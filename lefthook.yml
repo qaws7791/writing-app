@@ -1,0 +1,28 @@
+# lefthook.yml
+
+pre-commit:
+  parallel: true
+  commands:
+    # format all files
+    format:
+      glob: "**/*.{ts,tsx,js,jsx,cjs,mjs,json,css,md,yaml,yml}"
+      run: bun prettier --write {staged_files}
+      stage_fixed: true
+    # lint apps/web
+    web-lint:
+      root: "apps/web/"
+      glob: "**/*.{ts,tsx,js,jsx}"
+      run: pnpm eslint --fix {staged_files}
+      stage_fixed: true
+
+    # lint packages/ui
+    ui-lint:
+      root: "packages/ui/"
+      glob: "**/*.{ts,tsx}"
+      run: pnpm eslint --fix {staged_files}
+      stage_fixed: true
+
+pre-push:
+  commands:
+    turbo-lint:
+      run: pnpm turbo run lint
