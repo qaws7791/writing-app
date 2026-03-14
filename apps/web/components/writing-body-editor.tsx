@@ -1,7 +1,5 @@
 "use client"
 
-import Blockquote from "@tiptap/extension-blockquote"
-import Bold from "@tiptap/extension-bold"
 import CharacterCount from "@tiptap/extension-character-count"
 import Document from "@tiptap/extension-document"
 import History from "@tiptap/extension-history"
@@ -38,9 +36,6 @@ type EditorSnapshot = {
   canRedo: boolean
   canUndo: boolean
   characters: number
-  isBlockquote: boolean
-  isBold: boolean
-  isParagraph: boolean
   words: number
 }
 
@@ -62,9 +57,6 @@ const initialEditorSnapshot: EditorSnapshot = {
   canRedo: false,
   canUndo: false,
   characters: 0,
-  isBlockquote: false,
-  isBold: false,
-  isParagraph: true,
   words: 0,
 }
 
@@ -81,9 +73,6 @@ function createEditorSnapshot(editor: Editor): EditorSnapshot {
     canRedo: editor.can().chain().focus().redo().run(),
     canUndo: editor.can().chain().focus().undo().run(),
     characters: characterCount?.characters() ?? 0,
-    isBlockquote: editor.isActive("blockquote"),
-    isBold: editor.isActive("bold"),
-    isParagraph: editor.isActive("paragraph") && !editor.isActive("blockquote"),
     words: characterCount?.words() ?? 0,
   }
 }
@@ -127,62 +116,12 @@ function FloatingToolbar({
 }) {
   const isDisabled = !editor
 
-  const handleSetParagraph = () => {
-    if (!editor) {
-      return
-    }
-
-    if (editor.isActive("blockquote")) {
-      editor.chain().focus().toggleBlockquote().setParagraph().run()
-      return
-    }
-
-    editor.chain().focus().setParagraph().run()
-  }
-
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-5 z-30 flex justify-center px-4">
       <Toolbar
         aria-label="에세이 편집 도구"
         className="pointer-events-auto max-w-[760px] gap-2 overflow-x-auto rounded-[24px] border border-[#E5E5E5] bg-white/92 px-1.5 py-1.5 shadow-[0_18px_45px_rgba(17,17,17,0.12)] backdrop-blur-xl"
       >
-        <ToolbarGroup className="shrink-0 rounded-[16px] bg-[#F5F5F5] p-0.5">
-          <ToolbarActionButton
-            active={snapshot.isParagraph}
-            ariaLabel="본문 문단"
-            disabled={isDisabled}
-            title="본문 문단"
-            onClick={handleSetParagraph}
-          >
-            본문
-          </ToolbarActionButton>
-          <ToolbarActionButton
-            active={snapshot.isBlockquote}
-            ariaLabel="인용구"
-            disabled={isDisabled}
-            title="인용구"
-            onClick={() => editor?.chain().focus().toggleBlockquote().run()}
-          >
-            인용
-          </ToolbarActionButton>
-        </ToolbarGroup>
-
-        <ToolbarSeparator className="hidden sm:block" />
-
-        <ToolbarGroup className="shrink-0 rounded-[16px] bg-[#F5F5F5] p-0.5">
-          <ToolbarActionButton
-            active={snapshot.isBold}
-            ariaLabel="굵게"
-            disabled={isDisabled}
-            title="굵게"
-            onClick={() => editor?.chain().focus().toggleBold().run()}
-          >
-            <span className="font-semibold">B</span>
-          </ToolbarActionButton>
-        </ToolbarGroup>
-
-        <ToolbarSeparator />
-
         <ToolbarGroup className="shrink-0 rounded-[16px] bg-[#F5F5F5] p-0.5">
           <ToolbarActionButton
             ariaLabel="실행 취소"
@@ -235,8 +174,6 @@ export default function WritingBodyEditor({
 
   const editor = useEditor({
     extensions: [
-      Bold,
-      Blockquote,
       Document,
       History,
       Paragraph,
