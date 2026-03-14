@@ -1,10 +1,10 @@
 .editorShell {
   width: 100%;
-  min-height: 320px;
+  min-height: 360px;
 }
 
 .editor {
-  min-height: 320px;
+  min-height: 360px;
   color: #4c4c4c;
   caret-color: #111111;
   font-size: 18px;
@@ -17,6 +17,22 @@
 
 .editor p {
   margin: 0;
+}
+
+.editor p + p {
+  margin-top: 1.2em;
+}
+
+.editor strong {
+  color: #111111;
+  font-weight: 650;
+}
+
+.editor blockquote {
+  margin: 1.6em 0;
+  border-left: 3px solid #d8d8d8;
+  padding-left: 1.1em;
+  color: #2f2f2f;
 }
 
 .editor :global(p.is-editor-empty:first-child)::before,

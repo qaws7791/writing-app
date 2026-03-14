@@ -60,7 +60,7 @@ export default function WritingPage() {
         </div>
       </header>
 
-      <main className="flex flex-1 items-start justify-center px-6 pt-24 pb-24 md:px-10 md:pt-36">
+      <main className="flex flex-1 items-start justify-center px-6 pt-24 pb-40 md:px-10 md:pt-36 md:pb-44">
         <section className="w-full max-w-[760px]">
           <div className="space-y-12">
             <h1
