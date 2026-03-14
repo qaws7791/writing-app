@@ -48,7 +48,7 @@ export default function Page() {
               오늘의 영감
             </h2>
             <Link
-              href="/inspirations"
+              href="/prompts"
               className="text-[13px] font-medium text-[#888888] transition-colors hover:text-[#111111]"
             >
               더 보기
