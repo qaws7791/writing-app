@@ -4,7 +4,7 @@ import { Toolbar as ToolbarPrimitive } from "@base-ui/react/toolbar"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@workspace/ui/lib/utils"
-import { buttonVariants } from "@workspace/ui/components/button"
+import { buttonVariants } from "@workspace/ui/components/button.styles"
 
 const toolbarVariants = cva(
   "inline-flex w-fit max-w-full shrink-0 items-center gap-1 rounded-xl border border-border/70 bg-background/95 p-1 shadow-xs supports-[backdrop-filter]:bg-background/85",
