@@ -1,66 +1,40 @@
 import Link from "next/link"
-import {
-  AiBrain01Icon,
-  ArrowLeft01Icon,
-  Settings02Icon,
-} from "@hugeicons/core-free-icons"
+import { ArrowLeft01Icon, Settings02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import WritingBodyEditor from "@/components/writing-body-editor"
+import { buttonVariants } from "@workspace/ui/components/button.styles"
+import { Button } from "@workspace/ui/components/button"
 
 export default function WritingPage() {
   return (
     <div className="flex min-h-svh flex-col bg-[#FAFAFA] text-[#111111]">
-      <header className="border-b border-[#E5E5E5] bg-[#FAFAFA]">
-        <div className="flex h-16 items-center justify-between px-4 md:px-8">
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-40">
+        <div className="pointer-events-auto flex h-20 items-center justify-between px-4 md:px-6">
           <Link
+            aria-label="뒤로 가기"
             href="/"
-            className="inline-flex items-center gap-2 text-[15px] font-medium text-[#111111] transition-opacity hover:opacity-70"
+            className={buttonVariants({
+              variant: "outline",
+              size: "icon",
+            })}
           >
-            <HugeiconsIcon
-              icon={ArrowLeft01Icon}
-              size={22}
-              color="currentColor"
-              strokeWidth={1.8}
-            />
-            <span>돌아가기</span>
+            <HugeiconsIcon icon={ArrowLeft01Icon} />
           </Link>
 
           <div className="flex items-center gap-2 md:gap-3">
-            <div className="hidden items-center gap-2 text-[14px] font-medium text-[#5F5F5F] sm:flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#111111]" />
-              <span>저장중...</span>
-            </div>
-
-            <button
-              type="button"
-              className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-[14px] font-medium text-[#5F5F5F] transition-colors hover:bg-[#F0F0F0]"
-            >
-              <HugeiconsIcon
-                icon={AiBrain01Icon}
-                size={22}
-                color="currentColor"
-                strokeWidth={1.8}
-              />
-              <span>AI</span>
-            </button>
-
-            <button
-              type="button"
-              aria-label="설정"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full text-[#5F5F5F] transition-colors hover:bg-[#F0F0F0]"
-            >
+            <Button variant="outline" size="icon" aria-label="설정">
               <HugeiconsIcon
                 icon={Settings02Icon}
                 size={22}
                 color="currentColor"
                 strokeWidth={1.8}
               />
-            </button>
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="flex flex-1 items-start justify-center px-6 pt-24 pb-40 md:px-10 md:pt-36 md:pb-44">
+      <main className="flex flex-1 items-start justify-center px-6 pt-28 pb-40 md:px-10 md:pt-36 md:pb-44">
         <section className="w-full max-w-[760px]">
           <div className="space-y-12">
             <h1
