@@ -251,7 +251,7 @@ export default async function PromptDetailPage({
       <div className="fixed inset-x-0 bottom-0 z-50 px-6 py-4 lg:px-16">
         <div className="mx-auto flex max-w-[760px] items-center gap-2">
           <Link
-            href={`/write?prompt=${prompt.id}`}
+            href={`/write/new?prompt=${prompt.id}`}
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#111111] px-6 py-3 text-[16px] font-semibold text-white transition-transform hover:bg-[#222222] active:scale-[0.98]"
           >
             <HugeiconsIcon

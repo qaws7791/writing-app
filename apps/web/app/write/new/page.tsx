@@ -5,14 +5,14 @@ import WritingBodyEditor from "@/components/writing-body-editor"
 import { buttonVariants } from "@workspace/ui/components/button.styles"
 import { Button } from "@workspace/ui/components/button"
 
-export default function WritingPage() {
+export default function WritingNewPage() {
   return (
     <div className="flex min-h-svh flex-col bg-[#FAFAFA] text-[#111111]">
       <header className="pointer-events-none fixed inset-x-0 top-0 z-40">
         <div className="pointer-events-auto flex h-20 items-center justify-between px-4 md:px-6">
           <Link
             aria-label="뒤로 가기"
-            href="/"
+            href="/write"
             className={buttonVariants({
               variant: "outline",
               size: "icon",
