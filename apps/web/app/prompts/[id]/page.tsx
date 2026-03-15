@@ -128,86 +128,92 @@ export default async function PromptDetailPage({
   }
 
   return (
-    <div className="min-h-svh flex-1 bg-[#FAFAFA] px-6 pt-12 pb-32 lg:px-16">
+    <div className="min-h-svh flex-1 bg-[#FAFAFA] px-4 pb-32 lg:px-16">
       <div className="mx-auto max-w-[760px]">
-        {/* ── 상단 네비게이션 ── */}
-        <nav className="mb-10 flex items-center justify-between">
-          <Link
-            href="/prompts"
-            className="flex items-center gap-1.5 text-[14px] font-medium text-[#888888] transition-colors hover:text-[#111111]"
-          >
-            <HugeiconsIcon
-              icon={ArrowLeft01Icon}
-              size={18}
-              color="currentColor"
-              strokeWidth={1.5}
-            />
-            글감 찾기
-          </Link>
+        <div className="border-b border-[#EAEAEA]/80 bg-[#FAFAFA]/92 pb-6 backdrop-blur-xl lg:-mx-16 lg:px-16">
+          <div className="mx-auto max-w-[760px]">
+            {/* ── 상단 네비게이션 ── */}
+            <nav className="sticky top-0 z-40 flex items-center justify-between bg-[#FAFAFA] py-2">
+              <Link
+                href="/prompts"
+                className="flex items-center gap-1.5 text-[14px] font-medium text-[#888888] transition-colors hover:text-[#111111]"
+              >
+                <HugeiconsIcon
+                  icon={ArrowLeft01Icon}
+                  size={18}
+                  color="currentColor"
+                  strokeWidth={1.5}
+                />
+                글감 찾기
+              </Link>
 
-          <div className="flex items-center gap-1">
-            {/* 북마크 */}
-            <button
-              type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
-              aria-label="북마크"
-            >
-              <HugeiconsIcon
-                icon={prompt.bookmarked ? BookmarkCheckIcon : Bookmark01Icon}
-                size={18}
-                color={prompt.bookmarked ? "#111111" : "currentColor"}
-                strokeWidth={1.5}
-              />
-            </button>
-            {/* 공유 */}
-            <button
-              type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
-              aria-label="공유"
-            >
-              <HugeiconsIcon
-                icon={Share01Icon}
-                size={18}
-                color="currentColor"
-                strokeWidth={1.5}
-              />
-            </button>
-            {/* 더보기 */}
-            <button
-              type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
-              aria-label="더 보기"
-            >
-              <HugeiconsIcon
-                icon={MoreHorizontalIcon}
-                size={18}
-                color="currentColor"
-                strokeWidth={1.5}
-              />
-            </button>
+              <div className="flex items-center gap-1">
+                {/* 북마크 */}
+                <button
+                  type="button"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
+                  aria-label="북마크"
+                >
+                  <HugeiconsIcon
+                    icon={
+                      prompt.bookmarked ? BookmarkCheckIcon : Bookmark01Icon
+                    }
+                    size={18}
+                    color={prompt.bookmarked ? "#111111" : "currentColor"}
+                    strokeWidth={1.5}
+                  />
+                </button>
+                {/* 공유 */}
+                <button
+                  type="button"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
+                  aria-label="공유"
+                >
+                  <HugeiconsIcon
+                    icon={Share01Icon}
+                    size={18}
+                    color="currentColor"
+                    strokeWidth={1.5}
+                  />
+                </button>
+                {/* 더보기 */}
+                <button
+                  type="button"
+                  className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
+                  aria-label="더 보기"
+                >
+                  <HugeiconsIcon
+                    icon={MoreHorizontalIcon}
+                    size={18}
+                    color="currentColor"
+                    strokeWidth={1.5}
+                  />
+                </button>
+              </div>
+            </nav>
+
+            {/* ── 메인 헤더 ── */}
+            <header className="mt-4">
+              {/* 메타 정보 */}
+              <div className="mb-5 flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="text-[12px] font-medium">
+                  {prompt.topic}
+                </Badge>
+                <LevelDots level={prompt.level} showLabel />
+              </div>
+
+              {/* 글감 제목 */}
+              <h1 className="text-[26px] leading-snug font-semibold tracking-tight text-[#111111] md:text-[30px]">
+                {prompt.text}
+              </h1>
+
+              {/* 설명 */}
+              <p className="mt-4 text-[15px] leading-[1.8] text-[#666666]">
+                {prompt.description}
+              </p>
+            </header>
           </div>
-        </nav>
-
-        {/* ── 메인 헤더 ── */}
-        <header className="mb-10">
-          {/* 메타 정보 */}
-          <div className="mb-5 flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="text-[12px] font-medium">
-              {prompt.topic}
-            </Badge>
-            <LevelDots level={prompt.level} showLabel />
-          </div>
-
-          {/* 글감 제목 */}
-          <h1 className="text-[26px] leading-snug font-semibold tracking-tight text-[#111111] md:text-[30px]">
-            {prompt.text}
-          </h1>
-
-          {/* 설명 */}
-          <p className="mt-4 text-[15px] leading-[1.8] text-[#666666]">
-            {prompt.description}
-          </p>
-        </header>
+        </div>
 
         {/* ── 구조형 아웃라인 (있을 경우) ── */}
         {prompt.outline && prompt.outline.length > 0 && (
@@ -270,7 +276,7 @@ export default async function PromptDetailPage({
       </div>
 
       {/* ── 하단 고정 CTA ── */}
-      <div className="fixed inset-x-0 bottom-0 z-50 border-t border-[#EAEAEA]/80 bg-[#FAFAFA]/80 px-6 py-4 backdrop-blur-xl lg:px-16">
+      <div className="fixed inset-x-0 bottom-0 z-50 px-6 py-4 lg:px-16">
         <div className="mx-auto max-w-[760px]">
           <Link
             href={`/write?prompt=${prompt.id}`}
