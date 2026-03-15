@@ -148,21 +148,6 @@ export default async function PromptDetailPage({
               </Link>
 
               <div className="flex items-center gap-1">
-                {/* 북마크 */}
-                <button
-                  type="button"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
-                  aria-label="북마크"
-                >
-                  <HugeiconsIcon
-                    icon={
-                      prompt.bookmarked ? BookmarkCheckIcon : Bookmark01Icon
-                    }
-                    size={18}
-                    color={prompt.bookmarked ? "#111111" : "currentColor"}
-                    strokeWidth={1.5}
-                  />
-                </button>
                 {/* 공유 */}
                 <button
                   type="button"
@@ -171,19 +156,6 @@ export default async function PromptDetailPage({
                 >
                   <HugeiconsIcon
                     icon={Share01Icon}
-                    size={18}
-                    color="currentColor"
-                    strokeWidth={1.5}
-                  />
-                </button>
-                {/* 더보기 */}
-                <button
-                  type="button"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
-                  aria-label="더 보기"
-                >
-                  <HugeiconsIcon
-                    icon={MoreHorizontalIcon}
                     size={18}
                     color="currentColor"
                     strokeWidth={1.5}
@@ -277,10 +249,10 @@ export default async function PromptDetailPage({
 
       {/* ── 하단 고정 CTA ── */}
       <div className="fixed inset-x-0 bottom-0 z-50 px-6 py-4 lg:px-16">
-        <div className="mx-auto max-w-[760px]">
+        <div className="mx-auto flex max-w-[760px] items-center gap-2">
           <Link
             href={`/write?prompt=${prompt.id}`}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#111111] px-6 py-4 text-[16px] font-semibold text-white transition-transform hover:bg-[#222222] active:scale-[0.98]"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#111111] px-6 py-3 text-[16px] font-semibold text-white transition-transform hover:bg-[#222222] active:scale-[0.98]"
           >
             <HugeiconsIcon
               icon={PencilEdit02Icon}
@@ -290,6 +262,19 @@ export default async function PromptDetailPage({
             />
             이 글감으로 글 쓰기
           </Link>
+          {/* 북마크 */}
+          <button
+            type="button"
+            className="flex size-12 shrink-0 items-center justify-center rounded-full text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
+            aria-label="북마크"
+          >
+            <HugeiconsIcon
+              icon={prompt.bookmarked ? BookmarkCheckIcon : Bookmark01Icon}
+              size={18}
+              color={prompt.bookmarked ? "#111111" : "currentColor"}
+              strokeWidth={1.5}
+            />
+          </button>
         </div>
       </div>
     </div>
