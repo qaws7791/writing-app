@@ -90,14 +90,14 @@ export default function WriteListPage() {
             {mockPosts.map((post, index) => (
               <Link key={post.id} href={`/write/${post.id}`} className="group">
                 <article
-                  className={`flex flex-col gap-3 py-6 transition-colors ${
+                  className={`flex flex-col gap-1 py-6 transition-colors ${
                     index !== mockPosts.length - 1
                       ? "border-b border-[#F0F0F0]"
                       : ""
                   }`}
                 >
                   {/* 글 제목 */}
-                  <h3 className="text-[16px] leading-[1.5] font-semibold text-[#111111] underline-offset-4 group-hover:underline md:text-[17px]">
+                  <h3 className="text-[16px] leading-normal font-semibold text-[#111111] underline-offset-4 group-hover:underline md:text-[17px]">
                     {post.title}
                   </h3>
 
