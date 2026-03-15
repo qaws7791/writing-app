@@ -1,22 +1,31 @@
 import Link from "next/link"
+import { LevelDots } from "@/components/level-dots"
 
 export default function Page() {
   const mockInspirations = [
     {
       id: 1,
       text: "비가 올 때 제일 먼저 생각\n나는 게 뭔가요?",
+      category: "일상",
+      level: 1,
     },
     {
       id: 2,
-      text: "비가 올 때 제일 먼저 생각\n나는 게 뭔가요?",
+      text: "가장 최근에 누군가에게\n고마웠던 순간은 언제인가요?",
+      category: "관계",
+      level: 1,
     },
     {
       id: 3,
-      text: "비가 올 때 제일 먼저 생각\n나는 게 뭔가요?",
+      text: "10년 후의 나에게 하고\n싶은 말 한마디는?",
+      category: "자기이해",
+      level: 2,
     },
     {
       id: 4,
-      text: "비가 올 때 제일 먼저 생각\n나는 게 뭔가요?",
+      text: "어른이 된다는 건 무엇을\n포기하는 것일까요?",
+      category: "사회",
+      level: 3,
     },
   ]
 
@@ -59,11 +68,18 @@ export default function Page() {
             {mockInspirations.map((item) => (
               <div
                 key={item.id}
-                className="flex aspect-[2/1] cursor-pointer flex-col rounded-[20px] border border-[#EAEAEA] bg-white p-6 transition-all hover:border-[#D0D0D0] hover:shadow-sm"
+                className="flex h-full cursor-pointer flex-col justify-between gap-4 rounded-xl border border-[#EAEAEA] bg-white p-5 shadow-sm transition-all hover:border-[#D0D0D0]"
               >
                 <p className="text-[15px] leading-[1.6] font-medium whitespace-pre-wrap text-[#111111]">
                   {item.text}
                 </p>
+                <div className="mt-auto flex items-center gap-2">
+                  <span className="text-[12px] font-medium text-[#888888]">
+                    {item.category}
+                  </span>
+                  <span className="text-[10px] text-[#D0D0D0]">·</span>
+                  <LevelDots level={item.level as 1 | 2 | 3} showLabel />
+                </div>
               </div>
             ))}
           </div>
