@@ -8,6 +8,7 @@ import {
   BookmarkCheckIcon,
 } from "@hugeicons/core-free-icons"
 import { Badge } from "@workspace/ui/components/badge"
+import { LevelDots } from "@/components/level-dots"
 
 // ─── 목 데이터 ─────────────────────────────────────────────
 
@@ -131,26 +132,6 @@ const allPrompts: Prompt[] = [
     tags: ["장소", "발견"],
   },
 ]
-
-// ─── 레벨 표시 도우미 ─────────────────────────────────────
-
-function LevelDots({ level }: { level: 1 | 2 | 3 }) {
-  return (
-    <span
-      className="inline-flex items-center gap-[3px]"
-      title={`레벨 ${level}`}
-    >
-      {[1, 2, 3].map((i) => (
-        <span
-          key={i}
-          className={`block h-[5px] w-[5px] rounded-full ${
-            i <= level ? "bg-[#111111]" : "bg-[#D9D9D9]"
-          }`}
-        />
-      ))}
-    </span>
-  )
-}
 
 // ─── 글감 리스트 아이템 ─────────────────────────────────────
 

@@ -10,6 +10,7 @@ import {
   MoreHorizontalIcon,
 } from "@hugeicons/core-free-icons"
 import { Badge } from "@workspace/ui/components/badge"
+import { LevelDots } from "@/components/level-dots"
 
 // ─── 상세 데이터용 확장 타입 ───────────────────────────────
 
@@ -119,27 +120,6 @@ const allPrompts: Record<number, PromptDetail> = {
   },
 }
 
-// ─── 도우미 컴포넌트 ──────────────────────────────────────
-
-function LevelDots({ level }: { level: 1 | 2 | 3 }) {
-  const labels = { 1: "초급", 2: "중급", 3: "심화" } as const
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className="inline-flex items-center gap-[3px]">
-        {[1, 2, 3].map((i) => (
-          <span
-            key={i}
-            className={`block h-[5px] w-[5px] rounded-full ${
-              i <= level ? "bg-[#111111]" : "bg-[#D9D9D9]"
-            }`}
-          />
-        ))}
-      </span>
-      <span className="text-[12px] text-[#888888]">{labels[level]}</span>
-    </span>
-  )
-}
-
 // ─── 페이지 ────────────────────────────────────────────────
 
 export default async function PromptDetailPage({
@@ -236,7 +216,7 @@ export default async function PromptDetailPage({
             <Badge variant="outline" className="text-[12px] font-normal">
               {prompt.writingType}
             </Badge>
-            <LevelDots level={prompt.level} />
+            <LevelDots level={prompt.level} showLabel />
           </div>
 
           {/* 글감 제목 */}
