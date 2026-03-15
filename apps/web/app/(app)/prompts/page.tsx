@@ -7,7 +7,6 @@ import {
   Bookmark01Icon,
   BookmarkCheckIcon,
 } from "@hugeicons/core-free-icons"
-import { Badge } from "@workspace/ui/components/badge"
 import { LevelDots } from "@/components/level-dots"
 
 // ─── 목 데이터 ─────────────────────────────────────────────
@@ -31,9 +30,6 @@ interface Prompt {
   text: string
   topic: string
   level: 1 | 2 | 3
-  length: "짧음" | "보통" | "깊이"
-  type: "단문" | "구조형" | "시리즈"
-  tags: string[]
   bookmarked?: boolean
 }
 
@@ -44,9 +40,6 @@ const allPrompts: Prompt[] = [
     text: "최근에 내 생각이 바뀐 순간은?",
     topic: "자기이해",
     level: 1,
-    length: "짧음",
-    type: "단문",
-    tags: ["회고", "변화"],
     bookmarked: true,
   },
   {
@@ -54,54 +47,36 @@ const allPrompts: Prompt[] = [
     text: "사람들은 왜 익숙한 것을 떠나기 어려울까?",
     topic: "사회",
     level: 2,
-    length: "보통",
-    type: "단문",
-    tags: ["심리", "습관"],
   },
   {
     id: 3,
     text: "내가 가장 편안함을 느끼는 장소를 묘사해보세요",
     topic: "일상",
     level: 1,
-    length: "짧음",
-    type: "단문",
-    tags: ["묘사", "공간"],
   },
   {
     id: 4,
     text: "10년 후의 나에게 편지를 써보세요",
     topic: "자기이해",
     level: 2,
-    length: "보통",
-    type: "구조형",
-    tags: ["미래", "편지"],
   },
   {
     id: 5,
     text: "최근에 읽은 글에서 가장 인상 깊었던 문장은?",
     topic: "문화",
     level: 1,
-    length: "짧음",
-    type: "단문",
-    tags: ["독서", "인용"],
   },
   {
     id: 6,
     text: "AI가 일상에 들어오면서 잃어가는 것은?",
     topic: "기술",
     level: 3,
-    length: "깊이",
-    type: "구조형",
-    tags: ["AI", "비판"],
   },
   {
     id: 7,
     text: "내 하루에서 가장 조용한 순간은 언제인가요?",
     topic: "일상",
     level: 1,
-    length: "짧음",
-    type: "단문",
-    tags: ["일상", "관찰"],
     bookmarked: true,
   },
   {
@@ -109,27 +84,18 @@ const allPrompts: Prompt[] = [
     text: "어른이 된다는 건 무엇을 포기하는 것일까?",
     topic: "자기이해",
     level: 2,
-    length: "보통",
-    type: "단문",
-    tags: ["성장", "철학"],
   },
   {
     id: 9,
     text: "가장 최근에 누군가에게 고마웠던 순간",
     topic: "관계",
     level: 1,
-    length: "짧음",
-    type: "단문",
-    tags: ["감사", "관계"],
   },
   {
     id: 10,
     text: "지금 내가 살고 있는 동네의 숨은 매력",
     topic: "일상",
     level: 1,
-    length: "보통",
-    type: "단문",
-    tags: ["장소", "발견"],
   },
 ]
 
@@ -151,23 +117,8 @@ function PromptListItem({ prompt }: { prompt: Prompt }) {
             {prompt.topic}
           </span>
           <span className="text-[10px] text-[#D0D0D0]">·</span>
-          <LevelDots level={prompt.level} />
-          <span className="text-[10px] text-[#D0D0D0]">·</span>
-          <span className="text-[12px] text-[#AAAAAA]">{prompt.length}</span>
+          <LevelDots level={prompt.level} showLabel />
         </div>
-      </div>
-
-      {/* 태그 */}
-      <div className="hidden items-center gap-1.5 sm:flex">
-        {prompt.tags.map((tag) => (
-          <Badge
-            key={tag}
-            variant="secondary"
-            className="text-[11px] font-normal text-[#666666]"
-          >
-            {tag}
-          </Badge>
-        ))}
       </div>
 
       {/* 북마크 */}

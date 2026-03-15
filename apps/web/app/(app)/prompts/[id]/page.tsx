@@ -20,9 +20,6 @@ interface PromptDetail {
   description: string
   topic: string
   level: 1 | 2 | 3
-  length: "짧음" | "보통" | "깊이"
-  type: "단문" | "구조형" | "시리즈"
-  writingType: string
   bookmarked: boolean
   /** 구조형일 때만 존재하는 추천 아웃라인 */
   outline?: string[]
@@ -41,9 +38,6 @@ const allPrompts: Record<number, PromptDetail> = {
       "우리는 매일 작은 변화를 겪습니다. 어떤 사건, 대화, 혹은 책 한 줄이 기존의 믿음을 흔들기도 하죠. 가장 최근에 생각이 바뀌었던 순간을 떠올려보세요. 무엇이 변했고, 왜 변했는지 솔직하게 써보세요.",
     topic: "자기이해",
     level: 1,
-    length: "짧음",
-    type: "단문",
-    writingType: "회고적 글쓰기",
     bookmarked: true,
     tips: [
       "구체적인 장면이나 순간부터 시작해보세요",
@@ -59,9 +53,6 @@ const allPrompts: Record<number, PromptDetail> = {
       "변화를 원하면서도 현재에 머무르는 이유는 무엇일까요? 심리적 관성, 두려움, 혹은 안전감에 대해 생각해보세요. 나 자신의 경험이나, 주변 사람들의 모습을 관찰한 것을 바탕으로 써보세요.",
     topic: "사회",
     level: 2,
-    length: "보통",
-    type: "단문",
-    writingType: "분석적 글쓰기",
     bookmarked: false,
     tips: [
       "일반론보다 구체적인 사례로 시작해보세요",
@@ -76,9 +67,6 @@ const allPrompts: Record<number, PromptDetail> = {
       "미래의 나는 어떤 모습일까요? 지금의 고민, 바람, 다짐을 10년 후의 나에게 전해보세요. 편지 형식으로 자유롭게 쓰되, 현재의 감정을 솔직하게 담아보세요.",
     topic: "자기이해",
     level: 2,
-    length: "보통",
-    type: "구조형",
-    writingType: "성찰적 글쓰기",
     bookmarked: false,
     outline: [
       "인사 — 지금의 나를 소개하기",
@@ -100,9 +88,6 @@ const allPrompts: Record<number, PromptDetail> = {
       "AI가 우리 삶 깊숙이 들어오고 있습니다. 편리함을 얻는 동시에 잃어가는 것은 무엇일까요? 인간 고유의 능력, 관계, 감정 등 다양한 관점에서 비판적으로 생각해보세요.",
     topic: "기술",
     level: 3,
-    length: "깊이",
-    type: "구조형",
-    writingType: "비판적 글쓰기",
     bookmarked: false,
     outline: [
       "도입 — AI가 일상에 들어온 장면 묘사",
@@ -138,9 +123,6 @@ export default async function PromptDetailPage({
       "우리는 매일 작은 변화를 겪습니다. 어떤 사건, 대화, 혹은 책 한 줄이 기존의 믿음을 흔들기도 하죠. 가장 최근에 생각이 바뀌었던 순간을 떠올려보세요.",
     topic: "자기이해",
     level: 1,
-    length: "짧음",
-    type: "단문",
-    writingType: "회고적 글쓰기",
     bookmarked: false,
     tips: ["구체적인 장면부터 시작해보세요"],
   }
@@ -212,9 +194,6 @@ export default async function PromptDetailPage({
           <div className="mb-5 flex flex-wrap items-center gap-2">
             <Badge variant="secondary" className="text-[12px] font-medium">
               {prompt.topic}
-            </Badge>
-            <Badge variant="outline" className="text-[12px] font-normal">
-              {prompt.writingType}
             </Badge>
             <LevelDots level={prompt.level} showLabel />
           </div>
