@@ -1,5 +1,9 @@
 import Link from "next/link"
-import { Home01Icon, PencilEdit02Icon } from "@hugeicons/core-free-icons"
+import {
+  CompassIcon,
+  Home01Icon,
+  PencilEdit02Icon,
+} from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
 const links = [
@@ -7,6 +11,11 @@ const links = [
     href: "/",
     icon: Home01Icon,
     label: "Inbox",
+  },
+  {
+    href: "/prompts",
+    icon: CompassIcon,
+    label: "Prompts",
   },
   {
     href: "/write",
