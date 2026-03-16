@@ -2,7 +2,6 @@
 
 import type { ReactNode } from "react"
 import {
-  Cancel01Icon,
   ReplaceIcon,
   SearchAreaIcon,
   SparklesIcon,
@@ -14,7 +13,6 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
@@ -230,6 +228,7 @@ export function AIBottomSheet({
 }: AIBottomSheetProps) {
   const isLayer1 = mode.startsWith("layer1")
   const isLoading = mode === "layer1-loading" || mode === "layer2-loading"
+  const visibleSuggestions = suggestions.slice(0, 3)
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
@@ -279,7 +278,7 @@ export function AIBottomSheet({
                   {selectedText}
                 </p>
               </div>
-              {suggestions.map((suggestion, i) => (
+              {visibleSuggestions.map((suggestion, i) => (
                 <SuggestionCard
                   key={suggestion.id}
                   suggestion={suggestion}
@@ -287,21 +286,6 @@ export function AIBottomSheet({
                   onAccept={() => onAcceptSuggestion(suggestion)}
                 />
               ))}
-              <DrawerClose asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full gap-1.5 text-muted-foreground"
-                >
-                  <HugeiconsIcon
-                    icon={Cancel01Icon}
-                    size={14}
-                    color="currentColor"
-                    strokeWidth={2}
-                  />
-                  원문 유지
-                </Button>
-              </DrawerClose>
             </div>
           )}
 

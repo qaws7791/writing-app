@@ -103,8 +103,14 @@ function generateVocabularySuggestions(text: string): AISuggestion[] {
     {
       id: uid("vocab"),
       original: text,
-      suggestion: text + "—",
-      reason: "현재 표현이 적절합니다. 대시(—)를 추가해 호흡을 줄 수 있습니다.",
+      suggestion: `${text.replace(/[.!?]+$/, "")}라고 볼 수 있습니다.`,
+      reason: "서술 방식을 바꾸면 문장의 어조가 조금 더 단정해집니다.",
+    },
+    {
+      id: uid("vocab"),
+      original: text,
+      suggestion: `특히 ${text}`,
+      reason: "강조 지점을 앞에 두면 같은 내용도 더 선명하게 읽힙니다.",
     },
     {
       id: uid("vocab"),
@@ -120,84 +126,104 @@ function generateClaritySuggestions(text: string): AISuggestion[] {
   const andIdx = text.indexOf("그리고")
   const splitPoint =
     commaIdx > 5 ? commaIdx : andIdx > 5 ? andIdx : Math.floor(text.length / 2)
+  const normalizedText = text.replace(/[.!?]+$/, "")
+  const splitSuggestion =
+    text.slice(0, splitPoint).trim() +
+    ". " +
+    text
+      .slice(splitPoint)
+      .replace(/^[,\s그리고]+/, "")
+      .trim()
 
-  const suggestions: AISuggestion[] = [
+  const particleAdjustedText =
+    text.length > 20
+      ? text.replace(/[은는이가]/g, (m, offset) =>
+          offset < text.length / 2 ? m : m === "은" ? "는" : m
+        )
+      : `핵심은 ${text.replace(/^[\s,]+/, "")}`
+
+  return [
     {
       id: uid("clarity"),
       original: text,
-      suggestion:
-        text.slice(0, splitPoint).trim() +
-        ". " +
-        text
-          .slice(splitPoint)
-          .replace(/^[,\s그리고]+/, "")
-          .trim(),
+      suggestion: splitSuggestion,
       reason:
         "하나의 문장에 여러 의미가 담겨 있어 두 가지로 해석될 수 있습니다. 분리하면 의미가 명확해집니다.",
     },
-  ]
-
-  if (text.length > 20) {
-    suggestions.push({
+    {
       id: uid("clarity"),
       original: text,
-      suggestion: text.replace(/[은는이가]/g, (m, offset) =>
-        offset < text.length / 2 ? m : m === "은" ? "는" : m
-      ),
-      reason: "주격 조사의 일관성을 맞추면 주어가 더 명확해집니다.",
-    })
-  }
-
-  return suggestions.slice(0, 3)
+      suggestion: particleAdjustedText,
+      reason:
+        text.length > 20
+          ? "주격 조사의 일관성을 맞추면 주어가 더 명확해집니다."
+          : "핵심어를 앞쪽에 두면 독자가 문장의 중심을 더 빨리 파악할 수 있습니다.",
+    },
+    {
+      id: uid("clarity"),
+      original: text,
+      suggestion: `${normalizedText}. 다시 말해, ${text}`,
+      reason: "같은 내용을 짧게 덧붙이면 앞 문장의 의미가 더 선명해집니다.",
+    },
+  ]
 }
 
 function generateRhythmSuggestions(text: string): AISuggestion[] {
-  const suggestions: AISuggestion[] = []
+  const normalizedText = text.replace(/[.!?]+$/, "")
+  const splitSuggestion =
+    text.length > 40
+      ? (() => {
+          const midPoint = text.indexOf(". ")
+          const splitAt =
+            midPoint > 10
+              ? midPoint + 1
+              : text.indexOf(",") > 10
+                ? text.indexOf(",")
+                : Math.floor(text.length * 0.55)
 
-  if (text.length > 40) {
-    const midPoint = text.indexOf(". ")
-    const splitAt =
-      midPoint > 10
-        ? midPoint + 1
-        : text.indexOf(",") > 10
-          ? text.indexOf(",")
-          : Math.floor(text.length * 0.55)
+          return (
+            text.slice(0, splitAt).trim() +
+            ".\n" +
+            text
+              .slice(splitAt)
+              .replace(/^[,.\s]+/, "")
+              .trim()
+          )
+        })()
+      : `${normalizedText}.\n한 번 더 호흡을 정리해 보세요.`
 
-    suggestions.push({
+  const bridgeSuggestion =
+    text.length < 15
+      ? `${text}—그리고`
+      : `${normalizedText}, 그리고 다음 문장으로 자연스럽게 이어집니다.`
+
+  return [
+    {
       id: uid("rhythm"),
       original: text,
-      suggestion:
-        text.slice(0, splitAt).trim() +
-        ".\n" +
-        text
-          .slice(splitAt)
-          .replace(/^[,.\s]+/, "")
-          .trim(),
-      reason: "문장이 길어 숨이 차는 구조입니다. 분리하면 리듬감이 생깁니다.",
-    })
-  }
-
-  if (text.length < 15) {
-    suggestions.push({
-      id: uid("rhythm"),
-      original: text,
-      suggestion: text + "—그리고",
+      suggestion: splitSuggestion,
       reason:
-        "짧은 문장이 연속되면 단조로울 수 있습니다. 다음 문장과 연결하면 흐름이 부드러워집니다.",
-    })
-  }
-
-  if (suggestions.length === 0) {
-    suggestions.push({
+        text.length > 40
+          ? "문장이 길어 숨이 차는 구조입니다. 분리하면 리듬감이 생깁니다."
+          : "호흡을 한 번 끊어 주면 문장 리듬이 조금 더 안정적으로 읽힙니다.",
+    },
+    {
+      id: uid("rhythm"),
+      original: text,
+      suggestion: bridgeSuggestion,
+      reason:
+        text.length < 15
+          ? "짧은 문장이 연속되면 단조로울 수 있습니다. 다음 문장과 연결하면 흐름이 부드러워집니다."
+          : "완급을 한 번 더 주면 다음 문장으로 넘어가는 흐름이 부드러워집니다.",
+    },
+    {
       id: uid("rhythm"),
       original: text,
       suggestion: text,
       reason:
-        "현재 문장의 호흡이 적절합니다. 전후 문장과의 리듬을 확인해 보세요.",
-    })
-  }
-
-  return suggestions.slice(0, 3)
+        "현재 문장의 호흡이 적절합니다. 전후 문장과의 리듬을 함께 확인해 보세요.",
+    },
+  ]
 }
 
 // --- 공개 API ---
