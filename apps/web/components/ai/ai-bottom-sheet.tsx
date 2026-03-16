@@ -173,19 +173,9 @@ function SuggestionCard({
   onAccept: () => void
 }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-4">
-      <div className="mb-2 flex items-center gap-2">
-        <Badge variant="secondary" className="text-xs">
-          제안 {index + 1}
-        </Badge>
-      </div>
-      <p className="text-sm leading-relaxed text-foreground md:text-base">
-        {suggestion.suggestion}
-      </p>
-      <p className="mt-2 text-sm leading-snug text-muted-foreground">
-        {suggestion.reason}
-      </p>
-      <div className="mt-3 flex items-center gap-2">
+    <div className="min-w-0 rounded-2xl border border-border/60 bg-card p-4">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-sm text-muted-foreground">제안 {index + 1}</p>
         <Button size="sm" onClick={onAccept} className="gap-1.5">
           <HugeiconsIcon
             icon={Tick02Icon}
@@ -196,6 +186,12 @@ function SuggestionCard({
           적용
         </Button>
       </div>
+      <p className="text-sm leading-relaxed break-all whitespace-pre-wrap text-foreground md:text-base">
+        {suggestion.suggestion}
+      </p>
+      <p className="mt-2 text-sm leading-snug break-words whitespace-pre-wrap text-muted-foreground">
+        {suggestion.reason}
+      </p>
     </div>
   )
 }
@@ -250,7 +246,7 @@ export function AIBottomSheet({
           )}
         </DrawerHeader>
 
-        <div className="sheet-body-scroll overflow-y-auto px-4 pb-6">
+        <div className="sheet-body-scroll overflow-x-hidden px-4 pb-6">
           {/* Layer 1: 기능 선택 */}
           {mode === "layer1-features" && (
             <div className="flex flex-col gap-1">
@@ -271,10 +267,8 @@ export function AIBottomSheet({
           {mode === "layer1-suggestions" && (
             <div className="flex flex-col gap-3">
               <div className="rounded-xl bg-muted/40 px-4 py-3">
-                <p className="text-xs font-medium text-muted-foreground">
-                  원문
-                </p>
-                <p className="mt-1 text-sm leading-relaxed text-foreground/80">
+                <p className="text-sm text-muted-foreground">원문</p>
+                <p className="mt-1 text-sm leading-relaxed break-all whitespace-pre-wrap text-foreground/80">
                   {selectedText}
                 </p>
               </div>
