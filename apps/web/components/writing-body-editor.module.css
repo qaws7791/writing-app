@@ -43,3 +43,45 @@
   color: #a1a1a1;
   pointer-events: none;
 }
+
+/* --- AI 리뷰 하이라이트 --- */
+
+.editor :global(.ai-review-highlight) {
+  cursor: pointer;
+  border-radius: 3px;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.editor :global(.ai-review-spelling) {
+  background-color: rgba(239, 68, 68, 0.12);
+  text-decoration: wavy underline rgba(239, 68, 68, 0.6);
+  text-underline-offset: 3px;
+}
+
+.editor :global(.ai-review-spelling:hover) {
+  background-color: rgba(239, 68, 68, 0.2);
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+}
+
+.editor :global(.ai-review-duplicate) {
+  background-color: rgba(245, 158, 11, 0.12);
+  text-decoration: wavy underline rgba(245, 158, 11, 0.6);
+  text-underline-offset: 3px;
+}
+
+.editor :global(.ai-review-duplicate:hover) {
+  background-color: rgba(245, 158, 11, 0.2);
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+}
+
+.editor :global(.ai-review-flow) {
+  background-color: rgba(59, 130, 246, 0.1);
+  border-bottom: 2px dashed rgba(59, 130, 246, 0.5);
+}
+
+.editor :global(.ai-review-flow:hover) {
+  background-color: rgba(59, 130, 246, 0.18);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
+}
