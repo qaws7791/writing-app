@@ -7,7 +7,6 @@ import {
   PencilEdit02Icon,
   Share01Icon,
   SparklesIcon,
-  MoreHorizontalIcon,
 } from "@hugeicons/core-free-icons"
 import { Badge } from "@workspace/ui/components/badge"
 import { LevelDots } from "@/components/level-dots"
@@ -128,15 +127,15 @@ export default async function PromptDetailPage({
   }
 
   return (
-    <div className="min-h-svh flex-1 bg-[#FAFAFA] px-4 pb-32 lg:px-16">
-      <div className="mx-auto max-w-[760px]">
-        <div className="border-b border-[#EAEAEA]/80 bg-[#FAFAFA]/92 pb-6 backdrop-blur-xl lg:-mx-16 lg:px-16">
-          <div className="mx-auto max-w-[760px]">
+    <div className="min-h-svh flex-1 bg-background px-4 pb-32 lg:px-16">
+      <div className="mx-auto max-w-3xl">
+        <div className="border-b border-border/80 bg-background/95 pb-6 backdrop-blur-xl lg:-mx-16 lg:px-16">
+          <div className="mx-auto max-w-3xl">
             {/* ── 상단 네비게이션 ── */}
-            <nav className="sticky top-0 z-40 flex items-center justify-between bg-[#FAFAFA] py-2">
+            <nav className="sticky top-0 z-40 flex items-center justify-between bg-background py-2">
               <Link
                 href="/prompts"
-                className="flex items-center gap-1.5 text-[14px] font-medium text-[#888888] transition-colors hover:text-[#111111]"
+                className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               >
                 <HugeiconsIcon
                   icon={ArrowLeft01Icon}
@@ -151,7 +150,7 @@ export default async function PromptDetailPage({
                 {/* 공유 */}
                 <button
                   type="button"
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
+                  className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                   aria-label="공유"
                 >
                   <HugeiconsIcon
@@ -168,19 +167,19 @@ export default async function PromptDetailPage({
             <header className="mt-4">
               {/* 메타 정보 */}
               <div className="mb-5 flex flex-wrap items-center gap-2">
-                <Badge variant="secondary" className="text-[12px] font-medium">
+                <Badge variant="secondary" className="text-xs font-medium">
                   {prompt.topic}
                 </Badge>
                 <LevelDots level={prompt.level} showLabel />
               </div>
 
               {/* 글감 제목 */}
-              <h1 className="text-[26px] leading-snug font-semibold tracking-tight text-[#111111] md:text-[30px]">
+              <h1 className="text-2xl leading-snug font-semibold tracking-tight text-foreground md:text-3xl">
                 {prompt.text}
               </h1>
 
               {/* 설명 */}
-              <p className="mt-4 text-[15px] leading-[1.8] text-[#666666]">
+              <p className="mt-4 text-sm leading-8 text-muted-foreground md:text-base">
                 {prompt.description}
               </p>
             </header>
@@ -189,11 +188,11 @@ export default async function PromptDetailPage({
 
         {/* ── 구조형 아웃라인 (있을 경우) ── */}
         {prompt.outline && prompt.outline.length > 0 && (
-          <section className="mb-10 rounded-2xl border border-[#EAEAEA] bg-white p-6">
-            <h2 className="mb-4 text-[15px] font-semibold text-[#111111]">
+          <section className="mb-10 rounded-2xl border border-border bg-card p-6">
+            <h2 className="mb-4 text-sm font-semibold text-foreground md:text-base">
               추천 아웃라인
             </h2>
-            <p className="mb-5 text-[13px] text-[#999999]">
+            <p className="mb-5 text-sm text-muted-foreground">
               이 구조를 참고해서 써보세요. 꼭 따르지 않아도 괜찮아요.
             </p>
             <ol className="flex flex-col gap-0">
@@ -201,15 +200,15 @@ export default async function PromptDetailPage({
                 <li key={i} className="flex items-start gap-3">
                   {/* 타임라인 스타일 */}
                   <div className="flex flex-col items-center">
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F5F5F5] text-[12px] font-semibold text-[#555555]">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
                       {i + 1}
                     </span>
                     {i < prompt.outline!.length - 1 && (
-                      <span className="mt-1 h-6 w-px bg-[#E5E5E5]" />
+                      <span className="mt-1 h-6 w-px bg-border" />
                     )}
                   </div>
                   <div className="pt-1 pb-4">
-                    <span className="text-[14px] leading-relaxed text-[#333333]">
+                    <span className="text-sm leading-relaxed text-foreground/80">
                       {item}
                     </span>
                   </div>
@@ -221,23 +220,23 @@ export default async function PromptDetailPage({
 
         {/* ── 글쓰기 팁 ── */}
         {prompt.tips.length > 0 && (
-          <section className="mb-10 rounded-2xl border border-[#EAEAEA] bg-white p-6">
+          <section className="mb-10 rounded-2xl border border-border bg-card p-6">
             <div className="mb-4 flex items-center gap-2">
               <HugeiconsIcon
                 icon={SparklesIcon}
                 size={16}
-                color="#111111"
                 strokeWidth={1.5}
+                className="text-foreground"
               />
-              <h2 className="text-[15px] font-semibold text-[#111111]">
+              <h2 className="text-sm font-semibold text-foreground md:text-base">
                 글쓰기 팁
               </h2>
             </div>
             <ul className="flex flex-col gap-3">
               {prompt.tips.map((tip, i) => (
                 <li key={i} className="flex items-start gap-2.5">
-                  <span className="mt-1.5 block h-[5px] w-[5px] shrink-0 rounded-full bg-[#CCCCCC]" />
-                  <span className="text-[14px] leading-relaxed text-[#555555]">
+                  <span className="mt-1.5 block size-1.25 shrink-0 rounded-full bg-border" />
+                  <span className="text-sm leading-relaxed text-muted-foreground">
                     {tip}
                   </span>
                 </li>
@@ -249,15 +248,14 @@ export default async function PromptDetailPage({
 
       {/* ── 하단 고정 CTA ── */}
       <div className="fixed inset-x-0 bottom-0 z-50 px-6 py-4 lg:px-16">
-        <div className="mx-auto flex max-w-[760px] items-center gap-2">
+        <div className="mx-auto flex max-w-3xl items-center gap-2">
           <Link
             href={`/write/new?prompt=${prompt.id}`}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#111111] px-6 py-3 text-[16px] font-semibold text-white transition-transform hover:bg-[#222222] active:scale-[0.98]"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-transform hover:bg-primary/90 active:scale-95"
           >
             <HugeiconsIcon
               icon={PencilEdit02Icon}
               size={18}
-              color="currentColor"
               strokeWidth={1.5}
             />
             이 글감으로 글 쓰기
@@ -265,13 +263,14 @@ export default async function PromptDetailPage({
           {/* 북마크 */}
           <button
             type="button"
-            className="flex size-12 shrink-0 items-center justify-center rounded-full text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
+            className={`flex size-12 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-muted hover:text-foreground ${
+              prompt.bookmarked ? "text-foreground" : "text-muted-foreground"
+            }`}
             aria-label="북마크"
           >
             <HugeiconsIcon
               icon={prompt.bookmarked ? BookmarkCheckIcon : Bookmark01Icon}
               size={18}
-              color={prompt.bookmarked ? "#111111" : "currentColor"}
               strokeWidth={1.5}
             />
           </button>

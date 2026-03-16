@@ -131,13 +131,13 @@ function ProgressBar({
   const percentage = total > 0 ? (completed / total) * 100 : 0
   return (
     <div className="flex items-center gap-3">
-      <div className="h-1.5 flex-1 rounded-full bg-[#EEEEEE]">
+      <div className="h-1.5 flex-1 rounded-full bg-muted">
         <div
-          className="h-full rounded-full bg-[#111111] transition-all duration-500"
+          className="h-full rounded-full bg-foreground transition-all duration-500"
           style={{ width: `${percentage}%` }}
         />
       </div>
-      <span className="shrink-0 text-[13px] text-[#888888] tabular-nums">
+      <span className="shrink-0 text-sm text-muted-foreground tabular-nums">
         {completed}/{total}
       </span>
     </div>
@@ -157,13 +157,13 @@ export default async function PromptSeriesDetailPage({
   const series: SeriesDetail = allSeries[id] ?? allSeries["series-1"]!
 
   return (
-    <div className="min-h-svh flex-1 bg-[#FAFAFA] px-6 py-12 lg:px-16">
-      <div className="mx-auto max-w-[760px]">
+    <div className="min-h-svh flex-1 bg-background px-6 py-12 lg:px-16">
+      <div className="mx-auto max-w-3xl">
         {/* ── 상단 네비게이션 ── */}
         <nav className="mb-10 flex items-center justify-between">
           <Link
             href="/prompts"
-            className="flex items-center gap-1.5 text-[14px] font-medium text-[#888888] transition-colors hover:text-[#111111]"
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <HugeiconsIcon
               icon={ArrowLeft01Icon}
@@ -178,20 +178,21 @@ export default async function PromptSeriesDetailPage({
             {/* 북마크 */}
             <button
               type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
+              className={`flex size-9 items-center justify-center rounded-lg transition-colors hover:bg-muted hover:text-foreground ${
+                series.bookmarked ? "text-foreground" : "text-muted-foreground"
+              }`}
               aria-label="북마크"
             >
               <HugeiconsIcon
                 icon={series.bookmarked ? BookmarkCheckIcon : Bookmark01Icon}
                 size={18}
-                color={series.bookmarked ? "#111111" : "currentColor"}
                 strokeWidth={1.5}
               />
             </button>
             {/* 공유 */}
             <button
               type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
+              className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label="공유"
             >
               <HugeiconsIcon
@@ -204,7 +205,7 @@ export default async function PromptSeriesDetailPage({
             {/* 더보기 */}
             <button
               type="button"
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-[#888888] transition-colors hover:bg-[#F0F0F0] hover:text-[#111111]"
+              className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label="더 보기"
             >
               <HugeiconsIcon
@@ -221,24 +222,24 @@ export default async function PromptSeriesDetailPage({
         <header className="mb-10">
           {/* 메타 정보 */}
           <div className="mb-5 flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="text-[12px] font-medium">
+            <Badge variant="secondary" className="text-xs font-medium">
               {series.topic}
             </Badge>
-            <Badge variant="outline" className="text-[12px] font-normal">
+            <Badge variant="outline" className="text-xs font-normal">
               시리즈
             </Badge>
-            <span className="text-[12px] text-[#AAAAAA]">
+            <span className="text-xs text-muted-foreground">
               {series.promptCount}편
             </span>
           </div>
 
           {/* 시리즈 제목 */}
-          <h1 className="text-[26px] leading-snug font-semibold tracking-tight text-[#111111] md:text-[30px]">
+          <h1 className="text-2xl leading-snug font-semibold tracking-tight text-foreground md:text-3xl">
             {series.title}
           </h1>
 
           {/* 짧은 설명 */}
-          <p className="mt-2 text-[15px] text-[#888888]">
+          <p className="mt-2 text-sm text-muted-foreground md:text-base">
             {series.description}
           </p>
 
@@ -253,14 +254,14 @@ export default async function PromptSeriesDetailPage({
 
         {/* ── 소개글 ── */}
         <section className="mb-10">
-          <p className="text-[15px] leading-[1.8] text-[#666666]">
+          <p className="text-sm leading-8 text-muted-foreground md:text-base">
             {series.intro}
           </p>
         </section>
 
         {/* ── 글감 목록 ── */}
-        <section className="mb-10 rounded-2xl border border-[#EAEAEA] bg-white">
-          <h2 className="p-6 pb-2 text-[15px] font-semibold text-[#111111]">
+        <section className="mb-10 rounded-2xl border border-border bg-card">
+          <h2 className="p-6 pb-2 text-sm font-semibold text-foreground md:text-base">
             글감 목록
           </h2>
           <ol className="flex flex-col">
@@ -269,20 +270,20 @@ export default async function PromptSeriesDetailPage({
                 key={prompt.id}
                 className={
                   i < series.prompts.length - 1
-                    ? "border-b border-[#F0F0F0]"
+                    ? "border-b border-border/70"
                     : ""
                 }
               >
                 <Link
                   href={`/prompts/${prompt.id}`}
-                  className="group flex items-center gap-4 px-6 py-4 transition-colors hover:bg-[#FAFAFA]"
+                  className="group flex items-center gap-4 px-6 py-4 transition-colors hover:bg-muted/40"
                 >
                   {/* 번호 */}
                   <span
-                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold ${
+                    className={`flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
                       prompt.completed
-                        ? "bg-[#111111] text-white"
-                        : "bg-[#F5F5F5] text-[#999999]"
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {i + 1}
@@ -291,16 +292,16 @@ export default async function PromptSeriesDetailPage({
                   {/* 글감 제목 + 상태 */}
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5">
                     <span
-                      className={`text-[14px] leading-relaxed ${
+                      className={`text-sm leading-relaxed ${
                         prompt.completed
-                          ? "text-[#999999]"
-                          : "text-[#333333] group-hover:text-[#111111]"
+                          ? "text-muted-foreground"
+                          : "text-foreground/80 group-hover:text-foreground"
                       }`}
                     >
                       {prompt.title}
                     </span>
                     {prompt.completed && (
-                      <span className="text-[12px] text-[#AAAAAA]">
+                      <span className="text-xs text-muted-foreground">
                         작성 완료
                       </span>
                     )}
@@ -310,9 +311,12 @@ export default async function PromptSeriesDetailPage({
                   <HugeiconsIcon
                     icon={ArrowRight01Icon}
                     size={16}
-                    color={prompt.completed ? "#CCCCCC" : "#AAAAAA"}
                     strokeWidth={1.5}
-                    className="shrink-0 transition-colors group-hover:text-[#111111]"
+                    className={`shrink-0 transition-colors group-hover:text-foreground ${
+                      prompt.completed
+                        ? "text-muted-foreground/60"
+                        : "text-muted-foreground"
+                    }`}
                   />
                 </Link>
               </li>
@@ -322,23 +326,23 @@ export default async function PromptSeriesDetailPage({
 
         {/* ── 글쓰기 팁 ── */}
         {series.tips.length > 0 && (
-          <section className="mb-10 rounded-2xl border border-[#EAEAEA] bg-white p-6">
+          <section className="mb-10 rounded-2xl border border-border bg-card p-6">
             <div className="mb-4 flex items-center gap-2">
               <HugeiconsIcon
                 icon={SparklesIcon}
                 size={16}
-                color="#111111"
                 strokeWidth={1.5}
+                className="text-foreground"
               />
-              <h2 className="text-[15px] font-semibold text-[#111111]">
+              <h2 className="text-sm font-semibold text-foreground md:text-base">
                 시리즈 진행 팁
               </h2>
             </div>
             <ul className="flex flex-col gap-3">
               {series.tips.map((tip, i) => (
                 <li key={i} className="flex items-start gap-2.5">
-                  <span className="mt-1.5 block h-[5px] w-[5px] shrink-0 rounded-full bg-[#CCCCCC]" />
-                  <span className="text-[14px] leading-relaxed text-[#555555]">
+                  <span className="mt-1.5 block size-1.25 shrink-0 rounded-full bg-border" />
+                  <span className="text-sm leading-relaxed text-muted-foreground">
                     {tip}
                   </span>
                 </li>

@@ -5,8 +5,8 @@
 
 .editor {
   min-height: 360px;
-  color: #4c4c4c;
-  caret-color: #111111;
+  color: var(--muted-foreground);
+  caret-color: var(--foreground);
   font-size: 18px;
   font-weight: 400;
   line-height: 2;
@@ -24,15 +24,15 @@
 }
 
 .editor strong {
-  color: #111111;
+  color: var(--foreground);
   font-weight: 650;
 }
 
 .editor blockquote {
   margin: 1.6em 0;
-  border-left: 3px solid #d8d8d8;
+  border-left: 3px solid var(--border);
   padding-left: 1.1em;
-  color: #2f2f2f;
+  color: var(--foreground);
 }
 
 .editor :global(p.is-editor-empty:first-child)::before,
@@ -40,7 +40,7 @@
   content: attr(data-placeholder);
   float: left;
   height: 0;
-  color: #a1a1a1;
+  color: var(--muted-foreground);
   pointer-events: none;
 }
 
@@ -55,33 +55,35 @@
 }
 
 .editor :global(.ai-review-spelling) {
-  background-color: rgba(239, 68, 68, 0.12);
-  text-decoration: wavy underline rgba(239, 68, 68, 0.6);
+  background-color: color-mix(in oklab, var(--destructive) 12%, transparent);
+  text-decoration: wavy underline
+    color-mix(in oklab, var(--destructive) 60%, transparent);
   text-underline-offset: 3px;
 }
 
 .editor :global(.ai-review-spelling:hover) {
-  background-color: rgba(239, 68, 68, 0.2);
-  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+  background-color: color-mix(in oklab, var(--destructive) 20%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--destructive) 15%, transparent);
 }
 
 .editor :global(.ai-review-duplicate) {
-  background-color: rgba(245, 158, 11, 0.12);
-  text-decoration: wavy underline rgba(245, 158, 11, 0.6);
+  background-color: color-mix(in oklab, var(--warning) 12%, transparent);
+  text-decoration: wavy underline
+    color-mix(in oklab, var(--warning) 60%, transparent);
   text-underline-offset: 3px;
 }
 
 .editor :global(.ai-review-duplicate:hover) {
-  background-color: rgba(245, 158, 11, 0.2);
-  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+  background-color: color-mix(in oklab, var(--warning) 20%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--warning) 15%, transparent);
 }
 
 .editor :global(.ai-review-flow) {
-  background-color: rgba(59, 130, 246, 0.1);
-  border-bottom: 2px dashed rgba(59, 130, 246, 0.5);
+  background-color: color-mix(in oklab, var(--info) 10%, transparent);
+  border-bottom: 2px dashed color-mix(in oklab, var(--info) 50%, transparent);
 }
 
 .editor :global(.ai-review-flow:hover) {
-  background-color: rgba(59, 130, 246, 0.18);
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12);
+  background-color: color-mix(in oklab, var(--info) 18%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--info) 12%, transparent);
 }

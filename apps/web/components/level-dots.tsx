@@ -10,31 +10,28 @@ export function LevelDots({
   if (showLabel) {
     return (
       <span className="inline-flex items-center gap-1.5">
-        <span className="inline-flex items-center gap-[3px]">
+        <span className="inline-flex items-center gap-0.75">
           {[1, 2, 3].map((i) => (
             <span
               key={i}
-              className={`block h-[5px] w-[5px] rounded-full ${
-                i <= level ? "bg-[#111111]" : "bg-[#D9D9D9]"
+              className={`block size-1.25 rounded-full ${
+                i <= level ? "bg-foreground" : "bg-border"
               }`}
             />
           ))}
         </span>
-        <span className="text-[12px] text-[#888888]">{labels[level]}</span>
+        <span className="text-xs text-muted-foreground">{labels[level]}</span>
       </span>
     )
   }
 
   return (
-    <span
-      className="inline-flex items-center gap-[3px]"
-      title={`레벨 ${level}`}
-    >
+    <span className="inline-flex items-center gap-0.75" title={`레벨 ${level}`}>
       {[1, 2, 3].map((i) => (
         <span
           key={i}
-          className={`block h-[5px] w-[5px] rounded-full ${
-            i <= level ? "bg-[#111111]" : "bg-[#D9D9D9]"
+          className={`block size-1.25 rounded-full ${
+            i <= level ? "bg-foreground" : "bg-border"
           }`}
         />
       ))}

@@ -208,11 +208,11 @@ export default function Page() {
   ]
 
   return (
-    <div className="min-h-svh flex-1 bg-[#FAFAFA] px-10 py-20 lg:px-24">
-      <div className="mx-auto max-w-[1000px]">
+    <div className="min-h-svh flex-1 bg-background px-10 py-20 lg:px-24">
+      <div className="mx-auto max-w-5xl">
         {/* 헤더 */}
         <section className="mb-20">
-          <h1 className="text-[32px] leading-[1.4] font-medium tracking-tight text-[#111111] md:text-[36px]">
+          <h1 className="text-3xl leading-snug font-medium tracking-tight text-foreground md:text-4xl">
             오늘도,
             <br />
             그냥 써봐요
@@ -222,12 +222,10 @@ export default function Page() {
         {/* 오늘의 영감 */}
         <section className="mb-20">
           <div className="mb-8 flex items-center justify-between">
-            <h2 className="text-[17px] font-medium text-[#111111]">
-              오늘의 영감
-            </h2>
+            <h2 className="text-lg font-medium text-foreground">오늘의 영감</h2>
             <Link
               href="/prompts"
-              className="text-[13px] font-medium text-[#888888] transition-colors hover:text-[#111111]"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               더 보기
             </Link>
@@ -237,16 +235,16 @@ export default function Page() {
             {mockInspirations.map((item) => (
               <div
                 key={item.id}
-                className="flex h-full cursor-pointer flex-col justify-between gap-4 rounded-xl border border-[#EAEAEA] bg-white p-5 shadow-sm transition-all hover:border-[#D0D0D0]"
+                className="flex h-full cursor-pointer flex-col justify-between gap-4 rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:border-foreground/15"
               >
-                <p className="text-[15px] leading-[1.6] font-medium whitespace-pre-wrap text-[#111111]">
+                <p className="text-sm leading-6 font-medium whitespace-pre-wrap text-foreground">
                   {item.text}
                 </p>
                 <div className="mt-auto flex items-center gap-2">
-                  <span className="text-[12px] font-medium text-[#888888]">
+                  <span className="text-xs font-medium text-muted-foreground">
                     {item.category}
                   </span>
-                  <span className="text-[10px] text-[#D0D0D0]">·</span>
+                  <span className="text-xs text-border">·</span>
                   <LevelDots level={item.level as 1 | 2 | 3} showLabel />
                 </div>
               </div>
@@ -274,24 +272,24 @@ export default function Page() {
                       <article
                         className={`flex flex-col gap-1 py-6 transition-colors ${
                           index !== mockDrafts.length - 1
-                            ? "border-b border-[#F0F0F0]"
+                            ? "border-b border-border/70"
                             : ""
                         }`}
                       >
                         {/* 글 제목 */}
-                        <h3 className="text-[16px] leading-normal font-semibold text-[#111111] underline-offset-4 group-hover:underline md:text-[17px]">
+                        <h3 className="text-base leading-normal font-semibold text-foreground underline-offset-4 group-hover:underline md:text-lg">
                           {item.title}
                         </h3>
 
                         {/* 글 설명 (최대 2줄 말줄임) */}
-                        <p className="line-clamp-2 text-[14px] leading-[1.7] font-normal text-[#666666] md:text-[15px]">
+                        <p className="line-clamp-2 text-sm leading-7 font-normal text-muted-foreground md:text-base">
                           {item.description}
                         </p>
 
                         {/* 메타 정보 */}
-                        <div className="flex items-center gap-2 text-[12px] font-medium text-[#999999] md:text-[13px]">
+                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground md:text-sm">
                           <span>{item.date}</span>
-                          <span className="text-[#D6D6D6]">·</span>
+                          <span className="text-border">·</span>
                           <span>{item.length}</span>
                         </div>
                       </article>
@@ -299,8 +297,8 @@ export default function Page() {
                   ))}
                 </div>
               ) : (
-                <div className="flex items-center justify-center rounded-xl border border-dashed border-[#E0E0E0] bg-white py-16">
-                  <p className="text-[14px] text-[#AAAAAA]">
+                <div className="flex items-center justify-center rounded-xl border border-dashed border-border bg-card py-16">
+                  <p className="text-sm text-muted-foreground">
                     작성한 글이 아직 없습니다.
                   </p>
                 </div>
@@ -314,18 +312,18 @@ export default function Page() {
                     <Link
                       key={item.id}
                       href={`/prompts/${item.id}`}
-                      className="group flex items-center gap-4 rounded-xl py-3.5 transition-colors hover:bg-[#F5F5F5]"
+                      className="group flex items-center gap-4 rounded-xl py-3.5 transition-colors hover:bg-muted/60"
                     >
                       {/* 본문 */}
                       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                        <span className="text-[15px] leading-snug font-medium text-[#111111] underline-offset-4 group-hover:underline">
+                        <span className="text-sm leading-snug font-medium text-foreground underline-offset-4 group-hover:underline md:text-base">
                           {item.text}
                         </span>
                         <div className="flex items-center gap-2">
-                          <span className="text-[12px] font-medium text-[#888888]">
+                          <span className="text-xs font-medium text-muted-foreground">
                             {item.category}
                           </span>
-                          <span className="text-[10px] text-[#D0D0D0]">·</span>
+                          <span className="text-xs text-border">·</span>
                           <LevelDots level={item.level} showLabel />
                         </div>
                       </div>
@@ -337,7 +335,11 @@ export default function Page() {
                           e.preventDefault()
                           // 북마크 토글 로직 추가 예정
                         }}
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#CCCCCC] transition-all hover:text-[#111111]"
+                        className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-all ${
+                          item.bookmarked
+                            ? "text-foreground"
+                            : "text-muted-foreground/60 hover:text-foreground"
+                        }`}
                         aria-label="북마크"
                       >
                         <HugeiconsIcon
@@ -345,7 +347,6 @@ export default function Page() {
                             item.bookmarked ? BookmarkCheckIcon : Bookmark01Icon
                           }
                           size={16}
-                          color={item.bookmarked ? "#111111" : "currentColor"}
                           strokeWidth={1.5}
                         />
                       </button>
@@ -353,8 +354,8 @@ export default function Page() {
                   ))}
                 </div>
               ) : (
-                <div className="flex items-center justify-center rounded-xl border border-dashed border-[#E0E0E0] bg-white py-16">
-                  <p className="text-[14px] text-[#AAAAAA]">
+                <div className="flex items-center justify-center rounded-xl border border-dashed border-border bg-card py-16">
+                  <p className="text-sm text-muted-foreground">
                     저장한 글감이 아직 없습니다.
                   </p>
                 </div>

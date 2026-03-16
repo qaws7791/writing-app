@@ -105,18 +105,18 @@ function PromptListItem({ prompt }: { prompt: Prompt }) {
   return (
     <Link
       href={`/prompts/${prompt.id}`}
-      className="group flex items-center gap-4 rounded-xl py-3.5 transition-colors hover:bg-[#F5F5F5]"
+      className="group flex items-center gap-4 rounded-xl py-3.5 transition-colors hover:bg-muted/60"
     >
       {/* 본문 */}
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-        <span className="text-[15px] leading-snug font-medium text-[#111111] underline-offset-4 group-hover:underline">
+        <span className="text-sm leading-snug font-medium text-foreground underline-offset-4 group-hover:underline md:text-base">
           {prompt.text}
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-[12px] font-medium text-[#888888]">
+          <span className="text-xs font-medium text-muted-foreground">
             {prompt.topic}
           </span>
-          <span className="text-[10px] text-[#D0D0D0]">·</span>
+          <span className="text-xs text-border">·</span>
           <LevelDots level={prompt.level} showLabel />
         </div>
       </div>
@@ -128,13 +128,16 @@ function PromptListItem({ prompt }: { prompt: Prompt }) {
           e.preventDefault()
           // 북마크 토글 로직 추가 예정
         }}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#CCCCCC] transition-all hover:text-[#111111]"
+        className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-all ${
+          prompt.bookmarked
+            ? "text-foreground"
+            : "text-muted-foreground/60 hover:text-foreground"
+        }`}
         aria-label="북마크"
       >
         <HugeiconsIcon
           icon={prompt.bookmarked ? BookmarkCheckIcon : Bookmark01Icon}
           size={16}
-          color={prompt.bookmarked ? "#111111" : "currentColor"}
           strokeWidth={1.5}
         />
       </button>
@@ -146,14 +149,14 @@ function PromptListItem({ prompt }: { prompt: Prompt }) {
 
 export default function PromptsPage() {
   return (
-    <div className="min-h-svh flex-1 bg-[#FAFAFA] px-6 py-16 lg:px-16">
-      <div className="mx-auto max-w-[1200px]">
+    <div className="min-h-svh flex-1 bg-background px-6 py-16 lg:px-16">
+      <div className="mx-auto max-w-6xl">
         {/* ── 페이지 타이틀 ── */}
         <header className="mb-10">
-          <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-[#111111] md:text-[32px]">
+          <h1 className="text-3xl leading-tight font-semibold tracking-tight text-foreground md:text-4xl">
             글감 찾기
           </h1>
-          <p className="mt-2 text-[15px] text-[#888888]">
+          <p className="mt-2 text-sm text-muted-foreground md:text-base">
             오늘은 어떤 이야기를 써볼까요?
           </p>
         </header>
@@ -166,14 +169,13 @@ export default function PromptsPage() {
               <HugeiconsIcon
                 icon={SearchIcon}
                 size={18}
-                color="#AAAAAA"
                 strokeWidth={1.5}
-                className="absolute top-1/2 left-4 -translate-y-1/2"
+                className="absolute top-1/2 left-4 -translate-y-1/2 text-muted-foreground"
               />
               <input
                 type="text"
                 placeholder="주제, 키워드, 감정으로 검색"
-                className="h-11 w-full rounded-xl border border-[#EAEAEA] bg-white pr-4 pl-11 text-[14px] text-[#111111] transition-colors outline-none placeholder:text-[#BBBBBB] focus:border-[#CCCCCC]"
+                className="h-11 w-full rounded-xl border border-input bg-card pr-4 pl-11 text-sm text-foreground transition-colors outline-none placeholder:text-muted-foreground focus:border-ring"
               />
             </div>
           </div>
@@ -184,10 +186,10 @@ export default function PromptsPage() {
               <button
                 key={chip.id}
                 type="button"
-                className={`rounded-full px-3.5 py-1.5 text-[13px] font-medium transition-colors ${
+                className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
                   chip.active
-                    ? "bg-[#111111] text-white"
-                    : "bg-white text-[#555555] ring-1 ring-[#E5E5E5] hover:ring-[#CCCCCC]"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-card text-muted-foreground ring-1 ring-border hover:ring-ring/50"
                 }`}
               >
                 {chip.label}

@@ -34,7 +34,7 @@ export default function GlobalNavigation() {
     <>
       {/* 데스크톱: 사이드 네비게이션 (md 이상) */}
       <nav
-        className="hidden flex-col items-center bg-[#FAFAFA] px-4 md:flex"
+        className="hidden flex-col items-center bg-background px-4 md:flex"
         aria-label="메인 네비게이션"
       >
         <div className="my-auto flex flex-col gap-4">
@@ -48,10 +48,10 @@ export default function GlobalNavigation() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex h-12 w-12 items-center justify-center rounded-[16px] transition-colors ${
+                className={`flex size-12 items-center justify-center rounded-lg transition-colors ${
                   isActive
-                    ? "bg-neutral-100 text-[#111111]"
-                    : "text-[#4A5568] hover:bg-neutral-100 hover:text-[#111111]"
+                    ? "bg-muted text-foreground"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
                 title={link.label}
               >
@@ -73,7 +73,7 @@ export default function GlobalNavigation() {
         aria-label="메인 네비게이션"
       >
         {/* 글래스모피즘 배경 + 라운드 상단 */}
-        <div className="rounded-t-2xl border-t bg-card/95 px-2 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_20px_rgba(0,0,0,0.03)] backdrop-blur-md">
+        <div className="rounded-t-2xl border-t border-border bg-card/95 px-2 safe-area-pb shadow-sm backdrop-blur-md">
           <div className="flex items-center justify-around py-2">
             {links.map((link) => {
               const isActive =
@@ -87,8 +87,8 @@ export default function GlobalNavigation() {
                   href={link.href}
                   className={`flex flex-col items-center justify-center gap-0.5 rounded-xl px-3 py-1.5 transition-colors ${
                     isActive
-                      ? "text-[#111111]"
-                      : "text-[#9CA3AF] hover:text-[#6B7280]"
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground/80"
                   }`}
                   aria-current={isActive ? "page" : undefined}
                 >
@@ -99,7 +99,7 @@ export default function GlobalNavigation() {
                     strokeWidth={isActive ? 2 : 1.5}
                   />
                   <span
-                    className={`text-[10px] leading-tight ${
+                    className={`text-xs leading-tight ${
                       isActive ? "font-semibold" : "font-medium"
                     }`}
                   >

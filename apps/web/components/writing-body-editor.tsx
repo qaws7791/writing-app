@@ -168,8 +168,8 @@ function ToolbarActionButton({
       disabled={disabled}
       title={title}
       className={cn(
-        "min-w-8 rounded-[12px] px-2 text-[13px] font-medium text-[#5F5F5F] transition-colors hover:bg-white hover:text-[#111111]",
-        active && "bg-white text-[#111111] shadow-sm",
+        "min-w-8 rounded-md px-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-card hover:text-foreground",
+        active && "bg-card text-foreground shadow-sm",
         extraClassName
       )}
       onMouseDown={keepEditorSelection}
@@ -197,11 +197,11 @@ function FloatingToolbar({
     <div className="pointer-events-none fixed inset-x-0 bottom-5 z-30 flex justify-center px-4">
       <Toolbar
         aria-label="에세이 편집 도구"
-        className="pointer-events-auto max-w-[760px] gap-2 overflow-x-auto rounded-[24px] border border-[#E5E5E5] bg-white/92 px-1.5 py-1.5 shadow-[0_18px_45px_rgba(17,17,17,0.12)] backdrop-blur-xl"
+        className="pointer-events-auto max-w-3xl gap-2 overflow-x-auto rounded-2xl border border-border bg-background/95 px-1.5 py-1.5 shadow-xl backdrop-blur-xl"
       >
         {isReviewMode ? (
           <>
-            <div className="flex items-center gap-2 px-3 text-[13px] font-medium text-primary">
+            <div className="flex items-center gap-2 px-3 text-sm font-medium text-primary">
               <HugeiconsIcon
                 icon={SparklesIcon}
                 size={16}
@@ -223,12 +223,12 @@ function FloatingToolbar({
                 color="currentColor"
                 strokeWidth={2}
               />
-              <span className="text-[12px]">종료</span>
+              <span className="text-xs">종료</span>
             </ToolbarActionButton>
           </>
         ) : (
           <>
-            <ToolbarGroup className="shrink-0 rounded-[16px] bg-[#F5F5F5] p-0.5">
+            <ToolbarGroup className="shrink-0 rounded-lg bg-muted p-0.5">
               <ToolbarActionButton
                 ariaLabel="실행 취소"
                 disabled={!snapshot.canUndo}
@@ -259,9 +259,9 @@ function FloatingToolbar({
 
             <ToolbarSeparator />
 
-            <div className="flex shrink-0 items-center gap-2 px-2 text-[12px] font-medium whitespace-nowrap text-[#5F5F5F]">
+            <div className="flex shrink-0 items-center gap-2 px-2 text-xs font-medium whitespace-nowrap text-muted-foreground">
               <span>{snapshot.characters.toLocaleString("ko-KR")}자</span>
-              <span className="text-[#D6D6D6]">/</span>
+              <span className="text-border">/</span>
               <span>{snapshot.words.toLocaleString("ko-KR")}단어</span>
             </div>
 
@@ -285,7 +285,7 @@ function FloatingToolbar({
                 strokeWidth={1.8}
                 className={cn(snapshot.hasSelection && "animate-pulse")}
               />
-              <span className="text-[12px]">AI</span>
+              <span className="text-xs">AI</span>
             </ToolbarActionButton>
           </>
         )}
@@ -309,6 +309,7 @@ export default function WritingBodyEditor({
   // AI 상태
   const [sheetOpen, setSheetOpen] = useState(false)
   const [sheetMode, setSheetMode] = useState<AISheetMode>("layer1-features")
+  const [selectedText, setSelectedText] = useState("")
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([])
   const [isReviewMode, setIsReviewMode] = useState(false)
   const [activeReviewItem, setActiveReviewItem] = useState<ReviewItem | null>(
@@ -397,6 +398,7 @@ export default function WritingBodyEditor({
       from: snapshot.selectionFrom,
       to: snapshot.selectionTo,
     }
+    setSelectedText(snapshot.selectedText)
 
     if (snapshot.hasSelection) {
       setSheetMode("layer1-features")
@@ -440,6 +442,7 @@ export default function WritingBodyEditor({
         .run()
 
       setSheetOpen(false)
+      setSelectedText("")
       setSuggestions([])
     },
     [editor]
@@ -461,6 +464,7 @@ export default function WritingBodyEditor({
         setReviewItems(editor, items)
         setIsReviewMode(true)
         setSheetOpen(false)
+        setSelectedText("")
       } catch {
         setSheetOpen(false)
       }
@@ -530,7 +534,7 @@ export default function WritingBodyEditor({
 
       {/* 리뷰 모드: 리뷰 아이템 카드 (툴바 위에 표시) */}
       {isReviewMode && activeReviewItem && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-[72px] z-30 flex justify-center px-4">
+        <div className="pointer-events-none fixed inset-x-0 bottom-18 z-30 flex justify-center px-4">
           <AIReviewCard
             item={activeReviewItem}
             totalCount={reviewItems.length}
@@ -554,7 +558,7 @@ export default function WritingBodyEditor({
         open={sheetOpen}
         onOpenChange={setSheetOpen}
         mode={sheetMode}
-        selectedText={savedSelectionRef.current.text}
+        selectedText={selectedText}
         suggestions={suggestions}
         onSelectFeature={handleSelectFeature}
         onAcceptSuggestion={handleAcceptSuggestion}

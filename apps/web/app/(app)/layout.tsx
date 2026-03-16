@@ -9,7 +9,7 @@ export default function layout({
   return (
     <div className="flex min-h-screen">
       <GlobalNavigation />
-      <div className="max-h-screen flex-1 overflow-y-auto bg-[#FAFAFA] pb-20 md:pb-0">
+      <div className="max-h-screen flex-1 overflow-y-auto bg-background pb-20 md:pb-0">
         {children}
       </div>
     </div>

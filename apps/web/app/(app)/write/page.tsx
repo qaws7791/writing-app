@@ -47,10 +47,10 @@ export default function WriteListPage() {
   ]
 
   return (
-    <div className="min-h-svh flex-1 bg-[#FAFAFA] px-6 py-16 md:px-10 md:py-20 lg:px-24">
-      <div className="mx-auto max-w-[800px]">
+    <div className="min-h-svh flex-1 bg-background px-6 py-16 md:px-10 md:py-20 lg:px-24">
+      <div className="mx-auto max-w-3xl">
         {/* 페이지 제목 */}
-        <h1 className="mb-12 text-[28px] leading-[1.4] font-semibold tracking-tight text-[#111111] md:mb-16 md:text-[32px]">
+        <h1 className="mb-12 text-3xl leading-snug font-semibold tracking-tight text-foreground md:mb-16 md:text-4xl">
           내 글
         </h1>
 
@@ -58,26 +58,25 @@ export default function WriteListPage() {
         <section className="mb-14 md:mb-16">
           <Link
             href="/write/new"
-            className="group relative flex items-center justify-between overflow-hidden rounded-2xl border border-[#E0E0E0] bg-white px-7 py-8 shadow-sm transition-all hover:border-[#C8C8C8] hover:shadow-md md:px-10 md:py-10"
+            className="group relative flex items-center justify-between overflow-hidden rounded-2xl border border-border bg-card px-7 py-8 shadow-sm transition-all hover:border-foreground/15 hover:shadow-md md:px-10 md:py-10"
           >
             {/* 배경 장식 */}
-            <div className="pointer-events-none absolute -right-8 -bottom-8 h-40 w-40 rounded-full bg-[#F5F5F5] opacity-60 transition-transform group-hover:scale-110" />
-            <div className="pointer-events-none absolute top-4 -right-2 h-16 w-16 rounded-full bg-[#FAFAFA] opacity-40" />
+            <div className="pointer-events-none absolute -right-8 -bottom-8 size-40 rounded-full bg-muted/70 transition-transform group-hover:scale-110" />
+            <div className="pointer-events-none absolute top-4 -right-2 size-16 rounded-full bg-muted/40" />
 
             <div className="relative z-10 flex flex-col gap-2">
-              <span className="text-[20px] font-semibold tracking-tight text-[#111111] md:text-[22px]">
+              <span className="text-xl font-semibold tracking-tight text-foreground">
                 글쓰기
               </span>
-              <span className="text-[14px] font-medium text-[#888888]">
+              <span className="text-sm font-medium text-muted-foreground">
                 새로운 이야기를 시작해보세요
               </span>
             </div>
 
-            <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#111111] text-white transition-transform group-hover:scale-105">
+            <div className="relative z-10 flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform group-hover:scale-105">
               <HugeiconsIcon
                 icon={PencilEdit02Icon}
                 size={20}
-                color="currentColor"
                 strokeWidth={2}
               />
             </div>
@@ -92,24 +91,24 @@ export default function WriteListPage() {
                 <article
                   className={`flex flex-col gap-1 py-6 transition-colors ${
                     index !== mockPosts.length - 1
-                      ? "border-b border-[#F0F0F0]"
+                      ? "border-b border-border/70"
                       : ""
                   }`}
                 >
                   {/* 글 제목 */}
-                  <h3 className="text-[16px] leading-normal font-semibold text-[#111111] underline-offset-4 group-hover:underline md:text-[17px]">
+                  <h3 className="text-base leading-normal font-semibold text-foreground underline-offset-4 group-hover:underline md:text-lg">
                     {post.title}
                   </h3>
 
                   {/* 글 설명 (최대 2줄 말줄임) */}
-                  <p className="line-clamp-2 text-[14px] leading-[1.7] font-normal text-[#666666] md:text-[15px]">
+                  <p className="line-clamp-2 text-sm leading-7 font-normal text-muted-foreground md:text-base">
                     {post.description}
                   </p>
 
                   {/* 메타 정보 */}
-                  <div className="flex items-center gap-2 text-[12px] font-medium text-[#999999] md:text-[13px]">
+                  <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground md:text-sm">
                     <span>{post.updatedAt}</span>
-                    <span className="text-[#D6D6D6]">·</span>
+                    <span className="text-border">·</span>
                     <span>{post.characterCount.toLocaleString("ko-KR")}자</span>
                   </div>
                 </article>
