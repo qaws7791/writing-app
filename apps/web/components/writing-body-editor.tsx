@@ -24,6 +24,7 @@ import {
   useRef,
   useState,
 } from "react"
+import { createPortal } from "react-dom"
 
 import {
   Toolbar,
@@ -48,11 +49,13 @@ import {
   removeReviewItem,
   setReviewItems,
 } from "@/components/ai/ai-review-extension"
-import {
-  AIBottomSheet,
-  type AISheetMode,
-} from "@/components/ai/ai-bottom-sheet"
 import { AIReviewCard } from "@/components/ai/ai-review-card"
+import {
+  FeatureButton,
+  layer1Features,
+  layer2Options,
+} from "@/components/ai/ai-features"
+import { AISuggestionPanel } from "@/components/ai/ai-suggestion-panel"
 
 import styles from "./writing-body-editor.module.css"
 
@@ -87,6 +90,8 @@ type ToolbarActionButtonProps = {
   title?: string
   className?: string
 }
+
+type ToolbarExpandedMode = "layer1-features" | "layer2-options" | null
 
 // --- 상수 ---
 
@@ -146,6 +151,18 @@ function getParagraphs(
   return paragraphs
 }
 
+function scrollEditorSelectionIntoView(
+  editor: Editor,
+  selection?: { from: number; to: number }
+) {
+  if (selection && (selection.from !== 0 || selection.to !== 0)) {
+    editor.chain().setTextSelection(selection).scrollIntoView().run()
+    return
+  }
+
+  editor.commands.scrollIntoView()
+}
+
 // --- 서브 컴포넌트 ---
 
 function ToolbarActionButton({
@@ -184,17 +201,80 @@ function FloatingToolbar({
   editor,
   snapshot,
   isReviewMode,
+  isSuggestionMode,
+  expandedMode,
   onAIClick,
   onEndReview,
+  onSelectFeature,
+  onSelectLayer2Option,
+  onCollapseToolbar,
 }: {
   editor: Editor | null
   snapshot: EditorSnapshot
   isReviewMode: boolean
+  isSuggestionMode: boolean
+  expandedMode: ToolbarExpandedMode
   onAIClick: () => void
   onEndReview: () => void
+  onSelectFeature: (type: AIFeatureType) => void
+  onSelectLayer2Option: (id: "spelling-review" | "flow-review") => void
+  onCollapseToolbar: () => void
 }) {
+  const expandedRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!expandedMode) return
+
+    function handleClickOutside(e: globalThis.MouseEvent) {
+      if (
+        expandedRef.current &&
+        !expandedRef.current.contains(e.target as Node)
+      ) {
+        onCollapseToolbar()
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [expandedMode, onCollapseToolbar])
+
+  if (isSuggestionMode) return null
+
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-5 z-30 flex justify-center px-4">
+    <div
+      ref={expandedRef}
+      className="pointer-events-none fixed inset-x-0 bottom-5 z-30 flex flex-col items-center px-4"
+    >
+      {/* 확장 영역: 기능 선택 버튼들 */}
+      <div
+        className={cn(
+          "pointer-events-auto mb-2 w-full max-w-3xl origin-bottom overflow-hidden rounded-2xl border border-border/60 bg-background/95 shadow-xl backdrop-blur-xl transition-all duration-300 ease-in-out",
+          expandedMode
+            ? "max-h-[400px] scale-100 opacity-100"
+            : "max-h-0 scale-95 border-transparent opacity-0"
+        )}
+      >
+        <div className="px-2 py-2">
+          {expandedMode === "layer1-features" &&
+            layer1Features.map((feature) => (
+              <FeatureButton
+                key={feature.type}
+                feature={feature}
+                onClick={() => onSelectFeature(feature.type)}
+              />
+            ))}
+          {expandedMode === "layer2-options" &&
+            layer2Options.map((option) => (
+              <FeatureButton
+                key={option.id}
+                feature={option}
+                onClick={() => onSelectLayer2Option(option.id)}
+              />
+            ))}
+        </div>
+      </div>
+
+      {/* 메인 툴바 */}
       <Toolbar
         aria-label="에세이 편집 도구"
         className="pointer-events-auto max-w-3xl gap-2 overflow-x-auto rounded-2xl border border-border bg-background/95 px-1.5 py-1.5 shadow-xl backdrop-blur-xl"
@@ -267,14 +347,13 @@ function FloatingToolbar({
 
             <ToolbarSeparator />
 
-            {/* AI 버튼 */}
             <ToolbarActionButton
               ariaLabel="AI 글쓰기 도우미"
               title="AI 도우미"
               onClick={onAIClick}
               className={cn(
                 "gap-1.5 transition-all",
-                snapshot.hasSelection &&
+                (snapshot.hasSelection || expandedMode) &&
                   "bg-primary/10 text-primary ring-1 ring-primary/30 hover:bg-primary/15 hover:text-primary"
               )}
             >
@@ -307,8 +386,10 @@ export default function WritingBodyEditor({
   const [snapshot, setSnapshot] = useState(initialEditorSnapshot)
 
   // AI 상태
-  const [sheetOpen, setSheetOpen] = useState(false)
-  const [sheetMode, setSheetMode] = useState<AISheetMode>("layer1-features")
+  const [toolbarExpanded, setToolbarExpanded] =
+    useState<ToolbarExpandedMode>(null)
+  const [isSuggestionMode, setIsSuggestionMode] = useState(false)
+  const [isSuggestionLoading, setIsSuggestionLoading] = useState(false)
   const [selectedText, setSelectedText] = useState("")
   const [suggestions, setSuggestions] = useState<AISuggestion[]>([])
   const [isReviewMode, setIsReviewMode] = useState(false)
@@ -316,12 +397,12 @@ export default function WritingBodyEditor({
     null
   )
 
-  // AI 버튼 클릭 시 선택 상태를 저장
   const savedSelectionRef = useRef({
     text: "",
     from: 0,
     to: 0,
   })
+  const previousSuggestionModeRef = useRef(isSuggestionMode)
 
   const editor = useEditor({
     extensions: [
@@ -388,6 +469,45 @@ export default function WritingBodyEditor({
     }
   }, [editor, isReviewMode])
 
+  // 분할 뷰 data attribute 관리
+  useEffect(() => {
+    if (isSuggestionMode) {
+      document.documentElement.setAttribute("data-ai-split", "")
+    } else {
+      document.documentElement.removeAttribute("data-ai-split")
+    }
+    return () => {
+      document.documentElement.removeAttribute("data-ai-split")
+    }
+  }, [isSuggestionMode])
+
+  useEffect(() => {
+    if (!editor) return
+    if (previousSuggestionModeRef.current === isSuggestionMode) return
+
+    previousSuggestionModeRef.current = isSuggestionMode
+
+    let nestedFrame = 0
+    const frame = window.requestAnimationFrame(() => {
+      nestedFrame = window.requestAnimationFrame(() => {
+        if (isSuggestionMode) {
+          scrollEditorSelectionIntoView(editor, savedSelectionRef.current)
+          return
+        }
+
+        scrollEditorSelectionIntoView(editor, {
+          from: editor.state.selection.from,
+          to: editor.state.selection.to,
+        })
+      })
+    })
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.cancelAnimationFrame(nestedFrame)
+    }
+  }, [editor, isSuggestionMode])
+
   // --- AI 핸들러 ---
 
   const handleAIClick = useCallback(() => {
@@ -400,20 +520,31 @@ export default function WritingBodyEditor({
     }
     setSelectedText(snapshot.selectedText)
 
+    if (toolbarExpanded) {
+      setToolbarExpanded(null)
+      return
+    }
+
     if (snapshot.hasSelection) {
-      setSheetMode("layer1-features")
+      setToolbarExpanded("layer1-features")
     } else {
-      setSheetMode("layer2-options")
+      setToolbarExpanded("layer2-options")
     }
     setSuggestions([])
-    setSheetOpen(true)
-  }, [editor, snapshot])
+  }, [editor, snapshot, toolbarExpanded])
+
+  const handleCollapseToolbar = useCallback(() => {
+    setToolbarExpanded(null)
+  }, [])
 
   const handleSelectFeature = useCallback(
     async (type: AIFeatureType) => {
       if (!editor) return
 
-      setSheetMode("layer1-loading")
+      setToolbarExpanded(null)
+      setIsSuggestionMode(true)
+      setIsSuggestionLoading(true)
+      setSuggestions([])
 
       try {
         const result = await getAISuggestions(
@@ -421,9 +552,10 @@ export default function WritingBodyEditor({
           type
         )
         setSuggestions(result)
-        setSheetMode("layer1-suggestions")
       } catch {
-        setSheetOpen(false)
+        setIsSuggestionMode(false)
+      } finally {
+        setIsSuggestionLoading(false)
       }
     },
     [editor]
@@ -441,18 +573,24 @@ export default function WritingBodyEditor({
         .insertContentAt(from, suggestion.suggestion)
         .run()
 
-      setSheetOpen(false)
+      setIsSuggestionMode(false)
       setSelectedText("")
       setSuggestions([])
     },
     [editor]
   )
 
+  const handleCloseSuggestionPanel = useCallback(() => {
+    setIsSuggestionMode(false)
+    setSelectedText("")
+    setSuggestions([])
+  }, [])
+
   const handleSelectLayer2Option = useCallback(
     async (id: "spelling-review" | "flow-review") => {
       if (!editor) return
 
-      setSheetMode("layer2-loading")
+      setToolbarExpanded(null)
 
       try {
         const paragraphs = getParagraphs(editor)
@@ -463,10 +601,9 @@ export default function WritingBodyEditor({
 
         setReviewItems(editor, items)
         setIsReviewMode(true)
-        setSheetOpen(false)
         setSelectedText("")
       } catch {
-        setSheetOpen(false)
+        /* noop */
       }
     },
     [editor]
@@ -518,7 +655,6 @@ export default function WritingBodyEditor({
     setActiveReviewItem(null)
   }, [])
 
-  // 리뷰 아이템 인덱스 계산
   const reviewItems = editor ? getReviewItems(editor) : []
   const activeReviewIndex = activeReviewItem
     ? reviewItems.findIndex((i) => i.id === activeReviewItem.id)
@@ -550,20 +686,26 @@ export default function WritingBodyEditor({
         editor={editor}
         snapshot={snapshot}
         isReviewMode={isReviewMode}
+        isSuggestionMode={isSuggestionMode}
+        expandedMode={toolbarExpanded}
         onAIClick={handleAIClick}
         onEndReview={handleEndReview}
+        onSelectFeature={handleSelectFeature}
+        onSelectLayer2Option={handleSelectLayer2Option}
+        onCollapseToolbar={handleCollapseToolbar}
       />
 
-      <AIBottomSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
-        mode={sheetMode}
-        selectedText={selectedText}
-        suggestions={suggestions}
-        onSelectFeature={handleSelectFeature}
-        onAcceptSuggestion={handleAcceptSuggestion}
-        onSelectLayer2Option={handleSelectLayer2Option}
-      />
+      {isSuggestionMode &&
+        createPortal(
+          <AISuggestionPanel
+            isLoading={isSuggestionLoading}
+            selectedText={selectedText}
+            suggestions={suggestions}
+            onAcceptSuggestion={handleAcceptSuggestion}
+            onClose={handleCloseSuggestionPanel}
+          />,
+          document.body
+        )}
     </>
   )
 }

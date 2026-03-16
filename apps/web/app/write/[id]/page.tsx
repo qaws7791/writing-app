@@ -4,6 +4,7 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import WritingBodyEditor from "@/components/writing-body-editor"
 import { buttonVariants } from "@workspace/ui/components/button.styles"
 import { Button } from "@workspace/ui/components/button"
+import styles from "../write-editor-page.module.css"
 
 // 목 데이터 (추후 실제 데이터로 교체)
 const mockPosts: Record<string, { title: string; content: string }> = {
@@ -28,7 +29,10 @@ export default async function WriteDetailPage({
   const post = mockPosts[id]
 
   return (
-    <div className="flex min-h-svh flex-col bg-background text-foreground">
+    <div
+      data-writing-editor-page=""
+      className={`${styles.page} flex min-h-0 flex-1 flex-col overflow-y-auto bg-background text-foreground`}
+    >
       <header className="pointer-events-none fixed inset-x-0 top-0 z-40">
         <div className="pointer-events-auto flex h-20 items-center justify-between px-4 md:px-6">
           <Link

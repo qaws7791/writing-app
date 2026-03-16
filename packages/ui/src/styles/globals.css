@@ -152,3 +152,16 @@
 @utility sheet-body-scroll {
   max-height: 60vh;
 }
+
+/* AI 분할 뷰: body를 flex column으로 만들어 구조적으로 영역 분할 */
+
+html[data-ai-split] {
+  overflow: hidden;
+}
+
+html[data-ai-split] body {
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  overflow: hidden;
+}

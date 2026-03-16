@@ -1,0 +1,10 @@
+.page {
+  min-height: 100svh;
+  max-height: 100svh;
+}
+
+:global(html[data-ai-split]) .page {
+  height: auto;
+  min-height: 0;
+  max-height: none;
+}
