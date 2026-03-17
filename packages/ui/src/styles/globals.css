@@ -153,7 +153,7 @@
   max-height: 60vh;
 }
 
-/* AI 분할 뷰: body를 flex column으로 만들어 구조적으로 영역 분할 */
+/* AI 분할 뷰: 모바일은 상하, 데스크탑은 좌우 스플릿 */
 
 html[data-ai-split] {
   overflow: hidden;
@@ -164,4 +164,18 @@ html[data-ai-split] body {
   flex-direction: column;
   height: 100svh;
   overflow: hidden;
+}
+
+/* 에디터 영역이 남은 공간을 차지하고 flex 축에 맞게 축소되도록 */
+html[data-ai-split] body > *:first-child {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* 데스크탑(768px 이상): 좌우 스플릿 */
+@media (min-width: 768px) {
+  html[data-ai-split] body {
+    flex-direction: row;
+  }
 }

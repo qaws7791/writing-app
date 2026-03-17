@@ -10,10 +10,10 @@ export default function WritingNewPage() {
   return (
     <div
       data-writing-editor-page=""
-      className={`${styles.page} flex min-h-0 flex-1 flex-col overflow-y-auto bg-background text-foreground`}
+      className={`${styles.page} flex min-h-0 flex-1 flex-col bg-background text-foreground`}
     >
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-40">
-        <div className="pointer-events-auto flex h-20 items-center justify-between px-4 md:px-6">
+      <header>
+        <div className="pointer-events-auto flex h-16 items-center justify-between px-4 md:px-6">
           <Link
             aria-label="뒤로 가기"
             href="/write"
@@ -38,7 +38,7 @@ export default function WritingNewPage() {
         </div>
       </header>
 
-      <main className="flex flex-1 items-start justify-center px-6 pt-28 pb-40 md:px-10 md:pt-36 md:pb-44">
+      <main className="flex flex-1 items-start justify-center overflow-y-auto px-6 pt-28 pb-40 md:px-10 md:pt-36 md:pb-44">
         <section className="w-full max-w-3xl">
           <div className="flex flex-col gap-12">
             <h1

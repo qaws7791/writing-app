@@ -83,7 +83,7 @@ export function AISuggestionPanel({
   return (
     <div
       data-ai-suggestion-panel=""
-      className="flex h-[50svh] flex-none flex-col border-t border-border/60 bg-background"
+      className="flex h-[50svh] flex-none flex-col border-t border-border/60 bg-background md:h-full md:w-[50%] md:min-w-0 md:border-t-0 md:border-l"
     >
       {/* 헤더 */}
       <div className="flex shrink-0 items-center justify-between border-b border-border/40 px-5 py-3">

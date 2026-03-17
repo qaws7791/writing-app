@@ -8,3 +8,10 @@
   min-height: 0;
   max-height: none;
 }
+
+/* 데스크탑 좌우 스플릿: 에디터가 가로로 축소될 수 있도록 */
+@media (min-width: 768px) {
+  :global(html[data-ai-split]) .page {
+    min-width: 0;
+  }
+}
