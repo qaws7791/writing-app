@@ -1,4 +1,7 @@
-# Lint and Types
+---
+title: "린트 및 타입 설정 가이드"
+description: "모노레포 환경에서 ESLint와 TypeScript 설정을 공유하고 일관된 코드 품질을 유지하기 위한 원칙을 설명합니다."
+---
 
 ## 패키지 역할
 

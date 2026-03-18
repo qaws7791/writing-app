@@ -1,4 +1,7 @@
-# Information Architecture
+---
+title: "정보 구조(IA) 설계"
+description: "제품의 주요 흐름, 정보 우선순위 및 모바일 환경에 최적화된 정보 구조 원칙을 정의합니다."
+---
 
 ## 제품 구조
 

@@ -1,4 +1,7 @@
-# Assessment Strategy
+---
+title: "글쓰기 평가 전략"
+description: "점수화보다는 성장을 돕는 관점에서의 글쓰기 평가 기준과 AI 활용 방안을 정의합니다."
+---
 
 ## 평가 목적
 

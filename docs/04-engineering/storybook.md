@@ -1,4 +1,7 @@
-# Storybook
+---
+title: "Storybook 운영 가이드"
+description: "UI 컴포넌트의 시각적 검증과 디자인 시스템 관리를 위한 Storybook 활용 방안을 설명합니다."
+---
 
 ## 역할
 

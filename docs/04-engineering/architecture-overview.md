@@ -1,4 +1,7 @@
-# Architecture Overview
+---
+title: "아키텍처 개요"
+description: "Bun과 Turborepo 기반의 모노레포 구조, 주요 기술 스택 및 계층별 경계 원칙을 설명합니다."
+---
 
 ## 현재 저장소 기준
 
