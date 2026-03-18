@@ -663,7 +663,9 @@ export default function WritingBodyEditor({
   return (
     <>
       {editor ? (
-        <EditorContent editor={editor} className={editorShellClassName} />
+        <div data-writing-body>
+          <EditorContent editor={editor} className={editorShellClassName} />
+        </div>
       ) : (
         <div className={editorShellClassName} />
       )}
