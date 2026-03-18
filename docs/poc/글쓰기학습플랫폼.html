@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>글쓰기 학습 플랫폼</title>
+    <style>
+        /* CSS Variables - Monochrome Theme & Contrast Normalization */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #fafafa;
+            --text-primary: #000000;
+            --text-secondary: #777777;
+            --text-tertiary: #999999;
+            --border-color: #e5e5e5;
+            --border-heavy: #cccccc;
+            --action-bg: #000000;
+            --action-text: #ffffff;
+            --action-hover: #333333;
+            --surface-hover: #f5f5f5;
+            --nav-height: 60px;
+            --sidebar-width: 72px;
+            --max-content-width: 620px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-pill: 999px;
+            --transition: 0.2s ease-in-out;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #101010;
+                --bg-secondary: #1a1a1a;
+                --text-primary: #f3f5f7;
+                --text-secondary: #888888;
+                --text-tertiary: #555555;
+                --border-color: #2a2a2a;
+                --border-heavy: #444444;
+                --action-bg: #ffffff;
+                --action-text: #000000;
+                --action-hover: #dddddd;
+                --surface-hover: #1f1f1f;
+            }
+        }
+
+        /* Global Resets */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            overflow: hidden; /* Manage scroll within main */
+        }
+        button {
+            font-family: inherit; border: none; background: none; cursor: pointer; color: inherit; outline: none;
+        }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* Layout Architecture */
+        #app-layout {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            background-color: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            z-index: 100;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            color: var(--text-secondary);
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+        }
+        .nav-item:hover { background-color: var(--surface-hover); }
+        .nav-item.active { color: var(--text-primary); font-weight: 600; }
+        .nav-icon { width: 28px; height: 28px; fill: currentColor; }
+
+        /* Desktop vs Mobile Layout */
+        @media (min-width: 769px) {
+            nav {
+                flex-direction: column;
+                justify-content: flex-start;
+                width: var(--sidebar-width);
+                height: 100vh;
+                border-top: none;
+                border-right: 1px solid var(--border-color);
+                padding-top: 40px;
+                gap: 24px;
+            }
+            #main-content {
+                flex: 1;
+                display: flex;
+                justify-content: center;
+                overflow-y: auto;
+            }
+            .content-wrapper { width: 100%; max-width: var(--max-content-width); padding: 40px 20px; }
+            #ai-coach-panel { border-left: 1px solid var(--border-color); }
+        }
+
+        @media (max-width: 768px) {
+            #app-layout { flex-direction: column; }
+            #main-content { flex: 1; overflow-y: auto; padding-bottom: var(--nav-height); }
+            .content-wrapper { padding: 20px 16px; }
+            nav {
+                position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-height);
+            }
+            #ai-coach-panel { border-top: 1px solid var(--border-color); }
+        }
+
+        /* View Management */
+        .view { display: none; animation: fadeIn 0.3s ease; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Typography */
+        h1 { font-size: 24px; font-weight: 700; margin-bottom: 24px; letter-spacing: -0.5px; }
+        h2 { font-size: 18px; font-weight: 600; margin-bottom: 16px; letter-spacing: -0.3px; }
+        .text-body { font-size: 15px; color: var(--text-primary); }
+        .text-caption { font-size: 13px; color: var(--text-secondary); }
+
+        /* Components */
+        .card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: var(--transition);
+        }
+        .card:hover { border-color: var(--border-heavy); }
+        
+        .btn-primary {
+            background-color: var(--action-bg);
+            color: var(--action-text);
+            padding: 14px 24px;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+            transition: var(--transition);
+        }
+        .btn-primary:hover { background-color: var(--action-hover); }
+        
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 14px 24px;
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            font-weight: 600;
+            width: 100%;
+            text-align: center;
+            transition: var(--transition);
+        }
+        .btn-secondary:hover { background-color: var(--surface-hover); border-color: var(--border-heavy); }
+
+        .btn-group { display: flex; gap: 12px; margin-top: 16px; }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: var(--radius-pill);
+            background-color: var(--surface-hover);
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        /* Home View Specifics */
+        .status-text {
+            font-size: 16px;
+            font-weight: 500;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            line-height: 1.4;
+        }
+        .quick-start-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        .quick-start-btn {
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            text-align: left;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Session View Specifics */
+        .session-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .mission-area {
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 1.4;
+            margin-bottom: 24px;
+        }
+        .workspace textarea {
+            width: 100%;
+            min-height: 180px;
+            padding: 16px;
+            font-size: 16px;
+            line-height: 1.6;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            resize: vertical;
+            margin-bottom: 8px;
+            font-family: inherit;
+        }
+        .workspace textarea:focus {
+            outline: none;
+            border-color: var(--text-primary);
+            background-color: var(--bg-primary);
+        }
+        .char-count { text-align: right; font-size: 12px; color: var(--text-tertiary); margin-bottom: 24px; }
+
+        /* Feedback View Specifics */
+        .feedback-item { margin-bottom: 16px; }
+        .feedback-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 4px; }
+        .feedback-content { font-size: 15px; }
+        .highlight-good { border-left: 3px solid var(--text-primary); padding-left: 12px; }
+        .highlight-improve { border-left: 3px solid var(--border-heavy); padding-left: 12px; }
+
+        /* AI Coach Panel (Sliding Side/Bottom Panel) */
+        #ai-coach-panel {
+            position: fixed;
+            background-color: var(--bg-primary);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+        }
+        .coach-header { padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-weight: 600;}
+        .coach-body { padding: 16px; flex: 1; overflow-y: auto; font-size: 14px; }
+        .coach-actions { padding: 16px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 8px; }
+        .coach-btn { padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 13px; text-align: left; }
+
+        @media (min-width: 769px) {
+            #ai-coach-panel { top: 0; right: 0; width: 320px; height: 100vh; transform: translateX(100%); }
+            #ai-coach-panel.open { transform: translateX(0); box-shadow: -4px 0 16px rgba(0,0,0,0.05); }
+        }
+        @media (max-width: 768px) {
+            #ai-coach-panel { bottom: 0; left: 0; width: 100%; height: 60vh; transform: translateY(100%); border-radius: 20px 20px 0 0; }
+            #ai-coach-panel.open { transform: translateY(0); box-shadow: 0 -4px 16px rgba(0,0,0,0.1); }
+            /* Overlay for mobile */
+            .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 150; }
+            .overlay.active { display: block; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="app-layout">
+    <nav>
+        <button class="nav-item active" onclick="switchView('view-home')">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2L2 12h3v8h6v-6h2v6h6v-8h3L12 2z"/></svg>
+        </button>
+        <button class="nav-item" onclick="switchView('view-explore')">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        </button>
+        <button class="nav-item" onclick="startSession()">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        </button>
+        <button class="nav-item" onclick="switchView('view-dashboard')">
+            <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 3v18h18V3H3zm6 14H7v-5h2v5zm4 0h-2v-3h2v3zm0-5h-2v-2h2v2zm4 5h-2V7h2v10z"/></svg>
+        </button>
+    </nav>
+
+    <main id="main-content">
+        <div class="content-wrapper">
+            
+            <section id="view-home" class="view active">
+                <div class="status-text">
+                    "최근에는 문장 선택은 안정적이고,<br>짧은 쓰기에서 근거 연결이 약합니다."
+                </div>
+
+                <h2>지금 추천하는 활동</h2>
+                <div class="card">
+                    <span class="badge">Level 2</span>
+                    <h3 style="font-size: 18px; margin-bottom: 8px;">5분: 근거 강화 문장 쓰기</h3>
+                    <p class="text-caption" style="margin-bottom: 20px;">주장과 관련된 구체적 사례를 덧붙여 설득력을 높이는 훈련입니다.</p>
+                    <button class="btn-primary" onclick="startSession()">지금 시작</button>
+                </div>
+
+                <h2>빠른 시작</h2>
+                <div class="quick-start-grid">
+                    <button class="quick-start-btn" onclick="startSession()">3분 퀵 훈련<br><span class="text-caption">선택/판단형</span></button>
+                    <button class="quick-start-btn" onclick="startSession()">오늘의 수정 훈련<br><span class="text-caption">작성 기록 기반</span></button>
+                    <button class="quick-start-btn" onclick="startSession()">지난번 이어서 하기<br><span class="text-caption">도입부 강화 (진행중)</span></button>
+                    <button class="quick-start-btn" onclick="switchView('view-explore')">직접 고르기<br><span class="text-caption">전체 활동 탐색</span></button>
+                </div>
+            </section>
+
+            <section id="view-explore" class="view">
+                <h1>활동 탐색</h1>
+                <div class="card">
+                    <span class="badge">Level 1</span>
+                    <h3 style="font-size: 16px; margin-bottom: 4px;">더 나은 도입문 고르기</h3>
+                    <p class="text-caption" style="margin-bottom: 12px;">3분 · 선택형 · 5문항<br>도입부의 명확성과 흡입력을 구분하는 훈련</p>
+                    <button class="btn-secondary" onclick="startSession()">시작</button>
+                </div>
+                <div class="card">
+                    <span class="badge">Level 2</span>
+                    <h3 style="font-size: 16px; margin-bottom: 4px;">근거 강화 문장 쓰기</h3>
+                    <p class="text-caption" style="margin-bottom: 12px;">5분 · 짧은 생성형 · 2문항<br>주장과 관련된 구체적 사례를 덧붙이는 훈련</p>
+                    <button class="btn-secondary" onclick="startSession()">시작</button>
+                </div>
+                <div class="card">
+                    <span class="badge">Level 3</span>
+                    <h3 style="font-size: 16px; margin-bottom: 4px;">구조화된 문단 쓰기</h3>
+                    <p class="text-caption" style="margin-bottom: 12px;">10분 · 문단 쓰기형<br>서론-본론-결론의 뼈대를 세우고 살을 붙이는 훈련</p>
+                    <button class="btn-secondary" onclick="startSession()">시작</button>
+                </div>
+            </section>
+
+            <section id="view-session" class="view">
+                <div class="session-header">
+                    <span>근거 강화 훈련 · 1/2단계</span>
+                    <div style="display: flex; gap: 16px; align-items: center;">
+                        <span>약 4분 남음</span>
+                        <button onclick="switchView('view-home')" style="font-weight: 600;">나가기</button>
+                    </div>
+                </div>
+
+                <div class="mission-area">
+                    다음 주장을 뒷받침할 수 있는 구체적인 근거를 한 문장으로 작성해보세요.
+                </div>
+                <div style="margin-bottom: 24px; padding: 16px; background-color: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                    <span class="text-caption" style="font-weight: 600; text-transform: uppercase;">주장</span>
+                    <p class="text-body" style="margin-top: 4px;">재택근무는 직원들의 업무 효율성을 높이는 데 긍정적인 영향을 미친다.</p>
+                </div>
+
+                <div class="workspace">
+                    <textarea id="session-input" placeholder="여기에 근거 문장을 작성하세요..."></textarea>
+                    <div class="char-count" id="char-count">0 자</div>
+                </div>
+
+                <div class="btn-group" style="margin-top: 8px;">
+                    <button class="btn-secondary" style="width: 80px;" onclick="toggleCoachPanel()">힌트</button>
+                    <button class="btn-primary" onclick="submitSession()">제출하기</button>
+                </div>
+            </section>
+
+            <section id="view-feedback" class="view">
+                <div class="session-header">
+                    <span>피드백 및 재작성</span>
+                    <button onclick="switchView('view-home')" style="font-weight: 600;">종료</button>
+                </div>
+
+                <h2>작성한 내용</h2>
+                <div style="margin-bottom: 24px; padding: 16px; background-color: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                    <p class="text-body" id="user-submitted-text">출퇴근 시간이 줄어들기 때문이다.</p>
+                </div>
+
+                <h2>AI 코치 피드백</h2>
+                <div class="card highlight-good feedback-item">
+                    <div class="feedback-label">잘한 점</div>
+                    <div class="feedback-content">주장과 직접적으로 연결되는 가장 핵심적인 이유를 정확히 짚었습니다.</div>
+                </div>
+                <div class="card highlight-improve feedback-item">
+                    <div class="feedback-label">우선 개선점</div>
+                    <div class="feedback-content">이유가 다소 평이합니다. 줄어든 출퇴근 시간이 '어떻게' 업무 효율로 이어지는지 구체적인 변화나 데이터가 추가되면 더 좋습니다.</div>
+                </div>
+                <div class="card feedback-item" style="background-color: transparent; border-color: transparent; padding: 0;">
+                    <div class="feedback-label">다음 행동</div>
+                    <div class="feedback-content" style="font-weight: 500;">절약된 시간이 어떤 긍정적 결과(예: 에너지 보존, 몰입 시간 증가)로 이어지는지 한 가지 덧붙여 다시 써보세요.</div>
+                </div>
+
+                <div class="btn-group" style="margin-top: 32px;">
+                    <button class="btn-secondary" onclick="showRetrospect()">수정 없이 완료</button>
+                    <button class="btn-primary" onclick="retrySession()">다시 쓰기</button>
+                </div>
+            </section>
+
+            <section id="view-retrospect" class="view">
+                <h1>세션 완료</h1>
+                <p class="text-body" style="margin-bottom: 32px;">수고하셨습니다. 이번 세션을 짧게 돌아보세요.</p>
+                
+                <h2 style="font-size: 16px;">오늘 작성 과정에서 가장 어려웠던 점은?</h2>
+                <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 32px;">
+                    <button class="quick-start-btn">무엇을 쓸지 아이디어가 안 떠올랐음</button>
+                    <button class="quick-start-btn">문장을 매끄럽게 다듬는 것</button>
+                    <button class="quick-start-btn">주장과 근거를 논리적으로 연결하는 것</button>
+                    <button class="quick-start-btn">어려움 없었음</button>
+                </div>
+
+                <button class="btn-primary" onclick="switchView('view-dashboard')">성장 기록 보기</button>
+            </section>
+
+            <section id="view-dashboard" class="view">
+                <h1>성장 대시보드</h1>
+                <div class="card">
+                    <h3 style="font-size: 16px; margin-bottom: 16px;">최근 7일 요약</h3>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 12px;">
+                        <span class="text-secondary">완료한 세션</span>
+                        <span style="font-weight: 600;">12회</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 12px;">
+                        <span class="text-secondary">가장 많이 한 활동</span>
+                        <span style="font-weight: 600;">짧은 문장 생성 (Level 2)</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span class="text-secondary">최근 성장 지표</span>
+                        <span style="font-weight: 600;">도입부 명확성 ▲</span>
+                    </div>
+                </div>
+
+                <h2>추천 다음 단계</h2>
+                <div class="card">
+                    <p class="text-body" style="margin-bottom: 16px;">최근 짧은 문장 쓰기가 안정화되었습니다. 이제 여러 문장을 연결하는 <strong>구조화된 문단 쓰기(Level 3)</strong>를 시도해 볼 시점입니다.</p>
+                    <button class="btn-secondary" onclick="switchView('view-explore')">Level 3 활동 보기</button>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<div class="overlay" id="mobile-overlay" onclick="toggleCoachPanel()"></div>
+<aside id="ai-coach-panel">
+    <div class="coach-header">
+        <span>AI 코치</span>
+        <button onclick="toggleCoachPanel()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+    </div>
+    <div class="coach-body">
+        <p style="margin-bottom: 16px; color: var(--text-secondary);">현재 '근거 강화 훈련'을 진행 중입니다. 어떤 도움이 필요하신가요?</p>
+        <div class="coach-actions">
+            <button class="coach-btn">💡 근거 작성을 위한 방향 힌트 보기</button>
+            <button class="coach-btn">📝 다른 사람의 예시 문장 하나 보기</button>
+            <button class="coach-btn">🔍 내가 쓴 초안이 주제에 맞는지 점검</button>
+        </div>
+    </div>
+</aside>
+
+<script>
+    // Navigation / View Switching Logic
+    function switchView(viewId) {
+        document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        
+        // Update Nav Active State
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        if(event && event.currentTarget.classList.contains('nav-item')) {
+            event.currentTarget.classList.add('active');
+        } else if(viewId === 'view-home') {
+            document.querySelectorAll('.nav-item')[0].classList.add('active');
+        } else if(viewId === 'view-dashboard') {
+            document.querySelectorAll('.nav-item')[3].classList.add('active');
+        }
+
+        // Close side panel if open
+        const panel = document.getElementById('ai-coach-panel');
+        if (panel.classList.contains('open')) {
+            toggleCoachPanel();
+        }
+    }
+
+    // Core Loop Triggers
+    function startSession() {
+        document.getElementById('session-input').value = '';
+        document.getElementById('char-count').innerText = '0 자';
+        switchView('view-session');
+    }
+
+    function submitSession() {
+        const input = document.getElementById('session-input').value;
+        const fallbackText = "출퇴근 시간이 줄어들기 때문이다.";
+        document.getElementById('user-submitted-text').innerText = input.trim() !== '' ? input : fallbackText;
+        switchView('view-feedback');
+    }
+
+    function retrySession() {
+        switchView('view-session');
+        // Pre-fill text to simulate editing state
+        const prevText = document.getElementById('user-submitted-text').innerText;
+        const textarea = document.getElementById('session-input');
+        textarea.value = prevText;
+        updateCharCount.call(textarea);
+    }
+
+    function showRetrospect() {
+        switchView('view-retrospect');
+    }
+
+    // Character Counter
+    function updateCharCount() {
+        document.getElementById('char-count').innerText = `${this.value.length} 자`;
+    }
+    document.getElementById('session-input').addEventListener('input', updateCharCount);
+
+    // AI Coach Panel Toggle
+    function toggleCoachPanel() {
+        const panel = document.getElementById('ai-coach-panel');
+        const overlay = document.getElementById('mobile-overlay');
+        panel.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+</script>
+
+</body>
+</html>
