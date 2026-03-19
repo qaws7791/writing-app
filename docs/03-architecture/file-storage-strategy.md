@@ -107,3 +107,9 @@ quarantine/uploads/{file-id}
 - 저장 실패가 발생해도 글 본문 저장은 독립적으로 성공할 수 있어야 한다.
 - 파일 전략은 향후 모바일 앱이나 외부 공유 기능이 추가되어도 같은 권한 모델을 재사용할 수 있어야 한다.
 - 에디터 이미지 업로드 정책이 바뀌더라도 기존 글의 이미지 참조는 깨지지 않아야 한다.
+
+## 관련 다이어그램
+
+- [[03-architecture/diagrams/system-context]]
+- [[03-architecture/diagrams/writing-runtime-flow]]
+- [[03-architecture/diagrams/deployment-topology]]

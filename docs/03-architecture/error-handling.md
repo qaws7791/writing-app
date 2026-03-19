@@ -119,3 +119,8 @@ API 오류 응답은 RFC 7807/9457 Problem Details for HTTP APIs를 기반으로
 - AI 기능이 실패해도 수동 작성과 저장은 계속 가능해야 한다.
 - 파일 내보내기 실패는 글 본문 저장 실패로 취급하지 않는다.
 - 제한 공유 기능이 일시 중단되어도 비공개 초안 작성은 유지한다.
+
+## 관련 다이어그램
+
+- [[03-architecture/diagrams/writing-runtime-flow]]
+- [[03-architecture/diagrams/observability-flow]]

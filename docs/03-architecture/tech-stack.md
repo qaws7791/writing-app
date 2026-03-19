@@ -106,3 +106,8 @@ description: 플랫폼을 위한 기술 스택 정의서입니다. 모든 기술
 | **[Base UI (Radix 후속)](https://base-ui.com)** | MUI 팀이 개발한 완전 비스타일 헤드리스 컴포넌트 라이브러리. 접근성(WCAG 2.2) 처리가 내장되어 있으며 CSS를 일절 번들하지 않아 Tailwind와 충돌 없음. Dialog, Select, Tooltip 등 복잡한 인터랙션을 처음부터 구현할 필요 없음 |
 | **[shadcn/ui](https://ui.shadcn.com)**          | Base UI 위에 Tailwind로 스타일링된 고품질 컴포넌트 레시피. 코드를 직접 복사·소유하는 방식으로 `packages/ui`에 완전히 통합 가능. 빠른 프로토타이핑과 커스터마이징을 동시에 달성                                            |
 | **[Tailwind CSS](https://tailwindcss.com)**     | `apps/web`과 동일한 Tailwind 설정을 `packages/ui`에서 공유. 디자인 시스템 토큰(폰트, 색상, 간격)을 단일 소스로 관리                                                                                                       |
+
+## 관련 다이어그램
+
+- [[03-architecture/diagrams/system-context]]
+- [[03-architecture/diagrams/container-view]]

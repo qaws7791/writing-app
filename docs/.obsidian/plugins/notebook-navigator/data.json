@@ -190,7 +190,7 @@
   "defaultListMode": "standard",
   "includeDescendantNotes": false,
   "defaultFolderSort": "modified-desc",
-  "propertySortKey": "",
+  "propertySortKey": "title",
   "propertySortSecondary": "title",
   "revealFileOnListChanges": true,
   "listPaneTitle": "header",
@@ -429,7 +429,9 @@
   "folderColors": {},
   "folderBackgroundColors": {},
   "folderSortOverrides": {
-    "01-product": "title-asc"
+    "01-product": "title-asc",
+    "02-design/user-flows": "title-asc",
+    "02-design/screens": "title-asc"
   },
   "folderTreeSortOverrides": {},
   "folderAppearances": {},

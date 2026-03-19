@@ -128,3 +128,8 @@ description: 글쓰기 플랫폼의 핵심 엔티티와 관계, 책임 경계를
 - 학습 코스와 레슨은 제품 확장 엔티티이지만, 현재 핵심 쓰기 흐름과 분리된 서브도메인으로 둔다.
 - 커뮤니티 피드백은 추후 추가 가능하나, 현재는 `ShareLink`와 `Publication` 이후의 별도 영역으로 본다.
 - 통계용 집계 값은 원천 엔티티를 대체하지 않고 파생 데이터로 취급한다.
+
+## 관련 다이어그램
+
+- [[03-architecture/diagrams/domain-relationship]]
+- [[03-architecture/diagrams/writing-runtime-flow]]

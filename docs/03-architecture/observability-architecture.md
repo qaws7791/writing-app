@@ -90,3 +90,8 @@ description: 저장 실패, 인증 문제, AI 지연, 공개 오류를 빠르게
 - 모든 사용자 노출 오류는 `request_id`를 포함해 고객 지원과 운영 대응을 연결한다.
 - 배포 이벤트와 주요 경고를 같은 타임라인에서 볼 수 있어야 한다.
 - 회고 문서에는 증상, 탐지 시간, 완화 시간, 재발 방지 조치를 함께 남긴다.
+
+## 관련 다이어그램
+
+- [[03-architecture/diagrams/observability-flow]]
+- [[03-architecture/diagrams/deployment-topology]]

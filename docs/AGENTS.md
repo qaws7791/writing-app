@@ -44,7 +44,7 @@ File creation rules
 Writing rules
 
 - Always write both the title and description frontmatter in Korean, and never leave them empty.
-- Never use N1 level titles. Start with N2 level titles.
+- use title frontmatter instead of level 1 heading
 - Keep code as minimal as possible.
 
 Update rules for agents

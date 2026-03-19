@@ -113,3 +113,9 @@ API는 화면을 렌더링하지 않고, 다음 책임에 집중한다.
 - AI가 글 전체를 대신 작성해 반환하는 기능
 - 앱 간 직접 상대 경로 의존을 전제로 한 API 설계
 - 사용자가 별도 파일 보관함처럼 임의의 파일을 업로드하는 기능
+
+## 관련 다이어그램
+
+- [[03-architecture/diagrams/system-context]]
+- [[03-architecture/diagrams/container-view]]
+- [[03-architecture/diagrams/writing-runtime-flow]]
