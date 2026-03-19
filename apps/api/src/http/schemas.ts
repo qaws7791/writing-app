@@ -20,7 +20,9 @@ export const promptFiltersSchema = z.object({
 
 export const createDraftSchema = z
   .object({
+    content: draftContentSchema.optional(),
     sourcePromptId: promptIdSchema.optional(),
+    title: z.string().max(200).optional(),
   })
   .strict()
 

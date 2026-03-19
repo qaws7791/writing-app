@@ -13,6 +13,30 @@ afterEach(() => {
 })
 
 describe("phase one local repository", () => {
+  test("creates drafts with initial title and content", async () => {
+    const storage = createMemoryStorage()
+    const repository = createLocalPhaseOneRepository(storage)
+
+    const created = await repository.createDraft({
+      content: {
+        content: [
+          {
+            content: [{ text: "처음부터 본문이 있습니다", type: "text" }],
+            type: "paragraph",
+          },
+        ],
+        type: "doc",
+      },
+      sourcePromptId: 1,
+      title: "초기 초안",
+    })
+
+    expect(created.title).toBe("초기 초안")
+    expect(created.sourcePromptId).toBe(1)
+    expect(created.characterCount).toBeGreaterThan(0)
+    expect(created.preview).toContain("처음부터 본문이 있습니다")
+  })
+
   test("creates, autosaves, lists and deletes drafts without remote api", async () => {
     const storage = createMemoryStorage()
     const repository = createLocalPhaseOneRepository(storage)

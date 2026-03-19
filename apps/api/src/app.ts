@@ -142,10 +142,12 @@ export function createApp(services: AppServices): ApiApp {
     const userId = currentUserId(context)
     const body = await parseJsonBody(context, createDraftSchema)
     const draft = await services.draftUseCases.createDraft(userId, {
+      content: body.content,
       sourcePromptId:
         body.sourcePromptId === undefined
           ? undefined
           : toPromptId(body.sourcePromptId),
+      title: body.title,
     })
 
     return context.json(draft, 201)

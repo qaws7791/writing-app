@@ -34,7 +34,11 @@ type PhaseOneRepository = {
     draftId: number,
     input: { content?: DraftContent; title?: string }
   ) => Promise<{ draft: DraftDetail; kind: "autosaved" }>
-  createDraft: (input: { sourcePromptId?: number }) => Promise<DraftDetail>
+  createDraft: (input: {
+    content?: DraftContent
+    sourcePromptId?: number
+    title?: string
+  }) => Promise<DraftDetail>
   deleteDraft: (draftId: number) => Promise<void>
   getDraft: (draftId: number) => Promise<DraftDetail>
   getHome: () => Promise<HomeSnapshot>
@@ -208,7 +212,7 @@ export function createLocalPhaseOneRepository(
 
     async createDraft(input) {
       const drafts = readDrafts(storage)
-      const content = createEmptyDraftContent()
+      const content = input.content ?? createEmptyDraftContent()
       const metrics = getDraftMetrics(content)
       const now = new Date().toISOString()
 
@@ -220,7 +224,7 @@ export function createLocalPhaseOneRepository(
         lastSavedAt: now,
         preview: metrics.preview,
         sourcePromptId: input.sourcePromptId ?? null,
-        title: "",
+        title: input.title ?? "",
         updatedAt: now,
         wordCount: metrics.wordCount,
       }

@@ -136,6 +136,39 @@ describe("drafts", () => {
     expect(listBody.items[0]?.id).toBe(created.id)
   })
 
+  test("creates draft with initial title and content", async () => {
+    const { app } = setup()
+
+    const create = await app.request("/drafts", {
+      body: JSON.stringify({
+        content: {
+          content: [
+            {
+              content: [{ text: "첫 저장에서 바로 생성합니다", type: "text" }],
+              type: "paragraph",
+            },
+          ],
+          type: "doc",
+        },
+        title: "첫 문장부터 저장",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const created = await readJson<{
+      characterCount: number
+      preview: string
+      title: string
+      wordCount: number
+    }>(create)
+
+    expect(create.status).toBe(201)
+    expect(created.title).toBe("첫 문장부터 저장")
+    expect(created.preview).toContain("첫 저장에서 바로 생성합니다")
+    expect(created.characterCount).toBeGreaterThan(0)
+    expect(created.wordCount).toBeGreaterThan(0)
+  })
+
   test("autosaves tiptap json and returns derived metrics", async () => {
     const { app } = setup()
 
@@ -304,6 +337,22 @@ describe("drafts", () => {
 
     expect(response.status).toBe(400)
     expect(body.error.code).toBe("invalid_json")
+  })
+
+  test("rejects malformed create draft payloads", async () => {
+    const { app } = setup()
+
+    const response = await app.request("/drafts", {
+      body: JSON.stringify({
+        title: "x".repeat(201),
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.code).toBe("validation_error")
   })
 
   test("returns forbidden for drafts owned by another user", async () => {

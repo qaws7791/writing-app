@@ -12,7 +12,9 @@ import {
 import { ForbiddenError, NotFoundError, ValidationError } from "./errors.js"
 
 type CreateDraftInput = {
+  content?: DraftContent
   sourcePromptId?: PromptId
+  title?: string
 }
 
 type AutosaveDraftInput = {
@@ -80,7 +82,7 @@ export function createDraftUseCases(
         }
       }
 
-      const content = createEmptyDraftContent()
+      const content = input.content ?? createEmptyDraftContent()
       const metrics = extractDraftTextMetrics(content)
 
       return draftRepository.create(userId, {
@@ -88,7 +90,7 @@ export function createDraftUseCases(
         content,
         plainText: metrics.plainText,
         sourcePromptId,
-        title: "",
+        title: input.title ?? "",
         wordCount: metrics.wordCount,
       })
     },

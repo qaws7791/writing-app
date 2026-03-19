@@ -24,6 +24,7 @@ import WritingBodyEditor from "@/components/writing-body-editor"
 import { formatDraftMeta } from "@/lib/phase-one-format"
 import { createPhaseOneRepository } from "@/lib/phase-one-repository"
 import {
+  createEmptyDraftContent,
   draftContentToHtml,
   draftContentToPlainText,
 } from "@/lib/phase-one-rich-text"
@@ -64,6 +65,10 @@ function extractTitle(text: string | null) {
   return text?.replace(/\s+/g, " ").trim() ?? ""
 }
 
+function hasMeaningfulDraftInput(title: string, content: DraftContent) {
+  return title.trim().length > 0 || draftContentToPlainText(content).length > 0
+}
+
 type WritingNewPageClientProps = {
   draftId?: number
   initialPromptId?: number | null
@@ -76,13 +81,18 @@ export default function WritingNewPageClient({
   const repository = useMemo(() => createPhaseOneRepository(), [])
   const router = useRouter()
   const titleRef = useRef<HTMLHeadingElement>(null)
+  const lastPersistedVersionRef = useRef(0)
+  const hasLocalEditRef = useRef(false)
+  const latestInputRef = useRef({
+    content: createEmptyDraftContent(),
+    title: "",
+  })
+  const createRequestRef = useRef<Promise<DraftDetail> | null>(null)
+  const isMountedRef = useRef(true)
 
   const [draft, setDraft] = useState<DraftDetail | null>(null)
   const [title, setTitle] = useState("")
-  const [content, setContent] = useState<DraftContent>({
-    content: [{ type: "paragraph" }],
-    type: "doc",
-  })
+  const [content, setContent] = useState<DraftContent>(createEmptyDraftContent)
   const [prompt, setPrompt] = useState<PromptDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [saveState, setSaveState] = useState<
@@ -94,31 +104,64 @@ export default function WritingNewPageClient({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   useEffect(() => {
+    latestInputRef.current = {
+      content,
+      title,
+    }
+  }, [content, title])
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  useEffect(() => {
     let cancelled = false
 
     async function loadDraft() {
       try {
-        const nextDraft = draftId
-          ? await repository.getDraft(draftId)
-          : await repository.createDraft({
-              sourcePromptId: initialPromptId ?? undefined,
-            })
+        if (draftId) {
+          const nextDraft = await repository.getDraft(draftId)
+          const linkedPrompt =
+            nextDraft.sourcePromptId !== null
+              ? await repository.getPrompt(nextDraft.sourcePromptId)
+              : null
+
+          if (cancelled) {
+            return
+          }
+
+          setDraft(nextDraft)
+          setTitle(nextDraft.title)
+          setContent(nextDraft.content)
+          setPrompt(linkedPrompt)
+          hasLocalEditRef.current = false
+          lastPersistedVersionRef.current = 0
+          if (titleRef.current) {
+            titleRef.current.textContent = nextDraft.title
+          }
+          return
+        }
 
         const linkedPrompt =
-          nextDraft.sourcePromptId !== null
-            ? await repository.getPrompt(nextDraft.sourcePromptId)
+          initialPromptId !== null
+            ? await repository.getPrompt(initialPromptId)
             : null
 
         if (cancelled) {
           return
         }
 
-        setDraft(nextDraft)
-        setTitle(nextDraft.title)
-        setContent(nextDraft.content)
+        setDraft(null)
         setPrompt(linkedPrompt)
-        if (titleRef.current) {
-          titleRef.current.textContent = nextDraft.title
+        if (!hasLocalEditRef.current) {
+          setTitle("")
+          setContent(createEmptyDraftContent())
+        }
+        lastPersistedVersionRef.current = 0
+        if (!hasLocalEditRef.current && titleRef.current) {
+          titleRef.current.textContent = ""
         }
       } finally {
         if (!cancelled) {
@@ -135,24 +178,91 @@ export default function WritingNewPageClient({
   }, [draftId, initialPromptId, repository])
 
   useEffect(() => {
-    const draftId = draft?.id
-
-    if (!draftId || saveVersion === 0) {
+    if (loading || saveVersion === 0) {
       return
     }
+
+    if (!draft) {
+      if (!hasMeaningfulDraftInput(title, content)) {
+        return
+      }
+
+      if (
+        createRequestRef.current ||
+        saveVersion <= lastPersistedVersionRef.current
+      ) {
+        return
+      }
+
+      const createVersion = saveVersion
+      setSaveState("saving")
+
+      const createDraftRequest = repository.createDraft({
+        content,
+        sourcePromptId: initialPromptId ?? undefined,
+        title,
+      })
+
+      createRequestRef.current = createDraftRequest
+
+      void createDraftRequest
+        .then((createdDraft) => {
+          if (
+            !isMountedRef.current ||
+            createRequestRef.current !== createDraftRequest
+          ) {
+            return
+          }
+
+          lastPersistedVersionRef.current = createVersion
+          setDraft(createdDraft)
+          setSaveState("saved")
+          router.replace(`/write/${createdDraft.id}`)
+        })
+        .catch(() => {
+          if (!isMountedRef.current) {
+            return
+          }
+
+          setSaveState("error")
+        })
+        .finally(() => {
+          if (createRequestRef.current === createDraftRequest) {
+            createRequestRef.current = null
+          }
+        })
+
+      return
+    }
+
+    if (saveVersion <= lastPersistedVersionRef.current) {
+      return
+    }
+
+    const currentDraftId = draft.id
+    const versionToPersist = saveVersion
 
     setSaveState("saving")
     const timer = window.setTimeout(() => {
       void repository
-        .autosaveDraft(draftId, {
-          content,
-          title,
+        .autosaveDraft(currentDraftId, {
+          content: latestInputRef.current.content,
+          title: latestInputRef.current.title,
         })
         .then((result) => {
+          if (!isMountedRef.current) {
+            return
+          }
+
+          lastPersistedVersionRef.current = versionToPersist
           setDraft(result.draft)
           setSaveState("saved")
         })
         .catch(() => {
+          if (!isMountedRef.current) {
+            return
+          }
+
           setSaveState("error")
         })
     }, 700)
@@ -160,9 +270,19 @@ export default function WritingNewPageClient({
     return () => {
       window.clearTimeout(timer)
     }
-  }, [content, draft?.id, repository, saveVersion, title])
+  }, [
+    content,
+    draft,
+    initialPromptId,
+    loading,
+    repository,
+    router,
+    saveVersion,
+    title,
+  ])
 
   function bumpSaveVersion() {
+    hasLocalEditRef.current = true
     startTransition(() => {
       setSaveVersion((current) => current + 1)
     })
