@@ -1,4 +1,5 @@
 import { Hono, type Context } from "hono"
+import { cors } from "hono/cors"
 
 import {
   createDraftUseCases,
@@ -43,11 +44,30 @@ function currentUserId(
 
 export function createApp(services: AppServices): ApiApp {
   const app: ApiApp = new Hono()
+  const allowedOrigins = new Set([
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+  ])
 
   app.use("*", async (context, next) => {
     context.set("userId", toUserId(services.userId))
     await next()
   })
+
+  app.use(
+    "*",
+    cors({
+      allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+      credentials: false,
+      origin: (origin) => {
+        if (!origin) {
+          return "*"
+        }
+
+        return allowedOrigins.has(origin) ? origin : ""
+      },
+    })
+  )
 
   app.onError((error, context) => {
     const response = toErrorResponse(error)

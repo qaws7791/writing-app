@@ -11,6 +11,7 @@ import {
   phaseOneStorageKeys,
   type StorageLike,
 } from "./phase-one-storage"
+import { env } from "@/env"
 import type {
   DraftContent,
   DraftDetail,
@@ -25,6 +26,8 @@ type SavedPromptEntry = {
   promptId: number
   savedAt: string
 }
+
+type PhaseOneRepositoryMode = "api" | "local"
 
 type PhaseOneRepository = {
   autosaveDraft: (
@@ -50,13 +53,6 @@ function createRemoteApiError(status: number, message: string): RemoteApiError {
   const error = new Error(message) as RemoteApiError
   error.status = status
   return error
-}
-
-function isNetworkError(error: unknown): boolean {
-  return (
-    error instanceof TypeError ||
-    (error instanceof Error && "status" in error === false)
-  )
 }
 
 function readSavedPromptEntries(storage: StorageLike): SavedPromptEntry[] {
@@ -463,7 +459,7 @@ function resolveApiBaseUrl(explicitBaseUrl?: string): string | null {
     return explicitBaseUrl.replace(/\/$/, "")
   }
 
-  const envBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL
+  const envBaseUrl = env.NEXT_PUBLIC_API_BASE_URL
   if (!envBaseUrl) {
     return null
   }
@@ -471,120 +467,28 @@ function resolveApiBaseUrl(explicitBaseUrl?: string): string | null {
   return envBaseUrl.replace(/\/$/, "")
 }
 
+function resolveRepositoryMode(
+  explicitMode?: PhaseOneRepositoryMode
+): PhaseOneRepositoryMode {
+  return explicitMode ?? env.NEXT_PUBLIC_PHASE_ONE_MODE
+}
+
 export function createPhaseOneRepository(options?: {
   apiBaseUrl?: string
+  mode?: PhaseOneRepositoryMode
   storage?: StorageLike
 }): PhaseOneRepository {
   const storage = options?.storage ?? getDefaultStorage()
-  const localRepository = createLocalPhaseOneRepository(storage)
+  const mode = resolveRepositoryMode(options?.mode)
+
+  if (mode === "local") {
+    return createLocalPhaseOneRepository(storage)
+  }
+
   const apiBaseUrl = resolveApiBaseUrl(options?.apiBaseUrl)
-
   if (!apiBaseUrl) {
-    return localRepository
+    throw new Error("NEXT_PUBLIC_API_BASE_URL is required in api mode.")
   }
 
-  const remoteRepository = createRemotePhaseOneRepository(apiBaseUrl)
-
-  return {
-    async autosaveDraft(draftId, input) {
-      try {
-        return await remoteRepository.autosaveDraft(draftId, input)
-      } catch (error) {
-        if (!isNetworkError(error)) {
-          throw error
-        }
-        return localRepository.autosaveDraft(draftId, input)
-      }
-    },
-    async createDraft(input) {
-      try {
-        return await remoteRepository.createDraft(input)
-      } catch (error) {
-        if (!isNetworkError(error)) {
-          throw error
-        }
-        return localRepository.createDraft(input)
-      }
-    },
-    async deleteDraft(draftId) {
-      try {
-        await remoteRepository.deleteDraft(draftId)
-      } catch (error) {
-        if (!isNetworkError(error)) {
-          throw error
-        }
-        await localRepository.deleteDraft(draftId)
-      }
-    },
-    async getDraft(draftId) {
-      try {
-        return await remoteRepository.getDraft(draftId)
-      } catch (error) {
-        if (!isNetworkError(error)) {
-          throw error
-        }
-        return localRepository.getDraft(draftId)
-      }
-    },
-    async getHome() {
-      try {
-        return await remoteRepository.getHome()
-      } catch (error) {
-        if (!isNetworkError(error)) {
-          throw error
-        }
-        return localRepository.getHome()
-      }
-    },
-    async getPrompt(promptId) {
-      try {
-        return await remoteRepository.getPrompt(promptId)
-      } catch (error) {
-        if (!isNetworkError(error)) {
-          throw error
-        }
-        return localRepository.getPrompt(promptId)
-      }
-    },
-    async listDrafts() {
-      try {
-        return await remoteRepository.listDrafts()
-      } catch (error) {
-        if (!isNetworkError(error)) {
-          throw error
-        }
-        return localRepository.listDrafts()
-      }
-    },
-    async listPrompts(filters) {
-      try {
-        return await remoteRepository.listPrompts(filters)
-      } catch (error) {
-        if (!isNetworkError(error)) {
-          throw error
-        }
-        return localRepository.listPrompts(filters)
-      }
-    },
-    async savePrompt(promptId) {
-      try {
-        return await remoteRepository.savePrompt(promptId)
-      } catch (error) {
-        if (!isNetworkError(error)) {
-          throw error
-        }
-        return localRepository.savePrompt(promptId)
-      }
-    },
-    async unsavePrompt(promptId) {
-      try {
-        await remoteRepository.unsavePrompt(promptId)
-      } catch (error) {
-        if (!isNetworkError(error)) {
-          throw error
-        }
-        await localRepository.unsavePrompt(promptId)
-      }
-    },
-  }
+  return createRemotePhaseOneRepository(apiBaseUrl)
 }

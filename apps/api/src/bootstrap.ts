@@ -15,6 +15,7 @@ import {
 } from "@workspace/infrastructure"
 
 import { createApp } from "./app.js"
+import { apiEnv } from "./env.js"
 
 export type ApiEnvironment = {
   databasePath: string
@@ -31,10 +32,10 @@ export type AppDependencies = {
 
 export function readApiEnvironment(): ApiEnvironment {
   return {
-    databasePath: Bun.env.API_DATABASE_PATH ?? "./data/app.sqlite",
-    devUserId: Bun.env.API_DEV_USER_ID ?? "dev-user",
-    devUserNickname: Bun.env.API_DEV_USER_NICKNAME ?? "테스트 사용자",
-    port: Number(Bun.env.API_PORT ?? "3010"),
+    databasePath: apiEnv.API_DATABASE_PATH,
+    devUserId: apiEnv.API_DEV_USER_ID,
+    devUserNickname: apiEnv.API_DEV_USER_NICKNAME,
+    port: apiEnv.API_PORT,
   }
 }
 

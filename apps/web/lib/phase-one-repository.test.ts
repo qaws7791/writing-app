@@ -1,7 +1,16 @@
-import { describe, expect, test } from "bun:test"
+import { afterEach, describe, expect, mock, test } from "bun:test"
 
-import { createLocalPhaseOneRepository } from "./phase-one-repository"
+import {
+  createLocalPhaseOneRepository,
+  createPhaseOneRepository,
+} from "./phase-one-repository"
 import { createMemoryStorage } from "./phase-one-storage"
+
+const originalFetch = globalThis.fetch
+
+afterEach(() => {
+  globalThis.fetch = originalFetch
+})
 
 describe("phase one local repository", () => {
   test("creates, autosaves, lists and deletes drafts without remote api", async () => {
@@ -44,5 +53,19 @@ describe("phase one local repository", () => {
     await repository.unsavePrompt(6)
     const prompts = await repository.listPrompts({ saved: true })
     expect(prompts).toHaveLength(0)
+  })
+
+  test("does not fall back to local storage in api mode", async () => {
+    globalThis.fetch = mock(() => {
+      throw new TypeError("network down")
+    }) as unknown as typeof fetch
+
+    const repository = createPhaseOneRepository({
+      apiBaseUrl: "http://127.0.0.1:3010",
+      mode: "api",
+      storage: createMemoryStorage(),
+    })
+
+    await expect(repository.getHome()).rejects.toThrow("network down")
   })
 })

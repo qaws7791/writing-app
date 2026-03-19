@@ -2,14 +2,15 @@
   "name": "api",
   "type": "module",
   "scripts": {
-    "db:reset": "bun run src/scripts/db-reset.ts",
-    "dev": "bun run --hot src/index.ts",
+    "db:reset": "bun --env-file=.env.development run src/scripts/db-reset.ts",
+    "dev": "bun --env-file=.env.development run --hot src/index.ts",
     "lint": "eslint .",
-    "seed": "bun run src/scripts/seed.ts",
+    "seed": "bun --env-file=.env.development run src/scripts/seed.ts",
     "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@t3-oss/env-core": "^0.13.10",
     "@workspace/application": "workspace:*",
     "@workspace/domain": "workspace:*",
     "@workspace/infrastructure": "workspace:*",

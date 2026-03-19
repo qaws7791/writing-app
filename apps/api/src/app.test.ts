@@ -36,6 +36,20 @@ describe("health", () => {
     expect(body.jsonbSupported).toBe(true)
     expect(body.sqliteVersion.length).toBeGreaterThan(0)
   })
+
+  test("allows the local web origin through cors", async () => {
+    const { app } = setup()
+    const response = await app.request("/health", {
+      headers: {
+        origin: "http://127.0.0.1:3000",
+      },
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      "http://127.0.0.1:3000"
+    )
+  })
 })
 
 describe("prompts", () => {

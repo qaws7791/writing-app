@@ -135,14 +135,16 @@ export default function WritingNewPageClient({
   }, [draftId, initialPromptId, repository])
 
   useEffect(() => {
-    if (!draft || saveVersion === 0) {
+    const draftId = draft?.id
+
+    if (!draftId || saveVersion === 0) {
       return
     }
 
     setSaveState("saving")
     const timer = window.setTimeout(() => {
       void repository
-        .autosaveDraft(draft.id, {
+        .autosaveDraft(draftId, {
           content,
           title,
         })
@@ -158,7 +160,7 @@ export default function WritingNewPageClient({
     return () => {
       window.clearTimeout(timer)
     }
-  }, [content, draft, repository, saveVersion, title])
+  }, [content, draft?.id, repository, saveVersion, title])
 
   function bumpSaveVersion() {
     startTransition(() => {
