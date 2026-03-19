@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>글터 — 쓰는 힘을 기르는 곳</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#ffffff;--bg2:#f6f6f6;--bg3:#ededed;--bg4:#e3e3e3;
+  --t:#0d0d0d;--t2:#555;--t3:#999;--t4:#bbb;
+  --bd:#e4e4e4;--nav:72px;
+  --f:'Noto Sans KR',-apple-system,sans-serif;
+  --fs:'DM Serif Display',serif;
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#0f0f0f;--bg2:#191919;--bg3:#232323;--bg4:#2d2d2d;
+  --t:#f0f0f0;--t2:#aaa;--t3:#666;--t4:#444;
+  --bd:#2a2a2a;
+}}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--f);background:var(--bg);color:var(--t);display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--nav);position:fixed;left:0;top:0;height:100vh;
+  border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;align-items:center;
+  padding:16px 0;gap:4px;z-index:100;background:var(--bg);
+}
+.logo{font-family:var(--fs);font-size:20px;padding:10px;margin-bottom:10px;cursor:pointer;color:var(--t)}
+.nb{
+  width:48px;height:48px;border-radius:12px;border:none;
+  background:transparent;color:var(--t3);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .12s,color .12s;
+}
+.nb:hover{background:var(--bg3);color:var(--t)}
+.nb.on{background:var(--bg3);color:var(--t)}
+.nb svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── BOTTOM NAV ── */
+.bnav{
+  display:none;position:fixed;bottom:0;left:0;right:0;height:60px;
+  border-top:1px solid var(--bd);background:var(--bg);
+  z-index:100;align-items:center;justify-content:space-around;
+}
+.bnav .nb{width:44px;height:44px}
+
+/* ── MAIN ── */
+main{margin-left:var(--nav);flex:1;min-height:100vh}
+.page{display:none}
+.page.on{display:block}
+.wrap{max-width:640px;margin:0 auto;padding:36px 20px 100px}
+.ph{font-size:22px;font-weight:700}
+.ps{font-size:13px;color:var(--t3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin:24px 0 10px}
+.divider{height:1px;background:var(--bd);margin:16px 0}
+
+/* buttons */
+.btn{padding:10px 20px;border-radius:10px;border:none;font-family:var(--f);font-size:14px;font-weight:500;cursor:pointer;transition:opacity .15s}
+.btn:hover{opacity:.75}
+.bp{background:var(--t);color:var(--bg)}
+.bs{background:var(--bg3);color:var(--t)}
+.bg_{background:transparent;color:var(--t2);border:1px solid var(--bd)}
+.bsm{padding:7px 14px;font-size:13px}
+.row{display:flex;align-items:center;gap:10px}
+
+/* cards */
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:20px}
+
+/* ── HOME ── */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.stat{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:16px;text-align:center}
+.stat .n{font-size:28px;font-weight:700}
+.stat .l{font-size:12px;color:var(--t3);margin-top:4px}
+
+.streak-row{display:flex;gap:6px;margin-top:12px}
+.sd{width:32px;height:32px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3)}
+.sd.on{background:var(--t);color:var(--bg)}
+
+.essay-item{
+  padding:16px;border-radius:12px;cursor:pointer;
+  border-bottom:1px solid var(--bd);transition:background .1s;
+}
+.essay-item:last-child{border-bottom:none}
+.essay-item:hover{background:var(--bg2)}
+.essay-item .et{font-size:15px;font-weight:500;margin-bottom:4px}
+.essay-item .em{font-size:13px;color:var(--t3)}
+.essay-item .ep{font-size:14px;color:var(--t2);margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.continue-card{
+  border:1px solid var(--bd);border-radius:16px;padding:20px 24px;
+  margin-bottom:20px;cursor:pointer;display:flex;align-items:center;gap:16px;
+  transition:background .12s;
+}
+.continue-card:hover{background:var(--bg2)}
+.cc-icon{width:48px;height:48px;border-radius:12px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.cc-body{flex:1}
+.cc-title{font-size:15px;font-weight:600;margin-bottom:4px}
+.cc-sub{font-size:13px;color:var(--t2)}
+.pbar{height:4px;background:var(--bg3);border-radius:2px;margin-top:8px}
+.pfill{height:100%;border-radius:2px;background:var(--t)}
+
+/* ── WRITE LIST ── */
+.write-cta{
+  background:var(--bg2);border:1px solid var(--bd);border-radius:16px;
+  padding:24px;margin-bottom:20px;display:flex;align-items:center;
+  justify-content:space-between;gap:16px;
+}
+.wc-left h2{font-size:18px;font-weight:700;margin-bottom:6px}
+.wc-left p{font-size:14px;color:var(--t2)}
+.tab-bar{display:flex;border-bottom:1px solid var(--bd);margin-bottom:20px}
+.tab{padding:11px 18px;font-size:14px;font-weight:500;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all .12s}
+.tab:hover{color:var(--t)}
+.tab.on{color:var(--t);border-bottom-color:var(--t)}
+
+/* badge */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:12px;background:var(--bg3);color:var(--t2)}
+.badge.draft{background:#fff8e6;color:#a07000}
+@media(prefers-color-scheme:dark){.badge.draft{background:#2a1f00;color:#f0b30a}}
+
+/* ── EDITOR ── */
+#page-editor main,.editor-full{margin-left:0}
+.editor-layout{
+  display:grid;grid-template-columns:1fr 320px;
+  height:100vh;
+  /* Override main margin for editor */
+}
+.ep-left{
+  border-right:1px solid var(--bd);
+  display:flex;flex-direction:column;height:100vh;
+  position:sticky;top:0;overflow:hidden;
+}
+.etop{
+  padding:14px 20px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:12px;
+}
+.etop input{
+  flex:1;font-size:18px;font-weight:700;font-family:var(--f);
+  background:transparent;border:none;color:var(--t);outline:none;
+}
+.etop input::placeholder{color:var(--t3)}
+.ebody{flex:1;padding:24px;overflow-y:auto}
+.ebody textarea{
+  width:100%;height:100%;min-height:400px;
+  background:transparent;border:none;resize:none;
+  font-family:var(--f);font-size:16px;line-height:1.85;
+  color:var(--t);outline:none;
+}
+.ebody textarea::placeholder{color:var(--t4)}
+.ebar{
+  padding:10px 20px;border-top:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.wc{font-size:12px;color:var(--t3)}
+.save-status{font-size:12px;color:var(--t3);display:flex;align-items:center;gap:6px}
+
+/* AI Panel */
+.ep-right{
+  display:flex;flex-direction:column;height:100vh;
+  position:sticky;top:0;overflow:hidden;
+}
+.atop{
+  padding:14px 20px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;gap:8px;
+}
+.atop h3{font-size:14px;font-weight:600}
+.ai-badge{font-size:11px;background:var(--bg3);padding:2px 8px;border-radius:20px;color:var(--t2)}
+.abody{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.aact{
+  width:100%;padding:14px 16px;background:var(--bg2);
+  border:1px solid var(--bd);border-radius:12px;
+  font-family:var(--f);font-size:14px;font-weight:500;color:var(--t);
+  text-align:left;cursor:pointer;display:flex;align-items:center;gap:12px;
+  transition:background .12s;
+}
+.aact:hover{background:var(--bg3)}
+.aact .aico{font-size:20px}
+.aact .atxt{display:flex;flex-direction:column}
+.aact .asub{font-size:12px;color:var(--t3);margin-top:2px}
+.sec-label{font-size:11px;color:var(--t3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;margin:8px 0 4px}
+.ai-result{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:16px}
+.ar-title{font-size:13px;font-weight:600;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.ar-body{font-size:13px;line-height:1.65;color:var(--t2)}
+.score-row{display:flex;flex-direction:column;gap:10px;margin-top:2px}
+.si{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13px;color:var(--t2)}
+.sbar{flex:1;height:4px;background:var(--bg3);border-radius:2px}
+.sfill{height:100%;border-radius:2px;background:var(--t)}
+.snum{font-size:13px;font-weight:600;min-width:28px;text-align:right}
+
+/* mobile AI fab */
+.ai-fab{
+  display:none;position:fixed;bottom:80px;right:20px;
+  width:50px;height:50px;border-radius:50%;
+  background:var(--t);color:var(--bg);border:none;
+  font-size:18px;cursor:pointer;z-index:150;
+  align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(0,0,0,.2);
+}
+
+/* ── PROMPTS ── */
+.psearch{display:flex;gap:10px;margin-bottom:16px}
+.psearch input{
+  flex:1;padding:12px 16px;border-radius:12px;
+  border:1px solid var(--bd);background:var(--bg2);
+  font-family:var(--f);font-size:15px;color:var(--t);outline:none;
+}
+.psearch input:focus{border-color:var(--t3)}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.tag{
+  padding:6px 14px;border-radius:20px;font-size:13px;
+  border:1px solid var(--bd);background:var(--bg2);
+  cursor:pointer;transition:all .12s;
+}
+.tag:hover,.tag.on{background:var(--t);color:var(--bg);border-color:var(--t)}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pcard{
+  background:var(--bg2);border:1px solid var(--bd);border-radius:14px;
+  padding:18px;cursor:pointer;transition:all .12s;
+}
+.pcard:hover{border-color:var(--t3);transform:translateY(-1px)}
+.pcat{font-size:11px;color:var(--t3);margin-bottom:8px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.ptxt{font-size:14px;font-weight:500;line-height:1.5}
+
+/* ── LEARN LIST ── */
+.prog-banner{
+  background:var(--bg2);border:1px solid var(--bd);border-radius:16px;
+  padding:20px 24px;margin-bottom:24px;
+}
+.pb-row{display:flex;justify-content:space-between;margin-bottom:10px;align-items:flex-end}
+.pb-title{font-size:15px;font-weight:600}
+.pb-sub{font-size:13px;color:var(--t2)}
+.pb-pct{font-size:13px;color:var(--t3)}
+.pbar2{height:6px;background:var(--bg3);border-radius:3px}
+.pfill2{height:100%;border-radius:3px;background:var(--t)}
+.cur-list{display:flex;flex-direction:column;gap:10px}
+.cur-card{
+  border:1px solid var(--bd);border-radius:14px;padding:18px 20px;
+  cursor:pointer;display:flex;align-items:center;gap:14px;transition:all .12s;
+}
+.cur-card:hover{background:var(--bg2)}
+.cur-card.locked{opacity:.45;cursor:not-allowed}
+.cur-ico{
+  width:48px;height:48px;border-radius:12px;background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;
+}
+.cur-body{flex:1}
+.cur-title{font-size:15px;font-weight:600;margin-bottom:4px}
+.cur-desc{font-size:13px;color:var(--t2)}
+.cur-meta{font-size:12px;color:var(--t3);margin-top:5px}
+.cur-tag{font-size:12px;padding:4px 10px;border-radius:8px;background:var(--bg3);color:var(--t2);white-space:nowrap}
+.cur-tag.done{background:#e6f9ee;color:#167a40}
+@media(prefers-color-scheme:dark){.cur-tag.done{background:#0a2e1a;color:#4ade80}}
+
+/* ── LEARN DETAIL ── */
+.ld-header{
+  background:var(--bg2);border-bottom:1px solid var(--bd);
+  padding:28px 20px 24px;
+}
+.ld-header .tag-row{display:flex;gap:8px;margin-bottom:12px}
+.ld-header h1{font-size:22px;font-weight:700;margin-bottom:8px}
+.ld-header p{font-size:15px;color:var(--t2);line-height:1.6}
+.ld-meta{display:flex;gap:16px;margin-top:14px}
+.ld-meta .m{font-size:13px;color:var(--t3);display:flex;align-items:center;gap:5px}
+
+.les-list{display:flex;flex-direction:column}
+.les-item{
+  padding:16px 20px;border-bottom:1px solid var(--bd);
+  cursor:pointer;display:flex;align-items:center;gap:14px;transition:background .1s;
+}
+.les-item:last-child{border-bottom:none}
+.les-item:hover{background:var(--bg2)}
+.les-item.locked{opacity:.4;cursor:not-allowed}
+.lnum{
+  width:32px;height:32px;border-radius:50%;background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;flex-shrink:0;color:var(--t3);
+}
+.lnum.done{background:var(--t);color:var(--bg)}
+.lnum.cur{background:var(--t);color:var(--bg);outline:3px solid var(--bg3)}
+.les-title{font-size:14px;font-weight:500}
+.les-type{font-size:12px;color:var(--t3);margin-top:2px}
+.les-dur{font-size:12px;color:var(--t3);margin-left:auto}
+
+/* ── LESSON ── */
+.lesson-wrap{max-width:600px;margin:0 auto;padding:32px 20px 100px}
+.lp-top{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.lp-back{
+  width:36px;height:36px;border-radius:10px;border:1px solid var(--bd);
+  background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t);flex-shrink:0;
+}
+.lp-steps{flex:1;display:flex;gap:4px}
+.step{height:4px;border-radius:2px;background:var(--bg3);flex:1}
+.step.done,.step.cur{background:var(--t)}
+.l-content{margin-bottom:28px}
+.l-content h2{font-size:21px;font-weight:700;line-height:1.4;margin-bottom:14px}
+.l-content .lbody{font-size:16px;line-height:1.85;color:var(--t2)}
+.l-content .lbody p{margin-bottom:14px}
+
+.iblock{background:var(--bg2);border:1px solid var(--bd);border-radius:16px;padding:22px;margin:24px 0}
+.iblock-title{font-size:12px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:16px}
+.quiz-opts{display:flex;flex-direction:column;gap:8px}
+.qopt{
+  padding:13px 18px;border:1px solid var(--bd);border-radius:12px;
+  cursor:pointer;font-size:15px;transition:all .12s;
+  font-family:var(--f);background:var(--bg);color:var(--t);text-align:left;
+}
+.qopt:hover{border-color:var(--t3);background:var(--bg2)}
+.qopt.sel{border-color:var(--t);background:var(--bg3)}
+
+.drag-list{display:flex;flex-direction:column;gap:8px}
+.drag-item{
+  padding:12px 16px;background:var(--bg);border:1px solid var(--bd);
+  border-radius:10px;font-size:14px;cursor:grab;
+  display:flex;align-items:center;gap:10px;user-select:none;
+}
+.drag-handle{color:var(--t3);font-size:16px}
+
+.htext{
+  font-size:16px;line-height:1.9;padding:20px;
+  background:var(--bg);border:1px solid var(--bd);border-radius:12px;
+}
+mark{background:var(--bg3);color:var(--t);border-radius:3px;padding:0 2px}
+
+.l-nav{display:flex;gap:10px;margin-top:24px}
+
+/* ── PROFILE ── */
+.prof-head{
+  text-align:center;padding:40px 20px 24px;
+  border-bottom:1px solid var(--bd);
+}
+.avatar{
+  width:72px;height:72px;border-radius:50%;
+  background:var(--bg3);margin:0 auto 12px;
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+}
+.prof-name{font-size:18px;font-weight:700}
+.prof-bio{font-size:14px;color:var(--t2);margin-top:4px}
+.prof-stats{display:grid;grid-template-columns:repeat(3,1fr);border-bottom:1px solid var(--bd)}
+.pstat{padding:20px;text-align:center;border-right:1px solid var(--bd)}
+.pstat:last-child{border-right:none}
+.pstat .pn{font-size:22px;font-weight:700}
+.pstat .pl{font-size:12px;color:var(--t3);margin-top:4px}
+.menu-list{display:flex;flex-direction:column}
+.menu-item{
+  padding:16px 20px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--bd);cursor:pointer;transition:background .1s;
+}
+.menu-item:hover{background:var(--bg2)}
+.menu-item .mi-left{display:flex;align-items:center;gap:12px}
+.menu-item .mi-ico{font-size:18px}
+.menu-item .mi-txt{font-size:15px}
+.menu-item .chevron{color:var(--t3)}
+.danger{color:#e03}
+
+/* ── MISC ── */
+.back-link{
+  display:inline-flex;align-items:center;gap:8px;
+  color:var(--t2);font-size:14px;cursor:pointer;padding:8px 0;margin-bottom:16px;
+}
+.back-link:hover{color:var(--t)}
+.empty{text-align:center;padding:60px 20px;color:var(--t3)}
+.empty .ei{font-size:36px;margin-bottom:12px}
+.empty .et{font-size:15px;margin-bottom:16px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .bnav{display:flex}
+  main{margin-left:0}
+  .editor-layout{grid-template-columns:1fr}
+  .ep-right{display:none}
+  .ai-fab{display:flex}
+  .pgrid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .stat-row{grid-template-columns:repeat(3,1fr)}
+  .stat .n{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="logo" onclick="go('home')">글터</div>
+  <button class="nb on" id="nb-home" onclick="go('home')" title="홈">
+    <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+  </button>
+  <button class="nb" id="nb-write" onclick="go('write')" title="쓰기">
+    <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+  </button>
+  <button class="nb" id="nb-learn" onclick="go('learn')" title="배우기">
+    <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+  </button>
+  <button class="nb" id="nb-profile" onclick="go('profile')" title="내 프로필">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  </button>
+</aside>
+
+<!-- ── BOTTOM NAV ── -->
+<nav class="bnav">
+  <button class="nb on" id="bnb-home" onclick="go('home')" title="홈">
+    <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/><polyline points="9 21 9 12 15 12 15 21"/></svg>
+  </button>
+  <button class="nb" id="bnb-write" onclick="go('write')" title="쓰기">
+    <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+  </button>
+  <button class="nb" id="bnb-learn" onclick="go('learn')" title="배우기">
+    <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+  </button>
+  <button class="nb" id="bnb-profile" onclick="go('profile')" title="내 프로필">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+  </button>
+</nav>
+
+<main>
+
+<!-- ══════════ HOME ══════════ -->
+<div id="page-home" class="page on">
+<div class="wrap">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <h1 class="ph">안녕하세요, 민준님 👋</h1>
+      <p style="font-size:14px;color:var(--t2);margin-top:4px">오늘도 한 문장부터 시작해봐요.</p>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat"><div class="n">12</div><div class="l">쓴 글</div></div>
+    <div class="stat"><div class="n">7</div><div class="l">연속 일수</div></div>
+    <div class="stat"><div class="n">3</div><div class="l">완료 강의</div></div>
+  </div>
+
+  <div class="ps">이번 주 쓰기 현황</div>
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+      <span style="font-size:14px;font-weight:600">월~일 스트릭</span>
+      <span style="font-size:13px;color:var(--t3)">5 / 7일</span>
+    </div>
+    <div class="streak-row">
+      <div class="sd on">월</div><div class="sd on">화</div><div class="sd on">수</div>
+      <div class="sd">목</div><div class="sd on">금</div><div class="sd on">토</div><div class="sd">일</div>
+    </div>
+  </div>
+
+  <div class="ps">이어서 쓰기</div>
+  <div class="continue-card" onclick="go('editor')">
+    <div class="cc-icon">✍️</div>
+    <div class="cc-body">
+      <div class="cc-title">나는 왜 아침에 일어나기 싫을까</div>
+      <div class="cc-sub">임시저장 · 342자 작성됨</div>
+      <div class="pbar"><div class="pfill" style="width:35%"></div></div>
+    </div>
+    <svg style="width:18px;height:18px;color:var(--t3);flex-shrink:0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+
+  <div class="continue-card" onclick="go('learn-detail')">
+    <div class="cc-icon">📖</div>
+    <div class="cc-body">
+      <div class="cc-title">논증하는 글쓰기</div>
+      <div class="cc-sub">3강 — 반론 다루기</div>
+      <div class="pbar"><div class="pfill" style="width:55%"></div></div>
+    </div>
+    <svg style="width:18px;height:18px;color:var(--t3);flex-shrink:0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+  </div>
+
+  <div class="ps">최근 작성한 글</div>
+  <div>
+    <div class="essay-item" onclick="go('editor')">
+      <div class="et">혼자 여행하면 무엇이 달라질까</div>
+      <div class="em">완성 · 2025년 6월 3일 · 1,240자</div>
+      <div class="ep">처음 혼자 버스를 탔던 날을 기억한다. 목적지는 딱히 없었지만, 그날 이후 무언가 바뀐 것 같았다.</div>
+    </div>
+    <div class="essay-item" onclick="go('editor')">
+      <div class="et">좋아하는 음식이 바뀌는 이유</div>
+      <div class="em">완성 · 2025년 5월 29일 · 890자</div>
+      <div class="ep">어릴 때 가장 싫어하던 것이 지금은 가장 좋아하는 음식이 됐다. 맛이 바뀐 걸까, 내가 바뀐 걸까.</div>
+    </div>
+    <div class="essay-item" onclick="go('editor')">
+      <div class="et">친구에게 화가 났던 날</div>
+      <div class="em">임시저장 · 2025년 5월 22일 · 210자</div>
+      <div class="ep">그 말이 왜 그렇게 오래 남았는지 아직도 모르겠다. 어쩌면 그 말이 아니라...</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ WRITE LIST ══════════ -->
+<div id="page-write" class="page">
+<div class="wrap">
+  <h1 class="ph" style="margin-bottom:20px">내 글</h1>
+
+  <div class="write-cta">
+    <div class="wc-left">
+      <h2>새 글 시작하기</h2>
+      <p>무엇이든 좋아요. 지금 머릿속에 있는 것부터 꺼내보세요.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn bp" onclick="go('editor')">✍️ 빈 페이지로</button>
+      <button class="btn bs" onclick="go('prompts')">💡 글감 찾기</button>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab on" onclick="selectTab(this)">전체 <span style="color:var(--t3);margin-left:4px">12</span></div>
+    <div class="tab" onclick="selectTab(this)">작성 중 <span style="color:var(--t3);margin-left:4px">3</span></div>
+    <div class="tab" onclick="selectTab(this)">완성 <span style="color:var(--t3);margin-left:4px">9</span></div>
+  </div>
+
+  <div>
+    <div class="essay-item" onclick="go('editor')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div class="et">나는 왜 아침에 일어나기 싫을까</div>
+        <span class="badge draft">작성 중</span>
+      </div>
+      <div class="em">2025년 6월 5일 · 342자</div>
+      <div class="ep">아침이 오는 게 무섭다. 알람이 울릴 때마다 눈을 뜨기 싫다는 건 게으름 때문만은 아닌 것 같다.</div>
+    </div>
+    <div class="essay-item" onclick="go('editor')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div class="et">혼자 여행하면 무엇이 달라질까</div>
+        <span class="badge">완성</span>
+      </div>
+      <div class="em">2025년 6월 3일 · 1,240자</div>
+      <div class="ep">처음 혼자 버스를 탔던 날을 기억한다. 목적지는 딱히 없었지만, 그날 이후 무언가 바뀐 것 같았다.</div>
+    </div>
+    <div class="essay-item" onclick="go('editor')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div class="et">좋아하는 음식이 바뀌는 이유</div>
+        <span class="badge">완성</span>
+      </div>
+      <div class="em">2025년 5월 29일 · 890자</div>
+      <div class="ep">어릴 때 가장 싫어하던 것이 지금은 가장 좋아하는 음식이 됐다.</div>
+    </div>
+    <div class="essay-item" onclick="go('editor')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div class="et">친구에게 화가 났던 날</div>
+        <span class="badge draft">작성 중</span>
+      </div>
+      <div class="em">2025년 5월 22일 · 210자</div>
+      <div class="ep">그 말이 왜 그렇게 오래 남았는지 아직도 모르겠다.</div>
+    </div>
+    <div class="essay-item" onclick="go('editor')">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div class="et">지금 내가 두려운 것</div>
+        <span class="badge">완성</span>
+      </div>
+      <div class="em">2025년 5월 18일 · 1,050자</div>
+      <div class="ep">실패가 두렵다기보다, 아무것도 안 해서 후회하는 게 더 두렵다.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ EDITOR ══════════ -->
+<div id="page-editor" class="page">
+<div class="editor-layout">
+  <!-- Left: Editor -->
+  <div class="ep-left">
+    <div class="etop">
+      <button class="btn bs bsm" onclick="go('write')">← 돌아가기</button>
+      <input type="text" placeholder="제목을 입력하세요" value="나는 왜 아침에 일어나기 싫을까">
+      <button class="btn bp bsm">저장</button>
+    </div>
+    <div class="ebody">
+      <textarea placeholder="여기에 자유롭게 쓰세요. 완벽하지 않아도 됩니다. 틀려도 괜찮아요.&#10;&#10;첫 문장이 가장 어렵습니다. 지금 머릿속에 있는 것을 그대로 꺼내보세요.">아침이 오는 게 무섭다. 알람이 울릴 때마다 눈을 뜨기 싫다는 건 게으름 때문만은 아닌 것 같다.
+
+사람들은 흔히 아침에 못 일어나는 사람을 게으르다고 말한다. 하지만 내 경우는 조금 다른 것 같다. 눈을 뜨는 순간, 오늘 해야 할 것들이 한꺼번에 머릿속에 쏟아진다. 그 무게감 때문에 눈을 다시 감고 싶어진다.</textarea>
+    </div>
+    <div class="ebar">
+      <div class="wc">342자 · 약 2분 읽기</div>
+      <div class="save-status">
+        <svg style="width:14px;height:14px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="20 6 9 12 4 9"/><path d="M20 6L9 12l-5-3V19l5 3 11-6V6z"/></svg>
+        자동 저장됨
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: AI Panel -->
+  <div class="ep-right">
+    <div class="atop">
+      <h3>AI 글쓰기 도우미</h3>
+      <span class="ai-badge">Beta</span>
+    </div>
+    <div class="abody">
+      <div class="sec-label">AI로 글 다듬기</div>
+      <button class="aact">
+        <span class="aico">🔍</span>
+        <span class="atxt">
+          <span>맞춤법 · 문법 검사</span>
+          <span class="asub">오류를 찾아 수정 제안</span>
+        </span>
+      </button>
+      <button class="aact">
+        <span class="aico">💬</span>
+        <span class="atxt">
+          <span>피드백 받기</span>
+          <span class="asub">논리, 구성, 표현 분석</span>
+        </span>
+      </button>
+      <button class="aact">
+        <span class="aico">✨</span>
+        <span class="atxt">
+          <span>문장 개선하기</span>
+          <span class="asub">더 명확하고 자연스럽게</span>
+        </span>
+      </button>
+      <button class="aact">
+        <span class="aico">🧩</span>
+        <span class="atxt">
+          <span>글감 더 탐색하기</span>
+          <span class="asub">쓰고 싶은 내용이 떠오르게</span>
+        </span>
+      </button>
+
+      <div class="sec-label" style="margin-top:12px">최근 피드백</div>
+      <div class="ai-result">
+        <div class="ar-title">
+          <span>글 전체 분석</span>
+          <span style="font-size:12px;color:var(--t3)">방금 전</span>
+        </div>
+        <div class="score-row">
+          <div class="si">
+            <span>명확성</span>
+            <div class="sbar"><div class="sfill" style="width:75%"></div></div>
+            <span class="snum">75</span>
+          </div>
+          <div class="si">
+            <span>구성력</span>
+            <div class="sbar"><div class="sfill" style="width:60%"></div></div>
+            <span class="snum">60</span>
+          </div>
+          <div class="si">
+            <span>표현력</span>
+            <div class="sbar"><div class="sfill" style="width:82%"></div></div>
+            <span class="snum">82</span>
+          </div>
+        </div>
+      </div>
+      <div class="ai-result">
+        <div class="ar-title">개선 제안</div>
+        <div class="ar-body">두 번째 문단에서 주장이 조금 느슨해집니다. "내 경우는 다른 것 같다" 뒤에 구체적인 사례나 이유를 한 가지 더 추가하면 설득력이 높아질 것 같아요.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Mobile AI FAB -->
+<button class="ai-fab" title="AI 도우미">✨</button>
+</div>
+
+<!-- ══════════ PROMPTS ══════════ -->
+<div id="page-prompts" class="page">
+<div class="wrap">
+  <div class="back-link" onclick="go('write')">
+    <svg style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    내 글로
+  </div>
+  <h1 class="ph" style="margin-bottom:6px">글감 찾기</h1>
+  <p style="font-size:14px;color:var(--t2);margin-bottom:20px">지금 머릿속에 없어도 괜찮아요. 스크롤하다 보면 쓰고 싶어집니다.</p>
+
+  <div class="psearch">
+    <input type="text" placeholder="🔍  글감 검색 — 예: 가족, 두려움, 나의 첫 번째">
+  </div>
+
+  <div class="tags">
+    <div class="tag on">전체</div>
+    <div class="tag" onclick="selectTag(this)">일상</div>
+    <div class="tag" onclick="selectTag(this)">관계</div>
+    <div class="tag" onclick="selectTag(this)">감정</div>
+    <div class="tag" onclick="selectTag(this)">기억</div>
+    <div class="tag" onclick="selectTag(this)">사회</div>
+    <div class="tag" onclick="selectTag(this)">철학</div>
+    <div class="tag" onclick="selectTag(this)">성장</div>
+    <div class="tag" onclick="selectTag(this)">장소</div>
+  </div>
+
+  <div class="pgrid">
+    <div class="pcard" onclick="go('editor')">
+      <div class="pcat">일상</div>
+      <div class="ptxt">지금 내 방을 처음 보는 사람이 나에 대해 어떤 인상을 받을까</div>
+    </div>
+    <div class="pcard" onclick="go('editor')">
+      <div class="pcat">감정</div>
+      <div class="ptxt">최근에 이유 없이 기분이 좋았던 순간</div>
+    </div>
+    <div class="pcard" onclick="go('editor')">
+      <div class="pcat">기억</div>
+      <div class="ptxt">다시 돌아갈 수 있다면 꼭 가보고 싶은 하루</div>
+    </div>
+    <div class="pcard" onclick="go('editor')">
+      <div class="pcat">관계</div>
+      <div class="ptxt">오래 연락하지 못한 사람에게 하고 싶은 말</div>
+    </div>
+    <div class="pcard" onclick="go('editor')">
+      <div class="pcat">성장</div>
+      <div class="ptxt">내가 틀렸다고 인정했던 순간</div>
+    </div>
+    <div class="pcard" onclick="go('editor')">
+      <div class="pcat">철학</div>
+      <div class="ptxt">좋은 사람이 되는 것과 착한 사람이 되는 것은 다를까</div>
+    </div>
+    <div class="pcard" onclick="go('editor')">
+      <div class="pcat">사회</div>
+      <div class="ptxt">내가 당연하게 여겼는데 사실은 특권이었던 것</div>
+    </div>
+    <div class="pcard" onclick="go('editor')">
+      <div class="pcat">장소</div>
+      <div class="ptxt">내 삶을 가장 많이 바꾼 공간</div>
+    </div>
+    <div class="pcard" onclick="go('editor')">
+      <div class="pcat">일상</div>
+      <div class="ptxt">매일 하는 행동 중에서 그 이유를 한 번도 생각해본 적 없는 것</div>
+    </div>
+    <div class="pcard" onclick="go('editor')">
+      <div class="pcat">감정</div>
+      <div class="ptxt">질투심을 느꼈을 때 — 그게 나에게 무엇을 말해줬는가</div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:24px">
+    <button class="btn bs">글감 더 보기 (990+)</button>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ LEARN LIST ══════════ -->
+<div id="page-learn" class="page">
+<div class="wrap">
+  <h1 class="ph" style="margin-bottom:6px">글배우기</h1>
+  <p style="font-size:14px;color:var(--t2);margin-bottom:20px">모든 커리큘럼은 실제로 써보며 배웁니다.</p>
+
+  <div class="prog-banner">
+    <div class="pb-row">
+      <div>
+        <div class="pb-title">전체 학습 진도</div>
+        <div class="pb-sub">커리큘럼 3개 완료 · 2개 진행 중</div>
+      </div>
+      <div class="pb-pct">32%</div>
+    </div>
+    <div class="pbar2"><div class="pfill2" style="width:32%"></div></div>
+  </div>
+
+  <div class="ps">진행 중</div>
+  <div class="cur-list" style="margin-bottom:24px">
+    <div class="cur-card" onclick="go('learn-detail')">
+      <div class="cur-ico">🗣️</div>
+      <div class="cur-body">
+        <div class="cur-title">논증하는 글쓰기</div>
+        <div class="cur-desc">주장을 세우고 근거로 설득하는 법</div>
+        <div class="cur-meta">5강 중 3강 완료</div>
+      </div>
+      <span class="cur-tag">진행 중</span>
+    </div>
+    <div class="cur-card" onclick="go('learn-detail')">
+      <div class="cur-ico">🌱</div>
+      <div class="cur-body">
+        <div class="cur-title">첫 문장 쓰기</div>
+        <div class="cur-desc">빈 페이지를 채우는 12가지 방법</div>
+        <div class="cur-meta">6강 중 1강 완료</div>
+      </div>
+      <span class="cur-tag">진행 중</span>
+    </div>
+  </div>
+
+  <div class="ps">완료</div>
+  <div class="cur-list" style="margin-bottom:24px">
+    <div class="cur-card" onclick="go('learn-detail')">
+      <div class="cur-ico">📝</div>
+      <div class="cur-body">
+        <div class="cur-title">에세이란 무엇인가</div>
+        <div class="cur-desc">글쓰기를 왜, 어떻게 시작하는지</div>
+        <div class="cur-meta">4강 · 약 40분</div>
+      </div>
+      <span class="cur-tag done">완료 ✓</span>
+    </div>
+    <div class="cur-card" onclick="go('learn-detail')">
+      <div class="cur-ico">🔍</div>
+      <div class="cur-body">
+        <div class="cur-title">문장 다듬기</div>
+        <div class="cur-desc">불필요한 말을 걷어내고 핵심만 남기기</div>
+        <div class="cur-meta">5강 · 약 50분</div>
+      </div>
+      <span class="cur-tag done">완료 ✓</span>
+    </div>
+    <div class="cur-card" onclick="go('learn-detail')">
+      <div class="cur-ico">🧵</div>
+      <div class="cur-body">
+        <div class="cur-title">단락 구성하기</div>
+        <div class="cur-desc">한 단락에 하나의 생각</div>
+        <div class="cur-meta">4강 · 약 35분</div>
+      </div>
+      <span class="cur-tag done">완료 ✓</span>
+    </div>
+  </div>
+
+  <div class="ps">잠금</div>
+  <div class="cur-list">
+    <div class="cur-card locked">
+      <div class="cur-ico">🎭</div>
+      <div class="cur-body">
+        <div class="cur-title">독자를 의식한 글쓰기</div>
+        <div class="cur-desc">읽는 사람을 고려하는 시선</div>
+        <div class="cur-meta">앞 커리큘럼 완료 후 잠금 해제</div>
+      </div>
+      <span class="cur-tag">🔒</span>
+    </div>
+    <div class="cur-card locked">
+      <div class="cur-ico">🔄</div>
+      <div class="cur-body">
+        <div class="cur-title">퇴고의 기술</div>
+        <div class="cur-desc">초고를 완성본으로 만드는 법</div>
+        <div class="cur-meta">앞 커리큘럼 완료 후 잠금 해제</div>
+      </div>
+      <span class="cur-tag">🔒</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ LEARN DETAIL ══════════ -->
+<div id="page-learn-detail" class="page">
+  <div class="ld-header">
+    <div class="tag-row">
+      <div class="back-link" style="margin-bottom:0" onclick="go('learn')">
+        <svg style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        배우기
+      </div>
+    </div>
+    <h1>논증하는 글쓰기</h1>
+    <p>주장을 세우고 근거로 설득하는 에세이 쓰기. 단순히 의견을 나열하는 것과 논증이 어떻게 다른지 경험으로 익힙니다.</p>
+    <div class="ld-meta">
+      <div class="m">📚 총 5강</div>
+      <div class="m">⏱️ 약 50분</div>
+      <div class="m">✅ 3강 완료</div>
+    </div>
+  </div>
+
+  <div class="les-list" style="max-width:640px;margin:0 auto;padding:0 0 80px">
+    <div class="les-item" onclick="go('lesson')">
+      <div class="lnum done">✓</div>
+      <div>
+        <div class="les-title">주장이란 무엇인가</div>
+        <div class="les-type">강의 + 퀴즈</div>
+      </div>
+      <div class="les-dur">8분</div>
+    </div>
+    <div class="les-item" onclick="go('lesson')">
+      <div class="lnum done">✓</div>
+      <div>
+        <div class="les-title">근거 고르기 — 좋은 근거와 나쁜 근거</div>
+        <div class="les-type">강의 + 예시 분석</div>
+      </div>
+      <div class="les-dur">10분</div>
+    </div>
+    <div class="les-item" onclick="go('lesson')">
+      <div class="lnum done">✓</div>
+      <div>
+        <div class="les-title">근거를 문장으로 연결하기</div>
+        <div class="les-type">강의 + 직접 써보기</div>
+      </div>
+      <div class="les-dur">12분</div>
+    </div>
+    <div class="les-item" onclick="go('lesson')">
+      <div class="lnum cur">4</div>
+      <div>
+        <div class="les-title">반론 다루기 — 내 주장을 더 강하게</div>
+        <div class="les-type">강의 + 드래그 활동</div>
+      </div>
+      <div class="les-dur">10분</div>
+    </div>
+    <div class="les-item locked">
+      <div class="lnum">5</div>
+      <div>
+        <div class="les-title">완성된 논증 에세이 써보기</div>
+        <div class="les-type">실전 글쓰기</div>
+      </div>
+      <div class="les-dur">🔒</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ LESSON ══════════ -->
+<div id="page-lesson" class="page">
+<div class="lesson-wrap">
+  <div class="lp-top">
+    <button class="lp-back" onclick="go('learn-detail')">
+      <svg style="width:16px;height:16px" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <div class="lp-steps">
+      <div class="step done"></div>
+      <div class="step done"></div>
+      <div class="step cur"></div>
+      <div class="step"></div>
+      <div class="step"></div>
+    </div>
+    <span style="font-size:13px;color:var(--t3)">3 / 5</span>
+  </div>
+
+  <div class="l-content">
+    <h2>반론을 피하지 말고 맞서세요</h2>
+    <div class="lbody">
+      <p>좋은 논증 에세이는 반론을 숨기지 않습니다. 오히려 반론을 먼저 언급하고, 그에 대응함으로써 주장이 더 강해집니다.</p>
+      <p>독자는 읽으면서 자연스럽게 "하지만 이런 경우는?"이라고 생각합니다. 그 질문에 미리 답해두면, 독자는 당신이 신중하게 생각했다는 신뢰를 갖게 됩니다.</p>
+    </div>
+  </div>
+
+  <div class="iblock">
+    <div class="iblock-title">🔖 핵심 개념 확인하기</div>
+    <p style="font-size:15px;font-weight:600;margin-bottom:14px">반론을 다루는 문장 구조 중 올바른 것을 고르세요.</p>
+    <div class="quiz-opts">
+      <button class="qopt" onclick="selectOpt(this)">① 반론이 있다는 사실을 언급하되, 설명하지 않는다.</button>
+      <button class="qopt sel" onclick="selectOpt(this)">② 반론을 소개하고, 그 한계를 설명하며 내 주장을 보강한다.</button>
+      <button class="qopt" onclick="selectOpt(this)">③ 반론이 맞는 경우를 인정하고, 내 주장을 철회한다.</button>
+      <button class="qopt" onclick="selectOpt(this)">④ 반론을 감정적으로 반박하여 독자의 공감을 얻는다.</button>
+    </div>
+  </div>
+
+  <div class="iblock">
+    <div class="iblock-title">✍️ 논증 흐름 순서 맞추기</div>
+    <p style="font-size:15px;font-weight:600;margin-bottom:14px">아래 문장들을 논리적 순서로 배열해보세요.</p>
+    <div class="drag-list">
+      <div class="drag-item"><span class="drag-handle">⠿</span> 따라서 야간 영업 제한은 장기적으로 지역 상권을 안정시킨다.</div>
+      <div class="drag-item"><span class="drag-handle">⠿</span> 물론 일부 자영업자의 단기 수입이 줄어드는 문제가 있다.</div>
+      <div class="drag-item"><span class="drag-handle">⠿</span> 야간 영업 제한이 주거 환경을 개선한다는 주장이 있다.</div>
+      <div class="drag-item"><span class="drag-handle">⠿</span> 그러나 이는 지역 주민의 삶의 질 향상으로 상쇄된다.</div>
+    </div>
+  </div>
+
+  <div class="iblock">
+    <div class="iblock-title">📌 문장에서 반론 찾기</div>
+    <p style="font-size:15px;font-weight:600;margin-bottom:14px">아래 단락에서 반론에 해당하는 부분에 밑줄을 긋고, 필자의 대응 부분을 찾아보세요.</p>
+    <div class="htext">
+      독서량이 많은 사람이 더 창의적이라는 연구가 있다. <mark>일부는 독서보다 영상이 더 효율적인 학습 방법이라고 주장한다.</mark> 하지만 영상은 요약된 정보를 수동적으로 받아들이게 하는 반면, 독서는 독자가 직접 맥락을 구성하는 능동적 과정을 요구한다.
+    </div>
+  </div>
+
+  <div class="l-nav">
+    <button class="btn bg_" onclick="go('learn-detail')">← 이전</button>
+    <button class="btn bp" style="flex:1" onclick="go('learn-detail')">다음 강의 →</button>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ PROFILE ══════════ -->
+<div id="page-profile" class="page">
+  <div class="prof-head">
+    <div class="avatar">😊</div>
+    <div class="prof-name">김민준</div>
+    <div class="prof-bio">글쓰기 초보 · 2024년 11월부터 시작</div>
+  </div>
+
+  <div class="prof-stats">
+    <div class="pstat"><div class="pn">12</div><div class="pl">쓴 글</div></div>
+    <div class="pstat"><div class="pn">7</div><div class="pl">연속 일수</div></div>
+    <div class="pstat"><div class="pn">4,820</div><div class="pl">총 글자</div></div>
+  </div>
+
+  <div class="menu-list">
+    <div style="padding:16px 20px;font-size:12px;color:var(--t3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;background:var(--bg2)">계정</div>
+    <div class="menu-item">
+      <div class="mi-left"><span class="mi-ico">👤</span><span class="mi-txt">프로필 편집</span></div>
+      <span class="chevron">›</span>
+    </div>
+    <div class="menu-item">
+      <div class="mi-left"><span class="mi-ico">🔔</span><span class="mi-txt">알림 설정</span></div>
+      <span class="chevron">›</span>
+    </div>
+    <div class="menu-item">
+      <div class="mi-left"><span class="mi-ico">🌙</span><span class="mi-txt">화면 테마</span></div>
+      <span style="font-size:13px;color:var(--t3)">시스템 기본값</span>
+    </div>
+
+    <div style="padding:16px 20px;font-size:12px;color:var(--t3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;background:var(--bg2)">글쓰기</div>
+    <div class="menu-item">
+      <div class="mi-left"><span class="mi-ico">📊</span><span class="mi-txt">내 통계</span></div>
+      <span class="chevron">›</span>
+    </div>
+    <div class="menu-item">
+      <div class="mi-left"><span class="mi-ico">📥</span><span class="mi-txt">내 글 내보내기</span></div>
+      <span class="chevron">›</span>
+    </div>
+
+    <div style="padding:16px 20px;font-size:12px;color:var(--t3);font-weight:600;letter-spacing:.05em;text-transform:uppercase;background:var(--bg2)">지원</div>
+    <div class="menu-item">
+      <div class="mi-left"><span class="mi-ico">❓</span><span class="mi-txt">도움말</span></div>
+      <span class="chevron">›</span>
+    </div>
+    <div class="menu-item">
+      <div class="mi-left"><span class="mi-ico">📜</span><span class="mi-txt">이용약관 · 개인정보</span></div>
+      <span class="chevron">›</span>
+    </div>
+    <div class="menu-item" style="margin-top:8px">
+      <div class="mi-left"><span class="mi-ico">🚪</span><span class="mi-txt danger">로그아웃</span></div>
+    </div>
+  </div>
+  <div style="height:80px"></div>
+</div>
+
+</main>
+
+<script>
+const NAV_MAP = {
+  home:'home', write:'write', editor:'write', prompts:'write',
+  learn:'learn', 'learn-detail':'learn', lesson:'learn',
+  profile:'profile'
+};
+
+function go(page) {
+  // hide all
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  // show target
+  const el = document.getElementById('page-' + page);
+  if (el) el.classList.add('on');
+
+  // update nav
+  const group = NAV_MAP[page] || page;
+  ['home','write','learn','profile'].forEach(k => {
+    const ids = ['nb-'+k, 'bnb-'+k];
+    ids.forEach(id => {
+      const btn = document.getElementById(id);
+      if (btn) btn.classList.toggle('on', k === group);
+    });
+  });
+
+  // editor: hide sidebar on desktop? No, keep it. Just scroll top.
+  window.scrollTo(0, 0);
+}
+
+function selectTab(el) {
+  el.closest('.tab-bar').querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function selectTag(el) {
+  el.closest('.tags').querySelectorAll('.tag').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+}
+
+function selectOpt(el) {
+  el.closest('.quiz-opts').querySelectorAll('.qopt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+</script>
+</body>
+</html>
