@@ -9,6 +9,7 @@
     "start": "bun --bun next start",
     "lint": "eslint",
     "format": "prettier --write --ignore-path ../../.prettierignore \"**/*.{ts,tsx}\"",
+    "test": "bun test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

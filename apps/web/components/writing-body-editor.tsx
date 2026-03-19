@@ -56,12 +56,16 @@ import {
   layer2Options,
 } from "@/components/ai/ai-features"
 import { AISuggestionPanel } from "@/components/ai/ai-suggestion-panel"
+import type { DraftContent } from "@/lib/phase-one-types"
+import { createEmptyDraftContent } from "@/lib/phase-one-rich-text"
 
 import styles from "./writing-body-editor.module.css"
 
 // --- 타입 ---
 
 type WritingBodyEditorProps = {
+  initialContent?: DraftContent
+  onContentChange?: (content: DraftContent) => void
   placeholder?: string
 }
 
@@ -376,12 +380,17 @@ function FloatingToolbar({
 // --- 메인 컴포넌트 ---
 
 export default function WritingBodyEditor({
+  initialContent,
+  onContentChange,
   placeholder = "생각이 흐르는 대로 자유롭게 적어보세요...",
 }: WritingBodyEditorProps) {
   const resolvedPlaceholder =
     placeholder ?? "생각이 흐르는 대로 자유롭게 적어보세요..."
   const editorClassName = styles.editor ?? ""
   const editorShellClassName = styles.editorShell ?? ""
+  const serializedInitialContent = JSON.stringify(
+    initialContent ?? createEmptyDraftContent()
+  )
 
   const [snapshot, setSnapshot] = useState(initialEditorSnapshot)
 
@@ -420,12 +429,15 @@ export default function WritingBodyEditor({
       }),
       AIReviewExtension,
     ],
-    content: "<p></p>",
+    content: initialContent ?? createEmptyDraftContent(),
     immediatelyRender: false,
     editorProps: {
       attributes: {
         class: editorClassName,
       },
+    },
+    onUpdate({ editor: currentEditor }) {
+      onContentChange?.(currentEditor.getJSON() as DraftContent)
     },
   })
 
@@ -445,6 +457,19 @@ export default function WritingBodyEditor({
       editor.off("transaction", updateSnapshot)
     }
   }, [editor])
+
+  useEffect(() => {
+    if (!editor) return
+
+    const nextContent = JSON.parse(serializedInitialContent) as DraftContent
+    const currentContent = editor.getJSON() as DraftContent
+
+    if (JSON.stringify(currentContent) === serializedInitialContent) {
+      return
+    }
+
+    editor.commands.setContent(nextContent, { emitUpdate: false })
+  }, [editor, serializedInitialContent])
 
   // 리뷰 모드에서 하이라이트 클릭 감지
   useEffect(() => {

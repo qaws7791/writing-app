@@ -2,7 +2,8 @@
 
 import {
   type FormEvent,
-  useCallback,
+  useEffect,
+  useMemo,
   useRef,
   startTransition,
   useState,
@@ -20,6 +21,17 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 
 import WritingBodyEditor from "@/components/writing-body-editor"
+import { formatDraftMeta } from "@/lib/phase-one-format"
+import { createPhaseOneRepository } from "@/lib/phase-one-repository"
+import {
+  draftContentToHtml,
+  draftContentToPlainText,
+} from "@/lib/phase-one-rich-text"
+import type {
+  DraftContent,
+  DraftDetail,
+  PromptDetail,
+} from "@/lib/phase-one-types"
 import { Button } from "@workspace/ui/components/button"
 import { buttonVariants } from "@workspace/ui/components/button.styles"
 import {
@@ -52,44 +64,129 @@ function extractTitle(text: string | null) {
   return text?.replace(/\s+/g, " ").trim() ?? ""
 }
 
-function useWritingContent(containerRef: React.RefObject<HTMLElement | null>) {
-  return useCallback(() => {
-    const container = containerRef.current
-    if (!container) {
-      return { title: "", bodyHtml: "", bodyText: "" }
-    }
-
-    const titleEl = container.querySelector("h1")
-    const bodyEl = container.querySelector("[data-writing-body] .ProseMirror")
-
-    const title = titleEl?.textContent?.trim() ?? ""
-    const bodyHtml = bodyEl?.innerHTML ?? ""
-    const bodyText = bodyEl?.textContent?.trim() ?? ""
-
-    return { title, bodyHtml, bodyText }
-  }, [containerRef])
+type WritingNewPageClientProps = {
+  draftId?: number
+  initialPromptId?: number | null
 }
 
-export default function WritingNewPageClient() {
+export default function WritingNewPageClient({
+  draftId,
+  initialPromptId = null,
+}: WritingNewPageClientProps) {
+  const repository = useMemo(() => createPhaseOneRepository(), [])
   const router = useRouter()
+  const titleRef = useRef<HTMLHeadingElement>(null)
+
+  const [draft, setDraft] = useState<DraftDetail | null>(null)
   const [title, setTitle] = useState("")
+  const [content, setContent] = useState<DraftContent>({
+    content: [{ type: "paragraph" }],
+    type: "doc",
+  })
+  const [prompt, setPrompt] = useState<PromptDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saveState, setSaveState] = useState<
+    "error" | "idle" | "saved" | "saving"
+  >("idle")
+  const [saveVersion, setSaveVersion] = useState(0)
   const [exportModalOpen, setExportModalOpen] = useState(false)
   const [versionHistoryModalOpen, setVersionHistoryModalOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
-  const contentRef = useRef<HTMLElement>(null)
-  const getContent = useWritingContent(contentRef)
+  useEffect(() => {
+    let cancelled = false
 
-  function handleTitleInput(event: FormEvent<HTMLHeadingElement>) {
-    const nextTitle = extractTitle(event.currentTarget.textContent)
+    async function loadDraft() {
+      try {
+        const nextDraft = draftId
+          ? await repository.getDraft(draftId)
+          : await repository.createDraft({
+              sourcePromptId: initialPromptId ?? undefined,
+            })
 
+        const linkedPrompt =
+          nextDraft.sourcePromptId !== null
+            ? await repository.getPrompt(nextDraft.sourcePromptId)
+            : null
+
+        if (cancelled) {
+          return
+        }
+
+        setDraft(nextDraft)
+        setTitle(nextDraft.title)
+        setContent(nextDraft.content)
+        setPrompt(linkedPrompt)
+        if (titleRef.current) {
+          titleRef.current.textContent = nextDraft.title
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    void loadDraft()
+
+    return () => {
+      cancelled = true
+    }
+  }, [draftId, initialPromptId, repository])
+
+  useEffect(() => {
+    if (!draft || saveVersion === 0) {
+      return
+    }
+
+    setSaveState("saving")
+    const timer = window.setTimeout(() => {
+      void repository
+        .autosaveDraft(draft.id, {
+          content,
+          title,
+        })
+        .then((result) => {
+          setDraft(result.draft)
+          setSaveState("saved")
+        })
+        .catch(() => {
+          setSaveState("error")
+        })
+    }, 700)
+
+    return () => {
+      window.clearTimeout(timer)
+    }
+  }, [content, draft, repository, saveVersion, title])
+
+  function bumpSaveVersion() {
     startTransition(() => {
-      setTitle(nextTitle)
+      setSaveVersion((current) => current + 1)
     })
   }
 
+  function handleTitleInput(event: FormEvent<HTMLHeadingElement>) {
+    const nextTitle = extractTitle(event.currentTarget.textContent)
+    setTitle(nextTitle)
+    bumpSaveVersion()
+  }
+
+  function handleContentChange(nextContent: DraftContent) {
+    setContent(nextContent)
+    bumpSaveVersion()
+  }
+
+  function getContent() {
+    return {
+      bodyHtml: draftContentToHtml(content),
+      bodyText: draftContentToPlainText(content),
+      title,
+    }
+  }
+
   async function handleShare() {
-    const { title: contentTitle, bodyText } = getContent()
+    const { bodyText, title: contentTitle } = getContent()
     const text = [contentTitle, bodyText].filter(Boolean).join("\n\n")
 
     if (!navigator.share) {
@@ -99,15 +196,18 @@ export default function WritingNewPageClient() {
 
     try {
       await navigator.share({
-        title: contentTitle || "제목 없음",
         text,
+        title: contentTitle || "제목 없음",
       })
     } catch {
       await navigator.clipboard.writeText(text)
     }
   }
 
-  function handleDelete() {
+  async function handleDelete() {
+    if (draft) {
+      await repository.deleteDraft(draft.id)
+    }
     router.push("/write")
   }
 
@@ -116,25 +216,32 @@ export default function WritingNewPageClient() {
       data-writing-editor-page=""
       className={`${styles.page} flex min-h-0 flex-1 flex-col bg-background text-foreground`}
     >
-      <header>
-        <div className="pointer-events-auto flex h-16 items-center gap-3 px-4 md:px-6">
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-40">
+        <div className="pointer-events-auto flex h-20 items-center justify-between px-4 md:px-6">
           <Link
             aria-label="뒤로 가기"
             href="/write"
-            className={`${buttonVariants({
-              variant: "outline",
+            className={buttonVariants({
               size: "icon",
-            })} shrink-0`}
+              variant: "outline",
+            })}
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} />
+            <HugeiconsIcon icon={ArrowLeft01Icon} color="currentColor" />
           </Link>
 
-          <div className="min-w-0 flex-1">
-            <p
-              aria-live="polite"
-              className="min-h-5 truncate text-sm font-medium text-foreground/80 md:text-base"
-            >
-              {title}
+          <div className="min-w-0 flex-1 px-4">
+            <p className="truncate text-sm font-medium text-foreground/80 md:text-base">
+              {title || "새 글"}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">
+              {saveState === "saving" && "임시 저장 중"}
+              {saveState === "saved" &&
+                (draft
+                  ? `임시 저장됨 · ${formatDraftMeta(draft.lastSavedAt)}`
+                  : "임시 저장됨")}
+              {saveState === "error" && "저장 지연 중"}
+              {saveState === "idle" &&
+                (loading ? "초안 준비 중" : "입력을 시작하면 저장됩니다")}
             </p>
           </div>
 
@@ -156,17 +263,29 @@ export default function WritingNewPageClient() {
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>글쓰기</DropdownMenuLabel>
                   <DropdownMenuItem onClick={() => setExportModalOpen(true)}>
-                    <HugeiconsIcon icon={Download01Icon} strokeWidth={2} />
+                    <HugeiconsIcon
+                      icon={Download01Icon}
+                      color="currentColor"
+                      strokeWidth={2}
+                    />
                     파일로 내보내기
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleShare}>
-                    <HugeiconsIcon icon={Share08Icon} strokeWidth={2} />
+                  <DropdownMenuItem onClick={() => void handleShare()}>
+                    <HugeiconsIcon
+                      icon={Share08Icon}
+                      color="currentColor"
+                      strokeWidth={2}
+                    />
                     공유
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => setVersionHistoryModalOpen(true)}
                   >
-                    <HugeiconsIcon icon={Clock01Icon} strokeWidth={2} />
+                    <HugeiconsIcon
+                      icon={Clock01Icon}
+                      color="currentColor"
+                      strokeWidth={2}
+                    />
                     버전 기록
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -176,7 +295,11 @@ export default function WritingNewPageClient() {
                     onClick={() => setDeleteDialogOpen(true)}
                     variant="destructive"
                   >
-                    <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+                    <HugeiconsIcon
+                      icon={Delete02Icon}
+                      color="currentColor"
+                      strokeWidth={2}
+                    />
                     삭제
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
@@ -187,9 +310,24 @@ export default function WritingNewPageClient() {
       </header>
 
       <main className="flex flex-1 items-start justify-center overflow-y-auto px-6 pt-28 pb-40 md:px-10 md:pt-36 md:pb-44">
-        <section ref={contentRef} className="w-full max-w-3xl">
-          <div className="flex flex-col gap-12">
+        <section className="w-full max-w-3xl">
+          <div className="flex flex-col gap-10">
+            {prompt && (
+              <div className="rounded-2xl border border-border bg-card px-5 py-4">
+                <p className="mb-2 text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                  선택한 글감
+                </p>
+                <h2 className="text-base font-semibold text-foreground">
+                  {prompt.text}
+                </h2>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                  {prompt.description}
+                </p>
+              </div>
+            )}
+
             <h1
+              ref={titleRef}
               contentEditable
               suppressContentEditableWarning
               role="textbox"
@@ -199,7 +337,10 @@ export default function WritingNewPageClient() {
               onInput={handleTitleInput}
             />
 
-            <WritingBodyEditor />
+            <WritingBodyEditor
+              initialContent={content}
+              onContentChange={handleContentChange}
+            />
           </div>
         </section>
       </main>
@@ -220,7 +361,11 @@ export default function WritingNewPageClient() {
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
             <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20">
-              <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+              <HugeiconsIcon
+                icon={Delete02Icon}
+                color="currentColor"
+                strokeWidth={2}
+              />
             </AlertDialogMedia>
             <AlertDialogTitle>이 글을 삭제할까요?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -229,7 +374,10 @@ export default function WritingNewPageClient() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel variant="ghost">취소</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleDelete}>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => void handleDelete()}
+            >
               삭제
             </AlertDialogAction>
           </AlertDialogFooter>
