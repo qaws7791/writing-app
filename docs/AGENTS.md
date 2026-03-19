@@ -20,12 +20,10 @@ Directory intent
 
 - README.md: entry point and map of the docs.
 - 01-product: Product goals and problem definition
-- 02-learning: Writing learning model
-- 03-experience: Screen structure and interaction principles
+- 02-design: Design system and UI/UX guidelines
+- 03-architecture: System architecture and technical documentation
 - 04-engineering: Monorepo structure and technical documentation
-- 05-operations: Security, operations, and release response
-- 06-research: User research and references
-- 07-prompts: AI-powered prompt documentation
+- 05 ~ 98: Not yet implemented
 - 99-archive: Experimental results and replaced documents
 
 Obsidian conventions

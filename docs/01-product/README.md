@@ -11,5 +11,5 @@ description: 플랫폼의 비전, 문제 정의, 제품 원칙 및 사용자 흐
 - [[problem]]: 왜 이 제품이 필요한가
 - [[principles]]: 핵심 설계 원칙
 - [[persona]]: 주요 사용자 유형
-- `user-journeys.md`: 대표 사용자 흐름
-- `roadmap.md`: 단계별 확장 방향
+- [[user-journeys]]: 대표 사용자 흐름
+- [[roadmap]]: 단계별 확장 방향
