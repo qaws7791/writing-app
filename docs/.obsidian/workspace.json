@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03-architecture/error-handling.md",
+                "file": "01-product/roadmap.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "error-handling"
+              "title": "roadmap"
             }
           }
         ]
@@ -157,16 +157,23 @@
   },
   "active": "c2d61c4d18302827",
   "lastOpenFiles": [
+    "01-product/vision.md",
+    "01-product/persona.md",
+    "01-product/principles.md",
+    "02-design/information-architecture.md",
+    "04-engineering/backend-architecture-guide.md",
     "03-architecture/domain-model.md",
+    "03-architecture/tech-stack.md",
+    "04-engineering/backend-core-guide.md",
+    "04-engineering/api-conventions.md",
+    "03-architecture/error-handling.md",
+    "03-architecture/api-overview.md",
     "03-architecture/file-storage-strategy.md",
     "03-architecture/observability-architecture.md",
-    "03-architecture/api-overview.md",
     "03-architecture/auth-and-session.md",
     "03-architecture/data-flow.md",
     "03-architecture/deployment-strategy.md",
     "03-architecture/README.md",
-    "03-architecture/tech-stack.md",
-    "04-engineering/backend-architecture-guide.md",
     "04-engineering/frontend-architecture-guide.md",
     "02-design/features/editor-writing.md",
     "02-design/features/today-writing-prompts.md",
@@ -176,13 +183,6 @@
     "02-design/user-flows/create-new-draft-and-write.md",
     "02-design/user-flows/discover-prompt-and-start.md",
     "02-design/user-flows/resume-draft.md",
-    "03-architecture/diagrams/container-view.md",
-    "03-architecture/diagrams/domain-relationship.md",
-    "03-architecture/diagrams/writing-runtime-flow.md",
-    "02-design/screens/editor.md",
-    "02-design/user-flows/README.md",
-    "02-design/user-flows/start-writing-today.md",
-    "03-architecture/diagrams/README.md",
     "05-operations/templates",
     "04-engineering/templates",
     "04-engineering/adr"

@@ -1,6 +1,6 @@
 ---
 title: 도메인 모델
-description: 글쓰기 플랫폼의 핵심 엔티티와 관계, 책임 경계를 제품 개념에 맞춰 정의합니다.
+description: 글쓰기 플랫폼의 핵심 엔티티와 관계, 책임 경계를 immutable 데이터 모델 기준으로 정의합니다.
 ---
 
 ## 모델링 원칙
@@ -9,6 +9,9 @@ description: 글쓰기 플랫폼의 핵심 엔티티와 관계, 책임 경계를
 - AI는 독립 저자가 아니라 글쓰기를 보조하는 기능으로 모델링한다.
 - 공개 상태와 작성 상태를 같은 개념으로 섞지 않는다.
 - 사용자의 기록은 가능한 한 버전 가능한 형태로 다룬다.
+- 구현 기준에서 모델은 클래스 인스턴스보다 immutable plain object로 표현한다.
+- 상태 전이는 모델 내부 메서드보다 순수 함수와 operation 계층에서 처리한다.
+- 인프라 저장 모델과 제품 도메인 모델은 같은 이름을 써도 같은 타입으로 취급하지 않는다.
 
 ## 핵심 엔티티
 
@@ -125,6 +128,8 @@ description: 글쓰기 플랫폼의 핵심 엔티티와 관계, 책임 경계를
 
 - better-auth의 `user`, `account`, `session`은 인증 서브도메인의 영속성 모델이다.
 - 글쓰기 제품 문서에서는 이를 `User`, `AuthAccount`, `Session`으로 표현하되, 구현 스키마와의 대응 관계를 유지한다.
+- `packages/backend-core`는 제품 도메인 모델을 정의하고, `packages/db`는 영속성 모델과 매핑을 담당한다.
+- Hono request/response 타입은 도메인 모델에 직접 섞지 않는다.
 - 학습 코스와 레슨은 제품 확장 엔티티이지만, 현재 핵심 쓰기 흐름과 분리된 서브도메인으로 둔다.
 - 커뮤니티 피드백은 추후 추가 가능하나, 현재는 `ShareLink`와 `Publication` 이후의 별도 영역으로 본다.
 - 통계용 집계 값은 원천 엔티티를 대체하지 않고 파생 데이터로 취급한다.
@@ -133,3 +138,4 @@ description: 글쓰기 플랫폼의 핵심 엔티티와 관계, 책임 경계를
 
 - [[03-architecture/diagrams/domain-relationship]]
 - [[03-architecture/diagrams/writing-runtime-flow]]
+- [[04-engineering/backend-core-guide]]

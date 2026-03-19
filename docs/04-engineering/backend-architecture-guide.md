@@ -1,82 +1,226 @@
 ---
 title: 백엔드 아키텍처 가이드
-description: 아직 구현되지 않은 Hono 백엔드를 어떤 구조와 경계로 확장할지에 대한 기준을 정리합니다.
+description: DOP와 패키지 경계 중심으로 백엔드 구조를 정의합니다. apps/api는 조립 계층이고, 비즈니스와 인프라는 별도 패키지로 분리합니다.
 ---
 
 ## 상태
 
-- 기준 시점: 2026-03-19
-- 현재 `apps/api`는 `src/index.ts`, `src/app.ts`와 `GET /` 한 개의 라우트만 존재합니다.
-- 인증, 검증, 저장소, 로깅, 오류 처리, 도메인 모델은 아직 구현되지 않았습니다.
-- 이 문서는 "초기 구현을 시작할 때 따라야 할 기준"입니다.
+- 기준 시점: 2026-03-20
+- 현재 `apps/api`는 `src/index.ts`, `src/app.ts`, `GET /` 한 개의 라우트만 가진 최소 골격입니다.
+- `packages/backend-core`, `packages/db`, `packages/storage`, `packages/ai`는 아직 구현되지 않았습니다.
+- 이 문서는 현재 코드 설명보다 "도입할 표준 구조"를 정의하는 기준 문서입니다.
 
-## 시작 구조
+## 기준 원칙
 
-- `src/index.ts`: 런타임 어댑터와 포트 바인딩만 담당합니다.
-- `src/app.ts`: Hono 앱 생성, 미들웨어 등록, 라우트 조립의 composition root로 둡니다.
-- 새 기능은 처음부터 거대한 공용 패키지로 빼지 말고 `apps/api/src` 안에서 시작합니다.
+- 백엔드는 Data-Oriented Programming을 기본으로 설계합니다.
+- 데이터는 클래스 인스턴스보다 `readonly` plain object와 배열로 표현합니다.
+- 비즈니스 로직은 작은 순수 함수와 선언적 파이프라인으로 조합합니다.
+- 부수 효과는 패키지 경계의 adapter에서만 수행합니다.
+- 앱은 조립하고, 패키지는 자기 책임을 수행합니다.
+- 구현체가 아니라 포트와 인터페이스에 의존합니다.
 
-## 권장 디렉터리 구조
+## 핵심 패턴
+
+### Functional Core, Imperative Shell
+
+- `packages/backend-core`는 순수 함수, 상태 전이, 검증, use case 조합을 담당합니다.
+- `packages/db`, `packages/storage`, `packages/ai`는 외부 시스템과 통신하는 imperative shell입니다.
+- `apps/api`는 HTTP 요청을 순수 코어에 연결하고 결과를 HTTP 응답으로 변환합니다.
+
+### Ports and Adapters
+
+- 포트 타입은 `packages/backend-core`에 둡니다.
+- 저장소, 스토리지, AI 구현체는 각 인프라 패키지에서 포트를 구현합니다.
+- `apps/api`는 구현체를 생성하고 use case에 주입합니다.
+
+### Composition Root
+
+- 최상위 조립은 `apps/api`에서 끝냅니다.
+- 요청 스코프 값은 Hono `Context`에 두고, 장수명 dependency는 앱 시작 시 생성합니다.
+- 비즈니스 모듈은 Hono `Context`, SDK 클라이언트, SQL 빌더를 직접 참조하지 않습니다.
+
+### Schema-first Contract
+
+- 요청/응답에 사용하는 zod 스키마는 `packages/backend-core`의 `contracts`에 둡니다.
+- `apps/api`는 `@hono/zod-openapi`의 `createRoute()`에서 이 스키마를 가져다 씁니다.
+- HTTP 계약과 비즈니스 입력/출력 데이터의 기준을 한 곳에서 유지합니다.
+
+## 역할 분리
+
+### `apps/api`
+
+- Hono 라우팅
+- 미들웨어
+- request context
+- OpenAPI 문서화
+- HTTP 요청/응답 매핑
+- dependency 조립
+
+`apps/api`는 비즈니스 규칙, SQL, 스토리지 SDK, AI provider 호출 로직을 직접 가지지 않습니다.
+
+### `packages/backend-core`
+
+- 모듈러 모놀리스 비즈니스 로직
+- 도메인 상태 데이터와 브랜드 타입
+- zod 계약 스키마
+- 순수 연산과 상태 전이
+- use case
+- 포트 타입
+- 에러 타입
+
+`packages/backend-core`는 Hono, DB 드라이버, 스토리지 SDK, AI SDK에 직접 의존하지 않습니다.
+
+### `packages/db`
+
+- DB 클라이언트
+- 영속성 스키마
+- repository 구현체
+- DB 전용 mapper와 transaction 처리
+
+### `packages/storage`
+
+- 파일 저장
+- object key 전략
+- signed URL 발급
+- 업로드/다운로드 adapter
+
+### `packages/ai`
+
+- AI provider 연결
+- 프롬프트 실행
+- 응답 정규화
+- AI 관련 adapter
+
+## 표준 구조 예시
 
 ```text
-apps/api/src/
-  app.ts
-  index.ts
-  middleware/
-  shared/http/
-  features/
-    prompts/
-      domain/
-      application/
-      infrastructure/
-      presentation/
-    writings/
-      domain/
-      application/
-      infrastructure/
-      presentation/
+apps/
+  api/
+    src/
+      app.ts
+      index.ts
+      shared/
+        http/
+        middleware/
+        context/
+        openapi/
+        presenters/
+      composition/
+        create-app-deps.ts
+        create-modules.ts
+      modules/
+        writings/
+          writings-app.ts
+          routes/
+            create-writing-route.ts
+            get-writing-route.ts
+          handlers/
+            create-writing-handler.ts
+          presenters/
+            writing-presenter.ts
+        prompts/
+          prompts-app.ts
+          routes/
+          handlers/
+          presenters/
+
+packages/
+  backend-core/
+    src/
+      shared/
+        result/
+        types/
+        schema/
+        ports/
+        testing/
+      modules/
+        writings/
+          contracts/
+          model/
+          operations/
+          ports/
+          use-cases/
+          errors/
+          fixtures/
+        prompts/
+          contracts/
+          model/
+          operations/
+          ports/
+          use-cases/
+          fixtures/
+    tests/
+  db/
+    src/
+      client/
+      schema/
+      repositories/
+      mappers/
+      transactions/
+      testing/
+  storage/
+    src/
+      client/
+      objects/
+      signed-urls/
+      mappers/
+      testing/
+  ai/
+    src/
+      client/
+      prompts/
+      reviews/
+      suggestions/
+      mappers/
+      testing/
 ```
 
-## 레이어 원칙
+## 구현 흐름
 
-- `domain`: 순수 비즈니스 규칙과 타입만 둡니다.
-- `application`: use case, port, 정책 조합을 둡니다.
-- `infrastructure`: DB, 외부 API, 파일 저장, AI 연동 어댑터를 둡니다.
-- `presentation`: Hono route, validator, request/response 매핑을 둡니다.
+1. `packages/backend-core/modules/*/contracts`에서 zod 계약 스키마를 정의합니다.
+2. `apps/api/modules/*/routes`에서 `createRoute()`로 OpenAPI route를 선언합니다.
+3. `apps/api/modules/*/*-app.ts`에서 `new OpenAPIHono()`로 모듈 app을 만듭니다.
+4. `app.openapi()`에서 handler를 route와 연결합니다.
+5. handler는 `Context`를 use case 입력으로 변환합니다.
+6. use case는 포트를 주입받아 순수 연산과 adapter 호출 순서를 조합합니다.
+7. presenter가 `Result`를 HTTP 성공 응답 또는 Problem Details로 변환합니다.
 
-## Hono 적용 원칙
+## 데이터와 함수 기준
 
-- 요청 검증은 가장 바깥 HTTP 경계에서 수행합니다.
-- 요청별 메타데이터는 `c.set()` / `c.get()`으로 전달하되, 도메인 객체를 억지로 Context에 저장하지 않습니다.
-- 공통 예외 fallback은 `app.onError()`에 두고, 기능별 예외는 애플리케이션 계층에서 의미 있는 오류로 변환합니다.
-- `requestId`, 로거, 인증 미들웨어는 가능한 한 앞단에서 등록합니다.
+- 모든 상태 데이터는 가능한 한 `readonly`로 표현합니다.
+- 상태 변경은 객체를 직접 수정하지 않고 새 값을 반환하는 함수로 처리합니다.
+- 복잡한 흐름은 작은 함수와 `pipe()` 조합으로 표현합니다.
+- 범용 데이터 가공은 `remeda`를 우선 고려합니다.
+- 예외는 기본 제어 흐름으로 사용하지 않고 `neverthrow`의 `Result`, `ResultAsync`를 우선 사용합니다.
 
-## 패키지 분리 기준
+## 도입하지 않는 것
 
-- 두 개 이상의 앱이 같은 도메인 로직을 실제로 재사용할 때만 `packages/*` 추출을 고려합니다.
-- 단순히 "언젠가 쓸 수도 있음" 수준이면 `apps/api` 내부에 둡니다.
-- 추출 시에도 UI, 인프라, 애플리케이션의 역방향 의존성은 만들지 않습니다.
+- Hono route 안에서 직접 `new`로 외부 의존성을 생성하는 구조
+- `apps/api` 안에 SQL, 스토리지, AI provider 호출을 직접 두는 구조
+- 클래스 인스턴스를 중심으로 한 도메인 모델
+- 전역 mutable singleton
+- 테스트 우회를 위한 숨겨진 분기
 
-## 현재 저장소에 맞는 구현 순서
+## 테스트 기준
 
-1. `src/app.ts`에 공통 미들웨어와 오류 처리 뼈대를 먼저 넣습니다.
-2. `prompts`, `writings` 같은 사용자 흐름 단위 feature를 만듭니다.
-3. 각 feature 안에서 도메인과 use case를 먼저 굳힌 뒤 HTTP 표현을 붙입니다.
-4. 두 번째 소비자가 생기기 전까지는 feature를 패키지로 추출하지 않습니다.
+- `packages/backend-core`: vitest 단위 테스트가 기본입니다.
+- 순수 함수와 use case는 포트 스텁으로 검증합니다.
+- `packages/db`, `packages/storage`, `packages/ai`: adapter 계약과 mapper를 검증합니다.
+- `apps/api`: route 계약, validator, presenter, 모듈 조립을 검증합니다.
 
 ## 관련 문서
 
 - [[README]]
-- [[api-conventions]]
+- [[backend-package-boundaries]]
+- [[backend-core-guide]]
 - [[dependency-injection]]
-- [[logging-guide]]
+- [[api-conventions]]
+- [[coding-standards]]
 - [[03-architecture/api-overview]]
-- [[03-architecture/domain-model]]
+- [[03-architecture/error-handling]]
 
 ## 출처
 
-- [App - Hono](https://hono.dev/docs/api/hono)
+- [OpenAPI RPC - Hono](https://hono.dev/examples/zod-openapi)
 - [Context - Hono](https://hono.dev/docs/api/context)
-- [Factory Helper - Hono](https://hono.dev/docs/helpers/factory)
-- [Validation - Hono](https://hono.dev/docs/guides/validation)
 - [Structuring a repository | Turborepo](https://turborepo.dev/docs/crafting-your-repository/structuring-a-repository)

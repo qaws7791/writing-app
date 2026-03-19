@@ -1,6 +1,6 @@
 ---
 title: API 개요
-description: 글쓰기 플랫폼의 웹 클라이언트와 백엔드를 연결하는 API의 책임, 경계, 주요 리소스 구조를 정의합니다.
+description: 글쓰기 플랫폼에서 apps/api가 backend-core와 인프라 패키지를 HTTP/OpenAPI 경계로 연결하는 방식을 정의합니다.
 ---
 
 ## API의 역할
@@ -15,10 +15,18 @@ API는 화면을 렌더링하지 않고, 다음 책임에 집중한다.
 
 ## 계층 경계
 
-- `apps/api`는 전송 계층이다.
+- `apps/api`는 HTTP 전송 계층이자 composition root다.
 - 라우트는 요청 파싱, 검증, 인증 확인, 응답 매핑까지만 담당한다.
-- 비즈니스 규칙은 애플리케이션 계층과 도메인 계층으로 이동한다.
-- 외부 AI, 스토리지, 데이터베이스 연결은 인프라 계층으로 분리한다.
+- 비즈니스 규칙은 `packages/backend-core`로 이동한다.
+- 외부 AI, 스토리지, 데이터베이스 연결은 `packages/ai`, `packages/storage`, `packages/db`로 분리한다.
+- 내부 표준은 구현이 아니라 포트와 계약 스키마에 의존하는 구조다.
+
+## 계약과 실행 흐름
+
+- API 계약에 쓰는 zod 스키마는 `packages/backend-core/modules/*/contracts`에 둔다.
+- `apps/api`는 `@hono/zod-openapi`의 `createRoute()`로 route를 선언한다.
+- 각 기능 모듈은 `new OpenAPIHono()`로 app을 만들고 `app.openapi()`로 handler를 연결한다.
+- handler는 HTTP 입력을 use case 입력으로 변환하고, presenter는 use case 결과를 HTTP 응답으로 변환한다.
 
 ## 버전 전략
 
@@ -89,7 +97,7 @@ API는 화면을 렌더링하지 않고, 다음 책임에 집중한다.
 - 목록 응답은 페이지네이션 또는 커서 기반 탐색을 지원한다.
 - UI 전용 문구는 가능한 한 서버보다 클라이언트에서 조합한다.
 - 오류 응답은 RFC 7807/9457 Problem Details 형식을 사용한다.
-- 초기 구현에서는 Problem Details의 필수 필드만 포함한다.
+- 내부 use case는 예외보다 `Result` 기반 실패 값을 우선 사용한다.
 
 ## 쓰기 요청의 특징
 
@@ -113,9 +121,12 @@ API는 화면을 렌더링하지 않고, 다음 책임에 집중한다.
 - AI가 글 전체를 대신 작성해 반환하는 기능
 - 앱 간 직접 상대 경로 의존을 전제로 한 API 설계
 - 사용자가 별도 파일 보관함처럼 임의의 파일을 업로드하는 기능
+- `apps/api` 안에 비즈니스 규칙이나 인프라 구현을 직접 누적하는 구조
 
 ## 관련 다이어그램
 
 - [[03-architecture/diagrams/system-context]]
 - [[03-architecture/diagrams/container-view]]
 - [[03-architecture/diagrams/writing-runtime-flow]]
+- [[04-engineering/backend-architecture-guide]]
+- [[04-engineering/backend-package-boundaries]]

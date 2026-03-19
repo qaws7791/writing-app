@@ -1,71 +1,102 @@
 ---
 title: 의존성 주입 가이드
-description: 백엔드 기능 구현 시 의존성을 어디서 조립하고 어디까지 전달할지에 대한 실용적인 기준입니다.
+description: 백엔드 패키지들을 인터페이스와 포트로 연결하고 apps/api에서 최종 조립하는 기준을 정의합니다.
 ---
 
 ## 상태
 
-- 기준 시점: 2026-03-19
-- 현재 `apps/api`에는 실제 의존성 주입 구조가 아직 없습니다.
-- 백엔드가 미구현 상태이므로, 이 문서는 초기 설계 기준을 제공합니다.
+- 기준 시점: 2026-03-20
+- 현재 저장소에는 실제 DI 조립 코드가 아직 없습니다.
+- 이 문서는 `apps/api`, `backend-core`, `db`, `storage`, `ai` 패키지 분리 이후의 표준 조립 방식을 설명합니다.
 
 ## 기본 원칙
 
-- 의존성은 route handler 안에서 직접 생성하지 않고 composition root에서 조립합니다.
-- 도메인과 애플리케이션 계층은 인터페이스 또는 port에 의존합니다.
-- Hono `Context`는 요청 메타데이터 전달용이지, 비즈니스 의존성 컨테이너가 아닙니다.
-- 현재 단계에서는 DI 컨테이너보다 수동 주입을 우선합니다.
+- 비즈니스 코드는 구현체가 아니라 포트 타입에 의존합니다.
+- 포트는 `packages/backend-core`에 둡니다.
+- 구현체는 `packages/db`, `packages/storage`, `packages/ai`에 둡니다.
+- 최종 조립은 `apps/api`의 composition root에서 끝냅니다.
+- Hono `Context`는 요청 메타데이터 전달용이며, 범용 서비스 로케이터로 쓰지 않습니다.
 
-## 권장 조립 지점
+## 조립 위치
 
-- `src/app.ts`: 공용 인프라와 feature 라우터를 조립하는 최상위 지점
-- `features/*/presentation`: feature 라우터 팩토리
-- `features/*/application`: use case에 필요한 port 정의
-- `features/*/infrastructure`: port 구현체 생성
+### `packages/backend-core`
+
+- 포트 타입 정의
+- use case factory 또는 use case 함수 정의
+
+### 인프라 패키지
+
+- 포트 구현체 생성
+- 외부 SDK client bootstrap
+- provider, repository, adapter factory
+
+### `apps/api`
+
+- 앱 시작 시 장수명 dependency 생성
+- 모듈별 dependency 묶음 조립
+- handler에 use case 주입
+- 요청 스코프 값과 장수명 객체 연결
+
+## 요청 스코프와 장수명 dependency
+
+### 요청 스코프
+
+- `requestId`
+- 인증 주체
+- 권한 스냅샷
+- locale 같은 요청 메타데이터
+
+이 값들은 Hono `Context`에 둘 수 있습니다.
+
+### 장수명 dependency
+
+- DB client
+- repository factory
+- storage adapter
+- AI adapter
+- logger
+- clock, id generator의 기본 구현체
+
+이 값들은 앱 시작 시 생성해 조립합니다.
 
 ## 권장 패턴
 
 ```ts
-type WritingSummary = {
-  id: string
-  title: string
+type CreateWritingDeps = {
+  saveWriting: WritingRepository["save"]
+  getNow: Clock["now"]
+  createId: IdGenerator["create"]
 }
 
-type WritingRoutesDeps = {
-  listWritings: () => Promise<WritingSummary[]>
-}
-
-export function createWritingRoutes(deps: WritingRoutesDeps) {
-  const app = new Hono()
-  app.get("/", async (c) => c.json({ items: await deps.listWritings() }))
-  return app
-}
+export const createCreateWritingUseCase =
+  (deps: CreateWritingDeps) => (input: CreateWritingInput) =>
+    pipe(
+      buildWriting(input, deps.createId, deps.getNow),
+      ResultAsync.fromResult,
+      ResultAsync.andThen((writing) => deps.saveWriting(writing))
+    )
 ```
 
-이 패턴의 핵심은 "라우터는 필요한 기능만 인자로 받고, 구현체 선택은 상위에서 끝낸다"는 점입니다.
+핵심은 use case가 구현체를 직접 만들지 않고, 필요한 동작만 타입으로 받아 조합한다는 점입니다.
 
-## 요청 스코프 값 처리
+## 하지 않는 것
 
-- `requestId`, 인증 주체, 권한 스냅샷처럼 요청마다 달라지는 값만 `c.set()` / `c.get()`으로 전달합니다.
-- 저장소, AI 클라이언트, 파일 저장 어댑터 같은 장수명 의존성은 앱 시작 시 생성해 주입합니다.
-- 애플리케이션 계층 함수 시그니처에는 가능하면 Hono `Context`를 직접 노출하지 않습니다.
+- route handler 안에서 `new` 체인으로 구현체 생성
+- `backend-core`가 `db`, `storage`, `ai` 패키지를 직접 import
+- 전역 mutable singleton으로 상태 공유
+- 테스트만 위해 존재하는 과도한 추상화
 
-## 도입하지 않는 것
+## 검토 기준
 
-- 전역 mutable singleton
-- feature 내부에서 숨겨진 `new` 체인
-- 모든 기능을 한 번에 넣는 대형 DI 컨테이너
-- 테스트 때문에만 존재하는 과도한 추상화
+- 포트는 `backend-core`
+- 구현은 인프라 패키지
+- 조립은 `apps/api`
+- 요청 값과 장수명 객체의 수명이 구분되어야 합니다.
 
 ## 관련 문서
 
 - [[README]]
 - [[backend-architecture-guide]]
+- [[backend-package-boundaries]]
+- [[backend-core-guide]]
 - [[api-conventions]]
-- [[logging-guide]]
-
-## 출처
-
-- [Context - Hono](https://hono.dev/docs/api/context)
-- [Factory Helper - Hono](https://hono.dev/docs/helpers/factory)
-- [Structuring a repository | Turborepo](https://turborepo.dev/docs/crafting-your-repository/structuring-a-repository)
