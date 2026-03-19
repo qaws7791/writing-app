@@ -1,6 +1,9 @@
-import app from "./app"
+import { createApiDependencies, readApiEnvironment } from "./bootstrap.js"
+
+const environment = readApiEnvironment()
+const { app } = createApiDependencies(environment)
 
 export default {
-  port: 3010,
   fetch: app.fetch,
+  port: environment.port,
 }
