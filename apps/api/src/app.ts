@@ -18,10 +18,13 @@ import {
   promptIdSchema,
 } from "./http/schemas.js"
 import { UnauthorizedError } from "./http/unauthorized-error.js"
+import type { ApiLogger } from "./logger.js"
 
 type ApiVariables = {
   authSession: AuthenticatedSession | null
   authUser: AuthenticatedUser | null
+  requestId: string
+  requestLogger: ApiLogger
   userId: ReturnType<typeof toUserId> | null
 }
 
@@ -60,6 +63,7 @@ type AppServices = {
   draftUseCases: ReturnType<typeof createDraftUseCases>
   getSession: (request: Request) => Promise<AuthSession | null>
   homeUseCases: ReturnType<typeof createHomeUseCases>
+  logger: ApiLogger
   promptUseCases: ReturnType<typeof createPromptUseCases>
   readLatestAuthEmail: (input: {
     email: string
@@ -88,6 +92,10 @@ function currentUserId(
   return userId
 }
 
+function createRequestId(): string {
+  return crypto.randomUUID()
+}
+
 export function createApp(services: AppServices): ApiApp {
   const app: ApiApp = new Hono()
   const allowedOrigins = new Set([
@@ -112,6 +120,41 @@ export function createApp(services: AppServices): ApiApp {
   )
 
   app.use("*", async (context, next) => {
+    const startedAt = Date.now()
+    const requestId =
+      context.req.header("x-request-id")?.trim() || createRequestId()
+    const requestLogger = services.logger.child({
+      method: context.req.method,
+      path: context.req.path,
+      requestId,
+      scope: "http",
+    })
+
+    context.set("requestId", requestId)
+    context.set("requestLogger", requestLogger)
+    context.header("x-request-id", requestId)
+    requestLogger.info("request started")
+
+    let responseStatus = 500
+
+    try {
+      await next()
+      responseStatus = context.res.status
+    } catch (error) {
+      responseStatus = toErrorResponse(error).status
+      throw error
+    } finally {
+      requestLogger.info(
+        {
+          durationMs: Date.now() - startedAt,
+          status: responseStatus,
+        },
+        "request completed"
+      )
+    }
+  })
+
+  app.use("*", async (context, next) => {
     const authSession = await services.getSession(context.req.raw)
 
     if (!authSession) {
@@ -130,6 +173,34 @@ export function createApp(services: AppServices): ApiApp {
 
   app.onError((error, context) => {
     const response = toErrorResponse(error)
+    const requestLogger =
+      context.get("requestLogger") ??
+      services.logger.child({
+        method: context.req.method,
+        path: context.req.path,
+        requestId: context.get("requestId"),
+        scope: "http",
+      })
+
+    const logPayload =
+      error instanceof Error
+        ? {
+            code: response.body.error.code,
+            err: error,
+            status: response.status,
+          }
+        : {
+            code: response.body.error.code,
+            error,
+            status: response.status,
+          }
+
+    if (response.status >= 500) {
+      requestLogger.error(logPayload, "request failed")
+    } else {
+      requestLogger.warn(logPayload, "request failed")
+    }
+
     return context.json(
       response.body,
       response.status as 400 | 401 | 403 | 404 | 500

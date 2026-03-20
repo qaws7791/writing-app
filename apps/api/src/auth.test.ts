@@ -6,11 +6,11 @@ import {
   createEmptyDraftContent,
   toDraftId,
   toPromptId,
-  toUserId,
 } from "@workspace/domain"
 
 import { createApp } from "./app.js"
 import { createAuthEmailPort } from "./auth-email.js"
+import { createSilentLogger } from "./logger.js"
 
 type TestApp = ReturnType<typeof createApp>
 
@@ -23,7 +23,10 @@ afterEach(() => {
 })
 
 function setup(): { app: TestApp } {
-  const emailPort = createAuthEmailPort()
+  const emailPort = createAuthEmailPort({
+    exposeSensitiveData: true,
+    logger: createSilentLogger(),
+  })
   const auth = betterAuth({
     baseURL: "http://127.0.0.1:3010/api/auth",
     database: memoryAdapter({
@@ -130,6 +133,7 @@ function setup(): { app: TestApp } {
         }
       },
     },
+    logger: createSilentLogger(),
     promptUseCases: {
       async getPrompt() {
         return {

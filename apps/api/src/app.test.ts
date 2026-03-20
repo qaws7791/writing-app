@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "vitest"
 
 import { createTestApi } from "./test-support/create-test-app.js"
+import { createCapturedLogger } from "./test-support/capture-logger.js"
 
 const createdApps: Array<ReturnType<typeof createTestApi>> = []
 
@@ -477,5 +478,93 @@ describe("fallbacks", () => {
 
     expect(response.status).toBe(404)
     expect(body.error.code).toBe("not_found")
+  })
+})
+
+describe("logging", () => {
+  test("logs request lifecycle and reuses request ids", async () => {
+    const { entries, logger } = createCapturedLogger()
+    const api = createTestApi({
+      logger,
+    })
+    createdApps.push(api)
+
+    const response = await api.app.request("/health", {
+      headers: {
+        "x-request-id": "req-123",
+      },
+    })
+
+    const started = entries.find((entry) => entry.msg === "request started")
+    const completed = entries.find((entry) => entry.msg === "request completed")
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("x-request-id")).toBe("req-123")
+    expect(started).toEqual(
+      expect.objectContaining({
+        level: 30,
+        method: "GET",
+        path: "/health",
+        requestId: "req-123",
+        scope: "http",
+      })
+    )
+    expect(completed).toEqual(
+      expect.objectContaining({
+        level: 30,
+        requestId: "req-123",
+        status: 200,
+      })
+    )
+    expect(completed?.durationMs).toEqual(expect.any(Number))
+  })
+
+  test("logs 4xx errors at warn level", async () => {
+    const { entries, logger } = createCapturedLogger()
+    const api = createTestApi({
+      logger,
+    })
+    createdApps.push(api)
+
+    const response = await api.app.request("/prompts?saved=maybe")
+    const failed = entries.find((entry) => entry.msg === "request failed")
+
+    expect(response.status).toBe(400)
+    expect(failed).toEqual(
+      expect.objectContaining({
+        code: "validation_error",
+        level: 40,
+        status: 400,
+      })
+    )
+  })
+
+  test("logs 5xx errors at error level", async () => {
+    const { entries, logger } = createCapturedLogger()
+    const api = createTestApi({
+      homeError: new Error("boom"),
+      logger,
+    })
+    createdApps.push(api)
+
+    const response = await api.app.request("/home")
+    const body = await readJson<{ error: { code: string } }>(response)
+    const failed = entries.find((entry) => entry.msg === "request failed")
+
+    expect(response.status).toBe(500)
+    expect(body.error.code).toBe("internal_error")
+    expect(failed).toEqual(
+      expect.objectContaining({
+        code: "internal_error",
+        level: 50,
+        status: 500,
+      })
+    )
+    expect(failed?.err).toEqual(
+      expect.objectContaining({
+        message: "boom",
+        type: "Error",
+      })
+    )
   })
 })

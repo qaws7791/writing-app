@@ -8,6 +8,7 @@ import {
 import { ForbiddenError, NotFoundError } from "@workspace/application"
 
 import { createApp } from "../app.js"
+import { createSilentLogger, type ApiLogger } from "../logger.js"
 
 type TestPrompt = {
   description: string
@@ -170,7 +171,10 @@ function createTestSession(userId: string) {
   }
 }
 
-export function createTestApi() {
+export function createTestApi(input?: {
+  homeError?: Error
+  logger?: ApiLogger
+}) {
   const prompts = seedPrompts.map((prompt) => ({ ...prompt }))
   const drafts: StoredDraft[] = []
   let nextDraftId = 1
@@ -326,6 +330,10 @@ export function createTestApi() {
     },
     homeUseCases: {
       async getHome(userId) {
+        if (input?.homeError) {
+          throw input.homeError
+        }
+
         const recentDrafts = drafts
           .filter((draft) => draft.ownerId === userId)
           .sort((left, right) =>
@@ -374,6 +382,7 @@ export function createTestApi() {
         }
       },
     },
+    logger: input?.logger ?? createSilentLogger(),
     promptUseCases: {
       async getPrompt(_userId, promptId) {
         const prompt = findPrompt(Number(promptId))
