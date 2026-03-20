@@ -3,7 +3,6 @@ import {
   createHomeUseCases,
   createPromptUseCases,
 } from "@workspace/application"
-import { toUserId } from "@workspace/domain"
 import {
   closeSqliteDatabase,
   createSchema,
@@ -15,13 +14,16 @@ import {
 } from "@workspace/infrastructure"
 
 import { createApp } from "./app.js"
+import { createAuth, ensureAuthTables } from "./auth.js"
+import { createAuthEmailPort } from "./auth-email.js"
 import { apiEnv } from "./env.js"
 
 export type ApiEnvironment = {
+  authBaseUrl: string
+  authSecret: string
   databasePath: string
-  devUserId: string
-  devUserNickname: string
   port: number
+  webBaseUrl: string
 }
 
 export type AppDependencies = {
@@ -32,24 +34,25 @@ export type AppDependencies = {
 
 export function readApiEnvironment(): ApiEnvironment {
   return {
+    authBaseUrl: apiEnv.API_AUTH_BASE_URL,
+    authSecret: apiEnv.API_AUTH_SECRET,
     databasePath: apiEnv.API_DATABASE_PATH,
-    devUserId: apiEnv.API_DEV_USER_ID,
-    devUserNickname: apiEnv.API_DEV_USER_NICKNAME,
     port: apiEnv.API_PORT,
+    webBaseUrl: apiEnv.API_WEB_BASE_URL,
   }
 }
 
-export function createApiDependencies(
+export async function createApiDependencies(
   environment: ApiEnvironment
-): AppDependencies {
+): Promise<AppDependencies> {
   const database = openSqliteDatabase(environment.databasePath)
   const { sqliteVersion } = ensureSqliteJsonbSupport(database)
+  const authEmailPort = createAuthEmailPort()
+  const auth = createAuth(database, environment, authEmailPort)
 
+  await ensureAuthTables(auth)
   createSchema(database)
-  seedDatabase(database, {
-    nickname: environment.devUserNickname,
-    userId: toUserId(environment.devUserId),
-  })
+  seedDatabase(database)
 
   const promptRepository = new SqlitePromptRepository(database)
   const draftRepository = new SqliteDraftRepository(database)
@@ -60,13 +63,21 @@ export function createApiDependencies(
 
   return {
     app: createApp({
+      allowedOrigins: [environment.webBaseUrl],
+      authDebugEnabled: process.env.NODE_ENV !== "production",
+      authHandler: auth.handler,
       draftUseCases,
+      getSession: (request) =>
+        auth.api.getSession({ headers: request.headers }),
       homeUseCases,
       promptUseCases,
+      readLatestAuthEmail: authEmailPort.readLatestMessage,
       sqliteVersion,
-      userId: environment.devUserId,
     }),
-    close: () => closeSqliteDatabase(database),
+    close: () => {
+      authEmailPort.clear()
+      closeSqliteDatabase(database)
+    },
     sqliteVersion,
   }
 }

@@ -11,6 +11,7 @@ import {
   phaseOneStorageKeys,
   type StorageLike,
 } from "./phase-one-storage"
+import { resolveBrowserApiBaseUrl } from "./api-base-url"
 import { env } from "@/env"
 import type {
   DraftContent,
@@ -50,11 +51,13 @@ type PhaseOneRepository = {
 }
 
 type RemoteApiError = Error & {
+  code?: "remote_api_error" | "unauthorized"
   status: number
 }
 
 function createRemoteApiError(status: number, message: string): RemoteApiError {
   const error = new Error(message) as RemoteApiError
+  error.code = status === 401 ? "unauthorized" : "remote_api_error"
   error.status = status
   return error
 }
@@ -382,6 +385,7 @@ function createRemotePhaseOneRepository(
   ): Promise<TResponse> => {
     const response = await fetch(`${apiBaseUrl}${path}`, {
       ...init,
+      credentials: "include",
       headers: {
         ...(init?.body ? { "content-type": "application/json" } : {}),
         ...init?.headers,
@@ -468,7 +472,7 @@ function resolveApiBaseUrl(explicitBaseUrl?: string): string | null {
     return null
   }
 
-  return envBaseUrl.replace(/\/$/, "")
+  return resolveBrowserApiBaseUrl(envBaseUrl)
 }
 
 function resolveRepositoryMode(

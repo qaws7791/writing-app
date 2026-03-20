@@ -148,6 +148,28 @@ function toPreview(plainText: string): string {
   return plainText.length <= 120 ? plainText : `${plainText.slice(0, 120)}...`
 }
 
+function createTestSession(userId: string) {
+  return {
+    session: {
+      createdAt: "2026-03-20T00:00:00.000Z",
+      expiresAt: "2026-03-27T00:00:00.000Z",
+      id: `session-${userId}`,
+      ipAddress: null,
+      token: `token-${userId}`,
+      updatedAt: "2026-03-20T00:00:00.000Z",
+      userAgent: "vitest",
+      userId,
+    },
+    user: {
+      email: `${userId}@example.com`,
+      emailVerified: true,
+      id: userId,
+      image: null,
+      name: "테스트 사용자",
+    },
+  }
+}
+
 export function createTestApi() {
   const prompts = seedPrompts.map((prompt) => ({ ...prompt }))
   const drafts: StoredDraft[] = []
@@ -174,6 +196,23 @@ export function createTestApi() {
   }
 
   const app = createApp({
+    allowedOrigins: ["http://127.0.0.1:3000", "http://localhost:3000"],
+    authDebugEnabled: false,
+    authHandler: async () =>
+      new Response(
+        JSON.stringify({
+          error: {
+            code: "not_found",
+            message: "테스트 인증 핸들러가 구성되지 않았습니다.",
+          },
+        }),
+        {
+          headers: {
+            "content-type": "application/json",
+          },
+          status: 404,
+        }
+      ),
     draftUseCases: {
       async autosaveDraft(userId, draftId, input) {
         const current = drafts.find((draft) => draft.id === Number(draftId))
@@ -276,6 +315,14 @@ export function createTestApi() {
             wordCount: draft.wordCount,
           }))
       },
+    },
+    getSession: async (request) => {
+      if (request.headers.get("x-test-auth") === "none") {
+        return null
+      }
+
+      const userId = request.headers.get("x-test-user-id") ?? "dev-user"
+      return createTestSession(userId)
     },
     homeUseCases: {
       async getHome(userId) {
@@ -403,8 +450,8 @@ export function createTestApi() {
         prompt.saved = false
       },
     },
+    readLatestAuthEmail: () => null,
     sqliteVersion: "3.46.0",
-    userId: "dev-user",
   })
 
   return {

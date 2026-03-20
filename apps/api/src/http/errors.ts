@@ -4,6 +4,8 @@ import {
   ValidationError,
 } from "@workspace/application"
 
+import { UnauthorizedError } from "./unauthorized-error.js"
+
 export type ErrorPayload = {
   error: {
     code: string
@@ -49,6 +51,18 @@ export function toErrorResponse(error: unknown): {
         },
       },
       status: 403,
+    }
+  }
+
+  if (error instanceof UnauthorizedError) {
+    return {
+      body: {
+        error: {
+          code: "unauthorized",
+          message: error.message,
+        },
+      },
+      status: 401,
     }
   }
 

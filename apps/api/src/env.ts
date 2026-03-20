@@ -5,9 +5,10 @@ export const apiEnv = createEnv({
   emptyStringAsUndefined: true,
   runtimeEnv: process.env,
   server: {
+    API_AUTH_BASE_URL: z.string().url(),
+    API_AUTH_SECRET: z.string().min(32),
     API_DATABASE_PATH: z.string().min(1),
-    API_DEV_USER_ID: z.string().min(1),
-    API_DEV_USER_NICKNAME: z.string().min(1),
     API_PORT: z.coerce.number().int().min(1).max(65535),
+    API_WEB_BASE_URL: z.string().url(),
   },
 })

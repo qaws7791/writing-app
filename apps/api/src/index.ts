@@ -1,7 +1,7 @@
 import { createApiDependencies, readApiEnvironment } from "./bootstrap.js"
 
 const environment = readApiEnvironment()
-const { app } = createApiDependencies(environment)
+const { app } = await createApiDependencies(environment)
 
 export default {
   fetch: app.fetch,

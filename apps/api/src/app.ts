@@ -17,29 +17,75 @@ import {
   promptFiltersSchema,
   promptIdSchema,
 } from "./http/schemas.js"
+import { UnauthorizedError } from "./http/unauthorized-error.js"
+
+type ApiVariables = {
+  authSession: AuthenticatedSession | null
+  authUser: AuthenticatedUser | null
+  userId: ReturnType<typeof toUserId> | null
+}
 
 type ApiApp = Hono<{
-  Variables: {
-    userId: ReturnType<typeof toUserId>
-  }
+  Variables: ApiVariables
 }>
 
+type AuthenticatedSession = {
+  createdAt: Date | string
+  expiresAt: Date | string
+  id: string
+  ipAddress?: string | null
+  token: string
+  updatedAt: Date | string
+  userAgent?: string | null
+  userId: string
+}
+
+type AuthenticatedUser = {
+  email: string
+  emailVerified: boolean
+  id: string
+  image?: string | null
+  name: string
+}
+
+type AuthSession = {
+  session: AuthenticatedSession
+  user: AuthenticatedUser
+}
+
 type AppServices = {
+  allowedOrigins: string[]
+  authDebugEnabled: boolean
+  authHandler: (request: Request) => Promise<Response>
   draftUseCases: ReturnType<typeof createDraftUseCases>
+  getSession: (request: Request) => Promise<AuthSession | null>
   homeUseCases: ReturnType<typeof createHomeUseCases>
   promptUseCases: ReturnType<typeof createPromptUseCases>
+  readLatestAuthEmail: (input: {
+    email: string
+    kind: "password-reset" | "verification"
+  }) => {
+    email: string
+    kind: "password-reset" | "verification"
+    sentAt: string
+    token: string
+    url: string
+  } | null
   sqliteVersion: string
-  userId: string
 }
 
 function currentUserId(
   context: Context<{
-    Variables: {
-      userId: ReturnType<typeof toUserId>
-    }
+    Variables: ApiVariables
   }>
 ): ReturnType<typeof toUserId> {
-  return context.get("userId")
+  const userId = context.get("userId")
+
+  if (!userId) {
+    throw new UnauthorizedError("로그인이 필요합니다.")
+  }
+
+  return userId
 }
 
 export function createApp(services: AppServices): ApiApp {
@@ -47,18 +93,14 @@ export function createApp(services: AppServices): ApiApp {
   const allowedOrigins = new Set([
     "http://127.0.0.1:3000",
     "http://localhost:3000",
+    ...services.allowedOrigins,
   ])
-
-  app.use("*", async (context, next) => {
-    context.set("userId", toUserId(services.userId))
-    await next()
-  })
 
   app.use(
     "*",
     cors({
       allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
-      credentials: false,
+      credentials: true,
       origin: (origin) => {
         if (!origin) {
           return "*"
@@ -69,9 +111,29 @@ export function createApp(services: AppServices): ApiApp {
     })
   )
 
+  app.use("*", async (context, next) => {
+    const authSession = await services.getSession(context.req.raw)
+
+    if (!authSession) {
+      context.set("authSession", null)
+      context.set("authUser", null)
+      context.set("userId", null)
+      await next()
+      return
+    }
+
+    context.set("authSession", authSession.session)
+    context.set("authUser", authSession.user)
+    context.set("userId", toUserId(authSession.user.id))
+    await next()
+  })
+
   app.onError((error, context) => {
     const response = toErrorResponse(error)
-    return context.json(response.body, response.status as 400 | 403 | 404 | 500)
+    return context.json(
+      response.body,
+      response.status as 400 | 401 | 403 | 404 | 500
+    )
   })
 
   app.get("/health", (context) => {
@@ -81,6 +143,78 @@ export function createApp(services: AppServices): ApiApp {
       status: "ok",
     })
   })
+
+  app.on(["GET", "POST"], "/api/auth/*", (context) =>
+    services.authHandler(context.req.raw)
+  )
+
+  app.get("/session", (context) => {
+    const user = context.get("authUser")
+    const session = context.get("authSession")
+
+    if (!user || !session) {
+      throw new UnauthorizedError("로그인이 필요합니다.")
+    }
+
+    return context.json({
+      session,
+      user,
+    })
+  })
+
+  if (services.authDebugEnabled) {
+    app.get("/dev/auth-emails", (context) => {
+      const email = String(context.req.query("email") ?? "").trim()
+      const kind = context.req.query("kind")
+
+      if (!email || (kind !== "password-reset" && kind !== "verification")) {
+        return context.json(
+          {
+            error: {
+              code: "validation_error",
+              message: "email과 kind가 필요합니다.",
+            },
+          },
+          400
+        )
+      }
+
+      const message = services.readLatestAuthEmail({
+        email,
+        kind,
+      })
+
+      if (!message) {
+        return context.json(
+          {
+            error: {
+              code: "not_found",
+              message: "전송된 인증 메일을 찾을 수 없습니다.",
+            },
+          },
+          404
+        )
+      }
+
+      return context.json(message)
+    })
+  }
+
+  for (const protectedPath of [
+    "/home",
+    "/prompts",
+    "/prompts/*",
+    "/drafts",
+    "/drafts/*",
+  ] as const) {
+    app.use(protectedPath, async (context, next) => {
+      if (!context.get("userId")) {
+        throw new UnauthorizedError("로그인이 필요합니다.")
+      }
+
+      await next()
+    })
+  }
 
   app.get("/home", async (context) => {
     const userId = currentUserId(context)

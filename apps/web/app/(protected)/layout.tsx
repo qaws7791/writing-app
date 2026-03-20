@@ -1,11 +1,14 @@
 import GlobalNavigation from "@/components/global-navigation"
 import React from "react"
+import { redirectIfProtectedAccessMissing } from "@/lib/server-auth"
 
-export default function layout({
+export default async function layout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  await redirectIfProtectedAccessMissing()
+
   return (
     <div className="flex min-h-screen">
       <GlobalNavigation />

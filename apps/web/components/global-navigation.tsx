@@ -9,9 +9,11 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
+import { AuthSignOutButton } from "@/components/auth-sign-out-button"
+
 const links = [
   {
-    href: "/",
+    href: "/home",
     icon: Home01Icon,
     label: "홈",
   },
@@ -40,8 +42,8 @@ export default function GlobalNavigation() {
         <div className="my-auto flex flex-col gap-4">
           {links.map((link) => {
             const isActive =
-              link.href === "/"
-                ? pathname === "/"
+              link.href === "/home"
+                ? pathname === "/home"
                 : pathname.startsWith(link.href)
 
             return (
@@ -65,6 +67,9 @@ export default function GlobalNavigation() {
             )
           })}
         </div>
+        <div className="mb-6">
+          <AuthSignOutButton />
+        </div>
       </nav>
 
       {/* 모바일: 바텀 네비게이션 (md 미만) */}
@@ -77,8 +82,8 @@ export default function GlobalNavigation() {
           <div className="flex items-center justify-around py-2">
             {links.map((link) => {
               const isActive =
-                link.href === "/"
-                  ? pathname === "/"
+                link.href === "/home"
+                  ? pathname === "/home"
                   : pathname.startsWith(link.href)
 
               return (
@@ -108,6 +113,7 @@ export default function GlobalNavigation() {
                 </Link>
               )
             })}
+            <AuthSignOutButton />
           </div>
         </div>
       </nav>

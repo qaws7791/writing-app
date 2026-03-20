@@ -27,24 +27,69 @@ function createDraftContent(text: string) {
   }
 }
 
+async function buildApiCookieHeader(page: Page): Promise<string> {
+  const cookies = await page.context().cookies("http://127.0.0.1:3010")
+
+  return cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join("; ")
+}
+
 async function createDraftViaApi(
   request: APIRequestContext,
+  page: Page,
   input: {
     bodyText?: string
     sourcePromptId?: number
     title?: string
   }
 ) {
+  const cookie = await buildApiCookieHeader(page)
   const response = await request.post("http://127.0.0.1:3010/drafts", {
     data: {
       content: input.bodyText ? createDraftContent(input.bodyText) : undefined,
       sourcePromptId: input.sourcePromptId,
       title: input.title,
     },
+    headers: {
+      cookie,
+    },
   })
 
   expect(response.ok()).toBeTruthy()
   return response.json()
+}
+
+async function signUpAndLogin(
+  page: Page,
+  request: APIRequestContext,
+  testInfo: TestInfo
+) {
+  const token = createUniqueToken(testInfo)
+  const email = `writer-${token}@example.com`
+  const password = "password1234"
+
+  await page.goto("/sign-up")
+  await page.getByLabel("이름").fill("테스트 작성자")
+  await page.getByLabel("이메일").fill(email)
+  await page.getByLabel("비밀번호").fill(password)
+  await page.getByRole("button", { name: "인증 메일 보내기" }).click()
+
+  await expect(page.getByText("인증 메일을 보냈습니다.")).toBeVisible()
+
+  const verificationResponse = await request.get(
+    `http://127.0.0.1:3010/dev/auth-emails?kind=verification&email=${encodeURIComponent(email)}`
+  )
+  const verificationBody = (await verificationResponse.json()) as {
+    url: string
+  }
+
+  await request.get(verificationBody.url)
+
+  await page.goto("/sign-in?verified=1")
+  await page.getByLabel("이메일").fill(email)
+  await page.getByLabel("비밀번호").fill(password)
+  await page.getByRole("button", { name: "로그인" }).click()
+
+  await expect(page).toHaveURL(/\/home$/)
 }
 
 async function writeBody(page: Page, body: string) {
@@ -56,11 +101,13 @@ test("home prompt to editor and resume flow", async ({
   page,
   request,
 }, testInfo) => {
+  await signUpAndLogin(page, request, testInfo)
+
   const token = createUniqueToken(testInfo)
   const title = `phase-one-home-${token}`
   const body = `home-body-${token}`
 
-  await page.goto("/")
+  await page.goto("/home")
 
   await expect(
     page.getByRole("link", { name: /최근에 내 생각이 바뀐 순간은\?/i })
@@ -78,7 +125,7 @@ test("home prompt to editor and resume flow", async ({
     page.getByText("최근에 내 생각이 바뀐 순간은?").first()
   ).toBeVisible()
 
-  const draft = await createDraftViaApi(request, {
+  const draft = await createDraftViaApi(request, page, {
     bodyText: body,
     sourcePromptId: 1,
     title,
@@ -95,14 +142,19 @@ test("home prompt to editor and resume flow", async ({
   await page.goto("/write")
   await expect(page.getByText(title).first()).toBeVisible()
 
-  await page.goto("/")
+  await page.goto("/home")
   await expect(
     page.locator(`a[href="/write/${draft.id}"]`).first()
   ).toBeVisible()
   await expect(page.getByText(title).first()).toBeVisible()
 })
 
-test("prompt discovery search save detail and write flow", async ({ page }) => {
+test("prompt discovery search save detail and write flow", async ({
+  page,
+  request,
+}, testInfo) => {
+  await signUpAndLogin(page, request, testInfo)
+
   await page.goto("/prompts")
 
   await page.getByPlaceholder("주제, 키워드, 감정으로 검색").fill("AI")
@@ -147,10 +199,12 @@ test("create draft from list and delete it", async ({
   page,
   request,
 }, testInfo) => {
+  await signUpAndLogin(page, request, testInfo)
+
   const token = createUniqueToken(testInfo)
   const title = `phase-one-delete-${token}`
 
-  const draft = await createDraftViaApi(request, {
+  const draft = await createDraftViaApi(request, page, {
     title,
   })
 
@@ -170,12 +224,14 @@ test("reopen existing draft and expose it as latest resume target", async ({
   page,
   request,
 }, testInfo) => {
+  await signUpAndLogin(page, request, testInfo)
+
   const token = createUniqueToken(testInfo)
   const title = `phase-one-resume-${token}`
   const initialBody = `resume-initial-${token}`
   const updatedBody = `resume-updated-${token}`
 
-  const draft = await createDraftViaApi(request, {
+  const draft = await createDraftViaApi(request, page, {
     bodyText: initialBody,
     title,
   })
@@ -196,7 +252,7 @@ test("reopen existing draft and expose it as latest resume target", async ({
     page.locator("[data-writing-body] .ProseMirror").first()
   ).toContainText(updatedBody)
 
-  await page.goto("/")
+  await page.goto("/home")
   await expect(
     page.locator(`a[href="/write/${draft.id}"]`).first()
   ).toBeVisible()

@@ -1,28 +1,9 @@
 import type { Database } from "bun:sqlite"
-import { toUserId, type UserId } from "@workspace/domain"
 
 import { seedPrompts } from "./seed-data.js"
 
-export function seedDatabase(
-  database: Database,
-  options?: {
-    nickname?: string
-    userId?: UserId
-  }
-): void {
-  const userId = options?.userId ?? toUserId("dev-user")
-  const nickname = options?.nickname ?? "테스트 사용자"
+export function seedDatabase(database: Database): void {
   const now = new Date().toISOString()
-
-  const insertUser = database.query(
-    `
-      insert into users (id, nickname, created_at)
-      values (?, ?, ?)
-      on conflict(id) do update set nickname = excluded.nickname
-    `
-  )
-
-  insertUser.run(userId, nickname, now)
 
   const insertPrompt = database.query(
     `

@@ -19,17 +19,103 @@ import {
 } from "./sqlite-database.js"
 import { SqliteDraftRepository } from "./sqlite-draft-repository.js"
 import { SqlitePromptRepository } from "./sqlite-prompt-repository.js"
+import { seedPrompts } from "./seed-data.js"
 import { seedDatabase } from "./sqlite-seed.js"
+
+function createAuthTables(database: Database): void {
+  database.exec(`
+    create table if not exists "user" (
+      "id" text not null primary key,
+      "name" text not null,
+      "email" text not null unique,
+      "emailVerified" integer not null,
+      "image" text,
+      "createdAt" text not null,
+      "updatedAt" text not null
+    ) strict;
+
+    create table if not exists "session" (
+      "id" text not null primary key,
+      "expiresAt" text not null,
+      "token" text not null unique,
+      "createdAt" text not null,
+      "updatedAt" text not null,
+      "ipAddress" text,
+      "userAgent" text,
+      "userId" text not null references "user" ("id") on delete cascade
+    ) strict;
+
+    create table if not exists "account" (
+      "id" text not null primary key,
+      "accountId" text not null,
+      "providerId" text not null,
+      "userId" text not null references "user" ("id") on delete cascade,
+      "accessToken" text,
+      "refreshToken" text,
+      "idToken" text,
+      "accessTokenExpiresAt" text,
+      "refreshTokenExpiresAt" text,
+      "scope" text,
+      "password" text,
+      "createdAt" text not null,
+      "updatedAt" text not null
+    ) strict;
+
+    create table if not exists "verification" (
+      "id" text not null primary key,
+      "identifier" text not null,
+      "value" text not null,
+      "expiresAt" text not null,
+      "createdAt" text not null,
+      "updatedAt" text not null
+    ) strict;
+
+    create index if not exists "session_userId_idx" on "session" ("userId");
+    create index if not exists "account_userId_idx" on "account" ("userId");
+    create index if not exists "verification_identifier_idx" on "verification" ("identifier");
+  `)
+}
+
+function seedAuthUser(
+  database: Database,
+  input: {
+    email: string
+    name: string
+    userId: string
+  }
+): void {
+  const now = new Date().toISOString()
+
+  database
+    .query(
+      `
+        insert into "user" (
+          id,
+          name,
+          email,
+          emailVerified,
+          image,
+          createdAt,
+          updatedAt
+        )
+        values (?, ?, ?, ?, ?, ?, ?)
+      `
+    )
+    .run(input.userId, input.name, input.email, 1, null, now, now)
+}
 
 function createTestDatabase(): { database: Database; close: () => void } {
   const directory = mkdtempSync(join(tmpdir(), "writing-infra-"))
   const database = openSqliteDatabase(join(directory, "test.sqlite"))
   ensureSqliteJsonbSupport(database)
+  createAuthTables(database)
   createSchema(database)
-  seedDatabase(database, {
-    nickname: "테스트 사용자",
-    userId: toUserId("dev-user"),
+  seedAuthUser(database, {
+    email: "dev-user@example.com",
+    name: "테스트 사용자",
+    userId: "dev-user",
   })
+  seedDatabase(database)
 
   return {
     database,
@@ -38,19 +124,16 @@ function createTestDatabase(): { database: Database; close: () => void } {
 }
 
 describe("sqlite repositories", () => {
-  test("seed is idempotent and updates the dev user nickname", () => {
+  test("seed is idempotent and preserves prompt rows", () => {
     const { database, close } = createTestDatabase()
 
-    seedDatabase(database, {
-      nickname: "업데이트된 사용자",
-      userId: toUserId("dev-user"),
-    })
+    seedDatabase(database)
 
     const row = database
-      .query("select nickname from users where id = ? limit 1")
-      .get("dev-user") as { nickname: string } | null
+      .query("select count(*) as count from prompts")
+      .get() as { count: number } | null
 
-    expect(row?.nickname).toBe("업데이트된 사용자")
+    expect(row?.count).toBe(seedPrompts.length)
     close()
   })
 
@@ -163,15 +246,11 @@ describe("sqlite repositories", () => {
     const { database, close } = createTestDatabase()
     const repository = new SqliteDraftRepository(database)
     const now = new Date().toISOString()
-
-    database
-      .query(
-        `
-          insert into users (id, nickname, created_at)
-          values (?, ?, ?)
-        `
-      )
-      .run("other-user", "다른 사용자", now)
+    seedAuthUser(database, {
+      email: "other-user@example.com",
+      name: "다른 사용자",
+      userId: "other-user",
+    })
 
     const created = database
       .query(

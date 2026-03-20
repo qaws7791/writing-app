@@ -38,12 +38,6 @@ export function createSchema(database: Database): void {
   database.exec(`
     pragma foreign_keys = on;
 
-    create table if not exists users (
-      id text primary key,
-      nickname text not null,
-      created_at text not null
-    ) strict;
-
     create table if not exists prompts (
       id integer primary key,
       slug text not null unique,
@@ -69,7 +63,7 @@ export function createSchema(database: Database): void {
       prompt_id integer not null,
       saved_at text not null,
       primary key (user_id, prompt_id),
-      foreign key (user_id) references users(id) on delete cascade,
+      foreign key (user_id) references "user"(id) on delete cascade,
       foreign key (prompt_id) references prompts(id) on delete cascade
     ) strict;
 
@@ -88,7 +82,7 @@ export function createSchema(database: Database): void {
       last_saved_at text not null,
       created_at text not null,
       updated_at text not null,
-      foreign key (user_id) references users(id) on delete cascade,
+      foreign key (user_id) references "user"(id) on delete cascade,
       foreign key (source_prompt_id) references prompts(id) on delete set null
     ) strict;
 
