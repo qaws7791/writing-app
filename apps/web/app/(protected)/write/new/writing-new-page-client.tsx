@@ -3,9 +3,9 @@
 import {
   type FormEvent,
   useEffect,
+  useEffectEvent,
   useMemo,
   useRef,
-  startTransition,
   useState,
 } from "react"
 import Link from "next/link"
@@ -22,9 +22,20 @@ import { HugeiconsIcon } from "@hugeicons/react"
 
 import WritingBodyEditor from "@/components/writing-body-editor"
 import { formatDraftMeta } from "@/lib/phase-one-format"
+import {
+  consumeRedirectDraftSnapshot,
+  createDraftSnapshotFromDetail,
+  createEditorDraftSnapshot,
+  createEmptyEditorDraftSnapshot,
+  type DraftSyncState,
+  type EditorDraftSnapshot,
+  hasMeaningfulDraftInput,
+  normalizeDraftTitle,
+  persistRedirectDraftSnapshot,
+  serializeDraftSnapshot,
+} from "@/lib/phase-one-draft-sync"
 import { createPhaseOneRepository } from "@/lib/phase-one-repository"
 import {
-  createEmptyDraftContent,
   draftContentToHtml,
   draftContentToPlainText,
 } from "@/lib/phase-one-rich-text"
@@ -61,17 +72,15 @@ import { WritingVersionHistoryModal } from "./writing-version-history-modal"
 
 import styles from "../write-editor-page.module.css"
 
-function extractTitle(text: string | null) {
-  return text?.replace(/\s+/g, " ").trim() ?? ""
-}
-
-function hasMeaningfulDraftInput(title: string, content: DraftContent) {
-  return title.trim().length > 0 || draftContentToPlainText(content).length > 0
-}
+type CreateDraftState = "created" | "creating" | "idle" | "retry-pending"
 
 type WritingNewPageClientProps = {
   draftId?: number
   initialPromptId?: number | null
+}
+
+function extractTitle(text: string | null) {
+  return normalizeDraftTitle(text ?? "")
 }
 
 export default function WritingNewPageClient({
@@ -81,35 +90,160 @@ export default function WritingNewPageClient({
   const repository = useMemo(() => createPhaseOneRepository(), [])
   const router = useRouter()
   const titleRef = useRef<HTMLHeadingElement>(null)
-  const lastPersistedVersionRef = useRef(0)
-  const hasLocalEditRef = useRef(false)
-  const latestInputRef = useRef({
-    content: createEmptyDraftContent(),
-    title: "",
-  })
-  const createRequestRef = useRef<Promise<DraftDetail> | null>(null)
   const isMountedRef = useRef(true)
+  const syncInFlightRef = useRef(false)
+  const createStateRef = useRef<CreateDraftState>(draftId ? "created" : "idle")
+  const lastSyncedSnapshotRef = useRef<string | null>(null)
+  const pendingRouteReplaceRef = useRef<number | null>(null)
+  const editorDraftRef = useRef<EditorDraftSnapshot>(
+    createEmptyEditorDraftSnapshot()
+  )
+  const persistedDraftRef = useRef<DraftDetail | null>(null)
+  const promptRef = useRef<PromptDetail | null>(null)
 
-  const [draft, setDraft] = useState<DraftDetail | null>(null)
-  const [title, setTitle] = useState("")
-  const [content, setContent] = useState<DraftContent>(createEmptyDraftContent)
-  const [prompt, setPrompt] = useState<PromptDetail | null>(null)
+  const [editorDraft, setEditorDraftState] = useState<EditorDraftSnapshot>(
+    editorDraftRef.current
+  )
+  const [persistedDraft, setPersistedDraftState] = useState<DraftDetail | null>(
+    null
+  )
+  const [prompt, setPromptState] = useState<PromptDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [saveState, setSaveState] = useState<
-    "error" | "idle" | "saved" | "saving"
-  >("idle")
-  const [saveVersion, setSaveVersion] = useState(0)
+  const [syncState, setSyncState] = useState<DraftSyncState>("idle")
   const [exportModalOpen, setExportModalOpen] = useState(false)
   const [versionHistoryModalOpen, setVersionHistoryModalOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
-  useEffect(() => {
-    latestInputRef.current = {
-      content,
-      title,
+  function setEditorDraft(nextDraft: EditorDraftSnapshot) {
+    editorDraftRef.current = nextDraft
+    setEditorDraftState(nextDraft)
+  }
+
+  function setPersistedDraft(nextDraft: DraftDetail | null) {
+    persistedDraftRef.current = nextDraft
+    setPersistedDraftState(nextDraft)
+  }
+
+  function setPrompt(nextPrompt: PromptDetail | null) {
+    promptRef.current = nextPrompt
+    setPromptState(nextPrompt)
+  }
+
+  const createDraftFromSnapshot = useEffectEvent(
+    async (snapshot: EditorDraftSnapshot) => {
+      if (
+        draftId ||
+        persistedDraftRef.current !== null ||
+        createStateRef.current === "creating" ||
+        createStateRef.current === "created" ||
+        !hasMeaningfulDraftInput(snapshot)
+      ) {
+        return
+      }
+
+      createStateRef.current = "creating"
+      setSyncState("creating")
+
+      const serializedSnapshot = serializeDraftSnapshot(snapshot)
+
+      try {
+        const createdDraft = await repository.createDraft({
+          content: snapshot.content,
+          sourcePromptId: initialPromptId ?? undefined,
+          title: snapshot.title,
+        })
+
+        if (!isMountedRef.current) {
+          return
+        }
+
+        createStateRef.current = "created"
+        lastSyncedSnapshotRef.current = serializedSnapshot
+        setPersistedDraft(createdDraft)
+        setSyncState("saved")
+        if (
+          serializeDraftSnapshot(editorDraftRef.current) === serializedSnapshot
+        ) {
+          persistRedirectDraftSnapshot(createdDraft.id, {
+            editorDraft: editorDraftRef.current,
+            lastSyncedSnapshot: serializedSnapshot,
+          })
+          router.replace(`/write/${createdDraft.id}`)
+        } else {
+          pendingRouteReplaceRef.current = createdDraft.id
+        }
+      } catch {
+        if (!isMountedRef.current) {
+          return
+        }
+
+        createStateRef.current = "retry-pending"
+        setSyncState("error")
+      }
     }
-  }, [content, title])
+  )
+
+  const syncDraft = useEffectEvent(async () => {
+    if (loading || syncInFlightRef.current) {
+      return
+    }
+
+    const currentPersistedDraft = persistedDraftRef.current
+    const currentEditorDraft = editorDraftRef.current
+
+    if (!currentPersistedDraft) {
+      if (
+        !draftId &&
+        createStateRef.current === "retry-pending" &&
+        hasMeaningfulDraftInput(currentEditorDraft)
+      ) {
+        await createDraftFromSnapshot(currentEditorDraft)
+      }
+
+      return
+    }
+
+    const serializedSnapshot = serializeDraftSnapshot(currentEditorDraft)
+    if (serializedSnapshot === lastSyncedSnapshotRef.current) {
+      return
+    }
+
+    syncInFlightRef.current = true
+    setSyncState("saving")
+
+    try {
+      const result = await repository.autosaveDraft(currentPersistedDraft.id, {
+        content: currentEditorDraft.content,
+        title: currentEditorDraft.title,
+      })
+
+      if (!isMountedRef.current) {
+        return
+      }
+
+      lastSyncedSnapshotRef.current = serializedSnapshot
+      setPersistedDraft(result.draft)
+      setSyncState("saved")
+
+      if (pendingRouteReplaceRef.current === result.draft.id) {
+        pendingRouteReplaceRef.current = null
+        persistRedirectDraftSnapshot(result.draft.id, {
+          editorDraft: currentEditorDraft,
+          lastSyncedSnapshot: serializedSnapshot,
+        })
+        router.replace(`/write/${result.draft.id}`)
+      }
+    } catch {
+      if (!isMountedRef.current) {
+        return
+      }
+
+      setSyncState("error")
+    } finally {
+      syncInFlightRef.current = false
+    }
+  })
 
   useEffect(() => {
     return () => {
@@ -123,6 +257,29 @@ export default function WritingNewPageClient({
     async function loadDraft() {
       try {
         if (draftId) {
+          const currentPersistedDraft = persistedDraftRef.current
+          if (currentPersistedDraft?.id === draftId) {
+            if (
+              currentPersistedDraft.sourcePromptId !== null &&
+              promptRef.current === null
+            ) {
+              const linkedPrompt = await repository.getPrompt(
+                currentPersistedDraft.sourcePromptId
+              )
+
+              if (cancelled) {
+                return
+              }
+
+              setPrompt(linkedPrompt)
+            }
+
+            setLoadError(null)
+            setSyncState((current) => (current === "idle" ? "saved" : current))
+            return
+          }
+
+          const redirectDraftSnapshot = consumeRedirectDraftSnapshot(draftId)
           const nextDraft = await repository.getDraft(draftId)
           const linkedPrompt =
             nextDraft.sourcePromptId !== null
@@ -133,16 +290,24 @@ export default function WritingNewPageClient({
             return
           }
 
-          setDraft(nextDraft)
-          setTitle(nextDraft.title)
-          setContent(nextDraft.content)
+          const nextEditorDraft =
+            redirectDraftSnapshot?.editorDraft ??
+            createDraftSnapshotFromDetail(nextDraft)
+
+          setPersistedDraft(nextDraft)
+          setEditorDraft(nextEditorDraft)
           setPrompt(linkedPrompt)
           setLoadError(null)
-          hasLocalEditRef.current = false
-          lastPersistedVersionRef.current = 0
+          createStateRef.current = "created"
+          lastSyncedSnapshotRef.current =
+            redirectDraftSnapshot?.lastSyncedSnapshot ??
+            serializeDraftSnapshot(nextEditorDraft)
+          setSyncState("saved")
+
           if (titleRef.current) {
-            titleRef.current.textContent = nextDraft.title
+            titleRef.current.textContent = nextEditorDraft.title
           }
+
           return
         }
 
@@ -155,16 +320,31 @@ export default function WritingNewPageClient({
           return
         }
 
-        setDraft(null)
         setPrompt(linkedPrompt)
         setLoadError(null)
-        if (!hasLocalEditRef.current) {
-          setTitle("")
-          setContent(createEmptyDraftContent())
+
+        if (persistedDraftRef.current !== null) {
+          setPersistedDraft(null)
+          createStateRef.current = "idle"
+          lastSyncedSnapshotRef.current = null
+          setSyncState("idle")
+          setEditorDraft(createEmptyEditorDraftSnapshot())
+          if (titleRef.current) {
+            titleRef.current.textContent = ""
+          }
+          return
         }
-        lastPersistedVersionRef.current = 0
-        if (!hasLocalEditRef.current && titleRef.current) {
-          titleRef.current.textContent = ""
+
+        if (
+          createStateRef.current === "idle" &&
+          !hasMeaningfulDraftInput(editorDraftRef.current)
+        ) {
+          lastSyncedSnapshotRef.current = null
+          setSyncState("idle")
+          setEditorDraft(createEmptyEditorDraftSnapshot())
+          if (titleRef.current) {
+            titleRef.current.textContent = ""
+          }
         }
       } catch {
         if (!cancelled) {
@@ -179,6 +359,7 @@ export default function WritingNewPageClient({
       }
     }
 
+    setLoading(true)
     void loadDraft()
 
     return () => {
@@ -187,138 +368,62 @@ export default function WritingNewPageClient({
   }, [draftId, initialPromptId, repository])
 
   useEffect(() => {
-    if (loading || saveVersion === 0) {
-      return
-    }
-
-    if (!draft) {
-      if (!hasMeaningfulDraftInput(title, content)) {
-        return
-      }
-
-      if (
-        createRequestRef.current ||
-        saveVersion <= lastPersistedVersionRef.current
-      ) {
-        return
-      }
-
-      const createVersion = saveVersion
-      setSaveState("saving")
-
-      const createDraftRequest = repository.createDraft({
-        content,
-        sourcePromptId: initialPromptId ?? undefined,
-        title,
-      })
-
-      createRequestRef.current = createDraftRequest
-
-      void createDraftRequest
-        .then((createdDraft) => {
-          if (
-            !isMountedRef.current ||
-            createRequestRef.current !== createDraftRequest
-          ) {
-            return
-          }
-
-          lastPersistedVersionRef.current = createVersion
-          setDraft(createdDraft)
-          setSaveState("saved")
-          router.replace(`/write/${createdDraft.id}`)
-        })
-        .catch(() => {
-          if (!isMountedRef.current) {
-            return
-          }
-
-          setSaveState("error")
-        })
-        .finally(() => {
-          if (createRequestRef.current === createDraftRequest) {
-            createRequestRef.current = null
-          }
-        })
-
-      return
-    }
-
-    if (saveVersion <= lastPersistedVersionRef.current) {
-      return
-    }
-
-    const currentDraftId = draft.id
-    const versionToPersist = saveVersion
-
-    setSaveState("saving")
-    const timer = window.setTimeout(() => {
-      void repository
-        .autosaveDraft(currentDraftId, {
-          content: latestInputRef.current.content,
-          title: latestInputRef.current.title,
-        })
-        .then((result) => {
-          if (!isMountedRef.current) {
-            return
-          }
-
-          lastPersistedVersionRef.current = versionToPersist
-          setDraft(result.draft)
-          setSaveState("saved")
-        })
-        .catch(() => {
-          if (!isMountedRef.current) {
-            return
-          }
-
-          setSaveState("error")
-        })
-    }, 700)
+    const timer = window.setInterval(() => {
+      void syncDraft()
+    }, 3000)
 
     return () => {
-      window.clearTimeout(timer)
+      window.clearInterval(timer)
     }
-  }, [
-    content,
-    draft,
-    initialPromptId,
-    loading,
-    repository,
-    router,
-    saveVersion,
-    title,
-  ])
+  }, [syncDraft])
 
-  function bumpSaveVersion() {
-    hasLocalEditRef.current = true
-    startTransition(() => {
-      setSaveVersion((current) => current + 1)
-    })
+  function maybeCreateDraft(snapshot: EditorDraftSnapshot) {
+    if (
+      draftId ||
+      persistedDraftRef.current !== null ||
+      createStateRef.current !== "idle"
+    ) {
+      return
+    }
+
+    if (!hasMeaningfulDraftInput(snapshot)) {
+      return
+    }
+
+    void createDraftFromSnapshot(snapshot)
   }
 
   function handleTitleInput(event: FormEvent<HTMLHeadingElement>) {
-    const nextTitle = extractTitle(event.currentTarget.textContent)
-    setTitle(nextTitle)
-    bumpSaveVersion()
+    const nextEditorDraft = createEditorDraftSnapshot({
+      content: editorDraftRef.current.content,
+      title: extractTitle(event.currentTarget.textContent),
+    })
+
+    setEditorDraft(nextEditorDraft)
+    maybeCreateDraft(nextEditorDraft)
   }
 
   function handleContentChange(nextContent: DraftContent) {
-    setContent(nextContent)
-    bumpSaveVersion()
+    const nextEditorDraft = createEditorDraftSnapshot({
+      content: nextContent,
+      title: editorDraftRef.current.title,
+    })
+
+    setEditorDraft(nextEditorDraft)
+    maybeCreateDraft(nextEditorDraft)
   }
 
   function getContent() {
     return {
-      bodyHtml: draftContentToHtml(content),
-      bodyText: draftContentToPlainText(content),
-      title,
+      bodyHtml: draftContentToHtml(editorDraft.content),
+      bodyText: draftContentToPlainText(editorDraft.content),
+      title: editorDraft.title,
     }
   }
 
   async function handleShare() {
-    const { bodyText, title: contentTitle } = getContent()
-    const text = [contentTitle, bodyText].filter(Boolean).join("\n\n")
+    const { bodyText, title } = getContent()
+    const text = [title, bodyText].filter(Boolean).join("\n\n")
 
     if (!navigator.share) {
       await navigator.clipboard.writeText(text)
@@ -328,7 +433,7 @@ export default function WritingNewPageClient({
     try {
       await navigator.share({
         text,
-        title: contentTitle || "제목 없음",
+        title: title || "제목 없음",
       })
     } catch {
       await navigator.clipboard.writeText(text)
@@ -336,9 +441,12 @@ export default function WritingNewPageClient({
   }
 
   async function handleDelete() {
-    if (draft) {
-      await repository.deleteDraft(draft.id)
+    const currentPersistedDraft = persistedDraftRef.current
+
+    if (currentPersistedDraft) {
+      await repository.deleteDraft(currentPersistedDraft.id)
     }
+
     router.push("/write")
   }
 
@@ -362,16 +470,17 @@ export default function WritingNewPageClient({
 
           <div className="min-w-0 flex-1 px-4">
             <p className="truncate text-sm font-medium text-foreground/80 md:text-base">
-              {title || "새 글"}
+              {editorDraft.title || "새 글"}
             </p>
             <p className="truncate text-xs text-muted-foreground">
-              {saveState === "saving" && "임시 저장 중"}
-              {saveState === "saved" &&
-                (draft
-                  ? `임시 저장됨 · ${formatDraftMeta(draft.lastSavedAt)}`
+              {(syncState === "creating" || syncState === "saving") &&
+                "임시 저장 중"}
+              {syncState === "saved" &&
+                (persistedDraft
+                  ? `임시 저장됨 · ${formatDraftMeta(persistedDraft.lastSavedAt)}`
                   : "임시 저장됨")}
-              {saveState === "error" && "저장 지연 중"}
-              {saveState === "idle" &&
+              {syncState === "error" && "저장 지연 중"}
+              {syncState === "idle" &&
                 (loading ? "초안 준비 중" : "입력을 시작하면 저장됩니다")}
             </p>
           </div>
@@ -443,13 +552,13 @@ export default function WritingNewPageClient({
       <main className="flex flex-1 items-start justify-center overflow-y-auto px-6 pt-28 pb-40 md:px-10 md:pt-36 md:pb-44">
         <section className="w-full max-w-3xl">
           <div className="flex flex-col gap-10">
-            {loadError && (
+            {loadError ? (
               <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
                 {loadError}
               </div>
-            )}
+            ) : null}
 
-            {prompt && (
+            {prompt ? (
               <div className="rounded-2xl border border-border bg-card px-5 py-4">
                 <p className="mb-2 text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">
                   선택한 글감
@@ -461,7 +570,7 @@ export default function WritingNewPageClient({
                   {prompt.description}
                 </p>
               </div>
-            )}
+            ) : null}
 
             <h1
               ref={titleRef}
@@ -475,7 +584,7 @@ export default function WritingNewPageClient({
             />
 
             <WritingBodyEditor
-              initialContent={content}
+              initialContent={editorDraft.content}
               onContentChange={handleContentChange}
             />
           </div>

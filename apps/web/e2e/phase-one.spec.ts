@@ -97,6 +97,13 @@ async function writeBody(page: Page, body: string) {
   await bodyEditor.fill(body)
 }
 
+async function writeTitle(page: Page, title: string) {
+  const titleEditor = page.getByRole("textbox", { name: "에세이 제목" })
+
+  await titleEditor.click()
+  await titleEditor.pressSequentially(title, { delay: 0 })
+}
+
 test("home prompt to editor and resume flow", async ({
   page,
   request,
@@ -257,4 +264,38 @@ test("reopen existing draft and expose it as latest resume target", async ({
     page.locator(`a[href="/write/${draft.id}"]`).first()
   ).toBeVisible()
   await expect(page.getByText(title).first()).toBeVisible()
+})
+
+test("creates one draft from rapid title input and keeps updating the same draft", async ({
+  page,
+  request,
+}, testInfo) => {
+  await signUpAndLogin(page, request, testInfo)
+
+  const body = `phase-one-body-${createUniqueToken(testInfo)}`
+
+  await page.goto("/write/new")
+  await writeTitle(page, "12345")
+
+  await expect(page).toHaveURL(/\/write\/\d+$/)
+  const draftUrl = page.url()
+  await page.waitForTimeout(3_500)
+
+  await page.goto("/write")
+  const matchingDrafts = page.locator('a[href^="/write/"]').filter({
+    hasText: "12345",
+  })
+  await expect(matchingDrafts).toHaveCount(1)
+
+  await page.goto(draftUrl)
+  await writeBody(page, body)
+  await page.waitForTimeout(3_500)
+
+  await page.goto("/write")
+  await expect(matchingDrafts).toHaveCount(1)
+  await matchingDrafts.first().click()
+
+  await expect(
+    page.locator("[data-writing-body] .ProseMirror").first()
+  ).toContainText(body)
 })

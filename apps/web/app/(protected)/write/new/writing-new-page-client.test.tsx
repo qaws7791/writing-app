@@ -117,6 +117,39 @@ vi.mock("@workspace/ui/components/alert-dialog", () => ({
   ),
 }))
 
+function createDeferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+
+  const promise = new Promise<T>((nextResolve, nextReject) => {
+    resolve = nextResolve
+    reject = nextReject
+  })
+
+  return {
+    promise,
+    reject,
+    resolve,
+  }
+}
+
+async function flushAsyncWork() {
+  await act(async () => {
+    await Promise.resolve()
+  })
+}
+
+function inputTitle(value: string) {
+  const titleInput = screen.getByRole("textbox", { name: "에세이 제목" })
+  titleInput.textContent = value
+  fireEvent.input(titleInput)
+}
+
+async function settleLoader() {
+  await flushAsyncWork()
+  await flushAsyncWork()
+}
+
 describe("writing new page client", () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -124,6 +157,10 @@ describe("writing new page client", () => {
     repository.getPrompt.mockResolvedValue(
       createPromptDetail({ id: 1, text: "연결된 글감" })
     )
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   test("loads existing draft and prompt context", async () => {
@@ -143,9 +180,77 @@ describe("writing new page client", () => {
     ).toHaveTextContent("기존 초안")
   })
 
-  test("creates a draft after the first meaningful input", async () => {
-    const user = userEvent.setup()
+  test("does not create a draft before the first meaningful input", async () => {
+    vi.useFakeTimers()
 
+    render(<WritingNewPageClient initialPromptId={1} />)
+
+    await settleLoader()
+    expect(screen.getByText("연결된 글감")).toBeInTheDocument()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(6_000)
+    })
+
+    expect(repository.createDraft).not.toHaveBeenCalled()
+  })
+
+  test("creates one draft while the title changes rapidly", async () => {
+    vi.useFakeTimers()
+    const pendingCreate = createDeferred<ReturnType<typeof createDraftDetail>>()
+    repository.createDraft.mockReturnValueOnce(pendingCreate.promise)
+    repository.autosaveDraft.mockResolvedValue({
+      draft: createDraftDetail({
+        id: 41,
+        title: "12345",
+      }),
+      kind: "autosaved",
+    })
+
+    render(<WritingNewPageClient initialPromptId={1} />)
+
+    await settleLoader()
+
+    inputTitle("1")
+    await flushAsyncWork()
+
+    inputTitle("12")
+    inputTitle("123")
+    inputTitle("1234")
+    inputTitle("12345")
+    await flushAsyncWork()
+
+    expect(repository.createDraft).toHaveBeenCalledTimes(1)
+    expect(repository.createDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: "1",
+      })
+    )
+
+    pendingCreate.resolve(
+      createDraftDetail({
+        id: 41,
+        title: "1",
+      })
+    )
+    await flushAsyncWork()
+
+    expect(replace).not.toHaveBeenCalled()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000)
+    })
+
+    expect(repository.autosaveDraft).toHaveBeenCalledWith(
+      41,
+      expect.objectContaining({
+        title: "12345",
+      })
+    )
+    expect(replace).toHaveBeenCalledWith("/write/41")
+  })
+
+  test("creates a draft after the first meaningful body input", async () => {
     repository.createDraft.mockResolvedValue(
       createDraftDetail({
         id: 41,
@@ -156,15 +261,44 @@ describe("writing new page client", () => {
     render(<WritingNewPageClient initialPromptId={1} />)
 
     await screen.findByText("연결된 글감")
-    await user.click(screen.getByRole("button", { name: "본문 변경" }))
+    fireEvent.click(screen.getByRole("button", { name: "본문 변경" }))
 
     await waitFor(() => {
-      expect(repository.createDraft).toHaveBeenCalled()
+      expect(repository.createDraft).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: createDraftContent("에디터 변경"),
+        })
+      )
     })
     expect(replace).toHaveBeenCalledWith("/write/41")
   })
 
-  test("autosaves an existing draft after debounce and updates save state", async () => {
+  test("does not autosave immediately after create when nothing changed", async () => {
+    vi.useFakeTimers()
+    repository.createDraft.mockResolvedValue(
+      createDraftDetail({
+        id: 41,
+        content: createDraftContent("에디터 변경"),
+        title: "",
+      })
+    )
+
+    render(<WritingNewPageClient initialPromptId={1} />)
+
+    await settleLoader()
+    expect(screen.getByText("연결된 글감")).toBeInTheDocument()
+    fireEvent.click(screen.getByRole("button", { name: "본문 변경" }))
+    await flushAsyncWork()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000)
+    })
+
+    expect(repository.autosaveDraft).not.toHaveBeenCalled()
+  })
+
+  test("autosaves an existing draft only after the 3 second interval", async () => {
+    vi.useFakeTimers()
     repository.getDraft.mockResolvedValue(
       createDraftDetail({
         id: 7,
@@ -184,26 +318,74 @@ describe("writing new page client", () => {
 
     render(<WritingNewPageClient draftId={7} />)
 
-    await screen.findByText("자동저장 대상")
-    vi.useFakeTimers()
-    act(() => {
-      fireEvent.click(screen.getByRole("button", { name: "본문 변경" }))
-    })
-
-    expect(screen.getByText("임시 저장 중")).toBeInTheDocument()
+    await settleLoader()
+    expect(
+      screen.getByRole("textbox", { name: "에세이 제목" })
+    ).toHaveTextContent("자동저장 대상")
+    fireEvent.click(screen.getByRole("button", { name: "본문 변경" }))
 
     await act(async () => {
-      await vi.advanceTimersByTimeAsync(700)
+      await vi.advanceTimersByTimeAsync(2_999)
     })
+    expect(repository.autosaveDraft).not.toHaveBeenCalled()
 
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1)
+    })
+    expect(repository.autosaveDraft).toHaveBeenCalledTimes(1)
     expect(repository.autosaveDraft).toHaveBeenCalledWith(
       7,
       expect.objectContaining({
         content: createDraftContent("에디터 변경"),
       })
     )
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000)
+    })
+    expect(repository.autosaveDraft).toHaveBeenCalledTimes(1)
     expect(screen.getByText(/임시 저장됨/)).toBeInTheDocument()
-    vi.useRealTimers()
+  })
+
+  test("retries autosave on the next interval after a failure", async () => {
+    vi.useFakeTimers()
+    repository.getDraft.mockResolvedValue(
+      createDraftDetail({
+        id: 9,
+        title: "재시도 대상",
+      })
+    )
+    repository.autosaveDraft
+      .mockRejectedValueOnce(new Error("boom"))
+      .mockResolvedValueOnce({
+        draft: createDraftDetail({
+          id: 9,
+          content: createDraftContent("에디터 변경"),
+          lastSavedAt: "2026-03-20T12:00:00.000Z",
+          title: "재시도 대상",
+        }),
+        kind: "autosaved",
+      })
+
+    render(<WritingNewPageClient draftId={9} />)
+
+    await settleLoader()
+    expect(
+      screen.getByRole("textbox", { name: "에세이 제목" })
+    ).toHaveTextContent("재시도 대상")
+    fireEvent.click(screen.getByRole("button", { name: "본문 변경" }))
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000)
+    })
+    expect(repository.autosaveDraft).toHaveBeenCalledTimes(1)
+    expect(screen.getByText("저장 지연 중")).toBeInTheDocument()
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(3_000)
+    })
+    expect(repository.autosaveDraft).toHaveBeenCalledTimes(2)
+    expect(screen.getByText(/임시 저장됨/)).toBeInTheDocument()
   })
 
   test("deletes a draft and returns to the list", async () => {
@@ -211,20 +393,20 @@ describe("writing new page client", () => {
 
     repository.getDraft.mockResolvedValue(
       createDraftDetail({
-        id: 9,
+        id: 11,
         title: "삭제할 초안",
       })
     )
     repository.deleteDraft.mockResolvedValue()
 
-    render(<WritingNewPageClient draftId={9} />)
+    render(<WritingNewPageClient draftId={11} />)
 
     await screen.findByText("삭제할 초안")
     const deleteButtons = screen.getAllByRole("button", { name: "삭제" })
     await user.click(deleteButtons[1]!)
 
     await waitFor(() => {
-      expect(repository.deleteDraft).toHaveBeenCalledWith(9)
+      expect(repository.deleteDraft).toHaveBeenCalledWith(11)
     })
     expect(push).toHaveBeenCalledWith("/write")
   })

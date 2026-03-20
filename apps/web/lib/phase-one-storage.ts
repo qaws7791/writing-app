@@ -8,6 +8,7 @@ type MemoryStorageState = Map<string, string>
 
 export const phaseOneStorageKeys = {
   drafts: "phase-one.drafts",
+  redirectDraftSnapshotPrefix: "phase-one.redirect-draft",
   savedPromptEntries: "phase-one.saved-prompts",
   sequence: "phase-one.sequence",
 } as const
@@ -33,6 +34,7 @@ export function createMemoryStorage(
 }
 
 const inMemoryStorage = createMemoryStorage()
+const inMemorySessionStorage = createMemoryStorage()
 
 export function getDefaultStorage(): StorageLike {
   if (typeof window !== "undefined" && window.localStorage) {
@@ -40,6 +42,14 @@ export function getDefaultStorage(): StorageLike {
   }
 
   return inMemoryStorage
+}
+
+export function getSessionStorage(): StorageLike {
+  if (typeof window !== "undefined" && window.sessionStorage) {
+    return window.sessionStorage
+  }
+
+  return inMemorySessionStorage
 }
 
 export type { StorageLike }
