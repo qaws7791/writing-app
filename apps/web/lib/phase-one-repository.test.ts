@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, mock, test } from "bun:test"
+import { afterEach, describe, expect, test, vi } from "vitest"
 
 import {
   createLocalPhaseOneRepository,
@@ -10,6 +10,7 @@ const originalFetch = globalThis.fetch
 
 afterEach(() => {
   globalThis.fetch = originalFetch
+  vi.restoreAllMocks()
 })
 
 describe("phase one local repository", () => {
@@ -80,7 +81,7 @@ describe("phase one local repository", () => {
   })
 
   test("does not fall back to local storage in api mode", async () => {
-    globalThis.fetch = mock(() => {
+    globalThis.fetch = vi.fn(() => {
       throw new TypeError("network down")
     }) as unknown as typeof fetch
 
@@ -91,5 +92,73 @@ describe("phase one local repository", () => {
     })
 
     await expect(repository.getHome()).rejects.toThrow("network down")
+  })
+
+  test("serializes prompt filters for remote requests", async () => {
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ items: [] }), {
+          status: 200,
+        })
+    ) as unknown as typeof fetch
+
+    const repository = createPhaseOneRepository({
+      apiBaseUrl: "http://127.0.0.1:3010/",
+      mode: "api",
+      storage: createMemoryStorage(),
+    })
+
+    await repository.listPrompts({
+      level: 2,
+      query: "AI",
+      saved: true,
+      topic: "기술",
+    })
+
+    expect(globalThis.fetch).toHaveBeenCalledWith(
+      "http://127.0.0.1:3010/prompts?query=AI&topic=%EA%B8%B0%EC%88%A0&level=2&saved=true",
+      expect.objectContaining({
+        cache: "no-store",
+      })
+    )
+  })
+
+  test("returns undefined for 204 responses from remote api", async () => {
+    globalThis.fetch = vi.fn(
+      async () => new Response(null, { status: 204 })
+    ) as unknown as typeof fetch
+
+    const repository = createPhaseOneRepository({
+      apiBaseUrl: "http://127.0.0.1:3010",
+      mode: "api",
+      storage: createMemoryStorage(),
+    })
+
+    await expect(repository.deleteDraft(1)).resolves.toBeUndefined()
+  })
+
+  test("maps remote api errors with status and message", async () => {
+    globalThis.fetch = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              message: "초안을 찾을 수 없습니다.",
+            },
+          }),
+          { status: 404 }
+        )
+    ) as unknown as typeof fetch
+
+    const repository = createPhaseOneRepository({
+      apiBaseUrl: "http://127.0.0.1:3010",
+      mode: "api",
+      storage: createMemoryStorage(),
+    })
+
+    await expect(repository.getDraft(999)).rejects.toMatchObject({
+      message: "초안을 찾을 수 없습니다.",
+      status: 404,
+    })
   })
 })

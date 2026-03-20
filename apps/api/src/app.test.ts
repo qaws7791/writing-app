@@ -1,5 +1,4 @@
-import { Database } from "bun:sqlite"
-import { afterEach, describe, expect, test } from "bun:test"
+import { afterEach, describe, expect, test } from "vitest"
 
 import { createTestApi } from "./test-support/create-test-app.js"
 
@@ -48,6 +47,20 @@ describe("health", () => {
     expect(response.status).toBe(200)
     expect(response.headers.get("access-control-allow-origin")).toBe(
       "http://127.0.0.1:3000"
+    )
+  })
+
+  test("does not expose a disallowed origin", async () => {
+    const { app } = setup()
+    const response = await app.request("/health", {
+      headers: {
+        origin: "http://malicious.example",
+      },
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("access-control-allow-origin")).not.toBe(
+      "http://malicious.example"
     )
   })
 })
@@ -112,6 +125,55 @@ describe("prompts", () => {
     expect(detailBody).toEqual(expect.objectContaining({ id: 6, saved: true }))
     expect(unsave.status).toBe(204)
     expect(listBody.items).toHaveLength(0)
+  })
+
+  test("rejects invalid prompt query filters", async () => {
+    const { app } = setup()
+    const response = await app.request("/prompts?saved=maybe")
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.code).toBe("validation_error")
+  })
+
+  test("returns not found for missing prompt details", async () => {
+    const { app } = setup()
+    const response = await app.request("/prompts/999")
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(404)
+    expect(body.error.code).toBe("not_found")
+  })
+
+  test("rejects invalid prompt ids", async () => {
+    const { app } = setup()
+    const response = await app.request("/prompts/invalid")
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.code).toBe("validation_error")
+  })
+
+  test("returns not found when saving an unknown prompt", async () => {
+    const { app } = setup()
+    const response = await app.request("/prompts/999/save", {
+      method: "PUT",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(404)
+    expect(body.error.code).toBe("not_found")
+  })
+
+  test("returns not found when unsaving a prompt that was not saved", async () => {
+    const { app } = setup()
+    const response = await app.request("/prompts/6/save", {
+      method: "DELETE",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(404)
+    expect(body.error.code).toBe("not_found")
   })
 })
 
@@ -326,6 +388,26 @@ describe("drafts", () => {
     expect(body.error.code).toBe("validation_error")
   })
 
+  test("rejects empty autosave payloads", async () => {
+    const { app } = setup()
+    const create = await app.request("/drafts", {
+      body: JSON.stringify({}),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const created = await readJson<{ id: number }>(create)
+
+    const response = await app.request(`/drafts/${created.id}`, {
+      body: JSON.stringify({}),
+      headers: { "content-type": "application/json" },
+      method: "PATCH",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.code).toBe("validation_error")
+  })
+
   test("rejects invalid raw json bodies", async () => {
     const { app } = setup()
     const response = await app.request("/drafts", {
@@ -356,63 +438,44 @@ describe("drafts", () => {
   })
 
   test("returns forbidden for drafts owned by another user", async () => {
-    const { app, databasePath } = setup()
-    const database = new Database(databasePath)
-
-    const now = new Date().toISOString()
-    const result = database
-      .query(
-        `
-          insert into users (id, nickname, created_at)
-          values (?, ?, ?)
-          on conflict(id) do nothing
-        `
-      )
-      .run("other-user", "다른 사용자", now)
-
-    expect(result.changes).toBeGreaterThanOrEqual(0)
-
-    const created = database
-      .query(
-        `
-          insert into drafts (
-            user_id,
-            title,
-            body_jsonb,
-            body_plain_text,
-            character_count,
-            word_count,
-            source_prompt_id,
-            last_saved_at,
-            created_at,
-            updated_at
-          )
-          values (?, ?, jsonb(?), ?, ?, ?, ?, ?, ?, ?)
-          returning id
-        `
-      )
-      .get(
-        "other-user",
-        "숨겨진 초안",
-        JSON.stringify({
-          content: [{ type: "paragraph" }],
-          type: "doc",
-        }),
-        "숨겨진 초안",
-        5,
-        1,
-        null,
-        now,
-        now,
-        now
-      ) as { id: number }
-
-    database.close(false)
+    const { app, injectForeignDraft } = setup()
+    const created = injectForeignDraft({
+      title: "숨겨진 초안",
+    })
 
     const response = await app.request(`/drafts/${created.id}`)
     const body = await readJson<{ error: { code: string } }>(response)
 
     expect(response.status).toBe(403)
     expect(body.error.code).toBe("forbidden")
+  })
+
+  test("returns not found for missing drafts", async () => {
+    const { app } = setup()
+    const response = await app.request("/drafts/999")
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(404)
+    expect(body.error.code).toBe("not_found")
+  })
+
+  test("rejects invalid draft ids", async () => {
+    const { app } = setup()
+    const response = await app.request("/drafts/invalid")
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.code).toBe("validation_error")
+  })
+})
+
+describe("fallbacks", () => {
+  test("returns not found for unsupported routes", async () => {
+    const { app } = setup()
+    const response = await app.request("/unknown")
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(404)
+    expect(body.error.code).toBe("not_found")
   })
 })

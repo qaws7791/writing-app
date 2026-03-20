@@ -22,15 +22,30 @@ import {
 export default function Page() {
   const repository = useMemo(() => createPhaseOneRepository(), [])
   const [home, setHome] = useState<HomeSnapshot | null>(null)
+  const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
 
-    void repository.getHome().then((snapshot) => {
-      if (!cancelled) {
-        setHome(snapshot)
-      }
-    })
+    void repository
+      .getHome()
+      .then((snapshot) => {
+        if (!cancelled) {
+          setHome(snapshot)
+          setError(false)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(true)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      })
 
     return () => {
       cancelled = true
@@ -38,6 +53,9 @@ export default function Page() {
   }, [repository])
 
   const resumeDraft = home?.resumeDraft ?? null
+  const todayPrompts = home?.todayPrompts ?? []
+  const recentDrafts = home?.recentDrafts ?? []
+  const savedPrompts = home?.savedPrompts ?? []
 
   return (
     <div className="min-h-svh flex-1 bg-background px-6 py-16 lg:px-24">
@@ -101,26 +119,42 @@ export default function Page() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {(home?.todayPrompts ?? []).map((item) => (
-              <Link
-                key={item.id}
-                href={`/prompts/${item.id}`}
-                className="flex h-full flex-col justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition-all hover:border-foreground/15"
-              >
-                <p className="text-sm leading-6 font-medium text-foreground">
-                  {item.text}
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-muted-foreground">
-                    {item.topic}
-                  </span>
-                  <span className="text-xs text-border">·</span>
-                  <LevelDots level={item.level} showLabel />
-                </div>
-              </Link>
-            ))}
-          </div>
+          {loading ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              오늘의 글감을 불러오는 중입니다.
+            </p>
+          ) : error ? (
+            <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
+              추천 글감을 불러오지 못했습니다. 글감 찾기에서 다른 시작점을
+              찾아보세요.
+            </div>
+          ) : todayPrompts.length === 0 ? (
+            <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
+              오늘의 추천이 아직 준비되지 않았습니다. 글감 찾기에서 시작할 수
+              있습니다.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {todayPrompts.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/prompts/${item.id}`}
+                  className="flex h-full flex-col justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition-all hover:border-foreground/15"
+                >
+                  <p className="text-sm leading-6 font-medium text-foreground">
+                    {item.text}
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {item.topic}
+                    </span>
+                    <span className="text-xs text-border">·</span>
+                    <LevelDots level={item.level} showLabel />
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
 
         <section>
@@ -131,73 +165,93 @@ export default function Page() {
             </TabsList>
 
             <TabsContent value="drafts">
-              <div className="flex flex-col">
-                {(home?.recentDrafts ?? []).map((draft, index, drafts) => (
-                  <Link
-                    key={draft.id}
-                    href={`/write/${draft.id}`}
-                    className="group"
-                  >
-                    <article
-                      className={`flex flex-col gap-1 py-6 transition-colors ${
-                        index !== drafts.length - 1
-                          ? "border-b border-border/70"
-                          : ""
-                      }`}
+              {loading ? (
+                <p role="status" className="text-sm text-muted-foreground">
+                  작성 중인 글을 불러오는 중입니다.
+                </p>
+              ) : recentDrafts.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  아직 작성 중인 글이 없습니다.
+                </p>
+              ) : (
+                <div className="flex flex-col">
+                  {recentDrafts.map((draft, index, drafts) => (
+                    <Link
+                      key={draft.id}
+                      href={`/write/${draft.id}`}
+                      className="group"
                     >
-                      <h3 className="text-base leading-normal font-semibold text-foreground underline-offset-4 group-hover:underline md:text-lg">
-                        {draft.title || "제목 없는 초안"}
-                      </h3>
-                      <p className="line-clamp-2 text-sm leading-7 text-muted-foreground md:text-base">
-                        {draft.preview || "첫 문장을 아직 쓰지 않았습니다."}
-                      </p>
-                      <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground md:text-sm">
-                        <span>{formatDraftMeta(draft.lastSavedAt)}</span>
-                        <span className="text-border">·</span>
-                        <span>
-                          {draft.characterCount.toLocaleString("ko-KR")}자
-                        </span>
-                      </div>
-                    </article>
-                  </Link>
-                ))}
-              </div>
+                      <article
+                        className={`flex flex-col gap-1 py-6 transition-colors ${
+                          index !== drafts.length - 1
+                            ? "border-b border-border/70"
+                            : ""
+                        }`}
+                      >
+                        <h3 className="text-base leading-normal font-semibold text-foreground underline-offset-4 group-hover:underline md:text-lg">
+                          {draft.title || "제목 없는 초안"}
+                        </h3>
+                        <p className="line-clamp-2 text-sm leading-7 text-muted-foreground md:text-base">
+                          {draft.preview || "첫 문장을 아직 쓰지 않았습니다."}
+                        </p>
+                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground md:text-sm">
+                          <span>{formatDraftMeta(draft.lastSavedAt)}</span>
+                          <span className="text-border">·</span>
+                          <span>
+                            {draft.characterCount.toLocaleString("ko-KR")}자
+                          </span>
+                        </div>
+                      </article>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="saved">
-              <div className="flex flex-col">
-                {(home?.savedPrompts ?? []).map((prompt) => (
-                  <Link
-                    key={prompt.id}
-                    href={`/prompts/${prompt.id}`}
-                    className="group flex items-center gap-4 rounded-xl py-3.5 transition-colors hover:bg-muted/60"
-                  >
-                    <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                      <span className="text-sm leading-snug font-medium text-foreground underline-offset-4 group-hover:underline md:text-base">
-                        {prompt.text}
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {prompt.topic}
+              {loading ? (
+                <p role="status" className="text-sm text-muted-foreground">
+                  저장한 글감을 불러오는 중입니다.
+                </p>
+              ) : savedPrompts.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  아직 저장한 글감이 없습니다.
+                </p>
+              ) : (
+                <div className="flex flex-col">
+                  {savedPrompts.map((prompt) => (
+                    <Link
+                      key={prompt.id}
+                      href={`/prompts/${prompt.id}`}
+                      className="group flex items-center gap-4 rounded-xl py-3.5 transition-colors hover:bg-muted/60"
+                    >
+                      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                        <span className="text-sm leading-snug font-medium text-foreground underline-offset-4 group-hover:underline md:text-base">
+                          {prompt.text}
                         </span>
-                        <span className="text-xs text-border">·</span>
-                        <LevelDots level={prompt.level} showLabel />
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-muted-foreground">
+                            {prompt.topic}
+                          </span>
+                          <span className="text-xs text-border">·</span>
+                          <LevelDots level={prompt.level} showLabel />
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-lg text-foreground">
-                      <HugeiconsIcon
-                        icon={Bookmark01Icon}
-                        altIcon={BookmarkCheckIcon}
-                        showAlt={prompt.saved}
-                        size={16}
-                        color="currentColor"
-                        strokeWidth={1.5}
-                      />
-                    </div>
-                  </Link>
-                ))}
-              </div>
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg text-foreground">
+                        <HugeiconsIcon
+                          icon={Bookmark01Icon}
+                          altIcon={BookmarkCheckIcon}
+                          showAlt={prompt.saved}
+                          size={16}
+                          color="currentColor"
+                          strokeWidth={1.5}
+                        />
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </section>

@@ -5,6 +5,8 @@
   "private": true,
   "scripts": {
     "lint": "eslint .",
+    "test": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts --pool=forks --maxWorkers=1 --no-file-parallelism",
+    "test:watch": "node ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts --pool=forks --maxWorkers=1 --no-file-parallelism",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

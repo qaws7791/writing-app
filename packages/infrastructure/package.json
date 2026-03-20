@@ -5,6 +5,8 @@
   "private": true,
   "scripts": {
     "lint": "eslint .",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

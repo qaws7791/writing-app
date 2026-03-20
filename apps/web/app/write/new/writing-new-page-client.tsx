@@ -95,6 +95,7 @@ export default function WritingNewPageClient({
   const [content, setContent] = useState<DraftContent>(createEmptyDraftContent)
   const [prompt, setPrompt] = useState<PromptDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [saveState, setSaveState] = useState<
     "error" | "idle" | "saved" | "saving"
   >("idle")
@@ -136,6 +137,7 @@ export default function WritingNewPageClient({
           setTitle(nextDraft.title)
           setContent(nextDraft.content)
           setPrompt(linkedPrompt)
+          setLoadError(null)
           hasLocalEditRef.current = false
           lastPersistedVersionRef.current = 0
           if (titleRef.current) {
@@ -155,6 +157,7 @@ export default function WritingNewPageClient({
 
         setDraft(null)
         setPrompt(linkedPrompt)
+        setLoadError(null)
         if (!hasLocalEditRef.current) {
           setTitle("")
           setContent(createEmptyDraftContent())
@@ -162,6 +165,12 @@ export default function WritingNewPageClient({
         lastPersistedVersionRef.current = 0
         if (!hasLocalEditRef.current && titleRef.current) {
           titleRef.current.textContent = ""
+        }
+      } catch {
+        if (!cancelled) {
+          setLoadError(
+            "초안을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+          )
         }
       } finally {
         if (!cancelled) {
@@ -434,6 +443,12 @@ export default function WritingNewPageClient({
       <main className="flex flex-1 items-start justify-center overflow-y-auto px-6 pt-28 pb-40 md:px-10 md:pt-36 md:pb-44">
         <section className="w-full max-w-3xl">
           <div className="flex flex-col gap-10">
+            {loadError && (
+              <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
+                {loadError}
+              </div>
+            )}
+
             {prompt && (
               <div className="rounded-2xl border border-border bg-card px-5 py-4">
                 <p className="mb-2 text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">

@@ -1,11 +1,12 @@
 import { mkdirSync, rmSync } from "node:fs"
-import { dirname } from "node:path"
+import { dirname, resolve } from "node:path"
 import { Database } from "bun:sqlite"
 
 export function openSqliteDatabase(path: string): Database {
-  mkdirSync(dirname(path), { recursive: true })
+  const resolvedPath = resolve(path)
+  mkdirSync(dirname(resolvedPath), { recursive: true })
 
-  return new Database(path, {
+  return new Database(resolvedPath, {
     create: true,
     strict: true,
   })
@@ -97,7 +98,7 @@ export function createSchema(database: Database): void {
 }
 
 export function resetDatabaseFile(path: string): void {
-  rmSync(path, {
+  rmSync(resolve(path), {
     force: true,
   })
 }

@@ -11,15 +11,30 @@ import type { DraftSummary } from "@/lib/phase-one-types"
 export default function WriteListPage() {
   const repository = useMemo(() => createPhaseOneRepository(), [])
   const [drafts, setDrafts] = useState<DraftSummary[]>([])
+  const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
 
-    void repository.listDrafts().then((items) => {
-      if (!cancelled) {
-        setDrafts(items)
-      }
-    })
+    void repository
+      .listDrafts()
+      .then((items) => {
+        if (!cancelled) {
+          setDrafts(items)
+          setError(false)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(true)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      })
 
     return () => {
       cancelled = true
@@ -62,37 +77,53 @@ export default function WriteListPage() {
         </section>
 
         <section>
-          <div className="flex flex-col">
-            {drafts.map((draft, index) => (
-              <Link
-                key={draft.id}
-                href={`/write/${draft.id}`}
-                className="group"
-              >
-                <article
-                  className={`flex flex-col gap-1 py-6 transition-colors ${
-                    index !== drafts.length - 1
-                      ? "border-b border-border/70"
-                      : ""
-                  }`}
+          {loading ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              초안 목록을 불러오는 중입니다.
+            </p>
+          ) : error ? (
+            <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
+              초안 목록을 불러오지 못했습니다. 그래도 새 글은 바로 시작할 수
+              있습니다.
+            </div>
+          ) : drafts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              아직 작성한 초안이 없습니다. 오늘의 첫 문장을 여기서 시작할 수
+              있습니다.
+            </p>
+          ) : (
+            <div className="flex flex-col">
+              {drafts.map((draft, index) => (
+                <Link
+                  key={draft.id}
+                  href={`/write/${draft.id}`}
+                  className="group"
                 >
-                  <h3 className="text-base leading-normal font-semibold text-foreground underline-offset-4 group-hover:underline md:text-lg">
-                    {draft.title || "제목 없는 초안"}
-                  </h3>
-                  <p className="line-clamp-2 text-sm leading-7 font-normal text-muted-foreground md:text-base">
-                    {draft.preview || "아직 본문이 없습니다."}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground md:text-sm">
-                    <span>{formatDraftMeta(draft.lastSavedAt)}</span>
-                    <span className="text-border">·</span>
-                    <span>
-                      {draft.characterCount.toLocaleString("ko-KR")}자
-                    </span>
-                  </div>
-                </article>
-              </Link>
-            ))}
-          </div>
+                  <article
+                    className={`flex flex-col gap-1 py-6 transition-colors ${
+                      index !== drafts.length - 1
+                        ? "border-b border-border/70"
+                        : ""
+                    }`}
+                  >
+                    <h3 className="text-base leading-normal font-semibold text-foreground underline-offset-4 group-hover:underline md:text-lg">
+                      {draft.title || "제목 없는 초안"}
+                    </h3>
+                    <p className="line-clamp-2 text-sm leading-7 font-normal text-muted-foreground md:text-base">
+                      {draft.preview || "아직 본문이 없습니다."}
+                    </p>
+                    <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground md:text-sm">
+                      <span>{formatDraftMeta(draft.lastSavedAt)}</span>
+                      <span className="text-border">·</span>
+                      <span>
+                        {draft.characterCount.toLocaleString("ko-KR")}자
+                      </span>
+                    </div>
+                  </article>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </div>

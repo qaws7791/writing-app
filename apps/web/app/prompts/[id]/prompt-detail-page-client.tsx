@@ -22,23 +22,52 @@ export default function PromptDetailPageClient({
 }) {
   const repository = useMemo(() => createPhaseOneRepository(), [])
   const [prompt, setPrompt] = useState<PromptDetail | null>(null)
+  const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
 
-    void repository.getPrompt(promptId).then((detail) => {
-      if (!cancelled) {
-        setPrompt(detail)
-      }
-    })
+    void repository
+      .getPrompt(promptId)
+      .then((detail) => {
+        if (!cancelled) {
+          setPrompt(detail)
+          setError(false)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(true)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      })
 
     return () => {
       cancelled = true
     }
   }, [promptId, repository])
 
-  if (!prompt) {
-    return null
+  if (loading) {
+    return (
+      <div className="min-h-svh flex-1 bg-background px-4 py-16 text-sm text-muted-foreground lg:px-16">
+        글감을 불러오는 중입니다.
+      </div>
+    )
+  }
+
+  if (error || !prompt) {
+    return (
+      <div className="min-h-svh flex-1 bg-background px-4 py-16 lg:px-16">
+        <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
+          글감을 불러오지 못했습니다. 목록으로 돌아가 다시 선택해 주세요.
+        </div>
+      </div>
+    )
   }
 
   async function handleToggleSave() {

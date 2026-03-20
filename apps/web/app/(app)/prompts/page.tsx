@@ -27,6 +27,8 @@ const topicChips: Array<PromptTopic> = [
 export default function PromptsPage() {
   const repository = useMemo(() => createPhaseOneRepository(), [])
   const [prompts, setPrompts] = useState<PromptSummary[]>([])
+  const [error, setError] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [activeTopic, setActiveTopic] = useState<PromptTopic | null>(null)
   const deferredSearch = useDeferredValue(search)
@@ -34,11 +36,24 @@ export default function PromptsPage() {
   useEffect(() => {
     let cancelled = false
 
-    void repository.listPrompts().then((items) => {
-      if (!cancelled) {
-        setPrompts(items)
-      }
-    })
+    void repository
+      .listPrompts()
+      .then((items) => {
+        if (!cancelled) {
+          setPrompts(items)
+          setError(false)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setError(true)
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false)
+        }
+      })
 
     return () => {
       cancelled = true
@@ -141,51 +156,65 @@ export default function PromptsPage() {
         </section>
 
         <section className="mb-12">
-          <div className="flex flex-col">
-            {filteredPrompts.map((prompt) => (
-              <Link
-                key={prompt.id}
-                href={`/prompts/${prompt.id}`}
-                className="group flex items-center gap-4 rounded-xl py-3.5 transition-colors hover:bg-muted/60"
-              >
-                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-                  <span className="text-sm leading-snug font-medium text-foreground underline-offset-4 group-hover:underline md:text-base">
-                    {prompt.text}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {prompt.topic}
-                    </span>
-                    <span className="text-xs text-border">·</span>
-                    <LevelDots level={prompt.level} showLabel />
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.preventDefault()
-                    void handleToggleSave(prompt.id)
-                  }}
-                  className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-all ${
-                    prompt.saved
-                      ? "text-foreground"
-                      : "text-muted-foreground/60 hover:text-foreground"
-                  }`}
-                  aria-label={prompt.saved ? "저장 해제" : "글감 저장"}
+          {loading ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              글감을 불러오는 중입니다.
+            </p>
+          ) : error ? (
+            <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
+              글감을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
+            </div>
+          ) : filteredPrompts.length === 0 ? (
+            <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
+              조건에 맞는 글감이 없습니다. 검색어나 주제를 바꿔보세요.
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {filteredPrompts.map((prompt) => (
+                <Link
+                  key={prompt.id}
+                  href={`/prompts/${prompt.id}`}
+                  className="group flex items-center gap-4 rounded-xl py-3.5 transition-colors hover:bg-muted/60"
                 >
-                  <HugeiconsIcon
-                    icon={Bookmark01Icon}
-                    altIcon={BookmarkCheckIcon}
-                    showAlt={prompt.saved}
-                    size={16}
-                    color="currentColor"
-                    strokeWidth={1.5}
-                  />
-                </button>
-              </Link>
-            ))}
-          </div>
+                  <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                    <span className="text-sm leading-snug font-medium text-foreground underline-offset-4 group-hover:underline md:text-base">
+                      {prompt.text}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {prompt.topic}
+                      </span>
+                      <span className="text-xs text-border">·</span>
+                      <LevelDots level={prompt.level} showLabel />
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      void handleToggleSave(prompt.id)
+                    }}
+                    className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-all ${
+                      prompt.saved
+                        ? "text-foreground"
+                        : "text-muted-foreground/60 hover:text-foreground"
+                    }`}
+                    aria-label={prompt.saved ? "저장 해제" : "글감 저장"}
+                  >
+                    <HugeiconsIcon
+                      icon={Bookmark01Icon}
+                      altIcon={BookmarkCheckIcon}
+                      showAlt={prompt.saved}
+                      size={16}
+                      color="currentColor"
+                      strokeWidth={1.5}
+                    />
+                  </button>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </div>
