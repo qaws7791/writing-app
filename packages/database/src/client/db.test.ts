@@ -10,7 +10,7 @@ import {
   toDraftId,
   toPromptId,
   toUserId,
-} from "@workspace/backend-core"
+} from "@workspace/core"
 
 import { prompts, user } from "../schema/index.js"
 import {

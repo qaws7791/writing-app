@@ -25,7 +25,7 @@ import {
   type SavePromptUseCaseOutput,
   type UserId,
   toDraftId,
-} from "@workspace/backend-core"
+} from "@workspace/core"
 
 export type DraftApiService = {
   autosaveDraft: (

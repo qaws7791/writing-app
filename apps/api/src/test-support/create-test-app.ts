@@ -4,8 +4,8 @@ import {
   toDraftId,
   toPromptId,
   type DraftContent,
-} from "@workspace/backend-core"
-import { ForbiddenError, NotFoundError } from "@workspace/backend-core"
+} from "@workspace/core"
+import { ForbiddenError, NotFoundError } from "@workspace/core"
 
 import { createApp } from "../app.js"
 import { createSilentLogger, type ApiLogger } from "../logger.js"

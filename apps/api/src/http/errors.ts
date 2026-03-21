@@ -3,7 +3,7 @@ import {
   ForbiddenError,
   NotFoundError,
   ValidationError,
-} from "@workspace/backend-core"
+} from "@workspace/core"
 
 import { UnauthorizedError } from "./unauthorized-error.js"
 

@@ -19,8 +19,8 @@
     "test": "bun run typecheck:phase-one && bun run test:unit && bun run test:e2e",
     "test:coverage": "bunx --bun vitest run --config vitest.workspace.ts --coverage",
     "test:e2e": "bun --filter web test:e2e",
-    "test:unit": "turbo test --filter=api --filter=web --filter=@workspace/backend-core --filter=@workspace/database",
-    "typecheck:phase-one": "turbo typecheck --filter=api --filter=web --filter=@workspace/backend-core --filter=@workspace/database",
+    "test:unit": "turbo test --filter=api --filter=web --filter=@workspace/core --filter=@workspace/database",
+    "typecheck:phase-one": "turbo typecheck --filter=api --filter=web --filter=@workspace/core --filter=@workspace/database",
     "typecheck": "turbo typecheck",
     "prepare": "lefthook install"
   },

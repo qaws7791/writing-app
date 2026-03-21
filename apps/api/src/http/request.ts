@@ -1,7 +1,7 @@
 import type { Context } from "hono"
 import { z } from "zod"
 
-import { ValidationError } from "@workspace/backend-core"
+import { ValidationError } from "@workspace/core"
 
 export async function parseJsonBody<TSchema extends z.ZodTypeAny>(
   context: Context,

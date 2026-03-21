@@ -2,11 +2,7 @@ import { afterEach, describe, expect, test } from "vitest"
 import { betterAuth } from "better-auth"
 import { memoryAdapter } from "better-auth/adapters/memory"
 
-import {
-  createEmptyDraftContent,
-  toDraftId,
-  toPromptId,
-} from "@workspace/backend-core"
+import { createEmptyDraftContent, toDraftId, toPromptId } from "@workspace/core"
 
 import { createApp } from "./app.js"
 import { createAuthEmailPort } from "./auth-email.js"

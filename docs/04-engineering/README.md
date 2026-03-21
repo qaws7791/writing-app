@@ -20,9 +20,9 @@ description: 모노레포 개발 규칙과 프론트엔드, 백엔드, 패키지
 - [[frontend-architecture-guide]]: Next.js 프론트엔드 구조와 구성 원칙
 - [[state-management-guide]]: 프론트엔드 상태 관리 기준
 - [[backend-architecture-guide]]: DOP와 패키지 경계 중심 백엔드 표준 아키텍처
-- [[backend-package-boundaries]]: apps/api, backend-core, db, storage, ai의 책임과 금지 의존성
-- [[backend-core-guide]]: backend-core 모듈 구조, 포트, use case, 테스트 기준
-- [[api-conventions]]: OpenAPIHono와 backend-core 계약 스키마를 연결하는 규약
+- [[backend-package-boundaries]]: apps/api, core, db, storage, ai의 책임과 금지 의존성
+- [[backend-core-guide]]: core 모듈 구조, 포트, use case, 테스트 기준
+- [[api-conventions]]: OpenAPIHono와 core 계약 스키마를 연결하는 규약
 - [[dependency-injection]]: 포트, 구현체, 조립 계층을 연결하는 기준
 - [[environment-variables]]: 환경 변수 관리 정책
 - [[error-message-guidelines]]: 사용자 메시지와 API 오류 응답 기준

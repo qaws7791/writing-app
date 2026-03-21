@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@workspace/backend-core": "workspace:*",
+    "@workspace/core": "workspace:*",
     "drizzle-orm": "^0.44.6"
   },
   "devDependencies": {

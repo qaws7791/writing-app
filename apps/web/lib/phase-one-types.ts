@@ -6,7 +6,7 @@ import type {
   PromptTopic,
   TiptapMark as DraftMark,
   TiptapNode as DraftNode,
-} from "@workspace/backend-core"
+} from "@workspace/core"
 
 export type {
   DraftContent,

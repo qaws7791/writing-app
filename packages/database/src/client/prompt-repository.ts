@@ -19,7 +19,7 @@ import {
   type PromptSaveResult,
   type PromptSummary,
   type UserId,
-} from "@workspace/backend-core"
+} from "@workspace/core"
 
 import { prompts, savedPrompts } from "../schema/index.js"
 import type { DbClient } from "../types/index.js"

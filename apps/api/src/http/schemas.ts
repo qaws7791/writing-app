@@ -1,4 +1,4 @@
-import { draftContentSchema, promptTopics } from "@workspace/backend-core"
+import { draftContentSchema, promptTopics } from "@workspace/core"
 import { z } from "zod"
 
 export const promptIdSchema = z.coerce.number().int().positive()

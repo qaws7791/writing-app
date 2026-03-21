@@ -1,6 +1,6 @@
 ---
 title: API 규약
-description: apps/api가 backend-core 계약 스키마와 use case를 HTTP/OpenAPI 경계에 연결할 때 따르는 규약입니다.
+description: apps/api가 core 계약 스키마와 use case를 HTTP/OpenAPI 경계에 연결할 때 따르는 규약입니다.
 ---
 
 ## 상태
@@ -12,8 +12,8 @@ description: apps/api가 backend-core 계약 스키마와 use case를 HTTP/OpenA
 ## 역할
 
 - `apps/api`는 HTTP 경계와 OpenAPI 문서화를 담당합니다.
-- 계약 스키마는 `packages/backend-core/modules/*/contracts`에서 가져옵니다.
-- 비즈니스 로직은 `packages/backend-core` use case를 호출합니다.
+- 계약 스키마는 `packages/core/modules/*/contracts`에서 가져옵니다.
+- 비즈니스 로직은 `packages/core` use case를 호출합니다.
 - 인프라 구현체는 `packages/db`, `packages/storage`, `packages/ai`에서 조립합니다.
 
 ## 모듈 구성 규칙
@@ -26,7 +26,7 @@ description: apps/api가 backend-core 계약 스키마와 use case를 HTTP/OpenA
 
 ## 표준 흐름
 
-1. `backend-core/modules/*/contracts`에서 zod 스키마를 정의합니다.
+1. `core/modules/*/contracts`에서 zod 스키마를 정의합니다.
 2. `apps/api/modules/*/routes`에서 `createRoute()`로 route를 선언합니다.
 3. handler가 `Context`에서 입력을 읽어 use case input을 만듭니다.
 4. use case는 `Result`를 반환합니다.

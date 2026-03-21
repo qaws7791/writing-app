@@ -1,17 +1,17 @@
 ---
 title: 백엔드 코어 가이드
-description: packages/backend-core의 모듈 구조, DOP 패턴, 포트 설계, vitest 테스트 기준을 정의합니다.
+description: packages/core의 모듈 구조, DOP 패턴, 포트 설계, vitest 테스트 기준을 정의합니다.
 ---
 
 ## 상태
 
 - 기준 시점: 2026-03-20
-- `packages/backend-core`는 아직 구현되지 않았습니다.
+- `packages/core`는 아직 구현되지 않았습니다.
 - 이 문서는 비즈니스 코어를 어떤 구조로 만들지에 대한 설계 기준입니다.
 
 ## 역할
 
-`packages/backend-core`는 모듈러 모놀리스 비즈니스 코어입니다.
+`packages/core`는 모듈러 모놀리스 비즈니스 코어입니다.
 
 - 제품 도메인의 상태 데이터를 정의합니다.
 - 입력과 출력 계약 스키마를 관리합니다.
@@ -33,7 +33,7 @@ description: packages/backend-core의 모듈 구조, DOP 패턴, 포트 설계, 
 ## 권장 구조
 
 ```text
-packages/backend-core/
+packages/core/
   src/
     shared/
       result/

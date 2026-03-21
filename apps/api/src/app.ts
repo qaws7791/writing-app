@@ -1,7 +1,7 @@
 import { Hono, type Context } from "hono"
 import { cors } from "hono/cors"
 
-import { toDraftId, toPromptId, toUserId } from "@workspace/backend-core"
+import { toDraftId, toPromptId, toUserId } from "@workspace/core"
 
 import type {
   DraftApiService,

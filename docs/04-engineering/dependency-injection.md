@@ -7,19 +7,19 @@ description: 백엔드 패키지들을 인터페이스와 포트로 연결하고
 
 - 기준 시점: 2026-03-20
 - 현재 저장소에는 실제 DI 조립 코드가 아직 없습니다.
-- 이 문서는 `apps/api`, `backend-core`, `db`, `storage`, `ai` 패키지 분리 이후의 표준 조립 방식을 설명합니다.
+- 이 문서는 `apps/api`, `core`, `db`, `storage`, `ai` 패키지 분리 이후의 표준 조립 방식을 설명합니다.
 
 ## 기본 원칙
 
 - 비즈니스 코드는 구현체가 아니라 포트 타입에 의존합니다.
-- 포트는 `packages/backend-core`에 둡니다.
+- 포트는 `packages/core`에 둡니다.
 - 구현체는 `packages/db`, `packages/storage`, `packages/ai`에 둡니다.
 - 최종 조립은 `apps/api`의 composition root에서 끝냅니다.
 - Hono `Context`는 요청 메타데이터 전달용이며, 범용 서비스 로케이터로 쓰지 않습니다.
 
 ## 조립 위치
 
-### `packages/backend-core`
+### `packages/core`
 
 - 포트 타입 정의
 - use case factory 또는 use case 함수 정의
@@ -82,13 +82,13 @@ export const createCreateWritingUseCase =
 ## 하지 않는 것
 
 - route handler 안에서 `new` 체인으로 구현체 생성
-- `backend-core`가 `db`, `storage`, `ai` 패키지를 직접 import
+- `core`가 `db`, `storage`, `ai` 패키지를 직접 import
 - 전역 mutable singleton으로 상태 공유
 - 테스트만 위해 존재하는 과도한 추상화
 
 ## 검토 기준
 
-- 포트는 `backend-core`
+- 포트는 `core`
 - 구현은 인프라 패키지
 - 조립은 `apps/api`
 - 요청 값과 장수명 객체의 수명이 구분되어야 합니다.

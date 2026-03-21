@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.10",
-    "@workspace/backend-core": "workspace:*",
+    "@workspace/core": "workspace:*",
     "@workspace/database": "workspace:*",
     "better-auth": "^1.3.4",
     "hono": "^4.12.5",

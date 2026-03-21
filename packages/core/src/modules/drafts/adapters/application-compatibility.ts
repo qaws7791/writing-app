@@ -23,7 +23,7 @@ import type { DraftModuleError } from "../errors/index"
  * Compatibility layer for existing API handlers.
  * Wraps individual use-cases into a factory object matching the old interface.
  *
- * This is a temporary adapter during migration from application/ to backend-core/.
+ * This is a temporary adapter during migration from application/ to core/.
  * TODO: Migrate handlers directly to use-case functions instead of this wrapper.
  */
 export function createDraftUseCasesAdapter(

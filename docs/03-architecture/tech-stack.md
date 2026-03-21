@@ -21,13 +21,13 @@ description: 플랫폼과 백엔드 패키지 분리 구조를 위한 기술 스
 
 ## `apps/api` — HTTP / OpenAPI 조립 계층
 
-| 기술                                                           | 버전                     | 상태    | 선택 이유                                                 |
-| -------------------------------------------------------------- | ------------------------ | ------- | --------------------------------------------------------- |
-| **[Hono](https://hono.dev)**                                   | ^4.12.5                  | 사용 중 | 가벼운 HTTP 프레임워크와 명확한 경계 구성                 |
-| **[@hono/zod-openapi](https://hono.dev/examples/zod-openapi)** | 도입 예정                | 계획    | `backend-core`의 zod 계약을 route와 OpenAPI 문서에 재사용 |
-| **OpenAPIHono**                                                | `@hono/zod-openapi` 포함 | 계획    | 모듈별 app 구성과 `app.openapi()` 연결 표준               |
-| **[@scalar/hono-api-reference](https://scalar.com)**           | 도입 예정                | 계획    | Hono OpenAPI 스펙을 문서 UI로 노출                        |
-| **[better-auth](https://better-auth.com)**                     | 도입 예정                | 계획    | 인증과 세션 정책을 앱 경계에 통합                         |
+| 기술                                                           | 버전                     | 상태    | 선택 이유                                         |
+| -------------------------------------------------------------- | ------------------------ | ------- | ------------------------------------------------- |
+| **[Hono](https://hono.dev)**                                   | ^4.12.5                  | 사용 중 | 가벼운 HTTP 프레임워크와 명확한 경계 구성         |
+| **[@hono/zod-openapi](https://hono.dev/examples/zod-openapi)** | 도입 예정                | 계획    | `core`의 zod 계약을 route와 OpenAPI 문서에 재사용 |
+| **OpenAPIHono**                                                | `@hono/zod-openapi` 포함 | 계획    | 모듈별 app 구성과 `app.openapi()` 연결 표준       |
+| **[@scalar/hono-api-reference](https://scalar.com)**           | 도입 예정                | 계획    | Hono OpenAPI 스펙을 문서 UI로 노출                |
+| **[better-auth](https://better-auth.com)**                     | 도입 예정                | 계획    | 인증과 세션 정책을 앱 경계에 통합                 |
 
 ## API 계약 연동
 
@@ -36,7 +36,7 @@ description: 플랫폼과 백엔드 패키지 분리 구조를 위한 기술 스
 | **[openapi-typescript](https://openapi-ts.dev)**           | 도입 예정 | 계획 | OpenAPI 스펙에서 타입을 생성해 계약 드리프트를 줄임 |
 | **[openapi-fetch](https://openapi-ts.dev/openapi-fetch/)** | 도입 예정 | 계획 | 생성된 API 타입 기반 클라이언트 구성                |
 
-## `packages/backend-core` — 비즈니스 코어
+## `packages/core` — 비즈니스 코어
 
 | 기술                                                       | 버전      | 상태 | 선택 이유                               |
 | ---------------------------------------------------------- | --------- | ---- | --------------------------------------- |
@@ -85,7 +85,7 @@ description: 플랫폼과 백엔드 패키지 분리 구조를 위한 기술 스
 ## 메모
 
 - 현재 설치 상태는 실제 `package.json` 기준이다.
-- `backend-core`, `db`, `storage`, `ai` 관련 기술은 문서 기준의 목표 구조다.
+- `core`, `db`, `storage`, `ai` 관련 기술은 문서 기준의 목표 구조다.
 - 실제 도입 시 버전과 선택 세부사항을 다시 갱신해야 한다.
 
 ## 관련 다이어그램

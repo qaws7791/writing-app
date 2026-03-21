@@ -13,7 +13,7 @@ import {
   type DraftRepository,
   type DraftSummary,
   type UserId,
-} from "@workspace/backend-core"
+} from "@workspace/core"
 
 import { drafts } from "../schema/index.js"
 import type { DbClient, DraftRow } from "../types/index.js"

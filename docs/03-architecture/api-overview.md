@@ -1,6 +1,6 @@
 ---
 title: API 개요
-description: 글쓰기 플랫폼에서 apps/api가 backend-core와 인프라 패키지를 HTTP/OpenAPI 경계로 연결하는 방식을 정의합니다.
+description: 글쓰기 플랫폼에서 apps/api가 core와 인프라 패키지를 HTTP/OpenAPI 경계로 연결하는 방식을 정의합니다.
 ---
 
 ## API의 역할
@@ -17,13 +17,13 @@ API는 화면을 렌더링하지 않고, 다음 책임에 집중한다.
 
 - `apps/api`는 HTTP 전송 계층이자 composition root다.
 - 라우트는 요청 파싱, 검증, 인증 확인, 응답 매핑까지만 담당한다.
-- 비즈니스 규칙은 `packages/backend-core`로 이동한다.
+- 비즈니스 규칙은 `packages/core`로 이동한다.
 - 외부 AI, 스토리지, 데이터베이스 연결은 `packages/ai`, `packages/storage`, `packages/db`로 분리한다.
 - 내부 표준은 구현이 아니라 포트와 계약 스키마에 의존하는 구조다.
 
 ## 계약과 실행 흐름
 
-- API 계약에 쓰는 zod 스키마는 `packages/backend-core/modules/*/contracts`에 둔다.
+- API 계약에 쓰는 zod 스키마는 `packages/core/modules/*/contracts`에 둔다.
 - `apps/api`는 `@hono/zod-openapi`의 `createRoute()`로 route를 선언한다.
 - 각 기능 모듈은 `new OpenAPIHono()`로 app을 만들고 `app.openapi()`로 handler를 연결한다.
 - handler는 HTTP 입력을 use case 입력으로 변환하고, presenter는 use case 결과를 HTTP 응답으로 변환한다.

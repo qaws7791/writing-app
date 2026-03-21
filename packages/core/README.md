@@ -1,4 +1,4 @@
-# backend-core
+# core
 
 비즈니스 로직의 중심입니다. 순수 함수와 immutable 데이터 구조로 구현됩니다.
 
@@ -42,7 +42,7 @@ import {
   createDraftUseCase,
   getDraftUseCase,
   type CreateDraftInput,
-} from "@workspace/backend-core"
+} from "@workspace/core"
 
 // dependency 주입
 const createDraft = (input: CreateDraftInput) =>

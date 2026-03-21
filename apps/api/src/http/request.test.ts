@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { ValidationError } from "@workspace/backend-core"
+import { ValidationError } from "@workspace/core"
 
 import { parseJsonBody, parseValue } from "./request.js"
 
