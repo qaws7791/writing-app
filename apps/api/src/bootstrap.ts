@@ -12,6 +12,7 @@ import {
   seedDatabase,
 } from "@workspace/db"
 
+import { resolveAgainstApiPackage } from "./api-package-paths.js"
 import { createApp } from "./app.js"
 import { createAuth } from "./auth.js"
 import { createAuthEmailPort } from "./auth-email.js"
@@ -37,7 +38,7 @@ export function readApiEnvironment(): ApiEnvironment {
   return {
     authBaseUrl: apiEnv.API_AUTH_BASE_URL,
     authSecret: apiEnv.API_AUTH_SECRET,
-    databasePath: apiEnv.API_DATABASE_PATH,
+    databasePath: resolveAgainstApiPackage(apiEnv.API_DATABASE_PATH),
     logLevel: apiEnv.API_LOG_LEVEL,
     port: apiEnv.API_PORT,
     webBaseUrl: apiEnv.API_WEB_BASE_URL,
