@@ -1,5 +1,5 @@
 import type { DraftContent } from "../../../shared/schema/index"
-import { toDraftId, toPromptId, toUserId } from "../../../shared/brand/index"
+import { toDraftId, toPromptId } from "../../../shared/brand/index"
 import type { Draft } from "../model/index"
 
 /**

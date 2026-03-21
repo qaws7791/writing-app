@@ -23,23 +23,30 @@ import type {
   PromptSummary,
 } from "./phase-one-types"
 
+export type AutosaveDraftResult = {
+  draft: DraftDetail
+  kind: "autosaved"
+}
+
 type SavedPromptEntry = {
   promptId: number
   savedAt: string
 }
 
-type PhaseOneRepositoryMode = "api" | "local"
+export type CreateDraftInput = {
+  content?: DraftContent
+  sourcePromptId?: number
+  title?: string
+}
 
-type PhaseOneRepository = {
+export type PhaseOneRepositoryMode = "api" | "local"
+
+export type PhaseOneRepository = {
   autosaveDraft: (
     draftId: number,
     input: { content?: DraftContent; title?: string }
-  ) => Promise<{ draft: DraftDetail; kind: "autosaved" }>
-  createDraft: (input: {
-    content?: DraftContent
-    sourcePromptId?: number
-    title?: string
-  }) => Promise<DraftDetail>
+  ) => Promise<AutosaveDraftResult>
+  createDraft: (input: CreateDraftInput) => Promise<DraftDetail>
   deleteDraft: (draftId: number) => Promise<void>
   getDraft: (draftId: number) => Promise<DraftDetail>
   getHome: () => Promise<HomeSnapshot>
@@ -50,7 +57,7 @@ type PhaseOneRepository = {
   unsavePrompt: (promptId: number) => Promise<void>
 }
 
-type RemoteApiError = Error & {
+export type RemoteApiError = Error & {
   code?: "remote_api_error" | "unauthorized"
   status: number
 }
@@ -172,6 +179,25 @@ function filterPrompts(
       prompt.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery))
     )
   })
+}
+
+function createPromptSearchParams(filters?: PromptFilters): string {
+  const searchParams = new URLSearchParams()
+
+  if (filters?.query) {
+    searchParams.set("query", filters.query)
+  }
+  if (filters?.topic) {
+    searchParams.set("topic", filters.topic)
+  }
+  if (filters?.level) {
+    searchParams.set("level", String(filters.level))
+  }
+  if (filters?.saved !== undefined) {
+    searchParams.set("saved", String(filters.saved))
+  }
+
+  return searchParams.toString()
 }
 
 export function createLocalPhaseOneRepository(
@@ -428,22 +454,7 @@ function createRemotePhaseOneRepository(
       return response.items
     },
     async listPrompts(filters) {
-      const searchParams = new URLSearchParams()
-
-      if (filters?.query) {
-        searchParams.set("query", filters.query)
-      }
-      if (filters?.topic) {
-        searchParams.set("topic", filters.topic)
-      }
-      if (filters?.level) {
-        searchParams.set("level", String(filters.level))
-      }
-      if (filters?.saved !== undefined) {
-        searchParams.set("saved", String(filters.saved))
-      }
-
-      const query = searchParams.toString()
+      const query = createPromptSearchParams(filters)
       const response = await request<{ items: PromptSummary[] }>(
         `/prompts${query ? `?${query}` : ""}`
       )

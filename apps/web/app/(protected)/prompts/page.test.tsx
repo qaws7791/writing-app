@@ -36,20 +36,44 @@ describe("prompts page", () => {
   })
 
   test("filters prompts by search and topic chip", async () => {
-    repository.listPrompts.mockResolvedValue([
-      createPromptSummary({
-        id: 1,
-        text: "AI에 대한 생각",
-        topic: "기술",
-        tags: ["AI"],
-      }),
-      createPromptSummary({
-        id: 2,
-        text: "산책의 기억",
-        topic: "일상",
-        tags: ["기억"],
-      }),
-    ])
+    repository.listPrompts.mockImplementation(async (filters) => {
+      if (filters?.query === "AI") {
+        return [
+          createPromptSummary({
+            id: 1,
+            text: "AI에 대한 생각",
+            topic: "기술",
+            tags: ["AI"],
+          }),
+        ]
+      }
+
+      if (filters?.topic === "일상") {
+        return [
+          createPromptSummary({
+            id: 2,
+            text: "산책의 기억",
+            topic: "일상",
+            tags: ["기억"],
+          }),
+        ]
+      }
+
+      return [
+        createPromptSummary({
+          id: 1,
+          text: "AI에 대한 생각",
+          topic: "기술",
+          tags: ["AI"],
+        }),
+        createPromptSummary({
+          id: 2,
+          text: "산책의 기억",
+          topic: "일상",
+          tags: ["기억"],
+        }),
+      ]
+    })
 
     render(<PromptsPage />)
 
@@ -60,6 +84,12 @@ describe("prompts page", () => {
       "AI"
     )
 
+    await waitFor(() => {
+      expect(repository.listPrompts).toHaveBeenLastCalledWith({
+        query: "AI",
+        topic: undefined,
+      })
+    })
     expect(screen.getByText("AI에 대한 생각")).toBeInTheDocument()
     expect(screen.queryByText("산책의 기억")).not.toBeInTheDocument()
 
@@ -68,6 +98,12 @@ describe("prompts page", () => {
     )
     await userEvent.click(screen.getByRole("button", { name: "일상" }))
 
+    await waitFor(() => {
+      expect(repository.listPrompts).toHaveBeenLastCalledWith({
+        query: undefined,
+        topic: "일상",
+      })
+    })
     expect(screen.getByText("산책의 기억")).toBeInTheDocument()
     expect(screen.queryByText("AI에 대한 생각")).not.toBeInTheDocument()
   })

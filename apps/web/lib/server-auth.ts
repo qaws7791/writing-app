@@ -28,13 +28,21 @@ export type SessionSnapshot = {
   user: AuthenticatedUser
 }
 
+type SessionRequestContext = {
+  cookie: string | null
+  requestHost: string | null
+}
+
+type SessionAccess = "protected" | "public"
+
 export function isLocalPhaseOneMode(): boolean {
   return env.NEXT_PUBLIC_PHASE_ONE_MODE === "local"
 }
 
-function getApiBaseUrl(requestHost: string | null): string {
-  const apiBaseUrl = env.NEXT_PUBLIC_API_BASE_URL
-
+export function resolveSessionApiBaseUrl(
+  apiBaseUrl: string | undefined,
+  requestHost: string | null
+): string {
   if (!apiBaseUrl) {
     throw new Error("NEXT_PUBLIC_API_BASE_URL is required in api mode.")
   }
@@ -42,23 +50,33 @@ function getApiBaseUrl(requestHost: string | null): string {
   return resolveServerApiBaseUrl(apiBaseUrl, requestHost)
 }
 
-export async function getCurrentSession(): Promise<SessionSnapshot | null> {
-  if (isLocalPhaseOneMode()) {
-    return null
-  }
-
+async function readSessionRequestContext(): Promise<SessionRequestContext> {
   const requestHeaders = await headers()
-  const requestHost =
-    requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host")
-  const cookie = requestHeaders.get("cookie")
-  const response = await fetch(`${getApiBaseUrl(requestHost)}/session`, {
-    cache: "no-store",
-    headers: cookie
-      ? {
-          cookie,
-        }
-      : undefined,
-  })
+
+  return {
+    cookie: requestHeaders.get("cookie"),
+    requestHost:
+      requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host"),
+  }
+}
+
+export async function fetchSessionSnapshot(input: {
+  apiBaseUrl: string | undefined
+  cookie?: string | null
+  fetchImpl?: typeof fetch
+  requestHost: string | null
+}): Promise<SessionSnapshot | null> {
+  const response = await (input.fetchImpl ?? fetch)(
+    `${resolveSessionApiBaseUrl(input.apiBaseUrl, input.requestHost)}/session`,
+    {
+      cache: "no-store",
+      headers: input.cookie
+        ? {
+            cookie: input.cookie,
+          }
+        : undefined,
+    }
+  )
 
   if (response.status === 401) {
     return null
@@ -71,24 +89,60 @@ export async function getCurrentSession(): Promise<SessionSnapshot | null> {
   return (await response.json()) as SessionSnapshot
 }
 
-export async function redirectIfProtectedAccessMissing(): Promise<void> {
-  if (isLocalPhaseOneMode()) {
-    return
+export function getSessionAccessRedirectPath(input: {
+  access: SessionAccess
+  isLocalMode: boolean
+  session: SessionSnapshot | null
+}): "/home" | "/sign-in" | null {
+  if (input.access === "protected") {
+    return input.isLocalMode || input.session ? null : "/sign-in"
   }
 
+  if (input.isLocalMode || input.session) {
+    return "/home"
+  }
+
+  return null
+}
+
+export async function getCurrentSession(): Promise<SessionSnapshot | null> {
+  if (isLocalPhaseOneMode()) {
+    return null
+  }
+
+  const requestContext = await readSessionRequestContext()
+
+  return fetchSessionSnapshot({
+    apiBaseUrl: env.NEXT_PUBLIC_API_BASE_URL,
+    cookie: requestContext.cookie,
+    requestHost: requestContext.requestHost,
+  })
+}
+
+export async function redirectIfProtectedAccessMissing(): Promise<void> {
+  const isLocalMode = isLocalPhaseOneMode()
   const session = await getCurrentSession()
-  if (!session) {
-    redirect("/sign-in")
+  const redirectPath = getSessionAccessRedirectPath({
+    access: "protected",
+    isLocalMode,
+    session,
+  })
+
+  if (redirectPath) {
+    redirect(redirectPath)
   }
 }
 
 export async function redirectIfPublicAuthUnavailable(): Promise<void> {
-  if (isLocalPhaseOneMode()) {
-    redirect("/home")
-  }
+  const isLocalMode = isLocalPhaseOneMode()
+  const session = isLocalMode ? null : await getCurrentSession()
+  const redirectPath = getSessionAccessRedirectPath({
+    access: "public",
+    isLocalMode,
+    session,
+  })
 
-  const session = await getCurrentSession()
-  if (session) {
-    redirect("/home")
+  if (redirectPath) {
+    redirect(redirectPath)
   }
 }

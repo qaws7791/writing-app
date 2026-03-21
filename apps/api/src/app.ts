@@ -1,15 +1,13 @@
 import { Hono, type Context } from "hono"
 import { cors } from "hono/cors"
 
-import {
-  toDraftId,
-  toPromptId,
-  toUserId,
-  createDraftUseCasesAdapter,
-  createHomeUseCasesAdapter,
-  createPromptUseCasesAdapter,
-} from "@workspace/backend-core"
+import { toDraftId, toPromptId, toUserId } from "@workspace/backend-core"
 
+import type {
+  DraftApiService,
+  HomeApiService,
+  PromptApiService,
+} from "./application-services.js"
 import { toErrorResponse } from "./http/errors.js"
 import { parseJsonBody, parseValue } from "./http/request.js"
 import {
@@ -62,11 +60,11 @@ type AppServices = {
   allowedOrigins: string[]
   authDebugEnabled: boolean
   authHandler: (request: Request) => Promise<Response>
-  draftUseCases: ReturnType<typeof createDraftUseCasesAdapter>
+  draftUseCases: DraftApiService
   getSession: (request: Request) => Promise<AuthSession | null>
-  homeUseCases: ReturnType<typeof createHomeUseCasesAdapter>
+  homeUseCases: HomeApiService
   logger: ApiLogger
-  promptUseCases: ReturnType<typeof createPromptUseCasesAdapter>
+  promptUseCases: PromptApiService
   readLatestAuthEmail: (input: {
     email: string
     kind: "password-reset" | "verification"
@@ -205,7 +203,7 @@ export function createApp(services: AppServices): ApiApp {
 
     return context.json(
       response.body,
-      response.status as 400 | 401 | 403 | 404 | 500
+      response.status as 400 | 401 | 403 | 404 | 409 | 500
     )
   })
 

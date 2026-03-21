@@ -1,4 +1,5 @@
 import {
+  ConflictError,
   ForbiddenError,
   NotFoundError,
   ValidationError,
@@ -31,6 +32,13 @@ describe("toErrorResponse", () => {
 
     expect(response.status).toBe(404)
     expect(response.body.error.code).toBe("not_found")
+  })
+
+  test("maps conflict errors to 409", () => {
+    const response = toErrorResponse(new ConflictError("충돌"))
+
+    expect(response.status).toBe(409)
+    expect(response.body.error.code).toBe("conflict")
   })
 
   test("maps syntax errors to invalid_json", () => {

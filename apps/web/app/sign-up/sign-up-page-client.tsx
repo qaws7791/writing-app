@@ -25,6 +25,15 @@ function resolveErrorMessage(error: unknown): string {
   if (
     typeof error === "object" &&
     error !== null &&
+    "status" in error &&
+    error.status === 409
+  ) {
+    return "이미 가입된 이메일입니다. 로그인하거나 비밀번호 재설정을 사용해 주세요."
+  }
+
+  if (
+    typeof error === "object" &&
+    error !== null &&
     "message" in error &&
     typeof error.message === "string"
   ) {

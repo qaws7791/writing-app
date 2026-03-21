@@ -1,53 +1,100 @@
-/**
- * Common domain error types.
- * Uses discriminated unions instead of boolean flags.
- */
+import type { DraftId, PromptId, UserId } from "../brand/index"
 
-export type DomainError = {
-  kind: string
-  message: string
+type EntityId = DraftId | PromptId | UserId | number | string
+
+export type ValidationError = {
+  readonly code: "VALIDATION_ERROR"
+  readonly field?: string
+  readonly message: string
 }
 
-export type ValidationError = DomainError & {
-  kind: "validation-error"
+export type NotFoundError = {
+  readonly code: "NOT_FOUND"
+  readonly entity?: string
+  readonly id?: EntityId
+  readonly message: string
 }
 
-export function createValidationError(message: string): ValidationError {
+export type ForbiddenError = {
+  readonly code: "FORBIDDEN"
+  readonly ownerId?: UserId
+  readonly resource?: string
+  readonly message: string
+}
+
+export type ConflictError = {
+  readonly code: "CONFLICT"
+  readonly entity?: string
+  readonly message: string
+}
+
+export type DomainError =
+  | ConflictError
+  | ForbiddenError
+  | NotFoundError
+  | ValidationError
+
+export function createValidationError(
+  message: string,
+  field?: string
+): ValidationError {
   return {
-    kind: "validation-error",
+    code: "VALIDATION_ERROR",
+    field,
     message,
   }
 }
 
-export type NotFoundError = DomainError & {
-  kind: "not-found"
-}
-
-export function createNotFoundError(message: string): NotFoundError {
+export function createNotFoundError(
+  message: string,
+  details: {
+    entity?: string
+    id?: EntityId
+  } = {}
+): NotFoundError {
   return {
-    kind: "not-found",
+    code: "NOT_FOUND",
+    entity: details.entity,
+    id: details.id,
     message,
   }
 }
 
-export type ForbiddenError = DomainError & {
-  kind: "forbidden"
-}
-
-export function createForbiddenError(message: string): ForbiddenError {
+export function createForbiddenError(
+  message: string,
+  details: {
+    ownerId?: UserId
+    resource?: string
+  } = {}
+): ForbiddenError {
   return {
-    kind: "forbidden",
+    code: "FORBIDDEN",
+    ownerId: details.ownerId,
+    resource: details.resource,
     message,
   }
 }
 
-export type ConflictError = DomainError & {
-  kind: "conflict"
+export function createConflictError(
+  message: string,
+  entity?: string
+): ConflictError {
+  return {
+    code: "CONFLICT",
+    entity,
+    message,
+  }
 }
 
-export function createConflictError(message: string): ConflictError {
-  return {
-    kind: "conflict",
-    message,
+export function toHttpStatus(error: DomainError): 400 | 403 | 404 | 409 {
+  switch (error.code) {
+    case "VALIDATION_ERROR":
+      return 400
+    case "FORBIDDEN":
+      return 403
+    case "NOT_FOUND":
+      return 404
+    case "CONFLICT":
+      return 409
   }
 }

@@ -22,7 +22,7 @@ describe("createAuthEmailPort", () => {
         email: "writer@example.com",
         kind: "verification",
         level: 30,
-        msg: "auth email queued",
+        msg: "verification auth email queued: http://127.0.0.1:3000/verify?token=token-123",
         token: "token-123",
         url: "http://127.0.0.1:3000/verify?token=token-123",
       })

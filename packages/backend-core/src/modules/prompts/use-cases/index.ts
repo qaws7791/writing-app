@@ -1,11 +1,32 @@
-export type { GetPromptUseCaseOutput } from "./get-prompt-use-case"
-export { getPromptUseCase } from "./get-prompt-use-case"
+export type {
+  GetPromptUseCaseDependencies,
+  GetPromptUseCaseOutput,
+} from "./get-prompt-use-case"
+export { getPromptUseCase, makeGetPromptUseCase } from "./get-prompt-use-case"
 
-export type { ListPromptsUseCaseOutput } from "./list-prompts-use-case"
-export { listPromptsUseCase } from "./list-prompts-use-case"
+export type {
+  ListPromptsUseCaseDependencies,
+  ListPromptsUseCaseOutput,
+} from "./list-prompts-use-case"
+export {
+  listPromptsUseCase,
+  makeListPromptsUseCase,
+} from "./list-prompts-use-case"
 
-export type { SavePromptUseCaseOutput } from "./save-prompt-use-case"
-export { savePromptUseCase } from "./save-prompt-use-case"
+export type {
+  SavePromptUseCaseDependencies,
+  SavePromptUseCaseOutput,
+} from "./save-prompt-use-case"
+export {
+  makeSavePromptUseCase,
+  savePromptUseCase,
+} from "./save-prompt-use-case"
 
-export type { UnsavePromptUseCaseOutput } from "./unsave-prompt-use-case"
-export { unsavePromptUseCase } from "./unsave-prompt-use-case"
+export type {
+  UnsavePromptUseCaseDependencies,
+  UnsavePromptUseCaseOutput,
+} from "./unsave-prompt-use-case"
+export {
+  makeUnsavePromptUseCase,
+  unsavePromptUseCase,
+} from "./unsave-prompt-use-case"

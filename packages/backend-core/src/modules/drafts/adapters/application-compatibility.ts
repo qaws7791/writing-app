@@ -1,8 +1,13 @@
-import type { DraftId, PromptId, UserId } from "../../../shared/brand/index"
+import {
+  type DraftId,
+  type UserId,
+  toDraftId,
+} from "../../../shared/brand/index"
 import type {
   DraftRepository,
   PromptRepository,
 } from "../../../shared/ports/index"
+import { toApplicationError } from "../../../shared/utilities/index"
 import {
   autosaveDraftUseCase,
   createDraftUseCase,
@@ -11,14 +16,8 @@ import {
   listDraftsUseCase,
   type AutosaveDraftInput,
   type CreateDraftInput,
-  type GetDraftUseCaseOutput,
 } from "../use-cases/index"
-import {
-  draftForbidden,
-  draftNotFound,
-  draftValidationFailed,
-  type DraftModuleError,
-} from "../errors/index"
+import type { DraftModuleError } from "../errors/index"
 
 /**
  * Compatibility layer for existing API handlers.
@@ -45,8 +44,8 @@ export function createDraftUseCasesAdapter(
         () => new Date().toISOString()
       )
 
-      if (result.kind !== "success") {
-        throw toApplicationError(result)
+      if (isDraftModuleError(result)) {
+        throw toCompatibilityError(result)
       }
 
       return { draft: result.draft, kind: "autosaved" as const }
@@ -58,12 +57,12 @@ export function createDraftUseCasesAdapter(
         input,
         draftRepository,
         (id) => promptRepository.exists(id),
-        () => Math.floor(Math.random() * 1e9) as any, // TODO: use proper ID generator
+        () => toDraftId(Math.floor(Math.random() * 1e9)),
         () => new Date().toISOString()
       )
 
-      if (result.kind !== "success") {
-        throw toApplicationError(result)
+      if (isDraftModuleError(result)) {
+        throw toCompatibilityError(result)
       }
 
       return result.draft
@@ -72,16 +71,16 @@ export function createDraftUseCasesAdapter(
     async deleteDraft(userId: UserId, draftId: DraftId) {
       const result = await deleteDraftUseCase(userId, draftId, draftRepository)
 
-      if (result.kind !== "success") {
-        throw toApplicationError(result)
+      if (isDraftModuleError(result)) {
+        throw toCompatibilityError(result)
       }
     },
 
     async getDraft(userId: UserId, draftId: DraftId) {
       const result = await getDraftUseCase(userId, draftId, draftRepository)
 
-      if (result.kind !== "success") {
-        throw toApplicationError(result)
+      if (isDraftModuleError(result)) {
+        throw toCompatibilityError(result)
       }
 
       return result.draft
@@ -93,33 +92,15 @@ export function createDraftUseCasesAdapter(
   }
 }
 
-// Error conversion
-type ApplicationError = Error & { name: string }
+function toCompatibilityError(error: DraftModuleError): Error {
+  return toApplicationError(error)
+}
 
-function toApplicationError(error: DraftModuleError): ApplicationError {
-  const ApplicationError = {
-    "draft-not-found": () => {
-      const err = new Error(error.message)
-      ;(err as any).name = "NotFoundError"
-      return err
-    },
-    "draft-forbidden": () => {
-      const err = new Error(error.message)
-      ;(err as any).name = "ForbiddenError"
-      return err
-    },
-    "draft-validation-failed": () => {
-      const err = new Error(error.message)
-      ;(err as any).name = "ValidationError"
-      return err
-    },
-    "prompt-not-found": () => {
-      const err = new Error(error.message)
-      ;(err as any).name = "NotFoundError"
-      return err
-    },
-  }
-
-  const handler = ApplicationError[error.kind as keyof typeof ApplicationError]
-  return handler ? handler() : new Error(error.message)
+function isDraftModuleError(
+  result:
+    | DraftModuleError
+    | { kind: "success" }
+    | { kind: "success"; draft: unknown }
+): result is DraftModuleError {
+  return "code" in result
 }

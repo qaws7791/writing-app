@@ -3,7 +3,7 @@ import type {
   PromptRepository,
 } from "../../../shared/ports/index"
 import type { UserId } from "../../../shared/brand/index"
-import { getHomeUseCase } from "../use-cases/index"
+import { makeGetHomeUseCase } from "../use-cases/index"
 
 /**
  * Compatibility layer for existing API handlers.
@@ -12,9 +12,14 @@ export function createHomeUseCasesAdapter(
   draftRepository: DraftRepository,
   promptRepository: PromptRepository
 ) {
+  const getHome = makeGetHomeUseCase({
+    draftRepository,
+    promptRepository,
+  })
+
   return {
     async getHome(userId: UserId) {
-      return getHomeUseCase(userId, draftRepository, promptRepository)
+      return getHome(userId)
     },
   }
 }

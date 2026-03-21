@@ -1,41 +1,49 @@
-import { vi } from "vitest"
+import { vi, type Mock } from "vitest"
 
+import type { DraftContent } from "@/lib/phase-one-types"
 import type {
-  DraftContent,
-  DraftDetail,
-  DraftSummary,
-  HomeSnapshot,
-  PromptDetail,
-  PromptFilters,
-  PromptSummary,
-} from "@/lib/phase-one-types"
+  AutosaveDraftResult,
+  CreateDraftInput,
+  PhaseOneRepository,
+} from "@/lib/phase-one-repository"
 
-export function createMockPhaseOneRepository() {
+type MockedPhaseOneRepository = {
+  [TKey in keyof PhaseOneRepository]: Mock<PhaseOneRepository[TKey]>
+}
+
+export function createMockPhaseOneRepository(): MockedPhaseOneRepository {
   return {
     autosaveDraft:
       vi.fn<
         (
           draftId: number,
           input: { content?: DraftContent; title?: string }
-        ) => Promise<{ draft: DraftDetail; kind: "autosaved" }>
+        ) => Promise<AutosaveDraftResult>
       >(),
     createDraft:
       vi.fn<
-        (input: {
-          content?: DraftContent
-          sourcePromptId?: number
-          title?: string
-        }) => Promise<DraftDetail>
+        (
+          input: CreateDraftInput
+        ) => ReturnType<PhaseOneRepository["createDraft"]>
       >(),
     deleteDraft: vi.fn<(draftId: number) => Promise<void>>(),
-    getDraft: vi.fn<(draftId: number) => Promise<DraftDetail>>(),
-    getHome: vi.fn<() => Promise<HomeSnapshot>>(),
-    getPrompt: vi.fn<(promptId: number) => Promise<PromptDetail>>(),
-    listDrafts: vi.fn<() => Promise<DraftSummary[]>>(),
-    listPrompts: vi.fn<(filters?: PromptFilters) => Promise<PromptSummary[]>>(),
+    getDraft:
+      vi.fn<(draftId: number) => ReturnType<PhaseOneRepository["getDraft"]>>(),
+    getHome: vi.fn<() => ReturnType<PhaseOneRepository["getHome"]>>(),
+    getPrompt:
+      vi.fn<
+        (promptId: number) => ReturnType<PhaseOneRepository["getPrompt"]>
+      >(),
+    listDrafts: vi.fn<() => ReturnType<PhaseOneRepository["listDrafts"]>>(),
+    listPrompts:
+      vi.fn<
+        (
+          filters?: Parameters<PhaseOneRepository["listPrompts"]>[0]
+        ) => ReturnType<PhaseOneRepository["listPrompts"]>
+      >(),
     savePrompt:
       vi.fn<
-        (promptId: number) => Promise<{ kind: "saved"; savedAt: string }>
+        (promptId: number) => ReturnType<PhaseOneRepository["savePrompt"]>
       >(),
     unsavePrompt: vi.fn<(promptId: number) => Promise<void>>(),
   }

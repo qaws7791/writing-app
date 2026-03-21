@@ -1,8 +1,10 @@
 import { betterAuth } from "better-auth"
+import { createAuthMiddleware } from "better-auth/api"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
 import { authSchema, type DbClient } from "@workspace/db"
 
+import { assertEmailSignUpAllowed } from "./auth-sign-up-guard.js"
 import type { AuthEmailPort } from "./auth-email.js"
 
 const defaultTrustedOrigins = [
@@ -31,6 +33,30 @@ export function createAuth(
       provider: "sqlite",
       schema: authSchema,
     }),
+    hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/sign-up/email") {
+          return
+        }
+
+        const email =
+          typeof ctx.body?.email === "string"
+            ? ctx.body.email.trim().toLowerCase()
+            : ""
+
+        if (!email) {
+          return
+        }
+
+        await assertEmailSignUpAllowed({
+          email,
+          findExistingUserByEmail: (nextEmail) =>
+            database.query.user.findFirst({
+              where: (fields, { eq }) => eq(fields.email, nextEmail),
+            }),
+        })
+      }),
+    },
     emailAndPassword: {
       autoSignIn: false,
       enabled: true,

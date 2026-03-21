@@ -1,5 +1,9 @@
-import type { DraftId, PromptId, UserId } from "../brand/index"
-import type { PromptLevel, PromptTopic } from "../schema/index"
+import type { PromptId, UserId } from "../brand/index"
+import type {
+  PromptLengthLabel,
+  PromptLevel,
+  PromptTopic,
+} from "../schema/index"
 
 // ============================================================================
 // Result Types
@@ -22,12 +26,12 @@ export type PromptListFilters = {
 
 export type PromptSummary = {
   readonly id: PromptId
-  readonly level: number
+  readonly level: PromptLevel
   readonly saved: boolean
-  readonly suggestedLengthLabel: string
+  readonly suggestedLengthLabel: PromptLengthLabel
   readonly tags: readonly string[]
   readonly text: string
-  readonly topic: string
+  readonly topic: PromptTopic
 }
 
 export type PromptDetail = PromptSummary & {

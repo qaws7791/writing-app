@@ -1,15 +1,16 @@
 import type { PromptId, UserId } from "../../../shared/brand/index"
 import type {
-  PromptRepository,
   PromptListFilters,
+  PromptRepository,
 } from "../../../shared/ports/index"
+import { toApplicationError } from "../../../shared/utilities/index"
 import {
   getPromptUseCase,
   listPromptsUseCase,
   savePromptUseCase,
   unsavePromptUseCase,
 } from "../use-cases/index"
-import { promptNotFound, type PromptModuleError } from "../errors/index"
+import type { PromptModuleError } from "../errors/index"
 
 /**
  * Compatibility layer for existing API handlers.
@@ -21,8 +22,8 @@ export function createPromptUseCasesAdapter(
     async getPrompt(userId: UserId, promptId: PromptId) {
       const result = await getPromptUseCase(userId, promptId, promptRepository)
 
-      if (result.kind !== "success") {
-        throw toApplicationError(result)
+      if (isPromptModuleError(result)) {
+        throw toCompatibilityError(result)
       }
 
       return result.prompt
@@ -35,8 +36,8 @@ export function createPromptUseCasesAdapter(
     async savePrompt(userId: UserId, promptId: PromptId) {
       const result = await savePromptUseCase(userId, promptId, promptRepository)
 
-      if (result.kind !== "saved") {
-        throw toApplicationError(result)
+      if (isPromptModuleError(result)) {
+        throw toCompatibilityError(result)
       }
 
       return result
@@ -49,17 +50,23 @@ export function createPromptUseCasesAdapter(
         promptRepository
       )
 
-      if (result.kind !== "success") {
-        throw toApplicationError(result)
+      if (isPromptModuleError(result)) {
+        throw toCompatibilityError(result)
       }
     },
   }
 }
 
-type ApplicationError = Error & { name: string }
+function toCompatibilityError(error: PromptModuleError): Error {
+  return toApplicationError(error)
+}
 
-function toApplicationError(error: PromptModuleError): ApplicationError {
-  const err = new Error(error.message)
-  ;(err as any).name = "NotFoundError"
-  return err
+function isPromptModuleError(
+  result:
+    | PromptModuleError
+    | { kind: "saved"; savedAt: string }
+    | { kind: "success" }
+    | { kind: "success"; prompt: unknown }
+): result is PromptModuleError {
+  return "code" in result
 }

@@ -1,4 +1,4 @@
-import type { DraftId, PromptId, UserId } from "../brand/index"
+import type { DraftId, UserId } from "../brand/index"
 import type {
   DraftAccessResult,
   DraftDeleteResult,

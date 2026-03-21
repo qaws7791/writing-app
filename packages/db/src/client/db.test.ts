@@ -147,6 +147,18 @@ describe("prompt repository", () => {
       )
     ).toEqual([6])
   })
+
+  test("returns not-found when saving a missing prompt", async () => {
+    const { db } = await createTestDatabase()
+    const repository = createPromptRepository(db)
+
+    expect(await repository.exists(toPromptId(999))).toBe(false)
+    expect(
+      await repository.save(toUserId("dev-user"), toPromptId(999))
+    ).toEqual({
+      kind: "not-found",
+    })
+  })
 })
 
 describe("draft repository", () => {

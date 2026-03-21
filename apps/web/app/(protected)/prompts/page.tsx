@@ -10,7 +10,11 @@ import {
 } from "@hugeicons/core-free-icons"
 import { LevelDots } from "@/components/level-dots"
 import { createPhaseOneRepository } from "@/lib/phase-one-repository"
-import type { PromptSummary, PromptTopic } from "@/lib/phase-one-types"
+import type {
+  PromptFilters,
+  PromptSummary,
+  PromptTopic,
+} from "@/lib/phase-one-types"
 
 const topicChips: Array<PromptTopic> = [
   "일상",
@@ -32,12 +36,20 @@ export default function PromptsPage() {
   const [search, setSearch] = useState("")
   const [activeTopic, setActiveTopic] = useState<PromptTopic | null>(null)
   const deferredSearch = useDeferredValue(search)
+  const promptFilters = useMemo<PromptFilters>(() => {
+    const query = deferredSearch.trim()
+
+    return {
+      query: query.length > 0 ? query : undefined,
+      topic: activeTopic ?? undefined,
+    }
+  }, [activeTopic, deferredSearch])
 
   useEffect(() => {
     let cancelled = false
 
     void repository
-      .listPrompts()
+      .listPrompts(promptFilters)
       .then((items) => {
         if (!cancelled) {
           setPrompts(items)
@@ -58,26 +70,7 @@ export default function PromptsPage() {
     return () => {
       cancelled = true
     }
-  }, [repository])
-
-  const filteredPrompts = useMemo(() => {
-    const normalizedQuery = deferredSearch.trim().toLowerCase()
-
-    return prompts.filter((prompt) => {
-      if (activeTopic && prompt.topic !== activeTopic) {
-        return false
-      }
-
-      if (!normalizedQuery) {
-        return true
-      }
-
-      return (
-        prompt.text.toLowerCase().includes(normalizedQuery) ||
-        prompt.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery))
-      )
-    })
-  }, [activeTopic, deferredSearch, prompts])
+  }, [promptFilters, repository])
 
   async function handleToggleSave(promptId: number) {
     const target = prompts.find((prompt) => prompt.id === promptId)
@@ -164,13 +157,13 @@ export default function PromptsPage() {
             <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
               글감을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
             </div>
-          ) : filteredPrompts.length === 0 ? (
+          ) : prompts.length === 0 ? (
             <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
               조건에 맞는 글감이 없습니다. 검색어나 주제를 바꿔보세요.
             </div>
           ) : (
             <div className="flex flex-col">
-              {filteredPrompts.map((prompt) => (
+              {prompts.map((prompt) => (
                 <Link
                   key={prompt.id}
                   href={`/prompts/${prompt.id}`}

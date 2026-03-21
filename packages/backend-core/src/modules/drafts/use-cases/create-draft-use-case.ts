@@ -15,6 +15,54 @@ export type CreateDraftUseCaseOutput =
   | { kind: "success"; draft: DraftDetail }
   | DraftModuleError
 
+export type CreateDraftUseCaseDependencies = {
+  readonly createDraftId: () => DraftId
+  readonly draftRepository: DraftRepository
+  readonly getNow: () => string
+  readonly promptExists: (id: PromptId) => Promise<boolean>
+}
+
+export function makeCreateDraftUseCase(
+  dependencies: CreateDraftUseCaseDependencies
+) {
+  return async (
+    userId: UserId,
+    input: CreateDraftInput
+  ): Promise<CreateDraftUseCaseOutput> => {
+    const sourcePromptId = input.sourcePromptId ?? null
+
+    if (sourcePromptId !== null) {
+      const exists = await dependencies.promptExists(sourcePromptId)
+      if (!exists) {
+        return promptNotFound("글감을 찾을 수 없습니다.", sourcePromptId)
+      }
+    }
+
+    const content = input.content ?? createEmptyDraftContent()
+    const draft = buildDraft(
+      dependencies.createDraftId(),
+      input.title ?? "",
+      content,
+      sourcePromptId,
+      dependencies.getNow()
+    )
+
+    const persisted = await dependencies.draftRepository.create(userId, {
+      characterCount: draft.characterCount,
+      content: draft.content,
+      plainText: draft.plainText,
+      sourcePromptId: draft.sourcePromptId,
+      title: draft.title,
+      wordCount: draft.wordCount,
+    })
+
+    return {
+      draft: persisted,
+      kind: "success",
+    }
+  }
+}
+
 /**
  * Creates a new draft.
  * Validates source prompt exists if provided.
@@ -27,31 +75,10 @@ export async function createDraftUseCase(
   createId: () => DraftId,
   getNow: () => string
 ): Promise<CreateDraftUseCaseOutput> {
-  const sourcePromptId = input.sourcePromptId ?? null
-
-  if (sourcePromptId !== null) {
-    const exists = await promptExists(sourcePromptId)
-    if (!exists) {
-      return promptNotFound("글감을 찾을 수 없습니다.")
-    }
-  }
-
-  const content = input.content ?? createEmptyDraftContent()
-  const id = createId()
-  const now = getNow()
-  const draft = buildDraft(id, input.title ?? "", content, sourcePromptId, now)
-
-  const persisted = await draftRepository.create(userId, {
-    characterCount: draft.characterCount,
-    content: draft.content,
-    plainText: draft.plainText,
-    sourcePromptId: draft.sourcePromptId,
-    title: draft.title,
-    wordCount: draft.wordCount,
-  })
-
-  return {
-    draft: persisted,
-    kind: "success",
-  }
+  return makeCreateDraftUseCase({
+    createDraftId: createId,
+    draftRepository,
+    getNow,
+    promptExists,
+  })(userId, input)
 }

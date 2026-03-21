@@ -1,4 +1,5 @@
 import {
+  ConflictError,
   ForbiddenError,
   NotFoundError,
   ValidationError,
@@ -51,6 +52,18 @@ export function toErrorResponse(error: unknown): {
         },
       },
       status: 403,
+    }
+  }
+
+  if (error instanceof ConflictError) {
+    return {
+      body: {
+        error: {
+          code: "conflict",
+          message: error.message,
+        },
+      },
+      status: 409,
     }
   }
 

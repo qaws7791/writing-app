@@ -1,46 +1,21 @@
-export type PromptLevel = 1 | 2 | 3
+import type {
+  DraftContent,
+  JsonValue,
+  PromptLengthLabel,
+  PromptLevel,
+  PromptTopic,
+  TiptapMark as DraftMark,
+  TiptapNode as DraftNode,
+} from "@workspace/backend-core"
 
-export type PromptLengthLabel = "깊이" | "보통" | "짧음"
-
-export type PromptTopic =
-  | "감정"
-  | "경험"
-  | "관계"
-  | "기술"
-  | "기억"
-  | "문화"
-  | "사회"
-  | "상상"
-  | "성장"
-  | "여행"
-  | "일상"
-  | "자기이해"
-  | "진로"
-
-export type JsonValue =
-  | JsonValue[]
-  | { [key: string]: JsonValue }
-  | boolean
-  | null
-  | number
-  | string
-
-export type DraftMark = {
-  attrs?: { [key: string]: JsonValue }
-  type: string
-}
-
-export type DraftNode = {
-  attrs?: { [key: string]: JsonValue }
-  content?: DraftNode[]
-  marks?: DraftMark[]
-  text?: string
-  type: string
-}
-
-export type DraftContent = {
-  content?: DraftNode[]
-  type: "doc"
+export type {
+  DraftContent,
+  DraftMark,
+  DraftNode,
+  JsonValue,
+  PromptLengthLabel,
+  PromptLevel,
+  PromptTopic,
 }
 
 export type PromptSummary = {

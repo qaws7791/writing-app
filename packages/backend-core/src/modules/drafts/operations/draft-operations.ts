@@ -1,6 +1,6 @@
 import type { DraftContent } from "../../../shared/schema/index"
 import { extractDraftTextMetrics } from "../../../shared/utilities/index"
-import type { DraftId, PromptId, UserId } from "../../../shared/brand/index"
+import type { DraftId, PromptId } from "../../../shared/brand/index"
 import type { Draft } from "../model/index"
 import { createPreview } from "../model/index"
 
@@ -67,8 +67,8 @@ export function updateDraftTitle(
  * Validates draft input before creation.
  */
 export function validateCreateDraftInput(
-  title: string | undefined,
-  content: DraftContent | undefined
+  _title: string | undefined,
+  _content: DraftContent | undefined
 ): null {
   return null
 }

@@ -52,4 +52,28 @@ describe("sign-up page client", () => {
     ).toBeInTheDocument()
     expect(screen.getByText("new-user@example.com")).toBeInTheDocument()
   })
+
+  test("shows duplicate email guidance when sign-up conflicts", async () => {
+    const user = userEvent.setup()
+    signUpEmail.mockResolvedValue({
+      data: null,
+      error: {
+        message: "ignored",
+        status: 409,
+      },
+    })
+
+    render(<SignUpPageClient />)
+
+    await user.type(screen.getByLabelText("이름"), "기존 사용자")
+    await user.type(screen.getByLabelText("이메일"), "existing@example.com")
+    await user.type(screen.getByLabelText("비밀번호"), "password1234")
+    await user.click(screen.getByRole("button", { name: "인증 메일 보내기" }))
+
+    expect(
+      await screen.findByText(
+        "이미 가입된 이메일입니다. 로그인하거나 비밀번호 재설정을 사용해 주세요."
+      )
+    ).toBeInTheDocument()
+  })
 })

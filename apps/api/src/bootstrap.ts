@@ -1,9 +1,4 @@
 import {
-  createDraftUseCasesAdapter,
-  createHomeUseCasesAdapter,
-  createPromptUseCasesAdapter,
-} from "@workspace/backend-core"
-import {
   createDraftRepository,
   createPromptRepository,
   migrateDatabase,
@@ -12,6 +7,11 @@ import {
   seedDatabase,
 } from "@workspace/db"
 
+import {
+  createDraftApiService,
+  createHomeApiService,
+  createPromptApiService,
+} from "./application-services.js"
 import { createApp } from "./app.js"
 import { createAuth } from "./auth.js"
 import { createAuthEmailPort } from "./auth-email.js"
@@ -66,15 +66,15 @@ export async function createApiDependencies(
   const promptRepository = createPromptRepository(database.db)
   const draftRepository = createDraftRepository(database.db)
 
-  const promptUseCases = createPromptUseCasesAdapter(promptRepository)
-  const draftUseCases = createDraftUseCasesAdapter(
+  const promptUseCases = createPromptApiService(promptRepository)
+  const draftUseCases = createDraftApiService({
     draftRepository,
-    promptRepository
-  )
-  const homeUseCases = createHomeUseCasesAdapter(
+    promptRepository,
+  })
+  const homeUseCases = createHomeApiService({
     draftRepository,
-    promptRepository
-  )
+    promptRepository,
+  })
 
   logger.info(
     {

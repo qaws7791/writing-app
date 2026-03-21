@@ -32,6 +32,17 @@ function createKey(kind: AuthEmailKind, email: string): string {
   return `${kind}:${email.trim().toLowerCase()}`
 }
 
+function createLogMessage(
+  message: Pick<AuthEmailMessage, "kind" | "url">,
+  exposeSensitiveData: boolean
+): string {
+  if (!exposeSensitiveData) {
+    return "auth email queued"
+  }
+
+  return `${message.kind} auth email queued: ${message.url}`
+}
+
 export function createAuthEmailPort(input: {
   exposeSensitiveData: boolean
   logger: ApiLogger
@@ -52,7 +63,7 @@ export function createAuthEmailPort(input: {
             email: message.email,
             kind: message.kind,
           },
-      "auth email queued"
+      createLogMessage(message, input.exposeSensitiveData)
     )
   }
 

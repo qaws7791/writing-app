@@ -1,1 +1,1 @@
-// Prompts model (placeholder - extends port types)
+export type { PromptDetail, PromptSummary } from "../../../shared/ports/index"

@@ -11,6 +11,10 @@ import {
 import { usePathname, useRouter } from "next/navigation"
 
 import {
+  createPhaseOneRepository,
+  type PhaseOneRepository,
+} from "@/lib/phase-one-repository"
+import {
   consumeRedirectDraftSnapshot,
   createDraftSnapshotFromDetail,
   createEditorDraftSnapshot,
@@ -26,7 +30,6 @@ import {
   type FlushPendingDraftResult,
   useEditorLeaveGuard,
 } from "@/hooks/use-editor-leave-guard"
-import { createPhaseOneRepository } from "@/lib/phase-one-repository"
 import {
   draftContentToHtml,
   draftContentToPlainText,
@@ -56,7 +59,10 @@ export function useWritingNewPage({
   initialPromptId = null,
 }: WritingNewPageClientProps) {
   const pathname = usePathname()
-  const repository = useMemo(() => createPhaseOneRepository(), [])
+  const repository = useMemo<PhaseOneRepository>(
+    () => createPhaseOneRepository(),
+    []
+  )
   const router = useRouter()
   const titleRef = useRef<HTMLHeadingElement>(null)
   const isMountedRef = useRef(true)
