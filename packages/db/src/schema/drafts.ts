@@ -1,4 +1,4 @@
-import type { DraftContent } from "@workspace/domain"
+import type { DraftContent } from "@workspace/backend-core"
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
 import { prompts } from "./prompts.js"

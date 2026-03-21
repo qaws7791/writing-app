@@ -29,9 +29,8 @@
       "name": "api",
       "dependencies": {
         "@t3-oss/env-core": "^0.13.10",
-        "@workspace/application": "workspace:*",
+        "@workspace/backend-core": "workspace:*",
         "@workspace/db": "workspace:*",
-        "@workspace/domain": "workspace:*",
         "better-auth": "^1.3.4",
         "hono": "^4.12.5",
         "pino": "^10.3.1",
@@ -111,11 +110,11 @@
         "typescript": "^5.9.3",
       },
     },
-    "packages/application": {
-      "name": "@workspace/application",
+    "packages/backend-core": {
+      "name": "@workspace/backend-core",
       "version": "0.0.0",
       "dependencies": {
-        "@workspace/domain": "workspace:*",
+        "zod": "^3.25.76",
       },
       "devDependencies": {
         "@workspace/eslint-config": "workspace:*",
@@ -128,7 +127,7 @@
       "name": "@workspace/db",
       "version": "0.0.0",
       "dependencies": {
-        "@workspace/domain": "workspace:*",
+        "@workspace/backend-core": "workspace:*",
         "drizzle-orm": "^0.44.6",
       },
       "devDependencies": {
@@ -136,19 +135,6 @@
         "@workspace/eslint-config": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
         "drizzle-kit": "^0.31.5",
-        "eslint": "^9.39.2",
-        "typescript": "^5.9.3",
-      },
-    },
-    "packages/domain": {
-      "name": "@workspace/domain",
-      "version": "0.0.0",
-      "dependencies": {
-        "zod": "^3.25.76",
-      },
-      "devDependencies": {
-        "@workspace/eslint-config": "workspace:*",
-        "@workspace/typescript-config": "workspace:*",
         "eslint": "^9.39.2",
         "typescript": "^5.9.3",
       },
@@ -862,11 +848,9 @@
 
     "@vitest/utils": ["@vitest/utils@4.1.0", "", { "dependencies": { "@vitest/pretty-format": "4.1.0", "convert-source-map": "^2.0.0", "tinyrainbow": "^3.0.3" } }, "sha512-XfPXT6a8TZY3dcGY8EdwsBulFCIw+BeeX0RZn2x/BtiY/75YGh8FeWGG8QISN/WhaqSrE2OrlDgtF8q5uhOTmw=="],
 
-    "@workspace/application": ["@workspace/application@workspace:packages/application"],
+    "@workspace/backend-core": ["@workspace/backend-core@workspace:packages/backend-core"],
 
     "@workspace/db": ["@workspace/db@workspace:packages/db"],
-
-    "@workspace/domain": ["@workspace/domain@workspace:packages/domain"],
 
     "@workspace/eslint-config": ["@workspace/eslint-config@workspace:packages/eslint-config"],
 

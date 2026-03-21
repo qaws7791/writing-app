@@ -2,11 +2,13 @@ import { Hono, type Context } from "hono"
 import { cors } from "hono/cors"
 
 import {
-  createDraftUseCases,
-  createHomeUseCases,
-  createPromptUseCases,
-} from "@workspace/application"
-import { toDraftId, toPromptId, toUserId } from "@workspace/domain"
+  toDraftId,
+  toPromptId,
+  toUserId,
+  createDraftUseCasesAdapter,
+  createHomeUseCasesAdapter,
+  createPromptUseCasesAdapter,
+} from "@workspace/backend-core"
 
 import { toErrorResponse } from "./http/errors.js"
 import { parseJsonBody, parseValue } from "./http/request.js"
@@ -60,11 +62,11 @@ type AppServices = {
   allowedOrigins: string[]
   authDebugEnabled: boolean
   authHandler: (request: Request) => Promise<Response>
-  draftUseCases: ReturnType<typeof createDraftUseCases>
+  draftUseCases: ReturnType<typeof createDraftUseCasesAdapter>
   getSession: (request: Request) => Promise<AuthSession | null>
-  homeUseCases: ReturnType<typeof createHomeUseCases>
+  homeUseCases: ReturnType<typeof createHomeUseCasesAdapter>
   logger: ApiLogger
-  promptUseCases: ReturnType<typeof createPromptUseCases>
+  promptUseCases: ReturnType<typeof createPromptUseCasesAdapter>
   readLatestAuthEmail: (input: {
     email: string
     kind: "password-reset" | "verification"

@@ -2,7 +2,7 @@ import type {
   PromptLengthLabel,
   PromptLevel,
   PromptTopic,
-} from "@workspace/domain"
+} from "@workspace/backend-core"
 
 export type SeedPrompt = {
   description: string

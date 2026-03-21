@@ -48,6 +48,8 @@
   - `any`
   - weak `Record<string, unknown>` usage where a real type should exist
   - generic `{ success: boolean, data?: unknown, error?: string }` result shapes
+- Do not include the file extension in the import path.
+- Always use absolute paths when importing.
 
 ### Code Style
 

@@ -1,5 +1,5 @@
-import type { PromptLengthLabel, PromptTopic } from "@workspace/domain"
-import { promptTopics } from "@workspace/domain"
+import type { PromptLengthLabel, PromptTopic } from "@workspace/backend-core"
+import { promptTopics } from "@workspace/backend-core"
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
 const promptLengthLabels = [

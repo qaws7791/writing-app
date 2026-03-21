@@ -1,8 +1,8 @@
 import {
-  createDraftUseCases,
-  createHomeUseCases,
-  createPromptUseCases,
-} from "@workspace/application"
+  createDraftUseCasesAdapter,
+  createHomeUseCasesAdapter,
+  createPromptUseCasesAdapter,
+} from "@workspace/backend-core"
 import {
   createDraftRepository,
   createPromptRepository,
@@ -66,9 +66,15 @@ export async function createApiDependencies(
   const promptRepository = createPromptRepository(database.db)
   const draftRepository = createDraftRepository(database.db)
 
-  const promptUseCases = createPromptUseCases(promptRepository)
-  const draftUseCases = createDraftUseCases(draftRepository, promptRepository)
-  const homeUseCases = createHomeUseCases(draftRepository, promptRepository)
+  const promptUseCases = createPromptUseCasesAdapter(promptRepository)
+  const draftUseCases = createDraftUseCasesAdapter(
+    draftRepository,
+    promptRepository
+  )
+  const homeUseCases = createHomeUseCasesAdapter(
+    draftRepository,
+    promptRepository
+  )
 
   logger.info(
     {

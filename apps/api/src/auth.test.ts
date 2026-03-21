@@ -6,7 +6,7 @@ import {
   createEmptyDraftContent,
   toDraftId,
   toPromptId,
-} from "@workspace/domain"
+} from "@workspace/backend-core"
 
 import { createApp } from "./app.js"
 import { createAuthEmailPort } from "./auth-email.js"

@@ -2,7 +2,7 @@ import {
   ForbiddenError,
   NotFoundError,
   ValidationError,
-} from "@workspace/application"
+} from "@workspace/backend-core"
 
 import { toErrorResponse } from "./errors.js"
 
