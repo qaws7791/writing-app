@@ -22,6 +22,8 @@
     "typescript": "^5.9.3"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts",
+    "./testing": "./src/testing/index.ts"
   }
 }

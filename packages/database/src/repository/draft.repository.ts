@@ -1,10 +1,7 @@
 import { desc, eq } from "drizzle-orm"
 import {
   toDraftId,
-  toPromptId,
-  toUserId,
   type DraftAccessResult,
-  type DraftContent,
   type DraftDeleteResult,
   type DraftDetail,
   type DraftId,
@@ -17,30 +14,16 @@ import {
 
 import { drafts } from "../schema/index.js"
 import type { DbClient, DraftRow } from "../types/index.js"
+import {
+  mapDraftAccessResult,
+  mapDraftDetail,
+  mapDraftForbiddenResult,
+  mapDraftSummary,
+  toDraftIdValue,
+  toPromptIdValue,
+} from "./draft.mappers.js"
 
-function createDraftPreview(plainText: string): string {
-  return plainText.length <= 120 ? plainText : `${plainText.slice(0, 120)}...`
-}
-
-function toDraftIdValue(draftId: DraftId): number {
-  return draftId as number
-}
-
-function toPromptIdValue(
-  promptId: DraftPersistInput["sourcePromptId"]
-): number | null {
-  return promptId === null ? null : (promptId as number)
-}
-
-function toForbiddenDraftResult(ownerId: string): {
-  kind: "forbidden"
-  ownerId: UserId
-} {
-  return {
-    kind: "forbidden",
-    ownerId: toUserId(ownerId),
-  }
-}
+type Clock = () => string
 
 function loadDraftRow(database: DbClient, draftId: DraftId): DraftRow | null {
   return (
@@ -53,47 +36,10 @@ function loadDraftRow(database: DbClient, draftId: DraftId): DraftRow | null {
   )
 }
 
-function mapDraftSummary(row: DraftRow): DraftSummary {
-  return {
-    characterCount: row.characterCount,
-    id: toDraftId(row.id),
-    lastSavedAt: row.lastSavedAt,
-    preview: createDraftPreview(row.bodyPlainText),
-    sourcePromptId:
-      row.sourcePromptId === null ? null : toPromptId(row.sourcePromptId),
-    title: row.title,
-    wordCount: row.wordCount,
-  }
-}
-
-function mapDraftDetail(row: DraftRow): DraftDetail {
-  return {
-    ...mapDraftSummary(row),
-    content: row.bodyJson as DraftContent,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  }
-}
-
-function mapDraftAccessResult(
-  userId: UserId,
-  row: DraftRow | null
-): DraftAccessResult {
-  if (!row) {
-    return { kind: "not-found" }
-  }
-
-  if (row.userId !== userId) {
-    return toForbiddenDraftResult(row.userId)
-  }
-
-  return {
-    draft: mapDraftDetail(row),
-    kind: "draft",
-  }
-}
-
-export function createDraftRepository(database: DbClient): DraftRepository {
+export function createDraftRepository(
+  database: DbClient,
+  clock: Clock = () => new Date().toISOString()
+): DraftRepository {
   async function getDraftById(
     userId: UserId,
     draftId: DraftId
@@ -106,7 +52,7 @@ export function createDraftRepository(database: DbClient): DraftRepository {
       userId: UserId,
       input: DraftPersistInput
     ): Promise<DraftDetail> {
-      const now = new Date().toISOString()
+      const now = clock()
       const created = database
         .insert(drafts)
         .values({
@@ -144,7 +90,7 @@ export function createDraftRepository(database: DbClient): DraftRepository {
       }
 
       if (row.userId !== userId) {
-        return toForbiddenDraftResult(row.userId)
+        return mapDraftForbiddenResult(row.userId)
       }
 
       database
@@ -186,10 +132,10 @@ export function createDraftRepository(database: DbClient): DraftRepository {
       }
 
       if (current.userId !== userId) {
-        return toForbiddenDraftResult(current.userId)
+        return mapDraftForbiddenResult(current.userId)
       }
 
-      const now = new Date().toISOString()
+      const now = clock()
 
       database
         .update(drafts)

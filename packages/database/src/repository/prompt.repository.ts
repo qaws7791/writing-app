@@ -1,146 +1,63 @@
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  isNotNull,
-  isNull,
-  like,
-  or,
-  sql,
-  type SQL,
-} from "drizzle-orm"
-import {
-  toPromptId,
-  type PromptDetail,
-  type PromptId,
-  type PromptListFilters,
-  type PromptRepository,
-  type PromptSaveResult,
-  type PromptSummary,
-  type UserId,
+import { and, asc, desc, eq, sql } from "drizzle-orm"
+import type {
+  PromptDetail,
+  PromptId,
+  PromptListFilters,
+  PromptRepository,
+  PromptSaveResult,
+  PromptSummary,
+  UserId,
 } from "@workspace/core"
 
 import { prompts, savedPrompts } from "../schema/index.js"
 import type { DbClient } from "../types/index.js"
+import {
+  buildPromptListConditions,
+  mapPromptDetail,
+  mapPromptSummary,
+  savedExpression,
+  toPromptIdValue,
+} from "./prompt.mappers.js"
 
-type PromptSummaryRow = {
-  id: number
-  level: 1 | 2 | 3
-  saved: number
-  suggestedLengthLabel: "깊이" | "보통" | "짧음"
-  tagsJson: string[]
-  text: string
-  topic:
-    | "감정"
-    | "경험"
-    | "관계"
-    | "기술"
-    | "기억"
-    | "문화"
-    | "사회"
-    | "상상"
-    | "성장"
-    | "여행"
-    | "일상"
-    | "자기이해"
-    | "진로"
-}
-
-type PromptDetailRow = PromptSummaryRow & {
-  description: string
-  outlineJson: string[]
-  tipsJson: string[]
-}
-
-const savedExpression = sql<number>`case when ${savedPrompts.promptId} is null then 0 else 1 end`
-
-function toPromptIdValue(promptId: PromptId): number {
-  return promptId as number
-}
-
-function buildPromptListConditions(filters: PromptListFilters): SQL[] {
-  const conditions: SQL[] = []
-
-  if (filters.query) {
-    const likeQuery = `%${filters.query}%`
-    conditions.push(
-      or(like(prompts.text, likeQuery), like(prompts.description, likeQuery))!
-    )
-  }
-
-  if (filters.topic) {
-    conditions.push(eq(prompts.topic, filters.topic))
-  }
-
-  if (filters.level) {
-    conditions.push(eq(prompts.level, filters.level))
-  }
-
-  if (filters.saved === true) {
-    conditions.push(isNotNull(savedPrompts.promptId))
-  }
-
-  if (filters.saved === false) {
-    conditions.push(isNull(savedPrompts.promptId))
-  }
-
-  return conditions
-}
-
-function mapPromptSummary(row: PromptSummaryRow): PromptSummary {
-  return {
-    id: toPromptId(row.id),
-    level: row.level,
-    saved: row.saved === 1,
-    suggestedLengthLabel: row.suggestedLengthLabel,
-    tags: row.tagsJson,
-    text: row.text,
-    topic: row.topic,
-  }
-}
-
-function mapPromptDetail(row: PromptDetailRow): PromptDetail {
-  return {
-    ...mapPromptSummary(row),
-    description: row.description,
-    outline: row.outlineJson,
-    tips: row.tipsJson,
-  }
-}
+type Clock = () => string
 
 function loadPromptDetailRow(
   database: DbClient,
   userId: UserId,
   promptId: PromptId
-): PromptDetailRow | null {
-  return database
-    .select({
-      description: prompts.description,
-      id: prompts.id,
-      level: prompts.level,
-      outlineJson: prompts.outlineJson,
-      saved: savedExpression,
-      suggestedLengthLabel: prompts.suggestedLengthLabel,
-      tagsJson: prompts.tagsJson,
-      text: prompts.text,
-      tipsJson: prompts.tipsJson,
-      topic: prompts.topic,
-    })
-    .from(prompts)
-    .leftJoin(
-      savedPrompts,
-      and(
-        eq(savedPrompts.promptId, prompts.id),
-        eq(savedPrompts.userId, userId)
+) {
+  return (
+    database
+      .select({
+        description: prompts.description,
+        id: prompts.id,
+        level: prompts.level,
+        outlineJson: prompts.outlineJson,
+        saved: savedExpression,
+        suggestedLengthLabel: prompts.suggestedLengthLabel,
+        tagsJson: prompts.tagsJson,
+        text: prompts.text,
+        tipsJson: prompts.tipsJson,
+        topic: prompts.topic,
+      })
+      .from(prompts)
+      .leftJoin(
+        savedPrompts,
+        and(
+          eq(savedPrompts.promptId, prompts.id),
+          eq(savedPrompts.userId, userId)
+        )
       )
-    )
-    .where(eq(prompts.id, toPromptIdValue(promptId)))
-    .limit(1)
-    .get() as PromptDetailRow | null
+      .where(eq(prompts.id, toPromptIdValue(promptId)))
+      .limit(1)
+      .get() ?? null
+  )
 }
 
-export function createPromptRepository(database: DbClient): PromptRepository {
+export function createPromptRepository(
+  database: DbClient,
+  clock: Clock = () => new Date().toISOString()
+): PromptRepository {
   return {
     async exists(promptId: PromptId): Promise<boolean> {
       const row =
@@ -187,7 +104,7 @@ export function createPromptRepository(database: DbClient): PromptRepository {
         )
         .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(asc(prompts.id))
-        .all() as PromptSummaryRow[]
+        .all()
 
       return rows.map(mapPromptSummary)
     },
@@ -208,7 +125,7 @@ export function createPromptRepository(database: DbClient): PromptRepository {
         .where(eq(savedPrompts.userId, userId))
         .orderBy(desc(savedPrompts.savedAt), asc(prompts.id))
         .limit(limit)
-        .all() as PromptSummaryRow[]
+        .all()
 
       return rows.map(mapPromptSummary)
     },
@@ -238,7 +155,7 @@ export function createPromptRepository(database: DbClient): PromptRepository {
         .where(eq(prompts.isTodayRecommended, true))
         .orderBy(asc(prompts.todayRecommendationOrder), asc(prompts.id))
         .limit(limit)
-        .all() as PromptSummaryRow[]
+        .all()
 
       return rows.map(mapPromptSummary)
     },
@@ -250,7 +167,7 @@ export function createPromptRepository(database: DbClient): PromptRepository {
         return { kind: "not-found" }
       }
 
-      const savedAt = new Date().toISOString()
+      const savedAt = clock()
       database
         .insert(savedPrompts)
         .values({

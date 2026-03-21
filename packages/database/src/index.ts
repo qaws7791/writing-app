@@ -1,4 +1,24 @@
-export * from "./client/index.js"
-export * from "./seed-data.js"
-export * from "./schema/index.js"
-export * from "./types/index.js"
+export {
+  migrateDatabase,
+  openDb,
+  readSqliteVersion,
+  resetDatabaseFile,
+  seedDatabase,
+  type OpenedDb,
+} from "./connection/index.js"
+export {
+  createDraftRepository,
+  createPromptRepository,
+} from "./repository/index.js"
+export {
+  account,
+  authSchema,
+  drafts,
+  prompts,
+  savedPrompts,
+  schema,
+  session,
+  user,
+  verification,
+} from "./schema/index.js"
+export type { DbClient, DbSchema } from "./types/index.js"
