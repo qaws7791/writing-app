@@ -1,4 +1,4 @@
-import { migrateDatabase, openDb, seedDatabase } from "@workspace/db"
+import { migrateDatabase, openDb, seedDatabase } from "@workspace/database"
 
 import { readApiEnvironment } from "../bootstrap.js"
 import { createApiLogger } from "../logger.js"

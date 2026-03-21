@@ -5,7 +5,7 @@ import {
   openDb,
   readSqliteVersion,
   seedDatabase,
-} from "@workspace/db"
+} from "@workspace/database"
 
 import {
   createDraftApiService,

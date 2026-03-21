@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth"
 import { createAuthMiddleware } from "better-auth/api"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
-import { authSchema, type DbClient } from "@workspace/db"
+import { authSchema, type DbClient } from "@workspace/database"
 
 import { assertEmailSignUpAllowed } from "./auth-sign-up-guard.js"
 import type { AuthEmailPort } from "./auth-email.js"

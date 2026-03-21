@@ -3,7 +3,7 @@ import {
   openDb,
   resetDatabaseFile,
   seedDatabase,
-} from "@workspace/db"
+} from "@workspace/database"
 
 import { readApiEnvironment } from "../bootstrap.js"
 import { createApiLogger } from "../logger.js"
