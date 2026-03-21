@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "db:reset": "bun --env-file=.env.development run src/scripts/db-reset.ts",
-    "dev": "bun --env-file=.env.development run --hot src/index.ts",
+    "dev": "cd ../../ && bun --env-file=apps/api/.env.development run --hot apps/api/src/index.ts",
     "lint": "eslint .",
     "seed": "bun --env-file=.env.development run src/scripts/seed.ts",
     "test": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts --pool=forks --maxWorkers=1 --no-file-parallelism",
