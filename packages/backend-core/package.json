@@ -4,12 +4,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "build": "tsc",
     "lint": "eslint .",
     "test": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts --pool=forks --maxWorkers=1 --no-file-parallelism",
     "test:watch": "node ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts --pool=forks --maxWorkers=1 --no-file-parallelism",
-    "typecheck": "tsc --noEmit -p tsconfig.build.json"
+    "typecheck": "tsc --noEmit --skipLibCheck true"
   },
   "dependencies": {
     "zod": "^3.25.76"
@@ -21,21 +20,9 @@
     "typescript": "^5.9.3"
   },
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    },
-    "./modules/drafts": {
-      "types": "./dist/modules/drafts/index.d.ts",
-      "default": "./dist/modules/drafts/index.js"
-    },
-    "./modules/prompts": {
-      "types": "./dist/modules/prompts/index.d.ts",
-      "default": "./dist/modules/prompts/index.js"
-    },
-    "./modules/home": {
-      "types": "./dist/modules/home/index.d.ts",
-      "default": "./dist/modules/home/index.js"
-    }
+    ".": "./src/index.ts",
+    "./modules/drafts": "./src/modules/drafts/index.ts",
+    "./modules/prompts": "./src/modules/prompts/index.ts",
+    "./modules/home": "./src/modules/home/index.ts"
   }
 }

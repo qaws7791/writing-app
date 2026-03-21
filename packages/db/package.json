@@ -4,8 +4,6 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "drizzle:generate": "drizzle-kit generate --config drizzle.config.ts",
     "lint": "eslint .",
     "test": "bun test",
@@ -25,9 +23,6 @@
     "typescript": "^5.9.3"
   },
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
+    ".": "./src/index.ts"
   }
 }

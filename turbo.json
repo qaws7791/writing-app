@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["CI", "NODE_ENV", "WORKSPACE_DEPS_WATCH"],
+  "globalEnv": ["CI", "NODE_ENV"],
   "ui": "tui",
   "tasks": {
     "build": {
@@ -15,10 +15,10 @@
       "dependsOn": ["^format"]
     },
     "typecheck": {
-      "dependsOn": ["^build", "^typecheck"]
+      "dependsOn": ["^typecheck"]
     },
     "test": {
-      "dependsOn": ["^build", "^test"],
+      "dependsOn": ["^test"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"]
     },
     "dev": {

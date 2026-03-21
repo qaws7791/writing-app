@@ -2,17 +2,14 @@
   "name": "api",
   "type": "module",
   "scripts": {
-    "build:deps": "bun run src/scripts/build-workspace-deps.ts",
-    "prepare:deps": "bun run build:deps && bun run src/scripts/sync-workspace-deps.ts",
-    "db:reset": "bun run prepare:deps && bun --env-file=.env.development run src/scripts/db-reset.ts",
-    "dev": "bun run src/scripts/dev.ts",
-    "dev:server": "bun --env-file=.env.development run --hot src/index.ts",
-    "lint": "eslint . --ignore-pattern .workspace-deps",
-    "seed": "bun run prepare:deps && bun --env-file=.env.development run src/scripts/seed.ts",
+    "db:reset": "bun --env-file=.env.development run src/scripts/db-reset.ts",
+    "dev": "bun --env-file=.env.development run --hot src/index.ts",
+    "lint": "eslint .",
+    "seed": "bun --env-file=.env.development run src/scripts/seed.ts",
     "test": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts --pool=forks --maxWorkers=1 --no-file-parallelism",
-    "test:serve": "bun run prepare:deps && bun --env-file=.env.test run src/scripts/db-reset.ts && bun --env-file=.env.test run src/index.ts",
+    "test:serve": "bun --env-file=.env.test run src/scripts/db-reset.ts && bun --env-file=.env.test run src/index.ts",
     "test:watch": "node ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts --pool=forks --maxWorkers=1 --no-file-parallelism",
-    "typecheck": "bun run prepare:deps && tsc --noEmit"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.10",
