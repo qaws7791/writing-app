@@ -13,6 +13,31 @@ const repository = createMockPhaseOneRepository()
 const replace = vi.fn()
 const push = vi.fn()
 
+vi.mock("next/link", () => ({
+  default: ({
+    children,
+    href,
+    onClick,
+    ...props
+  }: React.ComponentProps<"a"> & { href: string }) => (
+    <a
+      {...props}
+      href={href}
+      onClick={(event) => {
+        onClick?.(event)
+        if (event.defaultPrevented) {
+          return
+        }
+
+        event.preventDefault()
+        push(href)
+      }}
+    >
+      {children}
+    </a>
+  ),
+}))
+
 vi.mock("@/lib/phase-one-repository", () => ({
   createPhaseOneRepository: () => repository,
 }))
@@ -22,6 +47,7 @@ vi.mock("next/navigation", () => ({
     push,
     replace,
   }),
+  usePathname: () => "/write/new",
 }))
 
 vi.mock("@/components/writing-body-editor", () => ({
@@ -84,9 +110,13 @@ vi.mock("@workspace/ui/components/dropdown-menu", () => ({
 }))
 
 vi.mock("@workspace/ui/components/alert-dialog", () => ({
-  AlertDialog: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
+  AlertDialog: ({
+    children,
+    open = true,
+  }: {
+    children: React.ReactNode
+    open?: boolean
+  }) => (open ? <div>{children}</div> : null),
   AlertDialogAction: ({
     children,
     onClick,
@@ -94,9 +124,13 @@ vi.mock("@workspace/ui/components/alert-dialog", () => ({
     children: React.ReactNode
     onClick?: () => void
   }) => <button onClick={onClick}>{children}</button>,
-  AlertDialogCancel: ({ children }: { children: React.ReactNode }) => (
-    <button>{children}</button>
-  ),
+  AlertDialogCancel: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode
+    onClick?: () => void
+  }) => <button onClick={onClick}>{children}</button>,
   AlertDialogContent: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
@@ -154,6 +188,7 @@ describe("writing new page client", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useRealTimers()
+    window.history.replaceState({}, "", "/write/new")
     repository.getPrompt.mockResolvedValue(
       createPromptDetail({ id: 1, text: "연결된 글감" })
     )
@@ -297,6 +332,32 @@ describe("writing new page client", () => {
     expect(repository.autosaveDraft).not.toHaveBeenCalled()
   })
 
+  test("navigates away without save calls when there are no pending changes", async () => {
+    const user = userEvent.setup()
+
+    render(<WritingNewPageClient initialPromptId={1} />)
+
+    await settleLoader()
+    await user.click(screen.getByRole("link", { name: "뒤로 가기" }))
+
+    expect(repository.createDraft).not.toHaveBeenCalled()
+    expect(repository.autosaveDraft).not.toHaveBeenCalled()
+    expect(push).toHaveBeenCalledWith("/write")
+  })
+
+  test("does not warn on beforeunload when there are no pending changes", async () => {
+    render(<WritingNewPageClient initialPromptId={1} />)
+
+    await settleLoader()
+
+    const event = new Event("beforeunload", { cancelable: true })
+    const dispatchResult = window.dispatchEvent(event)
+
+    expect(dispatchResult).toBe(true)
+    expect(repository.createDraft).not.toHaveBeenCalled()
+    expect(repository.autosaveDraft).not.toHaveBeenCalled()
+  })
+
   test("autosaves an existing draft only after the 3 second interval", async () => {
     vi.useFakeTimers()
     repository.getDraft.mockResolvedValue(
@@ -345,6 +406,75 @@ describe("writing new page client", () => {
     })
     expect(repository.autosaveDraft).toHaveBeenCalledTimes(1)
     expect(screen.getByText(/임시 저장됨/)).toBeInTheDocument()
+
+    const event = new Event("beforeunload", { cancelable: true })
+    const dispatchResult = window.dispatchEvent(event)
+    expect(dispatchResult).toBe(true)
+  })
+
+  test("flushes pending changes before leaving an existing draft", async () => {
+    const user = userEvent.setup()
+
+    repository.getDraft.mockResolvedValue(
+      createDraftDetail({
+        id: 7,
+        sourcePromptId: null,
+        title: "자동저장 대상",
+      })
+    )
+    repository.autosaveDraft.mockResolvedValue({
+      draft: createDraftDetail({
+        id: 7,
+        content: createDraftContent("에디터 변경"),
+        lastSavedAt: "2026-03-20T12:00:00.000Z",
+        title: "자동저장 대상",
+      }),
+      kind: "autosaved",
+    })
+
+    render(<WritingNewPageClient draftId={7} />)
+
+    await settleLoader()
+    fireEvent.click(screen.getByRole("button", { name: "본문 변경" }))
+    await user.click(screen.getByRole("link", { name: "뒤로 가기" }))
+
+    await waitFor(() => {
+      expect(repository.autosaveDraft).toHaveBeenCalledWith(
+        7,
+        expect.objectContaining({
+          content: createDraftContent("에디터 변경"),
+        })
+      )
+    })
+    expect(push).toHaveBeenCalledWith("/write")
+  })
+
+  test("leaves a new draft without canonical replace after leave flush", async () => {
+    const user = userEvent.setup()
+    const pendingCreate = createDeferred<ReturnType<typeof createDraftDetail>>()
+
+    repository.createDraft.mockReturnValueOnce(pendingCreate.promise)
+
+    render(<WritingNewPageClient initialPromptId={1} />)
+
+    await settleLoader()
+    inputTitle("이동 전 초안")
+    await flushAsyncWork()
+    await user.click(screen.getByRole("link", { name: "뒤로 가기" }))
+
+    expect(push).not.toHaveBeenCalled()
+
+    pendingCreate.resolve(
+      createDraftDetail({
+        id: 41,
+        title: "이동 전 초안",
+      })
+    )
+
+    await waitFor(() => {
+      expect(push).toHaveBeenCalledWith("/write")
+    })
+    expect(replace).not.toHaveBeenCalledWith("/write/41")
   })
 
   test("retries autosave on the next interval after a failure", async () => {
@@ -388,6 +518,40 @@ describe("writing new page client", () => {
     expect(screen.getByText(/임시 저장됨/)).toBeInTheDocument()
   })
 
+  test("shows a leave confirmation dialog when immediate save fails", async () => {
+    const user = userEvent.setup()
+
+    repository.getDraft.mockResolvedValue(
+      createDraftDetail({
+        id: 9,
+        title: "재시도 대상",
+      })
+    )
+    repository.autosaveDraft.mockRejectedValue(new Error("boom"))
+
+    render(<WritingNewPageClient draftId={9} />)
+
+    await settleLoader()
+    fireEvent.click(screen.getByRole("button", { name: "본문 변경" }))
+    await user.click(screen.getByRole("link", { name: "뒤로 가기" }))
+
+    expect(
+      await screen.findByText("저장되지 않은 변경이 있습니다")
+    ).toBeInTheDocument()
+    expect(push).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole("button", { name: "계속 작성" }))
+    expect(push).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole("link", { name: "뒤로 가기" }))
+    expect(
+      await screen.findByText("저장되지 않은 변경이 있습니다")
+    ).toBeInTheDocument()
+    await user.click(screen.getByRole("button", { name: "나가기" }))
+
+    expect(push).toHaveBeenCalledWith("/write")
+  })
+
   test("deletes a draft and returns to the list", async () => {
     const user = userEvent.setup()
 
@@ -402,7 +566,8 @@ describe("writing new page client", () => {
     render(<WritingNewPageClient draftId={11} />)
 
     await screen.findByText("삭제할 초안")
-    const deleteButtons = screen.getAllByRole("button", { name: "삭제" })
+    await user.click(screen.getByRole("button", { name: "삭제" }))
+    const deleteButtons = await screen.findAllByRole("button", { name: "삭제" })
     await user.click(deleteButtons[1]!)
 
     await waitFor(() => {

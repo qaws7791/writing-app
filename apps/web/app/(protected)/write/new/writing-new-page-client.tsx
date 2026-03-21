@@ -2,14 +2,14 @@
 
 import {
   type FormEvent,
+  useCallback,
   useEffect,
-  useEffectEvent,
   useMemo,
   useRef,
   useState,
 } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   ArrowLeft01Icon,
   Clock01Icon,
@@ -34,6 +34,10 @@ import {
   persistRedirectDraftSnapshot,
   serializeDraftSnapshot,
 } from "@/lib/phase-one-draft-sync"
+import {
+  type FlushPendingDraftResult,
+  useEditorLeaveGuard,
+} from "@/hooks/use-editor-leave-guard"
 import { createPhaseOneRepository } from "@/lib/phase-one-repository"
 import {
   draftContentToHtml,
@@ -73,6 +77,9 @@ import { WritingVersionHistoryModal } from "./writing-version-history-modal"
 import styles from "../write-editor-page.module.css"
 
 type CreateDraftState = "created" | "creating" | "idle" | "retry-pending"
+type CreateDraftFromSnapshotOptions = {
+  skipRouteReplace?: boolean
+}
 
 type WritingNewPageClientProps = {
   draftId?: number
@@ -87,14 +94,17 @@ export default function WritingNewPageClient({
   draftId,
   initialPromptId = null,
 }: WritingNewPageClientProps) {
+  const pathname = usePathname()
   const repository = useMemo(() => createPhaseOneRepository(), [])
   const router = useRouter()
   const titleRef = useRef<HTMLHeadingElement>(null)
   const isMountedRef = useRef(true)
-  const syncInFlightRef = useRef(false)
   const createStateRef = useRef<CreateDraftState>(draftId ? "created" : "idle")
+  const createPromiseRef = useRef<Promise<DraftDetail | null> | null>(null)
+  const flushPromiseRef = useRef<Promise<FlushPendingDraftResult> | null>(null)
   const lastSyncedSnapshotRef = useRef<string | null>(null)
   const pendingRouteReplaceRef = useRef<number | null>(null)
+  const skipCanonicalRouteReplaceRef = useRef(false)
   const editorDraftRef = useRef<EditorDraftSnapshot>(
     createEmptyEditorDraftSnapshot()
   )
@@ -130,16 +140,26 @@ export default function WritingNewPageClient({
     setPromptState(nextPrompt)
   }
 
-  const createDraftFromSnapshot = useEffectEvent(
-    async (snapshot: EditorDraftSnapshot) => {
+  const createDraftFromSnapshot = useCallback(
+    async (
+      snapshot: EditorDraftSnapshot,
+      options: CreateDraftFromSnapshotOptions = {}
+    ) => {
+      if (options.skipRouteReplace) {
+        skipCanonicalRouteReplaceRef.current = true
+      }
+
       if (
         draftId ||
         persistedDraftRef.current !== null ||
-        createStateRef.current === "creating" ||
         createStateRef.current === "created" ||
         !hasMeaningfulDraftInput(snapshot)
       ) {
-        return
+        return persistedDraftRef.current
+      }
+
+      if (createPromiseRef.current) {
+        return createPromiseRef.current
       }
 
       createStateRef.current = "creating"
@@ -147,102 +167,175 @@ export default function WritingNewPageClient({
 
       const serializedSnapshot = serializeDraftSnapshot(snapshot)
 
-      try {
-        const createdDraft = await repository.createDraft({
-          content: snapshot.content,
-          sourcePromptId: initialPromptId ?? undefined,
-          title: snapshot.title,
-        })
-
-        if (!isMountedRef.current) {
-          return
-        }
-
-        createStateRef.current = "created"
-        lastSyncedSnapshotRef.current = serializedSnapshot
-        setPersistedDraft(createdDraft)
-        setSyncState("saved")
-        if (
-          serializeDraftSnapshot(editorDraftRef.current) === serializedSnapshot
-        ) {
-          persistRedirectDraftSnapshot(createdDraft.id, {
-            editorDraft: editorDraftRef.current,
-            lastSyncedSnapshot: serializedSnapshot,
+      const createPromise = (async () => {
+        try {
+          const createdDraft = await repository.createDraft({
+            content: snapshot.content,
+            sourcePromptId: initialPromptId ?? undefined,
+            title: snapshot.title,
           })
-          router.replace(`/write/${createdDraft.id}`)
-        } else {
-          pendingRouteReplaceRef.current = createdDraft.id
-        }
-      } catch {
-        if (!isMountedRef.current) {
-          return
-        }
+          const shouldSkipRouteReplace =
+            options.skipRouteReplace || skipCanonicalRouteReplaceRef.current
 
-        createStateRef.current = "retry-pending"
-        setSyncState("error")
-      }
-    }
+          createStateRef.current = "created"
+          lastSyncedSnapshotRef.current = serializedSnapshot
+
+          if (isMountedRef.current) {
+            setPersistedDraft(createdDraft)
+            setSyncState("saved")
+          } else {
+            persistedDraftRef.current = createdDraft
+          }
+
+          if (!shouldSkipRouteReplace) {
+            if (
+              serializeDraftSnapshot(editorDraftRef.current) ===
+              serializedSnapshot
+            ) {
+              persistRedirectDraftSnapshot(createdDraft.id, {
+                editorDraft: editorDraftRef.current,
+                lastSyncedSnapshot: serializedSnapshot,
+              })
+              router.replace(`/write/${createdDraft.id}`)
+            } else {
+              pendingRouteReplaceRef.current = createdDraft.id
+            }
+          } else {
+            pendingRouteReplaceRef.current = null
+          }
+
+          return createdDraft
+        } catch {
+          createStateRef.current = "retry-pending"
+
+          if (isMountedRef.current) {
+            setSyncState("error")
+          }
+
+          return null
+        } finally {
+          createPromiseRef.current = null
+        }
+      })()
+
+      createPromiseRef.current = createPromise
+
+      return createPromise
+    },
+    [draftId, initialPromptId, repository, router]
   )
 
-  const syncDraft = useEffectEvent(async () => {
-    if (loading || syncInFlightRef.current) {
-      return
-    }
-
-    const currentPersistedDraft = persistedDraftRef.current
-    const currentEditorDraft = editorDraftRef.current
-
-    if (!currentPersistedDraft) {
-      if (
-        !draftId &&
-        createStateRef.current === "retry-pending" &&
-        hasMeaningfulDraftInput(currentEditorDraft)
-      ) {
-        await createDraftFromSnapshot(currentEditorDraft)
+  const flushPendingDraft =
+    useCallback(async (): Promise<FlushPendingDraftResult> => {
+      if (flushPromiseRef.current) {
+        return flushPromiseRef.current
       }
 
-      return
-    }
+      const flushPromise = (async (): Promise<FlushPendingDraftResult> => {
+        if (loading) {
+          return "blocked"
+        }
 
-    const serializedSnapshot = serializeDraftSnapshot(currentEditorDraft)
-    if (serializedSnapshot === lastSyncedSnapshotRef.current) {
-      return
-    }
+        let createdDuringFlush = false
+        const currentEditorDraft = editorDraftRef.current
+        const hasMeaningfulInput = hasMeaningfulDraftInput(currentEditorDraft)
 
-    syncInFlightRef.current = true
-    setSyncState("saving")
+        if (!persistedDraftRef.current) {
+          if (!hasMeaningfulInput) {
+            return "noop"
+          }
 
-    try {
-      const result = await repository.autosaveDraft(currentPersistedDraft.id, {
-        content: currentEditorDraft.content,
-        title: currentEditorDraft.title,
-      })
+          const createdDraft = await createDraftFromSnapshot(
+            currentEditorDraft,
+            {
+              skipRouteReplace: true,
+            }
+          )
 
-      if (!isMountedRef.current) {
-        return
-      }
+          if (!createdDraft) {
+            return "blocked"
+          }
 
-      lastSyncedSnapshotRef.current = serializedSnapshot
-      setPersistedDraft(result.draft)
-      setSyncState("saved")
+          createdDuringFlush = true
+        }
 
-      if (pendingRouteReplaceRef.current === result.draft.id) {
-        pendingRouteReplaceRef.current = null
-        persistRedirectDraftSnapshot(result.draft.id, {
-          editorDraft: currentEditorDraft,
-          lastSyncedSnapshot: serializedSnapshot,
-        })
-        router.replace(`/write/${result.draft.id}`)
-      }
-    } catch {
-      if (!isMountedRef.current) {
-        return
-      }
+        const currentPersistedDraft = persistedDraftRef.current
+        if (!currentPersistedDraft) {
+          return hasMeaningfulInput ? "blocked" : "noop"
+        }
 
-      setSyncState("error")
-    } finally {
-      syncInFlightRef.current = false
-    }
+        const snapshotToSync = editorDraftRef.current
+        const serializedSnapshot = serializeDraftSnapshot(snapshotToSync)
+
+        if (serializedSnapshot === lastSyncedSnapshotRef.current) {
+          return createdDuringFlush ? "saved" : "noop"
+        }
+
+        setSyncState("saving")
+
+        try {
+          const result = await repository.autosaveDraft(
+            currentPersistedDraft.id,
+            {
+              content: snapshotToSync.content,
+              title: snapshotToSync.title,
+            }
+          )
+
+          if (!isMountedRef.current) {
+            return "saved"
+          }
+
+          lastSyncedSnapshotRef.current = serializedSnapshot
+          setPersistedDraft(result.draft)
+          setSyncState("saved")
+
+          if (pendingRouteReplaceRef.current === result.draft.id) {
+            pendingRouteReplaceRef.current = null
+            persistRedirectDraftSnapshot(result.draft.id, {
+              editorDraft: snapshotToSync,
+              lastSyncedSnapshot: serializedSnapshot,
+            })
+            router.replace(`/write/${result.draft.id}`)
+          }
+
+          return "saved"
+        } catch {
+          if (isMountedRef.current) {
+            setSyncState("error")
+          }
+
+          return "blocked"
+        } finally {
+          flushPromiseRef.current = null
+        }
+      })()
+
+      flushPromiseRef.current = flushPromise
+
+      return flushPromise
+    }, [createDraftFromSnapshot, loading, repository, router])
+
+  const serializedEditorDraft = serializeDraftSnapshot(editorDraft)
+  const hasPendingChanges =
+    ((serializedEditorDraft !== lastSyncedSnapshotRef.current &&
+      hasMeaningfulDraftInput(editorDraft)) ||
+      syncState === "creating" ||
+      syncState === "saving" ||
+      syncState === "error" ||
+      (createStateRef.current === "retry-pending" &&
+        hasMeaningfulDraftInput(editorDraft))) &&
+    !loading
+
+  const {
+    cancelPendingNavigation,
+    confirmPendingNavigation,
+    isLeaveConfirmOpen,
+  } = useEditorLeaveGuard({
+    flushPendingDraft,
+    hasPendingChanges,
+    navigate: (href) => router.push(href),
+    pathname,
   })
 
   useEffect(() => {
@@ -256,6 +349,8 @@ export default function WritingNewPageClient({
 
     async function loadDraft() {
       try {
+        skipCanonicalRouteReplaceRef.current = false
+
         if (draftId) {
           const currentPersistedDraft = persistedDraftRef.current
           if (currentPersistedDraft?.id === draftId) {
@@ -369,13 +464,13 @@ export default function WritingNewPageClient({
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      void syncDraft()
+      void flushPendingDraft()
     }, 3000)
 
     return () => {
       window.clearInterval(timer)
     }
-  }, [syncDraft])
+  }, [flushPendingDraft])
 
   function maybeCreateDraft(snapshot: EditorDraftSnapshot) {
     if (
@@ -625,6 +720,39 @@ export default function WritingNewPageClient({
               onClick={() => void handleDelete()}
             >
               삭제
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={isLeaveConfirmOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            cancelPendingNavigation()
+          }
+        }}
+      >
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>저장되지 않은 변경이 있습니다</AlertDialogTitle>
+            <AlertDialogDescription>
+              지금 나가면 서버에 반영되지 않은 내용이 사라질 수 있습니다. 그래도
+              이동할까요?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              variant="ghost"
+              onClick={cancelPendingNavigation}
+            >
+              계속 작성
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={confirmPendingNavigation}
+            >
+              나가기
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
