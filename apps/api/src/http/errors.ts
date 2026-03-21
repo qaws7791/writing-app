@@ -1,3 +1,4 @@
+import { APIError } from "better-auth/api"
 import {
   ConflictError,
   ForbiddenError,
@@ -6,6 +7,16 @@ import {
 } from "@workspace/core"
 
 import { UnauthorizedError } from "./unauthorized-error.js"
+
+const betterAuthStatusMap = {
+  BAD_REQUEST: 400,
+  CONFLICT: 409,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  TOO_MANY_REQUESTS: 429,
+  UNAUTHORIZED: 401,
+  UNPROCESSABLE_ENTITY: 422,
+} as const
 
 export type ErrorPayload = {
   error: {
@@ -88,6 +99,23 @@ export function toErrorResponse(error: unknown): {
         },
       },
       status: 400,
+    }
+  }
+
+  if (error instanceof APIError) {
+    const errorStatus = String(error.status)
+    const status =
+      betterAuthStatusMap[errorStatus as keyof typeof betterAuthStatusMap] ??
+      500
+
+    return {
+      body: {
+        error: {
+          code: errorStatus.toLowerCase(),
+          message: error.message ?? "인증 처리 중 오류가 발생했습니다.",
+        },
+      },
+      status,
     }
   }
 

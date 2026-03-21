@@ -15,14 +15,14 @@ import {
   type DraftId,
   type DraftRepository,
   type DraftModuleError,
+  type DraftSummary,
   type GetHomeUseCaseOutput,
-  type GetPromptUseCaseOutput,
   type PromptDetail,
   type PromptId,
   type PromptListFilters,
   type PromptModuleError,
   type PromptRepository,
-  type SavePromptUseCaseOutput,
+  type PromptSummary,
   type UserId,
   toDraftId,
 } from "@workspace/core"
@@ -49,7 +49,7 @@ export type DraftApiService = {
   listDrafts: (
     userId: UserId,
     limit?: number
-  ) => ReturnType<DraftRepository["list"]>
+  ) => Promise<readonly DraftSummary[]>
 }
 
 export type PromptApiService = {
@@ -57,7 +57,7 @@ export type PromptApiService = {
   listPrompts: (
     userId: UserId,
     filters: PromptListFilters
-  ) => ReturnType<PromptRepository["list"]>
+  ) => Promise<readonly PromptSummary[]>
   savePrompt: (
     userId: UserId,
     promptId: PromptId
@@ -69,23 +69,16 @@ export type HomeApiService = {
   getHome: (userId: UserId) => Promise<GetHomeUseCaseOutput>
 }
 
-function isDraftModuleError(
-  result:
-    | DraftModuleError
-    | { kind: "success" }
-    | { kind: "success"; draft: DraftDetail }
-): result is DraftModuleError {
-  return "code" in result
-}
+type ModuleError = DraftModuleError | PromptModuleError
 
-function isPromptModuleError(
-  result:
-    | GetPromptUseCaseOutput
-    | PromptModuleError
-    | SavePromptUseCaseOutput
-    | { kind: "success" }
-): result is PromptModuleError {
-  return "code" in result
+function unwrapOrThrow<TResult extends object>(
+  result: ModuleError | TResult
+): TResult {
+  if ("code" in result && typeof result.code === "string") {
+    throw toApplicationError(result)
+  }
+
+  return result
 }
 
 export function createDraftApiService(input: {
@@ -118,11 +111,9 @@ export function createDraftApiService(input: {
 
   return {
     async autosaveDraft(userId, draftId, autosaveInput) {
-      const result = await autosaveDraft(userId, draftId, autosaveInput)
-
-      if (isDraftModuleError(result)) {
-        throw toApplicationError(result)
-      }
+      const result = unwrapOrThrow(
+        await autosaveDraft(userId, draftId, autosaveInput)
+      )
 
       return {
         draft: result.draft,
@@ -130,27 +121,15 @@ export function createDraftApiService(input: {
       }
     },
     async createDraft(userId, createInput) {
-      const result = await createDraft(userId, createInput)
-
-      if (isDraftModuleError(result)) {
-        throw toApplicationError(result)
-      }
+      const result = unwrapOrThrow(await createDraft(userId, createInput))
 
       return result.draft
     },
     async deleteDraft(userId, draftId) {
-      const result = await deleteDraft(userId, draftId)
-
-      if (isDraftModuleError(result)) {
-        throw toApplicationError(result)
-      }
+      unwrapOrThrow(await deleteDraft(userId, draftId))
     },
     async getDraft(userId, draftId) {
-      const result = await getDraft(userId, draftId)
-
-      if (isDraftModuleError(result)) {
-        throw toApplicationError(result)
-      }
+      const result = unwrapOrThrow(await getDraft(userId, draftId))
 
       return result.draft
     },
@@ -176,30 +155,18 @@ export function createPromptApiService(
 
   return {
     async getPrompt(userId, promptId) {
-      const result = await getPrompt(userId, promptId)
-
-      if (isPromptModuleError(result)) {
-        throw toApplicationError(result)
-      }
+      const result = unwrapOrThrow(await getPrompt(userId, promptId))
 
       return result.prompt
     },
     listPrompts,
     async savePrompt(userId, promptId) {
-      const result = await savePrompt(userId, promptId)
-
-      if (isPromptModuleError(result)) {
-        throw toApplicationError(result)
-      }
+      const result = unwrapOrThrow(await savePrompt(userId, promptId))
 
       return result
     },
     async unsavePrompt(userId, promptId) {
-      const result = await unsavePrompt(userId, promptId)
-
-      if (isPromptModuleError(result)) {
-        throw toApplicationError(result)
-      }
+      unwrapOrThrow(await unsavePrompt(userId, promptId))
     },
   }
 }

@@ -1,3 +1,4 @@
+import { APIError } from "better-auth/api"
 import {
   ConflictError,
   ForbiddenError,
@@ -46,6 +47,24 @@ describe("toErrorResponse", () => {
 
     expect(response.status).toBe(400)
     expect(response.body.error.code).toBe("invalid_json")
+  })
+
+  test("maps better-auth api errors to their http status", () => {
+    const response = toErrorResponse(
+      new APIError("CONFLICT", {
+        message: "이미 가입된 이메일입니다.",
+      })
+    )
+
+    expect(response).toEqual({
+      body: {
+        error: {
+          code: "conflict",
+          message: "이미 가입된 이메일입니다.",
+        },
+      },
+      status: 409,
+    })
   })
 
   test("falls back to internal error", () => {

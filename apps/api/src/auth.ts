@@ -5,7 +5,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { authSchema, type DbClient } from "@workspace/database"
 
 import { assertEmailSignUpAllowed } from "./auth-sign-up-guard.js"
-import type { AuthEmailPort } from "./auth-email.js"
+import type { EmailSender } from "./auth-email.js"
 
 const defaultTrustedOrigins = [
   "http://127.0.0.1:3000",
@@ -21,7 +21,7 @@ export type AuthEnvironment = {
 export function createAuth(
   database: DbClient,
   environment: AuthEnvironment,
-  emailPort: AuthEmailPort
+  emailSender: EmailSender
 ) {
   const trustedOrigins = Array.from(
     new Set([...defaultTrustedOrigins, environment.webBaseUrl])
@@ -64,7 +64,7 @@ export function createAuth(
       minPasswordLength: 8,
       requireEmailVerification: true,
       sendResetPassword: async ({ token, url, user }) => {
-        await emailPort.sendPasswordResetEmail({
+        await emailSender.sendPasswordResetEmail({
           email: user.email,
           token,
           url,
@@ -75,7 +75,7 @@ export function createAuth(
       autoSignInAfterVerification: false,
       sendOnSignUp: true,
       sendVerificationEmail: async ({ token, url, user }) => {
-        await emailPort.sendVerificationEmail({
+        await emailSender.sendVerificationEmail({
           email: user.email,
           token,
           url,

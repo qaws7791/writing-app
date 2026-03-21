@@ -14,7 +14,7 @@ import {
 } from "./application-services.js"
 import { createApp } from "./app.js"
 import { createAuth } from "./auth.js"
-import { createAuthEmailPort } from "./auth-email.js"
+import { createDevEmailPort } from "./auth-email.js"
 import { apiEnv } from "./env.js"
 import { createApiLogger, type ApiLogLevel } from "./logger.js"
 
@@ -24,6 +24,7 @@ export type ApiEnvironment = {
   databasePath: string
   logLevel: ApiLogLevel
   port: number
+  seedOnStartup: boolean
   webBaseUrl: string
 }
 
@@ -40,6 +41,7 @@ export function readApiEnvironment(): ApiEnvironment {
     databasePath: apiEnv.API_DATABASE_PATH,
     logLevel: apiEnv.API_LOG_LEVEL,
     port: apiEnv.API_PORT,
+    seedOnStartup: process.env.NODE_ENV !== "production",
     webBaseUrl: apiEnv.API_WEB_BASE_URL,
   }
 }
@@ -52,7 +54,7 @@ export async function createApiDependencies(
   })
   const database = openDb(environment.databasePath)
   const sqliteVersion = readSqliteVersion(database.sqlite)
-  const authEmailPort = createAuthEmailPort({
+  const authEmailPort = createDevEmailPort({
     exposeSensitiveData: process.env.NODE_ENV === "development",
     logger: logger.child({
       scope: "auth-email",
@@ -61,7 +63,9 @@ export async function createApiDependencies(
   const auth = createAuth(database.db, environment, authEmailPort)
 
   await migrateDatabase(database.db)
-  seedDatabase(database.db)
+  if (environment.seedOnStartup) {
+    seedDatabase(database.db)
+  }
 
   const promptRepository = createPromptRepository(database.db)
   const draftRepository = createDraftRepository(database.db)

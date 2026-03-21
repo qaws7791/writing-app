@@ -1,6 +1,6 @@
 import type { ApiLogger } from "./logger.js"
 
-type AuthEmailKind = "password-reset" | "verification"
+export type AuthEmailKind = "password-reset" | "verification"
 
 export type AuthEmailMessage = {
   email: string
@@ -10,12 +10,15 @@ export type AuthEmailMessage = {
   url: string
 }
 
-export type AuthEmailPort = {
+export type DevEmailInbox = {
   clear: () => void
   readLatestMessage: (input: {
     email: string
     kind: AuthEmailKind
   }) => AuthEmailMessage | null
+}
+
+export type EmailSender = {
   sendPasswordResetEmail: (input: {
     email: string
     token: string
@@ -43,10 +46,10 @@ function createLogMessage(
   return `${message.kind} auth email queued: ${message.url}`
 }
 
-export function createAuthEmailPort(input: {
+export function createDevEmailPort(input: {
   exposeSensitiveData: boolean
   logger: ApiLogger
-}): AuthEmailPort {
+}): DevEmailInbox & EmailSender {
   const latestMessages = new Map<string, AuthEmailMessage>()
 
   function storeMessage(message: AuthEmailMessage): void {

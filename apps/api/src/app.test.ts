@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from "vitest"
+import { APIError } from "better-auth/api"
 
 import { createTestApi } from "./test-support/create-test-app.js"
 import { createCapturedLogger } from "./test-support/capture-logger.js"
@@ -535,6 +536,26 @@ describe("logging", () => {
         status: 400,
       })
     )
+  })
+
+  test("maps better-auth api errors through the global error handler", async () => {
+    const api = createTestApi({
+      homeError: new APIError("CONFLICT", {
+        message: "이미 가입된 이메일입니다.",
+      }),
+    })
+    createdApps.push(api)
+
+    const response = await api.app.request("/home")
+    const body = await readJson<{ error: { code: string; message: string } }>(
+      response
+    )
+
+    expect(response.status).toBe(409)
+    expect(body.error).toEqual({
+      code: "conflict",
+      message: "이미 가입된 이메일입니다.",
+    })
   })
 
   test("logs 5xx errors at error level", async () => {
