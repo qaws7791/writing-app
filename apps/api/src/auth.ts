@@ -1,6 +1,7 @@
-import type { Database } from "bun:sqlite"
 import { betterAuth } from "better-auth"
-import { getMigrations } from "better-auth/db/migration"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
+
+import { authSchema, type DbClient } from "@workspace/db"
 
 import type { AuthEmailPort } from "./auth-email.js"
 
@@ -16,7 +17,7 @@ export type AuthEnvironment = {
 }
 
 export function createAuth(
-  database: Database,
+  database: DbClient,
   environment: AuthEnvironment,
   emailPort: AuthEmailPort
 ) {
@@ -26,7 +27,10 @@ export function createAuth(
 
   return betterAuth({
     baseURL: `${environment.authBaseUrl}/api/auth`,
-    database,
+    database: drizzleAdapter(database, {
+      provider: "sqlite",
+      schema: authSchema,
+    }),
     emailAndPassword: {
       autoSignIn: false,
       enabled: true,
@@ -61,8 +65,3 @@ export type WritingAppAuth = ReturnType<typeof createAuth>
 export type WritingAppSession = NonNullable<
   Awaited<ReturnType<WritingAppAuth["api"]["getSession"]>>
 >
-
-export async function ensureAuthTables(auth: WritingAppAuth): Promise<void> {
-  const migrations = await getMigrations(auth.options)
-  await migrations.runMigrations()
-}

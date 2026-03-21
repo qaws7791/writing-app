@@ -4,7 +4,7 @@ import type {
   PromptTopic,
 } from "@workspace/domain"
 
-type SeedPrompt = {
+export type SeedPrompt = {
   description: string
   id: number
   isTodayRecommended: boolean

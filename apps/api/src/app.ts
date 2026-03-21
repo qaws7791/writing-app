@@ -209,7 +209,6 @@ export function createApp(services: AppServices): ApiApp {
 
   app.get("/health", (context) => {
     return context.json({
-      jsonbSupported: true,
       sqliteVersion: services.sqliteVersion,
       status: "ok",
     })

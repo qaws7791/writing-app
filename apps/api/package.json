@@ -14,8 +14,8 @@
   "dependencies": {
     "@t3-oss/env-core": "^0.13.10",
     "@workspace/application": "workspace:*",
+    "@workspace/db": "workspace:*",
     "@workspace/domain": "workspace:*",
-    "@workspace/infrastructure": "workspace:*",
     "better-auth": "^1.3.4",
     "hono": "^4.12.5",
     "pino": "^10.3.1",

@@ -22,18 +22,16 @@ async function readJson<TResponse>(response: Response): Promise<TResponse> {
 }
 
 describe("health", () => {
-  test("reports sqlite jsonb support", async () => {
+  test("reports sqlite version", async () => {
     const { app } = setup()
     const response = await app.request("/health")
     const body = await readJson<{
-      jsonbSupported: boolean
       sqliteVersion: string
       status: string
     }>(response)
 
     expect(response.status).toBe(200)
     expect(body.status).toBe("ok")
-    expect(body.jsonbSupported).toBe(true)
     expect(body.sqliteVersion.length).toBeGreaterThan(0)
   })
 

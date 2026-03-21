@@ -4,17 +4,16 @@ import {
   createPromptUseCases,
 } from "@workspace/application"
 import {
-  closeSqliteDatabase,
-  createSchema,
-  ensureSqliteJsonbSupport,
-  openSqliteDatabase,
+  createDraftRepository,
+  createPromptRepository,
+  migrateDatabase,
+  openDb,
+  readSqliteVersion,
   seedDatabase,
-  SqliteDraftRepository,
-  SqlitePromptRepository,
-} from "@workspace/infrastructure"
+} from "@workspace/db"
 
 import { createApp } from "./app.js"
-import { createAuth, ensureAuthTables } from "./auth.js"
+import { createAuth } from "./auth.js"
 import { createAuthEmailPort } from "./auth-email.js"
 import { apiEnv } from "./env.js"
 import { createApiLogger, type ApiLogLevel } from "./logger.js"
@@ -51,22 +50,21 @@ export async function createApiDependencies(
   const logger = createApiLogger({
     level: environment.logLevel,
   })
-  const database = openSqliteDatabase(environment.databasePath)
-  const { sqliteVersion } = ensureSqliteJsonbSupport(database)
+  const database = openDb(environment.databasePath)
+  const sqliteVersion = readSqliteVersion(database.sqlite)
   const authEmailPort = createAuthEmailPort({
     exposeSensitiveData: process.env.NODE_ENV === "development",
     logger: logger.child({
       scope: "auth-email",
     }),
   })
-  const auth = createAuth(database, environment, authEmailPort)
+  const auth = createAuth(database.db, environment, authEmailPort)
 
-  await ensureAuthTables(auth)
-  createSchema(database)
-  seedDatabase(database)
+  await migrateDatabase(database.db)
+  seedDatabase(database.db)
 
-  const promptRepository = new SqlitePromptRepository(database)
-  const draftRepository = new SqliteDraftRepository(database)
+  const promptRepository = createPromptRepository(database.db)
+  const draftRepository = createDraftRepository(database.db)
 
   const promptUseCases = createPromptUseCases(promptRepository)
   const draftUseCases = createDraftUseCases(draftRepository, promptRepository)
@@ -97,7 +95,7 @@ export async function createApiDependencies(
     }),
     close: () => {
       authEmailPort.clear()
-      closeSqliteDatabase(database)
+      database.close()
     },
     sqliteVersion,
   }
