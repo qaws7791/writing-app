@@ -1,5 +1,2 @@
-export type {
-  GetHomeUseCaseDependencies,
-  GetHomeUseCaseOutput,
-} from "./get-home-use-case"
-export { getHomeUseCase, makeGetHomeUseCase } from "./get-home-use-case"
+export type { GetHomeDeps } from "./get-home"
+export { makeGetHomeUseCase } from "./get-home"

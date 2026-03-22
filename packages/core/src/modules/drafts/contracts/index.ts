@@ -1,17 +1,14 @@
-// Drafts module contracts and API for external usage
-export type { Draft } from "../model/index"
+/**
+ * @deprecated Import from "../index" directly.
+ */
+export type { Draft } from "../draft-types"
 export type {
+  AutosaveDraftDeps,
   AutosaveDraftInput,
-  AutosaveDraftUseCaseDependencies,
-  AutosaveDraftUseCaseOutput,
+  CreateDraftDeps,
   CreateDraftInput,
-  CreateDraftUseCaseDependencies,
-  CreateDraftUseCaseOutput,
-  DeleteDraftUseCaseDependencies,
-  DeleteDraftUseCaseOutput,
-  GetDraftUseCaseDependencies,
-  GetDraftUseCaseOutput,
-  ListDraftsUseCaseDependencies,
-  ListDraftsUseCaseOutput,
+  DeleteDraftDeps,
+  GetDraftDeps,
+  ListDraftsDeps,
 } from "../use-cases/index"
-export type { DraftModuleError } from "../errors/index"
+export type { DraftModuleError } from "../draft-error"

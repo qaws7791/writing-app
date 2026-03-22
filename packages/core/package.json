@@ -11,6 +11,9 @@
     "typecheck": "tsc --noEmit --skipLibCheck true"
   },
   "dependencies": {
+    "neverthrow": "^8.2.0",
+    "remeda": "^2.33.6",
+    "ts-pattern": "^5.9.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -21,7 +24,10 @@
   "exports": {
     ".": "./src/index.ts",
     "./modules/drafts": "./src/modules/drafts/index.ts",
+    "./modules/drafts/testing": "./src/modules/drafts/testing/index.ts",
     "./modules/prompts": "./src/modules/prompts/index.ts",
-    "./modules/home": "./src/modules/home/index.ts"
+    "./modules/prompts/testing": "./src/modules/prompts/testing/index.ts",
+    "./modules/home": "./src/modules/home/index.ts",
+    "./modules/home/testing": "./src/modules/home/testing/index.ts"
   }
 }

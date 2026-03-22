@@ -1,4 +1,5 @@
-export type {
-  DraftRepository,
-  PromptRepository,
-} from "../../../shared/ports/index"
+/**
+ * @deprecated Import from module-specific ports instead.
+ */
+export type { DraftRepository } from "../../drafts/draft-port"
+export type { PromptRepository } from "../../prompts/prompt-port"

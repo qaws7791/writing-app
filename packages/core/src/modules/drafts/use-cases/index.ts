@@ -1,43 +1,14 @@
-export type {
-  CreateDraftInput,
-  CreateDraftUseCaseDependencies,
-  CreateDraftUseCaseOutput,
-} from "./create-draft-use-case"
-export {
-  createDraftUseCase,
-  makeCreateDraftUseCase,
-} from "./create-draft-use-case"
+export type { CreateDraftInput, CreateDraftDeps } from "./create-draft"
+export { makeCreateDraftUseCase } from "./create-draft"
 
-export type {
-  AutosaveDraftInput,
-  AutosaveDraftUseCaseDependencies,
-  AutosaveDraftUseCaseOutput,
-} from "./autosave-draft-use-case"
-export {
-  autosaveDraftUseCase,
-  makeAutosaveDraftUseCase,
-} from "./autosave-draft-use-case"
+export type { AutosaveDraftInput, AutosaveDraftDeps } from "./autosave-draft"
+export { makeAutosaveDraftUseCase } from "./autosave-draft"
 
-export type {
-  DeleteDraftUseCaseDependencies,
-  DeleteDraftUseCaseOutput,
-} from "./delete-draft-use-case"
-export {
-  deleteDraftUseCase,
-  makeDeleteDraftUseCase,
-} from "./delete-draft-use-case"
+export type { DeleteDraftDeps } from "./delete-draft"
+export { makeDeleteDraftUseCase } from "./delete-draft"
 
-export type {
-  GetDraftUseCaseDependencies,
-  GetDraftUseCaseOutput,
-} from "./get-draft-use-case"
-export { getDraftUseCase, makeGetDraftUseCase } from "./get-draft-use-case"
+export type { GetDraftDeps } from "./get-draft"
+export { makeGetDraftUseCase } from "./get-draft"
 
-export type {
-  ListDraftsUseCaseDependencies,
-  ListDraftsUseCaseOutput,
-} from "./list-drafts-use-case"
-export {
-  listDraftsUseCase,
-  makeListDraftsUseCase,
-} from "./list-drafts-use-case"
+export type { ListDraftsDeps } from "./list-drafts"
+export { makeListDraftsUseCase } from "./list-drafts"

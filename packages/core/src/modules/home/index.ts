@@ -1,8 +1,6 @@
-export { getHomeUseCase, makeGetHomeUseCase } from "./use-cases/index"
-export type {
-  GetHomeUseCaseDependencies,
-  GetHomeUseCaseOutput,
-} from "./use-cases/index"
-export type { HomeSnapshot } from "./model/index"
-// Compatibility adapter for migration
-export { createHomeUseCasesAdapter } from "./adapters/application-compatibility"
+// Types
+export type { HomeSnapshot } from "./home-types"
+
+// Use Cases
+export type { GetHomeDeps } from "./use-cases/index"
+export { makeGetHomeUseCase } from "./use-cases/index"

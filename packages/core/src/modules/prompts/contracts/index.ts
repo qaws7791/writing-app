@@ -1,11 +1,10 @@
+/**
+ * @deprecated Import from "../index" directly.
+ */
 export type {
-  GetPromptUseCaseDependencies,
-  GetPromptUseCaseOutput,
-  ListPromptsUseCaseDependencies,
-  ListPromptsUseCaseOutput,
-  SavePromptUseCaseDependencies,
-  SavePromptUseCaseOutput,
-  UnsavePromptUseCaseDependencies,
-  UnsavePromptUseCaseOutput,
+  GetPromptDeps,
+  ListPromptsDeps,
+  SavePromptDeps,
+  UnsavePromptDeps,
 } from "../use-cases/index"
-export type { PromptModuleError } from "../errors/index"
+export type { PromptModuleError } from "../prompt-error"

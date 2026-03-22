@@ -1,31 +1,77 @@
-// Shared layer
+// Shared: Brand types
 export * from "./shared/brand/index"
+
+// Shared: Domain errors
 export type {
   ConflictError as DomainConflictError,
   DomainError,
   ForbiddenError as DomainForbiddenError,
   NotFoundError as DomainNotFoundError,
-  Result,
   ValidationError as DomainValidationError,
-} from "./shared/types/index"
+} from "./shared/error/index"
 export {
   createConflictError,
   createForbiddenError,
   createNotFoundError,
   createValidationError,
-  err,
-  flatMapResult,
-  isErr,
-  isOk,
-  mapResult,
-  ok,
-} from "./shared/types/index"
-export * from "./shared/schema/index"
-export * from "./shared/utilities/index"
-export * from "./shared/ports/index"
-export * from "./shared/testing/index"
+  toHttpStatus,
+} from "./shared/error/index"
 
-// Modules
-export * from "./modules/drafts/index"
-export * from "./modules/prompts/index"
-export * from "./modules/home/index"
+// Shared: Schemas
+export * from "./shared/schema/index"
+
+// Shared: Utilities
+export * from "./shared/utilities/index"
+
+// Modules (use module-specific exports to avoid naming collisions)
+export type {
+  Draft,
+  DraftAccessResult,
+  DraftDeleteResult,
+  DraftDetail,
+  DraftModuleError,
+  DraftMutationResult,
+  DraftPersistInput,
+  DraftRepository,
+  DraftSummary,
+  AutosaveDraftDeps,
+  AutosaveDraftInput,
+  CreateDraftDeps,
+  CreateDraftInput,
+  DeleteDraftDeps,
+  GetDraftDeps,
+  ListDraftsDeps,
+} from "./modules/drafts/index"
+export {
+  buildDraft,
+  createPreview,
+  updateDraftContent,
+  updateDraftTitle,
+  makeAutosaveDraftUseCase,
+  makeCreateDraftUseCase,
+  makeDeleteDraftUseCase,
+  makeGetDraftUseCase,
+  makeListDraftsUseCase,
+} from "./modules/drafts/index"
+
+export type {
+  PromptDetail,
+  PromptListFilters,
+  PromptModuleError,
+  PromptRepository,
+  PromptSaveResult,
+  PromptSummary,
+  GetPromptDeps,
+  ListPromptsDeps,
+  SavePromptDeps,
+  UnsavePromptDeps,
+} from "./modules/prompts/index"
+export {
+  makeGetPromptUseCase,
+  makeListPromptsUseCase,
+  makeSavePromptUseCase,
+  makeUnsavePromptUseCase,
+} from "./modules/prompts/index"
+
+export type { HomeSnapshot, GetHomeDeps } from "./modules/home/index"
+export { makeGetHomeUseCase } from "./modules/home/index"

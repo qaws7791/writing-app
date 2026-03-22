@@ -1,6 +1,8 @@
+/**
+ * @deprecated Import from "../draft-operations" instead.
+ */
 export {
   buildDraft,
   updateDraftContent,
   updateDraftTitle,
-  validateCreateDraftInput,
-} from "./draft-operations"
+} from "../draft-operations"

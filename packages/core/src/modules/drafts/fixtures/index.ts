@@ -1,1 +1,4 @@
-export { DraftFixtureBuilder, createTestDraft } from "./draft-fixture"
+/**
+ * @deprecated Import from "../testing" instead.
+ */
+export { createTestDraft } from "../testing/index"

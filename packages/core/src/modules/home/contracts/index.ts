@@ -1,5 +1,5 @@
-export type { HomeSnapshot } from "../model/index"
-export type {
-  GetHomeUseCaseDependencies,
-  GetHomeUseCaseOutput,
-} from "../use-cases/index"
+/**
+ * @deprecated Import from "../index" directly.
+ */
+export type { HomeSnapshot } from "../home-types"
+export type { GetHomeDeps } from "../use-cases/index"

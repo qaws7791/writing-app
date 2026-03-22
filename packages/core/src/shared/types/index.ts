@@ -1,3 +1,6 @@
+/**
+ * @deprecated Import from "../error/index" for errors, use neverthrow for Result.
+ */
 export type {
   ConflictError,
   DomainError,
@@ -13,4 +16,4 @@ export {
   toHttpStatus,
 } from "./errors"
 export type { Result } from "./result"
-export { ok, err, isOk, isErr, mapResult, flatMapResult } from "./result"
+export { ok, err } from "./result"

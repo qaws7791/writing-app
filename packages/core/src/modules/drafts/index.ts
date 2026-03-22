@@ -1,33 +1,54 @@
-// Public API for drafts module
-export type * from "./contracts/index"
-export type { Draft } from "./model/index"
+// Types
+export type {
+  Draft,
+  DraftAccessResult,
+  DraftDeleteResult,
+  DraftDetail,
+  DraftMutationResult,
+  DraftPersistInput,
+  DraftSummary,
+} from "./draft-types"
+
+// Errors
+export type {
+  DraftForbiddenError,
+  DraftModuleError,
+  DraftNotFoundError,
+  DraftValidationError,
+  PromptReferenceNotFoundError,
+} from "./draft-error"
 export {
-  autosaveDraftUseCase,
-  createDraftUseCase,
-  deleteDraftUseCase,
-  getDraftUseCase,
-  listDraftsUseCase,
+  draftForbidden,
+  draftNotFound,
+  draftValidationFailed,
+  promptNotFound,
+} from "./draft-error"
+
+// Port
+export type { DraftRepository } from "./draft-port"
+
+// Operations
+export {
+  buildDraft,
+  createPreview,
+  updateDraftContent,
+  updateDraftTitle,
+} from "./draft-operations"
+
+// Use Cases
+export type {
+  AutosaveDraftDeps,
+  AutosaveDraftInput,
+  CreateDraftDeps,
+  CreateDraftInput,
+  DeleteDraftDeps,
+  GetDraftDeps,
+  ListDraftsDeps,
+} from "./use-cases/index"
+export {
   makeAutosaveDraftUseCase,
   makeCreateDraftUseCase,
   makeDeleteDraftUseCase,
   makeGetDraftUseCase,
   makeListDraftsUseCase,
 } from "./use-cases/index"
-export type {
-  AutosaveDraftInput,
-  AutosaveDraftUseCaseDependencies,
-  AutosaveDraftUseCaseOutput,
-  CreateDraftInput,
-  CreateDraftUseCaseDependencies,
-  CreateDraftUseCaseOutput,
-  DeleteDraftUseCaseDependencies,
-  DeleteDraftUseCaseOutput,
-  GetDraftUseCaseDependencies,
-  GetDraftUseCaseOutput,
-  ListDraftsUseCaseDependencies,
-  ListDraftsUseCaseOutput,
-} from "./use-cases/index"
-export type { DraftModuleError } from "./errors/index"
-export { DraftFixtureBuilder, createTestDraft } from "./fixtures/index"
-// Compatibility adapter for migration
-export { createDraftUseCasesAdapter } from "./adapters/application-compatibility"

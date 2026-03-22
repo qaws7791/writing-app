@@ -1,1 +1,4 @@
-export type { HomeSnapshot } from "./home-snapshot"
+/**
+ * @deprecated Import from "../home-types" instead.
+ */
+export type { HomeSnapshot } from "../home-types"

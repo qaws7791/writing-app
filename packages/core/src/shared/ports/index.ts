@@ -1,3 +1,6 @@
+/**
+ * @deprecated Import from module-specific paths instead.
+ */
 export type {
   DraftAccessResult,
   DraftDeleteResult,

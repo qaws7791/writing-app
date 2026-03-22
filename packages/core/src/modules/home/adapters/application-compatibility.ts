@@ -1,12 +1,10 @@
-import type {
-  DraftRepository,
-  PromptRepository,
-} from "../../../shared/ports/index"
+import type { DraftRepository } from "../../drafts/draft-port"
+import type { PromptRepository } from "../../prompts/prompt-port"
 import type { UserId } from "../../../shared/brand/index"
 import { makeGetHomeUseCase } from "../use-cases/index"
 
 /**
- * Compatibility layer for existing API handlers.
+ * @deprecated Migrate handlers to use neverthrow-based use-cases directly.
  */
 export function createHomeUseCasesAdapter(
   draftRepository: DraftRepository,
@@ -19,7 +17,8 @@ export function createHomeUseCasesAdapter(
 
   return {
     async getHome(userId: UserId) {
-      return getHome(userId)
+      const result = await getHome(userId)
+      return result._unsafeUnwrap()
     },
   }
 }

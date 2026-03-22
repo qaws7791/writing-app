@@ -1,1 +1,4 @@
-export type { PromptDetail, PromptSummary } from "../../../shared/ports/index"
+/**
+ * @deprecated Import from "../prompt-types" instead.
+ */
+export type { PromptDetail, PromptSummary } from "../prompt-types"
