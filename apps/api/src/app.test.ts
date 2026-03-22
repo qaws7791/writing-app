@@ -586,4 +586,32 @@ describe("logging", () => {
       })
     )
   })
+
+  test("serves the openapi document for recursive draft schemas", async () => {
+    const { entries, logger } = createCapturedLogger()
+    const api = createTestApi({
+      logger,
+    })
+    createdApps.push(api)
+
+    const response = await api.app.request("/openapi.json")
+    const body = await readJson<{
+      components?: {
+        schemas?: Record<string, unknown>
+      }
+      openapi: string
+      paths?: Record<string, unknown>
+    }>(response)
+    const failed = entries.find(
+      (entry) => entry.msg === "openapi document generation failed"
+    )
+
+    expect(response.status).toBe(200)
+    expect(body.openapi).toBe("3.0.0")
+    expect(body.paths).toHaveProperty("/drafts")
+    expect(body.paths).toHaveProperty("/drafts/{draftId}")
+    expect(body.components?.schemas).toHaveProperty("DraftContent")
+    expect(body.components?.schemas).toHaveProperty("TiptapNode")
+    expect(failed).toBeUndefined()
+  })
 })
