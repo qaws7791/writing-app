@@ -1,7 +1,12 @@
-import { Hono } from "hono"
-import { type toUserId } from "@workspace/core"
+import type { toUserId } from "@workspace/core"
 
-import type { ApiLogger } from "./logger.js"
+import type {
+  DraftApiService,
+  HomeApiService,
+  PromptApiService,
+} from "./application-services"
+import type { DevEmailInbox } from "./auth/auth-email"
+import type { ApiLogger } from "./observability/logger"
 
 export type AuthenticatedSession = {
   createdAt: Date | string
@@ -29,18 +34,24 @@ export type AuthSession = {
 
 export type GetSession = (request: Request) => Promise<AuthSession | null>
 
-export type ApiVariables = {
+export type AppServices = {
+  authHandler: (request: Request) => Promise<Response>
+  draftUseCases: DraftApiService
+  homeUseCases: HomeApiService
+  promptUseCases: PromptApiService
+  readLatestAuthEmail?: DevEmailInbox["readLatestMessage"]
+  sqliteVersion: string
+}
+
+export type AppVariables = {
   authSession: AuthenticatedSession | null
   authUser: AuthenticatedUser | null
   requestId: string
   requestLogger: ApiLogger
+  services: AppServices
   userId: ReturnType<typeof toUserId> | null
 }
 
-export type ApiRouter = Hono<{
-  Variables: ApiVariables
-}>
-
-export function createApiRouter(): ApiRouter {
-  return new Hono<{ Variables: ApiVariables }>()
+export type AppEnv = {
+  Variables: AppVariables
 }

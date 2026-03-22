@@ -9,6 +9,17 @@ export type {
   DraftSummary,
 } from "./draft-types"
 
+// Schemas
+export {
+  autosaveDraftBodySchema,
+  autosaveDraftResponseSchema,
+  createDraftBodySchema,
+  draftDetailSchema,
+  draftIdParamSchema,
+  draftListResponseSchema,
+  draftSummarySchema,
+} from "./draft-schemas"
+
 // Errors
 export type {
   DraftForbiddenError,

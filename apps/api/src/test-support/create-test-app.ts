@@ -8,7 +8,7 @@ import {
 import { ForbiddenError, NotFoundError } from "@workspace/core"
 
 import { createApp } from "../app.js"
-import { createSilentLogger, type ApiLogger } from "../logger.js"
+import { createSilentLogger, type ApiLogger } from "../observability/logger.js"
 
 type TestPrompt = {
   description: string
@@ -202,124 +202,6 @@ export function createTestApi(input?: {
   const app = createApp({
     allowedOrigins: ["http://127.0.0.1:3000", "http://localhost:3000"],
     authDebugEnabled: false,
-    authHandler: async () =>
-      new Response(
-        JSON.stringify({
-          error: {
-            code: "not_found",
-            message: "테스트 인증 핸들러가 구성되지 않았습니다.",
-          },
-        }),
-        {
-          headers: {
-            "content-type": "application/json",
-          },
-          status: 404,
-        }
-      ),
-    draftUseCases: {
-      async autosaveDraft(userId, draftId, input) {
-        const current = drafts.find((draft) => draft.id === Number(draftId))
-        if (!current) {
-          throw new NotFoundError("초안을 찾을 수 없습니다.")
-        }
-        if (current.ownerId !== userId) {
-          throw new ForbiddenError("다른 사용자의 초안에는 접근할 수 없습니다.")
-        }
-
-        const nextContent = input.content ?? current.content
-        const nextTitle = input.title ?? current.title
-        const metrics = extractDraftTextMetrics(nextContent)
-        const now = new Date().toISOString()
-
-        current.content = nextContent
-        current.title = nextTitle
-        current.characterCount = metrics.characterCount
-        current.lastSavedAt = now
-        current.preview = toPreview(metrics.plainText)
-        current.updatedAt = now
-        current.wordCount = metrics.wordCount
-
-        return {
-          draft: serializeDraft(current),
-          kind: "autosaved" as const,
-        }
-      },
-      async createDraft(userId, input) {
-        if (
-          input.sourcePromptId !== undefined &&
-          !findPrompt(Number(input.sourcePromptId))
-        ) {
-          throw new NotFoundError("글감을 찾을 수 없습니다.")
-        }
-
-        const content = input.content ?? createEmptyDraftContent()
-        const metrics = extractDraftTextMetrics(content)
-        const now = new Date().toISOString()
-        const created: StoredDraft = {
-          characterCount: metrics.characterCount,
-          content,
-          createdAt: now,
-          id: nextDraftId++,
-          lastSavedAt: now,
-          ownerId: userId,
-          preview: toPreview(metrics.plainText),
-          sourcePromptId:
-            input.sourcePromptId === undefined
-              ? null
-              : Number(input.sourcePromptId),
-          title: input.title ?? "",
-          updatedAt: now,
-          wordCount: metrics.wordCount,
-        }
-
-        drafts.push(created)
-        return serializeDraft(created)
-      },
-      async deleteDraft(userId, draftId) {
-        const index = drafts.findIndex((draft) => draft.id === Number(draftId))
-        if (index === -1) {
-          throw new NotFoundError("초안을 찾을 수 없습니다.")
-        }
-        if (drafts[index]!.ownerId !== userId) {
-          throw new ForbiddenError("다른 사용자의 초안에는 접근할 수 없습니다.")
-        }
-
-        drafts.splice(index, 1)
-      },
-      async getDraft(userId, draftId) {
-        const draft = drafts.find((item) => item.id === Number(draftId))
-        if (!draft) {
-          throw new NotFoundError("초안을 찾을 수 없습니다.")
-        }
-        if (draft.ownerId !== userId) {
-          throw new ForbiddenError("다른 사용자의 초안에는 접근할 수 없습니다.")
-        }
-
-        return serializeDraft(draft)
-      },
-      async listDrafts(userId) {
-        return drafts
-          .filter((draft) => draft.ownerId === userId)
-          .sort((left, right) =>
-            left.updatedAt === right.updatedAt
-              ? right.id - left.id
-              : right.updatedAt.localeCompare(left.updatedAt)
-          )
-          .map((draft) => ({
-            characterCount: draft.characterCount,
-            id: toDraftId(draft.id),
-            lastSavedAt: draft.lastSavedAt,
-            preview: draft.preview,
-            sourcePromptId:
-              draft.sourcePromptId === null
-                ? null
-                : toPromptId(draft.sourcePromptId),
-            title: draft.title,
-            wordCount: draft.wordCount,
-          }))
-      },
-    },
     getSession: async (request) => {
       if (request.headers.get("x-test-auth") === "none") {
         return null
@@ -328,48 +210,234 @@ export function createTestApi(input?: {
       const userId = request.headers.get("x-test-user-id") ?? "dev-user"
       return createTestSession(userId)
     },
-    homeUseCases: {
-      async getHome(userId) {
-        if (input?.homeError) {
-          throw input.homeError
-        }
+    logger: input?.logger ?? createSilentLogger(),
+    services: {
+      authHandler: async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              code: "not_found",
+              message: "테스트 인증 핸들러가 구성되지 않았습니다.",
+            },
+          }),
+          {
+            headers: {
+              "content-type": "application/json",
+            },
+            status: 404,
+          }
+        ),
+      draftUseCases: {
+        async autosaveDraft(userId, draftId, autosaveInput) {
+          const current = drafts.find((draft) => draft.id === Number(draftId))
+          if (!current) {
+            throw new NotFoundError("초안을 찾을 수 없습니다.")
+          }
+          if (current.ownerId !== userId) {
+            throw new ForbiddenError(
+              "다른 사용자의 초안에는 접근할 수 없습니다."
+            )
+          }
 
-        const recentDrafts = drafts
-          .filter((draft) => draft.ownerId === userId)
-          .sort((left, right) =>
-            left.updatedAt === right.updatedAt
-              ? right.id - left.id
-              : right.updatedAt.localeCompare(left.updatedAt)
-          )
-          .map((draft) => ({
-            characterCount: draft.characterCount,
-            id: toDraftId(draft.id),
-            lastSavedAt: draft.lastSavedAt,
-            preview: draft.preview,
+          const nextContent = autosaveInput.content ?? current.content
+          const nextTitle = autosaveInput.title ?? current.title
+          const metrics = extractDraftTextMetrics(nextContent)
+          const now = new Date().toISOString()
+
+          current.content = nextContent
+          current.title = nextTitle
+          current.characterCount = metrics.characterCount
+          current.lastSavedAt = now
+          current.preview = toPreview(metrics.plainText)
+          current.updatedAt = now
+          current.wordCount = metrics.wordCount
+
+          return {
+            draft: serializeDraft(current),
+            kind: "autosaved" as const,
+          }
+        },
+        async createDraft(userId, createInput) {
+          if (
+            createInput.sourcePromptId !== undefined &&
+            !findPrompt(Number(createInput.sourcePromptId))
+          ) {
+            throw new NotFoundError("글감을 찾을 수 없습니다.")
+          }
+
+          const content = createInput.content ?? createEmptyDraftContent()
+          const metrics = extractDraftTextMetrics(content)
+          const now = new Date().toISOString()
+          const created: StoredDraft = {
+            characterCount: metrics.characterCount,
+            content,
+            createdAt: now,
+            id: nextDraftId++,
+            lastSavedAt: now,
+            ownerId: userId,
+            preview: toPreview(metrics.plainText),
             sourcePromptId:
-              draft.sourcePromptId === null
+              createInput.sourcePromptId === undefined
                 ? null
-                : toPromptId(draft.sourcePromptId),
-            title: draft.title,
-            wordCount: draft.wordCount,
-          }))
+                : Number(createInput.sourcePromptId),
+            title: createInput.title ?? "",
+            updatedAt: now,
+            wordCount: metrics.wordCount,
+          }
 
-        return {
-          recentDrafts,
-          resumeDraft: recentDrafts[0] ?? null,
-          savedPrompts: prompts
-            .filter((prompt) => prompt.saved)
-            .map((prompt) => ({
-              id: toPromptId(prompt.id),
-              level: prompt.level,
-              saved: true,
-              suggestedLengthLabel: prompt.suggestedLengthLabel,
-              tags: prompt.tags,
-              text: prompt.text,
-              topic: prompt.topic,
-            })),
-          todayPrompts: prompts
-            .filter((prompt) => prompt.isTodayRecommended)
+          drafts.push(created)
+          return serializeDraft(created)
+        },
+        async deleteDraft(userId, draftId) {
+          const index = drafts.findIndex(
+            (draft) => draft.id === Number(draftId)
+          )
+          if (index === -1) {
+            throw new NotFoundError("초안을 찾을 수 없습니다.")
+          }
+          if (drafts[index]!.ownerId !== userId) {
+            throw new ForbiddenError(
+              "다른 사용자의 초안에는 접근할 수 없습니다."
+            )
+          }
+
+          drafts.splice(index, 1)
+        },
+        async getDraft(userId, draftId) {
+          const draft = drafts.find((item) => item.id === Number(draftId))
+          if (!draft) {
+            throw new NotFoundError("초안을 찾을 수 없습니다.")
+          }
+          if (draft.ownerId !== userId) {
+            throw new ForbiddenError(
+              "다른 사용자의 초안에는 접근할 수 없습니다."
+            )
+          }
+
+          return serializeDraft(draft)
+        },
+        async listDrafts(userId) {
+          return drafts
+            .filter((draft) => draft.ownerId === userId)
+            .sort((left, right) =>
+              left.updatedAt === right.updatedAt
+                ? right.id - left.id
+                : right.updatedAt.localeCompare(left.updatedAt)
+            )
+            .map((draft) => ({
+              characterCount: draft.characterCount,
+              id: toDraftId(draft.id),
+              lastSavedAt: draft.lastSavedAt,
+              preview: draft.preview,
+              sourcePromptId:
+                draft.sourcePromptId === null
+                  ? null
+                  : toPromptId(draft.sourcePromptId),
+              title: draft.title,
+              wordCount: draft.wordCount,
+            }))
+        },
+      },
+      homeUseCases: {
+        async getHome(userId) {
+          if (input?.homeError) {
+            throw input.homeError
+          }
+
+          const recentDrafts = drafts
+            .filter((draft) => draft.ownerId === userId)
+            .sort((left, right) =>
+              left.updatedAt === right.updatedAt
+                ? right.id - left.id
+                : right.updatedAt.localeCompare(left.updatedAt)
+            )
+            .map((draft) => ({
+              characterCount: draft.characterCount,
+              id: toDraftId(draft.id),
+              lastSavedAt: draft.lastSavedAt,
+              preview: draft.preview,
+              sourcePromptId:
+                draft.sourcePromptId === null
+                  ? null
+                  : toPromptId(draft.sourcePromptId),
+              title: draft.title,
+              wordCount: draft.wordCount,
+            }))
+
+          return {
+            recentDrafts,
+            resumeDraft: recentDrafts[0] ?? null,
+            savedPrompts: prompts
+              .filter((prompt) => prompt.saved)
+              .map((prompt) => ({
+                id: toPromptId(prompt.id),
+                level: prompt.level,
+                saved: true,
+                suggestedLengthLabel: prompt.suggestedLengthLabel,
+                tags: prompt.tags,
+                text: prompt.text,
+                topic: prompt.topic,
+              })),
+            todayPrompts: prompts
+              .filter((prompt) => prompt.isTodayRecommended)
+              .map((prompt) => ({
+                id: toPromptId(prompt.id),
+                level: prompt.level,
+                saved: prompt.saved,
+                suggestedLengthLabel: prompt.suggestedLengthLabel,
+                tags: prompt.tags,
+                text: prompt.text,
+                topic: prompt.topic,
+              })),
+          }
+        },
+      },
+      promptUseCases: {
+        async getPrompt(_userId, promptId) {
+          const prompt = findPrompt(Number(promptId))
+          if (!prompt) {
+            throw new NotFoundError("글감을 찾을 수 없습니다.")
+          }
+
+          return {
+            description: prompt.description,
+            id: toPromptId(prompt.id),
+            level: prompt.level,
+            outline: prompt.outline,
+            saved: prompt.saved,
+            suggestedLengthLabel: prompt.suggestedLengthLabel,
+            tags: prompt.tags,
+            text: prompt.text,
+            tips: prompt.tips,
+            topic: prompt.topic,
+          }
+        },
+        async listPrompts(_userId, filters) {
+          const query = filters.query?.trim().toLowerCase()
+
+          return prompts
+            .filter((prompt) => {
+              if (
+                filters.saved !== undefined &&
+                prompt.saved !== filters.saved
+              ) {
+                return false
+              }
+              if (filters.topic && prompt.topic !== filters.topic) {
+                return false
+              }
+              if (filters.level && prompt.level !== filters.level) {
+                return false
+              }
+              if (!query) {
+                return true
+              }
+
+              return (
+                prompt.text.toLowerCase().includes(query) ||
+                prompt.tags.some((tag) => tag.toLowerCase().includes(query))
+              )
+            })
             .map((prompt) => ({
               id: toPromptId(prompt.id),
               level: prompt.level,
@@ -378,89 +446,34 @@ export function createTestApi(input?: {
               tags: prompt.tags,
               text: prompt.text,
               topic: prompt.topic,
-            })),
-        }
+            }))
+        },
+        async savePrompt(_userId, promptId) {
+          const prompt = findPrompt(Number(promptId))
+          if (!prompt) {
+            throw new NotFoundError("글감을 찾을 수 없습니다.")
+          }
+
+          const savedAt = new Date().toISOString()
+          prompt.saved = true
+
+          return {
+            kind: "saved" as const,
+            savedAt,
+          }
+        },
+        async unsavePrompt(_userId, promptId) {
+          const prompt = findPrompt(Number(promptId))
+          if (!prompt || !prompt.saved) {
+            throw new NotFoundError("저장된 글감을 찾을 수 없습니다.")
+          }
+
+          prompt.saved = false
+        },
       },
+      readLatestAuthEmail: () => null,
+      sqliteVersion: "3.46.0",
     },
-    logger: input?.logger ?? createSilentLogger(),
-    promptUseCases: {
-      async getPrompt(_userId, promptId) {
-        const prompt = findPrompt(Number(promptId))
-        if (!prompt) {
-          throw new NotFoundError("글감을 찾을 수 없습니다.")
-        }
-
-        return {
-          description: prompt.description,
-          id: toPromptId(prompt.id),
-          level: prompt.level,
-          outline: prompt.outline,
-          saved: prompt.saved,
-          suggestedLengthLabel: prompt.suggestedLengthLabel,
-          tags: prompt.tags,
-          text: prompt.text,
-          tips: prompt.tips,
-          topic: prompt.topic,
-        }
-      },
-      async listPrompts(_userId, filters) {
-        const query = filters.query?.trim().toLowerCase()
-
-        return prompts
-          .filter((prompt) => {
-            if (filters.saved !== undefined && prompt.saved !== filters.saved) {
-              return false
-            }
-            if (filters.topic && prompt.topic !== filters.topic) {
-              return false
-            }
-            if (filters.level && prompt.level !== filters.level) {
-              return false
-            }
-            if (!query) {
-              return true
-            }
-
-            return (
-              prompt.text.toLowerCase().includes(query) ||
-              prompt.tags.some((tag) => tag.toLowerCase().includes(query))
-            )
-          })
-          .map((prompt) => ({
-            id: toPromptId(prompt.id),
-            level: prompt.level,
-            saved: prompt.saved,
-            suggestedLengthLabel: prompt.suggestedLengthLabel,
-            tags: prompt.tags,
-            text: prompt.text,
-            topic: prompt.topic,
-          }))
-      },
-      async savePrompt(_userId, promptId) {
-        const prompt = findPrompt(Number(promptId))
-        if (!prompt) {
-          throw new NotFoundError("글감을 찾을 수 없습니다.")
-        }
-
-        const savedAt = new Date().toISOString()
-        prompt.saved = true
-
-        return {
-          kind: "saved" as const,
-          savedAt,
-        }
-      },
-      async unsavePrompt(_userId, promptId) {
-        const prompt = findPrompt(Number(promptId))
-        if (!prompt || !prompt.saved) {
-          throw new NotFoundError("저장된 글감을 찾을 수 없습니다.")
-        }
-
-        prompt.saved = false
-      },
-    },
-    readLatestAuthEmail: () => null,
-    sqliteVersion: "3.46.0",
   })
 
   return {

@@ -2,11 +2,16 @@ import { afterEach, describe, expect, test } from "vitest"
 import { betterAuth } from "better-auth"
 import { memoryAdapter } from "better-auth/adapters/memory"
 
-import { createEmptyDraftContent, toDraftId, toPromptId } from "@workspace/core"
+import {
+  createEmptyDraftContent,
+  toDraftId,
+  toPromptId,
+  type DraftId,
+} from "@workspace/core"
 
-import { createApp } from "./app.js"
+import { createApp } from "../app.js"
 import { createDevEmailPort } from "./auth-email.js"
-import { createSilentLogger } from "./logger.js"
+import { createSilentLogger } from "../observability/logger.js"
 
 type TestApp = ReturnType<typeof createApp>
 
@@ -64,102 +69,104 @@ function setup(): { app: TestApp } {
   const app = createApp({
     allowedOrigins: ["http://127.0.0.1:3000"],
     authDebugEnabled: true,
-    authHandler: auth.handler,
-    draftUseCases: {
-      async autosaveDraft(_userId, draftId) {
-        return {
-          draft: {
+    getSession: (request) => auth.api.getSession({ headers: request.headers }),
+    logger: createSilentLogger(),
+    services: {
+      authHandler: auth.handler,
+      draftUseCases: {
+        async autosaveDraft(_userId: string, draftId: DraftId) {
+          return {
+            draft: {
+              characterCount: 0,
+              content: createEmptyDraftContent(),
+              createdAt: "2026-03-20T00:00:00.000Z",
+              id: draftId,
+              lastSavedAt: "2026-03-20T00:00:00.000Z",
+              preview: "",
+              sourcePromptId: null,
+              title: "",
+              updatedAt: "2026-03-20T00:00:00.000Z",
+              wordCount: 0,
+            },
+            kind: "autosaved" as const,
+          }
+        },
+        async createDraft() {
+          return {
             characterCount: 0,
             content: createEmptyDraftContent(),
             createdAt: "2026-03-20T00:00:00.000Z",
-            id: draftId,
+            id: toDraftId(1),
             lastSavedAt: "2026-03-20T00:00:00.000Z",
             preview: "",
             sourcePromptId: null,
             title: "",
             updatedAt: "2026-03-20T00:00:00.000Z",
             wordCount: 0,
-          },
-          kind: "autosaved" as const,
-        }
+          }
+        },
+        async deleteDraft() {
+          return undefined
+        },
+        async getDraft() {
+          return {
+            characterCount: 0,
+            content: createEmptyDraftContent(),
+            createdAt: "2026-03-20T00:00:00.000Z",
+            id: toDraftId(1),
+            lastSavedAt: "2026-03-20T00:00:00.000Z",
+            preview: "",
+            sourcePromptId: null,
+            title: "",
+            updatedAt: "2026-03-20T00:00:00.000Z",
+            wordCount: 0,
+          }
+        },
+        async listDrafts() {
+          return []
+        },
       },
-      async createDraft() {
-        return {
-          characterCount: 0,
-          content: createEmptyDraftContent(),
-          createdAt: "2026-03-20T00:00:00.000Z",
-          id: toDraftId(1),
-          lastSavedAt: "2026-03-20T00:00:00.000Z",
-          preview: "",
-          sourcePromptId: null,
-          title: "",
-          updatedAt: "2026-03-20T00:00:00.000Z",
-          wordCount: 0,
-        }
+      homeUseCases: {
+        async getHome() {
+          return {
+            recentDrafts: [],
+            resumeDraft: null,
+            savedPrompts: [],
+            todayPrompts: [],
+          }
+        },
       },
-      async deleteDraft() {
-        return undefined
+      promptUseCases: {
+        async getPrompt() {
+          return {
+            description: "",
+            id: toPromptId(1),
+            level: 1 as const,
+            outline: [],
+            saved: false,
+            suggestedLengthLabel: "짧음" as const,
+            tags: [],
+            text: "테스트 글감",
+            tips: [],
+            topic: "일상" as const,
+          }
+        },
+        async listPrompts() {
+          return []
+        },
+        async savePrompt() {
+          return {
+            kind: "saved" as const,
+            savedAt: "2026-03-20T00:00:00.000Z",
+          }
+        },
+        async unsavePrompt() {
+          return undefined
+        },
       },
-      async getDraft() {
-        return {
-          characterCount: 0,
-          content: createEmptyDraftContent(),
-          createdAt: "2026-03-20T00:00:00.000Z",
-          id: toDraftId(1),
-          lastSavedAt: "2026-03-20T00:00:00.000Z",
-          preview: "",
-          sourcePromptId: null,
-          title: "",
-          updatedAt: "2026-03-20T00:00:00.000Z",
-          wordCount: 0,
-        }
-      },
-      async listDrafts() {
-        return []
-      },
+      readLatestAuthEmail: emailPort.readLatestMessage,
+      sqliteVersion: "memory",
     },
-    getSession: (request) => auth.api.getSession({ headers: request.headers }),
-    homeUseCases: {
-      async getHome() {
-        return {
-          recentDrafts: [],
-          resumeDraft: null,
-          savedPrompts: [],
-          todayPrompts: [],
-        }
-      },
-    },
-    logger: createSilentLogger(),
-    promptUseCases: {
-      async getPrompt() {
-        return {
-          description: "",
-          id: toPromptId(1),
-          level: 1 as const,
-          outline: [],
-          saved: false,
-          suggestedLengthLabel: "짧음" as const,
-          tags: [],
-          text: "테스트 글감",
-          tips: [],
-          topic: "일상" as const,
-        }
-      },
-      async listPrompts() {
-        return []
-      },
-      async savePrompt() {
-        return {
-          kind: "saved" as const,
-          savedAt: "2026-03-20T00:00:00.000Z",
-        }
-      },
-      async unsavePrompt() {
-        return undefined
-      },
-    },
-    readLatestAuthEmail: emailPort.readLatestMessage,
-    sqliteVersion: "memory",
   })
 
   return { app }

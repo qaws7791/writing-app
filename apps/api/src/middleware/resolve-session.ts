@@ -1,11 +1,11 @@
-import { type MiddlewareHandler } from "hono"
+import type { MiddlewareHandler } from "hono"
 import { toUserId } from "@workspace/core"
 
-import type { ApiVariables, GetSession } from "../app-variables.js"
+import type { AppEnv, GetSession } from "../app-env"
 
 export function createResolveSessionMiddleware(
   getSession: GetSession
-): MiddlewareHandler<{ Variables: ApiVariables }> {
+): MiddlewareHandler<AppEnv> {
   return async (context, next) => {
     const authSession = await getSession(context.req.raw)
 

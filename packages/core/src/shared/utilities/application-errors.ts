@@ -15,9 +15,15 @@ export class ForbiddenError extends Error {
 }
 
 export class ValidationError extends Error {
-  constructor(message: string) {
+  readonly details?: ReadonlyArray<{ message: string; path: string }>
+
+  constructor(
+    message: string,
+    details?: ReadonlyArray<{ message: string; path: string }>
+  ) {
     super(message)
     this.name = "ValidationError"
+    this.details = details
   }
 }
 

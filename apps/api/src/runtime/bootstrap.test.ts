@@ -41,25 +41,25 @@ vi.mock("@workspace/database", () => ({
   seedDatabase: seedDatabaseMock,
 }))
 
-vi.mock("./application-services.js", () => ({
+vi.mock("../application-services.js", () => ({
   createDraftApiService: createDraftApiServiceMock,
   createHomeApiService: createHomeApiServiceMock,
   createPromptApiService: createPromptApiServiceMock,
 }))
 
-vi.mock("./app.js", () => ({
+vi.mock("../app.js", () => ({
   createApp: createAppMock,
 }))
 
-vi.mock("./auth.js", () => ({
+vi.mock("../auth/auth.js", () => ({
   createAuth: createAuthMock,
 }))
 
-vi.mock("./auth-email.js", () => ({
+vi.mock("../auth/auth-email.js", () => ({
   createDevEmailPort: createDevEmailPortMock,
 }))
 
-vi.mock("./env.js", () => ({
+vi.mock("../config/env.js", () => ({
   apiEnv: {
     API_AUTH_BASE_URL: "http://127.0.0.1:3010",
     API_AUTH_SECRET: "test-secret-test-secret-test-secret",
@@ -70,7 +70,7 @@ vi.mock("./env.js", () => ({
   },
 }))
 
-vi.mock("./logger.js", () => ({
+vi.mock("../observability/logger.js", () => ({
   createApiLogger: createApiLoggerMock,
 }))
 

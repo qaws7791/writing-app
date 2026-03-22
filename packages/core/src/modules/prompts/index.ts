@@ -6,6 +6,16 @@ export type {
   PromptSummary,
 } from "./prompt-types"
 
+// Schemas
+export {
+  promptDetailSchema,
+  promptFiltersQuerySchema,
+  promptIdParamSchema,
+  promptListResponseSchema,
+  promptSaveResponseSchema,
+  promptSummarySchema,
+} from "./prompt-schemas"
+
 // Errors
 export type { PromptModuleError } from "./prompt-error"
 export { promptNotFound } from "./prompt-error"

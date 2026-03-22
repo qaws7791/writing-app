@@ -7,16 +7,17 @@ import {
   seedDatabase,
 } from "@workspace/database"
 
+import type { AppServices } from "../app-env"
+import { createApp } from "../app"
 import {
   createDraftApiService,
   createHomeApiService,
   createPromptApiService,
-} from "./application-services.js"
-import { createApp } from "./app.js"
-import { createAuth } from "./auth.js"
-import { createDevEmailPort } from "./auth-email.js"
-import { apiEnv } from "./env.js"
-import { createApiLogger, type ApiLogLevel } from "./logger.js"
+} from "../application-services"
+import { createAuth } from "../auth/auth"
+import { createDevEmailPort } from "../auth/auth-email"
+import { apiEnv } from "../config/env"
+import { createApiLogger, type ApiLogLevel } from "../observability/logger"
 
 export type ApiEnvironment = {
   authBaseUrl: string
@@ -80,6 +81,18 @@ export async function createApiDependencies(
     promptRepository,
   })
 
+  const services: AppServices = {
+    authHandler: auth.handler,
+    draftUseCases,
+    homeUseCases,
+    promptUseCases,
+    readLatestAuthEmail:
+      process.env.NODE_ENV !== "production"
+        ? authEmailPort.readLatestMessage
+        : undefined,
+    sqliteVersion,
+  }
+
   logger.info(
     {
       databasePath: environment.databasePath,
@@ -93,15 +106,10 @@ export async function createApiDependencies(
     app: createApp({
       allowedOrigins: [environment.webBaseUrl],
       authDebugEnabled: process.env.NODE_ENV !== "production",
-      authHandler: auth.handler,
-      draftUseCases,
       getSession: (request) =>
         auth.api.getSession({ headers: request.headers }),
-      homeUseCases,
       logger,
-      promptUseCases,
-      readLatestAuthEmail: authEmailPort.readLatestMessage,
-      sqliteVersion,
+      services,
     }),
     close: () => {
       authEmailPort.clear()

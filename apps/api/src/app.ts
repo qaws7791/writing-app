@@ -1,48 +1,44 @@
+import { apiReference } from "@scalar/hono-api-reference"
 import { cors } from "hono/cors"
 
-import type {
-  DraftApiService,
-  HomeApiService,
-  PromptApiService,
-} from "./application-services.js"
-import {
-  createApiRouter,
-  type ApiRouter,
-  type GetSession,
-} from "./app-variables.js"
-import type { DevEmailInbox } from "./auth-email.js"
-import { toErrorResponse } from "./http/errors.js"
-import type { ApiLogger } from "./logger.js"
-import { createRequestLoggerMiddleware } from "./middleware/request-logger.js"
-import { createResolveSessionMiddleware } from "./middleware/resolve-session.js"
-import { createAuthRouter } from "./routes/auth.js"
-import { createDevAuthEmailsRouter } from "./routes/dev-auth-emails.js"
-import { createDraftsRouter } from "./routes/drafts.js"
-import { createHealthRouter } from "./routes/health.js"
-import { createHomeRouter } from "./routes/home.js"
-import { createPromptsRouter } from "./routes/prompts.js"
-import { createSessionRouter } from "./routes/session.js"
+import type { AppServices, GetSession } from "./app-env"
+import { errorToResponse } from "./http/error-response"
+import { createRouter } from "./http/create-router"
+import type { ApiLogger } from "./observability/logger"
+import { createRequestLoggerMiddleware } from "./middleware/request-logger"
+import { createResolveSessionMiddleware } from "./middleware/resolve-session"
+import authHandler from "./routes/auth/auth-handler"
+import getAuthEmails from "./routes/dev/get-auth-emails"
+import autosaveDraft from "./routes/drafts/autosave-draft"
+import createDraft from "./routes/drafts/create-draft"
+import deleteDraft from "./routes/drafts/delete-draft"
+import getDraft from "./routes/drafts/get-draft"
+import listDrafts from "./routes/drafts/list-drafts"
+import getHealth from "./routes/health/get-health"
+import getHome from "./routes/home/get-home"
+import getPrompt from "./routes/prompts/get-prompt"
+import listPrompts from "./routes/prompts/list-prompts"
+import savePrompt from "./routes/prompts/save-prompt"
+import unsavePrompt from "./routes/prompts/unsave-prompt"
+import getSession from "./routes/session/get-session"
 
-type AppServices = {
+type CreateAppInput = {
   allowedOrigins: string[]
   authDebugEnabled: boolean
-  authHandler: (request: Request) => Promise<Response>
-  draftUseCases: DraftApiService
   getSession: GetSession
-  homeUseCases: HomeApiService
   logger: ApiLogger
-  promptUseCases: PromptApiService
-  readLatestAuthEmail: DevEmailInbox["readLatestMessage"]
-  sqliteVersion: string
+  services: AppServices
 }
 
-export function createApp(services: AppServices): ApiRouter {
-  const app = createApiRouter()
+export function createApp(input: CreateAppInput) {
+  const app = createRouter()
   const allowedOrigins = new Set([
     "http://127.0.0.1:3000",
     "http://localhost:3000",
-    ...services.allowedOrigins,
+    ...input.allowedOrigins,
   ])
+
+  // --- Global middleware ---
 
   app.use(
     "*",
@@ -50,26 +46,32 @@ export function createApp(services: AppServices): ApiRouter {
       allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
       credentials: true,
       origin: (origin) => {
-        if (!origin) {
-          return "*"
-        }
-
+        if (!origin) return "*"
         return allowedOrigins.has(origin) ? origin : ""
       },
     })
   )
 
-  app.use("*", createRequestLoggerMiddleware(services.logger))
-  app.use("*", createResolveSessionMiddleware(services.getSession))
+  app.use("*", createRequestLoggerMiddleware(input.logger))
+  app.use("*", createResolveSessionMiddleware(input.getSession))
 
-  app.onError((error, context) => {
-    const response = toErrorResponse(error)
+  // --- DI: inject services into context ---
+
+  app.use("*", async (c, next) => {
+    c.set("services", input.services)
+    await next()
+  })
+
+  // --- Error handler ---
+
+  app.onError((error, c) => {
+    const response = errorToResponse(error)
     const requestLogger =
-      context.get("requestLogger") ??
-      services.logger.child({
-        method: context.req.method,
-        path: context.req.path,
-        requestId: context.get("requestId"),
+      c.get("requestLogger") ??
+      input.logger.child({
+        method: c.req.method,
+        path: c.req.path,
+        requestId: c.get("requestId"),
         scope: "http",
       })
 
@@ -92,27 +94,75 @@ export function createApp(services: AppServices): ApiRouter {
       requestLogger.warn(logPayload, "request failed")
     }
 
-    return context.json(
+    return c.json(
       response.body,
       response.status as 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500
     )
   })
 
-  app.route("/health", createHealthRouter(services.sqliteVersion))
-  app.route("/api/auth", createAuthRouter(services.authHandler))
+  // --- Routes ---
 
-  app.route("/session", createSessionRouter())
+  app.route("/", getHealth)
+  app.route("/", authHandler)
+  app.route("/", getSession)
+  app.route("/", getHome)
+  app.route("/", listPrompts)
+  app.route("/", getPrompt)
+  app.route("/", savePrompt)
+  app.route("/", unsavePrompt)
+  app.route("/", listDrafts)
+  app.route("/", createDraft)
+  app.route("/", getDraft)
+  app.route("/", autosaveDraft)
+  app.route("/", deleteDraft)
 
-  if (services.authDebugEnabled) {
-    app.route("/dev", createDevAuthEmailsRouter(services.readLatestAuthEmail))
+  if (input.authDebugEnabled) {
+    app.route("/", getAuthEmails)
   }
 
-  app.route("/home", createHomeRouter(services.homeUseCases))
-  app.route("/prompts", createPromptsRouter(services.promptUseCases))
-  app.route("/drafts", createDraftsRouter(services.draftUseCases))
+  // --- OpenAPI spec ---
 
-  app.notFound((context) =>
-    context.json(
+  app.doc("/openapi.json", {
+    info: {
+      description:
+        "글쓰기 플랫폼 API입니다. 글감 탐색, 초안 작성, 자동 저장 등 에세이 작성 워크플로우를 지원합니다.",
+      title: "Writing App API",
+      version: "1.0.0",
+    },
+    openapi: "3.0.0",
+    security: [],
+    servers: [
+      {
+        description: "로컬 개발 서버",
+        url: "http://localhost:3010",
+      },
+    ],
+  })
+
+  // Register security scheme for cookie auth
+  app.openAPIRegistry.registerComponent("securitySchemes", "cookieAuth", {
+    description:
+      "better-auth가 관리하는 세션 쿠키입니다. /api/auth/sign-in/email 로그인 후 자동으로 설정됩니다.",
+    in: "cookie",
+    name: "better-auth.session_token",
+    type: "apiKey",
+  })
+
+  // --- Scalar API Reference ---
+
+  app.get(
+    "/docs",
+    apiReference({
+      pageTitle: "Writing App API",
+      url: "/openapi.json",
+      theme: "kepler",
+    })
+  )
+
+  // --- 404 handler ---
+
+  app.notFound((c) =>
+    c.json(
       {
         error: {
           code: "not_found",

@@ -5,8 +5,10 @@ import {
   NotFoundError,
   ValidationError,
 } from "@workspace/core"
+import { HTTPException } from "hono/http-exception"
 
-import { UnauthorizedError } from "./unauthorized-error.js"
+import type { ErrorResponse } from "./error-schema"
+import { UnauthorizedError } from "./unauthorized-error"
 
 const betterAuthStatusMap = {
   BAD_REQUEST: 400,
@@ -18,16 +20,8 @@ const betterAuthStatusMap = {
   UNPROCESSABLE_ENTITY: 422,
 } as const
 
-export type ErrorPayload = {
-  error: {
-    code: string
-    details?: unknown
-    message: string
-  }
-}
-
-export function toErrorResponse(error: unknown): {
-  body: ErrorPayload
+export function errorToResponse(error: unknown): {
+  body: ErrorResponse
   status: number
 } {
   if (error instanceof ValidationError) {
@@ -35,6 +29,7 @@ export function toErrorResponse(error: unknown): {
       body: {
         error: {
           code: "validation_error",
+          ...(error.details && { details: error.details }),
           message: error.message,
         },
       },
@@ -87,6 +82,18 @@ export function toErrorResponse(error: unknown): {
         },
       },
       status: 401,
+    }
+  }
+
+  if (error instanceof HTTPException) {
+    return {
+      body: {
+        error: {
+          code: "invalid_json",
+          message: "JSON 본문 형식이 올바르지 않습니다.",
+        },
+      },
+      status: error.status,
     }
   }
 

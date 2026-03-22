@@ -14,18 +14,18 @@ import {
   type DraftDetail,
   type DraftId,
   type DraftRepository,
-  type DraftModuleError,
   type DraftSummary,
-  type GetHomeUseCaseOutput,
+  type HomeSnapshot,
   type PromptDetail,
   type PromptId,
   type PromptListFilters,
-  type PromptModuleError,
   type PromptRepository,
   type PromptSummary,
   type UserId,
   toDraftId,
+  type DomainError,
 } from "@workspace/core"
+import type { Result } from "neverthrow"
 
 export type DraftApiService = {
   autosaveDraft: (
@@ -66,19 +66,17 @@ export type PromptApiService = {
 }
 
 export type HomeApiService = {
-  getHome: (userId: UserId) => Promise<GetHomeUseCaseOutput>
+  getHome: (userId: UserId) => Promise<HomeSnapshot>
 }
 
-type ModuleError = DraftModuleError | PromptModuleError
-
-function unwrapOrThrow<TResult extends object>(
-  result: ModuleError | TResult
-): TResult {
-  if ("code" in result && typeof result.code === "string") {
-    throw toApplicationError(result)
+function unwrapOrThrow<TValue, TError extends DomainError>(
+  result: Result<TValue, TError>
+): TValue {
+  if (result.isErr()) {
+    throw toApplicationError(result.error)
   }
 
-  return result
+  return result.value
 }
 
 export function createDraftApiService(input: {
@@ -111,29 +109,27 @@ export function createDraftApiService(input: {
 
   return {
     async autosaveDraft(userId, draftId, autosaveInput) {
-      const result = unwrapOrThrow(
+      const draft = unwrapOrThrow(
         await autosaveDraft(userId, draftId, autosaveInput)
       )
 
       return {
-        draft: result.draft,
+        draft,
         kind: "autosaved",
       }
     },
     async createDraft(userId, createInput) {
-      const result = unwrapOrThrow(await createDraft(userId, createInput))
-
-      return result.draft
+      return unwrapOrThrow(await createDraft(userId, createInput))
     },
     async deleteDraft(userId, draftId) {
       unwrapOrThrow(await deleteDraft(userId, draftId))
     },
     async getDraft(userId, draftId) {
-      const result = unwrapOrThrow(await getDraft(userId, draftId))
-
-      return result.draft
+      return unwrapOrThrow(await getDraft(userId, draftId))
     },
-    listDrafts,
+    async listDrafts(userId, limit) {
+      return unwrapOrThrow(await listDrafts(userId, limit))
+    },
   }
 }
 
@@ -155,15 +151,14 @@ export function createPromptApiService(
 
   return {
     async getPrompt(userId, promptId) {
-      const result = unwrapOrThrow(await getPrompt(userId, promptId))
-
-      return result.prompt
+      return unwrapOrThrow(await getPrompt(userId, promptId))
     },
-    listPrompts,
+    async listPrompts(userId, filters) {
+      return unwrapOrThrow(await listPrompts(userId, filters))
+    },
     async savePrompt(userId, promptId) {
       const result = unwrapOrThrow(await savePrompt(userId, promptId))
-
-      return result
+      return { kind: "saved" as const, savedAt: result.savedAt }
     },
     async unsavePrompt(userId, promptId) {
       unwrapOrThrow(await unsavePrompt(userId, promptId))
@@ -181,6 +176,8 @@ export function createHomeApiService(input: {
   })
 
   return {
-    getHome,
+    async getHome(userId) {
+      return unwrapOrThrow(await getHome(userId))
+    },
   }
 }

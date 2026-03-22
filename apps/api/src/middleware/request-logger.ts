@@ -1,12 +1,11 @@
 import type { MiddlewareHandler } from "hono"
 
-import type { ApiVariables } from "../app-variables.js"
-import { toErrorResponse } from "../http/errors.js"
-import type { ApiLogger } from "../logger.js"
+import type { AppEnv } from "../app-env"
+import type { ApiLogger } from "../observability/logger"
 
 export function createRequestLoggerMiddleware(
   logger: ApiLogger
-): MiddlewareHandler<{ Variables: ApiVariables }> {
+): MiddlewareHandler<AppEnv> {
   return async (context, next) => {
     const startedAt = Date.now()
     const requestId =
@@ -29,7 +28,7 @@ export function createRequestLoggerMiddleware(
       await next()
       responseStatus = context.res.status
     } catch (error) {
-      responseStatus = toErrorResponse(error).status
+      responseStatus = toQuickStatus(error)
       throw error
     } finally {
       requestLogger.info(
@@ -41,4 +40,17 @@ export function createRequestLoggerMiddleware(
       )
     }
   }
+}
+
+function toQuickStatus(error: unknown): number {
+  if (error instanceof Error) {
+    const name = error.name
+    if (name === "ValidationError") return 400
+    if (name === "UnauthorizedError") return 401
+    if (name === "ForbiddenError") return 403
+    if (name === "NotFoundError") return 404
+    if (name === "ConflictError") return 409
+  }
+
+  return 500
 }

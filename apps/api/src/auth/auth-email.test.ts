@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest"
 
 import { createDevEmailPort } from "./auth-email.js"
-import { createCapturedLogger } from "./test-support/capture-logger.js"
+import { createCapturedLogger } from "../test-support/capture-logger.js"
 
 describe("createDevEmailPort", () => {
   test("includes token and url in development-style logs", async () => {

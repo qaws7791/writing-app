@@ -52,6 +52,13 @@ export {
   makeDeleteDraftUseCase,
   makeGetDraftUseCase,
   makeListDraftsUseCase,
+  autosaveDraftBodySchema,
+  autosaveDraftResponseSchema,
+  createDraftBodySchema,
+  draftDetailSchema,
+  draftIdParamSchema,
+  draftListResponseSchema,
+  draftSummarySchema,
 } from "./modules/drafts/index"
 
 export type {
@@ -71,7 +78,14 @@ export {
   makeListPromptsUseCase,
   makeSavePromptUseCase,
   makeUnsavePromptUseCase,
+  promptDetailSchema,
+  promptFiltersQuerySchema,
+  promptIdParamSchema,
+  promptListResponseSchema,
+  promptSaveResponseSchema,
+  promptSummarySchema,
 } from "./modules/prompts/index"
 
 export type { HomeSnapshot, GetHomeDeps } from "./modules/home/index"
 export { makeGetHomeUseCase } from "./modules/home/index"
+export { homeSnapshotSchema } from "./modules/home/index"

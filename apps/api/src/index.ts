@@ -1,4 +1,4 @@
-import { createApiDependencies, readApiEnvironment } from "./bootstrap.js"
+import { createApiDependencies, readApiEnvironment } from "./runtime/bootstrap"
 
 const environment = readApiEnvironment()
 const { app } = await createApiDependencies(environment)

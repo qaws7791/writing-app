@@ -1,4 +1,4 @@
-import type { ApiLogger } from "./logger.js"
+import type { ApiLogger } from "../observability/logger.js"
 
 export type AuthEmailKind = "password-reset" | "verification"
 

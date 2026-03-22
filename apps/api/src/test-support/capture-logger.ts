@@ -1,6 +1,6 @@
 import pino from "pino"
 
-import type { ApiLogger } from "../logger.js"
+import type { ApiLogger } from "../observability/logger.js"
 
 export type CapturedLog = Record<string, unknown>
 

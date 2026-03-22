@@ -1,7 +1,7 @@
 import { migrateDatabase, openDb, seedDatabase } from "@workspace/database"
 
-import { readApiEnvironment } from "../bootstrap.js"
-import { createApiLogger } from "../logger.js"
+import { readApiEnvironment } from "../runtime/bootstrap.js"
+import { createApiLogger } from "../observability/logger.js"
 
 const environment = readApiEnvironment()
 const logger = createApiLogger({
