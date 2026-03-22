@@ -12,7 +12,7 @@ export function seedDatabase(database: DbClient): void {
           createdAt: now,
           description: prompt.description,
           id: prompt.id,
-          isTodayRecommended: prompt.isTodayRecommended,
+          isTodayRecommended: false,
           level: prompt.level,
           outlineJson: prompt.outline,
           slug: `prompt-${prompt.id}`,
@@ -20,14 +20,13 @@ export function seedDatabase(database: DbClient): void {
           tagsJson: prompt.tags,
           text: prompt.text,
           tipsJson: prompt.tips,
-          todayRecommendationOrder: prompt.todayRecommendationOrder,
+          todayRecommendationOrder: null,
           topic: prompt.topic,
           updatedAt: now,
         })
         .onConflictDoUpdate({
           set: {
             description: prompt.description,
-            isTodayRecommended: prompt.isTodayRecommended,
             level: prompt.level,
             outlineJson: prompt.outline,
             slug: `prompt-${prompt.id}`,
@@ -35,7 +34,6 @@ export function seedDatabase(database: DbClient): void {
             tagsJson: prompt.tags,
             text: prompt.text,
             tipsJson: prompt.tips,
-            todayRecommendationOrder: prompt.todayRecommendationOrder,
             topic: prompt.topic,
             updatedAt: now,
           },

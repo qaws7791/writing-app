@@ -32,6 +32,7 @@ describe("database migration", () => {
 
     expect(rows.map((row) => row.name)).toEqual([
       "account",
+      "daily_recommendations",
       "drafts",
       "prompts",
       "saved_prompts",

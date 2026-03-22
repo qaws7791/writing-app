@@ -1,4 +1,5 @@
 import {
+  createDailyRecommendationRepository,
   createDraftRepository,
   createPromptRepository,
   migrateDatabase,
@@ -70,6 +71,9 @@ export async function createApiDependencies(
 
   const promptRepository = createPromptRepository(database.db)
   const draftRepository = createDraftRepository(database.db)
+  const dailyRecommendationRepository = createDailyRecommendationRepository(
+    database.db
+  )
 
   const promptUseCases = createPromptApiService(promptRepository)
   const draftUseCases = createDraftApiService({
@@ -77,6 +81,7 @@ export async function createApiDependencies(
     promptRepository,
   })
   const homeUseCases = createHomeApiService({
+    dailyRecommendationRepository,
     draftRepository,
     promptRepository,
   })

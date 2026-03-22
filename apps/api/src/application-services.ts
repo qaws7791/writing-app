@@ -11,6 +11,7 @@ import {
   makeUnsavePromptUseCase,
   toApplicationError,
   type AutosaveDraftInput,
+  type DailyRecommendationRepository,
   type DraftDetail,
   type DraftId,
   type DraftRepository,
@@ -167,10 +168,12 @@ export function createPromptApiService(
 }
 
 export function createHomeApiService(input: {
+  dailyRecommendationRepository: DailyRecommendationRepository
   draftRepository: DraftRepository
   promptRepository: PromptRepository
 }): HomeApiService {
   const getHome = makeGetHomeUseCase({
+    dailyRecommendationRepository: input.dailyRecommendationRepository,
     draftRepository: input.draftRepository,
     promptRepository: input.promptRepository,
   })

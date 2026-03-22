@@ -7,12 +7,14 @@ export {
   type OpenedDb,
 } from "./connection/index.js"
 export {
+  createDailyRecommendationRepository,
   createDraftRepository,
   createPromptRepository,
 } from "./repository/index.js"
 export {
   account,
   authSchema,
+  dailyRecommendations,
   drafts,
   prompts,
   savedPrompts,

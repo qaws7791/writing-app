@@ -380,6 +380,7 @@ export function createTestApi(input?: {
               })),
             todayPrompts: prompts
               .filter((prompt) => prompt.isTodayRecommended)
+              .slice(0, 2)
               .map((prompt) => ({
                 id: toPromptId(prompt.id),
                 level: prompt.level,

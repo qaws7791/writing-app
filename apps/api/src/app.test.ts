@@ -74,7 +74,7 @@ describe("prompts", () => {
     }>(response)
 
     expect(response.status).toBe(200)
-    expect(body.todayPrompts.length).toBe(4)
+    expect(body.todayPrompts.length).toBe(2)
   })
 
   test("filters prompts by query and topic", async () => {

@@ -8,6 +8,13 @@
       "when": 1774077642162,
       "tag": "0000_mixed_wallflower",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1774200000000,
+      "tag": "0001_daily_recommendations",
+      "breakpoints": true
     }
   ]
 }

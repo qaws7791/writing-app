@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test"
-import { count } from "drizzle-orm"
+import { count, eq } from "drizzle-orm"
 import { toPromptId, toUserId } from "@workspace/core"
 
 import { seedDatabase } from "../connection/index.js"
@@ -30,12 +30,25 @@ describe("prompt repository", () => {
       .from(prompts)
       .get()
 
-    expect(row?.count).toBe(10)
+    expect(row?.count).toBe(100)
   })
 
   test("lists today prompts, filters prompts, and persists saved prompts", async () => {
     const { cleanup, db } = await createTestDb()
     cleanupTasks.push(cleanup)
+
+    // Manually set some prompts as today recommended
+    for (const [id, order] of [
+      [1, 1],
+      [3, 2],
+      [6, 3],
+      [7, 4],
+    ] as const) {
+      db.update(prompts)
+        .set({ isTodayRecommended: true, todayRecommendationOrder: order })
+        .where(eq(prompts.id, id))
+        .run()
+    }
 
     const repository = createPromptRepository(
       db,
@@ -50,8 +63,8 @@ describe("prompt repository", () => {
     })
 
     expect(today.map((prompt) => Number(prompt.id))).toEqual([1, 3, 6, 7])
-    expect(filtered).toHaveLength(1)
-    expect(Number(filtered[0]?.id)).toBe(6)
+    expect(filtered).toHaveLength(2)
+    expect(filtered.map((prompt) => Number(prompt.id))).toContain(6)
 
     await repository.save(toUserId("dev-user"), toPromptId(6))
     await repository.save(toUserId("dev-user"), toPromptId(1))

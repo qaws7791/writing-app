@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest"
 const {
   createAppMock,
   createAuthMock,
+  createDailyRecommendationRepositoryMock,
   createDevEmailPortMock,
   createDraftApiServiceMock,
   createDraftRepositoryMock,
@@ -18,6 +19,7 @@ const {
   return {
     createAppMock: vi.fn(),
     createAuthMock: vi.fn(),
+    createDailyRecommendationRepositoryMock: vi.fn(),
     createDevEmailPortMock: vi.fn(),
     createDraftApiServiceMock: vi.fn(),
     createDraftRepositoryMock: vi.fn(),
@@ -33,6 +35,7 @@ const {
 })
 
 vi.mock("@workspace/database", () => ({
+  createDailyRecommendationRepository: createDailyRecommendationRepositoryMock,
   createDraftRepository: createDraftRepositoryMock,
   createPromptRepository: createPromptRepositoryMock,
   migrateDatabase: migrateDatabaseMock,

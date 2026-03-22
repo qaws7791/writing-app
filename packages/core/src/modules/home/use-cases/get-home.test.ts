@@ -74,7 +74,19 @@ describe("makeGetHomeUseCase", () => {
       unsave: async () => true,
     } satisfies PromptRepository
 
-    const getHome = makeGetHomeUseCase({ draftRepository, promptRepository })
+    const dailyRecommendationRepository = {
+      existsForDate: vi.fn(async () => true),
+      create: vi.fn(async () => {}),
+      getRecentHistory: vi.fn(async () => []),
+      getAllPromptIds: vi.fn(async () => []),
+      refreshTodayFlags: vi.fn(async () => {}),
+    }
+
+    const getHome = makeGetHomeUseCase({
+      dailyRecommendationRepository,
+      draftRepository,
+      promptRepository,
+    })
     const result = await getHome(userId)
 
     expect(result.isOk()).toBe(true)
@@ -82,7 +94,7 @@ describe("makeGetHomeUseCase", () => {
     const snapshot = result._unsafeUnwrap()
     expect(listDrafts).toHaveBeenCalledWith(userId, 10)
     expect(listSaved).toHaveBeenCalledWith(userId, 10)
-    expect(listTodayPrompts).toHaveBeenCalledWith(userId, 4)
+    expect(listTodayPrompts).toHaveBeenCalledWith(userId, 2)
     expect(snapshot.resumeDraft?.id).toBe(toDraftId(1))
     expect(snapshot.savedPrompts).toHaveLength(1)
     expect(snapshot.todayPrompts).toHaveLength(1)

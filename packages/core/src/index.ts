@@ -89,3 +89,15 @@ export {
 export type { HomeSnapshot, GetHomeDeps } from "./modules/home/index"
 export { makeGetHomeUseCase } from "./modules/home/index"
 export { homeSnapshotSchema } from "./modules/home/index"
+
+export type {
+  DailyRecommendation,
+  DailyRecommendationRepository,
+  EnsureTodayRecommendationsDeps,
+  RecommendationHistoryEntry,
+} from "./modules/daily-recommendation/index"
+export {
+  getKstDateString,
+  makeEnsureTodayRecommendationsUseCase,
+  selectWeightedPrompts,
+} from "./modules/daily-recommendation/index"
