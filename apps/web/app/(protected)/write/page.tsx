@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { PencilEdit02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { formatDraftMeta } from "@/lib/phase-one-format"
@@ -9,10 +10,12 @@ import { createPhaseOneRepository } from "@/lib/phase-one-repository"
 import type { DraftSummary } from "@/lib/phase-one-types"
 
 export default function WriteListPage() {
+  const router = useRouter()
   const repository = useMemo(() => createPhaseOneRepository(), [])
   const [drafts, setDrafts] = useState<DraftSummary[]>([])
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [creating, setCreating] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -41,6 +44,17 @@ export default function WriteListPage() {
     }
   }, [repository])
 
+  const handleCreateDraft = useCallback(async () => {
+    if (creating) return
+    setCreating(true)
+    try {
+      const draft = await repository.createDraft({})
+      router.push(`/write/${draft.id}`)
+    } catch {
+      setCreating(false)
+    }
+  }, [creating, repository, router])
+
   return (
     <div className="min-h-svh flex-1 bg-background px-6 py-16 md:px-10 md:py-20 lg:px-24">
       <div className="mx-auto max-w-3xl">
@@ -49,16 +63,18 @@ export default function WriteListPage() {
         </h1>
 
         <section className="mb-14 md:mb-16">
-          <Link
-            href="/write/new"
-            className="group relative flex items-center justify-between overflow-hidden rounded-2xl border border-border bg-card px-7 py-8 shadow-sm transition-all hover:border-foreground/15 hover:shadow-md md:px-10 md:py-10"
+          <button
+            type="button"
+            onClick={() => void handleCreateDraft()}
+            disabled={creating}
+            className="group relative flex w-full items-center justify-between overflow-hidden rounded-2xl border border-border bg-card px-7 py-8 shadow-sm transition-all hover:border-foreground/15 hover:shadow-md disabled:opacity-60 md:px-10 md:py-10"
           >
             <div className="pointer-events-none absolute -right-8 -bottom-8 size-40 rounded-full bg-muted/70 transition-transform group-hover:scale-110" />
             <div className="pointer-events-none absolute top-4 -right-2 size-16 rounded-full bg-muted/40" />
 
             <div className="relative z-10 flex flex-col gap-2">
               <span className="text-xl font-semibold tracking-tight text-foreground">
-                새 글 시작
+                {creating ? "새 글 생성 중…" : "새 글 시작"}
               </span>
               <span className="text-sm font-medium text-muted-foreground">
                 설정 없이 바로 첫 문장을 쓸 수 있습니다
@@ -73,7 +89,7 @@ export default function WriteListPage() {
                 strokeWidth={2}
               />
             </div>
-          </Link>
+          </button>
         </section>
 
         <section>

@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { useRouter } from "next/navigation"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   ArrowLeft01Icon,
@@ -20,10 +21,12 @@ export default function PromptDetailPageClient({
 }: {
   promptId: number
 }) {
+  const router = useRouter()
   const repository = useMemo(() => createPhaseOneRepository(), [])
   const [prompt, setPrompt] = useState<PromptDetail | null>(null)
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [creating, setCreating] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -51,6 +54,19 @@ export default function PromptDetailPageClient({
       cancelled = true
     }
   }, [promptId, repository])
+
+  const handleCreateDraftFromPrompt = useCallback(async () => {
+    if (creating || !prompt) return
+    setCreating(true)
+    try {
+      const draft = await repository.createDraft({
+        sourcePromptId: prompt.id,
+      })
+      router.push(`/write/${draft.id}`)
+    } catch {
+      setCreating(false)
+    }
+  }, [creating, prompt, repository, router])
 
   if (loading) {
     return (
@@ -181,9 +197,11 @@ export default function PromptDetailPageClient({
 
       <div className="fixed inset-x-0 bottom-0 z-50 px-6 py-4 lg:px-16">
         <div className="mx-auto flex max-w-3xl items-center gap-2">
-          <Link
-            href={`/write/new?prompt=${prompt.id}`}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-transform hover:bg-primary/90 active:scale-95"
+          <button
+            type="button"
+            onClick={() => void handleCreateDraftFromPrompt()}
+            disabled={creating}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-transform hover:bg-primary/90 active:scale-95 disabled:opacity-60"
           >
             <HugeiconsIcon
               icon={PencilEdit02Icon}
@@ -191,8 +209,8 @@ export default function PromptDetailPageClient({
               color="currentColor"
               strokeWidth={1.5}
             />
-            이 글감으로 글 쓰기
-          </Link>
+            {creating ? "글 생성 중…" : "이 글감으로 글 쓰기"}
+          </button>
           <button
             type="button"
             onClick={() => void handleToggleSave()}

@@ -1,4 +1,4 @@
-import WritingNewPageClient from "../new/writing-new-page-client"
+import WritingPageClient from "./writing-page-client"
 
 export default async function WriteDetailPage({
   params,
@@ -6,5 +6,5 @@ export default async function WriteDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  return <WritingNewPageClient draftId={Number(id)} />
+  return <WritingPageClient draftId={Number(id)} />
 }

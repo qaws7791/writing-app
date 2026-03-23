@@ -4,7 +4,7 @@ import WritingBodyEditor from "@/components/writing-body-editor"
 import type { EditorDraftSnapshot } from "@/lib/phase-one-draft-sync"
 import type { DraftContent, PromptDetail } from "@/lib/phase-one-types"
 
-type WritingNewPageBodyProps = {
+type WritingPageBodyProps = {
   editorDraft: EditorDraftSnapshot
   loadError: string | null
   onContentChange: (nextContent: DraftContent) => void
@@ -13,14 +13,14 @@ type WritingNewPageBodyProps = {
   titleRef: RefObject<HTMLHeadingElement | null>
 }
 
-export function WritingNewPageBody({
+export function WritingPageBody({
   editorDraft,
   loadError,
   onContentChange,
   onTitleInput,
   prompt,
   titleRef,
-}: WritingNewPageBodyProps) {
+}: WritingPageBodyProps) {
   return (
     <main className="flex flex-1 items-start justify-center overflow-y-auto px-6 pt-28 pb-40 md:px-10 md:pt-36 md:pb-44">
       <section className="w-full max-w-3xl">

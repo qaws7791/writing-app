@@ -1,16 +1,13 @@
 "use client"
 
-import { WritingNewPageBody } from "./writing-new-page-body"
-import { WritingNewPageDialogs } from "./writing-new-page-dialogs"
-import { WritingNewPageHeader } from "./writing-new-page-header"
-import {
-  type WritingNewPageClientProps,
-  useWritingNewPage,
-} from "./use-writing-new-page"
+import { WritingPageBody } from "./writing-page-body"
+import { WritingPageDialogs } from "./writing-page-dialogs"
+import { WritingPageHeader } from "./writing-page-header"
+import { type WritingPageProps, useWritingPage } from "./use-writing-page"
 
 import styles from "../write-editor-page.module.css"
 
-export default function WritingNewPageClient(props: WritingNewPageClientProps) {
+export default function WritingPageClient(props: WritingPageProps) {
   const {
     cancelPendingNavigation,
     confirmPendingNavigation,
@@ -33,14 +30,14 @@ export default function WritingNewPageClient(props: WritingNewPageClientProps) {
     syncState,
     titleRef,
     versionHistoryModalOpen,
-  } = useWritingNewPage(props)
+  } = useWritingPage(props)
 
   return (
     <div
       data-writing-editor-page=""
       className={`${styles.page} flex min-h-0 flex-1 flex-col bg-background text-foreground`}
     >
-      <WritingNewPageHeader
+      <WritingPageHeader
         editorTitle={editorDraft.title}
         loading={loading}
         onDeleteClick={() => setDeleteDialogOpen(true)}
@@ -51,7 +48,7 @@ export default function WritingNewPageClient(props: WritingNewPageClientProps) {
         syncState={syncState}
       />
 
-      <WritingNewPageBody
+      <WritingPageBody
         editorDraft={editorDraft}
         loadError={loadError}
         onContentChange={handleContentChange}
@@ -60,7 +57,7 @@ export default function WritingNewPageClient(props: WritingNewPageClientProps) {
         titleRef={titleRef}
       />
 
-      <WritingNewPageDialogs
+      <WritingPageDialogs
         cancelPendingNavigation={cancelPendingNavigation}
         confirmPendingNavigation={confirmPendingNavigation}
         deleteDialogOpen={deleteDialogOpen}

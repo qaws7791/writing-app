@@ -22,7 +22,7 @@ type GetContent = () => {
   title: string
 }
 
-type WritingNewPageDialogsProps = {
+type WritingPageDialogsProps = {
   cancelPendingNavigation: () => void
   confirmPendingNavigation: () => void
   deleteDialogOpen: boolean
@@ -36,7 +36,7 @@ type WritingNewPageDialogsProps = {
   versionHistoryModalOpen: boolean
 }
 
-export function WritingNewPageDialogs({
+export function WritingPageDialogs({
   cancelPendingNavigation,
   confirmPendingNavigation,
   deleteDialogOpen,
@@ -48,7 +48,7 @@ export function WritingNewPageDialogs({
   onExportModalOpenChange,
   onVersionHistoryModalOpenChange,
   versionHistoryModalOpen,
-}: WritingNewPageDialogsProps) {
+}: WritingPageDialogsProps) {
   return (
     <>
       <WritingExportModal

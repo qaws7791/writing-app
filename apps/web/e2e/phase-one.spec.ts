@@ -274,7 +274,9 @@ test("creates one draft from rapid title input and keeps updating the same draft
 
   const body = `phase-one-body-${createUniqueToken(testInfo)}`
 
-  await page.goto("/write/new")
+  await page.goto("/write")
+  await page.getByRole("button", { name: /새 글 시작/i }).click()
+  await expect(page).toHaveURL(/\/write\/\d+$/)
   await writeTitle(page, "12345")
 
   await expect(page).toHaveURL(/\/write\/\d+$/)

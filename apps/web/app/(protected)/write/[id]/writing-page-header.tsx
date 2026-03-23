@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 
-type WritingNewPageHeaderProps = {
+type WritingPageHeaderProps = {
   editorTitle: string
   loading: boolean
   onDeleteClick: () => void
@@ -35,7 +35,7 @@ type WritingNewPageHeaderProps = {
   syncState: DraftSyncState
 }
 
-export function WritingNewPageHeader({
+export function WritingPageHeader({
   editorTitle,
   loading,
   onDeleteClick,
@@ -44,7 +44,7 @@ export function WritingNewPageHeader({
   onVersionHistoryClick,
   persistedDraft,
   syncState,
-}: WritingNewPageHeaderProps) {
+}: WritingPageHeaderProps) {
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-40">
       <div className="pointer-events-auto flex h-20 items-center justify-between px-4 md:px-6">
@@ -64,8 +64,7 @@ export function WritingNewPageHeader({
             {editorTitle || "새 글"}
           </p>
           <p className="truncate text-xs text-muted-foreground">
-            {(syncState === "creating" || syncState === "saving") &&
-              "임시 저장 중"}
+            {syncState === "saving" && "임시 저장 중"}
             {syncState === "saved" &&
               (persistedDraft
                 ? `임시 저장됨 · ${formatDraftMeta(persistedDraft.lastSavedAt)}`

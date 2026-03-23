@@ -10,7 +10,7 @@ export type EditorDraftSnapshot = {
   title: string
 }
 
-export type DraftSyncState = "creating" | "error" | "idle" | "saved" | "saving"
+export type DraftSyncState = "error" | "idle" | "saved" | "saving"
 
 type RedirectDraftSnapshot = {
   editorDraft: EditorDraftSnapshot

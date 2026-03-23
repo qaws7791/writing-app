@@ -6,6 +6,12 @@ import { createDeferred } from "@/test-support/async"
 import { createMockPhaseOneRepository } from "@/test-support/mock-phase-one-repository"
 import { createPromptDetail } from "@/test-support/phase-one-test-fixtures"
 
+const push = vi.fn()
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+}))
+
 const repository = createMockPhaseOneRepository()
 
 vi.mock("@/lib/phase-one-repository", () => ({
@@ -40,8 +46,8 @@ describe("prompt detail page client", () => {
       await screen.findByText("AI가 일상에 들어오면서 잃어가는 것은?")
     ).toBeInTheDocument()
     expect(
-      screen.getByRole("link", { name: "이 글감으로 글 쓰기" })
-    ).toHaveAttribute("href", "/write/new?prompt=6")
+      screen.getByRole("button", { name: /이 글감으로 글 쓰기/i })
+    ).toBeInTheDocument()
   })
 
   test("toggles save state", async () => {

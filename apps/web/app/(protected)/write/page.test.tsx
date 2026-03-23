@@ -5,6 +5,12 @@ import { createDeferred } from "@/test-support/async"
 import { createMockPhaseOneRepository } from "@/test-support/mock-phase-one-repository"
 import { createDraftSummary } from "@/test-support/phase-one-test-fixtures"
 
+const push = vi.fn()
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+}))
+
 const repository = createMockPhaseOneRepository()
 
 vi.mock("@/lib/phase-one-repository", () => ({
@@ -44,10 +50,9 @@ describe("write list page", () => {
     render(<WriteListPage />)
 
     expect(await screen.findByText("새 초안")).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: /새 글 시작/i })).toHaveAttribute(
-      "href",
-      "/write/new"
-    )
+    expect(
+      screen.getByRole("button", { name: /새 글 시작/i })
+    ).toBeInTheDocument()
   })
 
   test("renders empty and error states", async () => {

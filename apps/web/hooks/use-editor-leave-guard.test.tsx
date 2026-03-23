@@ -12,7 +12,7 @@ function LeaveGuardHarness({
   flushPendingDraft,
   hasPendingChanges,
   navigate,
-  pathname = "/write/new",
+  pathname = "/write/1",
 }: {
   flushPendingDraft: () => Promise<FlushPendingDraftResult>
   hasPendingChanges: boolean
@@ -35,7 +35,7 @@ function LeaveGuardHarness({
       <a href="/write" onClick={(event) => event.preventDefault()}>
         내 글
       </a>
-      <a href="/write/new#editor" onClick={(event) => event.preventDefault()}>
+      <a href="/write/1#editor" onClick={(event) => event.preventDefault()}>
         현재 해시
       </a>
       <a href="https://example.com" onClick={(event) => event.preventDefault()}>
@@ -57,7 +57,7 @@ function LeaveGuardHarness({
 
 describe("useEditorLeaveGuard", () => {
   beforeEach(() => {
-    window.history.replaceState({}, "", "/write/new")
+    window.history.replaceState({}, "", "/write/1")
   })
 
   test("does not intercept clean internal navigation", async () => {
