@@ -16,7 +16,7 @@ const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
   z.union([
     jsonPrimitiveSchema,
     z.array(jsonValueSchema),
-    z.record(jsonValueSchema),
+    z.record(z.string(), jsonValueSchema),
   ])
 )
 
@@ -40,7 +40,7 @@ export type DraftContent = {
 
 const tiptapMarkSchema: z.ZodType<TiptapMark> = z
   .object({
-    attrs: z.record(jsonValueSchema).optional(),
+    attrs: z.record(z.string(), jsonValueSchema).optional(),
     type: z.string().min(1),
   })
   .strict()
@@ -49,7 +49,7 @@ const tiptapMarkSchema: z.ZodType<TiptapMark> = z
 const tiptapNodeSchema: z.ZodType<TiptapNode> = z.lazy(() =>
   z
     .object({
-      attrs: z.record(jsonValueSchema).optional(),
+      attrs: z.record(z.string(), jsonValueSchema).optional(),
       content: z.array(tiptapNodeSchema).optional(),
       marks: z.array(tiptapMarkSchema).optional(),
       text: z.string().optional(),

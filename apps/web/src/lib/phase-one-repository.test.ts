@@ -116,7 +116,7 @@ describe("phase one local repository", () => {
     })
 
     expect(globalThis.fetch).toHaveBeenCalledOnce()
-    const request = vi.mocked(globalThis.fetch).mock.calls[0][0] as Request
+    const request = vi.mocked(globalThis.fetch).mock.calls[0]![0] as Request
     const url = new URL(request.url)
     expect(url.pathname).toBe("/prompts")
     expect(url.searchParams.get("query")).toBe("AI")

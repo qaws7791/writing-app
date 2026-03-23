@@ -50,7 +50,10 @@ describe("useWritingPage autosave", () => {
 
   test("autosave fires after title change", async () => {
     const updatedDraft = createDraftDetail({ id: 1, title: "새 제목" })
-    repository.autosaveDraft.mockResolvedValue({ draft: updatedDraft })
+    repository.autosaveDraft.mockResolvedValue({
+      kind: "autosaved",
+      draft: updatedDraft,
+    })
 
     const { result } = await setupLoadedHook()
 
@@ -74,7 +77,10 @@ describe("useWritingPage autosave", () => {
 
   test("autosave triggers after noop flush on subsequent timer tick", async () => {
     const updatedDraft = createDraftDetail({ id: 1, title: "수정됨" })
-    repository.autosaveDraft.mockResolvedValue({ draft: updatedDraft })
+    repository.autosaveDraft.mockResolvedValue({
+      kind: "autosaved",
+      draft: updatedDraft,
+    })
 
     const { result } = await setupLoadedHook()
 
@@ -105,6 +111,7 @@ describe("useWritingPage autosave", () => {
 
   test("multiple autosaves work across timer ticks", async () => {
     repository.autosaveDraft.mockImplementation(async (_id, input) => ({
+      kind: "autosaved",
       draft: createDraftDetail({ id: 1, title: input.title ?? "" }),
     }))
 
