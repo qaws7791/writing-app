@@ -139,12 +139,15 @@ export function useWritingPage({ draftId }: WritingPageProps) {
           }
 
           return "blocked"
-        } finally {
-          flushPromiseRef.current = null
         }
       })()
 
       flushPromiseRef.current = flushPromise
+
+      // microtask로 정리하여 동기 경로에서도 할당 후 ref가 해제됨
+      void flushPromise.finally(() => {
+        flushPromiseRef.current = null
+      })
 
       return flushPromise
     }, [loading, repository])
