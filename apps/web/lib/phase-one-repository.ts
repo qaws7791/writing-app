@@ -12,6 +12,12 @@ import {
   type StorageLike,
 } from "./phase-one-storage"
 import { resolveBrowserApiBaseUrl } from "./api-base-url"
+import { createApiClient } from "@/foundation/api/client"
+import {
+  createApiError,
+  throwOnError,
+  type ApiError,
+} from "@/foundation/api/error"
 import { env } from "@/env"
 import type {
   DraftContent,
@@ -57,17 +63,7 @@ export type PhaseOneRepository = {
   unsavePrompt: (promptId: number) => Promise<void>
 }
 
-export type RemoteApiError = Error & {
-  code?: "remote_api_error" | "unauthorized"
-  status: number
-}
-
-function createRemoteApiError(status: number, message: string): RemoteApiError {
-  const error = new Error(message) as RemoteApiError
-  error.code = status === 401 ? "unauthorized" : "remote_api_error"
-  error.status = status
-  return error
-}
+export type RemoteApiError = ApiError
 
 function readSavedPromptEntries(storage: StorageLike): SavedPromptEntry[] {
   const raw = storage.getItem(phaseOneStorageKeys.savedPromptEntries)
@@ -181,25 +177,6 @@ function filterPrompts(
   })
 }
 
-function createPromptSearchParams(filters?: PromptFilters): string {
-  const searchParams = new URLSearchParams()
-
-  if (filters?.query) {
-    searchParams.set("query", filters.query)
-  }
-  if (filters?.topic) {
-    searchParams.set("topic", filters.topic)
-  }
-  if (filters?.level) {
-    searchParams.set("level", String(filters.level))
-  }
-  if (filters?.saved !== undefined) {
-    searchParams.set("saved", String(filters.saved))
-  }
-
-  return searchParams.toString()
-}
-
 export function createLocalPhaseOneRepository(
   storage: StorageLike = createMemoryStorage()
 ): PhaseOneRepository {
@@ -208,7 +185,7 @@ export function createLocalPhaseOneRepository(
       const drafts = readDrafts(storage)
       const current = drafts.find((draft) => draft.id === draftId)
       if (!current) {
-        throw createRemoteApiError(404, "초안을 찾을 수 없습니다.")
+        throw createApiError(404, "초안을 찾을 수 없습니다.")
       }
 
       const nextContent = input.content ?? current.content
@@ -288,7 +265,7 @@ export function createLocalPhaseOneRepository(
         })()
 
       if (!draft) {
-        throw createRemoteApiError(404, "초안을 찾을 수 없습니다.")
+        throw createApiError(404, "초안을 찾을 수 없습니다.")
       }
 
       return draft
@@ -322,7 +299,7 @@ export function createLocalPhaseOneRepository(
     async getPrompt(promptId) {
       const prompt = findFixturePrompt(promptId)
       if (!prompt) {
-        throw createRemoteApiError(404, "글감을 찾을 수 없습니다.")
+        throw createApiError(404, "글감을 찾을 수 없습니다.")
       }
 
       const savedIds = new Set(
@@ -353,7 +330,7 @@ export function createLocalPhaseOneRepository(
     async savePrompt(promptId) {
       const prompt = findFixturePrompt(promptId)
       if (!prompt) {
-        throw createRemoteApiError(404, "글감을 찾을 수 없습니다.")
+        throw createApiError(404, "글감을 찾을 수 없습니다.")
       }
 
       const entries = readSavedPromptEntries(storage)
@@ -382,93 +359,88 @@ export function createLocalPhaseOneRepository(
   }
 }
 
-async function readJsonResponse<TResponse>(
-  response: Response
-): Promise<TResponse> {
-  if (!response.ok) {
-    const payload = (await response.json().catch(() => null)) as {
-      error?: { message?: string }
-    } | null
-    throw createRemoteApiError(
-      response.status,
-      payload?.error?.message ?? "API 요청에 실패했습니다."
-    )
-  }
-
-  if (response.status === 204) {
-    return undefined as TResponse
-  }
-
-  return (await response.json()) as TResponse
-}
-
 function createRemotePhaseOneRepository(
   apiBaseUrl: string
 ): PhaseOneRepository {
-  const request = async <TResponse>(
-    path: string,
-    init?: RequestInit
-  ): Promise<TResponse> => {
-    const response = await fetch(`${apiBaseUrl}${path}`, {
-      ...init,
-      credentials: "include",
-      headers: {
-        ...(init?.body ? { "content-type": "application/json" } : {}),
-        ...init?.headers,
-      },
-      cache: "no-store",
-    })
-
-    return readJsonResponse<TResponse>(response)
-  }
+  const client = createApiClient({ baseUrl: apiBaseUrl })
 
   return {
-    autosaveDraft(draftId, input) {
-      return request(`/drafts/${draftId}`, {
-        body: JSON.stringify(input),
-        method: "PATCH",
+    async autosaveDraft(draftId, input) {
+      return throwOnError(
+        await client.PATCH("/drafts/{draftId}", {
+          params: { path: { draftId } },
+          body: input,
+        })
+      ) as AutosaveDraftResult
+    },
+    async createDraft(input) {
+      return throwOnError(
+        await client.POST("/drafts", {
+          body: input,
+        })
+      ) as DraftDetail
+    },
+    async deleteDraft(draftId) {
+      const result = await client.DELETE("/drafts/{draftId}", {
+        params: { path: { draftId } },
       })
+      if (!result.response.ok) {
+        throwOnError(result)
+      }
     },
-    createDraft(input) {
-      return request("/drafts", {
-        body: JSON.stringify(input),
-        method: "POST",
-      })
+    async getDraft(draftId) {
+      return throwOnError(
+        await client.GET("/drafts/{draftId}", {
+          params: { path: { draftId } },
+        })
+      ) as DraftDetail
     },
-    deleteDraft(draftId) {
-      return request(`/drafts/${draftId}`, {
-        method: "DELETE",
-      })
+    async getHome() {
+      return throwOnError(await client.GET("/home")) as HomeSnapshot
     },
-    getDraft(draftId) {
-      return request(`/drafts/${draftId}`)
-    },
-    getHome() {
-      return request("/home")
-    },
-    getPrompt(promptId) {
-      return request(`/prompts/${promptId}`)
+    async getPrompt(promptId) {
+      return throwOnError(
+        await client.GET("/prompts/{promptId}", {
+          params: { path: { promptId } },
+        })
+      ) as PromptDetail
     },
     async listDrafts() {
-      const response = await request<{ items: DraftSummary[] }>("/drafts")
-      return response.items
+      const response = throwOnError(await client.GET("/drafts"))
+      return response.items as DraftSummary[]
     },
     async listPrompts(filters) {
-      const query = createPromptSearchParams(filters)
-      const response = await request<{ items: PromptSummary[] }>(
-        `/prompts${query ? `?${query}` : ""}`
+      const response = throwOnError(
+        await client.GET("/prompts", {
+          params: {
+            query: {
+              level: filters?.level,
+              query: filters?.query,
+              saved:
+                filters?.saved !== undefined
+                  ? (String(filters.saved) as "true" | "false")
+                  : undefined,
+              topic: filters?.topic,
+            },
+          },
+        })
       )
-      return response.items
+      return response.items as PromptSummary[]
     },
-    savePrompt(promptId) {
-      return request(`/prompts/${promptId}/save`, {
-        method: "PUT",
-      })
+    async savePrompt(promptId) {
+      return throwOnError(
+        await client.PUT("/prompts/{promptId}/save", {
+          params: { path: { promptId } },
+        })
+      )
     },
-    unsavePrompt(promptId) {
-      return request(`/prompts/${promptId}/save`, {
-        method: "DELETE",
+    async unsavePrompt(promptId) {
+      const result = await client.DELETE("/prompts/{promptId}/save", {
+        params: { path: { promptId } },
       })
+      if (!result.response.ok) {
+        throwOnError(result)
+      }
     },
   }
 }

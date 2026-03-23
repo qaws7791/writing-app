@@ -4,6 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "api:generate": "bun run scripts/generate-api-types.ts --input foundation/api/openapi.json",
+    "api:fetch": "bun run scripts/fetch-openapi-spec.ts",
     "dev": "bun --env-file=.env.development --bun next dev",
     "dev:local": "bun --env-file=.env.local-mode --bun next dev",
     "build": "bun --env-file=.env.development --bun next build",

@@ -1,3 +1,5 @@
+import { createApiClient } from "@/foundation/api/client"
+
 import type {
   SyncPullResponse,
   SyncPushRequest,
@@ -8,20 +10,6 @@ import type {
 
 export type SyncTransportConfig = {
   baseUrl: string
-}
-
-function createHeaders(): HeadersInit {
-  return {
-    "Content-Type": "application/json",
-  }
-}
-
-async function handleResponse<T>(response: Response): Promise<T> {
-  if (!response.ok) {
-    const body = await response.text().catch(() => "")
-    throw new SyncTransportError(response.status, body)
-  }
-  return response.json() as Promise<T>
 }
 
 export class SyncTransportError extends Error {
@@ -46,77 +34,78 @@ export class SyncTransportError extends Error {
   }
 }
 
+function throwTransportError(response: Response, errorBody?: unknown): never {
+  const body =
+    typeof errorBody === "object" && errorBody !== null
+      ? JSON.stringify(errorBody)
+      : ""
+  throw new SyncTransportError(response.status, body)
+}
+
 export function createSyncTransport(config: SyncTransportConfig) {
-  const { baseUrl } = config
+  const client = createApiClient({ baseUrl: config.baseUrl })
 
   return {
     async push(
       writingId: number,
       request: SyncPushRequest
     ): Promise<SyncPushResponse> {
-      const response = await fetch(
-        `${baseUrl}/writings/${writingId}/sync/push`,
-        {
-          method: "POST",
-          headers: createHeaders(),
-          credentials: "include",
-          body: JSON.stringify(request),
-        }
-      )
-      return handleResponse<SyncPushResponse>(response)
+      const result = await client.POST("/writings/{writingId}/sync/push", {
+        params: { path: { writingId } },
+        body: request,
+      })
+      if (result.error) {
+        throwTransportError(result.response, result.error)
+      }
+      return result.data as SyncPushResponse
     },
 
     async pull(
       writingId: number,
       sinceVersion?: number
     ): Promise<SyncPullResponse> {
-      const params = new URLSearchParams()
-      if (sinceVersion !== undefined) {
-        params.set("since", String(sinceVersion))
-      }
-      const query = params.toString()
-      const url = `${baseUrl}/writings/${writingId}/sync/pull${query ? `?${query}` : ""}`
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: createHeaders(),
-        credentials: "include",
+      const result = await client.GET("/writings/{writingId}/sync/pull", {
+        params: {
+          path: { writingId },
+          query: { since: sinceVersion },
+        },
       })
-      return handleResponse<SyncPullResponse>(response)
+      if (result.error) {
+        throwTransportError(result.response, result.error)
+      }
+      return result.data as SyncPullResponse
     },
 
     async listVersions(
       writingId: number,
       limit?: number
     ): Promise<{ items: VersionSummary[] }> {
-      const params = new URLSearchParams()
-      if (limit !== undefined) {
-        params.set("limit", String(limit))
-      }
-      const query = params.toString()
-      const url = `${baseUrl}/writings/${writingId}/versions${query ? `?${query}` : ""}`
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: createHeaders(),
-        credentials: "include",
+      const result = await client.GET("/writings/{writingId}/versions", {
+        params: {
+          path: { writingId },
+          query: { limit },
+        },
       })
-      return handleResponse<{ items: VersionSummary[] }>(response)
+      if (result.error) {
+        throwTransportError(result.response, result.error)
+      }
+      return result.data as { items: VersionSummary[] }
     },
 
     async getVersion(
       writingId: number,
       version: number
     ): Promise<VersionDetail> {
-      const response = await fetch(
-        `${baseUrl}/writings/${writingId}/versions/${version}`,
+      const result = await client.GET(
+        "/writings/{writingId}/versions/{version}",
         {
-          method: "GET",
-          headers: createHeaders(),
-          credentials: "include",
+          params: { path: { writingId, version } },
         }
       )
-      return handleResponse<VersionDetail>(response)
+      if (result.error) {
+        throwTransportError(result.response, result.error)
+      }
+      return result.data as VersionDetail
     },
   }
 }

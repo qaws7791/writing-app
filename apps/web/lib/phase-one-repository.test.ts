@@ -115,12 +115,14 @@ describe("phase one local repository", () => {
       topic: "기술",
     })
 
-    expect(globalThis.fetch).toHaveBeenCalledWith(
-      "http://127.0.0.1:3010/prompts?query=AI&topic=%EA%B8%B0%EC%88%A0&level=2&saved=true",
-      expect.objectContaining({
-        cache: "no-store",
-      })
-    )
+    expect(globalThis.fetch).toHaveBeenCalledOnce()
+    const request = vi.mocked(globalThis.fetch).mock.calls[0][0] as Request
+    const url = new URL(request.url)
+    expect(url.pathname).toBe("/prompts")
+    expect(url.searchParams.get("query")).toBe("AI")
+    expect(url.searchParams.get("topic")).toBe("기술")
+    expect(url.searchParams.get("level")).toBe("2")
+    expect(url.searchParams.get("saved")).toBe("true")
   })
 
   test("returns undefined for 204 responses from remote api", async () => {
