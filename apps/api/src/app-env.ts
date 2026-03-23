@@ -5,6 +5,7 @@ import type {
   HomeApiService,
   PromptApiService,
 } from "./application-services"
+import type { WritingApiService } from "./writing-services"
 import type { DevEmailInbox } from "./auth/auth-email"
 import type { ApiLogger } from "./observability/logger"
 
@@ -39,6 +40,7 @@ export type AppServices = {
   draftUseCases: DraftApiService
   homeUseCases: HomeApiService
   promptUseCases: PromptApiService
+  writingUseCases: WritingApiService
   readLatestAuthEmail?: DevEmailInbox["readLatestMessage"]
   sqliteVersion: string
 }

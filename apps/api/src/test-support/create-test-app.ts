@@ -474,6 +474,20 @@ export function createTestApi(input?: {
       },
       readLatestAuthEmail: () => null,
       sqliteVersion: "3.46.0",
+      writingUseCases: {
+        async pushTransactions() {
+          throw new NotFoundError("stub")
+        },
+        async pullDocument() {
+          throw new NotFoundError("stub")
+        },
+        async listVersions() {
+          return []
+        },
+        async getVersion() {
+          throw new NotFoundError("stub")
+        },
+      },
     },
   })
 

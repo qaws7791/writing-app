@@ -2,6 +2,9 @@ import {
   createDailyRecommendationRepository,
   createDraftRepository,
   createPromptRepository,
+  createWritingRepository,
+  createWritingTransactionRepository,
+  createWritingVersionRepository,
   migrateDatabase,
   openDb,
   readSqliteVersion,
@@ -15,6 +18,7 @@ import {
   createHomeApiService,
   createPromptApiService,
 } from "../application-services"
+import { createWritingApiService } from "../writing-services"
 import { createAuth } from "../auth/auth"
 import { createDevEmailPort } from "../auth/auth-email"
 import { apiEnv } from "../config/env"
@@ -74,6 +78,11 @@ export async function createApiDependencies(
   const dailyRecommendationRepository = createDailyRecommendationRepository(
     database.db
   )
+  const writingRepository = createWritingRepository(database.db)
+  const writingTransactionRepository = createWritingTransactionRepository(
+    database.db
+  )
+  const writingVersionRepository = createWritingVersionRepository(database.db)
 
   const promptUseCases = createPromptApiService(promptRepository)
   const draftUseCases = createDraftApiService({
@@ -85,12 +94,18 @@ export async function createApiDependencies(
     draftRepository,
     promptRepository,
   })
+  const writingUseCases = createWritingApiService({
+    writingRepository,
+    transactionRepository: writingTransactionRepository,
+    versionRepository: writingVersionRepository,
+  })
 
   const services: AppServices = {
     authHandler: auth.handler,
     draftUseCases,
     homeUseCases,
     promptUseCases,
+    writingUseCases,
     readLatestAuthEmail:
       process.env.NODE_ENV !== "production"
         ? authEmailPort.readLatestMessage

@@ -10,6 +10,9 @@ export {
   createDailyRecommendationRepository,
   createDraftRepository,
   createPromptRepository,
+  createWritingRepository,
+  createWritingTransactionRepository,
+  createWritingVersionRepository,
 } from "./repository/index.js"
 export {
   account,
@@ -22,5 +25,7 @@ export {
   session,
   user,
   verification,
+  writingTransactions,
+  writingVersions,
 } from "./schema/index.js"
 export type { DbClient, DbSchema } from "./types/index.js"

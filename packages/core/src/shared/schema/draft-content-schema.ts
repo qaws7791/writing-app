@@ -44,6 +44,7 @@ const tiptapMarkSchema: z.ZodType<TiptapMark> = z
     type: z.string().min(1),
   })
   .strict()
+  .meta({ id: "TiptapMark" })
 
 const tiptapNodeSchema: z.ZodType<TiptapNode> = z.lazy(() =>
   z
@@ -55,6 +56,7 @@ const tiptapNodeSchema: z.ZodType<TiptapNode> = z.lazy(() =>
       type: z.string().min(1),
     })
     .strict()
+    .meta({ id: "TiptapNode" })
 )
 
 export const draftContentSchema: z.ZodType<DraftContent> = z
@@ -63,3 +65,4 @@ export const draftContentSchema: z.ZodType<DraftContent> = z
     type: z.literal("doc"),
   })
   .strict()
+  .meta({ id: "DraftContent" })

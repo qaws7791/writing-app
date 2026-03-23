@@ -22,6 +22,10 @@ import listPrompts from "./routes/prompts/list-prompts"
 import savePrompt from "./routes/prompts/save-prompt"
 import unsavePrompt from "./routes/prompts/unsave-prompt"
 import getSession from "./routes/session/get-session"
+import pushTransactions from "./routes/writings/push-transactions"
+import pullDocument from "./routes/writings/pull-document"
+import listVersions from "./routes/writings/list-versions"
+import getVersion from "./routes/writings/get-version"
 
 type CreateAppInput = {
   allowedOrigins: string[]
@@ -150,6 +154,10 @@ export function createApp(input: CreateAppInput) {
   app.route("/", getDraft)
   app.route("/", autosaveDraft)
   app.route("/", deleteDraft)
+  app.route("/", pushTransactions)
+  app.route("/", pullDocument)
+  app.route("/", listVersions)
+  app.route("/", getVersion)
 
   if (input.authDebugEnabled) {
     app.route("/", getAuthEmails)

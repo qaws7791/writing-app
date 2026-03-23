@@ -166,6 +166,20 @@ function setup(): { app: TestApp } {
       },
       readLatestAuthEmail: emailPort.readLatestMessage,
       sqliteVersion: "memory",
+      writingUseCases: {
+        async pushTransactions() {
+          throw new Error("stub")
+        },
+        async pullDocument() {
+          throw new Error("stub")
+        },
+        async listVersions() {
+          return []
+        },
+        async getVersion() {
+          throw new Error("stub")
+        },
+      },
     },
   })
 

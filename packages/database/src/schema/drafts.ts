@@ -23,6 +23,7 @@ export const drafts = sqliteTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    version: integer("version").notNull().default(1),
     wordCount: integer("word_count").notNull(),
   },
   (table) => [

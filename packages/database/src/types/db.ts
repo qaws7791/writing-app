@@ -11,6 +11,8 @@ import {
   session,
   user,
   verification,
+  writingTransactions,
+  writingVersions,
 } from "../schema/index.js"
 
 export type DbSchema = typeof schema
@@ -32,3 +34,9 @@ export type SavedPromptRow = InferSelectModel<typeof savedPrompts>
 export type SessionRow = InferSelectModel<typeof session>
 export type UserRow = InferSelectModel<typeof user>
 export type VerificationRow = InferSelectModel<typeof verification>
+export type WritingTransactionInsert = InferInsertModel<
+  typeof writingTransactions
+>
+export type WritingTransactionRow = InferSelectModel<typeof writingTransactions>
+export type WritingVersionInsert = InferInsertModel<typeof writingVersions>
+export type WritingVersionRow = InferSelectModel<typeof writingVersions>

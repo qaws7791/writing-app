@@ -1,0 +1,52 @@
+import { err, ok, ResultAsync } from "neverthrow"
+import { match } from "ts-pattern"
+
+import type { DraftId, UserId } from "../../../shared/brand/index"
+import type {
+  WritingRepository,
+  WritingVersionRepository,
+} from "../writing-port"
+import {
+  writingForbidden,
+  writingNotFound,
+  type WritingModuleError,
+} from "../writing-error"
+import type { WritingVersionSummary } from "../writing-types"
+
+export type ListVersionsDeps = {
+  readonly writingRepository: WritingRepository
+  readonly versionRepository: WritingVersionRepository
+}
+
+export function makeListVersionsUseCase(deps: ListVersionsDeps) {
+  return (
+    userId: UserId,
+    draftId: DraftId,
+    limit?: number
+  ): ResultAsync<readonly WritingVersionSummary[], WritingModuleError> => {
+    return ResultAsync.fromSafePromise(
+      deps.writingRepository.getById(userId, draftId)
+    ).andThen((access) =>
+      match(access)
+        .with({ kind: "not-found" }, () =>
+          err<readonly WritingVersionSummary[], WritingModuleError>(
+            writingNotFound("문서를 찾을 수 없습니다.", draftId)
+          )
+        )
+        .with({ kind: "forbidden" }, ({ ownerId }) =>
+          err<readonly WritingVersionSummary[], WritingModuleError>(
+            writingForbidden(
+              "다른 사용자의 문서에는 접근할 수 없습니다.",
+              ownerId
+            )
+          )
+        )
+        .with({ kind: "writing" }, () =>
+          ResultAsync.fromSafePromise(
+            deps.versionRepository.list(draftId, limit)
+          )
+        )
+        .exhaustive()
+    )
+  }
+}
