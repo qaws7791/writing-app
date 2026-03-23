@@ -9,12 +9,8 @@ import {
   SearchIcon,
 } from "@hugeicons/core-free-icons"
 import { LevelDots } from "@/components/level-dots"
-import { createPhaseOneRepository } from "@/lib/phase-one-repository"
-import type {
-  PromptFilters,
-  PromptSummary,
-  PromptTopic,
-} from "@/lib/phase-one-types"
+import { createAppRepository } from "@/lib/repository"
+import type { PromptFilters, PromptSummary, PromptTopic } from "@/lib/web-types"
 
 const topicChips: Array<PromptTopic> = [
   "일상",
@@ -29,7 +25,7 @@ const topicChips: Array<PromptTopic> = [
 ]
 
 export default function PromptsPage() {
-  const repository = useMemo(() => createPhaseOneRepository(), [])
+  const repository = useMemo(() => createAppRepository(), [])
   const [prompts, setPrompts] = useState<PromptSummary[]>([])
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)

@@ -5,13 +5,13 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { PencilEdit02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { formatDraftMeta } from "@/lib/phase-one-format"
-import { createPhaseOneRepository } from "@/lib/phase-one-repository"
-import type { DraftSummary } from "@/lib/phase-one-types"
+import { formatDraftMeta } from "@/lib/format"
+import { createAppRepository } from "@/lib/repository"
+import type { DraftSummary } from "@/lib/web-types"
 
 export default function WriteListPage() {
   const router = useRouter()
-  const repository = useMemo(() => createPhaseOneRepository(), [])
+  const repository = useMemo(() => createAppRepository(), [])
   const [drafts, setDrafts] = useState<DraftSummary[]>([])
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)

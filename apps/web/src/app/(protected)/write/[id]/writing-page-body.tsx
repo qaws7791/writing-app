@@ -1,8 +1,8 @@
 import type { FormEvent, RefObject } from "react"
 
 import WritingBodyEditor from "@/components/writing-body-editor"
-import type { EditorDraftSnapshot } from "@/lib/phase-one-draft-sync"
-import type { DraftContent, PromptDetail } from "@/lib/phase-one-types"
+import type { EditorDraftSnapshot } from "@/lib/draft-sync"
+import type { DraftContent, PromptDetail } from "@/lib/web-types"
 
 type WritingPageBodyProps = {
   editorDraft: EditorDraftSnapshot

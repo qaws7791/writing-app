@@ -3,14 +3,14 @@ import {
   createFixtureHomeSnapshot,
   findFixturePrompt,
   listFixturePromptSummaries,
-} from "./phase-one-fixtures"
-import { createEmptyDraftContent, getDraftMetrics } from "./phase-one-rich-text"
+} from "./fixtures"
+import { createEmptyDraftContent, getDraftMetrics } from "./rich-text"
 import {
   createMemoryStorage,
   getDefaultStorage,
-  phaseOneStorageKeys,
+  storageKeys,
   type StorageLike,
-} from "./phase-one-storage"
+} from "./storage"
 import { resolveBrowserApiBaseUrl } from "./api-base-url"
 import { createApiClient } from "@/foundation/api/client"
 import {
@@ -27,7 +27,7 @@ import type {
   PromptDetail,
   PromptFilters,
   PromptSummary,
-} from "./phase-one-types"
+} from "./web-types"
 
 export type AutosaveDraftResult = {
   draft: DraftDetail
@@ -45,9 +45,9 @@ export type CreateDraftInput = {
   title?: string
 }
 
-export type PhaseOneRepositoryMode = "api" | "local"
+export type AppRepositoryMode = "api" | "local"
 
-export type PhaseOneRepository = {
+export type AppRepository = {
   autosaveDraft: (
     draftId: number,
     input: { content?: DraftContent; title?: string }
@@ -66,7 +66,7 @@ export type PhaseOneRepository = {
 export type RemoteApiError = ApiError
 
 function readSavedPromptEntries(storage: StorageLike): SavedPromptEntry[] {
-  const raw = storage.getItem(phaseOneStorageKeys.savedPromptEntries)
+  const raw = storage.getItem(storageKeys.savedPromptEntries)
   if (!raw) {
     return []
   }
@@ -82,14 +82,11 @@ function writeSavedPromptEntries(
   storage: StorageLike,
   entries: SavedPromptEntry[]
 ): void {
-  storage.setItem(
-    phaseOneStorageKeys.savedPromptEntries,
-    JSON.stringify(entries)
-  )
+  storage.setItem(storageKeys.savedPromptEntries, JSON.stringify(entries))
 }
 
 function readDrafts(storage: StorageLike): DraftDetail[] {
-  const raw = storage.getItem(phaseOneStorageKeys.drafts)
+  const raw = storage.getItem(storageKeys.drafts)
   if (!raw) {
     return []
   }
@@ -102,14 +99,14 @@ function readDrafts(storage: StorageLike): DraftDetail[] {
 }
 
 function writeDrafts(storage: StorageLike, drafts: DraftDetail[]): void {
-  storage.setItem(phaseOneStorageKeys.drafts, JSON.stringify(drafts))
+  storage.setItem(storageKeys.drafts, JSON.stringify(drafts))
 }
 
 function nextSequence(storage: StorageLike): number {
-  const raw = storage.getItem(phaseOneStorageKeys.sequence)
+  const raw = storage.getItem(storageKeys.sequence)
   const current = raw ? Number(raw) : 200
   const next = Number.isFinite(current) ? current + 1 : 201
-  storage.setItem(phaseOneStorageKeys.sequence, String(next))
+  storage.setItem(storageKeys.sequence, String(next))
   return next
 }
 
@@ -177,9 +174,9 @@ function filterPrompts(
   })
 }
 
-export function createLocalPhaseOneRepository(
+export function createLocalAppRepository(
   storage: StorageLike = createMemoryStorage()
-): PhaseOneRepository {
+): AppRepository {
   return {
     async autosaveDraft(draftId, input) {
       const drafts = readDrafts(storage)
@@ -359,9 +356,7 @@ export function createLocalPhaseOneRepository(
   }
 }
 
-function createRemotePhaseOneRepository(
-  apiBaseUrl: string
-): PhaseOneRepository {
+function createRemoteAppRepository(apiBaseUrl: string): AppRepository {
   const client = createApiClient({ baseUrl: apiBaseUrl })
 
   return {
@@ -459,21 +454,21 @@ function resolveApiBaseUrl(explicitBaseUrl?: string): string | null {
 }
 
 function resolveRepositoryMode(
-  explicitMode?: PhaseOneRepositoryMode
-): PhaseOneRepositoryMode {
+  explicitMode?: AppRepositoryMode
+): AppRepositoryMode {
   return explicitMode ?? env.NEXT_PUBLIC_PHASE_ONE_MODE
 }
 
-export function createPhaseOneRepository(options?: {
+export function createAppRepository(options?: {
   apiBaseUrl?: string
-  mode?: PhaseOneRepositoryMode
+  mode?: AppRepositoryMode
   storage?: StorageLike
-}): PhaseOneRepository {
+}): AppRepository {
   const storage = options?.storage ?? getDefaultStorage()
   const mode = resolveRepositoryMode(options?.mode)
 
   if (mode === "local") {
-    return createLocalPhaseOneRepository(storage)
+    return createLocalAppRepository(storage)
   }
 
   const apiBaseUrl = resolveApiBaseUrl(options?.apiBaseUrl)
@@ -481,5 +476,5 @@ export function createPhaseOneRepository(options?: {
     throw new Error("NEXT_PUBLIC_API_BASE_URL is required in api mode.")
   }
 
-  return createRemotePhaseOneRepository(apiBaseUrl)
+  return createRemoteAppRepository(apiBaseUrl)
 }

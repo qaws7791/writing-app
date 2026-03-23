@@ -1,4 +1,4 @@
-import { formatDraftMeta, formatSavedAt } from "./phase-one-format"
+import { formatDraftMeta, formatSavedAt } from "./format"
 
 describe("phase one format helpers", () => {
   test("formats saved time in Korean locale", () => {

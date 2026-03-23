@@ -2,8 +2,8 @@ import { render, screen } from "@testing-library/react"
 
 import WriteListPage from "./page"
 import { createDeferred } from "@/test-support/async"
-import { createMockPhaseOneRepository } from "@/test-support/mock-phase-one-repository"
-import { createDraftSummary } from "@/test-support/phase-one-test-fixtures"
+import { createMockRepository } from "@/test-support/mock-repository"
+import { createDraftSummary } from "@/test-support/test-fixtures"
 
 const push = vi.fn()
 
@@ -11,10 +11,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }))
 
-const repository = createMockPhaseOneRepository()
+const repository = createMockRepository()
 
-vi.mock("@/lib/phase-one-repository", () => ({
-  createPhaseOneRepository: () => repository,
+vi.mock("@/lib/repository", () => ({
+  createAppRepository: () => repository,
 }))
 
 describe("write list page", () => {

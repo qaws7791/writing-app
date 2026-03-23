@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event"
 
 import PromptDetailPageClient from "./prompt-detail-page-client"
 import { createDeferred } from "@/test-support/async"
-import { createMockPhaseOneRepository } from "@/test-support/mock-phase-one-repository"
-import { createPromptDetail } from "@/test-support/phase-one-test-fixtures"
+import { createMockRepository } from "@/test-support/mock-repository"
+import { createPromptDetail } from "@/test-support/test-fixtures"
 
 const push = vi.fn()
 
@@ -12,10 +12,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }))
 
-const repository = createMockPhaseOneRepository()
+const repository = createMockRepository()
 
-vi.mock("@/lib/phase-one-repository", () => ({
-  createPhaseOneRepository: () => repository,
+vi.mock("@/lib/repository", () => ({
+  createAppRepository: () => repository,
 }))
 
 describe("prompt detail page client", () => {

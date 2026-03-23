@@ -5,7 +5,7 @@ import type {
   HomeSnapshot,
   PromptDetail,
   PromptSummary,
-} from "@/lib/phase-one-types"
+} from "@/lib/web-types"
 
 export function createDraftContent(text = "기본 본문"): DraftContent {
   return {

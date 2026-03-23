@@ -9,9 +9,9 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
-import { formatDraftMeta } from "@/lib/phase-one-format"
-import type { DraftDetail } from "@/lib/phase-one-types"
-import type { DraftSyncState } from "@/lib/phase-one-draft-sync"
+import { formatDraftMeta } from "@/lib/format"
+import type { DraftDetail } from "@/lib/web-types"
+import type { DraftSyncState } from "@/lib/draft-sync"
 import { Button } from "@workspace/ui/components/button"
 import { buttonVariants } from "@workspace/ui/components/button.styles"
 import {

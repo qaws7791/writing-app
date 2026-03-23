@@ -13,8 +13,8 @@ import {
 } from "@hugeicons/core-free-icons"
 import { Badge } from "@workspace/ui/components/badge"
 import { LevelDots } from "@/components/level-dots"
-import { createPhaseOneRepository } from "@/lib/phase-one-repository"
-import type { PromptDetail } from "@/lib/phase-one-types"
+import { createAppRepository } from "@/lib/repository"
+import type { PromptDetail } from "@/lib/web-types"
 
 export default function PromptDetailPageClient({
   promptId,
@@ -22,7 +22,7 @@ export default function PromptDetailPageClient({
   promptId: number
 }) {
   const router = useRouter()
-  const repository = useMemo(() => createPhaseOneRepository(), [])
+  const repository = useMemo(() => createAppRepository(), [])
   const [prompt, setPrompt] = useState<PromptDetail | null>(null)
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)

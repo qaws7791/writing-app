@@ -3,7 +3,7 @@ import {
   draftContentToHtml,
   draftContentToPlainText,
   getDraftMetrics,
-} from "./phase-one-rich-text"
+} from "./rich-text"
 
 describe("phase one rich text helpers", () => {
   test("creates an empty paragraph document", () => {

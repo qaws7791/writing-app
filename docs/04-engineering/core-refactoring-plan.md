@@ -72,19 +72,19 @@ packages/core/
 
 ### 현재 구조 대비 주요 변경점
 
-| 현재 | 개선 후 | 근거 |
-|---|---|---|
-| `shared/types/result.ts` (자체 Result 구현) | **삭제** → `neverthrow` 대체 | 검증된 라이브러리로 체이닝·ResultAsync 등 확보 |
-| `shared/types/errors.ts` + `shared/utilities/application-errors.ts` | `shared/error/domain-error.ts` 통합 | 에러 정의와 변환이 분리되어 있던 것을 한 곳에 colocation |
-| `shared/ports/` (전역 레포지토리 인터페이스) | 각 모듈의 `*-port.ts`로 이동 | 포트는 모듈의 계약, 모듈이 소유해야 함 (DDD Bounded Context) |
-| `shared/testing/fake-draft-repository.ts` | `modules/drafts/testing/`으로 이동 | fake는 해당 모듈의 관심사 (colocation) |
-| 모듈 내 `contracts/` 디렉토리 | `index.ts`가 contracts 역할 통합 | 별도 디렉토리 없이 barrel export가 계약 |
-| 모듈 내 `model/`, `operations/`, `errors/`, `ports/` 각각 디렉토리 | 파일 1개씩으로 평탄화 | 파일이 1개인 디렉토리는 인지부하만 증가 (YAGNI) |
-| `adapters/application-compatibility.ts` | **삭제** | neverthrow `.match()`로 consumer가 직접 처리 |
-| use-case 이중 API (make* + standalone) | `make*` 팩토리만 유지 | 단일 진입점 원칙 (Code That Fits in Your Head) |
-| 자체 `mapResult`, `flatMapResult` | `neverthrow`의 `.map()`, `.andThen()` | Railway-Oriented Programming 표준 패턴 |
-| `switch` 문 에러 분기 | `ts-pattern`의 `match().with()` | 컴파일 타임 exhaustive check 보장 |
-| 수동 데이터 변환 | `remeda` 파이프라인 | 선언적·합성 가능한 데이터 처리 |
+| 현재                                                                | 개선 후                               | 근거                                                         |
+| ------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------ |
+| `shared/types/result.ts` (자체 Result 구현)                         | **삭제** → `neverthrow` 대체          | 검증된 라이브러리로 체이닝·ResultAsync 등 확보               |
+| `shared/types/errors.ts` + `shared/utilities/application-errors.ts` | `shared/error/domain-error.ts` 통합   | 에러 정의와 변환이 분리되어 있던 것을 한 곳에 colocation     |
+| `shared/ports/` (전역 레포지토리 인터페이스)                        | 각 모듈의 `*-port.ts`로 이동          | 포트는 모듈의 계약, 모듈이 소유해야 함 (DDD Bounded Context) |
+| `shared/testing/fake-draft-repository.ts`                           | `modules/drafts/testing/`으로 이동    | fake는 해당 모듈의 관심사 (colocation)                       |
+| 모듈 내 `contracts/` 디렉토리                                       | `index.ts`가 contracts 역할 통합      | 별도 디렉토리 없이 barrel export가 계약                      |
+| 모듈 내 `model/`, `operations/`, `errors/`, `ports/` 각각 디렉토리  | 파일 1개씩으로 평탄화                 | 파일이 1개인 디렉토리는 인지부하만 증가 (YAGNI)              |
+| `adapters/application-compatibility.ts`                             | **삭제**                              | neverthrow `.match()`로 consumer가 직접 처리                 |
+| use-case 이중 API (make\* + standalone)                             | `make*` 팩토리만 유지                 | 단일 진입점 원칙 (Code That Fits in Your Head)               |
+| 자체 `mapResult`, `flatMapResult`                                   | `neverthrow`의 `.map()`, `.andThen()` | Railway-Oriented Programming 표준 패턴                       |
+| `switch` 문 에러 분기                                               | `ts-pattern`의 `match().with()`       | 컴파일 타임 exhaustive check 보장                            |
+| 수동 데이터 변환                                                    | `remeda` 파이프라인                   | 선언적·합성 가능한 데이터 처리                               |
 
 ---
 
@@ -124,16 +124,16 @@ packages/core/
 
 ### 설계 철학
 
-| 원칙 | 출처 | 적용 |
-|---|---|---|
-| **데이터와 행위를 분리** | Data-Oriented Programming (Sharvit) | 타입은 plain data, 함수는 별도 모듈 |
-| **Railway-Oriented Error Handling** | Scott Wlaschin, NDC 2014 | neverthrow의 `Result`/`ResultAsync`로 에러를 값으로 흐름 제어 |
-| **Make Illegal States Unrepresentable** | Domain Modeling Made Functional | Brand 타입 + discriminated union으로 런타임 오류 방지 |
-| **단일 책임, 최소 표면적** | Clean Architecture (Martin) | 모듈은 index.ts를 통해서만 공개, 내부는 은닉 |
-| **Colocation** | A Philosophy of Software Design (Ousterhout) | 관련 코드는 물리적으로 가까이 배치 |
-| **YAGNI** | Extreme Programming (Beck) | 불필요한 추상화 디렉토리 제거, 필요할 때 분리 |
-| **Exhaustive Matching** | ts-pattern + Grokking Simplicity | 모든 분기를 컴파일 타임에 보장 |
-| **Pipe-based Composition** | Functional Design and Architecture, remeda | 데이터 변환을 선언적 파이프라인으로 |
+| 원칙                                    | 출처                                         | 적용                                                          |
+| --------------------------------------- | -------------------------------------------- | ------------------------------------------------------------- |
+| **데이터와 행위를 분리**                | Data-Oriented Programming (Sharvit)          | 타입은 plain data, 함수는 별도 모듈                           |
+| **Railway-Oriented Error Handling**     | Scott Wlaschin, NDC 2014                     | neverthrow의 `Result`/`ResultAsync`로 에러를 값으로 흐름 제어 |
+| **Make Illegal States Unrepresentable** | Domain Modeling Made Functional              | Brand 타입 + discriminated union으로 런타임 오류 방지         |
+| **단일 책임, 최소 표면적**              | Clean Architecture (Martin)                  | 모듈은 index.ts를 통해서만 공개, 내부는 은닉                  |
+| **Colocation**                          | A Philosophy of Software Design (Ousterhout) | 관련 코드는 물리적으로 가까이 배치                            |
+| **YAGNI**                               | Extreme Programming (Beck)                   | 불필요한 추상화 디렉토리 제거, 필요할 때 분리                 |
+| **Exhaustive Matching**                 | ts-pattern + Grokking Simplicity             | 모든 분기를 컴파일 타임에 보장                                |
+| **Pipe-based Composition**              | Functional Design and Architecture, remeda   | 데이터 변환을 선언적 파이프라인으로                           |
 
 ### 의존성 규칙
 
@@ -161,14 +161,15 @@ if (result.ok === false) return result.error
 
 // After: neverthrow의 ResultAsync + 체이닝
 const getDraft = (userId: UserId, draftId: DraftId) =>
-  ResultAsync.fromPromise(
-    repo.getById(userId, draftId),
-    () => draftNotFound("초안을 찾을 수 없습니다.", draftId)
-  ).andThen(accessResult =>
+  ResultAsync.fromPromise(repo.getById(userId, draftId), () =>
+    draftNotFound("초안을 찾을 수 없습니다.", draftId)
+  ).andThen((accessResult) =>
     match(accessResult)
       .with({ kind: "draft" }, ({ draft }) => ok(draft))
       .with({ kind: "not-found" }, () => err(draftNotFound("...", draftId)))
-      .with({ kind: "forbidden" }, ({ ownerId }) => err(draftForbidden("...", ownerId)))
+      .with({ kind: "forbidden" }, ({ ownerId }) =>
+        err(draftForbidden("...", ownerId))
+      )
       .exhaustive()
   )
 ```
@@ -201,7 +202,10 @@ export const toHttpStatus = (error: DomainError) =>
 
 ```typescript
 // Before: 수동 배열 조작
-const words = plainText.trim().split(/\s+/).filter(w => w.length > 0)
+const words = plainText
+  .trim()
+  .split(/\s+/)
+  .filter((w) => w.length > 0)
 
 // After: remeda 파이프라인
 import { pipe, split, filter, length } from "remeda"
@@ -209,8 +213,8 @@ import { pipe, split, filter, length } from "remeda"
 const wordCount = pipe(
   plainText.trim(),
   split(/\s+/),
-  filter(w => w.length > 0),
-  length,
+  filter((w) => w.length > 0),
+  length
 )
 ```
 
@@ -397,7 +401,7 @@ describe("makeCreateDraftUseCase", () => {
     const result = await createDraft(userId, input)
 
     expect(result.isOk()).toBe(true)
-    result.map(draft => {
+    result.map((draft) => {
       expect(draft.title).toBe("새 글")
     })
   })
@@ -406,7 +410,7 @@ describe("makeCreateDraftUseCase", () => {
     const result = await createDraft(userId, { sourcePromptId })
 
     expect(result.isErr()).toBe(true)
-    result.mapErr(error => {
+    result.mapErr((error) => {
       expect(error.code).toBe("NOT_FOUND")
     })
   })
@@ -436,17 +440,17 @@ describe("makeCreateDraftUseCase", () => {
 
 ## 8. 참고 문헌 매핑
 
-| 적용 항목 | 근거 문헌 |
-|---|---|
-| Result 모나드 기반 에러 처리 | Railway-Oriented Programming (Wlaschin), Domain Modeling Made Functional |
-| Plain data + 순수 함수 | Data-Oriented Programming (Sharvit), Grokking Simplicity |
-| Brand 타입으로 도메인 식별자 | Domain Modeling Made Functional, DDD (Evans) |
-| Discriminated union 에러 | Domain Modeling Made Functional, ts-pattern |
-| 모듈 내 포트 소유 | Clean Architecture (Martin), Hexagonal Architecture (Cockburn) |
-| Colocation 원칙 | A Philosophy of Software Design (Ousterhout), Code That Fits in Your Head (Seemann) |
-| 파이프 기반 합성 | Functional Design and Architecture, SICP |
-| 최소 표면적 | Clean Code (Martin), Code Simplicity (Kanat-Alexander) |
-| Exhaustive matching | Grokking Simplicity, ts-pattern 공식 문서 |
-| YAGNI (불필요 추상화 제거) | Extreme Programming Explained (Beck), Refactoring (Fowler) |
-| 테스트 colocation | The Art of Unit Testing (Osherove), xUnit Test Patterns (Meszaros) |
-| 팩토리 함수로 DI | Dependency Injection Principles (Seemann), Functional Architecture |
+| 적용 항목                    | 근거 문헌                                                                           |
+| ---------------------------- | ----------------------------------------------------------------------------------- |
+| Result 모나드 기반 에러 처리 | Railway-Oriented Programming (Wlaschin), Domain Modeling Made Functional            |
+| Plain data + 순수 함수       | Data-Oriented Programming (Sharvit), Grokking Simplicity                            |
+| Brand 타입으로 도메인 식별자 | Domain Modeling Made Functional, DDD (Evans)                                        |
+| Discriminated union 에러     | Domain Modeling Made Functional, ts-pattern                                         |
+| 모듈 내 포트 소유            | Clean Architecture (Martin), Hexagonal Architecture (Cockburn)                      |
+| Colocation 원칙              | A Philosophy of Software Design (Ousterhout), Code That Fits in Your Head (Seemann) |
+| 파이프 기반 합성             | Functional Design and Architecture, SICP                                            |
+| 최소 표면적                  | Clean Code (Martin), Code Simplicity (Kanat-Alexander)                              |
+| Exhaustive matching          | Grokking Simplicity, ts-pattern 공식 문서                                           |
+| YAGNI (불필요 추상화 제거)   | Extreme Programming Explained (Beck), Refactoring (Fowler)                          |
+| 테스트 colocation            | The Art of Unit Testing (Osherove), xUnit Test Patterns (Meszaros)                  |
+| 팩토리 함수로 DI             | Dependency Injection Principles (Seemann), Functional Architecture                  |

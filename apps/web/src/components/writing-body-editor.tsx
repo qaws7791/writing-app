@@ -56,8 +56,8 @@ import {
   layer2Options,
 } from "@/components/ai/ai-features"
 import { AISuggestionPanel } from "@/components/ai/ai-suggestion-panel"
-import type { DraftContent } from "@/lib/phase-one-types"
-import { createEmptyDraftContent } from "@/lib/phase-one-rich-text"
+import type { DraftContent } from "@/lib/web-types"
+import { createEmptyDraftContent } from "@/lib/rich-text"
 
 import styles from "./writing-body-editor.module.css"
 

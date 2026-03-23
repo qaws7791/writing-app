@@ -1,10 +1,7 @@
 import { afterEach, describe, expect, test, vi } from "vitest"
 
-import {
-  createLocalPhaseOneRepository,
-  createPhaseOneRepository,
-} from "./phase-one-repository"
-import { createMemoryStorage } from "./phase-one-storage"
+import { createLocalAppRepository, createAppRepository } from "./repository"
+import { createMemoryStorage } from "./storage"
 
 const originalFetch = globalThis.fetch
 
@@ -16,7 +13,7 @@ afterEach(() => {
 describe("phase one local repository", () => {
   test("creates drafts with initial title and content", async () => {
     const storage = createMemoryStorage()
-    const repository = createLocalPhaseOneRepository(storage)
+    const repository = createLocalAppRepository(storage)
 
     const created = await repository.createDraft({
       content: {
@@ -40,7 +37,7 @@ describe("phase one local repository", () => {
 
   test("creates, autosaves, lists and deletes drafts without remote api", async () => {
     const storage = createMemoryStorage()
-    const repository = createLocalPhaseOneRepository(storage)
+    const repository = createLocalAppRepository(storage)
 
     const created = await repository.createDraft({ sourcePromptId: 1 })
     const saved = await repository.autosaveDraft(created.id, {
@@ -68,7 +65,7 @@ describe("phase one local repository", () => {
 
   test("persists saved prompts in memory storage", async () => {
     const storage = createMemoryStorage()
-    const repository = createLocalPhaseOneRepository(storage)
+    const repository = createLocalAppRepository(storage)
 
     await repository.savePrompt(6)
     const home = await repository.getHome()
@@ -85,7 +82,7 @@ describe("phase one local repository", () => {
       throw new TypeError("network down")
     }) as unknown as typeof fetch
 
-    const repository = createPhaseOneRepository({
+    const repository = createAppRepository({
       apiBaseUrl: "http://127.0.0.1:3010",
       mode: "api",
       storage: createMemoryStorage(),
@@ -102,7 +99,7 @@ describe("phase one local repository", () => {
         })
     ) as unknown as typeof fetch
 
-    const repository = createPhaseOneRepository({
+    const repository = createAppRepository({
       apiBaseUrl: "http://127.0.0.1:3010/",
       mode: "api",
       storage: createMemoryStorage(),
@@ -130,7 +127,7 @@ describe("phase one local repository", () => {
       async () => new Response(null, { status: 204 })
     ) as unknown as typeof fetch
 
-    const repository = createPhaseOneRepository({
+    const repository = createAppRepository({
       apiBaseUrl: "http://127.0.0.1:3010",
       mode: "api",
       storage: createMemoryStorage(),
@@ -152,7 +149,7 @@ describe("phase one local repository", () => {
         )
     ) as unknown as typeof fetch
 
-    const repository = createPhaseOneRepository({
+    const repository = createAppRepository({
       apiBaseUrl: "http://127.0.0.1:3010",
       mode: "api",
       storage: createMemoryStorage(),

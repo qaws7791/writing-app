@@ -10,10 +10,7 @@ import {
 } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
-import {
-  createPhaseOneRepository,
-  type PhaseOneRepository,
-} from "@/lib/phase-one-repository"
+import { createAppRepository, type AppRepository } from "@/lib/repository"
 import {
   consumeRedirectDraftSnapshot,
   createDraftSnapshotFromDetail,
@@ -23,20 +20,13 @@ import {
   type EditorDraftSnapshot,
   normalizeDraftTitle,
   serializeDraftSnapshot,
-} from "@/lib/phase-one-draft-sync"
+} from "@/lib/draft-sync"
 import {
   type FlushPendingDraftResult,
   useEditorLeaveGuard,
 } from "@/hooks/use-editor-leave-guard"
-import {
-  draftContentToHtml,
-  draftContentToPlainText,
-} from "@/lib/phase-one-rich-text"
-import type {
-  DraftContent,
-  DraftDetail,
-  PromptDetail,
-} from "@/lib/phase-one-types"
+import { draftContentToHtml, draftContentToPlainText } from "@/lib/rich-text"
+import type { DraftContent, DraftDetail, PromptDetail } from "@/lib/web-types"
 
 export type WritingPageProps = {
   draftId: number
@@ -48,10 +38,7 @@ function extractTitle(text: string | null) {
 
 export function useWritingPage({ draftId }: WritingPageProps) {
   const pathname = usePathname()
-  const repository = useMemo<PhaseOneRepository>(
-    () => createPhaseOneRepository(),
-    []
-  )
+  const repository = useMemo<AppRepository>(() => createAppRepository(), [])
   const router = useRouter()
   const titleRef = useRef<HTMLHeadingElement>(null)
   const isMountedRef = useRef(true)

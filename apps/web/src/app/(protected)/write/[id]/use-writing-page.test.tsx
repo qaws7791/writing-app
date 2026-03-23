@@ -1,8 +1,8 @@
 import { act, renderHook } from "@testing-library/react"
 
 import { useWritingPage } from "./use-writing-page"
-import { createMockPhaseOneRepository } from "@/test-support/mock-phase-one-repository"
-import { createDraftDetail } from "@/test-support/phase-one-test-fixtures"
+import { createMockRepository } from "@/test-support/mock-repository"
+import { createDraftDetail } from "@/test-support/test-fixtures"
 
 const push = vi.fn()
 
@@ -11,15 +11,14 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }))
 
-const repository = createMockPhaseOneRepository()
+const repository = createMockRepository()
 
-vi.mock("@/lib/phase-one-repository", () => ({
-  createPhaseOneRepository: () => repository,
+vi.mock("@/lib/repository", () => ({
+  createAppRepository: () => repository,
 }))
 
-vi.mock("@/lib/phase-one-draft-sync", async (importOriginal) => {
-  const original =
-    await importOriginal<typeof import("@/lib/phase-one-draft-sync")>()
+vi.mock("@/lib/draft-sync", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@/lib/draft-sync")>()
   return {
     ...original,
     consumeRedirectDraftSnapshot: () => null,

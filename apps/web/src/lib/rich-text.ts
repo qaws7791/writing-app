@@ -1,4 +1,4 @@
-import type { DraftContent, DraftMark, DraftNode } from "./phase-one-types"
+import type { DraftContent, DraftMark, DraftNode } from "./web-types"
 
 export function createEmptyDraftContent(): DraftContent {
   return {

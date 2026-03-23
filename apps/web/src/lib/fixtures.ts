@@ -3,8 +3,8 @@ import type {
   HomeSnapshot,
   PromptDetail,
   PromptSummary,
-} from "./phase-one-types"
-import { createEmptyDraftContent, getDraftMetrics } from "./phase-one-rich-text"
+} from "./web-types"
+import { createEmptyDraftContent, getDraftMetrics } from "./rich-text"
 
 type SeedPrompt = PromptDetail
 

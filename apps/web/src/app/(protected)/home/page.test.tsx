@@ -3,13 +3,13 @@ import userEvent from "@testing-library/user-event"
 
 import Page from "./page"
 import { createDeferred } from "@/test-support/async"
-import { createMockPhaseOneRepository } from "@/test-support/mock-phase-one-repository"
-import { createHomeSnapshot } from "@/test-support/phase-one-test-fixtures"
+import { createMockRepository } from "@/test-support/mock-repository"
+import { createHomeSnapshot } from "@/test-support/test-fixtures"
 
-const repository = createMockPhaseOneRepository()
+const repository = createMockRepository()
 
-vi.mock("@/lib/phase-one-repository", () => ({
-  createPhaseOneRepository: () => repository,
+vi.mock("@/lib/repository", () => ({
+  createAppRepository: () => repository,
 }))
 
 describe("home page", () => {

@@ -9,9 +9,9 @@ import {
   PenConnectWifiIcon,
 } from "@hugeicons/core-free-icons"
 import { LevelDots } from "@/components/level-dots"
-import { formatDraftMeta } from "@/lib/phase-one-format"
-import { createPhaseOneRepository } from "@/lib/phase-one-repository"
-import type { HomeSnapshot } from "@/lib/phase-one-types"
+import { formatDraftMeta } from "@/lib/format"
+import { createAppRepository } from "@/lib/repository"
+import type { HomeSnapshot } from "@/lib/web-types"
 import {
   Tabs,
   TabsContent,
@@ -20,7 +20,7 @@ import {
 } from "@workspace/ui/components/tabs"
 
 export default function Page() {
-  const repository = useMemo(() => createPhaseOneRepository(), [])
+  const repository = useMemo(() => createAppRepository(), [])
   const [home, setHome] = useState<HomeSnapshot | null>(null)
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)

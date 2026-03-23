@@ -1,9 +1,6 @@
-import {
-  createEmptyDraftContent,
-  draftContentToPlainText,
-} from "./phase-one-rich-text"
-import { getSessionStorage, phaseOneStorageKeys } from "./phase-one-storage"
-import type { DraftContent, DraftDetail } from "./phase-one-types"
+import { createEmptyDraftContent, draftContentToPlainText } from "./rich-text"
+import { getSessionStorage, storageKeys } from "./storage"
+import type { DraftContent, DraftDetail } from "./web-types"
 
 export type EditorDraftSnapshot = {
   content: DraftContent
@@ -68,7 +65,7 @@ export function hasMeaningfulDraftInput(snapshot: EditorDraftSnapshot) {
 }
 
 function createRedirectDraftSnapshotStorageKey(draftId: number) {
-  return `${phaseOneStorageKeys.redirectDraftSnapshotPrefix}.${draftId}`
+  return `${storageKeys.redirectDraftSnapshotPrefix}.${draftId}`
 }
 
 export function consumeRedirectDraftSnapshot(
