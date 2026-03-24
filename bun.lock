@@ -26,7 +26,7 @@
         "typescript": "5.9.3",
         "vite-tsconfig-paths": "^6.1.1",
         "vitest": "^4.1.0",
-        "web": "^0.0.2",
+        "web": "workspace:*",
       },
     },
     "apps/api": {
@@ -96,6 +96,7 @@
         "@tiptap/extension-typography": "^3.20.1",
         "@tiptap/pm": "^3.20.1",
         "@tiptap/react": "^3.20.1",
+        "@workspace/api-client": "workspace:*",
         "@workspace/core": "workspace:*",
         "@workspace/ui": "workspace:*",
         "@xstate/react": "^6.1.0",
@@ -115,6 +116,18 @@
         "@types/react-dom": "^19.2.3",
         "@workspace/config": "workspace:*",
         "eslint": "^9.39.2",
+        "typescript": "^5.9.3",
+      },
+    },
+    "packages/api-client": {
+      "name": "@workspace/api-client",
+      "version": "0.0.0",
+      "dependencies": {
+        "openapi-fetch": "^0.17.0",
+      },
+      "devDependencies": {
+        "@workspace/config": "workspace:*",
+        "openapi-typescript": "^7.13.0",
         "typescript": "^5.9.3",
       },
     },
@@ -872,6 +885,8 @@
     "@vitest/spy": ["@vitest/spy@4.1.0", "", {}, "sha512-pz77k+PgNpyMDv2FV6qmk5ZVau6c3R8HC8v342T2xlFxQKTrSeYw9waIJG8KgV9fFwAtTu4ceRzMivPTH6wSxw=="],
 
     "@vitest/utils": ["@vitest/utils@4.1.0", "", { "dependencies": { "@vitest/pretty-format": "4.1.0", "convert-source-map": "^2.0.0", "tinyrainbow": "^3.0.3" } }, "sha512-XfPXT6a8TZY3dcGY8EdwsBulFCIw+BeeX0RZn2x/BtiY/75YGh8FeWGG8QISN/WhaqSrE2OrlDgtF8q5uhOTmw=="],
+
+    "@workspace/api-client": ["@workspace/api-client@workspace:packages/api-client"],
 
     "@workspace/config": ["@workspace/config@workspace:packages/config"],
 

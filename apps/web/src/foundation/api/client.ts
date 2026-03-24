@@ -1,8 +1,9 @@
-import createClient from "openapi-fetch"
+import { createApiClient as createPackageClient } from "@workspace/api-client"
 
-import type { paths } from "@/foundation/api/schema"
 import { resolveBrowserApiBaseUrl } from "@/lib/api-base-url"
 import { env } from "@/env"
+
+export type { ApiClient } from "@workspace/api-client"
 
 function resolveBaseUrl(explicitBaseUrl?: string): string {
   if (explicitBaseUrl) {
@@ -17,13 +18,7 @@ function resolveBaseUrl(explicitBaseUrl?: string): string {
   return resolveBrowserApiBaseUrl(envBaseUrl)
 }
 
-export type ApiClient = ReturnType<typeof createApiClient>
-
 export function createApiClient(options?: { baseUrl?: string }) {
   const baseUrl = resolveBaseUrl(options?.baseUrl)
-
-  return createClient<paths>({
-    baseUrl,
-    credentials: "include",
-  })
+  return createPackageClient({ baseUrl })
 }

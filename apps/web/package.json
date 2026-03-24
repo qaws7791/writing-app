@@ -4,8 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "api:generate": "bun run scripts/generate-api-types.ts --input foundation/api/openapi.json",
-    "api:fetch": "bun run scripts/fetch-openapi-spec.ts",
+    "api:generate": "bun run --filter=@workspace/api-client api:generate",
+    "api:fetch": "bun run --filter=@workspace/api-client api:fetch",
     "dev": "bun --env-file=.env.development --bun next dev",
     "dev:local": "bun --env-file=.env.local-mode --bun next dev",
     "build": "bun --env-file=.env.development --bun next build",
@@ -33,6 +33,7 @@
     "@tiptap/extension-typography": "^3.20.1",
     "@tiptap/pm": "^3.20.1",
     "@tiptap/react": "^3.20.1",
+    "@workspace/api-client": "workspace:*",
     "@workspace/core": "workspace:*",
     "@workspace/ui": "workspace:*",
     "@xstate/react": "^6.1.0",
