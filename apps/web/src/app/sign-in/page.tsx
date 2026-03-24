@@ -1,5 +1,5 @@
-import SignInPageClient from "./sign-in-page-client"
-import { redirectIfPublicAuthUnavailable } from "@/lib/server-auth"
+import SignInView from "@/views/sign-in-view"
+import { redirectIfPublicAuthUnavailable } from "@/features/auth/repositories/server-auth"
 
 export default async function SignInPage({
   searchParams,
@@ -14,9 +14,6 @@ export default async function SignInPage({
   const params = await searchParams
 
   return (
-    <SignInPageClient
-      errorCode={params.error}
-      verified={params.verified === "1"}
-    />
+    <SignInView errorCode={params.error} verified={params.verified === "1"} />
   )
 }

@@ -1,7 +1,7 @@
 import { createApiClient as createPackageClient } from "@workspace/api-client"
 
-import { resolveBrowserApiBaseUrl } from "@/lib/api-base-url"
-import { env } from "@/env"
+import { resolveBrowserApiBaseUrl } from "@/foundation/lib/api-base-url"
+import { env } from "@/foundation/config/env"
 
 export type { ApiClient } from "@workspace/api-client"
 

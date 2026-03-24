@@ -1,4 +1,4 @@
-import PromptDetailPageClient from "./prompt-detail-page-client"
+import PromptDetailView from "@/views/prompt-detail-view"
 
 export default async function PromptDetailPage({
   params,
@@ -6,7 +6,5 @@ export default async function PromptDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const promptId = Number(id)
-
-  return <PromptDetailPageClient promptId={promptId} />
+  return <PromptDetailView promptId={Number(id)} />
 }

@@ -1,11 +1,11 @@
 import { vi, type Mock } from "vitest"
 
-import type { DraftContent } from "@/lib/web-types"
+import type { DraftContent } from "@/domain/draft"
 import type {
   AutosaveDraftResult,
   CreateDraftInput,
   AppRepository,
-} from "@/lib/repository"
+} from "@/features/writing/repositories/app-repository"
 
 type MockedRepository = {
   [TKey in keyof AppRepository]: Mock<AppRepository[TKey]>

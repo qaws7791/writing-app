@@ -1,5 +1,5 @@
-import ResetPasswordPageClient from "./reset-password-page-client"
-import { redirectIfPublicAuthUnavailable } from "@/lib/server-auth"
+import ResetPasswordView from "@/views/reset-password-view"
+import { redirectIfPublicAuthUnavailable } from "@/features/auth/repositories/server-auth"
 
 export default async function ResetPasswordPage({
   searchParams,
@@ -13,7 +13,5 @@ export default async function ResetPasswordPage({
 
   const params = await searchParams
 
-  return (
-    <ResetPasswordPageClient errorCode={params.error} token={params.token} />
-  )
+  return <ResetPasswordView errorCode={params.error} token={params.token} />
 }

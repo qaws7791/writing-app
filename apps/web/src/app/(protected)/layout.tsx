@@ -1,6 +1,6 @@
-import GlobalNavigation from "@/components/global-navigation"
+import GlobalNavigation from "@/features/navigation/components/global-navigation"
 import React from "react"
-import { redirectIfProtectedAccessMissing } from "@/lib/server-auth"
+import { redirectIfProtectedAccessMissing } from "@/features/auth/repositories/server-auth"
 
 export default async function layout({
   children,

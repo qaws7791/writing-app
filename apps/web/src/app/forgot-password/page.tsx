@@ -1,8 +1,8 @@
-import ForgotPasswordPageClient from "./forgot-password-page-client"
-import { redirectIfPublicAuthUnavailable } from "@/lib/server-auth"
+import ForgotPasswordView from "@/views/forgot-password-view"
+import { redirectIfPublicAuthUnavailable } from "@/features/auth/repositories/server-auth"
 
 export default async function ForgotPasswordPage() {
   await redirectIfPublicAuthUnavailable()
 
-  return <ForgotPasswordPageClient />
+  return <ForgotPasswordView />
 }

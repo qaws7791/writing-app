@@ -1,8 +1,8 @@
-import SignUpPageClient from "./sign-up-page-client"
-import { redirectIfPublicAuthUnavailable } from "@/lib/server-auth"
+import SignUpView from "@/views/sign-up-view"
+import { redirectIfPublicAuthUnavailable } from "@/features/auth/repositories/server-auth"
 
 export default async function SignUpPage() {
   await redirectIfPublicAuthUnavailable()
 
-  return <SignUpPageClient />
+  return <SignUpView />
 }

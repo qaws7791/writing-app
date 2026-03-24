@@ -3,9 +3,8 @@ import type {
   DraftDetail,
   DraftSummary,
   HomeSnapshot,
-  PromptDetail,
-  PromptSummary,
-} from "@/lib/web-types"
+} from "@/domain/draft"
+import type { PromptDetail, PromptSummary } from "@/domain/prompt"
 
 export function createDraftContent(text = "기본 본문"): DraftContent {
   return {

@@ -13,7 +13,7 @@ vi.mock("next/navigation", () => ({
 
 const repository = createMockRepository()
 
-vi.mock("@/lib/repository", () => ({
+vi.mock("@/features/writing/repositories/app-repository", () => ({
   createAppRepository: () => repository,
 }))
 

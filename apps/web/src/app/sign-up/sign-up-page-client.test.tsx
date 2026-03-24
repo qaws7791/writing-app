@@ -1,13 +1,13 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
-import SignUpPageClient from "./sign-up-page-client"
+import SignUpView from "@/views/sign-up-view"
 
 const { signUpEmail } = vi.hoisted(() => ({
   signUpEmail: vi.fn(),
 }))
 
-vi.mock("@/lib/auth-client", () => ({
+vi.mock("@/features/auth/repositories/auth-client", () => ({
   authClient: {
     signUp: {
       email: signUpEmail,
@@ -15,7 +15,7 @@ vi.mock("@/lib/auth-client", () => ({
   },
 }))
 
-describe("sign-up page client", () => {
+describe("sign-up view", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -31,7 +31,7 @@ describe("sign-up page client", () => {
       error: null,
     })
 
-    render(<SignUpPageClient />)
+    render(<SignUpView />)
 
     await user.type(screen.getByLabelText("이름"), "새 사용자")
     await user.type(screen.getByLabelText("이메일"), "new-user@example.com")
@@ -63,7 +63,7 @@ describe("sign-up page client", () => {
       },
     })
 
-    render(<SignUpPageClient />)
+    render(<SignUpView />)
 
     await user.type(screen.getByLabelText("이름"), "기존 사용자")
     await user.type(screen.getByLabelText("이메일"), "existing@example.com")

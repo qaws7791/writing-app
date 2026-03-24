@@ -8,7 +8,7 @@ import { createPromptSummary } from "@/test-support/test-fixtures"
 
 const repository = createMockRepository()
 
-vi.mock("@/lib/repository", () => ({
+vi.mock("@/features/writing/repositories/app-repository", () => ({
   createAppRepository: () => repository,
 }))
 

@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
-import SignInPageClient from "./sign-in-page-client"
+import SignInView from "@/views/sign-in-view"
 
 const { push, refresh, signInEmail } = vi.hoisted(() => ({
   push: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("next/navigation", () => ({
   }),
 }))
 
-vi.mock("@/lib/auth-client", () => ({
+vi.mock("@/features/auth/repositories/auth-client", () => ({
   authClient: {
     signIn: {
       email: signInEmail,
@@ -24,7 +24,7 @@ vi.mock("@/lib/auth-client", () => ({
   },
 }))
 
-describe("sign-in page client", () => {
+describe("sign-in view", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -40,7 +40,7 @@ describe("sign-in page client", () => {
       error: null,
     })
 
-    render(<SignInPageClient verified={false} />)
+    render(<SignInView verified={false} />)
 
     await user.type(screen.getByLabelText("이메일"), "writer@example.com")
     await user.type(screen.getByLabelText("비밀번호"), "password1234")

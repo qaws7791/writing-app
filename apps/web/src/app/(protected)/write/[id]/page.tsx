@@ -1,4 +1,4 @@
-import WritingPageClient from "./writing-page-client"
+import WritingPageView from "@/views/writing-page-view"
 
 export default async function WriteDetailPage({
   params,
@@ -6,5 +6,5 @@ export default async function WriteDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  return <WritingPageClient draftId={Number(id)} />
+  return <WritingPageView draftId={Number(id)} />
 }

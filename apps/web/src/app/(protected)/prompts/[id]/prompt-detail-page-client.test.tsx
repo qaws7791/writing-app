@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
-import PromptDetailPageClient from "./prompt-detail-page-client"
+import PromptDetailView from "@/views/prompt-detail-view"
 import { createDeferred } from "@/test-support/async"
 import { createMockRepository } from "@/test-support/mock-repository"
 import { createPromptDetail } from "@/test-support/test-fixtures"
@@ -14,11 +14,11 @@ vi.mock("next/navigation", () => ({
 
 const repository = createMockRepository()
 
-vi.mock("@/lib/repository", () => ({
+vi.mock("@/features/writing/repositories/app-repository", () => ({
   createAppRepository: () => repository,
 }))
 
-describe("prompt detail page client", () => {
+describe("prompt detail view", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -27,7 +27,7 @@ describe("prompt detail page client", () => {
     const deferred = createDeferred<ReturnType<typeof createPromptDetail>>()
     repository.getPrompt.mockReturnValue(deferred.promise)
 
-    render(<PromptDetailPageClient promptId={1} />)
+    render(<PromptDetailView promptId={1} />)
 
     expect(screen.getByText("글감을 불러오는 중입니다.")).toBeInTheDocument()
   })
@@ -40,7 +40,7 @@ describe("prompt detail page client", () => {
       })
     )
 
-    render(<PromptDetailPageClient promptId={6} />)
+    render(<PromptDetailView promptId={6} />)
 
     expect(
       await screen.findByText("AI가 일상에 들어오면서 잃어가는 것은?")
@@ -59,7 +59,7 @@ describe("prompt detail page client", () => {
       savedAt: "2026-03-20T10:00:00.000Z",
     })
 
-    render(<PromptDetailPageClient promptId={3} />)
+    render(<PromptDetailView promptId={3} />)
 
     await screen.findByText("기본 글감")
     await userEvent.click(screen.getByRole("button", { name: "글감 저장" }))
@@ -75,7 +75,7 @@ describe("prompt detail page client", () => {
   test("shows error state when prompt loading fails", async () => {
     repository.getPrompt.mockRejectedValue(new Error("boom"))
 
-    render(<PromptDetailPageClient promptId={100} />)
+    render(<PromptDetailView promptId={100} />)
 
     expect(
       await screen.findByText(
