@@ -1,19 +1,19 @@
-import SignInView from "@/views/sign-in-view"
+import { z } from "zod"
 import { redirectIfPublicAuthUnavailable } from "@/features/auth/repositories/server-auth"
+import SignInView from "@/views/sign-in-view"
+
+const searchParamsSchema = z.object({
+  error: z.string().optional(),
+  verified: z.string().optional(),
+})
 
 export default async function SignInPage({
   searchParams,
-}: {
-  searchParams: Promise<{
-    error?: string
-    verified?: string
-  }>
-}) {
+}: PageProps<"/sign-in">) {
   await redirectIfPublicAuthUnavailable()
 
-  const params = await searchParams
+  const { error, verified } =
+    searchParamsSchema.safeParse(await searchParams).data ?? {}
 
-  return (
-    <SignInView errorCode={params.error} verified={params.verified === "1"} />
-  )
+  return <SignInView errorCode={error} verified={verified === "1"} />
 }

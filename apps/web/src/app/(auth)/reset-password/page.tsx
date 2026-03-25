@@ -1,17 +1,19 @@
-import ResetPasswordView from "@/views/reset-password-view"
+import { z } from "zod"
 import { redirectIfPublicAuthUnavailable } from "@/features/auth/repositories/server-auth"
+import ResetPasswordView from "@/views/reset-password-view"
+
+const searchParamsSchema = z.object({
+  error: z.string().optional(),
+  token: z.string().optional(),
+})
 
 export default async function ResetPasswordPage({
   searchParams,
-}: {
-  searchParams: Promise<{
-    error?: string
-    token?: string
-  }>
-}) {
+}: PageProps<"/reset-password">) {
   await redirectIfPublicAuthUnavailable()
 
-  const params = await searchParams
+  const { error, token } =
+    searchParamsSchema.safeParse(await searchParams).data ?? {}
 
-  return <ResetPasswordView errorCode={params.error} token={params.token} />
+  return <ResetPasswordView errorCode={error} token={token} />
 }

@@ -1,5 +1,9 @@
+import { notFound } from "next/navigation"
 import Link from "next/link"
+import { z } from "zod"
 import { HugeiconsIcon } from "@hugeicons/react"
+
+const paramsSchema = z.object({ id: z.string().min(1) })
 import {
   ArrowLeft01Icon,
   Bookmark01Icon,
@@ -148,10 +152,10 @@ function ProgressBar({
 
 export default async function PromptSeriesDetailPage({
   params,
-}: {
-  params: Promise<{ id: string }>
-}) {
-  const { id } = await params
+}: PageProps<"/prompts/series/[id]">) {
+  const parsed = paramsSchema.safeParse(await params)
+  if (!parsed.success) notFound()
+  const { id } = parsed.data
 
   // 목 데이터에서 찾기 (없으면 기본 데이터 사용)
   const series: SeriesDetail = allSeries[id] ?? allSeries["series-1"]!
