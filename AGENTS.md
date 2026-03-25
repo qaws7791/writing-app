@@ -98,3 +98,12 @@ When editing code:
 - Always design for mobile users
 - Platform theme: use glassmorphism and floating appropriately for editorial, to reduce frustration
 - Avoid using temporary values (bracket pattern) in apps/web
+
+## Local Development
+
+use test account to log in to the app and test features.
+
+Test Account:
+
+- email: `test@example.com`
+- password: `testpassword1234`

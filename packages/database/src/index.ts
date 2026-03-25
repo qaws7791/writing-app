@@ -4,7 +4,9 @@ export {
   readSqliteVersion,
   resetDatabaseFile,
   seedDatabase,
+  seedTestUsers,
   type OpenedDb,
+  type SeedTestUser,
 } from "./connection/index.js"
 export {
   createDailyRecommendationRepository,

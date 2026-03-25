@@ -2,10 +2,10 @@
   "name": "api",
   "type": "module",
   "scripts": {
-    "db:reset": "bun --env-file=.env.development run src/scripts/db-reset.ts",
+    "db:reset": "cd ../../ && bun --env-file=apps/api/.env.development run apps/api/src/scripts/db-reset.ts",
     "dev": "cd ../../ && bun --env-file=apps/api/.env.development run --hot apps/api/src/index.ts",
     "lint": "eslint .",
-    "seed": "bun --env-file=.env.development run src/scripts/seed.ts",
+    "seed": "cd ../../ && bun --env-file=apps/api/.env.development run apps/api/src/scripts/seed.ts",
     "test": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts --pool=forks --maxWorkers=1 --no-file-parallelism",
     "test:serve": "bun --env-file=.env.test run src/scripts/db-reset.ts && bun --env-file=.env.test run src/index.ts",
     "test:watch": "node ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts --pool=forks --maxWorkers=1 --no-file-parallelism",
