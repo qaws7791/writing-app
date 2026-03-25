@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useTransition } from "react"
 
 import { AuthPageShell } from "@/foundation/ui/auth-page-shell"
 import { authClient } from "@/features/auth/repositories/auth-client"
@@ -34,30 +34,29 @@ function resolveErrorMessage(error: unknown): string {
 }
 
 export default function ForgotPasswordView() {
+  const [isPending, startTransition] = useTransition()
   const [email, setEmail] = useState("")
   const [error, setError] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
   const [submittedEmail, setSubmittedEmail] = useState<string | null>(null)
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError(null)
-    setIsPending(true)
 
-    const redirectTo = `${window.location.origin}/reset-password`
-    const result = await authClient.requestPasswordReset({
-      email,
-      redirectTo,
+    startTransition(async () => {
+      const redirectTo = `${window.location.origin}/reset-password`
+      const result = await authClient.requestPasswordReset({
+        email,
+        redirectTo,
+      })
+
+      if (result.error) {
+        setError(resolveErrorMessage(result.error))
+        return
+      }
+
+      setSubmittedEmail(email)
     })
-
-    if (result.error) {
-      setError(resolveErrorMessage(result.error))
-      setIsPending(false)
-      return
-    }
-
-    setSubmittedEmail(email)
-    setIsPending(false)
   }
 
   return (
