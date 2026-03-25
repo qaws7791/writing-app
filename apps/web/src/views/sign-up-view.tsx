@@ -1,10 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
 
+import { useSignUp } from "@/features/auth/hooks/use-sign-up"
 import { AuthPageShell } from "@/foundation/ui/auth-page-shell"
-import { authClient } from "@/features/auth/repositories/auth-client"
 import { Button } from "@workspace/ui/components/button"
 import {
   CardContent,
@@ -21,58 +20,8 @@ import {
 } from "@workspace/ui/components/field"
 import { Input } from "@workspace/ui/components/input"
 
-function resolveErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "status" in error &&
-    error.status === 409
-  ) {
-    return "이미 가입된 이메일입니다. 로그인하거나 비밀번호 재설정을 사용해 주세요."
-  }
-
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof error.message === "string"
-  ) {
-    return error.message
-  }
-
-  return "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요."
-}
-
 export default function SignUpView() {
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [isPending, setIsPending] = useState(false)
-  const [submittedEmail, setSubmittedEmail] = useState<string | null>(null)
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setError(null)
-    setIsPending(true)
-
-    const callbackURL = `${window.location.origin}/sign-in?verified=1`
-    const result = await authClient.signUp.email({
-      callbackURL,
-      email,
-      name,
-      password,
-    })
-
-    if (result.error) {
-      setError(resolveErrorMessage(result.error))
-      setIsPending(false)
-      return
-    }
-
-    setSubmittedEmail(email)
-    setIsPending(false)
-  }
+  const { form, onSubmit, submittedEmail } = useSignUp()
 
   return (
     <AuthPageShell
@@ -114,53 +63,58 @@ export default function SignUpView() {
             </Link>
           </div>
         ) : (
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-5" noValidate onSubmit={onSubmit}>
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="name">이름</FieldLabel>
                 <Input
+                  {...form.register("name")}
                   id="name"
                   autoComplete="name"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
                   placeholder="필명 또는 이름"
-                  required
+                  aria-invalid={Boolean(form.formState.errors.name)}
                 />
+                <FieldError errors={[form.formState.errors.name]} />
               </Field>
               <Field>
                 <FieldLabel htmlFor="email">이메일</FieldLabel>
                 <Input
+                  {...form.register("email")}
                   id="email"
                   type="email"
                   autoComplete="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
                   placeholder="name@example.com"
-                  required
+                  aria-invalid={Boolean(form.formState.errors.email)}
                 />
+                <FieldError errors={[form.formState.errors.email]} />
               </Field>
               <Field>
                 <FieldLabel htmlFor="password">비밀번호</FieldLabel>
                 <Input
+                  {...form.register("password")}
                   id="password"
                   type="password"
                   autoComplete="new-password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
                   placeholder="8자 이상"
-                  minLength={8}
-                  required
+                  aria-invalid={Boolean(form.formState.errors.password)}
                 />
                 <FieldDescription>
                   검증 메일을 열어야 가입이 활성화됩니다.
                 </FieldDescription>
+                <FieldError errors={[form.formState.errors.password]} />
               </Field>
             </FieldGroup>
 
-            <FieldError>{error}</FieldError>
+            <FieldError errors={[form.formState.errors.root]} />
 
-            <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "계정 생성 중..." : "인증 메일 보내기"}
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting
+                ? "계정 생성 중..."
+                : "인증 메일 보내기"}
             </Button>
           </form>
         )}

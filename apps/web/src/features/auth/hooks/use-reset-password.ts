@@ -1,9 +1,24 @@
 "use client"
 
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 import { authClient } from "@/features/auth/repositories/auth-client"
+
+const resetPasswordSchema = z
+  .object({
+    password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다."),
+    confirmPassword: z.string().min(8, "비밀번호는 8자 이상이어야 합니다."),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "비밀번호 확인이 일치하지 않습니다.",
+    path: ["confirmPassword"],
+  })
+
+type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>
 
 function resolveErrorMessage(error: unknown): string {
   if (
@@ -41,36 +56,35 @@ type UseResetPasswordParams = {
 export function useResetPassword({ errorCode, token }: UseResetPasswordParams) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [password, setPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
+  const [serverError, setServerError] = useState<string | null>(null)
   const [completed, setCompleted] = useState(false)
+
+  const form = useForm<ResetPasswordFormValues>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  })
 
   const tokenError = resolveTokenError(errorCode, token)
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-
+  function onSubmit(data: ResetPasswordFormValues) {
     if (!token) {
-      setError("재설정 토큰이 없습니다.")
+      setServerError("재설정 토큰이 없습니다.")
       return
     }
 
-    if (password !== confirmPassword) {
-      setError("비밀번호 확인이 일치하지 않습니다.")
-      return
-    }
-
-    setError(null)
+    setServerError(null)
 
     startTransition(async () => {
       const result = await authClient.resetPassword({
-        newPassword: password,
+        newPassword: data.password,
         token,
       })
 
       if (result.error) {
-        setError(resolveErrorMessage(result.error))
+        setServerError(resolveErrorMessage(result.error))
         return
       }
 
@@ -80,14 +94,11 @@ export function useResetPassword({ errorCode, token }: UseResetPasswordParams) {
   }
 
   return {
-    password,
-    setPassword,
-    confirmPassword,
-    setConfirmPassword,
-    error,
+    form,
+    serverError,
     isPending,
     completed,
     tokenError,
-    handleSubmit,
+    onSubmit: form.handleSubmit(onSubmit),
   }
 }

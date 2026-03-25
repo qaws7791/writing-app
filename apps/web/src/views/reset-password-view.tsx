@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { Controller } from "react-hook-form"
 
 import { useResetPassword } from "@/features/auth/hooks/use-reset-password"
 import { AuthPageShell } from "@/foundation/ui/auth-page-shell"
@@ -29,17 +30,8 @@ export default function ResetPasswordView({
   errorCode,
   token,
 }: ResetPasswordViewProps) {
-  const {
-    password,
-    setPassword,
-    confirmPassword,
-    setConfirmPassword,
-    error,
-    isPending,
-    completed,
-    tokenError,
-    handleSubmit,
-  } = useResetPassword({ errorCode, token })
+  const { form, serverError, isPending, completed, tokenError, onSubmit } =
+    useResetPassword({ errorCode, token })
 
   return (
     <AuthPageShell
@@ -85,42 +77,56 @@ export default function ResetPasswordView({
             </p>
           </div>
         ) : (
-          <form className="space-y-5" onSubmit={handleSubmit}>
+          <form className="space-y-5" onSubmit={onSubmit}>
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="password">새 비밀번호</FieldLabel>
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  placeholder="8자 이상"
-                  minLength={8}
-                  required
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="confirm-password">
-                  새 비밀번호 확인
-                </FieldLabel>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  placeholder="한 번 더 입력"
-                  minLength={8}
-                  required
-                />
-                <FieldDescription>
-                  두 입력값이 같아야 재설정이 완료됩니다.
-                </FieldDescription>
-              </Field>
+              <Controller
+                name="password"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>새 비밀번호</FieldLabel>
+                    <Input
+                      {...field}
+                      id={field.name}
+                      type="password"
+                      autoComplete="new-password"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="8자 이상"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="confirmPassword"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      새 비밀번호 확인
+                    </FieldLabel>
+                    <Input
+                      {...field}
+                      id={field.name}
+                      type="password"
+                      autoComplete="new-password"
+                      aria-invalid={fieldState.invalid}
+                      placeholder="한 번 더 입력"
+                    />
+                    <FieldDescription>
+                      두 입력값이 같아야 재설정이 완료됩니다.
+                    </FieldDescription>
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
             </FieldGroup>
 
-            <FieldError>{error}</FieldError>
+            <FieldError>{serverError}</FieldError>
 
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? "변경 중..." : "새 비밀번호 저장"}
