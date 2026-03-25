@@ -45,10 +45,13 @@ export type WritingAccessResult =
 
 // --- Sync Push/Pull ---
 
+export type SnapshotReason = "auto" | "manual" | "restore"
+
 export type SyncPushInput = {
   readonly baseVersion: number
   readonly transactions: WritingTransaction[]
   readonly restoreFrom?: number
+  readonly snapshotReason?: "manual"
 }
 
 export type SyncPushAccepted = {

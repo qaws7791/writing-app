@@ -15,11 +15,14 @@ export default function WritingPageView(props: WritingPageProps) {
     cancelPendingNavigation,
     confirmPendingNavigation,
     deleteDialogOpen,
+    draftId,
     editorDraft,
     exportModalOpen,
     getContent,
     handleContentChange,
     handleDelete,
+    handleRestoreComplete,
+    handleSaveVersion,
     handleShare,
     handleTitleInput,
     isLeaveConfirmOpen,
@@ -45,6 +48,7 @@ export default function WritingPageView(props: WritingPageProps) {
         loading={loading}
         onDeleteClick={() => setDeleteDialogOpen(true)}
         onExportClick={() => setExportModalOpen(true)}
+        onSaveVersion={() => void handleSaveVersion()}
         onShare={handleShare}
         onVersionHistoryClick={() => setVersionHistoryModalOpen(true)}
         persistedDraft={persistedDraft}
@@ -64,12 +68,14 @@ export default function WritingPageView(props: WritingPageProps) {
         cancelPendingNavigation={cancelPendingNavigation}
         confirmPendingNavigation={confirmPendingNavigation}
         deleteDialogOpen={deleteDialogOpen}
+        draftId={draftId}
         exportModalOpen={exportModalOpen}
         getContent={getContent}
         isLeaveConfirmOpen={isLeaveConfirmOpen}
         onDelete={handleDelete}
         onDeleteDialogOpenChange={setDeleteDialogOpen}
         onExportModalOpenChange={setExportModalOpen}
+        onRestoreComplete={handleRestoreComplete}
         onVersionHistoryModalOpenChange={setVersionHistoryModalOpen}
         versionHistoryModalOpen={versionHistoryModalOpen}
       />

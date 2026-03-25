@@ -27,6 +27,7 @@ export const syncPushBodySchema = z
     baseVersion: z.number().int().min(0),
     transactions: z.array(transactionSchema).min(1),
     restoreFrom: z.number().int().positive().optional(),
+    snapshotReason: z.literal("manual").optional(),
   })
   .strict()
 

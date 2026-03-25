@@ -34,6 +34,10 @@ import {
 } from "@/domain/draft/model/draft.service"
 import type { DraftContent, DraftDetail } from "@/domain/draft"
 import type { PromptDetail } from "@/domain/prompt"
+import { createSyncTransport } from "@/features/writing/sync/sync-transport"
+import type { VersionDetail } from "@/features/writing/sync/types"
+import { env } from "@/foundation/config/env"
+import { resolveBrowserApiBaseUrl } from "@/foundation/lib/api-base-url"
 
 export type WritingPageProps = {
   draftId: number
@@ -289,15 +293,66 @@ export function useWritingPage({ draftId }: WritingPageProps) {
     router.push("/write")
   }
 
+  async function handleSaveVersion() {
+    await flushPendingDraft()
+
+    const apiBaseUrl = env.NEXT_PUBLIC_API_BASE_URL
+    if (!apiBaseUrl) return
+
+    const transport = createSyncTransport({
+      baseUrl: resolveBrowserApiBaseUrl(apiBaseUrl),
+    })
+
+    const current = editorDraftRef.current
+
+    try {
+      const pulled = await transport.pull(draftId)
+
+      await transport.push(draftId, {
+        baseVersion: pulled.version,
+        transactions: [
+          {
+            operations: [
+              { type: "setTitle", title: current.title },
+              { type: "setContent", content: current.content },
+            ],
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        snapshotReason: "manual",
+      })
+    } catch {
+      // 저장 실패는 무시 — 다음 자동 저장에서 재시도
+    }
+  }
+
+  function handleRestoreComplete(detail: VersionDetail) {
+    const nextEditorDraft = createEditorDraftSnapshot({
+      content: detail.content,
+      title: detail.title,
+    })
+
+    setEditorDraft(nextEditorDraft)
+    lastSyncedSnapshotRef.current = serializeDraftSnapshot(nextEditorDraft)
+    setSyncState("saved")
+
+    if (titleRef.current) {
+      titleRef.current.textContent = detail.title
+    }
+  }
+
   return {
     cancelPendingNavigation,
     confirmPendingNavigation,
     deleteDialogOpen,
+    draftId,
     editorDraft,
     exportModalOpen,
     getContent,
     handleContentChange,
     handleDelete,
+    handleRestoreComplete,
+    handleSaveVersion,
     handleShare,
     handleTitleInput,
     isLeaveConfirmOpen,

@@ -13,6 +13,9 @@ import {
   AlertDialogTitle,
 } from "@workspace/ui/components/alert-dialog"
 
+import { useVersionHistory } from "@/features/writing/hooks/use-version-history"
+import type { VersionDetail } from "@/features/writing/sync/types"
+
 import { WritingExportModal } from "./writing-export-modal"
 import { WritingVersionHistoryModal } from "./writing-version-history-modal"
 
@@ -26,29 +29,44 @@ type WritingPageDialogsProps = {
   cancelPendingNavigation: () => void
   confirmPendingNavigation: () => void
   deleteDialogOpen: boolean
+  draftId: number
   exportModalOpen: boolean
   getContent: GetContent
   isLeaveConfirmOpen: boolean
   onDelete: () => void
   onDeleteDialogOpenChange: (open: boolean) => void
   onExportModalOpenChange: (open: boolean) => void
+  onRestoreComplete: (detail: VersionDetail) => void
   onVersionHistoryModalOpenChange: (open: boolean) => void
   versionHistoryModalOpen: boolean
+  currentVersion?: number
 }
 
 export function WritingPageDialogs({
   cancelPendingNavigation,
   confirmPendingNavigation,
   deleteDialogOpen,
+  draftId,
   exportModalOpen,
   getContent,
   isLeaveConfirmOpen,
   onDelete,
   onDeleteDialogOpenChange,
   onExportModalOpenChange,
+  onRestoreComplete,
   onVersionHistoryModalOpenChange,
   versionHistoryModalOpen,
+  currentVersion,
 }: WritingPageDialogsProps) {
+  const versionHistory = useVersionHistory({
+    draftId,
+    open: versionHistoryModalOpen,
+    onRestoreComplete: (detail) => {
+      onVersionHistoryModalOpenChange(false)
+      onRestoreComplete(detail)
+    },
+  })
+
   return (
     <>
       <WritingExportModal
@@ -61,6 +79,16 @@ export function WritingPageDialogs({
         open={versionHistoryModalOpen}
         onOpenChange={onVersionHistoryModalOpenChange}
         getContent={getContent}
+        versions={versionHistory.versions}
+        selectedDetail={versionHistory.selectedDetail}
+        loading={versionHistory.loading}
+        detailLoading={versionHistory.detailLoading}
+        error={versionHistory.error}
+        restoring={versionHistory.restoring}
+        onSelectVersion={versionHistory.selectVersion}
+        onRestore={versionHistory.restoreVersion}
+        onRetry={versionHistory.retry}
+        currentVersion={currentVersion}
       />
 
       <AlertDialog

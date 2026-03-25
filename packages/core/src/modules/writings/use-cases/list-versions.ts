@@ -1,4 +1,4 @@
-import { err, ok, ResultAsync } from "neverthrow"
+import { err, ResultAsync } from "neverthrow"
 import { match } from "ts-pattern"
 
 import type { DraftId, UserId } from "../../../shared/brand/index"

@@ -62,6 +62,7 @@ export type SyncPushRequest = {
     createdAt: string
   }[]
   restoreFrom?: number
+  snapshotReason?: "manual"
 }
 
 export type SyncPushResponse =

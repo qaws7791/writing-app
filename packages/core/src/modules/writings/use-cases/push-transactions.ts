@@ -12,17 +12,12 @@ import {
   computeWritingMetrics,
 } from "../writing-operations"
 import {
-  writingConflict,
   writingForbidden,
   writingNotFound,
   writingValidationFailed,
   type WritingModuleError,
 } from "../writing-error"
-import type {
-  SyncPushInput,
-  SyncPushResult,
-  WritingTransaction,
-} from "../writing-types"
+import type { SyncPushInput, SyncPushResult } from "../writing-types"
 
 export type PushTransactionsDeps = {
   readonly writingRepository: WritingRepository
@@ -32,7 +27,6 @@ export type PushTransactionsDeps = {
 }
 
 const VERSION_SNAPSHOT_INTERVAL = 10
-const VERSION_SNAPSHOT_TIME_THRESHOLD_MS = 5 * 60 * 1000
 
 export function makePushTransactionsUseCase(deps: PushTransactionsDeps) {
   return (
@@ -133,9 +127,17 @@ export function makePushTransactionsUseCase(deps: PushTransactionsDeps) {
                 // 주기적 버전 스냅샷 생성
                 const shouldSnapshot =
                   nextVersion % VERSION_SNAPSHOT_INTERVAL === 0 ||
-                  input.restoreFrom !== undefined
+                  input.restoreFrom !== undefined ||
+                  input.snapshotReason === "manual"
 
                 if (shouldSnapshot) {
+                  const reason =
+                    input.restoreFrom !== undefined
+                      ? ("restore" as const)
+                      : input.snapshotReason === "manual"
+                        ? ("manual" as const)
+                        : ("auto" as const)
+
                   await deps.versionRepository.create({
                     draftId,
                     userId,
@@ -143,8 +145,7 @@ export function makePushTransactionsUseCase(deps: PushTransactionsDeps) {
                     title: currentTitle,
                     content: currentContent,
                     createdAt: now,
-                    reason:
-                      input.restoreFrom !== undefined ? "restore" : "auto",
+                    reason,
                   })
                 }
 

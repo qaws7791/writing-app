@@ -4,6 +4,7 @@ import {
   Clock01Icon,
   Delete02Icon,
   Download01Icon,
+  FloppyDiskIcon,
   Share08Icon,
   Settings02Icon,
 } from "@hugeicons/core-free-icons"
@@ -29,6 +30,7 @@ type WritingPageHeaderProps = {
   loading: boolean
   onDeleteClick: () => void
   onExportClick: () => void
+  onSaveVersion: () => void
   onShare: () => void
   onVersionHistoryClick: () => void
   persistedDraft: DraftDetail | null
@@ -40,6 +42,7 @@ export function WritingPageHeader({
   loading,
   onDeleteClick,
   onExportClick,
+  onSaveVersion,
   onShare,
   onVersionHistoryClick,
   persistedDraft,
@@ -115,6 +118,14 @@ export function WritingPageHeader({
                     strokeWidth={2}
                   />
                   버전 기록
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onSaveVersion}>
+                  <HugeiconsIcon
+                    icon={FloppyDiskIcon}
+                    color="currentColor"
+                    strokeWidth={2}
+                  />
+                  현재 버전 저장
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />

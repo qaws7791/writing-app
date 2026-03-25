@@ -14,6 +14,7 @@ export type {
   WritingVersionSummary,
   WritingVersionDetail,
   StoredTransaction,
+  SnapshotReason,
 } from "./writing-types"
 
 // Schemas
