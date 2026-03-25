@@ -21,12 +21,12 @@ const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
 )
 
 export type TiptapMark = {
-  attrs?: JsonObject
+  attrs?: { [key: string]: unknown }
   type: string
 }
 
 export type TiptapNode = {
-  attrs?: JsonObject
+  attrs?: { [key: string]: unknown }
   content?: TiptapNode[]
   marks?: TiptapMark[]
   text?: string

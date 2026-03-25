@@ -42,6 +42,17 @@ function throwTransportError(response: Response, errorBody?: unknown): never {
   throw new SyncTransportError(response.status, body)
 }
 
+function unwrapResult<T>(result: {
+  data?: T
+  error?: unknown
+  response: Response
+}): T {
+  if (result.data !== undefined) {
+    return result.data
+  }
+  throwTransportError(result.response, result.error)
+}
+
 export function createSyncTransport(config: SyncTransportConfig) {
   const client = createApiClient({ baseUrl: config.baseUrl })
 
@@ -54,10 +65,7 @@ export function createSyncTransport(config: SyncTransportConfig) {
         params: { path: { writingId } },
         body: request,
       })
-      if (result.error) {
-        throwTransportError(result.response, result.error)
-      }
-      return result.data as SyncPushResponse
+      return unwrapResult(result)
     },
 
     async pull(
@@ -70,10 +78,7 @@ export function createSyncTransport(config: SyncTransportConfig) {
           query: { since: sinceVersion },
         },
       })
-      if (result.error) {
-        throwTransportError(result.response, result.error)
-      }
-      return result.data as SyncPullResponse
+      return unwrapResult(result)
     },
 
     async listVersions(
@@ -86,10 +91,7 @@ export function createSyncTransport(config: SyncTransportConfig) {
           query: { limit },
         },
       })
-      if (result.error) {
-        throwTransportError(result.response, result.error)
-      }
-      return result.data as { items: VersionSummary[] }
+      return unwrapResult(result)
     },
 
     async getVersion(
@@ -102,10 +104,7 @@ export function createSyncTransport(config: SyncTransportConfig) {
           params: { path: { writingId, version } },
         }
       )
-      if (result.error) {
-        throwTransportError(result.response, result.error)
-      }
-      return result.data as VersionDetail
+      return unwrapResult(result)
     },
   }
 }

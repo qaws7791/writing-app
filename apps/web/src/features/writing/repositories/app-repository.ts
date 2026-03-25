@@ -252,14 +252,14 @@ function createRemoteAppRepository(apiBaseUrl: string): AppRepository {
           params: { path: { draftId } },
           body: input,
         })
-      ) as AutosaveDraftResult
+      )
     },
     async createDraft(input) {
       return throwOnError(
         await client.POST("/drafts", {
           body: input,
         })
-      ) as DraftDetail
+      )
     },
     async deleteDraft(draftId) {
       const result = await client.DELETE("/drafts/{draftId}", {
@@ -274,21 +274,21 @@ function createRemoteAppRepository(apiBaseUrl: string): AppRepository {
         await client.GET("/drafts/{draftId}", {
           params: { path: { draftId } },
         })
-      ) as DraftDetail
+      )
     },
     async getHome() {
-      return throwOnError(await client.GET("/home")) as HomeSnapshot
+      return throwOnError(await client.GET("/home"))
     },
     async getPrompt(promptId) {
       return throwOnError(
         await client.GET("/prompts/{promptId}", {
           params: { path: { promptId } },
         })
-      ) as PromptDetail
+      )
     },
     async listDrafts() {
-      const response = throwOnError(await client.GET("/drafts"))
-      return response.items as DraftSummary[]
+      const { items } = throwOnError(await client.GET("/drafts"))
+      return items
     },
     async listPrompts(filters) {
       const response = throwOnError(
@@ -306,7 +306,7 @@ function createRemoteAppRepository(apiBaseUrl: string): AppRepository {
           },
         })
       )
-      return response.items as PromptSummary[]
+      return response.items
     },
     async savePrompt(promptId) {
       return throwOnError(
