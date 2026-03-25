@@ -29,11 +29,17 @@ import {
 } from "@workspace/ui/components/alert-dialog"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 
+import DOMPurify from "dompurify"
+
 import { draftContentToHtml } from "@/domain/draft/model/draft.service"
 import type {
   VersionDetail,
   VersionSummary,
 } from "@/features/writing/sync/types"
+
+function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html)
+}
 
 const REASON_LABELS: Record<VersionSummary["reason"], string> = {
   auto: "자동 저장",
@@ -95,15 +101,19 @@ export function WritingVersionHistoryModal({
   const previewContent =
     selectedDetail !== null
       ? isCurrentVersion
-        ? `<h1>${title || "제목 없음"}</h1>${bodyHtml || "<p>내용이 없습니다.</p>"}`
-        : `<h1>${selectedDetail.title || "제목 없음"}</h1>${draftContentToHtml(selectedDetail.content) || "<p>내용이 없습니다.</p>"}`
+        ? sanitizeHtml(
+            `<h1>${title || "제목 없음"}</h1>${bodyHtml || "<p>내용이 없습니다.</p>"}`
+          )
+        : sanitizeHtml(
+            `<h1>${selectedDetail.title || "제목 없음"}</h1>${draftContentToHtml(selectedDetail.content) || "<p>내용이 없습니다.</p>"}`
+          )
       : ""
 
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="flex h-[85vh] max-h-[600px] flex-col gap-0 p-0 sm:max-w-4xl"
+          className="flex h-[85vh] max-h-150 flex-col gap-0 p-0 sm:max-w-4xl"
           showCloseButton
         >
           <DialogHeader className="shrink-0 border-b px-6 py-4">

@@ -3,6 +3,7 @@
 import { useCallback } from "react"
 import { Download01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import TurndownService from "turndown"
 
 import {
   Dialog,
@@ -22,14 +23,13 @@ type WritingExportModalProps = {
   getContent: () => { title: string; bodyHtml: string; bodyText: string }
 }
 
+const turndown = new TurndownService({
+  headingStyle: "atx",
+  bulletListMarker: "-",
+})
+
 function htmlToMarkdown(html: string): string {
-  const div = document.createElement("div")
-  div.innerHTML = html
-  const text = div.textContent ?? ""
-  return text
-    .split(/\n+/)
-    .map((line) => (line.trim() ? line : ""))
-    .join("\n\n")
+  return turndown.turndown(html)
 }
 
 export function WritingExportModal({

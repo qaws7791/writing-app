@@ -51,18 +51,28 @@ export function useSyncEngine(
   const [syncStatus, setSyncStatus] = useState<SyncStatus>("idle")
   const engineRef = useRef<SyncEngine | null>(null)
   const onDocumentUpdateRef = useRef(onDocumentUpdate)
+  const baseVersionRef = useRef(baseVersion)
 
   // 콜백 ref 최신 유지
   useEffect(() => {
     onDocumentUpdateRef.current = onDocumentUpdate
   }, [onDocumentUpdate])
 
+  // baseVersion은 초기값으로만 사용 (이후 엔진 내부에서 관리)
+  useEffect(() => {
+    baseVersionRef.current = baseVersion
+  }, [baseVersion])
+
   // 엔진 초기화
   useEffect(() => {
     if (!enabled) return
 
     const transport = createSyncTransport({ baseUrl: apiBaseUrl })
-    const engine = createSyncEngine({ draftId, baseVersion, transport })
+    const engine = createSyncEngine({
+      draftId,
+      baseVersion: baseVersionRef.current,
+      transport,
+    })
 
     engine.onStateChange((state) => {
       setSyncStatus(state as SyncStatus)
@@ -78,7 +88,7 @@ export function useSyncEngine(
       engine.destroy()
       engineRef.current = null
     }
-  }, [draftId, baseVersion, apiBaseUrl, enabled])
+  }, [draftId, apiBaseUrl, enabled])
 
   const pushChange = useCallback(
     (operations: Operation[], title: string, content: DraftContent) => {

@@ -2,6 +2,7 @@
 
 import {
   type FormEvent,
+  type MutableRefObject,
   useCallback,
   useEffect,
   useMemo,
@@ -47,6 +48,20 @@ function extractTitle(text: string | null) {
   return normalizeDraftTitle(text ?? "")
 }
 
+function useRefState<T>(
+  initialValue: T
+): [T, (next: T) => void, MutableRefObject<T>] {
+  const ref = useRef(initialValue)
+  const [state, setState] = useState(initialValue)
+
+  const set = useCallback((next: T) => {
+    ref.current = next
+    setState(next)
+  }, [])
+
+  return [state, set, ref]
+}
+
 export function useWritingPage({ draftId }: WritingPageProps) {
   const pathname = usePathname()
   const repository = useMemo<AppRepository>(() => createAppRepository(), [])
@@ -55,38 +70,26 @@ export function useWritingPage({ draftId }: WritingPageProps) {
   const isMountedRef = useRef(true)
   const lastSyncedSnapshotRef = useRef<string | null>(null)
   const flushPromiseRef = useRef<Promise<FlushPendingDraftResult> | null>(null)
-  const editorDraftRef = useRef<EditorDraftSnapshot>(
-    createEmptyEditorDraftSnapshot()
-  )
-  const persistedDraftRef = useRef<DraftDetail | null>(null)
 
-  const [editorDraft, setEditorDraftState] = useState<EditorDraftSnapshot>(
-    editorDraftRef.current
-  )
-  const [persistedDraft, setPersistedDraftState] = useState<DraftDetail | null>(
-    null
-  )
-  const [prompt, setPromptState] = useState<PromptDetail | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [editorDraft, setEditorDraft, editorDraftRef] =
+    useRefState<EditorDraftSnapshot>(createEmptyEditorDraftSnapshot())
+  const [persistedDraft, setPersistedDraft, persistedDraftRef] =
+    useRefState<DraftDetail | null>(null)
+
+  const [prompt, setPrompt] = useState<PromptDetail | null>(null)
+  const [loading, setLoadingState] = useState(true)
+  const loadingRef = useRef(true)
+
+  function setLoading(next: boolean) {
+    loadingRef.current = next
+    setLoadingState(next)
+  }
+
   const [loadError, setLoadError] = useState<string | null>(null)
   const [syncState, setSyncState] = useState<DraftSyncState>("idle")
   const [exportModalOpen, setExportModalOpen] = useState(false)
   const [versionHistoryModalOpen, setVersionHistoryModalOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-
-  function setEditorDraft(nextDraft: EditorDraftSnapshot) {
-    editorDraftRef.current = nextDraft
-    setEditorDraftState(nextDraft)
-  }
-
-  function setPersistedDraft(nextDraft: DraftDetail | null) {
-    persistedDraftRef.current = nextDraft
-    setPersistedDraftState(nextDraft)
-  }
-
-  function setPrompt(nextPrompt: PromptDetail | null) {
-    setPromptState(nextPrompt)
-  }
 
   const flushPendingDraft =
     useCallback(async (): Promise<FlushPendingDraftResult> => {
@@ -95,7 +98,7 @@ export function useWritingPage({ draftId }: WritingPageProps) {
       }
 
       const flushPromise = (async (): Promise<FlushPendingDraftResult> => {
-        if (loading) {
+        if (loadingRef.current) {
           return "blocked"
         }
 
@@ -148,7 +151,7 @@ export function useWritingPage({ draftId }: WritingPageProps) {
       })
 
       return flushPromise
-    }, [loading, repository])
+    }, [repository])
 
   const serializedEditorDraft = serializeDraftSnapshot(editorDraft)
   const hasPendingChanges =
@@ -238,33 +241,39 @@ export function useWritingPage({ draftId }: WritingPageProps) {
     }
   }, [flushPendingDraft])
 
-  function handleTitleInput(event: FormEvent<HTMLHeadingElement>) {
-    const nextEditorDraft = createEditorDraftSnapshot({
-      content: editorDraftRef.current.content,
-      title: extractTitle(event.currentTarget.textContent),
-    })
+  const handleTitleInput = useCallback(
+    (event: FormEvent<HTMLHeadingElement>) => {
+      const nextEditorDraft = createEditorDraftSnapshot({
+        content: editorDraftRef.current.content,
+        title: extractTitle(event.currentTarget.textContent),
+      })
 
-    setEditorDraft(nextEditorDraft)
-  }
+      setEditorDraft(nextEditorDraft)
+    },
+    [editorDraftRef, setEditorDraft]
+  )
 
-  function handleContentChange(nextContent: DraftContent) {
-    const nextEditorDraft = createEditorDraftSnapshot({
-      content: nextContent,
-      title: editorDraftRef.current.title,
-    })
+  const handleContentChange = useCallback(
+    (nextContent: DraftContent) => {
+      const nextEditorDraft = createEditorDraftSnapshot({
+        content: nextContent,
+        title: editorDraftRef.current.title,
+      })
 
-    setEditorDraft(nextEditorDraft)
-  }
+      setEditorDraft(nextEditorDraft)
+    },
+    [editorDraftRef, setEditorDraft]
+  )
 
-  function getContent() {
+  const getContent = useCallback(() => {
     return {
-      bodyHtml: draftContentToHtml(editorDraft.content),
-      bodyText: draftContentToPlainText(editorDraft.content),
-      title: editorDraft.title,
+      bodyHtml: draftContentToHtml(editorDraftRef.current.content),
+      bodyText: draftContentToPlainText(editorDraftRef.current.content),
+      title: editorDraftRef.current.title,
     }
-  }
+  }, [editorDraftRef])
 
-  async function handleShare() {
+  const handleShare = useCallback(async () => {
     const { bodyText, title } = getContent()
     const text = [title, bodyText].filter(Boolean).join("\n\n")
 
@@ -281,9 +290,9 @@ export function useWritingPage({ draftId }: WritingPageProps) {
     } catch {
       await navigator.clipboard.writeText(text)
     }
-  }
+  }, [getContent])
 
-  async function handleDelete() {
+  const handleDelete = useCallback(async () => {
     const currentPersistedDraft = persistedDraftRef.current
 
     if (currentPersistedDraft) {
@@ -291,9 +300,9 @@ export function useWritingPage({ draftId }: WritingPageProps) {
     }
 
     router.push("/write")
-  }
+  }, [persistedDraftRef, repository, router])
 
-  async function handleSaveVersion() {
+  const handleSaveVersion = useCallback(async () => {
     await flushPendingDraft()
 
     const apiBaseUrl = env.NEXT_PUBLIC_API_BASE_URL
@@ -324,22 +333,25 @@ export function useWritingPage({ draftId }: WritingPageProps) {
     } catch {
       // 저장 실패는 무시 — 다음 자동 저장에서 재시도
     }
-  }
+  }, [draftId, editorDraftRef, flushPendingDraft])
 
-  function handleRestoreComplete(detail: VersionDetail) {
-    const nextEditorDraft = createEditorDraftSnapshot({
-      content: detail.content,
-      title: detail.title,
-    })
+  const handleRestoreComplete = useCallback(
+    (detail: VersionDetail) => {
+      const nextEditorDraft = createEditorDraftSnapshot({
+        content: detail.content,
+        title: detail.title,
+      })
 
-    setEditorDraft(nextEditorDraft)
-    lastSyncedSnapshotRef.current = serializeDraftSnapshot(nextEditorDraft)
-    setSyncState("saved")
+      setEditorDraft(nextEditorDraft)
+      lastSyncedSnapshotRef.current = serializeDraftSnapshot(nextEditorDraft)
+      setSyncState("saved")
 
-    if (titleRef.current) {
-      titleRef.current.textContent = detail.title
-    }
-  }
+      if (titleRef.current) {
+        titleRef.current.textContent = detail.title
+      }
+    },
+    [setEditorDraft]
+  )
 
   return {
     cancelPendingNavigation,

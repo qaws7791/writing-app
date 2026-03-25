@@ -57,6 +57,11 @@ export const syncMachine = setup({
     periodicPull: PERIODIC_PULL_MS,
     retry: RETRY_MS,
   },
+  actions: {
+    onFlushPending: () => {},
+    onHandleConflict: () => {},
+    onTriggerPull: () => {},
+  },
   guards: {
     canRetry: ({ context }) => context.retryCount < context.maxRetries,
   },
@@ -108,6 +113,7 @@ export const syncMachine = setup({
           },
         },
         pulling: {
+          entry: "onTriggerPull",
           always: "waiting",
         },
       },
@@ -129,6 +135,7 @@ export const syncMachine = setup({
           },
         },
         syncing: {
+          entry: "onFlushPending",
           on: {
             SYNC_SUCCESS: {
               target: "idle",
@@ -180,6 +187,7 @@ export const syncMachine = setup({
           },
         },
         resolving: {
+          entry: "onHandleConflict",
           on: {
             CONFLICT_RESOLVED: {
               target: "idle",

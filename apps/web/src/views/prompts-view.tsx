@@ -33,6 +33,8 @@ export default function PromptsView() {
   useEffect(() => {
     let cancelled = false
 
+    setLoading(true)
+
     void repository
       .listPrompts(promptFilters)
       .then((items) => {

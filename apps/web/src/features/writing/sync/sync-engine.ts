@@ -65,35 +65,35 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
     return "idle"
   }
 
-  // XState actor
-  const actor = createActor(syncMachine, {
+  // XState actor — 액션 구현을 주입
+  const providedMachine = syncMachine.provide({
+    actions: {
+      onFlushPending: () => {
+        void flushPending()
+      },
+      onHandleConflict: ({ context }) => {
+        if (context.conflictData) {
+          void handleConflict(context.conflictData)
+        }
+      },
+      onTriggerPull: () => {
+        void pullFromServer()
+      },
+    },
+  })
+
+  const actor = createActor(providedMachine, {
     input: {
       draftId,
       baseVersion: config.baseVersion,
     },
   })
 
-  // 상태 변경 구독
+  // 상태 변경 구독 (관찰 전용)
   actor.subscribe((snapshot) => {
     const syncCoreState = extractSyncCoreState(snapshot.value)
     for (const handler of stateChangeHandlers) {
       handler(syncCoreState)
-    }
-  })
-
-  // 상태 머신이 syncing 상태로 진입하면 실제 flush를 수행
-  actor.subscribe((snapshot) => {
-    const syncCoreState = extractSyncCoreState(snapshot.value)
-
-    if (syncCoreState === "syncing") {
-      flushPending()
-    }
-
-    if (syncCoreState === "resolving") {
-      const ctx = snapshot.context
-      if (ctx.conflictData) {
-        handleConflict(ctx.conflictData)
-      }
     }
   })
 
@@ -258,6 +258,50 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
     }
   }
 
+  async function pullFromServer() {
+    try {
+      const ctx = actor.getSnapshot().context
+      const result = await transport.pull(draftId, ctx.baseVersion)
+
+      if (result.hasNewerVersion) {
+        const pending = await getPendingTransactions(draftId)
+        const hasPending = pending.some((tx) => tx.status === "pending")
+
+        if (hasPending) {
+          actor.send({
+            type: "SYNC_CONFLICT",
+            serverVersion: result.version,
+            serverContent: result.content,
+            serverTitle: result.title,
+          })
+        } else {
+          await applyServerState(
+            draftId,
+            result.version,
+            result.title,
+            result.content
+          )
+
+          for (const handler of documentUpdateHandlers) {
+            handler({
+              title: result.title,
+              content: result.content,
+              version: result.version,
+              source: "remote",
+            })
+          }
+
+          actor.send({
+            type: "SYNC_SUCCESS",
+            serverVersion: result.version,
+          })
+        }
+      }
+    } catch {
+      // pull 실패는 무시 (주기적으로 재시도됨)
+    }
+  }
+
   // --- Public API ---
 
   return {
@@ -299,49 +343,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
     },
 
     async pull() {
-      try {
-        const ctx = actor.getSnapshot().context
-        const result = await transport.pull(draftId, ctx.baseVersion)
-
-        if (result.hasNewerVersion) {
-          const pending = await getPendingTransactions(draftId)
-          const hasPending = pending.some((tx) => tx.status === "pending")
-
-          if (hasPending) {
-            // 보류 중인 트랜잭션이 있으면 충돌 처리
-            actor.send({
-              type: "SYNC_CONFLICT",
-              serverVersion: result.version,
-              serverContent: result.content,
-              serverTitle: result.title,
-            })
-          } else {
-            // 보류 없으면 서버 상태로 갱신
-            await applyServerState(
-              draftId,
-              result.version,
-              result.title,
-              result.content
-            )
-
-            for (const handler of documentUpdateHandlers) {
-              handler({
-                title: result.title,
-                content: result.content,
-                version: result.version,
-                source: "remote",
-              })
-            }
-
-            actor.send({
-              type: "SYNC_SUCCESS",
-              serverVersion: result.version,
-            })
-          }
-        }
-      } catch {
-        // pull 실패는 무시 (주기적으로 재시도됨)
-      }
+      await pullFromServer()
     },
 
     getState(): string {
