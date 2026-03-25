@@ -8,7 +8,7 @@ import { z } from "zod"
 
 import { parseAuthApiError } from "@/features/auth/lib/api-error"
 import {
-  ERROR_MESSAGES,
+  AUTH_MESSAGES,
   INVALID_TOKEN_CODES,
   PASSWORD_MIN_LENGTH,
   SIGN_IN_PATH,
@@ -17,13 +17,15 @@ import { authClient } from "@/features/auth/repositories/auth-client"
 
 const resetPasswordSchema = z
   .object({
-    password: z.string().min(PASSWORD_MIN_LENGTH, ERROR_MESSAGES.PASSWORD_MIN),
+    password: z
+      .string()
+      .min(PASSWORD_MIN_LENGTH, AUTH_MESSAGES.COMMON.PASSWORD_MIN),
     confirmPassword: z
       .string()
-      .min(PASSWORD_MIN_LENGTH, ERROR_MESSAGES.PASSWORD_MIN),
+      .min(PASSWORD_MIN_LENGTH, AUTH_MESSAGES.COMMON.PASSWORD_MIN),
   })
   .refine((data) => data.password === data.confirmPassword, {
-    message: ERROR_MESSAGES.PASSWORD_MISMATCH,
+    message: AUTH_MESSAGES.COMMON.PASSWORD_MISMATCH,
     path: ["confirmPassword"],
   })
 
@@ -44,10 +46,10 @@ function resolveTokenError(
   token: string | undefined
 ): string | null {
   if (errorCode != null && INVALID_TOKEN_CODES.has(errorCode)) {
-    return ERROR_MESSAGES.INVALID_TOKEN
+    return AUTH_MESSAGES.PASSWORD_RESET.INVALID_TOKEN
   }
   if (!token) {
-    return ERROR_MESSAGES.MISSING_TOKEN
+    return AUTH_MESSAGES.PASSWORD_RESET.MISSING_TOKEN
   }
   return null
 }
@@ -77,7 +79,7 @@ export function useResetPassword({ errorCode, token }: UseResetPasswordParams) {
       if (!token) {
         setSubmission({
           status: "error",
-          message: ERROR_MESSAGES.MISSING_TOKEN,
+          message: AUTH_MESSAGES.PASSWORD_RESET.MISSING_TOKEN,
         })
         return
       }
@@ -96,7 +98,7 @@ export function useResetPassword({ errorCode, token }: UseResetPasswordParams) {
               status: "error",
               message:
                 parseAuthApiError(error)?.message ??
-                ERROR_MESSAGES.RESET_FAILED,
+                AUTH_MESSAGES.PASSWORD_RESET.FAILED,
             })
             return
           }
@@ -106,7 +108,7 @@ export function useResetPassword({ errorCode, token }: UseResetPasswordParams) {
         } catch {
           setSubmission({
             status: "error",
-            message: ERROR_MESSAGES.RESET_FAILED,
+            message: AUTH_MESSAGES.PASSWORD_RESET.FAILED,
           })
         }
       })

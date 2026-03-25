@@ -7,13 +7,7 @@ import { z } from "zod"
 
 import { parseAuthApiError } from "@/features/auth/lib/api-error"
 import { authClient } from "@/features/auth/repositories/auth-client"
-
-const signInSchema = z.object({
-  email: z.email("올바른 이메일 주소를 입력해 주세요."),
-  password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다."),
-})
-
-type SignInFormValues = z.infer<typeof signInSchema>
+import { SignInFormValues, signInSchema } from "@/features/auth/lib/schema"
 
 type UseSignInParams = {
   errorCode?: string
