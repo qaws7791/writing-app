@@ -3,11 +3,7 @@
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  Bookmark01Icon,
-  BookmarkCheckIcon,
-  PenConnectWifiIcon,
-} from "@hugeicons/core-free-icons"
+import { Bookmark01Icon, BookmarkCheckIcon } from "@hugeicons/core-free-icons"
 import { LevelDots } from "@/domain/prompt/ui/level-dots"
 import { formatDraftMeta } from "@/foundation/lib/format"
 import { createAppRepository } from "@/features/writing/repositories/app-repository"
@@ -62,23 +58,11 @@ export default function HomeView() {
       <div className="mx-auto max-w-5xl">
         <section className="mb-12 flex items-end justify-between gap-6">
           <div>
-            <p className="mb-3 text-sm font-medium text-muted-foreground">
-              Phase 1 글쓰기 시작
-            </p>
             <h1 className="text-3xl leading-snug font-medium tracking-tight text-foreground md:text-4xl">
               오늘도,
               <br />
               그냥 써봐요
             </h1>
-          </div>
-          <div className="hidden items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground md:flex">
-            <HugeiconsIcon
-              icon={PenConnectWifiIcon}
-              size={16}
-              color="currentColor"
-              strokeWidth={1.6}
-            />
-            백엔드가 없으면 로컬 fixture로 동작합니다
           </div>
         </section>
 

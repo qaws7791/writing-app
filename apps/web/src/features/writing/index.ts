@@ -6,14 +6,6 @@ export {
   type CreateDraftInput,
   type AppRepositoryMode,
 } from "./repositories/app-repository"
-export {
-  fixturePrompts,
-  createFixtureHomeSnapshot,
-  listFixturePromptSummaries,
-  findFixturePrompt,
-  createFixtureDraftContent,
-} from "./repositories/fixtures"
-
 // sync
 export {
   createSyncEngine,

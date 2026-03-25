@@ -24,12 +24,6 @@ import {
   storageKeys,
   type StorageLike,
 } from "@/foundation/lib/storage"
-import {
-  createFixtureDraftContent,
-  createFixtureHomeSnapshot,
-  findFixturePrompt,
-  listFixturePromptSummaries,
-} from "@/features/writing/repositories/fixtures"
 
 export type AutosaveDraftResult = {
   draft: DraftDetail
@@ -112,26 +106,6 @@ function nextSequence(storage: StorageLike): number {
   return next
 }
 
-function applySavedState(
-  prompt: PromptSummary,
-  savedIds: Set<number>
-): PromptSummary {
-  return {
-    ...prompt,
-    saved: savedIds.has(prompt.id),
-  }
-}
-
-function applySavedStateToDetail(
-  prompt: PromptDetail,
-  savedIds: Set<number>
-): PromptDetail {
-  return {
-    ...prompt,
-    saved: savedIds.has(prompt.id),
-  }
-}
-
 function sortDrafts(drafts: DraftDetail[]): DraftDetail[] {
   return [...drafts].sort((left, right) => {
     if (left.updatedAt === right.updatedAt) {
@@ -139,40 +113,6 @@ function sortDrafts(drafts: DraftDetail[]): DraftDetail[] {
     }
 
     return right.updatedAt.localeCompare(left.updatedAt)
-  })
-}
-
-function filterPrompts(
-  prompts: PromptSummary[],
-  filters?: PromptFilters
-): PromptSummary[] {
-  if (!filters) {
-    return prompts
-  }
-
-  const normalizedQuery = filters.query?.trim().toLowerCase()
-
-  return prompts.filter((prompt) => {
-    if (filters.saved !== undefined && prompt.saved !== filters.saved) {
-      return false
-    }
-
-    if (filters.topic && prompt.topic !== filters.topic) {
-      return false
-    }
-
-    if (filters.level && prompt.level !== filters.level) {
-      return false
-    }
-
-    if (!normalizedQuery) {
-      return true
-    }
-
-    return (
-      prompt.text.toLowerCase().includes(normalizedQuery) ||
-      prompt.tags.some((tag) => tag.toLowerCase().includes(normalizedQuery))
-    )
   })
 }
 
@@ -247,91 +187,36 @@ export function createLocalAppRepository(
     },
 
     async getDraft(draftId) {
-      const draft =
-        readDrafts(storage).find((item) => item.id === draftId) ??
-        (() => {
-          const fallback = createFixtureHomeSnapshot().recentDrafts[0]
-          if (fallback && fallback.id === draftId) {
-            return {
-              ...fallback,
-              content: createFixtureDraftContent(),
-              createdAt: fallback.lastSavedAt,
-              updatedAt: fallback.lastSavedAt,
-            } satisfies DraftDetail
-          }
-
-          return null
-        })()
-
+      const draft = readDrafts(storage).find((item) => item.id === draftId)
       if (!draft) {
         throw createApiError(404, "초안을 찾을 수 없습니다.")
       }
-
       return draft
     },
 
     async getHome() {
-      const fixture = createFixtureHomeSnapshot()
       const drafts = sortDrafts(readDrafts(storage))
-      const savedEntries = readSavedPromptEntries(storage)
-      const savedIds = new Set(savedEntries.map((entry) => entry.promptId))
-      const promptMap = new Map(
-        listFixturePromptSummaries().map((prompt) => [prompt.id, prompt])
-      )
-
       return {
-        recentDrafts: drafts.length > 0 ? drafts : fixture.recentDrafts,
-        resumeDraft: drafts[0] ?? fixture.resumeDraft,
-        savedPrompts:
-          savedEntries.length > 0
-            ? savedEntries
-                .map((entry) => promptMap.get(entry.promptId))
-                .filter((prompt): prompt is PromptSummary => Boolean(prompt))
-                .map((prompt) => ({ ...prompt, saved: true }))
-            : fixture.savedPrompts,
-        todayPrompts: fixture.todayPrompts.map((prompt) =>
-          applySavedState(prompt, savedIds)
-        ),
+        recentDrafts: drafts,
+        resumeDraft: drafts[0] ?? null,
+        savedPrompts: [],
+        todayPrompts: [],
       }
     },
 
-    async getPrompt(promptId) {
-      const prompt = findFixturePrompt(promptId)
-      if (!prompt) {
-        throw createApiError(404, "글감을 찾을 수 없습니다.")
-      }
-
-      const savedIds = new Set(
-        readSavedPromptEntries(storage).map((entry) => entry.promptId)
-      )
-
-      return applySavedStateToDetail(prompt, savedIds)
+    async getPrompt() {
+      throw createApiError(404, "글감을 찾을 수 없습니다.")
     },
 
     async listDrafts() {
-      const drafts = sortDrafts(readDrafts(storage))
-      return drafts.length > 0
-        ? drafts
-        : createFixtureHomeSnapshot().recentDrafts
+      return sortDrafts(readDrafts(storage))
     },
 
-    async listPrompts(filters) {
-      const savedIds = new Set(
-        readSavedPromptEntries(storage).map((entry) => entry.promptId)
-      )
-      const prompts = listFixturePromptSummaries().map((prompt) =>
-        applySavedState(prompt, savedIds)
-      )
-
-      return filterPrompts(prompts, filters)
+    async listPrompts() {
+      return []
     },
 
     async savePrompt(promptId) {
-      const prompt = findFixturePrompt(promptId)
-      if (!prompt) {
-        throw createApiError(404, "글감을 찾을 수 없습니다.")
-      }
-
       const entries = readSavedPromptEntries(storage)
       const withoutCurrent = entries.filter(
         (entry) => entry.promptId !== promptId
@@ -341,7 +226,6 @@ export function createLocalAppRepository(
         { promptId, savedAt },
         ...withoutCurrent,
       ])
-
       return {
         kind: "saved" as const,
         savedAt,
