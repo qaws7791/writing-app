@@ -30,8 +30,10 @@ export default function ResetPasswordView({
   errorCode,
   token,
 }: ResetPasswordViewProps) {
-  const { form, serverError, isPending, completed, tokenError, onSubmit } =
-    useResetPassword({ errorCode, token })
+  const { form, state, isPending, tokenError, onSubmit } = useResetPassword({
+    errorCode,
+    token,
+  })
 
   return (
     <AuthPageShell
@@ -56,7 +58,7 @@ export default function ResetPasswordView({
         </CardDescription>
       </CardHeader>
       <CardContent className="px-0">
-        {completed ? (
+        {state.status === "completed" ? (
           <div className="space-y-3 rounded-[1.5rem] border border-foreground/10 bg-muted/60 p-5">
             <p className="text-lg font-semibold">변경이 완료되었습니다.</p>
             <p className="text-sm leading-7 text-muted-foreground">
@@ -126,7 +128,9 @@ export default function ResetPasswordView({
               />
             </FieldGroup>
 
-            <FieldError>{serverError}</FieldError>
+            <FieldError>
+              {state.status === "error" ? state.message : null}
+            </FieldError>
 
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending ? "변경 중..." : "새 비밀번호 저장"}

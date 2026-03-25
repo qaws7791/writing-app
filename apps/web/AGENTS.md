@@ -97,6 +97,46 @@ src/
 - CSS Module은 `features/writing/components`에만 허용합니다. 그 외 레이어에서는 Tailwind CSS를 사용합니다.
 - apps/web 내에서 임시 값(bracket 패턴) 사용 금지
 
+## 커스텀 훅 모범 사례
+
+### Discriminated Union으로 상태 표현
+
+서로 배타적인 상태(`idle`, `error`, `completed`)를 분리된 플래그(`boolean + string | null`)로 표현하지 않습니다.
+불가능한 상태 조합을 타입 수준에서 제거하기 위해 Discriminated Union을 사용합니다.
+
+### 매직 스트링 제거와 상수 중앙화
+
+에러 코드, 경로 등 문자열 리터럴을 직접 비교하지 않습니다.
+`lib/constants.ts`에 상수로 추출하여 재사용합니다.
+
+### Set을 사용한 멤버십 검사
+
+복수의 값 중 포함 여부를 확인할 때는 `||` 체인 대신 `Set.has()`를 사용합니다.
+값이 늘어나도 Set에만 추가하면 됩니다.
+
+### 파생 값에 대한 메모이제이션
+
+props를 기반으로 계산되는 파생 값은 렌더 때마다 재계산되지 않도록 `useMemo`로 감쌉니다.
+
+### 예외 처리
+
+비동기 함수 내 `await` 호출은 네트워크 오류 등 예외를 던질 수 있습니다.
+`startTransition` 콜백 안에서도 `try/catch`로 예외를 잡아 사용자에게 알립니다.
+
+### 구조 분해로 가독성 향상
+
+함수 매개변수에서 필요한 필드만 구조 분해해 불필요한 중간 변수를 제거합니다.
+
+```ts
+// ✅ 올바른 예시
+function onSubmit({ password }: ResetPasswordFormValues) { ... }
+
+// ❌ 잘못된 예시
+function onSubmit(data: ResetPasswordFormValues) {
+  // ... data.password ...
+}
+```
+
 ## 명령어
 
 - `bun dev` — 개발 서버 시작 (기본 포트: 3000)
