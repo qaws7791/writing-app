@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
+import { parseAuthApiError } from "@/features/auth/lib/api-error"
 import { authClient } from "@/features/auth/repositories/auth-client"
 
 const signInSchema = z.object({
@@ -13,19 +14,6 @@ const signInSchema = z.object({
 })
 
 type SignInFormValues = z.infer<typeof signInSchema>
-
-function resolveErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof error.message === "string"
-  ) {
-    return error.message
-  }
-
-  return "로그인에 실패했습니다. 입력값을 다시 확인해 주세요."
-}
 
 type UseSignInParams = {
   errorCode?: string
@@ -60,7 +48,9 @@ export function useSignIn({ errorCode, verified }: UseSignInParams) {
     if (result.error) {
       form.setError("root", {
         type: "server",
-        message: resolveErrorMessage(result.error),
+        message:
+          parseAuthApiError(result.error)?.message ??
+          "로그인에 실패했습니다. 입력값을 다시 확인해 주세요.",
       })
       return
     }

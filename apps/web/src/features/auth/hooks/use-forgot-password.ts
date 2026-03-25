@@ -2,20 +2,8 @@
 
 import { useState, useTransition } from "react"
 
+import { parseAuthApiError } from "@/features/auth/lib/api-error"
 import { authClient } from "@/features/auth/repositories/auth-client"
-
-function resolveErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof error.message === "string"
-  ) {
-    return error.message
-  }
-
-  return "비밀번호 재설정 요청에 실패했습니다."
-}
 
 export function useForgotPassword() {
   const [isPending, startTransition] = useTransition()
@@ -35,7 +23,10 @@ export function useForgotPassword() {
       })
 
       if (result.error) {
-        setError(resolveErrorMessage(result.error))
+        setError(
+          parseAuthApiError(result.error)?.message ??
+            "비밀번호 재설정 요청에 실패했습니다."
+        )
         return
       }
 

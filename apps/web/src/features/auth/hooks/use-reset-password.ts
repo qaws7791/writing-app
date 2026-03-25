@@ -6,6 +6,7 @@ import { useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
+import { parseAuthApiError } from "@/features/auth/lib/api-error"
 import { authClient } from "@/features/auth/repositories/auth-client"
 
 const resetPasswordSchema = z
@@ -19,19 +20,6 @@ const resetPasswordSchema = z
   })
 
 type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>
-
-function resolveErrorMessage(error: unknown): string {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "message" in error &&
-    typeof error.message === "string"
-  ) {
-    return error.message
-  }
-
-  return "비밀번호를 재설정하지 못했습니다."
-}
 
 function resolveTokenError(
   errorCode: string | undefined,
@@ -84,7 +72,10 @@ export function useResetPassword({ errorCode, token }: UseResetPasswordParams) {
       })
 
       if (result.error) {
-        setServerError(resolveErrorMessage(result.error))
+        setServerError(
+          parseAuthApiError(result.error)?.message ??
+            "비밀번호를 재설정하지 못했습니다."
+        )
         return
       }
 
