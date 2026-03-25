@@ -8,6 +8,7 @@ import { z } from "zod"
 import { parseAuthApiError } from "@/features/auth/lib/api-error"
 import { authClient } from "@/features/auth/repositories/auth-client"
 import { SignInFormValues, signInSchema } from "@/features/auth/lib/schema"
+import { AUTH_MESSAGES } from "@/features/auth/lib/constants"
 
 type UseSignInParams = {
   errorCode?: string
@@ -26,9 +27,9 @@ export function useSignIn({ errorCode, verified }: UseSignInParams) {
 
   const verificationNotice =
     errorCode === "invalid_token"
-      ? "인증 링크가 유효하지 않거나 만료되었습니다. 다시 가입하거나 새 링크를 요청해 주세요."
+      ? AUTH_MESSAGES.SIGN_IN.INVALID_TOKEN
       : verified
-        ? "이메일 인증이 완료되었습니다. 이제 로그인할 수 있습니다."
+        ? AUTH_MESSAGES.SIGN_IN.EMAIL_VERIFIED
         : null
 
   const onSubmit = form.handleSubmit(async (data) => {
@@ -44,7 +45,7 @@ export function useSignIn({ errorCode, verified }: UseSignInParams) {
         type: "server",
         message:
           parseAuthApiError(result.error)?.message ??
-          "로그인에 실패했습니다. 입력값을 다시 확인해 주세요.",
+          AUTH_MESSAGES.SIGN_IN.FAILED,
       })
       return
     }

@@ -4,32 +4,17 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { useCallback, useMemo, useState, useTransition } from "react"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
-
 import { parseAuthApiError } from "@/features/auth/lib/api-error"
 import {
   AUTH_MESSAGES,
   INVALID_TOKEN_CODES,
-  PASSWORD_MIN_LENGTH,
   SIGN_IN_PATH,
 } from "@/features/auth/lib/constants"
 import { authClient } from "@/features/auth/repositories/auth-client"
-
-const resetPasswordSchema = z
-  .object({
-    password: z
-      .string()
-      .min(PASSWORD_MIN_LENGTH, AUTH_MESSAGES.COMMON.PASSWORD_MIN),
-    confirmPassword: z
-      .string()
-      .min(PASSWORD_MIN_LENGTH, AUTH_MESSAGES.COMMON.PASSWORD_MIN),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: AUTH_MESSAGES.COMMON.PASSWORD_MISMATCH,
-    path: ["confirmPassword"],
-  })
-
-type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>
+import {
+  ResetPasswordFormValues,
+  resetPasswordSchema,
+} from "@/features/auth/lib/schema"
 
 type SubmissionState =
   | { status: "idle" }

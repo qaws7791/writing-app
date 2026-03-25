@@ -3,27 +3,18 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
 
 import { parseAuthApiError } from "@/features/auth/lib/api-error"
 import { authClient } from "@/features/auth/repositories/auth-client"
-
-const signUpSchema = z.object({
-  name: z.string().trim().min(1, "이름을 입력해 주세요."),
-  email: z.email("올바른 이메일 주소를 입력해 주세요."),
-  password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다."),
-})
-
-type SignUpFormValues = z.infer<typeof signUpSchema>
+import { SignUpFormValues, signUpSchema } from "@/features/auth/lib/schema"
+import { AUTH_MESSAGES } from "@/features/auth/lib/constants"
 
 function resolveSignUpError(error: unknown): string {
   const parsed = parseAuthApiError(error)
   if (parsed?.status === 409) {
-    return "이미 가입된 이메일입니다. 로그인하거나 비밀번호 재설정을 사용해 주세요."
+    return AUTH_MESSAGES.SIGN_UP.ALREADY_EXISTS
   }
-  return (
-    parsed?.message ?? "회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요."
-  )
+  return parsed?.message ?? AUTH_MESSAGES.SIGN_UP.FAILED
 }
 
 export function useSignUp() {
