@@ -1,3 +1,6 @@
+import { z } from "zod"
+import { jsonCodec } from "@/foundation/lib/zod"
+import { writingContentSchema } from "@/domain/writing/model/writing.service"
 import {
   createEmptyWritingContent,
   writingContentToPlainText,
@@ -19,6 +22,22 @@ type RedirectWritingSnapshot = {
   editorWriting: EditorWritingSnapshot
   lastSyncedSnapshot: string | null
 }
+
+const editorWritingSnapshotSchema = z.object({
+  content: writingContentSchema,
+  title: z.string(),
+})
+
+const redirectWritingSnapshotSchema = z.object({
+  editorWriting: editorWritingSnapshotSchema,
+  lastSyncedSnapshot: z.string().nullable(),
+})
+
+const editorWritingSnapshotJsonCodec = jsonCodec(editorWritingSnapshotSchema)
+
+const redirectWritingSnapshotJsonCodec = jsonCodec(
+  redirectWritingSnapshotSchema
+)
 
 export function normalizeWritingTitle(title: string) {
   return title.replace(/\s+/g, " ").trim()
@@ -50,10 +69,9 @@ export function createWritingSnapshotFromDetail(
 }
 
 export function serializeWritingSnapshot(snapshot: EditorWritingSnapshot) {
-  return JSON.stringify({
-    content: snapshot.content,
-    title: normalizeWritingTitle(snapshot.title),
-  })
+  return editorWritingSnapshotJsonCodec.encode(
+    createEditorWritingSnapshot(snapshot)
+  )
 }
 
 export function areWritingSnapshotsEqual(
@@ -88,7 +106,7 @@ export function consumeRedirectWritingSnapshot(
   storage.removeItem(key)
 
   try {
-    return JSON.parse(raw) as RedirectWritingSnapshot
+    return redirectWritingSnapshotJsonCodec.decode(raw)
   } catch {
     return null
   }
@@ -102,6 +120,6 @@ export function persistRedirectWritingSnapshot(
 
   storage.setItem(
     createRedirectWritingSnapshotStorageKey(writingId),
-    JSON.stringify(snapshot)
+    redirectWritingSnapshotJsonCodec.encode(snapshot)
   )
 }
