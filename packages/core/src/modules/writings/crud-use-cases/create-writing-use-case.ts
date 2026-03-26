@@ -1,10 +1,8 @@
 import type { WritingContent } from "../../../shared/schema/index"
 import { createEmptyWritingContent } from "../../../shared/utilities/index"
 import type { WritingId, PromptId, UserId } from "../../../shared/brand/index"
-import type {
-  WritingDetail,
-  WritingRepository,
-} from "../../../shared/ports/index"
+import type { WritingDetail } from "../writing-types"
+import type { WritingRepository } from "../writing-crud-port"
 import { buildWriting } from "../writing-crud-operations"
 import { promptNotFound, type WritingModuleError } from "../writing-error"
 

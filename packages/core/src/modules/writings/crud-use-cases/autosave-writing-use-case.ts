@@ -1,8 +1,6 @@
 import type { WritingId, UserId } from "../../../shared/brand/index"
-import type {
-  WritingDetail,
-  WritingRepository,
-} from "../../../shared/ports/index"
+import type { WritingDetail } from "../writing-types"
+import type { WritingRepository } from "../writing-crud-port"
 import type { WritingContent } from "../../../shared/schema/index"
 import { extractWritingTextMetrics } from "../../../shared/utilities/index"
 import type { WritingFull } from "../writing-types"

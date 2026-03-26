@@ -1,8 +1,6 @@
 import type { PromptId, UserId } from "../../../shared/brand/index"
-import type {
-  PromptRepository,
-  PromptDetail,
-} from "../../../shared/ports/index"
+import type { PromptDetail } from "../prompt-types"
+import type { PromptRepository } from "../prompt-port"
 import { promptNotFound, type PromptModuleError } from "../errors/index"
 
 export type GetPromptUseCaseOutput =

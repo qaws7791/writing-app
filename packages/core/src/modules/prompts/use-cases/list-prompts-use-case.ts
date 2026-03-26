@@ -1,9 +1,6 @@
 import type { UserId } from "../../../shared/brand/index"
-import type {
-  PromptRepository,
-  PromptListFilters,
-  PromptSummary,
-} from "../../../shared/ports/index"
+import type { PromptListFilters, PromptSummary } from "../prompt-types"
+import type { PromptRepository } from "../prompt-port"
 
 export type ListPromptsUseCaseOutput = readonly PromptSummary[]
 

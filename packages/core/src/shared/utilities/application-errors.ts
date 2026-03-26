@@ -1,4 +1,4 @@
-import type { DomainError } from "../types/index"
+import type { DomainError } from "../error/index"
 
 export class NotFoundError extends Error {
   constructor(message: string) {
@@ -44,5 +44,9 @@ export function toApplicationError(error: DomainError): Error {
       return new ForbiddenError(error.message)
     case "CONFLICT":
       return new ConflictError(error.message)
+    default: {
+      const _exhaustive: never = error
+      return _exhaustive
+    }
   }
 }

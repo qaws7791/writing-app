@@ -3,10 +3,8 @@ import type {
   CursorPage,
   CursorPageParams,
 } from "../../../shared/pagination/index"
-import type {
-  WritingRepository,
-  WritingSummary,
-} from "../../../shared/ports/index"
+import type { WritingSummary } from "../writing-types"
+import type { WritingRepository } from "../writing-crud-port"
 
 export type ListWritingsUseCaseOutput = CursorPage<WritingSummary>
 

@@ -1,8 +1,6 @@
 import type { UserId } from "../../../shared/brand/index"
-import type {
-  WritingRepository,
-  PromptRepository,
-} from "../../../shared/ports/index"
+import type { WritingRepository } from "../../writings/writing-crud-port"
+import type { PromptRepository } from "../../prompts/prompt-port"
 import type { HomeSnapshot } from "../model/index"
 
 export type GetHomeUseCaseOutput = HomeSnapshot

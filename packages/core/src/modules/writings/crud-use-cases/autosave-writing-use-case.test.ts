@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { toWritingId, toUserId } from "../../../shared/brand/index"
 import type { WritingContent } from "../../../shared/schema/index"
-import { FakeWritingRepository } from "../../../shared/testing/index"
+import { createFakeWritingRepository } from "../crud-testing/index"
 import { makeAutosaveWritingUseCase } from "./autosave-writing-use-case"
 
 const userId = toUserId("user-1")
@@ -25,7 +25,7 @@ const updatedContent: WritingContent = {
 describe("makeAutosaveWritingUseCase", () => {
   it("returns a validation error when nothing changed", async () => {
     const autosaveWriting = makeAutosaveWritingUseCase({
-      writingRepository: new FakeWritingRepository(),
+      writingRepository: createFakeWritingRepository(),
       getNow: () => "2026-03-22T00:00:00.000Z",
     })
 
@@ -39,7 +39,7 @@ describe("makeAutosaveWritingUseCase", () => {
   })
 
   it("updates the persisted WritingFull content and title", async () => {
-    const repository = new FakeWritingRepository()
+    const repository = createFakeWritingRepository()
     const createdWriting = await repository.create(userId, {
       characterCount: 4,
       content: {

@@ -2,15 +2,16 @@ import { describe, expect, it, vi } from "vitest"
 
 import { toWritingId, toPromptId, toUserId } from "../../../shared/brand/index"
 import type { CursorPage } from "../../../shared/pagination/index"
+import type { UserId } from "../../../shared/brand/index"
 import type {
   WritingCrudAccessResult,
   WritingDeleteResult,
   WritingDetail,
   WritingMutationResult,
   WritingPersistInput,
-  WritingRepository,
   WritingSummary,
-} from "../../../shared/ports/index"
+} from "../writing-types"
+import type { WritingRepository } from "../writing-crud-port"
 import { createEmptyWritingContent } from "../../../shared/utilities/index"
 import { makeCreateWritingUseCase } from "./create-writing-use-case"
 
@@ -20,7 +21,8 @@ function createWritingRepositoryStub(
   onCreate: (input: WritingPersistInput) => WritingDetail
 ) {
   return {
-    create: async (_userId, input) => onCreate(input),
+    create: async (_userId: UserId, input: WritingPersistInput) =>
+      onCreate(input),
     delete: async (): Promise<WritingDeleteResult> => ({ kind: "deleted" }),
     getById: async (): Promise<WritingCrudAccessResult> => ({
       kind: "not-found",

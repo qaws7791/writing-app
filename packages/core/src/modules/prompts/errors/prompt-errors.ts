@@ -2,7 +2,7 @@ import type { PromptId } from "../../../shared/brand/index"
 import {
   createNotFoundError,
   type NotFoundError,
-} from "../../../shared/types/index"
+} from "../../../shared/error/index"
 
 export type PromptModuleError = NotFoundError & {
   readonly entity: "prompt"

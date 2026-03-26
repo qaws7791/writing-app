@@ -1,4 +1,5 @@
-import type { WritingSummary, PromptSummary } from "../../../shared/ports/index"
+import type { WritingSummary } from "../../writings/writing-types"
+import type { PromptSummary } from "../../prompts/prompt-types"
 
 /**
  * Home page snapshot.

@@ -1,5 +1,5 @@
 import type { PromptId, UserId } from "../../../shared/brand/index"
-import type { PromptRepository } from "../../../shared/ports/index"
+import type { PromptRepository } from "../prompt-port"
 import { promptNotFound, type PromptModuleError } from "../errors/index"
 
 export type UnsavePromptUseCaseOutput = { kind: "success" } | PromptModuleError

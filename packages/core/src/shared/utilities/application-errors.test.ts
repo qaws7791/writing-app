@@ -5,7 +5,7 @@ import {
   createForbiddenError,
   createNotFoundError,
   createValidationError,
-} from "../types/index"
+} from "../error/index"
 import {
   ConflictError,
   ForbiddenError,

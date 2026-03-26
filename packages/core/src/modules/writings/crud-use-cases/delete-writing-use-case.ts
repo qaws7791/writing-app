@@ -1,5 +1,5 @@
 import type { WritingId, UserId } from "../../../shared/brand/index"
-import type { WritingRepository } from "../../../shared/ports/index"
+import type { WritingRepository } from "../writing-crud-port"
 import {
   writingForbidden,
   writingNotFound,
