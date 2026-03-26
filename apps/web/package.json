@@ -59,6 +59,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/turndown": "^5.0.6",
     "@workspace/config": "workspace:*",
+    "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.39.2",
     "typescript": "^5.9.3"
   }
