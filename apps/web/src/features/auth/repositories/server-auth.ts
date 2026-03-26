@@ -2,7 +2,7 @@ import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { env } from "@/foundation/config/env"
-import { resolveServerApiBaseUrl } from "@/foundation/lib/api-base-url"
+import { SessionRepository } from "@/features/auth/repositories/session-repository"
 import type { SessionSnapshot } from "@/domain/auth"
 
 type SessionRequestContext = {
@@ -18,17 +18,6 @@ export function isLocalPhaseOneMode(): boolean {
   return env.NEXT_PUBLIC_PHASE_ONE_MODE === "local"
 }
 
-export function resolveSessionApiBaseUrl(
-  apiBaseUrl: string | undefined,
-  requestHost: string | null
-): string {
-  if (!apiBaseUrl) {
-    throw new Error("NEXT_PUBLIC_API_BASE_URL is required in api mode.")
-  }
-
-  return resolveServerApiBaseUrl(apiBaseUrl, requestHost)
-}
-
 async function readSessionRequestContext(): Promise<SessionRequestContext> {
   const requestHeaders = await headers()
 
@@ -39,33 +28,17 @@ async function readSessionRequestContext(): Promise<SessionRequestContext> {
   }
 }
 
-export async function fetchSessionSnapshot(input: {
-  apiBaseUrl: string | undefined
-  cookie?: string | null
-  fetchImpl?: typeof fetch
-  requestHost: string | null
-}): Promise<SessionSnapshot | null> {
-  const response = await (input.fetchImpl ?? fetch)(
-    `${resolveSessionApiBaseUrl(input.apiBaseUrl, input.requestHost)}/session`,
-    {
-      cache: "no-store",
-      headers: input.cookie
-        ? {
-            cookie: input.cookie,
-          }
-        : undefined,
-    }
-  )
-
-  if (response.status === 401) {
+export async function fetchSessionSnapshot(): Promise<SessionSnapshot | null> {
+  if (isLocalPhaseOneMode()) {
     return null
   }
 
-  if (!response.ok) {
-    throw new Error("세션 상태를 확인하지 못했습니다.")
-  }
+  const requestContext = await readSessionRequestContext()
+  const repository = new SessionRepository({
+    requestHost: requestContext.requestHost,
+  })
 
-  return (await response.json()) as SessionSnapshot
+  return repository.getSession()
 }
 
 export function getSessionAccessRedirectPath(input: {
@@ -85,17 +58,7 @@ export function getSessionAccessRedirectPath(input: {
 }
 
 export async function getCurrentSession(): Promise<SessionSnapshot | null> {
-  if (isLocalPhaseOneMode()) {
-    return null
-  }
-
-  const requestContext = await readSessionRequestContext()
-
-  return fetchSessionSnapshot({
-    apiBaseUrl: env.NEXT_PUBLIC_API_BASE_URL,
-    cookie: requestContext.cookie,
-    requestHost: requestContext.requestHost,
-  })
+  return fetchSessionSnapshot()
 }
 
 export async function redirectIfProtectedAccessMissing(): Promise<void> {

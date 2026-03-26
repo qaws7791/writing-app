@@ -1,11 +1,26 @@
-import { describe, expect, test, vi } from "vitest"
+import { describe, expect, test, vi, beforeEach } from "vitest"
 
 import {
   fetchSessionSnapshot,
   getSessionAccessRedirectPath,
-  resolveSessionApiBaseUrl,
-  type SessionSnapshot,
 } from "./server-auth"
+import { SessionRepository } from "./session-repository"
+import type { SessionSnapshot } from "@/domain/auth"
+
+// 헤더 모킹
+vi.mock("next/headers", () => ({
+  headers: vi.fn(() =>
+    Promise.resolve({
+      get: (key: string) => {
+        if (key === "host") return "localhost:3000"
+        return null
+      },
+    })
+  ),
+}))
+
+// SessionRepository 모킹
+vi.mock("./session-repository")
 
 function createSessionSnapshot(): SessionSnapshot {
   return {
@@ -27,56 +42,58 @@ function createSessionSnapshot(): SessionSnapshot {
 }
 
 describe("server auth", () => {
-  test("resolves loopback api base url from request host", () => {
-    expect(
-      resolveSessionApiBaseUrl("http://127.0.0.1:3010", "localhost:3000")
-    ).toBe("http://localhost:3010")
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
-  test("fetches current session with request cookie", async () => {
-    const fetchImpl = vi.fn(
-      async () =>
-        new Response(JSON.stringify(createSessionSnapshot()), { status: 200 })
+  test("fetches current session using repository", async () => {
+    const mockSession = createSessionSnapshot()
+    const mockGetSession = vi.fn(async () => mockSession)
+
+    vi.mocked(SessionRepository).mockImplementation(
+      () =>
+        ({
+          getSession: mockGetSession,
+        }) as any
     )
 
-    const session = await fetchSessionSnapshot({
-      apiBaseUrl: "http://127.0.0.1:3010",
-      cookie: "session=abc",
-      fetchImpl,
-      requestHost: "localhost:3000",
-    })
+    const session = await fetchSessionSnapshot()
 
-    expect(session).toEqual(createSessionSnapshot())
-    expect(fetchImpl).toHaveBeenCalledWith("http://localhost:3010/session", {
-      cache: "no-store",
-      headers: {
-        cookie: "session=abc",
-      },
-    })
+    expect(session).toEqual(mockSession)
+    expect(mockGetSession).toHaveBeenCalled()
   })
 
-  test("returns null for unauthorized session response", async () => {
-    const fetchImpl = vi.fn(async () => new Response(null, { status: 401 }))
+  test("returns null for unauthorized session", async () => {
+    const mockGetSession = vi.fn(async () => null)
 
-    await expect(
-      fetchSessionSnapshot({
-        apiBaseUrl: "http://127.0.0.1:3010",
-        fetchImpl,
-        requestHost: "127.0.0.1:3000",
-      })
-    ).resolves.toBeNull()
+    vi.mocked(SessionRepository).mockImplementation(
+      () =>
+        ({
+          getSession: mockGetSession,
+        }) as any
+    )
+
+    const session = await fetchSessionSnapshot()
+
+    expect(session).toBeNull()
   })
 
-  test("maps non-401 failures to a consistent error", async () => {
-    const fetchImpl = vi.fn(async () => new Response(null, { status: 500 }))
+  test("throws on session repository error", async () => {
+    const mockError = new Error("세션 상태를 확인하지 못했습니다.")
+    const mockGetSession = vi.fn(async () => {
+      throw mockError
+    })
 
-    await expect(
-      fetchSessionSnapshot({
-        apiBaseUrl: "http://127.0.0.1:3010",
-        fetchImpl,
-        requestHost: "127.0.0.1:3000",
-      })
-    ).rejects.toThrow("세션 상태를 확인하지 못했습니다.")
+    vi.mocked(SessionRepository).mockImplementation(
+      () =>
+        ({
+          getSession: mockGetSession,
+        }) as any
+    )
+
+    await expect(fetchSessionSnapshot()).rejects.toThrow(
+      "세션 상태를 확인하지 못했습니다."
+    )
   })
 
   test("redirect policy keeps protected pages open in local mode", () => {
