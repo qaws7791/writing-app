@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useState } from "react"
+import { useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
 import { WritingPageBody } from "@/features/writing/components/writing-page-body"
@@ -77,7 +77,7 @@ export default function WritingPageView({ draftId }: WritingPageProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   // --- Handlers ---
-  const handleShare = useCallback(async () => {
+  const handleShare = async () => {
     const { bodyText, title } = getContent()
     const text = [title, bodyText].filter(Boolean).join("\n\n")
 
@@ -94,16 +94,16 @@ export default function WritingPageView({ draftId }: WritingPageProps) {
     } catch {
       await navigator.clipboard.writeText(text)
     }
-  }, [getContent])
+  }
 
-  const handleDelete = useCallback(async () => {
+  const handleDelete = async () => {
     if (draftQuery.data) {
       await deleteMutation.mutateAsync(draftQuery.data.id)
     }
     router.push("/write")
-  }, [draftQuery.data, deleteMutation, router])
+  }
 
-  const handleSaveVersion = useCallback(async () => {
+  const handleSaveVersion = async () => {
     await flushPendingDraft()
     const current = editorDraftRef.current
 
@@ -116,15 +116,12 @@ export default function WritingPageView({ draftId }: WritingPageProps) {
     } catch {
       // 저장 실패는 무시 — 다음 자동 저장에서 재시도
     }
-  }, [draftId, editorDraftRef, flushPendingDraft, saveVersionMutation])
+  }
 
-  const handleRestoreComplete = useCallback(
-    (detail: VersionDetail) => {
-      restoreFromVersion(detail)
-      markSaved()
-    },
-    [restoreFromVersion, markSaved]
-  )
+  const handleRestoreComplete = (detail: VersionDetail) => {
+    restoreFromVersion(detail)
+    markSaved()
+  }
 
   return (
     <div

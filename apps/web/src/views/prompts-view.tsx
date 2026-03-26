@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useDeferredValue, useMemo, useState } from "react"
+import { useDeferredValue, useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Bookmark01Icon,
@@ -18,14 +18,11 @@ export default function PromptsView() {
   const [search, setSearch] = useState("")
   const [activeTopic, setActiveTopic] = useState<PromptTopic | null>(null)
   const deferredSearch = useDeferredValue(search)
-  const promptFilters = useMemo<PromptFilters>(() => {
-    const query = deferredSearch.trim()
-
-    return {
-      query: query.length > 0 ? query : undefined,
-      topic: activeTopic ?? undefined,
-    }
-  }, [activeTopic, deferredSearch])
+  const query = deferredSearch.trim()
+  const promptFilters: PromptFilters = {
+    query: query.length > 0 ? query : undefined,
+    topic: activeTopic ?? undefined,
+  }
 
   const {
     data: prompts = [],

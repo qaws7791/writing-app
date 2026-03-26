@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { PencilEdit02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -11,7 +11,7 @@ import type { DraftSummary } from "@/domain/draft"
 
 export default function WriteListView() {
   const router = useRouter()
-  const repository = useMemo(() => createAppRepository(), [])
+  const repository = createAppRepository()
   const [drafts, setDrafts] = useState<DraftSummary[]>([])
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -44,7 +44,7 @@ export default function WriteListView() {
     }
   }, [repository])
 
-  const handleCreateDraft = useCallback(async () => {
+  const handleCreateDraft = async () => {
     if (creating) return
     setCreating(true)
     try {
@@ -53,7 +53,7 @@ export default function WriteListView() {
     } catch {
       setCreating(false)
     }
-  }, [creating, repository, router])
+  }
 
   return (
     <div className="min-h-svh flex-1 bg-background px-6 py-16 md:px-10 md:py-20 lg:px-24">

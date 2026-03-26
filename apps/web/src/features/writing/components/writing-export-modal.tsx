@@ -1,6 +1,4 @@
 "use client"
-
-import { useCallback } from "react"
 import { Download01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import TurndownService from "turndown"
@@ -37,36 +35,33 @@ export function WritingExportModal({
   onOpenChange,
   getContent,
 }: WritingExportModalProps) {
-  const handleExport = useCallback(
-    (format: ExportFormat) => {
-      const { title, bodyHtml, bodyText } = getContent()
-      const bodyMarkdown = htmlToMarkdown(bodyHtml)
+  const handleExport = (format: ExportFormat) => {
+    const { title, bodyHtml, bodyText } = getContent()
+    const bodyMarkdown = htmlToMarkdown(bodyHtml)
 
-      let content: string
-      let filename: string
-      let mimeType: string
+    let content: string
+    let filename: string
+    let mimeType: string
 
-      if (format === "txt") {
-        content = [title, bodyText].filter(Boolean).join("\n\n")
-        filename = `${title || "제목 없음"}.txt`
-        mimeType = "text/plain"
-      } else {
-        content = `# ${title}\n\n${bodyMarkdown}`
-        filename = `${title || "제목 없음"}.md`
-        mimeType = "text/markdown"
-      }
+    if (format === "txt") {
+      content = [title, bodyText].filter(Boolean).join("\n\n")
+      filename = `${title || "제목 없음"}.txt`
+      mimeType = "text/plain"
+    } else {
+      content = `# ${title}\n\n${bodyMarkdown}`
+      filename = `${title || "제목 없음"}.md`
+      mimeType = "text/markdown"
+    }
 
-      const blob = new Blob([content], { type: mimeType })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = filename
-      a.click()
-      URL.revokeObjectURL(url)
-      onOpenChange(false)
-    },
-    [getContent, onOpenChange]
-  )
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(url)
+    onOpenChange(false)
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -1,5 +1,5 @@
 import { type Editor } from "@tiptap/react"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import {
   type AIFeatureType,
@@ -83,7 +83,7 @@ export function useAISuggestion({ editor, snapshot }: UseAISuggestionOptions) {
     }
   }, [editor, isSuggestionMode])
 
-  const handleAIClick = useCallback(() => {
+  const handleAIClick = () => {
     if (!editor) return
 
     savedSelectionRef.current = {
@@ -104,64 +104,58 @@ export function useAISuggestion({ editor, snapshot }: UseAISuggestionOptions) {
       setToolbarExpanded("layer2-options")
     }
     setSuggestions([])
-  }, [editor, snapshot, toolbarExpanded])
+  }
 
-  const handleCollapseToolbar = useCallback(() => {
+  const handleCollapseToolbar = () => {
     setToolbarExpanded(null)
-  }, [])
+  }
 
-  const handleSelectFeature = useCallback(
-    async (type: AIFeatureType) => {
-      if (!editor) return
+  const handleSelectFeature = async (type: AIFeatureType) => {
+    if (!editor) return
 
-      setToolbarExpanded(null)
-      setIsSuggestionMode(true)
-      setIsSuggestionLoading(true)
-      setSuggestions([])
+    setToolbarExpanded(null)
+    setIsSuggestionMode(true)
+    setIsSuggestionLoading(true)
+    setSuggestions([])
 
-      try {
-        const result = await getAISuggestions(
-          savedSelectionRef.current.text,
-          type
-        )
-        setSuggestions(result)
-      } catch {
-        setIsSuggestionMode(false)
-      } finally {
-        setIsSuggestionLoading(false)
-      }
-    },
-    [editor]
-  )
-
-  const handleAcceptSuggestion = useCallback(
-    (suggestion: AISuggestion) => {
-      if (!editor) return
-
-      const { from, to } = savedSelectionRef.current
-      editor
-        .chain()
-        .focus()
-        .deleteRange({ from, to })
-        .insertContentAt(from, suggestion.suggestion)
-        .run()
-
+    try {
+      const result = await getAISuggestions(
+        savedSelectionRef.current.text,
+        type
+      )
+      setSuggestions(result)
+    } catch {
       setIsSuggestionMode(false)
-      setSelectedText("")
-      setSuggestions([])
-    },
-    [editor]
-  )
+    } finally {
+      setIsSuggestionLoading(false)
+    }
+  }
 
-  const handleCloseSuggestionPanel = useCallback(() => {
+  const handleAcceptSuggestion = (suggestion: AISuggestion) => {
+    if (!editor) return
+
+    const { from, to } = savedSelectionRef.current
+    editor
+      .chain()
+      .focus()
+      .deleteRange({ from, to })
+      .insertContentAt(from, suggestion.suggestion)
+      .run()
+
     setIsSuggestionMode(false)
     setSelectedText("")
     setSuggestions([])
-  }, [])
+  }
 
-  const clearSelectedText = useCallback(() => {
+  const handleCloseSuggestionPanel = () => {
+    setIsSuggestionMode(false)
     setSelectedText("")
-  }, [])
+    setSuggestions([])
+  }
+
+  const clearSelectedText = () => {
+    setSelectedText("")
+  }
 
   return {
     toolbarExpanded,
