@@ -7,11 +7,6 @@ import { authSchema, type DbClient } from "@workspace/database"
 import { assertEmailSignUpAllowed } from "./auth-sign-up-guard.js"
 import type { EmailSender } from "./auth-email.js"
 
-const defaultTrustedOrigins = [
-  "http://127.0.0.1:3000",
-  "http://localhost:3000",
-] as const
-
 export type AuthEnvironment = {
   authBaseUrl: string
   authSecret: string
@@ -23,9 +18,7 @@ export function createAuth(
   environment: AuthEnvironment,
   emailSender: EmailSender
 ) {
-  const trustedOrigins = Array.from(
-    new Set([...defaultTrustedOrigins, environment.webBaseUrl])
-  )
+  const trustedOrigins = [environment.webBaseUrl]
 
   return betterAuth({
     baseURL: `${environment.authBaseUrl}/api/auth`,

@@ -203,6 +203,7 @@ export function createTestApi(input?: {
 
   const app = createApp({
     allowedOrigins: ["http://127.0.0.1:3000", "http://localhost:3000"],
+    apiBaseUrl: "http://127.0.0.1:3010",
     authDebugEnabled: false,
     getSession: async (request) => {
       if (request.headers.get("x-test-auth") === "none") {

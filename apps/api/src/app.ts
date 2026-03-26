@@ -29,6 +29,7 @@ import getVersion from "./routes/writings/get-version"
 
 type CreateAppInput = {
   allowedOrigins: string[]
+  apiBaseUrl: string
   authDebugEnabled: boolean
   getSession: GetSession
   logger: ApiLogger
@@ -122,16 +123,12 @@ export function createApp(input: CreateAppInput) {
     security: [],
     servers: [
       {
-        description: "로컬 개발 서버",
-        url: "http://localhost:3010",
+        description: "API 서버",
+        url: input.apiBaseUrl,
       },
     ],
   }
-  const allowedOrigins = new Set([
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
-    ...input.allowedOrigins,
-  ])
+  const allowedOrigins = new Set(input.allowedOrigins)
 
   // --- Global middleware ---
 

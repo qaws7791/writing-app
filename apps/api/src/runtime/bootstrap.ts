@@ -128,6 +128,7 @@ export async function createApiDependencies(
   return {
     app: createApp({
       allowedOrigins: [environment.webBaseUrl],
+      apiBaseUrl: environment.authBaseUrl,
       authDebugEnabled: process.env.NODE_ENV !== "production",
       getSession: (request) =>
         auth.api.getSession({ headers: request.headers }),
