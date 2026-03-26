@@ -1,8 +1,61 @@
+import { z } from "zod"
+import { jsonCodec } from "@/foundation/lib/zod"
 import type {
   WritingContent,
+  WritingDetail,
   WritingMark,
   WritingNode,
 } from "@/domain/writing/model/writing.types"
+
+const writingMarkSchema = z.object({
+  attrs: z.record(z.string(), z.unknown()).optional(),
+  type: z.string().min(1),
+})
+
+const writingNodeSchema: z.ZodType<WritingNode> = z.lazy(() =>
+  z.object({
+    attrs: z.record(z.string(), z.unknown()).optional(),
+    content: z.array(writingNodeSchema).optional(),
+    marks: z.array(writingMarkSchema).optional(),
+    text: z.string().optional(),
+    type: z.string().min(1),
+  })
+)
+
+export const writingContentSchema: z.ZodType<WritingContent> = z.object({
+  content: z.array(writingNodeSchema).optional(),
+  type: z.literal("doc"),
+})
+
+const writingSummarySchema = z.object({
+  characterCount: z.number().int(),
+  id: z.number().int(),
+  lastSavedAt: z.string(),
+  preview: z.string(),
+  sourcePromptId: z.number().int().nullable(),
+  title: z.string(),
+  wordCount: z.number().int(),
+})
+
+const writingDetailSchema = writingSummarySchema.extend({
+  content: writingContentSchema,
+  createdAt: z.string(),
+  updatedAt: z.string(),
+})
+
+export const writingDetailsSchema = z.array(writingDetailSchema)
+
+export const writingContentJsonCodec = jsonCodec(writingContentSchema)
+
+export const writingDetailsJsonCodec = jsonCodec(writingDetailsSchema)
+
+export function parseWritingContent(value: unknown): WritingContent {
+  return writingContentSchema.parse(value)
+}
+
+export function parseWritingDetails(value: unknown): WritingDetail[] {
+  return writingDetailsSchema.parse(value)
+}
 
 export function createEmptyWritingContent(): WritingContent {
   return {

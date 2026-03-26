@@ -10,7 +10,11 @@ export type {
 
 export {
   createEmptyWritingContent,
+  parseWritingContent,
+  parseWritingDetails,
+  writingContentJsonCodec,
   writingContentToHtml,
+  writingDetailsJsonCodec,
   writingContentToPlainText,
   getWritingMetrics,
 } from "@/domain/writing/model/writing.service"
