@@ -4,8 +4,11 @@ import type { SessionSnapshot } from "@/domain/auth"
 export class SessionRepository {
   private client
 
-  constructor(input?: { requestHost?: string | null }) {
-    this.client = createServerApiClient({ requestHost: input?.requestHost })
+  constructor(input?: { cookie?: string | null; requestHost?: string | null }) {
+    this.client = createServerApiClient({
+      cookie: input?.cookie,
+      requestHost: input?.requestHost,
+    })
   }
 
   async getSession(): Promise<SessionSnapshot | null> {

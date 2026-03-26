@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
+import { AUTH_MESSAGES } from "@/features/auth/lib/constants"
 import SignUpView from "@/views/sign-up-view"
 
 const { signUpEmail } = vi.hoisted(() => ({
@@ -71,9 +72,7 @@ describe("sign-up view", () => {
     await user.click(screen.getByRole("button", { name: "인증 메일 보내기" }))
 
     expect(
-      await screen.findByText(
-        "이미 가입된 이메일입니다. 로그인하거나 비밀번호 재설정을 사용해 주세요."
-      )
+      await screen.findByText(AUTH_MESSAGES.SIGN_UP.ALREADY_EXISTS)
     ).toBeInTheDocument()
   })
 })

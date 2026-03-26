@@ -1,9 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import PromptDetailView from "@/views/prompt-detail-view"
 import { createDeferred } from "@/test-support/async"
 import { createMockPromptRepository } from "@/test-support/mock-repository"
+import { renderWithQueryClient } from "@/test-support/query-client"
 import { createPromptDetail } from "@/test-support/test-fixtures"
 
 const push = vi.fn()
@@ -27,7 +28,7 @@ describe("prompt detail view", () => {
     const deferred = createDeferred<ReturnType<typeof createPromptDetail>>()
     repository.getPrompt.mockReturnValue(deferred.promise)
 
-    render(<PromptDetailView promptId={1} />)
+    renderWithQueryClient(<PromptDetailView promptId={1} />)
 
     expect(screen.getByText("글감을 불러오는 중입니다.")).toBeInTheDocument()
   })
@@ -40,7 +41,7 @@ describe("prompt detail view", () => {
       })
     )
 
-    render(<PromptDetailView promptId={6} />)
+    renderWithQueryClient(<PromptDetailView promptId={6} />)
 
     expect(
       await screen.findByText("AI가 일상에 들어오면서 잃어가는 것은?")
@@ -51,15 +52,20 @@ describe("prompt detail view", () => {
   })
 
   test("toggles save state", async () => {
-    repository.getPrompt.mockResolvedValue(
-      createPromptDetail({ id: 3, saved: false })
+    let saved = false
+    repository.getPrompt.mockImplementation(async () =>
+      createPromptDetail({ id: 3, saved })
     )
-    repository.savePrompt.mockResolvedValue({
-      kind: "saved",
-      savedAt: "2026-03-20T10:00:00.000Z",
+    repository.savePrompt.mockImplementation(async () => {
+      saved = true
+
+      return {
+        kind: "saved",
+        savedAt: "2026-03-20T10:00:00.000Z",
+      }
     })
 
-    render(<PromptDetailView promptId={3} />)
+    renderWithQueryClient(<PromptDetailView promptId={3} />)
 
     await screen.findByText("기본 글감")
     await userEvent.click(screen.getByRole("button", { name: "글감 저장" }))
@@ -75,7 +81,7 @@ describe("prompt detail view", () => {
   test("shows error state when prompt loading fails", async () => {
     repository.getPrompt.mockRejectedValue(new Error("boom"))
 
-    render(<PromptDetailView promptId={100} />)
+    renderWithQueryClient(<PromptDetailView promptId={100} />)
 
     expect(
       await screen.findByText(

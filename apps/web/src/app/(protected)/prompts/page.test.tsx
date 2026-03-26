@@ -1,9 +1,10 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import PromptsPage from "./page"
 import { createDeferred } from "@/test-support/async"
 import { createMockPromptRepository } from "@/test-support/mock-repository"
+import { renderWithQueryClient } from "@/test-support/query-client"
 import { createPromptSummary } from "@/test-support/test-fixtures"
 
 const repository = createMockPromptRepository()
@@ -30,7 +31,7 @@ describe("prompts page", () => {
       >()
     repository.listPrompts.mockReturnValue(deferred.promise as never)
 
-    render(<PromptsPage />)
+    renderWithQueryClient(<PromptsPage />)
 
     expect(screen.getByText("글감을 불러오는 중입니다.")).toBeInTheDocument()
   })
@@ -75,7 +76,7 @@ describe("prompts page", () => {
       ]
     })
 
-    render(<PromptsPage />)
+    renderWithQueryClient(<PromptsPage />)
 
     expect(await screen.findByText("AI에 대한 생각")).toBeInTheDocument()
 
@@ -109,15 +110,20 @@ describe("prompts page", () => {
   })
 
   test("toggles saved state from the list", async () => {
-    repository.listPrompts.mockResolvedValue([
-      createPromptSummary({ id: 1, saved: false, text: "저장 테스트" }),
+    let saved = false
+    repository.listPrompts.mockImplementation(async () => [
+      createPromptSummary({ id: 1, saved, text: "저장 테스트" }),
     ])
-    repository.savePrompt.mockResolvedValue({
-      kind: "saved",
-      savedAt: "2026-03-20T10:00:00.000Z",
+    repository.savePrompt.mockImplementation(async () => {
+      saved = true
+
+      return {
+        kind: "saved",
+        savedAt: "2026-03-20T10:00:00.000Z",
+      }
     })
 
-    render(<PromptsPage />)
+    renderWithQueryClient(<PromptsPage />)
 
     await screen.findByText("저장 테스트")
     await userEvent.click(screen.getByRole("button", { name: "글감 저장" }))
@@ -133,7 +139,7 @@ describe("prompts page", () => {
   test("shows no-result and error states", async () => {
     repository.listPrompts.mockResolvedValue([])
 
-    const view = render(<PromptsPage />)
+    const view = renderWithQueryClient(<PromptsPage />)
 
     expect(
       await screen.findByText(
@@ -143,7 +149,7 @@ describe("prompts page", () => {
 
     view.unmount()
     repository.listPrompts.mockRejectedValue(new Error("boom"))
-    render(<PromptsPage />)
+    renderWithQueryClient(<PromptsPage />)
 
     expect(
       await screen.findByText(

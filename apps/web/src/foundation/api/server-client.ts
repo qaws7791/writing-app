@@ -7,6 +7,7 @@ export type { ApiClient } from "@workspace/api-client"
 
 export function createServerApiClient(input?: {
   baseUrl?: string
+  cookie?: string | null
   requestHost?: string | null
 }) {
   let baseUrl = input?.baseUrl
@@ -21,5 +22,6 @@ export function createServerApiClient(input?: {
 
   return createPackageClient({
     baseUrl: baseUrl.replace(/\/$/, ""),
+    headers: input?.cookie ? { cookie: input.cookie } : undefined,
   })
 }

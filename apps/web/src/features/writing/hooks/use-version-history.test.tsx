@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, renderHook, waitFor } from "@testing-library/react"
+import { act, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { useVersionHistory } from "./use-version-history"
@@ -8,6 +8,7 @@ import type {
   VersionSummary,
 } from "@/features/writing/sync/types"
 import type { WritingContent } from "@/domain/writing"
+import { renderHookWithQueryClient } from "@/test-support/query-client"
 
 const testContent: WritingContent = {
   type: "doc",
@@ -70,7 +71,7 @@ describe("useVersionHistory", () => {
   it("open이 true일 때 버전 목록을 로드한다", async () => {
     mockTransport.listVersions.mockResolvedValue({ items: mockVersions })
 
-    const { result } = renderHook(() =>
+    const { result } = renderHookWithQueryClient(() =>
       useVersionHistory({ writingId: 1, open: true })
     )
 
@@ -85,7 +86,9 @@ describe("useVersionHistory", () => {
   })
 
   it("open이 false이면 로드하지 않는다", () => {
-    renderHook(() => useVersionHistory({ writingId: 1, open: false }))
+    renderHookWithQueryClient(() =>
+      useVersionHistory({ writingId: 1, open: false })
+    )
 
     expect(mockTransport.listVersions).not.toHaveBeenCalled()
   })
@@ -93,7 +96,7 @@ describe("useVersionHistory", () => {
   it("버전 목록 로드 실패 시 에러 상태를 설정한다", async () => {
     mockTransport.listVersions.mockRejectedValue(new Error("network error"))
 
-    const { result } = renderHook(() =>
+    const { result } = renderHookWithQueryClient(() =>
       useVersionHistory({ writingId: 1, open: true })
     )
 
@@ -108,7 +111,7 @@ describe("useVersionHistory", () => {
     mockTransport.listVersions.mockResolvedValue({ items: mockVersions })
     mockTransport.getVersion.mockResolvedValue(mockDetail)
 
-    const { result } = renderHook(() =>
+    const { result } = renderHookWithQueryClient(() =>
       useVersionHistory({ writingId: 1, open: true })
     )
 
@@ -116,11 +119,13 @@ describe("useVersionHistory", () => {
       expect(result.current.loading).toBe(false)
     })
 
-    await act(async () => {
-      await result.current.selectVersion(20)
+    act(() => {
+      result.current.selectVersion(20)
     })
 
-    expect(result.current.selectedDetail).toEqual(mockDetail)
+    await waitFor(() => {
+      expect(result.current.selectedDetail).toEqual(mockDetail)
+    })
     expect(mockTransport.getVersion).toHaveBeenCalledWith(1, 20)
   })
 
@@ -133,7 +138,7 @@ describe("useVersionHistory", () => {
       serverVersion: 21,
     })
 
-    const { result } = renderHook(() =>
+    const { result } = renderHookWithQueryClient(() =>
       useVersionHistory({
         writingId: 1,
         open: true,
@@ -145,21 +150,29 @@ describe("useVersionHistory", () => {
       expect(result.current.loading).toBe(false)
     })
 
-    await act(async () => {
-      await result.current.selectVersion(20)
+    act(() => {
+      result.current.selectVersion(20)
     })
 
-    await act(async () => {
-      await result.current.restoreVersion(20)
+    await waitFor(() => {
+      expect(result.current.selectedDetail).toEqual(mockDetail)
     })
 
-    expect(mockTransport.push).toHaveBeenCalledWith(
-      1,
-      expect.objectContaining({
-        restoreFrom: 20,
-      })
-    )
-    expect(onRestoreComplete).toHaveBeenCalledWith(mockDetail)
+    act(() => {
+      result.current.restoreVersion(20)
+    })
+
+    await waitFor(() => {
+      expect(mockTransport.push).toHaveBeenCalledWith(
+        1,
+        expect.objectContaining({
+          restoreFrom: 20,
+        })
+      )
+    })
+    await waitFor(() => {
+      expect(onRestoreComplete).toHaveBeenCalledWith(mockDetail)
+    })
   })
 
   it("복원 실패 시 에러 상태를 설정한다", async () => {
@@ -167,7 +180,7 @@ describe("useVersionHistory", () => {
     mockTransport.getVersion.mockResolvedValue(mockDetail)
     mockTransport.push.mockRejectedValue(new Error("push failed"))
 
-    const { result } = renderHook(() =>
+    const { result } = renderHookWithQueryClient(() =>
       useVersionHistory({ writingId: 1, open: true })
     )
 
@@ -175,24 +188,32 @@ describe("useVersionHistory", () => {
       expect(result.current.loading).toBe(false)
     })
 
-    await act(async () => {
-      await result.current.selectVersion(20)
+    act(() => {
+      result.current.selectVersion(20)
     })
 
-    await act(async () => {
-      await result.current.restoreVersion(20)
+    await waitFor(() => {
+      expect(result.current.selectedDetail).toEqual(mockDetail)
     })
 
-    expect(result.current.error).toBe(
-      "복원에 실패했습니다. 다시 시도해 주세요."
-    )
+    act(() => {
+      result.current.restoreVersion(20)
+    })
+
+    await waitFor(() => {
+      expect(result.current.error).toBe(
+        "복원에 실패했습니다. 다시 시도해 주세요."
+      )
+    })
     expect(result.current.restoring).toBe(false)
   })
 
   it("retry로 에러를 초기화한다", async () => {
-    mockTransport.listVersions.mockRejectedValue(new Error("fail"))
+    mockTransport.listVersions
+      .mockRejectedValueOnce(new Error("fail"))
+      .mockResolvedValueOnce({ items: mockVersions })
 
-    const { result } = renderHook(() =>
+    const { result } = renderHookWithQueryClient(() =>
       useVersionHistory({ writingId: 1, open: true })
     )
 
@@ -204,6 +225,9 @@ describe("useVersionHistory", () => {
       result.current.retry()
     })
 
-    expect(result.current.error).toBeNull()
+    await waitFor(() => {
+      expect(result.current.error).toBeNull()
+    })
+    expect(result.current.versions).toEqual(mockVersions)
   })
 })

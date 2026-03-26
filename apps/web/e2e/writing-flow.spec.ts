@@ -60,6 +60,35 @@ async function createWritingViaApi(
   return response.json()
 }
 
+async function autosaveWritingViaApi(
+  request: APIRequestContext,
+  page: Page,
+  writingId: number,
+  input: {
+    bodyText?: string
+    title?: string
+  }
+) {
+  const cookie = await buildApiCookieHeader(page)
+  const response = await request.patch(
+    `http://127.0.0.1:3010/writings/${writingId}`,
+    {
+      data: {
+        content: input.bodyText
+          ? createWritingContent(input.bodyText)
+          : undefined,
+        title: input.title,
+      },
+      headers: {
+        cookie,
+      },
+    }
+  )
+
+  expect(response.ok()).toBeTruthy()
+  return response.json()
+}
+
 async function signUpAndLogin(
   page: Page,
   request: APIRequestContext,
@@ -102,8 +131,7 @@ async function writeBody(page: Page, body: string) {
 async function writeTitle(page: Page, title: string) {
   const titleEditor = page.getByRole("textbox", { name: "에세이 제목" })
 
-  await titleEditor.click()
-  await titleEditor.pressSequentially(title, { delay: 0 })
+  await titleEditor.fill(title)
 }
 
 test("home prompt to editor and resume flow", async ({
@@ -118,32 +146,37 @@ test("home prompt to editor and resume flow", async ({
 
   await page.goto("/home")
 
-  await expect(
-    page.getByRole("link", { name: /최근에 내 생각이 바뀐 순간은\?/i })
-  ).toBeVisible()
+  const todayPromptLink = page
+    .locator('a[href^="/prompts/"]')
+    .filter({ has: page.locator("p") })
+    .first()
+  await expect(todayPromptLink).toBeVisible()
 
-  await page
-    .getByRole("link", { name: /최근에 내 생각이 바뀐 순간은\?/i })
-    .click()
+  const promptTitle = await todayPromptLink.locator("p").textContent()
+  const promptHref = await todayPromptLink.getAttribute("href")
+  const promptId = Number(promptHref?.match(/\/prompts\/(\d+)/)?.[1])
 
-  await expect(page).toHaveURL(/\/prompts\/1$/)
-  await page.getByRole("link", { name: "이 글감으로 글 쓰기" }).click()
+  expect(promptTitle).toBeTruthy()
+  expect(Number.isFinite(promptId)).toBeTruthy()
 
-  await expect(page).toHaveURL(/\/writing\/new\?prompt=1$/)
-  await expect(
-    page.getByText("최근에 내 생각이 바뀐 순간은?").first()
-  ).toBeVisible()
+  await todayPromptLink.click()
 
-  const writing = await createWritingViaApi(request, page, {
+  await expect(page).toHaveURL(new RegExp(`/prompts/${promptId}$`))
+  await page.getByRole("button", { name: "이 글감으로 글 쓰기" }).click()
+
+  await expect(page).toHaveURL(/\/writing\/\d+$/)
+  await expect(page.getByText(promptTitle ?? "").first()).toBeVisible()
+
+  const writingId = Number(page.url().match(/\/writing\/(\d+)$/)?.[1])
+  expect(Number.isFinite(writingId)).toBeTruthy()
+
+  await autosaveWritingViaApi(request, page, writingId, {
     bodyText: body,
-    sourcePromptId: 1,
     title,
   })
 
-  await page.goto(`/writing/${writing.id}`)
-  await expect(
-    page.getByText("최근에 내 생각이 바뀐 순간은?").first()
-  ).toBeVisible()
+  await page.goto(`/writing/${writingId}`)
+  await expect(page.getByText(promptTitle ?? "").first()).toBeVisible()
   await expect(
     page.locator("[data-writing-body] .ProseMirror").first()
   ).toContainText(body)
@@ -153,7 +186,7 @@ test("home prompt to editor and resume flow", async ({
 
   await page.goto("/home")
   await expect(
-    page.locator(`a[href="/writing/${writing.id}"]`).first()
+    page.locator(`a[href="/writing/${writingId}"]`).first()
   ).toBeVisible()
   await expect(page.getByText(title).first()).toBeVisible()
 })
@@ -172,9 +205,7 @@ test("prompt discovery search save detail and write flow", async ({
   const promptLink = page.getByRole("link", {
     name: /AI가 일상에 들어오면서 잃어가는 것은\?/i,
   })
-  const saveButton = page.getByRole("button", {
-    name: /글감 저장|저장 해제/i,
-  })
+  const saveButton = promptLink.getByLabel(/글감 저장|저장 해제/i)
 
   await expect(promptLink).toBeVisible()
 
@@ -196,9 +227,9 @@ test("prompt discovery search save detail and write flow", async ({
     })
   ).toBeVisible()
 
-  await page.getByRole("link", { name: "이 글감으로 글 쓰기" }).click()
+  await page.getByRole("button", { name: "이 글감으로 글 쓰기" }).click()
 
-  await expect(page).toHaveURL(/\/writing\/new\?prompt=6$/)
+  await expect(page).toHaveURL(/\/writing\/\d+$/)
   await expect(
     page.getByText("AI가 일상에 들어오면서 잃어가는 것은?").first()
   ).toBeVisible()
@@ -251,7 +282,7 @@ test("reopen existing writing and expose it as latest resume target", async ({
   ).toContainText(initialBody)
 
   await writeBody(page, updatedBody)
-  await page.waitForTimeout(1_500)
+  await page.waitForTimeout(3_500)
 
   await page.goto("/writing")
   await page.locator(`a[href="/writing/${writing.id}"]`).first().click()

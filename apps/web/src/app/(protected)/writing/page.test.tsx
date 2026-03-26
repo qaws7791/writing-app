@@ -1,8 +1,9 @@
-import { render, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 
 import WritingListPage from "./page"
 import { createDeferred } from "@/test-support/async"
 import { createMockWritingRepository } from "@/test-support/mock-repository"
+import { renderWithQueryClient } from "@/test-support/query-client"
 import { createWritingSummary } from "@/test-support/test-fixtures"
 
 const push = vi.fn()
@@ -35,7 +36,7 @@ describe("writing list page", () => {
       >()
     repository.listWritings.mockReturnValue(deferred.promise as never)
 
-    render(<WritingListPage />)
+    renderWithQueryClient(<WritingListPage />)
 
     expect(screen.getByText("글 목록을 불러오는 중입니다.")).toBeInTheDocument()
   })
@@ -45,7 +46,7 @@ describe("writing list page", () => {
       createWritingSummary({ id: 4, title: "새 글", preview: "본문 요약" }),
     ])
 
-    render(<WritingListPage />)
+    renderWithQueryClient(<WritingListPage />)
 
     expect(await screen.findByText("새 글")).toBeInTheDocument()
     expect(
@@ -56,7 +57,7 @@ describe("writing list page", () => {
   test("renders empty and error states", async () => {
     repository.listWritings.mockResolvedValue([])
 
-    const view = render(<WritingListPage />)
+    const view = renderWithQueryClient(<WritingListPage />)
 
     expect(
       await screen.findByText(
@@ -66,7 +67,7 @@ describe("writing list page", () => {
 
     view.unmount()
     repository.listWritings.mockRejectedValue(new Error("boom"))
-    render(<WritingListPage />)
+    renderWithQueryClient(<WritingListPage />)
 
     expect(
       await screen.findByText(

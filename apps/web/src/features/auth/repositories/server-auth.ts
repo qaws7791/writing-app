@@ -35,6 +35,7 @@ export async function fetchSessionSnapshot(): Promise<SessionSnapshot | null> {
 
   const requestContext = await readSessionRequestContext()
   const repository = new SessionRepository({
+    cookie: requestContext.cookie,
     requestHost: requestContext.requestHost,
   })
 

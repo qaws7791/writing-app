@@ -7,11 +7,19 @@ import {
 import { SessionRepository } from "./session-repository"
 import type { SessionSnapshot } from "@/domain/auth"
 
+vi.mock("@/foundation/config/env", () => ({
+  env: {
+    NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:3010",
+    NEXT_PUBLIC_PHASE_ONE_MODE: "api",
+  },
+}))
+
 // 헤더 모킹
 vi.mock("next/headers", () => ({
   headers: vi.fn(() =>
     Promise.resolve({
       get: (key: string) => {
+        if (key === "cookie") return "better-auth.session_token=test-token"
         if (key === "host") return "localhost:3000"
         return null
       },
@@ -51,15 +59,20 @@ describe("server auth", () => {
     const mockGetSession = vi.fn(async () => mockSession)
 
     vi.mocked(SessionRepository).mockImplementation(
-      () =>
-        ({
+      function MockSessionRepository() {
+        return {
           getSession: mockGetSession,
-        }) as any
+        } as any
+      }
     )
 
     const session = await fetchSessionSnapshot()
 
     expect(session).toEqual(mockSession)
+    expect(SessionRepository).toHaveBeenCalledWith({
+      cookie: "better-auth.session_token=test-token",
+      requestHost: "localhost:3000",
+    })
     expect(mockGetSession).toHaveBeenCalled()
   })
 
@@ -67,10 +80,11 @@ describe("server auth", () => {
     const mockGetSession = vi.fn(async () => null)
 
     vi.mocked(SessionRepository).mockImplementation(
-      () =>
-        ({
+      function MockSessionRepository() {
+        return {
           getSession: mockGetSession,
-        }) as any
+        } as any
+      }
     )
 
     const session = await fetchSessionSnapshot()
@@ -85,10 +99,11 @@ describe("server auth", () => {
     })
 
     vi.mocked(SessionRepository).mockImplementation(
-      () =>
-        ({
+      function MockSessionRepository() {
+        return {
           getSession: mockGetSession,
-        }) as any
+        } as any
+      }
     )
 
     await expect(fetchSessionSnapshot()).rejects.toThrow(

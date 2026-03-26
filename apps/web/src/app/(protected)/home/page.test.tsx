@@ -1,9 +1,10 @@
-import { render, screen } from "@testing-library/react"
+import { screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import Page from "./page"
 import { createDeferred } from "@/test-support/async"
 import { createMockHomeRepository } from "@/test-support/mock-repository"
+import { renderWithQueryClient } from "@/test-support/query-client"
 import { createHomeSnapshot } from "@/test-support/test-fixtures"
 
 const repository = createMockHomeRepository()
@@ -21,7 +22,7 @@ describe("home page", () => {
     const deferred = createDeferred<ReturnType<typeof createHomeSnapshot>>()
     repository.getHome.mockReturnValue(deferred.promise)
 
-    render(<Page />)
+    renderWithQueryClient(<Page />)
 
     expect(
       screen.getByText("오늘의 글감을 불러오는 중입니다.")
@@ -34,7 +35,7 @@ describe("home page", () => {
   test("renders today prompts and resume writing from home snapshot", async () => {
     repository.getHome.mockResolvedValue(createHomeSnapshot())
 
-    render(<Page />)
+    renderWithQueryClient(<Page />)
 
     expect(await screen.findByText("오늘의 글감 1")).toBeInTheDocument()
     expect(
@@ -58,7 +59,7 @@ describe("home page", () => {
       })
     )
 
-    render(<Page />)
+    renderWithQueryClient(<Page />)
 
     expect(
       await screen.findByText(
@@ -77,7 +78,7 @@ describe("home page", () => {
   test("shows fallback when home loading fails", async () => {
     repository.getHome.mockRejectedValue(new Error("boom"))
 
-    render(<Page />)
+    renderWithQueryClient(<Page />)
 
     expect(
       await screen.findByText(

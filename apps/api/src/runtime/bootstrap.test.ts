@@ -7,6 +7,9 @@ const {
   createDevEmailPortMock,
   createWritingApiServiceMock,
   createWritingRepositoryMock,
+  createWritingSyncRepositoryMock,
+  createWritingTransactionRepositoryMock,
+  createWritingVersionRepositoryMock,
   createHomeApiServiceMock,
   createPromptApiServiceMock,
   createPromptRepositoryMock,
@@ -23,6 +26,9 @@ const {
     createDevEmailPortMock: vi.fn(),
     createWritingApiServiceMock: vi.fn(),
     createWritingRepositoryMock: vi.fn(),
+    createWritingSyncRepositoryMock: vi.fn(),
+    createWritingTransactionRepositoryMock: vi.fn(),
+    createWritingVersionRepositoryMock: vi.fn(),
     createHomeApiServiceMock: vi.fn(),
     createPromptApiServiceMock: vi.fn(),
     createPromptRepositoryMock: vi.fn(),
@@ -37,6 +43,9 @@ const {
 vi.mock("@workspace/database", () => ({
   createDailyRecommendationRepository: createDailyRecommendationRepositoryMock,
   createWritingRepository: createWritingRepositoryMock,
+  createWritingSyncRepository: createWritingSyncRepositoryMock,
+  createWritingTransactionRepository: createWritingTransactionRepositoryMock,
+  createWritingVersionRepository: createWritingVersionRepositoryMock,
   createPromptRepository: createPromptRepositoryMock,
   migrateDatabase: migrateDatabaseMock,
   openDb: openDbMock,
@@ -124,6 +133,9 @@ describe("bootstrap", () => {
     createAuthMock.mockReturnValue(auth)
     createPromptRepositoryMock.mockReturnValue({ exists: vi.fn() })
     createWritingRepositoryMock.mockReturnValue({ list: vi.fn() })
+    createWritingSyncRepositoryMock.mockReturnValue({})
+    createWritingTransactionRepositoryMock.mockReturnValue({})
+    createWritingVersionRepositoryMock.mockReturnValue({})
     createPromptApiServiceMock.mockReturnValue({ listPrompts: vi.fn() })
     createWritingApiServiceMock.mockReturnValue({ listWritings: vi.fn() })
     createHomeApiServiceMock.mockReturnValue({ getHome: vi.fn() })
