@@ -7,7 +7,7 @@ import type {
   VersionDetail,
   VersionSummary,
 } from "@/features/writing/sync/types"
-import type { WritingContent } from "@workspace/core"
+import type { WritingContent } from "@/domain/writing"
 
 const testContent: WritingContent = {
   type: "doc",

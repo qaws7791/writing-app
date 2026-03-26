@@ -1,5 +1,5 @@
 import { createActor } from "xstate"
-import type { WritingContent } from "@workspace/core"
+import type { WritingContent } from "@/domain/writing"
 
 import { syncMachine } from "./sync-machine"
 import { type SyncTransport, SyncTransportError } from "./sync-transport"

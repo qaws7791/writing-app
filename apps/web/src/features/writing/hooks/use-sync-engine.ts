@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import type { WritingContent } from "@workspace/core"
+import type { WritingContent } from "@/domain/writing"
 
 import {
   createSyncEngine,

@@ -1,4 +1,6 @@
+import { z } from "zod"
 import { type ApiClient } from "@/foundation/api/client"
+import { jsonCodec } from "@/foundation/lib/zod"
 
 import type {
   SyncPullResponse,
@@ -11,6 +13,10 @@ import type {
 export type SyncTransportConfig = {
   client: ApiClient
 }
+
+const jsonValueSchema = z.json()
+
+const jsonValueJsonCodec = jsonCodec(jsonValueSchema)
 
 export class SyncTransportError extends Error {
   constructor(
@@ -35,9 +41,13 @@ export class SyncTransportError extends Error {
 }
 
 function throwTransportError(response: Response, errorBody?: unknown): never {
-  const body =
+  const parsedErrorBody =
     typeof errorBody === "object" && errorBody !== null
-      ? JSON.stringify(errorBody)
+      ? jsonValueSchema.safeParse(errorBody)
+      : null
+  const body =
+    parsedErrorBody?.success === true
+      ? jsonValueJsonCodec.encode(parsedErrorBody.data)
       : ""
   throw new SyncTransportError(response.status, body)
 }

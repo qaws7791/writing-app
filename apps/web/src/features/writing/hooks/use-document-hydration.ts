@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import type { WritingContent } from "@workspace/core"
+import type { WritingContent } from "@/domain/writing"
 
 import { getDocument, putDocument } from "@/features/writing/sync/local-db"
 import { createSyncTransport } from "@/features/writing/sync/sync-transport"

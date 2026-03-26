@@ -15,7 +15,11 @@ import { AIReviewExtension } from "@/features/ai-assistant/components/ai-review-
 import { AIReviewCard } from "@/features/ai-assistant/components/ai-review-card"
 import { AISuggestionPanel } from "@/features/ai-assistant/components/ai-suggestion-panel"
 import type { WritingContent } from "@/domain/writing"
-import { createEmptyWritingContent } from "@/domain/writing/model/writing.service"
+import {
+  createEmptyWritingContent,
+  parseWritingContent,
+  writingContentJsonCodec,
+} from "@/domain/writing"
 
 import { useAISuggestion } from "@/features/writing/hooks/use-ai-suggestion"
 import { useAIReview } from "@/features/writing/hooks/use-ai-review"
@@ -96,7 +100,7 @@ export default function WritingBodyEditor({
     placeholder ?? "생각이 흐르는 대로 자유롭게 적어보세요..."
   const editorClassName = styles.editor ?? ""
   const editorShellClassName = styles.editorShell ?? ""
-  const serializedInitialContent = JSON.stringify(
+  const serializedInitialContent = writingContentJsonCodec.encode(
     initialContent ?? createEmptyWritingContent()
   )
 
@@ -126,7 +130,7 @@ export default function WritingBodyEditor({
       },
     },
     onUpdate({ editor: currentEditor }) {
-      onContentChange?.(currentEditor.getJSON() as WritingContent)
+      onContentChange?.(parseWritingContent(currentEditor.getJSON()))
     },
   })
 
@@ -150,14 +154,19 @@ export default function WritingBodyEditor({
   useEffect(() => {
     if (!editor) return
 
-    const nextContent = JSON.parse(serializedInitialContent) as WritingContent
-    const currentContent = editor.getJSON() as WritingContent
-
-    if (JSON.stringify(currentContent) === serializedInitialContent) {
+    if (
+      writingContentJsonCodec.encode(parseWritingContent(editor.getJSON())) ===
+      serializedInitialContent
+    ) {
       return
     }
 
-    editor.commands.setContent(nextContent, { emitUpdate: false })
+    editor.commands.setContent(
+      writingContentJsonCodec.decode(serializedInitialContent),
+      {
+        emitUpdate: false,
+      }
+    )
   }, [editor, serializedInitialContent])
 
   // AI 훅

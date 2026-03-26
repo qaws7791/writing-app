@@ -1,4 +1,4 @@
-import type { WritingContent } from "@workspace/core"
+import type { WritingContent } from "@/domain/writing"
 
 // --- Operation (Delta) ---
 
