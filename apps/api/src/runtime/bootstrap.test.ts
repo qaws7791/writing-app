@@ -5,9 +5,11 @@ const {
   createAuthMock,
   createDailyRecommendationRepositoryMock,
   createDevEmailPortMock,
+  drizzleAdapterMock,
   createWritingApiServiceMock,
   createWritingRepositoryMock,
   createWritingSyncRepositoryMock,
+  createWritingSyncWriterMock,
   createWritingTransactionRepositoryMock,
   createWritingVersionRepositoryMock,
   createHomeApiServiceMock,
@@ -24,9 +26,11 @@ const {
     createAuthMock: vi.fn(),
     createDailyRecommendationRepositoryMock: vi.fn(),
     createDevEmailPortMock: vi.fn(),
+    drizzleAdapterMock: vi.fn(),
     createWritingApiServiceMock: vi.fn(),
     createWritingRepositoryMock: vi.fn(),
     createWritingSyncRepositoryMock: vi.fn(),
+    createWritingSyncWriterMock: vi.fn(),
     createWritingTransactionRepositoryMock: vi.fn(),
     createWritingVersionRepositoryMock: vi.fn(),
     createHomeApiServiceMock: vi.fn(),
@@ -41,9 +45,11 @@ const {
 })
 
 vi.mock("@workspace/database", () => ({
+  authSchema: {},
   createDailyRecommendationRepository: createDailyRecommendationRepositoryMock,
   createWritingRepository: createWritingRepositoryMock,
   createWritingSyncRepository: createWritingSyncRepositoryMock,
+  createWritingSyncWriter: createWritingSyncWriterMock,
   createWritingTransactionRepository: createWritingTransactionRepositoryMock,
   createWritingVersionRepository: createWritingVersionRepositoryMock,
   createPromptRepository: createPromptRepositoryMock,
@@ -51,6 +57,10 @@ vi.mock("@workspace/database", () => ({
   openDb: openDbMock,
   readSqliteVersion: readSqliteVersionMock,
   seedDatabase: seedDatabaseMock,
+}))
+
+vi.mock("better-auth/adapters/drizzle", () => ({
+  drizzleAdapter: drizzleAdapterMock,
 }))
 
 vi.mock("../application-services.js", () => ({
@@ -130,10 +140,12 @@ describe("bootstrap", () => {
     openDbMock.mockReturnValue(database)
     readSqliteVersionMock.mockReturnValue("3.46.0")
     createDevEmailPortMock.mockReturnValue(emailPort)
+    drizzleAdapterMock.mockReturnValue({ name: "adapter" })
     createAuthMock.mockReturnValue(auth)
     createPromptRepositoryMock.mockReturnValue({ exists: vi.fn() })
     createWritingRepositoryMock.mockReturnValue({ list: vi.fn() })
     createWritingSyncRepositoryMock.mockReturnValue({})
+    createWritingSyncWriterMock.mockReturnValue({})
     createWritingTransactionRepositoryMock.mockReturnValue({})
     createWritingVersionRepositoryMock.mockReturnValue({})
     createPromptApiServiceMock.mockReturnValue({ listPrompts: vi.fn() })

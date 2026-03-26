@@ -10,7 +10,9 @@ import {
   openDb,
   readSqliteVersion,
   seedDatabase,
+  authSchema,
 } from "@workspace/database"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
 import type { AppServices } from "../app-env"
 import { createApp } from "../app"
@@ -67,7 +69,22 @@ export async function createApiDependencies(
       scope: "auth-email",
     }),
   })
-  const auth = createAuth(database.db, environment, authEmailPort)
+  const authDatabaseAdapter = drizzleAdapter(database.db, {
+    provider: "sqlite",
+    schema: authSchema,
+  })
+  const authUserPort = {
+    findUserByEmail: (email: string) =>
+      database.db.query.user.findFirst({
+        where: (fields, { eq }) => eq(fields.email, email),
+      }),
+  }
+  const auth = createAuth(
+    authDatabaseAdapter,
+    authUserPort,
+    environment,
+    authEmailPort
+  )
 
   await migrateDatabase(database.db)
   if (environment.seedOnStartup) {

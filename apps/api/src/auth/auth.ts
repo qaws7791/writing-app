@@ -1,11 +1,18 @@
 import { betterAuth } from "better-auth"
 import { createAuthMiddleware } from "better-auth/api"
-import { drizzleAdapter } from "better-auth/adapters/drizzle"
-
-import { authSchema, type DbClient } from "@workspace/database"
 
 import { assertEmailSignUpAllowed } from "./auth-sign-up-guard.js"
 import type { EmailSender } from "./auth-email.js"
+
+type BetterAuthDatabase = NonNullable<
+  Parameters<typeof betterAuth>[0]["database"]
+>
+
+export type AuthUserPort = {
+  findUserByEmail: (
+    email: string
+  ) => PromiseLike<{ email: string } | null | undefined>
+}
 
 export type AuthEnvironment = {
   authBaseUrl: string
@@ -14,7 +21,8 @@ export type AuthEnvironment = {
 }
 
 export function createAuth(
-  database: DbClient,
+  databaseAdapter: BetterAuthDatabase,
+  userPort: AuthUserPort,
   environment: AuthEnvironment,
   emailSender: EmailSender
 ) {
@@ -22,10 +30,7 @@ export function createAuth(
 
   return betterAuth({
     baseURL: `${environment.authBaseUrl}/api/auth`,
-    database: drizzleAdapter(database, {
-      provider: "sqlite",
-      schema: authSchema,
-    }),
+    database: databaseAdapter,
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
         if (ctx.path !== "/sign-up/email") {
@@ -43,10 +48,7 @@ export function createAuth(
 
         await assertEmailSignUpAllowed({
           email,
-          findExistingUserByEmail: (nextEmail) =>
-            database.query.user.findFirst({
-              where: (fields, { eq }) => eq(fields.email, nextEmail),
-            }),
+          findExistingUserByEmail: userPort.findUserByEmail,
         })
       }),
     },
