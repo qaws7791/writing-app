@@ -1,8 +1,7 @@
 import type { WritingDetail, HomeSnapshot } from "@/domain/writing"
-import { createApiClient } from "@/foundation/api/client"
+import { createApiClient, type ApiClient } from "@/foundation/api/client"
 import { throwOnError } from "@/foundation/api/error"
 import { env } from "@/foundation/config/env"
-import { resolveBrowserApiBaseUrl } from "@/foundation/lib/api-base-url"
 import {
   createMemoryStorage,
   getDefaultStorage,
@@ -55,9 +54,7 @@ export function createLocalHomeRepository(
   }
 }
 
-function createRemoteHomeRepository(apiBaseUrl: string): HomeRepository {
-  const client = createApiClient({ baseUrl: apiBaseUrl })
-
+function createRemoteHomeRepository(client: ApiClient): HomeRepository {
   return {
     async getHome() {
       return throwOnError(await client.GET("/home"))
@@ -65,25 +62,12 @@ function createRemoteHomeRepository(apiBaseUrl: string): HomeRepository {
   }
 }
 
-function resolveApiBaseUrl(explicitBaseUrl?: string): string | null {
-  if (explicitBaseUrl) {
-    return explicitBaseUrl.replace(/\/$/, "")
-  }
-
-  const envBaseUrl = env.NEXT_PUBLIC_API_BASE_URL
-  if (!envBaseUrl) {
-    return null
-  }
-
-  return resolveBrowserApiBaseUrl(envBaseUrl)
-}
-
 function resolveMode(explicitMode?: HomeRepositoryMode): HomeRepositoryMode {
   return explicitMode ?? env.NEXT_PUBLIC_PHASE_ONE_MODE
 }
 
 export function createHomeRepository(options?: {
-  apiBaseUrl?: string
+  client?: ApiClient
   mode?: HomeRepositoryMode
   storage?: StorageLike
 }): HomeRepository {
@@ -94,10 +78,5 @@ export function createHomeRepository(options?: {
     return createLocalHomeRepository(storage)
   }
 
-  const apiBaseUrl = resolveApiBaseUrl(options?.apiBaseUrl)
-  if (!apiBaseUrl) {
-    throw new Error("NEXT_PUBLIC_API_BASE_URL is required in api mode.")
-  }
-
-  return createRemoteHomeRepository(apiBaseUrl)
+  return createRemoteHomeRepository(options?.client ?? createApiClient())
 }

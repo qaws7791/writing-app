@@ -1,4 +1,4 @@
-import { createApiClient } from "@/foundation/api/client"
+import { type ApiClient } from "@/foundation/api/client"
 
 import type {
   SyncPullResponse,
@@ -9,7 +9,7 @@ import type {
 } from "./types"
 
 export type SyncTransportConfig = {
-  baseUrl: string
+  client: ApiClient
 }
 
 export class SyncTransportError extends Error {
@@ -54,7 +54,7 @@ function unwrapResult<T>(result: {
 }
 
 export function createSyncTransport(config: SyncTransportConfig) {
-  const client = createApiClient({ baseUrl: config.baseUrl })
+  const client = config.client
 
   return {
     async push(

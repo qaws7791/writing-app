@@ -4,6 +4,7 @@ import {
   createLocalPromptRepository,
   createPromptRepository,
 } from "./prompt-repository"
+import { createApiClient } from "@/foundation/api/client"
 import { createMemoryStorage } from "@/foundation/lib/storage"
 
 const originalFetch = globalThis.fetch
@@ -33,7 +34,7 @@ describe("local prompt repository", () => {
     ) as unknown as typeof fetch
 
     const repository = createPromptRepository({
-      apiBaseUrl: "http://127.0.0.1:3010/",
+      client: createApiClient({ baseUrl: "http://127.0.0.1:3010" }),
       mode: "api",
       storage: createMemoryStorage(),
     })

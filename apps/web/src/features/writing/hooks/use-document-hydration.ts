@@ -5,6 +5,7 @@ import type { WritingContent } from "@workspace/core"
 
 import { getDocument, putDocument } from "@/features/writing/sync/local-db"
 import { createSyncTransport } from "@/features/writing/sync/sync-transport"
+import { createApiClient } from "@/foundation/api/client"
 
 type HydrationState =
   | { status: "loading" }
@@ -81,7 +82,9 @@ export function useDocumentHydration(
         }
 
         // 3. 서버 pull
-        const transport = createSyncTransport({ baseUrl: apiBaseUrl })
+        const transport = createSyncTransport({
+          client: createApiClient({ baseUrl: apiBaseUrl }),
+        })
         const result = await transport.pull(writingId, 0)
 
         if (cancelled) return

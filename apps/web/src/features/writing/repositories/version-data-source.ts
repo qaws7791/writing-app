@@ -1,3 +1,4 @@
+import { createApiClient } from "@/foundation/api/client"
 import { createSyncTransport } from "@/features/writing/sync/sync-transport"
 import type {
   SyncPullResponse,
@@ -6,8 +7,6 @@ import type {
   VersionDetail,
   VersionSummary,
 } from "@/features/writing/sync/types"
-import { env } from "@/foundation/config/env"
-import { resolveBrowserApiBaseUrl } from "@/foundation/lib/api-base-url"
 
 export type VersionDataSource = {
   getVersion: (writingId: number, version: number) => Promise<VersionDetail>
@@ -23,15 +22,8 @@ export type VersionDataSource = {
 }
 
 export function createVersionDataSource(): VersionDataSource {
-  const apiBaseUrl = env.NEXT_PUBLIC_API_BASE_URL
-  if (!apiBaseUrl) {
-    throw new Error(
-      "NEXT_PUBLIC_API_BASE_URL is required for version operations."
-    )
-  }
-
   const transport = createSyncTransport({
-    baseUrl: resolveBrowserApiBaseUrl(apiBaseUrl),
+    client: createApiClient(),
   })
 
   return {

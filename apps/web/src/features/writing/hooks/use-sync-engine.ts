@@ -10,6 +10,7 @@ import {
 } from "@/features/writing/sync/sync-engine"
 import { createSyncTransport } from "@/features/writing/sync/sync-transport"
 import type { Operation } from "@/features/writing/sync/types"
+import { createApiClient } from "@/foundation/api/client"
 
 export type SyncStatus =
   | "idle"
@@ -67,7 +68,9 @@ export function useSyncEngine(
   useEffect(() => {
     if (!enabled) return
 
-    const transport = createSyncTransport({ baseUrl: apiBaseUrl })
+    const transport = createSyncTransport({
+      client: createApiClient({ baseUrl: apiBaseUrl }),
+    })
     const engine = createSyncEngine({
       writingId,
       baseVersion: baseVersionRef.current,

@@ -5,14 +5,13 @@ import type {
 } from "@/domain/writing"
 import { createEmptyWritingContent, getWritingMetrics } from "@/domain/writing"
 import type { PromptDetail } from "@/domain/prompt"
-import { createApiClient } from "@/foundation/api/client"
+import { createApiClient, type ApiClient } from "@/foundation/api/client"
 import {
   createApiError,
   throwOnError,
   type ApiError,
 } from "@/foundation/api/error"
 import { env } from "@/foundation/config/env"
-import { resolveBrowserApiBaseUrl } from "@/foundation/lib/api-base-url"
 import {
   createMemoryStorage,
   getDefaultStorage,
@@ -174,9 +173,7 @@ export function createLocalWritingRepository(
   }
 }
 
-function createRemoteWritingRepository(apiBaseUrl: string): WritingRepository {
-  const client = createApiClient({ baseUrl: apiBaseUrl })
-
+function createRemoteWritingRepository(client: ApiClient): WritingRepository {
   return {
     async autosaveWriting(writingId, input) {
       return throwOnError(
@@ -222,19 +219,6 @@ function createRemoteWritingRepository(apiBaseUrl: string): WritingRepository {
   }
 }
 
-function resolveApiBaseUrl(explicitBaseUrl?: string): string | null {
-  if (explicitBaseUrl) {
-    return explicitBaseUrl.replace(/\/$/, "")
-  }
-
-  const envBaseUrl = env.NEXT_PUBLIC_API_BASE_URL
-  if (!envBaseUrl) {
-    return null
-  }
-
-  return resolveBrowserApiBaseUrl(envBaseUrl)
-}
-
 function resolveMode(
   explicitMode?: WritingRepositoryMode
 ): WritingRepositoryMode {
@@ -242,7 +226,7 @@ function resolveMode(
 }
 
 export function createWritingRepository(options?: {
-  apiBaseUrl?: string
+  client?: ApiClient
   mode?: WritingRepositoryMode
   storage?: StorageLike
 }): WritingRepository {
@@ -253,10 +237,5 @@ export function createWritingRepository(options?: {
     return createLocalWritingRepository(storage)
   }
 
-  const apiBaseUrl = resolveApiBaseUrl(options?.apiBaseUrl)
-  if (!apiBaseUrl) {
-    throw new Error("NEXT_PUBLIC_API_BASE_URL is required in api mode.")
-  }
-
-  return createRemoteWritingRepository(apiBaseUrl)
+  return createRemoteWritingRepository(options?.client ?? createApiClient())
 }

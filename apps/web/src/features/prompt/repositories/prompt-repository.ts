@@ -4,10 +4,9 @@ import type {
   PromptFilters,
   PromptSummary,
 } from "@/domain/prompt"
-import { createApiClient } from "@/foundation/api/client"
+import { createApiClient, type ApiClient } from "@/foundation/api/client"
 import { createApiError, throwOnError } from "@/foundation/api/error"
 import { env } from "@/foundation/config/env"
-import { resolveBrowserApiBaseUrl } from "@/foundation/lib/api-base-url"
 import {
   createMemoryStorage,
   getDefaultStorage,
@@ -93,9 +92,7 @@ export function createLocalPromptRepository(
   }
 }
 
-function createRemotePromptRepository(apiBaseUrl: string): PromptRepository {
-  const client = createApiClient({ baseUrl: apiBaseUrl })
-
+function createRemotePromptRepository(client: ApiClient): PromptRepository {
   return {
     async createWriting(input) {
       return throwOnError(
@@ -147,19 +144,6 @@ function createRemotePromptRepository(apiBaseUrl: string): PromptRepository {
   }
 }
 
-function resolveApiBaseUrl(explicitBaseUrl?: string): string | null {
-  if (explicitBaseUrl) {
-    return explicitBaseUrl.replace(/\/$/, "")
-  }
-
-  const envBaseUrl = env.NEXT_PUBLIC_API_BASE_URL
-  if (!envBaseUrl) {
-    return null
-  }
-
-  return resolveBrowserApiBaseUrl(envBaseUrl)
-}
-
 function resolveMode(
   explicitMode?: PromptRepositoryMode
 ): PromptRepositoryMode {
@@ -167,7 +151,7 @@ function resolveMode(
 }
 
 export function createPromptRepository(options?: {
-  apiBaseUrl?: string
+  client?: ApiClient
   mode?: PromptRepositoryMode
   storage?: StorageLike
 }): PromptRepository {
@@ -178,10 +162,5 @@ export function createPromptRepository(options?: {
     return createLocalPromptRepository(storage)
   }
 
-  const apiBaseUrl = resolveApiBaseUrl(options?.apiBaseUrl)
-  if (!apiBaseUrl) {
-    throw new Error("NEXT_PUBLIC_API_BASE_URL is required in api mode.")
-  }
-
-  return createRemotePromptRepository(apiBaseUrl)
+  return createRemotePromptRepository(options?.client ?? createApiClient())
 }
