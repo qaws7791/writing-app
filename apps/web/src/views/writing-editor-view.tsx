@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
 import { WritingEditorBody } from "@/features/writing/components/writing-editor-body"
@@ -49,13 +49,30 @@ export default function WritingEditorView({
   } = useEditorWriting({ writingDetail: writingQuery.data, writingId })
 
   // --- Autosave ---
-  const { flushPendingWriting, markSaved, syncState } = useWritingAutosave({
-    writingId,
-    editorWritingRef,
-    isReady: writingQuery.data !== undefined,
-    lastSyncedSnapshotRef,
-    markSynced,
-  })
+  const { flushPendingWriting, markDirty, markSaved, syncState } =
+    useWritingAutosave({
+      writingId,
+      editorWritingRef,
+      isReady: writingQuery.data !== undefined,
+      lastSyncedSnapshotRef,
+      markSynced,
+    })
+
+  const onContentChange = useCallback(
+    (...args: Parameters<typeof handleContentChange>) => {
+      markDirty()
+      handleContentChange(...args)
+    },
+    [markDirty, handleContentChange]
+  )
+
+  const onTitleInput = useCallback(
+    (...args: Parameters<typeof handleTitleInput>) => {
+      markDirty()
+      handleTitleInput(...args)
+    },
+    [markDirty, handleTitleInput]
+  )
 
   // --- Navigation Guard ---
   const {
@@ -149,8 +166,8 @@ export default function WritingEditorView({
             ? "글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
             : null
         }
-        onContentChange={handleContentChange}
-        onTitleInput={handleTitleInput}
+        onContentChange={onContentChange}
+        onTitleInput={onTitleInput}
         prompt={promptQuery.data ?? null}
         titleRef={titleRef}
       />

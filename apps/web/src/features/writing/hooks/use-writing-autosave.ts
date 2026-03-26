@@ -35,6 +35,7 @@ export function useWritingAutosave({
     null
   )
   const isMountedRef = useRef(true)
+  const isDirtyRef = useRef(false)
 
   const isReadyRef = useRef(isReady)
   const markSyncedRef = useRef(markSynced)
@@ -76,6 +77,7 @@ export function useWritingAutosave({
         const serialized = serializeWritingSnapshot(snapshotToSync)
 
         if (serialized === lastSyncedSnapshotRef.current) {
+          isDirtyRef.current = false
           return "noop"
         }
 
@@ -92,6 +94,7 @@ export function useWritingAutosave({
             return "saved"
           }
 
+          isDirtyRef.current = false
           markSyncedRef.current(snapshotToSync)
           setSyncState("saved")
 
@@ -116,7 +119,9 @@ export function useWritingAutosave({
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      void flushPendingWriting()
+      if (isDirtyRef.current) {
+        void flushPendingWriting()
+      }
     }, 3000)
 
     return () => {
@@ -128,9 +133,14 @@ export function useWritingAutosave({
     setSyncState("saved")
   }, [])
 
+  const markDirty = useCallback(() => {
+    isDirtyRef.current = true
+  }, [])
+
   return {
     flushPendingWriting,
     markSaved,
+    markDirty,
     syncState: derivedSyncState,
   }
 }
