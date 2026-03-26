@@ -82,16 +82,16 @@ export function WritingPageHeader({
           <DropdownMenu>
             <DropdownMenuTrigger
               render={
-                <Button variant="outline" size="icon" aria-label="설정">
-                  <HugeiconsIcon
-                    icon={Settings02Icon}
-                    size={22}
-                    color="currentColor"
-                    strokeWidth={1.8}
-                  />
-                </Button>
+                <Button variant="outline" size="icon" aria-label="설정" />
               }
-            />
+            >
+              <HugeiconsIcon
+                icon={Settings02Icon}
+                size={22}
+                color="currentColor"
+                strokeWidth={1.8}
+              />
+            </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-44">
               <DropdownMenuGroup>
                 <DropdownMenuLabel>글쓰기</DropdownMenuLabel>
