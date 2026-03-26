@@ -3,9 +3,9 @@
 import { useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
-import { WritingPageBody } from "@/features/writing/components/writing-page-body"
-import { WritingPageDialogs } from "@/features/writing/components/writing-page-dialogs"
-import { WritingPageHeader } from "@/features/writing/components/writing-page-header"
+import { WritingEditorBody } from "@/features/writing/components/writing-editor-body"
+import { WritingEditorDialogs } from "@/features/writing/components/writing-editor-dialogs"
+import { WritingEditorHeader } from "@/features/writing/components/writing-editor-header"
 import { useDraftDetailQuery } from "@/features/writing/hooks/use-draft-detail-query"
 import { useDraftPromptQuery } from "@/features/writing/hooks/use-draft-prompt-query"
 import { useEditorDraft } from "@/features/writing/hooks/use-editor-draft"
@@ -17,11 +17,11 @@ import type { VersionDetail } from "@/features/writing/sync/types"
 
 import styles from "@/features/writing/components/write-editor-page.module.css"
 
-export type WritingPageProps = {
+export type WritingEditorViewProps = {
   draftId: number
 }
 
-export default function WritingPageView({ draftId }: WritingPageProps) {
+export default function WritingEditorView({ draftId }: WritingEditorViewProps) {
   const router = useRouter()
   const pathname = usePathname()
 
@@ -128,7 +128,7 @@ export default function WritingPageView({ draftId }: WritingPageProps) {
       data-writing-editor-page=""
       className={`${styles.page} flex min-h-0 flex-1 flex-col bg-background text-foreground`}
     >
-      <WritingPageHeader
+      <WritingEditorHeader
         editorTitle={editorDraft.title}
         loading={draftQuery.isLoading}
         onDeleteClick={() => setDeleteDialogOpen(true)}
@@ -140,7 +140,7 @@ export default function WritingPageView({ draftId }: WritingPageProps) {
         syncState={syncState}
       />
 
-      <WritingPageBody
+      <WritingEditorBody
         editorDraft={editorDraft}
         loadError={
           draftQuery.error
@@ -153,7 +153,7 @@ export default function WritingPageView({ draftId }: WritingPageProps) {
         titleRef={titleRef}
       />
 
-      <WritingPageDialogs
+      <WritingEditorDialogs
         cancelPendingNavigation={cancelPendingNavigation}
         confirmPendingNavigation={confirmPendingNavigation}
         deleteDialogOpen={deleteDialogOpen}

@@ -5,7 +5,7 @@ import type { EditorDraftSnapshot } from "@/domain/draft/model/draft-sync.servic
 import type { DraftContent } from "@/domain/draft"
 import type { PromptDetail } from "@/domain/prompt"
 
-type WritingPageBodyProps = {
+type WritingEditorBodyProps = {
   editorDraft: EditorDraftSnapshot
   loadError: string | null
   onContentChange: (nextContent: DraftContent) => void
@@ -14,14 +14,14 @@ type WritingPageBodyProps = {
   titleRef: RefObject<HTMLHeadingElement | null>
 }
 
-export function WritingPageBody({
+export function WritingEditorBody({
   editorDraft,
   loadError,
   onContentChange,
   onTitleInput,
   prompt,
   titleRef,
-}: WritingPageBodyProps) {
+}: WritingEditorBodyProps) {
   return (
     <main className="flex flex-1 items-start justify-center overflow-y-auto px-6 pt-28 pb-40 md:px-10 md:pt-36 md:pb-44">
       <section className="w-full max-w-3xl">

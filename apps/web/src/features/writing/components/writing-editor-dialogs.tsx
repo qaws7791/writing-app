@@ -25,7 +25,7 @@ type GetContent = () => {
   title: string
 }
 
-type WritingPageDialogsProps = {
+type WritingEditorDialogsProps = {
   cancelPendingNavigation: () => void
   confirmPendingNavigation: () => void
   deleteDialogOpen: boolean
@@ -42,7 +42,7 @@ type WritingPageDialogsProps = {
   currentVersion?: number
 }
 
-export function WritingPageDialogs({
+export function WritingEditorDialogs({
   cancelPendingNavigation,
   confirmPendingNavigation,
   deleteDialogOpen,
@@ -57,7 +57,7 @@ export function WritingPageDialogs({
   onVersionHistoryModalOpenChange,
   versionHistoryModalOpen,
   currentVersion,
-}: WritingPageDialogsProps) {
+}: WritingEditorDialogsProps) {
   const versionHistory = useVersionHistory({
     draftId,
     open: versionHistoryModalOpen,

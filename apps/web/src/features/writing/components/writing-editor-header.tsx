@@ -25,7 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 
-type WritingPageHeaderProps = {
+type WritingEditorHeaderProps = {
   editorTitle: string
   loading: boolean
   onDeleteClick: () => void
@@ -37,7 +37,7 @@ type WritingPageHeaderProps = {
   syncState: DraftSyncState
 }
 
-export function WritingPageHeader({
+export function WritingEditorHeader({
   editorTitle,
   loading,
   onDeleteClick,
@@ -47,7 +47,7 @@ export function WritingPageHeader({
   onVersionHistoryClick,
   persistedDraft,
   syncState,
-}: WritingPageHeaderProps) {
+}: WritingEditorHeaderProps) {
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-40">
       <div className="pointer-events-auto flex h-20 items-center justify-between px-4 md:px-6">
