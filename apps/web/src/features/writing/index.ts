@@ -6,6 +6,14 @@ export {
   type CreateDraftInput,
   type AppRepositoryMode,
 } from "./repositories/app-repository"
+export {
+  createDraftDataSource,
+  type DraftDataSource,
+} from "./repositories/draft-data-source"
+export {
+  createVersionDataSource,
+  type VersionDataSource,
+} from "./repositories/version-data-source"
 // sync
 export {
   createSyncEngine,
@@ -49,13 +57,21 @@ export type {
 } from "./sync/types"
 
 // hooks
+export { draftQueryKeys, versionQueryKeys } from "./hooks/draft-query-keys"
 export { useDocumentHydration } from "./hooks/use-document-hydration"
 export {
   useEditorLeaveGuard,
   type FlushPendingDraftResult,
 } from "./hooks/use-editor-leave-guard"
 export { useSyncEngine, type SyncStatus } from "./hooks/use-sync-engine"
-export { useWritingPage, type WritingPageProps } from "./hooks/use-writing-page"
+export { useDraftDetailQuery } from "./hooks/use-draft-detail-query"
+export { useDraftPromptQuery } from "./hooks/use-draft-prompt-query"
+export { useAutosaveDraftMutation } from "./hooks/use-autosave-draft-mutation"
+export { useDeleteDraftMutation } from "./hooks/use-delete-draft-mutation"
+export { useSaveVersionMutation } from "./hooks/use-save-version-mutation"
+export { useEditorDraft } from "./hooks/use-editor-draft"
+export { useDraftAutosave } from "./hooks/use-draft-autosave"
+export { useVersionHistory } from "./hooks/use-version-history"
 
 // components
 export { SyncStatusIndicator } from "./components/sync-status-indicator"

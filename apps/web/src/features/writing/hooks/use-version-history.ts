@@ -1,169 +1,134 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { useMutation, useQuery } from "@tanstack/react-query"
 
 import {
-  createSyncTransport,
-  type SyncTransport,
-} from "@/features/writing/sync/sync-transport"
-import type {
-  VersionDetail,
-  VersionSummary,
-} from "@/features/writing/sync/types"
-import { env } from "@/foundation/config/env"
-import { resolveBrowserApiBaseUrl } from "@/foundation/lib/api-base-url"
-
-export type VersionHistoryState = {
-  versions: VersionSummary[]
-  selectedDetail: VersionDetail | null
-  loading: boolean
-  detailLoading: boolean
-  error: string | null
-  restoring: boolean
-}
+  createVersionDataSource,
+  type VersionDataSource,
+} from "@/features/writing/repositories/version-data-source"
+import { versionQueryKeys } from "@/features/writing/hooks/draft-query-keys"
+import type { VersionDetail } from "@/features/writing/sync/types"
 
 type UseVersionHistoryOptions = {
+  dataSource?: VersionDataSource
   draftId: number
-  open: boolean
   onRestoreComplete?: (detail: VersionDetail) => void
-}
-
-function resolveApiBaseUrl(): string {
-  const envBaseUrl = env.NEXT_PUBLIC_API_BASE_URL
-  if (!envBaseUrl) {
-    throw new Error("NEXT_PUBLIC_API_BASE_URL is required.")
-  }
-  return resolveBrowserApiBaseUrl(envBaseUrl)
+  open: boolean
 }
 
 export function useVersionHistory({
+  dataSource,
   draftId,
-  open,
   onRestoreComplete,
+  open,
 }: UseVersionHistoryOptions) {
-  const [state, setState] = useState<VersionHistoryState>({
-    versions: [],
-    selectedDetail: null,
-    loading: false,
-    detailLoading: false,
-    error: null,
-    restoring: false,
-  })
+  const sourceRef = useRef(dataSource)
+
+  useEffect(() => {
+    sourceRef.current = dataSource
+  }, [dataSource])
+
+  function getSource(): VersionDataSource {
+    return sourceRef.current ?? createVersionDataSource()
+  }
 
   const onRestoreCompleteRef = useRef(onRestoreComplete)
   useEffect(() => {
     onRestoreCompleteRef.current = onRestoreComplete
   }, [onRestoreComplete])
 
-  const transport = useMemo<SyncTransport>(
-    () => createSyncTransport({ baseUrl: resolveApiBaseUrl() }),
-    []
-  )
+  const [selectedVersion, setSelectedVersion] = useState<number | null>(null)
+  const [prevOpen, setPrevOpen] = useState(open)
 
-  useEffect(() => {
+  if (prevOpen !== open) {
+    setPrevOpen(open)
     if (!open) {
-      return
+      setSelectedVersion(null)
     }
+  }
 
-    let cancelled = false
+  const versionsQuery = useQuery({
+    queryKey: versionQueryKeys.list(draftId),
+    queryFn: () => getSource().listVersions(draftId, 50),
+    enabled: open,
+    select: (data) => data.items,
+  })
 
-    async function loadVersions() {
-      setState((prev) => ({ ...prev, loading: true, error: null }))
+  const detailQuery = useQuery({
+    queryKey: versionQueryKeys.detail(draftId, selectedVersion ?? -1),
+    queryFn: () => getSource().getVersion(draftId, selectedVersion!),
+    enabled: open && selectedVersion !== null,
+  })
 
-      try {
-        const response = await transport.listVersions(draftId, 50)
-
-        if (cancelled) return
-
-        setState((prev) => ({
-          ...prev,
-          versions: response.items,
-          loading: false,
-        }))
-      } catch {
-        if (cancelled) return
-
-        setState((prev) => ({
-          ...prev,
-          loading: false,
-          error: "버전 기록을 불러올 수 없습니다.",
-        }))
+  const restoreMutation = useMutation({
+    mutationFn: async (version: number) => {
+      const detail = detailQuery.data
+      if (!detail || detail.version !== version) {
+        throw new Error("선택된 버전이 일치하지 않습니다.")
       }
-    }
 
-    void loadVersions()
+      await getSource().push(draftId, {
+        baseVersion: version,
+        transactions: [
+          {
+            operations: [
+              { type: "setTitle", title: detail.title },
+              { type: "setContent", content: detail.content },
+            ],
+            createdAt: new Date().toISOString(),
+          },
+        ],
+        restoreFrom: version,
+      })
 
-    return () => {
-      cancelled = true
-    }
-  }, [draftId, open, transport])
-
-  const selectVersion = useCallback(
-    async (version: number) => {
-      setState((prev) => ({ ...prev, detailLoading: true }))
-
-      try {
-        const detail = await transport.getVersion(draftId, version)
-
-        setState((prev) => ({
-          ...prev,
-          selectedDetail: detail,
-          detailLoading: false,
-        }))
-      } catch {
-        setState((prev) => ({
-          ...prev,
-          detailLoading: false,
-          error: "이 버전을 불러올 수 없습니다.",
-        }))
-      }
+      return detail
     },
-    [draftId, transport]
-  )
-
-  const restoreVersion = useCallback(
-    async (version: number) => {
-      const detail = state.selectedDetail
-      if (!detail || detail.version !== version) return
-
-      setState((prev) => ({ ...prev, restoring: true }))
-
-      try {
-        await transport.push(draftId, {
-          baseVersion: version,
-          transactions: [
-            {
-              operations: [
-                { type: "setTitle", title: detail.title },
-                { type: "setContent", content: detail.content },
-              ],
-              createdAt: new Date().toISOString(),
-            },
-          ],
-          restoreFrom: version,
-        })
-
-        setState((prev) => ({ ...prev, restoring: false }))
-        onRestoreCompleteRef.current?.(detail)
-      } catch {
-        setState((prev) => ({
-          ...prev,
-          restoring: false,
-          error: "복원에 실패했습니다. 다시 시도해 주세요.",
-        }))
-      }
+    onSuccess: (detail) => {
+      onRestoreCompleteRef.current?.(detail)
     },
-    [draftId, state.selectedDetail, transport]
-  )
+  })
 
-  const retry = useCallback(() => {
-    setState((prev) => ({ ...prev, error: null }))
+  const selectVersion = useCallback((version: number) => {
+    setSelectedVersion(version)
   }, [])
 
+  const restoreVersion = useCallback(
+    (version: number) => {
+      restoreMutation.mutate(version)
+    },
+    [restoreMutation]
+  )
+
+  function resolveErrorMessage(): string | null {
+    if (restoreMutation.isError)
+      return "복원에 실패했습니다. 다시 시도해 주세요."
+    if (detailQuery.isError) return "이 버전을 불러올 수 없습니다."
+    if (versionsQuery.isError) return "버전 기록을 불러올 수 없습니다."
+    return null
+  }
+
+  const retry = useCallback(() => {
+    if (versionsQuery.isError) {
+      void versionsQuery.refetch()
+    }
+    if (detailQuery.isError) {
+      void detailQuery.refetch()
+    }
+    if (restoreMutation.isError) {
+      restoreMutation.reset()
+    }
+  }, [versionsQuery, detailQuery, restoreMutation])
+
   return {
-    ...state,
-    selectVersion,
+    detailLoading: detailQuery.isLoading,
+    error: resolveErrorMessage(),
+    loading: versionsQuery.isLoading,
     restoreVersion,
+    restoring: restoreMutation.isPending,
     retry,
+    selectVersion,
+    selectedDetail: detailQuery.data ?? null,
+    versions: versionsQuery.data ?? [],
   }
 }
