@@ -12,13 +12,15 @@ const jsonPrimitiveSchema = z.union([
   z.null(),
 ])
 
-const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
-  z.union([
-    jsonPrimitiveSchema,
-    z.array(jsonValueSchema),
-    z.record(z.string(), jsonValueSchema),
-  ])
-)
+const jsonValueSchema: z.ZodType<JsonValue> = z
+  .lazy(() =>
+    z.union([
+      jsonPrimitiveSchema,
+      z.array(jsonValueSchema),
+      z.record(z.string(), jsonValueSchema),
+    ])
+  )
+  .meta({ id: "JsonValue" })
 
 export type TiptapMark = {
   attrs?: { [key: string]: unknown }
@@ -46,18 +48,19 @@ const tiptapMarkSchema: z.ZodType<TiptapMark> = z
   .strict()
   .meta({ id: "TiptapMark" })
 
-const tiptapNodeSchema: z.ZodType<TiptapNode> = z.lazy(() =>
-  z
-    .object({
-      attrs: z.record(z.string(), jsonValueSchema).optional(),
-      content: z.array(tiptapNodeSchema).optional(),
-      marks: z.array(tiptapMarkSchema).optional(),
-      text: z.string().optional(),
-      type: z.string().min(1),
-    })
-    .strict()
-    .meta({ id: "TiptapNode" })
-)
+const tiptapNodeSchema: z.ZodType<TiptapNode> = z
+  .lazy(() =>
+    z
+      .object({
+        attrs: z.record(z.string(), jsonValueSchema).optional(),
+        content: z.array(tiptapNodeSchema).optional(),
+        marks: z.array(tiptapMarkSchema).optional(),
+        text: z.string().optional(),
+        type: z.string().min(1),
+      })
+      .strict()
+  )
+  .meta({ id: "TiptapNode" })
 
 export const writingContentSchema: z.ZodType<WritingContent> = z
   .object({
