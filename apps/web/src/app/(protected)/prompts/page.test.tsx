@@ -3,13 +3,13 @@ import userEvent from "@testing-library/user-event"
 
 import PromptsPage from "./page"
 import { createDeferred } from "@/test-support/async"
-import { createMockRepository } from "@/test-support/mock-repository"
+import { createMockPromptRepository } from "@/test-support/mock-repository"
 import { createPromptSummary } from "@/test-support/test-fixtures"
 
-const repository = createMockRepository()
+const repository = createMockPromptRepository()
 
-vi.mock("@/features/writing/repositories/app-repository", () => ({
-  createAppRepository: () => repository,
+vi.mock("@/features/prompt/repositories/prompt-repository", () => ({
+  createPromptRepository: () => repository,
 }))
 
 describe("prompts page", () => {

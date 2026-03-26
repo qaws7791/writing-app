@@ -1,15 +1,6 @@
-import type {
-  DraftContent,
-  DraftDetail,
-  DraftSummary,
-  HomeSnapshot,
-} from "@/domain/draft"
+import type { DraftContent, DraftDetail, DraftSummary } from "@/domain/draft"
 import { createEmptyDraftContent, getDraftMetrics } from "@/domain/draft"
-import type {
-  PromptDetail,
-  PromptFilters,
-  PromptSummary,
-} from "@/domain/prompt"
+import type { PromptDetail } from "@/domain/prompt"
 import { createApiClient } from "@/foundation/api/client"
 import {
   createApiError,
@@ -30,20 +21,13 @@ export type AutosaveDraftResult = {
   kind: "autosaved"
 }
 
-type SavedPromptEntry = {
-  promptId: number
-  savedAt: string
-}
-
 export type CreateDraftInput = {
   content?: DraftContent
   sourcePromptId?: number
   title?: string
 }
 
-export type AppRepositoryMode = "api" | "local"
-
-export type AppRepository = {
+export type DraftRepository = {
   autosaveDraft: (
     draftId: number,
     input: { content?: DraftContent; title?: string }
@@ -51,35 +35,13 @@ export type AppRepository = {
   createDraft: (input: CreateDraftInput) => Promise<DraftDetail>
   deleteDraft: (draftId: number) => Promise<void>
   getDraft: (draftId: number) => Promise<DraftDetail>
-  getHome: () => Promise<HomeSnapshot>
   getPrompt: (promptId: number) => Promise<PromptDetail>
   listDrafts: () => Promise<DraftSummary[]>
-  listPrompts: (filters?: PromptFilters) => Promise<PromptSummary[]>
-  savePrompt: (promptId: number) => Promise<{ kind: "saved"; savedAt: string }>
-  unsavePrompt: (promptId: number) => Promise<void>
 }
+
+export type DraftRepositoryMode = "api" | "local"
 
 export type RemoteApiError = ApiError
-
-function readSavedPromptEntries(storage: StorageLike): SavedPromptEntry[] {
-  const raw = storage.getItem(storageKeys.savedPromptEntries)
-  if (!raw) {
-    return []
-  }
-
-  try {
-    return JSON.parse(raw) as SavedPromptEntry[]
-  } catch {
-    return []
-  }
-}
-
-function writeSavedPromptEntries(
-  storage: StorageLike,
-  entries: SavedPromptEntry[]
-): void {
-  storage.setItem(storageKeys.savedPromptEntries, JSON.stringify(entries))
-}
 
 function readDrafts(storage: StorageLike): DraftDetail[] {
   const raw = storage.getItem(storageKeys.drafts)
@@ -116,9 +78,9 @@ function sortDrafts(drafts: DraftDetail[]): DraftDetail[] {
   })
 }
 
-export function createLocalAppRepository(
+export function createLocalDraftRepository(
   storage: StorageLike = createMemoryStorage()
-): AppRepository {
+): DraftRepository {
   return {
     async autosaveDraft(draftId, input) {
       const drafts = readDrafts(storage)
@@ -194,16 +156,6 @@ export function createLocalAppRepository(
       return draft
     },
 
-    async getHome() {
-      const drafts = sortDrafts(readDrafts(storage))
-      return {
-        recentDrafts: drafts,
-        resumeDraft: drafts[0] ?? null,
-        savedPrompts: [],
-        todayPrompts: [],
-      }
-    },
-
     async getPrompt() {
       throw createApiError(404, "글감을 찾을 수 없습니다.")
     },
@@ -211,38 +163,10 @@ export function createLocalAppRepository(
     async listDrafts() {
       return sortDrafts(readDrafts(storage))
     },
-
-    async listPrompts() {
-      return []
-    },
-
-    async savePrompt(promptId) {
-      const entries = readSavedPromptEntries(storage)
-      const withoutCurrent = entries.filter(
-        (entry) => entry.promptId !== promptId
-      )
-      const savedAt = new Date().toISOString()
-      writeSavedPromptEntries(storage, [
-        { promptId, savedAt },
-        ...withoutCurrent,
-      ])
-      return {
-        kind: "saved" as const,
-        savedAt,
-      }
-    },
-
-    async unsavePrompt(promptId) {
-      const entries = readSavedPromptEntries(storage)
-      writeSavedPromptEntries(
-        storage,
-        entries.filter((entry) => entry.promptId !== promptId)
-      )
-    },
   }
 }
 
-function createRemoteAppRepository(apiBaseUrl: string): AppRepository {
+function createRemoteDraftRepository(apiBaseUrl: string): DraftRepository {
   const client = createApiClient({ baseUrl: apiBaseUrl })
 
   return {
@@ -276,9 +200,6 @@ function createRemoteAppRepository(apiBaseUrl: string): AppRepository {
         })
       )
     },
-    async getHome() {
-      return throwOnError(await client.GET("/home"))
-    },
     async getPrompt(promptId) {
       return throwOnError(
         await client.GET("/prompts/{promptId}", {
@@ -289,39 +210,6 @@ function createRemoteAppRepository(apiBaseUrl: string): AppRepository {
     async listDrafts() {
       const { items } = throwOnError(await client.GET("/drafts"))
       return items
-    },
-    async listPrompts(filters) {
-      const response = throwOnError(
-        await client.GET("/prompts", {
-          params: {
-            query: {
-              level: filters?.level,
-              query: filters?.query,
-              saved:
-                filters?.saved !== undefined
-                  ? (String(filters.saved) as "true" | "false")
-                  : undefined,
-              topic: filters?.topic,
-            },
-          },
-        })
-      )
-      return response.items
-    },
-    async savePrompt(promptId) {
-      return throwOnError(
-        await client.PUT("/prompts/{promptId}/save", {
-          params: { path: { promptId } },
-        })
-      )
-    },
-    async unsavePrompt(promptId) {
-      const result = await client.DELETE("/prompts/{promptId}/save", {
-        params: { path: { promptId } },
-      })
-      if (!result.response.ok) {
-        throwOnError(result)
-      }
     },
   }
 }
@@ -339,22 +227,20 @@ function resolveApiBaseUrl(explicitBaseUrl?: string): string | null {
   return resolveBrowserApiBaseUrl(envBaseUrl)
 }
 
-function resolveRepositoryMode(
-  explicitMode?: AppRepositoryMode
-): AppRepositoryMode {
+function resolveMode(explicitMode?: DraftRepositoryMode): DraftRepositoryMode {
   return explicitMode ?? env.NEXT_PUBLIC_PHASE_ONE_MODE
 }
 
-export function createAppRepository(options?: {
+export function createDraftRepository(options?: {
   apiBaseUrl?: string
-  mode?: AppRepositoryMode
+  mode?: DraftRepositoryMode
   storage?: StorageLike
-}): AppRepository {
+}): DraftRepository {
   const storage = options?.storage ?? getDefaultStorage()
-  const mode = resolveRepositoryMode(options?.mode)
+  const mode = resolveMode(options?.mode)
 
   if (mode === "local") {
-    return createLocalAppRepository(storage)
+    return createLocalDraftRepository(storage)
   }
 
   const apiBaseUrl = resolveApiBaseUrl(options?.apiBaseUrl)
@@ -362,5 +248,5 @@ export function createAppRepository(options?: {
     throw new Error("NEXT_PUBLIC_API_BASE_URL is required in api mode.")
   }
 
-  return createRemoteAppRepository(apiBaseUrl)
+  return createRemoteDraftRepository(apiBaseUrl)
 }

@@ -5,24 +5,24 @@ import { useMemo } from "react"
 
 import type { PromptDetail } from "@/domain/prompt"
 import {
-  createDraftDataSource,
-  type DraftDataSource,
-} from "@/features/writing/repositories/draft-data-source"
+  createDraftRepository,
+  type DraftRepository,
+} from "@/features/writing/repositories/draft-repository"
 import { draftQueryKeys } from "@/features/writing/hooks/draft-query-keys"
 
 export function useDraftPromptQuery(
   draftId: number,
   sourcePromptId: number | null,
-  dataSource?: DraftDataSource
+  repository?: DraftRepository
 ) {
-  const source = useMemo(
-    () => dataSource ?? createDraftDataSource(),
-    [dataSource]
+  const repo = useMemo(
+    () => repository ?? createDraftRepository(),
+    [repository]
   )
 
   return useQuery<PromptDetail>({
     queryKey: draftQueryKeys.prompt(draftId),
-    queryFn: () => source.getPrompt(sourcePromptId!),
+    queryFn: () => repo.getPrompt(sourcePromptId!),
     enabled: sourcePromptId !== null,
   })
 }

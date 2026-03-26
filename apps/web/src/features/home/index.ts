@@ -1,8 +1,8 @@
 // repositories
 export {
-  createHomeDataSource,
-  type HomeDataSource,
-} from "./repositories/home-data-source"
+  createHomeRepository,
+  type HomeRepository,
+} from "./repositories/home-repository"
 
 // hooks
 export { useHomeQuery, homeQueryKeys } from "./hooks/use-home-query"

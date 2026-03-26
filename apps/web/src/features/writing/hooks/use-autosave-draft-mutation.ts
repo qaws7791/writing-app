@@ -5,9 +5,9 @@ import { useMemo } from "react"
 
 import type { DraftContent } from "@/domain/draft"
 import {
-  createDraftDataSource,
-  type DraftDataSource,
-} from "@/features/writing/repositories/draft-data-source"
+  createDraftRepository,
+  type DraftRepository,
+} from "@/features/writing/repositories/draft-repository"
 import { draftQueryKeys } from "@/features/writing/hooks/draft-query-keys"
 
 type AutosaveInput = {
@@ -16,16 +16,16 @@ type AutosaveInput = {
   title: string
 }
 
-export function useAutosaveDraftMutation(dataSource?: DraftDataSource) {
-  const source = useMemo(
-    () => dataSource ?? createDraftDataSource(),
-    [dataSource]
+export function useAutosaveDraftMutation(repository?: DraftRepository) {
+  const repo = useMemo(
+    () => repository ?? createDraftRepository(),
+    [repository]
   )
   const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: async ({ draftId, content, title }: AutosaveInput) => {
-      return source.autosaveDraft(draftId, { content, title })
+      return repo.autosaveDraft(draftId, { content, title })
     },
     onSuccess: (result, { draftId }) => {
       queryClient.setQueryData(draftQueryKeys.detail(draftId), result.draft)

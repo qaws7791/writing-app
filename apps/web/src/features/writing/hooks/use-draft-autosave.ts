@@ -10,10 +10,10 @@ import type {
 import { serializeDraftSnapshot } from "@/domain/draft/model/draft-sync.service"
 import type { FlushPendingDraftResult } from "@/features/writing/hooks/use-editor-leave-guard"
 import { useAutosaveDraftMutation } from "@/features/writing/hooks/use-autosave-draft-mutation"
-import type { DraftDataSource } from "@/features/writing/repositories/draft-data-source"
+import type { DraftRepository } from "@/features/writing/repositories/draft-repository"
 
 type UseDraftAutosaveOptions = {
-  dataSource?: DraftDataSource
+  repository?: DraftRepository
   draftId: number
   editorDraftRef: MutableRefObject<EditorDraftSnapshot>
   isReady: boolean
@@ -22,7 +22,7 @@ type UseDraftAutosaveOptions = {
 }
 
 export function useDraftAutosave({
-  dataSource,
+  repository,
   draftId,
   editorDraftRef,
   isReady,
@@ -30,7 +30,7 @@ export function useDraftAutosave({
   markSynced,
 }: UseDraftAutosaveOptions) {
   const [syncState, setSyncState] = useState<DraftSyncState>("idle")
-  const autosaveMutation = useAutosaveDraftMutation(dataSource)
+  const autosaveMutation = useAutosaveDraftMutation(repository)
   const flushPromiseRef = useRef<Promise<FlushPendingDraftResult> | null>(null)
   const isMountedRef = useRef(true)
 

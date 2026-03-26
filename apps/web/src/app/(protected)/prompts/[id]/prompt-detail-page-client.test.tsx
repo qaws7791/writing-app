@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 
 import PromptDetailView from "@/views/prompt-detail-view"
 import { createDeferred } from "@/test-support/async"
-import { createMockRepository } from "@/test-support/mock-repository"
+import { createMockPromptRepository } from "@/test-support/mock-repository"
 import { createPromptDetail } from "@/test-support/test-fixtures"
 
 const push = vi.fn()
@@ -12,10 +12,10 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
 }))
 
-const repository = createMockRepository()
+const repository = createMockPromptRepository()
 
-vi.mock("@/features/writing/repositories/app-repository", () => ({
-  createAppRepository: () => repository,
+vi.mock("@/features/prompt/repositories/prompt-repository", () => ({
+  createPromptRepository: () => repository,
 }))
 
 describe("prompt detail view", () => {

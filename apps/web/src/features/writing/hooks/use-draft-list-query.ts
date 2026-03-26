@@ -6,18 +6,18 @@ import { useMemo } from "react"
 import type { DraftSummary } from "@/domain/draft"
 import { draftQueryKeys } from "@/features/writing/hooks/draft-query-keys"
 import {
-  createDraftListDataSource,
-  type DraftListDataSource,
-} from "@/features/writing/repositories/draft-list-data-source"
+  createDraftRepository,
+  type DraftRepository,
+} from "@/features/writing/repositories/draft-repository"
 
-export function useDraftListQuery(dataSource?: DraftListDataSource) {
-  const source = useMemo(
-    () => dataSource ?? createDraftListDataSource(),
-    [dataSource]
+export function useDraftListQuery(repository?: DraftRepository) {
+  const repo = useMemo(
+    () => repository ?? createDraftRepository(),
+    [repository]
   )
 
   return useQuery<DraftSummary[]>({
     queryKey: draftQueryKeys.list(),
-    queryFn: () => source.listDrafts(),
+    queryFn: () => repo.listDrafts(),
   })
 }

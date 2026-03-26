@@ -5,22 +5,22 @@ import { useMemo } from "react"
 
 import type { DraftDetail } from "@/domain/draft"
 import {
-  createDraftDataSource,
-  type DraftDataSource,
-} from "@/features/writing/repositories/draft-data-source"
+  createDraftRepository,
+  type DraftRepository,
+} from "@/features/writing/repositories/draft-repository"
 import { draftQueryKeys } from "@/features/writing/hooks/draft-query-keys"
 
 export function useDraftDetailQuery(
   draftId: number,
-  dataSource?: DraftDataSource
+  repository?: DraftRepository
 ) {
-  const source = useMemo(
-    () => dataSource ?? createDraftDataSource(),
-    [dataSource]
+  const repo = useMemo(
+    () => repository ?? createDraftRepository(),
+    [repository]
   )
 
   return useQuery<DraftDetail>({
     queryKey: draftQueryKeys.detail(draftId),
-    queryFn: () => source.getDraft(draftId),
+    queryFn: () => repo.getDraft(draftId),
   })
 }

@@ -9,9 +9,9 @@ import { useMemo } from "react"
 import type { PromptDetail, PromptSummary } from "@/domain/prompt"
 import { promptQueryKeys } from "@/features/prompt/hooks/prompt-query-keys"
 import {
-  createPromptDataSource,
-  type PromptDataSource,
-} from "@/features/prompt/repositories/prompt-data-source"
+  createPromptRepository,
+  type PromptRepository,
+} from "@/features/prompt/repositories/prompt-repository"
 
 type ToggleSaveInput = {
   promptId: number
@@ -29,21 +29,21 @@ type MutationContext = {
  * 낙관적 업데이트로 상세·목록 캐시를 즉시 갱신하고,
  * 실패 시 이전 상태로 롤백한다.
  *
- * @param dataSource - 의존성 주입용. 생략하면 기본 원격 데이터 소스를 사용한다.
+ * @param repository - 의존성 주입용. 생략하면 기본 원격 리포지토리를 사용한다.
  */
-export function useTogglePromptSaveMutation(dataSource?: PromptDataSource) {
-  const source = useMemo(
-    () => dataSource ?? createPromptDataSource(),
-    [dataSource]
+export function useTogglePromptSaveMutation(repository?: PromptRepository) {
+  const repo = useMemo(
+    () => repository ?? createPromptRepository(),
+    [repository]
   )
   const queryClient = useQueryClient()
 
   return useMutation<void, Error, ToggleSaveInput, MutationContext>({
     mutationFn: async ({ promptId, saved }) => {
       if (saved) {
-        await source.unsavePrompt(promptId)
+        await repo.unsavePrompt(promptId)
       } else {
-        await source.savePrompt(promptId)
+        await repo.savePrompt(promptId)
       }
     },
 
