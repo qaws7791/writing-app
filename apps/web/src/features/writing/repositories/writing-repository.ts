@@ -3,7 +3,11 @@ import type {
   WritingDetail,
   WritingSummary,
 } from "@/domain/writing"
-import { createEmptyWritingContent, getWritingMetrics } from "@/domain/writing"
+import {
+  createEmptyWritingContent,
+  getWritingMetrics,
+  writingDetailsJsonCodec,
+} from "@/domain/writing"
 import type { PromptDetail } from "@/domain/prompt"
 import { createApiClient, type ApiClient } from "@/foundation/api/client"
 import {
@@ -53,14 +57,17 @@ function readWritings(storage: StorageLike): WritingDetail[] {
   }
 
   try {
-    return JSON.parse(raw) as WritingDetail[]
+    return writingDetailsJsonCodec.decode(raw)
   } catch {
     return []
   }
 }
 
 function writeWritings(storage: StorageLike, writings: WritingDetail[]): void {
-  storage.setItem(storageKeys.writings, JSON.stringify(writings))
+  storage.setItem(
+    storageKeys.writings,
+    writingDetailsJsonCodec.encode(writings)
+  )
 }
 
 function nextSequence(storage: StorageLike): number {

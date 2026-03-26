@@ -1,3 +1,4 @@
+import { z } from "zod"
 import type { WritingDetail } from "@/domain/writing"
 import type {
   PromptDetail,
@@ -7,6 +8,7 @@ import type {
 import { createApiClient, type ApiClient } from "@/foundation/api/client"
 import { createApiError, throwOnError } from "@/foundation/api/error"
 import { env } from "@/foundation/config/env"
+import { jsonCodec } from "@/foundation/lib/zod"
 import {
   createMemoryStorage,
   getDefaultStorage,
@@ -19,6 +21,15 @@ type SavedPromptEntry = {
   promptId: number
   savedAt: string
 }
+
+const savedPromptEntrySchema = z.object({
+  promptId: z.number().int(),
+  savedAt: z.string(),
+})
+
+const savedPromptEntriesSchema = z.array(savedPromptEntrySchema)
+
+const savedPromptEntriesJsonCodec = jsonCodec(savedPromptEntriesSchema)
 
 export type PromptRepository = {
   createWriting: (input: CreateWritingInput) => Promise<WritingDetail>
@@ -37,7 +48,7 @@ function readSavedPromptEntries(storage: StorageLike): SavedPromptEntry[] {
   }
 
   try {
-    return JSON.parse(raw) as SavedPromptEntry[]
+    return savedPromptEntriesJsonCodec.decode(raw)
   } catch {
     return []
   }
@@ -47,7 +58,10 @@ function writeSavedPromptEntries(
   storage: StorageLike,
   entries: SavedPromptEntry[]
 ): void {
-  storage.setItem(storageKeys.savedPromptEntries, JSON.stringify(entries))
+  storage.setItem(
+    storageKeys.savedPromptEntries,
+    savedPromptEntriesJsonCodec.encode(entries)
+  )
 }
 
 export function createLocalPromptRepository(

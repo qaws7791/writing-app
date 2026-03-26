@@ -1,4 +1,5 @@
 import type { WritingDetail, HomeSnapshot } from "@/domain/writing"
+import { writingDetailsJsonCodec } from "@/domain/writing"
 import { createApiClient, type ApiClient } from "@/foundation/api/client"
 import { throwOnError } from "@/foundation/api/error"
 import { env } from "@/foundation/config/env"
@@ -22,7 +23,7 @@ function readWritings(storage: StorageLike): WritingDetail[] {
   }
 
   try {
-    return JSON.parse(raw) as WritingDetail[]
+    return writingDetailsJsonCodec.decode(raw)
   } catch {
     return []
   }
