@@ -566,11 +566,14 @@ describe("logging", () => {
     createdApps.push(api)
 
     const response = await api.app.request("/home")
-    const body = await readJson<{ error: { code: string } }>(response)
+    const body = await readJson<{
+      error: { code: string; requestId?: string }
+    }>(response)
     const failed = entries.find((entry) => entry.msg === "request failed")
 
     expect(response.status).toBe(500)
     expect(body.error.code).toBe("internal_error")
+    expect(body.error.requestId).toEqual(expect.any(String))
     expect(failed).toEqual(
       expect.objectContaining({
         code: "internal_error",
@@ -584,6 +587,41 @@ describe("logging", () => {
         type: "Error",
       })
     )
+  })
+
+  test("includes userId in 5xx error logs", async () => {
+    const { entries, logger } = createCapturedLogger()
+    const api = createTestApi({
+      homeError: new Error("crash"),
+      logger,
+    })
+    createdApps.push(api)
+
+    const response = await api.app.request("/home", {
+      headers: { "x-test-user-id": "user-42" },
+    })
+    const failed = entries.find((entry) => entry.msg === "request failed")
+
+    expect(response.status).toBe(500)
+    expect(failed).toEqual(
+      expect.objectContaining({
+        code: "internal_error",
+        level: 50,
+        status: 500,
+        userId: "user-42",
+      })
+    )
+  })
+
+  test("does not include requestId in 4xx error responses", async () => {
+    const { app } = setup()
+    const response = await app.request("/prompts?saved=maybe")
+    const body = await readJson<{
+      error: { code: string; requestId?: string }
+    }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.requestId).toBeUndefined()
   })
 
   test("serves the openapi document for recursive writing schemas", async () => {

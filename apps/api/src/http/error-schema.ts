@@ -5,6 +5,7 @@ export const errorResponseSchema = z.object({
     code: z.string(),
     details: z.unknown().optional(),
     message: z.string(),
+    requestId: z.string().optional(),
   }),
 })
 

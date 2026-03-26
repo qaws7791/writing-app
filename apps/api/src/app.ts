@@ -57,7 +57,8 @@ function logRequestFailure(
   requestLogger: ApiLogger,
   error: unknown,
   response: ApiErrorResult,
-  message: string
+  message: string,
+  extra?: Record<string, unknown>
 ) {
   const logPayload =
     error instanceof Error
@@ -65,11 +66,13 @@ function logRequestFailure(
           code: response.body.error.code,
           err: error,
           status: response.status,
+          ...extra,
         }
       : {
           code: response.body.error.code,
           error,
           status: response.status,
+          ...extra,
         }
 
   if (response.status >= 500) {
@@ -78,6 +81,32 @@ function logRequestFailure(
   }
 
   requestLogger.warn(logPayload, message)
+}
+
+function handleRequestError(
+  c: Context,
+  error: unknown,
+  logger: ApiLogger,
+  message: string
+) {
+  const response = errorToResponse(error)
+  const requestLogger = resolveRequestLogger(c, logger)
+  const requestId = (c.get("requestId") ?? undefined) as string | undefined
+  const userId = (c.get("userId") ?? undefined) as string | undefined
+
+  logRequestFailure(
+    requestLogger,
+    error,
+    response,
+    message,
+    userId ? { userId } : undefined
+  )
+
+  if (response.status >= 500 && requestId) {
+    response.body.error.requestId = requestId
+  }
+
+  return c.json(response.body, response.status as ApiErrorStatus)
 }
 
 export function createApp(input: CreateAppInput) {
@@ -131,12 +160,7 @@ export function createApp(input: CreateAppInput) {
   // --- Error handler ---
 
   app.onError((error, c) => {
-    const response = errorToResponse(error)
-    const requestLogger = resolveRequestLogger(c, input.logger)
-
-    logRequestFailure(requestLogger, error, response, "request failed")
-
-    return c.json(response.body, response.status as ApiErrorStatus)
+    return handleRequestError(c, error, input.logger, "request failed")
   })
 
   // --- Routes ---
@@ -169,17 +193,12 @@ export function createApp(input: CreateAppInput) {
     try {
       return c.json(app.getOpenAPIDocument(openApiDocumentConfig))
     } catch (error) {
-      const response = errorToResponse(error)
-      const requestLogger = resolveRequestLogger(c, input.logger)
-
-      logRequestFailure(
-        requestLogger,
+      return handleRequestError(
+        c,
         error,
-        response,
+        input.logger,
         "openapi document generation failed"
       )
-
-      return c.json(response.body, response.status as ApiErrorStatus)
     }
   })
 
