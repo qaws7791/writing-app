@@ -9,7 +9,12 @@
 
 const SYNC_TAG = "writing-sync"
 const DB_NAME = "writing-sync-db"
+const DB_VERSION = 2
 const STORE_NAME = "pendingTransactions"
+const CONFIG_STORE_NAME = "config"
+
+/** 메모리 캐시 (SW 생명주기 내 유지) */
+let cachedApiBaseUrl = null
 
 /** @type {ServiceWorkerGlobalScope} */
 const sw = /** @type {any} */ (self)
@@ -31,6 +36,12 @@ sw.addEventListener("sync", (event) => {
 
 // 메시지 핸들러 - 클라이언트에서 동기화 요청
 sw.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SET_API_BASE_URL") {
+    cachedApiBaseUrl = event.data.url
+    saveApiBaseUrl(event.data.url)
+    return
+  }
+
   if (event.data && event.data.type === "REGISTER_SYNC") {
     // Background Sync 등록
     sw.registration.sync.register(SYNC_TAG).catch(() => {
@@ -42,6 +53,9 @@ sw.addEventListener("message", (event) => {
 
 async function flushPendingTransactions() {
   try {
+    const apiBaseUrl = await loadApiBaseUrl()
+    if (!apiBaseUrl) return
+
     const db = await openDb()
     const tx = db.transaction(STORE_NAME, "readonly")
     const store = tx.objectStore(STORE_NAME)
@@ -73,11 +87,14 @@ async function flushPendingTransactions() {
         }))
 
         // API 호출
-        const response = await fetch(`/api/writings/${writingId}/sync/push`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ baseVersion, transactions }),
-        })
+        const response = await fetch(
+          `${apiBaseUrl}/writings/${writingId}/sync/push`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ baseVersion, transactions }),
+          }
+        )
 
         if (response.ok) {
           // 성공하면 해당 트랜잭션들 삭제
@@ -116,8 +133,8 @@ async function flushPendingTransactions() {
 
 function openDb() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, 1)
-    request.onupgradeneeded = () => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION)
+    request.onupgradeneeded = (event) => {
       const db = request.result
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, {
@@ -125,10 +142,44 @@ function openDb() {
           autoIncrement: true,
         })
       }
+      if (!db.objectStoreNames.contains(CONFIG_STORE_NAME)) {
+        db.createObjectStore(CONFIG_STORE_NAME, { keyPath: "key" })
+      }
     }
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(request.error)
   })
+}
+
+async function saveApiBaseUrl(url) {
+  try {
+    const db = await openDb()
+    const tx = db.transaction(CONFIG_STORE_NAME, "readwrite")
+    tx.objectStore(CONFIG_STORE_NAME).put({ key: "apiBaseUrl", value: url })
+    await promisifyTransaction(tx)
+    db.close()
+  } catch {
+    // 저장 실패 시 메모리 캐시만 사용
+  }
+}
+
+async function loadApiBaseUrl() {
+  if (cachedApiBaseUrl) return cachedApiBaseUrl
+  try {
+    const db = await openDb()
+    const tx = db.transaction(CONFIG_STORE_NAME, "readonly")
+    const record = await promisifyRequest(
+      tx.objectStore(CONFIG_STORE_NAME).get("apiBaseUrl")
+    )
+    db.close()
+    if (record?.value) {
+      cachedApiBaseUrl = record.value
+      return record.value
+    }
+  } catch {
+    // 읽기 실패 시 null 반환
+  }
+  return null
 }
 
 function promisifyRequest(request) {

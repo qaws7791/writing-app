@@ -1,6 +1,21 @@
+import { resolveBrowserApiBaseUrl } from "@/foundation/lib/api-base-url"
+import { env } from "@/foundation/config/env"
+
 const SYNC_TAG = "writing-sync"
 
 let registration: ServiceWorkerRegistration | null = null
+
+function resolveApiBaseUrl(): string | null {
+  const envBaseUrl = env.NEXT_PUBLIC_API_BASE_URL
+  if (!envBaseUrl) return null
+  return resolveBrowserApiBaseUrl(envBaseUrl)
+}
+
+function sendApiBaseUrl(target: ServiceWorker | null) {
+  if (!target) return
+  const url = resolveApiBaseUrl()
+  if (url) target.postMessage({ type: "SET_API_BASE_URL", url })
+}
 
 /** 서비스 워커를 등록하고 Background Sync를 활성화한다 */
 export async function registerSyncServiceWorker(): Promise<void> {
@@ -10,6 +25,7 @@ export async function registerSyncServiceWorker(): Promise<void> {
     registration = await navigator.serviceWorker.register("/sw.js", {
       scope: "/",
     })
+    sendApiBaseUrl(registration.active)
   } catch {
     // 서비스 워커 등록 실패 시 무시 (기능 저하)
   }
@@ -18,6 +34,8 @@ export async function registerSyncServiceWorker(): Promise<void> {
 /** 오프라인 복귀 시 Background Sync를 요청한다 */
 export function requestBackgroundSync(): void {
   if (!registration) return
+
+  sendApiBaseUrl(registration.active)
 
   if ("sync" in registration) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
