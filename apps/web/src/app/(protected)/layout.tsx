@@ -1,6 +1,7 @@
 import GlobalNavigation from "@/features/navigation/components/global-navigation"
 import React from "react"
 import { redirectIfProtectedAccessMissing } from "@/features/auth/repositories/server-auth"
+import Providers from "@/app/(protected)/providers"
 
 export default async function layout({
   children,
@@ -10,11 +11,13 @@ export default async function layout({
   await redirectIfProtectedAccessMissing()
 
   return (
-    <div className="flex min-h-screen">
-      <GlobalNavigation />
-      <div className="max-h-screen flex-1 overflow-y-auto bg-background pb-20 md:pb-0">
-        {children}
+    <Providers>
+      <div className="flex min-h-screen">
+        <GlobalNavigation />
+        <div className="max-h-screen flex-1 overflow-y-auto bg-background pb-20 md:pb-0">
+          {children}
+        </div>
       </div>
-    </div>
+    </Providers>
   )
 }
