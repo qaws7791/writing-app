@@ -69,9 +69,7 @@ export function createWritingSnapshotFromDetail(
 }
 
 export function serializeWritingSnapshot(snapshot: EditorWritingSnapshot) {
-  return editorWritingSnapshotJsonCodec.encode(
-    createEditorWritingSnapshot(snapshot)
-  )
+  return editorWritingSnapshotJsonCodec.encode(snapshot)
 }
 
 export function areWritingSnapshotsEqual(
