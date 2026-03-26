@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useCallback, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
@@ -13,58 +12,17 @@ import {
 } from "@hugeicons/core-free-icons"
 import { Badge } from "@workspace/ui/components/badge"
 import { LevelDots } from "@/domain/prompt/ui/level-dots"
-import { createAppRepository } from "@/features/writing/repositories/app-repository"
-import type { PromptDetail } from "@/domain/prompt"
+import { usePromptDetailQuery } from "@/features/prompt/hooks/use-prompt-detail-query"
+import { useTogglePromptSaveMutation } from "@/features/prompt/hooks/use-toggle-prompt-save-mutation"
+import { useCreateDraftFromPromptMutation } from "@/features/prompt/hooks/use-create-draft-from-prompt-mutation"
 
 export default function PromptDetailView({ promptId }: { promptId: number }) {
   const router = useRouter()
-  const repository = useMemo(() => createAppRepository(), [])
-  const [prompt, setPrompt] = useState<PromptDetail | null>(null)
-  const [error, setError] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [creating, setCreating] = useState(false)
+  const { data: prompt, isPending, isError } = usePromptDetailQuery(promptId)
+  const toggleSave = useTogglePromptSaveMutation()
+  const createDraft = useCreateDraftFromPromptMutation()
 
-  useEffect(() => {
-    let cancelled = false
-
-    void repository
-      .getPrompt(promptId)
-      .then((detail) => {
-        if (!cancelled) {
-          setPrompt(detail)
-          setError(false)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError(true)
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [promptId, repository])
-
-  const handleCreateDraftFromPrompt = useCallback(async () => {
-    if (creating || !prompt) return
-    setCreating(true)
-    try {
-      const draft = await repository.createDraft({
-        sourcePromptId: prompt.id,
-      })
-      router.push(`/write/${draft.id}`)
-    } catch {
-      setCreating(false)
-    }
-  }, [creating, prompt, repository, router])
-
-  if (loading) {
+  if (isPending) {
     return (
       <div className="min-h-svh flex-1 bg-background px-4 py-16 text-sm text-muted-foreground lg:px-16">
         글감을 불러오는 중입니다.
@@ -72,7 +30,7 @@ export default function PromptDetailView({ promptId }: { promptId: number }) {
     )
   }
 
-  if (error || !prompt) {
+  if (isError || !prompt) {
     return (
       <div className="min-h-svh flex-1 bg-background px-4 py-16 lg:px-16">
         <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
@@ -80,20 +38,6 @@ export default function PromptDetailView({ promptId }: { promptId: number }) {
         </div>
       </div>
     )
-  }
-
-  async function handleToggleSave() {
-    const currentPrompt = prompt
-    if (!currentPrompt) return
-
-    if (currentPrompt.saved) {
-      await repository.unsavePrompt(currentPrompt.id)
-      setPrompt((current) => (current ? { ...current, saved: false } : current))
-      return
-    }
-
-    await repository.savePrompt(currentPrompt.id)
-    setPrompt((current) => (current ? { ...current, saved: true } : current))
   }
 
   return (
@@ -195,8 +139,12 @@ export default function PromptDetailView({ promptId }: { promptId: number }) {
         <div className="mx-auto flex max-w-3xl items-center gap-2">
           <button
             type="button"
-            onClick={() => void handleCreateDraftFromPrompt()}
-            disabled={creating}
+            onClick={() =>
+              createDraft.mutate(prompt.id, {
+                onSuccess: (draft) => router.push(`/write/${draft.id}`),
+              })
+            }
+            disabled={createDraft.isPending}
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-transform hover:bg-primary/90 active:scale-95 disabled:opacity-60"
           >
             <HugeiconsIcon
@@ -205,11 +153,13 @@ export default function PromptDetailView({ promptId }: { promptId: number }) {
               color="currentColor"
               strokeWidth={1.5}
             />
-            {creating ? "글 생성 중…" : "이 글감으로 글 쓰기"}
+            {createDraft.isPending ? "글 생성 중…" : "이 글감으로 글 쓰기"}
           </button>
           <button
             type="button"
-            onClick={() => void handleToggleSave()}
+            onClick={() =>
+              toggleSave.mutate({ promptId: prompt.id, saved: prompt.saved })
+            }
             className={`flex size-12 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-muted hover:text-foreground ${
               prompt.saved ? "text-foreground" : "text-muted-foreground"
             }`}

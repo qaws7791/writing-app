@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useDeferredValue, useEffect, useMemo, useState } from "react"
+import { useDeferredValue, useMemo, useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   Bookmark01Icon,
@@ -9,15 +9,12 @@ import {
   SearchIcon,
 } from "@hugeicons/core-free-icons"
 import { LevelDots } from "@/domain/prompt/ui/level-dots"
-import { createAppRepository } from "@/features/writing/repositories/app-repository"
-import type { PromptFilters, PromptSummary, PromptTopic } from "@/domain/prompt"
+import type { PromptFilters, PromptTopic } from "@/domain/prompt"
 import { topicChips } from "@/domain/prompt/model/prompt.constants"
+import { usePromptsQuery } from "@/features/prompt/hooks/use-prompts-query"
+import { useTogglePromptSaveMutation } from "@/features/prompt/hooks/use-toggle-prompt-save-mutation"
 
 export default function PromptsView() {
-  const repository = useMemo(() => createAppRepository(), [])
-  const [prompts, setPrompts] = useState<PromptSummary[]>([])
-  const [error, setError] = useState(false)
-  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
   const [activeTopic, setActiveTopic] = useState<PromptTopic | null>(null)
   const deferredSearch = useDeferredValue(search)
@@ -30,51 +27,12 @@ export default function PromptsView() {
     }
   }, [activeTopic, deferredSearch])
 
-  useEffect(() => {
-    let cancelled = false
-
-    setLoading(true)
-
-    void repository
-      .listPrompts(promptFilters)
-      .then((items) => {
-        if (!cancelled) {
-          setPrompts(items)
-          setError(false)
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setError(true)
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false)
-        }
-      })
-
-    return () => {
-      cancelled = true
-    }
-  }, [promptFilters, repository])
-
-  async function handleToggleSave(promptId: number) {
-    const target = prompts.find((prompt) => prompt.id === promptId)
-    if (!target) return
-
-    if (target.saved) {
-      await repository.unsavePrompt(promptId)
-    } else {
-      await repository.savePrompt(promptId)
-    }
-
-    setPrompts((current) =>
-      current.map((prompt) =>
-        prompt.id === promptId ? { ...prompt, saved: !prompt.saved } : prompt
-      )
-    )
-  }
+  const {
+    data: prompts = [],
+    isPending,
+    isError,
+  } = usePromptsQuery(promptFilters)
+  const toggleSave = useTogglePromptSaveMutation()
 
   return (
     <div className="min-h-svh flex-1 bg-background px-6 py-16 lg:px-16">
@@ -136,11 +94,11 @@ export default function PromptsView() {
         </section>
 
         <section className="mb-12">
-          {loading ? (
+          {isPending ? (
             <p role="status" className="text-sm text-muted-foreground">
               글감을 불러오는 중입니다.
             </p>
-          ) : error ? (
+          ) : isError ? (
             <div className="rounded-2xl border border-border bg-card px-5 py-4 text-sm text-muted-foreground">
               글감을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
             </div>
@@ -173,7 +131,10 @@ export default function PromptsView() {
                     type="button"
                     onClick={(event) => {
                       event.preventDefault()
-                      void handleToggleSave(prompt.id)
+                      toggleSave.mutate({
+                        promptId: prompt.id,
+                        saved: prompt.saved,
+                      })
                     }}
                     className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-all ${
                       prompt.saved
