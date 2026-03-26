@@ -4,8 +4,7 @@ import { toWritingId, toUserId } from "../../../shared/brand/index"
 import { makePushTransactionsUseCase } from "./push-transactions"
 import {
   createFakeWritingSyncRepository,
-  createFakeTransactionRepository,
-  createFakeVersionRepository,
+  createFakeWritingSyncWriter,
 } from "../testing/fake-writing-repositories"
 import { createTestWriting, updatedContent } from "../testing/test-fixtures"
 
@@ -16,17 +15,15 @@ const now = "2026-03-25T12:00:00.000Z"
 function createDeps(version = 1) {
   const writing = createTestWriting({ version, id: writingId, userId })
   const writingRepository = createFakeWritingSyncRepository(writing)
-  const transactionRepository = createFakeTransactionRepository()
-  const versionRepository = createFakeVersionRepository()
+  const syncWriter = createFakeWritingSyncWriter(writingRepository)
 
   const pushTransactions = makePushTransactionsUseCase({
     writingRepository,
-    transactionRepository,
-    versionRepository,
+    syncWriter,
     getNow: () => now,
   })
 
-  return { pushTransactions, transactionRepository, versionRepository }
+  return { pushTransactions, syncWriter }
 }
 
 describe("makePushTransactionsUseCase", () => {
@@ -85,7 +82,7 @@ describe("makePushTransactionsUseCase", () => {
   })
 
   it("정상 push 시 accepted를 반환한다", async () => {
-    const { pushTransactions, transactionRepository } = createDeps(1)
+    const { pushTransactions, syncWriter } = createDeps(1)
 
     const result = await pushTransactions(userId, writingId, {
       baseVersion: 1,
@@ -104,11 +101,11 @@ describe("makePushTransactionsUseCase", () => {
       expect(value.serverVersion).toBe(2)
     }
 
-    expect(transactionRepository.getAll()).toHaveLength(1)
+    expect(syncWriter.getTransactions()).toHaveLength(1)
   })
 
   it("여러 트랜잭션을 순차 적용한다", async () => {
-    const { pushTransactions, transactionRepository } = createDeps(1)
+    const { pushTransactions, syncWriter } = createDeps(1)
 
     const result = await pushTransactions(userId, writingId, {
       baseVersion: 1,
@@ -131,11 +128,11 @@ describe("makePushTransactionsUseCase", () => {
       expect(value.serverVersion).toBe(3)
     }
 
-    expect(transactionRepository.getAll()).toHaveLength(2)
+    expect(syncWriter.getTransactions()).toHaveLength(2)
   })
 
   it("10 버전마다 자동 스냅샷을 생성한다", async () => {
-    const { pushTransactions, versionRepository } = createDeps(9)
+    const { pushTransactions, syncWriter } = createDeps(9)
 
     const result = await pushTransactions(userId, writingId, {
       baseVersion: 9,
@@ -148,14 +145,14 @@ describe("makePushTransactionsUseCase", () => {
     })
 
     expect(result.isOk()).toBe(true)
-    const snapshots = versionRepository.getAll()
+    const snapshots = syncWriter.getVersionSnapshots()
     expect(snapshots).toHaveLength(1)
     expect(snapshots[0]!.version).toBe(10)
     expect(snapshots[0]!.reason).toBe("auto")
   })
 
   it("restoreFrom이 있으면 restore 스냅샷을 생성한다", async () => {
-    const { pushTransactions, versionRepository } = createDeps(3)
+    const { pushTransactions, syncWriter } = createDeps(3)
 
     const result = await pushTransactions(userId, writingId, {
       baseVersion: 3,
@@ -172,13 +169,13 @@ describe("makePushTransactionsUseCase", () => {
     })
 
     expect(result.isOk()).toBe(true)
-    const snapshots = versionRepository.getAll()
+    const snapshots = syncWriter.getVersionSnapshots()
     expect(snapshots).toHaveLength(1)
     expect(snapshots[0]!.reason).toBe("restore")
   })
 
   it("snapshotReason이 manual이면 수동 스냅샷을 생성한다", async () => {
-    const { pushTransactions, versionRepository } = createDeps(2)
+    const { pushTransactions, syncWriter } = createDeps(2)
 
     const result = await pushTransactions(userId, writingId, {
       baseVersion: 2,
@@ -192,13 +189,13 @@ describe("makePushTransactionsUseCase", () => {
     })
 
     expect(result.isOk()).toBe(true)
-    const snapshots = versionRepository.getAll()
+    const snapshots = syncWriter.getVersionSnapshots()
     expect(snapshots).toHaveLength(1)
     expect(snapshots[0]!.reason).toBe("manual")
   })
 
   it("스냅샷 조건에 해당하지 않으면 스냅샷을 생성하지 않는다", async () => {
-    const { pushTransactions, versionRepository } = createDeps(2)
+    const { pushTransactions, syncWriter } = createDeps(2)
 
     await pushTransactions(userId, writingId, {
       baseVersion: 2,
@@ -210,6 +207,6 @@ describe("makePushTransactionsUseCase", () => {
       ],
     })
 
-    expect(versionRepository.getAll()).toHaveLength(0)
+    expect(syncWriter.getVersionSnapshots()).toHaveLength(0)
   })
 })

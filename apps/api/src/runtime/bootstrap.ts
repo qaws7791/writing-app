@@ -3,6 +3,7 @@ import {
   createWritingRepository,
   createPromptRepository,
   createWritingSyncRepository,
+  createWritingSyncWriter,
   createWritingTransactionRepository,
   createWritingVersionRepository,
   migrateDatabase,
@@ -79,6 +80,7 @@ export async function createApiDependencies(
     database.db
   )
   const writingSyncRepository = createWritingSyncRepository(database.db)
+  const writingSyncWriter = createWritingSyncWriter(database.db)
   const writingTransactionRepository = createWritingTransactionRepository(
     database.db
   )
@@ -96,6 +98,7 @@ export async function createApiDependencies(
   })
   const writingSyncUseCases = createWritingSyncApiService({
     writingRepository: writingSyncRepository,
+    syncWriter: writingSyncWriter,
     transactionRepository: writingTransactionRepository,
     versionRepository: writingVersionRepository,
   })

@@ -15,6 +15,10 @@ export type {
   WritingVersionDetail,
   StoredTransaction,
   SnapshotReason,
+  PushWritePlan,
+  PushWritePlanTransaction,
+  PushWritePlanWriting,
+  PushWritePlanSnapshot,
 } from "./writing-types"
 
 // Schemas
@@ -48,6 +52,7 @@ export {
 // Ports
 export type {
   WritingSyncRepository,
+  WritingSyncWriter,
   WritingTransactionRepository,
   WritingVersionRepository,
 } from "./writing-port"

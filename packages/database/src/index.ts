@@ -13,6 +13,7 @@ export {
   createWritingRepository,
   createPromptRepository,
   createWritingSyncRepository,
+  createWritingSyncWriter,
   createWritingTransactionRepository,
   createWritingVersionRepository,
 } from "./repository/index.js"

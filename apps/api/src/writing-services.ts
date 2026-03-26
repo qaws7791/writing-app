@@ -4,6 +4,7 @@ import {
   makeListVersionsUseCase,
   makeGetVersionUseCase,
   type WritingSyncRepository,
+  type WritingSyncWriter,
   type WritingTransactionRepository,
   type WritingVersionRepository,
   type SyncPushInput,
@@ -55,14 +56,14 @@ function unwrapOrThrow<TValue, TError extends DomainError>(
 
 export function createWritingSyncApiService(input: {
   writingRepository: WritingSyncRepository
+  syncWriter: WritingSyncWriter
   transactionRepository: WritingTransactionRepository
   versionRepository: WritingVersionRepository
   getNow?: () => string
 }): WritingSyncApiService {
   const pushTransactions = makePushTransactionsUseCase({
     writingRepository: input.writingRepository,
-    transactionRepository: input.transactionRepository,
-    versionRepository: input.versionRepository,
+    syncWriter: input.syncWriter,
     getNow: input.getNow ?? (() => new Date().toISOString()),
   })
 

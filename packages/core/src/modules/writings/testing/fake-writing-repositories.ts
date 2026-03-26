@@ -7,9 +7,11 @@ import type {
   WritingVersionDetail,
   WritingVersionSummary,
   Operation,
+  PushWritePlan,
 } from "../writing-types"
 import type {
   WritingSyncRepository,
+  WritingSyncWriter,
   WritingTransactionRepository,
   WritingVersionRepository,
 } from "../writing-port"
@@ -156,6 +158,72 @@ export function createFakeVersionRepository(): WritingVersionRepository & {
 
     getAll() {
       return [...versions]
+    },
+  }
+}
+
+export function createFakeWritingSyncWriter(
+  syncRepository: WritingSyncRepository
+): WritingSyncWriter & {
+  getTransactions(): StoredTransaction[]
+  getVersionSnapshots(): WritingVersionDetail[]
+} {
+  const transactions: StoredTransaction[] = []
+  const snapshots: WritingVersionDetail[] = []
+  let nextTxId = 1
+  let nextSnapshotId = 1
+
+  return {
+    async persistPush(plan: PushWritePlan) {
+      const updateResult = await syncRepository.updateWithVersion(
+        plan.writing.userId,
+        plan.writing.writingId,
+        {
+          content: plan.writing.content,
+          title: plan.writing.title,
+          plainText: plan.writing.plainText,
+          characterCount: plan.writing.characterCount,
+          wordCount: plan.writing.wordCount,
+          version: plan.writing.version,
+        }
+      )
+
+      if (updateResult.kind !== "updated") {
+        return updateResult
+      }
+
+      for (const entry of plan.transactions) {
+        transactions.push({
+          id: nextTxId++,
+          writingId: entry.writingId,
+          userId: entry.userId,
+          version: entry.version,
+          operations: entry.operations,
+          createdAt: entry.createdAt,
+        })
+      }
+
+      if (plan.versionSnapshot) {
+        snapshots.push({
+          id: nextSnapshotId++,
+          writingId: plan.versionSnapshot.writingId,
+          version: plan.versionSnapshot.version,
+          title: plan.versionSnapshot.title,
+          content: plan.versionSnapshot.content,
+          createdAt: plan.versionSnapshot.createdAt,
+          reason: plan.versionSnapshot.reason,
+        })
+      }
+
+      return updateResult
+    },
+
+    getTransactions() {
+      return [...transactions]
+    },
+
+    getVersionSnapshots() {
+      return [...snapshots]
     },
   }
 }

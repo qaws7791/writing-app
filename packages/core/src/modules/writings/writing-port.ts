@@ -2,6 +2,7 @@ import type { WritingId, UserId } from "../../shared/brand/index"
 import type { WritingContent } from "../../shared/schema/index"
 import type {
   Operation,
+  PushWritePlan,
   StoredTransaction,
   Writing,
   WritingSyncAccessResult,
@@ -50,6 +51,17 @@ export interface WritingTransactionRepository {
     writingId: WritingId,
     sinceVersion: number
   ): Promise<readonly StoredTransaction[]>
+}
+
+export interface WritingSyncWriter {
+  persistPush(
+    plan: PushWritePlan
+  ): Promise<
+    | { kind: "updated"; writing: Writing }
+    | { kind: "not-found" }
+    | { kind: "forbidden"; ownerId: UserId }
+    | { kind: "version-conflict"; currentVersion: number }
+  >
 }
 
 export interface WritingVersionRepository {

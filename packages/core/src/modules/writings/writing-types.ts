@@ -91,6 +91,43 @@ export type WritingVersionDetail = WritingVersionSummary & {
   readonly content: WritingContent
 }
 
+// --- Push Write Plan ---
+
+export type PushWritePlanTransaction = {
+  readonly writingId: WritingId
+  readonly userId: UserId
+  readonly version: number
+  readonly operations: Operation[]
+  readonly createdAt: string
+}
+
+export type PushWritePlanWriting = {
+  readonly userId: UserId
+  readonly writingId: WritingId
+  readonly content: WritingContent
+  readonly title: string
+  readonly plainText: string
+  readonly characterCount: number
+  readonly wordCount: number
+  readonly version: number
+}
+
+export type PushWritePlanSnapshot = {
+  readonly writingId: WritingId
+  readonly userId: UserId
+  readonly version: number
+  readonly title: string
+  readonly content: WritingContent
+  readonly createdAt: string
+  readonly reason: SnapshotReason
+}
+
+export type PushWritePlan = {
+  readonly transactions: readonly PushWritePlanTransaction[]
+  readonly writing: PushWritePlanWriting
+  readonly versionSnapshot?: PushWritePlanSnapshot
+}
+
 // --- Stored Transaction ---
 
 export type StoredTransaction = {

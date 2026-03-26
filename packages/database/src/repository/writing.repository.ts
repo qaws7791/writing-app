@@ -10,12 +10,14 @@ import type {
   Writing,
   WritingSyncAccessResult,
   WritingSyncRepository,
+  WritingSyncWriter,
   WritingTransactionRepository,
   WritingVersionRepository,
   WritingVersionDetail,
   WritingVersionSummary,
   StoredTransaction,
   Operation,
+  PushWritePlan,
 } from "@workspace/core/modules/writings"
 
 import { writings } from "../schema/index.js"
@@ -245,6 +247,90 @@ export function createWritingVersionRepository(
           .get() ?? null
 
       return row ? mapVersionRow(row) : null
+    },
+  }
+}
+
+export function createWritingSyncWriter(database: DbClient): WritingSyncWriter {
+  return {
+    async persistPush(plan: PushWritePlan) {
+      return database.transaction((tx) => {
+        for (const entry of plan.transactions) {
+          tx.insert(writingTransactions)
+            .values({
+              writingId: entry.writingId as number,
+              userId: entry.userId as string,
+              version: entry.version,
+              operationsJson: entry.operations,
+              createdAt: entry.createdAt,
+            })
+            .run()
+        }
+
+        const row = tx
+          .select()
+          .from(writings)
+          .where(eq(writings.id, plan.writing.writingId as number))
+          .limit(1)
+          .get()
+
+        if (!row) {
+          return { kind: "not-found" as const }
+        }
+
+        if (row.userId !== (plan.writing.userId as string)) {
+          return {
+            kind: "forbidden" as const,
+            ownerId: toUserId(row.userId),
+          }
+        }
+
+        const now = new Date().toISOString()
+
+        tx.update(writings)
+          .set({
+            bodyJson: plan.writing.content,
+            bodyPlainText: plan.writing.plainText,
+            characterCount: plan.writing.characterCount,
+            lastSavedAt: now,
+            title: plan.writing.title,
+            updatedAt: now,
+            version: plan.writing.version,
+            wordCount: plan.writing.wordCount,
+          })
+          .where(eq(writings.id, plan.writing.writingId as number))
+          .run()
+
+        if (plan.versionSnapshot) {
+          tx.insert(writingVersions)
+            .values({
+              writingId: plan.versionSnapshot.writingId as number,
+              userId: plan.versionSnapshot.userId as string,
+              version: plan.versionSnapshot.version,
+              title: plan.versionSnapshot.title,
+              contentJson: plan.versionSnapshot.content,
+              createdAt: plan.versionSnapshot.createdAt,
+              reason: plan.versionSnapshot.reason,
+            })
+            .run()
+        }
+
+        const updated = tx
+          .select()
+          .from(writings)
+          .where(eq(writings.id, plan.writing.writingId as number))
+          .limit(1)
+          .get()
+
+        if (!updated) {
+          return { kind: "not-found" as const }
+        }
+
+        return {
+          kind: "updated" as const,
+          writing: mapRowToWriting(updated),
+        }
+      })
     },
   }
 }
