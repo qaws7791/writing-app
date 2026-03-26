@@ -32,7 +32,11 @@ export function requestBackgroundSync(): void {
 
 /** 서비스 워커로부터의 메시지를 수신한다 */
 export function onServiceWorkerMessage(
-  handler: (data: { type: string; draftId?: number; version?: number }) => void
+  handler: (data: {
+    type: string
+    writingId?: number
+    version?: number
+  }) => void
 ): () => void {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
     return () => {}

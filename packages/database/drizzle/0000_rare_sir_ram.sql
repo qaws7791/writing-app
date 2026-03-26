@@ -28,7 +28,7 @@ CREATE TABLE `daily_recommendations` (
 CREATE UNIQUE INDEX `daily_rec_date_order_idx` ON `daily_recommendations` (`date`,`display_order`);--> statement-breakpoint
 CREATE UNIQUE INDEX `daily_rec_date_prompt_idx` ON `daily_recommendations` (`date`,`prompt_id`);--> statement-breakpoint
 CREATE INDEX `daily_rec_date_idx` ON `daily_recommendations` (`date`);--> statement-breakpoint
-CREATE TABLE `drafts` (
+CREATE TABLE `writings` (
 	`body_json` text NOT NULL,
 	`body_plain_text` text NOT NULL,
 	`character_count` integer NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE `drafts` (
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE INDEX `drafts_user_updated_idx` ON `drafts` (`user_id`,`updated_at`);--> statement-breakpoint
+CREATE INDEX `writings_user_updated_idx` ON `writings` (`user_id`,`updated_at`);--> statement-breakpoint
 CREATE TABLE `prompts` (
 	`created_at` text NOT NULL,
 	`description` text NOT NULL,
@@ -112,28 +112,28 @@ CREATE TABLE `verification` (
 CREATE INDEX `verification_identifier_idx` ON `verification` (`identifier`);--> statement-breakpoint
 CREATE TABLE `writing_transactions` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`draft_id` integer NOT NULL,
+	`writing_id` integer NOT NULL,
 	`user_id` text NOT NULL,
 	`version` integer NOT NULL,
 	`operations_json` text NOT NULL,
 	`created_at` text NOT NULL,
-	FOREIGN KEY (`draft_id`) REFERENCES `drafts`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`writing_id`) REFERENCES `writings`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE INDEX `writing_tx_draft_since_idx` ON `writing_transactions` (`draft_id`,`version`);--> statement-breakpoint
-CREATE UNIQUE INDEX `writing_tx_draft_version_uniq` ON `writing_transactions` (`draft_id`,`version`);--> statement-breakpoint
+CREATE INDEX `writing_tx_writing_since_idx` ON `writing_transactions` (`writing_id`,`version`);--> statement-breakpoint
+CREATE UNIQUE INDEX `writing_tx_writing_version_uniq` ON `writing_transactions` (`writing_id`,`version`);--> statement-breakpoint
 CREATE TABLE `writing_versions` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
-	`draft_id` integer NOT NULL,
+	`writing_id` integer NOT NULL,
 	`user_id` text NOT NULL,
 	`version` integer NOT NULL,
 	`title` text NOT NULL,
 	`content_json` text NOT NULL,
 	`created_at` text NOT NULL,
 	`reason` text NOT NULL,
-	FOREIGN KEY (`draft_id`) REFERENCES `drafts`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`writing_id`) REFERENCES `writings`(`id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE INDEX `writing_versions_draft_idx` ON `writing_versions` (`draft_id`,`version`);
+CREATE INDEX `writing_versions_writing_idx` ON `writing_versions` (`writing_id`,`version`);

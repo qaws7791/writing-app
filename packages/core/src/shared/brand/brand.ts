@@ -9,7 +9,7 @@ export type Brand<TValue, TName extends string> = TValue & {
 
 export type UserId = Brand<string, "user-id">
 export type PromptId = Brand<number, "prompt-id">
-export type DraftId = Brand<number, "draft-id">
+export type WritingId = Brand<number, "writing-id">
 
 export function unsafeBrand<TValue, TName extends string>(
   value: TValue
@@ -25,6 +25,6 @@ export function toPromptId(value: number): PromptId {
   return unsafeBrand<number, "prompt-id">(value)
 }
 
-export function toDraftId(value: number): DraftId {
-  return unsafeBrand<number, "draft-id">(value)
+export function toWritingId(value: number): WritingId {
+  return unsafeBrand<number, "writing-id">(value)
 }

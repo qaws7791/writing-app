@@ -69,7 +69,7 @@
 | G2 | 버전 기록 훅 생성 | `hooks/use-version-history.ts` (신규) | 버전 목록 로딩, 특정 버전 상세 조회, 로딩/에러 상태 관리 |
 | G3 | 모달에 복원 버튼 추가 | `writing-version-history-modal.tsx` | "이 버전으로 복원" 버튼 + 확인 다이얼로그 |
 | G4 | 복원 로직 구현 | `use-writing-page.ts` 또는 `hooks/use-version-history.ts` | `push({ baseVersion, transactions: [{ops: [setTitle, setContent]}], restoreFrom })` |
-| G5 | `WritingPageDialogs`에 데이터 연결 | `writing-page-dialogs.tsx` | `draftId` 전달, 훅 연결 |
+| G5 | `WritingPageDialogs`에 데이터 연결 | `writing-page-dialogs.tsx` | `writingId` 전달, 훅 연결 |
 
 ### 2.2 개선 작업
 
@@ -110,7 +110,7 @@ apps/web/src/features/writing/hooks/use-version-history.ts
 
 #### 3.3 `writing-page-dialogs.tsx` 연결
 
-- `draftId` prop 추가
+- `writingId` prop 추가
 - `useVersionHistory` 훅 호출
 - 모달에 실 데이터 전달
 
@@ -174,7 +174,7 @@ const shouldSnapshot =
 | `packages/core/src/modules/writings/use-cases/push-transactions.ts` | 수동 스냅샷 조건 추가 |
 | `apps/web/src/features/writing/sync/types.ts` | `SyncPushRequest`에 `snapshotReason` 추가 |
 | `apps/web/src/features/writing/components/writing-version-history-modal.tsx` | mock 제거, API 연결, 복원 버튼, 로딩/에러 상태 |
-| `apps/web/src/features/writing/components/writing-page-dialogs.tsx` | `draftId` prop, 훅 연결 |
+| `apps/web/src/features/writing/components/writing-page-dialogs.tsx` | `writingId` prop, 훅 연결 |
 | `apps/web/src/features/writing/components/writing-page-header.tsx` | "버전 저장" 메뉴 항목 |
 | `apps/web/src/features/writing/hooks/use-writing-page.ts` | `handleSaveVersion` 추가, 복원 콜백 |
 | `docs/02-design/features/version-history.md` | 기능 명세 추가 |

@@ -192,8 +192,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "drafts": {
-      "name": "drafts",
+    "writings": {
+      "name": "writings",
       "columns": {
         "body_json": {
           "name": "body_json",
@@ -282,25 +282,25 @@
         }
       },
       "indexes": {
-        "drafts_user_updated_idx": {
-          "name": "drafts_user_updated_idx",
+        "writings_user_updated_idx": {
+          "name": "writings_user_updated_idx",
           "columns": ["user_id", "updated_at"],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "drafts_source_prompt_id_prompts_id_fk": {
-          "name": "drafts_source_prompt_id_prompts_id_fk",
-          "tableFrom": "drafts",
+        "writings_source_prompt_id_prompts_id_fk": {
+          "name": "writings_source_prompt_id_prompts_id_fk",
+          "tableFrom": "writings",
           "tableTo": "prompts",
           "columnsFrom": ["source_prompt_id"],
           "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
-        "drafts_user_id_user_id_fk": {
-          "name": "drafts_user_id_user_id_fk",
-          "tableFrom": "drafts",
+        "writings_user_id_user_id_fk": {
+          "name": "writings_user_id_user_id_fk",
+          "tableFrom": "writings",
           "tableTo": "user",
           "columnsFrom": ["user_id"],
           "columnsTo": ["id"],
@@ -713,8 +713,8 @@
           "notNull": true,
           "autoincrement": true
         },
-        "draft_id": {
-          "name": "draft_id",
+        "writing_id": {
+          "name": "writing_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -750,23 +750,23 @@
         }
       },
       "indexes": {
-        "writing_tx_draft_since_idx": {
-          "name": "writing_tx_draft_since_idx",
-          "columns": ["draft_id", "version"],
+        "writing_tx_writing_since_idx": {
+          "name": "writing_tx_writing_since_idx",
+          "columns": ["writing_id", "version"],
           "isUnique": false
         },
-        "writing_tx_draft_version_uniq": {
-          "name": "writing_tx_draft_version_uniq",
-          "columns": ["draft_id", "version"],
+        "writing_tx_writing_version_uniq": {
+          "name": "writing_tx_writing_version_uniq",
+          "columns": ["writing_id", "version"],
           "isUnique": true
         }
       },
       "foreignKeys": {
-        "writing_transactions_draft_id_drafts_id_fk": {
-          "name": "writing_transactions_draft_id_drafts_id_fk",
+        "writing_transactions_writing_id_writings_id_fk": {
+          "name": "writing_transactions_writing_id_writings_id_fk",
           "tableFrom": "writing_transactions",
-          "tableTo": "drafts",
-          "columnsFrom": ["draft_id"],
+          "tableTo": "writings",
+          "columnsFrom": ["writing_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -795,8 +795,8 @@
           "notNull": true,
           "autoincrement": true
         },
-        "draft_id": {
-          "name": "draft_id",
+        "writing_id": {
+          "name": "writing_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -846,18 +846,18 @@
         }
       },
       "indexes": {
-        "writing_versions_draft_idx": {
-          "name": "writing_versions_draft_idx",
-          "columns": ["draft_id", "version"],
+        "writing_versions_writing_idx": {
+          "name": "writing_versions_writing_idx",
+          "columns": ["writing_id", "version"],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "writing_versions_draft_id_drafts_id_fk": {
-          "name": "writing_versions_draft_id_drafts_id_fk",
+        "writing_versions_writing_id_writings_id_fk": {
+          "name": "writing_versions_writing_id_writings_id_fk",
           "tableFrom": "writing_versions",
-          "tableTo": "drafts",
-          "columnsFrom": ["draft_id"],
+          "tableTo": "writings",
+          "columnsFrom": ["writing_id"],
           "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"

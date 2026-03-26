@@ -27,7 +27,7 @@ export const Showcase: Story = {
         <div className="grid gap-1">
           <Label htmlFor="label-story-switch">Public preview</Label>
           <p className="text-sm text-muted-foreground">
-            Let collaborators review the current draft before publication.
+            Let collaborators review the current writing before publication.
           </p>
         </div>
         <Switch id="label-story-switch" defaultChecked />

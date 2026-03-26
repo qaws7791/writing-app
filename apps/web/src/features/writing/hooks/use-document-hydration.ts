@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import type { DraftContent } from "@workspace/core"
+import type { WritingContent } from "@workspace/core"
 
 import { getDocument, putDocument } from "@/features/writing/sync/local-db"
 import { createSyncTransport } from "@/features/writing/sync/sync-transport"
@@ -11,18 +11,18 @@ type HydrationState =
   | {
       status: "ready"
       title: string
-      content: DraftContent
+      content: WritingContent
       baseVersion: number
     }
   | { status: "error"; error: string }
 
 type UseDocumentHydrationOptions = {
-  draftId: number
+  writingId: number
   apiBaseUrl: string
   /** 서버에서 받은 초기 데이터 (SSR/RSC) */
   serverData?: {
     title: string
-    content: DraftContent
+    content: WritingContent
     version: number
   }
 }
@@ -36,7 +36,7 @@ type UseDocumentHydrationOptions = {
 export function useDocumentHydration(
   options: UseDocumentHydrationOptions
 ): HydrationState {
-  const { draftId, apiBaseUrl, serverData } = options
+  const { writingId, apiBaseUrl, serverData } = options
   const [state, setState] = useState<HydrationState>({ status: "loading" })
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function useDocumentHydration(
     async function hydrate() {
       try {
         // 1. 로컬 DB 우선
-        const local = await getDocument(draftId)
+        const local = await getDocument(writingId)
         if (cancelled) return
 
         if (local) {
@@ -61,7 +61,7 @@ export function useDocumentHydration(
         // 2. SSR/RSC 서버 데이터
         if (serverData) {
           await putDocument({
-            draftId,
+            writingId,
             title: serverData.title,
             content: serverData.content,
             baseVersion: serverData.version,
@@ -82,12 +82,12 @@ export function useDocumentHydration(
 
         // 3. 서버 pull
         const transport = createSyncTransport({ baseUrl: apiBaseUrl })
-        const result = await transport.pull(draftId, 0)
+        const result = await transport.pull(writingId, 0)
 
         if (cancelled) return
 
         await putDocument({
-          draftId,
+          writingId,
           title: result.title,
           content: result.content,
           baseVersion: result.version,
@@ -118,7 +118,7 @@ export function useDocumentHydration(
     return () => {
       cancelled = true
     }
-  }, [draftId, apiBaseUrl, serverData])
+  }, [writingId, apiBaseUrl, serverData])
 
   return state
 }

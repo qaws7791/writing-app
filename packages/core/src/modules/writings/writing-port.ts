@@ -1,22 +1,28 @@
-import type { DraftId, UserId } from "../../shared/brand/index"
-import type { DraftContent } from "../../shared/schema/index"
+import type { WritingId, UserId } from "../../shared/brand/index"
+import type { WritingContent } from "../../shared/schema/index"
 import type {
   Operation,
   StoredTransaction,
   Writing,
-  WritingAccessResult,
+  WritingSyncAccessResult,
   WritingVersionDetail,
   WritingVersionSummary,
 } from "./writing-types"
 
-export interface WritingRepository {
-  getById(userId: UserId, draftId: DraftId): Promise<WritingAccessResult>
+// Re-export CRUD repository
+export type { WritingRepository } from "./writing-crud-port"
+
+export interface WritingSyncRepository {
+  getById(
+    userId: UserId,
+    writingId: WritingId
+  ): Promise<WritingSyncAccessResult>
 
   updateWithVersion(
     userId: UserId,
-    draftId: DraftId,
+    writingId: WritingId,
     input: {
-      content: DraftContent
+      content: WritingContent
       title: string
       plainText: string
       characterCount: number
@@ -33,7 +39,7 @@ export interface WritingRepository {
 
 export interface WritingTransactionRepository {
   append(
-    draftId: DraftId,
+    writingId: WritingId,
     userId: UserId,
     version: number,
     operations: Operation[],
@@ -41,29 +47,29 @@ export interface WritingTransactionRepository {
   ): Promise<StoredTransaction>
 
   listSince(
-    draftId: DraftId,
+    writingId: WritingId,
     sinceVersion: number
   ): Promise<readonly StoredTransaction[]>
 }
 
 export interface WritingVersionRepository {
   create(input: {
-    draftId: DraftId
+    writingId: WritingId
     userId: UserId
     version: number
     title: string
-    content: DraftContent
+    content: WritingContent
     createdAt: string
     reason: "auto" | "manual" | "restore"
   }): Promise<WritingVersionDetail>
 
   list(
-    draftId: DraftId,
+    writingId: WritingId,
     limit?: number
   ): Promise<readonly WritingVersionSummary[]>
 
   getByVersion(
-    draftId: DraftId,
+    writingId: WritingId,
     version: number
   ): Promise<WritingVersionDetail | null>
 }

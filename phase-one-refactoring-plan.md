@@ -21,7 +21,7 @@
 | `phase-one-storage.test.ts` | `storage.test.ts` |
 | `phase-one-repository.ts` | `repository.ts` |
 | `phase-one-repository.test.ts` | `repository.test.ts` |
-| `phase-one-draft-sync.ts` | `draft-sync.ts` |
+| `phase-one-writing-sync.ts` | `writing-sync.ts` |
 | `phase-one-fixtures.ts` | `fixtures.ts` |
 
 ### 2. `apps/web/src/test-support/` — phase-one 접두사 제거
@@ -86,7 +86,7 @@
 ### `apps/web/src/lib/` 내부
 
 - `rich-text.ts`: `./phase-one-types` → `./web-types`
-- `draft-sync.ts`: `./phase-one-rich-text`, `./phase-one-storage`, `./phase-one-types`
+- `writing-sync.ts`: `./phase-one-rich-text`, `./phase-one-storage`, `./phase-one-types`
 - `fixtures.ts`: `./phase-one-types`, `./phase-one-rich-text`
 - `repository.ts`: `./phase-one-fixtures`, `./phase-one-rich-text`, `./phase-one-storage`, `./phase-one-types`
 - `format.test.ts`: `./phase-one-format` → `./format`
@@ -108,17 +108,17 @@
 - `page.tsx`: `@/lib/phase-one-format` → `@/lib/format`, `@/lib/phase-one-repository` → `@/lib/repository` (+ `createAppRepository`), `@/lib/phase-one-types` → `@/lib/web-types`
 - `page.test.tsx`: `@/test-support/mock-phase-one-repository` → `@/test-support/mock-repository` (+ `createMockRepository`), `@/test-support/phase-one-test-fixtures` → `@/test-support/test-fixtures`
 
-### `apps/web/src/app/(protected)/write/`
+### `apps/web/src/app/(protected)/writing/`
 
 - `page.tsx`: phase-one → 정규화
 - `page.test.tsx`: mock-phase-one → 정규화
 
-### `apps/web/src/app/(protected)/write/[id]/`
+### `apps/web/src/app/(protected)/writing/[id]/`
 
-- `use-writing-page.ts`: phase-one-repository, phase-one-draft-sync, phase-one-rich-text, phase-one-types → 정규화
+- `use-writing-page.ts`: phase-one-repository, phase-one-writing-sync, phase-one-rich-text, phase-one-types → 정규화
 - `use-writing-page.test.tsx`: mock, fixtures → 정규화
-- `writing-page-header.tsx`: phase-one-format, phase-one-types, phase-one-draft-sync → 정규화
-- `writing-page-body.tsx`: phase-one-draft-sync, phase-one-types → 정규화
+- `writing-page-header.tsx`: phase-one-format, phase-one-types, phase-one-writing-sync → 정규화
+- `writing-page-body.tsx`: phase-one-writing-sync, phase-one-types → 정규화
 
 ### `apps/web/src/app/(protected)/prompts/`
 

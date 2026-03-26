@@ -1,12 +1,12 @@
 // repositories
 export {
-  createDraftRepository,
-  createLocalDraftRepository,
-  type DraftRepository,
-  type AutosaveDraftResult,
-  type CreateDraftInput,
-  type DraftRepositoryMode,
-} from "./repositories/draft-repository"
+  createWritingRepository,
+  createLocalWritingRepository,
+  type WritingRepository,
+  type AutosaveWritingResult,
+  type CreateWritingInput,
+  type WritingRepositoryMode,
+} from "./repositories/writing-repository"
 export {
   createVersionDataSource,
   type VersionDataSource,
@@ -54,28 +54,28 @@ export type {
 } from "./sync/types"
 
 // hooks
-export { draftQueryKeys, versionQueryKeys } from "./hooks/draft-query-keys"
+export { writingQueryKeys, versionQueryKeys } from "./hooks/writing-query-keys"
 export { useDocumentHydration } from "./hooks/use-document-hydration"
 export {
   useEditorLeaveGuard,
-  type FlushPendingDraftResult,
+  type FlushPendingWritingResult,
 } from "./hooks/use-editor-leave-guard"
 export { useSyncEngine, type SyncStatus } from "./hooks/use-sync-engine"
-export { useCreateDraftMutation } from "./hooks/use-create-draft-mutation"
-export { useDraftDetailQuery } from "./hooks/use-draft-detail-query"
-export { useDraftListQuery } from "./hooks/use-draft-list-query"
-export { useDraftPromptQuery } from "./hooks/use-draft-prompt-query"
-export { useAutosaveDraftMutation } from "./hooks/use-autosave-draft-mutation"
-export { useDeleteDraftMutation } from "./hooks/use-delete-draft-mutation"
+export { useCreateWritingMutation } from "./hooks/use-create-writing-mutation"
+export { useWritingDetailQuery } from "./hooks/use-writing-detail-query"
+export { useWritingListQuery } from "./hooks/use-writing-list-query"
+export { useWritingPromptQuery } from "./hooks/use-writing-prompt-query"
+export { useAutosaveWritingMutation } from "./hooks/use-autosave-writing-mutation"
+export { useDeleteWritingMutation } from "./hooks/use-delete-writing-mutation"
 export { useSaveVersionMutation } from "./hooks/use-save-version-mutation"
-export { useEditorDraft } from "./hooks/use-editor-draft"
-export { useDraftAutosave } from "./hooks/use-draft-autosave"
+export { useEditorWriting } from "./hooks/use-editor-writing"
+export { useWritingAutosave } from "./hooks/use-writing-autosave"
 export { useVersionHistory } from "./hooks/use-version-history"
 
 // components
-export { CreateDraftCard } from "./components/create-draft-card"
-export { DraftListItem } from "./components/draft-list-item"
-export { DraftListSection } from "./components/draft-list-section"
+export { CreateWritingCard } from "./components/create-writing-card"
+export { WritingListItem } from "./components/writing-list-item"
+export { WritingListSection } from "./components/writing-list-section"
 export { SyncStatusIndicator } from "./components/sync-status-indicator"
 export { default as WritingBodyEditor } from "./components/writing-body-editor"
 export { WritingEditorBody } from "./components/writing-editor-body"

@@ -1,6 +1,6 @@
 ---
 title: 글 목록 화면
-description: 새 글 시작과 최근 초안 재진입을 지원하는 글쓰기 진입 화면을 정의합니다.
+description: 새 글 시작과 최근 글 재진입을 지원하는 글쓰기 진입 화면을 정의합니다.
 status: active
 ---
 
@@ -15,28 +15,28 @@ status: active
 
 ## 범위
 
-- 포함: 새 글 쓰기 CTA, 최근 초안 목록, 제목/미리보기/수정 시점 노출
+- 포함: 새 글 쓰기 CTA, 최근 글 목록, 제목/미리보기/수정 시점 노출
 - 제외: 공개 글 관리, 버전 히스토리, 폴더/컬렉션
 
 ## 정보 위계
 
 1. 새 글 쓰기 CTA
-2. 최근 초안 목록
+2. 최근 글 목록
 3. 부가 메타 정보
 
 ## 주요 액션
 
 - 새 글 쓰기
-- 기존 초안 열기
+- 기존 글 열기
 
 ## 상태별 UI
 
 ### 기본 상태
 
 - 상단 또는 첫 카드에 새 글 쓰기 CTA를 가장 먼저 배치한다.
-- 초안 카드는 제목, 한 줄 미리보기, 마지막 수정 시점 정도로 단순하게 유지한다.
+- 글 카드는 제목, 한 줄 미리보기, 마지막 수정 시점 정도로 단순하게 유지한다.
 
-### 초안 없음 상태
+### 글 없음 상태
 
 - 새 글 시작을 메인 메시지로 전환하고 빈 상태를 창작 기회의 톤으로 표현한다.
 
@@ -50,26 +50,26 @@ status: active
 
 ## 문구 톤 가이드
 
-- 초안 없음 상태도 결핍처럼 보이지 않게 쓴다.
+- 글 없음 상태도 결핍처럼 보이지 않게 쓴다.
 - 예시: "오늘의 첫 문장을 여기서 시작할 수 있습니다."
 
 ## 네비게이션 이동
 
 - 새 글 쓰기: [[02-design/screens/editor]]
-- 기존 초안 선택: [[02-design/screens/editor]]
+- 기존 글 선택: [[02-design/screens/editor]]
 
 ## 데스크톱 차이
 
-- 초안 목록은 더 넓은 메타 정보를 보여줄 수 있다.
+- 글 목록은 더 넓은 메타 정보를 보여줄 수 있다.
 - 새 글 CTA는 고정 영역으로 둘 수 있지만 1차 행동 우선순위는 유지한다.
 
 ## 연결 features
 
 - [[02-design/features/resume-writing]]
-- [[02-design/features/start-new-draft]]
+- [[02-design/features/start-new-writing]]
 - [[02-design/features/autosave-feedback]]
 
 ## 연결 user-flows
 
-- [[02-design/user-flows/resume-draft]]
-- [[02-design/user-flows/create-new-draft-and-write]]
+- [[02-design/user-flows/resume-writing]]
+- [[02-design/user-flows/create-new-writing]]

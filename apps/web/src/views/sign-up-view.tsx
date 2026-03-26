@@ -26,7 +26,7 @@ export default function SignUpView() {
   return (
     <AuthPageShell
       title="계정을 만들고 축적하기"
-      description="가입 후 이메일 인증을 마치면 글감 저장과 초안 작성 이력이 계정에 연결됩니다."
+      description="가입 후 이메일 인증을 마치면 글감 저장과 글 작성 이력이 계정에 연결됩니다."
       footer={
         <div className="flex flex-wrap items-center gap-2">
           <span>이미 계정이 있다면</span>

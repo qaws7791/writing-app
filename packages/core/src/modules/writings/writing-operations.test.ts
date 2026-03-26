@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { DraftContent } from "../../shared/schema/index"
+import type { WritingContent } from "../../shared/schema/index"
 import {
   applyOperationsToContent,
   computeWritingMetrics,
@@ -52,7 +52,7 @@ describe("applyOperationsToContent", () => {
 
 describe("computeWritingMetrics", () => {
   it("빈 content에서 메트릭을 계산한다", () => {
-    const emptyContent: DraftContent = {
+    const emptyContent: WritingContent = {
       type: "doc",
       content: [{ type: "paragraph" }],
     }

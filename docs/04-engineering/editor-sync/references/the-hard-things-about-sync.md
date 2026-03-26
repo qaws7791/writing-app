@@ -95,7 +95,7 @@ Knowing the answers to these questions will help you more effectively evaluate w
 
 Happy syncing!
 
-_Thank you Chris Lewis, Rudi Chen, and Slava Kim for reviewing drafts of this blogpost._
+_Thank you Chris Lewis, Rudi Chen, and Slava Kim for reviewing writings of this blogpost._
 
 - [How Figma’s multiplayer technology works](https://www.figma.com/blog/how-figmas-multiplayer-technology-works/)
 

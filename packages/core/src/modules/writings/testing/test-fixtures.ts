@@ -1,8 +1,8 @@
-import { toDraftId, toUserId } from "../../../shared/brand/index"
-import type { DraftContent } from "../../../shared/schema/index"
+import { toWritingId, toUserId } from "../../../shared/brand/index"
+import type { WritingContent } from "../../../shared/schema/index"
 import type { Writing } from "../writing-types"
 
-const defaultContent: DraftContent = {
+const defaultContent: WritingContent = {
   type: "doc",
   content: [
     {
@@ -14,7 +14,7 @@ const defaultContent: DraftContent = {
 
 export function createTestWriting(overrides?: Partial<Writing>): Writing {
   return {
-    id: toDraftId(1),
+    id: toWritingId(1),
     userId: toUserId("user-1"),
     version: 1,
     title: "테스트 제목",
@@ -29,9 +29,9 @@ export function createTestWriting(overrides?: Partial<Writing>): Writing {
   }
 }
 
-export const testContent: DraftContent = defaultContent
+export const testContent: WritingContent = defaultContent
 
-export const updatedContent: DraftContent = {
+export const updatedContent: WritingContent = {
   type: "doc",
   content: [
     {

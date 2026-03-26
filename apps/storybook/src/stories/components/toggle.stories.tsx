@@ -30,7 +30,7 @@ export const Showcase: Story = {
         <HugeiconsIcon icon={TextItalicIcon} strokeWidth={2} />
         Italic
       </Toggle>
-      <Toggle variant="outline" size="lg" aria-label="Bookmark draft">
+      <Toggle variant="outline" size="lg" aria-label="Bookmark writing">
         <HugeiconsIcon icon={BookmarkIcon} strokeWidth={2} />
         Bookmark
       </Toggle>

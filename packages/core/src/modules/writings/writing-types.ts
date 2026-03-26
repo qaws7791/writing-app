@@ -1,5 +1,5 @@
-import type { DraftContent } from "../../shared/schema/index"
-import type { DraftId, UserId } from "../../shared/brand/index"
+import type { WritingContent } from "../../shared/schema/index"
+import type { WritingId, PromptId, UserId } from "../../shared/brand/index"
 
 // --- Operation (Delta) ---
 
@@ -10,7 +10,7 @@ export type SetTitleOperation = {
 
 export type SetContentOperation = {
   readonly type: "setContent"
-  readonly content: DraftContent
+  readonly content: WritingContent
 }
 
 export type Operation = SetTitleOperation | SetContentOperation
@@ -25,11 +25,11 @@ export type WritingTransaction = {
 // --- Writing (Document) ---
 
 export type Writing = {
-  readonly id: DraftId
+  readonly id: WritingId
   readonly userId: UserId
   readonly version: number
   readonly title: string
-  readonly content: DraftContent
+  readonly content: WritingContent
   readonly plainText: string
   readonly characterCount: number
   readonly wordCount: number
@@ -38,7 +38,7 @@ export type Writing = {
   readonly lastSavedAt: string
 }
 
-export type WritingAccessResult =
+export type WritingSyncAccessResult =
   | { kind: "writing"; writing: Writing }
   | { kind: "forbidden"; ownerId: UserId }
   | { kind: "not-found" }
@@ -62,7 +62,7 @@ export type SyncPushAccepted = {
 export type SyncPushConflict = {
   readonly accepted: false
   readonly serverVersion: number
-  readonly serverContent: DraftContent
+  readonly serverContent: WritingContent
   readonly serverTitle: string
 }
 
@@ -71,7 +71,7 @@ export type SyncPushResult = SyncPushAccepted | SyncPushConflict
 export type SyncPullResult = {
   readonly version: number
   readonly title: string
-  readonly content: DraftContent
+  readonly content: WritingContent
   readonly lastSavedAt: string
   readonly hasNewerVersion: boolean
 }
@@ -80,7 +80,7 @@ export type SyncPullResult = {
 
 export type WritingVersionSummary = {
   readonly id: number
-  readonly draftId: DraftId
+  readonly writingId: WritingId
   readonly version: number
   readonly title: string
   readonly createdAt: string
@@ -88,16 +88,62 @@ export type WritingVersionSummary = {
 }
 
 export type WritingVersionDetail = WritingVersionSummary & {
-  readonly content: DraftContent
+  readonly content: WritingContent
 }
 
 // --- Stored Transaction ---
 
 export type StoredTransaction = {
   readonly id: number
-  readonly draftId: DraftId
+  readonly writingId: WritingId
   readonly userId: UserId
   readonly version: number
   readonly operations: Operation[]
   readonly createdAt: string
+}
+
+// --- CRUD Types ---
+
+export type WritingSummary = {
+  readonly characterCount: number
+  readonly id: WritingId
+  readonly lastSavedAt: string
+  readonly preview: string
+  readonly sourcePromptId: PromptId | null
+  readonly title: string
+  readonly wordCount: number
+}
+
+export type WritingDetail = WritingSummary & {
+  readonly content: WritingContent
+  readonly createdAt: string
+  readonly updatedAt: string
+}
+
+export type WritingPersistInput = {
+  readonly characterCount: number
+  readonly content: WritingContent
+  readonly plainText: string
+  readonly sourcePromptId: PromptId | null
+  readonly title: string
+  readonly wordCount: number
+}
+
+export type WritingCrudAccessResult =
+  | { kind: "writing"; writing: WritingDetail }
+  | { kind: "forbidden"; ownerId: UserId }
+  | { kind: "not-found" }
+
+export type WritingMutationResult =
+  | { kind: "writing"; writing: WritingDetail }
+  | { kind: "forbidden"; ownerId: UserId }
+  | { kind: "not-found" }
+
+export type WritingDeleteResult =
+  | { kind: "deleted" }
+  | { kind: "forbidden"; ownerId: UserId }
+  | { kind: "not-found" }
+
+export type WritingFull = WritingDetail & {
+  readonly plainText: string
 }

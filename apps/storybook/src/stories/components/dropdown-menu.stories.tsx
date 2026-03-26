@@ -54,7 +54,7 @@ function DropdownMenuShowcase() {
           <DropdownMenuLabel>Story actions</DropdownMenuLabel>
           <DropdownMenuItem>
             <HugeiconsIcon icon={Edit01Icon} strokeWidth={2} />
-            Edit draft
+            Edit writing
             <DropdownMenuShortcut>E</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem>

@@ -1,22 +1,22 @@
-import type { DraftId, UserId } from "../../../shared/brand/index"
-import type { DraftContent } from "../../../shared/schema/index"
+import type { WritingId, UserId } from "../../../shared/brand/index"
+import type { WritingContent } from "../../../shared/schema/index"
 import type {
   Writing,
-  WritingAccessResult,
+  WritingSyncAccessResult,
   StoredTransaction,
   WritingVersionDetail,
   WritingVersionSummary,
   Operation,
 } from "../writing-types"
 import type {
-  WritingRepository,
+  WritingSyncRepository,
   WritingTransactionRepository,
   WritingVersionRepository,
 } from "../writing-port"
 
-export function createFakeWritingRepository(
+export function createFakeWritingSyncRepository(
   initial?: Writing
-): WritingRepository {
+): WritingSyncRepository {
   const store = new Map<string, Writing>()
 
   if (initial) {
@@ -26,17 +26,17 @@ export function createFakeWritingRepository(
   return {
     async getById(
       userId: UserId,
-      draftId: DraftId
-    ): Promise<WritingAccessResult> {
-      const writing = store.get(`${userId}:${draftId}`)
+      writingId: WritingId
+    ): Promise<WritingSyncAccessResult> {
+      const writing = store.get(`${userId}:${writingId}`)
       if (!writing) return { kind: "not-found" }
       if (writing.userId !== userId)
         return { kind: "forbidden", ownerId: writing.userId }
       return { kind: "writing", writing }
     },
 
-    async updateWithVersion(userId, draftId, input) {
-      const key = `${userId}:${draftId}`
+    async updateWithVersion(userId, writingId, input) {
+      const key = `${userId}:${writingId}`
       const writing = store.get(key)
       if (!writing) return { kind: "not-found" as const }
       if (writing.userId !== userId)
@@ -68,7 +68,7 @@ export function createFakeTransactionRepository(): WritingTransactionRepository 
 
   return {
     async append(
-      draftId: DraftId,
+      writingId: WritingId,
       userId: UserId,
       version: number,
       operations: Operation[],
@@ -76,7 +76,7 @@ export function createFakeTransactionRepository(): WritingTransactionRepository 
     ): Promise<StoredTransaction> {
       const tx: StoredTransaction = {
         id: nextId++,
-        draftId,
+        writingId,
         userId,
         version,
         operations,
@@ -87,11 +87,11 @@ export function createFakeTransactionRepository(): WritingTransactionRepository 
     },
 
     async listSince(
-      draftId: DraftId,
+      writingId: WritingId,
       sinceVersion: number
     ): Promise<readonly StoredTransaction[]> {
       return transactions.filter(
-        (tx) => tx.draftId === draftId && tx.version > sinceVersion
+        (tx) => tx.writingId === writingId && tx.version > sinceVersion
       )
     },
 
@@ -109,17 +109,17 @@ export function createFakeVersionRepository(): WritingVersionRepository & {
 
   return {
     async create(input: {
-      draftId: DraftId
+      writingId: WritingId
       userId: UserId
       version: number
       title: string
-      content: DraftContent
+      content: WritingContent
       createdAt: string
       reason: "auto" | "manual" | "restore"
     }): Promise<WritingVersionDetail> {
       const detail: WritingVersionDetail = {
         id: nextId++,
-        draftId: input.draftId,
+        writingId: input.writingId,
         version: input.version,
         title: input.title,
         content: input.content,
@@ -131,11 +131,11 @@ export function createFakeVersionRepository(): WritingVersionRepository & {
     },
 
     async list(
-      draftId: DraftId,
+      writingId: WritingId,
       limit?: number
     ): Promise<readonly WritingVersionSummary[]> {
       const filtered = versions
-        .filter((v) => v.draftId === draftId)
+        .filter((v) => v.writingId === writingId)
         .sort((a, b) => b.version - a.version)
 
       const limited = limit ? filtered.slice(0, limit) : filtered
@@ -144,12 +144,13 @@ export function createFakeVersionRepository(): WritingVersionRepository & {
     },
 
     async getByVersion(
-      draftId: DraftId,
+      writingId: WritingId,
       version: number
     ): Promise<WritingVersionDetail | null> {
       return (
-        versions.find((v) => v.draftId === draftId && v.version === version) ??
-        null
+        versions.find(
+          (v) => v.writingId === writingId && v.version === version
+        ) ?? null
       )
     },
 

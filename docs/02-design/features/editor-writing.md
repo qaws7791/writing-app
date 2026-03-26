@@ -20,7 +20,7 @@ status: active
 
 ## 진입 조건
 
-- 새 글 시작 또는 기존 초안 재진입으로 에디터를 연다.
+- 새 글 시작 또는 기존 글 재진입으로 에디터를 연다.
 
 ## 핵심 상호작용
 
@@ -36,16 +36,16 @@ status: active
 
 ## 예외 상태
 
-- 빈 초안: 부담을 낮추는 기본 힌트를 제공하되 과한 안내는 피한다.
-- 긴 초안: 현재 위치를 잃지 않도록 스크롤과 레이아웃 안정성을 유지한다.
+- 빈 글: 부담을 낮추는 기본 힌트를 제공하되 과한 안내는 피한다.
+- 긴 글: 현재 위치를 잃지 않도록 스크롤과 레이아웃 안정성을 유지한다.
 - 오프라인 또는 저장 지연: 작성 가능 상태는 유지하면서 저장 상태를 알려준다.
 
 ## 연결 user-flows
 
 - [[02-design/user-flows/start-writing-today]]
 - [[02-design/user-flows/discover-prompt-and-start]]
-- [[02-design/user-flows/resume-draft]]
-- [[02-design/user-flows/create-new-draft-and-write]]
+- [[02-design/user-flows/resume-writing]]
+- [[02-design/user-flows/create-new-writing]]
 
 ## 연결 screens
 

@@ -15,7 +15,7 @@
 ## Packages
 
 - `@workspace/domain`: 브랜드 타입, 도메인 엔터티, 저장 포트, Tiptap 문서 타입
-- `@workspace/application`: 홈/글감/초안 유스케이스
+- `@workspace/application`: 홈/글감/글 유스케이스
 - `@workspace/db`: Drizzle 스키마, migration, seed, 저장소 구현
 - `apps/api`: 라우트, 검증, 응답 매핑, 개발용 인증 미들웨어
 
@@ -27,16 +27,16 @@
 - `GET /prompts/:promptId`
 - `PUT /prompts/:promptId/save`
 - `DELETE /prompts/:promptId/save`
-- `GET /drafts`
-- `POST /drafts`
-- `GET /drafts/:draftId`
-- `PATCH /drafts/:draftId`
-- `DELETE /drafts/:draftId`
+- `GET /writings`
+- `POST /writings`
+- `GET /writings/:writingId`
+- `PATCH /writings/:writingId`
+- `DELETE /writings/:writingId`
 
 ## Storage Rules
 
-- `drafts.body_json`에는 Tiptap JSON 문서를 저장한다.
-- `drafts.body_plain_text`, `character_count`, `word_count`는 저장 시점에 파생값으로 갱신한다.
+- `writings.body_json`에는 Tiptap JSON 문서를 저장한다.
+- `writings.body_plain_text`, `character_count`, `word_count`는 저장 시점에 파생값으로 갱신한다.
 - 추천 글감과 탐색 글감은 seed 데이터로 관리한다.
 
 ## Local Commands

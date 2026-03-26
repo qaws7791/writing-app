@@ -2,14 +2,14 @@
  * @deprecated Import from module-specific paths instead.
  */
 export type {
-  DraftAccessResult,
-  DraftDeleteResult,
-  DraftDetail,
-  DraftMutationResult,
-  DraftPersistInput,
-  DraftRepository,
-  DraftSummary,
-} from "./draft-repository"
+  WritingCrudAccessResult,
+  WritingDeleteResult,
+  WritingDetail,
+  WritingMutationResult,
+  WritingPersistInput,
+  WritingRepository,
+  WritingSummary,
+} from "./writing-repository"
 export type {
   PromptDetail,
   PromptListFilters,

@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { draftContentSchema } from "../../shared/schema/index"
+import { writingContentSchema } from "../../shared/schema/index"
 
 // --- Operation schemas ---
 
@@ -11,7 +11,7 @@ const operationSchema = z.union([
   }),
   z.object({
     type: z.literal("setContent"),
-    content: draftContentSchema,
+    content: writingContentSchema,
   }),
 ])
 
@@ -39,7 +39,7 @@ export const syncPushResponseSchema = z.union([
   z.object({
     accepted: z.literal(false),
     serverVersion: z.number().int(),
-    serverContent: draftContentSchema,
+    serverContent: writingContentSchema,
     serverTitle: z.string(),
   }),
 ])
@@ -53,7 +53,7 @@ export const syncPullQuerySchema = z.object({
 export const syncPullResponseSchema = z.object({
   version: z.number().int(),
   title: z.string(),
-  content: draftContentSchema,
+  content: writingContentSchema,
   lastSavedAt: z.string(),
   hasNewerVersion: z.boolean(),
 })
@@ -62,7 +62,7 @@ export const syncPullResponseSchema = z.object({
 
 export const writingVersionSummarySchema = z.object({
   id: z.number().int(),
-  draftId: z.number().int(),
+  writingId: z.number().int(),
   version: z.number().int(),
   title: z.string(),
   createdAt: z.string(),
@@ -70,7 +70,7 @@ export const writingVersionSummarySchema = z.object({
 })
 
 export const writingVersionDetailSchema = writingVersionSummarySchema.extend({
-  content: draftContentSchema,
+  content: writingContentSchema,
 })
 
 export const versionListResponseSchema = z.object({
@@ -81,3 +81,13 @@ export const versionListResponseSchema = z.object({
 
 export const writingIdParamSchema = z.coerce.number().int().positive()
 export const versionParamSchema = z.coerce.number().int().positive()
+
+// Re-export CRUD schemas
+export {
+  autosaveWritingBodySchema,
+  autosaveWritingResponseSchema,
+  createWritingBodySchema,
+  writingDetailSchema,
+  writingListResponseSchema,
+  writingSummarySchema,
+} from "./writing-crud-schemas"

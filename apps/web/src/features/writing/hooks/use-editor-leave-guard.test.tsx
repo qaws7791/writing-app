@@ -4,17 +4,17 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import {
-  type FlushPendingDraftResult,
+  type FlushPendingWritingResult,
   useEditorLeaveGuard,
 } from "./use-editor-leave-guard"
 
 function LeaveGuardHarness({
-  flushPendingDraft,
+  flushPendingWriting,
   hasPendingChanges,
   navigate,
-  pathname = "/write/1",
+  pathname = "/writing/1",
 }: {
-  flushPendingDraft: () => Promise<FlushPendingDraftResult>
+  flushPendingWriting: () => Promise<FlushPendingWritingResult>
   hasPendingChanges: boolean
   navigate: (href: string) => void
   pathname?: string
@@ -24,7 +24,7 @@ function LeaveGuardHarness({
     confirmPendingNavigation,
     isLeaveConfirmOpen,
   } = useEditorLeaveGuard({
-    flushPendingDraft,
+    flushPendingWriting,
     hasPendingChanges,
     navigate,
     pathname,
@@ -32,10 +32,10 @@ function LeaveGuardHarness({
 
   return (
     <div>
-      <a href="/write" onClick={(event) => event.preventDefault()}>
+      <a href="/writing" onClick={(event) => event.preventDefault()}>
         내 글
       </a>
-      <a href="/write/1#editor" onClick={(event) => event.preventDefault()}>
+      <a href="/writing/1#editor" onClick={(event) => event.preventDefault()}>
         현재 해시
       </a>
       <a href="https://example.com" onClick={(event) => event.preventDefault()}>
@@ -57,17 +57,18 @@ function LeaveGuardHarness({
 
 describe("useEditorLeaveGuard", () => {
   beforeEach(() => {
-    window.history.replaceState({}, "", "/write/1")
+    window.history.replaceState({}, "", "/writing/1")
   })
 
   test("does not intercept clean internal navigation", async () => {
     const user = userEvent.setup()
-    const flushPendingDraft = vi.fn<() => Promise<FlushPendingDraftResult>>()
+    const flushPendingWriting =
+      vi.fn<() => Promise<FlushPendingWritingResult>>()
     const navigate = vi.fn()
 
     render(
       <LeaveGuardHarness
-        flushPendingDraft={flushPendingDraft}
+        flushPendingWriting={flushPendingWriting}
         hasPendingChanges={false}
         navigate={navigate}
       />
@@ -75,20 +76,20 @@ describe("useEditorLeaveGuard", () => {
 
     await user.click(screen.getByRole("link", { name: "내 글" }))
 
-    expect(flushPendingDraft).not.toHaveBeenCalled()
+    expect(flushPendingWriting).not.toHaveBeenCalled()
     expect(navigate).not.toHaveBeenCalled()
   })
 
   test("flushes and navigates on dirty internal navigation", async () => {
     const user = userEvent.setup()
-    const flushPendingDraft = vi
-      .fn<() => Promise<FlushPendingDraftResult>>()
+    const flushPendingWriting = vi
+      .fn<() => Promise<FlushPendingWritingResult>>()
       .mockResolvedValue("saved")
     const navigate = vi.fn()
 
     render(
       <LeaveGuardHarness
-        flushPendingDraft={flushPendingDraft}
+        flushPendingWriting={flushPendingWriting}
         hasPendingChanges
         navigate={navigate}
       />
@@ -97,21 +98,21 @@ describe("useEditorLeaveGuard", () => {
     await user.click(screen.getByRole("link", { name: "내 글" }))
 
     await waitFor(() => {
-      expect(flushPendingDraft).toHaveBeenCalledTimes(1)
+      expect(flushPendingWriting).toHaveBeenCalledTimes(1)
     })
-    expect(navigate).toHaveBeenCalledWith("/write")
+    expect(navigate).toHaveBeenCalledWith("/writing")
   })
 
   test("opens a confirmation dialog when leave flush is blocked", async () => {
     const user = userEvent.setup()
-    const flushPendingDraft = vi
-      .fn<() => Promise<FlushPendingDraftResult>>()
+    const flushPendingWriting = vi
+      .fn<() => Promise<FlushPendingWritingResult>>()
       .mockResolvedValue("blocked")
     const navigate = vi.fn()
 
     render(
       <LeaveGuardHarness
-        flushPendingDraft={flushPendingDraft}
+        flushPendingWriting={flushPendingWriting}
         hasPendingChanges
         navigate={navigate}
       />
@@ -127,18 +128,18 @@ describe("useEditorLeaveGuard", () => {
 
     await user.click(screen.getByRole("link", { name: "내 글" }))
     await user.click(await screen.findByRole("button", { name: "나가기" }))
-    expect(navigate).toHaveBeenCalledWith("/write")
+    expect(navigate).toHaveBeenCalledWith("/writing")
   })
 
   test("registers beforeunload while there are pending changes", async () => {
-    const flushPendingDraft = vi
-      .fn<() => Promise<FlushPendingDraftResult>>()
+    const flushPendingWriting = vi
+      .fn<() => Promise<FlushPendingWritingResult>>()
       .mockResolvedValue("saved")
     const navigate = vi.fn()
 
     render(
       <LeaveGuardHarness
-        flushPendingDraft={flushPendingDraft}
+        flushPendingWriting={flushPendingWriting}
         hasPendingChanges
         navigate={navigate}
       />
@@ -149,19 +150,19 @@ describe("useEditorLeaveGuard", () => {
 
     expect(dispatchResult).toBe(false)
     await waitFor(() => {
-      expect(flushPendingDraft).toHaveBeenCalledTimes(1)
+      expect(flushPendingWriting).toHaveBeenCalledTimes(1)
     })
   })
 
   test("does not warn on beforeunload after rerendering to a clean state", async () => {
-    const flushPendingDraft = vi
-      .fn<() => Promise<FlushPendingDraftResult>>()
+    const flushPendingWriting = vi
+      .fn<() => Promise<FlushPendingWritingResult>>()
       .mockResolvedValue("saved")
     const navigate = vi.fn()
 
     const { rerender } = render(
       <LeaveGuardHarness
-        flushPendingDraft={flushPendingDraft}
+        flushPendingWriting={flushPendingWriting}
         hasPendingChanges
         navigate={navigate}
       />
@@ -169,7 +170,7 @@ describe("useEditorLeaveGuard", () => {
 
     rerender(
       <LeaveGuardHarness
-        flushPendingDraft={flushPendingDraft}
+        flushPendingWriting={flushPendingWriting}
         hasPendingChanges={false}
         navigate={navigate}
       />
@@ -179,18 +180,18 @@ describe("useEditorLeaveGuard", () => {
     const dispatchResult = window.dispatchEvent(event)
 
     expect(dispatchResult).toBe(true)
-    expect(flushPendingDraft).not.toHaveBeenCalled()
+    expect(flushPendingWriting).not.toHaveBeenCalled()
   })
 
   test("ignores modified, external, and same-document link clicks", async () => {
-    const flushPendingDraft = vi
-      .fn<() => Promise<FlushPendingDraftResult>>()
+    const flushPendingWriting = vi
+      .fn<() => Promise<FlushPendingWritingResult>>()
       .mockResolvedValue("saved")
     const navigate = vi.fn()
 
     render(
       <LeaveGuardHarness
-        flushPendingDraft={flushPendingDraft}
+        flushPendingWriting={flushPendingWriting}
         hasPendingChanges
         navigate={navigate}
       />
@@ -202,19 +203,19 @@ describe("useEditorLeaveGuard", () => {
     })
     fireEvent.click(screen.getByRole("link", { name: "현재 해시" }))
 
-    expect(flushPendingDraft).not.toHaveBeenCalled()
+    expect(flushPendingWriting).not.toHaveBeenCalled()
     expect(navigate).not.toHaveBeenCalled()
   })
 
   test("routes popstate through the leave flow when dirty", async () => {
-    const flushPendingDraft = vi
-      .fn<() => Promise<FlushPendingDraftResult>>()
+    const flushPendingWriting = vi
+      .fn<() => Promise<FlushPendingWritingResult>>()
       .mockResolvedValue("blocked")
     const navigate = vi.fn()
 
     render(
       <LeaveGuardHarness
-        flushPendingDraft={flushPendingDraft}
+        flushPendingWriting={flushPendingWriting}
         hasPendingChanges
         navigate={navigate}
       />
@@ -223,7 +224,7 @@ describe("useEditorLeaveGuard", () => {
     window.dispatchEvent(new PopStateEvent("popstate"))
 
     await waitFor(() => {
-      expect(flushPendingDraft).toHaveBeenCalledTimes(1)
+      expect(flushPendingWriting).toHaveBeenCalledTimes(1)
     })
     expect(screen.getByRole("button", { name: "나가기" })).toBeVisible()
   })

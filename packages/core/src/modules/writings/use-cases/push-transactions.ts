@@ -1,9 +1,9 @@
 import { err, ok, ResultAsync } from "neverthrow"
 import { match } from "ts-pattern"
 
-import type { DraftId, UserId } from "../../../shared/brand/index"
+import type { WritingId, UserId } from "../../../shared/brand/index"
 import type {
-  WritingRepository,
+  WritingSyncRepository,
   WritingTransactionRepository,
   WritingVersionRepository,
 } from "../writing-port"
@@ -20,7 +20,7 @@ import {
 import type { SyncPushInput, SyncPushResult } from "../writing-types"
 
 export type PushTransactionsDeps = {
-  readonly writingRepository: WritingRepository
+  readonly writingRepository: WritingSyncRepository
   readonly transactionRepository: WritingTransactionRepository
   readonly versionRepository: WritingVersionRepository
   readonly getNow: () => string
@@ -31,7 +31,7 @@ const VERSION_SNAPSHOT_INTERVAL = 10
 export function makePushTransactionsUseCase(deps: PushTransactionsDeps) {
   return (
     userId: UserId,
-    draftId: DraftId,
+    writingId: WritingId,
     input: SyncPushInput
   ): ResultAsync<SyncPushResult, WritingModuleError> => {
     if (input.transactions.length === 0) {
@@ -43,11 +43,11 @@ export function makePushTransactionsUseCase(deps: PushTransactionsDeps) {
     }
 
     return ResultAsync.fromSafePromise(
-      deps.writingRepository.getById(userId, draftId)
+      deps.writingRepository.getById(userId, writingId)
     ).andThen((access) =>
       match(access)
         .with({ kind: "not-found" }, () =>
-          err(writingNotFound("문서를 찾을 수 없습니다.", draftId))
+          err(writingNotFound("문서를 찾을 수 없습니다.", writingId))
         )
         .with({ kind: "forbidden" }, ({ ownerId }) =>
           err(
@@ -87,7 +87,7 @@ export function makePushTransactionsUseCase(deps: PushTransactionsDeps) {
             const version = nextVersion
             transactionPromises.push(
               deps.transactionRepository
-                .append(draftId, userId, version, tx.operations, tx.createdAt)
+                .append(writingId, userId, version, tx.operations, tx.createdAt)
                 .then(() => undefined)
             )
           }
@@ -97,7 +97,7 @@ export function makePushTransactionsUseCase(deps: PushTransactionsDeps) {
           return ResultAsync.fromSafePromise(
             Promise.all(transactionPromises)
               .then(() =>
-                deps.writingRepository.updateWithVersion(userId, draftId, {
+                deps.writingRepository.updateWithVersion(userId, writingId, {
                   content: currentContent,
                   title: currentTitle,
                   plainText: metrics.plainText,
@@ -139,7 +139,7 @@ export function makePushTransactionsUseCase(deps: PushTransactionsDeps) {
                         : ("auto" as const)
 
                   await deps.versionRepository.create({
-                    draftId,
+                    writingId,
                     userId,
                     version: nextVersion,
                     title: currentTitle,

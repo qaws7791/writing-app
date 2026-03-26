@@ -177,11 +177,11 @@ describe("prompts", () => {
   })
 })
 
-describe("drafts", () => {
-  test("creates draft from prompt and lists it", async () => {
+describe("writings", () => {
+  test("creates writing from prompt and lists it", async () => {
     const { app } = setup()
 
-    const create = await app.request("/drafts", {
+    const create = await app.request("/writings", {
       body: JSON.stringify({ sourcePromptId: 1 }),
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -190,7 +190,7 @@ describe("drafts", () => {
       id: number
       sourcePromptId: number | null
     }>(create)
-    const list = await app.request("/drafts")
+    const list = await app.request("/writings")
     const listBody = await readJson<{ items: Array<{ id: number }> }>(list)
 
     expect(create.status).toBe(201)
@@ -198,10 +198,10 @@ describe("drafts", () => {
     expect(listBody.items[0]?.id).toBe(created.id)
   })
 
-  test("creates draft with initial title and content", async () => {
+  test("creates writing with initial title and content", async () => {
     const { app } = setup()
 
-    const create = await app.request("/drafts", {
+    const create = await app.request("/writings", {
       body: JSON.stringify({
         content: {
           content: [
@@ -234,14 +234,14 @@ describe("drafts", () => {
   test("autosaves tiptap json and returns derived metrics", async () => {
     const { app } = setup()
 
-    const create = await app.request("/drafts", {
+    const create = await app.request("/writings", {
       body: JSON.stringify({}),
       headers: { "content-type": "application/json" },
       method: "POST",
     })
     const created = await readJson<{ id: number }>(create)
 
-    const patch = await app.request(`/drafts/${created.id}`, {
+    const patch = await app.request(`/writings/${created.id}`, {
       body: JSON.stringify({
         content: {
           content: [
@@ -263,7 +263,7 @@ describe("drafts", () => {
     })
 
     const patchBody = await readJson<{
-      draft: {
+      writing: {
         characterCount: number
         content: { type: string }
         preview: string
@@ -275,17 +275,17 @@ describe("drafts", () => {
 
     expect(patch.status).toBe(200)
     expect(patchBody.kind).toBe("autosaved")
-    expect(patchBody.draft.title).toBe("자동저장 테스트")
-    expect(patchBody.draft.content.type).toBe("doc")
-    expect(patchBody.draft.preview).toContain("첫 문장")
-    expect(patchBody.draft.characterCount).toBeGreaterThan(0)
-    expect(patchBody.draft.wordCount).toBeGreaterThan(0)
+    expect(patchBody.writing.title).toBe("자동저장 테스트")
+    expect(patchBody.writing.content.type).toBe("doc")
+    expect(patchBody.writing.preview).toContain("첫 문장")
+    expect(patchBody.writing.characterCount).toBeGreaterThan(0)
+    expect(patchBody.writing.wordCount).toBeGreaterThan(0)
   })
 
   test("reloads the same json structure after autosave", async () => {
     const { app } = setup()
 
-    const create = await app.request("/drafts", {
+    const create = await app.request("/writings", {
       body: JSON.stringify({}),
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -303,28 +303,28 @@ describe("drafts", () => {
       type: "doc",
     }
 
-    await app.request(`/drafts/${created.id}`, {
+    await app.request(`/writings/${created.id}`, {
       body: JSON.stringify({ content }),
       headers: { "content-type": "application/json" },
       method: "PATCH",
     })
 
-    const detail = await app.request(`/drafts/${created.id}`)
+    const detail = await app.request(`/writings/${created.id}`)
     const body = await readJson<{ content: typeof content }>(detail)
 
     expect(detail.status).toBe(200)
     expect(body.content).toEqual(content)
   })
 
-  test("deletes drafts and keeps home resume ordering stable", async () => {
+  test("deletes writings and keeps home resume ordering stable", async () => {
     const { app } = setup()
 
-    const firstCreate = await app.request("/drafts", {
+    const firstCreate = await app.request("/writings", {
       body: JSON.stringify({}),
       headers: { "content-type": "application/json" },
       method: "POST",
     })
-    const secondCreate = await app.request("/drafts", {
+    const secondCreate = await app.request("/writings", {
       body: JSON.stringify({}),
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -333,45 +333,45 @@ describe("drafts", () => {
     const first = await readJson<{ id: number }>(firstCreate)
     const second = await readJson<{ id: number }>(secondCreate)
 
-    await app.request(`/drafts/${first.id}`, {
-      body: JSON.stringify({ title: "첫 초안" }),
+    await app.request(`/writings/${first.id}`, {
+      body: JSON.stringify({ title: "첫 글" }),
       headers: { "content-type": "application/json" },
       method: "PATCH",
     })
-    await app.request(`/drafts/${second.id}`, {
-      body: JSON.stringify({ title: "둘째 초안" }),
+    await app.request(`/writings/${second.id}`, {
+      body: JSON.stringify({ title: "둘째 글" }),
       headers: { "content-type": "application/json" },
       method: "PATCH",
     })
 
     const home = await app.request("/home")
     const homeBody = await readJson<{
-      recentDrafts: Array<{ id: number }>
-      resumeDraft: { id: number } | null
+      recentWritings: Array<{ id: number }>
+      resumeWriting: { id: number } | null
     }>(home)
-    const deleted = await app.request(`/drafts/${second.id}`, {
+    const deleted = await app.request(`/writings/${second.id}`, {
       method: "DELETE",
     })
-    const list = await app.request("/drafts")
+    const list = await app.request("/writings")
     const listBody = await readJson<{ items: Array<{ id: number }> }>(list)
 
-    expect(homeBody.resumeDraft?.id).toBe(second.id)
-    expect(homeBody.recentDrafts[0]?.id).toBe(second.id)
+    expect(homeBody.resumeWriting?.id).toBe(second.id)
+    expect(homeBody.recentWritings[0]?.id).toBe(second.id)
     expect(deleted.status).toBe(204)
     expect(listBody.items.map((item) => item.id)).toEqual([first.id])
   })
 
-  test("rejects malformed draft payloads", async () => {
+  test("rejects malformed writing payloads", async () => {
     const { app } = setup()
 
-    const create = await app.request("/drafts", {
+    const create = await app.request("/writings", {
       body: JSON.stringify({}),
       headers: { "content-type": "application/json" },
       method: "POST",
     })
     const created = await readJson<{ id: number }>(create)
 
-    const response = await app.request(`/drafts/${created.id}`, {
+    const response = await app.request(`/writings/${created.id}`, {
       body: JSON.stringify({
         content: {
           content: [],
@@ -390,14 +390,14 @@ describe("drafts", () => {
 
   test("rejects empty autosave payloads", async () => {
     const { app } = setup()
-    const create = await app.request("/drafts", {
+    const create = await app.request("/writings", {
       body: JSON.stringify({}),
       headers: { "content-type": "application/json" },
       method: "POST",
     })
     const created = await readJson<{ id: number }>(create)
 
-    const response = await app.request(`/drafts/${created.id}`, {
+    const response = await app.request(`/writings/${created.id}`, {
       body: JSON.stringify({}),
       headers: { "content-type": "application/json" },
       method: "PATCH",
@@ -410,7 +410,7 @@ describe("drafts", () => {
 
   test("rejects invalid raw json bodies", async () => {
     const { app } = setup()
-    const response = await app.request("/drafts", {
+    const response = await app.request("/writings", {
       body: "{invalid",
       headers: { "content-type": "application/json" },
       method: "POST",
@@ -421,10 +421,10 @@ describe("drafts", () => {
     expect(body.error.code).toBe("invalid_json")
   })
 
-  test("rejects malformed create draft payloads", async () => {
+  test("rejects malformed create writing payloads", async () => {
     const { app } = setup()
 
-    const response = await app.request("/drafts", {
+    const response = await app.request("/writings", {
       body: JSON.stringify({
         title: "x".repeat(201),
       }),
@@ -437,31 +437,31 @@ describe("drafts", () => {
     expect(body.error.code).toBe("validation_error")
   })
 
-  test("returns forbidden for drafts owned by another user", async () => {
-    const { app, injectForeignDraft } = setup()
-    const created = injectForeignDraft({
-      title: "숨겨진 초안",
+  test("returns forbidden for writings owned by another user", async () => {
+    const { app, injectForeignWriting } = setup()
+    const created = injectForeignWriting({
+      title: "숨겨진 글",
     })
 
-    const response = await app.request(`/drafts/${created.id}`)
+    const response = await app.request(`/writings/${created.id}`)
     const body = await readJson<{ error: { code: string } }>(response)
 
     expect(response.status).toBe(403)
     expect(body.error.code).toBe("forbidden")
   })
 
-  test("returns not found for missing drafts", async () => {
+  test("returns not found for missing writings", async () => {
     const { app } = setup()
-    const response = await app.request("/drafts/999")
+    const response = await app.request("/writings/999")
     const body = await readJson<{ error: { code: string } }>(response)
 
     expect(response.status).toBe(404)
     expect(body.error.code).toBe("not_found")
   })
 
-  test("rejects invalid draft ids", async () => {
+  test("rejects invalid writing ids", async () => {
     const { app } = setup()
-    const response = await app.request("/drafts/invalid")
+    const response = await app.request("/writings/invalid")
     const body = await readJson<{ error: { code: string } }>(response)
 
     expect(response.status).toBe(400)
@@ -587,7 +587,7 @@ describe("logging", () => {
     )
   })
 
-  test("serves the openapi document for recursive draft schemas", async () => {
+  test("serves the openapi document for recursive writing schemas", async () => {
     const { entries, logger } = createCapturedLogger()
     const api = createTestApi({
       logger,
@@ -608,9 +608,9 @@ describe("logging", () => {
 
     expect(response.status).toBe(200)
     expect(body.openapi).toBe("3.0.0")
-    expect(body.paths).toHaveProperty("/drafts")
-    expect(body.paths).toHaveProperty("/drafts/{draftId}")
-    expect(body.components?.schemas).toHaveProperty("DraftContent")
+    expect(body.paths).toHaveProperty("/writings")
+    expect(body.paths).toHaveProperty("/writings/{writingId}")
+    expect(body.components?.schemas).toHaveProperty("WritingContent")
     expect(body.components?.schemas).toHaveProperty("TiptapNode")
     expect(failed).toBeUndefined()
   })

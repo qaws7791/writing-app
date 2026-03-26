@@ -7,7 +7,7 @@ export function formatSavedAt(value: string): string {
   }).format(new Date(value))
 }
 
-export function formatDraftMeta(value: string): string {
+export function formatWritingMeta(value: string): string {
   return new Intl.DateTimeFormat("ko-KR", {
     month: "numeric",
     day: "numeric",

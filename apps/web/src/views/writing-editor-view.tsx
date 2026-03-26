@@ -6,36 +6,38 @@ import { usePathname, useRouter } from "next/navigation"
 import { WritingEditorBody } from "@/features/writing/components/writing-editor-body"
 import { WritingEditorDialogs } from "@/features/writing/components/writing-editor-dialogs"
 import { WritingEditorHeader } from "@/features/writing/components/writing-editor-header"
-import { useDraftDetailQuery } from "@/features/writing/hooks/use-draft-detail-query"
-import { useDraftPromptQuery } from "@/features/writing/hooks/use-draft-prompt-query"
-import { useEditorDraft } from "@/features/writing/hooks/use-editor-draft"
-import { useDraftAutosave } from "@/features/writing/hooks/use-draft-autosave"
-import { useDeleteDraftMutation } from "@/features/writing/hooks/use-delete-draft-mutation"
+import { useWritingDetailQuery } from "@/features/writing/hooks/use-writing-detail-query"
+import { useWritingPromptQuery } from "@/features/writing/hooks/use-writing-prompt-query"
+import { useEditorWriting } from "@/features/writing/hooks/use-editor-writing"
+import { useWritingAutosave } from "@/features/writing/hooks/use-writing-autosave"
+import { useDeleteWritingMutation } from "@/features/writing/hooks/use-delete-writing-mutation"
 import { useSaveVersionMutation } from "@/features/writing/hooks/use-save-version-mutation"
 import { useEditorLeaveGuard } from "@/features/writing/hooks/use-editor-leave-guard"
 import type { VersionDetail } from "@/features/writing/sync/types"
 
-import styles from "@/features/writing/components/write-editor-page.module.css"
+import styles from "@/features/writing/components/writing-editor-page.module.css"
 
 export type WritingEditorViewProps = {
-  draftId: number
+  writingId: number
 }
 
-export default function WritingEditorView({ draftId }: WritingEditorViewProps) {
+export default function WritingEditorView({
+  writingId,
+}: WritingEditorViewProps) {
   const router = useRouter()
   const pathname = usePathname()
 
   // --- Server State ---
-  const draftQuery = useDraftDetailQuery(draftId)
-  const promptQuery = useDraftPromptQuery(
-    draftId,
-    draftQuery.data?.sourcePromptId ?? null
+  const writingQuery = useWritingDetailQuery(writingId)
+  const promptQuery = useWritingPromptQuery(
+    writingId,
+    writingQuery.data?.sourcePromptId ?? null
   )
 
   // --- Editor State ---
   const {
-    editorDraft,
-    editorDraftRef,
+    editorWriting,
+    editorWritingRef,
     getContent,
     handleContentChange,
     handleTitleInput,
@@ -44,13 +46,13 @@ export default function WritingEditorView({ draftId }: WritingEditorViewProps) {
     markSynced,
     restoreFromVersion,
     titleRef,
-  } = useEditorDraft({ draftDetail: draftQuery.data, draftId })
+  } = useEditorWriting({ writingDetail: writingQuery.data, writingId })
 
   // --- Autosave ---
-  const { flushPendingDraft, markSaved, syncState } = useDraftAutosave({
-    draftId,
-    editorDraftRef,
-    isReady: draftQuery.data !== undefined,
+  const { flushPendingWriting, markSaved, syncState } = useWritingAutosave({
+    writingId,
+    editorWritingRef,
+    isReady: writingQuery.data !== undefined,
     lastSyncedSnapshotRef,
     markSynced,
   })
@@ -61,14 +63,14 @@ export default function WritingEditorView({ draftId }: WritingEditorViewProps) {
     confirmPendingNavigation,
     isLeaveConfirmOpen,
   } = useEditorLeaveGuard({
-    flushPendingDraft,
+    flushPendingWriting,
     hasPendingChanges,
     navigate: (href) => router.push(href),
     pathname,
   })
 
   // --- Mutations ---
-  const deleteMutation = useDeleteDraftMutation()
+  const deleteMutation = useDeleteWritingMutation()
   const saveVersionMutation = useSaveVersionMutation()
 
   // --- Dialog States ---
@@ -97,19 +99,19 @@ export default function WritingEditorView({ draftId }: WritingEditorViewProps) {
   }
 
   const handleDelete = async () => {
-    if (draftQuery.data) {
-      await deleteMutation.mutateAsync(draftQuery.data.id)
+    if (writingQuery.data) {
+      await deleteMutation.mutateAsync(writingQuery.data.id)
     }
-    router.push("/write")
+    router.push("/writing")
   }
 
   const handleSaveVersion = async () => {
-    await flushPendingDraft()
-    const current = editorDraftRef.current
+    await flushPendingWriting()
+    const current = editorWritingRef.current
 
     try {
       await saveVersionMutation.mutateAsync({
-        draftId,
+        writingId,
         title: current.title,
         content: current.content,
       })
@@ -129,22 +131,22 @@ export default function WritingEditorView({ draftId }: WritingEditorViewProps) {
       className={`${styles.page} flex min-h-0 flex-1 flex-col bg-background text-foreground`}
     >
       <WritingEditorHeader
-        editorTitle={editorDraft.title}
-        loading={draftQuery.isLoading}
+        editorTitle={editorWriting.title}
+        loading={writingQuery.isLoading}
         onDeleteClick={() => setDeleteDialogOpen(true)}
         onExportClick={() => setExportModalOpen(true)}
         onSaveVersion={() => void handleSaveVersion()}
         onShare={handleShare}
         onVersionHistoryClick={() => setVersionHistoryModalOpen(true)}
-        persistedDraft={draftQuery.data ?? null}
+        persistedWriting={writingQuery.data ?? null}
         syncState={syncState}
       />
 
       <WritingEditorBody
-        editorDraft={editorDraft}
+        editorWriting={editorWriting}
         loadError={
-          draftQuery.error
-            ? "초안을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+          writingQuery.error
+            ? "글을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
             : null
         }
         onContentChange={handleContentChange}
@@ -157,7 +159,7 @@ export default function WritingEditorView({ draftId }: WritingEditorViewProps) {
         cancelPendingNavigation={cancelPendingNavigation}
         confirmPendingNavigation={confirmPendingNavigation}
         deleteDialogOpen={deleteDialogOpen}
-        draftId={draftId}
+        writingId={writingId}
         exportModalOpen={exportModalOpen}
         getContent={getContent}
         isLeaveConfirmOpen={isLeaveConfirmOpen}

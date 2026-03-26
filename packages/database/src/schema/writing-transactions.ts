@@ -7,16 +7,16 @@ import {
   unique,
 } from "drizzle-orm/sqlite-core"
 
-import { drafts } from "./drafts.js"
+import { writings } from "./writings.js"
 import { user } from "./auth.js"
 
 export const writingTransactions = sqliteTable(
   "writing_transactions",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
-    draftId: integer("draft_id")
+    writingId: integer("writing_id")
       .notNull()
-      .references(() => drafts.id, { onDelete: "cascade" }),
+      .references(() => writings.id, { onDelete: "cascade" }),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
@@ -27,7 +27,10 @@ export const writingTransactions = sqliteTable(
     createdAt: text("created_at").notNull(),
   },
   (table) => [
-    unique("writing_tx_draft_version_uniq").on(table.draftId, table.version),
-    index("writing_tx_draft_since_idx").on(table.draftId, table.version),
+    unique("writing_tx_writing_version_uniq").on(
+      table.writingId,
+      table.version
+    ),
+    index("writing_tx_writing_since_idx").on(table.writingId, table.version),
   ]
 )

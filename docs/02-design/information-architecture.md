@@ -14,7 +14,7 @@ status: active
     - 홈(/)
     - 글감 찾기(/prompts)
     - 학습 활동(/courses)
-    - 글쓰기(/write)
+    - 글쓰기(/writing)
     - 프로필(/profile)
 
 ## 네비게이션 구조

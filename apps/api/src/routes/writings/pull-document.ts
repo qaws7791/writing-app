@@ -4,7 +4,7 @@ import {
   syncPullResponseSchema,
   writingIdParamSchema,
 } from "@workspace/core/modules/writings"
-import { toDraftId } from "@workspace/core"
+import { toWritingId } from "@workspace/core"
 
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -42,10 +42,10 @@ app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { writingId } = c.req.valid("param")
   const query = c.req.valid("query")
-  const { writingUseCases } = c.var.services
-  const result = await writingUseCases.pullDocument(
+  const { writingSyncUseCases } = c.var.services
+  const result = await writingSyncUseCases.pullDocument(
     userId,
-    toDraftId(writingId),
+    toWritingId(writingId),
     query.since
   )
   return c.json(result, 200)

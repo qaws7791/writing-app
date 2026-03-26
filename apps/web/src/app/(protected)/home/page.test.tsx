@@ -31,7 +31,7 @@ describe("home page", () => {
     ).toBeInTheDocument()
   })
 
-  test("renders today prompts and resume draft from home snapshot", async () => {
+  test("renders today prompts and resume writing from home snapshot", async () => {
     repository.getHome.mockResolvedValue(createHomeSnapshot())
 
     render(<Page />)
@@ -40,19 +40,19 @@ describe("home page", () => {
     expect(
       screen
         .getAllByRole("link")
-        .some((link) => link.getAttribute("href") === "/write/11")
+        .some((link) => link.getAttribute("href") === "/writing/11")
     ).toBe(true)
-    expect(screen.getAllByText("이어서 쓰는 초안")).toHaveLength(2)
+    expect(screen.getAllByText("이어서 쓰는 글")).toHaveLength(2)
     expect(
       screen.getByRole("link", { name: /오늘의 글감 1/i })
     ).toHaveAttribute("href", "/prompts/31")
   })
 
-  test("shows saved prompts in saved tab and empty drafts fallback", async () => {
+  test("shows saved prompts in saved tab and empty writings fallback", async () => {
     repository.getHome.mockResolvedValue(
       createHomeSnapshot({
-        recentDrafts: [],
-        resumeDraft: null,
+        recentWritings: [],
+        resumeWriting: null,
         savedPrompts: [],
         todayPrompts: [],
       })

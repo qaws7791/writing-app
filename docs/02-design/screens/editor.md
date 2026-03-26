@@ -12,7 +12,7 @@ status: active
 
 - 홈의 추천 글감 또는 이어서 쓰기
 - 글감 상세의 바로 쓰기
-- 글 목록의 새 글 쓰기 또는 초안 선택
+- 글 목록의 새 글 쓰기 또는 글 선택
 
 ## 범위
 
@@ -41,7 +41,7 @@ status: active
 - 상단 헤더와 하단 툴바는 떠 있지만 시선을 빼앗지 않는다.
 - 저장 상태는 화면의 조용한 위치에서 짧게 인지된다.
 
-### 빈 초안 상태
+### 빈 글 상태
 
 - 제목 또는 첫 문장을 시작할 수 있는 가벼운 힌트를 제공한다.
 - 힌트는 장황하지 않고 입력 전 불안을 낮추는 수준에 그친다.
@@ -81,7 +81,7 @@ status: active
 
 ## 연결 features
 
-- [[02-design/features/start-new-draft]]
+- [[02-design/features/start-new-writing]]
 - [[02-design/features/resume-writing]]
 - [[02-design/features/editor-writing]]
 - [[02-design/features/autosave-feedback]]
@@ -90,5 +90,5 @@ status: active
 
 - [[02-design/user-flows/start-writing-today]]
 - [[02-design/user-flows/discover-prompt-and-start]]
-- [[02-design/user-flows/resume-draft]]
-- [[02-design/user-flows/create-new-draft-and-write]]
+- [[02-design/user-flows/resume-writing]]
+- [[02-design/user-flows/create-new-writing]]

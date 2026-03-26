@@ -44,8 +44,8 @@ status: active
 
 - [[02-design/user-flows/start-writing-today]]
 - [[02-design/user-flows/discover-prompt-and-start]]
-- [[02-design/user-flows/resume-draft]]
-- [[02-design/user-flows/create-new-draft-and-write]]
+- [[02-design/user-flows/resume-writing]]
+- [[02-design/user-flows/create-new-writing]]
 
 ## 연결 screens
 

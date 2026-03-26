@@ -1,21 +1,21 @@
 import type { FormEvent, RefObject } from "react"
 
 import WritingBodyEditor from "@/features/writing/components/writing-body-editor"
-import type { EditorDraftSnapshot } from "@/domain/draft/model/draft-sync.service"
-import type { DraftContent } from "@/domain/draft"
+import type { EditorWritingSnapshot } from "@/domain/writing/model/writing-sync.service"
+import type { WritingContent } from "@/domain/writing"
 import type { PromptDetail } from "@/domain/prompt"
 
 type WritingEditorBodyProps = {
-  editorDraft: EditorDraftSnapshot
+  editorWriting: EditorWritingSnapshot
   loadError: string | null
-  onContentChange: (nextContent: DraftContent) => void
+  onContentChange: (nextContent: WritingContent) => void
   onTitleInput: (event: FormEvent<HTMLHeadingElement>) => void
   prompt: PromptDetail | null
   titleRef: RefObject<HTMLHeadingElement | null>
 }
 
 export function WritingEditorBody({
-  editorDraft,
+  editorWriting,
   loadError,
   onContentChange,
   onTitleInput,
@@ -58,7 +58,7 @@ export function WritingEditorBody({
           />
 
           <WritingBodyEditor
-            initialContent={editorDraft.content}
+            initialContent={editorWriting.content}
             onContentChange={onContentChange}
           />
         </div>

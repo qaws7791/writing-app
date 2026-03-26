@@ -7,7 +7,7 @@ import { requireUserId } from "../../http/require-user-id"
 
 const route = createRoute({
   description:
-    "오늘의 글감, 최근 초안, 이어쓸 초안, 저장된 글감을 한 번에 조회합니다.",
+    "오늘의 글감, 최근 글, 이어쓸 글, 저장된 글감을 한 번에 조회합니다.",
   method: "get",
   path: "/home",
   responses: {

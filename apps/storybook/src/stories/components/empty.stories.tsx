@@ -31,7 +31,7 @@ export const Showcase: Story = {
         <EmptyMedia variant="icon">
           <HugeiconsIcon icon={Note01Icon} strokeWidth={2} />
         </EmptyMedia>
-        <EmptyTitle>No drafts yet</EmptyTitle>
+        <EmptyTitle>No writings yet</EmptyTitle>
         <EmptyDescription>
           Start with a clean canvas and build a calm, high-contrast reading
           experience.
@@ -44,7 +44,7 @@ export const Showcase: Story = {
             strokeWidth={2}
             data-icon="inline-start"
           />
-          Create first draft
+          Create first writing
         </Button>
       </EmptyContent>
     </Empty>

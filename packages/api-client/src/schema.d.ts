@@ -462,7 +462,7 @@ export interface paths {
     }
     /**
      * 홈 조회
-     * @description 오늘의 글감, 최근 초안, 이어쓸 초안, 저장된 글감을 한 번에 조회합니다.
+     * @description 오늘의 글감, 최근 글, 이어쓸 글, 저장된 글감을 한 번에 조회합니다.
      */
     get: {
       parameters: {
@@ -480,7 +480,7 @@ export interface paths {
           }
           content: {
             "application/json": {
-              recentDrafts: {
+              recentWritings: {
                 characterCount: number
                 id: number
                 lastSavedAt: string
@@ -489,7 +489,7 @@ export interface paths {
                 title: string
                 wordCount: number
               }[]
-              resumeDraft: {
+              resumeWriting: {
                 characterCount: number
                 id: number
                 lastSavedAt: string
@@ -851,7 +851,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  "/drafts": {
+  "/writings": {
     parameters: {
       query?: never
       header?: never
@@ -859,8 +859,8 @@ export interface paths {
       cookie?: never
     }
     /**
-     * 초안 목록 조회
-     * @description 현재 사용자의 초안 목록을 최근 수정 순으로 조회합니다.
+     * 글 목록 조회
+     * @description 현재 사용자의 글 목록을 최근 수정 순으로 조회합니다.
      */
     get: {
       parameters: {
@@ -871,7 +871,7 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description 초안 목록 */
+        /** @description 글 목록 */
         200: {
           headers: {
             [name: string]: unknown
@@ -909,8 +909,8 @@ export interface paths {
     }
     put?: never
     /**
-     * 초안 생성
-     * @description 새 초안을 생성합니다. 글감을 기반으로 생성할 수 있습니다.
+     * 글 생성
+     * @description 새 글을 생성합니다. 글감을 기반으로 생성할 수 있습니다.
      */
     post: {
       parameters: {
@@ -922,14 +922,14 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
-            content?: components["schemas"]["DraftContent"]
+            content?: components["schemas"]["WritingContent"]
             sourcePromptId?: number
             title?: string
           }
         }
       }
       responses: {
-        /** @description 초안 생성 완료 */
+        /** @description 글 생성 완료 */
         201: {
           headers: {
             [name: string]: unknown
@@ -943,7 +943,7 @@ export interface paths {
               sourcePromptId: number | null
               title: string
               wordCount: number
-              content: components["schemas"]["DraftContent"]
+              content: components["schemas"]["WritingContent"]
               createdAt: string
               updatedAt: string
             }
@@ -972,7 +972,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  "/drafts/{draftId}": {
+  "/writings/{writingId}": {
     parameters: {
       query?: never
       header?: never
@@ -980,21 +980,21 @@ export interface paths {
       cookie?: never
     }
     /**
-     * 초안 상세 조회
-     * @description 특정 초안의 전체 내용을 조회합니다.
+     * 글 상세 조회
+     * @description 특정 글의 전체 내용을 조회합니다.
      */
     get: {
       parameters: {
         query?: never
         header?: never
         path: {
-          draftId: number
+          writingId: number
         }
         cookie?: never
       }
       requestBody?: never
       responses: {
-        /** @description 초안 상세 */
+        /** @description 글 상세 */
         200: {
           headers: {
             [name: string]: unknown
@@ -1008,7 +1008,7 @@ export interface paths {
               sourcePromptId: number | null
               title: string
               wordCount: number
-              content: components["schemas"]["DraftContent"]
+              content: components["schemas"]["WritingContent"]
               createdAt: string
               updatedAt: string
             }
@@ -1034,21 +1034,21 @@ export interface paths {
     put?: never
     post?: never
     /**
-     * 초안 삭제
-     * @description 특정 초안을 영구적으로 삭제합니다.
+     * 글 삭제
+     * @description 특정 글을 영구적으로 삭제합니다.
      */
     delete: {
       parameters: {
         query?: never
         header?: never
         path: {
-          draftId: number
+          writingId: number
         }
         cookie?: never
       }
       requestBody?: never
       responses: {
-        /** @description 초안 삭제 완료 */
+        /** @description 글 삭제 완료 */
         204: {
           headers: {
             [name: string]: unknown
@@ -1075,22 +1075,22 @@ export interface paths {
     options?: never
     head?: never
     /**
-     * 초안 자동 저장
-     * @description 초안의 제목 또는 본문을 자동 저장합니다.
+     * 글 자동 저장
+     * @description 글의 제목 또는 본문을 자동 저장합니다.
      */
     patch: {
       parameters: {
         query?: never
         header?: never
         path: {
-          draftId: number
+          writingId: number
         }
         cookie?: never
       }
       requestBody: {
         content: {
           "application/json": {
-            content?: components["schemas"]["DraftContent"]
+            content?: components["schemas"]["WritingContent"]
             title?: string
           }
         }
@@ -1103,7 +1103,7 @@ export interface paths {
           }
           content: {
             "application/json": {
-              draft: {
+              writing: {
                 characterCount: number
                 id: number
                 lastSavedAt: string
@@ -1111,7 +1111,7 @@ export interface paths {
                 sourcePromptId: number | null
                 title: string
                 wordCount: number
-                content: components["schemas"]["DraftContent"]
+                content: components["schemas"]["WritingContent"]
                 createdAt: string
                 updatedAt: string
               }
@@ -1175,7 +1175,7 @@ export interface paths {
                 | {
                     /** @enum {string} */
                     type: "setContent"
-                    content: components["schemas"]["DraftContent"]
+                    content: components["schemas"]["WritingContent"]
                   }
               )[]
               createdAt: string
@@ -1201,7 +1201,7 @@ export interface paths {
                   /** @enum {boolean} */
                   accepted: false
                   serverVersion: number
-                  serverContent: components["schemas"]["DraftContent"]
+                  serverContent: components["schemas"]["WritingContent"]
                   serverTitle: string
                 }
           }
@@ -1262,7 +1262,7 @@ export interface paths {
             "application/json": {
               version: number
               title: string
-              content: components["schemas"]["DraftContent"]
+              content: components["schemas"]["WritingContent"]
               lastSavedAt: string
               hasNewerVersion: boolean
             }
@@ -1326,7 +1326,7 @@ export interface paths {
             "application/json": {
               items: {
                 id: number
-                draftId: number
+                writingId: number
                 version: number
                 title: string
                 createdAt: string
@@ -1392,13 +1392,13 @@ export interface paths {
           content: {
             "application/json": {
               id: number
-              draftId: number
+              writingId: number
               version: number
               title: string
               createdAt: string
               /** @enum {string} */
               reason: "auto" | "manual" | "restore"
-              content: components["schemas"]["DraftContent"]
+              content: components["schemas"]["WritingContent"]
             }
           }
         }
@@ -1495,7 +1495,7 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
-    DraftContent: {
+    WritingContent: {
       content?: components["schemas"]["TiptapNode"][]
       /** @enum {string} */
       type: "doc"

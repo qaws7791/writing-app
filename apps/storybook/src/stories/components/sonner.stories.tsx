@@ -22,14 +22,14 @@ export const Showcase: Story = {
       <Toaster />
       <Button
         variant="outline"
-        onClick={() => toast("Draft saved successfully.")}
+        onClick={() => toast("Writing saved successfully.")}
       >
         Basic toast
       </Button>
       <Button
         onClick={() =>
           toast("Editorial review requested.", {
-            description: "The draft has been sent to the assigned editor.",
+            description: "The writing has been sent to the assigned editor.",
           })
         }
       >

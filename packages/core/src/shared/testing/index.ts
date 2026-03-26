@@ -1,4 +1,4 @@
 /**
- * @deprecated Import from "../../modules/drafts/testing" instead.
+ * @deprecated Import from "../../modules/writings/testing" instead.
  */
-export { FakeDraftRepository } from "./fake-draft-repository"
+export { FakeWritingRepository } from "./fake-writing-repository"

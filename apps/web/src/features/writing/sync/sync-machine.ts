@@ -1,11 +1,11 @@
 import { assign, setup } from "xstate"
 
-import type { DraftContent } from "@workspace/core"
+import type { WritingContent } from "@workspace/core"
 
 // --- Context ---
 
 export type SyncMachineContext = {
-  draftId: number
+  writingId: number
   baseVersion: number
   retryCount: number
   maxRetries: number
@@ -15,7 +15,7 @@ export type SyncMachineContext = {
   isOnline: boolean
   conflictData: {
     serverVersion: number
-    serverContent: DraftContent
+    serverContent: WritingContent
     serverTitle: string
   } | null
 }
@@ -29,7 +29,7 @@ export type SyncMachineEvent =
   | {
       type: "SYNC_CONFLICT"
       serverVersion: number
-      serverContent: DraftContent
+      serverContent: WritingContent
       serverTitle: string
     }
   | { type: "SYNC_ERROR"; error: string }
@@ -50,7 +50,7 @@ export const syncMachine = setup({
   types: {
     context: {} as SyncMachineContext,
     events: {} as SyncMachineEvent,
-    input: {} as { draftId: number; baseVersion: number },
+    input: {} as { writingId: number; baseVersion: number },
   },
   delays: {
     debounce: DEBOUNCE_MS,
@@ -69,7 +69,7 @@ export const syncMachine = setup({
   id: "sync",
   type: "parallel",
   context: ({ input }) => ({
-    draftId: input.draftId,
+    writingId: input.writingId,
     baseVersion: input.baseVersion,
     retryCount: 0,
     maxRetries: 5,

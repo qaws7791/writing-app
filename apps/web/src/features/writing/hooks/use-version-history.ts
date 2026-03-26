@@ -7,19 +7,19 @@ import {
   createVersionDataSource,
   type VersionDataSource,
 } from "@/features/writing/repositories/version-data-source"
-import { versionQueryKeys } from "@/features/writing/hooks/draft-query-keys"
+import { versionQueryKeys } from "@/features/writing/hooks/writing-query-keys"
 import type { VersionDetail } from "@/features/writing/sync/types"
 
 type UseVersionHistoryOptions = {
   dataSource?: VersionDataSource
-  draftId: number
+  writingId: number
   onRestoreComplete?: (detail: VersionDetail) => void
   open: boolean
 }
 
 export function useVersionHistory({
   dataSource,
-  draftId,
+  writingId,
   onRestoreComplete,
   open,
 }: UseVersionHistoryOptions) {
@@ -49,15 +49,15 @@ export function useVersionHistory({
   }
 
   const versionsQuery = useQuery({
-    queryKey: versionQueryKeys.list(draftId),
-    queryFn: () => getSource().listVersions(draftId, 50),
+    queryKey: versionQueryKeys.list(writingId),
+    queryFn: () => getSource().listVersions(writingId, 50),
     enabled: open,
     select: (data) => data.items,
   })
 
   const detailQuery = useQuery({
-    queryKey: versionQueryKeys.detail(draftId, selectedVersion ?? -1),
-    queryFn: () => getSource().getVersion(draftId, selectedVersion!),
+    queryKey: versionQueryKeys.detail(writingId, selectedVersion ?? -1),
+    queryFn: () => getSource().getVersion(writingId, selectedVersion!),
     enabled: open && selectedVersion !== null,
   })
 
@@ -68,7 +68,7 @@ export function useVersionHistory({
         throw new Error("선택된 버전이 일치하지 않습니다.")
       }
 
-      await getSource().push(draftId, {
+      await getSource().push(writingId, {
         baseVersion: version,
         transactions: [
           {

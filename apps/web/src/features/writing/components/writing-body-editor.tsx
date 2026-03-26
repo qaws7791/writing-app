@@ -14,8 +14,8 @@ import { createPortal } from "react-dom"
 import { AIReviewExtension } from "@/features/ai-assistant/components/ai-review-extension"
 import { AIReviewCard } from "@/features/ai-assistant/components/ai-review-card"
 import { AISuggestionPanel } from "@/features/ai-assistant/components/ai-suggestion-panel"
-import type { DraftContent } from "@/domain/draft"
-import { createEmptyDraftContent } from "@/domain/draft/model/draft.service"
+import type { WritingContent } from "@/domain/writing"
+import { createEmptyWritingContent } from "@/domain/writing/model/writing.service"
 
 import { useAISuggestion } from "@/features/writing/hooks/use-ai-suggestion"
 import { useAIReview } from "@/features/writing/hooks/use-ai-review"
@@ -26,8 +26,8 @@ import styles from "./writing-body-editor.module.css"
 // --- 타입 ---
 
 type WritingBodyEditorProps = {
-  initialContent?: DraftContent
-  onContentChange?: (content: DraftContent) => void
+  initialContent?: WritingContent
+  onContentChange?: (content: WritingContent) => void
   placeholder?: string
 }
 
@@ -97,7 +97,7 @@ export default function WritingBodyEditor({
   const editorClassName = styles.editor ?? ""
   const editorShellClassName = styles.editorShell ?? ""
   const serializedInitialContent = JSON.stringify(
-    initialContent ?? createEmptyDraftContent()
+    initialContent ?? createEmptyWritingContent()
   )
 
   const [snapshot, setSnapshot] = useState(initialEditorSnapshot)
@@ -118,7 +118,7 @@ export default function WritingBodyEditor({
       }),
       AIReviewExtension,
     ],
-    content: initialContent ?? createEmptyDraftContent(),
+    content: initialContent ?? createEmptyWritingContent(),
     immediatelyRender: false,
     editorProps: {
       attributes: {
@@ -126,7 +126,7 @@ export default function WritingBodyEditor({
       },
     },
     onUpdate({ editor: currentEditor }) {
-      onContentChange?.(currentEditor.getJSON() as DraftContent)
+      onContentChange?.(currentEditor.getJSON() as WritingContent)
     },
   })
 
@@ -150,8 +150,8 @@ export default function WritingBodyEditor({
   useEffect(() => {
     if (!editor) return
 
-    const nextContent = JSON.parse(serializedInitialContent) as DraftContent
-    const currentContent = editor.getJSON() as DraftContent
+    const nextContent = JSON.parse(serializedInitialContent) as WritingContent
+    const currentContent = editor.getJSON() as WritingContent
 
     if (JSON.stringify(currentContent) === serializedInitialContent) {
       return

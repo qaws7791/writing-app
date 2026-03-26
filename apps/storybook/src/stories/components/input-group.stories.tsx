@@ -37,7 +37,7 @@ export const Showcase: Story = {
   render: () => (
     <FieldGroup className="max-w-2xl">
       <Field>
-        <FieldLabel htmlFor="input-group-search">Search drafts</FieldLabel>
+        <FieldLabel htmlFor="input-group-search">Search writings</FieldLabel>
         <InputGroup>
           <InputGroupInput
             id="input-group-search"

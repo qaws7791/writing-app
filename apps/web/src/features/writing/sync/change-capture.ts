@@ -1,4 +1,4 @@
-import type { DraftContent } from "@workspace/core"
+import type { WritingContent } from "@workspace/core"
 import type { Operation } from "./types"
 
 /**
@@ -7,7 +7,7 @@ import type { Operation } from "./types"
  * 전체 content를 하나의 setContent Operation으로 캡처한다.
  * 이는 단일 사용자 환경에서 충분하며 구현 복잡도를 크게 줄인다.
  */
-export function captureContentChange(newContent: DraftContent): Operation[] {
+export function captureContentChange(newContent: WritingContent): Operation[] {
   return [
     {
       type: "setContent",
@@ -27,7 +27,7 @@ export function captureTitleChange(newTitle: string): Operation[] {
 
 export function captureFullSnapshot(
   title: string,
-  content: DraftContent
+  content: WritingContent
 ): Operation[] {
   const ops: Operation[] = []
 

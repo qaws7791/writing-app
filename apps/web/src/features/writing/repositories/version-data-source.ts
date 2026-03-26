@@ -10,13 +10,16 @@ import { env } from "@/foundation/config/env"
 import { resolveBrowserApiBaseUrl } from "@/foundation/lib/api-base-url"
 
 export type VersionDataSource = {
-  getVersion: (draftId: number, version: number) => Promise<VersionDetail>
+  getVersion: (writingId: number, version: number) => Promise<VersionDetail>
   listVersions: (
-    draftId: number,
+    writingId: number,
     limit?: number
   ) => Promise<{ items: VersionSummary[] }>
-  pull: (draftId: number, sinceVersion?: number) => Promise<SyncPullResponse>
-  push: (draftId: number, request: SyncPushRequest) => Promise<SyncPushResponse>
+  pull: (writingId: number, sinceVersion?: number) => Promise<SyncPullResponse>
+  push: (
+    writingId: number,
+    request: SyncPushRequest
+  ) => Promise<SyncPushResponse>
 }
 
 export function createVersionDataSource(): VersionDataSource {
@@ -32,9 +35,11 @@ export function createVersionDataSource(): VersionDataSource {
   })
 
   return {
-    getVersion: (draftId, version) => transport.getVersion(draftId, version),
-    listVersions: (draftId, limit) => transport.listVersions(draftId, limit),
-    pull: (draftId, sinceVersion) => transport.pull(draftId, sinceVersion),
-    push: (draftId, request) => transport.push(draftId, request),
+    getVersion: (writingId, version) =>
+      transport.getVersion(writingId, version),
+    listVersions: (writingId, limit) =>
+      transport.listVersions(writingId, limit),
+    pull: (writingId, sinceVersion) => transport.pull(writingId, sinceVersion),
+    push: (writingId, request) => transport.push(writingId, request),
   }
 }

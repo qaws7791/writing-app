@@ -37,7 +37,7 @@ export default function LandingPage() {
               끝까지 적어내는 공간
             </h1>
             <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground md:text-lg">
-              이메일 기반 계정으로 초안과 저장한 글감을 안전하게 이어가세요.
+              이메일 기반 계정으로 글과 저장한 글감을 안전하게 이어가세요.
               화려한 방해 대신, 오래 머물 수 있는 편집 환경에 집중했습니다.
             </p>
 
@@ -63,7 +63,7 @@ export default function LandingPage() {
                 Focus
               </p>
               <p className="mt-3 text-lg font-semibold">
-                글감 탐색, 저장, 초안 이어쓰기를 한 계정으로 묶습니다.
+                글감 탐색, 저장, 글 이어쓰기를 한 계정으로 묶습니다.
               </p>
             </article>
             <article className="rounded-[1.75rem] border border-foreground/10 bg-background/88 p-5">

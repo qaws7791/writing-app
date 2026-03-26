@@ -1,4 +1,4 @@
-import type { DraftDetail, HomeSnapshot } from "@/domain/draft"
+import type { WritingDetail, HomeSnapshot } from "@/domain/writing"
 import { createApiClient } from "@/foundation/api/client"
 import { throwOnError } from "@/foundation/api/error"
 import { env } from "@/foundation/config/env"
@@ -16,21 +16,21 @@ export type HomeRepository = {
 
 export type HomeRepositoryMode = "api" | "local"
 
-function readDrafts(storage: StorageLike): DraftDetail[] {
-  const raw = storage.getItem(storageKeys.drafts)
+function readWritings(storage: StorageLike): WritingDetail[] {
+  const raw = storage.getItem(storageKeys.writings)
   if (!raw) {
     return []
   }
 
   try {
-    return JSON.parse(raw) as DraftDetail[]
+    return JSON.parse(raw) as WritingDetail[]
   } catch {
     return []
   }
 }
 
-function sortDrafts(drafts: DraftDetail[]): DraftDetail[] {
-  return [...drafts].sort((left, right) => {
+function sortWritings(writings: WritingDetail[]): WritingDetail[] {
+  return [...writings].sort((left, right) => {
     if (left.updatedAt === right.updatedAt) {
       return right.id - left.id
     }
@@ -44,10 +44,10 @@ export function createLocalHomeRepository(
 ): HomeRepository {
   return {
     async getHome() {
-      const drafts = sortDrafts(readDrafts(storage))
+      const writings = sortWritings(readWritings(storage))
       return {
-        recentDrafts: drafts,
-        resumeDraft: drafts[0] ?? null,
+        recentWritings: writings,
+        resumeWriting: writings[0] ?? null,
         savedPrompts: [],
         todayPrompts: [],
       }

@@ -10,9 +10,9 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
-import { formatDraftMeta } from "@/foundation/lib/format"
-import type { DraftDetail } from "@/domain/draft"
-import type { DraftSyncState } from "@/domain/draft/model/draft-sync.service"
+import { formatWritingMeta } from "@/foundation/lib/format"
+import type { WritingDetail } from "@/domain/writing"
+import type { WritingSyncState } from "@/domain/writing/model/writing-sync.service"
 import { Button } from "@workspace/ui/components/button"
 import { buttonVariants } from "@workspace/ui/components/button.styles"
 import {
@@ -33,8 +33,8 @@ type WritingEditorHeaderProps = {
   onSaveVersion: () => void
   onShare: () => void
   onVersionHistoryClick: () => void
-  persistedDraft: DraftDetail | null
-  syncState: DraftSyncState
+  persistedWriting: WritingDetail | null
+  syncState: WritingSyncState
 }
 
 export function WritingEditorHeader({
@@ -45,7 +45,7 @@ export function WritingEditorHeader({
   onSaveVersion,
   onShare,
   onVersionHistoryClick,
-  persistedDraft,
+  persistedWriting,
   syncState,
 }: WritingEditorHeaderProps) {
   return (
@@ -53,7 +53,7 @@ export function WritingEditorHeader({
       <div className="pointer-events-auto flex h-20 items-center justify-between px-4 md:px-6">
         <Link
           aria-label="뒤로 가기"
-          href="/write"
+          href="/writing"
           className={buttonVariants({
             size: "icon",
             variant: "outline",
@@ -69,12 +69,12 @@ export function WritingEditorHeader({
           <p className="truncate text-xs text-muted-foreground">
             {syncState === "saving" && "임시 저장 중"}
             {syncState === "saved" &&
-              (persistedDraft
-                ? `임시 저장됨 · ${formatDraftMeta(persistedDraft.lastSavedAt)}`
+              (persistedWriting
+                ? `임시 저장됨 · ${formatWritingMeta(persistedWriting.lastSavedAt)}`
                 : "임시 저장됨")}
             {syncState === "error" && "저장 지연 중"}
             {syncState === "idle" &&
-              (loading ? "초안 준비 중" : "입력을 시작하면 저장됩니다")}
+              (loading ? "글 준비 중" : "입력을 시작하면 저장됩니다")}
           </p>
         </div>
 

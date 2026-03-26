@@ -1,8 +1,8 @@
 import {
   createDailyRecommendationRepository,
-  createDraftRepository,
-  createPromptRepository,
   createWritingRepository,
+  createPromptRepository,
+  createWritingSyncRepository,
   createWritingTransactionRepository,
   createWritingVersionRepository,
   migrateDatabase,
@@ -14,11 +14,11 @@ import {
 import type { AppServices } from "../app-env"
 import { createApp } from "../app"
 import {
-  createDraftApiService,
+  createWritingApiService,
   createHomeApiService,
   createPromptApiService,
 } from "../application-services"
-import { createWritingApiService } from "../writing-services"
+import { createWritingSyncApiService } from "../writing-services"
 import { createAuth } from "../auth/auth"
 import { createDevEmailPort } from "../auth/auth-email"
 import { apiEnv } from "../config/env"
@@ -74,38 +74,38 @@ export async function createApiDependencies(
   }
 
   const promptRepository = createPromptRepository(database.db)
-  const draftRepository = createDraftRepository(database.db)
+  const writingRepository = createWritingRepository(database.db)
   const dailyRecommendationRepository = createDailyRecommendationRepository(
     database.db
   )
-  const writingRepository = createWritingRepository(database.db)
+  const writingSyncRepository = createWritingSyncRepository(database.db)
   const writingTransactionRepository = createWritingTransactionRepository(
     database.db
   )
   const writingVersionRepository = createWritingVersionRepository(database.db)
 
   const promptUseCases = createPromptApiService(promptRepository)
-  const draftUseCases = createDraftApiService({
-    draftRepository,
+  const writingUseCases = createWritingApiService({
+    writingRepository,
     promptRepository,
   })
   const homeUseCases = createHomeApiService({
     dailyRecommendationRepository,
-    draftRepository,
+    writingRepository,
     promptRepository,
   })
-  const writingUseCases = createWritingApiService({
-    writingRepository,
+  const writingSyncUseCases = createWritingSyncApiService({
+    writingRepository: writingSyncRepository,
     transactionRepository: writingTransactionRepository,
     versionRepository: writingVersionRepository,
   })
 
   const services: AppServices = {
     authHandler: auth.handler,
-    draftUseCases,
+    writingUseCases,
     homeUseCases,
     promptUseCases,
-    writingUseCases,
+    writingSyncUseCases,
     readLatestAuthEmail:
       process.env.NODE_ENV !== "production"
         ? authEmailPort.readLatestMessage

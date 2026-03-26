@@ -1,4 +1,4 @@
-import type { DraftContent } from "@workspace/core"
+import type { WritingContent } from "@workspace/core"
 
 // --- Operation (Delta) ---
 
@@ -9,7 +9,7 @@ export type SetTitleOperation = {
 
 export type SetContentOperation = {
   readonly type: "setContent"
-  readonly content: DraftContent
+  readonly content: WritingContent
 }
 
 export type Operation = SetTitleOperation | SetContentOperation
@@ -19,9 +19,9 @@ export type Operation = SetTitleOperation | SetContentOperation
 export type SyncStatus = "synced" | "pending" | "conflict"
 
 export type LocalDocument = {
-  draftId: number
+  writingId: number
   title: string
-  content: DraftContent
+  content: WritingContent
   baseVersion: number
   localVersion: number
   lastModifiedAt: string
@@ -34,7 +34,7 @@ export type PendingTransactionStatus = "pending" | "sending" | "failed"
 
 export type PendingTransaction = {
   id?: number
-  draftId: number
+  writingId: number
   baseVersion: number
   operations: Operation[]
   createdAt: string
@@ -45,10 +45,10 @@ export type PendingTransaction = {
 
 export type LocalVersion = {
   id?: number
-  draftId: number
+  writingId: number
   version: number
   title: string
-  content: DraftContent
+  content: WritingContent
   createdAt: string
   source: "auto" | "server" | "restore"
 }
@@ -70,14 +70,14 @@ export type SyncPushResponse =
   | {
       accepted: false
       serverVersion: number
-      serverContent: DraftContent
+      serverContent: WritingContent
       serverTitle: string
     }
 
 export type SyncPullResponse = {
   version: number
   title: string
-  content: DraftContent
+  content: WritingContent
   lastSavedAt: string
   hasNewerVersion: boolean
 }
@@ -86,7 +86,7 @@ export type SyncPullResponse = {
 
 export type VersionSummary = {
   id: number
-  draftId: number
+  writingId: number
   version: number
   title: string
   createdAt: string
@@ -94,7 +94,7 @@ export type VersionSummary = {
 }
 
 export type VersionDetail = VersionSummary & {
-  content: DraftContent
+  content: WritingContent
 }
 
 // --- Sync State ---
@@ -111,8 +111,8 @@ export type SyncState =
 // --- Multi-tab Messages ---
 
 export type TabMessage =
-  | { type: "LOCAL_CHANGE"; draftId: number; tabId: string }
-  | { type: "SYNC_COMPLETE"; draftId: number; version: number; tabId: string }
+  | { type: "LOCAL_CHANGE"; writingId: number; tabId: string }
+  | { type: "SYNC_COMPLETE"; writingId: number; version: number; tabId: string }
   | { type: "LEADER_CLAIM"; tabId: string; timestamp: number }
   | { type: "LEADER_ACK"; tabId: string }
   | { type: "TAB_CLOSING"; tabId: string }

@@ -1,15 +1,15 @@
 import { and, desc, eq, gt } from "drizzle-orm"
 import {
-  toDraftId,
+  toWritingId,
   toUserId,
-  type DraftId,
+  type WritingId,
   type UserId,
-  type DraftContent,
+  type WritingContent,
 } from "@workspace/core"
 import type {
   Writing,
-  WritingAccessResult,
-  WritingRepository,
+  WritingSyncAccessResult,
+  WritingSyncRepository,
   WritingTransactionRepository,
   WritingVersionRepository,
   WritingVersionDetail,
@@ -18,21 +18,21 @@ import type {
   Operation,
 } from "@workspace/core/modules/writings"
 
-import { drafts } from "../schema/index.js"
+import { writings } from "../schema/index.js"
 import { writingTransactions } from "../schema/writing-transactions.js"
 import { writingVersions } from "../schema/writing-versions.js"
 import type {
   DbClient,
-  DraftRow,
+  WritingRow,
   WritingTransactionRow,
   WritingVersionRow,
 } from "../types/index.js"
 
 // --- Mappers ---
 
-function mapRowToWriting(row: DraftRow): Writing {
+function mapRowToWriting(row: WritingRow): Writing {
   return {
-    id: toDraftId(row.id),
+    id: toWritingId(row.id),
     userId: toUserId(row.userId),
     version: row.version ?? 1,
     title: row.title,
@@ -49,7 +49,7 @@ function mapRowToWriting(row: DraftRow): Writing {
 function mapTransactionRow(row: WritingTransactionRow): StoredTransaction {
   return {
     id: row.id,
-    draftId: toDraftId(row.draftId),
+    writingId: toWritingId(row.writingId),
     userId: toUserId(row.userId),
     version: row.version,
     operations: row.operationsJson as Operation[],
@@ -60,7 +60,7 @@ function mapTransactionRow(row: WritingTransactionRow): StoredTransaction {
 function mapVersionRow(row: WritingVersionRow): WritingVersionDetail {
   return {
     id: row.id,
-    draftId: toDraftId(row.draftId),
+    writingId: toWritingId(row.writingId),
     version: row.version,
     title: row.title,
     content: row.contentJson,
@@ -72,7 +72,7 @@ function mapVersionRow(row: WritingVersionRow): WritingVersionDetail {
 function mapVersionSummaryRow(row: WritingVersionRow): WritingVersionSummary {
   return {
     id: row.id,
-    draftId: toDraftId(row.draftId),
+    writingId: toWritingId(row.writingId),
     version: row.version,
     title: row.title,
     createdAt: row.createdAt,
@@ -82,13 +82,15 @@ function mapVersionSummaryRow(row: WritingVersionRow): WritingVersionSummary {
 
 // --- Repositories ---
 
-export function createWritingRepository(database: DbClient): WritingRepository {
-  function loadRow(draftId: DraftId): DraftRow | null {
+export function createWritingSyncRepository(
+  database: DbClient
+): WritingSyncRepository {
+  function loadRow(writingId: WritingId): WritingRow | null {
     return (
       database
         .select()
-        .from(drafts)
-        .where(eq(drafts.id, draftId as number))
+        .from(writings)
+        .where(eq(writings.id, writingId as number))
         .limit(1)
         .get() ?? null
     )
@@ -97,9 +99,9 @@ export function createWritingRepository(database: DbClient): WritingRepository {
   return {
     async getById(
       userId: UserId,
-      draftId: DraftId
-    ): Promise<WritingAccessResult> {
-      const row = loadRow(draftId)
+      writingId: WritingId
+    ): Promise<WritingSyncAccessResult> {
+      const row = loadRow(writingId)
 
       if (!row) {
         return { kind: "not-found" }
@@ -112,8 +114,8 @@ export function createWritingRepository(database: DbClient): WritingRepository {
       return { kind: "writing", writing: mapRowToWriting(row) }
     },
 
-    async updateWithVersion(userId, draftId, input) {
-      const row = loadRow(draftId)
+    async updateWithVersion(userId, writingId, input) {
+      const row = loadRow(writingId)
 
       if (!row) {
         return { kind: "not-found" }
@@ -131,7 +133,7 @@ export function createWritingRepository(database: DbClient): WritingRepository {
       const now = new Date().toISOString()
 
       database
-        .update(drafts)
+        .update(writings)
         .set({
           bodyJson: input.content,
           bodyPlainText: input.plainText,
@@ -142,10 +144,10 @@ export function createWritingRepository(database: DbClient): WritingRepository {
           version: input.version,
           wordCount: input.wordCount,
         })
-        .where(eq(drafts.id, draftId as number))
+        .where(eq(writings.id, writingId as number))
         .run()
 
-      const updated = loadRow(draftId)
+      const updated = loadRow(writingId)
 
       if (!updated) {
         return { kind: "not-found" }
@@ -160,11 +162,11 @@ export function createWritingTransactionRepository(
   database: DbClient
 ): WritingTransactionRepository {
   return {
-    async append(draftId, userId, version, operations, createdAt) {
+    async append(writingId, userId, version, operations, createdAt) {
       const row = database
         .insert(writingTransactions)
         .values({
-          draftId: draftId as number,
+          writingId: writingId as number,
           userId: userId as string,
           version,
           operationsJson: operations,
@@ -176,13 +178,13 @@ export function createWritingTransactionRepository(
       return mapTransactionRow(row)
     },
 
-    async listSince(draftId, sinceVersion) {
+    async listSince(writingId, sinceVersion) {
       const rows = database
         .select()
         .from(writingTransactions)
         .where(
           and(
-            eq(writingTransactions.draftId, draftId as number),
+            eq(writingTransactions.writingId, writingId as number),
             gt(writingTransactions.version, sinceVersion)
           )
         )
@@ -202,7 +204,7 @@ export function createWritingVersionRepository(
       const row = database
         .insert(writingVersions)
         .values({
-          draftId: input.draftId as number,
+          writingId: input.writingId as number,
           userId: input.userId as string,
           version: input.version,
           title: input.title,
@@ -216,11 +218,11 @@ export function createWritingVersionRepository(
       return mapVersionRow(row)
     },
 
-    async list(draftId, limit = 50) {
+    async list(writingId, limit = 50) {
       const rows = database
         .select()
         .from(writingVersions)
-        .where(eq(writingVersions.draftId, draftId as number))
+        .where(eq(writingVersions.writingId, writingId as number))
         .orderBy(desc(writingVersions.version))
         .limit(limit)
         .all()
@@ -228,14 +230,14 @@ export function createWritingVersionRepository(
       return rows.map(mapVersionSummaryRow)
     },
 
-    async getByVersion(draftId, version) {
+    async getByVersion(writingId, version) {
       const row =
         database
           .select()
           .from(writingVersions)
           .where(
             and(
-              eq(writingVersions.draftId, draftId as number),
+              eq(writingVersions.writingId, writingId as number),
               eq(writingVersions.version, version)
             )
           )

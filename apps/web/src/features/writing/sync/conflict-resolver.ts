@@ -1,11 +1,11 @@
-import type { DraftContent } from "@workspace/core"
+import type { WritingContent } from "@workspace/core"
 
 import type { LocalDocument } from "./types"
 import { deleteAllPendingTransactions, putDocument } from "./local-db"
 
 export type ConflictData = {
   serverVersion: number
-  serverContent: DraftContent
+  serverContent: WritingContent
   serverTitle: string
 }
 
@@ -16,11 +16,11 @@ export type ConflictData = {
  * (Last-Writer-Wins: 가장 최근 동기화 성공한 쪽이 우선)
  */
 export async function resolveConflict(
-  draftId: number,
+  writingId: number,
   conflictResponse: ConflictData
 ): Promise<LocalDocument> {
   const resolvedDoc: LocalDocument = {
-    draftId,
+    writingId,
     title: conflictResponse.serverTitle,
     content: conflictResponse.serverContent,
     baseVersion: conflictResponse.serverVersion,
@@ -29,7 +29,7 @@ export async function resolveConflict(
     syncStatus: "synced",
   }
 
-  await deleteAllPendingTransactions(draftId)
+  await deleteAllPendingTransactions(writingId)
   await putDocument(resolvedDoc)
 
   return resolvedDoc
@@ -40,13 +40,13 @@ export async function resolveConflict(
  * 보류 트랜잭션이 없는 경우에만 사용.
  */
 export async function applyServerState(
-  draftId: number,
+  writingId: number,
   serverVersion: number,
   serverTitle: string,
-  serverContent: DraftContent
+  serverContent: WritingContent
 ): Promise<LocalDocument> {
   const doc: LocalDocument = {
-    draftId,
+    writingId,
     title: serverTitle,
     content: serverContent,
     baseVersion: serverVersion,

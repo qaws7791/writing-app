@@ -1,9 +1,9 @@
 "use client"
 
 import { useHomeQuery } from "@/features/home/hooks/use-home-query"
-import { ResumeDraftCard } from "@/features/home/components/resume-draft-card"
+import { ResumeWritingCard } from "@/features/home/components/resume-writing-card"
 import { TodayPromptsSection } from "@/features/home/components/today-prompts-section"
-import { HomeDraftsTab } from "@/features/home/components/home-drafts-tab"
+import { HomeWritingsTab } from "@/features/home/components/home-writings-tab"
 import { HomeSavedPromptsTab } from "@/features/home/components/home-saved-prompts-tab"
 import {
   Tabs,
@@ -15,9 +15,9 @@ import {
 export default function HomeView() {
   const { data: home, isLoading, isError } = useHomeQuery()
 
-  const resumeDraft = home?.resumeDraft ?? null
+  const resumeWriting = home?.resumeWriting ?? null
   const todayPrompts = home?.todayPrompts ?? []
-  const recentDrafts = home?.recentDrafts ?? []
+  const recentWritings = home?.recentWritings ?? []
   const savedPrompts = home?.savedPrompts ?? []
 
   return (
@@ -33,7 +33,7 @@ export default function HomeView() {
           </div>
         </section>
 
-        {resumeDraft && <ResumeDraftCard draft={resumeDraft} />}
+        {resumeWriting && <ResumeWritingCard writing={resumeWriting} />}
 
         <TodayPromptsSection
           prompts={todayPrompts}
@@ -42,14 +42,17 @@ export default function HomeView() {
         />
 
         <section>
-          <Tabs defaultValue="drafts">
+          <Tabs defaultValue="writings">
             <TabsList className="mb-6 gap-0">
-              <TabsTrigger value="drafts">내가 쓰는 글</TabsTrigger>
+              <TabsTrigger value="writings">내가 쓰는 글</TabsTrigger>
               <TabsTrigger value="saved">저장한 글감</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="drafts">
-              <HomeDraftsTab drafts={recentDrafts} isLoading={isLoading} />
+            <TabsContent value="writings">
+              <HomeWritingsTab
+                writings={recentWritings}
+                isLoading={isLoading}
+              />
             </TabsContent>
 
             <TabsContent value="saved">

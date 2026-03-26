@@ -3,7 +3,7 @@ import {
   versionListResponseSchema,
   writingIdParamSchema,
 } from "@workspace/core/modules/writings"
-import { toDraftId } from "@workspace/core"
+import { toWritingId } from "@workspace/core"
 
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -43,10 +43,10 @@ app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { writingId } = c.req.valid("param")
   const query = c.req.valid("query")
-  const { writingUseCases } = c.var.services
-  const items = await writingUseCases.listVersions(
+  const { writingSyncUseCases } = c.var.services
+  const items = await writingSyncUseCases.listVersions(
     userId,
-    toDraftId(writingId),
+    toWritingId(writingId),
     query.limit
   )
   return c.json({ items }, 200)

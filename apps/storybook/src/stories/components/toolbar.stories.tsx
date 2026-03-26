@@ -101,7 +101,7 @@ function FormattingToolbar() {
         <ToolbarSeparator />
 
         <ToolbarLink
-          href="https://writing.app/preview/editorial-draft"
+          href="https://writing.app/preview/editorial-writing"
           target="_blank"
           rel="noreferrer"
           variant="outline"

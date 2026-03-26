@@ -3,15 +3,15 @@
 import { useMutation } from "@tanstack/react-query"
 import { useEffect, useRef } from "react"
 
-import type { DraftContent } from "@/domain/draft"
+import type { WritingContent } from "@/domain/writing"
 import {
   createVersionDataSource,
   type VersionDataSource,
 } from "@/features/writing/repositories/version-data-source"
 
 type SaveVersionInput = {
-  content: DraftContent
-  draftId: number
+  content: WritingContent
+  writingId: number
   title: string
 }
 
@@ -23,12 +23,12 @@ export function useSaveVersionMutation(dataSource?: VersionDataSource) {
   }, [dataSource])
 
   return useMutation({
-    mutationFn: async ({ draftId, title, content }: SaveVersionInput) => {
+    mutationFn: async ({ writingId, title, content }: SaveVersionInput) => {
       const source = sourceRef.current ?? createVersionDataSource()
 
-      const pulled = await source.pull(draftId)
+      const pulled = await source.pull(writingId)
 
-      await source.push(draftId, {
+      await source.push(writingId, {
         baseVersion: pulled.version,
         transactions: [
           {

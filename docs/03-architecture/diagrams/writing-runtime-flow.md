@@ -24,7 +24,7 @@ sequenceDiagram
 
     User->>Web: 글감 선택 후 작성 시작
     Web->>API: 새 글 생성 요청
-    API->>DB: Writing 초안 생성
+    API->>DB: Writing 글 생성
     DB-->>API: writingId / 초기 버전
     API-->>Web: 편집기 초기 상태
 

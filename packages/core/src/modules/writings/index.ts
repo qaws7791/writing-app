@@ -5,7 +5,7 @@ export type {
   SetContentOperation,
   WritingTransaction,
   Writing,
-  WritingAccessResult,
+  WritingSyncAccessResult,
   SyncPushInput,
   SyncPushAccepted,
   SyncPushConflict,
@@ -47,7 +47,7 @@ export {
 
 // Ports
 export type {
-  WritingRepository,
+  WritingSyncRepository,
   WritingTransactionRepository,
   WritingVersionRepository,
 } from "./writing-port"
@@ -72,3 +72,51 @@ export {
   makeListVersionsUseCase,
   makeGetVersionUseCase,
 } from "./use-cases/index"
+
+// CRUD
+export type {
+  WritingFull,
+  WritingCrudAccessResult,
+  WritingDeleteResult,
+  WritingDetail,
+  WritingMutationResult,
+  WritingPersistInput,
+  WritingSummary,
+} from "./writing-types"
+
+export type { WritingRepository } from "./writing-crud-port"
+
+export type { PromptReferenceNotFoundError } from "./writing-crud-error"
+
+export {
+  buildWriting,
+  createPreview,
+  updateWritingContent,
+  updateWritingTitle,
+} from "./writing-crud-operations"
+
+export {
+  autosaveWritingBodySchema,
+  autosaveWritingResponseSchema,
+  createWritingBodySchema,
+  writingDetailSchema,
+  writingListResponseSchema,
+  writingSummarySchema,
+} from "./writing-crud-schemas"
+
+export type {
+  AutosaveWritingDeps,
+  AutosaveWritingInput,
+  CreateWritingDeps,
+  CreateWritingInput,
+  DeleteWritingDeps,
+  GetWritingDeps,
+  ListWritingsDeps,
+} from "./crud-use-cases/index"
+export {
+  makeAutosaveWritingUseCase,
+  makeCreateWritingUseCase,
+  makeDeleteWritingUseCase,
+  makeGetWritingUseCase,
+  makeListWritingsUseCase,
+} from "./crud-use-cases/index"

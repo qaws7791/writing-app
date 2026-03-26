@@ -16,7 +16,7 @@ status: active
 - [[02-design/features/prompt-discovery]]
 - [[02-design/features/prompt-save]]
 - [[02-design/features/resume-writing]]
-- [[02-design/features/start-new-draft]]
+- [[02-design/features/start-new-writing]]
 - [[02-design/features/editor-writing]]
 - [[02-design/features/autosave-feedback]]
 

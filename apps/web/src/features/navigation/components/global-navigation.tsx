@@ -23,7 +23,7 @@ const links = [
     label: "글감 찾기",
   },
   {
-    href: "/write",
+    href: "/writing",
     icon: PencilEdit02Icon,
     label: "내 글",
   },

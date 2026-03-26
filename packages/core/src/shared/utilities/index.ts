@@ -1,7 +1,7 @@
 export {
-  createEmptyDraftContent,
-  extractDraftTextMetrics,
-} from "./draft-content-utilities"
+  createEmptyWritingContent,
+  extractWritingTextMetrics,
+} from "./writing-content-utilities"
 
 export {
   ConflictError,

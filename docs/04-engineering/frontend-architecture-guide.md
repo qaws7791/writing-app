@@ -10,7 +10,7 @@ description: Feature-Sliced Design 기반 4-Layer 아키텍처로 구성된 apps
 - **FSD(Feature-Sliced Design) 기반 4-Layer 아키텍처**(`views` → `features` → `domain` → `foundation`)가 적용되어 있습니다.
 - 구현 범위: 홈, 글감 목록/상세, 글 목록, 글쓰기(에디터), 인증(로그인·회원가입·비밀번호 재설정) 화면
 - API 클라이언트는 `packages/api-client`를 통해 타입 세이프하게 사용합니다.
-- 글쓰기 초안은 로컬 IndexedDB + 서버 동기화 엔진(XState 상태 머신 기반)으로 관리합니다.
+- 글쓰기 글은 로컬 IndexedDB + 서버 동기화 엔진(XState 상태 머신 기반)으로 관리합니다.
 
 ## 레이어 구조
 
@@ -41,7 +41,7 @@ app/
  │   ┣━ prompts/page.tsx
  │   ┣━ prompts/[id]/page.tsx
  │   ┣━ write/page.tsx                  ← 새 글쓰기
- │   └━ write/[id]/page.tsx             ← 기존 초안 편집
+ │   └━ write/[id]/page.tsx             ← 기존 글 편집
  ┣━ sign-in/, sign-up/
  ┣━ forgot-password/, reset-password/
 ```
@@ -58,7 +58,7 @@ views/
  ┣━ home-view.tsx
  ┣━ prompts-view.tsx
  ┣━ prompt-detail-view.tsx
- ┣━ write-list-view.tsx
+ ┣━ writing-list-view.tsx
  ┣━ writing-page-view.tsx              ← "use client" — 글쓰기 화면 조립
  ┣━ sign-in-view.tsx
  ┣━ sign-up-view.tsx
@@ -90,7 +90,7 @@ features/
  │   │   ┣━ use-document-hydration.ts
  │   │   └━ use-editor-leave-guard.ts
  │   ┣━ repositories/
- │   │   └━ app-repository.ts           ← 서버 API 요청 (초안 CRUD·동기화)
+ │   │   └━ app-repository.ts           ← 서버 API 요청 (글 CRUD·동기화)
  │   ┣━ sync/                           ← 오프라인·멀티탭 동기화 엔진
  │   │   ┣━ sync-machine.ts            ← XState 상태 머신
  │   │   ┣━ sync-engine.ts
@@ -133,11 +133,11 @@ domain/
  │   ┣━ model/
  │   │   └━ auth.types.ts
  │   └━ index.ts
- ┣━ draft/
+ ┣━ writing/
  │   ┣━ model/
- │   │   ┣━ draft.types.ts             ← DraftSummary·DraftDetail·HomeSnapshot
- │   │   ┣━ draft.service.ts           ← 순수 변환 함수 (content → HTML/text 등)
- │   │   └━ draft-sync.service.ts      ← 동기화 관련 순수 로직 (스냅샷 생성·직렬화)
+ │   │   ┣━ writing.types.ts             ← WritingSummary·WritingDetail·HomeSnapshot
+ │   │   ┣━ writing.service.ts           ← 순수 변환 함수 (content → HTML/text 등)
+ │   │   └━ writing-sync.service.ts      ← 동기화 관련 순수 로직 (스냅샷 생성·직렬화)
  │   └━ index.ts
  └━ prompt/
      ┣━ model/
@@ -188,9 +188,9 @@ foundation/
 ## 코드 패턴
 
 - `writing-body-editor.tsx`는 Tiptap 에디터 인스턴스와 AI 확장을 하나로 묶은 핵심 클라이언트 컴포넌트입니다.
-- `use-writing-page.ts`는 글쓰기 화면 전체 상태(에디터 초안, 동기화 상태, 모달 등)를 오케스트레이션하는 커스텀 훅입니다.
+- `use-writing-page.ts`는 글쓰기 화면 전체 상태(에디터 글, 동기화 상태, 모달 등)를 오케스트레이션하는 커스텀 훅입니다.
 - `features/writing/sync/sync-machine.ts`는 XState 상태 머신으로 동기화 흐름(`CHANGE_DETECTED → SYNC_SUCCESS/CONFLICT`)을 선언합니다.
-- `features/writing/repositories/app-repository.ts`는 서버 API 초안 CRUD를 담당합니다.
+- `features/writing/repositories/app-repository.ts`는 서버 API 글 CRUD를 담당합니다.
 - `theme-provider.tsx`는 `next-themes`와 키보드 단축키를 통해 전역 테마를 제어합니다.
 
 ## 원칙

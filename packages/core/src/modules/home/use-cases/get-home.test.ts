@@ -1,21 +1,21 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { toDraftId, toPromptId, toUserId } from "../../../shared/brand/index"
-import type { DraftRepository } from "../../drafts/draft-port"
+import { toWritingId, toPromptId, toUserId } from "../../../shared/brand/index"
+import type { WritingRepository } from "../../writings/writing-crud-port"
 import type { PromptRepository } from "../../prompts/prompt-port"
 import { makeGetHomeUseCase } from "./get-home"
 
 describe("makeGetHomeUseCase", () => {
   it("홈 스냅샷을 수집한다", async () => {
     const userId = toUserId("user-1")
-    const listDrafts = vi.fn(async () => [
+    const listWritings = vi.fn(async () => [
       {
         characterCount: 10,
-        id: toDraftId(1),
+        id: toWritingId(1),
         lastSavedAt: "2026-03-22T00:00:00.000Z",
-        preview: "최근 초안",
+        preview: "최근 글",
         sourcePromptId: null,
-        title: "최근 초안",
+        title: "최근 글",
         wordCount: 2,
       },
     ])
@@ -42,24 +42,24 @@ describe("makeGetHomeUseCase", () => {
       },
     ])
 
-    const draftRepository = {
+    const writingRepository = {
       create: async () => {
         throw new Error("not used")
       },
       delete: async () => ({ kind: "deleted" as const }),
       getById: async () => ({ kind: "not-found" as const }),
-      list: listDrafts,
+      list: listWritings,
       replace: async () => ({ kind: "not-found" as const }),
       resume: async () => ({
         characterCount: 10,
-        id: toDraftId(1),
+        id: toWritingId(1),
         lastSavedAt: "2026-03-22T00:00:00.000Z",
-        preview: "최근 초안",
+        preview: "최근 글",
         sourcePromptId: null,
-        title: "최근 초안",
+        title: "최근 글",
         wordCount: 2,
       }),
-    } satisfies DraftRepository
+    } satisfies WritingRepository
 
     const promptRepository = {
       exists: async () => true,
@@ -84,7 +84,7 @@ describe("makeGetHomeUseCase", () => {
 
     const getHome = makeGetHomeUseCase({
       dailyRecommendationRepository,
-      draftRepository,
+      writingRepository,
       promptRepository,
     })
     const result = await getHome(userId)
@@ -92,12 +92,12 @@ describe("makeGetHomeUseCase", () => {
     expect(result.isOk()).toBe(true)
 
     const snapshot = result._unsafeUnwrap()
-    expect(listDrafts).toHaveBeenCalledWith(userId, 10)
+    expect(listWritings).toHaveBeenCalledWith(userId, 10)
     expect(listSaved).toHaveBeenCalledWith(userId, 10)
     expect(listTodayPrompts).toHaveBeenCalledWith(userId, 2)
-    expect(snapshot.resumeDraft?.id).toBe(toDraftId(1))
+    expect(snapshot.resumeWriting?.id).toBe(toWritingId(1))
     expect(snapshot.savedPrompts).toHaveLength(1)
     expect(snapshot.todayPrompts).toHaveLength(1)
-    expect(snapshot.recentDrafts).toHaveLength(1)
+    expect(snapshot.recentWritings).toHaveLength(1)
   })
 })

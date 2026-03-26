@@ -31,7 +31,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 
 import DOMPurify from "dompurify"
 
-import { draftContentToHtml } from "@/domain/draft/model/draft.service"
+import { writingContentToHtml } from "@/domain/writing/model/writing.service"
 import type {
   VersionDetail,
   VersionSummary,
@@ -105,7 +105,7 @@ export function WritingVersionHistoryModal({
             `<h1>${title || "제목 없음"}</h1>${bodyHtml || "<p>내용이 없습니다.</p>"}`
           )
         : sanitizeHtml(
-            `<h1>${selectedDetail.title || "제목 없음"}</h1>${draftContentToHtml(selectedDetail.content) || "<p>내용이 없습니다.</p>"}`
+            `<h1>${selectedDetail.title || "제목 없음"}</h1>${writingContentToHtml(selectedDetail.content) || "<p>내용이 없습니다.</p>"}`
           )
       : ""
 

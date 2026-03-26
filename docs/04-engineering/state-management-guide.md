@@ -7,7 +7,7 @@ description: FSD 4-Layer 아키텍처 기반 apps/web의 상태 관리 원칙과
 
 - 기준 시점: 2026-03-25
 - 전역 클라이언트 상태 라이브러리(Zustand 등)는 도입되어 있지 않습니다.
-- 글쓰기 초안 동기화 상태는 **XState 상태 머신**(`features/writing/sync/sync-machine.ts`)으로 관리합니다.
+- 글쓰기 글 동기화 상태는 **XState 상태 머신**(`features/writing/sync/sync-machine.ts`)으로 관리합니다.
 - 테마 상태는 `next-themes`(`foundation/ui/theme-provider.tsx`)가 전담합니다.
 - 화면별 UI 상태는 `features/*/hooks/` 내 커스텀 훅의 로컬 상태로 관리합니다.
 
@@ -20,14 +20,14 @@ description: FSD 4-Layer 아키텍처 기반 apps/web의 상태 관리 원칙과
 
 ## 상태 종류별 위치
 
-| 상태 종류               | 위치                                                     |
-| ----------------------- | -------------------------------------------------------- |
-| 에디터 초안 동기화 상태 | `features/writing/sync/sync-machine.ts` (XState)         |
-| 글쓰기 화면 UI 상태     | `features/writing/hooks/use-writing-page.ts` (로컬 상태) |
-| 편집 이탈 가드 상태     | `features/writing/hooks/use-editor-leave-guard.ts`       |
-| 동기화 엔진 상태        | `features/writing/hooks/use-sync-engine.ts`              |
-| 테마 상태               | `foundation/ui/theme-provider.tsx` (next-themes)         |
-| 인증/세션 상태          | 서버 컴포넌트 + 쿠키 (`features/auth/repositories/`)     |
+| 상태 종류             | 위치                                                     |
+| --------------------- | -------------------------------------------------------- |
+| 에디터 글 동기화 상태 | `features/writing/sync/sync-machine.ts` (XState)         |
+| 글쓰기 화면 UI 상태   | `features/writing/hooks/use-writing-page.ts` (로컬 상태) |
+| 편집 이탈 가드 상태   | `features/writing/hooks/use-editor-leave-guard.ts`       |
+| 동기화 엔진 상태      | `features/writing/hooks/use-sync-engine.ts`              |
+| 테마 상태             | `foundation/ui/theme-provider.tsx` (next-themes)         |
+| 인증/세션 상태        | 서버 컴포넌트 + 쿠키 (`features/auth/repositories/`)     |
 
 ## 글쓰기 동기화 상태 머신
 
@@ -59,7 +59,7 @@ offline 상태에서는 capturing에 대기, NETWORK_ONLINE 이벤트로 재개
 
 ## 로컬 IndexedDB 상태
 
-- `features/writing/sync/local-db.ts`: 초안 변경 내역을 IndexedDB에 저장합니다.
+- `features/writing/sync/local-db.ts`: 글 변경 내역을 IndexedDB에 저장합니다.
 - 오프라인 중 누적된 변경은 네트워크 복구 시 자동으로 서버에 전송합니다.
 - 멀티탭 조율은 `features/writing/sync/multi-tab-coordinator.ts`가 담당합니다.
 
@@ -68,8 +68,8 @@ offline 상태에서는 capturing에 대기, NETWORK_ONLINE 이벤트로 재개
 `features/writing/hooks/use-writing-page.ts`는 글쓰기 화면의 모든 UI 상태를 하나로 오케스트레이션합니다.
 
 - 제목 입력 상태, 모달 open/close 상태 (삭제·내보내기·버전 기록)
-- 에디터 초안 스냅샷(`EditorDraftSnapshot`)
-- 동기화 상태(`DraftSyncState`) 구독
+- 에디터 글 스냅샷(`EditorWritingSnapshot`)
+- 동기화 상태(`WritingSyncState`) 구독
 
 이 훅은 `views/writing-page-view.tsx`에서 단 한 번 호출됩니다.
 

@@ -1,12 +1,12 @@
 export {
-  draftContentSchema,
-  type DraftContent,
+  writingContentSchema,
+  type WritingContent,
   type JsonArray,
   type JsonObject,
   type JsonValue,
   type TiptapMark,
   type TiptapNode,
-} from "./draft-content-schema"
+} from "./writing-content-schema"
 export {
   promptLengthLabelSchema,
   promptLevelSchema,

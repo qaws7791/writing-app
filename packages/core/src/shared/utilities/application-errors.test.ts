@@ -17,7 +17,7 @@ import {
 describe("toApplicationError", () => {
   it("maps validation errors to ValidationError instances", () => {
     const error = toApplicationError(
-      createValidationError("잘못된 요청", "draft")
+      createValidationError("잘못된 요청", "writing")
     )
 
     expect(error).toBeInstanceOf(ValidationError)
@@ -27,8 +27,8 @@ describe("toApplicationError", () => {
   it("maps not found, forbidden, and conflict errors to matching classes", () => {
     expect(
       toApplicationError(
-        createNotFoundError("초안을 찾을 수 없습니다.", {
-          entity: "draft",
+        createNotFoundError("글을 찾을 수 없습니다.", {
+          entity: "writing",
           id: "1",
         })
       )
@@ -37,7 +37,7 @@ describe("toApplicationError", () => {
     expect(
       toApplicationError(
         createForbiddenError("접근할 수 없습니다.", {
-          resource: "draft",
+          resource: "writing",
         })
       )
     ).toBeInstanceOf(ForbiddenError)

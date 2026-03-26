@@ -29,7 +29,7 @@ export const Showcase: Story = {
     <div className="grid max-w-4xl gap-6 lg:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>Weekly draft review</CardTitle>
+          <CardTitle>Weekly writing review</CardTitle>
           <CardDescription>
             Keep the editorial queue focused on pieces that need attention now.
           </CardDescription>

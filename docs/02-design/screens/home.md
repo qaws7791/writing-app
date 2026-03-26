@@ -37,9 +37,9 @@ status: active
 
 - 상단에는 차분한 인사와 현재 시간대 감각을 보여준다.
 - 추천 글감은 3~4개의 카드로 노출한다.
-- 이어서 쓸 초안이 있다면 홈 중단부에 가장 눈에 띄는 카드로 배치한다.
+- 이어서 쓸 글이 있다면 홈 중단부에 가장 눈에 띄는 카드로 배치한다.
 
-### 초안 없음 상태
+### 글 없음 상태
 
 - 이어서 쓰기 영역 대신 새 글 시작 CTA 또는 글감 찾기 CTA를 보여준다.
 
@@ -81,4 +81,4 @@ status: active
 ## 연결 user-flows
 
 - [[02-design/user-flows/start-writing-today]]
-- [[02-design/user-flows/resume-draft]]
+- [[02-design/user-flows/resume-writing]]

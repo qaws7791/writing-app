@@ -1,8 +1,8 @@
 import { err, ok, ResultAsync } from "neverthrow"
 import { match } from "ts-pattern"
 
-import type { DraftId, UserId } from "../../../shared/brand/index"
-import type { WritingRepository } from "../writing-port"
+import type { WritingId, UserId } from "../../../shared/brand/index"
+import type { WritingSyncRepository } from "../writing-port"
 import {
   writingForbidden,
   writingNotFound,
@@ -11,22 +11,22 @@ import {
 import type { SyncPullResult } from "../writing-types"
 
 export type PullDocumentDeps = {
-  readonly writingRepository: WritingRepository
+  readonly writingRepository: WritingSyncRepository
 }
 
 export function makePullDocumentUseCase(deps: PullDocumentDeps) {
   return (
     userId: UserId,
-    draftId: DraftId,
+    writingId: WritingId,
     sinceVersion?: number
   ): ResultAsync<SyncPullResult, WritingModuleError> => {
     return ResultAsync.fromSafePromise(
-      deps.writingRepository.getById(userId, draftId)
+      deps.writingRepository.getById(userId, writingId)
     ).andThen((access) =>
       match(access)
         .with({ kind: "not-found" }, () =>
           err<SyncPullResult, WritingModuleError>(
-            writingNotFound("문서를 찾을 수 없습니다.", draftId)
+            writingNotFound("문서를 찾을 수 없습니다.", writingId)
           )
         )
         .with({ kind: "forbidden" }, ({ ownerId }) =>

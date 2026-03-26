@@ -29,7 +29,7 @@ type WritingEditorDialogsProps = {
   cancelPendingNavigation: () => void
   confirmPendingNavigation: () => void
   deleteDialogOpen: boolean
-  draftId: number
+  writingId: number
   exportModalOpen: boolean
   getContent: GetContent
   isLeaveConfirmOpen: boolean
@@ -46,7 +46,7 @@ export function WritingEditorDialogs({
   cancelPendingNavigation,
   confirmPendingNavigation,
   deleteDialogOpen,
-  draftId,
+  writingId,
   exportModalOpen,
   getContent,
   isLeaveConfirmOpen,
@@ -59,7 +59,7 @@ export function WritingEditorDialogs({
   currentVersion,
 }: WritingEditorDialogsProps) {
   const versionHistory = useVersionHistory({
-    draftId,
+    writingId,
     open: versionHistoryModalOpen,
     onRestoreComplete: (detail) => {
       onVersionHistoryModalOpenChange(false)

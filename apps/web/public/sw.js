@@ -56,15 +56,15 @@ async function flushPendingTransactions() {
       return
     }
 
-    // draftId 별로 그룹화
+    // writingId 별로 그룹화
     const grouped = new Map()
     for (const record of pending) {
-      const existing = grouped.get(record.draftId) || []
+      const existing = grouped.get(record.writingId) || []
       existing.push(record)
-      grouped.set(record.draftId, existing)
+      grouped.set(record.writingId, existing)
     }
 
-    for (const [draftId, records] of grouped) {
+    for (const [writingId, records] of grouped) {
       try {
         const baseVersion = records[0].baseVersion
         const transactions = records.map((r) => ({
@@ -73,7 +73,7 @@ async function flushPendingTransactions() {
         }))
 
         // API 호출
-        const response = await fetch(`/api/writings/${draftId}/sync/push`, {
+        const response = await fetch(`/api/writings/${writingId}/sync/push`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ baseVersion, transactions }),
@@ -96,7 +96,7 @@ async function flushPendingTransactions() {
             const result = await response.clone().json()
             client.postMessage({
               type: "SYNC_COMPLETE",
-              draftId,
+              writingId,
               version: result.serverVersion,
             })
           }

@@ -1,19 +1,19 @@
 import { describe, expect, it } from "vitest"
 
-import { toDraftId, toUserId } from "../../../shared/brand/index"
+import { toWritingId, toUserId } from "../../../shared/brand/index"
 import { makeListVersionsUseCase } from "./list-versions"
 import {
-  createFakeWritingRepository,
+  createFakeWritingSyncRepository,
   createFakeVersionRepository,
 } from "../testing/fake-writing-repositories"
 import { createTestWriting, testContent } from "../testing/test-fixtures"
 
 const userId = toUserId("user-1")
-const draftId = toDraftId(1)
+const writingId = toWritingId(1)
 
 function createDeps() {
-  const writing = createTestWriting({ id: draftId, userId })
-  const writingRepository = createFakeWritingRepository(writing)
+  const writing = createTestWriting({ id: writingId, userId })
+  const writingRepository = createFakeWritingSyncRepository(writing)
   const versionRepository = createFakeVersionRepository()
 
   const listVersions = makeListVersionsUseCase({
@@ -28,7 +28,7 @@ describe("makeListVersionsUseCase", () => {
   it("버전이 없으면 빈 배열을 반환한다", async () => {
     const { listVersions } = createDeps()
 
-    const result = await listVersions(userId, draftId)
+    const result = await listVersions(userId, writingId)
 
     expect(result.isOk()).toBe(true)
     expect(result._unsafeUnwrap()).toEqual([])
@@ -38,7 +38,7 @@ describe("makeListVersionsUseCase", () => {
     const { listVersions, versionRepository } = createDeps()
 
     await versionRepository.create({
-      draftId,
+      writingId,
       userId,
       version: 10,
       title: "버전 10",
@@ -48,7 +48,7 @@ describe("makeListVersionsUseCase", () => {
     })
 
     await versionRepository.create({
-      draftId,
+      writingId,
       userId,
       version: 20,
       title: "버전 20",
@@ -57,7 +57,7 @@ describe("makeListVersionsUseCase", () => {
       reason: "auto",
     })
 
-    const result = await listVersions(userId, draftId)
+    const result = await listVersions(userId, writingId)
 
     expect(result.isOk()).toBe(true)
     const versions = result._unsafeUnwrap()
@@ -71,7 +71,7 @@ describe("makeListVersionsUseCase", () => {
 
     for (let i = 1; i <= 3; i++) {
       await versionRepository.create({
-        draftId,
+        writingId,
         userId,
         version: i * 10,
         title: `버전 ${i * 10}`,
@@ -81,7 +81,7 @@ describe("makeListVersionsUseCase", () => {
       })
     }
 
-    const result = await listVersions(userId, draftId, 2)
+    const result = await listVersions(userId, writingId, 2)
 
     expect(result.isOk()).toBe(true)
     expect(result._unsafeUnwrap()).toHaveLength(2)
@@ -90,7 +90,7 @@ describe("makeListVersionsUseCase", () => {
   it("존재하지 않는 문서이면 NOT_FOUND를 반환한다", async () => {
     const { listVersions } = createDeps()
 
-    const result = await listVersions(userId, toDraftId(999))
+    const result = await listVersions(userId, toWritingId(999))
 
     expect(result.isErr()).toBe(true)
     expect(result._unsafeUnwrapErr()).toMatchObject({
@@ -101,7 +101,7 @@ describe("makeListVersionsUseCase", () => {
   it("다른 사용자의 문서이면 FORBIDDEN을 반환한다", async () => {
     const { listVersions } = createDeps()
 
-    const result = await listVersions(toUserId("other-user"), draftId)
+    const result = await listVersions(toUserId("other-user"), writingId)
 
     expect(result.isErr()).toBe(true)
     expect(result._unsafeUnwrapErr()).toMatchObject({

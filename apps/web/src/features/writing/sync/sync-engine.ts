@@ -1,5 +1,5 @@
 import { createActor } from "xstate"
-import type { DraftContent } from "@workspace/core"
+import type { WritingContent } from "@workspace/core"
 
 import { syncMachine } from "./sync-machine"
 import { type SyncTransport, SyncTransportError } from "./sync-transport"
@@ -19,14 +19,14 @@ import {
 import type { Operation } from "./types"
 
 export type SyncEngineConfig = {
-  draftId: number
+  writingId: number
   baseVersion: number
   transport: SyncTransport
 }
 
 export type DocumentUpdate = {
   title: string
-  content: DraftContent
+  content: WritingContent
   version: number
   source: "local" | "remote" | "conflict-resolution"
 }
@@ -36,7 +36,7 @@ export type SyncEngine = {
   pushLocalChange: (
     operations: Operation[],
     title: string,
-    content: DraftContent
+    content: WritingContent
   ) => Promise<void>
   /** 서버에서 최신 상태를 가져온다 */
   pull: () => Promise<void>
@@ -51,7 +51,7 @@ export type SyncEngine = {
 }
 
 export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
-  const { draftId, transport } = config
+  const { writingId, transport } = config
 
   const documentUpdateHandlers: ((update: DocumentUpdate) => void)[] = []
   const stateChangeHandlers: ((state: string) => void)[] = []
@@ -84,7 +84,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
 
   const actor = createActor(providedMachine, {
     input: {
-      draftId,
+      writingId,
       baseVersion: config.baseVersion,
     },
   })
@@ -121,14 +121,14 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
     tabCoordinator = createTabCoordinator()
 
     tabCoordinator.onMessage((msg) => {
-      if (msg.type === "SYNC_COMPLETE" && msg.draftId === draftId) {
+      if (msg.type === "SYNC_COMPLETE" && msg.writingId === writingId) {
         // 다른 탭이 동기화를 완료했으면 로컬 DB에서 최신 상태를 읽어 에디터 갱신
         refreshFromLocalDb()
       }
 
       if (
         msg.type === "LOCAL_CHANGE" &&
-        msg.draftId === draftId &&
+        msg.writingId === writingId &&
         msg.tabId !== tabCoordinator?.tabId
       ) {
         // 다른 탭의 로컬 변경이 있으면 리더인 경우 flush 트리거
@@ -152,7 +152,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
         return
       }
 
-      const pending = await getPendingTransactions(draftId)
+      const pending = await getPendingTransactions(writingId)
       const toSend = pending.filter(
         (tx) => tx.status === "pending" || tx.status === "failed"
       )
@@ -169,7 +169,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
       await updateTransactionStatus(ids, "sending")
 
       const ctx = actor.getSnapshot().context
-      const result = await transport.push(draftId, {
+      const result = await transport.push(writingId, {
         baseVersion: ctx.baseVersion,
         transactions: toSend.map((tx) => ({
           operations: tx.operations,
@@ -180,7 +180,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
       if (result.accepted) {
         await deletePendingTransactions(ids)
 
-        const doc = await getDocument(draftId)
+        const doc = await getDocument(writingId)
         if (doc) {
           await putDocument({
             ...doc,
@@ -197,7 +197,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
         // 멀티 탭에 동기화 완료 알림
         tabCoordinator?.broadcast({
           type: "SYNC_COMPLETE",
-          draftId,
+          writingId,
           version: result.serverVersion,
           tabId: tabCoordinator.tabId,
         })
@@ -224,10 +224,10 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
 
   async function handleConflict(conflictData: {
     serverVersion: number
-    serverContent: DraftContent
+    serverContent: WritingContent
     serverTitle: string
   }) {
-    const resolved = await resolveConflict(draftId, conflictData)
+    const resolved = await resolveConflict(writingId, conflictData)
 
     for (const handler of documentUpdateHandlers) {
       handler({
@@ -245,7 +245,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
   }
 
   async function refreshFromLocalDb() {
-    const doc = await getDocument(draftId)
+    const doc = await getDocument(writingId)
     if (doc) {
       for (const handler of documentUpdateHandlers) {
         handler({
@@ -261,10 +261,10 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
   async function pullFromServer() {
     try {
       const ctx = actor.getSnapshot().context
-      const result = await transport.pull(draftId, ctx.baseVersion)
+      const result = await transport.pull(writingId, ctx.baseVersion)
 
       if (result.hasNewerVersion) {
-        const pending = await getPendingTransactions(draftId)
+        const pending = await getPendingTransactions(writingId)
         const hasPending = pending.some((tx) => tx.status === "pending")
 
         if (hasPending) {
@@ -276,7 +276,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
           })
         } else {
           await applyServerState(
-            draftId,
+            writingId,
             result.version,
             result.title,
             result.content
@@ -309,11 +309,11 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
       const now = new Date().toISOString()
 
       // 1. 로컬 DB에 문서 스냅샷 즉시 저장
-      const existing = await getDocument(draftId)
+      const existing = await getDocument(writingId)
       const localVersion = (existing?.localVersion ?? 0) + 1
 
       await putDocument({
-        draftId,
+        writingId,
         title,
         content,
         baseVersion: existing?.baseVersion ?? config.baseVersion,
@@ -324,7 +324,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
 
       // 2. Pending transaction 큐에 추가
       await enqueuePendingTransaction({
-        draftId,
+        writingId,
         baseVersion: existing?.baseVersion ?? config.baseVersion,
         operations,
         createdAt: now,
@@ -337,7 +337,7 @@ export function createSyncEngine(config: SyncEngineConfig): SyncEngine {
       // 4. 다른 탭에 알림
       tabCoordinator?.broadcast({
         type: "LOCAL_CHANGE",
-        draftId,
+        writingId,
         tabId: tabCoordinator.tabId,
       })
     },

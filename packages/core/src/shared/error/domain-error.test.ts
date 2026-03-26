@@ -40,11 +40,11 @@ describe("createValidationError", () => {
 
 describe("createNotFoundError", () => {
   it("entity 정보를 포함한다", () => {
-    const error = createNotFoundError("없음", { entity: "draft", id: "123" })
+    const error = createNotFoundError("없음", { entity: "writing", id: "123" })
 
     expect(error).toMatchObject({
       code: "NOT_FOUND",
-      entity: "draft",
+      entity: "writing",
       id: "123",
     })
   })
@@ -52,11 +52,11 @@ describe("createNotFoundError", () => {
 
 describe("createForbiddenError", () => {
   it("resource 정보를 포함한다", () => {
-    const error = createForbiddenError("접근 불가", { resource: "draft" })
+    const error = createForbiddenError("접근 불가", { resource: "writing" })
 
     expect(error).toMatchObject({
       code: "FORBIDDEN",
-      resource: "draft",
+      resource: "writing",
     })
   })
 })

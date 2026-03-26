@@ -10,9 +10,9 @@ export {
 } from "./connection/index.js"
 export {
   createDailyRecommendationRepository,
-  createDraftRepository,
-  createPromptRepository,
   createWritingRepository,
+  createPromptRepository,
+  createWritingSyncRepository,
   createWritingTransactionRepository,
   createWritingVersionRepository,
 } from "./repository/index.js"
@@ -20,7 +20,7 @@ export {
   account,
   authSchema,
   dailyRecommendations,
-  drafts,
+  writings,
   prompts,
   savedPrompts,
   schema,

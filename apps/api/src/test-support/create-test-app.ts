@@ -1,9 +1,9 @@
 import {
-  createEmptyDraftContent,
-  extractDraftTextMetrics,
-  toDraftId,
+  createEmptyWritingContent,
+  extractWritingTextMetrics,
+  toWritingId,
   toPromptId,
-  type DraftContent,
+  type WritingContent,
 } from "@workspace/core"
 import { ForbiddenError, NotFoundError } from "@workspace/core"
 
@@ -37,9 +37,9 @@ type TestPrompt = {
     | "진로"
 }
 
-type StoredDraft = {
+type StoredWriting = {
   characterCount: number
-  content: DraftContent
+  content: WritingContent
   createdAt: string
   id: number
   lastSavedAt: string
@@ -176,26 +176,28 @@ export function createTestApi(input?: {
   logger?: ApiLogger
 }) {
   const prompts = seedPrompts.map((prompt) => ({ ...prompt }))
-  const drafts: StoredDraft[] = []
-  let nextDraftId = 1
+  const writings: StoredWriting[] = []
+  let nextWritingId = 1
 
   function findPrompt(promptId: number) {
     return prompts.find((prompt) => prompt.id === promptId) ?? null
   }
 
-  function serializeDraft(draft: StoredDraft) {
+  function serializeWriting(writing: StoredWriting) {
     return {
-      characterCount: draft.characterCount,
-      content: draft.content,
-      createdAt: draft.createdAt,
-      id: toDraftId(draft.id),
-      lastSavedAt: draft.lastSavedAt,
-      preview: draft.preview,
+      characterCount: writing.characterCount,
+      content: writing.content,
+      createdAt: writing.createdAt,
+      id: toWritingId(writing.id),
+      lastSavedAt: writing.lastSavedAt,
+      preview: writing.preview,
       sourcePromptId:
-        draft.sourcePromptId === null ? null : toPromptId(draft.sourcePromptId),
-      title: draft.title,
-      updatedAt: draft.updatedAt,
-      wordCount: draft.wordCount,
+        writing.sourcePromptId === null
+          ? null
+          : toPromptId(writing.sourcePromptId),
+      title: writing.title,
+      updatedAt: writing.updatedAt,
+      wordCount: writing.wordCount,
     }
   }
 
@@ -227,21 +229,21 @@ export function createTestApi(input?: {
             status: 404,
           }
         ),
-      draftUseCases: {
-        async autosaveDraft(userId, draftId, autosaveInput) {
-          const current = drafts.find((draft) => draft.id === Number(draftId))
+      writingUseCases: {
+        async autosaveWriting(userId, writingId, autosaveInput) {
+          const current = writings.find(
+            (writing) => writing.id === Number(writingId)
+          )
           if (!current) {
-            throw new NotFoundError("초안을 찾을 수 없습니다.")
+            throw new NotFoundError("글을 찾을 수 없습니다.")
           }
           if (current.ownerId !== userId) {
-            throw new ForbiddenError(
-              "다른 사용자의 초안에는 접근할 수 없습니다."
-            )
+            throw new ForbiddenError("다른 사용자의 글에는 접근할 수 없습니다.")
           }
 
           const nextContent = autosaveInput.content ?? current.content
           const nextTitle = autosaveInput.title ?? current.title
-          const metrics = extractDraftTextMetrics(nextContent)
+          const metrics = extractWritingTextMetrics(nextContent)
           const now = new Date().toISOString()
 
           current.content = nextContent
@@ -253,11 +255,11 @@ export function createTestApi(input?: {
           current.wordCount = metrics.wordCount
 
           return {
-            draft: serializeDraft(current),
+            writing: serializeWriting(current),
             kind: "autosaved" as const,
           }
         },
-        async createDraft(userId, createInput) {
+        async createWriting(userId, createInput) {
           if (
             createInput.sourcePromptId !== undefined &&
             !findPrompt(Number(createInput.sourcePromptId))
@@ -265,14 +267,14 @@ export function createTestApi(input?: {
             throw new NotFoundError("글감을 찾을 수 없습니다.")
           }
 
-          const content = createInput.content ?? createEmptyDraftContent()
-          const metrics = extractDraftTextMetrics(content)
+          const content = createInput.content ?? createEmptyWritingContent()
+          const metrics = extractWritingTextMetrics(content)
           const now = new Date().toISOString()
-          const created: StoredDraft = {
+          const created: StoredWriting = {
             characterCount: metrics.characterCount,
             content,
             createdAt: now,
-            id: nextDraftId++,
+            id: nextWritingId++,
             lastSavedAt: now,
             ownerId: userId,
             preview: toPreview(metrics.plainText),
@@ -285,56 +287,52 @@ export function createTestApi(input?: {
             wordCount: metrics.wordCount,
           }
 
-          drafts.push(created)
-          return serializeDraft(created)
+          writings.push(created)
+          return serializeWriting(created)
         },
-        async deleteDraft(userId, draftId) {
-          const index = drafts.findIndex(
-            (draft) => draft.id === Number(draftId)
+        async deleteWriting(userId, writingId) {
+          const index = writings.findIndex(
+            (writing) => writing.id === Number(writingId)
           )
           if (index === -1) {
-            throw new NotFoundError("초안을 찾을 수 없습니다.")
+            throw new NotFoundError("글을 찾을 수 없습니다.")
           }
-          if (drafts[index]!.ownerId !== userId) {
-            throw new ForbiddenError(
-              "다른 사용자의 초안에는 접근할 수 없습니다."
-            )
+          if (writings[index]!.ownerId !== userId) {
+            throw new ForbiddenError("다른 사용자의 글에는 접근할 수 없습니다.")
           }
 
-          drafts.splice(index, 1)
+          writings.splice(index, 1)
         },
-        async getDraft(userId, draftId) {
-          const draft = drafts.find((item) => item.id === Number(draftId))
-          if (!draft) {
-            throw new NotFoundError("초안을 찾을 수 없습니다.")
+        async getWriting(userId, writingId) {
+          const writing = writings.find((item) => item.id === Number(writingId))
+          if (!writing) {
+            throw new NotFoundError("글을 찾을 수 없습니다.")
           }
-          if (draft.ownerId !== userId) {
-            throw new ForbiddenError(
-              "다른 사용자의 초안에는 접근할 수 없습니다."
-            )
+          if (writing.ownerId !== userId) {
+            throw new ForbiddenError("다른 사용자의 글에는 접근할 수 없습니다.")
           }
 
-          return serializeDraft(draft)
+          return serializeWriting(writing)
         },
-        async listDrafts(userId) {
-          return drafts
-            .filter((draft) => draft.ownerId === userId)
+        async listWritings(userId) {
+          return writings
+            .filter((writing) => writing.ownerId === userId)
             .sort((left, right) =>
               left.updatedAt === right.updatedAt
                 ? right.id - left.id
                 : right.updatedAt.localeCompare(left.updatedAt)
             )
-            .map((draft) => ({
-              characterCount: draft.characterCount,
-              id: toDraftId(draft.id),
-              lastSavedAt: draft.lastSavedAt,
-              preview: draft.preview,
+            .map((writing) => ({
+              characterCount: writing.characterCount,
+              id: toWritingId(writing.id),
+              lastSavedAt: writing.lastSavedAt,
+              preview: writing.preview,
               sourcePromptId:
-                draft.sourcePromptId === null
+                writing.sourcePromptId === null
                   ? null
-                  : toPromptId(draft.sourcePromptId),
-              title: draft.title,
-              wordCount: draft.wordCount,
+                  : toPromptId(writing.sourcePromptId),
+              title: writing.title,
+              wordCount: writing.wordCount,
             }))
         },
       },
@@ -344,29 +342,29 @@ export function createTestApi(input?: {
             throw input.homeError
           }
 
-          const recentDrafts = drafts
-            .filter((draft) => draft.ownerId === userId)
+          const recentWritings = writings
+            .filter((writing) => writing.ownerId === userId)
             .sort((left, right) =>
               left.updatedAt === right.updatedAt
                 ? right.id - left.id
                 : right.updatedAt.localeCompare(left.updatedAt)
             )
-            .map((draft) => ({
-              characterCount: draft.characterCount,
-              id: toDraftId(draft.id),
-              lastSavedAt: draft.lastSavedAt,
-              preview: draft.preview,
+            .map((writing) => ({
+              characterCount: writing.characterCount,
+              id: toWritingId(writing.id),
+              lastSavedAt: writing.lastSavedAt,
+              preview: writing.preview,
               sourcePromptId:
-                draft.sourcePromptId === null
+                writing.sourcePromptId === null
                   ? null
-                  : toPromptId(draft.sourcePromptId),
-              title: draft.title,
-              wordCount: draft.wordCount,
+                  : toPromptId(writing.sourcePromptId),
+              title: writing.title,
+              wordCount: writing.wordCount,
             }))
 
           return {
-            recentDrafts,
-            resumeDraft: recentDrafts[0] ?? null,
+            recentWritings,
+            resumeWriting: recentWritings[0] ?? null,
             savedPrompts: prompts
               .filter((prompt) => prompt.saved)
               .map((prompt) => ({
@@ -474,8 +472,8 @@ export function createTestApi(input?: {
       },
       readLatestAuthEmail: () => null,
       sqliteVersion: "3.46.0",
-      writingUseCases: {
-        async pushTransactions() {
+      writingSyncUseCases: {
+        pushTransactions() {
           throw new NotFoundError("stub")
         },
         async pullDocument() {
@@ -494,19 +492,19 @@ export function createTestApi(input?: {
   return {
     app,
     close: () => undefined,
-    injectForeignDraft(input: {
-      content?: DraftContent
+    injectForeignWriting(input: {
+      content?: WritingContent
       sourcePromptId?: number | null
       title: string
     }) {
-      const content = input.content ?? createEmptyDraftContent()
-      const metrics = extractDraftTextMetrics(content)
+      const content = input.content ?? createEmptyWritingContent()
+      const metrics = extractWritingTextMetrics(content)
       const now = new Date().toISOString()
-      const created: StoredDraft = {
+      const created: StoredWriting = {
         characterCount: metrics.characterCount,
         content,
         createdAt: now,
-        id: nextDraftId++,
+        id: nextWritingId++,
         lastSavedAt: now,
         ownerId: "other-user",
         preview: toPreview(metrics.plainText),
@@ -516,7 +514,7 @@ export function createTestApi(input?: {
         wordCount: metrics.wordCount,
       }
 
-      drafts.push(created)
+      writings.push(created)
       return {
         id: created.id,
       }

@@ -3,7 +3,7 @@ import {
   makePullDocumentUseCase,
   makeListVersionsUseCase,
   makeGetVersionUseCase,
-  type WritingRepository,
+  type WritingSyncRepository,
   type WritingTransactionRepository,
   type WritingVersionRepository,
   type SyncPushInput,
@@ -14,31 +14,31 @@ import {
 } from "@workspace/core/modules/writings"
 import {
   toApplicationError,
-  type DraftId,
+  type WritingId,
   type DomainError,
   type UserId,
 } from "@workspace/core"
 import type { Result } from "neverthrow"
 
-export type WritingApiService = {
+export type WritingSyncApiService = {
   pushTransactions: (
     userId: UserId,
-    draftId: DraftId,
+    writingId: WritingId,
     input: SyncPushInput
   ) => Promise<SyncPushResult>
   pullDocument: (
     userId: UserId,
-    draftId: DraftId,
+    writingId: WritingId,
     sinceVersion?: number
   ) => Promise<SyncPullResult>
   listVersions: (
     userId: UserId,
-    draftId: DraftId,
+    writingId: WritingId,
     limit?: number
   ) => Promise<readonly WritingVersionSummary[]>
   getVersion: (
     userId: UserId,
-    draftId: DraftId,
+    writingId: WritingId,
     version: number
   ) => Promise<WritingVersionDetail>
 }
@@ -53,12 +53,12 @@ function unwrapOrThrow<TValue, TError extends DomainError>(
   return result.value
 }
 
-export function createWritingApiService(input: {
-  writingRepository: WritingRepository
+export function createWritingSyncApiService(input: {
+  writingRepository: WritingSyncRepository
   transactionRepository: WritingTransactionRepository
   versionRepository: WritingVersionRepository
   getNow?: () => string
-}): WritingApiService {
+}): WritingSyncApiService {
   const pushTransactions = makePushTransactionsUseCase({
     writingRepository: input.writingRepository,
     transactionRepository: input.transactionRepository,
@@ -81,17 +81,17 @@ export function createWritingApiService(input: {
   })
 
   return {
-    async pushTransactions(userId, draftId, pushInput) {
-      return unwrapOrThrow(await pushTransactions(userId, draftId, pushInput))
+    async pushTransactions(userId, writingId, pushInput) {
+      return unwrapOrThrow(await pushTransactions(userId, writingId, pushInput))
     },
-    async pullDocument(userId, draftId, sinceVersion) {
-      return unwrapOrThrow(await pullDocument(userId, draftId, sinceVersion))
+    async pullDocument(userId, writingId, sinceVersion) {
+      return unwrapOrThrow(await pullDocument(userId, writingId, sinceVersion))
     },
-    async listVersions(userId, draftId, limit) {
-      return unwrapOrThrow(await listVersions(userId, draftId, limit))
+    async listVersions(userId, writingId, limit) {
+      return unwrapOrThrow(await listVersions(userId, writingId, limit))
     },
-    async getVersion(userId, draftId, version) {
-      return unwrapOrThrow(await getVersion(userId, draftId, version))
+    async getVersion(userId, writingId, version) {
+      return unwrapOrThrow(await getVersion(userId, writingId, version))
     },
   }
 }

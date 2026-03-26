@@ -1,9 +1,9 @@
 import { err, ResultAsync } from "neverthrow"
 import { match } from "ts-pattern"
 
-import type { DraftId, UserId } from "../../../shared/brand/index"
+import type { WritingId, UserId } from "../../../shared/brand/index"
 import type {
-  WritingRepository,
+  WritingSyncRepository,
   WritingVersionRepository,
 } from "../writing-port"
 import {
@@ -14,23 +14,23 @@ import {
 import type { WritingVersionSummary } from "../writing-types"
 
 export type ListVersionsDeps = {
-  readonly writingRepository: WritingRepository
+  readonly writingRepository: WritingSyncRepository
   readonly versionRepository: WritingVersionRepository
 }
 
 export function makeListVersionsUseCase(deps: ListVersionsDeps) {
   return (
     userId: UserId,
-    draftId: DraftId,
+    writingId: WritingId,
     limit?: number
   ): ResultAsync<readonly WritingVersionSummary[], WritingModuleError> => {
     return ResultAsync.fromSafePromise(
-      deps.writingRepository.getById(userId, draftId)
+      deps.writingRepository.getById(userId, writingId)
     ).andThen((access) =>
       match(access)
         .with({ kind: "not-found" }, () =>
           err<readonly WritingVersionSummary[], WritingModuleError>(
-            writingNotFound("문서를 찾을 수 없습니다.", draftId)
+            writingNotFound("문서를 찾을 수 없습니다.", writingId)
           )
         )
         .with({ kind: "forbidden" }, ({ ownerId }) =>
@@ -43,7 +43,7 @@ export function makeListVersionsUseCase(deps: ListVersionsDeps) {
         )
         .with({ kind: "writing" }, () =>
           ResultAsync.fromSafePromise(
-            deps.versionRepository.list(draftId, limit)
+            deps.versionRepository.list(writingId, limit)
           )
         )
         .exhaustive()

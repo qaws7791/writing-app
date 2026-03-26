@@ -7,8 +7,8 @@ type StorageLike = {
 type MemoryStorageState = Map<string, string>
 
 export const storageKeys = {
-  drafts: "phase-one.drafts",
-  redirectDraftSnapshotPrefix: "phase-one.redirect-draft",
+  writings: "phase-one.writings",
+  redirectWritingSnapshotPrefix: "phase-one.redirect-writing",
   savedPromptEntries: "phase-one.saved-prompts",
   sequence: "phase-one.sequence",
 } as const

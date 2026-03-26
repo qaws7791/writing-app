@@ -1,6 +1,6 @@
 import type { UserId } from "../../../shared/brand/index"
 import type {
-  DraftRepository,
+  WritingRepository,
   PromptRepository,
 } from "../../../shared/ports/index"
 import type { HomeSnapshot } from "../model/index"
@@ -8,27 +8,27 @@ import type { HomeSnapshot } from "../model/index"
 export type GetHomeUseCaseOutput = HomeSnapshot
 
 export type GetHomeUseCaseDependencies = {
-  readonly draftRepository: DraftRepository
+  readonly writingRepository: WritingRepository
   readonly promptRepository: PromptRepository
 }
 
 /**
  * Retrieves home page snapshot.
- * Fetches today's prompts, saved prompts, recent drafts, and resumable draft in parallel.
+ * Fetches today's prompts, saved prompts, recent writings, and resumable WritingFull in parallel.
  */
 export function makeGetHomeUseCase(dependencies: GetHomeUseCaseDependencies) {
   return async (userId: UserId): Promise<GetHomeUseCaseOutput> => {
-    const [todayPrompts, resumeDraft, recentDrafts, savedPrompts] =
+    const [todayPrompts, resumeWriting, recentWritings, savedPrompts] =
       await Promise.all([
         dependencies.promptRepository.listTodayPrompts(userId, 4),
-        dependencies.draftRepository.resume(userId),
-        dependencies.draftRepository.list(userId, 10),
+        dependencies.writingRepository.resume(userId),
+        dependencies.writingRepository.list(userId, 10),
         dependencies.promptRepository.listSaved(userId, 10),
       ])
 
     return {
-      recentDrafts,
-      resumeDraft,
+      recentWritings,
+      resumeWriting,
       savedPrompts,
       todayPrompts,
     }
@@ -37,11 +37,11 @@ export function makeGetHomeUseCase(dependencies: GetHomeUseCaseDependencies) {
 
 export async function getHomeUseCase(
   userId: UserId,
-  draftRepository: DraftRepository,
+  writingRepository: WritingRepository,
   promptRepository: PromptRepository
 ): Promise<GetHomeUseCaseOutput> {
   return makeGetHomeUseCase({
-    draftRepository,
+    writingRepository,
     promptRepository,
   })(userId)
 }

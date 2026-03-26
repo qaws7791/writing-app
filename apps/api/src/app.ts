@@ -10,11 +10,11 @@ import { createRequestLoggerMiddleware } from "./middleware/request-logger"
 import { createResolveSessionMiddleware } from "./middleware/resolve-session"
 import authHandler from "./routes/auth/auth-handler"
 import getAuthEmails from "./routes/dev/get-auth-emails"
-import autosaveDraft from "./routes/drafts/autosave-draft"
-import createDraft from "./routes/drafts/create-draft"
-import deleteDraft from "./routes/drafts/delete-draft"
-import getDraft from "./routes/drafts/get-draft"
-import listDrafts from "./routes/drafts/list-drafts"
+import autosaveWriting from "./routes/writings/autosave-writing"
+import createWriting from "./routes/writings/create-writing"
+import deleteWriting from "./routes/writings/delete-writing"
+import getWriting from "./routes/writings/get-writing"
+import listWritings from "./routes/writings/list-writings"
 import getHealth from "./routes/health/get-health"
 import getHome from "./routes/home/get-home"
 import getPrompt from "./routes/prompts/get-prompt"
@@ -85,7 +85,7 @@ export function createApp(input: CreateAppInput) {
   const openApiDocumentConfig = {
     info: {
       description:
-        "글쓰기 플랫폼 API입니다. 글감 탐색, 초안 작성, 자동 저장 등 에세이 작성 워크플로우를 지원합니다.",
+        "글쓰기 플랫폼 API입니다. 글감 탐색, 글 작성, 자동 저장 등 에세이 작성 워크플로우를 지원합니다.",
       title: "Writing App API",
       version: "1.0.0",
     },
@@ -149,11 +149,11 @@ export function createApp(input: CreateAppInput) {
   app.route("/", getPrompt)
   app.route("/", savePrompt)
   app.route("/", unsavePrompt)
-  app.route("/", listDrafts)
-  app.route("/", createDraft)
-  app.route("/", getDraft)
-  app.route("/", autosaveDraft)
-  app.route("/", deleteDraft)
+  app.route("/", listWritings)
+  app.route("/", createWriting)
+  app.route("/", getWriting)
+  app.route("/", autosaveWriting)
+  app.route("/", deleteWriting)
   app.route("/", pushTransactions)
   app.route("/", pullDocument)
   app.route("/", listVersions)

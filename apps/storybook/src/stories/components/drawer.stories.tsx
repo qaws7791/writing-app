@@ -39,7 +39,7 @@ export const Showcase: Story = {
             </DrawerDescription>
           </DrawerHeader>
           <div className="px-4 pb-2 text-sm text-muted-foreground">
-            Slug, excerpt, and schedule are already synced from the draft.
+            Slug, excerpt, and schedule are already synced from the writing.
           </div>
           <DrawerFooter>
             <Button>Publish now</Button>

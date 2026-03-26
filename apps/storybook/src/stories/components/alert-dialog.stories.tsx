@@ -33,11 +33,11 @@ export const Showcase: Story = {
     <div className="flex flex-wrap gap-4">
       <AlertDialog>
         <AlertDialogTrigger render={<Button variant="outline" />}>
-          Leave draft
+          Leave writing
         </AlertDialogTrigger>
         <AlertDialogContent size="sm">
           <AlertDialogHeader>
-            <AlertDialogTitle>Leave this draft?</AlertDialogTitle>
+            <AlertDialogTitle>Leave this writing?</AlertDialogTitle>
             <AlertDialogDescription>
               Your unsaved edits will be discarded if you close this workspace.
             </AlertDialogDescription>

@@ -23,8 +23,6 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./modules/drafts": "./src/modules/drafts/index.ts",
-    "./modules/drafts/testing": "./src/modules/drafts/testing/index.ts",
     "./modules/prompts": "./src/modules/prompts/index.ts",
     "./modules/prompts/testing": "./src/modules/prompts/testing/index.ts",
     "./modules/home": "./src/modules/home/index.ts",

@@ -14,8 +14,8 @@ status: active
 
 - [[02-design/user-flows/start-writing-today]]: 홈에서 오늘의 글쓰기를 시작하는 흐름
 - [[02-design/user-flows/discover-prompt-and-start]]: 글감을 탐색하고 선택해 바로 쓰기로 이어지는 흐름
-- [[02-design/user-flows/resume-draft]]: 최근 초안을 다시 열어 이어 쓰는 흐름
-- [[02-design/user-flows/create-new-draft-and-write]]: 빈 상태에서 새 글을 만들어 초고를 쓰는 흐름
+- [[02-design/user-flows/resume-writing]]: 최근 글을 다시 열어 이어 쓰는 흐름
+- [[02-design/user-flows/create-new-writing]]: 빈 상태에서 새 글을 만들어 초고를 쓰는 흐름
 
 ## 연결 규칙
 

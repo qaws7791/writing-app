@@ -14,9 +14,9 @@ class WritingSyncDatabase extends Dexie {
     super(DATABASE_NAME)
 
     this.version(DATABASE_VERSION).stores({
-      documents: "draftId, syncStatus, lastModifiedAt",
-      pendingTransactions: "++id, draftId, status, createdAt",
-      versions: "++id, draftId, version",
+      documents: "writingId, syncStatus, lastModifiedAt",
+      pendingTransactions: "++id, writingId, status, createdAt",
+      versions: "++id, writingId, version",
     })
   }
 }
@@ -31,9 +31,9 @@ export function getLocalDb(): WritingSyncDatabase {
 }
 
 export async function getDocument(
-  draftId: number
+  writingId: number
 ): Promise<LocalDocument | undefined> {
-  return getLocalDb().documents.get(draftId)
+  return getLocalDb().documents.get(writingId)
 }
 
 export async function putDocument(doc: LocalDocument): Promise<void> {
@@ -47,21 +47,21 @@ export async function enqueuePendingTransaction(
 }
 
 export async function getPendingTransactions(
-  draftId: number
+  writingId: number
 ): Promise<PendingTransaction[]> {
   return getLocalDb()
-    .pendingTransactions.where("draftId")
-    .equals(draftId)
+    .pendingTransactions.where("writingId")
+    .equals(writingId)
     .sortBy("createdAt")
 }
 
 export async function getPendingTransactionsByStatus(
-  draftId: number,
+  writingId: number,
   status: PendingTransaction["status"]
 ): Promise<PendingTransaction[]> {
   return getLocalDb()
-    .pendingTransactions.where(["draftId", "status"])
-    .equals([draftId, status])
+    .pendingTransactions.where(["writingId", "status"])
+    .equals([writingId, status])
     .sortBy("createdAt")
 }
 
@@ -80,18 +80,18 @@ export async function deletePendingTransactions(ids: number[]): Promise<void> {
 }
 
 export async function deleteAllPendingTransactions(
-  draftId: number
+  writingId: number
 ): Promise<void> {
   await getLocalDb()
-    .pendingTransactions.where("draftId")
-    .equals(draftId)
+    .pendingTransactions.where("writingId")
+    .equals(writingId)
     .delete()
 }
 
-export async function getPendingCount(draftId: number): Promise<number> {
+export async function getPendingCount(writingId: number): Promise<number> {
   return getLocalDb()
-    .pendingTransactions.where("draftId")
-    .equals(draftId)
+    .pendingTransactions.where("writingId")
+    .equals(writingId)
     .count()
 }
 
@@ -102,14 +102,14 @@ export async function putLocalVersion(
 
   // 최대 50개 유지
   const count = await db.versions
-    .where("draftId")
-    .equals(version.draftId)
+    .where("writingId")
+    .equals(version.writingId)
     .count()
 
   if (count >= 50) {
     const oldest = await db.versions
-      .where("draftId")
-      .equals(version.draftId)
+      .where("writingId")
+      .equals(version.writingId)
       .sortBy("version")
 
     const toDelete = oldest.slice(0, count - 49)
@@ -120,11 +120,11 @@ export async function putLocalVersion(
 }
 
 export async function getLocalVersions(
-  draftId: number
+  writingId: number
 ): Promise<LocalVersion[]> {
   return getLocalDb()
-    .versions.where("draftId")
-    .equals(draftId)
+    .versions.where("writingId")
+    .equals(writingId)
     .reverse()
     .sortBy("version")
 }

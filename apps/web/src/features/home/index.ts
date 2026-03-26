@@ -8,7 +8,7 @@ export {
 export { useHomeQuery, homeQueryKeys } from "./hooks/use-home-query"
 
 // components
-export { ResumeDraftCard } from "./components/resume-draft-card"
+export { ResumeWritingCard } from "./components/resume-writing-card"
 export { TodayPromptsSection } from "./components/today-prompts-section"
-export { HomeDraftsTab } from "./components/home-drafts-tab"
+export { HomeWritingsTab } from "./components/home-writings-tab"
 export { HomeSavedPromptsTab } from "./components/home-saved-prompts-tab"

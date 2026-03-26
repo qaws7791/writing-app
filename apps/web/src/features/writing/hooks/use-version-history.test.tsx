@@ -7,9 +7,9 @@ import type {
   VersionDetail,
   VersionSummary,
 } from "@/features/writing/sync/types"
-import type { DraftContent } from "@workspace/core"
+import type { WritingContent } from "@workspace/core"
 
-const testContent: DraftContent = {
+const testContent: WritingContent = {
   type: "doc",
   content: [{ type: "paragraph", content: [{ type: "text", text: "테스트" }] }],
 }
@@ -17,7 +17,7 @@ const testContent: DraftContent = {
 const mockVersions: VersionSummary[] = [
   {
     id: 2,
-    draftId: 1,
+    writingId: 1,
     version: 20,
     title: "버전 20",
     createdAt: "2026-03-25T13:00:00.000Z",
@@ -25,7 +25,7 @@ const mockVersions: VersionSummary[] = [
   },
   {
     id: 1,
-    draftId: 1,
+    writingId: 1,
     version: 10,
     title: "버전 10",
     createdAt: "2026-03-25T12:00:00.000Z",
@@ -35,7 +35,7 @@ const mockVersions: VersionSummary[] = [
 
 const mockDetail: VersionDetail = {
   id: 2,
-  draftId: 1,
+  writingId: 1,
   version: 20,
   title: "버전 20",
   createdAt: "2026-03-25T13:00:00.000Z",
@@ -71,7 +71,7 @@ describe("useVersionHistory", () => {
     mockTransport.listVersions.mockResolvedValue({ items: mockVersions })
 
     const { result } = renderHook(() =>
-      useVersionHistory({ draftId: 1, open: true })
+      useVersionHistory({ writingId: 1, open: true })
     )
 
     expect(result.current.loading).toBe(true)
@@ -85,7 +85,7 @@ describe("useVersionHistory", () => {
   })
 
   it("open이 false이면 로드하지 않는다", () => {
-    renderHook(() => useVersionHistory({ draftId: 1, open: false }))
+    renderHook(() => useVersionHistory({ writingId: 1, open: false }))
 
     expect(mockTransport.listVersions).not.toHaveBeenCalled()
   })
@@ -94,7 +94,7 @@ describe("useVersionHistory", () => {
     mockTransport.listVersions.mockRejectedValue(new Error("network error"))
 
     const { result } = renderHook(() =>
-      useVersionHistory({ draftId: 1, open: true })
+      useVersionHistory({ writingId: 1, open: true })
     )
 
     await waitFor(() => {
@@ -109,7 +109,7 @@ describe("useVersionHistory", () => {
     mockTransport.getVersion.mockResolvedValue(mockDetail)
 
     const { result } = renderHook(() =>
-      useVersionHistory({ draftId: 1, open: true })
+      useVersionHistory({ writingId: 1, open: true })
     )
 
     await waitFor(() => {
@@ -135,7 +135,7 @@ describe("useVersionHistory", () => {
 
     const { result } = renderHook(() =>
       useVersionHistory({
-        draftId: 1,
+        writingId: 1,
         open: true,
         onRestoreComplete,
       })
@@ -168,7 +168,7 @@ describe("useVersionHistory", () => {
     mockTransport.push.mockRejectedValue(new Error("push failed"))
 
     const { result } = renderHook(() =>
-      useVersionHistory({ draftId: 1, open: true })
+      useVersionHistory({ writingId: 1, open: true })
     )
 
     await waitFor(() => {
@@ -193,7 +193,7 @@ describe("useVersionHistory", () => {
     mockTransport.listVersions.mockRejectedValue(new Error("fail"))
 
     const { result } = renderHook(() =>
-      useVersionHistory({ draftId: 1, open: true })
+      useVersionHistory({ writingId: 1, open: true })
     )
 
     await waitFor(() => {

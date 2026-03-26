@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useRef, useState } from "react"
-import type { DraftContent } from "@workspace/core"
+import type { WritingContent } from "@workspace/core"
 
 import {
   createSyncEngine,
@@ -20,7 +20,7 @@ export type SyncStatus =
   | "error"
 
 type UseSyncEngineOptions = {
-  draftId: number
+  writingId: number
   baseVersion: number
   apiBaseUrl: string
   onDocumentUpdate?: (update: DocumentUpdate) => void
@@ -32,7 +32,7 @@ type UseSyncEngineReturn = {
   pushChange: (
     operations: Operation[],
     title: string,
-    content: DraftContent
+    content: WritingContent
   ) => void
   forcePull: () => void
 }
@@ -41,7 +41,7 @@ export function useSyncEngine(
   options: UseSyncEngineOptions
 ): UseSyncEngineReturn {
   const {
-    draftId,
+    writingId,
     baseVersion,
     apiBaseUrl,
     onDocumentUpdate,
@@ -69,7 +69,7 @@ export function useSyncEngine(
 
     const transport = createSyncTransport({ baseUrl: apiBaseUrl })
     const engine = createSyncEngine({
-      draftId,
+      writingId,
       baseVersion: baseVersionRef.current,
       transport,
     })
@@ -88,10 +88,10 @@ export function useSyncEngine(
       engine.destroy()
       engineRef.current = null
     }
-  }, [draftId, apiBaseUrl, enabled])
+  }, [writingId, apiBaseUrl, enabled])
 
   const pushChange = useCallback(
-    (operations: Operation[], title: string, content: DraftContent) => {
+    (operations: Operation[], title: string, content: WritingContent) => {
       engineRef.current?.pushLocalChange(operations, title, content)
     },
     []

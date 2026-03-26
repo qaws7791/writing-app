@@ -5,8 +5,8 @@ const {
   createAuthMock,
   createDailyRecommendationRepositoryMock,
   createDevEmailPortMock,
-  createDraftApiServiceMock,
-  createDraftRepositoryMock,
+  createWritingApiServiceMock,
+  createWritingRepositoryMock,
   createHomeApiServiceMock,
   createPromptApiServiceMock,
   createPromptRepositoryMock,
@@ -21,8 +21,8 @@ const {
     createAuthMock: vi.fn(),
     createDailyRecommendationRepositoryMock: vi.fn(),
     createDevEmailPortMock: vi.fn(),
-    createDraftApiServiceMock: vi.fn(),
-    createDraftRepositoryMock: vi.fn(),
+    createWritingApiServiceMock: vi.fn(),
+    createWritingRepositoryMock: vi.fn(),
     createHomeApiServiceMock: vi.fn(),
     createPromptApiServiceMock: vi.fn(),
     createPromptRepositoryMock: vi.fn(),
@@ -36,7 +36,7 @@ const {
 
 vi.mock("@workspace/database", () => ({
   createDailyRecommendationRepository: createDailyRecommendationRepositoryMock,
-  createDraftRepository: createDraftRepositoryMock,
+  createWritingRepository: createWritingRepositoryMock,
   createPromptRepository: createPromptRepositoryMock,
   migrateDatabase: migrateDatabaseMock,
   openDb: openDbMock,
@@ -45,7 +45,7 @@ vi.mock("@workspace/database", () => ({
 }))
 
 vi.mock("../application-services.js", () => ({
-  createDraftApiService: createDraftApiServiceMock,
+  createWritingApiService: createWritingApiServiceMock,
   createHomeApiService: createHomeApiServiceMock,
   createPromptApiService: createPromptApiServiceMock,
 }))
@@ -123,9 +123,9 @@ describe("bootstrap", () => {
     createDevEmailPortMock.mockReturnValue(emailPort)
     createAuthMock.mockReturnValue(auth)
     createPromptRepositoryMock.mockReturnValue({ exists: vi.fn() })
-    createDraftRepositoryMock.mockReturnValue({ list: vi.fn() })
+    createWritingRepositoryMock.mockReturnValue({ list: vi.fn() })
     createPromptApiServiceMock.mockReturnValue({ listPrompts: vi.fn() })
-    createDraftApiServiceMock.mockReturnValue({ listDrafts: vi.fn() })
+    createWritingApiServiceMock.mockReturnValue({ listWritings: vi.fn() })
     createHomeApiServiceMock.mockReturnValue({ getHome: vi.fn() })
     createAppMock.mockReturnValue(app)
     migrateDatabaseMock.mockResolvedValue(undefined)

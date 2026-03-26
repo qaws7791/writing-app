@@ -1,4 +1,4 @@
-import type { DraftDetail } from "@/domain/draft"
+import type { WritingDetail } from "@/domain/writing"
 import type {
   PromptDetail,
   PromptFilters,
@@ -14,7 +14,7 @@ import {
   storageKeys,
   type StorageLike,
 } from "@/foundation/lib/storage"
-import type { CreateDraftInput } from "@/features/writing/repositories/draft-repository"
+import type { CreateWritingInput } from "@/features/writing/repositories/writing-repository"
 
 type SavedPromptEntry = {
   promptId: number
@@ -22,7 +22,7 @@ type SavedPromptEntry = {
 }
 
 export type PromptRepository = {
-  createDraft: (input: CreateDraftInput) => Promise<DraftDetail>
+  createWriting: (input: CreateWritingInput) => Promise<WritingDetail>
   getPrompt: (promptId: number) => Promise<PromptDetail>
   listPrompts: (filters?: PromptFilters) => Promise<PromptSummary[]>
   savePrompt: (promptId: number) => Promise<{ kind: "saved"; savedAt: string }>
@@ -55,8 +55,8 @@ export function createLocalPromptRepository(
   storage: StorageLike = createMemoryStorage()
 ): PromptRepository {
   return {
-    async createDraft() {
-      throw createApiError(404, "로컬 모드에서는 초안을 생성할 수 없습니다.")
+    async createWriting() {
+      throw createApiError(404, "로컬 모드에서는 글을 생성할 수 없습니다.")
     },
 
     async getPrompt() {
@@ -97,9 +97,9 @@ function createRemotePromptRepository(apiBaseUrl: string): PromptRepository {
   const client = createApiClient({ baseUrl: apiBaseUrl })
 
   return {
-    async createDraft(input) {
+    async createWriting(input) {
       return throwOnError(
-        await client.POST("/drafts", {
+        await client.POST("/writings", {
           body: input,
         })
       )

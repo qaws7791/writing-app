@@ -5,7 +5,7 @@
 ## 구조
 
 - `shared/`: 모든 모듈이 공유하는 타입, 유틸리티, 포트
-  - `brand/`: 도메인 식별자 (UserId, DraftId 등)
+  - `brand/`: 도메인 식별자 (UserId, WritingId 등)
   - `types/`: 공통 타입 (Result, DomainError 등)
   - `schema/`: zod 계약 스키마
   - `utilities/`: 순수 헬퍼 함수
@@ -13,7 +13,7 @@
   - `testing/`: 테스트 유틸리티
 
 - `modules/`: 기능별 모듈
-  - `drafts/`: 초안 관리
+  - `writings/`: 글 관리
   - `prompts/`: 글감 관리
   - `home/`: 홈 페이지
 
@@ -39,17 +39,17 @@
 
 ```ts
 import {
-  createDraftUseCase,
-  getDraftUseCase,
-  type CreateDraftInput,
+  createWritingUseCase,
+  getWritingUseCase,
+  type CreateWritingInput,
 } from "@workspace/core"
 
 // dependency 주입
-const createDraft = (input: CreateDraftInput) =>
-  createDraftUseCase(
+const createWriting = (input: CreateWritingInput) =>
+  createWritingUseCase(
     userId,
     input,
-    draftRepository,
+    writingRepository,
     promptExists,
     () => createId(),
     () => new Date().toISOString()

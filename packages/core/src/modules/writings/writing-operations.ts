@@ -1,12 +1,12 @@
-import type { DraftContent } from "../../shared/schema/index"
-import { extractDraftTextMetrics } from "../../shared/utilities/draft-content-utilities"
+import type { WritingContent } from "../../shared/schema/index"
+import { extractWritingTextMetrics } from "../../shared/utilities/writing-content-utilities"
 import type { Operation, Writing } from "./writing-types"
 
 export function applyOperationsToContent(
-  content: DraftContent,
+  content: WritingContent,
   title: string,
   operations: Operation[]
-): { content: DraftContent; title: string } {
+): { content: WritingContent; title: string } {
   let currentContent = content
   let currentTitle = title
 
@@ -24,18 +24,18 @@ export function applyOperationsToContent(
   return { content: currentContent, title: currentTitle }
 }
 
-export function computeWritingMetrics(content: DraftContent) {
-  return extractDraftTextMetrics(content)
+export function computeWritingMetrics(content: WritingContent) {
+  return extractWritingTextMetrics(content)
 }
 
 export function advanceWritingVersion(
   writing: Writing,
-  content: DraftContent,
+  content: WritingContent,
   title: string,
   newVersion: number,
   now: string
 ): Writing {
-  const metrics = extractDraftTextMetrics(content)
+  const metrics = extractWritingTextMetrics(content)
 
   return {
     ...writing,
@@ -49,3 +49,11 @@ export function advanceWritingVersion(
     lastSavedAt: now,
   }
 }
+
+// Re-export CRUD operations
+export {
+  buildWriting,
+  createPreview,
+  updateWritingContent,
+  updateWritingTitle,
+} from "./writing-crud-operations"

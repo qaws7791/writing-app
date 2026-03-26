@@ -44,7 +44,7 @@ export function AuthPageShell({
 
             <div className="grid max-w-xl gap-3 text-sm text-muted-foreground sm:grid-cols-2">
               <div className="rounded-2xl border border-foreground/10 bg-background/80 p-4">
-                이메일과 비밀번호만으로 글감, 초안, 저장 흐름을 한 계정에
+                이메일과 비밀번호만으로 글감, 글, 저장 흐름을 한 계정에
                 묶습니다.
               </div>
               <div className="rounded-2xl border border-foreground/10 bg-background/80 p-4">

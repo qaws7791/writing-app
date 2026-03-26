@@ -1,21 +1,21 @@
 import {
-  makeAutosaveDraftUseCase,
-  makeCreateDraftUseCase,
-  makeDeleteDraftUseCase,
-  makeGetDraftUseCase,
+  makeAutosaveWritingUseCase,
+  makeCreateWritingUseCase,
+  makeDeleteWritingUseCase,
+  makeGetWritingUseCase,
   makeGetHomeUseCase,
   makeGetPromptUseCase,
-  makeListDraftsUseCase,
+  makeListWritingsUseCase,
   makeListPromptsUseCase,
   makeSavePromptUseCase,
   makeUnsavePromptUseCase,
   toApplicationError,
-  type AutosaveDraftInput,
+  type AutosaveWritingInput,
   type DailyRecommendationRepository,
-  type DraftDetail,
-  type DraftId,
-  type DraftRepository,
-  type DraftSummary,
+  type WritingDetail,
+  type WritingId,
+  type WritingRepository,
+  type WritingSummary,
   type HomeSnapshot,
   type PromptDetail,
   type PromptId,
@@ -23,34 +23,34 @@ import {
   type PromptRepository,
   type PromptSummary,
   type UserId,
-  toDraftId,
+  toWritingId,
   type DomainError,
 } from "@workspace/core"
 import type { Result } from "neverthrow"
 
-export type DraftApiService = {
-  autosaveDraft: (
+export type WritingApiService = {
+  autosaveWriting: (
     userId: UserId,
-    draftId: DraftId,
-    input: AutosaveDraftInput
+    writingId: WritingId,
+    input: AutosaveWritingInput
   ) => Promise<{
-    draft: DraftDetail
+    writing: WritingDetail
     kind: "autosaved"
   }>
-  createDraft: (
+  createWriting: (
     userId: UserId,
     input: {
-      content?: AutosaveDraftInput["content"]
+      content?: AutosaveWritingInput["content"]
       sourcePromptId?: PromptId
       title?: string
     }
-  ) => Promise<DraftDetail>
-  deleteDraft: (userId: UserId, draftId: DraftId) => Promise<void>
-  getDraft: (userId: UserId, draftId: DraftId) => Promise<DraftDetail>
-  listDrafts: (
+  ) => Promise<WritingDetail>
+  deleteWriting: (userId: UserId, writingId: WritingId) => Promise<void>
+  getWriting: (userId: UserId, writingId: WritingId) => Promise<WritingDetail>
+  listWritings: (
     userId: UserId,
     limit?: number
-  ) => Promise<readonly DraftSummary[]>
+  ) => Promise<readonly WritingSummary[]>
 }
 
 export type PromptApiService = {
@@ -80,56 +80,57 @@ function unwrapOrThrow<TValue, TError extends DomainError>(
   return result.value
 }
 
-export function createDraftApiService(input: {
-  createDraftId?: () => DraftId
-  draftRepository: DraftRepository
+export function createWritingApiService(input: {
+  createWritingId?: () => WritingId
+  writingRepository: WritingRepository
   getNow?: () => string
   promptRepository: Pick<PromptRepository, "exists">
-}): DraftApiService {
-  const createDraft = makeCreateDraftUseCase({
-    createDraftId:
-      input.createDraftId ?? (() => toDraftId(Math.floor(Math.random() * 1e9))),
-    draftRepository: input.draftRepository,
+}): WritingApiService {
+  const createWriting = makeCreateWritingUseCase({
+    createWritingId:
+      input.createWritingId ??
+      (() => toWritingId(Math.floor(Math.random() * 1e9))),
+    writingRepository: input.writingRepository,
     getNow: input.getNow ?? (() => new Date().toISOString()),
     promptExists: (promptId: PromptId) =>
       input.promptRepository.exists(promptId),
   })
-  const autosaveDraft = makeAutosaveDraftUseCase({
-    draftRepository: input.draftRepository,
+  const autosaveWriting = makeAutosaveWritingUseCase({
+    writingRepository: input.writingRepository,
     getNow: input.getNow ?? (() => new Date().toISOString()),
   })
-  const deleteDraft = makeDeleteDraftUseCase({
-    draftRepository: input.draftRepository,
+  const deleteWriting = makeDeleteWritingUseCase({
+    writingRepository: input.writingRepository,
   })
-  const getDraft = makeGetDraftUseCase({
-    draftRepository: input.draftRepository,
+  const getWriting = makeGetWritingUseCase({
+    writingRepository: input.writingRepository,
   })
-  const listDrafts = makeListDraftsUseCase({
-    draftRepository: input.draftRepository,
+  const listWritings = makeListWritingsUseCase({
+    writingRepository: input.writingRepository,
   })
 
   return {
-    async autosaveDraft(userId, draftId, autosaveInput) {
-      const draft = unwrapOrThrow(
-        await autosaveDraft(userId, draftId, autosaveInput)
+    async autosaveWriting(userId, writingId, autosaveInput) {
+      const writing = unwrapOrThrow(
+        await autosaveWriting(userId, writingId, autosaveInput)
       )
 
       return {
-        draft,
+        writing,
         kind: "autosaved",
       }
     },
-    async createDraft(userId, createInput) {
-      return unwrapOrThrow(await createDraft(userId, createInput))
+    async createWriting(userId, createInput) {
+      return unwrapOrThrow(await createWriting(userId, createInput))
     },
-    async deleteDraft(userId, draftId) {
-      unwrapOrThrow(await deleteDraft(userId, draftId))
+    async deleteWriting(userId, writingId) {
+      unwrapOrThrow(await deleteWriting(userId, writingId))
     },
-    async getDraft(userId, draftId) {
-      return unwrapOrThrow(await getDraft(userId, draftId))
+    async getWriting(userId, writingId) {
+      return unwrapOrThrow(await getWriting(userId, writingId))
     },
-    async listDrafts(userId, limit) {
-      return unwrapOrThrow(await listDrafts(userId, limit))
+    async listWritings(userId, limit) {
+      return unwrapOrThrow(await listWritings(userId, limit))
     },
   }
 }
@@ -169,12 +170,12 @@ export function createPromptApiService(
 
 export function createHomeApiService(input: {
   dailyRecommendationRepository: DailyRecommendationRepository
-  draftRepository: DraftRepository
+  writingRepository: WritingRepository
   promptRepository: PromptRepository
 }): HomeApiService {
   const getHome = makeGetHomeUseCase({
     dailyRecommendationRepository: input.dailyRecommendationRepository,
-    draftRepository: input.draftRepository,
+    writingRepository: input.writingRepository,
     promptRepository: input.promptRepository,
   })
 

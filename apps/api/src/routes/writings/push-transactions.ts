@@ -4,7 +4,7 @@ import {
   syncPushResponseSchema,
   writingIdParamSchema,
 } from "@workspace/core/modules/writings"
-import { toDraftId } from "@workspace/core"
+import { toWritingId } from "@workspace/core"
 
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -49,10 +49,10 @@ app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { writingId } = c.req.valid("param")
   const body = c.req.valid("json")
-  const { writingUseCases } = c.var.services
-  const result = await writingUseCases.pushTransactions(
+  const { writingSyncUseCases } = c.var.services
+  const result = await writingSyncUseCases.pushTransactions(
     userId,
-    toDraftId(writingId),
+    toWritingId(writingId),
     body
   )
   return c.json(result, 200)

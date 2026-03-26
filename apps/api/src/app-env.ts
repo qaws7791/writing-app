@@ -1,11 +1,11 @@
 import type { toUserId } from "@workspace/core"
 
 import type {
-  DraftApiService,
+  WritingApiService,
   HomeApiService,
   PromptApiService,
 } from "./application-services"
-import type { WritingApiService } from "./writing-services"
+import type { WritingSyncApiService } from "./writing-services"
 import type { DevEmailInbox } from "./auth/auth-email"
 import type { ApiLogger } from "./observability/logger"
 
@@ -37,10 +37,10 @@ export type GetSession = (request: Request) => Promise<AuthSession | null>
 
 export type AppServices = {
   authHandler: (request: Request) => Promise<Response>
-  draftUseCases: DraftApiService
+  writingUseCases: WritingApiService
   homeUseCases: HomeApiService
   promptUseCases: PromptApiService
-  writingUseCases: WritingApiService
+  writingSyncUseCases: WritingSyncApiService
   readLatestAuthEmail?: DevEmailInbox["readLatestMessage"]
   sqliteVersion: string
 }

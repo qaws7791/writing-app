@@ -73,9 +73,9 @@
 ```typescript
 // documents 테이블: 현재 문서 스냅샷
 interface LocalDocument {
-  draftId: number // PK
+  writingId: number // PK
   title: string
-  content: DraftContent // Tiptap JSON
+  content: WritingContent // Tiptap JSON
   baseVersion: number // 서버에서 마지막으로 확인된 버전
   localVersion: number // 로컬 편집 카운터
   lastModifiedAt: string // ISO timestamp
@@ -85,7 +85,7 @@ interface LocalDocument {
 // pending_transactions 테이블: 미전송 변경분 큐 (outbox)
 interface PendingTransaction {
   id: string // auto-increment or UUID
-  draftId: number
+  writingId: number
   baseVersion: number // 이 트랜잭션이 기반한 서버 버전
   operations: Operation[] // 직렬화된 변경 연산
   createdAt: string
@@ -95,10 +95,10 @@ interface PendingTransaction {
 // versions 테이블: 로컬 버전 기록 스냅샷
 interface LocalVersion {
   id: string
-  draftId: number
+  writingId: number
   version: number
   title: string
-  content: DraftContent
+  content: WritingContent
   createdAt: string
   source: "auto" | "server" | "restore"
 }
@@ -106,31 +106,31 @@ interface LocalVersion {
 
 ### 3.2 서버 데이터베이스 (확장)
 
-기존 `drafts` 테이블에 `version` 컬럼을 추가하고, `writing_transactions` 테이블을 신설:
+기존 `writings` 테이블에 `version` 컬럼을 추가하고, `writing_transactions` 테이블을 신설:
 
 ```sql
--- drafts 테이블 확장
-ALTER TABLE drafts ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
+-- writings 테이블 확장
+ALTER TABLE writings ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
 
 -- 트랜잭션 기록 (이벤트 소싱)
 CREATE TABLE writing_transactions (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  draft_id    INTEGER NOT NULL REFERENCES drafts(id) ON DELETE CASCADE,
+  writing_id    INTEGER NOT NULL REFERENCES writings(id) ON DELETE CASCADE,
   user_id     TEXT    NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   version     INTEGER NOT NULL,  -- 이 트랜잭션 적용 후 버전
   operations  TEXT    NOT NULL,  -- JSON: Operation[]
   created_at  TEXT    NOT NULL,
-  UNIQUE(draft_id, version)
+  UNIQUE(writing_id, version)
 );
 
 -- 버전 스냅샷 (특정 시점 복원용)
 CREATE TABLE writing_versions (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  draft_id    INTEGER NOT NULL REFERENCES drafts(id) ON DELETE CASCADE,
+  writing_id    INTEGER NOT NULL REFERENCES writings(id) ON DELETE CASCADE,
   user_id     TEXT    NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   version     INTEGER NOT NULL,
   title       TEXT    NOT NULL,
-  content     TEXT    NOT NULL,  -- JSON: DraftContent
+  content     TEXT    NOT NULL,  -- JSON: WritingContent
   created_at  TEXT    NOT NULL,
   reason      TEXT    NOT NULL DEFAULT 'auto'  -- 'auto' | 'manual' | 'restore'
 );
@@ -164,7 +164,7 @@ type Operation =
 [사용자 입력]
      │
      ▼
-[Tiptap onUpdate] ──→ DraftContent(JSON) 추출
+[Tiptap onUpdate] ──→ WritingContent(JSON) 추출
      │
      ├──→ [Dexie] documents 테이블 즉시 갱신 (UI 즉시 반영)
      │
@@ -214,7 +214,7 @@ type Operation =
 ### 4.3 콜드 스타트 / 하이드레이션
 
 ```
-[/write/[id] 페이지 진입]
+[/writing/[id] 페이지 진입]
      │
      ├─ 1. Dexie에서 로컬 문서 조회
      │      ├─ 있음 → 로컬 데이터로 에디터 즉시 렌더링
@@ -237,12 +237,12 @@ type Operation =
 
 탭 A (리더):
   - 서버 동기화를 수행하는 유일한 탭
-  - 동기화 완료 시 BroadcastChannel로 { type: 'SYNC_COMPLETE', draftId, version } 전파
+  - 동기화 완료 시 BroadcastChannel로 { type: 'SYNC_COMPLETE', writingId, version } 전파
   - 리더는 탭 가시성/timestamp 기반 선출
 
 탭 B, C (팔로워):
   - 로컬 편집 → Dexie에 저장 + pending_transactions 생성
-  - BroadcastChannel로 { type: 'LOCAL_CHANGE', draftId } 리더에게 알림
+  - BroadcastChannel로 { type: 'LOCAL_CHANGE', writingId } 리더에게 알림
   - SYNC_COMPLETE 수신 시 → Dexie에서 최신 문서 읽기 → 에디터 갱신
 
 리더 교체:
@@ -320,7 +320,7 @@ type Operation =
 
 ```typescript
 type SyncContext = {
-  draftId: number
+  writingId: number
   baseVersion: number // 서버에서 확인된 마지막 버전
   retryCount: number // 현재 재시도 횟수
   maxRetries: number // 최대 재시도 (기본 5)
@@ -443,7 +443,7 @@ type SyncPushResponse = {
 type SyncPushConflictResponse = {
   accepted: false
   serverVersion: number
-  serverContent: DraftContent
+  serverContent: WritingContent
   serverTitle: string
 }
 ```
@@ -455,7 +455,7 @@ type SyncPushConflictResponse = {
 type SyncPullResponse = {
   version: number
   title: string
-  content: DraftContent
+  content: WritingContent
   lastSavedAt: string
   hasNewerVersion: boolean
 }
@@ -525,7 +525,7 @@ apps/api/
 에디터는 외부 상태 변경(서버 동기화, 다른 탭) 시에도 커서 위치와 선택 영역을 보존:
 
 ```typescript
-function applyRemoteUpdate(editor: Editor, newContent: DraftContent) {
+function applyRemoteUpdate(editor: Editor, newContent: WritingContent) {
   // 1. 현재 커서/선택 위치 기억
   const { from, to } = editor.state.selection
 
@@ -555,6 +555,6 @@ function applyRemoteUpdate(editor: Editor, newContent: DraftContent) {
 ## 14. 보안 고려사항
 
 - 모든 sync API는 인증 필수 (`requireUserId` 미들웨어)
-- `draftId → userId` 소유권 검증 (기존 패턴 유지)
+- `writingId → userId` 소유권 검증 (기존 패턴 유지)
 - IndexedDB는 같은 origin에서만 접근 가능 (브라우저 샌드박스)
 - 서비스 워커 전송도 쿠키 기반 인증 사용

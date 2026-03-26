@@ -3,10 +3,10 @@ import { betterAuth } from "better-auth"
 import { memoryAdapter } from "better-auth/adapters/memory"
 
 import {
-  createEmptyDraftContent,
-  toDraftId,
+  createEmptyWritingContent,
+  toWritingId,
   toPromptId,
-  type DraftId,
+  type WritingId,
 } from "@workspace/core"
 
 import { createApp } from "../app.js"
@@ -73,14 +73,14 @@ function setup(): { app: TestApp } {
     logger: createSilentLogger(),
     services: {
       authHandler: auth.handler,
-      draftUseCases: {
-        async autosaveDraft(_userId: string, draftId: DraftId) {
+      writingUseCases: {
+        async autosaveWriting(_userId: string, writingId: WritingId) {
           return {
-            draft: {
+            writing: {
               characterCount: 0,
-              content: createEmptyDraftContent(),
+              content: createEmptyWritingContent(),
               createdAt: "2026-03-20T00:00:00.000Z",
-              id: draftId,
+              id: writingId,
               lastSavedAt: "2026-03-20T00:00:00.000Z",
               preview: "",
               sourcePromptId: null,
@@ -91,12 +91,12 @@ function setup(): { app: TestApp } {
             kind: "autosaved" as const,
           }
         },
-        async createDraft() {
+        async createWriting() {
           return {
             characterCount: 0,
-            content: createEmptyDraftContent(),
+            content: createEmptyWritingContent(),
             createdAt: "2026-03-20T00:00:00.000Z",
-            id: toDraftId(1),
+            id: toWritingId(1),
             lastSavedAt: "2026-03-20T00:00:00.000Z",
             preview: "",
             sourcePromptId: null,
@@ -105,15 +105,15 @@ function setup(): { app: TestApp } {
             wordCount: 0,
           }
         },
-        async deleteDraft() {
+        async deleteWriting() {
           return undefined
         },
-        async getDraft() {
+        async getWriting() {
           return {
             characterCount: 0,
-            content: createEmptyDraftContent(),
+            content: createEmptyWritingContent(),
             createdAt: "2026-03-20T00:00:00.000Z",
-            id: toDraftId(1),
+            id: toWritingId(1),
             lastSavedAt: "2026-03-20T00:00:00.000Z",
             preview: "",
             sourcePromptId: null,
@@ -122,15 +122,15 @@ function setup(): { app: TestApp } {
             wordCount: 0,
           }
         },
-        async listDrafts() {
+        async listWritings() {
           return []
         },
       },
       homeUseCases: {
         async getHome() {
           return {
-            recentDrafts: [],
-            resumeDraft: null,
+            recentWritings: [],
+            resumeWriting: null,
             savedPrompts: [],
             todayPrompts: [],
           }
@@ -166,8 +166,8 @@ function setup(): { app: TestApp } {
       },
       readLatestAuthEmail: emailPort.readLatestMessage,
       sqliteVersion: "memory",
-      writingUseCases: {
-        async pushTransactions() {
+      writingSyncUseCases: {
+        pushTransactions() {
           throw new Error("stub")
         },
         async pullDocument() {

@@ -34,7 +34,7 @@ export default function SignInView({ errorCode, verified }: SignInViewProps) {
   return (
     <AuthPageShell
       title="다시 이어 쓰기"
-      description="이메일과 비밀번호로 로그인하면 저장한 글감과 초안을 바로 이어서 볼 수 있습니다."
+      description="이메일과 비밀번호로 로그인하면 저장한 글감과 글을 바로 이어서 볼 수 있습니다."
       footer={
         <div className="flex flex-wrap items-center gap-2">
           <span>계정이 아직 없다면</span>

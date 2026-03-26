@@ -25,15 +25,15 @@ export const Showcase: Story = {
       <Tabs defaultValue="overview">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="drafts">Drafts</TabsTrigger>
+          <TabsTrigger value="writings">Writings</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
         <div className="rounded-lg border p-6">
           <TabsContent value="overview">
             A calm default variant for primary workspace navigation.
           </TabsContent>
-          <TabsContent value="drafts">
-            Drafts waiting for attention, grouped by editorial stage.
+          <TabsContent value="writings">
+            Writings waiting for attention, grouped by editorial stage.
           </TabsContent>
           <TabsContent value="analytics">
             Reader behavior and completion metrics for published pieces.

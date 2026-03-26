@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 
-export type FlushPendingDraftResult = "blocked" | "noop" | "saved"
+export type FlushPendingWritingResult = "blocked" | "noop" | "saved"
 
 type PendingNavigationTarget =
   | {
@@ -15,7 +15,7 @@ type PendingNavigationTarget =
     }
 
 type UseEditorLeaveGuardOptions = {
-  flushPendingDraft: () => Promise<FlushPendingDraftResult>
+  flushPendingWriting: () => Promise<FlushPendingWritingResult>
   hasPendingChanges: boolean
   navigate: (href: string) => void
   pathname: string
@@ -45,14 +45,14 @@ function toRelativeHref(url: URL) {
 }
 
 export function useEditorLeaveGuard({
-  flushPendingDraft,
+  flushPendingWriting,
   hasPendingChanges,
   navigate,
   pathname,
 }: UseEditorLeaveGuardOptions): UseEditorLeaveGuardResult {
   const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false)
 
-  const flushPendingDraftRef = useRef(flushPendingDraft)
+  const flushPendingWritingRef = useRef(flushPendingWriting)
   const hasPendingChangesRef = useRef(hasPendingChanges)
   const navigateRef = useRef(navigate)
   const leaveInFlightRef = useRef(false)
@@ -60,7 +60,7 @@ export function useEditorLeaveGuard({
   const skipGuardRef = useRef(false)
   const sentinelInstalledRef = useRef(false)
 
-  flushPendingDraftRef.current = flushPendingDraft
+  flushPendingWritingRef.current = flushPendingWriting
   hasPendingChangesRef.current = hasPendingChanges
   navigateRef.current = navigate
 
@@ -101,7 +101,7 @@ export function useEditorLeaveGuard({
       leaveInFlightRef.current = true
 
       try {
-        const result = await flushPendingDraftRef.current()
+        const result = await flushPendingWritingRef.current()
 
         if (result !== "blocked" || !hasPendingChangesRef.current) {
           navigateToTarget(target)
@@ -199,7 +199,7 @@ export function useEditorLeaveGuard({
         return
       }
 
-      void flushPendingDraftRef.current()
+      void flushPendingWritingRef.current()
       event.preventDefault()
       event.returnValue = ""
     }

@@ -15,33 +15,33 @@ packages/core/
     │   ├── index.ts
     │   ├── brand/
     │   │   ├── index.ts
-    │   │   └── brand.ts                   # Brand<T,N>, UserId, DraftId, PromptId
+    │   │   └── brand.ts                   # Brand<T,N>, UserId, WritingId, PromptId
     │   ├── error/
     │   │   ├── index.ts
     │   │   └── domain-error.ts            # DomainError discriminated union + 팩토리 + toHttpStatus
     │   └── schema/
     │       ├── index.ts
-    │       ├── draft-content-schema.ts    # DraftContent zod 스키마
+    │       ├── writing-content-schema.ts    # WritingContent zod 스키마
     │       └── prompt-schema.ts           # PromptTopic, PromptLevel 등
     │
     ├── modules/
-    │   ├── drafts/
+    │   ├── writings/
     │   │   ├── index.ts                   # 모듈 공개 API (contracts 역할 통합)
-    │   │   ├── draft-types.ts             # Draft, DraftSummary, DraftDetail, DraftPersistInput
-    │   │   ├── draft-error.ts             # DraftModuleError discriminated union + 팩토리
-    │   │   ├── draft-operations.ts        # 순수 함수: buildDraft, updateDraftContent 등
-    │   │   ├── draft-port.ts              # DraftRepository 인터페이스
+    │   │   ├── writing-types.ts             # Writing, WritingSummary, WritingDetail, WritingPersistInput
+    │   │   ├── writing-error.ts             # WritingCrudModuleError discriminated union + 팩토리
+    │   │   ├── writing-operations.ts        # 순수 함수: buildWriting, updateWritingContent 등
+    │   │   ├── writing-port.ts              # WritingCrudRepository 인터페이스
     │   │   ├── use-cases/
     │   │   │   ├── index.ts
-    │   │   │   ├── create-draft.ts
-    │   │   │   ├── autosave-draft.ts
-    │   │   │   ├── delete-draft.ts
-    │   │   │   ├── get-draft.ts
-    │   │   │   └── list-drafts.ts
+    │   │   │   ├── create-writing.ts
+    │   │   │   ├── autosave-writing.ts
+    │   │   │   ├── delete-writing.ts
+    │   │   │   ├── get-writing.ts
+    │   │   │   └── list-writings.ts
     │   │   └── testing/
     │   │       ├── index.ts
-    │   │       ├── draft-fixture.ts       # DraftFixture 빌더 (함수형)
-    │   │       └── fake-draft-repository.ts
+    │   │       ├── writing-fixture.ts       # WritingFixture 빌더 (함수형)
+    │   │       └── fake-writing-repository.ts
     │   │
     │   ├── prompts/
     │   │   ├── index.ts
@@ -77,7 +77,7 @@ packages/core/
 | `shared/types/result.ts` (자체 Result 구현)                         | **삭제** → `neverthrow` 대체          | 검증된 라이브러리로 체이닝·ResultAsync 등 확보               |
 | `shared/types/errors.ts` + `shared/utilities/application-errors.ts` | `shared/error/domain-error.ts` 통합   | 에러 정의와 변환이 분리되어 있던 것을 한 곳에 colocation     |
 | `shared/ports/` (전역 레포지토리 인터페이스)                        | 각 모듈의 `*-port.ts`로 이동          | 포트는 모듈의 계약, 모듈이 소유해야 함 (DDD Bounded Context) |
-| `shared/testing/fake-draft-repository.ts`                           | `modules/drafts/testing/`으로 이동    | fake는 해당 모듈의 관심사 (colocation)                       |
+| `shared/testing/fake-writing-repository.ts`                         | `modules/writings/testing/`으로 이동  | fake는 해당 모듈의 관심사 (colocation)                       |
 | 모듈 내 `contracts/` 디렉토리                                       | `index.ts`가 contracts 역할 통합      | 별도 디렉토리 없이 barrel export가 계약                      |
 | 모듈 내 `model/`, `operations/`, `errors/`, `ports/` 각각 디렉토리  | 파일 1개씩으로 평탄화                 | 파일이 1개인 디렉토리는 인지부하만 증가 (YAGNI)              |
 | `adapters/application-compatibility.ts`                             | **삭제**                              | neverthrow `.match()`로 consumer가 직접 처리                 |
@@ -94,9 +94,9 @@ packages/core/
 
 1. **자체 Result 타입 재발명**: `shared/types/result.ts`에 `ok()`, `err()`, `mapResult()`, `flatMapResult()` 등을 직접 구현. neverthrow가 제공하는 `ResultAsync`, `.andThen()`, `.orElse()`, `.match()` 등 풍부한 API를 활용하지 못함.
 
-2. **포트의 잘못된 배치**: `DraftRepository`, `PromptRepository` 인터페이스가 `shared/ports/`에 위치. DDD에서 포트는 해당 모듈의 계약이므로 모듈이 소유해야 함. 현재 구조는 모듈 간 결합을 유발.
+2. **포트의 잘못된 배치**: `WritingCrudRepository`, `PromptRepository` 인터페이스가 `shared/ports/`에 위치. DDD에서 포트는 해당 모듈의 계약이므로 모듈이 소유해야 함. 현재 구조는 모듈 간 결합을 유발.
 
-3. **과도한 디렉토리 중첩**: 파일이 1개뿐인 디렉토리가 다수 (`contracts/index.ts`, `model/draft.ts`, `errors/draft-errors.ts`). 탐색 시 인지부하 증가.
+3. **과도한 디렉토리 중첩**: 파일이 1개뿐인 디렉토리가 다수 (`contracts/index.ts`, `model/writing.ts`, `errors/writing-errors.ts`). 탐색 시 인지부하 증가.
 
 4. **adapter 계층의 불필요한 복잡성**: `application-compatibility.ts`가 Result → throw 변환만 수행. neverthrow의 `.match()`를 consumer가 직접 사용하면 이 계층이 불필요.
 
@@ -110,13 +110,13 @@ packages/core/
 
 3. **switch 문의 비안전성**: `toHttpStatus()`의 switch 문은 새 에러 코드 추가 시 컴파일 타임 경고 없음. ts-pattern의 `.exhaustive()`로 보장 가능.
 
-4. **수동 데이터 변환**: `extractDraftTextMetrics()` 등에서 수동 배열 조작. remeda의 `pipe`, `map`, `filter` 등으로 선언적 처리 가능.
+4. **수동 데이터 변환**: `extractWritingTextMetrics()` 등에서 수동 배열 조작. remeda의 `pipe`, `map`, `filter` 등으로 선언적 처리 가능.
 
 ### 2.3 타입 시스템 관점
 
-1. **DraftDetail이 DraftSummary를 확장**: 상속 대신 합성이 적절. 각각 독립 타입으로 정의하고 공통 필드는 별도 base 타입으로.
+1. **WritingDetail이 WritingSummary를 확장**: 상속 대신 합성이 적절. 각각 독립 타입으로 정의하고 공통 필드는 별도 base 타입으로.
 
-2. **use-case 출력 타입이 모호**: `{ kind: "success"; draft: DraftDetail } | DraftModuleError`에서 DraftModuleError에 `kind`가 없어 태그 판별이 불완전. neverthrow의 `Result<T, E>`가 이 문제를 근본적으로 해결.
+2. **use-case 출력 타입이 모호**: `{ kind: "success"; writing: WritingDetail } | WritingCrudModuleError`에서 WritingCrudModuleError에 `kind`가 없어 태그 판별이 불완전. neverthrow의 `Result<T, E>`가 이 문제를 근본적으로 해결.
 
 ---
 
@@ -139,9 +139,9 @@ packages/core/
 
 ```
 shared (커널)          ← 어떤 모듈에도 의존하지 않음
-modules/drafts         ← shared만 의존
+modules/writings         ← shared만 의존
 modules/prompts        ← shared만 의존
-modules/home           ← shared + drafts/prompts의 공개 타입만 의존
+modules/home           ← shared + writings/prompts의 공개 타입만 의존
 ```
 
 모듈 간 직접 import 금지. home이 다른 모듈의 타입을 필요로 할 경우 shared 또는 포트를 통해 간접 참조.
@@ -156,19 +156,21 @@ modules/home           ← shared + drafts/prompts의 공개 타입만 의존
 
 ```typescript
 // Before: 자체 Result + 수동 분기
-const result = await getDraftUseCase(userId, draftId, repo)
+const result = await getWritingUseCase(userId, writingId, repo)
 if (result.ok === false) return result.error
 
 // After: neverthrow의 ResultAsync + 체이닝
-const getDraft = (userId: UserId, draftId: DraftId) =>
-  ResultAsync.fromPromise(repo.getById(userId, draftId), () =>
-    draftNotFound("초안을 찾을 수 없습니다.", draftId)
+const getWriting = (userId: UserId, writingId: WritingId) =>
+  ResultAsync.fromPromise(repo.getById(userId, writingId), () =>
+    writingCrudNotFound("글을 찾을 수 없습니다.", writingId)
   ).andThen((accessResult) =>
     match(accessResult)
-      .with({ kind: "draft" }, ({ draft }) => ok(draft))
-      .with({ kind: "not-found" }, () => err(draftNotFound("...", draftId)))
+      .with({ kind: "writing" }, ({ writing }) => ok(writing))
+      .with({ kind: "not-found" }, () =>
+        err(writingCrudNotFound("...", writingId))
+      )
       .with({ kind: "forbidden" }, ({ ownerId }) =>
-        err(draftForbidden("...", ownerId))
+        err(writingCrudForbidden("...", ownerId))
       )
       .exhaustive()
   )
@@ -254,14 +256,14 @@ const wordCount = pipe(
 #### 1-5. shared/utilities 정리
 
 - `application-errors.ts`, `application-errors.test.ts` 삭제
-- `draft-content-utilities.ts` → remeda 파이프라인으로 리팩토링
+- `writing-content-utilities.ts` → remeda 파이프라인으로 리팩토링
 - 디렉토리명 `utilities` 유지 (범용 순수 함수)
 
 ### Phase 2: 모듈 구조 개편
 
 #### 2-1. 포트 이동
 
-- `shared/ports/draft-repository.ts` → `modules/drafts/draft-port.ts`
+- `shared/ports/writing-repository.ts` → `modules/writings/writing-port.ts`
 - `shared/ports/prompt-repository.ts` → `modules/prompts/prompt-port.ts`
 - `shared/ports/user-seed-repository.ts` → `shared/` 유지 (범용)
 - `shared/ports/` 디렉토리 삭제
@@ -270,17 +272,17 @@ const wordCount = pipe(
 
 각 모듈에서 파일이 1개뿐인 디렉토리를 파일로 승격:
 
-- `model/draft.ts` → `draft-types.ts`
-- `errors/draft-errors.ts` → `draft-error.ts`
-- `operations/draft-operations.ts` → `draft-operations.ts`
-- `ports/index.ts` → 삭제 (draft-port.ts로 대체)
+- `model/writing.ts` → `writing-types.ts`
+- `errors/writing-errors.ts` → `writing-error.ts`
+- `operations/writing-operations.ts` → `writing-operations.ts`
+- `ports/index.ts` → 삭제 (writing-port.ts로 대체)
 - `contracts/index.ts` → 삭제 (index.ts가 역할 대체)
 - `adapters/application-compatibility.ts` → 삭제
 - `fixtures/` → `testing/` 디렉토리로 이동
 
 #### 2-3. 테스팅 유틸리티 이동
 
-- `shared/testing/fake-draft-repository.ts` → `modules/drafts/testing/fake-draft-repository.ts`
+- `shared/testing/fake-writing-repository.ts` → `modules/writings/testing/fake-writing-repository.ts`
 - `shared/testing/` → 패키지 수준 공유가 필요하면 `src/testing/`으로 이동
 
 ### Phase 3: Use-case neverthrow 전환
@@ -291,18 +293,18 @@ const wordCount = pipe(
 
 ```typescript
 // Before
-export type CreateDraftUseCaseOutput =
-  | { kind: "success"; draft: DraftDetail }
-  | DraftModuleError
+export type CreateWritingUseCaseOutput =
+  | { kind: "success"; writing: WritingDetail }
+  | WritingCrudModuleError
 
 // After
-// 함수 반환: ResultAsync<DraftDetail, DraftModuleError>
+// 함수 반환: ResultAsync<WritingDetail, WritingCrudModuleError>
 ```
 
 #### 3-2. 이중 API 제거
 
-- `makeCreateDraftUseCase` 팩토리만 유지
-- standalone `createDraftUseCase` 제거
+- `makeCreateWritingUseCase` 팩토리만 유지
+- standalone `createWritingUseCase` 제거
 - 모든 모듈에 동일 적용
 
 #### 3-3. ts-pattern 적용
@@ -329,8 +331,8 @@ use-case 내 `if (result.kind === "not-found")` 패턴을 `match(result).with(..
 {
   "exports": {
     ".": "./src/index.ts",
-    "./modules/drafts": "./src/modules/drafts/index.ts",
-    "./modules/drafts/testing": "./src/modules/drafts/testing/index.ts",
+    "./modules/writings": "./src/modules/writings/index.ts",
+    "./modules/writings/testing": "./src/modules/writings/testing/index.ts",
     "./modules/prompts": "./src/modules/prompts/index.ts",
     "./modules/prompts/testing": "./src/modules/prompts/testing/index.ts",
     "./modules/home": "./src/modules/home/index.ts",
@@ -350,7 +352,7 @@ use-case 내 `if (result.kind === "not-found")` 패턴을 `match(result).with(..
 
 #### 5-2. packages/database 수정
 
-- 포트 인터페이스 import 경로 변경 (`@workspace/core` → `@workspace/core/modules/drafts`)
+- 포트 인터페이스 import 경로 변경 (`@workspace/core` → `@workspace/core/modules/writings`)
 - 타입 import 경로 변경
 
 #### 5-3. apps/web 수정
@@ -371,13 +373,13 @@ use-case 내 `if (result.kind === "not-found")` 패턴을 `match(result).with(..
 ### 테스트 파일 목록
 
 ```
-modules/drafts/
-  draft-operations.test.ts
-  use-cases/create-draft.test.ts
-  use-cases/autosave-draft.test.ts
-  use-cases/delete-draft.test.ts
-  use-cases/get-draft.test.ts
-  use-cases/list-drafts.test.ts
+modules/writings/
+  writing-operations.test.ts
+  use-cases/create-writing.test.ts
+  use-cases/autosave-writing.test.ts
+  use-cases/delete-writing.test.ts
+  use-cases/get-writing.test.ts
+  use-cases/list-writings.test.ts
 
 modules/prompts/
   use-cases/get-prompt.test.ts
@@ -390,24 +392,24 @@ modules/home/
 
 shared/
   error/domain-error.test.ts
-  utilities/draft-content-utilities.test.ts
+  utilities/writing-content-utilities.test.ts
 ```
 
 ### neverthrow 테스트 패턴
 
 ```typescript
-describe("makeCreateDraftUseCase", () => {
-  it("글감이 존재하면 초안을 생성한다", async () => {
-    const result = await createDraft(userId, input)
+describe("makeCreateWritingUseCase", () => {
+  it("글감이 존재하면 글을 생성한다", async () => {
+    const result = await createWriting(userId, input)
 
     expect(result.isOk()).toBe(true)
-    result.map((draft) => {
-      expect(draft.title).toBe("새 글")
+    result.map((writing) => {
+      expect(writing.title).toBe("새 글")
     })
   })
 
   it("글감이 없으면 NOT_FOUND 에러를 반환한다", async () => {
-    const result = await createDraft(userId, { sourcePromptId })
+    const result = await createWriting(userId, { sourcePromptId })
 
     expect(result.isErr()).toBe(true)
     result.mapErr((error) => {

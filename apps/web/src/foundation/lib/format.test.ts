@@ -1,4 +1,4 @@
-import { formatDraftMeta, formatSavedAt } from "./format"
+import { formatWritingMeta, formatSavedAt } from "./format"
 
 describe("phase one format helpers", () => {
   test("formats saved time in Korean locale", () => {
@@ -8,8 +8,8 @@ describe("phase one format helpers", () => {
     expect(formatted).toContain("20.")
   })
 
-  test("formats draft meta in Korean locale", () => {
-    const formatted = formatDraftMeta("2026-03-20T10:15:00.000Z")
+  test("formats writing meta in Korean locale", () => {
+    const formatted = formatWritingMeta("2026-03-20T10:15:00.000Z")
 
     expect(formatted).toContain("3.")
     expect(formatted).toContain("20.")

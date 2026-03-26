@@ -1,17 +1,17 @@
 import { vi, type Mock } from "vitest"
 
-import type { DraftContent } from "@/domain/draft"
+import type { WritingContent } from "@/domain/writing"
 import type { PromptFilters } from "@/domain/prompt"
 import type {
-  AutosaveDraftResult,
-  CreateDraftInput,
-  DraftRepository,
-} from "@/features/writing/repositories/draft-repository"
+  AutosaveWritingResult,
+  CreateWritingInput,
+  WritingRepository,
+} from "@/features/writing/repositories/writing-repository"
 import type { HomeRepository } from "@/features/home/repositories/home-repository"
 import type { PromptRepository } from "@/features/prompt/repositories/prompt-repository"
 
-type MockedDraftRepository = {
-  [TKey in keyof DraftRepository]: Mock<DraftRepository[TKey]>
+type MockedWritingRepository = {
+  [TKey in keyof WritingRepository]: Mock<WritingRepository[TKey]>
 }
 
 type MockedHomeRepository = {
@@ -22,25 +22,29 @@ type MockedPromptRepository = {
   [TKey in keyof PromptRepository]: Mock<PromptRepository[TKey]>
 }
 
-export function createMockDraftRepository(): MockedDraftRepository {
+export function createMockWritingRepository(): MockedWritingRepository {
   return {
-    autosaveDraft:
+    autosaveWriting:
       vi.fn<
         (
-          draftId: number,
-          input: { content?: DraftContent; title?: string }
-        ) => Promise<AutosaveDraftResult>
+          writingId: number,
+          input: { content?: WritingContent; title?: string }
+        ) => Promise<AutosaveWritingResult>
       >(),
-    createDraft:
+    createWriting:
       vi.fn<
-        (input: CreateDraftInput) => ReturnType<DraftRepository["createDraft"]>
+        (
+          input: CreateWritingInput
+        ) => ReturnType<WritingRepository["createWriting"]>
       >(),
-    deleteDraft: vi.fn<(draftId: number) => Promise<void>>(),
-    getDraft:
-      vi.fn<(draftId: number) => ReturnType<DraftRepository["getDraft"]>>(),
+    deleteWriting: vi.fn<(writingId: number) => Promise<void>>(),
+    getWriting:
+      vi.fn<
+        (writingId: number) => ReturnType<WritingRepository["getWriting"]>
+      >(),
     getPrompt:
-      vi.fn<(promptId: number) => ReturnType<DraftRepository["getPrompt"]>>(),
-    listDrafts: vi.fn<() => ReturnType<DraftRepository["listDrafts"]>>(),
+      vi.fn<(promptId: number) => ReturnType<WritingRepository["getPrompt"]>>(),
+    listWritings: vi.fn<() => ReturnType<WritingRepository["listWritings"]>>(),
   }
 }
 
@@ -52,9 +56,11 @@ export function createMockHomeRepository(): MockedHomeRepository {
 
 export function createMockPromptRepository(): MockedPromptRepository {
   return {
-    createDraft:
+    createWriting:
       vi.fn<
-        (input: CreateDraftInput) => ReturnType<PromptRepository["createDraft"]>
+        (
+          input: CreateWritingInput
+        ) => ReturnType<PromptRepository["createWriting"]>
       >(),
     getPrompt:
       vi.fn<(promptId: number) => ReturnType<PromptRepository["getPrompt"]>>(),

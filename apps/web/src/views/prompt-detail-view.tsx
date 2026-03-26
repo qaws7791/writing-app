@@ -14,13 +14,13 @@ import { Badge } from "@workspace/ui/components/badge"
 import { LevelDots } from "@/domain/prompt/ui/level-dots"
 import { usePromptDetailQuery } from "@/features/prompt/hooks/use-prompt-detail-query"
 import { useTogglePromptSaveMutation } from "@/features/prompt/hooks/use-toggle-prompt-save-mutation"
-import { useCreateDraftFromPromptMutation } from "@/features/prompt/hooks/use-create-draft-from-prompt-mutation"
+import { useCreateWritingFromPromptMutation } from "@/features/prompt/hooks/use-create-writing-from-prompt-mutation"
 
 export default function PromptDetailView({ promptId }: { promptId: number }) {
   const router = useRouter()
   const { data: prompt, isPending, isError } = usePromptDetailQuery(promptId)
   const toggleSave = useTogglePromptSaveMutation()
-  const createDraft = useCreateDraftFromPromptMutation()
+  const createWriting = useCreateWritingFromPromptMutation()
 
   if (isPending) {
     return (
@@ -140,11 +140,11 @@ export default function PromptDetailView({ promptId }: { promptId: number }) {
           <button
             type="button"
             onClick={() =>
-              createDraft.mutate(prompt.id, {
-                onSuccess: (draft) => router.push(`/write/${draft.id}`),
+              createWriting.mutate(prompt.id, {
+                onSuccess: (writing) => router.push(`/writing/${writing.id}`),
               })
             }
-            disabled={createDraft.isPending}
+            disabled={createWriting.isPending}
             className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-3 text-base font-semibold text-primary-foreground transition-transform hover:bg-primary/90 active:scale-95 disabled:opacity-60"
           >
             <HugeiconsIcon
@@ -153,7 +153,7 @@ export default function PromptDetailView({ promptId }: { promptId: number }) {
               color="currentColor"
               strokeWidth={1.5}
             />
-            {createDraft.isPending ? "글 생성 중…" : "이 글감으로 글 쓰기"}
+            {createWriting.isPending ? "글 생성 중…" : "이 글감으로 글 쓰기"}
           </button>
           <button
             type="button"

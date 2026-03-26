@@ -25,7 +25,7 @@ export const Showcase: Story = {
         </KbdGroup>
       </div>
       <div className="flex items-center gap-2">
-        Publish current draft
+        Publish current writing
         <KbdGroup>
           <Kbd>Shift</Kbd>
           <Kbd>Enter</Kbd>

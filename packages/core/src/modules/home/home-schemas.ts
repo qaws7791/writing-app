@@ -1,11 +1,11 @@
 import { z } from "zod"
 
-import { draftSummarySchema } from "../drafts/draft-schemas"
+import { writingSummarySchema } from "../writings/writing-crud-schemas"
 import { promptSummarySchema } from "../prompts/prompt-schemas"
 
 export const homeSnapshotSchema = z.object({
-  recentDrafts: z.array(draftSummarySchema).readonly(),
-  resumeDraft: draftSummarySchema.nullable(),
+  recentWritings: z.array(writingSummarySchema).readonly(),
+  resumeWriting: writingSummarySchema.nullable(),
   savedPrompts: z.array(promptSummarySchema).readonly(),
   todayPrompts: z.array(promptSummarySchema).readonly(),
 })

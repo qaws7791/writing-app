@@ -1,4 +1,4 @@
-import type { DraftId, UserId } from "../../shared/brand/index"
+import type { WritingId, UserId } from "../../shared/brand/index"
 import {
   createConflictError,
   createForbiddenError,
@@ -9,10 +9,15 @@ import {
   type NotFoundError,
   type ValidationError,
 } from "../../shared/error/index"
+import type { PromptReferenceNotFoundError } from "./writing-crud-error"
+
+// Re-export CRUD-specific errors
+export type { PromptReferenceNotFoundError } from "./writing-crud-error"
+export { promptNotFound } from "./writing-crud-error"
 
 export type WritingNotFoundError = NotFoundError & {
   readonly entity: "writing"
-  readonly id?: DraftId
+  readonly id?: WritingId
 }
 
 export type WritingForbiddenError = ForbiddenError & {
@@ -34,15 +39,16 @@ export type WritingModuleError =
   | WritingForbiddenError
   | WritingValidationError
   | WritingConflictError
+  | PromptReferenceNotFoundError
 
 export function writingNotFound(
   message: string,
-  draftId?: DraftId
+  writingId?: WritingId
 ): WritingNotFoundError {
   return {
-    ...createNotFoundError(message, { entity: "writing", id: draftId }),
+    ...createNotFoundError(message, { entity: "writing", id: writingId }),
     entity: "writing",
-    id: draftId,
+    id: writingId,
   }
 }
 

@@ -36,7 +36,7 @@ export const Showcase: Story = {
         <DialogHeader>
           <DialogTitle>Submit for editorial review</DialogTitle>
           <DialogDescription>
-            Share the latest context before handing this draft to the next
+            Share the latest context before handing this writing to the next
             editor.
           </DialogDescription>
         </DialogHeader>

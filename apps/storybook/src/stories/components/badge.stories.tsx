@@ -20,7 +20,7 @@ export const Showcase: Story = {
   render: () => (
     <div className="flex flex-wrap gap-3">
       <Badge>Published</Badge>
-      <Badge variant="secondary">Draft</Badge>
+      <Badge variant="secondary">Writing</Badge>
       <Badge variant="outline">Needs review</Badge>
       <Badge variant="destructive">Overdue</Badge>
       <Badge variant="link" render={<a href="#badge-link" />}>

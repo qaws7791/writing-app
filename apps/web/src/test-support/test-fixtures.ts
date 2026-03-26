@@ -1,12 +1,12 @@
 import type {
-  DraftContent,
-  DraftDetail,
-  DraftSummary,
+  WritingContent,
+  WritingDetail,
+  WritingSummary,
   HomeSnapshot,
-} from "@/domain/draft"
+} from "@/domain/writing"
 import type { PromptDetail, PromptSummary } from "@/domain/prompt"
 
-export function createDraftContent(text = "기본 본문"): DraftContent {
+export function createWritingContent(text = "기본 본문"): WritingContent {
   return {
     content: [
       {
@@ -45,27 +45,27 @@ export function createPromptDetail(
   }
 }
 
-export function createDraftSummary(
-  overrides: Partial<DraftSummary> = {}
-): DraftSummary {
+export function createWritingSummary(
+  overrides: Partial<WritingSummary> = {}
+): WritingSummary {
   return {
     characterCount: 12,
     id: 1,
     lastSavedAt: "2026-03-20T10:00:00.000Z",
     preview: "기본 미리보기",
     sourcePromptId: null,
-    title: "기본 초안",
+    title: "기본 글",
     wordCount: 3,
     ...overrides,
   }
 }
 
-export function createDraftDetail(
-  overrides: Partial<DraftDetail> = {}
-): DraftDetail {
+export function createWritingDetail(
+  overrides: Partial<WritingDetail> = {}
+): WritingDetail {
   return {
-    ...createDraftSummary(),
-    content: createDraftContent(),
+    ...createWritingSummary(),
+    content: createWritingContent(),
     createdAt: "2026-03-20T09:00:00.000Z",
     updatedAt: "2026-03-20T10:00:00.000Z",
     ...overrides,
@@ -75,15 +75,15 @@ export function createDraftDetail(
 export function createHomeSnapshot(
   overrides: Partial<HomeSnapshot> = {}
 ): HomeSnapshot {
-  const resumeDraft = createDraftSummary({
+  const resumeWriting = createWritingSummary({
     id: 11,
-    preview: "이어서 쓰는 초안",
+    preview: "이어서 쓰는 글",
     title: "이어서 쓰기",
   })
 
   return {
-    recentDrafts: [resumeDraft],
-    resumeDraft,
+    recentWritings: [resumeWriting],
+    resumeWriting,
     savedPrompts: [
       createPromptSummary({ id: 21, saved: true, text: "저장 글감" }),
     ],
