@@ -31,7 +31,11 @@ describe("makeListVersionsUseCase", () => {
     const result = await listVersions(userId, writingId)
 
     expect(result.isOk()).toBe(true)
-    expect(result._unsafeUnwrap()).toEqual([])
+    expect(result._unsafeUnwrap()).toEqual({
+      items: [],
+      nextCursor: null,
+      hasMore: false,
+    })
   })
 
   it("저장된 버전 목록을 반환한다", async () => {
@@ -61,9 +65,9 @@ describe("makeListVersionsUseCase", () => {
 
     expect(result.isOk()).toBe(true)
     const versions = result._unsafeUnwrap()
-    expect(versions).toHaveLength(2)
-    expect(versions[0]!.version).toBe(20)
-    expect(versions[1]!.version).toBe(10)
+    expect(versions.items).toHaveLength(2)
+    expect(versions.items[0]!.version).toBe(20)
+    expect(versions.items[1]!.version).toBe(10)
   })
 
   it("limit을 적용할 수 있다", async () => {
@@ -81,10 +85,10 @@ describe("makeListVersionsUseCase", () => {
       })
     }
 
-    const result = await listVersions(userId, writingId, 2)
+    const result = await listVersions(userId, writingId, { limit: 2 })
 
     expect(result.isOk()).toBe(true)
-    expect(result._unsafeUnwrap()).toHaveLength(2)
+    expect(result._unsafeUnwrap().items).toHaveLength(2)
   })
 
   it("존재하지 않는 문서이면 NOT_FOUND를 반환한다", async () => {

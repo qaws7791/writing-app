@@ -15,6 +15,8 @@ import {
 } from "@workspace/core/modules/writings"
 import {
   toApplicationError,
+  type CursorPage,
+  type CursorPageParams,
   type WritingId,
   type DomainError,
   type UserId,
@@ -35,8 +37,8 @@ export type WritingSyncApiService = {
   listVersions: (
     userId: UserId,
     writingId: WritingId,
-    limit?: number
-  ) => Promise<readonly WritingVersionSummary[]>
+    params?: CursorPageParams
+  ) => Promise<CursorPage<WritingVersionSummary>>
   getVersion: (
     userId: UserId,
     writingId: WritingId,
@@ -88,8 +90,8 @@ export function createWritingSyncApiService(input: {
     async pullDocument(userId, writingId, sinceVersion) {
       return unwrapOrThrow(await pullDocument(userId, writingId, sinceVersion))
     },
-    async listVersions(userId, writingId, limit) {
-      return unwrapOrThrow(await listVersions(userId, writingId, limit))
+    async listVersions(userId, writingId, params) {
+      return unwrapOrThrow(await listVersions(userId, writingId, params))
     },
     async getVersion(userId, writingId, version) {
       return unwrapOrThrow(await getVersion(userId, writingId, version))

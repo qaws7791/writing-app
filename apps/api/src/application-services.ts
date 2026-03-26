@@ -11,6 +11,8 @@ import {
   makeUnsavePromptUseCase,
   toApplicationError,
   type AutosaveWritingInput,
+  type CursorPage,
+  type CursorPageParams,
   type DailyRecommendationRepository,
   type WritingDetail,
   type WritingId,
@@ -49,8 +51,8 @@ export type WritingApiService = {
   getWriting: (userId: UserId, writingId: WritingId) => Promise<WritingDetail>
   listWritings: (
     userId: UserId,
-    limit?: number
-  ) => Promise<readonly WritingSummary[]>
+    params?: CursorPageParams
+  ) => Promise<CursorPage<WritingSummary>>
 }
 
 export type PromptApiService = {
@@ -129,8 +131,8 @@ export function createWritingApiService(input: {
     async getWriting(userId, writingId) {
       return unwrapOrThrow(await getWriting(userId, writingId))
     },
-    async listWritings(userId, limit) {
-      return unwrapOrThrow(await listWritings(userId, limit))
+    async listWritings(userId, params) {
+      return unwrapOrThrow(await listWritings(userId, params))
     },
   }
 }

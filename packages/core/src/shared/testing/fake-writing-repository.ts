@@ -1,4 +1,5 @@
 import type { WritingId, UserId } from "../brand/index"
+import type { CursorPage, CursorPageParams } from "../pagination/index"
 import type {
   WritingCrudAccessResult,
   WritingDeleteResult,
@@ -70,11 +71,13 @@ export class FakeWritingRepository implements WritingRepository {
 
   async list(
     userId: UserId,
-    limit?: number
-  ): Promise<readonly WritingSummary[]> {
+    params?: CursorPageParams
+  ): Promise<CursorPage<WritingSummary>> {
     const userWritings = this.storage.get(userId) ?? new Map()
     const writings = Array.from(userWritings.values()) as WritingSummary[]
-    return limit ? writings.slice(0, limit) : writings
+    const limit = params?.limit
+    const items = limit ? writings.slice(0, limit) : writings
+    return { items, nextCursor: null, hasMore: false }
   }
 
   async replace(

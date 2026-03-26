@@ -1,7 +1,12 @@
-import { and, desc, eq, gt } from "drizzle-orm"
+import { and, desc, eq, gt, lt } from "drizzle-orm"
 import {
   toWritingId,
   toUserId,
+  buildCursorPage,
+  decodeCursor,
+  mapCursorPage,
+  type CursorPage,
+  type CursorPageParams,
   type WritingId,
   type UserId,
   type WritingContent,
@@ -220,16 +225,36 @@ export function createWritingVersionRepository(
       return mapVersionRow(row)
     },
 
-    async list(writingId, limit = 50) {
+    async list(
+      writingId,
+      params: CursorPageParams = {}
+    ): Promise<CursorPage<WritingVersionSummary>> {
+      const limit = params.limit ?? 50
+      const cursor = params.cursor
+        ? decodeCursor<{ v: number }>(params.cursor)
+        : null
+
+      const cursorCondition = cursor
+        ? lt(writingVersions.version, cursor.v)
+        : undefined
+
       const rows = database
         .select()
         .from(writingVersions)
-        .where(eq(writingVersions.writingId, writingId as number))
+        .where(
+          and(
+            eq(writingVersions.writingId, writingId as number),
+            cursorCondition
+          )
+        )
         .orderBy(desc(writingVersions.version))
-        .limit(limit)
+        .limit(limit + 1)
         .all()
 
-      return rows.map(mapVersionSummaryRow)
+      return mapCursorPage(
+        buildCursorPage(rows, limit, (row) => ({ v: row.version })),
+        mapVersionSummaryRow
+      )
     },
 
     async getByVersion(writingId, version) {

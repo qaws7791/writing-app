@@ -10,17 +10,21 @@ import { makeGetHomeUseCase } from "./get-home-use-case"
 describe("makeGetHomeUseCase", () => {
   it("collects the home snapshot with the expected repository limits", async () => {
     const userId = toUserId("user-1")
-    const listWritings = vi.fn(async () => [
-      {
-        characterCount: 10,
-        id: toWritingId(1),
-        lastSavedAt: "2026-03-22T00:00:00.000Z",
-        preview: "최근 글",
-        sourcePromptId: null,
-        title: "최근 글",
-        wordCount: 2,
-      },
-    ])
+    const listWritings = vi.fn(async () => ({
+      items: [
+        {
+          characterCount: 10,
+          id: toWritingId(1),
+          lastSavedAt: "2026-03-22T00:00:00.000Z",
+          preview: "최근 글",
+          sourcePromptId: null,
+          title: "최근 글",
+          wordCount: 2,
+        },
+      ],
+      nextCursor: null,
+      hasMore: false,
+    }))
     const listSaved = vi.fn(async () => [
       {
         id: toPromptId(10),
@@ -83,7 +87,7 @@ describe("makeGetHomeUseCase", () => {
 
     const result = await getHome(userId)
 
-    expect(listWritings).toHaveBeenCalledWith(userId, 10)
+    expect(listWritings).toHaveBeenCalledWith(userId, { limit: 10 })
     expect(listSaved).toHaveBeenCalledWith(userId, 10)
     expect(listTodayPrompts).toHaveBeenCalledWith(userId, 4)
     expect(result.resumeWriting?.id).toBe(toWritingId(1))

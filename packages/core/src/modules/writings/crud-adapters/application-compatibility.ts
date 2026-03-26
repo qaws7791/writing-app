@@ -78,7 +78,7 @@ export function createWritingUseCasesAdapter(
     },
 
     async listWritings(userId: UserId, limit?: number) {
-      const result = await list(userId, limit)
+      const result = await list(userId, limit ? { limit } : undefined)
       return result._unsafeUnwrap()
     },
   }

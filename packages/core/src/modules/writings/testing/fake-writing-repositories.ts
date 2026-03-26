@@ -1,4 +1,8 @@
 import type { WritingId, UserId } from "../../../shared/brand/index"
+import type {
+  CursorPage,
+  CursorPageParams,
+} from "../../../shared/pagination/index"
 import type { WritingContent } from "../../../shared/schema/index"
 import type {
   Writing,
@@ -134,15 +138,17 @@ export function createFakeVersionRepository(): WritingVersionRepository & {
 
     async list(
       writingId: WritingId,
-      limit?: number
-    ): Promise<readonly WritingVersionSummary[]> {
+      params?: CursorPageParams
+    ): Promise<CursorPage<WritingVersionSummary>> {
       const filtered = versions
         .filter((v) => v.writingId === writingId)
         .sort((a, b) => b.version - a.version)
 
+      const limit = params?.limit
       const limited = limit ? filtered.slice(0, limit) : filtered
 
-      return limited.map(({ content: _content, ...summary }) => summary)
+      const items = limited.map(({ content: _content, ...summary }) => summary)
+      return { items, nextCursor: null, hasMore: false }
     },
 
     async getByVersion(

@@ -3,6 +3,10 @@ import { match } from "ts-pattern"
 
 import type { WritingId, UserId } from "../../../shared/brand/index"
 import type {
+  CursorPage,
+  CursorPageParams,
+} from "../../../shared/pagination/index"
+import type {
   WritingSyncRepository,
   WritingVersionRepository,
 } from "../writing-port"
@@ -22,19 +26,19 @@ export function makeListVersionsUseCase(deps: ListVersionsDeps) {
   return (
     userId: UserId,
     writingId: WritingId,
-    limit?: number
-  ): ResultAsync<readonly WritingVersionSummary[], WritingModuleError> => {
+    params?: CursorPageParams
+  ): ResultAsync<CursorPage<WritingVersionSummary>, WritingModuleError> => {
     return ResultAsync.fromSafePromise(
       deps.writingRepository.getById(userId, writingId)
     ).andThen((access) =>
       match(access)
         .with({ kind: "not-found" }, () =>
-          err<readonly WritingVersionSummary[], WritingModuleError>(
+          err<CursorPage<WritingVersionSummary>, WritingModuleError>(
             writingNotFound("문서를 찾을 수 없습니다.", writingId)
           )
         )
         .with({ kind: "forbidden" }, ({ ownerId }) =>
-          err<readonly WritingVersionSummary[], WritingModuleError>(
+          err<CursorPage<WritingVersionSummary>, WritingModuleError>(
             writingForbidden(
               "다른 사용자의 문서에는 접근할 수 없습니다.",
               ownerId
@@ -43,7 +47,7 @@ export function makeListVersionsUseCase(deps: ListVersionsDeps) {
         )
         .with({ kind: "writing" }, () =>
           ResultAsync.fromSafePromise(
-            deps.versionRepository.list(writingId, limit)
+            deps.versionRepository.list(writingId, params)
           )
         )
         .exhaustive()

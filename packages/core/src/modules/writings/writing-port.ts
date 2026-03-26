@@ -1,4 +1,8 @@
 import type { WritingId, UserId } from "../../shared/brand/index"
+import type {
+  CursorPage,
+  CursorPageParams,
+} from "../../shared/pagination/index"
 import type { WritingContent } from "../../shared/schema/index"
 import type {
   Operation,
@@ -77,8 +81,8 @@ export interface WritingVersionRepository {
 
   list(
     writingId: WritingId,
-    limit?: number
-  ): Promise<readonly WritingVersionSummary[]>
+    params?: CursorPageParams
+  ): Promise<CursorPage<WritingVersionSummary>>
 
   getByVersion(
     writingId: WritingId,

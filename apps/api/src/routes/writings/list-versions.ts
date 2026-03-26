@@ -3,7 +3,7 @@ import {
   versionListResponseSchema,
   writingIdParamSchema,
 } from "@workspace/core/modules/writings"
-import { toWritingId } from "@workspace/core"
+import { cursorPageQuerySchema, toWritingId } from "@workspace/core"
 
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -17,9 +17,7 @@ const route = createRoute({
     params: z.object({
       writingId: writingIdParamSchema,
     }),
-    query: z.object({
-      limit: z.coerce.number().int().positive().max(100).optional(),
-    }),
+    query: cursorPageQuerySchema,
   },
   responses: {
     200: {
@@ -44,12 +42,12 @@ app.openapi(route, async (c) => {
   const { writingId } = c.req.valid("param")
   const query = c.req.valid("query")
   const { writingSyncUseCases } = c.var.services
-  const items = await writingSyncUseCases.listVersions(
+  const page = await writingSyncUseCases.listVersions(
     userId,
     toWritingId(writingId),
-    query.limit
+    query
   )
-  return c.json({ items }, 200)
+  return c.json(page, 200)
 })
 
 export default app

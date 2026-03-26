@@ -315,7 +315,7 @@ export function createTestApi(input?: {
           return serializeWriting(writing)
         },
         async listWritings(userId) {
-          return writings
+          const items = writings
             .filter((writing) => writing.ownerId === userId)
             .sort((left, right) =>
               left.updatedAt === right.updatedAt
@@ -334,6 +334,7 @@ export function createTestApi(input?: {
               title: writing.title,
               wordCount: writing.wordCount,
             }))
+          return { items, nextCursor: null, hasMore: false }
         },
       },
       homeUseCases: {
@@ -480,7 +481,7 @@ export function createTestApi(input?: {
           throw new NotFoundError("stub")
         },
         async listVersions() {
-          return []
+          return { items: [], nextCursor: null, hasMore: false }
         },
         async getVersion() {
           throw new NotFoundError("stub")

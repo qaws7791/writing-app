@@ -73,16 +73,16 @@ describe("writing repository", () => {
       wordCount: metrics.wordCount,
     })
 
-    const writings = await repository.list(toUserId("dev-user"), 10)
+    const writings = await repository.list(toUserId("dev-user"), { limit: 10 })
     const resume = await repository.resume(toUserId("dev-user"))
     const detail = await repository.getById(
       toUserId("dev-user"),
       toWritingId(first.id)
     )
 
-    expect(writings[0]?.id).toBe(first.id)
+    expect(writings.items[0]?.id).toBe(first.id)
     expect(resume?.id).toBe(first.id)
-    expect(writings[0]?.preview.length).toBe(123)
+    expect(writings.items[0]?.preview.length).toBe(123)
     expect(Number(second.sourcePromptId)).toBe(1)
     expect(detail).toEqual(
       expect.objectContaining({

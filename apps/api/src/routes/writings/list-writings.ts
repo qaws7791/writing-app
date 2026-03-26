@@ -1,5 +1,8 @@
 import { createRoute } from "@hono/zod-openapi"
-import { writingListResponseSchema } from "@workspace/core"
+import {
+  cursorPageQuerySchema,
+  writingListResponseSchema,
+} from "@workspace/core"
 
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -9,6 +12,9 @@ const route = createRoute({
   description: "현재 사용자의 글 목록을 최근 수정 순으로 조회합니다.",
   method: "get",
   path: "/writings",
+  request: {
+    query: cursorPageQuerySchema,
+  },
   responses: {
     200: {
       content: {
@@ -29,9 +35,10 @@ const app = createRouter()
 
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
+  const query = c.req.valid("query")
   const { writingUseCases } = c.var.services
-  const writings = await writingUseCases.listWritings(userId)
-  return c.json({ items: writings }, 200)
+  const page = await writingUseCases.listWritings(userId, query)
+  return c.json(page, 200)
 })
 
 export default app

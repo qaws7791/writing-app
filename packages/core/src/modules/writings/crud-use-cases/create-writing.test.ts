@@ -15,7 +15,7 @@ function createStubRepository(
     create: async (_userId, input) => onCreate(input),
     delete: async () => ({ kind: "deleted" }),
     getById: async () => ({ kind: "not-found" }),
-    list: async () => [],
+    list: async () => ({ items: [], nextCursor: null, hasMore: false }),
     replace: async () => ({ kind: "not-found" }),
     resume: async () => null,
   }

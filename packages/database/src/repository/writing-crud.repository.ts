@@ -1,6 +1,11 @@
-import { desc, eq } from "drizzle-orm"
+import { and, desc, eq, lt, or } from "drizzle-orm"
 import {
   toWritingId,
+  buildCursorPage,
+  decodeCursor,
+  mapCursorPage,
+  type CursorPage,
+  type CursorPageParams,
   type WritingCrudAccessResult,
   type WritingDeleteResult,
   type WritingDetail,
@@ -117,16 +122,37 @@ export function createWritingRepository(
       return getWritingById(userId, writingId)
     },
 
-    async list(userId: UserId, limit = 20): Promise<WritingSummary[]> {
+    async list(
+      userId: UserId,
+      params: CursorPageParams = {}
+    ): Promise<CursorPage<WritingSummary>> {
+      const limit = params.limit ?? 20
+      const cursor = params.cursor
+        ? decodeCursor<{ u: string; i: number }>(params.cursor)
+        : null
+
+      const cursorCondition = cursor
+        ? or(
+            lt(writings.updatedAt, cursor.u),
+            and(eq(writings.updatedAt, cursor.u), lt(writings.id, cursor.i))
+          )
+        : undefined
+
       const rows = database
         .select()
         .from(writings)
-        .where(eq(writings.userId, userId))
+        .where(and(eq(writings.userId, userId), cursorCondition))
         .orderBy(desc(writings.updatedAt), desc(writings.id))
-        .limit(limit)
+        .limit(limit + 1)
         .all()
 
-      return rows.map(mapWritingSummary)
+      return mapCursorPage(
+        buildCursorPage(rows, limit, (row) => ({
+          u: row.updatedAt,
+          i: row.id,
+        })),
+        mapWritingSummary
+      )
     },
 
     async replace(

@@ -20,6 +20,9 @@ export {
 // Shared: Schemas
 export * from "./shared/schema/index"
 
+// Shared: Pagination
+export * from "./shared/pagination/index"
+
 // Shared: Utilities
 export * from "./shared/utilities/index"
 

@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import { writingContentSchema } from "../../shared/schema/index"
+import { cursorPageResponseSchema } from "../../shared/pagination/index"
 
 export const writingIdParamSchema = z.coerce.number().int().positive()
 
@@ -42,9 +43,8 @@ export const autosaveWritingBodySchema = z
     message: "변경할 제목 또는 본문이 필요합니다.",
   })
 
-export const writingListResponseSchema = z.object({
-  items: z.array(writingSummarySchema).readonly(),
-})
+export const writingListResponseSchema =
+  cursorPageResponseSchema(writingSummarySchema)
 
 export const autosaveWritingResponseSchema = z.object({
   writing: writingDetailSchema,

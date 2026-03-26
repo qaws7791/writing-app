@@ -8,17 +8,21 @@ import { makeGetHomeUseCase } from "./get-home"
 describe("makeGetHomeUseCase", () => {
   it("홈 스냅샷을 수집한다", async () => {
     const userId = toUserId("user-1")
-    const listWritings = vi.fn(async () => [
-      {
-        characterCount: 10,
-        id: toWritingId(1),
-        lastSavedAt: "2026-03-22T00:00:00.000Z",
-        preview: "최근 글",
-        sourcePromptId: null,
-        title: "최근 글",
-        wordCount: 2,
-      },
-    ])
+    const listWritings = vi.fn(async () => ({
+      items: [
+        {
+          characterCount: 10,
+          id: toWritingId(1),
+          lastSavedAt: "2026-03-22T00:00:00.000Z",
+          preview: "최근 글",
+          sourcePromptId: null,
+          title: "최근 글",
+          wordCount: 2,
+        },
+      ],
+      nextCursor: null,
+      hasMore: false,
+    }))
     const listSaved = vi.fn(async () => [
       {
         id: toPromptId(10),
@@ -92,7 +96,7 @@ describe("makeGetHomeUseCase", () => {
     expect(result.isOk()).toBe(true)
 
     const snapshot = result._unsafeUnwrap()
-    expect(listWritings).toHaveBeenCalledWith(userId, 10)
+    expect(listWritings).toHaveBeenCalledWith(userId, { limit: 10 })
     expect(listSaved).toHaveBeenCalledWith(userId, 10)
     expect(listTodayPrompts).toHaveBeenCalledWith(userId, 2)
     expect(snapshot.resumeWriting?.id).toBe(toWritingId(1))

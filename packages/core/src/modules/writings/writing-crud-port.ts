@@ -1,5 +1,9 @@
 import type { WritingId, UserId } from "../../shared/brand/index"
 import type {
+  CursorPage,
+  CursorPageParams,
+} from "../../shared/pagination/index"
+import type {
   WritingCrudAccessResult,
   WritingDeleteResult,
   WritingDetail,
@@ -15,7 +19,10 @@ export interface WritingRepository {
     userId: UserId,
     writingId: WritingId
   ): Promise<WritingCrudAccessResult>
-  list(userId: UserId, limit?: number): Promise<readonly WritingSummary[]>
+  list(
+    userId: UserId,
+    params?: CursorPageParams
+  ): Promise<CursorPage<WritingSummary>>
   replace(
     userId: UserId,
     writingId: WritingId,

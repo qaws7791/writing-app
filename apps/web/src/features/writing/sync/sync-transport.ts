@@ -93,15 +93,23 @@ export function createSyncTransport(config: SyncTransportConfig) {
 
     async listVersions(
       writingId: number,
-      limit?: number
-    ): Promise<{ items: VersionSummary[] }> {
+      params?: { cursor?: string; limit?: number }
+    ): Promise<{
+      items: VersionSummary[]
+      nextCursor: string | null
+      hasMore: boolean
+    }> {
       const result = await client.GET("/writings/{writingId}/versions", {
         params: {
           path: { writingId },
-          query: { limit },
+          query: params as Record<string, unknown>,
         },
       })
-      return unwrapResult(result)
+      return unwrapResult(result) as {
+        items: VersionSummary[]
+        nextCursor: string | null
+        hasMore: boolean
+      }
     },
 
     async getVersion(

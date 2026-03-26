@@ -18,16 +18,16 @@ export type GetHomeUseCaseDependencies = {
  */
 export function makeGetHomeUseCase(dependencies: GetHomeUseCaseDependencies) {
   return async (userId: UserId): Promise<GetHomeUseCaseOutput> => {
-    const [todayPrompts, resumeWriting, recentWritings, savedPrompts] =
+    const [todayPrompts, resumeWriting, recentWritingsPage, savedPrompts] =
       await Promise.all([
         dependencies.promptRepository.listTodayPrompts(userId, 4),
         dependencies.writingRepository.resume(userId),
-        dependencies.writingRepository.list(userId, 10),
+        dependencies.writingRepository.list(userId, { limit: 10 }),
         dependencies.promptRepository.listSaved(userId, 10),
       ])
 
     return {
-      recentWritings,
+      recentWritings: recentWritingsPage.items,
       resumeWriting,
       savedPrompts,
       todayPrompts,

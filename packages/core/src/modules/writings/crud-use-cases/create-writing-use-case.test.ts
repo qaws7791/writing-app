@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { toWritingId, toPromptId, toUserId } from "../../../shared/brand/index"
+import type { CursorPage } from "../../../shared/pagination/index"
 import type {
   WritingCrudAccessResult,
   WritingDeleteResult,
@@ -24,7 +25,11 @@ function createWritingRepositoryStub(
     getById: async (): Promise<WritingCrudAccessResult> => ({
       kind: "not-found",
     }),
-    list: async (): Promise<readonly WritingSummary[]> => [],
+    list: async (): Promise<CursorPage<WritingSummary>> => ({
+      items: [],
+      nextCursor: null,
+      hasMore: false,
+    }),
     replace: async (): Promise<WritingMutationResult> => ({
       kind: "not-found",
     }),

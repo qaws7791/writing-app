@@ -123,7 +123,7 @@ function setup(): { app: TestApp } {
           }
         },
         async listWritings() {
-          return []
+          return { items: [], nextCursor: null, hasMore: false }
         },
       },
       homeUseCases: {
@@ -174,7 +174,7 @@ function setup(): { app: TestApp } {
           throw new Error("stub")
         },
         async listVersions() {
-          return []
+          return { items: [], nextCursor: null, hasMore: false }
         },
         async getVersion() {
           throw new Error("stub")

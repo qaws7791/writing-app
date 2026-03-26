@@ -1,10 +1,14 @@
 import type { UserId } from "../../../shared/brand/index"
 import type {
+  CursorPage,
+  CursorPageParams,
+} from "../../../shared/pagination/index"
+import type {
   WritingRepository,
   WritingSummary,
 } from "../../../shared/ports/index"
 
-export type ListWritingsUseCaseOutput = readonly WritingSummary[]
+export type ListWritingsUseCaseOutput = CursorPage<WritingSummary>
 
 export type ListWritingsUseCaseDependencies = {
   readonly writingRepository: WritingRepository
@@ -18,17 +22,17 @@ export function makeListWritingsUseCase(
 ) {
   return async (
     userId: UserId,
-    limit?: number
+    params?: CursorPageParams
   ): Promise<ListWritingsUseCaseOutput> =>
-    dependencies.writingRepository.list(userId, limit)
+    dependencies.writingRepository.list(userId, params)
 }
 
 export async function listWritingsUseCase(
   userId: UserId,
   writingRepository: WritingRepository,
-  limit?: number
+  params?: CursorPageParams
 ): Promise<ListWritingsUseCaseOutput> {
   return makeListWritingsUseCase({
     writingRepository,
-  })(userId, limit)
+  })(userId, params)
 }

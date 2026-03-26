@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import { writingContentSchema } from "../../shared/schema/index"
+import { cursorPageResponseSchema } from "../../shared/pagination/index"
 
 // --- Operation schemas ---
 
@@ -73,9 +74,9 @@ export const writingVersionDetailSchema = writingVersionSummarySchema.extend({
   content: writingContentSchema,
 })
 
-export const versionListResponseSchema = z.object({
-  items: z.array(writingVersionSummarySchema).readonly(),
-})
+export const versionListResponseSchema = cursorPageResponseSchema(
+  writingVersionSummarySchema
+)
 
 // --- Param schemas ---
 

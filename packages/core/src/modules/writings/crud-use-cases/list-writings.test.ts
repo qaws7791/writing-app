@@ -32,7 +32,7 @@ describe("makeListWritingsUseCase", () => {
     const result = await listWritings(userId)
 
     expect(result.isOk()).toBe(true)
-    expect(result._unsafeUnwrap()).toHaveLength(2)
+    expect(result._unsafeUnwrap().items).toHaveLength(2)
   })
 
   it("limit를 지정하면 해당 수만큼만 반환한다", async () => {
@@ -51,10 +51,10 @@ describe("makeListWritingsUseCase", () => {
     const listWritings = makeListWritingsUseCase({
       writingRepository: repository,
     })
-    const result = await listWritings(userId, 3)
+    const result = await listWritings(userId, { limit: 3 })
 
     expect(result.isOk()).toBe(true)
-    expect(result._unsafeUnwrap()).toHaveLength(3)
+    expect(result._unsafeUnwrap().items).toHaveLength(3)
   })
 
   it("글이 없으면 빈 배열을 반환한다", async () => {
@@ -65,6 +65,6 @@ describe("makeListWritingsUseCase", () => {
     const result = await listWritings(userId)
 
     expect(result.isOk()).toBe(true)
-    expect(result._unsafeUnwrap()).toHaveLength(0)
+    expect(result._unsafeUnwrap().items).toHaveLength(0)
   })
 })

@@ -50,7 +50,7 @@ export function useVersionHistory({
 
   const versionsQuery = useQuery({
     queryKey: versionQueryKeys.list(writingId),
-    queryFn: () => getSource().listVersions(writingId, 50),
+    queryFn: () => getSource().listVersions(writingId, { limit: 50 }),
     enabled: open,
     select: (data) => data.items,
   })

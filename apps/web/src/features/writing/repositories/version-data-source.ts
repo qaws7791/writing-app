@@ -12,8 +12,12 @@ export type VersionDataSource = {
   getVersion: (writingId: number, version: number) => Promise<VersionDetail>
   listVersions: (
     writingId: number,
-    limit?: number
-  ) => Promise<{ items: VersionSummary[] }>
+    params?: { cursor?: string; limit?: number }
+  ) => Promise<{
+    items: VersionSummary[]
+    nextCursor: string | null
+    hasMore: boolean
+  }>
   pull: (writingId: number, sinceVersion?: number) => Promise<SyncPullResponse>
   push: (
     writingId: number,
@@ -29,8 +33,8 @@ export function createVersionDataSource(): VersionDataSource {
   return {
     getVersion: (writingId, version) =>
       transport.getVersion(writingId, version),
-    listVersions: (writingId, limit) =>
-      transport.listVersions(writingId, limit),
+    listVersions: (writingId, params) =>
+      transport.listVersions(writingId, params),
     pull: (writingId, sinceVersion) => transport.pull(writingId, sinceVersion),
     push: (writingId, request) => transport.push(writingId, request),
   }

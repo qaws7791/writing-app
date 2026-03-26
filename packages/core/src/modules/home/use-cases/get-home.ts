@@ -24,11 +24,16 @@ export function makeGetHomeUseCase(deps: GetHomeDeps) {
         Promise.all([
           deps.promptRepository.listTodayPrompts(userId, 2),
           deps.writingRepository.resume(userId),
-          deps.writingRepository.list(userId, 10),
+          deps.writingRepository.list(userId, { limit: 10 }),
           deps.promptRepository.listSaved(userId, 10),
         ]).then(
-          ([todayPrompts, resumeWriting, recentWritings, savedPrompts]) => ({
-            recentWritings,
+          ([
+            todayPrompts,
+            resumeWriting,
+            recentWritingsPage,
+            savedPrompts,
+          ]) => ({
+            recentWritings: recentWritingsPage.items,
             resumeWriting,
             savedPrompts,
             todayPrompts,
