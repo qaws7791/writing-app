@@ -2,6 +2,7 @@ export const draftQueryKeys = {
   all: ["drafts"] as const,
   detail: (draftId: number) =>
     [...draftQueryKeys.all, "detail", draftId] as const,
+  list: () => [...draftQueryKeys.all, "list"] as const,
   prompt: (draftId: number) =>
     [...draftQueryKeys.all, "prompt", draftId] as const,
 }
