@@ -1,11 +1,25 @@
-import type {
-  WritingContent,
-  JsonValue,
-  TiptapMark as WritingMark,
-  TiptapNode as WritingNode,
-} from "@workspace/core"
+export type JsonPrimitive = boolean | null | number | string
+export type JsonArray = JsonValue[]
+export type JsonObject = { [key: string]: JsonValue }
+export type JsonValue = JsonArray | JsonObject | JsonPrimitive
 
-export type { WritingContent, WritingMark, WritingNode, JsonValue }
+export type WritingMark = {
+  attrs?: { [key: string]: unknown }
+  type: string
+}
+
+export type WritingNode = {
+  attrs?: { [key: string]: unknown }
+  content?: WritingNode[]
+  marks?: WritingMark[]
+  text?: string
+  type: string
+}
+
+export type WritingContent = {
+  content?: WritingNode[]
+  type: "doc"
+}
 
 export type WritingSummary = {
   characterCount: number
