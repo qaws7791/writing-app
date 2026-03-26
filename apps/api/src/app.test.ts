@@ -295,7 +295,6 @@ describe("writings", () => {
     const content = {
       content: [
         {
-          attrs: { align: "left" },
           content: [{ text: "JSONB 복원", type: "text" }],
           type: "paragraph",
         },

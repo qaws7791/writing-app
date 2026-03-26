@@ -5,7 +5,6 @@ export type {
   WritingNode,
   WritingSummary,
   HomeSnapshot,
-  JsonValue,
 } from "@/domain/writing/model/writing.types"
 
 export {

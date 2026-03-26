@@ -7,25 +7,94 @@ import type {
   WritingNode,
 } from "@/domain/writing/model/writing.types"
 
-const writingMarkSchema = z.object({
-  attrs: z.record(z.string(), z.unknown()).optional(),
-  type: z.string().min(1),
-})
+const boldMarkSchema = z.object({ type: z.literal("bold") }).strict()
+const italicMarkSchema = z.object({ type: z.literal("italic") }).strict()
+const writingMarkSchema = z.union([boldMarkSchema, italicMarkSchema])
+
+const textNodeSchema = z
+  .object({
+    marks: z.array(writingMarkSchema).optional(),
+    text: z.string().min(1),
+    type: z.literal("text"),
+  })
+  .strict()
+
+const headingAttrsSchema = z
+  .object({ level: z.number().int().min(1).max(6) })
+  .strict()
+
+const orderedListAttrsSchema = z
+  .object({ start: z.number().int().min(1) })
+  .strict()
 
 const writingNodeSchema: z.ZodType<WritingNode> = z.lazy(() =>
-  z.object({
-    attrs: z.record(z.string(), z.unknown()).optional(),
-    content: z.array(writingNodeSchema).optional(),
-    marks: z.array(writingMarkSchema).optional(),
-    text: z.string().optional(),
-    type: z.string().min(1),
-  })
+  z.union([
+    textNodeSchema,
+    z
+      .object({
+        content: z.array(textNodeSchema).optional(),
+        type: z.literal("paragraph"),
+      })
+      .strict(),
+    z
+      .object({
+        attrs: headingAttrsSchema,
+        content: z.array(textNodeSchema).optional(),
+        type: z.literal("heading"),
+      })
+      .strict(),
+    z
+      .object({
+        content: z.array(writingNodeSchema).optional(),
+        type: z.literal("blockquote"),
+      })
+      .strict(),
+    z
+      .object({
+        content: z
+          .array(
+            z
+              .object({
+                content: z.array(writingNodeSchema).optional(),
+                type: z.literal("listItem"),
+              })
+              .strict()
+          )
+          .optional(),
+        type: z.literal("bulletList"),
+      })
+      .strict(),
+    z
+      .object({
+        attrs: orderedListAttrsSchema.optional(),
+        content: z
+          .array(
+            z
+              .object({
+                content: z.array(writingNodeSchema).optional(),
+                type: z.literal("listItem"),
+              })
+              .strict()
+          )
+          .optional(),
+        type: z.literal("orderedList"),
+      })
+      .strict(),
+    z
+      .object({
+        content: z.array(writingNodeSchema).optional(),
+        type: z.literal("listItem"),
+      })
+      .strict(),
+  ])
 )
 
-export const writingContentSchema: z.ZodType<WritingContent> = z.object({
-  content: z.array(writingNodeSchema).optional(),
-  type: z.literal("doc"),
-})
+export const writingContentSchema: z.ZodType<WritingContent> = z
+  .object({
+    content: z.array(writingNodeSchema).optional(),
+    type: z.literal("doc"),
+  })
+  .strict()
 
 const writingSummarySchema = z.object({
   characterCount: z.number().int(),

@@ -1,19 +1,24 @@
-export type JsonPrimitive = boolean | null | number | string
-export type JsonArray = JsonValue[]
-export type JsonObject = { [key: string]: JsonValue }
-export type JsonValue = JsonArray | JsonObject | JsonPrimitive
+export type WritingMarkType = "bold" | "italic"
 
 export type WritingMark = {
-  attrs?: { [key: string]: unknown }
-  type: string
+  type: WritingMarkType
 }
 
+export type WritingNodeType =
+  | "blockquote"
+  | "bulletList"
+  | "heading"
+  | "listItem"
+  | "orderedList"
+  | "paragraph"
+  | "text"
+
 export type WritingNode = {
-  attrs?: { [key: string]: unknown }
+  attrs?: { level?: number; start?: number }
   content?: WritingNode[]
   marks?: WritingMark[]
   text?: string
-  type: string
+  type: WritingNodeType
 }
 
 export type WritingContent = {

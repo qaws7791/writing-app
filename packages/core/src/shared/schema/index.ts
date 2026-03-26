@@ -1,11 +1,10 @@
 export {
   writingContentSchema,
   type WritingContent,
-  type JsonArray,
-  type JsonObject,
-  type JsonValue,
   type TiptapMark,
+  type TiptapMarkType,
   type TiptapNode,
+  type TiptapNodeType,
 } from "./writing-content-schema"
 export {
   promptLengthLabelSchema,

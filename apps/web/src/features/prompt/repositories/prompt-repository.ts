@@ -113,7 +113,7 @@ function createRemotePromptRepository(client: ApiClient): PromptRepository {
         await client.POST("/writings", {
           body: input,
         })
-      )
+      ) as WritingDetail
     },
     async getPrompt(promptId) {
       return throwOnError(

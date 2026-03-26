@@ -188,14 +188,14 @@ function createRemoteWritingRepository(client: ApiClient): WritingRepository {
           params: { path: { writingId } },
           body: input,
         })
-      )
+      ) as AutosaveWritingResult
     },
     async createWriting(input) {
       return throwOnError(
         await client.POST("/writings", {
           body: input,
         })
-      )
+      ) as WritingDetail
     },
     async deleteWriting(writingId) {
       const result = await client.DELETE("/writings/{writingId}", {
@@ -210,7 +210,7 @@ function createRemoteWritingRepository(client: ApiClient): WritingRepository {
         await client.GET("/writings/{writingId}", {
           params: { path: { writingId } },
         })
-      )
+      ) as WritingDetail
     },
     async getPrompt(promptId) {
       return throwOnError(

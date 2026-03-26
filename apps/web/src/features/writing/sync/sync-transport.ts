@@ -75,7 +75,7 @@ export function createSyncTransport(config: SyncTransportConfig) {
         params: { path: { writingId } },
         body: request,
       })
-      return unwrapResult(result)
+      return unwrapResult(result) as SyncPushResponse
     },
 
     async pull(
@@ -88,7 +88,7 @@ export function createSyncTransport(config: SyncTransportConfig) {
           query: { since: sinceVersion },
         },
       })
-      return unwrapResult(result)
+      return unwrapResult(result) as SyncPullResponse
     },
 
     async listVersions(
@@ -122,7 +122,7 @@ export function createSyncTransport(config: SyncTransportConfig) {
           params: { path: { writingId, version } },
         }
       )
-      return unwrapResult(result)
+      return unwrapResult(result) as VersionDetail
     },
   }
 }

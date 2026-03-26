@@ -38,7 +38,6 @@ describe("writing repository", () => {
     const content = {
       content: [
         {
-          attrs: { align: "left" },
           content: [{ text: longText, type: "text" }],
           type: "paragraph",
         },

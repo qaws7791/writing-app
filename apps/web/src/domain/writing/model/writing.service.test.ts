@@ -1,3 +1,4 @@
+import type { WritingContent } from "@/domain/writing/model/writing.types"
 import {
   createEmptyWritingContent,
   writingContentToHtml,
@@ -25,8 +26,8 @@ describe("phase one rich text helpers", () => {
           type: "blockquote",
         },
       ],
-      type: "doc" as const,
-    }
+      type: "doc",
+    } satisfies WritingContent
 
     expect(writingContentToPlainText(content)).toBe("굵게\n인용")
     expect(writingContentToHtml(content)).toContain("<strong>굵게</strong>")
