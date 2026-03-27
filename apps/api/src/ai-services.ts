@@ -45,7 +45,7 @@ export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
 
       try {
         await aiRequestRepository.saveRequest({
-          userId: userId as string,
+          userId,
           featureType: type,
           inputText: text,
           outputJson: JSON.stringify(suggestions),
@@ -72,7 +72,7 @@ export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
 
       try {
         await aiRequestRepository.saveRequest({
-          userId: userId as string,
+          userId,
           featureType: "document-review",
           inputText,
           outputJson: JSON.stringify(items),
@@ -99,7 +99,7 @@ export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
 
       try {
         await aiRequestRepository.saveRequest({
-          userId: userId as string,
+          userId,
           featureType: "flow-review",
           inputText,
           outputJson: JSON.stringify(items),

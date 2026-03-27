@@ -1,10 +1,10 @@
-
+import type { UserId } from "@workspace/core"
 import { aiRequests } from "../schema/index.js"
 import type { DbClient } from "../types/index.js"
 
 export type AIRequestRepository = {
   saveRequest: (input: {
-    userId: string
+    userId: UserId
     writingId?: number | null
     featureType: string
     inputText: string
