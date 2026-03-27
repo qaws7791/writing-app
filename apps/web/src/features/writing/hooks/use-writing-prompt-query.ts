@@ -1,24 +1,18 @@
 "use client"
 
 import { useQuery } from "@tanstack/react-query"
-import { useMemo } from "react"
 
 import type { PromptDetail } from "@/domain/prompt"
-import {
-  createWritingRepository,
-  type WritingRepository,
-} from "@/features/writing/repositories/writing-repository"
 import { writingQueryKeys } from "@/features/writing/hooks/writing-query-keys"
+import { useWritingRepository } from "@/features/writing/hooks/use-writing-repository"
+import type { WritingRepository } from "@/features/writing/repositories/writing-repository"
 
 export function useWritingPromptQuery(
   writingId: number,
   sourcePromptId: number | null,
   repository?: WritingRepository
 ) {
-  const repo = useMemo(
-    () => repository ?? createWritingRepository(),
-    [repository]
-  )
+  const repo = useWritingRepository(repository)
 
   return useQuery<PromptDetail>({
     queryKey: writingQueryKeys.prompt(writingId),
