@@ -1,7 +1,15 @@
 import type { MiddlewareHandler } from "hono"
 
+import {
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+  ValidationError,
+} from "@workspace/core"
+
 import type { AppEnv } from "../app-env"
 import type { ApiLogger } from "../observability/logger"
+import { UnauthorizedError } from "../http/unauthorized-error"
 
 export function createRequestLoggerMiddleware(
   logger: ApiLogger
@@ -43,14 +51,10 @@ export function createRequestLoggerMiddleware(
 }
 
 function toQuickStatus(error: unknown): number {
-  if (error instanceof Error) {
-    const name = error.name
-    if (name === "ValidationError") return 400
-    if (name === "UnauthorizedError") return 401
-    if (name === "ForbiddenError") return 403
-    if (name === "NotFoundError") return 404
-    if (name === "ConflictError") return 409
-  }
-
+  if (error instanceof ValidationError) return 400
+  if (error instanceof UnauthorizedError) return 401
+  if (error instanceof ForbiddenError) return 403
+  if (error instanceof NotFoundError) return 404
+  if (error instanceof ConflictError) return 409
   return 500
 }
