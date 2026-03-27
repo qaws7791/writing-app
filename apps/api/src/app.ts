@@ -2,6 +2,7 @@ import { apiReference } from "@scalar/hono-api-reference"
 import type { Context } from "hono"
 import { bodyLimit } from "hono/body-limit"
 import { cors } from "hono/cors"
+import { timeout } from "hono/timeout"
 
 import type { AppServices, GetSession } from "./app-env"
 import { errorToResponse } from "./http/error-response"
@@ -187,9 +188,35 @@ export function createApp(input: CreateAppInput) {
     await next()
   })
 
+  // --- Request timeout middleware ---
+
+  app.use(
+    "/ai/*",
+    timeout(30_000, () => {
+      const error = new Error("요청 시간이 초과되었습니다.")
+      error.name = "TimeoutError"
+      throw error
+    })
+  )
+
+  app.use("*", timeout(60_000))
+
   // --- Error handler ---
 
   app.onError((error, c) => {
+    // Handle timeout errors from both /ai/* and global timeout middleware
+    if (error instanceof Error && error.name === "TimeoutError") {
+      return c.json(
+        {
+          error: {
+            code: "request_timeout",
+            message: error.message,
+          },
+        },
+        408
+      )
+    }
+
     return handleRequestError(c, error, input.logger, "request failed")
   })
 
