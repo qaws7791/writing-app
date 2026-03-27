@@ -1,8 +1,4 @@
-import {
-  getAISuggestions,
-  getDocumentReview,
-  getFlowReview,
-} from "@workspace/ai"
+import { createAIService, createAIModel } from "@workspace/ai"
 import type {
   AIFeatureType,
   AIReviewParagraph,
@@ -38,10 +34,11 @@ type AIApiServiceDeps = {
 
 export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
   const { aiRequestRepository, logger } = deps
+  const ai = createAIService(createAIModel())
 
   return {
     async getSuggestions(userId, text, type) {
-      const suggestions = await getAISuggestions(text, type)
+      const suggestions = await ai.getSuggestions({ text, type })
 
       try {
         await aiRequestRepository.saveRequest({
@@ -68,7 +65,7 @@ export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
 
     async getDocumentReview(userId, paragraphs) {
       const inputText = paragraphs.map((p) => p.text).join("\n")
-      const items = await getDocumentReview(paragraphs)
+      const items = await ai.getDocumentReview(paragraphs)
 
       try {
         await aiRequestRepository.saveRequest({
@@ -95,7 +92,7 @@ export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
 
     async getFlowReview(userId, paragraphs) {
       const inputText = paragraphs.map((p) => p.text).join("\n")
-      const items = await getFlowReview(paragraphs)
+      const items = await ai.getFlowReview(paragraphs)
 
       try {
         await aiRequestRepository.saveRequest({

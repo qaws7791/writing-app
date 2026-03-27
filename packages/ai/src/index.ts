@@ -1,1 +1,3 @@
-export { getAISuggestions, getDocumentReview, getFlowReview } from "./service"
+export { createAIService } from "./service"
+export type { AIService } from "./port"
+export { createAIModel } from "./provider"
