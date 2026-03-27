@@ -106,7 +106,10 @@ export async function createApiDependencies(
   )
   const writingVersionRepository = createWritingVersionRepository(database.db)
 
-  const aiUseCases = createAIApiService({ aiRequestRepository })
+  const aiUseCases = createAIApiService({
+    aiRequestRepository,
+    logger: logger.child({ scope: "ai-services" }),
+  })
   const promptUseCases = createPromptApiService(promptRepository)
   const writingUseCases = createWritingApiService({
     writingRepository,

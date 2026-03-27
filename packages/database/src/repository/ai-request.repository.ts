@@ -1,4 +1,3 @@
-import type { UserId } from "@workspace/core"
 
 import { aiRequests } from "../schema/index.js"
 import type { DbClient } from "../types/index.js"
@@ -11,13 +10,14 @@ export type AIRequestRepository = {
     inputText: string
     outputJson: string
     model: string
-  }) => void
+  }) => Promise<void>
 }
 
 export function createAIRequestRepository(db: DbClient): AIRequestRepository {
   return {
-    saveRequest(input) {
-      db.insert(aiRequests)
+    async saveRequest(input) {
+      await db
+        .insert(aiRequests)
         .values({
           userId: input.userId,
           writingId: input.writingId ?? null,

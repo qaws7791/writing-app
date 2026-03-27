@@ -11,6 +11,7 @@ import type {
   UserId,
 } from "@workspace/core"
 import type { AIRequestRepository } from "@workspace/database"
+import type { ApiLogger } from "./observability/logger"
 
 export type AIApiService = {
   getSuggestions: (
@@ -30,22 +31,35 @@ export type AIApiService = {
 
 type AIApiServiceDeps = {
   aiRequestRepository: AIRequestRepository
+  logger: ApiLogger
 }
 
 export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
-  const { aiRequestRepository } = deps
+  const { aiRequestRepository, logger } = deps
 
   return {
     async getSuggestions(userId, text, type) {
       const suggestions = await getAISuggestions(text, type)
 
-      aiRequestRepository.saveRequest({
-        userId: userId as string,
-        featureType: type,
-        inputText: text,
-        outputJson: JSON.stringify(suggestions),
-        model: "gemini-3.1-flash-lite-preview",
-      })
+      try {
+        await aiRequestRepository.saveRequest({
+          userId: userId as string,
+          featureType: type,
+          inputText: text,
+          outputJson: JSON.stringify(suggestions),
+          model: "gemini-3.1-flash-lite-preview",
+        })
+      } catch (error) {
+        logger.error(
+          {
+            error,
+            userId,
+            featureType: type,
+            scope: "ai-suggestions",
+          },
+          "Failed to save AI request"
+        )
+      }
 
       return suggestions
     },
@@ -54,13 +68,25 @@ export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
       const inputText = paragraphs.map((p) => p.text).join("\n")
       const items = await getDocumentReview(paragraphs)
 
-      aiRequestRepository.saveRequest({
-        userId: userId as string,
-        featureType: "document-review",
-        inputText,
-        outputJson: JSON.stringify(items),
-        model: "gemini-3.1-flash-lite-preview",
-      })
+      try {
+        await aiRequestRepository.saveRequest({
+          userId: userId as string,
+          featureType: "document-review",
+          inputText,
+          outputJson: JSON.stringify(items),
+          model: "gemini-3.1-flash-lite-preview",
+        })
+      } catch (error) {
+        logger.error(
+          {
+            error,
+            userId,
+            featureType: "document-review",
+            scope: "ai-document-review",
+          },
+          "Failed to save AI request"
+        )
+      }
 
       return items
     },
@@ -69,13 +95,25 @@ export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
       const inputText = paragraphs.map((p) => p.text).join("\n")
       const items = await getFlowReview(paragraphs)
 
-      aiRequestRepository.saveRequest({
-        userId: userId as string,
-        featureType: "flow-review",
-        inputText,
-        outputJson: JSON.stringify(items),
-        model: "gemini-3.1-flash-lite-preview",
-      })
+      try {
+        await aiRequestRepository.saveRequest({
+          userId: userId as string,
+          featureType: "flow-review",
+          inputText,
+          outputJson: JSON.stringify(items),
+          model: "gemini-3.1-flash-lite-preview",
+        })
+      } catch (error) {
+        logger.error(
+          {
+            error,
+            userId,
+            featureType: "flow-review",
+            scope: "ai-flow-review",
+          },
+          "Failed to save AI request"
+        )
+      }
 
       return items
     },
