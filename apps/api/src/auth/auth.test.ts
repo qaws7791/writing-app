@@ -10,7 +10,7 @@ import {
 } from "@workspace/core"
 
 import { createApp } from "../app.js"
-import { createDevEmailPort } from "./auth-email.js"
+import { createDevEmailInbox, createDevEmailPort } from "./auth-email.js"
 import { createSilentLogger } from "../observability/logger.js"
 
 type TestApp = ReturnType<typeof createApp>
@@ -24,8 +24,10 @@ afterEach(() => {
 })
 
 function setup(): { app: TestApp } {
+  const inbox = createDevEmailInbox()
   const emailPort = createDevEmailPort({
     exposeSensitiveData: true,
+    inbox,
     logger: createSilentLogger(),
   })
   const auth = betterAuth({
@@ -64,7 +66,7 @@ function setup(): { app: TestApp } {
     trustedOrigins: ["http://127.0.0.1:3000"],
   })
 
-  cleanupTasks.push(() => emailPort.clear())
+  cleanupTasks.push(() => inbox.clear())
 
   const app = createApp({
     allowedOrigins: ["http://127.0.0.1:3000"],
@@ -176,7 +178,7 @@ function setup(): { app: TestApp } {
           return undefined
         },
       },
-      readLatestAuthEmail: emailPort.readLatestMessage,
+      readLatestAuthEmail: inbox.readLatestMessage,
       sqliteVersion: "memory",
       writingSyncUseCases: {
         pushTransactions() {

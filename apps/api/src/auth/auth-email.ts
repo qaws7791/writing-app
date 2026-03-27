@@ -22,6 +22,10 @@ export type DevEmailInbox = {
   }) => AuthEmailMessage | null
 }
 
+type DevEmailInboxWriter = DevEmailInbox & {
+  store: (message: AuthEmailMessage) => void
+}
+
 function createKey(kind: AuthEmailKind, email: string): string {
   return `${kind}:${email.trim().toLowerCase()}`
 }
@@ -37,14 +41,31 @@ function createLogMessage(
   return `${message.kind} auth email queued: ${message.url}`
 }
 
+export function createDevEmailInbox(): DevEmailInboxWriter {
+  const messages = new Map<string, AuthEmailMessage>()
+
+  return {
+    clear(): void {
+      messages.clear()
+    },
+
+    readLatestMessage(input): AuthEmailMessage | null {
+      return messages.get(createKey(input.kind, input.email)) ?? null
+    },
+
+    store(message: AuthEmailMessage): void {
+      messages.set(createKey(message.kind, message.email), message)
+    },
+  }
+}
+
 export function createDevEmailPort(input: {
   exposeSensitiveData: boolean
+  inbox: DevEmailInboxWriter
   logger: ApiLogger
-}): DevEmailInbox & EmailSender {
-  const latestMessages = new Map<string, AuthEmailMessage>()
-
+}): EmailSender {
   function storeMessage(message: AuthEmailMessage): void {
-    latestMessages.set(createKey(message.kind, message.email), message)
+    input.inbox.store(message)
     input.logger.info(
       input.exposeSensitiveData
         ? {
@@ -62,14 +83,6 @@ export function createDevEmailPort(input: {
   }
 
   return {
-    clear() {
-      latestMessages.clear()
-    },
-
-    readLatestMessage(input) {
-      return latestMessages.get(createKey(input.kind, input.email)) ?? null
-    },
-
     async sendPasswordResetEmail(input) {
       storeMessage({
         email: input.email,

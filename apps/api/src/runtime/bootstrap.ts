@@ -28,7 +28,7 @@ import {
   createPromptApiService,
 } from "../services/prompt-services"
 import { createAuth } from "../auth/auth"
-import { createDevEmailPort } from "../auth/auth-email"
+import { createDevEmailInbox, createDevEmailPort } from "../auth/auth-email"
 import { apiEnv } from "../config/env"
 import { createApiLogger, type ApiLogLevel } from "../observability/logger"
 
@@ -71,10 +71,12 @@ export async function createApiDependencies(
   const database = openDb(environment.databasePath)
   const sqliteVersion = readSqliteVersion(database.sqlite)
   const isProduction = process.env.NODE_ENV === "production"
+  const devEmailInbox = isProduction ? null : createDevEmailInbox()
   const devEmailPort = isProduction
     ? null
     : createDevEmailPort({
         exposeSensitiveData: process.env.NODE_ENV === "development",
+        inbox: devEmailInbox!,
         logger: logger.child({
           scope: "auth-email",
         }),
@@ -148,7 +150,7 @@ export async function createApiDependencies(
     homeUseCases,
     promptUseCases,
     writingSyncUseCases,
-    readLatestAuthEmail: devEmailPort?.readLatestMessage,
+    readLatestAuthEmail: devEmailInbox?.readLatestMessage,
     sqliteVersion,
   }
 
@@ -172,7 +174,7 @@ export async function createApiDependencies(
       services,
     }),
     close: () => {
-      devEmailPort?.clear()
+      devEmailInbox?.clear()
       database.close()
     },
     sqliteVersion,

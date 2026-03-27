@@ -6,6 +6,7 @@ const {
   createAuthMock,
   createAIRequestRepositoryMock,
   createDailyRecommendationRepositoryMock,
+  createDevEmailInboxMock,
   createDevEmailPortMock,
   drizzleAdapterMock,
   createWritingApiServiceMock,
@@ -30,6 +31,7 @@ const {
     createAuthMock: vi.fn(),
     createAIRequestRepositoryMock: vi.fn(),
     createDailyRecommendationRepositoryMock: vi.fn(),
+    createDevEmailInboxMock: vi.fn(),
     createDevEmailPortMock: vi.fn(),
     drizzleAdapterMock: vi.fn(),
     createWritingApiServiceMock: vi.fn(),
@@ -97,6 +99,7 @@ vi.mock("../auth/auth.js", () => ({
 }))
 
 vi.mock("../auth/auth-email.js", () => ({
+  createDevEmailInbox: createDevEmailInboxMock,
   createDevEmailPort: createDevEmailPortMock,
 }))
 
@@ -139,9 +142,12 @@ describe("bootstrap", () => {
       db: { name: "db" },
       sqlite: { name: "sqlite" },
     }
-    const emailPort = {
+    const emailInbox = {
       clear: vi.fn(),
       readLatestMessage: vi.fn(),
+      store: vi.fn(),
+    }
+    const emailPort = {
       sendPasswordResetEmail: vi.fn(),
       sendVerificationEmail: vi.fn(),
     }
@@ -158,6 +164,7 @@ describe("bootstrap", () => {
     createApiLoggerMock.mockReturnValue(logger)
     openDbMock.mockReturnValue(database)
     readSqliteVersionMock.mockReturnValue("3.46.0")
+    createDevEmailInboxMock.mockReturnValue(emailInbox)
     createDevEmailPortMock.mockReturnValue(emailPort)
     drizzleAdapterMock.mockReturnValue({ name: "adapter" })
     createAuthMock.mockReturnValue(auth)

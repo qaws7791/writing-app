@@ -1,13 +1,15 @@
 import { describe, expect, test } from "vitest"
 
-import { createDevEmailPort } from "./auth-email.js"
+import { createDevEmailInbox, createDevEmailPort } from "./auth-email.js"
 import { createCapturedLogger } from "../test-support/capture-logger.js"
 
 describe("createDevEmailPort", () => {
   test("includes token and url in development-style logs", async () => {
     const { entries, logger } = createCapturedLogger()
+    const inbox = createDevEmailInbox()
     const emailPort = createDevEmailPort({
       exposeSensitiveData: true,
+      inbox,
       logger,
     })
 
@@ -31,8 +33,10 @@ describe("createDevEmailPort", () => {
 
   test("omits token and url in production-style logs", async () => {
     const { entries, logger } = createCapturedLogger()
+    const inbox = createDevEmailInbox()
     const emailPort = createDevEmailPort({
       exposeSensitiveData: false,
+      inbox,
       logger,
     })
 
@@ -56,8 +60,10 @@ describe("createDevEmailPort", () => {
 
   test("stores the latest message for development inbox lookups", async () => {
     const { logger } = createCapturedLogger()
+    const inbox = createDevEmailInbox()
     const emailPort = createDevEmailPort({
       exposeSensitiveData: true,
+      inbox,
       logger,
     })
 
@@ -68,7 +74,7 @@ describe("createDevEmailPort", () => {
     })
 
     expect(
-      emailPort.readLatestMessage({
+      inbox.readLatestMessage({
         email: "writer@example.com",
         kind: "verification",
       })
