@@ -9,27 +9,8 @@ import { createRouter } from "./http/create-router"
 import type { ApiLogger } from "./observability/logger"
 import { createRequestLoggerMiddleware } from "./middleware/request-logger"
 import { createResolveSessionMiddleware } from "./middleware/resolve-session"
-import authHandler from "./routes/auth/auth-handler"
 import getAuthEmails from "./routes/dev/get-auth-emails"
-import getAISuggestions from "./routes/ai/get-suggestions"
-import getDocumentReview from "./routes/ai/get-document-review"
-import getFlowReview from "./routes/ai/get-flow-review"
-import autosaveWriting from "./routes/writings/autosave-writing"
-import createWriting from "./routes/writings/create-writing"
-import deleteWriting from "./routes/writings/delete-writing"
-import getWriting from "./routes/writings/get-writing"
-import listWritings from "./routes/writings/list-writings"
-import getHealth from "./routes/health/get-health"
-import getHome from "./routes/home/get-home"
-import getPrompt from "./routes/prompts/get-prompt"
-import listPrompts from "./routes/prompts/list-prompts"
-import savePrompt from "./routes/prompts/save-prompt"
-import unsavePrompt from "./routes/prompts/unsave-prompt"
-import getSession from "./routes/session/get-session"
-import pushTransactions from "./routes/writings/push-transactions"
-import pullDocument from "./routes/writings/pull-document"
-import listVersions from "./routes/writings/list-versions"
-import getVersion from "./routes/writings/get-version"
+import { allRoutes } from "./routes"
 
 type CreateAppInput = {
   allowedOrigins: string[]
@@ -200,26 +181,9 @@ export function createApp(input: CreateAppInput) {
 
   // --- Routes ---
 
-  app.route("/", getHealth)
-  app.route("/", authHandler)
-  app.route("/", getSession)
-  app.route("/", getHome)
-  app.route("/", getAISuggestions)
-  app.route("/", getDocumentReview)
-  app.route("/", getFlowReview)
-  app.route("/", listPrompts)
-  app.route("/", getPrompt)
-  app.route("/", savePrompt)
-  app.route("/", unsavePrompt)
-  app.route("/", listWritings)
-  app.route("/", createWriting)
-  app.route("/", getWriting)
-  app.route("/", autosaveWriting)
-  app.route("/", deleteWriting)
-  app.route("/", pushTransactions)
-  app.route("/", pullDocument)
-  app.route("/", listVersions)
-  app.route("/", getVersion)
+  for (const route of allRoutes) {
+    app.route("/", route)
+  }
 
   if (input.authDebugEnabled) {
     app.route("/", getAuthEmails)
