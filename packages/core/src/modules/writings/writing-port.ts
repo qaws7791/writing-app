@@ -1,4 +1,4 @@
-import type { WritingId, UserId, PromptId } from "../../shared/brand/index"
+import type { WritingId, UserId } from "../../shared/brand/index"
 import type {
   CursorPage,
   CursorPageParams,

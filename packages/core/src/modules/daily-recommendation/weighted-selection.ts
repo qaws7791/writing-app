@@ -1,5 +1,4 @@
 import type { RecommendationHistoryEntry } from "./daily-recommendation-types"
-import { getKstDateString } from "./kst-date"
 
 const MAX_WEIGHT = 100
 

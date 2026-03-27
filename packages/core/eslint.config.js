@@ -17,6 +17,8 @@ export default [
       globals: {
         console: "readonly",
         process: "readonly",
+        btoa: "readonly",
+        atob: "readonly",
       },
     },
     plugins: {
