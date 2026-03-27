@@ -1,5 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi"
 
+import { NotFoundError } from "@workspace/core"
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 
@@ -44,29 +45,13 @@ app.openapi(route, (c) => {
   const { readLatestAuthEmail } = c.var.services
 
   if (!readLatestAuthEmail) {
-    return c.json(
-      {
-        error: {
-          code: "not_available",
-          message: "개발 환경에서만 사용할 수 있습니다.",
-        },
-      },
-      404
-    )
+    throw new NotFoundError("개발 환경에서만 사용할 수 있습니다.")
   }
 
   const message = readLatestAuthEmail({ email, kind })
 
   if (!message) {
-    return c.json(
-      {
-        error: {
-          code: "not_found",
-          message: "전송된 인증 메일을 찾을 수 없습니다.",
-        },
-      },
-      404
-    )
+    throw new NotFoundError("전송된 인증 메일을 찾을 수 없습니다.")
   }
 
   return c.json(message, 200)
