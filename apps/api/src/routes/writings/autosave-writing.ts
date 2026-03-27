@@ -9,6 +9,7 @@ import {
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { BODY_LIMITS, withBodyLimit } from "../../http/body-limit-middleware"
 
 const route = createRoute({
   description: "글의 제목 또는 본문을 자동 저장합니다.",
@@ -44,6 +45,8 @@ const route = createRoute({
 })
 
 const app = createRouter()
+
+app.use(withBodyLimit(BODY_LIMITS.document))
 
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)

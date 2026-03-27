@@ -1,6 +1,5 @@
 import { apiReference } from "@scalar/hono-api-reference"
 import type { Context } from "hono"
-import { bodyLimit } from "hono/body-limit"
 import { cors } from "hono/cors"
 import { timeout } from "hono/timeout"
 
@@ -139,35 +138,6 @@ export function createApp(input: CreateAppInput) {
   const allowedOrigins = new Set(input.allowedOrigins)
 
   // --- Global middleware ---
-
-  app.use("*", (c, next) => {
-    const path = c.req.path
-    let maxSize: number
-
-    if (/^\/writings\/[^/]+\/sync\/push$/.test(path)) {
-      maxSize = 2 * 1024 * 1024 // 2MB: 오프라인 트랜잭션 배치
-    } else if (/^\/ai\/review\//.test(path)) {
-      maxSize = 512 * 1024 // 512KB: AI 리뷰 문서
-    } else if (/^\/writings\/[^/]+$/.test(path)) {
-      maxSize = 512 * 1024 // 512KB: 글 자동 저장 (ProseMirror JSON)
-    } else {
-      maxSize = 100 * 1024 // 100KB: 기본 제한
-    }
-
-    return bodyLimit({
-      maxSize,
-      onError: (c) =>
-        c.json(
-          {
-            error: {
-              code: "payload_too_large",
-              message: "요청 본문이 너무 큽니다.",
-            },
-          },
-          413
-        ),
-    })(c, next)
-  })
 
   app.use(
     "*",

@@ -9,6 +9,7 @@ import { toWritingId } from "@workspace/core"
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { BODY_LIMITS, withBodyLimit } from "../../http/body-limit-middleware"
 
 const route = createRoute({
   description: "에디터 트랜잭션을 서버에 푸시하여 동기화합니다.",
@@ -44,6 +45,8 @@ const route = createRoute({
 })
 
 const app = createRouter()
+
+app.use(withBodyLimit(BODY_LIMITS.syncPush))
 
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)

@@ -8,6 +8,7 @@ import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { createAiRateLimiter } from "../../middleware/ai-rate-limiter"
+import { BODY_LIMITS, withBodyLimit } from "../../http/body-limit-middleware"
 
 const route = createRoute({
   description: "문단 간 연결 흐름을 분석하고 개선점을 제안합니다.",
@@ -40,6 +41,7 @@ const route = createRoute({
 
 const app = createRouter()
 
+app.use(withBodyLimit(BODY_LIMITS.document))
 // 분당 20회 제한 (사용자당)
 app.use("*", createAiRateLimiter({ limit: 20, windowMs: 60 * 1000 }))
 
