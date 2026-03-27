@@ -13,6 +13,8 @@
 
 ## Task Guide
 
+- Always update the documentation (/docs) to the latest version for changes when starting and finishing a task.
+
 ### Prerequisites
 
 - bun 1310
