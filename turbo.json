@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["CI", "NODE_ENV"],
+  "globalEnv": ["CI", "NODE_ENV", "RESEND_API_KEY", "RESEND_FROM_ADDRESS"],
   "ui": "tui",
   "tasks": {
     "build": {

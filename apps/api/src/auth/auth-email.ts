@@ -1,4 +1,8 @@
+import type { EmailSender } from "@workspace/email"
+
 import type { ApiLogger } from "../observability/logger.js"
+
+export type { EmailSender }
 
 export type AuthEmailKind = "password-reset" | "verification"
 
@@ -16,19 +20,6 @@ export type DevEmailInbox = {
     email: string
     kind: AuthEmailKind
   }) => AuthEmailMessage | null
-}
-
-export type EmailSender = {
-  sendPasswordResetEmail: (input: {
-    email: string
-    token: string
-    url: string
-  }) => Promise<void>
-  sendVerificationEmail: (input: {
-    email: string
-    token: string
-    url: string
-  }) => Promise<void>
 }
 
 function createKey(kind: AuthEmailKind, email: string): string {

@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, test, vi } from "vitest"
 
 const {
+  createAIApiServiceMock,
   createAppMock,
   createAuthMock,
+  createAIRequestRepositoryMock,
   createDailyRecommendationRepositoryMock,
   createDevEmailPortMock,
   drizzleAdapterMock,
   createWritingApiServiceMock,
   createWritingRepositoryMock,
+  createWritingSyncApiServiceMock,
   createWritingSyncRepositoryMock,
   createWritingSyncWriterMock,
   createWritingTransactionRepositoryMock,
@@ -22,13 +25,16 @@ const {
   seedDatabaseMock,
 } = vi.hoisted(() => {
   return {
+    createAIApiServiceMock: vi.fn(),
     createAppMock: vi.fn(),
     createAuthMock: vi.fn(),
+    createAIRequestRepositoryMock: vi.fn(),
     createDailyRecommendationRepositoryMock: vi.fn(),
     createDevEmailPortMock: vi.fn(),
     drizzleAdapterMock: vi.fn(),
     createWritingApiServiceMock: vi.fn(),
     createWritingRepositoryMock: vi.fn(),
+    createWritingSyncApiServiceMock: vi.fn(),
     createWritingSyncRepositoryMock: vi.fn(),
     createWritingSyncWriterMock: vi.fn(),
     createWritingTransactionRepositoryMock: vi.fn(),
@@ -46,6 +52,7 @@ const {
 
 vi.mock("@workspace/database", () => ({
   authSchema: {},
+  createAIRequestRepository: createAIRequestRepositoryMock,
   createDailyRecommendationRepository: createDailyRecommendationRepositoryMock,
   createWritingRepository: createWritingRepositoryMock,
   createWritingSyncRepository: createWritingSyncRepositoryMock,
@@ -63,6 +70,10 @@ vi.mock("better-auth/adapters/drizzle", () => ({
   drizzleAdapter: drizzleAdapterMock,
 }))
 
+vi.mock("@workspace/email", () => ({
+  createResendEmailSender: vi.fn(),
+}))
+
 vi.mock("../application-services.js", () => ({
   createWritingApiService: createWritingApiServiceMock,
   createHomeApiService: createHomeApiServiceMock,
@@ -71,6 +82,14 @@ vi.mock("../application-services.js", () => ({
 
 vi.mock("../app.js", () => ({
   createApp: createAppMock,
+}))
+
+vi.mock("../ai-services.js", () => ({
+  createAIApiService: createAIApiServiceMock,
+}))
+
+vi.mock("../writing-services.js", () => ({
+  createWritingSyncApiService: createWritingSyncApiServiceMock,
 }))
 
 vi.mock("../auth/auth.js", () => ({
@@ -142,21 +161,25 @@ describe("bootstrap", () => {
     createDevEmailPortMock.mockReturnValue(emailPort)
     drizzleAdapterMock.mockReturnValue({ name: "adapter" })
     createAuthMock.mockReturnValue(auth)
+    createAIRequestRepositoryMock.mockReturnValue({})
     createPromptRepositoryMock.mockReturnValue({ exists: vi.fn() })
     createWritingRepositoryMock.mockReturnValue({ list: vi.fn() })
     createWritingSyncRepositoryMock.mockReturnValue({})
     createWritingSyncWriterMock.mockReturnValue({})
     createWritingTransactionRepositoryMock.mockReturnValue({})
     createWritingVersionRepositoryMock.mockReturnValue({})
+    createAIApiServiceMock.mockReturnValue({})
     createPromptApiServiceMock.mockReturnValue({ listPrompts: vi.fn() })
     createWritingApiServiceMock.mockReturnValue({ listWritings: vi.fn() })
     createHomeApiServiceMock.mockReturnValue({ getHome: vi.fn() })
+    createWritingSyncApiServiceMock.mockReturnValue({})
     createAppMock.mockReturnValue(app)
     migrateDatabaseMock.mockResolvedValue(undefined)
   })
 
   test("seeds the database on startup when enabled", async () => {
     await createApiDependencies({
+      apiBaseUrl: "http://127.0.0.1:3010",
       authBaseUrl: "http://127.0.0.1:3010",
       authSecret: "test-secret-test-secret-test-secret",
       databasePath: "memory:test",
@@ -172,6 +195,7 @@ describe("bootstrap", () => {
 
   test("skips database seeding on startup when disabled", async () => {
     await createApiDependencies({
+      apiBaseUrl: "http://127.0.0.1:3010",
       authBaseUrl: "http://127.0.0.1:3010",
       authSecret: "test-secret-test-secret-test-secret",
       databasePath: "memory:test",

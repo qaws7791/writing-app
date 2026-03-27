@@ -14,6 +14,7 @@ import {
   authSchema,
 } from "@workspace/database"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { createResendEmailSender } from "@workspace/email"
 
 import type { AppServices } from "../app-env"
 import { createApp } from "../app"
@@ -67,12 +68,21 @@ export async function createApiDependencies(
   })
   const database = openDb(environment.databasePath)
   const sqliteVersion = readSqliteVersion(database.sqlite)
-  const authEmailPort = createDevEmailPort({
-    exposeSensitiveData: process.env.NODE_ENV === "development",
-    logger: logger.child({
-      scope: "auth-email",
-    }),
-  })
+  const isProduction = process.env.NODE_ENV === "production"
+  const devEmailPort = isProduction
+    ? null
+    : createDevEmailPort({
+        exposeSensitiveData: process.env.NODE_ENV === "development",
+        logger: logger.child({
+          scope: "auth-email",
+        }),
+      })
+  const emailSender = isProduction
+    ? createResendEmailSender({
+        apiKey: apiEnv.RESEND_API_KEY!,
+        fromAddress: apiEnv.RESEND_FROM_ADDRESS!,
+      })
+    : devEmailPort!
   const authDatabaseAdapter = drizzleAdapter(database.db, {
     provider: "sqlite",
     schema: authSchema,
@@ -87,7 +97,7 @@ export async function createApiDependencies(
     authDatabaseAdapter,
     authUserPort,
     environment,
-    authEmailPort
+    emailSender
   )
 
   await migrateDatabase(database.db)
@@ -136,10 +146,7 @@ export async function createApiDependencies(
     homeUseCases,
     promptUseCases,
     writingSyncUseCases,
-    readLatestAuthEmail:
-      process.env.NODE_ENV !== "production"
-        ? authEmailPort.readLatestMessage
-        : undefined,
+    readLatestAuthEmail: devEmailPort?.readLatestMessage,
     sqliteVersion,
   }
 
@@ -163,7 +170,7 @@ export async function createApiDependencies(
       services,
     }),
     close: () => {
-      authEmailPort.clear()
+      devEmailPort?.clear()
       database.close()
     },
     sqliteVersion,
