@@ -21,6 +21,7 @@ import {
   writingContentJsonCodec,
 } from "@/domain/writing"
 
+import { useAISplit } from "@/features/writing/context/ai-split-context"
 import { useAISuggestion } from "@/features/writing/hooks/use-ai-suggestion"
 import { useAIReview } from "@/features/writing/hooks/use-ai-review"
 import { FloatingToolbar } from "@/features/writing/components/floating-toolbar"
@@ -171,6 +172,7 @@ export default function WritingTextEditor({
 
   // AI 훅
   const suggestion = useAISuggestion({ editor, snapshot })
+  const { panelContainer } = useAISplit()
   const review = useAIReview({
     editor,
     onClearSelectedText: suggestion.clearSelectedText,
@@ -214,6 +216,7 @@ export default function WritingTextEditor({
       />
 
       {suggestion.isSuggestionMode &&
+        panelContainer &&
         createPortal(
           <AISuggestionPanel
             isLoading={suggestion.isSuggestionLoading}
@@ -222,7 +225,7 @@ export default function WritingTextEditor({
             onAcceptSuggestion={suggestion.handleAcceptSuggestion}
             onClose={suggestion.handleCloseSuggestionPanel}
           />,
-          document.body
+          panelContainer
         )}
     </>
   )

@@ -6,6 +6,7 @@ import {
   type AISuggestion,
   getAISuggestions,
 } from "@/features/ai-assistant/repositories/api-ai"
+import { useAISplit } from "@/features/writing/context/ai-split-context"
 
 type ToolbarExpandedMode = "layer1-features" | "layer2-options" | null
 
@@ -34,6 +35,7 @@ function scrollEditorSelectionIntoView(
 }
 
 export function useAISuggestion({ editor, snapshot }: UseAISuggestionOptions) {
+  const { setIsSplitMode } = useAISplit()
   const [toolbarExpanded, setToolbarExpanded] =
     useState<ToolbarExpandedMode>(null)
   const [isSuggestionMode, setIsSuggestionMode] = useState(false)
@@ -44,17 +46,9 @@ export function useAISuggestion({ editor, snapshot }: UseAISuggestionOptions) {
   const savedSelectionRef = useRef({ text: "", from: 0, to: 0 })
   const previousSuggestionModeRef = useRef(isSuggestionMode)
 
-  // 분할 뷰 data attribute 관리
   useEffect(() => {
-    if (isSuggestionMode) {
-      document.documentElement.setAttribute("data-ai-split", "")
-    } else {
-      document.documentElement.removeAttribute("data-ai-split")
-    }
-    return () => {
-      document.documentElement.removeAttribute("data-ai-split")
-    }
-  }, [isSuggestionMode])
+    setIsSplitMode(isSuggestionMode)
+  }, [isSuggestionMode, setIsSplitMode])
 
   useEffect(() => {
     if (!editor) return

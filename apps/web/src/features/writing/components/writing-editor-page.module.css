@@ -3,15 +3,24 @@
   max-height: 100svh;
 }
 
-:global(html[data-ai-split]) .page {
-  height: auto;
+.page[data-ai-split] {
+  height: 100svh;
   min-height: 0;
   max-height: none;
+  overflow: hidden;
+  flex-direction: column;
+}
+
+/* 에디터 main이 남은 공간을 차지하고 flex 축에 따라 축소될 수 있도록 */
+.page[data-ai-split] > main {
+  min-height: 0;
+  min-width: 0;
 }
 
 /* 데스크탑 좌우 스플릿: 에디터가 가로로 축소될 수 있도록 */
 @media (min-width: 768px) {
-  :global(html[data-ai-split]) .page {
+  .page[data-ai-split] {
+    flex-direction: row;
     min-width: 0;
   }
 }

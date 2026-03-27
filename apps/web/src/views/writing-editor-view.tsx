@@ -3,6 +3,11 @@
 import { useCallback, useState } from "react"
 import { usePathname, useRouter } from "next/navigation"
 
+import {
+  AISplitProvider,
+  useAISplit,
+} from "@/features/writing/context/ai-split-context"
+
 import { WritingEditorBody } from "@/features/writing/components/writing-editor-body"
 import { WritingEditorDialogs } from "@/features/writing/components/writing-editor-dialogs"
 import { WritingEditorHeader } from "@/features/writing/components/writing-editor-header"
@@ -21,9 +26,8 @@ export type WritingEditorViewProps = {
   writingId: number
 }
 
-export default function WritingEditorView({
-  writingId,
-}: WritingEditorViewProps) {
+function WritingEditorViewContent({ writingId }: WritingEditorViewProps) {
+  const { isSplitMode, setPanelContainer } = useAISplit()
   const router = useRouter()
   const pathname = usePathname()
 
@@ -145,6 +149,7 @@ export default function WritingEditorView({
   return (
     <div
       data-writing-editor-page=""
+      data-ai-split={isSplitMode ? "" : undefined}
       className={`${styles.page} flex min-h-0 flex-1 flex-col bg-background text-foreground`}
     >
       <WritingEditorHeader
@@ -187,6 +192,18 @@ export default function WritingEditorView({
         onVersionHistoryModalOpenChange={setVersionHistoryModalOpen}
         versionHistoryModalOpen={versionHistoryModalOpen}
       />
+      {/* AI 제안 패널 포털 마운트 지점 */}
+      <div ref={setPanelContainer} className="contents" />
     </div>
+  )
+}
+
+export default function WritingEditorView({
+  writingId,
+}: WritingEditorViewProps) {
+  return (
+    <AISplitProvider>
+      <WritingEditorViewContent writingId={writingId} />
+    </AISplitProvider>
   )
 }
