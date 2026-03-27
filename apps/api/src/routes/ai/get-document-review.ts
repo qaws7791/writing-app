@@ -1,4 +1,4 @@
-import { createRoute, z } from "@hono/zod-openapi"
+import { createRoute } from "@hono/zod-openapi"
 import {
   aiDocumentReviewInputSchema,
   aiReviewResponseSchema,
@@ -7,6 +7,7 @@ import {
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { createAiRateLimiter } from "../../middleware/ai-rate-limiter"
 
 const route = createRoute({
   description: "문서 전체의 맞춤법 및 중복 표현을 검토합니다.",
@@ -38,6 +39,9 @@ const route = createRoute({
 })
 
 const app = createRouter()
+
+// 분당 20회 제한 (사용자당)
+app.use("*", createAiRateLimiter({ limit: 20, windowMs: 60 * 1000 }))
 
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
