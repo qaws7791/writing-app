@@ -5,9 +5,9 @@ description: 백엔드 패키지들을 인터페이스와 포트로 연결하고
 
 ## 상태
 
-- 기준 시점: 2026-03-20
-- 현재 저장소에는 실제 DI 조립 코드가 아직 없습니다.
-- 이 문서는 `apps/api`, `core`, `db`, `storage`, `ai` 패키지 분리 이후의 표준 조립 방식을 설명합니다.
+- 기준 시점: 2026-03-28
+- `apps/api/src/runtime/container.ts`에 Awilix 기반 DI 컨테이너가 도입되었습니다.
+- `apps/api/src/runtime/bootstrap.ts`는 컨테이너를 생성하고 마이그레이션/시딩 등 오케스트레이션만 담당합니다.
 
 ## 기본 원칙
 
@@ -61,6 +61,8 @@ description: 백엔드 패키지들을 인터페이스와 포트로 연결하고
 
 ## 권장 패턴
 
+### Use case factory (packages/core)
+
 ```ts
 type CreateWritingDeps = {
   saveWriting: WritingRepository["save"]
@@ -78,6 +80,49 @@ export const createCreateWritingUseCase =
 ```
 
 핵심은 use case가 구현체를 직접 만들지 않고, 필요한 동작만 타입으로 받아 조합한다는 점입니다.
+
+### 컨테이너 등록 (apps/api)
+
+`apps/api/src/runtime/container.ts`에서 Awilix 컨테이너에 모든 장수명 dependency를 선언적으로 등록합니다.
+
+```ts
+import { createContainer, asFunction, asValue, InjectionMode } from "awilix"
+
+const container = createContainer<ApiCradle>({
+  injectionMode: InjectionMode.PROXY,
+  strict: true,
+})
+
+container.register({
+  // 각 팩토리는 cradle에서 의존성을 구조 분해로 받습니다.
+  // Awilix가 의존성 해석 순서를 자동으로 결정합니다.
+  writingRepository: asFunction(({ database }: ApiCradle) =>
+    createWritingRepository(database.db)
+  ).singleton(),
+
+  writingUseCases: asFunction(
+    ({ writingRepository, promptRepository }: ApiCradle) =>
+      createWritingApiService({ writingRepository, promptRepository })
+  ).singleton(),
+})
+```
+
+- `InjectionMode.PROXY`: 팩토리 함수에 cradle proxy를 전달하고, 구조 분해 시 lazy 해석합니다.
+- `strict: true`: 등록되지 않은 이름으로 해석을 시도하면 즉시 에러를 던집니다.
+- 모든 등록은 `singleton()`: 앱 수명과 동일한 장수명 객체입니다.
+- `disposer()`: `container.dispose()` 호출 시 DB 연결 등 자원을 정리합니다.
+
+### 오케스트레이션 (bootstrap.ts)
+
+`bootstrap.ts`는 컨테이너를 생성한 뒤 마이그레이션, 시딩, Hono 앱 조립 등 순서가 중요한 작업만 담당합니다.
+
+```ts
+const container = createApiContainer(environment)
+const { database, logger } = container.cradle
+
+await migrateDatabase(database.db)
+// 컨테이너에서 서비스를 꺼내 Hono 앱에 주입
+```
 
 ## 하지 않는 것
 

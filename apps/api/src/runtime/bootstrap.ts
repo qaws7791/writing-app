@@ -1,36 +1,10 @@
-import {
-  createAIRequestRepository,
-  createDailyRecommendationRepository,
-  createWritingRepository,
-  createPromptRepository,
-  createWritingSyncRepository,
-  createWritingSyncWriter,
-  createWritingTransactionRepository,
-  createWritingVersionRepository,
-  migrateDatabase,
-  openDb,
-  readSqliteVersion,
-  seedDatabase,
-  authSchema,
-} from "@workspace/database"
-import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { createResendEmailSender } from "@workspace/email"
+import { migrateDatabase, seedDatabase } from "@workspace/database"
 
 import type { AppServices } from "../app-env"
 import { createApp } from "../app"
-import { createAIApiService } from "../services/ai-services"
-import {
-  createWritingApiService,
-  createWritingSyncApiService,
-} from "../services/writing-services"
-import {
-  createHomeApiService,
-  createPromptApiService,
-} from "../services/prompt-services"
-import { createAuth } from "../auth/auth"
-import { createDevEmailInbox, createDevEmailPort } from "../auth/auth-email"
 import { apiEnv } from "../config/env"
-import { createApiLogger, type ApiLogLevel } from "../observability/logger"
+import type { ApiLogLevel } from "../observability/logger"
+import { createApiContainer } from "./container"
 
 export type ApiEnvironment = {
   apiBaseUrl: string
@@ -65,91 +39,22 @@ export function readApiEnvironment(): ApiEnvironment {
 export async function createApiDependencies(
   environment: ApiEnvironment
 ): Promise<AppDependencies> {
-  const logger = createApiLogger({
-    level: environment.logLevel,
-  })
-  const database = openDb(environment.databasePath)
-  const sqliteVersion = readSqliteVersion(database.sqlite)
-  const isProduction = process.env.NODE_ENV === "production"
-  const devEmailInbox = isProduction ? null : createDevEmailInbox()
-  const devEmailPort = isProduction
-    ? null
-    : createDevEmailPort({
-        exposeSensitiveData: process.env.NODE_ENV === "development",
-        inbox: devEmailInbox!,
-        logger: logger.child({
-          scope: "auth-email",
-        }),
-      })
-  const emailSender = isProduction
-    ? createResendEmailSender({
-        apiKey: apiEnv.RESEND_API_KEY!,
-        fromAddress: apiEnv.RESEND_FROM_ADDRESS!,
-      })
-    : devEmailPort!
-  const authDatabaseAdapter = drizzleAdapter(database.db, {
-    provider: "sqlite",
-    schema: authSchema,
-  })
-  const authUserPort = {
-    findUserByEmail: (email: string) =>
-      database.db.query.user.findFirst({
-        where: (fields, { eq }) => eq(fields.email, email),
-      }),
-  }
-  const auth = createAuth(
-    authDatabaseAdapter,
-    authUserPort,
-    environment,
-    emailSender
-  )
+  const container = createApiContainer(environment)
+  const { auth, database, devEmailInbox, logger, sqliteVersion } =
+    container.cradle
 
   await migrateDatabase(database.db)
   if (environment.seedOnStartup) {
     seedDatabase(database.db)
   }
 
-  const promptRepository = createPromptRepository(database.db)
-  const writingRepository = createWritingRepository(database.db)
-  const aiRequestRepository = createAIRequestRepository(database.db)
-  const dailyRecommendationRepository = createDailyRecommendationRepository(
-    database.db
-  )
-  const writingSyncRepository = createWritingSyncRepository(database.db)
-  const writingSyncWriter = createWritingSyncWriter(database.db)
-  const writingTransactionRepository = createWritingTransactionRepository(
-    database.db
-  )
-  const writingVersionRepository = createWritingVersionRepository(database.db)
-
-  const aiUseCases = createAIApiService({
-    aiRequestRepository,
-    logger: logger.child({ scope: "ai-services" }),
-  })
-  const promptUseCases = createPromptApiService(promptRepository)
-  const writingUseCases = createWritingApiService({
-    writingRepository,
-    promptRepository,
-  })
-  const homeUseCases = createHomeApiService({
-    dailyRecommendationRepository,
-    writingRepository,
-    promptRepository,
-  })
-  const writingSyncUseCases = createWritingSyncApiService({
-    writingRepository: writingSyncRepository,
-    syncWriter: writingSyncWriter,
-    transactionRepository: writingTransactionRepository,
-    versionRepository: writingVersionRepository,
-  })
-
   const services: AppServices = {
-    aiUseCases,
+    aiUseCases: container.cradle.aiUseCases,
     authHandler: auth.handler,
-    writingUseCases,
-    homeUseCases,
-    promptUseCases,
-    writingSyncUseCases,
+    homeUseCases: container.cradle.homeUseCases,
+    promptUseCases: container.cradle.promptUseCases,
+    writingUseCases: container.cradle.writingUseCases,
+    writingSyncUseCases: container.cradle.writingSyncUseCases,
     readLatestAuthEmail: devEmailInbox?.readLatestMessage,
     sqliteVersion,
   }
@@ -174,8 +79,7 @@ export async function createApiDependencies(
       services,
     }),
     close: () => {
-      devEmailInbox?.clear()
-      database.close()
+      void container.dispose()
     },
     sqliteVersion,
   }
