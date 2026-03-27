@@ -91,6 +91,15 @@ function logRequestFailure(
   requestLogger.warn(logPayload, message)
 }
 
+const AI_TIMEOUT_MS = 30_000
+const DEFAULT_TIMEOUT_MS = 60_000
+
+function throwTimeoutError(): never {
+  const error = new Error("요청 시간이 초과되었습니다.")
+  error.name = "TimeoutError"
+  throw error
+}
+
 function handleRequestError(
   c: Context<AppEnv>,
   error: unknown,
@@ -161,23 +170,19 @@ export function createApp(input: CreateAppInput) {
     return next()
   })
 
-  // --- Request timeout middleware ---
+  // --- Request timeout ---
+  // AI 엔드포인트는 30s, 나머지는 60s. 단일 미들웨어로 이중 등록을 방지한다.
 
-  app.use(
-    "/ai/*",
-    timeout(30_000, () => {
-      const error = new Error("요청 시간이 초과되었습니다.")
-      error.name = "TimeoutError"
-      throw error
-    })
-  )
-
-  app.use("*", timeout(60_000))
+  app.use("*", (c, next) => {
+    const ms = c.req.path.startsWith("/ai/")
+      ? AI_TIMEOUT_MS
+      : DEFAULT_TIMEOUT_MS
+    return timeout(ms, throwTimeoutError)(c, next)
+  })
 
   // --- Error handler ---
 
   app.onError((error, c) => {
-    // Handle timeout errors from both /ai/* and global timeout middleware
     if (error instanceof Error && error.name === "TimeoutError") {
       return c.json(
         {
