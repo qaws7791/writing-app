@@ -30,6 +30,7 @@ import { apiEnv } from "../config/env"
 import { createApiLogger, type ApiLogLevel } from "../observability/logger"
 
 export type ApiEnvironment = {
+  apiBaseUrl: string
   authBaseUrl: string
   authSecret: string
   databasePath: string
@@ -47,6 +48,7 @@ export type AppDependencies = {
 
 export function readApiEnvironment(): ApiEnvironment {
   return {
+    apiBaseUrl: apiEnv.API_BASE_URL,
     authBaseUrl: apiEnv.API_AUTH_BASE_URL,
     authSecret: apiEnv.API_AUTH_SECRET,
     databasePath: apiEnv.API_DATABASE_PATH,
@@ -153,7 +155,7 @@ export async function createApiDependencies(
   return {
     app: createApp({
       allowedOrigins: [environment.webBaseUrl],
-      apiBaseUrl: environment.authBaseUrl,
+      apiBaseUrl: environment.apiBaseUrl,
       authDebugEnabled: process.env.NODE_ENV !== "production",
       getSession: (request) =>
         auth.api.getSession({ headers: request.headers }),

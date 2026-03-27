@@ -5,6 +5,7 @@ export const apiEnv = createEnv({
   emptyStringAsUndefined: true,
   runtimeEnv: process.env,
   server: {
+    API_BASE_URL: z.string().url(),
     API_AUTH_BASE_URL: z.string().url(),
     API_AUTH_SECRET: z.string().min(32),
     API_DATABASE_PATH: z.string().min(1),
