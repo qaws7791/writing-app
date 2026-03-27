@@ -25,7 +25,6 @@ import {
   type PromptRepository,
   type PromptSummary,
   type UserId,
-  toWritingId,
   type DomainError,
 } from "@workspace/core"
 import type { Result } from "neverthrow"
@@ -83,17 +82,12 @@ function unwrapOrThrow<TValue, TError extends DomainError>(
 }
 
 export function createWritingApiService(input: {
-  createWritingId?: () => WritingId
   writingRepository: WritingRepository
   getNow?: () => string
   promptRepository: Pick<PromptRepository, "exists">
 }): WritingApiService {
   const createWriting = makeCreateWritingUseCase({
-    createWritingId:
-      input.createWritingId ??
-      (() => toWritingId(Math.floor(Math.random() * 1e9))),
     writingRepository: input.writingRepository,
-    getNow: input.getNow ?? (() => new Date().toISOString()),
     promptExists: (promptId: PromptId) =>
       input.promptRepository.exists(promptId),
   })

@@ -35,9 +35,7 @@ describe("makeCreateWritingUseCase", () => {
     }))
 
     const createWriting = makeCreateWritingUseCase({
-      createWritingId: () => toWritingId(99),
       writingRepository: repository,
-      getNow: () => "2026-03-22T00:00:00.000Z",
       promptExists,
     })
 
@@ -66,9 +64,7 @@ describe("makeCreateWritingUseCase", () => {
     }))
 
     const createWriting = makeCreateWritingUseCase({
-      createWritingId: () => toWritingId(1),
       writingRepository: repository,
-      getNow: () => "2026-03-22T00:00:00.000Z",
       promptExists: vi.fn(),
     })
 
@@ -81,7 +77,6 @@ describe("makeCreateWritingUseCase", () => {
   it("존재하지 않는 프롬프트를 참조하면 NOT_FOUND 에러를 반환한다", async () => {
     const sourcePromptId = toPromptId(3)
     const createWriting = makeCreateWritingUseCase({
-      createWritingId: () => toWritingId(99),
       writingRepository: createStubRepository((input) => ({
         ...input,
         createdAt: "2026-03-22T00:00:00.000Z",
@@ -90,7 +85,6 @@ describe("makeCreateWritingUseCase", () => {
         preview: "",
         updatedAt: "2026-03-22T00:00:00.000Z",
       })),
-      getNow: () => "2026-03-22T00:00:00.000Z",
       promptExists: async () => false,
     })
 
