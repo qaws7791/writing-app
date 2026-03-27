@@ -4,7 +4,7 @@ import { bodyLimit } from "hono/body-limit"
 import { cors } from "hono/cors"
 import { timeout } from "hono/timeout"
 
-import type { AppServices, GetSession } from "./app-env"
+import type { AppEnv, AppServices, GetSession } from "./app-env"
 import { errorToResponse } from "./http/error-response"
 import { createRouter } from "./http/create-router"
 import type { ApiLogger } from "./observability/logger"
@@ -44,11 +44,14 @@ type CreateAppInput = {
 type ApiErrorResult = ReturnType<typeof errorToResponse>
 type ApiErrorStatus = 400 | 401 | 403 | 404 | 409 | 422 | 429 | 500
 
-function resolveRequestLogger(context: Context, logger: ApiLogger): ApiLogger {
+function resolveRequestLogger(
+  context: Context<AppEnv>,
+  logger: ApiLogger
+): ApiLogger {
   const requestLogger = context.get("requestLogger")
 
   if (requestLogger) {
-    return requestLogger as ApiLogger
+    return requestLogger
   }
 
   return logger.child({
@@ -90,7 +93,7 @@ function logRequestFailure(
 }
 
 function handleRequestError(
-  c: Context,
+  c: Context<AppEnv>,
   error: unknown,
   logger: ApiLogger,
   message: string
