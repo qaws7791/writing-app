@@ -13,6 +13,8 @@ import type {
 import type { AIRequestRepository } from "@workspace/database"
 import type { ApiLogger } from "./observability/logger"
 
+const AI_MODEL = "gemini-3.1-flash-lite-preview" as const
+
 export type AIApiService = {
   getSuggestions: (
     userId: UserId,
@@ -47,7 +49,7 @@ export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
           featureType: type,
           inputText: text,
           outputJson: JSON.stringify(suggestions),
-          model: "gemini-3.1-flash-lite-preview",
+          model: AI_MODEL,
         })
       } catch (error) {
         logger.error(
@@ -74,7 +76,7 @@ export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
           featureType: "document-review",
           inputText,
           outputJson: JSON.stringify(items),
-          model: "gemini-3.1-flash-lite-preview",
+          model: AI_MODEL,
         })
       } catch (error) {
         logger.error(
@@ -101,7 +103,7 @@ export function createAIApiService(deps: AIApiServiceDeps): AIApiService {
           featureType: "flow-review",
           inputText,
           outputJson: JSON.stringify(items),
-          model: "gemini-3.1-flash-lite-preview",
+          model: AI_MODEL,
         })
       } catch (error) {
         logger.error(
