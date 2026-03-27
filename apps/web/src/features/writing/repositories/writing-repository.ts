@@ -229,7 +229,7 @@ function createRemoteWritingRepository(client: ApiClient): WritingRepository {
 function resolveMode(
   explicitMode?: WritingRepositoryMode
 ): WritingRepositoryMode {
-  return explicitMode ?? env.NEXT_PUBLIC_PHASE_ONE_MODE
+  return explicitMode ?? env.NEXT_PUBLIC_CLIENT_MODE
 }
 
 export function createWritingRepository(options?: {

@@ -161,7 +161,7 @@ function createRemotePromptRepository(client: ApiClient): PromptRepository {
 function resolveMode(
   explicitMode?: PromptRepositoryMode
 ): PromptRepositoryMode {
-  return explicitMode ?? env.NEXT_PUBLIC_PHASE_ONE_MODE
+  return explicitMode ?? env.NEXT_PUBLIC_CLIENT_MODE
 }
 
 export function createPromptRepository(options?: {

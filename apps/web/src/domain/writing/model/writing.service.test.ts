@@ -6,7 +6,7 @@ import {
   getWritingMetrics,
 } from "./writing.service"
 
-describe("phase one rich text helpers", () => {
+describe("rich text helpers", () => {
   test("creates an empty paragraph document", () => {
     expect(createEmptyWritingContent()).toEqual({
       content: [{ type: "paragraph" }],

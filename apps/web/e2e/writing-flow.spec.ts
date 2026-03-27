@@ -141,7 +141,7 @@ test("home prompt to editor and resume flow", async ({
   await signUpAndLogin(page, request, testInfo)
 
   const token = createUniqueToken(testInfo)
-  const title = `phase-one-home-${token}`
+  const title = `e2e-home-${token}`
   const body = `home-body-${token}`
 
   await page.goto("/home")
@@ -242,7 +242,7 @@ test("create writing from list and delete it", async ({
   await signUpAndLogin(page, request, testInfo)
 
   const token = createUniqueToken(testInfo)
-  const title = `phase-one-delete-${token}`
+  const title = `e2e-delete-${token}`
 
   const writing = await createWritingViaApi(request, page, {
     title,
@@ -267,7 +267,7 @@ test("reopen existing writing and expose it as latest resume target", async ({
   await signUpAndLogin(page, request, testInfo)
 
   const token = createUniqueToken(testInfo)
-  const title = `phase-one-resume-${token}`
+  const title = `e2e-resume-${token}`
   const initialBody = `resume-initial-${token}`
   const updatedBody = `resume-updated-${token}`
 
@@ -305,7 +305,7 @@ test("creates one writing from rapid title input and keeps updating the same wri
 }, testInfo) => {
   await signUpAndLogin(page, request, testInfo)
 
-  const body = `phase-one-body-${createUniqueToken(testInfo)}`
+  const body = `e2e-body-${createUniqueToken(testInfo)}`
 
   await page.goto("/writing")
   await page.getByRole("button", { name: /새 글 시작/i }).click()

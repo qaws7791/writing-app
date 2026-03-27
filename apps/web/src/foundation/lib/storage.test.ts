@@ -1,6 +1,6 @@
 import { createMemoryStorage, getDefaultStorage, storageKeys } from "./storage"
 
-describe("phase one storage helpers", () => {
+describe("storage helpers", () => {
   test("stores and removes values in memory storage", () => {
     const storage = createMemoryStorage()
     storage.setItem(storageKeys.sequence, "1")

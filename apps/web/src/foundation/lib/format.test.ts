@@ -1,6 +1,6 @@
 import { formatWritingMeta, formatSavedAt } from "./format"
 
-describe("phase one format helpers", () => {
+describe("format helpers", () => {
   test("formats saved time in Korean locale", () => {
     const formatted = formatSavedAt("2026-03-20T10:15:00.000Z")
 

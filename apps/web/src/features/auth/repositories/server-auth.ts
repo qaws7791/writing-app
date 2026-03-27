@@ -14,8 +14,8 @@ type SessionAccess = "protected" | "public"
 
 export type { SessionSnapshot }
 
-export function isLocalPhaseOneMode(): boolean {
-  return env.NEXT_PUBLIC_PHASE_ONE_MODE === "local"
+export function isLocalMode(): boolean {
+  return env.NEXT_PUBLIC_CLIENT_MODE === "local"
 }
 
 async function readSessionRequestContext(): Promise<SessionRequestContext> {
@@ -29,7 +29,7 @@ async function readSessionRequestContext(): Promise<SessionRequestContext> {
 }
 
 export async function fetchSessionSnapshot(): Promise<SessionSnapshot | null> {
-  if (isLocalPhaseOneMode()) {
+  if (isLocalMode()) {
     return null
   }
 
@@ -63,11 +63,11 @@ export async function getCurrentSession(): Promise<SessionSnapshot | null> {
 }
 
 export async function redirectIfProtectedAccessMissing(): Promise<void> {
-  const isLocalMode = isLocalPhaseOneMode()
+  const localMode = isLocalMode()
   const session = await getCurrentSession()
   const redirectPath = getSessionAccessRedirectPath({
     access: "protected",
-    isLocalMode,
+    isLocalMode: localMode,
     session,
   })
 
@@ -77,11 +77,11 @@ export async function redirectIfProtectedAccessMissing(): Promise<void> {
 }
 
 export async function redirectIfPublicAuthUnavailable(): Promise<void> {
-  const isLocalMode = isLocalPhaseOneMode()
-  const session = isLocalMode ? null : await getCurrentSession()
+  const localMode = isLocalMode()
+  const session = localMode ? null : await getCurrentSession()
   const redirectPath = getSessionAccessRedirectPath({
     access: "public",
-    isLocalMode,
+    isLocalMode: localMode,
     session,
   })
 

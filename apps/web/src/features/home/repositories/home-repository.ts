@@ -64,7 +64,7 @@ function createRemoteHomeRepository(client: ApiClient): HomeRepository {
 }
 
 function resolveMode(explicitMode?: HomeRepositoryMode): HomeRepositoryMode {
-  return explicitMode ?? env.NEXT_PUBLIC_PHASE_ONE_MODE
+  return explicitMode ?? env.NEXT_PUBLIC_CLIENT_MODE
 }
 
 export function createHomeRepository(options?: {

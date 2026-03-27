@@ -7,10 +7,10 @@ type StorageLike = {
 type MemoryStorageState = Map<string, string>
 
 export const storageKeys = {
-  writings: "phase-one.writings",
-  redirectWritingSnapshotPrefix: "phase-one.redirect-writing",
-  savedPromptEntries: "phase-one.saved-prompts",
-  sequence: "phase-one.sequence",
+  writings: "writing-app.writings",
+  redirectWritingSnapshotPrefix: "writing-app.redirect-writing",
+  savedPromptEntries: "writing-app.saved-prompts",
+  sequence: "writing-app.sequence",
 } as const
 
 export function createMemoryStorage(

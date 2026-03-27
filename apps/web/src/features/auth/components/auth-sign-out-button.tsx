@@ -11,7 +11,7 @@ export function AuthSignOutButton() {
   const router = useRouter()
 
   async function handleSignOut() {
-    if (env.NEXT_PUBLIC_PHASE_ONE_MODE === "local") {
+    if (env.NEXT_PUBLIC_CLIENT_MODE === "local") {
       router.push("/")
       router.refresh()
       return

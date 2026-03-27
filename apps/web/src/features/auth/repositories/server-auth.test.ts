@@ -10,7 +10,7 @@ import type { SessionSnapshot } from "@/domain/auth"
 vi.mock("@/foundation/config/env", () => ({
   env: {
     NEXT_PUBLIC_API_BASE_URL: "http://127.0.0.1:3010",
-    NEXT_PUBLIC_PHASE_ONE_MODE: "api",
+    NEXT_PUBLIC_CLIENT_MODE: "api",
   },
 }))
 
