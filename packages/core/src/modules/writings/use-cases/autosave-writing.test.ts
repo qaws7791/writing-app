@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { toWritingId, toUserId } from "../../../shared/brand/index"
 import type { WritingContent } from "../../../shared/schema/index"
-import { createFakeWritingRepository } from "../testing/fake-writing-repository"
+import { createFakeWritingRepository } from "../testing/fake-writing-repositories"
 import { makeAutosaveWritingUseCase } from "./autosave-writing"
 
 const userId = toUserId("user-1")

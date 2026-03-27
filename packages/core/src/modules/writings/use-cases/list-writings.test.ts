@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { toUserId } from "../../../shared/brand/index"
-import { createFakeWritingRepository } from "../testing/fake-writing-repository"
+import { createFakeWritingRepository } from "../testing/fake-writing-repositories"
 import { makeListWritingsUseCase } from "./list-writings"
 
 const userId = toUserId("user-1")

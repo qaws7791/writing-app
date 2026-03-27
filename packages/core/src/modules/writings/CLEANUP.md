@@ -64,7 +64,7 @@
 
 ### Phase 3: testing 통합
 
-7. `crud-testing/fake-writing-repository.ts` → `testing/fake-writing-repository.ts`
+7. `crud-testing/fake-writing-repository.ts` → `testing/fake-writing-repositories.ts` (모든 fake repository 함수 통합)
 8. `crud-testing/writing-fixture.ts` → `testing/writing-full-fixtures.ts` (createTestWriting → createTestWritingFull)
 
 ### Phase 4: deprecated 삭제

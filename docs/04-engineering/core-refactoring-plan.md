@@ -41,7 +41,7 @@ packages/core/
     │   │   └── testing/
     │   │       ├── index.ts
     │   │       ├── writing-fixture.ts       # WritingFixture 빌더 (함수형)
-    │   │       └── fake-writing-repository.ts
+    │   │       └── fake-writing-repositories.ts
     │   │
     │   ├── prompts/
     │   │   ├── index.ts
@@ -77,7 +77,7 @@ packages/core/
 | `shared/types/result.ts` (자체 Result 구현)                         | **삭제** → `neverthrow` 대체          | 검증된 라이브러리로 체이닝·ResultAsync 등 확보               |
 | `shared/types/errors.ts` + `shared/utilities/application-errors.ts` | `shared/error/domain-error.ts` 통합   | 에러 정의와 변환이 분리되어 있던 것을 한 곳에 colocation     |
 | `shared/ports/` (전역 레포지토리 인터페이스)                        | 각 모듈의 `*-port.ts`로 이동          | 포트는 모듈의 계약, 모듈이 소유해야 함 (DDD Bounded Context) |
-| `shared/testing/fake-writing-repository.ts`                         | `modules/writings/testing/`으로 이동  | fake는 해당 모듈의 관심사 (colocation)                       |
+| `shared/testing/fake-writing-repositories.ts`                       | `modules/writings/testing/`으로 이동  | fake는 해당 모듈의 관심사 (colocation)                       |
 | 모듈 내 `contracts/` 디렉토리                                       | `index.ts`가 contracts 역할 통합      | 별도 디렉토리 없이 barrel export가 계약                      |
 | 모듈 내 `model/`, `operations/`, `errors/`, `ports/` 각각 디렉토리  | 파일 1개씩으로 평탄화                 | 파일이 1개인 디렉토리는 인지부하만 증가 (YAGNI)              |
 | `adapters/application-compatibility.ts`                             | **삭제**                              | neverthrow `.match()`로 consumer가 직접 처리                 |
@@ -282,7 +282,7 @@ const wordCount = pipe(
 
 #### 2-3. 테스팅 유틸리티 이동
 
-- `shared/testing/fake-writing-repository.ts` → `modules/writings/testing/fake-writing-repository.ts`
+- `shared/testing/fake-writing-repositories.ts` → `modules/writings/testing/fake-writing-repositories.ts`
 - `shared/testing/` → 패키지 수준 공유가 필요하면 `src/testing/`으로 이동
 
 ### Phase 3: Use-case neverthrow 전환
