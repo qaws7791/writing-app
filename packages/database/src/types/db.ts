@@ -3,6 +3,7 @@ import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
 
 import {
   account,
+  aiRequests,
   dailyRecommendations,
   writings,
   prompts,
@@ -19,6 +20,8 @@ export type DbSchema = typeof schema
 export type DbClient = BunSQLiteDatabase<DbSchema>
 
 export type AccountRow = InferSelectModel<typeof account>
+export type AIRequestInsert = InferInsertModel<typeof aiRequests>
+export type AIRequestRow = InferSelectModel<typeof aiRequests>
 export type DailyRecommendationInsert = InferInsertModel<
   typeof dailyRecommendations
 >

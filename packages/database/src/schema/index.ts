@@ -1,4 +1,5 @@
 export { account, authSchema, session, user, verification } from "./auth.js"
+export { aiRequests } from "./ai-requests.js"
 export { dailyRecommendations } from "./daily-recommendations.js"
 export { writings } from "./writings.js"
 export { prompts } from "./prompts.js"
@@ -7,6 +8,7 @@ export { writingTransactions } from "./writing-transactions.js"
 export { writingVersions } from "./writing-versions.js"
 
 import { account, session, user, verification } from "./auth.js"
+import { aiRequests } from "./ai-requests.js"
 import { dailyRecommendations } from "./daily-recommendations.js"
 import { writings } from "./writings.js"
 import { prompts } from "./prompts.js"
@@ -16,6 +18,7 @@ import { writingVersions } from "./writing-versions.js"
 
 export const schema = {
   account,
+  aiRequests,
   dailyRecommendations,
   writings,
   prompts,

@@ -1,4 +1,5 @@
 import {
+  createAIRequestRepository,
   createDailyRecommendationRepository,
   createWritingRepository,
   createPromptRepository,
@@ -16,6 +17,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
 import type { AppServices } from "../app-env"
 import { createApp } from "../app"
+import { createAIApiService } from "../ai-services"
 import {
   createWritingApiService,
   createHomeApiService,
@@ -93,6 +95,7 @@ export async function createApiDependencies(
 
   const promptRepository = createPromptRepository(database.db)
   const writingRepository = createWritingRepository(database.db)
+  const aiRequestRepository = createAIRequestRepository(database.db)
   const dailyRecommendationRepository = createDailyRecommendationRepository(
     database.db
   )
@@ -103,6 +106,7 @@ export async function createApiDependencies(
   )
   const writingVersionRepository = createWritingVersionRepository(database.db)
 
+  const aiUseCases = createAIApiService({ aiRequestRepository })
   const promptUseCases = createPromptApiService(promptRepository)
   const writingUseCases = createWritingApiService({
     writingRepository,
@@ -121,6 +125,7 @@ export async function createApiDependencies(
   })
 
   const services: AppServices = {
+    aiUseCases,
     authHandler: auth.handler,
     writingUseCases,
     homeUseCases,

@@ -10,7 +10,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
-import type { AIFeatureType } from "@/features/ai-assistant/repositories/mock-ai"
+import type { AIFeatureType } from "@workspace/core/modules/ai-assistant"
 
 // --- 타입 ---
 

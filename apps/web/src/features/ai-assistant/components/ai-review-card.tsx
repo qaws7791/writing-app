@@ -9,7 +9,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
 
-import type { ReviewItem } from "@/features/ai-assistant/repositories/mock-ai"
+import type { ReviewItem } from "@workspace/core/modules/ai-assistant"
 
 const typeConfig: Record<
   ReviewItem["type"],

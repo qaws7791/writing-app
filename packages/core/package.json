@@ -28,6 +28,7 @@
     "./modules/home": "./src/modules/home/index.ts",
     "./modules/home/testing": "./src/modules/home/testing/index.ts",
     "./modules/daily-recommendation": "./src/modules/daily-recommendation/index.ts",
-    "./modules/writings": "./src/modules/writings/index.ts"
+    "./modules/writings": "./src/modules/writings/index.ts",
+    "./modules/ai-assistant": "./src/modules/ai-assistant/index.ts"
   }
 }

@@ -10,6 +10,9 @@ import { createRequestLoggerMiddleware } from "./middleware/request-logger"
 import { createResolveSessionMiddleware } from "./middleware/resolve-session"
 import authHandler from "./routes/auth/auth-handler"
 import getAuthEmails from "./routes/dev/get-auth-emails"
+import getAISuggestions from "./routes/ai/get-suggestions"
+import getDocumentReview from "./routes/ai/get-document-review"
+import getFlowReview from "./routes/ai/get-flow-review"
 import autosaveWriting from "./routes/writings/autosave-writing"
 import createWriting from "./routes/writings/create-writing"
 import deleteWriting from "./routes/writings/delete-writing"
@@ -166,6 +169,9 @@ export function createApp(input: CreateAppInput) {
   app.route("/", authHandler)
   app.route("/", getSession)
   app.route("/", getHome)
+  app.route("/", getAISuggestions)
+  app.route("/", getDocumentReview)
+  app.route("/", getFlowReview)
   app.route("/", listPrompts)
   app.route("/", getPrompt)
   app.route("/", savePrompt)

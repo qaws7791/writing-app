@@ -59,6 +59,7 @@
 ### Phase 2: use-cases 통합
 
 5. `crud-use-cases/` 하위 파일 모두 → `use-cases/`로 이동
+
 6. `use-cases/index.ts` 업데이트
 
 ### Phase 3: testing 통합

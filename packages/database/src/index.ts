@@ -9,6 +9,7 @@ export {
   type SeedTestUser,
 } from "./connection/index.js"
 export {
+  createAIRequestRepository,
   createDailyRecommendationRepository,
   createWritingRepository,
   createPromptRepository,
@@ -16,9 +17,11 @@ export {
   createWritingSyncWriter,
   createWritingTransactionRepository,
   createWritingVersionRepository,
+  type AIRequestRepository,
 } from "./repository/index.js"
 export {
   account,
+  aiRequests,
   authSchema,
   dailyRecommendations,
   writings,

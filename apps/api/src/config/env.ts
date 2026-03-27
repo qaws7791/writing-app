@@ -13,5 +13,6 @@ export const apiEnv = createEnv({
       .default("info"),
     API_PORT: z.coerce.number().int().min(1).max(65535),
     API_WEB_BASE_URL: z.string().url(),
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1),
   },
 })

@@ -8,6 +8,13 @@
       "when": 1774287180578,
       "tag": "0000_rare_sir_ram",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1774576407250,
+      "tag": "0001_ambitious_yellowjacket",
+      "breakpoints": true
     }
   ]
 }

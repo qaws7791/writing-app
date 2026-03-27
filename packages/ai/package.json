@@ -1,0 +1,25 @@
+{
+  "name": "@workspace/ai",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit --skipLibCheck true"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^3.0.53",
+    "@workspace/core": "workspace:*",
+    "ai": "^6.0.140",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@workspace/config": "workspace:*",
+    "eslint": "^9.39.2",
+    "typescript": "^5.9.3"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

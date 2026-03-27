@@ -5,6 +5,7 @@ import type {
   HomeApiService,
   PromptApiService,
 } from "./application-services"
+import type { AIApiService } from "./ai-services"
 import type { WritingSyncApiService } from "./writing-services"
 import type { DevEmailInbox } from "./auth/auth-email"
 import type { ApiLogger } from "./observability/logger"
@@ -36,6 +37,7 @@ export type AuthSession = {
 export type GetSession = (request: Request) => Promise<AuthSession | null>
 
 export type AppServices = {
+  aiUseCases: AIApiService
   authHandler: (request: Request) => Promise<Response>
   writingUseCases: WritingApiService
   homeUseCases: HomeApiService

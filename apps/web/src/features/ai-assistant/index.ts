@@ -1,12 +1,15 @@
+export type {
+  AIFeatureType,
+  AISuggestion,
+  ReviewItem,
+  ReviewItemType,
+} from "@workspace/core/modules/ai-assistant"
+
 export {
-  type AIFeatureType,
-  type AISuggestion,
-  type ReviewItem,
-  type ReviewItemType,
   getAISuggestions,
   getDocumentReview,
   getFlowReview,
-} from "@/features/ai-assistant/repositories/mock-ai"
+} from "@/features/ai-assistant/repositories/api-ai"
 
 export {
   type AIFeatureOption,

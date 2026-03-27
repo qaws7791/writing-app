@@ -215,6 +215,17 @@ export function createTestApi(input?: {
     },
     logger: input?.logger ?? createSilentLogger(),
     services: {
+      aiUseCases: {
+        async getSuggestions() {
+          return []
+        },
+        async getDocumentReview() {
+          return []
+        },
+        async getFlowReview() {
+          return []
+        },
+      },
       authHandler: async () =>
         new Response(
           JSON.stringify({

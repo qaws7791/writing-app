@@ -5,7 +5,7 @@ import {
   type AIFeatureType,
   type AISuggestion,
   getAISuggestions,
-} from "@/features/ai-assistant/repositories/mock-ai"
+} from "@/features/ai-assistant/repositories/api-ai"
 
 type ToolbarExpandedMode = "layer1-features" | "layer2-options" | null
 

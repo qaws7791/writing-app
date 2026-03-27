@@ -5,7 +5,7 @@ import {
   type ReviewItem,
   getDocumentReview,
   getFlowReview,
-} from "@/features/ai-assistant/repositories/mock-ai"
+} from "@/features/ai-assistant/repositories/api-ai"
 import {
   clearReviewItems,
   getReviewItems,

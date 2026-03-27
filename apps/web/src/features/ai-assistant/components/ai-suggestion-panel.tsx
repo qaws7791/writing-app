@@ -8,7 +8,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Button } from "@workspace/ui/components/button"
 
-import type { AISuggestion } from "@/features/ai-assistant/repositories/mock-ai"
+import type { AISuggestion } from "@workspace/core/modules/ai-assistant"
 
 // --- 서브 컴포넌트 ---
 

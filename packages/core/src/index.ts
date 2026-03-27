@@ -104,3 +104,27 @@ export {
   makeEnsureTodayRecommendationsUseCase,
   selectWeightedPrompts,
 } from "./modules/daily-recommendation/index"
+
+// AI Assistant
+export type {
+  AIFeatureType,
+  AIReviewParagraph,
+  AISuggestion,
+  AISuggestionInput,
+  AIDocumentReviewInput,
+  AIFlowReviewInput,
+  ReviewItem,
+  ReviewItemType,
+} from "./modules/ai-assistant/index"
+export {
+  aiFeatureTypeSchema,
+  aiSuggestionSchema,
+  aiSuggestionInputSchema,
+  aiDocumentReviewInputSchema,
+  aiFlowReviewInputSchema,
+  aiSuggestionResponseSchema,
+  aiReviewResponseSchema,
+  aiReviewParagraphSchema,
+  reviewItemSchema,
+  reviewItemTypeSchema,
+} from "./modules/ai-assistant/index"

@@ -16,7 +16,7 @@ import {
 } from "@workspace/ui/components/toolbar"
 import { cn } from "@workspace/ui/lib/utils"
 
-import type { AIFeatureType } from "@/features/ai-assistant/repositories/mock-ai"
+import type { AIFeatureType } from "@workspace/core/modules/ai-assistant"
 import {
   FeatureButton,
   layer1Features,

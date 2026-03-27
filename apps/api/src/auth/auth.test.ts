@@ -68,10 +68,22 @@ function setup(): { app: TestApp } {
 
   const app = createApp({
     allowedOrigins: ["http://127.0.0.1:3000"],
+    apiBaseUrl: "http://127.0.0.1:4000",
     authDebugEnabled: true,
     getSession: (request) => auth.api.getSession({ headers: request.headers }),
     logger: createSilentLogger(),
     services: {
+      aiUseCases: {
+        async getSuggestions() {
+          return []
+        },
+        async getDocumentReview() {
+          return []
+        },
+        async getFlowReview() {
+          return []
+        },
+      },
       authHandler: auth.handler,
       writingUseCases: {
         async autosaveWriting(_userId: string, writingId: WritingId) {

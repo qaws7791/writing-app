@@ -1,7 +1,7 @@
 import { Extension } from "@tiptap/core"
 import { Plugin, PluginKey } from "@tiptap/pm/state"
 import { Decoration, DecorationSet } from "@tiptap/pm/view"
-import type { ReviewItem } from "@/features/ai-assistant/repositories/mock-ai"
+import type { ReviewItem } from "@workspace/core/modules/ai-assistant"
 
 export const aiReviewPluginKey = new PluginKey("aiReview")
 
