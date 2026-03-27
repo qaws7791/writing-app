@@ -14,14 +14,12 @@ import {
   type WritingVersionDetail,
 } from "@workspace/core/modules/writings"
 import {
-  toApplicationError,
   type CursorPage,
   type CursorPageParams,
   type WritingId,
-  type DomainError,
   type UserId,
 } from "@workspace/core"
-import type { Result } from "neverthrow"
+import { unwrapOrThrow } from "./http/unwrap-or-throw"
 
 export type WritingSyncApiService = {
   pushTransactions: (
@@ -44,16 +42,6 @@ export type WritingSyncApiService = {
     writingId: WritingId,
     version: number
   ) => Promise<WritingVersionDetail>
-}
-
-function unwrapOrThrow<TValue, TError extends DomainError>(
-  result: Result<TValue, TError>
-): TValue {
-  if (result.isErr()) {
-    throw toApplicationError(result.error)
-  }
-
-  return result.value
 }
 
 export function createWritingSyncApiService(input: {

@@ -9,7 +9,6 @@ import {
   makeListPromptsUseCase,
   makeSavePromptUseCase,
   makeUnsavePromptUseCase,
-  toApplicationError,
   type AutosaveWritingInput,
   type CursorPage,
   type CursorPageParams,
@@ -25,9 +24,8 @@ import {
   type PromptRepository,
   type PromptSummary,
   type UserId,
-  type DomainError,
 } from "@workspace/core"
-import type { Result } from "neverthrow"
+import { unwrapOrThrow } from "./http/unwrap-or-throw"
 
 export type WritingApiService = {
   autosaveWriting: (
@@ -69,16 +67,6 @@ export type PromptApiService = {
 
 export type HomeApiService = {
   getHome: (userId: UserId) => Promise<HomeSnapshot>
-}
-
-function unwrapOrThrow<TValue, TError extends DomainError>(
-  result: Result<TValue, TError>
-): TValue {
-  if (result.isErr()) {
-    throw toApplicationError(result.error)
-  }
-
-  return result.value
 }
 
 export function createWritingApiService(input: {
