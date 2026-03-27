@@ -181,9 +181,9 @@ foundation/
 
 ## API 계층
 
-- `packages/api-client`: 서버 OpenAPI 스펙 기반 타입 세이프 HTTP 클라이언트 패키지
+- `@workspace/api-client`: 서버 OpenAPI 스펙 기반 타입 세이프 HTTP 클라이언트 패키지 (`packages/api-client`)
 - `foundation/api/client.ts`: `@workspace/api-client` 래퍼. 쿠키 인증과 baseUrl 주입을 담당합니다.
-- 타입 갱신 스크립트: `bun run api:generate`
+- 타입 갱신 명령: `bun run api:generate` (monorepo 루트에서 실행, `@workspace/api-client` 스크립트 위임)
 
 ## 코드 패턴
 
