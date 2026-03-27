@@ -1,12 +1,12 @@
 import { createApiClient } from "@/foundation/api/client"
-import { createSyncTransport } from "@/features/writing/sync/sync-transport"
+import { createSyncTransport } from "@/features/writing/sync"
 import type {
   SyncPullResponse,
   SyncPushRequest,
   SyncPushResponse,
   VersionDetail,
   VersionSummary,
-} from "@/features/writing/sync/types"
+} from "@/features/writing/sync"
 
 export type VersionDataSource = {
   getVersion: (writingId: number, version: number) => Promise<VersionDetail>

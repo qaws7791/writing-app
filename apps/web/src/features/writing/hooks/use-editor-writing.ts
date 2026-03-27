@@ -24,7 +24,7 @@ import {
   writingContentToPlainText,
 } from "@/domain/writing/model/writing.service"
 import type { WritingContent, WritingDetail } from "@/domain/writing"
-import type { VersionDetail } from "@/features/writing/sync/types"
+import type { VersionDetail } from "@/features/writing/sync"
 
 function extractTitle(text: string | null) {
   return normalizeWritingTitle(text ?? "")

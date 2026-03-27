@@ -3,10 +3,7 @@ import { act, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { useVersionHistory } from "./use-version-history"
-import type {
-  VersionDetail,
-  VersionSummary,
-} from "@/features/writing/sync/types"
+import type { VersionDetail, VersionSummary } from "@/features/writing/sync"
 import type { WritingContent } from "@/domain/writing"
 import { renderHookWithQueryClient } from "@/test-support/query-client"
 

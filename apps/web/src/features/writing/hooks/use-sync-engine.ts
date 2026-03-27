@@ -5,11 +5,11 @@ import type { WritingContent } from "@/domain/writing"
 
 import {
   createSyncEngine,
+  createSyncTransport,
   type DocumentUpdate,
+  type Operation,
   type SyncEngine,
-} from "@/features/writing/sync/sync-engine"
-import { createSyncTransport } from "@/features/writing/sync/sync-transport"
-import type { Operation } from "@/features/writing/sync/types"
+} from "@/features/writing/sync"
 import { createApiClient } from "@/foundation/api/client"
 
 export type SyncStatus =

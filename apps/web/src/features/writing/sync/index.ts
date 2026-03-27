@@ -1,40 +1,34 @@
+// --- Engine (primary entry point) ---
 export {
   createSyncEngine,
   type SyncEngine,
   type SyncEngineConfig,
   type DocumentUpdate,
 } from "./sync-engine"
+
+// --- Transport (HTTP layer) ---
 export {
   createSyncTransport,
   SyncTransportError,
   type SyncTransport,
 } from "./sync-transport"
-export { getLocalDb } from "./local-db"
-export {
-  captureContentChange,
-  captureTitleChange,
-  captureFullSnapshot,
-} from "./change-capture"
-export { resolveConflict, applyServerState } from "./conflict-resolver"
-export {
-  createTabCoordinator,
-  type TabCoordinator,
-} from "./multi-tab-coordinator"
-export {
-  syncMachine,
-  type SyncMachineContext,
-  type SyncMachineEvent,
-} from "./sync-machine"
+
+// --- Service Worker lifecycle ---
 export {
   registerSyncServiceWorker,
   requestBackgroundSync,
   onServiceWorkerMessage,
 } from "./service-worker-bridge"
+
+// --- Local document cache (for hydration before engine starts) ---
+export { getDocument, putDocument } from "./local-db"
+
+// --- Shared domain types that cross the module boundary ---
 export type {
   Operation,
-  LocalDocument,
-  PendingTransaction,
-  LocalVersion,
-  SyncState,
-  TabMessage,
+  VersionSummary,
+  VersionDetail,
+  SyncPushRequest,
+  SyncPushResponse,
+  SyncPullResponse,
 } from "./types"

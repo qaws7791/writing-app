@@ -3,8 +3,11 @@
 import { useEffect, useState } from "react"
 import type { WritingContent } from "@/domain/writing"
 
-import { getDocument, putDocument } from "@/features/writing/sync/local-db"
-import { createSyncTransport } from "@/features/writing/sync/sync-transport"
+import {
+  getDocument,
+  putDocument,
+  createSyncTransport,
+} from "@/features/writing/sync"
 import { createApiClient } from "@/foundation/api/client"
 
 type HydrationState =

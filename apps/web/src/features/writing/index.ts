@@ -17,41 +17,21 @@ export {
   type SyncEngine,
   type SyncEngineConfig,
   type DocumentUpdate,
-} from "./sync/sync-engine"
-export {
   createSyncTransport,
   SyncTransportError,
   type SyncTransport,
-} from "./sync/sync-transport"
-export { getLocalDb } from "./sync/local-db"
-export {
-  captureContentChange,
-  captureTitleChange,
-  captureFullSnapshot,
-} from "./sync/change-capture"
-export { resolveConflict, applyServerState } from "./sync/conflict-resolver"
-export {
-  createTabCoordinator,
-  type TabCoordinator,
-} from "./sync/multi-tab-coordinator"
-export {
-  syncMachine,
-  type SyncMachineContext,
-  type SyncMachineEvent,
-} from "./sync/sync-machine"
-export {
   registerSyncServiceWorker,
   requestBackgroundSync,
   onServiceWorkerMessage,
-} from "./sync/service-worker-bridge"
-export type {
-  Operation,
-  LocalDocument,
-  PendingTransaction,
-  LocalVersion,
-  SyncState,
-  TabMessage,
-} from "./sync/types"
+  getDocument,
+  putDocument,
+  type Operation,
+  type VersionSummary,
+  type VersionDetail,
+  type SyncPushRequest,
+  type SyncPushResponse,
+  type SyncPullResponse,
+} from "./sync"
 
 // hooks
 export { writingQueryKeys, versionQueryKeys } from "./hooks/writing-query-keys"

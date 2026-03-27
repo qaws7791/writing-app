@@ -32,10 +32,7 @@ import { Skeleton } from "@workspace/ui/components/skeleton"
 import DOMPurify from "dompurify"
 
 import { writingContentToHtml } from "@/domain/writing/model/writing.service"
-import type {
-  VersionDetail,
-  VersionSummary,
-} from "@/features/writing/sync/types"
+import type { VersionDetail, VersionSummary } from "@/features/writing/sync"
 
 function sanitizeHtml(html: string): string {
   return DOMPurify.sanitize(html)

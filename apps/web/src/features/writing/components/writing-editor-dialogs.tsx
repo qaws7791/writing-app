@@ -14,7 +14,7 @@ import {
 } from "@workspace/ui/components/alert-dialog"
 
 import { useVersionHistory } from "@/features/writing/hooks/use-version-history"
-import type { VersionDetail } from "@/features/writing/sync/types"
+import type { VersionDetail } from "@/features/writing/sync"
 
 import { WritingExportModal } from "./writing-export-modal"
 import { WritingVersionHistoryModal } from "./writing-version-history-modal"
