@@ -253,16 +253,7 @@ export function createApp(input: CreateAppInput) {
   // --- OpenAPI spec ---
 
   app.get("/openapi.json", (c) => {
-    try {
-      return c.json(app.getOpenAPIDocument(openApiDocumentConfig))
-    } catch (error) {
-      return handleRequestError(
-        c,
-        error,
-        input.logger,
-        "openapi document generation failed"
-      )
-    }
+    return c.json(app.getOpenAPIDocument(openApiDocumentConfig))
   })
 
   // Register security scheme for cookie auth
@@ -284,6 +275,11 @@ export function createApp(input: CreateAppInput) {
       theme: "kepler",
     })
   )
+
+  // Validate OpenAPI document at startup to catch config errors early
+  if (process.env.NODE_ENV !== "production") {
+    app.getOpenAPIDocument(openApiDocumentConfig)
+  }
 
   // --- 404 handler ---
 
