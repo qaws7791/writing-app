@@ -3,29 +3,34 @@ import {
   makeCreateWritingUseCase,
   makeDeleteWritingUseCase,
   makeGetWritingUseCase,
-  makeGetHomeUseCase,
-  makeGetPromptUseCase,
   makeListWritingsUseCase,
-  makeListPromptsUseCase,
-  makeSavePromptUseCase,
-  makeUnsavePromptUseCase,
+  makePushTransactionsUseCase,
+  makePullDocumentUseCase,
+  makeListVersionsUseCase,
+  makeGetVersionUseCase,
   type AutosaveWritingInput,
-  type CursorPage,
-  type CursorPageParams,
-  type DailyRecommendationRepository,
   type WritingDetail,
-  type WritingId,
   type WritingRepository,
   type WritingSummary,
-  type HomeSnapshot,
-  type PromptDetail,
+  type WritingSyncRepository,
+  type WritingSyncWriter,
+  type WritingTransactionRepository,
+  type WritingVersionRepository,
+  type SyncPushInput,
+  type SyncPushResult,
+  type SyncPullResult,
+  type WritingVersionSummary,
+  type WritingVersionDetail,
+} from "@workspace/core/modules/writings"
+import {
+  type CursorPage,
+  type CursorPageParams,
   type PromptId,
-  type PromptListFilters,
   type PromptRepository,
-  type PromptSummary,
   type UserId,
+  type WritingId,
 } from "@workspace/core"
-import { unwrapOrThrow } from "./http/unwrap-or-throw"
+import { unwrapOrThrow } from "../http/unwrap-or-throw"
 
 export type WritingApiService = {
   autosaveWriting: (
@@ -52,21 +57,27 @@ export type WritingApiService = {
   ) => Promise<CursorPage<WritingSummary>>
 }
 
-export type PromptApiService = {
-  getPrompt: (userId: UserId, promptId: PromptId) => Promise<PromptDetail>
-  listPrompts: (
+export type WritingSyncApiService = {
+  pushTransactions: (
     userId: UserId,
-    filters: PromptListFilters
-  ) => Promise<readonly PromptSummary[]>
-  savePrompt: (
+    writingId: WritingId,
+    input: SyncPushInput
+  ) => Promise<SyncPushResult>
+  pullDocument: (
     userId: UserId,
-    promptId: PromptId
-  ) => Promise<{ kind: "saved"; savedAt: string }>
-  unsavePrompt: (userId: UserId, promptId: PromptId) => Promise<void>
-}
-
-export type HomeApiService = {
-  getHome: (userId: UserId) => Promise<HomeSnapshot>
+    writingId: WritingId,
+    sinceVersion?: number
+  ) => Promise<SyncPullResult>
+  listVersions: (
+    userId: UserId,
+    writingId: WritingId,
+    params?: CursorPageParams
+  ) => Promise<CursorPage<WritingVersionSummary>>
+  getVersion: (
+    userId: UserId,
+    writingId: WritingId,
+    version: number
+  ) => Promise<WritingVersionDetail>
 }
 
 export function createWritingApiService(input: {
@@ -119,53 +130,45 @@ export function createWritingApiService(input: {
   }
 }
 
-export function createPromptApiService(
-  promptRepository: PromptRepository
-): PromptApiService {
-  const getPrompt = makeGetPromptUseCase({
-    promptRepository,
-  })
-  const listPrompts = makeListPromptsUseCase({
-    promptRepository,
-  })
-  const savePrompt = makeSavePromptUseCase({
-    promptRepository,
-  })
-  const unsavePrompt = makeUnsavePromptUseCase({
-    promptRepository,
-  })
-
-  return {
-    async getPrompt(userId, promptId) {
-      return unwrapOrThrow(await getPrompt(userId, promptId))
-    },
-    async listPrompts(userId, filters) {
-      return unwrapOrThrow(await listPrompts(userId, filters))
-    },
-    async savePrompt(userId, promptId) {
-      const result = unwrapOrThrow(await savePrompt(userId, promptId))
-      return { kind: "saved" as const, savedAt: result.savedAt }
-    },
-    async unsavePrompt(userId, promptId) {
-      unwrapOrThrow(await unsavePrompt(userId, promptId))
-    },
-  }
-}
-
-export function createHomeApiService(input: {
-  dailyRecommendationRepository: DailyRecommendationRepository
-  writingRepository: WritingRepository
-  promptRepository: PromptRepository
-}): HomeApiService {
-  const getHome = makeGetHomeUseCase({
-    dailyRecommendationRepository: input.dailyRecommendationRepository,
+export function createWritingSyncApiService(input: {
+  writingRepository: WritingSyncRepository
+  syncWriter: WritingSyncWriter
+  transactionRepository: WritingTransactionRepository
+  versionRepository: WritingVersionRepository
+  getNow?: () => string
+}): WritingSyncApiService {
+  const pushTransactions = makePushTransactionsUseCase({
     writingRepository: input.writingRepository,
-    promptRepository: input.promptRepository,
+    syncWriter: input.syncWriter,
+    getNow: input.getNow ?? (() => new Date().toISOString()),
+  })
+
+  const pullDocument = makePullDocumentUseCase({
+    writingRepository: input.writingRepository,
+  })
+
+  const listVersions = makeListVersionsUseCase({
+    writingRepository: input.writingRepository,
+    versionRepository: input.versionRepository,
+  })
+
+  const getVersion = makeGetVersionUseCase({
+    writingRepository: input.writingRepository,
+    versionRepository: input.versionRepository,
   })
 
   return {
-    async getHome(userId) {
-      return unwrapOrThrow(await getHome(userId))
+    async pushTransactions(userId, writingId, pushInput) {
+      return unwrapOrThrow(await pushTransactions(userId, writingId, pushInput))
+    },
+    async pullDocument(userId, writingId, sinceVersion) {
+      return unwrapOrThrow(await pullDocument(userId, writingId, sinceVersion))
+    },
+    async listVersions(userId, writingId, params) {
+      return unwrapOrThrow(await listVersions(userId, writingId, params))
+    },
+    async getVersion(userId, writingId, version) {
+      return unwrapOrThrow(await getVersion(userId, writingId, version))
     },
   }
 }

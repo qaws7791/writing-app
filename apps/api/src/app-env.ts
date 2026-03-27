@@ -2,11 +2,13 @@ import type { toUserId } from "@workspace/core"
 
 import type {
   WritingApiService,
+  WritingSyncApiService,
+} from "./services/writing-services"
+import type {
   HomeApiService,
   PromptApiService,
-} from "./application-services"
-import type { AIApiService } from "./ai-services"
-import type { WritingSyncApiService } from "./writing-services"
+} from "./services/prompt-services"
+import type { AIApiService } from "./services/ai-services"
 import type { DevEmailInbox } from "./auth/auth-email"
 import type { ApiLogger } from "./observability/logger"
 

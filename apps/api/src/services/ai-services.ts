@@ -11,7 +11,7 @@ import type {
   UserId,
 } from "@workspace/core"
 import type { AIRequestRepository } from "@workspace/database"
-import type { ApiLogger } from "./observability/logger"
+import type { ApiLogger } from "../observability/logger"
 
 const AI_MODEL = "gemini-3.1-flash-lite-preview" as const
 

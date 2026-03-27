@@ -74,8 +74,12 @@ vi.mock("@workspace/email", () => ({
   createResendEmailSender: vi.fn(),
 }))
 
-vi.mock("../application-services.js", () => ({
+vi.mock("../services/writing-services.js", () => ({
   createWritingApiService: createWritingApiServiceMock,
+  createWritingSyncApiService: createWritingSyncApiServiceMock,
+}))
+
+vi.mock("../services/prompt-services.js", () => ({
   createHomeApiService: createHomeApiServiceMock,
   createPromptApiService: createPromptApiServiceMock,
 }))
@@ -84,12 +88,8 @@ vi.mock("../app.js", () => ({
   createApp: createAppMock,
 }))
 
-vi.mock("../ai-services.js", () => ({
+vi.mock("../services/ai-services.js", () => ({
   createAIApiService: createAIApiServiceMock,
-}))
-
-vi.mock("../writing-services.js", () => ({
-  createWritingSyncApiService: createWritingSyncApiServiceMock,
 }))
 
 vi.mock("../auth/auth.js", () => ({

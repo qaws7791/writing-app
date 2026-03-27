@@ -18,13 +18,15 @@ import { createResendEmailSender } from "@workspace/email"
 
 import type { AppServices } from "../app-env"
 import { createApp } from "../app"
-import { createAIApiService } from "../ai-services"
+import { createAIApiService } from "../services/ai-services"
 import {
   createWritingApiService,
+  createWritingSyncApiService,
+} from "../services/writing-services"
+import {
   createHomeApiService,
   createPromptApiService,
-} from "../application-services"
-import { createWritingSyncApiService } from "../writing-services"
+} from "../services/prompt-services"
 import { createAuth } from "../auth/auth"
 import { createDevEmailPort } from "../auth/auth-email"
 import { apiEnv } from "../config/env"
