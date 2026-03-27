@@ -19,79 +19,16 @@ const textNodeSchema = z
   })
   .strict()
 
-const headingAttrsSchema = z
-  .object({ level: z.number().int().min(1).max(6) })
+const paragraphNodeSchema = z
+  .object({
+    content: z.array(textNodeSchema).optional(),
+    type: z.literal("paragraph"),
+  })
   .strict()
-
-const orderedListAttrsSchema = z
-  .object({ start: z.number().int().min(1) })
-  .strict()
-
-const writingNodeSchema: z.ZodType<WritingNode> = z.lazy(() =>
-  z.union([
-    textNodeSchema,
-    z
-      .object({
-        content: z.array(textNodeSchema).optional(),
-        type: z.literal("paragraph"),
-      })
-      .strict(),
-    z
-      .object({
-        attrs: headingAttrsSchema,
-        content: z.array(textNodeSchema).optional(),
-        type: z.literal("heading"),
-      })
-      .strict(),
-    z
-      .object({
-        content: z.array(writingNodeSchema).optional(),
-        type: z.literal("blockquote"),
-      })
-      .strict(),
-    z
-      .object({
-        content: z
-          .array(
-            z
-              .object({
-                content: z.array(writingNodeSchema).optional(),
-                type: z.literal("listItem"),
-              })
-              .strict()
-          )
-          .optional(),
-        type: z.literal("bulletList"),
-      })
-      .strict(),
-    z
-      .object({
-        attrs: orderedListAttrsSchema.optional(),
-        content: z
-          .array(
-            z
-              .object({
-                content: z.array(writingNodeSchema).optional(),
-                type: z.literal("listItem"),
-              })
-              .strict()
-          )
-          .optional(),
-        type: z.literal("orderedList"),
-      })
-      .strict(),
-    z
-      .object({
-        content: z.array(writingNodeSchema).optional(),
-        type: z.literal("listItem"),
-      })
-      .strict(),
-  ])
-)
 
 export const writingContentSchema: z.ZodType<WritingContent> = z
   .object({
-    content: z.array(writingNodeSchema).optional(),
+    content: z.array(paragraphNodeSchema).optional(),
     type: z.literal("doc"),
   })
   .strict()
@@ -157,23 +94,7 @@ function nodeToHtml(node: WritingNode): string {
   }
 
   const children = (node.content ?? []).map(nodeToHtml).join("")
-
-  switch (node.type) {
-    case "paragraph":
-      return `<p>${children || "<br />"}</p>`
-    case "heading":
-      return `<h2>${children}</h2>`
-    case "blockquote":
-      return `<blockquote>${children}</blockquote>`
-    case "listItem":
-      return `<li>${children}</li>`
-    case "bulletList":
-      return `<ul>${children}</ul>`
-    case "orderedList":
-      return `<ol>${children}</ol>`
-    default:
-      return children
-  }
+  return `<p>${children || "<br />"}</p>`
 }
 
 function collectText(

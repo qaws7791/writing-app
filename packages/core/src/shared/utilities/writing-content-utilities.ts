@@ -14,14 +14,9 @@ export function createEmptyWritingContent(): WritingContent {
   }
 }
 
-/**
- * Extracts all text from WritingFull content.
- * Preserves newlines between paragraphs.
- */
 function collectTextParts(
   node: WritingContent | TiptapNode,
-  buffer: string[],
-  insideBlock: boolean
+  buffer: string[]
 ): void {
   if ("text" in node && typeof node.text === "string") {
     buffer.push(node.text)
@@ -32,10 +27,10 @@ function collectTextParts(
   }
 
   node.content.forEach((child, index) => {
-    collectTextParts(child, buffer, child.type === "paragraph")
+    collectTextParts(child, buffer)
 
     const isLastChild = index === node.content!.length - 1
-    if (!isLastChild && (child.type === "paragraph" || insideBlock)) {
+    if (!isLastChild && child.type === "paragraph") {
       buffer.push("\n")
     }
   })
@@ -56,7 +51,7 @@ export function extractWritingTextMetrics(content: WritingContent): {
   wordCount: number
 } {
   const buffer: string[] = []
-  collectTextParts(content, buffer, false)
+  collectTextParts(content, buffer)
 
   const plainText = buffer.join("")
   const characterCount = plainText.length

@@ -4,17 +4,9 @@ export type WritingMark = {
   type: WritingMarkType
 }
 
-export type WritingNodeType =
-  | "blockquote"
-  | "bulletList"
-  | "heading"
-  | "listItem"
-  | "orderedList"
-  | "paragraph"
-  | "text"
+export type WritingNodeType = "paragraph" | "text"
 
 export type WritingNode = {
-  attrs?: { level?: number; start?: number }
   content?: WritingNode[]
   marks?: WritingMark[]
   text?: string
