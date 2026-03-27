@@ -171,8 +171,8 @@ export function createApp(input: CreateAppInput) {
       allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
       credentials: true,
       origin: (origin) => {
-        if (!origin) return "*"
-        return allowedOrigins.has(origin) ? origin : ""
+        if (!origin) return null
+        return allowedOrigins.has(origin) ? origin : null
       },
     })
   )
