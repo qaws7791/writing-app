@@ -25,11 +25,11 @@ import { useAISuggestion } from "@/features/writing/hooks/use-ai-suggestion"
 import { useAIReview } from "@/features/writing/hooks/use-ai-review"
 import { FloatingToolbar } from "@/features/writing/components/floating-toolbar"
 
-import styles from "./writing-body-editor.module.css"
+import styles from "./writing-text-editor.module.css"
 
 // --- 타입 ---
 
-type WritingBodyEditorProps = {
+type WritingTextEditorProps = {
   initialContent?: WritingContent
   onContentChange?: (content: WritingContent) => void
   placeholder?: string
@@ -91,11 +91,11 @@ function createEditorSnapshot(editor: Editor): EditorSnapshot {
 
 // --- 메인 컴포넌트 ---
 
-export default function WritingBodyEditor({
+export default function WritingTextEditor({
   initialContent,
   onContentChange,
   placeholder = "생각이 흐르는 대로 자유롭게 적어보세요...",
-}: WritingBodyEditorProps) {
+}: WritingTextEditorProps) {
   const resolvedPlaceholder =
     placeholder ?? "생각이 흐르는 대로 자유롭게 적어보세요..."
   const editorClassName = styles.editor ?? ""

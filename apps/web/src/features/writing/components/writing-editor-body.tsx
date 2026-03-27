@@ -1,6 +1,6 @@
 import type { FormEvent, RefObject } from "react"
 
-import WritingBodyEditor from "@/features/writing/components/writing-body-editor"
+import WritingTextEditor from "@/features/writing/components/writing-text-editor"
 import type { EditorWritingSnapshot } from "@/domain/writing/model/writing-sync.service"
 import type { WritingContent } from "@/domain/writing"
 import type { PromptDetail } from "@/domain/prompt"
@@ -57,7 +57,7 @@ export function WritingEditorBody({
             onInput={onTitleInput}
           />
 
-          <WritingBodyEditor
+          <WritingTextEditor
             initialContent={editorWriting.content}
             onContentChange={onContentChange}
           />
