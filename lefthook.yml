@@ -22,6 +22,27 @@ pre-commit:
       run: bun eslint --fix {staged_files}
       stage_fixed: true
 
+    # lint apps/api
+    api-lint:
+      root: "apps/api/"
+      glob: "**/*.{ts,js}"
+      run: bun eslint --fix {staged_files}
+      stage_fixed: true
+
+    # lint packages/core
+    core-lint:
+      root: "packages/core/"
+      glob: "**/*.{ts}"
+      run: bun eslint --fix {staged_files}
+      stage_fixed: true
+
+    # lint packages/database
+    database-lint:
+      root: "packages/database/"
+      glob: "**/*.{ts}"
+      run: bun eslint --fix {staged_files}
+      stage_fixed: true
+
 pre-push:
   commands:
     turbo-lint:
