@@ -185,7 +185,7 @@ export function createApp(input: CreateAppInput) {
 
   app.use("*", async (c, next) => {
     c.set("services", input.services)
-    await next()
+    return next()
   })
 
   // --- Request timeout middleware ---
