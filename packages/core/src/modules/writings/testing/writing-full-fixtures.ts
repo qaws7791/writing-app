@@ -2,7 +2,7 @@ import type { WritingContent } from "../../../shared/schema/index"
 import { toWritingId, toPromptId } from "../../../shared/brand/index"
 import type { WritingFull } from "../writing-types"
 
-const defaultWriting: WritingFull = {
+const defaultWritingFull: WritingFull = {
   characterCount: 0,
   content: { content: [{ type: "paragraph" }], type: "doc" },
   createdAt: "2026-03-21T00:00:00Z",
@@ -16,7 +16,7 @@ const defaultWriting: WritingFull = {
   wordCount: 0,
 }
 
-type WritingOverrides = {
+type WritingFullOverrides = {
   readonly characterCount?: number
   readonly content?: WritingContent
   readonly createdAt?: string
@@ -30,11 +30,11 @@ type WritingOverrides = {
   readonly wordCount?: number
 }
 
-export function createTestWriting(
-  overrides: WritingOverrides = {}
+export function createTestWritingFull(
+  overrides: WritingFullOverrides = {}
 ): WritingFull {
   return {
-    ...defaultWriting,
+    ...defaultWritingFull,
     ...(overrides.id !== undefined && { id: toWritingId(overrides.id) }),
     ...(overrides.title !== undefined && { title: overrides.title }),
     ...(overrides.content !== undefined && { content: overrides.content }),

@@ -19,6 +19,13 @@ export type {
   PushWritePlanTransaction,
   PushWritePlanWriting,
   PushWritePlanSnapshot,
+  WritingFull,
+  WritingCrudAccessResult,
+  WritingDeleteResult,
+  WritingDetail,
+  WritingMutationResult,
+  WritingPersistInput,
+  WritingSummary,
 } from "./writing-types"
 
 // Schemas
@@ -32,6 +39,12 @@ export {
   versionListResponseSchema,
   writingIdParamSchema,
   versionParamSchema,
+  autosaveWritingBodySchema,
+  autosaveWritingResponseSchema,
+  createWritingBodySchema,
+  writingDetailSchema,
+  writingListResponseSchema,
+  writingSummarySchema,
 } from "./writing-schemas"
 
 // Errors
@@ -41,16 +54,19 @@ export type {
   WritingForbiddenError,
   WritingValidationError,
   WritingConflictError,
+  PromptReferenceNotFoundError,
 } from "./writing-error"
 export {
   writingNotFound,
   writingForbidden,
   writingValidationFailed,
   writingConflict,
+  promptNotFound,
 } from "./writing-error"
 
 // Ports
 export type {
+  WritingRepository,
   WritingSyncRepository,
   WritingSyncWriter,
   WritingTransactionRepository,
@@ -62,6 +78,10 @@ export {
   applyOperationsToContent,
   computeWritingMetrics,
   advanceWritingVersion,
+  buildWriting,
+  createPreview,
+  updateWritingContent,
+  updateWritingTitle,
 } from "./writing-operations"
 
 // Use Cases
@@ -70,46 +90,6 @@ export type {
   PullDocumentDeps,
   ListVersionsDeps,
   GetVersionDeps,
-} from "./use-cases/index"
-export {
-  makePushTransactionsUseCase,
-  makePullDocumentUseCase,
-  makeListVersionsUseCase,
-  makeGetVersionUseCase,
-} from "./use-cases/index"
-
-// CRUD
-export type {
-  WritingFull,
-  WritingCrudAccessResult,
-  WritingDeleteResult,
-  WritingDetail,
-  WritingMutationResult,
-  WritingPersistInput,
-  WritingSummary,
-} from "./writing-types"
-
-export type { WritingRepository } from "./writing-crud-port"
-
-export type { PromptReferenceNotFoundError } from "./writing-crud-error"
-
-export {
-  buildWriting,
-  createPreview,
-  updateWritingContent,
-  updateWritingTitle,
-} from "./writing-crud-operations"
-
-export {
-  autosaveWritingBodySchema,
-  autosaveWritingResponseSchema,
-  createWritingBodySchema,
-  writingDetailSchema,
-  writingListResponseSchema,
-  writingSummarySchema,
-} from "./writing-crud-schemas"
-
-export type {
   AutosaveWritingDeps,
   AutosaveWritingInput,
   CreateWritingDeps,
@@ -117,11 +97,15 @@ export type {
   DeleteWritingDeps,
   GetWritingDeps,
   ListWritingsDeps,
-} from "./crud-use-cases/index"
+} from "./use-cases/index"
 export {
+  makePushTransactionsUseCase,
+  makePullDocumentUseCase,
+  makeListVersionsUseCase,
+  makeGetVersionUseCase,
   makeAutosaveWritingUseCase,
   makeCreateWritingUseCase,
   makeDeleteWritingUseCase,
   makeGetWritingUseCase,
   makeListWritingsUseCase,
-} from "./crud-use-cases/index"
+} from "./use-cases/index"

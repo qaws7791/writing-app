@@ -38,8 +38,8 @@ describe("writing repository", () => {
     const content = {
       content: [
         {
-          content: [{ text: longText, type: "text" }],
-          type: "paragraph",
+          content: [{ text: longText, type: "text" as const }],
+          type: "paragraph" as const,
         },
       ],
       type: "doc" as const,

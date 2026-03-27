@@ -8,7 +8,7 @@ import {
   updateWritingContent,
   updateWritingTitle,
 } from "./writing-operations"
-import { createTestWriting } from "./crud-testing/writing-fixture"
+import { createTestWritingFull } from "./testing/writing-full-fixtures"
 
 const now = "2026-03-22T00:00:00.000Z"
 
@@ -55,7 +55,7 @@ describe("buildWriting", () => {
 
 describe("updateWritingContent", () => {
   it("본문을 업데이트하고 메트릭스를 다시 계산한다", () => {
-    const writing = createTestWriting({ plainText: "이전" })
+    const writing = createTestWritingFull({ plainText: "이전" })
     const newContent: WritingContent = {
       content: [
         {
@@ -76,7 +76,7 @@ describe("updateWritingContent", () => {
 
 describe("updateWritingTitle", () => {
   it("제목을 업데이트한다", () => {
-    const writing = createTestWriting({ title: "이전 제목" })
+    const writing = createTestWritingFull({ title: "이전 제목" })
 
     const updated = updateWritingTitle(writing, "새 제목", now)
 
@@ -85,7 +85,7 @@ describe("updateWritingTitle", () => {
   })
 
   it("다른 필드는 변경하지 않는다", () => {
-    const writing = createTestWriting({ plainText: "본문", title: "이전" })
+    const writing = createTestWritingFull({ plainText: "본문", title: "이전" })
 
     const updated = updateWritingTitle(writing, "새 제목", now)
 

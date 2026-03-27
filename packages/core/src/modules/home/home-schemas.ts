@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { writingSummarySchema } from "../writings/writing-crud-schemas"
+import { writingSummarySchema } from "../writings/writing-schemas"
 import { promptSummarySchema } from "../prompts/prompt-schemas"
 
 export const homeSnapshotSchema = z.object({

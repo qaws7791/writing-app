@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { toWritingId, toPromptId, toUserId } from "../../../shared/brand/index"
-import type { WritingRepository } from "../../writings/writing-crud-port"
+import type { WritingRepository } from "../../writings/writing-port"
 import type { PromptRepository } from "../../prompts/prompt-port"
 import { makeGetHomeUseCase } from "./get-home-use-case"
 

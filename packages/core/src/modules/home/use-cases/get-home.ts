@@ -3,7 +3,7 @@ import { ResultAsync } from "neverthrow"
 import type { UserId } from "../../../shared/brand/index"
 import type { DailyRecommendationRepository } from "../../daily-recommendation/daily-recommendation-port"
 import { makeEnsureTodayRecommendationsUseCase } from "../../daily-recommendation/use-cases/ensure-today-recommendations"
-import type { WritingRepository } from "../../writings/writing-crud-port"
+import type { WritingRepository } from "../../writings/writing-port"
 import type { PromptRepository } from "../../prompts/prompt-port"
 import type { HomeSnapshot } from "../home-types"
 

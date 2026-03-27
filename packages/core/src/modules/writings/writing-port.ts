@@ -1,4 +1,4 @@
-import type { WritingId, UserId } from "../../shared/brand/index"
+import type { WritingId, UserId, PromptId } from "../../shared/brand/index"
 import type {
   CursorPage,
   CursorPageParams,
@@ -12,10 +12,32 @@ import type {
   WritingSyncAccessResult,
   WritingVersionDetail,
   WritingVersionSummary,
+  WritingCrudAccessResult,
+  WritingDeleteResult,
+  WritingDetail,
+  WritingMutationResult,
+  WritingPersistInput,
+  WritingSummary,
 } from "./writing-types"
 
-// Re-export CRUD repository
-export type { WritingRepository } from "./writing-crud-port"
+export interface WritingRepository {
+  create(userId: UserId, input: WritingPersistInput): Promise<WritingDetail>
+  delete(userId: UserId, writingId: WritingId): Promise<WritingDeleteResult>
+  getById(
+    userId: UserId,
+    writingId: WritingId
+  ): Promise<WritingCrudAccessResult>
+  list(
+    userId: UserId,
+    params?: CursorPageParams
+  ): Promise<CursorPage<WritingSummary>>
+  replace(
+    userId: UserId,
+    writingId: WritingId,
+    input: WritingPersistInput
+  ): Promise<WritingMutationResult>
+  resume(userId: UserId): Promise<WritingSummary | null>
+}
 
 export interface WritingSyncRepository {
   getById(

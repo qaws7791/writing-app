@@ -11,7 +11,7 @@ import type {
   WritingPersistInput,
   WritingSummary,
 } from "../writing-types"
-import type { WritingRepository } from "../writing-crud-port"
+import type { WritingRepository } from "../writing-port"
 
 export function createFakeWritingRepository(): WritingRepository & {
   clear(): void
