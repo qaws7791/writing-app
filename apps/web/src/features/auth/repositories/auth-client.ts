@@ -6,7 +6,7 @@ import { env } from "@/foundation/config/env"
 import { resolveBrowserApiBaseUrl } from "@/foundation/lib/api-base-url"
 
 function resolveAuthBaseUrl(): string {
-  const apiBaseUrl = env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:3010"
+  const apiBaseUrl = env.NEXT_PUBLIC_API_BASE_URL
 
   return `${resolveBrowserApiBaseUrl(apiBaseUrl)}/api/auth`
 }

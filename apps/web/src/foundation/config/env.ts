@@ -26,7 +26,9 @@ const webRuntimeEnv = z
 
 export const env = createEnv({
   client: {
-    NEXT_PUBLIC_API_BASE_URL: z.string().url().optional(),
+    NEXT_PUBLIC_API_BASE_URL: z.url({
+      error: "Invalid URL format for NEXT_PUBLIC_API_BASE_URL",
+    }),
     NEXT_PUBLIC_PHASE_ONE_MODE: z.enum(["api", "local"]),
   },
   emptyStringAsUndefined: true,
