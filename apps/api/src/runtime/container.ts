@@ -1,7 +1,6 @@
 import {
   createContainer,
   asFunction,
-  asValue,
   InjectionMode,
   type AwilixContainer,
 } from "awilix"
@@ -15,11 +14,7 @@ import {
   createWritingTransactionRepository,
   createWritingVersionRepository,
   openDb,
-  readSqliteVersion,
-  authSchema,
 } from "@workspace/database"
-import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { createResendEmailSender } from "@workspace/email"
 
 import { createAIApiService, type AIApiService } from "../services/ai-services"
 import {
@@ -35,14 +30,12 @@ import {
   type PromptApiService,
 } from "../services/prompt-services"
 import { createAuth } from "../auth/auth"
-import {
-  createDevEmailInbox,
-  createDevEmailPort,
-  type EmailSender,
-} from "../auth/auth-email"
-import { apiEnv } from "../config/env"
-import { createApiLogger, type ApiLogger } from "../observability/logger"
+import { createDevEmailInbox, type EmailSender } from "../auth/auth-email"
+import type { ApiLogger } from "../observability/logger"
 import type { ApiEnvironment } from "./bootstrap"
+import { registerInfrastructure } from "./modules/infrastructure"
+import { registerAuth } from "./modules/auth"
+import { registerRepositories } from "./modules/repositories"
 
 export type ApiCradle = {
   // --- Configuration ---
@@ -89,107 +82,11 @@ export function createApiContainer(
     strict: true,
   })
 
+  registerInfrastructure(container, environment)
+  registerAuth(container)
+  registerRepositories(container)
+
   container.register({
-    // --- Configuration ---
-
-    environment: asValue(environment),
-    isProduction: asValue(process.env.NODE_ENV === "production"),
-
-    // --- Infrastructure ---
-
-    logger: asFunction(({ environment }: ApiCradle) =>
-      createApiLogger({ level: environment.logLevel })
-    ).singleton(),
-
-    database: asFunction(({ environment }: ApiCradle) =>
-      openDb(environment.databasePath)
-    )
-      .singleton()
-      .disposer((database) => database.close()),
-
-    sqliteVersion: asFunction(({ database }: ApiCradle) =>
-      readSqliteVersion(database.sqlite)
-    ).singleton(),
-
-    // --- Auth & Email ---
-
-    devEmailInbox: asFunction(({ isProduction }: ApiCradle) =>
-      isProduction ? null : createDevEmailInbox()
-    )
-      .singleton()
-      .disposer((inbox) => inbox?.clear()),
-
-    emailSender: asFunction(
-      ({ isProduction, devEmailInbox, logger }: ApiCradle) => {
-        if (isProduction) {
-          return createResendEmailSender({
-            apiKey: apiEnv.RESEND_API_KEY!,
-            fromAddress: apiEnv.RESEND_FROM_ADDRESS!,
-          })
-        }
-
-        return createDevEmailPort({
-          exposeSensitiveData: process.env.NODE_ENV === "development",
-          inbox: devEmailInbox!,
-          logger: logger.child({ scope: "auth-email" }),
-        })
-      }
-    ).singleton(),
-
-    auth: asFunction(({ database, environment, emailSender }: ApiCradle) => {
-      const authDatabaseAdapter = drizzleAdapter(database.db, {
-        provider: "sqlite",
-        schema: authSchema,
-      })
-      const authUserPort = {
-        findUserByEmail: (email: string) =>
-          database.db.query.user.findFirst({
-            where: (fields, { eq }) => eq(fields.email, email),
-          }),
-      }
-
-      return createAuth(
-        authDatabaseAdapter,
-        authUserPort,
-        environment,
-        emailSender
-      )
-    }).singleton(),
-
-    // --- Repositories ---
-
-    aiRequestRepository: asFunction(({ database }: ApiCradle) =>
-      createAIRequestRepository(database.db)
-    ).singleton(),
-
-    dailyRecommendationRepository: asFunction(({ database }: ApiCradle) =>
-      createDailyRecommendationRepository(database.db)
-    ).singleton(),
-
-    promptRepository: asFunction(({ database }: ApiCradle) =>
-      createPromptRepository(database.db)
-    ).singleton(),
-
-    writingRepository: asFunction(({ database }: ApiCradle) =>
-      createWritingRepository(database.db)
-    ).singleton(),
-
-    writingSyncRepository: asFunction(({ database }: ApiCradle) =>
-      createWritingSyncRepository(database.db)
-    ).singleton(),
-
-    writingSyncWriter: asFunction(({ database }: ApiCradle) =>
-      createWritingSyncWriter(database.db)
-    ).singleton(),
-
-    writingTransactionRepository: asFunction(({ database }: ApiCradle) =>
-      createWritingTransactionRepository(database.db)
-    ).singleton(),
-
-    writingVersionRepository: asFunction(({ database }: ApiCradle) =>
-      createWritingVersionRepository(database.db)
-    ).singleton(),
-
     // --- API Services ---
 
     aiUseCases: asFunction(({ aiRequestRepository, logger }: ApiCradle) =>
