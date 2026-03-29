@@ -9,6 +9,7 @@ import { toWritingId } from "@workspace/core"
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description: "특정 버전의 문서 스냅샷을 조회합니다.",
@@ -41,13 +42,12 @@ const app = createRouter()
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { writingId, version } = c.req.valid("param")
-  const { writingSyncUseCases } = c.var.services
-  const result = await writingSyncUseCases.getVersion(
+  const result = await c.var.getVersionUseCase(
     userId,
     toWritingId(writingId),
     version
   )
-  return c.json(result, 200)
+  return c.json(unwrapOrThrow(result), 200)
 })
 
 export default app

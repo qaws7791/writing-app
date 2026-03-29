@@ -46,9 +46,8 @@ app.use("*", createAiRateLimiter({ limit: 20, windowMs: 60 * 1000 }))
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { text, type } = c.req.valid("json")
-  const { aiUseCases } = c.var.services
 
-  const suggestions = await aiUseCases.getSuggestions(userId, text, type)
+  const suggestions = await c.var.aiUseCases.getSuggestions(userId, text, type)
   return c.json({ suggestions }, 200)
 })
 

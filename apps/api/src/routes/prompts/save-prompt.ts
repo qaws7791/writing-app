@@ -8,6 +8,7 @@ import {
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description:
@@ -40,9 +41,9 @@ const app = createRouter()
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { promptId } = c.req.valid("param")
-  const { promptUseCases } = c.var.services
-  const result = await promptUseCases.savePrompt(userId, toPromptId(promptId))
-  return c.json(result, 200)
+  const result = await c.var.savePromptUseCase(userId, toPromptId(promptId))
+  const { savedAt } = unwrapOrThrow(result)
+  return c.json({ kind: "saved" as const, savedAt }, 200)
 })
 
 export default app

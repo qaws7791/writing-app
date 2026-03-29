@@ -30,7 +30,7 @@ const route = createRoute({
 const app = createRouter()
 
 app.openapi(route, (c) => {
-  const { sqliteVersion } = c.var.services
+  const { sqliteVersion } = c.var
   return c.json({ sqliteVersion, status: "ok" as const }, 200)
 })
 

@@ -5,7 +5,7 @@ import type { UserId } from "@workspace/core"
 import type { ApiLogger } from "./observability/logger"
 import type {
   AppEnv,
-  AppServices,
+  AppUseCases,
   AppVariables,
   AuthenticatedSession,
   AuthenticatedUser,
@@ -45,12 +45,12 @@ describe("AppEnv 타입 계약", () => {
       expectTypeOf<AppVariables["requestLogger"]>().toEqualTypeOf<ApiLogger>()
     })
 
-    test("services: AppServices", () => {
-      expectTypeOf<AppVariables["services"]>().toEqualTypeOf<AppServices>()
-    })
-
     test("userId: UserId | null", () => {
       expectTypeOf<AppVariables["userId"]>().toEqualTypeOf<UserId | null>()
+    })
+
+    test("AppVariables는 AppUseCases를 포함한다", () => {
+      expectTypeOf<AppVariables>().toMatchTypeOf<AppUseCases>()
     })
   })
 })

@@ -8,6 +8,7 @@ import {
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description: "새 글을 생성합니다. 글감을 기반으로 생성할 수 있습니다.",
@@ -44,8 +45,7 @@ const app = createRouter()
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const body = c.req.valid("json")
-  const { writingUseCases } = c.var.services
-  const writing = await writingUseCases.createWriting(userId, {
+  const result = await c.var.createWritingUseCase(userId, {
     content: body.content,
     sourcePromptId:
       body.sourcePromptId === undefined
@@ -53,6 +53,7 @@ app.openapi(route, async (c) => {
         : toPromptId(body.sourcePromptId),
     title: body.title,
   })
+  const writing = unwrapOrThrow(result)
   return c.json(writing, 201)
 })
 

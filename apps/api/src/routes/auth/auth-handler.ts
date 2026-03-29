@@ -177,8 +177,7 @@ app.openAPIRegistry.registerPath({
 })
 
 app.on(["GET", "POST"], "/api/auth/*", (c) => {
-  const { authHandler } = c.var.services
-  return authHandler(c.req.raw)
+  return c.var.authHandler(c.req.raw)
 })
 
 export default app

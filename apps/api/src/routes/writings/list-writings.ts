@@ -7,6 +7,7 @@ import {
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description: "현재 사용자의 글 목록을 최근 수정 순으로 조회합니다.",
@@ -36,8 +37,8 @@ const app = createRouter()
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const query = c.req.valid("query")
-  const { writingUseCases } = c.var.services
-  const page = await writingUseCases.listWritings(userId, query)
+  const result = await c.var.listWritingsUseCase(userId, query)
+  const page = unwrapOrThrow(result)
   return c.json(page, 200)
 })
 

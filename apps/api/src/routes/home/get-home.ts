@@ -4,6 +4,7 @@ import { homeSnapshotSchema } from "@workspace/core"
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description:
@@ -30,8 +31,8 @@ const app = createRouter()
 
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
-  const { homeUseCases } = c.var.services
-  const home = await homeUseCases.getHome(userId)
+  const result = await c.var.getHomeUseCase(userId)
+  const home = unwrapOrThrow(result)
   return c.json(home, 200)
 })
 

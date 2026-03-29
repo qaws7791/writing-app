@@ -8,6 +8,7 @@ import { cursorPageQuerySchema, toWritingId } from "@workspace/core"
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description: "문서의 버전 기록 목록을 조회합니다.",
@@ -41,12 +42,12 @@ app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { writingId } = c.req.valid("param")
   const query = c.req.valid("query")
-  const { writingSyncUseCases } = c.var.services
-  const page = await writingSyncUseCases.listVersions(
+  const result = await c.var.listVersionsUseCase(
     userId,
     toWritingId(writingId),
     query
   )
+  const page = unwrapOrThrow(result)
   return c.json(page, 200)
 })
 

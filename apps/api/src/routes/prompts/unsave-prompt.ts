@@ -4,6 +4,7 @@ import { promptIdParamSchema, toPromptId } from "@workspace/core"
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description: "특정 글감을 저장 목록에서 제거합니다.",
@@ -30,8 +31,8 @@ const app = createRouter()
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { promptId } = c.req.valid("param")
-  const { promptUseCases } = c.var.services
-  await promptUseCases.unsavePrompt(userId, toPromptId(promptId))
+  const result = await c.var.unsavePromptUseCase(userId, toPromptId(promptId))
+  unwrapOrThrow(result)
   return c.body(null, 204)
 })
 

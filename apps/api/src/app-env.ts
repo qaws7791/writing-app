@@ -1,16 +1,24 @@
-import type { toUserId } from "@workspace/core"
+import type { UserId } from "@workspace/core"
 
-import type {
-  WritingApiService,
-  WritingSyncApiService,
-} from "./services/writing-services"
-import type {
-  HomeApiService,
-  PromptApiService,
-} from "./services/prompt-services"
 import type { AIApiService } from "./services/ai-services"
 import type { DevEmailInbox } from "./auth/auth-email"
 import type { ApiLogger } from "./observability/logger"
+import type {
+  AutosaveWritingUseCase,
+  CreateWritingUseCase,
+  DeleteWritingUseCase,
+  GetHomeUseCase,
+  GetPromptUseCase,
+  GetVersionUseCase,
+  GetWritingUseCase,
+  ListPromptsUseCase,
+  ListVersionsUseCase,
+  ListWritingsUseCase,
+  PullDocumentUseCase,
+  PushTransactionsUseCase,
+  SavePromptUseCase,
+  UnsavePromptUseCase,
+} from "./runtime/modules/use-cases"
 
 export type AuthenticatedSession = {
   createdAt: Date | string
@@ -38,24 +46,33 @@ export type AuthSession = {
 
 export type GetSession = (request: Request) => Promise<AuthSession | null>
 
-export type AppServices = {
+export type AppUseCases = {
   aiUseCases: AIApiService
   authHandler: (request: Request) => Promise<Response>
-  writingUseCases: WritingApiService
-  homeUseCases: HomeApiService
-  promptUseCases: PromptApiService
-  writingSyncUseCases: WritingSyncApiService
+  autosaveWritingUseCase: AutosaveWritingUseCase
+  createWritingUseCase: CreateWritingUseCase
+  deleteWritingUseCase: DeleteWritingUseCase
+  getHomeUseCase: GetHomeUseCase
+  getPromptUseCase: GetPromptUseCase
+  getVersionUseCase: GetVersionUseCase
+  getWritingUseCase: GetWritingUseCase
+  listPromptsUseCase: ListPromptsUseCase
+  listVersionsUseCase: ListVersionsUseCase
+  listWritingsUseCase: ListWritingsUseCase
+  pullDocumentUseCase: PullDocumentUseCase
+  pushTransactionsUseCase: PushTransactionsUseCase
   readLatestAuthEmail?: DevEmailInbox["readLatestMessage"]
+  savePromptUseCase: SavePromptUseCase
   sqliteVersion: string
+  unsavePromptUseCase: UnsavePromptUseCase
 }
 
-export type AppVariables = {
+export type AppVariables = AppUseCases & {
   authSession: AuthenticatedSession | null
   authUser: AuthenticatedUser | null
   requestId: string
   requestLogger: ApiLogger
-  services: AppServices
-  userId: ReturnType<typeof toUserId> | null
+  userId: UserId | null
 }
 
 export type AppEnv = {

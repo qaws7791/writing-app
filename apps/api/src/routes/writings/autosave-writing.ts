@@ -9,6 +9,7 @@ import {
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { BODY_LIMITS, withBodyLimit } from "../../http/body-limit-middleware"
 
 const route = createRoute({
@@ -52,13 +53,13 @@ app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { writingId } = c.req.valid("param")
   const body = c.req.valid("json")
-  const { writingUseCases } = c.var.services
-  const result = await writingUseCases.autosaveWriting(
+  const result = await c.var.autosaveWritingUseCase(
     userId,
     toWritingId(writingId),
     body
   )
-  return c.json(result, 200)
+  const writing = unwrapOrThrow(result)
+  return c.json({ writing, kind: "autosaved" as const }, 200)
 })
 
 export default app

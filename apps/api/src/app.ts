@@ -3,7 +3,7 @@ import type { Context } from "hono"
 import { cors } from "hono/cors"
 import { timeout } from "hono/timeout"
 
-import type { AppEnv, AppServices, GetSession } from "./app-env"
+import type { AppEnv, AppUseCases, GetSession } from "./app-env"
 import { errorToResponse } from "./http/error-response"
 import { createRouter } from "./http/create-router"
 import type { ApiLogger } from "./observability/logger"
@@ -18,7 +18,7 @@ type CreateAppInput = {
   authDebugEnabled: boolean
   getSession: GetSession
   logger: ApiLogger
-  services: AppServices
+  useCases: AppUseCases
 }
 
 type ApiErrorResult = ReturnType<typeof errorToResponse>
@@ -144,10 +144,28 @@ export function createApp(input: CreateAppInput) {
   app.use("*", createRequestLoggerMiddleware(input.logger))
   app.use("*", createResolveSessionMiddleware(input.getSession))
 
-  // --- DI: inject services into context ---
+  // --- DI: inject use cases into context ---
 
   app.use("*", async (c, next) => {
-    c.set("services", input.services)
+    const uc = input.useCases
+    c.set("aiUseCases", uc.aiUseCases)
+    c.set("authHandler", uc.authHandler)
+    c.set("autosaveWritingUseCase", uc.autosaveWritingUseCase)
+    c.set("createWritingUseCase", uc.createWritingUseCase)
+    c.set("deleteWritingUseCase", uc.deleteWritingUseCase)
+    c.set("getHomeUseCase", uc.getHomeUseCase)
+    c.set("getPromptUseCase", uc.getPromptUseCase)
+    c.set("getVersionUseCase", uc.getVersionUseCase)
+    c.set("getWritingUseCase", uc.getWritingUseCase)
+    c.set("listPromptsUseCase", uc.listPromptsUseCase)
+    c.set("listVersionsUseCase", uc.listVersionsUseCase)
+    c.set("listWritingsUseCase", uc.listWritingsUseCase)
+    c.set("pullDocumentUseCase", uc.pullDocumentUseCase)
+    c.set("pushTransactionsUseCase", uc.pushTransactionsUseCase)
+    c.set("readLatestAuthEmail", uc.readLatestAuthEmail)
+    c.set("savePromptUseCase", uc.savePromptUseCase)
+    c.set("sqliteVersion", uc.sqliteVersion)
+    c.set("unsavePromptUseCase", uc.unsavePromptUseCase)
     return next()
   })
 

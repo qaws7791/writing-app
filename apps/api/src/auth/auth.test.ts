@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "vitest"
 import { betterAuth } from "better-auth"
 import { memoryAdapter } from "better-auth/adapters/memory"
+import { okAsync, errAsync } from "neverthrow"
 
 import {
   createEmptyWritingContent,
@@ -8,6 +9,7 @@ import {
   toPromptId,
   type WritingId,
 } from "@workspace/core"
+import { writingNotFound } from "@workspace/core/modules/writings"
 
 import { createApp } from "../app.js"
 import { createDevEmailInbox, createDevEmailPort } from "./auth-email.js"
@@ -74,7 +76,7 @@ function setup(): { app: TestApp } {
     authDebugEnabled: true,
     getSession: (request) => auth.api.getSession({ headers: request.headers }),
     logger: createSilentLogger(),
-    services: {
+    useCases: {
       aiUseCases: {
         async getSuggestions() {
           return []
@@ -87,112 +89,100 @@ function setup(): { app: TestApp } {
         },
       },
       authHandler: auth.handler,
-      writingUseCases: {
-        async autosaveWriting(_userId: string, writingId: WritingId) {
-          return {
-            writing: {
-              characterCount: 0,
-              content: createEmptyWritingContent(),
-              createdAt: "2026-03-20T00:00:00.000Z",
-              id: writingId,
-              lastSavedAt: "2026-03-20T00:00:00.000Z",
-              preview: "",
-              sourcePromptId: null,
-              title: "",
-              updatedAt: "2026-03-20T00:00:00.000Z",
-              wordCount: 0,
-            },
-            kind: "autosaved" as const,
-          }
-        },
-        async createWriting() {
-          return {
-            characterCount: 0,
-            content: createEmptyWritingContent(),
-            createdAt: "2026-03-20T00:00:00.000Z",
-            id: toWritingId(1),
-            lastSavedAt: "2026-03-20T00:00:00.000Z",
-            preview: "",
-            sourcePromptId: null,
-            title: "",
-            updatedAt: "2026-03-20T00:00:00.000Z",
-            wordCount: 0,
-          }
-        },
-        async deleteWriting() {
-          return undefined
-        },
-        async getWriting() {
-          return {
-            characterCount: 0,
-            content: createEmptyWritingContent(),
-            createdAt: "2026-03-20T00:00:00.000Z",
-            id: toWritingId(1),
-            lastSavedAt: "2026-03-20T00:00:00.000Z",
-            preview: "",
-            sourcePromptId: null,
-            title: "",
-            updatedAt: "2026-03-20T00:00:00.000Z",
-            wordCount: 0,
-          }
-        },
-        async listWritings() {
-          return { items: [], nextCursor: null, hasMore: false }
-        },
+      autosaveWritingUseCase(_userId: string, writingId: WritingId) {
+        return okAsync({
+          characterCount: 0,
+          content: createEmptyWritingContent(),
+          createdAt: "2026-03-20T00:00:00.000Z",
+          id: writingId,
+          lastSavedAt: "2026-03-20T00:00:00.000Z",
+          preview: "",
+          sourcePromptId: null,
+          title: "",
+          updatedAt: "2026-03-20T00:00:00.000Z",
+          wordCount: 0,
+        })
       },
-      homeUseCases: {
-        async getHome() {
-          return {
-            recentWritings: [],
-            resumeWriting: null,
-            savedPrompts: [],
-            todayPrompts: [],
-          }
-        },
+      createWritingUseCase() {
+        return okAsync({
+          characterCount: 0,
+          content: createEmptyWritingContent(),
+          createdAt: "2026-03-20T00:00:00.000Z",
+          id: toWritingId(1),
+          lastSavedAt: "2026-03-20T00:00:00.000Z",
+          preview: "",
+          sourcePromptId: null,
+          title: "",
+          updatedAt: "2026-03-20T00:00:00.000Z",
+          wordCount: 0,
+        })
       },
-      promptUseCases: {
-        async getPrompt() {
-          return {
-            description: "",
-            id: toPromptId(1),
-            level: 1 as const,
-            outline: [],
-            saved: false,
-            suggestedLengthLabel: "짧음" as const,
-            tags: [],
-            text: "테스트 글감",
-            tips: [],
-            topic: "일상" as const,
-          }
-        },
-        async listPrompts() {
-          return []
-        },
-        async savePrompt() {
-          return {
-            kind: "saved" as const,
-            savedAt: "2026-03-20T00:00:00.000Z",
-          }
-        },
-        async unsavePrompt() {
-          return undefined
-        },
+      deleteWritingUseCase() {
+        return okAsync(undefined as void)
+      },
+      getWritingUseCase() {
+        return okAsync({
+          characterCount: 0,
+          content: createEmptyWritingContent(),
+          createdAt: "2026-03-20T00:00:00.000Z",
+          id: toWritingId(1),
+          lastSavedAt: "2026-03-20T00:00:00.000Z",
+          preview: "",
+          sourcePromptId: null,
+          title: "",
+          updatedAt: "2026-03-20T00:00:00.000Z",
+          wordCount: 0,
+        })
+      },
+      listWritingsUseCase() {
+        return okAsync({ items: [], nextCursor: null, hasMore: false })
+      },
+      getHomeUseCase() {
+        return okAsync({
+          recentWritings: [],
+          resumeWriting: null,
+          savedPrompts: [],
+          todayPrompts: [],
+        })
+      },
+      getPromptUseCase() {
+        return okAsync({
+          description: "",
+          id: toPromptId(1),
+          level: 1 as const,
+          outline: [],
+          saved: false,
+          suggestedLengthLabel: "짧음" as const,
+          tags: [],
+          text: "테스트 글감",
+          tips: [],
+          topic: "일상" as const,
+        })
+      },
+      listPromptsUseCase() {
+        return okAsync([])
+      },
+      savePromptUseCase() {
+        return okAsync({
+          savedAt: "2026-03-20T00:00:00.000Z",
+        })
+      },
+      unsavePromptUseCase() {
+        return okAsync(undefined as void)
       },
       readLatestAuthEmail: inbox.readLatestMessage,
       sqliteVersion: "memory",
-      writingSyncUseCases: {
-        pushTransactions() {
-          throw new Error("stub")
-        },
-        async pullDocument() {
-          throw new Error("stub")
-        },
-        async listVersions() {
-          return { items: [], nextCursor: null, hasMore: false }
-        },
-        async getVersion() {
-          throw new Error("stub")
-        },
+      pushTransactionsUseCase() {
+        return errAsync(writingNotFound("stub"))
+      },
+      pullDocumentUseCase() {
+        return errAsync(writingNotFound("stub"))
+      },
+      listVersionsUseCase() {
+        return okAsync({ items: [], nextCursor: null, hasMore: false })
+      },
+      getVersionUseCase() {
+        return errAsync(writingNotFound("stub"))
       },
     },
   })

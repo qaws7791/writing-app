@@ -9,6 +9,7 @@ import { toWritingId } from "@workspace/core"
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description: "서버에서 최신 문서 상태를 가져옵니다.",
@@ -42,13 +43,12 @@ app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { writingId } = c.req.valid("param")
   const query = c.req.valid("query")
-  const { writingSyncUseCases } = c.var.services
-  const result = await writingSyncUseCases.pullDocument(
+  const result = await c.var.pullDocumentUseCase(
     userId,
     toWritingId(writingId),
     query.since
   )
-  return c.json(result, 200)
+  return c.json(unwrapOrThrow(result), 200)
 })
 
 export default app

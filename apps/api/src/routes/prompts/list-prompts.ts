@@ -7,6 +7,7 @@ import {
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description:
@@ -37,8 +38,8 @@ const app = createRouter()
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const filters = c.req.valid("query")
-  const { promptUseCases } = c.var.services
-  const prompts = await promptUseCases.listPrompts(userId, filters)
+  const result = await c.var.listPromptsUseCase(userId, filters)
+  const prompts = unwrapOrThrow(result)
   return c.json({ items: prompts }, 200)
 })
 

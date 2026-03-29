@@ -42,7 +42,7 @@ const app = createRouter()
 
 app.openapi(route, (c) => {
   const { email, kind } = c.req.valid("query")
-  const { readLatestAuthEmail } = c.var.services
+  const { readLatestAuthEmail } = c.var
 
   if (!readLatestAuthEmail) {
     throw new NotFoundError("개발 환경에서만 사용할 수 있습니다.")

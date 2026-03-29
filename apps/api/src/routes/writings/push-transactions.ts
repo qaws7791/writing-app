@@ -9,6 +9,7 @@ import { toWritingId } from "@workspace/core"
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { BODY_LIMITS, withBodyLimit } from "../../http/body-limit-middleware"
 
 const route = createRoute({
@@ -52,13 +53,12 @@ app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { writingId } = c.req.valid("param")
   const body = c.req.valid("json")
-  const { writingSyncUseCases } = c.var.services
-  const result = await writingSyncUseCases.pushTransactions(
+  const result = await c.var.pushTransactionsUseCase(
     userId,
     toWritingId(writingId),
     body
   )
-  return c.json(result, 200)
+  return c.json(unwrapOrThrow(result), 200)
 })
 
 export default app

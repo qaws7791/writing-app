@@ -4,6 +4,7 @@ import { writingIdParamSchema, toWritingId } from "@workspace/core"
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description: "특정 글을 영구적으로 삭제합니다.",
@@ -30,8 +31,11 @@ const app = createRouter()
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { writingId } = c.req.valid("param")
-  const { writingUseCases } = c.var.services
-  await writingUseCases.deleteWriting(userId, toWritingId(writingId))
+  const result = await c.var.deleteWritingUseCase(
+    userId,
+    toWritingId(writingId)
+  )
+  unwrapOrThrow(result)
   return c.body(null, 204)
 })
 

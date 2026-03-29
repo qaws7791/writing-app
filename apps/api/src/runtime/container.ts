@@ -1,9 +1,4 @@
-import {
-  createContainer,
-  asFunction,
-  InjectionMode,
-  type AwilixContainer,
-} from "awilix"
+import { createContainer, InjectionMode, type AwilixContainer } from "awilix"
 import {
   createAIRequestRepository,
   createDailyRecommendationRepository,
@@ -16,19 +11,7 @@ import {
   openDb,
 } from "@workspace/database"
 
-import { createAIApiService, type AIApiService } from "../services/ai-services"
-import {
-  createWritingApiService,
-  createWritingSyncApiService,
-  type WritingApiService,
-  type WritingSyncApiService,
-} from "../services/writing-services"
-import {
-  createHomeApiService,
-  createPromptApiService,
-  type HomeApiService,
-  type PromptApiService,
-} from "../services/prompt-services"
+import type { AIApiService } from "../services/ai-services"
 import { createAuth } from "../auth/auth"
 import { createDevEmailInbox, type EmailSender } from "../auth/auth-email"
 import type { ApiLogger } from "../observability/logger"
@@ -36,6 +19,23 @@ import type { ApiEnvironment } from "./bootstrap"
 import { registerInfrastructure } from "./modules/infrastructure"
 import { registerAuth } from "./modules/auth"
 import { registerRepositories } from "./modules/repositories"
+import {
+  registerUseCases,
+  type AutosaveWritingUseCase,
+  type CreateWritingUseCase,
+  type DeleteWritingUseCase,
+  type GetHomeUseCase,
+  type GetPromptUseCase,
+  type GetVersionUseCase,
+  type GetWritingUseCase,
+  type ListPromptsUseCase,
+  type ListVersionsUseCase,
+  type ListWritingsUseCase,
+  type PullDocumentUseCase,
+  type PushTransactionsUseCase,
+  type SavePromptUseCase,
+  type UnsavePromptUseCase,
+} from "./modules/use-cases"
 
 export type ApiCradle = {
   // --- Configuration ---
@@ -66,12 +66,22 @@ export type ApiCradle = {
   >
   writingVersionRepository: ReturnType<typeof createWritingVersionRepository>
 
-  // --- API Services ---
+  // --- Use Cases ---
   aiUseCases: AIApiService
-  homeUseCases: HomeApiService
-  promptUseCases: PromptApiService
-  writingUseCases: WritingApiService
-  writingSyncUseCases: WritingSyncApiService
+  autosaveWritingUseCase: AutosaveWritingUseCase
+  createWritingUseCase: CreateWritingUseCase
+  deleteWritingUseCase: DeleteWritingUseCase
+  getHomeUseCase: GetHomeUseCase
+  getPromptUseCase: GetPromptUseCase
+  getVersionUseCase: GetVersionUseCase
+  getWritingUseCase: GetWritingUseCase
+  listPromptsUseCase: ListPromptsUseCase
+  listVersionsUseCase: ListVersionsUseCase
+  listWritingsUseCase: ListWritingsUseCase
+  pullDocumentUseCase: PullDocumentUseCase
+  pushTransactionsUseCase: PushTransactionsUseCase
+  savePromptUseCase: SavePromptUseCase
+  unsavePromptUseCase: UnsavePromptUseCase
 }
 
 export function createApiContainer(
@@ -85,57 +95,7 @@ export function createApiContainer(
   registerInfrastructure(container, environment)
   registerAuth(container)
   registerRepositories(container)
-
-  container.register({
-    // --- API Services ---
-
-    aiUseCases: asFunction(({ aiRequestRepository, logger }: ApiCradle) =>
-      createAIApiService({
-        aiRequestRepository,
-        logger: logger.child({ scope: "ai-services" }),
-      })
-    ).singleton(),
-
-    promptUseCases: asFunction(({ promptRepository }: ApiCradle) =>
-      createPromptApiService(promptRepository)
-    ).singleton(),
-
-    homeUseCases: asFunction(
-      ({
-        dailyRecommendationRepository,
-        writingRepository,
-        promptRepository,
-      }: ApiCradle) =>
-        createHomeApiService({
-          dailyRecommendationRepository,
-          writingRepository,
-          promptRepository,
-        })
-    ).singleton(),
-
-    writingUseCases: asFunction(
-      ({ writingRepository, promptRepository }: ApiCradle) =>
-        createWritingApiService({
-          writingRepository,
-          promptRepository,
-        })
-    ).singleton(),
-
-    writingSyncUseCases: asFunction(
-      ({
-        writingSyncRepository,
-        writingSyncWriter,
-        writingTransactionRepository,
-        writingVersionRepository,
-      }: ApiCradle) =>
-        createWritingSyncApiService({
-          writingRepository: writingSyncRepository,
-          syncWriter: writingSyncWriter,
-          transactionRepository: writingTransactionRepository,
-          versionRepository: writingVersionRepository,
-        })
-    ).singleton(),
-  })
+  registerUseCases(container)
 
   return container
 }

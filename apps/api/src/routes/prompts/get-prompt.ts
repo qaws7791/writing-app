@@ -8,6 +8,7 @@ import {
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description: "특정 글감의 상세 정보를 조회합니다.",
@@ -39,8 +40,8 @@ const app = createRouter()
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { promptId } = c.req.valid("param")
-  const { promptUseCases } = c.var.services
-  const prompt = await promptUseCases.getPrompt(userId, toPromptId(promptId))
+  const result = await c.var.getPromptUseCase(userId, toPromptId(promptId))
+  const prompt = unwrapOrThrow(result)
   return c.json(prompt, 200)
 })
 

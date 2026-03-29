@@ -1,6 +1,6 @@
 import { migrateDatabase, seedDatabase } from "@workspace/database"
 
-import type { AppServices } from "../app-env"
+import type { AppUseCases } from "../app-env"
 import { createApp } from "../app"
 import { apiEnv } from "../config/env"
 import type { ApiLogLevel } from "../observability/logger"
@@ -48,15 +48,25 @@ export async function createApiDependencies(
     seedDatabase(database.db)
   }
 
-  const services: AppServices = {
+  const useCases: AppUseCases = {
     aiUseCases: container.cradle.aiUseCases,
     authHandler: auth.handler,
-    homeUseCases: container.cradle.homeUseCases,
-    promptUseCases: container.cradle.promptUseCases,
-    writingUseCases: container.cradle.writingUseCases,
-    writingSyncUseCases: container.cradle.writingSyncUseCases,
+    autosaveWritingUseCase: container.cradle.autosaveWritingUseCase,
+    createWritingUseCase: container.cradle.createWritingUseCase,
+    deleteWritingUseCase: container.cradle.deleteWritingUseCase,
+    getHomeUseCase: container.cradle.getHomeUseCase,
+    getPromptUseCase: container.cradle.getPromptUseCase,
+    getVersionUseCase: container.cradle.getVersionUseCase,
+    getWritingUseCase: container.cradle.getWritingUseCase,
+    listPromptsUseCase: container.cradle.listPromptsUseCase,
+    listVersionsUseCase: container.cradle.listVersionsUseCase,
+    listWritingsUseCase: container.cradle.listWritingsUseCase,
+    pullDocumentUseCase: container.cradle.pullDocumentUseCase,
+    pushTransactionsUseCase: container.cradle.pushTransactionsUseCase,
     readLatestAuthEmail: devEmailInbox?.readLatestMessage,
+    savePromptUseCase: container.cradle.savePromptUseCase,
     sqliteVersion,
+    unsavePromptUseCase: container.cradle.unsavePromptUseCase,
   }
 
   logger.info(
@@ -76,7 +86,7 @@ export async function createApiDependencies(
       getSession: (request) =>
         auth.api.getSession({ headers: request.headers }),
       logger,
-      services,
+      useCases,
     }),
     close: () => {
       void container.dispose()

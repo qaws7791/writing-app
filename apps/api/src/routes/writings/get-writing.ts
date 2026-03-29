@@ -8,6 +8,7 @@ import {
 import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 
 const route = createRoute({
   description: "특정 글의 전체 내용을 조회합니다.",
@@ -39,11 +40,8 @@ const app = createRouter()
 app.openapi(route, async (c) => {
   const userId = requireUserId(c)
   const { writingId } = c.req.valid("param")
-  const { writingUseCases } = c.var.services
-  const writing = await writingUseCases.getWriting(
-    userId,
-    toWritingId(writingId)
-  )
+  const result = await c.var.getWritingUseCase(userId, toWritingId(writingId))
+  const writing = unwrapOrThrow(result)
   return c.json(writing, 200)
 })
 
