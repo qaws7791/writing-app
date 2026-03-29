@@ -84,6 +84,66 @@ export type ApiCradle = {
   unsavePromptUseCase: UnsavePromptUseCase
 }
 
+export type ApiCradleUseCases = Pick<
+  ApiCradle,
+  | "aiUseCases"
+  | "autosaveWritingUseCase"
+  | "createWritingUseCase"
+  | "deleteWritingUseCase"
+  | "getHomeUseCase"
+  | "getPromptUseCase"
+  | "getVersionUseCase"
+  | "getWritingUseCase"
+  | "listPromptsUseCase"
+  | "listVersionsUseCase"
+  | "listWritingsUseCase"
+  | "pullDocumentUseCase"
+  | "pushTransactionsUseCase"
+  | "savePromptUseCase"
+  | "sqliteVersion"
+  | "unsavePromptUseCase"
+>
+
+export function extractUseCases(cradle: ApiCradle): ApiCradleUseCases {
+  const {
+    aiUseCases,
+    autosaveWritingUseCase,
+    createWritingUseCase,
+    deleteWritingUseCase,
+    getHomeUseCase,
+    getPromptUseCase,
+    getVersionUseCase,
+    getWritingUseCase,
+    listPromptsUseCase,
+    listVersionsUseCase,
+    listWritingsUseCase,
+    pullDocumentUseCase,
+    pushTransactionsUseCase,
+    savePromptUseCase,
+    sqliteVersion,
+    unsavePromptUseCase,
+  } = cradle
+
+  return {
+    aiUseCases,
+    autosaveWritingUseCase,
+    createWritingUseCase,
+    deleteWritingUseCase,
+    getHomeUseCase,
+    getPromptUseCase,
+    getVersionUseCase,
+    getWritingUseCase,
+    listPromptsUseCase,
+    listVersionsUseCase,
+    listWritingsUseCase,
+    pullDocumentUseCase,
+    pushTransactionsUseCase,
+    savePromptUseCase,
+    sqliteVersion,
+    unsavePromptUseCase,
+  }
+}
+
 export function createApiContainer(
   environment: ApiEnvironment
 ): AwilixContainer<ApiCradle> {

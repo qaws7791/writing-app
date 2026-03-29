@@ -4,11 +4,12 @@ import type { AppUseCases } from "../app-env"
 import { createApp } from "../app"
 import { apiEnv } from "../config/env"
 import type { ApiLogLevel } from "../observability/logger"
-import { createApiContainer } from "./container"
+import { createApiContainer, extractUseCases } from "./container"
 
 export type ApiEnvironment = {
   apiBaseUrl: string
   authBaseUrl: string
+  authDebugEnabled: boolean
   authSecret: string
   databasePath: string
   logLevel: ApiLogLevel
@@ -24,14 +25,16 @@ export type AppDependencies = {
 }
 
 export function readApiEnvironment(): ApiEnvironment {
+  const isProduction = process.env.NODE_ENV === "production"
   return {
     apiBaseUrl: apiEnv.API_BASE_URL,
     authBaseUrl: apiEnv.API_AUTH_BASE_URL,
+    authDebugEnabled: !isProduction,
     authSecret: apiEnv.API_AUTH_SECRET,
     databasePath: apiEnv.API_DATABASE_PATH,
     logLevel: apiEnv.API_LOG_LEVEL,
     port: apiEnv.API_PORT,
-    seedOnStartup: process.env.NODE_ENV !== "production",
+    seedOnStartup: !isProduction,
     webBaseUrl: apiEnv.API_WEB_BASE_URL,
   }
 }
@@ -49,24 +52,9 @@ export async function createApiDependencies(
   }
 
   const useCases: AppUseCases = {
-    aiUseCases: container.cradle.aiUseCases,
+    ...extractUseCases(container.cradle),
     authHandler: auth.handler,
-    autosaveWritingUseCase: container.cradle.autosaveWritingUseCase,
-    createWritingUseCase: container.cradle.createWritingUseCase,
-    deleteWritingUseCase: container.cradle.deleteWritingUseCase,
-    getHomeUseCase: container.cradle.getHomeUseCase,
-    getPromptUseCase: container.cradle.getPromptUseCase,
-    getVersionUseCase: container.cradle.getVersionUseCase,
-    getWritingUseCase: container.cradle.getWritingUseCase,
-    listPromptsUseCase: container.cradle.listPromptsUseCase,
-    listVersionsUseCase: container.cradle.listVersionsUseCase,
-    listWritingsUseCase: container.cradle.listWritingsUseCase,
-    pullDocumentUseCase: container.cradle.pullDocumentUseCase,
-    pushTransactionsUseCase: container.cradle.pushTransactionsUseCase,
     readLatestAuthEmail: devEmailInbox?.readLatestMessage,
-    savePromptUseCase: container.cradle.savePromptUseCase,
-    sqliteVersion,
-    unsavePromptUseCase: container.cradle.unsavePromptUseCase,
   }
 
   logger.info(
@@ -82,7 +70,7 @@ export async function createApiDependencies(
     app: createApp({
       allowedOrigins: [environment.webBaseUrl],
       apiBaseUrl: environment.apiBaseUrl,
-      authDebugEnabled: process.env.NODE_ENV !== "production",
+      authDebugEnabled: environment.authDebugEnabled,
       getSession: (request) =>
         auth.api.getSession({ headers: request.headers }),
       logger,

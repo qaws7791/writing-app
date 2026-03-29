@@ -25,6 +25,44 @@ vi.mock("../app.js", () => ({
 
 vi.mock("./container.js", () => ({
   createApiContainer: createApiContainerMock,
+  extractUseCases: (cradle: Record<string, unknown>) => {
+    const {
+      aiUseCases,
+      autosaveWritingUseCase,
+      createWritingUseCase,
+      deleteWritingUseCase,
+      getHomeUseCase,
+      getPromptUseCase,
+      getVersionUseCase,
+      getWritingUseCase,
+      listPromptsUseCase,
+      listVersionsUseCase,
+      listWritingsUseCase,
+      pullDocumentUseCase,
+      pushTransactionsUseCase,
+      savePromptUseCase,
+      sqliteVersion,
+      unsavePromptUseCase,
+    } = cradle
+    return {
+      aiUseCases,
+      autosaveWritingUseCase,
+      createWritingUseCase,
+      deleteWritingUseCase,
+      getHomeUseCase,
+      getPromptUseCase,
+      getVersionUseCase,
+      getWritingUseCase,
+      listPromptsUseCase,
+      listVersionsUseCase,
+      listWritingsUseCase,
+      pullDocumentUseCase,
+      pushTransactionsUseCase,
+      savePromptUseCase,
+      sqliteVersion,
+      unsavePromptUseCase,
+    }
+  },
 }))
 
 vi.mock("../config/env.js", () => ({
@@ -108,6 +146,7 @@ describe("bootstrap", () => {
     await createApiDependencies({
       apiBaseUrl: "http://127.0.0.1:3010",
       authBaseUrl: "http://127.0.0.1:3010",
+      authDebugEnabled: false,
       authSecret: "test-secret-test-secret-test-secret",
       databasePath: "memory:test",
       logLevel: "info",
@@ -124,6 +163,7 @@ describe("bootstrap", () => {
     await createApiDependencies({
       apiBaseUrl: "http://127.0.0.1:3010",
       authBaseUrl: "http://127.0.0.1:3010",
+      authDebugEnabled: false,
       authSecret: "test-secret-test-secret-test-secret",
       databasePath: "memory:test",
       logLevel: "info",
@@ -135,12 +175,14 @@ describe("bootstrap", () => {
     expect(seedDatabaseMock).not.toHaveBeenCalled()
   })
 
-  test("derives seedOnStartup from NODE_ENV", () => {
+  test("derives seedOnStartup and authDebugEnabled from NODE_ENV", () => {
     vi.stubEnv("NODE_ENV", "production")
     expect(readApiEnvironment().seedOnStartup).toBe(false)
+    expect(readApiEnvironment().authDebugEnabled).toBe(false)
 
     vi.stubEnv("NODE_ENV", "development")
     expect(readApiEnvironment().seedOnStartup).toBe(true)
+    expect(readApiEnvironment().authDebugEnabled).toBe(true)
 
     vi.unstubAllEnvs()
   })
@@ -149,6 +191,7 @@ describe("bootstrap", () => {
     const result = await createApiDependencies({
       apiBaseUrl: "http://127.0.0.1:3010",
       authBaseUrl: "http://127.0.0.1:3010",
+      authDebugEnabled: false,
       authSecret: "test-secret-test-secret-test-secret",
       databasePath: "memory:test",
       logLevel: "info",
