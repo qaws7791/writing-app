@@ -1,11 +1,22 @@
 {
   "name": "@workspace/core",
   "version": "0.0.0",
-  "type": "module",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./modules/prompts": "./src/modules/prompts/index.ts",
+    "./modules/prompts/testing": "./src/modules/prompts/testing/index.ts",
+    "./modules/home": "./src/modules/home/index.ts",
+    "./modules/home/testing": "./src/modules/home/testing/index.ts",
+    "./modules/daily-recommendation": "./src/modules/daily-recommendation/index.ts",
+    "./modules/writings": "./src/modules/writings/index.ts",
+    "./modules/ai-assistant": "./src/modules/ai-assistant/index.ts"
+  },
   "scripts": {
     "build": "tsc",
     "lint": "eslint .",
+    "lint:oxlint": "oxlint",
     "test": "node ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts --pool=forks --maxWorkers=1 --no-file-parallelism",
     "test:watch": "node ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts --pool=forks --maxWorkers=1 --no-file-parallelism",
     "typecheck": "tsc --noEmit --skipLibCheck true"
@@ -20,15 +31,5 @@
     "@workspace/config": "workspace:*",
     "eslint": "^9.39.2",
     "typescript": "^5.9.3"
-  },
-  "exports": {
-    ".": "./src/index.ts",
-    "./modules/prompts": "./src/modules/prompts/index.ts",
-    "./modules/prompts/testing": "./src/modules/prompts/testing/index.ts",
-    "./modules/home": "./src/modules/home/index.ts",
-    "./modules/home/testing": "./src/modules/home/testing/index.ts",
-    "./modules/daily-recommendation": "./src/modules/daily-recommendation/index.ts",
-    "./modules/writings": "./src/modules/writings/index.ts",
-    "./modules/ai-assistant": "./src/modules/ai-assistant/index.ts"
   }
 }

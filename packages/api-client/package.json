@@ -1,8 +1,11 @@
 {
   "name": "@workspace/api-client",
   "version": "0.0.0",
-  "type": "module",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
   "scripts": {
     "api:generate": "bun run scripts/generate-api-types.ts --input src/openapi.json",
     "api:fetch": "bun run scripts/fetch-openapi-spec.ts",
@@ -15,8 +18,5 @@
     "@workspace/config": "workspace:*",
     "openapi-typescript": "^7.13.0",
     "typescript": "^5.9.3"
-  },
-  "exports": {
-    ".": "./src/index.ts"
   }
 }

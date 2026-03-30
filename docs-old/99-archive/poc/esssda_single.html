@@ -1,317 +1,739 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>에쓰다 - 단일 HTML</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #0c0c0b; --s1: #161614; --s2: #1e1e1b; --s3: #272724;
-      --border: #2d2d29; --border2: #3a3a35;
-      --text: #f2ede3; --text2: #8c8679; --text3: #504e47;
-      --gold: #c9a84c; --gold2: #e8c877; --gold-bg: rgba(201,168,76,0.12); --gold-bg2: rgba(201,168,76,0.06);
-      --green: #74a87c; --green-bg: rgba(116,168,124,0.12);
-      --blue: #6d9ecb; --blue-bg: rgba(109,158,203,0.12); --red: #c86b6b;
-      --r: 14px; --r-sm: 9px; --r-xs: 6px;
-      --serif: "Noto Serif KR", "Apple SD Gothic Neo", Georgia, serif;
-      --sans: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
-      --shadow: 0 4px 24px rgba(0,0,0,0.4);
-    }
-    html, body { height: 100%; overflow: hidden; }
-    body {
-      background: var(--bg); color: var(--text); font-family: var(--sans);
-      -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
-    }
-    button, input, textarea { font: inherit; }
-    textarea:focus, input:focus { outline: none; }
-    ::-webkit-scrollbar { width: 4px; }
-    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 999px; }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-    @keyframes scaleIn { from { opacity:0; transform:scale(.92); } to { opacity:1; transform:scale(1); } }
-    @keyframes goldPulse { 0%,100%{ box-shadow:0 0 0 0 rgba(201,168,76,.4) } 50%{ box-shadow:0 0 0 8px rgba(201,168,76,0) } }
-    @keyframes confettiFall { 0%{ transform:translateY(-20px) rotate(0deg); opacity:1 } 100%{ transform:translateY(110vh) rotate(360deg); opacity:0 } }
-    @keyframes breathe { 0%,100%{ transform:scale(1) } 50%{ transform:scale(1.04) } }
-    .fu { animation: fadeUp .45s cubic-bezier(.22,1,.36,1) both; }
-    .fi { animation: fadeIn .35s ease both; }
-    .si { animation: scaleIn .4s cubic-bezier(.22,1,.36,1) both; }
-    .app-shell { max-width: 520px; margin: 0 auto; position: relative; height: 100vh; }
-    .page { height: 100vh; overflow-y: auto; }
-    .card {
-      background: var(--s1); border: 1px solid var(--border); border-radius: var(--r);
-      padding: 20px; transition: all .2s;
-    }
-    .card.hoverable { cursor: pointer; }
-    .card.hoverable:hover { border-color: var(--border2); background: var(--s2); transform: translateY(-1px); }
-    .badge {
-      display: inline-flex; align-items: center; gap: 4px; border-radius: 999px;
-      padding: 3px 10px; font-size: 11px; font-weight: 700; letter-spacing: .03em;
-    }
-    .badge.gold { background: var(--gold-bg); color: var(--gold); }
-    .badge.green { background: var(--green-bg); color: var(--green); }
-    .badge.blue { background: var(--blue-bg); color: var(--blue); }
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-      border-radius: 999px; font-weight: 600; font-size: 14px; padding: 12px 24px;
-      transition: all .2s; cursor: pointer; letter-spacing: .01em; border: none;
-      text-decoration: none;
-    }
-    .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
-    .btn.primary { background: var(--gold); color: #0c0c0b; }
-    .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--border2); }
-    .btn.soft { background: var(--s3); color: var(--text); }
-    .btn.green { background: var(--green-bg); color: var(--green); }
-    .btn:disabled { opacity: .4; cursor: not-allowed; filter: none !important; transform: none !important; }
-    .nav-bar {
-      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 520px;
-      background: rgba(12,12,11,.94); backdrop-filter: blur(24px); border-top: 1px solid var(--border);
-      display: flex; justify-content: space-around; align-items: center; padding: 10px 0 20px; z-index: 100;
-    }
-    .nav-btn {
-      display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none;
-      cursor: pointer; padding: 4px 12px; border-radius: 10px; transition: all .2s;
-      color: var(--text3);
-    }
-    .nav-btn.active { color: var(--gold); }
-    .nav-btn .icon { font-size: 18px; }
-    .nav-btn.write .icon { font-size: 22px; }
-    .nav-btn .label { font-size: 10px; font-weight: 600; letter-spacing: .03em; }
-    .toast {
-      position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 1000;
-      background: rgba(22,22,20,.96); border: 1px solid var(--border2); color: var(--text);
-      padding: 10px 14px; border-radius: 999px; box-shadow: var(--shadow); font-size: 13px;
-    }
-    .confetti-layer {
-      position: fixed; inset: 0; pointer-events: none; z-index: 999; overflow: hidden;
-    }
-    .confetti-piece {
-      position: absolute; width: 7px; height: 7px; border-radius: 50%; top: -10px;
-      animation-name: confettiFall; animation-timing-function: ease-in; animation-fill-mode: forwards;
-    }
-    .quote { font-family: var(--serif); font-style: italic; }
-    .muted { color: var(--text2); }
-    .subtle { color: var(--text3); }
-    .title-serif { font-family: var(--serif); }
-    .sr-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
-    .growth-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 9px; }
-    .hidden { display: none !important; }
-    .sticky-bottom-help { position: sticky; bottom: 20px; }
-    .hero-title { font-family: var(--serif); font-size: clamp(26px,5.5vw,40px); font-weight: 900; line-height: 1.45; letter-spacing: -.02em; white-space: pre-line; }
-    .focus-exit {
-      position: fixed; top: 14px; right: 14px; background: var(--s2); border: 1px solid var(--border);
-      border-radius: 7px; padding: 5px 11px; color: var(--text3); font-size: 12px; cursor: pointer; z-index: 10;
-    }
-    .radar-wrap { width: 100%; display: flex; justify-content: center; }
-    .timeline-row { display:flex; gap:12px; padding:11px 0; }
-    .timeline-bar { height:4px; background:var(--s3); border-radius:2px; overflow:hidden; }
-    .bar-fill { height:100%; border-radius:2px; }
-    .markdown-like p + p { margin-top: 10px; }
-    .landing-header {
-      padding: 18px 24px; display:flex; align-items:center; justify-content:space-between;
-      border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50;
-      background: rgba(12,12,11,.9); backdrop-filter: blur(20px);
-    }
-    .chip-list { display:flex; gap:8px; }
-  </style>
-</head>
-<body>
-  <div id="app"></div>
-  <script>
-    (() => {
-      const RADAR_DATA = [
-        { axis: "아이디어", v: 62 },
-        { axis: "논리구조", v: 41 },
-        { axis: "표현력", v: 74 },
-        { axis: "근거충실", v: 35 },
-        { axis: "퇴고력", v: 52 },
-      ];
-      const STREAK_MAP = Array.from({ length: 35 }, (_, i) => ({ i, done: [0,1,2,3,5,6,7,8,10,11,12].includes(i), today: i === 12 }));
-      const BADGES = [
-        { icon: "🌱", name: "첫 씨앗", desc: "첫 번째 글 완성", earned: true },
-        { icon: "🔥", name: "7일 연속", desc: "7일 연속 작성", earned: true },
-        { icon: "✏️", name: "초고 탄생", desc: "에세이 초고 완성", earned: true },
-        { icon: "🔄", name: "퇴고 입문", desc: "처음으로 퇴고", earned: false },
-        { icon: "📚", name: "10편의 기록", desc: "글 10편 완성", earned: false },
-        { icon: "💎", name: "한 달 수련", desc: "30일 연속 작성", earned: false },
-      ];
-      const DOJO = [
-        { id: 1, title: "한 문단의 힘", sub: "주장 + 이유 1개", status: "done", xp: 50, lessons: 3 },
-        { id: 2, title: "3단 구조", sub: "서론·본론·결론", status: "done", xp: 80, lessons: 4 },
-        { id: 3, title: "근거 강화", sub: "사례와 데이터", status: "current", xp: 100, lessons: 5 },
-        { id: 4, title: "반론과 재반박", sub: "다른 입장 받아들이기", status: "locked", xp: 120, lessons: 4 },
-        { id: 5, title: "퇴고 마스터", sub: "삭제·재배열·보강", status: "locked", xp: 150, lessons: 6 },
-      ];
-      const COACH_Q = [
-        "이 주제에 대해 가장 먼저 떠오르는 생각이 뭔가요?",
-        "왜 그런 생각이 드셨나요? 경험이나 이유가 있다면요.",
-        "반대로 생각하면 어떤 의견도 있지 않을까요?",
-        "당신의 삶에서 이 주제와 연결되는 순간이 있었나요?",
-        "이 글을 읽는 사람에게 꼭 전하고 싶은 한 문장은?",
-      ];
-      const TESTIMONIALS = [
-        { q: "뭘 써야 할지 몰라서 항상 미뤘는데, 질문에 답하다 보니 어느새 한 편이 됐어요.", w: "박지수 · 중학교 2학년" },
-        { q: "글쓰기를 배우고 싶었는데 어디서 시작할지 몰랐어요. 씨앗 쓰기부터 따라가니 자신감이 생겼어요.", w: "이순자 · 72세" },
-        { q: "AI가 대신 써주지 않고 계속 질문을 던지는 게 처음엔 답답했는데, 그게 진짜 도움이 된다는 걸 압니다.", w: "김태현 · 대학원생" },
-      ];
-      const state = {
-        screen: "landing",
-        appPage: "home",
-        confetti: false,
-        confettiPieces: [],
-        toast: "",
-        landingTypedIndex: 0,
-        landingFull: "처음 쓰는 한 문장부터,\n생각이 깊어지는 한 편의 글까지",
-        onboarding: { step: 0, answer: "", level: null },
-        write: { content: "", mode: "write", focusMode: false, timer: 0, showTip: false },
-        feedbackTab: "structure",
-        dojo: { lesson: null, step: 0, sel: null, answered: false },
-        coach: { step: 0, answers: [], input: "", done: false },
-      };
-
-      const root = document.getElementById("app");
-      let landingInterval = null;
-      let writeTimerInterval = null;
-      let toastTimer = null;
-
-      const escapeHtml = (s) => String(s)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/\"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-      const nl2br = (s) => escapeHtml(s).replace(/\n/g, "<br>");
-      const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-      const sentenceCount = (content) => content.split(/[.!?。]+/).filter((s) => s.trim().length > 2).length;
-      const detectLevel = (t) => t.length < 30 ? "seed" : t.length < 120 ? "grow" : "deep";
-      const levelMap = {
-        seed: { label: "씨앗 단계", color: "var(--green)", icon: "🌱", desc: "처음이어도 괜찮아요! 씨앗 쓰기부터 짧고 쉬운 미션으로 시작합니다." },
-        grow: { label: "성장 단계", color: "var(--gold)", icon: "🌿", desc: "기초는 있군요! 에세이 구조와 논리를 단계적으로 훈련합니다." },
-        deep: { label: "심화 단계", color: "var(--blue)", icon: "🌳", desc: "능숙하게 쓰시는군요. 비판적 사고와 자기 목소리 찾기를 훈련합니다." },
-      };
-
-      function showToast(message) {
-        state.toast = message;
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-          state.toast = "";
-          render();
-        }, 1800);
-        render();
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>에쓰다 - 단일 HTML</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
       }
-
-      function startLandingTyping() {
-        clearInterval(landingInterval);
-        landingInterval = setInterval(() => {
-          if (state.screen !== "landing") return;
-          if (state.landingTypedIndex < state.landingFull.length) {
-            state.landingTypedIndex += 1;
-            render();
-          } else {
-            clearInterval(landingInterval);
-          }
-        }, 28);
+      :root {
+        --bg: #0c0c0b;
+        --s1: #161614;
+        --s2: #1e1e1b;
+        --s3: #272724;
+        --border: #2d2d29;
+        --border2: #3a3a35;
+        --text: #f2ede3;
+        --text2: #8c8679;
+        --text3: #504e47;
+        --gold: #c9a84c;
+        --gold2: #e8c877;
+        --gold-bg: rgba(201, 168, 76, 0.12);
+        --gold-bg2: rgba(201, 168, 76, 0.06);
+        --green: #74a87c;
+        --green-bg: rgba(116, 168, 124, 0.12);
+        --blue: #6d9ecb;
+        --blue-bg: rgba(109, 158, 203, 0.12);
+        --red: #c86b6b;
+        --r: 14px;
+        --r-sm: 9px;
+        --r-xs: 6px;
+        --serif: "Noto Serif KR", "Apple SD Gothic Neo", Georgia, serif;
+        --sans:
+          "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui,
+          sans-serif;
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
       }
-
-      function ensureWriteTimer() {
-        clearInterval(writeTimerInterval);
-        writeTimerInterval = setInterval(() => {
-          if (state.screen === "app" && state.appPage === "write") {
-            state.write.timer += 1;
-            const timerEl = document.getElementById("write-timer");
-            if (timerEl) timerEl.textContent = `⏱ ${fmt(state.write.timer)}`;
-          }
-        }, 1000);
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
       }
-
-      function makeConfetti() {
-        state.confettiPieces = Array.from({ length: 24 }, (_, i) => ({
-          id: i,
-          left: Math.random() * 100,
-          color: ["var(--gold)", "var(--green)", "var(--blue)", "#f5a623"][Math.floor(Math.random() * 4)],
-          duration: (0.9 + Math.random() * 1.2).toFixed(2),
-          delay: (Math.random() * 0.6).toFixed(2),
-        }));
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
       }
-
-      function withActiveScreen(html) {
-        const toast = state.toast ? `<div class="toast fi">${escapeHtml(state.toast)}</div>` : "";
-        const confetti = state.confetti ? renderConfetti() : "";
-        return `${toast}${confetti}${html}`;
+      button,
+      input,
+      textarea {
+        font: inherit;
       }
+      textarea:focus,
+      input:focus {
+        outline: none;
+      }
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border2);
+        border-radius: 999px;
+      }
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes scaleIn {
+        from {
+          opacity: 0;
+          transform: scale(0.92);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @keyframes goldPulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(201, 168, 76, 0.4);
+        }
+        50% {
+          box-shadow: 0 0 0 8px rgba(201, 168, 76, 0);
+        }
+      }
+      @keyframes confettiFall {
+        0% {
+          transform: translateY(-20px) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(110vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+      @keyframes breathe {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.04);
+        }
+      }
+      .fu {
+        animation: fadeUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      .fi {
+        animation: fadeIn 0.35s ease both;
+      }
+      .si {
+        animation: scaleIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      .app-shell {
+        max-width: 520px;
+        margin: 0 auto;
+        position: relative;
+        height: 100vh;
+      }
+      .page {
+        height: 100vh;
+        overflow-y: auto;
+      }
+      .card {
+        background: var(--s1);
+        border: 1px solid var(--border);
+        border-radius: var(--r);
+        padding: 20px;
+        transition: all 0.2s;
+      }
+      .card.hoverable {
+        cursor: pointer;
+      }
+      .card.hoverable:hover {
+        border-color: var(--border2);
+        background: var(--s2);
+        transform: translateY(-1px);
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+      }
+      .badge.gold {
+        background: var(--gold-bg);
+        color: var(--gold);
+      }
+      .badge.green {
+        background: var(--green-bg);
+        color: var(--green);
+      }
+      .badge.blue {
+        background: var(--blue-bg);
+        color: var(--blue);
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 12px 24px;
+        transition: all 0.2s;
+        cursor: pointer;
+        letter-spacing: 0.01em;
+        border: none;
+        text-decoration: none;
+      }
+      .btn:hover {
+        filter: brightness(1.08);
+        transform: translateY(-1px);
+      }
+      .btn.primary {
+        background: var(--gold);
+        color: #0c0c0b;
+      }
+      .btn.ghost {
+        background: transparent;
+        color: var(--text);
+        border: 1px solid var(--border2);
+      }
+      .btn.soft {
+        background: var(--s3);
+        color: var(--text);
+      }
+      .btn.green {
+        background: var(--green-bg);
+        color: var(--green);
+      }
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        filter: none !important;
+        transform: none !important;
+      }
+      .nav-bar {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 520px;
+        background: rgba(12, 12, 11, 0.94);
+        backdrop-filter: blur(24px);
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 10px 0 20px;
+        z-index: 100;
+      }
+      .nav-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px 12px;
+        border-radius: 10px;
+        transition: all 0.2s;
+        color: var(--text3);
+      }
+      .nav-btn.active {
+        color: var(--gold);
+      }
+      .nav-btn .icon {
+        font-size: 18px;
+      }
+      .nav-btn.write .icon {
+        font-size: 22px;
+      }
+      .nav-btn .label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.03em;
+      }
+      .toast {
+        position: fixed;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        background: rgba(22, 22, 20, 0.96);
+        border: 1px solid var(--border2);
+        color: var(--text);
+        padding: 10px 14px;
+        border-radius: 999px;
+        box-shadow: var(--shadow);
+        font-size: 13px;
+      }
+      .confetti-layer {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 999;
+        overflow: hidden;
+      }
+      .confetti-piece {
+        position: absolute;
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        top: -10px;
+        animation-name: confettiFall;
+        animation-timing-function: ease-in;
+        animation-fill-mode: forwards;
+      }
+      .quote {
+        font-family: var(--serif);
+        font-style: italic;
+      }
+      .muted {
+        color: var(--text2);
+      }
+      .subtle {
+        color: var(--text3);
+      }
+      .title-serif {
+        font-family: var(--serif);
+      }
+      .sr-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      .growth-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 9px;
+      }
+      .hidden {
+        display: none !important;
+      }
+      .sticky-bottom-help {
+        position: sticky;
+        bottom: 20px;
+      }
+      .hero-title {
+        font-family: var(--serif);
+        font-size: clamp(26px, 5.5vw, 40px);
+        font-weight: 900;
+        line-height: 1.45;
+        letter-spacing: -0.02em;
+        white-space: pre-line;
+      }
+      .focus-exit {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        background: var(--s2);
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        padding: 5px 11px;
+        color: var(--text3);
+        font-size: 12px;
+        cursor: pointer;
+        z-index: 10;
+      }
+      .radar-wrap {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+      .timeline-row {
+        display: flex;
+        gap: 12px;
+        padding: 11px 0;
+      }
+      .timeline-bar {
+        height: 4px;
+        background: var(--s3);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 2px;
+      }
+      .markdown-like p + p {
+        margin-top: 10px;
+      }
+      .landing-header {
+        padding: 18px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: rgba(12, 12, 11, 0.9);
+        backdrop-filter: blur(20px);
+      }
+      .chip-list {
+        display: flex;
+        gap: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script>
+      ;(() => {
+        const RADAR_DATA = [
+          { axis: "아이디어", v: 62 },
+          { axis: "논리구조", v: 41 },
+          { axis: "표현력", v: 74 },
+          { axis: "근거충실", v: 35 },
+          { axis: "퇴고력", v: 52 },
+        ]
+        const STREAK_MAP = Array.from({ length: 35 }, (_, i) => ({
+          i,
+          done: [0, 1, 2, 3, 5, 6, 7, 8, 10, 11, 12].includes(i),
+          today: i === 12,
+        }))
+        const BADGES = [
+          {
+            icon: "🌱",
+            name: "첫 씨앗",
+            desc: "첫 번째 글 완성",
+            earned: true,
+          },
+          { icon: "🔥", name: "7일 연속", desc: "7일 연속 작성", earned: true },
+          {
+            icon: "✏️",
+            name: "초고 탄생",
+            desc: "에세이 초고 완성",
+            earned: true,
+          },
+          {
+            icon: "🔄",
+            name: "퇴고 입문",
+            desc: "처음으로 퇴고",
+            earned: false,
+          },
+          {
+            icon: "📚",
+            name: "10편의 기록",
+            desc: "글 10편 완성",
+            earned: false,
+          },
+          {
+            icon: "💎",
+            name: "한 달 수련",
+            desc: "30일 연속 작성",
+            earned: false,
+          },
+        ]
+        const DOJO = [
+          {
+            id: 1,
+            title: "한 문단의 힘",
+            sub: "주장 + 이유 1개",
+            status: "done",
+            xp: 50,
+            lessons: 3,
+          },
+          {
+            id: 2,
+            title: "3단 구조",
+            sub: "서론·본론·결론",
+            status: "done",
+            xp: 80,
+            lessons: 4,
+          },
+          {
+            id: 3,
+            title: "근거 강화",
+            sub: "사례와 데이터",
+            status: "current",
+            xp: 100,
+            lessons: 5,
+          },
+          {
+            id: 4,
+            title: "반론과 재반박",
+            sub: "다른 입장 받아들이기",
+            status: "locked",
+            xp: 120,
+            lessons: 4,
+          },
+          {
+            id: 5,
+            title: "퇴고 마스터",
+            sub: "삭제·재배열·보강",
+            status: "locked",
+            xp: 150,
+            lessons: 6,
+          },
+        ]
+        const COACH_Q = [
+          "이 주제에 대해 가장 먼저 떠오르는 생각이 뭔가요?",
+          "왜 그런 생각이 드셨나요? 경험이나 이유가 있다면요.",
+          "반대로 생각하면 어떤 의견도 있지 않을까요?",
+          "당신의 삶에서 이 주제와 연결되는 순간이 있었나요?",
+          "이 글을 읽는 사람에게 꼭 전하고 싶은 한 문장은?",
+        ]
+        const TESTIMONIALS = [
+          {
+            q: "뭘 써야 할지 몰라서 항상 미뤘는데, 질문에 답하다 보니 어느새 한 편이 됐어요.",
+            w: "박지수 · 중학교 2학년",
+          },
+          {
+            q: "글쓰기를 배우고 싶었는데 어디서 시작할지 몰랐어요. 씨앗 쓰기부터 따라가니 자신감이 생겼어요.",
+            w: "이순자 · 72세",
+          },
+          {
+            q: "AI가 대신 써주지 않고 계속 질문을 던지는 게 처음엔 답답했는데, 그게 진짜 도움이 된다는 걸 압니다.",
+            w: "김태현 · 대학원생",
+          },
+        ]
+        const state = {
+          screen: "landing",
+          appPage: "home",
+          confetti: false,
+          confettiPieces: [],
+          toast: "",
+          landingTypedIndex: 0,
+          landingFull: "처음 쓰는 한 문장부터,\n생각이 깊어지는 한 편의 글까지",
+          onboarding: { step: 0, answer: "", level: null },
+          write: {
+            content: "",
+            mode: "write",
+            focusMode: false,
+            timer: 0,
+            showTip: false,
+          },
+          feedbackTab: "structure",
+          dojo: { lesson: null, step: 0, sel: null, answered: false },
+          coach: { step: 0, answers: [], input: "", done: false },
+        }
 
-      function renderConfetti() {
-        return `
+        const root = document.getElementById("app")
+        let landingInterval = null
+        let writeTimerInterval = null
+        let toastTimer = null
+
+        const escapeHtml = (s) =>
+          String(s)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/\"/g, "&quot;")
+            .replace(/'/g, "&#39;")
+        const nl2br = (s) => escapeHtml(s).replace(/\n/g, "<br>")
+        const fmt = (s) =>
+          `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`
+        const sentenceCount = (content) =>
+          content.split(/[.!?。]+/).filter((s) => s.trim().length > 2).length
+        const detectLevel = (t) =>
+          t.length < 30 ? "seed" : t.length < 120 ? "grow" : "deep"
+        const levelMap = {
+          seed: {
+            label: "씨앗 단계",
+            color: "var(--green)",
+            icon: "🌱",
+            desc: "처음이어도 괜찮아요! 씨앗 쓰기부터 짧고 쉬운 미션으로 시작합니다.",
+          },
+          grow: {
+            label: "성장 단계",
+            color: "var(--gold)",
+            icon: "🌿",
+            desc: "기초는 있군요! 에세이 구조와 논리를 단계적으로 훈련합니다.",
+          },
+          deep: {
+            label: "심화 단계",
+            color: "var(--blue)",
+            icon: "🌳",
+            desc: "능숙하게 쓰시는군요. 비판적 사고와 자기 목소리 찾기를 훈련합니다.",
+          },
+        }
+
+        function showToast(message) {
+          state.toast = message
+          clearTimeout(toastTimer)
+          toastTimer = setTimeout(() => {
+            state.toast = ""
+            render()
+          }, 1800)
+          render()
+        }
+
+        function startLandingTyping() {
+          clearInterval(landingInterval)
+          landingInterval = setInterval(() => {
+            if (state.screen !== "landing") return
+            if (state.landingTypedIndex < state.landingFull.length) {
+              state.landingTypedIndex += 1
+              render()
+            } else {
+              clearInterval(landingInterval)
+            }
+          }, 28)
+        }
+
+        function ensureWriteTimer() {
+          clearInterval(writeTimerInterval)
+          writeTimerInterval = setInterval(() => {
+            if (state.screen === "app" && state.appPage === "write") {
+              state.write.timer += 1
+              const timerEl = document.getElementById("write-timer")
+              if (timerEl) timerEl.textContent = `⏱ ${fmt(state.write.timer)}`
+            }
+          }, 1000)
+        }
+
+        function makeConfetti() {
+          state.confettiPieces = Array.from({ length: 24 }, (_, i) => ({
+            id: i,
+            left: Math.random() * 100,
+            color: ["var(--gold)", "var(--green)", "var(--blue)", "#f5a623"][
+              Math.floor(Math.random() * 4)
+            ],
+            duration: (0.9 + Math.random() * 1.2).toFixed(2),
+            delay: (Math.random() * 0.6).toFixed(2),
+          }))
+        }
+
+        function withActiveScreen(html) {
+          const toast = state.toast
+            ? `<div class="toast fi">${escapeHtml(state.toast)}</div>`
+            : ""
+          const confetti = state.confetti ? renderConfetti() : ""
+          return `${toast}${confetti}${html}`
+        }
+
+        function renderConfetti() {
+          return `
           <div class="confetti-layer fi">
-            ${state.confettiPieces.map((piece) => `
+            ${state.confettiPieces
+              .map(
+                (piece) => `
               <div class="confetti-piece" style="left:${piece.left}%;background:${piece.color};animation-duration:${piece.duration}s;animation-delay:${piece.delay}s;"></div>
-            `).join("")}
+            `
+              )
+              .join("")}
             <div style="position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);text-align:center;animation:scaleIn .4s ease;">
               <div style="font-size:56px;">🎉</div>
               <div style="font-size:20px;font-weight:900;font-family:var(--serif);color:var(--gold);margin-top:10px;text-shadow:0 0 30px rgba(201,168,76,.5);">에쓰다 시작!</div>
             </div>
           </div>
-        `;
-      }
+        `
+        }
 
-      function renderButton(label, action, opts = {}) {
-        const cls = opts.variant || "primary";
-        const attrs = [
-          `class="btn ${cls}"`,
-          `data-action="${action}"`,
-          opts.value !== undefined ? `data-value="${escapeHtml(opts.value)}"` : "",
-          opts.style ? `style="${opts.style}"` : "",
-          opts.disabled ? "disabled" : "",
-        ].filter(Boolean).join(" ");
-        return `<button ${attrs}>${label}</button>`;
-      }
+        function renderButton(label, action, opts = {}) {
+          const cls = opts.variant || "primary"
+          const attrs = [
+            `class="btn ${cls}"`,
+            `data-action="${action}"`,
+            opts.value !== undefined
+              ? `data-value="${escapeHtml(opts.value)}"`
+              : "",
+            opts.style ? `style="${opts.style}"` : "",
+            opts.disabled ? "disabled" : "",
+          ]
+            .filter(Boolean)
+            .join(" ")
+          return `<button ${attrs}>${label}</button>`
+        }
 
-      function renderBadge(label, color = "gold") {
-        return `<span class="badge ${color}">${label}</span>`;
-      }
+        function renderBadge(label, color = "gold") {
+          return `<span class="badge ${color}">${label}</span>`
+        }
 
-      function radarChartSVG(data) {
-        const cx = 160, cy = 120, radius = 76;
-        const levels = 4;
-        const angleStep = (Math.PI * 2) / data.length;
-        const startAngle = -Math.PI / 2;
-        const point = (r, angle) => ({ x: cx + Math.cos(angle) * r, y: cy + Math.sin(angle) * r });
-        const polygonPoints = (scale) => data.map((_, i) => {
-          const p = point(radius * scale, startAngle + angleStep * i);
-          return `${p.x.toFixed(2)},${p.y.toFixed(2)}`;
-        }).join(" ");
-        const dataPoints = data.map((d, i) => {
-          const p = point(radius * (d.v / 100), startAngle + angleStep * i);
-          return { ...p, angle: startAngle + angleStep * i, label: d.axis, value: d.v };
-        });
-        const dataPolygon = dataPoints.map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(" ");
-        return `
+        function radarChartSVG(data) {
+          const cx = 160,
+            cy = 120,
+            radius = 76
+          const levels = 4
+          const angleStep = (Math.PI * 2) / data.length
+          const startAngle = -Math.PI / 2
+          const point = (r, angle) => ({
+            x: cx + Math.cos(angle) * r,
+            y: cy + Math.sin(angle) * r,
+          })
+          const polygonPoints = (scale) =>
+            data
+              .map((_, i) => {
+                const p = point(radius * scale, startAngle + angleStep * i)
+                return `${p.x.toFixed(2)},${p.y.toFixed(2)}`
+              })
+              .join(" ")
+          const dataPoints = data.map((d, i) => {
+            const p = point(radius * (d.v / 100), startAngle + angleStep * i)
+            return {
+              ...p,
+              angle: startAngle + angleStep * i,
+              label: d.axis,
+              value: d.v,
+            }
+          })
+          const dataPolygon = dataPoints
+            .map((p) => `${p.x.toFixed(2)},${p.y.toFixed(2)}`)
+            .join(" ")
+          return `
           <svg width="320" height="240" viewBox="0 0 320 240" aria-label="스킬 레이더 차트">
             ${Array.from({ length: levels }, (_, i) => `<polygon points="${polygonPoints((i + 1) / levels)}" fill="none" stroke="#2d2d29" stroke-width="1" />`).join("")}
-            ${data.map((_, i) => {
-              const p = point(radius, startAngle + angleStep * i);
-              return `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#2d2d29" stroke-width="1" />`;
-            }).join("")}
+            ${data
+              .map((_, i) => {
+                const p = point(radius, startAngle + angleStep * i)
+                return `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#2d2d29" stroke-width="1" />`
+              })
+              .join("")}
             <polygon points="${dataPolygon}" fill="rgba(201,168,76,.18)" stroke="#c9a84c" stroke-width="2" />
             ${dataPoints.map((p) => `<circle cx="${p.x}" cy="${p.y}" r="3.2" fill="#c9a84c" />`).join("")}
-            ${dataPoints.map((p) => {
-              const labelPos = point(radius + 22, p.angle);
-              return `<text x="${labelPos.x}" y="${labelPos.y}" fill="#504e47" font-size="11" text-anchor="middle" dominant-baseline="middle">${escapeHtml(p.label)}</text>`;
-            }).join("")}
+            ${dataPoints
+              .map((p) => {
+                const labelPos = point(radius + 22, p.angle)
+                return `<text x="${labelPos.x}" y="${labelPos.y}" fill="#504e47" font-size="11" text-anchor="middle" dominant-baseline="middle">${escapeHtml(p.label)}</text>`
+              })
+              .join("")}
           </svg>
-        `;
-      }
+        `
+        }
 
-      function renderLanding() {
-        const typed = state.landingFull.slice(0, state.landingTypedIndex);
-        const features = [
-          { icon: "🌱", title: "씨앗 쓰기", desc: "3문장으로 시작하는 첫 경험. 쓰기가 처음이어도 괜찮아요." },
-          { icon: "🏋️", title: "에세이 도장", desc: "레벨별 인터랙티브 훈련으로 논리적 글쓰기를 단계적으로 쌓습니다." },
-          { icon: "💬", title: "생각 코치", desc: "AI가 질문을 던집니다. 당신이 스스로 생각하고 쓰도록 이끕니다." },
-          { icon: "📊", title: "성장 지도", desc: "5개 역량 레이더로 내 글쓰기 실력 변화를 데이터로 확인합니다." },
-        ];
-        return withActiveScreen(`
+        function renderLanding() {
+          const typed = state.landingFull.slice(0, state.landingTypedIndex)
+          const features = [
+            {
+              icon: "🌱",
+              title: "씨앗 쓰기",
+              desc: "3문장으로 시작하는 첫 경험. 쓰기가 처음이어도 괜찮아요.",
+            },
+            {
+              icon: "🏋️",
+              title: "에세이 도장",
+              desc: "레벨별 인터랙티브 훈련으로 논리적 글쓰기를 단계적으로 쌓습니다.",
+            },
+            {
+              icon: "💬",
+              title: "생각 코치",
+              desc: "AI가 질문을 던집니다. 당신이 스스로 생각하고 쓰도록 이끕니다.",
+            },
+            {
+              icon: "📊",
+              title: "성장 지도",
+              desc: "5개 역량 레이더로 내 글쓰기 실력 변화를 데이터로 확인합니다.",
+            },
+          ]
+          return withActiveScreen(`
           <div class="page">
             <header class="landing-header">
               <div style="display:flex;align-items:center;gap:10px;">
@@ -338,39 +760,58 @@
             </section>
             <section style="padding:20px 18px 56px;max-width:520px;margin:0 auto;width:100%;">
               <div class="sr-grid-2">
-                ${features.map((f) => `
+                ${features
+                  .map(
+                    (f) => `
                   <div class="card hoverable fu" data-action="start-app" style="padding:20px;position:relative;overflow:hidden;">
                     <div style="font-size:30px;margin-bottom:10px;">${f.icon}</div>
                     <div style="font-size:14px;font-weight:700;margin-bottom:7px;font-family:var(--serif);">${escapeHtml(f.title)}</div>
                     <div class="muted" style="font-size:12px;line-height:1.75;">${escapeHtml(f.desc)}</div>
                     <div style="position:absolute;top:-16px;right:-16px;font-size:72px;opacity:.04;">${f.icon}</div>
                   </div>
-                `).join("")}
+                `
+                  )
+                  .join("")}
               </div>
             </section>
             <section style="padding:0 18px 56px;max-width:520px;margin:0 auto;width:100%;">
               <div class="card fu">
                 <div class="subtle" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;">에쓰다는 이것이 아닙니다</div>
                 ${[
-                  ["📖 책·강의", "지식 전달은 책이 합니다. 에쓰다는 생각을 글로 밀어내는 훈련을 합니다."],
-                  ["🗒 노션·옵시디언", "정보 수집은 생산성 앱이 합니다. 에쓰다는 생각을 글로 발전시킵니다."],
-                  ["📣 브런치·문피아", "발행은 출판 플랫폼이 합니다. 에쓰다는 그 전 단계, 쓰는 근육을 키웁니다."],
-                ].map(([t, d], i) => `
-                  <div style="display:flex;gap:12px;padding:11px 0;${i < 2 ? 'border-bottom:1px solid var(--border);' : ''}">
+                  [
+                    "📖 책·강의",
+                    "지식 전달은 책이 합니다. 에쓰다는 생각을 글로 밀어내는 훈련을 합니다.",
+                  ],
+                  [
+                    "🗒 노션·옵시디언",
+                    "정보 수집은 생산성 앱이 합니다. 에쓰다는 생각을 글로 발전시킵니다.",
+                  ],
+                  [
+                    "📣 브런치·문피아",
+                    "발행은 출판 플랫폼이 합니다. 에쓰다는 그 전 단계, 쓰는 근육을 키웁니다.",
+                  ],
+                ]
+                  .map(
+                    ([t, d], i) => `
+                  <div style="display:flex;gap:12px;padding:11px 0;${i < 2 ? "border-bottom:1px solid var(--border);" : ""}">
                     <span class="muted" style="font-size:13px;font-weight:700;min-width:100px;">${t}</span>
                     <span class="subtle" style="font-size:12px;line-height:1.7;">${d}</span>
                   </div>
-                `).join("")}
+                `
+                  )
+                  .join("")}
               </div>
             </section>
             <section style="padding:0 18px 56px;max-width:520px;margin:0 auto;width:100%;">
               <h2 style="font-family:var(--serif);font-size:18px;font-weight:700;text-align:center;margin-bottom:18px;color:var(--text2);">사용자 이야기</h2>
-              ${TESTIMONIALS.map((t) => `
+              ${TESTIMONIALS.map(
+                (t) => `
                 <div class="card fu" style="margin-bottom:10px;padding:20px;">
                   <p class="quote" style="font-size:14px;line-height:1.9;color:var(--text);margin-bottom:10px;">“${escapeHtml(t.q)}”</p>
                   <span class="subtle" style="font-size:12px;">— ${escapeHtml(t.w)}</span>
                 </div>
-              `).join("")}
+              `
+              ).join("")}
             </section>
             <section style="padding:32px 18px 60px;text-align:center;border-top:1px solid var(--border);">
               <p style="font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:20px;color:var(--text);">지금 첫 문장을 써보세요.</p>
@@ -378,25 +819,27 @@
               <p class="subtle" style="margin-top:14px;font-size:12px;">개인정보 보호 · 언제든 탈퇴 가능</p>
             </section>
           </div>
-        `);
-      }
+        `)
+        }
 
-      function renderOnboarding() {
-        const { step, answer, level } = state.onboarding;
-        const lv = level ? levelMap[level] : null;
-        return withActiveScreen(`
+        function renderOnboarding() {
+          const { step, answer, level } = state.onboarding
+          const lv = level ? levelMap[level] : null
+          return withActiveScreen(`
           <div style="min-height:100vh;display:flex;flex-direction:column;background:var(--bg);">
             <div style="padding:20px 24px 0;">
               <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
                 <span style="font-size:18px;font-family:var(--serif);font-weight:900;color:var(--gold);">에쓰다</span>
                 <div style="flex:1;height:3px;background:var(--s3);border-radius:2px;overflow:hidden;">
-                  <div style="width:${step === 0 ? '10%' : step === 1 ? '55%' : '100%'};height:100%;background:var(--gold);border-radius:2px;transition:width .5s ease;"></div>
+                  <div style="width:${step === 0 ? "10%" : step === 1 ? "55%" : "100%"};height:100%;background:var(--gold);border-radius:2px;transition:width .5s ease;"></div>
                 </div>
                 <span class="subtle" style="font-size:12px;">${step + 1} / 3</span>
               </div>
             </div>
             <div style="flex:1;padding:0 24px;max-width:460px;margin:0 auto;width:100%;">
-              ${step === 0 ? `
+              ${
+                step === 0
+                  ? `
                 <div class="fu" style="text-align:center;padding-top:32px;">
                   <div style="font-size:60px;margin-bottom:20px;">✍️</div>
                   <h2 style="font-family:var(--serif);font-size:26px;font-weight:900;margin-bottom:14px;line-height:1.4;">어서 오세요!<br>레벨을 알아볼게요.</h2>
@@ -404,8 +847,12 @@
                   ${renderButton("시작하기 →", "onboarding-step", { value: "1", style: "width:100%;padding:15px;font-size:16px;" })}
                   <button data-action="onboarding-seed" style="margin-top:14px;background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;text-decoration:underline;">글쓰기가 처음이에요 (씨앗으로 시작)</button>
                 </div>
-              ` : ""}
-              ${step === 1 ? `
+              `
+                  : ""
+              }
+              ${
+                step === 1
+                  ? `
                 <div class="fu">
                   <div style="margin-bottom:10px;">${renderBadge("진단 글쓰기", "green")}</div>
                   <h2 style="font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:8px;line-height:1.7;">오늘 하루 중 가장 기억에 남는 장면을 떠올려보세요.<br>그것을 보거나 겪으면서 어떤 생각이 들었나요?</h2>
@@ -418,8 +865,12 @@
                     </div>
                   </div>
                 </div>
-              ` : ""}
-              ${step === 2 && lv ? `
+              `
+                  : ""
+              }
+              ${
+                step === 2 && lv
+                  ? `
                 <div class="si" style="text-align:center;padding-top:24px;">
                   <div style="font-size:68px;margin-bottom:14px;animation:breathe 2.5s infinite;">${lv.icon}</div>
                   <div style="margin-bottom:12px;">
@@ -429,16 +880,19 @@
                   <p class="muted" style="font-size:14px;line-height:1.8;margin:0 auto 28px;max-width:300px;">${escapeHtml(lv.desc)}</p>
                   ${renderButton("에쓰다 시작하기 →", "finish-onboarding", { style: "width:100%;padding:15px;font-size:16px;" })}
                 </div>
-              ` : ""}
+              `
+                  : ""
+              }
             </div>
           </div>
-        `);
-      }
+        `)
+        }
 
-      function renderHomePage() {
-        const h = new Date().getHours();
-        const gr = h < 12 ? "좋은 아침이에요" : h < 18 ? "안녕하세요" : "수고하셨어요";
-        return `
+        function renderHomePage() {
+          const h = new Date().getHours()
+          const gr =
+            h < 12 ? "좋은 아침이에요" : h < 18 ? "안녕하세요" : "수고하셨어요"
+          return `
           <div class="page" style="padding:22px 18px 100px;">
             <div class="fu" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
               <div>
@@ -483,13 +937,17 @@
                 { n: "12", l: "연속일", i: "🔥" },
                 { n: "8", l: "완성 글", i: "📄" },
                 { n: "Lv.3", l: "현재 레벨", i: "⭐" },
-              ].map((s) => `
+              ]
+                .map(
+                  (s) => `
                 <div class="card" style="padding:14px;text-align:center;">
                   <div style="font-size:20px;margin-bottom:4px;">${s.i}</div>
                   <div style="font-size:20px;font-weight:800;font-family:var(--serif);">${s.n}</div>
                   <div class="subtle" style="font-size:11px;margin-top:2px;">${s.l}</div>
                 </div>
-              `).join("")}
+              `
+                )
+                .join("")}
             </div>
             <div class="fu" style="margin-bottom:18px;">
               <div class="subtle" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px;">이어서 훈련하기</div>
@@ -508,9 +966,21 @@
             <div class="fu">
               <div class="subtle" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px;">최근 작성한 글</div>
               ${[
-                { t: "기술은 인간을 게으르게 만들까", d: "2일 전", s: "피드백 완료", i: "✅" },
-                { t: "내가 가장 행복했던 여름날", d: "4일 전", s: "초안 완성", i: "✏️" },
-              ].map((r) => `
+                {
+                  t: "기술은 인간을 게으르게 만들까",
+                  d: "2일 전",
+                  s: "피드백 완료",
+                  i: "✅",
+                },
+                {
+                  t: "내가 가장 행복했던 여름날",
+                  d: "4일 전",
+                  s: "초안 완성",
+                  i: "✏️",
+                },
+              ]
+                .map(
+                  (r) => `
                 <div class="card hoverable" style="margin-bottom:9px;padding:14px;">
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <div>
@@ -520,18 +990,22 @@
                     <span class="subtle">›</span>
                   </div>
                 </div>
-              `).join("")}
+              `
+                )
+                .join("")}
             </div>
           </div>
-        `;
-      }
+        `
+        }
 
-      function renderWritePage() {
-        const w = state.write;
-        if (w.mode === "feedback") return renderFeedbackView();
-        return `
+        function renderWritePage() {
+          const w = state.write
+          if (w.mode === "feedback") return renderFeedbackView()
+          return `
           <div style="height:100vh;display:flex;flex-direction:column;background:var(--bg);">
-            ${!w.focusMode ? `
+            ${
+              !w.focusMode
+                ? `
               <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
                 <div>
                   <div class="subtle" style="font-size:11px;margin-bottom:1px;">오늘의 글감</div>
@@ -542,17 +1016,25 @@
                   <button data-action="write-toggle-focus" style="background:var(--s3);border:none;border-radius:7px;padding:6px 10px;color:var(--text2);font-size:11px;cursor:pointer;">집중 모드</button>
                 </div>
               </div>
-            ` : `<button class="focus-exit" data-action="write-toggle-focus">✕ 종료</button>`}
-            <div style="flex:1;padding:${w.focusMode ? '56px 32px' : '22px 18px'};overflow-y:auto;position:relative;">
+            `
+                : `<button class="focus-exit" data-action="write-toggle-focus">✕ 종료</button>`
+            }
+            <div style="flex:1;padding:${w.focusMode ? "56px 32px" : "22px 18px"};overflow-y:auto;position:relative;">
               <textarea id="write-content" placeholder="생각나는 대로 써보세요.\n\n완벽할 필요 없어요. 일단 적어보는 게 먼저입니다." style="width:100%;min-height:calc(100% - 20px);background:transparent;border:none;color:var(--text);font-size:${w.focusMode ? 20 : 17}px;line-height:2.1;resize:none;font-family:var(--serif);letter-spacing:.015em;">${escapeHtml(w.content)}</textarea>
-              ${w.content.length > 20 && !w.showTip && !w.focusMode ? `
+              ${
+                w.content.length > 20 && !w.showTip && !w.focusMode
+                  ? `
                 <div class="sticky-bottom-help" style="display:flex;justify-content:flex-end;">
                   <div data-action="write-show-tip" style="background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:9px 14px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:7px;box-shadow:var(--shadow);">
                     <span>💬</span><span class="muted">막혔나요? AI 질문 보기</span>
                   </div>
                 </div>
-              ` : ""}
-              ${w.showTip ? `
+              `
+                  : ""
+              }
+              ${
+                w.showTip
+                  ? `
                 <div class="si sticky-bottom-help">
                   <div class="card" style="border:1px solid var(--gold);background:#1a1a16;">
                     <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
@@ -563,9 +1045,13 @@
                     <p class="subtle" style="font-size:11px;">AI는 문장을 써주지 않아요. 당신이 스스로 쓸 수 있도록 질문만 드립니다.</p>
                   </div>
                 </div>
-              ` : ""}
+              `
+                  : ""
+              }
             </div>
-            ${!w.focusMode ? `
+            ${
+              !w.focusMode
+                ? `
               <div style="padding:12px 18px 80px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(12,12,11,.95);backdrop-filter:blur(20px);gap:10px;">
                 <div style="display:flex;gap:14px;font-size:12px;color:var(--text3);">
                   <span>${w.content.length}자</span><span>${sentenceCount(w.content)}문장</span>
@@ -575,19 +1061,36 @@
                   ${renderButton("AI 피드백 →", "write-feedback", { disabled: w.content.length < 20, style: "padding:8px 18px;font-size:13px;" })}
                 </div>
               </div>
-            ` : ""}
+            `
+                : ""
+            }
           </div>
-        `;
-      }
+        `
+        }
 
-      function renderFeedbackView() {
-        const tab = state.feedbackTab;
-        const seg = [
-          { label: "서론", color: "#74a87c", bg: "rgba(116,168,124,.14)", text: "인공지능은 우리의 삶을 편리하게 만들었다. 특히 정보를 빠르게 찾거나 반복적인 일을 대신해주는 측면에서 분명한 효율이 있다." },
-          { label: "본론", color: "#c9a84c", bg: "rgba(201,168,76,.14)", text: "하지만 동시에, 우리는 점점 더 생각하는 것을 포기하고 있는 것은 아닐까. 검색 한 번으로 답을 얻는 시대에, 스스로 고민하는 능력이 약해지는 느낌이 든다. 수업에서 AI가 요약해준 내용을 그대로 받아들인 적이 있었다." },
-          { label: "결론", color: "#6d9ecb", bg: "rgba(109,158,203,.14)", text: "AI를 잘 사용하면 효율적으로 될 수 있다. 하지만 잘 사용한다는 것이 무엇인지 모른다면 오히려 더 게을러질 수 있다고 생각한다." },
-        ];
-        return `
+        function renderFeedbackView() {
+          const tab = state.feedbackTab
+          const seg = [
+            {
+              label: "서론",
+              color: "#74a87c",
+              bg: "rgba(116,168,124,.14)",
+              text: "인공지능은 우리의 삶을 편리하게 만들었다. 특히 정보를 빠르게 찾거나 반복적인 일을 대신해주는 측면에서 분명한 효율이 있다.",
+            },
+            {
+              label: "본론",
+              color: "#c9a84c",
+              bg: "rgba(201,168,76,.14)",
+              text: "하지만 동시에, 우리는 점점 더 생각하는 것을 포기하고 있는 것은 아닐까. 검색 한 번으로 답을 얻는 시대에, 스스로 고민하는 능력이 약해지는 느낌이 든다. 수업에서 AI가 요약해준 내용을 그대로 받아들인 적이 있었다.",
+            },
+            {
+              label: "결론",
+              color: "#6d9ecb",
+              bg: "rgba(109,158,203,.14)",
+              text: "AI를 잘 사용하면 효율적으로 될 수 있다. 하지만 잘 사용한다는 것이 무엇인지 모른다면 오히려 더 게을러질 수 있다고 생각한다.",
+            },
+          ]
+          return `
           <div style="height:100vh;display:flex;flex-direction:column;background:var(--bg);">
             <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
               <button data-action="feedback-back" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">←</button>
@@ -598,15 +1101,27 @@
               ${renderBadge("2회 제출", "green")}
             </div>
             <div style="display:flex;gap:2px;padding:10px 18px 0;border-bottom:1px solid var(--border);">
-              ${[["structure", "구조"], ["strength", "강점"], ["suggest", "제안"]].map(([id, label]) => `
-                <button data-action="feedback-tab" data-value="${id}" style="padding:8px 14px;border-radius:7px 7px 0 0;border:none;font-size:13px;background:${tab === id ? 'var(--s2)' : 'transparent'};color:${tab === id ? 'var(--text)' : 'var(--text3)'};font-weight:${tab === id ? 600 : 400};cursor:pointer;border-bottom:${tab === id ? '2px solid var(--gold)' : '2px solid transparent'};">${label}</button>
-              `).join("")}
+              ${[
+                ["structure", "구조"],
+                ["strength", "강점"],
+                ["suggest", "제안"],
+              ]
+                .map(
+                  ([id, label]) => `
+                <button data-action="feedback-tab" data-value="${id}" style="padding:8px 14px;border-radius:7px 7px 0 0;border:none;font-size:13px;background:${tab === id ? "var(--s2)" : "transparent"};color:${tab === id ? "var(--text)" : "var(--text3)"};font-weight:${tab === id ? 600 : 400};cursor:pointer;border-bottom:${tab === id ? "2px solid var(--gold)" : "2px solid transparent"};">${label}</button>
+              `
+                )
+                .join("")}
             </div>
             <div class="page" style="padding:18px 18px 100px;">
-              ${tab === 'structure' ? `
+              ${
+                tab === "structure"
+                  ? `
                 <div class="fu">
                   <p class="subtle" style="font-size:12px;margin-bottom:14px;line-height:1.7;">글의 구조를 색으로 구분했어요. 어느 부분이 서론·본론·결론인지 확인해보세요.</p>
-                  ${seg.map((s) => `
+                  ${seg
+                    .map(
+                      (s) => `
                     <div style="margin-bottom:12px;">
                       <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">
                         <span style="width:9px;height:9px;border-radius:50%;background:${s.color};display:inline-block;"></span>
@@ -616,21 +1131,41 @@
                         <p style="font-family:var(--serif);font-size:13px;line-height:1.9;color:var(--text);">${escapeHtml(s.text)}</p>
                       </div>
                     </div>
-                  `).join("")}
+                  `
+                    )
+                    .join("")}
                   <div class="card" style="margin-top:12px;background:rgba(200,107,107,.07);border:1px solid #c86b6b33;">
                     <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:5px;">⚠️ 빠진 부분</div>
                     <p class="muted" style="font-size:13px;line-height:1.7;">결론이 짧고 갑작스럽게 끝나고 있어요. 본론의 핵심을 다시 한번 정리하는 문장이 있으면 좋겠어요.</p>
                   </div>
                 </div>
-              ` : ''}
-              ${tab === 'strength' ? `
+              `
+                  : ""
+              }
+              ${
+                tab === "strength"
+                  ? `
                 <div class="fu">
                   <p class="subtle" style="font-size:12px;margin-bottom:18px;line-height:1.7;">이번 글에서 잘 된 점이에요. 다음 글에도 유지해보세요!</p>
                   ${[
-                    { i: '✨', t: '구체적인 경험 사용', d: '수업 경험을 직접 언급한 부분이 설득력을 높였어요. 추상적인 주장보다 훨씬 강력합니다.' },
-                    { i: '🔗', t: '자연스러운 전환', d: '“하지만 동시에”로 대조적 시각을 매끄럽게 도입했어요.' },
-                    { i: '💡', t: '균형 잡힌 시각', d: '기술의 긍정/부정 면을 모두 다루려는 시도가 에세이에 깊이를 더해줍니다.' },
-                  ].map((s) => `
+                    {
+                      i: "✨",
+                      t: "구체적인 경험 사용",
+                      d: "수업 경험을 직접 언급한 부분이 설득력을 높였어요. 추상적인 주장보다 훨씬 강력합니다.",
+                    },
+                    {
+                      i: "🔗",
+                      t: "자연스러운 전환",
+                      d: "“하지만 동시에”로 대조적 시각을 매끄럽게 도입했어요.",
+                    },
+                    {
+                      i: "💡",
+                      t: "균형 잡힌 시각",
+                      d: "기술의 긍정/부정 면을 모두 다루려는 시도가 에세이에 깊이를 더해줍니다.",
+                    },
+                  ]
+                    .map(
+                      (s) => `
                     <div class="card" style="margin-bottom:10px;border:1px solid var(--green)30;background:var(--green-bg);">
                       <div style="display:flex;gap:12px;">
                         <span style="font-size:22px;">${s.i}</span>
@@ -640,39 +1175,66 @@
                         </div>
                       </div>
                     </div>
-                  `).join("")}
+                  `
+                    )
+                    .join("")}
                 </div>
-              ` : ''}
-              ${tab === 'suggest' ? `
+              `
+                  : ""
+              }
+              ${
+                tab === "suggest"
+                  ? `
                 <div class="fu">
                   <p class="subtle" style="font-size:12px;margin-bottom:18px;line-height:1.7;">AI는 문장을 써주지 않아요. 어느 부분을 왜 보강하면 좋을지만 알려드립니다.</p>
                   ${[
-                    { n: '01', t: '근거 추가', d: '“점점 생각하는 것을 포기한다”는 주장에 수치나 연구 사례를 하나 추가해보세요. 개인 경험만으로는 설득력이 제한돼요.', a: '근거 자료 찾기' },
-                    { n: '02', t: '반론 수용', d: '기술이 오히려 사고를 확장시킨다는 반대 의견을 한 문장이라도 다루면 더 성숙한 에세이가 됩니다.', a: '반론 질문 받기' },
-                    { n: '03', t: '결론 강화', d: '“잘 사용하면 된다”는 결론을 넘어, 그럼 어떻게 잘 사용할 수 있는지 한 문장 더 써보세요.', a: '결론 힌트 받기' },
-                  ].map((s) => `
+                    {
+                      n: "01",
+                      t: "근거 추가",
+                      d: "“점점 생각하는 것을 포기한다”는 주장에 수치나 연구 사례를 하나 추가해보세요. 개인 경험만으로는 설득력이 제한돼요.",
+                      a: "근거 자료 찾기",
+                    },
+                    {
+                      n: "02",
+                      t: "반론 수용",
+                      d: "기술이 오히려 사고를 확장시킨다는 반대 의견을 한 문장이라도 다루면 더 성숙한 에세이가 됩니다.",
+                      a: "반론 질문 받기",
+                    },
+                    {
+                      n: "03",
+                      t: "결론 강화",
+                      d: "“잘 사용하면 된다”는 결론을 넘어, 그럼 어떻게 잘 사용할 수 있는지 한 문장 더 써보세요.",
+                      a: "결론 힌트 받기",
+                    },
+                  ]
+                    .map(
+                      (s) => `
                     <div class="card" style="margin-bottom:10px;">
                       <div style="display:flex;gap:12px;">
                         <span style="font-size:11px;font-weight:800;color:var(--gold);opacity:.5;min-width:22px;padding-top:2px;">${s.n}</span>
                         <div style="flex:1;">
                           <div style="font-size:13px;font-weight:700;margin-bottom:5px;">${s.t}</div>
                           <div class="muted" style="font-size:12px;line-height:1.7;margin-bottom:10px;">${s.d}</div>
-                          ${renderButton(`💬 ${s.a}`, 'feedback-hint', { variant: 'soft', style: 'padding:5px 11px;font-size:11px;' })}
+                          ${renderButton(`💬 ${s.a}`, "feedback-hint", { variant: "soft", style: "padding:5px 11px;font-size:11px;" })}
                         </div>
                       </div>
                     </div>
-                  `).join("")}
-                  ${renderButton('↩ 수정하고 재제출하기', 'feedback-back', { style: 'width:100%;margin-top:6px;padding:13px;font-size:14px;' })}
+                  `
+                    )
+                    .join("")}
+                  ${renderButton("↩ 수정하고 재제출하기", "feedback-back", { style: "width:100%;margin-top:6px;padding:13px;font-size:14px;" })}
                 </div>
-              ` : ''}
+              `
+                  : ""
+              }
             </div>
           </div>
-        `;
-      }
+        `
+        }
 
-      function renderDojoPage() {
-        if (state.dojo.lesson) return renderDojoLesson();
-        return `
+        function renderDojoPage() {
+          if (state.dojo.lesson) return renderDojoLesson()
+          return `
           <div class="page" style="padding:22px 18px 100px;">
             <div class="fu" style="margin-bottom:22px;">
               <h1 style="font-family:var(--serif);font-size:24px;font-weight:900;margin-bottom:5px;">에세이 도장</h1>
@@ -688,44 +1250,44 @@
             <div style="position:relative;">
               <div style="position:absolute;left:29px;top:36px;bottom:36px;width:2px;background:linear-gradient(to bottom,var(--green),var(--gold) 40%,var(--border) 40%);z-index:0;"></div>
               ${DOJO.map((lv, i) => {
-                const done = lv.status === 'done';
-                const current = lv.status === 'current';
-                const locked = lv.status === 'locked';
+                const done = lv.status === "done"
+                const current = lv.status === "current"
+                const locked = lv.status === "locked"
                 return `
                   <div class="fu" style="display:flex;gap:14px;margin-bottom:14px;position:relative;z-index:1;">
-                    <div style="width:42px;height:42px;border-radius:50%;flex-shrink:0;background:${done ? 'var(--green)' : current ? 'var(--gold)' : 'var(--s3)'};border:2px solid ${done ? 'var(--green)' : current ? 'var(--gold)' : 'var(--border2)'};display:flex;align-items:center;justify-content:center;font-size:16px;color:${done || current ? '#0c0c0b' : 'var(--text3)'};animation:${current ? 'goldPulse 2.5s infinite' : 'none'};">
-                      ${done ? '✓' : current ? lv.id : '🔒'}
+                    <div style="width:42px;height:42px;border-radius:50%;flex-shrink:0;background:${done ? "var(--green)" : current ? "var(--gold)" : "var(--s3)"};border:2px solid ${done ? "var(--green)" : current ? "var(--gold)" : "var(--border2)"};display:flex;align-items:center;justify-content:center;font-size:16px;color:${done || current ? "#0c0c0b" : "var(--text3)"};animation:${current ? "goldPulse 2.5s infinite" : "none"};">
+                      ${done ? "✓" : current ? lv.id : "🔒"}
                     </div>
                     <div style="flex:1;">
-                      <div class="card ${locked ? '' : 'hoverable'}" ${locked ? '' : `data-action="dojo-open" data-value="${lv.id}"`} style="padding:14px;opacity:${locked ? .45 : 1};border:${current ? '1px solid var(--gold)55' : '1px solid var(--border)'};background:${current ? 'linear-gradient(135deg,var(--s1),#1a1a15)' : 'var(--s1)'};">
+                      <div class="card ${locked ? "" : "hoverable"}" ${locked ? "" : `data-action="dojo-open" data-value="${lv.id}"`} style="padding:14px;opacity:${locked ? 0.45 : 1};border:${current ? "1px solid var(--gold)55" : "1px solid var(--border)"};background:${current ? "linear-gradient(135deg,var(--s1),#1a1a15)" : "var(--s1)"};">
                         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
                           <div>
                             <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap;">
                               <span style="font-size:13px;font-weight:700;">레벨 ${lv.id}. ${escapeHtml(lv.title)}</span>
-                              ${current ? renderBadge('진행 중', 'gold') : ''}
-                              ${done ? renderBadge('완료', 'green') : ''}
+                              ${current ? renderBadge("진행 중", "gold") : ""}
+                              ${done ? renderBadge("완료", "green") : ""}
                             </div>
                             <div class="subtle" style="font-size:11px;">${escapeHtml(lv.sub)} · 레슨 ${lv.lessons}개</div>
                           </div>
                           <span style="font-size:12px;color:var(--gold);font-weight:700;">+${lv.xp} XP</span>
                         </div>
-                        ${current ? `<div style="margin-top:10px;height:3px;background:var(--s3);border-radius:2px;"><div style="width:30%;height:100%;background:var(--gold);border-radius:2px;"></div></div>` : ''}
+                        ${current ? `<div style="margin-top:10px;height:3px;background:var(--s3);border-radius:2px;"><div style="width:30%;height:100%;background:var(--gold);border-radius:2px;"></div></div>` : ""}
                       </div>
                     </div>
                   </div>
-                `;
+                `
               }).join("")}
             </div>
           </div>
-        `;
-      }
+        `
+        }
 
-      function renderDojoLesson() {
-        const step = state.dojo.step;
-        const sel = state.dojo.sel;
-        const ans = state.dojo.answered;
-        const correct = 'B';
-        return `
+        function renderDojoLesson() {
+          const step = state.dojo.step
+          const sel = state.dojo.sel
+          const ans = state.dojo.answered
+          const correct = "B"
+          return `
           <div style="height:100vh;display:flex;flex-direction:column;background:var(--bg);">
             <div style="padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
               <button data-action="dojo-back" style="background:none;border:none;color:var(--text2);font-size:20px;cursor:pointer;">←</button>
@@ -736,76 +1298,121 @@
               <span class="subtle" style="font-size:12px;">${step + 1}/3</span>
             </div>
             <div class="page" style="padding:24px 18px;">
-              ${step === 0 ? `
+              ${
+                step === 0
+                  ? `
                 <div class="fu">
                   <div style="font-size:48px;margin-bottom:18px;">📚</div>
                   <h2 style="font-family:var(--serif);font-size:20px;font-weight:700;line-height:1.6;margin-bottom:18px;">근거 없는 주장은<br>의견에 불과합니다.</h2>
                   <div class="card" style="padding:18px;margin-bottom:20px;"><p style="font-size:14px;line-height:1.9;font-family:var(--serif);">좋은 에세이는 주장만으로 부족합니다. 독자를 설득하려면 구체적인 근거가 필요해요. 오늘은 두 가지 근거 유형을 직접 써보며 익힙니다.</p></div>
                   <div class="sr-grid-2" style="margin-bottom:22px;">
-                    ${[["📊", "통계/연구", "숫자와 출처로 신뢰도 높이기"], ["💬", "사례/경험", "구체적 이야기로 공감 얻기"]].map(([ic, t, d]) => `
+                    ${[
+                      ["📊", "통계/연구", "숫자와 출처로 신뢰도 높이기"],
+                      ["💬", "사례/경험", "구체적 이야기로 공감 얻기"],
+                    ]
+                      .map(
+                        ([ic, t, d]) => `
                       <div class="card" style="padding:14px;">
                         <div style="font-size:24px;margin-bottom:8px;">${ic}</div>
                         <div style="font-size:12px;font-weight:700;margin-bottom:4px;">${t}</div>
                         <div class="subtle" style="font-size:11px;">${d}</div>
                       </div>
-                    `).join("")}
+                    `
+                      )
+                      .join("")}
                   </div>
-                  ${renderButton('다음 →', 'dojo-step', { value: '1', style: 'width:100%;padding:14px;font-size:15px;' })}
+                  ${renderButton("다음 →", "dojo-step", { value: "1", style: "width:100%;padding:14px;font-size:15px;" })}
                 </div>
-              ` : ''}
-              ${step === 1 ? `
+              `
+                  : ""
+              }
+              ${
+                step === 1
+                  ? `
                 <div class="fu">
-                  <div style="margin-bottom:12px;">${renderBadge('인터랙티브 문제', 'gold')}</div>
+                  <div style="margin-bottom:12px;">${renderBadge("인터랙티브 문제", "gold")}</div>
                   <h2 style="font-family:var(--serif);font-size:16px;font-weight:700;line-height:1.7;margin-bottom:18px;">다음 두 문단 중 더 설득력 있는 것은 어느 쪽인가요?</h2>
                   ${[
-                    { id: 'A', text: '스마트폰은 분명히 사람들을 더 게으르게 만들었다. 많은 사람들이 스마트폰 때문에 생각하는 것을 멈추게 됐다는 것은 사실이다.' },
-                    { id: 'B', text: '2023년 MIT 연구에 따르면 스마트폰 의존도가 높은 그룹은 기억력 테스트에서 평균 23% 낮은 점수를 기록했다. 이는 “디지털 건망증” 현상으로 불리며, 기억을 외부에 위탁하는 경향이 늘고 있음을 보여준다.' },
-                  ].map((opt) => {
-                    const border = sel === opt.id
-                      ? (ans ? (opt.id === correct ? '1px solid var(--green)' : '1px solid var(--red)') : '1px solid var(--gold)')
-                      : (ans && opt.id === correct ? '1px solid var(--green)' : '1px solid var(--border)');
-                    const bg = sel === opt.id
-                      ? (ans ? (opt.id === correct ? 'var(--green-bg)' : 'rgba(200,107,107,.1)') : 'var(--gold-bg2)')
-                      : (ans && opt.id === correct ? 'var(--green-bg)' : 'var(--s1)');
-                    return `
-                      <div class="card" ${ans ? '' : `data-action="dojo-select" data-value="${opt.id}"`} style="margin-bottom:10px;cursor:${ans ? 'default' : 'pointer'};border:${border};background:${bg};transition:all .2s;">
+                    {
+                      id: "A",
+                      text: "스마트폰은 분명히 사람들을 더 게으르게 만들었다. 많은 사람들이 스마트폰 때문에 생각하는 것을 멈추게 됐다는 것은 사실이다.",
+                    },
+                    {
+                      id: "B",
+                      text: "2023년 MIT 연구에 따르면 스마트폰 의존도가 높은 그룹은 기억력 테스트에서 평균 23% 낮은 점수를 기록했다. 이는 “디지털 건망증” 현상으로 불리며, 기억을 외부에 위탁하는 경향이 늘고 있음을 보여준다.",
+                    },
+                  ]
+                    .map((opt) => {
+                      const border =
+                        sel === opt.id
+                          ? ans
+                            ? opt.id === correct
+                              ? "1px solid var(--green)"
+                              : "1px solid var(--red)"
+                            : "1px solid var(--gold)"
+                          : ans && opt.id === correct
+                            ? "1px solid var(--green)"
+                            : "1px solid var(--border)"
+                      const bg =
+                        sel === opt.id
+                          ? ans
+                            ? opt.id === correct
+                              ? "var(--green-bg)"
+                              : "rgba(200,107,107,.1)"
+                            : "var(--gold-bg2)"
+                          : ans && opt.id === correct
+                            ? "var(--green-bg)"
+                            : "var(--s1)"
+                      return `
+                      <div class="card" ${ans ? "" : `data-action="dojo-select" data-value="${opt.id}"`} style="margin-bottom:10px;cursor:${ans ? "default" : "pointer"};border:${border};background:${bg};transition:all .2s;">
                         <div style="display:flex;gap:10px;">
                           <span style="width:22px;height:22px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex-shrink:0;">${opt.id}</span>
                           <p style="font-family:var(--serif);font-size:13px;line-height:1.85;color:var(--text);">${escapeHtml(opt.text)}</p>
                         </div>
                       </div>
-                    `;
-                  }).join("")}
-                  ${!ans && sel ? renderButton('선택 확인', 'dojo-confirm', { style: 'width:100%;margin-top:6px;padding:13px;' }) : ''}
-                  ${ans ? `
+                    `
+                    })
+                    .join("")}
+                  ${!ans && sel ? renderButton("선택 확인", "dojo-confirm", { style: "width:100%;margin-top:6px;padding:13px;" }) : ""}
+                  ${
+                    ans
+                      ? `
                     <div class="card si" style="margin-top:8px;background:var(--s2);border:1px solid var(--border2);">
-                      <div style="font-size:12px;font-weight:700;color:${sel === correct ? 'var(--green)' : 'var(--red)'};margin-bottom:7px;">${sel === correct ? '✅ 정확해요!' : '❌ 아쉬워요'}</div>
+                      <div style="font-size:12px;font-weight:700;color:${sel === correct ? "var(--green)" : "var(--red)"};margin-bottom:7px;">${sel === correct ? "✅ 정확해요!" : "❌ 아쉬워요"}</div>
                       <p class="muted" style="font-size:13px;line-height:1.8;margin-bottom:12px;">정답은 B입니다. A는 단언하지만 근거가 없어요. B는 구체적 수치, 연구 출처, 현상의 이름까지 제시합니다. 독자는 검증 가능한 정보를 더 신뢰합니다.</p>
-                      ${renderButton('다음 레슨으로 →', 'dojo-step', { value: '2', style: 'width:100%;padding:12px;font-size:13px;' })}
+                      ${renderButton("다음 레슨으로 →", "dojo-step", { value: "2", style: "width:100%;padding:12px;font-size:13px;" })}
                     </div>
-                  ` : ''}
+                  `
+                      : ""
+                  }
                 </div>
-              ` : ''}
-              ${step === 2 ? `
+              `
+                  : ""
+              }
+              ${
+                step === 2
+                  ? `
                 <div class="fu">
-                  <div style="margin-bottom:12px;">${renderBadge('직접 써보기', 'blue')}</div>
+                  <div style="margin-bottom:12px;">${renderBadge("직접 써보기", "blue")}</div>
                   <h2 style="font-family:var(--serif);font-size:16px;font-weight:700;line-height:1.7;margin:0 0 16px;">지금 작성 중인 에세이에서 주장 하나를 고르고, 그것을 뒷받침하는 구체적 사례나 수치를 추가해보세요.</h2>
                   <div class="card" style="padding:0;overflow:hidden;">
                     <textarea id="dojo-freewrite" placeholder="예) '실제로 내 친구 중 하나는...' 또는 '한 연구에 따르면...'" style="width:100%;min-height:160px;background:transparent;border:none;color:var(--text);font-size:15px;line-height:1.9;resize:none;padding:16px;font-family:var(--serif);"></textarea>
                     <div style="padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
-                      ${renderButton('레슨 완료 +100 XP →', 'dojo-complete', { style: 'padding:8px 18px;font-size:13px;' })}
+                      ${renderButton("레슨 완료 +100 XP →", "dojo-complete", { style: "padding:8px 18px;font-size:13px;" })}
                     </div>
                   </div>
                 </div>
-              ` : ''}
+              `
+                  : ""
+              }
             </div>
           </div>
-        `;
-      }
+        `
+        }
 
-      function renderCoachPage() {
-        const c = state.coach;
-        return `
+        function renderCoachPage() {
+          const c = state.coach
+          return `
           <div style="height:100vh;display:flex;flex-direction:column;background:var(--bg);">
             <div style="padding:14px 18px;border-bottom:1px solid var(--border);">
               <h1 style="font-size:16px;font-weight:700;margin-bottom:2px;">💬 생각 코치</h1>
@@ -817,7 +1424,9 @@
                 <p style="font-family:var(--serif);font-size:15px;font-weight:600;line-height:1.65;">기술이 인간을 더 게으르게 만들까요?</p>
               </div>
               <div style="display:flex;flex-direction:column;gap:14px;">
-                ${COACH_Q.slice(0, c.step + 1).map((q, i) => `
+                ${COACH_Q.slice(0, c.step + 1)
+                  .map(
+                    (q, i) => `
                   <div>
                     <div class="fu" style="display:flex;gap:10px;margin-bottom:9px;">
                       <div style="width:30px;height:30px;border-radius:50%;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">✦</div>
@@ -825,41 +1434,55 @@
                         <p style="font-size:13px;line-height:1.8;">${escapeHtml(q)}</p>
                       </div>
                     </div>
-                    ${c.answers[i] ? `
+                    ${
+                      c.answers[i]
+                        ? `
                       <div class="fu" style="display:flex;justify-content:flex-end;">
                         <div style="background:var(--gold-bg);border-radius:11px 0 11px 11px;padding:11px 14px;max-width:88%;border:1px solid var(--gold)22;">
                           <p style="font-size:13px;line-height:1.8;font-family:var(--serif);">${nl2br(c.answers[i])}</p>
                         </div>
                       </div>
-                    ` : ''}
+                    `
+                        : ""
+                    }
                   </div>
-                `).join("")}
-                ${c.done ? `
+                `
+                  )
+                  .join("")}
+                ${
+                  c.done
+                    ? `
                   <div class="card si" style="text-align:center;padding:22px;border:1px solid var(--gold);background:linear-gradient(135deg,var(--s1),#1a1a15);">
                     <div style="font-size:40px;margin-bottom:10px;">🎉</div>
                     <h3 style="font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:7px;">생각 재료가 모였어요!</h3>
                     <p class="muted" style="font-size:13px;line-height:1.8;margin-bottom:18px;">방금 답변한 내용이 초고의 뼈대가 됩니다.<br>이것을 바탕으로 에세이를 시작해볼까요?</p>
-                    ${renderButton('초고 쓰러 가기 →', 'nav', { value: 'write', style: 'width:100%;padding:13px;font-size:14px;' })}
+                    ${renderButton("초고 쓰러 가기 →", "nav", { value: "write", style: "width:100%;padding:13px;font-size:14px;" })}
                   </div>
-                ` : ''}
+                `
+                    : ""
+                }
               </div>
               <div id="coach-bottom-anchor"></div>
             </div>
-            ${!c.done ? `
+            ${
+              !c.done
+                ? `
               <div style="padding:10px 18px 80px;border-top:1px solid var(--border);background:rgba(12,12,11,.95);backdrop-filter:blur(20px);">
                 <div style="display:flex;gap:9px;">
                   <input id="coach-input" value="${escapeHtml(c.input)}" placeholder="생각을 자유롭게 적어보세요..." style="flex:1;background:var(--s2);border:1px solid var(--border2);border-radius:11px;padding:11px 15px;color:var(--text);font-size:14px;">
-                  <button data-action="coach-send" ${c.input.trim() ? '' : 'disabled'} style="width:42px;height:42px;border-radius:11px;background:${c.input.trim() ? 'var(--gold)' : 'var(--s3)'};border:none;font-size:17px;cursor:${c.input.trim() ? 'pointer' : 'not-allowed'};transition:all .2s;flex-shrink:0;color:${c.input.trim() ? '#0c0c0b' : 'var(--text3)'};">↑</button>
+                  <button data-action="coach-send" ${c.input.trim() ? "" : "disabled"} style="width:42px;height:42px;border-radius:11px;background:${c.input.trim() ? "var(--gold)" : "var(--s3)"};border:none;font-size:17px;cursor:${c.input.trim() ? "pointer" : "not-allowed"};transition:all .2s;flex-shrink:0;color:${c.input.trim() ? "#0c0c0b" : "var(--text3)"};">↑</button>
                 </div>
                 <div class="subtle" style="font-size:11px;margin-top:7px;text-align:center;">질문 ${c.step + 1} / ${COACH_Q.length} · 잘 쓸 필요 없어요</div>
               </div>
-            ` : ''}
+            `
+                : ""
+            }
           </div>
-        `;
-      }
+        `
+        }
 
-      function renderGrowthPage() {
-        return `
+        function renderGrowthPage() {
+          return `
           <div class="page" style="padding:22px 18px 100px;">
             <div class="fu" style="margin-bottom:22px;">
               <h1 style="font-family:var(--serif);font-size:24px;font-weight:900;margin-bottom:5px;">성장 지도</h1>
@@ -870,12 +1493,14 @@
               <div class="subtle" style="font-size:11px;margin-bottom:14px;">5개 글쓰기 역량 현황</div>
               <div class="radar-wrap">${radarChartSVG(RADAR_DATA)}</div>
               <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:6px;">
-                ${RADAR_DATA.map((d) => `
+                ${RADAR_DATA.map(
+                  (d) => `
                   <div style="text-align:center;">
                     <div style="font-size:15px;font-weight:800;color:var(--gold);">${d.v}</div>
                     <div class="subtle" style="font-size:10px;">${d.axis}</div>
                   </div>
-                `).join("")}
+                `
+                ).join("")}
               </div>
             </div>
             <div class="card fu" style="margin-bottom:14px;padding:16px;">
@@ -890,35 +1515,46 @@
                 </div>
               </div>
               <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;">
-                ${['일','월','화','수','목','금','토'].map((d) => `<div style="text-align:center;font-size:10px;color:var(--text3);margin-bottom:3px;">${d}</div>`).join("")}
-                ${STREAK_MAP.map((day) => `
-                  <div style="aspect-ratio:1;border-radius:5px;background:${day.today ? 'var(--gold)' : day.done ? 'rgba(116,168,124,.44)' : 'var(--s3)'};border:${day.today ? '2px solid var(--gold2)' : 'none'};display:flex;align-items:center;justify-content:center;font-size:9px;color:${day.today ? '#000' : day.done ? 'var(--green)' : 'var(--text3)'};font-weight:${day.today ? 800 : 400};">
-                    ${day.today ? '★' : ''}
+                ${["일", "월", "화", "수", "목", "금", "토"].map((d) => `<div style="text-align:center;font-size:10px;color:var(--text3);margin-bottom:3px;">${d}</div>`).join("")}
+                ${STREAK_MAP.map(
+                  (day) => `
+                  <div style="aspect-ratio:1;border-radius:5px;background:${day.today ? "var(--gold)" : day.done ? "rgba(116,168,124,.44)" : "var(--s3)"};border:${day.today ? "2px solid var(--gold2)" : "none"};display:flex;align-items:center;justify-content:center;font-size:9px;color:${day.today ? "#000" : day.done ? "var(--green)" : "var(--text3)"};font-weight:${day.today ? 800 : 400};">
+                    ${day.today ? "★" : ""}
                   </div>
-                `).join("")}
+                `
+                ).join("")}
               </div>
             </div>
             <div class="card fu" style="margin-bottom:14px;padding:16px;">
               <div style="font-size:13px;font-weight:700;margin-bottom:3px;">획득한 뱃지</div>
               <div class="subtle" style="font-size:11px;margin-bottom:14px;">${BADGES.filter((b) => b.earned).length} / ${BADGES.length}개 달성</div>
               <div class="growth-grid">
-                ${BADGES.map((b) => `
-                  <div style="text-align:center;padding:13px 7px;background:${b.earned ? 'var(--s2)' : 'var(--s1)'};border-radius:var(--r-sm);border:1px solid ${b.earned ? 'var(--border2)' : 'var(--border)'};opacity:${b.earned ? 1 : .38};transition:all .2s;">
-                    <div style="font-size:26px;margin-bottom:5px;filter:${b.earned ? 'none' : 'grayscale(100%)'};">${b.icon}</div>
-                    <div style="font-size:11px;font-weight:700;margin-bottom:2px;color:${b.earned ? 'var(--text)' : 'var(--text3)'};">${b.name}</div>
+                ${BADGES.map(
+                  (b) => `
+                  <div style="text-align:center;padding:13px 7px;background:${b.earned ? "var(--s2)" : "var(--s1)"};border-radius:var(--r-sm);border:1px solid ${b.earned ? "var(--border2)" : "var(--border)"};opacity:${b.earned ? 1 : 0.38};transition:all .2s;">
+                    <div style="font-size:26px;margin-bottom:5px;filter:${b.earned ? "none" : "grayscale(100%)"};">${b.icon}</div>
+                    <div style="font-size:11px;font-weight:700;margin-bottom:2px;color:${b.earned ? "var(--text)" : "var(--text3)"};">${b.name}</div>
                     <div class="subtle" style="font-size:10px;line-height:1.4;">${b.desc}</div>
                   </div>
-                `).join("")}
+                `
+                ).join("")}
               </div>
             </div>
             <div class="card fu" style="padding:16px;">
               <div style="font-size:13px;font-weight:700;margin-bottom:12px;">성장 타임라인</div>
               ${[
-                { date: '03.12', title: '기술과 게으름', score: 74, diff: '+12' },
-                { date: '03.10', title: '봄날의 기억', score: 62, diff: '+7' },
-                { date: '03.07', title: '첫 에세이', score: 55, diff: '+55' },
-              ].map((h, i) => `
-                <div class="timeline-row" style="${i < 2 ? 'border-bottom:1px solid var(--border);' : ''}">
+                {
+                  date: "03.12",
+                  title: "기술과 게으름",
+                  score: 74,
+                  diff: "+12",
+                },
+                { date: "03.10", title: "봄날의 기억", score: 62, diff: "+7" },
+                { date: "03.07", title: "첫 에세이", score: 55, diff: "+55" },
+              ]
+                .map(
+                  (h, i) => `
+                <div class="timeline-row" style="${i < 2 ? "border-bottom:1px solid var(--border);" : ""}">
                   <div class="subtle" style="font-size:11px;min-width:36px;padding-top:2px;">${h.date}</div>
                   <div style="flex:1;">
                     <div style="font-size:13px;font-weight:600;margin-bottom:5px;">${h.title}</div>
@@ -926,240 +1562,267 @@
                   </div>
                   <div style="font-size:13px;font-weight:800;color:var(--green);min-width:36px;text-align:right;">${h.diff}</div>
                 </div>
-              `).join("")}
+              `
+                )
+                .join("")}
             </div>
           </div>
-        `;
-      }
+        `
+        }
 
-      function renderAppShell() {
-        const page = (() => {
-          switch (state.appPage) {
-            case 'home': return renderHomePage();
-            case 'write': return renderWritePage();
-            case 'dojo': return renderDojoPage();
-            case 'coach': return renderCoachPage();
-            case 'growth': return renderGrowthPage();
-            default: return renderHomePage();
-          }
-        })();
-        return withActiveScreen(`
+        function renderAppShell() {
+          const page = (() => {
+            switch (state.appPage) {
+              case "home":
+                return renderHomePage()
+              case "write":
+                return renderWritePage()
+              case "dojo":
+                return renderDojoPage()
+              case "coach":
+                return renderCoachPage()
+              case "growth":
+                return renderGrowthPage()
+              default:
+                return renderHomePage()
+            }
+          })()
+          return withActiveScreen(`
           <div class="app-shell">
             ${page}
             <div class="nav-bar">
               ${[
-                { id: 'home', icon: '⌂', label: '홈' },
-                { id: 'dojo', icon: '🏋', label: '도장' },
-                { id: 'write', icon: '✍', label: '쓰기' },
-                { id: 'coach', icon: '💬', label: '코치' },
-                { id: 'growth', icon: '📊', label: '성장' },
-              ].map((it) => `
-                <button class="nav-btn ${state.appPage === it.id ? 'active' : ''} ${it.id === 'write' ? 'write' : ''}" data-action="nav" data-value="${it.id}">
+                { id: "home", icon: "⌂", label: "홈" },
+                { id: "dojo", icon: "🏋", label: "도장" },
+                { id: "write", icon: "✍", label: "쓰기" },
+                { id: "coach", icon: "💬", label: "코치" },
+                { id: "growth", icon: "📊", label: "성장" },
+              ]
+                .map(
+                  (it) => `
+                <button class="nav-btn ${state.appPage === it.id ? "active" : ""} ${it.id === "write" ? "write" : ""}" data-action="nav" data-value="${it.id}">
                   <span class="icon">${it.icon}</span>
                   <span class="label">${it.label}</span>
                 </button>
-              `).join("")}
+              `
+                )
+                .join("")}
             </div>
           </div>
-        `);
-      }
-
-      function render(options = {}) {
-        const active = document.activeElement;
-        const preserve = options.preserveFocus && active && (active.tagName === 'TEXTAREA' || active.tagName === 'INPUT');
-        const activeId = preserve ? active.id : null;
-        const selStart = preserve && typeof active.selectionStart === 'number' ? active.selectionStart : null;
-        const selEnd = preserve && typeof active.selectionEnd === 'number' ? active.selectionEnd : null;
-
-        const html = state.screen === 'landing'
-          ? renderLanding()
-          : state.screen === 'onboarding'
-            ? renderOnboarding()
-            : renderAppShell();
-
-        root.innerHTML = html;
-        bindInputs();
-        if (state.appPage === 'coach') {
-          const anchor = document.getElementById('coach-bottom-anchor');
-          if (anchor) anchor.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        `)
         }
-        if (preserve && activeId) {
-          const restored = document.getElementById(activeId);
-          if (restored) {
-            restored.focus();
-            if (selStart !== null && selEnd !== null && typeof restored.setSelectionRange === 'function') {
-              restored.setSelectionRange(selStart, selEnd);
+
+        function render(options = {}) {
+          const active = document.activeElement
+          const preserve =
+            options.preserveFocus &&
+            active &&
+            (active.tagName === "TEXTAREA" || active.tagName === "INPUT")
+          const activeId = preserve ? active.id : null
+          const selStart =
+            preserve && typeof active.selectionStart === "number"
+              ? active.selectionStart
+              : null
+          const selEnd =
+            preserve && typeof active.selectionEnd === "number"
+              ? active.selectionEnd
+              : null
+
+          const html =
+            state.screen === "landing"
+              ? renderLanding()
+              : state.screen === "onboarding"
+                ? renderOnboarding()
+                : renderAppShell()
+
+          root.innerHTML = html
+          bindInputs()
+          if (state.appPage === "coach") {
+            const anchor = document.getElementById("coach-bottom-anchor")
+            if (anchor)
+              anchor.scrollIntoView({ behavior: "smooth", block: "end" })
+          }
+          if (preserve && activeId) {
+            const restored = document.getElementById(activeId)
+            if (restored) {
+              restored.focus()
+              if (
+                selStart !== null &&
+                selEnd !== null &&
+                typeof restored.setSelectionRange === "function"
+              ) {
+                restored.setSelectionRange(selStart, selEnd)
+              }
             }
           }
         }
-      }
 
-      function bindInputs() {
-        const onboarding = document.getElementById('onboarding-answer');
-        if (onboarding) {
-          onboarding.addEventListener('input', (e) => {
-            state.onboarding.answer = e.target.value;
-            render({ preserveFocus: true });
-          });
+        function bindInputs() {
+          const onboarding = document.getElementById("onboarding-answer")
+          if (onboarding) {
+            onboarding.addEventListener("input", (e) => {
+              state.onboarding.answer = e.target.value
+              render({ preserveFocus: true })
+            })
+          }
+          const write = document.getElementById("write-content")
+          if (write) {
+            write.addEventListener("input", (e) => {
+              state.write.content = e.target.value
+              render({ preserveFocus: true })
+            })
+          }
+          const coachInput = document.getElementById("coach-input")
+          if (coachInput) {
+            coachInput.addEventListener("input", (e) => {
+              state.coach.input = e.target.value
+              render({ preserveFocus: true })
+            })
+            coachInput.addEventListener("keydown", (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                handleAction("coach-send")
+              }
+            })
+          }
         }
-        const write = document.getElementById('write-content');
-        if (write) {
-          write.addEventListener('input', (e) => {
-            state.write.content = e.target.value;
-            render({ preserveFocus: true });
-          });
+
+        function finishOnboarding() {
+          state.screen = "app"
+          state.appPage = "home"
+          state.confetti = true
+          makeConfetti()
+          render()
+          setTimeout(() => {
+            state.confetti = false
+            render()
+          }, 3000)
         }
-        const coachInput = document.getElementById('coach-input');
-        if (coachInput) {
-          coachInput.addEventListener('input', (e) => {
-            state.coach.input = e.target.value;
-            render({ preserveFocus: true });
-          });
-          coachInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              handleAction('coach-send');
-            }
-          });
+
+        function handleAction(action, value) {
+          switch (action) {
+            case "start-app":
+              state.screen = "onboarding"
+              render()
+              return
+            case "onboarding-step":
+              state.onboarding.step = Number(value)
+              render()
+              return
+            case "onboarding-seed":
+              state.onboarding.level = "seed"
+              state.onboarding.step = 2
+              render()
+              return
+            case "onboarding-submit":
+              state.onboarding.level = detectLevel(state.onboarding.answer)
+              state.onboarding.step = 2
+              render()
+              return
+            case "finish-onboarding":
+              finishOnboarding()
+              return
+            case "nav":
+              state.appPage = value
+              render()
+              return
+            case "write-toggle-focus":
+              state.write.focusMode = !state.write.focusMode
+              render()
+              return
+            case "write-show-tip":
+              state.write.showTip = true
+              render()
+              return
+            case "write-hide-tip":
+              state.write.showTip = false
+              render()
+              return
+            case "write-feedback":
+              state.write.mode = "feedback"
+              state.feedbackTab = "structure"
+              render()
+              return
+            case "write-save":
+              showToast("초안이 저장되었습니다.")
+              return
+            case "feedback-back":
+              state.write.mode = "write"
+              render()
+              return
+            case "feedback-tab":
+              state.feedbackTab = value
+              render()
+              return
+            case "feedback-hint":
+              showToast("힌트 기능은 데모에서는 안내만 제공합니다.")
+              return
+            case "dojo-open":
+              state.dojo.lesson = Number(value)
+              state.dojo.step = 0
+              state.dojo.sel = null
+              state.dojo.answered = false
+              render()
+              return
+            case "dojo-back":
+              state.dojo.lesson = null
+              state.dojo.step = 0
+              state.dojo.sel = null
+              state.dojo.answered = false
+              render()
+              return
+            case "dojo-step":
+              state.dojo.step = Number(value)
+              if (state.dojo.step !== 1) {
+                state.dojo.sel = null
+                state.dojo.answered = false
+              }
+              render()
+              return
+            case "dojo-select":
+              state.dojo.sel = value
+              render()
+              return
+            case "dojo-confirm":
+              state.dojo.answered = true
+              render()
+              return
+            case "dojo-complete":
+              state.dojo.lesson = null
+              state.dojo.step = 0
+              state.dojo.sel = null
+              state.dojo.answered = false
+              showToast("레슨을 완료했습니다. +100 XP")
+              render()
+              return
+            case "coach-send":
+              if (!state.coach.input.trim()) return
+              state.coach.answers.push(state.coach.input.trim())
+              state.coach.input = ""
+              if (state.coach.step + 1 >= COACH_Q.length) {
+                state.coach.done = true
+              } else {
+                state.coach.step += 1
+              }
+              render()
+              return
+            default:
+              return
+          }
         }
-      }
 
-      function finishOnboarding() {
-        state.screen = 'app';
-        state.appPage = 'home';
-        state.confetti = true;
-        makeConfetti();
-        render();
-        setTimeout(() => {
-          state.confetti = false;
-          render();
-        }, 3000);
-      }
+        document.addEventListener("click", (e) => {
+          const target = e.target.closest("[data-action]")
+          if (!target) return
+          const action = target.getAttribute("data-action")
+          const value = target.getAttribute("data-value")
+          handleAction(action, value)
+        })
 
-      function handleAction(action, value) {
-        switch (action) {
-          case 'start-app':
-            state.screen = 'onboarding';
-            render();
-            return;
-          case 'onboarding-step':
-            state.onboarding.step = Number(value);
-            render();
-            return;
-          case 'onboarding-seed':
-            state.onboarding.level = 'seed';
-            state.onboarding.step = 2;
-            render();
-            return;
-          case 'onboarding-submit':
-            state.onboarding.level = detectLevel(state.onboarding.answer);
-            state.onboarding.step = 2;
-            render();
-            return;
-          case 'finish-onboarding':
-            finishOnboarding();
-            return;
-          case 'nav':
-            state.appPage = value;
-            render();
-            return;
-          case 'write-toggle-focus':
-            state.write.focusMode = !state.write.focusMode;
-            render();
-            return;
-          case 'write-show-tip':
-            state.write.showTip = true;
-            render();
-            return;
-          case 'write-hide-tip':
-            state.write.showTip = false;
-            render();
-            return;
-          case 'write-feedback':
-            state.write.mode = 'feedback';
-            state.feedbackTab = 'structure';
-            render();
-            return;
-          case 'write-save':
-            showToast('초안이 저장되었습니다.');
-            return;
-          case 'feedback-back':
-            state.write.mode = 'write';
-            render();
-            return;
-          case 'feedback-tab':
-            state.feedbackTab = value;
-            render();
-            return;
-          case 'feedback-hint':
-            showToast('힌트 기능은 데모에서는 안내만 제공합니다.');
-            return;
-          case 'dojo-open':
-            state.dojo.lesson = Number(value);
-            state.dojo.step = 0;
-            state.dojo.sel = null;
-            state.dojo.answered = false;
-            render();
-            return;
-          case 'dojo-back':
-            state.dojo.lesson = null;
-            state.dojo.step = 0;
-            state.dojo.sel = null;
-            state.dojo.answered = false;
-            render();
-            return;
-          case 'dojo-step':
-            state.dojo.step = Number(value);
-            if (state.dojo.step !== 1) {
-              state.dojo.sel = null;
-              state.dojo.answered = false;
-            }
-            render();
-            return;
-          case 'dojo-select':
-            state.dojo.sel = value;
-            render();
-            return;
-          case 'dojo-confirm':
-            state.dojo.answered = true;
-            render();
-            return;
-          case 'dojo-complete':
-            state.dojo.lesson = null;
-            state.dojo.step = 0;
-            state.dojo.sel = null;
-            state.dojo.answered = false;
-            showToast('레슨을 완료했습니다. +100 XP');
-            render();
-            return;
-          case 'coach-send':
-            if (!state.coach.input.trim()) return;
-            state.coach.answers.push(state.coach.input.trim());
-            state.coach.input = '';
-            if (state.coach.step + 1 >= COACH_Q.length) {
-              state.coach.done = true;
-            } else {
-              state.coach.step += 1;
-            }
-            render();
-            return;
-          default:
-            return;
-        }
-      }
-
-      document.addEventListener('click', (e) => {
-        const target = e.target.closest('[data-action]');
-        if (!target) return;
-        const action = target.getAttribute('data-action');
-        const value = target.getAttribute('data-value');
-        handleAction(action, value);
-      });
-
-      startLandingTyping();
-      ensureWriteTimer();
-      render();
-    })();
-  </script>
-</body>
+        startLandingTyping()
+        ensureWriteTimer()
+        render()
+      })()
+    </script>
+  </body>
 </html>

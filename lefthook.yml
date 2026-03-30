@@ -3,11 +3,18 @@
 pre-commit:
   parallel: true
   commands:
-    # format all files
+    # format all files with oxfmt
     format:
       glob: "**/*.{ts,tsx,js,jsx,cjs,mjs,json,css,md,yaml,yml}"
-      run: bun prettier --write --ignore-path .prettierignore {staged_files}
+      run: bunx oxfmt --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
+
+    # oxlint for all staged files
+    oxlint:
+      glob: "**/*.{ts,tsx,js,jsx}"
+      run: bunx oxlint --fix {staged_files}
+      stage_fixed: true
+
     # lint apps/web
     web-lint:
       root: "apps/web/"

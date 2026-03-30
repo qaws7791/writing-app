@@ -78,16 +78,16 @@ AI 요청 이력 테이블 추가.
 packages/database/src/schema/ai-requests.ts   ← ai_requests 테이블
 ```
 
-| 컬럼 | 타입 | 설명 |
-|------|------|------|
-| id | text (PK) | 요청 ID |
-| user_id | text (FK) | 사용자 ID |
-| writing_id | text (FK, nullable) | 관련 글 ID |
-| feature_type | text | vocabulary/clarity/rhythm/spelling-review/flow-review |
-| input_text | text | 입력 텍스트 |
-| output_json | text | AI 응답 JSON |
-| model | text | 사용 모델명 |
-| created_at | integer | 생성 시각 |
+| 컬럼         | 타입                | 설명                                                  |
+| ------------ | ------------------- | ----------------------------------------------------- |
+| id           | text (PK)           | 요청 ID                                               |
+| user_id      | text (FK)           | 사용자 ID                                             |
+| writing_id   | text (FK, nullable) | 관련 글 ID                                            |
+| feature_type | text                | vocabulary/clarity/rhythm/spelling-review/flow-review |
+| input_text   | text                | 입력 텍스트                                           |
+| output_json  | text                | AI 응답 JSON                                          |
+| model        | text                | 사용 모델명                                           |
+| created_at   | integer             | 생성 시각                                             |
 
 ### 4. `apps/api` (수정)
 
@@ -144,6 +144,6 @@ apps/web/src/features/ai-assistant/repositories/
 
 ## 환경 변수
 
-| 변수 | 위치 | 설명 |
-|------|------|------|
+| 변수                           | 위치       | 설명             |
+| ------------------------------ | ---------- | ---------------- |
 | `GOOGLE_GENERATIVE_AI_API_KEY` | `apps/api` | Google AI API 키 |

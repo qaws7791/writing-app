@@ -1,1197 +1,1810 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>글터 — 개선된 AI 글쓰기 도우미</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg-0: #0a0a0a;
-  --bg-1: #111111;
-  --bg-2: #181818;
-  --bg-3: #222222;
-  --bg-4: #2a2a2a;
-  --border: rgba(255,255,255,0.07);
-  --border-md: rgba(255,255,255,0.12);
-  --text-0: #f0ede8;
-  --text-1: #a8a49e;
-  --text-2: #6b6762;
-  --text-3: #3d3b38;
-  --accent: #e8e0d4;
-  --ai-color: #7c6af5;
-  --ai-light: rgba(124,106,245,0.12);
-  --ai-border: rgba(124,106,245,0.3);
-  --ghost-color: rgba(160,155,148,0.38);
-  --sidebar-w: 52px;
-  --panel-w: 320px;
-  --transition: 0.22s cubic-bezier(0.4,0,0.2,1);
-}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>글터 — 개선된 AI 글쓰기 도우미</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500&family=Noto+Sans+KR:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-0: #0a0a0a;
+        --bg-1: #111111;
+        --bg-2: #181818;
+        --bg-3: #222222;
+        --bg-4: #2a2a2a;
+        --border: rgba(255, 255, 255, 0.07);
+        --border-md: rgba(255, 255, 255, 0.12);
+        --text-0: #f0ede8;
+        --text-1: #a8a49e;
+        --text-2: #6b6762;
+        --text-3: #3d3b38;
+        --accent: #e8e0d4;
+        --ai-color: #7c6af5;
+        --ai-light: rgba(124, 106, 245, 0.12);
+        --ai-border: rgba(124, 106, 245, 0.3);
+        --ghost-color: rgba(160, 155, 148, 0.38);
+        --sidebar-w: 52px;
+        --panel-w: 320px;
+        --transition: 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-html, body {
-  height: 100%;
-  background: var(--bg-0);
-  color: var(--text-0);
-  font-family: 'Noto Sans KR', sans-serif;
-  font-size: 14px;
-  overflow: hidden;
-}
+      html,
+      body {
+        height: 100%;
+        background: var(--bg-0);
+        color: var(--text-0);
+        font-family: "Noto Sans KR", sans-serif;
+        font-size: 14px;
+        overflow: hidden;
+      }
 
-/* ──── LAYOUT ──── */
-.app {
-  display: flex;
-  height: 100vh;
-  position: relative;
-}
+      /* ──── LAYOUT ──── */
+      .app {
+        display: flex;
+        height: 100vh;
+        position: relative;
+      }
 
-/* ──── SIDEBAR ──── */
-.sidebar {
-  width: var(--sidebar-w);
-  background: var(--bg-1);
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px 0;
-  gap: 4px;
-  flex-shrink: 0;
-  z-index: 10;
-}
-.sidebar-logo {
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--text-0);
-  margin-bottom: 8px;
-  padding: 6px 0;
-  letter-spacing: -0.03em;
-}
-.sidebar-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--text-2);
-  transition: background var(--transition), color var(--transition);
-}
-.sidebar-icon:hover { background: var(--bg-3); color: var(--text-1); }
-.sidebar-icon.active { background: var(--bg-3); color: var(--text-0); }
-.sidebar-icon svg { width: 16px; height: 16px; }
-.sidebar-sep { width: 24px; height: 1px; background: var(--border); margin: 4px 0; }
+      /* ──── SIDEBAR ──── */
+      .sidebar {
+        width: var(--sidebar-w);
+        background: var(--bg-1);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 12px 0;
+        gap: 4px;
+        flex-shrink: 0;
+        z-index: 10;
+      }
+      .sidebar-logo {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text-0);
+        margin-bottom: 8px;
+        padding: 6px 0;
+        letter-spacing: -0.03em;
+      }
+      .sidebar-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-2);
+        transition:
+          background var(--transition),
+          color var(--transition);
+      }
+      .sidebar-icon:hover {
+        background: var(--bg-3);
+        color: var(--text-1);
+      }
+      .sidebar-icon.active {
+        background: var(--bg-3);
+        color: var(--text-0);
+      }
+      .sidebar-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+      .sidebar-sep {
+        width: 24px;
+        height: 1px;
+        background: var(--border);
+        margin: 4px 0;
+      }
 
-/* ──── MAIN ──── */
-.main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
+      /* ──── MAIN ──── */
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
 
-/* ──── TOP BAR ──── */
-.topbar {
-  height: 48px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  gap: 12px;
-  flex-shrink: 0;
-  background: var(--bg-1);
-}
-.topbar-back {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-2);
-  cursor: pointer;
-  font-size: 13px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  transition: all var(--transition);
-}
-.topbar-back:hover { color: var(--text-1); border-color: var(--border-md); }
-.topbar-title {
-  flex: 1;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-0);
-  letter-spacing: -0.02em;
-}
-.topbar-save {
-  padding: 6px 16px;
-  background: var(--text-0);
-  color: var(--bg-0);
-  border: none;
-  border-radius: 7px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  font-family: inherit;
-  transition: opacity var(--transition);
-}
-.topbar-save:hover { opacity: 0.85; }
-.topbar-ai-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--ai-color);
-  background: var(--ai-light);
-  border: 1px solid var(--ai-border);
-  padding: 4px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all var(--transition);
-}
-.topbar-ai-badge:hover { background: rgba(124,106,245,0.2); }
-.topbar-ai-badge .dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: var(--ai-color);
-}
+      /* ──── TOP BAR ──── */
+      .topbar {
+        height: 48px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 12px;
+        flex-shrink: 0;
+        background: var(--bg-1);
+      }
+      .topbar-back {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--text-2);
+        cursor: pointer;
+        font-size: 13px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        transition: all var(--transition);
+      }
+      .topbar-back:hover {
+        color: var(--text-1);
+        border-color: var(--border-md);
+      }
+      .topbar-title {
+        flex: 1;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text-0);
+        letter-spacing: -0.02em;
+      }
+      .topbar-save {
+        padding: 6px 16px;
+        background: var(--text-0);
+        color: var(--bg-0);
+        border: none;
+        border-radius: 7px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: inherit;
+        transition: opacity var(--transition);
+      }
+      .topbar-save:hover {
+        opacity: 0.85;
+      }
+      .topbar-ai-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--ai-color);
+        background: var(--ai-light);
+        border: 1px solid var(--ai-border);
+        padding: 4px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all var(--transition);
+      }
+      .topbar-ai-badge:hover {
+        background: rgba(124, 106, 245, 0.2);
+      }
+      .topbar-ai-badge .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--ai-color);
+      }
 
-/* ──── CONTENT AREA ──── */
-.content-wrap {
-  flex: 1;
-  display: flex;
-  overflow: hidden;
-  position: relative;
-}
+      /* ──── CONTENT AREA ──── */
+      .content-wrap {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+        position: relative;
+      }
 
-/* ──── EDITOR ──── */
-.editor-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.editor-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 48px 0 120px;
-  scroll-behavior: smooth;
-}
-.editor-scroll::-webkit-scrollbar { width: 4px; }
-.editor-scroll::-webkit-scrollbar-track { background: transparent; }
-.editor-scroll::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 2px; }
-.editor-inner {
-  max-width: 640px;
-  margin: 0 auto;
-  padding: 0 40px;
-}
+      /* ──── EDITOR ──── */
+      .editor-area {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .editor-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 48px 0 120px;
+        scroll-behavior: smooth;
+      }
+      .editor-scroll::-webkit-scrollbar {
+        width: 4px;
+      }
+      .editor-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .editor-scroll::-webkit-scrollbar-thumb {
+        background: var(--bg-4);
+        border-radius: 2px;
+      }
+      .editor-inner {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 0 40px;
+      }
 
-/* Editor content */
-#editor {
-  font-family: 'Noto Serif KR', serif;
-  font-size: 17px;
-  line-height: 1.9;
-  color: var(--text-0);
-  outline: none;
-  caret-color: var(--text-0);
-  min-height: 300px;
-  white-space: pre-wrap;
-  word-break: break-word;
-  position: relative;
-}
-#editor::selection { background: rgba(124,106,245,0.2); }
-#editor *::selection { background: rgba(124,106,245,0.2); }
+      /* Editor content */
+      #editor {
+        font-family: "Noto Serif KR", serif;
+        font-size: 17px;
+        line-height: 1.9;
+        color: var(--text-0);
+        outline: none;
+        caret-color: var(--text-0);
+        min-height: 300px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        position: relative;
+      }
+      #editor::selection {
+        background: rgba(124, 106, 245, 0.2);
+      }
+      #editor *::selection {
+        background: rgba(124, 106, 245, 0.2);
+      }
 
-/* Ghost text */
-.ghost-text {
-  color: var(--ghost-color);
-  font-family: 'Noto Serif KR', serif;
-  font-size: 17px;
-  line-height: 1.9;
-  pointer-events: none;
-  user-select: none;
-  display: inline;
-}
+      /* Ghost text */
+      .ghost-text {
+        color: var(--ghost-color);
+        font-family: "Noto Serif KR", serif;
+        font-size: 17px;
+        line-height: 1.9;
+        pointer-events: none;
+        user-select: none;
+        display: inline;
+      }
 
-/* ──── AI SIDE PANEL ──── */
-.ai-panel {
-  width: var(--panel-w);
-  background: var(--bg-1);
-  border-left: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  transition: transform var(--transition), opacity var(--transition);
-  overflow: hidden;
-}
-.ai-panel.hidden {
-  transform: translateX(100%);
-  opacity: 0;
-  width: 0;
-  border: none;
-}
-.ai-panel-header {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.ai-panel-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-0);
-}
-.ai-panel-title .badge {
-  font-size: 10px;
-  padding: 2px 6px;
-  background: var(--ai-light);
-  color: var(--ai-color);
-  border: 1px solid var(--ai-border);
-  border-radius: 4px;
-  letter-spacing: 0.03em;
-}
-.ai-panel-close {
-  width: 24px; height: 24px;
-  border-radius: 5px;
-  border: none;
-  background: transparent;
-  color: var(--text-2);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background var(--transition), color var(--transition);
-}
-.ai-panel-close:hover { background: var(--bg-3); color: var(--text-1); }
-.ai-panel-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-.ai-panel-body::-webkit-scrollbar { width: 3px; }
-.ai-panel-body::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 2px; }
+      /* ──── AI SIDE PANEL ──── */
+      .ai-panel {
+        width: var(--panel-w);
+        background: var(--bg-1);
+        border-left: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+        transition:
+          transform var(--transition),
+          opacity var(--transition);
+        overflow: hidden;
+      }
+      .ai-panel.hidden {
+        transform: translateX(100%);
+        opacity: 0;
+        width: 0;
+        border: none;
+      }
+      .ai-panel-header {
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .ai-panel-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-0);
+      }
+      .ai-panel-title .badge {
+        font-size: 10px;
+        padding: 2px 6px;
+        background: var(--ai-light);
+        color: var(--ai-color);
+        border: 1px solid var(--ai-border);
+        border-radius: 4px;
+        letter-spacing: 0.03em;
+      }
+      .ai-panel-close {
+        width: 24px;
+        height: 24px;
+        border-radius: 5px;
+        border: none;
+        background: transparent;
+        color: var(--text-2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition:
+          background var(--transition),
+          color var(--transition);
+      }
+      .ai-panel-close:hover {
+        background: var(--bg-3);
+        color: var(--text-1);
+      }
+      .ai-panel-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .ai-panel-body::-webkit-scrollbar {
+        width: 3px;
+      }
+      .ai-panel-body::-webkit-scrollbar-thumb {
+        background: var(--bg-4);
+        border-radius: 2px;
+      }
 
-/* AI Tools */
-.ai-tool-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  cursor: pointer;
-  transition: all var(--transition);
-  background: var(--bg-2);
-}
-.ai-tool-item:hover { background: var(--bg-3); border-color: var(--border-md); }
-.ai-tool-icon {
-  width: 30px; height: 30px;
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-.ai-tool-icon.purple { background: rgba(124,106,245,0.15); }
-.ai-tool-icon.blue { background: rgba(76,139,245,0.15); }
-.ai-tool-icon.amber { background: rgba(245,178,76,0.15); }
-.ai-tool-icon.green { background: rgba(76,200,120,0.15); }
-.ai-tool-text { flex: 1; }
-.ai-tool-name { font-size: 13px; font-weight: 500; color: var(--text-0); }
-.ai-tool-desc { font-size: 11px; color: var(--text-2); margin-top: 1px; }
+      /* AI Tools */
+      .ai-tool-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: all var(--transition);
+        background: var(--bg-2);
+      }
+      .ai-tool-item:hover {
+        background: var(--bg-3);
+        border-color: var(--border-md);
+      }
+      .ai-tool-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+      }
+      .ai-tool-icon.purple {
+        background: rgba(124, 106, 245, 0.15);
+      }
+      .ai-tool-icon.blue {
+        background: rgba(76, 139, 245, 0.15);
+      }
+      .ai-tool-icon.amber {
+        background: rgba(245, 178, 76, 0.15);
+      }
+      .ai-tool-icon.green {
+        background: rgba(76, 200, 120, 0.15);
+      }
+      .ai-tool-text {
+        flex: 1;
+      }
+      .ai-tool-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-0);
+      }
+      .ai-tool-desc {
+        font-size: 11px;
+        color: var(--text-2);
+        margin-top: 1px;
+      }
 
-/* Score section */
-.score-section {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-}
-.score-label { font-size: 11px; color: var(--text-2); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
-.score-label span:last-child { color: var(--text-3); font-size: 10px; }
-.score-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
-.score-row:last-child { margin-bottom: 0; }
-.score-name { font-size: 12px; color: var(--text-1); width: 36px; }
-.score-bar-bg { flex: 1; height: 3px; background: var(--bg-4); border-radius: 2px; overflow: hidden; }
-.score-bar { height: 100%; border-radius: 2px; background: var(--ai-color); transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
-.score-num { font-size: 12px; color: var(--text-1); width: 24px; text-align: right; }
+      /* Score section */
+      .score-section {
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+      }
+      .score-label {
+        font-size: 11px;
+        color: var(--text-2);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .score-label span:last-child {
+        color: var(--text-3);
+        font-size: 10px;
+      }
+      .score-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 7px;
+      }
+      .score-row:last-child {
+        margin-bottom: 0;
+      }
+      .score-name {
+        font-size: 12px;
+        color: var(--text-1);
+        width: 36px;
+      }
+      .score-bar-bg {
+        flex: 1;
+        height: 3px;
+        background: var(--bg-4);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .score-bar {
+        height: 100%;
+        border-radius: 2px;
+        background: var(--ai-color);
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .score-num {
+        font-size: 12px;
+        color: var(--text-1);
+        width: 24px;
+        text-align: right;
+      }
 
-/* Feedback card */
-.feedback-card {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px;
-}
-.feedback-label {
-  font-size: 11px; color: var(--text-2); margin-bottom: 8px;
-  display: flex; align-items: center; gap: 6px;
-}
-.feedback-label::before {
-  content: '';
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  background: #f5c84c;
-  display: inline-block;
-}
-.feedback-text { font-size: 12px; color: var(--text-1); line-height: 1.7; }
+      /* Feedback card */
+      .feedback-card {
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+      }
+      .feedback-label {
+        font-size: 11px;
+        color: var(--text-2);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .feedback-label::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #f5c84c;
+        display: inline-block;
+      }
+      .feedback-text {
+        font-size: 12px;
+        color: var(--text-1);
+        line-height: 1.7;
+      }
 
-/* ──── STATUS BAR ──── */
-.statusbar {
-  height: 36px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  padding: 0 16px;
-  gap: 16px;
-  background: var(--bg-1);
-  flex-shrink: 0;
-}
-.statusbar-item { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 5px; }
-.statusbar-sep { width: 1px; height: 12px; background: var(--border); }
-.statusbar-ai-hint {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: var(--text-2);
-  background: rgba(124,106,245,0.08);
-  border: 1px solid rgba(124,106,245,0.15);
-  padding: 3px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all var(--transition);
-  opacity: 0;
-  pointer-events: none;
-}
-.statusbar-ai-hint.visible {
-  opacity: 1;
-  pointer-events: auto;
-  animation: fadeSlide 0.3s ease;
-}
-.statusbar-ai-hint:hover { background: rgba(124,106,245,0.15); }
-@keyframes fadeSlide {
-  from { opacity: 0; transform: translateY(3px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+      /* ──── STATUS BAR ──── */
+      .statusbar {
+        height: 36px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        gap: 16px;
+        background: var(--bg-1);
+        flex-shrink: 0;
+      }
+      .statusbar-item {
+        font-size: 12px;
+        color: var(--text-2);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .statusbar-sep {
+        width: 1px;
+        height: 12px;
+        background: var(--border);
+      }
+      .statusbar-ai-hint {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        color: var(--text-2);
+        background: rgba(124, 106, 245, 0.08);
+        border: 1px solid rgba(124, 106, 245, 0.15);
+        padding: 3px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all var(--transition);
+        opacity: 0;
+        pointer-events: none;
+      }
+      .statusbar-ai-hint.visible {
+        opacity: 1;
+        pointer-events: auto;
+        animation: fadeSlide 0.3s ease;
+      }
+      .statusbar-ai-hint:hover {
+        background: rgba(124, 106, 245, 0.15);
+      }
+      @keyframes fadeSlide {
+        from {
+          opacity: 0;
+          transform: translateY(3px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-/* ──── FLOATING TOOLBAR ──── */
-.floating-toolbar {
-  position: fixed;
-  z-index: 1000;
-  background: var(--bg-2);
-  border: 1px solid var(--border-md);
-  border-radius: 9px;
-  padding: 5px;
-  display: flex;
-  gap: 3px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  transform: translateY(4px) scale(0.97);
-}
-.floating-toolbar.visible {
-  opacity: 1;
-  pointer-events: auto;
-  transform: translateY(0) scale(1);
-}
-.ft-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  border-radius: 6px;
-  border: none;
-  background: transparent;
-  color: var(--text-1);
-  font-size: 12px;
-  font-weight: 400;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  transition: background var(--transition), color var(--transition);
-}
-.ft-btn:hover { background: var(--bg-4); color: var(--text-0); }
-.ft-btn.primary { color: var(--ai-color); }
-.ft-btn.primary:hover { background: var(--ai-light); }
-.ft-sep { width: 1px; height: 20px; background: var(--border); align-self: center; margin: 0 2px; }
-.ft-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+      /* ──── FLOATING TOOLBAR ──── */
+      .floating-toolbar {
+        position: fixed;
+        z-index: 1000;
+        background: var(--bg-2);
+        border: 1px solid var(--border-md);
+        border-radius: 9px;
+        padding: 5px;
+        display: flex;
+        gap: 3px;
+        box-shadow:
+          0 8px 32px rgba(0, 0, 0, 0.6),
+          0 2px 8px rgba(0, 0, 0, 0.4);
+        opacity: 0;
+        pointer-events: none;
+        transition:
+          opacity 0.15s ease,
+          transform 0.15s ease;
+        transform: translateY(4px) scale(0.97);
+      }
+      .floating-toolbar.visible {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0) scale(1);
+      }
+      .ft-btn {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        color: var(--text-1);
+        font-size: 12px;
+        font-weight: 400;
+        cursor: pointer;
+        font-family: inherit;
+        white-space: nowrap;
+        transition:
+          background var(--transition),
+          color var(--transition);
+      }
+      .ft-btn:hover {
+        background: var(--bg-4);
+        color: var(--text-0);
+      }
+      .ft-btn.primary {
+        color: var(--ai-color);
+      }
+      .ft-btn.primary:hover {
+        background: var(--ai-light);
+      }
+      .ft-sep {
+        width: 1px;
+        height: 20px;
+        background: var(--border);
+        align-self: center;
+        margin: 0 2px;
+      }
+      .ft-btn svg {
+        width: 13px;
+        height: 13px;
+        flex-shrink: 0;
+      }
 
-/* ──── BOTTOM SHEET ──── */
-.bottom-sheet-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 500;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--transition);
-}
-.bottom-sheet-overlay.visible { opacity: 1; pointer-events: auto; }
+      /* ──── BOTTOM SHEET ──── */
+      .bottom-sheet-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 500;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--transition);
+      }
+      .bottom-sheet-overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
 
-.bottom-sheet {
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  z-index: 501;
-  background: var(--bg-1);
-  border-top: 1px solid var(--border-md);
-  border-radius: 16px 16px 0 0;
-  transform: translateY(100%);
-  transition: transform 0.35s cubic-bezier(0.32,0.72,0,1);
-  max-height: 75vh;
-  display: flex;
-  flex-direction: column;
-}
-.bottom-sheet.open { transform: translateY(0); }
+      .bottom-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 501;
+        background: var(--bg-1);
+        border-top: 1px solid var(--border-md);
+        border-radius: 16px 16px 0 0;
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+        max-height: 75vh;
+        display: flex;
+        flex-direction: column;
+      }
+      .bottom-sheet.open {
+        transform: translateY(0);
+      }
 
-.bs-handle-area {
-  padding: 12px 0 8px;
-  display: flex;
-  justify-content: center;
-  cursor: grab;
-  flex-shrink: 0;
-}
-.bs-handle-area:active { cursor: grabbing; }
-.bs-handle {
-  width: 36px; height: 4px;
-  background: var(--bg-4);
-  border-radius: 2px;
-}
-.bs-header {
-  padding: 0 16px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.bs-title {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 14px; font-weight: 500; color: var(--text-0);
-}
-.bs-close {
-  width: 28px; height: 28px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-2);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all var(--transition);
-}
-.bs-close:hover { background: var(--bg-3); color: var(--text-1); }
-.bs-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.bs-body::-webkit-scrollbar { width: 3px; }
-.bs-body::-webkit-scrollbar-thumb { background: var(--bg-4); border-radius: 2px; }
+      .bs-handle-area {
+        padding: 12px 0 8px;
+        display: flex;
+        justify-content: center;
+        cursor: grab;
+        flex-shrink: 0;
+      }
+      .bs-handle-area:active {
+        cursor: grabbing;
+      }
+      .bs-handle {
+        width: 36px;
+        height: 4px;
+        background: var(--bg-4);
+        border-radius: 2px;
+      }
+      .bs-header {
+        padding: 0 16px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .bs-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-0);
+      }
+      .bs-close {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-2);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition);
+      }
+      .bs-close:hover {
+        background: var(--bg-3);
+        color: var(--text-1);
+      }
+      .bs-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .bs-body::-webkit-scrollbar {
+        width: 3px;
+      }
+      .bs-body::-webkit-scrollbar-thumb {
+        background: var(--bg-4);
+        border-radius: 2px;
+      }
 
-/* ──── MOBILE VIEW TOGGLE ──── */
-.view-toggle {
-  position: fixed;
-  top: 12px;
-  right: 12px;
-  z-index: 200;
-  display: flex;
-  background: var(--bg-2);
-  border: 1px solid var(--border-md);
-  border-radius: 8px;
-  overflow: hidden;
-}
-.vt-btn {
-  padding: 5px 10px;
-  border: none;
-  background: transparent;
-  color: var(--text-2);
-  font-size: 11px;
-  cursor: pointer;
-  font-family: inherit;
-  display: flex; align-items: center; gap: 4px;
-  transition: all var(--transition);
-}
-.vt-btn.active { background: var(--bg-4); color: var(--text-0); }
-.vt-btn svg { width: 12px; height: 12px; }
+      /* ──── MOBILE VIEW TOGGLE ──── */
+      .view-toggle {
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        z-index: 200;
+        display: flex;
+        background: var(--bg-2);
+        border: 1px solid var(--border-md);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .vt-btn {
+        padding: 5px 10px;
+        border: none;
+        background: transparent;
+        color: var(--text-2);
+        font-size: 11px;
+        cursor: pointer;
+        font-family: inherit;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all var(--transition);
+      }
+      .vt-btn.active {
+        background: var(--bg-4);
+        color: var(--text-0);
+      }
+      .vt-btn svg {
+        width: 12px;
+        height: 12px;
+      }
 
-/* ──── MOBILE OVERRIDES ──── */
-.app.mobile-view .ai-panel { display: none; }
-.app.mobile-view .sidebar { display: none; }
-.app.mobile-view .topbar-ai-badge { display: none; }
-.app.mobile-view .mobile-ai-btn { display: flex !important; }
-.mobile-ai-btn {
-  display: none;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
-  background: var(--ai-light);
-  border: 1px solid var(--ai-border);
-  border-radius: 7px;
-  font-size: 12px;
-  color: var(--ai-color);
-  cursor: pointer;
-  font-family: inherit;
-  transition: all var(--transition);
-}
-.mobile-ai-btn:hover { background: rgba(124,106,245,0.2); }
+      /* ──── MOBILE OVERRIDES ──── */
+      .app.mobile-view .ai-panel {
+        display: none;
+      }
+      .app.mobile-view .sidebar {
+        display: none;
+      }
+      .app.mobile-view .topbar-ai-badge {
+        display: none;
+      }
+      .app.mobile-view .mobile-ai-btn {
+        display: flex !important;
+      }
+      .mobile-ai-btn {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 12px;
+        background: var(--ai-light);
+        border: 1px solid var(--ai-border);
+        border-radius: 7px;
+        font-size: 12px;
+        color: var(--ai-color);
+        cursor: pointer;
+        font-family: inherit;
+        transition: all var(--transition);
+      }
+      .mobile-ai-btn:hover {
+        background: rgba(124, 106, 245, 0.2);
+      }
 
-/* ──── INLINE RESULT ──── */
-.inline-result {
-  display: none;
-  margin-top: 12px;
-  padding: 12px 16px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 13px;
-  color: var(--text-1);
-  line-height: 1.7;
-  animation: fadeIn 0.2s ease;
-}
-.inline-result.visible { display: block; }
-.inline-result-header { font-size: 11px; color: var(--text-2); margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-.inline-result-header::before { content:''; width:5px;height:5px;border-radius:50%;background:var(--ai-color);display:inline-block; }
-.inline-result-actions { margin-top: 10px; display: flex; gap: 6px; }
-.ira-btn {
-  padding: 4px 10px;
-  border-radius: 5px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-1);
-  font-size: 11px;
-  cursor: pointer;
-  font-family: inherit;
-  transition: all var(--transition);
-}
-.ira-btn:hover { background: var(--bg-3); color: var(--text-0); }
-.ira-btn.apply { border-color: var(--ai-border); color: var(--ai-color); background: var(--ai-light); }
-.ira-btn.apply:hover { background: rgba(124,106,245,0.2); }
+      /* ──── INLINE RESULT ──── */
+      .inline-result {
+        display: none;
+        margin-top: 12px;
+        padding: 12px 16px;
+        background: var(--bg-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 13px;
+        color: var(--text-1);
+        line-height: 1.7;
+        animation: fadeIn 0.2s ease;
+      }
+      .inline-result.visible {
+        display: block;
+      }
+      .inline-result-header {
+        font-size: 11px;
+        color: var(--text-2);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .inline-result-header::before {
+        content: "";
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--ai-color);
+        display: inline-block;
+      }
+      .inline-result-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 6px;
+      }
+      .ira-btn {
+        padding: 4px 10px;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-1);
+        font-size: 11px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all var(--transition);
+      }
+      .ira-btn:hover {
+        background: var(--bg-3);
+        color: var(--text-0);
+      }
+      .ira-btn.apply {
+        border-color: var(--ai-border);
+        color: var(--ai-color);
+        background: var(--ai-light);
+      }
+      .ira-btn.apply:hover {
+        background: rgba(124, 106, 245, 0.2);
+      }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-/* ──── DEMO LABEL ──── */
-.demo-label {
-  position: fixed;
-  bottom: 48px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(124,106,245,0.9);
-  color: white;
-  font-size: 11px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  z-index: 900;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  white-space: nowrap;
-}
-.demo-label.show { opacity: 1; }
+      /* ──── DEMO LABEL ──── */
+      .demo-label {
+        position: fixed;
+        bottom: 48px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(124, 106, 245, 0.9);
+        color: white;
+        font-size: 11px;
+        padding: 6px 14px;
+        border-radius: 20px;
+        z-index: 900;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        white-space: nowrap;
+      }
+      .demo-label.show {
+        opacity: 1;
+      }
 
-/* ──── FEATURE BADGES ──── */
-.feature-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 500;
-  padding: 2px 7px;
-  border-radius: 4px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.fb-ghost { background: rgba(160,155,148,0.12); color: var(--text-2); border: 1px solid rgba(160,155,148,0.2); }
-.fb-toolbar { background: rgba(76,139,245,0.1); color: #7ca8f5; border: 1px solid rgba(76,139,245,0.2); }
-.fb-sheet { background: rgba(76,200,120,0.1); color: #4cc878; border: 1px solid rgba(76,200,120,0.2); }
+      /* ──── FEATURE BADGES ──── */
+      .feature-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 10px;
+        font-weight: 500;
+        padding: 2px 7px;
+        border-radius: 4px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .fb-ghost {
+        background: rgba(160, 155, 148, 0.12);
+        color: var(--text-2);
+        border: 1px solid rgba(160, 155, 148, 0.2);
+      }
+      .fb-toolbar {
+        background: rgba(76, 139, 245, 0.1);
+        color: #7ca8f5;
+        border: 1px solid rgba(76, 139, 245, 0.2);
+      }
+      .fb-sheet {
+        background: rgba(76, 200, 120, 0.1);
+        color: #4cc878;
+        border: 1px solid rgba(76, 200, 120, 0.2);
+      }
 
-/* ──── GUIDE CALLOUTS ──── */
-.guide-row {
-  display: flex;
-  gap: 8px;
-  padding: 8px 0 0;
-  flex-wrap: wrap;
-}
-</style>
-</head>
-<body>
-
-<!-- View Toggle -->
-<div class="view-toggle">
-  <button class="vt-btn active" id="btn-desktop" onclick="setView('desktop')">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="14" height="10" rx="1.5"/><path d="M5 14h6M8 12v2" stroke-linecap="round"/></svg>
-    데스크톱
-  </button>
-  <button class="vt-btn" id="btn-mobile" onclick="setView('mobile')">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="4" y="1" width="8" height="14" rx="2"/><circle cx="8" cy="12.5" r=".8" fill="currentColor" stroke="none"/></svg>
-    모바일
-  </button>
-</div>
-
-<!-- App -->
-<div class="app" id="app">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="sidebar-logo">글터</div>
-    <div class="sidebar-sep"></div>
-    <div class="sidebar-icon">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12M2 4h8M2 12h6" stroke-linecap="round"/></svg>
-    </div>
-    <div class="sidebar-icon active">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M5 6h6M5 9h4" stroke-linecap="round"/></svg>
-    </div>
-    <div class="sidebar-icon">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke-linecap="round"/></svg>
-    </div>
-    <div class="sidebar-sep"></div>
-    <div class="sidebar-icon" style="margin-top:auto;">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5" stroke-linecap="round"/></svg>
-    </div>
-  </div>
-
-  <!-- Main -->
-  <div class="main">
-    <!-- Topbar -->
-    <div class="topbar">
-      <div class="topbar-back">
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L4 6l4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        돌아가기
-      </div>
-      <div class="topbar-title">나는 왜 아침에 일어나기 싫을까</div>
-      <!-- Desktop AI badge -->
-      <div class="topbar-ai-badge" id="ai-badge" onclick="togglePanel()">
-        <div class="dot"></div>
-        AI 글쓰기 도우미
-        <span style="font-size:10px;opacity:0.6;">Beta</span>
-      </div>
-      <!-- Mobile AI button -->
-      <button class="mobile-ai-btn" onclick="openBottomSheet()">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2C4.7 2 2 4.2 2 7c0 1.5.7 2.9 1.8 3.9L3 13l2.3-.9C6.1 12.4 7 12.6 8 12.6c3.3 0 6-2.2 6-5.3C14 4.2 11.3 2 8 2z"/></svg>
-        AI 도우미
+      /* ──── GUIDE CALLOUTS ──── */
+      .guide-row {
+        display: flex;
+        gap: 8px;
+        padding: 8px 0 0;
+        flex-wrap: wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- View Toggle -->
+    <div class="view-toggle">
+      <button
+        class="vt-btn active"
+        id="btn-desktop"
+        onclick="setView('desktop')"
+      >
+        <svg
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <rect x="1" y="2" width="14" height="10" rx="1.5" />
+          <path d="M5 14h6M8 12v2" stroke-linecap="round" />
+        </svg>
+        데스크톱
       </button>
-      <button class="topbar-save">저장</button>
+      <button class="vt-btn" id="btn-mobile" onclick="setView('mobile')">
+        <svg
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
+          <rect x="4" y="1" width="8" height="14" rx="2" />
+          <circle cx="8" cy="12.5" r=".8" fill="currentColor" stroke="none" />
+        </svg>
+        모바일
+      </button>
     </div>
 
-    <!-- Content -->
-    <div class="content-wrap">
-      <div class="editor-area">
-        <div class="editor-scroll">
-          <div class="editor-inner">
-            <!-- Guide badges -->
-            <div class="guide-row">
-              <span class="feature-badge fb-ghost">✦ Ghost Text — 타이핑 멈추면 자동 제안</span>
-              <span class="feature-badge fb-toolbar">✦ Floating Toolbar — 텍스트 선택 시 등장</span>
-              <span class="feature-badge fb-sheet" id="sheet-badge" style="display:none">✦ Bottom Sheet — 하단 버튼으로 열기</span>
-            </div>
+    <!-- App -->
+    <div class="app" id="app">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-logo">글터</div>
+        <div class="sidebar-sep"></div>
+        <div class="sidebar-icon">
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M2 8h12M2 4h8M2 12h6" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div class="sidebar-icon active">
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path
+              d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"
+            />
+            <path d="M5 6h6M5 9h4" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div class="sidebar-icon">
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <rect x="2" y="2" width="12" height="12" rx="2" />
+            <path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div class="sidebar-sep"></div>
+        <div class="sidebar-icon" style="margin-top: auto">
+          <svg
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <circle cx="8" cy="6" r="3" />
+            <path d="M2 14c0-3 2.7-5 6-5s6 2 6 5" stroke-linecap="round" />
+          </svg>
+        </div>
+      </div>
 
-            <!-- Editor -->
-            <div id="editor" contenteditable="true" spellcheck="false">아침이 오는 게 무섭다. 알람이 울릴 때마다 눈을 뜨기 싫다는 건 게으름 때문만은 아닌 것 같다.
+      <!-- Main -->
+      <div class="main">
+        <!-- Topbar -->
+        <div class="topbar">
+          <div class="topbar-back">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                d="M8 2L4 6l4 4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            돌아가기
+          </div>
+          <div class="topbar-title">나는 왜 아침에 일어나기 싫을까</div>
+          <!-- Desktop AI badge -->
+          <div class="topbar-ai-badge" id="ai-badge" onclick="togglePanel()">
+            <div class="dot"></div>
+            AI 글쓰기 도우미
+            <span style="font-size: 10px; opacity: 0.6">Beta</span>
+          </div>
+          <!-- Mobile AI button -->
+          <button class="mobile-ai-btn" onclick="openBottomSheet()">
+            <svg
+              width="13"
+              height="13"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <path
+                d="M8 2C4.7 2 2 4.2 2 7c0 1.5.7 2.9 1.8 3.9L3 13l2.3-.9C6.1 12.4 7 12.6 8 12.6c3.3 0 6-2.2 6-5.3C14 4.2 11.3 2 8 2z"
+              />
+            </svg>
+            AI 도우미
+          </button>
+          <button class="topbar-save">저장</button>
+        </div>
 
-사람들은 흔히 아침에 못 일어나는 사람을 게으르다고 말한다. 하지만 내 경우는 조금 다른 것 같다. 눈을 뜨는 순간, 오늘 해야 할 것들이 한꺼번에 머릿속에 쏟아진다. 그 무게감 때문에 눈을 다시 감고 싶어진다.</div>
+        <!-- Content -->
+        <div class="content-wrap">
+          <div class="editor-area">
+            <div class="editor-scroll">
+              <div class="editor-inner">
+                <!-- Guide badges -->
+                <div class="guide-row">
+                  <span class="feature-badge fb-ghost"
+                    >✦ Ghost Text — 타이핑 멈추면 자동 제안</span
+                  >
+                  <span class="feature-badge fb-toolbar"
+                    >✦ Floating Toolbar — 텍스트 선택 시 등장</span
+                  >
+                  <span
+                    class="feature-badge fb-sheet"
+                    id="sheet-badge"
+                    style="display: none"
+                    >✦ Bottom Sheet — 하단 버튼으로 열기</span
+                  >
+                </div>
 
-            <!-- Inline result panel (from floating toolbar actions) -->
-            <div id="inline-result" class="inline-result">
-              <div class="inline-result-header" id="inline-result-header">문장 개선 결과</div>
-              <div id="inline-result-text"></div>
-              <div class="inline-result-actions">
-                <button class="ira-btn apply" onclick="applyResult()">적용</button>
-                <button class="ira-btn" onclick="closeInlineResult()">닫기</button>
-                <button class="ira-btn" onclick="regenerate()">다시 생성</button>
+                <!-- Editor -->
+                <div id="editor" contenteditable="true" spellcheck="false">
+                  아침이 오는 게 무섭다. 알람이 울릴 때마다 눈을 뜨기 싫다는 건
+                  게으름 때문만은 아닌 것 같다. 사람들은 흔히 아침에 못 일어나는
+                  사람을 게으르다고 말한다. 하지만 내 경우는 조금 다른 것 같다.
+                  눈을 뜨는 순간, 오늘 해야 할 것들이 한꺼번에 머릿속에
+                  쏟아진다. 그 무게감 때문에 눈을 다시 감고 싶어진다.
+                </div>
+
+                <!-- Inline result panel (from floating toolbar actions) -->
+                <div id="inline-result" class="inline-result">
+                  <div class="inline-result-header" id="inline-result-header">
+                    문장 개선 결과
+                  </div>
+                  <div id="inline-result-text"></div>
+                  <div class="inline-result-actions">
+                    <button class="ira-btn apply" onclick="applyResult()">
+                      적용
+                    </button>
+                    <button class="ira-btn" onclick="closeInlineResult()">
+                      닫기
+                    </button>
+                    <button class="ira-btn" onclick="regenerate()">
+                      다시 생성
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
-          </div>
-        </div>
-
-        <!-- Status Bar -->
-        <div class="statusbar">
-          <div class="statusbar-item">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 3h10M1 6h7M1 9h5" stroke-linecap="round"/></svg>
-            <span id="word-count">342자</span>
-          </div>
-          <div class="statusbar-sep"></div>
-          <div class="statusbar-item">약 2분 읽기</div>
-          <div class="statusbar-item" style="margin-left:auto;gap:4px;">
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 5h8M5 1l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span style="font-size:11px;">자동 저장됨</span>
-          </div>
-          <div class="statusbar-ai-hint" id="ai-hint" onclick="handleAiHint()">
-            <span>💡</span>
-            <span id="ai-hint-text">새 제안 1개</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- AI Side Panel (Desktop) -->
-      <div class="ai-panel" id="ai-panel">
-        <div class="ai-panel-header">
-          <div class="ai-panel-title">
-            AI 글쓰기 도우미
-            <span class="badge">Beta</span>
-          </div>
-          <button class="ai-panel-close" onclick="togglePanel()" title="패널 닫기">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2l8 8M10 2l-8 8" stroke-linecap="round"/></svg>
-          </button>
-        </div>
-        <div class="ai-panel-body">
-          <div style="font-size:11px;color:var(--text-2);margin-bottom:2px;">AI로 글 다듬기</div>
-          <div class="ai-tool-item" onclick="runAiTool('grammar')">
-            <div class="ai-tool-icon blue">🔤</div>
-            <div class="ai-tool-text"><div class="ai-tool-name">맞춤법 · 문법 검사</div><div class="ai-tool-desc">오류를 찾아 수정 제안</div></div>
-          </div>
-          <div class="ai-tool-item" onclick="runAiTool('feedback')">
-            <div class="ai-tool-icon purple">💬</div>
-            <div class="ai-tool-text"><div class="ai-tool-name">피드백 받기</div><div class="ai-tool-desc">논리, 구성, 표현 분석</div></div>
-          </div>
-          <div class="ai-tool-item" onclick="runAiTool('improve')">
-            <div class="ai-tool-icon amber">✨</div>
-            <div class="ai-tool-text"><div class="ai-tool-name">문장 개선하기</div><div class="ai-tool-desc">더 명확하고 자연스럽게</div></div>
-          </div>
-          <div class="ai-tool-item" onclick="runAiTool('explore')">
-            <div class="ai-tool-icon green">🧭</div>
-            <div class="ai-tool-text"><div class="ai-tool-name">글감 더 탐색하기</div><div class="ai-tool-desc">쓰고 싶은 내용이 떠오르게</div></div>
-          </div>
-
-          <div style="font-size:11px;color:var(--text-2);margin-top:4px;">최근 피드백</div>
-          <div class="score-section">
-            <div class="score-label">
-              <span>글 전체 분석</span>
-              <span>방금 전</span>
-            </div>
-            <div class="score-row">
-              <div class="score-name">명확성</div>
-              <div class="score-bar-bg"><div class="score-bar" style="width:75%"></div></div>
-              <div class="score-num">75</div>
-            </div>
-            <div class="score-row">
-              <div class="score-name">구성력</div>
-              <div class="score-bar-bg"><div class="score-bar" style="width:60%"></div></div>
-              <div class="score-num">60</div>
-            </div>
-            <div class="score-row">
-              <div class="score-name">표현력</div>
-              <div class="score-bar-bg"><div class="score-bar" style="width:82%"></div></div>
-              <div class="score-num">82</div>
+            <!-- Status Bar -->
+            <div class="statusbar">
+              <div class="statusbar-item">
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                >
+                  <path d="M1 3h10M1 6h7M1 9h5" stroke-linecap="round" />
+                </svg>
+                <span id="word-count">342자</span>
+              </div>
+              <div class="statusbar-sep"></div>
+              <div class="statusbar-item">약 2분 읽기</div>
+              <div class="statusbar-item" style="margin-left: auto; gap: 4px">
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 10 10"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                >
+                  <path
+                    d="M1 5h8M5 1l4 4-4 4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <span style="font-size: 11px">자동 저장됨</span>
+              </div>
+              <div
+                class="statusbar-ai-hint"
+                id="ai-hint"
+                onclick="handleAiHint()"
+              >
+                <span>💡</span>
+                <span id="ai-hint-text">새 제안 1개</span>
+              </div>
             </div>
           </div>
 
-          <div class="feedback-card">
-            <div class="feedback-label">개선 제안</div>
-            <div class="feedback-text">두 번째 문단에서 주장이 조금 느슨해집니다. "내 경우는 다른 것 같다" 뒤에 구체적인 사례나 이유를 한 가지 더 추가하면 설득력이 높아질 것 같아요.</div>
+          <!-- AI Side Panel (Desktop) -->
+          <div class="ai-panel" id="ai-panel">
+            <div class="ai-panel-header">
+              <div class="ai-panel-title">
+                AI 글쓰기 도우미
+                <span class="badge">Beta</span>
+              </div>
+              <button
+                class="ai-panel-close"
+                onclick="togglePanel()"
+                title="패널 닫기"
+              >
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                >
+                  <path d="M2 2l8 8M10 2l-8 8" stroke-linecap="round" />
+                </svg>
+              </button>
+            </div>
+            <div class="ai-panel-body">
+              <div
+                style="
+                  font-size: 11px;
+                  color: var(--text-2);
+                  margin-bottom: 2px;
+                "
+              >
+                AI로 글 다듬기
+              </div>
+              <div class="ai-tool-item" onclick="runAiTool('grammar')">
+                <div class="ai-tool-icon blue">🔤</div>
+                <div class="ai-tool-text">
+                  <div class="ai-tool-name">맞춤법 · 문법 검사</div>
+                  <div class="ai-tool-desc">오류를 찾아 수정 제안</div>
+                </div>
+              </div>
+              <div class="ai-tool-item" onclick="runAiTool('feedback')">
+                <div class="ai-tool-icon purple">💬</div>
+                <div class="ai-tool-text">
+                  <div class="ai-tool-name">피드백 받기</div>
+                  <div class="ai-tool-desc">논리, 구성, 표현 분석</div>
+                </div>
+              </div>
+              <div class="ai-tool-item" onclick="runAiTool('improve')">
+                <div class="ai-tool-icon amber">✨</div>
+                <div class="ai-tool-text">
+                  <div class="ai-tool-name">문장 개선하기</div>
+                  <div class="ai-tool-desc">더 명확하고 자연스럽게</div>
+                </div>
+              </div>
+              <div class="ai-tool-item" onclick="runAiTool('explore')">
+                <div class="ai-tool-icon green">🧭</div>
+                <div class="ai-tool-text">
+                  <div class="ai-tool-name">글감 더 탐색하기</div>
+                  <div class="ai-tool-desc">쓰고 싶은 내용이 떠오르게</div>
+                </div>
+              </div>
+
+              <div
+                style="font-size: 11px; color: var(--text-2); margin-top: 4px"
+              >
+                최근 피드백
+              </div>
+              <div class="score-section">
+                <div class="score-label">
+                  <span>글 전체 분석</span>
+                  <span>방금 전</span>
+                </div>
+                <div class="score-row">
+                  <div class="score-name">명확성</div>
+                  <div class="score-bar-bg">
+                    <div class="score-bar" style="width: 75%"></div>
+                  </div>
+                  <div class="score-num">75</div>
+                </div>
+                <div class="score-row">
+                  <div class="score-name">구성력</div>
+                  <div class="score-bar-bg">
+                    <div class="score-bar" style="width: 60%"></div>
+                  </div>
+                  <div class="score-num">60</div>
+                </div>
+                <div class="score-row">
+                  <div class="score-name">표현력</div>
+                  <div class="score-bar-bg">
+                    <div class="score-bar" style="width: 82%"></div>
+                  </div>
+                  <div class="score-num">82</div>
+                </div>
+              </div>
+
+              <div class="feedback-card">
+                <div class="feedback-label">개선 제안</div>
+                <div class="feedback-text">
+                  두 번째 문단에서 주장이 조금 느슨해집니다. "내 경우는 다른 것
+                  같다" 뒤에 구체적인 사례나 이유를 한 가지 더 추가하면 설득력이
+                  높아질 것 같아요.
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<!-- Floating Toolbar -->
-<div class="floating-toolbar" id="floating-toolbar">
-  <button class="ft-btn primary" onclick="ftAction('improve')">
-    <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6.5 1l1.2 3.6L11 6.5l-3.3 1.9L6.5 12l-1.2-4.1-3.3-1.4 3.3-1.9z" stroke-linejoin="round"/></svg>
-    문장 개선
-  </button>
-  <div class="ft-sep"></div>
-  <button class="ft-btn" onclick="ftAction('shorter')">
-    <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 6.5h9M7 3.5l3 3-3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    더 짧게
-  </button>
-  <button class="ft-btn" onclick="ftAction('longer')">
-    <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 6.5h9M5.5 3.5l-3 3 3 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    더 길게
-  </button>
-  <div class="ft-sep"></div>
-  <button class="ft-btn" onclick="ftAction('grammar')">
-    <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 10l3-8 3 8M3.5 7h5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="10.5" cy="9.5" r="1.8" stroke-width="1.2"/><path d="M11.8 10.8l.8.8" stroke-linecap="round"/></svg>
-    문법 검사
-  </button>
-</div>
+    <!-- Floating Toolbar -->
+    <div class="floating-toolbar" id="floating-toolbar">
+      <button class="ft-btn primary" onclick="ftAction('improve')">
+        <svg
+          viewBox="0 0 13 13"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.4"
+        >
+          <path
+            d="M6.5 1l1.2 3.6L11 6.5l-3.3 1.9L6.5 12l-1.2-4.1-3.3-1.4 3.3-1.9z"
+            stroke-linejoin="round"
+          />
+        </svg>
+        문장 개선
+      </button>
+      <div class="ft-sep"></div>
+      <button class="ft-btn" onclick="ftAction('shorter')">
+        <svg
+          viewBox="0 0 13 13"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.4"
+        >
+          <path
+            d="M2 6.5h9M7 3.5l3 3-3 3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        더 짧게
+      </button>
+      <button class="ft-btn" onclick="ftAction('longer')">
+        <svg
+          viewBox="0 0 13 13"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.4"
+        >
+          <path
+            d="M2 6.5h9M5.5 3.5l-3 3 3 3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+        더 길게
+      </button>
+      <div class="ft-sep"></div>
+      <button class="ft-btn" onclick="ftAction('grammar')">
+        <svg
+          viewBox="0 0 13 13"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.4"
+        >
+          <path
+            d="M2 10l3-8 3 8M3.5 7h5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <circle cx="10.5" cy="9.5" r="1.8" stroke-width="1.2" />
+          <path d="M11.8 10.8l.8.8" stroke-linecap="round" />
+        </svg>
+        문법 검사
+      </button>
+    </div>
 
-<!-- Bottom Sheet Overlay -->
-<div class="bottom-sheet-overlay" id="bs-overlay" onclick="closeBottomSheet()"></div>
+    <!-- Bottom Sheet Overlay -->
+    <div
+      class="bottom-sheet-overlay"
+      id="bs-overlay"
+      onclick="closeBottomSheet()"
+    ></div>
 
-<!-- Bottom Sheet -->
-<div class="bottom-sheet" id="bottom-sheet">
-  <div class="bs-handle-area" id="bs-handle">
-    <div class="bs-handle"></div>
-  </div>
-  <div class="bs-header">
-    <div class="bs-title">
-      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="var(--ai-color)" stroke-width="1.5"><path d="M8 2C4.7 2 2 4.2 2 7c0 1.5.7 2.9 1.8 3.9L3 13l2.3-.9C6.1 12.4 7 12.6 8 12.6c3.3 0 6-2.2 6-5.3C14 4.2 11.3 2 8 2z"/></svg>
-      AI 글쓰기 도우미
-      <span style="font-size:10px;color:var(--ai-color);background:var(--ai-light);border:1px solid var(--ai-border);padding:1px 5px;border-radius:3px;">Beta</span>
-    </div>
-    <button class="bs-close" onclick="closeBottomSheet()">
-      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2l8 8M10 2l-8 8" stroke-linecap="round"/></svg>
-    </button>
-  </div>
-  <div class="bs-body">
-    <div style="font-size:11px;color:var(--text-2);margin-bottom:2px;">AI로 글 다듬기</div>
-    <div class="ai-tool-item" onclick="runAiTool('grammar'); closeBottomSheet()">
-      <div class="ai-tool-icon blue">🔤</div>
-      <div class="ai-tool-text"><div class="ai-tool-name">맞춤법 · 문법 검사</div><div class="ai-tool-desc">오류를 찾아 수정 제안</div></div>
-    </div>
-    <div class="ai-tool-item" onclick="runAiTool('feedback'); closeBottomSheet()">
-      <div class="ai-tool-icon purple">💬</div>
-      <div class="ai-tool-text"><div class="ai-tool-name">피드백 받기</div><div class="ai-tool-desc">논리, 구성, 표현 분석</div></div>
-    </div>
-    <div class="ai-tool-item" onclick="runAiTool('improve'); closeBottomSheet()">
-      <div class="ai-tool-icon amber">✨</div>
-      <div class="ai-tool-text"><div class="ai-tool-name">문장 개선하기</div><div class="ai-tool-desc">더 명확하고 자연스럽게</div></div>
-    </div>
-    <div class="ai-tool-item" onclick="runAiTool('explore'); closeBottomSheet()">
-      <div class="ai-tool-icon green">🧭</div>
-      <div class="ai-tool-text"><div class="ai-tool-name">글감 더 탐색하기</div><div class="ai-tool-desc">쓰고 싶은 내용이 떠오르게</div></div>
-    </div>
-
-    <div style="font-size:11px;color:var(--text-2);margin-top:6px;">최근 피드백</div>
-    <div class="score-section">
-      <div class="score-label">
-        <span>글 전체 분석</span><span>방금 전</span>
+    <!-- Bottom Sheet -->
+    <div class="bottom-sheet" id="bottom-sheet">
+      <div class="bs-handle-area" id="bs-handle">
+        <div class="bs-handle"></div>
       </div>
-      <div class="score-row">
-        <div class="score-name">명확성</div>
-        <div class="score-bar-bg"><div class="score-bar" style="width:75%"></div></div>
-        <div class="score-num">75</div>
+      <div class="bs-header">
+        <div class="bs-title">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="var(--ai-color)"
+            stroke-width="1.5"
+          >
+            <path
+              d="M8 2C4.7 2 2 4.2 2 7c0 1.5.7 2.9 1.8 3.9L3 13l2.3-.9C6.1 12.4 7 12.6 8 12.6c3.3 0 6-2.2 6-5.3C14 4.2 11.3 2 8 2z"
+            />
+          </svg>
+          AI 글쓰기 도우미
+          <span
+            style="
+              font-size: 10px;
+              color: var(--ai-color);
+              background: var(--ai-light);
+              border: 1px solid var(--ai-border);
+              padding: 1px 5px;
+              border-radius: 3px;
+            "
+            >Beta</span
+          >
+        </div>
+        <button class="bs-close" onclick="closeBottomSheet()">
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
+            <path d="M2 2l8 8M10 2l-8 8" stroke-linecap="round" />
+          </svg>
+        </button>
       </div>
-      <div class="score-row">
-        <div class="score-name">구성력</div>
-        <div class="score-bar-bg"><div class="score-bar" style="width:60%"></div></div>
-        <div class="score-num">60</div>
-      </div>
-      <div class="score-row">
-        <div class="score-name">표현력</div>
-        <div class="score-bar-bg"><div class="score-bar" style="width:82%"></div></div>
-        <div class="score-num">82</div>
+      <div class="bs-body">
+        <div style="font-size: 11px; color: var(--text-2); margin-bottom: 2px">
+          AI로 글 다듬기
+        </div>
+        <div
+          class="ai-tool-item"
+          onclick="
+            runAiTool('grammar')
+            closeBottomSheet()
+          "
+        >
+          <div class="ai-tool-icon blue">🔤</div>
+          <div class="ai-tool-text">
+            <div class="ai-tool-name">맞춤법 · 문법 검사</div>
+            <div class="ai-tool-desc">오류를 찾아 수정 제안</div>
+          </div>
+        </div>
+        <div
+          class="ai-tool-item"
+          onclick="
+            runAiTool('feedback')
+            closeBottomSheet()
+          "
+        >
+          <div class="ai-tool-icon purple">💬</div>
+          <div class="ai-tool-text">
+            <div class="ai-tool-name">피드백 받기</div>
+            <div class="ai-tool-desc">논리, 구성, 표현 분석</div>
+          </div>
+        </div>
+        <div
+          class="ai-tool-item"
+          onclick="
+            runAiTool('improve')
+            closeBottomSheet()
+          "
+        >
+          <div class="ai-tool-icon amber">✨</div>
+          <div class="ai-tool-text">
+            <div class="ai-tool-name">문장 개선하기</div>
+            <div class="ai-tool-desc">더 명확하고 자연스럽게</div>
+          </div>
+        </div>
+        <div
+          class="ai-tool-item"
+          onclick="
+            runAiTool('explore')
+            closeBottomSheet()
+          "
+        >
+          <div class="ai-tool-icon green">🧭</div>
+          <div class="ai-tool-text">
+            <div class="ai-tool-name">글감 더 탐색하기</div>
+            <div class="ai-tool-desc">쓰고 싶은 내용이 떠오르게</div>
+          </div>
+        </div>
+
+        <div style="font-size: 11px; color: var(--text-2); margin-top: 6px">
+          최근 피드백
+        </div>
+        <div class="score-section">
+          <div class="score-label">
+            <span>글 전체 분석</span><span>방금 전</span>
+          </div>
+          <div class="score-row">
+            <div class="score-name">명확성</div>
+            <div class="score-bar-bg">
+              <div class="score-bar" style="width: 75%"></div>
+            </div>
+            <div class="score-num">75</div>
+          </div>
+          <div class="score-row">
+            <div class="score-name">구성력</div>
+            <div class="score-bar-bg">
+              <div class="score-bar" style="width: 60%"></div>
+            </div>
+            <div class="score-num">60</div>
+          </div>
+          <div class="score-row">
+            <div class="score-name">표현력</div>
+            <div class="score-bar-bg">
+              <div class="score-bar" style="width: 82%"></div>
+            </div>
+            <div class="score-num">82</div>
+          </div>
+        </div>
+        <div class="feedback-card">
+          <div class="feedback-label">개선 제안</div>
+          <div class="feedback-text">
+            두 번째 문단에서 주장이 조금 느슨해집니다. "내 경우는 다른 것 같다"
+            뒤에 구체적인 사례나 이유를 한 가지 더 추가하면 설득력이 높아질 것
+            같아요.
+          </div>
+        </div>
       </div>
     </div>
-    <div class="feedback-card">
-      <div class="feedback-label">개선 제안</div>
-      <div class="feedback-text">두 번째 문단에서 주장이 조금 느슨해집니다. "내 경우는 다른 것 같다" 뒤에 구체적인 사례나 이유를 한 가지 더 추가하면 설득력이 높아질 것 같아요.</div>
-    </div>
-  </div>
-</div>
 
-<!-- Demo hint label -->
-<div class="demo-label" id="demo-label"></div>
+    <!-- Demo hint label -->
+    <div class="demo-label" id="demo-label"></div>
 
-<script>
-// ──── STATE ────
-let panelOpen = true;
-let ghostTimer = null;
-let selectedText = '';
-let lastSelectedRange = null;
-const editor = document.getElementById('editor');
+    <script>
+      // ──── STATE ────
+      let panelOpen = true
+      let ghostTimer = null
+      let selectedText = ""
+      let lastSelectedRange = null
+      const editor = document.getElementById("editor")
 
-// Ghost text suggestions
-const ghostSuggestions = {
-  '싶어진다.': ' 어쩌면 그 무게를 외면하고 싶은 마음이, 이미 하루를 버티는 방식인지도 모른다.',
-  '아닌 것 같다.': ' 매일 아침 반복되는 그 감각에는, 이름 붙이지 못한 무언가가 담겨 있다.',
-  '쏟아진다.': ' 그것들을 하나씩 꺼내 정리하기도 전에, 몸이 먼저 무거워지는 것 같다.',
-};
-
-// ──── PANEL TOGGLE ────
-function togglePanel() {
-  panelOpen = !panelOpen;
-  const panel = document.getElementById('ai-panel');
-  if (panelOpen) {
-    panel.classList.remove('hidden');
-    showLabel('AI 패널 열림');
-  } else {
-    panel.classList.add('hidden');
-    showLabel('포커스 모드 — AI 패널 닫힘. 오른쪽 상단 버튼으로 다시 열기');
-  }
-}
-
-// ──── VIEW TOGGLE ────
-function setView(view) {
-  const app = document.getElementById('app');
-  const btns = document.querySelectorAll('.vt-btn');
-  const sheetBadge = document.getElementById('sheet-badge');
-  btns.forEach(b => b.classList.remove('active'));
-  if (view === 'mobile') {
-    app.classList.add('mobile-view');
-    document.getElementById('btn-mobile').classList.add('active');
-    sheetBadge.style.display = 'inline-flex';
-    showLabel('모바일 모드 — AI 도우미 버튼을 눌러 바텀 시트 열기');
-    if (panelOpen) {
-      document.getElementById('ai-panel').classList.add('hidden');
-    }
-  } else {
-    app.classList.remove('mobile-view');
-    document.getElementById('btn-desktop').classList.add('active');
-    sheetBadge.style.display = 'none';
-    if (panelOpen) {
-      document.getElementById('ai-panel').classList.remove('hidden');
-    }
-  }
-}
-
-// ──── BOTTOM SHEET ────
-function openBottomSheet() {
-  document.getElementById('bs-overlay').classList.add('visible');
-  document.getElementById('bottom-sheet').classList.add('open');
-}
-function closeBottomSheet() {
-  document.getElementById('bs-overlay').classList.remove('visible');
-  document.getElementById('bottom-sheet').classList.remove('open');
-}
-
-// ──── GHOST TEXT ────
-function clearGhost() {
-  const existing = document.getElementById('ghost-node');
-  if (existing) existing.remove();
-}
-
-function showGhost(text) {
-  clearGhost();
-  const sel = window.getSelection();
-  if (!sel || sel.rangeCount === 0) return;
-  const range = sel.getRangeAt(0);
-  const span = document.createElement('span');
-  span.id = 'ghost-node';
-  span.className = 'ghost-text';
-  span.textContent = text;
-  span.setAttribute('data-ghost', 'true');
-  range.collapse(false);
-  range.insertNode(span);
-  // Move cursor after ghost for correct positioning
-  sel.collapseToEnd();
-  showLabel('Ghost Text — Tab으로 수락, Esc로 거부');
-  // Show AI hint in status bar
-  const hint = document.getElementById('ai-hint');
-  document.getElementById('ai-hint-text').textContent = 'AI 제안 있음 — Tab으로 수락';
-  hint.classList.add('visible');
-}
-
-function acceptGhost() {
-  const ghost = document.getElementById('ghost-node');
-  if (!ghost) return;
-  const text = ghost.textContent;
-  ghost.replaceWith(document.createTextNode(text));
-  hideAiHint();
-  showLabel('Ghost Text 수락됨 ✓');
-}
-
-function dismissGhost() {
-  clearGhost();
-  hideAiHint();
-}
-
-function hideAiHint() {
-  document.getElementById('ai-hint').classList.remove('visible');
-}
-
-function handleAiHint() {
-  const ghost = document.getElementById('ghost-node');
-  if (ghost) acceptGhost();
-}
-
-editor.addEventListener('keydown', (e) => {
-  const ghost = document.getElementById('ghost-node');
-  if (ghost) {
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      acceptGhost();
-      return;
-    }
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      dismissGhost();
-      return;
-    }
-    // Any other key dismisses ghost
-    if (!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Shift','Control','Meta','Alt'].includes(e.key)) {
-      dismissGhost();
-    }
-  }
-});
-
-editor.addEventListener('input', () => {
-  clearGhost();
-  hideAiHint();
-  clearTimeout(ghostTimer);
-
-  const text = editor.innerText;
-  // Update word count
-  const charCount = text.replace(/\s/g,'').length;
-  document.getElementById('word-count').textContent = charCount + '자';
-
-  // Check for ghost suggestion trigger
-  ghostTimer = setTimeout(() => {
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return;
-    const range = sel.getRangeAt(0);
-    const node = range.startContainer;
-    if (!node || node.nodeType !== Node.TEXT_NODE) return;
-    const nodeText = node.textContent.substring(0, range.startOffset);
-
-    for (const [trigger, suggestion] of Object.entries(ghostSuggestions)) {
-      if (nodeText.trim().endsWith(trigger)) {
-        showGhost(suggestion);
-        break;
+      // Ghost text suggestions
+      const ghostSuggestions = {
+        "싶어진다.":
+          " 어쩌면 그 무게를 외면하고 싶은 마음이, 이미 하루를 버티는 방식인지도 모른다.",
+        "아닌 것 같다.":
+          " 매일 아침 반복되는 그 감각에는, 이름 붙이지 못한 무언가가 담겨 있다.",
+        "쏟아진다.":
+          " 그것들을 하나씩 꺼내 정리하기도 전에, 몸이 먼저 무거워지는 것 같다.",
       }
-    }
-  }, 1500);
-});
 
-// ──── FLOATING TOOLBAR ────
-const toolbar = document.getElementById('floating-toolbar');
-let toolbarTimer = null;
+      // ──── PANEL TOGGLE ────
+      function togglePanel() {
+        panelOpen = !panelOpen
+        const panel = document.getElementById("ai-panel")
+        if (panelOpen) {
+          panel.classList.remove("hidden")
+          showLabel("AI 패널 열림")
+        } else {
+          panel.classList.add("hidden")
+          showLabel(
+            "포커스 모드 — AI 패널 닫힘. 오른쪽 상단 버튼으로 다시 열기"
+          )
+        }
+      }
 
-function hideToolbar() {
-  toolbar.classList.remove('visible');
-  selectedText = '';
-  lastSelectedRange = null;
-}
+      // ──── VIEW TOGGLE ────
+      function setView(view) {
+        const app = document.getElementById("app")
+        const btns = document.querySelectorAll(".vt-btn")
+        const sheetBadge = document.getElementById("sheet-badge")
+        btns.forEach((b) => b.classList.remove("active"))
+        if (view === "mobile") {
+          app.classList.add("mobile-view")
+          document.getElementById("btn-mobile").classList.add("active")
+          sheetBadge.style.display = "inline-flex"
+          showLabel("모바일 모드 — AI 도우미 버튼을 눌러 바텀 시트 열기")
+          if (panelOpen) {
+            document.getElementById("ai-panel").classList.add("hidden")
+          }
+        } else {
+          app.classList.remove("mobile-view")
+          document.getElementById("btn-desktop").classList.add("active")
+          sheetBadge.style.display = "none"
+          if (panelOpen) {
+            document.getElementById("ai-panel").classList.remove("hidden")
+          }
+        }
+      }
 
-document.addEventListener('selectionchange', () => {
-  clearTimeout(toolbarTimer);
-  const sel = window.getSelection();
-  if (!sel || sel.isCollapsed || !sel.toString().trim()) {
-    toolbarTimer = setTimeout(hideToolbar, 200);
-    return;
-  }
-  const text = sel.toString().trim();
-  if (text.length < 3) return;
-  if (!editor.contains(sel.anchorNode)) return;
+      // ──── BOTTOM SHEET ────
+      function openBottomSheet() {
+        document.getElementById("bs-overlay").classList.add("visible")
+        document.getElementById("bottom-sheet").classList.add("open")
+      }
+      function closeBottomSheet() {
+        document.getElementById("bs-overlay").classList.remove("visible")
+        document.getElementById("bottom-sheet").classList.remove("open")
+      }
 
-  selectedText = text;
-  const range = sel.getRangeAt(0);
-  lastSelectedRange = range.cloneRange();
-  const rect = range.getBoundingClientRect();
+      // ──── GHOST TEXT ────
+      function clearGhost() {
+        const existing = document.getElementById("ghost-node")
+        if (existing) existing.remove()
+      }
 
-  if (rect.width === 0) return;
+      function showGhost(text) {
+        clearGhost()
+        const sel = window.getSelection()
+        if (!sel || sel.rangeCount === 0) return
+        const range = sel.getRangeAt(0)
+        const span = document.createElement("span")
+        span.id = "ghost-node"
+        span.className = "ghost-text"
+        span.textContent = text
+        span.setAttribute("data-ghost", "true")
+        range.collapse(false)
+        range.insertNode(span)
+        // Move cursor after ghost for correct positioning
+        sel.collapseToEnd()
+        showLabel("Ghost Text — Tab으로 수락, Esc로 거부")
+        // Show AI hint in status bar
+        const hint = document.getElementById("ai-hint")
+        document.getElementById("ai-hint-text").textContent =
+          "AI 제안 있음 — Tab으로 수락"
+        hint.classList.add("visible")
+      }
 
-  const tbW = 340;
-  let left = rect.left + (rect.width / 2) - (tbW / 2);
-  let top = rect.top - 50;
-  left = Math.max(8, Math.min(left, window.innerWidth - tbW - 8));
-  if (top < 8) top = rect.bottom + 10;
+      function acceptGhost() {
+        const ghost = document.getElementById("ghost-node")
+        if (!ghost) return
+        const text = ghost.textContent
+        ghost.replaceWith(document.createTextNode(text))
+        hideAiHint()
+        showLabel("Ghost Text 수락됨 ✓")
+      }
 
-  toolbar.style.left = left + 'px';
-  toolbar.style.top = top + 'px';
-  toolbar.style.width = tbW + 'px';
-  toolbar.classList.add('visible');
-});
+      function dismissGhost() {
+        clearGhost()
+        hideAiHint()
+      }
 
-document.addEventListener('mousedown', (e) => {
-  if (!toolbar.contains(e.target)) {
-    toolbarTimer = setTimeout(hideToolbar, 150);
-  }
-});
+      function hideAiHint() {
+        document.getElementById("ai-hint").classList.remove("visible")
+      }
 
-// ──── TOOLBAR ACTIONS ────
-const resultTexts = {
-  improve: {
-    label: '✨ 문장 개선 결과',
-    fn: (t) => {
-      const samples = [
-        '아침이 무서운 건 게으름 탓이 아니다. 눈을 뜨는 순간, 오늘의 무게가 한꺼번에 쏟아지기 때문이다.',
-        '알람이 울릴 때마다 눈을 감고 싶어지는 건, 하루를 시작하기 전에 이미 지쳐있기 때문인지도 모른다.',
-      ];
-      return samples[Math.floor(Math.random() * samples.length)];
-    }
-  },
-  shorter: {
-    label: '✂ 요약 결과',
-    fn: (t) => {
-      if (t.length < 20) return '이미 충분히 간결합니다.';
-      return t.split(/[.,。]/)[0].trim() + '.';
-    }
-  },
-  longer: {
-    label: '↔ 확장 결과',
-    fn: (t) => t + ' 그것은 단순한 피로가 아니라, 아직 해결되지 않은 어제의 감정들이 쌓인 결과일 수 있다.'
-  },
-  grammar: {
-    label: '🔤 문법 검사 결과',
-    fn: (t) => '선택한 텍스트에서 문법적 오류가 발견되지 않았습니다. 문장 구조와 맞춤법 모두 자연스럽습니다.'
-  }
-};
+      function handleAiHint() {
+        const ghost = document.getElementById("ghost-node")
+        if (ghost) acceptGhost()
+      }
 
-function ftAction(type) {
-  if (!selectedText) return;
-  hideToolbar();
-  const info = resultTexts[type];
-  const result = info.fn(selectedText);
-  const panel = document.getElementById('inline-result');
-  document.getElementById('inline-result-header').textContent = info.label;
-  document.getElementById('inline-result-text').textContent = result;
-  panel.classList.add('visible');
-  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  showLabel('Floating Toolbar — AI 결과가 에디터 하단에 인라인으로 표시됨');
-}
+      editor.addEventListener("keydown", (e) => {
+        const ghost = document.getElementById("ghost-node")
+        if (ghost) {
+          if (e.key === "Tab") {
+            e.preventDefault()
+            acceptGhost()
+            return
+          }
+          if (e.key === "Escape") {
+            e.preventDefault()
+            dismissGhost()
+            return
+          }
+          // Any other key dismisses ghost
+          if (
+            ![
+              "ArrowLeft",
+              "ArrowRight",
+              "ArrowUp",
+              "ArrowDown",
+              "Shift",
+              "Control",
+              "Meta",
+              "Alt",
+            ].includes(e.key)
+          ) {
+            dismissGhost()
+          }
+        }
+      })
 
-function applyResult() {
-  if (lastSelectedRange) {
-    // Replace selected text
-    const text = document.getElementById('inline-result-text').textContent;
-    // Re-select and replace
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    sel.addRange(lastSelectedRange);
-    document.execCommand('insertText', false, text);
-  }
-  closeInlineResult();
-  showLabel('수정 내용이 적용됐습니다 ✓');
-}
+      editor.addEventListener("input", () => {
+        clearGhost()
+        hideAiHint()
+        clearTimeout(ghostTimer)
 
-function closeInlineResult() {
-  document.getElementById('inline-result').classList.remove('visible');
-}
+        const text = editor.innerText
+        // Update word count
+        const charCount = text.replace(/\s/g, "").length
+        document.getElementById("word-count").textContent = charCount + "자"
 
-function regenerate() {
-  const info = resultTexts['improve'];
-  const newText = info.fn(selectedText || '');
-  document.getElementById('inline-result-text').textContent = newText;
-}
+        // Check for ghost suggestion trigger
+        ghostTimer = setTimeout(() => {
+          const sel = window.getSelection()
+          if (!sel || sel.rangeCount === 0) return
+          const range = sel.getRangeAt(0)
+          const node = range.startContainer
+          if (!node || node.nodeType !== Node.TEXT_NODE) return
+          const nodeText = node.textContent.substring(0, range.startOffset)
 
-// ──── AI TOOLS ────
-function runAiTool(type) {
-  const messages = {
-    grammar: '문법 검사를 실행했습니다. 총 2개의 개선 제안이 있습니다.',
-    feedback: '피드백 분석이 완료됐습니다. 점수가 업데이트되었습니다.',
-    improve: '문장 개선 제안 3개가 준비됐습니다.',
-    explore: '비슷한 주제의 글감 5개를 찾았습니다.',
-  };
-  showLabel(messages[type] || 'AI 실행 중...');
-}
+          for (const [trigger, suggestion] of Object.entries(
+            ghostSuggestions
+          )) {
+            if (nodeText.trim().endsWith(trigger)) {
+              showGhost(suggestion)
+              break
+            }
+          }
+        }, 1500)
+      })
 
-// ──── DEMO LABEL ────
-let labelTimer = null;
-function showLabel(text) {
-  const el = document.getElementById('demo-label');
-  el.textContent = text;
-  el.classList.add('show');
-  clearTimeout(labelTimer);
-  labelTimer = setTimeout(() => el.classList.remove('show'), 2800);
-}
+      // ──── FLOATING TOOLBAR ────
+      const toolbar = document.getElementById("floating-toolbar")
+      let toolbarTimer = null
 
-// Bottom sheet drag
-let bsDragStartY = 0;
-let bsDragStartOpen = true;
-const bs = document.getElementById('bottom-sheet');
-const bsHandle = document.getElementById('bs-handle');
-bsHandle.addEventListener('touchstart', (e) => { bsDragStartY = e.touches[0].clientY; }, { passive: true });
-bsHandle.addEventListener('touchmove', (e) => {
-  const dy = e.touches[0].clientY - bsDragStartY;
-  if (dy > 60) closeBottomSheet();
-}, { passive: true });
-bsHandle.addEventListener('mousedown', (e) => {
-  bsDragStartY = e.clientY;
-  const onMove = (ev) => { if (ev.clientY - bsDragStartY > 60) { closeBottomSheet(); cleanup(); } };
-  const cleanup = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', cleanup); };
-  document.addEventListener('mousemove', onMove);
-  document.addEventListener('mouseup', cleanup);
-});
+      function hideToolbar() {
+        toolbar.classList.remove("visible")
+        selectedText = ""
+        lastSelectedRange = null
+      }
 
-// Initial hint
-setTimeout(() => showLabel('텍스트를 선택하면 플로팅 툴바가 나타납니다'), 800);
-</script>
-</body>
+      document.addEventListener("selectionchange", () => {
+        clearTimeout(toolbarTimer)
+        const sel = window.getSelection()
+        if (!sel || sel.isCollapsed || !sel.toString().trim()) {
+          toolbarTimer = setTimeout(hideToolbar, 200)
+          return
+        }
+        const text = sel.toString().trim()
+        if (text.length < 3) return
+        if (!editor.contains(sel.anchorNode)) return
+
+        selectedText = text
+        const range = sel.getRangeAt(0)
+        lastSelectedRange = range.cloneRange()
+        const rect = range.getBoundingClientRect()
+
+        if (rect.width === 0) return
+
+        const tbW = 340
+        let left = rect.left + rect.width / 2 - tbW / 2
+        let top = rect.top - 50
+        left = Math.max(8, Math.min(left, window.innerWidth - tbW - 8))
+        if (top < 8) top = rect.bottom + 10
+
+        toolbar.style.left = left + "px"
+        toolbar.style.top = top + "px"
+        toolbar.style.width = tbW + "px"
+        toolbar.classList.add("visible")
+      })
+
+      document.addEventListener("mousedown", (e) => {
+        if (!toolbar.contains(e.target)) {
+          toolbarTimer = setTimeout(hideToolbar, 150)
+        }
+      })
+
+      // ──── TOOLBAR ACTIONS ────
+      const resultTexts = {
+        improve: {
+          label: "✨ 문장 개선 결과",
+          fn: (t) => {
+            const samples = [
+              "아침이 무서운 건 게으름 탓이 아니다. 눈을 뜨는 순간, 오늘의 무게가 한꺼번에 쏟아지기 때문이다.",
+              "알람이 울릴 때마다 눈을 감고 싶어지는 건, 하루를 시작하기 전에 이미 지쳐있기 때문인지도 모른다.",
+            ]
+            return samples[Math.floor(Math.random() * samples.length)]
+          },
+        },
+        shorter: {
+          label: "✂ 요약 결과",
+          fn: (t) => {
+            if (t.length < 20) return "이미 충분히 간결합니다."
+            return t.split(/[.,。]/)[0].trim() + "."
+          },
+        },
+        longer: {
+          label: "↔ 확장 결과",
+          fn: (t) =>
+            t +
+            " 그것은 단순한 피로가 아니라, 아직 해결되지 않은 어제의 감정들이 쌓인 결과일 수 있다.",
+        },
+        grammar: {
+          label: "🔤 문법 검사 결과",
+          fn: (t) =>
+            "선택한 텍스트에서 문법적 오류가 발견되지 않았습니다. 문장 구조와 맞춤법 모두 자연스럽습니다.",
+        },
+      }
+
+      function ftAction(type) {
+        if (!selectedText) return
+        hideToolbar()
+        const info = resultTexts[type]
+        const result = info.fn(selectedText)
+        const panel = document.getElementById("inline-result")
+        document.getElementById("inline-result-header").textContent = info.label
+        document.getElementById("inline-result-text").textContent = result
+        panel.classList.add("visible")
+        panel.scrollIntoView({ behavior: "smooth", block: "nearest" })
+        showLabel(
+          "Floating Toolbar — AI 결과가 에디터 하단에 인라인으로 표시됨"
+        )
+      }
+
+      function applyResult() {
+        if (lastSelectedRange) {
+          // Replace selected text
+          const text = document.getElementById("inline-result-text").textContent
+          // Re-select and replace
+          const sel = window.getSelection()
+          sel.removeAllRanges()
+          sel.addRange(lastSelectedRange)
+          document.execCommand("insertText", false, text)
+        }
+        closeInlineResult()
+        showLabel("수정 내용이 적용됐습니다 ✓")
+      }
+
+      function closeInlineResult() {
+        document.getElementById("inline-result").classList.remove("visible")
+      }
+
+      function regenerate() {
+        const info = resultTexts["improve"]
+        const newText = info.fn(selectedText || "")
+        document.getElementById("inline-result-text").textContent = newText
+      }
+
+      // ──── AI TOOLS ────
+      function runAiTool(type) {
+        const messages = {
+          grammar: "문법 검사를 실행했습니다. 총 2개의 개선 제안이 있습니다.",
+          feedback: "피드백 분석이 완료됐습니다. 점수가 업데이트되었습니다.",
+          improve: "문장 개선 제안 3개가 준비됐습니다.",
+          explore: "비슷한 주제의 글감 5개를 찾았습니다.",
+        }
+        showLabel(messages[type] || "AI 실행 중...")
+      }
+
+      // ──── DEMO LABEL ────
+      let labelTimer = null
+      function showLabel(text) {
+        const el = document.getElementById("demo-label")
+        el.textContent = text
+        el.classList.add("show")
+        clearTimeout(labelTimer)
+        labelTimer = setTimeout(() => el.classList.remove("show"), 2800)
+      }
+
+      // Bottom sheet drag
+      let bsDragStartY = 0
+      let bsDragStartOpen = true
+      const bs = document.getElementById("bottom-sheet")
+      const bsHandle = document.getElementById("bs-handle")
+      bsHandle.addEventListener(
+        "touchstart",
+        (e) => {
+          bsDragStartY = e.touches[0].clientY
+        },
+        { passive: true }
+      )
+      bsHandle.addEventListener(
+        "touchmove",
+        (e) => {
+          const dy = e.touches[0].clientY - bsDragStartY
+          if (dy > 60) closeBottomSheet()
+        },
+        { passive: true }
+      )
+      bsHandle.addEventListener("mousedown", (e) => {
+        bsDragStartY = e.clientY
+        const onMove = (ev) => {
+          if (ev.clientY - bsDragStartY > 60) {
+            closeBottomSheet()
+            cleanup()
+          }
+        }
+        const cleanup = () => {
+          document.removeEventListener("mousemove", onMove)
+          document.removeEventListener("mouseup", cleanup)
+        }
+        document.addEventListener("mousemove", onMove)
+        document.addEventListener("mouseup", cleanup)
+      })
+
+      // Initial hint
+      setTimeout(
+        () => showLabel("텍스트를 선택하면 플로팅 툴바가 나타납니다"),
+        800
+      )
+    </script>
+  </body>
 </html>

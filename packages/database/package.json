@@ -1,12 +1,18 @@
 {
   "name": "@workspace/database",
   "version": "0.0.0",
-  "type": "module",
   "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema/index.ts",
+    "./testing": "./src/testing/index.ts"
+  },
   "scripts": {
     "drizzle:generate": "drizzle-kit generate --config drizzle.config.ts",
     "drizzle:push": "drizzle-kit push --config drizzle.config.ts",
     "lint": "eslint .",
+    "lint:oxlint": "oxlint",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "typecheck": "tsc --noEmit"
@@ -22,10 +28,5 @@
     "drizzle-kit": "^0.31.5",
     "eslint": "^9.39.2",
     "typescript": "^5.9.3"
-  },
-  "exports": {
-    ".": "./src/index.ts",
-    "./schema": "./src/schema/index.ts",
-    "./testing": "./src/testing/index.ts"
   }
 }

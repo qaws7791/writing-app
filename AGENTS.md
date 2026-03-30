@@ -55,8 +55,9 @@
 
 ### Code Style
 
-- Use Prettier for formatting only
-- Use ESLint to enforce architectural and semantic rules
+- Use oxfmt for formatting only
+- Use oxlint + ESLint to enforce linting rules (ESLint for turbo env-var rules, oxlint for everything else)
+- eslint-plugin-oxlint disables ESLint rules already covered by oxlint
 - Do not bikeshed formatting in reviews
 - Optimize reviews for correctness, naming, coupling, and boundary clarity
 
@@ -77,6 +78,7 @@ When editing code:
 ### Validation checklist
 
 - After the change, it must pass build, lint, typecheck, etc. to the extent possible.
+- `bun lefthook run pre-commit` can be used to lint,formatting before commit
 
 ## Commit Guidelines
 
@@ -89,7 +91,7 @@ When editing code:
 
 - [detailed description of changes 1(optional)]
 - [detailed description of changes 2(optional)]
-- 
+-
 ```
 
 ## UI Design Principles

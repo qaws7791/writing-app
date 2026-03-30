@@ -1,13 +1,14 @@
 {
   "name": "storybook",
   "version": "0.0.1",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "storybook dev -p 6006 --ci",
     "build": "storybook build --output-dir dist",
     "lint": "eslint",
-    "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "format": "oxfmt .",
+    "lint:oxlint": "oxlint",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

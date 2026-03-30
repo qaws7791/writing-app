@@ -38,7 +38,6 @@ export function requestBackgroundSync(): void {
   sendApiBaseUrl(registration.active)
 
   if ("sync" in registration) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(registration as any).sync.register(SYNC_TAG).catch(() => {
       // Background Sync API 미지원
     })

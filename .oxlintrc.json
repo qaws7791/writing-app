@@ -1,0 +1,31 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "nextjs", "unicorn", "import", "oxc"],
+  "categories": {
+    "correctness": "warn"
+  },
+  "rules": {
+    "typescript/no-explicit-any": "warn",
+    "no-unused-vars": "warn",
+    "no-console": "off",
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "off",
+    "eslint/no-unused-vars": "warn"
+  },
+  "settings": {
+    "next": {
+      "rootDir": "apps/web/"
+    },
+    "react": {
+      "version": "19.2"
+    }
+  },
+  "ignorePatterns": [
+    "dist/**",
+    ".next/**",
+    "**/.turbo/**",
+    "**/coverage/**",
+    "**/next-env.d.ts",
+    "**/node_modules/**"
+  ]
+}
