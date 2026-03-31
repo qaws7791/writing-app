@@ -1,54 +1,41 @@
-import { createRoute, z } from "@hono/zod-openapi"
+import { z } from "@hono/zod-openapi"
 import {
   versionListResponseSchema,
   writingIdParamSchema,
 } from "@workspace/core/modules/writings"
 import { cursorPageQuerySchema, toWritingId } from "@workspace/core"
 
-import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
+import { ListVersionsUseCase } from "../../runtime/tokens"
 
-const route = createRoute({
-  description: "문서의 버전 기록 목록을 조회합니다.",
+export default route({
   method: "get",
   path: "/writings/{writingId}/versions",
+  inject: { listVersions: ListVersionsUseCase },
   request: {
-    params: z.object({
-      writingId: writingIdParamSchema,
-    }),
+    params: z.object({ writingId: writingIdParamSchema }),
     query: cursorPageQuerySchema,
   },
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: versionListResponseSchema,
-        },
-      },
-      description: "버전 기록 목록",
-    },
+  response: {
+    200: versionListResponseSchema,
     default: defaultErrorResponse,
   },
-  security: [{ cookieAuth: [] }],
-  summary: "버전 기록 목록",
-  tags: ["동기화"],
+  meta: {
+    description: "문서의 버전 기록 목록을 조회합니다.",
+    summary: "버전 기록 목록",
+    tags: ["동기화"],
+    security: [{ cookieAuth: [] }],
+  },
+  handler: async ({ listVersions, params, query, context }) => {
+    const userId = requireUserId(context)
+    const result = await listVersions(
+      userId,
+      toWritingId(params.writingId),
+      query
+    )
+    return unwrapOrThrow(result)
+  },
 })
-
-const app = createRouter()
-
-app.openapi(route, async (c) => {
-  const userId = requireUserId(c)
-  const { writingId } = c.req.valid("param")
-  const query = c.req.valid("query")
-  const result = await c.var.listVersionsUseCase(
-    userId,
-    toWritingId(writingId),
-    query
-  )
-  const page = unwrapOrThrow(result)
-  return c.json(page, 200)
-})
-
-export default app

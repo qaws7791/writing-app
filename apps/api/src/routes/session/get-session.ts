@@ -1,8 +1,9 @@
-import { createRoute, z } from "@hono/zod-openapi"
+import { z } from "@hono/zod-openapi"
 
-import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
+import { route } from "../../http/route"
 import { UnauthorizedError } from "../../http/unauthorized-error"
+import { AuthSession, AuthUser } from "../../runtime/tokens"
 
 const sessionResponseSchema = z.object({
   session: z.object({
@@ -24,37 +25,21 @@ const sessionResponseSchema = z.object({
   }),
 })
 
-const route = createRoute({
-  description: "현재 인증된 사용자의 세션 정보를 반환합니다.",
+export default route({
   method: "get",
   path: "/session",
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: sessionResponseSchema,
-        },
-      },
-      description: "세션 정보",
-    },
-    default: defaultErrorResponse,
+  inject: { authUser: AuthUser, authSession: AuthSession },
+  response: { 200: sessionResponseSchema, default: defaultErrorResponse },
+  meta: {
+    description: "현재 인증된 사용자의 세션 정보를 반환합니다.",
+    summary: "세션 조회",
+    tags: ["인증"],
+    security: [{ cookieAuth: [] }],
   },
-  security: [{ cookieAuth: [] }],
-  summary: "세션 조회",
-  tags: ["인증"],
+  handler: ({ authUser, authSession }) => {
+    if (!authUser || !authSession) {
+      throw new UnauthorizedError("로그인이 필요합니다.")
+    }
+    return { session: authSession, user: authUser }
+  },
 })
-
-const app = createRouter()
-
-app.openapi(route, (c) => {
-  const user = c.get("authUser")
-  const session = c.get("authSession")
-
-  if (!user || !session) {
-    throw new UnauthorizedError("로그인이 필요합니다.")
-  }
-
-  return c.json({ session, user }, 200)
-})
-
-export default app

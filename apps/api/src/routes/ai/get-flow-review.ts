@@ -1,56 +1,34 @@
-import { createRoute } from "@hono/zod-openapi"
 import {
   aiFlowReviewInputSchema,
   aiReviewResponseSchema,
 } from "@workspace/core"
 
-import { createRouter } from "../../http/create-router"
+import { BODY_LIMITS, withBodyLimit } from "../../http/body-limit-middleware"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { route } from "../../http/route"
 import { createAiRateLimiter } from "../../middleware/ai-rate-limiter"
-import { BODY_LIMITS, withBodyLimit } from "../../http/body-limit-middleware"
+import { AiUseCases } from "../../runtime/tokens"
 
-const route = createRoute({
-  description: "문단 간 연결 흐름을 분석하고 개선점을 제안합니다.",
+export default route({
   method: "post",
   path: "/ai/review/flow",
-  request: {
-    body: {
-      content: {
-        "application/json": {
-          schema: aiFlowReviewInputSchema,
-        },
-      },
-    },
+  inject: { aiUseCases: AiUseCases },
+  middleware: [
+    withBodyLimit(BODY_LIMITS.document),
+    createAiRateLimiter({ limit: 20, windowMs: 60 * 1000 }),
+  ],
+  request: { body: aiFlowReviewInputSchema },
+  response: { 200: aiReviewResponseSchema, default: defaultErrorResponse },
+  meta: {
+    description: "문단 간 연결 흐름을 분석하고 개선점을 제안합니다.",
+    summary: "AI 흐름 검토",
+    tags: ["AI 보조"],
+    security: [{ cookieAuth: [] }],
   },
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: aiReviewResponseSchema,
-        },
-      },
-      description: "흐름 검토 결과",
-    },
-    default: defaultErrorResponse,
+  handler: async ({ aiUseCases, body, context }) => {
+    const userId = requireUserId(context)
+    const items = await aiUseCases.getFlowReview(userId, body.paragraphs)
+    return { items }
   },
-  security: [{ cookieAuth: [] }],
-  summary: "AI 흐름 검토",
-  tags: ["AI 보조"],
 })
-
-const app = createRouter()
-
-app.use(withBodyLimit(BODY_LIMITS.document))
-// 분당 20회 제한 (사용자당)
-app.use("*", createAiRateLimiter({ limit: 20, windowMs: 60 * 1000 }))
-
-app.openapi(route, async (c) => {
-  const userId = requireUserId(c)
-  const { paragraphs } = c.req.valid("json")
-
-  const items = await c.var.aiUseCases.getFlowReview(userId, paragraphs)
-  return c.json({ items }, 200)
-})
-
-export default app

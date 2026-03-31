@@ -1,4 +1,4 @@
-import { createRoute, z } from "@hono/zod-openapi"
+import { z } from "@hono/zod-openapi"
 import {
   syncPushBodySchema,
   syncPushResponseSchema,
@@ -6,59 +6,36 @@ import {
 } from "@workspace/core/modules/writings"
 import { toWritingId } from "@workspace/core"
 
-import { createRouter } from "../../http/create-router"
+import { BODY_LIMITS, withBodyLimit } from "../../http/body-limit-middleware"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
-import { BODY_LIMITS, withBodyLimit } from "../../http/body-limit-middleware"
+import { PushTransactionsUseCase } from "../../runtime/tokens"
 
-const route = createRoute({
-  description: "에디터 트랜잭션을 서버에 푸시하여 동기화합니다.",
+export default route({
   method: "post",
   path: "/writings/{writingId}/sync/push",
+  inject: { pushTransactions: PushTransactionsUseCase },
+  middleware: [withBodyLimit(BODY_LIMITS.syncPush)],
   request: {
-    body: {
-      content: {
-        "application/json": {
-          schema: syncPushBodySchema,
-        },
-      },
-      required: true,
-    },
-    params: z.object({
-      writingId: writingIdParamSchema,
-    }),
+    body: syncPushBodySchema,
+    params: z.object({ writingId: writingIdParamSchema }),
   },
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: syncPushResponseSchema,
-        },
-      },
-      description: "동기화 결과 (승인 또는 충돌)",
-    },
-    default: defaultErrorResponse,
+  response: { 200: syncPushResponseSchema, default: defaultErrorResponse },
+  meta: {
+    description: "에디터 트랜잭션을 서버에 푸시하여 동기화합니다.",
+    summary: "트랜잭션 푸시",
+    tags: ["동기화"],
+    security: [{ cookieAuth: [] }],
   },
-  security: [{ cookieAuth: [] }],
-  summary: "트랜잭션 푸시",
-  tags: ["동기화"],
+  handler: async ({ pushTransactions, body, params, context }) => {
+    const userId = requireUserId(context)
+    const result = await pushTransactions(
+      userId,
+      toWritingId(params.writingId),
+      body
+    )
+    return unwrapOrThrow(result)
+  },
 })
-
-const app = createRouter()
-
-app.use(withBodyLimit(BODY_LIMITS.syncPush))
-
-app.openapi(route, async (c) => {
-  const userId = requireUserId(c)
-  const { writingId } = c.req.valid("param")
-  const body = c.req.valid("json")
-  const result = await c.var.pushTransactionsUseCase(
-    userId,
-    toWritingId(writingId),
-    body
-  )
-  return c.json(unwrapOrThrow(result), 200)
-})
-
-export default app

@@ -1,42 +1,25 @@
-import { createRoute, z } from "@hono/zod-openapi"
+import { z } from "@hono/zod-openapi"
 import { writingIdParamSchema, toWritingId } from "@workspace/core"
 
-import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
+import { route } from "../../http/route"
+import { DeleteWritingUseCase } from "../../runtime/tokens"
 
-const route = createRoute({
-  description: "특정 글을 영구적으로 삭제합니다.",
+export default route({
   method: "delete",
   path: "/writings/{writingId}",
-  request: {
-    params: z.object({
-      writingId: writingIdParamSchema,
-    }),
+  inject: { deleteWriting: DeleteWritingUseCase },
+  request: { params: z.object({ writingId: writingIdParamSchema }) },
+  response: { 204: "글 삭제 완료", default: defaultErrorResponse },
+  meta: {
+    description: "특정 글을 영구적으로 삭제합니다.",
+    summary: "글 삭제",
+    tags: ["글"],
+    security: [{ cookieAuth: [] }],
   },
-  responses: {
-    204: {
-      description: "글 삭제 완료",
-    },
-    default: defaultErrorResponse,
+  handler: async ({ deleteWriting, params, context }) => {
+    const userId = requireUserId(context)
+    return deleteWriting(userId, toWritingId(params.writingId))
   },
-  security: [{ cookieAuth: [] }],
-  summary: "글 삭제",
-  tags: ["글"],
 })
-
-const app = createRouter()
-
-app.openapi(route, async (c) => {
-  const userId = requireUserId(c)
-  const { writingId } = c.req.valid("param")
-  const result = await c.var.deleteWritingUseCase(
-    userId,
-    toWritingId(writingId)
-  )
-  unwrapOrThrow(result)
-  return c.body(null, 204)
-})
-
-export default app

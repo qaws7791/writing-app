@@ -1,60 +1,37 @@
-import { createRoute } from "@hono/zod-openapi"
 import {
   createWritingBodySchema,
   writingDetailSchema,
   toPromptId,
 } from "@workspace/core"
 
-import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
+import { CreateWritingUseCase } from "../../runtime/tokens"
 
-const route = createRoute({
-  description: "새 글을 생성합니다. 글감을 기반으로 생성할 수 있습니다.",
+export default route({
   method: "post",
   path: "/writings",
-  request: {
-    body: {
-      content: {
-        "application/json": {
-          schema: createWritingBodySchema,
-        },
-      },
-      required: true,
-    },
+  inject: { createWriting: CreateWritingUseCase },
+  request: { body: createWritingBodySchema },
+  response: { 201: writingDetailSchema, default: defaultErrorResponse },
+  meta: {
+    description: "새 글을 생성합니다. 글감을 기반으로 생성할 수 있습니다.",
+    summary: "글 생성",
+    tags: ["글"],
+    security: [{ cookieAuth: [] }],
   },
-  responses: {
-    201: {
-      content: {
-        "application/json": {
-          schema: writingDetailSchema,
-        },
-      },
-      description: "글 생성 완료",
-    },
-    default: defaultErrorResponse,
+  handler: async ({ createWriting, body, context }) => {
+    const userId = requireUserId(context)
+    const result = await createWriting(userId, {
+      content: body.content,
+      sourcePromptId:
+        body.sourcePromptId === undefined
+          ? undefined
+          : toPromptId(body.sourcePromptId),
+      title: body.title,
+    })
+    return unwrapOrThrow(result)
   },
-  security: [{ cookieAuth: [] }],
-  summary: "글 생성",
-  tags: ["글"],
 })
-
-const app = createRouter()
-
-app.openapi(route, async (c) => {
-  const userId = requireUserId(c)
-  const body = c.req.valid("json")
-  const result = await c.var.createWritingUseCase(userId, {
-    content: body.content,
-    sourcePromptId:
-      body.sourcePromptId === undefined
-        ? undefined
-        : toPromptId(body.sourcePromptId),
-    title: body.title,
-  })
-  const writing = unwrapOrThrow(result)
-  return c.json(writing, 201)
-})
-
-export default app

@@ -1,46 +1,31 @@
-import { createRoute } from "@hono/zod-openapi"
 import {
   promptFiltersQuerySchema,
   promptListResponseSchema,
 } from "@workspace/core"
 
-import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
+import { ListPromptsUseCase } from "../../runtime/tokens"
 
-const route = createRoute({
-  description:
-    "주제, 난이도, 검색어 등 필터를 적용하여 글감 목록을 조회합니다.",
+export default route({
   method: "get",
   path: "/prompts",
-  request: {
-    query: promptFiltersQuerySchema,
+  inject: { listPrompts: ListPromptsUseCase },
+  request: { query: promptFiltersQuerySchema },
+  response: { 200: promptListResponseSchema, default: defaultErrorResponse },
+  meta: {
+    description:
+      "주제, 난이도, 검색어 등 필터를 적용하여 글감 목록을 조회합니다.",
+    summary: "글감 목록 조회",
+    tags: ["글감"],
+    security: [{ cookieAuth: [] }],
   },
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: promptListResponseSchema,
-        },
-      },
-      description: "글감 목록",
-    },
-    default: defaultErrorResponse,
+  handler: async ({ listPrompts, query, context }) => {
+    const userId = requireUserId(context)
+    const result = await listPrompts(userId, query)
+    const prompts = unwrapOrThrow(result)
+    return { items: prompts }
   },
-  security: [{ cookieAuth: [] }],
-  summary: "글감 목록 조회",
-  tags: ["글감"],
 })
-
-const app = createRouter()
-
-app.openapi(route, async (c) => {
-  const userId = requireUserId(c)
-  const filters = c.req.valid("query")
-  const result = await c.var.listPromptsUseCase(userId, filters)
-  const prompts = unwrapOrThrow(result)
-  return c.json({ items: prompts }, 200)
-})
-
-export default app

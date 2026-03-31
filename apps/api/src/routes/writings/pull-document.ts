@@ -1,4 +1,4 @@
-import { createRoute, z } from "@hono/zod-openapi"
+import { z } from "@hono/zod-openapi"
 import {
   syncPullQuerySchema,
   syncPullResponseSchema,
@@ -6,49 +6,34 @@ import {
 } from "@workspace/core/modules/writings"
 import { toWritingId } from "@workspace/core"
 
-import { createRouter } from "../../http/create-router"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
+import { PullDocumentUseCase } from "../../runtime/tokens"
 
-const route = createRoute({
-  description: "서버에서 최신 문서 상태를 가져옵니다.",
+export default route({
   method: "get",
   path: "/writings/{writingId}/sync/pull",
+  inject: { pullDocument: PullDocumentUseCase },
   request: {
-    params: z.object({
-      writingId: writingIdParamSchema,
-    }),
+    params: z.object({ writingId: writingIdParamSchema }),
     query: syncPullQuerySchema,
   },
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: syncPullResponseSchema,
-        },
-      },
-      description: "현재 문서 상태",
-    },
-    default: defaultErrorResponse,
+  response: { 200: syncPullResponseSchema, default: defaultErrorResponse },
+  meta: {
+    description: "서버에서 최신 문서 상태를 가져옵니다.",
+    summary: "문서 상태 풀",
+    tags: ["동기화"],
+    security: [{ cookieAuth: [] }],
   },
-  security: [{ cookieAuth: [] }],
-  summary: "문서 상태 풀",
-  tags: ["동기화"],
+  handler: async ({ pullDocument, params, query, context }) => {
+    const userId = requireUserId(context)
+    const result = await pullDocument(
+      userId,
+      toWritingId(params.writingId),
+      query.since
+    )
+    return unwrapOrThrow(result)
+  },
 })
-
-const app = createRouter()
-
-app.openapi(route, async (c) => {
-  const userId = requireUserId(c)
-  const { writingId } = c.req.valid("param")
-  const query = c.req.valid("query")
-  const result = await c.var.pullDocumentUseCase(
-    userId,
-    toWritingId(writingId),
-    query.since
-  )
-  return c.json(unwrapOrThrow(result), 200)
-})
-
-export default app
