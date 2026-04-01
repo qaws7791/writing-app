@@ -13,9 +13,19 @@ import {
 } from "@workspace/core/modules/writings"
 import { promptNotFound } from "@workspace/core/modules/prompts"
 import { okAsync, errAsync } from "neverthrow"
+import { cors } from "hono/cors"
 
-import { createApp } from "../app.js"
+import {
+  createUseCaseMiddleware,
+  createTimeoutMiddleware,
+  handleRequestError,
+} from "../app.js"
+import { createApp } from "../lib/hono/create-app.js"
+import { createRequestLoggerMiddleware } from "../middleware/request-logger.js"
+import { createResolveSessionMiddleware } from "../middleware/resolve-session.js"
 import { createSilentLogger, type ApiLogger } from "../observability/logger.js"
+import { allRoutes } from "../routes/index.js"
+import type { AppEnv } from "../app-env.js"
 
 type TestPrompt = {
   description: string
@@ -208,310 +218,343 @@ export function createTestApi(input?: {
     }
   }
 
-  const app = createApp({
-    allowedOrigins: ["http://127.0.0.1:3000", "http://localhost:3000"],
-    apiBaseUrl: "http://127.0.0.1:3010",
-    authDebugEnabled: false,
-    getSession: async (request) => {
-      if (request.headers.get("x-test-auth") === "none") {
-        return null
-      }
+  const allowedOrigins = new Set([
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+  ])
+  const logger = input?.logger ?? createSilentLogger()
 
-      const userId = request.headers.get("x-test-user-id") ?? "dev-user"
-      return createTestSession(userId)
-    },
-    logger: input?.logger ?? createSilentLogger(),
-    useCases: {
-      aiUseCases: {
-        async getSuggestions() {
-          return []
+  const app = createApp<AppEnv>({
+    globalMiddleware: [
+      cors({
+        allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+        credentials: true,
+        origin: (origin) => {
+          if (!origin) return null
+          return allowedOrigins.has(origin) ? origin : null
         },
-        async getDocumentReview() {
-          return []
+      }),
+      createRequestLoggerMiddleware(logger),
+      createResolveSessionMiddleware(async (request) => {
+        if (request.headers.get("x-test-auth") === "none") {
+          return null
+        }
+        const userId = request.headers.get("x-test-user-id") ?? "dev-user"
+        return createTestSession(userId)
+      }),
+      createUseCaseMiddleware({
+        aiUseCases: {
+          async getSuggestions() {
+            return []
+          },
+          async getDocumentReview() {
+            return []
+          },
+          async getFlowReview() {
+            return []
+          },
         },
-        async getFlowReview() {
-          return []
-        },
-      },
-      authHandler: async () =>
-        new Response(
-          JSON.stringify({
-            error: {
-              code: "not_found",
-              message: "테스트 인증 핸들러가 구성되지 않았습니다.",
-            },
-          }),
-          {
-            headers: {
-              "content-type": "application/json",
-            },
-            status: 404,
+        authHandler: async () =>
+          new Response(
+            JSON.stringify({
+              error: {
+                code: "not_found",
+                message: "테스트 인증 핸들러가 구성되지 않았습니다.",
+              },
+            }),
+            {
+              headers: {
+                "content-type": "application/json",
+              },
+              status: 404,
+            }
+          ),
+        autosaveWritingUseCase(userId, writingId, autosaveInput) {
+          const current = writings.find(
+            (writing) => writing.id === Number(writingId)
+          )
+          if (!current) {
+            return errAsync(writingNotFound("글을 찾을 수 없습니다."))
           }
-        ),
-      autosaveWritingUseCase(userId, writingId, autosaveInput) {
-        const current = writings.find(
-          (writing) => writing.id === Number(writingId)
-        )
-        if (!current) {
-          return errAsync(writingNotFound("글을 찾을 수 없습니다."))
-        }
-        if (current.ownerId !== userId) {
-          return errAsync(
-            writingForbidden(
-              "다른 사용자의 글에는 접근할 수 없습니다.",
-              toUserId(current.ownerId)
-            )
-          )
-        }
-
-        const nextContent = autosaveInput.content ?? current.content
-        const nextTitle = autosaveInput.title ?? current.title
-        const metrics = extractWritingTextMetrics(nextContent)
-        const now = new Date().toISOString()
-
-        current.content = nextContent
-        current.title = nextTitle
-        current.characterCount = metrics.characterCount
-        current.lastSavedAt = now
-        current.preview = toPreview(metrics.plainText)
-        current.updatedAt = now
-        current.wordCount = metrics.wordCount
-
-        return okAsync(serializeWriting(current))
-      },
-      createWritingUseCase(userId, createInput) {
-        if (
-          createInput.sourcePromptId !== undefined &&
-          !findPrompt(Number(createInput.sourcePromptId))
-        ) {
-          return errAsync(writingPromptNotFound("글감을 찾을 수 없습니다."))
-        }
-
-        const content = createInput.content ?? createEmptyWritingContent()
-        const metrics = extractWritingTextMetrics(content)
-        const now = new Date().toISOString()
-        const created: StoredWriting = {
-          characterCount: metrics.characterCount,
-          content,
-          createdAt: now,
-          id: nextWritingId++,
-          lastSavedAt: now,
-          ownerId: userId,
-          preview: toPreview(metrics.plainText),
-          sourcePromptId:
-            createInput.sourcePromptId === undefined
-              ? null
-              : Number(createInput.sourcePromptId),
-          title: createInput.title ?? "",
-          updatedAt: now,
-          wordCount: metrics.wordCount,
-        }
-
-        writings.push(created)
-        return okAsync(serializeWriting(created))
-      },
-      deleteWritingUseCase(userId, writingId) {
-        const index = writings.findIndex(
-          (writing) => writing.id === Number(writingId)
-        )
-        if (index === -1) {
-          return errAsync(writingNotFound("글을 찾을 수 없습니다."))
-        }
-        if (writings[index]!.ownerId !== userId) {
-          return errAsync(
-            writingForbidden(
-              "다른 사용자의 글에는 접근할 수 없습니다.",
-              toUserId(writings[index]!.ownerId)
-            )
-          )
-        }
-
-        writings.splice(index, 1)
-        return okAsync(undefined as void)
-      },
-      getWritingUseCase(userId, writingId) {
-        const writing = writings.find((item) => item.id === Number(writingId))
-        if (!writing) {
-          return errAsync(writingNotFound("글을 찾을 수 없습니다."))
-        }
-        if (writing.ownerId !== userId) {
-          return errAsync(
-            writingForbidden(
-              "다른 사용자의 글에는 접근할 수 없습니다.",
-              toUserId(writing.ownerId)
-            )
-          )
-        }
-
-        return okAsync(serializeWriting(writing))
-      },
-      listWritingsUseCase(userId) {
-        const items = writings
-          .filter((writing) => writing.ownerId === userId)
-          .sort((left, right) =>
-            left.updatedAt === right.updatedAt
-              ? right.id - left.id
-              : right.updatedAt.localeCompare(left.updatedAt)
-          )
-          .map((writing) => ({
-            characterCount: writing.characterCount,
-            id: toWritingId(writing.id),
-            lastSavedAt: writing.lastSavedAt,
-            preview: writing.preview,
-            sourcePromptId:
-              writing.sourcePromptId === null
-                ? null
-                : toPromptId(writing.sourcePromptId),
-            title: writing.title,
-            wordCount: writing.wordCount,
-          }))
-        return okAsync({ items, nextCursor: null, hasMore: false })
-      },
-      getHomeUseCase(userId) {
-        if (input?.homeError) {
-          throw input.homeError
-        }
-
-        const recentWritings = writings
-          .filter((writing) => writing.ownerId === userId)
-          .sort((left, right) =>
-            left.updatedAt === right.updatedAt
-              ? right.id - left.id
-              : right.updatedAt.localeCompare(left.updatedAt)
-          )
-          .map((writing) => ({
-            characterCount: writing.characterCount,
-            id: toWritingId(writing.id),
-            lastSavedAt: writing.lastSavedAt,
-            preview: writing.preview,
-            sourcePromptId:
-              writing.sourcePromptId === null
-                ? null
-                : toPromptId(writing.sourcePromptId),
-            title: writing.title,
-            wordCount: writing.wordCount,
-          }))
-
-        return okAsync({
-          recentWritings,
-          resumeWriting: recentWritings[0] ?? null,
-          savedPrompts: prompts
-            .filter((prompt) => prompt.saved)
-            .map((prompt) => ({
-              id: toPromptId(prompt.id),
-              level: prompt.level,
-              saved: true,
-              suggestedLengthLabel: prompt.suggestedLengthLabel,
-              tags: prompt.tags,
-              text: prompt.text,
-              topic: prompt.topic,
-            })),
-          todayPrompts: prompts
-            .filter((prompt) => prompt.isTodayRecommended)
-            .slice(0, 2)
-            .map((prompt) => ({
-              id: toPromptId(prompt.id),
-              level: prompt.level,
-              saved: prompt.saved,
-              suggestedLengthLabel: prompt.suggestedLengthLabel,
-              tags: prompt.tags,
-              text: prompt.text,
-              topic: prompt.topic,
-            })),
-        })
-      },
-      getPromptUseCase(_userId, promptId) {
-        const prompt = findPrompt(Number(promptId))
-        if (!prompt) {
-          return errAsync(promptNotFound("글감을 찾을 수 없습니다."))
-        }
-
-        return okAsync({
-          description: prompt.description,
-          id: toPromptId(prompt.id),
-          level: prompt.level,
-          outline: prompt.outline,
-          saved: prompt.saved,
-          suggestedLengthLabel: prompt.suggestedLengthLabel,
-          tags: prompt.tags,
-          text: prompt.text,
-          tips: prompt.tips,
-          topic: prompt.topic,
-        })
-      },
-      listPromptsUseCase(_userId, filters) {
-        const query = filters.query?.trim().toLowerCase()
-
-        return okAsync(
-          prompts
-            .filter((prompt) => {
-              if (
-                filters.saved !== undefined &&
-                prompt.saved !== filters.saved
-              ) {
-                return false
-              }
-              if (filters.topic && prompt.topic !== filters.topic) {
-                return false
-              }
-              if (filters.level && prompt.level !== filters.level) {
-                return false
-              }
-              if (!query) {
-                return true
-              }
-
-              return (
-                prompt.text.toLowerCase().includes(query) ||
-                prompt.tags.some((tag) => tag.toLowerCase().includes(query))
+          if (current.ownerId !== userId) {
+            return errAsync(
+              writingForbidden(
+                "다른 사용자의 글에는 접근할 수 없습니다.",
+                toUserId(current.ownerId)
               )
-            })
-            .map((prompt) => ({
-              id: toPromptId(prompt.id),
-              level: prompt.level,
-              saved: prompt.saved,
-              suggestedLengthLabel: prompt.suggestedLengthLabel,
-              tags: prompt.tags,
-              text: prompt.text,
-              topic: prompt.topic,
+            )
+          }
+
+          const nextContent = autosaveInput.content ?? current.content
+          const nextTitle = autosaveInput.title ?? current.title
+          const metrics = extractWritingTextMetrics(nextContent)
+          const now = new Date().toISOString()
+
+          current.content = nextContent
+          current.title = nextTitle
+          current.characterCount = metrics.characterCount
+          current.lastSavedAt = now
+          current.preview = toPreview(metrics.plainText)
+          current.updatedAt = now
+          current.wordCount = metrics.wordCount
+
+          return okAsync(serializeWriting(current))
+        },
+        createWritingUseCase(userId, createInput) {
+          if (
+            createInput.sourcePromptId !== undefined &&
+            !findPrompt(Number(createInput.sourcePromptId))
+          ) {
+            return errAsync(writingPromptNotFound("글감을 찾을 수 없습니다."))
+          }
+
+          const content = createInput.content ?? createEmptyWritingContent()
+          const metrics = extractWritingTextMetrics(content)
+          const now = new Date().toISOString()
+          const created: StoredWriting = {
+            characterCount: metrics.characterCount,
+            content,
+            createdAt: now,
+            id: nextWritingId++,
+            lastSavedAt: now,
+            ownerId: userId,
+            preview: toPreview(metrics.plainText),
+            sourcePromptId:
+              createInput.sourcePromptId === undefined
+                ? null
+                : Number(createInput.sourcePromptId),
+            title: createInput.title ?? "",
+            updatedAt: now,
+            wordCount: metrics.wordCount,
+          }
+
+          writings.push(created)
+          return okAsync(serializeWriting(created))
+        },
+        deleteWritingUseCase(userId, writingId) {
+          const index = writings.findIndex(
+            (writing) => writing.id === Number(writingId)
+          )
+          if (index === -1) {
+            return errAsync(writingNotFound("글을 찾을 수 없습니다."))
+          }
+          if (writings[index]!.ownerId !== userId) {
+            return errAsync(
+              writingForbidden(
+                "다른 사용자의 글에는 접근할 수 없습니다.",
+                toUserId(writings[index]!.ownerId)
+              )
+            )
+          }
+
+          writings.splice(index, 1)
+          return okAsync(undefined as void)
+        },
+        getWritingUseCase(userId, writingId) {
+          const writing = writings.find((item) => item.id === Number(writingId))
+          if (!writing) {
+            return errAsync(writingNotFound("글을 찾을 수 없습니다."))
+          }
+          if (writing.ownerId !== userId) {
+            return errAsync(
+              writingForbidden(
+                "다른 사용자의 글에는 접근할 수 없습니다.",
+                toUserId(writing.ownerId)
+              )
+            )
+          }
+
+          return okAsync(serializeWriting(writing))
+        },
+        listWritingsUseCase(userId) {
+          const items = writings
+            .filter((writing) => writing.ownerId === userId)
+            .sort((left, right) =>
+              left.updatedAt === right.updatedAt
+                ? right.id - left.id
+                : right.updatedAt.localeCompare(left.updatedAt)
+            )
+            .map((writing) => ({
+              characterCount: writing.characterCount,
+              id: toWritingId(writing.id),
+              lastSavedAt: writing.lastSavedAt,
+              preview: writing.preview,
+              sourcePromptId:
+                writing.sourcePromptId === null
+                  ? null
+                  : toPromptId(writing.sourcePromptId),
+              title: writing.title,
+              wordCount: writing.wordCount,
             }))
+          return okAsync({ items, nextCursor: null, hasMore: false })
+        },
+        getHomeUseCase(userId) {
+          if (input?.homeError) {
+            throw input.homeError
+          }
+
+          const recentWritings = writings
+            .filter((writing) => writing.ownerId === userId)
+            .sort((left, right) =>
+              left.updatedAt === right.updatedAt
+                ? right.id - left.id
+                : right.updatedAt.localeCompare(left.updatedAt)
+            )
+            .map((writing) => ({
+              characterCount: writing.characterCount,
+              id: toWritingId(writing.id),
+              lastSavedAt: writing.lastSavedAt,
+              preview: writing.preview,
+              sourcePromptId:
+                writing.sourcePromptId === null
+                  ? null
+                  : toPromptId(writing.sourcePromptId),
+              title: writing.title,
+              wordCount: writing.wordCount,
+            }))
+
+          return okAsync({
+            recentWritings,
+            resumeWriting: recentWritings[0] ?? null,
+            savedPrompts: prompts
+              .filter((prompt) => prompt.saved)
+              .map((prompt) => ({
+                id: toPromptId(prompt.id),
+                level: prompt.level,
+                saved: true,
+                suggestedLengthLabel: prompt.suggestedLengthLabel,
+                tags: prompt.tags,
+                text: prompt.text,
+                topic: prompt.topic,
+              })),
+            todayPrompts: prompts
+              .filter((prompt) => prompt.isTodayRecommended)
+              .slice(0, 2)
+              .map((prompt) => ({
+                id: toPromptId(prompt.id),
+                level: prompt.level,
+                saved: prompt.saved,
+                suggestedLengthLabel: prompt.suggestedLengthLabel,
+                tags: prompt.tags,
+                text: prompt.text,
+                topic: prompt.topic,
+              })),
+          })
+        },
+        getPromptUseCase(_userId, promptId) {
+          const prompt = findPrompt(Number(promptId))
+          if (!prompt) {
+            return errAsync(promptNotFound("글감을 찾을 수 없습니다."))
+          }
+
+          return okAsync({
+            description: prompt.description,
+            id: toPromptId(prompt.id),
+            level: prompt.level,
+            outline: prompt.outline,
+            saved: prompt.saved,
+            suggestedLengthLabel: prompt.suggestedLengthLabel,
+            tags: prompt.tags,
+            text: prompt.text,
+            tips: prompt.tips,
+            topic: prompt.topic,
+          })
+        },
+        listPromptsUseCase(_userId, filters) {
+          const query = filters.query?.trim().toLowerCase()
+
+          return okAsync(
+            prompts
+              .filter((prompt) => {
+                if (
+                  filters.saved !== undefined &&
+                  prompt.saved !== filters.saved
+                ) {
+                  return false
+                }
+                if (filters.topic && prompt.topic !== filters.topic) {
+                  return false
+                }
+                if (filters.level && prompt.level !== filters.level) {
+                  return false
+                }
+                if (!query) {
+                  return true
+                }
+
+                return (
+                  prompt.text.toLowerCase().includes(query) ||
+                  prompt.tags.some((tag) => tag.toLowerCase().includes(query))
+                )
+              })
+              .map((prompt) => ({
+                id: toPromptId(prompt.id),
+                level: prompt.level,
+                saved: prompt.saved,
+                suggestedLengthLabel: prompt.suggestedLengthLabel,
+                tags: prompt.tags,
+                text: prompt.text,
+                topic: prompt.topic,
+              }))
+          )
+        },
+        savePromptUseCase(_userId, promptId) {
+          const prompt = findPrompt(Number(promptId))
+          if (!prompt) {
+            return errAsync(promptNotFound("글감을 찾을 수 없습니다."))
+          }
+
+          const savedAt = new Date().toISOString()
+          prompt.saved = true
+
+          return okAsync({ savedAt })
+        },
+        unsavePromptUseCase(_userId, promptId) {
+          const prompt = findPrompt(Number(promptId))
+          if (!prompt || !prompt.saved) {
+            return errAsync(promptNotFound("저장된 글감을 찾을 수 없습니다."))
+          }
+
+          prompt.saved = false
+          return okAsync(undefined as void)
+        },
+        readLatestAuthEmail: () => null,
+        sqliteVersion: "3.46.0",
+        pushTransactionsUseCase() {
+          return errAsync(writingNotFound("stub"))
+        },
+        pullDocumentUseCase() {
+          return errAsync(writingNotFound("stub"))
+        },
+        listVersionsUseCase() {
+          return okAsync({ items: [], nextCursor: null, hasMore: false })
+        },
+        getVersionUseCase() {
+          return errAsync(writingNotFound("stub"))
+        },
+      }),
+      createTimeoutMiddleware(),
+    ],
+    errorHandler: (error, c) => {
+      if (error instanceof Error && error.name === "TimeoutError") {
+        return c.json(
+          { error: { code: "request_timeout", message: error.message } },
+          408
         )
-      },
-      savePromptUseCase(_userId, promptId) {
-        const prompt = findPrompt(Number(promptId))
-        if (!prompt) {
-          return errAsync(promptNotFound("글감을 찾을 수 없습니다."))
-        }
-
-        const savedAt = new Date().toISOString()
-        prompt.saved = true
-
-        return okAsync({ savedAt })
-      },
-      unsavePromptUseCase(_userId, promptId) {
-        const prompt = findPrompt(Number(promptId))
-        if (!prompt || !prompt.saved) {
-          return errAsync(promptNotFound("저장된 글감을 찾을 수 없습니다."))
-        }
-
-        prompt.saved = false
-        return okAsync(undefined as void)
-      },
-      readLatestAuthEmail: () => null,
-      sqliteVersion: "3.46.0",
-      pushTransactionsUseCase() {
-        return errAsync(writingNotFound("stub"))
-      },
-      pullDocumentUseCase() {
-        return errAsync(writingNotFound("stub"))
-      },
-      listVersionsUseCase() {
-        return okAsync({ items: [], nextCursor: null, hasMore: false })
-      },
-      getVersionUseCase() {
-        return errAsync(writingNotFound("stub"))
-      },
+      }
+      return handleRequestError(c, error, logger, "request failed")
     },
+    routes: allRoutes,
+    notFound: (c) =>
+      c.json(
+        {
+          error: {
+            code: "not_found",
+            message: "요청한 경로를 찾을 수 없습니다.",
+          },
+        },
+        404
+      ),
   })
 
   return {

@@ -2,6 +2,8 @@ import { afterEach, describe, expect, test } from "vitest"
 import { betterAuth } from "better-auth"
 import { memoryAdapter } from "better-auth/adapters/memory"
 import { okAsync, errAsync } from "neverthrow"
+import { cors } from "hono/cors"
+import type { OpenAPIHono } from "@hono/zod-openapi"
 
 import {
   createEmptyWritingContent,
@@ -11,11 +13,21 @@ import {
 } from "@workspace/core"
 import { writingNotFound } from "@workspace/core/modules/writings"
 
-import { createApp } from "../app.js"
+import {
+  createUseCaseMiddleware,
+  createTimeoutMiddleware,
+  handleRequestError,
+} from "../app.js"
+import { createApp } from "../lib/hono/create-app.js"
+import { createRequestLoggerMiddleware } from "../middleware/request-logger.js"
+import { createResolveSessionMiddleware } from "../middleware/resolve-session.js"
 import { createDevEmailInbox, createDevEmailPort } from "./auth-email.js"
 import { createSilentLogger } from "../observability/logger.js"
+import { allRoutes } from "../routes/index.js"
+import getAuthEmails from "../routes/dev/get-auth-emails.js"
+import type { AppEnv } from "../app-env.js"
 
-type TestApp = ReturnType<typeof createApp>
+type TestApp = OpenAPIHono<AppEnv>
 
 const cleanupTasks: Array<() => void> = []
 
@@ -70,121 +82,153 @@ function setup(): { app: TestApp } {
 
   cleanupTasks.push(() => inbox.clear())
 
-  const app = createApp({
-    allowedOrigins: ["http://127.0.0.1:3000"],
-    apiBaseUrl: "http://127.0.0.1:4000",
-    authDebugEnabled: true,
-    getSession: (request) => auth.api.getSession({ headers: request.headers }),
-    logger: createSilentLogger(),
-    useCases: {
-      aiUseCases: {
-        async getSuggestions() {
-          return []
+  const logger = createSilentLogger()
+
+  const app = createApp<AppEnv>({
+    globalMiddleware: [
+      cors({
+        allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+        credentials: true,
+        origin: (origin) => {
+          if (!origin) return null
+          return origin === "http://127.0.0.1:3000" ? origin : null
         },
-        async getDocumentReview() {
-          return []
+      }),
+      createRequestLoggerMiddleware(logger),
+      createResolveSessionMiddleware((request) =>
+        auth.api.getSession({ headers: request.headers })
+      ),
+      createUseCaseMiddleware({
+        aiUseCases: {
+          async getSuggestions() {
+            return []
+          },
+          async getDocumentReview() {
+            return []
+          },
+          async getFlowReview() {
+            return []
+          },
         },
-        async getFlowReview() {
-          return []
+        authHandler: auth.handler,
+        autosaveWritingUseCase(_userId: string, writingId: WritingId) {
+          return okAsync({
+            characterCount: 0,
+            content: createEmptyWritingContent(),
+            createdAt: "2026-03-20T00:00:00.000Z",
+            id: writingId,
+            lastSavedAt: "2026-03-20T00:00:00.000Z",
+            preview: "",
+            sourcePromptId: null,
+            title: "",
+            updatedAt: "2026-03-20T00:00:00.000Z",
+            wordCount: 0,
+          })
         },
-      },
-      authHandler: auth.handler,
-      autosaveWritingUseCase(_userId: string, writingId: WritingId) {
-        return okAsync({
-          characterCount: 0,
-          content: createEmptyWritingContent(),
-          createdAt: "2026-03-20T00:00:00.000Z",
-          id: writingId,
-          lastSavedAt: "2026-03-20T00:00:00.000Z",
-          preview: "",
-          sourcePromptId: null,
-          title: "",
-          updatedAt: "2026-03-20T00:00:00.000Z",
-          wordCount: 0,
-        })
-      },
-      createWritingUseCase() {
-        return okAsync({
-          characterCount: 0,
-          content: createEmptyWritingContent(),
-          createdAt: "2026-03-20T00:00:00.000Z",
-          id: toWritingId(1),
-          lastSavedAt: "2026-03-20T00:00:00.000Z",
-          preview: "",
-          sourcePromptId: null,
-          title: "",
-          updatedAt: "2026-03-20T00:00:00.000Z",
-          wordCount: 0,
-        })
-      },
-      deleteWritingUseCase() {
-        return okAsync(undefined as void)
-      },
-      getWritingUseCase() {
-        return okAsync({
-          characterCount: 0,
-          content: createEmptyWritingContent(),
-          createdAt: "2026-03-20T00:00:00.000Z",
-          id: toWritingId(1),
-          lastSavedAt: "2026-03-20T00:00:00.000Z",
-          preview: "",
-          sourcePromptId: null,
-          title: "",
-          updatedAt: "2026-03-20T00:00:00.000Z",
-          wordCount: 0,
-        })
-      },
-      listWritingsUseCase() {
-        return okAsync({ items: [], nextCursor: null, hasMore: false })
-      },
-      getHomeUseCase() {
-        return okAsync({
-          recentWritings: [],
-          resumeWriting: null,
-          savedPrompts: [],
-          todayPrompts: [],
-        })
-      },
-      getPromptUseCase() {
-        return okAsync({
-          description: "",
-          id: toPromptId(1),
-          level: 1 as const,
-          outline: [],
-          saved: false,
-          suggestedLengthLabel: "짧음" as const,
-          tags: [],
-          text: "테스트 글감",
-          tips: [],
-          topic: "일상" as const,
-        })
-      },
-      listPromptsUseCase() {
-        return okAsync([])
-      },
-      savePromptUseCase() {
-        return okAsync({
-          savedAt: "2026-03-20T00:00:00.000Z",
-        })
-      },
-      unsavePromptUseCase() {
-        return okAsync(undefined as void)
-      },
-      readLatestAuthEmail: inbox.readLatestMessage,
-      sqliteVersion: "memory",
-      pushTransactionsUseCase() {
-        return errAsync(writingNotFound("stub"))
-      },
-      pullDocumentUseCase() {
-        return errAsync(writingNotFound("stub"))
-      },
-      listVersionsUseCase() {
-        return okAsync({ items: [], nextCursor: null, hasMore: false })
-      },
-      getVersionUseCase() {
-        return errAsync(writingNotFound("stub"))
-      },
+        createWritingUseCase() {
+          return okAsync({
+            characterCount: 0,
+            content: createEmptyWritingContent(),
+            createdAt: "2026-03-20T00:00:00.000Z",
+            id: toWritingId(1),
+            lastSavedAt: "2026-03-20T00:00:00.000Z",
+            preview: "",
+            sourcePromptId: null,
+            title: "",
+            updatedAt: "2026-03-20T00:00:00.000Z",
+            wordCount: 0,
+          })
+        },
+        deleteWritingUseCase() {
+          return okAsync(undefined as void)
+        },
+        getWritingUseCase() {
+          return okAsync({
+            characterCount: 0,
+            content: createEmptyWritingContent(),
+            createdAt: "2026-03-20T00:00:00.000Z",
+            id: toWritingId(1),
+            lastSavedAt: "2026-03-20T00:00:00.000Z",
+            preview: "",
+            sourcePromptId: null,
+            title: "",
+            updatedAt: "2026-03-20T00:00:00.000Z",
+            wordCount: 0,
+          })
+        },
+        listWritingsUseCase() {
+          return okAsync({ items: [], nextCursor: null, hasMore: false })
+        },
+        getHomeUseCase() {
+          return okAsync({
+            recentWritings: [],
+            resumeWriting: null,
+            savedPrompts: [],
+            todayPrompts: [],
+          })
+        },
+        getPromptUseCase() {
+          return okAsync({
+            description: "",
+            id: toPromptId(1),
+            level: 1 as const,
+            outline: [],
+            saved: false,
+            suggestedLengthLabel: "짧음" as const,
+            tags: [],
+            text: "테스트 글감",
+            tips: [],
+            topic: "일상" as const,
+          })
+        },
+        listPromptsUseCase() {
+          return okAsync([])
+        },
+        savePromptUseCase() {
+          return okAsync({
+            savedAt: "2026-03-20T00:00:00.000Z",
+          })
+        },
+        unsavePromptUseCase() {
+          return okAsync(undefined as void)
+        },
+        readLatestAuthEmail: inbox.readLatestMessage,
+        sqliteVersion: "memory",
+        pushTransactionsUseCase() {
+          return errAsync(writingNotFound("stub"))
+        },
+        pullDocumentUseCase() {
+          return errAsync(writingNotFound("stub"))
+        },
+        listVersionsUseCase() {
+          return okAsync({ items: [], nextCursor: null, hasMore: false })
+        },
+        getVersionUseCase() {
+          return errAsync(writingNotFound("stub"))
+        },
+      }),
+      createTimeoutMiddleware(),
+    ],
+    errorHandler: (error, c) => {
+      if (error instanceof Error && error.name === "TimeoutError") {
+        return c.json(
+          { error: { code: "request_timeout", message: error.message } },
+          408
+        )
+      }
+      return handleRequestError(c, error, logger, "request failed")
     },
+    routes: [...allRoutes, getAuthEmails],
+    notFound: (c) =>
+      c.json(
+        {
+          error: {
+            code: "not_found",
+            message: "요청한 경로를 찾을 수 없습니다.",
+          },
+        },
+        404
+      ),
   })
 
   return { app }

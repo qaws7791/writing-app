@@ -19,7 +19,7 @@ vi.mock("@workspace/database", () => ({
   seedDatabase: seedDatabaseMock,
 }))
 
-vi.mock("../app.js", () => ({
+vi.mock("../lib/hono/create-app.js", () => ({
   createApp: createAppMock,
 }))
 
@@ -135,7 +135,11 @@ describe("bootstrap", () => {
     vi.clearAllMocks()
 
     const container = createMockContainer()
-    const app = { fetch: vi.fn() }
+    const app = {
+      fetch: vi.fn(),
+      get: vi.fn(),
+      openAPIRegistry: { registerComponent: vi.fn() },
+    }
 
     createApiContainerMock.mockReturnValue(container)
     createAppMock.mockReturnValue(app)
