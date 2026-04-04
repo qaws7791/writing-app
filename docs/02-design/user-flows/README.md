@@ -1,6 +1,6 @@
 ---
-title: 유저 플로우
-description: Phase 1에서 사용자가 글쓰기를 시작하고 이어가는 핵심 경험 흐름을 설계 단위로 관리합니다.
+title: 사용자 흐름 (User Flows)
+description: 글필의 핵심 사용자 경험 흐름을 설계 단위로 관리한다.
 status: active
 ---
 
@@ -12,13 +12,12 @@ status: active
 
 ## 문서 목록
 
-- [[02-design/user-flows/start-writing-today]]: 홈에서 오늘의 글쓰기를 시작하는 흐름
-- [[02-design/user-flows/discover-prompt-and-start]]: 글감을 탐색하고 선택해 바로 쓰기로 이어지는 흐름
-- [[02-design/user-flows/resume-writing]]: 최근 글을 다시 열어 이어 쓰는 흐름
-- [[02-design/user-flows/create-new-writing]]: 빈 상태에서 새 글을 만들어 초고를 쓰는 흐름
+- [[02-design/user-flows/onboarding]] — 앱 최초 진입, 관심사/수준 설정, 회원가입
+- [[02-design/user-flows/prompt-to-writing]] — 글감 탐색 → 글감 상세 → 글 에디터 → 서재 저장
+- [[02-design/user-flows/journey-session]] — 여정 선택 → 세션 진행 → 스텝별 학습 → AI 피드백 → 세션 완료
+- [[02-design/user-flows/library-management]] — 서재에서 글 조회, 검색, 재편집
 
 ## 연결 규칙
 
-- 상위 제품 여정: [[01-product/user-journeys]]
 - 연결 기준 문서: [[02-design/design-principles]], [[02-design/information-architecture]], [[02-design/content-style-guide]]
 - 하위 연결: 모든 flow는 하나 이상의 [[02-design/features/README]] 문서와 [[02-design/screens/README]] 문서를 참조한다.

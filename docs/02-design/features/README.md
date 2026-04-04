@@ -1,6 +1,6 @@
 ---
 title: 기능 설계
-description: Phase 1에서 사용자 가치 단위로 정의한 기능 설계 문서를 관리합니다.
+description: 글필의 핵심 기능을 사용자 가치 단위로 정의한 설계 문서를 관리한다.
 status: active
 ---
 
@@ -12,13 +12,12 @@ status: active
 
 ## 문서 목록
 
-- [[02-design/features/today-writing-prompts]]
-- [[02-design/features/prompt-discovery]]
-- [[02-design/features/prompt-save]]
-- [[02-design/features/resume-writing]]
-- [[02-design/features/start-new-writing]]
-- [[02-design/features/editor-writing]]
-- [[02-design/features/autosave-feedback]]
+- [[02-design/features/writing-prompt]] — 글감 시스템 (탐색, 필터, 북마크)
+- [[02-design/features/journey-system]] — 여정 시스템 (진행률, 세션 잠금/해제)
+- [[02-design/features/session-steps]] — 세션/스텝 타입 및 상태 관리
+- [[02-design/features/ai-feedback]] — AI 소크라테스식 코칭 피드백
+- [[02-design/features/editor-library]] — 에디터 & 서재 (자동 저장, 검색)
+- [[02-design/features/gamification]] — 게이미피케이션 (진행률, 스트릭, 뱃지)
 
 ## 연결 기준
 
