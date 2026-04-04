@@ -5,11 +5,12 @@ description: FSD 4-Layer 아키텍처 기반 apps/web의 상태 관리 원칙과
 
 ## 상태
 
-- 기준 시점: 2026-03-25
+- 기준 시점: 2026-04-06
 - 전역 클라이언트 상태 라이브러리(Zustand 등)는 도입되어 있지 않습니다.
 - 글쓰기 글 동기화 상태는 **XState 상태 머신**(`features/writing/sync/sync-machine.ts`)으로 관리합니다.
 - 테마 상태는 `next-themes`(`foundation/ui/theme-provider.tsx`)가 전담합니다.
 - 화면별 UI 상태는 `features/*/hooks/` 내 커스텀 훅의 로컬 상태로 관리합니다.
+- 글필(Geulpil) 피벗으로 세션 진행 상태, AI 피드백 상태가 추가될 예정입니다.
 
 ## 기본 원칙
 
@@ -20,14 +21,16 @@ description: FSD 4-Layer 아키텍처 기반 apps/web의 상태 관리 원칙과
 
 ## 상태 종류별 위치
 
-| 상태 종류             | 위치                                                     |
-| --------------------- | -------------------------------------------------------- |
-| 에디터 글 동기화 상태 | `features/writing/sync/sync-machine.ts` (XState)         |
-| 글쓰기 화면 UI 상태   | `features/writing/hooks/use-writing-page.ts` (로컬 상태) |
-| 편집 이탈 가드 상태   | `features/writing/hooks/use-editor-leave-guard.ts`       |
-| 동기화 엔진 상태      | `features/writing/hooks/use-sync-engine.ts`              |
-| 테마 상태             | `foundation/ui/theme-provider.tsx` (next-themes)         |
-| 인증/세션 상태        | 서버 컴포넌트 + 쿠키 (`features/auth/repositories/`)     |
+| 상태 종류                | 위치                                                          |
+| ------------------------ | ------------------------------------------------------------- |
+| 에디터 글 동기화 상태    | `features/writing/sync/sync-machine.ts` (XState)              |
+| 글쓰기 화면 UI 상태      | `features/writing/hooks/use-writing-page.ts` (로컬 상태)      |
+| 편집 이탈 가드 상태      | `features/writing/hooks/use-editor-leave-guard.ts`            |
+| 동기화 엔진 상태         | `features/writing/hooks/use-sync-engine.ts`                   |
+| 세션 진행 상태           | `features/session-flow/hooks/use-session-flow.ts` (로컬 상태) |
+| 스텝 제출/AI 피드백 상태 | `features/session-flow/hooks/use-step-submission.ts`          |
+| 테마 상태                | `foundation/ui/theme-provider.tsx` (next-themes)              |
+| 인증/세션 상태           | 서버 컴포넌트 + 쿠키 (`features/auth/repositories/`)          |
 
 ## 글쓰기 동기화 상태 머신
 
@@ -72,6 +75,17 @@ offline 상태에서는 capturing에 대기, NETWORK_ONLINE 이벤트로 재개
 - 동기화 상태(`WritingSyncState`) 구독
 
 이 훅은 `views/writing-page-view.tsx`에서 단 한 번 호출됩니다.
+
+## 세션 진행 상태 (`use-session-flow.ts`)
+
+`features/session-flow/hooks/use-session-flow.ts`는 세션 진행 화면의 모든 상태를 오케스트레이션합니다.
+
+- 현재 스텝 인덱스, 스텝 유형 (LEARN/READ/GUIDED_QUESTION/WRITE/FEEDBACK/REVISE)
+- 스텝 제출 로딩 상태, AI 피드백 대기 상태
+- 스텝 이동 내비게이션 (이전/다음)
+- 세션 완료 상태
+
+이 훅은 `views/session-flow-view.tsx`에서 단 한 번 호출됩니다.
 
 ## 전역 스토어 도입 기준
 

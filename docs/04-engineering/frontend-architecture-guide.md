@@ -5,10 +5,10 @@ description: Feature-Sliced Design 기반 4-Layer 아키텍처로 구성된 apps
 
 ## 상태
 
-- 기준 시점: 2026-03-25
+- 기준 시점: 2026-04-06
 - 현재 프론트엔드는 `apps/web` 단일 앱으로 운영됩니다.
 - **FSD(Feature-Sliced Design) 기반 4-Layer 아키텍처**(`views` → `features` → `domain` → `foundation`)가 적용되어 있습니다.
-- 구현 범위: 홈, 글감 목록/상세, 글 목록, 글쓰기(에디터), 인증(로그인·회원가입·비밀번호 재설정) 화면
+- 구현 범위: 홈, 글감 목록/상세, 글 목록, 글쓰기(에디터), 여정 목록/상세, 세션 흐름, AI 피드백, 인증(로그인·회원가입·비밀번호 재설정) 화면
 - API 클라이언트는 `packages/api-client`를 통해 타입 세이프하게 사용합니다.
 - 글쓰기 글은 로컬 IndexedDB + 서버 동기화 엔진(XState 상태 머신 기반)으로 관리합니다.
 
@@ -41,7 +41,10 @@ app/
  │   ┣━ prompts/page.tsx
  │   ┣━ prompts/[id]/page.tsx
  │   ┣━ write/page.tsx                  ← 새 글쓰기
- │   └━ write/[id]/page.tsx             ← 기존 글 편집
+ │   ┣━ write/[id]/page.tsx             ← 기존 글 편집
+ │   ┣━ journeys/page.tsx               ← 여정 목록
+ │   ┣━ journeys/[id]/page.tsx          ← 여정 상세 (세션 목록)
+ │   └━ journeys/[id]/sessions/[sessionId]/page.tsx  ← 세션 흐름
  ┣━ sign-in/, sign-up/
  ┣━ forgot-password/, reset-password/
 ```
@@ -60,6 +63,9 @@ views/
  ┣━ prompt-detail-view.tsx
  ┣━ writing-list-view.tsx
  ┣━ writing-page-view.tsx              ← "use client" — 글쓰기 화면 조립
+ ┣━ journey-list-view.tsx              ← 여정 목록 화면
+ ┣━ journey-detail-view.tsx            ← 여정 상세 (세션 목록) 화면
+ ┣━ session-flow-view.tsx              ← "use client" — 세션 스텝별 진행 화면
  ┣━ sign-in-view.tsx
  ┣━ sign-up-view.tsx
  ┣━ forgot-password-view.tsx
@@ -67,6 +73,7 @@ views/
 ```
 
 - `writing-page-view.tsx`는 `features/writing`의 훅과 컴포넌트를 조립하는 화면 조립 루트입니다.
+- `session-flow-view.tsx`는 `features/session-flow`의 훅과 컴포넌트를 조립하는 세션 진행 화면입니다.
 - view 간 직접 import는 금지합니다.
 
 ### `features/` — 독립적 기능 단위 계층
@@ -101,14 +108,32 @@ features/
  │   │   ┣━ multi-tab-coordinator.ts
  │   │   └━ service-worker-bridge.ts
  │   └━ index.ts
- ┣━ ai-assistant/
+ ┣━ session-flow/                       ← 여정 세션 진행 기능
  │   ┣━ components/
- │   │   ┣━ ai-features.tsx
- │   │   ┣━ ai-review-card.tsx
- │   │   ┣━ ai-review-extension.ts     ← Tiptap 확장 (AI 리뷰)
- │   │   └━ ai-suggestion-panel.tsx
+ │   │   ┣━ session-step-card.tsx       ← 스텝 유형별 카드 (LEARN/READ/WRITE 등)
+ │   │   ┣━ session-progress-bar.tsx    ← 세션 내 스텝 진행률
+ │   │   ┣━ session-feedback-panel.tsx  ← AI 피드백 표시 패널
+ │   │   └━ session-step-navigation.tsx ← 이전/다음 스텝 내비게이션
+ │   ┣━ hooks/
+ │   │   ┣━ use-session-flow.ts        ← 세션 진행 전체 상태 오케스트레이션
+ │   │   └━ use-step-submission.ts     ← 스텝 제출 및 AI 피드백 요청
  │   ┣━ repositories/
- │   │   └━ mock-ai.ts                 ← AI API mock (추후 실제 API 교체 예정)
+ │   │   └━ session-repository.ts      ← 세션/스텝 API 요청
+ │   └━ index.ts
+ ┣━ ai-feedback/                        ← AI 소크라테스식 코칭 피드백
+ │   ┣━ components/
+ │   │   ┣━ ai-feedback-card.tsx       ← 강점/개선점/질문 표시
+ │   │   ┣━ ai-revision-comparison.tsx ← 초안-수정본 비교 UI
+ │   │   └━ ai-feedback-loading.tsx    ← 피드백 생성 로딩 상태
+ │   ┣━ repositories/
+ │   │   └━ ai-feedback-repository.ts  ← AI 피드백 API 요청
+ │   └━ index.ts
+ ┣━ journey/                            ← 여정 목록/상세 기능
+ │   ┣━ components/
+ │   │   ┣━ journey-card.tsx           ← 여정 목록 카드
+ │   │   └━ journey-session-list.tsx   ← 세션 목록 (잠금/진행/완료 상태)
+ │   ┣━ repositories/
+ │   │   └━ journey-repository.ts      ← 여정 API 요청
  │   └━ index.ts
  ┣━ auth/
  │   ┣━ components/
@@ -135,16 +160,26 @@ domain/
  │   └━ index.ts
  ┣━ writing/
  │   ┣━ model/
- │   │   ┣━ writing.types.ts             ← WritingSummary·WritingDetail·HomeSnapshot
+ │   │   ┣━ writing.types.ts             ← WritingSummary·WritingDetail
  │   │   ┣━ writing.service.ts           ← 순수 변환 함수 (content → HTML/text 등)
  │   │   └━ writing-sync.service.ts      ← 동기화 관련 순수 로직 (스냅샷 생성·직렬화)
  │   └━ index.ts
- └━ prompt/
+ ┣━ prompt/
+ │   ┣━ model/
+ │   │   ┣━ prompt.types.ts              ← WritingPrompt, PromptType (SENSORY/REFLECTION/OPINION)
+ │   │   └━ prompt.constants.ts
+ │   ┣━ ui/
+ │   │   └━ level-dots.tsx             ← 글감 난이도 표시 UI
+ │   └━ index.ts
+ ┣━ journey/                             ← 여정 도메인 타입
+ │   ┣━ model/
+ │   │   ┣━ journey.types.ts             ← Journey, JourneySession, Step, StepType
+ │   │   └━ journey.service.ts           ← 진행률 계산, 세션 상태 판단
+ │   └━ index.ts
+ └━ session/                             ← 세션 진행 도메인 타입
      ┣━ model/
-     │   ┣━ prompt.types.ts
-     │   └━ prompt.constants.ts
-     ┣━ ui/
-     │   └━ level-dots.tsx             ← 글감 난이도 표시 UI
+     │   ┣━ session.types.ts             ← UserSessionProgress, SessionStatus
+     │   └━ session.service.ts           ← 스텝 유효성 검증, 진행 상태 계산
      └━ index.ts
 ```
 
@@ -191,6 +226,8 @@ foundation/
 - `use-writing-page.ts`는 글쓰기 화면 전체 상태(에디터 글, 동기화 상태, 모달 등)를 오케스트레이션하는 커스텀 훅입니다.
 - `features/writing/sync/sync-machine.ts`는 XState 상태 머신으로 동기화 흐름(`CHANGE_DETECTED → SYNC_SUCCESS/CONFLICT`)을 선언합니다.
 - `features/writing/repositories/app-repository.ts`는 서버 API 글 CRUD를 담당합니다.
+- `use-session-flow.ts`는 세션 진행 화면의 스텝별 상태(현재 스텝, 진행률, AI 피드백 대기)를 오케스트레이션합니다.
+- `ai-feedback-card.tsx`는 소크라테스식 피드백(강점, 개선점, 사고 촉발 질문)을 표시하는 컴포넌트입니다.
 - `theme-provider.tsx`는 `next-themes`와 키보드 단축키를 통해 전역 테마를 제어합니다.
 
 ## 원칙

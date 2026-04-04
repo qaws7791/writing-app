@@ -2,6 +2,7 @@
 
 > 생성일: 2026-03-23
 > 아키텍처 문서: docs/04-engineering/editor-sync/editor-sync-architecture.md
+> 비고: 글필(Geulpil) 피벗 이후에도 에디터 동기화 아키텍처는 유지됩니다. 세션 글쓰기(WRITE 스텝)에서도 동일한 동기화 엔진을 활용합니다.
 
 ## 진행 상태
 

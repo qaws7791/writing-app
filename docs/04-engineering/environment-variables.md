@@ -5,8 +5,8 @@ description: 이 모노레포에서 환경 변수를 저장, 노출, 검증, 캐
 
 ## 상태
 
-- 기준 시점: 2026-03-19
-- 현재 코드베이스에서 `process.env`, `Bun.env`, `import.meta.env`를 직접 읽는 구현은 없습니다.
+- 기준 시점: 2026-04-06
+- `apps/api`에서 환경 변수 기반 설정이 동작 중입니다.
 - `turbo.json`은 `build` 입력에 `.env*`를 포함하지만, 아직 `env` 또는 `globalEnv` 등록은 없습니다.
 
 ## 기본 정책
@@ -38,19 +38,19 @@ description: 이 모노레포에서 환경 변수를 저장, 노출, 검증, 캐
 
 ## 현재 변수 등록표
 
-| 앱         | 변수                           | 상태   | 설명                                 |
-| ---------- | ------------------------------ | ------ | ------------------------------------ |
-| `apps/api` | `API_BASE_URL`                 | 사용중 | API 서버 기본 URL                    |
-| `apps/api` | `API_AUTH_BASE_URL`            | 사용중 | 인증 서버 기본 URL                   |
-| `apps/api` | `API_AUTH_SECRET`              | 사용중 | 인증 비밀 키 (32자 이상)             |
-| `apps/api` | `API_DATABASE_PATH`            | 사용중 | SQLite 데이터베이스 파일 경로        |
-| `apps/api` | `API_LOG_LEVEL`                | 사용중 | 로그 레벨 (기본: info)               |
-| `apps/api` | `API_PORT`                     | 사용중 | API 서버 포트                        |
-| `apps/api` | `API_WEB_BASE_URL`             | 사용중 | 프론트엔드 기본 URL                  |
-| `apps/api` | `GOOGLE_GENERATIVE_AI_API_KEY` | 사용중 | Google Generative AI API 키          |
-| `apps/api` | `RESEND_API_KEY`               | 사용중 | Resend 이메일 API 키 (프로덕션 필수) |
-| `apps/api` | `RESEND_FROM_ADDRESS`          | 사용중 | 발신 이메일 주소 (프로덕션 필수)     |
-| `apps/web` | 없음                           | 미사용 | 아직 API/분석/인증 환경 변수가 없음  |
+| 앱         | 변수                           | 상태   | 설명                                               |
+| ---------- | ------------------------------ | ------ | -------------------------------------------------- |
+| `apps/api` | `API_BASE_URL`                 | 사용중 | API 서버 기본 URL                                  |
+| `apps/api` | `API_AUTH_BASE_URL`            | 사용중 | 인증 서버 기본 URL                                 |
+| `apps/api` | `API_AUTH_SECRET`              | 사용중 | 인증 비밀 키 (32자 이상)                           |
+| `apps/api` | `API_DATABASE_PATH`            | 사용중 | PostgreSQL 연결 문자열                             |
+| `apps/api` | `API_LOG_LEVEL`                | 사용중 | 로그 레벨 (기본: info)                             |
+| `apps/api` | `API_PORT`                     | 사용중 | API 서버 포트                                      |
+| `apps/api` | `API_WEB_BASE_URL`             | 사용중 | 프론트엔드 기본 URL                                |
+| `apps/api` | `GOOGLE_GENERATIVE_AI_API_KEY` | 사용중 | Google Generative AI API 키 (소크라테스식 AI 코칭) |
+| `apps/api` | `RESEND_API_KEY`               | 사용중 | Resend 이메일 API 키 (프로덕션 필수)               |
+| `apps/api` | `RESEND_FROM_ADDRESS`          | 사용중 | 발신 이메일 주소 (프로덕션 필수)                   |
+| `apps/web` | 없음                           | 미사용 | 아직 API/분석/인증 환경 변수가 없음                |
 
 ## 새 변수 추가 절차
 

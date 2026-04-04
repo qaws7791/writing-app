@@ -1,6 +1,16 @@
-# packages/core 리팩토링 계획서
+# packages/core 모듈 확장 계획서
 
-## 1. 개선 후 예상 전체 디렉토리 구조
+> 글필(Geulpil) 피벗에 따른 core 모듈 확장 계획입니다.
+> 기존 코어 리팩토링(neverthrow, ts-pattern, remeda 도입, 모듈 평탄화)은 완료된 상태입니다.
+
+## 상태
+
+- 기준 시점: 2026-04-06
+- neverthrow, ts-pattern, remeda가 도입되어 사용 중입니다.
+- 기존 writings, prompts, home 모듈이 구현된 상태입니다.
+- 글필 피벗에 따라 여정, 세션, 스텝, AI 피드백 모듈 확장이 필요합니다.
+
+## 1. 목표 전체 디렉토리 구조
 
 ```
 packages/core/
@@ -9,427 +19,303 @@ packages/core/
 ├── vitest.config.ts
 ├── eslint.config.js
 └── src/
-    ├── index.ts                           # 패키지 공개 barrel export
+    ├── index.ts
     │
-    ├── shared/                            # 모든 모듈이 공유하는 커널
+    ├── shared/
     │   ├── index.ts
     │   ├── brand/
-    │   │   ├── index.ts
-    │   │   └── brand.ts                   # Brand<T,N>, UserId, WritingId, PromptId
+    │   │   └── brand.ts                   # Brand<T,N>, UserId, WritingId, PromptId, JourneyId, SessionId, StepId
     │   ├── error/
-    │   │   ├── index.ts
     │   │   └── domain-error.ts            # DomainError discriminated union + 팩토리 + toHttpStatus
     │   └── schema/
-    │       ├── index.ts
-    │       ├── writing-content-schema.ts    # WritingContent zod 스키마
-    │       └── prompt-schema.ts           # PromptTopic, PromptLevel 등
+    │       ├── writing-content-schema.ts
+    │       └── prompt-schema.ts
     │
     ├── modules/
     │   ├── writings/
-    │   │   ├── index.ts                   # 모듈 공개 API (contracts 역할 통합)
-    │   │   ├── writing-types.ts             # Writing, WritingSummary, WritingDetail, WritingPersistInput
-    │   │   ├── writing-error.ts             # WritingCrudModuleError discriminated union + 팩토리
-    │   │   ├── writing-operations.ts        # 순수 함수: buildWriting, updateWritingContent 등
-    │   │   ├── writing-port.ts              # WritingCrudRepository 인터페이스
+    │   │   ├── index.ts
+    │   │   ├── writing-types.ts           # Writing, WritingSummary, WritingDetail
+    │   │   ├── writing-error.ts           # WritingModuleError discriminated union
+    │   │   ├── writing-operations.ts      # 순수 함수: buildWriting, updateWritingContent
+    │   │   ├── writing-port.ts            # WritingRepository 인터페이스
     │   │   ├── use-cases/
-    │   │   │   ├── index.ts
     │   │   │   ├── create-writing.ts
     │   │   │   ├── autosave-writing.ts
     │   │   │   ├── delete-writing.ts
     │   │   │   ├── get-writing.ts
     │   │   │   └── list-writings.ts
     │   │   └── testing/
-    │   │       ├── index.ts
-    │   │       ├── writing-fixture.ts       # WritingFixture 빌더 (함수형)
+    │   │       ├── writing-fixture.ts
     │   │       └── fake-writing-repositories.ts
     │   │
-    │   ├── prompts/
+    │   ├── writing-prompts/
     │   │   ├── index.ts
-    │   │   ├── prompt-types.ts            # PromptSummary, PromptDetail
-    │   │   ├── prompt-error.ts            # PromptModuleError + 팩토리
+    │   │   ├── prompt-types.ts            # WritingPrompt, PromptSummary, PromptDetail
+    │   │   ├── prompt-error.ts
     │   │   ├── prompt-port.ts             # PromptRepository 인터페이스
     │   │   ├── use-cases/
-    │   │   │   ├── index.ts
     │   │   │   ├── get-prompt.ts
     │   │   │   ├── list-prompts.ts
-    │   │   │   ├── save-prompt.ts
-    │   │   │   └── unsave-prompt.ts
+    │   │   │   ├── bookmark-prompt.ts
+    │   │   │   └── unbookmark-prompt.ts
     │   │   └── testing/
-    │   │       └── index.ts
+    │   │
+    │   ├── journeys/                      # 도입 예정
+    │   │   ├── index.ts
+    │   │   ├── journey-types.ts           # Journey, JourneySession, Step, StepType
+    │   │   ├── journey-error.ts           # JourneyModuleError
+    │   │   ├── journey-operations.ts      # unlockNextSession, calculateProgress
+    │   │   ├── journey-port.ts            # JourneyRepository 인터페이스
+    │   │   ├── session-progress-port.ts   # SessionProgressRepository 인터페이스
+    │   │   ├── use-cases/
+    │   │   │   ├── get-journey.ts
+    │   │   │   ├── list-journeys.ts
+    │   │   │   ├── enroll-journey.ts
+    │   │   │   ├── start-session.ts
+    │   │   │   ├── submit-step.ts
+    │   │   │   └── complete-session.ts
+    │   │   └── testing/
+    │   │       ├── journey-fixture.ts
+    │   │       └── fake-journey-repositories.ts
+    │   │
+    │   ├── ai-feedback/                   # 도입 예정
+    │   │   ├── index.ts
+    │   │   ├── feedback-types.ts          # AiFeedback, FeedbackStrength, FeedbackImprovement
+    │   │   ├── feedback-error.ts
+    │   │   ├── feedback-port.ts           # AiCoachingGateway 인터페이스
+    │   │   ├── use-cases/
+    │   │   │   ├── generate-feedback.ts
+    │   │   │   └── compare-revisions.ts
+    │   │   └── testing/
+    │   │       └── fake-ai-coaching-gateway.ts
     │   │
     │   └── home/
     │       ├── index.ts
     │       ├── home-types.ts              # HomeSnapshot
     │       ├── use-cases/
-    │       │   ├── index.ts
     │       │   └── get-home.ts
     │       └── testing/
-    │           └── index.ts
     │
-    └── testing/                           # 패키지 수준 공유 테스트 유틸리티
+    └── testing/
         └── index.ts
 ```
 
-### 현재 구조 대비 주요 변경점
+## 2. 신규 모듈 설계
 
-| 현재                                                                | 개선 후                               | 근거                                                         |
-| ------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------ |
-| `shared/types/result.ts` (자체 Result 구현)                         | **삭제** → `neverthrow` 대체          | 검증된 라이브러리로 체이닝·ResultAsync 등 확보               |
-| `shared/types/errors.ts` + `shared/utilities/application-errors.ts` | `shared/error/domain-error.ts` 통합   | 에러 정의와 변환이 분리되어 있던 것을 한 곳에 colocation     |
-| `shared/ports/` (전역 레포지토리 인터페이스)                        | 각 모듈의 `*-port.ts`로 이동          | 포트는 모듈의 계약, 모듈이 소유해야 함 (DDD Bounded Context) |
-| `shared/testing/fake-writing-repositories.ts`                       | `modules/writings/testing/`으로 이동  | fake는 해당 모듈의 관심사 (colocation)                       |
-| 모듈 내 `contracts/` 디렉토리                                       | `index.ts`가 contracts 역할 통합      | 별도 디렉토리 없이 barrel export가 계약                      |
-| 모듈 내 `model/`, `operations/`, `errors/`, `ports/` 각각 디렉토리  | 파일 1개씩으로 평탄화                 | 파일이 1개인 디렉토리는 인지부하만 증가 (YAGNI)              |
-| `adapters/application-compatibility.ts`                             | **삭제**                              | neverthrow `.match()`로 consumer가 직접 처리                 |
-| use-case 이중 API (make\* + standalone)                             | `make*` 팩토리만 유지                 | 단일 진입점 원칙 (Code That Fits in Your Head)               |
-| 자체 `mapResult`, `flatMapResult`                                   | `neverthrow`의 `.map()`, `.andThen()` | Railway-Oriented Programming 표준 패턴                       |
-| `switch` 문 에러 분기                                               | `ts-pattern`의 `match().with()`       | 컴파일 타임 exhaustive check 보장                            |
-| 수동 데이터 변환                                                    | `remeda` 파이프라인                   | 선언적·합성 가능한 데이터 처리                               |
+### 2.1 journeys 모듈
 
----
+여정-세션-스텝 계층 구조를 관리하는 핵심 학습 도메인입니다.
 
-## 2. 현재 코드 분석 및 문제점
+**핵심 타입:**
 
-### 2.1 구조적 문제
+- `Journey`: 구조화된 커리큘럼. 카테고리(WRITING_SKILL/MINDFULNESS/PRACTICAL), 세션 수 포함
+- `JourneySession`: 여정 내 학습 노드. 순서(order), 예상 소요 시간
+- `Step`: 세션 내 마이크로 활동. 유형별 콘텐츠 JSON
+- `StepType`: `LEARN` | `READ` | `GUIDED_QUESTION` | `WRITE` | `FEEDBACK` | `REVISE`
+- `UserJourneyProgress`: 사용자의 여정 참여 상태 (IN_PROGRESS | COMPLETED)
+- `UserSessionProgress`: 세션 진행 상태 (LOCKED | IN_PROGRESS | COMPLETED)
 
-1. **자체 Result 타입 재발명**: `shared/types/result.ts`에 `ok()`, `err()`, `mapResult()`, `flatMapResult()` 등을 직접 구현. neverthrow가 제공하는 `ResultAsync`, `.andThen()`, `.orElse()`, `.match()` 등 풍부한 API를 활용하지 못함.
+**핵심 연산:**
 
-2. **포트의 잘못된 배치**: `WritingCrudRepository`, `PromptRepository` 인터페이스가 `shared/ports/`에 위치. DDD에서 포트는 해당 모듈의 계약이므로 모듈이 소유해야 함. 현재 구조는 모듈 간 결합을 유발.
+- `unlockNextSession`: 현재 세션 완료 시 다음 세션 잠금 해제
+- `calculateProgress`: 여정 내 세션 완료율 계산
+- `validateStepSubmission`: 스텝 유형별 응답 검증
 
-3. **과도한 디렉토리 중첩**: 파일이 1개뿐인 디렉토리가 다수 (`contracts/index.ts`, `model/writing.ts`, `errors/writing-errors.ts`). 탐색 시 인지부하 증가.
+**포트:**
 
-4. **adapter 계층의 불필요한 복잡성**: `application-compatibility.ts`가 Result → throw 변환만 수행. neverthrow의 `.match()`를 consumer가 직접 사용하면 이 계층이 불필요.
+- `JourneyRepository`: 여정 조회, 세션/스텝 조회
+- `JourneyProgressRepository`: 여정/세션 진행 상태 관리
 
-5. **이중 use-case API**: 모든 use-case에 `make*` 팩토리 + standalone 함수가 공존. 진입점이 2개라 혼란.
+**use case:**
 
-### 2.2 함수형 프로그래밍 관점
+- `enroll-journey`: 여정 참여 시작 → 첫 세션 IN_PROGRESS로 설정
+- `start-session`: 이전 세션 완료 확인 → 세션 시작
+- `submit-step`: 스텝 유형별 응답 검증 → 저장 → WRITE 스텝이면 AI 피드백 트리거
+- `complete-session`: 세션 완료 → 다음 세션 잠금 해제 → 마지막이면 여정 완료
 
-1. **명령형 에러 처리**: `if (result.kind === "not-found") return ...` 패턴이 반복. Railway-Oriented 파이프라인으로 선언적 처리 가능.
+### 2.2 ai-feedback 모듈
 
-2. **Error 클래스 혼재**: `application-errors.ts`에 class 기반 Error와 plain object DomainError가 공존. Data-Oriented Programming 원칙에 따라 plain data만 사용해야 함.
+소크라테스식 코칭 피드백을 생성하는 AI 도메인입니다.
 
-3. **switch 문의 비안전성**: `toHttpStatus()`의 switch 문은 새 에러 코드 추가 시 컴파일 타임 경고 없음. ts-pattern의 `.exhaustive()`로 보장 가능.
+**핵심 타입:**
 
-4. **수동 데이터 변환**: `extractWritingTextMetrics()` 등에서 수동 배열 조작. remeda의 `pipe`, `map`, `filter` 등으로 선언적 처리 가능.
+- `AiFeedback`: 강점(1~2개), 개선점(1~2개), 사고 촉발 질문(1개)
+- `FeedbackLevel`: 사용자 수준별 피드백 전략 (입문: 강점 2:1, 중급: 1:1, 상급: 1:2)
+- `RevisionComparison`: 초안-수정본 비교 분석 결과
 
-### 2.3 타입 시스템 관점
+**핵심 원칙:**
 
-1. **WritingDetail이 WritingSummary를 확장**: 상속 대신 합성이 적절. 각각 독립 타입으로 정의하고 공통 필드는 별도 base 타입으로.
+- AI는 완성된 문장이나 대체 표현을 직접 제시하지 않는다
+- 피드백은 힌트와 질문 형태로만 개선 방향을 제안한다
+- 수준별로 강점:개선점 비율을 조정한다
 
-2. **use-case 출력 타입이 모호**: `{ kind: "success"; writing: WritingDetail } | WritingCrudModuleError`에서 WritingCrudModuleError에 `kind`가 없어 태그 판별이 불완전. neverthrow의 `Result<T, E>`가 이 문제를 근본적으로 해결.
+**포트:**
 
----
+- `AiCoachingGateway`: AI 제공자에게 피드백 생성을 요청하는 인터페이스
 
-## 3. 리팩토링 원칙
+**use case:**
 
-### 설계 철학
+- `generate-feedback`: 글 내용 + 사용자 수준 → AI 피드백 생성 (10초 이내)
+- `compare-revisions`: 초안 + 수정본 → 개선 부분 명시 비교 피드백
 
-| 원칙                                    | 출처                                         | 적용                                                          |
-| --------------------------------------- | -------------------------------------------- | ------------------------------------------------------------- |
-| **데이터와 행위를 분리**                | Data-Oriented Programming (Sharvit)          | 타입은 plain data, 함수는 별도 모듈                           |
-| **Railway-Oriented Error Handling**     | Scott Wlaschin, NDC 2014                     | neverthrow의 `Result`/`ResultAsync`로 에러를 값으로 흐름 제어 |
-| **Make Illegal States Unrepresentable** | Domain Modeling Made Functional              | Brand 타입 + discriminated union으로 런타임 오류 방지         |
-| **단일 책임, 최소 표면적**              | Clean Architecture (Martin)                  | 모듈은 index.ts를 통해서만 공개, 내부는 은닉                  |
-| **Colocation**                          | A Philosophy of Software Design (Ousterhout) | 관련 코드는 물리적으로 가까이 배치                            |
-| **YAGNI**                               | Extreme Programming (Beck)                   | 불필요한 추상화 디렉토리 제거, 필요할 때 분리                 |
-| **Exhaustive Matching**                 | ts-pattern + Grokking Simplicity             | 모든 분기를 컴파일 타임에 보장                                |
-| **Pipe-based Composition**              | Functional Design and Architecture, remeda   | 데이터 변환을 선언적 파이프라인으로                           |
+### 2.3 기존 모듈 변경
 
-### 의존성 규칙
+**writings 모듈 확장:**
+
+- `Writing`에 `sessionId` 선택 필드 추가 (세션 글쓰기 연결)
+- `WritingVersion`에 `aiFeedback` JSON 필드 추가
+- 세션 글쓰기 스텝에서 생성되는 글도 서재에 포함
+
+**writing-prompts 모듈 변경:**
+
+- `WritingPrompt` 유형: `SENSORY` | `REFLECTION` | `OPINION`
+- 북마크 기능 추가 (bookmark/unbookmark use case)
+- 응답 수(responseCount) 관리
+
+**home 모듈 확장:**
+
+- `HomeSnapshot`에 진행 중인 여정 목록, 오늘의 추천 글감 포함
+
+## 3. 모듈 간 의존 규칙
 
 ```
-shared (커널)          ← 어떤 모듈에도 의존하지 않음
-modules/writings         ← shared만 의존
-modules/prompts        ← shared만 의존
-modules/home           ← shared + writings/prompts의 공개 타입만 의존
+shared (커널)             ← 어떤 모듈에도 의존하지 않음
+modules/writings           ← shared만 의존
+modules/writing-prompts    ← shared만 의존
+modules/journeys           ← shared만 의존
+modules/ai-feedback        ← shared만 의존
+modules/home               ← shared + 다른 모듈의 공개 타입만 의존
 ```
 
 모듈 간 직접 import 금지. home이 다른 모듈의 타입을 필요로 할 경우 shared 또는 포트를 통해 간접 참조.
 
----
+## 4. 구현 우선순위
 
-## 4. 라이브러리 도입 계획
+### Phase 1: writing-prompts 모듈 확장
 
-### 4.1 neverthrow
+- 글감 유형 분류 (SENSORY/REFLECTION/OPINION)
+- 북마크 기능
+- 응답 수 관리
 
-**역할**: Result<T, E> 모나드 기반 에러 처리
+### Phase 2: journeys 모듈 신규 도입
 
-```typescript
-// Before: 자체 Result + 수동 분기
-const result = await getWritingUseCase(userId, writingId, repo)
-if (result.ok === false) return result.error
+- Journey, JourneySession, Step 타입 정의
+- UserJourneyProgress, UserSessionProgress 타입 정의
+- 선형 진행 구조(이전 세션 완료 → 다음 잠금 해제) 연산
+- enroll, start-session, submit-step, complete-session use case
 
-// After: neverthrow의 ResultAsync + 체이닝
-const getWriting = (userId: UserId, writingId: WritingId) =>
-  ResultAsync.fromPromise(repo.getById(userId, writingId), () =>
-    writingCrudNotFound("글을 찾을 수 없습니다.", writingId)
-  ).andThen((accessResult) =>
-    match(accessResult)
-      .with({ kind: "writing" }, ({ writing }) => ok(writing))
-      .with({ kind: "not-found" }, () =>
-        err(writingCrudNotFound("...", writingId))
-      )
-      .with({ kind: "forbidden" }, ({ ownerId }) =>
-        err(writingCrudForbidden("...", ownerId))
-      )
-      .exhaustive()
-  )
-```
+### Phase 3: ai-feedback 모듈 신규 도입
 
-### 4.2 ts-pattern
+- AiCoachingGateway 포트 정의
+- generate-feedback, compare-revisions use case
+- 수준별 피드백 전략
 
-**역할**: Exhaustive 패턴 매칭
+### Phase 4: home 모듈 확장
 
-```typescript
-// Before: switch + 누락 위험
-export function toHttpStatus(error: DomainError): number {
-  switch (error.code) { ... }
-}
+- 진행 중인 여정, 추천 글감 통합
 
-// After: 컴파일 타임 exhaustive 보장
-import { match } from "ts-pattern"
-
-export const toHttpStatus = (error: DomainError) =>
-  match(error)
-    .with({ code: "VALIDATION_ERROR" }, () => 400 as const)
-    .with({ code: "NOT_FOUND" }, () => 404 as const)
-    .with({ code: "FORBIDDEN" }, () => 403 as const)
-    .with({ code: "CONFLICT" }, () => 409 as const)
-    .exhaustive()
-```
-
-### 4.3 remeda
-
-**역할**: 타입 안전한 FP 유틸리티 (pipe, map, filter 등)
-
-```typescript
-// Before: 수동 배열 조작
-const words = plainText
-  .trim()
-  .split(/\s+/)
-  .filter((w) => w.length > 0)
-
-// After: remeda 파이프라인
-import { pipe, split, filter, length } from "remeda"
-
-const wordCount = pipe(
-  plainText.trim(),
-  split(/\s+/),
-  filter((w) => w.length > 0),
-  length
-)
-```
-
-### 4.4 zod (유지)
-
-기존 zod 스키마는 그대로 유지. 입력 검증과 파싱에 계속 활용.
-
----
-
-## 5. 상세 리팩토링 작업 목록
-
-### Phase 1: 기반 인프라 교체
-
-#### 1-1. 의존성 추가
-
-- `package.json`에 `neverthrow`, `ts-pattern`, `remeda` 추가
-
-#### 1-2. shared/error 통합
-
-- `shared/types/errors.ts` + `shared/utilities/application-errors.ts` → `shared/error/domain-error.ts`로 병합
-- DomainError discriminated union 및 팩토리 함수 유지
-- `toHttpStatus`를 ts-pattern으로 재작성
-- Error 클래스(`NotFoundError`, `ForbiddenError` 등) 제거 → plain object만 사용
-- `toApplicationError` 제거 (neverthrow `.match()` 사용으로 대체)
-
-#### 1-3. shared/types/result.ts 제거
-
-- 자체 Result 타입 전체 삭제
-- 모든 참조를 `neverthrow`의 `Result`, `ResultAsync`, `ok`, `err`로 교체
-
-#### 1-4. shared/types 디렉토리 제거
-
-- errors.ts → shared/error/로 이동
-- result.ts → 삭제
-- 디렉토리 자체 제거
-
-#### 1-5. shared/utilities 정리
-
-- `application-errors.ts`, `application-errors.test.ts` 삭제
-- `writing-content-utilities.ts` → remeda 파이프라인으로 리팩토링
-- 디렉토리명 `utilities` 유지 (범용 순수 함수)
-
-### Phase 2: 모듈 구조 개편
-
-#### 2-1. 포트 이동
-
-- `shared/ports/writing-repository.ts` → `modules/writings/writing-port.ts`
-- `shared/ports/prompt-repository.ts` → `modules/prompts/prompt-port.ts`
-- `shared/ports/user-seed-repository.ts` → `shared/` 유지 (범용)
-- `shared/ports/` 디렉토리 삭제
-
-#### 2-2. 모듈 내 디렉토리 평탄화
-
-각 모듈에서 파일이 1개뿐인 디렉토리를 파일로 승격:
-
-- `model/writing.ts` → `writing-types.ts`
-- `errors/writing-errors.ts` → `writing-error.ts`
-- `operations/writing-operations.ts` → `writing-operations.ts`
-- `ports/index.ts` → 삭제 (writing-port.ts로 대체)
-- `contracts/index.ts` → 삭제 (index.ts가 역할 대체)
-- `adapters/application-compatibility.ts` → 삭제
-- `fixtures/` → `testing/` 디렉토리로 이동
-
-#### 2-3. 테스팅 유틸리티 이동
-
-- `shared/testing/fake-writing-repositories.ts` → `modules/writings/testing/fake-writing-repositories.ts`
-- `shared/testing/` → 패키지 수준 공유가 필요하면 `src/testing/`으로 이동
-
-### Phase 3: Use-case neverthrow 전환
-
-#### 3-1. 반환 타입 변경
-
-모든 use-case의 반환 타입을 `ResultAsync<T, E>`로 변경:
-
-```typescript
-// Before
-export type CreateWritingUseCaseOutput =
-  | { kind: "success"; writing: WritingDetail }
-  | WritingCrudModuleError
-
-// After
-// 함수 반환: ResultAsync<WritingDetail, WritingCrudModuleError>
-```
-
-#### 3-2. 이중 API 제거
-
-- `makeCreateWritingUseCase` 팩토리만 유지
-- standalone `createWritingUseCase` 제거
-- 모든 모듈에 동일 적용
-
-#### 3-3. ts-pattern 적용
-
-use-case 내 `if (result.kind === "not-found")` 패턴을 `match(result).with(...)` 으로 교체.
-
-#### 3-4. remeda 적용
-
-데이터 변환 로직에 remeda 파이프라인 적용.
-
-### Phase 4: barrel export 정리
-
-#### 4-1. 모듈 index.ts 재작성
-
-각 모듈의 `index.ts`가 해당 모듈의 유일한 공개 경계:
-
-- 타입: 도메인 모델, 에러, 포트 인터페이스
-- 값: use-case 팩토리 함수
-- 테스팅: `testing/` 하위 export (별도 export path)
-
-#### 4-2. 패키지 exports 업데이트
-
-```json
-{
-  "exports": {
-    ".": "./src/index.ts",
-    "./modules/writings": "./src/modules/writings/index.ts",
-    "./modules/writings/testing": "./src/modules/writings/testing/index.ts",
-    "./modules/prompts": "./src/modules/prompts/index.ts",
-    "./modules/prompts/testing": "./src/modules/prompts/testing/index.ts",
-    "./modules/home": "./src/modules/home/index.ts",
-    "./modules/home/testing": "./src/modules/home/testing/index.ts",
-    "./testing": "./src/testing/index.ts"
-  }
-}
-```
-
-### Phase 5: Consumer 마이그레이션
-
-#### 5-1. apps/api 수정
-
-- `toApplicationError` import 제거
-- use-case 결과를 `.match()` 또는 ts-pattern으로 직접 처리
-- adapter 계층 제거 후 use-case 직접 호출
-
-#### 5-2. packages/database 수정
-
-- 포트 인터페이스 import 경로 변경 (`@workspace/core` → `@workspace/core/modules/writings`)
-- 타입 import 경로 변경
-
-#### 5-3. apps/web 수정
-
-- 타입 import 경로 확인 및 필요 시 변경
-
----
-
-## 6. 테스트 전략
+## 5. 테스트 전략
 
 ### 원칙
 
-- **각 use-case마다 단위 테스트** (Given-When-Then)
-- **순수 함수(operations)는 빠른 속성 기반 테스트** 가능
-- **fake repository는 함수형으로 재작성** (팩토리 함수로 생성)
-- **테스트 파일은 `__tests__/` 대신 같은 디렉토리에 `.test.ts`로 colocation**
+- 각 use-case마다 단위 테스트 (Given-When-Then)
+- 순수 함수(operations)는 완전한 단위 테스트
+- fake repository는 함수형으로 재작성 (팩토리 함수로 생성)
+- 테스트 파일은 같은 디렉토리에 `.test.ts`로 colocation
 
-### 테스트 파일 목록
+### 신규 모듈 테스트 파일
 
 ```
-modules/writings/
-  writing-operations.test.ts
-  use-cases/create-writing.test.ts
-  use-cases/autosave-writing.test.ts
-  use-cases/delete-writing.test.ts
-  use-cases/get-writing.test.ts
-  use-cases/list-writings.test.ts
+modules/journeys/
+  journey-operations.test.ts
+  use-cases/enroll-journey.test.ts
+  use-cases/start-session.test.ts
+  use-cases/submit-step.test.ts
+  use-cases/complete-session.test.ts
 
-modules/prompts/
-  use-cases/get-prompt.test.ts
-  use-cases/list-prompts.test.ts
-  use-cases/save-prompt.test.ts
-  use-cases/unsave-prompt.test.ts
-
-modules/home/
-  use-cases/get-home.test.ts
-
-shared/
-  error/domain-error.test.ts
-  utilities/writing-content-utilities.test.ts
+modules/ai-feedback/
+  use-cases/generate-feedback.test.ts
+  use-cases/compare-revisions.test.ts
 ```
 
-### neverthrow 테스트 패턴
+### AI 피드백 테스트 패턴
 
 ```typescript
-describe("makeCreateWritingUseCase", () => {
-  it("글감이 존재하면 글을 생성한다", async () => {
-    const result = await createWriting(userId, input)
+describe("makeGenerateFeedbackUseCase", () => {
+  it("글 내용과 수준을 받아 소크라테스식 피드백을 반환한다", async () => {
+    const result = await generateFeedback(writingContent, "beginner")
 
     expect(result.isOk()).toBe(true)
-    result.map((writing) => {
-      expect(writing.title).toBe("새 글")
-    })
-  })
-
-  it("글감이 없으면 NOT_FOUND 에러를 반환한다", async () => {
-    const result = await createWriting(userId, { sourcePromptId })
-
-    expect(result.isErr()).toBe(true)
-    result.mapErr((error) => {
-      expect(error.code).toBe("NOT_FOUND")
+    result.map((feedback) => {
+      expect(feedback.strengths.length).toBeGreaterThanOrEqual(1)
+      expect(feedback.improvements.length).toBeGreaterThanOrEqual(1)
+      expect(feedback.question).toBeDefined()
     })
   })
 })
 ```
 
----
+## 6. 검증 체크리스트
 
-## 7. 마이그레이션 안전성
+- [ ] `bun run typecheck` 통과
+- [ ] `bun run test` 전체 통과
+- [ ] `bun run lint` 통과
+- [ ] `bun run build` 통과
+- [ ] packages/database 기존 테스트 통과
 
-### 하위 호환성
+## 관련 문서
 
-- 기존 `@workspace/core` export 경로는 모두 유지
-- 새 export 경로를 추가하되 기존 경로를 즉시 제거하지 않음
-- adapter 제거는 consumer 마이그레이션 완료 후 진행
+- [[README]]
+- [[backend-architecture-guide]]
+- [[backend-core-guide]]
+- [[dependency-injection]]
+- [[03-architecture/domain-model]]
+- fake repository는 함수형으로 생성
+- 테스트 파일은 같은 디렉토리에 `.test.ts`로 colocation
 
-### 검증 체크리스트
+### 신규 테스트 파일
+
+```
+modules/journeys/
+  journey-operations.test.ts
+  use-cases/enroll-journey.test.ts
+  use-cases/start-session.test.ts
+  use-cases/submit-step.test.ts
+  use-cases/complete-session.test.ts
+
+modules/ai-feedback/
+  use-cases/generate-feedback.test.ts
+  use-cases/compare-revisions.test.ts
+
+modules/writing-prompts/
+  use-cases/bookmark-prompt.test.ts
+```
+
+### neverthrow 테스트 패턴
+
+```typescript
+describe("makeStartSessionUseCase", () => {
+  it("이전 세션이 완료되었으면 세션을 시작한다", async () => {
+    const result = await startSession(userId, sessionId)
+
+    expect(result.isOk()).toBe(true)
+    result.map((progress) => {
+      expect(progress.status).toBe("IN_PROGRESS")
+    })
+  })
+
+  it("이전 세션이 미완료이면 FORBIDDEN 에러를 반환한다", async () => {
+    const result = await startSession(userId, lockedSessionId)
+
+    expect(result.isErr()).toBe(true)
+    result.mapErr((error) => {
+      expect(error.code).toBe("FORBIDDEN")
+    })
+  })
+})
+```
+
+## 6. 검증 체크리스트
 
 - [ ] `bun run typecheck` 통과
 - [ ] `bun run test` 전체 통과
@@ -438,21 +324,10 @@ describe("makeCreateWritingUseCase", () => {
 - [ ] apps/api 기존 테스트 통과
 - [ ] packages/database 기존 테스트 통과
 
----
+## 관련 문서
 
-## 8. 참고 문헌 매핑
-
-| 적용 항목                    | 근거 문헌                                                                           |
-| ---------------------------- | ----------------------------------------------------------------------------------- |
-| Result 모나드 기반 에러 처리 | Railway-Oriented Programming (Wlaschin), Domain Modeling Made Functional            |
-| Plain data + 순수 함수       | Data-Oriented Programming (Sharvit), Grokking Simplicity                            |
-| Brand 타입으로 도메인 식별자 | Domain Modeling Made Functional, DDD (Evans)                                        |
-| Discriminated union 에러     | Domain Modeling Made Functional, ts-pattern                                         |
-| 모듈 내 포트 소유            | Clean Architecture (Martin), Hexagonal Architecture (Cockburn)                      |
-| Colocation 원칙              | A Philosophy of Software Design (Ousterhout), Code That Fits in Your Head (Seemann) |
-| 파이프 기반 합성             | Functional Design and Architecture, SICP                                            |
-| 최소 표면적                  | Clean Code (Martin), Code Simplicity (Kanat-Alexander)                              |
-| Exhaustive matching          | Grokking Simplicity, ts-pattern 공식 문서                                           |
-| YAGNI (불필요 추상화 제거)   | Extreme Programming Explained (Beck), Refactoring (Fowler)                          |
-| 테스트 colocation            | The Art of Unit Testing (Osherove), xUnit Test Patterns (Meszaros)                  |
-| 팩토리 함수로 DI             | Dependency Injection Principles (Seemann), Functional Architecture                  |
+- [[README]]
+- [[backend-architecture-guide]]
+- [[backend-core-guide]]
+- [[dependency-injection]]
+- [[03-architecture/domain-model]]

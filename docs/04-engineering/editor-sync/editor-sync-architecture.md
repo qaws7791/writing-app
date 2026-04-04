@@ -114,24 +114,24 @@ ALTER TABLE writings ADD COLUMN version INTEGER NOT NULL DEFAULT 1;
 
 -- 트랜잭션 기록 (이벤트 소싱)
 CREATE TABLE writing_transactions (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  writing_id    INTEGER NOT NULL REFERENCES writings(id) ON DELETE CASCADE,
-  user_id     TEXT    NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  id          SERIAL PRIMARY KEY,
+  writing_id  INTEGER NOT NULL REFERENCES writings(id) ON DELETE CASCADE,
+  user_id     TEXT    NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
   version     INTEGER NOT NULL,  -- 이 트랜잭션 적용 후 버전
-  operations  TEXT    NOT NULL,  -- JSON: Operation[]
-  created_at  TEXT    NOT NULL,
+  operations  JSONB   NOT NULL,  -- Operation[]
+  created_at  TIMESTAMPTZ NOT NULL,
   UNIQUE(writing_id, version)
 );
 
 -- 버전 스냅샷 (특정 시점 복원용)
 CREATE TABLE writing_versions (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  writing_id    INTEGER NOT NULL REFERENCES writings(id) ON DELETE CASCADE,
-  user_id     TEXT    NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  id          SERIAL PRIMARY KEY,
+  writing_id  INTEGER NOT NULL REFERENCES writings(id) ON DELETE CASCADE,
+  user_id     TEXT    NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
   version     INTEGER NOT NULL,
   title       TEXT    NOT NULL,
-  content     TEXT    NOT NULL,  -- JSON: WritingContent
-  created_at  TEXT    NOT NULL,
+  content     JSONB   NOT NULL,  -- WritingContent
+  created_at  TIMESTAMPTZ NOT NULL,
   reason      TEXT    NOT NULL DEFAULT 'auto'  -- 'auto' | 'manual' | 'restore'
 );
 ```
