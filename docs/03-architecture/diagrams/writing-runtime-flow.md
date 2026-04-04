@@ -1,9 +1,9 @@
 ---
 title: 글쓰기 런타임 흐름 다이어그램
-description: 홈 진입, 작성, 자동 저장, AI 보조, 공개, 내보내기까지의 핵심 런타임 흐름을 보여주는 목표 아키텍처 다이어그램입니다.
+description: 홈 진입, 글감 자유 글쓰기, 여정 세션 진행, AI 코칭 피드백까지의 핵심 런타임 흐름을 보여주는 목표 아키텍처 다이어그램입니다.
 ---
 
-이 다이어그램은 사용자 글쓰기 세션에서 어떤 요청과 저장이 어떤 순서로 일어나는지 상세 흐름을 보여준다.
+이 다이어그램은 글필의 두 가지 주요 흐름(글감 자유 글쓰기, 여정 세션 진행)에서 어떤 요청과 저장이 어떤 순서로 일어나는지 상세 흐름을 보여준다.
 
 ## 다이어그램
 
@@ -12,57 +12,64 @@ sequenceDiagram
     actor User as 사용자
     participant Web as web
     participant API as api
-    participant DB as 관계형 DB
-    participant AI as AI 제공자
-    participant Storage as 오브젝트 스토리지
+    participant DB as PostgreSQL
+    participant AI as Google Gemini
 
     User->>Web: 홈 진입
-    Web->>API: 세션 상태 / 이어쓰기 / 글감 요약 요청
+    Web->>API: 진행 중인 여정·최근 글·오늘의 글감 요청
     API->>DB: 사용자 상태 조회
     DB-->>API: 홈 구성 데이터
-    API-->>Web: 최소 홈 데이터 응답
+    API-->>Web: 홈 데이터 응답
 
-    User->>Web: 글감 선택 후 작성 시작
-    Web->>API: 새 글 생성 요청
-    API->>DB: Writing 글 생성
-    DB-->>API: writingId / 초기 버전
-    API-->>Web: 편집기 초기 상태
+    alt 글감 자유 글쓰기
+        User->>Web: 글감 선택 후 작성 시작
+        Web->>API: 새 글 생성 요청 (promptId)
+        API->>DB: Writing 생성
+        DB-->>API: writingId / 초기 버전
+        API-->>Web: 편집기 초기 상태
 
-    User->>Web: 제목 / 본문 입력
-    Web->>Web: 클라이언트 편집 상태 반영
-    Web->>API: 자동 저장 요청
-    API->>DB: 버전 충돌 확인 후 저장
-    alt 저장 성공
-        DB-->>API: Writing / WritingVersion 갱신
-        API-->>Web: 저장 시각 / 버전 상태 반환
-    else 저장 실패 또는 충돌
-        DB-->>API: 실패 또는 충돌 정보
-        API-->>Web: 재시도 가능 여부 / 충돌 정보 반환
+        User->>Web: 본문 입력
+        Web->>Web: 5초 디바운스 자동 저장
+        Web->>API: 자동 저장 요청
+        API->>DB: WritingVersion 저장
+        DB-->>API: 저장 완료
+        API-->>Web: 저장 시각 반환
     end
 
-    opt AI 제안 또는 검토 요청
-        User->>Web: AI 기능 실행
-        Web->>API: 선택 영역 또는 문단 정보 전송
-        API->>AI: 코칭형 요청
-        AI-->>API: 제안 목록 또는 검토 결과
-        API-->>Web: 사용자 승인용 결과 반환
-    end
+    alt 여정 세션 진행
+        User->>Web: 여정 카드 선택
+        Web->>API: 세션 목록 / 진행 상태 요청
+        API->>DB: UserJourneyProgress·UserSessionProgress 조회
+        DB-->>API: 세션 목록 + 잠금 상태
+        API-->>Web: 세션 목록 응답
 
-    opt 공개 또는 공유
-        User->>Web: 공개 범위 선택
-        Web->>API: 공개 / 공유 요청
-        API->>DB: 권한 / 상태 / 메타데이터 검증
-        DB-->>API: Publication 또는 ShareLink 상태
-        API-->>Web: 공개 결과 반환
-    end
+        User->>Web: 잠금 해제된 세션 시작
+        Web->>API: 세션 스텝 목록 요청
+        API->>DB: Step 목록 조회
+        DB-->>API: 스텝 목록 (LEARN/READ/GUIDED_QUESTION/WRITE/FEEDBACK/REVISE)
+        API-->>Web: 스텝 목록 응답
 
-    opt 내보내기
-        User->>Web: txt / md 내보내기 요청
-        Web->>API: 내보내기 요청
-        API->>DB: 기준 버전 조회
-        API->>Storage: 파생 파일 생성 또는 임시 링크 발급
-        Storage-->>API: 다운로드 정보
-        API-->>Web: 다운로드 응답
+        loop 각 스텝 진행
+            User->>Web: 스텝 완료 / 글 작성
+            Web->>API: 스텝 완료 또는 글 저장 요청
+            API->>DB: 진행 상태 갱신
+            DB-->>API: 갱신 완료
+            API-->>Web: 다음 스텝 전환
+        end
+
+        opt AI 코칭 피드백 (FEEDBACK 스텝)
+            Web->>API: 피드백 요청 (writingId + 수준)
+            API->>AI: 소크라테스식 코칭 프롬프트
+            AI-->>API: 강점 / 개선점 / 질문
+            API->>DB: 피드백 결과 저장
+            API-->>Web: 피드백 응답
+        end
+
+        User->>Web: 세션 완료
+        Web->>API: 세션 완료 요청
+        API->>DB: UserSessionProgress COMPLETED + 다음 세션 잠금 해제
+        DB-->>API: 여정 진행 상태 갱신
+        API-->>Web: 완료 결과 + 보상 정보
     end
 ```
 
@@ -77,4 +84,3 @@ sequenceDiagram
 - [[03-architecture/data-flow]]
 - [[03-architecture/api-overview]]
 - [[03-architecture/error-handling]]
-- [[03-architecture/file-storage-strategy]]

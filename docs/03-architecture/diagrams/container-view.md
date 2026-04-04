@@ -19,31 +19,34 @@ flowchart LR
         end
 
         subgraph packages["packages"]
+            core["packages/core<br/>도메인 로직·결과 타입"]
+            database["packages/database<br/>Drizzle ORM 스키마"]
+            ai["packages/ai<br/>Gemini AI SDK"]
+            apiClient["packages/api-client<br/>타입 안전 API 클라이언트"]
             ui["packages/ui<br/>Base UI + shadcn/ui"]
+            config["packages/config<br/>공유 설정"]
             eslint["packages/eslint-config"]
             tsconfig["packages/typescript-config"]
         end
     end
 
-    db["관계형 데이터베이스"]
-    storage["오브젝트 스토리지"]
-    auth["인증 / 소셜 로그인"]
-    ai["AI 제공자"]
+    db["PostgreSQL"]
+    storage["Cloudflare R2"]
+    auth["Google·Kakao 소셜 로그인"]
+    gemini["Google Gemini API"]
 
     browser --> web
     web --> ui
+    web --> apiClient
     storybook --> ui
-    web --> api
-    api --> db
+    apiClient --> api
+    api --> core
+    api --> database
+    api --> ai
+    database --> db
+    ai --> gemini
     api --> storage
     api --> auth
-    api --> ai
-    web --> eslint
-    api --> eslint
-    storybook --> eslint
-    web --> tsconfig
-    api --> tsconfig
-    storybook --> tsconfig
 ```
 
 ## 상태

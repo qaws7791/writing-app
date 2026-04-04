@@ -12,9 +12,9 @@ flowchart LR
     browser["브라우저 요청 / 사용자 상호작용"]
     web["apps/web"]
     api["apps/api"]
-    db["관계형 데이터베이스"]
-    ai["AI 제공자"]
-    storage["오브젝트 스토리지"]
+    db["PostgreSQL"]
+    ai["Google Gemini"]
+    storage["Cloudflare R2"]
 
     subgraph collection["수집 계층"]
         logs["구조화 로그"]

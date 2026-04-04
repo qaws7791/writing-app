@@ -14,9 +14,9 @@ flowchart TB
     subgraph local["로컬"]
         localWeb["web 개발 서버"]
         localApi["api 개발 서버"]
-        localStorage["로컬 에뮬레이터 또는 개발 버킷"]
-        localDb["개발 데이터베이스"]
-        localObs["개발용 로그 / 디버그 추적"]
+        localStorage["로컬 R2 에뮬레이터"]
+        localDb["로컬 PostgreSQL"]
+        localObs["개발용 pino 로그"]
         localWeb --> localApi
         localApi --> localStorage
         localApi --> localDb
@@ -24,10 +24,10 @@ flowchart TB
     end
 
     subgraph staging["스테이징"]
-        stagingWeb["web 스테이징 배포"]
+        stagingWeb["Vercel Preview<br/>web 스테이징"]
         stagingApi["api 스테이징 배포"]
-        stagingStorage["스테이징 스토리지"]
-        stagingDb["스테이징 데이터베이스"]
+        stagingStorage["Cloudflare R2 스테이징"]
+        stagingDb["스테이징 PostgreSQL"]
         stagingObs["관측 스택"]
         stagingWeb --> stagingApi
         stagingApi --> stagingStorage
@@ -36,10 +36,10 @@ flowchart TB
     end
 
     subgraph production["운영"]
-        prodWeb["web 운영 배포"]
+        prodWeb["Vercel Production<br/>web 운영"]
         prodApi["api 운영 배포"]
-        prodStorage["운영 오브젝트 스토리지"]
-        prodDb["고가용성 데이터베이스"]
+        prodStorage["Cloudflare R2 운영"]
+        prodDb["PostgreSQL<br/>고가용성"]
         prodObs["운영 관측 스택"]
         prodWeb --> prodApi
         prodApi --> prodStorage
