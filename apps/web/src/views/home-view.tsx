@@ -10,6 +10,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import PromptArchiveView from "@/views/prompt-archive-view"
 import JourneyArchiveView from "@/views/journey-archive-view"
+import MyJourneysView from "@/views/my-journeys-view"
 const JOURNEY_IMAGE_1 =
   "https://www.figma.com/api/mcp/asset/6641c434-17fc-48b2-9a4e-e0791a903147"
 const JOURNEY_IMAGE_2 =
@@ -62,6 +63,8 @@ const BOTTOM_NAV_ITEMS = [
   { icon: QuillWrite01Icon, label: "서재" },
   { icon: User02Icon, label: "프로필" },
 ] as const
+
+type BottomNavLabel = (typeof BOTTOM_NAV_ITEMS)[number]["label"]
 
 function HomeContent() {
   return (
@@ -126,38 +129,45 @@ function HomeContent() {
 
 export default function HomeView() {
   const [activeTab, setActiveTab] = useState<(typeof TOP_TABS)[number]>("글감")
+  const [activeBottomNav, setActiveBottomNav] = useState<BottomNavLabel>("홈")
+
+  const isHomeSection = activeBottomNav === "홈"
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
-      {/* Top Tabs */}
-      <header className="flex items-center gap-6 px-6 py-6">
-        {TOP_TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`text-2xl leading-6 font-semibold transition-colors ${
-              activeTab === tab ? "text-on-surface" : "text-on-surface-lowest"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </header>
+      {/* Top Tabs (홈 섹션에서만 표시) */}
+      {isHomeSection && (
+        <header className="flex items-center gap-6 px-6 py-6">
+          {TOP_TABS.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`text-2xl leading-6 font-semibold transition-colors ${
+                activeTab === tab ? "text-on-surface" : "text-on-surface-lowest"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </header>
+      )}
 
       {/* Tab Content */}
-      <div className="flex-1 pb-24">
-        {activeTab === "홈" && <HomeContent />}
-        {activeTab === "글감" && <PromptArchiveView />}
-        {activeTab === "여정" && <JourneyArchiveView />}
+      <div className="flex-1 overflow-y-auto pb-24">
+        {isHomeSection && activeTab === "홈" && <HomeContent />}
+        {isHomeSection && activeTab === "글감" && <PromptArchiveView />}
+        {isHomeSection && activeTab === "여정" && <JourneyArchiveView />}
+        {activeBottomNav === "나의 여정" && <MyJourneysView />}
       </div>
 
       {/* Bottom Navigation */}
       <nav className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-around rounded-tl-[2rem] rounded-tr-[2rem] border-t border-outline/20 bg-surface/95 px-4 py-4.25 safe-area-pb shadow-[0px_-12px_40px_0px_rgba(47,52,48,0.04)] backdrop-blur-xl">
-        {BOTTOM_NAV_ITEMS.map(({ icon, label }, index) => {
-          const isActive = index === 0
+        {BOTTOM_NAV_ITEMS.map(({ icon, label }) => {
+          const isActive = activeBottomNav === label
           return (
             <button
               key={label}
+              onClick={() => setActiveBottomNav(label)}
               className={`flex flex-col items-center gap-1 transition-colors ${
                 isActive ? "text-primary" : "text-on-surface-lowest"
               }`}
