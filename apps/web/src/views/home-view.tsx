@@ -12,6 +12,7 @@ import PromptArchiveView from "@/views/prompt-archive-view"
 import JourneyArchiveView from "@/views/journey-archive-view"
 import MyJourneysView from "@/views/my-journeys-view"
 import WritingsListView from "@/views/writings-list-view"
+import ProfileView from "@/views/profile-view"
 const JOURNEY_IMAGE_1 =
   "https://www.figma.com/api/mcp/asset/6641c434-17fc-48b2-9a4e-e0791a903147"
 const JOURNEY_IMAGE_2 =
@@ -160,6 +161,7 @@ export default function HomeView() {
         {isHomeSection && activeTab === "여정" && <JourneyArchiveView />}
         {activeBottomNav === "나의 여정" && <MyJourneysView />}
         {activeBottomNav === "서재" && <WritingsListView />}
+        {activeBottomNav === "프로필" && <ProfileView />}
       </div>
 
       {/* Bottom Navigation */}
