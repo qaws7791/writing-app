@@ -52,8 +52,14 @@ const MOCK_WRITINGS: WritingSummary[] = [
 ]
 
 function WritingCard({ writing }: { writing: WritingSummary }) {
+  const router = useRouter()
+
   return (
-    <div className="flex flex-col gap-4 rounded-[2.25rem] bg-surface-container p-8">
+    <button
+      type="button"
+      onClick={() => router.push(`/writings/${writing.id}`)}
+      className="flex flex-col gap-4 rounded-[2.25rem] bg-surface-container p-8 text-left transition-colors hover:bg-surface-container-high"
+    >
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium tracking-[1px] text-on-surface-low uppercase">
           {writing.date}
@@ -62,6 +68,7 @@ function WritingCard({ writing }: { writing: WritingSummary }) {
           type="button"
           aria-label="더보기"
           className="flex items-center justify-center text-on-surface-low"
+          onClick={(e) => e.stopPropagation()}
         >
           <HugeiconsIcon
             icon={MoreVerticalIcon}
@@ -85,7 +92,7 @@ function WritingCard({ writing }: { writing: WritingSummary }) {
           {writing.wordCount.toLocaleString()} 단어
         </span>
       </div>
-    </div>
+    </button>
   )
 }
 

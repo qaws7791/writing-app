@@ -8,33 +8,43 @@ import {
   QuillWrite01Icon,
   User02Icon,
 } from "@hugeicons/core-free-icons"
+import { useRouter } from "next/navigation"
 import PromptArchiveView from "@/views/prompt-archive-view"
 import JourneyArchiveView from "@/views/journey-archive-view"
 import MyJourneysView from "@/views/my-journeys-view"
 import WritingsListView from "@/views/writings-list-view"
 import ProfileView from "@/views/profile-view"
-const JOURNEY_IMAGE_1 =
-  "https://www.figma.com/api/mcp/asset/6641c434-17fc-48b2-9a4e-e0791a903147"
-const JOURNEY_IMAGE_2 =
-  "https://www.figma.com/api/mcp/asset/f7488375-2d98-416f-a189-9a970d8f4097"
+import journeyData from "@/data/journey-sessions.json"
+const JOURNEY_IMAGES = [
+  "https://www.figma.com/api/mcp/asset/6641c434-17fc-48b2-9a4e-e0791a903147",
+  "https://www.figma.com/api/mcp/asset/f7488375-2d98-416f-a189-9a970d8f4097",
+]
 const STAR_ICON =
   "https://www.figma.com/api/mcp/asset/062e2961-d065-43b8-8e11-d98fc24abe73"
 
 const TOP_TABS = ["홈", "글감", "여정"] as const
 
 function JourneyCard({
+  id,
   imageUrl,
   title,
   subtitle,
   progress,
 }: {
+  id: string
   imageUrl: string
   title: string
   subtitle: string
   progress: number
 }) {
+  const router = useRouter()
+
   return (
-    <div className="flex h-32 items-center gap-5 rounded-3xl bg-surface-container p-4">
+    <button
+      type="button"
+      onClick={() => router.push(`/journeys/${id}`)}
+      className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-container p-4 text-left transition-colors hover:bg-surface-container-high"
+    >
       <div className="size-24 shrink-0 overflow-hidden rounded-[32px] bg-surface-container-high">
         <img src={imageUrl} alt={title} className="size-full object-cover" />
       </div>
@@ -55,7 +65,7 @@ function JourneyCard({
           </div>
         </div>
       </div>
-    </div>
+    </button>
   )
 }
 
@@ -68,7 +78,7 @@ const BOTTOM_NAV_ITEMS = [
 
 type BottomNavLabel = (typeof BOTTOM_NAV_ITEMS)[number]["label"]
 
-function HomeContent() {
+function HomeContent({ onViewAllJourneys }: { onViewAllJourneys: () => void }) {
   return (
     <>
       {/* Greeting */}
@@ -106,23 +116,24 @@ function HomeContent() {
           <h2 className="text-xl font-semibold text-on-surface-low">
             현재 진행 중인 여정
           </h2>
-          <button className="text-sm font-semibold text-on-surface-low">
+          <button
+            className="text-sm font-semibold text-on-surface-low"
+            onClick={onViewAllJourneys}
+          >
             더보기
           </button>
         </div>
         <div className="flex flex-col gap-6">
-          <JourneyCard
-            imageUrl={JOURNEY_IMAGE_1}
-            title="새벽의 대화"
-            subtitle="완성된 단편선"
-            progress={65}
-          />
-          <JourneyCard
-            imageUrl={JOURNEY_IMAGE_2}
-            title="나를 찾는 여행"
-            subtitle="자아 성찰 에세이"
-            progress={14}
-          />
+          {journeyData.journeys.slice(0, 2).map((journey, index) => (
+            <JourneyCard
+              key={journey.id}
+              id={journey.id}
+              imageUrl={JOURNEY_IMAGES[index % JOURNEY_IMAGES.length]}
+              title={journey.title}
+              subtitle={journey.category}
+              progress={0}
+            />
+          ))}
         </div>
       </div>
     </>
@@ -156,7 +167,11 @@ export default function HomeView() {
 
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto pb-24">
-        {isHomeSection && activeTab === "홈" && <HomeContent />}
+        {isHomeSection && activeTab === "홈" && (
+          <HomeContent
+            onViewAllJourneys={() => setActiveBottomNav("나의 여정")}
+          />
+        )}
         {isHomeSection && activeTab === "글감" && <PromptArchiveView />}
         {isHomeSection && activeTab === "여정" && <JourneyArchiveView />}
         {activeBottomNav === "나의 여정" && <MyJourneysView />}

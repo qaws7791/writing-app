@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Bookmark01Icon } from "@hugeicons/core-free-icons"
+import { useRouter } from "next/navigation"
 
 const PROMPT_IMAGES = {
   card1:
@@ -71,10 +72,14 @@ function CategoryBadge({ category }: { category: Exclude<Category, "전체"> }) 
 }
 
 function PromptCard({ card }: { card: PromptCardData }) {
+  const router = useRouter()
+
   return (
     <div className="flex flex-col gap-6">
-      <div
-        className={`relative h-64 overflow-hidden rounded-[3rem] ${
+      <button
+        type="button"
+        onClick={() => router.push(`/prompts/${card.id}`)}
+        className={`relative h-64 w-full overflow-hidden rounded-[3rem] transition-opacity hover:opacity-90 ${
           card.cardVariant === "elevated"
             ? "bg-surface-container-high"
             : "bg-surface"
@@ -87,7 +92,7 @@ function PromptCard({ card }: { card: PromptCardData }) {
             className="h-full w-auto object-contain"
           />
         </div>
-      </div>
+      </button>
       <div className="flex flex-col gap-3 px-2">
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium text-on-surface-low">
@@ -95,9 +100,15 @@ function PromptCard({ card }: { card: PromptCardData }) {
           </span>
           <CategoryBadge category={card.category} />
         </div>
-        <p className="text-2xl leading-tight font-medium tracking-tight text-on-surface">
-          {card.title}
-        </p>
+        <button
+          type="button"
+          onClick={() => router.push(`/prompts/${card.id}`)}
+          className="text-left"
+        >
+          <p className="text-2xl leading-tight font-medium tracking-tight text-on-surface">
+            {card.title}
+          </p>
+        </button>
         <div className="flex items-center justify-between pt-3">
           <span className="text-xs font-medium text-on-surface-lowest">
             {card.responseCount}명 응답

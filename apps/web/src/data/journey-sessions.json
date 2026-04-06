@@ -1,0 +1,1677 @@
+{
+  "journeys": [
+    {
+      "id": "j1",
+      "category": "글쓰기 기초",
+      "title": "나의 첫 글쓰기",
+      "description": "좋은 문장의 조건부터 문단 구성까지, 글쓰기의 기본기를 탄탄히 다집니다.",
+      "difficulty": "BEGINNER",
+      "sessions": [
+        {
+          "id": "j1-s1",
+          "order": 1,
+          "title": "문장의 기본기",
+          "description": "좋은 글은 좋은 문장에서 시작됩니다. 명확하고 간결한 문장 쓰기의 핵심을 배워봅니다.",
+          "steps": [
+            {
+              "id": "j1-s1-1",
+              "type": "INTRO",
+              "order": 1,
+              "content": {
+                "type": "INTRO",
+                "title": "문장의 기본기",
+                "description": "좋은 글은 좋은 문장에서 시작됩니다. 이번 세션에서는 명확하고 간결하며 구체적인 문장을 쓰는 법을 배웁니다.",
+                "keywords": ["명확성", "간결성", "구체성"],
+                "estimatedMinutes": 15
+              },
+              "cta": { "label": "시작하기", "variant": "primary" }
+            },
+            {
+              "id": "j1-s1-2",
+              "type": "CONCEPT",
+              "order": 2,
+              "content": {
+                "type": "CONCEPT",
+                "title": "좋은 문장의 3가지 조건",
+                "body": "## 1. 명확성\n주어와 서술어가 분명해야 합니다. 누가 무엇을 했는지 한 번에 이해할 수 있어야 합니다.\n\n## 2. 간결성\n불필요한 수식어와 반복을 줄이세요. 짧은 문장이 항상 좋은 것은 아니지만, 군더더기 없는 문장이 좋은 문장입니다.\n\n## 3. 구체성\n추상적인 표현 대신 구체적인 사실과 이미지를 담으세요. '좋은 날씨'보다 '창문 너머로 벚꽃잎이 날리는 4월의 오후'가 더 생생합니다.",
+                "keyTakeaway": "좋은 문장은 명확하고, 간결하며, 구체적입니다. 이 세 가지를 기억하세요."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j1-s1-3",
+              "type": "EXAMPLE",
+              "order": 3,
+              "content": {
+                "type": "EXAMPLE",
+                "title": "문장 비교해보기",
+                "examples": [
+                  {
+                    "label": "개선 전",
+                    "text": "그 날 날씨가 정말 매우 좋았고 기분이 너무 좋아서 산책을 하기로 결정을 내렸다.",
+                    "highlights": [
+                      {
+                        "startOffset": 8,
+                        "endOffset": 14,
+                        "comment": "'정말 매우'는 중복 수식어입니다"
+                      },
+                      {
+                        "startOffset": 29,
+                        "endOffset": 38,
+                        "comment": "'결정을 내렸다'는 '결심했다'로 간결하게"
+                      }
+                    ]
+                  },
+                  {
+                    "label": "개선 후",
+                    "text": "화창한 봄날, 나는 산책을 나섰다. 벚꽃잎이 어깨 위로 내려앉았다.",
+                    "highlights": [
+                      {
+                        "startOffset": 0,
+                        "endOffset": 6,
+                        "comment": "구체적인 계절감을 담은 표현"
+                      },
+                      {
+                        "startOffset": 18,
+                        "endOffset": 32,
+                        "comment": "감각적이고 구체적인 묘사"
+                      }
+                    ]
+                  }
+                ],
+                "commentary": "개선 후 문장은 불필요한 수식어를 줄이고, 구체적인 이미지를 담아 더 생생합니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j1-s1-4",
+              "type": "WRITING",
+              "order": 4,
+              "content": {
+                "type": "WRITING",
+                "prompt": "최근 일상에서 감동받았던 작은 순간을 떠올려 보세요. 그 순간을 명확하고 구체적인 문장으로 써보세요.",
+                "guideline": "오늘 배운 3가지 조건(명확성, 간결성, 구체성)을 떠올리며 써보세요. 짧아도 괜찮습니다.",
+                "minLength": 50,
+                "recommendedLength": 300,
+                "timeLimitSeconds": 0
+              },
+              "cta": { "label": "제출", "variant": "primary" }
+            },
+            {
+              "id": "j1-s1-5",
+              "type": "AI_FEEDBACK",
+              "order": 5,
+              "content": {
+                "type": "AI_FEEDBACK",
+                "targetStepId": "j1-s1-4",
+                "loadingMessage": "글을 분석하고 있어요..."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j1-s1-6",
+              "type": "COMPLETION",
+              "order": 6,
+              "content": {
+                "type": "COMPLETION",
+                "congratsMessage": "첫 번째 세션을 완료했어요!",
+                "summaryPoints": [
+                  "좋은 문장의 3가지 조건을 배웠어요",
+                  "문장 비교를 통해 차이를 느껴봤어요",
+                  "나만의 첫 글을 써봤어요"
+                ],
+                "nextSessionPreview": {
+                  "title": "문단 구성하기",
+                  "teaser": "문장을 모아 하나의 문단을 구성하는 방법을 배워봅니다."
+                }
+              },
+              "cta": { "label": "다음 세션으로", "variant": "primary" }
+            }
+          ]
+        },
+        {
+          "id": "j1-s2",
+          "order": 2,
+          "title": "문단 구성하기",
+          "description": "문장을 모아 하나의 완결된 문단을 만드는 방법을 배웁니다.",
+          "steps": []
+        },
+        {
+          "id": "j1-s3",
+          "order": 3,
+          "title": "글의 흐름 만들기",
+          "description": "문단과 문단을 자연스럽게 연결하는 전환의 기술을 익힙니다.",
+          "steps": []
+        },
+        {
+          "id": "j1-s4",
+          "order": 4,
+          "title": "퇴고의 기술",
+          "description": "쓴 글을 다듬어 더 좋은 글로 만드는 퇴고 방법을 배웁니다.",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": "j2",
+      "category": "에세이 구조와 논리",
+      "title": "논리적인 글의 뼈대",
+      "description": "서론-본론-결론의 구조를 이해하고, 논리적 흐름을 갖춘 에세이를 써봅니다.",
+      "difficulty": "INTERMEDIATE",
+      "sessions": [
+        {
+          "id": "j2-s1",
+          "order": 1,
+          "title": "에세이의 3단 구조",
+          "description": "서론, 본론, 결론의 역할을 이해하고 논리적으로 배치하는 연습을 합니다.",
+          "steps": [
+            {
+              "id": "j2-s1-1",
+              "type": "INTRO",
+              "order": 1,
+              "content": {
+                "type": "INTRO",
+                "title": "에세이의 3단 구조",
+                "description": "모든 에세이의 기본이 되는 서론-본론-결론 구조를 배우고, 직접 구성해봅니다.",
+                "keywords": ["서론", "본론", "결론", "전환어"],
+                "estimatedMinutes": 20
+              },
+              "cta": { "label": "시작하기", "variant": "primary" }
+            },
+            {
+              "id": "j2-s1-2",
+              "type": "CONCEPT",
+              "order": 2,
+              "content": {
+                "type": "CONCEPT",
+                "title": "서론 · 본론 · 결론의 역할",
+                "body": "## 서론 — 문을 여는 역할\n독자의 관심을 끌고, 글의 주제와 방향을 제시합니다. **주장(thesis)**을 명확히 밝히세요.\n\n## 본론 — 집의 기둥\n주장을 뒷받침하는 **근거와 사례**를 제시합니다. 각 문단은 하나의 핵심 아이디어를 다룹니다.\n\n## 결론 — 문을 닫는 역할\n본론의 내용을 요약하고, 독자에게 **여운이나 행동 촉구**를 남깁니다. 새로운 주장을 추가하지 마세요.",
+                "keyTakeaway": "서론은 '왜 읽어야 하는지', 본론은 '왜 맞는지', 결론은 '그래서 어쩌라는 건지'를 담습니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j2-s1-3",
+              "type": "ORDERING",
+              "order": 3,
+              "content": {
+                "type": "ORDERING",
+                "instruction": "다음 문단들을 올바른 에세이 순서(서론→본론→결론)로 배열하세요.",
+                "items": [
+                  {
+                    "id": "ord-a",
+                    "text": "이러한 이유들을 종합하면, 독서 습관은 단순한 취미를 넘어 삶의 질을 높이는 핵심 활동이다. 오늘부터 하루 30분 독서를 시작해보자."
+                  },
+                  {
+                    "id": "ord-b",
+                    "text": "첫째, 독서는 어휘력과 표현력을 키워준다. 다양한 글을 읽으면 자연스럽게 새로운 표현을 익히게 된다."
+                  },
+                  {
+                    "id": "ord-c",
+                    "text": "현대인의 평균 독서량은 연간 4.5권에 불과하다. 왜 우리는 더 많이 읽어야 할까? 독서는 단순한 정보 습득을 넘어 사고력을 확장하는 가장 효과적인 방법이다."
+                  },
+                  {
+                    "id": "ord-d",
+                    "text": "둘째, 독서는 공감 능력을 발달시킨다. 다른 사람의 이야기를 통해 세상을 보는 시야이 넓어진다."
+                  }
+                ],
+                "correctOrder": ["ord-c", "ord-b", "ord-d", "ord-a"],
+                "explanation": "서론(통계+주장) → 본론1(근거1: 어휘력) → 본론2(근거2: 공감능력) → 결론(요약+행동촉구) 순서가 자연스럽습니다."
+              },
+              "cta": { "label": "순서 확인", "variant": "primary" }
+            },
+            {
+              "id": "j2-s1-4",
+              "type": "EXAMPLE",
+              "order": 4,
+              "content": {
+                "type": "EXAMPLE",
+                "title": "잘 구조화된 짧은 에세이",
+                "examples": [
+                  {
+                    "label": "전체 에세이",
+                    "text": "[서론] 매일 아침 출근길, 사람들은 스마트폰 화면에 고개를 숙이고 있다. 우리는 연결되어 있지만 실은 더 외로워졌다. 디지털 시대에 진정한 소통이란 무엇인지 생각해볼 때다.\n\n[본론] 소셜 미디어는 '좋아요'와 댓글로 소통의 착각을 만든다. 하지만 연구에 따르면, 온라인 교류가 많을수록 외로움을 더 크게 느낀다고 한다. 반면 카페에서 나누는 10분의 대화는 하루의 기분을 바꿀 만큼 강력하다.\n\n[결론] 스마트폰을 내려놓고 눈을 마주치는 순간, 비로소 진짜 소통이 시작된다. 오늘 점심, 동료에게 먼저 말을 걸어보는 건 어떨까.",
+                    "highlights": [
+                      {
+                        "startOffset": 0,
+                        "endOffset": 5,
+                        "comment": "서론 시작: 구체적 장면으로 관심 유도"
+                      },
+                      {
+                        "startOffset": 119,
+                        "endOffset": 124,
+                        "comment": "본론 시작: 근거와 사례 제시"
+                      },
+                      {
+                        "startOffset": 276,
+                        "endOffset": 281,
+                        "comment": "결론 시작: 요약과 행동 촉구"
+                      }
+                    ]
+                  }
+                ],
+                "commentary": "서론에서 구체적 장면으로 시작하고, 본론에서 근거를 들고, 결론에서 행동을 제안하는 깔끔한 구조입니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j2-s1-5",
+              "type": "FILL_IN_THE_BLANK",
+              "order": 5,
+              "content": {
+                "type": "FILL_IN_THE_BLANK",
+                "instruction": "문단 사이를 연결하는 적절한 전환어를 골라 넣으세요.",
+                "sentence": "독서는 상상력을 키워준다. {{blank1}} 독서는 스트레스 해소에도 효과적이다. 영국 서식스 대학교 연구에 따르면 6분간의 독서만으로 스트레스가 68% 감소한다고 한다. {{blank2}} 독서는 지식 습득과 정서적 안정 모두에 기여하는 활동이라 할 수 있다.",
+                "blanks": [
+                  {
+                    "id": "blank1",
+                    "options": [
+                      { "id": "b1-1", "text": "그런데" },
+                      { "id": "b1-2", "text": "또한" },
+                      { "id": "b1-3", "text": "하지만" },
+                      { "id": "b1-4", "text": "반면에" }
+                    ],
+                    "correctOptionId": "b1-2"
+                  },
+                  {
+                    "id": "blank2",
+                    "options": [
+                      { "id": "b2-1", "text": "그러므로" },
+                      { "id": "b2-2", "text": "그런데" },
+                      { "id": "b2-3", "text": "이처럼" },
+                      { "id": "b2-4", "text": "반면에" }
+                    ],
+                    "correctOptionId": "b2-3"
+                  }
+                ],
+                "explanation": "'또한'은 같은 방향의 근거를 추가할 때, '이처럼'은 앞의 내용을 종합하여 정리할 때 사용합니다."
+              },
+              "cta": { "label": "완성 확인", "variant": "primary" }
+            },
+            {
+              "id": "j2-s1-6",
+              "type": "WRITING",
+              "order": 6,
+              "content": {
+                "type": "WRITING",
+                "prompt": "'우리 사회에서 바꾸고 싶은 한 가지'를 주제로 서론-본론-결론 구조의 짧은 에세이를 써보세요.",
+                "guideline": "서론에서 주장을 밝히고, 본론에서 근거 1~2개를 제시하고, 결론에서 요약하세요. 전환어를 활용해보세요.",
+                "minLength": 150,
+                "recommendedLength": 500,
+                "timeLimitSeconds": 0
+              },
+              "cta": { "label": "제출", "variant": "primary" }
+            },
+            {
+              "id": "j2-s1-7",
+              "type": "AI_FEEDBACK",
+              "order": 7,
+              "content": {
+                "type": "AI_FEEDBACK",
+                "targetStepId": "j2-s1-6",
+                "loadingMessage": "에세이 구조를 분석하고 있어요..."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j2-s1-8",
+              "type": "COMPLETION",
+              "order": 8,
+              "content": {
+                "type": "COMPLETION",
+                "congratsMessage": "에세이의 뼈대를 세우는 법을 배웠어요!",
+                "summaryPoints": [
+                  "서론·본론·결론의 역할을 이해했어요",
+                  "올바른 단락 순서를 연습했어요",
+                  "전환어를 활용해 글의 흐름을 만들었어요",
+                  "직접 구조화된 에세이를 써봤어요"
+                ],
+                "nextSessionPreview": {
+                  "title": "근거 제시의 기술",
+                  "teaser": "주장을 뒷받침하는 강력한 근거를 찾고 배치하는 방법을 배웁니다."
+                }
+              },
+              "cta": { "label": "다음 세션으로", "variant": "primary" }
+            }
+          ]
+        },
+        {
+          "id": "j2-s2",
+          "order": 2,
+          "title": "근거 제시의 기술",
+          "description": "주장을 뒷받침하는 강력한 근거를 찾고 배치하는 방법을 배웁니다.",
+          "steps": []
+        },
+        {
+          "id": "j2-s3",
+          "order": 3,
+          "title": "반론과 재반박",
+          "description": "예상 반론을 세우고 이에 재반박하여 글의 설득력을 높입니다.",
+          "steps": []
+        },
+        {
+          "id": "j2-s4",
+          "order": 4,
+          "title": "설득력 있는 결론",
+          "description": "독자에게 여운을 남기는 결론 작성법을 연습합니다.",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": "j3",
+      "category": "감각과 묘사",
+      "title": "오감으로 쓰는 글",
+      "description": "시각, 청각, 촉각, 후각, 미각을 활용해 생생한 글을 쓰는 방법을 배웁니다.",
+      "difficulty": "BEGINNER",
+      "sessions": [
+        {
+          "id": "j3-s1",
+          "order": 1,
+          "title": "보이는 것을 글로 옮기기",
+          "description": "관찰력을 키우고, 눈에 보이는 것을 구체적으로 묘사하는 연습을 합니다.",
+          "steps": [
+            {
+              "id": "j3-s1-1",
+              "type": "INTRO",
+              "order": 1,
+              "content": {
+                "type": "INTRO",
+                "title": "보이는 것을 글로 옮기기",
+                "description": "좋은 묘사는 독자의 머릿속에 그림을 그립니다. 관찰하는 눈을 키우고, 보이는 것을 글로 옮기는 연습을 해봅니다.",
+                "keywords": ["관찰", "시각 묘사", "구체성"],
+                "estimatedMinutes": 15
+              },
+              "cta": { "label": "시작하기", "variant": "primary" }
+            },
+            {
+              "id": "j3-s1-2",
+              "type": "CONCEPT",
+              "order": 2,
+              "content": {
+                "type": "CONCEPT",
+                "title": "묘사란 무엇인가",
+                "body": "묘사는 **감각을 통해 경험한 것을 언어로 재현**하는 것입니다.\n\n단순히 '예쁘다', '좋다'고 말하는 것은 묘사가 아닙니다. 독자가 마치 그 자리에 있는 것처럼 느끼게 하는 것이 진짜 묘사입니다.\n\n### 묘사의 핵심 원칙\n\n1. **보여주기(Show), 말하지 않기(Tell)**: '슬펐다' 대신 '눈물이 볼을 타고 흘렀다'\n2. **구체적인 디테일**: '꽃'보다 '붉은 동백꽃'\n3. **비유 활용**: 낯선 것을 익숙한 것에 빗대기",
+                "keyTakeaway": "좋은 묘사는 '말하기(Tell)' 대신 '보여주기(Show)'입니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j3-s1-3",
+              "type": "EXAMPLE",
+              "order": 3,
+              "content": {
+                "type": "EXAMPLE",
+                "title": "시각 묘사 비교",
+                "examples": [
+                  {
+                    "label": "Tell (말하기)",
+                    "text": "카페가 아늑했다. 분위기가 좋았고 커피도 맛있었다."
+                  },
+                  {
+                    "label": "Show (보여주기)",
+                    "text": "낡은 원목 테이블 위에 스팀이 피어오르는 라떼 한 잔. 벽돌 벽에 걸린 빈티지 포스터 사이로 은은한 재즈가 흘렀다. 창밖으로 비가 내렸고, 유리창에 맺힌 빗방울이 가로등 불빛을 흩뜨렸다.",
+                    "highlights": [
+                      {
+                        "startOffset": 0,
+                        "endOffset": 8,
+                        "comment": "구체적인 재질과 상태"
+                      },
+                      {
+                        "startOffset": 13,
+                        "endOffset": 25,
+                        "comment": "시각+촉각을 자극하는 묘사"
+                      }
+                    ]
+                  }
+                ],
+                "commentary": "'아늑했다'는 판단이고, '낡은 원목 테이블'은 묘사입니다. 독자가 직접 '아늑하다'고 느끼게 만드세요."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j3-s1-4",
+              "type": "SHORT_ANSWER",
+              "order": 4,
+              "content": {
+                "type": "SHORT_ANSWER",
+                "question": "지금 당신 주변을 둘러보세요. 눈에 보이는 것 중 가장 인상적인 3가지를 적어주세요.",
+                "context": "색상, 형태, 질감, 빛, 움직임 등 시각적 요소에 집중해보세요.",
+                "placeholder": "예: 책상 위 반쯤 식은 커피잔, 창밖 흐린 하늘, 모니터에 비친 내 얼굴...",
+                "minLength": 10,
+                "maxLength": 200
+              },
+              "cta": { "label": "답변 제출", "variant": "primary" }
+            },
+            {
+              "id": "j3-s1-5",
+              "type": "WRITING",
+              "order": 5,
+              "content": {
+                "type": "WRITING",
+                "prompt": "방금 관찰한 3가지를 활용해, 지금 있는 공간을 생생하게 묘사해보세요. 독자가 마치 그 공간에 들어온 것처럼 느끼게 써주세요.",
+                "guideline": "Show, don't Tell을 기억하세요. '좋다', '예쁘다' 같은 판단 대신 구체적인 감각을 담아보세요.",
+                "minLength": 100,
+                "recommendedLength": 400,
+                "timeLimitSeconds": 0
+              },
+              "cta": { "label": "제출", "variant": "primary" }
+            },
+            {
+              "id": "j3-s1-6",
+              "type": "AI_FEEDBACK",
+              "order": 6,
+              "content": {
+                "type": "AI_FEEDBACK",
+                "targetStepId": "j3-s1-5",
+                "loadingMessage": "묘사의 생생함을 분석하고 있어요..."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j3-s1-7",
+              "type": "COMPLETION",
+              "order": 7,
+              "content": {
+                "type": "COMPLETION",
+                "congratsMessage": "관찰하는 눈이 열렸어요!",
+                "summaryPoints": [
+                  "묘사의 핵심 원칙 'Show, don't Tell'을 배웠어요",
+                  "주변을 관찰하고 시각 묘사를 연습했어요",
+                  "구체적인 감각을 담은 글을 써봤어요"
+                ],
+                "nextSessionPreview": {
+                  "title": "소리와 냄새로 쓰기",
+                  "teaser": "청각과 후각을 활용해 더 풍부한 묘사를 써봅니다."
+                }
+              },
+              "cta": { "label": "다음 세션으로", "variant": "primary" }
+            }
+          ]
+        },
+        {
+          "id": "j3-s2",
+          "order": 2,
+          "title": "소리와 냄새로 쓰기",
+          "description": "청각과 후각을 활용해 더 풍부한 묘사를 연습합니다.",
+          "steps": []
+        },
+        {
+          "id": "j3-s3",
+          "order": 3,
+          "title": "감정을 묘사하기",
+          "description": "추상적인 감정을 구체적인 신체 반응과 행동으로 묘사합니다.",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": "j4",
+      "category": "자기 탐구와 회고",
+      "title": "나를 발견하는 글쓰기",
+      "description": "질문에 답하며 자신의 가치관, 경험, 감정을 탐구하는 글쓰기 여정입니다.",
+      "difficulty": "BEGINNER",
+      "sessions": [
+        {
+          "id": "j4-s1",
+          "order": 1,
+          "title": "나의 가치관 탐색",
+          "description": "나를 이루는 핵심 가치관을 발견하고 글로 표현해봅니다.",
+          "steps": [
+            {
+              "id": "j4-s1-1",
+              "type": "INTRO",
+              "order": 1,
+              "content": {
+                "type": "INTRO",
+                "title": "나의 가치관 탐색",
+                "description": "나는 무엇을 중요하게 생각할까요? 질문에 답하며 나만의 가치관을 발견하고, 이를 글로 표현해봅니다.",
+                "keywords": ["가치관", "자기 인식", "성찰"],
+                "estimatedMinutes": 15
+              },
+              "cta": { "label": "시작하기", "variant": "primary" }
+            },
+            {
+              "id": "j4-s1-2",
+              "type": "CONCEPT",
+              "order": 2,
+              "content": {
+                "type": "CONCEPT",
+                "title": "자기 탐구 글쓰기란",
+                "body": "자기 탐구 글쓰기는 **질문을 던지고, 솔직하게 답하는 과정**입니다.\n\n정답이 없고, 잘 쓸 필요도 없습니다. 중요한 것은 **솔직함**과 **구체성**입니다.\n\n### 왜 글로 써야 할까?\n\n- 머릿속 생각을 글로 꺼내면 **정리**가 됩니다\n- 시간이 지난 후 다시 읽으면 **성장**이 보입니다\n- 막연했던 감정이 **선명**해집니다",
+                "keyTakeaway": "자기 탐구 글쓰기에 정답은 없습니다. 솔직하게 쓰는 것 자체가 목적입니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j4-s1-3",
+              "type": "SHORT_ANSWER",
+              "order": 3,
+              "content": {
+                "type": "SHORT_ANSWER",
+                "question": "나를 가장 잘 표현하는 단어 3가지를 적어주세요.",
+                "context": "성격, 가치관, 역할, 꿈 등 어떤 영역이든 좋습니다. 직관적으로 떠오르는 단어를 써보세요.",
+                "placeholder": "예: 호기심, 따뜻함, 성장...",
+                "minLength": 3,
+                "maxLength": 100
+              },
+              "cta": { "label": "답변 제출", "variant": "primary" }
+            },
+            {
+              "id": "j4-s1-4",
+              "type": "SHORT_ANSWER",
+              "order": 4,
+              "content": {
+                "type": "SHORT_ANSWER",
+                "question": "최근 1년간 가장 중요한 결정을 내린 순간은 언제였나요? 무엇을 선택했고, 왜 그 선택을 했나요?",
+                "context": "크든 작든 상관없습니다. 직업, 관계, 습관, 취미 등 어떤 영역이든 좋습니다.",
+                "placeholder": "예: 3개월 전 이직을 결심했습니다. 성장할 수 있는 환경이 더 중요하다고 느꼈기 때문입니다...",
+                "minLength": 30,
+                "maxLength": 500
+              },
+              "cta": { "label": "답변 제출", "variant": "primary" }
+            },
+            {
+              "id": "j4-s1-5",
+              "type": "WRITING",
+              "order": 5,
+              "content": {
+                "type": "WRITING",
+                "prompt": "앞서 적은 단어들과 경험을 바탕으로, '나에게 가장 중요한 가치'에 대해 자유롭게 써보세요.",
+                "guideline": "왜 그 가치가 중요한지, 그 가치가 삶에서 어떻게 드러나는지 구체적인 경험과 함께 써보세요.",
+                "minLength": 100,
+                "recommendedLength": 500,
+                "timeLimitSeconds": 0
+              },
+              "cta": { "label": "제출", "variant": "primary" }
+            },
+            {
+              "id": "j4-s1-6",
+              "type": "AI_FEEDBACK",
+              "order": 6,
+              "content": {
+                "type": "AI_FEEDBACK",
+                "targetStepId": "j4-s1-5",
+                "loadingMessage": "글에 담긴 가치관을 읽고 있어요..."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j4-s1-7",
+              "type": "COMPLETION",
+              "order": 7,
+              "content": {
+                "type": "COMPLETION",
+                "congratsMessage": "나를 한 걸음 더 알게 됐어요!",
+                "summaryPoints": [
+                  "나를 표현하는 핵심 단어를 찾았어요",
+                  "중요한 결정의 이유를 되짚어봤어요",
+                  "가치관을 글로 정리했어요"
+                ],
+                "nextSessionPreview": {
+                  "title": "전환점의 기록",
+                  "teaser": "인생의 전환점이 된 경험을 깊이 있게 탐구해봅니다."
+                }
+              },
+              "cta": { "label": "다음 세션으로", "variant": "primary" }
+            }
+          ]
+        },
+        {
+          "id": "j4-s2",
+          "order": 2,
+          "title": "전환점의 기록",
+          "description": "인생의 전환점이 된 경험을 깊이 있게 탐구합니다.",
+          "steps": []
+        },
+        {
+          "id": "j4-s3",
+          "order": 3,
+          "title": "일상 속 발견",
+          "description": "평범한 일상에서 의미를 발견하는 관찰 글쓰기를 합니다.",
+          "steps": []
+        },
+        {
+          "id": "j4-s4",
+          "order": 4,
+          "title": "미래의 나에게",
+          "description": "1년 후의 나에게 편지를 쓰며 현재를 정리합니다.",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": "j5",
+      "category": "비판적 사고와 논증",
+      "title": "논리적으로 읽고 쓰기",
+      "description": "사실과 의견을 구분하고, 논리적 오류를 발견하며, 비판적 사고력을 키웁니다.",
+      "difficulty": "INTERMEDIATE",
+      "sessions": [
+        {
+          "id": "j5-s1",
+          "order": 1,
+          "title": "사실과 의견 구분하기",
+          "description": "사실 진술과 의견 진술의 차이를 이해하고, 텍스트에서 구분하는 연습을 합니다.",
+          "steps": [
+            {
+              "id": "j5-s1-1",
+              "type": "INTRO",
+              "order": 1,
+              "content": {
+                "type": "INTRO",
+                "title": "사실과 의견 구분하기",
+                "description": "비판적 사고의 첫걸음은 사실과 의견을 구분하는 것입니다. 텍스트를 분석하고, 논리적 오류를 찾아봅니다.",
+                "keywords": ["사실", "의견", "논리적 오류", "비판적 읽기"],
+                "estimatedMinutes": 15
+              },
+              "cta": { "label": "시작하기", "variant": "primary" }
+            },
+            {
+              "id": "j5-s1-2",
+              "type": "CONCEPT",
+              "order": 2,
+              "content": {
+                "type": "CONCEPT",
+                "title": "사실과 의견의 차이",
+                "body": "## 사실(Fact)\n객관적으로 **검증 가능한** 진술입니다.\n- \"대한민국의 수도는 서울이다\"\n- \"물은 100°C에서 끓는다\"\n\n## 의견(Opinion)\n개인의 **판단, 해석, 가치 평가**가 담긴 진술입니다.\n- \"서울은 살기 좋은 도시다\"\n- \"여름이 가장 좋은 계절이다\"\n\n## 구분이 어려운 경우\n통계를 인용하더라도 해석을 덧붙이면 의견이 됩니다.\n- 사실: \"청년 실업률은 7.2%다\"\n- 의견: \"청년 실업률 7.2%는 심각한 수준이다\"",
+                "keyTakeaway": "'검증 가능한가?'를 물어보세요. 검증할 수 있으면 사실, 사람마다 다르게 판단할 수 있으면 의견입니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j5-s1-3",
+              "type": "EXAMPLE",
+              "order": 3,
+              "content": {
+                "type": "EXAMPLE",
+                "title": "사실과 의견 진술 예시",
+                "examples": [
+                  {
+                    "label": "사실 진술",
+                    "text": "한국의 출생률은 2023년 기준 0.72명으로 OECD 최저 수준이다. 정부는 2024년부터 육아휴직 급여를 인상했다."
+                  },
+                  {
+                    "label": "의견 진술",
+                    "text": "저출생 문제의 근본 원인은 높은 주거 비용이다. 정부의 육아휴직 급여 인상은 미봉책에 불과하며, 주거 정책이 우선되어야 한다."
+                  }
+                ],
+                "commentary": "같은 주제라도 '검증 가능한 데이터'는 사실, '판단과 주장'은 의견입니다. 의견이 나쁜 것이 아니라, 구분할 줄 아는 것이 중요합니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j5-s1-4",
+              "type": "HIGHLIGHT",
+              "order": 4,
+              "content": {
+                "type": "HIGHLIGHT",
+                "instruction": "아래 글에서 '의견'에 해당하는 부분을 모두 선택하세요.",
+                "passage": "한국인의 평균 수면 시간은 7시간 22분이다. 이는 OECD 평균보다 40분 짧다. 수면 부족은 현대인의 가장 심각한 건강 문제다. 전문가들은 최소 7시간 이상의 수면을 권장한다. 하지만 야근 문화가 개선되지 않는 한 수면 시간 확보는 불가능할 것이다.",
+                "selectableRanges": [
+                  { "id": "h1", "startOffset": 0, "endOffset": 20 },
+                  { "id": "h2", "startOffset": 22, "endOffset": 42 },
+                  { "id": "h3", "startOffset": 44, "endOffset": 65 },
+                  { "id": "h4", "startOffset": 67, "endOffset": 89 },
+                  { "id": "h5", "startOffset": 91, "endOffset": 125 }
+                ],
+                "correctRangeIds": ["h3", "h5"],
+                "explanations": {
+                  "h1": "검증 가능한 통계 데이터로, 사실 진술입니다.",
+                  "h2": "OECD 자료를 기반으로 한 비교로, 사실 진술입니다.",
+                  "h3": "'가장 심각한'이라는 가치 판단이 포함된 의견 진술입니다.",
+                  "h4": "전문가의 권장 사항으로, 사실에 가까운 진술입니다.",
+                  "h5": "'불가능할 것이다'는 미래에 대한 예측이자 판단으로, 의견 진술입니다."
+                }
+              },
+              "cta": { "label": "확인하기", "variant": "primary" }
+            },
+            {
+              "id": "j5-s1-5",
+              "type": "MULTIPLE_CHOICE",
+              "order": 5,
+              "content": {
+                "type": "MULTIPLE_CHOICE",
+                "question": "다음 중 논리적 오류가 포함된 문장은?",
+                "options": [
+                  {
+                    "id": "mc-a",
+                    "text": "A 교수는 경제학 박사이므로, 그의 경제 분석은 참고할 가치가 있다."
+                  },
+                  {
+                    "id": "mc-b",
+                    "text": "모든 학생이 이 책을 좋아하니까, 이 책은 분명히 좋은 책이다."
+                  },
+                  {
+                    "id": "mc-c",
+                    "text": "작년 매출이 20% 증가했으므로, 사업 전략이 효과가 있었다고 볼 수 있다."
+                  },
+                  {
+                    "id": "mc-d",
+                    "text": "그 정치인은 과거에 거짓말을 한 적이 있으니, 이번 공약도 거짓말일 것이다."
+                  }
+                ],
+                "correctOptionIds": ["mc-b", "mc-d"],
+                "multiSelect": true,
+                "explanations": {
+                  "mc-a": "전문성에 근거한 합리적 추론입니다.",
+                  "mc-b": "다수에 호소하는 오류(Bandwagon Fallacy)입니다. 많은 사람이 좋아한다고 객관적으로 좋은 것은 아닙니다.",
+                  "mc-c": "데이터에 근거한 합리적 추론입니다.",
+                  "mc-d": "인신공격의 오류(Ad Hominem)입니다. 과거 행동이 현재 주장의 진위를 결정하지 않습니다."
+                }
+              },
+              "cta": { "label": "확인하기", "variant": "primary" }
+            },
+            {
+              "id": "j5-s1-6",
+              "type": "SHORT_ANSWER",
+              "order": 6,
+              "content": {
+                "type": "SHORT_ANSWER",
+                "question": "'AI가 인간의 일자리를 모두 대체할 것이다'라는 주장에 대해, 반론을 하나 제시해보세요.",
+                "context": "사실에 근거하여, 논리적으로 반론을 구성해보세요.",
+                "placeholder": "예: AI는 반복적 업무를 대체하지만, 창의성과 감정이 필요한 영역에서는...",
+                "minLength": 30,
+                "maxLength": 500
+              },
+              "cta": { "label": "답변 제출", "variant": "primary" }
+            },
+            {
+              "id": "j5-s1-7",
+              "type": "COMPLETION",
+              "order": 7,
+              "content": {
+                "type": "COMPLETION",
+                "congratsMessage": "비판적 사고의 첫 걸음을 뗐어요!",
+                "summaryPoints": [
+                  "사실과 의견의 차이를 이해했어요",
+                  "텍스트에서 의견 진술을 찾아냈어요",
+                  "논리적 오류를 구분할 수 있게 됐어요",
+                  "반론을 구성하는 연습을 했어요"
+                ],
+                "nextSessionPreview": {
+                  "title": "논증 구조 분석하기",
+                  "teaser": "글의 논증 구조를 파악하고, 강한 논증과 약한 논증을 구분합니다."
+                }
+              },
+              "cta": { "label": "다음 세션으로", "variant": "primary" }
+            }
+          ]
+        },
+        {
+          "id": "j5-s2",
+          "order": 2,
+          "title": "논증 구조 분석하기",
+          "description": "글의 논증 구조를 파악하고 강한 논증과 약한 논증을 구분합니다.",
+          "steps": []
+        },
+        {
+          "id": "j5-s3",
+          "order": 3,
+          "title": "오류 없는 글 쓰기",
+          "description": "논리적 오류를 피하며 설득력 있는 글을 작성합니다.",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": "j6",
+      "category": "직무와 실용 글쓰기",
+      "title": "일잘러의 글쓰기",
+      "description": "업무 이메일, 보고서, 제안서 등 직장에서 필요한 실용적 글쓰기를 배웁니다.",
+      "difficulty": "INTERMEDIATE",
+      "sessions": [
+        {
+          "id": "j6-s1",
+          "order": 1,
+          "title": "명확한 업무 이메일",
+          "description": "상대방이 한 번에 이해하고 행동할 수 있는 업무 이메일 작성법을 배웁니다.",
+          "steps": [
+            {
+              "id": "j6-s1-1",
+              "type": "INTRO",
+              "order": 1,
+              "content": {
+                "type": "INTRO",
+                "title": "명확한 업무 이메일",
+                "description": "읽는 사람이 한 번에 이해하고, 바로 행동할 수 있는 이메일을 쓰는 법을 배웁니다. 직접 써보고, 피드백을 받아 수정까지 해봅니다.",
+                "keywords": ["업무 이메일", "명확성", "행동 유도"],
+                "estimatedMinutes": 20
+              },
+              "cta": { "label": "시작하기", "variant": "primary" }
+            },
+            {
+              "id": "j6-s1-2",
+              "type": "CONCEPT",
+              "order": 2,
+              "content": {
+                "type": "CONCEPT",
+                "title": "업무 이메일의 5가지 원칙",
+                "body": "## 1. 제목에 핵심을 담기\n\"회의 관련\"보다 \"[요청] 4/10 마케팅 회의 안건 확인\"이 낫습니다.\n\n## 2. 첫 문장에 목적 밝히기\n\"다름이 아니라...\"로 시작하지 마세요. 바로 용건을 말하세요.\n\n## 3. 한 메일 한 주제\n여러 주제를 섞으면 답장이 지연됩니다.\n\n## 4. 액션 아이템 명시\n누가, 무엇을, 언제까지 해야 하는지 명확히 적으세요.\n\n## 5. 짧게, 단락 나눠 쓰기\n3줄 이상 이어지는 문단은 읽기 어렵습니다.",
+                "keyTakeaway": "좋은 업무 이메일은 제목만 읽어도 용건을 알 수 있고, 본문에는 명확한 액션 아이템이 있습니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j6-s1-3",
+              "type": "EXAMPLE",
+              "order": 3,
+              "content": {
+                "type": "EXAMPLE",
+                "title": "이메일 비교: 개선 전 vs 개선 후",
+                "examples": [
+                  {
+                    "label": "개선 전",
+                    "text": "제목: 회의 건\n\n안녕하세요, 김대리님.\n다름이 아니라 다음 주에 회의가 있는데요, 마케팅 관련 자료를 좀 준비해주시면 좋겠습니다. 그리고 지난번에 말씀드린 프로모션 건도 같이 논의하면 좋을 것 같아요. 시간 되시면 알려주세요."
+                  },
+                  {
+                    "label": "개선 후",
+                    "text": "제목: [요청] 4/15(화) Q2 마케팅 회의 자료 준비 요청\n\n김대리님,\n\n4/15(화) 오후 2시 Q2 마케팅 전략 회의 관련하여 아래 자료 준비를 요청드립니다.\n\n• Q1 프로모션 성과 요약 (1장)\n• Q2 채널별 예산 초안\n\n4/12(금)까지 공유 드라이브에 업로드 부탁드립니다.\n\n감사합니다.",
+                    "highlights": [
+                      {
+                        "startOffset": 0,
+                        "endOffset": 30,
+                        "comment": "제목에 유형·날짜·핵심 용건이 모두 담겨 있습니다"
+                      }
+                    ]
+                  }
+                ],
+                "commentary": "개선 후 이메일은 제목만 읽어도 용건을 알 수 있고, 액션 아이템과 기한이 명확합니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j6-s1-4",
+              "type": "WRITING",
+              "order": 4,
+              "content": {
+                "type": "WRITING",
+                "prompt": "다음 상황에 맞는 업무 이메일을 작성하세요:\n\n'팀원들에게 다음 주 금요일까지 월간 보고서를 제출해달라고 요청하는 이메일'",
+                "guideline": "제목을 포함해서 써주세요. 5가지 원칙을 적용해보세요: 제목에 핵심, 첫 문장에 목적, 한 메일 한 주제, 액션 아이템 명시, 짧은 단락.",
+                "minLength": 80,
+                "recommendedLength": 300,
+                "timeLimitSeconds": 0
+              },
+              "cta": { "label": "제출", "variant": "primary" }
+            },
+            {
+              "id": "j6-s1-5",
+              "type": "AI_FEEDBACK",
+              "order": 5,
+              "content": {
+                "type": "AI_FEEDBACK",
+                "targetStepId": "j6-s1-4",
+                "loadingMessage": "이메일의 명확성을 분석하고 있어요..."
+              },
+              "cta": { "label": "수정하기", "variant": "primary" }
+            },
+            {
+              "id": "j6-s1-6",
+              "type": "REWRITING",
+              "order": 6,
+              "content": {
+                "type": "REWRITING",
+                "instruction": "AI 피드백을 참고하여 이메일을 수정해보세요. 더 명확하고 간결하게 만들어봅시다.",
+                "originalWritingStepId": "j6-s1-4",
+                "feedbackStepId": "j6-s1-5"
+              },
+              "cta": { "label": "재제출", "variant": "primary" }
+            },
+            {
+              "id": "j6-s1-7",
+              "type": "AI_COMPARISON",
+              "order": 7,
+              "content": {
+                "type": "AI_COMPARISON",
+                "originalStepId": "j6-s1-4",
+                "rewritingStepId": "j6-s1-6",
+                "loadingMessage": "수정 전후를 비교 분석하고 있어요..."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j6-s1-8",
+              "type": "COMPLETION",
+              "order": 8,
+              "content": {
+                "type": "COMPLETION",
+                "congratsMessage": "업무 이메일의 달인이 되어가고 있어요!",
+                "summaryPoints": [
+                  "업무 이메일의 5가지 원칙을 배웠어요",
+                  "직접 이메일을 작성하고 피드백을 받았어요",
+                  "피드백을 반영해 수정하고 개선점을 확인했어요"
+                ],
+                "nextSessionPreview": {
+                  "title": "보고서 작성법",
+                  "teaser": "핵심을 먼저 전달하는 보고서 구성법을 배웁니다."
+                }
+              },
+              "cta": { "label": "다음 세션으로", "variant": "primary" }
+            }
+          ]
+        },
+        {
+          "id": "j6-s2",
+          "order": 2,
+          "title": "보고서 작성법",
+          "description": "핵심을 먼저 전달하는 보고서 구성법을 배웁니다.",
+          "steps": []
+        },
+        {
+          "id": "j6-s3",
+          "order": 3,
+          "title": "회의록 정리",
+          "description": "회의 내용을 효과적으로 정리하고 공유하는 방법을 배웁니다.",
+          "steps": []
+        },
+        {
+          "id": "j6-s4",
+          "order": 4,
+          "title": "제안서 쓰기",
+          "description": "설득력 있는 제안서의 구조와 작성법을 연습합니다.",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": "j7",
+      "category": "입시와 학술 글쓰기",
+      "title": "합격하는 자기소개서",
+      "description": "자기소개서의 핵심 구조를 이해하고, 경험을 효과적으로 전달하는 법을 배웁니다.",
+      "difficulty": "INTERMEDIATE",
+      "sessions": [
+        {
+          "id": "j7-s1",
+          "order": 1,
+          "title": "자소서의 핵심 구조",
+          "description": "합격하는 자기소개서의 기본 구조를 이해하고, 핵심 요소를 파악합니다.",
+          "steps": [
+            {
+              "id": "j7-s1-1",
+              "type": "INTRO",
+              "order": 1,
+              "content": {
+                "type": "INTRO",
+                "title": "자소서의 핵심 구조",
+                "description": "자기소개서에는 공식이 있습니다. 구조를 이해하고, 핵심 요소를 배치하는 연습을 해봅니다.",
+                "keywords": ["자기소개서", "STAR 기법", "경험 구체화"],
+                "estimatedMinutes": 20
+              },
+              "cta": { "label": "시작하기", "variant": "primary" }
+            },
+            {
+              "id": "j7-s1-2",
+              "type": "CONCEPT",
+              "order": 2,
+              "content": {
+                "type": "CONCEPT",
+                "title": "STAR 기법으로 경험 쓰기",
+                "body": "자기소개서에서 경험을 효과적으로 전달하는 **STAR 기법**을 소개합니다.\n\n## S — Situation (상황)\n어떤 상황이었는지 배경을 설명합니다.\n\n## T — Task (과제)\n그 상황에서 내가 맡은 역할과 해결해야 할 과제를 밝힙니다.\n\n## A — Action (행동)\n과제를 해결하기 위해 **구체적으로 무엇을 했는지** 서술합니다.\n\n## R — Result (결과)\n행동의 결과와 배운 점을 정리합니다. **수치**가 있으면 더 좋습니다.",
+                "keyTakeaway": "STAR 기법: 상황 → 과제 → 행동 → 결과. 이 순서로 쓰면 경험이 논리적으로 전달됩니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j7-s1-3",
+              "type": "EXAMPLE",
+              "order": 3,
+              "content": {
+                "type": "EXAMPLE",
+                "title": "STAR 기법 적용 예시",
+                "examples": [
+                  {
+                    "label": "약한 자소서",
+                    "text": "저는 대학교에서 동아리 회장을 했습니다. 리더십이 있고 책임감이 강합니다. 팀원들과 잘 소통하며 좋은 결과를 냈습니다."
+                  },
+                  {
+                    "label": "STAR 기법 적용",
+                    "text": "[S] 30명 규모의 봉사 동아리에서 참여율이 40%로 떨어진 상황이었습니다. [T] 회장으로서 참여율을 높이고 동아리를 활성화하는 것이 과제였습니다. [A] 설문조사를 실시해 불참 이유를 파악하고, 시간대 변경과 소규모 프로젝트 제도를 도입했습니다. [R] 3개월 만에 참여율이 85%로 상승했고, 학교 우수 동아리에 선정됐습니다.",
+                    "highlights": [
+                      {
+                        "startOffset": 0,
+                        "endOffset": 3,
+                        "comment": "Situation: 구체적 상황 제시"
+                      },
+                      {
+                        "startOffset": 39,
+                        "endOffset": 42,
+                        "comment": "Task: 명확한 과제 설정"
+                      },
+                      {
+                        "startOffset": 72,
+                        "endOffset": 75,
+                        "comment": "Action: 구체적 행동 서술"
+                      },
+                      {
+                        "startOffset": 115,
+                        "endOffset": 118,
+                        "comment": "Result: 수치로 입증된 결과"
+                      }
+                    ]
+                  }
+                ],
+                "commentary": "같은 경험이라도 STAR 구조로 쓰면 훨씬 구체적이고 설득력 있게 전달됩니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j7-s1-4",
+              "type": "MULTIPLE_CHOICE",
+              "order": 4,
+              "content": {
+                "type": "MULTIPLE_CHOICE",
+                "question": "다음 중 자기소개서에서 피해야 할 표현은?",
+                "options": [
+                  {
+                    "id": "mc-a",
+                    "text": "팀 프로젝트에서 데이터 분석을 맡아 보고서를 작성했습니다"
+                  },
+                  {
+                    "id": "mc-b",
+                    "text": "저는 성실하고 책임감 있는 사람입니다"
+                  },
+                  {
+                    "id": "mc-c",
+                    "text": "매출을 전월 대비 15% 향상시켰습니다"
+                  },
+                  {
+                    "id": "mc-d",
+                    "text": "이 경험을 통해 커뮤니케이션의 중요성을 배웠습니다"
+                  }
+                ],
+                "correctOptionIds": ["mc-b"],
+                "multiSelect": false,
+                "explanations": {
+                  "mc-a": "구체적인 역할과 행동이 드러나는 좋은 표현입니다.",
+                  "mc-b": "추상적인 자기 평가는 설득력이 없습니다. 행동과 결과로 보여주세요.",
+                  "mc-c": "수치가 포함된 구체적 결과로, 좋은 표현입니다.",
+                  "mc-d": "구체적이진 않지만, 경험에서 배운 점을 명시한 유의미한 표현입니다."
+                }
+              },
+              "cta": { "label": "확인하기", "variant": "primary" }
+            },
+            {
+              "id": "j7-s1-5",
+              "type": "ORDERING",
+              "order": 5,
+              "content": {
+                "type": "ORDERING",
+                "instruction": "자기소개서의 STAR 구조에 맞게 다음 문장들을 올바른 순서로 배열하세요.",
+                "items": [
+                  {
+                    "id": "star-r",
+                    "text": "결과적으로 고객 만족도가 4.2에서 4.7로 상승했고, 해당 개선 사례가 사내 베스트 프랙티스로 선정됐습니다."
+                  },
+                  {
+                    "id": "star-s",
+                    "text": "인턴 기간 중, 고객 문의 응대 시간이 평균 48시간으로 고객 불만이 증가하는 상황이었습니다."
+                  },
+                  {
+                    "id": "star-a",
+                    "text": "자주 묻는 질문을 분석해 FAQ 페이지를 재구성하고, 챗봇 시나리오 15개를 설계하여 도입을 제안했습니다."
+                  },
+                  {
+                    "id": "star-t",
+                    "text": "CS팀 인턴으로서 응대 프로세스의 비효율을 개선하는 것이 저의 과제였습니다."
+                  }
+                ],
+                "correctOrder": ["star-s", "star-t", "star-a", "star-r"],
+                "explanation": "Situation(상황) → Task(과제) → Action(행동) → Result(결과) 순서로 배치하면 경험이 논리적으로 전달됩니다."
+              },
+              "cta": { "label": "순서 확인", "variant": "primary" }
+            },
+            {
+              "id": "j7-s1-6",
+              "type": "WRITING",
+              "order": 6,
+              "content": {
+                "type": "WRITING",
+                "prompt": "본인의 경험 하나를 STAR 기법으로 써보세요. 학교, 직장, 동아리, 아르바이트 등 어떤 경험이든 좋습니다.",
+                "guideline": "S(상황) → T(과제) → A(행동) → R(결과) 순서를 지켜주세요. 구체적인 수치나 사실을 포함하면 더 좋습니다.",
+                "minLength": 150,
+                "recommendedLength": 500,
+                "timeLimitSeconds": 0
+              },
+              "cta": { "label": "제출", "variant": "primary" }
+            },
+            {
+              "id": "j7-s1-7",
+              "type": "AI_FEEDBACK",
+              "order": 7,
+              "content": {
+                "type": "AI_FEEDBACK",
+                "targetStepId": "j7-s1-6",
+                "loadingMessage": "STAR 구조와 구체성을 분석하고 있어요..."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j7-s1-8",
+              "type": "COMPLETION",
+              "order": 8,
+              "content": {
+                "type": "COMPLETION",
+                "congratsMessage": "자소서의 핵심을 파악했어요!",
+                "summaryPoints": [
+                  "STAR 기법의 4단계를 배웠어요",
+                  "좋은 자소서와 약한 자소서의 차이를 알았어요",
+                  "나의 경험을 STAR 구조로 써봤어요"
+                ],
+                "nextSessionPreview": {
+                  "title": "경험 구체화하기",
+                  "teaser": "평범한 경험을 특별하게 만드는 구체화 기술을 배웁니다."
+                }
+              },
+              "cta": { "label": "다음 세션으로", "variant": "primary" }
+            }
+          ]
+        },
+        {
+          "id": "j7-s2",
+          "order": 2,
+          "title": "경험 구체화하기",
+          "description": "평범한 경험을 특별하게 만드는 구체화 기술을 배웁니다.",
+          "steps": []
+        },
+        {
+          "id": "j7-s3",
+          "order": 3,
+          "title": "지원 동기 쓰기",
+          "description": "진정성 있는 지원 동기를 작성하는 방법을 연습합니다.",
+          "steps": []
+        },
+        {
+          "id": "j7-s4",
+          "order": 4,
+          "title": "마무리와 퇴고",
+          "description": "자소서 전체를 점검하고 완성도를 높이는 퇴고를 합니다.",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": "j8",
+      "category": "창작과 스토리텔링",
+      "title": "이야기의 시작",
+      "description": "매력적인 인물과 갈등을 만들어 나만의 이야기를 시작해봅니다.",
+      "difficulty": "BEGINNER",
+      "sessions": [
+        {
+          "id": "j8-s1",
+          "order": 1,
+          "title": "매력적인 인물 만들기",
+          "description": "독자의 마음을 사로잡는 인물을 창조하는 기본기를 배웁니다.",
+          "steps": [
+            {
+              "id": "j8-s1-1",
+              "type": "INTRO",
+              "order": 1,
+              "content": {
+                "type": "INTRO",
+                "title": "매력적인 인물 만들기",
+                "description": "모든 이야기의 중심에는 인물이 있습니다. 독자가 응원하고 싶은 인물을 만드는 방법을 배워봅니다.",
+                "keywords": ["인물 창조", "캐릭터", "동기 부여"],
+                "estimatedMinutes": 15
+              },
+              "cta": { "label": "시작하기", "variant": "primary" }
+            },
+            {
+              "id": "j8-s1-2",
+              "type": "CONCEPT",
+              "order": 2,
+              "content": {
+                "type": "CONCEPT",
+                "title": "인물의 3요소",
+                "body": "매력적인 인물에는 세 가지 핵심 요소가 있습니다.\n\n## 1. 욕구 (Want)\n인물이 **간절히 원하는 것**. 이야기를 움직이는 원동력입니다.\n- 표면적 욕구: 승진, 여행, 연애 등\n- 내면적 욕구: 인정, 자유, 소속감 등\n\n## 2. 결핍 (Flaw)\n인물의 **약점이나 한계**. 완벽한 인물은 재미없습니다.\n- 두려움, 편견, 과거의 상처 등\n\n## 3. 변화 (Arc)\n이야기를 통해 인물이 **성장하거나 변하는 과정**.\n결핍을 극복하거나, 때로는 더 깊이 빠지기도 합니다.",
+                "keyTakeaway": "매력적인 인물 = 간절한 욕구 + 극복해야 할 결핍 + 변화의 여정"
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j8-s1-3",
+              "type": "EXAMPLE",
+              "order": 3,
+              "content": {
+                "type": "EXAMPLE",
+                "title": "인물 소개 예시",
+                "examples": [
+                  {
+                    "label": "평면적 인물",
+                    "text": "수진은 28살 회사원이다. 성격이 밝고 친구가 많다. 일도 잘하고 운동도 좋아한다."
+                  },
+                  {
+                    "label": "입체적 인물",
+                    "text": "수진은 팀에서 가장 먼저 출근하고 가장 늦게 퇴근한다. 동료들은 그녀를 '에너지 넘치는 사람'이라 부르지만, 퇴근 후 텅 빈 원룸에서 혼자 라면을 먹는 밤이면 그 칭찬이 무겁게 느껴진다. 모두에게 웃어 보이지만, 정작 자신에게 솔직해지는 법을 모른다.",
+                    "highlights": [
+                      {
+                        "startOffset": 0,
+                        "endOffset": 24,
+                        "comment": "행동으로 성격을 보여줌 (Show)"
+                      },
+                      {
+                        "startOffset": 56,
+                        "endOffset": 93,
+                        "comment": "겉과 속의 괴리 = 결핍(Flaw)"
+                      }
+                    ]
+                  }
+                ],
+                "commentary": "입체적 인물은 겉과 속이 다르고, 극복해야 할 약점이 있습니다. 이것이 독자가 인물에게 끌리는 이유입니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j8-s1-4",
+              "type": "SHORT_ANSWER",
+              "order": 4,
+              "content": {
+                "type": "SHORT_ANSWER",
+                "question": "당신이 만들고 싶은 인물의 '욕구'와 '결핍'을 각각 한 문장으로 적어주세요.",
+                "context": "어떤 장르든 좋습니다. 현실적이든 판타지든 자유롭게 상상해보세요.",
+                "placeholder": "예:\n욕구: 잃어버린 가족을 찾고 싶다\n결핍: 남을 믿지 못한다",
+                "minLength": 20,
+                "maxLength": 300
+              },
+              "cta": { "label": "답변 제출", "variant": "primary" }
+            },
+            {
+              "id": "j8-s1-5",
+              "type": "WRITING",
+              "order": 5,
+              "content": {
+                "type": "WRITING",
+                "prompt": "방금 설정한 인물이 처음 등장하는 장면을 써보세요. 인물의 욕구와 결핍이 자연스럽게 드러나도록 해주세요.",
+                "guideline": "인물의 성격을 직접 설명하지 말고, 행동·대화·상황을 통해 보여주세요(Show, don't Tell).",
+                "minLength": 150,
+                "recommendedLength": 500,
+                "timeLimitSeconds": 0
+              },
+              "cta": { "label": "제출", "variant": "primary" }
+            },
+            {
+              "id": "j8-s1-6",
+              "type": "AI_FEEDBACK",
+              "order": 6,
+              "content": {
+                "type": "AI_FEEDBACK",
+                "targetStepId": "j8-s1-5",
+                "loadingMessage": "인물의 매력을 분석하고 있어요..."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j8-s1-7",
+              "type": "COMPLETION",
+              "order": 7,
+              "content": {
+                "type": "COMPLETION",
+                "congratsMessage": "첫 번째 인물이 탄생했어요!",
+                "summaryPoints": [
+                  "인물의 3요소(욕구·결핍·변화)를 배웠어요",
+                  "입체적 인물과 평면적 인물의 차이를 알았어요",
+                  "나만의 인물을 창조하고 첫 장면을 써봤어요"
+                ],
+                "nextSessionPreview": {
+                  "title": "갈등 만들기",
+                  "teaser": "인물에게 장애물을 주어 이야기에 긴장감을 만들어봅니다."
+                }
+              },
+              "cta": { "label": "다음 세션으로", "variant": "primary" }
+            }
+          ]
+        },
+        {
+          "id": "j8-s2",
+          "order": 2,
+          "title": "갈등 만들기",
+          "description": "인물에게 장애물을 주어 이야기에 긴장감을 만듭니다.",
+          "steps": []
+        },
+        {
+          "id": "j8-s3",
+          "order": 3,
+          "title": "배경 설정하기",
+          "description": "이야기의 시공간 배경을 구축하는 방법을 배웁니다.",
+          "steps": []
+        },
+        {
+          "id": "j8-s4",
+          "order": 4,
+          "title": "대화문 쓰기",
+          "description": "인물의 성격이 드러나는 자연스러운 대화문을 작성합니다.",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": "j9",
+      "category": "마음챙김과 감정 글쓰기",
+      "title": "감정을 글로 담기",
+      "description": "감정을 알아차리고 글로 표현하며, 마음을 정리하는 치유적 글쓰기를 경험합니다.",
+      "difficulty": "BEGINNER",
+      "sessions": [
+        {
+          "id": "j9-s1",
+          "order": 1,
+          "title": "오늘의 감정 알아차리기",
+          "description": "지금 이 순간의 감정을 인식하고, 글로 풀어내는 연습을 합니다.",
+          "steps": [
+            {
+              "id": "j9-s1-1",
+              "type": "INTRO",
+              "order": 1,
+              "content": {
+                "type": "INTRO",
+                "title": "오늘의 감정 알아차리기",
+                "description": "감정을 글로 쓰면 마음이 정리됩니다. 오늘 느끼는 감정을 알아차리고, 솔직하게 표현해보는 시간입니다.",
+                "keywords": ["감정 인식", "마음챙김", "감정 일기"],
+                "estimatedMinutes": 12
+              },
+              "cta": { "label": "시작하기", "variant": "primary" }
+            },
+            {
+              "id": "j9-s1-2",
+              "type": "CONCEPT",
+              "order": 2,
+              "content": {
+                "type": "CONCEPT",
+                "title": "감정 글쓰기의 치유 효과",
+                "body": "심리학자 제임스 페니베이커의 연구에 따르면, **감정을 글로 쓰는 것만으로도 스트레스가 감소**하고 면역력이 향상됩니다.\n\n### 감정 글쓰기의 3가지 원칙\n\n1. **판단하지 않기**: 어떤 감정이든 괜찮습니다. '이런 걸 느끼면 안 되는데'라고 생각하지 마세요.\n2. **구체적으로 쓰기**: '기분이 안 좋다' 대신 '가슴이 답답하고 눈이 뜨거워진다'\n3. **원인을 탐구하기**: 감정을 느낀 후, '왜?'라는 질문을 던져보세요.",
+                "keyTakeaway": "감정에 이름을 붙이면 그 감정의 강도가 줄어듭니다. 이것을 '감정 명명 효과'라 합니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j9-s1-3",
+              "type": "SHORT_ANSWER",
+              "order": 3,
+              "content": {
+                "type": "SHORT_ANSWER",
+                "question": "지금 이 순간, 당신의 감정을 한 단어로 표현한다면?",
+                "context": "기쁨, 불안, 평온, 지루함, 설렘, 피곤함... 떠오르는 감정을 솔직하게 적어주세요. 복합적이라면 여러 단어도 괜찮습니다.",
+                "placeholder": "예: 잔잔한 불안",
+                "minLength": 1,
+                "maxLength": 50
+              },
+              "cta": { "label": "답변 제출", "variant": "primary" }
+            },
+            {
+              "id": "j9-s1-4",
+              "type": "SHORT_ANSWER",
+              "order": 4,
+              "content": {
+                "type": "SHORT_ANSWER",
+                "question": "그 감정은 언제부터, 또는 왜 시작되었나요?",
+                "context": "정확하지 않아도 괜찮습니다. 어렴풋이 떠오르는 상황이나 계기를 적어보세요.",
+                "placeholder": "예: 아침에 읽은 뉴스가 마음에 걸려서... / 내일 발표가 있어서 계속 생각이 나요...",
+                "minLength": 10,
+                "maxLength": 300
+              },
+              "cta": { "label": "답변 제출", "variant": "primary" }
+            },
+            {
+              "id": "j9-s1-5",
+              "type": "WRITING",
+              "order": 5,
+              "content": {
+                "type": "WRITING",
+                "prompt": "오늘의 감정 일기를 써보세요. 지금 느끼는 감정을 솔직하게, 구체적으로 표현해주세요.",
+                "guideline": "잘 쓸 필요 없습니다. 감정을 판단하지 말고 있는 그대로 적어주세요. 몸의 감각(가슴이 답답하다, 어깨가 무겁다 등)도 함께 적으면 좋습니다.",
+                "minLength": 50,
+                "recommendedLength": 300,
+                "timeLimitSeconds": 300
+              },
+              "cta": { "label": "제출", "variant": "primary" }
+            },
+            {
+              "id": "j9-s1-6",
+              "type": "AI_FEEDBACK",
+              "order": 6,
+              "content": {
+                "type": "AI_FEEDBACK",
+                "targetStepId": "j9-s1-5",
+                "loadingMessage": "당신의 감정을 조심스럽게 읽고 있어요..."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j9-s1-7",
+              "type": "COMPLETION",
+              "order": 7,
+              "content": {
+                "type": "COMPLETION",
+                "congratsMessage": "오늘의 감정을 잘 돌봐줬어요.",
+                "summaryPoints": [
+                  "감정 글쓰기의 치유 효과를 알게 됐어요",
+                  "지금 느끼는 감정에 이름을 붙여봤어요",
+                  "감정 일기를 써보며 마음을 정리했어요"
+                ],
+                "nextSessionPreview": {
+                  "title": "분노와 마주하기",
+                  "teaser": "억눌러왔던 분노를 안전하게 글로 풀어내는 연습을 합니다."
+                }
+              },
+              "cta": { "label": "다음 세션으로", "variant": "primary" }
+            }
+          ]
+        },
+        {
+          "id": "j9-s2",
+          "order": 2,
+          "title": "분노와 마주하기",
+          "description": "억눌러왔던 분노를 안전하게 글로 풀어내는 연습을 합니다.",
+          "steps": []
+        },
+        {
+          "id": "j9-s3",
+          "order": 3,
+          "title": "감사의 기록",
+          "description": "일상의 작은 감사를 발견하고 기록하는 습관을 만듭니다.",
+          "steps": []
+        }
+      ]
+    },
+    {
+      "id": "j10",
+      "category": "퍼블리싱과 독자 소통",
+      "title": "독자의 마음을 사로잡는 글",
+      "description": "독자를 사로잡는 오프닝부터 피드백 수용까지, 글을 세상에 내놓는 법을 배웁니다.",
+      "difficulty": "ADVANCED",
+      "sessions": [
+        {
+          "id": "j10-s1",
+          "order": 1,
+          "title": "첫 문장의 힘",
+          "description": "독자가 글을 계속 읽게 만드는 강력한 오프닝을 쓰는 법을 배웁니다.",
+          "steps": [
+            {
+              "id": "j10-s1-1",
+              "type": "INTRO",
+              "order": 1,
+              "content": {
+                "type": "INTRO",
+                "title": "첫 문장의 힘",
+                "description": "독자가 글을 읽을지 말지는 첫 문장에서 결정됩니다. 강력한 오프닝을 쓰는 5가지 기법을 배우고, 직접 써봅니다.",
+                "keywords": ["오프닝", "첫 문장", "독자 관심"],
+                "estimatedMinutes": 20
+              },
+              "cta": { "label": "시작하기", "variant": "primary" }
+            },
+            {
+              "id": "j10-s1-2",
+              "type": "CONCEPT",
+              "order": 2,
+              "content": {
+                "type": "CONCEPT",
+                "title": "오프닝의 5가지 기법",
+                "body": "## 1. 질문으로 시작\n\"당신은 하루에 몇 번이나 거짓말을 할까요?\"\n\n## 2. 충격적 사실\n\"인간의 집중력은 금붕어보다 짧다. 8초.\"\n\n## 3. 장면 묘사\n\"새벽 4시, 병원 복도에 그의 구두 소리만 울렸다.\"\n\n## 4. 대화로 시작\n\"'엄마, 나 이혼할 거야.' 전화기 너머로 긴 침묵이 흘렀다.\"\n\n## 5. 반전 진술\n\"나는 20년간 매일 달렸다. 그리고 깨달았다. 달리기가 싫다는 것을.\"",
+                "keyTakeaway": "좋은 오프닝은 독자의 '왜?', '그래서?', '정말?'을 유발합니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j10-s1-3",
+              "type": "EXAMPLE",
+              "order": 3,
+              "content": {
+                "type": "EXAMPLE",
+                "title": "유명 작품의 오프닝",
+                "examples": [
+                  {
+                    "label": "카프카 — 변신",
+                    "text": "어느 날 아침, 그레고르 잠자가 불안한 꿈에서 깨어났을 때, 그는 침대 위에서 한 마리의 흉측한 벌레로 변해 있었다.",
+                    "highlights": [
+                      {
+                        "startOffset": 0,
+                        "endOffset": 54,
+                        "comment": "일상적 시작 + 충격적 반전: 독자가 '왜?'를 묻게 됩니다"
+                      }
+                    ]
+                  },
+                  {
+                    "label": "톨스토이 — 안나 카레니나",
+                    "text": "행복한 가정은 모두 비슷하지만, 불행한 가정은 저마다의 이유로 불행하다.",
+                    "highlights": [
+                      {
+                        "startOffset": 0,
+                        "endOffset": 37,
+                        "comment": "보편적 진리를 담은 반전 진술: 강렬한 인상을 남깁니다"
+                      }
+                    ]
+                  }
+                ],
+                "commentary": "두 작품 모두 첫 문장만으로 독자를 사로잡습니다. 핵심은 '궁금증'을 만드는 것입니다."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j10-s1-4",
+              "type": "FILL_IN_THE_BLANK",
+              "order": 4,
+              "content": {
+                "type": "FILL_IN_THE_BLANK",
+                "instruction": "오프닝 기법에 맞게 빈칸을 채워 문장을 완성하세요.",
+                "sentence": "{{blank1}} 어느 일요일 오후, 나는 서점에서 한 권의 책을 집어 들었다. 그 책의 첫 줄을 읽는 순간, {{blank2}}",
+                "blanks": [
+                  {
+                    "id": "blank1",
+                    "options": [
+                      { "id": "b1-1", "text": "인생을 바꾼 책이 있다." },
+                      { "id": "b1-2", "text": "나는 독서를 좋아한다." },
+                      { "id": "b1-3", "text": "책은 중요하다." },
+                      { "id": "b1-4", "text": "서점에 간 날이었다." }
+                    ],
+                    "correctOptionId": "b1-1"
+                  },
+                  {
+                    "id": "blank2",
+                    "options": [
+                      { "id": "b2-1", "text": "재미있었다." },
+                      {
+                        "id": "b2-2",
+                        "text": "나는 3시간 동안 서점 바닥에 주저앉아 있었다."
+                      },
+                      { "id": "b2-3", "text": "좋은 책이라고 생각했다." },
+                      { "id": "b2-4", "text": "집에 가고 싶어졌다." }
+                    ],
+                    "correctOptionId": "b2-2"
+                  }
+                ],
+                "explanation": "'인생을 바꾼 책이 있다'는 강렬한 선언으로 독자의 호기심을 유발하고, '3시간 동안 바닥에 주저앉아 있었다'는 구체적 행동으로 감동의 깊이를 보여줍니다."
+              },
+              "cta": { "label": "완성 확인", "variant": "primary" }
+            },
+            {
+              "id": "j10-s1-5",
+              "type": "WRITING",
+              "order": 5,
+              "content": {
+                "type": "WRITING",
+                "prompt": "자유 주제로, 독자를 사로잡는 오프닝 3개를 써보세요. 5가지 기법 중 각각 다른 기법을 사용해주세요.",
+                "guideline": "각 오프닝에 사용한 기법을 표시해주세요. 예: [질문] \"당신은 마지막으로 진심을 말한 게 언제인가요?\"",
+                "minLength": 50,
+                "recommendedLength": 300,
+                "timeLimitSeconds": 0
+              },
+              "cta": { "label": "제출", "variant": "primary" }
+            },
+            {
+              "id": "j10-s1-6",
+              "type": "AI_FEEDBACK",
+              "order": 6,
+              "content": {
+                "type": "AI_FEEDBACK",
+                "targetStepId": "j10-s1-5",
+                "loadingMessage": "오프닝의 임팩트를 분석하고 있어요..."
+              },
+              "cta": { "label": "수정하기", "variant": "primary" }
+            },
+            {
+              "id": "j10-s1-7",
+              "type": "REWRITING",
+              "order": 7,
+              "content": {
+                "type": "REWRITING",
+                "instruction": "AI 피드백을 참고하여, 3개의 오프닝 중 가장 마음에 드는 1개를 선택해 더 다듬어보세요.",
+                "originalWritingStepId": "j10-s1-5",
+                "feedbackStepId": "j10-s1-6"
+              },
+              "cta": { "label": "재제출", "variant": "primary" }
+            },
+            {
+              "id": "j10-s1-8",
+              "type": "AI_COMPARISON",
+              "order": 8,
+              "content": {
+                "type": "AI_COMPARISON",
+                "originalStepId": "j10-s1-5",
+                "rewritingStepId": "j10-s1-7",
+                "loadingMessage": "수정 전후를 비교하고 있어요..."
+              },
+              "cta": { "label": "다음", "variant": "primary" }
+            },
+            {
+              "id": "j10-s1-9",
+              "type": "COMPLETION",
+              "order": 9,
+              "content": {
+                "type": "COMPLETION",
+                "congratsMessage": "독자를 사로잡는 첫 문장을 완성했어요!",
+                "summaryPoints": [
+                  "오프닝의 5가지 기법을 배웠어요",
+                  "유명 작품의 오프닝을 분석했어요",
+                  "나만의 오프닝을 쓰고 피드백을 반영해 다듬었어요"
+                ],
+                "nextSessionPreview": {
+                  "title": "독자 분석하기",
+                  "teaser": "내 글의 독자가 누구인지 파악하고, 그에 맞는 글쓰기 전략을 세웁니다."
+                }
+              },
+              "cta": { "label": "다음 세션으로", "variant": "primary" }
+            }
+          ]
+        },
+        {
+          "id": "j10-s2",
+          "order": 2,
+          "title": "독자 분석하기",
+          "description": "내 글의 독자가 누구인지 파악하고 맞춤 전략을 세웁니다.",
+          "steps": []
+        },
+        {
+          "id": "j10-s3",
+          "order": 3,
+          "title": "피드백 수용하기",
+          "description": "타인의 피드백을 건설적으로 수용하고 반영하는 방법을 배웁니다.",
+          "steps": []
+        },
+        {
+          "id": "j10-s4",
+          "order": 4,
+          "title": "출판 전 체크리스트",
+          "description": "글을 세상에 내놓기 전 최종 점검 과정을 익힙니다.",
+          "steps": []
+        }
+      ]
+    }
+  ]
+}

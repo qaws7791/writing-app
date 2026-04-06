@@ -44,8 +44,14 @@ function WordCountBadge({ count }: { count: number }) {
 }
 
 function EssayListItem({ essay }: { essay: EssayItem }) {
+  const router = useRouter()
+
   return (
-    <article className="flex flex-col gap-4">
+    <button
+      type="button"
+      onClick={() => router.push(`/writings/${essay.id}`)}
+      className="flex flex-col gap-4 text-left"
+    >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium tracking-wide text-on-surface-lowest">
           {essay.date}
@@ -58,7 +64,7 @@ function EssayListItem({ essay }: { essay: EssayItem }) {
       <p className="line-clamp-2 text-base leading-relaxed text-on-surface-low">
         {essay.preview}
       </p>
-    </article>
+    </button>
   )
 }
 
@@ -184,6 +190,7 @@ export default function PromptDetailView({
         {BOTTOM_NAV_ITEMS.map(({ icon, label }) => (
           <button
             key={label}
+            onClick={() => router.push("/")}
             className="flex flex-col items-center gap-1 text-on-surface-lowest transition-colors"
           >
             <HugeiconsIcon

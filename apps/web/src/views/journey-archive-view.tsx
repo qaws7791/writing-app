@@ -3,14 +3,19 @@
 import { useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Layers01Icon } from "@hugeicons/core-free-icons"
+import { useRouter } from "next/navigation"
+import journeyData from "@/data/journey-sessions.json"
 
-const JOURNEY_IMAGE_1 =
-  "https://www.figma.com/api/mcp/asset/c6b65f07-a7d0-4a31-b8c7-1e75acfd3b0b"
-const JOURNEY_IMAGE_2 =
-  "https://www.figma.com/api/mcp/asset/089e5c17-97a0-4064-ac59-6f9bb2b74ef7"
+const JOURNEY_IMAGES = [
+  "https://www.figma.com/api/mcp/asset/c6b65f07-a7d0-4a31-b8c7-1e75acfd3b0b",
+  "https://www.figma.com/api/mcp/asset/089e5c17-97a0-4064-ac59-6f9bb2b74ef7",
+]
 
-const CATEGORIES = ["전체", "글쓰기 기술", "마음챙김", "기술"] as const
-type Category = (typeof CATEGORIES)[number]
+const ALL_CATEGORIES = Array.from(
+  new Set(journeyData.journeys.map((j) => j.category))
+)
+const CATEGORIES = ["전체", ...ALL_CATEGORIES] as const
+type Category = string
 
 interface JourneyCardData {
   id: string
@@ -18,59 +23,27 @@ interface JourneyCardData {
   description: string
   sessionCount: number
   imageUrl: string
-  category: Exclude<Category, "전체">
+  category: string
 }
 
-const JOURNEY_CARDS: JourneyCardData[] = [
-  {
-    id: "1",
-    title: "새벽의 대화",
-    description: "완성된 단편선",
-    sessionCount: 11,
-    imageUrl: JOURNEY_IMAGE_1,
-    category: "글쓰기 기술",
-  },
-  {
-    id: "2",
-    title: "나를 찾는 여행",
-    description:
-      "자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이",
-    sessionCount: 11,
-    imageUrl: JOURNEY_IMAGE_2,
-    category: "마음챙김",
-  },
-  {
-    id: "3",
-    title: "나를 찾는 여행",
-    description:
-      "자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이",
-    sessionCount: 11,
-    imageUrl: JOURNEY_IMAGE_2,
-    category: "기술",
-  },
-  {
-    id: "4",
-    title: "나를 찾는 여행",
-    description:
-      "자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이",
-    sessionCount: 11,
-    imageUrl: JOURNEY_IMAGE_2,
-    category: "마음챙김",
-  },
-  {
-    id: "5",
-    title: "나를 찾는 여행",
-    description:
-      "자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이 자아 성찰 에세이",
-    sessionCount: 11,
-    imageUrl: JOURNEY_IMAGE_2,
-    category: "글쓰기 기술",
-  },
-]
+const JOURNEY_CARDS: JourneyCardData[] = journeyData.journeys.map((j, i) => ({
+  id: j.id,
+  title: j.title,
+  description: j.description,
+  sessionCount: j.sessions.length,
+  imageUrl: JOURNEY_IMAGES[i % JOURNEY_IMAGES.length],
+  category: j.category,
+}))
 
 function JourneyListCard({ card }: { card: JourneyCardData }) {
+  const router = useRouter()
+
   return (
-    <div className="flex h-32 items-center gap-5 rounded-3xl bg-surface-container p-4">
+    <button
+      type="button"
+      onClick={() => router.push(`/journeys/${card.id}`)}
+      className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-container p-4 text-left transition-colors hover:bg-surface-container-high"
+    >
       <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-container-high">
         <img
           src={card.imageUrl}
@@ -100,7 +73,7 @@ function JourneyListCard({ card }: { card: JourneyCardData }) {
           </span>
         </div>
       </div>
-    </div>
+    </button>
   )
 }
 

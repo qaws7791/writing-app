@@ -2,6 +2,7 @@
 
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Sun03Icon, FavouriteIcon } from "@hugeicons/core-free-icons"
+import { useRouter } from "next/navigation"
 
 const JOURNEY_IMAGE_1 =
   "https://www.figma.com/api/mcp/asset/1a3a4942-67ce-4428-b640-f9df6d44775c"
@@ -50,8 +51,14 @@ const JOURNEY_CATEGORIES: JourneyCategory[] = [
 ]
 
 function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
+  const router = useRouter()
+
   return (
-    <div className="flex h-32 items-center gap-5 rounded-3xl bg-surface-container p-4">
+    <button
+      type="button"
+      onClick={() => router.push(`/journeys/${journey.id}`)}
+      className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-container p-4 text-left transition-colors hover:bg-surface-container-high"
+    >
       <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-container-high">
         <img
           src={journey.imageUrl}
@@ -80,7 +87,7 @@ function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
           </div>
         </div>
       </div>
-    </div>
+    </button>
   )
 }
 

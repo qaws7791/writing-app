@@ -36,39 +36,59 @@ const BOTTOM_NAV_ITEMS = [
   { icon: User02Icon, label: "프로필" },
 ] as const
 
-function WritingPromptCard({ title }: { title: string }) {
+function WritingPromptCard({
+  title,
+  promptId,
+}: {
+  title: string
+  promptId?: string
+}) {
+  const router = useRouter()
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <button
-      type="button"
-      onClick={() => setExpanded((prev) => !prev)}
-      className="flex w-full items-center justify-between rounded-[2.25rem] bg-surface-container px-7.5 py-6 text-left transition-colors hover:bg-surface-container-high"
-      aria-expanded={expanded}
-    >
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1.5">
-          <HugeiconsIcon
-            icon={BookOpen01Icon}
-            size={18}
-            color="currentColor"
-            strokeWidth={1.5}
-            className="text-on-surface-low"
-          />
-          <span className="text-[0.75rem] font-bold tracking-[0.0438rem] text-on-surface-low uppercase">
-            Writing Prompt
+    <div className="flex flex-col gap-2">
+      <button
+        type="button"
+        onClick={() => setExpanded((prev) => !prev)}
+        className="flex w-full items-center justify-between rounded-[2.25rem] bg-surface-container px-7.5 py-6 text-left transition-colors hover:bg-surface-container-high"
+        aria-expanded={expanded}
+      >
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-1.5">
+            <HugeiconsIcon
+              icon={BookOpen01Icon}
+              size={18}
+              color="currentColor"
+              strokeWidth={1.5}
+              className="text-on-surface-low"
+            />
+            <span className="text-[0.75rem] font-bold tracking-[0.0438rem] text-on-surface-low uppercase">
+              Writing Prompt
+            </span>
+          </div>
+          <span className="text-base font-semibold text-on-surface">
+            {title}
           </span>
         </div>
-        <span className="text-base font-semibold text-on-surface">{title}</span>
-      </div>
-      <HugeiconsIcon
-        icon={ArrowDown01Icon}
-        size={24}
-        color="currentColor"
-        strokeWidth={1.5}
-        className={`shrink-0 text-on-surface transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
-      />
-    </button>
+        <HugeiconsIcon
+          icon={ArrowDown01Icon}
+          size={24}
+          color="currentColor"
+          strokeWidth={1.5}
+          className={`shrink-0 text-on-surface transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+        />
+      </button>
+      {expanded && promptId && (
+        <button
+          type="button"
+          onClick={() => router.push(`/prompts/${promptId}`)}
+          className="self-end px-4 text-sm font-semibold text-on-surface-low transition-colors hover:text-on-surface"
+        >
+          글감 보기 →
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -155,7 +175,10 @@ export default function WritingDetailView({
         {/* Writing Prompt */}
         {data.prompt && (
           <div className="mt-6">
-            <WritingPromptCard title={data.prompt.title} />
+            <WritingPromptCard
+              title={data.prompt.title}
+              promptId={data.prompt.id}
+            />
           </div>
         )}
 
@@ -181,6 +204,7 @@ export default function WritingDetailView({
         {BOTTOM_NAV_ITEMS.map(({ icon, label }) => (
           <button
             key={label}
+            onClick={() => router.push("/")}
             className="flex flex-col items-center gap-1 text-on-surface-lowest transition-colors"
           >
             <HugeiconsIcon
