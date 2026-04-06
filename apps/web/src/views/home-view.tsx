@@ -9,6 +9,7 @@ import {
   User02Icon,
 } from "@hugeicons/core-free-icons"
 import PromptArchiveView from "@/views/prompt-archive-view"
+import JourneyArchiveView from "@/views/journey-archive-view"
 const JOURNEY_IMAGE_1 =
   "https://www.figma.com/api/mcp/asset/6641c434-17fc-48b2-9a4e-e0791a903147"
 const JOURNEY_IMAGE_2 =
@@ -147,7 +148,7 @@ export default function HomeView() {
       <div className="flex-1 pb-24">
         {activeTab === "홈" && <HomeContent />}
         {activeTab === "글감" && <PromptArchiveView />}
-        {activeTab === "여정" && null}
+        {activeTab === "여정" && <JourneyArchiveView />}
       </div>
 
       {/* Bottom Navigation */}
