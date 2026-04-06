@@ -46,6 +46,28 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --primary: #1e1d1d;
+  --on-primary: #ffffff;
+  --primary-container: #333232;
+  --on-primary-container: #9c9a99;
+  --secondary: #605e5e;
+  --on-secondary: #ffffff;
+  --secondary-container: #e5e2e1;
+  --on-secondary-container: #666464;
+  --surface: #fdfcf8;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f7f3f2;
+  --surface-container: #f1edec;
+  --surface-container-high: #ebe7e6;
+  --surface-container-highest: #e5e2e1;
+  --on-surface: #1c1b1b;
+  --on-surface-low: #4d4848;
+  --on-surface-lowest: #837c7c;
+  --outline: #77767b;
+  --error: #ba1a1a;
+  --on-error: #ffffff;
+  --error-container: #ffdad6;
+  --on-error-container: #93000a;
 }
 
 .dark {
@@ -86,6 +108,28 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --primary: #c9c6c5;
+  --on-primary: #313030;
+  --primary-container: #333232;
+  --on-primary-container: #9c9a99;
+  --secondary: #c9c6c5;
+  --on-secondary: #313030;
+  --secondary-container: #484646;
+  --on-secondary-container: #b7b4b4;
+  --surface: #141313;
+  --surface-container-lowest: #0e0e0e;
+  --surface-container-low: #1c1b1b;
+  --surface-container: #201f1f;
+  --surface-container-high: #2b2a2a;
+  --surface-container-highest: #363434;
+  --on-surface: #e5e2e1;
+  --on-surface-low: #d2cecd;
+  --on-surface-lowest: #ffffff;
+  --outline: #919094;
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
 }
 
 @theme inline {
@@ -134,6 +178,28 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: var(--font-sans);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-container: var(--primary-container);
+  --color-on-primary-container: var(--on-primary-container);
+  --color-secondary: var(--secondary);
+  --color-on-secondary: var(--on-secondary);
+  --color-secondary-container: var(--secondary-container);
+  --color-on-secondary-container: var(--on-secondary-container);
+  --color-surface: var(--surface);
+  --color-surface-container-lowest: var(--surface-container-lowest);
+  --color-surface-container-low: var(--surface-container-low);
+  --color-surface-container: var(--surface-container);
+  --color-surface-container-high: var(--surface-container-high);
+  --color-surface-container-highest: var(--surface-container-highest);
+  --color-on-surface: var(--on-surface);
+  --color-on-surface-low: var(--on-surface-low);
+  --color-on-surface-lowest: var(--on-surface-lowest);
+  --color-outline: var(--outline);
+  --color-error: var(--error);
+  --color-on-error: var(--on-error);
+  --color-error-container: var(--error-container);
+  --color-on-error-container: var(--on-error-container);
 }
 
 @layer base {
