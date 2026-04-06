@@ -51,7 +51,7 @@ const JOURNEY_CATEGORIES: JourneyCategory[] = [
 
 function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
   return (
-    <div className="flex h-32 items-center gap-5 rounded-3xl bg-surface p-4">
+    <div className="flex h-32 items-center gap-5 rounded-3xl bg-surface-container p-4">
       <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-container-high">
         <img
           src={journey.imageUrl}

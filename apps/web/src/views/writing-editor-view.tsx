@@ -18,6 +18,36 @@ import {
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 
+const MOCK_PROMPTS: Record<number, { title: string; description: string }> = {
+  1: {
+    title: "오래된 서랍 속의 기억",
+    description:
+      "먼지 쌓인 서랍을 열었을 때, 당신의 시선을 멈추게 한 물건은 무엇인가요? 그 물건에 얽힌 작고 소중한 이야기를 들려주세요.",
+  },
+}
+
+function PromptBanner({
+  title,
+  description,
+}: {
+  title: string
+  description: string
+}) {
+  return (
+    <section className="flex flex-col gap-2 rounded-2xl bg-secondary-container px-5 py-4">
+      <p className="text-xs font-semibold tracking-widest text-on-surface-low uppercase">
+        오늘의 글감
+      </p>
+      <h2 className="text-lg leading-snug font-semibold tracking-tight text-on-surface">
+        {title}
+      </h2>
+      <p className="text-sm leading-relaxed text-on-surface-low">
+        {description}
+      </p>
+    </section>
+  )
+}
+
 function formatKoreanDate(date: Date): string {
   return new Intl.DateTimeFormat("ko-KR", {
     year: "numeric",
@@ -27,7 +57,7 @@ function formatKoreanDate(date: Date): string {
   }).format(date)
 }
 
-export default function WritingEditorView() {
+export default function WritingEditorView({ promptId }: { promptId?: number }) {
   const router = useRouter()
   const [title, setTitle] = useState("")
   const [today] = useState(() => new Date())
@@ -50,6 +80,7 @@ export default function WritingEditorView() {
   })
 
   const wordCount = editor?.storage.characterCount.words() ?? 0
+  const prompt = promptId != null ? (MOCK_PROMPTS[promptId] ?? null) : null
 
   const handleTitleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
     const el = e.currentTarget
@@ -115,6 +146,15 @@ export default function WritingEditorView() {
 
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto px-6 pb-16">
+        {/* Prompt banner */}
+        {prompt && (
+          <div className="pt-6">
+            <PromptBanner
+              title={prompt.title}
+              description={prompt.description}
+            />
+          </div>
+        )}
         {/* Date + Title block */}
         <section className="flex flex-col gap-2 pt-6">
           <p className="text-sm font-medium tracking-[0.022rem] text-on-surface-lowest">

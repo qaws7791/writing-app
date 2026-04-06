@@ -62,7 +62,7 @@ export default function PromptDetailClientPage({
   }
 
   function handleStartWriting() {
-    router.push(`/writing?promptId=${promptId}`)
+    router.push(`/writings/new?promptId=${promptId}`)
   }
 
   return (

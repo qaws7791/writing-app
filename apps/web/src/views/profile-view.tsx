@@ -91,13 +91,13 @@ export default function ProfileView() {
 
         {/* 통계 카드 */}
         <div className="flex gap-4 px-4 pb-10">
-          <div className="flex flex-1 flex-col gap-1 rounded-[2rem] bg-surface p-6 shadow-[0_2px_12px_0_rgba(28,27,27,0.04)]">
+          <div className="flex flex-1 flex-col gap-1 rounded-[2rem] bg-surface-container p-6">
             <p className="text-xs font-semibold tracking-[0.5px] text-on-surface-low uppercase">
               완료한 여정
             </p>
             <p className="text-xl font-medium text-on-surface">여정 4개</p>
           </div>
-          <div className="flex flex-1 flex-col gap-1 rounded-[2rem] bg-surface p-6 shadow-[0_2px_12px_0_rgba(28,27,27,0.04)]">
+          <div className="flex flex-1 flex-col gap-1 rounded-[2rem] bg-surface-container p-6">
             <p className="text-xs font-semibold tracking-[0.5px] text-on-surface-low uppercase">
               작성한 글
             </p>
