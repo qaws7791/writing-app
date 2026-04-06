@@ -1,3 +1,6 @@
+
+- 2026-06-01: 글필_PRD_v1.0.md를 기반으로 전체 프로젝트를 피봇하는 중
+
 # Project Structure Guide
 
 - This repository is monorepo for essay writing-platform project.

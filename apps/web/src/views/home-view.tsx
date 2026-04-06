@@ -1,7 +1,14 @@
 "use client"
 
 import { useState } from "react"
-
+import { HugeiconsIcon } from "@hugeicons/react"
+import {
+  Home01Icon,
+  BookOpen01Icon,
+  QuillWrite01Icon,
+  User02Icon,
+} from "@hugeicons/core-free-icons"
+import PromptArchiveView from "@/views/prompt-archive-view"
 const JOURNEY_IMAGE_1 =
   "https://www.figma.com/api/mcp/asset/6641c434-17fc-48b2-9a4e-e0791a903147"
 const JOURNEY_IMAGE_2 =
@@ -48,26 +55,16 @@ function JourneyCard({
   )
 }
 
-export default function HomeView() {
-  const [activeTab, setActiveTab] = useState<(typeof TOP_TABS)[number]>("홈")
+const BOTTOM_NAV_ITEMS = [
+  { icon: Home01Icon, label: "홈" },
+  { icon: BookOpen01Icon, label: "나의 여정" },
+  { icon: QuillWrite01Icon, label: "서재" },
+  { icon: User02Icon, label: "프로필" },
+] as const
 
+function HomeContent() {
   return (
-    <div className="min-h-screen bg-surface">
-      {/* Top Tabs */}
-      <header className="flex items-center gap-6 px-6 py-6">
-        {TOP_TABS.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`text-2xl leading-6 font-semibold transition-colors ${
-              activeTab === tab ? "text-on-surface" : "text-on-surface-lowest"
-            }`}
-          >
-            {tab}
-          </button>
-        ))}
-      </header>
-
+    <>
       {/* Greeting */}
       <div className="mt-4 px-6">
         <h1 className="text-4xl leading-[1.1] font-medium tracking-tight text-on-surface">
@@ -79,8 +76,8 @@ export default function HomeView() {
 
       {/* Daily Topic Card */}
       <div className="mt-6 px-4">
-        <div className="flex min-h-[180px] flex-col justify-between rounded-[32px] bg-surface-container-high p-6">
-          <div className="flex flex-col gap-[11px]">
+        <div className="flex min-h-45 flex-col justify-between rounded-[32px] bg-surface-container-high p-6">
+          <div className="flex flex-col gap-2.75">
             <div className="flex items-center gap-1.5">
               <img src={STAR_ICON} alt="star" className="size-4" />
               <span className="text-sm font-medium text-on-surface-low">
@@ -122,6 +119,61 @@ export default function HomeView() {
           />
         </div>
       </div>
+    </>
+  )
+}
+
+export default function HomeView() {
+  const [activeTab, setActiveTab] = useState<(typeof TOP_TABS)[number]>("글감")
+
+  return (
+    <div className="flex min-h-screen flex-col bg-surface">
+      {/* Top Tabs */}
+      <header className="flex items-center gap-6 px-6 py-6">
+        {TOP_TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`text-2xl leading-6 font-semibold transition-colors ${
+              activeTab === tab ? "text-on-surface" : "text-on-surface-lowest"
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </header>
+
+      {/* Tab Content */}
+      <div className="flex-1 pb-24">
+        {activeTab === "홈" && <HomeContent />}
+        {activeTab === "글감" && <PromptArchiveView />}
+        {activeTab === "여정" && null}
+      </div>
+
+      {/* Bottom Navigation */}
+      <nav className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-around rounded-tl-[2rem] rounded-tr-[2rem] border-t border-outline/20 bg-surface/95 px-4 py-4.25 safe-area-pb shadow-[0px_-12px_40px_0px_rgba(47,52,48,0.04)] backdrop-blur-xl">
+        {BOTTOM_NAV_ITEMS.map(({ icon, label }, index) => {
+          const isActive = index === 0
+          return (
+            <button
+              key={label}
+              className={`flex flex-col items-center gap-1 transition-colors ${
+                isActive ? "text-primary" : "text-on-surface-lowest"
+              }`}
+            >
+              <HugeiconsIcon
+                icon={icon}
+                size={24}
+                color="currentColor"
+                strokeWidth={isActive ? 2 : 1.5}
+              />
+              <span className="text-[11px] font-semibold tracking-wide uppercase">
+                {label}
+              </span>
+            </button>
+          )
+        })}
+      </nav>
     </div>
   )
 }
