@@ -6,6 +6,7 @@ import {
   MoreVerticalIcon,
   QuillWrite01Icon,
 } from "@hugeicons/core-free-icons"
+import { useRouter } from "next/navigation"
 
 interface WritingSummary {
   id: string
@@ -89,6 +90,8 @@ function WritingCard({ writing }: { writing: WritingSummary }) {
 }
 
 export default function WritingsListView() {
+  const router = useRouter()
+
   return (
     <div className="relative flex flex-col bg-surface">
       {/* Header */}
@@ -124,6 +127,7 @@ export default function WritingsListView() {
         type="button"
         aria-label="새 글쓰기"
         className="fixed right-4 bottom-24 flex size-14 items-center justify-center rounded-[16px] bg-primary text-on-primary shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
+        onClick={() => router.push("/writings/new")}
       >
         <HugeiconsIcon
           icon={QuillWrite01Icon}

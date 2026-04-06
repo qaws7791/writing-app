@@ -218,3 +218,28 @@
 @utility sheet-body-scroll {
   max-height: 60vh;
 }
+
+/* Writing editor - Tiptap styles */
+.writing-editor .ProseMirror {
+  outline: none;
+  font-size: 1.125rem;
+  line-height: 1.956;
+  color: var(--on-surface);
+  min-height: 50vh;
+}
+
+.writing-editor .ProseMirror p {
+  margin: 0;
+}
+
+.writing-editor .ProseMirror p + p {
+  margin-top: 2.944rem;
+}
+
+.writing-editor .ProseMirror p.is-editor-empty:first-child::before {
+  color: var(--on-surface-lowest);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
