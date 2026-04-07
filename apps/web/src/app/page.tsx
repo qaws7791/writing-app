@@ -1,5 +1,10 @@
+import { Suspense } from "react"
 import HomeView from "@/views/home-view"
 
 export default function Page() {
-  return <HomeView />
+  return (
+    <Suspense>
+      <HomeView />
+    </Suspense>
+  )
 }

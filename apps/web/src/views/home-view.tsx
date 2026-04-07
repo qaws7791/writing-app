@@ -8,7 +8,7 @@ import {
   QuillWrite01Icon,
   User02Icon,
 } from "@hugeicons/core-free-icons"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import PromptArchiveView from "@/views/prompt-archive-view"
 import JourneyArchiveView from "@/views/journey-archive-view"
 import MyJourneysView from "@/views/my-journeys-view"
@@ -23,6 +23,17 @@ const STAR_ICON =
   "https://www.figma.com/api/mcp/asset/062e2961-d065-43b8-8e11-d98fc24abe73"
 
 const TOP_TABS = ["홈", "글감", "여정"] as const
+
+const TOP_TAB_PARAM: Record<(typeof TOP_TABS)[number], string> = {
+  홈: "home",
+  글감: "prompts",
+  여정: "journeys",
+}
+const PARAM_TO_TOP_TAB: Record<string, (typeof TOP_TABS)[number]> = {
+  home: "홈",
+  prompts: "글감",
+  journeys: "여정",
+}
 
 function JourneyCard({
   id,
@@ -141,10 +152,21 @@ function HomeContent({ onViewAllJourneys }: { onViewAllJourneys: () => void }) {
 }
 
 export default function HomeView() {
-  const [activeTab, setActiveTab] = useState<(typeof TOP_TABS)[number]>("글감")
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [activeBottomNav, setActiveBottomNav] = useState<BottomNavLabel>("홈")
 
+  const rawTab = searchParams.get("tab")
+  const activeTab: (typeof TOP_TABS)[number] =
+    rawTab && rawTab in PARAM_TO_TOP_TAB ? PARAM_TO_TOP_TAB[rawTab]! : "글감"
+
   const isHomeSection = activeBottomNav === "홈"
+
+  function navigateToTab(tab: (typeof TOP_TABS)[number]) {
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("tab", TOP_TAB_PARAM[tab])
+    router.push(`/?${params.toString()}`, { scroll: false })
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
@@ -154,7 +176,7 @@ export default function HomeView() {
           {TOP_TABS.map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => navigateToTab(tab)}
               className={`text-2xl leading-6 font-semibold transition-colors ${
                 activeTab === tab ? "text-on-surface" : "text-on-surface-lowest"
               }`}
