@@ -1,19 +1,19 @@
 // Types
 export type {
-  PromptDetail,
-  PromptListFilters,
-  PromptSaveResult,
+  PromptType,
   PromptSummary,
+  PromptListFilters,
+  PromptBookmarkResult,
 } from "./prompt-types"
 
 // Schemas
 export {
-  promptDetailSchema,
-  promptFiltersQuerySchema,
-  promptIdParamSchema,
-  promptListResponseSchema,
-  promptSaveResponseSchema,
+  promptTypeSchema,
   promptSummarySchema,
+  promptListResponseSchema,
+  promptIdParamSchema,
+  promptFiltersQuerySchema,
+  promptBookmarkResponseSchema,
 } from "./prompt-schemas"
 
 // Errors
@@ -27,12 +27,12 @@ export type { PromptRepository } from "./prompt-port"
 export type {
   GetPromptDeps,
   ListPromptsDeps,
-  SavePromptDeps,
-  UnsavePromptDeps,
+  BookmarkPromptDeps,
+  UnbookmarkPromptDeps,
 } from "./use-cases/index"
 export {
   makeGetPromptUseCase,
   makeListPromptsUseCase,
-  makeSavePromptUseCase,
-  makeUnsavePromptUseCase,
+  makeBookmarkPromptUseCase,
+  makeUnbookmarkPromptUseCase,
 } from "./use-cases/index"

@@ -1,43 +1,47 @@
 import authHandler from "./auth/auth-handler"
-import getAISuggestions from "./ai/get-suggestions"
-import getDocumentReview from "./ai/get-document-review"
-import getFlowReview from "./ai/get-flow-review"
 import getHealth from "./health/get-health"
-import getHome from "./home/get-home"
-import getPrompt from "./prompts/get-prompt"
-import listPrompts from "./prompts/list-prompts"
-import savePrompt from "./prompts/save-prompt"
-import unsavePrompt from "./prompts/unsave-prompt"
 import getSession from "./session/get-session"
-import autosaveWriting from "./writings/autosave-writing"
-import createWriting from "./writings/create-writing"
-import deleteWriting from "./writings/delete-writing"
-import getVersion from "./writings/get-version"
-import getWriting from "./writings/get-writing"
-import listVersions from "./writings/list-versions"
+import getHome from "./home/get-home"
+import listPrompts from "./prompts/list-prompts"
+import getPrompt from "./prompts/get-prompt"
+import bookmarkPrompt from "./prompts/bookmark-prompt"
+import unbookmarkPrompt from "./prompts/unbookmark-prompt"
+import listJourneys from "./journeys/list-journeys"
+import getJourney from "./journeys/get-journey"
+import enrollJourney from "./journeys/enroll-journey"
+import getSessionDetail from "./sessions/get-session"
+import startSession from "./sessions/start-session"
+import submitStep from "./sessions/submit-step"
+import completeSession from "./sessions/complete-session"
 import listWritings from "./writings/list-writings"
-import pullDocument from "./writings/pull-document"
-import pushTransactions from "./writings/push-transactions"
+import createWriting from "./writings/create-writing"
+import getWriting from "./writings/get-writing"
+import autosaveWriting from "./writings/autosave-writing"
+import deleteWriting from "./writings/delete-writing"
+import generateFeedback from "./ai/generate-feedback"
+import compareRevisions from "./ai/compare-revisions"
 
 export const allRoutes = [
   getHealth,
   authHandler,
   getSession,
   getHome,
-  getAISuggestions,
-  getDocumentReview,
-  getFlowReview,
   listPrompts,
   getPrompt,
-  savePrompt,
-  unsavePrompt,
+  bookmarkPrompt,
+  unbookmarkPrompt,
+  listJourneys,
+  getJourney,
+  enrollJourney,
+  getSessionDetail,
+  startSession,
+  submitStep,
+  completeSession,
   listWritings,
   createWriting,
   getWriting,
   autosaveWriting,
   deleteWriting,
-  pushTransactions,
-  pullDocument,
-  listVersions,
-  getVersion,
+  generateFeedback,
+  compareRevisions,
 ] as const

@@ -1,107 +1,142 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { toWritingId, toPromptId, toUserId } from "../../../shared/brand/index"
-import type { WritingRepository } from "../../writings/writing-port"
+import { toUserId, toPromptId, toJourneyId } from "../../../shared/brand/index"
 import type { PromptRepository } from "../../prompts/prompt-port"
+import type { ProgressRepository } from "../../progress/progress-port"
+import type { JourneyRepository } from "../../journeys/journey-port"
 import { makeGetHomeUseCase } from "./get-home"
 
 describe("makeGetHomeUseCase", () => {
   it("홈 스냅샷을 수집한다", async () => {
     const userId = toUserId("user-1")
-    const listWritings = vi.fn(async () => ({
-      items: [
-        {
-          characterCount: 10,
-          id: toWritingId(1),
-          lastSavedAt: "2026-03-22T00:00:00.000Z",
-          preview: "최근 글",
-          sourcePromptId: null,
-          title: "최근 글",
-          wordCount: 2,
-        },
-      ],
-      nextCursor: null,
-      hasMore: false,
-    }))
-    const listSaved = vi.fn(async () => [
-      {
-        id: toPromptId(10),
-        level: 1 as const,
-        saved: true,
-        suggestedLengthLabel: "짧음" as const,
-        tags: ["회고"],
-        text: "저장된 글감",
-        topic: "자기이해" as const,
-      },
-    ])
-    const listTodayPrompts = vi.fn(async () => [
-      {
+    const journeyId = toJourneyId(1)
+
+    const promptRepository: PromptRepository = {
+      getDailyPrompt: vi.fn(async () => ({
         id: toPromptId(3),
-        level: 2 as const,
-        saved: false,
-        suggestedLengthLabel: "보통" as const,
-        tags: ["오늘"],
-        text: "오늘의 글감",
-        topic: "일상" as const,
-      },
-    ])
+        promptType: "reflection" as const,
+        title: "오늘의 글감",
+        body: "오늘 가장 기억에 남는 순간은?",
+        responseCount: 5,
+        isBookmarked: false,
+      })),
+      getById: vi.fn(async () => null),
+      list: vi.fn(async () => []),
+      bookmark: vi.fn(async () => ({ kind: "not-found" as const })),
+      unbookmark: vi.fn(async () => {}),
+    }
 
-    const writingRepository = {
-      create: async () => {
-        throw new Error("not used")
-      },
-      delete: async () => ({ kind: "deleted" as const }),
-      getById: async () => ({ kind: "not-found" as const }),
-      list: listWritings,
-      replace: async () => ({ kind: "not-found" as const }),
-      resume: async () => ({
-        characterCount: 10,
-        id: toWritingId(1),
-        lastSavedAt: "2026-03-22T00:00:00.000Z",
-        preview: "최근 글",
-        sourcePromptId: null,
-        title: "최근 글",
-        wordCount: 2,
-      }),
-    } satisfies WritingRepository
+    const progressRepository: ProgressRepository = {
+      listActiveJourneys: vi.fn(async () => [
+        {
+          userId,
+          journeyId,
+          currentSessionOrder: 2,
+          completionRate: 0.5,
+          status: "in_progress" as const,
+        },
+      ]),
+      getJourneyProgress: vi.fn(async () => null),
+      enrollJourney: vi.fn(async () => ({
+        userId,
+        journeyId,
+        currentSessionOrder: 1,
+        completionRate: 0,
+        status: "in_progress" as const,
+      })),
+      updateJourneyProgress: vi.fn(async () => {}),
+      initSessionProgressForJourney: vi.fn(async () => {}),
+      getSessionProgress: vi.fn(async () => null),
+      startSession: vi.fn(async () => ({
+        userId,
+        sessionId: toJourneyId(
+          1
+        ) as unknown as import("../../../shared/brand/index").SessionId,
+        currentStepOrder: 1,
+        status: "in_progress" as const,
+        stepResponsesJson: {},
+      })),
+      updateSessionProgress: vi.fn(async () => {}),
+    }
 
-    const promptRepository = {
-      exists: async () => true,
-      getById: async () => null,
-      list: async () => [],
-      listSaved,
-      listTodayPrompts,
-      save: async () => ({
-        kind: "saved" as const,
-        savedAt: "2026-03-22T00:00:00.000Z",
-      }),
-      unsave: async () => true,
-    } satisfies PromptRepository
-
-    const dailyRecommendationRepository = {
-      existsForDate: vi.fn(async () => true),
-      create: vi.fn(async () => {}),
-      getRecentHistory: vi.fn(async () => []),
-      getAllPromptIds: vi.fn(async () => []),
-      refreshTodayFlags: vi.fn(async () => {}),
+    const journeyRepository: JourneyRepository = {
+      list: vi.fn(async () => []),
+      getById: vi.fn(async () => ({
+        id: journeyId,
+        title: "에세이 기초",
+        description: "에세이 쓰기 기초 여정",
+        category: "writing_skill" as const,
+        thumbnailUrl: null,
+        sessionCount: 4,
+        sessions: [],
+      })),
+      getSessionDetail: vi.fn(async () => null),
     }
 
     const getHome = makeGetHomeUseCase({
-      dailyRecommendationRepository,
-      writingRepository,
       promptRepository,
+      progressRepository,
+      journeyRepository,
     })
+
     const result = await getHome(userId)
 
     expect(result.isOk()).toBe(true)
 
     const snapshot = result._unsafeUnwrap()
-    expect(listWritings).toHaveBeenCalledWith(userId, { limit: 10 })
-    expect(listSaved).toHaveBeenCalledWith(userId, 10)
-    expect(listTodayPrompts).toHaveBeenCalledWith(userId, 2)
-    expect(snapshot.resumeWriting?.id).toBe(toWritingId(1))
-    expect(snapshot.savedPrompts).toHaveLength(1)
-    expect(snapshot.todayPrompts).toHaveLength(1)
-    expect(snapshot.recentWritings).toHaveLength(1)
+    expect(snapshot.dailyPrompt?.title).toBe("오늘의 글감")
+    expect(snapshot.activeJourneys).toHaveLength(1)
+    expect(snapshot.activeJourneys[0]?.title).toBe("에세이 기초")
+    expect(snapshot.activeJourneys[0]?.completionRate).toBe(0.5)
+  })
+
+  it("일일 글감이 없으면 null을 반환한다", async () => {
+    const userId = toUserId("user-2")
+
+    const promptRepository: PromptRepository = {
+      getDailyPrompt: vi.fn(async () => null),
+      getById: vi.fn(async () => null),
+      list: vi.fn(async () => []),
+      bookmark: vi.fn(async () => ({ kind: "not-found" as const })),
+      unbookmark: vi.fn(async () => {}),
+    }
+
+    const progressRepository: ProgressRepository = {
+      listActiveJourneys: vi.fn(async () => []),
+      getJourneyProgress: vi.fn(async () => null),
+      enrollJourney: vi.fn(async () => ({
+        userId,
+        journeyId: toJourneyId(1),
+        currentSessionOrder: 1,
+        completionRate: 0,
+        status: "in_progress" as const,
+      })),
+      updateJourneyProgress: vi.fn(async () => {}),
+      initSessionProgressForJourney: vi.fn(async () => {}),
+      getSessionProgress: vi.fn(async () => null),
+      startSession: vi.fn(async () => {
+        throw new Error("not used")
+      }),
+      updateSessionProgress: vi.fn(async () => {}),
+    }
+
+    const journeyRepository: JourneyRepository = {
+      list: vi.fn(async () => []),
+      getById: vi.fn(async () => null),
+      getSessionDetail: vi.fn(async () => null),
+    }
+
+    const getHome = makeGetHomeUseCase({
+      promptRepository,
+      progressRepository,
+      journeyRepository,
+    })
+
+    const result = await getHome(userId)
+
+    expect(result.isOk()).toBe(true)
+    const snapshot = result._unsafeUnwrap()
+    expect(snapshot.dailyPrompt).toBeNull()
+    expect(snapshot.activeJourneys).toHaveLength(0)
   })
 })

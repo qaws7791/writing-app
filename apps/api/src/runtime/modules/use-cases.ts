@@ -1,24 +1,27 @@
-import { asFunction, type AwilixContainer } from "awilix"
+import { asFunction, asValue, type AwilixContainer } from "awilix"
 import {
   makeAutosaveWritingUseCase,
   makeCreateWritingUseCase,
   makeDeleteWritingUseCase,
-  makeGetVersionUseCase,
   makeGetWritingUseCase,
-  makeListVersionsUseCase,
   makeListWritingsUseCase,
-  makePullDocumentUseCase,
-  makePushTransactionsUseCase,
-} from "@workspace/core/modules/writings"
-import {
   makeGetPromptUseCase,
   makeListPromptsUseCase,
-  makeSavePromptUseCase,
-  makeUnsavePromptUseCase,
+  makeBookmarkPromptUseCase,
+  makeUnbookmarkPromptUseCase,
   makeGetHomeUseCase,
+  makeListJourneysUseCase,
+  makeGetJourneyUseCase,
+  makeGetSessionDetailUseCase,
+  makeEnrollJourneyUseCase,
+  makeStartSessionUseCase,
+  makeSubmitStepUseCase,
+  makeCompleteSessionUseCase,
+  makeGenerateFeedbackUseCase,
+  makeCompareRevisionsUseCase,
 } from "@workspace/core"
 
-import { createAIApiService } from "../../services/ai-services"
+import { createAiCoachingGateway } from "../../services/ai-services"
 import type { ApiCradle } from "../container"
 
 export type AutosaveWritingUseCase = ReturnType<
@@ -26,48 +29,52 @@ export type AutosaveWritingUseCase = ReturnType<
 >
 export type CreateWritingUseCase = ReturnType<typeof makeCreateWritingUseCase>
 export type DeleteWritingUseCase = ReturnType<typeof makeDeleteWritingUseCase>
-export type GetVersionUseCase = ReturnType<typeof makeGetVersionUseCase>
 export type GetWritingUseCase = ReturnType<typeof makeGetWritingUseCase>
-export type ListVersionsUseCase = ReturnType<typeof makeListVersionsUseCase>
 export type ListWritingsUseCase = ReturnType<typeof makeListWritingsUseCase>
-export type PullDocumentUseCase = ReturnType<typeof makePullDocumentUseCase>
-export type PushTransactionsUseCase = ReturnType<
-  typeof makePushTransactionsUseCase
->
 
 export type GetPromptUseCase = ReturnType<typeof makeGetPromptUseCase>
 export type ListPromptsUseCase = ReturnType<typeof makeListPromptsUseCase>
-export type SavePromptUseCase = ReturnType<typeof makeSavePromptUseCase>
-export type UnsavePromptUseCase = ReturnType<typeof makeUnsavePromptUseCase>
+export type BookmarkPromptUseCase = ReturnType<typeof makeBookmarkPromptUseCase>
+export type UnbookmarkPromptUseCase = ReturnType<
+  typeof makeUnbookmarkPromptUseCase
+>
 
 export type GetHomeUseCase = ReturnType<typeof makeGetHomeUseCase>
 
+export type ListJourneysUseCase = ReturnType<typeof makeListJourneysUseCase>
+export type GetJourneyUseCase = ReturnType<typeof makeGetJourneyUseCase>
+export type GetSessionDetailUseCase = ReturnType<
+  typeof makeGetSessionDetailUseCase
+>
+
+export type EnrollJourneyUseCase = ReturnType<typeof makeEnrollJourneyUseCase>
+export type StartSessionUseCase = ReturnType<typeof makeStartSessionUseCase>
+export type SubmitStepUseCase = ReturnType<typeof makeSubmitStepUseCase>
+export type CompleteSessionUseCase = ReturnType<
+  typeof makeCompleteSessionUseCase
+>
+
+export type GenerateFeedbackUseCase = ReturnType<
+  typeof makeGenerateFeedbackUseCase
+>
+export type CompareRevisionsUseCase = ReturnType<
+  typeof makeCompareRevisionsUseCase
+>
+
 export function registerUseCases(container: AwilixContainer<ApiCradle>) {
   container.register({
-    // --- AI ---
+    // --- AI Coaching Gateway ---
 
-    aiUseCases: asFunction(({ aiRequestRepository, logger }: ApiCradle) =>
-      createAIApiService({
-        aiRequestRepository,
-        logger: logger.child({ scope: "ai-services" }),
-      })
-    ).singleton(),
+    aiCoachingGateway: asValue(createAiCoachingGateway()),
 
     // --- Writing ---
 
-    createWritingUseCase: asFunction(
-      ({ writingRepository, promptRepository }: ApiCradle) =>
-        makeCreateWritingUseCase({
-          writingRepository,
-          promptExists: (id) => promptRepository.exists(id),
-        })
+    createWritingUseCase: asFunction(({ writingRepository }: ApiCradle) =>
+      makeCreateWritingUseCase({ writingRepository })
     ).singleton(),
 
     autosaveWritingUseCase: asFunction(({ writingRepository }: ApiCradle) =>
-      makeAutosaveWritingUseCase({
-        writingRepository,
-        getNow: () => new Date().toISOString(),
-      })
+      makeAutosaveWritingUseCase({ writingRepository })
     ).singleton(),
 
     deleteWritingUseCase: asFunction(({ writingRepository }: ApiCradle) =>
@@ -82,37 +89,6 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
       makeListWritingsUseCase({ writingRepository })
     ).singleton(),
 
-    // --- Sync ---
-
-    pushTransactionsUseCase: asFunction(
-      ({ writingSyncRepository, writingSyncWriter }: ApiCradle) =>
-        makePushTransactionsUseCase({
-          writingRepository: writingSyncRepository,
-          syncWriter: writingSyncWriter,
-          getNow: () => new Date().toISOString(),
-        })
-    ).singleton(),
-
-    pullDocumentUseCase: asFunction(({ writingSyncRepository }: ApiCradle) =>
-      makePullDocumentUseCase({ writingRepository: writingSyncRepository })
-    ).singleton(),
-
-    listVersionsUseCase: asFunction(
-      ({ writingSyncRepository, writingVersionRepository }: ApiCradle) =>
-        makeListVersionsUseCase({
-          writingRepository: writingSyncRepository,
-          versionRepository: writingVersionRepository,
-        })
-    ).singleton(),
-
-    getVersionUseCase: asFunction(
-      ({ writingSyncRepository, writingVersionRepository }: ApiCradle) =>
-        makeGetVersionUseCase({
-          writingRepository: writingSyncRepository,
-          versionRepository: writingVersionRepository,
-        })
-    ).singleton(),
-
     // --- Prompt ---
 
     getPromptUseCase: asFunction(({ promptRepository }: ApiCradle) =>
@@ -123,27 +99,69 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
       makeListPromptsUseCase({ promptRepository })
     ).singleton(),
 
-    savePromptUseCase: asFunction(({ promptRepository }: ApiCradle) =>
-      makeSavePromptUseCase({ promptRepository })
+    bookmarkPromptUseCase: asFunction(({ promptRepository }: ApiCradle) =>
+      makeBookmarkPromptUseCase({ promptRepository })
     ).singleton(),
 
-    unsavePromptUseCase: asFunction(({ promptRepository }: ApiCradle) =>
-      makeUnsavePromptUseCase({ promptRepository })
+    unbookmarkPromptUseCase: asFunction(({ promptRepository }: ApiCradle) =>
+      makeUnbookmarkPromptUseCase({ promptRepository })
     ).singleton(),
 
     // --- Home ---
 
     getHomeUseCase: asFunction(
       ({
-        dailyRecommendationRepository,
-        writingRepository,
         promptRepository,
+        progressRepository,
+        journeyRepository,
       }: ApiCradle) =>
         makeGetHomeUseCase({
-          dailyRecommendationRepository,
-          writingRepository,
           promptRepository,
+          progressRepository,
+          journeyRepository,
         })
+    ).singleton(),
+
+    // --- Journeys ---
+
+    listJourneysUseCase: asFunction(({ journeyRepository }: ApiCradle) =>
+      makeListJourneysUseCase({ journeyRepository })
+    ).singleton(),
+
+    getJourneyUseCase: asFunction(({ journeyRepository }: ApiCradle) =>
+      makeGetJourneyUseCase({ journeyRepository })
+    ).singleton(),
+
+    getSessionDetailUseCase: asFunction(({ journeyRepository }: ApiCradle) =>
+      makeGetSessionDetailUseCase({ journeyRepository })
+    ).singleton(),
+
+    // --- Progress ---
+
+    enrollJourneyUseCase: asFunction(({ progressRepository }: ApiCradle) =>
+      makeEnrollJourneyUseCase({ progressRepository })
+    ).singleton(),
+
+    startSessionUseCase: asFunction(({ progressRepository }: ApiCradle) =>
+      makeStartSessionUseCase({ progressRepository })
+    ).singleton(),
+
+    submitStepUseCase: asFunction(({ progressRepository }: ApiCradle) =>
+      makeSubmitStepUseCase({ progressRepository })
+    ).singleton(),
+
+    completeSessionUseCase: asFunction(({ progressRepository }: ApiCradle) =>
+      makeCompleteSessionUseCase({ progressRepository })
+    ).singleton(),
+
+    // --- AI Feedback ---
+
+    generateFeedbackUseCase: asFunction(({ aiCoachingGateway }: ApiCradle) =>
+      makeGenerateFeedbackUseCase({ aiCoachingGateway })
+    ).singleton(),
+
+    compareRevisionsUseCase: asFunction(({ aiCoachingGateway }: ApiCradle) =>
+      makeCompareRevisionsUseCase({ aiCoachingGateway })
     ).singleton(),
   })
 }

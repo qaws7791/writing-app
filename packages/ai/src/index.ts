@@ -1,3 +1,2 @@
-export { createAIService } from "./service"
-export type { AIService } from "./port"
+export { createAiCoachingService } from "./service"
 export { createAIModel } from "./provider"

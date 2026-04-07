@@ -26,105 +26,168 @@ export * from "./shared/pagination/index"
 // Shared: Utilities
 export * from "./shared/utilities/index"
 
-// Modules (use module-specific exports to avoid naming collisions)
+// Module: Writings
 export type {
-  WritingFull,
-  WritingCrudAccessResult,
-  WritingDeleteResult,
-  WritingDetail,
-  WritingModuleError,
-  WritingMutationResult,
-  WritingPersistInput,
-  WritingRepository,
   WritingSummary,
-  AutosaveWritingDeps,
-  AutosaveWritingInput,
-  CreateWritingDeps,
+  WritingDetail,
+  WritingCreateInput,
+  WritingUpdateInput,
+  WritingAccessResult,
+  WritingUpdateResult,
+  WritingDeleteResult,
+  WritingModuleError,
+  WritingNotFoundError,
+  WritingForbiddenError,
+  WritingValidationError,
+  WritingRepository,
   CreateWritingInput,
-  DeleteWritingDeps,
+  CreateWritingDeps,
+  AutosaveWritingInput,
+  AutosaveWritingDeps,
   GetWritingDeps,
   ListWritingsDeps,
+  ListWritingsParams,
+  DeleteWritingDeps,
 } from "./modules/writings/index"
 export {
-  buildWriting,
   createPreview,
-  updateWritingContent,
-  updateWritingTitle,
-  makeAutosaveWritingUseCase,
-  makeCreateWritingUseCase,
-  makeDeleteWritingUseCase,
-  makeGetWritingUseCase,
-  makeListWritingsUseCase,
-  autosaveWritingBodySchema,
-  autosaveWritingResponseSchema,
-  createWritingBodySchema,
+  writingNotFound,
+  writingForbidden,
+  writingValidationFailed,
+  writingSummarySchema,
   writingDetailSchema,
   writingIdParamSchema,
+  createWritingBodySchema,
+  autosaveWritingBodySchema,
   writingListResponseSchema,
-  writingSummarySchema,
+  autosaveWritingResponseSchema,
+  makeCreateWritingUseCase,
+  makeAutosaveWritingUseCase,
+  makeGetWritingUseCase,
+  makeListWritingsUseCase,
+  makeDeleteWritingUseCase,
 } from "./modules/writings/index"
 
+// Module: Prompts
 export type {
-  PromptDetail,
+  PromptType,
+  PromptSummary,
   PromptListFilters,
+  PromptBookmarkResult,
   PromptModuleError,
   PromptRepository,
-  PromptSaveResult,
-  PromptSummary,
   GetPromptDeps,
   ListPromptsDeps,
-  SavePromptDeps,
-  UnsavePromptDeps,
+  BookmarkPromptDeps,
+  UnbookmarkPromptDeps,
 } from "./modules/prompts/index"
 export {
+  promptNotFound,
+  promptTypeSchema,
+  promptSummarySchema,
+  promptListResponseSchema,
+  promptIdParamSchema,
+  promptFiltersQuerySchema,
+  promptBookmarkResponseSchema,
   makeGetPromptUseCase,
   makeListPromptsUseCase,
-  makeSavePromptUseCase,
-  makeUnsavePromptUseCase,
-  promptDetailSchema,
-  promptFiltersQuerySchema,
-  promptIdParamSchema,
-  promptListResponseSchema,
-  promptSaveResponseSchema,
-  promptSummarySchema,
+  makeBookmarkPromptUseCase,
+  makeUnbookmarkPromptUseCase,
 } from "./modules/prompts/index"
 
-export type { HomeSnapshot, GetHomeDeps } from "./modules/home/index"
-export { makeGetHomeUseCase } from "./modules/home/index"
-export { homeSnapshotSchema } from "./modules/home/index"
-
+// Module: Journeys
 export type {
-  DailyRecommendation,
-  DailyRecommendationRepository,
-  EnsureTodayRecommendationsDeps,
-  RecommendationHistoryEntry,
-} from "./modules/daily-recommendation/index"
+  JourneyCategory,
+  StepType,
+  JourneySummary,
+  JourneyDetail,
+  JourneySessionSummary,
+  JourneySessionDetail,
+  StepSummary,
+  JourneyModuleError,
+  JourneyNotFoundError,
+  SessionNotFoundError,
+  JourneyRepository,
+  ListJourneysDeps,
+  GetJourneyDeps,
+  GetSessionDetailDeps,
+} from "./modules/journeys/index"
 export {
-  getKstDateString,
-  makeEnsureTodayRecommendationsUseCase,
-  selectWeightedPrompts,
-} from "./modules/daily-recommendation/index"
+  journeyNotFound,
+  sessionNotFound,
+  journeyCategorySchema,
+  stepTypeSchema,
+  journeyIdParamSchema,
+  sessionIdParamSchema,
+  journeySummarySchema,
+  journeySessionSummarySchema,
+  stepSummarySchema,
+  journeyDetailSchema,
+  journeySessionDetailSchema,
+  journeyListResponseSchema,
+  journeyFiltersQuerySchema,
+  makeListJourneysUseCase,
+  makeGetJourneyUseCase,
+  makeGetSessionDetailUseCase,
+} from "./modules/journeys/index"
 
-// AI Assistant
+// Module: Progress
 export type {
-  AIFeatureType,
-  AIReviewParagraph,
-  AISuggestion,
-  AISuggestionInput,
-  AIDocumentReviewInput,
-  AIFlowReviewInput,
-  ReviewItem,
-  ReviewItemType,
-} from "./modules/ai-assistant/index"
+  JourneyProgressStatus,
+  SessionProgressStatus,
+  UserJourneyProgress,
+  UserSessionProgress,
+  ProgressRepository,
+  EnrollJourneyDeps,
+  StartSessionDeps,
+  SubmitStepDeps,
+  SubmitStepInput,
+  CompleteSessionDeps,
+  CompleteSessionInput,
+} from "./modules/progress/index"
 export {
-  aiFeatureTypeSchema,
-  aiSuggestionSchema,
-  aiSuggestionInputSchema,
-  aiDocumentReviewInputSchema,
-  aiFlowReviewInputSchema,
-  aiSuggestionResponseSchema,
-  aiReviewResponseSchema,
-  aiReviewParagraphSchema,
-  reviewItemSchema,
-  reviewItemTypeSchema,
-} from "./modules/ai-assistant/index"
+  journeyProgressStatusSchema,
+  sessionProgressStatusSchema,
+  userJourneyProgressSchema,
+  userSessionProgressSchema,
+  submitStepBodySchema,
+  makeEnrollJourneyUseCase,
+  makeStartSessionUseCase,
+  makeSubmitStepUseCase,
+  makeCompleteSessionUseCase,
+} from "./modules/progress/index"
+
+// Module: AI Feedback
+export type {
+  UserLevel,
+  WritingFeedback,
+  RevisionComparison,
+  GenerateFeedbackInput,
+  CompareRevisionsInput,
+  AiCoachingGateway,
+  GenerateFeedbackDeps,
+  GenerateFeedbackUseCaseInput,
+  CompareRevisionsDeps,
+  CompareRevisionsUseCaseInput,
+} from "./modules/ai-feedback/index"
+export {
+  userLevelSchema,
+  writingFeedbackSchema,
+  revisionComparisonSchema,
+  generateFeedbackBodySchema,
+  compareRevisionsBodySchema,
+  makeGenerateFeedbackUseCase,
+  makeCompareRevisionsUseCase,
+} from "./modules/ai-feedback/index"
+
+// Module: Home
+export type {
+  HomeSnapshot,
+  ActiveJourneySummary,
+  GetHomeDeps,
+} from "./modules/home/index"
+export {
+  homeSnapshotSchema,
+  activeJourneySummarySchema,
+  makeGetHomeUseCase,
+} from "./modules/home/index"

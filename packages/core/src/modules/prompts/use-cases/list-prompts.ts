@@ -10,8 +10,8 @@ export type ListPromptsDeps = {
 
 export function makeListPromptsUseCase(deps: ListPromptsDeps) {
   return (
-    userId: UserId,
-    filters: PromptListFilters
-  ): ResultAsync<readonly PromptSummary[], never> =>
+    userId: UserId | null,
+    filters?: PromptListFilters
+  ): ResultAsync<PromptSummary[], never> =>
     ResultAsync.fromSafePromise(deps.promptRepository.list(userId, filters))
 }

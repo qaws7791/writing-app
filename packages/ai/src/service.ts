@@ -1,95 +1,55 @@
 import { generateText, Output } from "ai"
 import type { LanguageModel } from "ai"
 import type {
-  AIReviewParagraph,
-  AISuggestionInput,
-  ReviewItem,
+  AiCoachingGateway,
+  GenerateFeedbackInput,
+  CompareRevisionsInput,
 } from "@workspace/core"
 
-import { buildSuggestionPrompt } from "./prompts/suggestion-prompt"
-import { buildDocumentReviewPrompt } from "./prompts/review-prompt"
-import { buildFlowReviewPrompt } from "./prompts/flow-prompt"
-import { aiSuggestionOutputSchema } from "./schemas/suggestion-schema"
-import { reviewItemOutputSchema } from "./schemas/review-schema"
-import type { AIService } from "./port"
+import { buildFeedbackPrompt } from "./prompts/feedback-prompt"
+import { buildComparePrompt } from "./prompts/compare-prompt"
+import { feedbackOutputSchema } from "./schemas/feedback-schema"
+import { compareOutputSchema } from "./schemas/compare-schema"
 
-let idCounter = 0
-function uid(prefix: string): string {
-  return `${prefix}-${Date.now()}-${++idCounter}`
-}
-
-export function createAIService(model: LanguageModel): AIService {
+export function createAiCoachingService(
+  model: LanguageModel
+): AiCoachingGateway {
   return {
-    async getSuggestions({ text, type }: AISuggestionInput) {
-      const { system, prompt } = buildSuggestionPrompt(text, type)
+    async generateFeedback({ bodyPlainText, level }: GenerateFeedbackInput) {
+      const { system, prompt } = buildFeedbackPrompt(bodyPlainText, level)
 
       const { output } = await generateText({
         model,
         system,
         prompt,
-        output: Output.object({ schema: aiSuggestionOutputSchema }),
+        output: Output.object({ schema: feedbackOutputSchema }),
       })
 
       if (!output) {
-        return []
+        return { strengths: [], improvements: [], question: "" }
       }
 
-      return output.suggestions.map((s) => ({
-        id: uid(type),
-        original: text,
-        suggestion: s.suggestion,
-        reason: s.reason,
-      }))
+      return output
     },
 
-    async getDocumentReview(paragraphs: AIReviewParagraph[]) {
-      const { system, prompt } = buildDocumentReviewPrompt(paragraphs)
+    async compareRevisions({
+      originalText,
+      revisedText,
+    }: CompareRevisionsInput) {
+      const { system, prompt } = buildComparePrompt(originalText, revisedText)
 
       const { output } = await generateText({
         model,
         system,
         prompt,
-        output: Output.object({ schema: reviewItemOutputSchema }),
+        output: Output.object({ schema: compareOutputSchema }),
       })
 
       if (!output) {
-        return []
+        return { improvements: [], summary: "" }
       }
 
-      return output.items.map((item) => ({
-        id: uid(item.type),
-        type: item.type,
-        from: item.from,
-        to: item.to,
-        original: item.original,
-        suggestion: item.suggestion,
-        reason: item.reason,
-      }))
-    },
-
-    async getFlowReview(paragraphs: AIReviewParagraph[]) {
-      const { system, prompt } = buildFlowReviewPrompt(paragraphs)
-
-      const { output } = await generateText({
-        model,
-        system,
-        prompt,
-        output: Output.object({ schema: reviewItemOutputSchema }),
-      })
-
-      if (!output) {
-        return []
-      }
-
-      return output.items.map((item) => ({
-        id: uid("flow"),
-        type: "flow" as const,
-        from: item.from,
-        to: item.to,
-        original: item.original,
-        suggestion: item.suggestion,
-        reason: item.reason,
-      }))
+      return output
     },
   }
 }

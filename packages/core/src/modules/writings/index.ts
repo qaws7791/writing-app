@@ -1,50 +1,23 @@
 // Types
 export type {
-  Operation,
-  SetTitleOperation,
-  SetContentOperation,
-  WritingTransaction,
-  Writing,
-  WritingSyncAccessResult,
-  SyncPushInput,
-  SyncPushAccepted,
-  SyncPushConflict,
-  SyncPushResult,
-  SyncPullResult,
-  WritingVersionSummary,
-  WritingVersionDetail,
-  StoredTransaction,
-  SnapshotReason,
-  PushWritePlan,
-  PushWritePlanTransaction,
-  PushWritePlanWriting,
-  PushWritePlanSnapshot,
-  WritingFull,
-  WritingCrudAccessResult,
-  WritingDeleteResult,
-  WritingDetail,
-  WritingMutationResult,
-  WritingPersistInput,
   WritingSummary,
+  WritingDetail,
+  WritingCreateInput,
+  WritingUpdateInput,
+  WritingAccessResult,
+  WritingUpdateResult,
+  WritingDeleteResult,
 } from "./writing-types"
 
 // Schemas
 export {
-  syncPushBodySchema,
-  syncPushResponseSchema,
-  syncPullQuerySchema,
-  syncPullResponseSchema,
-  writingVersionSummarySchema,
-  writingVersionDetailSchema,
-  versionListResponseSchema,
-  writingIdParamSchema,
-  versionParamSchema,
-  autosaveWritingBodySchema,
-  autosaveWritingResponseSchema,
-  createWritingBodySchema,
-  writingDetailSchema,
-  writingListResponseSchema,
   writingSummarySchema,
+  writingDetailSchema,
+  writingIdParamSchema,
+  createWritingBodySchema,
+  autosaveWritingBodySchema,
+  writingListResponseSchema,
+  autosaveWritingResponseSchema,
 } from "./writing-schemas"
 
 // Errors
@@ -53,59 +26,34 @@ export type {
   WritingNotFoundError,
   WritingForbiddenError,
   WritingValidationError,
-  WritingConflictError,
-  PromptReferenceNotFoundError,
 } from "./writing-error"
 export {
   writingNotFound,
   writingForbidden,
   writingValidationFailed,
-  writingConflict,
-  promptNotFound,
 } from "./writing-error"
 
-// Ports
-export type {
-  WritingRepository,
-  WritingSyncRepository,
-  WritingSyncWriter,
-  WritingTransactionRepository,
-  WritingVersionRepository,
-} from "./writing-port"
+// Port
+export type { WritingRepository } from "./writing-port"
 
 // Operations
-export {
-  applyOperationsToContent,
-  computeWritingMetrics,
-  advanceWritingVersion,
-  buildWriting,
-  createPreview,
-  updateWritingContent,
-  updateWritingTitle,
-} from "./writing-operations"
+export { createPreview } from "./writing-operations"
 
 // Use Cases
 export type {
-  PushTransactionsDeps,
-  PullDocumentDeps,
-  ListVersionsDeps,
-  GetVersionDeps,
-  AutosaveWritingDeps,
-  AutosaveWritingInput,
-  CreateWritingDeps,
   CreateWritingInput,
-  DeleteWritingDeps,
+  CreateWritingDeps,
+  AutosaveWritingInput,
+  AutosaveWritingDeps,
   GetWritingDeps,
   ListWritingsDeps,
+  ListWritingsParams,
+  DeleteWritingDeps,
 } from "./use-cases/index"
 export {
-  makePushTransactionsUseCase,
-  makePullDocumentUseCase,
-  makeListVersionsUseCase,
-  makeGetVersionUseCase,
-  makeAutosaveWritingUseCase,
   makeCreateWritingUseCase,
-  makeDeleteWritingUseCase,
+  makeAutosaveWritingUseCase,
   makeGetWritingUseCase,
   makeListWritingsUseCase,
+  makeDeleteWritingUseCase,
 } from "./use-cases/index"

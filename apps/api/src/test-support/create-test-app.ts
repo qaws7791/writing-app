@@ -1,17 +1,16 @@
 import {
-  createEmptyWritingContent,
-  extractWritingTextMetrics,
   toUserId,
   toWritingId,
   toPromptId,
-  type WritingContent,
+  toJourneyId,
+  toSessionId,
 } from "@workspace/core"
 import {
   writingNotFound,
   writingForbidden,
-  promptNotFound as writingPromptNotFound,
 } from "@workspace/core/modules/writings"
 import { promptNotFound } from "@workspace/core/modules/prompts"
+import { journeyNotFound, sessionNotFound } from "@workspace/core"
 import { okAsync, errAsync } from "neverthrow"
 import { cors } from "hono/cors"
 
@@ -28,38 +27,19 @@ import { allRoutes } from "../routes/index.js"
 import type { AppEnv } from "../app-env.js"
 
 type TestPrompt = {
-  description: string
   id: number
-  isTodayRecommended: boolean
-  level: 1 | 2 | 3
-  outline: string[]
-  saved: boolean
-  suggestedLengthLabel: "깊이" | "보통" | "짧음"
-  tags: string[]
-  text: string
-  tips: string[]
-  topic:
-    | "감정"
-    | "경험"
-    | "관계"
-    | "기술"
-    | "기억"
-    | "문화"
-    | "사회"
-    | "상상"
-    | "성장"
-    | "여행"
-    | "일상"
-    | "자기이해"
-    | "진로"
+  promptType: "sensory" | "reflection" | "opinion"
+  title: string
+  body: string
+  responseCount: number
+  isBookmarked: boolean
 }
 
 type StoredWriting = {
-  characterCount: number
-  content: WritingContent
+  bodyJson: unknown
+  bodyPlainText: string
   createdAt: string
   id: number
-  lastSavedAt: string
   ownerId: string
   preview: string
   sourcePromptId: number | null
@@ -70,95 +50,28 @@ type StoredWriting = {
 
 const seedPrompts: TestPrompt[] = [
   {
-    description: "생각 변화의 계기를 씁니다.",
     id: 1,
-    isTodayRecommended: true,
-    level: 1,
-    outline: [],
-    saved: false,
-    suggestedLengthLabel: "짧음",
-    tags: ["변화", "회고"],
-    text: "최근에 내 생각이 바뀐 순간은?",
-    tips: ["장면부터 시작하세요."],
-    topic: "자기이해",
+    promptType: "reflection",
+    title: "생각이 바뀐 순간",
+    body: "최근에 내 생각이 바뀐 순간은?",
+    responseCount: 0,
+    isBookmarked: false,
   },
   {
-    description: "익숙함을 떠나기 어려운 이유를 씁니다.",
     id: 2,
-    isTodayRecommended: false,
-    level: 2,
-    outline: [],
-    saved: false,
-    suggestedLengthLabel: "보통",
-    tags: ["관성", "변화"],
-    text: "사람들은 왜 익숙한 것을 떠나기 어려울까?",
-    tips: ["경험을 먼저 적어보세요."],
-    topic: "사회",
+    promptType: "opinion",
+    title: "익숙함을 떠나기 어려운 이유",
+    body: "사람들은 왜 익숙한 것을 떠나기 어려울까?",
+    responseCount: 0,
+    isBookmarked: false,
   },
   {
-    description: "하루의 조용한 순간을 씁니다.",
     id: 3,
-    isTodayRecommended: true,
-    level: 1,
-    outline: [],
-    saved: false,
-    suggestedLengthLabel: "짧음",
-    tags: ["루틴", "감정"],
-    text: "내 하루에서 가장 조용한 순간은 언제인가요?",
-    tips: ["감각을 함께 써보세요."],
-    topic: "일상",
-  },
-  {
-    description: "미래의 나에게 편지를 씁니다.",
-    id: 4,
-    isTodayRecommended: false,
-    level: 2,
-    outline: ["지금의 나", "요즘의 고민", "미래에게"],
-    saved: false,
-    suggestedLengthLabel: "보통",
-    tags: ["미래", "편지"],
-    text: "10년 후의 나에게 편지를 써보세요",
-    tips: ["고민을 숨기지 마세요."],
-    topic: "자기이해",
-  },
-  {
-    description: "읽은 글의 인상적 문장을 씁니다.",
-    id: 5,
-    isTodayRecommended: false,
-    level: 1,
-    outline: [],
-    saved: false,
-    suggestedLengthLabel: "짧음",
-    tags: ["독서", "문화"],
-    text: "최근에 읽은 글에서 가장 인상 깊었던 문장은?",
-    tips: ["문장을 만난 장면도 적어보세요."],
-    topic: "문화",
-  },
-  {
-    description: "AI가 일상에 들어오며 잃는 것을 씁니다.",
-    id: 6,
-    isTodayRecommended: true,
-    level: 3,
-    outline: ["장면", "편리함", "잃는 것", "균형점"],
-    saved: false,
-    suggestedLengthLabel: "깊이",
-    tags: ["기술", "비평", "AI"],
-    text: "AI가 일상에 들어오면서 잃어가는 것은?",
-    tips: ["양면을 함께 다뤄보세요."],
-    topic: "기술",
-  },
-  {
-    description: "최근 고마웠던 순간을 씁니다.",
-    id: 7,
-    isTodayRecommended: true,
-    level: 1,
-    outline: [],
-    saved: false,
-    suggestedLengthLabel: "짧음",
-    tags: ["관계", "감사"],
-    text: "가장 최근에 누군가에게 고마웠던 순간은 언제인가요?",
-    tips: ["감정 변화를 써보세요."],
-    topic: "관계",
+    promptType: "sensory",
+    title: "하루의 조용한 순간",
+    body: "내 하루에서 가장 조용한 순간은 언제인가요?",
+    responseCount: 0,
+    isBookmarked: false,
   },
 ]
 
@@ -202,19 +115,18 @@ export function createTestApi(input?: {
 
   function serializeWriting(writing: StoredWriting) {
     return {
-      characterCount: writing.characterCount,
-      content: writing.content,
-      createdAt: writing.createdAt,
       id: toWritingId(writing.id),
-      lastSavedAt: writing.lastSavedAt,
+      title: writing.title,
       preview: writing.preview,
+      wordCount: writing.wordCount,
       sourcePromptId:
         writing.sourcePromptId === null
           ? null
           : toPromptId(writing.sourcePromptId),
-      title: writing.title,
+      createdAt: writing.createdAt,
       updatedAt: writing.updatedAt,
-      wordCount: writing.wordCount,
+      bodyJson: writing.bodyJson,
+      bodyPlainText: writing.bodyPlainText,
     }
   }
 
@@ -243,17 +155,6 @@ export function createTestApi(input?: {
         return createTestSession(userId)
       }),
       createUseCaseMiddleware({
-        aiUseCases: {
-          async getSuggestions() {
-            return []
-          },
-          async getDocumentReview() {
-            return []
-          },
-          async getFlowReview() {
-            return []
-          },
-        },
         authHandler: async () =>
           new Response(
             JSON.stringify({
@@ -263,9 +164,7 @@ export function createTestApi(input?: {
               },
             }),
             {
-              headers: {
-                "content-type": "application/json",
-              },
+              headers: { "content-type": "application/json" },
               status: 404,
             }
           ),
@@ -276,56 +175,43 @@ export function createTestApi(input?: {
           if (!current) {
             return errAsync(writingNotFound("글을 찾을 수 없습니다."))
           }
-          if (current.ownerId !== userId) {
+          if (current.ownerId !== String(userId)) {
             return errAsync(
-              writingForbidden(
-                "다른 사용자의 글에는 접근할 수 없습니다.",
-                toUserId(current.ownerId)
-              )
+              writingForbidden("다른 사용자의 글에는 접근할 수 없습니다.")
             )
           }
 
-          const nextContent = autosaveInput.content ?? current.content
           const nextTitle = autosaveInput.title ?? current.title
-          const metrics = extractWritingTextMetrics(nextContent)
+          const nextBodyPlainText =
+            autosaveInput.bodyPlainText ?? current.bodyPlainText
           const now = new Date().toISOString()
 
-          current.content = nextContent
+          current.bodyJson = autosaveInput.bodyJson ?? current.bodyJson
+          current.bodyPlainText = nextBodyPlainText
           current.title = nextTitle
-          current.characterCount = metrics.characterCount
-          current.lastSavedAt = now
-          current.preview = toPreview(metrics.plainText)
+          current.preview = toPreview(nextBodyPlainText)
           current.updatedAt = now
-          current.wordCount = metrics.wordCount
+          current.wordCount = autosaveInput.wordCount ?? current.wordCount
 
           return okAsync(serializeWriting(current))
         },
         createWritingUseCase(userId, createInput) {
-          if (
-            createInput.sourcePromptId !== undefined &&
-            !findPrompt(Number(createInput.sourcePromptId))
-          ) {
-            return errAsync(writingPromptNotFound("글감을 찾을 수 없습니다."))
-          }
-
-          const content = createInput.content ?? createEmptyWritingContent()
-          const metrics = extractWritingTextMetrics(content)
+          const bodyPlainText = createInput.bodyPlainText ?? ""
           const now = new Date().toISOString()
           const created: StoredWriting = {
-            characterCount: metrics.characterCount,
-            content,
+            bodyJson: createInput.bodyJson ?? null,
+            bodyPlainText,
             createdAt: now,
             id: nextWritingId++,
-            lastSavedAt: now,
-            ownerId: userId,
-            preview: toPreview(metrics.plainText),
+            ownerId: String(userId),
+            preview: toPreview(bodyPlainText),
             sourcePromptId:
               createInput.sourcePromptId === undefined
                 ? null
                 : Number(createInput.sourcePromptId),
             title: createInput.title ?? "",
             updatedAt: now,
-            wordCount: metrics.wordCount,
+            wordCount: createInput.wordCount ?? 0,
           }
 
           writings.push(created)
@@ -338,12 +224,9 @@ export function createTestApi(input?: {
           if (index === -1) {
             return errAsync(writingNotFound("글을 찾을 수 없습니다."))
           }
-          if (writings[index]!.ownerId !== userId) {
+          if (writings[index]!.ownerId !== String(userId)) {
             return errAsync(
-              writingForbidden(
-                "다른 사용자의 글에는 접근할 수 없습니다.",
-                toUserId(writings[index]!.ownerId)
-              )
+              writingForbidden("다른 사용자의 글에는 접근할 수 없습니다.")
             )
           }
 
@@ -355,12 +238,9 @@ export function createTestApi(input?: {
           if (!writing) {
             return errAsync(writingNotFound("글을 찾을 수 없습니다."))
           }
-          if (writing.ownerId !== userId) {
+          if (writing.ownerId !== String(userId)) {
             return errAsync(
-              writingForbidden(
-                "다른 사용자의 글에는 접근할 수 없습니다.",
-                toUserId(writing.ownerId)
-              )
+              writingForbidden("다른 사용자의 글에는 접근할 수 없습니다.")
             )
           }
 
@@ -368,170 +248,147 @@ export function createTestApi(input?: {
         },
         listWritingsUseCase(userId) {
           const items = writings
-            .filter((writing) => writing.ownerId === userId)
-            .sort((left, right) =>
-              left.updatedAt === right.updatedAt
-                ? right.id - left.id
-                : right.updatedAt.localeCompare(left.updatedAt)
+            .filter((writing) => writing.ownerId === String(userId))
+            .sort((l, r) =>
+              l.updatedAt === r.updatedAt
+                ? r.id - l.id
+                : r.updatedAt.localeCompare(l.updatedAt)
             )
             .map((writing) => ({
-              characterCount: writing.characterCount,
               id: toWritingId(writing.id),
-              lastSavedAt: writing.lastSavedAt,
+              title: writing.title,
               preview: writing.preview,
+              wordCount: writing.wordCount,
               sourcePromptId:
                 writing.sourcePromptId === null
                   ? null
                   : toPromptId(writing.sourcePromptId),
-              title: writing.title,
-              wordCount: writing.wordCount,
+              createdAt: writing.createdAt,
+              updatedAt: writing.updatedAt,
             }))
-          return okAsync({ items, nextCursor: null, hasMore: false })
+          return okAsync({ items, nextCursor: null })
         },
         getHomeUseCase(userId) {
           if (input?.homeError) {
             throw input.homeError
           }
-
-          const recentWritings = writings
-            .filter((writing) => writing.ownerId === userId)
-            .sort((left, right) =>
-              left.updatedAt === right.updatedAt
-                ? right.id - left.id
-                : right.updatedAt.localeCompare(left.updatedAt)
-            )
-            .map((writing) => ({
-              characterCount: writing.characterCount,
-              id: toWritingId(writing.id),
-              lastSavedAt: writing.lastSavedAt,
-              preview: writing.preview,
-              sourcePromptId:
-                writing.sourcePromptId === null
-                  ? null
-                  : toPromptId(writing.sourcePromptId),
-              title: writing.title,
-              wordCount: writing.wordCount,
-            }))
-
           return okAsync({
-            recentWritings,
-            resumeWriting: recentWritings[0] ?? null,
-            savedPrompts: prompts
-              .filter((prompt) => prompt.saved)
-              .map((prompt) => ({
-                id: toPromptId(prompt.id),
-                level: prompt.level,
-                saved: true,
-                suggestedLengthLabel: prompt.suggestedLengthLabel,
-                tags: prompt.tags,
-                text: prompt.text,
-                topic: prompt.topic,
-              })),
-            todayPrompts: prompts
-              .filter((prompt) => prompt.isTodayRecommended)
-              .slice(0, 2)
-              .map((prompt) => ({
-                id: toPromptId(prompt.id),
-                level: prompt.level,
-                saved: prompt.saved,
-                suggestedLengthLabel: prompt.suggestedLengthLabel,
-                tags: prompt.tags,
-                text: prompt.text,
-                topic: prompt.topic,
-              })),
+            dailyPrompt: prompts[0]
+              ? {
+                  id: toPromptId(prompts[0].id),
+                  promptType: prompts[0].promptType,
+                  title: prompts[0].title,
+                  body: prompts[0].body,
+                  responseCount: prompts[0].responseCount,
+                  isBookmarked: prompts[0].isBookmarked,
+                }
+              : null,
+            activeJourneys: [],
           })
         },
-        getPromptUseCase(_userId, promptId) {
+        getPromptUseCase(promptId, _userId) {
           const prompt = findPrompt(Number(promptId))
           if (!prompt) {
             return errAsync(promptNotFound("글감을 찾을 수 없습니다."))
           }
 
           return okAsync({
-            description: prompt.description,
             id: toPromptId(prompt.id),
-            level: prompt.level,
-            outline: prompt.outline,
-            saved: prompt.saved,
-            suggestedLengthLabel: prompt.suggestedLengthLabel,
-            tags: prompt.tags,
-            text: prompt.text,
-            tips: prompt.tips,
-            topic: prompt.topic,
+            promptType: prompt.promptType,
+            title: prompt.title,
+            body: prompt.body,
+            responseCount: prompt.responseCount,
+            isBookmarked: prompt.isBookmarked,
           })
         },
         listPromptsUseCase(_userId, filters) {
-          const query = filters.query?.trim().toLowerCase()
-
           return okAsync(
             prompts
               .filter((prompt) => {
                 if (
-                  filters.saved !== undefined &&
-                  prompt.saved !== filters.saved
+                  filters?.promptType &&
+                  prompt.promptType !== filters.promptType
                 ) {
                   return false
                 }
-                if (filters.topic && prompt.topic !== filters.topic) {
-                  return false
-                }
-                if (filters.level && prompt.level !== filters.level) {
-                  return false
-                }
-                if (!query) {
-                  return true
-                }
-
-                return (
-                  prompt.text.toLowerCase().includes(query) ||
-                  prompt.tags.some((tag) => tag.toLowerCase().includes(query))
-                )
+                return true
               })
               .map((prompt) => ({
                 id: toPromptId(prompt.id),
-                level: prompt.level,
-                saved: prompt.saved,
-                suggestedLengthLabel: prompt.suggestedLengthLabel,
-                tags: prompt.tags,
-                text: prompt.text,
-                topic: prompt.topic,
+                promptType: prompt.promptType,
+                title: prompt.title,
+                body: prompt.body,
+                responseCount: prompt.responseCount,
+                isBookmarked: prompt.isBookmarked,
               }))
           )
         },
-        savePromptUseCase(_userId, promptId) {
+        bookmarkPromptUseCase(_userId, promptId) {
           const prompt = findPrompt(Number(promptId))
           if (!prompt) {
             return errAsync(promptNotFound("글감을 찾을 수 없습니다."))
           }
-
           const savedAt = new Date().toISOString()
-          prompt.saved = true
-
+          prompt.isBookmarked = true
           return okAsync({ savedAt })
         },
-        unsavePromptUseCase(_userId, promptId) {
+        unbookmarkPromptUseCase(_userId, promptId) {
           const prompt = findPrompt(Number(promptId))
-          if (!prompt || !prompt.saved) {
-            return errAsync(promptNotFound("저장된 글감을 찾을 수 없습니다."))
-          }
-
-          prompt.saved = false
+          if (prompt) prompt.isBookmarked = false
           return okAsync(undefined as void)
+        },
+        listJourneysUseCase() {
+          return okAsync([])
+        },
+        getJourneyUseCase(journeyId) {
+          return errAsync(
+            journeyNotFound("여정을 찾을 수 없습니다.", journeyId)
+          )
+        },
+        getSessionDetailUseCase(sessionId) {
+          return errAsync(
+            sessionNotFound("세션을 찾을 수 없습니다.", sessionId)
+          )
+        },
+        enrollJourneyUseCase(userId, journeyId) {
+          return okAsync({
+            userId: toUserId(String(userId)),
+            journeyId,
+            currentSessionOrder: 1,
+            completionRate: 0,
+            status: "in_progress" as const,
+          })
+        },
+        startSessionUseCase(userId, sessionId) {
+          return okAsync({
+            userId: toUserId(String(userId)),
+            sessionId,
+            currentStepOrder: 1,
+            status: "in_progress" as const,
+            stepResponsesJson: {},
+          })
+        },
+        submitStepUseCase() {
+          return okAsync(undefined as void)
+        },
+        completeSessionUseCase() {
+          return okAsync(undefined as void)
+        },
+        generateFeedbackUseCase() {
+          return okAsync({
+            strengths: [],
+            improvements: [],
+            question: "테스트 질문입니다.",
+          })
+        },
+        compareRevisionsUseCase() {
+          return okAsync({
+            improvements: [],
+            summary: "테스트 요약입니다.",
+          })
         },
         readLatestAuthEmail: () => null,
         sqliteVersion: "3.46.0",
-        pushTransactionsUseCase() {
-          return errAsync(writingNotFound("stub"))
-        },
-        pullDocumentUseCase() {
-          return errAsync(writingNotFound("stub"))
-        },
-        listVersionsUseCase() {
-          return okAsync({ items: [], nextCursor: null, hasMore: false })
-        },
-        getVersionUseCase() {
-          return errAsync(writingNotFound("stub"))
-        },
       }),
       createTimeoutMiddleware(),
     ],
@@ -544,7 +401,7 @@ export function createTestApi(input?: {
       }
       return handleRequestError(c, error, logger, "request failed")
     },
-    routes: allRoutes,
+    routes: [...allRoutes],
     notFound: (c) =>
       c.json(
         {
@@ -560,32 +417,28 @@ export function createTestApi(input?: {
   return {
     app,
     close: () => undefined,
-    injectForeignWriting(input: {
-      content?: WritingContent
+    injectForeignWriting(foreignInput: {
+      bodyPlainText?: string
       sourcePromptId?: number | null
       title: string
     }) {
-      const content = input.content ?? createEmptyWritingContent()
-      const metrics = extractWritingTextMetrics(content)
+      const bodyPlainText = foreignInput.bodyPlainText ?? ""
       const now = new Date().toISOString()
       const created: StoredWriting = {
-        characterCount: metrics.characterCount,
-        content,
+        bodyJson: null,
+        bodyPlainText,
         createdAt: now,
         id: nextWritingId++,
-        lastSavedAt: now,
         ownerId: "other-user",
-        preview: toPreview(metrics.plainText),
-        sourcePromptId: input.sourcePromptId ?? null,
-        title: input.title,
+        preview: toPreview(bodyPlainText),
+        sourcePromptId: foreignInput.sourcePromptId ?? null,
+        title: foreignInput.title,
         updatedAt: now,
-        wordCount: metrics.wordCount,
+        wordCount: 0,
       }
 
       writings.push(created)
-      return {
-        id: created.id,
-      }
+      return { id: created.id }
     },
   }
 }

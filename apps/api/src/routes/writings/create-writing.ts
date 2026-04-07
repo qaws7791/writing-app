@@ -25,12 +25,14 @@ export default route({
   handler: async ({ createWriting, body, context }) => {
     const userId = requireUserId(context)
     const result = await createWriting(userId, {
-      content: body.content,
+      title: body.title,
+      bodyJson: body.bodyJson,
+      bodyPlainText: body.bodyPlainText,
+      wordCount: body.wordCount,
       sourcePromptId:
         body.sourcePromptId === undefined
           ? undefined
           : toPromptId(body.sourcePromptId),
-      title: body.title,
     })
     return unwrapOrThrow(result)
   },

@@ -1,11 +1,17 @@
 import { z } from "zod"
 
-import { writingSummarySchema } from "../writings/writing-schemas"
 import { promptSummarySchema } from "../prompts/prompt-schemas"
 
+export const activeJourneySummarySchema = z.object({
+  journeyId: z.number().int(),
+  title: z.string(),
+  description: z.string(),
+  thumbnailUrl: z.string().nullable(),
+  completionRate: z.number(),
+  currentSessionOrder: z.number().int(),
+})
+
 export const homeSnapshotSchema = z.object({
-  recentWritings: z.array(writingSummarySchema).readonly(),
-  resumeWriting: writingSummarySchema.nullable(),
-  savedPrompts: z.array(promptSummarySchema).readonly(),
-  todayPrompts: z.array(promptSummarySchema).readonly(),
+  dailyPrompt: promptSummarySchema.nullable(),
+  activeJourneys: z.array(activeJourneySummarySchema),
 })

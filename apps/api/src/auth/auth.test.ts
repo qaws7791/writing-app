@@ -6,10 +6,12 @@ import { cors } from "hono/cors"
 import type { OpenAPIHono } from "@hono/zod-openapi"
 
 import {
-  createEmptyWritingContent,
   toWritingId,
   toPromptId,
-  type WritingId,
+  toJourneyId,
+  toSessionId,
+  journeyNotFound,
+  sessionNotFound,
 } from "@workspace/core"
 import { writingNotFound } from "@workspace/core/modules/writings"
 
@@ -84,6 +86,27 @@ function setup(): { app: TestApp } {
 
   const logger = createSilentLogger()
 
+  const stubWriting = {
+    id: toWritingId(1),
+    title: "",
+    preview: "",
+    wordCount: 0,
+    sourcePromptId: null,
+    createdAt: "2026-03-20T00:00:00.000Z",
+    updatedAt: "2026-03-20T00:00:00.000Z",
+    bodyJson: null,
+    bodyPlainText: "",
+  }
+
+  const stubPrompt = {
+    id: toPromptId(1),
+    promptType: "reflection" as const,
+    title: "테스트 글감",
+    body: "테스트 내용",
+    responseCount: 0,
+    isBookmarked: false,
+  }
+
   const app = createApp<AppEnv>({
     globalMiddleware: [
       cors({
@@ -99,112 +122,84 @@ function setup(): { app: TestApp } {
         auth.api.getSession({ headers: request.headers })
       ),
       createUseCaseMiddleware({
-        aiUseCases: {
-          async getSuggestions() {
-            return []
-          },
-          async getDocumentReview() {
-            return []
-          },
-          async getFlowReview() {
-            return []
-          },
-        },
         authHandler: auth.handler,
-        autosaveWritingUseCase(_userId: string, writingId: WritingId) {
+        autosaveWritingUseCase(_userId, _writingId, _input) {
+          return okAsync(stubWriting)
+        },
+        bookmarkPromptUseCase() {
           return okAsync({
-            characterCount: 0,
-            content: createEmptyWritingContent(),
-            createdAt: "2026-03-20T00:00:00.000Z",
-            id: writingId,
-            lastSavedAt: "2026-03-20T00:00:00.000Z",
-            preview: "",
-            sourcePromptId: null,
-            title: "",
-            updatedAt: "2026-03-20T00:00:00.000Z",
-            wordCount: 0,
+            kind: "bookmarked" as const,
+            savedAt: "2026-03-20T00:00:00.000Z",
           })
+        },
+        compareRevisionsUseCase() {
+          return okAsync({ improvements: [], summary: "" })
+        },
+        completeSessionUseCase() {
+          return okAsync(undefined as void)
         },
         createWritingUseCase() {
-          return okAsync({
-            characterCount: 0,
-            content: createEmptyWritingContent(),
-            createdAt: "2026-03-20T00:00:00.000Z",
-            id: toWritingId(1),
-            lastSavedAt: "2026-03-20T00:00:00.000Z",
-            preview: "",
-            sourcePromptId: null,
-            title: "",
-            updatedAt: "2026-03-20T00:00:00.000Z",
-            wordCount: 0,
-          })
+          return okAsync(stubWriting)
         },
         deleteWritingUseCase() {
           return okAsync(undefined as void)
         },
-        getWritingUseCase() {
+        enrollJourneyUseCase() {
           return okAsync({
-            characterCount: 0,
-            content: createEmptyWritingContent(),
-            createdAt: "2026-03-20T00:00:00.000Z",
-            id: toWritingId(1),
-            lastSavedAt: "2026-03-20T00:00:00.000Z",
-            preview: "",
-            sourcePromptId: null,
-            title: "",
-            updatedAt: "2026-03-20T00:00:00.000Z",
-            wordCount: 0,
+            userId: "user-1" as unknown as ReturnType<
+              typeof import("@workspace/core").toUserId
+            >,
+            journeyId: toJourneyId(1),
+            currentSessionOrder: 1,
+            completionRate: 0,
+            status: "in_progress" as const,
           })
         },
-        listWritingsUseCase() {
-          return okAsync({ items: [], nextCursor: null, hasMore: false })
+        generateFeedbackUseCase() {
+          return okAsync({ strengths: [], improvements: [], question: "" })
         },
         getHomeUseCase() {
-          return okAsync({
-            recentWritings: [],
-            resumeWriting: null,
-            savedPrompts: [],
-            todayPrompts: [],
-          })
+          return okAsync({ dailyPrompt: null, activeJourneys: [] })
+        },
+        getJourneyUseCase() {
+          return errAsync(journeyNotFound("여정을 찾을 수 없습니다."))
         },
         getPromptUseCase() {
-          return okAsync({
-            description: "",
-            id: toPromptId(1),
-            level: 1 as const,
-            outline: [],
-            saved: false,
-            suggestedLengthLabel: "짧음" as const,
-            tags: [],
-            text: "테스트 글감",
-            tips: [],
-            topic: "일상" as const,
-          })
+          return okAsync(stubPrompt)
+        },
+        getSessionDetailUseCase() {
+          return errAsync(sessionNotFound("세션을 찾을 수 없습니다."))
+        },
+        getWritingUseCase() {
+          return okAsync(stubWriting)
+        },
+        listJourneysUseCase() {
+          return okAsync([])
         },
         listPromptsUseCase() {
           return okAsync([])
         },
-        savePromptUseCase() {
-          return okAsync({
-            savedAt: "2026-03-20T00:00:00.000Z",
-          })
-        },
-        unsavePromptUseCase() {
-          return okAsync(undefined as void)
+        listWritingsUseCase() {
+          return okAsync({ items: [], nextCursor: null })
         },
         readLatestAuthEmail: inbox.readLatestMessage,
         sqliteVersion: "memory",
-        pushTransactionsUseCase() {
-          return errAsync(writingNotFound("stub"))
+        startSessionUseCase() {
+          return okAsync({
+            userId: "user-1" as unknown as ReturnType<
+              typeof import("@workspace/core").toUserId
+            >,
+            sessionId: toSessionId(1),
+            currentStepOrder: 1,
+            status: "in_progress" as const,
+            stepResponsesJson: {},
+          })
         },
-        pullDocumentUseCase() {
-          return errAsync(writingNotFound("stub"))
+        submitStepUseCase() {
+          return okAsync(undefined as void)
         },
-        listVersionsUseCase() {
-          return okAsync({ items: [], nextCursor: null, hasMore: false })
-        },
-        getVersionUseCase() {
-          return errAsync(writingNotFound("stub"))
+        unbookmarkPromptUseCase() {
+          return okAsync(undefined as void)
         },
       }),
       createTimeoutMiddleware(),
@@ -397,52 +392,59 @@ describe("auth", () => {
     expect(homeResponse.status).toBe(200)
   })
 
-  test("supports password reset and rejects the old password afterwards", async () => {
+  test("supports password reset flow", async () => {
     const { app } = setup()
-    const email = createEmailAddress("auth-reset")
+    const email = createEmailAddress("pwd-reset")
 
     await signUp(app, email)
     await verifyEmail(app, email)
 
-    const requestReset = await app.request("/api/auth/request-password-reset", {
-      body: JSON.stringify({
-        email,
-        redirectTo: "http://127.0.0.1:3000/reset-password",
-      }),
-      headers: {
-        "content-type": "application/json",
-        origin: "http://127.0.0.1:3000",
-      },
-      method: "POST",
-    })
+    const requestResetResponse = await app.request(
+      "/api/auth/forget-password",
+      {
+        body: JSON.stringify({
+          email,
+          redirectTo: "http://127.0.0.1:3000/reset-password",
+        }),
+        headers: {
+          "content-type": "application/json",
+          origin: "http://127.0.0.1:3000",
+        },
+        method: "POST",
+      }
+    )
 
-    expect(requestReset.status).toBe(200)
+    expect(requestResetResponse.ok).toBeTruthy()
 
-    const token = await extractResetToken(app, email)
-    const resetResponse = await app.request("/api/auth/reset-password", {
-      body: JSON.stringify({
-        newPassword: "new-password1234",
-        token,
-      }),
-      headers: {
-        "content-type": "application/json",
-        origin: "http://127.0.0.1:3000",
-      },
-      method: "POST",
-    })
+    const resetToken = await extractResetToken(app, email)
 
-    expect(resetResponse.status).toBe(200)
+    const resetPasswordResponse = await app.request(
+      "/api/auth/reset-password",
+      {
+        body: JSON.stringify({
+          newPassword: "newpassword1234",
+          token: resetToken,
+        }),
+        headers: {
+          "content-type": "application/json",
+          origin: "http://127.0.0.1:3000",
+        },
+        method: "POST",
+      }
+    )
 
-    const oldPasswordSignIn = await signIn(app, {
+    expect(resetPasswordResponse.ok).toBeTruthy()
+
+    const signInWithOldPassword = await signIn(app, {
       email,
       password: "password1234",
     })
-    const newPasswordSignIn = await signIn(app, {
+    const signInWithNewPassword = await signIn(app, {
       email,
-      password: "new-password1234",
+      password: "newpassword1234",
     })
 
-    expect(oldPasswordSignIn.status).toBeGreaterThanOrEqual(400)
-    expect(newPasswordSignIn.status).toBe(200)
+    expect(signInWithOldPassword.status).toBeGreaterThanOrEqual(400)
+    expect(signInWithNewPassword.status).toBe(200)
   })
 })

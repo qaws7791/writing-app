@@ -23,17 +23,13 @@ async function readJson<TResponse>(response: Response): Promise<TResponse> {
 }
 
 describe("health", () => {
-  test("reports sqlite version", async () => {
+  test("reports server status", async () => {
     const { app } = setup()
     const response = await app.request("/health")
-    const body = await readJson<{
-      sqliteVersion: string
-      status: string
-    }>(response)
+    const body = await readJson<{ status: string }>(response)
 
     expect(response.status).toBe(200)
     expect(body.status).toBe("ok")
-    expect(body.sqliteVersion.length).toBeGreaterThan(0)
   })
 
   test("allows the local web origin through cors", async () => {
@@ -65,78 +61,78 @@ describe("health", () => {
   })
 })
 
-describe("prompts", () => {
-  test("lists today prompts without version prefix", async () => {
+describe("home", () => {
+  test("returns daily prompt and active journeys", async () => {
     const { app } = setup()
     const response = await app.request("/home")
     const body = await readJson<{
-      todayPrompts: Array<{ id: number }>
+      dailyPrompt: { id: number } | null
+      activeJourneys: Array<{ journeyId: number }>
     }>(response)
 
     expect(response.status).toBe(200)
-    expect(body.todayPrompts.length).toBe(2)
+    expect(body.activeJourneys).toEqual([])
+    expect(body.dailyPrompt).not.toBeNull()
   })
+})
 
-  test("filters prompts by query and topic", async () => {
+describe("prompts", () => {
+  test("lists prompts without filters", async () => {
     const { app } = setup()
-    const response = await app.request("/prompts?query=AI&topic=기술")
+    const response = await app.request("/prompts")
     const body = await readJson<{
-      items: Array<{ id: number; text: string; topic: string }>
+      items: Array<{ id: number; promptType: string }>
     }>(response)
 
     expect(response.status).toBe(200)
-    expect(body.items).toHaveLength(1)
-    expect(body.items[0]?.topic).toBe("기술")
-    expect(body.items[0]?.text).toContain("AI")
+    expect(body.items.length).toBeGreaterThan(0)
   })
 
-  test("saves a prompt idempotently and exposes saved filters", async () => {
+  test("bookmarks a prompt idempotently", async () => {
     const { app } = setup()
 
-    const firstSave = await app.request("/prompts/1/save", { method: "PUT" })
-    const secondSave = await app.request("/prompts/1/save", { method: "PUT" })
-    const savedList = await app.request("/prompts?saved=true")
-    const body = await readJson<{
-      items: Array<{ id: number; saved: boolean }>
-    }>(savedList)
+    const firstBookmark = await app.request("/prompts/1/bookmark", {
+      method: "PUT",
+    })
+    const secondBookmark = await app.request("/prompts/1/bookmark", {
+      method: "PUT",
+    })
 
-    expect(firstSave.status).toBe(200)
-    expect(secondSave.status).toBe(200)
-    expect(body.items).toHaveLength(1)
-    expect(body.items[0]).toEqual(
-      expect.objectContaining({
-        id: 1,
-        saved: true,
-      })
+    expect(firstBookmark.status).toBe(200)
+    expect(secondBookmark.status).toBe(200)
+
+    const body = await readJson<{ kind: string; savedAt: string }>(
+      firstBookmark
     )
+    expect(body.kind).toBe("bookmarked")
   })
 
-  test("returns prompt detail and supports unsave", async () => {
+  test("unbookmarks a prompt", async () => {
     const { app } = setup()
 
-    await app.request("/prompts/6/save", { method: "PUT" })
-    const detail = await app.request("/prompts/6")
-    const detailBody = await readJson<{ id: number; saved: boolean }>(detail)
-    const unsave = await app.request("/prompts/6/save", { method: "DELETE" })
-    const savedList = await app.request("/prompts?saved=true")
-    const listBody = await readJson<{ items: Array<{ id: number }> }>(savedList)
+    await app.request("/prompts/1/bookmark", { method: "PUT" })
+    const unbookmark = await app.request("/prompts/1/bookmark", {
+      method: "DELETE",
+    })
 
-    expect(detail.status).toBe(200)
-    expect(detailBody).toEqual(expect.objectContaining({ id: 6, saved: true }))
-    expect(unsave.status).toBe(204)
-    expect(listBody.items).toHaveLength(0)
+    expect(unbookmark.status).toBe(204)
   })
 
-  test("rejects invalid prompt query filters", async () => {
+  test("returns prompt summary", async () => {
     const { app } = setup()
-    const response = await app.request("/prompts?saved=maybe")
-    const body = await readJson<{ error: { code: string } }>(response)
+    const response = await app.request("/prompts/1")
+    const body = await readJson<{
+      id: number
+      promptType: string
+      title: string
+    }>(response)
 
-    expect(response.status).toBe(400)
-    expect(body.error.code).toBe("validation_error")
+    expect(response.status).toBe(200)
+    expect(body.id).toBe(1)
+    expect(body.promptType).toBeDefined()
   })
 
-  test("returns not found for missing prompt details", async () => {
+  test("returns not found for missing prompt", async () => {
     const { app } = setup()
     const response = await app.request("/prompts/999")
     const body = await readJson<{ error: { code: string } }>(response)
@@ -154,21 +150,10 @@ describe("prompts", () => {
     expect(body.error.code).toBe("validation_error")
   })
 
-  test("returns not found when saving an unknown prompt", async () => {
+  test("returns not found when bookmarking an unknown prompt", async () => {
     const { app } = setup()
-    const response = await app.request("/prompts/999/save", {
+    const response = await app.request("/prompts/999/bookmark", {
       method: "PUT",
-    })
-    const body = await readJson<{ error: { code: string } }>(response)
-
-    expect(response.status).toBe(404)
-    expect(body.error.code).toBe("not_found")
-  })
-
-  test("returns not found when unsaving a prompt that was not saved", async () => {
-    const { app } = setup()
-    const response = await app.request("/prompts/6/save", {
-      method: "DELETE",
     })
     const body = await readJson<{ error: { code: string } }>(response)
 
@@ -178,7 +163,7 @@ describe("prompts", () => {
 })
 
 describe("writings", () => {
-  test("creates writing from prompt and lists it", async () => {
+  test("creates writing and lists it", async () => {
     const { app } = setup()
 
     const create = await app.request("/writings", {
@@ -198,27 +183,19 @@ describe("writings", () => {
     expect(listBody.items[0]?.id).toBe(created.id)
   })
 
-  test("creates writing with initial title and content", async () => {
+  test("creates writing with initial title and body", async () => {
     const { app } = setup()
 
     const create = await app.request("/writings", {
       body: JSON.stringify({
-        content: {
-          content: [
-            {
-              content: [{ text: "첫 저장에서 바로 생성합니다", type: "text" }],
-              type: "paragraph",
-            },
-          ],
-          type: "doc",
-        },
         title: "첫 문장부터 저장",
+        bodyPlainText: "첫 저장에서 바로 생성합니다",
+        wordCount: 3,
       }),
       headers: { "content-type": "application/json" },
       method: "POST",
     })
     const created = await readJson<{
-      characterCount: number
       preview: string
       title: string
       wordCount: number
@@ -227,11 +204,10 @@ describe("writings", () => {
     expect(create.status).toBe(201)
     expect(created.title).toBe("첫 문장부터 저장")
     expect(created.preview).toContain("첫 저장에서 바로 생성합니다")
-    expect(created.characterCount).toBeGreaterThan(0)
-    expect(created.wordCount).toBeGreaterThan(0)
+    expect(created.wordCount).toBe(3)
   })
 
-  test("autosaves tiptap json and returns derived metrics", async () => {
+  test("autosaves writing body and title", async () => {
     const { app } = setup()
 
     const create = await app.request("/writings", {
@@ -243,20 +219,9 @@ describe("writings", () => {
 
     const patch = await app.request(`/writings/${created.id}`, {
       body: JSON.stringify({
-        content: {
-          content: [
-            {
-              content: [{ text: "첫 문장 입니다", type: "text" }],
-              type: "paragraph",
-            },
-            {
-              content: [{ text: "둘째 문장도 적습니다", type: "text" }],
-              type: "paragraph",
-            },
-          ],
-          type: "doc",
-        },
         title: "자동저장 테스트",
+        bodyPlainText: "첫 문장 입니다 둘째 문장도 적습니다",
+        wordCount: 6,
       }),
       headers: { "content-type": "application/json" },
       method: "PATCH",
@@ -264,8 +229,6 @@ describe("writings", () => {
 
     const patchBody = await readJson<{
       writing: {
-        characterCount: number
-        content: { type: string }
         preview: string
         title: string
         wordCount: number
@@ -276,13 +239,11 @@ describe("writings", () => {
     expect(patch.status).toBe(200)
     expect(patchBody.kind).toBe("autosaved")
     expect(patchBody.writing.title).toBe("자동저장 테스트")
-    expect(patchBody.writing.content.type).toBe("doc")
     expect(patchBody.writing.preview).toContain("첫 문장")
-    expect(patchBody.writing.characterCount).toBeGreaterThan(0)
-    expect(patchBody.writing.wordCount).toBeGreaterThan(0)
+    expect(patchBody.writing.wordCount).toBe(6)
   })
 
-  test("reloads the same json structure after autosave", async () => {
+  test("reloads the same bodyJson after autosave", async () => {
     const { app } = setup()
 
     const create = await app.request("/writings", {
@@ -292,75 +253,42 @@ describe("writings", () => {
     })
     const created = await readJson<{ id: number }>(create)
 
-    const content = {
-      content: [
-        {
-          content: [{ text: "JSONB 복원", type: "text" }],
-          type: "paragraph",
-        },
-      ],
-      type: "doc",
-    }
+    const bodyJson = { type: "doc", content: [{ type: "paragraph" }] }
 
     await app.request(`/writings/${created.id}`, {
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ bodyJson }),
       headers: { "content-type": "application/json" },
       method: "PATCH",
     })
 
     const detail = await app.request(`/writings/${created.id}`)
-    const body = await readJson<{ content: typeof content }>(detail)
+    const body = await readJson<{ bodyJson: unknown }>(detail)
 
     expect(detail.status).toBe(200)
-    expect(body.content).toEqual(content)
+    expect(body.bodyJson).toEqual(bodyJson)
   })
 
-  test("deletes writings and keeps home resume ordering stable", async () => {
+  test("deletes writing", async () => {
     const { app } = setup()
 
-    const firstCreate = await app.request("/writings", {
+    const create = await app.request("/writings", {
       body: JSON.stringify({}),
       headers: { "content-type": "application/json" },
       method: "POST",
     })
-    const secondCreate = await app.request("/writings", {
-      body: JSON.stringify({}),
-      headers: { "content-type": "application/json" },
-      method: "POST",
-    })
+    const created = await readJson<{ id: number }>(create)
 
-    const first = await readJson<{ id: number }>(firstCreate)
-    const second = await readJson<{ id: number }>(secondCreate)
-
-    await app.request(`/writings/${first.id}`, {
-      body: JSON.stringify({ title: "첫 글" }),
-      headers: { "content-type": "application/json" },
-      method: "PATCH",
-    })
-    await app.request(`/writings/${second.id}`, {
-      body: JSON.stringify({ title: "둘째 글" }),
-      headers: { "content-type": "application/json" },
-      method: "PATCH",
-    })
-
-    const home = await app.request("/home")
-    const homeBody = await readJson<{
-      recentWritings: Array<{ id: number }>
-      resumeWriting: { id: number } | null
-    }>(home)
-    const deleted = await app.request(`/writings/${second.id}`, {
+    const deleted = await app.request(`/writings/${created.id}`, {
       method: "DELETE",
     })
     const list = await app.request("/writings")
     const listBody = await readJson<{ items: Array<{ id: number }> }>(list)
 
-    expect(homeBody.resumeWriting?.id).toBe(second.id)
-    expect(homeBody.recentWritings[0]?.id).toBe(second.id)
     expect(deleted.status).toBe(204)
-    expect(listBody.items.map((item) => item.id)).toEqual([first.id])
+    expect(listBody.items).toHaveLength(0)
   })
 
-  test("rejects malformed writing payloads", async () => {
+  test("rejects extra fields in autosave payloads", async () => {
     const { app } = setup()
 
     const create = await app.request("/writings", {
@@ -371,13 +299,7 @@ describe("writings", () => {
     const created = await readJson<{ id: number }>(create)
 
     const response = await app.request(`/writings/${created.id}`, {
-      body: JSON.stringify({
-        content: {
-          content: [],
-          invalid: true,
-          type: "doc",
-        },
-      }),
+      body: JSON.stringify({ unknownField: true }),
       headers: { "content-type": "application/json" },
       method: "PATCH",
     })
@@ -420,7 +342,7 @@ describe("writings", () => {
     expect(body.error.code).toBe("invalid_json")
   })
 
-  test("rejects malformed create writing payloads", async () => {
+  test("rejects title exceeding max length", async () => {
     const { app } = setup()
 
     const response = await app.request("/writings", {
@@ -438,9 +360,7 @@ describe("writings", () => {
 
   test("returns forbidden for writings owned by another user", async () => {
     const { app, injectForeignWriting } = setup()
-    const created = injectForeignWriting({
-      title: "숨겨진 글",
-    })
+    const created = injectForeignWriting({ title: "숨겨진 글" })
 
     const response = await app.request(`/writings/${created.id}`)
     const body = await readJson<{ error: { code: string } }>(response)
@@ -482,15 +402,11 @@ describe("fallbacks", () => {
 describe("logging", () => {
   test("logs request lifecycle and reuses request ids", async () => {
     const { entries, logger } = createCapturedLogger()
-    const api = createTestApi({
-      logger,
-    })
+    const api = createTestApi({ logger })
     createdApps.push(api)
 
     const response = await api.app.request("/health", {
-      headers: {
-        "x-request-id": "req-123",
-      },
+      headers: { "x-request-id": "req-123" },
     })
 
     const started = entries.find((entry) => entry.msg === "request started")
@@ -517,14 +433,12 @@ describe("logging", () => {
     expect(completed?.durationMs).toEqual(expect.any(Number))
   })
 
-  test("logs 4xx errors at warn level", async () => {
+  test("logs 4xx validation errors at warn level", async () => {
     const { entries, logger } = createCapturedLogger()
-    const api = createTestApi({
-      logger,
-    })
+    const api = createTestApi({ logger })
     createdApps.push(api)
 
-    const response = await api.app.request("/prompts?saved=maybe")
+    const response = await api.app.request("/writings/invalid")
     const failed = entries.find((entry) => entry.msg === "request failed")
 
     expect(response.status).toBe(400)
@@ -615,7 +529,7 @@ describe("logging", () => {
 
   test("does not include requestId in 4xx error responses", async () => {
     const { app } = setup()
-    const response = await app.request("/prompts?saved=maybe")
+    const response = await app.request("/writings/invalid")
     const body = await readJson<{
       error: { code: string; requestId?: string }
     }>(response)
@@ -624,18 +538,13 @@ describe("logging", () => {
     expect(body.error.requestId).toBeUndefined()
   })
 
-  test("serves the openapi document for recursive writing schemas", async () => {
+  test("serves the openapi document with new route paths", async () => {
     const { entries, logger } = createCapturedLogger()
-    const api = createTestApi({
-      logger,
-    })
+    const api = createTestApi({ logger })
     createdApps.push(api)
 
     const response = await api.app.request("/openapi.json")
     const body = await readJson<{
-      components?: {
-        schemas?: Record<string, unknown>
-      }
       openapi: string
       paths?: Record<string, unknown>
     }>(response)
@@ -646,9 +555,8 @@ describe("logging", () => {
     expect(response.status).toBe(200)
     expect(body.openapi).toBe("3.0.0")
     expect(body.paths).toHaveProperty("/writings")
-    expect(body.paths).toHaveProperty("/writings/{writingId}")
-    expect(body.components?.schemas).toHaveProperty("WritingContent")
-    expect(body.components?.schemas).toHaveProperty("TiptapNode")
+    expect(body.paths).toHaveProperty("/journeys")
+    expect(body.paths).toHaveProperty("/home")
     expect(failed).toBeUndefined()
   })
 })

@@ -1,33 +1,20 @@
 import type { PromptId } from "../../shared/brand/index"
-import type {
-  PromptLengthLabel,
-  PromptLevel,
-  PromptTopic,
-} from "../../shared/schema/index"
 
-export type PromptSaveResult =
-  | { kind: "saved"; savedAt: string }
-  | { kind: "not-found" }
-
-export type PromptListFilters = {
-  level?: PromptLevel
-  query?: string
-  saved?: boolean
-  topic?: PromptTopic
-}
+export type PromptType = "sensory" | "reflection" | "opinion"
 
 export type PromptSummary = {
   readonly id: PromptId
-  readonly level: PromptLevel
-  readonly saved: boolean
-  readonly suggestedLengthLabel: PromptLengthLabel
-  readonly tags: readonly string[]
-  readonly text: string
-  readonly topic: PromptTopic
+  readonly promptType: PromptType
+  readonly title: string
+  readonly body: string
+  readonly responseCount: number
+  readonly isBookmarked: boolean
 }
 
-export type PromptDetail = PromptSummary & {
-  readonly description: string
-  readonly outline: readonly string[]
-  readonly tips: readonly string[]
+export type PromptListFilters = {
+  promptType?: PromptType
 }
+
+export type PromptBookmarkResult =
+  | { kind: "bookmarked"; savedAt: string }
+  | { kind: "not-found" }

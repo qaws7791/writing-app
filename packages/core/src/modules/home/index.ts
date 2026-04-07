@@ -1,8 +1,8 @@
 // Types
-export type { HomeSnapshot } from "./home-types"
+export type { HomeSnapshot, ActiveJourneySummary } from "./home-types"
 
 // Schemas
-export { homeSnapshotSchema } from "./home-schemas"
+export { homeSnapshotSchema, activeJourneySummarySchema } from "./home-schemas"
 
 // Use Cases
 export type { GetHomeDeps } from "./use-cases/index"

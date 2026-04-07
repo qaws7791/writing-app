@@ -1,135 +1,101 @@
 import { and, eq } from "drizzle-orm"
 
-import {
-  userJourneyProgress,
-  type JourneyProgressStatus,
-} from "../schema/user-journey-progress"
-import {
-  userSessionProgress,
-  type SessionProgressStatus,
-} from "../schema/user-session-progress"
+import type {
+  UserId,
+  JourneyId,
+  SessionId,
+  ProgressRepository,
+  UserJourneyProgress,
+  UserSessionProgress,
+  JourneyProgressStatus,
+  SessionProgressStatus,
+} from "@workspace/core"
+
+import { userJourneyProgress } from "../schema/user-journey-progress"
+import { userSessionProgress } from "../schema/user-session-progress"
 import { journeySessions } from "../schema/journey-sessions"
 import type { DbClient } from "../types/index"
 
-export type UserJourneyProgressSummary = {
-  id: number
+function mapJourneyProgress(row: {
   userId: string
   journeyId: number
   currentSessionOrder: number
   completionRate: number
   status: string
+}): UserJourneyProgress {
+  return {
+    userId: row.userId as unknown as UserId,
+    journeyId: row.journeyId as unknown as JourneyId,
+    currentSessionOrder: row.currentSessionOrder,
+    completionRate: row.completionRate,
+    status: row.status as JourneyProgressStatus,
+  }
 }
 
-export type UserSessionProgressSummary = {
-  id: number
+function mapSessionProgress(row: {
   userId: string
   sessionId: number
   currentStepOrder: number
   status: string
   stepResponsesJson: unknown
-}
-
-export type ProgressRepository = {
-  getJourneyProgress: (
-    userId: string,
-    journeyId: number
-  ) => Promise<UserJourneyProgressSummary | null>
-  listInProgressJourneys: (
-    userId: string
-  ) => Promise<UserJourneyProgressSummary[]>
-  enrollJourney: (
-    userId: string,
-    journeyId: number
-  ) => Promise<UserJourneyProgressSummary>
-  updateJourneyProgress: (
-    userId: string,
-    journeyId: number,
-    update: {
-      currentSessionOrder?: number
-      completionRate?: number
-      status?: JourneyProgressStatus
-    }
-  ) => Promise<void>
-  getSessionProgress: (
-    userId: string,
-    sessionId: number
-  ) => Promise<UserSessionProgressSummary | null>
-  startSession: (
-    userId: string,
-    sessionId: number
-  ) => Promise<UserSessionProgressSummary>
-  updateSessionProgress: (
-    userId: string,
-    sessionId: number,
-    update: {
-      currentStepOrder?: number
-      status?: SessionProgressStatus
-      stepResponsesJson?: unknown
-    }
-  ) => Promise<void>
-  initSessionProgressForJourney: (
-    userId: string,
-    journeyId: number
-  ) => Promise<void>
+}): UserSessionProgress {
+  return {
+    userId: row.userId as unknown as UserId,
+    sessionId: row.sessionId as unknown as SessionId,
+    currentStepOrder: row.currentStepOrder,
+    status: row.status as SessionProgressStatus,
+    stepResponsesJson: (row.stepResponsesJson ?? {}) as Record<string, unknown>,
+  }
 }
 
 export function createProgressRepository(
   database: DbClient
 ): ProgressRepository {
   return {
-    async getJourneyProgress(userId, journeyId) {
+    async getJourneyProgress(
+      userId: UserId,
+      journeyId: JourneyId
+    ): Promise<UserJourneyProgress | null> {
       const row = await database
         .select()
         .from(userJourneyProgress)
         .where(
           and(
-            eq(userJourneyProgress.userId, userId),
-            eq(userJourneyProgress.journeyId, journeyId)
+            eq(userJourneyProgress.userId, userId as unknown as string),
+            eq(userJourneyProgress.journeyId, journeyId as unknown as number)
           )
         )
         .limit(1)
         .then((rows) => rows[0] ?? null)
 
       if (!row) return null
-
-      return {
-        id: row.id,
-        userId: row.userId,
-        journeyId: row.journeyId,
-        currentSessionOrder: row.currentSessionOrder,
-        completionRate: row.completionRate,
-        status: row.status,
-      }
+      return mapJourneyProgress(row)
     },
 
-    async listInProgressJourneys(userId) {
+    async listActiveJourneys(userId: UserId): Promise<UserJourneyProgress[]> {
       const rows = await database
         .select()
         .from(userJourneyProgress)
         .where(
           and(
-            eq(userJourneyProgress.userId, userId),
+            eq(userJourneyProgress.userId, userId as unknown as string),
             eq(userJourneyProgress.status, "in_progress")
           )
         )
 
-      return rows.map((row) => ({
-        id: row.id,
-        userId: row.userId,
-        journeyId: row.journeyId,
-        currentSessionOrder: row.currentSessionOrder,
-        completionRate: row.completionRate,
-        status: row.status,
-      }))
+      return rows.map(mapJourneyProgress)
     },
 
-    async enrollJourney(userId, journeyId) {
+    async enrollJourney(
+      userId: UserId,
+      journeyId: JourneyId
+    ): Promise<UserJourneyProgress> {
       const now = new Date()
       const row = await database
         .insert(userJourneyProgress)
         .values({
-          userId,
-          journeyId,
+          userId: userId as unknown as string,
+          journeyId: journeyId as unknown as number,
           currentSessionOrder: 1,
           completionRate: 0,
           status: "in_progress",
@@ -145,17 +111,18 @@ export function createProgressRepository(
         return existing!
       }
 
-      return {
-        id: row.id,
-        userId: row.userId,
-        journeyId: row.journeyId,
-        currentSessionOrder: row.currentSessionOrder,
-        completionRate: row.completionRate,
-        status: row.status,
-      }
+      return mapJourneyProgress(row)
     },
 
-    async updateJourneyProgress(userId, journeyId, update) {
+    async updateJourneyProgress(
+      userId: UserId,
+      journeyId: JourneyId,
+      update: {
+        currentSessionOrder?: number
+        completionRate?: number
+        status?: JourneyProgressStatus
+      }
+    ): Promise<void> {
       await database
         .update(userJourneyProgress)
         .set({
@@ -170,44 +137,69 @@ export function createProgressRepository(
         })
         .where(
           and(
-            eq(userJourneyProgress.userId, userId),
-            eq(userJourneyProgress.journeyId, journeyId)
+            eq(userJourneyProgress.userId, userId as unknown as string),
+            eq(userJourneyProgress.journeyId, journeyId as unknown as number)
           )
         )
     },
 
-    async getSessionProgress(userId, sessionId) {
+    async initSessionProgressForJourney(
+      userId: UserId,
+      journeyId: JourneyId
+    ): Promise<void> {
+      const sessions = await database
+        .select({ id: journeySessions.id, order: journeySessions.order })
+        .from(journeySessions)
+        .where(eq(journeySessions.journeyId, journeyId as unknown as number))
+        .orderBy(journeySessions.order)
+
+      const now = new Date()
+      for (const session of sessions) {
+        await database
+          .insert(userSessionProgress)
+          .values({
+            userId: userId as unknown as string,
+            sessionId: session.id,
+            currentStepOrder: 1,
+            status: session.order === 1 ? "in_progress" : "locked",
+            stepResponsesJson: {},
+            createdAt: now,
+            updatedAt: now,
+          })
+          .onConflictDoNothing()
+      }
+    },
+
+    async getSessionProgress(
+      userId: UserId,
+      sessionId: SessionId
+    ): Promise<UserSessionProgress | null> {
       const row = await database
         .select()
         .from(userSessionProgress)
         .where(
           and(
-            eq(userSessionProgress.userId, userId),
-            eq(userSessionProgress.sessionId, sessionId)
+            eq(userSessionProgress.userId, userId as unknown as string),
+            eq(userSessionProgress.sessionId, sessionId as unknown as number)
           )
         )
         .limit(1)
         .then((rows) => rows[0] ?? null)
 
       if (!row) return null
-
-      return {
-        id: row.id,
-        userId: row.userId,
-        sessionId: row.sessionId,
-        currentStepOrder: row.currentStepOrder,
-        status: row.status,
-        stepResponsesJson: row.stepResponsesJson,
-      }
+      return mapSessionProgress(row)
     },
 
-    async startSession(userId, sessionId) {
+    async startSession(
+      userId: UserId,
+      sessionId: SessionId
+    ): Promise<UserSessionProgress> {
       const now = new Date()
       const row = await database
         .insert(userSessionProgress)
         .values({
-          userId,
-          sessionId,
+          userId: userId as unknown as string,
+          sessionId: sessionId as unknown as number,
           currentStepOrder: 1,
           status: "in_progress",
           stepResponsesJson: {},
@@ -221,17 +213,18 @@ export function createProgressRepository(
         .returning()
         .then((rows) => rows[0]!)
 
-      return {
-        id: row.id,
-        userId: row.userId,
-        sessionId: row.sessionId,
-        currentStepOrder: row.currentStepOrder,
-        status: row.status,
-        stepResponsesJson: row.stepResponsesJson,
-      }
+      return mapSessionProgress(row)
     },
 
-    async updateSessionProgress(userId, sessionId, update) {
+    async updateSessionProgress(
+      userId: UserId,
+      sessionId: SessionId,
+      update: {
+        currentStepOrder?: number
+        status?: SessionProgressStatus
+        stepResponsesJson?: Record<string, unknown>
+      }
+    ): Promise<void> {
       await database
         .update(userSessionProgress)
         .set({
@@ -246,34 +239,10 @@ export function createProgressRepository(
         })
         .where(
           and(
-            eq(userSessionProgress.userId, userId),
-            eq(userSessionProgress.sessionId, sessionId)
+            eq(userSessionProgress.userId, userId as unknown as string),
+            eq(userSessionProgress.sessionId, sessionId as unknown as number)
           )
         )
-    },
-
-    async initSessionProgressForJourney(userId, journeyId) {
-      const sessions = await database
-        .select({ id: journeySessions.id, order: journeySessions.order })
-        .from(journeySessions)
-        .where(eq(journeySessions.journeyId, journeyId))
-        .orderBy(journeySessions.order)
-
-      const now = new Date()
-      for (const session of sessions) {
-        await database
-          .insert(userSessionProgress)
-          .values({
-            userId,
-            sessionId: session.id,
-            currentStepOrder: 1,
-            status: session.order === 1 ? "in_progress" : "locked",
-            stepResponsesJson: {},
-            createdAt: now,
-            updatedAt: now,
-          })
-          .onConflictDoNothing()
-      }
     },
   }
 }

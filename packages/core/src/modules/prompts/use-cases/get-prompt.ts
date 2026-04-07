@@ -1,7 +1,7 @@
 import { err, ok, ResultAsync } from "neverthrow"
 
 import type { PromptId, UserId } from "../../../shared/brand/index"
-import type { PromptDetail } from "../prompt-types"
+import type { PromptSummary } from "../prompt-types"
 import type { PromptRepository } from "../prompt-port"
 import { promptNotFound, type PromptModuleError } from "../prompt-error"
 
@@ -11,11 +11,11 @@ export type GetPromptDeps = {
 
 export function makeGetPromptUseCase(deps: GetPromptDeps) {
   return (
-    userId: UserId,
-    promptId: PromptId
-  ): ResultAsync<PromptDetail, PromptModuleError> =>
+    promptId: PromptId,
+    userId: UserId | null
+  ): ResultAsync<PromptSummary, PromptModuleError> =>
     ResultAsync.fromSafePromise(
-      deps.promptRepository.getById(userId, promptId)
+      deps.promptRepository.getById(promptId, userId)
     ).andThen((prompt) =>
       prompt !== null
         ? ok(prompt)

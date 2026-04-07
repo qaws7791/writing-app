@@ -95,33 +95,39 @@ export function createUseCaseMiddleware(
   useCases: AppUseCases
 ): MiddlewareHandler<AppEnv> {
   return async (c, next) => {
-    c.set("aiUseCases", useCases.aiUseCases)
     c.set("authHandler", useCases.authHandler)
     c.set("autosaveWritingUseCase", useCases.autosaveWritingUseCase)
+    c.set("bookmarkPromptUseCase", useCases.bookmarkPromptUseCase)
+    c.set("compareRevisionsUseCase", useCases.compareRevisionsUseCase)
+    c.set("completeSessionUseCase", useCases.completeSessionUseCase)
     c.set("createWritingUseCase", useCases.createWritingUseCase)
     c.set("deleteWritingUseCase", useCases.deleteWritingUseCase)
+    c.set("enrollJourneyUseCase", useCases.enrollJourneyUseCase)
+    c.set("generateFeedbackUseCase", useCases.generateFeedbackUseCase)
     c.set("getHomeUseCase", useCases.getHomeUseCase)
+    c.set("getJourneyUseCase", useCases.getJourneyUseCase)
     c.set("getPromptUseCase", useCases.getPromptUseCase)
-    c.set("getVersionUseCase", useCases.getVersionUseCase)
+    c.set("getSessionDetailUseCase", useCases.getSessionDetailUseCase)
     c.set("getWritingUseCase", useCases.getWritingUseCase)
+    c.set("listJourneysUseCase", useCases.listJourneysUseCase)
     c.set("listPromptsUseCase", useCases.listPromptsUseCase)
-    c.set("listVersionsUseCase", useCases.listVersionsUseCase)
     c.set("listWritingsUseCase", useCases.listWritingsUseCase)
-    c.set("pullDocumentUseCase", useCases.pullDocumentUseCase)
-    c.set("pushTransactionsUseCase", useCases.pushTransactionsUseCase)
     c.set("readLatestAuthEmail", useCases.readLatestAuthEmail)
-    c.set("savePromptUseCase", useCases.savePromptUseCase)
     c.set("sqliteVersion", useCases.sqliteVersion)
-    c.set("unsavePromptUseCase", useCases.unsavePromptUseCase)
+    c.set("startSessionUseCase", useCases.startSessionUseCase)
+    c.set("submitStepUseCase", useCases.submitStepUseCase)
+    c.set("unbookmarkPromptUseCase", useCases.unbookmarkPromptUseCase)
     return next()
   }
 }
 
 export function createTimeoutMiddleware(): MiddlewareHandler<AppEnv> {
   return (c, next) => {
-    const ms = c.req.path.startsWith("/ai/")
-      ? AI_TIMEOUT_MS
-      : DEFAULT_TIMEOUT_MS
+    const ms =
+      c.req.path.startsWith("/writings/") &&
+      (c.req.path.endsWith("/feedback") || c.req.path.endsWith("/compare"))
+        ? AI_TIMEOUT_MS
+        : DEFAULT_TIMEOUT_MS
     return timeout(ms, throwTimeoutError)(c, next)
   }
 }

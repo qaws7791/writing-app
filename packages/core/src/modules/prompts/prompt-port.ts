@@ -1,23 +1,23 @@
 import type { PromptId, UserId } from "../../shared/brand/index"
 import type {
-  PromptDetail,
+  PromptBookmarkResult,
   PromptListFilters,
-  PromptSaveResult,
   PromptSummary,
 } from "./prompt-types"
 
 export interface PromptRepository {
-  exists(promptId: PromptId): Promise<boolean>
-  getById(userId: UserId, promptId: PromptId): Promise<PromptDetail | null>
   list(
-    userId: UserId,
-    filters: PromptListFilters
-  ): Promise<readonly PromptSummary[]>
-  listSaved(userId: UserId, limit?: number): Promise<readonly PromptSummary[]>
-  listTodayPrompts(
-    userId: UserId,
-    limit: number
-  ): Promise<readonly PromptSummary[]>
-  save(userId: UserId, promptId: PromptId): Promise<PromptSaveResult>
-  unsave(userId: UserId, promptId: PromptId): Promise<boolean>
+    userId: UserId | null,
+    filters?: PromptListFilters
+  ): Promise<PromptSummary[]>
+  getById(
+    promptId: PromptId,
+    userId: UserId | null
+  ): Promise<PromptSummary | null>
+  getDailyPrompt(
+    userId: UserId | null,
+    dateKey: string
+  ): Promise<PromptSummary | null>
+  bookmark(userId: UserId, promptId: PromptId): Promise<PromptBookmarkResult>
+  unbookmark(userId: UserId, promptId: PromptId): Promise<void>
 }

@@ -1,5 +1,5 @@
 import { asFunction, asValue, type AwilixContainer } from "awilix"
-import { openDb, readSqliteVersion } from "@workspace/database"
+import { openDb } from "@workspace/database"
 
 import { createApiLogger } from "../../observability/logger"
 import type { ApiCradle } from "../container"
@@ -22,8 +22,10 @@ export function registerInfrastructure(
       .singleton()
       .disposer((database) => database.close()),
 
-    sqliteVersion: asFunction(({ database }: ApiCradle) =>
-      readSqliteVersion(database.sqlite)
-    ).singleton(),
+    sqliteVersion: asFunction(async ({ database }: ApiCradle) => {
+      const rows = await database.sql`SELECT version()`
+      const row = rows[0] as { version?: string } | undefined
+      return row?.version ?? "unknown"
+    }).singleton(),
   })
 }

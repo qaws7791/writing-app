@@ -27,13 +27,8 @@ export function makeGetWritingUseCase(deps: GetWritingDeps) {
         .with({ kind: "not-found" }, () =>
           err(writingNotFound("글을 찾을 수 없습니다.", writingId))
         )
-        .with({ kind: "forbidden" }, ({ ownerId }) =>
-          err(
-            writingForbidden(
-              "다른 사용자의 글에는 접근할 수 없습니다.",
-              ownerId
-            )
-          )
+        .with({ kind: "forbidden" }, () =>
+          err(writingForbidden("다른 사용자의 글에는 접근할 수 없습니다."))
         )
         .exhaustive()
     )

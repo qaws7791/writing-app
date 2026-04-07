@@ -1,44 +1,52 @@
 import { ResultAsync } from "neverthrow"
 
 import type { UserId } from "../../../shared/brand/index"
-import type { DailyRecommendationRepository } from "../../daily-recommendation/daily-recommendation-port"
-import { makeEnsureTodayRecommendationsUseCase } from "../../daily-recommendation/use-cases/ensure-today-recommendations"
-import type { WritingRepository } from "../../writings/writing-port"
 import type { PromptRepository } from "../../prompts/prompt-port"
-import type { HomeSnapshot } from "../home-types"
+import type { ProgressRepository } from "../../progress/progress-port"
+import type { JourneyRepository } from "../../journeys/journey-port"
+import type { HomeSnapshot, ActiveJourneySummary } from "../home-types"
+
+function getKstDateKey(): string {
+  const now = new Date()
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000)
+  return kst.toISOString().slice(0, 10)
+}
 
 export type GetHomeDeps = {
-  readonly dailyRecommendationRepository: DailyRecommendationRepository
-  readonly writingRepository: WritingRepository
   readonly promptRepository: PromptRepository
+  readonly progressRepository: ProgressRepository
+  readonly journeyRepository: JourneyRepository
 }
 
 export function makeGetHomeUseCase(deps: GetHomeDeps) {
-  const ensureTodayRecommendations = makeEnsureTodayRecommendationsUseCase({
-    dailyRecommendationRepository: deps.dailyRecommendationRepository,
-  })
-
   return (userId: UserId): ResultAsync<HomeSnapshot, never> =>
     ResultAsync.fromSafePromise(
-      ensureTodayRecommendations().then(() =>
-        Promise.all([
-          deps.promptRepository.listTodayPrompts(userId, 2),
-          deps.writingRepository.resume(userId),
-          deps.writingRepository.list(userId, { limit: 10 }),
-          deps.promptRepository.listSaved(userId, 10),
-        ]).then(
-          ([
-            todayPrompts,
-            resumeWriting,
-            recentWritingsPage,
-            savedPrompts,
-          ]) => ({
-            recentWritings: recentWritingsPage.items,
-            resumeWriting,
-            savedPrompts,
-            todayPrompts,
-          })
+      Promise.all([
+        deps.promptRepository.getDailyPrompt(userId, getKstDateKey()),
+        deps.progressRepository.listActiveJourneys(userId),
+      ]).then(async ([dailyPrompt, activeProgresses]) => {
+        const journeyDetails = await Promise.all(
+          activeProgresses.map((p) =>
+            deps.journeyRepository.getById(p.journeyId)
+          )
         )
-      )
+
+        const activeJourneys: ActiveJourneySummary[] = activeProgresses
+          .map((p, i) => {
+            const journey = journeyDetails[i]
+            if (!journey) return null
+            return {
+              journeyId: p.journeyId,
+              title: journey.title,
+              description: journey.description,
+              thumbnailUrl: journey.thumbnailUrl,
+              completionRate: p.completionRate,
+              currentSessionOrder: p.currentSessionOrder,
+            }
+          })
+          .filter((j): j is ActiveJourneySummary => j !== null)
+
+        return { dailyPrompt, activeJourneys }
+      })
     )
 }

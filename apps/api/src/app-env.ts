@@ -1,23 +1,27 @@
 import type { UserId } from "@workspace/core"
 
-import type { AIApiService } from "./services/ai-services"
 import type { DevEmailInbox } from "./auth/auth-email"
 import type { ApiLogger } from "./observability/logger"
 import type {
   AutosaveWritingUseCase,
+  BookmarkPromptUseCase,
+  CompareRevisionsUseCase,
+  CompleteSessionUseCase,
   CreateWritingUseCase,
   DeleteWritingUseCase,
+  EnrollJourneyUseCase,
+  GenerateFeedbackUseCase,
   GetHomeUseCase,
+  GetJourneyUseCase,
   GetPromptUseCase,
-  GetVersionUseCase,
+  GetSessionDetailUseCase,
   GetWritingUseCase,
+  ListJourneysUseCase,
   ListPromptsUseCase,
-  ListVersionsUseCase,
   ListWritingsUseCase,
-  PullDocumentUseCase,
-  PushTransactionsUseCase,
-  SavePromptUseCase,
-  UnsavePromptUseCase,
+  StartSessionUseCase,
+  SubmitStepUseCase,
+  UnbookmarkPromptUseCase,
 } from "./runtime/modules/use-cases"
 
 export type AuthenticatedSession = {
@@ -47,24 +51,28 @@ export type AuthSession = {
 export type GetSession = (request: Request) => Promise<AuthSession | null>
 
 export type AppUseCases = {
-  aiUseCases: AIApiService
   authHandler: (request: Request) => Promise<Response>
   autosaveWritingUseCase: AutosaveWritingUseCase
+  bookmarkPromptUseCase: BookmarkPromptUseCase
+  compareRevisionsUseCase: CompareRevisionsUseCase
+  completeSessionUseCase: CompleteSessionUseCase
   createWritingUseCase: CreateWritingUseCase
   deleteWritingUseCase: DeleteWritingUseCase
+  enrollJourneyUseCase: EnrollJourneyUseCase
+  generateFeedbackUseCase: GenerateFeedbackUseCase
   getHomeUseCase: GetHomeUseCase
+  getJourneyUseCase: GetJourneyUseCase
   getPromptUseCase: GetPromptUseCase
-  getVersionUseCase: GetVersionUseCase
+  getSessionDetailUseCase: GetSessionDetailUseCase
   getWritingUseCase: GetWritingUseCase
+  listJourneysUseCase: ListJourneysUseCase
   listPromptsUseCase: ListPromptsUseCase
-  listVersionsUseCase: ListVersionsUseCase
   listWritingsUseCase: ListWritingsUseCase
-  pullDocumentUseCase: PullDocumentUseCase
-  pushTransactionsUseCase: PushTransactionsUseCase
   readLatestAuthEmail?: DevEmailInbox["readLatestMessage"]
-  savePromptUseCase: SavePromptUseCase
   sqliteVersion: string
-  unsavePromptUseCase: UnsavePromptUseCase
+  startSessionUseCase: StartSessionUseCase
+  submitStepUseCase: SubmitStepUseCase
+  unbookmarkPromptUseCase: UnbookmarkPromptUseCase
 }
 
 export type AppVariables = AppUseCases & {

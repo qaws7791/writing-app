@@ -1,9 +1,16 @@
-import type { WritingSummary } from "../writings/writing-types"
+import type { JourneyId } from "../../shared/brand/index"
 import type { PromptSummary } from "../prompts/prompt-types"
 
+export type ActiveJourneySummary = {
+  readonly journeyId: JourneyId
+  readonly title: string
+  readonly description: string
+  readonly thumbnailUrl: string | null
+  readonly completionRate: number
+  readonly currentSessionOrder: number
+}
+
 export type HomeSnapshot = {
-  readonly recentWritings: readonly WritingSummary[]
-  readonly resumeWriting: WritingSummary | null
-  readonly savedPrompts: readonly PromptSummary[]
-  readonly todayPrompts: readonly PromptSummary[]
+  readonly dailyPrompt: PromptSummary | null
+  readonly activeJourneys: ActiveJourneySummary[]
 }

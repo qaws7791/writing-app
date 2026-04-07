@@ -1,17 +1,13 @@
 import { createContainer, InjectionMode, type AwilixContainer } from "awilix"
 import {
-  createAIRequestRepository,
-  createDailyRecommendationRepository,
+  createJourneyRepository,
+  createProgressRepository,
+  createWritingPromptRepository,
   createWritingRepository,
-  createPromptRepository,
-  createWritingSyncRepository,
-  createWritingSyncWriter,
-  createWritingTransactionRepository,
-  createWritingVersionRepository,
   openDb,
 } from "@workspace/database"
+import type { AiCoachingGateway } from "@workspace/core"
 
-import type { AIApiService } from "../services/ai-services"
 import { createAuth } from "../auth/auth"
 import { createDevEmailInbox, type EmailSender } from "../auth/auth-email"
 import type { ApiLogger } from "../observability/logger"
@@ -22,19 +18,24 @@ import { registerRepositories } from "./modules/repositories"
 import {
   registerUseCases,
   type AutosaveWritingUseCase,
+  type BookmarkPromptUseCase,
+  type CompareRevisionsUseCase,
+  type CompleteSessionUseCase,
   type CreateWritingUseCase,
   type DeleteWritingUseCase,
+  type EnrollJourneyUseCase,
+  type GenerateFeedbackUseCase,
   type GetHomeUseCase,
+  type GetJourneyUseCase,
   type GetPromptUseCase,
-  type GetVersionUseCase,
+  type GetSessionDetailUseCase,
   type GetWritingUseCase,
+  type ListJourneysUseCase,
   type ListPromptsUseCase,
-  type ListVersionsUseCase,
   type ListWritingsUseCase,
-  type PullDocumentUseCase,
-  type PushTransactionsUseCase,
-  type SavePromptUseCase,
-  type UnsavePromptUseCase,
+  type StartSessionUseCase,
+  type SubmitStepUseCase,
+  type UnbookmarkPromptUseCase,
 } from "./modules/use-cases"
 
 export type ApiCradle = {
@@ -53,94 +54,110 @@ export type ApiCradle = {
   auth: ReturnType<typeof createAuth>
 
   // --- Repositories ---
-  aiRequestRepository: ReturnType<typeof createAIRequestRepository>
-  dailyRecommendationRepository: ReturnType<
-    typeof createDailyRecommendationRepository
-  >
-  promptRepository: ReturnType<typeof createPromptRepository>
+  promptRepository: ReturnType<typeof createWritingPromptRepository>
   writingRepository: ReturnType<typeof createWritingRepository>
-  writingSyncRepository: ReturnType<typeof createWritingSyncRepository>
-  writingSyncWriter: ReturnType<typeof createWritingSyncWriter>
-  writingTransactionRepository: ReturnType<
-    typeof createWritingTransactionRepository
-  >
-  writingVersionRepository: ReturnType<typeof createWritingVersionRepository>
+  journeyRepository: ReturnType<typeof createJourneyRepository>
+  progressRepository: ReturnType<typeof createProgressRepository>
+
+  // --- AI ---
+  aiCoachingGateway: AiCoachingGateway
 
   // --- Use Cases ---
-  aiUseCases: AIApiService
   autosaveWritingUseCase: AutosaveWritingUseCase
   createWritingUseCase: CreateWritingUseCase
   deleteWritingUseCase: DeleteWritingUseCase
-  getHomeUseCase: GetHomeUseCase
-  getPromptUseCase: GetPromptUseCase
-  getVersionUseCase: GetVersionUseCase
   getWritingUseCase: GetWritingUseCase
-  listPromptsUseCase: ListPromptsUseCase
-  listVersionsUseCase: ListVersionsUseCase
   listWritingsUseCase: ListWritingsUseCase
-  pullDocumentUseCase: PullDocumentUseCase
-  pushTransactionsUseCase: PushTransactionsUseCase
-  savePromptUseCase: SavePromptUseCase
-  unsavePromptUseCase: UnsavePromptUseCase
+
+  getPromptUseCase: GetPromptUseCase
+  listPromptsUseCase: ListPromptsUseCase
+  bookmarkPromptUseCase: BookmarkPromptUseCase
+  unbookmarkPromptUseCase: UnbookmarkPromptUseCase
+
+  getHomeUseCase: GetHomeUseCase
+
+  listJourneysUseCase: ListJourneysUseCase
+  getJourneyUseCase: GetJourneyUseCase
+  getSessionDetailUseCase: GetSessionDetailUseCase
+
+  enrollJourneyUseCase: EnrollJourneyUseCase
+  startSessionUseCase: StartSessionUseCase
+  submitStepUseCase: SubmitStepUseCase
+  completeSessionUseCase: CompleteSessionUseCase
+
+  generateFeedbackUseCase: GenerateFeedbackUseCase
+  compareRevisionsUseCase: CompareRevisionsUseCase
 }
 
 export type ApiCradleUseCases = Pick<
   ApiCradle,
-  | "aiUseCases"
   | "autosaveWritingUseCase"
+  | "bookmarkPromptUseCase"
+  | "compareRevisionsUseCase"
+  | "completeSessionUseCase"
   | "createWritingUseCase"
   | "deleteWritingUseCase"
+  | "enrollJourneyUseCase"
+  | "generateFeedbackUseCase"
   | "getHomeUseCase"
+  | "getJourneyUseCase"
   | "getPromptUseCase"
-  | "getVersionUseCase"
+  | "getSessionDetailUseCase"
   | "getWritingUseCase"
+  | "listJourneysUseCase"
   | "listPromptsUseCase"
-  | "listVersionsUseCase"
   | "listWritingsUseCase"
-  | "pullDocumentUseCase"
-  | "pushTransactionsUseCase"
-  | "savePromptUseCase"
   | "sqliteVersion"
-  | "unsavePromptUseCase"
+  | "startSessionUseCase"
+  | "submitStepUseCase"
+  | "unbookmarkPromptUseCase"
 >
 
 export function extractUseCases(cradle: ApiCradle): ApiCradleUseCases {
   const {
-    aiUseCases,
     autosaveWritingUseCase,
+    bookmarkPromptUseCase,
+    compareRevisionsUseCase,
+    completeSessionUseCase,
     createWritingUseCase,
     deleteWritingUseCase,
+    enrollJourneyUseCase,
+    generateFeedbackUseCase,
     getHomeUseCase,
+    getJourneyUseCase,
     getPromptUseCase,
-    getVersionUseCase,
+    getSessionDetailUseCase,
     getWritingUseCase,
+    listJourneysUseCase,
     listPromptsUseCase,
-    listVersionsUseCase,
     listWritingsUseCase,
-    pullDocumentUseCase,
-    pushTransactionsUseCase,
-    savePromptUseCase,
     sqliteVersion,
-    unsavePromptUseCase,
+    startSessionUseCase,
+    submitStepUseCase,
+    unbookmarkPromptUseCase,
   } = cradle
 
   return {
-    aiUseCases,
     autosaveWritingUseCase,
+    bookmarkPromptUseCase,
+    compareRevisionsUseCase,
+    completeSessionUseCase,
     createWritingUseCase,
     deleteWritingUseCase,
+    enrollJourneyUseCase,
+    generateFeedbackUseCase,
     getHomeUseCase,
+    getJourneyUseCase,
     getPromptUseCase,
-    getVersionUseCase,
+    getSessionDetailUseCase,
     getWritingUseCase,
+    listJourneysUseCase,
     listPromptsUseCase,
-    listVersionsUseCase,
     listWritingsUseCase,
-    pullDocumentUseCase,
-    pushTransactionsUseCase,
-    savePromptUseCase,
     sqliteVersion,
-    unsavePromptUseCase,
+    startSessionUseCase,
+    submitStepUseCase,
+    unbookmarkPromptUseCase,
   }
 }
 

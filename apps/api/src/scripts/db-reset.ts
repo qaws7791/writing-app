@@ -3,7 +3,7 @@ import { hashPassword } from "better-auth/crypto"
 import {
   migrateDatabase,
   openDb,
-  resetDatabaseFile,
+  resetDatabase,
   seedDatabase,
   seedTestUsers,
   type SeedTestUser,
@@ -27,12 +27,11 @@ const logger = createApiLogger({
   script: "db-reset",
 })
 
-resetDatabaseFile(environment.databasePath)
-
 const database = openDb(environment.databasePath)
 
 try {
   await migrateDatabase(database.db)
+  await resetDatabase(database.db)
   seedDatabase(database.db)
 
   const testUserSeeds: SeedTestUser[] = await Promise.all(
@@ -60,5 +59,5 @@ try {
   )
   throw error
 } finally {
-  database.close()
+  await database.close()
 }
