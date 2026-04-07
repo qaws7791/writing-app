@@ -1,213 +1,231 @@
-import { and, desc, eq, lt, or } from "drizzle-orm"
-import {
-  toWritingId,
-  buildCursorPage,
-  decodeCursor,
-  mapCursorPage,
-  type CursorPage,
-  type CursorPageParams,
-  type WritingCrudAccessResult,
-  type WritingDeleteResult,
-  type WritingDetail,
-  type WritingId,
-  type WritingMutationResult,
-  type WritingPersistInput,
-  type WritingRepository,
-  type WritingSummary,
-  type UserId,
-} from "@workspace/core"
+import { and, desc, eq, lt, or, sql } from "drizzle-orm"
 
-import { writings } from "../schema/index.js"
-import type { DbClient, WritingRow } from "../types/index.js"
-import {
-  mapWritingCrudAccessResult,
-  mapWritingDetail,
-  mapWritingForbiddenResult,
-  mapWritingSummary,
-  toWritingIdValue,
-  toPromptIdValue,
-} from "./writing.mappers.js"
+import { writings, type WritingStatus } from "../schema/writings"
+import { writingPrompts } from "../schema/writing-prompts"
+import type { DbClient, WritingRow } from "../types/index"
 
-type Clock = () => string
-
-function loadWritingRow(
-  database: DbClient,
-  writingId: WritingId
-): WritingRow | null {
-  return (
-    database
-      .select()
-      .from(writings)
-      .where(eq(writings.id, toWritingIdValue(writingId)))
-      .limit(1)
-      .get() ?? null
-  )
+export type WritingSummary = {
+  id: number
+  title: string
+  preview: string
+  wordCount: number
+  status: string
+  sourcePromptId: number | null
+  sourceSessionId: number | null
+  createdAt: Date
+  updatedAt: Date
 }
 
-export function createWritingRepository(
-  database: DbClient,
-  clock: Clock = () => new Date().toISOString()
-): WritingRepository {
-  async function getWritingById(
-    userId: UserId,
-    writingId: WritingId
-  ): Promise<WritingCrudAccessResult> {
-    return mapWritingCrudAccessResult(
-      userId,
-      loadWritingRow(database, writingId)
-    )
+export type WritingDetail = WritingSummary & {
+  bodyJson: unknown
+  bodyPlainText: string
+}
+
+export type WritingCreateInput = {
+  title: string
+  bodyJson: unknown
+  bodyPlainText: string
+  wordCount: number
+  sourcePromptId?: number | null
+  sourceSessionId?: number | null
+}
+
+export type WritingUpdateInput = {
+  title?: string
+  bodyJson?: unknown
+  bodyPlainText?: string
+  wordCount?: number
+  status?: WritingStatus
+}
+
+export type WritingRepository = {
+  create: (userId: string, input: WritingCreateInput) => Promise<WritingDetail>
+  delete: (
+    userId: string,
+    writingId: number
+  ) => Promise<
+    { kind: "deleted" } | { kind: "not-found" } | { kind: "forbidden" }
+  >
+  getById: (userId: string, writingId: number) => Promise<WritingDetail | null>
+  list: (
+    userId: string,
+    params?: { limit?: number; cursor?: string }
+  ) => Promise<{ items: WritingSummary[]; nextCursor: string | null }>
+  update: (
+    userId: string,
+    writingId: number,
+    input: WritingUpdateInput
+  ) => Promise<
+    | { kind: "updated"; writing: WritingDetail }
+    | { kind: "not-found" }
+    | { kind: "forbidden" }
+  >
+  resume: (userId: string) => Promise<WritingSummary | null>
+}
+
+function createPreview(plainText: string): string {
+  return plainText.length <= 120 ? plainText : `${plainText.slice(0, 120)}...`
+}
+
+function mapWritingSummary(row: WritingRow): WritingSummary {
+  return {
+    id: row.id,
+    title: row.title,
+    preview: createPreview(row.bodyPlainText),
+    wordCount: row.wordCount,
+    status: row.status,
+    sourcePromptId: row.sourcePromptId,
+    sourceSessionId: row.sourceSessionId,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  }
+}
+
+function mapWritingDetail(row: WritingRow): WritingDetail {
+  return {
+    ...mapWritingSummary(row),
+    bodyJson: row.bodyJson,
+    bodyPlainText: row.bodyPlainText,
+  }
+}
+
+export function createWritingRepository(database: DbClient): WritingRepository {
+  async function loadRow(writingId: number): Promise<WritingRow | null> {
+    return database
+      .select()
+      .from(writings)
+      .where(eq(writings.id, writingId))
+      .limit(1)
+      .then((rows) => rows[0] ?? null)
   }
 
   return {
-    async create(
-      userId: UserId,
-      input: WritingPersistInput
-    ): Promise<WritingDetail> {
-      const now = clock()
-      const created = database
+    async create(userId, input) {
+      const now = new Date()
+      const created = await database
         .insert(writings)
         .values({
-          bodyJson: input.content,
-          bodyPlainText: input.plainText,
-          characterCount: input.characterCount,
-          createdAt: now,
-          lastSavedAt: now,
-          sourcePromptId: toPromptIdValue(input.sourcePromptId),
-          title: input.title,
-          updatedAt: now,
           userId,
+          title: input.title,
+          bodyJson: input.bodyJson,
+          bodyPlainText: input.bodyPlainText,
           wordCount: input.wordCount,
+          sourcePromptId: input.sourcePromptId ?? null,
+          sourceSessionId: input.sourceSessionId ?? null,
+          createdAt: now,
+          updatedAt: now,
         })
-        .returning({ id: writings.id })
-        .get()
+        .returning()
+        .then((rows) => rows[0])
 
       if (!created) {
         throw new Error("글을 생성하지 못했습니다.")
       }
 
-      const writing = await getWritingById(userId, toWritingId(created.id))
-      if (writing.kind !== "writing") {
-        throw new Error("생성한 글을 다시 읽지 못했습니다.")
+      if (input.sourcePromptId) {
+        await database
+          .update(writingPrompts)
+          .set({
+            responseCount: sql`${writingPrompts.responseCount} + 1`,
+          })
+          .where(eq(writingPrompts.id, input.sourcePromptId))
       }
 
-      return writing.writing
+      return mapWritingDetail(created)
     },
 
-    async delete(
-      userId: UserId,
-      writingId: WritingId
-    ): Promise<WritingDeleteResult> {
-      const row = loadWritingRow(database, writingId)
+    async delete(userId, writingId) {
+      const row = await loadRow(writingId)
+      if (!row) return { kind: "not-found" }
+      if (row.userId !== userId) return { kind: "forbidden" }
 
-      if (!row) {
-        return { kind: "not-found" }
-      }
-
-      if (row.userId !== userId) {
-        return mapWritingForbiddenResult(row.userId)
-      }
-
-      database
-        .delete(writings)
-        .where(eq(writings.id, toWritingIdValue(writingId)))
-        .run()
-
+      await database.delete(writings).where(eq(writings.id, writingId))
       return { kind: "deleted" }
     },
 
-    async getById(
-      userId: UserId,
-      writingId: WritingId
-    ): Promise<WritingCrudAccessResult> {
-      return getWritingById(userId, writingId)
+    async getById(userId, writingId) {
+      const row = await loadRow(writingId)
+      if (!row || row.userId !== userId) return null
+      return mapWritingDetail(row)
     },
 
-    async list(
-      userId: UserId,
-      params: CursorPageParams = {}
-    ): Promise<CursorPage<WritingSummary>> {
+    async list(userId, params = {}) {
       const limit = params.limit ?? 20
-      const cursor = params.cursor
-        ? decodeCursor<{ u: string; i: number }>(params.cursor)
-        : null
 
-      const cursorCondition = cursor
-        ? or(
-            lt(writings.updatedAt, cursor.u),
-            and(eq(writings.updatedAt, cursor.u), lt(writings.id, cursor.i))
+      let cursorCondition
+      if (params.cursor) {
+        const decoded = JSON.parse(
+          Buffer.from(params.cursor, "base64url").toString()
+        ) as { u: string; i: number }
+        cursorCondition = or(
+          lt(writings.updatedAt, new Date(decoded.u)),
+          and(
+            eq(writings.updatedAt, new Date(decoded.u)),
+            lt(writings.id, decoded.i)
           )
-        : undefined
+        )
+      }
 
-      const rows = database
+      const rows = await database
         .select()
         .from(writings)
         .where(and(eq(writings.userId, userId), cursorCondition))
         .orderBy(desc(writings.updatedAt), desc(writings.id))
         .limit(limit + 1)
-        .all()
 
-      return mapCursorPage(
-        buildCursorPage(rows, limit, (row) => ({
-          u: row.updatedAt,
-          i: row.id,
-        })),
+      const hasMore = rows.length > limit
+      const items = (hasMore ? rows.slice(0, limit) : rows).map(
         mapWritingSummary
       )
+
+      const lastItem = items[items.length - 1]
+      const nextCursor =
+        hasMore && lastItem
+          ? Buffer.from(
+              JSON.stringify({
+                u: lastItem.updatedAt.toISOString(),
+                i: lastItem.id,
+              })
+            ).toString("base64url")
+          : null
+
+      return { items, nextCursor }
     },
 
-    async replace(
-      userId: UserId,
-      writingId: WritingId,
-      input: WritingPersistInput
-    ): Promise<WritingMutationResult> {
-      const current = loadWritingRow(database, writingId)
+    async update(userId, writingId, input) {
+      const row = await loadRow(writingId)
+      if (!row) return { kind: "not-found" }
+      if (row.userId !== userId) return { kind: "forbidden" }
 
-      if (!current) {
-        return { kind: "not-found" }
-      }
-
-      if (current.userId !== userId) {
-        return mapWritingForbiddenResult(current.userId)
-      }
-
-      const now = clock()
-
-      database
+      const now = new Date()
+      await database
         .update(writings)
         .set({
-          bodyJson: input.content,
-          bodyPlainText: input.plainText,
-          characterCount: input.characterCount,
-          lastSavedAt: now,
-          sourcePromptId: toPromptIdValue(input.sourcePromptId),
-          title: input.title,
+          ...(input.title !== undefined && { title: input.title }),
+          ...(input.bodyJson !== undefined && { bodyJson: input.bodyJson }),
+          ...(input.bodyPlainText !== undefined && {
+            bodyPlainText: input.bodyPlainText,
+          }),
+          ...(input.wordCount !== undefined && { wordCount: input.wordCount }),
+          ...(input.status !== undefined && { status: input.status }),
           updatedAt: now,
-          wordCount: input.wordCount,
         })
-        .where(eq(writings.id, toWritingIdValue(writingId)))
-        .run()
+        .where(eq(writings.id, writingId))
 
-      const updated = loadWritingRow(database, writingId)
+      const updated = await loadRow(writingId)
+      if (!updated) return { kind: "not-found" }
 
-      if (!updated) {
-        return { kind: "not-found" }
-      }
-
-      return {
-        writing: mapWritingDetail(updated),
-        kind: "writing",
-      }
+      return { kind: "updated", writing: mapWritingDetail(updated) }
     },
 
-    async resume(userId: UserId): Promise<WritingSummary | null> {
-      const row =
-        database
-          .select()
-          .from(writings)
-          .where(eq(writings.userId, userId))
-          .orderBy(desc(writings.updatedAt), desc(writings.id))
-          .limit(1)
-          .get() ?? null
+    async resume(userId) {
+      const row = await database
+        .select()
+        .from(writings)
+        .where(and(eq(writings.userId, userId), eq(writings.status, "draft")))
+        .orderBy(desc(writings.updatedAt), desc(writings.id))
+        .limit(1)
+        .then((rows) => rows[0] ?? null)
 
       return row ? mapWritingSummary(row) : null
     },

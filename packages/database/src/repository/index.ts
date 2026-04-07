@@ -1,13 +1,37 @@
 export {
-  createAIRequestRepository,
-  type AIRequestRepository,
-} from "./ai-request.repository.js"
-export { createDailyRecommendationRepository } from "./daily-recommendation.repository.js"
-export { createWritingRepository } from "./writing.repository.js"
-export { createPromptRepository } from "./prompt.repository.js"
+  createWritingPromptRepository,
+  type WritingPromptRepository,
+  type WritingPromptSummary,
+  type WritingPromptDetail,
+  type WritingPromptListFilters,
+} from "./writing-prompt.repository"
 export {
-  createWritingSyncRepository,
-  createWritingSyncWriter,
-  createWritingTransactionRepository,
+  createWritingRepository,
+  type WritingRepository,
+  type WritingSummary,
+  type WritingDetail,
+  type WritingCreateInput,
+  type WritingUpdateInput,
+} from "./writing.repository"
+export {
   createWritingVersionRepository,
-} from "./writing-sync.repository.js"
+  type WritingVersionRepository,
+  type WritingVersionSummary,
+  type WritingVersionDetail,
+  type WritingVersionCreateInput,
+} from "./writing-version.repository"
+export {
+  createJourneyRepository,
+  type JourneyRepository,
+  type JourneySummary,
+  type JourneyDetail,
+  type JourneySessionSummary,
+  type JourneySessionDetail,
+  type StepSummary,
+} from "./journey.repository"
+export {
+  createProgressRepository,
+  type ProgressRepository,
+  type UserJourneyProgressSummary,
+  type UserSessionProgressSummary,
+} from "./progress.repository"

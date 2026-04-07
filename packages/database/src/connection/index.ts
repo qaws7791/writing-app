@@ -1,4 +1,4 @@
-export { migrateDatabase } from "./migrate.js"
-export { openDb, readSqliteVersion, type OpenedDb } from "./open-db.js"
-export { resetDatabaseFile } from "./reset.js"
-export { seedDatabase, seedTestUsers, type SeedTestUser } from "./seed.js"
+export { migrateDatabase } from "./migrate"
+export { openDb, type OpenedDb } from "./open-db"
+export { resetDatabase } from "./reset"
+export { seedDatabase, seedTestUsers, type SeedTestUser } from "./seed"

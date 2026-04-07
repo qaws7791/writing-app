@@ -1,28 +1,33 @@
-import type { WritingContent } from "@workspace/core"
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import {
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core"
 
-import { writings } from "./writings.js"
-import { user } from "./auth.js"
+import { writings } from "./writings"
 
-export const writingVersions = sqliteTable(
+export const writingVersions = pgTable(
   "writing_versions",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
+    id: serial("id").primaryKey(),
     writingId: integer("writing_id")
       .notNull()
       .references(() => writings.id, { onDelete: "cascade" }),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    version: integer("version").notNull(),
+    versionNumber: integer("version_number").notNull(),
     title: text("title").notNull(),
-    contentJson: text("content_json", { mode: "json" })
-      .$type<WritingContent>()
-      .notNull(),
-    createdAt: text("created_at").notNull(),
-    reason: text("reason").notNull().$type<"auto" | "manual" | "restore">(),
+    bodyJson: jsonb("body_json").notNull(),
+    wordCount: integer("word_count").notNull(),
+    aiFeedbackJson: jsonb("ai_feedback_json"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [
-    index("writing_versions_writing_idx").on(table.writingId, table.version),
+    index("writing_versions_writing_idx").on(
+      table.writingId,
+      table.versionNumber
+    ),
   ]
 )

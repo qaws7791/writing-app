@@ -1,31 +1,43 @@
-export { account, authSchema, session, user, verification } from "./auth.js"
-export { aiRequests } from "./ai-requests.js"
-export { dailyRecommendations } from "./daily-recommendations.js"
-export { writings } from "./writings.js"
-export { prompts } from "./prompts.js"
-export { savedPrompts } from "./saved-prompts.js"
-export { writingTransactions } from "./writing-transactions.js"
-export { writingVersions } from "./writing-versions.js"
+export { account, authSchema, session, user, verification } from "./auth"
+export { journeys, journeyCategories } from "./journeys"
+export { journeySessions } from "./journey-sessions"
+export { savedPrompts } from "./saved-prompts"
+export { steps, stepTypes } from "./steps"
+export {
+  userJourneyProgress,
+  journeyProgressStatuses,
+} from "./user-journey-progress"
+export {
+  userSessionProgress,
+  sessionProgressStatuses,
+} from "./user-session-progress"
+export { writings, writingStatuses } from "./writings"
+export { writingPrompts, promptTypes } from "./writing-prompts"
+export { writingVersions } from "./writing-versions"
 
-import { account, session, user, verification } from "./auth.js"
-import { aiRequests } from "./ai-requests.js"
-import { dailyRecommendations } from "./daily-recommendations.js"
-import { writings } from "./writings.js"
-import { prompts } from "./prompts.js"
-import { savedPrompts } from "./saved-prompts.js"
-import { writingTransactions } from "./writing-transactions.js"
-import { writingVersions } from "./writing-versions.js"
+import { account, session, user, verification } from "./auth"
+import { journeys } from "./journeys"
+import { journeySessions } from "./journey-sessions"
+import { savedPrompts } from "./saved-prompts"
+import { steps } from "./steps"
+import { userJourneyProgress } from "./user-journey-progress"
+import { userSessionProgress } from "./user-session-progress"
+import { writings } from "./writings"
+import { writingPrompts } from "./writing-prompts"
+import { writingVersions } from "./writing-versions"
 
 export const schema = {
   account,
-  aiRequests,
-  dailyRecommendations,
-  writings,
-  prompts,
+  journeys,
+  journeySessions,
   savedPrompts,
   session,
+  steps,
   user,
+  userJourneyProgress,
+  userSessionProgress,
   verification,
-  writingTransactions,
+  writings,
+  writingPrompts,
   writingVersions,
 } as const

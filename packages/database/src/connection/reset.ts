@@ -1,8 +1,10 @@
-import { rmSync } from "node:fs"
-import { resolve } from "node:path"
+import type { DbClient } from "../types/index"
+import { schema } from "../schema/index"
 
-export function resetDatabaseFile(path: string): void {
-  rmSync(resolve(path), {
-    force: true,
-  })
+export async function resetDatabase(database: DbClient): Promise<void> {
+  const tables = Object.values(schema)
+
+  for (const table of tables.reverse()) {
+    await database.delete(table)
+  }
 }

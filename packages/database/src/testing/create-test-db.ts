@@ -1,57 +1,42 @@
-import { mkdtempSync } from "node:fs"
-import { join } from "node:path"
-import { tmpdir } from "node:os"
+import postgres from "postgres"
+import { drizzle } from "drizzle-orm/postgres-js"
 
-import {
-  migrateDatabase,
-  openDb,
-  type OpenedDb,
-  seedDatabase,
-} from "../connection/index.js"
-import { user } from "../schema/index.js"
+import { migrateDatabase } from "../connection/migrate"
+import { seedDatabase } from "../connection/seed"
+import { schema } from "../schema/index"
+import { user } from "../schema/auth"
+import type { DbClient } from "../types/index"
 
-type CreateTestDbOptions = {
-  withTestUser?: boolean
+export type TestDatabase = {
+  cleanup: () => Promise<void>
+  db: DbClient
 }
 
-export type TestDatabase = OpenedDb & {
-  cleanup: () => void
-  path: string
-}
+export async function createTestDb(): Promise<TestDatabase> {
+  const connectionUrl =
+    process.env.TEST_DATABASE_URL ??
+    "postgresql://postgres:postgres@localhost:5432/geulpil_test"
 
-export async function createTestDb(
-  options: CreateTestDbOptions = {}
-): Promise<TestDatabase> {
-  const { withTestUser = true } = options
-  const root = mkdtempSync(join(tmpdir(), "writing-db-"))
-  const path = join(root, "test.sqlite")
-  const database = openDb(path)
-  const cleanup = () => {
-    database.close()
-  }
+  const sql = postgres(connectionUrl)
+  const db = drizzle({ client: sql, schema })
 
-  await migrateDatabase(database.db)
-  seedDatabase(database.db)
+  await migrateDatabase(db)
+  await seedDatabase(db)
 
-  if (withTestUser) {
-    const now = new Date("2026-03-21T00:00:00.000Z")
-    database.db
-      .insert(user)
-      .values({
-        createdAt: now,
-        email: "dev-user@example.com",
-        emailVerified: true,
-        id: "dev-user",
-        image: null,
-        name: "테스트 사용자",
-        updatedAt: now,
-      })
-      .run()
-  }
+  await db
+    .insert(user)
+    .values({
+      createdAt: new Date("2026-03-21T00:00:00.000Z"),
+      email: "dev-user@example.com",
+      emailVerified: true,
+      id: "dev-user",
+      name: "테스트 사용자",
+      updatedAt: new Date("2026-03-21T00:00:00.000Z"),
+    })
+    .onConflictDoNothing()
 
   return {
-    ...database,
-    cleanup,
-    path,
+    cleanup: () => sql.end(),
+    db,
   }
 }

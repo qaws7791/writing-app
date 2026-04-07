@@ -1,1 +1,1 @@
-export type * from "./db.js"
+export type * from "./db"

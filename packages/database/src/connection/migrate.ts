@@ -1,8 +1,8 @@
 import { fileURLToPath } from "node:url"
 
-import { migrate } from "drizzle-orm/bun-sqlite/migrator"
+import { migrate } from "drizzle-orm/postgres-js/migrator"
 
-import type { DbClient } from "../types/index.js"
+import type { DbClient } from "../types/index"
 
 const defaultMigrationsFolder = fileURLToPath(
   new URL("../../drizzle", import.meta.url)

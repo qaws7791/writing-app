@@ -1,1 +1,1 @@
-export { seedPrompts, type SeedPrompt } from "./prompts.js"
+export { seedWritingPrompts, type SeedWritingPrompt } from "./writing-prompts"

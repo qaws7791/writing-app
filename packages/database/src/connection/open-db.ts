@@ -1,48 +1,22 @@
-import { mkdirSync } from "node:fs"
-import { dirname, resolve } from "node:path"
+import postgres from "postgres"
+import { drizzle } from "drizzle-orm/postgres-js"
 
-import { Database } from "bun:sqlite"
-import { drizzle } from "drizzle-orm/bun-sqlite"
-
-import { schema } from "../schema/index.js"
-import type { DbClient } from "../types/index.js"
+import { schema } from "../schema/index"
+import type { DbClient } from "../types/index"
 
 export type OpenedDb = {
-  close: () => void
+  close: () => Promise<void>
   db: DbClient
-  sqlite: Database
+  sql: postgres.Sql
 }
 
-export function openDb(path: string): OpenedDb {
-  const resolvedPath = resolve(path)
-  mkdirSync(dirname(resolvedPath), { recursive: true })
-
-  const sqlite = new Database(resolvedPath, {
-    create: true,
-    strict: true,
-  })
-  sqlite.exec("pragma foreign_keys = on;")
+export function openDb(connectionUrl: string): OpenedDb {
+  const sql = postgres(connectionUrl)
+  const db = drizzle({ client: sql, schema })
 
   return {
-    close: () => {
-      sqlite.close(false)
-    },
-    db: drizzle({
-      client: sqlite,
-      schema,
-    }),
-    sqlite,
+    close: () => sql.end(),
+    db,
+    sql,
   }
-}
-
-export function readSqliteVersion(sqlite: Database): string {
-  const row = sqlite.query("select sqlite_version() as version").get() as {
-    version: string
-  } | null
-
-  if (!row) {
-    throw new Error("SQLite 버전을 읽지 못했습니다.")
-  }
-
-  return row.version
 }

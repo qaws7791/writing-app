@@ -1,1 +1,1 @@
-export { createTestDb, type TestDatabase } from "./create-test-db.js"
+export { createTestDb, type TestDatabase } from "./create-test-db"

@@ -1,45 +1,53 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm"
-import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
+import type { PostgresJsDatabase } from "drizzle-orm/postgres-js"
 
-import {
-  account,
-  aiRequests,
-  dailyRecommendations,
-  writings,
-  prompts,
+import type {
+  journeys,
+  journeySessions,
   savedPrompts,
+  steps,
+  userJourneyProgress,
+  userSessionProgress,
+  writings,
+  writingPrompts,
+  writingVersions,
   schema,
+  account,
   session,
   user,
   verification,
-  writingTransactions,
-  writingVersions,
-} from "../schema/index.js"
+} from "../schema/index"
 
 export type DbSchema = typeof schema
-export type DbClient = BunSQLiteDatabase<DbSchema>
+export type DbClient = PostgresJsDatabase<DbSchema>
 
 export type AccountRow = InferSelectModel<typeof account>
-export type AIRequestInsert = InferInsertModel<typeof aiRequests>
-export type AIRequestRow = InferSelectModel<typeof aiRequests>
-export type DailyRecommendationInsert = InferInsertModel<
-  typeof dailyRecommendations
->
-export type DailyRecommendationRow = InferSelectModel<
-  typeof dailyRecommendations
->
-export type WritingInsert = InferInsertModel<typeof writings>
-export type WritingRow = InferSelectModel<typeof writings>
-export type PromptInsert = InferInsertModel<typeof prompts>
-export type PromptRow = InferSelectModel<typeof prompts>
+export type JourneyInsert = InferInsertModel<typeof journeys>
+export type JourneyRow = InferSelectModel<typeof journeys>
+export type JourneySessionInsert = InferInsertModel<typeof journeySessions>
+export type JourneySessionRow = InferSelectModel<typeof journeySessions>
 export type SavedPromptInsert = InferInsertModel<typeof savedPrompts>
 export type SavedPromptRow = InferSelectModel<typeof savedPrompts>
 export type SessionRow = InferSelectModel<typeof session>
-export type UserRow = InferSelectModel<typeof user>
-export type VerificationRow = InferSelectModel<typeof verification>
-export type WritingTransactionInsert = InferInsertModel<
-  typeof writingTransactions
+export type StepInsert = InferInsertModel<typeof steps>
+export type StepRow = InferSelectModel<typeof steps>
+export type UserJourneyProgressInsert = InferInsertModel<
+  typeof userJourneyProgress
 >
-export type WritingTransactionRow = InferSelectModel<typeof writingTransactions>
+export type UserJourneyProgressRow = InferSelectModel<
+  typeof userJourneyProgress
+>
+export type UserRow = InferSelectModel<typeof user>
+export type UserSessionProgressInsert = InferInsertModel<
+  typeof userSessionProgress
+>
+export type UserSessionProgressRow = InferSelectModel<
+  typeof userSessionProgress
+>
+export type VerificationRow = InferSelectModel<typeof verification>
+export type WritingInsert = InferInsertModel<typeof writings>
+export type WritingRow = InferSelectModel<typeof writings>
+export type WritingPromptInsert = InferInsertModel<typeof writingPrompts>
+export type WritingPromptRow = InferSelectModel<typeof writingPrompts>
 export type WritingVersionInsert = InferInsertModel<typeof writingVersions>
 export type WritingVersionRow = InferSelectModel<typeof writingVersions>

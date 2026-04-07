@@ -1,27 +1,28 @@
 import {
   index,
   integer,
+  pgTable,
   primaryKey,
-  sqliteTable,
   text,
-} from "drizzle-orm/sqlite-core"
+  timestamp,
+} from "drizzle-orm/pg-core"
 
-import { prompts } from "./prompts.js"
-import { user } from "./auth.js"
+import { user } from "./auth"
+import { writingPrompts } from "./writing-prompts"
 
-export const savedPrompts = sqliteTable(
+export const savedPrompts = pgTable(
   "saved_prompts",
   {
-    promptId: integer("prompt_id")
-      .notNull()
-      .references(() => prompts.id, { onDelete: "cascade" }),
-    savedAt: text("saved_at").notNull(),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    promptId: integer("prompt_id")
+      .notNull()
+      .references(() => writingPrompts.id, { onDelete: "cascade" }),
+    savedAt: timestamp("saved_at").notNull().defaultNow(),
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.promptId] }),
-    index("saved_prompts_saved_at_idx").on(table.userId, table.savedAt),
+    index("saved_prompts_user_saved_idx").on(table.userId, table.savedAt),
   ]
 )
