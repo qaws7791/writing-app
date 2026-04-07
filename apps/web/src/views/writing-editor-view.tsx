@@ -57,7 +57,13 @@ function formatKoreanDate(date: Date): string {
   }).format(date)
 }
 
-export default function WritingEditorView({ promptId }: { promptId?: number }) {
+export default function WritingEditorView({
+  promptId,
+  writingId,
+}: {
+  promptId?: number
+  writingId?: string
+}) {
   const router = useRouter()
   const [title, setTitle] = useState("")
   const [today] = useState(() => new Date())

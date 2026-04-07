@@ -17,6 +17,7 @@ interface EssayItem {
   wordCount: number
   title: string
   preview: string
+  isOwner: boolean
 }
 
 interface PromptDetailData {
@@ -49,7 +50,11 @@ function EssayListItem({ essay }: { essay: EssayItem }) {
   return (
     <button
       type="button"
-      onClick={() => router.push(`/writings/${essay.id}`)}
+      onClick={() =>
+        router.push(
+          essay.isOwner ? `/writings/${essay.id}/edit` : `/writings/${essay.id}`
+        )
+      }
       className="flex flex-col gap-4 text-left"
     >
       <div className="flex items-center justify-between">

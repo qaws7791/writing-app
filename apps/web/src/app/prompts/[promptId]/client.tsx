@@ -11,6 +11,7 @@ const MOCK_ESSAYS = [
     title: "단순한 삶을 위한 뺄셈",
     preview:
       "서랍을 정리하며 지난 3년간 한 번도 꺼내지 않은 물건들을 골라냈다. 마음의 짐 또한 마찬가지였다.",
+    isOwner: true,
   },
   {
     id: "2",
@@ -19,6 +20,7 @@ const MOCK_ESSAYS = [
     title: "정적 속에서 들리는 소리",
     preview:
       "완전한 침묵이란 존재하지 않는다. 모든 소음이 걷힌 자리에는 심장 박동 소리와...",
+    isOwner: false,
   },
   {
     id: "3",
@@ -27,6 +29,7 @@ const MOCK_ESSAYS = [
     title: "흰 캔버스가 주는 위로",
     preview:
       "무언가를 그려야 한다는 압박에서 벗어나, 그저 하얀 공간을 응시하는 것만으로도...",
+    isOwner: false,
   },
 ]
 

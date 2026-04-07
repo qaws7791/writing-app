@@ -58,9 +58,9 @@ function WritingCard({ writing }: { writing: WritingSummary }) {
     <div
       role="button"
       tabIndex={0}
-      onClick={() => router.push(`/writings/${writing.id}`)}
+      onClick={() => router.push(`/writings/${writing.id}/edit`)}
       onKeyDown={(e) =>
-        e.key === "Enter" && router.push(`/writings/${writing.id}`)
+        e.key === "Enter" && router.push(`/writings/${writing.id}/edit`)
       }
       className="flex cursor-pointer flex-col gap-4 rounded-[2.25rem] bg-surface-container p-8 text-left transition-colors hover:bg-surface-container-high"
     >
