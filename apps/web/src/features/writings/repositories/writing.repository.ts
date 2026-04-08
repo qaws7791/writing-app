@@ -42,3 +42,14 @@ export async function fetchWritingDetail(client: ApiClient, writingId: number) {
   if (error) throw error
   return data
 }
+
+export async function fetchWritings(
+  client: ApiClient,
+  params: { cursor?: string; limit?: number } = {}
+) {
+  const { data, error } = await client.GET("/writings", {
+    params: { query: params },
+  })
+  if (error) throw error
+  return data
+}

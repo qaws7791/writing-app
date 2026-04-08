@@ -7,49 +7,17 @@ import {
   QuillWrite01Icon,
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { useEffect, useRef } from "react"
+
+import { useWritings } from "@/features/writings"
 
 interface WritingSummary {
-  id: string
+  id: number
   date: string
   title: string
   excerpt: string
   wordCount: number
 }
-
-const MOCK_WRITINGS: WritingSummary[] = [
-  {
-    id: "1",
-    date: "2024년 5월 12일",
-    title: "단순한 삶을 위한 뺄셈",
-    excerpt:
-      "서랍을 정리하며 지난 3년간 한 번도 꺼내지 않은 물건들을 골라냈다. 마음의 짐 또한 마찬가지였다.",
-    wordCount: 1240,
-  },
-  {
-    id: "2",
-    date: "2024년 5월 12일",
-    title: "단순한 삶을 위한 뺄셈",
-    excerpt:
-      "서랍을 정리하며 지난 3년간 한 번도 꺼내지 않은 물건들을 골라냈다. 마음의 짐 또한 마찬가지였다.",
-    wordCount: 1240,
-  },
-  {
-    id: "3",
-    date: "2024년 5월 12일",
-    title: "단순한 삶을 위한 뺄셈",
-    excerpt:
-      "서랍을 정리하며 지난 3년간 한 번도 꺼내지 않은 물건들을 골라냈다. 마음의 짐 또한 마찬가지였다.",
-    wordCount: 1240,
-  },
-  {
-    id: "4",
-    date: "2024년 5월 12일",
-    title: "단순한 삶을 위한 뺄셈",
-    excerpt:
-      "서랍을 정리하며 지난 3년간 한 번도 꺼내지 않은 물건들을 골라냈다. 마음의 짐 또한 마찬가지였다.",
-    wordCount: 1240,
-  },
-]
 
 function WritingCard({ writing }: { writing: WritingSummary }) {
   const router = useRouter()
@@ -102,6 +70,40 @@ function WritingCard({ writing }: { writing: WritingSummary }) {
 
 export default function WritingsListView() {
   const router = useRouter()
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useWritings()
+  const sentinelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          void fetchNextPage()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  const writings: WritingSummary[] =
+    data?.pages.flatMap((page) =>
+      page.items.map((item) => ({
+        id: item.id as unknown as number,
+        date: new Date(item.updatedAt).toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        title: item.title || "제목 없음",
+        excerpt: item.preview,
+        wordCount: item.wordCount,
+      }))
+    ) ?? []
 
   return (
     <div className="relative flex flex-col bg-surface">
@@ -128,9 +130,15 @@ export default function WritingsListView() {
 
       {/* Writing Cards */}
       <div className="flex flex-col gap-5 px-2 pt-5 pb-8">
-        {MOCK_WRITINGS.map((writing) => (
+        {writings.map((writing) => (
           <WritingCard key={writing.id} writing={writing} />
         ))}
+        {isFetchingNextPage && (
+          <div className="flex justify-center py-4">
+            <span className="text-sm text-on-surface-low">불러오는 중...</span>
+          </div>
+        )}
+        <div ref={sentinelRef} />
       </div>
 
       {/* FAB */}
