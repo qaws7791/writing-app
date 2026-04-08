@@ -1,28 +1,22 @@
-import {
-  index,
-  integer,
-  jsonb,
-  pgTable,
-  serial,
-  text,
-  timestamp,
-} from "drizzle-orm/pg-core"
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
 import { writings } from "./writings"
 
-export const writingVersions = pgTable(
+export const writingVersions = sqliteTable(
   "writing_versions",
   {
-    id: serial("id").primaryKey(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
     writingId: integer("writing_id")
       .notNull()
       .references(() => writings.id, { onDelete: "cascade" }),
     versionNumber: integer("version_number").notNull(),
     title: text("title").notNull(),
-    bodyJson: jsonb("body_json").notNull(),
+    bodyJson: text("body_json", { mode: "json" }).notNull(),
     wordCount: integer("word_count").notNull(),
-    aiFeedbackJson: jsonb("ai_feedback_json"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
+    aiFeedbackJson: text("ai_feedback_json", { mode: "json" }),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     index("writing_versions_writing_idx").on(

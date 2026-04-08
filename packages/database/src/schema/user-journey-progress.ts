@@ -1,13 +1,11 @@
 import {
   index,
   integer,
-  pgTable,
   real,
-  serial,
+  sqliteTable,
   text,
-  timestamp,
   unique,
-} from "drizzle-orm/pg-core"
+} from "drizzle-orm/sqlite-core"
 
 import { user } from "./auth"
 import { journeys } from "./journeys"
@@ -15,10 +13,10 @@ import { journeys } from "./journeys"
 export const journeyProgressStatuses = ["in_progress", "completed"] as const
 export type JourneyProgressStatus = (typeof journeyProgressStatuses)[number]
 
-export const userJourneyProgress = pgTable(
+export const userJourneyProgress = sqliteTable(
   "user_journey_progress",
   {
-    id: serial("id").primaryKey(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
@@ -30,8 +28,12 @@ export const userJourneyProgress = pgTable(
     status: text("status", { enum: journeyProgressStatuses })
       .notNull()
       .default("in_progress"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     unique("user_journey_progress_user_journey_uniq").on(

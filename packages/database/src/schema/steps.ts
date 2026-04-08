@@ -1,13 +1,10 @@
 import {
   index,
   integer,
-  jsonb,
-  pgTable,
-  serial,
+  sqliteTable,
   text,
-  timestamp,
   unique,
-} from "drizzle-orm/pg-core"
+} from "drizzle-orm/sqlite-core"
 
 import { journeySessions } from "./journey-sessions"
 
@@ -21,18 +18,22 @@ export const stepTypes = [
 ] as const
 export type StepType = (typeof stepTypes)[number]
 
-export const steps = pgTable(
+export const steps = sqliteTable(
   "steps",
   {
-    id: serial("id").primaryKey(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
     sessionId: integer("session_id")
       .notNull()
       .references(() => journeySessions.id, { onDelete: "cascade" }),
     order: integer("order").notNull(),
     type: text("type", { enum: stepTypes }).notNull(),
-    contentJson: jsonb("content_json").notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    contentJson: text("content_json", { mode: "json" }).notNull(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     unique("steps_session_order_uniq").on(table.sessionId, table.order),

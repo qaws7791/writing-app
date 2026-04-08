@@ -1,16 +1,15 @@
 import {
   index,
   integer,
-  pgTable,
   primaryKey,
+  sqliteTable,
   text,
-  timestamp,
-} from "drizzle-orm/pg-core"
+} from "drizzle-orm/sqlite-core"
 
 import { user } from "./auth"
 import { writingPrompts } from "./writing-prompts"
 
-export const savedPrompts = pgTable(
+export const savedPrompts = sqliteTable(
   "saved_prompts",
   {
     userId: text("user_id")
@@ -19,7 +18,7 @@ export const savedPrompts = pgTable(
     promptId: integer("prompt_id")
       .notNull()
       .references(() => writingPrompts.id, { onDelete: "cascade" }),
-    savedAt: timestamp("saved_at").notNull().defaultNow(),
+    savedAt: integer("saved_at", { mode: "timestamp" }).notNull().defaultNow(),
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.promptId] }),

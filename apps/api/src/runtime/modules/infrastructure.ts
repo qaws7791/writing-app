@@ -22,10 +22,11 @@ export function registerInfrastructure(
       .singleton()
       .disposer((database) => database.close()),
 
-    sqliteVersion: asFunction(async ({ database }: ApiCradle) => {
-      const rows = await database.sql`SELECT version()`
-      const row = rows[0] as { version?: string } | undefined
-      return row?.version ?? "unknown"
+    sqliteVersion: asFunction(({ database }: ApiCradle) => {
+      const result = database.sql
+        .query("SELECT sqlite_version() as version")
+        .get() as { version: string } | null
+      return result?.version ?? "unknown"
     }).singleton(),
   })
 }

@@ -1,5 +1,5 @@
-import postgres from "postgres"
-import { drizzle } from "drizzle-orm/postgres-js"
+import { Database } from "bun:sqlite"
+import { drizzle } from "drizzle-orm/bun-sqlite"
 
 import { migrateDatabase } from "../connection/migrate"
 import { seedDatabase } from "../connection/seed"
@@ -13,11 +13,7 @@ export type TestDatabase = {
 }
 
 export async function createTestDb(): Promise<TestDatabase> {
-  const connectionUrl =
-    process.env.TEST_DATABASE_URL ??
-    "postgresql://postgres:postgres@localhost:5432/geulpil_test"
-
-  const sql = postgres(connectionUrl)
+  const sql = new Database(":memory:")
   const db = drizzle({ client: sql, schema })
 
   await migrateDatabase(db)
@@ -36,7 +32,7 @@ export async function createTestDb(): Promise<TestDatabase> {
     .onConflictDoNothing()
 
   return {
-    cleanup: () => sql.end(),
+    cleanup: () => Promise.resolve(sql.close()),
     db,
   }
 }

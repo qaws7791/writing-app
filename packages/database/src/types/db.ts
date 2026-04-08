@@ -1,5 +1,5 @@
 import type { InferInsertModel, InferSelectModel } from "drizzle-orm"
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js"
+import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
 
 import type {
   journeys,
@@ -19,7 +19,7 @@ import type {
 } from "../schema/index"
 
 export type DbSchema = typeof schema
-export type DbClient = PostgresJsDatabase<DbSchema>
+export type DbClient = BunSQLiteDatabase<DbSchema>
 
 export type AccountRow = InferSelectModel<typeof account>
 export type JourneyInsert = InferInsertModel<typeof journeys>

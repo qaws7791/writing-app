@@ -1,4 +1,4 @@
-import { index, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core"
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
 export const journeyCategories = [
   "writing_skill",
@@ -7,16 +7,20 @@ export const journeyCategories = [
 ] as const
 export type JourneyCategory = (typeof journeyCategories)[number]
 
-export const journeys = pgTable(
+export const journeys = sqliteTable(
   "journeys",
   {
-    id: serial("id").primaryKey(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
     title: text("title").notNull(),
     description: text("description").notNull(),
     category: text("category", { enum: journeyCategories }).notNull(),
     thumbnailUrl: text("thumbnail_url"),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [index("journeys_category_idx").on(table.category)]
 )

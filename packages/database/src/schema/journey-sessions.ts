@@ -1,19 +1,17 @@
 import {
   index,
   integer,
-  pgTable,
-  serial,
+  sqliteTable,
   text,
-  timestamp,
   unique,
-} from "drizzle-orm/pg-core"
+} from "drizzle-orm/sqlite-core"
 
 import { journeys } from "./journeys"
 
-export const journeySessions = pgTable(
+export const journeySessions = sqliteTable(
   "journey_sessions",
   {
-    id: serial("id").primaryKey(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
     journeyId: integer("journey_id")
       .notNull()
       .references(() => journeys.id, { onDelete: "cascade" }),
@@ -21,8 +19,12 @@ export const journeySessions = pgTable(
     title: text("title").notNull(),
     description: text("description").notNull(),
     estimatedMinutes: integer("estimated_minutes").notNull(),
-    createdAt: timestamp("created_at").notNull().defaultNow(),
-    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .defaultNow(),
+    updatedAt: integer("updated_at", { mode: "timestamp" })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     unique("journey_sessions_journey_order_uniq").on(

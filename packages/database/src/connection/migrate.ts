@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url"
 
-import { migrate } from "drizzle-orm/postgres-js/migrator"
+import { migrate } from "drizzle-orm/bun-sqlite/migrator"
 
 import type { DbClient } from "../types/index"
 
@@ -12,7 +12,7 @@ export async function migrateDatabase(
   database: DbClient,
   migrationsFolder = defaultMigrationsFolder
 ): Promise<void> {
-  await migrate(database, {
+  migrate(database, {
     migrationsFolder,
   })
 }
