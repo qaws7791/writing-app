@@ -79,7 +79,7 @@ function HomeContent() {
             <div className="flex items-center gap-1.5">
               <img src={STAR_ICON} alt="star" className="size-4" />
               <span className="text-sm font-medium text-on-surface-low">
-                오늘의 추천 주제
+                오늘의 추천 글감
               </span>
             </div>
             <p className="text-2xl leading-9 font-medium text-on-surface-low">
