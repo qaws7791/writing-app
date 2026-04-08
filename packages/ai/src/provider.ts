@@ -1,6 +1,13 @@
 import type { LanguageModel } from "ai"
-import { google } from "@ai-sdk/google"
+import {
+  createVertex,
+  GoogleVertexProviderSettings,
+} from "@ai-sdk/google-vertex"
 
-export function createAIModel(): LanguageModel {
-  return google("gemini-3.1-flash-lite-preview")
+export function createAIModel(
+  options?: GoogleVertexProviderSettings | undefined
+): LanguageModel {
+  const vertex = createVertex(options)
+
+  return vertex("gemini-3.1-flash-lite-preview")
 }

@@ -41,3 +41,6 @@ docs/.obsidian/
 
 # local database
 /data
+
+# secret credentials
+/credentials
