@@ -1,7 +1,14 @@
 "use client"
 
-import { useCallback, useRef, useState } from "react"
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
+import type { JSONContent } from "@tiptap/react"
 import Document from "@tiptap/extension-document"
 import Paragraph from "@tiptap/extension-paragraph"
 import Text from "@tiptap/extension-text"
@@ -17,8 +24,14 @@ import {
   Tick02Icon,
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { Drawer, DrawerContent } from "@workspace/ui/components/drawer"
 
 import { usePromptDetail } from "@/features/prompts/hooks/use-prompt-detail"
+import {
+  useCreateWriting,
+  useSaveWriting,
+  useWritingDetail,
+} from "@/features/writings"
 
 function PromptBanner({ title, body }: { title: string; body: string }) {
   return (
@@ -64,6 +77,12 @@ export default function WritingEditorView({
   const [title, setTitle] = useState("")
   const [today] = useState(() => new Date())
   const titleRef = useRef<HTMLTextAreaElement>(null)
+  const [isDirty, setIsDirty] = useState(false)
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false)
+  const hasPopulatedRef = useRef(false)
+  const isSettingInitialContentRef = useRef(false)
+
+  const writingIdNumber = writingId ? Number(writingId) : undefined
 
   const editor = useEditor({
     extensions: [
@@ -78,27 +97,113 @@ export default function WritingEditorView({
       }),
       Typography,
     ],
+    onUpdate: () => {
+      if (!isSettingInitialContentRef.current) {
+        setIsDirty(true)
+      }
+    },
     immediatelyRender: false,
   })
 
   const wordCount = editor?.storage.characterCount.words() ?? 0
 
   const promptQuery = usePromptDetail(promptId)
+  const writingQuery = useWritingDetail(writingIdNumber)
+  const createWriting = useCreateWriting()
+  const saveWriting = useSaveWriting()
+  const isSaving = createWriting.isPending || saveWriting.isPending
+
   const isPromptEnabled = promptId != null
   const prompt =
     isPromptEnabled && promptQuery.data != null ? promptQuery.data : null
   const isPromptLoading = isPromptEnabled && promptQuery.isLoading
 
-  const handleTitleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
-    const el = e.currentTarget
+  // Populate editor when existing writing data loads
+  useEffect(() => {
+    if (!editor || !writingQuery.data || hasPopulatedRef.current) return
+    hasPopulatedRef.current = true
+    const { title: loadedTitle, bodyJson } = writingQuery.data
+    startTransition(() => {
+      setTitle(loadedTitle)
+    })
+    if (bodyJson) {
+      isSettingInitialContentRef.current = true
+      editor.commands.setContent(bodyJson as JSONContent)
+      isSettingInitialContentRef.current = false
+    }
+  }, [editor, writingQuery.data])
+
+  // Warn browser close/refresh when there are unsaved changes
+  useEffect(() => {
+    if (!isDirty) return
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+    }
+    window.addEventListener("beforeunload", handler)
+    return () => window.removeEventListener("beforeunload", handler)
+  }, [isDirty])
+
+  const performSave = useCallback(async () => {
+    const bodyJson = editor?.getJSON()
+    const bodyPlainText = editor?.getText()
+    const words = editor?.storage.characterCount.words() ?? 0
+
+    if (writingIdNumber) {
+      await saveWriting.mutateAsync({
+        writingId: writingIdNumber,
+        title,
+        bodyJson,
+        bodyPlainText,
+        wordCount: words,
+      })
+    } else {
+      await createWriting.mutateAsync({
+        title,
+        bodyJson,
+        bodyPlainText,
+        wordCount: words,
+        sourcePromptId: promptId,
+      })
+    }
+    setIsDirty(false)
+  }, [editor, writingIdNumber, title, promptId, saveWriting, createWriting])
+
+  const handleSave = useCallback(async () => {
+    await performSave()
+    router.back()
+  }, [performSave, router])
+
+  const handleBack = useCallback(() => {
+    if (isDirty) {
+      setShowLeaveDialog(true)
+    } else {
+      router.back()
+    }
+  }, [isDirty, router])
+
+  const handleLeaveWithoutSave = useCallback(() => {
+    setShowLeaveDialog(false)
+    setIsDirty(false)
+    router.back()
+  }, [router])
+
+  const handleSaveAndLeave = useCallback(async () => {
+    setShowLeaveDialog(false)
+    try {
+      await performSave()
+      router.back()
+    } catch {
+      // save failed — stay on page
+    }
+  }, [performSave, router])
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const el = e.target
     setTitle(el.value)
+    setIsDirty(true)
     el.style.height = "auto"
     el.style.height = `${el.scrollHeight}px`
   }
-
-  const handleSave = useCallback(() => {
-    router.back()
-  }, [router])
 
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
@@ -107,7 +212,7 @@ export default function WritingEditorView({
         <button
           type="button"
           aria-label="뒤로 가기"
-          onClick={() => router.back()}
+          onClick={handleBack}
           className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
         >
           <HugeiconsIcon
@@ -139,7 +244,8 @@ export default function WritingEditorView({
             type="button"
             aria-label="저장"
             onClick={handleSave}
-            className="flex size-10 items-center justify-center rounded-full bg-on-surface text-on-primary transition-colors hover:opacity-90"
+            disabled={isSaving}
+            className="flex size-10 items-center justify-center rounded-full bg-on-surface text-on-primary transition-colors hover:opacity-90 disabled:opacity-50"
           >
             <HugeiconsIcon
               icon={Tick02Icon}
@@ -172,8 +278,7 @@ export default function WritingEditorView({
           <textarea
             ref={titleRef}
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onInput={handleTitleInput}
+            onChange={handleTitleChange}
             placeholder="제목"
             rows={1}
             className="w-full resize-none overflow-hidden bg-transparent text-[2rem] leading-normal font-medium tracking-[-0.0625em] text-on-surface outline-none placeholder:text-on-surface-lowest"
@@ -190,6 +295,81 @@ export default function WritingEditorView({
           {wordCount} 단어
         </p>
       </div>
+
+      {/* Unsaved changes bottom sheet */}
+      <Drawer open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <DrawerContent className="!rounded-t-[32px] !border-t-0 bg-surface-container-lowest px-6 pt-3 pb-9 [&>div:first-child]:!hidden">
+          {/* Handle bar */}
+          <div className="mx-auto mb-[38px] h-[5px] w-[45px] rounded-full bg-on-surface-lowest" />
+
+          <div className="flex flex-col items-center gap-[33px]">
+            {/* Icon + text */}
+            <div className="flex w-full flex-col items-center gap-[33px]">
+              <div className="flex size-[58px] items-center justify-center rounded-[20px] bg-surface">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M14 2H6C5.47 2 4.96 2.21 4.59 2.59C4.21 2.96 4 3.47 4 4V20C4 20.53 4.21 21.04 4.59 21.41C4.96 21.79 5.47 22 6 22H18C18.53 22 19.04 21.79 19.41 21.41C19.79 21.04 20 20.53 20 20V8L14 2Z"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M14 2V8H20"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M16 13H8M16 17H8M10 9H8"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+
+              <div className="flex flex-col items-center gap-[14px] text-center">
+                <p className="text-[20px] leading-6 font-bold text-on-surface">
+                  작성 중인 수필이 있어요
+                </p>
+                <p className="text-sm leading-[21px] text-on-surface-lowest">
+                  지금 나가면 저장되지 않은 내용이 사라질 수 있습니다.
+                  <br />
+                  저장 후 나가시겠어요?
+                </p>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex w-full gap-[10px]">
+              <button
+                type="button"
+                onClick={handleLeaveWithoutSave}
+                className="flex-1 rounded-[20px] bg-surface-container-high py-[14px] text-base font-semibold text-on-surface"
+              >
+                그냥 나가기
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveAndLeave}
+                disabled={isSaving}
+                className="flex-1 rounded-[20px] bg-on-surface py-[14px] text-base font-semibold text-on-primary disabled:opacity-50"
+              >
+                임시 저장 후 나가기
+              </button>
+            </div>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   )
 }
