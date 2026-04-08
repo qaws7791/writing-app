@@ -38,44 +38,39 @@ API는 화면을 렌더링하지 않고, 다음 책임에 집중한다.
 
 ### 인증
 
-- `POST /auth/login`
-- `POST /auth/logout`
-- `POST /auth/signup`
-- `GET /auth/session`
-- `POST /auth/social/google`
-- `POST /auth/social/kakao`
+- `POST /api/auth/sign-in/email`
+- `POST /api/auth/sign-up/email`
+- `POST /api/auth/sign-out`
+- `GET /session`
 
 ### 사용자
 
-- `GET /me`
-- `PATCH /me/profile`
-- `PATCH /me/onboarding`
+- `GET /users/profile`
 
 ### 홈
 
 - `GET /home`
-- `GET /home/recommended-prompt`
 
 ### 글감
 
-- `GET /writing-prompts`
-- `GET /writing-prompts/{promptId}`
-- `POST /writing-prompts/{promptId}/bookmark`
-- `DELETE /writing-prompts/{promptId}/bookmark`
+- `GET /prompts`
+- `GET /prompts/categories`
+- `GET /prompts/{promptId}`
+- `GET /prompts/{promptId}/writings`
+- `PUT /prompts/{promptId}/bookmark`
+- `DELETE /prompts/{promptId}/bookmark`
 
 ### 여정
 
 - `GET /journeys`
 - `GET /journeys/{journeyId}`
 - `POST /journeys/{journeyId}/enroll`
-- `GET /me/journeys`
 
 ### 세션과 스텝
 
-- `GET /journeys/{journeyId}/sessions`
 - `GET /sessions/{sessionId}`
 - `POST /sessions/{sessionId}/start`
-- `POST /sessions/{sessionId}/steps/{stepId}/submit`
+- `POST /sessions/{sessionId}/steps/{stepOrder}/submit`
 - `POST /sessions/{sessionId}/complete`
 
 ### 글쓰기
@@ -85,13 +80,11 @@ API는 화면을 렌더링하지 않고, 다음 책임에 집중한다.
 - `GET /writings/{writingId}`
 - `PATCH /writings/{writingId}`
 - `DELETE /writings/{writingId}`
-- `POST /writings/{writingId}/autosave`
-- `GET /writings/{writingId}/versions`
 
 ### AI 피드백
 
-- `POST /writings/{writingId}/ai/feedback`
-- `POST /writings/{writingId}/ai/compare`
+- `POST /writings/{writingId}/feedback`
+- `POST /writings/{writingId}/compare`
 
 AI 피드백은 소크라테스식 코칭 형태로 강점, 개선점, 사고 촉발 질문을 반환한다. 완성된 문장이나 대체 표현을 직접 제시하지 않는다.
 

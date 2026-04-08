@@ -36,10 +36,10 @@ interface JourneyDetailData {
 }
 
 const BOTTOM_NAV_ITEMS = [
-  { icon: Home01Icon, label: "홈" },
-  { icon: BookOpen01Icon, label: "나의 여정" },
-  { icon: QuillWrite01Icon, label: "서재" },
-  { icon: User02Icon, label: "프로필" },
+  { icon: Home01Icon, label: "홈", href: "/home" },
+  { icon: BookOpen01Icon, label: "나의 여정", href: "/my-journeys" },
+  { icon: QuillWrite01Icon, label: "서재", href: "/library" },
+  { icon: User02Icon, label: "프로필", href: "/profile" },
 ] as const
 
 function ProgressSegments({
@@ -187,8 +187,10 @@ function SessionCard({
 
 export default function JourneyDetailView({
   data,
+  onStartSession,
 }: {
   data: JourneyDetailData
+  onStartSession?: (sessionId: string) => void | Promise<void>
 }) {
   const router = useRouter()
   const progressPercent =
@@ -197,6 +199,11 @@ export default function JourneyDetailView({
       : 0
 
   function handleStartSession(sessionId: string) {
+    if (onStartSession) {
+      void onStartSession(sessionId)
+      return
+    }
+
     router.push(`/journeys/${data.id}/sessions/${sessionId}`)
   }
 
@@ -288,10 +295,10 @@ export default function JourneyDetailView({
 
       {/* Bottom Navigation */}
       <nav className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-around rounded-tl-[2rem] rounded-tr-[2rem] border-t border-outline/20 bg-surface/95 px-4 py-4 safe-area-pb shadow-[0px_-12px_40px_0px_rgba(47,52,48,0.04)] backdrop-blur-xl">
-        {BOTTOM_NAV_ITEMS.map(({ icon, label }) => (
+        {BOTTOM_NAV_ITEMS.map(({ icon, label, href }) => (
           <button
             key={label}
-            onClick={() => router.push("/home")}
+            onClick={() => router.push(href)}
             className="flex flex-col items-center gap-1 text-on-surface-lowest transition-colors"
           >
             <HugeiconsIcon

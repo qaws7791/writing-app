@@ -2,6 +2,7 @@ import { migrateDatabase, seedDatabase } from "@workspace/database"
 import { apiReference } from "@scalar/hono-api-reference"
 import { OpenAPIHono } from "@hono/zod-openapi"
 import { cors } from "hono/cors"
+import journeySeeds from "../../data/journey-seeds.json"
 
 import type { AppEnv, AppUseCases } from "../app-env"
 import {
@@ -60,7 +61,7 @@ export async function createApiDependencies(
 
   await migrateDatabase(database.db)
   if (environment.seedOnStartup) {
-    seedDatabase(database.db)
+    await seedDatabase(database.db, journeySeeds.journeys)
   }
 
   const useCases: AppUseCases = {

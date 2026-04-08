@@ -66,6 +66,8 @@ features/{feature-name}/
  ┗━ index.ts           ← Public API (re-export만)
 ```
 
+현재 `apps/web`에서 이 구조를 적용한 대표 기능은 `home`, `prompts`, `journeys`, `sessions`, `users`, `writings`입니다.
+
 **핵심 규칙:**
 
 - `index.ts`에 공개 API만 명시적으로 re-export합니다. 외부에서 내부 파일을 직접 import하지 않습니다.

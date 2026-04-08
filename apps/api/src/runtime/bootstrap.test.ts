@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from "vitest"
 
+import journeySeeds from "../../data/journey-seeds.json"
+
 const {
   createApiContainerMock,
   createAppMock,
@@ -160,7 +162,10 @@ describe("bootstrap", () => {
     })
 
     expect(seedDatabaseMock).toHaveBeenCalledTimes(1)
-    expect(seedDatabaseMock).toHaveBeenCalledWith({ name: "db" })
+    expect(seedDatabaseMock).toHaveBeenCalledWith(
+      { name: "db" },
+      journeySeeds.journeys
+    )
   })
 
   test("skips database seeding on startup when disabled", async () => {

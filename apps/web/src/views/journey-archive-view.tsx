@@ -4,36 +4,27 @@ import { useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Layers01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
-import journeyData from "@/data/journey-sessions.json"
+import { useJourneys } from "@/features/journeys"
 
-const JOURNEY_IMAGES = [
-  "https://www.figma.com/api/mcp/asset/c6b65f07-a7d0-4a31-b8c7-1e75acfd3b0b",
-  "https://www.figma.com/api/mcp/asset/089e5c17-97a0-4064-ac59-6f9bb2b74ef7",
-]
+const CATEGORY_LABEL: Record<
+  "writing_skill" | "mindfulness" | "practical",
+  string
+> = {
+  writing_skill: "글쓰기 역량",
+  mindfulness: "자기 탐구",
+  practical: "실용 글쓰기",
+}
 
-const ALL_CATEGORIES = Array.from(
-  new Set(journeyData.journeys.map((j) => j.category))
-)
-const CATEGORIES = ["전체", ...ALL_CATEGORIES] as const
 type Category = string
 
 interface JourneyCardData {
-  id: string
+  id: number
   title: string
   description: string
   sessionCount: number
   imageUrl: string
   category: string
 }
-
-const JOURNEY_CARDS: JourneyCardData[] = journeyData.journeys.map((j, i) => ({
-  id: j.id,
-  title: j.title,
-  description: j.description,
-  sessionCount: j.sessions.length,
-  imageUrl: JOURNEY_IMAGES[i % JOURNEY_IMAGES.length] ?? JOURNEY_IMAGES[0]!,
-  category: j.category,
-}))
 
 function JourneyListCard({ card }: { card: JourneyCardData }) {
   const router = useRouter()
@@ -78,18 +69,36 @@ function JourneyListCard({ card }: { card: JourneyCardData }) {
 }
 
 export default function JourneyArchiveView() {
+  const { data, isPending, isError } = useJourneys()
   const [selectedCategory, setSelectedCategory] = useState<Category>("전체")
+
+  const journeyCards: JourneyCardData[] =
+    data?.items.map((journey) => ({
+      id: journey.id,
+      title: journey.title,
+      description: journey.description,
+      sessionCount: journey.sessionCount,
+      imageUrl:
+        journey.thumbnailUrl ??
+        `https://picsum.photos/seed/journey-card-${journey.id}/600/400`,
+      category: CATEGORY_LABEL[journey.category],
+    })) ?? []
+
+  const categories = [
+    "전체",
+    ...Array.from(new Set(journeyCards.map((journey) => journey.category))),
+  ]
 
   const filteredJourneys =
     selectedCategory === "전체"
-      ? JOURNEY_CARDS
-      : JOURNEY_CARDS.filter((j) => j.category === selectedCategory)
+      ? journeyCards
+      : journeyCards.filter((journey) => journey.category === selectedCategory)
 
   return (
     <div className="flex flex-col">
       {/* Category Filter Chips */}
       <div className="flex gap-2.5 overflow-x-auto px-4 py-2.5 [scrollbar-width:none]">
-        {CATEGORIES.map((cat) => (
+        {categories.map((cat) => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
@@ -106,9 +115,32 @@ export default function JourneyArchiveView() {
 
       {/* Journey Cards */}
       <div className="flex flex-col gap-4 px-4 pt-6 pb-8">
-        {filteredJourneys.map((journey) => (
-          <JourneyListCard key={journey.id} card={journey} />
-        ))}
+        {isPending
+          ? Array.from({ length: 3 }, (_, index) => (
+              <div
+                key={index}
+                className="h-32 animate-pulse rounded-3xl bg-surface-container"
+              />
+            ))
+          : null}
+
+        {isError ? (
+          <div className="rounded-3xl bg-surface-container p-6 text-sm text-on-surface-low">
+            여정 목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
+          </div>
+        ) : null}
+
+        {!isPending && !isError && filteredJourneys.length === 0 ? (
+          <div className="rounded-3xl bg-surface-container p-6 text-sm text-on-surface-low">
+            조건에 맞는 여정이 아직 없어요.
+          </div>
+        ) : null}
+
+        {!isPending && !isError
+          ? filteredJourneys.map((journey) => (
+              <JourneyListCard key={journey.id} card={journey} />
+            ))
+          : null}
       </div>
     </div>
   )

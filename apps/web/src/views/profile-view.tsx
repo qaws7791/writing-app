@@ -13,6 +13,7 @@ import {
   ArrowRight01Icon,
   User02Icon,
 } from "@hugeicons/core-free-icons"
+import { useUserProfile } from "@/features/users"
 
 function SettingRow({
   icon,
@@ -63,6 +64,7 @@ function Divider() {
 export default function ProfileView() {
   const router = useRouter()
   const [reduceMotion, setReduceMotion] = useState(false)
+  const { data, isPending, isError } = useUserProfile()
 
   async function handleLogout() {
     await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/sign-out`, {
@@ -83,35 +85,52 @@ export default function ProfileView() {
         {/* 프로필 섹션 */}
         <div className="flex flex-col items-center gap-1 px-4 pt-8 pb-10">
           <div className="mb-3 flex size-24 items-center justify-center overflow-hidden rounded-full bg-secondary-container">
-            <HugeiconsIcon
-              icon={User02Icon}
-              size={48}
-              color="currentColor"
-              strokeWidth={1}
-              className="text-on-secondary-container"
-            />
+            {data?.image ? (
+              <img
+                src={data.image}
+                alt={data.name}
+                className="size-full object-cover"
+              />
+            ) : (
+              <HugeiconsIcon
+                icon={User02Icon}
+                size={48}
+                color="currentColor"
+                strokeWidth={1}
+                className="text-on-secondary-container"
+              />
+            )}
           </div>
           <h2 className="text-[30px] font-medium tracking-[-0.05em] text-on-surface">
-            김수필
+            {isPending ? "불러오는 중..." : (data?.name ?? "사용자")}
           </h2>
           <p className="text-sm font-medium text-on-surface-low">
-            abcd1234@email.com
+            {data?.email ?? ""}
           </p>
+          {isError ? (
+            <p className="pt-2 text-xs text-on-surface-low">
+              프로필 정보를 불러오지 못했어요.
+            </p>
+          ) : null}
         </div>
 
         {/* 통계 카드 */}
         <div className="flex gap-4 px-4 pb-10">
           <div className="flex flex-1 flex-col gap-1 rounded-[2rem] bg-surface-container p-6">
             <p className="text-xs font-semibold tracking-[0.5px] text-on-surface-low uppercase">
-              완료한 여정
+              진행 중인 여정
             </p>
-            <p className="text-xl font-medium text-on-surface">여정 4개</p>
+            <p className="text-xl font-medium text-on-surface">
+              여정 {data?.activeJourneyCount ?? 0}개
+            </p>
           </div>
           <div className="flex flex-1 flex-col gap-1 rounded-[2rem] bg-surface-container p-6">
             <p className="text-xs font-semibold tracking-[0.5px] text-on-surface-low uppercase">
               작성한 글
             </p>
-            <p className="text-xl font-medium text-on-surface">글 10개</p>
+            <p className="text-xl font-medium text-on-surface">
+              글 {data?.writingCount ?? 0}개
+            </p>
           </div>
         </div>
 

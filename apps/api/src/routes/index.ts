@@ -15,6 +15,7 @@ import getSessionDetail from "./sessions/get-session"
 import startSession from "./sessions/start-session"
 import submitStep from "./sessions/submit-step"
 import completeSession from "./sessions/complete-session"
+import getUserProfile from "./users/get-user-profile"
 import listWritings from "./writings/list-writings"
 import createWriting from "./writings/create-writing"
 import getWriting from "./writings/get-writing"
@@ -41,6 +42,7 @@ export const allRoutes = [
   startSession,
   submitStep,
   completeSession,
+  getUserProfile,
   listWritings,
   createWriting,
   getWriting,

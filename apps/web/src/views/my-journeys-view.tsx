@@ -3,14 +3,20 @@
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Sun03Icon, FavouriteIcon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { useHomeSnapshot } from "@/features/home"
+import { useJourneys } from "@/features/journeys"
 
-const JOURNEY_IMAGE_1 =
-  "https://www.figma.com/api/mcp/asset/1a3a4942-67ce-4428-b640-f9df6d44775c"
-const JOURNEY_IMAGE_2 =
-  "https://www.figma.com/api/mcp/asset/2ae9530d-daa9-4a43-afd4-317a38251550"
+const CATEGORY_LABEL: Record<
+  "writing_skill" | "mindfulness" | "practical",
+  string
+> = {
+  writing_skill: "글쓰기 역량",
+  mindfulness: "자기 탐구",
+  practical: "실용 글쓰기",
+}
 
 interface ActiveJourney {
-  id: string
+  id: number
   title: string
   subtitle: string
   progress: number
@@ -23,32 +29,6 @@ interface JourneyCategory {
   name: string
   themeCount: number
 }
-
-const ACTIVE_JOURNEYS: ActiveJourney[] = [
-  {
-    id: "1",
-    title: "새벽의 대화",
-    subtitle: "완성된 단편선",
-    progress: 65,
-    imageUrl: JOURNEY_IMAGE_1,
-  },
-  {
-    id: "2",
-    title: "나를 찾는 여행",
-    subtitle: "자아 성찰 에세이",
-    progress: 14,
-    imageUrl: JOURNEY_IMAGE_2,
-  },
-]
-
-const JOURNEY_CATEGORIES: JourneyCategory[] = [
-  { id: "1", icon: "sun", name: "일상의 발견", themeCount: 12 },
-  { id: "2", icon: "heart", name: "관계의 밀도", themeCount: 8 },
-  { id: "3", icon: "sun", name: "일상의 발견", themeCount: 12 },
-  { id: "4", icon: "heart", name: "관계의 밀도", themeCount: 8 },
-  { id: "5", icon: "sun", name: "일상의 발견", themeCount: 12 },
-  { id: "6", icon: "heart", name: "관계의 밀도", themeCount: 8 },
-]
 
 function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
   const router = useRouter()
@@ -118,6 +98,44 @@ function CategoryCard({ category }: { category: JourneyCategory }) {
 }
 
 export default function MyJourneysView() {
+  const router = useRouter()
+  const {
+    data: home,
+    isPending: isHomePending,
+    isError: isHomeError,
+  } = useHomeSnapshot()
+  const { data: journeys } = useJourneys()
+
+  const activeJourneys: ActiveJourney[] =
+    home?.activeJourneys.map((journey) => ({
+      id: journey.journeyId,
+      title: journey.title,
+      subtitle: `${journey.currentSessionOrder}번째 세션 진행 중`,
+      progress: Math.round(journey.completionRate * 100),
+      imageUrl:
+        journey.thumbnailUrl ??
+        `https://picsum.photos/seed/active-journey-${journey.journeyId}/600/400`,
+    })) ?? []
+
+  const journeyCategories: JourneyCategory[] =
+    journeys?.items.reduce<JourneyCategory[]>((acc, journey) => {
+      const label = CATEGORY_LABEL[journey.category]
+      const existing = acc.find((category) => category.name === label)
+
+      if (existing) {
+        existing.themeCount += 1
+        return acc
+      }
+
+      acc.push({
+        id: journey.category,
+        icon: journey.category === "mindfulness" ? "heart" : "sun",
+        name: label,
+        themeCount: 1,
+      })
+      return acc
+    }, []) ?? []
+
   return (
     <div className="flex flex-col gap-3">
       {/* Header */}
@@ -129,27 +147,47 @@ export default function MyJourneysView() {
 
       {/* Active Journeys */}
       <div className="flex flex-col gap-6 px-4">
-        {ACTIVE_JOURNEYS.length === 0 ? (
+        {isHomePending
+          ? Array.from({ length: 2 }, (_, index) => (
+              <div
+                key={index}
+                className="h-32 animate-pulse rounded-3xl bg-surface-container"
+              />
+            ))
+          : null}
+
+        {isHomeError ? (
+          <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
+            내 여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
+          </div>
+        ) : null}
+
+        {!isHomePending && !isHomeError && activeJourneys.length === 0 ? (
           <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
             아직 시작한 여정이 없어요. 나에게 맞는 여정을 찾아보세요!
           </div>
-        ) : (
-          ACTIVE_JOURNEYS.map((journey) => (
-            <ActiveJourneyCard key={journey.id} journey={journey} />
-          ))
-        )}
+        ) : null}
+
+        {!isHomePending && !isHomeError
+          ? activeJourneys.map((journey) => (
+              <ActiveJourneyCard key={journey.id} journey={journey} />
+            ))
+          : null}
       </div>
 
       {/* Find Journeys */}
       <div className="mt-4 flex flex-col gap-4 px-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-on-surface">여정 찾기</h2>
-          <button className="text-sm font-semibold text-on-surface-low">
+          <button
+            onClick={() => router.push("/home?tab=journeys")}
+            className="text-sm font-semibold text-on-surface-low"
+          >
             더보기
           </button>
         </div>
         <div className="grid grid-cols-2 gap-4">
-          {JOURNEY_CATEGORIES.map((category) => (
+          {journeyCategories.map((category) => (
             <CategoryCard key={category.id} category={category} />
           ))}
         </div>

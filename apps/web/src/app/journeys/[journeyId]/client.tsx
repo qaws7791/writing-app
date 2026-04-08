@@ -2,35 +2,10 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+
+import { useHomeSnapshot } from "@/features/home"
+import { useEnrollJourney, useJourneyDetail } from "@/features/journeys"
 import JourneyDetailView from "@/views/journey-detail-view"
-import journeyData from "@/data/journey-sessions.json"
-
-const JOURNEY_IMAGES = [
-  "https://www.figma.com/api/mcp/asset/c6b65f07-a7d0-4a31-b8c7-1e75acfd3b0b",
-  "https://www.figma.com/api/mcp/asset/089e5c17-97a0-4064-ac59-6f9bb2b74ef7",
-]
-
-const JOURNEY_DETAILS = Object.fromEntries(
-  journeyData.journeys.map((j, i) => [
-    j.id,
-    {
-      title: j.title,
-      description: j.description,
-      thumbnailUrl:
-        JOURNEY_IMAGES[i % JOURNEY_IMAGES.length] ?? JOURNEY_IMAGES[0]!,
-      sessions: j.sessions.map((s, si) => ({
-        id: s.id,
-        order: s.order,
-        title: s.title,
-        description: s.description,
-        status: (si === 0 ? "IN_PROGRESS" : "LOCKED") as
-          | "COMPLETED"
-          | "IN_PROGRESS"
-          | "LOCKED",
-      })),
-    },
-  ])
-)
 
 export default function JourneyDetailClientPage({
   journeyId,
@@ -38,33 +13,92 @@ export default function JourneyDetailClientPage({
   journeyId: string
 }) {
   const router = useRouter()
-  const journey = JOURNEY_DETAILS[journeyId]
+  const journeyIdNumber = Number(journeyId)
+  const {
+    data: journey,
+    isPending,
+    isError,
+  } = useJourneyDetail(journeyIdNumber)
+  const { data: home } = useHomeSnapshot()
+  const enrollJourney = useEnrollJourney()
 
   useEffect(() => {
-    if (!journey) {
+    if (!Number.isFinite(journeyIdNumber) || journeyIdNumber <= 0) {
       router.replace("/")
     }
-  }, [journey, router])
+  }, [journeyIdNumber, router])
 
-  if (!journey) {
+  if (!Number.isFinite(journeyIdNumber) || journeyIdNumber <= 0) {
     return null
   }
 
-  const completedCount = journey.sessions.filter(
-    (s) => s.status === "COMPLETED"
-  ).length
+  if (isPending) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-surface px-6 text-sm text-on-surface-low">
+        여정을 불러오고 있어요...
+      </div>
+    )
+  }
+
+  if (isError || !journey) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface px-6 text-center">
+        <p className="text-sm text-on-surface-low">
+          여정 정보를 불러오지 못했어요.
+        </p>
+        <button
+          onClick={() => router.push("/home?tab=journeys")}
+          className="rounded-full bg-on-surface px-5 py-3 text-sm font-semibold text-surface"
+        >
+          여정 목록으로 돌아가기
+        </button>
+      </div>
+    )
+  }
+
+  const journeyDetail = journey
+
+  const activeJourney = home?.activeJourneys.find(
+    (item) => item.journeyId === journeyDetail.id
+  )
+  const currentSessionOrder = activeJourney?.currentSessionOrder ?? 1
+  const completedCount = activeJourney
+    ? Math.max(0, currentSessionOrder - 1)
+    : 0
+
+  async function handleStartSession(sessionId: string) {
+    if (!activeJourney) {
+      await enrollJourney.mutateAsync(journeyDetail.id)
+    }
+
+    router.push(`/journeys/${journeyDetail.id}/sessions/${sessionId}`)
+  }
 
   return (
     <JourneyDetailView
       data={{
-        id: journeyId,
-        title: journey.title ?? "",
-        description: journey.description,
-        thumbnailUrl: journey.thumbnailUrl,
+        id: String(journeyDetail.id),
+        title: journeyDetail.title,
+        description: journeyDetail.description,
+        thumbnailUrl:
+          journeyDetail.thumbnailUrl ??
+          `https://picsum.photos/seed/journey-detail-${journeyDetail.id}/800/600`,
         completedCount,
-        totalCount: journey.sessions.length,
-        sessions: journey.sessions,
+        totalCount: journeyDetail.sessions.length,
+        sessions: journeyDetail.sessions.map((session) => ({
+          id: String(session.id),
+          order: session.order,
+          title: session.title,
+          description: session.description,
+          status:
+            session.order < currentSessionOrder
+              ? "COMPLETED"
+              : session.order === currentSessionOrder
+                ? "IN_PROGRESS"
+                : "LOCKED",
+        })),
       }}
+      onStartSession={handleStartSession}
     />
   )
 }

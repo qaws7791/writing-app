@@ -7,6 +7,7 @@ import {
   seedTestUsers,
   type SeedTestUser,
 } from "@workspace/database"
+import journeySeeds from "../../data/journey-seeds.json"
 
 import { readApiEnvironment } from "../runtime/bootstrap.js"
 import { createApiLogger } from "../observability/logger.js"
@@ -30,7 +31,7 @@ const database = openDb(environment.databasePath)
 
 try {
   await migrateDatabase(database.db)
-  await seedDatabase(database.db)
+  await seedDatabase(database.db, journeySeeds.journeys)
 
   const testUserSeeds: SeedTestUser[] = await Promise.all(
     DEV_TEST_USERS.map(async (u, i) => ({

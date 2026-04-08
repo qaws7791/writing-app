@@ -13,7 +13,6 @@ import {
   journeyNotFound,
   sessionNotFound,
 } from "@workspace/core"
-import { writingNotFound } from "@workspace/core/modules/writings"
 
 import {
   createUseCaseMiddleware,
@@ -404,7 +403,7 @@ describe("auth", () => {
     await verifyEmail(app, email)
 
     const requestResetResponse = await app.request(
-      "/api/auth/forget-password",
+      "/api/auth/request-password-reset",
       {
         body: JSON.stringify({
           email,

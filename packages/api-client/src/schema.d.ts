@@ -534,67 +534,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  "/prompts/categories": {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * 글감 카테고리 목록
-     * @description 글감 카테고리 목록을 반환합니다. (감각, 회고, 의견)
-     */
-    get: {
-      parameters: {
-        query?: never
-        header?: never
-        path?: never
-        cookie?: never
-      }
-      requestBody?: never
-      responses: {
-        /** @description 성공 */
-        200: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            "application/json": {
-              items: {
-                /** @enum {string} */
-                key: "sensory" | "reflection" | "opinion"
-                label: string
-              }[]
-            }
-          }
-        }
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            "application/json": {
-              error: {
-                code: string
-                details?: unknown
-                message: string
-                requestId?: string
-              }
-            }
-          }
-        }
-      }
-    }
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   "/prompts": {
     parameters: {
       query?: never
@@ -637,6 +576,67 @@ export interface paths {
                 isBookmarked: boolean
               }[]
               nextCursor: number | null
+            }
+          }
+        }
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/prompts/categories": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 글감 카테고리 목록
+     * @description 글감 카테고리 목록을 반환합니다. (감각, 회고, 의견)
+     */
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description 성공 */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              items: {
+                /** @enum {string} */
+                key: "sensory" | "reflection" | "opinion"
+                label: string
+              }[]
             }
           }
         }
@@ -764,7 +764,7 @@ export interface paths {
           }
           content: {
             "application/json": {
-              items: readonly {
+              items: {
                 id: number
                 title: string
                 preview: string
@@ -1370,6 +1370,69 @@ export interface paths {
         }
       }
     }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/users/profile": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 프로필 조회
+     * @description 현재 로그인한 사용자의 프로필과 기본 통계를 조회합니다.
+     */
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description 성공 */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              activeJourneyCount: number
+              /** Format: email */
+              email: string
+              emailVerified: boolean
+              image?: string | null
+              name: string
+              writingCount: number
+            }
+          }
+        }
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
     delete?: never
     options?: never
     head?: never

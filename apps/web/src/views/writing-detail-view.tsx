@@ -29,11 +29,22 @@ type WritingBlock =
   | { type: "paragraph"; content: string }
   | { type: "quote"; content: string }
 
+interface WritingFeedbackData {
+  strengths: string[]
+  improvements: string[]
+  question: string
+}
+
+interface WritingComparisonData {
+  improvements: string[]
+  summary: string
+}
+
 const BOTTOM_NAV_ITEMS = [
-  { icon: Home01Icon, label: "홈" },
-  { icon: BookOpen01Icon, label: "나의 여정" },
-  { icon: QuillWrite01Icon, label: "서재" },
-  { icon: User02Icon, label: "프로필" },
+  { icon: Home01Icon, label: "홈", href: "/home" },
+  { icon: BookOpen01Icon, label: "나의 여정", href: "/my-journeys" },
+  { icon: QuillWrite01Icon, label: "서재", href: "/library" },
+  { icon: User02Icon, label: "프로필", href: "/profile" },
 ] as const
 
 function WritingPromptCard({
@@ -116,10 +127,23 @@ function QuoteBlock({ content }: { content: string }) {
 
 export default function WritingDetailView({
   data,
+  feedback,
+  feedbackPending = false,
+  comparison,
+  comparisonPending = false,
+  onGenerateFeedback,
+  onCompareRevision,
 }: {
   data: WritingDetailData
+  feedback?: WritingFeedbackData
+  feedbackPending?: boolean
+  comparison?: WritingComparisonData
+  comparisonPending?: boolean
+  onGenerateFeedback?: () => Promise<unknown>
+  onCompareRevision?: (revisedText: string) => Promise<unknown>
 }) {
   const router = useRouter()
+  const [revisedText, setRevisedText] = useState("")
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
@@ -182,6 +206,88 @@ export default function WritingDetailView({
           </div>
         )}
 
+        <div className="mt-8 flex flex-col gap-4 rounded-[2rem] bg-surface-container p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-on-surface">
+                AI 피드백
+              </h2>
+              <p className="mt-1 text-sm text-on-surface-low">
+                현재 글을 기준으로 강점과 개선점을 받아볼 수 있어요.
+              </p>
+            </div>
+            <button
+              onClick={() => void onGenerateFeedback?.()}
+              disabled={feedbackPending}
+              className="rounded-full bg-on-surface px-4 py-2 text-sm font-semibold text-surface disabled:opacity-50"
+            >
+              {feedbackPending ? "생성 중..." : "피드백 받기"}
+            </button>
+          </div>
+
+          {feedback ? (
+            <div className="flex flex-col gap-4">
+              <div>
+                <p className="text-sm font-semibold text-on-surface">강점</p>
+                <ul className="mt-2 flex list-disc flex-col gap-2 pl-5 text-sm text-on-surface-low">
+                  {feedback.strengths.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-on-surface">개선점</p>
+                <ul className="mt-2 flex list-disc flex-col gap-2 pl-5 text-sm text-on-surface-low">
+                  {feedback.improvements.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-2xl bg-surface px-4 py-3 text-sm text-on-surface-low">
+                {feedback.question}
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-6 flex flex-col gap-4 rounded-[2rem] bg-surface-container p-6">
+          <div>
+            <h2 className="text-lg font-semibold text-on-surface">
+              수정본 비교
+            </h2>
+            <p className="mt-1 text-sm text-on-surface-low">
+              수정한 버전을 붙여 넣으면 원문과 비교해 개선 지점을 알려줘요.
+            </p>
+          </div>
+          <textarea
+            value={revisedText}
+            onChange={(event) => setRevisedText(event.target.value)}
+            placeholder="수정한 버전을 여기에 붙여 넣어주세요."
+            className="min-h-40 rounded-[1.5rem] bg-surface px-4 py-4 text-sm text-on-surface outline-none"
+          />
+          <button
+            onClick={() => void onCompareRevision?.(revisedText)}
+            disabled={comparisonPending || revisedText.trim().length === 0}
+            className="rounded-full bg-on-surface px-4 py-3 text-sm font-semibold text-surface disabled:opacity-50"
+          >
+            {comparisonPending ? "비교 중..." : "수정본 비교하기"}
+          </button>
+
+          {comparison ? (
+            <div className="flex flex-col gap-4 rounded-[1.5rem] bg-surface px-4 py-4">
+              <p className="text-sm font-semibold text-on-surface">요약</p>
+              <p className="text-sm leading-relaxed text-on-surface-low">
+                {comparison.summary}
+              </p>
+              <ul className="flex list-disc flex-col gap-2 pl-5 text-sm text-on-surface-low">
+                {comparison.improvements.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </div>
+
         {/* Essay body */}
         <div className="mt-12 flex flex-col gap-12">
           {data.paragraphs.map((block, index) =>
@@ -201,10 +307,10 @@ export default function WritingDetailView({
 
       {/* Bottom Navigation */}
       <nav className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-around rounded-tl-[2rem] rounded-tr-[2rem] border-t border-outline/20 bg-surface/95 px-4 py-4 safe-area-pb shadow-[0px_-12px_40px_0px_rgba(47,52,48,0.04)] backdrop-blur-xl">
-        {BOTTOM_NAV_ITEMS.map(({ icon, label }) => (
+        {BOTTOM_NAV_ITEMS.map(({ icon, label, href }) => (
           <button
             key={label}
-            onClick={() => router.push("/home")}
+            onClick={() => router.push(href)}
             className="flex flex-col items-center gap-1 text-on-surface-lowest transition-colors"
           >
             <HugeiconsIcon

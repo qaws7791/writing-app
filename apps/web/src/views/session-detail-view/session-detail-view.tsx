@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowLeft01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
 
@@ -12,9 +12,13 @@ import type {
 import { StepRenderer } from "@/views/session-detail-view/step-renderer"
 
 interface SessionDetailViewProps {
+  initialCurrentStepOrder?: number
+  initialStepStates?: Record<string, StepState>
   journeyTitle: string
+  onCompleteSession?: () => Promise<void>
   session: Session
   onExit: () => void
+  onSubmitStep?: (stepOrder: number, response: unknown) => Promise<void>
 }
 
 const SELECTION_TYPES: StepType[] = [
@@ -27,16 +31,34 @@ const SELECTION_TYPES: StepType[] = [
 const INPUT_TYPES: StepType[] = ["WRITING", "SHORT_ANSWER", "REWRITING"]
 
 export default function SessionDetailView({
+  initialCurrentStepOrder = 1,
+  initialStepStates = {},
   journeyTitle,
+  onCompleteSession,
   session,
   onExit,
+  onSubmitStep,
 }: SessionDetailViewProps) {
-  const [currentStepIndex, setCurrentStepIndex] = useState(0)
-  const [stepStates, setStepStates] = useState<Record<string, StepState>>({})
+  const [currentStepIndex, setCurrentStepIndex] = useState(
+    Math.max(0, initialCurrentStepOrder - 1)
+  )
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [stepStates, setStepStates] =
+    useState<Record<string, StepState>>(initialStepStates)
 
   const steps = session.steps
   const currentStep = steps[currentStepIndex]!
   const progress = ((currentStepIndex + 1) / steps.length) * 100
+
+  useEffect(() => {
+    setCurrentStepIndex(
+      Math.min(Math.max(0, initialCurrentStepOrder - 1), steps.length - 1)
+    )
+  }, [initialCurrentStepOrder, steps.length])
+
+  useEffect(() => {
+    setStepStates(initialStepStates)
+  }, [initialStepStates])
 
   const updateStepState = useCallback((stepId: string, state: StepState) => {
     setStepStates((prev) => ({ ...prev, [stepId]: state }))
@@ -47,13 +69,37 @@ export default function SessionDetailView({
     [stepStates]
   )
 
-  const handleNext = useCallback(() => {
-    if (currentStepIndex < steps.length - 1) {
-      setCurrentStepIndex((i) => i + 1)
-    } else {
-      onExit()
+  const handleNext = useCallback(async () => {
+    if (isSubmitting) {
+      return
     }
-  }, [currentStepIndex, steps.length, onExit])
+
+    setIsSubmitting(true)
+
+    try {
+      await onSubmitStep?.(currentStep.order, stepStates[currentStep.id])
+
+      if (currentStepIndex < steps.length - 1) {
+        setCurrentStepIndex((i) => i + 1)
+        return
+      }
+
+      await onCompleteSession?.()
+      onExit()
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [
+    currentStep.id,
+    currentStep.order,
+    currentStepIndex,
+    isSubmitting,
+    onCompleteSession,
+    onExit,
+    onSubmitStep,
+    stepStates,
+    steps.length,
+  ])
 
   const handleBack = useCallback(() => {
     if (currentStepIndex > 0) {
@@ -78,7 +124,7 @@ export default function SessionDetailView({
       const hasSelection = state?.hasSelection === true
       return {
         label: currentStep.cta.label,
-        enabled: hasSelection,
+        enabled: hasSelection && !isSubmitting,
         action: () =>
           updateStepState(currentStep.id, {
             ...state,
@@ -91,13 +137,17 @@ export default function SessionDetailView({
       const hasInput = state?.hasInput === true
       return {
         label: currentStep.cta.label,
-        enabled: hasInput,
+        enabled: hasInput && !isSubmitting,
         action: handleNext,
       }
     }
 
-    return { label: currentStep.cta.label, enabled: true, action: handleNext }
-  }, [currentStep, getStepState, handleNext, updateStepState])
+    return {
+      label: currentStep.cta.label,
+      enabled: !isSubmitting,
+      action: handleNext,
+    }
+  }, [currentStep, getStepState, handleNext, isSubmitting, updateStepState])
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
@@ -153,13 +203,13 @@ export default function SessionDetailView({
       </div>
 
       {/* CTA */}
-      <div className="fixed right-0 bottom-0 left-0 z-50 bg-gradient-to-t from-surface via-surface to-transparent px-5 pt-6 pb-8 safe-area-pb">
+      <div className="fixed right-0 bottom-0 left-0 z-50 bg-linear-to-t from-surface via-surface to-transparent px-5 pt-6 safe-area-pb">
         <button
           onClick={ctaState.action}
-          disabled={!ctaState.enabled}
+          disabled={!ctaState.enabled || isSubmitting}
           className="w-full rounded-2xl bg-primary px-6 py-4 text-base font-semibold text-on-primary transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
         >
-          {ctaState.label}
+          {isSubmitting ? "저장 중..." : ctaState.label}
         </button>
       </div>
     </div>

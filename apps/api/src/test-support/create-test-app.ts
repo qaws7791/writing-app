@@ -1,10 +1,4 @@
-import {
-  toUserId,
-  toWritingId,
-  toPromptId,
-  toJourneyId,
-  toSessionId,
-} from "@workspace/core"
+import { toUserId, toWritingId, toPromptId } from "@workspace/core"
 import {
   writingNotFound,
   writingForbidden,
@@ -272,7 +266,7 @@ export function createTestApi(input?: {
             }))
           return okAsync({ items, nextCursor: null })
         },
-        getHomeUseCase(userId) {
+        getHomeUseCase(_userId) {
           if (input?.homeError) {
             throw input.homeError
           }
@@ -409,6 +403,11 @@ export function createTestApi(input?: {
         )
       }
       return handleRequestError(c, error, logger, "request failed")
+    },
+    openapi: {
+      description: "테스트용 OpenAPI 문서",
+      title: "writing-app test api",
+      version: "0.0.0-test",
     },
     routes: [...allRoutes],
     notFound: (c) =>
