@@ -16,7 +16,8 @@ const JOURNEY_DETAILS = Object.fromEntries(
     {
       title: j.title,
       description: j.description,
-      thumbnailUrl: JOURNEY_IMAGES[i % JOURNEY_IMAGES.length],
+      thumbnailUrl:
+        JOURNEY_IMAGES[i % JOURNEY_IMAGES.length] ?? JOURNEY_IMAGES[0]!,
       sessions: j.sessions.map((s, si) => ({
         id: s.id,
         order: s.order,
@@ -57,7 +58,7 @@ export default function JourneyDetailClientPage({
     <JourneyDetailView
       data={{
         id: journeyId,
-        title: journey.title,
+        title: journey.title ?? "",
         description: journey.description,
         thumbnailUrl: journey.thumbnailUrl,
         completedCount,

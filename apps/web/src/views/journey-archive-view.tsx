@@ -31,7 +31,7 @@ const JOURNEY_CARDS: JourneyCardData[] = journeyData.journeys.map((j, i) => ({
   title: j.title,
   description: j.description,
   sessionCount: j.sessions.length,
-  imageUrl: JOURNEY_IMAGES[i % JOURNEY_IMAGES.length],
+  imageUrl: JOURNEY_IMAGES[i % JOURNEY_IMAGES.length] ?? JOURNEY_IMAGES[0]!,
   category: j.category,
 }))
 

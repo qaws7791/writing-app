@@ -1,55 +1,59 @@
 "use client"
 
+import { HugeiconsIcon } from "@hugeicons/react"
+import { FallingStarIcon } from "@hugeicons/core-free-icons"
 import { useRouter, useSearchParams } from "next/navigation"
 import PromptArchiveView from "@/views/prompt-archive-view"
 import JourneyArchiveView from "@/views/journey-archive-view"
-import journeyData from "@/data/journey-sessions.json"
-const JOURNEY_IMAGES = [
-  "https://www.figma.com/api/mcp/asset/6641c434-17fc-48b2-9a4e-e0791a903147",
-  "https://www.figma.com/api/mcp/asset/f7488375-2d98-416f-a189-9a970d8f4097",
-]
-const STAR_ICON =
-  "https://www.figma.com/api/mcp/asset/062e2961-d065-43b8-8e11-d98fc24abe73"
+import { useHomeSnapshot } from "@/features/home"
 
 const TOP_TABS = ["홈", "글감", "여정"] as const
 
 function JourneyCard({
-  id,
-  imageUrl,
+  journeyId,
+  thumbnailUrl,
   title,
-  subtitle,
-  progress,
+  description,
+  completionRate,
 }: {
-  id: string
-  imageUrl: string
+  journeyId: number
+  thumbnailUrl: string | null
   title: string
-  subtitle: string
-  progress: number
+  description: string
+  completionRate: number
 }) {
   const router = useRouter()
 
   return (
     <button
       type="button"
-      onClick={() => router.push(`/journeys/${id}`)}
+      onClick={() => router.push(`/journeys/${journeyId}`)}
       className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-container p-4 text-left transition-colors hover:bg-surface-container-high"
     >
       <div className="size-24 shrink-0 overflow-hidden rounded-[32px] bg-surface-container-high">
-        <img src={imageUrl} alt={title} className="size-full object-cover" />
+        {thumbnailUrl ? (
+          <img
+            src={thumbnailUrl}
+            alt={title}
+            className="size-full object-cover"
+          />
+        ) : null}
       </div>
       <div className="flex h-[87.5px] flex-1 flex-col gap-1">
         <p className="text-base font-medium text-on-surface">{title}</p>
-        <p className="text-xs text-on-surface-low">{subtitle}</p>
+        <p className="line-clamp-1 text-xs text-on-surface-low">
+          {description}
+        </p>
         <div className="flex flex-1 items-end">
           <div className="flex w-full items-center gap-2">
             <div className="relative h-2 flex-1 rounded-full bg-surface-container-high">
               <div
                 className="absolute inset-y-0 left-0 rounded-full bg-on-surface-low"
-                style={{ width: `${progress}%` }}
+                style={{ width: `${completionRate}%` }}
               />
             </div>
             <span className="shrink-0 text-xs font-bold text-on-surface-low">
-              {progress}%
+              {completionRate}%
             </span>
           </div>
         </div>
@@ -58,17 +62,31 @@ function JourneyCard({
   )
 }
 
+function JourneyCardSkeleton() {
+  return (
+    <div className="flex h-32 w-full animate-pulse items-center gap-5 rounded-3xl bg-surface-container p-4">
+      <div className="size-24 shrink-0 rounded-[32px] bg-surface-container-high" />
+      <div className="flex h-[87.5px] flex-1 flex-col gap-2">
+        <div className="h-4 w-3/4 rounded bg-surface-container-high" />
+        <div className="h-3 w-1/2 rounded bg-surface-container-high" />
+      </div>
+    </div>
+  )
+}
+
 function HomeContent() {
   const router = useRouter()
+  const { data, isPending, isError } = useHomeSnapshot()
+
+  const dailyPrompt = data?.dailyPrompt ?? null
+  const activeJourneys = data?.activeJourneys.slice(0, 2) ?? []
 
   return (
     <>
       {/* Greeting */}
       <div className="mt-4 px-6">
         <h1 className="text-4xl leading-[1.1] font-medium tracking-tight text-on-surface">
-          좋은 아침입니다,
-          <br />
-          준혁님.
+          오늘도 글을 써볼까요?
         </h1>
       </div>
 
@@ -77,18 +95,39 @@ function HomeContent() {
         <div className="flex min-h-45 flex-col justify-between rounded-[32px] bg-surface-container-high p-6">
           <div className="flex flex-col gap-2.75">
             <div className="flex items-center gap-1.5">
-              <img src={STAR_ICON} alt="star" className="size-4" />
+              <HugeiconsIcon
+                icon={FallingStarIcon}
+                size={16}
+                color="currentColor"
+                strokeWidth={1.5}
+                className="text-on-surface-low"
+              />
               <span className="text-sm font-medium text-on-surface-low">
                 오늘의 추천 글감
               </span>
             </div>
-            <p className="text-2xl leading-9 font-medium text-on-surface-low">
-              나를 설레게 하는 작은 것들
-            </p>
+            {isPending ? (
+              <div className="h-9 w-4/5 animate-pulse rounded bg-surface-container" />
+            ) : isError || !dailyPrompt ? (
+              <p className="text-2xl leading-9 font-medium text-on-surface-lowest">
+                오늘의 글감을 불러올 수 없어요
+              </p>
+            ) : (
+              <button
+                type="button"
+                className="text-left text-2xl leading-9 font-medium text-on-surface-low"
+                onClick={() => router.push(`/prompts/${dailyPrompt.id}`)}
+              >
+                {dailyPrompt.title}
+              </button>
+            )}
           </div>
-          <p className="text-right text-xs font-medium text-on-surface-low">
-            지금까지 247명이 응답했어요
-          </p>
+          {!isPending && dailyPrompt ? (
+            <p className="text-right text-xs font-medium text-on-surface-low">
+              지금까지 {dailyPrompt.responseCount.toLocaleString()}명이
+              응답했어요
+            </p>
+          ) : null}
         </div>
       </div>
 
@@ -106,16 +145,31 @@ function HomeContent() {
           </button>
         </div>
         <div className="flex flex-col gap-6">
-          {journeyData.journeys.slice(0, 2).map((journey, index) => (
-            <JourneyCard
-              key={journey.id}
-              id={journey.id}
-              imageUrl={JOURNEY_IMAGES[index % JOURNEY_IMAGES.length]!}
-              title={journey.title}
-              subtitle={journey.category}
-              progress={0}
-            />
-          ))}
+          {isPending ? (
+            <>
+              <JourneyCardSkeleton />
+              <JourneyCardSkeleton />
+            </>
+          ) : isError ? (
+            <p className="px-2 text-sm text-on-surface-low">
+              여정 정보를 불러올 수 없어요
+            </p>
+          ) : activeJourneys.length === 0 ? (
+            <p className="px-2 text-sm text-on-surface-low">
+              진행 중인 여정이 없어요
+            </p>
+          ) : (
+            activeJourneys.map((journey) => (
+              <JourneyCard
+                key={journey.journeyId}
+                journeyId={journey.journeyId}
+                thumbnailUrl={journey.thumbnailUrl}
+                title={journey.title}
+                description={journey.description}
+                completionRate={Math.round(journey.completionRate)}
+              />
+            ))
+          )}
         </div>
       </div>
     </>
