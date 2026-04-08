@@ -151,15 +151,27 @@ export default function SessionDetailClientPage({
     steps: sessionDetail.steps.map(mapSessionStep),
   }
 
-  if (
-    journeyQuery.isError ||
-    sessionQuery.isError ||
-    mappedSession.steps.length === 0
-  ) {
+  if (journeyQuery.isError || sessionQuery.isError) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface px-6 text-center">
         <p className="text-sm text-on-surface-low">
           세션 정보를 불러오지 못했어요.
+        </p>
+        <button
+          onClick={() => router.push(`/journeys/${journeyId}`)}
+          className="rounded-full bg-on-surface px-5 py-3 text-sm font-semibold text-surface"
+        >
+          여정으로 돌아가기
+        </button>
+      </div>
+    )
+  }
+
+  if (mappedSession.steps.length === 0) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface px-6 text-center">
+        <p className="text-sm text-on-surface-low">
+          아직 준비 중인 세션이에요.
         </p>
         <button
           onClick={() => router.push(`/journeys/${journeyId}`)}

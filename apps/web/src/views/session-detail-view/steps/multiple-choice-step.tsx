@@ -44,7 +44,7 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
       <div className="flex flex-col gap-2.5">
         {content.options.map((opt) => {
           const isSelected = selected.includes(opt.id)
-          const isCorrect = content.correctOptionIds.includes(opt.id)
+          const isCorrect = content.correctOptionIds?.includes(opt.id) ?? false
 
           let borderClass = "border-outline/20"
           let bgClass = "bg-surface-container-low"
@@ -111,7 +111,7 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
               <span className="font-medium text-on-surface">
                 {opt.text.slice(0, 1)}:
               </span>{" "}
-              {content.explanations[opt.id]}
+              {content.explanations?.[opt.id]}
             </p>
           ))}
         </div>
