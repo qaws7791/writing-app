@@ -732,6 +732,77 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/prompts/{promptId}/writings": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 글감별 공개 글 목록 조회
+     * @description 특정 글감을 주제로 작성된 공개 글 목록을 커서 기반 페이지네이션으로 조회합니다.
+     */
+    get: {
+      parameters: {
+        query?: {
+          cursor?: string
+          limit?: number
+        }
+        header?: never
+        path: {
+          promptId: number
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description 성공 */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              items: readonly {
+                id: number
+                title: string
+                preview: string
+                wordCount: number
+                createdAt: string
+                isOwner: boolean
+              }[]
+              nextCursor: string | null
+              hasMore: boolean
+            }
+          }
+        }
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/prompts/{promptId}/bookmark": {
     parameters: {
       query?: never

@@ -5,6 +5,7 @@ import {
   makeDeleteWritingUseCase,
   makeGetWritingUseCase,
   makeListWritingsUseCase,
+  makeListPromptWritingsUseCase,
   makeGetPromptUseCase,
   makeListPromptsUseCase,
   makeBookmarkPromptUseCase,
@@ -31,6 +32,10 @@ export type CreateWritingUseCase = ReturnType<typeof makeCreateWritingUseCase>
 export type DeleteWritingUseCase = ReturnType<typeof makeDeleteWritingUseCase>
 export type GetWritingUseCase = ReturnType<typeof makeGetWritingUseCase>
 export type ListWritingsUseCase = ReturnType<typeof makeListWritingsUseCase>
+
+export type ListPromptWritingsUseCase = ReturnType<
+  typeof makeListPromptWritingsUseCase
+>
 
 export type GetPromptUseCase = ReturnType<typeof makeGetPromptUseCase>
 export type ListPromptsUseCase = ReturnType<typeof makeListPromptsUseCase>
@@ -87,6 +92,10 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
 
     listWritingsUseCase: asFunction(({ writingRepository }: ApiCradle) =>
       makeListWritingsUseCase({ writingRepository })
+    ).singleton(),
+
+    listPromptWritingsUseCase: asFunction(({ writingRepository }: ApiCradle) =>
+      makeListPromptWritingsUseCase({ writingRepository })
     ).singleton(),
 
     // --- Prompt ---

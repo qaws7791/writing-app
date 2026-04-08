@@ -7,6 +7,8 @@ export type {
   WritingAccessResult,
   WritingUpdateResult,
   WritingDeleteResult,
+  PublicWritingSummary,
+  ListPromptWritingsParams,
 } from "./writing-types"
 
 // Schemas
@@ -18,6 +20,9 @@ export {
   autosaveWritingBodySchema,
   writingListResponseSchema,
   autosaveWritingResponseSchema,
+  publicWritingSummarySchema,
+  promptWritingsQuerySchema,
+  promptWritingsResponseSchema,
 } from "./writing-schemas"
 
 // Errors
@@ -49,6 +54,7 @@ export type {
   ListWritingsDeps,
   ListWritingsParams,
   DeleteWritingDeps,
+  ListPromptWritingsDeps,
 } from "./use-cases/index"
 export {
   makeCreateWritingUseCase,
@@ -56,4 +62,5 @@ export {
   makeGetWritingUseCase,
   makeListWritingsUseCase,
   makeDeleteWritingUseCase,
+  makeListPromptWritingsUseCase,
 } from "./use-cases/index"

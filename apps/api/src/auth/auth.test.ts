@@ -103,6 +103,7 @@ function setup(): { app: TestApp } {
     promptType: "reflection" as const,
     title: "테스트 글감",
     body: "테스트 내용",
+    thumbnailUrl: "",
     responseCount: 0,
     isBookmarked: false,
   }
@@ -176,8 +177,11 @@ function setup(): { app: TestApp } {
         listJourneysUseCase() {
           return okAsync([])
         },
+        listPromptWritingsUseCase() {
+          return okAsync({ items: [], nextCursor: null, hasMore: false })
+        },
         listPromptsUseCase() {
-          return okAsync([])
+          return okAsync({ items: [], nextCursor: null })
         },
         listWritingsUseCase() {
           return okAsync({ items: [], nextCursor: null })

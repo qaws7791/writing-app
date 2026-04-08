@@ -45,3 +45,17 @@ export type WritingDeleteResult =
   | { kind: "deleted" }
   | { kind: "not-found" }
   | { kind: "forbidden" }
+
+export type PublicWritingSummary = {
+  readonly id: WritingId
+  readonly title: string
+  readonly preview: string
+  readonly wordCount: number
+  readonly createdAt: string
+  readonly isOwner: boolean
+}
+
+export type ListPromptWritingsParams = {
+  cursor?: string
+  limit?: number
+}

@@ -48,6 +48,9 @@ export type {
   ListWritingsDeps,
   ListWritingsParams,
   DeleteWritingDeps,
+  PublicWritingSummary,
+  ListPromptWritingsDeps,
+  ListPromptWritingsParams,
 } from "./modules/writings/index"
 export {
   createPreview,
@@ -61,11 +64,15 @@ export {
   autosaveWritingBodySchema,
   writingListResponseSchema,
   autosaveWritingResponseSchema,
+  publicWritingSummarySchema,
+  promptWritingsQuerySchema,
+  promptWritingsResponseSchema,
   makeCreateWritingUseCase,
   makeAutosaveWritingUseCase,
   makeGetWritingUseCase,
   makeListWritingsUseCase,
   makeDeleteWritingUseCase,
+  makeListPromptWritingsUseCase,
 } from "./modules/writings/index"
 
 // Module: Prompts

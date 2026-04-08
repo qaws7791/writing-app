@@ -31,6 +31,7 @@ type TestPrompt = {
   promptType: "sensory" | "reflection" | "opinion"
   title: string
   body: string
+  thumbnailUrl: string
   responseCount: number
   isBookmarked: boolean
 }
@@ -54,6 +55,7 @@ const seedPrompts: TestPrompt[] = [
     promptType: "reflection",
     title: "생각이 바뀐 순간",
     body: "최근에 내 생각이 바뀐 순간은?",
+    thumbnailUrl: "",
     responseCount: 0,
     isBookmarked: false,
   },
@@ -62,6 +64,7 @@ const seedPrompts: TestPrompt[] = [
     promptType: "opinion",
     title: "익숙함을 떠나기 어려운 이유",
     body: "사람들은 왜 익숙한 것을 떠나기 어려울까?",
+    thumbnailUrl: "",
     responseCount: 0,
     isBookmarked: false,
   },
@@ -70,6 +73,7 @@ const seedPrompts: TestPrompt[] = [
     promptType: "sensory",
     title: "하루의 조용한 순간",
     body: "내 하루에서 가장 조용한 순간은 언제인가요?",
+    thumbnailUrl: "",
     responseCount: 0,
     isBookmarked: false,
   },
@@ -279,12 +283,16 @@ export function createTestApi(input?: {
                   promptType: prompts[0].promptType,
                   title: prompts[0].title,
                   body: prompts[0].body,
+                  thumbnailUrl: prompts[0].thumbnailUrl ?? "",
                   responseCount: prompts[0].responseCount,
                   isBookmarked: prompts[0].isBookmarked,
                 }
               : null,
             activeJourneys: [],
           })
+        },
+        listPromptWritingsUseCase(_promptId, _userId, _params) {
+          return okAsync({ items: [], nextCursor: null, hasMore: false })
         },
         getPromptUseCase(promptId, _userId) {
           const prompt = findPrompt(Number(promptId))
@@ -297,31 +305,32 @@ export function createTestApi(input?: {
             promptType: prompt.promptType,
             title: prompt.title,
             body: prompt.body,
+            thumbnailUrl: prompt.thumbnailUrl ?? "",
             responseCount: prompt.responseCount,
             isBookmarked: prompt.isBookmarked,
           })
         },
         listPromptsUseCase(_userId, filters) {
-          return okAsync(
-            prompts
-              .filter((prompt) => {
-                if (
-                  filters?.promptType &&
-                  prompt.promptType !== filters.promptType
-                ) {
-                  return false
-                }
-                return true
-              })
-              .map((prompt) => ({
-                id: toPromptId(prompt.id),
-                promptType: prompt.promptType,
-                title: prompt.title,
-                body: prompt.body,
-                responseCount: prompt.responseCount,
-                isBookmarked: prompt.isBookmarked,
-              }))
-          )
+          const mappedItems = prompts
+            .filter((prompt) => {
+              if (
+                filters?.promptType &&
+                prompt.promptType !== filters.promptType
+              ) {
+                return false
+              }
+              return true
+            })
+            .map((prompt) => ({
+              id: toPromptId(prompt.id),
+              promptType: prompt.promptType,
+              title: prompt.title,
+              body: prompt.body,
+              thumbnailUrl: prompt.thumbnailUrl ?? "",
+              responseCount: prompt.responseCount,
+              isBookmarked: prompt.isBookmarked,
+            }))
+          return okAsync({ items: mappedItems, nextCursor: null })
         },
         bookmarkPromptUseCase(_userId, promptId) {
           const prompt = findPrompt(Number(promptId))

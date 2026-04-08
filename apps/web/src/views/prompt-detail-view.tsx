@@ -12,7 +12,7 @@ import {
 import { useRouter } from "next/navigation"
 
 interface EssayItem {
-  id: string
+  id: number
   date: string
   wordCount: number
   title: string
@@ -24,7 +24,6 @@ interface PromptDetailData {
   id: number
   title: string
   description: string
-  participantCount: number
   essayCount: number
   essays: EssayItem[]
 }
@@ -83,10 +82,16 @@ function EmptyEssayList() {
 
 export default function PromptDetailView({
   data,
+  hasMoreEssays,
+  isLoadingMoreEssays,
   onStartWritingAction,
+  onLoadMoreEssaysAction,
 }: {
   data: PromptDetailData
+  hasMoreEssays: boolean
+  isLoadingMoreEssays: boolean
   onStartWritingAction: () => void
+  onLoadMoreEssaysAction: () => void
 }) {
   const router = useRouter()
 
@@ -138,15 +143,6 @@ export default function PromptDetailView({
           <div className="flex items-center gap-4">
             <div className="flex flex-col gap-0.5">
               <span className="text-xs font-medium tracking-widest text-on-surface-lowest uppercase">
-                참여 작가
-              </span>
-              <span className="text-xl font-semibold text-on-surface tabular-nums">
-                {data.participantCount.toLocaleString("ko-KR")}
-              </span>
-            </div>
-            <div className="h-8 w-px bg-surface-container-high" />
-            <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-medium tracking-widest text-on-surface-lowest uppercase">
                 작성된 수필
               </span>
               <span className="text-xl font-semibold text-on-surface tabular-nums">
@@ -171,10 +167,14 @@ export default function PromptDetailView({
         </div>
 
         {/* Load More */}
-        {data.essays.length > 0 && (
+        {hasMoreEssays && (
           <div className="flex items-center justify-center py-6">
-            <button className="rounded-[3rem] px-6 py-3 text-xs font-bold tracking-wide text-on-surface-low uppercase transition-colors hover:bg-surface-container">
-              더 불러오기
+            <button
+              onClick={onLoadMoreEssaysAction}
+              disabled={isLoadingMoreEssays}
+              className="rounded-[3rem] px-6 py-3 text-xs font-bold tracking-wide text-on-surface-low uppercase transition-colors hover:bg-surface-container disabled:opacity-50"
+            >
+              {isLoadingMoreEssays ? "불러오는 중..." : "더 불러오기"}
             </button>
           </div>
         )}

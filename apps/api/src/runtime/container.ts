@@ -31,6 +31,7 @@ import {
   type GetSessionDetailUseCase,
   type GetWritingUseCase,
   type ListJourneysUseCase,
+  type ListPromptWritingsUseCase,
   type ListPromptsUseCase,
   type ListWritingsUseCase,
   type StartSessionUseCase,
@@ -71,6 +72,7 @@ export type ApiCradle = {
 
   getPromptUseCase: GetPromptUseCase
   listPromptsUseCase: ListPromptsUseCase
+  listPromptWritingsUseCase: ListPromptWritingsUseCase
   bookmarkPromptUseCase: BookmarkPromptUseCase
   unbookmarkPromptUseCase: UnbookmarkPromptUseCase
 
@@ -105,6 +107,7 @@ export type ApiCradleUseCases = Pick<
   | "getSessionDetailUseCase"
   | "getWritingUseCase"
   | "listJourneysUseCase"
+  | "listPromptWritingsUseCase"
   | "listPromptsUseCase"
   | "listWritingsUseCase"
   | "sqliteVersion"
@@ -129,6 +132,7 @@ export function extractUseCases(cradle: ApiCradle): ApiCradleUseCases {
     getSessionDetailUseCase,
     getWritingUseCase,
     listJourneysUseCase,
+    listPromptWritingsUseCase,
     listPromptsUseCase,
     listWritingsUseCase,
     sqliteVersion,
@@ -152,6 +156,7 @@ export function extractUseCases(cradle: ApiCradle): ApiCradleUseCases {
     getSessionDetailUseCase,
     getWritingUseCase,
     listJourneysUseCase,
+    listPromptWritingsUseCase,
     listPromptsUseCase,
     listWritingsUseCase,
     sqliteVersion,

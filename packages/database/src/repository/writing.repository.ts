@@ -7,6 +7,8 @@ import type {
   WritingRepository,
   WritingDetail,
   WritingSummary,
+  PublicWritingSummary,
+  ListPromptWritingsParams,
   WritingCreateInput,
   WritingUpdateInput,
   WritingAccessResult,
@@ -209,6 +211,71 @@ export function createWritingRepository(database: DbClient): WritingRepository {
         .delete(writings)
         .where(eq(writings.id, writingId as unknown as number))
       return { kind: "deleted" }
+    },
+
+    async listByPrompt(
+      promptId: PromptId,
+      userId: UserId | null,
+      params: ListPromptWritingsParams = {}
+    ): Promise<{
+      items: PublicWritingSummary[]
+      nextCursor: string | null
+      hasMore: boolean
+    }> {
+      const limit = params.limit ?? 20
+
+      let cursorCondition
+      if (params.cursor) {
+        const decoded = JSON.parse(
+          Buffer.from(params.cursor, "base64url").toString()
+        ) as { c: string; i: number }
+        cursorCondition = or(
+          lt(writings.createdAt, new Date(decoded.c)),
+          and(
+            eq(writings.createdAt, new Date(decoded.c)),
+            lt(writings.id, decoded.i)
+          )
+        )
+      }
+
+      const rows = await database
+        .select()
+        .from(writings)
+        .where(
+          and(
+            eq(writings.sourcePromptId, promptId as unknown as number),
+            eq(writings.status, "completed"),
+            cursorCondition
+          )
+        )
+        .orderBy(desc(writings.createdAt), desc(writings.id))
+        .limit(limit + 1)
+
+      const hasMore = rows.length > limit
+      const pageRows = hasMore ? rows.slice(0, limit) : rows
+
+      const items: PublicWritingSummary[] = pageRows.map((row) => ({
+        id: row.id as unknown as WritingId,
+        title: row.title,
+        preview: createPreview(row.bodyPlainText),
+        wordCount: row.wordCount,
+        createdAt: row.createdAt.toISOString(),
+        isOwner:
+          userId !== null && row.userId === (userId as unknown as string),
+      }))
+
+      const lastItem = pageRows[pageRows.length - 1]
+      const nextCursor =
+        hasMore && lastItem
+          ? Buffer.from(
+              JSON.stringify({
+                c: lastItem.createdAt.toISOString(),
+                i: lastItem.id,
+              })
+            ).toString("base64url")
+          : null
+
+      return { items, nextCursor, hasMore }
     },
   }
 }

@@ -17,6 +17,7 @@ import type {
   GetSessionDetailUseCase,
   GetWritingUseCase,
   ListJourneysUseCase,
+  ListPromptWritingsUseCase,
   ListPromptsUseCase,
   ListWritingsUseCase,
   StartSessionUseCase,
@@ -66,6 +67,7 @@ export type AppUseCases = {
   getSessionDetailUseCase: GetSessionDetailUseCase
   getWritingUseCase: GetWritingUseCase
   listJourneysUseCase: ListJourneysUseCase
+  listPromptWritingsUseCase: ListPromptWritingsUseCase
   listPromptsUseCase: ListPromptsUseCase
   listWritingsUseCase: ListWritingsUseCase
   readLatestAuthEmail?: DevEmailInbox["readLatestMessage"]

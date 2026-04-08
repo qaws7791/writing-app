@@ -15,3 +15,6 @@ export { makeListWritingsUseCase } from "./list-writings"
 
 export type { DeleteWritingDeps } from "./delete-writing"
 export { makeDeleteWritingUseCase } from "./delete-writing"
+
+export type { ListPromptWritingsDeps } from "./list-prompt-writings"
+export { makeListPromptWritingsUseCase } from "./list-prompt-writings"

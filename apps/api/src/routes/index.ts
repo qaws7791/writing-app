@@ -5,6 +5,7 @@ import getHome from "./home/get-home"
 import listCategories from "./prompts/list-categories"
 import listPrompts from "./prompts/list-prompts"
 import getPrompt from "./prompts/get-prompt"
+import listPromptWritings from "./prompts/list-prompt-writings"
 import bookmarkPrompt from "./prompts/bookmark-prompt"
 import unbookmarkPrompt from "./prompts/unbookmark-prompt"
 import listJourneys from "./journeys/list-journeys"
@@ -30,6 +31,7 @@ export const allRoutes = [
   listPrompts,
   listCategories,
   getPrompt,
+  listPromptWritings,
   bookmarkPrompt,
   unbookmarkPrompt,
   listJourneys,

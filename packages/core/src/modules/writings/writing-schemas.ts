@@ -1,5 +1,10 @@
 import { z } from "zod"
 
+import {
+  cursorPageQuerySchema,
+  cursorPageResponseSchema,
+} from "../../shared/pagination/index"
+
 const writingSummaryBaseSchema = z.object({
   id: z.number().int(),
   title: z.string(),
@@ -56,3 +61,20 @@ export const autosaveWritingResponseSchema = z.object({
   kind: z.literal("autosaved"),
   writing: writingDetailSchema,
 })
+
+export const publicWritingSummarySchema = z
+  .object({
+    id: z.number().int(),
+    title: z.string(),
+    preview: z.string(),
+    wordCount: z.number().int(),
+    createdAt: z.string(),
+    isOwner: z.boolean(),
+  })
+  .readonly()
+
+export const promptWritingsQuerySchema = cursorPageQuerySchema
+
+export const promptWritingsResponseSchema = cursorPageResponseSchema(
+  publicWritingSummarySchema
+)
