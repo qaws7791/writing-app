@@ -3,7 +3,6 @@
 import { useRouter, useSearchParams } from "next/navigation"
 import PromptArchiveView from "@/views/prompt-archive-view"
 import JourneyArchiveView from "@/views/journey-archive-view"
-import BottomNav from "@/foundation/ui/bottom-nav"
 import journeyData from "@/data/journey-sessions.json"
 const JOURNEY_IMAGES = [
   "https://www.figma.com/api/mcp/asset/6641c434-17fc-48b2-9a4e-e0791a903147",
@@ -145,11 +144,11 @@ export default function HomeView() {
   function navigateToTab(tab: (typeof TOP_TABS)[number]) {
     const params = new URLSearchParams(searchParams.toString())
     params.set("tab", TOP_TAB_PARAM[tab])
-    router.push(`/?${params.toString()}`, { scroll: false })
+    router.push(`/home?${params.toString()}`, { scroll: false })
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface">
+    <>
       <header className="flex items-center gap-6 px-6 py-6">
         {TOP_TABS.map((tab) => (
           <button
@@ -164,13 +163,11 @@ export default function HomeView() {
         ))}
       </header>
 
-      <div className="flex-1 overflow-y-auto pb-24">
+      <div className="flex-1 overflow-y-auto">
         {activeTab === "홈" && <HomeContent />}
         {activeTab === "글감" && <PromptArchiveView />}
         {activeTab === "여정" && <JourneyArchiveView />}
       </div>
-
-      <BottomNav />
-    </div>
+    </>
   )
 }

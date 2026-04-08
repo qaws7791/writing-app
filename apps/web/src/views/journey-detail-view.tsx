@@ -291,7 +291,7 @@ export default function JourneyDetailView({
         {BOTTOM_NAV_ITEMS.map(({ icon, label }) => (
           <button
             key={label}
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/home")}
             className="flex flex-col items-center gap-1 text-on-surface-lowest transition-colors"
           >
             <HugeiconsIcon

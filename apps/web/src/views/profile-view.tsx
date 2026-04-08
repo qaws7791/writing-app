@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   SecurityLockIcon,
@@ -60,7 +61,16 @@ function Divider() {
 }
 
 export default function ProfileView() {
+  const router = useRouter()
   const [reduceMotion, setReduceMotion] = useState(false)
+
+  async function handleLogout() {
+    await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/sign-out`, {
+      method: "POST",
+      credentials: "include",
+    })
+    router.push("/login")
+  }
 
   return (
     <div className="flex min-h-full flex-col bg-surface">
@@ -201,7 +211,10 @@ export default function ProfileView() {
           </section>
 
           {/* 로그아웃 */}
-          <button className="flex items-center justify-center py-5 opacity-70">
+          <button
+            className="flex items-center justify-center py-5 opacity-70"
+            onClick={handleLogout}
+          >
             <span className="text-sm font-medium text-error">로그아웃</span>
           </button>
         </div>

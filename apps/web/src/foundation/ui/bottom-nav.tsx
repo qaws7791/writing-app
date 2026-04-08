@@ -11,7 +11,7 @@ import {
 } from "@hugeicons/core-free-icons"
 
 const NAV_ITEMS = [
-  { icon: Home01Icon, label: "홈", href: "/" },
+  { icon: Home01Icon, label: "홈", href: "/home" },
   { icon: BookOpen01Icon, label: "나의 여정", href: "/my-journeys" },
   { icon: QuillWrite01Icon, label: "서재", href: "/library" },
   { icon: User02Icon, label: "프로필", href: "/profile" },
