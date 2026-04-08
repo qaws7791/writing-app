@@ -17,6 +17,11 @@ export const generateFeedbackBodySchema = z.object({
   level: userLevelSchema.optional().default("beginner"),
 })
 
+export const generateTextFeedbackBodySchema = z.object({
+  text: z.string().min(1),
+  level: userLevelSchema.optional().default("beginner"),
+})
+
 export const compareRevisionsBodySchema = z.object({
   originalText: z.string().min(1),
   revisedText: z.string().min(1),

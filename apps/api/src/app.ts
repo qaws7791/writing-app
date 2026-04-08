@@ -125,8 +125,11 @@ export function createUseCaseMiddleware(
 export function createTimeoutMiddleware(): MiddlewareHandler<AppEnv> {
   return (c, next) => {
     const ms =
-      c.req.path.startsWith("/writings/") &&
-      (c.req.path.endsWith("/feedback") || c.req.path.endsWith("/compare"))
+      (c.req.path.startsWith("/writings/") &&
+        (c.req.path.endsWith("/feedback") ||
+          c.req.path.endsWith("/compare"))) ||
+      c.req.path === "/ai/feedback" ||
+      c.req.path === "/ai/compare"
         ? AI_TIMEOUT_MS
         : DEFAULT_TIMEOUT_MS
     return timeout(ms, throwTimeoutError)(c, next)

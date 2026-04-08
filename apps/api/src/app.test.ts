@@ -560,3 +560,195 @@ describe("logging", () => {
     expect(failed).toBeUndefined()
   })
 })
+
+describe("ai", () => {
+  test("generates text feedback", async () => {
+    const { app } = setup()
+    const response = await app.request("/ai/feedback", {
+      body: JSON.stringify({
+        text: "오늘 하루는 참 바빴다. 하지만 뜻 깊은 하루였다.",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const body = await readJson<{
+      strengths: string[]
+      improvements: string[]
+      question: string
+    }>(response)
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body.strengths)).toBe(true)
+    expect(Array.isArray(body.improvements)).toBe(true)
+    expect(typeof body.question).toBe("string")
+  })
+
+  test("rejects feedback request without text", async () => {
+    const { app } = setup()
+    const response = await app.request("/ai/feedback", {
+      body: JSON.stringify({ level: "beginner" }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.code).toBe("validation_error")
+  })
+
+  test("rejects unauthenticated feedback request", async () => {
+    const { app } = setup()
+    const response = await app.request("/ai/feedback", {
+      body: JSON.stringify({ text: "테스트 글" }),
+      headers: {
+        "content-type": "application/json",
+        "x-test-auth": "none",
+      },
+      method: "POST",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(401)
+    expect(body.error.code).toBe("unauthorized")
+  })
+
+  test("compares two texts", async () => {
+    const { app } = setup()
+    const response = await app.request("/ai/compare", {
+      body: JSON.stringify({
+        originalText: "오늘 날씨가 맑다.",
+        revisedText: "오늘 하늘이 맑고 바람도 선선하게 불었다.",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const body = await readJson<{
+      improvements: string[]
+      summary: string
+    }>(response)
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body.improvements)).toBe(true)
+    expect(typeof body.summary).toBe("string")
+  })
+
+  test("rejects compare request with missing fields", async () => {
+    const { app } = setup()
+    const response = await app.request("/ai/compare", {
+      body: JSON.stringify({ originalText: "원문" }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.code).toBe("validation_error")
+  })
+
+  test("rejects unauthenticated compare request", async () => {
+    const { app } = setup()
+    const response = await app.request("/ai/compare", {
+      body: JSON.stringify({
+        originalText: "원문입니다.",
+        revisedText: "수정된 내용입니다.",
+      }),
+      headers: {
+        "content-type": "application/json",
+        "x-test-auth": "none",
+      },
+      method: "POST",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(401)
+    expect(body.error.code).toBe("unauthorized")
+  })
+
+  test("generates feedback for a specific writing", async () => {
+    const { app } = setup()
+
+    const create = await app.request("/writings", {
+      body: JSON.stringify({
+        bodyPlainText: "나는 오늘 책을 읽었다. 매우 유익했다.",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const created = await readJson<{ id: number }>(create)
+
+    const response = await app.request(`/writings/${created.id}/feedback`, {
+      body: JSON.stringify({ level: "beginner" }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const body = await readJson<{
+      strengths: string[]
+      improvements: string[]
+      question: string
+    }>(response)
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body.strengths)).toBe(true)
+    expect(typeof body.question).toBe("string")
+  })
+
+  test("returns not found when generating feedback for missing writing", async () => {
+    const { app } = setup()
+
+    const response = await app.request("/writings/999/feedback", {
+      body: JSON.stringify({}),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(404)
+    expect(body.error.code).toBe("not_found")
+  })
+
+  test("compares revisions for a specific writing", async () => {
+    const { app } = setup()
+
+    const create = await app.request("/writings", {
+      body: JSON.stringify({ bodyPlainText: "처음 작성한 글입니다." }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const created = await readJson<{ id: number }>(create)
+
+    const response = await app.request(`/writings/${created.id}/compare`, {
+      body: JSON.stringify({
+        originalText: "처음 작성한 글입니다.",
+        revisedText: "많이 다듬어진 글입니다. 문장이 더 명확해졌습니다.",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const body = await readJson<{
+      improvements: string[]
+      summary: string
+    }>(response)
+
+    expect(response.status).toBe(200)
+    expect(Array.isArray(body.improvements)).toBe(true)
+    expect(typeof body.summary).toBe("string")
+  })
+
+  test("returns forbidden for writing compare owned by another user", async () => {
+    const { app, injectForeignWriting } = setup()
+    const foreign = injectForeignWriting({ title: "다른 사람 글" })
+
+    const response = await app.request(`/writings/${foreign.id}/compare`, {
+      body: JSON.stringify({
+        originalText: "원문",
+        revisedText: "수정본",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(403)
+    expect(body.error.code).toBe("forbidden")
+  })
+})

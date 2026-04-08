@@ -187,6 +187,7 @@ export {
   writingFeedbackSchema,
   revisionComparisonSchema,
   generateFeedbackBodySchema,
+  generateTextFeedbackBodySchema,
   compareRevisionsBodySchema,
   makeGenerateFeedbackUseCase,
   makeCompareRevisionsUseCase,

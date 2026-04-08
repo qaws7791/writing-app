@@ -13,6 +13,7 @@ export {
   writingFeedbackSchema,
   revisionComparisonSchema,
   generateFeedbackBodySchema,
+  generateTextFeedbackBodySchema,
   compareRevisionsBodySchema,
 } from "./ai-feedback-schemas"
 

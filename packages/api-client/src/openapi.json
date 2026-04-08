@@ -2880,6 +2880,189 @@
         }
       }
     },
+    "/ai/feedback": {
+      "post": {
+        "description": "텍스트에 대한 AI 소크라테스식 피드백을 생성합니다.",
+        "summary": "AI 텍스트 피드백 생성",
+        "tags": ["AI"],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "level": {
+                    "type": "string",
+                    "enum": ["beginner", "intermediate", "advanced"],
+                    "default": "beginner"
+                  }
+                },
+                "required": ["text"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "strengths": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "improvements": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "question": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["strengths", "improvements", "question"]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "에러 응답",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "nullable": true
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["code", "message"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ai/compare": {
+      "post": {
+        "description": "두 텍스트를 비교하여 개선 사항을 분석합니다.",
+        "summary": "AI 텍스트 비교 분석",
+        "tags": ["AI"],
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "originalText": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "revisedText": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": ["originalText", "revisedText"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "improvements": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "summary": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["improvements", "summary"]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "에러 응답",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "nullable": true
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "requestId": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["code", "message"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/dev/auth-emails": {
       "get": {
         "description": "개발 환경에서 전송된 인증 메일을 조회합니다. 프로덕션에서는 비활성화됩니다.",

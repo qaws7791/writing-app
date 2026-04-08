@@ -1875,6 +1875,141 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/ai/feedback": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * AI 텍스트 피드백 생성
+     * @description 텍스트에 대한 AI 소크라테스식 피드백을 생성합니다.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          "application/json": {
+            text: string
+            /**
+             * @default beginner
+             * @enum {string}
+             */
+            level?: "beginner" | "intermediate" | "advanced"
+          }
+        }
+      }
+      responses: {
+        /** @description 성공 */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              strengths: string[]
+              improvements: string[]
+              question: string
+            }
+          }
+        }
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/ai/compare": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * AI 텍스트 비교 분석
+     * @description 두 텍스트를 비교하여 개선 사항을 분석합니다.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody: {
+        content: {
+          "application/json": {
+            originalText: string
+            revisedText: string
+          }
+        }
+      }
+      responses: {
+        /** @description 성공 */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              improvements: string[]
+              summary: string
+            }
+          }
+        }
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/dev/auth-emails": {
     parameters: {
       query?: never
