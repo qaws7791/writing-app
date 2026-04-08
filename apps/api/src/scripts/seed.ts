@@ -1,7 +1,23 @@
-import { migrateDatabase, openDb, seedDatabase } from "@workspace/database"
+import { hashPassword } from "better-auth/crypto"
+
+import {
+  migrateDatabase,
+  openDb,
+  seedDatabase,
+  seedTestUsers,
+  type SeedTestUser,
+} from "@workspace/database"
 
 import { readApiEnvironment } from "../runtime/bootstrap.js"
 import { createApiLogger } from "../observability/logger.js"
+
+const DEV_TEST_USERS = [
+  {
+    email: "test@example.com",
+    name: "테스트 사용자",
+    password: "testpassword1234",
+  },
+] as const
 
 const environment = readApiEnvironment()
 const logger = createApiLogger({
@@ -14,10 +30,23 @@ const database = openDb(environment.databasePath)
 
 try {
   await migrateDatabase(database.db)
-  seedDatabase(database.db)
+  await seedDatabase(database.db)
+
+  const testUserSeeds: SeedTestUser[] = await Promise.all(
+    DEV_TEST_USERS.map(async (u, i) => ({
+      accountRecordId: `dev-account-${i + 1}`,
+      email: u.email,
+      name: u.name,
+      passwordHash: await hashPassword(u.password),
+      userId: `dev-user-${i + 1}`,
+    }))
+  )
+  await seedTestUsers(database.db, testUserSeeds)
+
   logger.info(
     {
       databasePath: environment.databasePath,
+      testUserEmails: DEV_TEST_USERS.map((u) => u.email),
     },
     "database seed completed"
   )
