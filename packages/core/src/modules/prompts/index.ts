@@ -3,16 +3,21 @@ export type {
   PromptType,
   PromptSummary,
   PromptListFilters,
+  PromptListPage,
+  PromptCategory,
   PromptBookmarkResult,
 } from "./prompt-types"
+export { PROMPT_CATEGORIES } from "./prompt-types"
 
 // Schemas
 export {
   promptTypeSchema,
   promptSummarySchema,
-  promptListResponseSchema,
+  promptListPageResponseSchema,
   promptIdParamSchema,
   promptFiltersQuerySchema,
+  promptCategorySchema,
+  promptCategoriesResponseSchema,
   promptBookmarkResponseSchema,
 } from "./prompt-schemas"
 

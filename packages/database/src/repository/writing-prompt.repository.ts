@@ -1,14 +1,4 @@
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  isNotNull,
-  isNull,
-  like,
-  or,
-  sql,
-} from "drizzle-orm"
+import { and, asc, eq, gt, sql } from "drizzle-orm"
 
 import type {
   PromptId,
@@ -16,12 +6,15 @@ import type {
   PromptRepository,
   PromptSummary,
   PromptListFilters,
+  PromptListPage,
   PromptBookmarkResult,
 } from "@workspace/core"
 
 import { writingPrompts } from "../schema/writing-prompts"
 import { savedPrompts } from "../schema/saved-prompts"
 import type { DbClient } from "../types/index"
+
+const DEFAULT_PAGE_LIMIT = 20
 
 const bookmarkedExpression = sql<number>`case when ${savedPrompts.promptId} is null then 0 else 1 end`
 
@@ -30,6 +23,7 @@ function mapPromptSummary(row: {
   promptType: string
   title: string
   body: string
+  thumbnailUrl: string | null
   responseCount: number
   isBookmarked: number | boolean
 }): PromptSummary {
@@ -38,6 +32,8 @@ function mapPromptSummary(row: {
     promptType: row.promptType as PromptSummary["promptType"],
     title: row.title,
     body: row.body,
+    thumbnailUrl:
+      row.thumbnailUrl ?? `https://picsum.photos/seed/prompt-${row.id}/600/400`,
     responseCount: row.responseCount,
     isBookmarked:
       typeof row.isBookmarked === "number"
@@ -53,11 +49,16 @@ export function createWritingPromptRepository(
     async list(
       userId: UserId | null,
       filters?: PromptListFilters
-    ): Promise<PromptSummary[]> {
+    ): Promise<PromptListPage> {
+      const limit = Math.min(filters?.limit ?? DEFAULT_PAGE_LIMIT, 50)
       const conditions = []
 
       if (filters?.promptType) {
         conditions.push(eq(writingPrompts.promptType, filters.promptType))
+      }
+
+      if (filters?.cursor) {
+        conditions.push(gt(writingPrompts.id, filters.cursor))
       }
 
       const rows = await database
@@ -66,6 +67,7 @@ export function createWritingPromptRepository(
           promptType: writingPrompts.promptType,
           title: writingPrompts.title,
           body: writingPrompts.body,
+          thumbnailUrl: writingPrompts.thumbnailUrl,
           responseCount: writingPrompts.responseCount,
           isBookmarked: userId ? bookmarkedExpression : sql<number>`0`,
         })
@@ -81,8 +83,13 @@ export function createWritingPromptRepository(
         )
         .where(conditions.length > 0 ? and(...conditions) : undefined)
         .orderBy(asc(writingPrompts.id))
+        .limit(limit + 1)
 
-      return rows.map(mapPromptSummary)
+      const hasMore = rows.length > limit
+      const items = hasMore ? rows.slice(0, limit) : rows
+      const nextCursor = hasMore ? (items[items.length - 1]?.id ?? null) : null
+
+      return { items: items.map(mapPromptSummary), nextCursor }
     },
 
     async getById(
@@ -95,6 +102,7 @@ export function createWritingPromptRepository(
           promptType: writingPrompts.promptType,
           title: writingPrompts.title,
           body: writingPrompts.body,
+          thumbnailUrl: writingPrompts.thumbnailUrl,
           responseCount: writingPrompts.responseCount,
           isBookmarked: userId ? bookmarkedExpression : sql<number>`0`,
         })
@@ -141,6 +149,7 @@ export function createWritingPromptRepository(
           promptType: writingPrompts.promptType,
           title: writingPrompts.title,
           body: writingPrompts.body,
+          thumbnailUrl: writingPrompts.thumbnailUrl,
           responseCount: writingPrompts.responseCount,
           isBookmarked: userId ? bookmarkedExpression : sql<number>`0`,
         })

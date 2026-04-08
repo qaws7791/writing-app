@@ -2,6 +2,7 @@ import type { PromptId, UserId } from "../../shared/brand/index"
 import type {
   PromptBookmarkResult,
   PromptListFilters,
+  PromptListPage,
   PromptSummary,
 } from "./prompt-types"
 
@@ -9,7 +10,7 @@ export interface PromptRepository {
   list(
     userId: UserId | null,
     filters?: PromptListFilters
-  ): Promise<PromptSummary[]>
+  ): Promise<PromptListPage>
   getById(
     promptId: PromptId,
     userId: UserId | null

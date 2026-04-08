@@ -10,6 +10,7 @@ export const writingPrompts = sqliteTable(
     promptType: text("prompt_type", { enum: promptTypes }).notNull(),
     title: text("title").notNull(),
     body: text("body").notNull(),
+    thumbnailUrl: text("thumbnail_url"),
     responseCount: integer("response_count").notNull().default(0),
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()

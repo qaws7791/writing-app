@@ -1,77 +1,41 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Bookmark01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { usePromptCategories, usePromptList } from "@/features/prompts"
 
-const PROMPT_IMAGES = {
-  card1:
-    "https://www.figma.com/api/mcp/asset/7b7a9ecc-692c-450a-a3a0-9d074037055e",
-  card2:
-    "https://www.figma.com/api/mcp/asset/39371be0-37aa-4fb8-900a-4db8f1c5ecde",
-  card3:
-    "https://www.figma.com/api/mcp/asset/dacc17e5-cbdd-4ac7-b1be-20159f18de40",
-}
+type PromptType = "sensory" | "reflection" | "opinion"
 
-const CATEGORIES = ["전체", "감각", "회고", "의견"] as const
-type Category = (typeof CATEGORIES)[number]
-
-interface PromptCardData {
-  id: string
-  date: string
-  category: Exclude<Category, "전체">
-  title: string
-  responseCount: number
-  imageUrl: string
-  cardVariant: "default" | "elevated"
-}
-
-const PROMPT_CARDS: PromptCardData[] = [
-  {
-    id: "1",
-    date: "3월 31일 (화)",
-    category: "감각",
-    title: "오늘 아침 처음 든 생각은?",
-    responseCount: 261,
-    imageUrl: PROMPT_IMAGES.card1,
-    cardVariant: "default",
-  },
-  {
-    id: "2",
-    date: "3월 30일 (월)",
-    category: "회고",
-    title: "나를 설레게 하는 작은 순간들",
-    responseCount: 184,
-    imageUrl: PROMPT_IMAGES.card2,
-    cardVariant: "elevated",
-  },
-  {
-    id: "3",
-    date: "3월 29일 (일)",
-    category: "의견",
-    title: "행복은 발견하는 것일까, 만드는 것일까?",
-    responseCount: 302,
-    imageUrl: PROMPT_IMAGES.card3,
-    cardVariant: "default",
-  },
-]
-
-function CategoryBadge({ category }: { category: Exclude<Category, "전체"> }) {
+function CategoryBadge({ promptType }: { promptType: PromptType }) {
   return (
     <span
       className={`rounded-full px-3 py-1 text-[10px] tracking-wide uppercase ${
-        category === "의견"
+        promptType === "opinion"
           ? "bg-surface-container-high text-on-surface"
           : "bg-secondary-container text-on-surface-low"
       }`}
     >
-      {category}
+      {promptType === "sensory"
+        ? "감각"
+        : promptType === "reflection"
+          ? "회고"
+          : "의견"}
     </span>
   )
 }
 
-function PromptCard({ card }: { card: PromptCardData }) {
+interface PromptCardItem {
+  id: number
+  promptType: PromptType
+  title: string
+  thumbnailUrl: string
+  responseCount: number
+  isBookmarked: boolean
+}
+
+function PromptCard({ card }: { card: PromptCardItem }) {
   const router = useRouter()
 
   return (
@@ -79,15 +43,11 @@ function PromptCard({ card }: { card: PromptCardData }) {
       <button
         type="button"
         onClick={() => router.push(`/prompts/${card.id}`)}
-        className={`relative h-64 w-full overflow-hidden rounded-[3rem] transition-opacity hover:opacity-90 ${
-          card.cardVariant === "elevated"
-            ? "bg-surface-container-high"
-            : "bg-surface"
-        }`}
+        className="relative h-64 w-full overflow-hidden rounded-[3rem] bg-surface transition-opacity hover:opacity-90"
       >
         <div className="absolute inset-8 flex items-center justify-center opacity-80">
           <img
-            src={card.imageUrl}
+            src={card.thumbnailUrl}
             alt={card.title}
             className="h-full w-auto object-contain"
           />
@@ -95,10 +55,7 @@ function PromptCard({ card }: { card: PromptCardData }) {
       </button>
       <div className="flex flex-col gap-3 px-2">
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium text-on-surface-low">
-            {card.date}
-          </span>
-          <CategoryBadge category={card.category} />
+          <CategoryBadge promptType={card.promptType} />
         </div>
         <button
           type="button"
@@ -131,37 +88,84 @@ function PromptCard({ card }: { card: PromptCardData }) {
 }
 
 export default function PromptArchiveView() {
-  const [selectedCategory, setSelectedCategory] = useState<Category>("전체")
+  const [selectedType, setSelectedType] = useState<PromptType | undefined>(
+    undefined
+  )
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
-  const filteredPrompts =
-    selectedCategory === "전체"
-      ? PROMPT_CARDS
-      : PROMPT_CARDS.filter((prompt) => prompt.category === selectedCategory)
+  const { data: categoriesData } = usePromptCategories()
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    usePromptList({ promptType: selectedType, limit: 10 })
+
+  const prompts = data?.pages.flatMap((page) => page.items) ?? []
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+          void fetchNextPage()
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage])
 
   return (
     <div className="flex flex-col">
       {/* Category Filter Chips */}
       <div className="flex gap-2.5 overflow-x-auto px-4 py-2.5 [scrollbar-width:none]">
-        {CATEGORIES.map((cat) => (
+        <button
+          onClick={() => setSelectedType(undefined)}
+          className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+            selectedType === undefined
+              ? "bg-primary text-on-primary"
+              : "bg-secondary-container text-on-surface-low"
+          }`}
+        >
+          전체
+        </button>
+        {categoriesData?.items.map((cat) => (
           <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
+            key={cat.key}
+            onClick={() => setSelectedType(cat.key as PromptType)}
             className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
-              selectedCategory === cat
+              selectedType === cat.key
                 ? "bg-primary text-on-primary"
                 : "bg-secondary-container text-on-surface-low"
             }`}
           >
-            {cat}
+            {cat.label}
           </button>
         ))}
       </div>
 
       {/* Prompt Cards */}
       <div className="flex flex-col gap-12 px-4 pt-6 pb-8">
-        {filteredPrompts.map((prompt) => (
-          <PromptCard key={prompt.id} card={prompt} />
-        ))}
+        {isLoading ? (
+          <div className="py-12 text-center text-sm text-on-surface-lowest">
+            불러오는 중...
+          </div>
+        ) : prompts.length === 0 ? (
+          <div className="py-12 text-center text-sm text-on-surface-lowest">
+            글감이 없습니다.
+          </div>
+        ) : (
+          prompts.map((prompt) => (
+            <PromptCard key={prompt.id} card={prompt as PromptCardItem} />
+          ))
+        )}
+        {isFetchingNextPage && (
+          <div className="py-4 text-center text-sm text-on-surface-lowest">
+            불러오는 중...
+          </div>
+        )}
+        <div ref={sentinelRef} className="h-px" />
       </div>
     </div>
   )

@@ -10,17 +10,30 @@ export const promptSummarySchema = z
     promptType: promptTypeSchema,
     title: z.string(),
     body: z.string(),
+    thumbnailUrl: z.string(),
     responseCount: z.number().int(),
     isBookmarked: z.boolean(),
   })
   .readonly()
 
-export const promptListResponseSchema = z.object({
-  items: z.array(promptSummarySchema),
+export const promptListPageResponseSchema = z.object({
+  items: z.array(promptSummarySchema).readonly(),
+  nextCursor: z.number().int().nullable(),
 })
 
 export const promptFiltersQuerySchema = z.object({
   promptType: promptTypeSchema.optional(),
+  cursor: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().min(1).max(50).optional(),
+})
+
+export const promptCategorySchema = z.object({
+  key: promptTypeSchema,
+  label: z.string(),
+})
+
+export const promptCategoriesResponseSchema = z.object({
+  items: z.array(promptCategorySchema),
 })
 
 export const promptBookmarkResponseSchema = z.object({

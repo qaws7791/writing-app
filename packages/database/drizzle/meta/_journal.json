@@ -8,6 +8,13 @@
       "when": 1775630986348,
       "tag": "0000_normal_iron_monger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1744080000000,
+      "tag": "0001_add_prompt_thumbnail",
+      "breakpoints": true
     }
   ]
 }

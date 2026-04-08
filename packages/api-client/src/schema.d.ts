@@ -6,7 +6,10 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** @description 서버 상태를 확인합니다. */
+    /**
+     * 헬스 체크
+     * @description 서버 상태와 SQLite 버전을 확인합니다.
+     */
     get: {
       parameters: {
         query?: never
@@ -16,17 +19,35 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description 서버 정상 */
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
+              sqliteVersion: string
               /** @enum {string} */
               status: "ok"
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     put?: never
@@ -46,7 +67,10 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** @description 이메일과 비밀번호로 회원가입합니다. */
+    /**
+     * 이메일 회원가입
+     * @description 이메일과 비밀번호로 회원가입합니다. 가입 후 이메일 인증이 필요합니다.
+     */
     post: {
       parameters: {
         query?: never
@@ -67,7 +91,9 @@ export interface paths {
       responses: {
         /** @description 회원가입 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
               id: string
@@ -76,7 +102,22 @@ export interface paths {
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -94,7 +135,10 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** @description 이메일과 비밀번호로 로그인합니다. */
+    /**
+     * 이메일 로그인
+     * @description 이메일과 비밀번호로 로그인합니다.
+     */
     post: {
       parameters: {
         query?: never
@@ -114,7 +158,9 @@ export interface paths {
       responses: {
         /** @description 로그인 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
               session: {
@@ -130,7 +176,22 @@ export interface paths {
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -148,7 +209,10 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** @description 현재 세션을 종료합니다. */
+    /**
+     * 로그아웃
+     * @description 현재 세션을 종료하고 로그아웃합니다.
+     */
     post: {
       parameters: {
         query?: never
@@ -160,12 +224,31 @@ export interface paths {
       responses: {
         /** @description 로그아웃 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
-            "application/json": { success: boolean }
+            "application/json": {
+              success: boolean
+            }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -183,7 +266,10 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** @description 비밀번호 재설정 이메일을 전송합니다. */
+    /**
+     * 비밀번호 재설정 요청
+     * @description 비밀번호 재설정 이메일을 전송합니다.
+     */
     post: {
       parameters: {
         query?: never
@@ -202,13 +288,33 @@ export interface paths {
         }
       }
       responses: {
+        /** @description 재설정 이메일 전송 완료 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
-            "application/json": { status: boolean }
+            "application/json": {
+              status: boolean
+            }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -226,7 +332,10 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** @description 이메일로 전송된 토큰으로 비밀번호를 재설정합니다. */
+    /**
+     * 비밀번호 재설정
+     * @description 이메일로 전송된 토큰을 사용하여 비밀번호를 재설정합니다.
+     */
     post: {
       parameters: {
         query?: never
@@ -243,13 +352,33 @@ export interface paths {
         }
       }
       responses: {
+        /** @description 비밀번호 재설정 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
-            "application/json": { status: boolean }
+            "application/json": {
+              status: boolean
+            }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -265,7 +394,10 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** @description 현재 인증된 사용자의 세션 정보를 반환합니다. */
+    /**
+     * 세션 조회
+     * @description 현재 인증된 사용자의 세션 정보를 반환합니다.
+     */
     get: {
       parameters: {
         query?: never
@@ -275,8 +407,11 @@ export interface paths {
       }
       requestBody?: never
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
               session: {
@@ -299,7 +434,22 @@ export interface paths {
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     put?: never
@@ -318,8 +468,8 @@ export interface paths {
       cookie?: never
     }
     /**
-     * 홈 스냅샷 조회
-     * @description 오늘의 글감과 진행 중인 여정 목록을 반환합니다.
+     * 홈 조회
+     * @description 오늘의 글감, 최근 글, 이어쓸 글, 저장된 글감을 한 번에 조회합니다.
      */
     get: {
       parameters: {
@@ -330,17 +480,111 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description 홈 스냅샷 */
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
-              dailyPrompt: components["schemas"]["PromptSummary"] | null
-              activeJourneys: components["schemas"]["ActiveJourneySummary"][]
+              dailyPrompt: {
+                id: number
+                /** @enum {string} */
+                promptType: "sensory" | "reflection" | "opinion"
+                title: string
+                body: string
+                thumbnailUrl: string
+                responseCount: number
+                isBookmarked: boolean
+              } | null
+              activeJourneys: {
+                journeyId: number
+                title: string
+                description: string
+                thumbnailUrl: string | null
+                completionRate: number
+                currentSessionOrder: number
+              }[]
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
+      }
+    }
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/prompts/categories": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 글감 카테고리 목록
+     * @description 글감 카테고리 목록을 반환합니다. (감각, 회고, 의견)
+     */
+    get: {
+      parameters: {
+        query?: never
+        header?: never
+        path?: never
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description 성공 */
+        200: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              items: {
+                /** @enum {string} */
+                key: "sensory" | "reflection" | "opinion"
+                label: string
+              }[]
+            }
+          }
+        }
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     put?: never
@@ -360,15 +604,14 @@ export interface paths {
     }
     /**
      * 글감 목록 조회
-     * @description 유형, 북마크 여부로 필터링하여 글감 목록을 조회합니다.
+     * @description 카테고리(promptType) 필터와 커서 기반 페이지네이션으로 글감 목록을 조회합니다.
      */
     get: {
       parameters: {
         query?: {
-          /** @enum {string} */
-          type?: "sensory" | "reflection" | "opinion"
-          bookmarked?: boolean
-          query?: string
+          promptType?: "sensory" | "reflection" | "opinion"
+          cursor?: number
+          limit?: number
         }
         header?: never
         path?: never
@@ -376,16 +619,43 @@ export interface paths {
       }
       requestBody?: never
       responses: {
-        /** @description 글감 목록 */
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
-              items: components["schemas"]["PromptSummary"][]
+              items: {
+                id: number
+                /** @enum {string} */
+                promptType: "sensory" | "reflection" | "opinion"
+                title: string
+                body: string
+                thumbnailUrl: string
+                responseCount: number
+                isBookmarked: boolean
+              }[]
+              nextCursor: number | null
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     put?: never
@@ -403,23 +673,55 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** @description 특정 글감의 상세 정보를 조회합니다. */
+    /**
+     * 글감 상세 조회
+     * @description 특정 글감의 상세 정보를 조회합니다.
+     */
     get: {
       parameters: {
         query?: never
         header?: never
-        path: { promptId: number }
+        path: {
+          promptId: number
+        }
         cookie?: never
       }
       requestBody?: never
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
-            "application/json": components["schemas"]["PromptSummary"]
+            "application/json": {
+              id: number
+              /** @enum {string} */
+              promptType: "sensory" | "reflection" | "opinion"
+              title: string
+              body: string
+              thumbnailUrl: string
+              responseCount: number
+              isBookmarked: boolean
+            }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     put?: never
@@ -438,18 +740,26 @@ export interface paths {
       cookie?: never
     }
     get?: never
-    /** @description 글감을 북마크에 추가합니다. */
+    /**
+     * 글감 북마크
+     * @description 글감을 북마크에 추가합니다.
+     */
     put: {
       parameters: {
         query?: never
         header?: never
-        path: { promptId: number }
+        path: {
+          promptId: number
+        }
         cookie?: never
       }
       requestBody?: never
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
               /** @enum {string} */
@@ -458,25 +768,63 @@ export interface paths {
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     post?: never
-    /** @description 글감 북마크를 해제합니다. */
+    /**
+     * 글감 북마크 해제
+     * @description 글감 북마크를 해제합니다.
+     */
     delete: {
       parameters: {
         query?: never
         header?: never
-        path: { promptId: number }
+        path: {
+          promptId: number
+        }
         cookie?: never
       }
       requestBody?: never
       responses: {
+        /** @description 북마크 해제 완료 */
         204: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content?: never
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     options?: never
@@ -491,11 +839,13 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** @description 여정 목록을 조회합니다. */
+    /**
+     * 여정 목록 조회
+     * @description 여정 목록을 조회합니다.
+     */
     get: {
       parameters: {
         query?: {
-          /** @enum {string} */
           category?: "writing_skill" | "mindfulness" | "practical"
         }
         header?: never
@@ -504,15 +854,41 @@ export interface paths {
       }
       requestBody?: never
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
-              items: components["schemas"]["JourneySummary"][]
+              items: {
+                id: number
+                title: string
+                description: string
+                /** @enum {string} */
+                category: "writing_skill" | "mindfulness" | "practical"
+                thumbnailUrl: string | null
+                sessionCount: number
+              }[]
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     put?: never
@@ -530,23 +906,62 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** @description 특정 여정의 상세 정보(세션 목록 포함)를 조회합니다. */
+    /**
+     * 여정 상세 조회
+     * @description 특정 여정의 상세 정보(세션 목록 포함)를 조회합니다.
+     */
     get: {
       parameters: {
         query?: never
         header?: never
-        path: { journeyId: number }
+        path: {
+          journeyId: number
+        }
         cookie?: never
       }
       requestBody?: never
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
-            "application/json": components["schemas"]["JourneyDetail"]
+            "application/json": {
+              id: number
+              title: string
+              description: string
+              /** @enum {string} */
+              category: "writing_skill" | "mindfulness" | "practical"
+              thumbnailUrl: string | null
+              sessionCount: number
+              sessions: {
+                id: number
+                journeyId: number
+                order: number
+                title: string
+                description: string
+                estimatedMinutes: number
+              }[]
+            }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     put?: never
@@ -566,23 +981,53 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** @description 여정에 등록합니다. */
+    /**
+     * 여정 등록
+     * @description 여정에 등록합니다.
+     */
     post: {
       parameters: {
         query?: never
         header?: never
-        path: { journeyId: number }
+        path: {
+          journeyId: number
+        }
         cookie?: never
       }
       requestBody?: never
       responses: {
+        /** @description 생성 완료 */
         201: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
-            "application/json": components["schemas"]["UserJourneyProgress"]
+            "application/json": {
+              userId: string
+              journeyId: number
+              currentSessionOrder: number
+              completionRate: number
+              /** @enum {string} */
+              status: "in_progress" | "completed"
+            }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -598,23 +1043,67 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** @description 특정 세션의 상세 정보(스텝 목록 포함)를 조회합니다. */
+    /**
+     * 세션 상세 조회
+     * @description 특정 세션의 상세 정보(스텝 목록 포함)를 조회합니다.
+     */
     get: {
       parameters: {
         query?: never
         header?: never
-        path: { sessionId: number }
+        path: {
+          sessionId: number
+        }
         cookie?: never
       }
       requestBody?: never
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
-            "application/json": components["schemas"]["JourneySessionDetail"]
+            "application/json": {
+              id: number
+              journeyId: number
+              order: number
+              title: string
+              description: string
+              estimatedMinutes: number
+              steps: {
+                id: number
+                sessionId: number
+                order: number
+                /** @enum {string} */
+                type:
+                  | "learn"
+                  | "read"
+                  | "guided_question"
+                  | "write"
+                  | "feedback"
+                  | "revise"
+                contentJson?: unknown
+              }[]
+            }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     put?: never
@@ -634,23 +1123,55 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** @description 세션을 시작합니다. */
+    /**
+     * 세션 시작
+     * @description 세션을 시작합니다.
+     */
     post: {
       parameters: {
         query?: never
         header?: never
-        path: { sessionId: number }
+        path: {
+          sessionId: number
+        }
         cookie?: never
       }
       requestBody?: never
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
-            "application/json": components["schemas"]["UserSessionProgress"]
+            "application/json": {
+              userId: string
+              sessionId: number
+              currentStepOrder: number
+              /** @enum {string} */
+              status: "locked" | "in_progress" | "completed"
+              stepResponsesJson: {
+                [key: string]: unknown
+              }
+            }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -668,27 +1189,51 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** @description 스텝 응답을 제출합니다. */
+    /**
+     * 스텝 제출
+     * @description 스텝 응답을 제출합니다.
+     */
     post: {
       parameters: {
         query?: never
         header?: never
-        path: { sessionId: number; stepOrder: number }
+        path: {
+          sessionId: number
+          stepOrder: number
+        }
         cookie?: never
       }
       requestBody: {
         content: {
           "application/json": {
-            response: unknown
+            response?: unknown
           }
         }
       }
       responses: {
+        /** @description 스텝 제출 완료 */
         204: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content?: never
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -706,12 +1251,17 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** @description 세션을 완료 처리합니다. */
+    /**
+     * 세션 완료
+     * @description 세션을 완료 처리합니다.
+     */
     post: {
       parameters: {
         query?: never
         header?: never
-        path: { sessionId: number }
+        path: {
+          sessionId: number
+        }
         cookie?: never
       }
       requestBody: {
@@ -724,11 +1274,29 @@ export interface paths {
         }
       }
       responses: {
+        /** @description 세션 완료 */
         204: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content?: never
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -744,12 +1312,15 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** @description 현재 사용자의 글 목록을 조회합니다. */
+    /**
+     * 글 목록 조회
+     * @description 현재 사용자의 글 목록을 최근 수정 순으로 조회합니다.
+     */
     get: {
       parameters: {
         query?: {
-          limit?: number
           cursor?: string
+          limit?: number
         }
         header?: never
         path?: never
@@ -757,20 +1328,49 @@ export interface paths {
       }
       requestBody?: never
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
-              items: components["schemas"]["WritingSummary"][]
+              items: {
+                id: number
+                title: string
+                preview: string
+                wordCount: number
+                sourcePromptId: number | null
+                createdAt: string
+                updatedAt: string
+              }[]
               nextCursor: string | null
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     put?: never
-    /** @description 새 글을 생성합니다. */
+    /**
+     * 글 생성
+     * @description 새 글을 생성합니다. 글감을 기반으로 생성할 수 있습니다.
+     */
     post: {
       parameters: {
         query?: never
@@ -786,19 +1386,45 @@ export interface paths {
             bodyPlainText?: string
             wordCount?: number
             sourcePromptId?: number
-            sourceSessionId?: number
           }
         }
       }
       responses: {
-        /** @description 글 생성 완료 */
+        /** @description 생성 완료 */
         201: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
-            "application/json": components["schemas"]["WritingDetail"]
+            "application/json": {
+              id: number
+              title: string
+              preview: string
+              wordCount: number
+              sourcePromptId: number | null
+              createdAt: string
+              updatedAt: string
+              bodyJson?: unknown
+              bodyPlainText: string
+            }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -814,52 +1440,113 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** @description 특정 글의 전체 내용을 조회합니다. */
+    /**
+     * 글 상세 조회
+     * @description 특정 글의 전체 내용을 조회합니다.
+     */
     get: {
       parameters: {
         query?: never
         header?: never
-        path: { writingId: number }
+        path: {
+          writingId: number
+        }
         cookie?: never
       }
       requestBody?: never
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
-            "application/json": components["schemas"]["WritingDetail"]
+            "application/json": {
+              id: number
+              title: string
+              preview: string
+              wordCount: number
+              sourcePromptId: number | null
+              createdAt: string
+              updatedAt: string
+              bodyJson?: unknown
+              bodyPlainText: string
+            }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     put?: never
     post?: never
-    /** @description 특정 글을 영구적으로 삭제합니다. */
+    /**
+     * 글 삭제
+     * @description 특정 글을 영구적으로 삭제합니다.
+     */
     delete: {
       parameters: {
         query?: never
         header?: never
-        path: { writingId: number }
+        path: {
+          writingId: number
+        }
         cookie?: never
       }
       requestBody?: never
       responses: {
+        /** @description 글 삭제 완료 */
         204: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content?: never
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     options?: never
     head?: never
-    /** @description 글을 자동 저장합니다. */
+    /**
+     * 글 자동 저장
+     * @description 글의 제목 또는 본문을 자동 저장합니다.
+     */
     patch: {
       parameters: {
         query?: never
         header?: never
-        path: { writingId: number }
+        path: {
+          writingId: number
+        }
         cookie?: never
       }
       requestBody: {
@@ -873,17 +1560,45 @@ export interface paths {
         }
       }
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
               /** @enum {string} */
               kind: "autosaved"
-              writing: components["schemas"]["WritingDetail"]
+              writing: {
+                id: number
+                title: string
+                preview: string
+                wordCount: number
+                sourcePromptId: number | null
+                createdAt: string
+                updatedAt: string
+                bodyJson?: unknown
+                bodyPlainText: string
+              }
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     trace?: never
@@ -897,25 +1612,36 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** @description AI 소크라테스식 피드백을 생성합니다. */
+    /**
+     * AI 피드백 생성
+     * @description AI 소크라테스식 피드백을 생성합니다.
+     */
     post: {
       parameters: {
         query?: never
         header?: never
-        path: { writingId: number }
+        path: {
+          writingId: number
+        }
         cookie?: never
       }
       requestBody: {
         content: {
           "application/json": {
-            /** @enum {string} */
-            level: "beginner" | "intermediate" | "advanced"
+            /**
+             * @default beginner
+             * @enum {string}
+             */
+            level?: "beginner" | "intermediate" | "advanced"
           }
         }
       }
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
               strengths: string[]
@@ -924,7 +1650,22 @@ export interface paths {
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -942,12 +1683,17 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** @description 두 버전의 글을 비교하여 개선 사항을 분석합니다. */
+    /**
+     * 글 버전 비교
+     * @description 두 버전의 글을 비교하여 개선 사항을 분석합니다.
+     */
     post: {
       parameters: {
         query?: never
         header?: never
-        path: { writingId: number }
+        path: {
+          writingId: number
+        }
         cookie?: never
       }
       requestBody: {
@@ -959,8 +1705,11 @@ export interface paths {
         }
       }
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
               improvements: string[]
@@ -968,7 +1717,22 @@ export interface paths {
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     delete?: never
@@ -984,7 +1748,10 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** @description 개발 환경에서 전송된 인증 메일을 조회합니다. */
+    /**
+     * 인증 메일 조회 (개발용)
+     * @description 개발 환경에서 전송된 인증 메일을 조회합니다. 프로덕션에서는 비활성화됩니다.
+     */
     get: {
       parameters: {
         query: {
@@ -997,8 +1764,11 @@ export interface paths {
       }
       requestBody?: never
       responses: {
+        /** @description 성공 */
         200: {
-          headers: { [name: string]: unknown }
+          headers: {
+            [name: string]: unknown
+          }
           content: {
             "application/json": {
               email: string
@@ -1010,7 +1780,22 @@ export interface paths {
             }
           }
         }
-        default: components["responses"]["ErrorResponse"]
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
       }
     }
     put?: never
@@ -1024,105 +1809,8 @@ export interface paths {
 }
 export type webhooks = Record<string, never>
 export interface components {
-  schemas: {
-    PromptSummary: {
-      id: number
-      /** @enum {string} */
-      promptType: "sensory" | "reflection" | "opinion"
-      title: string
-      body: string
-      responseCount: number
-      isBookmarked: boolean
-    }
-    ActiveJourneySummary: {
-      journeyId: number
-      title: string
-      description: string
-      thumbnailUrl: string | null
-      completionRate: number
-      currentSessionOrder: number
-    }
-    JourneySummary: {
-      id: number
-      title: string
-      description: string
-      /** @enum {string} */
-      category: "writing_skill" | "mindfulness" | "practical"
-      thumbnailUrl: string | null
-      sessionCount: number
-    }
-    JourneySessionSummary: {
-      id: number
-      journeyId: number
-      order: number
-      title: string
-      description: string
-      estimatedMinutes: number
-    }
-    StepSummary: {
-      id: number
-      sessionId: number
-      order: number
-      /** @enum {string} */
-      type:
-        | "learn"
-        | "read"
-        | "guided_question"
-        | "write"
-        | "feedback"
-        | "revise"
-      contentJson: unknown
-    }
-    JourneyDetail: components["schemas"]["JourneySummary"] & {
-      sessions: components["schemas"]["JourneySessionSummary"][]
-    }
-    JourneySessionDetail: components["schemas"]["JourneySessionSummary"] & {
-      steps: components["schemas"]["StepSummary"][]
-    }
-    UserJourneyProgress: {
-      userId: string
-      journeyId: number
-      currentSessionOrder: number
-      completionRate: number
-      /** @enum {string} */
-      status: "in_progress" | "completed"
-    }
-    UserSessionProgress: {
-      userId: string
-      sessionId: number
-      currentStepOrder: number
-      /** @enum {string} */
-      status: "locked" | "in_progress" | "completed"
-      stepResponsesJson: Record<string, unknown>
-    }
-    WritingSummary: {
-      id: number
-      title: string
-      preview: string
-      wordCount: number
-      sourcePromptId: number | null
-      createdAt: string
-      updatedAt: string
-    }
-    WritingDetail: components["schemas"]["WritingSummary"] & {
-      bodyJson: unknown
-      bodyPlainText: string
-    }
-  }
-  responses: {
-    ErrorResponse: {
-      headers: { [name: string]: unknown }
-      content: {
-        "application/json": {
-          error: {
-            code: string
-            message: string
-            details?: unknown
-          }
-        }
-      }
-    }
-  }
+  schemas: never
+  responses: never
   parameters: never
   requestBodies: never
   headers: never

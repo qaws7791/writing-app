@@ -38,3 +38,6 @@ docs/.obsidian/
 
 # Agent skills (Antigravity)
 .agent
+
+# local database
+/data

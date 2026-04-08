@@ -2,6 +2,7 @@ import authHandler from "./auth/auth-handler"
 import getHealth from "./health/get-health"
 import getSession from "./session/get-session"
 import getHome from "./home/get-home"
+import listCategories from "./prompts/list-categories"
 import listPrompts from "./prompts/list-prompts"
 import getPrompt from "./prompts/get-prompt"
 import bookmarkPrompt from "./prompts/bookmark-prompt"
@@ -27,6 +28,7 @@ export const allRoutes = [
   getSession,
   getHome,
   listPrompts,
+  listCategories,
   getPrompt,
   bookmarkPrompt,
   unbookmarkPrompt,

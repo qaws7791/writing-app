@@ -17,11 +17,12 @@ describe("makeGetHomeUseCase", () => {
         promptType: "reflection" as const,
         title: "오늘의 글감",
         body: "오늘 가장 기억에 남는 순간은?",
+        thumbnailUrl: "https://picsum.photos/seed/prompt-1/600/400",
         responseCount: 5,
         isBookmarked: false,
       })),
       getById: vi.fn(async () => null),
-      list: vi.fn(async () => []),
+      list: vi.fn(async () => ({ items: [], nextCursor: null })),
       bookmark: vi.fn(async () => ({ kind: "not-found" as const })),
       unbookmark: vi.fn(async () => {}),
     }
@@ -96,7 +97,7 @@ describe("makeGetHomeUseCase", () => {
     const promptRepository: PromptRepository = {
       getDailyPrompt: vi.fn(async () => null),
       getById: vi.fn(async () => null),
-      list: vi.fn(async () => []),
+      list: vi.fn(async () => ({ items: [], nextCursor: null })),
       bookmark: vi.fn(async () => ({ kind: "not-found" as const })),
       unbookmark: vi.fn(async () => {}),
     }
