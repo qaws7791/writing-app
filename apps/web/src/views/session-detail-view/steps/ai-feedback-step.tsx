@@ -1,20 +1,42 @@
 "use client"
 
-import { useAIFeedback } from "@/features/ai"
 import type {
   AIFeedbackContent,
   CrossReferenceStepProps,
+  SessionAiStepState,
+  WritingFeedbackResult,
 } from "@/views/session-detail-view/types"
 
 type Props = CrossReferenceStepProps<AIFeedbackContent>
 
-export function AIFeedbackStep({ content, allStepStates }: Props) {
+function isWritingFeedbackResult(
+  value: SessionAiStepState["resultJson"]
+): value is WritingFeedbackResult {
+  return (
+    value !== null &&
+    "strengths" in value &&
+    "improvements" in value &&
+    "question" in value
+  )
+}
+
+export function AIFeedbackStep({
+  content,
+  allStepStates,
+  isRetryingAi = false,
+  onRetryAi,
+  step,
+}: Props) {
   const targetState = allStepStates[content.targetStepId] as
     | { text?: string }
     | undefined
   const userText = targetState?.text ?? ""
-
-  const feedbackQuery = useAIFeedback(userText)
+  const aiState = allStepStates[step.id] as SessionAiStepState | undefined
+  const feedback =
+    aiState?.status === "succeeded" &&
+    isWritingFeedbackResult(aiState.resultJson)
+      ? aiState.resultJson
+      : null
 
   return (
     <div className="flex flex-col gap-5">
@@ -33,7 +55,7 @@ export function AIFeedbackStep({ content, allStepStates }: Props) {
         </details>
       )}
 
-      {feedbackQuery.isPending && userText && (
+      {(aiState === undefined || aiState.status === "pending") && (
         <div className="flex flex-col items-center justify-center gap-3 py-12 text-on-surface-low">
           <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
           <p className="text-sm">
@@ -42,23 +64,24 @@ export function AIFeedbackStep({ content, allStepStates }: Props) {
         </div>
       )}
 
-      {feedbackQuery.isError && (
+      {aiState?.status === "failed" && (
         <div className="rounded-xl bg-surface-container p-4 text-center">
           <p className="text-sm text-on-surface-low">
-            피드백을 불러오는 중 오류가 발생했어요.
+            {aiState.errorMessage ?? "피드백을 생성하는 중 오류가 발생했어요."}
           </p>
           <button
-            onClick={() => feedbackQuery.refetch()}
+            onClick={() => onRetryAi?.(step.order)}
+            disabled={isRetryingAi}
             className="mt-3 rounded-full bg-on-surface px-4 py-2 text-xs font-semibold text-surface"
           >
-            다시 시도
+            {isRetryingAi ? "재시도 중..." : "다시 시도"}
           </button>
         </div>
       )}
 
-      {feedbackQuery.isSuccess && feedbackQuery.data && (
+      {feedback && (
         <div className="flex flex-col gap-3">
-          {feedbackQuery.data.strengths.map((strength, i) => (
+          {feedback.strengths.map((strength, i) => (
             <div
               key={i}
               className="rounded-2xl border border-green-200 bg-green-50 p-4 dark:border-green-500/20 dark:bg-green-500/10"
@@ -73,7 +96,7 @@ export function AIFeedbackStep({ content, allStepStates }: Props) {
               </p>
             </div>
           ))}
-          {feedbackQuery.data.improvements.map((improvement, i) => (
+          {feedback.improvements.map((improvement, i) => (
             <div
               key={i}
               className="rounded-2xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/20 dark:bg-amber-500/10"
@@ -88,13 +111,13 @@ export function AIFeedbackStep({ content, allStepStates }: Props) {
               </p>
             </div>
           ))}
-          {feedbackQuery.data.question && (
+          {feedback.question && (
             <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-500/20 dark:bg-blue-500/10">
               <p className="mb-2 text-xs font-semibold text-blue-700 dark:text-blue-400">
                 생각해볼 질문
               </p>
               <p className="text-sm leading-relaxed text-blue-900 dark:text-blue-200">
-                {feedbackQuery.data.question}
+                {feedback.question}
               </p>
             </div>
           )}

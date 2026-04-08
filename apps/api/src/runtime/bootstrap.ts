@@ -16,6 +16,7 @@ import { createRequestLoggerMiddleware } from "../middleware/request-logger"
 import { createResolveSessionMiddleware } from "../middleware/resolve-session"
 import type { ApiLogLevel } from "../observability/logger"
 import { createApiContainer, extractUseCases } from "./container"
+import { createSessionAiWorker } from "./session-ai-worker"
 import getAuthEmails from "../routes/dev/get-auth-emails"
 import { allRoutes } from "../routes"
 
@@ -69,6 +70,11 @@ export async function createApiDependencies(
     authHandler: auth.handler,
     readLatestAuthEmail: devEmailInbox?.readLatestMessage,
   }
+  const sessionAiWorker = createSessionAiWorker({
+    aiCoachingGateway: container.cradle.aiCoachingGateway,
+    logger,
+    progressRepository: container.cradle.progressRepository,
+  })
 
   logger.info(
     {
@@ -152,9 +158,12 @@ export async function createApiDependencies(
     })
   )
 
+  sessionAiWorker.start()
+
   return {
     app,
     close: () => {
+      sessionAiWorker.stop()
       void container.dispose()
     },
     sqliteVersion,

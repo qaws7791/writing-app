@@ -5,12 +5,7 @@
     "version": "1.0.0"
   },
   "openapi": "3.0.0",
-  "servers": [
-    {
-      "description": "API 서버",
-      "url": "http://localhost:3010"
-    }
-  ],
+  "servers": [{ "description": "API 서버", "url": "http://localhost:3010" }],
   "components": {
     "securitySchemes": {
       "cookieAuth": {
@@ -37,13 +32,8 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "sqliteVersion": {
-                      "type": "string"
-                    },
-                    "status": {
-                      "type": "string",
-                      "enum": ["ok"]
-                    }
+                    "sqliteVersion": { "type": "string" },
+                    "status": { "type": "string", "enum": ["ok"] }
                   },
                   "required": ["sqliteVersion", "status"]
                 }
@@ -60,18 +50,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -96,14 +78,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": {
-                    "type": "string",
-                    "format": "email"
-                  },
-                  "name": {
-                    "type": "string",
-                    "minLength": 1
-                  },
+                  "email": { "type": "string", "format": "email" },
+                  "name": { "type": "string", "minLength": 1 },
                   "password": {
                     "type": "string",
                     "minLength": 8,
@@ -123,15 +99,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "id": {
-                      "type": "string"
-                    },
-                    "email": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
+                    "id": { "type": "string" },
+                    "email": { "type": "string" },
+                    "name": { "type": "string" }
                   },
                   "required": ["id", "email", "name"]
                 }
@@ -148,18 +118,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -184,13 +146,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": {
-                    "type": "string",
-                    "format": "email"
-                  },
-                  "password": {
-                    "type": "string"
-                  }
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" }
                 },
                 "required": ["email", "password"]
               }
@@ -208,30 +165,18 @@
                     "session": {
                       "type": "object",
                       "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "token": {
-                          "type": "string"
-                        },
-                        "userId": {
-                          "type": "string"
-                        }
+                        "id": { "type": "string" },
+                        "token": { "type": "string" },
+                        "userId": { "type": "string" }
                       },
                       "required": ["id", "token", "userId"]
                     },
                     "user": {
                       "type": "object",
                       "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "email": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        }
+                        "id": { "type": "string" },
+                        "email": { "type": "string" },
+                        "name": { "type": "string" }
                       },
                       "required": ["id", "email", "name"]
                     }
@@ -251,18 +196,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -278,11 +215,7 @@
     "/api/auth/sign-out": {
       "post": {
         "description": "현재 세션을 종료하고 로그아웃합니다.",
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "summary": "로그아웃",
         "tags": ["인증"],
         "responses": {
@@ -292,11 +225,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "success": {
-                      "type": "boolean"
-                    }
-                  },
+                  "properties": { "success": { "type": "boolean" } },
                   "required": ["success"]
                 }
               }
@@ -312,18 +241,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -348,14 +269,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": {
-                    "type": "string",
-                    "format": "email"
-                  },
-                  "redirectTo": {
-                    "type": "string",
-                    "format": "uri"
-                  }
+                  "email": { "type": "string", "format": "email" },
+                  "redirectTo": { "type": "string", "format": "uri" }
                 },
                 "required": ["email"]
               }
@@ -369,11 +284,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "boolean"
-                    }
-                  },
+                  "properties": { "status": { "type": "boolean" } },
                   "required": ["status"]
                 }
               }
@@ -389,18 +300,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -430,9 +333,7 @@
                     "minLength": 8,
                     "maxLength": 128
                   },
-                  "token": {
-                    "type": "string"
-                  }
+                  "token": { "type": "string" }
                 },
                 "required": ["newPassword", "token"]
               }
@@ -446,11 +347,7 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "boolean"
-                    }
-                  },
+                  "properties": { "status": { "type": "boolean" } },
                   "required": ["status"]
                 }
               }
@@ -466,18 +363,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -495,11 +384,7 @@
         "description": "현재 인증된 사용자의 세션 정보를 반환합니다.",
         "summary": "세션 조회",
         "tags": ["인증"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "responses": {
           "200": {
             "description": "성공",
@@ -513,54 +398,27 @@
                       "properties": {
                         "createdAt": {
                           "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
+                            { "type": "string" },
+                            { "type": "string", "format": "date-time" }
                           ]
                         },
                         "expiresAt": {
                           "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
+                            { "type": "string" },
+                            { "type": "string", "format": "date-time" }
                           ]
                         },
-                        "id": {
-                          "type": "string"
-                        },
-                        "ipAddress": {
-                          "type": "string",
-                          "nullable": true
-                        },
-                        "token": {
-                          "type": "string"
-                        },
+                        "id": { "type": "string" },
+                        "ipAddress": { "type": "string", "nullable": true },
+                        "token": { "type": "string" },
                         "updatedAt": {
                           "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "string",
-                              "format": "date-time"
-                            }
+                            { "type": "string" },
+                            { "type": "string", "format": "date-time" }
                           ]
                         },
-                        "userAgent": {
-                          "type": "string",
-                          "nullable": true
-                        },
-                        "userId": {
-                          "type": "string"
-                        }
+                        "userAgent": { "type": "string", "nullable": true },
+                        "userId": { "type": "string" }
                       },
                       "required": [
                         "createdAt",
@@ -574,22 +432,11 @@
                     "user": {
                       "type": "object",
                       "properties": {
-                        "email": {
-                          "type": "string"
-                        },
-                        "emailVerified": {
-                          "type": "boolean"
-                        },
-                        "id": {
-                          "type": "string"
-                        },
-                        "image": {
-                          "type": "string",
-                          "nullable": true
-                        },
-                        "name": {
-                          "type": "string"
-                        }
+                        "email": { "type": "string" },
+                        "emailVerified": { "type": "boolean" },
+                        "id": { "type": "string" },
+                        "image": { "type": "string", "nullable": true },
+                        "name": { "type": "string" }
                       },
                       "required": ["email", "emailVerified", "id", "name"]
                     }
@@ -609,18 +456,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -638,11 +477,7 @@
         "description": "오늘의 글감, 최근 글, 이어쓸 글, 저장된 글감을 한 번에 조회합니다.",
         "summary": "홈 조회",
         "tags": ["홈"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "responses": {
           "200": {
             "description": "성공",
@@ -655,28 +490,16 @@
                       "type": "object",
                       "nullable": true,
                       "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
+                        "id": { "type": "integer" },
                         "promptType": {
                           "type": "string",
                           "enum": ["sensory", "reflection", "opinion"]
                         },
-                        "title": {
-                          "type": "string"
-                        },
-                        "body": {
-                          "type": "string"
-                        },
-                        "thumbnailUrl": {
-                          "type": "string"
-                        },
-                        "responseCount": {
-                          "type": "integer"
-                        },
-                        "isBookmarked": {
-                          "type": "boolean"
-                        }
+                        "title": { "type": "string" },
+                        "body": { "type": "string" },
+                        "thumbnailUrl": { "type": "string" },
+                        "responseCount": { "type": "integer" },
+                        "isBookmarked": { "type": "boolean" }
                       },
                       "required": [
                         "id",
@@ -693,25 +516,15 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "journeyId": {
-                            "type": "integer"
-                          },
-                          "title": {
-                            "type": "string"
-                          },
-                          "description": {
-                            "type": "string"
-                          },
+                          "journeyId": { "type": "integer" },
+                          "title": { "type": "string" },
+                          "description": { "type": "string" },
                           "thumbnailUrl": {
                             "type": "string",
                             "nullable": true
                           },
-                          "completionRate": {
-                            "type": "number"
-                          },
-                          "currentSessionOrder": {
-                            "type": "integer"
-                          }
+                          "completionRate": { "type": "number" },
+                          "currentSessionOrder": { "type": "integer" }
                         },
                         "required": [
                           "journeyId",
@@ -739,18 +552,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -768,11 +573,7 @@
         "description": "카테고리(promptType) 필터와 커서 기반 페이지네이션으로 글감 목록을 조회합니다.",
         "summary": "글감 목록 조회",
         "tags": ["글감"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -794,11 +595,7 @@
             "in": "query"
           },
           {
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 50
-            },
+            "schema": { "type": "integer", "minimum": 1, "maximum": 50 },
             "required": false,
             "name": "limit",
             "in": "query"
@@ -817,28 +614,16 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
+                          "id": { "type": "integer" },
                           "promptType": {
                             "type": "string",
                             "enum": ["sensory", "reflection", "opinion"]
                           },
-                          "title": {
-                            "type": "string"
-                          },
-                          "body": {
-                            "type": "string"
-                          },
-                          "thumbnailUrl": {
-                            "type": "string"
-                          },
-                          "responseCount": {
-                            "type": "integer"
-                          },
-                          "isBookmarked": {
-                            "type": "boolean"
-                          }
+                          "title": { "type": "string" },
+                          "body": { "type": "string" },
+                          "thumbnailUrl": { "type": "string" },
+                          "responseCount": { "type": "integer" },
+                          "isBookmarked": { "type": "boolean" }
                         },
                         "required": [
                           "id",
@@ -851,10 +636,7 @@
                         ]
                       }
                     },
-                    "nextCursor": {
-                      "type": "integer",
-                      "nullable": true
-                    }
+                    "nextCursor": { "type": "integer", "nullable": true }
                   },
                   "required": ["items", "nextCursor"]
                 }
@@ -871,18 +653,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -917,9 +691,7 @@
                             "type": "string",
                             "enum": ["sensory", "reflection", "opinion"]
                           },
-                          "label": {
-                            "type": "string"
-                          }
+                          "label": { "type": "string" }
                         },
                         "required": ["key", "label"]
                       }
@@ -940,18 +712,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -969,11 +733,7 @@
         "description": "특정 글감의 상세 정보를 조회합니다.",
         "summary": "글감 상세 조회",
         "tags": ["글감"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -994,28 +754,16 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
+                    "id": { "type": "integer" },
                     "promptType": {
                       "type": "string",
                       "enum": ["sensory", "reflection", "opinion"]
                     },
-                    "title": {
-                      "type": "string"
-                    },
-                    "body": {
-                      "type": "string"
-                    },
-                    "thumbnailUrl": {
-                      "type": "string"
-                    },
-                    "responseCount": {
-                      "type": "integer"
-                    },
-                    "isBookmarked": {
-                      "type": "boolean"
-                    }
+                    "title": { "type": "string" },
+                    "body": { "type": "string" },
+                    "thumbnailUrl": { "type": "string" },
+                    "responseCount": { "type": "integer" },
+                    "isBookmarked": { "type": "boolean" }
                   },
                   "required": [
                     "id",
@@ -1040,18 +788,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -1069,11 +809,7 @@
         "description": "특정 글감을 주제로 작성된 공개 글 목록을 커서 기반 페이지네이션으로 조회합니다.",
         "summary": "글감별 공개 글 목록 조회",
         "tags": ["글감"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -1086,9 +822,7 @@
             "in": "path"
           },
           {
-            "schema": {
-              "type": "string"
-            },
+            "schema": { "type": "string" },
             "required": false,
             "name": "cursor",
             "in": "query"
@@ -1118,24 +852,12 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
-                          "title": {
-                            "type": "string"
-                          },
-                          "preview": {
-                            "type": "string"
-                          },
-                          "wordCount": {
-                            "type": "integer"
-                          },
-                          "createdAt": {
-                            "type": "string"
-                          },
-                          "isOwner": {
-                            "type": "boolean"
-                          }
+                          "id": { "type": "integer" },
+                          "title": { "type": "string" },
+                          "preview": { "type": "string" },
+                          "wordCount": { "type": "integer" },
+                          "createdAt": { "type": "string" },
+                          "isOwner": { "type": "boolean" }
                         },
                         "required": [
                           "id",
@@ -1147,13 +869,8 @@
                         ]
                       }
                     },
-                    "nextCursor": {
-                      "type": "string",
-                      "nullable": true
-                    },
-                    "hasMore": {
-                      "type": "boolean"
-                    }
+                    "nextCursor": { "type": "string", "nullable": true },
+                    "hasMore": { "type": "boolean" }
                   },
                   "required": ["items", "nextCursor", "hasMore"]
                 }
@@ -1170,18 +887,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -1199,11 +908,7 @@
         "description": "글감을 북마크에 추가합니다.",
         "summary": "글감 북마크",
         "tags": ["글감"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -1224,13 +929,8 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "kind": {
-                      "type": "string",
-                      "enum": ["bookmarked"]
-                    },
-                    "savedAt": {
-                      "type": "string"
-                    }
+                    "kind": { "type": "string", "enum": ["bookmarked"] },
+                    "savedAt": { "type": "string" }
                   },
                   "required": ["kind", "savedAt"]
                 }
@@ -1247,18 +947,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -1274,11 +966,7 @@
         "description": "글감 북마크를 해제합니다.",
         "summary": "글감 북마크 해제",
         "tags": ["글감"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -1292,9 +980,7 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "북마크 해제 완료"
-          },
+          "204": { "description": "북마크 해제 완료" },
           "default": {
             "description": "에러 응답",
             "content": {
@@ -1305,18 +991,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -1358,15 +1036,9 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
-                          "title": {
-                            "type": "string"
-                          },
-                          "description": {
-                            "type": "string"
-                          },
+                          "id": { "type": "integer" },
+                          "title": { "type": "string" },
+                          "description": { "type": "string" },
                           "category": {
                             "type": "string",
                             "enum": [
@@ -1379,9 +1051,7 @@
                             "type": "string",
                             "nullable": true
                           },
-                          "sessionCount": {
-                            "type": "integer"
-                          }
+                          "sessionCount": { "type": "integer" }
                         },
                         "required": [
                           "id",
@@ -1409,18 +1079,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -1458,49 +1120,26 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "title": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string"
-                    },
+                    "id": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "description": { "type": "string" },
                     "category": {
                       "type": "string",
                       "enum": ["writing_skill", "mindfulness", "practical"]
                     },
-                    "thumbnailUrl": {
-                      "type": "string",
-                      "nullable": true
-                    },
-                    "sessionCount": {
-                      "type": "integer"
-                    },
+                    "thumbnailUrl": { "type": "string", "nullable": true },
+                    "sessionCount": { "type": "integer" },
                     "sessions": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
-                          "journeyId": {
-                            "type": "integer"
-                          },
-                          "order": {
-                            "type": "integer"
-                          },
-                          "title": {
-                            "type": "string"
-                          },
-                          "description": {
-                            "type": "string"
-                          },
-                          "estimatedMinutes": {
-                            "type": "integer"
-                          }
+                          "id": { "type": "integer" },
+                          "journeyId": { "type": "integer" },
+                          "order": { "type": "integer" },
+                          "title": { "type": "string" },
+                          "description": { "type": "string" },
+                          "estimatedMinutes": { "type": "integer" }
                         },
                         "required": [
                           "id",
@@ -1536,18 +1175,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -1565,11 +1196,7 @@
         "description": "여정에 등록합니다.",
         "summary": "여정 등록",
         "tags": ["여정"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -1590,18 +1217,10 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "userId": {
-                      "type": "string"
-                    },
-                    "journeyId": {
-                      "type": "integer"
-                    },
-                    "currentSessionOrder": {
-                      "type": "integer"
-                    },
-                    "completionRate": {
-                      "type": "number"
-                    },
+                    "userId": { "type": "string" },
+                    "journeyId": { "type": "integer" },
+                    "currentSessionOrder": { "type": "integer" },
+                    "completionRate": { "type": "number" },
                     "status": {
                       "type": "string",
                       "enum": ["in_progress", "completed"]
@@ -1628,18 +1247,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -1654,9 +1265,10 @@
     },
     "/sessions/{sessionId}": {
       "get": {
-        "description": "특정 세션의 상세 정보(스텝 목록 포함)를 조회합니다.",
+        "description": "특정 세션의 런타임 스냅샷을 조회합니다.",
         "summary": "세션 상세 조회",
         "tags": ["세션"],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -1677,38 +1289,20 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "journeyId": {
-                      "type": "integer"
-                    },
-                    "order": {
-                      "type": "integer"
-                    },
-                    "title": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string"
-                    },
-                    "estimatedMinutes": {
-                      "type": "integer"
-                    },
+                    "id": { "type": "integer" },
+                    "journeyId": { "type": "integer" },
+                    "order": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "description": { "type": "string" },
+                    "estimatedMinutes": { "type": "integer" },
                     "steps": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
-                          "sessionId": {
-                            "type": "integer"
-                          },
-                          "order": {
-                            "type": "integer"
-                          },
+                          "id": { "type": "integer" },
+                          "sessionId": { "type": "integer" },
+                          "order": { "type": "integer" },
                           "type": {
                             "type": "string",
                             "enum": [
@@ -1720,11 +1314,90 @@
                               "revise"
                             ]
                           },
-                          "contentJson": {
-                            "nullable": true
-                          }
+                          "contentJson": { "nullable": true }
                         },
                         "required": ["id", "sessionId", "order", "type"]
+                      }
+                    },
+                    "currentStepOrder": { "type": "integer", "minimum": 1 },
+                    "status": {
+                      "type": "string",
+                      "enum": ["locked", "in_progress", "completed"]
+                    },
+                    "stepResponsesJson": {
+                      "type": "object",
+                      "additionalProperties": { "nullable": true }
+                    },
+                    "stepAiStates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "stepOrder": { "type": "integer", "minimum": 1 },
+                          "kind": {
+                            "type": "string",
+                            "enum": ["feedback", "comparison"]
+                          },
+                          "sourceStepOrder": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["pending", "succeeded", "failed"]
+                          },
+                          "attemptCount": { "type": "integer", "minimum": 0 },
+                          "resultJson": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "strengths": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "improvements": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "question": { "type": "string" }
+                                },
+                                "required": [
+                                  "strengths",
+                                  "improvements",
+                                  "question"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "improvements": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "summary": { "type": "string" }
+                                },
+                                "required": ["improvements", "summary"]
+                              },
+                              { "nullable": true }
+                            ]
+                          },
+                          "errorMessage": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "updatedAt": { "type": "string" }
+                        },
+                        "required": [
+                          "stepOrder",
+                          "kind",
+                          "sourceStepOrder",
+                          "status",
+                          "attemptCount",
+                          "resultJson",
+                          "errorMessage",
+                          "updatedAt"
+                        ]
                       }
                     }
                   },
@@ -1735,7 +1408,11 @@
                     "title",
                     "description",
                     "estimatedMinutes",
-                    "steps"
+                    "steps",
+                    "currentStepOrder",
+                    "status",
+                    "stepResponsesJson",
+                    "stepAiStates"
                   ]
                 }
               }
@@ -1751,18 +1428,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -1780,11 +1449,7 @@
         "description": "세션을 시작합니다.",
         "summary": "세션 시작",
         "tags": ["세션"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -1805,32 +1470,130 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "userId": {
-                      "type": "string"
+                    "id": { "type": "integer" },
+                    "journeyId": { "type": "integer" },
+                    "order": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "description": { "type": "string" },
+                    "estimatedMinutes": { "type": "integer" },
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "sessionId": { "type": "integer" },
+                          "order": { "type": "integer" },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "learn",
+                              "read",
+                              "guided_question",
+                              "write",
+                              "feedback",
+                              "revise"
+                            ]
+                          },
+                          "contentJson": { "nullable": true }
+                        },
+                        "required": ["id", "sessionId", "order", "type"]
+                      }
                     },
-                    "sessionId": {
-                      "type": "integer"
-                    },
-                    "currentStepOrder": {
-                      "type": "integer"
-                    },
+                    "currentStepOrder": { "type": "integer", "minimum": 1 },
                     "status": {
                       "type": "string",
                       "enum": ["locked", "in_progress", "completed"]
                     },
                     "stepResponsesJson": {
                       "type": "object",
-                      "additionalProperties": {
-                        "nullable": true
+                      "additionalProperties": { "nullable": true }
+                    },
+                    "stepAiStates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "stepOrder": { "type": "integer", "minimum": 1 },
+                          "kind": {
+                            "type": "string",
+                            "enum": ["feedback", "comparison"]
+                          },
+                          "sourceStepOrder": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["pending", "succeeded", "failed"]
+                          },
+                          "attemptCount": { "type": "integer", "minimum": 0 },
+                          "resultJson": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "strengths": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "improvements": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "question": { "type": "string" }
+                                },
+                                "required": [
+                                  "strengths",
+                                  "improvements",
+                                  "question"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "improvements": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "summary": { "type": "string" }
+                                },
+                                "required": ["improvements", "summary"]
+                              },
+                              { "nullable": true }
+                            ]
+                          },
+                          "errorMessage": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "updatedAt": { "type": "string" }
+                        },
+                        "required": [
+                          "stepOrder",
+                          "kind",
+                          "sourceStepOrder",
+                          "status",
+                          "attemptCount",
+                          "resultJson",
+                          "errorMessage",
+                          "updatedAt"
+                        ]
                       }
                     }
                   },
                   "required": [
-                    "userId",
-                    "sessionId",
+                    "id",
+                    "journeyId",
+                    "order",
+                    "title",
+                    "description",
+                    "estimatedMinutes",
+                    "steps",
                     "currentStepOrder",
                     "status",
-                    "stepResponsesJson"
+                    "stepResponsesJson",
+                    "stepAiStates"
                   ]
                 }
               }
@@ -1846,18 +1609,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -1872,14 +1627,10 @@
     },
     "/sessions/{sessionId}/steps/{stepOrder}/submit": {
       "post": {
-        "description": "스텝 응답을 제출합니다.",
+        "description": "스텝 응답을 제출하고 갱신된 세션 스냅샷을 반환합니다.",
         "summary": "스텝 제출",
         "tags": ["세션"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -1892,10 +1643,7 @@
             "in": "path"
           },
           {
-            "schema": {
-              "type": "integer",
-              "minimum": 1
-            },
+            "schema": { "type": "integer", "minimum": 1 },
             "required": true,
             "name": "stepOrder",
             "in": "path"
@@ -1907,18 +1655,283 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {
-                  "response": {
-                    "nullable": true
-                  }
-                }
+                "properties": { "response": { "nullable": true } }
               }
             }
           }
         },
         "responses": {
-          "204": {
-            "description": "스텝 제출 완료"
+          "200": {
+            "description": "스텝 제출 완료",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "journeyId": { "type": "integer" },
+                    "order": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "description": { "type": "string" },
+                    "estimatedMinutes": { "type": "integer" },
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "sessionId": { "type": "integer" },
+                          "order": { "type": "integer" },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "learn",
+                              "read",
+                              "guided_question",
+                              "write",
+                              "feedback",
+                              "revise"
+                            ]
+                          },
+                          "contentJson": { "nullable": true }
+                        },
+                        "required": ["id", "sessionId", "order", "type"]
+                      }
+                    },
+                    "currentStepOrder": { "type": "integer", "minimum": 1 },
+                    "status": {
+                      "type": "string",
+                      "enum": ["locked", "in_progress", "completed"]
+                    },
+                    "stepResponsesJson": {
+                      "type": "object",
+                      "additionalProperties": { "nullable": true }
+                    },
+                    "stepAiStates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "stepOrder": { "type": "integer", "minimum": 1 },
+                          "kind": {
+                            "type": "string",
+                            "enum": ["feedback", "comparison"]
+                          },
+                          "sourceStepOrder": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["pending", "succeeded", "failed"]
+                          },
+                          "attemptCount": { "type": "integer", "minimum": 0 },
+                          "resultJson": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "strengths": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "improvements": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "question": { "type": "string" }
+                                },
+                                "required": [
+                                  "strengths",
+                                  "improvements",
+                                  "question"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "improvements": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "summary": { "type": "string" }
+                                },
+                                "required": ["improvements", "summary"]
+                              },
+                              { "nullable": true }
+                            ]
+                          },
+                          "errorMessage": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "updatedAt": { "type": "string" }
+                        },
+                        "required": [
+                          "stepOrder",
+                          "kind",
+                          "sourceStepOrder",
+                          "status",
+                          "attemptCount",
+                          "resultJson",
+                          "errorMessage",
+                          "updatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "journeyId",
+                    "order",
+                    "title",
+                    "description",
+                    "estimatedMinutes",
+                    "steps",
+                    "currentStepOrder",
+                    "status",
+                    "stepResponsesJson",
+                    "stepAiStates"
+                  ]
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "AI 처리 수락",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "journeyId": { "type": "integer" },
+                    "order": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "description": { "type": "string" },
+                    "estimatedMinutes": { "type": "integer" },
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "sessionId": { "type": "integer" },
+                          "order": { "type": "integer" },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "learn",
+                              "read",
+                              "guided_question",
+                              "write",
+                              "feedback",
+                              "revise"
+                            ]
+                          },
+                          "contentJson": { "nullable": true }
+                        },
+                        "required": ["id", "sessionId", "order", "type"]
+                      }
+                    },
+                    "currentStepOrder": { "type": "integer", "minimum": 1 },
+                    "status": {
+                      "type": "string",
+                      "enum": ["locked", "in_progress", "completed"]
+                    },
+                    "stepResponsesJson": {
+                      "type": "object",
+                      "additionalProperties": { "nullable": true }
+                    },
+                    "stepAiStates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "stepOrder": { "type": "integer", "minimum": 1 },
+                          "kind": {
+                            "type": "string",
+                            "enum": ["feedback", "comparison"]
+                          },
+                          "sourceStepOrder": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["pending", "succeeded", "failed"]
+                          },
+                          "attemptCount": { "type": "integer", "minimum": 0 },
+                          "resultJson": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "strengths": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "improvements": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "question": { "type": "string" }
+                                },
+                                "required": [
+                                  "strengths",
+                                  "improvements",
+                                  "question"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "improvements": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "summary": { "type": "string" }
+                                },
+                                "required": ["improvements", "summary"]
+                              },
+                              { "nullable": true }
+                            ]
+                          },
+                          "errorMessage": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "updatedAt": { "type": "string" }
+                        },
+                        "required": [
+                          "stepOrder",
+                          "kind",
+                          "sourceStepOrder",
+                          "status",
+                          "attemptCount",
+                          "resultJson",
+                          "errorMessage",
+                          "updatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "journeyId",
+                    "order",
+                    "title",
+                    "description",
+                    "estimatedMinutes",
+                    "steps",
+                    "currentStepOrder",
+                    "status",
+                    "stepResponsesJson",
+                    "stepAiStates"
+                  ]
+                }
+              }
+            }
           },
           "default": {
             "description": "에러 응답",
@@ -1930,18 +1943,197 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
+                      },
+                      "required": ["code", "message"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/sessions/{sessionId}/steps/{stepOrder}/retry": {
+      "post": {
+        "description": "실패한 세션 AI 작업을 다시 시작합니다.",
+        "summary": "세션 AI 재시도",
+        "tags": ["세션"],
+        "security": [{ "cookieAuth": [] }],
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "exclusiveMinimum": true
+            },
+            "required": true,
+            "name": "sessionId",
+            "in": "path"
+          },
+          {
+            "schema": { "type": "integer", "minimum": 1 },
+            "required": true,
+            "name": "stepOrder",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "처리 수락",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer" },
+                    "journeyId": { "type": "integer" },
+                    "order": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "description": { "type": "string" },
+                    "estimatedMinutes": { "type": "integer" },
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "integer" },
+                          "sessionId": { "type": "integer" },
+                          "order": { "type": "integer" },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "learn",
+                              "read",
+                              "guided_question",
+                              "write",
+                              "feedback",
+                              "revise"
+                            ]
+                          },
+                          "contentJson": { "nullable": true }
                         },
-                        "details": {
-                          "nullable": true
+                        "required": ["id", "sessionId", "order", "type"]
+                      }
+                    },
+                    "currentStepOrder": { "type": "integer", "minimum": 1 },
+                    "status": {
+                      "type": "string",
+                      "enum": ["locked", "in_progress", "completed"]
+                    },
+                    "stepResponsesJson": {
+                      "type": "object",
+                      "additionalProperties": { "nullable": true }
+                    },
+                    "stepAiStates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "stepOrder": { "type": "integer", "minimum": 1 },
+                          "kind": {
+                            "type": "string",
+                            "enum": ["feedback", "comparison"]
+                          },
+                          "sourceStepOrder": {
+                            "type": "integer",
+                            "minimum": 1
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["pending", "succeeded", "failed"]
+                          },
+                          "attemptCount": { "type": "integer", "minimum": 0 },
+                          "resultJson": {
+                            "anyOf": [
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "strengths": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "improvements": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "question": { "type": "string" }
+                                },
+                                "required": [
+                                  "strengths",
+                                  "improvements",
+                                  "question"
+                                ]
+                              },
+                              {
+                                "type": "object",
+                                "properties": {
+                                  "improvements": {
+                                    "type": "array",
+                                    "items": { "type": "string" }
+                                  },
+                                  "summary": { "type": "string" }
+                                },
+                                "required": ["improvements", "summary"]
+                              },
+                              { "nullable": true }
+                            ]
+                          },
+                          "errorMessage": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "updatedAt": { "type": "string" }
                         },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "required": [
+                          "stepOrder",
+                          "kind",
+                          "sourceStepOrder",
+                          "status",
+                          "attemptCount",
+                          "resultJson",
+                          "errorMessage",
+                          "updatedAt"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "journeyId",
+                    "order",
+                    "title",
+                    "description",
+                    "estimatedMinutes",
+                    "steps",
+                    "currentStepOrder",
+                    "status",
+                    "stepResponsesJson",
+                    "stepAiStates"
+                  ]
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "에러 응답",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -1959,11 +2151,7 @@
         "description": "세션을 완료 처리합니다.",
         "summary": "세션 완료",
         "tags": ["세션"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -1988,14 +2176,8 @@
                     "minimum": 0,
                     "exclusiveMinimum": true
                   },
-                  "nextSessionOrder": {
-                    "type": "integer",
-                    "minimum": 1
-                  },
-                  "totalSessions": {
-                    "type": "integer",
-                    "minimum": 1
-                  }
+                  "nextSessionOrder": { "type": "integer", "minimum": 1 },
+                  "totalSessions": { "type": "integer", "minimum": 1 }
                 },
                 "required": ["journeyId", "nextSessionOrder", "totalSessions"]
               }
@@ -2003,9 +2185,7 @@
           }
         },
         "responses": {
-          "204": {
-            "description": "세션 완료"
-          },
+          "204": { "description": "세션 완료" },
           "default": {
             "description": "에러 응답",
             "content": {
@@ -2016,18 +2196,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -2045,11 +2217,7 @@
         "description": "현재 로그인한 사용자의 프로필과 기본 통계를 조회합니다.",
         "summary": "프로필 조회",
         "tags": ["사용자"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "responses": {
           "200": {
             "description": "성공",
@@ -2058,26 +2226,12 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "activeJourneyCount": {
-                      "type": "integer"
-                    },
-                    "email": {
-                      "type": "string",
-                      "format": "email"
-                    },
-                    "emailVerified": {
-                      "type": "boolean"
-                    },
-                    "image": {
-                      "type": "string",
-                      "nullable": true
-                    },
-                    "name": {
-                      "type": "string"
-                    },
-                    "writingCount": {
-                      "type": "integer"
-                    }
+                    "activeJourneyCount": { "type": "integer" },
+                    "email": { "type": "string", "format": "email" },
+                    "emailVerified": { "type": "boolean" },
+                    "image": { "type": "string", "nullable": true },
+                    "name": { "type": "string" },
+                    "writingCount": { "type": "integer" }
                   },
                   "required": [
                     "activeJourneyCount",
@@ -2100,18 +2254,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -2129,16 +2275,10 @@
         "description": "현재 사용자의 글 목록을 최근 수정 순으로 조회합니다.",
         "summary": "글 목록 조회",
         "tags": ["글"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
-            "schema": {
-              "type": "string"
-            },
+            "schema": { "type": "string" },
             "required": false,
             "name": "cursor",
             "in": "query"
@@ -2168,28 +2308,16 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
-                          "title": {
-                            "type": "string"
-                          },
-                          "preview": {
-                            "type": "string"
-                          },
-                          "wordCount": {
-                            "type": "integer"
-                          },
+                          "id": { "type": "integer" },
+                          "title": { "type": "string" },
+                          "preview": { "type": "string" },
+                          "wordCount": { "type": "integer" },
                           "sourcePromptId": {
                             "type": "integer",
                             "nullable": true
                           },
-                          "createdAt": {
-                            "type": "string"
-                          },
-                          "updatedAt": {
-                            "type": "string"
-                          }
+                          "createdAt": { "type": "string" },
+                          "updatedAt": { "type": "string" }
                         },
                         "required": [
                           "id",
@@ -2202,10 +2330,7 @@
                         ]
                       }
                     },
-                    "nextCursor": {
-                      "type": "string",
-                      "nullable": true
-                    }
+                    "nextCursor": { "type": "string", "nullable": true }
                   },
                   "required": ["items", "nextCursor"]
                 }
@@ -2222,18 +2347,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -2249,11 +2366,7 @@
         "description": "새 글을 생성합니다. 글감을 기반으로 생성할 수 있습니다.",
         "summary": "글 생성",
         "tags": ["글"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -2261,20 +2374,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "title": {
-                    "type": "string",
-                    "maxLength": 200
-                  },
-                  "bodyJson": {
-                    "nullable": true
-                  },
-                  "bodyPlainText": {
-                    "type": "string"
-                  },
-                  "wordCount": {
-                    "type": "integer",
-                    "minimum": 0
-                  },
+                  "title": { "type": "string", "maxLength": 200 },
+                  "bodyJson": { "nullable": true },
+                  "bodyPlainText": { "type": "string" },
+                  "wordCount": { "type": "integer", "minimum": 0 },
                   "sourcePromptId": {
                     "type": "integer",
                     "minimum": 0,
@@ -2294,34 +2397,15 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "title": {
-                      "type": "string"
-                    },
-                    "preview": {
-                      "type": "string"
-                    },
-                    "wordCount": {
-                      "type": "integer"
-                    },
-                    "sourcePromptId": {
-                      "type": "integer",
-                      "nullable": true
-                    },
-                    "createdAt": {
-                      "type": "string"
-                    },
-                    "updatedAt": {
-                      "type": "string"
-                    },
-                    "bodyJson": {
-                      "nullable": true
-                    },
-                    "bodyPlainText": {
-                      "type": "string"
-                    }
+                    "id": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "preview": { "type": "string" },
+                    "wordCount": { "type": "integer" },
+                    "sourcePromptId": { "type": "integer", "nullable": true },
+                    "createdAt": { "type": "string" },
+                    "updatedAt": { "type": "string" },
+                    "bodyJson": { "nullable": true },
+                    "bodyPlainText": { "type": "string" }
                   },
                   "required": [
                     "id",
@@ -2347,18 +2431,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -2376,11 +2452,7 @@
         "description": "특정 글의 전체 내용을 조회합니다.",
         "summary": "글 상세 조회",
         "tags": ["글"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -2401,34 +2473,15 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "id": {
-                      "type": "integer"
-                    },
-                    "title": {
-                      "type": "string"
-                    },
-                    "preview": {
-                      "type": "string"
-                    },
-                    "wordCount": {
-                      "type": "integer"
-                    },
-                    "sourcePromptId": {
-                      "type": "integer",
-                      "nullable": true
-                    },
-                    "createdAt": {
-                      "type": "string"
-                    },
-                    "updatedAt": {
-                      "type": "string"
-                    },
-                    "bodyJson": {
-                      "nullable": true
-                    },
-                    "bodyPlainText": {
-                      "type": "string"
-                    }
+                    "id": { "type": "integer" },
+                    "title": { "type": "string" },
+                    "preview": { "type": "string" },
+                    "wordCount": { "type": "integer" },
+                    "sourcePromptId": { "type": "integer", "nullable": true },
+                    "createdAt": { "type": "string" },
+                    "updatedAt": { "type": "string" },
+                    "bodyJson": { "nullable": true },
+                    "bodyPlainText": { "type": "string" }
                   },
                   "required": [
                     "id",
@@ -2454,18 +2507,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -2481,11 +2526,7 @@
         "description": "글의 제목 또는 본문을 자동 저장합니다.",
         "summary": "글 자동 저장",
         "tags": ["글"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -2505,20 +2546,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "title": {
-                    "type": "string",
-                    "maxLength": 200
-                  },
-                  "bodyJson": {
-                    "nullable": true
-                  },
-                  "bodyPlainText": {
-                    "type": "string"
-                  },
-                  "wordCount": {
-                    "type": "integer",
-                    "minimum": 0
-                  }
+                  "title": { "type": "string", "maxLength": 200 },
+                  "bodyJson": { "nullable": true },
+                  "bodyPlainText": { "type": "string" },
+                  "wordCount": { "type": "integer", "minimum": 0 }
                 },
                 "additionalProperties": false
               }
@@ -2533,41 +2564,22 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "kind": {
-                      "type": "string",
-                      "enum": ["autosaved"]
-                    },
+                    "kind": { "type": "string", "enum": ["autosaved"] },
                     "writing": {
                       "type": "object",
                       "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "title": {
-                          "type": "string"
-                        },
-                        "preview": {
-                          "type": "string"
-                        },
-                        "wordCount": {
-                          "type": "integer"
-                        },
+                        "id": { "type": "integer" },
+                        "title": { "type": "string" },
+                        "preview": { "type": "string" },
+                        "wordCount": { "type": "integer" },
                         "sourcePromptId": {
                           "type": "integer",
                           "nullable": true
                         },
-                        "createdAt": {
-                          "type": "string"
-                        },
-                        "updatedAt": {
-                          "type": "string"
-                        },
-                        "bodyJson": {
-                          "nullable": true
-                        },
-                        "bodyPlainText": {
-                          "type": "string"
-                        }
+                        "createdAt": { "type": "string" },
+                        "updatedAt": { "type": "string" },
+                        "bodyJson": { "nullable": true },
+                        "bodyPlainText": { "type": "string" }
                       },
                       "required": [
                         "id",
@@ -2596,18 +2608,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -2623,11 +2627,7 @@
         "description": "특정 글을 영구적으로 삭제합니다.",
         "summary": "글 삭제",
         "tags": ["글"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -2641,9 +2641,7 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "글 삭제 완료"
-          },
+          "204": { "description": "글 삭제 완료" },
           "default": {
             "description": "에러 응답",
             "content": {
@@ -2654,18 +2652,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -2683,11 +2673,7 @@
         "description": "AI 소크라테스식 피드백을 생성합니다.",
         "summary": "AI 피드백 생성",
         "tags": ["AI"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -2727,19 +2713,13 @@
                   "properties": {
                     "strengths": {
                       "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
+                      "items": { "type": "string" }
                     },
                     "improvements": {
                       "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
+                      "items": { "type": "string" }
                     },
-                    "question": {
-                      "type": "string"
-                    }
+                    "question": { "type": "string" }
                   },
                   "required": ["strengths", "improvements", "question"]
                 }
@@ -2756,18 +2736,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -2785,11 +2757,7 @@
         "description": "두 버전의 글을 비교하여 개선 사항을 분석합니다.",
         "summary": "글 버전 비교",
         "tags": ["AI"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "parameters": [
           {
             "schema": {
@@ -2809,14 +2777,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "originalText": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "revisedText": {
-                    "type": "string",
-                    "minLength": 1
-                  }
+                  "originalText": { "type": "string", "minLength": 1 },
+                  "revisedText": { "type": "string", "minLength": 1 }
                 },
                 "required": ["originalText", "revisedText"]
               }
@@ -2833,13 +2795,9 @@
                   "properties": {
                     "improvements": {
                       "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
+                      "items": { "type": "string" }
                     },
-                    "summary": {
-                      "type": "string"
-                    }
+                    "summary": { "type": "string" }
                   },
                   "required": ["improvements", "summary"]
                 }
@@ -2856,18 +2814,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -2885,11 +2835,7 @@
         "description": "텍스트에 대한 AI 소크라테스식 피드백을 생성합니다.",
         "summary": "AI 텍스트 피드백 생성",
         "tags": ["AI"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -2897,10 +2843,7 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "text": {
-                    "type": "string",
-                    "minLength": 1
-                  },
+                  "text": { "type": "string", "minLength": 1 },
                   "level": {
                     "type": "string",
                     "enum": ["beginner", "intermediate", "advanced"],
@@ -2922,19 +2865,13 @@
                   "properties": {
                     "strengths": {
                       "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
+                      "items": { "type": "string" }
                     },
                     "improvements": {
                       "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
+                      "items": { "type": "string" }
                     },
-                    "question": {
-                      "type": "string"
-                    }
+                    "question": { "type": "string" }
                   },
                   "required": ["strengths", "improvements", "question"]
                 }
@@ -2951,18 +2888,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -2980,11 +2909,7 @@
         "description": "두 텍스트를 비교하여 개선 사항을 분석합니다.",
         "summary": "AI 텍스트 비교 분석",
         "tags": ["AI"],
-        "security": [
-          {
-            "cookieAuth": []
-          }
-        ],
+        "security": [{ "cookieAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -2992,14 +2917,8 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "originalText": {
-                    "type": "string",
-                    "minLength": 1
-                  },
-                  "revisedText": {
-                    "type": "string",
-                    "minLength": 1
-                  }
+                  "originalText": { "type": "string", "minLength": 1 },
+                  "revisedText": { "type": "string", "minLength": 1 }
                 },
                 "required": ["originalText", "revisedText"]
               }
@@ -3016,13 +2935,9 @@
                   "properties": {
                     "improvements": {
                       "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
+                      "items": { "type": "string" }
                     },
-                    "summary": {
-                      "type": "string"
-                    }
+                    "summary": { "type": "string" }
                   },
                   "required": ["improvements", "summary"]
                 }
@@ -3039,18 +2954,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }
@@ -3070,10 +2977,7 @@
         "tags": ["개발"],
         "parameters": [
           {
-            "schema": {
-              "type": "string",
-              "format": "email"
-            },
+            "schema": { "type": "string", "format": "email" },
             "required": true,
             "name": "email",
             "in": "query"
@@ -3096,22 +3000,14 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "email": {
-                      "type": "string"
-                    },
+                    "email": { "type": "string" },
                     "kind": {
                       "type": "string",
                       "enum": ["password-reset", "verification"]
                     },
-                    "sentAt": {
-                      "type": "string"
-                    },
-                    "token": {
-                      "type": "string"
-                    },
-                    "url": {
-                      "type": "string"
-                    }
+                    "sentAt": { "type": "string" },
+                    "token": { "type": "string" },
+                    "url": { "type": "string" }
                   },
                   "required": ["email", "kind", "sentAt", "token", "url"]
                 }
@@ -3128,18 +3024,10 @@
                     "error": {
                       "type": "object",
                       "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "details": {
-                          "nullable": true
-                        },
-                        "message": {
-                          "type": "string"
-                        },
-                        "requestId": {
-                          "type": "string"
-                        }
+                        "code": { "type": "string" },
+                        "details": { "nullable": true },
+                        "message": { "type": "string" },
+                        "requestId": { "type": "string" }
                       },
                       "required": ["code", "message"]
                     }

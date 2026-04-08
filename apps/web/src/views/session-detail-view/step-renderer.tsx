@@ -36,6 +36,9 @@ import { AIFeedbackStep } from "@/views/session-detail-view/steps/ai-feedback-st
 import { AIComparisonStep } from "@/views/session-detail-view/steps/ai-comparison-step"
 
 interface StepRendererProps {
+  isRetryingAi?: boolean
+  onRetryAi?: (stepOrder: number) => Promise<void>
+  sessionId: string
   step: Step
   stepState: StepState
   onStateChange: (state: StepState) => void
@@ -44,6 +47,9 @@ interface StepRendererProps {
 }
 
 export function StepRenderer({
+  isRetryingAi,
+  onRetryAi,
+  sessionId,
   step,
   stepState,
   onStateChange,
@@ -122,6 +128,10 @@ export function StepRenderer({
         <AIFeedbackStep
           content={step.content as AIFeedbackContent}
           allStepStates={allStepStates}
+          isRetryingAi={isRetryingAi}
+          onRetryAi={onRetryAi}
+          sessionId={sessionId}
+          step={step}
           steps={steps}
         />
       )
@@ -130,6 +140,10 @@ export function StepRenderer({
         <AIComparisonStep
           content={step.content as AIComparisonContent}
           allStepStates={allStepStates}
+          isRetryingAi={isRetryingAi}
+          onRetryAi={onRetryAi}
+          sessionId={sessionId}
+          step={step}
           steps={steps}
         />
       )

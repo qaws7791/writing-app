@@ -20,6 +20,7 @@ import type {
   ListPromptWritingsUseCase,
   ListPromptsUseCase,
   ListWritingsUseCase,
+  RetrySessionStepAiUseCase,
   StartSessionUseCase,
   SubmitStepUseCase,
   UnbookmarkPromptUseCase,
@@ -71,6 +72,7 @@ export type AppUseCases = {
   listPromptsUseCase: ListPromptsUseCase
   listWritingsUseCase: ListWritingsUseCase
   readLatestAuthEmail?: DevEmailInbox["readLatestMessage"]
+  retrySessionStepAiUseCase: RetrySessionStepAiUseCase
   sqliteVersion: string
   startSessionUseCase: StartSessionUseCase
   submitStepUseCase: SubmitStepUseCase

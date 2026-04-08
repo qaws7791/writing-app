@@ -1,7 +1,7 @@
 import { z } from "@hono/zod-openapi"
 import {
   sessionIdParamSchema,
-  userSessionProgressSchema,
+  sessionRuntimeSchema,
   toSessionId,
 } from "@workspace/core"
 
@@ -16,7 +16,7 @@ export default route({
   path: "/sessions/{sessionId}/start",
   inject: { startSession: StartSessionUseCase },
   request: { params: z.object({ sessionId: sessionIdParamSchema }) },
-  response: { 200: userSessionProgressSchema, default: defaultErrorResponse },
+  response: { 200: sessionRuntimeSchema, default: defaultErrorResponse },
   meta: {
     description: "세션을 시작합니다.",
     summary: "세션 시작",

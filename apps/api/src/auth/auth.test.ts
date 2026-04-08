@@ -6,12 +6,12 @@ import { cors } from "hono/cors"
 import type { OpenAPIHono } from "@hono/zod-openapi"
 
 import {
-  toWritingId,
-  toPromptId,
   toJourneyId,
+  toPromptId,
   toSessionId,
+  toStepId,
+  toWritingId,
   journeyNotFound,
-  sessionNotFound,
 } from "@workspace/core"
 
 import {
@@ -107,6 +107,39 @@ function setup(): { app: TestApp } {
     isBookmarked: false,
   }
 
+  const stubSessionRuntime = {
+    id: toSessionId(1),
+    journeyId: toJourneyId(1),
+    order: 1,
+    title: "테스트 세션",
+    description: "테스트용 세션 설명",
+    estimatedMinutes: 10,
+    steps: [
+      {
+        id: toStepId(1),
+        sessionId: toSessionId(1),
+        order: 1,
+        type: "write" as const,
+        contentJson: {
+          cta: { label: "다음", variant: "primary" as const },
+          content: {
+            type: "WRITING" as const,
+            guideline: "테스트 가이드",
+            minLength: 1,
+            prompt: "테스트 글을 작성해 주세요.",
+            recommendedLength: 10,
+            timeLimitSeconds: 0,
+          },
+          type: "WRITING" as const,
+        },
+      },
+    ],
+    currentStepOrder: 1,
+    status: "in_progress" as const,
+    stepResponsesJson: {},
+    stepAiStates: [],
+  }
+
   const app = createApp<AppEnv>({
     globalMiddleware: [
       cors({
@@ -168,7 +201,7 @@ function setup(): { app: TestApp } {
           return okAsync(stubPrompt)
         },
         getSessionDetailUseCase() {
-          return errAsync(sessionNotFound("세션을 찾을 수 없습니다."))
+          return okAsync(stubSessionRuntime)
         },
         getWritingUseCase() {
           return okAsync(stubWriting)
@@ -188,18 +221,16 @@ function setup(): { app: TestApp } {
         readLatestAuthEmail: inbox.readLatestMessage,
         sqliteVersion: "memory",
         startSessionUseCase() {
-          return okAsync({
-            userId: "user-1" as unknown as ReturnType<
-              typeof import("@workspace/core").toUserId
-            >,
-            sessionId: toSessionId(1),
-            currentStepOrder: 1,
-            status: "in_progress" as const,
-            stepResponsesJson: {},
-          })
+          return okAsync(stubSessionRuntime)
         },
         submitStepUseCase() {
-          return okAsync(undefined as void)
+          return okAsync({
+            acceptedAi: false,
+            runtime: stubSessionRuntime,
+          })
+        },
+        retrySessionStepAiUseCase() {
+          return okAsync(stubSessionRuntime)
         },
         unbookmarkPromptUseCase() {
           return okAsync(undefined as void)

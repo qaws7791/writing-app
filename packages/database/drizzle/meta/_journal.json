@@ -15,6 +15,13 @@
       "when": 1744080000000,
       "tag": "0001_add_prompt_thumbnail",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1775687789018,
+      "tag": "0002_fair_jubilee",
+      "breakpoints": true
     }
   ]
 }

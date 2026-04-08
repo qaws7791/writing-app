@@ -9,11 +9,9 @@ export function useStartSession() {
 
   return useMutation({
     mutationFn: (sessionId: number) => startSession(apiClient, sessionId),
-    onSuccess: (data) => {
+    onSuccess: (data, sessionId) => {
       void queryClient.invalidateQueries({ queryKey: ["home", "snapshot"] })
-      void queryClient.invalidateQueries({
-        queryKey: ["sessions", "detail", data.sessionId],
-      })
+      queryClient.setQueryData(["sessions", "detail", sessionId], data)
     },
   })
 }

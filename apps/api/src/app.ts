@@ -114,6 +114,7 @@ export function createUseCaseMiddleware(
     c.set("listPromptsUseCase", useCases.listPromptsUseCase)
     c.set("listWritingsUseCase", useCases.listWritingsUseCase)
     c.set("readLatestAuthEmail", useCases.readLatestAuthEmail)
+    c.set("retrySessionStepAiUseCase", useCases.retrySessionStepAiUseCase)
     c.set("sqliteVersion", useCases.sqliteVersion)
     c.set("startSessionUseCase", useCases.startSessionUseCase)
     c.set("submitStepUseCase", useCases.submitStepUseCase)

@@ -84,7 +84,9 @@ function createLoggerStub() {
   const child = vi.fn()
   const logger = {
     child,
+    error: vi.fn(),
     info: vi.fn(),
+    warn: vi.fn(),
   }
 
   child.mockReturnValue(logger)

@@ -34,6 +34,7 @@ import {
   type ListPromptWritingsUseCase,
   type ListPromptsUseCase,
   type ListWritingsUseCase,
+  type RetrySessionStepAiUseCase,
   type StartSessionUseCase,
   type SubmitStepUseCase,
   type UnbookmarkPromptUseCase,
@@ -85,6 +86,7 @@ export type ApiCradle = {
   enrollJourneyUseCase: EnrollJourneyUseCase
   startSessionUseCase: StartSessionUseCase
   submitStepUseCase: SubmitStepUseCase
+  retrySessionStepAiUseCase: RetrySessionStepAiUseCase
   completeSessionUseCase: CompleteSessionUseCase
 
   generateFeedbackUseCase: GenerateFeedbackUseCase
@@ -110,6 +112,7 @@ export type ApiCradleUseCases = Pick<
   | "listPromptWritingsUseCase"
   | "listPromptsUseCase"
   | "listWritingsUseCase"
+  | "retrySessionStepAiUseCase"
   | "sqliteVersion"
   | "startSessionUseCase"
   | "submitStepUseCase"
@@ -135,6 +138,7 @@ export function extractUseCases(cradle: ApiCradle): ApiCradleUseCases {
     listPromptWritingsUseCase,
     listPromptsUseCase,
     listWritingsUseCase,
+    retrySessionStepAiUseCase,
     sqliteVersion,
     startSessionUseCase,
     submitStepUseCase,
@@ -159,6 +163,7 @@ export function extractUseCases(cradle: ApiCradle): ApiCradleUseCases {
     listPromptWritingsUseCase,
     listPromptsUseCase,
     listWritingsUseCase,
+    retrySessionStepAiUseCase,
     sqliteVersion,
     startSessionUseCase,
     submitStepUseCase,

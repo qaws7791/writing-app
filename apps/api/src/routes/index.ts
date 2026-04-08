@@ -14,6 +14,7 @@ import enrollJourney from "./journeys/enroll-journey"
 import getSessionDetail from "./sessions/get-session"
 import startSession from "./sessions/start-session"
 import submitStep from "./sessions/submit-step"
+import retrySessionStepAi from "./sessions/retry-step-ai"
 import completeSession from "./sessions/complete-session"
 import getUserProfile from "./users/get-user-profile"
 import listWritings from "./writings/list-writings"
@@ -43,6 +44,7 @@ export const allRoutes = [
   getSessionDetail,
   startSession,
   submitStep,
+  retrySessionStepAi,
   completeSession,
   getUserProfile,
   listWritings,

@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { toUserId, toPromptId, toJourneyId } from "../../../shared/brand/index"
+import {
+  toJourneyId,
+  toPromptId,
+  toSessionId,
+  toUserId,
+} from "../../../shared/brand/index"
 import type { PromptRepository } from "../../prompts/prompt-port"
 import type { ProgressRepository } from "../../progress/progress-port"
 import type { JourneyRepository } from "../../journeys/journey-port"
@@ -50,14 +55,16 @@ describe("makeGetHomeUseCase", () => {
       getSessionProgress: vi.fn(async () => null),
       startSession: vi.fn(async () => ({
         userId,
-        sessionId: toJourneyId(
-          1
-        ) as unknown as import("../../../shared/brand/index").SessionId,
+        sessionId: toSessionId(1),
         currentStepOrder: 1,
         status: "in_progress" as const,
         stepResponsesJson: {},
       })),
       updateSessionProgress: vi.fn(async () => {}),
+      getSessionStepAiState: vi.fn(async () => null),
+      listSessionStepAiStates: vi.fn(async () => []),
+      listPendingSessionStepAiStates: vi.fn(async () => []),
+      saveSessionStepAiState: vi.fn(async () => {}),
     }
 
     const journeyRepository: JourneyRepository = {
@@ -119,6 +126,10 @@ describe("makeGetHomeUseCase", () => {
         throw new Error("not used")
       }),
       updateSessionProgress: vi.fn(async () => {}),
+      getSessionStepAiState: vi.fn(async () => null),
+      listSessionStepAiStates: vi.fn(async () => []),
+      listPendingSessionStepAiStates: vi.fn(async () => []),
+      saveSessionStepAiState: vi.fn(async () => {}),
     }
 
     const journeyRepository: JourneyRepository = {

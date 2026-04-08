@@ -198,12 +198,34 @@ export interface InputStepState {
   hasInput: boolean
 }
 
+export interface WritingFeedbackResult {
+  strengths: string[]
+  improvements: string[]
+  question: string
+}
+
+export interface RevisionComparisonResult {
+  improvements: string[]
+  summary: string
+}
+
+export interface SessionAiStepState {
+  kind: "feedback" | "comparison"
+  status: "pending" | "succeeded" | "failed"
+  sourceStepOrder: number
+  attemptCount: number
+  resultJson: WritingFeedbackResult | RevisionComparisonResult | null
+  errorMessage: string | null
+  updatedAt: string
+}
+
 export type StepState =
   | MultipleChoiceState
   | FillInTheBlankState
   | OrderingState
   | HighlightState
   | InputStepState
+  | SessionAiStepState
   | undefined
 
 // ─── Step Component Props ───────────────────────────────────────────────
@@ -220,5 +242,9 @@ export interface InteractiveStepProps<
 export interface CrossReferenceStepProps<TContent extends StepContent> {
   content: TContent
   allStepStates: Record<string, StepState>
+  isRetryingAi?: boolean
+  onRetryAi?: (stepOrder: number) => Promise<void>
+  sessionId: string
+  step: Step
   steps: Step[]
 }

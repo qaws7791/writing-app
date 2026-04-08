@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation"
 
 import { useJourneyDetail } from "@/features/journeys"
 import {
+  fetchSessionDetail,
   useCompleteSession,
+  useRetrySessionStepAi,
   useSessionDetail,
   useStartSession,
   useSubmitSessionStep,
@@ -13,16 +15,14 @@ import {
 import SessionDetailView from "@/views/session-detail-view"
 import type {
   Session,
+  SessionAiStepState,
   Step,
   StepContent,
   StepState,
   StepType,
 } from "@/views/session-detail-view/types"
 
-type SessionProgressState = {
-  currentStepOrder: number
-  stepResponsesJson: Record<string, unknown>
-}
+type SessionRuntime = Awaited<ReturnType<typeof fetchSessionDetail>>
 
 const FALLBACK_STEP_TYPE: Record<string, StepType> = {
   learn: "CONCEPT",
@@ -59,18 +59,24 @@ function mapSessionStep(step: {
 }
 
 function mapStepStates(
-  stepResponsesJson: Record<string, unknown> | undefined
+  runtime: SessionRuntime | undefined
 ): Record<string, StepState> {
-  if (!stepResponsesJson) {
+  if (!runtime) {
     return {}
   }
 
-  return Object.fromEntries(
-    Object.entries(stepResponsesJson).map(([stepId, response]) => [
+  const stepStates = Object.fromEntries(
+    Object.entries(runtime.stepResponsesJson).map(([stepId, response]) => [
       stepId,
       response as StepState,
     ])
   )
+
+  for (const aiState of runtime.stepAiStates) {
+    stepStates[String(aiState.stepOrder)] = aiState as SessionAiStepState
+  }
+
+  return stepStates
 }
 
 export default function SessionDetailClientPage({
@@ -86,11 +92,12 @@ export default function SessionDetailClientPage({
   const journeyQuery = useJourneyDetail(journeyIdNumber)
   const sessionQuery = useSessionDetail(sessionIdNumber)
   const startSession = useStartSession()
+  const retrySessionStepAi = useRetrySessionStepAi()
   const submitSessionStep = useSubmitSessionStep()
   const completeSession = useCompleteSession()
 
   const journey = journeyQuery.data
-  const session = sessionQuery.data
+  const sessionRuntime = sessionQuery.data
 
   const invalid =
     !Number.isFinite(journeyIdNumber) ||
@@ -105,22 +112,16 @@ export default function SessionDetailClientPage({
   }, [invalid, journeyId, router])
 
   useEffect(() => {
-    if (!session || startSession.data || startSession.isPending) {
+    if (!sessionRuntime || startSession.isPending || startSession.isSuccess) {
       return
     }
 
-    void startSession.mutateAsync(session.id)
-  }, [session, startSession])
+    void startSession.mutateAsync(sessionRuntime.id)
+  }, [sessionRuntime, startSession])
 
-  const sessionProgress: SessionProgressState | null = startSession.data
-    ? {
-        currentStepOrder: startSession.data.currentStepOrder,
-        stepResponsesJson: startSession.data.stepResponsesJson,
-      }
-    : null
   const initialStepStates = useMemo(
-    () => mapStepStates(sessionProgress?.stepResponsesJson),
-    [sessionProgress?.stepResponsesJson]
+    () => mapStepStates(sessionRuntime),
+    [sessionRuntime]
   )
 
   if (invalid) {
@@ -130,7 +131,7 @@ export default function SessionDetailClientPage({
   if (
     journeyQuery.isPending ||
     sessionQuery.isPending ||
-    !session ||
+    !sessionRuntime ||
     !journey
   ) {
     return (
@@ -141,7 +142,7 @@ export default function SessionDetailClientPage({
   }
 
   const journeyDetail = journey
-  const sessionDetail = session
+  const sessionDetail = sessionRuntime
   const mappedSession: Session = {
     id: String(sessionDetail.id),
     order: sessionDetail.order,
@@ -178,6 +179,13 @@ export default function SessionDetailClientPage({
     })
   }
 
+  async function handleRetryAi(stepOrder: number) {
+    await retrySessionStepAi.mutateAsync({
+      sessionId: sessionDetail.id,
+      stepOrder,
+    })
+  }
+
   async function handleCompleteSession() {
     await completeSession.mutateAsync({
       sessionId: sessionDetail.id,
@@ -189,11 +197,13 @@ export default function SessionDetailClientPage({
 
   return (
     <SessionDetailView
-      initialCurrentStepOrder={sessionProgress?.currentStepOrder}
+      initialCurrentStepOrder={sessionDetail.currentStepOrder}
       initialStepStates={initialStepStates}
+      isRetryingAi={retrySessionStepAi.isPending}
       journeyTitle={journeyDetail.title}
       onCompleteSession={handleCompleteSession}
       onExit={() => router.push(`/journeys/${journeyId}`)}
+      onRetryAi={handleRetryAi}
       onSubmitStep={handleSubmitStep}
       session={mappedSession}
     />

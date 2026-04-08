@@ -6,6 +6,7 @@ import { ArrowLeft01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
 
 import type {
   Session,
+  SessionAiStepState,
   StepState,
   StepType,
 } from "@/views/session-detail-view/types"
@@ -14,8 +15,10 @@ import { StepRenderer } from "@/views/session-detail-view/step-renderer"
 interface SessionDetailViewProps {
   initialCurrentStepOrder?: number
   initialStepStates?: Record<string, StepState>
+  isRetryingAi?: boolean
   journeyTitle: string
   onCompleteSession?: () => Promise<void>
+  onRetryAi?: (stepOrder: number) => Promise<void>
   session: Session
   onExit: () => void
   onSubmitStep?: (stepOrder: number, response: unknown) => Promise<void>
@@ -28,13 +31,26 @@ const SELECTION_TYPES: StepType[] = [
   "HIGHLIGHT",
 ]
 
+const AI_TYPES: StepType[] = ["AI_FEEDBACK", "AI_COMPARISON"]
 const INPUT_TYPES: StepType[] = ["WRITING", "SHORT_ANSWER", "REWRITING"]
+
+function isSessionAiStepState(value: StepState): value is SessionAiStepState {
+  return (
+    value !== undefined &&
+    typeof value === "object" &&
+    value !== null &&
+    "status" in value &&
+    "kind" in value
+  )
+}
 
 export default function SessionDetailView({
   initialCurrentStepOrder = 1,
   initialStepStates = {},
+  isRetryingAi = false,
   journeyTitle,
   onCompleteSession,
+  onRetryAi,
   session,
   onExit,
   onSubmitStep,
@@ -108,36 +124,48 @@ export default function SessionDetailView({
   }, [currentStepIndex])
 
   const ctaState = useMemo(() => {
-    const state = getStepState(currentStep.id) as
-      | (Record<string, unknown> & {
-          checked?: boolean
-          hasSelection?: boolean
-          hasInput?: boolean
-        })
-      | undefined
-    const isChecked = state?.checked === true
+    const state = getStepState(currentStep.id)
+    const stateFlags =
+      typeof state === "object" && state !== null
+        ? (state as {
+            checked?: boolean
+            hasSelection?: boolean
+            hasInput?: boolean
+          })
+        : undefined
+    const isChecked = stateFlags?.checked === true
 
     if (SELECTION_TYPES.includes(currentStep.type)) {
       if (isChecked) {
         return { label: "다음", enabled: true, action: handleNext }
       }
-      const hasSelection = state?.hasSelection === true
+      const hasSelection = stateFlags?.hasSelection === true
       return {
         label: currentStep.cta.label,
         enabled: hasSelection && !isSubmitting,
         action: () =>
           updateStepState(currentStep.id, {
-            ...state,
+            ...stateFlags,
             checked: true,
           } as StepState),
       }
     }
 
     if (INPUT_TYPES.includes(currentStep.type)) {
-      const hasInput = state?.hasInput === true
+      const hasInput = stateFlags?.hasInput === true
       return {
         label: currentStep.cta.label,
         enabled: hasInput && !isSubmitting,
+        action: handleNext,
+      }
+    }
+
+    if (AI_TYPES.includes(currentStep.type)) {
+      const aiState = isSessionAiStepState(state) ? state : undefined
+
+      return {
+        label: currentStep.cta.label,
+        enabled: aiState?.status === "succeeded" && !isSubmitting,
         action: handleNext,
       }
     }
@@ -194,6 +222,9 @@ export default function SessionDetailView({
       {/* Step Content */}
       <div className="flex-1 overflow-y-auto px-5 pt-6 pb-32">
         <StepRenderer
+          isRetryingAi={isRetryingAi}
+          onRetryAi={onRetryAi}
+          sessionId={session.id}
           step={currentStep}
           stepState={getStepState(currentStep.id)}
           onStateChange={(state) => updateStepState(currentStep.id, state)}

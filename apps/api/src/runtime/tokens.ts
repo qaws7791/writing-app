@@ -71,6 +71,9 @@ export const ReadLatestAuthEmail = createToken<
 export const RequestId = createToken<AppVariables["requestId"]>("requestId")
 export const RequestLogger =
   createToken<AppVariables["requestLogger"]>("requestLogger")
+export const RetrySessionStepAiUseCase = createToken<
+  AppVariables["retrySessionStepAiUseCase"]
+>("retrySessionStepAiUseCase")
 export const SqliteVersion =
   createToken<AppVariables["sqliteVersion"]>("sqliteVersion")
 export const UserId = createToken<AppVariables["userId"]>("userId")

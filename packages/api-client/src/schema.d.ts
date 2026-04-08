@@ -1116,7 +1116,7 @@ export interface paths {
     }
     /**
      * 세션 상세 조회
-     * @description 특정 세션의 상세 정보(스텝 목록 포함)를 조회합니다.
+     * @description 특정 세션의 런타임 스냅샷을 조회합니다.
      */
     get: {
       parameters: {
@@ -1155,6 +1155,34 @@ export interface paths {
                   | "feedback"
                   | "revise"
                 contentJson?: unknown
+              }[]
+              currentStepOrder: number
+              /** @enum {string} */
+              status: "locked" | "in_progress" | "completed"
+              stepResponsesJson: {
+                [key: string]: unknown
+              }
+              stepAiStates: {
+                stepOrder: number
+                /** @enum {string} */
+                kind: "feedback" | "comparison"
+                sourceStepOrder: number
+                /** @enum {string} */
+                status: "pending" | "succeeded" | "failed"
+                attemptCount: number
+                resultJson:
+                  | {
+                      strengths: string[]
+                      improvements: string[]
+                      question: string
+                    }
+                  | {
+                      improvements: string[]
+                      summary: string
+                    }
+                  | unknown
+                errorMessage: string | null
+                updatedAt: string
               }[]
             }
           }
@@ -1216,14 +1244,54 @@ export interface paths {
           }
           content: {
             "application/json": {
-              userId: string
-              sessionId: number
+              id: number
+              journeyId: number
+              order: number
+              title: string
+              description: string
+              estimatedMinutes: number
+              steps: {
+                id: number
+                sessionId: number
+                order: number
+                /** @enum {string} */
+                type:
+                  | "learn"
+                  | "read"
+                  | "guided_question"
+                  | "write"
+                  | "feedback"
+                  | "revise"
+                contentJson?: unknown
+              }[]
               currentStepOrder: number
               /** @enum {string} */
               status: "locked" | "in_progress" | "completed"
               stepResponsesJson: {
                 [key: string]: unknown
               }
+              stepAiStates: {
+                stepOrder: number
+                /** @enum {string} */
+                kind: "feedback" | "comparison"
+                sourceStepOrder: number
+                /** @enum {string} */
+                status: "pending" | "succeeded" | "failed"
+                attemptCount: number
+                resultJson:
+                  | {
+                      strengths: string[]
+                      improvements: string[]
+                      question: string
+                    }
+                  | {
+                      improvements: string[]
+                      summary: string
+                    }
+                  | unknown
+                errorMessage: string | null
+                updatedAt: string
+              }[]
             }
           }
         }
@@ -1262,7 +1330,7 @@ export interface paths {
     put?: never
     /**
      * 스텝 제출
-     * @description 스텝 응답을 제출합니다.
+     * @description 스텝 응답을 제출하고 갱신된 세션 스냅샷을 반환합니다.
      */
     post: {
       parameters: {
@@ -1283,11 +1351,227 @@ export interface paths {
       }
       responses: {
         /** @description 스텝 제출 완료 */
-        204: {
+        200: {
           headers: {
             [name: string]: unknown
           }
-          content?: never
+          content: {
+            "application/json": {
+              id: number
+              journeyId: number
+              order: number
+              title: string
+              description: string
+              estimatedMinutes: number
+              steps: {
+                id: number
+                sessionId: number
+                order: number
+                /** @enum {string} */
+                type:
+                  | "learn"
+                  | "read"
+                  | "guided_question"
+                  | "write"
+                  | "feedback"
+                  | "revise"
+                contentJson?: unknown
+              }[]
+              currentStepOrder: number
+              /** @enum {string} */
+              status: "locked" | "in_progress" | "completed"
+              stepResponsesJson: {
+                [key: string]: unknown
+              }
+              stepAiStates: {
+                stepOrder: number
+                /** @enum {string} */
+                kind: "feedback" | "comparison"
+                sourceStepOrder: number
+                /** @enum {string} */
+                status: "pending" | "succeeded" | "failed"
+                attemptCount: number
+                resultJson:
+                  | {
+                      strengths: string[]
+                      improvements: string[]
+                      question: string
+                    }
+                  | {
+                      improvements: string[]
+                      summary: string
+                    }
+                  | unknown
+                errorMessage: string | null
+                updatedAt: string
+              }[]
+            }
+          }
+        }
+        /** @description AI 처리 수락 */
+        202: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              id: number
+              journeyId: number
+              order: number
+              title: string
+              description: string
+              estimatedMinutes: number
+              steps: {
+                id: number
+                sessionId: number
+                order: number
+                /** @enum {string} */
+                type:
+                  | "learn"
+                  | "read"
+                  | "guided_question"
+                  | "write"
+                  | "feedback"
+                  | "revise"
+                contentJson?: unknown
+              }[]
+              currentStepOrder: number
+              /** @enum {string} */
+              status: "locked" | "in_progress" | "completed"
+              stepResponsesJson: {
+                [key: string]: unknown
+              }
+              stepAiStates: {
+                stepOrder: number
+                /** @enum {string} */
+                kind: "feedback" | "comparison"
+                sourceStepOrder: number
+                /** @enum {string} */
+                status: "pending" | "succeeded" | "failed"
+                attemptCount: number
+                resultJson:
+                  | {
+                      strengths: string[]
+                      improvements: string[]
+                      question: string
+                    }
+                  | {
+                      improvements: string[]
+                      summary: string
+                    }
+                  | unknown
+                errorMessage: string | null
+                updatedAt: string
+              }[]
+            }
+          }
+        }
+        /** @description 에러 응답 */
+        default: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              error: {
+                code: string
+                details?: unknown
+                message: string
+                requestId?: string
+              }
+            }
+          }
+        }
+      }
+    }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/sessions/{sessionId}/steps/{stepOrder}/retry": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * 세션 AI 재시도
+     * @description 실패한 세션 AI 작업을 다시 시작합니다.
+     */
+    post: {
+      parameters: {
+        query?: never
+        header?: never
+        path: {
+          sessionId: number
+          stepOrder: number
+        }
+        cookie?: never
+      }
+      requestBody?: never
+      responses: {
+        /** @description 처리 수락 */
+        202: {
+          headers: {
+            [name: string]: unknown
+          }
+          content: {
+            "application/json": {
+              id: number
+              journeyId: number
+              order: number
+              title: string
+              description: string
+              estimatedMinutes: number
+              steps: {
+                id: number
+                sessionId: number
+                order: number
+                /** @enum {string} */
+                type:
+                  | "learn"
+                  | "read"
+                  | "guided_question"
+                  | "write"
+                  | "feedback"
+                  | "revise"
+                contentJson?: unknown
+              }[]
+              currentStepOrder: number
+              /** @enum {string} */
+              status: "locked" | "in_progress" | "completed"
+              stepResponsesJson: {
+                [key: string]: unknown
+              }
+              stepAiStates: {
+                stepOrder: number
+                /** @enum {string} */
+                kind: "feedback" | "comparison"
+                sourceStepOrder: number
+                /** @enum {string} */
+                status: "pending" | "succeeded" | "failed"
+                attemptCount: number
+                resultJson:
+                  | {
+                      strengths: string[]
+                      improvements: string[]
+                      question: string
+                    }
+                  | {
+                      improvements: string[]
+                      summary: string
+                    }
+                  | unknown
+                errorMessage: string | null
+                updatedAt: string
+              }[]
+            }
+          }
         }
         /** @description 에러 응답 */
         default: {

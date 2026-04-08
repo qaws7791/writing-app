@@ -1,18 +1,23 @@
-import { and, eq } from "drizzle-orm"
+import { and, asc, eq } from "drizzle-orm"
 
 import type {
-  UserId,
   JourneyId,
-  SessionId,
   ProgressRepository,
-  UserJourneyProgress,
-  UserSessionProgress,
   JourneyProgressStatus,
   SessionProgressStatus,
+  SessionAiStateKind,
+  SessionAiStateStatus,
+  SessionAiResult,
+  SessionId,
+  UserId,
+  UserJourneyProgress,
+  UserSessionProgress,
+  UserSessionStepAiState,
 } from "@workspace/core"
 
 import { userJourneyProgress } from "../schema/user-journey-progress"
 import { userSessionProgress } from "../schema/user-session-progress"
+import { userSessionStepAiState } from "../schema/user-session-step-ai-state"
 import { journeySessions } from "../schema/journey-sessions"
 import type { DbClient } from "../types/index"
 
@@ -45,6 +50,34 @@ function mapSessionProgress(row: {
     currentStepOrder: row.currentStepOrder,
     status: row.status as SessionProgressStatus,
     stepResponsesJson: (row.stepResponsesJson ?? {}) as Record<string, unknown>,
+  }
+}
+
+function mapSessionStepAiState(row: {
+  userId: string
+  sessionId: number
+  stepOrder: number
+  kind: string
+  sourceStepOrder: number
+  status: string
+  attemptCount: number
+  inputJson: unknown
+  resultJson: unknown
+  errorMessage: string | null
+  updatedAt: Date
+}): UserSessionStepAiState {
+  return {
+    userId: row.userId as unknown as UserId,
+    sessionId: row.sessionId as unknown as SessionId,
+    stepOrder: row.stepOrder,
+    kind: row.kind as SessionAiStateKind,
+    sourceStepOrder: row.sourceStepOrder,
+    status: row.status as SessionAiStateStatus,
+    attemptCount: row.attemptCount,
+    inputJson: (row.inputJson ?? {}) as Record<string, unknown>,
+    resultJson: (row.resultJson ?? null) as SessionAiResult | null,
+    errorMessage: row.errorMessage,
+    updatedAt: row.updatedAt.toISOString(),
   }
 }
 
@@ -243,6 +276,113 @@ export function createProgressRepository(
             eq(userSessionProgress.sessionId, sessionId as unknown as number)
           )
         )
+    },
+
+    async getSessionStepAiState(
+      userId: UserId,
+      sessionId: SessionId,
+      stepOrder: number
+    ): Promise<UserSessionStepAiState | null> {
+      const row = await database
+        .select()
+        .from(userSessionStepAiState)
+        .where(
+          and(
+            eq(userSessionStepAiState.userId, userId as unknown as string),
+            eq(
+              userSessionStepAiState.sessionId,
+              sessionId as unknown as number
+            ),
+            eq(userSessionStepAiState.stepOrder, stepOrder)
+          )
+        )
+        .limit(1)
+        .then((rows) => rows[0] ?? null)
+
+      if (!row) return null
+      return mapSessionStepAiState(row)
+    },
+
+    async listSessionStepAiStates(
+      userId: UserId,
+      sessionId: SessionId
+    ): Promise<UserSessionStepAiState[]> {
+      const rows = await database
+        .select()
+        .from(userSessionStepAiState)
+        .where(
+          and(
+            eq(userSessionStepAiState.userId, userId as unknown as string),
+            eq(userSessionStepAiState.sessionId, sessionId as unknown as number)
+          )
+        )
+        .orderBy(asc(userSessionStepAiState.stepOrder))
+
+      return rows.map(mapSessionStepAiState)
+    },
+
+    async listPendingSessionStepAiStates(
+      limit: number
+    ): Promise<UserSessionStepAiState[]> {
+      const rows = await database
+        .select()
+        .from(userSessionStepAiState)
+        .where(eq(userSessionStepAiState.status, "pending"))
+        .orderBy(asc(userSessionStepAiState.updatedAt))
+        .limit(limit)
+
+      return rows.map(mapSessionStepAiState)
+    },
+
+    async saveSessionStepAiState(
+      userId: UserId,
+      sessionId: SessionId,
+      stepOrder: number,
+      state: {
+        kind: SessionAiStateKind
+        sourceStepOrder: number
+        status: SessionAiStateStatus
+        attemptCount: number
+        inputJson: Record<string, unknown>
+        resultJson: Record<string, unknown> | null
+        errorMessage: string | null
+      }
+    ): Promise<void> {
+      const now = new Date()
+
+      await database
+        .insert(userSessionStepAiState)
+        .values({
+          userId: userId as unknown as string,
+          sessionId: sessionId as unknown as number,
+          stepOrder,
+          kind: state.kind,
+          sourceStepOrder: state.sourceStepOrder,
+          status: state.status,
+          attemptCount: state.attemptCount,
+          inputJson: state.inputJson,
+          resultJson: state.resultJson,
+          errorMessage: state.errorMessage,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .onConflictDoUpdate({
+          target: [
+            userSessionStepAiState.userId,
+            userSessionStepAiState.sessionId,
+            userSessionStepAiState.stepOrder,
+          ],
+          set: {
+            kind: state.kind,
+            sourceStepOrder: state.sourceStepOrder,
+            status: state.status,
+            attemptCount: state.attemptCount,
+            inputJson: state.inputJson,
+            resultJson: state.resultJson,
+            errorMessage: state.errorMessage,
+            updatedAt: now,
+          },
+        })
     },
   }
 }

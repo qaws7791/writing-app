@@ -1,6 +1,7 @@
 import { asFunction, asValue, type AwilixContainer } from "awilix"
 import {
   makeAutosaveWritingUseCase,
+  makeGetSessionRuntimeUseCase,
   makeCreateWritingUseCase,
   makeDeleteWritingUseCase,
   makeGetWritingUseCase,
@@ -13,10 +14,10 @@ import {
   makeGetHomeUseCase,
   makeListJourneysUseCase,
   makeGetJourneyUseCase,
-  makeGetSessionDetailUseCase,
   makeEnrollJourneyUseCase,
   makeStartSessionUseCase,
   makeSubmitStepUseCase,
+  makeRetrySessionStepAiUseCase,
   makeCompleteSessionUseCase,
   makeGenerateFeedbackUseCase,
   makeCompareRevisionsUseCase,
@@ -49,12 +50,15 @@ export type GetHomeUseCase = ReturnType<typeof makeGetHomeUseCase>
 export type ListJourneysUseCase = ReturnType<typeof makeListJourneysUseCase>
 export type GetJourneyUseCase = ReturnType<typeof makeGetJourneyUseCase>
 export type GetSessionDetailUseCase = ReturnType<
-  typeof makeGetSessionDetailUseCase
+  typeof makeGetSessionRuntimeUseCase
 >
 
 export type EnrollJourneyUseCase = ReturnType<typeof makeEnrollJourneyUseCase>
 export type StartSessionUseCase = ReturnType<typeof makeStartSessionUseCase>
 export type SubmitStepUseCase = ReturnType<typeof makeSubmitStepUseCase>
+export type RetrySessionStepAiUseCase = ReturnType<
+  typeof makeRetrySessionStepAiUseCase
+>
 export type CompleteSessionUseCase = ReturnType<
   typeof makeCompleteSessionUseCase
 >
@@ -141,8 +145,12 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
       makeGetJourneyUseCase({ journeyRepository })
     ).singleton(),
 
-    getSessionDetailUseCase: asFunction(({ journeyRepository }: ApiCradle) =>
-      makeGetSessionDetailUseCase({ journeyRepository })
+    getSessionDetailUseCase: asFunction(
+      ({ journeyRepository, progressRepository }: ApiCradle) =>
+        makeGetSessionRuntimeUseCase({
+          journeyRepository,
+          progressRepository,
+        })
     ).singleton(),
 
     // --- Progress ---
@@ -151,12 +159,28 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
       makeEnrollJourneyUseCase({ progressRepository })
     ).singleton(),
 
-    startSessionUseCase: asFunction(({ progressRepository }: ApiCradle) =>
-      makeStartSessionUseCase({ progressRepository })
+    startSessionUseCase: asFunction(
+      ({ progressRepository, journeyRepository }: ApiCradle) =>
+        makeStartSessionUseCase({
+          progressRepository,
+          journeyRepository,
+        })
     ).singleton(),
 
-    submitStepUseCase: asFunction(({ progressRepository }: ApiCradle) =>
-      makeSubmitStepUseCase({ progressRepository })
+    submitStepUseCase: asFunction(
+      ({ progressRepository, journeyRepository }: ApiCradle) =>
+        makeSubmitStepUseCase({
+          progressRepository,
+          journeyRepository,
+        })
+    ).singleton(),
+
+    retrySessionStepAiUseCase: asFunction(
+      ({ progressRepository, journeyRepository }: ApiCradle) =>
+        makeRetrySessionStepAiUseCase({
+          progressRepository,
+          journeyRepository,
+        })
     ).singleton(),
 
     completeSessionUseCase: asFunction(({ progressRepository }: ApiCradle) =>

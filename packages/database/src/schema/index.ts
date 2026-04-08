@@ -11,6 +11,11 @@ export {
   userSessionProgress,
   sessionProgressStatuses,
 } from "./user-session-progress"
+export {
+  userSessionStepAiState,
+  sessionStepAiStateKinds,
+  sessionStepAiStateStatuses,
+} from "./user-session-step-ai-state"
 export { writings, writingStatuses } from "./writings"
 export { writingPrompts, promptTypes } from "./writing-prompts"
 export { writingVersions } from "./writing-versions"
@@ -22,6 +27,7 @@ import { savedPrompts } from "./saved-prompts"
 import { steps } from "./steps"
 import { userJourneyProgress } from "./user-journey-progress"
 import { userSessionProgress } from "./user-session-progress"
+import { userSessionStepAiState } from "./user-session-step-ai-state"
 import { writings } from "./writings"
 import { writingPrompts } from "./writing-prompts"
 import { writingVersions } from "./writing-versions"
@@ -36,6 +42,7 @@ export const schema = {
   user,
   userJourneyProgress,
   userSessionProgress,
+  userSessionStepAiState,
   verification,
   writings,
   writingPrompts,

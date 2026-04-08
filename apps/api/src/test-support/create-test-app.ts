@@ -1,10 +1,17 @@
-import { toUserId, toWritingId, toPromptId } from "@workspace/core"
+import {
+  toJourneyId,
+  toPromptId,
+  toSessionId,
+  toStepId,
+  toUserId,
+  toWritingId,
+} from "@workspace/core"
 import {
   writingNotFound,
   writingForbidden,
 } from "@workspace/core/modules/writings"
 import { promptNotFound } from "@workspace/core/modules/prompts"
-import { journeyNotFound, sessionNotFound } from "@workspace/core"
+import { journeyNotFound } from "@workspace/core"
 import { okAsync, errAsync } from "neverthrow"
 import { cors } from "hono/cors"
 
@@ -96,6 +103,56 @@ function createTestSession(userId: string) {
       image: null,
       name: "테스트 사용자",
     },
+  }
+}
+
+function createStubSessionRuntime(userId: string, sessionId: number) {
+  return {
+    id: toSessionId(sessionId),
+    journeyId: toJourneyId(1),
+    order: 1,
+    title: "테스트 세션",
+    description: "테스트용 세션 설명",
+    estimatedMinutes: 10,
+    steps: [
+      {
+        id: toStepId(1),
+        sessionId: toSessionId(sessionId),
+        order: 1,
+        type: "write" as const,
+        contentJson: {
+          cta: { label: "다음", variant: "primary" as const },
+          content: {
+            type: "WRITING" as const,
+            guideline: "테스트 가이드",
+            minLength: 1,
+            prompt: "테스트 글을 작성해 주세요.",
+            recommendedLength: 10,
+            timeLimitSeconds: 0,
+          },
+          type: "WRITING" as const,
+        },
+      },
+      {
+        id: toStepId(2),
+        sessionId: toSessionId(sessionId),
+        order: 2,
+        type: "feedback" as const,
+        contentJson: {
+          cta: { label: "다음", variant: "primary" as const },
+          content: {
+            type: "AI_FEEDBACK" as const,
+            loadingMessage: "AI가 분석 중입니다.",
+            targetStepId: "1",
+          },
+          type: "AI_FEEDBACK" as const,
+        },
+      },
+    ],
+    currentStepOrder: 1,
+    status: "in_progress" as const,
+    stepResponsesJson: {},
+    stepAiStates: [],
   }
 }
 
@@ -348,9 +405,9 @@ export function createTestApi(input?: {
             journeyNotFound("여정을 찾을 수 없습니다.", journeyId)
           )
         },
-        getSessionDetailUseCase(sessionId) {
-          return errAsync(
-            sessionNotFound("세션을 찾을 수 없습니다.", sessionId)
+        getSessionDetailUseCase(_userId, sessionId) {
+          return okAsync(
+            createStubSessionRuntime("dev-user", Number(sessionId))
           )
         },
         enrollJourneyUseCase(userId, journeyId) {
@@ -363,16 +420,23 @@ export function createTestApi(input?: {
           })
         },
         startSessionUseCase(userId, sessionId) {
+          return okAsync(
+            createStubSessionRuntime(String(userId), Number(sessionId))
+          )
+        },
+        submitStepUseCase(userId, sessionId, _input) {
           return okAsync({
-            userId: toUserId(String(userId)),
-            sessionId,
-            currentStepOrder: 1,
-            status: "in_progress" as const,
-            stepResponsesJson: {},
+            acceptedAi: false,
+            runtime: createStubSessionRuntime(
+              String(userId),
+              Number(sessionId)
+            ),
           })
         },
-        submitStepUseCase() {
-          return okAsync(undefined as void)
+        retrySessionStepAiUseCase(userId, sessionId, _input) {
+          return okAsync(
+            createStubSessionRuntime(String(userId), Number(sessionId))
+          )
         },
         completeSessionUseCase() {
           return okAsync(undefined as void)
