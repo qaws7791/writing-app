@@ -5,11 +5,18 @@ import {
   Search01Icon,
   MoreVerticalIcon,
   QuillWrite01Icon,
+  Delete01Icon,
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef } from "react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu"
 
-import { useWritings } from "@/features/writings"
+import { useWritings, useDeleteWriting } from "@/features/writings"
 
 interface WritingSummary {
   id: number
@@ -19,7 +26,13 @@ interface WritingSummary {
   wordCount: number
 }
 
-function WritingCard({ writing }: { writing: WritingSummary }) {
+function WritingCard({
+  writing,
+  onDelete,
+}: {
+  writing: WritingSummary
+  onDelete: (id: number) => void
+}) {
   const router = useRouter()
 
   return (
@@ -36,19 +49,44 @@ function WritingCard({ writing }: { writing: WritingSummary }) {
         <span className="text-xs font-medium tracking-[1px] text-on-surface-low uppercase">
           {writing.date}
         </span>
-        <button
-          type="button"
-          aria-label="더보기"
-          className="flex items-center justify-center text-on-surface-low"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <HugeiconsIcon
-            icon={MoreVerticalIcon}
-            size={16}
-            color="currentColor"
-            strokeWidth={2}
-          />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <button
+                type="button"
+                aria-label="더보기"
+                className="flex h-10 w-10 items-center justify-center text-on-surface-low"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <HugeiconsIcon
+                  icon={MoreVerticalIcon}
+                  size={16}
+                  color="currentColor"
+                  strokeWidth={2}
+                />
+              </button>
+            }
+          ></DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="bottom"
+            align="end"
+            className="min-w-32.5 rounded-2xl bg-surface-container-low px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <DropdownMenuItem
+              className="gap-3 px-3 py-3 text-sm font-medium text-on-surface-low"
+              onClick={() => onDelete(writing.id)}
+            >
+              <HugeiconsIcon
+                icon={Delete01Icon}
+                size={20}
+                color="currentColor"
+                strokeWidth={1.5}
+              />
+              삭제
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <h2 className="text-2xl font-bold tracking-[-0.6px] text-on-surface">
         {writing.title}
@@ -71,6 +109,7 @@ function WritingCard({ writing }: { writing: WritingSummary }) {
 export default function WritingsListView() {
   const router = useRouter()
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } = useWritings()
+  const deleteWriting = useDeleteWriting()
   const sentinelRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -131,7 +170,11 @@ export default function WritingsListView() {
       {/* Writing Cards */}
       <div className="flex flex-col gap-5 px-2 pt-5 pb-8">
         {writings.map((writing) => (
-          <WritingCard key={writing.id} writing={writing} />
+          <WritingCard
+            key={writing.id}
+            writing={writing}
+            onDelete={(id) => deleteWriting.mutate(id)}
+          />
         ))}
         {isFetchingNextPage && (
           <div className="flex justify-center py-4">

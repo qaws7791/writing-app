@@ -22,13 +22,21 @@ import {
   ArrowLeft01Icon,
   MoreVerticalIcon,
   Tick02Icon,
+  Delete01Icon,
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 import { Drawer, DrawerContent } from "@workspace/ui/components/drawer"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/dropdown-menu"
 
 import { usePromptDetail } from "@/features/prompts/hooks/use-prompt-detail"
 import {
   useCreateWriting,
+  useDeleteWriting,
   useSaveWriting,
   useWritingDetail,
 } from "@/features/writings"
@@ -111,6 +119,7 @@ export default function WritingEditorView({
   const writingQuery = useWritingDetail(writingIdNumber)
   const createWriting = useCreateWriting()
   const saveWriting = useSaveWriting()
+  const deleteWriting = useDeleteWriting()
   const isSaving = createWriting.isPending || saveWriting.isPending
 
   const isPromptEnabled = promptId != null
@@ -197,6 +206,12 @@ export default function WritingEditorView({
     }
   }, [performSave, router])
 
+  const handleDelete = useCallback(async () => {
+    if (!writingIdNumber) return
+    await deleteWriting.mutateAsync(writingIdNumber)
+    router.replace("/library")
+  }, [writingIdNumber, deleteWriting, router])
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const el = e.target
     setTitle(el.value)
@@ -228,18 +243,42 @@ export default function WritingEditorView({
         </span>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="더보기"
-            className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-          >
-            <HugeiconsIcon
-              icon={MoreVerticalIcon}
-              size={24}
-              color="currentColor"
-              strokeWidth={1.5}
-            />
-          </button>
+          {writingIdNumber && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="더보기"
+                  className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
+                >
+                  <HugeiconsIcon
+                    icon={MoreVerticalIcon}
+                    size={24}
+                    color="currentColor"
+                    strokeWidth={1.5}
+                  />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="bottom"
+                align="end"
+                className="min-w-32.5 rounded-2xl bg-surface-container-low px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
+              >
+                <DropdownMenuItem
+                  className="gap-3 px-3 py-3 text-sm font-medium text-on-surface-low"
+                  onClick={handleDelete}
+                >
+                  <HugeiconsIcon
+                    icon={Delete01Icon}
+                    size={20}
+                    color="currentColor"
+                    strokeWidth={1.5}
+                  />
+                  삭제
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <button
             type="button"
             aria-label="저장"

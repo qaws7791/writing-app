@@ -43,6 +43,13 @@ export async function fetchWritingDetail(client: ApiClient, writingId: number) {
   return data
 }
 
+export async function deleteWriting(client: ApiClient, writingId: number) {
+  const { error } = await client.DELETE("/writings/{writingId}", {
+    params: { path: { writingId } },
+  })
+  if (error) throw error
+}
+
 export async function fetchWritings(
   client: ApiClient,
   params: { cursor?: string; limit?: number } = {}
