@@ -17,7 +17,6 @@ interface SessionDetailViewProps {
   initialStepStates?: Record<string, StepState>
   isRetryingAi?: boolean
   journeyTitle: string
-  onCompleteSession?: () => Promise<void>
   onRetryAi?: (stepOrder: number) => Promise<void>
   session: Session
   onExit: () => void
@@ -49,7 +48,6 @@ export default function SessionDetailView({
   initialStepStates = {},
   isRetryingAi = false,
   journeyTitle,
-  onCompleteSession,
   onRetryAi,
   session,
   onExit,
@@ -100,7 +98,6 @@ export default function SessionDetailView({
         return
       }
 
-      await onCompleteSession?.()
       onExit()
     } finally {
       setIsSubmitting(false)
@@ -110,7 +107,6 @@ export default function SessionDetailView({
     currentStep.order,
     currentStepIndex,
     isSubmitting,
-    onCompleteSession,
     onExit,
     onSubmitStep,
     stepStates,

@@ -102,6 +102,9 @@ export function makeSubmitStepUseCase(deps: SubmitStepDeps) {
         const nextStep = session.steps.find(
           (step) => step.order === input.stepOrder + 1
         )
+        const isNextStepLast =
+          nextStep !== undefined &&
+          !session.steps.some((s) => s.order > nextStep.order)
         const shouldTriggerAi =
           (currentStep.type === "write" || currentStep.type === "revise") &&
           nextStep?.type === "feedback"
@@ -162,6 +165,40 @@ export function makeSubmitStepUseCase(deps: SubmitStepDeps) {
                 inputJson: aiInput,
                 resultJson: null,
                 errorMessage: null,
+              }
+            ),
+          ])
+        } else if (isNextStepLast) {
+          const journey = await deps.journeyRepository.getById(
+            session.journeyId
+          )
+          if (!journey) {
+            throw createValidationError(
+              "여정 정보를 찾을 수 없습니다.",
+              "session"
+            )
+          }
+          const nextSessionOrder = session.order + 1
+          const completionRate = Math.min(
+            1,
+            nextSessionOrder / journey.sessionCount
+          )
+          await Promise.all([
+            deps.progressRepository.updateSessionProgress(userId, sessionId, {
+              currentStepOrder: input.stepOrder + 1,
+              stepResponsesJson: updated,
+              status: "completed",
+            }),
+            deps.progressRepository.updateJourneyProgress(
+              userId,
+              session.journeyId,
+              {
+                currentSessionOrder: nextSessionOrder,
+                completionRate,
+                status:
+                  nextSessionOrder > journey.sessionCount
+                    ? "completed"
+                    : "in_progress",
               }
             ),
           ])

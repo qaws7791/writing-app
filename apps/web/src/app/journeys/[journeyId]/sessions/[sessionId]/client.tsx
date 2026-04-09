@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation"
 import { useJourneyDetail } from "@/features/journeys"
 import {
   fetchSessionDetail,
-  useCompleteSession,
   useRetrySessionStepAi,
   useSessionDetail,
   useStartSession,
@@ -94,7 +93,6 @@ export default function SessionDetailClientPage({
   const startSession = useStartSession()
   const retrySessionStepAi = useRetrySessionStepAi()
   const submitSessionStep = useSubmitSessionStep()
-  const completeSession = useCompleteSession()
 
   const journey = journeyQuery.data
   const sessionRuntime = sessionQuery.data
@@ -198,22 +196,12 @@ export default function SessionDetailClientPage({
     })
   }
 
-  async function handleCompleteSession() {
-    await completeSession.mutateAsync({
-      sessionId: sessionDetail.id,
-      journeyId: journeyDetail.id,
-      nextSessionOrder: sessionDetail.order + 1,
-      totalSessions: journeyDetail.sessions.length,
-    })
-  }
-
   return (
     <SessionDetailView
       initialCurrentStepOrder={sessionDetail.currentStepOrder}
       initialStepStates={initialStepStates}
       isRetryingAi={retrySessionStepAi.isPending}
       journeyTitle={journeyDetail.title}
-      onCompleteSession={handleCompleteSession}
       onExit={() => router.push(`/journeys/${journeyId}`)}
       onRetryAi={handleRetryAi}
       onSubmitStep={handleSubmitStep}
