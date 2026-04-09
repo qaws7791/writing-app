@@ -1,10 +1,11 @@
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { apiClient } from "@/foundation/api/client"
 
 import { saveWriting } from "../repositories/writing.repository"
 
 export function useSaveWriting() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: ({
       writingId,
@@ -16,5 +17,8 @@ export function useSaveWriting() {
       bodyPlainText?: string
       wordCount?: number
     }) => saveWriting(apiClient, writingId, input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["writings", "list"] })
+    },
   })
 }
