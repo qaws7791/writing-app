@@ -340,6 +340,7 @@ export function createTestApi(input?: {
                 }
               : null,
             activeJourneys: [],
+            completedJourneys: [],
           })
         },
         listPromptWritingsUseCase(_promptId, _userId, _params) {

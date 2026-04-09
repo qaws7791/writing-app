@@ -535,9 +535,38 @@
                           "currentSessionOrder"
                         ]
                       }
+                    },
+                    "completedJourneys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "journeyId": { "type": "integer" },
+                          "title": { "type": "string" },
+                          "description": { "type": "string" },
+                          "thumbnailUrl": {
+                            "type": "string",
+                            "nullable": true
+                          },
+                          "completionRate": { "type": "number" },
+                          "currentSessionOrder": { "type": "integer" }
+                        },
+                        "required": [
+                          "journeyId",
+                          "title",
+                          "description",
+                          "thumbnailUrl",
+                          "completionRate",
+                          "currentSessionOrder"
+                        ]
+                      }
                     }
                   },
-                  "required": ["dailyPrompt", "activeJourneys"]
+                  "required": [
+                    "dailyPrompt",
+                    "activeJourneys",
+                    "completedJourneys"
+                  ]
                 }
               }
             }

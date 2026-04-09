@@ -505,6 +505,14 @@ export interface paths {
                 completionRate: number
                 currentSessionOrder: number
               }[]
+              completedJourneys: {
+                journeyId: number
+                title: string
+                description: string
+                thumbnailUrl: string | null
+                completionRate: number
+                currentSessionOrder: number
+              }[]
             }
           }
         }

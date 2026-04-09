@@ -24,29 +24,36 @@ export function makeGetHomeUseCase(deps: GetHomeDeps) {
       Promise.all([
         deps.promptRepository.getDailyPrompt(userId, getKstDateKey()),
         deps.progressRepository.listActiveJourneys(userId),
-      ]).then(async ([dailyPrompt, activeProgresses]) => {
-        const journeyDetails = await Promise.all(
-          activeProgresses.map((p) =>
-            deps.journeyRepository.getById(p.journeyId)
+        deps.progressRepository.listCompletedJourneys(userId),
+      ]).then(async ([dailyPrompt, activeProgresses, completedProgresses]) => {
+        const toSummaries = async (
+          progresses: typeof activeProgresses
+        ): Promise<ActiveJourneySummary[]> => {
+          const journeyDetails = await Promise.all(
+            progresses.map((p) => deps.journeyRepository.getById(p.journeyId))
           )
-        )
+          return progresses
+            .map((p, i) => {
+              const journey = journeyDetails[i]
+              if (!journey) return null
+              return {
+                journeyId: p.journeyId,
+                title: journey.title,
+                description: journey.description,
+                thumbnailUrl: journey.thumbnailUrl,
+                completionRate: p.completionRate,
+                currentSessionOrder: p.currentSessionOrder,
+              }
+            })
+            .filter((j): j is ActiveJourneySummary => j !== null)
+        }
 
-        const activeJourneys: ActiveJourneySummary[] = activeProgresses
-          .map((p, i) => {
-            const journey = journeyDetails[i]
-            if (!journey) return null
-            return {
-              journeyId: p.journeyId,
-              title: journey.title,
-              description: journey.description,
-              thumbnailUrl: journey.thumbnailUrl,
-              completionRate: p.completionRate,
-              currentSessionOrder: p.currentSessionOrder,
-            }
-          })
-          .filter((j): j is ActiveJourneySummary => j !== null)
+        const [activeJourneys, completedJourneys] = await Promise.all([
+          toSummaries(activeProgresses),
+          toSummaries(completedProgresses),
+        ])
 
-        return { dailyPrompt, activeJourneys }
+        return { dailyPrompt, activeJourneys, completedJourneys }
       })
     )
 }

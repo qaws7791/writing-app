@@ -192,7 +192,11 @@ function setup(): { app: TestApp } {
           return okAsync({ strengths: [], improvements: [], question: "" })
         },
         getHomeUseCase() {
-          return okAsync({ dailyPrompt: null, activeJourneys: [] })
+          return okAsync({
+            dailyPrompt: null,
+            activeJourneys: [],
+            completedJourneys: [],
+          })
         },
         getJourneyUseCase() {
           return errAsync(journeyNotFound("여정을 찾을 수 없습니다."))

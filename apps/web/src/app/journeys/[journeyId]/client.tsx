@@ -58,9 +58,9 @@ export default function JourneyDetailClientPage({
 
   const journeyDetail = journey
 
-  const activeJourney = home?.activeJourneys.find(
-    (item) => item.journeyId === journeyDetail.id
-  )
+  const activeJourney =
+    home?.activeJourneys.find((item) => item.journeyId === journeyDetail.id) ??
+    home?.completedJourneys.find((item) => item.journeyId === journeyDetail.id)
   const currentSessionOrder = activeJourney?.currentSessionOrder ?? 1
   const completedCount = activeJourney
     ? Math.max(0, currentSessionOrder - 1)
