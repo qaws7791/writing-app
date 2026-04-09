@@ -25,3 +25,12 @@ export type {
   CompleteSessionInput,
 } from "./complete-session"
 export { makeCompleteSessionUseCase } from "./complete-session"
+
+export type {
+  CompletedJourneySummary,
+  ListCompletedJourneysDeps,
+} from "./list-completed-journeys"
+export { makeListCompletedJourneysUseCase } from "./list-completed-journeys"
+
+export type { ListUserJourneysDeps } from "./list-user-journeys"
+export { makeListUserJourneysUseCase } from "./list-user-journeys"

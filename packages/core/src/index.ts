@@ -166,6 +166,9 @@ export type {
   RetrySessionStepAiInput,
   CompleteSessionDeps,
   CompleteSessionInput,
+  CompletedJourneySummary,
+  ListCompletedJourneysDeps,
+  ListUserJourneysDeps,
 } from "./modules/progress/index"
 export {
   journeyProgressStatusSchema,
@@ -184,6 +187,8 @@ export {
   makeSubmitStepUseCase,
   makeRetrySessionStepAiUseCase,
   makeCompleteSessionUseCase,
+  makeListCompletedJourneysUseCase,
+  makeListUserJourneysUseCase,
 } from "./modules/progress/index"
 
 // Module: AI Feedback

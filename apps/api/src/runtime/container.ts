@@ -30,7 +30,9 @@ import {
   type GetPromptUseCase,
   type GetSessionDetailUseCase,
   type GetWritingUseCase,
+  type ListCompletedJourneysUseCase,
   type ListJourneysUseCase,
+  type ListUserJourneysUseCase,
   type ListPromptWritingsUseCase,
   type ListPromptsUseCase,
   type ListWritingsUseCase,
@@ -69,6 +71,7 @@ export type ApiCradle = {
   createWritingUseCase: CreateWritingUseCase
   deleteWritingUseCase: DeleteWritingUseCase
   getWritingUseCase: GetWritingUseCase
+  listCompletedJourneysUseCase: ListCompletedJourneysUseCase
   listWritingsUseCase: ListWritingsUseCase
 
   getPromptUseCase: GetPromptUseCase
@@ -80,6 +83,7 @@ export type ApiCradle = {
   getHomeUseCase: GetHomeUseCase
 
   listJourneysUseCase: ListJourneysUseCase
+  listUserJourneysUseCase: ListUserJourneysUseCase
   getJourneyUseCase: GetJourneyUseCase
   getSessionDetailUseCase: GetSessionDetailUseCase
 
@@ -108,7 +112,9 @@ export type ApiCradleUseCases = Pick<
   | "getPromptUseCase"
   | "getSessionDetailUseCase"
   | "getWritingUseCase"
+  | "listCompletedJourneysUseCase"
   | "listJourneysUseCase"
+  | "listUserJourneysUseCase"
   | "listPromptWritingsUseCase"
   | "listPromptsUseCase"
   | "listWritingsUseCase"
@@ -134,7 +140,9 @@ export function extractUseCases(cradle: ApiCradle): ApiCradleUseCases {
     getPromptUseCase,
     getSessionDetailUseCase,
     getWritingUseCase,
+    listCompletedJourneysUseCase,
     listJourneysUseCase,
+    listUserJourneysUseCase,
     listPromptWritingsUseCase,
     listPromptsUseCase,
     listWritingsUseCase,
@@ -159,7 +167,9 @@ export function extractUseCases(cradle: ApiCradle): ApiCradleUseCases {
     getPromptUseCase,
     getSessionDetailUseCase,
     getWritingUseCase,
+    listCompletedJourneysUseCase,
     listJourneysUseCase,
+    listUserJourneysUseCase,
     listPromptWritingsUseCase,
     listPromptsUseCase,
     listWritingsUseCase,

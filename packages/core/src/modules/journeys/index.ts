@@ -12,6 +12,7 @@ export type {
 // Schemas
 export {
   journeyCategorySchema,
+  journeyStatusSchema,
   stepTypeSchema,
   journeyIdParamSchema,
   sessionIdParamSchema,

@@ -110,6 +110,8 @@ export function createUseCaseMiddleware(
     c.set("getSessionDetailUseCase", useCases.getSessionDetailUseCase)
     c.set("getWritingUseCase", useCases.getWritingUseCase)
     c.set("listJourneysUseCase", useCases.listJourneysUseCase)
+    c.set("listCompletedJourneysUseCase", useCases.listCompletedJourneysUseCase)
+    c.set("listUserJourneysUseCase", useCases.listUserJourneysUseCase)
     c.set("listPromptWritingsUseCase", useCases.listPromptWritingsUseCase)
     c.set("listPromptsUseCase", useCases.listPromptsUseCase)
     c.set("listWritingsUseCase", useCases.listWritingsUseCase)

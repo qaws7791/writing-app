@@ -17,6 +17,8 @@ export interface ProgressRepository {
 
   listActiveJourneys(userId: UserId): Promise<UserJourneyProgress[]>
 
+  listCompletedJourneys(userId: UserId): Promise<UserJourneyProgress[]>
+
   enrollJourney(
     userId: UserId,
     journeyId: JourneyId

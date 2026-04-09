@@ -66,6 +66,9 @@ export const journeyListResponseSchema = z.object({
   items: z.array(journeySummarySchema),
 })
 
+export const journeyStatusSchema = z.enum(["all", "in_progress", "completed"])
+
 export const journeyFiltersQuerySchema = z.object({
   category: journeyCategorySchema.optional(),
+  status: journeyStatusSchema.optional(),
 })

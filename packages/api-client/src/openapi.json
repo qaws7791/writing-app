@@ -2227,6 +2227,24 @@
                   "type": "object",
                   "properties": {
                     "activeJourneyCount": { "type": "integer" },
+                    "completedJourneys": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "journeyId": { "type": "integer" },
+                          "title": { "type": "string" },
+                          "description": { "type": "string" },
+                          "thumbnailUrl": { "type": "string", "nullable": true }
+                        },
+                        "required": [
+                          "journeyId",
+                          "title",
+                          "description",
+                          "thumbnailUrl"
+                        ]
+                      }
+                    },
                     "email": { "type": "string", "format": "email" },
                     "emailVerified": { "type": "boolean" },
                     "image": { "type": "string", "nullable": true },
@@ -2235,6 +2253,7 @@
                   },
                   "required": [
                     "activeJourneyCount",
+                    "completedJourneys",
                     "email",
                     "emailVerified",
                     "name",

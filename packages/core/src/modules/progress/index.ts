@@ -41,6 +41,9 @@ export type {
   RetrySessionStepAiInput,
   CompleteSessionDeps,
   CompleteSessionInput,
+  CompletedJourneySummary,
+  ListCompletedJourneysDeps,
+  ListUserJourneysDeps,
 } from "./use-cases/index"
 export {
   makeGetSessionRuntimeUseCase,
@@ -49,4 +52,6 @@ export {
   makeSubmitStepUseCase,
   makeRetrySessionStepAiUseCase,
   makeCompleteSessionUseCase,
+  makeListCompletedJourneysUseCase,
+  makeListUserJourneysUseCase,
 } from "./use-cases/index"

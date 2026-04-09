@@ -400,6 +400,12 @@ export function createTestApi(input?: {
         listJourneysUseCase() {
           return okAsync([])
         },
+        listCompletedJourneysUseCase() {
+          return okAsync([])
+        },
+        listUserJourneysUseCase() {
+          return okAsync([])
+        },
         getJourneyUseCase(journeyId) {
           return errAsync(
             journeyNotFound("여정을 찾을 수 없습니다.", journeyId)

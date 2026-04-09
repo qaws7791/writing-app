@@ -119,6 +119,22 @@ export function createProgressRepository(
       return rows.map(mapJourneyProgress)
     },
 
+    async listCompletedJourneys(
+      userId: UserId
+    ): Promise<UserJourneyProgress[]> {
+      const rows = await database
+        .select()
+        .from(userJourneyProgress)
+        .where(
+          and(
+            eq(userJourneyProgress.userId, userId as unknown as string),
+            eq(userJourneyProgress.status, "completed")
+          )
+        )
+
+      return rows.map(mapJourneyProgress)
+    },
+
     async enrollJourney(
       userId: UserId,
       journeyId: JourneyId

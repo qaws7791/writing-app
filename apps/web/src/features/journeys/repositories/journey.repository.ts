@@ -4,6 +4,7 @@ export async function fetchJourneyList(
   client: ApiClient,
   params?: {
     category?: "writing_skill" | "mindfulness" | "practical"
+    status?: "all" | "in_progress" | "completed"
   }
 ) {
   const { data, error } = await client.GET("/journeys", {

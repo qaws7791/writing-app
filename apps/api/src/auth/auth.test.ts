@@ -209,6 +209,12 @@ function setup(): { app: TestApp } {
         listJourneysUseCase() {
           return okAsync([])
         },
+        listCompletedJourneysUseCase() {
+          return okAsync([])
+        },
+        listUserJourneysUseCase() {
+          return okAsync([])
+        },
         listPromptWritingsUseCase() {
           return okAsync({ items: [], nextCursor: null, hasMore: false })
         },

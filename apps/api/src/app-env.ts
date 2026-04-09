@@ -16,7 +16,9 @@ import type {
   GetPromptUseCase,
   GetSessionDetailUseCase,
   GetWritingUseCase,
+  ListCompletedJourneysUseCase,
   ListJourneysUseCase,
+  ListUserJourneysUseCase,
   ListPromptWritingsUseCase,
   ListPromptsUseCase,
   ListWritingsUseCase,
@@ -67,7 +69,9 @@ export type AppUseCases = {
   getPromptUseCase: GetPromptUseCase
   getSessionDetailUseCase: GetSessionDetailUseCase
   getWritingUseCase: GetWritingUseCase
+  listCompletedJourneysUseCase: ListCompletedJourneysUseCase
   listJourneysUseCase: ListJourneysUseCase
+  listUserJourneysUseCase: ListUserJourneysUseCase
   listPromptWritingsUseCase: ListPromptWritingsUseCase
   listPromptsUseCase: ListPromptsUseCase
   listWritingsUseCase: ListWritingsUseCase

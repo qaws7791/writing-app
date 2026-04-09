@@ -21,6 +21,8 @@ import {
   makeCompleteSessionUseCase,
   makeGenerateFeedbackUseCase,
   makeCompareRevisionsUseCase,
+  makeListCompletedJourneysUseCase,
+  makeListUserJourneysUseCase,
 } from "@workspace/core"
 
 import { createAiCoachingGateway } from "../../services/ai-services"
@@ -68,6 +70,14 @@ export type GenerateFeedbackUseCase = ReturnType<
 >
 export type CompareRevisionsUseCase = ReturnType<
   typeof makeCompareRevisionsUseCase
+>
+
+export type ListCompletedJourneysUseCase = ReturnType<
+  typeof makeListCompletedJourneysUseCase
+>
+
+export type ListUserJourneysUseCase = ReturnType<
+  typeof makeListUserJourneysUseCase
 >
 
 export function registerUseCases(container: AwilixContainer<ApiCradle>) {
@@ -185,6 +195,22 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
 
     completeSessionUseCase: asFunction(({ progressRepository }: ApiCradle) =>
       makeCompleteSessionUseCase({ progressRepository })
+    ).singleton(),
+
+    listCompletedJourneysUseCase: asFunction(
+      ({ progressRepository, journeyRepository }: ApiCradle) =>
+        makeListCompletedJourneysUseCase({
+          progressRepository,
+          journeyRepository,
+        })
+    ).singleton(),
+
+    listUserJourneysUseCase: asFunction(
+      ({ progressRepository, journeyRepository }: ApiCradle) =>
+        makeListUserJourneysUseCase({
+          progressRepository,
+          journeyRepository,
+        })
     ).singleton(),
 
     // --- AI Feedback ---

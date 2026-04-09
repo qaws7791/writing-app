@@ -1,19 +1,16 @@
 "use client"
 
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Sun03Icon, FavouriteIcon } from "@hugeicons/core-free-icons"
+import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/tabs"
 import { useHomeSnapshot } from "@/features/home"
 import { useJourneys } from "@/features/journeys"
-
-const CATEGORY_LABEL: Record<
-  "writing_skill" | "mindfulness" | "practical",
-  string
-> = {
-  writing_skill: "글쓰기 역량",
-  mindfulness: "자기 탐구",
-  practical: "실용 글쓰기",
-}
 
 interface ActiveJourney {
   id: number
@@ -23,11 +20,11 @@ interface ActiveJourney {
   imageUrl: string
 }
 
-interface JourneyCategory {
-  id: string
-  icon: "sun" | "heart"
-  name: string
-  themeCount: number
+interface CompletedJourney {
+  id: number
+  title: string
+  description: string
+  imageUrl: string
 }
 
 function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
@@ -71,29 +68,38 @@ function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
   )
 }
 
-function CategoryCard({ category }: { category: JourneyCategory }) {
-  const icon = category.icon === "sun" ? Sun03Icon : FavouriteIcon
+function CompletedJourneyCard({ journey }: { journey: CompletedJourney }) {
+  const router = useRouter()
 
   return (
-    <div className="flex h-33.75 flex-col justify-between rounded-[32px] bg-surface-container p-5">
-      <div className="flex flex-col gap-4">
-        <div className="flex size-10 items-center justify-center rounded-full bg-surface-container-highest">
-          <HugeiconsIcon
-            icon={icon}
-            size={22}
-            color="currentColor"
-            strokeWidth={1.5}
-            className="text-on-surface-low"
-          />
-        </div>
-        <p className="text-lg leading-[22.5px] font-medium text-on-surface">
-          {category.name}
+    <button
+      type="button"
+      onClick={() => router.push(`/journeys/${journey.id}`)}
+      className="flex items-center gap-4 rounded-3xl bg-surface-container p-4 text-left transition-colors hover:bg-surface-container-high"
+    >
+      <div className="size-16 shrink-0 overflow-hidden rounded-2xl bg-surface-container-high">
+        <img
+          src={journey.imageUrl}
+          alt={journey.title}
+          className="size-full object-cover"
+        />
+      </div>
+      <div className="flex flex-1 flex-col gap-0.5">
+        <p className="text-base font-semibold text-on-surface">
+          {journey.title}
+        </p>
+        <p className="line-clamp-1 text-sm font-medium text-on-surface-low">
+          {journey.description}
         </p>
       </div>
-      <p className="text-xs leading-4 font-medium text-on-surface-low">
-        {category.themeCount}개 테마
-      </p>
-    </div>
+      <HugeiconsIcon
+        icon={CheckmarkCircle02Icon}
+        size={20}
+        color="currentColor"
+        strokeWidth={1.5}
+        className="shrink-0 text-primary"
+      />
+    </button>
   )
 }
 
@@ -104,7 +110,11 @@ export default function MyJourneysView() {
     isPending: isHomePending,
     isError: isHomeError,
   } = useHomeSnapshot()
-  const { data: journeys } = useJourneys()
+  const {
+    data: completedJourneysData,
+    isPending: isCompletedPending,
+    isError: isCompletedError,
+  } = useJourneys({ status: "completed" })
 
   const activeJourneys: ActiveJourney[] =
     home?.activeJourneys.map((journey) => ({
@@ -117,81 +127,104 @@ export default function MyJourneysView() {
         `https://picsum.photos/seed/active-journey-${journey.journeyId}/600/400`,
     })) ?? []
 
-  const journeyCategories: JourneyCategory[] =
-    journeys?.items.reduce<JourneyCategory[]>((acc, journey) => {
-      const label = CATEGORY_LABEL[journey.category]
-      const existing = acc.find((category) => category.name === label)
-
-      if (existing) {
-        existing.themeCount += 1
-        return acc
-      }
-
-      acc.push({
-        id: journey.category,
-        icon: journey.category === "mindfulness" ? "heart" : "sun",
-        name: label,
-        themeCount: 1,
-      })
-      return acc
-    }, []) ?? []
+  const completedJourneys: CompletedJourney[] =
+    completedJourneysData?.items.map((journey) => ({
+      id: journey.id,
+      title: journey.title,
+      description: journey.description,
+      imageUrl:
+        journey.thumbnailUrl ??
+        `https://picsum.photos/seed/journey-${journey.id}/200/200`,
+    })) ?? []
 
   return (
     <div className="flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-2xl leading-6 font-semibold text-on-surface">
-          여정
+          나의 여정
         </h1>
+        <button
+          onClick={() => router.push("/home?tab=journeys")}
+          className="text-sm font-semibold text-on-surface-low"
+        >
+          여정 찾기
+        </button>
       </div>
 
-      {/* Active Journeys */}
-      <div className="flex flex-col gap-6 px-4">
-        {isHomePending
-          ? Array.from({ length: 2 }, (_, index) => (
-              <div
-                key={index}
-                className="h-32 animate-pulse rounded-3xl bg-surface-container"
-              />
-            ))
-          : null}
+      {/* Tabs */}
+      <Tabs defaultValue="in_progress" className="px-4">
+        <TabsList variant="line" className="w-full">
+          <TabsTrigger value="in_progress" className="flex-1">
+            진행 중
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="flex-1">
+            완료
+          </TabsTrigger>
+        </TabsList>
 
-        {isHomeError ? (
-          <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
-            내 여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
-          </div>
-        ) : null}
+        {/* 진행 중 탭 */}
+        <TabsContent value="in_progress" className="flex flex-col gap-4 pt-4">
+          {isHomePending
+            ? Array.from({ length: 2 }, (_, index) => (
+                <div
+                  key={index}
+                  className="h-32 animate-pulse rounded-3xl bg-surface-container"
+                />
+              ))
+            : null}
 
-        {!isHomePending && !isHomeError && activeJourneys.length === 0 ? (
-          <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
-            아직 시작한 여정이 없어요. 나에게 맞는 여정을 찾아보세요!
-          </div>
-        ) : null}
+          {isHomeError ? (
+            <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
+              여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
+            </div>
+          ) : null}
 
-        {!isHomePending && !isHomeError
-          ? activeJourneys.map((journey) => (
-              <ActiveJourneyCard key={journey.id} journey={journey} />
-            ))
-          : null}
-      </div>
+          {!isHomePending && !isHomeError && activeJourneys.length === 0 ? (
+            <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
+              아직 시작한 여정이 없어요. 나에게 맞는 여정을 찾아보세요!
+            </div>
+          ) : null}
 
-      {/* Find Journeys */}
-      <div className="mt-4 flex flex-col gap-4 px-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-on-surface">여정 찾기</h2>
-          <button
-            onClick={() => router.push("/home?tab=journeys")}
-            className="text-sm font-semibold text-on-surface-low"
-          >
-            더보기
-          </button>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          {journeyCategories.map((category) => (
-            <CategoryCard key={category.id} category={category} />
-          ))}
-        </div>
-      </div>
+          {!isHomePending && !isHomeError
+            ? activeJourneys.map((journey) => (
+                <ActiveJourneyCard key={journey.id} journey={journey} />
+              ))
+            : null}
+        </TabsContent>
+
+        {/* 완료 탭 */}
+        <TabsContent value="completed" className="flex flex-col gap-4 pt-4">
+          {isCompletedPending
+            ? Array.from({ length: 2 }, (_, index) => (
+                <div
+                  key={index}
+                  className="h-24 animate-pulse rounded-3xl bg-surface-container"
+                />
+              ))
+            : null}
+
+          {isCompletedError ? (
+            <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
+              완료한 여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
+            </div>
+          ) : null}
+
+          {!isCompletedPending &&
+          !isCompletedError &&
+          completedJourneys.length === 0 ? (
+            <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
+              아직 완료한 여정이 없어요. 여정을 시작해보세요!
+            </div>
+          ) : null}
+
+          {!isCompletedPending && !isCompletedError
+            ? completedJourneys.map((journey) => (
+                <CompletedJourneyCard key={journey.id} journey={journey} />
+              ))
+            : null}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

@@ -42,6 +42,7 @@ describe("makeGetHomeUseCase", () => {
           status: "in_progress" as const,
         },
       ]),
+      listCompletedJourneys: vi.fn(async () => []),
       getJourneyProgress: vi.fn(async () => null),
       enrollJourney: vi.fn(async () => ({
         userId,
@@ -111,6 +112,7 @@ describe("makeGetHomeUseCase", () => {
 
     const progressRepository: ProgressRepository = {
       listActiveJourneys: vi.fn(async () => []),
+      listCompletedJourneys: vi.fn(async () => []),
       getJourneyProgress: vi.fn(async () => null),
       enrollJourney: vi.fn(async () => ({
         userId,

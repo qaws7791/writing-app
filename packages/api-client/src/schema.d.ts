@@ -1688,6 +1688,12 @@ export interface paths {
           content: {
             "application/json": {
               activeJourneyCount: number
+              completedJourneys: {
+                journeyId: number
+                title: string
+                description: string
+                thumbnailUrl: string | null
+              }[]
               /** Format: email */
               email: string
               emailVerified: boolean

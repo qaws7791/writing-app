@@ -41,6 +41,12 @@ export const GetWritingUseCase =
 export const ListJourneysUseCase = createToken<
   AppVariables["listJourneysUseCase"]
 >("listJourneysUseCase")
+export const ListCompletedJourneysUseCase = createToken<
+  AppVariables["listCompletedJourneysUseCase"]
+>("listCompletedJourneysUseCase")
+export const ListUserJourneysUseCase = createToken<
+  AppVariables["listUserJourneysUseCase"]
+>("listUserJourneysUseCase")
 export const ListPromptsUseCase =
   createToken<AppVariables["listPromptsUseCase"]>("listPromptsUseCase")
 export const ListPromptWritingsUseCase = createToken<
