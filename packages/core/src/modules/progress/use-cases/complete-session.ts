@@ -21,7 +21,7 @@ export function makeCompleteSessionUseCase(deps: CompleteSessionDeps) {
   ): ResultAsync<void, never> => {
     const completionRate = Math.min(
       1,
-      input.nextSessionOrder / input.totalSessions
+      (input.nextSessionOrder - 1) / input.totalSessions
     )
 
     return ResultAsync.fromSafePromise(

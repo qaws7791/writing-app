@@ -96,7 +96,7 @@ describe("makeGetHomeUseCase", () => {
     expect(snapshot.dailyPrompt?.title).toBe("오늘의 글감")
     expect(snapshot.activeJourneys).toHaveLength(1)
     expect(snapshot.activeJourneys[0]?.title).toBe("에세이 기초")
-    expect(snapshot.activeJourneys[0]?.completionRate).toBe(0.5)
+    expect(snapshot.activeJourneys[0]?.completionRate).toBe(0.25)
   })
 
   it("일일 글감이 없으면 null을 반환한다", async () => {

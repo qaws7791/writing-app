@@ -181,7 +181,7 @@ export function makeSubmitStepUseCase(deps: SubmitStepDeps) {
           const nextSessionOrder = session.order + 1
           const completionRate = Math.min(
             1,
-            nextSessionOrder / journey.sessionCount
+            (nextSessionOrder - 1) / journey.sessionCount
           )
           await Promise.all([
             deps.progressRepository.updateSessionProgress(userId, sessionId, {

@@ -40,7 +40,13 @@ export function makeGetHomeUseCase(deps: GetHomeDeps) {
               title: journey.title,
               description: journey.description,
               thumbnailUrl: journey.thumbnailUrl,
-              completionRate: p.completionRate,
+              completionRate:
+                journey.sessionCount > 0
+                  ? Math.min(
+                      1,
+                      (p.currentSessionOrder - 1) / journey.sessionCount
+                    )
+                  : 0,
               currentSessionOrder: p.currentSessionOrder,
             }
           })

@@ -166,7 +166,7 @@ function HomeContent() {
                 thumbnailUrl={journey.thumbnailUrl}
                 title={journey.title}
                 description={journey.description}
-                completionRate={Math.round(journey.completionRate)}
+                completionRate={Math.round(journey.completionRate * 100)}
               />
             ))
           )}
