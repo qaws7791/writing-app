@@ -14,5 +14,4 @@ export const activeJourneySummarySchema = z.object({
 export const homeSnapshotSchema = z.object({
   dailyPrompt: promptSummarySchema.nullable(),
   activeJourneys: z.array(activeJourneySummarySchema),
-  completedJourneys: z.array(activeJourneySummarySchema),
 })

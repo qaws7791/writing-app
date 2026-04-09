@@ -13,5 +13,4 @@ export type ActiveJourneySummary = {
 export type HomeSnapshot = {
   readonly dailyPrompt: PromptSummary | null
   readonly activeJourneys: ActiveJourneySummary[]
-  readonly completedJourneys: ActiveJourneySummary[]
 }

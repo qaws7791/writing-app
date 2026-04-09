@@ -56,6 +56,21 @@ export const journeyDetailSchema = journeySummaryBase
   })
   .readonly()
 
+export const journeyProgressSchema = z
+  .object({
+    currentSessionOrder: z.number().int(),
+    completionRate: z.number(),
+    status: z.enum(["in_progress", "completed"]),
+  })
+  .nullable()
+
+export const journeyDetailWithProgressSchema = journeySummaryBase
+  .extend({
+    sessions: z.array(journeySessionSummarySchema),
+    progress: journeyProgressSchema,
+  })
+  .readonly()
+
 export const journeySessionDetailSchema = journeySessionSummaryBase
   .extend({
     steps: z.array(stepSummarySchema),

@@ -40,6 +40,14 @@ export type JourneyDetail = JourneySummary & {
   readonly sessions: JourneySessionSummary[]
 }
 
+export type JourneyDetailWithProgress = JourneyDetail & {
+  readonly progress: {
+    readonly currentSessionOrder: number
+    readonly completionRate: number
+    readonly status: "in_progress" | "completed"
+  } | null
+}
+
 export type JourneySessionDetail = JourneySessionSummary & {
   readonly steps: StepSummary[]
 }

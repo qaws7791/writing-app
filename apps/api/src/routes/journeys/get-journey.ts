@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi"
 import {
-  journeyDetailSchema,
+  journeyDetailWithProgressSchema,
   journeyIdParamSchema,
   toJourneyId,
 } from "@workspace/core"
@@ -15,14 +15,19 @@ export default route({
   path: "/journeys/{journeyId}",
   inject: { getJourney: GetJourneyUseCase },
   request: { params: z.object({ journeyId: journeyIdParamSchema }) },
-  response: { 200: journeyDetailSchema, default: defaultErrorResponse },
+  response: {
+    200: journeyDetailWithProgressSchema,
+    default: defaultErrorResponse,
+  },
   meta: {
-    description: "특정 여정의 상세 정보(세션 목록 포함)를 조회합니다.",
+    description:
+      "특정 여정의 상세 정보(세션 목록 및 진행률 포함)를 조회합니다.",
     summary: "여정 상세 조회",
     tags: ["여정"],
   },
-  handler: async ({ getJourney, params }) => {
-    const result = await getJourney(toJourneyId(params.journeyId))
+  handler: async ({ getJourney, params, context }) => {
+    const userId = context.get("userId")
+    const result = await getJourney(toJourneyId(params.journeyId), userId)
     return unwrapOrThrow(result)
   },
 })

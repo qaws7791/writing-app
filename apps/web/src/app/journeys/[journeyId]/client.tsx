@@ -3,7 +3,6 @@
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 
-import { useHomeSnapshot } from "@/features/home"
 import { useEnrollJourney, useJourneyDetail } from "@/features/journeys"
 import JourneyDetailView from "@/views/journey-detail-view"
 
@@ -19,7 +18,6 @@ export default function JourneyDetailClientPage({
     isPending,
     isError,
   } = useJourneyDetail(journeyIdNumber)
-  const { data: home } = useHomeSnapshot()
   const enrollJourney = useEnrollJourney()
 
   useEffect(() => {
@@ -56,36 +54,30 @@ export default function JourneyDetailClientPage({
     )
   }
 
-  const journeyDetail = journey
-
-  const activeJourney =
-    home?.activeJourneys.find((item) => item.journeyId === journeyDetail.id) ??
-    home?.completedJourneys.find((item) => item.journeyId === journeyDetail.id)
-  const currentSessionOrder = activeJourney?.currentSessionOrder ?? 1
-  const completedCount = activeJourney
-    ? Math.max(0, currentSessionOrder - 1)
-    : 0
+  const progress = journey.progress
+  const currentSessionOrder = progress?.currentSessionOrder ?? 1
+  const completedCount = progress ? Math.max(0, currentSessionOrder - 1) : 0
 
   async function handleStartSession(sessionId: string) {
-    if (!activeJourney) {
-      await enrollJourney.mutateAsync(journeyDetail.id)
+    if (!progress) {
+      await enrollJourney.mutateAsync(journey!.id)
     }
 
-    router.push(`/journeys/${journeyDetail.id}/sessions/${sessionId}`)
+    router.push(`/journeys/${journey!.id}/sessions/${sessionId}`)
   }
 
   return (
     <JourneyDetailView
       data={{
-        id: String(journeyDetail.id),
-        title: journeyDetail.title,
-        description: journeyDetail.description,
+        id: String(journey.id),
+        title: journey.title,
+        description: journey.description,
         thumbnailUrl:
-          journeyDetail.thumbnailUrl ??
-          `https://picsum.photos/seed/journey-detail-${journeyDetail.id}/800/600`,
+          journey.thumbnailUrl ??
+          `https://picsum.photos/seed/journey-detail-${journey.id}/800/600`,
         completedCount,
-        totalCount: journeyDetail.sessions.length,
-        sessions: journeyDetail.sessions.map((session) => ({
+        totalCount: journey.sessions.length,
+        sessions: journey.sessions.map((session) => ({
           id: String(session.id),
           order: session.order,
           title: session.title,

@@ -151,8 +151,9 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
       makeListJourneysUseCase({ journeyRepository })
     ).singleton(),
 
-    getJourneyUseCase: asFunction(({ journeyRepository }: ApiCradle) =>
-      makeGetJourneyUseCase({ journeyRepository })
+    getJourneyUseCase: asFunction(
+      ({ journeyRepository, progressRepository }: ApiCradle) =>
+        makeGetJourneyUseCase({ journeyRepository, progressRepository })
     ).singleton(),
 
     getSessionDetailUseCase: asFunction(

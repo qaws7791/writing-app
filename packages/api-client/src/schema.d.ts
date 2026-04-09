@@ -505,14 +505,6 @@ export interface paths {
                 completionRate: number
                 currentSessionOrder: number
               }[]
-              completedJourneys: {
-                journeyId: number
-                title: string
-                description: string
-                thumbnailUrl: string | null
-                completionRate: number
-                currentSessionOrder: number
-              }[]
             }
           }
         }
@@ -987,7 +979,7 @@ export interface paths {
     }
     /**
      * 여정 상세 조회
-     * @description 특정 여정의 상세 정보(세션 목록 포함)를 조회합니다.
+     * @description 특정 여정의 상세 정보(세션 목록 및 진행률 포함)를 조회합니다.
      */
     get: {
       parameters: {
@@ -1022,6 +1014,12 @@ export interface paths {
                 description: string
                 estimatedMinutes: number
               }[]
+              progress: {
+                currentSessionOrder: number
+                completionRate: number
+                /** @enum {string} */
+                status: "in_progress" | "completed"
+              } | null
             }
           }
         }

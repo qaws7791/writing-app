@@ -535,38 +535,9 @@
                           "currentSessionOrder"
                         ]
                       }
-                    },
-                    "completedJourneys": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "journeyId": { "type": "integer" },
-                          "title": { "type": "string" },
-                          "description": { "type": "string" },
-                          "thumbnailUrl": {
-                            "type": "string",
-                            "nullable": true
-                          },
-                          "completionRate": { "type": "number" },
-                          "currentSessionOrder": { "type": "integer" }
-                        },
-                        "required": [
-                          "journeyId",
-                          "title",
-                          "description",
-                          "thumbnailUrl",
-                          "completionRate",
-                          "currentSessionOrder"
-                        ]
-                      }
                     }
                   },
-                  "required": [
-                    "dailyPrompt",
-                    "activeJourneys",
-                    "completedJourneys"
-                  ]
+                  "required": ["dailyPrompt", "activeJourneys"]
                 }
               }
             }
@@ -1126,7 +1097,7 @@
     },
     "/journeys/{journeyId}": {
       "get": {
-        "description": "특정 여정의 상세 정보(세션 목록 포함)를 조회합니다.",
+        "description": "특정 여정의 상세 정보(세션 목록 및 진행률 포함)를 조회합니다.",
         "summary": "여정 상세 조회",
         "tags": ["여정"],
         "parameters": [
@@ -1179,6 +1150,23 @@
                           "estimatedMinutes"
                         ]
                       }
+                    },
+                    "progress": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "currentSessionOrder": { "type": "integer" },
+                        "completionRate": { "type": "number" },
+                        "status": {
+                          "type": "string",
+                          "enum": ["in_progress", "completed"]
+                        }
+                      },
+                      "required": [
+                        "currentSessionOrder",
+                        "completionRate",
+                        "status"
+                      ]
                     }
                   },
                   "required": [
@@ -1188,7 +1176,8 @@
                     "category",
                     "thumbnailUrl",
                     "sessionCount",
-                    "sessions"
+                    "sessions",
+                    "progress"
                   ]
                 }
               }
