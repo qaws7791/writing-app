@@ -46,7 +46,7 @@ function WritingCard({
       className="flex cursor-pointer flex-col gap-4 rounded-[2.25rem] bg-surface-container p-8 text-left transition-colors hover:bg-surface-container-high"
     >
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium tracking-[1px] text-on-surface-low uppercase">
+        <span className="text-label-large text-on-surface-low">
           {writing.date}
         </span>
         <DropdownMenu>
@@ -74,7 +74,7 @@ function WritingCard({
             onClick={(e) => e.stopPropagation()}
           >
             <DropdownMenuItem
-              className="gap-3 px-3 py-3 text-sm font-medium text-on-surface-low"
+              className="gap-3 px-3 py-3 text-label-large text-on-surface-low"
               onClick={() => onDelete(writing.id)}
             >
               <HugeiconsIcon
@@ -88,17 +88,17 @@ function WritingCard({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <h2 className="text-2xl font-bold tracking-[-0.6px] text-on-surface">
+      <h2 className="text-headline-small-em text-on-surface">
         {writing.title}
       </h2>
-      <p className="line-clamp-2 text-base leading-relaxed text-on-surface-low">
+      <p className="line-clamp-2 text-body-large text-on-surface-low">
         {writing.excerpt}
       </p>
       <div className="flex items-center gap-2">
         <span className="text-on-surface-low" aria-hidden="true">
           ≡
         </span>
-        <span className="text-[11px] font-semibold tracking-[1.1px] text-on-surface-low uppercase">
+        <span className="text-label-small-em tracking-[1.1px] text-on-surface-low uppercase">
           {writing.wordCount.toLocaleString()} 단어
         </span>
       </div>
@@ -148,7 +148,7 @@ export default function WritingsListView() {
     <div className="relative flex flex-col bg-surface">
       {/* Header */}
       <div className="px-4 pt-4 pb-0">
-        <h1 className="text-2xl font-semibold text-on-surface">글쓰기</h1>
+        <h1 className="text-headline-small-em text-on-surface">글쓰기</h1>
       </div>
 
       {/* Search Bar */}
@@ -161,7 +161,7 @@ export default function WritingsListView() {
             strokeWidth={1.5}
             className="shrink-0 text-on-surface-lowest"
           />
-          <span className="text-base text-on-surface-lowest">
+          <span className="text-body-large text-on-surface-lowest">
             기록된 생각을 검색해보세요
           </span>
         </div>

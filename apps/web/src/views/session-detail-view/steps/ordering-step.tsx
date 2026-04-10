@@ -34,7 +34,7 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-base font-semibold text-on-surface">
+      <p className="text-body-large-em text-on-surface">
         {content.instruction}
       </p>
       <div className="flex flex-col gap-2">
@@ -57,10 +57,10 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
               key={id}
               className={`flex items-center gap-3 rounded-xl border-2 bg-surface-container p-3 transition-all ${borderClass}`}
             >
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-container-high text-xs font-bold text-on-surface-low">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-container-high text-label-medium-em text-on-surface-low">
                 {index + 1}
               </span>
-              <p className="flex-1 text-sm leading-relaxed text-on-surface">
+              <p className="flex-1 text-body-medium-em text-on-surface">
                 {item.text}
               </p>
               {!checked && (
@@ -109,7 +109,7 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
       {checked && (
         <div className="rounded-xl bg-surface-container p-4">
           <p className="text-xs font-semibold text-on-surface-lowest">해설</p>
-          <p className="mt-1 text-sm leading-relaxed text-on-surface-low">
+          <p className="text-sm leading-relaxed mt-1 text-on-surface-low">
             {content.explanation}
           </p>
         </div>

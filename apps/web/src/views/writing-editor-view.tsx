@@ -44,13 +44,11 @@ import {
 function PromptBanner({ title, body }: { title: string; body: string }) {
   return (
     <section className="flex flex-col gap-2 rounded-2xl bg-secondary-container px-5 py-4">
-      <p className="text-xs font-semibold tracking-widest text-on-surface-low uppercase">
+      <p className="tracking-widest text-label-medium-em text-on-surface-low uppercase">
         오늘의 글감
       </p>
-      <h2 className="text-lg leading-snug font-semibold tracking-tight text-on-surface">
-        {title}
-      </h2>
-      <p className="text-sm leading-relaxed text-on-surface-low">{body}</p>
+      <h2 className="text-title-medium-em text-on-surface">{title}</h2>
+      <p className="text-body-medium text-on-surface-low">{body}</p>
     </section>
   )
 }
@@ -238,7 +236,7 @@ export default function WritingEditorView({
           />
         </button>
 
-        <span className="flex-1 truncate px-2 text-center text-sm font-semibold text-on-surface">
+        <span className="flex-1 truncate px-2 text-center text-label-large-em text-on-surface">
           {title || "새 글"}
         </span>
 
@@ -265,7 +263,7 @@ export default function WritingEditorView({
                 className="min-w-32.5 rounded-2xl bg-surface-container-low px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
               >
                 <DropdownMenuItem
-                  className="gap-3 px-3 py-3 text-sm font-medium text-on-surface-low"
+                  className="text-sm font-medium gap-3 px-3 py-3 text-on-surface-low"
                   onClick={handleDelete}
                 >
                   <HugeiconsIcon
@@ -311,7 +309,7 @@ export default function WritingEditorView({
         )}
         {/* Date + Title block */}
         <section className="flex flex-col gap-2 pt-6">
-          <p className="text-sm font-medium tracking-[0.022rem] text-on-surface-lowest">
+          <p className="text-label-large text-on-surface-lowest">
             {formatKoreanDate(today)}
           </p>
           <textarea
@@ -320,7 +318,7 @@ export default function WritingEditorView({
             onChange={handleTitleChange}
             placeholder="제목"
             rows={1}
-            className="w-full resize-none overflow-hidden bg-transparent text-[2rem] leading-normal font-medium tracking-[-0.0625em] text-on-surface outline-none placeholder:text-on-surface-lowest"
+            className="w-full resize-none overflow-hidden bg-transparent text-headline-large-em text-on-surface outline-none placeholder:text-on-surface-lowest"
           />
         </section>
 
@@ -330,7 +328,7 @@ export default function WritingEditorView({
         </div>
 
         {/* Word count */}
-        <p className="mt-6 text-right text-sm text-on-surface-lowest">
+        <p className="mt-6 text-right text-label-large text-on-surface-lowest">
           {wordCount} 단어
         </p>
       </div>
@@ -377,7 +375,7 @@ export default function WritingEditorView({
               </div>
 
               <div className="flex flex-col items-center gap-[14px] text-center">
-                <p className="text-[20px] leading-6 font-bold text-on-surface">
+                <p className="font-bold text-[20px] leading-6 text-on-surface">
                   작성 중인 수필이 있어요
                 </p>
                 <p className="text-sm leading-[21px] text-on-surface-lowest">
@@ -393,7 +391,7 @@ export default function WritingEditorView({
               <button
                 type="button"
                 onClick={handleLeaveWithoutSave}
-                className="flex-1 rounded-[20px] bg-surface-container-high py-[14px] text-base font-semibold text-on-surface"
+                className="text-base font-semibold flex-1 rounded-[20px] bg-surface-container-high py-[14px] text-on-surface"
               >
                 그냥 나가기
               </button>
@@ -401,7 +399,7 @@ export default function WritingEditorView({
                 type="button"
                 onClick={handleSaveAndLeave}
                 disabled={isSaving}
-                className="flex-1 rounded-[20px] bg-on-surface py-[14px] text-base font-semibold text-on-primary disabled:opacity-50"
+                className="text-base font-semibold flex-1 rounded-[20px] bg-on-surface py-[14px] text-on-primary disabled:opacity-50"
               >
                 임시 저장 후 나가기
               </button>

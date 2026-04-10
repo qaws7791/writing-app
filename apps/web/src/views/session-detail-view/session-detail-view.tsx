@@ -190,7 +190,7 @@ export default function SessionDetailView({
               strokeWidth={1.5}
             />
           </button>
-          <span className="flex-1 truncate px-2 text-center text-sm font-medium text-on-surface-low">
+          <span className="flex-1 truncate px-2 text-center text-label-large text-on-surface-low">
             {journeyTitle}
           </span>
           <button
@@ -234,7 +234,7 @@ export default function SessionDetailView({
         <button
           onClick={ctaState.action}
           disabled={!ctaState.enabled || isSubmitting}
-          className="w-full rounded-2xl bg-primary px-6 py-4 text-base font-semibold text-on-primary transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
+          className="w-full rounded-2xl bg-primary px-6 py-4 text-title-small-em text-on-primary transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
         >
           {isSubmitting ? "저장 중..." : ctaState.label}
         </button>

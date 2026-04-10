@@ -44,10 +44,8 @@ function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
         />
       </div>
       <div className="flex h-[87.5px] flex-1 flex-col gap-1">
-        <p className="text-lg leading-6 font-semibold text-on-surface">
-          {journey.title}
-        </p>
-        <p className="pb-1.5 text-sm leading-4 font-medium text-on-surface-low">
+        <p className="text-title-medium text-on-surface">{journey.title}</p>
+        <p className="pb-1.5 text-body-small text-on-surface-low">
           {journey.subtitle}
         </p>
         <div className="flex flex-1 items-end">
@@ -58,7 +56,7 @@ function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
                 style={{ width: `${journey.progress}%` }}
               />
             </div>
-            <span className="shrink-0 text-xs font-bold text-on-surface-low">
+            <span className="shrink-0 text-label-medium-em text-on-surface-low">
               {journey.progress}%
             </span>
           </div>
@@ -85,10 +83,8 @@ function CompletedJourneyCard({ journey }: { journey: CompletedJourney }) {
         />
       </div>
       <div className="flex flex-1 flex-col gap-0.5">
-        <p className="text-base font-semibold text-on-surface">
-          {journey.title}
-        </p>
-        <p className="line-clamp-1 text-sm font-medium text-on-surface-low">
+        <p className="text-title-small-em text-on-surface">{journey.title}</p>
+        <p className="line-clamp-1 text-label-large text-on-surface-low">
           {journey.description}
         </p>
       </div>
@@ -141,12 +137,10 @@ export default function MyJourneysView() {
     <div className="flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-4">
-        <h1 className="text-2xl leading-6 font-semibold text-on-surface">
-          나의 여정
-        </h1>
+        <h1 className="text-headline-small-em text-on-surface">나의 여정</h1>
         <button
           onClick={() => router.push("/home?tab=journeys")}
-          className="text-sm font-semibold text-on-surface-low"
+          className="text-label-large-em text-on-surface-low"
         >
           여정 찾기
         </button>
@@ -175,13 +169,13 @@ export default function MyJourneysView() {
             : null}
 
           {isHomeError ? (
-            <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
+            <div className="text-sm rounded-3xl bg-surface-container p-6 text-center text-on-surface-low">
               여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           ) : null}
 
           {!isHomePending && !isHomeError && activeJourneys.length === 0 ? (
-            <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
+            <div className="text-sm rounded-3xl bg-surface-container p-6 text-center text-on-surface-low">
               아직 시작한 여정이 없어요. 나에게 맞는 여정을 찾아보세요!
             </div>
           ) : null}
@@ -205,7 +199,7 @@ export default function MyJourneysView() {
             : null}
 
           {isCompletedError ? (
-            <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
+            <div className="text-sm rounded-3xl bg-surface-container p-6 text-center text-on-surface-low">
               완료한 여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           ) : null}
@@ -213,7 +207,7 @@ export default function MyJourneysView() {
           {!isCompletedPending &&
           !isCompletedError &&
           completedJourneys.length === 0 ? (
-            <div className="rounded-3xl bg-surface-container p-6 text-center text-sm text-on-surface-low">
+            <div className="text-sm rounded-3xl bg-surface-container p-6 text-center text-on-surface-low">
               아직 완료한 여정이 없어요. 여정을 시작해보세요!
             </div>
           ) : null}
