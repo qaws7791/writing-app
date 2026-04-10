@@ -11,7 +11,7 @@ type PromptType = "sensory" | "reflection" | "opinion"
 function CategoryBadge({ promptType }: { promptType: PromptType }) {
   return (
     <span
-      className={`rounded-full px-3 py-1 text-[10px] tracking-wide uppercase ${
+      className={`rounded-full px-3 py-1 text-label-small uppercase ${
         promptType === "opinion"
           ? "bg-surface-container-high text-on-surface"
           : "bg-secondary-container text-on-surface-low"
@@ -62,12 +62,10 @@ function PromptCard({ card }: { card: PromptCardItem }) {
           onClick={() => router.push(`/prompts/${card.id}`)}
           className="text-left"
         >
-          <p className="text-2xl leading-tight font-medium tracking-tight text-on-surface">
-            {card.title}
-          </p>
+          <p className="text-title-large-em text-on-surface">{card.title}</p>
         </button>
         <div className="flex items-center justify-between pt-3">
-          <span className="text-xs font-medium text-on-surface-lowest">
+          <span className="text-label-medium text-on-surface-lowest">
             {card.responseCount}명 응답
           </span>
           <button
@@ -122,7 +120,7 @@ export default function PromptArchiveView() {
       <div className="flex gap-2.5 overflow-x-auto px-4 py-2.5 [scrollbar-width:none]">
         <button
           onClick={() => setSelectedType(undefined)}
-          className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+          className={`shrink-0 rounded-full px-5 py-2.5 text-title-small whitespace-nowrap transition-colors ${
             selectedType === undefined
               ? "bg-primary text-on-primary"
               : "bg-secondary-container text-on-surface-low"
@@ -134,7 +132,7 @@ export default function PromptArchiveView() {
           <button
             key={cat.key}
             onClick={() => setSelectedType(cat.key as PromptType)}
-            className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`shrink-0 rounded-full px-5 py-2.5 text-title-small whitespace-nowrap transition-colors ${
               selectedType === cat.key
                 ? "bg-primary text-on-primary"
                 : "bg-secondary-container text-on-surface-low"
@@ -148,11 +146,11 @@ export default function PromptArchiveView() {
       {/* Prompt Cards */}
       <div className="flex flex-col gap-12 px-4 pt-6 pb-8">
         {isLoading ? (
-          <div className="py-12 text-center text-sm text-on-surface-lowest">
+          <div className="text-sm py-12 text-center text-on-surface-lowest">
             불러오는 중...
           </div>
         ) : prompts.length === 0 ? (
-          <div className="py-12 text-center text-sm text-on-surface-lowest">
+          <div className="text-sm py-12 text-center text-on-surface-lowest">
             글감이 없습니다.
           </div>
         ) : (
@@ -161,7 +159,7 @@ export default function PromptArchiveView() {
           ))
         )}
         {isFetchingNextPage && (
-          <div className="py-4 text-center text-sm text-on-surface-lowest">
+          <div className="text-sm py-4 text-center text-on-surface-lowest">
             불러오는 중...
           </div>
         )}

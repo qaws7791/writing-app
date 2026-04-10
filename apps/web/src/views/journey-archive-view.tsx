@@ -44,10 +44,8 @@ function JourneyListCard({ card }: { card: JourneyCardData }) {
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5">
         <div className="flex flex-col gap-1">
-          <p className="text-lg leading-6 font-semibold text-on-surface">
-            {card.title}
-          </p>
-          <p className="line-clamp-2 text-sm leading-4 font-medium text-on-surface-low">
+          <p className="text-title-medium text-on-surface">{card.title}</p>
+          <p className="line-clamp-2 text-body-medium text-on-surface-low">
             {card.description}
           </p>
         </div>
@@ -59,7 +57,7 @@ function JourneyListCard({ card }: { card: JourneyCardData }) {
             strokeWidth={1.5}
             className="text-on-surface-low"
           />
-          <span className="text-[11px] font-medium tracking-[0.016rem] text-on-surface-low uppercase">
+          <span className="text-label-small text-on-surface-low uppercase">
             {card.sessionCount}개의 세션
           </span>
         </div>
@@ -102,7 +100,7 @@ export default function JourneyArchiveView() {
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
-            className={`shrink-0 rounded-full px-5 py-2.5 text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`shrink-0 rounded-full px-5 py-2.5 text-title-small whitespace-nowrap transition-colors ${
               selectedCategory === cat
                 ? "bg-primary text-on-primary"
                 : "bg-secondary-container text-on-surface-low"
@@ -125,13 +123,13 @@ export default function JourneyArchiveView() {
           : null}
 
         {isError ? (
-          <div className="rounded-3xl bg-surface-container p-6 text-sm text-on-surface-low">
+          <div className="text-sm rounded-3xl bg-surface-container p-6 text-on-surface-low">
             여정 목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
           </div>
         ) : null}
 
         {!isPending && !isError && filteredJourneys.length === 0 ? (
-          <div className="rounded-3xl bg-surface-container p-6 text-sm text-on-surface-low">
+          <div className="text-sm rounded-3xl bg-surface-container p-6 text-on-surface-low">
             조건에 맞는 여정이 아직 없어요.
           </div>
         ) : null}

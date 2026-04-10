@@ -37,7 +37,7 @@ const BOTTOM_NAV_ITEMS = [
 
 function WordCountBadge({ count }: { count: number }) {
   return (
-    <span className="rounded-full bg-secondary-container px-2.5 py-0.5 text-xs font-semibold text-on-surface-low">
+    <span className="text-xs font-semibold rounded-full bg-secondary-container px-2.5 py-0.5 text-on-surface-low">
       {count.toLocaleString("ko-KR")} 단어
     </span>
   )
@@ -57,15 +57,13 @@ function EssayListItem({ essay }: { essay: EssayItem }) {
       className="flex flex-col gap-4 text-left"
     >
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium tracking-wide text-on-surface-lowest">
+        <span className="text-label-small text-on-surface-lowest">
           {essay.date}
         </span>
         <WordCountBadge count={essay.wordCount} />
       </div>
-      <h3 className="text-2xl leading-snug font-medium tracking-tight text-on-surface">
-        {essay.title}
-      </h3>
-      <p className="line-clamp-2 text-base leading-relaxed text-on-surface-low">
+      <h3 className="text-title-large-em text-on-surface">{essay.title}</h3>
+      <p className="line-clamp-2 text-body-medium text-on-surface-low">
         {essay.preview}
       </p>
     </button>
@@ -74,7 +72,7 @@ function EssayListItem({ essay }: { essay: EssayItem }) {
 
 function EmptyEssayList() {
   return (
-    <p className="py-10 text-center text-base text-on-surface-lowest">
+    <p className="text-base py-10 text-center text-on-surface-lowest">
       이 글감에 아직 작성된 글이 없어요. 첫 번째로 써보세요!
     </p>
   )
@@ -111,7 +109,7 @@ export default function PromptDetailView({
             strokeWidth={1.5}
           />
         </button>
-        <span className="flex-1 text-center text-sm font-semibold text-on-surface">
+        <span className="flex-1 text-center text-label-large text-on-surface">
           {data.title}
         </span>
         <button
@@ -131,21 +129,21 @@ export default function PromptDetailView({
       <div className="flex-1 overflow-y-auto pb-40">
         {/* Topic Header Section */}
         <div className="flex flex-col gap-6 px-5 pt-4">
-          <h1 className="text-[2.5rem] leading-tight font-medium tracking-[-0.05em] text-on-surface">
+          <h1 className="text-headline-large-em text-on-surface">
             {data.title}
           </h1>
 
-          <p className="text-lg leading-relaxed text-on-surface-low opacity-80">
+          <p className="text-body-large text-on-surface-low opacity-80">
             {data.description}
           </p>
 
           {/* Stats */}
           <div className="flex items-center gap-4">
             <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-medium tracking-widest text-on-surface-lowest uppercase">
+              <span className="text-label-medium text-on-surface-lowest uppercase">
                 작성된 수필
               </span>
-              <span className="text-xl font-semibold text-on-surface tabular-nums">
+              <span className="text-title-large-em text-on-surface tabular-nums">
                 {data.essayCount.toLocaleString("ko-KR")}
               </span>
             </div>
@@ -172,7 +170,7 @@ export default function PromptDetailView({
             <button
               onClick={onLoadMoreEssaysAction}
               disabled={isLoadingMoreEssays}
-              className="rounded-[3rem] px-6 py-3 text-xs font-bold tracking-wide text-on-surface-low uppercase transition-colors hover:bg-surface-container disabled:opacity-50"
+              className="rounded-[3rem] px-6 py-3 text-label-small-em text-on-surface-low uppercase transition-colors hover:bg-surface-container disabled:opacity-50"
             >
               {isLoadingMoreEssays ? "불러오는 중..." : "더 불러오기"}
             </button>
@@ -184,7 +182,7 @@ export default function PromptDetailView({
       <div className="fixed right-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] left-0 z-40 px-4 pb-3">
         <button
           onClick={onStartWritingAction}
-          className="w-full rounded-[1rem] bg-primary py-4 text-base font-semibold text-on-primary transition-opacity hover:opacity-90 active:opacity-75"
+          className="font-semibold w-full rounded-[1rem] bg-primary py-4 text-title-small text-on-primary transition-opacity hover:opacity-90 active:opacity-75"
         >
           글쓰기 시작
         </button>
@@ -198,15 +196,14 @@ export default function PromptDetailView({
             onClick={() => router.push("/home")}
             className="flex flex-col items-center gap-1 text-on-surface-lowest transition-colors"
           >
+            {" "}
             <HugeiconsIcon
               icon={icon}
               size={24}
               color="currentColor"
               strokeWidth={1.5}
             />
-            <span className="text-[11px] font-semibold tracking-wide uppercase">
-              {label}
-            </span>
+            <span className="text-label-medium-em uppercase">{label}</span>
           </button>
         ))}
       </nav>

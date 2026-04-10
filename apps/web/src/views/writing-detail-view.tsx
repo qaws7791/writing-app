@@ -74,13 +74,11 @@ function WritingPromptCard({
               strokeWidth={1.5}
               className="text-on-surface-low"
             />
-            <span className="text-[0.75rem] font-bold tracking-[0.0438rem] text-on-surface-low uppercase">
+            <span className="text-label-large text-on-surface-low uppercase">
               Writing Prompt
             </span>
           </div>
-          <span className="text-base font-semibold text-on-surface">
-            {title}
-          </span>
+          <span className="text-title-medium-em text-on-surface">{title}</span>
         </div>
         <HugeiconsIcon
           icon={ArrowDown01Icon}
@@ -94,7 +92,7 @@ function WritingPromptCard({
         <button
           type="button"
           onClick={() => router.push(`/prompts/${promptId}`)}
-          className="self-end px-4 text-sm font-semibold text-on-surface-low transition-colors hover:text-on-surface"
+          className="self-end px-4 text-label-large-em text-on-surface-low transition-colors hover:text-on-surface"
         >
           글감 보기 →
         </button>
@@ -161,7 +159,7 @@ export default function WritingDetailView({
             strokeWidth={1.5}
           />
         </button>
-        <span className="flex-1 text-center text-sm font-semibold text-on-surface">
+        <span className="flex-1 text-center text-label-large text-on-surface">
           {data.title}
         </span>
         <button
@@ -181,17 +179,17 @@ export default function WritingDetailView({
       <div className="flex-1 overflow-y-auto px-4 pt-5 pb-32">
         {/* Title block */}
         <div className="flex flex-col gap-3">
-          <span className="text-sm font-medium tracking-[0.022rem] text-on-surface-lowest">
+          <span className="text-label-large text-on-surface-lowest">
             {data.date}
           </span>
-          <h1 className="text-[2.5rem] leading-tight font-medium tracking-[-0.0625rem] text-on-surface">
+          <h1 className="text-headline-large-em text-on-surface">
             {data.title}
           </h1>
         </div>
 
         {/* Author */}
         <div className="mt-4 text-right">
-          <span className="text-base font-medium text-on-surface">
+          <span className="text-title-small text-on-surface">
             {data.author}
           </span>
         </div>
@@ -209,17 +207,17 @@ export default function WritingDetailView({
         <div className="mt-8 flex flex-col gap-4 rounded-[2rem] bg-surface-container p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-semibold text-on-surface">
+              <h2 className="text-title-medium-em text-on-surface">
                 AI 피드백
               </h2>
-              <p className="mt-1 text-sm text-on-surface-low">
+              <p className="mt-1 text-body-medium text-on-surface-low">
                 현재 글을 기준으로 강점과 개선점을 받아볼 수 있어요.
               </p>
             </div>
             <button
               onClick={() => void onGenerateFeedback?.()}
               disabled={feedbackPending}
-              className="rounded-full bg-on-surface px-4 py-2 text-sm font-semibold text-surface disabled:opacity-50"
+              className="rounded-full bg-on-surface px-4 py-2 text-label-large-em text-surface disabled:opacity-50"
             >
               {feedbackPending ? "생성 중..." : "피드백 받기"}
             </button>
@@ -228,22 +226,22 @@ export default function WritingDetailView({
           {feedback ? (
             <div className="flex flex-col gap-4">
               <div>
-                <p className="text-sm font-semibold text-on-surface">강점</p>
-                <ul className="mt-2 flex list-disc flex-col gap-2 pl-5 text-sm text-on-surface-low">
+                <p className="text-label-large-em text-on-surface">강점</p>
+                <ul className="mt-2 flex list-disc flex-col gap-2 pl-5 text-body-medium text-on-surface-low">
                   {feedback.strengths.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
               </div>
               <div>
-                <p className="text-sm font-semibold text-on-surface">개선점</p>
-                <ul className="mt-2 flex list-disc flex-col gap-2 pl-5 text-sm text-on-surface-low">
+                <p className="text-label-large-em text-on-surface">개선점</p>
+                <ul className="mt-2 flex list-disc flex-col gap-2 pl-5 text-body-medium text-on-surface-low">
                   {feedback.improvements.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
               </div>
-              <div className="rounded-2xl bg-surface px-4 py-3 text-sm text-on-surface-low">
+              <div className="rounded-2xl bg-surface px-4 py-3 text-body-medium text-on-surface-low">
                 {feedback.question}
               </div>
             </div>
@@ -252,10 +250,10 @@ export default function WritingDetailView({
 
         <div className="mt-6 flex flex-col gap-4 rounded-[2rem] bg-surface-container p-6">
           <div>
-            <h2 className="text-lg font-semibold text-on-surface">
+            <h2 className="text-title-medium-em text-on-surface">
               수정본 비교
             </h2>
-            <p className="mt-1 text-sm text-on-surface-low">
+            <p className="mt-1 text-body-medium text-on-surface-low">
               수정한 버전을 붙여 넣으면 원문과 비교해 개선 지점을 알려줘요.
             </p>
           </div>
@@ -263,23 +261,23 @@ export default function WritingDetailView({
             value={revisedText}
             onChange={(event) => setRevisedText(event.target.value)}
             placeholder="수정한 버전을 여기에 붙여 넣어주세요."
-            className="min-h-40 rounded-[1.5rem] bg-surface px-4 py-4 text-sm text-on-surface outline-none"
+            className="min-h-40 rounded-[1.5rem] bg-surface px-4 py-4 text-body-medium text-on-surface outline-none"
           />
           <button
             onClick={() => void onCompareRevision?.(revisedText)}
             disabled={comparisonPending || revisedText.trim().length === 0}
-            className="rounded-full bg-on-surface px-4 py-3 text-sm font-semibold text-surface disabled:opacity-50"
+            className="rounded-full bg-on-surface px-4 py-3 text-label-large-em text-surface disabled:opacity-50"
           >
             {comparisonPending ? "비교 중..." : "수정본 비교하기"}
           </button>
 
           {comparison ? (
             <div className="flex flex-col gap-4 rounded-[1.5rem] bg-surface px-4 py-4">
-              <p className="text-sm font-semibold text-on-surface">요약</p>
-              <p className="text-sm leading-relaxed text-on-surface-low">
+              <p className="text-label-large-em text-on-surface">요약</p>
+              <p className="leading-relaxed text-body-medium text-on-surface-low">
                 {comparison.summary}
               </p>
-              <ul className="flex list-disc flex-col gap-2 pl-5 text-sm text-on-surface-low">
+              <ul className="flex list-disc flex-col gap-2 pl-5 text-body-medium text-on-surface-low">
                 {comparison.improvements.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
@@ -294,10 +292,7 @@ export default function WritingDetailView({
             block.type === "quote" ? (
               <QuoteBlock key={index} content={block.content} />
             ) : (
-              <p
-                key={index}
-                className="text-[1.125rem] leading-[1.956rem] text-on-surface"
-              >
+              <p key={index} className="text-body-large text-on-surface">
                 {block.content}
               </p>
             )
@@ -319,9 +314,7 @@ export default function WritingDetailView({
               color="currentColor"
               strokeWidth={1.5}
             />
-            <span className="text-[11px] font-semibold tracking-wide uppercase">
-              {label}
-            </span>
+            <span className="text-label-medium-em uppercase">{label}</span>
           </button>
         ))}
       </nav>

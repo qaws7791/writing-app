@@ -40,8 +40,8 @@ function JourneyCard({
         ) : null}
       </div>
       <div className="flex h-[87.5px] flex-1 flex-col gap-1">
-        <p className="text-base font-medium text-on-surface">{title}</p>
-        <p className="line-clamp-1 text-xs text-on-surface-low">
+        <p className="text-title-medium text-on-surface">{title}</p>
+        <p className="line-clamp-1 text-body-small text-on-surface-low">
           {description}
         </p>
         <div className="flex flex-1 items-end">
@@ -52,7 +52,7 @@ function JourneyCard({
                 style={{ width: `${completionRate}%` }}
               />
             </div>
-            <span className="shrink-0 text-xs font-bold text-on-surface-low">
+            <span className="shrink-0 text-label-medium-em text-on-surface-low">
               {completionRate}%
             </span>
           </div>
@@ -85,7 +85,7 @@ function HomeContent() {
     <>
       {/* Greeting */}
       <div className="mt-4 px-6">
-        <h1 className="text-4xl leading-[1.1] font-medium tracking-tight text-on-surface">
+        <h1 className="text-headline-medium-em text-on-surface">
           오늘도 글을 써볼까요?
         </h1>
       </div>
@@ -102,20 +102,20 @@ function HomeContent() {
                 strokeWidth={1.5}
                 className="text-on-surface-low"
               />
-              <span className="text-sm font-medium text-on-surface-low">
+              <span className="text-label-large text-on-surface-low">
                 오늘의 추천 글감
               </span>
             </div>
             {isPending ? (
               <div className="h-9 w-4/5 animate-pulse rounded bg-surface-container" />
             ) : isError || !dailyPrompt ? (
-              <p className="text-2xl leading-9 font-medium text-on-surface-lowest">
+              <p className="text-headline-small-em text-on-surface-lowest">
                 오늘의 글감을 불러올 수 없어요
               </p>
             ) : (
               <button
                 type="button"
-                className="text-left text-2xl leading-9 font-medium text-on-surface-low"
+                className="text-left text-headline-small-em text-on-surface-low"
                 onClick={() => router.push(`/prompts/${dailyPrompt.id}`)}
               >
                 {dailyPrompt.title}
@@ -123,7 +123,7 @@ function HomeContent() {
             )}
           </div>
           {!isPending && dailyPrompt ? (
-            <p className="text-right text-xs font-medium text-on-surface-low">
+            <p className="text-right text-body-small-em text-on-surface-low">
               지금까지 {dailyPrompt.responseCount.toLocaleString()}명이
               응답했어요
             </p>
@@ -134,11 +134,11 @@ function HomeContent() {
       {/* Journey Section */}
       <div className="mt-8 flex flex-col gap-6 px-4">
         <div className="flex items-center justify-between px-2">
-          <h2 className="text-xl font-semibold text-on-surface-low">
+          <h2 className="text-title-medium-em text-on-surface-low">
             현재 진행 중인 여정
           </h2>
           <button
-            className="text-sm font-semibold text-on-surface-low"
+            className="text-label-large-em text-on-surface-low"
             onClick={() => router.push("/my-journeys")}
           >
             더보기
@@ -151,11 +151,11 @@ function HomeContent() {
               <JourneyCardSkeleton />
             </>
           ) : isError ? (
-            <p className="px-2 text-sm text-on-surface-low">
+            <p className="text-sm px-2 text-on-surface-low">
               여정 정보를 불러올 수 없어요
             </p>
           ) : activeJourneys.length === 0 ? (
-            <p className="px-2 text-sm text-on-surface-low">
+            <p className="text-sm px-2 text-on-surface-low">
               진행 중인 여정이 없어요
             </p>
           ) : (
@@ -208,7 +208,7 @@ export default function HomeView() {
           <button
             key={tab}
             onClick={() => navigateToTab(tab)}
-            className={`text-2xl leading-6 font-semibold transition-colors ${
+            className={`text-headline-small-em transition-colors ${
               activeTab === tab ? "text-on-surface" : "text-on-surface-lowest"
             }`}
           >

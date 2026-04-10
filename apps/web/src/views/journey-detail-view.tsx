@@ -89,11 +89,13 @@ function SessionCard({
                   strokeWidth={2}
                 />
               </div>
-              <span className="text-xs font-bold tracking-[1px] text-on-surface-low uppercase">
+              <span className="text-label-medium-em text-on-surface-low uppercase">
                 완료
               </span>
             </div>
-            <p className="text-lg font-bold text-on-surface">{session.title}</p>
+            <p className="text-title-medium-em text-on-surface">
+              {session.title}
+            </p>
           </div>
           <HugeiconsIcon
             icon={ArrowDown01Icon}
@@ -105,7 +107,7 @@ function SessionCard({
         </button>
         {isOpen && session.description && (
           <div className="px-6 pb-6">
-            <p className="text-base leading-relaxed text-on-surface">
+            <p className="text-body-large text-on-surface">
               {session.description}
             </p>
           </div>
@@ -124,15 +126,17 @@ function SessionCard({
           <div className="flex flex-1 flex-col gap-2.5 text-left">
             <div className="flex items-center gap-2">
               <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-container-high">
-                <span className="text-xs font-bold text-on-surface-low">
+                <span className="text-label-medium-em text-on-surface-low">
                   {session.order}
                 </span>
               </div>
-              <span className="text-xs font-bold tracking-[1px] text-on-surface-low uppercase">
+              <span className="text-label-medium-em text-on-surface-low uppercase">
                 진행 중
               </span>
             </div>
-            <p className="text-xl font-bold text-on-surface">{session.title}</p>
+            <p className="text-title-large-em text-on-surface">
+              {session.title}
+            </p>
           </div>
           <HugeiconsIcon
             icon={ArrowDown01Icon}
@@ -145,13 +149,13 @@ function SessionCard({
         {isOpen && (
           <div className="flex flex-col gap-6 px-6 pb-6">
             {session.description && (
-              <p className="text-base leading-relaxed text-on-surface">
+              <p className="text-body-large text-on-surface">
                 {session.description}
               </p>
             )}
             <button
               onClick={() => onStart(session.id)}
-              className="w-full rounded-full bg-on-surface py-3 text-base font-bold text-surface transition-opacity hover:opacity-90 active:opacity-75"
+              className="font-bold w-full rounded-full bg-on-surface py-3 text-title-small text-surface transition-opacity hover:opacity-90 active:opacity-75"
             >
               지금 시작하기 →
             </button>
@@ -173,11 +177,11 @@ function SessionCard({
             strokeWidth={1.5}
             className="shrink-0 text-on-surface-low"
           />
-          <span className="text-xs font-bold tracking-[1px] text-on-surface-low uppercase">
+          <span className="text-label-medium-em text-on-surface-low uppercase">
             대기 중
           </span>
         </div>
-        <p className="text-lg font-semibold text-on-surface-low">
+        <p className="text-title-medium-em text-on-surface-low">
           {session.title}
         </p>
       </div>
@@ -223,7 +227,7 @@ export default function JourneyDetailView({
             strokeWidth={1.5}
           />
         </button>
-        <span className="flex-1 truncate px-2 text-center text-sm font-semibold text-on-surface">
+        <span className="flex-1 truncate px-2 text-center text-label-large text-on-surface">
           {data.title}
         </span>
         <button
@@ -252,10 +256,10 @@ export default function JourneyDetailView({
 
         {/* Journey Header */}
         <div className="flex flex-col gap-4 px-5 pt-6">
-          <h1 className="text-4xl leading-tight font-medium tracking-tight text-on-surface">
+          <h1 className="text-headline-large-em text-on-surface">
             {data.title}
           </h1>
-          <p className="text-lg leading-relaxed text-on-surface-low opacity-80">
+          <p className="text-body-large text-on-surface-low opacity-80">
             {data.description}
           </p>
         </div>
@@ -264,14 +268,14 @@ export default function JourneyDetailView({
         <div className="mx-4 mt-6 flex flex-col gap-4 rounded-[2rem] bg-surface py-6">
           <div className="flex items-end justify-between">
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-semibold text-on-surface-low">
+              <span className="text-label-large text-on-surface-low">
                 전체 진행률
               </span>
-              <span className="text-xl font-semibold text-on-surface">
+              <span className="text-title-large-em text-on-surface">
                 {data.completedCount} / {data.totalCount} 세션
               </span>
             </div>
-            <span className="text-base font-semibold text-on-surface">
+            <span className="text-title-small text-on-surface">
               {progressPercent}% 달성
             </span>
           </div>
@@ -307,9 +311,7 @@ export default function JourneyDetailView({
               color="currentColor"
               strokeWidth={1.5}
             />
-            <span className="text-[11px] font-semibold tracking-wide uppercase">
-              {label}
-            </span>
+            <span className="text-label-medium-em uppercase">{label}</span>
           </button>
         ))}
       </nav>
