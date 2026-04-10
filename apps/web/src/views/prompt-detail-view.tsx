@@ -37,7 +37,7 @@ const BOTTOM_NAV_ITEMS = [
 
 function WordCountBadge({ count }: { count: number }) {
   return (
-    <span className="text-xs font-semibold rounded-full bg-secondary-container px-2.5 py-0.5 text-on-surface-low">
+    <span className="rounded-full bg-secondary-container px-2.5 py-0.5 text-label-medium-em text-on-surface-low">
       {count.toLocaleString("ko-KR")} 단어
     </span>
   )
@@ -72,7 +72,7 @@ function EssayListItem({ essay }: { essay: EssayItem }) {
 
 function EmptyEssayList() {
   return (
-    <p className="text-base py-10 text-center text-on-surface-lowest">
+    <p className="py-10 text-center text-body-large text-on-surface-lowest">
       이 글감에 아직 작성된 글이 없어요. 첫 번째로 써보세요!
     </p>
   )
@@ -182,7 +182,7 @@ export default function PromptDetailView({
       <div className="fixed right-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] left-0 z-40 px-4 pb-3">
         <button
           onClick={onStartWritingAction}
-          className="font-semibold w-full rounded-[1rem] bg-primary py-4 text-title-small text-on-primary transition-opacity hover:opacity-90 active:opacity-75"
+          className="w-full rounded-[1rem] bg-primary py-4 text-title-small-em text-on-primary transition-opacity hover:opacity-90 active:opacity-75"
         >
           글쓰기 시작
         </button>

@@ -110,9 +110,7 @@ function QuoteBlock({ content }: { content: string }) {
       >
         &ldquo;
       </span>
-      <p className="text-[1.25rem] leading-6.5 text-on-surface-low">
-        {content}
-      </p>
+      <p className="text-title-large text-on-surface-low">{content}</p>
       <span
         className="absolute right-4 bottom-[0.969rem] font-serif text-[3rem] leading-none text-surface-container-highest select-none"
         aria-hidden="true"

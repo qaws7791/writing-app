@@ -14,7 +14,7 @@ export function CompletionStep({ content }: { content: CompletionContent }) {
           strokeWidth={2}
         />
       </div>
-      <h1 className="text-2xl font-bold text-on-surface">
+      <h1 className="text-headline-small-em text-on-surface">
         {content.congratsMessage}
       </h1>
       <div className="flex w-full flex-col gap-3 text-left">
@@ -30,19 +30,19 @@ export function CompletionStep({ content }: { content: CompletionContent }) {
               strokeWidth={2}
               className="mt-0.5 shrink-0"
             />
-            <span className="text-sm text-on-surface">{point}</span>
+            <span className="text-body-medium text-on-surface">{point}</span>
           </div>
         ))}
       </div>
       {content.nextSessionPreview && (
         <div className="w-full rounded-2xl border border-outline/10 bg-surface-container-low p-5 text-left">
-          <p className="mb-1 text-xs font-semibold tracking-widest text-on-surface-lowest uppercase">
+          <p className="mb-1 text-label-medium-em text-on-surface-lowest uppercase">
             다음 세션 미리보기
           </p>
-          <p className="text-base font-semibold text-on-surface">
+          <p className="text-title-small-em text-on-surface">
             {content.nextSessionPreview.title}
           </p>
-          <p className="mt-1 text-sm text-on-surface-low">
+          <p className="mt-1 text-body-medium text-on-surface-low">
             {content.nextSessionPreview.teaser}
           </p>
         </div>

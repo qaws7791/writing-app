@@ -44,10 +44,10 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-base font-semibold text-on-surface">
+      <p className="text-title-small-em text-on-surface">
         {content.instruction}
       </p>
-      <div className="rounded-2xl bg-surface-container p-4 text-sm leading-loose text-on-surface">
+      <div className="rounded-2xl bg-surface-container p-4 text-body-medium text-on-surface">
         {segments.map((seg, i) => {
           if (!seg.rangeId) {
             return <span key={i}>{seg.text}</span>
@@ -96,12 +96,9 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
       </div>
       {checked && (
         <div className="flex flex-col gap-2 rounded-xl bg-surface-container p-4">
-          <p className="text-xs font-semibold text-on-surface-lowest">해설</p>
+          <p className="text-label-medium-em text-on-surface-lowest">해설</p>
           {content.selectableRanges.map((r) => (
-            <p
-              key={r.id}
-              className="text-sm leading-relaxed text-on-surface-low"
-            >
+            <p key={r.id} className="text-body-medium text-on-surface-low">
               <span
                 className={`font-medium ${
                   content.correctRangeIds.includes(r.id)

@@ -108,8 +108,8 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
       </div>
       {checked && (
         <div className="rounded-xl bg-surface-container p-4">
-          <p className="text-xs font-semibold text-on-surface-lowest">해설</p>
-          <p className="text-sm leading-relaxed mt-1 text-on-surface-low">
+          <p className="text-label-medium-em text-on-surface-lowest">해설</p>
+          <p className="mt-1 text-body-medium text-on-surface-low">
             {content.explanation}
           </p>
         </div>

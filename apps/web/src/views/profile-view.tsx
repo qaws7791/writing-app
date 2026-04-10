@@ -40,9 +40,7 @@ function SettingRow({
         strokeWidth={1.5}
         className="shrink-0 text-on-surface"
       />
-      <span className="flex-1 text-base font-medium text-on-surface">
-        {label}
-      </span>
+      <span className="flex-1 text-title-small text-on-surface">{label}</span>
       {trailing}
       {showChevron && (
         <HugeiconsIcon
@@ -78,7 +76,7 @@ export default function ProfileView() {
     <div className="flex min-h-full flex-col bg-surface">
       {/* 헤더 */}
       <div className="px-4 pt-4 pb-2">
-        <h1 className="text-2xl font-semibold text-on-surface">설정</h1>
+        <h1 className="text-headline-small-em text-on-surface">설정</h1>
       </div>
 
       <div className="flex-1 overflow-y-auto pb-6">
@@ -101,14 +99,14 @@ export default function ProfileView() {
               />
             )}
           </div>
-          <h2 className="text-[30px] font-medium tracking-[-0.05em] text-on-surface">
+          <h2 className="text-headline-medium-em text-on-surface">
             {isPending ? "불러오는 중..." : (data?.name ?? "사용자")}
           </h2>
-          <p className="text-sm font-medium text-on-surface-low">
+          <p className="text-body-medium-em text-on-surface-low">
             {data?.email ?? ""}
           </p>
           {isError ? (
-            <p className="pt-2 text-xs text-on-surface-low">
+            <p className="pt-2 text-label-medium text-on-surface-low">
               프로필 정보를 불러오지 못했어요.
             </p>
           ) : null}
@@ -117,18 +115,18 @@ export default function ProfileView() {
         {/* 통계 카드 */}
         <div className="flex gap-4 px-4 pb-10">
           <div className="flex flex-1 flex-col gap-1 rounded-[2rem] bg-surface-container p-6">
-            <p className="text-xs font-semibold tracking-[0.5px] text-on-surface-low uppercase">
+            <p className="text-label-medium-em text-on-surface-low uppercase">
               진행 중인 여정
             </p>
-            <p className="text-xl font-medium text-on-surface">
+            <p className="text-title-large-em text-on-surface">
               여정 {data?.activeJourneyCount ?? 0}개
             </p>
           </div>
           <div className="flex flex-1 flex-col gap-1 rounded-[2rem] bg-surface-container p-6">
-            <p className="text-xs font-semibold tracking-[0.5px] text-on-surface-low uppercase">
+            <p className="text-label-medium-em text-on-surface-low uppercase">
               작성한 글
             </p>
-            <p className="text-xl font-medium text-on-surface">
+            <p className="text-title-large-em text-on-surface">
               글 {data?.writingCount ?? 0}개
             </p>
           </div>
@@ -138,7 +136,7 @@ export default function ProfileView() {
         <div className="flex flex-col gap-10 px-4">
           {/* 계정 관리 */}
           <section className="flex flex-col gap-4">
-            <p className="text-sm tracking-[1.2px] text-on-surface-lowest uppercase">
+            <p className="text-label-medium-em text-on-surface-lowest uppercase">
               계정 관리
             </p>
             <div className="overflow-hidden rounded-[2rem] bg-surface-container">
@@ -148,7 +146,7 @@ export default function ProfileView() {
                 icon={Notification01Icon}
                 label="알림 설정"
                 trailing={
-                  <span className="mr-2 text-xs font-bold text-on-surface-low">
+                  <span className="mr-2 text-label-medium-em text-on-surface-low">
                     ON
                   </span>
                 }
@@ -158,7 +156,7 @@ export default function ProfileView() {
 
           {/* 접근성 */}
           <section className="flex flex-col gap-4">
-            <p className="text-sm tracking-[1.2px] text-on-surface-lowest uppercase">
+            <p className="text-label-medium-em text-on-surface-lowest uppercase">
               접근성
             </p>
             <div className="overflow-hidden rounded-[2rem] bg-surface-container">
@@ -166,7 +164,7 @@ export default function ProfileView() {
                 icon={TextFontIcon}
                 label="글꼴 크기"
                 trailing={
-                  <span className="mr-2 text-sm font-medium text-on-surface-low">
+                  <span className="mr-2 text-body-medium-em text-on-surface-low">
                     보통
                   </span>
                 }
@@ -182,10 +180,10 @@ export default function ProfileView() {
                   className="shrink-0 text-on-surface"
                 />
                 <div className="flex flex-1 flex-col">
-                  <span className="text-base font-medium text-on-surface">
+                  <span className="text-title-small text-on-surface">
                     동작 줄이기 모드
                   </span>
-                  <span className="text-[11px] font-medium text-on-surface-low">
+                  <span className="text-label-small text-on-surface-low">
                     화면 움직임을 최소화합니다
                   </span>
                 </div>
@@ -211,7 +209,7 @@ export default function ProfileView() {
 
           {/* 서비스 및 데이터 */}
           <section className="flex flex-col gap-4">
-            <p className="text-sm tracking-[1.2px] text-on-surface-lowest uppercase">
+            <p className="text-label-medium-em text-on-surface-lowest uppercase">
               서비스 및 데이터
             </p>
             <div className="overflow-hidden rounded-[2rem] bg-surface-container">
@@ -219,7 +217,7 @@ export default function ProfileView() {
                 icon={CrownIcon}
                 label="구독 관리 (Pro)"
                 trailing={
-                  <span className="mr-3 rounded-full bg-surface-container-high px-2 py-0.5 text-[10px] font-extrabold text-on-surface">
+                  <span className="mr-3 rounded-full bg-surface-container-high px-2 py-0.5 text-label-small-em text-on-surface">
                     ACTIVE
                   </span>
                 }
@@ -234,7 +232,7 @@ export default function ProfileView() {
             className="flex items-center justify-center py-5 opacity-70"
             onClick={handleLogout}
           >
-            <span className="text-sm font-medium text-error">로그아웃</span>
+            <span className="text-body-medium-em text-error">로그아웃</span>
           </button>
         </div>
       </div>

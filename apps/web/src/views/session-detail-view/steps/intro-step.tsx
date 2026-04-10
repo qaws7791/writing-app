@@ -4,14 +4,12 @@ export function IntroStep({ content }: { content: IntroContent }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <p className="text-xs font-semibold tracking-widest text-primary uppercase">
-          세션 시작
-        </p>
-        <h1 className="text-2xl leading-tight font-bold tracking-tight text-on-surface">
+        <p className="text-label-medium-em text-primary uppercase">세션 시작</p>
+        <h1 className="text-headline-small-em text-on-surface">
           {content.title}
         </h1>
       </div>
-      <p className="text-base leading-relaxed text-on-surface-low">
+      <p className="text-body-large text-on-surface-low">
         {content.description}
       </p>
       {content.keywords && content.keywords.length > 0 && (
@@ -19,7 +17,7 @@ export function IntroStep({ content }: { content: IntroContent }) {
           {content.keywords.map((kw) => (
             <span
               key={kw}
-              className="rounded-lg bg-secondary-container px-3 py-1.5 text-sm font-medium text-on-secondary-container"
+              className="rounded-lg bg-secondary-container px-3 py-1.5 text-body-medium-em text-on-secondary-container"
             >
               {kw}
             </span>
@@ -27,8 +25,10 @@ export function IntroStep({ content }: { content: IntroContent }) {
         </div>
       )}
       <div className="flex items-center gap-2 rounded-xl bg-surface-container px-4 py-3">
-        <span className="text-sm text-on-surface-low">예상 소요 시간</span>
-        <span className="text-sm font-semibold text-on-surface">
+        <span className="text-body-medium text-on-surface-low">
+          예상 소요 시간
+        </span>
+        <span className="text-label-large-em text-on-surface">
           {content.estimatedMinutes}분
         </span>
       </div>

@@ -263,7 +263,7 @@ export default function WritingEditorView({
                 className="min-w-32.5 rounded-2xl bg-surface-container-low px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
               >
                 <DropdownMenuItem
-                  className="text-sm font-medium gap-3 px-3 py-3 text-on-surface-low"
+                  className="gap-3 px-3 py-3 text-body-medium-em text-on-surface-low"
                   onClick={handleDelete}
                 >
                   <HugeiconsIcon
@@ -375,10 +375,10 @@ export default function WritingEditorView({
               </div>
 
               <div className="flex flex-col items-center gap-[14px] text-center">
-                <p className="font-bold text-[20px] leading-6 text-on-surface">
+                <p className="text-title-large-em text-on-surface">
                   작성 중인 수필이 있어요
                 </p>
-                <p className="text-sm leading-[21px] text-on-surface-lowest">
+                <p className="text-body-medium text-on-surface-lowest">
                   지금 나가면 저장되지 않은 내용이 사라질 수 있습니다.
                   <br />
                   저장 후 나가시겠어요?
@@ -391,7 +391,7 @@ export default function WritingEditorView({
               <button
                 type="button"
                 onClick={handleLeaveWithoutSave}
-                className="text-base font-semibold flex-1 rounded-[20px] bg-surface-container-high py-[14px] text-on-surface"
+                className="flex-1 rounded-[20px] bg-surface-container-high py-[14px] text-title-small-em text-on-surface"
               >
                 그냥 나가기
               </button>
@@ -399,7 +399,7 @@ export default function WritingEditorView({
                 type="button"
                 onClick={handleSaveAndLeave}
                 disabled={isSaving}
-                className="text-base font-semibold flex-1 rounded-[20px] bg-on-surface py-[14px] text-on-primary disabled:opacity-50"
+                className="flex-1 rounded-[20px] bg-on-surface py-[14px] text-title-small-em text-on-primary disabled:opacity-50"
               >
                 임시 저장 후 나가기
               </button>

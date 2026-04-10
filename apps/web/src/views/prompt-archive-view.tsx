@@ -146,11 +146,11 @@ export default function PromptArchiveView() {
       {/* Prompt Cards */}
       <div className="flex flex-col gap-12 px-4 pt-6 pb-8">
         {isLoading ? (
-          <div className="text-sm py-12 text-center text-on-surface-lowest">
+          <div className="py-12 text-center text-body-medium text-on-surface-lowest">
             불러오는 중...
           </div>
         ) : prompts.length === 0 ? (
-          <div className="text-sm py-12 text-center text-on-surface-lowest">
+          <div className="py-12 text-center text-body-medium text-on-surface-lowest">
             글감이 없습니다.
           </div>
         ) : (
@@ -159,7 +159,7 @@ export default function PromptArchiveView() {
           ))
         )}
         {isFetchingNextPage && (
-          <div className="text-sm py-4 text-center text-on-surface-lowest">
+          <div className="py-4 text-center text-body-medium text-on-surface-lowest">
             불러오는 중...
           </div>
         )}

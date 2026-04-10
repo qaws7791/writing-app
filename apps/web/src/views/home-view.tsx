@@ -151,11 +151,11 @@ function HomeContent() {
               <JourneyCardSkeleton />
             </>
           ) : isError ? (
-            <p className="text-sm px-2 text-on-surface-low">
+            <p className="px-2 text-body-medium text-on-surface-low">
               여정 정보를 불러올 수 없어요
             </p>
           ) : activeJourneys.length === 0 ? (
-            <p className="text-sm px-2 text-on-surface-low">
+            <p className="px-2 text-body-medium text-on-surface-low">
               진행 중인 여정이 없어요
             </p>
           ) : (

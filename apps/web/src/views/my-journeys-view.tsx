@@ -169,13 +169,13 @@ export default function MyJourneysView() {
             : null}
 
           {isHomeError ? (
-            <div className="text-sm rounded-3xl bg-surface-container p-6 text-center text-on-surface-low">
+            <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
               여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           ) : null}
 
           {!isHomePending && !isHomeError && activeJourneys.length === 0 ? (
-            <div className="text-sm rounded-3xl bg-surface-container p-6 text-center text-on-surface-low">
+            <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
               아직 시작한 여정이 없어요. 나에게 맞는 여정을 찾아보세요!
             </div>
           ) : null}
@@ -199,7 +199,7 @@ export default function MyJourneysView() {
             : null}
 
           {isCompletedError ? (
-            <div className="text-sm rounded-3xl bg-surface-container p-6 text-center text-on-surface-low">
+            <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
               완료한 여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           ) : null}
@@ -207,7 +207,7 @@ export default function MyJourneysView() {
           {!isCompletedPending &&
           !isCompletedError &&
           completedJourneys.length === 0 ? (
-            <div className="text-sm rounded-3xl bg-surface-container p-6 text-center text-on-surface-low">
+            <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
               아직 완료한 여정이 없어요. 여정을 시작해보세요!
             </div>
           ) : null}

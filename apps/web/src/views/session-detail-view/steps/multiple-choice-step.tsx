@@ -32,14 +32,18 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <h2 className="text-lg font-bold text-on-surface">{content.question}</h2>
+      <h2 className="text-title-medium-em text-on-surface">
+        {content.question}
+      </h2>
       {content.passage && (
-        <p className="rounded-xl bg-surface-container p-4 text-sm leading-relaxed text-on-surface">
+        <p className="rounded-xl bg-surface-container p-4 text-body-medium text-on-surface">
           {content.passage}
         </p>
       )}
       {content.multiSelect && !checked && (
-        <p className="text-xs text-on-surface-lowest">복수 선택 가능</p>
+        <p className="text-label-medium text-on-surface-lowest">
+          복수 선택 가능
+        </p>
       )}
       <div className="flex flex-col gap-2.5">
         {content.options.map((opt) => {
@@ -77,7 +81,9 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
                   <span className="size-2.5 rounded-full bg-current" />
                 )}
               </span>
-              <span className="flex-1 text-sm text-on-surface">{opt.text}</span>
+              <span className="flex-1 text-body-medium text-on-surface">
+                {opt.text}
+              </span>
               {checked && isCorrect && (
                 <HugeiconsIcon
                   icon={Tick02Icon}
@@ -102,12 +108,9 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
       </div>
       {checked && (
         <div className="flex flex-col gap-2 rounded-xl bg-surface-container p-4">
-          <p className="text-xs font-semibold text-on-surface-lowest">해설</p>
+          <p className="text-label-medium-em text-on-surface-lowest">해설</p>
           {content.options.map((opt) => (
-            <p
-              key={opt.id}
-              className="text-sm leading-relaxed text-on-surface-low"
-            >
+            <p key={opt.id} className="text-body-medium text-on-surface-low">
               <span className="font-medium text-on-surface">
                 {opt.text.slice(0, 1)}:
               </span>{" "}

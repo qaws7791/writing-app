@@ -155,7 +155,7 @@ function SessionCard({
             )}
             <button
               onClick={() => onStart(session.id)}
-              className="font-bold w-full rounded-full bg-on-surface py-3 text-title-small text-surface transition-opacity hover:opacity-90 active:opacity-75"
+              className="w-full rounded-full bg-on-surface py-3 text-title-small-em text-surface transition-opacity hover:opacity-90 active:opacity-75"
             >
               지금 시작하기 →
             </button>

@@ -25,12 +25,12 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-base font-semibold text-on-surface">
+      <p className="text-title-small-em text-on-surface">
         {content.instruction}
       </p>
 
       {/* 빈칸이 포함된 문장 */}
-      <div className="rounded-2xl bg-surface-container p-4 text-sm leading-loose text-on-surface">
+      <div className="rounded-2xl bg-surface-container p-4 text-body-medium text-on-surface">
         {parts.map((part, i) => {
           const match = part.match(/\{\{(.+)\}\}/)
           if (!match) return <span key={i}>{part}</span>
@@ -62,7 +62,7 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
       {/* 빈칸별 선택지 */}
       {content.blanks.map((blank) => (
         <div key={blank.id} className="flex flex-col gap-2">
-          <p className="text-xs font-semibold text-on-surface-lowest">
+          <p className="text-label-medium-em text-on-surface-lowest">
             빈칸 선택
           </p>
           <div className="flex flex-wrap gap-2">
@@ -70,7 +70,8 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
               const isSelected = selections[blank.id] === opt.id
               const isCorrect = opt.id === blank.correctOptionId
 
-              let cls = "rounded-lg border px-3 py-2 text-sm transition-all"
+              let cls =
+                "rounded-lg border px-3 py-2 text-body-medium transition-all"
               if (isSelected && !checked) {
                 cls += " border-primary bg-primary/10 text-primary font-medium"
               } else if (checked && isSelected && isCorrect) {
@@ -104,8 +105,8 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
 
       {checked && (
         <div className="rounded-xl bg-surface-container p-4">
-          <p className="text-xs font-semibold text-on-surface-lowest">해설</p>
-          <p className="mt-1 text-sm leading-relaxed text-on-surface-low">
+          <p className="text-label-medium-em text-on-surface-lowest">해설</p>
+          <p className="mt-1 text-body-medium text-on-surface-low">
             {content.explanation}
           </p>
         </div>

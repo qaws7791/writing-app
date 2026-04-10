@@ -178,7 +178,9 @@ export default function WritingsListView() {
         ))}
         {isFetchingNextPage && (
           <div className="flex justify-center py-4">
-            <span className="text-sm text-on-surface-low">불러오는 중...</span>
+            <span className="text-body-medium text-on-surface-low">
+              불러오는 중...
+            </span>
           </div>
         )}
         <div ref={sentinelRef} />
