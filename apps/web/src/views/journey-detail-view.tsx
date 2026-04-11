@@ -1,15 +1,10 @@
 "use client"
 
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  ArrowLeft01Icon,
-  MoreHorizontalIcon,
-  Home01Icon,
-  BookOpen01Icon,
-  QuillWrite01Icon,
-  User02Icon,
-} from "@hugeicons/core-free-icons"
+import { ArrowLeft01Icon, MoreHorizontalIcon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { IconButton } from "@workspace/ui/components/icon-button"
+import { Button } from "@workspace/ui/components/button"
 import {
   JourneyHero,
   JourneyProgressCard,
@@ -26,13 +21,6 @@ interface JourneyDetailData {
   totalCount: number
   sessions: SessionItem[]
 }
-
-const BOTTOM_NAV_ITEMS = [
-  { icon: Home01Icon, label: "홈", href: "/home" },
-  { icon: BookOpen01Icon, label: "여정", href: "/journeys" },
-  { icon: QuillWrite01Icon, label: "글쓰기", href: "/writings" },
-  { icon: User02Icon, label: "프로필", href: "/profile" },
-] as const
 
 export default function JourneyDetailView({
   data,
@@ -56,32 +44,25 @@ export default function JourneyDetailView({
     <div className="flex min-h-screen flex-col bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between px-4 py-3">
-        <button
-          aria-label="뒤로 가기"
-          onClick={() => router.back()}
-          className="flex size-10 items-center justify-center rounded-full bg-surface text-on-surface transition-colors hover:bg-surface-container"
-        >
+        <IconButton aria-label="뒤로 가기" onClick={() => router.back()}>
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </button>
+        </IconButton>
         <span className="flex-1 truncate px-2 text-center text-label-large text-on-surface">
           {data.title}
         </span>
-        <button
-          aria-label="더보기"
-          className="flex size-10 items-center justify-center rounded-full bg-surface text-on-surface transition-colors hover:bg-surface-container"
-        >
+        <IconButton aria-label="더보기">
           <HugeiconsIcon
             icon={MoreHorizontalIcon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </button>
+        </IconButton>
       </header>
 
       {/* Scrollable Content */}
@@ -111,10 +92,10 @@ export default function JourneyDetailView({
         {/* Writing CTA after journey completion */}
         {data.completedCount === data.totalCount && data.totalCount > 0 && (
           <div className="px-4 pb-8">
-            <button
-              type="button"
+            <Button
+              variant="tonal"
+              className="flex h-auto w-full flex-col gap-2 rounded-3xl p-6 text-left"
               onClick={() => router.push("/writings/new")}
-              className="flex w-full flex-col gap-2 rounded-3xl bg-secondary-container p-6 text-left transition-colors hover:opacity-90"
             >
               <p className="text-title-medium-em text-on-surface">
                 글쓰기 공간에서 배운 내용을 표현해보세요
@@ -122,29 +103,10 @@ export default function JourneyDetailView({
               <p className="text-body-medium text-on-surface-low">
                 여정에서 배운 내용을 자유롭게 글로 써보세요
               </p>
-            </button>
+            </Button>
           </div>
         )}
       </div>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-around rounded-tl-[2rem] rounded-tr-[2rem] border-t border-outline/20 bg-surface/95 px-4 py-4 safe-area-pb shadow-[0px_-12px_40px_0px_rgba(47,52,48,0.04)] backdrop-blur-xl">
-        {BOTTOM_NAV_ITEMS.map(({ icon, label, href }) => (
-          <button
-            key={label}
-            onClick={() => router.push(href)}
-            className="flex flex-col items-center gap-1 text-on-surface-lowest transition-colors"
-          >
-            <HugeiconsIcon
-              icon={icon}
-              size={24}
-              color="currentColor"
-              strokeWidth={1.5}
-            />
-            <span className="text-label-medium-em uppercase">{label}</span>
-          </button>
-        ))}
-      </nav>
     </div>
   )
 }

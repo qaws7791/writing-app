@@ -1,5 +1,6 @@
 "use client"
 
+import { Chip } from "@workspace/ui/components/chip"
 import type { PromptType } from "./prompt-card"
 
 interface PromptCategoryChipsProps {
@@ -15,28 +16,24 @@ export function PromptCategoryChips({
 }: PromptCategoryChipsProps) {
   return (
     <div className="flex gap-2.5 overflow-x-auto px-4 py-2.5 [scrollbar-width:none]">
-      <button
-        onClick={() => onSelectType(undefined)}
-        className={`shrink-0 rounded-full px-5 py-2.5 text-title-small whitespace-nowrap transition-colors ${
-          selectedType === undefined
-            ? "bg-primary text-on-primary"
-            : "bg-secondary-container text-on-surface-low"
-        }`}
+      <Chip
+        variant="filter"
+        selected={selectedType === undefined}
+        onSelect={() => onSelectType(undefined)}
+        className="shrink-0"
       >
         전체
-      </button>
+      </Chip>
       {categories.map((cat) => (
-        <button
+        <Chip
           key={cat.key}
-          onClick={() => onSelectType(cat.key as PromptType)}
-          className={`shrink-0 rounded-full px-5 py-2.5 text-title-small whitespace-nowrap transition-colors ${
-            selectedType === cat.key
-              ? "bg-primary text-on-primary"
-              : "bg-secondary-container text-on-surface-low"
-          }`}
+          variant="filter"
+          selected={selectedType === cat.key}
+          onSelect={() => onSelectType(cat.key as PromptType)}
+          className="shrink-0"
         >
           {cat.label}
-        </button>
+        </Chip>
       ))}
     </div>
   )

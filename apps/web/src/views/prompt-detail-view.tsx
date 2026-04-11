@@ -1,15 +1,10 @@
 "use client"
 
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  ArrowLeft01Icon,
-  MoreHorizontalIcon,
-  Home01Icon,
-  BookOpen01Icon,
-  QuillWrite01Icon,
-  User02Icon,
-} from "@hugeicons/core-free-icons"
+import { ArrowLeft01Icon, MoreHorizontalIcon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { IconButton } from "@workspace/ui/components/icon-button"
+import { Button } from "@workspace/ui/components/button"
 
 interface EssayItem {
   id: number
@@ -27,13 +22,6 @@ interface PromptDetailData {
   essayCount: number
   essays: EssayItem[]
 }
-
-const BOTTOM_NAV_ITEMS = [
-  { icon: Home01Icon, label: "홈" },
-  { icon: BookOpen01Icon, label: "나의 여정" },
-  { icon: QuillWrite01Icon, label: "서재" },
-  { icon: User02Icon, label: "프로필" },
-] as const
 
 function WordCountBadge({ count }: { count: number }) {
   return (
@@ -97,32 +85,25 @@ export default function PromptDetailView({
     <div className="flex min-h-screen flex-col bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between bg-surface px-4 py-3">
-        <button
-          aria-label="뒤로 가기"
-          onClick={() => router.back()}
-          className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-        >
+        <IconButton aria-label="뒤로 가기" onClick={() => router.back()}>
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </button>
+        </IconButton>
         <span className="flex-1 text-center text-label-large text-on-surface">
           {data.title}
         </span>
-        <button
-          aria-label="더보기"
-          className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-        >
+        <IconButton aria-label="더보기">
           <HugeiconsIcon
             icon={MoreHorizontalIcon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </button>
+        </IconButton>
       </header>
 
       {/* Scrollable content */}
@@ -167,46 +148,29 @@ export default function PromptDetailView({
         {/* Load More */}
         {hasMoreEssays && (
           <div className="flex items-center justify-center py-6">
-            <button
+            <Button
+              variant="text"
+              size="sm"
               onClick={onLoadMoreEssaysAction}
               disabled={isLoadingMoreEssays}
-              className="rounded-[3rem] px-6 py-3 text-label-small-em text-on-surface-low uppercase transition-colors hover:bg-surface-container disabled:opacity-50"
             >
               {isLoadingMoreEssays ? "불러오는 중..." : "더 불러오기"}
-            </button>
+            </Button>
           </div>
         )}
       </div>
 
       {/* CTA Button */}
       <div className="fixed right-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] left-0 z-40 px-4 pb-3">
-        <button
+        <Button
+          variant="filled"
+          size="lg"
           onClick={onStartWritingAction}
-          className="w-full rounded-[1rem] bg-primary py-4 text-title-small-em text-on-primary transition-opacity hover:opacity-90 active:opacity-75"
+          className="w-full"
         >
           글쓰기 시작
-        </button>
+        </Button>
       </div>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-around rounded-tl-[2rem] rounded-tr-[2rem] border-t border-outline/20 bg-surface/95 px-4 py-4 safe-area-pb shadow-[0px_-12px_40px_0px_rgba(47,52,48,0.04)] backdrop-blur-xl">
-        {BOTTOM_NAV_ITEMS.map(({ icon, label }) => (
-          <button
-            key={label}
-            onClick={() => router.push("/home")}
-            className="flex flex-col items-center gap-1 text-on-surface-lowest transition-colors"
-          >
-            {" "}
-            <HugeiconsIcon
-              icon={icon}
-              size={24}
-              color="currentColor"
-              strokeWidth={1.5}
-            />
-            <span className="text-label-medium-em uppercase">{label}</span>
-          </button>
-        ))}
-      </nav>
     </div>
   )
 }

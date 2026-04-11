@@ -7,11 +7,11 @@ import {
   MoreHorizontalIcon,
   BookOpen01Icon,
   ArrowDown01Icon,
-  Home01Icon,
-  QuillWrite01Icon,
-  User02Icon,
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { IconButton } from "@workspace/ui/components/icon-button"
+import { Button } from "@workspace/ui/components/button"
+import { Textarea } from "@workspace/ui/components/text-field"
 
 interface WritingDetailData {
   id: string
@@ -39,13 +39,6 @@ interface WritingComparisonData {
   improvements: string[]
   summary: string
 }
-
-const BOTTOM_NAV_ITEMS = [
-  { icon: Home01Icon, label: "홈", href: "/home" },
-  { icon: BookOpen01Icon, label: "여정", href: "/journeys" },
-  { icon: QuillWrite01Icon, label: "글쓰기", href: "/writings" },
-  { icon: User02Icon, label: "프로필", href: "/profile" },
-] as const
 
 function WritingPromptCard({ title }: { title: string }) {
   const [expanded, setExpanded] = useState(false)
@@ -129,32 +122,25 @@ export default function WritingDetailView({
     <div className="flex min-h-screen flex-col bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between bg-surface px-4 py-3">
-        <button
-          aria-label="뒤로 가기"
-          onClick={() => router.back()}
-          className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-        >
+        <IconButton aria-label="뒤로 가기" onClick={() => router.back()}>
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </button>
+        </IconButton>
         <span className="flex-1 text-center text-label-large text-on-surface">
           {data.title}
         </span>
-        <button
-          aria-label="더보기"
-          className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-        >
+        <IconButton aria-label="더보기">
           <HugeiconsIcon
             icon={MoreHorizontalIcon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </button>
+        </IconButton>
       </header>
 
       {/* Scrollable content */}
@@ -193,13 +179,14 @@ export default function WritingDetailView({
                 현재 글을 기준으로 강점과 개선점을 받아볼 수 있어요.
               </p>
             </div>
-            <button
+            <Button
+              variant="filled"
+              size="sm"
               onClick={() => void onGenerateFeedback?.()}
-              disabled={feedbackPending}
-              className="rounded-full bg-on-surface px-4 py-2 text-label-large-em text-surface disabled:opacity-50"
+              loading={feedbackPending}
             >
               {feedbackPending ? "생성 중..." : "피드백 받기"}
-            </button>
+            </Button>
           </div>
 
           {feedback ? (
@@ -236,19 +223,20 @@ export default function WritingDetailView({
               수정한 버전을 붙여 넣으면 원문과 비교해 개선 지점을 알려줘요.
             </p>
           </div>
-          <textarea
+          <Textarea
             value={revisedText}
             onChange={(event) => setRevisedText(event.target.value)}
             placeholder="수정한 버전을 여기에 붙여 넣어주세요."
-            className="min-h-40 rounded-[1.5rem] bg-surface px-4 py-4 text-body-medium text-on-surface outline-none"
+            className="min-h-40"
           />
-          <button
+          <Button
+            variant="filled"
             onClick={() => void onCompareRevision?.(revisedText)}
-            disabled={comparisonPending || revisedText.trim().length === 0}
-            className="rounded-full bg-on-surface px-4 py-3 text-label-large-em text-surface disabled:opacity-50"
+            loading={comparisonPending}
+            disabled={revisedText.trim().length === 0}
           >
             {comparisonPending ? "비교 중..." : "수정본 비교하기"}
-          </button>
+          </Button>
 
           {comparison ? (
             <div className="flex flex-col gap-4 rounded-[1.5rem] bg-surface px-4 py-4">
@@ -278,25 +266,6 @@ export default function WritingDetailView({
           )}
         </div>
       </div>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed right-0 bottom-0 left-0 z-50 flex items-center justify-around rounded-tl-[2rem] rounded-tr-[2rem] border-t border-outline/20 bg-surface/95 px-4 py-4 safe-area-pb shadow-[0px_-12px_40px_0px_rgba(47,52,48,0.04)] backdrop-blur-xl">
-        {BOTTOM_NAV_ITEMS.map(({ icon, label, href }) => (
-          <button
-            key={label}
-            onClick={() => router.push(href)}
-            className="flex flex-col items-center gap-1 text-on-surface-lowest transition-colors"
-          >
-            <HugeiconsIcon
-              icon={icon}
-              size={24}
-              color="currentColor"
-              strokeWidth={1.5}
-            />
-            <span className="text-label-medium-em uppercase">{label}</span>
-          </button>
-        ))}
-      </nav>
     </div>
   )
 }

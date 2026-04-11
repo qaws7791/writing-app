@@ -4,6 +4,8 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Search01Icon, QuillWrite01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef } from "react"
+import { FAB } from "@workspace/ui/components/fab"
+import { LoadingIndicator } from "@workspace/ui/components/loading-indicator"
 
 import { useWritings, useDeleteWriting } from "@/features/writings"
 import { WritingCard } from "@/features/writings/components"
@@ -81,19 +83,17 @@ export default function WritingsListView() {
         ))}
         {isFetchingNextPage && (
           <div className="flex justify-center py-4">
-            <span className="text-body-medium text-on-surface-low">
-              불러오는 중...
-            </span>
+            <LoadingIndicator size="sm" />
           </div>
         )}
         <div ref={sentinelRef} />
       </div>
 
       {/* FAB */}
-      <button
-        type="button"
+      <FAB
         aria-label="새 글쓰기"
-        className="fixed right-4 bottom-24 flex size-14 items-center justify-center rounded-[16px] bg-primary text-on-primary shadow-[0px_4px_4px_0px_rgba(0,0,0,0.25)]"
+        variant="primary"
+        className="fixed right-4 bottom-24"
         onClick={() => router.push("/writings/new")}
       >
         <HugeiconsIcon
@@ -102,7 +102,7 @@ export default function WritingsListView() {
           color="currentColor"
           strokeWidth={1.5}
         />
-      </button>
+      </FAB>
     </div>
   )
 }

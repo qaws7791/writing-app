@@ -1,6 +1,8 @@
 "use client"
 
 import { useState } from "react"
+import { Chip } from "@workspace/ui/components/chip"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 import { useHomeSnapshot } from "@/features/home"
 import { useJourneys } from "@/features/journeys"
 import { JourneyCard } from "@/features/journeys/components"
@@ -90,9 +92,10 @@ export default function JourneysView() {
           </h2>
           {isHomePending
             ? Array.from({ length: 2 }, (_, index) => (
-                <div
+                <Skeleton
                   key={index}
-                  className="h-32 animate-pulse rounded-3xl bg-surface-container"
+                  variant="rectangular"
+                  className="h-32 rounded-3xl"
                 />
               ))
             : activeJourneys.map((journey) => (
@@ -114,9 +117,10 @@ export default function JourneysView() {
           </h2>
           {isCompletedPending
             ? Array.from({ length: 2 }, (_, index) => (
-                <div
+                <Skeleton
                   key={index}
-                  className="h-24 animate-pulse rounded-3xl bg-surface-container"
+                  variant="rectangular"
+                  className="h-24 rounded-3xl"
                 />
               ))
             : completedJourneys.map((journey) => (
@@ -139,17 +143,15 @@ export default function JourneysView() {
         {/* Category Filter Chips */}
         <div className="flex gap-2.5 overflow-x-auto px-4 py-4 [scrollbar-width:none]">
           {categories.map((cat) => (
-            <button
+            <Chip
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`shrink-0 rounded-full px-5 py-2.5 text-title-small whitespace-nowrap transition-colors ${
-                selectedCategory === cat
-                  ? "bg-primary text-on-primary"
-                  : "bg-secondary-container text-on-surface-low"
-              }`}
+              variant="filter"
+              selected={selectedCategory === cat}
+              onSelect={() => setSelectedCategory(cat)}
+              className="shrink-0"
             >
               {cat}
-            </button>
+            </Chip>
           ))}
         </div>
 
@@ -157,9 +159,10 @@ export default function JourneysView() {
         <div className="flex flex-col gap-4 px-4 pb-8">
           {isAllPending ? (
             Array.from({ length: 3 }, (_, index) => (
-              <div
+              <Skeleton
                 key={index}
-                className="h-32 animate-pulse rounded-3xl bg-surface-container"
+                variant="rectangular"
+                className="h-32 rounded-3xl"
               />
             ))
           ) : filteredJourneys.length === 0 ? (

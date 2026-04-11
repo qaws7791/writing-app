@@ -27,6 +27,8 @@ import {
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 import { BottomSheet } from "@workspace/ui/components/bottom-sheet"
+import { IconButton } from "@workspace/ui/components/icon-button"
+import { Button } from "@workspace/ui/components/button"
 import {
   Menu,
   MenuTrigger,
@@ -230,19 +232,14 @@ export default function WritingEditorView({
     <div className="flex min-h-dvh flex-col bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between bg-surface px-4 py-3">
-        <button
-          type="button"
-          aria-label="뒤로 가기"
-          onClick={handleBack}
-          className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-        >
+        <IconButton aria-label="뒤로 가기" onClick={handleBack}>
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </button>
+        </IconButton>
 
         <span className="flex-1 truncate px-2 text-center text-label-large-em text-on-surface">
           {title || "새 글"}
@@ -252,18 +249,14 @@ export default function WritingEditorView({
           {writingIdNumber && (
             <Menu>
               <MenuTrigger>
-                <button
-                  type="button"
-                  aria-label="더보기"
-                  className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-                >
+                <IconButton aria-label="더보기">
                   <HugeiconsIcon
                     icon={MoreVerticalIcon}
                     size={24}
                     color="currentColor"
                     strokeWidth={1.5}
                   />
-                </button>
+                </IconButton>
               </MenuTrigger>
               <MenuContent
                 side="bottom"
@@ -287,12 +280,11 @@ export default function WritingEditorView({
               </MenuContent>
             </Menu>
           )}
-          <button
-            type="button"
+          <IconButton
             aria-label="저장"
+            variant="filled"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex size-10 items-center justify-center rounded-full bg-on-surface text-on-primary transition-colors hover:opacity-90 disabled:opacity-50"
           >
             <HugeiconsIcon
               icon={Tick02Icon}
@@ -300,7 +292,7 @@ export default function WritingEditorView({
               color="currentColor"
               strokeWidth={2}
             />
-          </button>
+          </IconButton>
         </div>
       </header>
 
@@ -420,21 +412,24 @@ export default function WritingEditorView({
 
           {/* Buttons */}
           <div className="flex w-full gap-[10px]">
-            <button
-              type="button"
+            <Button
+              variant="tonal"
+              size="lg"
               onClick={handleLeaveWithoutSave}
-              className="flex-1 rounded-[20px] bg-surface-container-high py-[14px] text-title-small-em text-on-surface"
+              className="flex-1"
             >
               그냥 나가기
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              variant="filled"
+              size="lg"
               onClick={handleSaveAndLeave}
               disabled={isSaving}
-              className="flex-1 rounded-[20px] bg-on-surface py-[14px] text-title-small-em text-on-primary disabled:opacity-50"
+              loading={isSaving}
+              className="flex-1"
             >
               임시 저장 후 나가기
-            </button>
+            </Button>
           </div>
         </div>
       </BottomSheet>

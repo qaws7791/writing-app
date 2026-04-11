@@ -4,6 +4,10 @@ import { useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { IconButton } from "@workspace/ui/components/icon-button"
+import { Chip } from "@workspace/ui/components/chip"
+import { Skeleton } from "@workspace/ui/components/skeleton"
+import { Button } from "@workspace/ui/components/button"
 import { usePromptCategories, usePromptList } from "@/features/prompts"
 
 type PromptType = "sensory" | "reflection" | "opinion"
@@ -67,19 +71,14 @@ export default function WritingEntryView() {
     <div className="flex h-dvh flex-col bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center gap-3 bg-surface px-4 py-3">
-        <button
-          type="button"
-          aria-label="뒤로 가기"
-          onClick={() => router.back()}
-          className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-        >
+        <IconButton aria-label="뒤로 가기" onClick={() => router.back()}>
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </button>
+        </IconButton>
         <span className="flex-1 text-center text-label-large-em text-on-surface">
           새 글 쓰기
         </span>
@@ -99,28 +98,24 @@ export default function WritingEntryView() {
 
         {/* Category Filter Chips */}
         <div className="flex gap-2.5 overflow-x-auto py-2.5 [scrollbar-width:none]">
-          <button
-            onClick={() => setSelectedType(undefined)}
-            className={`shrink-0 rounded-full px-5 py-2.5 text-title-small whitespace-nowrap transition-colors ${
-              selectedType === undefined
-                ? "bg-primary text-on-primary"
-                : "bg-secondary-container text-on-surface-low"
-            }`}
+          <Chip
+            variant="filter"
+            selected={selectedType === undefined}
+            onSelect={() => setSelectedType(undefined)}
+            className="shrink-0"
           >
             전체
-          </button>
+          </Chip>
           {categoriesData?.items.map((cat) => (
-            <button
+            <Chip
               key={cat.key}
-              onClick={() => setSelectedType(cat.key as PromptType)}
-              className={`shrink-0 rounded-full px-5 py-2.5 text-title-small whitespace-nowrap transition-colors ${
-                selectedType === cat.key
-                  ? "bg-primary text-on-primary"
-                  : "bg-secondary-container text-on-surface-low"
-              }`}
+              variant="filter"
+              selected={selectedType === cat.key}
+              onSelect={() => setSelectedType(cat.key as PromptType)}
+              className="shrink-0"
             >
               {cat.label}
-            </button>
+            </Chip>
           ))}
         </div>
 
@@ -128,9 +123,10 @@ export default function WritingEntryView() {
         <div className="flex flex-col gap-4 pt-6">
           {isLoading ? (
             Array.from({ length: 3 }, (_, index) => (
-              <div
+              <Skeleton
                 key={index}
-                className="h-36 animate-pulse rounded-3xl bg-surface-container"
+                variant="rectangular"
+                className="h-36 rounded-3xl"
               />
             ))
           ) : prompts.length === 0 ? (
@@ -154,13 +150,14 @@ export default function WritingEntryView() {
 
       {/* 항상 보이는 하단 고정 버튼 */}
       <div className="border-outline-variant shrink-0 border-t bg-surface px-4 py-4">
-        <button
-          type="button"
+        <Button
+          variant="tonal"
+          size="lg"
           onClick={() => router.push("/writings/new/editor")}
-          className="w-full rounded-[1rem] bg-surface-container py-4 text-title-small-em text-on-surface transition-colors hover:bg-surface-container-high"
+          className="w-full"
         >
           직접 쓸게요
-        </button>
+        </Button>
       </div>
     </div>
   )

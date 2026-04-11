@@ -9,6 +9,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@workspace/ui/components/tabs"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 import { useHomeSnapshot } from "@/features/home"
 import { useJourneys } from "@/features/journeys"
 
@@ -161,9 +162,10 @@ export default function MyJourneysView() {
         <TabsContent value="in_progress" className="flex flex-col gap-4 pt-4">
           {isHomePending
             ? Array.from({ length: 2 }, (_, index) => (
-                <div
+                <Skeleton
                   key={index}
-                  className="h-32 animate-pulse rounded-3xl bg-surface-container"
+                  variant="rectangular"
+                  className="h-32 rounded-3xl"
                 />
               ))
             : null}
@@ -191,9 +193,10 @@ export default function MyJourneysView() {
         <TabsContent value="completed" className="flex flex-col gap-4 pt-4">
           {isCompletedPending
             ? Array.from({ length: 2 }, (_, index) => (
-                <div
+                <Skeleton
                   key={index}
-                  className="h-24 animate-pulse rounded-3xl bg-surface-container"
+                  variant="rectangular"
+                  className="h-24 rounded-3xl"
                 />
               ))
             : null}

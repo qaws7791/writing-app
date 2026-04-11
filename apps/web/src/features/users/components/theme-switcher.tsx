@@ -9,6 +9,7 @@ import {
   Motion01Icon,
 } from "@hugeicons/core-free-icons"
 import { useTheme } from "next-themes"
+import { Switch } from "@workspace/ui/components/switch"
 import { Divider } from "./setting-row"
 
 const THEME_OPTIONS = [
@@ -73,20 +74,11 @@ export function ThemeSwitcher() {
             화면 움직임을 최소화합니다
           </span>
         </div>
-        <button
-          role="switch"
-          aria-checked={reduceMotion}
-          onClick={() => setReduceMotion((v) => !v)}
-          className={`relative h-5 w-10 shrink-0 rounded-full transition-colors ${
-            reduceMotion ? "bg-on-surface" : "bg-surface-container-highest"
-          }`}
-        >
-          <div
-            className={`absolute top-0.75 size-3.5 rounded-full bg-on-primary shadow-sm transition-transform ${
-              reduceMotion ? "left-0.75 translate-x-5.5" : "left-0.75"
-            }`}
-          />
-        </button>
+        <Switch
+          checked={reduceMotion}
+          onCheckedChange={setReduceMotion}
+          size="sm"
+        />
       </div>
     </>
   )

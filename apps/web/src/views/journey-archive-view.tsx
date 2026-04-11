@@ -4,6 +4,8 @@ import { useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Layers01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { Chip } from "@workspace/ui/components/chip"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 import { useJourneys } from "@/features/journeys"
 
 const CATEGORY_LABEL: Record<
@@ -97,17 +99,15 @@ export default function JourneyArchiveView() {
       {/* Category Filter Chips */}
       <div className="flex gap-2.5 overflow-x-auto px-4 py-2.5 [scrollbar-width:none]">
         {categories.map((cat) => (
-          <button
+          <Chip
             key={cat}
-            onClick={() => setSelectedCategory(cat)}
-            className={`shrink-0 rounded-full px-5 py-2.5 text-title-small whitespace-nowrap transition-colors ${
-              selectedCategory === cat
-                ? "bg-primary text-on-primary"
-                : "bg-secondary-container text-on-surface-low"
-            }`}
+            variant="filter"
+            selected={selectedCategory === cat}
+            onSelect={() => setSelectedCategory(cat)}
+            className="shrink-0"
           >
             {cat}
-          </button>
+          </Chip>
         ))}
       </div>
 
@@ -115,9 +115,10 @@ export default function JourneyArchiveView() {
       <div className="flex flex-col gap-4 px-4 pt-6 pb-8">
         {isPending
           ? Array.from({ length: 3 }, (_, index) => (
-              <div
+              <Skeleton
                 key={index}
-                className="h-32 animate-pulse rounded-3xl bg-surface-container"
+                variant="rectangular"
+                className="h-32 rounded-3xl"
               />
             ))
           : null}

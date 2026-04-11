@@ -1,6 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 import { useHomeSnapshot } from "@/features/home"
 import { JourneyCard } from "@/features/journeys/components"
 import {
@@ -10,11 +11,14 @@ import {
 
 function JourneyCardSkeleton() {
   return (
-    <div className="flex h-32 w-full animate-pulse items-center gap-5 rounded-3xl bg-surface-container p-4">
-      <div className="size-24 shrink-0 rounded-[32px] bg-surface-container-high" />
+    <div className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-container p-4">
+      <Skeleton
+        variant="rectangular"
+        className="size-24 shrink-0 rounded-[32px]"
+      />
       <div className="flex h-[87.5px] flex-1 flex-col gap-2">
-        <div className="h-4 w-3/4 rounded bg-surface-container-high" />
-        <div className="h-3 w-1/2 rounded bg-surface-container-high" />
+        <Skeleton variant="text" className="h-4 w-3/4" />
+        <Skeleton variant="text" className="h-3 w-1/2" />
       </div>
     </div>
   )

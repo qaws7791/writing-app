@@ -1025,17 +1025,17 @@ apps/web/src/features/users/components/
 | **5-4** | Prompt 비즈니스 컴포넌트 | ⬜ |
 | **5-5** | Home 비즈니스 컴포넌트 | ⬜ |
 | **5-6** | Profile 비즈니스 컴포넌트 | ⬜ |
-| **6-1** | BottomNav → NavigationBar | ⬜ |
-| **6-2** | home-view 리팩토링 | ⬜ |
-| **6-3** | 여정 목록 뷰 리팩토링 | ⬜ |
-| **6-4** | journey-detail-view 리팩토링 | ⬜ |
-| **6-5** | session-detail-view 리팩토링 | ⬜ |
-| **6-6** | writing-list-view 리팩토링 | ⬜ |
-| **6-7** | writing-editor-view 리팩토링 | ⬜ |
-| **6-8** | writing-detail/entry-view 리팩토링 | ⬜ |
-| **6-9** | prompt 뷰 리팩토링 | ⬜ |
-| **6-10** | profile-view 리팩토링 | ⬜ |
-| **6-11** | prompt-bottom-sheet 리팩토링 | ⬜ |
+| **6-1** | BottomNav → NavigationBar | ✅ |
+| **6-2** | home-view 리팩토링 | ✅ |
+| **6-3** | 여정 목록 뷰 리팩토링 | ✅ |
+| **6-4** | journey-detail-view 리팩토링 | ✅ |
+| **6-5** | session-detail-view 리팩토링 | ✅ |
+| **6-6** | writing-list-view 리팩토링 | ✅ |
+| **6-7** | writing-editor-view 리팩토링 | ✅ |
+| **6-8** | writing-detail/entry-view 리팩토링 | ✅ |
+| **6-9** | prompt 뷰 리팩토링 | ✅ |
+| **6-10** | profile-view 리팩토링 | ✅ |
+| **6-11** | prompt-bottom-sheet 리팩토링 | ✅ |
 | **7-1** | 전체 빌드/린트 검증 | ⬜ |
 | **7-2** | 스토리북 빌드 검증 | ⬜ |
 | **7-3** | E2E 테스트 검증 | ⬜ |

@@ -1,5 +1,6 @@
 import { HugeiconsIcon } from "@hugeicons/react"
 import { User02Icon } from "@hugeicons/core-free-icons"
+import { Avatar } from "@workspace/ui/components/avatar"
 
 export interface ProfileData {
   name: string
@@ -18,23 +19,13 @@ export function ProfileHeader({
 }) {
   return (
     <div className="flex flex-col items-center gap-1 px-4 pt-8 pb-10">
-      <div className="mb-3 flex size-24 items-center justify-center overflow-hidden rounded-full bg-secondary-container">
-        {data?.image ? (
-          <img
-            src={data.image}
-            alt={data.name}
-            className="size-full object-cover"
-          />
-        ) : (
-          <HugeiconsIcon
-            icon={User02Icon}
-            size={48}
-            color="currentColor"
-            strokeWidth={1}
-            className="text-on-secondary-container"
-          />
-        )}
-      </div>
+      <Avatar
+        src={data?.image}
+        alt={data?.name ?? "사용자"}
+        fallback={data?.name?.[0]}
+        size="lg"
+        className="mb-3 size-24 text-title-large"
+      />
       <h2 className="text-headline-medium-em text-on-surface">
         {isPending ? "불러오는 중..." : (data?.name ?? "사용자")}
       </h2>
