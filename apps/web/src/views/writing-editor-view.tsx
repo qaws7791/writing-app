@@ -26,17 +26,13 @@ import {
   Idea01Icon,
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { BottomSheet } from "@workspace/ui/components/bottom-sheet"
 import {
-  Drawer,
-  DrawerContent,
-  DrawerTitle,
-} from "@workspace/ui/components/drawer"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
+  Menu,
+  MenuTrigger,
+  MenuContent,
+  MenuItem,
+} from "@workspace/ui/components/menu"
 
 import { usePromptDetail } from "@/features/prompts/hooks/use-prompt-detail"
 import {
@@ -300,42 +296,42 @@ export default function WritingEditorView({
 
         <div className="flex items-center gap-2">
           {writingIdNumber && (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <button
-                    type="button"
-                    aria-label="더보기"
-                    className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-                  >
-                    <HugeiconsIcon
-                      icon={MoreVerticalIcon}
-                      size={24}
-                      color="currentColor"
-                      strokeWidth={1.5}
-                    />
-                  </button>
-                }
-              />
-              <DropdownMenuContent
+            <Menu>
+              <MenuTrigger>
+                <button
+                  type="button"
+                  aria-label="더보기"
+                  className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
+                >
+                  <HugeiconsIcon
+                    icon={MoreVerticalIcon}
+                    size={24}
+                    color="currentColor"
+                    strokeWidth={1.5}
+                  />
+                </button>
+              </MenuTrigger>
+              <MenuContent
                 side="bottom"
                 align="end"
                 className="min-w-32.5 rounded-2xl bg-surface-container-low px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
               >
-                <DropdownMenuItem
+                <MenuItem
                   className="gap-3 px-3 py-3 text-body-medium-em text-on-surface-low"
                   onClick={handleDelete}
+                  leadingIcon={
+                    <HugeiconsIcon
+                      icon={Delete01Icon}
+                      size={20}
+                      color="currentColor"
+                      strokeWidth={1.5}
+                    />
+                  }
                 >
-                  <HugeiconsIcon
-                    icon={Delete01Icon}
-                    size={20}
-                    color="currentColor"
-                    strokeWidth={1.5}
-                  />
                   삭제
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </MenuItem>
+              </MenuContent>
+            </Menu>
           )}
           <button
             type="button"
@@ -420,80 +416,74 @@ export default function WritingEditorView({
       </div>
 
       {/* Unsaved changes bottom sheet */}
-      <Drawer open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
-        <DrawerContent className="!rounded-t-[32px] !border-t-0 bg-surface-container-lowest px-6 pt-3 pb-9 [&>div:first-child]:!hidden">
-          <DrawerTitle className="sr-only">저장되지 않은 변경사항</DrawerTitle>
-          {/* Handle bar */}
-          <div className="mx-auto mb-[38px] h-[5px] w-[45px] rounded-full bg-on-surface-lowest" />
-
-          <div className="flex flex-col items-center gap-[33px]">
-            {/* Icon + text */}
-            <div className="flex w-full flex-col items-center gap-[33px]">
-              <div className="flex size-[58px] items-center justify-center rounded-[20px] bg-surface">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M14 2H6C5.47 2 4.96 2.21 4.59 2.59C4.21 2.96 4 3.47 4 4V20C4 20.53 4.21 21.04 4.59 21.41C4.96 21.79 5.47 22 6 22H18C18.53 22 19.04 21.79 19.41 21.41C19.79 21.04 20 20.53 20 20V8L14 2Z"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M14 2V8H20"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M16 13H8M16 17H8M10 9H8"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-
-              <div className="flex flex-col items-center gap-[14px] text-center">
-                <p className="text-title-large-em text-on-surface">
-                  작성 중인 수필이 있어요
-                </p>
-                <p className="text-body-medium text-on-surface-lowest">
-                  지금 나가면 저장되지 않은 내용이 사라질 수 있습니다.
-                  <br />
-                  저장 후 나가시겠어요?
-                </p>
-              </div>
+      <BottomSheet open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <div className="flex flex-col items-center gap-[33px]">
+          {/* Icon + text */}
+          <div className="flex w-full flex-col items-center gap-[33px]">
+            <div className="flex size-[58px] items-center justify-center rounded-[20px] bg-surface">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M14 2H6C5.47 2 4.96 2.21 4.59 2.59C4.21 2.96 4 3.47 4 4V20C4 20.53 4.21 21.04 4.59 21.41C4.96 21.79 5.47 22 6 22H18C18.53 22 19.04 21.79 19.41 21.41C19.79 21.04 20 20.53 20 20V8L14 2Z"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M14 2V8H20"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M16 13H8M16 17H8M10 9H8"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
 
-            {/* Buttons */}
-            <div className="flex w-full gap-[10px]">
-              <button
-                type="button"
-                onClick={handleLeaveWithoutSave}
-                className="flex-1 rounded-[20px] bg-surface-container-high py-[14px] text-title-small-em text-on-surface"
-              >
-                그냥 나가기
-              </button>
-              <button
-                type="button"
-                onClick={handleSaveAndLeave}
-                disabled={isSaving}
-                className="flex-1 rounded-[20px] bg-on-surface py-[14px] text-title-small-em text-on-primary disabled:opacity-50"
-              >
-                임시 저장 후 나가기
-              </button>
+            <div className="flex flex-col items-center gap-[14px] text-center">
+              <p className="text-title-large-em text-on-surface">
+                작성 중인 수필이 있어요
+              </p>
+              <p className="text-body-medium text-on-surface-lowest">
+                지금 나가면 저장되지 않은 내용이 사라질 수 있습니다.
+                <br />
+                저장 후 나가시겠어요?
+              </p>
             </div>
           </div>
-        </DrawerContent>
-      </Drawer>
+
+          {/* Buttons */}
+          <div className="flex w-full gap-[10px]">
+            <button
+              type="button"
+              onClick={handleLeaveWithoutSave}
+              className="flex-1 rounded-[20px] bg-surface-container-high py-[14px] text-title-small-em text-on-surface"
+            >
+              그냥 나가기
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveAndLeave}
+              disabled={isSaving}
+              className="flex-1 rounded-[20px] bg-on-surface py-[14px] text-title-small-em text-on-primary disabled:opacity-50"
+            >
+              임시 저장 후 나가기
+            </button>
+          </div>
+        </div>
+      </BottomSheet>
 
       {/* Prompt selection bottom sheet */}
       <PromptBottomSheet

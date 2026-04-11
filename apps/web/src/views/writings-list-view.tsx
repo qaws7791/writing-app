@@ -10,11 +10,11 @@ import {
 import { useRouter } from "next/navigation"
 import { useEffect, useRef } from "react"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
+  Menu,
+  MenuTrigger,
+  MenuContent,
+  MenuItem,
+} from "@workspace/ui/components/menu"
 
 import { useWritings, useDeleteWriting } from "@/features/writings"
 
@@ -49,44 +49,43 @@ function WritingCard({
         <span className="text-label-large text-on-surface-low">
           {writing.date}
         </span>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                aria-label="더보기"
-                className="flex h-10 w-10 items-center justify-center text-on-surface-low"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <HugeiconsIcon
-                  icon={MoreVerticalIcon}
-                  size={16}
-                  color="currentColor"
-                  strokeWidth={2}
-                />
-              </button>
-            }
-          ></DropdownMenuTrigger>
-          <DropdownMenuContent
+        <Menu>
+          <MenuTrigger>
+            <button
+              type="button"
+              aria-label="더보기"
+              className="flex h-10 w-10 items-center justify-center text-on-surface-low"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <HugeiconsIcon
+                icon={MoreVerticalIcon}
+                size={16}
+                color="currentColor"
+                strokeWidth={2}
+              />
+            </button>
+          </MenuTrigger>
+          <MenuContent
             side="bottom"
             align="end"
             className="min-w-32.5 rounded-2xl bg-surface-container-low px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
-            onClick={(e) => e.stopPropagation()}
           >
-            <DropdownMenuItem
+            <MenuItem
               className="gap-3 px-3 py-3 text-label-large text-on-surface-low"
               onClick={() => onDelete(writing.id)}
+              leadingIcon={
+                <HugeiconsIcon
+                  icon={Delete01Icon}
+                  size={20}
+                  color="currentColor"
+                  strokeWidth={1.5}
+                />
+              }
             >
-              <HugeiconsIcon
-                icon={Delete01Icon}
-                size={20}
-                color="currentColor"
-                strokeWidth={1.5}
-              />
               삭제
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </MenuItem>
+          </MenuContent>
+        </Menu>
       </div>
       <h2 className="text-headline-small-em text-on-surface">
         {writing.title}

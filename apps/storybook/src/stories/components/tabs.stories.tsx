@@ -40,7 +40,7 @@ export const Showcase: Story = {
       </Tabs>
 
       <Tabs defaultValue="account" orientation="vertical">
-        <TabsList variant="line">
+        <TabsList variant="primary">
           <TabsTrigger value="account">Account</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
