@@ -1,5 +1,3 @@
-import { HugeiconsIcon } from "@hugeicons/react"
-import { User02Icon } from "@hugeicons/core-free-icons"
 import { Avatar } from "@workspace/ui/components/avatar"
 
 export interface ProfileData {
