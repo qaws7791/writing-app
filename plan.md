@@ -1,360 +1,1042 @@
-# PRD v1.0 → v2.1 전체 구현 계획
+# UI 패키지 구현 및 Web 앱 리팩토링 계획
 
-> **작성일:** 2026-04-11
-> **기준 문서:** 글필_PRD_v2_1.md
-> **현재 상태:** PRD v1.0 기반 구현 완료 (MVP 수준)
-
----
-
-## 목차
-
-1. [변경 요약 (v1.0 → v2.1 Gap 분석)](#1-변경-요약)
-2. [Phase 1 — 문서(/docs) 업데이트](#phase-1--문서docs-업데이트)
-3. [Phase 2 — 백엔드 구현](#phase-2--백엔드-구현)
-4. [Phase 3 — 프론트엔드 구현 및 API 연결](#phase-3--프론트엔드-구현-및-api-연결)
-5. [Phase 4 — 통합 테스트 (브라우저 E2E)](#phase-4--통합-테스트-브라우저-e2e)
+> **목표**: `packages/ui`를 MD3 기반 공용 컴포넌트 라이브러리로 재구축하고, `apps/web`의 인라인 UI를 공용 컴포넌트로 교체한다.
+> **원칙**: 모든 작업 단위는 원자적 커밋 — 빌드 깨짐 없이 독립적으로 머지 가능해야 한다.
 
 ---
 
-## 1. 변경 요약
+## 현재 상태 요약
 
-### 1.1. 핵심 전략 변경
+### packages/ui (현재)
 
-| 항목 | v1.0 | v2.1 | 영향 범위 |
-|---|---|---|---|
-| 제품 전략 | 기능 병렬 나열 | **DOTADIW** — 여정 > 글쓰기 > 글감 명확한 위계 | 전체 UX/UI, API 우선순위 |
-| 제품 비전 | "글쓰기를 통해 생각하는 힘을 기르는 여정" | "여정을 통해 성장하고, 글쓰기로 표현하라" | 마케팅/문서 |
-| 기능 계층 | 여정/글감/글쓰기 동급 | Core(여정) > Secondary(글쓰기) > Tertiary(글감) | 화면 설계, 내비게이션 |
+- shadcn/base-vega 기반 33개 컴포넌트 (Button, Card, Dialog, Drawer, Tabs, Badge, Input, Textarea, Switch 등)
+- `@base-ui/react` + CVA + Tailwind CSS v4 + `cn()` 유틸리티
+- globals.css: oklch 기반 shadcn 토큰 + MD3 색상 토큰 혼재
+- 스토리북: `apps/storybook/src/stories/` 에 31개 스토리 존재 (패키지와 분리)
 
-### 1.2. 하단 탭 내비게이션 변경
+### apps/web에서의 @workspace/ui 사용 현황
 
-| v1.0 (현재 구현) | v2.1 (목표) |
-|---|---|
-| `홈 \| 나의 여정 \| 서재 \| 프로필` | `홈 \| 여정 \| 글쓰기 \| 프로필` |
+- **사용 중인 컴포넌트 (3개)**: Drawer, DropdownMenu, Tabs
+- **미사용 (30+ 컴포넌트)**: Button, Card, Input, Textarea, Badge, Skeleton, Spinner, Dialog 등
+- **인라인 구현**: 버튼, 카드, 인풋, 체크박스, 스위치, 스피너, 프로그레스 바 등 모두 각 view에서 Tailwind로 직접 구현
 
-### 1.3. 화면별 변경 사항
+### 설계 문서 (ui-package-design.md) 목표 구조
 
-| 화면 | 변경 수준 | 상세 |
-|---|---|---|
-| **홈** | 🔴 대규모 | 3개 서브탭(홈/글감/여정) → 서브탭 제거, 여정 중심 단일 구조. 글감 직접 노출 제거 |
-| **여정 탭** | 🟡 중간 | "나의 여정" → "여정" 리네이밍. 탐색(Discover) + 진행(My Progress) 통합 |
-| **글쓰기 탭** | 🔴 신규 | "서재" → "글쓰기"로 전환. "새 글 쓰기" → 글감 미리보기 중간 화면(v2.1 신규) 추가 |
-| **글감** | 🔴 대규모 | 독립 탭/상세 화면 제거 → 글쓰기 진입 화면 + 에디터 내 Bottom Sheet로만 존재 |
-| **글 에디터** | 🟡 중간 | 글감 참조 카드(선택적), "아이디어가 필요하신가요?" 버튼 추가 |
-| **프로필** | 🟢 경미 | 성장 통계에서 여정 수를 글 수보다 앞에 표시 |
-
-### 1.4. 데이터 모델 변경
-
-| 모델 | 변경 | 상세 |
-|---|---|---|
-| `WritingPrompt` | 🟢 경미 | `partnerId` 필드 제거 (현재 미존재하므로 변경 없음). `responseCount` 유지 (이미 존재) |
-| `Writing` | 🟢 없음 | `promptId` optional 유지 (현재와 동일) |
-
-### 1.5. API 변경 영향
-
-| API | 변경 | 상세 |
-|---|---|---|
-| **`GET /home`** | 🔴 수정 필요 | 오늘의 추천 글감 제거 → 진행 중인 여정 카드 우선. 하단에 "글쓰기 제안" 보조 카드 추가 |
-| `GET /prompts/{id}` | 🟡 유지 (내부 사용) | 프론트엔드에서 독립 상세 화면 제거하지만 API 자체는 에디터 참조 카드용으로 유지 |
-| `GET /prompts/{id}/writings` | 🔴 제거 고려 | 글감 상세 화면이 없으므로 "해당 글감의 다른 사용자 글" 노출 불필요 |
-| `GET /prompts/categories` | 🟡 유지 | 글감 필터 칩에서 계속 사용 |
-| 여정 API | 🟢 없음 | 기존 API 그대로 사용 |
-| 세션 API | 🟢 없음 | 기존 API 그대로 사용 |
-| 글쓰기 API | 🟢 없음 | 기존 API 그대로 사용 |
+- `packages/ui`: MD3 기반 공용 원자 컴포넌트 (domain-agnostic)
+- `apps/web/src/features/**/components/`: 앱 전용 비즈니스 컴포넌트
+- 새로 추가 필요: NavigationBar, TopAppBar, FAB, Chip, LinearProgress, CircularProgress, BottomSheet, Snackbar 등
 
 ---
 
-## Phase 1 — 문서(/docs) 업데이트
+## 구현 방침
 
-> **목표:** PRD v2.1의 전략/화면/기능 변경을 문서에 반영하여 구현의 단일 소스로 삼는다.
-> **원칙:** 문서가 먼저 업데이트되어야 코드 변경의 기준이 명확해진다.
+필요한 경우 ui-package-design.md를 참고하세요.
 
-### 1-1. 제품 문서 (`docs/01-product/`)
+### 디자인 토큰
 
-| # | 파일 | 변경 내용 | 난이도 | 상태 |
-|---|---|---|---|---|
-| 1-1-1 | `vision.md` | 제품 비전을 v2.1로 업데이트: "여정을 통해 성장하고, 글쓰기로 표현하라" | 🟢 | - [x] |
-| 1-1-2 | `principles.md` | 설계 원칙 v2.1 반영: "여정 우선(Journey First)" 추가, 기존 "사고 우선"은 2순위로 | 🟢 | - [x] |
-| 1-1-3 | `roadmap.md` | v2.1 로드맵으로 전면 교체 (Phase 1 MVP 목표 재정의) | 🟡 | - [x] |
-| 1-1-4 | `user-journeys.md` | 사용자 여정 맵을 v2.1 흐름으로 업데이트 (글감 독립 탐색 제거, 글쓰기 진입 화면 추가) | 🟡 | - [x] |
+- MD3 색상 체계를 기본으로 사용 (기존 shadcn oklch 토큰은 호환성 유지)
+- `@theme inline` 블록에 MD3 시맨틱 색상 매핑 유지
 
-### 1-2. 설계 문서 (`docs/02-design/`)
+### State Layer (MD3)
 
-| # | 파일 | 변경 내용 | 난이도 | 상태 |
-|---|---|---|---|---|
-| 1-2-1 | `information-architecture.md` | 글로벌 네비게이션을 v2.1 4탭 구조로 변경. 글감 위계를 Tertiary로 명시 | 🟡 | - [x] |
-| 1-2-2 | `screens/home.md` | 홈 화면 재설계: 서브탭 제거 → 여정 중심 단일 구조 | 🔴 | - [x] |
-| 1-2-3 | `screens/prompt-detail.md` | 글감 상세 화면 deprecation 명시 (v2.1에서 글감 상세 화면 없음) | 🟡 | - [x] |
-| 1-2-4 | `screens/library.md` | "서재" → "글쓰기 탭" 문서 리네이밍 및 구조 변경 반영 | 🟡 | - [x] |
-| 1-2-5 | `screens/editor.md` | 에디터 화면에 글감 참조 카드(선택적), "아이디어가 필요하신가요?" 버튼 추가 | 🟡 | - [x] |
-| 1-2-6 | `screens/` | **신규 문서**: `writing-entry.md` — 글쓰기 진입 화면("오늘 어떤 글을 써볼까요?") 설계 | 🔴 | - [x] |
-| 1-2-7 | `screens/` | **신규 문서**: `prompt-sheet.md` — 에디터 내 글감 선택 Bottom Sheet 설계 | 🟡 | - [x] |
-| 1-2-8 | `features/writing-prompt.md` | 글감의 Tertiary 위계 반영, 독립 탭/상세 화면 제거 명시 | 🟡 | - [x] |
-| 1-2-9 | `user-flows/prompt-to-writing.md` | 글감 → 글쓰기 흐름을 v2.1 기준으로 재작성 (진입 화면 → 에디터) | 🟡 | - [x] |
+- `color-mix()` CSS 함수로 구현
+- hover: `color-mix(in srgb, var(--md-on-surface) 8%, transparent)`
+- pressed: `color-mix(in srgb, var(--md-on-surface) 12%, transparent)`
+- focus: `color-mix(in srgb, var(--md-on-surface) 12%, transparent)`
+- dragged: `color-mix(in srgb, var(--md-on-surface) 16%, transparent)`
 
-### 1-3. 아키텍처 문서 (`docs/03-architecture/`)
+### Motion
 
-| # | 파일 | 변경 내용 | 난이도 | 상태 |
-|---|---|---|---|---|
-| 1-3-1 | `api-overview.md` | 홈 API 응답 구조 변경 반영, `GET /prompts/{id}/writings` deprecation 명시 | 🟡 | - [x] |
-| 1-3-2 | `domain-model.md` | 기능 위계 (Core/Secondary/Tertiary) 명시, WritingPrompt.partnerId 필드 없음 확인 | 🟢 | - [x] |
+- `motion` 라이브러리 사용 (`import { motion } from "motion/react"`)
+- MD3 모션 토큰 (duration, easing)을 CSS 변수로 정의
+- 컴포넌트별 진입/퇴장 애니메이션에 `motion` 컴포넌트 활용
 
-### 1-4. 엔지니어링 문서 (`docs/04-engineering/`)
+### 스토리북
 
-| # | 파일 | 변경 내용 | 난이도 | 상태 |
-|---|---|---|---|---|
-| 1-4-1 | `frontend-architecture-guide.md` | 라우트 구조 변경 반영 (/my-journeys → /journeys, /library → /writings 탭) | 🟡 | - [x] |
-| 1-4-2 | `frontend/` 하위 문서 | 라우트 변경에 영향받는 프론트엔드 세부 가이드 업데이트 | 🟡 | - [x] |
+- 스토리 파일은 컴포넌트와 같은 위치(colocation)에 배치
+  - 예: `packages/ui/src/components/button/button.stories.tsx`
+- `apps/storybook/.storybook/main.ts`의 stories 경로에 `packages/ui` 추가
+- 기존 `apps/storybook/src/stories/` 스토리는 점진적 마이그레이션
+
+### 원자적 커밋 규칙
+
+- 각 작업은 `bun lefthook run pre-commit` (lint + format) 통과
+- 타입 체크 (`bun turbo typecheck`) 통과
+- 빌드 (`bun turbo build`) 통과
+- 컴포넌트 구현 + 스토리 = 하나의 커밋 단위
 
 ---
 
-## Phase 2 — 백엔드 구현
+## Phase 0: 정리 — 미사용 코드 제거 및 인프라 준비
 
-> **목표:** v2.1에 맞춰 API 응답을 조정하고, 불필요한 엔드포인트를 정리한다.
-> **원칙:** 데이터 모델 변경은 최소화. 대부분의 변경은 API 응답 구조와 비즈니스 로직 조정이다.
+### 0-1. packages/ui 미사용 코드 정리
 
-### 2-1. 홈 API 응답 구조 변경
+현재 33개 컴포넌트 중 실제 사용되는 것은 3개(Drawer, DropdownMenu, Tabs)이며, 나머지는 shadcn 기본 생성물이다. MD3 기반으로 재작성할 컴포넌트와 유지할 컴포넌트를 구분한다.
 
-| # | 작업 | 파일/경로 | 상세 | 상태 |
-|---|---|---|---|---|
-| 2-1-1 | `GET /home` 응답 수정 | `packages/core/src/modules/home/` | v2.1 홈 화면에 맞게 응답 구조 변경: ① 진행 중인 여정 카드 목록 (최우선), ② 진행 중인 여정이 없을 때 "첫 여정 시작하기" CTA 플래그, ③ "오늘의 추천 글감" 필드 제거 (홈에서 글감 미노왁), ④ "글쓰기 제안" 보조 카드 데이터(단순 boolean 또는 static) | - [x] |
-| 2-1-2 | `GetHomeUseCase` 수정 | `packages/core/src/modules/home/use-cases/` | 홈 데이터 구성 로직을 v2.1에 맞게 조정. 추천 글감 로직 제거, 여정 진행률 데이터 우선 반환 | - [x] |
-| 2-1-3 | 홈 API HTTP 핸들러 스키마 수정 | `apps/api/src/http/routes/home/` | 응답 Zod 스키마를 v2.1 구조에 맞게 변경 | - [x] |
+**유지 (MD3로 점진적 교체 예정이나 당장 삭제하지 않음)**:
 
-### 2-2. 글감(Prompt) API 조정
+- `drawer.tsx` — apps/web에서 활발히 사용 중. BottomSheet 구현 시 교체
+- `dropdown-menu.tsx` — apps/web에서 사용 중. Menu 구현 시 교체
+- `tabs.tsx` — apps/web에서 사용 중. MD3 Tabs 구현 시 교체
+- `lib/utils.ts` — cn() 유틸리티. 계속 사용
 
-| # | 작업 | 파일/경로 | 상세 | 상태 |
-|---|---|---|---|---|
-| 2-2-1 | `GET /prompts/{id}/writings` 비활성화 | `apps/api/src/http/routes/prompts/` | v2.1에서 글감 상세 화면이 없으므로 해당 엔드포인트 deprecated 처리. 즐시 삭제하지 않고 주석/미사용 상태로 유지 가능 | - [x] |
-| 2-2-2 | `GET /prompts/{id}` 유지 | — | 에디터의 글감 참조 카드에서 아을쟁. 변경 없음 | - [x] |
-| 2-2-3 | `GET /prompts` 유지 | — | 글쓰기 진입 화면 + Bottom Sheet에서 글감 목록 조회에 사용. 변경 없음 | - [x] |
-| 2-2-4 | `PUT /prompts/{id}/bookmark` 검토 | — | v2.1 PRD에서 글감 북마크 기능 미언급. 제거 여부 확인 재난 (당장은 유지) | - [x] |
+**삭제 대상 (apps/web에서 미사용)**:
 
-### 2-3. 여정 API 확인
+- [ ] `alert-dialog.tsx` — 미사용
+- [ ] `avatar.tsx` — 미사용
+- [ ] `badge.tsx` — 미사용
+- [ ] `button.tsx` + `button.styles.ts` — 미사용 (MD3 Button으로 재작성)
+- [ ] `button-group.tsx` — 미사용
+- [ ] `card.tsx` — 미사용
+- [ ] `dialog.tsx` — 미사용 (MD3 Dialog로 재작성)
+- [ ] `empty.tsx` — 미사용
+- [ ] `field.tsx` — 미사용
+- [ ] `input.tsx` — 미사용
+- [ ] `input-group.tsx` — 미사용
+- [ ] `item.tsx` — 미사용
+- [ ] `kbd.tsx` — 미사용
+- [ ] `label.tsx` — 미사용
+- [ ] `popover.tsx` — 미사용
+- [ ] `scroll-area.tsx` — 미사용
+- [ ] `select.tsx` — 미사용
+- [ ] `separator.tsx` — 미사용
+- [ ] `skeleton.tsx` — 미사용
+- [ ] `slider.tsx` — 미사용
+- [ ] `sonner.tsx` — 미사용
+- [ ] `spinner.tsx` — 미사용
+- [ ] `switch.tsx` — 미사용
+- [ ] `textarea.tsx` — 미사용
+- [ ] `toggle.tsx` — 미사용
+- [ ] `toggle-group.tsx` — 미사용
+- [ ] `toolbar.tsx` — 미사용
+- [ ] `tooltip.tsx` — 미사용
 
-| # | 작업 | 상세 | 상태 |
-|---|---|---|---|
-| 2-3-1 | `GET /journeys` 확인 | 여정 탭에서 카테고리 필터 + 전체 목록 사용. v2.1 변경 없음 | - [x] |
-| 2-3-2 | 여정 완료 → 글쓰기 연결 CTA | 여정 완료 시 클라이언트에서 처리 가능. 서버 측 변경 불땄요 | - [x] |
+**삭제할 스토리북 파일 (apps/storybook/src/stories/)**:
 
-### 2-4. API 클라이언트 재생성
+- [ ] 삭제된 컴포넌트에 대응하는 스토리 파일 전체 제거
+- [ ] `apps/storybook/src/stories/lib/shadcn-story.ts` — shadcn 전용 유틸이므로 제거
 
-| # | 작업 | 상세 | 상태 |
-|---|---|---|---|
-| 2-4-1 | `bun run api:generate` | 홈 API 스키마 변경 후 타입 재생성 | - [x] |
+**삭제할 기타 파일**:
 
-### 2-5. 테스트
+- [ ] `packages/ui/components.json` — shadcn CLI 설정. MD3 재구축 후 불필요
+- [ ] `packages/ui/src/styles/light.tokens.json` — Figma 토큰 export. globals.css에 통합 완료
+- [ ] `packages/ui/src/styles/dark.tokens.json` — 동일
 
-| # | 작업 | 상세 | 상태 |
-|---|---|---|---|
-| 2-5-1 | `GetHomeUseCase` 단위 테스트 갱신 | 홈 응답 구조 변경에 따른 기존 테스트 업데이트 | - [x] |
-| 2-5-2 | `bun typecheck` | 타입 에러 듀른지 확인 | - [x] |
-| 2-5-3 | `bun test` | 전체 테스트 통과 확인 | - [x] |
+**커밋**: `UI 패키지 미사용 shadcn 컴포넌트 및 관련 스토리 정리`
 
----
+### 0-2. 의존성 정리 및 추가
 
-## Phase 3 — 프론트엔드 구현 및 API 연결
+**제거할 의존성**:
 
-> **목표:** v2.1 화면 설계에 맞게 프론트엔드를 재구성한다.
-> **원칙:** 변경은 최소 diff 원칙. 기존 컴포넌트를 최대한 재활용하고, 라우트/레이아웃 변경 → 뷰 수정 → 신규 화면 순으로 진행한다.
-> **의존성 방향:** app → views → features → foundation
+- [ ] `tw-animate-css` — shadcn 애니메이션 유틸. motion으로 대체
+- [ ] `vaul` — Drawer 컴포넌트 삭제 시 함께 제거 (0-1에서 유지하므로 Drawer 교체 시 제거)
+- [ ] `shadcn` — CLI 도구. 더 이상 자동 생성하지 않으므로 제거
+- [ ] `sonner` — packages/ui에서 제거 (apps/web에서 직접 사용 가능)
+- [ ] `zod` — UI 패키지에서 불필요
 
-### 3-1. 하단 탭 내비게이션 변경 (Foundation)
+**추가할 의존성**:
 
-| # | 작업 | 파일 | 상세 | 상태 |
-|---|---|---|---|---|
-| 3-1-1 | `bottom-nav.tsx` 수정 | `apps/web/src/foundation/ui/bottom-nav.tsx` | NAV_ITEMS 변경: ① "나의 여정" → "여정" (href: `/journeys`), ② "서재" → "글쓰기" (href: `/writings`). 아이콘 검토 및 재난 시 변경 | - [x] |
+- [ ] `motion` — MD3 모션 구현
 
-### 3-2. 라우트 재구성 (App Layer)
+**커밋**: `UI 패키지 의존성 정리 및 motion 추가`
 
-| # | 작업 | 파일/경로 | 상세 | 상태 |
-|---|---|---|---|---|
-| 3-2-1 | `/journeys` 탭 라우트 생성 | `apps/web/src/app/(tabs)/journeys/page.tsx` | 여정 탐색 + 진행 현황 통합 뷰. 기존 `my-journeys-view.tsx` + `journey-archive-view.tsx` 기능 병합 | - [x] |
-| 3-2-2 | `/writings` 탭 라우트 수정 | `apps/web/src/app/(tabs)/writings/page.tsx` | 기존 글 상세/에디터 라우트(`/writings/[id]`, `/writings/new`)는 유지. 탭 루트를 글쓰기 목록(서재)으로 설정 | - [x] |
-| 3-2-3 | `/library` 라우트 제거 | `apps/web/src/app/(tabs)/library/` | `/writings`로 통합되므로 리다이렉트 또는 제거 | - [x] |
-| 3-2-4 | `/my-journeys` 라우트 리다이렉트 | `apps/web/src/app/(tabs)/my-journeys/` | `/journeys`로 리다이렉트 처리 | - [x] |
-| 3-2-5 | `/prompts` 탭 라우트 정리 | `apps/web/src/app/(tabs)/prompts/` | 독립 글감 페이지 제거. `/prompts/[id]` 상세 라우트 제거 (글감 상세 화면 없음). 필요 시 리다이렉트 | - [x] |
-| 3-2-6 | `/writings/new` 라우트 추가 | `apps/web/src/app/(tabs)/writings/new/page.tsx` | 글쓰기 진입 화면 ("오늘 어떤 글을 써볼까요?") 라우트 | - [x] |
+### 0-3. 스토리북 설정 변경 — colocation 지원
 
-### 3-3. 홈 화면 재구성 (Views)
+**변경 사항**:
 
-| # | 작업 | 파일 | 상세 | 상태 |
-|---|---|---|---|---|
-| 3-3-1 | `home-view.tsx` 재작성 | `apps/web/src/views/home-view.tsx` | ① 서브탭 (TOP_TABS: ["홈", "글감", "여정"]) 완전 제거, ② 화면 구성: 인사 영역 → [PRIMARY] 진행 중인 여정 카드 (이어하기 CTA) → 나의 여정 목록 → [SECONDARY] "오늘 자유롭게 글을 써보세요" 보조 카드, ③ 진행 중인 여정 없을 시 "첫 여정 시작하기" CTA 표시 | - [x] |
-| 3-3-2 | 홈 features 수정 | `apps/web/src/features/home/` | 홈 데이터 fetching 로직을 v2.1 API 응답에 맞게 수정 | - [x] |
+1. `apps/storybook/.storybook/main.ts`: stories 경로에 packages/ui 추가
 
-### 3-4. 여정 탭 화면 (Views)
+   ```ts
+   stories: [
+     "../src/**/*.stories.@(ts|tsx)",
+     "../../../packages/ui/src/**/*.stories.@(ts|tsx)",
+   ],
+   ```
 
-| # | 작업 | 파일 | 상세 | 상태 |
-|---|---|---|---|---|
-| 3-4-1 | 여정 탭 뷰 통합 | `apps/web/src/views/` | `my-journeys-view.tsx` + `journey-archive-view.tsx` 기능을 하나의 여정 탭 뷰로 통합. 상단에 "진행 중인 여정" 섹션, 하단에 "새 여정 시작하기" 탐색 섹션 (카테고리 필터 칩 포함) | - [x] |
-| 3-4-2 | 여정 상세 뷰 수정 | `apps/web/src/views/journey-detail-view.tsx` | 여정 완료 후 "글쓰기 공간에서 배운 내용을 표현해보세요" CTA 추가 (글쓰기 탭으로 연결) | - [x] |
+2. `apps/storybook/package.json`: `motion` 의존성 추가 (스토리에서 사용)
 
-### 3-5. 글쓰기 탭 화면 (Views) — 핵심 변경
+**커밋**: `스토리북 설정 변경 — packages/ui 컴포넌트 colocation 스토리 지원`
 
-| # | 작업 | 파일 | 상세 | 상태 |
-|---|---|---|---|---|
-| 3-5-1 | 글쓰기 탭 루트 뷰 수정 | `apps/web/src/views/writings-list-view.tsx` | 기존 서재(Library) 뷰를 글쓰기 탭 기본 화면으로 활용. ① 상단 "새 글 쓰기" 버튼 → `/writings/new` (글감 미리보기 진입 화면)으로 이동, ② 하단에 서재 글 목록 유지 | - [x] |
-| 3-5-2 | **글쓰기 진입 화면 (v2.1 신규)** | `apps/web/src/views/writing-entry-view.tsx` (신규) | "오늘 어떤 글을 써볼까요?" 중간 화면 구현: ① 필터 칩 (전체/감각/회고/의견), ② 글감 카드 목록 (3~5장, 유형 태그 + 제목 + 본문 요약 + 응답 수 소형 표시), ③ 글감 카드 탭 → 해당 글감이 참조 카드로 고정된 에디터로 이동, ④ "직접 쓸게요" 버튼 → 빈 에디터로 이동 | - [x] |
-| 3-5-3 | 글 에디터 수정 | `apps/web/src/views/writing-editor-view.tsx` | ① [선택적] 글감 참조 카드: 글감 선택 시 에디터 상단에 접힘/펼침 카드로 글감 제목+본문 표시, ② [TERTIARY] "아이디어가 필요하신가요?" 버튼: 글감 미선택 + 본문 비어있을 때만 표시 → 탭 시 Bottom Sheet, ③ 본문 입력 시 "아이디어가 필요하신가요?" 버튼 자동 숨김 | - [x] |
-| 3-5-4 | **글감 선택 Bottom Sheet (v2.1 신규)** | `apps/web/src/views/` 또는 `features/writings/` 내 컴포넌트 | 에디터 내 "아이디어가 필요하신가요?" 탭 시 표시되는 Bottom Sheet: ① "어떤 이야기를 꺼내볼까요?" 타이틀, ② 필터 칩 (전체/감각/회고/의견), ③ 글감 카드 리스트 (유형 태그 + 제목 + 요약 + 응답 수), ④ 글감 탭 → 시트 닫힘 → 에디터에 글감 참조 카드 고정, ⑤ "직접 쓸게요" 버튼 | - [x] |
+### 0-4. 컴포넌트 디렉터리 구조 전환
 
-### 3-6. 글감 관련 화면 제거/축소
-
-| # | 작업 | 파일 | 상세 | 상태 |
-|---|---|---|---|---|
-| 3-6-1 | 글감 상세 뷰 제거 | `apps/web/src/views/prompt-detail-view.tsx` | v2.1에서 글감 상세 화면 없음. 뷰 파일 제거 또는 미사용 처리 | - [x] |
-| 3-6-2 | 글감 아카이브 뷰 제거 | `apps/web/src/views/prompt-archive-view.tsx` | 독립 글감 탐색 화면 없음. 뷰 파일 제거 또는 미사용 처리 | - [x] |
-| 3-6-3 | 글 상세 뷰에서 "글감 상세 보기" 링크 제거 | `apps/web/src/views/writing-detail-view.tsx` | Writing Prompt 카드의 "글감 상세 보기 →" 버튼 제거. 글감 제목+본문만 접힘/펼침으로 표시 | - [x] |
-
-### 3-7. 프로필 화면 수정
-
-| # | 작업 | 파일 | 상세 | 상태 |
-|---|---|---|---|---|
-| 3-7-1 | 성장 통계 순서 변경 | `apps/web/src/views/profile-view.tsx` | "완료한 여정 수"를 "작성한 글 수"보다 앞에 표시 | - [x] |
-
-### 3-8. Features 레이어 정리
-
-| # | 작업 | 파일/경로 | 상세 | 상태 |
-|---|---|---|---|---|
-| 3-8-1 | `features/prompts/` 정리 | `apps/web/src/features/prompts/` | 글감 목록 조회 hooks 유지 (진입 화면 + Bottom Sheet에서 사용). 글감 상세 조회, 글감별 글 목록 hooks 제거 | - [x] |
-| 3-8-2 | `features/home/` 수정 | `apps/web/src/features/home/` | 홈 데이터 fetching을 v2.1 응답 구조에 맞게 수정 | - [x] |
-| 3-8-3 | `features/writings/` 확장 | `apps/web/src/features/writings/` | 글쓰기 진입 화면, 글감 참조 카드, Bottom Sheet 관련 상태 관리 추가 | - [x] |
-
-### 3-9. 빌드 검증
-
-| # | 작업 | 상세 | 상태 |
-|---|---|---|---|
-| 3-9-1 | `bun typecheck` | 타입 에러 확인 | - [x] |
-| 3-9-2 | `bun build` | 빌드 성공 확인 | - [x] |
-| 3-9-3 | `bun lint` | 린트 통과 확인 | - [x] |
-| 3-9-4 | `bun lefthook run pre-commit` | 커밋 전 전체 검증 | - [ ] |
-
----
-
-## Phase 4 — 통합 테스트 (브라우저 E2E)
-
-> **목표:** 전체 사용자 흐름을 브라우저에서 직접 검증한다.
-> **테스트 계정:** `test@example.com` / `testpassword1234`
-> **환경:** `bun dev --filter=web...` (API + Web 동시 실행)
-
-### 4-1. 인증 플로우
-
-| # | 테스트 | 검증 항목 | 상태 |
-|---|---|---|---|
-| 4-1-1 | 로그인 | test 계정으로 로그인 성공 → 홈 화면 진입 | - [ ] |
-
-### 4-2. 홈 화면
-
-| # | 테스트 | 검증 항목 | 상태 |
-|---|---|---|---|
-| 4-2-1 | 서브탭 제거 확인 | 홈 화면에 "홈/글감/여정" 서브탭이 없는지 확인 | - [ ] |
-| 4-2-2 | 여정 카드 노출 | 진행 중인 여정 카드가 최상단에 표시되는지 확인 | - [ ] |
-| 4-2-3 | "이어하기" CTA | 여정 카드의 "이어하기" 버튼 탭 시 세션 진행 화면 연결 확인 | - [ ] |
-| 4-2-4 | 여정 없을 시 CTA | 진행 중인 여정이 없을 때 "첫 여정 시작하기" CTA 표시 확인 | - [ ] |
-| 4-2-5 | 글쓰기 제안 카드 | 하단에 "오늘 자유롭게 글을 써보세요" 보조 카드가 표시되는지 확인 | - [ ] |
-| 4-2-6 | 글감 미노출 | 홈 화면에 글감 제목이 직접 노출되지 않는지 확인 | - [ ] |
-
-### 4-3. 하단 탭 내비게이션
-
-| # | 테스트 | 검증 항목 | 상태 |
-|---|---|---|---|
-| 4-3-1 | 탭 라벨 확인 | "홈 / 여정 / 글쓰기 / 프로필" 4개 탭 표시 확인 | - [ ] |
-| 4-3-2 | 탭 라우팅 | 각 탭 탭 시 올바른 페이지로 이동하는지 확인 | - [ ] |
-
-### 4-4. 여정 탭
-
-| # | 테스트 | 검증 항목 | 상태 |
-|---|---|---|---|
-| 4-4-1 | 진행 중인 여정 | 상단에 진행 중인 여정 카드 목록 표시 확인 | - [ ] |
-| 4-4-2 | 여정 탐색 | 카테고리 필터 칩 (전체/글쓰기 기술/마음챙김/실용 글쓰기) 동작 확인 | - [ ] |
-| 4-4-3 | 여정 상세 진입 | 여정 카드 탭 → 여정 상세 화면(세션 리스트) 표시 확인 | - [ ] |
-| 4-4-4 | 세션 진행 | 세션 시작 → 스텝별 진행(Learn → Guided Question → Write → Feedback) 검증 | - [ ] |
-
-### 4-5. 글쓰기 탭
-
-| # | 테스트 | 검증 항목 | 상태 |
-|---|---|---|---|
-| 4-5-1 | 탭 기본 화면 | 글쓰기 탭 진입 시 서재(글 목록) + "새 글 쓰기" 버튼 표시 확인 | - [ ] |
-| 4-5-2 | 글감 미리보기 진입 | "새 글 쓰기" 탭 → "오늘 어떤 글을 써볼까요?" 화면 표시 확인 | - [ ] |
-| 4-5-3 | 글감 카드 목록 | 유형 태그, 제목, 요약, 응답 수("N명이 이 글감으로 글을 썼어요") 표시 확인 | - [ ] |
-| 4-5-4 | 글감 필터 | 전체/감각/회고/의견 필터 칩 동작 확인 | - [ ] |
-| 4-5-5 | 글감 선택 → 에디터 | 글감 카드 탭 → 에디터 열림 + 상단에 글감 참조 카드 고정 확인 | - [ ] |
-| 4-5-6 | 직접 쓰기 → 에디터 | "직접 쓸게요" 탭 → 빈 에디터 열림 + "아이디어가 필요하신가요?" 버튼 표시 확인 | - [ ] |
-| 4-5-7 | Bottom Sheet | "아이디어가 필요하신가요?" 탭 → 글감 선택 Bottom Sheet 표시 확인 | - [ ] |
-| 4-5-8 | Bottom Sheet 글감 선택 | Bottom Sheet에서 글감 탭 → 시트 닫힘 + 에디터 상단 참조 카드 고정 확인 | - [ ] |
-| 4-5-9 | 글 작성 & 자동 저장 | 글 작성 중 자동 저장 동작 확인 | - [ ] |
-| 4-5-10 | 글 완료 | 완료(✓) 버튼 탭 → 서재에 저장 → 글 상세(읽기 뷰) 전환 확인 | - [ ] |
-
-### 4-6. 글 상세 화면
-
-| # | 테스트 | 검증 항목 | 상태 |
-|---|---|---|---|
-| 4-6-1 | 글감 사용 글 | 글감을 사용한 글에서 Writing Prompt 접힘 카드 표시 확인 ("글감 상세 보기" 링크 없음) | - [ ] |
-| 4-6-2 | 글감 미사용 글 | 글감 없이 작성한 글에서 Writing Prompt 카드 미표시 확인 | - [ ] |
-
-### 4-7. 프로필 화면
-
-| # | 테스트 | 검증 항목 | 상태 |
-|---|---|---|---|
-| 4-7-1 | 통계 순서 | 완료한 여정 수가 작성한 글 수보다 앞에 표시되는지 확인 | - [ ] |
-
-### 4-8. 레거시 URL 리다이렉트
-
-| # | 테스트 | 검증 항목 | 상태 |
-|---|---|---|---|
-| 4-8-1 | `/my-journeys` | `/journeys`로 리다이렉트 확인 | - [ ] |
-| 4-8-2 | `/library` | `/writings`로 리다이렉트 확인 | - [ ] |
-| 4-8-3 | `/prompts/[id]` | `/writings`로 리다이렉트 또는 404 확인 | - [ ] |
-
----
-
-## 작업 순서 요약
+현재 `packages/ui/src/components/` 아래 flat 파일 구조를 폴더 구조로 전환한다.
+유지 중인 컴포넌트(drawer, dropdown-menu, tabs)를 폴더 구조로 이동.
 
 ```
-Phase 1: 문서 업데이트 (15개 작업)
-├── 1-1: 제품 문서 (4건)
-├── 1-2: 설계 문서 (9건)
-├── 1-3: 아키텍처 문서 (2건)
-└── 1-4: 엔지니어링 문서 (2건 이하)
-
-Phase 2: 백엔드 구현 (8개 작업)
-├── 2-1: 홈 API 변경 (3건)
-├── 2-2: 글감 API 조정 (4건)
-├── 2-3: 여정 API 확인 (2건)
-├── 2-4: API 클라이언트 재생성 (1건)
-└── 2-5: 테스트 (3건)
-
-Phase 3: 프론트엔드 구현 (26개 작업)
-├── 3-1: 하단 탭 내비게이션 (1건)
-├── 3-2: 라우트 재구성 (6건)
-├── 3-3: 홈 화면 재구성 (2건)
-├── 3-4: 여정 탭 화면 (2건)
-├── 3-5: 글쓰기 탭 화면 (4건) ⭐ 핵심 변경
-├── 3-6: 글감 관련 화면 제거 (3건)
-├── 3-7: 프로필 화면 수정 (1건)
-├── 3-8: Features 레이어 정리 (3건)
-└── 3-9: 빌드 검증 (4건)
-
-Phase 4: 통합 테스트 (21개 테스트)
-├── 4-1: 인증 (1건)
-├── 4-2: 홈 화면 (6건)
-├── 4-3: 하단 탭 (2건)
-├── 4-4: 여정 탭 (4건)
-├── 4-5: 글쓰기 탭 (10건) ⭐ 핵심 검증
-├── 4-6: 글 상세 (2건)
-├── 4-7: 프로필 (1건)
-└── 4-8: 레거시 URL (3건)
+packages/ui/src/components/
+├── drawer/
+│   ├── drawer.tsx
+│   └── index.ts
+├── dropdown-menu/
+│   ├── dropdown-menu.tsx
+│   └── index.ts
+├── tabs/
+│   ├── tabs.tsx
+│   └── index.ts
+└── .gitkeep (제거)
 ```
+
+**package.json exports 업데이트**:
+
+```json
+"./components/*": "./src/components/*/index.ts"
+```
+
+**apps/web import 경로 변경 없음** — 기존 `@workspace/ui/components/drawer` 그대로 유지.
+단, export 경로가 `*.tsx` → `*/index.ts`로 바뀌므로 package.json exports 수정 필요.
+
+**커밋**: `UI 패키지 컴포넌트 디렉터리 구조를 폴더 기반으로 전환`
 
 ---
 
-## 위험 요소 및 주의 사항
+## Phase 1: 핵심 인프라 — globals.css 및 기초 컴포넌트
 
-| 위험 | 대응 |
-|---|---|
-| 홈 서브탭 제거 시 기존 글감 탐색 경험 상실 | 글쓰기 진입 화면에서 충분한 글감 발견성 확보 필수 |
-| `/library`, `/my-journeys`, `/prompts/[id]` 기존 URL 깨짐 | 리다이렉트 적용으로 기존 북마크/링크 호환 보장 |
-| 홈 API 응답 구조 변경 시 프론트엔드 타입 불일치 | Phase 2 완료 후 `bun run api:generate`로 타입 재생성 후 Phase 3 진행 |
-| 글쓰기 진입 화면(v2.1 신규)이 사용자에게 추가 마찰로 작용 | "직접 쓸게요" 버튼 항상 노출로 스킵 가능하게 설계 |
-| 글감 상세 화면 제거 시 기존 데이터(글감별 글 목록) 접근 불가 | API는 유지하되 프론트엔드에서만 진입점 제거. 추후 복원 가능 |
+### 1-1. globals.css 재구축
+
+현재 globals.css는 shadcn oklch 토큰과 MD3 hex 토큰이 혼재한다. 설계 문서 기준으로 정리한다.
+
+**변경 사항**:
+
+- [ ] 사용하지 않는 shadcn 전용 토큰 정리 (chart-*, sidebar-* 등)
+- [ ] MD3 State Layer 유틸리티 추가 (color-mix 기반)
+- [ ] MD3 Motion 토큰 CSS 변수 추가
+
+```css
+/* State Layer 유틸리티 (MD3) */
+@utility state-layer-hover {
+  background-color: color-mix(in srgb, currentColor 8%, transparent);
+}
+@utility state-layer-pressed {
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+@utility state-layer-focus {
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+@utility state-layer-dragged {
+  background-color: color-mix(in srgb, currentColor 16%, transparent);
+}
+```
+
+```css
+/* MD3 Motion 토큰 */
+:root {
+  /* Duration */
+  --md-duration-short1: 50ms;
+  --md-duration-short2: 100ms;
+  --md-duration-short3: 150ms;
+  --md-duration-short4: 200ms;
+  --md-duration-medium1: 250ms;
+  --md-duration-medium2: 300ms;
+  --md-duration-medium3: 350ms;
+  --md-duration-medium4: 400ms;
+  --md-duration-long1: 450ms;
+  --md-duration-long2: 500ms;
+  --md-duration-long3: 550ms;
+  --md-duration-long4: 600ms;
+  --md-duration-extra-long1: 700ms;
+  --md-duration-extra-long2: 800ms;
+  --md-duration-extra-long3: 900ms;
+  --md-duration-extra-long4: 1000ms;
+
+  /* Easing */
+  --md-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+  --md-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --md-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --md-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md-easing-legacy: cubic-bezier(0.4, 0, 0.2, 1);
+  --md-easing-legacy-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --md-easing-legacy-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --md-easing-linear: cubic-bezier(0, 0, 1, 1);
+}
+```
+
+- [ ] `@theme inline` 블록에 motion 토큰 Tailwind 매핑 추가
+- [ ] `@import "tw-animate-css"` 제거 (vaul 삭제 후)
+- [ ] `@import "shadcn/tailwind.css"` 제거 여부 검토 (shadcn 유틸이 남아있는 컴포넌트 확인)
+- [ ] `@source` 경로 정리
+
+**커밋**: `globals.css MD3 인프라 토큰 추가 — state layer, motion, shape`
+
+### 1-2. Button 컴포넌트
+
+MD3 Button variants를 구현한다. 기존 shadcn Button과는 완전히 다른 설계.
+
+```
+packages/ui/src/components/button/
+├── button.tsx
+├── button.types.ts
+├── button.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- variants: `filled` | `tonal` | `outlined` | `text` | `elevated`
+- sizes: `sm` (32px) | `md` (40px) | `lg` (48px)
+- states: default | hovered | focused | pressed | disabled | loading
+- props: `leadingIcon`, `trailingIcon`, `loading`, `disabled`
+- State Layer: `color-mix()` 기반 hover/pressed/focus 오버레이
+- Motion: 상태 전환 시 `motion` 라이브러리로 ripple 또는 scale 효과
+- 접근성: focus-visible 링, disabled 시 aria-disabled, 로딩 시 aria-busy
+
+**커밋**: `Button 컴포넌트 구현 (MD3 filled/tonal/outlined/text/elevated)`
+
+### 1-3. IconButton 컴포넌트
+
+```
+packages/ui/src/components/icon-button/
+├── icon-button.tsx
+├── icon-button.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- variants: `standard` | `filled` | `tonal` | `outlined`
+- sizes: `sm` (32px) | `md` (40px) | `lg` (48px)
+- toggle: boolean — 토글 가능한 icon button
+- State Layer: color-mix() 기반
+
+**커밋**: `IconButton 컴포넌트 구현 (MD3 standard/filled/tonal/outlined)`
+
+### 1-4. TopAppBar 컴포넌트
+
+```
+packages/ui/src/components/top-app-bar/
+├── top-app-bar.tsx
+├── top-app-bar.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- variants: `center-aligned` | `small` | `medium` | `large`
+- props: `title`, `navigationIcon`, `actions[]`, `scrollBehavior`
+- scrollBehavior: `fixed` | `scroll` | `compress`
+
+**커밋**: `TopAppBar 컴포넌트 구현 (MD3 center-aligned/small/medium/large)`
+
+### 1-5. Skeleton 컴포넌트
+
+```
+packages/ui/src/components/skeleton/
+├── skeleton.tsx
+├── skeleton.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- variants: `text` | `rectangular` | `circular`
+- props: `width`, `height`, `size` (circular 전용)
+- 애니메이션: pulse (CSS animation 유지)
+
+**커밋**: `Skeleton 컴포넌트 구현 (text/rectangular/circular)`
+
+### 1-6. Card 컴포넌트
+
+```
+packages/ui/src/components/card/
+├── card.tsx
+├── card.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- variants: `elevated` | `filled` | `outlined`
+- interactive: boolean — 클릭 가능한 카드 (state layer 포함)
+- MD3 surface color + elevation 매핑
+
+**커밋**: `Card 컴포넌트 구현 (MD3 elevated/filled/outlined)`
+
+### 1-7. Divider 컴포넌트
+
+```
+packages/ui/src/components/divider/
+├── divider.tsx
+├── divider.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- orientation: `horizontal` | `vertical`
+- variant: `full-width` | `inset` | `middle-inset`
+
+**커밋**: `Divider 컴포넌트 구현`
+
+### 1-8. Badge 컴포넌트
+
+```
+packages/ui/src/components/badge/
+├── badge.tsx
+├── badge.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- MD3 Badge: 작은 원형 알림 표시자
+- variants: `small` (dot) | `large` (숫자 포함)
+- props: `count`, `max`, `showZero`, `invisible`
+
+**커밋**: `Badge 컴포넌트 구현 (MD3 small/large)`
+
+### 1-9. NavigationBar 컴포넌트
+
+기존 `apps/web/src/foundation/ui/bottom-nav.tsx` 의 MD3 버전.
+
+```
+packages/ui/src/components/navigation-bar/
+├── navigation-bar.tsx
+├── nav-item.tsx
+├── navigation-bar.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- 하단 고정 탭 바
+- NavItem: icon, label, badge, active state
+- Active indicator: MD3 pill 형태 (filled pill behind icon)
+- Glassmorphism 배경 유지
+- safe-area-inset-bottom 지원
+
+**커밋**: `NavigationBar 컴포넌트 구현 (MD3 하단 네비게이션 바)`
+
+---
+
+## Phase 2: 세션 및 입력 컴포넌트
+
+### 2-1. LinearProgress 컴포넌트
+
+```
+packages/ui/src/components/progress/
+├── linear-progress.tsx
+├── circular-progress.tsx
+├── linear-progress.stories.tsx
+├── circular-progress.stories.tsx
+└── index.ts
+```
+
+**스펙 (LinearProgress)**:
+
+- props: `value` (0-100), `indeterminate`
+- MD3 스타일: track + indicator, rounded caps
+- Motion: value 변경 시 부드러운 애니메이션
+
+**스펙 (CircularProgress)**:
+
+- props: `value`, `size`, `indeterminate`
+
+**커밋**: `Progress 컴포넌트 구현 (LinearProgress + CircularProgress)`
+
+### 2-2. Tabs 컴포넌트 (MD3 재작성)
+
+기존 shadcn Tabs를 유지하면서 MD3 스타일의 새 Tabs를 구현한다.
+기존 Tabs 사용처를 새 Tabs로 교체한 후 구 Tabs를 제거한다.
+
+```
+packages/ui/src/components/tabs/  (기존 폴더 교체)
+├── tabs.tsx
+├── tab.tsx
+├── tab-list.tsx
+├── tab-panel.tsx
+├── tabs.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- variants: `primary` (underline indicator) | `secondary` (pill indicator)
+- `@base-ui/react/tabs` 래핑
+- scrollable: boolean
+- MD3 active indicator 애니메이션
+
+**커밋**: `Tabs 컴포넌트 MD3 재작성 (primary/secondary variants)`
+
+### 2-3. BottomSheet 컴포넌트
+
+기존 Drawer(vaul)를 MD3 BottomSheet로 교체한다.
+
+```
+packages/ui/src/components/bottom-sheet/
+├── bottom-sheet.tsx
+├── bottom-sheet.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- `@base-ui/react/dialog` 기반 (모달 오버레이 + 하단 슬라이드)
+- props: `open`, `onClose`, `title`, `description`, `dismissible`, `overlay`
+- Drag handle 지원
+- Motion: 진입/퇴장 슬라이드 애니메이션 (`motion`)
+- snapPoints는 CSS max-height로 단순 구현
+
+**커밋**: `BottomSheet 컴포넌트 구현 (MD3 하단 시트)`
+
+### 2-4. Dialog 컴포넌트 (MD3 재작성)
+
+```
+packages/ui/src/components/dialog/
+├── dialog.tsx
+├── dialog.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- variants: `basic` | `full-screen`
+- `@base-ui/react/dialog` 래핑
+- props: `open`, `onClose`, `title`, `description`
+- actions: primary, secondary, destructive
+- Motion: 진입/퇴장 fade + scale
+
+**커밋**: `Dialog 컴포넌트 MD3 재작성`
+
+### 2-5. TextField / Textarea 컴포넌트
+
+```
+packages/ui/src/components/text-field/
+├── text-field.tsx
+├── textarea.tsx
+├── text-field.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- variants: `filled` | `outlined`
+- states: default | focused | error | disabled
+- props: `label`, `placeholder`, `helperText`, `errorText`, `leadingIcon`, `trailingIcon`, `maxLength`, `showCount`
+- `@base-ui/react/field` + `@base-ui/react/input` 래핑
+
+**커밋**: `TextField/Textarea 컴포넌트 구현 (MD3 filled/outlined)`
+
+### 2-6. Checkbox 컴포넌트
+
+```
+packages/ui/src/components/checkbox/
+├── checkbox.tsx
+├── checkbox.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- `@base-ui/react/checkbox` 래핑
+- MD3 체크박스 스타일 (filled square, checkmark, indeterminate)
+- props: `checked`, `onCheckedChange`, `indeterminate`, `disabled`
+
+**커밋**: `Checkbox 컴포넌트 구현`
+
+### 2-7. Radio / RadioGroup 컴포넌트
+
+```
+packages/ui/src/components/radio/
+├── radio.tsx
+├── radio-group.tsx
+├── radio.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- `@base-ui/react/radio-group` 래핑
+- MD3 라디오 스타일 (filled circle indicator)
+
+**커밋**: `Radio/RadioGroup 컴포넌트 구현`
+
+### 2-8. Switch 컴포넌트 (MD3 재작성)
+
+```
+packages/ui/src/components/switch/
+├── switch.tsx
+├── switch.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- `@base-ui/react/switch` 래핑
+- MD3 스위치 스타일 (thumb + track, 아이콘 옵션)
+- sizes: `sm` | `md`
+
+**커밋**: `Switch 컴포넌트 MD3 재작성`
+
+---
+
+## Phase 3: 풍부한 인터랙션 컴포넌트
+
+### 3-1. Chip 컴포넌트
+
+```
+packages/ui/src/components/chip/
+├── chip.tsx
+├── chip.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- variants: `assist` | `filter` | `input` | `suggestion`
+- props: `selected`, `onSelect`, `leadingIcon`, `trailingIcon`, `onDelete`
+- State Layer: color-mix() 기반
+
+**커밋**: `Chip 컴포넌트 구현 (MD3 assist/filter/input/suggestion)`
+
+### 3-2. Snackbar 컴포넌트
+
+```
+packages/ui/src/components/snackbar/
+├── snackbar.tsx
+├── snackbar-provider.tsx
+├── use-snackbar.ts
+├── snackbar.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- `@base-ui/react/toast` 래핑 (또는 portal 기반 커스텀)
+- `useSnackbar()` 훅: `toast()`, `toast.error()`, `toast.success()`
+- props: `message`, `action`, `duration`, `onClose`
+- Motion: 하단에서 슬라이드 업
+
+**커밋**: `Snackbar 컴포넌트 및 useSnackbar 훅 구현`
+
+### 3-3. Menu 컴포넌트
+
+기존 DropdownMenu를 MD3 Menu로 교체한다.
+
+```
+packages/ui/src/components/menu/
+├── menu.tsx
+├── menu-item.tsx
+├── menu.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- `@base-ui/react/menu` 래핑
+- MenuItem: icon, label, trailing text, divider, destructive
+- MD3 메뉴 스타일 (elevation-2, rounded-extra-small)
+
+**커밋**: `Menu 컴포넌트 구현 (MD3)`
+
+### 3-4. FAB 컴포넌트
+
+```
+packages/ui/src/components/fab/
+├── fab.tsx
+├── fab.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- variants: `surface` | `primary` | `secondary` | `tertiary`
+- sizes: `sm` | `md` | `lg`
+- extended: boolean (아이콘 + 텍스트)
+- MD3 elevation + state layer
+
+**커밋**: `FAB 컴포넌트 구현 (MD3 surface/primary/secondary/tertiary)`
+
+### 3-5. Tooltip 컴포넌트
+
+```
+packages/ui/src/components/tooltip/
+├── tooltip.tsx
+├── tooltip.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- `@base-ui/react/tooltip` 래핑
+- MD3 plain tooltip 스타일
+
+**커밋**: `Tooltip 컴포넌트 구현 (MD3)`
+
+### 3-6. Avatar 컴포넌트
+
+```
+packages/ui/src/components/avatar/
+├── avatar.tsx
+├── avatar.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- 이미지 + fallback (이니셜)
+- sizes: `sm` | `md` | `lg`
+
+**커밋**: `Avatar 컴포넌트 구현`
+
+### 3-7. List / ListItem 컴포넌트
+
+```
+packages/ui/src/components/list/
+├── list.tsx
+├── list-item.tsx
+├── list.stories.tsx
+└── index.ts
+```
+
+**스펙**:
+
+- MD3 List 스타일
+- ListItem: leadingContent, headlineText, supportingText, trailingContent
+
+**커밋**: `List/ListItem 컴포넌트 구현 (MD3)`
+
+---
+
+## Phase 4: 레이아웃 및 유틸리티
+
+### 4-1. ScrollArea 컴포넌트
+
+```
+packages/ui/src/components/scroll-area/
+├── scroll-area.tsx
+├── scroll-area.stories.tsx
+└── index.ts
+```
+
+**커밋**: `ScrollArea 컴포넌트 구현`
+
+### 4-2. MarkdownRenderer 컴포넌트
+
+현재 `apps/web/src/views/session-detail-view/markdown-renderer.tsx`를 추출.
+
+```
+packages/ui/src/components/markdown/
+├── markdown-renderer.tsx
+├── inline-markdown.tsx
+├── markdown.stories.tsx
+└── index.ts
+```
+
+**커밋**: `MarkdownRenderer 컴포넌트를 UI 패키지로 추출`
+
+### 4-3. Spinner / LoadingIndicator 컴포넌트
+
+```
+packages/ui/src/components/loading-indicator/
+├── loading-indicator.tsx
+├── loading-indicator.stories.tsx
+└── index.ts
+```
+
+**커밋**: `LoadingIndicator 컴포넌트 구현`
+
+### 4-4. hooks 구현
+
+```
+packages/ui/src/hooks/
+├── use-media-query.ts
+├── use-disclosure.ts
+└── index.ts
+```
+
+**커밋**: `UI 훅 구현 (useMediaQuery, useDisclosure)`
+
+### 4-5. 레거시 컴포넌트 제거
+
+Phase 1~4 완료 후, 0-1에서 유지했던 레거시 컴포넌트를 제거한다.
+
+- [ ] `drawer/` 폴더 삭제 (BottomSheet로 교체 완료 후)
+- [ ] `dropdown-menu/` 폴더 삭제 (Menu로 교체 완료 후)
+- [ ] `tabs/` (MD3 Tabs로 교체 완료 후 — 이미 같은 경로에서 재작성)
+- [ ] `vaul` 의존성 제거
+- [ ] `@import "shadcn/tailwind.css"` 제거 가능 여부 확인 후 제거
+
+**커밋**: `레거시 shadcn 컴포넌트 및 vaul 의존성 제거`
+
+### 4-6. index.ts 공개 API 정리
+
+`packages/ui/src/index.ts` 또는 package.json exports에서 모든 공용 컴포넌트를 re-export.
+
+**커밋**: `UI 패키지 공개 API 정리`
+
+---
+
+## Phase 5: 비즈니스 컴포넌트 추출
+
+views에 인라인으로 존재하는 비즈니스 로직 결합 컴포넌트를 `features/**/components/`로 추출한다.
+
+### 5-1. Journey 비즈니스 컴포넌트
+
+```
+apps/web/src/features/journeys/components/
+├── journey-card.tsx           ← journeys-view, home-view에서 추출
+├── journey-hero.tsx           ← journey-detail-view에서 추출
+├── journey-progress-card.tsx  ← journey-detail-view에서 추출
+├── progress-segments.tsx      ← journey-detail-view에서 추출
+├── session-card.tsx           ← journey-detail-view에서 추출
+└── index.ts
+```
+
+**커밋**: `Journey 비즈니스 컴포넌트 추출 (JourneyCard, SessionCard 등)`
+
+### 5-2. Session 비즈니스 컴포넌트
+
+```
+apps/web/src/features/sessions/components/
+├── session-header.tsx         ← session-detail-view에서 추출
+├── session-cta-bar.tsx        ← session-detail-view에서 추출
+└── index.ts
+```
+
+**커밋**: `Session 비즈니스 컴포넌트 추출 (SessionHeader, SessionCtaBar)`
+
+### 5-3. Writing 비즈니스 컴포넌트
+
+```
+apps/web/src/features/writings/components/
+├── writing-card.tsx           ← writing-list-view에서 추출
+├── writing-word-count.tsx     ← writing-editor-view에서 추출
+├── prompt-banner.tsx          ← writing-editor-view에서 추출
+└── index.ts
+```
+
+**커밋**: `Writing 비즈니스 컴포넌트 추출 (WritingCard, PromptBanner 등)`
+
+### 5-4. Prompt 비즈니스 컴포넌트
+
+```
+apps/web/src/features/prompts/components/
+├── prompt-card.tsx            ← prompt-archive-view에서 추출
+├── prompt-category-chips.tsx  ← prompt-archive-view에서 추출
+└── index.ts
+```
+
+**커밋**: `Prompt 비즈니스 컴포넌트 추출 (PromptCard, PromptCategoryChips)`
+
+### 5-5. Home 비즈니스 컴포넌트
+
+```
+apps/web/src/features/home/components/
+├── greeting-section.tsx       ← home-view에서 추출
+├── writing-suggestion-card.tsx ← home-view에서 추출
+└── index.ts
+```
+
+**커밋**: `Home 비즈니스 컴포넌트 추출 (GreetingSection, WritingSuggestionCard)`
+
+### 5-6. Profile 비즈니스 컴포넌트
+
+```
+apps/web/src/features/users/components/
+├── profile-header.tsx         ← profile-view에서 추출
+├── stats-cards.tsx            ← profile-view에서 추출
+├── setting-row.tsx            ← profile-view에서 추출
+├── setting-section.tsx        ← profile-view에서 추출
+├── theme-switcher.tsx         ← profile-view에서 추출
+└── index.ts
+```
+
+**커밋**: `Profile 비즈니스 컴포넌트 추출 (ProfileHeader, ThemeSwitcher 등)`
+
+---
+
+## Phase 6: Web 앱 리팩토링 — 공용 컴포넌트 적용
+
+각 view를 공용 컴포넌트 + 비즈니스 컴포넌트로 리팩토링한다.
+**원칙**: view 파일은 조립(composition)만 담당하며, UI 프리미티브를 직접 구현하지 않는다.
+
+### 6-1. BottomNav → NavigationBar 교체
+
+- [ ] `apps/web/src/foundation/ui/bottom-nav.tsx` → NavigationBar 사용으로 교체
+- [ ] `(tabs)/layout.tsx` 업데이트
+
+**커밋**: `BottomNav를 NavigationBar 공용 컴포넌트로 교체`
+
+### 6-2. home-view 리팩토링
+
+- [ ] 인라인 버튼 → Button 컴포넌트
+- [ ] 인라인 카드 → Card 컴포넌트 + JourneyCard 비즈니스 컴포넌트
+- [ ] 인라인 스켈레톤 → Skeleton 컴포넌트
+- [ ] 인라인 스피너 → LoadingIndicator
+
+**커밋**: `home-view UI 컴포넌트 리팩토링`
+
+### 6-3. journeys-view / my-journeys-view / journey-archive-view 리팩토링
+
+- [ ] 인라인 탭 → Tabs 컴포넌트
+- [ ] 인라인 여정 카드 → JourneyCard 비즈니스 컴포넌트
+- [ ] 인라인 칩 → Chip 컴포넌트
+- [ ] 인라인 버튼 → Button 컴포넌트
+
+**커밋**: `여정 목록 뷰 UI 컴포넌트 리팩토링`
+
+### 6-4. journey-detail-view 리팩토링
+
+- [ ] 인라인 헤더 → TopAppBar
+- [ ] 인라인 세션 카드 → SessionCard 비즈니스 컴포넌트
+- [ ] 진행률 바 → LinearProgress
+- [ ] 인라인 버튼 → Button
+
+**커밋**: `journey-detail-view UI 컴포넌트 리팩토링`
+
+### 6-5. session-detail-view 리팩토링
+
+- [ ] 세션 헤더 → SessionHeader (TopAppBar + LinearProgress)
+- [ ] 하단 CTA → SessionCtaBar (Button)
+- [ ] 각 스텝 컴포넌트 내부 인라인 UI:
+  - MultipleChoiceStep: 선택지 → Checkbox/Radio 기반
+  - WritingStep/ShortAnswerStep/RewritingStep: 인라인 textarea → Textarea
+  - IntroStep: 키워드 → Chip
+  - AI steps: 로딩 → CircularProgress + LoadingIndicator
+
+**커밋**: `session-detail-view UI 컴포넌트 리팩토링`
+
+### 6-6. writing-list-view 리팩토링
+
+- [ ] 인라인 글 카드 → WritingCard 비즈니스 컴포넌트
+- [ ] 인라인 검색 바 → TextField
+- [ ] FAB 버튼 → FAB 컴포넌트
+- [ ] DropdownMenu → Menu 교체
+- [ ] 인라인 스피너 → LoadingIndicator
+
+**커밋**: `writing-list-view UI 컴포넌트 리팩토링`
+
+### 6-7. writing-editor-view 리팩토링
+
+- [ ] 헤더 버튼들 → IconButton
+- [ ] 글감 배너 → PromptBanner 비즈니스 컴포넌트
+- [ ] Drawer(vaul 기반) → BottomSheet
+- [ ] 단어 수 → WritingWordCount 비즈니스 컴포넌트
+
+**커밋**: `writing-editor-view UI 컴포넌트 리팩토링`
+
+### 6-8. writing-detail-view / writing-entry-view 리팩토링
+
+- [ ] 인라인 버튼 → Button / IconButton
+- [ ] 인라인 카드 → Card
+- [ ] 로딩 상태 → Skeleton / LoadingIndicator
+
+**커밋**: `writing-detail/entry-view UI 컴포넌트 리팩토링`
+
+### 6-9. prompt-archive-view / prompt-detail-view 리팩토링
+
+- [ ] 인라인 글감 카드 → PromptCard 비즈니스 컴포넌트
+- [ ] 카테고리 칩 → PromptCategoryChips (Chip 기반)
+- [ ] Drawer → BottomSheet
+
+**커밋**: `prompt 뷰 UI 컴포넌트 리팩토링`
+
+### 6-10. profile-view 리팩토링
+
+- [ ] 프로필 헤더 → ProfileHeader (Avatar)
+- [ ] 통계 카드 → StatsCards (Card)
+- [ ] 설정 행 → SettingRow (ListItem 기반)
+- [ ] 테마 스위처 → ThemeSwitcher (Button group)
+- [ ] 인라인 switch → Switch
+
+**커밋**: `profile-view UI 컴포넌트 리팩토링`
+
+### 6-11. prompt-bottom-sheet 리팩토링
+
+- [ ] Drawer(vaul) → BottomSheet
+- [ ] 인라인 카테고리 칩 → Chip
+
+**커밋**: `prompt-bottom-sheet를 BottomSheet 컴포넌트로 교체`
+
+---
+
+## Phase 7: 정리 및 검증
+
+### 7-1. 전체 빌드 및 린트 검증
+
+- [ ] `bun turbo build` 전체 통과
+- [ ] `bun turbo typecheck` 전체 통과
+- [ ] `bun turbo lint` 전체 통과
+- [ ] `bun lefthook run pre-commit` 통과
+
+**커밋**: (필요 시 수정 커밋)
+
+### 7-2. 스토리북 빌드 검증
+
+- [ ] `bun --filter storybook build` 통과
+- [ ] 모든 스토리 렌더링 확인
+
+### 7-3. E2E 테스트 검증
+
+- [ ] 기존 E2E 테스트 통과 확인 (`bun run test:e2e`)
+
+### 7-4. 문서 업데이트
+
+- [ ] `/docs/04-engineering/frontend-architecture-guide.md` 업데이트
+- [ ] `packages/ui/AGENTS.md` 업데이트 (MD3 기반 설명)
+- [ ] `ui-package-design.md` 최종 상태 반영
+
+**커밋**: `문서 업데이트 — UI 패키지 아키텍처 반영`
+
+---
+
+## 전체 진행 상태 트래커
+
+| Phase | 작업 | 상태 |
+|-------|------|------|
+| **0-1** | packages/ui 미사용 코드 정리 | ⬜ |
+| **0-2** | 의존성 정리 및 motion 추가 | ⬜ |
+| **0-3** | 스토리북 colocation 설정 | ⬜ |
+| **0-4** | 컴포넌트 디렉터리 폴더 구조 전환 | ⬜ |
+| **1-1** | globals.css 재구축 | ⬜ |
+| **1-2** | Button | ⬜ |
+| **1-3** | IconButton | ⬜ |
+| **1-4** | TopAppBar | ⬜ |
+| **1-5** | Skeleton | ⬜ |
+| **1-6** | Card | ⬜ |
+| **1-7** | Divider | ⬜ |
+| **1-8** | Badge | ⬜ |
+| **1-9** | NavigationBar | ⬜ |
+| **2-1** | LinearProgress + CircularProgress | ⬜ |
+| **2-2** | Tabs (MD3 재작성) | ⬜ |
+| **2-3** | BottomSheet | ⬜ |
+| **2-4** | Dialog (MD3 재작성) | ⬜ |
+| **2-5** | TextField / Textarea | ⬜ |
+| **2-6** | Checkbox | ⬜ |
+| **2-7** | Radio / RadioGroup | ⬜ |
+| **2-8** | Switch (MD3 재작성) | ⬜ |
+| **3-1** | Chip | ⬜ |
+| **3-2** | Snackbar | ⬜ |
+| **3-3** | Menu | ⬜ |
+| **3-4** | FAB | ⬜ |
+| **3-5** | Tooltip | ⬜ |
+| **3-6** | Avatar | ⬜ |
+| **3-7** | List / ListItem | ⬜ |
+| **4-1** | ScrollArea | ⬜ |
+| **4-2** | MarkdownRenderer | ⬜ |
+| **4-3** | LoadingIndicator | ⬜ |
+| **4-4** | hooks (useMediaQuery, useDisclosure) | ⬜ |
+| **4-5** | 레거시 컴포넌트 제거 | ⬜ |
+| **4-6** | index.ts 공개 API 정리 | ⬜ |
+| **5-1** | Journey 비즈니스 컴포넌트 | ⬜ |
+| **5-2** | Session 비즈니스 컴포넌트 | ⬜ |
+| **5-3** | Writing 비즈니스 컴포넌트 | ⬜ |
+| **5-4** | Prompt 비즈니스 컴포넌트 | ⬜ |
+| **5-5** | Home 비즈니스 컴포넌트 | ⬜ |
+| **5-6** | Profile 비즈니스 컴포넌트 | ⬜ |
+| **6-1** | BottomNav → NavigationBar | ⬜ |
+| **6-2** | home-view 리팩토링 | ⬜ |
+| **6-3** | 여정 목록 뷰 리팩토링 | ⬜ |
+| **6-4** | journey-detail-view 리팩토링 | ⬜ |
+| **6-5** | session-detail-view 리팩토링 | ⬜ |
+| **6-6** | writing-list-view 리팩토링 | ⬜ |
+| **6-7** | writing-editor-view 리팩토링 | ⬜ |
+| **6-8** | writing-detail/entry-view 리팩토링 | ⬜ |
+| **6-9** | prompt 뷰 리팩토링 | ⬜ |
+| **6-10** | profile-view 리팩토링 | ⬜ |
+| **6-11** | prompt-bottom-sheet 리팩토링 | ⬜ |
+| **7-1** | 전체 빌드/린트 검증 | ⬜ |
+| **7-2** | 스토리북 빌드 검증 | ⬜ |
+| **7-3** | E2E 테스트 검증 | ⬜ |
+| **7-4** | 문서 업데이트 | ⬜ |

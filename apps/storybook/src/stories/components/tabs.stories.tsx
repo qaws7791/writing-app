@@ -7,12 +7,10 @@ import {
   TabsTrigger,
 } from "@workspace/ui/components/tabs"
 
-import { shadcnParameters } from "../lib/shadcn-story"
-
 const meta = {
   title: "Components/Tabs",
   component: Tabs,
-  parameters: shadcnParameters("tabs"),
+  parameters: {},
 } satisfies Meta<typeof Tabs>
 
 export default meta

@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { Button } from "@workspace/ui/components/button"
 import {
   Drawer,
   DrawerClose,
@@ -12,12 +11,10 @@ import {
   DrawerTrigger,
 } from "@workspace/ui/components/drawer"
 
-import { shadcnParameters } from "../lib/shadcn-story"
-
 const meta = {
   title: "Components/Drawer",
   component: Drawer,
-  parameters: shadcnParameters("drawer"),
+  parameters: {},
 } satisfies Meta<typeof Drawer>
 
 export default meta
@@ -29,7 +26,7 @@ export const Showcase: Story = {
     <div className="flex flex-wrap gap-4">
       <Drawer>
         <DrawerTrigger asChild>
-          <Button variant="outline">Bottom drawer</Button>
+          <button>Bottom drawer</button>
         </DrawerTrigger>
         <DrawerContent className="data-[vaul-drawer-direction=bottom]:max-h-[50vh]">
           <DrawerHeader>
@@ -38,13 +35,13 @@ export const Showcase: Story = {
               Review the final settings before this piece goes live.
             </DrawerDescription>
           </DrawerHeader>
-          <div className="px-4 pb-2 text-sm text-muted-foreground">
+          <div className="text-sm px-4 pb-2 text-muted-foreground">
             Slug, excerpt, and schedule are already synced from the writing.
           </div>
           <DrawerFooter>
-            <Button>Publish now</Button>
+            <button>Publish now</button>
             <DrawerClose asChild>
-              <Button variant="outline">Cancel</Button>
+              <button>Cancel</button>
             </DrawerClose>
           </DrawerFooter>
         </DrawerContent>
@@ -52,7 +49,7 @@ export const Showcase: Story = {
 
       <Drawer direction="right">
         <DrawerTrigger asChild>
-          <Button variant="outline">Side drawer</Button>
+          <button>Side drawer</button>
         </DrawerTrigger>
         <DrawerContent>
           <DrawerHeader>
@@ -61,14 +58,14 @@ export const Showcase: Story = {
               High-level performance data for the current story.
             </DrawerDescription>
           </DrawerHeader>
-          <div className="flex flex-col gap-3 px-4 pb-2 text-sm text-muted-foreground">
+          <div className="text-sm flex flex-col gap-3 px-4 pb-2 text-muted-foreground">
             <p>Average reading time: 6m 20s</p>
             <p>Completion rate: 78%</p>
             <p>Saved for later: 214 readers</p>
           </div>
           <DrawerFooter>
             <DrawerClose asChild>
-              <Button variant="outline">Close</Button>
+              <button>Close</button>
             </DrawerClose>
           </DrawerFooter>
         </DrawerContent>

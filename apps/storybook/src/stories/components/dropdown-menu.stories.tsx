@@ -9,7 +9,6 @@ import {
   Share08Icon,
 } from "@hugeicons/core-free-icons"
 
-import { Button } from "@workspace/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -28,12 +27,10 @@ import {
   DropdownMenuTrigger,
 } from "@workspace/ui/components/dropdown-menu"
 
-import { shadcnParameters } from "../lib/shadcn-story"
-
 const meta = {
   title: "Components/Dropdown Menu",
   component: DropdownMenu,
-  parameters: shadcnParameters("dropdown-menu"),
+  parameters: {},
 } satisfies Meta<typeof DropdownMenu>
 
 export default meta
@@ -46,9 +43,7 @@ function DropdownMenuShowcase() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={<Button variant="outline" />}>
-        Open menu
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger render={<button />}>Open menu</DropdownMenuTrigger>
       <DropdownMenuContent className="min-w-56">
         <DropdownMenuGroup>
           <DropdownMenuLabel>Story actions</DropdownMenuLabel>
