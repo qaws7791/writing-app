@@ -1,78 +1,25 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { HugeiconsIcon } from "@hugeicons/react"
 import {
   SecurityLockIcon,
   Notification01Icon,
   TextFontIcon,
-  Motion01Icon,
   CrownIcon,
   FileExportIcon,
-  ArrowRight01Icon,
-  User02Icon,
-  Sun01Icon,
-  Moon02Icon,
-  SmartPhone01Icon,
 } from "@hugeicons/core-free-icons"
-import { useTheme } from "next-themes"
 import { useUserProfile } from "@/features/users"
-
-function SettingRow({
-  icon,
-  label,
-  trailing,
-  showChevron = true,
-  onClick,
-}: {
-  icon: React.ComponentProps<typeof HugeiconsIcon>["icon"]
-  label: string
-  trailing?: React.ReactNode
-  showChevron?: boolean
-  onClick?: () => void
-}) {
-  return (
-    <button
-      className="flex w-full items-center gap-4 px-6 py-5 text-left"
-      onClick={onClick}
-    >
-      <HugeiconsIcon
-        icon={icon}
-        size={20}
-        color="currentColor"
-        strokeWidth={1.5}
-        className="shrink-0 text-on-surface"
-      />
-      <span className="flex-1 text-title-small text-on-surface">{label}</span>
-      {trailing}
-      {showChevron && (
-        <HugeiconsIcon
-          icon={ArrowRight01Icon}
-          size={16}
-          color="currentColor"
-          strokeWidth={1.5}
-          className="shrink-0 text-on-surface-low"
-        />
-      )}
-    </button>
-  )
-}
-
-function Divider() {
-  return <div className="mx-6 h-px bg-outline/10" />
-}
-
-const THEME_OPTIONS = [
-  { value: "light", icon: Sun01Icon, label: "라이트" },
-  { value: "system", icon: SmartPhone01Icon, label: "디바이스" },
-  { value: "dark", icon: Moon02Icon, label: "다크" },
-] as const
+import {
+  ProfileHeader,
+  StatsCards,
+  SettingRow,
+  SettingSection,
+  Divider,
+  ThemeSwitcher,
+} from "@/features/users/components"
 
 export default function ProfileView() {
   const router = useRouter()
-  const [reduceMotion, setReduceMotion] = useState(false)
-  const { theme, setTheme } = useTheme()
   const { data, isPending, isError } = useUserProfile()
 
   async function handleLogout() {
@@ -91,186 +38,56 @@ export default function ProfileView() {
       </div>
 
       <div className="flex-1 overflow-y-auto pb-6">
-        {/* 프로필 섹션 */}
-        <div className="flex flex-col items-center gap-1 px-4 pt-8 pb-10">
-          <div className="mb-3 flex size-24 items-center justify-center overflow-hidden rounded-full bg-secondary-container">
-            {data?.image ? (
-              <img
-                src={data.image}
-                alt={data.name}
-                className="size-full object-cover"
-              />
-            ) : (
-              <HugeiconsIcon
-                icon={User02Icon}
-                size={48}
-                color="currentColor"
-                strokeWidth={1}
-                className="text-on-secondary-container"
-              />
-            )}
-          </div>
-          <h2 className="text-headline-medium-em text-on-surface">
-            {isPending ? "불러오는 중..." : (data?.name ?? "사용자")}
-          </h2>
-          <p className="text-body-medium-em text-on-surface-low">
-            {data?.email ?? ""}
-          </p>
-          {isError ? (
-            <p className="pt-2 text-label-medium text-on-surface-low">
-              프로필 정보를 불러오지 못했어요.
-            </p>
-          ) : null}
-        </div>
-
-        {/* 통계 카드 */}
-        <div className="flex gap-4 px-4 pb-10">
-          <div className="flex flex-1 flex-col gap-1 rounded-[2rem] bg-surface-container p-6">
-            <p className="text-label-medium-em text-on-surface-low uppercase">
-              완료한 여정
-            </p>
-            <p className="text-title-large-em text-on-surface">
-              여정 {data?.completedJourneyCount ?? 0}개
-            </p>
-          </div>
-          <div className="flex flex-1 flex-col gap-1 rounded-[2rem] bg-surface-container p-6">
-            <p className="text-label-medium-em text-on-surface-low uppercase">
-              작성한 글
-            </p>
-            <p className="text-title-large-em text-on-surface">
-              글 {data?.writingCount ?? 0}개
-            </p>
-          </div>
-        </div>
+        <ProfileHeader data={data} isPending={isPending} isError={isError} />
+        <StatsCards
+          completedJourneyCount={data?.completedJourneyCount ?? 0}
+          writingCount={data?.writingCount ?? 0}
+        />
 
         {/* 설정 그룹 */}
         <div className="flex flex-col gap-10 px-4">
-          {/* 계정 관리 */}
-          <section className="flex flex-col gap-4">
-            <p className="text-label-medium-em text-on-surface-lowest uppercase">
-              계정 관리
-            </p>
-            <div className="overflow-hidden rounded-[2rem] bg-surface-container">
-              <SettingRow icon={SecurityLockIcon} label="계정 보안" />
-              <Divider />
-              <SettingRow
-                icon={Notification01Icon}
-                label="알림 설정"
-                trailing={
-                  <span className="mr-2 text-label-medium-em text-on-surface-low">
-                    ON
-                  </span>
-                }
-              />
-            </div>
-          </section>
-
-          {/* 접근성 */}
-          <section className="flex flex-col gap-4">
-            <p className="text-label-medium-em text-on-surface-lowest uppercase">
-              접근성
-            </p>
-            <div className="overflow-hidden rounded-[2rem] bg-surface-container">
-              <div className="flex w-full items-center gap-4 px-6 py-5">
-                <HugeiconsIcon
-                  icon={Sun01Icon}
-                  size={20}
-                  color="currentColor"
-                  strokeWidth={1.5}
-                  className="shrink-0 text-on-surface"
-                />
-                <span className="flex-1 text-title-small text-on-surface">
-                  화면 모드
+          <SettingSection title="계정 관리">
+            <SettingRow icon={SecurityLockIcon} label="계정 보안" />
+            <Divider />
+            <SettingRow
+              icon={Notification01Icon}
+              label="알림 설정"
+              trailing={
+                <span className="mr-2 text-label-medium-em text-on-surface-low">
+                  ON
                 </span>
-                <div className="flex gap-0.5 rounded-full bg-surface-container-high p-0.5">
-                  {THEME_OPTIONS.map(({ value, icon, label }) => (
-                    <button
-                      key={value}
-                      aria-label={label}
-                      onClick={() => setTheme(value)}
-                      className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
-                        theme === value
-                          ? "bg-on-surface text-on-primary"
-                          : "text-on-surface-low"
-                      }`}
-                    >
-                      <HugeiconsIcon
-                        icon={icon}
-                        size={14}
-                        color="currentColor"
-                        strokeWidth={1.5}
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <Divider />
-              <SettingRow
-                icon={TextFontIcon}
-                label="글꼴 크기"
-                trailing={
-                  <span className="mr-2 text-body-medium-em text-on-surface-low">
-                    보통
-                  </span>
-                }
-                showChevron={false}
-              />
-              <Divider />
-              <div className="flex w-full items-center gap-4 px-6 py-5">
-                <HugeiconsIcon
-                  icon={Motion01Icon}
-                  size={20}
-                  color="currentColor"
-                  strokeWidth={1.5}
-                  className="shrink-0 text-on-surface"
-                />
-                <div className="flex flex-1 flex-col">
-                  <span className="text-title-small text-on-surface">
-                    동작 줄이기 모드
-                  </span>
-                  <span className="text-label-small text-on-surface-low">
-                    화면 움직임을 최소화합니다
-                  </span>
-                </div>
-                <button
-                  role="switch"
-                  aria-checked={reduceMotion}
-                  onClick={() => setReduceMotion((v) => !v)}
-                  className={`relative h-5 w-10 shrink-0 rounded-full transition-colors ${
-                    reduceMotion
-                      ? "bg-on-surface"
-                      : "bg-surface-container-highest"
-                  }`}
-                >
-                  <div
-                    className={`absolute top-0.75 size-3.5 rounded-full bg-on-primary shadow-sm transition-transform ${
-                      reduceMotion ? "left-0.75 translate-x-5.5" : "left-0.75"
-                    }`}
-                  />
-                </button>
-              </div>
-            </div>
-          </section>
+              }
+            />
+          </SettingSection>
 
-          {/* 서비스 및 데이터 */}
-          <section className="flex flex-col gap-4">
-            <p className="text-label-medium-em text-on-surface-lowest uppercase">
-              서비스 및 데이터
-            </p>
-            <div className="overflow-hidden rounded-[2rem] bg-surface-container">
-              <SettingRow
-                icon={CrownIcon}
-                label="구독 관리 (Pro)"
-                trailing={
-                  <span className="mr-3 rounded-full bg-surface-container-high px-2 py-0.5 text-label-small-em text-on-surface">
-                    ACTIVE
-                  </span>
-                }
-              />
-              <Divider />
-              <SettingRow icon={FileExportIcon} label="데이터 내보내기" />
-            </div>
-          </section>
+          <SettingSection title="접근성">
+            <ThemeSwitcher />
+            <Divider />
+            <SettingRow
+              icon={TextFontIcon}
+              label="글꼴 크기"
+              trailing={
+                <span className="mr-2 text-body-medium-em text-on-surface-low">
+                  보통
+                </span>
+              }
+              showChevron={false}
+            />
+          </SettingSection>
+
+          <SettingSection title="서비스 및 데이터">
+            <SettingRow
+              icon={CrownIcon}
+              label="구독 관리 (Pro)"
+              trailing={
+                <span className="mr-3 rounded-full bg-surface-container-high px-2 py-0.5 text-label-small-em text-on-surface">
+                  ACTIVE
+                </span>
+              }
+            />
+            <Divider />
+            <SettingRow icon={FileExportIcon} label="데이터 내보내기" />
+          </SettingSection>
 
           {/* 로그아웃 */}
           <button
