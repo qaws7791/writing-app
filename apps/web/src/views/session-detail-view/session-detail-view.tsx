@@ -1,8 +1,6 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowLeft01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
 
 import type {
   Session,
@@ -11,6 +9,7 @@ import type {
   StepType,
 } from "@/views/session-detail-view/types"
 import { StepRenderer } from "@/views/session-detail-view/step-renderer"
+import { SessionHeader, SessionCtaBar } from "@/features/sessions/components"
 
 interface SessionDetailViewProps {
   initialCurrentStepOrder?: number
@@ -175,45 +174,12 @@ export default function SessionDetailView({
 
   return (
     <div className="flex min-h-screen flex-col bg-surface">
-      {/* Header */}
-      <header className="sticky top-0 z-40 flex flex-col bg-surface/95 backdrop-blur-xl">
-        <div className="flex items-center justify-between px-4 py-3">
-          <button
-            aria-label="나가기"
-            onClick={currentStepIndex > 0 ? handleBack : onExit}
-            className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-          >
-            <HugeiconsIcon
-              icon={ArrowLeft01Icon}
-              size={24}
-              color="currentColor"
-              strokeWidth={1.5}
-            />
-          </button>
-          <span className="flex-1 truncate px-2 text-center text-label-large text-on-surface-low">
-            {journeyTitle}
-          </span>
-          <button
-            aria-label="닫기"
-            onClick={onExit}
-            className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-          >
-            <HugeiconsIcon
-              icon={Cancel01Icon}
-              size={20}
-              color="currentColor"
-              strokeWidth={1.5}
-            />
-          </button>
-        </div>
-        {/* Progress bar */}
-        <div className="h-1 w-full bg-surface-container-high">
-          <div
-            className="h-full bg-primary transition-all duration-500 ease-out"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-      </header>
+      <SessionHeader
+        journeyTitle={journeyTitle}
+        progress={progress}
+        onBack={currentStepIndex > 0 ? handleBack : onExit}
+        onExit={onExit}
+      />
 
       {/* Step Content */}
       <div className="flex-1 overflow-y-auto px-5 pt-6 pb-32">
@@ -229,16 +195,12 @@ export default function SessionDetailView({
         />
       </div>
 
-      {/* CTA */}
-      <div className="fixed right-0 bottom-0 left-0 z-50 bg-linear-to-t from-surface via-surface to-transparent px-5 pt-6 safe-area-pb">
-        <button
-          onClick={ctaState.action}
-          disabled={!ctaState.enabled || isSubmitting}
-          className="w-full rounded-2xl bg-primary px-6 py-4 text-title-small-em text-on-primary transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100"
-        >
-          {isSubmitting ? "저장 중..." : ctaState.label}
-        </button>
-      </div>
+      <SessionCtaBar
+        label={ctaState.label}
+        enabled={ctaState.enabled}
+        isSubmitting={isSubmitting}
+        onClick={ctaState.action}
+      />
     </div>
   )
 }

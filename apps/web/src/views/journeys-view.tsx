@@ -1,11 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { CheckmarkCircle02Icon, Layers01Icon } from "@hugeicons/core-free-icons"
-import { useRouter } from "next/navigation"
 import { useHomeSnapshot } from "@/features/home"
 import { useJourneys } from "@/features/journeys"
+import { JourneyCard } from "@/features/journeys/components"
 
 const CATEGORY_LABEL: Record<
   "writing_skill" | "mindfulness" | "practical",
@@ -17,138 +15,6 @@ const CATEGORY_LABEL: Record<
 }
 
 type Category = string
-
-function ActiveJourneyCard({
-  id,
-  title,
-  subtitle,
-  progress,
-  imageUrl,
-}: {
-  id: number
-  title: string
-  subtitle: string
-  progress: number
-  imageUrl: string
-}) {
-  const router = useRouter()
-
-  return (
-    <button
-      type="button"
-      onClick={() => router.push(`/journeys/${id}`)}
-      className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-container p-4 text-left transition-colors hover:bg-surface-container-high"
-    >
-      <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-container-high">
-        <img src={imageUrl} alt={title} className="size-full object-cover" />
-      </div>
-      <div className="flex h-[87.5px] flex-1 flex-col gap-1">
-        <p className="text-title-medium text-on-surface">{title}</p>
-        <p className="pb-1.5 text-body-small text-on-surface-low">{subtitle}</p>
-        <div className="flex flex-1 items-end">
-          <div className="flex w-full items-center gap-2">
-            <div className="relative h-2 flex-1 rounded-full bg-surface-container-high">
-              <div
-                className="absolute inset-y-0 left-0 rounded-full bg-on-surface-low"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <span className="shrink-0 text-label-medium-em text-on-surface-low">
-              {progress}%
-            </span>
-          </div>
-        </div>
-      </div>
-    </button>
-  )
-}
-
-function CompletedJourneyCard({
-  id,
-  title,
-  description,
-  imageUrl,
-}: {
-  id: number
-  title: string
-  description: string
-  imageUrl: string
-}) {
-  const router = useRouter()
-
-  return (
-    <button
-      type="button"
-      onClick={() => router.push(`/journeys/${id}`)}
-      className="flex items-center gap-4 rounded-3xl bg-surface-container p-4 text-left transition-colors hover:bg-surface-container-high"
-    >
-      <div className="size-16 shrink-0 overflow-hidden rounded-2xl bg-surface-container-high">
-        <img src={imageUrl} alt={title} className="size-full object-cover" />
-      </div>
-      <div className="flex flex-1 flex-col gap-0.5">
-        <p className="text-title-small-em text-on-surface">{title}</p>
-        <p className="line-clamp-1 text-label-large text-on-surface-low">
-          {description}
-        </p>
-      </div>
-      <HugeiconsIcon
-        icon={CheckmarkCircle02Icon}
-        size={20}
-        color="currentColor"
-        strokeWidth={1.5}
-        className="shrink-0 text-primary"
-      />
-    </button>
-  )
-}
-
-function DiscoverJourneyCard({
-  id,
-  title,
-  description,
-  sessionCount,
-  imageUrl,
-}: {
-  id: number
-  title: string
-  description: string
-  sessionCount: number
-  imageUrl: string
-}) {
-  const router = useRouter()
-
-  return (
-    <button
-      type="button"
-      onClick={() => router.push(`/journeys/${id}`)}
-      className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-container p-4 text-left transition-colors hover:bg-surface-container-high"
-    >
-      <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-container-high">
-        <img src={imageUrl} alt={title} className="size-full object-cover" />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5">
-        <div className="flex flex-col gap-1">
-          <p className="text-title-medium text-on-surface">{title}</p>
-          <p className="line-clamp-2 text-body-medium text-on-surface-low">
-            {description}
-          </p>
-        </div>
-        <div className="flex items-center gap-0.5">
-          <HugeiconsIcon
-            icon={Layers01Icon}
-            size={12}
-            color="currentColor"
-            strokeWidth={1.5}
-            className="text-on-surface-low"
-          />
-          <span className="text-label-small text-on-surface-low uppercase">
-            {sessionCount}개의 세션
-          </span>
-        </div>
-      </div>
-    </button>
-  )
-}
 
 export default function JourneysView() {
   const {
@@ -168,7 +34,7 @@ export default function JourneysView() {
     home?.activeJourneys.map((journey) => ({
       id: journey.journeyId,
       title: journey.title,
-      subtitle: `${journey.currentSessionOrder}번째 세션 진행 중`,
+      description: `${journey.currentSessionOrder}번째 세션 진행 중`,
       progress: Math.round(journey.completionRate * 100),
       imageUrl:
         journey.thumbnailUrl ??
@@ -230,7 +96,7 @@ export default function JourneysView() {
                 />
               ))
             : activeJourneys.map((journey) => (
-                <ActiveJourneyCard key={journey.id} {...journey} />
+                <JourneyCard key={journey.id} mode="active" {...journey} />
               ))}
           {isHomeError && (
             <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
@@ -254,7 +120,7 @@ export default function JourneysView() {
                 />
               ))
             : completedJourneys.map((journey) => (
-                <CompletedJourneyCard key={journey.id} {...journey} />
+                <JourneyCard key={journey.id} mode="completed" {...journey} />
               ))}
           {isCompletedError && (
             <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
@@ -302,7 +168,7 @@ export default function JourneysView() {
             </div>
           ) : (
             filteredJourneys.map((journey) => (
-              <DiscoverJourneyCard key={journey.id} {...journey} />
+              <JourneyCard key={journey.id} mode="discover" {...journey} />
             ))
           )}
         </div>

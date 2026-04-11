@@ -1,89 +1,9 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Bookmark01Icon } from "@hugeicons/core-free-icons"
-import { useRouter } from "next/navigation"
 import { usePromptCategories, usePromptList } from "@/features/prompts"
-
-type PromptType = "sensory" | "reflection" | "opinion"
-
-function CategoryBadge({ promptType }: { promptType: PromptType }) {
-  return (
-    <span
-      className={`rounded-full px-3 py-1 text-label-small uppercase ${
-        promptType === "opinion"
-          ? "bg-surface-container-high text-on-surface"
-          : "bg-secondary-container text-on-surface-low"
-      }`}
-    >
-      {promptType === "sensory"
-        ? "감각"
-        : promptType === "reflection"
-          ? "회고"
-          : "의견"}
-    </span>
-  )
-}
-
-interface PromptCardItem {
-  id: number
-  promptType: PromptType
-  title: string
-  thumbnailUrl: string
-  responseCount: number
-  isBookmarked: boolean
-}
-
-function PromptCard({ card }: { card: PromptCardItem }) {
-  const router = useRouter()
-
-  return (
-    <div className="flex flex-col gap-6">
-      <button
-        type="button"
-        onClick={() => router.push(`/prompts/${card.id}`)}
-        className="relative h-64 w-full overflow-hidden rounded-[3rem] bg-surface transition-opacity hover:opacity-90"
-      >
-        <div className="absolute inset-8 flex items-center justify-center opacity-80">
-          <img
-            src={card.thumbnailUrl}
-            alt={card.title}
-            className="h-full w-auto object-contain"
-          />
-        </div>
-      </button>
-      <div className="flex flex-col gap-3 px-2">
-        <div className="flex items-center gap-3">
-          <CategoryBadge promptType={card.promptType} />
-        </div>
-        <button
-          type="button"
-          onClick={() => router.push(`/prompts/${card.id}`)}
-          className="text-left"
-        >
-          <p className="text-title-large-em text-on-surface">{card.title}</p>
-        </button>
-        <div className="flex items-center justify-between pt-3">
-          <span className="text-label-medium text-on-surface-lowest">
-            {card.responseCount}명 응답
-          </span>
-          <button
-            aria-label="북마크"
-            className="text-on-surface-lowest transition-colors hover:text-on-surface"
-          >
-            <HugeiconsIcon
-              icon={Bookmark01Icon}
-              size={24}
-              color="currentColor"
-              strokeWidth={1.5}
-            />
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
+import { PromptCard, PromptCategoryChips } from "@/features/prompts/components"
+import type { PromptType, PromptCardData } from "@/features/prompts/components"
 
 export default function PromptArchiveView() {
   const [selectedType, setSelectedType] = useState<PromptType | undefined>(
@@ -117,31 +37,11 @@ export default function PromptArchiveView() {
   return (
     <div className="flex flex-col">
       {/* Category Filter Chips */}
-      <div className="flex gap-2.5 overflow-x-auto px-4 py-2.5 [scrollbar-width:none]">
-        <button
-          onClick={() => setSelectedType(undefined)}
-          className={`shrink-0 rounded-full px-5 py-2.5 text-title-small whitespace-nowrap transition-colors ${
-            selectedType === undefined
-              ? "bg-primary text-on-primary"
-              : "bg-secondary-container text-on-surface-low"
-          }`}
-        >
-          전체
-        </button>
-        {categoriesData?.items.map((cat) => (
-          <button
-            key={cat.key}
-            onClick={() => setSelectedType(cat.key as PromptType)}
-            className={`shrink-0 rounded-full px-5 py-2.5 text-title-small whitespace-nowrap transition-colors ${
-              selectedType === cat.key
-                ? "bg-primary text-on-primary"
-                : "bg-secondary-container text-on-surface-low"
-            }`}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
+      <PromptCategoryChips
+        selectedType={selectedType}
+        categories={categoriesData?.items ?? []}
+        onSelectType={setSelectedType}
+      />
 
       {/* Prompt Cards */}
       <div className="flex flex-col gap-12 px-4 pt-6 pb-8">
@@ -155,7 +55,7 @@ export default function PromptArchiveView() {
           </div>
         ) : (
           prompts.map((prompt) => (
-            <PromptCard key={prompt.id} card={prompt as PromptCardItem} />
+            <PromptCard key={prompt.id} card={prompt as PromptCardData} />
           ))
         )}
         {isFetchingNextPage && (
