@@ -1,5 +1,4 @@
 import type { JourneyId } from "../../shared/brand/index"
-import type { PromptSummary } from "../prompts/prompt-types"
 
 export type ActiveJourneySummary = {
   readonly journeyId: JourneyId
@@ -11,6 +10,7 @@ export type ActiveJourneySummary = {
 }
 
 export type HomeSnapshot = {
-  readonly dailyPrompt: PromptSummary | null
   readonly activeJourneys: ActiveJourneySummary[]
+  readonly showStartJourneyCta: boolean
+  readonly showWritingSuggestion: boolean
 }

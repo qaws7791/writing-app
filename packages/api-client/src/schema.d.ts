@@ -469,7 +469,7 @@ export interface paths {
     }
     /**
      * 홈 조회
-     * @description 오늘의 글감, 최근 글, 이어쓸 글, 저장된 글감을 한 번에 조회합니다.
+     * @description 진행 중인 여정 목록과 글쓰기 제안 여부를 조회합니다.
      */
     get: {
       parameters: {
@@ -487,16 +487,6 @@ export interface paths {
           }
           content: {
             "application/json": {
-              dailyPrompt: {
-                id: number
-                /** @enum {string} */
-                promptType: "sensory" | "reflection" | "opinion"
-                title: string
-                body: string
-                thumbnailUrl: string
-                responseCount: number
-                isBookmarked: boolean
-              } | null
               activeJourneys: {
                 journeyId: number
                 title: string
@@ -505,6 +495,8 @@ export interface paths {
                 completionRate: number
                 currentSessionOrder: number
               }[]
+              showStartJourneyCta: boolean
+              showWritingSuggestion: boolean
             }
           }
         }
@@ -741,6 +733,7 @@ export interface paths {
     }
     /**
      * 글감별 공개 글 목록 조회
+     * @deprecated
      * @description 특정 글감을 주제로 작성된 공개 글 목록을 커서 기반 페이지네이션으로 조회합니다.
      */
     get: {
@@ -912,12 +905,13 @@ export interface paths {
     }
     /**
      * 여정 목록 조회
-     * @description 여정 목록을 조회합니다.
+     * @description 여정 목록을 조회합니다. status 파라미터로 전체/진행중/완료 필터링이 가능합니다.
      */
     get: {
       parameters: {
         query?: {
           category?: "writing_skill" | "mindfulness" | "practical"
+          status?: "all" | "in_progress" | "completed"
         }
         header?: never
         path?: never
@@ -1694,12 +1688,6 @@ export interface paths {
           content: {
             "application/json": {
               activeJourneyCount: number
-              completedJourneys: {
-                journeyId: number
-                title: string
-                description: string
-                thumbnailUrl: string | null
-              }[]
               /** Format: email */
               email: string
               emailVerified: boolean

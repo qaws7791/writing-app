@@ -1,12 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
-import {
-  toJourneyId,
-  toPromptId,
-  toSessionId,
-  toUserId,
-} from "../../../shared/brand/index"
-import type { PromptRepository } from "../../prompts/prompt-port"
+import { toJourneyId, toSessionId, toUserId } from "../../../shared/brand/index"
 import type { ProgressRepository } from "../../progress/progress-port"
 import type { JourneyRepository } from "../../journeys/journey-port"
 import { makeGetHomeUseCase } from "./get-home"
@@ -15,22 +9,6 @@ describe("makeGetHomeUseCase", () => {
   it("홈 스냅샷을 수집한다", async () => {
     const userId = toUserId("user-1")
     const journeyId = toJourneyId(1)
-
-    const promptRepository: PromptRepository = {
-      getDailyPrompt: vi.fn(async () => ({
-        id: toPromptId(3),
-        promptType: "reflection" as const,
-        title: "오늘의 글감",
-        body: "오늘 가장 기억에 남는 순간은?",
-        thumbnailUrl: "https://picsum.photos/seed/prompt-1/600/400",
-        responseCount: 5,
-        isBookmarked: false,
-      })),
-      getById: vi.fn(async () => null),
-      list: vi.fn(async () => ({ items: [], nextCursor: null })),
-      bookmark: vi.fn(async () => ({ kind: "not-found" as const })),
-      unbookmark: vi.fn(async () => {}),
-    }
 
     const progressRepository: ProgressRepository = {
       listActiveJourneys: vi.fn(async () => [
@@ -83,7 +61,6 @@ describe("makeGetHomeUseCase", () => {
     }
 
     const getHome = makeGetHomeUseCase({
-      promptRepository,
       progressRepository,
       journeyRepository,
     })
@@ -93,22 +70,15 @@ describe("makeGetHomeUseCase", () => {
     expect(result.isOk()).toBe(true)
 
     const snapshot = result._unsafeUnwrap()
-    expect(snapshot.dailyPrompt?.title).toBe("오늘의 글감")
     expect(snapshot.activeJourneys).toHaveLength(1)
     expect(snapshot.activeJourneys[0]?.title).toBe("에세이 기초")
     expect(snapshot.activeJourneys[0]?.completionRate).toBe(0.25)
+    expect(snapshot.showStartJourneyCta).toBe(false)
+    expect(snapshot.showWritingSuggestion).toBe(true)
   })
 
-  it("일일 글감이 없으면 null을 반환한다", async () => {
+  it("진행 중인 여정이 없으면 시작 CTA를 표시한다", async () => {
     const userId = toUserId("user-2")
-
-    const promptRepository: PromptRepository = {
-      getDailyPrompt: vi.fn(async () => null),
-      getById: vi.fn(async () => null),
-      list: vi.fn(async () => ({ items: [], nextCursor: null })),
-      bookmark: vi.fn(async () => ({ kind: "not-found" as const })),
-      unbookmark: vi.fn(async () => {}),
-    }
 
     const progressRepository: ProgressRepository = {
       listActiveJourneys: vi.fn(async () => []),
@@ -141,7 +111,6 @@ describe("makeGetHomeUseCase", () => {
     }
 
     const getHome = makeGetHomeUseCase({
-      promptRepository,
       progressRepository,
       journeyRepository,
     })
@@ -150,7 +119,8 @@ describe("makeGetHomeUseCase", () => {
 
     expect(result.isOk()).toBe(true)
     const snapshot = result._unsafeUnwrap()
-    expect(snapshot.dailyPrompt).toBeNull()
     expect(snapshot.activeJourneys).toHaveLength(0)
+    expect(snapshot.showStartJourneyCta).toBe(true)
+    expect(snapshot.showWritingSuggestion).toBe(true)
   })
 })

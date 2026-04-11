@@ -62,17 +62,19 @@ describe("health", () => {
 })
 
 describe("home", () => {
-  test("returns daily prompt and active journeys", async () => {
+  test("returns active journeys and CTA flags", async () => {
     const { app } = setup()
     const response = await app.request("/home")
     const body = await readJson<{
-      dailyPrompt: { id: number } | null
       activeJourneys: Array<{ journeyId: number }>
+      showStartJourneyCta: boolean
+      showWritingSuggestion: boolean
     }>(response)
 
     expect(response.status).toBe(200)
     expect(body.activeJourneys).toEqual([])
-    expect(body.dailyPrompt).not.toBeNull()
+    expect(body.showStartJourneyCta).toBe(true)
+    expect(body.showWritingSuggestion).toBe(true)
   })
 })
 

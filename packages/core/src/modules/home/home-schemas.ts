@@ -1,7 +1,5 @@
 import { z } from "zod"
 
-import { promptSummarySchema } from "../prompts/prompt-schemas"
-
 export const activeJourneySummarySchema = z.object({
   journeyId: z.number().int(),
   title: z.string(),
@@ -12,6 +10,7 @@ export const activeJourneySummarySchema = z.object({
 })
 
 export const homeSnapshotSchema = z.object({
-  dailyPrompt: promptSummarySchema.nullable(),
   activeJourneys: z.array(activeJourneySummarySchema),
+  showStartJourneyCta: z.boolean(),
+  showWritingSuggestion: z.boolean(),
 })

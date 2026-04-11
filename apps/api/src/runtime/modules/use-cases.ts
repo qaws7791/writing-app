@@ -133,13 +133,8 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
     // --- Home ---
 
     getHomeUseCase: asFunction(
-      ({
-        promptRepository,
-        progressRepository,
-        journeyRepository,
-      }: ApiCradle) =>
+      ({ progressRepository, journeyRepository }: ApiCradle) =>
         makeGetHomeUseCase({
-          promptRepository,
           progressRepository,
           journeyRepository,
         })

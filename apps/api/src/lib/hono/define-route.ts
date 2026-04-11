@@ -33,7 +33,6 @@ type ResponseMap = {
   default?: ResponseDescriptor
 }
 
- 
 type InjectMap = Record<string, InjectionToken<any>>
 
 type SuccessData<R extends ResponseMap> = {
@@ -62,6 +61,7 @@ type HandlerReturn<TData> =
   | PromiseLike<TData | Result<TData, DomainError>>
 
 type RouteMeta = {
+  deprecated?: boolean
   description?: string
   security?: Record<string, string[]>[]
   summary?: string
@@ -234,7 +234,7 @@ export function defineRoute<TEnv extends Env>() {
     // The internal handler uses a loose context type because @hono/zod-openapi
     // requires exact route-to-handler type correspondence which cannot be
     // expressed when building routes dynamically.
-     
+
     app.openapi(route, async (c: any) => {
       const input: Record<string, unknown> = { context: c }
 

@@ -328,18 +328,9 @@ export function createTestApi(input?: {
             throw input.homeError
           }
           return okAsync({
-            dailyPrompt: prompts[0]
-              ? {
-                  id: toPromptId(prompts[0].id),
-                  promptType: prompts[0].promptType,
-                  title: prompts[0].title,
-                  body: prompts[0].body,
-                  thumbnailUrl: prompts[0].thumbnailUrl ?? "",
-                  responseCount: prompts[0].responseCount,
-                  isBookmarked: prompts[0].isBookmarked,
-                }
-              : null,
             activeJourneys: [],
+            showStartJourneyCta: true,
+            showWritingSuggestion: true,
           })
         },
         listPromptWritingsUseCase(_promptId, _userId, _params) {

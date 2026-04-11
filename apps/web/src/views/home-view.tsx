@@ -1,7 +1,5 @@
 "use client"
 
-import { HugeiconsIcon } from "@hugeicons/react"
-import { FallingStarIcon } from "@hugeicons/core-free-icons"
 import { useRouter, useSearchParams } from "next/navigation"
 import PromptArchiveView from "@/views/prompt-archive-view"
 import JourneyArchiveView from "@/views/journey-archive-view"
@@ -78,7 +76,6 @@ function HomeContent() {
   const router = useRouter()
   const { data, isPending, isError } = useHomeSnapshot()
 
-  const dailyPrompt = data?.dailyPrompt ?? null
   const activeJourneys = data?.activeJourneys.slice(0, 2) ?? []
 
   return (
@@ -88,47 +85,6 @@ function HomeContent() {
         <h1 className="text-headline-medium-em text-on-surface">
           오늘도 글을 써볼까요?
         </h1>
-      </div>
-
-      {/* Daily Topic Card */}
-      <div className="mt-6 px-4">
-        <div className="flex min-h-45 flex-col justify-between rounded-[32px] bg-surface-container-high p-6">
-          <div className="flex flex-col gap-2.75">
-            <div className="flex items-center gap-1.5">
-              <HugeiconsIcon
-                icon={FallingStarIcon}
-                size={16}
-                color="currentColor"
-                strokeWidth={1.5}
-                className="text-on-surface-low"
-              />
-              <span className="text-label-large text-on-surface-low">
-                오늘의 추천 글감
-              </span>
-            </div>
-            {isPending ? (
-              <div className="h-9 w-4/5 animate-pulse rounded bg-surface-container" />
-            ) : isError || !dailyPrompt ? (
-              <p className="text-headline-small-em text-on-surface-lowest">
-                오늘의 글감을 불러올 수 없어요
-              </p>
-            ) : (
-              <button
-                type="button"
-                className="text-left text-headline-small-em text-on-surface-low"
-                onClick={() => router.push(`/prompts/${dailyPrompt.id}`)}
-              >
-                {dailyPrompt.title}
-              </button>
-            )}
-          </div>
-          {!isPending && dailyPrompt ? (
-            <p className="text-right text-body-small-em text-on-surface-low">
-              지금까지 {dailyPrompt.responseCount.toLocaleString()}명이
-              응답했어요
-            </p>
-          ) : null}
-        </div>
       </div>
 
       {/* Journey Section */}

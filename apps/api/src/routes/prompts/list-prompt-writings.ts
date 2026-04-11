@@ -29,6 +29,7 @@ export default route({
     summary: "글감별 공개 글 목록 조회",
     tags: ["글감"],
     security: [{ cookieAuth: [] }],
+    deprecated: true,
   },
   handler: async ({ listPromptWritings, params, query, context }) => {
     const userId = context.get("userId")
