@@ -251,8 +251,12 @@ export default function WritingEditorView({
   const handleSaveAndLeave = useCallback(async () => {
     setShowLeaveDialog(false)
     try {
-      await performSave()
-      router.back()
+      const savedWritingId = await performSave()
+      if (savedWritingId != null) {
+        router.push(`/writings/${savedWritingId}`)
+      } else {
+        router.back()
+      }
     } catch {
       // save failed — stay on page
     }
