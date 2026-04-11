@@ -120,6 +120,7 @@ export default function WritingEditorView({
   const [sheetPromptId, setSheetPromptId] = useState<number | undefined>(
     undefined
   )
+  const [wordCount, setWordCount] = useState(0)
   const hasPopulatedRef = useRef(false)
   const isSettingInitialContentRef = useRef(false)
 
@@ -139,15 +140,14 @@ export default function WritingEditorView({
       }),
       Typography,
     ],
-    onUpdate: () => {
+    onUpdate: ({ editor }) => {
       if (!isSettingInitialContentRef.current) {
         setIsDirty(true)
       }
+      setWordCount(editor.storage.characterCount.words())
     },
     immediatelyRender: false,
   })
-
-  const wordCount = editor?.storage.characterCount.words() ?? 0
 
   const promptQuery = usePromptDetail(effectivePromptId)
   const writingQuery = useWritingDetail(writingIdNumber)
