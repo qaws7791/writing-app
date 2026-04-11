@@ -209,6 +209,56 @@
   --color-on-error: var(--on-error);
   --color-error-container: var(--error-container);
   --color-on-error-container: var(--on-error-container);
+
+  /* MD3 Motion tokens */
+  --duration-short1: var(--md-duration-short1);
+  --duration-short2: var(--md-duration-short2);
+  --duration-short3: var(--md-duration-short3);
+  --duration-short4: var(--md-duration-short4);
+  --duration-medium1: var(--md-duration-medium1);
+  --duration-medium2: var(--md-duration-medium2);
+  --duration-medium3: var(--md-duration-medium3);
+  --duration-medium4: var(--md-duration-medium4);
+  --duration-long1: var(--md-duration-long1);
+  --duration-long2: var(--md-duration-long2);
+  --ease-standard: var(--md-easing-standard);
+  --ease-standard-decelerate: var(--md-easing-standard-decelerate);
+  --ease-standard-accelerate: var(--md-easing-standard-accelerate);
+  --ease-emphasized: var(--md-easing-emphasized);
+  --ease-emphasized-decelerate: var(--md-easing-emphasized-decelerate);
+  --ease-emphasized-accelerate: var(--md-easing-emphasized-accelerate);
+}
+
+:root {
+  /* MD3 Duration */
+  --md-duration-short1: 50ms;
+  --md-duration-short2: 100ms;
+  --md-duration-short3: 150ms;
+  --md-duration-short4: 200ms;
+  --md-duration-medium1: 250ms;
+  --md-duration-medium2: 300ms;
+  --md-duration-medium3: 350ms;
+  --md-duration-medium4: 400ms;
+  --md-duration-long1: 450ms;
+  --md-duration-long2: 500ms;
+  --md-duration-long3: 550ms;
+  --md-duration-long4: 600ms;
+  --md-duration-extra-long1: 700ms;
+  --md-duration-extra-long2: 800ms;
+  --md-duration-extra-long3: 900ms;
+  --md-duration-extra-long4: 1000ms;
+
+  /* MD3 Easing */
+  --md-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+  --md-easing-standard-decelerate: cubic-bezier(0, 0, 0, 1);
+  --md-easing-standard-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --md-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --md-easing-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --md-easing-emphasized-accelerate: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --md-easing-legacy: cubic-bezier(0.4, 0, 0.2, 1);
+  --md-easing-legacy-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --md-easing-legacy-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --md-easing-linear: cubic-bezier(0, 0, 1, 1);
 }
 
 @layer base {
@@ -218,6 +268,23 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* MD3 State Layer utilities */
+@utility state-layer-hover {
+  background-color: color-mix(in srgb, currentColor 8%, transparent);
+}
+
+@utility state-layer-pressed {
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+@utility state-layer-focus {
+  background-color: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+@utility state-layer-dragged {
+  background-color: color-mix(in srgb, currentColor 16%, transparent);
 }
 
 @utility safe-area-pb {
