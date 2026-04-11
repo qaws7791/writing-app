@@ -270,6 +270,16 @@
   }
 }
 
+/* MD3 indeterminate progress animation */
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
 /* MD3 State Layer utilities */
 @utility state-layer-hover {
   background-color: color-mix(in srgb, currentColor 8%, transparent);

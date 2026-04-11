@@ -148,7 +148,7 @@ export default function MyJourneysView() {
 
       {/* Tabs */}
       <Tabs defaultValue="in_progress" className="px-4">
-        <TabsList variant="line" className="w-full">
+        <TabsList variant="primary" className="w-full">
           <TabsTrigger value="in_progress" className="flex-1">
             진행 중
           </TabsTrigger>
