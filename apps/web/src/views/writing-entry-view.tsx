@@ -64,7 +64,7 @@ export default function WritingEntryView() {
   const prompts = data?.pages.flatMap((page) => page.items) ?? []
 
   return (
-    <div className="flex min-h-dvh flex-col bg-surface">
+    <div className="flex h-dvh flex-col bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center gap-3 bg-surface px-4 py-3">
         <button
@@ -86,7 +86,7 @@ export default function WritingEntryView() {
         <div className="size-10" />
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-8">
+      <div className="flex-1 overflow-y-auto px-4 pb-4">
         {/* Title */}
         <div className="px-2 pt-4 pb-6">
           <h1 className="text-headline-medium-em text-on-surface">
@@ -150,17 +150,17 @@ export default function WritingEntryView() {
             ))
           )}
         </div>
+      </div>
 
-        {/* "직접 쓸게요" Button */}
-        <div className="pt-6">
-          <button
-            type="button"
-            onClick={() => router.push("/writings/new/editor")}
-            className="w-full rounded-[1rem] bg-surface-container py-4 text-title-small-em text-on-surface transition-colors hover:bg-surface-container-high"
-          >
-            직접 쓸게요
-          </button>
-        </div>
+      {/* 항상 보이는 하단 고정 버튼 */}
+      <div className="border-outline-variant shrink-0 border-t bg-surface px-4 py-4">
+        <button
+          type="button"
+          onClick={() => router.push("/writings/new/editor")}
+          className="w-full rounded-[1rem] bg-surface-container py-4 text-title-small-em text-on-surface transition-colors hover:bg-surface-container-high"
+        >
+          직접 쓸게요
+        </button>
       </div>
     </div>
   )
