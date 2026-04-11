@@ -186,7 +186,7 @@ export default function WritingEditorView({
     return () => window.removeEventListener("beforeunload", handler)
   }, [isDirty])
 
-  const performSave = useCallback(async () => {
+  const performSave = useCallback(async (): Promise<number | undefined> => {
     const bodyJson = editor?.getJSON()
     const bodyPlainText = editor?.getText()
     const words = editor?.storage.characterCount.words() ?? 0
@@ -199,16 +199,19 @@ export default function WritingEditorView({
         bodyPlainText,
         wordCount: words,
       })
+      setIsDirty(false)
+      return writingIdNumber
     } else {
-      await createWriting.mutateAsync({
+      const created = await createWriting.mutateAsync({
         title,
         bodyJson,
         bodyPlainText,
         wordCount: words,
         sourcePromptId: effectivePromptId,
       })
+      setIsDirty(false)
+      return created?.id
     }
-    setIsDirty(false)
   }, [
     editor,
     writingIdNumber,
@@ -219,8 +222,12 @@ export default function WritingEditorView({
   ])
 
   const handleSave = useCallback(async () => {
-    await performSave()
-    router.back()
+    const writingId = await performSave()
+    if (writingId != null) {
+      router.push(`/writings/${writingId}`)
+    } else {
+      router.back()
+    }
   }, [performSave, router])
 
   const handleBack = useCallback(() => {

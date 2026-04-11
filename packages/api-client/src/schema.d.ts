@@ -1687,7 +1687,7 @@ export interface paths {
           }
           content: {
             "application/json": {
-              activeJourneyCount: number
+              completedJourneyCount: number
               /** Format: email */
               email: string
               emailVerified: boolean

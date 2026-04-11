@@ -1,7 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { Drawer, DrawerContent } from "@workspace/ui/components/drawer"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+} from "@workspace/ui/components/drawer"
 import { usePromptCategories, usePromptList } from "@/features/prompts"
 
 type PromptType = "sensory" | "reflection" | "opinion"
@@ -42,9 +46,9 @@ export default function PromptBottomSheet({
         <div className="flex max-h-[70dvh] flex-col gap-4">
           {/* Title */}
           <div className="px-2">
-            <h2 className="text-title-large-em text-on-surface">
+            <DrawerTitle className="text-title-large-em text-on-surface">
               어떤 이야기를 꺼내볼까요?
-            </h2>
+            </DrawerTitle>
           </div>
 
           {/* Category Filter Chips */}

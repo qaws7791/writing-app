@@ -6,12 +6,12 @@ import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import {
   AuthUser,
-  GetHomeUseCase,
+  ListCompletedJourneysUseCase,
   ListWritingsUseCase,
 } from "../../runtime/tokens"
 
 const userProfileSchema = z.object({
-  activeJourneyCount: z.number().int(),
+  completedJourneyCount: z.number().int(),
   email: z.string().email(),
   emailVerified: z.boolean(),
   image: z.string().nullable().optional(),
@@ -24,7 +24,7 @@ export default route({
   path: "/users/profile",
   inject: {
     authUser: AuthUser,
-    getHome: GetHomeUseCase,
+    listCompletedJourneys: ListCompletedJourneysUseCase,
     listWritings: ListWritingsUseCase,
   },
   response: { 200: userProfileSchema, default: defaultErrorResponse },
@@ -34,9 +34,14 @@ export default route({
     tags: ["사용자"],
     security: [{ cookieAuth: [] }],
   },
-  handler: async ({ authUser, getHome, listWritings, context }) => {
+  handler: async ({
+    authUser,
+    listCompletedJourneys,
+    listWritings,
+    context,
+  }) => {
     const userId = requireUserId(context)
-    const home = unwrapOrThrow(await getHome(userId))
+    const completedJourneys = unwrapOrThrow(await listCompletedJourneys(userId))
 
     let cursor: string | undefined
     let writingCount = 0
@@ -53,7 +58,7 @@ export default route({
     } while (cursor)
 
     return {
-      activeJourneyCount: home.activeJourneys.length,
+      completedJourneyCount: completedJourneys.length,
       email: authUser?.email ?? "",
       emailVerified: authUser?.emailVerified ?? false,
       image: authUser?.image ?? null,
