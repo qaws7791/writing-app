@@ -1,8 +1,10 @@
 ---
 title: 글감 상세 화면
-description: 선택한 글감의 맥락을 이해하고 글쓰기를 시작하는 화면. 다른 사용자의 응답 글 목록도 포함한다.
-status: active
+description: v2.1에서 제거됨. 글감은 더 이상 독립 상세 화면을 갖지 않으며 글쓰기 진입 화면과 에디터 내 Bottom Sheet에서만 노출된다.
+status: deprecated
 ---
+
+> **⚠️ DEPRECATED (v2.1):** 이 화면은 v2.1에서 제거되었다. 글감은 Tertiary 기능으로 격하되어 독립 상세 화면이 존재하지 않는다. 글감 탐색은 [[02-design/screens/writing-entry]]와 [[02-design/screens/prompt-sheet]]에서 이루어진다. API(`GET /prompts/{id}`)는 에디터 참조 카드용으로 유지되지만 전용 화면은 없다.
 
 ## 목적
 

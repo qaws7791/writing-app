@@ -10,7 +10,7 @@ status: active
 
 제품 의도, UX 구조, 화면 명세, 상태 정의, 기능 설계를 포함한다. 구현 방식, API, 데이터 모델, 프론트엔드 아키텍처는 제외한다.
 
-모든 설계 판단의 근거는 `글필_PRD_v1.0.md`를 따른다.
+모든 설계 판단의 근거는 `글필_PRD_v2_1.md`를 따른다.
 
 ## 제품 개요
 
@@ -50,14 +50,16 @@ status: active
 
 **화면 (Screens)**
 
-- [[02-design/screens/home]] — 홈 (홈/글감/여정 탭)
-- [[02-design/screens/prompt-detail]] — 글감 상세
+- [[02-design/screens/home]] — 홈 (여정 중심 단일 구조)
+- [[02-design/screens/prompt-detail]] — ~~글감 상세~~ (v2.1 deprecated)
+- [[02-design/screens/writing-entry]] — 글쓰기 진입 화면 (v2.1 신규)
+- [[02-design/screens/prompt-sheet]] — 글감 선택 Bottom Sheet (v2.1 신규)
 - [[02-design/screens/editor]] — 글 에디터
 - [[02-design/screens/writing-detail]] — 글 상세 (읽기 뷰)
-- [[02-design/screens/my-journeys]] — 나의 여정
+- [[02-design/screens/my-journeys]] — 여정 탭
 - [[02-design/screens/journey-detail]] — 여정 상세
 - [[02-design/screens/session-flow]] — 세션 진행 플로우
-- [[02-design/screens/library]] — 서재
+- [[02-design/screens/library]] — 글쓰기 탭 (서재 포함)
 - [[02-design/screens/profile]] — 프로필/설정
 
 **기능 (Features)**
@@ -72,6 +74,6 @@ status: active
 **사용자 흐름 (User Flows)**
 
 - [[02-design/user-flows/onboarding]] — 온보딩
-- [[02-design/user-flows/prompt-to-writing]] — 글감 → 글쓰기
+- [[02-design/user-flows/prompt-to-writing]] — 글쓰기 시작 흐름 (글감 선택 또는 직접 쓰기)
 - [[02-design/user-flows/journey-session]] — 여정 세션 진행
 - [[02-design/user-flows/library-management]] — 서재 관리

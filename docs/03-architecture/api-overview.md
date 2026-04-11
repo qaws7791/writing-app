@@ -49,14 +49,14 @@ API는 화면을 렌더링하지 않고, 다음 책임에 집중한다.
 
 ### 홈
 
-- `GET /home`
+- `GET /home` — v2.1: 진행 중인 여정 카드 목록 우선, 첫 여정 시작 CTA 플래그, 글쓰기 제안 보조 카드. 오늘의 추천 글감 필드 제거
 
 ### 글감
 
 - `GET /prompts`
 - `GET /prompts/categories`
 - `GET /prompts/{promptId}`
-- `GET /prompts/{promptId}/writings`
+- `GET /prompts/{promptId}/writings` — **deprecated (v2.1):** 글감 상세 화면이 제거되어 프론트엔드에서 미사용
 - `PUT /prompts/{promptId}/bookmark`
 - `DELETE /prompts/{promptId}/bookmark`
 
