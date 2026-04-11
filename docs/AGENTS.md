@@ -23,7 +23,9 @@ Directory intent
 - 02-design: Design system and UI/UX guidelines
 - 03-architecture: System architecture and technical documentation
 - 04-engineering: Monorepo structure and technical documentation
-- 05 ~ 98: Not yet implemented
+- 05-research: User research, market research, reference materials
+- 06-operations: Security policy, operational risks, incident playbook
+- 07 ~ 98: Not yet implemented
 - 99-archive: Experimental results and replaced documents
 
 Obsidian conventions

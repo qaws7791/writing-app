@@ -13,3 +13,4 @@ description: 글필(Geulpil)의 제품 비전, 문제 정의, 설계 원칙, 타
 - [[persona]]: 3개 주요 페르소나 및 타겟 세그먼트
 - [[user-journeys]]: 핵심 사용 시나리오 (온보딩, 글감, 여정, 서재)
 - [[roadmap]]: MVP → P1 → P2 단계별 확장 방향
+- [[learning-design]]: 여정·세션 구조의 학습 설계 철학 (커리큘럼 원칙, 학습 루프, 활동 체계)
