@@ -26,7 +26,11 @@ import {
   Idea01Icon,
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
-import { Drawer, DrawerContent } from "@workspace/ui/components/drawer"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+} from "@workspace/ui/components/drawer"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -414,6 +418,7 @@ export default function WritingEditorView({
       {/* Unsaved changes bottom sheet */}
       <Drawer open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
         <DrawerContent className="!rounded-t-[32px] !border-t-0 bg-surface-container-lowest px-6 pt-3 pb-9 [&>div:first-child]:!hidden">
+          <DrawerTitle className="sr-only">저장되지 않은 변경사항</DrawerTitle>
           {/* Handle bar */}
           <div className="mx-auto mb-[38px] h-[5px] w-[45px] rounded-full bg-on-surface-lowest" />
 
