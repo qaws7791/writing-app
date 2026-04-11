@@ -12,7 +12,11 @@ import {
   FileExportIcon,
   ArrowRight01Icon,
   User02Icon,
+  Sun01Icon,
+  Moon02Icon,
+  SmartPhone01Icon,
 } from "@hugeicons/core-free-icons"
+import { useTheme } from "next-themes"
 import { useUserProfile } from "@/features/users"
 
 function SettingRow({
@@ -59,9 +63,16 @@ function Divider() {
   return <div className="mx-6 h-px bg-outline/10" />
 }
 
+const THEME_OPTIONS = [
+  { value: "light", icon: Sun01Icon, label: "라이트" },
+  { value: "system", icon: SmartPhone01Icon, label: "디바이스" },
+  { value: "dark", icon: Moon02Icon, label: "다크" },
+] as const
+
 export default function ProfileView() {
   const router = useRouter()
   const [reduceMotion, setReduceMotion] = useState(false)
+  const { theme, setTheme } = useTheme()
   const { data, isPending, isError } = useUserProfile()
 
   async function handleLogout() {
@@ -160,6 +171,40 @@ export default function ProfileView() {
               접근성
             </p>
             <div className="overflow-hidden rounded-[2rem] bg-surface-container">
+              <div className="flex w-full items-center gap-4 px-6 py-5">
+                <HugeiconsIcon
+                  icon={Sun01Icon}
+                  size={20}
+                  color="currentColor"
+                  strokeWidth={1.5}
+                  className="shrink-0 text-on-surface"
+                />
+                <span className="flex-1 text-title-small text-on-surface">
+                  화면 모드
+                </span>
+                <div className="flex gap-0.5 rounded-full bg-surface-container-high p-0.5">
+                  {THEME_OPTIONS.map(({ value, icon, label }) => (
+                    <button
+                      key={value}
+                      aria-label={label}
+                      onClick={() => setTheme(value)}
+                      className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
+                        theme === value
+                          ? "bg-on-surface text-on-primary"
+                          : "text-on-surface-low"
+                      }`}
+                    >
+                      <HugeiconsIcon
+                        icon={icon}
+                        size={14}
+                        color="currentColor"
+                        strokeWidth={1.5}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <Divider />
               <SettingRow
                 icon={TextFontIcon}
                 label="글꼴 크기"
