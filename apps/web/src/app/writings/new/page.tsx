@@ -1,16 +1,12 @@
-import WritingEditorView from "@/views/writing-editor-view"
+"use client"
 
-export default async function WritingNewPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ promptId?: string }>
-}) {
-  const { promptId } = await searchParams
-  const promptIdNumber = promptId ? Number(promptId) : undefined
-  const resolvedPromptId =
-    promptIdNumber && Number.isInteger(promptIdNumber) && promptIdNumber > 0
-      ? promptIdNumber
-      : undefined
+import { Suspense } from "react"
+import WritingEntryView from "@/views/writing-entry-view"
 
-  return <WritingEditorView promptId={resolvedPromptId} />
+export default function WritingNewPage() {
+  return (
+    <Suspense>
+      <WritingEntryView />
+    </Suspense>
+  )
 }

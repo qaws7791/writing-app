@@ -12,8 +12,8 @@ import {
 
 const NAV_ITEMS = [
   { icon: Home01Icon, label: "홈", href: "/home" },
-  { icon: BookOpen01Icon, label: "나의 여정", href: "/my-journeys" },
-  { icon: QuillWrite01Icon, label: "서재", href: "/library" },
+  { icon: BookOpen01Icon, label: "여정", href: "/journeys" },
+  { icon: QuillWrite01Icon, label: "글쓰기", href: "/writings" },
   { icon: User02Icon, label: "프로필", href: "/profile" },
 ] as const
 
@@ -38,7 +38,7 @@ export default function BottomNav() {
               color="currentColor"
               strokeWidth={isActive ? 2 : 1.5}
             />
-            <span className="text-[11px] font-semibold tracking-wide uppercase">
+            <span className="font-semibold tracking-wide text-[11px] uppercase">
               {label}
             </span>
           </Link>

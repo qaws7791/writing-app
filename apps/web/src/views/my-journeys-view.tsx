@@ -139,7 +139,7 @@ export default function MyJourneysView() {
       <div className="flex items-center justify-between px-4 py-4">
         <h1 className="text-headline-small-em text-on-surface">나의 여정</h1>
         <button
-          onClick={() => router.push("/home?tab=journeys")}
+          onClick={() => router.push("/journeys")}
           className="text-label-large-em text-on-surface-low"
         >
           여정 찾기

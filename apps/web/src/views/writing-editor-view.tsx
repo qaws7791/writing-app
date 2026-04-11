@@ -23,6 +23,7 @@ import {
   MoreVerticalIcon,
   Tick02Icon,
   Delete01Icon,
+  Idea01Icon,
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 import { Drawer, DrawerContent } from "@workspace/ui/components/drawer"
@@ -40,15 +41,44 @@ import {
   useSaveWriting,
   useWritingDetail,
 } from "@/features/writings"
+import PromptBottomSheet from "@/views/prompt-bottom-sheet"
 
-function PromptBanner({ title, body }: { title: string; body: string }) {
+function PromptBanner({
+  title,
+  body,
+  collapsed,
+  onToggle,
+}: {
+  title: string
+  body: string
+  collapsed: boolean
+  onToggle: () => void
+}) {
   return (
     <section className="flex flex-col gap-2 rounded-2xl bg-secondary-container px-5 py-4">
-      <p className="tracking-widest text-label-medium-em text-on-surface-low uppercase">
-        오늘의 글감
-      </p>
-      <h2 className="text-title-medium-em text-on-surface">{title}</h2>
-      <p className="text-body-medium text-on-surface-low">{body}</p>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex items-center justify-between"
+      >
+        <p className="tracking-widest text-label-medium-em text-on-surface-low uppercase">
+          오늘의 글감
+        </p>
+        <span
+          className={`text-on-surface-low transition-transform duration-200 ${collapsed ? "" : "rotate-180"}`}
+        >
+          ▾
+        </span>
+      </button>
+      {!collapsed && (
+        <>
+          <h2 className="text-title-medium-em text-on-surface">{title}</h2>
+          <p className="text-body-medium text-on-surface-low">{body}</p>
+        </>
+      )}
+      {collapsed && (
+        <h2 className="text-title-medium-em text-on-surface">{title}</h2>
+      )}
     </section>
   )
 }
@@ -85,10 +115,16 @@ export default function WritingEditorView({
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const [isDirty, setIsDirty] = useState(false)
   const [showLeaveDialog, setShowLeaveDialog] = useState(false)
+  const [promptCollapsed, setPromptCollapsed] = useState(false)
+  const [showPromptSheet, setShowPromptSheet] = useState(false)
+  const [sheetPromptId, setSheetPromptId] = useState<number | undefined>(
+    undefined
+  )
   const hasPopulatedRef = useRef(false)
   const isSettingInitialContentRef = useRef(false)
 
   const writingIdNumber = writingId ? Number(writingId) : undefined
+  const effectivePromptId = sheetPromptId ?? promptId
 
   const editor = useEditor({
     extensions: [
@@ -113,14 +149,14 @@ export default function WritingEditorView({
 
   const wordCount = editor?.storage.characterCount.words() ?? 0
 
-  const promptQuery = usePromptDetail(promptId)
+  const promptQuery = usePromptDetail(effectivePromptId)
   const writingQuery = useWritingDetail(writingIdNumber)
   const createWriting = useCreateWriting()
   const saveWriting = useSaveWriting()
   const deleteWriting = useDeleteWriting()
   const isSaving = createWriting.isPending || saveWriting.isPending
 
-  const isPromptEnabled = promptId != null
+  const isPromptEnabled = effectivePromptId != null
   const prompt =
     isPromptEnabled && promptQuery.data != null ? promptQuery.data : null
   const isPromptLoading = isPromptEnabled && promptQuery.isLoading
@@ -169,11 +205,18 @@ export default function WritingEditorView({
         bodyJson,
         bodyPlainText,
         wordCount: words,
-        sourcePromptId: promptId,
+        sourcePromptId: effectivePromptId,
       })
     }
     setIsDirty(false)
-  }, [editor, writingIdNumber, title, promptId, saveWriting, createWriting])
+  }, [
+    editor,
+    writingIdNumber,
+    title,
+    effectivePromptId,
+    saveWriting,
+    createWriting,
+  ])
 
   const handleSave = useCallback(async () => {
     await performSave()
@@ -207,7 +250,7 @@ export default function WritingEditorView({
   const handleDelete = useCallback(async () => {
     if (!writingIdNumber) return
     await deleteWriting.mutateAsync(writingIdNumber)
-    router.replace("/library")
+    router.replace("/writings")
   }, [writingIdNumber, deleteWriting, router])
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -243,20 +286,22 @@ export default function WritingEditorView({
         <div className="flex items-center gap-2">
           {writingIdNumber && (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  aria-label="더보기"
-                  className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
-                >
-                  <HugeiconsIcon
-                    icon={MoreVerticalIcon}
-                    size={24}
-                    color="currentColor"
-                    strokeWidth={1.5}
-                  />
-                </button>
-              </DropdownMenuTrigger>
+              <DropdownMenuTrigger
+                render={
+                  <button
+                    type="button"
+                    aria-label="더보기"
+                    className="flex size-10 items-center justify-center rounded-full text-on-surface transition-colors hover:bg-surface-container"
+                  >
+                    <HugeiconsIcon
+                      icon={MoreVerticalIcon}
+                      size={24}
+                      color="currentColor"
+                      strokeWidth={1.5}
+                    />
+                  </button>
+                }
+              />
               <DropdownMenuContent
                 side="bottom"
                 align="end"
@@ -304,7 +349,33 @@ export default function WritingEditorView({
         )}
         {prompt && (
           <div className="pt-6">
-            <PromptBanner title={prompt.title} body={prompt.body} />
+            <PromptBanner
+              title={prompt.title}
+              body={prompt.body}
+              collapsed={promptCollapsed}
+              onToggle={() => setPromptCollapsed((v) => !v)}
+            />
+          </div>
+        )}
+        {/* "아이디어가 필요하신가요?" button — shown when no prompt and body is empty */}
+        {!prompt && !isPromptLoading && wordCount === 0 && !writingIdNumber && (
+          <div className="pt-6">
+            <button
+              type="button"
+              onClick={() => setShowPromptSheet(true)}
+              className="flex w-full items-center gap-3 rounded-2xl bg-surface-container px-5 py-4 text-left transition-colors hover:bg-surface-container-high"
+            >
+              <HugeiconsIcon
+                icon={Idea01Icon}
+                size={20}
+                color="currentColor"
+                strokeWidth={1.5}
+                className="shrink-0 text-on-surface-low"
+              />
+              <span className="text-body-medium text-on-surface-low">
+                아이디어가 필요하신가요?
+              </span>
+            </button>
           </div>
         )}
         {/* Date + Title block */}
@@ -407,6 +478,16 @@ export default function WritingEditorView({
           </div>
         </DrawerContent>
       </Drawer>
+
+      {/* Prompt selection bottom sheet */}
+      <PromptBottomSheet
+        open={showPromptSheet}
+        onOpenChange={setShowPromptSheet}
+        onSelectPrompt={(selectedPromptId) => {
+          setSheetPromptId(selectedPromptId)
+          setShowPromptSheet(false)
+        }}
+      />
     </div>
   )
 }

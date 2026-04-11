@@ -163,71 +163,71 @@
 
 | # | 작업 | 파일 | 상세 | 상태 |
 |---|---|---|---|---|
-| 3-1-1 | `bottom-nav.tsx` 수정 | `apps/web/src/foundation/ui/bottom-nav.tsx` | NAV_ITEMS 변경: ① "나의 여정" → "여정" (href: `/journeys`), ② "서재" → "글쓰기" (href: `/writings`). 아이콘 검토 및 재난 시 변경 | - [ ] |
+| 3-1-1 | `bottom-nav.tsx` 수정 | `apps/web/src/foundation/ui/bottom-nav.tsx` | NAV_ITEMS 변경: ① "나의 여정" → "여정" (href: `/journeys`), ② "서재" → "글쓰기" (href: `/writings`). 아이콘 검토 및 재난 시 변경 | - [x] |
 
 ### 3-2. 라우트 재구성 (App Layer)
 
 | # | 작업 | 파일/경로 | 상세 | 상태 |
 |---|---|---|---|---|
-| 3-2-1 | `/journeys` 탭 라우트 생성 | `apps/web/src/app/(tabs)/journeys/page.tsx` | 여정 탐색 + 진행 현황 통합 뷰. 기존 `my-journeys-view.tsx` + `journey-archive-view.tsx` 기능 병합 | - [ ] |
-| 3-2-2 | `/writings` 탭 라우트 수정 | `apps/web/src/app/(tabs)/writings/page.tsx` | 기존 글 상세/에디터 라우트(`/writings/[id]`, `/writings/new`)는 유지. 탭 루트를 글쓰기 목록(서재)으로 설정 | - [ ] |
-| 3-2-3 | `/library` 라우트 제거 | `apps/web/src/app/(tabs)/library/` | `/writings`로 통합되므로 리다이렉트 또는 제거 | - [ ] |
-| 3-2-4 | `/my-journeys` 라우트 리다이렉트 | `apps/web/src/app/(tabs)/my-journeys/` | `/journeys`로 리다이렉트 처리 | - [ ] |
-| 3-2-5 | `/prompts` 탭 라우트 정리 | `apps/web/src/app/(tabs)/prompts/` | 독립 글감 페이지 제거. `/prompts/[id]` 상세 라우트 제거 (글감 상세 화면 없음). 필요 시 리다이렉트 | - [ ] |
-| 3-2-6 | `/writings/new` 라우트 추가 | `apps/web/src/app/(tabs)/writings/new/page.tsx` | 글쓰기 진입 화면 ("오늘 어떤 글을 써볼까요?") 라우트 | - [ ] |
+| 3-2-1 | `/journeys` 탭 라우트 생성 | `apps/web/src/app/(tabs)/journeys/page.tsx` | 여정 탐색 + 진행 현황 통합 뷰. 기존 `my-journeys-view.tsx` + `journey-archive-view.tsx` 기능 병합 | - [x] |
+| 3-2-2 | `/writings` 탭 라우트 수정 | `apps/web/src/app/(tabs)/writings/page.tsx` | 기존 글 상세/에디터 라우트(`/writings/[id]`, `/writings/new`)는 유지. 탭 루트를 글쓰기 목록(서재)으로 설정 | - [x] |
+| 3-2-3 | `/library` 라우트 제거 | `apps/web/src/app/(tabs)/library/` | `/writings`로 통합되므로 리다이렉트 또는 제거 | - [x] |
+| 3-2-4 | `/my-journeys` 라우트 리다이렉트 | `apps/web/src/app/(tabs)/my-journeys/` | `/journeys`로 리다이렉트 처리 | - [x] |
+| 3-2-5 | `/prompts` 탭 라우트 정리 | `apps/web/src/app/(tabs)/prompts/` | 독립 글감 페이지 제거. `/prompts/[id]` 상세 라우트 제거 (글감 상세 화면 없음). 필요 시 리다이렉트 | - [x] |
+| 3-2-6 | `/writings/new` 라우트 추가 | `apps/web/src/app/(tabs)/writings/new/page.tsx` | 글쓰기 진입 화면 ("오늘 어떤 글을 써볼까요?") 라우트 | - [x] |
 
 ### 3-3. 홈 화면 재구성 (Views)
 
 | # | 작업 | 파일 | 상세 | 상태 |
 |---|---|---|---|---|
-| 3-3-1 | `home-view.tsx` 재작성 | `apps/web/src/views/home-view.tsx` | ① 서브탭 (TOP_TABS: ["홈", "글감", "여정"]) 완전 제거, ② 화면 구성: 인사 영역 → [PRIMARY] 진행 중인 여정 카드 (이어하기 CTA) → 나의 여정 목록 → [SECONDARY] "오늘 자유롭게 글을 써보세요" 보조 카드, ③ 진행 중인 여정 없을 시 "첫 여정 시작하기" CTA 표시 | - [ ] |
-| 3-3-2 | 홈 features 수정 | `apps/web/src/features/home/` | 홈 데이터 fetching 로직을 v2.1 API 응답에 맞게 수정 | - [ ] |
+| 3-3-1 | `home-view.tsx` 재작성 | `apps/web/src/views/home-view.tsx` | ① 서브탭 (TOP_TABS: ["홈", "글감", "여정"]) 완전 제거, ② 화면 구성: 인사 영역 → [PRIMARY] 진행 중인 여정 카드 (이어하기 CTA) → 나의 여정 목록 → [SECONDARY] "오늘 자유롭게 글을 써보세요" 보조 카드, ③ 진행 중인 여정 없을 시 "첫 여정 시작하기" CTA 표시 | - [x] |
+| 3-3-2 | 홈 features 수정 | `apps/web/src/features/home/` | 홈 데이터 fetching 로직을 v2.1 API 응답에 맞게 수정 | - [x] |
 
 ### 3-4. 여정 탭 화면 (Views)
 
 | # | 작업 | 파일 | 상세 | 상태 |
 |---|---|---|---|---|
-| 3-4-1 | 여정 탭 뷰 통합 | `apps/web/src/views/` | `my-journeys-view.tsx` + `journey-archive-view.tsx` 기능을 하나의 여정 탭 뷰로 통합. 상단에 "진행 중인 여정" 섹션, 하단에 "새 여정 시작하기" 탐색 섹션 (카테고리 필터 칩 포함) | - [ ] |
-| 3-4-2 | 여정 상세 뷰 수정 | `apps/web/src/views/journey-detail-view.tsx` | 여정 완료 후 "글쓰기 공간에서 배운 내용을 표현해보세요" CTA 추가 (글쓰기 탭으로 연결) | - [ ] |
+| 3-4-1 | 여정 탭 뷰 통합 | `apps/web/src/views/` | `my-journeys-view.tsx` + `journey-archive-view.tsx` 기능을 하나의 여정 탭 뷰로 통합. 상단에 "진행 중인 여정" 섹션, 하단에 "새 여정 시작하기" 탐색 섹션 (카테고리 필터 칩 포함) | - [x] |
+| 3-4-2 | 여정 상세 뷰 수정 | `apps/web/src/views/journey-detail-view.tsx` | 여정 완료 후 "글쓰기 공간에서 배운 내용을 표현해보세요" CTA 추가 (글쓰기 탭으로 연결) | - [x] |
 
 ### 3-5. 글쓰기 탭 화면 (Views) — 핵심 변경
 
-| # | 작업 | 파일 | 상세 |
-|---|---|---|---|
-| 3-5-1 | 글쓰기 탭 루트 뷰 수정 | `apps/web/src/views/writings-list-view.tsx` | 기존 서재(Library) 뷰를 글쓰기 탭 기본 화면으로 활용. ① 상단 "새 글 쓰기" 버튼 → `/writings/new` (글감 미리보기 진입 화면)으로 이동, ② 하단에 서재 글 목록 유지 |
-| 3-5-2 | **글쓰기 진입 화면 (v2.1 신규)** | `apps/web/src/views/writing-entry-view.tsx` (신규) | "오늘 어떤 글을 써볼까요?" 중간 화면 구현: ① 필터 칩 (전체/감각/회고/의견), ② 글감 카드 목록 (3~5장, 유형 태그 + 제목 + 본문 요약 + 응답 수 소형 표시), ③ 글감 카드 탭 → 해당 글감이 참조 카드로 고정된 에디터로 이동, ④ "직접 쓸게요" 버튼 → 빈 에디터로 이동 |
-| 3-5-3 | 글 에디터 수정 | `apps/web/src/views/writing-editor-view.tsx` | ① [선택적] 글감 참조 카드: 글감 선택 시 에디터 상단에 접힘/펼침 카드로 글감 제목+본문 표시, ② [TERTIARY] "아이디어가 필요하신가요?" 버튼: 글감 미선택 + 본문 비어있을 때만 표시 → 탭 시 Bottom Sheet, ③ 본문 입력 시 "아이디어가 필요하신가요?" 버튼 자동 숨김 |
-| 3-5-4 | **글감 선택 Bottom Sheet (v2.1 신규)** | `apps/web/src/views/` 또는 `features/writings/` 내 컴포넌트 | 에디터 내 "아이디어가 필요하신가요?" 탭 시 표시되는 Bottom Sheet: ① "어떤 이야기를 꺼내볼까요?" 타이틀, ② 필터 칩 (전체/감각/회고/의견), ③ 글감 카드 리스트 (유형 태그 + 제목 + 요약 + 응답 수), ④ 글감 탭 → 시트 닫힘 → 에디터에 글감 참조 카드 고정, ⑤ "직접 쓸게요" 버튼 |
+| # | 작업 | 파일 | 상세 | 상태 |
+|---|---|---|---|---|
+| 3-5-1 | 글쓰기 탭 루트 뷰 수정 | `apps/web/src/views/writings-list-view.tsx` | 기존 서재(Library) 뷰를 글쓰기 탭 기본 화면으로 활용. ① 상단 "새 글 쓰기" 버튼 → `/writings/new` (글감 미리보기 진입 화면)으로 이동, ② 하단에 서재 글 목록 유지 | - [x] |
+| 3-5-2 | **글쓰기 진입 화면 (v2.1 신규)** | `apps/web/src/views/writing-entry-view.tsx` (신규) | "오늘 어떤 글을 써볼까요?" 중간 화면 구현: ① 필터 칩 (전체/감각/회고/의견), ② 글감 카드 목록 (3~5장, 유형 태그 + 제목 + 본문 요약 + 응답 수 소형 표시), ③ 글감 카드 탭 → 해당 글감이 참조 카드로 고정된 에디터로 이동, ④ "직접 쓸게요" 버튼 → 빈 에디터로 이동 | - [x] |
+| 3-5-3 | 글 에디터 수정 | `apps/web/src/views/writing-editor-view.tsx` | ① [선택적] 글감 참조 카드: 글감 선택 시 에디터 상단에 접힘/펼침 카드로 글감 제목+본문 표시, ② [TERTIARY] "아이디어가 필요하신가요?" 버튼: 글감 미선택 + 본문 비어있을 때만 표시 → 탭 시 Bottom Sheet, ③ 본문 입력 시 "아이디어가 필요하신가요?" 버튼 자동 숨김 | - [x] |
+| 3-5-4 | **글감 선택 Bottom Sheet (v2.1 신규)** | `apps/web/src/views/` 또는 `features/writings/` 내 컴포넌트 | 에디터 내 "아이디어가 필요하신가요?" 탭 시 표시되는 Bottom Sheet: ① "어떤 이야기를 꺼내볼까요?" 타이틀, ② 필터 칩 (전체/감각/회고/의견), ③ 글감 카드 리스트 (유형 태그 + 제목 + 요약 + 응답 수), ④ 글감 탭 → 시트 닫힘 → 에디터에 글감 참조 카드 고정, ⑤ "직접 쓸게요" 버튼 | - [x] |
 
 ### 3-6. 글감 관련 화면 제거/축소
 
 | # | 작업 | 파일 | 상세 | 상태 |
 |---|---|---|---|---|
-| 3-6-1 | 글감 상세 뷰 제거 | `apps/web/src/views/prompt-detail-view.tsx` | v2.1에서 글감 상세 화면 없음. 뷰 파일 제거 또는 미사용 처리 | - [ ] |
-| 3-6-2 | 글감 아카이브 뷰 제거 | `apps/web/src/views/prompt-archive-view.tsx` | 독립 글감 탐색 화면 없음. 뷰 파일 제거 또는 미사용 처리 | - [ ] |
-| 3-6-3 | 글 상세 뷰에서 "글감 상세 보기" 링크 제거 | `apps/web/src/views/writing-detail-view.tsx` | Writing Prompt 카드의 "글감 상세 보기 →" 버튼 제거. 글감 제목+본문만 접힘/펼침으로 표시 | - [ ] |
+| 3-6-1 | 글감 상세 뷰 제거 | `apps/web/src/views/prompt-detail-view.tsx` | v2.1에서 글감 상세 화면 없음. 뷰 파일 제거 또는 미사용 처리 | - [x] |
+| 3-6-2 | 글감 아카이브 뷰 제거 | `apps/web/src/views/prompt-archive-view.tsx` | 독립 글감 탐색 화면 없음. 뷰 파일 제거 또는 미사용 처리 | - [x] |
+| 3-6-3 | 글 상세 뷰에서 "글감 상세 보기" 링크 제거 | `apps/web/src/views/writing-detail-view.tsx` | Writing Prompt 카드의 "글감 상세 보기 →" 버튼 제거. 글감 제목+본문만 접힘/펼침으로 표시 | - [x] |
 
 ### 3-7. 프로필 화면 수정
 
 | # | 작업 | 파일 | 상세 | 상태 |
 |---|---|---|---|---|
-| 3-7-1 | 성장 통계 순서 변경 | `apps/web/src/views/profile-view.tsx` | "완료한 여정 수"를 "작성한 글 수"보다 앞에 표시 | - [ ] |
+| 3-7-1 | 성장 통계 순서 변경 | `apps/web/src/views/profile-view.tsx` | "완료한 여정 수"를 "작성한 글 수"보다 앞에 표시 | - [x] |
 
 ### 3-8. Features 레이어 정리
 
 | # | 작업 | 파일/경로 | 상세 | 상태 |
 |---|---|---|---|---|
-| 3-8-1 | `features/prompts/` 정리 | `apps/web/src/features/prompts/` | 글감 목록 조회 hooks 유지 (진입 화면 + Bottom Sheet에서 사용). 글감 상세 조회, 글감별 글 목록 hooks 제거 | - [ ] |
-| 3-8-2 | `features/home/` 수정 | `apps/web/src/features/home/` | 홈 데이터 fetching을 v2.1 응답 구조에 맞게 수정 | - [ ] |
-| 3-8-3 | `features/writings/` 확장 | `apps/web/src/features/writings/` | 글쓰기 진입 화면, 글감 참조 카드, Bottom Sheet 관련 상태 관리 추가 | - [ ] |
+| 3-8-1 | `features/prompts/` 정리 | `apps/web/src/features/prompts/` | 글감 목록 조회 hooks 유지 (진입 화면 + Bottom Sheet에서 사용). 글감 상세 조회, 글감별 글 목록 hooks 제거 | - [x] |
+| 3-8-2 | `features/home/` 수정 | `apps/web/src/features/home/` | 홈 데이터 fetching을 v2.1 응답 구조에 맞게 수정 | - [x] |
+| 3-8-3 | `features/writings/` 확장 | `apps/web/src/features/writings/` | 글쓰기 진입 화면, 글감 참조 카드, Bottom Sheet 관련 상태 관리 추가 | - [x] |
 
 ### 3-9. 빌드 검증
 
 | # | 작업 | 상세 | 상태 |
 |---|---|---|---|
-| 3-9-1 | `bun typecheck` | 타입 에러 확인 | - [ ] |
-| 3-9-2 | `bun build` | 빌드 성공 확인 | - [ ] |
-| 3-9-3 | `bun lint` | 린트 통과 확인 | - [ ] |
+| 3-9-1 | `bun typecheck` | 타입 에러 확인 | - [x] |
+| 3-9-2 | `bun build` | 빌드 성공 확인 | - [x] |
+| 3-9-3 | `bun lint` | 린트 통과 확인 | - [x] |
 | 3-9-4 | `bun lefthook run pre-commit` | 커밋 전 전체 검증 | - [ ] |
 
 ---

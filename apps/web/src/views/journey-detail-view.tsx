@@ -37,8 +37,8 @@ interface JourneyDetailData {
 
 const BOTTOM_NAV_ITEMS = [
   { icon: Home01Icon, label: "홈", href: "/home" },
-  { icon: BookOpen01Icon, label: "나의 여정", href: "/my-journeys" },
-  { icon: QuillWrite01Icon, label: "서재", href: "/library" },
+  { icon: BookOpen01Icon, label: "여정", href: "/journeys" },
+  { icon: QuillWrite01Icon, label: "글쓰기", href: "/writings" },
   { icon: User02Icon, label: "프로필", href: "/profile" },
 ] as const
 
@@ -295,6 +295,24 @@ export default function JourneyDetailView({
             />
           ))}
         </div>
+
+        {/* Writing CTA after journey completion */}
+        {data.completedCount === data.totalCount && data.totalCount > 0 && (
+          <div className="px-4 pb-8">
+            <button
+              type="button"
+              onClick={() => router.push("/writings/new")}
+              className="flex w-full flex-col gap-2 rounded-3xl bg-secondary-container p-6 text-left transition-colors hover:opacity-90"
+            >
+              <p className="text-title-medium-em text-on-surface">
+                글쓰기 공간에서 배운 내용을 표현해보세요
+              </p>
+              <p className="text-body-medium text-on-surface-low">
+                여정에서 배운 내용을 자유롭게 글로 써보세요
+              </p>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Bottom Navigation */}

@@ -1,10 +1,5 @@
-import { Suspense } from "react"
-import MyJourneysView from "@/views/my-journeys-view"
+import { redirect } from "next/navigation"
 
 export default function MyJourneysPage() {
-  return (
-    <Suspense>
-      <MyJourneysView />
-    </Suspense>
-  )
+  redirect("/journeys")
 }

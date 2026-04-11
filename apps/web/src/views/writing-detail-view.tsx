@@ -42,19 +42,12 @@ interface WritingComparisonData {
 
 const BOTTOM_NAV_ITEMS = [
   { icon: Home01Icon, label: "홈", href: "/home" },
-  { icon: BookOpen01Icon, label: "나의 여정", href: "/my-journeys" },
-  { icon: QuillWrite01Icon, label: "서재", href: "/library" },
+  { icon: BookOpen01Icon, label: "여정", href: "/journeys" },
+  { icon: QuillWrite01Icon, label: "글쓰기", href: "/writings" },
   { icon: User02Icon, label: "프로필", href: "/profile" },
 ] as const
 
-function WritingPromptCard({
-  title,
-  promptId,
-}: {
-  title: string
-  promptId?: string
-}) {
-  const router = useRouter()
+function WritingPromptCard({ title }: { title: string }) {
   const [expanded, setExpanded] = useState(false)
 
   return (
@@ -88,15 +81,6 @@ function WritingPromptCard({
           className={`shrink-0 text-on-surface transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
         />
       </button>
-      {expanded && promptId && (
-        <button
-          type="button"
-          onClick={() => router.push(`/prompts/${promptId}`)}
-          className="self-end px-4 text-label-large-em text-on-surface-low transition-colors hover:text-on-surface"
-        >
-          글감 보기 →
-        </button>
-      )}
     </div>
   )
 }
@@ -195,10 +179,7 @@ export default function WritingDetailView({
         {/* Writing Prompt */}
         {data.prompt && (
           <div className="mt-6">
-            <WritingPromptCard
-              title={data.prompt.title}
-              promptId={data.prompt.id}
-            />
+            <WritingPromptCard title={data.prompt.title} />
           </div>
         )}
 

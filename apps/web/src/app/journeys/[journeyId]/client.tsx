@@ -32,7 +32,7 @@ export default function JourneyDetailClientPage({
 
   if (isPending) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface px-6 text-sm text-on-surface-low">
+      <div className="text-sm flex min-h-screen items-center justify-center bg-surface px-6 text-on-surface-low">
         여정을 불러오고 있어요...
       </div>
     )
@@ -45,8 +45,8 @@ export default function JourneyDetailClientPage({
           여정 정보를 불러오지 못했어요.
         </p>
         <button
-          onClick={() => router.push("/home?tab=journeys")}
-          className="rounded-full bg-on-surface px-5 py-3 text-sm font-semibold text-surface"
+          onClick={() => router.push("/journeys")}
+          className="text-sm font-semibold rounded-full bg-on-surface px-5 py-3 text-surface"
         >
           여정 목록으로 돌아가기
         </button>
