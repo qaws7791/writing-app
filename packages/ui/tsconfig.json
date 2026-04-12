@@ -5,6 +5,7 @@
     "moduleResolution": "Bundler",
     "baseUrl": ".",
     "paths": {
+      "@workspace/ui": ["./src/index.ts"],
       "@workspace/ui/*": ["./src/*"]
     }
   },

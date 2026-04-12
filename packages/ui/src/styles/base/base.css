@@ -1,0 +1,19 @@
+@layer base {
+  /* Border color inheritance */
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border, currentColor);
+  }
+
+  /* View transition */
+  :root {
+    view-transition-name: none;
+  }
+
+  ::view-transition {
+    pointer-events: none;
+  }
+}
