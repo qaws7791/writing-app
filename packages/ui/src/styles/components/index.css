@@ -79,3 +79,28 @@
 @import "./popover.css";
 @import "./toast.css";
 @import "./tooltip.css";
+
+/* ------------------------------------------------------------------------------------------------
+ * Component Styles — Phase 3 (Tier 2 Composite + Tier 3 High-level)
+ * ------------------------------------------------------------------------------------------------ */
+
+/* Menu primitives (shared by Dropdown) */
+@import "./menu-item.css";
+@import "./menu-section.css";
+
+/* Selects */
+@import "./select.css";
+@import "./combo-box.css";
+
+/* Dropdown */
+@import "./dropdown.css";
+
+/* Overlays */
+@import "./alert-dialog.css";
+
+/* Tags */
+@import "./tag.css";
+@import "./tag-group.css";
+
+/* High-level */
+@import "./autocomplete.css";
