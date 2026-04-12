@@ -40,3 +40,41 @@
 
 /* Utilities */
 @import "./scroll-shadow.css";
+
+/* ------------------------------------------------------------------------------------------------
+ * Component Styles — Phase 1.5 (Tier 1 Simple Composites)
+ * ------------------------------------------------------------------------------------------------ */
+
+@import "./card.css";
+@import "./meter.css";
+@import "./progress-bar.css";
+@import "./switch.css";
+@import "./tabs.css";
+
+/* ------------------------------------------------------------------------------------------------
+ * Component Styles — Phase 2 (Tier 1 Basic Composites)
+ * ------------------------------------------------------------------------------------------------ */
+
+/* Feedback */
+@import "./alert.css";
+
+/* Forms */
+@import "./checkbox-group.css";
+@import "./fieldset.css";
+@import "./input-group.css";
+@import "./radio-group.css";
+@import "./search-field.css";
+@import "./textfield.css";
+
+/* Groups */
+@import "./button-group.css";
+@import "./toggle-button-group.css";
+@import "./toolbar.css";
+
+/* Data Display */
+@import "./list-box.css";
+
+/* Overlays */
+@import "./modal.css";
+@import "./popover.css";
+@import "./tooltip.css";

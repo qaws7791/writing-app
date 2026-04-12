@@ -1,0 +1,182 @@
+"use client"
+
+import type { ComponentPropsWithRef } from "react"
+
+import React, { createContext, useContext, useMemo } from "react"
+import {
+  Group as GroupPrimitive,
+  Input as InputPrimitive,
+  TextArea as TextAreaPrimitive,
+} from "react-aria-components"
+
+import type { InputGroupVariants } from "./input-group.styles"
+
+import {
+  composeSlotClassName,
+  composeTwRenderProps,
+} from "@workspace/ui/utils/compose"
+import { TextFieldContext } from "@workspace/ui/components/text-field"
+
+import { inputGroupVariants } from "./input-group.styles"
+
+/* -------------------------------------------------------------------------------------------------
+ * InputGroup Context
+ * -----------------------------------------------------------------------------------------------*/
+type InputGroupContext = {
+  slots?: ReturnType<typeof inputGroupVariants>
+}
+
+const InputGroupContext = createContext<InputGroupContext>({})
+
+/* -------------------------------------------------------------------------------------------------
+ * InputGroup Root
+ * -----------------------------------------------------------------------------------------------*/
+interface InputGroupRootProps
+  extends ComponentPropsWithRef<typeof GroupPrimitive>, InputGroupVariants {}
+
+const InputGroupRoot = ({
+  children,
+  className,
+  fullWidth,
+  onClick,
+  variant,
+  ...props
+}: InputGroupRootProps) => {
+  const textFieldContext = useContext(TextFieldContext)
+  const resolvedVariant = variant ?? textFieldContext?.variant
+  const groupRef = React.useRef<HTMLDivElement>(null)
+
+  const slots = useMemo(
+    () => inputGroupVariants({ fullWidth, variant: resolvedVariant }),
+    [fullWidth, resolvedVariant]
+  )
+
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement
+    const input = groupRef.current?.querySelector("input")
+
+    if (input && target !== input && !input.contains(target)) {
+      input.focus()
+    }
+
+    onClick?.(e)
+  }
+
+  return (
+    <InputGroupContext value={{ slots }}>
+      <GroupPrimitive
+        {...props}
+        ref={groupRef}
+        className={composeTwRenderProps(className, slots?.base())}
+        data-slot="input-group"
+        onClick={handleClick}
+      >
+        {(renderProps) =>
+          typeof children === "function" ? children(renderProps) : children
+        }
+      </GroupPrimitive>
+    </InputGroupContext>
+  )
+}
+
+/* -------------------------------------------------------------------------------------------------
+ * InputGroup Input
+ * -----------------------------------------------------------------------------------------------*/
+type InputGroupInputProps = ComponentPropsWithRef<typeof InputPrimitive>
+
+const InputGroupInput = ({ className, ...props }: InputGroupInputProps) => {
+  const { slots } = useContext(InputGroupContext)
+
+  return (
+    <InputPrimitive
+      className={composeTwRenderProps(className, slots?.input())}
+      data-slot="input-group-input"
+      {...props}
+    />
+  )
+}
+
+/* -------------------------------------------------------------------------------------------------
+ * InputGroup TextArea
+ * -----------------------------------------------------------------------------------------------*/
+type InputGroupTextAreaProps = ComponentPropsWithRef<typeof TextAreaPrimitive>
+
+const InputGroupTextArea = ({
+  className,
+  ...props
+}: InputGroupTextAreaProps) => {
+  const { slots } = useContext(InputGroupContext)
+
+  return (
+    <TextAreaPrimitive
+      className={composeTwRenderProps(className, slots?.input())}
+      data-slot="input-group-textarea"
+      {...props}
+    />
+  )
+}
+
+/* -------------------------------------------------------------------------------------------------
+ * InputGroup Prefix
+ * -----------------------------------------------------------------------------------------------*/
+type InputGroupPrefixProps = ComponentPropsWithRef<"div">
+
+const InputGroupPrefix = ({
+  children,
+  className,
+  ...props
+}: InputGroupPrefixProps) => {
+  const { slots } = useContext(InputGroupContext)
+
+  return (
+    <div
+      className={composeSlotClassName(slots?.prefix, className)}
+      data-slot="input-group-prefix"
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------------------------------------------
+ * InputGroup Suffix
+ * -----------------------------------------------------------------------------------------------*/
+type InputGroupSuffixProps = ComponentPropsWithRef<"div">
+
+const InputGroupSuffix = ({
+  children,
+  className,
+  ...props
+}: InputGroupSuffixProps) => {
+  const { slots } = useContext(InputGroupContext)
+
+  return (
+    <div
+      className={composeSlotClassName(slots?.suffix, className)}
+      data-slot="input-group-suffix"
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+/* -------------------------------------------------------------------------------------------------
+ * Exports
+ * -----------------------------------------------------------------------------------------------*/
+export {
+  InputGroupRoot,
+  InputGroupInput,
+  InputGroupTextArea,
+  InputGroupPrefix,
+  InputGroupSuffix,
+}
+
+export type {
+  InputGroupRootProps,
+  InputGroupInputProps,
+  InputGroupTextAreaProps,
+  InputGroupPrefixProps,
+  InputGroupSuffixProps,
+}
