@@ -1,0 +1,40 @@
+/* Spinner component styles */
+
+.spinner {
+  @apply pointer-events-none relative size-6 origin-center animate-spin-fast;
+}
+
+.spinner--sm {
+  @apply size-4;
+}
+
+.spinner--md {
+}
+
+.spinner--lg {
+  @apply size-8;
+}
+
+.spinner--xl {
+  @apply size-10;
+}
+
+.spinner--current {
+  color: inherit;
+}
+
+.spinner--accent {
+  color: var(--accent);
+}
+
+.spinner--danger {
+  color: var(--danger);
+}
+
+.spinner--success {
+  color: var(--success);
+}
+
+.spinner--warning {
+  color: var(--warning);
+}

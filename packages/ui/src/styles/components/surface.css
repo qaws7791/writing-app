@@ -1,0 +1,21 @@
+/* Surface component styles */
+
+.surface {
+  @apply relative text-foreground;
+}
+
+.surface--transparent {
+  @apply bg-transparent;
+}
+
+.surface--default {
+  @apply bg-surface text-surface-foreground;
+}
+
+.surface--secondary {
+  @apply bg-surface-secondary text-surface-secondary-foreground;
+}
+
+.surface--tertiary {
+  @apply bg-surface-tertiary text-surface-tertiary-foreground;
+}

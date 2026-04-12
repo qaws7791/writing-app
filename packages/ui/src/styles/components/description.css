@@ -1,0 +1,5 @@
+/* Description component styles */
+
+.description {
+  @apply text-xs text-wrap wrap-break-word text-muted;
+}

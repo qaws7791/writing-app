@@ -1,6 +1,6 @@
 import { Geist_Mono, Noto_Sans } from "next/font/google"
 
-import "@workspace/ui/globals.css"
+import "./globals.css"
 import { QueryProvider } from "@/foundation/api/query-provider"
 import { ThemeProvider } from "@/foundation/ui/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"

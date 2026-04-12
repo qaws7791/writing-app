@@ -1,0 +1,26 @@
+/* Separator component styles */
+
+.separator {
+  @apply shrink-0 rounded-[4px] border-t-0 border-b-0 bg-separator;
+  @apply h-px w-full;
+}
+
+.separator--horizontal {
+  @apply h-px w-full;
+}
+
+.separator--vertical {
+  @apply h-auto min-h-2 w-px self-stretch;
+}
+
+.separator--default {
+  @apply bg-separator;
+}
+
+.separator--secondary {
+  @apply bg-separator-secondary;
+}
+
+.separator--tertiary {
+  @apply bg-separator-tertiary;
+}

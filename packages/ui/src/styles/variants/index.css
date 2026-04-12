@@ -1,0 +1,58 @@
+/* -------------------------------------------------------------------------------------------------
+ * motion-reduce — Minimize animations for accessibility
+ * Priority: data-reduce-motion="true" → prefers-reduced-motion: reduce
+ * ------------------------------------------------------------------------------------------------- */
+@custom-variant motion-reduce {
+  &:is([data-reduce-motion="true"], [data-reduce-motion="true"] *) {
+    @slot;
+
+    &::before,
+    &::after {
+      @slot;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:not(:is([data-reduce-motion="true"], [data-reduce-motion="true"] *)) {
+      @slot;
+
+      &::before,
+      &::after {
+        @slot;
+      }
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------------------------------
+ * motion-safe — Enable full animations and transitions
+ * Priority: data-reduce-motion="false" → prefers-reduced-motion: no-preference
+ * ------------------------------------------------------------------------------------------------- */
+@custom-variant motion-safe {
+  &:is([data-reduce-motion="false"], [data-reduce-motion="false"] *) {
+    @slot;
+
+    &::before,
+    &::after {
+      @slot;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    &:not(
+      :is(
+        [data-reduce-motion="true"],
+        [data-reduce-motion="true"] *,
+        [data-reduce-motion="false"],
+        [data-reduce-motion="false"] *
+      )
+    ) {
+      @slot;
+
+      &::before,
+      &::after {
+        @slot;
+      }
+    }
+  }
+}

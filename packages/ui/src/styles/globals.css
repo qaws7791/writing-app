@@ -1,3 +1,6 @@
+/* Initialize Tailwind v4 utilities */
+@import "tailwindcss";
+
 /* Dark mode variant - .dark class approach */
 @custom-variant dark (&:is(.dark *));
 
@@ -10,5 +13,11 @@
 /* Base reset styles */
 @import "./base/base.css";
 
-/* Component CSS (populated in Phase 1+) */
+/* Component CSS */
 @import "./components/index.css";
+
+/* Utilities (status-focused, no-highlight, etc.) */
+@import "./utilities/index.css";
+
+/* Custom variants (motion-reduce, motion-safe) */
+@import "./variants/index.css";

@@ -1,0 +1,43 @@
+/* Skeleton component styles */
+
+.skeleton {
+  @apply pointer-events-none relative overflow-hidden rounded-sm bg-surface-tertiary/70;
+}
+
+.skeleton--shimmer {
+  &::after {
+    @apply absolute inset-0 -translate-x-full animate-skeleton bg-linear-to-r from-transparent via-surface-tertiary to-transparent content-[''];
+  }
+
+  &:has(.skeleton) {
+    &::after {
+      content: none;
+    }
+
+    &::before {
+      @apply absolute inset-0 -translate-x-full animate-skeleton content-[''];
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.5) 50%,
+        transparent 100%
+      );
+      z-index: 10;
+      pointer-events: none;
+      mix-blend-mode: overlay;
+    }
+
+    & .skeleton {
+      &::after {
+        content: none;
+      }
+    }
+  }
+}
+
+.skeleton--pulse {
+  @apply animate-pulse;
+}
+
+.skeleton--none {
+}

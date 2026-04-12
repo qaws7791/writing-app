@@ -1,1 +1,42 @@
-/* Component CSS will be added here as components are implemented in Phase 1+ */
+/* ------------------------------------------------------------------------------------------------
+ * Component Styles — Phase 1 (Tier 0 Primitives)
+ * ------------------------------------------------------------------------------------------------
+ * Import order matters: shared/primitive components FIRST, then consumers.
+ * ------------------------------------------------------------------------------------------------ */
+
+/* Shared — used across many components */
+@import "./close-button.css";
+@import "./description.css";
+@import "./error-message.css";
+@import "./field-error.css";
+@import "./label.css";
+
+/* Navigation */
+@import "./link.css";
+
+/* Buttons */
+@import "./button.css";
+@import "./toggle-button.css";
+
+/* Data Display */
+@import "./badge.css";
+@import "./chip.css";
+
+/* Feedback */
+@import "./skeleton.css";
+@import "./spinner.css";
+
+/* Forms */
+@import "./checkbox.css";
+@import "./input.css";
+@import "./textarea.css";
+
+/* Layout */
+@import "./separator.css";
+@import "./surface.css";
+
+/* Media */
+@import "./avatar.css";
+
+/* Utilities */
+@import "./scroll-shadow.css";

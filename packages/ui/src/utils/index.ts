@@ -1,3 +1,4 @@
+export * from "./assertion"
 export * from "./compose"
 export * from "./styles"
 export { tv } from "./tv"

@@ -3,9 +3,10 @@
 pre-commit:
   parallel: true
   commands:
-    # format all files with oxfmt
+    # format all files with oxfmt (excluding packages/ui CSS which uses @apply)
     format:
-      glob: "**/*.{ts,tsx,js,jsx,cjs,mjs,json,css,md,yaml,yml}"
+      glob: "**/*.{ts,tsx,js,jsx,cjs,mjs,json,md,yaml,yml}"
+      exclude: "packages/ui/**/*.css"
       run: bunx oxfmt --no-error-on-unmatched-pattern {staged_files}
       stage_fixed: true
 
