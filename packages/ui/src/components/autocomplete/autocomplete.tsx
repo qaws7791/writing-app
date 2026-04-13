@@ -59,7 +59,7 @@ interface AutocompleteRootProps<
   extends
     ComponentPropsWithRef<typeof SelectPrimitive<T, M>>,
     AutocompleteVariants {
-  items?: Iterable<T>
+  items?: Iterable<T, M>
   /** Handler called when the clear button is pressed. */
   onClear?: () => void
 }

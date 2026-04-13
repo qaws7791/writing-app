@@ -7,6 +7,11 @@ export {
   ToastDescription,
   ToastActionButton,
   ToastCloseButton,
+  DEFAULT_GAP,
+  DEFAULT_MAX_VISIBLE_TOAST,
+  DEFAULT_SCALE_FACTOR,
+  DEFAULT_TOAST_WIDTH,
+  DEFAULT_TOAST_TIMEOUT,
 } from "./toast"
 export type {
   ToastProps,

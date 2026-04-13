@@ -74,3 +74,8 @@ export * from "./components/autocomplete"
 /** Phase 3 — Internal Primitives (for advanced composition) */
 export * from "./components/menu-item"
 export * from "./components/menu-section"
+
+/** New Components — from audit alignment */
+export * from "./components/radio"
+export * from "./components/menu"
+export * from "./components/switch-group"

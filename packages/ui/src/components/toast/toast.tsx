@@ -48,6 +48,7 @@ const DEFAULT_GAP = 12
 const DEFAULT_MAX_VISIBLE_TOAST = 3
 const DEFAULT_SCALE_FACTOR = 0.05
 const DEFAULT_TOAST_WIDTH = 460
+const DEFAULT_TOAST_TIMEOUT = 5000
 
 /* -------------------------------------------------------------------------------------------------
  * Toast Context
@@ -498,6 +499,11 @@ export {
   ToastDescription,
   ToastActionButton,
   ToastCloseButton,
+  DEFAULT_GAP,
+  DEFAULT_MAX_VISIBLE_TOAST,
+  DEFAULT_SCALE_FACTOR,
+  DEFAULT_TOAST_WIDTH,
+  DEFAULT_TOAST_TIMEOUT,
 }
 export type {
   ToastProps,

@@ -2,7 +2,7 @@ import type { VariantProps } from "@workspace/ui/utils/tv"
 
 import { tv } from "@workspace/ui/utils/tv"
 
-export const listBoxVariants = tv({
+export const listboxVariants = tv({
   base: "list-box",
   defaultVariants: {
     variant: "default",
@@ -15,7 +15,7 @@ export const listBoxVariants = tv({
   },
 })
 
-export const listBoxItemVariants = tv({
+export const listboxItemVariants = tv({
   slots: {
     item: "list-box-item",
     indicator: "list-box-item__indicator",
@@ -31,5 +31,10 @@ export const listBoxItemVariants = tv({
   },
 })
 
-export type ListBoxVariants = VariantProps<typeof listBoxVariants>
-export type ListBoxItemVariants = VariantProps<typeof listBoxItemVariants>
+export const listboxSectionVariants = tv({
+  base: "list-box-section",
+})
+
+export type ListBoxVariants = VariantProps<typeof listboxVariants>
+export type ListBoxItemVariants = VariantProps<typeof listboxItemVariants>
+export type ListBoxSectionVariants = VariantProps<typeof listboxSectionVariants>
