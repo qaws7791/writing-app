@@ -16,7 +16,7 @@ export function SessionCtaBar({
   onClick,
 }: SessionCtaBarProps) {
   return (
-    <div className="safe-area-pb fixed right-0 bottom-0 left-0 z-50 bg-linear-to-t from-surface via-surface to-transparent px-5 pt-6">
+    <div className="fixed right-0 bottom-0 left-0 z-50 bg-linear-to-t from-surface via-surface to-transparent px-5 pt-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
       <Button
         variant="primary"
         size="lg"
