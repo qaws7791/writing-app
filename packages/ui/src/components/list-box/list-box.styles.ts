@@ -15,4 +15,21 @@ export const listBoxVariants = tv({
   },
 })
 
+export const listBoxItemVariants = tv({
+  slots: {
+    item: "list-box-item",
+    indicator: "list-box-item__indicator",
+  },
+  defaultVariants: {
+    variant: "default",
+  },
+  variants: {
+    variant: {
+      default: { item: "list-box-item--default" },
+      danger: { item: "list-box-item--danger" },
+    },
+  },
+})
+
 export type ListBoxVariants = VariantProps<typeof listBoxVariants>
+export type ListBoxItemVariants = VariantProps<typeof listBoxItemVariants>

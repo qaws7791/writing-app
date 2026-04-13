@@ -36,7 +36,7 @@
 }
 
 .skeleton--pulse {
-  @apply animate-pulse;
+  /* @apply animate-pulse; */
 }
 
 .skeleton--none {

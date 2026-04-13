@@ -1,8 +1,8 @@
 /* Initialize Tailwind v4 utilities */
 @import "tailwindcss";
 
-/* Dark mode variant - .dark class approach */
-@custom-variant dark (&:is(.dark *));
+/* Animation utilities - must be before other imports for @apply */
+@import "./base/animations.css";
 
 /* Design tokens */
 @import "./tokens/variables.css";
@@ -21,3 +21,6 @@
 
 /* Custom variants (motion-reduce, motion-safe) */
 @import "./variants/index.css";
+
+/* Dark mode variant - .dark class approach */
+@custom-variant dark (&:is(.dark *));

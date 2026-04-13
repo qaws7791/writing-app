@@ -3,13 +3,16 @@
 import type { ComponentPropsWithRef } from "react"
 
 import { useMemo } from "react"
-import { ListBox as ListBoxPrimitive } from "react-aria-components"
+import {
+  ListBox as ListBoxPrimitive,
+  ListBoxItem as ListBoxItemPrimitive,
+} from "react-aria-components"
 
-import type { ListBoxVariants } from "./list-box.styles"
+import type { ListBoxItemVariants, ListBoxVariants } from "./list-box.styles"
 
 import { composeTwRenderProps } from "@workspace/ui/utils/compose"
 
-import { listBoxVariants } from "./list-box.styles"
+import { listBoxItemVariants, listBoxVariants } from "./list-box.styles"
 
 /* -------------------------------------------------------------------------------------------------
  * ListBox Root
@@ -36,8 +39,26 @@ function ListBoxRoot<T extends object>({
 }
 
 /* -------------------------------------------------------------------------------------------------
+ * ListBox Item
+ * -----------------------------------------------------------------------------------------------*/
+type ListBoxItemProps = ComponentPropsWithRef<typeof ListBoxItemPrimitive> &
+  ListBoxItemVariants
+
+const ListBoxItem = ({ className, variant, ...props }: ListBoxItemProps) => {
+  const slots = useMemo(() => listBoxItemVariants({ variant }), [variant])
+
+  return (
+    <ListBoxItemPrimitive
+      className={composeTwRenderProps(className, slots.item())}
+      data-slot="list-box-item"
+      {...props}
+    />
+  )
+}
+
+/* -------------------------------------------------------------------------------------------------
  * Exports
  * -----------------------------------------------------------------------------------------------*/
-export { ListBoxRoot }
+export { ListBoxRoot, ListBoxItem }
 
-export type { ListBoxRootProps }
+export type { ListBoxRootProps, ListBoxItemProps }

@@ -10,3 +10,51 @@
     @apply ml-[3%] w-[94%];
   }
 }
+
+/* ==========================================================================
+   List box item styles
+   ========================================================================== */
+
+.list-box-item {
+  @apply relative flex cursor-pointer select-none items-center rounded-md px-2 py-1.5 text-sm outline-none transition-colors;
+  @apply text-foreground;
+
+  &[data-focused] {
+    @apply bg-accent/10 text-accent;
+  }
+
+  &[data-selected] {
+    @apply bg-accent/15 text-accent;
+  }
+
+  &[data-disabled] {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  &[data-hovered] {
+    @apply bg-accent/10;
+  }
+}
+
+.list-box-item--default {
+  &[data-focused],
+  &[data-hovered] {
+    @apply bg-accent/10 text-accent;
+  }
+
+  &[data-selected] {
+    @apply bg-accent/15 font-medium text-accent;
+  }
+}
+
+.list-box-item--danger {
+  &[data-focused],
+  &[data-hovered] {
+    @apply bg-danger/10 text-danger;
+  }
+
+  &[data-selected] {
+    @apply bg-danger/15 font-medium text-danger;
+  }
+}
+

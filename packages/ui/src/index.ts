@@ -14,79 +14,63 @@ export { useMeasuredHeight } from "./hooks/use-measured-height"
 export { useMediaQuery } from "./hooks/use-media-query"
 export { useResizeObserver } from "./hooks/use-resize-observer"
 
+/** Phase 0 — Tier 0 Primitives */
+export * from "./components/alert"
+export * from "./components/avatar"
+export * from "./components/badge"
+export * from "./components/button"
+export * from "./components/checkbox"
+export * from "./components/description"
+export * from "./components/error-message"
+export * from "./components/input"
+export * from "./components/label"
+export * from "./components/link"
+export * from "./components/progress-bar"
+export * from "./components/meter"
+export * from "./components/radio-group"
+export * from "./components/scroll-shadow"
+export * from "./components/separator"
+export * from "./components/skeleton"
+export * from "./components/spinner"
+export * from "./components/surface"
+export * from "./components/switch"
+export * from "./components/textarea"
+export * from "./components/text-field"
+export * from "./components/toggle-button"
+
+/** Phase 1 — Tier 1 Composite Components */
+export * from "./components/button-group"
+export * from "./components/card"
+export * from "./components/checkbox-group"
+export * from "./components/chip"
+export * from "./components/close-button"
+export * from "./components/field-error"
+export * from "./components/fieldset"
+export * from "./components/form"
+export * from "./components/input-group"
+export * from "./components/list-box"
+export * from "./components/modal"
+export * from "./components/popover"
+export * from "./components/tabs"
+export * from "./components/toast"
+export * from "./components/toggle-button-group"
+export * from "./components/toolbar"
+export * from "./components/tooltip"
+
+/** Phase 2 — Search Components */
+export * from "./components/search-field"
+
 /** Phase 3 — Tier 2 Composite Components */
-export { Select, selectVariants } from "./components/select"
-export type { SelectVariants } from "./components/select"
-
-export { ComboBox, comboBoxVariants } from "./components/combo-box"
-export type { ComboBoxVariants } from "./components/combo-box"
-
-export {
-  Dropdown,
-  DropdownRoot,
-  DropdownTrigger,
-  DropdownPopover,
-  DropdownMenu,
-  DropdownItem,
-  DropdownSection,
-  DropdownItemIndicator,
-  DropdownSubmenuIndicator,
-  DropdownSubmenuTrigger,
-  dropdownVariants,
-} from "./components/dropdown"
-export type { DropdownVariants } from "./components/dropdown"
-
-export {
-  AlertDialog,
-  AlertDialogRoot,
-  AlertDialogTrigger,
-  AlertDialogBackdrop,
-  AlertDialogContainer,
-  AlertDialogDialog,
-  AlertDialogHeader,
-  AlertDialogHeading,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogIcon,
-  AlertDialogCloseTrigger,
-  alertDialogVariants,
-} from "./components/alert-dialog"
-export type { AlertDialogVariants } from "./components/alert-dialog"
-
-export {
-  TagGroup,
-  TagGroupRoot,
-  TagGroupList,
-  tagGroupVariants,
-} from "./components/tag-group"
-export type { TagGroupVariants } from "./components/tag-group"
-
-export { Tag, TagRoot, TagRemoveButton, tagVariants } from "./components/tag"
-export type { TagVariants } from "./components/tag"
+export * from "./components/select"
+export * from "./components/combo-box"
+export * from "./components/dropdown"
+export * from "./components/alert-dialog"
+export * from "./components/tag-group"
+export * from "./components/tag"
 
 /** Phase 3 — Tier 3 High-level Components */
-export {
-  Autocomplete,
-  AutocompleteRoot,
-  AutocompleteTrigger,
-  AutocompleteValue,
-  AutocompleteIndicator,
-  AutocompletePopover,
-  AutocompleteFilter,
-  AutocompleteClearButton,
-  autocompleteVariants,
-} from "./components/autocomplete"
-export type { AutocompleteVariants } from "./components/autocomplete"
+export * from "./components/autocomplete"
 
 /** Phase 3 — Internal Primitives (for advanced composition) */
-export {
-  MenuItem,
-  MenuItemRoot,
-  MenuItemIndicator,
-  MenuItemSubmenuIndicator,
-  menuItemVariants,
-} from "./components/menu-item"
-export type { MenuItemVariants } from "./components/menu-item"
-
-export { MenuSectionRoot, menuSectionVariants } from "./components/menu-section"
-export type { MenuSectionVariants } from "./components/menu-section"
+export * from "./components/menu-item"
+export * from "./components/menu-section"
