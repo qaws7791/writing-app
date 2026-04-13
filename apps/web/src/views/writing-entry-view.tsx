@@ -4,10 +4,11 @@ import { useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
-import { IconButton } from "@workspace/ui/components/icon-button"
+import { Button } from "@workspace/ui/components/button"
 import { Chip } from "@workspace/ui/components/chip"
 import { Skeleton } from "@workspace/ui/components/skeleton"
-import { Button } from "@workspace/ui/components/button"
+import { ToggleButton } from "@workspace/ui/components/toggle-button"
+import { Card } from "@workspace/ui/components/card"
 import { usePromptCategories, usePromptList } from "@/features/prompts"
 
 type PromptType = "sensory" | "reflection" | "opinion"
@@ -34,22 +35,21 @@ function PromptCard({
   const router = useRouter()
 
   return (
-    <button
-      type="button"
+    <Card.Root
+      className="hover:bg-surface-container-high cursor-pointer transition-colors"
       onClick={() => router.push(`/writings/new/editor?promptId=${id}`)}
-      className="flex w-full flex-col gap-3 rounded-3xl bg-surface-container p-6 text-left transition-colors hover:bg-surface-container-high"
     >
-      <span className="self-start rounded-full bg-secondary-container px-3 py-1 text-label-small text-on-surface-low uppercase">
-        {PROMPT_TYPE_LABEL[promptType]}
-      </span>
-      <h3 className="text-title-medium-em text-on-surface">{title}</h3>
-      <p className="line-clamp-2 text-body-medium text-on-surface-low">
-        {body}
-      </p>
-      <span className="text-label-small text-on-surface-lowest">
-        {responseCount}명이 이 글감으로 글을 썼어요
-      </span>
-    </button>
+      <Card.Content className="flex flex-col gap-3 p-6">
+        <Chip variant="secondary" size="sm" className="self-start">
+          {PROMPT_TYPE_LABEL[promptType]}
+        </Chip>
+        <Card.Title>{title}</Card.Title>
+        <Card.Description className="line-clamp-2">{body}</Card.Description>
+        <span className="text-label-small text-on-surface-lowest">
+          {responseCount}명이 이 글감으로 글을 썬어요
+        </span>
+      </Card.Content>
+    </Card.Root>
   )
 }
 
@@ -71,15 +71,20 @@ export default function WritingEntryView() {
     <div className="flex h-dvh flex-col bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center gap-3 bg-surface px-4 py-3">
-        <IconButton aria-label="뒤로 가기" onClick={() => router.back()}>
+        <Button
+          isIconOnly
+          variant="ghost"
+          aria-label="뒤로 가기"
+          onPress={() => router.back()}
+        >
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </IconButton>
-        <span className="flex-1 text-center text-label-large-em text-on-surface">
+        </Button>
+        <span className="text-label-large-em text-on-surface flex-1 text-center">
           새 글 쓰기
         </span>
         <div className="size-10" />
@@ -91,31 +96,29 @@ export default function WritingEntryView() {
           <h1 className="text-headline-medium-em text-on-surface">
             오늘 어떤 글을 써볼까요?
           </h1>
-          <p className="mt-2 text-body-medium text-on-surface-low">
+          <p className="text-body-medium text-on-surface-low mt-2">
             글감을 선택하거나 자유롭게 시작할 수 있어요
           </p>
         </div>
 
         {/* Category Filter Chips */}
         <div className="flex gap-2.5 overflow-x-auto py-2.5 [scrollbar-width:none]">
-          <Chip
-            variant="filter"
-            selected={selectedType === undefined}
-            onSelect={() => setSelectedType(undefined)}
+          <ToggleButton
+            isSelected={selectedType === undefined}
+            onChange={() => setSelectedType(undefined)}
             className="shrink-0"
           >
             전체
-          </Chip>
+          </ToggleButton>
           {categoriesData?.items.map((cat) => (
-            <Chip
+            <ToggleButton
               key={cat.key}
-              variant="filter"
-              selected={selectedType === cat.key}
-              onSelect={() => setSelectedType(cat.key as PromptType)}
+              isSelected={selectedType === cat.key}
+              onChange={() => setSelectedType(cat.key as PromptType)}
               className="shrink-0"
             >
               {cat.label}
-            </Chip>
+            </ToggleButton>
           ))}
         </div>
 
@@ -123,14 +126,10 @@ export default function WritingEntryView() {
         <div className="flex flex-col gap-4 pt-6">
           {isLoading ? (
             Array.from({ length: 3 }, (_, index) => (
-              <Skeleton
-                key={index}
-                variant="rectangular"
-                className="h-36 rounded-3xl"
-              />
+              <Skeleton key={index} className="h-36 rounded-3xl" />
             ))
           ) : prompts.length === 0 ? (
-            <div className="py-12 text-center text-body-medium text-on-surface-lowest">
+            <div className="text-body-medium text-on-surface-lowest py-12 text-center">
               글감이 없습니다.
             </div>
           ) : (
@@ -151,10 +150,10 @@ export default function WritingEntryView() {
       {/* 항상 보이는 하단 고정 버튼 */}
       <div className="border-outline-variant shrink-0 border-t bg-surface px-4 py-4">
         <Button
-          variant="tonal"
+          variant="secondary"
           size="lg"
-          onClick={() => router.push("/writings/new/editor")}
-          className="w-full"
+          onPress={() => router.push("/writings/new/editor")}
+          fullWidth
         >
           직접 쓸게요
         </Button>

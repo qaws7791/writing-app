@@ -9,9 +9,10 @@ import {
   ArrowDown01Icon,
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
-import { IconButton } from "@workspace/ui/components/icon-button"
 import { Button } from "@workspace/ui/components/button"
-import { Textarea } from "@workspace/ui/components/text-field"
+import { Card } from "@workspace/ui/components/card"
+import { TextField } from "@workspace/ui/components/text-field"
+import { TextArea } from "@workspace/ui/components/textarea"
 
 interface WritingDetailData {
   id: string
@@ -44,11 +45,11 @@ function WritingPromptCard({ title }: { title: string }) {
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="flex flex-col gap-2">
+    <Card.Root>
       <button
         type="button"
         onClick={() => setExpanded((prev) => !prev)}
-        className="flex w-full items-center justify-between rounded-[2.25rem] bg-surface-container px-7.5 py-6 text-left transition-colors hover:bg-surface-container-high"
+        className="flex w-full items-center justify-between px-7.5 py-6 text-left"
         aria-expanded={expanded}
       >
         <div className="flex flex-col gap-1">
@@ -71,10 +72,10 @@ function WritingPromptCard({ title }: { title: string }) {
           size={24}
           color="currentColor"
           strokeWidth={1.5}
-          className={`shrink-0 text-on-surface transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+          className={`text-on-surface shrink-0 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
         />
       </button>
-    </div>
+    </Card.Root>
   )
 }
 
@@ -82,14 +83,14 @@ function QuoteBlock({ content }: { content: string }) {
   return (
     <blockquote className="relative w-full rounded-[3rem] bg-surface px-10 py-12">
       <span
-        className="absolute top-[2.556rem] left-4 -translate-y-1/2 font-serif text-[3rem] leading-none text-surface-container-highest select-none"
+        className="text-surface-container-highest absolute top-[2.556rem] left-4 -translate-y-1/2 font-serif text-[3rem] leading-none select-none"
         aria-hidden="true"
       >
         &ldquo;
       </span>
       <p className="text-title-large text-on-surface-low">{content}</p>
       <span
-        className="absolute right-4 bottom-[0.969rem] font-serif text-[3rem] leading-none text-surface-container-highest select-none"
+        className="text-surface-container-highest absolute right-4 bottom-[0.969rem] font-serif text-[3rem] leading-none select-none"
         aria-hidden="true"
       >
         &rdquo;
@@ -122,25 +123,30 @@ export default function WritingDetailView({
     <div className="flex min-h-screen flex-col bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between bg-surface px-4 py-3">
-        <IconButton aria-label="뒤로 가기" onClick={() => router.back()}>
+        <Button
+          isIconOnly
+          variant="ghost"
+          aria-label="뒤로 가기"
+          onPress={() => router.back()}
+        >
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </IconButton>
-        <span className="flex-1 text-center text-label-large text-on-surface">
+        </Button>
+        <span className="text-label-large text-on-surface flex-1 text-center">
           {data.title}
         </span>
-        <IconButton aria-label="더보기">
+        <Button isIconOnly variant="ghost" aria-label="더보기">
           <HugeiconsIcon
             icon={MoreHorizontalIcon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </IconButton>
+        </Button>
       </header>
 
       {/* Scrollable content */}
@@ -169,21 +175,21 @@ export default function WritingDetailView({
           </div>
         )}
 
-        <div className="mt-8 flex flex-col gap-4 rounded-[2rem] bg-surface-container p-6">
+        <div className="bg-surface-container mt-8 flex flex-col gap-4 rounded-[2rem] p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
               <h2 className="text-title-medium-em text-on-surface">
                 AI 피드백
               </h2>
-              <p className="mt-1 text-body-medium text-on-surface-low">
+              <p className="text-body-medium text-on-surface-low mt-1">
                 현재 글을 기준으로 강점과 개선점을 받아볼 수 있어요.
               </p>
             </div>
             <Button
-              variant="filled"
+              variant="primary"
               size="sm"
-              onClick={() => void onGenerateFeedback?.()}
-              loading={feedbackPending}
+              onPress={() => void onGenerateFeedback?.()}
+              isDisabled={feedbackPending}
             >
               {feedbackPending ? "생성 중..." : "피드백 받기"}
             </Button>
@@ -193,7 +199,7 @@ export default function WritingDetailView({
             <div className="flex flex-col gap-4">
               <div>
                 <p className="text-label-large-em text-on-surface">강점</p>
-                <ul className="mt-2 flex list-disc flex-col gap-2 pl-5 text-body-medium text-on-surface-low">
+                <ul className="text-body-medium text-on-surface-low mt-2 flex list-disc flex-col gap-2 pl-5">
                   {feedback.strengths.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
@@ -201,39 +207,38 @@ export default function WritingDetailView({
               </div>
               <div>
                 <p className="text-label-large-em text-on-surface">개선점</p>
-                <ul className="mt-2 flex list-disc flex-col gap-2 pl-5 text-body-medium text-on-surface-low">
+                <ul className="text-body-medium text-on-surface-low mt-2 flex list-disc flex-col gap-2 pl-5">
                   {feedback.improvements.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
               </div>
-              <div className="rounded-2xl bg-surface px-4 py-3 text-body-medium text-on-surface-low">
+              <div className="text-body-medium text-on-surface-low rounded-2xl bg-surface px-4 py-3">
                 {feedback.question}
               </div>
             </div>
           ) : null}
         </div>
 
-        <div className="mt-6 flex flex-col gap-4 rounded-[2rem] bg-surface-container p-6">
+        <div className="bg-surface-container mt-6 flex flex-col gap-4 rounded-[2rem] p-6">
           <div>
             <h2 className="text-title-medium-em text-on-surface">
               수정본 비교
             </h2>
-            <p className="mt-1 text-body-medium text-on-surface-low">
+            <p className="text-body-medium text-on-surface-low mt-1">
               수정한 버전을 붙여 넣으면 원문과 비교해 개선 지점을 알려줘요.
             </p>
           </div>
-          <Textarea
-            value={revisedText}
-            onChange={(event) => setRevisedText(event.target.value)}
-            placeholder="수정한 버전을 여기에 붙여 넣어주세요."
-            className="min-h-40"
-          />
+          <TextField value={revisedText} onChange={setRevisedText}>
+            <TextArea
+              placeholder="수정한 버전을 여기에 붙여 넣어주세요."
+              className="min-h-40"
+            />
+          </TextField>
           <Button
-            variant="filled"
-            onClick={() => void onCompareRevision?.(revisedText)}
-            loading={comparisonPending}
-            disabled={revisedText.trim().length === 0}
+            variant="primary"
+            onPress={() => void onCompareRevision?.(revisedText)}
+            isDisabled={comparisonPending || revisedText.trim().length === 0}
           >
             {comparisonPending ? "비교 중..." : "수정본 비교하기"}
           </Button>
@@ -241,10 +246,10 @@ export default function WritingDetailView({
           {comparison ? (
             <div className="flex flex-col gap-4 rounded-[1.5rem] bg-surface px-4 py-4">
               <p className="text-label-large-em text-on-surface">요약</p>
-              <p className="leading-relaxed text-body-medium text-on-surface-low">
+              <p className="text-body-medium text-on-surface-low leading-relaxed">
                 {comparison.summary}
               </p>
-              <ul className="flex list-disc flex-col gap-2 pl-5 text-body-medium text-on-surface-low">
+              <ul className="text-body-medium text-on-surface-low flex list-disc flex-col gap-2 pl-5">
                 {comparison.improvements.map((item) => (
                   <li key={item}>{item}</li>
                 ))}

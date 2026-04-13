@@ -3,7 +3,6 @@
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowLeft01Icon, MoreHorizontalIcon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
-import { IconButton } from "@workspace/ui/components/icon-button"
 import { Button } from "@workspace/ui/components/button"
 import {
   JourneyHero,
@@ -44,25 +43,30 @@ export default function JourneyDetailView({
     <div className="flex min-h-screen flex-col bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between px-4 py-3">
-        <IconButton aria-label="뒤로 가기" onClick={() => router.back()}>
+        <Button
+          isIconOnly
+          variant="ghost"
+          aria-label="뒤로 가기"
+          onPress={() => router.back()}
+        >
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </IconButton>
-        <span className="flex-1 truncate px-2 text-center text-label-large text-on-surface">
+        </Button>
+        <span className="text-label-large text-on-surface flex-1 truncate px-2 text-center">
           {data.title}
         </span>
-        <IconButton aria-label="더보기">
+        <Button isIconOnly variant="ghost" aria-label="더보기">
           <HugeiconsIcon
             icon={MoreHorizontalIcon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </IconButton>
+        </Button>
       </header>
 
       {/* Scrollable Content */}
@@ -93,9 +97,9 @@ export default function JourneyDetailView({
         {data.completedCount === data.totalCount && data.totalCount > 0 && (
           <div className="px-4 pb-8">
             <Button
-              variant="tonal"
+              variant="secondary"
               className="flex h-auto w-full flex-col gap-2 rounded-3xl p-6 text-left"
-              onClick={() => router.push("/writings/new")}
+              onPress={() => router.push("/writings/new")}
             >
               <p className="text-title-medium-em text-on-surface">
                 글쓰기 공간에서 배운 내용을 표현해보세요

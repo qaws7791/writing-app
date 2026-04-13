@@ -5,6 +5,7 @@ import {
   ArrowUp01Icon,
   ArrowDown01Icon,
 } from "@hugeicons/core-free-icons"
+import { Button } from "@workspace/ui/components/button"
 
 import type {
   OrderingContent,
@@ -55,20 +56,23 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
           return (
             <div
               key={id}
-              className={`flex items-center gap-3 rounded-xl border-2 bg-surface-container p-3 transition-all ${borderClass}`}
+              className={`bg-surface-container flex items-center gap-3 rounded-xl border-2 p-3 transition-all ${borderClass}`}
             >
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-container-high text-label-medium-em text-on-surface-low">
+              <span className="bg-surface-container-high text-label-medium-em text-on-surface-low flex size-7 shrink-0 items-center justify-center rounded-full">
                 {index + 1}
               </span>
-              <p className="flex-1 text-body-medium-em text-on-surface">
+              <p className="text-body-medium-em text-on-surface flex-1">
                 {item.text}
               </p>
               {!checked && (
                 <div className="flex shrink-0 flex-col gap-0.5">
-                  <button
+                  <Button
+                    variant="ghost"
+                    isIconOnly
+                    size="sm"
                     onClick={() => moveItem(index, "up")}
-                    disabled={index === 0}
-                    className="rounded p-0.5 text-on-surface-lowest hover:text-on-surface disabled:opacity-30"
+                    isDisabled={index === 0}
+                    aria-label="위로 이동"
                   >
                     <HugeiconsIcon
                       icon={ArrowUp01Icon}
@@ -76,11 +80,14 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
                       color="currentColor"
                       strokeWidth={1.5}
                     />
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    isIconOnly
+                    size="sm"
                     onClick={() => moveItem(index, "down")}
-                    disabled={index === currentOrder.length - 1}
-                    className="rounded p-0.5 text-on-surface-lowest hover:text-on-surface disabled:opacity-30"
+                    isDisabled={index === currentOrder.length - 1}
+                    aria-label="아래로 이동"
                   >
                     <HugeiconsIcon
                       icon={ArrowDown01Icon}
@@ -88,7 +95,7 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
                       color="currentColor"
                       strokeWidth={1.5}
                     />
-                  </button>
+                  </Button>
                 </div>
               )}
               {checked && (
@@ -107,9 +114,9 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
         })}
       </div>
       {checked && (
-        <div className="rounded-xl bg-surface-container p-4">
+        <div className="bg-surface-container rounded-xl p-4">
           <p className="text-label-medium-em text-on-surface-lowest">해설</p>
-          <p className="mt-1 text-body-medium text-on-surface-low">
+          <p className="text-body-medium text-on-surface-low mt-1">
             {content.explanation}
           </p>
         </div>

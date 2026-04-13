@@ -1,3 +1,5 @@
+import { Chip } from "@workspace/ui/components/chip"
+
 import type { IntroContent } from "@/views/session-detail-view/types"
 
 export function IntroStep({ content }: { content: IntroContent }) {
@@ -15,16 +17,13 @@ export function IntroStep({ content }: { content: IntroContent }) {
       {content.keywords && content.keywords.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {content.keywords.map((kw) => (
-            <span
-              key={kw}
-              className="rounded-lg bg-secondary-container px-3 py-1.5 text-body-medium-em text-on-secondary-container"
-            >
+            <Chip key={kw} variant="secondary" size="md">
               {kw}
-            </span>
+            </Chip>
           ))}
         </div>
       )}
-      <div className="flex items-center gap-2 rounded-xl bg-surface-container px-4 py-3">
+      <div className="bg-surface-container flex items-center gap-2 rounded-xl px-4 py-3">
         <span className="text-body-medium text-on-surface-low">
           예상 소요 시간
         </span>

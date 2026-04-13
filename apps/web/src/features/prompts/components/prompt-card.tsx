@@ -3,13 +3,14 @@
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Bookmark01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { Button } from "@workspace/ui/components/button"
 
 export type PromptType = "sensory" | "reflection" | "opinion"
 
 function CategoryBadge({ promptType }: { promptType: PromptType }) {
   return (
     <span
-      className={`rounded-full px-3 py-1 text-label-small uppercase ${
+      className={`text-label-small rounded-full px-3 py-1 uppercase ${
         promptType === "opinion"
           ? "bg-surface-container-high text-on-surface"
           : "bg-secondary-container text-on-surface-low"
@@ -66,17 +67,14 @@ export function PromptCard({ card }: { card: PromptCardData }) {
           <span className="text-label-medium text-on-surface-lowest">
             {card.responseCount}명 응답
           </span>
-          <button
-            aria-label="북마크"
-            className="text-on-surface-lowest transition-colors hover:text-on-surface"
-          >
+          <Button aria-label="북마크" variant="ghost" isIconOnly>
             <HugeiconsIcon
               icon={Bookmark01Icon}
               size={24}
               color="currentColor"
               strokeWidth={1.5}
             />
-          </button>
+          </Button>
         </div>
       </div>
     </div>

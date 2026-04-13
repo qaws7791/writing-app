@@ -4,7 +4,7 @@ import { useState } from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Layers01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
-import { Chip } from "@workspace/ui/components/chip"
+import { ToggleButton } from "@workspace/ui/components/toggle-button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { useJourneys } from "@/features/journeys"
 
@@ -35,9 +35,9 @@ function JourneyListCard({ card }: { card: JourneyCardData }) {
     <button
       type="button"
       onClick={() => router.push(`/journeys/${card.id}`)}
-      className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-container p-4 text-left transition-colors hover:bg-surface-container-high"
+      className="bg-surface-container hover:bg-surface-container-high flex h-32 w-full items-center gap-5 rounded-3xl p-4 text-left transition-colors"
     >
-      <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-container-high">
+      <div className="bg-surface-container-high size-24 shrink-0 overflow-hidden rounded-[18px]">
         <img
           src={card.imageUrl}
           alt={card.title}
@@ -47,7 +47,7 @@ function JourneyListCard({ card }: { card: JourneyCardData }) {
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5">
         <div className="flex flex-col gap-1">
           <p className="text-title-medium text-on-surface">{card.title}</p>
-          <p className="line-clamp-2 text-body-medium text-on-surface-low">
+          <p className="text-body-medium text-on-surface-low line-clamp-2">
             {card.description}
           </p>
         </div>
@@ -99,15 +99,14 @@ export default function JourneyArchiveView() {
       {/* Category Filter Chips */}
       <div className="flex gap-2.5 overflow-x-auto px-4 py-2.5 [scrollbar-width:none]">
         {categories.map((cat) => (
-          <Chip
+          <ToggleButton
             key={cat}
-            variant="filter"
-            selected={selectedCategory === cat}
-            onSelect={() => setSelectedCategory(cat)}
+            isSelected={selectedCategory === cat}
+            onChange={() => setSelectedCategory(cat)}
             className="shrink-0"
           >
             {cat}
-          </Chip>
+          </ToggleButton>
         ))}
       </div>
 
@@ -115,22 +114,18 @@ export default function JourneyArchiveView() {
       <div className="flex flex-col gap-4 px-4 pt-6 pb-8">
         {isPending
           ? Array.from({ length: 3 }, (_, index) => (
-              <Skeleton
-                key={index}
-                variant="rectangular"
-                className="h-32 rounded-3xl"
-              />
+              <Skeleton key={index} className="h-32 rounded-3xl" />
             ))
           : null}
 
         {isError ? (
-          <div className="rounded-3xl bg-surface-container p-6 text-body-medium text-on-surface-low">
+          <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6">
             여정 목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
           </div>
         ) : null}
 
         {!isPending && !isError && filteredJourneys.length === 0 ? (
-          <div className="rounded-3xl bg-surface-container p-6 text-body-medium text-on-surface-low">
+          <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6">
             조건에 맞는 여정이 아직 없어요.
           </div>
         ) : null}

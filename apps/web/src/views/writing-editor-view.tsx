@@ -26,15 +26,15 @@ import {
   Idea01Icon,
 } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
-import { BottomSheet } from "@workspace/ui/components/bottom-sheet"
-import { IconButton } from "@workspace/ui/components/icon-button"
+import { Modal } from "@workspace/ui/components/modal"
 import { Button } from "@workspace/ui/components/button"
 import {
-  Menu,
-  MenuTrigger,
-  MenuContent,
-  MenuItem,
-} from "@workspace/ui/components/menu"
+  Dropdown,
+  DropdownTrigger,
+  DropdownPopover,
+  DropdownMenu,
+  DropdownItem,
+} from "@workspace/ui/components/dropdown"
 
 import { usePromptDetail } from "@/features/prompts/hooks/use-prompt-detail"
 import {
@@ -232,59 +232,64 @@ export default function WritingEditorView({
     <div className="flex min-h-dvh flex-col bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between bg-surface px-4 py-3">
-        <IconButton aria-label="뒤로 가기" onClick={handleBack}>
+        <Button
+          isIconOnly
+          variant="ghost"
+          aria-label="뒤로 가기"
+          onPress={handleBack}
+        >
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </IconButton>
+        </Button>
 
-        <span className="flex-1 truncate px-2 text-center text-label-large-em text-on-surface">
+        <span className="text-label-large-em text-on-surface flex-1 truncate px-2 text-center">
           {title || "새 글"}
         </span>
 
         <div className="flex items-center gap-2">
           {writingIdNumber && (
-            <Menu>
-              <MenuTrigger>
-                <IconButton aria-label="더보기">
+            <Dropdown>
+              <DropdownTrigger>
+                <Button isIconOnly variant="ghost" aria-label="더보기">
                   <HugeiconsIcon
                     icon={MoreVerticalIcon}
                     size={24}
                     color="currentColor"
                     strokeWidth={1.5}
                   />
-                </IconButton>
-              </MenuTrigger>
-              <MenuContent
-                side="bottom"
-                align="end"
-                className="min-w-32.5 rounded-2xl bg-surface-container-low px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
+                </Button>
+              </DropdownTrigger>
+              <DropdownPopover
+                placement="bottom end"
+                className="bg-surface-container-low min-w-32.5 rounded-2xl px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
               >
-                <MenuItem
-                  className="gap-3 px-3 py-3 text-body-medium-em text-on-surface-low"
-                  onClick={handleDelete}
-                  leadingIcon={
+                <DropdownMenu>
+                  <DropdownItem
+                    className="text-body-medium-em text-on-surface-low gap-3 px-3 py-3"
+                    onAction={handleDelete}
+                  >
                     <HugeiconsIcon
                       icon={Delete01Icon}
                       size={20}
                       color="currentColor"
                       strokeWidth={1.5}
                     />
-                  }
-                >
-                  삭제
-                </MenuItem>
-              </MenuContent>
-            </Menu>
+                    삭제
+                  </DropdownItem>
+                </DropdownMenu>
+              </DropdownPopover>
+            </Dropdown>
           )}
-          <IconButton
+          <Button
+            isIconOnly
+            variant="primary"
             aria-label="저장"
-            variant="filled"
-            onClick={handleSave}
-            disabled={isSaving}
+            onPress={handleSave}
+            isDisabled={isSaving}
           >
             <HugeiconsIcon
               icon={Tick02Icon}
@@ -292,7 +297,7 @@ export default function WritingEditorView({
               color="currentColor"
               strokeWidth={2}
             />
-          </IconButton>
+          </Button>
         </div>
       </header>
 
@@ -320,14 +325,14 @@ export default function WritingEditorView({
             <button
               type="button"
               onClick={() => setShowPromptSheet(true)}
-              className="flex w-full items-center gap-3 rounded-2xl bg-surface-container px-5 py-4 text-left transition-colors hover:bg-surface-container-high"
+              className="bg-surface-container hover:bg-surface-container-high flex w-full items-center gap-3 rounded-2xl px-5 py-4 text-left transition-colors"
             >
               <HugeiconsIcon
                 icon={Idea01Icon}
                 size={20}
                 color="currentColor"
                 strokeWidth={1.5}
-                className="shrink-0 text-on-surface-low"
+                className="text-on-surface-low shrink-0"
               />
               <span className="text-body-medium text-on-surface-low">
                 아이디어가 필요하신가요?
@@ -346,7 +351,7 @@ export default function WritingEditorView({
             onChange={handleTitleChange}
             placeholder="제목"
             rows={1}
-            className="w-full resize-none overflow-hidden bg-transparent text-headline-large-em text-on-surface outline-none placeholder:text-on-surface-lowest"
+            className="text-headline-large-em text-on-surface placeholder:text-on-surface-lowest w-full resize-none overflow-hidden bg-transparent outline-none"
           />
         </section>
 
@@ -356,83 +361,87 @@ export default function WritingEditorView({
         </div>
 
         {/* Word count */}
-        <p className="mt-6 text-right text-label-large text-on-surface-lowest">
+        <p className="text-label-large text-on-surface-lowest mt-6 text-right">
           {wordCount} 단어
         </p>
       </div>
 
-      {/* Unsaved changes bottom sheet */}
-      <BottomSheet open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
-        <div className="flex flex-col items-center gap-[33px]">
-          {/* Icon + text */}
-          <div className="flex w-full flex-col items-center gap-[33px]">
-            <div className="flex size-[58px] items-center justify-center rounded-[20px] bg-surface">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M14 2H6C5.47 2 4.96 2.21 4.59 2.59C4.21 2.96 4 3.47 4 4V20C4 20.53 4.21 21.04 4.59 21.41C4.96 21.79 5.47 22 6 22H18C18.53 22 19.04 21.79 19.41 21.41C19.79 21.04 20 20.53 20 20V8L14 2Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M14 2V8H20"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M16 13H8M16 17H8M10 9H8"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
+      {/* Unsaved changes dialog */}
+      <Modal isOpen={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
+        <Modal.Backdrop />
+        <Modal.Container>
+          <Modal.Dialog>
+            <Modal.Body>
+              {/* Icon + text */}
+              <div className="flex w-full flex-col items-center gap-[33px]">
+                <div className="flex size-[58px] items-center justify-center rounded-[20px] bg-surface">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M14 2H6C5.47 2 4.96 2.21 4.59 2.59C4.21 2.96 4 3.47 4 4V20C4 20.53 4.21 21.04 4.59 21.41C4.96 21.79 5.47 22 6 22H18C18.53 22 19.04 21.79 19.41 21.41C19.79 21.04 20 20.53 20 20V8L14 2Z"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M14 2V8H20"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M16 13H8M16 17H8M10 9H8"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
 
-            <div className="flex flex-col items-center gap-[14px] text-center">
-              <p className="text-title-large-em text-on-surface">
-                작성 중인 수필이 있어요
-              </p>
-              <p className="text-body-medium text-on-surface-lowest">
-                지금 나가면 저장되지 않은 내용이 사라질 수 있습니다.
-                <br />
-                저장 후 나가시겠어요?
-              </p>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex w-full gap-[10px]">
-            <Button
-              variant="tonal"
-              size="lg"
-              onClick={handleLeaveWithoutSave}
-              className="flex-1"
-            >
-              그냥 나가기
-            </Button>
-            <Button
-              variant="filled"
-              size="lg"
-              onClick={handleSaveAndLeave}
-              disabled={isSaving}
-              loading={isSaving}
-              className="flex-1"
-            >
-              임시 저장 후 나가기
-            </Button>
-          </div>
-        </div>
-      </BottomSheet>
+                <div className="flex flex-col items-center gap-[14px] text-center">
+                  <p className="text-title-large-em text-on-surface">
+                    작성 중인 수필이 있어요
+                  </p>
+                  <p className="text-body-medium text-on-surface-lowest">
+                    지금 나가면 저장되지 않은 내용이 사라질 수 있습니다.
+                    <br />
+                    저장 후 나가시겠어요?
+                  </p>
+                </div>
+              </div>
+            </Modal.Body>
+            <Modal.Footer>
+              <div className="flex w-full gap-[10px]">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onPress={handleLeaveWithoutSave}
+                  className="flex-1"
+                >
+                  그냥 나가기
+                </Button>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onPress={handleSaveAndLeave}
+                  isDisabled={isSaving}
+                  className="flex-1"
+                >
+                  임시 저장 후 나가기
+                </Button>
+              </div>
+            </Modal.Footer>
+          </Modal.Dialog>
+        </Modal.Container>
+      </Modal>
 
       {/* Prompt selection bottom sheet */}
       <PromptBottomSheet

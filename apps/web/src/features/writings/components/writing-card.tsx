@@ -3,12 +3,14 @@
 import { HugeiconsIcon } from "@hugeicons/react"
 import { MoreVerticalIcon, Delete01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
+import { Button } from "@workspace/ui/components/button"
 import {
-  Menu,
-  MenuTrigger,
-  MenuContent,
-  MenuItem,
-} from "@workspace/ui/components/menu"
+  Dropdown,
+  DropdownTrigger,
+  DropdownPopover,
+  DropdownMenu,
+  DropdownItem,
+} from "@workspace/ui/components/dropdown"
 
 export interface WritingCardData {
   id: number
@@ -35,19 +37,19 @@ export function WritingCard({
       onKeyDown={(e) =>
         e.key === "Enter" && router.push(`/writings/${writing.id}/edit`)
       }
-      className="flex cursor-pointer flex-col gap-4 rounded-[2.25rem] bg-surface-container p-8 text-left transition-colors hover:bg-surface-container-high"
+      className="bg-surface-container hover:bg-surface-container-high flex cursor-pointer flex-col gap-4 rounded-[2.25rem] p-8 text-left transition-colors"
     >
       <div className="flex items-center justify-between">
         <span className="text-label-large text-on-surface-low">
           {writing.date}
         </span>
-        <Menu>
-          <MenuTrigger>
-            <button
-              type="button"
+        <Dropdown>
+          <DropdownTrigger>
+            <Button
+              isIconOnly
+              variant="ghost"
               aria-label="더보기"
-              className="flex h-10 w-10 items-center justify-center text-on-surface-low"
-              onClick={(e) => e.stopPropagation()}
+              onPress={(e) => e.continuePropagation()}
             >
               <HugeiconsIcon
                 icon={MoreVerticalIcon}
@@ -55,41 +57,40 @@ export function WritingCard({
                 color="currentColor"
                 strokeWidth={2}
               />
-            </button>
-          </MenuTrigger>
-          <MenuContent
-            side="bottom"
-            align="end"
-            className="min-w-32.5 rounded-2xl bg-surface-container-low px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
+            </Button>
+          </DropdownTrigger>
+          <DropdownPopover
+            placement="bottom end"
+            className="bg-surface-container-low min-w-32.5 rounded-2xl px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
           >
-            <MenuItem
-              className="gap-3 px-3 py-3 text-label-large text-on-surface-low"
-              onClick={() => onDelete(writing.id)}
-              leadingIcon={
+            <DropdownMenu>
+              <DropdownItem
+                className="text-label-large text-on-surface-low gap-3 px-3 py-3"
+                onAction={() => onDelete(writing.id)}
+              >
                 <HugeiconsIcon
                   icon={Delete01Icon}
                   size={20}
                   color="currentColor"
                   strokeWidth={1.5}
                 />
-              }
-            >
-              삭제
-            </MenuItem>
-          </MenuContent>
-        </Menu>
+                삭제
+              </DropdownItem>
+            </DropdownMenu>
+          </DropdownPopover>
+        </Dropdown>
       </div>
       <h2 className="text-headline-small-em text-on-surface">
         {writing.title}
       </h2>
-      <p className="line-clamp-2 text-body-large text-on-surface-low">
+      <p className="text-body-large text-on-surface-low line-clamp-2">
         {writing.excerpt}
       </p>
       <div className="flex items-center gap-2">
         <span className="text-on-surface-low" aria-hidden="true">
           ≡
         </span>
-        <span className="text-label-small-em tracking-[1.1px] text-on-surface-low uppercase">
+        <span className="text-label-small-em text-on-surface-low tracking-[1.1px] uppercase">
           {writing.wordCount.toLocaleString()} 단어
         </span>
       </div>

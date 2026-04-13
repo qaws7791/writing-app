@@ -1,3 +1,6 @@
+import { TextField } from "@workspace/ui/components/text-field"
+import { TextArea } from "@workspace/ui/components/textarea"
+
 import type {
   WritingContent,
   InputStepState,
@@ -11,8 +14,8 @@ export function WritingStep({ content, state, onStateChange }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="rounded-2xl bg-secondary-container px-5 py-4">
-        <p className="mb-2 text-label-medium-em text-on-surface-low uppercase">
+      <div className="bg-secondary-container rounded-2xl px-5 py-4">
+        <p className="text-label-medium-em text-on-surface-low mb-2 uppercase">
           글쓰기 주제
         </p>
         <p className="text-body-large-em text-on-surface">{content.prompt}</p>
@@ -23,24 +26,23 @@ export function WritingStep({ content, state, onStateChange }: Props) {
         </p>
       )}
       {content.timeLimitSeconds > 0 && (
-        <div className="flex items-center gap-2 rounded-lg bg-surface-container px-3 py-2">
+        <div className="bg-surface-container flex items-center gap-2 rounded-lg px-3 py-2">
           <span className="text-label-medium text-on-surface-low">
             제한 시간: {Math.floor(content.timeLimitSeconds / 60)}분
           </span>
         </div>
       )}
-      <textarea
+      <TextField
         value={text}
-        onChange={(e) =>
+        onChange={(value) =>
           onStateChange({
-            text: e.target.value,
-            hasInput: e.target.value.length >= content.minLength,
+            text: value,
+            hasInput: value.length >= content.minLength,
           })
         }
-        placeholder="여기에 글을 써주세요..."
-        rows={10}
-        className="w-full resize-none rounded-xl border border-outline/20 bg-surface-container-low px-4 py-3 text-body-medium text-on-surface placeholder:text-on-surface-lowest focus:border-primary focus:outline-none"
-      />
+      >
+        <TextArea placeholder="여기에 글을 써주세요..." rows={10} />
+      </TextField>
       <div className="flex items-center justify-between">
         <span className="text-label-medium text-on-surface-lowest">
           최소 {content.minLength}자

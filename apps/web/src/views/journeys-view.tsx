@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Chip } from "@workspace/ui/components/chip"
+import { ToggleButton } from "@workspace/ui/components/toggle-button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { useHomeSnapshot } from "@/features/home"
 import { useJourneys } from "@/features/journeys"
@@ -87,22 +87,18 @@ export default function JourneysView() {
       {/* Active Journeys Section */}
       {(isHomePending || activeJourneys.length > 0) && (
         <section className="flex flex-col gap-4 px-4 pt-4">
-          <h2 className="px-2 text-title-medium-em text-on-surface-low">
+          <h2 className="text-title-medium-em text-on-surface-low px-2">
             진행 중인 여정
           </h2>
           {isHomePending
             ? Array.from({ length: 2 }, (_, index) => (
-                <Skeleton
-                  key={index}
-                  variant="rectangular"
-                  className="h-32 rounded-3xl"
-                />
+                <Skeleton key={index} className="h-32 rounded-3xl" />
               ))
             : activeJourneys.map((journey) => (
                 <JourneyCard key={journey.id} mode="active" {...journey} />
               ))}
           {isHomeError && (
-            <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
+            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
               여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           )}
@@ -112,22 +108,18 @@ export default function JourneysView() {
       {/* Completed Journeys Section */}
       {(isCompletedPending || completedJourneys.length > 0) && (
         <section className="flex flex-col gap-4 px-4 pt-8">
-          <h2 className="px-2 text-title-medium-em text-on-surface-low">
+          <h2 className="text-title-medium-em text-on-surface-low px-2">
             완료한 여정
           </h2>
           {isCompletedPending
             ? Array.from({ length: 2 }, (_, index) => (
-                <Skeleton
-                  key={index}
-                  variant="rectangular"
-                  className="h-24 rounded-3xl"
-                />
+                <Skeleton key={index} className="h-24 rounded-3xl" />
               ))
             : completedJourneys.map((journey) => (
                 <JourneyCard key={journey.id} mode="completed" {...journey} />
               ))}
           {isCompletedError && (
-            <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
+            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
               완료한 여정을 불러오지 못했어요.
             </div>
           )}
@@ -136,22 +128,21 @@ export default function JourneysView() {
 
       {/* Discover Section */}
       <section className="flex flex-col pt-8">
-        <h2 className="px-6 text-title-medium-em text-on-surface-low">
+        <h2 className="text-title-medium-em text-on-surface-low px-6">
           새 여정 시작하기
         </h2>
 
         {/* Category Filter Chips */}
         <div className="flex gap-2.5 overflow-x-auto px-4 py-4 [scrollbar-width:none]">
           {categories.map((cat) => (
-            <Chip
+            <ToggleButton
               key={cat}
-              variant="filter"
-              selected={selectedCategory === cat}
-              onSelect={() => setSelectedCategory(cat)}
+              isSelected={selectedCategory === cat}
+              onChange={() => setSelectedCategory(cat)}
               className="shrink-0"
             >
               {cat}
-            </Chip>
+            </ToggleButton>
           ))}
         </div>
 
@@ -159,14 +150,10 @@ export default function JourneysView() {
         <div className="flex flex-col gap-4 px-4 pb-8">
           {isAllPending ? (
             Array.from({ length: 3 }, (_, index) => (
-              <Skeleton
-                key={index}
-                variant="rectangular"
-                className="h-32 rounded-3xl"
-              />
+              <Skeleton key={index} className="h-32 rounded-3xl" />
             ))
           ) : filteredJourneys.length === 0 ? (
-            <div className="rounded-3xl bg-surface-container p-6 text-body-medium text-on-surface-low">
+            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6">
               조건에 맞는 여정이 아직 없어요.
             </div>
           ) : (

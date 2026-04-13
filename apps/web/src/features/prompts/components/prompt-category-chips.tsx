@@ -1,6 +1,6 @@
 "use client"
 
-import { Chip } from "@workspace/ui/components/chip"
+import { ToggleButton } from "@workspace/ui/components/toggle-button"
 import type { PromptType } from "./prompt-card"
 
 interface PromptCategoryChipsProps {
@@ -16,24 +16,22 @@ export function PromptCategoryChips({
 }: PromptCategoryChipsProps) {
   return (
     <div className="flex gap-2.5 overflow-x-auto px-4 py-2.5 [scrollbar-width:none]">
-      <Chip
-        variant="filter"
-        selected={selectedType === undefined}
-        onSelect={() => onSelectType(undefined)}
+      <ToggleButton
+        isSelected={selectedType === undefined}
+        onChange={() => onSelectType(undefined)}
         className="shrink-0"
       >
         전체
-      </Chip>
+      </ToggleButton>
       {categories.map((cat) => (
-        <Chip
+        <ToggleButton
           key={cat.key}
-          variant="filter"
-          selected={selectedType === cat.key}
-          onSelect={() => onSelectType(cat.key as PromptType)}
+          isSelected={selectedType === cat.key}
+          onChange={() => onSelectType(cat.key as PromptType)}
           className="shrink-0"
         >
           {cat.label}
-        </Chip>
+        </ToggleButton>
       ))}
     </div>
   )

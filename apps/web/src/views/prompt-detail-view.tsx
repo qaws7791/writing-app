@@ -3,7 +3,6 @@
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowLeft01Icon, MoreHorizontalIcon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
-import { IconButton } from "@workspace/ui/components/icon-button"
 import { Button } from "@workspace/ui/components/button"
 
 interface EssayItem {
@@ -25,7 +24,7 @@ interface PromptDetailData {
 
 function WordCountBadge({ count }: { count: number }) {
   return (
-    <span className="rounded-full bg-secondary-container px-2.5 py-0.5 text-label-medium-em text-on-surface-low">
+    <span className="bg-secondary-container text-label-medium-em text-on-surface-low rounded-full px-2.5 py-0.5">
       {count.toLocaleString("ko-KR")} 단어
     </span>
   )
@@ -51,7 +50,7 @@ function EssayListItem({ essay }: { essay: EssayItem }) {
         <WordCountBadge count={essay.wordCount} />
       </div>
       <h3 className="text-title-large-em text-on-surface">{essay.title}</h3>
-      <p className="line-clamp-2 text-body-medium text-on-surface-low">
+      <p className="text-body-medium text-on-surface-low line-clamp-2">
         {essay.preview}
       </p>
     </button>
@@ -60,7 +59,7 @@ function EssayListItem({ essay }: { essay: EssayItem }) {
 
 function EmptyEssayList() {
   return (
-    <p className="py-10 text-center text-body-large text-on-surface-lowest">
+    <p className="text-body-large text-on-surface-lowest py-10 text-center">
       이 글감에 아직 작성된 글이 없어요. 첫 번째로 써보세요!
     </p>
   )
@@ -85,25 +84,30 @@ export default function PromptDetailView({
     <div className="flex min-h-screen flex-col bg-surface">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between bg-surface px-4 py-3">
-        <IconButton aria-label="뒤로 가기" onClick={() => router.back()}>
+        <Button
+          isIconOnly
+          variant="ghost"
+          aria-label="뒤로 가기"
+          onPress={() => router.back()}
+        >
           <HugeiconsIcon
             icon={ArrowLeft01Icon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </IconButton>
-        <span className="flex-1 text-center text-label-large text-on-surface">
+        </Button>
+        <span className="text-label-large text-on-surface flex-1 text-center">
           {data.title}
         </span>
-        <IconButton aria-label="더보기">
+        <Button isIconOnly variant="ghost" aria-label="더보기">
           <HugeiconsIcon
             icon={MoreHorizontalIcon}
             size={24}
             color="currentColor"
             strokeWidth={1.5}
           />
-        </IconButton>
+        </Button>
       </header>
 
       {/* Scrollable content */}
@@ -132,7 +136,7 @@ export default function PromptDetailView({
         </div>
 
         {/* Divider */}
-        <div className="mt-8 h-px bg-surface-container-high" />
+        <div className="bg-surface-container-high mt-8 h-px" />
 
         {/* Essay List */}
         <div className="flex flex-col gap-12 px-5 pt-8 pb-6">
@@ -149,10 +153,10 @@ export default function PromptDetailView({
         {hasMoreEssays && (
           <div className="flex items-center justify-center py-6">
             <Button
-              variant="text"
+              variant="ghost"
               size="sm"
-              onClick={onLoadMoreEssaysAction}
-              disabled={isLoadingMoreEssays}
+              onPress={onLoadMoreEssaysAction}
+              isDisabled={isLoadingMoreEssays}
             >
               {isLoadingMoreEssays ? "불러오는 중..." : "더 불러오기"}
             </Button>
@@ -163,10 +167,10 @@ export default function PromptDetailView({
       {/* CTA Button */}
       <div className="fixed right-0 bottom-[calc(env(safe-area-inset-bottom)+4.5rem)] left-0 z-40 px-4 pb-3">
         <Button
-          variant="filled"
+          variant="primary"
           size="lg"
-          onClick={onStartWritingAction}
-          className="w-full"
+          onPress={onStartWritingAction}
+          fullWidth
         >
           글쓰기 시작
         </Button>

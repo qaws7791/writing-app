@@ -7,6 +7,7 @@ import {
   Tick02Icon,
   LockIcon,
 } from "@hugeicons/core-free-icons"
+import { Button } from "@workspace/ui/components/button"
 
 export type SessionStatus = "COMPLETED" | "IN_PROGRESS" | "LOCKED"
 
@@ -29,14 +30,14 @@ export function SessionCard({
 
   if (session.status === "COMPLETED") {
     return (
-      <div className="overflow-hidden rounded-[2.375rem] bg-surface-container-high">
+      <div className="bg-surface-container-high overflow-hidden rounded-[2.375rem]">
         <button
           onClick={() => setIsOpen((v) => !v)}
           className="flex w-full items-center p-6"
         >
           <div className="flex flex-1 flex-col gap-2.5 text-left">
             <div className="flex items-center gap-2">
-              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-on-surface-low">
+              <div className="bg-on-surface-low flex size-6 shrink-0 items-center justify-center rounded-full">
                 <HugeiconsIcon
                   icon={Tick02Icon}
                   size={14}
@@ -57,7 +58,7 @@ export function SessionCard({
             size={24}
             color="currentColor"
             strokeWidth={1.5}
-            className={`shrink-0 text-on-surface transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            className={`text-on-surface shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
         {isOpen && session.description && (
@@ -73,14 +74,14 @@ export function SessionCard({
 
   if (session.status === "IN_PROGRESS") {
     return (
-      <div className="flex flex-col overflow-hidden rounded-[2.375rem] bg-surface-container-high">
+      <div className="bg-surface-container-high flex flex-col overflow-hidden rounded-[2.375rem]">
         <button
           onClick={() => setIsOpen((v) => !v)}
           className="flex w-full items-start justify-between gap-4 p-6"
         >
           <div className="flex flex-1 flex-col gap-2.5 text-left">
             <div className="flex items-center gap-2">
-              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-container-high">
+              <div className="bg-surface-container-high flex size-6 shrink-0 items-center justify-center rounded-full">
                 <span className="text-label-medium-em text-on-surface-low">
                   {session.order}
                 </span>
@@ -98,7 +99,7 @@ export function SessionCard({
             size={24}
             color="currentColor"
             strokeWidth={1.5}
-            className={`mt-1 shrink-0 text-on-surface transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            className={`text-on-surface mt-1 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
         {isOpen && (
@@ -108,12 +109,14 @@ export function SessionCard({
                 {session.description}
               </p>
             )}
-            <button
+            <Button
               onClick={() => onStart(session.id)}
-              className="w-full rounded-full bg-on-surface py-3 text-title-small-em text-surface transition-opacity hover:opacity-90 active:opacity-75"
+              variant="primary"
+              fullWidth
+              className="rounded-full"
             >
               지금 시작하기 →
-            </button>
+            </Button>
           </div>
         )}
       </div>
@@ -130,7 +133,7 @@ export function SessionCard({
             size={24}
             color="currentColor"
             strokeWidth={1.5}
-            className="shrink-0 text-on-surface-low"
+            className="text-on-surface-low shrink-0"
           />
           <span className="text-label-medium-em text-on-surface-low uppercase">
             대기 중

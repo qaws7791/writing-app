@@ -3,6 +3,10 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { Button } from "@workspace/ui/components/button"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
+import { TextField } from "@workspace/ui/components/text-field"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -46,7 +50,7 @@ export default function LoginPage() {
       <header className="px-6 pt-14 pb-2">
         <Link
           href="/"
-          className="text-sm font-medium text-on-surface-low transition-colors hover:text-on-surface"
+          className="text-on-surface-low hover:text-on-surface text-sm font-medium transition-colors"
         >
           ← 돌아가기
         </Link>
@@ -54,65 +58,47 @@ export default function LoginPage() {
 
       <main className="flex flex-1 flex-col justify-center px-6 pb-20">
         <div className="mx-auto w-full max-w-sm">
-          <h1 className="text-3xl font-semibold tracking-tight text-on-surface">
+          <h1 className="text-on-surface text-3xl font-semibold tracking-tight">
             로그인
           </h1>
-          <p className="mt-2 text-base text-on-surface-low">
+          <p className="text-on-surface-low mt-2 text-base">
             글필에 다시 오신 것을 환영합니다.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-10 flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="email"
-                className="text-sm font-medium text-on-surface-low"
-              >
-                이메일
-              </label>
-              <input
-                id="email"
+            <TextField value={email} onChange={setEmail} isRequired>
+              <Label>이메일</Label>
+              <Input
                 type="email"
                 autoComplete="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@email.com"
-                className="rounded-2xl border border-outline/30 bg-surface-container-low px-4 py-3.5 text-base text-on-surface transition-colors outline-none placeholder:text-on-surface-lowest focus:border-on-surface-low focus:ring-1 focus:ring-on-surface-low"
               />
-            </div>
+            </TextField>
 
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="password"
-                className="text-sm font-medium text-on-surface-low"
-              >
-                비밀번호
-              </label>
-              <input
-                id="password"
+            <TextField value={password} onChange={setPassword} isRequired>
+              <Label>비밀번호</Label>
+              <Input
                 type="password"
                 autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 placeholder="비밀번호를 입력하세요"
-                className="rounded-2xl border border-outline/30 bg-surface-container-low px-4 py-3.5 text-base text-on-surface transition-colors outline-none placeholder:text-on-surface-lowest focus:border-on-surface-low focus:ring-1 focus:ring-on-surface-low"
               />
-            </div>
+            </TextField>
 
             {error && (
-              <p className="text-sm text-error" role="alert">
+              <p className="text-error text-sm" role="alert">
                 {error}
               </p>
             )}
 
-            <button
+            <Button
               type="submit"
-              disabled={isLoading}
-              className="mt-2 rounded-2xl bg-primary px-6 py-3.5 text-base font-semibold text-on-primary transition-colors hover:bg-primary-container hover:text-on-primary-container disabled:opacity-50"
+              isDisabled={isLoading}
+              variant="primary"
+              fullWidth
+              className="mt-2"
             >
               {isLoading ? "로그인 중..." : "로그인"}
-            </button>
+            </Button>
           </form>
         </div>
       </main>

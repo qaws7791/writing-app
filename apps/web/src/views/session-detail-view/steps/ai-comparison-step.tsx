@@ -1,3 +1,6 @@
+import { Button } from "@workspace/ui/components/button"
+import { Spinner } from "@workspace/ui/components/spinner"
+
 import type {
   AIComparisonContent,
   CrossReferenceStepProps,
@@ -41,25 +44,25 @@ export function AIComparisonStep({
       <h2 className="text-title-medium-em text-on-surface">비교 분석</h2>
 
       <div className="grid gap-3">
-        <div className="rounded-xl bg-surface-container p-4">
-          <p className="mb-2 text-label-medium-em text-on-surface-lowest">
+        <div className="bg-surface-container rounded-xl p-4">
+          <p className="text-label-medium-em text-on-surface-lowest mb-2">
             초안
           </p>
-          <p className="text-body-medium whitespace-pre-line text-on-surface-low">
+          <p className="text-body-medium text-on-surface-low whitespace-pre-line">
             {originalText}
           </p>
         </div>
-        <div className="rounded-xl bg-surface-container p-4">
-          <p className="mb-2 text-label-medium-em text-primary">수정본</p>
-          <p className="text-body-medium whitespace-pre-line text-on-surface">
+        <div className="bg-surface-container rounded-xl p-4">
+          <p className="text-label-medium-em text-primary mb-2">수정본</p>
+          <p className="text-body-medium text-on-surface whitespace-pre-line">
             {rewrittenText}
           </p>
         </div>
       </div>
 
       {(aiState === undefined || aiState.status === "pending") && (
-        <div className="flex flex-col items-center justify-center gap-3 py-12 text-on-surface-low">
-          <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <div className="text-on-surface-low flex flex-col items-center justify-center gap-3 py-12">
+          <Spinner size="sm" />
           <p className="text-body-medium">
             {content.loadingMessage || "AI가 수정 전후 글을 비교하고 있어요..."}
           </p>
@@ -67,18 +70,20 @@ export function AIComparisonStep({
       )}
 
       {aiState?.status === "failed" && (
-        <div className="rounded-xl bg-surface-container p-4 text-center">
+        <div className="bg-surface-container rounded-xl p-4 text-center">
           <p className="text-body-medium text-on-surface-low">
             {aiState.errorMessage ??
               "비교 분석을 생성하는 중 오류가 발생했어요."}
           </p>
-          <button
+          <Button
             onClick={() => onRetryAi?.(step.order)}
-            disabled={isRetryingAi}
-            className="mt-3 rounded-full bg-on-surface px-4 py-2 text-label-medium-em text-surface"
+            isDisabled={isRetryingAi}
+            variant="primary"
+            size="sm"
+            className="mt-3"
           >
             {isRetryingAi ? "재시도 중..." : "다시 시도"}
-          </button>
+          </Button>
         </div>
       )}
 
@@ -87,21 +92,21 @@ export function AIComparisonStep({
           {comparison.improvements.map((improvement, index) => (
             <div
               key={`${improvement}-${index}`}
-              className="rounded-2xl border border-primary/20 bg-primary/5 p-4"
+              className="border-primary/20 bg-primary/5 rounded-2xl border p-4"
             >
               {index === 0 && (
-                <p className="mb-2 text-label-medium-em text-primary">
+                <p className="text-label-medium-em text-primary mb-2">
                   개선 포인트
                 </p>
               )}
               <p className="text-body-medium text-on-surface">{improvement}</p>
             </div>
           ))}
-          <div className="rounded-xl bg-surface-container p-4">
+          <div className="bg-surface-container rounded-xl p-4">
             <p className="text-label-medium-em text-on-surface-lowest">
               종합 코멘트
             </p>
-            <p className="mt-1 text-body-medium text-on-surface-low">
+            <p className="text-body-medium text-on-surface-low mt-1">
               {comparison.summary}
             </p>
           </div>

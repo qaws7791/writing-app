@@ -3,12 +3,7 @@
 import { HugeiconsIcon } from "@hugeicons/react"
 import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@workspace/ui/components/tabs"
+import { Tabs, TabPanel, TabList, Tab } from "@workspace/ui/components/tabs"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { useHomeSnapshot } from "@/features/home"
 import { useJourneys } from "@/features/journeys"
@@ -35,9 +30,9 @@ function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
     <button
       type="button"
       onClick={() => router.push(`/journeys/${journey.id}`)}
-      className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-container p-4 text-left transition-colors hover:bg-surface-container-high"
+      className="bg-surface-container hover:bg-surface-container-high flex h-32 w-full items-center gap-5 rounded-3xl p-4 text-left transition-colors"
     >
-      <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-container-high">
+      <div className="bg-surface-container-high size-24 shrink-0 overflow-hidden rounded-[18px]">
         <img
           src={journey.imageUrl}
           alt={journey.title}
@@ -46,18 +41,18 @@ function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
       </div>
       <div className="flex h-[87.5px] flex-1 flex-col gap-1">
         <p className="text-title-medium text-on-surface">{journey.title}</p>
-        <p className="pb-1.5 text-body-small text-on-surface-low">
+        <p className="text-body-small text-on-surface-low pb-1.5">
           {journey.subtitle}
         </p>
         <div className="flex flex-1 items-end">
           <div className="flex w-full items-center gap-2">
-            <div className="relative h-2 flex-1 rounded-full bg-surface-container-high">
+            <div className="bg-surface-container-high relative h-2 flex-1 rounded-full">
               <div
-                className="absolute inset-y-0 left-0 rounded-full bg-on-surface-low"
+                className="bg-on-surface-low absolute inset-y-0 left-0 rounded-full"
                 style={{ width: `${journey.progress}%` }}
               />
             </div>
-            <span className="shrink-0 text-label-medium-em text-on-surface-low">
+            <span className="text-label-medium-em text-on-surface-low shrink-0">
               {journey.progress}%
             </span>
           </div>
@@ -74,9 +69,9 @@ function CompletedJourneyCard({ journey }: { journey: CompletedJourney }) {
     <button
       type="button"
       onClick={() => router.push(`/journeys/${journey.id}`)}
-      className="flex items-center gap-4 rounded-3xl bg-surface-container p-4 text-left transition-colors hover:bg-surface-container-high"
+      className="bg-surface-container hover:bg-surface-container-high flex items-center gap-4 rounded-3xl p-4 text-left transition-colors"
     >
-      <div className="size-16 shrink-0 overflow-hidden rounded-2xl bg-surface-container-high">
+      <div className="bg-surface-container-high size-16 shrink-0 overflow-hidden rounded-2xl">
         <img
           src={journey.imageUrl}
           alt={journey.title}
@@ -85,7 +80,7 @@ function CompletedJourneyCard({ journey }: { journey: CompletedJourney }) {
       </div>
       <div className="flex flex-1 flex-col gap-0.5">
         <p className="text-title-small-em text-on-surface">{journey.title}</p>
-        <p className="line-clamp-1 text-label-large text-on-surface-low">
+        <p className="text-label-large text-on-surface-low line-clamp-1">
           {journey.description}
         </p>
       </div>
@@ -94,7 +89,7 @@ function CompletedJourneyCard({ journey }: { journey: CompletedJourney }) {
         size={20}
         color="currentColor"
         strokeWidth={1.5}
-        className="shrink-0 text-primary"
+        className="text-primary shrink-0"
       />
     </button>
   )
@@ -148,36 +143,32 @@ export default function MyJourneysView() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="in_progress" className="px-4">
-        <TabsList variant="primary" className="w-full">
-          <TabsTrigger value="in_progress" className="flex-1">
+      <Tabs defaultSelectedKey="in_progress" className="px-4">
+        <TabList className="w-full">
+          <Tab id="in_progress" className="flex-1">
             진행 중
-          </TabsTrigger>
-          <TabsTrigger value="completed" className="flex-1">
+          </Tab>
+          <Tab id="completed" className="flex-1">
             완료
-          </TabsTrigger>
-        </TabsList>
+          </Tab>
+        </TabList>
 
         {/* 진행 중 탭 */}
-        <TabsContent value="in_progress" className="flex flex-col gap-4 pt-4">
+        <TabPanel id="in_progress" className="flex flex-col gap-4 pt-4">
           {isHomePending
             ? Array.from({ length: 2 }, (_, index) => (
-                <Skeleton
-                  key={index}
-                  variant="rectangular"
-                  className="h-32 rounded-3xl"
-                />
+                <Skeleton key={index} className="h-32 rounded-3xl" />
               ))
             : null}
 
           {isHomeError ? (
-            <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
+            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
               여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           ) : null}
 
           {!isHomePending && !isHomeError && activeJourneys.length === 0 ? (
-            <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
+            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
               아직 시작한 여정이 없어요. 나에게 맞는 여정을 찾아보세요!
             </div>
           ) : null}
@@ -187,22 +178,18 @@ export default function MyJourneysView() {
                 <ActiveJourneyCard key={journey.id} journey={journey} />
               ))
             : null}
-        </TabsContent>
+        </TabPanel>
 
         {/* 완료 탭 */}
-        <TabsContent value="completed" className="flex flex-col gap-4 pt-4">
+        <TabPanel id="completed" className="flex flex-col gap-4 pt-4">
           {isCompletedPending
             ? Array.from({ length: 2 }, (_, index) => (
-                <Skeleton
-                  key={index}
-                  variant="rectangular"
-                  className="h-24 rounded-3xl"
-                />
+                <Skeleton key={index} className="h-24 rounded-3xl" />
               ))
             : null}
 
           {isCompletedError ? (
-            <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
+            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
               완료한 여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           ) : null}
@@ -210,7 +197,7 @@ export default function MyJourneysView() {
           {!isCompletedPending &&
           !isCompletedError &&
           completedJourneys.length === 0 ? (
-            <div className="rounded-3xl bg-surface-container p-6 text-center text-body-medium text-on-surface-low">
+            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
               아직 완료한 여정이 없어요. 여정을 시작해보세요!
             </div>
           ) : null}
@@ -220,7 +207,7 @@ export default function MyJourneysView() {
                 <CompletedJourneyCard key={journey.id} journey={journey} />
               ))
             : null}
-        </TabsContent>
+        </TabPanel>
       </Tabs>
     </div>
   )

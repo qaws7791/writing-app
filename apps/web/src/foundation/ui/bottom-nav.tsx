@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -9,7 +10,6 @@ import {
   QuillWrite01Icon,
   User02Icon,
 } from "@hugeicons/core-free-icons"
-import { NavigationBar, NavItem } from "@workspace/ui/components/navigation-bar"
 
 const NAV_ITEMS = [
   { icon: Home01Icon, label: "홈", href: "/home" },
@@ -18,17 +18,40 @@ const NAV_ITEMS = [
   { icon: User02Icon, label: "프로필", href: "/profile" },
 ] as const
 
+function NavItem({
+  href,
+  label,
+  active,
+  icon,
+}: {
+  href: string
+  label: string
+  active: boolean
+  icon: ReactNode
+}) {
+  return (
+    <Link
+      href={href}
+      className={`text-label-small flex flex-1 flex-col items-center gap-1 py-3 transition-colors ${
+        active ? "text-on-surface" : "text-on-surface-lowest"
+      }`}
+    >
+      {icon}
+      <span>{label}</span>
+    </Link>
+  )
+}
+
 export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <NavigationBar>
+    <nav className="border-outline-variant safe-area-pb fixed right-0 bottom-0 left-0 z-50 flex border-t bg-surface">
       {NAV_ITEMS.map(({ icon, label, href }) => {
         const isActive = pathname === href
         return (
           <NavItem
             key={href}
-            as={Link}
             href={href}
             label={label}
             active={isActive}
@@ -43,6 +66,6 @@ export default function BottomNav() {
           />
         )
       })}
-    </NavigationBar>
+    </nav>
   )
 }

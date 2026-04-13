@@ -30,12 +30,12 @@ export function ThemeSwitcher() {
           size={20}
           color="currentColor"
           strokeWidth={1.5}
-          className="shrink-0 text-on-surface"
+          className="text-on-surface shrink-0"
         />
-        <span className="flex-1 text-title-small text-on-surface">
+        <span className="text-title-small text-on-surface flex-1">
           화면 모드
         </span>
-        <div className="flex gap-0.5 rounded-full bg-surface-container-high p-0.5">
+        <div className="bg-surface-container-high flex gap-0.5 rounded-full p-0.5">
           {THEME_OPTIONS.map(({ value, icon, label }) => (
             <button
               key={value}
@@ -64,7 +64,7 @@ export function ThemeSwitcher() {
           size={20}
           color="currentColor"
           strokeWidth={1.5}
-          className="shrink-0 text-on-surface"
+          className="text-on-surface shrink-0"
         />
         <div className="flex flex-1 flex-col">
           <span className="text-title-small text-on-surface">
@@ -74,11 +74,11 @@ export function ThemeSwitcher() {
             화면 움직임을 최소화합니다
           </span>
         </div>
-        <Switch
-          checked={reduceMotion}
-          onCheckedChange={setReduceMotion}
-          size="sm"
-        />
+        <Switch isSelected={reduceMotion} onChange={setReduceMotion} size="sm">
+          <Switch.Control>
+            <Switch.Thumb />
+          </Switch.Control>
+        </Switch>
       </div>
     </>
   )

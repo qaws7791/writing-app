@@ -1,3 +1,6 @@
+import { TextField } from "@workspace/ui/components/text-field"
+import { TextArea } from "@workspace/ui/components/textarea"
+
 import type {
   RewritingContent,
   InputStepState,
@@ -34,29 +37,28 @@ export function RewritingStep({
         {content.instruction}
       </p>
       {originalText && (
-        <details className="rounded-xl bg-surface-container">
-          <summary className="cursor-pointer px-4 py-3 text-body-medium-em text-on-surface-low">
+        <details className="bg-surface-container rounded-xl">
+          <summary className="text-body-medium-em text-on-surface-low cursor-pointer px-4 py-3">
             원본 글 보기
           </summary>
-          <div className="border-t border-outline/10 px-4 py-3">
-            <p className="text-body-medium whitespace-pre-line text-on-surface-lowest">
+          <div className="border-outline/10 border-t px-4 py-3">
+            <p className="text-body-medium text-on-surface-lowest whitespace-pre-line">
               {originalText}
             </p>
           </div>
         </details>
       )}
-      <textarea
+      <TextField
         value={displayText}
-        onChange={(e) =>
+        onChange={(value) =>
           onStateChange({
-            text: e.target.value,
-            hasInput:
-              e.target.value.length > 0 && e.target.value !== originalText,
+            text: value,
+            hasInput: value.length > 0 && value !== originalText,
           })
         }
-        rows={10}
-        className="w-full resize-none rounded-xl border border-outline/20 bg-surface-container-low px-4 py-3 text-body-medium text-on-surface placeholder:text-on-surface-lowest focus:border-primary focus:outline-none"
-      />
+      >
+        <TextArea rows={10} />
+      </TextField>
       <div className="flex justify-end">
         <span className="text-label-medium text-on-surface-lowest">
           {displayText.length}자

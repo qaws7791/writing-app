@@ -1,5 +1,8 @@
 "use client"
 
+import { Card } from "@workspace/ui/components/card"
+import { Skeleton } from "@workspace/ui/components/skeleton"
+
 export function PromptBanner({
   title,
   body,
@@ -12,13 +15,13 @@ export function PromptBanner({
   onToggle: () => void
 }) {
   return (
-    <section className="flex flex-col gap-2 rounded-2xl bg-secondary-container px-5 py-4">
+    <Card.Root variant="secondary" className="px-5 py-4">
       <button
         type="button"
         onClick={onToggle}
-        className="flex items-center justify-between"
+        className="flex w-full items-center justify-between"
       >
-        <p className="tracking-widest text-label-medium-em text-on-surface-low uppercase">
+        <p className="text-label-medium-em text-on-surface-low tracking-widest uppercase">
           오늘의 글감
         </p>
         <span
@@ -36,16 +39,16 @@ export function PromptBanner({
       {collapsed && (
         <h2 className="text-title-medium-em text-on-surface">{title}</h2>
       )}
-    </section>
+    </Card.Root>
   )
 }
 
 export function PromptBannerSkeleton() {
   return (
-    <section className="flex flex-col gap-2 rounded-2xl bg-secondary-container px-5 py-4">
-      <div className="h-3 w-16 animate-pulse rounded bg-on-surface/10" />
-      <div className="h-5 w-3/4 animate-pulse rounded bg-on-surface/10" />
-      <div className="h-4 w-full animate-pulse rounded bg-on-surface/10" />
-    </section>
+    <Card.Root variant="secondary" className="px-5 py-4">
+      <Skeleton className="h-3 w-16" />
+      <Skeleton className="h-5 w-3/4" />
+      <Skeleton className="h-4 w-full" />
+    </Card.Root>
   )
 }

@@ -4,8 +4,8 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { Search01Icon, QuillWrite01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef } from "react"
-import { FAB } from "@workspace/ui/components/fab"
-import { LoadingIndicator } from "@workspace/ui/components/loading-indicator"
+import { Button } from "@workspace/ui/components/button"
+import { Spinner } from "@workspace/ui/components/spinner"
 
 import { useWritings, useDeleteWriting } from "@/features/writings"
 import { WritingCard } from "@/features/writings/components"
@@ -58,13 +58,13 @@ export default function WritingsListView() {
 
       {/* Search Bar */}
       <div className="px-4 pt-4">
-        <div className="flex items-center gap-2.5 rounded-[2rem] bg-surface-container px-6 py-5">
+        <div className="bg-surface-container flex items-center gap-2.5 rounded-[2rem] px-6 py-5">
           <HugeiconsIcon
             icon={Search01Icon}
             size={18}
             color="currentColor"
             strokeWidth={1.5}
-            className="shrink-0 text-on-surface-lowest"
+            className="text-on-surface-lowest shrink-0"
           />
           <span className="text-body-large text-on-surface-lowest">
             기록된 생각을 검색해보세요
@@ -83,18 +83,20 @@ export default function WritingsListView() {
         ))}
         {isFetchingNextPage && (
           <div className="flex justify-center py-4">
-            <LoadingIndicator size="sm" />
+            <Spinner size="sm" />
           </div>
         )}
         <div ref={sentinelRef} />
       </div>
 
       {/* FAB */}
-      <FAB
-        aria-label="새 글쓰기"
+      <Button
+        isIconOnly
         variant="primary"
-        className="fixed right-4 bottom-24"
-        onClick={() => router.push("/writings/new")}
+        size="lg"
+        aria-label="새 글쓰기"
+        className="fixed right-4 bottom-24 rounded-full shadow-lg"
+        onPress={() => router.push("/writings/new")}
       >
         <HugeiconsIcon
           icon={QuillWrite01Icon}
@@ -102,7 +104,7 @@ export default function WritingsListView() {
           color="currentColor"
           strokeWidth={1.5}
         />
-      </FAB>
+      </Button>
     </div>
   )
 }
