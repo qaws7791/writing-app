@@ -3,7 +3,6 @@
 import { HugeiconsIcon } from "@hugeicons/react"
 import { MoreVerticalIcon, Delete01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
-import { Button } from "@workspace/ui/components/button"
 import {
   Dropdown,
   DropdownTrigger,
@@ -44,20 +43,17 @@ export function WritingCard({
           {writing.date}
         </span>
         <Dropdown>
-          <DropdownTrigger>
-            <Button
-              isIconOnly
-              variant="ghost"
-              aria-label="더보기"
-              onPress={(e) => e.continuePropagation()}
-            >
-              <HugeiconsIcon
-                icon={MoreVerticalIcon}
-                size={16}
-                color="currentColor"
-                strokeWidth={2}
-              />
-            </Button>
+          <DropdownTrigger
+            aria-label="더보기"
+            className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-surface-tertiary"
+            onPress={(e) => e.continuePropagation()}
+          >
+            <HugeiconsIcon
+              icon={MoreVerticalIcon}
+              size={16}
+              color="currentColor"
+              strokeWidth={2}
+            />
           </DropdownTrigger>
           <DropdownPopover
             placement="bottom end"
