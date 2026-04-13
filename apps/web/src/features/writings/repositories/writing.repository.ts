@@ -60,34 +60,3 @@ export async function fetchWritings(
   if (error) throw error
   return data
 }
-
-export async function generateWritingFeedback(
-  client: ApiClient,
-  writingId: number,
-  input: {
-    level?: "beginner" | "intermediate" | "advanced"
-  }
-) {
-  const { data, error } = await client.POST("/writings/{writingId}/feedback", {
-    params: { path: { writingId } },
-    body: input,
-  })
-  if (error) throw error
-  return data
-}
-
-export async function compareWritingRevision(
-  client: ApiClient,
-  writingId: number,
-  input: {
-    originalText: string
-    revisedText: string
-  }
-) {
-  const { data, error } = await client.POST("/writings/{writingId}/compare", {
-    params: { path: { writingId } },
-    body: input,
-  })
-  if (error) throw error
-  return data
-}

@@ -22,8 +22,6 @@ import createWriting from "./writings/create-writing"
 import getWriting from "./writings/get-writing"
 import autosaveWriting from "./writings/autosave-writing"
 import deleteWriting from "./writings/delete-writing"
-import generateFeedback from "./ai/generate-feedback"
-import compareRevisions from "./ai/compare-revisions"
 import generateTextFeedback from "./ai/generate-text-feedback"
 import compareTexts from "./ai/compare-texts"
 
@@ -52,8 +50,6 @@ export const allRoutes = [
   getWriting,
   autosaveWriting,
   deleteWriting,
-  generateFeedback,
-  compareRevisions,
   generateTextFeedback,
   compareTexts,
 ] as const

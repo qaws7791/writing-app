@@ -33,9 +33,9 @@ export function WritingCard({
     <div
       role="button"
       tabIndex={0}
-      onClick={() => router.push(`/writings/${writing.id}/edit`)}
+      onClick={() => router.push(`/writings/${writing.id}`)}
       onKeyDown={(e) =>
-        e.key === "Enter" && router.push(`/writings/${writing.id}/edit`)
+        e.key === "Enter" && router.push(`/writings/${writing.id}`)
       }
       className="flex cursor-pointer flex-col gap-4 rounded-[2.25rem] bg-surface-secondary p-8 text-left transition-colors hover:bg-surface-tertiary"
     >

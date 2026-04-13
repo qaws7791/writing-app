@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation"
-import WritingDetailClientPage from "./client"
+import WritingEditorView from "@/views/writing-editor-view"
 
-export default async function WritingDetailPage({
+export default async function WritingEditPage({
   params,
 }: {
   params: Promise<{ writingId: string }>
@@ -12,5 +12,5 @@ export default async function WritingDetailPage({
     redirect("/")
   }
 
-  return <WritingDetailClientPage writingId={writingId} />
+  return <WritingEditorView writingId={writingId} />
 }

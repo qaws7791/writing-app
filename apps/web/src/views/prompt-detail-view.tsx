@@ -36,11 +36,7 @@ function EssayListItem({ essay }: { essay: EssayItem }) {
   return (
     <button
       type="button"
-      onClick={() =>
-        router.push(
-          essay.isOwner ? `/writings/${essay.id}/edit` : `/writings/${essay.id}`
-        )
-      }
+      onClick={() => router.push(`/writings/${essay.id}`)}
       className="flex flex-col gap-4 text-left"
     >
       <div className="flex items-center justify-between">
