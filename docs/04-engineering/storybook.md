@@ -36,12 +36,15 @@ bun build:storybook  # 정적 빌드
 - `@workspace/ui`의 공용 컴포넌트 변경 시, 관련 스토리와 함께 검증합니다.
 - 제품 고유 화면(로그인, 홈 등)보다 재사용 가능한 UI 조합과 패턴을 우선 다룹니다.
 - 스토리는 컴포넌트의 실제 사용 시나리오를 반영해야 합니다.
+- 현재 스토리 소스는 `packages/ui/src/**/*.stories.tsx`만 Storybook에서 수집합니다. `apps/storybook` 내부에는 독립 스토리 디렉터리를 두지 않습니다.
 
 ## 런타임 주의사항
 
 - `.storybook/manager.ts`에서 Storybook manager theme 색상은 hex 또는 rgb 계열 값만 사용합니다.
 - `storybook/theming` 내부에서 `polished`를 사용하므로 `oklch(...)`를 직접 넣으면 `parseToRgb` 런타임 오류로 manager가 흰 화면이 될 수 있습니다.
 - 정적 결과물은 `bunx serve` 대신 `http-server`로 서빙합니다. `serve`는 Storybook의 `iframe.html?id=...` 요청을 `/iframe`으로 리다이렉트하면서 query를 잃어 `No Preview`를 만들 수 있습니다.
+- Storybook Vite 빌드는 워크스페이스 소스와 외부 UI 패키지의 최상위 `"use client"` 지시문을 번들 단계에서 제거합니다. 이는 Storybook이 React Server Component 경계를 사용하지 않기 때문이며, Next.js 앱 런타임용 소스 파일은 변경하지 않습니다.
+- 정적 빌드에서는 `packages/ui/src`의 공유 런타임과 Storybook 자체 런타임, `react`, `react-aria`, `motion`, `axe-core` 등 주요 의존성을 별도 청크로 분리합니다. `chunkSizeWarningLimit`은 사용자 코드 청크가 아니라 Storybook이 생성하는 `vite-inject-mocker-entry.js`까지 포함해 1200으로 맞춥니다.
 
 ## 관련 문서
 
