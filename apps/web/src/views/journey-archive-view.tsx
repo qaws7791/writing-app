@@ -1,12 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Layers01Icon } from "@hugeicons/core-free-icons"
-import { useRouter } from "next/navigation"
+
 import { ToggleButton } from "@workspace/ui/components/toggle-button"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { useJourneys } from "@/features/journeys"
+import { JourneyCard } from "@/features/journeys/components/journey-card"
 
 const CATEGORY_LABEL: Record<
   "writing_skill" | "mindfulness" | "practical",
@@ -26,48 +25,6 @@ interface JourneyCardData {
   sessionCount: number
   imageUrl: string
   category: string
-}
-
-function JourneyListCard({ card }: { card: JourneyCardData }) {
-  const router = useRouter()
-
-  return (
-    <button
-      type="button"
-      onClick={() => router.push(`/journeys/${card.id}`)}
-      className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-secondary p-4 text-left transition-colors hover:bg-surface-tertiary"
-    >
-      <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-tertiary">
-        <img
-          src={card.imageUrl}
-          alt={card.title}
-          className="size-full object-cover"
-        />
-      </div>
-      <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5">
-        <div className="flex flex-col gap-1">
-          <p className="text-lg leading-7 font-medium text-foreground">
-            {card.title}
-          </p>
-          <p className="line-clamp-2 text-sm leading-6 text-muted">
-            {card.description}
-          </p>
-        </div>
-        <div className="flex items-center gap-0.5">
-          <HugeiconsIcon
-            icon={Layers01Icon}
-            size={12}
-            color="currentColor"
-            strokeWidth={1.5}
-            className="text-muted"
-          />
-          <span className="text-xs leading-4 font-medium text-muted uppercase">
-            {card.sessionCount}개의 세션
-          </span>
-        </div>
-      </div>
-    </button>
-  )
 }
 
 export default function JourneyArchiveView() {
@@ -134,7 +91,7 @@ export default function JourneyArchiveView() {
 
         {!isPending && !isError
           ? filteredJourneys.map((journey) => (
-              <JourneyListCard key={journey.id} card={journey} />
+              <JourneyCard key={journey.id} mode="discover" {...journey} />
             ))
           : null}
       </div>

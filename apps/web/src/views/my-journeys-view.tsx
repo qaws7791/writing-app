@@ -1,103 +1,11 @@
 "use client"
 
-import { HugeiconsIcon } from "@hugeicons/react"
-import { CheckmarkCircle02Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 import { Tabs, TabPanel, TabList, Tab } from "@workspace/ui/components/tabs"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { useHomeSnapshot } from "@/features/home"
 import { useJourneys } from "@/features/journeys"
-
-interface ActiveJourney {
-  id: number
-  title: string
-  subtitle: string
-  progress: number
-  imageUrl: string
-}
-
-interface CompletedJourney {
-  id: number
-  title: string
-  description: string
-  imageUrl: string
-}
-
-function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
-  const router = useRouter()
-
-  return (
-    <button
-      type="button"
-      onClick={() => router.push(`/journeys/${journey.id}`)}
-      className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-secondary p-4 text-left transition-colors hover:bg-surface-tertiary"
-    >
-      <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-tertiary">
-        <img
-          src={journey.imageUrl}
-          alt={journey.title}
-          className="size-full object-cover"
-        />
-      </div>
-      <div className="flex h-[87.5px] flex-1 flex-col gap-1">
-        <p className="text-lg leading-7 font-medium text-foreground">
-          {journey.title}
-        </p>
-        <p className="pb-1.5 text-xs leading-5 text-muted">
-          {journey.subtitle}
-        </p>
-        <div className="flex flex-1 items-end">
-          <div className="flex w-full items-center gap-2">
-            <div className="relative h-2 flex-1 rounded-full bg-surface-tertiary">
-              <div
-                className="absolute inset-y-0 left-0 rounded-full bg-accent"
-                style={{ width: `${journey.progress}%` }}
-              />
-            </div>
-            <span className="shrink-0 text-xs leading-5 font-semibold tracking-wide text-muted">
-              {journey.progress}%
-            </span>
-          </div>
-        </div>
-      </div>
-    </button>
-  )
-}
-
-function CompletedJourneyCard({ journey }: { journey: CompletedJourney }) {
-  const router = useRouter()
-
-  return (
-    <button
-      type="button"
-      onClick={() => router.push(`/journeys/${journey.id}`)}
-      className="flex items-center gap-4 rounded-3xl bg-surface-secondary p-4 text-left transition-colors hover:bg-surface-tertiary"
-    >
-      <div className="size-16 shrink-0 overflow-hidden rounded-2xl bg-surface-tertiary">
-        <img
-          src={journey.imageUrl}
-          alt={journey.title}
-          className="size-full object-cover"
-        />
-      </div>
-      <div className="flex flex-1 flex-col gap-0.5">
-        <p className="text-base leading-6 font-semibold text-foreground">
-          {journey.title}
-        </p>
-        <p className="line-clamp-1 text-sm leading-5 font-medium text-muted">
-          {journey.description}
-        </p>
-      </div>
-      <HugeiconsIcon
-        icon={CheckmarkCircle02Icon}
-        size={20}
-        color="currentColor"
-        strokeWidth={1.5}
-        className="shrink-0 text-accent"
-      />
-    </button>
-  )
-}
+import { JourneyCard } from "@/features/journeys/components/journey-card"
 
 export default function MyJourneysView() {
   const router = useRouter()
@@ -112,18 +20,18 @@ export default function MyJourneysView() {
     isError: isCompletedError,
   } = useJourneys({ status: "completed" })
 
-  const activeJourneys: ActiveJourney[] =
+  const activeJourneys =
     home?.activeJourneys.map((journey) => ({
       id: journey.journeyId,
       title: journey.title,
-      subtitle: `${journey.currentSessionOrder}번째 세션 진행 중`,
+      description: `${journey.currentSessionOrder}번째 세션 진행 중`,
       progress: Math.round(journey.completionRate * 100),
       imageUrl:
         journey.thumbnailUrl ??
         `https://picsum.photos/seed/active-journey-${journey.journeyId}/600/400`,
     })) ?? []
 
-  const completedJourneys: CompletedJourney[] =
+  const completedJourneys =
     completedJourneysData?.items.map((journey) => ({
       id: journey.id,
       title: journey.title,
@@ -181,7 +89,7 @@ export default function MyJourneysView() {
 
           {!isHomePending && !isHomeError
             ? activeJourneys.map((journey) => (
-                <ActiveJourneyCard key={journey.id} journey={journey} />
+                <JourneyCard key={journey.id} mode="active" {...journey} />
               ))
             : null}
         </TabPanel>
@@ -210,7 +118,7 @@ export default function MyJourneysView() {
 
           {!isCompletedPending && !isCompletedError
             ? completedJourneys.map((journey) => (
-                <CompletedJourneyCard key={journey.id} journey={journey} />
+                <JourneyCard key={journey.id} mode="completed" {...journey} />
               ))
             : null}
         </TabPanel>
