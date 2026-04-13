@@ -92,21 +92,23 @@ export default function WritingsListView() {
       </div>
 
       {/* FAB */}
-      <Button
-        isIconOnly
-        variant="primary"
-        size="lg"
-        aria-label="새 글쓰기"
-        className="fixed right-4 bottom-24 rounded-full shadow-lg"
-        onPress={() => router.push("/writings/new")}
-      >
-        <HugeiconsIcon
-          icon={QuillWrite01Icon}
-          size={24}
-          color="currentColor"
-          strokeWidth={1.5}
-        />
-      </Button>
+      <div className="fixed right-4 bottom-24 z-50">
+        <Button
+          isIconOnly
+          variant="primary"
+          size="lg"
+          aria-label="새 글쓰기"
+          className="rounded-full shadow-lg"
+          onPress={() => router.push("/writings/new")}
+        >
+          <HugeiconsIcon
+            icon={QuillWrite01Icon}
+            size={24}
+            color="currentColor"
+            strokeWidth={1.5}
+          />
+        </Button>
+      </div>
     </div>
   )
 }

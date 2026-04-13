@@ -10,6 +10,7 @@ import {
   DropdownMenu,
   DropdownItem,
 } from "@workspace/ui/components/dropdown"
+import { Button } from "@workspace/ui/components/button"
 
 export interface WritingCardData {
   id: number
@@ -43,9 +44,11 @@ export function WritingCard({
           {writing.date}
         </span>
         <Dropdown>
-          <DropdownTrigger
+          <Button
+            variant="ghost"
+            isIconOnly
             aria-label="더보기"
-            className="flex size-8 items-center justify-center rounded-lg text-muted hover:bg-surface-tertiary"
+            className=""
             onPress={(e) => e.continuePropagation()}
           >
             <HugeiconsIcon
@@ -54,7 +57,7 @@ export function WritingCard({
               color="currentColor"
               strokeWidth={2}
             />
-          </DropdownTrigger>
+          </Button>
           <DropdownPopover
             placement="bottom end"
             className="min-w-32.5 rounded-2xl bg-overlay px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"

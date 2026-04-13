@@ -253,16 +253,14 @@ export default function WritingEditorView({
         <div className="flex items-center gap-2">
           {writingIdNumber && (
             <Dropdown>
-              <DropdownTrigger>
-                <Button isIconOnly variant="ghost" aria-label="더보기">
-                  <HugeiconsIcon
-                    icon={MoreVerticalIcon}
-                    size={24}
-                    color="currentColor"
-                    strokeWidth={1.5}
-                  />
-                </Button>
-              </DropdownTrigger>
+              <Button isIconOnly variant="ghost" aria-label="더보기">
+                <HugeiconsIcon
+                  icon={MoreVerticalIcon}
+                  size={24}
+                  color="currentColor"
+                  strokeWidth={1.5}
+                />
+              </Button>
               <DropdownPopover
                 placement="bottom end"
                 className="min-w-32.5 rounded-2xl bg-overlay px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
