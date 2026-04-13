@@ -10,10 +10,10 @@ export type PromptType = "sensory" | "reflection" | "opinion"
 function CategoryBadge({ promptType }: { promptType: PromptType }) {
   return (
     <span
-      className={`text-label-small rounded-full px-3 py-1 uppercase ${
+      className={`rounded-full px-3 py-1 text-xs leading-4 font-medium uppercase ${
         promptType === "opinion"
-          ? "bg-surface-container-high text-on-surface"
-          : "bg-secondary-container text-on-surface-low"
+          ? "bg-surface-tertiary text-foreground"
+          : "bg-accent-soft text-muted"
       }`}
     >
       {promptType === "sensory"
@@ -61,10 +61,12 @@ export function PromptCard({ card }: { card: PromptCardData }) {
           onClick={() => router.push(`/prompts/${card.id}`)}
           className="text-left"
         >
-          <p className="text-title-large-em text-on-surface">{card.title}</p>
+          <p className="text-xl leading-8 font-semibold text-foreground">
+            {card.title}
+          </p>
         </button>
         <div className="flex items-center justify-between pt-3">
-          <span className="text-label-medium text-on-surface-lowest">
+          <span className="text-xs leading-5 font-medium text-muted/80">
             {card.responseCount}명 응답
           </span>
           <Button aria-label="북마크" variant="ghost" isIconOnly>

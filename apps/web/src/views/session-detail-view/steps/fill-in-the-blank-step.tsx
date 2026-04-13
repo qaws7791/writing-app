@@ -25,12 +25,12 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-title-small-em text-on-surface">
+      <p className="text-base leading-6 font-semibold text-foreground">
         {content.instruction}
       </p>
 
       {/* 빈칸이 포함된 문장 */}
-      <div className="rounded-2xl bg-surface-container p-4 text-body-medium text-on-surface">
+      <div className="rounded-2xl bg-surface-secondary p-4 text-sm leading-6 text-foreground">
         {parts.map((part, i) => {
           const match = part.match(/\{\{(.+)\}\}/)
           if (!match) return <span key={i}>{part}</span>
@@ -44,11 +44,11 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
           const isCorrect = selectedId === blank.correctOptionId
 
           let style =
-            "border-b-2 border-dashed border-primary px-1 font-medium text-primary"
+            "border-b-2 border-dashed border-accent px-1 font-[500] text-accent"
           if (checked && selectedId) {
             style = isCorrect
-              ? "border-b-2 border-green-500 px-1 font-medium text-green-600 dark:text-green-400"
-              : "border-b-2 border-red-500 px-1 font-medium text-red-600 dark:text-red-400 line-through"
+              ? "border-b-2 border-success px-1 font-[500] text-success-soft-foreground"
+              : "border-b-2 border-danger px-1 font-[500] text-danger-soft-foreground line-through"
           }
 
           return (
@@ -62,7 +62,7 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
       {/* 빈칸별 선택지 */}
       {content.blanks.map((blank) => (
         <div key={blank.id} className="flex flex-col gap-2">
-          <p className="text-label-medium-em text-on-surface-lowest">
+          <p className="text-xs leading-5 font-semibold tracking-wide text-muted/80">
             빈칸 선택
           </p>
           <div className="flex flex-wrap gap-2">
@@ -71,21 +71,21 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
               const isCorrect = opt.id === blank.correctOptionId
 
               let cls =
-                "rounded-lg border px-3 py-2 text-body-medium transition-all"
+                "rounded-lg border px-3 py-2 text-sm leading-6 transition-all"
               if (isSelected && !checked) {
-                cls += " border-primary bg-primary/10 text-primary font-medium"
+                cls +=
+                  " border-accent bg-accent-soft text-accent-soft-foreground font-[500]"
               } else if (checked && isSelected && isCorrect) {
                 cls +=
-                  " border-green-500 bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-400 font-medium"
+                  " border-success bg-success-soft text-success-soft-foreground font-[500]"
               } else if (checked && isSelected && !isCorrect) {
                 cls +=
-                  " border-red-500 bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400 line-through"
+                  " border-danger bg-danger-soft text-danger-soft-foreground line-through"
               } else if (checked && isCorrect) {
                 cls +=
-                  " border-green-500/50 bg-green-50/50 text-green-600 dark:bg-green-500/5 dark:text-green-400"
+                  " border-success/50 bg-success-soft/60 text-success-soft-foreground"
               } else {
-                cls +=
-                  " border-outline/20 bg-surface-container-low text-on-surface"
+                cls += " border-separator bg-surface text-foreground"
               }
 
               return (
@@ -104,9 +104,11 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
       ))}
 
       {checked && (
-        <div className="rounded-xl bg-surface-container p-4">
-          <p className="text-label-medium-em text-on-surface-lowest">해설</p>
-          <p className="mt-1 text-body-medium text-on-surface-low">
+        <div className="rounded-xl bg-surface-secondary p-4">
+          <p className="text-xs leading-5 font-semibold tracking-wide text-muted/80">
+            해설
+          </p>
+          <p className="mt-1 text-sm leading-6 text-muted">
             {content.explanation}
           </p>
         </div>

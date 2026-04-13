@@ -11,7 +11,7 @@ export function ProgressSegments({
         <div
           key={i}
           className={`h-1.5 flex-1 rounded-full transition-colors ${
-            i < completed ? "bg-on-surface-low" : "bg-surface-container-high"
+            i < completed ? "bg-accent" : "bg-surface-tertiary"
           }`}
         />
       ))}

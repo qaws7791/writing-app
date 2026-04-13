@@ -148,6 +148,6 @@ export function StepRenderer({
         />
       )
     default:
-      return <p className="text-on-surface-low">알 수 없는 스탭 유형입니다.</p>
+      return <p className="text-muted">알 수 없는 스탭 유형입니다.</p>
   }
 }

@@ -6,7 +6,7 @@ interface MarkdownRendererProps {
 function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   return (
     <div
-      className={`prose prose-sm text-on-surface max-w-none ${className ?? ""}`}
+      className={`max-w-none text-foreground ${className ?? ""}`}
       dangerouslySetInnerHTML={{ __html: content }}
     />
   )
@@ -15,7 +15,7 @@ function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
 function InlineMarkdown({ content, className }: MarkdownRendererProps) {
   return (
     <span
-      className={`text-on-surface ${className ?? ""}`}
+      className={`text-foreground ${className ?? ""}`}
       dangerouslySetInnerHTML={{ __html: content }}
     />
   )

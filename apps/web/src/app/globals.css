@@ -1,4 +1,37 @@
-@import "tailwindcss";
 @import "@workspace/ui/styles";
 
-@source "../../../packages/ui/src";
+@source "../../../../packages/ui/src";
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@utility safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.writing-editor .ProseMirror {
+  outline: none;
+  min-height: 50vh;
+  font-size: 1.125rem;
+  line-height: 1.956;
+  color: var(--color-foreground);
+}
+
+.writing-editor .ProseMirror p {
+  margin: 0;
+}
+
+.writing-editor .ProseMirror p + p {
+  margin-top: 2.944rem;
+}
+
+.writing-editor .ProseMirror p.is-editor-empty:first-child::before {
+  float: left;
+  height: 0;
+  color: var(--color-muted);
+  content: attr(data-placeholder);
+  pointer-events: none;
+}

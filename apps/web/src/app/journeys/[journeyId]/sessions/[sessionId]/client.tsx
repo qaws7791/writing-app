@@ -133,7 +133,7 @@ export default function SessionDetailClientPage({
     !journey
   ) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface px-6 text-sm text-on-surface-low">
+      <div className="flex min-h-screen items-center justify-center bg-surface px-6 text-sm text-muted">
         세션을 준비하고 있어요...
       </div>
     )
@@ -152,12 +152,10 @@ export default function SessionDetailClientPage({
   if (journeyQuery.isError || sessionQuery.isError) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface px-6 text-center">
-        <p className="text-sm text-on-surface-low">
-          세션 정보를 불러오지 못했어요.
-        </p>
+        <p className="text-sm text-muted">세션 정보를 불러오지 못했어요.</p>
         <button
           onClick={() => router.push(`/journeys/${journeyId}`)}
-          className="rounded-full bg-on-surface px-5 py-3 text-sm font-semibold text-surface"
+          className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background"
         >
           여정으로 돌아가기
         </button>
@@ -168,12 +166,10 @@ export default function SessionDetailClientPage({
   if (mappedSession.steps.length === 0) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface px-6 text-center">
-        <p className="text-sm text-on-surface-low">
-          아직 준비 중인 세션이에요.
-        </p>
+        <p className="text-sm text-muted">아직 준비 중인 세션이에요.</p>
         <button
           onClick={() => router.push(`/journeys/${journeyId}`)}
-          className="rounded-full bg-on-surface px-5 py-3 text-sm font-semibold text-surface"
+          className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background"
         >
           여정으로 돌아가기
         </button>

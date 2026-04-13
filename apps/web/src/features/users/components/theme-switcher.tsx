@@ -30,21 +30,19 @@ export function ThemeSwitcher() {
           size={20}
           color="currentColor"
           strokeWidth={1.5}
-          className="text-on-surface shrink-0"
+          className="shrink-0 text-foreground"
         />
-        <span className="text-title-small text-on-surface flex-1">
+        <span className="flex-1 text-base leading-6 font-medium text-foreground">
           화면 모드
         </span>
-        <div className="bg-surface-container-high flex gap-0.5 rounded-full p-0.5">
+        <div className="flex gap-0.5 rounded-full bg-surface-tertiary p-0.5">
           {THEME_OPTIONS.map(({ value, icon, label }) => (
             <button
               key={value}
               aria-label={label}
               onClick={() => setTheme(value)}
               className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${
-                theme === value
-                  ? "bg-on-surface text-on-primary"
-                  : "text-on-surface-low"
+                theme === value ? "bg-surface text-foreground" : "text-muted"
               }`}
             >
               <HugeiconsIcon
@@ -64,13 +62,13 @@ export function ThemeSwitcher() {
           size={20}
           color="currentColor"
           strokeWidth={1.5}
-          className="text-on-surface shrink-0"
+          className="shrink-0 text-foreground"
         />
         <div className="flex flex-1 flex-col">
-          <span className="text-title-small text-on-surface">
+          <span className="text-base leading-6 font-medium text-foreground">
             동작 줄이기 모드
           </span>
-          <span className="text-label-small text-on-surface-low">
+          <span className="text-xs leading-4 font-medium text-muted">
             화면 움직임을 최소화합니다
           </span>
         </div>

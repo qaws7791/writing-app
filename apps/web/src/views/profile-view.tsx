@@ -34,7 +34,9 @@ export default function ProfileView() {
     <div className="flex min-h-full flex-col bg-surface">
       {/* 헤더 */}
       <div className="px-4 pt-4 pb-2">
-        <h1 className="text-headline-small-em text-on-surface">설정</h1>
+        <h1 className="text-xl leading-snug font-semibold text-foreground">
+          설정
+        </h1>
       </div>
 
       <div className="flex-1 overflow-y-auto pb-6">
@@ -53,7 +55,7 @@ export default function ProfileView() {
               icon={Notification01Icon}
               label="알림 설정"
               trailing={
-                <span className="mr-2 text-label-medium-em text-on-surface-low">
+                <span className="mr-2 text-xs leading-5 font-semibold tracking-wide text-muted">
                   ON
                 </span>
               }
@@ -67,7 +69,7 @@ export default function ProfileView() {
               icon={TextFontIcon}
               label="글꼴 크기"
               trailing={
-                <span className="mr-2 text-body-medium-em text-on-surface-low">
+                <span className="mr-2 text-sm leading-6 font-medium text-muted">
                   보통
                 </span>
               }
@@ -80,7 +82,7 @@ export default function ProfileView() {
               icon={CrownIcon}
               label="구독 관리 (Pro)"
               trailing={
-                <span className="mr-3 rounded-full bg-surface-container-high px-2 py-0.5 text-label-small-em text-on-surface">
+                <span className="mr-3 rounded-full bg-surface-tertiary px-2 py-0.5 text-xs leading-4 font-semibold text-foreground">
                   ACTIVE
                 </span>
               }
@@ -94,7 +96,9 @@ export default function ProfileView() {
             className="flex items-center justify-center py-5 opacity-70"
             onClick={handleLogout}
           >
-            <span className="text-body-medium-em text-error">로그아웃</span>
+            <span className="text-sm leading-6 font-medium text-danger">
+              로그아웃
+            </span>
           </button>
         </div>
       </div>

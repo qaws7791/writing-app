@@ -30,26 +30,27 @@ export function SessionCard({
 
   if (session.status === "COMPLETED") {
     return (
-      <div className="bg-surface-container-high overflow-hidden rounded-[2.375rem]">
+      <div className="overflow-hidden rounded-[2.375rem] bg-surface-tertiary">
         <button
           onClick={() => setIsOpen((v) => !v)}
           className="flex w-full items-center p-6"
         >
           <div className="flex flex-1 flex-col gap-2.5 text-left">
             <div className="flex items-center gap-2">
-              <div className="bg-on-surface-low flex size-6 shrink-0 items-center justify-center rounded-full">
+              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-success-soft">
                 <HugeiconsIcon
                   icon={Tick02Icon}
                   size={14}
-                  color="white"
+                  color="currentColor"
                   strokeWidth={2}
+                  className="text-success"
                 />
               </div>
-              <span className="text-label-medium-em text-on-surface-low uppercase">
+              <span className="text-xs leading-5 font-semibold tracking-wide text-muted uppercase">
                 완료
               </span>
             </div>
-            <p className="text-title-medium-em text-on-surface">
+            <p className="text-lg leading-7 font-semibold text-foreground">
               {session.title}
             </p>
           </div>
@@ -58,12 +59,12 @@ export function SessionCard({
             size={24}
             color="currentColor"
             strokeWidth={1.5}
-            className={`text-on-surface shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            className={`shrink-0 text-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
         {isOpen && session.description && (
           <div className="px-6 pb-6">
-            <p className="text-body-large text-on-surface">
+            <p className="text-base leading-7 text-foreground">
               {session.description}
             </p>
           </div>
@@ -74,23 +75,23 @@ export function SessionCard({
 
   if (session.status === "IN_PROGRESS") {
     return (
-      <div className="bg-surface-container-high flex flex-col overflow-hidden rounded-[2.375rem]">
+      <div className="flex flex-col overflow-hidden rounded-[2.375rem] bg-surface-tertiary">
         <button
           onClick={() => setIsOpen((v) => !v)}
           className="flex w-full items-start justify-between gap-4 p-6"
         >
           <div className="flex flex-1 flex-col gap-2.5 text-left">
             <div className="flex items-center gap-2">
-              <div className="bg-surface-container-high flex size-6 shrink-0 items-center justify-center rounded-full">
-                <span className="text-label-medium-em text-on-surface-low">
+              <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-surface-tertiary">
+                <span className="text-xs leading-5 font-semibold tracking-wide text-muted">
                   {session.order}
                 </span>
               </div>
-              <span className="text-label-medium-em text-on-surface-low uppercase">
+              <span className="text-xs leading-5 font-semibold tracking-wide text-muted uppercase">
                 진행 중
               </span>
             </div>
-            <p className="text-title-large-em text-on-surface">
+            <p className="text-xl leading-8 font-semibold text-foreground">
               {session.title}
             </p>
           </div>
@@ -99,13 +100,13 @@ export function SessionCard({
             size={24}
             color="currentColor"
             strokeWidth={1.5}
-            className={`text-on-surface mt-1 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+            className={`mt-1 shrink-0 text-foreground transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           />
         </button>
         {isOpen && (
           <div className="flex flex-col gap-6 px-6 pb-6">
             {session.description && (
-              <p className="text-body-large text-on-surface">
+              <p className="text-base leading-7 text-foreground">
                 {session.description}
               </p>
             )}
@@ -133,13 +134,13 @@ export function SessionCard({
             size={24}
             color="currentColor"
             strokeWidth={1.5}
-            className="text-on-surface-low shrink-0"
+            className="shrink-0 text-muted"
           />
-          <span className="text-label-medium-em text-on-surface-low uppercase">
+          <span className="text-xs leading-5 font-semibold tracking-wide text-muted uppercase">
             대기 중
           </span>
         </div>
-        <p className="text-title-medium-em text-on-surface-low">
+        <p className="text-lg leading-7 font-semibold text-muted">
           {session.title}
         </p>
       </div>

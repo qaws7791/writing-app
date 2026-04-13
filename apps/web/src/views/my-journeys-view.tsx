@@ -30,9 +30,9 @@ function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
     <button
       type="button"
       onClick={() => router.push(`/journeys/${journey.id}`)}
-      className="bg-surface-container hover:bg-surface-container-high flex h-32 w-full items-center gap-5 rounded-3xl p-4 text-left transition-colors"
+      className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-secondary p-4 text-left transition-colors hover:bg-surface-tertiary"
     >
-      <div className="bg-surface-container-high size-24 shrink-0 overflow-hidden rounded-[18px]">
+      <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-tertiary">
         <img
           src={journey.imageUrl}
           alt={journey.title}
@@ -40,19 +40,21 @@ function ActiveJourneyCard({ journey }: { journey: ActiveJourney }) {
         />
       </div>
       <div className="flex h-[87.5px] flex-1 flex-col gap-1">
-        <p className="text-title-medium text-on-surface">{journey.title}</p>
-        <p className="text-body-small text-on-surface-low pb-1.5">
+        <p className="text-lg leading-7 font-medium text-foreground">
+          {journey.title}
+        </p>
+        <p className="pb-1.5 text-xs leading-5 text-muted">
           {journey.subtitle}
         </p>
         <div className="flex flex-1 items-end">
           <div className="flex w-full items-center gap-2">
-            <div className="bg-surface-container-high relative h-2 flex-1 rounded-full">
+            <div className="relative h-2 flex-1 rounded-full bg-surface-tertiary">
               <div
-                className="bg-on-surface-low absolute inset-y-0 left-0 rounded-full"
+                className="absolute inset-y-0 left-0 rounded-full bg-accent"
                 style={{ width: `${journey.progress}%` }}
               />
             </div>
-            <span className="text-label-medium-em text-on-surface-low shrink-0">
+            <span className="shrink-0 text-xs leading-5 font-semibold tracking-wide text-muted">
               {journey.progress}%
             </span>
           </div>
@@ -69,9 +71,9 @@ function CompletedJourneyCard({ journey }: { journey: CompletedJourney }) {
     <button
       type="button"
       onClick={() => router.push(`/journeys/${journey.id}`)}
-      className="bg-surface-container hover:bg-surface-container-high flex items-center gap-4 rounded-3xl p-4 text-left transition-colors"
+      className="flex items-center gap-4 rounded-3xl bg-surface-secondary p-4 text-left transition-colors hover:bg-surface-tertiary"
     >
-      <div className="bg-surface-container-high size-16 shrink-0 overflow-hidden rounded-2xl">
+      <div className="size-16 shrink-0 overflow-hidden rounded-2xl bg-surface-tertiary">
         <img
           src={journey.imageUrl}
           alt={journey.title}
@@ -79,8 +81,10 @@ function CompletedJourneyCard({ journey }: { journey: CompletedJourney }) {
         />
       </div>
       <div className="flex flex-1 flex-col gap-0.5">
-        <p className="text-title-small-em text-on-surface">{journey.title}</p>
-        <p className="text-label-large text-on-surface-low line-clamp-1">
+        <p className="text-base leading-6 font-semibold text-foreground">
+          {journey.title}
+        </p>
+        <p className="line-clamp-1 text-sm leading-5 font-medium text-muted">
           {journey.description}
         </p>
       </div>
@@ -89,7 +93,7 @@ function CompletedJourneyCard({ journey }: { journey: CompletedJourney }) {
         size={20}
         color="currentColor"
         strokeWidth={1.5}
-        className="text-primary shrink-0"
+        className="shrink-0 text-accent"
       />
     </button>
   )
@@ -133,10 +137,12 @@ export default function MyJourneysView() {
     <div className="flex flex-col gap-3">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-4">
-        <h1 className="text-headline-small-em text-on-surface">나의 여정</h1>
+        <h1 className="text-xl leading-snug font-semibold text-foreground">
+          나의 여정
+        </h1>
         <button
           onClick={() => router.push("/journeys")}
-          className="text-label-large-em text-on-surface-low"
+          className="text-sm leading-5 font-medium text-muted"
         >
           여정 찾기
         </button>
@@ -162,13 +168,13 @@ export default function MyJourneysView() {
             : null}
 
           {isHomeError ? (
-            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
+            <div className="rounded-3xl bg-surface-secondary p-6 text-center text-sm leading-6 text-muted">
               여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           ) : null}
 
           {!isHomePending && !isHomeError && activeJourneys.length === 0 ? (
-            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
+            <div className="rounded-3xl bg-surface-secondary p-6 text-center text-sm leading-6 text-muted">
               아직 시작한 여정이 없어요. 나에게 맞는 여정을 찾아보세요!
             </div>
           ) : null}
@@ -189,7 +195,7 @@ export default function MyJourneysView() {
             : null}
 
           {isCompletedError ? (
-            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
+            <div className="rounded-3xl bg-surface-secondary p-6 text-center text-sm leading-6 text-muted">
               완료한 여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           ) : null}
@@ -197,7 +203,7 @@ export default function MyJourneysView() {
           {!isCompletedPending &&
           !isCompletedError &&
           completedJourneys.length === 0 ? (
-            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
+            <div className="rounded-3xl bg-surface-secondary p-6 text-center text-sm leading-6 text-muted">
               아직 완료한 여정이 없어요. 여정을 시작해보세요!
             </div>
           ) : null}

@@ -24,9 +24,11 @@ export function SettingRow({
         size={20}
         color="currentColor"
         strokeWidth={1.5}
-        className="shrink-0 text-on-surface"
+        className="shrink-0 text-foreground"
       />
-      <span className="flex-1 text-title-small text-on-surface">{label}</span>
+      <span className="flex-1 text-base leading-6 font-medium text-foreground">
+        {label}
+      </span>
       {trailing}
       {showChevron && (
         <HugeiconsIcon
@@ -34,7 +36,7 @@ export function SettingRow({
           size={16}
           color="currentColor"
           strokeWidth={1.5}
-          className="shrink-0 text-on-surface-low"
+          className="shrink-0 text-muted"
         />
       )}
     </button>
@@ -42,7 +44,7 @@ export function SettingRow({
 }
 
 export function Divider() {
-  return <div className="mx-6 h-px bg-outline/10" />
+  return <div className="mx-6 h-px bg-separator/80" />
 }
 
 export function SettingSection({
@@ -54,10 +56,10 @@ export function SettingSection({
 }) {
   return (
     <section className="flex flex-col gap-4">
-      <p className="text-label-medium-em text-on-surface-lowest uppercase">
+      <p className="text-xs leading-5 font-semibold tracking-wide text-muted/80 uppercase">
         {title}
       </p>
-      <div className="overflow-hidden rounded-[2rem] bg-surface-container">
+      <div className="overflow-hidden rounded-[2rem] bg-surface-secondary">
         {children}
       </div>
     </section>

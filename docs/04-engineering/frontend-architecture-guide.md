@@ -286,6 +286,32 @@ TanStack Query가 아키텍처에서 차지하는 위치:
 
 ---
 
+## 7. UI 토큰 사용 규칙
+
+`apps/web`의 화면 스타일링은 `@workspace/ui`가 제공하는 현재 토큰 체계를 기준으로 맞춥니다. 화면 구현에서 레거시 테마 유틸리티를 다시 도입하지 않습니다.
+
+### 토큰 기준
+
+- 표면 계층은 `bg-surface`, `bg-surface-secondary`, `bg-surface-tertiary`, `bg-overlay`를 우선 사용합니다.
+- 텍스트 계층은 `text-foreground`, `text-muted`를 기본으로 하고, 강조/상태 표현은 `text-accent`, `text-success`, `text-warning`, `text-danger` 계열을 사용합니다.
+- 선택/보조 강조 배경은 `bg-accent-soft`, `bg-success-soft`, `bg-warning-soft`, `bg-danger-soft`를 우선 사용합니다.
+- 경계선은 `border-separator`, `border-success`, `border-warning`, `border-danger`처럼 의미가 드러나는 토큰을 사용합니다.
+
+### 금지 규칙
+
+- `bg-surface-container*`, `text-on-surface*`, `border-outline*` 같은 이전 테마 토큰을 새 코드에 사용하지 않습니다.
+- `text-headline-*`, `text-title-*`, `text-body-*`, `text-label-*` 같은 이전 타이포그래피 유틸리티를 다시 도입하지 않습니다.
+- 의미 없는 기계적 1:1 치환보다, 요소 역할에 맞는 현재 토큰을 선택합니다. 예를 들어 카드 내부 팝오버는 `surface`보다 `overlay`, 진행 상태는 역상 토큰보다 `accent` 또는 상태 토큰을 우선 검토합니다.
+
+### 실무 적용 기준
+
+- 제품 화면은 가능하면 `@workspace/ui` 컴포넌트의 variant와 slot 구조를 먼저 활용하고, 추가 클래스는 그 위에 얹습니다.
+- view 또는 feature에서 직접 Tailwind 클래스를 쓸 때도 `packages/ui/src/styles/tokens`에 정의된 현재 토큰만 사용합니다.
+- 레거시 클래스가 남아 있는 화면을 수정할 때는 해당 파일 범위에서 함께 정리해, 동일 토큰 체계가 한 화면 안에서 섞이지 않게 유지합니다.
+- `apps/web/src/app/globals.css`는 얇게 유지합니다. `@workspace/ui/styles` import 위에 앱 전용 유틸리티나 에디터 스타일만 추가하고, web 앱에서 Tailwind 초기화나 레거시 토큰 정의를 다시 복제하지 않습니다.
+
+---
+
 ## 참고
 
 - [Route Groups | Next.js](https://nextjs.org/docs/app/api-reference/file-conventions/route-groups)

@@ -14,10 +14,10 @@ export function WritingSuggestionCard() {
         onClick={() => router.push("/writings/new")}
       >
         <Card.Content className="flex flex-col gap-2 p-6">
-          <p className="text-title-medium-em text-on-surface">
+          <p className="text-lg leading-7 font-semibold text-foreground">
             오늘 자유롭게 글을 써보세요
           </p>
-          <p className="text-body-medium text-on-surface-low">
+          <p className="text-sm leading-6 text-muted">
             여정 밖에서도 자유롭게 생각을 기록할 수 있어요
           </p>
         </Card.Content>

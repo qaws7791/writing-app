@@ -14,20 +14,20 @@ export function WritingStep({ content, state, onStateChange }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="bg-secondary-container rounded-2xl px-5 py-4">
-        <p className="text-label-medium-em text-on-surface-low mb-2 uppercase">
+      <div className="rounded-2xl bg-accent-soft px-5 py-4">
+        <p className="mb-2 text-xs leading-5 font-semibold tracking-wide text-muted uppercase">
           글쓰기 주제
         </p>
-        <p className="text-body-large-em text-on-surface">{content.prompt}</p>
+        <p className="text-base leading-7 font-medium text-foreground">
+          {content.prompt}
+        </p>
       </div>
       {content.guideline && (
-        <p className="text-body-medium text-on-surface-low">
-          {content.guideline}
-        </p>
+        <p className="text-sm leading-6 text-muted">{content.guideline}</p>
       )}
       {content.timeLimitSeconds > 0 && (
-        <div className="bg-surface-container flex items-center gap-2 rounded-lg px-3 py-2">
-          <span className="text-label-medium text-on-surface-low">
+        <div className="flex items-center gap-2 rounded-lg bg-surface-secondary px-3 py-2">
+          <span className="text-xs leading-5 font-medium text-muted">
             제한 시간: {Math.floor(content.timeLimitSeconds / 60)}분
           </span>
         </div>
@@ -44,14 +44,12 @@ export function WritingStep({ content, state, onStateChange }: Props) {
         <TextArea placeholder="여기에 글을 써주세요..." rows={10} />
       </TextField>
       <div className="flex items-center justify-between">
-        <span className="text-label-medium text-on-surface-lowest">
+        <span className="text-xs leading-5 font-medium text-muted/80">
           최소 {content.minLength}자
         </span>
         <span
-          className={`text-label-medium ${
-            text.length >= content.minLength
-              ? "text-on-surface-low"
-              : "text-on-surface-lowest"
+          className={`text-xs leading-5 font-medium ${
+            text.length >= content.minLength ? "text-muted" : "text-muted/80"
           }`}
         >
           {text.length} / {content.recommendedLength}자 (권장)

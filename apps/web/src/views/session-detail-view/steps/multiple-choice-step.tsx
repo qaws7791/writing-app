@@ -32,16 +32,16 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <h2 className="text-title-medium-em text-on-surface">
+      <h2 className="text-lg leading-7 font-semibold text-foreground">
         {content.question}
       </h2>
       {content.passage && (
-        <p className="rounded-xl bg-surface-container p-4 text-body-medium text-on-surface">
+        <p className="rounded-xl bg-surface-secondary p-4 text-sm leading-6 text-foreground">
           {content.passage}
         </p>
       )}
       {content.multiSelect && !checked && (
-        <p className="text-label-medium text-on-surface-lowest">
+        <p className="text-xs leading-5 font-medium text-muted/80">
           복수 선택 가능
         </p>
       )}
@@ -50,23 +50,23 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
           const isSelected = selected.includes(opt.id)
           const isCorrect = content.correctOptionIds?.includes(opt.id) ?? false
 
-          let borderClass = "border-outline/20"
-          let bgClass = "bg-surface-container-low"
+          let borderClass = "border-separator"
+          let bgClass = "bg-surface"
           if (isSelected && !checked) {
-            borderClass = "border-primary"
-            bgClass = "bg-primary/5"
+            borderClass = "border-accent"
+            bgClass = "bg-accent-soft"
           }
           if (checked && isSelected && isCorrect) {
-            borderClass = "border-green-500"
-            bgClass = "bg-green-50 dark:bg-green-500/10"
+            borderClass = "border-success"
+            bgClass = "bg-success-soft"
           }
           if (checked && isSelected && !isCorrect) {
-            borderClass = "border-red-500"
-            bgClass = "bg-red-50 dark:bg-red-500/10"
+            borderClass = "border-danger"
+            bgClass = "bg-danger-soft"
           }
           if (checked && !isSelected && isCorrect) {
-            borderClass = "border-green-500/50"
-            bgClass = "bg-green-50/50 dark:bg-green-500/5"
+            borderClass = "border-success/50"
+            bgClass = "bg-success-soft/60"
           }
 
           return (
@@ -76,30 +76,30 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
               disabled={checked}
               className={`flex items-start gap-3 rounded-xl border-2 px-4 py-3 text-left transition-all ${borderClass} ${bgClass}`}
             >
-              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-current text-on-surface-lowest">
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-current text-muted/80">
                 {isSelected && (
                   <span className="size-2.5 rounded-full bg-current" />
                 )}
               </span>
-              <span className="flex-1 text-body-medium text-on-surface">
+              <span className="flex-1 text-sm leading-6 text-foreground">
                 {opt.text}
               </span>
               {checked && isCorrect && (
                 <HugeiconsIcon
                   icon={Tick02Icon}
                   size={18}
-                  color="rgb(34 197 94)"
+                  color="currentColor"
                   strokeWidth={2}
-                  className="mt-0.5 shrink-0"
+                  className="mt-0.5 shrink-0 text-success"
                 />
               )}
               {checked && isSelected && !isCorrect && (
                 <HugeiconsIcon
                   icon={Cancel01Icon}
                   size={18}
-                  color="rgb(239 68 68)"
+                  color="currentColor"
                   strokeWidth={2}
-                  className="mt-0.5 shrink-0"
+                  className="mt-0.5 shrink-0 text-danger"
                 />
               )}
             </button>
@@ -107,11 +107,13 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
         })}
       </div>
       {checked && (
-        <div className="flex flex-col gap-2 rounded-xl bg-surface-container p-4">
-          <p className="text-label-medium-em text-on-surface-lowest">해설</p>
+        <div className="flex flex-col gap-2 rounded-xl bg-surface-secondary p-4">
+          <p className="text-xs leading-5 font-semibold tracking-wide text-muted/80">
+            해설
+          </p>
           {content.options.map((opt) => (
-            <p key={opt.id} className="text-body-medium text-on-surface-low">
-              <span className="font-medium text-on-surface">
+            <p key={opt.id} className="text-sm leading-6 text-muted">
+              <span className="font-[500] text-foreground">
                 {opt.text.slice(0, 1)}:
               </span>{" "}
               {content.explanations?.[opt.id]}

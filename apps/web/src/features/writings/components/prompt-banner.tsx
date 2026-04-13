@@ -21,23 +21,27 @@ export function PromptBanner({
         onClick={onToggle}
         className="flex w-full items-center justify-between"
       >
-        <p className="text-label-medium-em text-on-surface-low tracking-widest uppercase">
+        <p className="text-xs leading-5 font-semibold tracking-wide text-muted uppercase">
           오늘의 글감
         </p>
         <span
-          className={`text-on-surface-low transition-transform duration-200 ${collapsed ? "" : "rotate-180"}`}
+          className={`text-muted transition-transform duration-200 ${collapsed ? "" : "rotate-180"}`}
         >
           ▾
         </span>
       </button>
       {!collapsed && (
         <>
-          <h2 className="text-title-medium-em text-on-surface">{title}</h2>
-          <p className="text-body-medium text-on-surface-low">{body}</p>
+          <h2 className="text-lg leading-7 font-semibold text-foreground">
+            {title}
+          </h2>
+          <p className="text-sm leading-6 text-muted">{body}</p>
         </>
       )}
       {collapsed && (
-        <h2 className="text-title-medium-em text-on-surface">{title}</h2>
+        <h2 className="text-lg leading-7 font-semibold text-foreground">
+          {title}
+        </h2>
       )}
     </Card.Root>
   )

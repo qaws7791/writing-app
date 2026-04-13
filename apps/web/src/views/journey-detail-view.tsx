@@ -56,7 +56,7 @@ export default function JourneyDetailView({
             strokeWidth={1.5}
           />
         </Button>
-        <span className="text-label-large text-on-surface flex-1 truncate px-2 text-center">
+        <span className="flex-1 truncate px-2 text-center text-sm leading-5 font-medium text-foreground">
           {data.title}
         </span>
         <Button isIconOnly variant="ghost" aria-label="더보기">
@@ -101,10 +101,10 @@ export default function JourneyDetailView({
               className="flex h-auto w-full flex-col gap-2 rounded-3xl p-6 text-left"
               onPress={() => router.push("/writings/new")}
             >
-              <p className="text-title-medium-em text-on-surface">
+              <p className="text-lg leading-7 font-semibold text-foreground">
                 글쓰기 공간에서 배운 내용을 표현해보세요
               </p>
-              <p className="text-body-medium text-on-surface-low">
+              <p className="text-sm leading-6 text-muted">
                 여정에서 배운 내용을 자유롭게 글로 써보세요
               </p>
             </Button>

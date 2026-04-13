@@ -32,8 +32,8 @@ function NavItem({
   return (
     <Link
       href={href}
-      className={`text-label-small flex flex-1 flex-col items-center gap-1 py-3 transition-colors ${
-        active ? "text-on-surface" : "text-on-surface-lowest"
+      className={`flex flex-1 flex-col items-center gap-1 py-3 text-xs leading-4 font-medium transition-colors ${
+        active ? "text-foreground" : "text-muted/80"
       }`}
     >
       {icon}
@@ -46,7 +46,7 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="border-outline-variant safe-area-pb fixed right-0 bottom-0 left-0 z-50 flex border-t bg-surface">
+    <nav className="safe-area-pb fixed right-0 bottom-0 left-0 z-50 flex border-t border-separator bg-surface">
       {NAV_ITEMS.map(({ icon, label, href }) => {
         const isActive = pathname === href
         return (

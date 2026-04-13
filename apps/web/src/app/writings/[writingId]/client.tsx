@@ -46,7 +46,7 @@ export default function WritingDetailClientPage({
 
   if (writingQuery.isPending) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface px-6 text-sm text-on-surface-low">
+      <div className="flex min-h-screen items-center justify-center bg-surface px-6 text-sm text-muted">
         글을 불러오고 있어요...
       </div>
     )
@@ -54,7 +54,7 @@ export default function WritingDetailClientPage({
 
   if (writingQuery.isError || !writingQuery.data) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface px-6 text-sm text-on-surface-low">
+      <div className="flex min-h-screen items-center justify-center bg-surface px-6 text-sm text-muted">
         글 정보를 불러오지 못했어요.
       </div>
     )

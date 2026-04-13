@@ -35,9 +35,9 @@ function JourneyListCard({ card }: { card: JourneyCardData }) {
     <button
       type="button"
       onClick={() => router.push(`/journeys/${card.id}`)}
-      className="bg-surface-container hover:bg-surface-container-high flex h-32 w-full items-center gap-5 rounded-3xl p-4 text-left transition-colors"
+      className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-secondary p-4 text-left transition-colors hover:bg-surface-tertiary"
     >
-      <div className="bg-surface-container-high size-24 shrink-0 overflow-hidden rounded-[18px]">
+      <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-tertiary">
         <img
           src={card.imageUrl}
           alt={card.title}
@@ -46,8 +46,10 @@ function JourneyListCard({ card }: { card: JourneyCardData }) {
       </div>
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5">
         <div className="flex flex-col gap-1">
-          <p className="text-title-medium text-on-surface">{card.title}</p>
-          <p className="text-body-medium text-on-surface-low line-clamp-2">
+          <p className="text-lg leading-7 font-medium text-foreground">
+            {card.title}
+          </p>
+          <p className="line-clamp-2 text-sm leading-6 text-muted">
             {card.description}
           </p>
         </div>
@@ -57,9 +59,9 @@ function JourneyListCard({ card }: { card: JourneyCardData }) {
             size={12}
             color="currentColor"
             strokeWidth={1.5}
-            className="text-on-surface-low"
+            className="text-muted"
           />
-          <span className="text-label-small text-on-surface-low uppercase">
+          <span className="text-xs leading-4 font-medium text-muted uppercase">
             {card.sessionCount}개의 세션
           </span>
         </div>
@@ -119,13 +121,13 @@ export default function JourneyArchiveView() {
           : null}
 
         {isError ? (
-          <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6">
+          <div className="rounded-3xl bg-surface-secondary p-6 text-sm leading-6 text-muted">
             여정 목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
           </div>
         ) : null}
 
         {!isPending && !isError && filteredJourneys.length === 0 ? (
-          <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6">
+          <div className="rounded-3xl bg-surface-secondary p-6 text-sm leading-6 text-muted">
             조건에 맞는 여정이 아직 없어요.
           </div>
         ) : null}

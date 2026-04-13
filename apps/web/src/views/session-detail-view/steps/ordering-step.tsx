@@ -35,7 +35,7 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-body-large-em text-on-surface">
+      <p className="text-base leading-7 font-medium text-foreground">
         {content.instruction}
       </p>
       <div className="flex flex-col gap-2">
@@ -46,22 +46,20 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
           const isCorrectPosition =
             checked && content.correctOrder[index] === id
 
-          let borderClass = "border-outline/10"
+          let borderClass = "border-separator/80"
           if (checked) {
-            borderClass = isCorrectPosition
-              ? "border-green-500"
-              : "border-red-500"
+            borderClass = isCorrectPosition ? "border-success" : "border-danger"
           }
 
           return (
             <div
               key={id}
-              className={`bg-surface-container flex items-center gap-3 rounded-xl border-2 p-3 transition-all ${borderClass}`}
+              className={`flex items-center gap-3 rounded-xl border-2 bg-surface-secondary p-3 transition-all ${borderClass}`}
             >
-              <span className="bg-surface-container-high text-label-medium-em text-on-surface-low flex size-7 shrink-0 items-center justify-center rounded-full">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-tertiary text-xs leading-5 font-semibold tracking-wide text-muted">
                 {index + 1}
               </span>
-              <p className="text-body-medium-em text-on-surface flex-1">
+              <p className="flex-1 text-sm leading-6 font-medium text-foreground">
                 {item.text}
               </p>
               {!checked && (
@@ -102,11 +100,9 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
                 <HugeiconsIcon
                   icon={isCorrectPosition ? Tick02Icon : Cancel01Icon}
                   size={18}
-                  color={
-                    isCorrectPosition ? "rgb(34 197 94)" : "rgb(239 68 68)"
-                  }
+                  color="currentColor"
                   strokeWidth={2}
-                  className="shrink-0"
+                  className={`shrink-0 ${isCorrectPosition ? "text-success" : "text-danger"}`}
                 />
               )}
             </div>
@@ -114,9 +110,11 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
         })}
       </div>
       {checked && (
-        <div className="bg-surface-container rounded-xl p-4">
-          <p className="text-label-medium-em text-on-surface-lowest">해설</p>
-          <p className="text-body-medium text-on-surface-low mt-1">
+        <div className="rounded-xl bg-surface-secondary p-4">
+          <p className="text-xs leading-5 font-semibold tracking-wide text-muted/80">
+            해설
+          </p>
+          <p className="mt-1 text-sm leading-6 text-muted">
             {content.explanation}
           </p>
         </div>

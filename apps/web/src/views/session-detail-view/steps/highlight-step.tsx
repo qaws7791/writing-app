@@ -44,10 +44,10 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-title-small-em text-on-surface">
+      <p className="text-base leading-6 font-semibold text-foreground">
         {content.instruction}
       </p>
-      <div className="rounded-2xl bg-surface-container p-4 text-body-medium text-on-surface">
+      <div className="rounded-2xl bg-surface-secondary p-4 text-sm leading-6 text-foreground">
         {segments.map((seg, i) => {
           if (!seg.rangeId) {
             return <span key={i}>{seg.text}</span>
@@ -59,18 +59,16 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
           let cls = "cursor-pointer rounded px-0.5 transition-all"
           if (!checked) {
             cls += isSelected
-              ? " bg-primary/20 text-primary underline"
-              : " hover:bg-surface-container-high"
+              ? " bg-accent-soft text-accent-soft-foreground underline"
+              : " hover:bg-surface-tertiary"
           } else {
             if (isSelected && isCorrect) {
-              cls +=
-                " bg-green-200 dark:bg-green-500/20 text-green-800 dark:text-green-300"
+              cls += " bg-success-soft text-success-soft-foreground"
             } else if (isSelected && !isCorrect) {
-              cls +=
-                " bg-red-200 dark:bg-red-500/20 text-red-800 dark:text-red-300 line-through"
+              cls += " bg-danger-soft text-danger-soft-foreground line-through"
             } else if (isCorrect) {
               cls +=
-                " bg-green-100 dark:bg-green-500/10 text-green-700 dark:text-green-400 underline"
+                " bg-success-soft/70 text-success-soft-foreground underline"
             }
           }
 
@@ -95,15 +93,17 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
         })}
       </div>
       {checked && (
-        <div className="flex flex-col gap-2 rounded-xl bg-surface-container p-4">
-          <p className="text-label-medium-em text-on-surface-lowest">해설</p>
+        <div className="flex flex-col gap-2 rounded-xl bg-surface-secondary p-4">
+          <p className="text-xs leading-5 font-semibold tracking-wide text-muted/80">
+            해설
+          </p>
           {content.selectableRanges.map((r) => (
-            <p key={r.id} className="text-body-medium text-on-surface-low">
+            <p key={r.id} className="text-sm leading-6 text-muted">
               <span
-                className={`font-medium ${
+                className={`font-[500] ${
                   content.correctRangeIds.includes(r.id)
-                    ? "text-green-600 dark:text-green-400"
-                    : "text-on-surface"
+                    ? "text-success-soft-foreground"
+                    : "text-foreground"
                 }`}
               >
                 &quot;{content.passage.slice(r.startOffset, r.endOffset)}&quot;

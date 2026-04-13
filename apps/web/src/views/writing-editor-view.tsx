@@ -246,7 +246,7 @@ export default function WritingEditorView({
           />
         </Button>
 
-        <span className="text-label-large-em text-on-surface flex-1 truncate px-2 text-center">
+        <span className="flex-1 truncate px-2 text-center text-sm leading-5 font-medium text-foreground">
           {title || "새 글"}
         </span>
 
@@ -265,11 +265,11 @@ export default function WritingEditorView({
               </DropdownTrigger>
               <DropdownPopover
                 placement="bottom end"
-                className="bg-surface-container-low min-w-32.5 rounded-2xl px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
+                className="min-w-32.5 rounded-2xl bg-overlay px-0 py-1 shadow-[0px_4px_8px_3px_rgba(0,0,0,0.15),0px_1px_3px_0px_rgba(0,0,0,0.3)]"
               >
                 <DropdownMenu>
                   <DropdownItem
-                    className="text-body-medium-em text-on-surface-low gap-3 px-3 py-3"
+                    className="gap-3 px-3 py-3 text-sm leading-6 font-medium text-muted"
                     onAction={handleDelete}
                   >
                     <HugeiconsIcon
@@ -325,16 +325,16 @@ export default function WritingEditorView({
             <button
               type="button"
               onClick={() => setShowPromptSheet(true)}
-              className="bg-surface-container hover:bg-surface-container-high flex w-full items-center gap-3 rounded-2xl px-5 py-4 text-left transition-colors"
+              className="flex w-full items-center gap-3 rounded-2xl bg-surface-secondary px-5 py-4 text-left transition-colors hover:bg-surface-tertiary"
             >
               <HugeiconsIcon
                 icon={Idea01Icon}
                 size={20}
                 color="currentColor"
                 strokeWidth={1.5}
-                className="text-on-surface-low shrink-0"
+                className="shrink-0 text-muted"
               />
-              <span className="text-body-medium text-on-surface-low">
+              <span className="text-sm leading-6 text-muted">
                 아이디어가 필요하신가요?
               </span>
             </button>
@@ -342,7 +342,7 @@ export default function WritingEditorView({
         )}
         {/* Date + Title block */}
         <section className="flex flex-col gap-2 pt-6">
-          <p className="text-label-large text-on-surface-lowest">
+          <p className="text-sm leading-5 font-medium text-muted/80">
             {formatKoreanDate(today)}
           </p>
           <textarea
@@ -351,7 +351,7 @@ export default function WritingEditorView({
             onChange={handleTitleChange}
             placeholder="제목"
             rows={1}
-            className="text-headline-large-em text-on-surface placeholder:text-on-surface-lowest w-full resize-none overflow-hidden bg-transparent outline-none"
+            className="w-full resize-none overflow-hidden bg-transparent text-3xl leading-tight font-semibold text-foreground outline-none placeholder:text-muted/80"
           />
         </section>
 
@@ -361,7 +361,7 @@ export default function WritingEditorView({
         </div>
 
         {/* Word count */}
-        <p className="text-label-large text-on-surface-lowest mt-6 text-right">
+        <p className="mt-6 text-right text-sm leading-5 font-medium text-muted/80">
           {wordCount} 단어
         </p>
       </div>
@@ -373,8 +373,8 @@ export default function WritingEditorView({
           <Modal.Dialog>
             <Modal.Body>
               {/* Icon + text */}
-              <div className="flex w-full flex-col items-center gap-[33px]">
-                <div className="flex size-[58px] items-center justify-center rounded-[20px] bg-surface">
+              <div className="flex w-full flex-col items-center gap-8.25">
+                <div className="flex size-14.5 items-center justify-center rounded-[20px] bg-surface">
                   <svg
                     width="24"
                     height="24"
@@ -406,11 +406,11 @@ export default function WritingEditorView({
                   </svg>
                 </div>
 
-                <div className="flex flex-col items-center gap-[14px] text-center">
-                  <p className="text-title-large-em text-on-surface">
+                <div className="flex flex-col items-center gap-3.5 text-center">
+                  <p className="text-xl leading-8 font-semibold text-foreground">
                     작성 중인 수필이 있어요
                   </p>
-                  <p className="text-body-medium text-on-surface-lowest">
+                  <p className="text-sm leading-6 text-muted/80">
                     지금 나가면 저장되지 않은 내용이 사라질 수 있습니다.
                     <br />
                     저장 후 나가시겠어요?
@@ -419,7 +419,7 @@ export default function WritingEditorView({
               </div>
             </Modal.Body>
             <Modal.Footer>
-              <div className="flex w-full gap-[10px]">
+              <div className="flex w-full gap-2.5">
                 <Button
                   variant="secondary"
                   size="lg"

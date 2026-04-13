@@ -29,7 +29,7 @@ export function SessionHeader({
             strokeWidth={1.5}
           />
         </Button>
-        <span className="text-label-large text-on-surface-low flex-1 truncate px-2 text-center">
+        <span className="flex-1 truncate px-2 text-center text-sm leading-5 font-medium text-muted">
           {journeyTitle}
         </span>
         <Button isIconOnly variant="ghost" aria-label="닫기" onPress={onExit}>

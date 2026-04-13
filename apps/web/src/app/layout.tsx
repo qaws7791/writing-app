@@ -1,11 +1,9 @@
-import { Geist_Mono, Noto_Sans } from "next/font/google"
+import { Geist_Mono } from "next/font/google"
 
 import "./globals.css"
 import { QueryProvider } from "@/foundation/api/query-provider"
 import { ThemeProvider } from "@/foundation/ui/theme-provider"
 import { cn } from "@workspace/ui/lib/utils"
-
-const notoSans = Noto_Sans({ variable: "--font-sans" })
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
@@ -21,13 +19,14 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn(
-        "antialiased",
-        fontMono.variable,
-        "font-sans",
-        notoSans.variable
-      )}
+      className={cn("antialiased", fontMono.variable, "font-sans")}
     >
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+        />
+      </head>
       <body>
         <ThemeProvider>
           <QueryProvider>{children}</QueryProvider>

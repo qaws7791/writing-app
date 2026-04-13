@@ -81,13 +81,15 @@ export default function JourneysView() {
     <div className="flex flex-col">
       {/* Header */}
       <div className="px-4 pt-4 pb-2">
-        <h1 className="text-headline-small-em text-on-surface">여정</h1>
+        <h1 className="text-xl leading-snug font-semibold text-foreground">
+          여정
+        </h1>
       </div>
 
       {/* Active Journeys Section */}
       {(isHomePending || activeJourneys.length > 0) && (
         <section className="flex flex-col gap-4 px-4 pt-4">
-          <h2 className="text-title-medium-em text-on-surface-low px-2">
+          <h2 className="px-2 text-lg leading-7 font-semibold text-muted">
             진행 중인 여정
           </h2>
           {isHomePending
@@ -98,7 +100,7 @@ export default function JourneysView() {
                 <JourneyCard key={journey.id} mode="active" {...journey} />
               ))}
           {isHomeError && (
-            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
+            <div className="rounded-3xl bg-surface-secondary p-6 text-center text-sm leading-6 text-muted">
               여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           )}
@@ -108,7 +110,7 @@ export default function JourneysView() {
       {/* Completed Journeys Section */}
       {(isCompletedPending || completedJourneys.length > 0) && (
         <section className="flex flex-col gap-4 px-4 pt-8">
-          <h2 className="text-title-medium-em text-on-surface-low px-2">
+          <h2 className="px-2 text-lg leading-7 font-semibold text-muted">
             완료한 여정
           </h2>
           {isCompletedPending
@@ -119,7 +121,7 @@ export default function JourneysView() {
                 <JourneyCard key={journey.id} mode="completed" {...journey} />
               ))}
           {isCompletedError && (
-            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6 text-center">
+            <div className="rounded-3xl bg-surface-secondary p-6 text-center text-sm leading-6 text-muted">
               완료한 여정을 불러오지 못했어요.
             </div>
           )}
@@ -128,7 +130,7 @@ export default function JourneysView() {
 
       {/* Discover Section */}
       <section className="flex flex-col pt-8">
-        <h2 className="text-title-medium-em text-on-surface-low px-6">
+        <h2 className="px-6 text-lg leading-7 font-semibold text-muted">
           새 여정 시작하기
         </h2>
 
@@ -153,7 +155,7 @@ export default function JourneysView() {
               <Skeleton key={index} className="h-32 rounded-3xl" />
             ))
           ) : filteredJourneys.length === 0 ? (
-            <div className="bg-surface-container text-body-medium text-on-surface-low rounded-3xl p-6">
+            <div className="rounded-3xl bg-surface-secondary p-6 text-sm leading-6 text-muted">
               조건에 맞는 여정이 아직 없어요.
             </div>
           ) : (

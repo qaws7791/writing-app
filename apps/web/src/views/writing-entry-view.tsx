@@ -36,7 +36,7 @@ function PromptCard({
 
   return (
     <Card.Root
-      className="hover:bg-surface-container-high cursor-pointer transition-colors"
+      className="cursor-pointer transition-colors hover:bg-surface-tertiary"
       onClick={() => router.push(`/writings/new/editor?promptId=${id}`)}
     >
       <Card.Content className="flex flex-col gap-3 p-6">
@@ -45,7 +45,7 @@ function PromptCard({
         </Chip>
         <Card.Title>{title}</Card.Title>
         <Card.Description className="line-clamp-2">{body}</Card.Description>
-        <span className="text-label-small text-on-surface-lowest">
+        <span className="text-xs leading-4 font-medium text-muted/80">
           {responseCount}명이 이 글감으로 글을 썬어요
         </span>
       </Card.Content>
@@ -84,7 +84,7 @@ export default function WritingEntryView() {
             strokeWidth={1.5}
           />
         </Button>
-        <span className="text-label-large-em text-on-surface flex-1 text-center">
+        <span className="flex-1 text-center text-sm leading-5 font-medium text-foreground">
           새 글 쓰기
         </span>
         <div className="size-10" />
@@ -93,10 +93,10 @@ export default function WritingEntryView() {
       <div className="flex-1 overflow-y-auto px-4 pb-4">
         {/* Title */}
         <div className="px-2 pt-4 pb-6">
-          <h1 className="text-headline-medium-em text-on-surface">
+          <h1 className="text-2xl leading-tight font-semibold text-foreground">
             오늘 어떤 글을 써볼까요?
           </h1>
-          <p className="text-body-medium text-on-surface-low mt-2">
+          <p className="mt-2 text-sm leading-6 text-muted">
             글감을 선택하거나 자유롭게 시작할 수 있어요
           </p>
         </div>
@@ -129,7 +129,7 @@ export default function WritingEntryView() {
               <Skeleton key={index} className="h-36 rounded-3xl" />
             ))
           ) : prompts.length === 0 ? (
-            <div className="text-body-medium text-on-surface-lowest py-12 text-center">
+            <div className="py-12 text-center text-sm leading-6 text-muted/80">
               글감이 없습니다.
             </div>
           ) : (
@@ -148,7 +148,7 @@ export default function WritingEntryView() {
       </div>
 
       {/* 항상 보이는 하단 고정 버튼 */}
-      <div className="border-outline-variant shrink-0 border-t bg-surface px-4 py-4">
+      <div className="shrink-0 border-t border-separator bg-surface px-4 py-4">
         <Button
           variant="secondary"
           size="lg"

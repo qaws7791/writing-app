@@ -59,20 +59,22 @@ function WritingPromptCard({ title }: { title: string }) {
               size={18}
               color="currentColor"
               strokeWidth={1.5}
-              className="text-on-surface-low"
+              className="text-muted"
             />
-            <span className="text-label-large text-on-surface-low uppercase">
+            <span className="text-sm leading-5 font-medium text-muted uppercase">
               Writing Prompt
             </span>
           </div>
-          <span className="text-title-medium-em text-on-surface">{title}</span>
+          <span className="text-lg leading-7 font-semibold text-foreground">
+            {title}
+          </span>
         </div>
         <HugeiconsIcon
           icon={ArrowDown01Icon}
           size={24}
           color="currentColor"
           strokeWidth={1.5}
-          className={`text-on-surface shrink-0 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+          className={`shrink-0 text-foreground transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
         />
       </button>
     </Card.Root>
@@ -83,14 +85,14 @@ function QuoteBlock({ content }: { content: string }) {
   return (
     <blockquote className="relative w-full rounded-[3rem] bg-surface px-10 py-12">
       <span
-        className="text-surface-container-highest absolute top-[2.556rem] left-4 -translate-y-1/2 font-serif text-[3rem] leading-none select-none"
+        className="absolute top-[2.556rem] left-4 -translate-y-1/2 font-serif text-[3rem] leading-none text-muted/40 select-none"
         aria-hidden="true"
       >
         &ldquo;
       </span>
-      <p className="text-title-large text-on-surface-low">{content}</p>
+      <p className="text-xl leading-8 font-medium text-muted">{content}</p>
       <span
-        className="text-surface-container-highest absolute right-4 bottom-[0.969rem] font-serif text-[3rem] leading-none select-none"
+        className="absolute right-4 bottom-[0.969rem] font-serif text-[3rem] leading-none text-muted/40 select-none"
         aria-hidden="true"
       >
         &rdquo;
@@ -136,7 +138,7 @@ export default function WritingDetailView({
             strokeWidth={1.5}
           />
         </Button>
-        <span className="text-label-large text-on-surface flex-1 text-center">
+        <span className="flex-1 text-center text-sm leading-5 font-medium text-foreground">
           {data.title}
         </span>
         <Button isIconOnly variant="ghost" aria-label="더보기">
@@ -153,17 +155,17 @@ export default function WritingDetailView({
       <div className="flex-1 overflow-y-auto px-4 pt-5 pb-32">
         {/* Title block */}
         <div className="flex flex-col gap-3">
-          <span className="text-label-large text-on-surface-lowest">
+          <span className="text-sm leading-5 font-medium text-muted/80">
             {data.date}
           </span>
-          <h1 className="text-headline-large-em text-on-surface">
+          <h1 className="text-3xl leading-tight font-semibold text-foreground">
             {data.title}
           </h1>
         </div>
 
         {/* Author */}
         <div className="mt-4 text-right">
-          <span className="text-title-small text-on-surface">
+          <span className="text-base leading-6 font-medium text-foreground">
             {data.author}
           </span>
         </div>
@@ -175,13 +177,13 @@ export default function WritingDetailView({
           </div>
         )}
 
-        <div className="bg-surface-container mt-8 flex flex-col gap-4 rounded-[2rem] p-6">
+        <div className="mt-8 flex flex-col gap-4 rounded-[2rem] bg-surface-secondary p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h2 className="text-title-medium-em text-on-surface">
+              <h2 className="text-lg leading-7 font-semibold text-foreground">
                 AI 피드백
               </h2>
-              <p className="text-body-medium text-on-surface-low mt-1">
+              <p className="mt-1 text-sm leading-6 text-muted">
                 현재 글을 기준으로 강점과 개선점을 받아볼 수 있어요.
               </p>
             </div>
@@ -198,34 +200,38 @@ export default function WritingDetailView({
           {feedback ? (
             <div className="flex flex-col gap-4">
               <div>
-                <p className="text-label-large-em text-on-surface">강점</p>
-                <ul className="text-body-medium text-on-surface-low mt-2 flex list-disc flex-col gap-2 pl-5">
+                <p className="text-sm leading-5 font-medium text-foreground">
+                  강점
+                </p>
+                <ul className="mt-2 flex list-disc flex-col gap-2 pl-5 text-sm leading-6 text-muted">
                   {feedback.strengths.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
               </div>
               <div>
-                <p className="text-label-large-em text-on-surface">개선점</p>
-                <ul className="text-body-medium text-on-surface-low mt-2 flex list-disc flex-col gap-2 pl-5">
+                <p className="text-sm leading-5 font-medium text-foreground">
+                  개선점
+                </p>
+                <ul className="mt-2 flex list-disc flex-col gap-2 pl-5 text-sm leading-6 text-muted">
                   {feedback.improvements.map((item) => (
                     <li key={item}>{item}</li>
                   ))}
                 </ul>
               </div>
-              <div className="text-body-medium text-on-surface-low rounded-2xl bg-surface px-4 py-3">
+              <div className="rounded-2xl bg-surface px-4 py-3 text-sm leading-6 text-muted">
                 {feedback.question}
               </div>
             </div>
           ) : null}
         </div>
 
-        <div className="bg-surface-container mt-6 flex flex-col gap-4 rounded-[2rem] p-6">
+        <div className="mt-6 flex flex-col gap-4 rounded-[2rem] bg-surface-secondary p-6">
           <div>
-            <h2 className="text-title-medium-em text-on-surface">
+            <h2 className="text-lg leading-7 font-semibold text-foreground">
               수정본 비교
             </h2>
-            <p className="text-body-medium text-on-surface-low mt-1">
+            <p className="mt-1 text-sm leading-6 text-muted">
               수정한 버전을 붙여 넣으면 원문과 비교해 개선 지점을 알려줘요.
             </p>
           </div>
@@ -245,11 +251,13 @@ export default function WritingDetailView({
 
           {comparison ? (
             <div className="flex flex-col gap-4 rounded-[1.5rem] bg-surface px-4 py-4">
-              <p className="text-label-large-em text-on-surface">요약</p>
-              <p className="text-body-medium text-on-surface-low leading-relaxed">
+              <p className="text-sm leading-5 font-medium text-foreground">
+                요약
+              </p>
+              <p className="text-sm leading-6 leading-[1.6] text-muted">
                 {comparison.summary}
               </p>
-              <ul className="text-body-medium text-on-surface-low flex list-disc flex-col gap-2 pl-5">
+              <ul className="flex list-disc flex-col gap-2 pl-5 text-sm leading-6 text-muted">
                 {comparison.improvements.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
@@ -264,7 +272,7 @@ export default function WritingDetailView({
             block.type === "quote" ? (
               <QuoteBlock key={index} content={block.content} />
             ) : (
-              <p key={index} className="text-body-large text-on-surface">
+              <p key={index} className="text-base leading-7 text-foreground">
                 {block.content}
               </p>
             )

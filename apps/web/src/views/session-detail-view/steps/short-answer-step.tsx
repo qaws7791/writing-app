@@ -14,13 +14,11 @@ export function ShortAnswerStep({ content, state, onStateChange }: Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <h2 className="text-title-medium-em text-on-surface">
+      <h2 className="text-lg leading-7 font-semibold text-foreground">
         {content.question}
       </h2>
       {content.context && (
-        <p className="text-body-medium text-on-surface-low">
-          {content.context}
-        </p>
+        <p className="text-sm leading-6 text-muted">{content.context}</p>
       )}
       <TextField
         value={text}
@@ -34,7 +32,7 @@ export function ShortAnswerStep({ content, state, onStateChange }: Props) {
         <TextArea placeholder={content.placeholder} rows={4} />
       </TextField>
       <div className="flex justify-end">
-        <span className="text-label-medium text-on-surface-lowest">
+        <span className="text-xs leading-5 font-medium text-muted/80">
           {text.length} / {content.maxLength}자
         </span>
       </div>

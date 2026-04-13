@@ -24,7 +24,7 @@ interface PromptDetailData {
 
 function WordCountBadge({ count }: { count: number }) {
   return (
-    <span className="bg-secondary-container text-label-medium-em text-on-surface-low rounded-full px-2.5 py-0.5">
+    <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-xs leading-5 font-semibold tracking-wide text-muted">
       {count.toLocaleString("ko-KR")} 단어
     </span>
   )
@@ -44,13 +44,15 @@ function EssayListItem({ essay }: { essay: EssayItem }) {
       className="flex flex-col gap-4 text-left"
     >
       <div className="flex items-center justify-between">
-        <span className="text-label-small text-on-surface-lowest">
+        <span className="text-xs leading-4 font-medium text-muted/80">
           {essay.date}
         </span>
         <WordCountBadge count={essay.wordCount} />
       </div>
-      <h3 className="text-title-large-em text-on-surface">{essay.title}</h3>
-      <p className="text-body-medium text-on-surface-low line-clamp-2">
+      <h3 className="text-xl leading-8 font-semibold text-foreground">
+        {essay.title}
+      </h3>
+      <p className="line-clamp-2 text-sm leading-6 text-muted">
         {essay.preview}
       </p>
     </button>
@@ -59,7 +61,7 @@ function EssayListItem({ essay }: { essay: EssayItem }) {
 
 function EmptyEssayList() {
   return (
-    <p className="text-body-large text-on-surface-lowest py-10 text-center">
+    <p className="py-10 text-center text-base leading-7 text-muted/80">
       이 글감에 아직 작성된 글이 없어요. 첫 번째로 써보세요!
     </p>
   )
@@ -97,7 +99,7 @@ export default function PromptDetailView({
             strokeWidth={1.5}
           />
         </Button>
-        <span className="text-label-large text-on-surface flex-1 text-center">
+        <span className="flex-1 text-center text-sm leading-5 font-medium text-foreground">
           {data.title}
         </span>
         <Button isIconOnly variant="ghost" aria-label="더보기">
@@ -114,21 +116,21 @@ export default function PromptDetailView({
       <div className="flex-1 overflow-y-auto pb-40">
         {/* Topic Header Section */}
         <div className="flex flex-col gap-6 px-5 pt-4">
-          <h1 className="text-headline-large-em text-on-surface">
+          <h1 className="text-3xl leading-tight font-semibold text-foreground">
             {data.title}
           </h1>
 
-          <p className="text-body-large text-on-surface-low opacity-80">
+          <p className="text-base leading-7 text-muted opacity-80">
             {data.description}
           </p>
 
           {/* Stats */}
           <div className="flex items-center gap-4">
             <div className="flex flex-col gap-0.5">
-              <span className="text-label-medium text-on-surface-lowest uppercase">
+              <span className="text-xs leading-5 font-medium text-muted/80 uppercase">
                 작성된 수필
               </span>
-              <span className="text-title-large-em text-on-surface tabular-nums">
+              <span className="text-xl leading-8 font-semibold text-foreground tabular-nums">
                 {data.essayCount.toLocaleString("ko-KR")}
               </span>
             </div>
@@ -136,7 +138,7 @@ export default function PromptDetailView({
         </div>
 
         {/* Divider */}
-        <div className="bg-surface-container-high mt-8 h-px" />
+        <div className="mt-8 h-px bg-surface-tertiary" />
 
         {/* Essay List */}
         <div className="flex flex-col gap-12 px-5 pt-8 pb-6">

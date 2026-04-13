@@ -74,7 +74,7 @@ export default function PromptBottomSheet({
                     <Skeleton key={index} className="h-24 rounded-2xl" />
                   ))
                 ) : prompts.length === 0 ? (
-                  <div className="text-body-medium text-on-surface-lowest py-8 text-center">
+                  <div className="py-8 text-center text-sm leading-6 text-muted/80">
                     글감이 없습니다.
                   </div>
                 ) : (
@@ -83,18 +83,18 @@ export default function PromptBottomSheet({
                       key={prompt.id}
                       type="button"
                       onClick={() => onSelectPrompt(prompt.id)}
-                      className="bg-surface-container hover:bg-surface-container-high flex w-full flex-col gap-2 rounded-2xl p-4 text-left transition-colors"
+                      className="flex w-full flex-col gap-2 rounded-2xl bg-surface-secondary p-4 text-left transition-colors hover:bg-surface-tertiary"
                     >
-                      <span className="bg-secondary-container text-label-small text-on-surface-low self-start rounded-full px-2.5 py-0.5 uppercase">
+                      <span className="self-start rounded-full bg-accent-soft px-2.5 py-0.5 text-xs leading-4 font-medium text-muted uppercase">
                         {PROMPT_TYPE_LABEL[prompt.promptType as PromptType]}
                       </span>
-                      <h3 className="text-title-small-em text-on-surface">
+                      <h3 className="text-base leading-6 font-semibold text-foreground">
                         {prompt.title}
                       </h3>
-                      <p className="text-body-small text-on-surface-low line-clamp-1">
+                      <p className="line-clamp-1 text-xs leading-5 text-muted">
                         {prompt.body}
                       </p>
-                      <span className="text-label-small text-on-surface-lowest">
+                      <span className="text-xs leading-4 font-medium text-muted/80">
                         {prompt.responseCount}명이 이 글감으로 글을 썼어요
                       </span>
                     </button>

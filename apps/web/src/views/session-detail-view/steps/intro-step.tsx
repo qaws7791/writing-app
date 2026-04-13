@@ -6,14 +6,14 @@ export function IntroStep({ content }: { content: IntroContent }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <p className="text-label-medium-em text-primary uppercase">세션 시작</p>
-        <h1 className="text-headline-small-em text-on-surface">
+        <p className="text-xs leading-5 font-semibold tracking-wide text-accent uppercase">
+          세션 시작
+        </p>
+        <h1 className="text-xl leading-snug font-semibold text-foreground">
           {content.title}
         </h1>
       </div>
-      <p className="text-body-large text-on-surface-low">
-        {content.description}
-      </p>
+      <p className="text-base leading-7 text-muted">{content.description}</p>
       {content.keywords && content.keywords.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {content.keywords.map((kw) => (
@@ -23,11 +23,9 @@ export function IntroStep({ content }: { content: IntroContent }) {
           ))}
         </div>
       )}
-      <div className="bg-surface-container flex items-center gap-2 rounded-xl px-4 py-3">
-        <span className="text-body-medium text-on-surface-low">
-          예상 소요 시간
-        </span>
-        <span className="text-label-large-em text-on-surface">
+      <div className="flex items-center gap-2 rounded-xl bg-surface-secondary px-4 py-3">
+        <span className="text-sm leading-6 text-muted">예상 소요 시간</span>
+        <span className="text-sm leading-5 font-medium text-foreground">
           {content.estimatedMinutes}분
         </span>
       </div>

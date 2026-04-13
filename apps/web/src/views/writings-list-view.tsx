@@ -53,20 +53,22 @@ export default function WritingsListView() {
     <div className="relative flex flex-col bg-surface">
       {/* Header */}
       <div className="px-4 pt-4 pb-0">
-        <h1 className="text-headline-small-em text-on-surface">글쓰기</h1>
+        <h1 className="text-xl leading-snug font-semibold text-foreground">
+          글쓰기
+        </h1>
       </div>
 
       {/* Search Bar */}
       <div className="px-4 pt-4">
-        <div className="bg-surface-container flex items-center gap-2.5 rounded-[2rem] px-6 py-5">
+        <div className="flex items-center gap-2.5 rounded-[2rem] bg-surface-secondary px-6 py-5">
           <HugeiconsIcon
             icon={Search01Icon}
             size={18}
             color="currentColor"
             strokeWidth={1.5}
-            className="text-on-surface-lowest shrink-0"
+            className="shrink-0 text-muted/80"
           />
-          <span className="text-body-large text-on-surface-lowest">
+          <span className="text-base leading-7 text-muted/80">
             기록된 생각을 검색해보세요
           </span>
         </div>

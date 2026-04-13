@@ -50,7 +50,7 @@ export default function LoginPage() {
       <header className="px-6 pt-14 pb-2">
         <Link
           href="/"
-          className="text-on-surface-low hover:text-on-surface text-sm font-medium transition-colors"
+          className="text-xs leading-5 font-medium text-muted transition-colors hover:text-foreground"
         >
           ← 돌아가기
         </Link>
@@ -58,10 +58,10 @@ export default function LoginPage() {
 
       <main className="flex flex-1 flex-col justify-center px-6 pb-20">
         <div className="mx-auto w-full max-w-sm">
-          <h1 className="text-on-surface text-3xl font-semibold tracking-tight">
+          <h1 className="text-3xl leading-tight font-semibold text-foreground">
             로그인
           </h1>
-          <p className="text-on-surface-low mt-2 text-base">
+          <p className="mt-2 text-base leading-7 text-muted">
             글필에 다시 오신 것을 환영합니다.
           </p>
 
@@ -85,7 +85,7 @@ export default function LoginPage() {
             </TextField>
 
             {error && (
-              <p className="text-error text-sm" role="alert">
+              <p className="text-xs leading-5 text-danger" role="alert">
                 {error}
               </p>
             )}

@@ -33,16 +33,16 @@ export function RewritingStep({
 
   return (
     <div className="flex flex-col gap-5">
-      <p className="text-title-small-em text-on-surface">
+      <p className="text-base leading-6 font-semibold text-foreground">
         {content.instruction}
       </p>
       {originalText && (
-        <details className="bg-surface-container rounded-xl">
-          <summary className="text-body-medium-em text-on-surface-low cursor-pointer px-4 py-3">
+        <details className="rounded-xl bg-surface-secondary">
+          <summary className="cursor-pointer px-4 py-3 text-sm leading-6 font-medium text-muted">
             원본 글 보기
           </summary>
-          <div className="border-outline/10 border-t px-4 py-3">
-            <p className="text-body-medium text-on-surface-lowest whitespace-pre-line">
+          <div className="border-t border-separator/80 px-4 py-3">
+            <p className="text-sm leading-6 whitespace-pre-line text-muted/80">
               {originalText}
             </p>
           </div>
@@ -60,7 +60,7 @@ export function RewritingStep({
         <TextArea rows={10} />
       </TextField>
       <div className="flex justify-end">
-        <span className="text-label-medium text-on-surface-lowest">
+        <span className="text-xs leading-5 font-medium text-muted/80">
           {displayText.length}자
         </span>
       </div>
