@@ -1,14 +1,16 @@
 import { addons } from "storybook/manager-api"
 import { create } from "storybook/theming"
 
+const accentColor = "#006FEE"
+
 const lightTheme = create({
   base: "light",
   brandTitle: "글필 Design System",
   brandUrl: "/",
 
   // UI colors
-  colorPrimary: "oklch(0.6204 0.195 253.83)",
-  colorSecondary: "oklch(0.6204 0.195 253.83)",
+  colorPrimary: accentColor,
+  colorSecondary: accentColor,
 
   // App
   appBg: "#f5f5f5",
@@ -30,7 +32,7 @@ const lightTheme = create({
   // Toolbar
   barTextColor: "#6b7280",
   barHoverColor: "#1a1a1a",
-  barSelectedColor: "oklch(0.6204 0.195 253.83)",
+  barSelectedColor: accentColor,
   barBg: "#ffffff",
 
   // Form
@@ -46,8 +48,8 @@ const darkTheme = create({
   brandUrl: "/",
 
   // UI colors
-  colorPrimary: "oklch(0.6204 0.195 253.83)",
-  colorSecondary: "oklch(0.6204 0.195 253.83)",
+  colorPrimary: accentColor,
+  colorSecondary: accentColor,
 
   // App
   appBg: "#0f0f13",
@@ -69,7 +71,7 @@ const darkTheme = create({
   // Toolbar
   barTextColor: "#9ca3af",
   barHoverColor: "#f5f5f5",
-  barSelectedColor: "oklch(0.6204 0.195 253.83)",
+  barSelectedColor: accentColor,
   barBg: "#19191f",
 
   // Form

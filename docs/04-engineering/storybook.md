@@ -37,6 +37,12 @@ bun build:storybook  # 정적 빌드
 - 제품 고유 화면(로그인, 홈 등)보다 재사용 가능한 UI 조합과 패턴을 우선 다룹니다.
 - 스토리는 컴포넌트의 실제 사용 시나리오를 반영해야 합니다.
 
+## 런타임 주의사항
+
+- `.storybook/manager.ts`에서 Storybook manager theme 색상은 hex 또는 rgb 계열 값만 사용합니다.
+- `storybook/theming` 내부에서 `polished`를 사용하므로 `oklch(...)`를 직접 넣으면 `parseToRgb` 런타임 오류로 manager가 흰 화면이 될 수 있습니다.
+- 정적 결과물은 `bunx serve` 대신 `http-server`로 서빙합니다. `serve`는 Storybook의 `iframe.html?id=...` 요청을 `/iframe`으로 리다이렉트하면서 query를 잃어 `No Preview`를 만들 수 있습니다.
+
 ## 관련 문서
 
 - UI 패키지 가이드 → [[../04-engineering/frontend-architecture-guide|프론트엔드 아키텍처 가이드]]

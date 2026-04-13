@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "storybook dev -p 6006 --ci",
     "build": "storybook build --output-dir dist",
-    "serve": "bunx serve dist -p 6007",
-    "build:serve": "storybook build --output-dir dist && bunx serve dist -p 6007",
+    "serve": "bunx http-server dist -p 6007 -c-1",
+    "build:serve": "storybook build --output-dir dist && bunx http-server dist -p 6007 -c-1",
     "lint": "eslint",
     "format": "oxfmt .",
     "lint:oxlint": "oxlint",
