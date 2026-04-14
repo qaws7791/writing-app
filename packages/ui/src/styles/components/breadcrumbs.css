@@ -1,0 +1,26 @@
+/* Base breadcrumbs container */
+.breadcrumbs {
+  @apply flex items-center;
+
+  .breadcrumbs__link {
+    @apply relative px-0.5 text-sm leading-5 font-medium text-muted no-underline opacity-100;
+
+    &:hover,
+    &[data-hovered="true"] {
+      @apply underline;
+    }
+
+    &[data-current="true"] {
+      @apply text-foreground opacity-100;
+      pointer-events: none;
+    }
+  }
+
+  .breadcrumbs__item {
+    @apply flex shrink-0 items-center justify-center gap-0.5 px-0.5;
+  }
+
+  .breadcrumbs__separator {
+    @apply size-3 text-muted;
+  }
+}

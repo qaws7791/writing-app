@@ -3,6 +3,12 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
+import { Button } from "@workspace/ui/components/button"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
+import { TextArea } from "@workspace/ui/components/textarea"
+import { TextField } from "@workspace/ui/components/text-field"
+
 type SessionFormValues = {
   title: string
   description: string
@@ -28,16 +34,6 @@ export function SessionForm({ journeyId, defaultValues, sessionId }: Props) {
   })
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
-
-  function handleChange(
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
-    const { name, value, type } = e.target
-    setValues((prev) => ({
-      ...prev,
-      [name]: type === "number" ? Number(value) : value,
-    }))
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -74,9 +70,7 @@ export function SessionForm({ journeyId, defaultValues, sessionId }: Props) {
     try {
       const res = await fetch(
         `/api/journeys/${journeyId}/sessions/${sessionId}`,
-        {
-          method: "DELETE",
-        }
+        { method: "DELETE" }
       )
       if (!res.ok) {
         setError("삭제에 실패했습니다")
@@ -91,80 +85,72 @@ export function SessionForm({ journeyId, defaultValues, sessionId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="space-y-1">
-        <label className="block text-sm font-medium">제목</label>
-        <input
-          name="title"
-          required
-          value={values.title}
-          onChange={handleChange}
-          className="focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-        />
-      </div>
-      <div className="space-y-1">
-        <label className="block text-sm font-medium">설명</label>
-        <textarea
-          name="description"
-          required
-          rows={3}
-          value={values.description}
-          onChange={handleChange}
-          className="focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-        />
-      </div>
+      <TextField
+        value={values.title}
+        onChange={(v) => setValues((prev) => ({ ...prev, title: v }))}
+        isRequired
+      >
+        <Label>제목</Label>
+        <Input fullWidth />
+      </TextField>
+
+      <TextField
+        value={values.description}
+        onChange={(v) => setValues((prev) => ({ ...prev, description: v }))}
+        isRequired
+      >
+        <Label>설명</Label>
+        <TextArea fullWidth rows={3} />
+      </TextField>
+
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <label className="block text-sm font-medium">순서</label>
-          <input
-            name="order"
-            type="number"
-            min={1}
-            required
-            value={values.order}
-            onChange={handleChange}
-            className="focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-          />
-        </div>
-        <div className="space-y-1">
-          <label className="block text-sm font-medium">
-            예상 소요 시간 (분)
-          </label>
-          <input
-            name="estimatedMinutes"
-            type="number"
-            min={1}
-            required
-            value={values.estimatedMinutes}
-            onChange={handleChange}
-            className="focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-          />
-        </div>
+        <TextField
+          value={String(values.order)}
+          onChange={(v) =>
+            setValues((prev) => ({ ...prev, order: Number(v) || prev.order }))
+          }
+          type="number"
+          isRequired
+        >
+          <Label>순서</Label>
+          <Input fullWidth min={1} />
+        </TextField>
+
+        <TextField
+          value={String(values.estimatedMinutes)}
+          onChange={(v) =>
+            setValues((prev) => ({
+              ...prev,
+              estimatedMinutes: Number(v) || prev.estimatedMinutes,
+            }))
+          }
+          type="number"
+          isRequired
+        >
+          <Label>예상 소요 시간 (분)</Label>
+          <Input fullWidth min={1} />
+        </TextField>
       </div>
+
       {error !== null && <p className="text-destructive text-sm">{error}</p>}
+
       <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
-        >
+        <Button type="submit" variant="primary" isDisabled={isPending}>
           {isPending ? "저장 중..." : isEdit ? "수정 저장" : "세션 추가"}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="rounded-md border border-border px-4 py-2 text-sm hover:bg-accent"
-        >
+        </Button>
+        <Button type="button" variant="outline" onPress={() => router.back()}>
           취소
-        </button>
+        </Button>
         {isEdit && (
-          <button
+          <Button
             type="button"
-            onClick={handleDelete}
-            disabled={isPending}
-            className="border-destructive text-destructive hover:bg-destructive/10 ml-auto rounded-md border px-4 py-2 text-sm disabled:opacity-50"
+            variant="danger-soft"
+            isDisabled={isPending}
+            onPress={handleDelete}
+            className="ml-auto"
           >
             삭제
-          </button>
+          </Button>
         )}
       </div>
     </form>

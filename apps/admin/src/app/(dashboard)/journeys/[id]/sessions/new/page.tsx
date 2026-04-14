@@ -1,5 +1,6 @@
-import Link from "next/link"
 import { notFound } from "next/navigation"
+
+import { Breadcrumbs } from "@workspace/ui/components/breadcrumbs"
 
 import { SessionForm } from "@/components/session-form"
 
@@ -11,19 +12,19 @@ export default async function NewSessionPage({ params }: Props) {
   if (Number.isNaN(journeyId)) notFound()
 
   return (
-    <div className="space-y-4">
-      <div className="text-muted-foreground flex items-center gap-2 text-sm">
-        <Link href="/journeys" className="hover:underline">
-          여정 관리
-        </Link>
-        <span>/</span>
-        <Link href={`/journeys/${journeyId}`} className="hover:underline">
+    <div className="space-y-5">
+      <Breadcrumbs>
+        <Breadcrumbs.Item href="/journeys">여정 관리</Breadcrumbs.Item>
+        <Breadcrumbs.Item href={`/journeys/${journeyId}`}>
           여정
-        </Link>
-        <span>/</span>
-        <span>새 세션</span>
-      </div>
-      <h1 className="text-xl font-semibold">새 세션 추가</h1>
+        </Breadcrumbs.Item>
+        <Breadcrumbs.Item href={`/journeys/${journeyId}/sessions/new`}>
+          새 세션
+        </Breadcrumbs.Item>
+      </Breadcrumbs>
+
+      <h1 className="text-xl font-semibold text-foreground">새 세션 추가</h1>
+
       <div className="max-w-lg">
         <SessionForm journeyId={journeyId} />
       </div>

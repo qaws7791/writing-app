@@ -3,6 +3,12 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
+import { Button } from "@workspace/ui/components/button"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
+import { TextArea } from "@workspace/ui/components/textarea"
+import { TextField } from "@workspace/ui/components/text-field"
+
 type JourneyFormValues = {
   title: string
   description: string
@@ -33,15 +39,6 @@ export function JourneyForm({ defaultValues, journeyId }: Props) {
   })
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
-
-  function handleChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) {
-    const { name, value } = e.target
-    setValues((prev) => ({ ...prev, [name]: value }))
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -93,34 +90,39 @@ export function JourneyForm({ defaultValues, journeyId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="space-y-1">
-        <label className="block text-sm font-medium">제목</label>
-        <input
-          name="title"
-          required
-          value={values.title}
-          onChange={handleChange}
-          className="focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-        />
-      </div>
-      <div className="space-y-1">
-        <label className="block text-sm font-medium">설명</label>
-        <textarea
-          name="description"
-          required
-          rows={3}
-          value={values.description}
-          onChange={handleChange}
-          className="focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-        />
-      </div>
-      <div className="space-y-1">
-        <label className="block text-sm font-medium">카테고리</label>
+      <TextField
+        value={values.title}
+        onChange={(v) => setValues((prev) => ({ ...prev, title: v }))}
+        isRequired
+      >
+        <Label>제목</Label>
+        <Input fullWidth />
+      </TextField>
+
+      <TextField
+        value={values.description}
+        onChange={(v) => setValues((prev) => ({ ...prev, description: v }))}
+        isRequired
+      >
+        <Label>설명</Label>
+        <TextArea fullWidth rows={3} />
+      </TextField>
+
+      <div className="space-y-1.5">
+        <label htmlFor="category" className="label">
+          카테고리
+        </label>
         <select
+          id="category"
           name="category"
           value={values.category}
-          onChange={handleChange}
-          className="focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+          onChange={(e) =>
+            setValues((prev) => ({
+              ...prev,
+              category: e.target.value as JourneyFormValues["category"],
+            }))
+          }
+          className="input input--full-width"
         >
           {categoryOptions.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -129,42 +131,35 @@ export function JourneyForm({ defaultValues, journeyId }: Props) {
           ))}
         </select>
       </div>
-      <div className="space-y-1">
-        <label className="block text-sm font-medium">썸네일 URL (선택)</label>
-        <input
-          name="thumbnailUrl"
-          type="url"
-          value={values.thumbnailUrl}
-          onChange={handleChange}
-          className="focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-          placeholder="https://..."
-        />
-      </div>
+
+      <TextField
+        value={values.thumbnailUrl}
+        onChange={(v) => setValues((prev) => ({ ...prev, thumbnailUrl: v }))}
+        type="url"
+      >
+        <Label>썸네일 URL (선택)</Label>
+        <Input fullWidth placeholder="https://..." />
+      </TextField>
+
       {error !== null && <p className="text-destructive text-sm">{error}</p>}
+
       <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
-        >
+        <Button type="submit" variant="primary" isDisabled={isPending}>
           {isPending ? "저장 중..." : isEdit ? "수정 저장" : "여정 추가"}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="rounded-md border border-border px-4 py-2 text-sm hover:bg-accent"
-        >
+        </Button>
+        <Button type="button" variant="outline" onPress={() => router.back()}>
           취소
-        </button>
+        </Button>
         {isEdit && (
-          <button
+          <Button
             type="button"
-            onClick={handleDelete}
-            disabled={isPending}
-            className="border-destructive text-destructive hover:bg-destructive/10 ml-auto rounded-md border px-4 py-2 text-sm disabled:opacity-50"
+            variant="danger-soft"
+            isDisabled={isPending}
+            onPress={handleDelete}
+            className="ml-auto"
           >
             삭제
-          </button>
+          </Button>
         )}
       </div>
     </form>

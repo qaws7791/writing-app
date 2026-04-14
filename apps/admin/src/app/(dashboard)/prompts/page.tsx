@@ -1,6 +1,9 @@
 import Link from "next/link"
 
 import { writingPrompts } from "@workspace/database"
+import { cn } from "@workspace/ui"
+import { buttonVariants } from "@workspace/ui/components/button"
+import { Table } from "@workspace/ui/components/table"
 
 import { getDb } from "@/lib/db"
 
@@ -18,64 +21,65 @@ export default async function PromptsPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">글감 관리</h1>
+        <div>
+          <h1 className="text-xl font-semibold text-foreground">글감 관리</h1>
+          <p className="mt-0.5 text-sm text-muted">
+            총 {items.length}개의 글감
+          </p>
+        </div>
         <Link
           href="/prompts/new"
-          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 text-sm font-medium"
+          className={cn(buttonVariants({ variant: "primary", size: "sm" }))}
         >
           새 글감 추가
         </Link>
       </div>
-      <div className="rounded-lg border border-border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 text-left font-medium">제목</th>
-              <th className="px-4 py-3 text-left font-medium">타입</th>
-              <th className="px-4 py-3 text-left font-medium">응답 수</th>
-              <th className="px-4 py-3 text-left font-medium">생성일</th>
-              <th className="px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody>
-            {items.length === 0 && (
-              <tr>
-                <td
-                  colSpan={5}
-                  className="text-muted-foreground px-4 py-8 text-center"
-                >
-                  글감이 없습니다
-                </td>
-              </tr>
-            )}
-            {items.map((item) => (
-              <tr
-                key={item.id}
-                className="border-b border-border last:border-0 hover:bg-muted/30"
-              >
-                <td className="px-4 py-3 font-medium">{item.title}</td>
-                <td className="text-muted-foreground px-4 py-3">
-                  {typeLabels[item.promptType] ?? item.promptType}
-                </td>
-                <td className="px-4 py-3">{item.responseCount}</td>
-                <td className="text-muted-foreground px-4 py-3">
-                  {item.createdAt?.toLocaleDateString("ko-KR") ?? "-"}
-                </td>
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/prompts/${item.id}`}
-                    className="text-primary hover:underline"
-                  >
-                    편집
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+
+      {items.length === 0 ? (
+        <div className="rounded-3xl bg-surface-secondary py-16 text-center text-sm text-muted">
+          글감이 없습니다
+        </div>
+      ) : (
+        <Table variant="secondary">
+          <Table.ScrollContainer>
+            <Table.Content aria-label="글감 목록">
+              <Table.Header>
+                <Table.Column isRowHeader>제목</Table.Column>
+                <Table.Column>타입</Table.Column>
+                <Table.Column>응답 수</Table.Column>
+                <Table.Column>생성일</Table.Column>
+                <Table.Column> </Table.Column>
+              </Table.Header>
+              <Table.Body>
+                {items.map((item) => (
+                  <Table.Row key={item.id} id={item.id}>
+                    <Table.Cell className="font-medium">
+                      {item.title}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {typeLabels[item.promptType] ?? item.promptType}
+                    </Table.Cell>
+                    <Table.Cell>{item.responseCount}</Table.Cell>
+                    <Table.Cell>
+                      {item.createdAt?.toLocaleDateString("ko-KR") ?? "-"}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Link
+                        href={`/prompts/${item.id}`}
+                        className="text-sm font-medium text-accent hover:underline"
+                      >
+                        편집
+                      </Link>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Content>
+          </Table.ScrollContainer>
+        </Table>
+      )}
     </div>
   )
 }

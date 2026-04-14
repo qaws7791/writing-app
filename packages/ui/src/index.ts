@@ -71,6 +71,10 @@ export * from "./components/tag"
 /** Phase 3 — Tier 3 High-level Components */
 export * from "./components/autocomplete"
 
+/** Extended Components — Table & Breadcrumbs */
+export * from "./components/table"
+export * from "./components/breadcrumbs"
+
 /** Phase 3 — Internal Primitives (for advanced composition) */
 export * from "./components/menu-item"
 export * from "./components/menu-section"

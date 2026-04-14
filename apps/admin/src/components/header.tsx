@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation"
 
+import { Button } from "@workspace/ui/components/button"
+
 export function Header({ adminName }: { adminName: string }) {
   const router = useRouter()
 
@@ -11,14 +13,11 @@ export function Header({ adminName }: { adminName: string }) {
   }
 
   return (
-    <header className="flex h-14 items-center justify-end gap-4 border-b border-border px-6">
-      <span className="text-muted-foreground text-sm">{adminName}</span>
-      <button
-        onClick={handleLogout}
-        className="rounded-md border border-border px-3 py-1 text-sm hover:bg-accent"
-      >
+    <header className="flex h-14 items-center justify-end gap-3 border-b border-separator bg-surface px-6">
+      <span className="text-sm text-muted">{adminName}</span>
+      <Button variant="outline" size="sm" onPress={handleLogout}>
         로그아웃
-      </button>
+      </Button>
     </header>
   )
 }

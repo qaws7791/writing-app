@@ -3,6 +3,11 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
+import { Button } from "@workspace/ui/components/button"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
+import { TextField } from "@workspace/ui/components/text-field"
+
 export function LoginForm() {
   const router = useRouter()
   const [email, setEmail] = useState("")
@@ -35,44 +40,33 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-1">
-        <label htmlFor="email" className="block text-sm font-medium">
-          이메일
-        </label>
-        <input
-          id="email"
-          type="email"
-          autoComplete="email"
-          required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="placeholder:text-muted-foreground focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-          placeholder="admin@example.com"
-        />
-      </div>
-      <div className="space-y-1">
-        <label htmlFor="password" className="block text-sm font-medium">
-          비밀번호
-        </label>
-        <input
-          id="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="placeholder:text-muted-foreground focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-          placeholder="••••••••"
-        />
-      </div>
-      {error !== null && <p className="text-destructive text-sm">{error}</p>}
-      <button
-        type="submit"
-        disabled={isPending}
-        className="bg-primary text-primary-foreground hover:bg-primary/90 w-full rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
+      <TextField
+        value={email}
+        onChange={setEmail}
+        type="email"
+        autoComplete="email"
+        isRequired
       >
+        <Label>이메일</Label>
+        <Input fullWidth placeholder="admin@example.com" />
+      </TextField>
+
+      <TextField
+        value={password}
+        onChange={setPassword}
+        type="password"
+        autoComplete="current-password"
+        isRequired
+      >
+        <Label>비밀번호</Label>
+        <Input fullWidth placeholder="••••••••" />
+      </TextField>
+
+      {error !== null && <p className="text-destructive text-sm">{error}</p>}
+
+      <Button type="submit" variant="primary" fullWidth isDisabled={isPending}>
         {isPending ? "로그인 중..." : "로그인"}
-      </button>
+      </Button>
     </form>
   )
 }

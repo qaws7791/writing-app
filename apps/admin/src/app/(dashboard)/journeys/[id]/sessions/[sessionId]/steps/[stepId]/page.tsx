@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm"
-import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { journeys, journeySessions, steps } from "@workspace/database"
+import { Breadcrumbs } from "@workspace/ui/components/breadcrumbs"
 
 import { StepForm } from "@/components/step-form"
 import { getDb } from "@/lib/db"
@@ -37,26 +37,26 @@ export default async function StepDetailPage({ params }: Props) {
   if (!journey || !session || !step) notFound()
 
   return (
-    <div className="space-y-4">
-      <div className="text-muted-foreground flex items-center gap-2 text-sm">
-        <Link href="/journeys" className="hover:underline">
-          여정 관리
-        </Link>
-        <span>/</span>
-        <Link href={`/journeys/${journeyId}`} className="hover:underline">
+    <div className="space-y-5">
+      <Breadcrumbs>
+        <Breadcrumbs.Item href="/journeys">여정 관리</Breadcrumbs.Item>
+        <Breadcrumbs.Item href={`/journeys/${journeyId}`}>
           {journey.title}
-        </Link>
-        <span>/</span>
-        <Link
+        </Breadcrumbs.Item>
+        <Breadcrumbs.Item
           href={`/journeys/${journeyId}/sessions/${sessionIdNum}`}
-          className="hover:underline"
         >
           {session.title}
-        </Link>
-        <span>/</span>
-        <span>스텝 {step.order}</span>
-      </div>
-      <h1 className="text-xl font-semibold">스텝 편집</h1>
+        </Breadcrumbs.Item>
+        <Breadcrumbs.Item
+          href={`/journeys/${journeyId}/sessions/${sessionIdNum}/steps/${stepIdNum}`}
+        >
+          스텝 {step.order}
+        </Breadcrumbs.Item>
+      </Breadcrumbs>
+
+      <h1 className="text-xl font-semibold text-foreground">스텝 편집</h1>
+
       <div className="max-w-2xl">
         <StepForm
           journeyId={journeyId}

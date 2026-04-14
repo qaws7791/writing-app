@@ -1,4 +1,10 @@
+"use client"
+
 import Link from "next/link"
+import { usePathname } from "next/navigation"
+
+import { cn } from "@workspace/ui"
+import { buttonVariants } from "@workspace/ui/components/button"
 
 const navItems = [
   { href: "/journeys", label: "여정 관리" },
@@ -6,23 +12,32 @@ const navItems = [
 ]
 
 export function Sidebar() {
+  const pathname = usePathname()
+
   return (
-    <aside className="w-56 shrink-0 border-r border-border bg-muted/30">
-      <div className="p-4">
-        <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+    <aside className="flex w-56 shrink-0 flex-col border-r border-separator bg-surface">
+      <div className="flex h-14 items-center border-b border-separator px-5">
+        <span className="text-sm font-semibold tracking-tight text-foreground">
           글필 어드민
-        </p>
+        </span>
       </div>
-      <nav className="px-2">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            className="flex items-center rounded-md px-3 py-2 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground"
-          >
-            {item.label}
-          </Link>
-        ))}
+      <nav className="flex flex-col gap-1 p-3">
+        {navItems.map((item) => {
+          const isActive = pathname.startsWith(item.href)
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "sm" }),
+                "justify-start",
+                isActive && "bg-default text-foreground"
+              )}
+            >
+              {item.label}
+            </Link>
+          )
+        })}
       </nav>
     </aside>
   )

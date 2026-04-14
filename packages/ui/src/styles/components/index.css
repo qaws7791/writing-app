@@ -13,6 +13,7 @@
 
 /* Navigation */
 @import "./link.css";
+@import "./breadcrumbs.css";
 
 /* Buttons */
 @import "./button.css";
@@ -73,6 +74,7 @@
 
 /* Data Display */
 @import "./list-box.css";
+@import "./table.css";
 
 /* Overlays */
 @import "./modal.css";

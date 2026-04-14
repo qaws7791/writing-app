@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm"
-import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { writingPrompts } from "@workspace/database"
+import { Breadcrumbs } from "@workspace/ui/components/breadcrumbs"
 
 import { PromptForm } from "@/components/prompt-form"
 import { getDb } from "@/lib/db"
@@ -24,15 +24,16 @@ export default async function PromptDetailPage({ params }: Props) {
   if (!prompt) notFound()
 
   return (
-    <div className="space-y-4">
-      <div className="text-muted-foreground flex items-center gap-2 text-sm">
-        <Link href="/prompts" className="hover:underline">
-          글감 관리
-        </Link>
-        <span>/</span>
-        <span>{prompt.title}</span>
-      </div>
-      <h1 className="text-xl font-semibold">글감 편집</h1>
+    <div className="space-y-5">
+      <Breadcrumbs>
+        <Breadcrumbs.Item href="/prompts">글감 관리</Breadcrumbs.Item>
+        <Breadcrumbs.Item href={`/prompts/${promptId}`}>
+          {prompt.title}
+        </Breadcrumbs.Item>
+      </Breadcrumbs>
+
+      <h1 className="text-xl font-semibold text-foreground">글감 편집</h1>
+
       <div className="max-w-lg">
         <PromptForm
           promptId={prompt.id}

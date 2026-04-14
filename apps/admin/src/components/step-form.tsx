@@ -3,6 +3,12 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
+import { Button } from "@workspace/ui/components/button"
+import { Input } from "@workspace/ui/components/input"
+import { Label } from "@workspace/ui/components/label"
+import { TextArea } from "@workspace/ui/components/textarea"
+import { TextField } from "@workspace/ui/components/text-field"
+
 type StepType =
   | "learn"
   | "read"
@@ -55,18 +61,6 @@ export function StepForm({
   })
   const [error, setError] = useState<string | null>(null)
   const [isPending, setIsPending] = useState(false)
-
-  function handleChange(
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) {
-    const { name, value, type } = e.target
-    setValues((prev) => ({
-      ...prev,
-      [name]: type === "number" ? Number(value) : value,
-    }))
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -132,13 +126,21 @@ export function StepForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <label className="block text-sm font-medium">타입</label>
+        <div className="space-y-1.5">
+          <label htmlFor="step-type" className="label">
+            타입
+          </label>
           <select
+            id="step-type"
             name="type"
             value={values.type}
-            onChange={handleChange}
-            className="focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
+            onChange={(e) =>
+              setValues((prev) => ({
+                ...prev,
+                type: e.target.value as StepType,
+              }))
+            }
+            className="input input--full-width"
           >
             {stepTypeOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -147,56 +149,48 @@ export function StepForm({
             ))}
           </select>
         </div>
-        <div className="space-y-1">
-          <label className="block text-sm font-medium">순서</label>
-          <input
-            name="order"
-            type="number"
-            min={1}
-            required
-            value={values.order}
-            onChange={handleChange}
-            className="focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-          />
-        </div>
+
+        <TextField
+          value={String(values.order)}
+          onChange={(v) =>
+            setValues((prev) => ({ ...prev, order: Number(v) || prev.order }))
+          }
+          type="number"
+          isRequired
+        >
+          <Label>순서</Label>
+          <Input fullWidth min={1} />
+        </TextField>
       </div>
-      <div className="space-y-1">
-        <label className="block text-sm font-medium">콘텐츠 JSON</label>
-        <textarea
-          name="contentJson"
-          required
-          rows={10}
-          value={values.contentJson}
-          onChange={handleChange}
-          className="focus:ring-ring w-full rounded-md border border-border bg-background px-3 py-2 font-mono text-sm focus:ring-2 focus:outline-none"
-          placeholder="{}"
-        />
-      </div>
+
+      <TextField
+        value={values.contentJson}
+        onChange={(v) => setValues((prev) => ({ ...prev, contentJson: v }))}
+        isRequired
+      >
+        <Label>콘텐츠 JSON</Label>
+        <TextArea fullWidth rows={10} className="font-mono" placeholder="{}" />
+      </TextField>
+
       {error !== null && <p className="text-destructive text-sm">{error}</p>}
+
       <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={isPending}
-          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-4 py-2 text-sm font-medium disabled:opacity-50"
-        >
+        <Button type="submit" variant="primary" isDisabled={isPending}>
           {isPending ? "저장 중..." : isEdit ? "수정 저장" : "스텝 추가"}
-        </button>
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="rounded-md border border-border px-4 py-2 text-sm hover:bg-accent"
-        >
+        </Button>
+        <Button type="button" variant="outline" onPress={() => router.back()}>
           취소
-        </button>
+        </Button>
         {isEdit && (
-          <button
+          <Button
             type="button"
-            onClick={handleDelete}
-            disabled={isPending}
-            className="border-destructive text-destructive hover:bg-destructive/10 ml-auto rounded-md border px-4 py-2 text-sm disabled:opacity-50"
+            variant="danger-soft"
+            isDisabled={isPending}
+            onPress={handleDelete}
+            className="ml-auto"
           >
             삭제
-          </button>
+          </Button>
         )}
       </div>
     </form>
