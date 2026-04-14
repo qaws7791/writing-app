@@ -215,6 +215,9 @@
         "zod": "^4.3.6",
       },
       "devDependencies": {
+        "@eslint/js": "^9.39.2",
+        "@typescript-eslint/eslint-plugin": "^8.37.0",
+        "@typescript-eslint/parser": "^8.37.0",
         "@workspace/config": "workspace:*",
         "eslint": "^9.39.2",
         "typescript": "^5.9.3",
@@ -268,6 +271,7 @@
         "@types/react": "^19.2.10",
         "@types/react-dom": "^19.2.3",
         "@workspace/config": "workspace:*",
+        "eslint": "^9.39.2",
         "jsdom": "^29.0.0",
         "tailwindcss": "^4.1.18",
         "typescript": "^5.9.3",
