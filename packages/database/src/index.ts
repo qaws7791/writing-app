@@ -15,6 +15,7 @@ export {
   createWritingVersionRepository,
 } from "./repository/index"
 export {
+  adminUsers,
   account,
   authSchema,
   journeyCategories,

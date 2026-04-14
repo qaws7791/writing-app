@@ -1,0 +1,9 @@
+@import "@workspace/ui/styles";
+
+@source "../../../../packages/ui/src";
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+}
