@@ -28,10 +28,10 @@ export const steps = sqliteTable(
     order: integer("order").notNull(),
     type: text("type", { enum: stepTypes }).notNull(),
     contentJson: text("content_json", { mode: "json" }).notNull(),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
-    updatedAt: integer("updated_at", { mode: "timestamp" })
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
   },

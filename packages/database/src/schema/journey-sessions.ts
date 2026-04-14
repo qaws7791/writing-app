@@ -19,10 +19,10 @@ export const journeySessions = sqliteTable(
     title: text("title").notNull(),
     description: text("description").notNull(),
     estimatedMinutes: integer("estimated_minutes").notNull(),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
-    updatedAt: integer("updated_at", { mode: "timestamp" })
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
   },

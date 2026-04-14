@@ -18,7 +18,9 @@ export const savedPrompts = sqliteTable(
     promptId: integer("prompt_id")
       .notNull()
       .references(() => writingPrompts.id, { onDelete: "cascade" }),
-    savedAt: integer("saved_at", { mode: "timestamp" }).notNull().defaultNow(),
+    savedAt: integer("saved_at", { mode: "timestamp_ms" })
+      .notNull()
+      .defaultNow(),
   },
   (table) => [
     primaryKey({ columns: [table.userId, table.promptId] }),

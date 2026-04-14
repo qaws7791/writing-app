@@ -33,10 +33,10 @@ export const userSessionProgress = sqliteTable(
     stepResponsesJson: text("step_responses_json", { mode: "json" })
       .notNull()
       .default({}),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
-    updatedAt: integer("updated_at", { mode: "timestamp" })
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
   },

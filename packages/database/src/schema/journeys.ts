@@ -15,10 +15,10 @@ export const journeys = sqliteTable(
     description: text("description").notNull(),
     category: text("category", { enum: journeyCategories }).notNull(),
     thumbnailUrl: text("thumbnail_url"),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
-    updatedAt: integer("updated_at", { mode: "timestamp" })
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
   },

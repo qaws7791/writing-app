@@ -28,10 +28,10 @@ export const userJourneyProgress = sqliteTable(
     status: text("status", { enum: journeyProgressStatuses })
       .notNull()
       .default("in_progress"),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
-    updatedAt: integer("updated_at", { mode: "timestamp" })
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
   },

@@ -12,10 +12,10 @@ export const writingPrompts = sqliteTable(
     body: text("body").notNull(),
     thumbnailUrl: text("thumbnail_url"),
     responseCount: integer("response_count").notNull().default(0),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
-    updatedAt: integer("updated_at", { mode: "timestamp" })
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
   },

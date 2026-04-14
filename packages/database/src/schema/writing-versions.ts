@@ -14,7 +14,7 @@ export const writingVersions = sqliteTable(
     bodyJson: text("body_json", { mode: "json" }).notNull(),
     wordCount: integer("word_count").notNull(),
     aiFeedbackJson: text("ai_feedback_json", { mode: "json" }),
-    createdAt: integer("created_at", { mode: "timestamp" })
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
       .defaultNow(),
   },

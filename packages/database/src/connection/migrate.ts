@@ -1,18 +1,16 @@
+import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import { migrate } from "drizzle-orm/bun-sqlite/migrator"
 
 import type { DbClient } from "../types/index"
 
-const defaultMigrationsFolder = fileURLToPath(
-  new URL("../../drizzle", import.meta.url)
-)
-
 export async function migrateDatabase(
   database: DbClient,
-  migrationsFolder = defaultMigrationsFolder
+  migrationsFolder?: string
 ): Promise<void> {
-  migrate(database, {
-    migrationsFolder,
-  })
+  const folder =
+    migrationsFolder ??
+    resolve(dirname(fileURLToPath(import.meta.url)), "../../drizzle")
+  migrate(database, { migrationsFolder: folder })
 }
