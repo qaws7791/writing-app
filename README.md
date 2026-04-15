@@ -28,3 +28,15 @@ import { Button } from "@workspace/ui/components/button"
 ## use bun
 
 use `@types/bun` instead of `@types/node`
+
+## 스토리지 로컬 실행 방법
+
+### 1. SeaweedFS 실행 (data/seaweedfs-config/s3.json 이미 생성됨)
+
+  `docker compose up -d`
+
+### 2. 어드민 개발 서버
+
+  `bun dev`
+
+### 3. `http://localhost:3020/prompts/new` 에서 이미지 업로드 테스트

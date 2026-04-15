@@ -9,6 +9,8 @@ import { Label } from "@workspace/ui/components/label"
 import { TextArea } from "@workspace/ui/components/textarea"
 import { TextField } from "@workspace/ui/components/text-field"
 
+import { ImageUpload } from "@/components/image-upload"
+
 type JourneyFormValues = {
   title: string
   description: string
@@ -132,14 +134,12 @@ export function JourneyForm({ defaultValues, journeyId }: Props) {
         </select>
       </div>
 
-      <TextField
+      <ImageUpload
         value={values.thumbnailUrl}
-        onChange={(v) => setValues((prev) => ({ ...prev, thumbnailUrl: v }))}
-        type="url"
-      >
-        <Label>썸네일 URL (선택)</Label>
-        <Input fullWidth placeholder="https://..." />
-      </TextField>
+        onUrlChange={(url) =>
+          setValues((prev) => ({ ...prev, thumbnailUrl: url ?? "" }))
+        }
+      />
 
       {error !== null && <p className="text-destructive text-sm">{error}</p>}
 
