@@ -24,8 +24,12 @@ export const apiEnv = createEnv({
           .filter(Boolean)
       )
       .optional(),
-    GOOGLE_VERTEX_PROJECT: z.string().min(1),
+    GOOGLE_VERTEX_PROJECT:
+      process.env.NODE_ENV === "production"
+        ? z.string().min(1)
+        : z.string().min(1).optional(),
     GOOGLE_VERTEX_LOCATION: z.string().min(1).default("us-central1"),
+    GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1).optional(),
     RESEND_API_KEY:
       process.env.NODE_ENV === "production"
         ? z.string().min(1)

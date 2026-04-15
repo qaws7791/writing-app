@@ -44,7 +44,7 @@ function logRequestFailure(
         }
       : {
           code: response.body.error.code,
-          error,
+          cause: error,
           status: response.status,
           ...extra,
         }

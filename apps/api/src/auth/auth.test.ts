@@ -412,7 +412,7 @@ describe("auth", () => {
     expect(signInResponse.status).toBe(200)
     expect(cookie).toContain("better-auth.session_token")
 
-    const sessionResponse = await app.request("/session", {
+    const sessionResponse = await app.request("/me", {
       headers: {
         cookie: cookie ?? "",
       },

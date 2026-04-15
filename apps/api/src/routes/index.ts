@@ -1,6 +1,6 @@
 import authHandler from "./auth/auth-handler"
 import getHealth from "./health/get-health"
-import getSession from "./session/get-session"
+import getMe from "./me/get-me"
 import getHome from "./home/get-home"
 import listCategories from "./prompts/list-categories"
 import listPrompts from "./prompts/list-prompts"
@@ -28,7 +28,7 @@ import compareTexts from "./ai/compare-texts"
 export const allRoutes = [
   getHealth,
   authHandler,
-  getSession,
+  getMe,
   getHome,
   listPrompts,
   listCategories,

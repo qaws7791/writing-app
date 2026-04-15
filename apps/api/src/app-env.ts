@@ -1,27 +1,16 @@
+import type { z } from "zod"
 import type { UserId } from "@workspace/core"
 
+import type {
+  authenticatedSessionSchema,
+  authenticatedUserSchema,
+} from "./auth/auth-schemas"
 import type { DevEmailInbox } from "./auth/auth-email"
 import type { ApiLogger } from "./observability/logger"
 import type { ApiCradleUseCases } from "./runtime/container"
 
-export type AuthenticatedSession = {
-  createdAt: Date | string
-  expiresAt: Date | string
-  id: string
-  ipAddress?: string | null
-  token: string
-  updatedAt: Date | string
-  userAgent?: string | null
-  userId: string
-}
-
-export type AuthenticatedUser = {
-  email: string
-  emailVerified: boolean
-  id: string
-  image?: string | null
-  name: string
-}
+export type AuthenticatedSession = z.infer<typeof authenticatedSessionSchema>
+export type AuthenticatedUser = z.infer<typeof authenticatedUserSchema>
 
 export type AuthSession = {
   session: AuthenticatedSession

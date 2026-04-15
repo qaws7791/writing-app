@@ -1,35 +1,24 @@
 import { z } from "@hono/zod-openapi"
 
+import {
+  authenticatedSessionSchema,
+  authenticatedUserSchema,
+} from "../../auth/auth-schemas"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
 import { UnauthorizedError } from "../../http/unauthorized-error"
 import { AuthSession, AuthUser } from "../../runtime/tokens"
 
-const sessionResponseSchema = z.object({
-  session: z.object({
-    createdAt: z.union([z.string(), z.date()]),
-    expiresAt: z.union([z.string(), z.date()]),
-    id: z.string(),
-    ipAddress: z.string().nullable().optional(),
-    token: z.string(),
-    updatedAt: z.union([z.string(), z.date()]),
-    userAgent: z.string().nullable().optional(),
-    userId: z.string(),
-  }),
-  user: z.object({
-    email: z.string(),
-    emailVerified: z.boolean(),
-    id: z.string(),
-    image: z.string().nullable().optional(),
-    name: z.string(),
-  }),
+const meResponseSchema = z.object({
+  session: authenticatedSessionSchema,
+  user: authenticatedUserSchema,
 })
 
 export default route({
   method: "get",
-  path: "/session",
+  path: "/me",
   inject: { authUser: AuthUser, authSession: AuthSession },
-  response: { 200: sessionResponseSchema, default: defaultErrorResponse },
+  response: { 200: meResponseSchema, default: defaultErrorResponse },
   meta: {
     description: "현재 인증된 사용자의 세션 정보를 반환합니다.",
     summary: "세션 조회",
