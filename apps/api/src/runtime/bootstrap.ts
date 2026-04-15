@@ -85,7 +85,10 @@ export async function createApiDependencies(
     "api dependencies ready"
   )
 
-  const allowedOrigins = new Set([environment.webBaseUrl])
+  const allowedOrigins = new Set([
+    environment.webBaseUrl,
+    ...(apiEnv.API_ALLOWED_ORIGINS ?? []),
+  ])
 
   const app = createApp<AppEnv>({
     globalMiddleware: [
@@ -93,8 +96,8 @@ export async function createApiDependencies(
         allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
         origin: (origin) => {
-          if (!origin) return null
-          return allowedOrigins.has(origin) ? origin : null
+          if (!origin) return undefined
+          return allowedOrigins.has(origin) ? origin : undefined
         },
       }),
       createRequestLoggerMiddleware(logger),
