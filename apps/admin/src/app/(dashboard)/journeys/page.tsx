@@ -4,6 +4,7 @@ import { count, eq } from "drizzle-orm"
 import { journeys, journeySessions } from "@workspace/database"
 import { cn } from "@workspace/ui"
 import { buttonVariants } from "@workspace/ui/components/button"
+import { Chip } from "@workspace/ui/components/chip"
 import { Table } from "@workspace/ui/components/table"
 
 import { getDb } from "@/lib/db"
@@ -32,10 +33,13 @@ export default async function JourneysPage() {
     .leftJoin(sessionCountSq, eq(journeys.id, sessionCountSq.journeyId))
     .orderBy(journeys.createdAt)
 
-  const categoryLabels: Record<string, string> = {
-    writing_skill: "글쓰기 스킬",
-    mindfulness: "마음챙김",
-    practical: "실용",
+  const categoryConfig: Record<
+    string,
+    { label: string; color: "default" | "accent" | "success" | "warning" }
+  > = {
+    writing_skill: { label: "글쓰기 스킬", color: "accent" },
+    mindfulness: { label: "마음챙김", color: "success" },
+    practical: { label: "실용", color: "warning" },
   }
 
   return (
@@ -71,28 +75,37 @@ export default async function JourneysPage() {
                 <Table.Column> </Table.Column>
               </Table.Header>
               <Table.Body>
-                {items.map((item) => (
-                  <Table.Row key={item.id} id={item.id}>
-                    <Table.Cell className="font-medium">
-                      {item.title}
-                    </Table.Cell>
-                    <Table.Cell>
-                      {categoryLabels[item.category] ?? item.category}
-                    </Table.Cell>
-                    <Table.Cell>{item.sessionCount ?? 0}</Table.Cell>
-                    <Table.Cell>
-                      {item.createdAt?.toLocaleDateString("ko-KR") ?? "-"}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Link
-                        href={`/journeys/${item.id}`}
-                        className="text-sm font-medium text-accent hover:underline"
-                      >
-                        편집
-                      </Link>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
+                {items.map((item) => {
+                  const category = categoryConfig[item.category]
+                  return (
+                    <Table.Row key={item.id} id={item.id}>
+                      <Table.Cell className="font-medium">
+                        {item.title}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Chip
+                          color={category?.color ?? "default"}
+                          size="sm"
+                          variant="soft"
+                        >
+                          {category?.label ?? item.category}
+                        </Chip>
+                      </Table.Cell>
+                      <Table.Cell>{item.sessionCount ?? 0}</Table.Cell>
+                      <Table.Cell>
+                        {item.createdAt?.toLocaleDateString("ko-KR") ?? "-"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Link
+                          href={`/journeys/${item.id}`}
+                          className="text-sm font-medium text-accent hover:underline"
+                        >
+                          편집
+                        </Link>
+                      </Table.Cell>
+                    </Table.Row>
+                  )
+                })}
               </Table.Body>
             </Table.Content>
           </Table.ScrollContainer>

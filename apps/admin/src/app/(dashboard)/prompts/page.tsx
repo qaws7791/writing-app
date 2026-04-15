@@ -3,6 +3,7 @@ import Link from "next/link"
 import { writingPrompts } from "@workspace/database"
 import { cn } from "@workspace/ui"
 import { buttonVariants } from "@workspace/ui/components/button"
+import { Chip } from "@workspace/ui/components/chip"
 import { Table } from "@workspace/ui/components/table"
 
 import { getDb } from "@/lib/db"
@@ -14,10 +15,13 @@ export default async function PromptsPage() {
     .from(writingPrompts)
     .orderBy(writingPrompts.createdAt)
 
-  const typeLabels: Record<string, string> = {
-    sensory: "감각",
-    reflection: "성찰",
-    opinion: "의견",
+  const typeConfig: Record<
+    string,
+    { label: string; color: "default" | "accent" | "success" | "warning" }
+  > = {
+    sensory: { label: "감각", color: "accent" },
+    reflection: { label: "성찰", color: "success" },
+    opinion: { label: "의견", color: "warning" },
   }
 
   return (
@@ -53,28 +57,37 @@ export default async function PromptsPage() {
                 <Table.Column> </Table.Column>
               </Table.Header>
               <Table.Body>
-                {items.map((item) => (
-                  <Table.Row key={item.id} id={item.id}>
-                    <Table.Cell className="font-medium">
-                      {item.title}
-                    </Table.Cell>
-                    <Table.Cell>
-                      {typeLabels[item.promptType] ?? item.promptType}
-                    </Table.Cell>
-                    <Table.Cell>{item.responseCount}</Table.Cell>
-                    <Table.Cell>
-                      {item.createdAt?.toLocaleDateString("ko-KR") ?? "-"}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Link
-                        href={`/prompts/${item.id}`}
-                        className="text-sm font-medium text-accent hover:underline"
-                      >
-                        편집
-                      </Link>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
+                {items.map((item) => {
+                  const type = typeConfig[item.promptType]
+                  return (
+                    <Table.Row key={item.id} id={item.id}>
+                      <Table.Cell className="font-medium">
+                        {item.title}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Chip
+                          color={type?.color ?? "default"}
+                          size="sm"
+                          variant="soft"
+                        >
+                          {type?.label ?? item.promptType}
+                        </Chip>
+                      </Table.Cell>
+                      <Table.Cell>{item.responseCount}</Table.Cell>
+                      <Table.Cell>
+                        {item.createdAt?.toLocaleDateString("ko-KR") ?? "-"}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Link
+                          href={`/prompts/${item.id}`}
+                          className="text-sm font-medium text-accent hover:underline"
+                        >
+                          편집
+                        </Link>
+                      </Table.Cell>
+                    </Table.Row>
+                  )
+                })}
               </Table.Body>
             </Table.Content>
           </Table.ScrollContainer>

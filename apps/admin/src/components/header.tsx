@@ -13,11 +13,16 @@ export function Header({ adminName }: { adminName: string }) {
   }
 
   return (
-    <header className="flex h-14 items-center justify-end gap-3 border-b border-separator bg-surface px-6">
-      <span className="text-sm text-muted">{adminName}</span>
-      <Button variant="outline" size="sm" onPress={handleLogout}>
-        로그아웃
-      </Button>
+    <header className="flex h-14 items-center justify-between gap-3 border-b border-separator bg-surface px-6">
+      <p className="text-sm font-medium text-foreground">
+        안녕하세요, <span className="text-accent">{adminName}</span>님
+      </p>
+      <div className="flex items-center gap-3">
+        <span className="text-xs text-muted">{adminName}</span>
+        <Button variant="outline" size="sm" onPress={handleLogout}>
+          로그아웃
+        </Button>
+      </div>
     </header>
   )
 }
