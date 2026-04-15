@@ -24,6 +24,7 @@ export default route({
     generateFeedback: GenerateFeedbackUseCase,
   },
   middleware: [aiRateLimiter],
+  timeoutMs: 30_000,
   request: {
     body: generateTextFeedbackBodySchema,
   },

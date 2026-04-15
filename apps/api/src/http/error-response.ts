@@ -8,6 +8,7 @@ import {
 import { HTTPException } from "hono/http-exception"
 
 import type { ErrorResponse } from "./error-schema"
+import { TimeoutError } from "./timeout-error"
 import { UnauthorizedError } from "./unauthorized-error"
 
 const betterAuthStatusMap = {
@@ -106,6 +107,18 @@ export function errorToResponse(error: unknown): {
         },
       },
       status: 400,
+    }
+  }
+
+  if (error instanceof TimeoutError) {
+    return {
+      body: {
+        error: {
+          code: "request_timeout",
+          message: error.message,
+        },
+      },
+      status: 408,
     }
   }
 

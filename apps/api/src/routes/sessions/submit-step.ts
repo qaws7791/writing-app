@@ -1,64 +1,47 @@
-import { createRoute, OpenAPIHono, z } from "@hono/zod-openapi"
+import { z } from "@hono/zod-openapi"
 import {
   sessionIdParamSchema,
   sessionRuntimeSchema,
   submitStepBodySchema,
-  toApplicationError,
   toSessionId,
 } from "@workspace/core"
 
-import type { AppEnv } from "../../app-env"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
+import { route } from "../../http/route"
+import { withStatus } from "../../lib/hono/define-route"
 import { SubmitStepUseCase } from "../../runtime/tokens"
 
-const submitStepRoute = createRoute({
+export default route({
   method: "post",
   path: "/sessions/{sessionId}/steps/{stepOrder}/submit",
+  inject: { submitStep: SubmitStepUseCase },
   request: {
-    body: {
-      content: { "application/json": { schema: submitStepBodySchema } },
-      required: true,
-    },
+    body: submitStepBodySchema,
     params: z.object({
       sessionId: sessionIdParamSchema,
       stepOrder: z.coerce.number().int().min(1),
     }),
   },
-  responses: {
-    200: {
-      content: { "application/json": { schema: sessionRuntimeSchema } },
-      description: "스텝 제출 완료",
-    },
-    202: {
-      content: { "application/json": { schema: sessionRuntimeSchema } },
-      description: "AI 처리 수락",
-    },
+  response: {
+    200: sessionRuntimeSchema,
+    202: sessionRuntimeSchema,
     default: defaultErrorResponse,
   },
-  description: "스텝 응답을 제출하고 갱신된 세션 스냅샷을 반환합니다.",
-  summary: "스텝 제출",
-  tags: ["세션"],
-  security: [{ cookieAuth: [] }],
+  meta: {
+    description: "스텝 응답을 제출하고 갱신된 세션 스냅샷을 반환합니다.",
+    summary: "스텝 제출",
+    tags: ["세션"],
+    security: [{ cookieAuth: [] }],
+  },
+  handler: async ({ submitStep, params, body, context }) => {
+    const userId = requireUserId(context)
+    const result = await submitStep(userId, toSessionId(params.sessionId), {
+      stepOrder: params.stepOrder,
+      response: body.response,
+    })
+    return result.map((value) =>
+      withStatus(value.runtime, value.acceptedAi ? 202 : 200)
+    )
+  },
 })
-
-const app = new OpenAPIHono<AppEnv>()
-
-app.openapi(submitStepRoute, async (context) => {
-  const userId = requireUserId(context)
-  const params = context.req.valid("param")
-  const body = context.req.valid("json")
-  const submitStep = context.var.submitStepUseCase
-  const result = await submitStep(userId, toSessionId(params.sessionId), {
-    stepOrder: params.stepOrder,
-    response: body.response,
-  })
-
-  if (result.isErr()) {
-    throw toApplicationError(result.error)
-  }
-
-  return context.json(result.value.runtime, result.value.acceptedAi ? 202 : 200)
-})
-
-export default app

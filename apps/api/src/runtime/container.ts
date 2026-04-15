@@ -97,88 +97,44 @@ export type ApiCradle = {
   compareRevisionsUseCase: CompareRevisionsUseCase
 }
 
-export type ApiCradleUseCases = Pick<
-  ApiCradle,
-  | "autosaveWritingUseCase"
-  | "bookmarkPromptUseCase"
-  | "compareRevisionsUseCase"
-  | "completeSessionUseCase"
-  | "createWritingUseCase"
-  | "deleteWritingUseCase"
-  | "enrollJourneyUseCase"
-  | "generateFeedbackUseCase"
-  | "getHomeUseCase"
-  | "getJourneyUseCase"
-  | "getPromptUseCase"
-  | "getSessionDetailUseCase"
-  | "getWritingUseCase"
-  | "listCompletedJourneysUseCase"
-  | "listJourneysUseCase"
-  | "listUserJourneysUseCase"
-  | "listPromptWritingsUseCase"
-  | "listPromptsUseCase"
-  | "listWritingsUseCase"
-  | "retrySessionStepAiUseCase"
-  | "sqliteVersion"
-  | "startSessionUseCase"
-  | "submitStepUseCase"
-  | "unbookmarkPromptUseCase"
->
+/**
+ * cradle에서 컨텍스트로 노출할 유스케이스 키 목록.
+ * 새 유스케이스를 추가할 때는 여기만 수정하면 ApiCradleUseCases 타입과
+ * extractUseCases 함수가 자동으로 동기화됩니다.
+ */
+export const USE_CASE_KEYS = [
+  "autosaveWritingUseCase",
+  "bookmarkPromptUseCase",
+  "compareRevisionsUseCase",
+  "completeSessionUseCase",
+  "createWritingUseCase",
+  "deleteWritingUseCase",
+  "enrollJourneyUseCase",
+  "generateFeedbackUseCase",
+  "getHomeUseCase",
+  "getJourneyUseCase",
+  "getPromptUseCase",
+  "getSessionDetailUseCase",
+  "getWritingUseCase",
+  "listCompletedJourneysUseCase",
+  "listJourneysUseCase",
+  "listUserJourneysUseCase",
+  "listPromptWritingsUseCase",
+  "listPromptsUseCase",
+  "listWritingsUseCase",
+  "retrySessionStepAiUseCase",
+  "sqliteVersion",
+  "startSessionUseCase",
+  "submitStepUseCase",
+  "unbookmarkPromptUseCase",
+] as const satisfies readonly (keyof ApiCradle)[]
+
+export type ApiCradleUseCases = Pick<ApiCradle, (typeof USE_CASE_KEYS)[number]>
 
 export function extractUseCases(cradle: ApiCradle): ApiCradleUseCases {
-  const {
-    autosaveWritingUseCase,
-    bookmarkPromptUseCase,
-    compareRevisionsUseCase,
-    completeSessionUseCase,
-    createWritingUseCase,
-    deleteWritingUseCase,
-    enrollJourneyUseCase,
-    generateFeedbackUseCase,
-    getHomeUseCase,
-    getJourneyUseCase,
-    getPromptUseCase,
-    getSessionDetailUseCase,
-    getWritingUseCase,
-    listCompletedJourneysUseCase,
-    listJourneysUseCase,
-    listUserJourneysUseCase,
-    listPromptWritingsUseCase,
-    listPromptsUseCase,
-    listWritingsUseCase,
-    retrySessionStepAiUseCase,
-    sqliteVersion,
-    startSessionUseCase,
-    submitStepUseCase,
-    unbookmarkPromptUseCase,
-  } = cradle
-
-  return {
-    autosaveWritingUseCase,
-    bookmarkPromptUseCase,
-    compareRevisionsUseCase,
-    completeSessionUseCase,
-    createWritingUseCase,
-    deleteWritingUseCase,
-    enrollJourneyUseCase,
-    generateFeedbackUseCase,
-    getHomeUseCase,
-    getJourneyUseCase,
-    getPromptUseCase,
-    getSessionDetailUseCase,
-    getWritingUseCase,
-    listCompletedJourneysUseCase,
-    listJourneysUseCase,
-    listUserJourneysUseCase,
-    listPromptWritingsUseCase,
-    listPromptsUseCase,
-    listWritingsUseCase,
-    retrySessionStepAiUseCase,
-    sqliteVersion,
-    startSessionUseCase,
-    submitStepUseCase,
-    unbookmarkPromptUseCase,
-  }
+  return Object.fromEntries(
+    USE_CASE_KEYS.map((key) => [key, cradle[key]])
+  ) as ApiCradleUseCases
 }
 
 export function createApiContainer(

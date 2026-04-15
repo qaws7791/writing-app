@@ -107,20 +107,8 @@ export async function createApiDependencies(
       createUseCaseMiddleware(useCases),
       createTimeoutMiddleware(),
     ],
-    errorHandler: (error, c) => {
-      if (error instanceof Error && error.name === "TimeoutError") {
-        return c.json(
-          {
-            error: {
-              code: "request_timeout",
-              message: error.message,
-            },
-          },
-          408
-        )
-      }
-      return handleRequestError(c, error, logger, "request failed")
-    },
+    errorHandler: (error, c) =>
+      handleRequestError(c, error, logger, "request failed"),
     routes: [
       ...allRoutes,
       ...(environment.authDebugEnabled ? [getAuthEmails] : []),

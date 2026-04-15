@@ -1,4 +1,5 @@
 import type { Context, Env, MiddlewareHandler } from "hono"
+import { timeout } from "hono/timeout"
 import { createRoute, OpenAPIHono } from "@hono/zod-openapi"
 import type { RouteConfig } from "@hono/zod-openapi"
 import type { ZodType, z } from "zod"
@@ -9,6 +10,7 @@ import {
 } from "@workspace/core"
 import type { Result } from "neverthrow"
 import type { InjectionToken } from "../injection-token"
+import { TimeoutError } from "../../http/timeout-error"
 
 // ── Type Utilities ──
 
@@ -55,10 +57,42 @@ type HandlerInput<
     [K in keyof TInject]: TInject[K] extends InjectionToken<infer T> ? T : never
   }
 
+/**
+ * 핸들러에서 특정 HTTP 상태 코드와 함께 데이터를 반환할 때 사용합니다.
+ * 응답에 2xx 상태 코드가 여러 개 정의된 경우(예: 200 / 202) 동적으로 선택할 수 있습니다.
+ *
+ * @example
+ * ```ts
+ * handler: async ({ submitStep, ... }) =>
+ *   (await submitStep(...)).map((v) =>
+ *     withStatus(v.runtime, v.acceptedAi ? 202 : 200)
+ *   )
+ * ```
+ */
+export class RouteStatusResponse<TData> {
+  readonly __routeStatusBrand = true as const
+  constructor(
+    readonly data: TData,
+    readonly status: SuccessStatusCode
+  ) {}
+}
+
+export function withStatus<TData>(
+  data: TData,
+  status: SuccessStatusCode
+): RouteStatusResponse<TData> {
+  return new RouteStatusResponse(data, status)
+}
+
 type HandlerReturn<TData> =
   | TData
-  | Result<TData, DomainError>
-  | PromiseLike<TData | Result<TData, DomainError>>
+  | RouteStatusResponse<TData>
+  | Result<TData | RouteStatusResponse<TData>, DomainError>
+  | PromiseLike<
+      | TData
+      | RouteStatusResponse<TData>
+      | Result<TData | RouteStatusResponse<TData>, DomainError>
+    >
 
 type RouteMeta = {
   deprecated?: boolean
@@ -90,6 +124,11 @@ type RouteOptions<
     query?: TQuery
   }
   response: TResponse
+  /**
+   * 라우트 단위 타임아웃(ms). 지정하면 전역 타임아웃보다 우선합니다.
+   * AI 엔드포인트처럼 오래 걸리는 라우트에서 다른 기본값이 필요할 때 사용하세요.
+   */
+  timeoutMs?: number
 }
 
 // ── Runtime Helpers ──
@@ -111,12 +150,26 @@ function isResult(value: unknown): value is Result<unknown, unknown> {
   )
 }
 
-function resolveHandlerValue(value: unknown): unknown {
-  if (!isResult(value)) return value
-  if (value.isOk()) return value.value
-  const error = value.error
-  if (error instanceof Error) throw error
-  throw toApplicationError(error as DomainError)
+function resolveHandlerValue(value: unknown): {
+  data: unknown
+  status?: SuccessStatusCode
+} {
+  // Result 처리 — 먼저 언래핑하고 재귀 호출
+  if (isResult(value)) {
+    if (value.isErr()) {
+      const error = value.error
+      if (error instanceof Error) throw error
+      throw toApplicationError(error as DomainError)
+    }
+    return resolveHandlerValue(value.value)
+  }
+
+  // withStatus() 래퍼 처리
+  if (value instanceof RouteStatusResponse) {
+    return { data: value.data, status: value.status }
+  }
+
+  return { data: value }
 }
 
 function isResponseDescriptor(value: unknown): value is ResponseDescriptor {
@@ -194,9 +247,10 @@ export function defineRoute<TEnv extends Env>() {
       path,
       request,
       response,
+      timeoutMs,
     } = options
 
-    const successStatus = pickSuccessStatus(response)
+    const defaultSuccessStatus = pickSuccessStatus(response)
 
     // Build @hono/zod-openapi request config
     const reqConfig: Record<string, unknown> = {}
@@ -210,12 +264,25 @@ export function defineRoute<TEnv extends Env>() {
     if (request?.params) reqConfig.params = request.params
     const hasRequest = Object.keys(reqConfig).length > 0
 
+    // 라우트 단위 타임아웃 미들웨어를 앞에 붙임 (전역보다 먼저 실행되어 더 짧은 제한 적용)
+    const resolvedMiddleware: MiddlewareHandler[] = []
+    if (timeoutMs !== undefined) {
+      resolvedMiddleware.push(
+        timeout(timeoutMs, () => {
+          throw new TimeoutError()
+        })
+      )
+    }
+    if (middleware?.length) {
+      resolvedMiddleware.push(...middleware)
+    }
+
     const route = createRoute({
       method,
       path,
       ...(hasRequest && { request: reqConfig }),
       responses: buildResponses(response),
-      ...(middleware?.length && { middleware }),
+      ...(resolvedMiddleware.length && { middleware: resolvedMiddleware }),
       ...meta,
     } as RouteConfig)
 
@@ -251,10 +318,11 @@ export function defineRoute<TEnv extends Env>() {
       const raw = await handler(
         input as HandlerInput<TEnv, TBody, TQuery, TParams, TInject>
       )
-      const data = resolveHandlerValue(raw)
+      const { data, status } = resolveHandlerValue(raw)
+      const finalStatus = status ?? defaultSuccessStatus
 
-      if (successStatus === 204) return c.body(null, 204)
-      return c.json(data, successStatus)
+      if (finalStatus === 204) return c.body(null, 204)
+      return c.json(data, finalStatus)
     })
 
     return app

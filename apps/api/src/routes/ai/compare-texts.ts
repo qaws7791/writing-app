@@ -24,6 +24,7 @@ export default route({
     compareRevisions: CompareRevisionsUseCase,
   },
   middleware: [aiRateLimiter],
+  timeoutMs: 30_000,
   request: {
     body: compareRevisionsBodySchema,
   },

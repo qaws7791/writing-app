@@ -2,31 +2,7 @@ import type { UserId } from "@workspace/core"
 
 import type { DevEmailInbox } from "./auth/auth-email"
 import type { ApiLogger } from "./observability/logger"
-import type {
-  AutosaveWritingUseCase,
-  BookmarkPromptUseCase,
-  CompareRevisionsUseCase,
-  CompleteSessionUseCase,
-  CreateWritingUseCase,
-  DeleteWritingUseCase,
-  EnrollJourneyUseCase,
-  GenerateFeedbackUseCase,
-  GetHomeUseCase,
-  GetJourneyUseCase,
-  GetPromptUseCase,
-  GetSessionDetailUseCase,
-  GetWritingUseCase,
-  ListCompletedJourneysUseCase,
-  ListJourneysUseCase,
-  ListUserJourneysUseCase,
-  ListPromptWritingsUseCase,
-  ListPromptsUseCase,
-  ListWritingsUseCase,
-  RetrySessionStepAiUseCase,
-  StartSessionUseCase,
-  SubmitStepUseCase,
-  UnbookmarkPromptUseCase,
-} from "./runtime/modules/use-cases"
+import type { ApiCradleUseCases } from "./runtime/container"
 
 export type AuthenticatedSession = {
   createdAt: Date | string
@@ -54,33 +30,13 @@ export type AuthSession = {
 
 export type GetSession = (request: Request) => Promise<AuthSession | null>
 
-export type AppUseCases = {
+/**
+ * Hono 컨텍스트로 노출되는 유스케이스 + 특수 핸들러 집합.
+ * 유스케이스 목록은 `runtime/container.ts`의 `USE_CASE_KEYS`에서 단일 관리됩니다.
+ */
+export type AppUseCases = ApiCradleUseCases & {
   authHandler: (request: Request) => Promise<Response>
-  autosaveWritingUseCase: AutosaveWritingUseCase
-  bookmarkPromptUseCase: BookmarkPromptUseCase
-  compareRevisionsUseCase: CompareRevisionsUseCase
-  completeSessionUseCase: CompleteSessionUseCase
-  createWritingUseCase: CreateWritingUseCase
-  deleteWritingUseCase: DeleteWritingUseCase
-  enrollJourneyUseCase: EnrollJourneyUseCase
-  generateFeedbackUseCase: GenerateFeedbackUseCase
-  getHomeUseCase: GetHomeUseCase
-  getJourneyUseCase: GetJourneyUseCase
-  getPromptUseCase: GetPromptUseCase
-  getSessionDetailUseCase: GetSessionDetailUseCase
-  getWritingUseCase: GetWritingUseCase
-  listCompletedJourneysUseCase: ListCompletedJourneysUseCase
-  listJourneysUseCase: ListJourneysUseCase
-  listUserJourneysUseCase: ListUserJourneysUseCase
-  listPromptWritingsUseCase: ListPromptWritingsUseCase
-  listPromptsUseCase: ListPromptsUseCase
-  listWritingsUseCase: ListWritingsUseCase
   readLatestAuthEmail?: DevEmailInbox["readLatestMessage"]
-  retrySessionStepAiUseCase: RetrySessionStepAiUseCase
-  sqliteVersion: string
-  startSessionUseCase: StartSessionUseCase
-  submitStepUseCase: SubmitStepUseCase
-  unbookmarkPromptUseCase: UnbookmarkPromptUseCase
 }
 
 export type AppVariables = AppUseCases & {
