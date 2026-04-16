@@ -29,3 +29,12 @@ services:
     volumes:
       - ./data:/data
     restart: unless-stopped
+
+  rustfs_public_assets_init:
+    image: minio/mc:latest
+    depends_on:
+      rustfs:
+        condition: service_started
+    entrypoint: ["/bin/sh", "/init-public-assets-bucket.sh"]
+    volumes:
+      - ./scripts/init-public-assets-bucket.sh:/init-public-assets-bucket.sh:ro

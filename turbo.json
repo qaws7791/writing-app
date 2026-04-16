@@ -1,14 +1,19 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
+    "ADMIN_EMAIL",
+    "ADMIN_JWT_SECRET",
+    "ADMIN_NAME",
+    "ADMIN_PASSWORD",
     "CI",
+    "DATABASE_URL",
     "NODE_ENV",
     "RESEND_API_KEY",
     "RESEND_FROM_ADDRESS",
     "STORAGE_ENDPOINT",
     "STORAGE_ACCESS_KEY",
     "STORAGE_SECRET_KEY",
-    "STORAGE_BUCKET",
+    "STORAGE_PUBLIC_BUCKET",
     "STORAGE_REGION",
     "STORAGE_PUBLIC_URL"
   ],

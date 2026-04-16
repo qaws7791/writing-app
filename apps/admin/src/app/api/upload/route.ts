@@ -24,7 +24,7 @@ function getStorage() {
       endpoint: env.STORAGE_ENDPOINT,
       accessKey: env.STORAGE_ACCESS_KEY,
       secretKey: env.STORAGE_SECRET_KEY,
-      bucket: env.STORAGE_BUCKET,
+      bucket: env.STORAGE_PUBLIC_BUCKET,
       region: env.STORAGE_REGION,
       publicUrl: env.STORAGE_PUBLIC_URL,
     })

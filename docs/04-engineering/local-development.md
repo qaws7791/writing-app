@@ -5,7 +5,7 @@ description: 이 모노레포를 로컬에서 설치, 실행, 점검할 때 필�
 
 ## 상태
 
-- 기준 시점: 2026-04-16
+- 기준 시점: 2026-04-17
 - 현재 로컬 개발의 중심은 `apps/web` 화면 프로토타입 및 `apps/api` 기능 구현입니다.
 - `packages/core`, `packages/database`, `packages/ai`가 생성되어 있으며 개발 중입니다.
 - 데이터베이스는 PostgreSQL을 사용합니다.
@@ -60,7 +60,7 @@ description: 이 모노레포를 로컬에서 설치, 실행, 점검할 때 필�
 
 ### 시작
 
-저장소 루트에서 `docker compose up -d`를 실행하면 RustFS가 자동으로 시작됩니다.
+저장소 루트에서 `docker compose up -d`를 실행하면 RustFS가 자동으로 시작되고, 공개 자산 버킷 초기화 컨테이너가 함께 실행됩니다.
 
 ### 접근
 
@@ -74,6 +74,12 @@ description: 이 모노레포를 로컬에서 설치, 실행, 점검할 때 필�
 
 RustFS 데이터는 프로젝트의 `./data` 디렉토리에 저장됩니다. 이 디렉토리는 `.gitignore`에 포함되어 있습니다.
 
+### 공개 자산 버킷 초기화
+
+- `docker compose up -d`는 `writing-app-public-assets` 버킷을 자동 생성합니다.
+- 같은 초기화 단계에서 해당 버킷에 익명 읽기 정책을 적용합니다.
+- 기존 `writing-app-images` 버킷은 비공개 용도로 유지되며, 공개 미리보기 URL에 사용하지 않습니다.
+
 ### 스토리지 환경 변수
 
 `apps/admin` 앱의 `.env.development.local` 또는 `.env.example`을 참고하여 아래 변수를 설정합니다.
@@ -82,7 +88,7 @@ RustFS 데이터는 프로젝트의 `./data` 디렉토리에 저장됩니다. �
 STORAGE_ENDPOINT=http://localhost:9000
 STORAGE_ACCESS_KEY=rustfsadmin
 STORAGE_SECRET_KEY=rustfsadmin
-STORAGE_BUCKET=writing-app-images
+STORAGE_PUBLIC_BUCKET=writing-app-public-assets
 STORAGE_REGION=us-east-1
 STORAGE_PUBLIC_URL=http://localhost:9000
 ```
