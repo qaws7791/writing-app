@@ -2,7 +2,7 @@ import * as React from "react"
 import { useEffect } from "react"
 import type { Preview } from "@storybook/react-vite"
 
-import "@workspace/ui/globals.css"
+import "../styles.css"
 
 type ThemeName = "light" | "dark" | "system"
 
