@@ -24,3 +24,5 @@
 
 /* Dark mode variant - .dark class approach */
 @custom-variant dark (&:is(.dark *));
+
+@source "../**/*"
