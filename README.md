@@ -31,9 +31,12 @@ use `@types/bun` instead of `@types/node`
 
 ## 스토리지 로컬 실행 방법
 
-### 1. SeaweedFS 실행 (data/seaweedfs-config/s3.json 이미 생성됨)
+### 1. RustFS 실행
 
   `docker compose up -d`
+
+  - S3 API: `http://localhost:9000`
+  - 웹 콘솔: `http://localhost:9001`
 
 ### 2. 어드민 개발 서버
 
