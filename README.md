@@ -31,15 +31,28 @@ use `@types/bun` instead of `@types/node`
 
 ## 스토리지 로컬 실행 방법
 
-### 1. RustFS 실행
+### 1. RustFS 시작
 
-  `docker compose up -d`
+저장소 루트에서 다음 명령을 실행합니다:
 
-  - S3 API: `http://localhost:9000`
-  - 웹 콘솔: `http://localhost:9001`
+```bash
+docker compose up -d
+```
+
+RustFS가 시작되면 다음 주소로 접근할 수 있습니다:
+
+- **S3 API**: `http://localhost:9000`
+- **웹 콘솔**: `http://localhost:9001`
+- **자격증명**: `rustfsadmin` / `rustfsadmin`
 
 ### 2. 어드민 개발 서버
 
-  `bun dev`
+```bash
+bun dev
+```
 
-### 3. `http://localhost:3020/prompts/new` 에서 이미지 업로드 테스트
+### 3. 이미지 업로드 테스트
+
+`http://localhost:3020/prompts/new` 에서 이미지 업로드를 테스트할 수 있습니다.
+
+자세한 설정은 [로컬 개발 가이드](docs/04-engineering/local-development.md)를 참고하세요.

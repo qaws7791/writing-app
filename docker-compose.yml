@@ -1,39 +1,31 @@
+version: "3.9"
+
 services:
-  rustfs-perms:
+  rustfs_perms:
     image: alpine
     user: root
     volumes:
-      - rustfs-data:/data
-    command: chown -R 10001:10001 /data
+      - ./data:/fix_path
+    command: chown -R 10001:10001 /fix_path
 
   rustfs:
     image: rustfs/rustfs:latest
-    ports:
-      - "9000:9000"
-      - "9001:9001"
-    volumes:
-      - rustfs-data:/data
-    command: --access-key local-access-key --secret-key local-secret-key --console-enable /data
+    container_name: rustfs-local
+    security_opt:
+      - "no-new-privileges:true"
     depends_on:
-      rustfs-perms:
+      rustfs_perms:
         condition: service_completed_successfully
-    healthcheck:
-      test: ["CMD", "curl", "-s", "-o", "/dev/null", "http://localhost:9000/"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  rustfs-init:
-    image: amazon/aws-cli:latest
+    ports:
+      - "9000:9000" 
+      - "9001:9001" 
     environment:
-      AWS_ACCESS_KEY_ID: local-access-key
-      AWS_SECRET_ACCESS_KEY: local-secret-key
-      AWS_DEFAULT_REGION: us-east-1
-    command: s3 mb s3://writing-app-images --endpoint-url http://rustfs:9000
-    depends_on:
-      rustfs:
-        condition: service_healthy
-    restart: on-failure
-
-volumes:
-  rustfs-data:
+      - RUSTFS_VOLUMES=/data
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9001
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_ACCESS_KEY=rustfsadmin 
+      - RUSTFS_SECRET_KEY=rustfsadmin 
+    volumes:
+      - ./data:/data
+    restart: unless-stopped

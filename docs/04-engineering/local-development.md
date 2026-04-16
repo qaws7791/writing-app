@@ -5,10 +5,11 @@ description: 이 모노레포를 로컬에서 설치, 실행, 점검할 때 필�
 
 ## 상태
 
-- 기준 시점: 2026-04-06
+- 기준 시점: 2026-04-16
 - 현재 로컬 개발의 중심은 `apps/web` 화면 프로토타입 및 `apps/api` 기능 구현입니다.
 - `packages/core`, `packages/database`, `packages/ai`가 생성되어 있으며 개발 중입니다.
 - 데이터베이스는 PostgreSQL을 사용합니다.
+- RustFS를 로컬 S3 호환 저장소로 사용합니다.
 
 ## 준비물
 
@@ -52,6 +53,39 @@ description: 이 모노레포를 로컬에서 설치, 실행, 점검할 때 필�
 
 - 웹: `3000`
 - API: `3010`
+- RustFS S3 API: `9000`
+- RustFS 콘솔: `9001`
+
+## RustFS (로컬 S3 호환 저장소) 설정
+
+### 시작
+
+저장소 루트에서 `docker compose up -d`를 실행하면 RustFS가 자동으로 시작됩니다.
+
+### 접근
+
+- **S3 API**: `http://localhost:9000`
+- **웹 콘솔**: `http://localhost:9001`
+- **자격증명**:
+  - Access Key: `rustfsadmin`
+  - Secret Key: `rustfsadmin`
+
+### 데이터 저장
+
+RustFS 데이터는 프로젝트의 `./data` 디렉토리에 저장됩니다. 이 디렉토리는 `.gitignore`에 포함되어 있습니다.
+
+### 스토리지 환경 변수
+
+`apps/admin` 앱의 `.env.development.local` 또는 `.env.example`을 참고하여 아래 변수를 설정합니다.
+
+```
+STORAGE_ENDPOINT=http://localhost:9000
+STORAGE_ACCESS_KEY=rustfsadmin
+STORAGE_SECRET_KEY=rustfsadmin
+STORAGE_BUCKET=writing-app-images
+STORAGE_REGION=us-east-1
+STORAGE_PUBLIC_URL=http://localhost:9000
+```
 
 ## 작업 흐름 권장
 
