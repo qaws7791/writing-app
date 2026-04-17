@@ -17,7 +17,6 @@ const meta: Meta<typeof Tabs> = {
   title: "Components/Tabs",
   component: Tabs,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
 }
 
 export default meta

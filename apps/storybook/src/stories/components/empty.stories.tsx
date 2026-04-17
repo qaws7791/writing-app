@@ -15,7 +15,6 @@ const meta: Meta<typeof Empty> = {
   title: "Components/Empty",
   component: Empty,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
 }
 
 export default meta

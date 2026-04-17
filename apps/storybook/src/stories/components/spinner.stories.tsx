@@ -6,7 +6,6 @@ const meta: Meta<typeof Spinner> = {
   title: "Components/Spinner",
   component: Spinner,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
 }
 
 export default meta

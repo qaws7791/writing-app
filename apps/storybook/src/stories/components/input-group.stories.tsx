@@ -13,7 +13,6 @@ const meta: Meta<typeof InputGroup> = {
   title: "Components/InputGroup",
   component: InputGroup,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
 }
 
 export default meta

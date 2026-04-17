@@ -91,10 +91,17 @@ const config: StorybookConfig = {
     "../../../packages/ui/src/**/*.stories.@(ts|tsx)",
     "../src/stories/**/*.stories.@(ts|tsx)",
   ],
-  addons: ["@storybook/addon-a11y"],
+  addons: ["@storybook/addon-docs", "@storybook/addon-a11y"],
   framework: {
     name: "@storybook/react-vite",
     options: {},
+  },
+  typescript: {
+    reactDocgen: "react-docgen-typescript",
+    reactDocgenTypescriptOptions: {
+      shouldExtractLiteralValuesFromEnum: true,
+      shouldRemoveUndefinedFromOptional: true,
+    },
   },
   async viteFinal(config) {
     return mergeConfig(config, {

@@ -14,7 +14,6 @@ import {
 const meta: Meta = {
   title: "Components/Select",
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
 }
 
 export default meta

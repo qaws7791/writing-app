@@ -16,6 +16,7 @@ function resolveTheme(theme: ThemeName): "light" | "dark" {
 }
 
 const preview: Preview = {
+  tags: ["autodocs"],
   parameters: {
     controls: {
       matchers: {

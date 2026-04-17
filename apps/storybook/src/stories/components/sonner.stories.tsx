@@ -8,7 +8,6 @@ const meta: Meta<typeof Toaster> = {
   title: "Components/Sonner",
   component: Toaster,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
   decorators: [
     (Story) => (
       <>

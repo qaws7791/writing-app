@@ -6,7 +6,6 @@ const meta: Meta<typeof Separator> = {
   title: "Components/Separator",
   component: Separator,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
   argTypes: {
     orientation: {
       control: "select",

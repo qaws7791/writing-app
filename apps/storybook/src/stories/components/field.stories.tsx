@@ -25,7 +25,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 const meta: Meta = {
   title: "Components/Field",
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
 }
 
 export default meta

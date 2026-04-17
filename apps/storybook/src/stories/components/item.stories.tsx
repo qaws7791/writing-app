@@ -17,7 +17,6 @@ import { Badge } from "@/components/ui/badge"
 const meta: Meta = {
   title: "Components/Item",
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
 }
 
 export default meta

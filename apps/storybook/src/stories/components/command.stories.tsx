@@ -26,7 +26,6 @@ const meta: Meta<typeof Command> = {
   title: "Components/Command",
   component: Command,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
 }
 
 export default meta

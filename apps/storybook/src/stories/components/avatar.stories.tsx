@@ -13,7 +13,6 @@ const meta: Meta<typeof Avatar> = {
   title: "Components/Avatar",
   component: Avatar,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
   argTypes: {
     size: {
       control: "select",

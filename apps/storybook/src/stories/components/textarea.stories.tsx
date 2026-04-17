@@ -8,7 +8,6 @@ const meta: Meta<typeof Textarea> = {
   title: "Components/Textarea",
   component: Textarea,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
   argTypes: {
     disabled: { control: "boolean" },
   },

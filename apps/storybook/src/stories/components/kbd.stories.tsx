@@ -6,7 +6,6 @@ const meta: Meta<typeof Kbd> = {
   title: "Components/Kbd",
   component: Kbd,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
 }
 
 export default meta

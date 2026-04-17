@@ -20,7 +20,6 @@ const frameworks = [
 const meta: Meta = {
   title: "Components/Combobox",
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
 }
 
 export default meta

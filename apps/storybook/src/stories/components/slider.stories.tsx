@@ -6,7 +6,6 @@ const meta: Meta<typeof Slider> = {
   title: "Components/Slider",
   component: Slider,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
   argTypes: {
     min: { control: { type: "number" } },
     max: { control: { type: "number" } },

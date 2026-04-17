@@ -8,7 +8,6 @@ const meta: Meta<typeof ButtonGroup> = {
   title: "Components/ButtonGroup",
   component: ButtonGroup,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
 }
 
 export default meta

@@ -7,7 +7,6 @@ const meta: Meta<typeof Toggle> = {
   title: "Components/Toggle",
   component: Toggle,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
   argTypes: {
     variant: {
       control: "select",
