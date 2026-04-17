@@ -87,7 +87,10 @@ function getStorybookManualChunk(id: string) {
 }
 
 const config: StorybookConfig = {
-  stories: ["../../../packages/ui/src/**/*.stories.@(ts|tsx)"],
+  stories: [
+    "../../../packages/ui/src/**/*.stories.@(ts|tsx)",
+    "../src/stories/**/*.stories.@(ts|tsx)",
+  ],
   addons: ["@storybook/addon-a11y"],
   framework: {
     name: "@storybook/react-vite",
@@ -98,6 +101,11 @@ const config: StorybookConfig = {
       server: {
         fs: {
           allow: [workspaceRoot],
+        },
+      },
+      resolve: {
+        alias: {
+          "@": path.resolve(workspaceRoot, "packages/ui/src"),
         },
       },
       build: {
