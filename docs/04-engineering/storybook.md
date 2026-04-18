@@ -41,6 +41,7 @@ bun build:storybook  # 정적 빌드
 ## 런타임 주의사항
 
 - `.storybook/manager.ts`에서 Storybook manager theme 색상은 hex 또는 rgb 계열 값만 사용합니다.
+- Storybook toolbar의 `theme` global은 `.storybook/manager.ts`와 `.storybook/preview.tsx` 양쪽에서 함께 소비해야 합니다. manager UI와 Autodocs는 기본적으로 서로 독립적으로 테마를 가지므로, Docs는 `docs.container`를 커스텀해 현재 global에 맞는 theme를 주입합니다.
 - `storybook/theming` 내부에서 `polished`를 사용하므로 `oklch(...)`를 직접 넣으면 `parseToRgb` 런타임 오류로 manager가 흰 화면이 될 수 있습니다.
 - 정적 결과물은 `bunx serve` 대신 `http-server`로 서빙합니다. `serve`는 Storybook의 `iframe.html?id=...` 요청을 `/iframe`으로 리다이렉트하면서 query를 잃어 `No Preview`를 만들 수 있습니다.
 - Storybook Vite 빌드는 워크스페이스 소스와 외부 UI 패키지의 최상위 `"use client"` 지시문을 번들 단계에서 제거합니다. 이는 Storybook이 React Server Component 경계를 사용하지 않기 때문이며, Next.js 앱 런타임용 소스 파일은 변경하지 않습니다.
