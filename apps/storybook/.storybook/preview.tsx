@@ -1,19 +1,10 @@
 import * as React from "react"
-import { useEffect } from "react"
 import type { Preview } from "@storybook/react-vite"
+import { ThemeProvider } from "@workspace/ui/components/ui/theme-provider"
 
 import "../styles.css"
 
 type ThemeName = "light" | "dark" | "system"
-
-function resolveTheme(theme: ThemeName): "light" | "dark" {
-  if (theme === "system") {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light"
-  }
-  return theme
-}
 
 const preview: Preview = {
   tags: ["autodocs"],
@@ -52,41 +43,21 @@ const preview: Preview = {
     (Story, context) => {
       const theme = context.globals.theme as ThemeName
 
-      useEffect(() => {
-        const resolved = resolveTheme(theme)
-        const root = document.documentElement
-
-        root.classList.remove("light", "dark")
-        root.classList.add(resolved)
-      }, [theme])
-
-      // Listen for system theme changes when in "system" mode
-      useEffect(() => {
-        if (theme !== "system") return
-
-        const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
-
-        const handleChange = (e: MediaQueryListEvent) => {
-          const root = document.documentElement
-
-          root.classList.remove("light", "dark")
-          root.classList.add(e.matches ? "dark" : "light")
-        }
-
-        mediaQuery.addEventListener("change", handleChange)
-        return () => mediaQuery.removeEventListener("change", handleChange)
-      }, [theme])
-
       return (
-        <div
-          className="antialiased"
-          style={{
-            fontFamily:
-              '"Noto Sans KR", "Noto Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif',
-          }}
+        <ThemeProvider
+          forcedTheme={theme === "system" ? undefined : theme}
+          defaultTheme={theme}
         >
-          <Story />
-        </div>
+          <div
+            className="antialiased"
+            style={{
+              fontFamily:
+                '"Noto Sans KR", "Noto Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif',
+            }}
+          >
+            <Story />
+          </div>
+        </ThemeProvider>
       )
     },
   ],

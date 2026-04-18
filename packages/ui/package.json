@@ -16,6 +16,7 @@
     "./utils": "./src/utils/index.ts",
     "./utils/*": "./src/utils/*.ts",
     "./components/icons": "./src/components/icons.tsx",
+    "./components/ui/theme-provider": "./src/components/ui/theme-provider.tsx",
     "./components/*": "./src/components/*/index.ts"
   },
   "scripts": {
