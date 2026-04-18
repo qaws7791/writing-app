@@ -18,7 +18,7 @@ function ThemedDocsContainer({
 }: React.PropsWithChildren<DocsContainerProps>) {
   const [theme, setTheme] = React.useState<ThemeName | undefined>(() => {
     try {
-      const story = context.storyById(context.id)
+      const story = context.storyById()
       const storyContext = context.getStoryContext(story)
       return storyContext.globals.theme as ThemeName | undefined
     } catch {
