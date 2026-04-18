@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//c/Users/dongheon/.claude/**)",
-      "Read(//c/Users/dongheon/.config/claude/**)",
-      "Bash(bunx tsc:*)"
-    ]
-  }
-}
