@@ -1,6 +1,14 @@
+import Link from "next/link"
 import { notFound } from "next/navigation"
 
-import { Breadcrumbs } from "@workspace/ui/components/breadcrumbs"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@workspace/ui/components/ui/breadcrumb"
 
 import { SessionForm } from "@/components/session-form"
 
@@ -13,15 +21,25 @@ export default async function NewSessionPage({ params }: Props) {
 
   return (
     <div className="space-y-5">
-      <Breadcrumbs>
-        <Breadcrumbs.Item href="/journeys">여정 관리</Breadcrumbs.Item>
-        <Breadcrumbs.Item href={`/journeys/${journeyId}`}>
-          여정
-        </Breadcrumbs.Item>
-        <Breadcrumbs.Item href={`/journeys/${journeyId}/sessions/new`}>
-          새 세션
-        </Breadcrumbs.Item>
-      </Breadcrumbs>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/journeys" />}>
+              여정 관리
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href={`/journeys/${journeyId}`} />}>
+              여정
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>새 세션</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       <h1 className="text-xl font-semibold text-foreground">새 세션 추가</h1>
 

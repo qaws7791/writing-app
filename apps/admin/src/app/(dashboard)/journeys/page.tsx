@@ -3,9 +3,16 @@ import { count, eq } from "drizzle-orm"
 
 import { journeys, journeySessions } from "@workspace/database"
 import { cn } from "@workspace/ui"
-import { buttonVariants } from "@workspace/ui/components/button"
-import { Chip } from "@workspace/ui/components/chip"
-import { Table } from "@workspace/ui/components/table"
+import { buttonVariants } from "@workspace/ui/components/ui/button"
+import { Chip } from "@workspace/ui/components/ui/chip"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@workspace/ui/components/ui/table"
 
 import { getDb } from "@/lib/db"
 
@@ -33,13 +40,10 @@ export default async function JourneysPage() {
     .leftJoin(sessionCountSq, eq(journeys.id, sessionCountSq.journeyId))
     .orderBy(journeys.createdAt)
 
-  const categoryConfig: Record<
-    string,
-    { label: string; color: "default" | "accent" | "success" | "warning" }
-  > = {
-    writing_skill: { label: "글쓰기 스킬", color: "accent" },
-    mindfulness: { label: "마음챙김", color: "success" },
-    practical: { label: "실용", color: "warning" },
+  const categoryLabels: Record<string, string> = {
+    writing_skill: "글쓰기 스킬",
+    mindfulness: "마음챙김",
+    practical: "실용",
   }
 
   return (
@@ -47,68 +51,57 @@ export default async function JourneysPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-foreground">여정 관리</h1>
-          <p className="mt-0.5 text-sm text-muted">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             총 {items.length}개의 여정
           </p>
         </div>
         <Link
           href="/journeys/new"
-          className={cn(buttonVariants({ variant: "primary", size: "sm" }))}
+          className={cn(buttonVariants({ variant: "default", size: "sm" }))}
         >
           새 여정 추가
         </Link>
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-3xl bg-surface-secondary py-16 text-center text-sm text-muted">
+        <div className="rounded-3xl bg-muted py-16 text-center text-sm text-muted-foreground">
           여정이 없습니다
         </div>
       ) : (
-        <Table variant="secondary">
-          <Table.ScrollContainer>
-            <Table.Content aria-label="여정 목록">
-              <Table.Header>
-                <Table.Column isRowHeader>제목</Table.Column>
-                <Table.Column>카테고리</Table.Column>
-                <Table.Column>세션 수</Table.Column>
-                <Table.Column>생성일</Table.Column>
-                <Table.Column> </Table.Column>
-              </Table.Header>
-              <Table.Body>
-                {items.map((item) => {
-                  const category = categoryConfig[item.category]
-                  return (
-                    <Table.Row key={item.id} id={item.id}>
-                      <Table.Cell className="font-medium">
-                        {item.title}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Chip
-                          color={category?.color ?? "default"}
-                          size="sm"
-                          variant="soft"
-                        >
-                          {category?.label ?? item.category}
-                        </Chip>
-                      </Table.Cell>
-                      <Table.Cell>{item.sessionCount ?? 0}</Table.Cell>
-                      <Table.Cell>
-                        {item.createdAt?.toLocaleDateString("ko-KR") ?? "-"}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Link
-                          href={`/journeys/${item.id}`}
-                          className="text-sm font-medium text-accent hover:underline"
-                        >
-                          편집
-                        </Link>
-                      </Table.Cell>
-                    </Table.Row>
-                  )
-                })}
-              </Table.Body>
-            </Table.Content>
-          </Table.ScrollContainer>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>제목</TableHead>
+              <TableHead>카테고리</TableHead>
+              <TableHead>세션 수</TableHead>
+              <TableHead>생성일</TableHead>
+              <TableHead> </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {items.map((item) => (
+              <TableRow key={item.id}>
+                <TableCell className="font-medium">{item.title}</TableCell>
+                <TableCell>
+                  <Chip size="sm">
+                    {categoryLabels[item.category] ?? item.category}
+                  </Chip>
+                </TableCell>
+                <TableCell>{item.sessionCount ?? 0}</TableCell>
+                <TableCell>
+                  {item.createdAt?.toLocaleDateString("ko-KR") ?? "-"}
+                </TableCell>
+                <TableCell>
+                  <Link
+                    href={`/journeys/${item.id}`}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    편집
+                  </Link>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
         </Table>
       )}
     </div>

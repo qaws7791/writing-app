@@ -1,14 +1,32 @@
-import { Breadcrumbs } from "@workspace/ui/components/breadcrumbs"
+import Link from "next/link"
+
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@workspace/ui/components/ui/breadcrumb"
 
 import { JourneyForm } from "@/components/journey-form"
 
 export default function NewJourneyPage() {
   return (
     <div className="space-y-5">
-      <Breadcrumbs>
-        <Breadcrumbs.Item href="/journeys">여정 관리</Breadcrumbs.Item>
-        <Breadcrumbs.Item href="/journeys/new">새 여정</Breadcrumbs.Item>
-      </Breadcrumbs>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/journeys" />}>
+              여정 관리
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>새 여정</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       <h1 className="text-xl font-semibold text-foreground">새 여정 추가</h1>
 

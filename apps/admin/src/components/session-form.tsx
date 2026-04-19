@@ -3,11 +3,14 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
-import { TextArea } from "@workspace/ui/components/textarea"
-import { TextField } from "@workspace/ui/components/text-field"
+import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Field,
+  FieldContent,
+  FieldLabel,
+} from "@workspace/ui/components/ui/field"
+import { Input } from "@workspace/ui/components/ui/input"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 type SessionFormValues = {
   title: string
@@ -85,68 +88,87 @@ export function SessionForm({ journeyId, defaultValues, sessionId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <TextField
-        value={values.title}
-        onChange={(v) => setValues((prev) => ({ ...prev, title: v }))}
-        isRequired
-      >
-        <Label>제목</Label>
-        <Input fullWidth />
-      </TextField>
+      <Field>
+        <FieldLabel>제목</FieldLabel>
+        <FieldContent>
+          <Input
+            value={values.title}
+            onChange={(e) =>
+              setValues((prev) => ({ ...prev, title: e.target.value }))
+            }
+            required
+          />
+        </FieldContent>
+      </Field>
 
-      <TextField
-        value={values.description}
-        onChange={(v) => setValues((prev) => ({ ...prev, description: v }))}
-        isRequired
-      >
-        <Label>설명</Label>
-        <TextArea fullWidth rows={3} />
-      </TextField>
+      <Field>
+        <FieldLabel>설명</FieldLabel>
+        <FieldContent>
+          <Textarea
+            value={values.description}
+            onChange={(e) =>
+              setValues((prev) => ({ ...prev, description: e.target.value }))
+            }
+            rows={3}
+            required
+          />
+        </FieldContent>
+      </Field>
 
       <div className="grid grid-cols-2 gap-4">
-        <TextField
-          value={String(values.order)}
-          onChange={(v) =>
-            setValues((prev) => ({ ...prev, order: Number(v) || prev.order }))
-          }
-          type="number"
-          isRequired
-        >
-          <Label>순서</Label>
-          <Input fullWidth min={1} />
-        </TextField>
+        <Field>
+          <FieldLabel>순서</FieldLabel>
+          <FieldContent>
+            <Input
+              type="number"
+              value={String(values.order)}
+              onChange={(e) =>
+                setValues((prev) => ({
+                  ...prev,
+                  order: Number(e.target.value) || prev.order,
+                }))
+              }
+              min={1}
+              required
+            />
+          </FieldContent>
+        </Field>
 
-        <TextField
-          value={String(values.estimatedMinutes)}
-          onChange={(v) =>
-            setValues((prev) => ({
-              ...prev,
-              estimatedMinutes: Number(v) || prev.estimatedMinutes,
-            }))
-          }
-          type="number"
-          isRequired
-        >
-          <Label>예상 소요 시간 (분)</Label>
-          <Input fullWidth min={1} />
-        </TextField>
+        <Field>
+          <FieldLabel>예상 소요 시간 (분)</FieldLabel>
+          <FieldContent>
+            <Input
+              type="number"
+              value={String(values.estimatedMinutes)}
+              onChange={(e) =>
+                setValues((prev) => ({
+                  ...prev,
+                  estimatedMinutes:
+                    Number(e.target.value) || prev.estimatedMinutes,
+                }))
+              }
+              min={1}
+              required
+            />
+          </FieldContent>
+        </Field>
       </div>
 
-      {error !== null && <p className="text-destructive text-sm">{error}</p>}
+      {error !== null && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" variant="primary" isDisabled={isPending}>
+        <Button type="submit" disabled={isPending}>
           {isPending ? "저장 중..." : isEdit ? "수정 저장" : "세션 추가"}
         </Button>
-        <Button type="button" variant="outline" onPress={() => router.back()}>
+        <Button type="button" variant="outline" onClick={() => router.back()}>
           취소
         </Button>
         {isEdit && (
           <Button
             type="button"
-            variant="danger-soft"
-            isDisabled={isPending}
-            onPress={handleDelete}
+            variant="destructive"
+            disabled={isPending}
+            onClick={handleDelete}
             className="ml-auto"
           >
             삭제

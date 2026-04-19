@@ -75,7 +75,6 @@ function getStorybookManualChunk(id: string) {
   }
 
   if (
-    normalizedId.includes("/@hugeicons/") ||
     normalizedId.includes("/@radix-ui/") ||
     normalizedId.includes("/tailwind-merge/") ||
     normalizedId.includes("/tailwind-variants/")

@@ -1,71 +1,61 @@
 "use client"
 
+import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  Home01Icon,
-  BookOpen01Icon,
-  QuillWrite01Icon,
-} from "@hugeicons/core-free-icons"
+import { HomeIcon, BookOpenIcon, PenToolIcon } from "lucide-react"
 
-import { Sidebar as UiSidebar } from "@workspace/ui/components/sidebar"
+import { cn } from "@workspace/ui/utils"
 
 const navItems = [
-  { href: "/dashboard", label: "대시보드", icon: Home01Icon },
-  { href: "/journeys", label: "여정 관리", icon: BookOpen01Icon },
-  { href: "/prompts", label: "글감 관리", icon: QuillWrite01Icon },
+  { href: "/dashboard", label: "대시보드", icon: HomeIcon },
+  { href: "/journeys", label: "여정 관리", icon: BookOpenIcon },
+  { href: "/prompts", label: "글감 관리", icon: PenToolIcon },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
 
-  const activeItem = navItems.find((item) =>
-    item.href === "/dashboard"
-      ? pathname === "/dashboard"
-      : pathname.startsWith(item.href)
-  )
-
   return (
-    <UiSidebar.Root className="border-r border-separator bg-surface">
-      <UiSidebar.Header>
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-foreground text-xs font-bold text-background">
-            글
-          </div>
-          <span className="text-sm font-semibold tracking-tight text-foreground">
-            글필 어드민
-          </span>
+    <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-background">
+      <div className="flex h-14 items-center gap-2.5 border-b border-border px-4">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-foreground text-xs font-bold text-background">
+          글
         </div>
-      </UiSidebar.Header>
+        <span className="text-sm font-semibold tracking-tight text-foreground">
+          글필 어드민
+        </span>
+      </div>
 
-      <UiSidebar.Body
-        selectionMode="single"
-        selectedKeys={activeItem ? [activeItem.href] : []}
-      >
+      <nav className="flex flex-col gap-1 p-3">
         {navItems.map((item) => {
-          const isActive = activeItem?.href === item.href
+          const isActive =
+            item.href === "/dashboard"
+              ? pathname === "/dashboard"
+              : pathname.startsWith(item.href)
 
           return (
-            <UiSidebar.Item
+            <Link
               key={item.href}
-              id={item.href}
               href={item.href}
-              textValue={item.label}
+              className={cn(
+                "flex items-center gap-2.5 rounded-2xl px-3 py-2 text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
             >
-              <div className="flex w-full items-center gap-2.5">
-                <HugeiconsIcon
-                  icon={item.icon}
+              {
+                <item.icon
                   size={20}
-                  color="currentColor"
                   className="shrink-0"
                   strokeWidth={isActive ? 2 : 1.5}
                 />
-                <span className="text-sm font-medium">{item.label}</span>
-              </div>
-            </UiSidebar.Item>
+              }
+              {item.label}
+            </Link>
           )
         })}
-      </UiSidebar.Body>
-    </UiSidebar.Root>
+      </nav>
+    </aside>
   )
 }

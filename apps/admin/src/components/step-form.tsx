@@ -3,11 +3,14 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
-import { TextArea } from "@workspace/ui/components/textarea"
-import { TextField } from "@workspace/ui/components/text-field"
+import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Field,
+  FieldContent,
+  FieldLabel,
+} from "@workspace/ui/components/ui/field"
+import { Input } from "@workspace/ui/components/ui/input"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 type StepType =
   | "learn"
@@ -150,43 +153,56 @@ export function StepForm({
           </select>
         </div>
 
-        <TextField
-          value={String(values.order)}
-          onChange={(v) =>
-            setValues((prev) => ({ ...prev, order: Number(v) || prev.order }))
-          }
-          type="number"
-          isRequired
-        >
-          <Label>순서</Label>
-          <Input fullWidth min={1} />
-        </TextField>
+        <Field>
+          <FieldLabel>순서</FieldLabel>
+          <FieldContent>
+            <Input
+              type="number"
+              value={String(values.order)}
+              onChange={(e) =>
+                setValues((prev) => ({
+                  ...prev,
+                  order: Number(e.target.value) || prev.order,
+                }))
+              }
+              min={1}
+              required
+            />
+          </FieldContent>
+        </Field>
       </div>
 
-      <TextField
-        value={values.contentJson}
-        onChange={(v) => setValues((prev) => ({ ...prev, contentJson: v }))}
-        isRequired
-      >
-        <Label>콘텐츠 JSON</Label>
-        <TextArea fullWidth rows={10} className="font-mono" placeholder="{}" />
-      </TextField>
+      <Field>
+        <FieldLabel>콘텐츠 JSON</FieldLabel>
+        <FieldContent>
+          <Textarea
+            value={values.contentJson}
+            onChange={(e) =>
+              setValues((prev) => ({ ...prev, contentJson: e.target.value }))
+            }
+            rows={10}
+            className="font-mono"
+            placeholder="{}"
+            required
+          />
+        </FieldContent>
+      </Field>
 
-      {error !== null && <p className="text-destructive text-sm">{error}</p>}
+      {error !== null && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" variant="primary" isDisabled={isPending}>
+        <Button type="submit" disabled={isPending}>
           {isPending ? "저장 중..." : isEdit ? "수정 저장" : "스텝 추가"}
         </Button>
-        <Button type="button" variant="outline" onPress={() => router.back()}>
+        <Button type="button" variant="outline" onClick={() => router.back()}>
           취소
         </Button>
         {isEdit && (
           <Button
             type="button"
-            variant="danger-soft"
-            isDisabled={isPending}
-            onPress={handleDelete}
+            variant="destructive"
+            disabled={isPending}
+            onClick={handleDelete}
             className="ml-auto"
           >
             삭제

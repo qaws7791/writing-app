@@ -3,11 +3,14 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
-import { TextArea } from "@workspace/ui/components/textarea"
-import { TextField } from "@workspace/ui/components/text-field"
+import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Field,
+  FieldContent,
+  FieldLabel,
+} from "@workspace/ui/components/ui/field"
+import { Input } from "@workspace/ui/components/ui/input"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 import { ImageUpload } from "@/components/image-upload"
 
@@ -92,23 +95,32 @@ export function PromptForm({ defaultValues, promptId }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <TextField
-        value={values.title}
-        onChange={(v) => setValues((prev) => ({ ...prev, title: v }))}
-        isRequired
-      >
-        <Label>제목</Label>
-        <Input fullWidth />
-      </TextField>
+      <Field>
+        <FieldLabel>제목</FieldLabel>
+        <FieldContent>
+          <Input
+            value={values.title}
+            onChange={(e) =>
+              setValues((prev) => ({ ...prev, title: e.target.value }))
+            }
+            required
+          />
+        </FieldContent>
+      </Field>
 
-      <TextField
-        value={values.body}
-        onChange={(v) => setValues((prev) => ({ ...prev, body: v }))}
-        isRequired
-      >
-        <Label>본문</Label>
-        <TextArea fullWidth rows={5} />
-      </TextField>
+      <Field>
+        <FieldLabel>본문</FieldLabel>
+        <FieldContent>
+          <Textarea
+            value={values.body}
+            onChange={(e) =>
+              setValues((prev) => ({ ...prev, body: e.target.value }))
+            }
+            rows={5}
+            required
+          />
+        </FieldContent>
+      </Field>
 
       <div className="space-y-1.5">
         <label htmlFor="promptType" className="label">
@@ -141,21 +153,21 @@ export function PromptForm({ defaultValues, promptId }: Props) {
         }
       />
 
-      {error !== null && <p className="text-destructive text-sm">{error}</p>}
+      {error !== null && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" variant="primary" isDisabled={isPending}>
+        <Button type="submit" disabled={isPending}>
           {isPending ? "저장 중..." : isEdit ? "수정 저장" : "글감 추가"}
         </Button>
-        <Button type="button" variant="outline" onPress={() => router.back()}>
+        <Button type="button" variant="outline" onClick={() => router.back()}>
           취소
         </Button>
         {isEdit && (
           <Button
             type="button"
-            variant="danger-soft"
-            isDisabled={isPending}
-            onPress={handleDelete}
+            variant="destructive"
+            disabled={isPending}
+            onClick={handleDelete}
             className="ml-auto"
           >
             삭제

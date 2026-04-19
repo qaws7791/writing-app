@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react"
 
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@workspace/ui/components/ui/button"
 
 type UploadState =
   | { status: "idle" }
@@ -108,17 +108,17 @@ export function ImageUpload({
               type="button"
               variant="outline"
               size="sm"
-              isDisabled={isUploading}
-              onPress={() => inputRef.current?.click()}
+              disabled={isUploading}
+              onClick={() => inputRef.current?.click()}
             >
               {isUploading ? "업로드 중..." : "이미지 교체"}
             </Button>
             <Button
               type="button"
-              variant="danger-soft"
+              variant="destructive"
               size="sm"
-              isDisabled={isUploading}
-              onPress={() => {
+              disabled={isUploading}
+              onClick={() => {
                 onUrlChange(null)
                 setUploadState({ status: "idle" })
               }}
@@ -147,17 +147,17 @@ export function ImageUpload({
           className={[
             "flex h-40 cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed transition-colors",
             isDragOver
-              ? "border-accent bg-accent/5"
-              : "border-border hover:border-accent/50 hover:bg-default/50",
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-primary/50 hover:bg-muted/50",
             isUploading ? "pointer-events-none" : "",
           ].join(" ")}
         >
           {isUploading ? (
-            <p className="text-sm text-muted">업로드 중...</p>
+            <p className="text-sm text-muted-foreground">업로드 중...</p>
           ) : (
             <>
               <svg
-                className="size-8 text-muted"
+                className="size-8 text-muted-foreground"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -170,10 +170,10 @@ export function ImageUpload({
                   d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
                 />
               </svg>
-              <p className="text-sm text-muted">
+              <p className="text-sm text-muted-foreground">
                 클릭하거나 파일을 드래그하여 업로드
               </p>
-              <p className="text-xs text-muted">
+              <p className="text-xs text-muted-foreground">
                 PNG, JPG, WebP, GIF, AVIF · 최대 5MB
               </p>
             </>
@@ -182,7 +182,7 @@ export function ImageUpload({
       )}
 
       {uploadState.status === "error" && (
-        <p className="text-destructive text-sm">{uploadState.message}</p>
+        <p className="text-sm text-destructive">{uploadState.message}</p>
       )}
     </div>
   )

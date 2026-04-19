@@ -4,9 +4,23 @@ import { notFound } from "next/navigation"
 
 import { journeys, journeySessions } from "@workspace/database"
 import { cn } from "@workspace/ui"
-import { buttonVariants } from "@workspace/ui/components/button"
-import { Breadcrumbs } from "@workspace/ui/components/breadcrumbs"
-import { Table } from "@workspace/ui/components/table"
+import { buttonVariants } from "@workspace/ui/components/ui/button"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@workspace/ui/components/ui/breadcrumb"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@workspace/ui/components/ui/table"
 
 import { JourneyForm } from "@/components/journey-form"
 import { getDb } from "@/lib/db"
@@ -35,12 +49,19 @@ export default async function JourneyDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <Breadcrumbs>
-        <Breadcrumbs.Item href="/journeys">여정 관리</Breadcrumbs.Item>
-        <Breadcrumbs.Item href={`/journeys/${journeyId}`}>
-          {journey.title}
-        </Breadcrumbs.Item>
-      </Breadcrumbs>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/journeys" />}>
+              여정 관리
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{journey.title}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       <section className="space-y-5">
         <h1 className="text-xl font-semibold text-foreground">여정 편집</h1>
@@ -62,47 +83,43 @@ export default async function JourneyDetailPage({ params }: Props) {
           <h2 className="text-lg font-semibold text-foreground">세션 목록</h2>
           <Link
             href={`/journeys/${journeyId}/sessions/new`}
-            className={cn(buttonVariants({ variant: "primary", size: "sm" }))}
+            className={cn(buttonVariants({ variant: "default", size: "sm" }))}
           >
             새 세션 추가
           </Link>
         </div>
 
         {sessions.length === 0 ? (
-          <div className="rounded-3xl bg-surface-secondary py-12 text-center text-sm text-muted">
+          <div className="rounded-3xl bg-muted py-12 text-center text-sm text-muted-foreground">
             세션이 없습니다
           </div>
         ) : (
-          <Table variant="secondary">
-            <Table.ScrollContainer>
-              <Table.Content aria-label="세션 목록">
-                <Table.Header>
-                  <Table.Column>순서</Table.Column>
-                  <Table.Column isRowHeader>제목</Table.Column>
-                  <Table.Column>예상 시간</Table.Column>
-                  <Table.Column> </Table.Column>
-                </Table.Header>
-                <Table.Body>
-                  {sessions.map((session) => (
-                    <Table.Row key={session.id} id={session.id}>
-                      <Table.Cell>{session.order}</Table.Cell>
-                      <Table.Cell className="font-medium">
-                        {session.title}
-                      </Table.Cell>
-                      <Table.Cell>{session.estimatedMinutes}분</Table.Cell>
-                      <Table.Cell>
-                        <Link
-                          href={`/journeys/${journeyId}/sessions/${session.id}`}
-                          className="text-sm font-medium text-accent hover:underline"
-                        >
-                          편집
-                        </Link>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table.Content>
-            </Table.ScrollContainer>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>순서</TableHead>
+                <TableHead>제목</TableHead>
+                <TableHead>예상 시간</TableHead>
+                <TableHead> </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {sessions.map((session) => (
+                <TableRow key={session.id}>
+                  <TableCell>{session.order}</TableCell>
+                  <TableCell className="font-medium">{session.title}</TableCell>
+                  <TableCell>{session.estimatedMinutes}분</TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/journeys/${journeyId}/sessions/${session.id}`}
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      편집
+                    </Link>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
           </Table>
         )}
       </section>

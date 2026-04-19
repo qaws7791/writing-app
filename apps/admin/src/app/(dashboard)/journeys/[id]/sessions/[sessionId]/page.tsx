@@ -4,8 +4,15 @@ import { notFound } from "next/navigation"
 
 import { journeys, journeySessions, steps } from "@workspace/database"
 import { cn } from "@workspace/ui"
-import { buttonVariants } from "@workspace/ui/components/button"
-import { Breadcrumbs } from "@workspace/ui/components/breadcrumbs"
+import { buttonVariants } from "@workspace/ui/components/ui/button"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@workspace/ui/components/ui/breadcrumb"
 
 import { SessionForm } from "@/components/session-form"
 import { StepList } from "@/components/step-list"
@@ -40,17 +47,25 @@ export default async function SessionDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-8">
-      <Breadcrumbs>
-        <Breadcrumbs.Item href="/journeys">여정 관리</Breadcrumbs.Item>
-        <Breadcrumbs.Item href={`/journeys/${journeyId}`}>
-          {journey.title}
-        </Breadcrumbs.Item>
-        <Breadcrumbs.Item
-          href={`/journeys/${journeyId}/sessions/${sessionIdNum}`}
-        >
-          {session.title}
-        </Breadcrumbs.Item>
-      </Breadcrumbs>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/journeys" />}>
+              여정 관리
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href={`/journeys/${journeyId}`} />}>
+              {journey.title}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{session.title}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       <section className="space-y-5">
         <h1 className="text-xl font-semibold text-foreground">세션 편집</h1>
@@ -73,7 +88,7 @@ export default async function SessionDetailPage({ params }: Props) {
           <h2 className="text-lg font-semibold text-foreground">스텝 목록</h2>
           <Link
             href={`/journeys/${journeyId}/sessions/${sessionIdNum}/steps/new`}
-            className={cn(buttonVariants({ variant: "primary", size: "sm" }))}
+            className={cn(buttonVariants({ variant: "default", size: "sm" }))}
           >
             새 스텝 추가
           </Link>

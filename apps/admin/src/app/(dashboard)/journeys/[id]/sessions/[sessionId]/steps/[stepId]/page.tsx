@@ -1,8 +1,16 @@
 import { eq } from "drizzle-orm"
+import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { journeys, journeySessions, steps } from "@workspace/database"
-import { Breadcrumbs } from "@workspace/ui/components/breadcrumbs"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@workspace/ui/components/ui/breadcrumb"
 
 import { StepForm } from "@/components/step-form"
 import { getDb } from "@/lib/db"
@@ -38,22 +46,37 @@ export default async function StepDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-5">
-      <Breadcrumbs>
-        <Breadcrumbs.Item href="/journeys">여정 관리</Breadcrumbs.Item>
-        <Breadcrumbs.Item href={`/journeys/${journeyId}`}>
-          {journey.title}
-        </Breadcrumbs.Item>
-        <Breadcrumbs.Item
-          href={`/journeys/${journeyId}/sessions/${sessionIdNum}`}
-        >
-          {session.title}
-        </Breadcrumbs.Item>
-        <Breadcrumbs.Item
-          href={`/journeys/${journeyId}/sessions/${sessionIdNum}/steps/${stepIdNum}`}
-        >
-          스텝 {step.order}
-        </Breadcrumbs.Item>
-      </Breadcrumbs>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/journeys" />}>
+              여정 관리
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href={`/journeys/${journeyId}`} />}>
+              {journey.title}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink
+              render={
+                <Link
+                  href={`/journeys/${journeyId}/sessions/${sessionIdNum}`}
+                />
+              }
+            >
+              {session.title}
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>스텝 {step.order}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       <h1 className="text-xl font-semibold text-foreground">스텝 편집</h1>
 

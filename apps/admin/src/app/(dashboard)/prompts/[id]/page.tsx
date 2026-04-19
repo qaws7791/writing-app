@@ -1,8 +1,16 @@
 import { eq } from "drizzle-orm"
+import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { writingPrompts } from "@workspace/database"
-import { Breadcrumbs } from "@workspace/ui/components/breadcrumbs"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@workspace/ui/components/ui/breadcrumb"
 
 import { PromptForm } from "@/components/prompt-form"
 import { getDb } from "@/lib/db"
@@ -25,12 +33,19 @@ export default async function PromptDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-5">
-      <Breadcrumbs>
-        <Breadcrumbs.Item href="/prompts">글감 관리</Breadcrumbs.Item>
-        <Breadcrumbs.Item href={`/prompts/${promptId}`}>
-          {prompt.title}
-        </Breadcrumbs.Item>
-      </Breadcrumbs>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink render={<Link href="/prompts" />}>
+              글감 관리
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{prompt.title}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
 
       <h1 className="text-xl font-semibold text-foreground">글감 편집</h1>
 

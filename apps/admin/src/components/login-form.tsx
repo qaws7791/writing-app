@@ -3,10 +3,13 @@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 
-import { Button } from "@workspace/ui/components/button"
-import { Input } from "@workspace/ui/components/input"
-import { Label } from "@workspace/ui/components/label"
-import { TextField } from "@workspace/ui/components/text-field"
+import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Field,
+  FieldContent,
+  FieldLabel,
+} from "@workspace/ui/components/ui/field"
+import { Input } from "@workspace/ui/components/ui/input"
 
 export function LoginForm() {
   const router = useRouter()
@@ -40,31 +43,37 @@ export function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <TextField
-        value={email}
-        onChange={setEmail}
-        type="email"
-        autoComplete="email"
-        isRequired
-      >
-        <Label>이메일</Label>
-        <Input fullWidth placeholder="admin@example.com" />
-      </TextField>
+      <Field>
+        <FieldLabel>이메일</FieldLabel>
+        <FieldContent>
+          <Input
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="admin@example.com"
+            required
+          />
+        </FieldContent>
+      </Field>
 
-      <TextField
-        value={password}
-        onChange={setPassword}
-        type="password"
-        autoComplete="current-password"
-        isRequired
-      >
-        <Label>비밀번호</Label>
-        <Input fullWidth placeholder="••••••••" />
-      </TextField>
+      <Field>
+        <FieldLabel>비밀번호</FieldLabel>
+        <FieldContent>
+          <Input
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+          />
+        </FieldContent>
+      </Field>
 
-      {error !== null && <p className="text-destructive text-sm">{error}</p>}
+      {error !== null && <p className="text-sm text-destructive">{error}</p>}
 
-      <Button type="submit" variant="primary" fullWidth isDisabled={isPending}>
+      <Button type="submit" className="w-full" disabled={isPending}>
         {isPending ? "로그인 중..." : "로그인"}
       </Button>
     </form>

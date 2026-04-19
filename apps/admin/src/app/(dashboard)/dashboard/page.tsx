@@ -1,7 +1,12 @@
 import { count } from "drizzle-orm"
 
 import { journeys, journeySessions, writingPrompts } from "@workspace/database"
-import { Card } from "@workspace/ui/components/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@workspace/ui/components/ui/card"
 
 import { getDb } from "@/lib/db"
 
@@ -91,38 +96,44 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-xl font-semibold text-foreground">대시보드</h1>
-        <p className="mt-0.5 text-sm text-muted">글필 서비스 현황 개요</p>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          글필 서비스 현황 개요
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {stats.map((stat) => (
-          <Card key={stat.label} variant="secondary">
-            <Card.Content className="p-5">
+          <Card key={stat.label}>
+            <CardContent className="p-5">
               <div className="flex items-start justify-between">
                 <div className="space-y-3">
-                  <p className="text-sm font-medium text-muted">{stat.label}</p>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    {stat.label}
+                  </p>
                   <p className="text-3xl font-semibold text-foreground tabular-nums">
                     {stat.value.toLocaleString()}
                   </p>
-                  <p className="text-xs text-muted">{stat.description}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {stat.description}
+                  </p>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-default text-muted">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
                   {stat.icon}
                 </div>
               </div>
-            </Card.Content>
+            </CardContent>
           </Card>
         ))}
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Card variant="secondary">
-          <Card.Header className="px-5 pt-5 pb-3">
-            <Card.Title className="text-sm font-semibold text-foreground">
+        <Card>
+          <CardHeader className="px-5 pt-5 pb-3">
+            <CardTitle className="text-sm font-semibold text-foreground">
               빠른 이동
-            </Card.Title>
-          </Card.Header>
-          <Card.Content className="px-5 pb-5">
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-5 pb-5">
             <div className="space-y-1">
               <QuickLink
                 href="/journeys"
@@ -145,16 +156,16 @@ export default async function DashboardPage() {
                 description="새로운 글쓰기 글감 만들기"
               />
             </div>
-          </Card.Content>
+          </CardContent>
         </Card>
 
-        <Card variant="secondary">
-          <Card.Header className="px-5 pt-5 pb-3">
-            <Card.Title className="text-sm font-semibold text-foreground">
+        <Card>
+          <CardHeader className="px-5 pt-5 pb-3">
+            <CardTitle className="text-sm font-semibold text-foreground">
               서비스 현황
-            </Card.Title>
-          </Card.Header>
-          <Card.Content className="px-5 pb-5">
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-5 pb-5">
             <div className="space-y-3">
               <StatRow
                 label="여정당 평균 세션 수"
@@ -165,7 +176,7 @@ export default async function DashboardPage() {
                 }
                 unit="개"
               />
-              <div className="border-t border-separator" />
+              <div className="border-t border-border" />
               <StatRow
                 label="전체 여정 수"
                 value={journeyCount.toString()}
@@ -182,7 +193,7 @@ export default async function DashboardPage() {
                 unit="개"
               />
             </div>
-          </Card.Content>
+          </CardContent>
         </Card>
       </div>
     </div>
@@ -201,15 +212,15 @@ function QuickLink({
   return (
     <a
       href={href}
-      className="group flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-default"
+      className="group flex items-center justify-between rounded-xl px-3 py-2.5 transition-colors hover:bg-muted"
     >
       <div>
         <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-muted">{description}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
       </div>
       <svg
         aria-hidden="true"
-        className="text-muted transition-colors group-hover:text-foreground"
+        className="text-muted-foreground transition-colors group-hover:text-foreground"
         fill="none"
         height={14}
         viewBox="0 0 16 16"
@@ -238,10 +249,10 @@ function StatRow({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-sm text-muted">{label}</span>
+      <span className="text-sm text-muted-foreground">{label}</span>
       <span className="text-sm font-semibold text-foreground tabular-nums">
         {value}
-        <span className="ml-0.5 font-normal text-muted">{unit}</span>
+        <span className="ml-0.5 font-normal text-muted-foreground">{unit}</span>
       </span>
     </div>
   )
