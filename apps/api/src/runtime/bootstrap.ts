@@ -28,6 +28,8 @@ export type ApiEnvironment = {
   databasePath: string
   logLevel: ApiLogLevel
   port: number
+  rateLimitRedisPrefix: string
+  redisUrl: string
   seedOnStartup: boolean
   webBaseUrl: string
 }
@@ -48,6 +50,8 @@ export function readApiEnvironment(): ApiEnvironment {
     databasePath: apiEnv.API_DATABASE_PATH,
     logLevel: apiEnv.API_LOG_LEVEL,
     port: apiEnv.API_PORT,
+    rateLimitRedisPrefix: apiEnv.API_RATE_LIMIT_REDIS_PREFIX,
+    redisUrl: apiEnv.API_REDIS_URL,
     seedOnStartup: !isProduction,
     webBaseUrl: apiEnv.API_WEB_BASE_URL,
   }
@@ -57,9 +61,17 @@ export async function createApiDependencies(
   environment: ApiEnvironment
 ): Promise<AppDependencies> {
   const container = createApiContainer(environment)
-  const { auth, database, devEmailInbox, logger, sqliteVersion } =
-    container.cradle
+  const {
+    auth,
+    database,
+    devEmailInbox,
+    logger,
+    rateLimitBackend,
+    redisClient,
+    sqliteVersion,
+  } = container.cradle
 
+  await redisClient.ping()
   await migrateDatabase(database.db)
   if (environment.seedOnStartup) {
     await seedDatabase(database.db, journeySeeds.journeys)
@@ -80,6 +92,7 @@ export async function createApiDependencies(
     {
       databasePath: environment.databasePath,
       port: environment.port,
+      rateLimitRedisPrefix: environment.rateLimitRedisPrefix,
       sqliteVersion,
     },
     "api dependencies ready"
@@ -110,7 +123,7 @@ export async function createApiDependencies(
     errorHandler: (error, c) =>
       handleRequestError(c, error, logger, "request failed"),
     routes: [
-      ...allRoutes,
+      ...allRoutes({ rateLimitBackend }),
       ...(environment.authDebugEnabled ? [getAuthEmails] : []),
     ],
     notFound: (c) =>

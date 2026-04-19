@@ -24,6 +24,7 @@ import { createApp } from "../lib/hono/create-app.js"
 import { createRequestLoggerMiddleware } from "../middleware/request-logger.js"
 import { createResolveSessionMiddleware } from "../middleware/resolve-session.js"
 import { createSilentLogger, type ApiLogger } from "../observability/logger.js"
+import { createMemoryRateLimitBackend } from "../rate-limit/rate-limit-backend.js"
 import { allRoutes } from "../routes/index.js"
 import type { AppEnv } from "../app-env.js"
 
@@ -190,6 +191,7 @@ export function createTestApi(input?: {
     "http://localhost:3000",
   ])
   const logger = input?.logger ?? createSilentLogger()
+  const rateLimitBackend = createMemoryRateLimitBackend()
 
   const app = createApp<AppEnv>({
     globalMiddleware: [
@@ -488,7 +490,7 @@ export function createTestApi(input?: {
       title: "writing-app test api",
       version: "0.0.0-test",
     },
-    routes: [...allRoutes],
+    routes: [...allRoutes({ rateLimitBackend })],
     notFound: (c) =>
       c.json(
         {

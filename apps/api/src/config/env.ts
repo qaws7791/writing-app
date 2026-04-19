@@ -13,6 +13,11 @@ export const apiEnv = createEnv({
       .enum(["trace", "debug", "info", "warn", "error", "fatal"])
       .default("info"),
     API_PORT: z.coerce.number().int().min(1).max(65535),
+    API_RATE_LIMIT_REDIS_PREFIX: z
+      .string()
+      .min(1)
+      .default("writing-app:rate-limit"),
+    API_REDIS_URL: z.string().url(),
     API_WEB_BASE_URL: z.string().url(),
     // 추가 허용 오리진을 쉼표로 구분하여 지정합니다. API_WEB_BASE_URL은 항상 포함됩니다.
     API_ALLOWED_ORIGINS: z

@@ -690,4 +690,59 @@ describe("ai", () => {
     expect(response.status).toBe(401)
     expect(body.error.code).toBe("unauthorized")
   })
+
+  test("rate limits feedback requests per user without affecting compare", async () => {
+    const { app } = setup()
+    const requests = Array.from({ length: 20 }, () =>
+      app.request("/ai/feedback", {
+        body: JSON.stringify({ text: "반복 호출 테스트" }),
+        headers: { "content-type": "application/json" },
+        method: "POST",
+      })
+    )
+
+    const responses = await Promise.all(requests)
+    const blocked = await app.request("/ai/feedback", {
+      body: JSON.stringify({ text: "21번째 호출" }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const compare = await app.request("/ai/compare", {
+      body: JSON.stringify({
+        originalText: "원문",
+        revisedText: "수정문",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const blockedBody = await readJson<{ error: { code: string } }>(blocked)
+
+    expect(responses.every((response) => response.status === 200)).toBe(true)
+    expect(blocked.status).toBe(429)
+    expect(blockedBody.error.code).toBe("too_many_requests")
+    expect(compare.status).toBe(200)
+  })
+
+  test("rate limits unauthenticated feedback requests by forwarded ip", async () => {
+    const { app } = setup()
+    const requestInit = {
+      body: JSON.stringify({ text: "인증 없는 요청" }),
+      headers: {
+        "content-type": "application/json",
+        "x-forwarded-for": "203.0.113.10, 10.0.0.1",
+        "x-test-auth": "none",
+      },
+      method: "POST",
+    } as const
+
+    const responses = await Promise.all(
+      Array.from({ length: 20 }, () => app.request("/ai/feedback", requestInit))
+    )
+    const blocked = await app.request("/ai/feedback", requestInit)
+    const blockedBody = await readJson<{ error: { code: string } }>(blocked)
+
+    expect(responses.every((response) => response.status === 401)).toBe(true)
+    expect(blocked.status).toBe(429)
+    expect(blockedBody.error.code).toBe("too_many_requests")
+  })
 })

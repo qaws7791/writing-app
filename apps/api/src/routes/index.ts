@@ -22,34 +22,41 @@ import createWriting from "./writings/create-writing"
 import getWriting from "./writings/get-writing"
 import autosaveWriting from "./writings/autosave-writing"
 import deleteWriting from "./writings/delete-writing"
-import generateTextFeedback from "./ai/generate-text-feedback"
-import compareTexts from "./ai/compare-texts"
+import { createGenerateTextFeedbackRoute } from "./ai/generate-text-feedback"
+import { createCompareTextsRoute } from "./ai/compare-texts"
+import type { RateLimitBackend } from "../rate-limit/rate-limit-backend"
 
-export const allRoutes = [
-  getHealth,
-  authHandler,
-  getMe,
-  getHome,
-  listPrompts,
-  listCategories,
-  getPrompt,
-  listPromptWritings,
-  bookmarkPrompt,
-  unbookmarkPrompt,
-  listJourneys,
-  getJourney,
-  enrollJourney,
-  getSessionDetail,
-  startSession,
-  submitStep,
-  retrySessionStepAi,
-  completeSession,
-  getUserProfile,
-  listWritings,
-  createWriting,
-  getWriting,
-  autosaveWriting,
-  deleteWriting,
-  generateTextFeedback,
-  compareTexts,
-] as const
+type RouteDependencies = {
+  rateLimitBackend: RateLimitBackend
+}
+
+export function allRoutes({ rateLimitBackend }: RouteDependencies) {
+  return [
+    getHealth,
+    authHandler,
+    getMe,
+    getHome,
+    listPrompts,
+    listCategories,
+    getPrompt,
+    listPromptWritings,
+    bookmarkPrompt,
+    unbookmarkPrompt,
+    listJourneys,
+    getJourney,
+    enrollJourney,
+    getSessionDetail,
+    startSession,
+    submitStep,
+    retrySessionStepAi,
+    completeSession,
+    getUserProfile,
+    listWritings,
+    createWriting,
+    getWriting,
+    autosaveWriting,
+    deleteWriting,
+    createGenerateTextFeedbackRoute(rateLimitBackend),
+    createCompareTextsRoute(rateLimitBackend),
+  ] as const
+}

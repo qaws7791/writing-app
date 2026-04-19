@@ -25,6 +25,7 @@ import { createRequestLoggerMiddleware } from "../middleware/request-logger.js"
 import { createResolveSessionMiddleware } from "../middleware/resolve-session.js"
 import { createDevEmailInbox, createDevEmailPort } from "./auth-email.js"
 import { createSilentLogger } from "../observability/logger.js"
+import { createMemoryRateLimitBackend } from "../rate-limit/rate-limit-backend.js"
 import { allRoutes } from "../routes/index.js"
 import getAuthEmails from "../routes/dev/get-auth-emails.js"
 import type { AppEnv } from "../app-env.js"
@@ -85,6 +86,7 @@ function setup(): { app: TestApp } {
   cleanupTasks.push(() => inbox.clear())
 
   const logger = createSilentLogger()
+  const rateLimitBackend = createMemoryRateLimitBackend()
 
   const stubWriting = {
     id: toWritingId(1),
@@ -256,7 +258,7 @@ function setup(): { app: TestApp } {
       }
       return handleRequestError(c, error, logger, "request failed")
     },
-    routes: [...allRoutes, getAuthEmails],
+    routes: [...allRoutes({ rateLimitBackend }), getAuthEmails],
     notFound: (c) =>
       c.json(
         {

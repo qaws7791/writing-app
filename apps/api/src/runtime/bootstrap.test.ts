@@ -5,12 +5,14 @@ import journeySeeds from "../../data/journey-seeds.json"
 const {
   createApiContainerMock,
   createAppMock,
+  createAllRoutesMock,
   migrateDatabaseMock,
   seedDatabaseMock,
 } = vi.hoisted(() => {
   return {
     createApiContainerMock: vi.fn(),
     createAppMock: vi.fn(),
+    createAllRoutesMock: vi.fn(() => []),
     migrateDatabaseMock: vi.fn(),
     seedDatabaseMock: vi.fn(),
   }
@@ -67,6 +69,10 @@ vi.mock("./container.js", () => ({
   },
 }))
 
+vi.mock("../routes/index.js", () => ({
+  allRoutes: createAllRoutesMock,
+}))
+
 vi.mock("../config/env.js", () => ({
   apiEnv: {
     API_AUTH_BASE_URL: "http://127.0.0.1:3010",
@@ -74,6 +80,8 @@ vi.mock("../config/env.js", () => ({
     API_DATABASE_PATH: "memory:test",
     API_LOG_LEVEL: "info",
     API_PORT: 3010,
+    API_RATE_LIMIT_REDIS_PREFIX: "test:rate-limit",
+    API_REDIS_URL: "redis://127.0.0.1:6379",
     API_WEB_BASE_URL: "http://127.0.0.1:3000",
   },
 }))
@@ -110,6 +118,10 @@ function createMockContainer() {
       readLatestMessage: vi.fn(),
     },
     logger: createLoggerStub(),
+    rateLimitBackend: { createStore: vi.fn() },
+    redisClient: {
+      ping: vi.fn().mockResolvedValue("PONG"),
+    },
     sqliteVersion: "3.46.0",
     aiUseCases: {},
     autosaveWritingUseCase: vi.fn(),
@@ -159,6 +171,8 @@ describe("bootstrap", () => {
       databasePath: "memory:test",
       logLevel: "info",
       port: 3010,
+      rateLimitRedisPrefix: "test:rate-limit",
+      redisUrl: "redis://127.0.0.1:6379",
       seedOnStartup: true,
       webBaseUrl: "http://127.0.0.1:3000",
     })
@@ -179,6 +193,8 @@ describe("bootstrap", () => {
       databasePath: "memory:test",
       logLevel: "info",
       port: 3010,
+      rateLimitRedisPrefix: "test:rate-limit",
+      redisUrl: "redis://127.0.0.1:6379",
       seedOnStartup: false,
       webBaseUrl: "http://127.0.0.1:3000",
     })
@@ -207,6 +223,8 @@ describe("bootstrap", () => {
       databasePath: "memory:test",
       logLevel: "info",
       port: 3010,
+      rateLimitRedisPrefix: "test:rate-limit",
+      redisUrl: "redis://127.0.0.1:6379",
       seedOnStartup: false,
       webBaseUrl: "http://127.0.0.1:3000",
     })

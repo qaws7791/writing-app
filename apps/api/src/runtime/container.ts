@@ -10,10 +10,12 @@ import type {
   AiCoachingGateway,
   RepositoryTransactionManager,
 } from "@workspace/core"
+import type Redis from "ioredis"
 
 import { createAuth } from "../auth/auth"
 import { createDevEmailInbox, type EmailSender } from "../auth/auth-email"
 import type { ApiLogger } from "../observability/logger"
+import type { RateLimitBackend } from "../rate-limit/rate-limit-backend"
 import type { ApiEnvironment } from "./bootstrap"
 import { registerInfrastructure } from "./modules/infrastructure"
 import { registerAuth } from "./modules/auth"
@@ -53,6 +55,8 @@ export type ApiCradle = {
   // --- Infrastructure ---
   logger: ApiLogger
   database: ReturnType<typeof openDb>
+  redisClient: Redis
+  rateLimitBackend: RateLimitBackend
   sqliteVersion: string
 
   // --- Auth & Email ---

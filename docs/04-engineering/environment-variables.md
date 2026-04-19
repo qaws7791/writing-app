@@ -5,9 +5,9 @@ description: 이 모노레포에서 환경 변수를 저장, 노출, 검증, 캐
 
 ## 상태
 
-- 기준 시점: 2026-04-17
+- 기준 시점: 2026-04-20
 - `apps/api`에서 환경 변수 기반 설정이 동작 중입니다.
-- `turbo.json`은 `build` 입력에 `.env*`를 포함하지만, 아직 `env` 또는 `globalEnv` 등록은 없습니다.
+- `turbo.json`은 `build` 입력에 `.env*`를 포함하며, 런타임 동작을 바꾸는 일부 변수는 `globalEnv`에 등록되어 있습니다.
 
 ## 기본 정책
 
@@ -48,6 +48,8 @@ description: 이 모노레포에서 환경 변수를 저장, 노출, 검증, 캐
 | `apps/api`   | `API_DATABASE_PATH`            | 사용중 | SQLite 연결 문자열                                 |
 | `apps/api`   | `API_LOG_LEVEL`                | 사용중 | 로그 레벨 (기본: info)                             |
 | `apps/api`   | `API_PORT`                     | 사용중 | API 서버 포트                                      |
+| `apps/api`   | `API_RATE_LIMIT_REDIS_PREFIX`  | 사용중 | Redis rate limiter 키 prefix                       |
+| `apps/api`   | `API_REDIS_URL`                | 사용중 | Redis 연결 URL (`redis://` 또는 `rediss://`)       |
 | `apps/api`   | `API_WEB_BASE_URL`             | 사용중 | 프론트엔드 기본 URL                                |
 | `apps/api`   | `GOOGLE_GENERATIVE_AI_API_KEY` | 사용중 | Google Generative AI API 키 (소크라테스식 AI 코칭) |
 | `apps/api`   | `RESEND_API_KEY`               | 사용중 | Resend 이메일 API 키 (프로덕션 필수)               |
@@ -72,6 +74,12 @@ description: 이 모노레포에서 환경 변수를 저장, 노출, 검증, 캐
 3. `.env.example`과 문서를 함께 갱신합니다.
 4. `turbo.json`의 `env` 또는 `globalEnv`를 함께 갱신합니다.
 5. 앱 시작 시 검증 규칙을 추가합니다.
+
+## Rate Limiter 변수 메모
+
+- `API_REDIS_URL`은 로컬 개발에서는 `redis://localhost:6379`를 사용합니다.
+- 운영 Redis는 TLS 엔드포인트를 전제로 하므로 `rediss://...` 형태를 사용합니다.
+- `API_RATE_LIMIT_REDIS_PREFIX`는 엔드포인트별 버킷 prefix의 루트 네임스페이스입니다.
 
 ## 관련 문서
 

@@ -5,11 +5,12 @@ description: 이 모노레포를 로컬에서 설치, 실행, 점검할 때 필�
 
 ## 상태
 
-- 기준 시점: 2026-04-17
+- 기준 시점: 2026-04-20
 - 현재 로컬 개발의 중심은 `apps/web` 화면 프로토타입 및 `apps/api` 기능 구현입니다.
 - `packages/core`, `packages/database`, `packages/ai`가 생성되어 있으며 개발 중입니다.
 - 데이터베이스는 SQLite을 사용합니다.
 - RustFS를 로컬 S3 호환 저장소로 사용합니다.
+- AI rate limiter 로컬 저장소로 Redis를 사용합니다.
 
 ## 준비물
 
@@ -53,14 +54,35 @@ description: 이 모노레포를 로컬에서 설치, 실행, 점검할 때 필�
 
 - 웹: `3000`
 - API: `3010`
+- Redis: `6379`
+- Redis Insight: `5540`
 - RustFS S3 API: `9000`
 - RustFS 콘솔: `9001`
+
+## Docker 로컬 인프라 설정
+
+저장소 루트에서 `docker compose up -d`를 실행하면 Redis와 RustFS가 함께 시작됩니다.
+
+### Redis (AI Rate Limiter)
+
+- 엔드포인트: `redis://localhost:6379`
+- Redis Insight: `http://localhost:5540`
+- 기본 환경 변수:
+
+```env
+API_REDIS_URL=redis://localhost:6379
+API_RATE_LIMIT_REDIS_PREFIX=writing-app:rate-limit
+```
+
+- Redis 데이터는 Docker named volume `redis_data`에 저장됩니다.
+- Redis Insight 데이터는 Docker named volume `redisinsight_data`에 저장됩니다.
+- API 서버는 시작 시 Redis 연결을 확인하므로, `bun --filter api dev` 전에 `docker compose up -d`를 먼저 실행합니다.
 
 ## RustFS (로컬 S3 호환 저장소) 설정
 
 ### 시작
 
-저장소 루트에서 `docker compose up -d`를 실행하면 RustFS가 자동으로 시작되고, 공개 자산 버킷 초기화 컨테이너가 함께 실행됩니다.
+같은 `docker compose up -d` 명령으로 RustFS가 자동으로 시작되고, 공개 자산 버킷 초기화 컨테이너가 함께 실행됩니다.
 
 ### 접근
 
@@ -107,6 +129,7 @@ STORAGE_PUBLIC_URL=http://localhost:9000
 - 웹은 목 데이터와 mock AI에 의존하는 화면이 있습니다.
 - `turbo.json` 기준으로 `dev`는 캐시되지 않고, `build`에는 `.env*`가 입력으로 반영됩니다.
 - 로컬 개발 시 SQLite이 실행 중이어야 합니다.
+- API 로컬 실행과 `apps/api/.env.test` 기반 서버 실행은 Redis 기동이 필요합니다.
 
 ## 관련 문서
 
