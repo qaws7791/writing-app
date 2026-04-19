@@ -17,7 +17,14 @@ import History from "@tiptap/extension-history"
 import Placeholder from "@tiptap/extension-placeholder"
 import Typography from "@tiptap/extension-typography"
 import CharacterCount from "@tiptap/extension-character-count"
-import { ArrowLeft, MoreVertical, Check, Trash2, Lightbulb } from "lucide-react"
+import {
+  ArrowLeft,
+  MoreVertical,
+  Check,
+  Trash2,
+  Lightbulb,
+  FileTextIcon,
+} from "lucide-react"
 import { useRouter } from "next/navigation"
 import {
   Dialog,
@@ -342,35 +349,7 @@ export default function WritingEditorView({
           </DialogHeader>
           <div className="flex flex-col items-center gap-4">
             <div className="flex size-14 items-center justify-center rounded-[20px] bg-muted">
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M14 2H6C5.47 2 4.96 2.21 4.59 2.59C4.21 2.96 4 3.47 4 4V20C4 20.53 4.21 21.04 4.59 21.41C4.96 21.79 5.47 22 6 22H18C18.53 22 19.04 21.79 19.41 21.41C19.79 21.04 20 20.53 20 20V8L14 2Z"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M14 2V8H20"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M16 13H8M16 17H8M10 9H8"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <FileTextIcon />
             </div>
             <p className="text-center text-sm leading-6 text-muted-foreground/80">
               지금 나가면 저장되지 않은 내용이 사라질 수 있습니다.
