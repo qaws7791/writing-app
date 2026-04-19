@@ -10,6 +10,32 @@ export type StepType =
   | "feedback"
   | "revise"
 
+export type CreateJourneyInput = {
+  readonly title: string
+  readonly description: string
+  readonly category: JourneyCategory
+  readonly thumbnailUrl?: string | null
+}
+
+export type UpdateJourneyInput = Partial<CreateJourneyInput>
+
+export type CreateSessionInput = {
+  readonly title: string
+  readonly description: string
+  readonly estimatedMinutes: number
+  readonly order: number
+}
+
+export type UpdateSessionInput = Partial<CreateSessionInput>
+
+export type CreateStepInput = {
+  readonly type: StepType
+  readonly order: number
+  readonly contentJson: unknown
+}
+
+export type UpdateStepInput = Partial<CreateStepInput>
+
 export type JourneySummary = {
   readonly id: JourneyId
   readonly title: string
@@ -38,6 +64,10 @@ export type StepSummary = {
 
 export type JourneyDetail = JourneySummary & {
   readonly sessions: JourneySessionSummary[]
+}
+
+export type JourneyFullDetail = JourneySummary & {
+  readonly sessions: readonly JourneySessionDetail[]
 }
 
 export type JourneyDetailWithProgress = JourneyDetail & {

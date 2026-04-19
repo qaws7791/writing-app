@@ -12,3 +12,12 @@ export {
   makeBookmarkPromptUseCase,
   makeUnbookmarkPromptUseCase,
 } from "./bookmark-prompt"
+
+export type { CreatePromptDeps } from "./create-prompt"
+export { makeCreatePromptUseCase } from "./create-prompt"
+
+export type { UpdatePromptDeps } from "./update-prompt"
+export { makeUpdatePromptUseCase } from "./update-prompt"
+
+export type { DeletePromptDeps } from "./delete-prompt"
+export { makeDeletePromptUseCase } from "./delete-prompt"

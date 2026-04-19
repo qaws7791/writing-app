@@ -1,16 +1,15 @@
-import { eq } from "drizzle-orm"
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { promptTypes, writingPrompts } from "@workspace/database"
+import { promptTypeSchema, toPromptId, toHttpStatus } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getDb } from "@/lib/db"
+import { getUseCases } from "@/lib/use-cases"
 
 const updatePromptSchema = z.object({
   title: z.string().min(1).optional(),
   body: z.string().min(1).optional(),
-  promptType: z.enum(promptTypes).optional(),
+  promptType: promptTypeSchema.optional(),
   thumbnailUrl: z.string().url().nullable().optional(),
 })
 
@@ -21,17 +20,15 @@ export const GET = withAdminAuth(async (_req, context) => {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const db = getDb()
-  const [prompt] = await db
-    .select()
-    .from(writingPrompts)
-    .where(eq(writingPrompts.id, promptId))
-    .limit(1)
-
-  if (!prompt) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  const { getPrompt } = getUseCases()
+  const result = await getPrompt(toPromptId(promptId), null)
+  if (result.isErr()) {
+    return NextResponse.json(
+      { error: result.error.message },
+      { status: toHttpStatus(result.error) }
+    )
   }
-  return NextResponse.json(prompt)
+  return NextResponse.json(result.value)
 })
 
 export const PUT = withAdminAuth(async (req, context) => {
@@ -53,17 +50,15 @@ export const PUT = withAdminAuth(async (req, context) => {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const db = getDb()
-  const [updated] = await db
-    .update(writingPrompts)
-    .set({ ...parsed.data, updatedAt: new Date() })
-    .where(eq(writingPrompts.id, promptId))
-    .returning()
-
-  if (!updated) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  const { updatePrompt } = getUseCases()
+  const result = await updatePrompt(toPromptId(promptId), parsed.data)
+  if (result.isErr()) {
+    return NextResponse.json(
+      { error: result.error.message },
+      { status: toHttpStatus(result.error) }
+    )
   }
-  return NextResponse.json(updated)
+  return NextResponse.json(result.value)
 })
 
 export const DELETE = withAdminAuth(async (_req, context) => {
@@ -73,14 +68,7 @@ export const DELETE = withAdminAuth(async (_req, context) => {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const db = getDb()
-  const [deleted] = await db
-    .delete(writingPrompts)
-    .where(eq(writingPrompts.id, promptId))
-    .returning()
-
-  if (!deleted) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
-  }
+  const { deletePrompt } = getUseCases()
+  await deletePrompt(toPromptId(promptId))
   return NextResponse.json({ ok: true })
 })

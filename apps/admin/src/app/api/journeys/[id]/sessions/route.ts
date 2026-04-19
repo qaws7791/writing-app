@@ -1,11 +1,10 @@
-import { eq } from "drizzle-orm"
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { journeySessions } from "@workspace/database"
+import { toJourneyId, toHttpStatus } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getDb } from "@/lib/db"
+import { getUseCases } from "@/lib/use-cases"
 
 const createSessionSchema = z.object({
   title: z.string().min(1),
@@ -21,13 +20,8 @@ export const GET = withAdminAuth(async (_req, context) => {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const db = getDb()
-  const items = await db
-    .select()
-    .from(journeySessions)
-    .where(eq(journeySessions.journeyId, journeyId))
-    .orderBy(journeySessions.order)
-
+  const { listSessions } = getUseCases()
+  const items = (await listSessions(toJourneyId(journeyId)))._unsafeUnwrap()
   return NextResponse.json({ items })
 })
 
@@ -50,11 +44,13 @@ export const POST = withAdminAuth(async (req, context) => {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const db = getDb()
-  const [created] = await db
-    .insert(journeySessions)
-    .values({ ...parsed.data, journeyId })
-    .returning()
-
-  return NextResponse.json(created, { status: 201 })
+  const { createSession } = getUseCases()
+  const result = await createSession(toJourneyId(journeyId), parsed.data)
+  if (result.isErr()) {
+    return NextResponse.json(
+      { error: result.error.message },
+      { status: toHttpStatus(result.error) }
+    )
+  }
+  return NextResponse.json(result.value, { status: 201 })
 })

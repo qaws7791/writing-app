@@ -8,6 +8,8 @@ import type {
   PromptListFilters,
   PromptListPage,
   PromptBookmarkResult,
+  CreatePromptInput,
+  UpdatePromptInput,
 } from "@workspace/core"
 
 import { writingPrompts } from "../schema/writing-prompts"
@@ -210,6 +212,38 @@ export function createWritingPromptRepository(
             eq(savedPrompts.promptId, promptId as unknown as number)
           )
         )
+    },
+
+    async create(input: CreatePromptInput): Promise<PromptSummary> {
+      const [row] = await database
+        .insert(writingPrompts)
+        .values({
+          title: input.title,
+          body: input.body,
+          promptType: input.promptType,
+          thumbnailUrl: input.thumbnailUrl ?? null,
+        })
+        .returning()
+      return mapPromptSummary({ ...row!, isBookmarked: 0 })
+    },
+
+    async update(
+      promptId: PromptId,
+      input: UpdatePromptInput
+    ): Promise<PromptSummary | null> {
+      const [row] = await database
+        .update(writingPrompts)
+        .set({ ...input, updatedAt: new Date() })
+        .where(eq(writingPrompts.id, promptId as unknown as number))
+        .returning()
+      if (!row) return null
+      return mapPromptSummary({ ...row, isBookmarked: 0 })
+    },
+
+    async delete(promptId: PromptId): Promise<void> {
+      await database
+        .delete(writingPrompts)
+        .where(eq(writingPrompts.id, promptId as unknown as number))
     },
   }
 }

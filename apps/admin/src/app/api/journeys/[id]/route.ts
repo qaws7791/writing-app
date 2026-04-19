@@ -1,70 +1,44 @@
-import { eq, inArray } from "drizzle-orm"
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { z } from "zod"
 
 import {
-  journeyCategories,
-  journeys,
-  journeySessions,
-  steps,
-} from "@workspace/database"
+  journeyCategorySchema,
+  toJourneyId,
+  toHttpStatus,
+} from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getDb } from "@/lib/db"
+import { getUseCases } from "@/lib/use-cases"
 
 const updateJourneySchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().min(1).optional(),
-  category: z.enum(journeyCategories).optional(),
+  category: journeyCategorySchema.optional(),
   thumbnailUrl: z.string().url().nullable().optional(),
 })
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const journeyId = Number(id)
-  if (Number.isNaN(journeyId)) {
+  const numId = Number(id)
+  if (Number.isNaN(numId)) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const db = getDb()
-  const [journey] = await db
-    .select()
-    .from(journeys)
-    .where(eq(journeys.id, journeyId))
-    .limit(1)
-
-  if (!journey) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  const { getJourneyFull } = getUseCases()
+  const result = await getJourneyFull(toJourneyId(numId))
+  if (result.isErr()) {
+    return NextResponse.json(
+      { error: result.error.message },
+      { status: toHttpStatus(result.error) }
+    )
   }
-
-  const sessions = await db
-    .select()
-    .from(journeySessions)
-    .where(eq(journeySessions.journeyId, journeyId))
-    .orderBy(journeySessions.order)
-
-  const sessionIds = sessions.map((s) => s.id)
-  const allSteps =
-    sessionIds.length > 0
-      ? await db
-          .select()
-          .from(steps)
-          .where(inArray(steps.sessionId, sessionIds))
-          .orderBy(steps.order)
-      : []
-
-  const sessionsWithSteps = sessions.map((session) => ({
-    ...session,
-    steps: allSteps.filter((s) => s.sessionId === session.id),
-  }))
-
-  return NextResponse.json({ ...journey, sessions: sessionsWithSteps })
+  return NextResponse.json(result.value)
 })
 
 export const PUT = withAdminAuth(async (req, context) => {
   const { id } = await context.params
-  const journeyId = Number(id)
-  if (Number.isNaN(journeyId)) {
+  const numId = Number(id)
+  if (Number.isNaN(numId)) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -80,36 +54,25 @@ export const PUT = withAdminAuth(async (req, context) => {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const db = getDb()
-  const [updated] = await db
-    .update(journeys)
-    .set({ ...parsed.data, updatedAt: new Date() })
-    .where(eq(journeys.id, journeyId))
-    .returning()
-
-  if (!updated) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  const { updateJourney } = getUseCases()
+  const result = await updateJourney(toJourneyId(numId), parsed.data)
+  if (result.isErr()) {
+    return NextResponse.json(
+      { error: result.error.message },
+      { status: toHttpStatus(result.error) }
+    )
   }
-
-  return NextResponse.json(updated)
+  return NextResponse.json(result.value)
 })
 
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const journeyId = Number(id)
-  if (Number.isNaN(journeyId)) {
+  const numId = Number(id)
+  if (Number.isNaN(numId)) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const db = getDb()
-  const [deleted] = await db
-    .delete(journeys)
-    .where(eq(journeys.id, journeyId))
-    .returning()
-
-  if (!deleted) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
-  }
-
+  const { deleteJourney } = getUseCases()
+  await deleteJourney(toJourneyId(numId))
   return NextResponse.json({ ok: true })
 })

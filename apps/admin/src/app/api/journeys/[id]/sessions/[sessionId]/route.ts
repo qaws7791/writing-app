@@ -1,11 +1,10 @@
-import { eq } from "drizzle-orm"
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { journeySessions } from "@workspace/database"
+import { toSessionId, toHttpStatus } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getDb } from "@/lib/db"
+import { getUseCases } from "@/lib/use-cases"
 
 const updateSessionSchema = z.object({
   title: z.string().min(1).optional(),
@@ -21,17 +20,15 @@ export const GET = withAdminAuth(async (_req, context) => {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const db = getDb()
-  const [session] = await db
-    .select()
-    .from(journeySessions)
-    .where(eq(journeySessions.id, id))
-    .limit(1)
-
-  if (!session) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  const { getSessionDetail } = getUseCases()
+  const result = await getSessionDetail(toSessionId(id))
+  if (result.isErr()) {
+    return NextResponse.json(
+      { error: result.error.message },
+      { status: toHttpStatus(result.error) }
+    )
   }
-  return NextResponse.json(session)
+  return NextResponse.json(result.value)
 })
 
 export const PUT = withAdminAuth(async (req, context) => {
@@ -53,17 +50,15 @@ export const PUT = withAdminAuth(async (req, context) => {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const db = getDb()
-  const [updated] = await db
-    .update(journeySessions)
-    .set({ ...parsed.data, updatedAt: new Date() })
-    .where(eq(journeySessions.id, id))
-    .returning()
-
-  if (!updated) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
+  const { updateSession } = getUseCases()
+  const result = await updateSession(toSessionId(id), parsed.data)
+  if (result.isErr()) {
+    return NextResponse.json(
+      { error: result.error.message },
+      { status: toHttpStatus(result.error) }
+    )
   }
-  return NextResponse.json(updated)
+  return NextResponse.json(result.value)
 })
 
 export const DELETE = withAdminAuth(async (_req, context) => {
@@ -73,14 +68,7 @@ export const DELETE = withAdminAuth(async (_req, context) => {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const db = getDb()
-  const [deleted] = await db
-    .delete(journeySessions)
-    .where(eq(journeySessions.id, id))
-    .returning()
-
-  if (!deleted) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
-  }
+  const { deleteSession } = getUseCases()
+  await deleteSession(toSessionId(id))
   return NextResponse.json({ ok: true })
 })

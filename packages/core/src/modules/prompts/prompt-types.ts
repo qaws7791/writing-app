@@ -37,3 +37,12 @@ export const PROMPT_CATEGORIES: readonly PromptCategory[] = [
 export type PromptBookmarkResult =
   | { kind: "bookmarked"; savedAt: string }
   | { kind: "not-found" }
+
+export type CreatePromptInput = {
+  readonly title: string
+  readonly body: string
+  readonly promptType: PromptType
+  readonly thumbnailUrl?: string | null
+}
+
+export type UpdatePromptInput = Partial<CreatePromptInput>

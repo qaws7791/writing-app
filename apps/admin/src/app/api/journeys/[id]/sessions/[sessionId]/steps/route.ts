@@ -1,14 +1,13 @@
-import { eq } from "drizzle-orm"
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { stepTypes, steps } from "@workspace/database"
+import { stepTypeSchema, toSessionId, toHttpStatus } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getDb } from "@/lib/db"
+import { getUseCases } from "@/lib/use-cases"
 
 const createStepSchema = z.object({
-  type: z.enum(stepTypes),
+  type: stepTypeSchema,
   order: z.number().int().min(1),
   contentJson: z.unknown(),
 })
@@ -20,14 +19,15 @@ export const GET = withAdminAuth(async (_req, context) => {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const db = getDb()
-  const items = await db
-    .select()
-    .from(steps)
-    .where(eq(steps.sessionId, id))
-    .orderBy(steps.order)
-
-  return NextResponse.json({ items })
+  const { getSessionDetail } = getUseCases()
+  const result = await getSessionDetail(toSessionId(id))
+  if (result.isErr()) {
+    return NextResponse.json(
+      { error: result.error.message },
+      { status: toHttpStatus(result.error) }
+    )
+  }
+  return NextResponse.json({ items: result.value.steps })
 })
 
 export const POST = withAdminAuth(async (req, context) => {
@@ -49,16 +49,13 @@ export const POST = withAdminAuth(async (req, context) => {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const db = getDb()
-  const [created] = await db
-    .insert(steps)
-    .values({
-      sessionId: id,
-      type: parsed.data.type,
-      order: parsed.data.order,
-      contentJson: parsed.data.contentJson,
-    })
-    .returning()
-
-  return NextResponse.json(created, { status: 201 })
+  const { createStep } = getUseCases()
+  const result = await createStep(toSessionId(id), parsed.data)
+  if (result.isErr()) {
+    return NextResponse.json(
+      { error: result.error.message },
+      { status: toHttpStatus(result.error) }
+    )
+  }
+  return NextResponse.json(result.value, { status: 201 })
 })

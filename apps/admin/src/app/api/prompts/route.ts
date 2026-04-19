@@ -1,16 +1,15 @@
-import { eq } from "drizzle-orm"
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { promptTypes, writingPrompts } from "@workspace/database"
+import { promptTypeSchema } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getDb } from "@/lib/db"
+import { getUseCases } from "@/lib/use-cases"
 
 const createPromptSchema = z.object({
   title: z.string().min(1),
   body: z.string().min(1),
-  promptType: z.enum(promptTypes),
+  promptType: promptTypeSchema,
   thumbnailUrl: z.string().url().nullable().optional(),
 })
 
@@ -19,24 +18,22 @@ export const GET = withAdminAuth(async (req) => {
   const type = searchParams.get("type")
   const page = Math.max(1, Number(searchParams.get("page") ?? "1"))
   const limit = 20
-  const offset = (page - 1) * limit
 
-  const db = getDb()
+  const filters =
+    type && promptTypeSchema.safeParse(type).success
+      ? {
+          promptType: promptTypeSchema.parse(type),
+          cursor: (page - 1) * limit > 0 ? (page - 1) * limit : undefined,
+          limit,
+        }
+      : {
+          limit,
+          cursor: (page - 1) * limit > 0 ? (page - 1) * limit : undefined,
+        }
 
-  let query = db.select().from(writingPrompts).$dynamic()
-
-  if (type && promptTypes.includes(type as (typeof promptTypes)[number])) {
-    query = query.where(
-      eq(writingPrompts.promptType, type as (typeof promptTypes)[number])
-    )
-  }
-
-  const items = await query
-    .orderBy(writingPrompts.createdAt)
-    .limit(limit)
-    .offset(offset)
-
-  return NextResponse.json({ items, page, limit })
+  const { listPrompts } = getUseCases()
+  const page$ = (await listPrompts(null, filters))._unsafeUnwrap()
+  return NextResponse.json({ items: page$.items, page, limit })
 })
 
 export const POST = withAdminAuth(async (req) => {
@@ -52,14 +49,7 @@ export const POST = withAdminAuth(async (req) => {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const db = getDb()
-  const [created] = await db
-    .insert(writingPrompts)
-    .values({
-      ...parsed.data,
-      thumbnailUrl: parsed.data.thumbnailUrl ?? null,
-    })
-    .returning()
-
-  return NextResponse.json(created, { status: 201 })
+  const { createPrompt } = getUseCases()
+  const prompt = (await createPrompt(parsed.data))._unsafeUnwrap()
+  return NextResponse.json(prompt, { status: 201 })
 })

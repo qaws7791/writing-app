@@ -4,10 +4,17 @@ export type {
   StepType,
   JourneySummary,
   JourneyDetail,
+  JourneyFullDetail,
   JourneyDetailWithProgress,
   JourneySessionSummary,
   JourneySessionDetail,
   StepSummary,
+  CreateJourneyInput,
+  UpdateJourneyInput,
+  CreateSessionInput,
+  UpdateSessionInput,
+  CreateStepInput,
+  UpdateStepInput,
 } from "./journey-types"
 
 // Schemas
@@ -32,8 +39,9 @@ export type {
   JourneyModuleError,
   JourneyNotFoundError,
   SessionNotFoundError,
+  StepNotFoundError,
 } from "./journey-error"
-export { journeyNotFound, sessionNotFound } from "./journey-error"
+export { journeyNotFound, sessionNotFound, stepNotFound } from "./journey-error"
 
 // Port
 export type { JourneyRepository } from "./journey-port"
@@ -42,10 +50,32 @@ export type { JourneyRepository } from "./journey-port"
 export type {
   ListJourneysDeps,
   GetJourneyDeps,
+  GetJourneyFullDeps,
   GetSessionDetailDeps,
+  ListSessionsDeps,
+  CreateJourneyDeps,
+  UpdateJourneyDeps,
+  DeleteJourneyDeps,
+  CreateSessionDeps,
+  UpdateSessionDeps,
+  DeleteSessionDeps,
+  CreateStepDeps,
+  UpdateStepDeps,
+  DeleteStepDeps,
 } from "./use-cases/index"
 export {
   makeListJourneysUseCase,
   makeGetJourneyUseCase,
+  makeGetJourneyFullUseCase,
   makeGetSessionDetailUseCase,
+  makeListSessionsUseCase,
+  makeCreateJourneyUseCase,
+  makeUpdateJourneyUseCase,
+  makeDeleteJourneyUseCase,
+  makeCreateSessionUseCase,
+  makeUpdateSessionUseCase,
+  makeDeleteSessionUseCase,
+  makeCreateStepUseCase,
+  makeUpdateStepUseCase,
+  makeDeleteStepUseCase,
 } from "./use-cases/index"

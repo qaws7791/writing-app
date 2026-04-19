@@ -1,4 +1,4 @@
-import type { JourneyId, SessionId } from "../../shared/brand/index"
+import type { JourneyId, SessionId, StepId } from "../../shared/brand/index"
 import {
   createNotFoundError,
   type NotFoundError,
@@ -14,7 +14,15 @@ export type SessionNotFoundError = NotFoundError & {
   readonly id?: SessionId
 }
 
-export type JourneyModuleError = JourneyNotFoundError | SessionNotFoundError
+export type StepNotFoundError = NotFoundError & {
+  readonly entity: "step"
+  readonly id?: StepId
+}
+
+export type JourneyModuleError =
+  | JourneyNotFoundError
+  | SessionNotFoundError
+  | StepNotFoundError
 
 export function journeyNotFound(
   message: string,
@@ -35,5 +43,16 @@ export function sessionNotFound(
     ...createNotFoundError(message, { entity: "session", id: sessionId }),
     entity: "session",
     id: sessionId,
+  }
+}
+
+export function stepNotFound(
+  message: string,
+  stepId?: StepId
+): StepNotFoundError {
+  return {
+    ...createNotFoundError(message, { entity: "step", id: stepId }),
+    entity: "step",
+    id: stepId,
   }
 }

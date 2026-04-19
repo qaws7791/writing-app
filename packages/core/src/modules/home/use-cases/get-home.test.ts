@@ -57,7 +57,24 @@ describe("makeGetHomeUseCase", () => {
         sessionCount: 4,
         sessions: [],
       })),
+      getByIdFull: vi.fn(async () => null),
       getSessionDetail: vi.fn(async () => null),
+      listSessions: vi.fn(async () => []),
+      create: vi.fn(async () => {
+        throw new Error("not used")
+      }),
+      update: vi.fn(async () => null),
+      delete: vi.fn(async () => {}),
+      createSession: vi.fn(async () => {
+        throw new Error("not used")
+      }),
+      updateSession: vi.fn(async () => null),
+      deleteSession: vi.fn(async () => {}),
+      createStep: vi.fn(async () => {
+        throw new Error("not used")
+      }),
+      updateStep: vi.fn(async () => null),
+      deleteStep: vi.fn(async () => {}),
     }
 
     const getHome = makeGetHomeUseCase({
@@ -107,7 +124,24 @@ describe("makeGetHomeUseCase", () => {
     const journeyRepository: JourneyRepository = {
       list: vi.fn(async () => []),
       getById: vi.fn(async () => null),
+      getByIdFull: vi.fn(async () => null),
       getSessionDetail: vi.fn(async () => null),
+      listSessions: vi.fn(async () => []),
+      create: vi.fn(async () => {
+        throw new Error("not used")
+      }),
+      update: vi.fn(async () => null),
+      delete: vi.fn(async () => {}),
+      createSession: vi.fn(async () => {
+        throw new Error("not used")
+      }),
+      updateSession: vi.fn(async () => null),
+      deleteSession: vi.fn(async () => {}),
+      createStep: vi.fn(async () => {
+        throw new Error("not used")
+      }),
+      updateStep: vi.fn(async () => null),
+      deleteStep: vi.fn(async () => {}),
     }
 
     const getHome = makeGetHomeUseCase({

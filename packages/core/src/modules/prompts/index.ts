@@ -6,6 +6,8 @@ export type {
   PromptListPage,
   PromptCategory,
   PromptBookmarkResult,
+  CreatePromptInput,
+  UpdatePromptInput,
 } from "./prompt-types"
 export { PROMPT_CATEGORIES } from "./prompt-types"
 
@@ -34,10 +36,16 @@ export type {
   ListPromptsDeps,
   BookmarkPromptDeps,
   UnbookmarkPromptDeps,
+  CreatePromptDeps,
+  UpdatePromptDeps,
+  DeletePromptDeps,
 } from "./use-cases/index"
 export {
   makeGetPromptUseCase,
   makeListPromptsUseCase,
   makeBookmarkPromptUseCase,
   makeUnbookmarkPromptUseCase,
+  makeCreatePromptUseCase,
+  makeUpdatePromptUseCase,
+  makeDeletePromptUseCase,
 } from "./use-cases/index"
