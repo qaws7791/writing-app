@@ -28,12 +28,6 @@ API는 화면을 렌더링하지 않고, 다음 책임에 집중한다.
 - 각 기능 모듈은 `new OpenAPIHono()`로 app을 만들고 `app.openapi()`로 handler를 연결한다.
 - handler는 HTTP 입력을 use case 입력으로 변환하고, presenter는 use case 결과를 HTTP 응답으로 변환한다.
 
-## 버전 전략
-
-- 외부 공개 API 경로는 `/api/v1`를 기본으로 한다.
-- 하위 호환이 깨지는 변경만 새 버전을 도입한다.
-- 내부 실험용 엔드포인트는 운영 API와 분리한다.
-
 ## 주요 리소스
 
 ### 인증
