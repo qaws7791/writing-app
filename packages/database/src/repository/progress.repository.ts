@@ -196,27 +196,33 @@ export function createProgressRepository(
       userId: UserId,
       journeyId: JourneyId
     ): Promise<void> {
-      const sessions = await database
-        .select({ id: journeySessions.id, order: journeySessions.order })
-        .from(journeySessions)
-        .where(eq(journeySessions.journeyId, journeyId as unknown as number))
-        .orderBy(journeySessions.order)
+      await database.transaction(async (tx) => {
+        const sessions = await tx
+          .select({ id: journeySessions.id, order: journeySessions.order })
+          .from(journeySessions)
+          .where(eq(journeySessions.journeyId, journeyId as unknown as number))
+          .orderBy(journeySessions.order)
 
-      const now = new Date()
-      for (const session of sessions) {
-        await database
+        if (sessions.length === 0) return
+
+        const now = new Date()
+        const records = sessions.map((session) => ({
+          userId: userId as unknown as string,
+          sessionId: session.id,
+          currentStepOrder: 1,
+          status: (session.order === 1 ? "in_progress" : "locked") as
+            | "in_progress"
+            | "locked",
+          stepResponsesJson: {},
+          createdAt: now,
+          updatedAt: now,
+        }))
+
+        await tx
           .insert(userSessionProgress)
-          .values({
-            userId: userId as unknown as string,
-            sessionId: session.id,
-            currentStepOrder: 1,
-            status: session.order === 1 ? "in_progress" : "locked",
-            stepResponsesJson: {},
-            createdAt: now,
-            updatedAt: now,
-          })
+          .values(records)
           .onConflictDoNothing()
-      }
+      })
     },
 
     async getSessionProgress(
