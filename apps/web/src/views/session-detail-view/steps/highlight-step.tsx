@@ -1,3 +1,5 @@
+import { cn } from "@workspace/ui/utils"
+
 import type {
   HighlightContent,
   HighlightState,
@@ -57,21 +59,23 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
           const isSelected = selectedIds.includes(rangeId)
           const isCorrect = content.correctRangeIds.includes(rangeId)
 
-          let cls = "cursor-pointer rounded px-0.5 transition-all"
-          if (!checked) {
-            cls += isSelected
-              ? " bg-accent/50 text-foreground underline"
-              : " hover:bg-accent"
-          } else {
-            if (isSelected && isCorrect) {
-              cls += " bg-success-soft text-success-soft-foreground"
-            } else if (isSelected && !isCorrect) {
-              cls += " bg-danger-soft text-danger-soft-foreground line-through"
-            } else if (isCorrect) {
-              cls +=
-                " bg-success-soft/70 text-success-soft-foreground underline"
-            }
-          }
+          const cls = cn(
+            "cursor-pointer rounded px-0.5 transition-all",
+            !checked && isSelected && "bg-accent/50 text-foreground underline",
+            !checked && !isSelected && "hover:bg-accent",
+            checked &&
+              isSelected &&
+              isCorrect &&
+              "bg-success-soft text-success-soft-foreground",
+            checked &&
+              isSelected &&
+              !isCorrect &&
+              "bg-danger-soft text-danger-soft-foreground line-through",
+            checked &&
+              !isSelected &&
+              isCorrect &&
+              "bg-success-soft/70 text-success-soft-foreground underline"
+          )
 
           return (
             <span
@@ -101,11 +105,12 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
           {content.selectableRanges.map((r) => (
             <p key={r.id} className="text-sm leading-6 text-muted-foreground">
               <span
-                className={`font-[500] ${
+                className={cn(
+                  "font-[500]",
                   content.correctRangeIds.includes(r.id)
                     ? "text-success-soft-foreground"
                     : "text-foreground"
-                }`}
+                )}
               >
                 &quot;{content.passage.slice(r.startOffset, r.endOffset)}&quot;
               </span>{" "}

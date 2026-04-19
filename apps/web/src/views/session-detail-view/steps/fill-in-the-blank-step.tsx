@@ -1,3 +1,5 @@
+import { cn } from "@workspace/ui/utils"
+
 import type {
   FillInTheBlankContent,
   FillInTheBlankState,
@@ -44,13 +46,14 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
           const selectedOpt = blank.options.find((o) => o.id === selectedId)
           const isCorrect = selectedId === blank.correctOptionId
 
-          let style =
-            "border-b-2 border-dashed border-accent px-1 font-[500] text-accent"
-          if (checked && selectedId) {
-            style = isCorrect
-              ? "border-b-2 border-success px-1 font-[500] text-success-soft-foreground"
-              : "border-b-2 border-danger px-1 font-[500] text-danger-soft-foreground line-through"
-          }
+          const style = cn(
+            "border-b-2 border-dashed px-1 font-[500]",
+            checked && selectedId
+              ? isCorrect
+                ? "border-success text-success-soft-foreground"
+                : "border-danger text-danger-soft-foreground line-through"
+              : "border-accent text-accent"
+          )
 
           return (
             <span key={i} className={style}>
@@ -70,22 +73,27 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
               const isSelected = selections[blank.id] === opt.id
               const isCorrect = opt.id === blank.correctOptionId
 
-              let cls =
-                "rounded-lg border px-3 py-2 text-sm leading-6 transition-all"
-              if (isSelected && !checked) {
-                cls += " border-accent bg-accent/50 text-foreground font-[500]"
-              } else if (checked && isSelected && isCorrect) {
-                cls +=
-                  " border-success bg-success-soft text-success-soft-foreground font-[500]"
-              } else if (checked && isSelected && !isCorrect) {
-                cls +=
-                  " border-danger bg-danger-soft text-danger-soft-foreground line-through"
-              } else if (checked && isCorrect) {
-                cls +=
-                  " border-success/50 bg-success-soft/60 text-success-soft-foreground"
-              } else {
-                cls += " border-border bg-background text-foreground"
-              }
+              const cls = cn(
+                "rounded-lg border px-3 py-2 text-sm leading-6 transition-all",
+                isSelected &&
+                  !checked &&
+                  "border-accent bg-accent/50 font-[500] text-foreground",
+                checked &&
+                  isSelected &&
+                  isCorrect &&
+                  "border-success bg-success-soft text-success-soft-foreground font-[500]",
+                checked &&
+                  isSelected &&
+                  !isCorrect &&
+                  "border-danger bg-danger-soft text-danger-soft-foreground line-through",
+                checked &&
+                  !isSelected &&
+                  isCorrect &&
+                  "border-success/50 bg-success-soft/60 text-success-soft-foreground",
+                !isSelected &&
+                  (!checked || !isCorrect) &&
+                  "border-border bg-background text-foreground"
+              )
 
               return (
                 <button
