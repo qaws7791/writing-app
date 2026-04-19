@@ -56,3 +56,9 @@ bun dev
 `http://localhost:3020/prompts/new` 에서 이미지 업로드를 테스트할 수 있습니다.
 
 자세한 설정은 [로컬 개발 가이드](docs/04-engineering/local-development.md)를 참고하세요.
+
+## packs repository for agent
+
+```
+npx repomix@latest -i ".agent, .agents, .claude, .tmp, .vscode, docs, apps/web/src/data/journey-sessions.json,  apps/api/src/openapi.json, **/*.d.ts, **/*.test.ts, packages/database/drizzle/meta/, apps/storybook, **/*.spec.ts"
+```
