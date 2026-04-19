@@ -2,7 +2,7 @@ import {
   Avatar,
   AvatarImage,
   AvatarFallback,
-} from "@workspace/ui/components/avatar"
+} from "@workspace/ui/components/ui/avatar"
 
 export interface ProfileData {
   name: string
@@ -31,11 +31,11 @@ export function ProfileHeader({
       <h2 className="text-2xl leading-tight font-semibold text-foreground">
         {isPending ? "불러오는 중..." : (data?.name ?? "사용자")}
       </h2>
-      <p className="text-sm leading-6 font-medium text-muted">
+      <p className="text-sm leading-6 font-medium text-muted-foreground">
         {data?.email ?? ""}
       </p>
       {isError ? (
-        <p className="pt-2 text-xs leading-5 font-medium text-muted">
+        <p className="pt-2 text-xs leading-5 font-medium text-muted-foreground">
           프로필 정보를 불러오지 못했어요.
         </p>
       ) : null}

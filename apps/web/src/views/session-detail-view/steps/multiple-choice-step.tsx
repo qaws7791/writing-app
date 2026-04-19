@@ -1,5 +1,4 @@
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Tick02Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
+import { Check, X } from "lucide-react"
 
 import type {
   MultipleChoiceContent,
@@ -36,12 +35,12 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
         {content.question}
       </h2>
       {content.passage && (
-        <p className="rounded-xl bg-surface-secondary p-4 text-sm leading-6 text-foreground">
+        <p className="rounded-xl bg-muted p-4 text-sm leading-6 text-foreground">
           {content.passage}
         </p>
       )}
       {content.multiSelect && !checked && (
-        <p className="text-xs leading-5 font-medium text-muted/80">
+        <p className="text-xs leading-5 font-medium text-muted-foreground/80">
           복수 선택 가능
         </p>
       )}
@@ -50,11 +49,11 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
           const isSelected = selected.includes(opt.id)
           const isCorrect = content.correctOptionIds?.includes(opt.id) ?? false
 
-          let borderClass = "border-separator"
-          let bgClass = "bg-surface"
+          let borderClass = "border-border"
+          let bgClass = "bg-background"
           if (isSelected && !checked) {
             borderClass = "border-accent"
-            bgClass = "bg-accent-soft"
+            bgClass = "bg-accent/50"
           }
           if (checked && isSelected && isCorrect) {
             borderClass = "border-success"
@@ -76,7 +75,7 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
               disabled={checked}
               className={`flex items-start gap-3 rounded-xl border-2 px-4 py-3 text-left transition-all ${borderClass} ${bgClass}`}
             >
-              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-current text-muted/80">
+              <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border-2 border-current text-muted-foreground/80">
                 {isSelected && (
                   <span className="size-2.5 rounded-full bg-current" />
                 )}
@@ -85,21 +84,17 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
                 {opt.text}
               </span>
               {checked && isCorrect && (
-                <HugeiconsIcon
-                  icon={Tick02Icon}
+                <Check
                   size={18}
-                  color="currentColor"
                   strokeWidth={2}
-                  className="mt-0.5 shrink-0 text-success"
+                  className="text-success mt-0.5 shrink-0"
                 />
               )}
               {checked && isSelected && !isCorrect && (
-                <HugeiconsIcon
-                  icon={Cancel01Icon}
+                <X
                   size={18}
-                  color="currentColor"
                   strokeWidth={2}
-                  className="mt-0.5 shrink-0 text-danger"
+                  className="text-danger mt-0.5 shrink-0"
                 />
               )}
             </button>
@@ -107,12 +102,12 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
         })}
       </div>
       {checked && (
-        <div className="flex flex-col gap-2 rounded-xl bg-surface-secondary p-4">
-          <p className="text-xs leading-5 font-semibold tracking-wide text-muted/80">
+        <div className="flex flex-col gap-2 rounded-xl bg-muted p-4">
+          <p className="text-xs leading-5 font-semibold tracking-wide text-muted-foreground/80">
             해설
           </p>
           {content.options.map((opt) => (
-            <p key={opt.id} className="text-sm leading-6 text-muted">
+            <p key={opt.id} className="text-sm leading-6 text-muted-foreground">
               <span className="font-[500] text-foreground">
                 {opt.text.slice(0, 1)}:
               </span>{" "}

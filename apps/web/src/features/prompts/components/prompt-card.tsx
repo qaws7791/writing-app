@@ -1,9 +1,8 @@
 "use client"
 
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Bookmark01Icon } from "@hugeicons/core-free-icons"
+import { Bookmark } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@workspace/ui/components/ui/button"
 
 export type PromptType = "sensory" | "reflection" | "opinion"
 
@@ -12,8 +11,8 @@ function CategoryBadge({ promptType }: { promptType: PromptType }) {
     <span
       className={`rounded-full px-3 py-1 text-xs leading-4 font-medium uppercase ${
         promptType === "opinion"
-          ? "bg-surface-tertiary text-foreground"
-          : "bg-accent-soft text-muted"
+          ? "bg-accent text-foreground"
+          : "bg-accent/50 text-muted-foreground"
       }`}
     >
       {promptType === "sensory"
@@ -42,7 +41,7 @@ export function PromptCard({ card }: { card: PromptCardData }) {
       <button
         type="button"
         onClick={() => router.push(`/prompts/${card.id}`)}
-        className="relative h-64 w-full overflow-hidden rounded-[3rem] bg-surface transition-opacity hover:opacity-90"
+        className="relative h-64 w-full overflow-hidden rounded-[3rem] bg-background transition-opacity hover:opacity-90"
       >
         <div className="absolute inset-8 flex items-center justify-center opacity-80">
           <img
@@ -66,16 +65,11 @@ export function PromptCard({ card }: { card: PromptCardData }) {
           </p>
         </button>
         <div className="flex items-center justify-between pt-3">
-          <span className="text-xs leading-5 font-medium text-muted/80">
+          <span className="text-xs leading-5 font-medium text-muted-foreground/80">
             {card.responseCount}명 응답
           </span>
-          <Button aria-label="북마크" variant="ghost" isIconOnly>
-            <HugeiconsIcon
-              icon={Bookmark01Icon}
-              size={24}
-              color="currentColor"
-              strokeWidth={1.5}
-            />
+          <Button aria-label="북마크" variant="ghost" size="icon">
+            <Bookmark size={24} strokeWidth={1.5} />
           </Button>
         </div>
       </div>

@@ -1,11 +1,5 @@
-import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  Tick02Icon,
-  Cancel01Icon,
-  ArrowUp01Icon,
-  ArrowDown01Icon,
-} from "@hugeicons/core-free-icons"
-import { Button } from "@workspace/ui/components/button"
+import { ChevronUp, ChevronDown, Check, X } from "lucide-react"
+import { Button } from "@workspace/ui/components/ui/button"
 
 import type {
   OrderingContent,
@@ -46,7 +40,7 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
           const isCorrectPosition =
             checked && content.correctOrder[index] === id
 
-          let borderClass = "border-separator/80"
+          let borderClass = "border-border/80"
           if (checked) {
             borderClass = isCorrectPosition ? "border-success" : "border-danger"
           }
@@ -54,9 +48,9 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
           return (
             <div
               key={id}
-              className={`flex items-center gap-3 rounded-xl border-2 bg-surface-secondary p-3 transition-all ${borderClass}`}
+              className={`flex items-center gap-3 rounded-xl border-2 bg-muted p-3 transition-all ${borderClass}`}
             >
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-surface-tertiary text-xs leading-5 font-semibold tracking-wide text-muted">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs leading-5 font-semibold tracking-wide text-muted-foreground">
                 {index + 1}
               </span>
               <p className="flex-1 text-sm leading-6 font-medium text-foreground">
@@ -66,55 +60,50 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
                 <div className="flex shrink-0 flex-col gap-0.5">
                   <Button
                     variant="ghost"
-                    isIconOnly
-                    size="sm"
+                    size="icon"
                     onClick={() => moveItem(index, "up")}
-                    isDisabled={index === 0}
+                    disabled={index === 0}
                     aria-label="위로 이동"
+                    className="h-7 w-7"
                   >
-                    <HugeiconsIcon
-                      icon={ArrowUp01Icon}
-                      size={16}
-                      color="currentColor"
-                      strokeWidth={1.5}
-                    />
+                    <ChevronUp size={16} strokeWidth={1.5} />
                   </Button>
                   <Button
                     variant="ghost"
-                    isIconOnly
-                    size="sm"
+                    size="icon"
                     onClick={() => moveItem(index, "down")}
-                    isDisabled={index === currentOrder.length - 1}
+                    disabled={index === currentOrder.length - 1}
                     aria-label="아래로 이동"
+                    className="h-7 w-7"
                   >
-                    <HugeiconsIcon
-                      icon={ArrowDown01Icon}
-                      size={16}
-                      color="currentColor"
-                      strokeWidth={1.5}
-                    />
+                    <ChevronDown size={16} strokeWidth={1.5} />
                   </Button>
                 </div>
               )}
-              {checked && (
-                <HugeiconsIcon
-                  icon={isCorrectPosition ? Tick02Icon : Cancel01Icon}
-                  size={18}
-                  color="currentColor"
-                  strokeWidth={2}
-                  className={`shrink-0 ${isCorrectPosition ? "text-success" : "text-danger"}`}
-                />
-              )}
+              {checked &&
+                (isCorrectPosition ? (
+                  <Check
+                    size={18}
+                    strokeWidth={2}
+                    className="text-success shrink-0"
+                  />
+                ) : (
+                  <X
+                    size={18}
+                    strokeWidth={2}
+                    className="text-danger shrink-0"
+                  />
+                ))}
             </div>
           )
         })}
       </div>
       {checked && (
-        <div className="rounded-xl bg-surface-secondary p-4">
-          <p className="text-xs leading-5 font-semibold tracking-wide text-muted/80">
+        <div className="rounded-xl bg-muted p-4">
+          <p className="text-xs leading-5 font-semibold tracking-wide text-muted-foreground/80">
             해설
           </p>
-          <p className="mt-1 text-sm leading-6 text-muted">
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
             {content.explanation}
           </p>
         </div>

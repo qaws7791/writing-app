@@ -173,7 +173,7 @@ export default function SessionDetailView({
   }, [currentStep, getStepState, handleNext, isSubmitting, updateStepState])
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface">
+    <div className="flex min-h-screen flex-col bg-background">
       <SessionHeader
         journeyTitle={journeyTitle}
         progress={progress}

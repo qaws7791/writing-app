@@ -9,7 +9,7 @@ export function JourneyHero({
 }) {
   return (
     <>
-      <div className="mx-4 aspect-4/3 overflow-hidden rounded-[2rem] bg-surface-tertiary">
+      <div className="mx-4 aspect-4/3 overflow-hidden rounded-[2rem] bg-accent">
         <img
           src={thumbnailUrl}
           alt={title}
@@ -20,7 +20,7 @@ export function JourneyHero({
         <h1 className="text-3xl leading-tight font-semibold text-foreground">
           {title}
         </h1>
-        <p className="text-base leading-7 text-muted opacity-80">
+        <p className="text-base leading-7 text-muted-foreground opacity-80">
           {description}
         </p>
       </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { ToggleButton } from "@workspace/ui/components/toggle-button"
+import { ToggleButton } from "@workspace/ui/components/ui/toggle-button"
 import type { PromptType } from "./prompt-card"
 
 interface PromptCategoryChipsProps {

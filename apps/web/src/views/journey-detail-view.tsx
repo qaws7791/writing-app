@@ -1,9 +1,8 @@
 "use client"
 
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowLeft01Icon, MoreHorizontalIcon } from "@hugeicons/core-free-icons"
+import { ArrowLeft, MoreHorizontal } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { Button } from "@workspace/ui/components/button"
+import { Button } from "@workspace/ui/components/ui/button"
 import {
   JourneyHero,
   JourneyProgressCard,
@@ -40,32 +39,22 @@ export default function JourneyDetailView({
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-surface">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 flex items-center justify-between px-4 py-3">
         <Button
-          isIconOnly
+          size="icon"
           variant="ghost"
           aria-label="뒤로 가기"
-          onPress={() => router.back()}
+          onClick={() => router.back()}
         >
-          <HugeiconsIcon
-            icon={ArrowLeft01Icon}
-            size={24}
-            color="currentColor"
-            strokeWidth={1.5}
-          />
+          <ArrowLeft size={24} strokeWidth={1.5} />
         </Button>
         <span className="flex-1 truncate px-2 text-center text-sm leading-5 font-medium text-foreground">
           {data.title}
         </span>
-        <Button isIconOnly variant="ghost" aria-label="더보기">
-          <HugeiconsIcon
-            icon={MoreHorizontalIcon}
-            size={24}
-            color="currentColor"
-            strokeWidth={1.5}
-          />
+        <Button size="icon" variant="ghost" aria-label="더보기">
+          <MoreHorizontal size={24} strokeWidth={1.5} />
         </Button>
       </header>
 
@@ -99,12 +88,12 @@ export default function JourneyDetailView({
             <Button
               variant="secondary"
               className="flex h-auto w-full flex-col gap-2 rounded-3xl p-6 text-left"
-              onPress={() => router.push("/writings/new")}
+              onClick={() => router.push("/writings/new")}
             >
               <p className="text-lg leading-7 font-semibold text-foreground">
                 글쓰기 공간에서 배운 내용을 표현해보세요
               </p>
-              <p className="text-sm leading-6 text-muted">
+              <p className="text-sm leading-6 text-muted-foreground">
                 여정에서 배운 내용을 자유롭게 글로 써보세요
               </p>
             </Button>

@@ -1,9 +1,9 @@
 import Link from "next/link"
-import { buttonVariants } from "@workspace/ui/components/button"
+import { buttonVariants } from "@workspace/ui/components/ui/button"
 
 export default function LandingPage() {
   return (
-    <div className="flex min-h-screen flex-col bg-surface">
+    <div className="flex min-h-screen flex-col bg-background">
       <header className="flex items-center justify-between px-6 py-5">
         <span className="text-xl font-bold tracking-tight text-foreground">
           글필
@@ -23,7 +23,7 @@ export default function LandingPage() {
             <br />
             나를 발견하다
           </h1>
-          <p className="mt-5 text-lg leading-relaxed text-muted">
+          <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
             매일의 글감과 여정을 따라가며
             <br />
             나만의 글쓰기 습관을 만들어보세요.
@@ -32,7 +32,7 @@ export default function LandingPage() {
           <div className="mt-10 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
             <Link
               href="/login"
-              className={buttonVariants({ variant: "primary", size: "lg" })}
+              className={buttonVariants({ variant: "default", size: "lg" })}
             >
               시작하기
             </Link>
@@ -40,7 +40,7 @@ export default function LandingPage() {
         </div>
       </main>
 
-      <footer className="px-6 py-6 text-center text-xs text-muted/80">
+      <footer className="px-6 py-6 text-center text-xs text-muted-foreground/80">
         © 글필
       </footer>
     </div>

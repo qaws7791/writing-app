@@ -1,11 +1,10 @@
 "use client"
 
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Search01Icon, QuillWrite01Icon } from "@hugeicons/core-free-icons"
+import { Search, PenLine } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef } from "react"
-import { Button } from "@workspace/ui/components/button"
-import { Spinner } from "@workspace/ui/components/spinner"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Spinner } from "@workspace/ui/components/ui/spinner"
 
 import { useWritings, useDeleteWriting } from "@/features/writings"
 import { WritingCard } from "@/features/writings/components"
@@ -50,7 +49,7 @@ export default function WritingsListView() {
     ) ?? []
 
   return (
-    <div className="relative flex flex-col bg-surface">
+    <div className="relative flex flex-col bg-background">
       {/* Header */}
       <div className="px-4 pt-4 pb-0">
         <h1 className="text-xl leading-snug font-semibold text-foreground">
@@ -60,15 +59,13 @@ export default function WritingsListView() {
 
       {/* Search Bar */}
       <div className="px-4 pt-4">
-        <div className="flex items-center gap-2.5 rounded-[2rem] bg-surface-secondary px-6 py-5">
-          <HugeiconsIcon
-            icon={Search01Icon}
+        <div className="flex items-center gap-2.5 rounded-[2rem] bg-muted px-6 py-5">
+          <Search
             size={18}
-            color="currentColor"
             strokeWidth={1.5}
-            className="shrink-0 text-muted/80"
+            className="shrink-0 text-muted-foreground/80"
           />
-          <span className="text-base leading-7 text-muted/80">
+          <span className="text-base leading-7 text-muted-foreground/80">
             기록된 생각을 검색해보세요
           </span>
         </div>
@@ -85,7 +82,7 @@ export default function WritingsListView() {
         ))}
         {isFetchingNextPage && (
           <div className="flex justify-center py-4">
-            <Spinner size="sm" />
+            <Spinner />
           </div>
         )}
         <div ref={sentinelRef} />
@@ -94,19 +91,13 @@ export default function WritingsListView() {
       {/* FAB */}
       <div className="fixed right-4 bottom-24 z-50">
         <Button
-          isIconOnly
-          variant="primary"
-          size="lg"
+          size="icon-lg"
+          variant="default"
           aria-label="새 글쓰기"
           className="rounded-full shadow-lg"
-          onPress={() => router.push("/writings/new")}
+          onClick={() => router.push("/writings/new")}
         >
-          <HugeiconsIcon
-            icon={QuillWrite01Icon}
-            size={24}
-            color="currentColor"
-            strokeWidth={1.5}
-          />
+          <PenLine size={24} strokeWidth={1.5} />
         </Button>
       </div>
     </div>

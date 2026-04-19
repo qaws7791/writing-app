@@ -47,7 +47,7 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
       <p className="text-base leading-6 font-semibold text-foreground">
         {content.instruction}
       </p>
-      <div className="rounded-2xl bg-surface-secondary p-4 text-sm leading-6 text-foreground">
+      <div className="rounded-2xl bg-muted p-4 text-sm leading-6 text-foreground">
         {segments.map((seg, i) => {
           if (!seg.rangeId) {
             return <span key={i}>{seg.text}</span>
@@ -59,8 +59,8 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
           let cls = "cursor-pointer rounded px-0.5 transition-all"
           if (!checked) {
             cls += isSelected
-              ? " bg-accent-soft text-accent-soft-foreground underline"
-              : " hover:bg-surface-tertiary"
+              ? " bg-accent/50 text-foreground underline"
+              : " hover:bg-accent"
           } else {
             if (isSelected && isCorrect) {
               cls += " bg-success-soft text-success-soft-foreground"
@@ -93,12 +93,12 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
         })}
       </div>
       {checked && (
-        <div className="flex flex-col gap-2 rounded-xl bg-surface-secondary p-4">
-          <p className="text-xs leading-5 font-semibold tracking-wide text-muted/80">
+        <div className="flex flex-col gap-2 rounded-xl bg-muted p-4">
+          <p className="text-xs leading-5 font-semibold tracking-wide text-muted-foreground/80">
             해설
           </p>
           {content.selectableRanges.map((r) => (
-            <p key={r.id} className="text-sm leading-6 text-muted">
+            <p key={r.id} className="text-sm leading-6 text-muted-foreground">
               <span
                 className={`font-[500] ${
                   content.correctRangeIds.includes(r.id)

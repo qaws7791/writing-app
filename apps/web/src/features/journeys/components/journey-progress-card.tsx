@@ -11,10 +11,10 @@ export function JourneyProgressCard({
     totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
 
   return (
-    <div className="mx-4 mt-6 flex flex-col gap-4 rounded-[2rem] bg-surface px-6 py-6">
+    <div className="mx-4 mt-6 flex flex-col gap-4 rounded-[2rem] bg-background px-6 py-6">
       <div className="flex items-end justify-between">
         <div className="flex flex-col gap-1">
-          <span className="text-sm leading-5 font-medium text-muted">
+          <span className="text-sm leading-5 font-medium text-muted-foreground">
             전체 진행률
           </span>
           <span className="text-xl leading-8 font-semibold text-foreground">

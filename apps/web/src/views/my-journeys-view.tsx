@@ -1,8 +1,13 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Tabs, TabPanel, TabList, Tab } from "@workspace/ui/components/tabs"
-import { Skeleton } from "@workspace/ui/components/skeleton"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/ui/tabs"
+import { Skeleton } from "@workspace/ui/components/ui/skeleton"
 import { useHomeSnapshot } from "@/features/home"
 import { useJourneys } from "@/features/journeys"
 import { JourneyCard } from "@/features/journeys/components/journey-card"
@@ -50,25 +55,25 @@ export default function MyJourneysView() {
         </h1>
         <button
           onClick={() => router.push("/journeys")}
-          className="text-sm leading-5 font-medium text-muted"
+          className="text-sm leading-5 font-medium text-muted-foreground"
         >
           여정 찾기
         </button>
       </div>
 
       {/* Tabs */}
-      <Tabs defaultSelectedKey="in_progress" className="px-4">
-        <TabList className="w-full">
-          <Tab id="in_progress" className="flex-1">
+      <Tabs defaultValue="in_progress" className="px-4">
+        <TabsList className="w-full">
+          <TabsTrigger value="in_progress" className="flex-1">
             진행 중
-          </Tab>
-          <Tab id="completed" className="flex-1">
+          </TabsTrigger>
+          <TabsTrigger value="completed" className="flex-1">
             완료
-          </Tab>
-        </TabList>
+          </TabsTrigger>
+        </TabsList>
 
         {/* 진행 중 탭 */}
-        <TabPanel id="in_progress" className="flex flex-col gap-4 pt-4">
+        <TabsContent value="in_progress" className="flex flex-col gap-4 pt-4">
           {isHomePending
             ? Array.from({ length: 2 }, (_, index) => (
                 <Skeleton key={index} className="h-32 rounded-3xl" />
@@ -76,13 +81,13 @@ export default function MyJourneysView() {
             : null}
 
           {isHomeError ? (
-            <div className="rounded-3xl bg-surface-secondary p-6 text-center text-sm leading-6 text-muted">
+            <div className="rounded-3xl bg-muted p-6 text-center text-sm leading-6 text-muted-foreground">
               여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           ) : null}
 
           {!isHomePending && !isHomeError && activeJourneys.length === 0 ? (
-            <div className="rounded-3xl bg-surface-secondary p-6 text-center text-sm leading-6 text-muted">
+            <div className="rounded-3xl bg-muted p-6 text-center text-sm leading-6 text-muted-foreground">
               아직 시작한 여정이 없어요. 나에게 맞는 여정을 찾아보세요!
             </div>
           ) : null}
@@ -92,10 +97,10 @@ export default function MyJourneysView() {
                 <JourneyCard key={journey.id} mode="active" {...journey} />
               ))
             : null}
-        </TabPanel>
+        </TabsContent>
 
         {/* 완료 탭 */}
-        <TabPanel id="completed" className="flex flex-col gap-4 pt-4">
+        <TabsContent value="completed" className="flex flex-col gap-4 pt-4">
           {isCompletedPending
             ? Array.from({ length: 2 }, (_, index) => (
                 <Skeleton key={index} className="h-24 rounded-3xl" />
@@ -103,7 +108,7 @@ export default function MyJourneysView() {
             : null}
 
           {isCompletedError ? (
-            <div className="rounded-3xl bg-surface-secondary p-6 text-center text-sm leading-6 text-muted">
+            <div className="rounded-3xl bg-muted p-6 text-center text-sm leading-6 text-muted-foreground">
               완료한 여정을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
             </div>
           ) : null}
@@ -111,7 +116,7 @@ export default function MyJourneysView() {
           {!isCompletedPending &&
           !isCompletedError &&
           completedJourneys.length === 0 ? (
-            <div className="rounded-3xl bg-surface-secondary p-6 text-center text-sm leading-6 text-muted">
+            <div className="rounded-3xl bg-muted p-6 text-center text-sm leading-6 text-muted-foreground">
               아직 완료한 여정이 없어요. 여정을 시작해보세요!
             </div>
           ) : null}
@@ -121,7 +126,7 @@ export default function MyJourneysView() {
                 <JourneyCard key={journey.id} mode="completed" {...journey} />
               ))
             : null}
-        </TabPanel>
+        </TabsContent>
       </Tabs>
     </div>
   )

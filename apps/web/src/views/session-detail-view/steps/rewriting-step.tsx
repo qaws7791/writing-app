@@ -1,5 +1,4 @@
-import { TextField } from "@workspace/ui/components/text-field"
-import { TextArea } from "@workspace/ui/components/textarea"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 import type {
   RewritingContent,
@@ -37,30 +36,30 @@ export function RewritingStep({
         {content.instruction}
       </p>
       {originalText && (
-        <details className="rounded-xl bg-surface-secondary">
-          <summary className="cursor-pointer px-4 py-3 text-sm leading-6 font-medium text-muted">
+        <details className="rounded-xl bg-muted">
+          <summary className="cursor-pointer px-4 py-3 text-sm leading-6 font-medium text-muted-foreground">
             원본 글 보기
           </summary>
-          <div className="border-t border-separator/80 px-4 py-3">
-            <p className="text-sm leading-6 whitespace-pre-line text-muted/80">
+          <div className="border-t border-border/80 px-4 py-3">
+            <p className="text-sm leading-6 whitespace-pre-line text-muted-foreground/80">
               {originalText}
             </p>
           </div>
         </details>
       )}
-      <TextField
+      <Textarea
         value={displayText}
-        onChange={(value) =>
+        onChange={(e) =>
           onStateChange({
-            text: value,
-            hasInput: value.length > 0 && value !== originalText,
+            text: e.target.value,
+            hasInput:
+              e.target.value.length > 0 && e.target.value !== originalText,
           })
         }
-      >
-        <TextArea rows={10} />
-      </TextField>
+        rows={10}
+      />
       <div className="flex justify-end">
-        <span className="text-xs leading-5 font-medium text-muted/80">
+        <span className="text-xs leading-5 font-medium text-muted-foreground/80">
           {displayText.length}자
         </span>
       </div>

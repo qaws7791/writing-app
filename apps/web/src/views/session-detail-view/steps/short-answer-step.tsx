@@ -1,5 +1,4 @@
-import { TextField } from "@workspace/ui/components/text-field"
-import { TextArea } from "@workspace/ui/components/textarea"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 import type {
   ShortAnswerContent,
@@ -18,21 +17,23 @@ export function ShortAnswerStep({ content, state, onStateChange }: Props) {
         {content.question}
       </h2>
       {content.context && (
-        <p className="text-sm leading-6 text-muted">{content.context}</p>
+        <p className="text-sm leading-6 text-muted-foreground">
+          {content.context}
+        </p>
       )}
-      <TextField
+      <Textarea
         value={text}
-        onChange={(value) =>
+        onChange={(e) =>
           onStateChange({
-            text: value,
-            hasInput: value.length >= content.minLength,
+            text: e.target.value,
+            hasInput: e.target.value.length >= content.minLength,
           })
         }
-      >
-        <TextArea placeholder={content.placeholder} rows={4} />
-      </TextField>
+        placeholder={content.placeholder}
+        rows={4}
+      />
       <div className="flex justify-end">
-        <span className="text-xs leading-5 font-medium text-muted/80">
+        <span className="text-xs leading-5 font-medium text-muted-foreground/80">
           {text.length} / {content.maxLength}자
         </span>
       </div>

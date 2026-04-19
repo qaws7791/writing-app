@@ -11,7 +11,7 @@ export function ConceptStep({ content }: { content: ConceptContent }) {
         <MarkdownRenderer content={content.body} />
       </div>
       {content.keyTakeaway && (
-        <div className="rounded-xl border-l-4 border-accent bg-accent-soft px-4 py-3">
+        <div className="rounded-xl border-l-4 border-accent bg-accent/50 px-4 py-3">
           <p className="mb-1 text-xs leading-5 font-semibold tracking-wide text-foreground">
             핵심 요약
           </p>

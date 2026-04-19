@@ -1,13 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import {
-  SecurityLockIcon,
-  Notification01Icon,
-  TextFontIcon,
-  CrownIcon,
-  FileExportIcon,
-} from "@hugeicons/core-free-icons"
+import { ShieldCheck, Bell, Type, Crown, FileOutput } from "lucide-react"
 import { useUserProfile } from "@/features/users"
 import {
   ProfileHeader,
@@ -31,7 +25,7 @@ export default function ProfileView() {
   }
 
   return (
-    <div className="flex min-h-full flex-col bg-surface">
+    <div className="flex min-h-full flex-col bg-background">
       {/* 헤더 */}
       <div className="px-4 pt-4 pb-2">
         <h1 className="text-xl leading-snug font-semibold text-foreground">
@@ -49,13 +43,13 @@ export default function ProfileView() {
         {/* 설정 그룹 */}
         <div className="flex flex-col gap-10 px-4">
           <SettingSection title="계정 관리">
-            <SettingRow icon={SecurityLockIcon} label="계정 보안" />
+            <SettingRow icon={ShieldCheck} label="계정 보안" />
             <Divider />
             <SettingRow
-              icon={Notification01Icon}
+              icon={Bell}
               label="알림 설정"
               trailing={
-                <span className="mr-2 text-xs leading-5 font-semibold tracking-wide text-muted">
+                <span className="mr-2 text-xs leading-5 font-semibold tracking-wide text-muted-foreground">
                   ON
                 </span>
               }
@@ -66,10 +60,10 @@ export default function ProfileView() {
             <ThemeSwitcher />
             <Divider />
             <SettingRow
-              icon={TextFontIcon}
+              icon={Type}
               label="글꼴 크기"
               trailing={
-                <span className="mr-2 text-sm leading-6 font-medium text-muted">
+                <span className="mr-2 text-sm leading-6 font-medium text-muted-foreground">
                   보통
                 </span>
               }
@@ -79,16 +73,16 @@ export default function ProfileView() {
 
           <SettingSection title="서비스 및 데이터">
             <SettingRow
-              icon={CrownIcon}
+              icon={Crown}
               label="구독 관리 (Pro)"
               trailing={
-                <span className="mr-3 rounded-full bg-surface-tertiary px-2 py-0.5 text-xs leading-4 font-semibold text-foreground">
+                <span className="mr-3 rounded-full bg-accent px-2 py-0.5 text-xs leading-4 font-semibold text-foreground">
                   ACTIVE
                 </span>
               }
             />
             <Divider />
-            <SettingRow icon={FileExportIcon} label="데이터 내보내기" />
+            <SettingRow icon={FileOutput} label="데이터 내보내기" />
           </SettingSection>
 
           {/* 로그아웃 */}
@@ -96,7 +90,7 @@ export default function ProfileView() {
             className="flex items-center justify-center py-5 opacity-70"
             onClick={handleLogout}
           >
-            <span className="text-sm leading-6 font-medium text-danger">
+            <span className="text-sm leading-6 font-medium text-destructive">
               로그아웃
             </span>
           </button>

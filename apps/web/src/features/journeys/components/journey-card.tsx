@@ -1,8 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { CheckmarkCircle02Icon, Layers01Icon } from "@hugeicons/core-free-icons"
+import { CheckCircle2, Layers } from "lucide-react"
 
 interface JourneyCardBaseProps {
   id: number
@@ -40,9 +39,9 @@ export function JourneyCard(props: JourneyCardProps) {
       <button
         type="button"
         onClick={() => router.push(`/journeys/${props.id}`)}
-        className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-secondary p-4 text-left transition-colors hover:bg-surface-tertiary"
+        className="flex h-32 w-full items-center gap-5 rounded-3xl bg-muted p-4 text-left transition-colors hover:bg-accent"
       >
-        <div className="size-24 shrink-0 overflow-hidden rounded-[32px] bg-surface-tertiary">
+        <div className="size-24 shrink-0 overflow-hidden rounded-[32px] bg-accent">
           <img
             src={props.imageUrl}
             alt={props.title}
@@ -53,18 +52,18 @@ export function JourneyCard(props: JourneyCardProps) {
           <p className="text-lg leading-7 font-medium text-foreground">
             {props.title}
           </p>
-          <p className="line-clamp-1 pb-1.5 text-xs leading-5 text-muted">
+          <p className="line-clamp-1 pb-1.5 text-xs leading-5 text-muted-foreground">
             {props.description}
           </p>
           <div className="flex flex-1 items-end">
             <div className="flex w-full items-center gap-2">
-              <div className="relative h-2 flex-1 rounded-full bg-surface-tertiary">
+              <div className="relative h-2 flex-1 rounded-full bg-accent">
                 <div
-                  className="absolute inset-y-0 left-0 rounded-full bg-accent"
+                  className="absolute inset-y-0 left-0 rounded-full bg-primary"
                   style={{ width: `${props.progress}%` }}
                 />
               </div>
-              <span className="shrink-0 text-xs leading-5 font-semibold tracking-wide text-muted">
+              <span className="shrink-0 text-xs leading-5 font-semibold tracking-wide text-muted-foreground">
                 {props.progress}%
               </span>
             </div>
@@ -79,9 +78,9 @@ export function JourneyCard(props: JourneyCardProps) {
       <button
         type="button"
         onClick={() => router.push(`/journeys/${props.id}`)}
-        className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-secondary p-4 text-left transition-colors hover:bg-surface-tertiary"
+        className="flex h-32 w-full items-center gap-5 rounded-3xl bg-muted p-4 text-left transition-colors hover:bg-accent"
       >
-        <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-surface-tertiary">
+        <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-accent">
           <img
             src={props.imageUrl}
             alt={props.title}
@@ -93,19 +92,17 @@ export function JourneyCard(props: JourneyCardProps) {
             <p className="text-lg leading-7 font-medium text-foreground">
               {props.title}
             </p>
-            <p className="line-clamp-2 text-sm leading-6 text-muted">
+            <p className="line-clamp-2 text-sm leading-6 text-muted-foreground">
               {props.description}
             </p>
           </div>
           <div className="flex items-center gap-0.5">
-            <HugeiconsIcon
-              icon={Layers01Icon}
+            <Layers
               size={12}
-              color="currentColor"
               strokeWidth={1.5}
-              className="text-muted"
+              className="text-muted-foreground"
             />
-            <span className="text-xs leading-4 font-medium text-muted uppercase">
+            <span className="text-xs leading-4 font-medium text-muted-foreground uppercase">
               {props.sessionCount}개의 세션
             </span>
           </div>
@@ -119,9 +116,9 @@ export function JourneyCard(props: JourneyCardProps) {
     <button
       type="button"
       onClick={() => router.push(`/journeys/${props.id}`)}
-      className="flex items-center gap-4 rounded-3xl bg-surface-secondary p-4 text-left transition-colors hover:bg-surface-tertiary"
+      className="flex items-center gap-4 rounded-3xl bg-muted p-4 text-left transition-colors hover:bg-accent"
     >
-      <div className="size-16 shrink-0 overflow-hidden rounded-2xl bg-surface-tertiary">
+      <div className="size-16 shrink-0 overflow-hidden rounded-2xl bg-accent">
         <img
           src={props.imageUrl}
           alt={props.title}
@@ -132,16 +129,14 @@ export function JourneyCard(props: JourneyCardProps) {
         <p className="text-base leading-6 font-semibold text-foreground">
           {props.title}
         </p>
-        <p className="line-clamp-1 text-sm leading-5 font-medium text-muted">
+        <p className="line-clamp-1 text-sm leading-5 font-medium text-muted-foreground">
           {props.description}
         </p>
       </div>
-      <HugeiconsIcon
-        icon={CheckmarkCircle02Icon}
+      <CheckCircle2
         size={20}
-        color="currentColor"
         strokeWidth={1.5}
-        className="shrink-0 text-accent"
+        className="shrink-0 text-primary"
       />
     </button>
   )

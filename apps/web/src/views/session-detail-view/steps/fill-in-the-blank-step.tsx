@@ -29,8 +29,7 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
         {content.instruction}
       </p>
 
-      {/* 빈칸이 포함된 문장 */}
-      <div className="rounded-2xl bg-surface-secondary p-4 text-sm leading-6 text-foreground">
+      <div className="rounded-2xl bg-muted p-4 text-sm leading-6 text-foreground">
         {parts.map((part, i) => {
           const match = part.match(/\{\{(.+)\}\}/)
           if (!match) return <span key={i}>{part}</span>
@@ -59,10 +58,9 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
         })}
       </div>
 
-      {/* 빈칸별 선택지 */}
       {content.blanks.map((blank) => (
         <div key={blank.id} className="flex flex-col gap-2">
-          <p className="text-xs leading-5 font-semibold tracking-wide text-muted/80">
+          <p className="text-xs leading-5 font-semibold tracking-wide text-muted-foreground/80">
             빈칸 선택
           </p>
           <div className="flex flex-wrap gap-2">
@@ -73,8 +71,7 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
               let cls =
                 "rounded-lg border px-3 py-2 text-sm leading-6 transition-all"
               if (isSelected && !checked) {
-                cls +=
-                  " border-accent bg-accent-soft text-accent-soft-foreground font-[500]"
+                cls += " border-accent bg-accent/50 text-foreground font-[500]"
               } else if (checked && isSelected && isCorrect) {
                 cls +=
                   " border-success bg-success-soft text-success-soft-foreground font-[500]"
@@ -85,7 +82,7 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
                 cls +=
                   " border-success/50 bg-success-soft/60 text-success-soft-foreground"
               } else {
-                cls += " border-separator bg-surface text-foreground"
+                cls += " border-border bg-background text-foreground"
               }
 
               return (
@@ -104,11 +101,11 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
       ))}
 
       {checked && (
-        <div className="rounded-xl bg-surface-secondary p-4">
-          <p className="text-xs leading-5 font-semibold tracking-wide text-muted/80">
+        <div className="rounded-xl bg-muted p-4">
+          <p className="text-xs leading-5 font-semibold tracking-wide text-muted-foreground/80">
             해설
           </p>
-          <p className="mt-1 text-sm leading-6 text-muted">
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">
             {content.explanation}
           </p>
         </div>

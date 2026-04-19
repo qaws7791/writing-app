@@ -2,8 +2,8 @@
 
 import { useState } from "react"
 
-import { ToggleButton } from "@workspace/ui/components/toggle-button"
-import { Skeleton } from "@workspace/ui/components/skeleton"
+import { ToggleButton } from "@workspace/ui/components/ui/toggle-button"
+import { Skeleton } from "@workspace/ui/components/ui/skeleton"
 import { useJourneys } from "@/features/journeys"
 import { JourneyCard } from "@/features/journeys/components/journey-card"
 
@@ -78,13 +78,13 @@ export default function JourneyArchiveView() {
           : null}
 
         {isError ? (
-          <div className="rounded-3xl bg-surface-secondary p-6 text-sm leading-6 text-muted">
+          <div className="rounded-3xl bg-muted p-6 text-sm leading-6 text-muted-foreground">
             여정 목록을 불러오지 못했어요. 잠시 후 다시 시도해주세요.
           </div>
         ) : null}
 
         {!isPending && !isError && filteredJourneys.length === 0 ? (
-          <div className="rounded-3xl bg-surface-secondary p-6 text-sm leading-6 text-muted">
+          <div className="rounded-3xl bg-muted p-6 text-sm leading-6 text-muted-foreground">
             조건에 맞는 여정이 아직 없어요.
           </div>
         ) : null}

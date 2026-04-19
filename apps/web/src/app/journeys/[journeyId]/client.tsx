@@ -32,7 +32,7 @@ export default function JourneyDetailClientPage({
 
   if (isPending) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface px-6 text-sm text-muted">
+      <div className="flex min-h-screen items-center justify-center bg-background px-6 text-sm text-muted-foreground">
         여정을 불러오고 있어요...
       </div>
     )
@@ -40,8 +40,10 @@ export default function JourneyDetailClientPage({
 
   if (isError || !journey) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface px-6 text-center">
-        <p className="text-sm text-muted">여정 정보를 불러오지 못했어요.</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          여정 정보를 불러오지 못했어요.
+        </p>
         <button
           onClick={() => router.push("/journeys")}
           className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background"

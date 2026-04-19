@@ -1,9 +1,9 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { Skeleton } from "@workspace/ui/components/skeleton"
-import { Button } from "@workspace/ui/components/button"
-import { Card } from "@workspace/ui/components/card"
+import { Skeleton } from "@workspace/ui/components/ui/skeleton"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Card, CardContent } from "@workspace/ui/components/ui/card"
 import { useHomeSnapshot } from "@/features/home"
 import { JourneyCard } from "@/features/journeys/components"
 import {
@@ -13,7 +13,7 @@ import {
 
 function JourneyCardSkeleton() {
   return (
-    <div className="flex h-32 w-full items-center gap-5 rounded-3xl bg-surface-secondary p-4">
+    <div className="flex h-32 w-full items-center gap-5 rounded-3xl bg-muted p-4">
       <Skeleton className="size-24 shrink-0 rounded-[32px]" />
       <div className="flex h-[87.5px] flex-1 flex-col gap-2">
         <Skeleton className="h-4 w-3/4" />
@@ -49,7 +49,7 @@ export default function HomeView() {
         {/* Active Journeys Section */}
         <div className="mt-8 flex flex-col gap-6 px-4 pb-8">
           <div className="flex items-center justify-between px-2">
-            <h3 className="text-lg leading-7 font-semibold text-muted">
+            <h3 className="text-lg leading-7 font-semibold text-muted-foreground">
               현재 진행 중인 여정
             </h3>
             <Button
@@ -67,26 +67,26 @@ export default function HomeView() {
                 <JourneyCardSkeleton />
               </>
             ) : isError ? (
-              <p className="px-2 text-sm leading-6 text-muted">
+              <p className="px-2 text-sm leading-6 text-muted-foreground">
                 여정 정보를 불러올 수 없어요
               </p>
             ) : activeJourneys.length === 0 ? (
               showStartJourneyCta ? (
-                <Card.Root
-                  className="cursor-pointer transition-colors hover:bg-surface-tertiary"
+                <Card
+                  className="cursor-pointer transition-colors hover:bg-accent"
                   onClick={() => router.push("/journeys")}
                 >
-                  <Card.Content className="flex flex-col items-center gap-3 p-8">
+                  <CardContent className="flex flex-col items-center gap-3 p-8">
                     <p className="text-lg leading-7 font-semibold text-foreground">
                       첫 여정을 시작해보세요
                     </p>
-                    <p className="text-sm leading-6 text-muted">
+                    <p className="text-sm leading-6 text-muted-foreground">
                       나에게 맞는 여정을 찾아 글쓰기 실력을 키워보세요
                     </p>
-                  </Card.Content>
-                </Card.Root>
+                  </CardContent>
+                </Card>
               ) : (
-                <p className="px-2 text-sm leading-6 text-muted">
+                <p className="px-2 text-sm leading-6 text-muted-foreground">
                   진행 중인 여정이 없어요
                 </p>
               )
