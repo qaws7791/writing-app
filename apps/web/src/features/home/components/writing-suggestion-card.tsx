@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@workspace/ui/components/ui/card"
+import { appendReturnTo } from "@/foundation/navigation"
 
 export function WritingSuggestionCard() {
   const router = useRouter()
@@ -10,7 +11,7 @@ export function WritingSuggestionCard() {
     <div className="mt-8 px-4">
       <Card
         className="cursor-pointer transition-colors hover:opacity-90"
-        onClick={() => router.push("/writings/new")}
+        onClick={() => router.push(appendReturnTo("/writings/new", "/home"))}
       >
         <CardContent className="flex flex-col gap-2 p-6">
           <p className="text-lg leading-7 font-semibold text-foreground">

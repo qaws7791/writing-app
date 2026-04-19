@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Spinner } from "@workspace/ui/components/ui/spinner"
 
+import { appendReturnTo } from "@/foundation/navigation"
 import { useWritings, useDeleteWriting } from "@/features/writings"
 import { WritingCard } from "@/features/writings/components"
 import type { WritingCardData } from "@/features/writings/components"
@@ -95,7 +96,9 @@ export default function WritingsListView() {
           variant="default"
           aria-label="새 글쓰기"
           className="rounded-full shadow-lg"
-          onClick={() => router.push("/writings/new")}
+          onClick={() =>
+            router.push(appendReturnTo("/writings/new", "/writings"))
+          }
         >
           <PenLine size={24} strokeWidth={1.5} />
         </Button>

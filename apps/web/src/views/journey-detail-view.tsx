@@ -1,8 +1,9 @@
 "use client"
 
 import { ArrowLeft, MoreHorizontal } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@workspace/ui/components/ui/button"
+import { appendReturnTo, navigateBack } from "@/foundation/navigation"
 import {
   JourneyHero,
   JourneyProgressCard,
@@ -27,7 +28,12 @@ export default function JourneyDetailView({
   data: JourneyDetailData
   onStartSession?: (sessionId: string) => void | Promise<void>
 }) {
+  const pathname = usePathname()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const search = searchParams.toString()
+  const currentPath = search ? `${pathname}?${search}` : pathname
+  const returnTo = searchParams.get("returnTo")
 
   function handleStartSession(sessionId: string) {
     if (onStartSession) {
@@ -46,7 +52,12 @@ export default function JourneyDetailView({
           size="icon"
           variant="ghost"
           aria-label="뒤로 가기"
-          onClick={() => router.back()}
+          onClick={() =>
+            navigateBack(router, {
+              returnTo,
+              fallbackPath: "/journeys",
+            })
+          }
         >
           <ArrowLeft size={24} strokeWidth={1.5} />
         </Button>
@@ -88,7 +99,9 @@ export default function JourneyDetailView({
             <Button
               variant="secondary"
               className="flex h-auto w-full flex-col gap-2 rounded-3xl p-6 text-left"
-              onClick={() => router.push("/writings/new")}
+              onClick={() =>
+                router.push(appendReturnTo("/writings/new", currentPath))
+              }
             >
               <p className="text-lg leading-7 font-semibold text-foreground">
                 글쓰기 공간에서 배운 내용을 표현해보세요

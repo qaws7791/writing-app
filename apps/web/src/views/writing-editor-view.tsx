@@ -25,7 +25,7 @@ import {
   Lightbulb,
   FileTextIcon,
 } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
   Dialog,
   DialogContent,
@@ -41,6 +41,7 @@ import {
   DropdownMenuItem,
 } from "@workspace/ui/components/ui/dropdown-menu"
 
+import { appendReturnTo, navigateBack } from "@/foundation/navigation"
 import { usePromptDetail } from "@/features/prompts/hooks/use-prompt-detail"
 import {
   useCreateWriting,
@@ -71,6 +72,7 @@ export default function WritingEditorView({
   writingId?: string
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [title, setTitle] = useState("")
   const [today] = useState(() => new Date())
   const titleRef = useRef<HTMLTextAreaElement>(null)
@@ -87,6 +89,8 @@ export default function WritingEditorView({
 
   const writingIdNumber = writingId ? Number(writingId) : undefined
   const effectivePromptId = sheetPromptId ?? promptId
+  const fallbackPath = writingIdNumber ? "/writings" : "/writings/new"
+  const returnTo = searchParams.get("returnTo")
 
   const editor = useEditor({
     extensions: [
@@ -183,39 +187,53 @@ export default function WritingEditorView({
   const handleSave = useCallback(async () => {
     const savedId = await performSave()
     if (savedId != null) {
-      router.push(`/writings/${savedId}`)
+      router.push(appendReturnTo(`/writings/${savedId}`, returnTo ?? ""))
     } else {
-      router.back()
+      navigateBack(router, {
+        returnTo,
+        fallbackPath,
+      })
     }
-  }, [performSave, router])
+  }, [fallbackPath, performSave, returnTo, router])
 
   const handleBack = useCallback(() => {
     if (isDirty) {
       setShowLeaveDialog(true)
     } else {
-      router.back()
+      navigateBack(router, {
+        returnTo,
+        fallbackPath,
+      })
     }
-  }, [isDirty, router])
+  }, [fallbackPath, isDirty, returnTo, router])
 
   const handleLeaveWithoutSave = useCallback(() => {
     setShowLeaveDialog(false)
     setIsDirty(false)
-    router.back()
-  }, [router])
+    navigateBack(router, {
+      returnTo,
+      fallbackPath,
+    })
+  }, [fallbackPath, returnTo, router])
 
   const handleSaveAndLeave = useCallback(async () => {
     setShowLeaveDialog(false)
     try {
       const savedWritingId = await performSave()
       if (savedWritingId != null) {
-        router.push(`/writings/${savedWritingId}`)
+        router.push(
+          appendReturnTo(`/writings/${savedWritingId}`, returnTo ?? "")
+        )
       } else {
-        router.back()
+        navigateBack(router, {
+          returnTo,
+          fallbackPath,
+        })
       }
     } catch {
       // save failed — stay on page
     }
-  }, [performSave, router])
+  }, [fallbackPath, performSave, returnTo, router])
 
   const handleDelete = useCallback(async () => {
     if (!writingIdNumber) return

@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
 } from "@workspace/ui/components/ui/dropdown-menu"
 import { Button } from "@workspace/ui/components/ui/button"
+import { appendReturnTo } from "@/foundation/navigation"
 
 export interface WritingCardData {
   id: number
@@ -26,15 +27,14 @@ export function WritingCard({
   onDelete: (id: number) => void
 }) {
   const router = useRouter()
+  const detailPath = appendReturnTo(`/writings/${writing.id}`, "/writings")
 
   return (
     <div
       role="button"
       tabIndex={0}
-      onClick={() => router.push(`/writings/${writing.id}`)}
-      onKeyDown={(e) =>
-        e.key === "Enter" && router.push(`/writings/${writing.id}`)
-      }
+      onClick={() => router.push(detailPath)}
+      onKeyDown={(e) => e.key === "Enter" && router.push(detailPath)}
       className="flex cursor-pointer flex-col gap-4 rounded-[2.25rem] bg-muted p-8 text-left transition-colors hover:bg-accent"
     >
       <div className="flex items-center justify-between">

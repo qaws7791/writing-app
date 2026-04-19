@@ -106,9 +106,13 @@ domain/{entity}/
 foundation/
  ┣━ api/           ← HTTP 클라이언트 중앙화 래퍼·에러 처리
  ┣━ config/        ← 환경 변수 접근
+ ┣━ navigation/    ← 내부 경로 검증·`returnTo` 기반 앱 내 복귀
  ┣━ lib/           ← 범용 유틸리티 (날짜·포맷·스토리지)
  ┗━ ui/            ← 공용 UI 컴포넌트·테마 Provider
 ```
+
+- 앱 레벨 헤더의 뒤로 가기 버튼은 `router.back()`을 직접 호출하지 않습니다.
+- 뒤로 가기 의도는 `foundation/navigation`의 `returnTo` 검증 유틸을 통해 내부 경로로만 복귀시키고, 값이 없거나 외부 경로면 화면별 fallback으로 `replace()`합니다.
 
 ---
 

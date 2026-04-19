@@ -1,7 +1,8 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { CheckCircle2, Layers } from "lucide-react"
+import { appendReturnTo } from "@/foundation/navigation"
 
 interface JourneyCardBaseProps {
   id: number
@@ -32,13 +33,18 @@ export type JourneyCardProps =
   | CompletedJourneyCardProps
 
 export function JourneyCard(props: JourneyCardProps) {
+  const pathname = usePathname()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const search = searchParams.toString()
+  const currentPath = search ? `${pathname}?${search}` : pathname
+  const detailPath = appendReturnTo(`/journeys/${props.id}`, currentPath)
 
   if (props.mode === "active") {
     return (
       <button
         type="button"
-        onClick={() => router.push(`/journeys/${props.id}`)}
+        onClick={() => router.push(detailPath)}
         className="flex h-32 w-full items-center gap-5 rounded-3xl bg-muted p-4 text-left transition-colors hover:bg-accent"
       >
         <div className="size-24 shrink-0 overflow-hidden rounded-[32px] bg-accent">
@@ -77,7 +83,7 @@ export function JourneyCard(props: JourneyCardProps) {
     return (
       <button
         type="button"
-        onClick={() => router.push(`/journeys/${props.id}`)}
+        onClick={() => router.push(detailPath)}
         className="flex h-32 w-full items-center gap-5 rounded-3xl bg-muted p-4 text-left transition-colors hover:bg-accent"
       >
         <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-accent">
@@ -115,7 +121,7 @@ export function JourneyCard(props: JourneyCardProps) {
   return (
     <button
       type="button"
-      onClick={() => router.push(`/journeys/${props.id}`)}
+      onClick={() => router.push(detailPath)}
       className="flex items-center gap-4 rounded-3xl bg-muted p-4 text-left transition-colors hover:bg-accent"
     >
       <div className="size-16 shrink-0 overflow-hidden rounded-2xl bg-accent">

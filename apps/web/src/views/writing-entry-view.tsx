@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { ArrowLeft } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Chip } from "@workspace/ui/components/ui/chip"
 import { Skeleton } from "@workspace/ui/components/ui/skeleton"
@@ -13,6 +13,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@workspace/ui/components/ui/card"
+import { appendReturnTo, navigateBack } from "@/foundation/navigation"
 import { usePromptCategories, usePromptList } from "@/features/prompts"
 
 type PromptType = "sensory" | "reflection" | "opinion"
@@ -24,12 +25,14 @@ const PROMPT_TYPE_LABEL: Record<PromptType, string> = {
 }
 
 function PromptCard({
+  entryPath,
   id,
   promptType,
   title,
   body,
   responseCount,
 }: {
+  entryPath: string
   id: number
   promptType: PromptType
   title: string
@@ -37,11 +40,15 @@ function PromptCard({
   responseCount: number
 }) {
   const router = useRouter()
+  const editorPath = appendReturnTo(
+    `/writings/new/editor?promptId=${id}`,
+    entryPath
+  )
 
   return (
     <Card
       className="cursor-pointer transition-colors hover:bg-accent"
-      onClick={() => router.push(`/writings/new/editor?promptId=${id}`)}
+      onClick={() => router.push(editorPath)}
     >
       <CardContent className="flex flex-col gap-3 p-6">
         <Chip variant="secondary" size="sm" className="self-start">
@@ -58,7 +65,9 @@ function PromptCard({
 }
 
 export default function WritingEntryView() {
+  const pathname = usePathname()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [selectedType, setSelectedType] = useState<PromptType | undefined>(
     undefined
   )
@@ -70,6 +79,10 @@ export default function WritingEntryView() {
   })
 
   const prompts = data?.pages.flatMap((page) => page.items) ?? []
+  const search = searchParams.toString()
+  const currentPath = search ? `${pathname}?${search}` : pathname
+  const returnTo = searchParams.get("returnTo")
+  const directWritePath = appendReturnTo("/writings/new/editor", currentPath)
 
   return (
     <div className="flex h-dvh flex-col bg-background">
@@ -79,7 +92,12 @@ export default function WritingEntryView() {
           size="icon"
           variant="ghost"
           aria-label="뒤로 가기"
-          onClick={() => router.back()}
+          onClick={() =>
+            navigateBack(router, {
+              returnTo,
+              fallbackPath: "/writings",
+            })
+          }
         >
           <ArrowLeft size={24} strokeWidth={1.5} />
         </Button>
@@ -135,6 +153,7 @@ export default function WritingEntryView() {
             prompts.map((prompt) => (
               <PromptCard
                 key={prompt.id}
+                entryPath={currentPath}
                 id={prompt.id}
                 promptType={prompt.promptType as PromptType}
                 title={prompt.title}
@@ -151,7 +170,7 @@ export default function WritingEntryView() {
         <Button
           variant="secondary"
           size="lg"
-          onClick={() => router.push("/writings/new/editor")}
+          onClick={() => router.push(directWritePath)}
           className="w-full"
         >
           직접 쓸게요
