@@ -76,7 +76,11 @@ export function createWritingVersionRepository(
           aiFeedbackJson: input.aiFeedbackJson ?? null,
         })
         .returning()
-        .then((rows) => rows[0]!)
+        .then((rows) => rows[0])
+
+      if (!row) {
+        throw new Error("글 버전을 생성하지 못했습니다.")
+      }
 
       return mapVersionDetail(row)
     },

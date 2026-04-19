@@ -141,13 +141,7 @@ export default function SessionDetailClientPage({
 
   const journeyDetail = journey
   const sessionDetail = sessionRuntime
-  const mappedSession: Session = {
-    id: String(sessionDetail.id),
-    order: sessionDetail.order,
-    title: sessionDetail.title,
-    description: sessionDetail.description,
-    steps: sessionDetail.steps.map(mapSessionStep),
-  }
+  const mappedSteps = sessionDetail.steps.map(mapSessionStep)
 
   if (journeyQuery.isError || sessionQuery.isError) {
     return (
@@ -165,7 +159,9 @@ export default function SessionDetailClientPage({
     )
   }
 
-  if (mappedSession.steps.length === 0) {
+  const [firstStep, ...remainingSteps] = mappedSteps
+
+  if (!firstStep) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center">
         <p className="text-sm text-muted-foreground">
@@ -179,6 +175,14 @@ export default function SessionDetailClientPage({
         </button>
       </div>
     )
+  }
+
+  const mappedSession: Session = {
+    id: String(sessionDetail.id),
+    order: sessionDetail.order,
+    title: sessionDetail.title,
+    description: sessionDetail.description,
+    steps: [firstStep, ...remainingSteps],
   }
 
   async function handleSubmitStep(stepOrder: number, response: unknown) {

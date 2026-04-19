@@ -25,6 +25,7 @@ export const config = [
       "unused-imports": unusedImports,
     },
     rules: {
+      "@typescript-eslint/no-non-null-assertion": "error",
       "@typescript-eslint/no-unused-vars": "off",
       "no-unused-vars": "off",
       "unused-imports/no-unused-imports": "error",

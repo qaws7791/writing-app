@@ -132,11 +132,19 @@ export function createJourneyRepository(
           ? await database
               .select()
               .from(steps)
-              .where(
-                sessionIds.length === 1
-                  ? eq(steps.sessionId, sessionIds[0]!)
-                  : inArray(steps.sessionId, sessionIds)
-              )
+              .where(() => {
+                if (sessionIds.length === 1) {
+                  const [sessionId] = sessionIds
+
+                  if (!sessionId) {
+                    throw new Error("세션 ID를 찾지 못했습니다.")
+                  }
+
+                  return eq(steps.sessionId, sessionId)
+                }
+
+                return inArray(steps.sessionId, sessionIds)
+              })
               .orderBy(asc(steps.order))
           : []
 
@@ -204,12 +212,16 @@ export function createJourneyRepository(
           thumbnailUrl: input.thumbnailUrl ?? null,
         })
         .returning()
+      if (!row) {
+        throw new Error("여정을 생성하지 못했습니다.")
+      }
+
       return {
-        id: row!.id,
-        title: row!.title,
-        description: row!.description,
-        category: row!.category as JourneyCategory,
-        thumbnailUrl: row!.thumbnailUrl,
+        id: row.id,
+        title: row.title,
+        description: row.description,
+        category: row.category as JourneyCategory,
+        thumbnailUrl: row.thumbnailUrl,
         sessionCount: 0,
       }
     },
@@ -257,7 +269,11 @@ export function createJourneyRepository(
           order: input.order,
         })
         .returning()
-      return mapSessionSummary(row!)
+      if (!row) {
+        throw new Error("세션을 생성하지 못했습니다.")
+      }
+
+      return mapSessionSummary(row)
     },
 
     async updateSession(
@@ -292,7 +308,11 @@ export function createJourneyRepository(
           contentJson: input.contentJson,
         })
         .returning()
-      return mapStepSummary(row!)
+      if (!row) {
+        throw new Error("스텝을 생성하지 못했습니다.")
+      }
+
+      return mapStepSummary(row)
     },
 
     async updateStep(

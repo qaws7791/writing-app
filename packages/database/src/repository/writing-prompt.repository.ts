@@ -225,7 +225,11 @@ export function createWritingPromptRepository(
           thumbnailUrl: input.thumbnailUrl ?? null,
         })
         .returning()
-      return mapPromptSummary({ ...row!, isBookmarked: 0 })
+      if (!row) {
+        throw new Error("글감을 생성하지 못했습니다.")
+      }
+
+      return mapPromptSummary({ ...row, isBookmarked: 0 })
     },
 
     async update(

@@ -279,7 +279,11 @@ export function createTestApi(input?: {
           if (index === -1) {
             return errAsync(writingNotFound("글을 찾을 수 없습니다."))
           }
-          if (writings[index]!.ownerId !== String(userId)) {
+          const writing = writings[index]
+          if (!writing) {
+            return errAsync(writingNotFound("글을 찾을 수 없습니다."))
+          }
+          if (writing.ownerId !== String(userId)) {
             return errAsync(
               writingForbidden("다른 사용자의 글에는 접근할 수 없습니다.")
             )

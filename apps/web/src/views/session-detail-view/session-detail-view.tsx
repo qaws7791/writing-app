@@ -60,7 +60,7 @@ export default function SessionDetailView({
     useState<Record<string, StepState>>(initialStepStates)
 
   const steps = session.steps
-  const currentStep = steps[currentStepIndex]!
+  const currentStep = steps[currentStepIndex] ?? steps[0]
   const progress = ((currentStepIndex + 1) / steps.length) * 100
 
   useEffect(() => {

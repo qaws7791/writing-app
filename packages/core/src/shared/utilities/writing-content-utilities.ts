@@ -26,10 +26,12 @@ function collectTextParts(
     return
   }
 
-  node.content.forEach((child, index) => {
+  const content = node.content
+
+  content.forEach((child, index) => {
     collectTextParts(child, buffer)
 
-    const isLastChild = index === node.content!.length - 1
+    const isLastChild = index === content.length - 1
     if (!isLastChild && child.type === "paragraph") {
       buffer.push("\n")
     }

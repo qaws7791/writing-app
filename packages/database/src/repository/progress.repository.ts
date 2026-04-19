@@ -157,7 +157,11 @@ export function createProgressRepository(
 
       if (!row) {
         const existing = await this.getJourneyProgress(userId, journeyId)
-        return existing!
+        if (!existing) {
+          throw new Error("여정 진행 상태를 찾지 못했습니다.")
+        }
+
+        return existing
       }
 
       return mapJourneyProgress(row)
@@ -264,7 +268,11 @@ export function createProgressRepository(
           target: [userSessionProgress.userId, userSessionProgress.sessionId],
         })
         .returning()
-        .then((rows) => rows[0]!)
+        .then((rows) => rows[0])
+
+      if (!row) {
+        throw new Error("세션 진행 상태를 시작하지 못했습니다.")
+      }
 
       return mapSessionProgress(row)
     },

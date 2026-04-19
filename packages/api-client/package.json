@@ -9,6 +9,7 @@
   "scripts": {
     "api:generate": "bun run scripts/generate-api-types.ts --input src/openapi.json",
     "api:fetch": "bun run scripts/fetch-openapi-spec.ts",
+    "lint": "bunx eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@workspace/config": "workspace:*",
+    "eslint": "^9.39.2",
     "openapi-typescript": "^7.13.0",
     "typescript": "^5.9.3"
   }

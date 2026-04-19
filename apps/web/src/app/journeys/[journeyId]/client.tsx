@@ -54,16 +54,17 @@ export default function JourneyDetailClientPage({
     )
   }
 
+  const journeyIdValue = journey.id
   const progress = journey.progress
   const currentSessionOrder = progress?.currentSessionOrder ?? 1
   const completedCount = progress ? Math.max(0, currentSessionOrder - 1) : 0
 
   async function handleStartSession(sessionId: string) {
     if (!progress) {
-      await enrollJourney.mutateAsync(journey!.id)
+      await enrollJourney.mutateAsync(journeyIdValue)
     }
 
-    router.push(`/journeys/${journey!.id}/sessions/${sessionId}`)
+    router.push(`/journeys/${journeyIdValue}/sessions/${sessionId}`)
   }
 
   return (

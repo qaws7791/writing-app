@@ -30,6 +30,26 @@ description: 이 저장소에서 일관된 품질과 경계 명확성을 유지�
 - 이미 검증된 내부 값에만 `toXId`를 사용합니다.
 - `as UserId`, `as PromptId` 같은 direct brand cast는 금지합니다.
 - 파생 가능한 값은 상태로 저장하지 않고 계산합니다.
+- postfix non-null assertion `value!`는 금지합니다.
+- nullable 값은 사용 직전 guard, early return, 지역 상수 재할당으로 좁힙니다.
+
+- !(non-null assertion) 대신 타입 시스템을 실제로 좁히는 방법들로 대체해야 합니다.
+
+| 상황              | 안티패턴 (!)                | 안전한 대체 패턴              |
+| ----------------- | --------------------------- | ----------------------------- |
+| null 가능 값 접근 | user!.name                  | user?.name ?? '기본값'        |
+| 조건부 존재 확인  | data!.id                    | if (data != null) { data.id } |
+| 런타임 보장 필요  | value!                      | assertNonNull(value, 'msg')   |
+| 외부 데이터 파싱  | (response as MyType).field! | Zod schema.parse(response)    |
+
+- as unknown as가 필요하다고 느껴지는 상황 대부분에는 타입 안전한 대안이 있습니다.
+
+| 상황             | 안티패턴                           | 권장 대안                                 |
+| ---------------- | ---------------------------------- | ----------------------------------------- |
+| API 응답 파싱    | response.json() as unknown as User | 타입 가드 함수 isUser(data): data is User |
+| 타입 겹침 확인   | obj as unknown as SubType          | instanceof 또는 in 연산자로 narrowing     |
+| 객체 형태 검증   | data as unknown as Config          | zod / valibot 등 런타임 스키마 검증       |
+| 타입 호환성 강제 | a as unknown as B                  | satisfies 연산자 (TS 4.9+)                |
 
 ## 백엔드 기준
 

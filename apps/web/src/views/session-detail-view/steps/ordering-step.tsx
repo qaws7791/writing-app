@@ -18,8 +18,9 @@ export function OrderingStep({ content, state, onStateChange }: Props) {
     const next = [...currentOrder]
     const swapIndex = direction === "up" ? index - 1 : index + 1
     if (swapIndex < 0 || swapIndex >= next.length) return
-    const a = next[index]!
-    const b = next[swapIndex]!
+    const a = next[index]
+    const b = next[swapIndex]
+    if (!a || !b) return
     next[index] = b
     next[swapIndex] = a
     onStateChange({ order: next, hasSelection: true, checked: false })

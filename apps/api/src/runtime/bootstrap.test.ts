@@ -213,7 +213,13 @@ describe("bootstrap", () => {
 
     result.close()
 
-    const container = createApiContainerMock.mock.results[0]!.value
+    expect(createApiContainerMock).toHaveBeenCalledTimes(1)
+
+    const [firstResult] = createApiContainerMock.mock.results
+    expect(firstResult).toBeDefined()
+
+    const container = firstResult?.value
+    expect(container).toBeDefined()
     expect(container.dispose).toHaveBeenCalledTimes(1)
   })
 })

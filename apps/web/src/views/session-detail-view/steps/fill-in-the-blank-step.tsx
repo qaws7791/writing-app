@@ -34,7 +34,9 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
           const match = part.match(/\{\{(.+)\}\}/)
           if (!match) return <span key={i}>{part}</span>
 
-          const blankId = match[1]!
+          const [, blankId] = match
+          if (!blankId) return <span key={i}>{part}</span>
+
           const blank = content.blanks.find((b) => b.id === blankId)
           if (!blank) return <span key={i}>{part}</span>
 

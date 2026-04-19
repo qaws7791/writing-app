@@ -49,12 +49,13 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
       </p>
       <div className="rounded-2xl bg-muted p-4 text-sm leading-6 text-foreground">
         {segments.map((seg, i) => {
-          if (!seg.rangeId) {
+          const rangeId = seg.rangeId
+          if (!rangeId) {
             return <span key={i}>{seg.text}</span>
           }
 
-          const isSelected = selectedIds.includes(seg.rangeId)
-          const isCorrect = content.correctRangeIds.includes(seg.rangeId)
+          const isSelected = selectedIds.includes(rangeId)
+          const isCorrect = content.correctRangeIds.includes(rangeId)
 
           let cls = "cursor-pointer rounded px-0.5 transition-all"
           if (!checked) {
@@ -78,11 +79,11 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
               role="button"
               tabIndex={checked ? -1 : 0}
               aria-pressed={isSelected}
-              onClick={() => toggleRange(seg.rangeId!)}
+              onClick={() => toggleRange(rangeId)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault()
-                  toggleRange(seg.rangeId!)
+                  toggleRange(rangeId)
                 }
               }}
               className={cls}

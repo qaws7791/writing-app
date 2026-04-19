@@ -162,12 +162,14 @@ export interface Step {
   cta: CTAConfig
 }
 
+export type NonEmptyArray<T> = [T, ...T[]]
+
 export interface Session {
   id: string
   order: number
   title: string
   description: string
-  steps: Step[]
+  steps: NonEmptyArray<Step>
 }
 
 // ─── Step State ─────────────────────────────────────────────────────────

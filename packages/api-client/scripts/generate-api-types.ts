@@ -21,8 +21,10 @@ const inputIndex = args.indexOf("--input")
 async function main() {
   let source: string | URL
 
-  if (inputIndex !== -1 && args[inputIndex + 1]) {
-    const inputPath = path.resolve(args[inputIndex + 1]!)
+  const inputArg = inputIndex === -1 ? undefined : args[inputIndex + 1]
+
+  if (inputArg) {
+    const inputPath = path.resolve(inputArg)
     console.log(`Reading spec from: ${inputPath}`)
     source = new URL(`file:///${inputPath.replace(/\\/g, "/")}`)
   } else {
