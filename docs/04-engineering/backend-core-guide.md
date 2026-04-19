@@ -30,6 +30,8 @@ description: packages/core의 모듈 구조, DOP 패턴, 포트 설계, vitest �
 - 외부 호출 순서와 조합은 `use-cases`에 둡니다.
 - 에러는 `neverthrow`의 `Result` 값으로 표현합니다.
 - 데이터 가공과 컬렉션 조합은 `remeda`와 `pipe()` 중심으로 구성합니다.
+- contract DTO의 primitive 입력과 domain model의 branded id는 같은 타입으로 취급하지 않습니다.
+- 경계에서는 `parseXId`로 brand를 만들고, 내부 trusted path에서만 `toXId`를 사용합니다.
 
 ## 권장 구조
 
@@ -120,12 +122,14 @@ packages/core/
 - zod 스키마
 - API와 use case가 공유하는 입력/출력 DTO
 - OpenAPI route 정의에 재사용될 계약
+- wire shape는 primitive를 유지하고, branded id는 handler/use-case 진입 직전에 변환합니다.
 
 ### `model`
 
 - 브랜드 타입
 - readonly 상태 타입
 - 상태 enum 또는 discriminated union
+- trusted constructor (`toXId`)와 boundary parser (`parseXId`)를 함께 둡니다.
 
 ### `operations`
 

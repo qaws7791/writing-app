@@ -21,7 +21,7 @@ const DEFAULT_PAGE_LIMIT = 20
 const bookmarkedExpression = sql<number>`case when ${savedPrompts.promptId} is null then 0 else 1 end`
 
 function mapPromptSummary(row: {
-  id: number
+  id: PromptId
   promptType: string
   title: string
   body: string
@@ -30,7 +30,7 @@ function mapPromptSummary(row: {
   isBookmarked: number | boolean
 }): PromptSummary {
   return {
-    id: row.id as unknown as PromptId,
+    id: row.id,
     promptType: row.promptType as PromptSummary["promptType"],
     title: row.title,
     body: row.body,
@@ -79,7 +79,7 @@ export function createWritingPromptRepository(
           userId
             ? and(
                 eq(savedPrompts.promptId, writingPrompts.id),
-                eq(savedPrompts.userId, userId as unknown as string)
+                eq(savedPrompts.userId, userId)
               )
             : sql`false`
         )
@@ -89,7 +89,8 @@ export function createWritingPromptRepository(
 
       const hasMore = rows.length > limit
       const items = hasMore ? rows.slice(0, limit) : rows
-      const nextCursor = hasMore ? (items[items.length - 1]?.id ?? null) : null
+      const lastItem = items[items.length - 1]
+      const nextCursor = hasMore && lastItem ? lastItem.id : null
 
       return { items: items.map(mapPromptSummary), nextCursor }
     },
@@ -114,11 +115,11 @@ export function createWritingPromptRepository(
           userId
             ? and(
                 eq(savedPrompts.promptId, writingPrompts.id),
-                eq(savedPrompts.userId, userId as unknown as string)
+                eq(savedPrompts.userId, userId)
               )
             : sql`false`
         )
-        .where(eq(writingPrompts.id, promptId as unknown as number))
+        .where(eq(writingPrompts.id, promptId))
         .limit(1)
         .then((rows) => rows[0] ?? null)
 
@@ -161,7 +162,7 @@ export function createWritingPromptRepository(
           userId
             ? and(
                 eq(savedPrompts.promptId, writingPrompts.id),
-                eq(savedPrompts.userId, userId as unknown as string)
+                eq(savedPrompts.userId, userId)
               )
             : sql`false`
         )
@@ -181,7 +182,7 @@ export function createWritingPromptRepository(
       const exists = await database
         .select({ id: writingPrompts.id })
         .from(writingPrompts)
-        .where(eq(writingPrompts.id, promptId as unknown as number))
+        .where(eq(writingPrompts.id, promptId))
         .limit(1)
         .then((rows) => rows.length > 0)
 
@@ -191,8 +192,8 @@ export function createWritingPromptRepository(
       await database
         .insert(savedPrompts)
         .values({
-          userId: userId as unknown as string,
-          promptId: promptId as unknown as number,
+          userId,
+          promptId,
           savedAt,
         })
         .onConflictDoUpdate({
@@ -208,8 +209,8 @@ export function createWritingPromptRepository(
         .delete(savedPrompts)
         .where(
           and(
-            eq(savedPrompts.userId, userId as unknown as string),
-            eq(savedPrompts.promptId, promptId as unknown as number)
+            eq(savedPrompts.userId, userId),
+            eq(savedPrompts.promptId, promptId)
           )
         )
     },
@@ -234,7 +235,7 @@ export function createWritingPromptRepository(
       const [row] = await database
         .update(writingPrompts)
         .set({ ...input, updatedAt: new Date() })
-        .where(eq(writingPrompts.id, promptId as unknown as number))
+        .where(eq(writingPrompts.id, promptId))
         .returning()
       if (!row) return null
       return mapPromptSummary({ ...row, isBookmarked: 0 })
@@ -243,7 +244,7 @@ export function createWritingPromptRepository(
     async delete(promptId: PromptId): Promise<void> {
       await database
         .delete(writingPrompts)
-        .where(eq(writingPrompts.id, promptId as unknown as number))
+        .where(eq(writingPrompts.id, promptId))
     },
   }
 }

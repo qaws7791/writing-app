@@ -353,7 +353,7 @@ export function createTestApi(input?: {
           })
         },
         listPromptsUseCase(_userId, filters) {
-          const mappedItems = prompts
+          const filtered = prompts
             .filter((prompt) => {
               if (
                 filters?.promptType &&
@@ -361,18 +361,32 @@ export function createTestApi(input?: {
               ) {
                 return false
               }
+              if (
+                filters?.cursor !== undefined &&
+                prompt.id <= Number(filters.cursor)
+              ) {
+                return false
+              }
               return true
             })
-            .map((prompt) => ({
-              id: toPromptId(prompt.id),
-              promptType: prompt.promptType,
-              title: prompt.title,
-              body: prompt.body,
-              thumbnailUrl: prompt.thumbnailUrl ?? "",
-              responseCount: prompt.responseCount,
-              isBookmarked: prompt.isBookmarked,
-            }))
-          return okAsync({ items: mappedItems, nextCursor: null })
+            .sort((left, right) => left.id - right.id)
+          const limit = filters?.limit ?? 20
+          const pageItems = filtered.slice(0, limit)
+          const hasMore = filtered.length > limit
+          const mappedItems = pageItems.map((prompt) => ({
+            id: toPromptId(prompt.id),
+            promptType: prompt.promptType,
+            title: prompt.title,
+            body: prompt.body,
+            thumbnailUrl: prompt.thumbnailUrl ?? "",
+            responseCount: prompt.responseCount,
+            isBookmarked: prompt.isBookmarked,
+          }))
+          const lastItem = mappedItems[mappedItems.length - 1]
+          return okAsync({
+            items: mappedItems,
+            nextCursor: hasMore && lastItem ? lastItem.id : null,
+          })
         },
         bookmarkPromptUseCase(_userId, promptId) {
           const prompt = findPrompt(Number(promptId))

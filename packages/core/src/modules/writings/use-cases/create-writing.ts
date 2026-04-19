@@ -1,6 +1,6 @@
 import { ResultAsync } from "neverthrow"
 
-import type { PromptId, UserId } from "../../../shared/brand/index"
+import type { PromptId, SessionId, UserId } from "../../../shared/brand/index"
 import type { WritingDetail } from "../writing-types"
 import type { WritingRepository } from "../writing-port"
 
@@ -10,7 +10,7 @@ export type CreateWritingInput = {
   readonly bodyPlainText?: string
   readonly wordCount?: number
   readonly sourcePromptId?: PromptId
-  readonly sourceSessionId?: number
+  readonly sourceSessionId?: SessionId
 }
 
 export type CreateWritingDeps = {

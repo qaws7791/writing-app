@@ -1,4 +1,4 @@
-import type { WritingId, PromptId } from "../../shared/brand/index"
+import type { WritingId, PromptId, SessionId } from "../../shared/brand/index"
 
 export type WritingSummary = {
   readonly id: WritingId
@@ -21,7 +21,7 @@ export type WritingCreateInput = {
   readonly bodyPlainText: string
   readonly wordCount: number
   readonly sourcePromptId?: PromptId | null
-  readonly sourceSessionId?: number | null
+  readonly sourceSessionId?: SessionId | null
 }
 
 export type WritingUpdateInput = {

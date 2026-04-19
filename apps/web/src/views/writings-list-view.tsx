@@ -36,7 +36,7 @@ export default function WritingsListView() {
   const writings: WritingCardData[] =
     data?.pages.flatMap((page) =>
       page.items.map((item) => ({
-        id: item.id as unknown as number,
+        id: item.id as number,
         date: new Date(item.updatedAt).toLocaleDateString("ko-KR", {
           year: "numeric",
           month: "long",

@@ -1,5 +1,5 @@
 import { z } from "@hono/zod-openapi"
-import { writingIdParamSchema, toWritingId } from "@workspace/core"
+import { parseWritingId, writingIdParamSchema } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
@@ -20,6 +20,6 @@ export default route({
   },
   handler: async ({ deleteWriting, params, context }) => {
     const userId = requireUserId(context)
-    return deleteWriting(userId, toWritingId(params.writingId))
+    return deleteWriting(userId, parseWritingId(params.writingId))
   },
 })

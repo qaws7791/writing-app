@@ -1,12 +1,14 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
+import type { PromptId } from "@workspace/core"
+
 export const promptTypes = ["sensory", "reflection", "opinion"] as const
 export type PromptType = (typeof promptTypes)[number]
 
 export const writingPrompts = sqliteTable(
   "writing_prompts",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
+    id: integer("id").$type<PromptId>().primaryKey({ autoIncrement: true }),
     promptType: text("prompt_type", { enum: promptTypes }).notNull(),
     title: text("title").notNull(),
     body: text("body").notNull(),

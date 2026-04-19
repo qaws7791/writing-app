@@ -2,8 +2,8 @@ import { z } from "@hono/zod-openapi"
 import {
   autosaveWritingBodySchema,
   autosaveWritingResponseSchema,
+  parseWritingId,
   writingIdParamSchema,
-  toWritingId,
 } from "@workspace/core"
 
 import { BODY_LIMITS, withBodyLimit } from "../../http/body-limit-middleware"
@@ -36,7 +36,7 @@ export default route({
     const userId = requireUserId(context)
     const result = await autosaveWriting(
       userId,
-      toWritingId(params.writingId),
+      parseWritingId(params.writingId),
       body
     )
     const writing = unwrapOrThrow(result)

@@ -1,5 +1,7 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
+import type { JourneyId } from "@workspace/core"
+
 export const journeyCategories = [
   "writing_skill",
   "mindfulness",
@@ -10,7 +12,7 @@ export type JourneyCategory = (typeof journeyCategories)[number]
 export const journeys = sqliteTable(
   "journeys",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
+    id: integer("id").$type<JourneyId>().primaryKey({ autoIncrement: true }),
     title: text("title").notNull(),
     description: text("description").notNull(),
     category: text("category", { enum: journeyCategories }).notNull(),

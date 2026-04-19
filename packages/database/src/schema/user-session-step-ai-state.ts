@@ -6,6 +6,8 @@ import {
   unique,
 } from "drizzle-orm/sqlite-core"
 
+import type { SessionId, UserId } from "@workspace/core"
+
 import { user } from "./auth"
 import { journeySessions } from "./journey-sessions"
 
@@ -25,9 +27,11 @@ export const userSessionStepAiState = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     userId: text("user_id")
+      .$type<UserId>()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     sessionId: integer("session_id")
+      .$type<SessionId>()
       .notNull()
       .references(() => journeySessions.id, { onDelete: "cascade" }),
     stepOrder: integer("step_order").notNull(),

@@ -6,6 +6,8 @@ import {
   unique,
 } from "drizzle-orm/sqlite-core"
 
+import type { SessionId, StepId } from "@workspace/core"
+
 import { journeySessions } from "./journey-sessions"
 
 export const stepTypes = [
@@ -21,8 +23,9 @@ export type StepType = (typeof stepTypes)[number]
 export const steps = sqliteTable(
   "steps",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
+    id: integer("id").$type<StepId>().primaryKey({ autoIncrement: true }),
     sessionId: integer("session_id")
+      .$type<SessionId>()
       .notNull()
       .references(() => journeySessions.id, { onDelete: "cascade" }),
     order: integer("order").notNull(),

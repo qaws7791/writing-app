@@ -6,13 +6,16 @@ import {
   unique,
 } from "drizzle-orm/sqlite-core"
 
+import type { JourneyId, SessionId } from "@workspace/core"
+
 import { journeys } from "./journeys"
 
 export const journeySessions = sqliteTable(
   "journey_sessions",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
+    id: integer("id").$type<SessionId>().primaryKey({ autoIncrement: true }),
     journeyId: integer("journey_id")
+      .$type<JourneyId>()
       .notNull()
       .references(() => journeys.id, { onDelete: "cascade" }),
     order: integer("order").notNull(),

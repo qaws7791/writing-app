@@ -2,9 +2,9 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 
 import {
+  parseSessionId,
+  parseStepId,
   stepTypeSchema,
-  toStepId,
-  toSessionId,
   toHttpStatus,
 } from "@workspace/core"
 
@@ -21,21 +21,25 @@ export const GET = withAdminAuth(async (_req, context) => {
   const { sessionId, stepId } = await context.params
   const sId = Number(sessionId)
   const stId = Number(stepId)
-  if (Number.isNaN(sId) || Number.isNaN(stId)) {
+  if (
+    !Number.isInteger(sId) ||
+    sId <= 0 ||
+    !Number.isInteger(stId) ||
+    stId <= 0
+  ) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
   const { getSessionDetail } = getUseCases()
-  const result = await getSessionDetail(toSessionId(sId))
+  const result = await getSessionDetail(parseSessionId(sId))
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
       { status: toHttpStatus(result.error) }
     )
   }
-  const step = result.value.steps.find(
-    (s) => s.id === (toStepId(stId) as unknown as typeof s.id)
-  )
+  const stepIdValue = parseStepId(stId)
+  const step = result.value.steps.find((s) => s.id === stepIdValue)
   if (!step) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
@@ -45,7 +49,7 @@ export const GET = withAdminAuth(async (_req, context) => {
 export const PUT = withAdminAuth(async (req, context) => {
   const { stepId } = await context.params
   const id = Number(stepId)
-  if (Number.isNaN(id)) {
+  if (!Number.isInteger(id) || id <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -62,7 +66,7 @@ export const PUT = withAdminAuth(async (req, context) => {
   }
 
   const { updateStep } = getUseCases()
-  const result = await updateStep(toStepId(id), parsed.data)
+  const result = await updateStep(parseStepId(id), parsed.data)
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -75,11 +79,11 @@ export const PUT = withAdminAuth(async (req, context) => {
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { stepId } = await context.params
   const id = Number(stepId)
-  if (Number.isNaN(id)) {
+  if (!Number.isInteger(id) || id <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
   const { deleteStep } = getUseCases()
-  await deleteStep(toStepId(id))
+  await deleteStep(parseStepId(id))
   return NextResponse.json({ ok: true })
 })

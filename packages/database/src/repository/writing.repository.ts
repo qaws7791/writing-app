@@ -1,5 +1,6 @@
 import { and, desc, eq, lt, or } from "drizzle-orm"
 
+import { toWritingId } from "@workspace/core"
 import type {
   WritingId,
   UserId,
@@ -26,13 +27,13 @@ function createPreview(plainText: string): string {
 }
 
 type WritingRow = {
-  id: number
-  userId: string
+  id: WritingId
+  userId: UserId
   title: string
   bodyJson: unknown
   bodyPlainText: string
   wordCount: number
-  sourcePromptId: number | null
+  sourcePromptId: PromptId | null
   sourceSessionId: number | null
   createdAt: Date
   updatedAt: Date
@@ -40,11 +41,11 @@ type WritingRow = {
 
 function mapWritingSummary(row: WritingRow): WritingSummary {
   return {
-    id: row.id as unknown as WritingId,
+    id: row.id,
     title: row.title,
     preview: createPreview(row.bodyPlainText),
     wordCount: row.wordCount,
-    sourcePromptId: row.sourcePromptId as unknown as PromptId | null,
+    sourcePromptId: row.sourcePromptId,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   }
@@ -59,7 +60,7 @@ function mapWritingDetail(row: WritingRow): WritingDetail {
 }
 
 export function createWritingRepository(database: DbClient): WritingRepository {
-  async function loadRow(writingId: number): Promise<WritingRow | null> {
+  async function loadRow(writingId: WritingId): Promise<WritingRow | null> {
     return database
       .select()
       .from(writings)
@@ -77,13 +78,12 @@ export function createWritingRepository(database: DbClient): WritingRepository {
       const created = await database
         .insert(writings)
         .values({
-          userId: userId as unknown as string,
+          userId,
           title: input.title,
           bodyJson: input.bodyJson,
           bodyPlainText: input.bodyPlainText,
           wordCount: input.wordCount,
-          sourcePromptId:
-            (input.sourcePromptId as unknown as number | null) ?? null,
+          sourcePromptId: input.sourcePromptId ?? null,
           sourceSessionId: input.sourceSessionId ?? null,
           createdAt: now,
           updatedAt: now,
@@ -101,9 +101,7 @@ export function createWritingRepository(database: DbClient): WritingRepository {
           .set({
             responseCount: sql`${writingPrompts.responseCount} + 1`,
           })
-          .where(
-            eq(writingPrompts.id, input.sourcePromptId as unknown as number)
-          )
+          .where(eq(writingPrompts.id, input.sourcePromptId))
       }
 
       return mapWritingDetail(created)
@@ -113,10 +111,9 @@ export function createWritingRepository(database: DbClient): WritingRepository {
       userId: UserId,
       writingId: WritingId
     ): Promise<WritingAccessResult> {
-      const row = await loadRow(writingId as unknown as number)
+      const row = await loadRow(writingId)
       if (!row) return { kind: "not-found" }
-      if (row.userId !== (userId as unknown as string))
-        return { kind: "forbidden" }
+      if (row.userId !== userId) return { kind: "forbidden" }
       return { kind: "writing", writing: mapWritingDetail(row) }
     },
 
@@ -135,7 +132,7 @@ export function createWritingRepository(database: DbClient): WritingRepository {
           lt(writings.updatedAt, new Date(decoded.u)),
           and(
             eq(writings.updatedAt, new Date(decoded.u)),
-            lt(writings.id, decoded.i)
+            lt(writings.id, toWritingId(decoded.i))
           )
         )
       }
@@ -143,9 +140,7 @@ export function createWritingRepository(database: DbClient): WritingRepository {
       const rows = await database
         .select()
         .from(writings)
-        .where(
-          and(eq(writings.userId, userId as unknown as string), cursorCondition)
-        )
+        .where(and(eq(writings.userId, userId), cursorCondition))
         .orderBy(desc(writings.updatedAt), desc(writings.id))
         .limit(limit + 1)
 
@@ -160,7 +155,7 @@ export function createWritingRepository(database: DbClient): WritingRepository {
           ? Buffer.from(
               JSON.stringify({
                 u: lastItem.updatedAt,
-                i: lastItem.id as unknown as number,
+                i: lastItem.id as number,
               })
             ).toString("base64url")
           : null
@@ -173,10 +168,9 @@ export function createWritingRepository(database: DbClient): WritingRepository {
       writingId: WritingId,
       input: WritingUpdateInput
     ): Promise<WritingUpdateResult> {
-      const row = await loadRow(writingId as unknown as number)
+      const row = await loadRow(writingId)
       if (!row) return { kind: "not-found" }
-      if (row.userId !== (userId as unknown as string))
-        return { kind: "forbidden" }
+      if (row.userId !== userId) return { kind: "forbidden" }
 
       const now = new Date()
       await database
@@ -190,9 +184,9 @@ export function createWritingRepository(database: DbClient): WritingRepository {
           ...(input.wordCount !== undefined && { wordCount: input.wordCount }),
           updatedAt: now,
         })
-        .where(eq(writings.id, writingId as unknown as number))
+        .where(eq(writings.id, writingId))
 
-      const updated = await loadRow(writingId as unknown as number)
+      const updated = await loadRow(writingId)
       if (!updated) return { kind: "not-found" }
 
       return { kind: "updated", writing: mapWritingDetail(updated) }
@@ -202,14 +196,11 @@ export function createWritingRepository(database: DbClient): WritingRepository {
       userId: UserId,
       writingId: WritingId
     ): Promise<WritingDeleteResult> {
-      const row = await loadRow(writingId as unknown as number)
+      const row = await loadRow(writingId)
       if (!row) return { kind: "not-found" }
-      if (row.userId !== (userId as unknown as string))
-        return { kind: "forbidden" }
+      if (row.userId !== userId) return { kind: "forbidden" }
 
-      await database
-        .delete(writings)
-        .where(eq(writings.id, writingId as unknown as number))
+      await database.delete(writings).where(eq(writings.id, writingId))
       return { kind: "deleted" }
     },
 
@@ -233,7 +224,7 @@ export function createWritingRepository(database: DbClient): WritingRepository {
           lt(writings.createdAt, new Date(decoded.c)),
           and(
             eq(writings.createdAt, new Date(decoded.c)),
-            lt(writings.id, decoded.i)
+            lt(writings.id, toWritingId(decoded.i))
           )
         )
       }
@@ -243,7 +234,7 @@ export function createWritingRepository(database: DbClient): WritingRepository {
         .from(writings)
         .where(
           and(
-            eq(writings.sourcePromptId, promptId as unknown as number),
+            eq(writings.sourcePromptId, promptId),
             eq(writings.status, "completed"),
             cursorCondition
           )
@@ -255,13 +246,12 @@ export function createWritingRepository(database: DbClient): WritingRepository {
       const pageRows = hasMore ? rows.slice(0, limit) : rows
 
       const items: PublicWritingSummary[] = pageRows.map((row) => ({
-        id: row.id as unknown as WritingId,
+        id: row.id,
         title: row.title,
         preview: createPreview(row.bodyPlainText),
         wordCount: row.wordCount,
         createdAt: row.createdAt.toISOString(),
-        isOwner:
-          userId !== null && row.userId === (userId as unknown as string),
+        isOwner: userId !== null && row.userId === userId,
       }))
 
       const lastItem = pageRows[pageRows.length - 1]

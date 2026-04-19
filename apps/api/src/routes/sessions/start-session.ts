@@ -1,8 +1,8 @@
 import { z } from "@hono/zod-openapi"
 import {
+  parseSessionId,
   sessionIdParamSchema,
   sessionRuntimeSchema,
-  toSessionId,
 } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -25,7 +25,7 @@ export default route({
   },
   handler: async ({ startSession, params, context }) => {
     const userId = requireUserId(context)
-    const result = await startSession(userId, toSessionId(params.sessionId))
+    const result = await startSession(userId, parseSessionId(params.sessionId))
     return unwrapOrThrow(result)
   },
 })

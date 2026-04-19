@@ -40,6 +40,19 @@ export const config = [
     },
   },
   {
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector:
+            "TSAsExpression > TSAsExpression[typeAnnotation.type='TSUnknownKeyword']",
+          message:
+            "'as unknown as T' bypasses type safety. Use branded constructors (toUserId, toJourneyId, etc.) or .$type<>() in the Drizzle schema.",
+        },
+      ],
+    },
+  },
+  {
     ignores: [
       "dist/**",
       ".next/**",

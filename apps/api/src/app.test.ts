@@ -84,10 +84,26 @@ describe("prompts", () => {
     const response = await app.request("/prompts")
     const body = await readJson<{
       items: Array<{ id: number; promptType: string }>
+      nextCursor: number | null
     }>(response)
 
     expect(response.status).toBe(200)
     expect(body.items.length).toBeGreaterThan(0)
+    expect(body.nextCursor).toBeNull()
+  })
+
+  test("accepts numeric prompt cursor query values", async () => {
+    const { app } = setup()
+    const response = await app.request("/prompts?cursor=1&limit=1")
+    const body = await readJson<{
+      items: Array<{ id: number }>
+      nextCursor: number | null
+    }>(response)
+
+    expect(response.status).toBe(200)
+    expect(body.items).toHaveLength(1)
+    expect(body.items[0]?.id).toBe(2)
+    expect(body.nextCursor).toBe(2)
   })
 
   test("bookmarks a prompt idempotently", async () => {
@@ -146,6 +162,15 @@ describe("prompts", () => {
   test("rejects invalid prompt ids", async () => {
     const { app } = setup()
     const response = await app.request("/prompts/invalid")
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.code).toBe("validation_error")
+  })
+
+  test("rejects invalid prompt cursor query values", async () => {
+    const { app } = setup()
+    const response = await app.request("/prompts?cursor=invalid")
     const body = await readJson<{ error: { code: string } }>(response)
 
     expect(response.status).toBe(400)

@@ -1,5 +1,7 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
+import type { PromptId, UserId, WritingId } from "@workspace/core"
+
 import { user } from "./auth"
 import { writingPrompts } from "./writing-prompts"
 import { journeySessions } from "./journey-sessions"
@@ -10,8 +12,9 @@ export type WritingStatus = (typeof writingStatuses)[number]
 export const writings = sqliteTable(
   "writings",
   {
-    id: integer("id").primaryKey({ autoIncrement: true }),
+    id: integer("id").$type<WritingId>().primaryKey({ autoIncrement: true }),
     userId: text("user_id")
+      .$type<UserId>()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
@@ -21,10 +24,9 @@ export const writings = sqliteTable(
     status: text("status", { enum: writingStatuses })
       .notNull()
       .default("draft"),
-    sourcePromptId: integer("source_prompt_id").references(
-      () => writingPrompts.id,
-      { onDelete: "set null" }
-    ),
+    sourcePromptId: integer("source_prompt_id")
+      .$type<PromptId>()
+      .references(() => writingPrompts.id, { onDelete: "set null" }),
     sourceSessionId: integer("source_session_id").references(
       () => journeySessions.id,
       { onDelete: "set null" }

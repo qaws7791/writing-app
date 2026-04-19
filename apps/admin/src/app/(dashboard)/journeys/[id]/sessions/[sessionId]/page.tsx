@@ -3,6 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { journeys, journeySessions, steps } from "@workspace/database"
+import { parseJourneyId, parseSessionId } from "@workspace/core"
 import { cn } from "@workspace/ui"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
 import {
@@ -22,9 +23,17 @@ type Props = { params: Promise<{ id: string; sessionId: string }> }
 
 export default async function SessionDetailPage({ params }: Props) {
   const { id, sessionId } = await params
-  const journeyId = Number(id)
-  const sessionIdNum = Number(sessionId)
-  if (Number.isNaN(journeyId) || Number.isNaN(sessionIdNum)) notFound()
+  const rawId = Number(id)
+  const rawSessionId = Number(sessionId)
+  if (
+    !Number.isInteger(rawId) ||
+    rawId <= 0 ||
+    !Number.isInteger(rawSessionId) ||
+    rawSessionId <= 0
+  )
+    notFound()
+  const journeyId = parseJourneyId(rawId)
+  const sessionIdNum = parseSessionId(rawSessionId)
 
   const db = getDb()
 

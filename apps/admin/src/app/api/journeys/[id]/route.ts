@@ -3,7 +3,7 @@ import { z } from "zod"
 
 import {
   journeyCategorySchema,
-  toJourneyId,
+  parseJourneyId,
   toHttpStatus,
 } from "@workspace/core"
 
@@ -20,12 +20,12 @@ const updateJourneySchema = z.object({
 export const GET = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
   const numId = Number(id)
-  if (Number.isNaN(numId)) {
+  if (!Number.isInteger(numId) || numId <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
   const { getJourneyFull } = getUseCases()
-  const result = await getJourneyFull(toJourneyId(numId))
+  const result = await getJourneyFull(parseJourneyId(numId))
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -38,7 +38,7 @@ export const GET = withAdminAuth(async (_req, context) => {
 export const PUT = withAdminAuth(async (req, context) => {
   const { id } = await context.params
   const numId = Number(id)
-  if (Number.isNaN(numId)) {
+  if (!Number.isInteger(numId) || numId <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -55,7 +55,7 @@ export const PUT = withAdminAuth(async (req, context) => {
   }
 
   const { updateJourney } = getUseCases()
-  const result = await updateJourney(toJourneyId(numId), parsed.data)
+  const result = await updateJourney(parseJourneyId(numId), parsed.data)
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -68,11 +68,11 @@ export const PUT = withAdminAuth(async (req, context) => {
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
   const numId = Number(id)
-  if (Number.isNaN(numId)) {
+  if (!Number.isInteger(numId) || numId <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
   const { deleteJourney } = getUseCases()
-  await deleteJourney(toJourneyId(numId))
+  await deleteJourney(parseJourneyId(numId))
   return NextResponse.json({ ok: true })
 })

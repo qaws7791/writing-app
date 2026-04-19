@@ -27,8 +27,8 @@ import type { DbClient, JourneySessionRow, StepRow } from "../types/index"
 
 function mapSessionSummary(row: JourneySessionRow): JourneySessionSummary {
   return {
-    id: row.id as unknown as SessionId,
-    journeyId: row.journeyId as unknown as JourneyId,
+    id: row.id,
+    journeyId: row.journeyId,
     order: row.order,
     title: row.title,
     description: row.description,
@@ -38,8 +38,8 @@ function mapSessionSummary(row: JourneySessionRow): JourneySessionSummary {
 
 function mapStepSummary(step: StepRow): StepSummary {
   return {
-    id: step.id as unknown as StepId,
-    sessionId: step.sessionId as unknown as SessionId,
+    id: step.id,
+    sessionId: step.sessionId,
     order: step.order,
     type: step.type as StepSummary["type"],
     contentJson: step.contentJson,
@@ -72,7 +72,7 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
       )
 
       return rows.map((row) => ({
-        id: row.id as unknown as JourneyId,
+        id: row.id,
         title: row.title,
         description: row.description,
         category: row.category as JourneyCategory,
@@ -82,11 +82,10 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
     },
 
     async getById(journeyId: JourneyId): Promise<JourneyDetail | null> {
-      const id = journeyId as unknown as number
       const journey = await database
         .select()
         .from(journeys)
-        .where(eq(journeys.id, id))
+        .where(eq(journeys.id, journeyId))
         .limit(1)
         .then((rows) => rows[0] ?? null)
 
@@ -95,11 +94,11 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
       const sessions = await database
         .select()
         .from(journeySessions)
-        .where(eq(journeySessions.journeyId, id))
+        .where(eq(journeySessions.journeyId, journeyId))
         .orderBy(asc(journeySessions.order))
 
       return {
-        id: journey.id as unknown as JourneyId,
+        id: journey.id,
         title: journey.title,
         description: journey.description,
         category: journey.category as JourneyCategory,
@@ -110,11 +109,10 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
     },
 
     async getByIdFull(journeyId: JourneyId): Promise<JourneyFullDetail | null> {
-      const id = journeyId as unknown as number
       const journey = await database
         .select()
         .from(journeys)
-        .where(eq(journeys.id, id))
+        .where(eq(journeys.id, journeyId))
         .limit(1)
         .then((rows) => rows[0] ?? null)
 
@@ -123,7 +121,7 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
       const sessionRows = await database
         .select()
         .from(journeySessions)
-        .where(eq(journeySessions.journeyId, id))
+        .where(eq(journeySessions.journeyId, journeyId))
         .orderBy(asc(journeySessions.order))
 
       const sessionIds = sessionRows.map((s) => s.id)
@@ -140,7 +138,7 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
               .orderBy(asc(steps.order))
           : []
 
-      const stepsBySession = new Map<number, StepRow[]>()
+      const stepsBySession = new Map<SessionId, StepRow[]>()
       for (const step of allSteps) {
         const list = stepsBySession.get(step.sessionId) ?? []
         list.push(step)
@@ -148,7 +146,7 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
       }
 
       return {
-        id: journey.id as unknown as JourneyId,
+        id: journey.id,
         title: journey.title,
         description: journey.description,
         category: journey.category as JourneyCategory,
@@ -164,11 +162,10 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
     async getSessionDetail(
       sessionId: SessionId
     ): Promise<JourneySessionDetail | null> {
-      const id = sessionId as unknown as number
       const session = await database
         .select()
         .from(journeySessions)
-        .where(eq(journeySessions.id, id))
+        .where(eq(journeySessions.id, sessionId))
         .limit(1)
         .then((rows) => rows[0] ?? null)
 
@@ -177,7 +174,7 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
       const sessionSteps = await database
         .select()
         .from(steps)
-        .where(eq(steps.sessionId, id))
+        .where(eq(steps.sessionId, sessionId))
         .orderBy(asc(steps.order))
 
       return {
@@ -187,11 +184,10 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
     },
 
     async listSessions(journeyId: JourneyId): Promise<JourneySessionSummary[]> {
-      const id = journeyId as unknown as number
       const rows = await database
         .select()
         .from(journeySessions)
-        .where(eq(journeySessions.journeyId, id))
+        .where(eq(journeySessions.journeyId, journeyId))
         .orderBy(asc(journeySessions.order))
       return rows.map(mapSessionSummary)
     },
@@ -207,7 +203,7 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
         })
         .returning()
       return {
-        id: row!.id as unknown as JourneyId,
+        id: row!.id,
         title: row!.title,
         description: row!.description,
         category: row!.category as JourneyCategory,
@@ -220,20 +216,19 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
       journeyId: JourneyId,
       input: UpdateJourneyInput
     ): Promise<JourneySummary | null> {
-      const id = journeyId as unknown as number
       const [row] = await database
         .update(journeys)
         .set({ ...input, updatedAt: new Date() })
-        .where(eq(journeys.id, id))
+        .where(eq(journeys.id, journeyId))
         .returning()
       if (!row) return null
       const sessionCount = await database
         .select({ count: count() })
         .from(journeySessions)
-        .where(eq(journeySessions.journeyId, id))
+        .where(eq(journeySessions.journeyId, journeyId))
         .then((rows) => Number(rows[0]?.count ?? 0))
       return {
-        id: row.id as unknown as JourneyId,
+        id: row.id,
         title: row.title,
         description: row.description,
         category: row.category as JourneyCategory,
@@ -243,9 +238,7 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
     },
 
     async delete(journeyId: JourneyId): Promise<void> {
-      await database
-        .delete(journeys)
-        .where(eq(journeys.id, journeyId as unknown as number))
+      await database.delete(journeys).where(eq(journeys.id, journeyId))
     },
 
     async createSession(
@@ -255,7 +248,7 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
       const [row] = await database
         .insert(journeySessions)
         .values({
-          journeyId: journeyId as unknown as number,
+          journeyId,
           title: input.title,
           description: input.description,
           estimatedMinutes: input.estimatedMinutes,
@@ -272,7 +265,7 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
       const [row] = await database
         .update(journeySessions)
         .set({ ...input, updatedAt: new Date() })
-        .where(eq(journeySessions.id, sessionId as unknown as number))
+        .where(eq(journeySessions.id, sessionId))
         .returning()
       if (!row) return null
       return mapSessionSummary(row)
@@ -281,7 +274,7 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
     async deleteSession(sessionId: SessionId): Promise<void> {
       await database
         .delete(journeySessions)
-        .where(eq(journeySessions.id, sessionId as unknown as number))
+        .where(eq(journeySessions.id, sessionId))
     },
 
     async createStep(
@@ -291,7 +284,7 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
       const [row] = await database
         .insert(steps)
         .values({
-          sessionId: sessionId as unknown as number,
+          sessionId,
           type: input.type,
           order: input.order,
           contentJson: input.contentJson,
@@ -307,16 +300,14 @@ export function createJourneyRepository(database: DbClient): JourneyRepository {
       const [row] = await database
         .update(steps)
         .set({ ...input, updatedAt: new Date() })
-        .where(eq(steps.id, stepId as unknown as number))
+        .where(eq(steps.id, stepId))
         .returning()
       if (!row) return null
       return mapStepSummary(row)
     },
 
     async deleteStep(stepId: StepId): Promise<void> {
-      await database
-        .delete(steps)
-        .where(eq(steps.id, stepId as unknown as number))
+      await database.delete(steps).where(eq(steps.id, stepId))
     },
   }
 }

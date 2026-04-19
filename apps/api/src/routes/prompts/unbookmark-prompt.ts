@@ -1,5 +1,5 @@
 import { z } from "@hono/zod-openapi"
-import { promptIdParamSchema, toPromptId } from "@workspace/core"
+import { parsePromptId, promptIdParamSchema } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
@@ -20,6 +20,6 @@ export default route({
   },
   handler: async ({ unbookmarkPrompt, params, context }) => {
     const userId = requireUserId(context)
-    await unbookmarkPrompt(userId, toPromptId(params.promptId))
+    await unbookmarkPrompt(userId, parsePromptId(params.promptId))
   },
 })

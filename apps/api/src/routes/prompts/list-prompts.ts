@@ -1,4 +1,5 @@
 import {
+  parsePromptId,
   promptFiltersQuerySchema,
   promptListPageResponseSchema,
 } from "@workspace/core"
@@ -27,7 +28,12 @@ export default route({
   },
   handler: async ({ listPrompts, query, context }) => {
     const userId = requireUserId(context)
-    const result = await listPrompts(userId, query)
+    const result = await listPrompts(userId, {
+      promptType: query.promptType,
+      cursor:
+        query.cursor === undefined ? undefined : parsePromptId(query.cursor),
+      limit: query.limit,
+    })
     return unwrapOrThrow(result)
   },
 })

@@ -1,8 +1,8 @@
 import { z } from "@hono/zod-openapi"
 import {
+  parsePromptId,
   promptSummarySchema,
   promptIdParamSchema,
-  toPromptId,
 } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -25,7 +25,7 @@ export default route({
   },
   handler: async ({ getPrompt, params, context }) => {
     const userId = requireUserId(context)
-    const result = await getPrompt(toPromptId(params.promptId), userId)
+    const result = await getPrompt(parsePromptId(params.promptId), userId)
     return unwrapOrThrow(result)
   },
 })

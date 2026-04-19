@@ -22,15 +22,15 @@ import { journeySessions } from "../schema/journey-sessions"
 import type { DbClient } from "../types/index"
 
 function mapJourneyProgress(row: {
-  userId: string
-  journeyId: number
+  userId: UserId
+  journeyId: JourneyId
   currentSessionOrder: number
   completionRate: number
   status: string
 }): UserJourneyProgress {
   return {
-    userId: row.userId as unknown as UserId,
-    journeyId: row.journeyId as unknown as JourneyId,
+    userId: row.userId,
+    journeyId: row.journeyId,
     currentSessionOrder: row.currentSessionOrder,
     completionRate: row.completionRate,
     status: row.status as JourneyProgressStatus,
@@ -38,15 +38,15 @@ function mapJourneyProgress(row: {
 }
 
 function mapSessionProgress(row: {
-  userId: string
-  sessionId: number
+  userId: UserId
+  sessionId: SessionId
   currentStepOrder: number
   status: string
   stepResponsesJson: unknown
 }): UserSessionProgress {
   return {
-    userId: row.userId as unknown as UserId,
-    sessionId: row.sessionId as unknown as SessionId,
+    userId: row.userId,
+    sessionId: row.sessionId,
     currentStepOrder: row.currentStepOrder,
     status: row.status as SessionProgressStatus,
     stepResponsesJson: (row.stepResponsesJson ?? {}) as Record<string, unknown>,
@@ -54,8 +54,8 @@ function mapSessionProgress(row: {
 }
 
 function mapSessionStepAiState(row: {
-  userId: string
-  sessionId: number
+  userId: UserId
+  sessionId: SessionId
   stepOrder: number
   kind: string
   sourceStepOrder: number
@@ -67,8 +67,8 @@ function mapSessionStepAiState(row: {
   updatedAt: Date
 }): UserSessionStepAiState {
   return {
-    userId: row.userId as unknown as UserId,
-    sessionId: row.sessionId as unknown as SessionId,
+    userId: row.userId,
+    sessionId: row.sessionId,
     stepOrder: row.stepOrder,
     kind: row.kind as SessionAiStateKind,
     sourceStepOrder: row.sourceStepOrder,
@@ -94,8 +94,8 @@ export function createProgressRepository(
         .from(userJourneyProgress)
         .where(
           and(
-            eq(userJourneyProgress.userId, userId as unknown as string),
-            eq(userJourneyProgress.journeyId, journeyId as unknown as number)
+            eq(userJourneyProgress.userId, userId),
+            eq(userJourneyProgress.journeyId, journeyId)
           )
         )
         .limit(1)
@@ -111,7 +111,7 @@ export function createProgressRepository(
         .from(userJourneyProgress)
         .where(
           and(
-            eq(userJourneyProgress.userId, userId as unknown as string),
+            eq(userJourneyProgress.userId, userId),
             eq(userJourneyProgress.status, "in_progress")
           )
         )
@@ -127,7 +127,7 @@ export function createProgressRepository(
         .from(userJourneyProgress)
         .where(
           and(
-            eq(userJourneyProgress.userId, userId as unknown as string),
+            eq(userJourneyProgress.userId, userId),
             eq(userJourneyProgress.status, "completed")
           )
         )
@@ -143,8 +143,8 @@ export function createProgressRepository(
       const row = await database
         .insert(userJourneyProgress)
         .values({
-          userId: userId as unknown as string,
-          journeyId: journeyId as unknown as number,
+          userId,
+          journeyId,
           currentSessionOrder: 1,
           completionRate: 0,
           status: "in_progress",
@@ -186,8 +186,8 @@ export function createProgressRepository(
         })
         .where(
           and(
-            eq(userJourneyProgress.userId, userId as unknown as string),
-            eq(userJourneyProgress.journeyId, journeyId as unknown as number)
+            eq(userJourneyProgress.userId, userId),
+            eq(userJourneyProgress.journeyId, journeyId)
           )
         )
     },
@@ -200,14 +200,14 @@ export function createProgressRepository(
         const sessions = await tx
           .select({ id: journeySessions.id, order: journeySessions.order })
           .from(journeySessions)
-          .where(eq(journeySessions.journeyId, journeyId as unknown as number))
+          .where(eq(journeySessions.journeyId, journeyId))
           .orderBy(journeySessions.order)
 
         if (sessions.length === 0) return
 
         const now = new Date()
         const records = sessions.map((session) => ({
-          userId: userId as unknown as string,
+          userId,
           sessionId: session.id,
           currentStepOrder: 1,
           status: (session.order === 1 ? "in_progress" : "locked") as
@@ -234,8 +234,8 @@ export function createProgressRepository(
         .from(userSessionProgress)
         .where(
           and(
-            eq(userSessionProgress.userId, userId as unknown as string),
-            eq(userSessionProgress.sessionId, sessionId as unknown as number)
+            eq(userSessionProgress.userId, userId),
+            eq(userSessionProgress.sessionId, sessionId)
           )
         )
         .limit(1)
@@ -253,8 +253,8 @@ export function createProgressRepository(
       const row = await database
         .insert(userSessionProgress)
         .values({
-          userId: userId as unknown as string,
-          sessionId: sessionId as unknown as number,
+          userId,
+          sessionId,
           currentStepOrder: 1,
           status: "in_progress",
           stepResponsesJson: {},
@@ -294,8 +294,8 @@ export function createProgressRepository(
         })
         .where(
           and(
-            eq(userSessionProgress.userId, userId as unknown as string),
-            eq(userSessionProgress.sessionId, sessionId as unknown as number)
+            eq(userSessionProgress.userId, userId),
+            eq(userSessionProgress.sessionId, sessionId)
           )
         )
     },
@@ -310,11 +310,8 @@ export function createProgressRepository(
         .from(userSessionStepAiState)
         .where(
           and(
-            eq(userSessionStepAiState.userId, userId as unknown as string),
-            eq(
-              userSessionStepAiState.sessionId,
-              sessionId as unknown as number
-            ),
+            eq(userSessionStepAiState.userId, userId),
+            eq(userSessionStepAiState.sessionId, sessionId),
             eq(userSessionStepAiState.stepOrder, stepOrder)
           )
         )
@@ -334,8 +331,8 @@ export function createProgressRepository(
         .from(userSessionStepAiState)
         .where(
           and(
-            eq(userSessionStepAiState.userId, userId as unknown as string),
-            eq(userSessionStepAiState.sessionId, sessionId as unknown as number)
+            eq(userSessionStepAiState.userId, userId),
+            eq(userSessionStepAiState.sessionId, sessionId)
           )
         )
         .orderBy(asc(userSessionStepAiState.stepOrder))
@@ -375,8 +372,8 @@ export function createProgressRepository(
       await database
         .insert(userSessionStepAiState)
         .values({
-          userId: userId as unknown as string,
-          sessionId: sessionId as unknown as number,
+          userId,
+          sessionId,
           stepOrder,
           kind: state.kind,
           sourceStepOrder: state.sourceStepOrder,

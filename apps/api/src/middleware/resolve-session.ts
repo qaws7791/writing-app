@@ -1,5 +1,5 @@
 import type { MiddlewareHandler } from "hono"
-import { toUserId } from "@workspace/core"
+import { parseUserId } from "@workspace/core"
 
 import type { AppEnv, GetSession } from "../app-env"
 
@@ -19,7 +19,7 @@ export function createResolveSessionMiddleware(
 
     context.set("authSession", authSession.session)
     context.set("authUser", authSession.user)
-    context.set("userId", toUserId(authSession.user.id))
+    context.set("userId", parseUserId(authSession.user.id))
     await next()
   }
 }

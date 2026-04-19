@@ -7,6 +7,8 @@ import {
   unique,
 } from "drizzle-orm/sqlite-core"
 
+import type { JourneyId, UserId } from "@workspace/core"
+
 import { user } from "./auth"
 import { journeys } from "./journeys"
 
@@ -18,9 +20,11 @@ export const userJourneyProgress = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     userId: text("user_id")
+      .$type<UserId>()
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     journeyId: integer("journey_id")
+      .$type<JourneyId>()
       .notNull()
       .references(() => journeys.id, { onDelete: "cascade" }),
     currentSessionOrder: integer("current_session_order").notNull().default(1),

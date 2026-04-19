@@ -1,7 +1,7 @@
 import {
   createWritingBodySchema,
+  parsePromptId,
   writingDetailSchema,
-  toPromptId,
 } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -32,7 +32,7 @@ export default route({
       sourcePromptId:
         body.sourcePromptId === undefined
           ? undefined
-          : toPromptId(body.sourcePromptId),
+          : parsePromptId(body.sourcePromptId),
     })
     return unwrapOrThrow(result)
   },

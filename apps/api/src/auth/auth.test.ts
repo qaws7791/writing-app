@@ -10,6 +10,7 @@ import {
   toPromptId,
   toSessionId,
   toStepId,
+  toUserId,
   toWritingId,
   journeyNotFound,
 } from "@workspace/core"
@@ -179,9 +180,7 @@ function setup(): { app: TestApp } {
         },
         enrollJourneyUseCase() {
           return okAsync({
-            userId: "user-1" as unknown as ReturnType<
-              typeof import("@workspace/core").toUserId
-            >,
+            userId: toUserId("user-1"),
             journeyId: toJourneyId(1),
             currentSessionOrder: 1,
             completionRate: 0,

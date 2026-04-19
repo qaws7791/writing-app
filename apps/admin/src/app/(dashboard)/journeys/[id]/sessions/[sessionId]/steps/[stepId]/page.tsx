@@ -3,6 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { journeys, journeySessions, steps } from "@workspace/database"
+import { parseJourneyId, parseSessionId, parseStepId } from "@workspace/core"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -21,15 +22,21 @@ type Props = {
 
 export default async function StepDetailPage({ params }: Props) {
   const { id, sessionId, stepId } = await params
-  const journeyId = Number(id)
-  const sessionIdNum = Number(sessionId)
-  const stepIdNum = Number(stepId)
+  const rawId = Number(id)
+  const rawSessionId = Number(sessionId)
+  const rawStepId = Number(stepId)
   if (
-    Number.isNaN(journeyId) ||
-    Number.isNaN(sessionIdNum) ||
-    Number.isNaN(stepIdNum)
+    !Number.isInteger(rawId) ||
+    rawId <= 0 ||
+    !Number.isInteger(rawSessionId) ||
+    rawSessionId <= 0 ||
+    !Number.isInteger(rawStepId) ||
+    rawStepId <= 0
   )
     notFound()
+  const journeyId = parseJourneyId(rawId)
+  const sessionIdNum = parseSessionId(rawSessionId)
+  const stepIdNum = parseStepId(rawStepId)
 
   const db = getDb()
   const [[journey], [session], [step]] = await Promise.all([

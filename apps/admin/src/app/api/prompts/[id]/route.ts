@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { promptTypeSchema, toPromptId, toHttpStatus } from "@workspace/core"
+import { parsePromptId, promptTypeSchema, toHttpStatus } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
 import { getUseCases } from "@/lib/use-cases"
@@ -16,12 +16,12 @@ const updatePromptSchema = z.object({
 export const GET = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
   const promptId = Number(id)
-  if (Number.isNaN(promptId)) {
+  if (!Number.isInteger(promptId) || promptId <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
   const { getPrompt } = getUseCases()
-  const result = await getPrompt(toPromptId(promptId), null)
+  const result = await getPrompt(parsePromptId(promptId), null)
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -34,7 +34,7 @@ export const GET = withAdminAuth(async (_req, context) => {
 export const PUT = withAdminAuth(async (req, context) => {
   const { id } = await context.params
   const promptId = Number(id)
-  if (Number.isNaN(promptId)) {
+  if (!Number.isInteger(promptId) || promptId <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -51,7 +51,7 @@ export const PUT = withAdminAuth(async (req, context) => {
   }
 
   const { updatePrompt } = getUseCases()
-  const result = await updatePrompt(toPromptId(promptId), parsed.data)
+  const result = await updatePrompt(parsePromptId(promptId), parsed.data)
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -64,11 +64,11 @@ export const PUT = withAdminAuth(async (req, context) => {
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
   const promptId = Number(id)
-  if (Number.isNaN(promptId)) {
+  if (!Number.isInteger(promptId) || promptId <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
   const { deletePrompt } = getUseCases()
-  await deletePrompt(toPromptId(promptId))
+  await deletePrompt(parsePromptId(promptId))
   return NextResponse.json({ ok: true })
 })

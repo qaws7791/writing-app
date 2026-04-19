@@ -1,8 +1,8 @@
 import { z } from "@hono/zod-openapi"
 import {
+  parseSessionId,
   sessionIdParamSchema,
   sessionRuntimeSchema,
-  toSessionId,
 } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -32,7 +32,7 @@ export default route({
     const userId = requireUserId(context)
     const result = await retrySessionStepAi(
       userId,
-      toSessionId(params.sessionId),
+      parseSessionId(params.sessionId),
       {
         stepOrder: params.stepOrder,
       }

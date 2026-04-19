@@ -14,13 +14,13 @@ export type PromptSummary = {
 
 export type PromptListFilters = {
   promptType?: PromptType
-  cursor?: number
+  cursor?: PromptId
   limit?: number
 }
 
 export type PromptListPage = {
   readonly items: readonly PromptSummary[]
-  readonly nextCursor: number | null
+  readonly nextCursor: PromptId | null
 }
 
 export type PromptCategory = {

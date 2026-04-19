@@ -1,8 +1,8 @@
 import { z } from "@hono/zod-openapi"
 import {
+  parsePromptId,
   promptIdParamSchema,
   promptBookmarkResponseSchema,
-  toPromptId,
 } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -28,7 +28,7 @@ export default route({
   },
   handler: async ({ bookmarkPrompt, params, context }) => {
     const userId = requireUserId(context)
-    const result = await bookmarkPrompt(userId, toPromptId(params.promptId))
+    const result = await bookmarkPrompt(userId, parsePromptId(params.promptId))
     const { savedAt } = unwrapOrThrow(result)
     return { kind: "bookmarked" as const, savedAt }
   },

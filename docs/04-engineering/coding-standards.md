@@ -26,6 +26,9 @@ description: 이 저장소에서 일관된 품질과 경계 명확성을 유지�
 - 성공/실패를 `boolean` 한 개로 뭉개지 말고, 의미 있는 union 타입으로 표현합니다.
 - 상태나 메시지 분기는 discriminated union과 exhaustive check를 우선합니다.
 - 도메인 식별자는 brand type 또는 별도 타입 별칭으로 의미를 드러냅니다.
+- 외부 입력은 경계에서 `parseXId`로 검증한 뒤 brand type으로 올립니다.
+- 이미 검증된 내부 값에만 `toXId`를 사용합니다.
+- `as UserId`, `as PromptId` 같은 direct brand cast는 금지합니다.
 - 파생 가능한 값은 상태로 저장하지 않고 계산합니다.
 
 ## 백엔드 기준
@@ -35,6 +38,7 @@ description: 이 저장소에서 일관된 품질과 경계 명확성을 유지�
 - 예외는 예외 상황에 한정하고, 기본 실패 흐름은 `Result` 값으로 표현합니다.
 - 데이터 가공과 컬렉션 조합은 선언적으로 작성하고 필요 시 `pipe()`와 `remeda`를 사용합니다.
 - Hono, DB, Storage, AI SDK 같은 프레임워크 의존성은 경계 계층에만 둡니다.
+- Drizzle의 식별자 PK/FK 컬럼은 `.$type<>()`으로 domain brand를 보존합니다.
 - `apps/api`는 HTTP 조립과 매핑만 담당합니다.
 - `core`는 포트와 계약 스키마, 비즈니스 규칙만 담당합니다.
 - 인프라 구현은 `packages/database`, `packages/ai`로 분리합니다.

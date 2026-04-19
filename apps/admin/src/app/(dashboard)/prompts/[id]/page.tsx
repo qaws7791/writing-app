@@ -3,6 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 
 import { writingPrompts } from "@workspace/database"
+import { parsePromptId } from "@workspace/core"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,8 +20,9 @@ type Props = { params: Promise<{ id: string }> }
 
 export default async function PromptDetailPage({ params }: Props) {
   const { id } = await params
-  const promptId = Number(id)
-  if (Number.isNaN(promptId)) notFound()
+  const rawId = Number(id)
+  if (!Number.isInteger(rawId) || rawId <= 0) notFound()
+  const promptId = parsePromptId(rawId)
 
   const db = getDb()
   const [prompt] = await db

@@ -1,8 +1,8 @@
 import {
+  parsePromptId,
   promptWritingsQuerySchema,
   promptWritingsResponseSchema,
   promptIdParamSchema,
-  toPromptId,
 } from "@workspace/core"
 import { z } from "@hono/zod-openapi"
 
@@ -34,7 +34,7 @@ export default route({
   handler: async ({ listPromptWritings, params, query, context }) => {
     const userId = context.get("userId")
     const result = await listPromptWritings(
-      toPromptId(params.promptId),
+      parsePromptId(params.promptId),
       userId,
       query
     )

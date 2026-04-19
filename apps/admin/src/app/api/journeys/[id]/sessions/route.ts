@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { toJourneyId, toHttpStatus } from "@workspace/core"
+import { parseJourneyId, toHttpStatus } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
 import { getUseCases } from "@/lib/use-cases"
@@ -16,19 +16,19 @@ const createSessionSchema = z.object({
 export const GET = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
   const journeyId = Number(id)
-  if (Number.isNaN(journeyId)) {
+  if (!Number.isInteger(journeyId) || journeyId <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
   const { listSessions } = getUseCases()
-  const items = (await listSessions(toJourneyId(journeyId)))._unsafeUnwrap()
+  const items = (await listSessions(parseJourneyId(journeyId)))._unsafeUnwrap()
   return NextResponse.json({ items })
 })
 
 export const POST = withAdminAuth(async (req, context) => {
   const { id } = await context.params
   const journeyId = Number(id)
-  if (Number.isNaN(journeyId)) {
+  if (!Number.isInteger(journeyId) || journeyId <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -45,7 +45,7 @@ export const POST = withAdminAuth(async (req, context) => {
   }
 
   const { createSession } = getUseCases()
-  const result = await createSession(toJourneyId(journeyId), parsed.data)
+  const result = await createSession(parseJourneyId(journeyId), parsed.data)
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },

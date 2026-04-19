@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { toSessionId, toHttpStatus } from "@workspace/core"
+import { parseSessionId, toHttpStatus } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
 import { getUseCases } from "@/lib/use-cases"
@@ -16,12 +16,12 @@ const updateSessionSchema = z.object({
 export const GET = withAdminAuth(async (_req, context) => {
   const { sessionId } = await context.params
   const id = Number(sessionId)
-  if (Number.isNaN(id)) {
+  if (!Number.isInteger(id) || id <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
   const { getSessionDetail } = getUseCases()
-  const result = await getSessionDetail(toSessionId(id))
+  const result = await getSessionDetail(parseSessionId(id))
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -34,7 +34,7 @@ export const GET = withAdminAuth(async (_req, context) => {
 export const PUT = withAdminAuth(async (req, context) => {
   const { sessionId } = await context.params
   const id = Number(sessionId)
-  if (Number.isNaN(id)) {
+  if (!Number.isInteger(id) || id <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -51,7 +51,7 @@ export const PUT = withAdminAuth(async (req, context) => {
   }
 
   const { updateSession } = getUseCases()
-  const result = await updateSession(toSessionId(id), parsed.data)
+  const result = await updateSession(parseSessionId(id), parsed.data)
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -64,11 +64,11 @@ export const PUT = withAdminAuth(async (req, context) => {
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { sessionId } = await context.params
   const id = Number(sessionId)
-  if (Number.isNaN(id)) {
+  if (!Number.isInteger(id) || id <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
   const { deleteSession } = getUseCases()
-  await deleteSession(toSessionId(id))
+  await deleteSession(parseSessionId(id))
   return NextResponse.json({ ok: true })
 })

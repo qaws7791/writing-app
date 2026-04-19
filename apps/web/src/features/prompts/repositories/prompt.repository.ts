@@ -51,5 +51,5 @@ export async function fetchPromptWritings(
     params: { path: { promptId }, query: params },
   })
   if (error) throw error
-  return data as unknown as PromptWritingsData
+  return data as PromptWritingsData
 }

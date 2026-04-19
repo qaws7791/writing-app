@@ -1,9 +1,9 @@
 import { z } from "@hono/zod-openapi"
 import {
+  parseSessionId,
   sessionIdParamSchema,
   sessionRuntimeSchema,
   submitStepBodySchema,
-  toSessionId,
 } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -36,7 +36,7 @@ export default route({
   },
   handler: async ({ submitStep, params, body, context }) => {
     const userId = requireUserId(context)
-    const result = await submitStep(userId, toSessionId(params.sessionId), {
+    const result = await submitStep(userId, parseSessionId(params.sessionId), {
       stepOrder: params.stepOrder,
       response: body.response,
     })

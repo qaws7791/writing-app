@@ -58,9 +58,11 @@ packages/ai -> packages/core
   - `use-cases`
   - `ports`
   - `model`의 핵심 타입
+  - boundary parsing 유틸 (`parseXId`)
 - 비공개 대상
   - 내부 helper
   - 모듈 내부 조합 세부사항
+  - 검증 없는 brand 부여 helper
 
 ### `packages/database`
 
@@ -83,6 +85,7 @@ packages/ai -> packages/core
 ## 새 기능 배치 규칙
 
 - HTTP 요청 파싱, 응답 직렬화, OpenAPI route 정의는 `apps/api`
+- primitive -> brand 변환은 `apps/api`, `apps/admin` 같은 adapter/app 경계에서 수행
 - 비즈니스 규칙, 검증, 상태 전이, 유스케이스는 `core`
 - 영속성 구현은 `database`
 - AI 코칭 피드백 구현은 `ai`

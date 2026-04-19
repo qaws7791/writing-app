@@ -2,7 +2,7 @@ import { z } from "@hono/zod-openapi"
 import {
   journeyDetailWithProgressSchema,
   journeyIdParamSchema,
-  toJourneyId,
+  parseJourneyId,
 } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
@@ -27,7 +27,7 @@ export default route({
   },
   handler: async ({ getJourney, params, context }) => {
     const userId = context.get("userId")
-    const result = await getJourney(toJourneyId(params.journeyId), userId)
+    const result = await getJourney(parseJourneyId(params.journeyId), userId)
     return unwrapOrThrow(result)
   },
 })

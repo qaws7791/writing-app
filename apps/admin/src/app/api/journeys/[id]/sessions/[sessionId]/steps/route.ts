@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { z } from "zod"
 
-import { stepTypeSchema, toSessionId, toHttpStatus } from "@workspace/core"
+import { parseSessionId, stepTypeSchema, toHttpStatus } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
 import { getUseCases } from "@/lib/use-cases"
@@ -15,12 +15,12 @@ const createStepSchema = z.object({
 export const GET = withAdminAuth(async (_req, context) => {
   const { sessionId } = await context.params
   const id = Number(sessionId)
-  if (Number.isNaN(id)) {
+  if (!Number.isInteger(id) || id <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
   const { getSessionDetail } = getUseCases()
-  const result = await getSessionDetail(toSessionId(id))
+  const result = await getSessionDetail(parseSessionId(id))
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -33,7 +33,7 @@ export const GET = withAdminAuth(async (_req, context) => {
 export const POST = withAdminAuth(async (req, context) => {
   const { sessionId } = await context.params
   const id = Number(sessionId)
-  if (Number.isNaN(id)) {
+  if (!Number.isInteger(id) || id <= 0) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -50,7 +50,7 @@ export const POST = withAdminAuth(async (req, context) => {
   }
 
   const { createStep } = getUseCases()
-  const result = await createStep(toSessionId(id), parsed.data)
+  const result = await createStep(parseSessionId(id), parsed.data)
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
