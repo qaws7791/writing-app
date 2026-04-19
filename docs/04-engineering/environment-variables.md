@@ -43,7 +43,7 @@ description: 이 모노레포에서 환경 변수를 저장, 노출, 검증, 캐
 | `apps/api`   | `API_BASE_URL`                 | 사용중 | API 서버 기본 URL                                  |
 | `apps/api`   | `API_AUTH_BASE_URL`            | 사용중 | 인증 서버 기본 URL                                 |
 | `apps/api`   | `API_AUTH_SECRET`              | 사용중 | 인증 비밀 키 (32자 이상)                           |
-| `apps/api`   | `API_DATABASE_PATH`            | 사용중 | PostgreSQL 연결 문자열                             |
+| `apps/api`   | `API_DATABASE_PATH`            | 사용중 | SQLite 연결 문자열                                 |
 | `apps/api`   | `API_LOG_LEVEL`                | 사용중 | 로그 레벨 (기본: info)                             |
 | `apps/api`   | `API_PORT`                     | 사용중 | API 서버 포트                                      |
 | `apps/api`   | `API_WEB_BASE_URL`             | 사용중 | 프론트엔드 기본 URL                                |

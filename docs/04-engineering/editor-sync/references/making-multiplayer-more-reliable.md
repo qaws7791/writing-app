@@ -141,7 +141,7 @@ At a high-level the concept of a journal is simple, but there were a number of t
 
 ### [Datastore considerations](https://www.figma.com/blog/making-multiplayer-more-reliable/#datastore-considerations)
 
-We used DynamoDB as our backing datastore, but considered a number of other options ranging from databases we were more familiar with, to writing to attached local volumes. For example, we also use Postgres heavily in our architecture, but chose not to use it here because we understood that the volume of writes would require us to consider a horizontally-scalable database—and we’re not there quite yet with Postgres.
+We used DynamoDB as our backing datastore, but considered a number of other options ranging from databases we were more familiar with, to writing to attached local volumes. For example, we also use SQLite heavily in our architecture, but chose not to use it here because we understood that the volume of writes would require us to consider a horizontally-scalable database—and we’re not there quite yet with SQLite.
 
 ### [Changes, batched](https://www.figma.com/blog/making-multiplayer-more-reliable/#changes-batched)
 
@@ -187,7 +187,7 @@ Now that we have the journal, we’re no longer limited to use checkpoints for o
 
 ### [File data across Figma](https://www.figma.com/blog/making-multiplayer-more-reliable/#file-data-across-figma)
 
-We can build a self-service platform to allow other internal teams to subscribe to and use the journal data. We have a similar system for listening to updates for metadata stored in the database (powered by the Postgres replication log) that powers a number of services in Figma. There are a number of interesting features we could power with the journal: file webhooks, activity graphs, time-lapse, etc.
+We can build a self-service platform to allow other internal teams to subscribe to and use the journal data. We have a similar system for listening to updates for metadata stored in the database (powered by the SQLite replication log) that powers a number of services in Figma. There are a number of interesting features we could power with the journal: file webhooks, activity graphs, time-lapse, etc.
 
 Multiplayer is one of the core aspects of Figma, and makes real-time collaboration a reality for teams around the globe. We’re constantly looking to improve the multiplayer experience for users and continuing to build trust with our community of creators who need a reliable and stable platform to do their best work. If this kind of work interests you, we’re[hiring](https://boards.greenhouse.io/figma/jobs/4214856004)!
 

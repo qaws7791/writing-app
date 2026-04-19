@@ -30,7 +30,7 @@ flowchart LR
         end
     end
 
-    db["PostgreSQL"]
+    db["SQLite"]
     storage["Cloudflare R2"]
     auth["Google·Kakao 소셜 로그인"]
     gemini["Google Gemini API"]

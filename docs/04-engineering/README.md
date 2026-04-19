@@ -13,7 +13,7 @@ description: 글필(Geulpil) 모노레포 개발 규칙과 프론트엔드, 백�
 - `apps/web`은 홈, 여정, 글쓰기(서재 포함), 에디터, 인증 화면의 프로토타입을 포함합니다.
 - `apps/api`는 Hono + Awilix 기반 DI 컨테이너와 인증, 글쓰기, 글감, 동기화 라우트를 포함합니다.
 - `packages/core`는 writings, prompts, home 모듈의 비즈니스 코어를 포함합니다.
-- `packages/database`는 PostgreSQL + Drizzle ORM 기반 영속성 계층입니다.
+- `packages/database`는 SQLite + Drizzle ORM 기반 영속성 계층입니다.
 - `packages/ai`는 AI SDK + Google Gemini 기반 AI 어댑터입니다.
 - 여정, 세션, 스텝, AI 피드백 모듈은 도입 예정입니다.
 

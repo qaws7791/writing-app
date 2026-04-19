@@ -15,7 +15,7 @@ flowchart TB
         localWeb["web 개발 서버"]
         localApi["api 개발 서버"]
         localStorage["로컬 R2 에뮬레이터"]
-        localDb["로컬 PostgreSQL"]
+        localDb["로컬 SQLite"]
         localObs["개발용 pino 로그"]
         localWeb --> localApi
         localApi --> localStorage
@@ -27,7 +27,7 @@ flowchart TB
         stagingWeb["Vercel Preview<br/>web 스테이징"]
         stagingApi["api 스테이징 배포"]
         stagingStorage["Cloudflare R2 스테이징"]
-        stagingDb["스테이징 PostgreSQL"]
+        stagingDb["스테이징 SQLite"]
         stagingObs["관측 스택"]
         stagingWeb --> stagingApi
         stagingApi --> stagingStorage
@@ -39,7 +39,7 @@ flowchart TB
         prodWeb["Vercel Production<br/>web 운영"]
         prodApi["api 운영 배포"]
         prodStorage["Cloudflare R2 운영"]
-        prodDb["PostgreSQL<br/>고가용성"]
+        prodDb["SQLite<br/>고가용성"]
         prodObs["운영 관측 스택"]
         prodWeb --> prodApi
         prodApi --> prodStorage

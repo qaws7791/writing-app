@@ -43,7 +43,7 @@
 00:55 the client side and usually there was
 00:58
 
-00:58 some sort of Postgres database and lots
+00:58 some sort of SQLite database and lots
 01:00
 
 01:00 of food third party party rest queries

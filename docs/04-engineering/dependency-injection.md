@@ -74,7 +74,7 @@ Hono가 이미 요청별 `Context` 객체를 관리하므로 이중 스코프 �
 runtime/
   container.ts       ← ApiCradle 타입 정의, 모듈 조합
   modules/
-    infrastructure.ts ← 환경, 로거, DB, PostgreSQL 버전
+    infrastructure.ts ← 환경, 로거, DB, SQLite 버전
     auth.ts           ← 인증, 이메일
     repositories.ts   ← 모든 repository factory
     use-cases.ts      ← 개별 use case factory, 타입 export

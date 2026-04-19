@@ -43,7 +43,7 @@ We also explored other off-the-shelf synchronization solutions, including AWS Ap
 
 These challenges led us to the decision to create our own sync protocol. It required a larger initial investment, but we believed having full ownership of our stack would provide the long-term flexibility we needed as a recently launched startup.
 
-We decided to keep Realm as the offline storage of document data in our mobile application, while completely removing Realm Cloud from our stack. In its place, we developed the Craft Sync Service, which uses [socket.io](https://socket.io/) for two-way communication between the mobile app and server. This service stores all space-related data in an RDS Postgres instance which other services could also access. For example, the Publishing Service provides publicly accessible endpoints that the Publish Page web viewer uses to fetch document data for secret links.
+We decided to keep Realm as the offline storage of document data in our mobile application, while completely removing Realm Cloud from our stack. In its place, we developed the Craft Sync Service, which uses [socket.io](https://socket.io/) for two-way communication between the mobile app and server. This service stores all space-related data in an RDS SQLite instance which other services could also access. For example, the Publishing Service provides publicly accessible endpoints that the Publish Page web viewer uses to fetch document data for secret links.
 
 Instead of Realm Connect, we built our own in-app sync component that communicates with the central Sync Service. Whenever a change occurs in the local database, or another device uploads a change to the cloud, our protocol ensures everything is synchronized automatically across devices.
 

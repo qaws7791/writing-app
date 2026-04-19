@@ -12,7 +12,7 @@ sequenceDiagram
     actor User as 사용자
     participant Web as web
     participant API as api
-    participant DB as PostgreSQL
+    participant DB as SQLite
     participant AI as Google Gemini
 
     User->>Web: 홈 진입

@@ -12,7 +12,7 @@ flowchart LR
     browser["브라우저 요청 / 사용자 상호작용"]
     web["apps/web"]
     api["apps/api"]
-    db["PostgreSQL"]
+    db["SQLite"]
     ai["Google Gemini"]
     storage["Cloudflare R2"]
 

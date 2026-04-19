@@ -20,7 +20,7 @@ flowchart TB
         auth["인증 시스템<br/>better-auth / Google·Kakao 소셜 로그인"]
         ai["Google Gemini<br/>AI 코칭 피드백"]
         storage["Cloudflare R2<br/>오브젝트 스토리지"]
-        db["PostgreSQL<br/>관계형 데이터베이스"]
+        db["SQLite<br/>관계형 데이터베이스"]
     end
 
     subgraph operations["운영 계층"]

@@ -15,6 +15,7 @@ Global rules
 - If unsure, say so explicitly. Do not present guesses as facts.
 - Use Korean unless a file is explicitly intended for another language.
 - Use Markdown that renders well in Obsidian.
+- Previous versions of the document in 00-prd must not be modified.
 
 Directory intent
 
