@@ -20,7 +20,7 @@ import type {
 import { writings } from "../schema/writings"
 import { writingPrompts } from "../schema/writing-prompts"
 import { sql } from "drizzle-orm"
-import type { DbClient } from "../types/index"
+import type { DbExecutor } from "../types/index"
 
 function createPreview(plainText: string): string {
   return plainText.length <= 120 ? plainText : `${plainText.slice(0, 120)}...`
@@ -59,7 +59,9 @@ function mapWritingDetail(row: WritingRow): WritingDetail {
   }
 }
 
-export function createWritingRepository(database: DbClient): WritingRepository {
+export function createWritingRepository(
+  database: DbExecutor
+): WritingRepository {
   async function loadRow(writingId: WritingId): Promise<WritingRow | null> {
     return database
       .select()

@@ -113,6 +113,7 @@ description: 글필(Geulpil) wiki의 모든 페이지를 카테고리별로 나�
 | [[04-engineering/backend-package-boundaries]] | apps/api·core·database·ai 패키지 책임과 금지 의존성        |
 | [[04-engineering/api-conventions]]            | core 계약 스키마와 use case를 HTTP/OpenAPI에 연결하는 규약 |
 | [[04-engineering/dependency-injection]]       | 인터페이스·포트 연결 및 apps/api 최종 조립 기준            |
+| [[04-engineering/transaction-boundary-audit]] | 트랜잭션 없는 다단계 DB 작업 감사와 시스템 차단 전략       |
 | [[04-engineering/logging-guide]]              | 요청 추적·운영 디버깅·보안 대응을 위한 로그 기준           |
 | [[04-engineering/error-message-guidelines]]   | 사용자·API 오류 응답 일관 설계 기준                        |
 | [[04-engineering/core-refactoring-plan]]      | packages/core 모듈 확장 계획 (피벗 대응)                   |

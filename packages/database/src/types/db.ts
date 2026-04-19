@@ -20,6 +20,12 @@ import type {
 
 export type DbSchema = typeof schema
 export type DbClient = BunSQLiteDatabase<DbSchema>
+export type DbTransaction = Parameters<DbClient["transaction"]>[0] extends (
+  tx: infer T
+) => unknown
+  ? T
+  : never
+export type DbExecutor = DbClient | DbTransaction
 
 export type AccountRow = InferSelectModel<typeof account>
 export type JourneyInsert = InferInsertModel<typeof journeys>

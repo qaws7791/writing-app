@@ -19,7 +19,7 @@ import { userJourneyProgress } from "../schema/user-journey-progress"
 import { userSessionProgress } from "../schema/user-session-progress"
 import { userSessionStepAiState } from "../schema/user-session-step-ai-state"
 import { journeySessions } from "../schema/journey-sessions"
-import type { DbClient } from "../types/index"
+import type { DbExecutor } from "../types/index"
 
 function mapJourneyProgress(row: {
   userId: UserId
@@ -82,7 +82,7 @@ function mapSessionStepAiState(row: {
 }
 
 export function createProgressRepository(
-  database: DbClient
+  database: DbExecutor
 ): ProgressRepository {
   return {
     async getJourneyProgress(
@@ -196,33 +196,31 @@ export function createProgressRepository(
       userId: UserId,
       journeyId: JourneyId
     ): Promise<void> {
-      await database.transaction(async (tx) => {
-        const sessions = await tx
-          .select({ id: journeySessions.id, order: journeySessions.order })
-          .from(journeySessions)
-          .where(eq(journeySessions.journeyId, journeyId))
-          .orderBy(journeySessions.order)
+      const sessions = await database
+        .select({ id: journeySessions.id, order: journeySessions.order })
+        .from(journeySessions)
+        .where(eq(journeySessions.journeyId, journeyId))
+        .orderBy(journeySessions.order)
 
-        if (sessions.length === 0) return
+      if (sessions.length === 0) return
 
-        const now = new Date()
-        const records = sessions.map((session) => ({
-          userId,
-          sessionId: session.id,
-          currentStepOrder: 1,
-          status: (session.order === 1 ? "in_progress" : "locked") as
-            | "in_progress"
-            | "locked",
-          stepResponsesJson: {},
-          createdAt: now,
-          updatedAt: now,
-        }))
+      const now = new Date()
+      const records = sessions.map((session) => ({
+        userId,
+        sessionId: session.id,
+        currentStepOrder: 1,
+        status: (session.order === 1 ? "in_progress" : "locked") as
+          | "in_progress"
+          | "locked",
+        stepResponsesJson: {},
+        createdAt: now,
+        updatedAt: now,
+      }))
 
-        await tx
-          .insert(userSessionProgress)
-          .values(records)
-          .onConflictDoNothing()
-      })
+      await database
+        .insert(userSessionProgress)
+        .values(records)
+        .onConflictDoNothing()
     },
 
     async getSessionProgress(

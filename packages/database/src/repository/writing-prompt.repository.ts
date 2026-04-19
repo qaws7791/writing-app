@@ -14,7 +14,7 @@ import type {
 
 import { writingPrompts } from "../schema/writing-prompts"
 import { savedPrompts } from "../schema/saved-prompts"
-import type { DbClient } from "../types/index"
+import type { DbExecutor } from "../types/index"
 
 const DEFAULT_PAGE_LIMIT = 20
 
@@ -45,7 +45,7 @@ function mapPromptSummary(row: {
 }
 
 export function createWritingPromptRepository(
-  database: DbClient
+  database: DbExecutor
 ): PromptRepository {
   return {
     async list(

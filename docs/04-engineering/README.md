@@ -29,6 +29,7 @@ description: 글필(Geulpil) 모노레포 개발 규칙과 프론트엔드, 백�
 - [[backend-core-guide]]: core 모듈 구조, 포트, use case, 테스트 기준
 - [[api-conventions]]: OpenAPIHono와 core 계약 스키마를 연결하는 규약
 - [[dependency-injection]]: 포트, 구현체, 조립 계층을 연결하는 기준
+- [[transaction-boundary-audit]]: 트랜잭션 없는 다단계 DB 작업 감사와 차단 전략
 - [[environment-variables]]: 환경 변수 관리 정책
 - [[error-message-guidelines]]: 사용자 메시지와 API 오류 응답 기준
 - [[logging-guide]]: 구조화 로그와 요청 추적 기준

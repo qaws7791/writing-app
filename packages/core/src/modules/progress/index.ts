@@ -29,6 +29,9 @@ export {
 // Port
 export type { ProgressRepository } from "./progress-port"
 
+// Transaction
+export type { RepositoryTransactionManager } from "../../shared/transaction/index"
+
 // Use Cases
 export type {
   GetSessionRuntimeDeps,

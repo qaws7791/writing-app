@@ -88,8 +88,9 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
 
     // --- Writing ---
 
-    createWritingUseCase: asFunction(({ writingRepository }: ApiCradle) =>
-      makeCreateWritingUseCase({ writingRepository })
+    createWritingUseCase: asFunction(
+      ({ writingRepository, transactionManager }: ApiCradle) =>
+        makeCreateWritingUseCase({ writingRepository, transactionManager })
     ).singleton(),
 
     autosaveWritingUseCase: asFunction(({ writingRepository }: ApiCradle) =>
@@ -161,8 +162,9 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
 
     // --- Progress ---
 
-    enrollJourneyUseCase: asFunction(({ progressRepository }: ApiCradle) =>
-      makeEnrollJourneyUseCase({ progressRepository })
+    enrollJourneyUseCase: asFunction(
+      ({ progressRepository, transactionManager }: ApiCradle) =>
+        makeEnrollJourneyUseCase({ progressRepository, transactionManager })
     ).singleton(),
 
     startSessionUseCase: asFunction(
@@ -174,10 +176,15 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
     ).singleton(),
 
     submitStepUseCase: asFunction(
-      ({ progressRepository, journeyRepository }: ApiCradle) =>
+      ({
+        progressRepository,
+        journeyRepository,
+        transactionManager,
+      }: ApiCradle) =>
         makeSubmitStepUseCase({
           progressRepository,
           journeyRepository,
+          transactionManager,
         })
     ).singleton(),
 
@@ -189,8 +196,9 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
         })
     ).singleton(),
 
-    completeSessionUseCase: asFunction(({ progressRepository }: ApiCradle) =>
-      makeCompleteSessionUseCase({ progressRepository })
+    completeSessionUseCase: asFunction(
+      ({ progressRepository, transactionManager }: ApiCradle) =>
+        makeCompleteSessionUseCase({ progressRepository, transactionManager })
     ).singleton(),
 
     listCompletedJourneysUseCase: asFunction(

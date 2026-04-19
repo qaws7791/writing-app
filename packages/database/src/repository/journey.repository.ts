@@ -23,7 +23,7 @@ import type {
 import { journeys } from "../schema/journeys"
 import { journeySessions } from "../schema/journey-sessions"
 import { steps } from "../schema/steps"
-import type { DbClient, JourneySessionRow, StepRow } from "../types/index"
+import type { DbExecutor, JourneySessionRow, StepRow } from "../types/index"
 
 function mapSessionSummary(row: JourneySessionRow): JourneySessionSummary {
   return {
@@ -46,7 +46,9 @@ function mapStepSummary(step: StepRow): StepSummary {
   }
 }
 
-export function createJourneyRepository(database: DbClient): JourneyRepository {
+export function createJourneyRepository(
+  database: DbExecutor
+): JourneyRepository {
   return {
     async list(filters?: {
       category?: JourneyCategory

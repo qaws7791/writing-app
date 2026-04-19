@@ -2,6 +2,7 @@ import { asFunction, type AwilixContainer } from "awilix"
 import {
   createJourneyRepository,
   createProgressRepository,
+  createRepositoryTransactionManager,
   createWritingPromptRepository,
   createWritingRepository,
 } from "@workspace/database"
@@ -24,6 +25,10 @@ export function registerRepositories(container: AwilixContainer<ApiCradle>) {
 
     progressRepository: asFunction(({ database }: ApiCradle) =>
       createProgressRepository(database.db)
+    ).singleton(),
+
+    transactionManager: asFunction(({ database }: ApiCradle) =>
+      createRepositoryTransactionManager(database.db)
     ).singleton(),
   })
 }

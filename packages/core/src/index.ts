@@ -26,6 +26,12 @@ export * from "./shared/pagination/index"
 // Shared: Utilities
 export * from "./shared/utilities/index"
 
+// Shared: Transaction
+export type {
+  RepositoryTransactionManager,
+  RepositoryTransactionScope,
+} from "./shared/transaction/index"
+
 // Module: Writings
 export type {
   WritingSummary,
