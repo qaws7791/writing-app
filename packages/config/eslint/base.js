@@ -1,6 +1,7 @@
 import js from "@eslint/js"
 import oxlint from "eslint-plugin-oxlint"
 import turboPlugin from "eslint-plugin-turbo"
+import unusedImports from "eslint-plugin-unused-imports"
 import tseslint from "typescript-eslint"
 
 /**
@@ -17,6 +18,25 @@ export const config = [
     },
     rules: {
       "turbo/no-undeclared-env-vars": "warn",
+    },
+  },
+  {
+    plugins: {
+      "unused-imports": unusedImports,
+    },
+    rules: {
+      "@typescript-eslint/no-unused-vars": "off",
+      "no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error",
+      "unused-imports/no-unused-vars": [
+        "warn",
+        {
+          vars: "all",
+          varsIgnorePattern: "^_",
+          args: "after-used",
+          argsIgnorePattern: "^_",
+        },
+      ],
     },
   },
   {
