@@ -17,7 +17,7 @@
     "./utils/*": "./src/utils/*.ts",
     "./components/icons": "./src/components/icons.tsx",
     "./components/ui/theme-provider": "./src/components/ui/theme-provider.tsx",
-    "./components/*": "./src/components/*/index.ts"
+    "./components/ui/*": "./src/components/ui/*.tsx"
   },
   "scripts": {
     "format": "oxfmt .",

@@ -1,12 +1,8 @@
 "use client"
 
 import * as React from "react"
-import {
-  Progress,
-  ProgressTrack,
-  ProgressIndicator,
-} from "@/components/ui/progress"
-import { cn } from "@/lib/utils"
+import { Progress, ProgressTrack, ProgressIndicator } from "./progress"
+import { cn } from "../../lib/utils"
 
 function ProgressBar({
   value,

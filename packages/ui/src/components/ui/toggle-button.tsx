@@ -2,7 +2,7 @@
 
 import { Toggle as TogglePrimitive } from "@base-ui/react/toggle"
 
-import { cn } from "@/lib/utils"
+import { cn } from "../../lib/utils"
 
 interface ToggleButtonProps extends Omit<
   TogglePrimitive.Props,
