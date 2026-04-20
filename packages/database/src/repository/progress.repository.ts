@@ -174,7 +174,7 @@ export function createProgressRepository(
   const journeySessionCountSq = database
     .select({
       journeyId: journeySessions.journeyId,
-      sessionCount: count(),
+      sessionCount: count().as("sessionCount"),
     })
     .from(journeySessions)
     .groupBy(journeySessions.journeyId)

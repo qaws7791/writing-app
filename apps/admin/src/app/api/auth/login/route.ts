@@ -5,8 +5,11 @@ import { z } from "zod"
 
 import { adminUsers } from "@workspace/database"
 
+import {
+  createSessionToken,
+  sessionCookieOptions,
+} from "@/lib/auth/session-token"
 import { getDb } from "@/lib/db"
-import { createSessionToken, sessionCookieOptions } from "@/lib/auth/session"
 
 const loginSchema = z.object({
   email: z.string().email(),

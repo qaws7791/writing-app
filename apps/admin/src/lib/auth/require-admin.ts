@@ -5,8 +5,8 @@ import { ZodError } from "zod"
 import {
   ADMIN_SESSION_COOKIE,
   type AdminSession,
-  verifySessionToken,
-} from "./session"
+} from "@/lib/auth/session-token"
+import { verifySessionToken } from "@/lib/auth/session"
 
 type RouteHandler = (
   req: NextRequest,

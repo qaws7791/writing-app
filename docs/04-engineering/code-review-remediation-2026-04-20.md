@@ -50,3 +50,64 @@ description: code-review (1).md 기준 후속 조치 현황과 실제 코드 기
 
 - 리뷰 문서와 현재 브랜치 사이에 차이가 있어, 수정 전 재검증을 우선한다.
 - `기해결` 항목은 최종 정리 시 근거 파일과 함께 다시 확인한다.
+
+## 브라우저 수동 검증
+
+- 검증 시각: 2026-04-20
+- 검증 환경: Windows 11, Docker Desktop, `docker compose`, Chrome DevTools MCP
+- 로컬 인프라: Redis, Redis Insight, RustFS
+- 앱 실행: `api`(`3010`), `web`(`3000`), `admin`(`3020`)
+
+### 검증 전 준비
+
+1. `docker compose up -d`
+2. `bun --filter api db:reset`
+3. `bun --filter admin seed:admin`
+4. `bun --filter api dev`, `bun --filter web dev`, `bun --filter admin dev`
+
+### 브라우저에서 확인한 사용자 플로우
+
+#### 사용자 앱 (`apps/web`)
+
+- `/login`에서 테스트 계정(`test@example.com`) 로그인
+- `/home` 진입 및 진행 중인 여정 카드 확인
+- `/journeys`에서 여정 상세 진입
+- 첫 세션 시작 후 학습 스텝 진행
+- 쓰기 스텝 제출 및 AI 피드백 확인
+- 세션 완료 화면 확인
+- `/writings`에서 자유 글쓰기 생성, 저장, 목록 복귀, 재진입 확인
+- `/profile`에서 사용자 정보/통계/설정 화면 확인
+
+#### 관리자 앱 (`apps/admin`)
+
+- `/login` 진입 및 관리자 로그인
+- `/dashboard`에서 집계 카드와 빠른 이동 확인
+- `/journeys` 목록 및 `/journeys/[id]` 상세 진입
+- `/journeys/[id]/sessions/[sessionId]` 상세와 스텝 목록 확인
+- `/prompts` 목록 및 `/prompts/[id]` 편집 화면 확인
+
+### 검증 중 추가로 발견하고 즉시 수정한 항목
+
+| 항목 | 증상                                                                 | 조치                                                                                                            |
+| ---- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| A    | `admin` 로그인 페이지가 Edge Runtime에서 `node:path` 로딩 오류로 500 | 세션 토큰 유틸을 서버 전용 DB 검증 로직과 분리하여 `middleware`가 Edge-safe 경로만 사용하도록 조정              |
+| B    | `web` 홈 화면이 `GET /home` 500으로 진행 중인 여정을 불러오지 못함   | `packages/database/src/repository/progress.repository.ts`의 서브쿼리 `count()` 필드에 `sessionCount` alias 추가 |
+
+### 코드/정적 검증 결과
+
+- 통과:
+  - `bun --filter admin typecheck`
+  - `bun --filter admin lint`
+  - `bun --filter api typecheck`
+  - `bun --filter api lint`
+  - `bun --filter @workspace/database typecheck`
+  - `bun --filter @workspace/database lint`
+- 저장소 전체 검증은 기존 이슈로 실패:
+  - `bun typecheck`: `packages/core` 테스트 fixture 타입 불일치
+  - `bun lint`: `apps/storybook` unused import 오류
+
+### 최종 상태
+
+- `web` 핵심 사용자 플로우는 브라우저에서 직접 완료됨
+- `admin` 핵심 관리 플로우는 브라우저에서 직접 진입/조회됨
+- 이번 작업 중 발견된 런타임 500 두 건은 수정 후 재검증 완료

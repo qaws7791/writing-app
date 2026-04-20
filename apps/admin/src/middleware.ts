@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 
-import { ADMIN_SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session"
+import {
+  ADMIN_SESSION_COOKIE,
+  verifySessionTokenSignature,
+} from "@/lib/auth/session-token"
 
 const PUBLIC_PATHS = ["/login", "/api/auth/login"]
 
@@ -16,9 +19,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  const session = await verifySessionToken(token, {
-    skipFreshnessCheck: true,
-  })
+  const session = await verifySessionTokenSignature(token)
   if (!session) {
     const response = NextResponse.redirect(new URL("/login", request.url))
     response.cookies.delete(ADMIN_SESSION_COOKIE)
