@@ -1,8 +1,7 @@
 import type { Context } from "hono"
-import type { UserId } from "@workspace/core"
+import { UnauthorizedError, type UserId } from "@workspace/core"
 
 import type { AppEnv } from "../app-env"
-import { UnauthorizedError } from "./unauthorized-error"
 
 export function requireUserId(context: Context<AppEnv>): UserId {
   const userId = context.get("userId")

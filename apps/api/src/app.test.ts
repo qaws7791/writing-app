@@ -534,6 +534,35 @@ describe("logging", () => {
     )
   })
 
+  test("logs 401 unauthorized errors through the shared application status map", async () => {
+    const { entries, logger } = createCapturedLogger()
+    const api = createTestApi({ logger })
+    createdApps.push(api)
+
+    const response = await api.app.request("/home", {
+      headers: {
+        "x-test-auth": "none",
+      },
+    })
+    const failed = entries.find((entry) => entry.msg === "request failed")
+    const completed = entries.find((entry) => entry.msg === "request completed")
+
+    expect(response.status).toBe(401)
+    expect(failed).toEqual(
+      expect.objectContaining({
+        code: "unauthorized",
+        level: 40,
+        status: 401,
+      })
+    )
+    expect(completed).toEqual(
+      expect.objectContaining({
+        level: 30,
+        status: 401,
+      })
+    )
+  })
+
   test("maps better-auth api errors through the global error handler", async () => {
     const api = createTestApi({
       homeError: new APIError("CONFLICT", {

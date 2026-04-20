@@ -7,12 +7,14 @@ export type {
   DomainError,
   ForbiddenError as DomainForbiddenError,
   NotFoundError as DomainNotFoundError,
+  UnauthorizedError as DomainUnauthorizedError,
   ValidationError as DomainValidationError,
 } from "./shared/error/index"
 export {
   createConflictError,
   createForbiddenError,
   createNotFoundError,
+  createUnauthorizedError,
   createValidationError,
   toHttpStatus,
 } from "./shared/error/index"

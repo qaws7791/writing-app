@@ -1,15 +1,9 @@
 import { APIError } from "better-auth/api"
-import {
-  ConflictError,
-  ForbiddenError,
-  NotFoundError,
-  ValidationError,
-} from "@workspace/core"
+import { toApplicationErrorStatus, ValidationError } from "@workspace/core"
 import { HTTPException } from "hono/http-exception"
 
 import type { ErrorResponse } from "./error-schema"
 import { TimeoutError } from "./timeout-error"
-import { UnauthorizedError } from "./unauthorized-error"
 
 const betterAuthStatusMap = {
   BAD_REQUEST: 400,
@@ -21,68 +15,45 @@ const betterAuthStatusMap = {
   UNPROCESSABLE_ENTITY: 422,
 } as const
 
+const applicationErrorCodeMap = {
+  400: "validation_error",
+  401: "unauthorized",
+  403: "forbidden",
+  404: "not_found",
+  409: "conflict",
+} as const
+
 export function errorToResponse(error: unknown): {
   body: ErrorResponse
   status: number
 } {
+  const applicationStatus = toApplicationErrorStatus(error)
+
   if (error instanceof ValidationError) {
     return {
       body: {
         error: {
-          code: "validation_error",
+          code: applicationErrorCodeMap[applicationStatus ?? 400],
           ...(error.details && { details: error.details }),
           message: error.message,
         },
       },
-      status: 400,
+      status: applicationStatus ?? 400,
     }
   }
 
-  if (error instanceof NotFoundError) {
+  if (applicationStatus !== undefined) {
     return {
       body: {
         error: {
-          code: "not_found",
-          message: error.message,
+          code: applicationErrorCodeMap[applicationStatus],
+          message:
+            error instanceof Error
+              ? error.message
+              : "요청을 처리하지 못했습니다.",
         },
       },
-      status: 404,
-    }
-  }
-
-  if (error instanceof ForbiddenError) {
-    return {
-      body: {
-        error: {
-          code: "forbidden",
-          message: error.message,
-        },
-      },
-      status: 403,
-    }
-  }
-
-  if (error instanceof ConflictError) {
-    return {
-      body: {
-        error: {
-          code: "conflict",
-          message: error.message,
-        },
-      },
-      status: 409,
-    }
-  }
-
-  if (error instanceof UnauthorizedError) {
-    return {
-      body: {
-        error: {
-          code: "unauthorized",
-          message: error.message,
-        },
-      },
-      status: 401,
+      status: applicationStatus,
     }
   }
 

@@ -4,6 +4,7 @@ import {
   createConflictError,
   createForbiddenError,
   createNotFoundError,
+  createUnauthorizedError,
   createValidationError,
   toHttpStatus,
 } from "./domain-error"
@@ -15,6 +16,12 @@ describe("toHttpStatus", () => {
 
   it("FORBIDDEN → 403", () => {
     expect(toHttpStatus(createForbiddenError("접근 불가"))).toBe(403)
+  })
+
+  it("UNAUTHORIZED → 401", () => {
+    expect(toHttpStatus(createUnauthorizedError("로그인이 필요합니다."))).toBe(
+      401
+    )
   })
 
   it("NOT_FOUND → 404", () => {
@@ -57,6 +64,19 @@ describe("createForbiddenError", () => {
     expect(error).toMatchObject({
       code: "FORBIDDEN",
       resource: "writing",
+    })
+  })
+})
+
+describe("createUnauthorizedError", () => {
+  it("reason 정보를 포함한다", () => {
+    const error = createUnauthorizedError("로그인이 필요합니다.", {
+      reason: "authentication_required",
+    })
+
+    expect(error).toMatchObject({
+      code: "UNAUTHORIZED",
+      reason: "authentication_required",
     })
   })
 })

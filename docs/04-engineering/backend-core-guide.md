@@ -29,9 +29,19 @@ description: packages/core의 모듈 구조, DOP 패턴, 포트 설계, vitest �
 - 상태 전이는 `operations`에 둡니다.
 - 외부 호출 순서와 조합은 `use-cases`에 둡니다.
 - 에러는 `neverthrow`의 `Result` 값으로 표현합니다.
+- core의 에러 분류는 `shared/error`에 단일 소스로 둡니다.
+- `DomainError`는 use case와 포트가 주고받는 값 표현입니다.
+- 런타임 `Error` 클래스는 HTTP, validator, framework interop 경계에서만 사용합니다.
 - 데이터 가공과 컬렉션 조합은 `remeda`와 `pipe()` 중심으로 구성합니다.
 - contract DTO의 primitive 입력과 domain model의 branded id는 같은 타입으로 취급하지 않습니다.
 - 경계에서는 `parseXId`로 brand를 만들고, 내부 trusted path에서만 `toXId`를 사용합니다.
+
+## 에러 표현 규칙
+
+- `shared/error/domain-error.ts`는 `DomainError` 유니온, 코드별 팩토리, `toHttpStatus()`를 관리합니다.
+- `shared/utilities/application-errors.ts`는 framework가 다루는 런타임 `Error` 클래스와 `toApplicationError()`를 관리합니다.
+- 새 에러 타입을 추가할 때는 값 표현과 런타임 표현을 둘 다 `packages/core`에서 함께 정의합니다.
+- 앱 계층은 로컬 에러 클래스를 만들지 않고 core export를 그대로 사용합니다.
 
 ## 권장 구조
 

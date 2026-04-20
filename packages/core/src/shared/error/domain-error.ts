@@ -24,6 +24,16 @@ export type ForbiddenError = {
   readonly message: string
 }
 
+export type UnauthorizedReason =
+  | "authentication_expired"
+  | "authentication_required"
+
+export type UnauthorizedError = {
+  readonly code: "UNAUTHORIZED"
+  readonly message: string
+  readonly reason?: UnauthorizedReason
+}
+
 export type ConflictError = {
   readonly code: "CONFLICT"
   readonly entity?: string
@@ -34,6 +44,7 @@ export type DomainError =
   | ConflictError
   | ForbiddenError
   | NotFoundError
+  | UnauthorizedError
   | ValidationError
 
 export function createValidationError(
@@ -77,6 +88,19 @@ export function createForbiddenError(
   }
 }
 
+export function createUnauthorizedError(
+  message: string,
+  details: {
+    reason?: UnauthorizedReason
+  } = {}
+): UnauthorizedError {
+  return {
+    code: "UNAUTHORIZED",
+    message,
+    reason: details.reason,
+  }
+}
+
 export function createConflictError(
   message: string,
   entity?: string
@@ -88,9 +112,10 @@ export function createConflictError(
   }
 }
 
-export const toHttpStatus = (error: DomainError): 400 | 403 | 404 | 409 =>
+export const toHttpStatus = (error: DomainError): 400 | 401 | 403 | 404 | 409 =>
   match(error)
     .with({ code: "VALIDATION_ERROR" }, () => 400 as const)
+    .with({ code: "UNAUTHORIZED" }, () => 401 as const)
     .with({ code: "FORBIDDEN" }, () => 403 as const)
     .with({ code: "NOT_FOUND" }, () => 404 as const)
     .with({ code: "CONFLICT" }, () => 409 as const)

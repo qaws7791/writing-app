@@ -56,6 +56,9 @@ description: 저장, 인증, AI 코칭, 여정 진행 흐름에서 발생하는 
 
 ## 내부 오류 흐름 기준
 
+- `packages/core`가 canonical error taxonomy를 소유합니다.
+- core 내부에서는 `DomainError` 값을 표준 실패 표현으로 사용합니다.
+- HTTP/validator 경계에서는 core가 제공하는 런타임 `Error` 클래스로 변환해 예외 흐름을 처리합니다.
 - `packages/core`는 예외를 기본 제어 흐름으로 사용하지 않는다.
 - use case는 `neverthrow`의 `Result`, `ResultAsync` 같은 실패 값을 우선 사용한다.
 - `packages/database`, `packages/ai`는 외부 오류를 의미 있는 포트 오류나 실패 값으로 변환한다.
@@ -91,7 +94,7 @@ API 오류 응답은 RFC 7807/9457 Problem Details for HTTP APIs를 기반으로
 ## HTTP 상태 코드 기준
 
 - `400`: 입력 검증 실패
-- `401`: 인증 필요 또는 세션 만료
+- `401`: 인증 필요 또는 세션 만료 (`UNAUTHORIZED`)
 - `403`: 권한 없음
 - `404`: 존재하지 않거나 접근할 수 없는 리소스
 - `409`: 저장 충돌 또는 상태 충돌
@@ -99,6 +102,14 @@ API 오류 응답은 RFC 7807/9457 Problem Details for HTTP APIs를 기반으로
 - `429`: 속도 제한
 - `500`: 복구 불가능한 서버 오류
 - `503`: 일시적 외부 의존성 장애
+
+현재 core 표준 도메인 에러 코드는 아래 다섯 가지다.
+
+- `VALIDATION_ERROR`
+- `UNAUTHORIZED`
+- `FORBIDDEN`
+- `NOT_FOUND`
+- `CONFLICT`
 
 ## 클라이언트 처리 원칙
 

@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi"
+import { UnauthorizedError } from "@workspace/core"
 
 import {
   authenticatedSessionSchema,
@@ -6,7 +7,6 @@ import {
 } from "../../auth/auth-schemas"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
-import { UnauthorizedError } from "../../http/unauthorized-error"
 import { AuthSession, AuthUser } from "../../runtime/tokens"
 
 const meResponseSchema = z.object({
