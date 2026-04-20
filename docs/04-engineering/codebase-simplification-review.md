@@ -10,7 +10,7 @@ description: 2026-04-21 기준 글필 모노레포를 탐색해 단순하고 안
 - 목적: 동작 변경 없이 구조 복잡도와 숨은 변환을 줄이기 위한 후속 작업 후보를 정리합니다.
 - 전제: 현재는 개발 단계이므로 마이그레이션 비용이나 하위 호환성보다 구현 단순성과 구조 명확성을 우선합니다.
 - 후속 작업: `codebase-simplification-review.md` 기준 순차 개선을 2026-04-21부터 진행합니다.
-- 현재 작업: 후속 구조 단순화 9번 항목인 `writing-operations.ts` 구조 정리를 완료했고, 다음 작업은 `GreetingSection` 재검토입니다.
+- 현재 작업: 후속 구조 단순화 작업 10개를 모두 완료했습니다.
 - 진행 현황: 1번 항목(스텝 타입 모델 통일), 2번 항목(세션 상세 화면 step registry 정리), 3번 항목(`progress.repository`와 `submit-step` 분리), 4번 항목(웹 API/Query 보일러플레이트 축소), 5번 항목(DI/라우트/토큰 등록 국소화), 6번 항목(`@workspace/core` 루트 배럴 축소), 7번 항목(관리자 CRUD 폼 정리)은 2026-04-21에 구현 완료했습니다.
 - 기준 원칙: 지역성 확보, 조기 추상화 방지(AHA), 단일 책임, 명시적 설계, 순수 함수, 얕은 계층, 불변성, 의존성 명시화, 일관된 추상화 수준, 작은 변경 단위, 규약 우선, 파일 크기 제한
 
@@ -39,6 +39,7 @@ description: 2026-04-21 기준 글필 모노레포를 탐색해 단순하고 안
 | 완료 | `observability/logger.ts` 통합          | `apps/api/src/observability/logger.ts`, `apps/api/src/runtime/modules/infrastructure.ts`, `apps/api/src/**/*.ts`                                                                         | API 전용 logger 래퍼를 제거하고 `@workspace/logging`과 서비스명 상수를 직접 사용하도록 정리한 뒤 `api` 타입체크·린트 검증 완료                                                                         |
 | 완료 | API 라우트 로컬 응답 스키마 이전        | `packages/core/src/modules/{auth,home,users}/*`, `apps/api/src/routes/{health,me,users,dev}/*.ts`, `apps/api/src/app-env.ts`                                                             | `health`, `me`, `users/profile`, `dev/auth-emails` 계약 스키마를 `@workspace/core`로 이동하고 `api`·`@workspace/core` 타입체크와 린트 검증 완료 (`core` lint의 coverage 경고 3건은 기존 상태)          |
 | 완료 | `writing-operations.ts` 구조 정리       | `packages/core/src/modules/writings/operations/*`, `packages/core/src/modules/writings/index.ts`, `packages/database/src/repository/writing.repository.ts`                               | `createPreview`를 `operations/` 디렉터리로 이동하고 저장소 중복 구현을 제거한 뒤 `api`·`@workspace/core`·`@workspace/database` 타입체크와 린트 검증 완료 (`core` lint의 coverage 경고 3건은 기존 상태) |
+| 완료 | `GreetingSection` 재검토                | `apps/web/src/views/home-view.tsx`, `apps/web/src/features/home/components/{greeting-section.tsx,index.ts}`                                                                              | 단일 사용처 인사말 컴포넌트를 `HomeView`로 인라인 병합하고 `web` 타입체크·린트 검증 완료                                                                                                               |
 
 ## 요약
 

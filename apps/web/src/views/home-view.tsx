@@ -6,10 +6,7 @@ import { Button } from "@workspace/ui/components/ui/button"
 import { Card, CardContent } from "@workspace/ui/components/ui/card"
 import { useHomeSnapshot } from "@/features/home"
 import { JourneyCard } from "@/features/journeys/components"
-import {
-  GreetingSection,
-  WritingSuggestionCard,
-} from "@/features/home/components"
+import { WritingSuggestionCard } from "@/features/home/components"
 
 function JourneyCardSkeleton() {
   return (
@@ -41,7 +38,11 @@ export default function HomeView() {
 
       <div className="flex-1 overflow-y-auto">
         {/* Greeting */}
-        <GreetingSection />
+        <div className="px-6">
+          <h2 className="text-2xl leading-tight font-semibold text-foreground">
+            오늘도 글을 써볼까요?
+          </h2>
+        </div>
 
         {/* Writing Suggestion Card */}
         {data?.showWritingSuggestion && <WritingSuggestionCard />}
