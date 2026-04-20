@@ -12,6 +12,8 @@ import openapiTS, { astToString } from "openapi-typescript"
 import fs from "node:fs"
 import path from "node:path"
 
+import { formatGeneratedFile } from "./format-generated-file"
+
 const SPEC_URL = "http://localhost:3010/openapi.json"
 const OUTPUT_PATH = path.resolve(import.meta.dirname, "../src/schema.d.ts")
 
@@ -36,6 +38,7 @@ async function main() {
   const output = astToString(ast)
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true })
   fs.writeFileSync(OUTPUT_PATH, output)
+  formatGeneratedFile(OUTPUT_PATH)
   console.log(`Generated: ${OUTPUT_PATH}`)
 }
 

@@ -1,6 +1,8 @@
 import fs from "node:fs"
 import path from "node:path"
 
+import { formatGeneratedFile } from "./format-generated-file"
+
 const GENERATED_SPEC_PATH = path.resolve(
   import.meta.dirname,
   "../../../apps/api/.generated/openapi.json"
@@ -15,6 +17,7 @@ async function main() {
   const spec = JSON.parse(fs.readFileSync(GENERATED_SPEC_PATH, "utf8"))
   fs.mkdirSync(path.dirname(OUTPUT_PATH), { recursive: true })
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(spec, null, 2))
+  formatGeneratedFile(OUTPUT_PATH)
   console.log(`Saved: ${OUTPUT_PATH}`)
 }
 
