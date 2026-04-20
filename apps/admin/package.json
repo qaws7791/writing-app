@@ -16,6 +16,7 @@
     "@t3-oss/env-nextjs": "^0.13.10",
     "@workspace/core": "workspace:*",
     "@workspace/database": "workspace:*",
+    "@workspace/logging": "workspace:*",
     "@workspace/storage": "workspace:*",
     "@workspace/ui": "workspace:*",
     "bcryptjs": "^3.0.2",

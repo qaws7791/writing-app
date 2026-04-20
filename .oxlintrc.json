@@ -7,11 +7,19 @@
   "rules": {
     "typescript/no-explicit-any": "warn",
     "no-unused-vars": "warn",
-    "no-console": "off",
+    "no-console": "error",
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
     "eslint/no-unused-vars": "warn"
   },
+  "overrides": [
+    {
+      "files": ["**/scripts/**"],
+      "rules": {
+        "no-console": "off"
+      }
+    }
+  ],
   "settings": {
     "next": {
       "rootDir": "apps/web/"
@@ -23,6 +31,7 @@
   "ignorePatterns": [
     "dist/**",
     ".next/**",
+    "docs/.obsidian/**",
     "**/.turbo/**",
     "**/coverage/**",
     "**/next-env.d.ts",

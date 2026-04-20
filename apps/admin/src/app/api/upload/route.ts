@@ -6,6 +6,7 @@ import { createS3StorageClient } from "@workspace/storage"
 
 import { env } from "@/env"
 import { withAdminAuth } from "@/lib/auth/require-admin"
+import { adminLogger } from "@/lib/runtime/admin-logger"
 
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
@@ -70,7 +71,16 @@ export const POST = withAdminAuth(async (req: NextRequest) => {
     })
     return NextResponse.json({ url }, { status: 201 })
   } catch (err) {
-    console.error("Storage upload failed:", err)
+    adminLogger.error(
+      {
+        contentLength: file.size,
+        contentType: file.type,
+        err,
+        operation: "upload-image",
+        route: "/api/upload",
+      },
+      "storage upload failed"
+    )
     return NextResponse.json(
       { error: "업로드에 실패했습니다" },
       { status: 502 }
