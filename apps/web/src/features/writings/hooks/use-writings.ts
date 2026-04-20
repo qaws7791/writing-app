@@ -1,10 +1,12 @@
 import { useInfiniteQuery } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { fetchWritings } from "../repositories/writing.repository"
 
 export function useWritings() {
+  const apiClient = useApiClient()
+
   return useInfiniteQuery({
     queryKey: ["writings", "list"],
     queryFn: ({ pageParam }) =>

@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { startSession } from "../repositories/session.repository"
 
 export function useStartSession() {
+  const apiClient = useApiClient()
   const queryClient = useQueryClient()
 
   return useMutation({

@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { fetchJourneyDetail } from "../repositories/journey.repository"
 
 export function useJourneyDetail(journeyId: number | undefined) {
+  const apiClient = useApiClient()
   const validJourneyId =
     journeyId !== undefined && journeyId > 0 ? journeyId : null
 

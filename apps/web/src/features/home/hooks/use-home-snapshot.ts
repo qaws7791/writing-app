@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { fetchHomeSnapshot } from "../repositories/home.repository"
 
 export function useHomeSnapshot() {
+  const apiClient = useApiClient()
+
   return useQuery({
     queryKey: ["home", "snapshot"],
     queryFn: () => fetchHomeSnapshot(apiClient),

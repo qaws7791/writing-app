@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import type { SessionStepResponse } from "../session-step-response"
 import { submitSessionStep } from "../repositories/session.repository"
 
 export function useSubmitSessionStep() {
+  const apiClient = useApiClient()
   const queryClient = useQueryClient()
 
   return useMutation({

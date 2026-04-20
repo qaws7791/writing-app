@@ -1,10 +1,12 @@
 import { useMutation } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { compareTexts } from "../repositories/ai.repository"
 
 export function useCompareTexts() {
+  const apiClient = useApiClient()
+
   return useMutation({
     mutationFn: ({
       originalText,

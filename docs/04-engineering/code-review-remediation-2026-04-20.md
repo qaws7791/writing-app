@@ -25,7 +25,7 @@ description: code-review (1).md 기준 후속 조치 현황과 실제 코드 기
 | 번호 | 항목                                          | 상태   | 비고                                            |
 | ---- | --------------------------------------------- | ------ | ----------------------------------------------- |
 | 1    | Session AI Worker 중복 처리 방지 및 폴링 개선 | 완료   | 저장소 선점(claim) + 비중첩 스케줄링 적용       |
-| 2    | 프론트엔드 `apiClient` 직접 임포트 제거       | 대기   | `apps/web/src/foundation/api` 중심              |
+| 2    | 프론트엔드 `apiClient` 직접 임포트 제거       | 완료   | `useApiClient()` 컨텍스트 주입으로 전환         |
 | 3    | Admin 세션 스택 통합                          | 대기   | `apps/admin/src/lib/auth`                       |
 | 4    | 테스트 커버리지 임계값 강제                   | 대기   | Vitest workspace 설정 필요                      |
 | 5    | 완료/내 여정 목록의 묵음 삭제                 | 기해결 | 현재 구현은 `listUserJourneyItems` 직접 사용    |

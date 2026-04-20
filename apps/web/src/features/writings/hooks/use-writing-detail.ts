@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { fetchWritingDetail } from "../repositories/writing.repository"
 
 export function useWritingDetail(writingId: number | undefined) {
+  const apiClient = useApiClient()
   const validWritingId =
     writingId !== undefined && writingId > 0 ? writingId : null
 

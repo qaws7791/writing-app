@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { fetchJourneyList } from "../repositories/journey.repository"
 
@@ -8,6 +8,8 @@ export function useJourneys(params?: {
   category?: "writing_skill" | "mindfulness" | "practical"
   status?: "all" | "in_progress" | "completed"
 }) {
+  const apiClient = useApiClient()
+
   return useQuery({
     queryKey: ["journeys", "list", params],
     queryFn: () => fetchJourneyList(apiClient, params),

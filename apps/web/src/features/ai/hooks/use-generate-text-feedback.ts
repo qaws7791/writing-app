@@ -1,10 +1,12 @@
 import { useMutation } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { generateTextFeedback } from "../repositories/ai.repository"
 
 export function useGenerateTextFeedback() {
+  const apiClient = useApiClient()
+
   return useMutation({
     mutationFn: ({
       text,

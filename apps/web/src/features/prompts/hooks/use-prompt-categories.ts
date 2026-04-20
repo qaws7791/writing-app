@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { fetchPromptCategories } from "../repositories/prompt.repository"
 
 export function usePromptCategories() {
+  const apiClient = useApiClient()
+
   return useQuery({
     queryKey: ["prompts", "categories"],
     queryFn: () => fetchPromptCategories(apiClient),

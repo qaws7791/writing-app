@@ -1,10 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { generateTextFeedback } from "../repositories/ai.repository"
 
 export function useAIFeedback(text: string) {
+  const apiClient = useApiClient()
+
   return useQuery({
     queryKey: ["ai-feedback", text],
     queryFn: () => generateTextFeedback(apiClient, { text }),

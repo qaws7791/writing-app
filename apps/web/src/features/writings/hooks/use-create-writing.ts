@@ -1,10 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { createWriting } from "../repositories/writing.repository"
 
 export function useCreateWriting() {
+  const apiClient = useApiClient()
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (input: {

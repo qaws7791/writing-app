@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { fetchPromptDetail } from "../repositories/prompt.repository"
 
 export function usePromptDetail(promptId: number | undefined) {
+  const apiClient = useApiClient()
   const validPromptId = promptId !== undefined && promptId > 0 ? promptId : null
 
   return useQuery({

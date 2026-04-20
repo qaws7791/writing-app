@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { apiClient } from "@/foundation/api/client"
+import { useApiClient } from "@/foundation/api"
 
 import { fetchSessionDetail } from "../repositories/session.repository"
 
@@ -13,6 +13,7 @@ function hasPendingSessionAi(
 }
 
 export function useSessionDetail(sessionId: number | undefined) {
+  const apiClient = useApiClient()
   const validSessionId =
     sessionId !== undefined && sessionId > 0 ? sessionId : null
 
