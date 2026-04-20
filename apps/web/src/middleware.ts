@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-
-const SESSION_COOKIE_NAME = "better-auth.session_token"
+import { SESSION_COOKIE_NAME } from "@/foundation/auth/constants"
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
