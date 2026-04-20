@@ -6,7 +6,7 @@ const {
   createApiContainerMock,
   createAppMock,
   createAllRoutesMock,
-  createDevRoutesMock,
+  getAuthEmailsRouteMock,
   migrateDatabaseMock,
   seedDatabaseMock,
 } = vi.hoisted(() => {
@@ -16,7 +16,7 @@ const {
     createApiContainerMock: vi.fn(),
     createAppMock: vi.fn(),
     createAllRoutesMock: vi.fn(() => [publicRoute]),
-    createDevRoutesMock: vi.fn(() => [devRoute]),
+    getAuthEmailsRouteMock: devRoute,
     migrateDatabaseMock: vi.fn(),
     seedDatabaseMock: vi.fn(),
   }
@@ -77,8 +77,8 @@ vi.mock("../routes/index.js", () => ({
   allRoutes: createAllRoutesMock,
 }))
 
-vi.mock("../routes/dev/index.js", () => ({
-  devRoutes: createDevRoutesMock,
+vi.mock("../routes/dev/get-auth-emails.js", () => ({
+  default: getAuthEmailsRouteMock,
 }))
 
 vi.mock("../config/env.js", () => ({
@@ -225,7 +225,6 @@ describe("bootstrap", () => {
       webBaseUrl: "http://127.0.0.1:3000",
     })
 
-    expect(createDevRoutesMock).not.toHaveBeenCalled()
     expect(createAppMock).toHaveBeenCalledWith(
       expect.objectContaining({
         routes: createAllRoutesMock.mock.results[0]?.value,
@@ -248,12 +247,11 @@ describe("bootstrap", () => {
       webBaseUrl: "http://127.0.0.1:3000",
     })
 
-    expect(createDevRoutesMock).toHaveBeenCalledTimes(1)
     expect(createAppMock).toHaveBeenCalledWith(
       expect.objectContaining({
         routes: [
           ...(createAllRoutesMock.mock.results[0]?.value ?? []),
-          ...(createDevRoutesMock.mock.results[0]?.value ?? []),
+          getAuthEmailsRouteMock,
         ],
       })
     )

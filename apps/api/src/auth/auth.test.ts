@@ -26,8 +26,8 @@ import { createResolveSessionMiddleware } from "../middleware/resolve-session.js
 import { createDevEmailInbox, createDevEmailPort } from "./auth-email.js"
 import { createSilentLogger } from "../observability/logger.js"
 import { createMemoryRateLimitBackend } from "../rate-limit/rate-limit-backend.js"
+import getAuthEmails from "../routes/dev/get-auth-emails.js"
 import { allRoutes } from "../routes/index.js"
-import { devRoutes } from "../routes/dev/index.js"
 import type { AppEnv } from "../app-env.js"
 
 type TestApp = OpenAPIHono<AppEnv>
@@ -272,7 +272,7 @@ function setup(): { app: TestApp } {
       }
       return handleRequestError(c, error, logger, "request failed")
     },
-    routes: [...allRoutes({ rateLimitBackend }), ...devRoutes()],
+    routes: [...allRoutes({ rateLimitBackend }), getAuthEmails],
     notFound: (c) =>
       c.json(
         {

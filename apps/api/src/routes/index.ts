@@ -1,13 +1,13 @@
 import type { RateLimitBackend } from "../rate-limit/rate-limit-backend"
 import { aiRoutes } from "./ai"
-import { authRoutes } from "./auth"
-import { healthRoutes } from "./health"
-import { homeRoutes } from "./home"
+import authHandler from "./auth/auth-handler"
+import getHealth from "./health/get-health"
+import getHome from "./home/get-home"
 import { journeyRoutes } from "./journeys"
-import { meRoutes } from "./me"
+import getMe from "./me/get-me"
 import { promptRoutes } from "./prompts"
 import { sessionRoutes } from "./sessions"
-import { userRoutes } from "./users"
+import getUserProfile from "./users/get-user-profile"
 import { writingRoutes } from "./writings"
 
 type RouteDependencies = {
@@ -16,14 +16,14 @@ type RouteDependencies = {
 
 export function allRoutes({ rateLimitBackend }: RouteDependencies) {
   return [
-    ...healthRoutes(),
-    ...authRoutes(),
-    ...meRoutes(),
-    ...homeRoutes(),
+    getHealth,
+    authHandler,
+    getMe,
+    getHome,
     ...promptRoutes(),
     ...journeyRoutes(),
     ...sessionRoutes(),
-    ...userRoutes(),
+    getUserProfile,
     ...writingRoutes(),
     ...aiRoutes({ rateLimitBackend }),
   ] as const

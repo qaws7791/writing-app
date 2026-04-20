@@ -15,10 +15,10 @@ import { createApp } from "../lib/hono/create-app"
 import { createRequestLoggerMiddleware } from "../middleware/request-logger"
 import { createResolveSessionMiddleware } from "../middleware/resolve-session"
 import type { ApiLogLevel } from "../observability/logger"
+import getAuthEmails from "../routes/dev/get-auth-emails"
+import { allRoutes } from "../routes"
 import { createApiContainer, extractUseCases } from "./container"
 import { createSessionAiWorker } from "./session-ai-worker"
-import { devRoutes } from "../routes/dev"
-import { allRoutes } from "../routes"
 
 export type ApiEnvironment = {
   apiBaseUrl: string
@@ -124,7 +124,7 @@ export async function createApiDependencies(
       handleRequestError(c, error, logger, "request failed"),
     routes: [
       ...allRoutes({ rateLimitBackend }),
-      ...(environment.authDebugEnabled ? devRoutes() : []),
+      ...(environment.authDebugEnabled ? [getAuthEmails] : []),
     ],
     notFound: (c) =>
       c.json(
