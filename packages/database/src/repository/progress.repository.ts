@@ -492,6 +492,24 @@ export function createProgressRepository(
       return rows.map(mapSessionStepAiState)
     },
 
+    async claimPendingSessionStepAiState(input): Promise<boolean> {
+      const claimedRows = await database
+        .update(userSessionStepAiState)
+        .set({ updatedAt: new Date() })
+        .where(
+          and(
+            eq(userSessionStepAiState.userId, input.userId),
+            eq(userSessionStepAiState.sessionId, input.sessionId),
+            eq(userSessionStepAiState.stepOrder, input.stepOrder),
+            eq(userSessionStepAiState.status, "pending"),
+            eq(userSessionStepAiState.updatedAt, new Date(input.updatedAt))
+          )
+        )
+        .returning({ id: userSessionStepAiState.id })
+
+      return claimedRows.length > 0
+    },
+
     async saveSessionStepAiState(
       userId: UserId,
       sessionId: SessionId,

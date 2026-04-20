@@ -82,6 +82,13 @@ export interface ProgressRepository {
     limit: number
   ): Promise<UserSessionStepAiState[]>
 
+  claimPendingSessionStepAiState(input: {
+    userId: UserId
+    sessionId: SessionId
+    stepOrder: number
+    updatedAt: string
+  }): Promise<boolean>
+
   saveSessionStepAiState(
     userId: UserId,
     sessionId: SessionId,

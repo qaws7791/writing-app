@@ -34,6 +34,7 @@ description: 글필(Geulpil) 모노레포 개발 규칙과 프론트엔드, 백�
 - [[environment-variables]]: 환경 변수 관리 정책
 - [[error-message-guidelines]]: 사용자 메시지와 API 오류 응답 기준
 - [[logging-guide]]: 구조화 로그와 요청 추적 기준
+- [[code-review-remediation-2026-04-20]]: 2026-04-20 코드 리뷰 후속 조치와 항목별 처리 현황
 
 ## 읽는 순서
 

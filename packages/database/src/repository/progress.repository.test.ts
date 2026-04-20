@@ -173,6 +173,51 @@ describe("createProgressRepository", () => {
     })
   })
 
+  it("pending session ai 작업은 updatedAt 기준으로 선점한다", async () => {
+    database = await createTestDb()
+
+    const userId = toUserId("dev-user")
+    const { sessionId } = await createJourneySession(
+      database,
+      "AI 선점 검증 여정"
+    )
+    const repository = createProgressRepository(database.db)
+
+    await repository.saveSessionStepAiState(userId, sessionId, 2, {
+      kind: "feedback",
+      sourceStepOrder: 1,
+      status: "pending",
+      attemptCount: 0,
+      inputJson: {
+        bodyPlainText: "초안",
+        level: "beginner",
+      },
+      resultJson: null,
+      errorMessage: null,
+    })
+
+    const state = await repository.getSessionStepAiState(userId, sessionId, 2)
+    expect(state).not.toBeNull()
+
+    const claimed = await repository.claimPendingSessionStepAiState({
+      userId,
+      sessionId,
+      stepOrder: 2,
+      updatedAt: state?.updatedAt ?? "",
+    })
+
+    expect(claimed).toBe(true)
+
+    const staleClaim = await repository.claimPendingSessionStepAiState({
+      userId,
+      sessionId,
+      stepOrder: 2,
+      updatedAt: state?.updatedAt ?? "",
+    })
+
+    expect(staleClaim).toBe(false)
+  })
+
   it("손상된 session ai 결과를 읽을 때 validation error를 던진다", async () => {
     database = await createTestDb()
 

@@ -57,7 +57,27 @@ export function createSessionAiWorker(input: {
   const batchSize = input.batchSize ?? 8
   const pollMs = input.pollMs ?? 750
   const inFlight = new Set<string>()
-  let timer: ReturnType<typeof setInterval> | null = null
+  let isRunning = false
+  let isStarted = false
+  let timer: ReturnType<typeof setTimeout> | null = null
+
+  function clearScheduledTick() {
+    if (timer !== null) {
+      clearTimeout(timer)
+      timer = null
+    }
+  }
+
+  function scheduleNextTick() {
+    if (!isStarted) {
+      return
+    }
+
+    clearScheduledTick()
+    timer = setTimeout(() => {
+      void tickAndSchedule()
+    }, pollMs)
+  }
 
   async function processPendingStep(
     step: Awaited<
@@ -72,6 +92,18 @@ export function createSessionAiWorker(input: {
     inFlight.add(key)
 
     try {
+      const claimed =
+        await input.progressRepository.claimPendingSessionStepAiState({
+          userId: step.userId,
+          sessionId: step.sessionId,
+          stepOrder: step.stepOrder,
+          updatedAt: step.updatedAt,
+        })
+
+      if (!claimed) {
+        return
+      }
+
       const attemptCount = step.attemptCount + 1
 
       await input.progressRepository.saveSessionStepAiState(
@@ -194,6 +226,12 @@ export function createSessionAiWorker(input: {
   }
 
   async function tick() {
+    if (isRunning) {
+      return
+    }
+
+    isRunning = true
+
     try {
       const pendingSteps =
         await input.progressRepository.listPendingSessionStepAiStates(batchSize)
@@ -213,26 +251,31 @@ export function createSessionAiWorker(input: {
         },
         "session ai worker tick failed"
       )
+    } finally {
+      isRunning = false
+    }
+  }
+
+  async function tickAndSchedule() {
+    await tick()
+
+    if (isStarted) {
+      scheduleNextTick()
     }
   }
 
   return {
     start() {
-      if (timer !== null) {
+      if (isStarted) {
         return
       }
 
-      timer = setInterval(() => {
-        void tick()
-      }, pollMs)
-
-      void tick()
+      isStarted = true
+      void tickAndSchedule()
     },
     stop() {
-      if (timer !== null) {
-        clearInterval(timer)
-        timer = null
-      }
+      isStarted = false
+      clearScheduledTick()
     },
     tick,
   }

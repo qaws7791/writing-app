@@ -27,6 +27,7 @@ function createProgressRepositoryMock(): ProgressRepository {
     getSessionStepAiState: vi.fn(async () => null),
     listSessionStepAiStates: vi.fn(async () => []),
     listPendingSessionStepAiStates: vi.fn(async () => []),
+    claimPendingSessionStepAiState: vi.fn(async () => false),
     saveSessionStepAiState: vi.fn(async () => {}),
   }
 }
@@ -36,7 +37,7 @@ describe("makeListCompletedJourneysUseCase", () => {
     const userId = toUserId("user-1")
     const progressRepository = createProgressRepositoryMock()
 
-    vi.mocked(progressRepository.listUserJourneyItems).mockResolvedValue([
+    progressRepository.listUserJourneyItems = vi.fn(async () => [
       {
         id: toJourneyId(1),
         title: "문장 훈련",

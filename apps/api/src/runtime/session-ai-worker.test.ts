@@ -31,11 +31,17 @@ function createPendingFeedbackStep(): UserSessionStepAiState {
 }
 
 function createProgressRepositoryDouble(
-  pendingSteps: UserSessionStepAiState[]
+  pendingSteps: UserSessionStepAiState[],
+  options?: {
+    claimPendingSessionStepAiState?: ReturnType<typeof vi.fn>
+  }
 ): {
   repository: ProgressRepository
+  claimPendingSessionStepAiState: ReturnType<typeof vi.fn>
   saveSessionStepAiState: ReturnType<typeof vi.fn>
 } {
+  const claimPendingSessionStepAiState =
+    options?.claimPendingSessionStepAiState ?? vi.fn(async () => true)
   const saveSessionStepAiState = vi.fn(async () => undefined)
 
   return {
@@ -53,8 +59,10 @@ function createProgressRepositoryDouble(
       getSessionStepAiState: vi.fn(),
       listSessionStepAiStates: vi.fn(),
       listPendingSessionStepAiStates: vi.fn(async () => pendingSteps),
+      claimPendingSessionStepAiState,
       saveSessionStepAiState,
     } satisfies ProgressRepository,
+    claimPendingSessionStepAiState,
     saveSessionStepAiState,
   }
 }
@@ -71,8 +79,11 @@ describe("createSessionAiWorker", () => {
       compareRevisions: vi.fn(),
     }
     const { logger } = createCapturedLogger()
-    const { repository, saveSessionStepAiState } =
-      createProgressRepositoryDouble([createPendingFeedbackStep()])
+    const {
+      repository,
+      claimPendingSessionStepAiState,
+      saveSessionStepAiState,
+    } = createProgressRepositoryDouble([createPendingFeedbackStep()])
 
     const worker = createSessionAiWorker({
       aiCoachingGateway: gateway,
@@ -82,6 +93,12 @@ describe("createSessionAiWorker", () => {
 
     await worker.tick()
 
+    expect(claimPendingSessionStepAiState).toHaveBeenCalledWith({
+      userId: "dev-user",
+      sessionId: 1,
+      stepOrder: 2,
+      updatedAt: "2026-04-20T00:00:00.000Z",
+    })
     expect(gateway.generateFeedback).toHaveBeenCalledWith({
       bodyPlainText: "초안입니다.",
       level: "beginner",
@@ -148,5 +165,30 @@ describe("createSessionAiWorker", () => {
         issues: expect.any(Array),
       })
     )
+  })
+
+  it("다른 워커가 먼저 선점한 작업은 건너뛴다", async () => {
+    const gateway: AiCoachingGateway = {
+      generateFeedback: vi.fn(),
+      compareRevisions: vi.fn(),
+    }
+    const { logger } = createCapturedLogger()
+    const claimPendingSessionStepAiState = vi.fn(async () => false)
+    const { repository, saveSessionStepAiState } =
+      createProgressRepositoryDouble([createPendingFeedbackStep()], {
+        claimPendingSessionStepAiState,
+      })
+
+    const worker = createSessionAiWorker({
+      aiCoachingGateway: gateway,
+      logger,
+      progressRepository: repository,
+    })
+
+    await worker.tick()
+
+    expect(claimPendingSessionStepAiState).toHaveBeenCalledTimes(1)
+    expect(gateway.generateFeedback).not.toHaveBeenCalled()
+    expect(saveSessionStepAiState).not.toHaveBeenCalled()
   })
 })

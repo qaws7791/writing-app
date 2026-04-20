@@ -47,6 +47,7 @@ describe("makeGetHomeUseCase", () => {
       getSessionStepAiState: vi.fn(async () => null),
       listSessionStepAiStates: vi.fn(async () => []),
       listPendingSessionStepAiStates: vi.fn(async () => []),
+      claimPendingSessionStepAiState: vi.fn(async () => false),
       saveSessionStepAiState: vi.fn(async () => {}),
     }
 
@@ -96,6 +97,7 @@ describe("makeGetHomeUseCase", () => {
       getSessionStepAiState: vi.fn(async () => null),
       listSessionStepAiStates: vi.fn(async () => []),
       listPendingSessionStepAiStates: vi.fn(async () => []),
+      claimPendingSessionStepAiState: vi.fn(async () => false),
       saveSessionStepAiState: vi.fn(async () => {}),
     }
 
