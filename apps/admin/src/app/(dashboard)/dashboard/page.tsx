@@ -1,4 +1,10 @@
 import { count } from "drizzle-orm"
+import {
+  BookOpenIcon,
+  ChevronRightIcon,
+  MapIcon,
+  PenToolIcon,
+} from "lucide-react"
 
 import { journeys, journeySessions, writingPrompts } from "@workspace/database"
 import {
@@ -28,67 +34,19 @@ export default async function DashboardPage() {
       label: "전체 여정",
       value: journeyCount,
       description: "등록된 글쓰기 여정",
-      icon: (
-        <svg
-          aria-hidden="true"
-          fill="none"
-          height={20}
-          viewBox="0 0 16 16"
-          width={20}
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            clipRule="evenodd"
-            d="M5.5 1.217A.75.75 0 0 1 6 1.25l4 1.5 3.75-1.5a.75.75 0 0 1 1 .7v10.3a.75.75 0 0 1-.5.707l-4 1.5a.75.75 0 0 1-.5 0l-4-1.5-3.75 1.5A.75.75 0 0 1 1 13.25V2.95a.75.75 0 0 1 .5-.707l4-1.026ZM5.25 3.04 2.5 3.77v8.79l2.75-1.1V3.04Zm1.5.46v8.46l3-1.125V2.375L6.75 3.5Zm4.5-.625v8.46l2.25-.844V2.031l-2.25.844Z"
-            fill="currentColor"
-            fillRule="evenodd"
-          />
-        </svg>
-      ),
+      icon: MapIcon,
     },
     {
       label: "전체 세션",
       value: sessionCount,
       description: "여정 내 학습 세션",
-      icon: (
-        <svg
-          aria-hidden="true"
-          fill="none"
-          height={20}
-          viewBox="0 0 16 16"
-          width={20}
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            clipRule="evenodd"
-            d="M2 2.75A.75.75 0 0 1 2.75 2h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 2.75Zm0 5A.75.75 0 0 1 2.75 7h10.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 7.75ZM2.75 12a.75.75 0 0 0 0 1.5h7a.75.75 0 0 0 0-1.5h-7Z"
-            fill="currentColor"
-            fillRule="evenodd"
-          />
-        </svg>
-      ),
+      icon: BookOpenIcon,
     },
     {
       label: "전체 글감",
       value: promptCount,
       description: "등록된 글쓰기 글감",
-      icon: (
-        <svg
-          aria-hidden="true"
-          fill="none"
-          height={20}
-          viewBox="0 0 16 16"
-          width={20}
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            clipRule="evenodd"
-            d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm1.414 1.06a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354l-1.086-1.086ZM11.19 6.25 9.75 4.81 3.862 10.7a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.557a.253.253 0 0 0 .108-.065L11.19 6.25Z"
-            fill="currentColor"
-            fillRule="evenodd"
-          />
-        </svg>
-      ),
+      icon: PenToolIcon,
     },
   ]
 
@@ -118,7 +76,7 @@ export default async function DashboardPage() {
                   </p>
                 </div>
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground">
-                  {stat.icon}
+                  <stat.icon aria-hidden="true" size={20} strokeWidth={1.75} />
                 </div>
               </div>
             </CardContent>
@@ -218,22 +176,12 @@ function QuickLink({
         <p className="text-sm font-medium text-foreground">{label}</p>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
-      <svg
+      <ChevronRightIcon
         aria-hidden="true"
         className="text-muted-foreground transition-colors group-hover:text-foreground"
-        fill="none"
-        height={14}
-        viewBox="0 0 16 16"
-        width={14}
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          clipRule="evenodd"
-          d="M5.97 3.47a.75.75 0 0 1 1.06 0l4 4a.75.75 0 0 1 0 1.06l-4 4a.75.75 0 1 1-1.06-1.06L9.44 8 5.97 4.53a.75.75 0 0 1 0-1.06Z"
-          fill="currentColor"
-          fillRule="evenodd"
-        />
-      </svg>
+        size={14}
+        strokeWidth={1.75}
+      />
     </a>
   )
 }
