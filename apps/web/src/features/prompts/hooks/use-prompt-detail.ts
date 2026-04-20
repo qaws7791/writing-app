@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 
 import {
-  createDetailQueryKey,
   getPositiveId,
   requirePositiveId,
   useApiClient,
 } from "@/foundation/api"
 
+import { promptQueryKeys } from "../query-keys"
 import { fetchPromptDetail } from "../repositories/prompt.repository"
 
 export function usePromptDetail(promptId: number | undefined) {
@@ -14,7 +14,7 @@ export function usePromptDetail(promptId: number | undefined) {
   const validPromptId = getPositiveId(promptId)
 
   return useQuery({
-    queryKey: createDetailQueryKey("prompts", promptId),
+    queryKey: promptQueryKeys.detail(promptId),
     queryFn: () => {
       return fetchPromptDetail(
         apiClient,

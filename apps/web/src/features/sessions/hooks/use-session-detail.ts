@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 
 import {
-  createDetailQueryKey,
   getPositiveId,
   requirePositiveId,
   useApiClient,
 } from "@/foundation/api"
 
+import { sessionQueryKeys } from "../query-keys"
 import { fetchSessionDetail } from "../repositories/session.repository"
 
 function hasPendingSessionAi(
@@ -22,7 +22,7 @@ export function useSessionDetail(sessionId: number | undefined) {
   const validSessionId = getPositiveId(sessionId)
 
   return useQuery({
-    queryKey: createDetailQueryKey("sessions", sessionId),
+    queryKey: sessionQueryKeys.detail(sessionId),
     queryFn: () => {
       return fetchSessionDetail(
         apiClient,

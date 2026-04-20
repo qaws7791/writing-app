@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 
 import {
-  createDetailQueryKey,
   getPositiveId,
   requirePositiveId,
   useApiClient,
 } from "@/foundation/api"
 
+import { writingQueryKeys } from "../query-keys"
 import { fetchWritingDetail } from "../repositories/writing.repository"
 
 export function useWritingDetail(writingId: number | undefined) {
@@ -14,7 +14,7 @@ export function useWritingDetail(writingId: number | undefined) {
   const validWritingId = getPositiveId(writingId)
 
   return useQuery({
-    queryKey: createDetailQueryKey("writings", writingId),
+    queryKey: writingQueryKeys.detail(writingId),
     queryFn: () => {
       return fetchWritingDetail(
         apiClient,

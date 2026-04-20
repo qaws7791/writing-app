@@ -2,6 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query"
 
 import { useApiClient } from "@/foundation/api"
 
+import { promptQueryKeys } from "../query-keys"
 import { fetchPromptList } from "../repositories/prompt.repository"
 
 type PromptType = "sensory" | "reflection" | "opinion"
@@ -13,7 +14,7 @@ export function usePromptList(params?: {
   const apiClient = useApiClient()
 
   return useInfiniteQuery({
-    queryKey: ["prompts", "list", params],
+    queryKey: promptQueryKeys.list(params),
     queryFn: ({ pageParam }) =>
       fetchPromptList(apiClient, {
         promptType: params?.promptType,

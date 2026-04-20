@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { useApiClient } from "@/foundation/api"
 
+import { writingQueryKeys } from "../query-keys"
 import { createWriting } from "../repositories/writing.repository"
 
 export function useCreateWriting() {
@@ -16,7 +17,7 @@ export function useCreateWriting() {
       sourcePromptId?: number
     }) => createWriting(apiClient, input),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["writings", "list"] })
+      void queryClient.invalidateQueries({ queryKey: writingQueryKeys.list() })
     },
   })
 }

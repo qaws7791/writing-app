@@ -1,12 +1,12 @@
 import { useQuery } from "@tanstack/react-query"
 
 import {
-  createDetailQueryKey,
   getPositiveId,
   requirePositiveId,
   useApiClient,
 } from "@/foundation/api"
 
+import { journeyQueryKeys } from "../query-keys"
 import { fetchJourneyDetail } from "../repositories/journey.repository"
 
 export function useJourneyDetail(journeyId: number | undefined) {
@@ -14,7 +14,7 @@ export function useJourneyDetail(journeyId: number | undefined) {
   const validJourneyId = getPositiveId(journeyId)
 
   return useQuery({
-    queryKey: createDetailQueryKey("journeys", journeyId),
+    queryKey: journeyQueryKeys.detail(journeyId),
     queryFn: () => {
       return fetchJourneyDetail(
         apiClient,

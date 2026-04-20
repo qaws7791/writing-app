@@ -1,7 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 import { useApiClient } from "@/foundation/api"
+import { homeQueryKeys } from "@/features/home/query-keys"
 
+import { journeyQueryKeys } from "../query-keys"
 import { enrollJourney } from "../repositories/journey.repository"
 
 export function useEnrollJourney() {
@@ -11,9 +13,9 @@ export function useEnrollJourney() {
   return useMutation({
     mutationFn: (journeyId: number) => enrollJourney(apiClient, journeyId),
     onSuccess: (_, journeyId) => {
-      void queryClient.invalidateQueries({ queryKey: ["home", "snapshot"] })
+      void queryClient.invalidateQueries({ queryKey: homeQueryKeys.snapshot() })
       void queryClient.invalidateQueries({
-        queryKey: ["journeys", "detail", journeyId],
+        queryKey: journeyQueryKeys.detail(journeyId),
       })
     },
   })
