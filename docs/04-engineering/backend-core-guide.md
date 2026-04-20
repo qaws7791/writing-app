@@ -5,7 +5,7 @@ description: packages/core의 모듈 구조, DOP 패턴, 포트 설계, vitest �
 
 ## 상태
 
-- 기준 시점: 2026-04-06
+- 기준 시점: 2026-04-20
 - `packages/core`는 writings, prompts, home 모듈이 구현된 상태입니다.
 - neverthrow, ts-pattern, remeda가 도입되어 사용 중입니다.
 - 여정(journeys), 세션(sessions), 스텝(steps), AI 피드백(ai-feedback) 모듈은 도입 예정입니다.
@@ -122,6 +122,7 @@ packages/core/
 - zod 스키마
 - API와 use case가 공유하는 입력/출력 DTO
 - OpenAPI route 정의에 재사용될 계약
+- adapter가 그대로 재사용할 create/update/query body schema
 - wire shape는 primitive를 유지하고, branded id는 handler/use-case 진입 직전에 변환합니다.
 
 ### `model`

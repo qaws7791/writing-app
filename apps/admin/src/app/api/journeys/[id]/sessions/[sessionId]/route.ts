@@ -1,27 +1,24 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
 
-import { parseSessionId, toHttpStatus } from "@workspace/core"
+import {
+  parseSessionId,
+  sessionIdParamSchema,
+  toHttpStatus,
+  updateSessionBodySchema,
+} from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getUseCases } from "@/lib/use-cases"
-
-const updateSessionSchema = z.object({
-  title: z.string().min(1).optional(),
-  description: z.string().min(1).optional(),
-  estimatedMinutes: z.number().int().positive().optional(),
-  order: z.number().int().min(1).optional(),
-})
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { sessionId } = await context.params
-  const id = Number(sessionId)
-  if (!Number.isInteger(id) || id <= 0) {
+  const parsedSessionId = sessionIdParamSchema.safeParse(sessionId)
+  if (!parsedSessionId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const { getSessionDetail } = getUseCases()
-  const result = await getSessionDetail(parseSessionId(id))
+  const { getSessionDetail } = getAdminRuntime().useCases
+  const result = await getSessionDetail(parseSessionId(parsedSessionId.data))
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -33,8 +30,8 @@ export const GET = withAdminAuth(async (_req, context) => {
 
 export const PUT = withAdminAuth(async (req, context) => {
   const { sessionId } = await context.params
-  const id = Number(sessionId)
-  if (!Number.isInteger(id) || id <= 0) {
+  const parsedSessionId = sessionIdParamSchema.safeParse(sessionId)
+  if (!parsedSessionId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -45,13 +42,16 @@ export const PUT = withAdminAuth(async (req, context) => {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const parsed = updateSessionSchema.safeParse(body)
+  const parsed = updateSessionBodySchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const { updateSession } = getUseCases()
-  const result = await updateSession(parseSessionId(id), parsed.data)
+  const { updateSession } = getAdminRuntime().useCases
+  const result = await updateSession(
+    parseSessionId(parsedSessionId.data),
+    parsed.data
+  )
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -63,12 +63,12 @@ export const PUT = withAdminAuth(async (req, context) => {
 
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { sessionId } = await context.params
-  const id = Number(sessionId)
-  if (!Number.isInteger(id) || id <= 0) {
+  const parsedSessionId = sessionIdParamSchema.safeParse(sessionId)
+  if (!parsedSessionId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const { deleteSession } = getUseCases()
-  await deleteSession(parseSessionId(id))
+  const { deleteSession } = getAdminRuntime().useCases
+  await deleteSession(parseSessionId(parsedSessionId.data))
   return NextResponse.json({ ok: true })
 })

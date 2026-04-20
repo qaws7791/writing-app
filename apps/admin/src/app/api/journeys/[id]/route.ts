@@ -1,31 +1,24 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
 
 import {
-  journeyCategorySchema,
   parseJourneyId,
+  journeyIdParamSchema,
   toHttpStatus,
+  updateJourneyBodySchema,
 } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getUseCases } from "@/lib/use-cases"
-
-const updateJourneySchema = z.object({
-  title: z.string().min(1).optional(),
-  description: z.string().min(1).optional(),
-  category: journeyCategorySchema.optional(),
-  thumbnailUrl: z.string().url().nullable().optional(),
-})
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const numId = Number(id)
-  if (!Number.isInteger(numId) || numId <= 0) {
+  const parsedJourneyId = journeyIdParamSchema.safeParse(id)
+  if (!parsedJourneyId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const { getJourneyFull } = getUseCases()
-  const result = await getJourneyFull(parseJourneyId(numId))
+  const { getJourneyFull } = getAdminRuntime().useCases
+  const result = await getJourneyFull(parseJourneyId(parsedJourneyId.data))
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -37,8 +30,8 @@ export const GET = withAdminAuth(async (_req, context) => {
 
 export const PUT = withAdminAuth(async (req, context) => {
   const { id } = await context.params
-  const numId = Number(id)
-  if (!Number.isInteger(numId) || numId <= 0) {
+  const parsedJourneyId = journeyIdParamSchema.safeParse(id)
+  if (!parsedJourneyId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -49,13 +42,16 @@ export const PUT = withAdminAuth(async (req, context) => {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const parsed = updateJourneySchema.safeParse(body)
+  const parsed = updateJourneyBodySchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const { updateJourney } = getUseCases()
-  const result = await updateJourney(parseJourneyId(numId), parsed.data)
+  const { updateJourney } = getAdminRuntime().useCases
+  const result = await updateJourney(
+    parseJourneyId(parsedJourneyId.data),
+    parsed.data
+  )
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -67,12 +63,12 @@ export const PUT = withAdminAuth(async (req, context) => {
 
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const numId = Number(id)
-  if (!Number.isInteger(numId) || numId <= 0) {
+  const parsedJourneyId = journeyIdParamSchema.safeParse(id)
+  if (!parsedJourneyId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const { deleteJourney } = getUseCases()
-  await deleteJourney(parseJourneyId(numId))
+  const { deleteJourney } = getAdminRuntime().useCases
+  await deleteJourney(parseJourneyId(parsedJourneyId.data))
   return NextResponse.json({ ok: true })
 })

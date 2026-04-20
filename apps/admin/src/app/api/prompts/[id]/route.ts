@@ -1,27 +1,24 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
 
-import { parsePromptId, promptTypeSchema, toHttpStatus } from "@workspace/core"
+import {
+  parsePromptId,
+  promptIdParamSchema,
+  toHttpStatus,
+  updatePromptBodySchema,
+} from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getUseCases } from "@/lib/use-cases"
-
-const updatePromptSchema = z.object({
-  title: z.string().min(1).optional(),
-  body: z.string().min(1).optional(),
-  promptType: promptTypeSchema.optional(),
-  thumbnailUrl: z.string().url().nullable().optional(),
-})
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const promptId = Number(id)
-  if (!Number.isInteger(promptId) || promptId <= 0) {
+  const parsedPromptId = promptIdParamSchema.safeParse(id)
+  if (!parsedPromptId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const { getPrompt } = getUseCases()
-  const result = await getPrompt(parsePromptId(promptId), null)
+  const { getPrompt } = getAdminRuntime().useCases
+  const result = await getPrompt(parsePromptId(parsedPromptId.data), null)
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -33,8 +30,8 @@ export const GET = withAdminAuth(async (_req, context) => {
 
 export const PUT = withAdminAuth(async (req, context) => {
   const { id } = await context.params
-  const promptId = Number(id)
-  if (!Number.isInteger(promptId) || promptId <= 0) {
+  const parsedPromptId = promptIdParamSchema.safeParse(id)
+  if (!parsedPromptId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -45,13 +42,16 @@ export const PUT = withAdminAuth(async (req, context) => {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const parsed = updatePromptSchema.safeParse(body)
+  const parsed = updatePromptBodySchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const { updatePrompt } = getUseCases()
-  const result = await updatePrompt(parsePromptId(promptId), parsed.data)
+  const { updatePrompt } = getAdminRuntime().useCases
+  const result = await updatePrompt(
+    parsePromptId(parsedPromptId.data),
+    parsed.data
+  )
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -63,12 +63,12 @@ export const PUT = withAdminAuth(async (req, context) => {
 
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const promptId = Number(id)
-  if (!Number.isInteger(promptId) || promptId <= 0) {
+  const parsedPromptId = promptIdParamSchema.safeParse(id)
+  if (!parsedPromptId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const { deletePrompt } = getUseCases()
-  await deletePrompt(parsePromptId(promptId))
+  const { deletePrompt } = getAdminRuntime().useCases
+  await deletePrompt(parsePromptId(parsedPromptId.data))
   return NextResponse.json({ ok: true })
 })

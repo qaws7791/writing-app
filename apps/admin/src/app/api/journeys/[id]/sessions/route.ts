@@ -1,34 +1,33 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
 
-import { parseJourneyId, toHttpStatus } from "@workspace/core"
+import {
+  createSessionBodySchema,
+  journeyIdParamSchema,
+  parseJourneyId,
+  toHttpStatus,
+} from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getUseCases } from "@/lib/use-cases"
-
-const createSessionSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  estimatedMinutes: z.number().int().positive(),
-  order: z.number().int().min(1),
-})
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const journeyId = Number(id)
-  if (!Number.isInteger(journeyId) || journeyId <= 0) {
+  const parsedJourneyId = journeyIdParamSchema.safeParse(id)
+  if (!parsedJourneyId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const { listSessions } = getUseCases()
-  const items = (await listSessions(parseJourneyId(journeyId)))._unsafeUnwrap()
+  const { listSessions } = getAdminRuntime().useCases
+  const items = (
+    await listSessions(parseJourneyId(parsedJourneyId.data))
+  )._unsafeUnwrap()
   return NextResponse.json({ items })
 })
 
 export const POST = withAdminAuth(async (req, context) => {
   const { id } = await context.params
-  const journeyId = Number(id)
-  if (!Number.isInteger(journeyId) || journeyId <= 0) {
+  const parsedJourneyId = journeyIdParamSchema.safeParse(id)
+  if (!parsedJourneyId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -39,13 +38,16 @@ export const POST = withAdminAuth(async (req, context) => {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const parsed = createSessionSchema.safeParse(body)
+  const parsed = createSessionBodySchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const { createSession } = getUseCases()
-  const result = await createSession(parseJourneyId(journeyId), parsed.data)
+  const { createSession } = getAdminRuntime().useCases
+  const result = await createSession(
+    parseJourneyId(parsedJourneyId.data),
+    parsed.data
+  )
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },

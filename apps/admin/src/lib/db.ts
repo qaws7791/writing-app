@@ -1,12 +1,5 @@
-import { openDb } from "@workspace/database"
-
-import { env } from "@/env"
-
-let dbInstance: ReturnType<typeof openDb> | null = null
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export function getDb() {
-  if (!dbInstance) {
-    dbInstance = openDb(env.DATABASE_URL)
-  }
-  return dbInstance.db
+  return getAdminRuntime().database.db
 }

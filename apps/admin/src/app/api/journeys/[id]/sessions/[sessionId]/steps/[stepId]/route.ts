@@ -1,44 +1,35 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
 
 import {
   parseSessionId,
   parseStepId,
-  stepTypeSchema,
+  sessionIdParamSchema,
+  stepIdParamSchema,
   toHttpStatus,
+  updateStepBodySchema,
 } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getUseCases } from "@/lib/use-cases"
-
-const updateStepSchema = z.object({
-  type: stepTypeSchema.optional(),
-  order: z.number().int().min(1).optional(),
-  contentJson: z.unknown().optional(),
-})
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { sessionId, stepId } = await context.params
-  const sId = Number(sessionId)
-  const stId = Number(stepId)
-  if (
-    !Number.isInteger(sId) ||
-    sId <= 0 ||
-    !Number.isInteger(stId) ||
-    stId <= 0
-  ) {
+  const parsedSessionId = sessionIdParamSchema.safeParse(sessionId)
+  const parsedStepId = stepIdParamSchema.safeParse(stepId)
+
+  if (!parsedSessionId.success || !parsedStepId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const { getSessionDetail } = getUseCases()
-  const result = await getSessionDetail(parseSessionId(sId))
+  const { getSessionDetail } = getAdminRuntime().useCases
+  const result = await getSessionDetail(parseSessionId(parsedSessionId.data))
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
       { status: toHttpStatus(result.error) }
     )
   }
-  const stepIdValue = parseStepId(stId)
+  const stepIdValue = parseStepId(parsedStepId.data)
   const step = result.value.steps.find((s) => s.id === stepIdValue)
   if (!step) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
@@ -48,8 +39,8 @@ export const GET = withAdminAuth(async (_req, context) => {
 
 export const PUT = withAdminAuth(async (req, context) => {
   const { stepId } = await context.params
-  const id = Number(stepId)
-  if (!Number.isInteger(id) || id <= 0) {
+  const parsedStepId = stepIdParamSchema.safeParse(stepId)
+  if (!parsedStepId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -60,13 +51,13 @@ export const PUT = withAdminAuth(async (req, context) => {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const parsed = updateStepSchema.safeParse(body)
+  const parsed = updateStepBodySchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const { updateStep } = getUseCases()
-  const result = await updateStep(parseStepId(id), parsed.data)
+  const { updateStep } = getAdminRuntime().useCases
+  const result = await updateStep(parseStepId(parsedStepId.data), parsed.data)
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -78,12 +69,12 @@ export const PUT = withAdminAuth(async (req, context) => {
 
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { stepId } = await context.params
-  const id = Number(stepId)
-  if (!Number.isInteger(id) || id <= 0) {
+  const parsedStepId = stepIdParamSchema.safeParse(stepId)
+  if (!parsedStepId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const { deleteStep } = getUseCases()
-  await deleteStep(parseStepId(id))
+  const { deleteStep } = getAdminRuntime().useCases
+  await deleteStep(parseStepId(parsedStepId.data))
   return NextResponse.json({ ok: true })
 })

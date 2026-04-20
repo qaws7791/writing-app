@@ -14,6 +14,8 @@ export { PROMPT_CATEGORIES } from "./prompt-types"
 // Schemas
 export {
   promptTypeSchema,
+  createPromptBodySchema,
+  updatePromptBodySchema,
   promptSummarySchema,
   promptListPageResponseSchema,
   promptIdParamSchema,

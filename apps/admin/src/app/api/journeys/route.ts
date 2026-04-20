@@ -1,29 +1,28 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
 
-import { journeyCategorySchema } from "@workspace/core"
+import {
+  createJourneyBodySchema,
+  journeyFiltersQuerySchema,
+} from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getUseCases } from "@/lib/use-cases"
-
-const createJourneySchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  category: journeyCategorySchema,
-  thumbnailUrl: z.string().url().nullable().optional(),
-})
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (req) => {
-  const { searchParams } = req.nextUrl
-  const category = searchParams.get("category")
-  const { listJourneys } = getUseCases()
+  const parsedFilters = journeyFiltersQuerySchema.safeParse({
+    category: req.nextUrl.searchParams.get("category") ?? undefined,
+    status: req.nextUrl.searchParams.get("status") ?? undefined,
+  })
 
-  const filters =
-    category && journeyCategorySchema.safeParse(category).success
-      ? { category: journeyCategorySchema.parse(category) }
-      : undefined
+  if (!parsedFilters.success) {
+    return NextResponse.json(
+      { error: parsedFilters.error.flatten() },
+      { status: 422 }
+    )
+  }
 
-  const items = (await listJourneys(filters))._unsafeUnwrap()
+  const { listJourneys } = getAdminRuntime().useCases
+  const items = (await listJourneys(parsedFilters.data))._unsafeUnwrap()
   return NextResponse.json({ items })
 })
 
@@ -35,12 +34,12 @@ export const POST = withAdminAuth(async (req) => {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const parsed = createJourneySchema.safeParse(body)
+  const parsed = createJourneyBodySchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const { createJourney } = getUseCases()
+  const { createJourney } = getAdminRuntime().useCases
   const journey = (await createJourney(parsed.data))._unsafeUnwrap()
   return NextResponse.json(journey, { status: 201 })
 })

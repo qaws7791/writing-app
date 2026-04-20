@@ -17,6 +17,33 @@ export const stepTypeSchema = z.enum([
 
 export const journeyIdParamSchema = z.coerce.number().int().positive()
 export const sessionIdParamSchema = z.coerce.number().int().positive()
+export const stepIdParamSchema = z.coerce.number().int().positive()
+
+export const createJourneyBodySchema = z.object({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  category: journeyCategorySchema,
+  thumbnailUrl: z.string().url().nullable().optional(),
+})
+
+export const updateJourneyBodySchema = createJourneyBodySchema.partial()
+
+export const createSessionBodySchema = z.object({
+  title: z.string().min(1),
+  description: z.string().min(1),
+  estimatedMinutes: z.number().int().positive(),
+  order: z.number().int().min(1),
+})
+
+export const updateSessionBodySchema = createSessionBodySchema.partial()
+
+export const createStepBodySchema = z.object({
+  type: stepTypeSchema,
+  order: z.number().int().min(1),
+  contentJson: z.unknown(),
+})
+
+export const updateStepBodySchema = createStepBodySchema.partial()
 
 const journeySummaryBase = z.object({
   id: z.number().int(),

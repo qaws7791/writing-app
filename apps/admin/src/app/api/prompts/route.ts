@@ -1,21 +1,13 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
 
 import {
+  createPromptBodySchema,
   parsePromptId,
   promptFiltersQuerySchema,
-  promptTypeSchema,
 } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getUseCases } from "@/lib/use-cases"
-
-const createPromptSchema = z.object({
-  title: z.string().min(1),
-  body: z.string().min(1),
-  promptType: promptTypeSchema,
-  thumbnailUrl: z.string().url().nullable().optional(),
-})
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (req) => {
   const parsed = promptFiltersQuerySchema.safeParse({
@@ -28,7 +20,7 @@ export const GET = withAdminAuth(async (req) => {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const { listPrompts } = getUseCases()
+  const { listPrompts } = getAdminRuntime().useCases
   const page$ = (
     await listPrompts(null, {
       promptType: parsed.data.promptType,
@@ -50,12 +42,12 @@ export const POST = withAdminAuth(async (req) => {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const parsed = createPromptSchema.safeParse(body)
+  const parsed = createPromptBodySchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const { createPrompt } = getUseCases()
+  const { createPrompt } = getAdminRuntime().useCases
   const prompt = (await createPrompt(parsed.data))._unsafeUnwrap()
   return NextResponse.json(prompt, { status: 201 })
 })

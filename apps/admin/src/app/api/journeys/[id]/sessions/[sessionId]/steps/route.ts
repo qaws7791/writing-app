@@ -1,26 +1,24 @@
 import { NextResponse } from "next/server"
-import { z } from "zod"
 
-import { parseSessionId, stepTypeSchema, toHttpStatus } from "@workspace/core"
+import {
+  createStepBodySchema,
+  parseSessionId,
+  sessionIdParamSchema,
+  toHttpStatus,
+} from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
-import { getUseCases } from "@/lib/use-cases"
-
-const createStepSchema = z.object({
-  type: stepTypeSchema,
-  order: z.number().int().min(1),
-  contentJson: z.unknown(),
-})
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { sessionId } = await context.params
-  const id = Number(sessionId)
-  if (!Number.isInteger(id) || id <= 0) {
+  const parsedSessionId = sessionIdParamSchema.safeParse(sessionId)
+  if (!parsedSessionId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
-  const { getSessionDetail } = getUseCases()
-  const result = await getSessionDetail(parseSessionId(id))
+  const { getSessionDetail } = getAdminRuntime().useCases
+  const result = await getSessionDetail(parseSessionId(parsedSessionId.data))
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },
@@ -32,8 +30,8 @@ export const GET = withAdminAuth(async (_req, context) => {
 
 export const POST = withAdminAuth(async (req, context) => {
   const { sessionId } = await context.params
-  const id = Number(sessionId)
-  if (!Number.isInteger(id) || id <= 0) {
+  const parsedSessionId = sessionIdParamSchema.safeParse(sessionId)
+  if (!parsedSessionId.success) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 })
   }
 
@@ -44,13 +42,16 @@ export const POST = withAdminAuth(async (req, context) => {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  const parsed = createStepSchema.safeParse(body)
+  const parsed = createStepBodySchema.safeParse(body)
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
   }
 
-  const { createStep } = getUseCases()
-  const result = await createStep(parseSessionId(id), parsed.data)
+  const { createStep } = getAdminRuntime().useCases
+  const result = await createStep(
+    parseSessionId(parsedSessionId.data),
+    parsed.data
+  )
   if (result.isErr()) {
     return NextResponse.json(
       { error: result.error.message },

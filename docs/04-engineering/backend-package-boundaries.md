@@ -1,11 +1,11 @@
 ---
 title: 백엔드 패키지 경계
-description: apps/api, core, database, ai 패키지의 책임과 금지 의존성을 정의합니다.
+description: apps/api, apps/admin, core, database, ai 패키지의 책임과 금지 의존성을 정의합니다.
 ---
 
 ## 상태
 
-- 기준 시점: 2026-04-06
+- 기준 시점: 2026-04-20
 - 현재 이 문서의 패키지 구조는 목표 구조입니다.
 - `packages/core`, `packages/database`, `packages/ai`가 생성되어 있습니다.
 - 글필(Geulpil) 피벗에 따라 여정, 세션, AI 피드백 도메인이 추가되었습니다.
@@ -20,13 +20,14 @@ description: apps/api, core, database, ai 패키지의 책임과 금지 의존�
 
 ## 책임 표
 
-| 위치                | 책임                                                        | 직접 알면 안 되는 것             |
-| ------------------- | ----------------------------------------------------------- | -------------------------------- |
-| `apps/api`          | HTTP 라우팅, 미들웨어, Context, OpenAPI, HTTP 매핑, 조립    | SQL 상세, AI provider 세부 응답  |
-| `packages/core`     | 비즈니스 규칙, 계약 스키마, 상태 전이, use case, 포트       | Hono, DB 드라이버, AI SDK        |
-| `packages/database` | DB 스키마, repository 구현, transaction, persistence mapper | Hono Context, HTTP 응답 형식     |
-| `packages/ai`       | AI provider adapter, 프롬프트 실행, 응답 정규화             | Hono Context, 비즈니스 상태 전이 |
-| `packages/ui`       | 프론트 디자인 시스템                                        | 백엔드 계약 구현, 서버 인프라    |
+| 위치                | 책임                                                        | 직접 알면 안 되는 것              |
+| ------------------- | ----------------------------------------------------------- | --------------------------------- |
+| `apps/api`          | HTTP 라우팅, 미들웨어, Context, OpenAPI, HTTP 매핑, 조립    | SQL 상세, AI provider 세부 응답   |
+| `apps/admin`        | 관리자용 HTTP route, 인증, 서버 컴포넌트, app-level 조립    | core 내부 helper, repository 구현 |
+| `packages/core`     | 비즈니스 규칙, 계약 스키마, 상태 전이, use case, 포트       | Hono, DB 드라이버, AI SDK         |
+| `packages/database` | DB 스키마, repository 구현, transaction, persistence mapper | Hono Context, HTTP 응답 형식      |
+| `packages/ai`       | AI provider adapter, 프롬프트 실행, 응답 정규화             | Hono Context, 비즈니스 상태 전이  |
+| `packages/ui`       | 프론트 디자인 시스템                                        | 백엔드 계약 구현, 서버 인프라     |
 
 ## 허용 의존 방향
 
@@ -34,6 +35,8 @@ description: apps/api, core, database, ai 패키지의 책임과 금지 의존�
 apps/api -> packages/core
 apps/api -> packages/database
 apps/api -> packages/ai
+apps/admin -> packages/core
+apps/admin -> packages/database
 
 packages/database -> packages/core
 packages/ai -> packages/core
@@ -59,6 +62,7 @@ packages/ai -> packages/core
   - `ports`
   - `model`의 핵심 타입
   - boundary parsing 유틸 (`parseXId`)
+  - adapter가 재사용하는 create/update/query body schema
 - 비공개 대상
   - 내부 helper
   - 모듈 내부 조합 세부사항
@@ -84,18 +88,20 @@ packages/ai -> packages/core
 
 ## 새 기능 배치 규칙
 
-- HTTP 요청 파싱, 응답 직렬화, OpenAPI route 정의는 `apps/api`
+- HTTP 요청 파싱, 응답 직렬화, OpenAPI route 정의는 `apps/api`, `apps/admin`
 - primitive -> brand 변환은 `apps/api`, `apps/admin` 같은 adapter/app 경계에서 수행
 - 비즈니스 규칙, 검증, 상태 전이, 유스케이스는 `core`
 - 영속성 구현은 `database`
 - AI 코칭 피드백 구현은 `ai`
 - LLM 호출과 응답 정규화는 `ai`
+- 앱은 composition root를 가질 수 있지만, body/query schema를 로컬 `z.object()`로 다시 정의하지 않고 `core` 계약을 재사용합니다.
 
 한 기능이 여러 패키지를 건드리더라도 책임을 한 패키지에 몰아넣지 않습니다.
 
 ## 안티패턴
 
 - `apps/api`가 직접 SQL을 실행하는 구조
+- `apps/admin`이 core use case와 같은 입력 계약을 로컬에서 다시 정의하는 구조
 - `core`가 Hono `Context`를 파라미터로 받는 구조
 - `core`가 SDK 클라이언트를 직접 import하는 구조
 - `db` 패키지가 AI provider를 직접 호출하는 구조

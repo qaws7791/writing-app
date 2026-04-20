@@ -4,6 +4,15 @@ export const promptTypeSchema = z.enum(["sensory", "reflection", "opinion"])
 
 export const promptIdParamSchema = z.coerce.number().int().positive()
 
+export const createPromptBodySchema = z.object({
+  title: z.string().min(1),
+  body: z.string().min(1),
+  promptType: promptTypeSchema,
+  thumbnailUrl: z.string().url().nullable().optional(),
+})
+
+export const updatePromptBodySchema = createPromptBodySchema.partial()
+
 export const promptSummarySchema = z
   .object({
     id: z.number().int(),
