@@ -1,65 +1,14 @@
 "use client"
 
-import { useEffect, useMemo } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import type { SessionStepPayload } from "@workspace/core/modules/journeys"
 
 import { useJourneyDetail } from "@/features/journeys"
-import {
-  deserializeStepResponses,
-  fetchSessionDetail,
-  serializeStepResponse,
-  useRetrySessionStepAi,
-  useSessionDetail,
-  useStartSession,
-  useSubmitSessionStep,
-} from "@/features/sessions"
+import { useSessionDetail } from "@/features/sessions"
 import SessionDetailView from "@/views/session-detail-view"
-import type {
-  Session,
-  SessionAiStepState,
-  Step,
-  StepContent,
-  StepState,
-  StepType,
-} from "@/views/session-detail-view/types"
 
-type SessionRuntime = Awaited<ReturnType<typeof fetchSessionDetail>>
-
-function mapSessionStep(step: {
-  order: number
-  type: StepType
-  contentJson: SessionStepPayload
-}): Step {
-  const payload = step.contentJson
-
-  return {
-    id: String(step.order),
-    type: step.type,
-    order: step.order,
-    content: payload.content as StepContent,
-    cta: {
-      label: payload.cta?.label ?? "다음",
-      variant: payload.cta?.variant === "secondary" ? "secondary" : "primary",
-    },
-  }
-}
-
-function mapStepStates(
-  runtime: SessionRuntime | undefined
-): Record<string, StepState> {
-  if (!runtime) {
-    return {}
-  }
-
-  const stepStates = deserializeStepResponses(runtime.stepResponsesJson)
-
-  for (const aiState of runtime.stepAiStates) {
-    stepStates[String(aiState.stepOrder)] = aiState as SessionAiStepState
-  }
-
-  return stepStates
-}
+import { mapSession } from "./session-mappers"
+import { useSessionRunner } from "./use-session-runner"
 
 export default function SessionDetailClientPage({
   journeyId,
@@ -73,12 +22,10 @@ export default function SessionDetailClientPage({
   const sessionIdNumber = Number(sessionId)
   const journeyQuery = useJourneyDetail(journeyIdNumber)
   const sessionQuery = useSessionDetail(sessionIdNumber)
-  const startSession = useStartSession()
-  const retrySessionStepAi = useRetrySessionStepAi()
-  const submitSessionStep = useSubmitSessionStep()
 
   const journey = journeyQuery.data
   const sessionRuntime = sessionQuery.data
+  const session = mapSession(sessionRuntime)
 
   const invalid =
     !Number.isFinite(journeyIdNumber) ||
@@ -92,39 +39,14 @@ export default function SessionDetailClientPage({
     }
   }, [invalid, journeyId, router])
 
-  useEffect(() => {
-    if (!sessionRuntime || startSession.isPending || startSession.isSuccess) {
-      return
-    }
-
-    void startSession.mutateAsync(sessionRuntime.id)
-  }, [sessionRuntime, startSession])
-
-  const initialStepStates = useMemo(
-    () => mapStepStates(sessionRuntime),
-    [sessionRuntime]
-  )
+  const sessionRunner = useSessionRunner({
+    session: sessionRuntime,
+    steps: session?.steps ?? [],
+  })
 
   if (invalid) {
     return null
   }
-
-  if (
-    journeyQuery.isPending ||
-    sessionQuery.isPending ||
-    !sessionRuntime ||
-    !journey
-  ) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background px-6 text-sm text-muted-foreground">
-        세션을 준비하고 있어요...
-      </div>
-    )
-  }
-
-  const journeyDetail = journey
-  const sessionDetail = sessionRuntime
-  const mappedSteps = sessionDetail.steps.map(mapSessionStep)
 
   if (journeyQuery.isError || sessionQuery.isError) {
     return (
@@ -143,9 +65,20 @@ export default function SessionDetailClientPage({
     )
   }
 
-  const [firstStep, ...remainingSteps] = mappedSteps
+  if (
+    journeyQuery.isPending ||
+    sessionQuery.isPending ||
+    !sessionRuntime ||
+    !journey
+  ) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6 text-sm text-muted-foreground">
+        세션을 준비하고 있어요...
+      </div>
+    )
+  }
 
-  if (!firstStep) {
+  if (!session) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background px-6 text-center">
         <p className="text-sm text-muted-foreground">
@@ -162,42 +95,16 @@ export default function SessionDetailClientPage({
     )
   }
 
-  const mappedSession: Session = {
-    id: String(sessionDetail.id),
-    order: sessionDetail.order,
-    title: sessionDetail.title,
-    description: sessionDetail.description,
-    steps: [firstStep, ...remainingSteps],
-  }
-
-  async function handleSubmitStep(stepOrder: number, response: StepState) {
-    const step = mappedSteps.find((item) => item.order === stepOrder)
-
-    await submitSessionStep.mutateAsync({
-      sessionId: sessionDetail.id,
-      stepOrder,
-      response:
-        step === undefined ? undefined : serializeStepResponse(step, response),
-    })
-  }
-
-  async function handleRetryAi(stepOrder: number) {
-    await retrySessionStepAi.mutateAsync({
-      sessionId: sessionDetail.id,
-      stepOrder,
-    })
-  }
-
   return (
     <SessionDetailView
-      initialCurrentStepOrder={sessionDetail.currentStepOrder}
-      initialStepStates={initialStepStates}
-      isRetryingAi={retrySessionStepAi.isPending}
-      journeyTitle={journeyDetail.title}
+      initialCurrentStepOrder={sessionRuntime.currentStepOrder}
+      initialStepStates={sessionRunner.initialStepStates}
+      isRetryingAi={sessionRunner.isRetryingAi}
+      journeyTitle={journey.title}
       onExit={() => router.push(`/journeys/${journeyId}`)}
-      onRetryAi={handleRetryAi}
-      onSubmitStep={handleSubmitStep}
-      session={mappedSession}
+      onRetryAi={sessionRunner.handleRetryAi}
+      onSubmitStep={sessionRunner.handleSubmitStep}
+      session={session}
     />
   )
 }
