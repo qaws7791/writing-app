@@ -36,6 +36,7 @@ export type {
 
 // Schemas
 export {
+  stepTypeValues,
   sessionStepContentTypeSchema,
   ctaConfigSchema,
   introStepContentSchema,

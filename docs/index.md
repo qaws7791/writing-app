@@ -119,6 +119,7 @@ description: 글필(Geulpil) wiki의 모든 페이지를 카테고리별로 나�
 | [[04-engineering/error-message-guidelines]]           | 사용자·API 오류 응답 일관 설계 기준                        |
 | [[04-engineering/core-refactoring-plan]]              | packages/core 모듈 확장 계획 (피벗 대응)                   |
 | [[04-engineering/code-review-remediation-2026-04-20]] | 2026-04-20 코드 리뷰 후속 조치 현황                        |
+| [[04-engineering/codebase-simplification-review]]     | 2026-04-21 기준 코드베이스 단순화 우선 개선 포인트         |
 
 ### 프론트엔드
 

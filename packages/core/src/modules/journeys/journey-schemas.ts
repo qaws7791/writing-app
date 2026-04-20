@@ -6,14 +6,23 @@ export const journeyCategorySchema = z.enum([
   "practical",
 ])
 
-export const stepTypeSchema = z.enum([
-  "learn",
-  "read",
-  "guided_question",
-  "write",
-  "feedback",
-  "revise",
-])
+export const stepTypeValues = [
+  "INTRO",
+  "COMPLETION",
+  "CONCEPT",
+  "EXAMPLE",
+  "MULTIPLE_CHOICE",
+  "FILL_IN_THE_BLANK",
+  "ORDERING",
+  "HIGHLIGHT",
+  "SHORT_ANSWER",
+  "WRITING",
+  "REWRITING",
+  "AI_FEEDBACK",
+  "AI_COMPARISON",
+] as const
+
+export const stepTypeSchema = z.enum(stepTypeValues)
 
 export const journeyIdParamSchema = z.coerce.number().int().positive()
 export const sessionIdParamSchema = z.coerce.number().int().positive()
@@ -37,29 +46,7 @@ export const createSessionBodySchema = z.object({
 
 export const updateSessionBodySchema = createSessionBodySchema.partial()
 
-export const createStepBodySchema = z.object({
-  type: stepTypeSchema,
-  order: z.number().int().min(1),
-  contentJson: z.unknown(),
-})
-
-export const updateStepBodySchema = createStepBodySchema.partial()
-
-export const sessionStepContentTypeSchema = z.enum([
-  "INTRO",
-  "COMPLETION",
-  "CONCEPT",
-  "EXAMPLE",
-  "MULTIPLE_CHOICE",
-  "FILL_IN_THE_BLANK",
-  "ORDERING",
-  "HIGHLIGHT",
-  "SHORT_ANSWER",
-  "WRITING",
-  "REWRITING",
-  "AI_FEEDBACK",
-  "AI_COMPARISON",
-])
+export const sessionStepContentTypeSchema = stepTypeSchema
 
 export const ctaConfigSchema = z
   .object({
@@ -289,6 +276,54 @@ export const sessionStepPayloadSchema = z
     }
   })
   .readonly()
+
+export const createStepBodySchema = z
+  .object({
+    type: stepTypeSchema,
+    order: z.number().int().min(1),
+    contentJson: sessionStepPayloadSchema,
+  })
+  .superRefine((value, ctx) => {
+    if (value.type !== value.contentJson.content.type) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "스텝 타입과 콘텐츠 타입이 일치해야 합니다.",
+        path: ["type"],
+      })
+    }
+  })
+
+export const updateStepBodySchema = z
+  .object({
+    type: stepTypeSchema.optional(),
+    order: z.number().int().min(1).optional(),
+    contentJson: sessionStepPayloadSchema.optional(),
+  })
+  .superRefine((value, ctx) => {
+    const hasType = value.type !== undefined
+    const hasContentJson = value.contentJson !== undefined
+
+    if (hasType !== hasContentJson) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "스텝 타입과 콘텐츠는 함께 수정해야 합니다.",
+        path: hasType ? ["contentJson"] : ["type"],
+      })
+      return
+    }
+
+    if (
+      value.type !== undefined &&
+      value.contentJson !== undefined &&
+      value.type !== value.contentJson.content.type
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "스텝 타입과 콘텐츠 타입이 일치해야 합니다.",
+        path: ["type"],
+      })
+    }
+  })
 
 const journeySummaryBase = z.object({
   id: z.number().int(),

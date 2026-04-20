@@ -6,18 +6,11 @@ import {
   unique,
 } from "drizzle-orm/sqlite-core"
 
-import type { SessionId, StepId } from "@workspace/core"
+import { stepTypeValues, type SessionId, type StepId } from "@workspace/core"
 
 import { journeySessions } from "./journey-sessions"
 
-export const stepTypes = [
-  "learn",
-  "read",
-  "guided_question",
-  "write",
-  "feedback",
-  "revise",
-] as const
+export const stepTypes = stepTypeValues
 export type StepType = (typeof stepTypes)[number]
 
 export const steps = sqliteTable(

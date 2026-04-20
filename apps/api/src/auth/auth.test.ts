@@ -122,7 +122,7 @@ function setup(): { app: TestApp } {
         id: toStepId(1),
         sessionId: toSessionId(1),
         order: 1,
-        type: "write" as const,
+        type: "WRITING" as const,
         contentJson: {
           cta: { label: "다음", variant: "primary" as const },
           content: {

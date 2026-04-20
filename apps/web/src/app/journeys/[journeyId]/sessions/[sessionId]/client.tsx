@@ -26,27 +26,16 @@ import type {
 
 type SessionRuntime = Awaited<ReturnType<typeof fetchSessionDetail>>
 
-const FALLBACK_STEP_TYPE: Record<string, StepType> = {
-  learn: "CONCEPT",
-  read: "EXAMPLE",
-  guided_question: "MULTIPLE_CHOICE",
-  write: "WRITING",
-  feedback: "AI_FEEDBACK",
-  revise: "REWRITING",
-}
-
 function mapSessionStep(step: {
   order: number
-  type: string
-  contentJson?: unknown
+  type: StepType
+  contentJson: SessionStepPayload
 }): Step {
-  const payload = (step.contentJson ?? {}) as Partial<SessionStepPayload>
-
-  const type = payload.type ?? FALLBACK_STEP_TYPE[step.type] ?? "CONCEPT"
+  const payload = step.contentJson
 
   return {
     id: String(step.order),
-    type,
+    type: step.type,
     order: step.order,
     content: payload.content as StepContent,
     cta: {

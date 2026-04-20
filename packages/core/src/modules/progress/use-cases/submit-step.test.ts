@@ -29,7 +29,7 @@ function createSessionDetail(
 function createStep(input: {
   order: number
   type: JourneySessionDetail["steps"][number]["type"]
-  contentType: string
+  contentType: JourneySessionDetail["steps"][number]["contentJson"]["content"]["type"]
   content?: Record<string, unknown>
 }) {
   return {
@@ -39,10 +39,13 @@ function createStep(input: {
     type: input.type,
     contentJson: {
       type: input.contentType,
-      content: input.content ?? {},
+      content: {
+        type: input.contentType,
+        ...input.content,
+      },
       cta: { label: "다음", variant: "primary" },
     },
-  } as const
+  } as JourneySessionDetail["steps"][number]
 }
 
 function createProgressRepositoryMock(
@@ -136,12 +139,12 @@ describe("makeSubmitStepUseCase", () => {
     const sessionDetail = createSessionDetail([
       createStep({
         order: 1,
-        type: "write",
+        type: "WRITING",
         contentType: "WRITING",
       }),
       createStep({
         order: 2,
-        type: "feedback",
+        type: "AI_FEEDBACK",
         contentType: "AI_FEEDBACK",
         content: { targetStepId: "1" },
       }),
@@ -198,13 +201,13 @@ describe("makeSubmitStepUseCase", () => {
     const sessionDetail = createSessionDetail([
       createStep({
         order: 1,
-        type: "feedback",
+        type: "AI_FEEDBACK",
         contentType: "AI_FEEDBACK",
         content: { targetStepId: "0" },
       }),
       createStep({
         order: 2,
-        type: "learn",
+        type: "COMPLETION",
         contentType: "COMPLETION",
       }),
     ])
@@ -240,12 +243,12 @@ describe("makeSubmitStepUseCase", () => {
     const sessionDetail = createSessionDetail([
       createStep({
         order: 1,
-        type: "guided_question",
+        type: "MULTIPLE_CHOICE",
         contentType: "MULTIPLE_CHOICE",
       }),
       createStep({
         order: 2,
-        type: "learn",
+        type: "COMPLETION",
         contentType: "COMPLETION",
       }),
     ])
@@ -280,24 +283,24 @@ describe("makeSubmitStepUseCase", () => {
     const sessionDetail = createSessionDetail([
       createStep({
         order: 1,
-        type: "write",
+        type: "WRITING",
         contentType: "WRITING",
       }),
       createStep({
         order: 2,
-        type: "feedback",
+        type: "AI_FEEDBACK",
         contentType: "AI_FEEDBACK",
         content: { targetStepId: "1" },
       }),
       createStep({
         order: 3,
-        type: "revise",
+        type: "REWRITING",
         contentType: "REWRITING",
         content: { originalWritingStepId: "1", feedbackStepId: "2" },
       }),
       createStep({
         order: 4,
-        type: "feedback",
+        type: "AI_COMPARISON",
         contentType: "AI_COMPARISON",
         content: { originalStepId: "1", rewritingStepId: "3" },
       }),

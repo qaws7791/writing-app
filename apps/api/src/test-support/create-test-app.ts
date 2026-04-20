@@ -122,7 +122,7 @@ function createStubSessionRuntime(userId: string, sessionId: number) {
         id: toStepId(1),
         sessionId: toSessionId(sessionId),
         order: 1,
-        type: "write" as const,
+        type: "WRITING" as const,
         contentJson: {
           cta: { label: "다음", variant: "primary" as const },
           content: {
@@ -140,7 +140,7 @@ function createStubSessionRuntime(userId: string, sessionId: number) {
         id: toStepId(2),
         sessionId: toSessionId(sessionId),
         order: 2,
-        type: "feedback" as const,
+        type: "AI_FEEDBACK" as const,
         contentJson: {
           cta: { label: "다음", variant: "primary" as const },
           content: {

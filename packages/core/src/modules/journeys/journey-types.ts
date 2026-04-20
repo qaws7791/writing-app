@@ -23,14 +23,6 @@ import type {
 
 export type JourneyCategory = "writing_skill" | "mindfulness" | "practical"
 
-export type StepType =
-  | "learn"
-  | "read"
-  | "guided_question"
-  | "write"
-  | "feedback"
-  | "revise"
-
 export type CreateJourneyInput = {
   readonly title: string
   readonly description: string
@@ -49,10 +41,15 @@ export type CreateSessionInput = {
 
 export type UpdateSessionInput = Partial<CreateSessionInput>
 
+export type SessionStepContentType = z.infer<
+  typeof sessionStepContentTypeSchema
+>
+export type StepType = SessionStepContentType
+
 export type CreateStepInput = {
   readonly type: StepType
   readonly order: number
-  readonly contentJson: unknown
+  readonly contentJson: SessionStepPayload
 }
 
 export type UpdateStepInput = Partial<CreateStepInput>
@@ -75,9 +72,6 @@ export type JourneySessionSummary = {
   readonly estimatedMinutes: number
 }
 
-export type SessionStepContentType = z.infer<
-  typeof sessionStepContentTypeSchema
->
 export type CTAConfig = z.infer<typeof ctaConfigSchema>
 export type IntroStepContent = z.infer<typeof introStepContentSchema>
 export type CompletionStepContent = z.infer<typeof completionStepContentSchema>

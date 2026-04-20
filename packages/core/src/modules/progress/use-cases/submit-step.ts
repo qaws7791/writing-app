@@ -71,6 +71,20 @@ function resolveAiKind(step: StepSummary): "comparison" | "feedback" {
     : "feedback"
 }
 
+function shouldQueueAiStep(
+  currentStep: StepSummary,
+  nextStep: StepSummary | undefined
+): nextStep is StepSummary {
+  if (!nextStep) {
+    return false
+  }
+
+  return (
+    (currentStep.type === "WRITING" && nextStep.type === "AI_FEEDBACK") ||
+    (currentStep.type === "REWRITING" && nextStep.type === "AI_COMPARISON")
+  )
+}
+
 function resolveExpectedResponseType(
   step: StepSummary
 ): StepResponse["type"] | null {
@@ -174,11 +188,7 @@ export function makeSubmitStepUseCase(deps: SubmitStepDeps) {
             const isNextStepLast =
               nextStep !== undefined &&
               !session.steps.some((step) => step.order > nextStep.order)
-            const shouldQueueAi =
-              (currentStep.type === "write" || currentStep.type === "revise") &&
-              nextStep?.type === "feedback"
-
-            if (shouldQueueAi && nextStep) {
+            if (shouldQueueAiStep(currentStep, nextStep)) {
               const kind = resolveAiKind(nextStep)
               const submittedText = extractTextResponse(validatedResponse)
 

@@ -24,12 +24,19 @@ type Props = {
 }
 
 const stepTypeLabels: Record<string, string> = {
-  learn: "학습",
-  read: "읽기",
-  guided_question: "안내 질문",
-  write: "쓰기",
-  feedback: "피드백",
-  revise: "수정",
+  INTRO: "인트로",
+  COMPLETION: "완료",
+  CONCEPT: "개념",
+  EXAMPLE: "예시",
+  MULTIPLE_CHOICE: "객관식",
+  FILL_IN_THE_BLANK: "빈칸 채우기",
+  ORDERING: "순서 배열",
+  HIGHLIGHT: "하이라이트",
+  SHORT_ANSWER: "단답형",
+  WRITING: "글쓰기",
+  REWRITING: "퇴고",
+  AI_FEEDBACK: "AI 피드백",
+  AI_COMPARISON: "AI 비교",
 }
 
 export function StepList({ steps, journeyId, sessionId }: Props) {

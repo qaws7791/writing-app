@@ -13,12 +13,19 @@ import { Input } from "@workspace/ui/components/ui/input"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 type StepType =
-  | "learn"
-  | "read"
-  | "guided_question"
-  | "write"
-  | "feedback"
-  | "revise"
+  | "INTRO"
+  | "COMPLETION"
+  | "CONCEPT"
+  | "EXAMPLE"
+  | "MULTIPLE_CHOICE"
+  | "FILL_IN_THE_BLANK"
+  | "ORDERING"
+  | "HIGHLIGHT"
+  | "SHORT_ANSWER"
+  | "WRITING"
+  | "REWRITING"
+  | "AI_FEEDBACK"
+  | "AI_COMPARISON"
 
 type StepFormValues = {
   type: StepType
@@ -38,12 +45,19 @@ type Props = {
 }
 
 const stepTypeOptions: { value: StepType; label: string }[] = [
-  { value: "learn", label: "학습" },
-  { value: "read", label: "읽기" },
-  { value: "guided_question", label: "안내 질문" },
-  { value: "write", label: "쓰기" },
-  { value: "feedback", label: "피드백" },
-  { value: "revise", label: "수정" },
+  { value: "INTRO", label: "인트로" },
+  { value: "COMPLETION", label: "완료" },
+  { value: "CONCEPT", label: "개념" },
+  { value: "EXAMPLE", label: "예시" },
+  { value: "MULTIPLE_CHOICE", label: "객관식" },
+  { value: "FILL_IN_THE_BLANK", label: "빈칸 채우기" },
+  { value: "ORDERING", label: "순서 배열" },
+  { value: "HIGHLIGHT", label: "하이라이트" },
+  { value: "SHORT_ANSWER", label: "단답형" },
+  { value: "WRITING", label: "글쓰기" },
+  { value: "REWRITING", label: "퇴고" },
+  { value: "AI_FEEDBACK", label: "AI 피드백" },
+  { value: "AI_COMPARISON", label: "AI 비교" },
 ]
 
 export function StepForm({
@@ -56,7 +70,7 @@ export function StepForm({
   const isEdit = stepId !== undefined
 
   const [values, setValues] = useState<StepFormValues>({
-    type: defaultValues?.type ?? "learn",
+    type: defaultValues?.type ?? "INTRO",
     order: defaultValues?.order ?? 1,
     contentJson: defaultValues?.contentJson
       ? JSON.stringify(defaultValues.contentJson, null, 2)

@@ -50,11 +50,18 @@ function mapStepSummary(step: StepRow): StepSummary {
     )
   }
 
+  if (step.type !== parsedContentJson.data.content.type) {
+    throw createValidationError(
+      "스텝 타입과 콘텐츠 타입이 일치하지 않습니다.",
+      "type"
+    )
+  }
+
   return {
     id: step.id,
     sessionId: step.sessionId,
     order: step.order,
-    type: step.type as StepSummary["type"],
+    type: step.type,
     contentJson: parsedContentJson.data,
   }
 }

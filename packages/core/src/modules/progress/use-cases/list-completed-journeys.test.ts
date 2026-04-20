@@ -42,12 +42,12 @@ describe("makeListCompletedJourneysUseCase", () => {
         id: toJourneyId(1),
         title: "문장 훈련",
         description: "짧은 문장부터 다듬는 여정",
-        category: "writing_skill",
+        category: "writing_skill" as const,
         thumbnailUrl: null,
         sessionCount: 3,
         currentSessionOrder: 4,
         completionRate: 1,
-        status: "completed",
+        status: "completed" as const,
       },
     ])
 

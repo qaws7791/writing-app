@@ -8,7 +8,7 @@ export interface paths {
     }
     /**
      * 헬스 체크
-     * @description 서버 상태와 SQLite 버전을 확인합니다.
+     * @description DB 쿼리 가능 여부와 AI 서브시스템 상태를 함께 확인합니다.
      */
     get: {
       parameters: {
@@ -26,9 +26,19 @@ export interface paths {
           }
           content: {
             "application/json": {
+              ai: {
+                reason: string
+                /** @enum {string} */
+                status: "degraded"
+              }
+              db: {
+                latencyMs: number | null
+                /** @enum {string} */
+                status: "degraded" | "ok"
+              }
               sqliteVersion: string
               /** @enum {string} */
-              status: "ok"
+              status: "degraded" | "ok"
             }
           }
         }
@@ -1148,12 +1158,19 @@ export interface paths {
                 order: number
                 /** @enum {string} */
                 type:
-                  | "learn"
-                  | "read"
-                  | "guided_question"
-                  | "write"
-                  | "feedback"
-                  | "revise"
+                  | "INTRO"
+                  | "COMPLETION"
+                  | "CONCEPT"
+                  | "EXAMPLE"
+                  | "MULTIPLE_CHOICE"
+                  | "FILL_IN_THE_BLANK"
+                  | "ORDERING"
+                  | "HIGHLIGHT"
+                  | "SHORT_ANSWER"
+                  | "WRITING"
+                  | "REWRITING"
+                  | "AI_FEEDBACK"
+                  | "AI_COMPARISON"
                 contentJson: {
                   /** @enum {string} */
                   type?:
@@ -1461,12 +1478,19 @@ export interface paths {
                 order: number
                 /** @enum {string} */
                 type:
-                  | "learn"
-                  | "read"
-                  | "guided_question"
-                  | "write"
-                  | "feedback"
-                  | "revise"
+                  | "INTRO"
+                  | "COMPLETION"
+                  | "CONCEPT"
+                  | "EXAMPLE"
+                  | "MULTIPLE_CHOICE"
+                  | "FILL_IN_THE_BLANK"
+                  | "ORDERING"
+                  | "HIGHLIGHT"
+                  | "SHORT_ANSWER"
+                  | "WRITING"
+                  | "REWRITING"
+                  | "AI_FEEDBACK"
+                  | "AI_COMPARISON"
                 contentJson: {
                   /** @enum {string} */
                   type?:
@@ -1816,12 +1840,19 @@ export interface paths {
                 order: number
                 /** @enum {string} */
                 type:
-                  | "learn"
-                  | "read"
-                  | "guided_question"
-                  | "write"
-                  | "feedback"
-                  | "revise"
+                  | "INTRO"
+                  | "COMPLETION"
+                  | "CONCEPT"
+                  | "EXAMPLE"
+                  | "MULTIPLE_CHOICE"
+                  | "FILL_IN_THE_BLANK"
+                  | "ORDERING"
+                  | "HIGHLIGHT"
+                  | "SHORT_ANSWER"
+                  | "WRITING"
+                  | "REWRITING"
+                  | "AI_FEEDBACK"
+                  | "AI_COMPARISON"
                 contentJson: {
                   /** @enum {string} */
                   type?:
@@ -2079,12 +2110,19 @@ export interface paths {
                 order: number
                 /** @enum {string} */
                 type:
-                  | "learn"
-                  | "read"
-                  | "guided_question"
-                  | "write"
-                  | "feedback"
-                  | "revise"
+                  | "INTRO"
+                  | "COMPLETION"
+                  | "CONCEPT"
+                  | "EXAMPLE"
+                  | "MULTIPLE_CHOICE"
+                  | "FILL_IN_THE_BLANK"
+                  | "ORDERING"
+                  | "HIGHLIGHT"
+                  | "SHORT_ANSWER"
+                  | "WRITING"
+                  | "REWRITING"
+                  | "AI_FEEDBACK"
+                  | "AI_COMPARISON"
                 contentJson: {
                   /** @enum {string} */
                   type?:
@@ -2391,12 +2429,19 @@ export interface paths {
                 order: number
                 /** @enum {string} */
                 type:
-                  | "learn"
-                  | "read"
-                  | "guided_question"
-                  | "write"
-                  | "feedback"
-                  | "revise"
+                  | "INTRO"
+                  | "COMPLETION"
+                  | "CONCEPT"
+                  | "EXAMPLE"
+                  | "MULTIPLE_CHOICE"
+                  | "FILL_IN_THE_BLANK"
+                  | "ORDERING"
+                  | "HIGHLIGHT"
+                  | "SHORT_ANSWER"
+                  | "WRITING"
+                  | "REWRITING"
+                  | "AI_FEEDBACK"
+                  | "AI_COMPARISON"
                 contentJson: {
                   /** @enum {string} */
                   type?:

@@ -33,9 +33,22 @@ describe("journey-schemas", () => {
 
     expect(
       createStepBodySchema.safeParse({
-        type: "write",
+        type: "WRITING",
         order: 1,
-        contentJson: { prompt: "write something" },
+        contentJson: {
+          type: "WRITING",
+          content: {
+            type: "WRITING",
+            prompt: "write something",
+            minLength: 1,
+            recommendedLength: 10,
+            timeLimitSeconds: 0,
+          },
+          cta: {
+            label: "다음",
+            variant: "primary",
+          },
+        },
       }).success
     ).toBe(true)
   })
@@ -82,7 +95,19 @@ describe("journey-schemas", () => {
 
     expect(
       updateStepBodySchema.safeParse({
-        contentJson: { title: "updated" },
+        type: "CONCEPT",
+        contentJson: {
+          type: "CONCEPT",
+          content: {
+            type: "CONCEPT",
+            title: "updated",
+            body: "body",
+          },
+          cta: {
+            label: "다음",
+            variant: "primary",
+          },
+        },
       }).success
     ).toBe(true)
   })
@@ -99,7 +124,7 @@ describe("journey-schemas", () => {
         id: 1,
         sessionId: 1,
         order: 1,
-        type: "write",
+        type: "WRITING",
         contentJson: {
           type: "WRITING",
           content: {
@@ -124,7 +149,7 @@ describe("journey-schemas", () => {
         id: 1,
         sessionId: 1,
         order: 1,
-        type: "feedback",
+        type: "AI_FEEDBACK",
         contentJson: {
           type: "AI_FEEDBACK",
           content: {

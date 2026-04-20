@@ -12,10 +12,10 @@ description: 글필(Geulpil) 모노레포 개발 규칙과 프론트엔드, 백�
 - 핵심 도메인은 여정(Journey)-세션(Session)-스텝(Step) 기반 학습, 글감(WritingPrompt), 글쓰기(Writing), AI 소크라테스식 코칭입니다.
 - `apps/web`은 홈, 여정, 글쓰기(서재 포함), 에디터, 인증 화면의 프로토타입을 포함합니다.
 - `apps/api`는 Hono + Awilix 기반 DI 컨테이너와 인증, 글쓰기, 글감, 동기화 라우트를 포함합니다.
-- `packages/core`는 writings, prompts, home 모듈의 비즈니스 코어를 포함합니다.
+- `packages/core`는 writings, prompts, home, journeys, progress, ai-feedback 모듈의 비즈니스 코어를 포함합니다.
 - `packages/database`는 SQLite + Drizzle ORM 기반 영속성 계층입니다.
 - `packages/ai`는 AI SDK + Google Gemini 기반 AI 어댑터입니다.
-- 여정, 세션, 스텝, AI 피드백 모듈은 도입 예정입니다.
+- 여정, 세션, 스텝, AI 피드백 흐름은 `apps/web`, `apps/api`, `apps/admin`, `packages/core`, `packages/database`에 부분 도입되어 있습니다.
 
 ## 포함 문서
 
@@ -35,6 +35,7 @@ description: 글필(Geulpil) 모노레포 개발 규칙과 프론트엔드, 백�
 - [[error-message-guidelines]]: 사용자 메시지와 API 오류 응답 기준
 - [[logging-guide]]: 구조화 로그와 요청 추적 기준
 - [[code-review-remediation-2026-04-20]]: 2026-04-20 코드 리뷰 후속 조치와 항목별 처리 현황
+- [[codebase-simplification-review]]: 2026-04-21 기준 코드베이스 단순화 우선 개선 포인트
 
 ## 읽는 순서
 

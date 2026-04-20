@@ -18,7 +18,7 @@
   "paths": {
     "/health": {
       "get": {
-        "description": "서버 상태와 SQLite 버전을 확인합니다.",
+        "description": "DB 쿼리 가능 여부와 AI 서브시스템 상태를 함께 확인합니다.",
         "summary": "헬스 체크",
         "tags": ["시스템"],
         "responses": {
@@ -29,15 +29,43 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "ai": {
+                      "type": "object",
+                      "properties": {
+                        "reason": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": ["degraded"]
+                        }
+                      },
+                      "required": ["reason", "status"]
+                    },
+                    "db": {
+                      "type": "object",
+                      "properties": {
+                        "latencyMs": {
+                          "type": "integer",
+                          "nullable": true,
+                          "minimum": 0
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": ["degraded", "ok"]
+                        }
+                      },
+                      "required": ["latencyMs", "status"]
+                    },
                     "sqliteVersion": {
                       "type": "string"
                     },
                     "status": {
                       "type": "string",
-                      "enum": ["ok"]
+                      "enum": ["degraded", "ok"]
                     }
                   },
-                  "required": ["sqliteVersion", "status"]
+                  "required": ["ai", "db", "sqliteVersion", "status"]
                 }
               }
             }
@@ -1714,12 +1742,19 @@
                           "type": {
                             "type": "string",
                             "enum": [
-                              "learn",
-                              "read",
-                              "guided_question",
-                              "write",
-                              "feedback",
-                              "revise"
+                              "INTRO",
+                              "COMPLETION",
+                              "CONCEPT",
+                              "EXAMPLE",
+                              "MULTIPLE_CHOICE",
+                              "FILL_IN_THE_BLANK",
+                              "ORDERING",
+                              "HIGHLIGHT",
+                              "SHORT_ANSWER",
+                              "WRITING",
+                              "REWRITING",
+                              "AI_FEEDBACK",
+                              "AI_COMPARISON"
                             ]
                           },
                           "contentJson": {
@@ -2642,12 +2677,19 @@
                           "type": {
                             "type": "string",
                             "enum": [
-                              "learn",
-                              "read",
-                              "guided_question",
-                              "write",
-                              "feedback",
-                              "revise"
+                              "INTRO",
+                              "COMPLETION",
+                              "CONCEPT",
+                              "EXAMPLE",
+                              "MULTIPLE_CHOICE",
+                              "FILL_IN_THE_BLANK",
+                              "ORDERING",
+                              "HIGHLIGHT",
+                              "SHORT_ANSWER",
+                              "WRITING",
+                              "REWRITING",
+                              "AI_FEEDBACK",
+                              "AI_COMPARISON"
                             ]
                           },
                           "contentJson": {
@@ -3706,12 +3748,19 @@
                           "type": {
                             "type": "string",
                             "enum": [
-                              "learn",
-                              "read",
-                              "guided_question",
-                              "write",
-                              "feedback",
-                              "revise"
+                              "INTRO",
+                              "COMPLETION",
+                              "CONCEPT",
+                              "EXAMPLE",
+                              "MULTIPLE_CHOICE",
+                              "FILL_IN_THE_BLANK",
+                              "ORDERING",
+                              "HIGHLIGHT",
+                              "SHORT_ANSWER",
+                              "WRITING",
+                              "REWRITING",
+                              "AI_FEEDBACK",
+                              "AI_COMPARISON"
                             ]
                           },
                           "contentJson": {
@@ -4577,12 +4626,19 @@
                           "type": {
                             "type": "string",
                             "enum": [
-                              "learn",
-                              "read",
-                              "guided_question",
-                              "write",
-                              "feedback",
-                              "revise"
+                              "INTRO",
+                              "COMPLETION",
+                              "CONCEPT",
+                              "EXAMPLE",
+                              "MULTIPLE_CHOICE",
+                              "FILL_IN_THE_BLANK",
+                              "ORDERING",
+                              "HIGHLIGHT",
+                              "SHORT_ANSWER",
+                              "WRITING",
+                              "REWRITING",
+                              "AI_FEEDBACK",
+                              "AI_COMPARISON"
                             ]
                           },
                           "contentJson": {
@@ -5514,12 +5570,19 @@
                           "type": {
                             "type": "string",
                             "enum": [
-                              "learn",
-                              "read",
-                              "guided_question",
-                              "write",
-                              "feedback",
-                              "revise"
+                              "INTRO",
+                              "COMPLETION",
+                              "CONCEPT",
+                              "EXAMPLE",
+                              "MULTIPLE_CHOICE",
+                              "FILL_IN_THE_BLANK",
+                              "ORDERING",
+                              "HIGHLIGHT",
+                              "SHORT_ANSWER",
+                              "WRITING",
+                              "REWRITING",
+                              "AI_FEEDBACK",
+                              "AI_COMPARISON"
                             ]
                           },
                           "contentJson": {

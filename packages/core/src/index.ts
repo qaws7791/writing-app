@@ -180,6 +180,7 @@ export type {
   DeleteStepDeps,
 } from "./modules/journeys/index"
 export {
+  stepTypeValues,
   sessionStepContentTypeSchema,
   ctaConfigSchema,
   introStepContentSchema,

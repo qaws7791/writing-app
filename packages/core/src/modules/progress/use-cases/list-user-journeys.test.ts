@@ -42,12 +42,12 @@ describe("makeListUserJourneysUseCase", () => {
         id: toJourneyId(2),
         title: "에세이 구조",
         description: "서론과 본론, 결론을 정리하는 여정",
-        category: "writing_skill",
+        category: "writing_skill" as const,
         thumbnailUrl: "https://example.com/essay.png",
         sessionCount: 5,
         currentSessionOrder: 2,
         completionRate: 0.2,
-        status: "in_progress",
+        status: "in_progress" as const,
       },
     ])
 

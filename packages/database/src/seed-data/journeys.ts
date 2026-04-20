@@ -44,22 +44,6 @@ const CATEGORY_MAP: Record<string, JourneyCategory> = {
   퍼블리싱과독자소통: "writing_skill",
 }
 
-const TYPE_MAP: Record<string, StepType> = {
-  INTRO: "learn",
-  COMPLETION: "learn",
-  CONCEPT: "learn",
-  EXAMPLE: "read",
-  MULTIPLE_CHOICE: "guided_question",
-  FILL_IN_THE_BLANK: "guided_question",
-  ORDERING: "guided_question",
-  HIGHLIGHT: "guided_question",
-  SHORT_ANSWER: "write",
-  WRITING: "write",
-  REWRITING: "revise",
-  AI_FEEDBACK: "feedback",
-  AI_COMPARISON: "feedback",
-}
-
 function picsumUrl(seed: string): string {
   return `https://picsum.photos/seed/${seed}/600/400`
 }
@@ -149,7 +133,7 @@ export function seedJourneys(rawJourneys: RawJsonJourney[]): SeedJourney[] {
           description: session.description,
           estimatedMinutes,
           steps: sessionSteps.map((step): SeedStep => {
-            const dbType: StepType = TYPE_MAP[step.type] ?? "learn"
+            const dbType = step.type as StepType
             const transformedContent = transformContent(
               step.content,
               sessionSteps

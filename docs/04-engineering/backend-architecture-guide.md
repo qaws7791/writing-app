@@ -7,10 +7,10 @@ description: DOP와 패키지 경계 중심으로 글필(Geulpil) 백엔드 구�
 
 - 기준 시점: 2026-04-06
 - `apps/api`는 Hono + Awilix 기반으로 인증, 글쓰기, 글감, 동기화 라우트를 포함합니다.
-- `packages/core`는 writings, prompts, home 모듈의 비즈니스 코어를 포함합니다.
+- `packages/core`는 writings, prompts, home, journeys, progress, ai-feedback 모듈의 비즈니스 코어를 포함합니다.
 - `packages/database`는 SQLite + Drizzle ORM 기반 영속성 계층입니다.
 - `packages/ai`는 AI SDK + Google Gemini 기반 AI 어댑터입니다.
-- 여정(journeys), 세션(sessions), 스텝(steps), AI 피드백(ai-feedback) 모듈은 도입 예정입니다.
+- 여정(journeys), 세션(sessions), 스텝(steps), AI 피드백(ai-feedback) 모듈은 현재 코드베이스에 도입되어 있습니다.
 
 ## 기준 원칙
 
