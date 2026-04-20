@@ -45,7 +45,7 @@ export type { WritingRepository } from "./writing-port"
 export type { RepositoryTransactionManager } from "../../shared/transaction/index"
 
 // Operations
-export { createPreview } from "./writing-operations"
+export { createPreview } from "./operations/index"
 
 // Use Cases
 export type {

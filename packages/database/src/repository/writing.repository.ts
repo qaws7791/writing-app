@@ -1,5 +1,6 @@
 import { and, count, desc, eq, lt, or } from "drizzle-orm"
 
+import { createPreview } from "@workspace/core/modules/writings"
 import { toWritingId } from "@workspace/core/shared"
 import type { WritingId, UserId, PromptId } from "@workspace/core"
 import type {
@@ -19,10 +20,6 @@ import { writings } from "../schema/writings"
 import { writingPrompts } from "../schema/writing-prompts"
 import { sql } from "drizzle-orm"
 import type { DbExecutor } from "../types/index"
-
-function createPreview(plainText: string): string {
-  return plainText.length <= 120 ? plainText : `${plainText.slice(0, 120)}...`
-}
 
 type WritingRow = {
   id: WritingId
