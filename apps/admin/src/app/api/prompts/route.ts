@@ -21,17 +21,22 @@ export const GET = withAdminAuth(async (req) => {
   }
 
   const { listPrompts } = getAdminRuntime().useCases
-  const page$ = (
-    await listPrompts(null, {
-      promptType: parsed.data.promptType,
-      cursor:
-        parsed.data.cursor === undefined
-          ? undefined
-          : parsePromptId(parsed.data.cursor),
-      limit: parsed.data.limit,
-    })
-  )._unsafeUnwrap()
-  return NextResponse.json(page$)
+  const result = await listPrompts(null, {
+    promptType: parsed.data.promptType,
+    cursor:
+      parsed.data.cursor === undefined
+        ? undefined
+        : parsePromptId(parsed.data.cursor),
+    limit: parsed.data.limit,
+  })
+  return result.match(
+    (page) => NextResponse.json(page),
+    () =>
+      NextResponse.json(
+        { error: "관리자 요청 처리 중 오류가 발생했습니다." },
+        { status: 500 }
+      )
+  )
 })
 
 export const POST = withAdminAuth(async (req) => {
@@ -48,6 +53,13 @@ export const POST = withAdminAuth(async (req) => {
   }
 
   const { createPrompt } = getAdminRuntime().useCases
-  const prompt = (await createPrompt(parsed.data))._unsafeUnwrap()
-  return NextResponse.json(prompt, { status: 201 })
+  const result = await createPrompt(parsed.data)
+  return result.match(
+    (prompt) => NextResponse.json(prompt, { status: 201 }),
+    () =>
+      NextResponse.json(
+        { error: "관리자 요청 처리 중 오류가 발생했습니다." },
+        { status: 500 }
+      )
+  )
 })

@@ -22,8 +22,15 @@ export const GET = withAdminAuth(async (req) => {
   }
 
   const { listJourneys } = getAdminRuntime().useCases
-  const items = (await listJourneys(parsedFilters.data))._unsafeUnwrap()
-  return NextResponse.json({ items })
+  const result = await listJourneys(parsedFilters.data)
+  return result.match(
+    (items) => NextResponse.json({ items }),
+    () =>
+      NextResponse.json(
+        { error: "관리자 요청 처리 중 오류가 발생했습니다." },
+        { status: 500 }
+      )
+  )
 })
 
 export const POST = withAdminAuth(async (req) => {
@@ -40,6 +47,13 @@ export const POST = withAdminAuth(async (req) => {
   }
 
   const { createJourney } = getAdminRuntime().useCases
-  const journey = (await createJourney(parsed.data))._unsafeUnwrap()
-  return NextResponse.json(journey, { status: 201 })
+  const result = await createJourney(parsed.data)
+  return result.match(
+    (journey) => NextResponse.json(journey, { status: 201 }),
+    () =>
+      NextResponse.json(
+        { error: "관리자 요청 처리 중 오류가 발생했습니다." },
+        { status: 500 }
+      )
+  )
 })

@@ -17,10 +17,15 @@ export const GET = withAdminAuth(async (_req, context) => {
   }
 
   const { listSessions } = getAdminRuntime().useCases
-  const items = (
-    await listSessions(parseJourneyId(parsedJourneyId.data))
-  )._unsafeUnwrap()
-  return NextResponse.json({ items })
+  const result = await listSessions(parseJourneyId(parsedJourneyId.data))
+  return result.match(
+    (items) => NextResponse.json({ items }),
+    () =>
+      NextResponse.json(
+        { error: "관리자 요청 처리 중 오류가 발생했습니다." },
+        { status: 500 }
+      )
+  )
 })
 
 export const POST = withAdminAuth(async (req, context) => {
