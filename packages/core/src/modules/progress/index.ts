@@ -5,6 +5,7 @@ export type {
   SessionAiStateKind,
   SessionAiStateStatus,
   SessionAiResult,
+  UserJourneyListItem,
   UserJourneyProgress,
   UserSessionProgress,
   UserSessionStepAiState,

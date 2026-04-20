@@ -7,7 +7,7 @@ description: 글필(Geulpil) 모노레포 개발 규칙과 프론트엔드, 백�
 
 ## 상태
 
-- 기준 시점: 2026-04-06
+- 기준 시점: 2026-04-20
 - 제품은 글필(Geulpil) — 한국어 에세이 글쓰기 학습 플랫폼으로 피벗했습니다.
 - 핵심 도메인은 여정(Journey)-세션(Session)-스텝(Step) 기반 학습, 글감(WritingPrompt), 글쓰기(Writing), AI 소크라테스식 코칭입니다.
 - `apps/web`은 홈, 여정, 글쓰기(서재 포함), 에디터, 인증 화면의 프로토타입을 포함합니다.
@@ -30,6 +30,7 @@ description: 글필(Geulpil) 모노레포 개발 규칙과 프론트엔드, 백�
 - [[api-conventions]]: OpenAPIHono와 core 계약 스키마를 연결하는 규약
 - [[dependency-injection]]: 포트, 구현체, 조립 계층을 연결하는 기준
 - [[transaction-boundary-audit]]: 트랜잭션 없는 다단계 DB 작업 감사와 차단 전략
+- [[journey-list-n-plus-one-options]]: 완료 여정/내 여정 목록의 N+1 제거 접근 비교
 - [[environment-variables]]: 환경 변수 관리 정책
 - [[error-message-guidelines]]: 사용자 메시지와 API 오류 응답 기준
 - [[logging-guide]]: 구조화 로그와 요청 추적 기준

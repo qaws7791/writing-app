@@ -4,6 +4,7 @@ import type {
   SessionAiStateStatus,
   JourneyProgressStatus,
   SessionProgressStatus,
+  UserJourneyListItem,
   UserJourneyProgress,
   UserSessionProgress,
   UserSessionStepAiState,
@@ -18,6 +19,11 @@ export interface ProgressRepository {
   listActiveJourneys(userId: UserId): Promise<UserJourneyProgress[]>
 
   listCompletedJourneys(userId: UserId): Promise<UserJourneyProgress[]>
+
+  listUserJourneyItems(
+    userId: UserId,
+    status: JourneyProgressStatus
+  ): Promise<UserJourneyListItem[]>
 
   enrollJourney(
     userId: UserId,

@@ -133,12 +133,10 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
 
     // --- Home ---
 
-    getHomeUseCase: asFunction(
-      ({ progressRepository, journeyRepository }: ApiCradle) =>
-        makeGetHomeUseCase({
-          progressRepository,
-          journeyRepository,
-        })
+    getHomeUseCase: asFunction(({ progressRepository }: ApiCradle) =>
+      makeGetHomeUseCase({
+        progressRepository,
+      })
     ).singleton(),
 
     // --- Journeys ---
@@ -202,19 +200,16 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
     ).singleton(),
 
     listCompletedJourneysUseCase: asFunction(
-      ({ progressRepository, journeyRepository }: ApiCradle) =>
+      ({ progressRepository }: ApiCradle) =>
         makeListCompletedJourneysUseCase({
           progressRepository,
-          journeyRepository,
         })
     ).singleton(),
 
-    listUserJourneysUseCase: asFunction(
-      ({ progressRepository, journeyRepository }: ApiCradle) =>
-        makeListUserJourneysUseCase({
-          progressRepository,
-          journeyRepository,
-        })
+    listUserJourneysUseCase: asFunction(({ progressRepository }: ApiCradle) =>
+      makeListUserJourneysUseCase({
+        progressRepository,
+      })
     ).singleton(),
 
     // --- AI Feedback ---

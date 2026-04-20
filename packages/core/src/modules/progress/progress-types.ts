@@ -3,6 +3,7 @@ import type {
   RevisionComparison,
   WritingFeedback,
 } from "../ai-feedback/ai-feedback-types"
+import type { JourneySummary } from "../journeys/journey-types"
 import type { JourneySessionDetail } from "../journeys/journey-types"
 
 export type JourneyProgressStatus = "in_progress" | "completed"
@@ -13,6 +14,12 @@ export type SessionAiStateKind = "feedback" | "comparison"
 export type UserJourneyProgress = {
   readonly userId: UserId
   readonly journeyId: JourneyId
+  readonly currentSessionOrder: number
+  readonly completionRate: number
+  readonly status: JourneyProgressStatus
+}
+
+export type UserJourneyListItem = JourneySummary & {
   readonly currentSessionOrder: number
   readonly completionRate: number
   readonly status: JourneyProgressStatus

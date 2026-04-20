@@ -1,8 +1,10 @@
-import { and, asc, eq } from "drizzle-orm"
+import { and, asc, count, eq } from "drizzle-orm"
 
 import type {
   JourneyId,
   ProgressRepository,
+  UserJourneyListItem,
+  JourneyCategory,
   JourneyProgressStatus,
   SessionProgressStatus,
   SessionAiStateKind,
@@ -15,6 +17,7 @@ import type {
   UserSessionStepAiState,
 } from "@workspace/core"
 
+import { journeys } from "../schema/journeys"
 import { userJourneyProgress } from "../schema/user-journey-progress"
 import { userSessionProgress } from "../schema/user-session-progress"
 import { userSessionStepAiState } from "../schema/user-session-step-ai-state"
@@ -31,6 +34,30 @@ function mapJourneyProgress(row: {
   return {
     userId: row.userId,
     journeyId: row.journeyId,
+    currentSessionOrder: row.currentSessionOrder,
+    completionRate: row.completionRate,
+    status: row.status as JourneyProgressStatus,
+  }
+}
+
+function mapUserJourneyListItem(row: {
+  journeyId: JourneyId
+  currentSessionOrder: number
+  completionRate: number
+  status: string
+  title: string
+  description: string
+  category: string
+  thumbnailUrl: string | null
+  sessionCount: number | null
+}): UserJourneyListItem {
+  return {
+    id: row.journeyId,
+    title: row.title,
+    description: row.description,
+    category: row.category as JourneyCategory,
+    thumbnailUrl: row.thumbnailUrl,
+    sessionCount: Number(row.sessionCount ?? 0),
     currentSessionOrder: row.currentSessionOrder,
     completionRate: row.completionRate,
     status: row.status as JourneyProgressStatus,
@@ -84,6 +111,15 @@ function mapSessionStepAiState(row: {
 export function createProgressRepository(
   database: DbExecutor
 ): ProgressRepository {
+  const journeySessionCountSq = database
+    .select({
+      journeyId: journeySessions.journeyId,
+      sessionCount: count(),
+    })
+    .from(journeySessions)
+    .groupBy(journeySessions.journeyId)
+    .as("journey_session_count_sq")
+
   return {
     async getJourneyProgress(
       userId: UserId,
@@ -133,6 +169,38 @@ export function createProgressRepository(
         )
 
       return rows.map(mapJourneyProgress)
+    },
+
+    async listUserJourneyItems(
+      userId: UserId,
+      status: JourneyProgressStatus
+    ): Promise<UserJourneyListItem[]> {
+      const rows = await database
+        .select({
+          journeyId: userJourneyProgress.journeyId,
+          currentSessionOrder: userJourneyProgress.currentSessionOrder,
+          completionRate: userJourneyProgress.completionRate,
+          status: userJourneyProgress.status,
+          title: journeys.title,
+          description: journeys.description,
+          category: journeys.category,
+          thumbnailUrl: journeys.thumbnailUrl,
+          sessionCount: journeySessionCountSq.sessionCount,
+        })
+        .from(userJourneyProgress)
+        .innerJoin(journeys, eq(userJourneyProgress.journeyId, journeys.id))
+        .leftJoin(
+          journeySessionCountSq,
+          eq(journeySessionCountSq.journeyId, journeys.id)
+        )
+        .where(
+          and(
+            eq(userJourneyProgress.userId, userId),
+            eq(userJourneyProgress.status, status)
+          )
+        )
+
+      return rows.map(mapUserJourneyListItem)
     },
 
     async enrollJourney(

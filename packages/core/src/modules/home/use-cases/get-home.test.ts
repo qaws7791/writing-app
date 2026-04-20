@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from "vitest"
 
 import { toJourneyId, toSessionId, toUserId } from "../../../shared/brand/index"
 import type { ProgressRepository } from "../../progress/progress-port"
-import type { JourneyRepository } from "../../journeys/journey-port"
 import { makeGetHomeUseCase } from "./get-home"
 
 describe("makeGetHomeUseCase", () => {
@@ -11,16 +10,21 @@ describe("makeGetHomeUseCase", () => {
     const journeyId = toJourneyId(1)
 
     const progressRepository: ProgressRepository = {
-      listActiveJourneys: vi.fn(async () => [
+      listActiveJourneys: vi.fn(async () => []),
+      listCompletedJourneys: vi.fn(async () => []),
+      listUserJourneyItems: vi.fn(async () => [
         {
-          userId,
-          journeyId,
+          id: journeyId,
+          title: "에세이 기초",
+          description: "에세이 쓰기 기초 여정",
+          category: "writing_skill" as const,
+          thumbnailUrl: null,
+          sessionCount: 4,
           currentSessionOrder: 2,
           completionRate: 0.5,
           status: "in_progress" as const,
         },
       ]),
-      listCompletedJourneys: vi.fn(async () => []),
       getJourneyProgress: vi.fn(async () => null),
       enrollJourney: vi.fn(async () => ({
         userId,
@@ -46,45 +50,18 @@ describe("makeGetHomeUseCase", () => {
       saveSessionStepAiState: vi.fn(async () => {}),
     }
 
-    const journeyRepository: JourneyRepository = {
-      list: vi.fn(async () => []),
-      getById: vi.fn(async () => ({
-        id: journeyId,
-        title: "에세이 기초",
-        description: "에세이 쓰기 기초 여정",
-        category: "writing_skill" as const,
-        thumbnailUrl: null,
-        sessionCount: 4,
-        sessions: [],
-      })),
-      getByIdFull: vi.fn(async () => null),
-      getSessionDetail: vi.fn(async () => null),
-      listSessions: vi.fn(async () => []),
-      create: vi.fn(async () => {
-        throw new Error("not used")
-      }),
-      update: vi.fn(async () => null),
-      delete: vi.fn(async () => {}),
-      createSession: vi.fn(async () => {
-        throw new Error("not used")
-      }),
-      updateSession: vi.fn(async () => null),
-      deleteSession: vi.fn(async () => {}),
-      createStep: vi.fn(async () => {
-        throw new Error("not used")
-      }),
-      updateStep: vi.fn(async () => null),
-      deleteStep: vi.fn(async () => {}),
-    }
-
     const getHome = makeGetHomeUseCase({
       progressRepository,
-      journeyRepository,
     })
 
     const result = await getHome(userId)
 
     expect(result.isOk()).toBe(true)
+    expect(progressRepository.listUserJourneyItems).toHaveBeenCalledWith(
+      userId,
+      "in_progress"
+    )
+    expect(progressRepository.listActiveJourneys).not.toHaveBeenCalled()
 
     const snapshot = result._unsafeUnwrap()
     expect(snapshot.activeJourneys).toHaveLength(1)
@@ -100,6 +77,7 @@ describe("makeGetHomeUseCase", () => {
     const progressRepository: ProgressRepository = {
       listActiveJourneys: vi.fn(async () => []),
       listCompletedJourneys: vi.fn(async () => []),
+      listUserJourneyItems: vi.fn(async () => []),
       getJourneyProgress: vi.fn(async () => null),
       enrollJourney: vi.fn(async () => ({
         userId,
@@ -121,32 +99,8 @@ describe("makeGetHomeUseCase", () => {
       saveSessionStepAiState: vi.fn(async () => {}),
     }
 
-    const journeyRepository: JourneyRepository = {
-      list: vi.fn(async () => []),
-      getById: vi.fn(async () => null),
-      getByIdFull: vi.fn(async () => null),
-      getSessionDetail: vi.fn(async () => null),
-      listSessions: vi.fn(async () => []),
-      create: vi.fn(async () => {
-        throw new Error("not used")
-      }),
-      update: vi.fn(async () => null),
-      delete: vi.fn(async () => {}),
-      createSession: vi.fn(async () => {
-        throw new Error("not used")
-      }),
-      updateSession: vi.fn(async () => null),
-      deleteSession: vi.fn(async () => {}),
-      createStep: vi.fn(async () => {
-        throw new Error("not used")
-      }),
-      updateStep: vi.fn(async () => null),
-      deleteStep: vi.fn(async () => {}),
-    }
-
     const getHome = makeGetHomeUseCase({
       progressRepository,
-      journeyRepository,
     })
 
     const result = await getHome(userId)
