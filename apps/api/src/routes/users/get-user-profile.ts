@@ -1,4 +1,4 @@
-import { z } from "@hono/zod-openapi"
+import { userProfileSchema } from "@workspace/core/modules/users"
 import { ResultAsync } from "neverthrow"
 
 import {
@@ -10,15 +10,6 @@ import { route } from "../../http/route"
 import { AuthUser } from "../../runtime/modules/auth"
 import { ListCompletedJourneysUseCase } from "../../runtime/modules/journeys"
 import { CountWritingsUseCase } from "../../runtime/modules/writings"
-
-const userProfileSchema = z.object({
-  completedJourneyCount: z.number().int(),
-  email: z.string().email(),
-  emailVerified: z.boolean(),
-  image: z.string().nullable().optional(),
-  name: z.string(),
-  writingCount: z.number().int(),
-})
 
 export default route({
   method: "get",

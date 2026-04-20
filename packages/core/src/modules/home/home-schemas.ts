@@ -14,3 +14,20 @@ export const homeSnapshotSchema = z.object({
   showStartJourneyCta: z.boolean(),
   showWritingSuggestion: z.boolean(),
 })
+
+export const healthCheckAiStatusSchema = z.object({
+  reason: z.string(),
+  status: z.enum(["degraded"]),
+})
+
+export const healthCheckDatabaseStatusSchema = z.object({
+  latencyMs: z.number().int().nonnegative().nullable(),
+  status: z.enum(["degraded", "ok"]),
+})
+
+export const healthCheckResponseSchema = z.object({
+  ai: healthCheckAiStatusSchema,
+  db: healthCheckDatabaseStatusSchema,
+  sqliteVersion: z.string(),
+  status: z.enum(["degraded", "ok"]),
+})

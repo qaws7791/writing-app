@@ -1,11 +1,10 @@
 import type { z } from "zod"
-import type { UserId } from "@workspace/core/shared"
-import type { AppLogger } from "@workspace/logging"
-
-import type {
+import {
   authenticatedSessionSchema,
   authenticatedUserSchema,
-} from "./auth/auth-schemas"
+} from "@workspace/core/modules/auth"
+import type { UserId } from "@workspace/core/shared"
+import type { AppLogger } from "@workspace/logging"
 import type { DevEmailInbox } from "./auth/auth-email"
 import type { ApiCradleUseCases } from "./runtime/container"
 

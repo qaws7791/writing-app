@@ -1,29 +1,19 @@
-import { z } from "@hono/zod-openapi"
+import {
+  authEmailMessageSchema,
+  authEmailQuerySchema,
+} from "@workspace/core/modules/auth"
 import { NotFoundError } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
 import { ReadLatestAuthEmail } from "../../runtime/modules/auth"
 
-const authEmailResponseSchema = z.object({
-  email: z.string(),
-  kind: z.enum(["password-reset", "verification"]),
-  sentAt: z.string(),
-  token: z.string(),
-  url: z.string(),
-})
-
-const querySchema = z.object({
-  email: z.string().email(),
-  kind: z.enum(["password-reset", "verification"]),
-})
-
 export default route({
   method: "get",
   path: "/dev/auth-emails",
   inject: { readLatestAuthEmail: ReadLatestAuthEmail },
-  request: { query: querySchema },
-  response: { 200: authEmailResponseSchema, default: defaultErrorResponse },
+  request: { query: authEmailQuerySchema },
+  response: { 200: authEmailMessageSchema, default: defaultErrorResponse },
   meta: {
     description:
       "로컬 또는 테스트 환경에서 전송된 인증 메일을 조회합니다. 운영 앱에는 등록되지 않습니다.",

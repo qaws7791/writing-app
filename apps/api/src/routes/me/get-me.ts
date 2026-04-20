@@ -1,21 +1,12 @@
-import { z } from "@hono/zod-openapi"
+import { meResponseSchema } from "@workspace/core/modules/auth"
 import { UnauthorizedError } from "@workspace/core"
 
-import {
-  authenticatedSessionSchema,
-  authenticatedUserSchema,
-} from "../../auth/auth-schemas"
 import {
   cookieSecurity,
   defaultErrorResponse,
 } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
 import { AuthSession, AuthUser } from "../../runtime/modules/auth"
-
-const meResponseSchema = z.object({
-  session: authenticatedSessionSchema,
-  user: authenticatedUserSchema,
-})
 
 export default route({
   method: "get",
