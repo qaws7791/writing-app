@@ -7,6 +7,10 @@ import {
 import { parsePromptId } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
+import {
+  parseAdminJsonBody,
+  toAdminResultResponse,
+} from "@/lib/api/admin-route"
 import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (req) => {
@@ -21,45 +25,24 @@ export const GET = withAdminAuth(async (req) => {
   }
 
   const { listPrompts } = getAdminRuntime().useCases
-  const result = await listPrompts(null, {
-    promptType: parsed.data.promptType,
-    cursor:
-      parsed.data.cursor === undefined
-        ? undefined
-        : parsePromptId(parsed.data.cursor),
-    limit: parsed.data.limit,
-  })
-  return result.match(
-    (page) => NextResponse.json(page),
-    () =>
-      NextResponse.json(
-        { error: "관리자 요청 처리 중 오류가 발생했습니다." },
-        { status: 500 }
-      )
+  return toAdminResultResponse(
+    await listPrompts(null, {
+      promptType: parsed.data.promptType,
+      cursor:
+        parsed.data.cursor === undefined
+          ? undefined
+          : parsePromptId(parsed.data.cursor),
+      limit: parsed.data.limit,
+    })
   )
 })
 
 export const POST = withAdminAuth(async (req) => {
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
-  }
-
-  const parsed = createPromptBodySchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
+  const parsed = await parseAdminJsonBody(req, createPromptBodySchema)
+  if (parsed instanceof NextResponse) {
+    return parsed
   }
 
   const { createPrompt } = getAdminRuntime().useCases
-  const result = await createPrompt(parsed.data)
-  return result.match(
-    (prompt) => NextResponse.json(prompt, { status: 201 }),
-    () =>
-      NextResponse.json(
-        { error: "관리자 요청 처리 중 오류가 발생했습니다." },
-        { status: 500 }
-      )
-  )
+  return toAdminResultResponse(await createPrompt(parsed), { status: 201 })
 })

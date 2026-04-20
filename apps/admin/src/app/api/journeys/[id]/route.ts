@@ -4,70 +4,55 @@ import {
   journeyIdParamSchema,
   updateJourneyBodySchema,
 } from "@workspace/core/modules/journeys"
-import { parseJourneyId, toHttpStatus } from "@workspace/core"
+import { parseJourneyId } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
+import {
+  parseAdminJsonBody,
+  parseAdminRouteParam,
+  toAdminResultResponse,
+} from "@/lib/api/admin-route"
 import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const parsedJourneyId = journeyIdParamSchema.safeParse(id)
-  if (!parsedJourneyId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedJourneyId = parseAdminRouteParam(id, journeyIdParamSchema)
+  if (parsedJourneyId instanceof NextResponse) {
+    return parsedJourneyId
   }
 
   const { getJourneyFull } = getAdminRuntime().useCases
-  const result = await getJourneyFull(parseJourneyId(parsedJourneyId.data))
-  if (result.isErr()) {
-    return NextResponse.json(
-      { error: result.error.message },
-      { status: toHttpStatus(result.error) }
-    )
-  }
-  return NextResponse.json(result.value)
+  return toAdminResultResponse(
+    await getJourneyFull(parseJourneyId(parsedJourneyId))
+  )
 })
 
 export const PUT = withAdminAuth(async (req, context) => {
   const { id } = await context.params
-  const parsedJourneyId = journeyIdParamSchema.safeParse(id)
-  if (!parsedJourneyId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedJourneyId = parseAdminRouteParam(id, journeyIdParamSchema)
+  if (parsedJourneyId instanceof NextResponse) {
+    return parsedJourneyId
   }
 
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
-  }
-
-  const parsed = updateJourneyBodySchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
+  const parsed = await parseAdminJsonBody(req, updateJourneyBodySchema)
+  if (parsed instanceof NextResponse) {
+    return parsed
   }
 
   const { updateJourney } = getAdminRuntime().useCases
-  const result = await updateJourney(
-    parseJourneyId(parsedJourneyId.data),
-    parsed.data
+  return toAdminResultResponse(
+    await updateJourney(parseJourneyId(parsedJourneyId), parsed)
   )
-  if (result.isErr()) {
-    return NextResponse.json(
-      { error: result.error.message },
-      { status: toHttpStatus(result.error) }
-    )
-  }
-  return NextResponse.json(result.value)
 })
 
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const parsedJourneyId = journeyIdParamSchema.safeParse(id)
-  if (!parsedJourneyId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedJourneyId = parseAdminRouteParam(id, journeyIdParamSchema)
+  if (parsedJourneyId instanceof NextResponse) {
+    return parsedJourneyId
   }
 
   const { deleteJourney } = getAdminRuntime().useCases
-  await deleteJourney(parseJourneyId(parsedJourneyId.data))
+  await deleteJourney(parseJourneyId(parsedJourneyId))
   return NextResponse.json({ ok: true })
 })

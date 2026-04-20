@@ -4,70 +4,55 @@ import {
   promptIdParamSchema,
   updatePromptBodySchema,
 } from "@workspace/core/modules/prompts"
-import { parsePromptId, toHttpStatus } from "@workspace/core"
+import { parsePromptId } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
+import {
+  parseAdminJsonBody,
+  parseAdminRouteParam,
+  toAdminResultResponse,
+} from "@/lib/api/admin-route"
 import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const parsedPromptId = promptIdParamSchema.safeParse(id)
-  if (!parsedPromptId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedPromptId = parseAdminRouteParam(id, promptIdParamSchema)
+  if (parsedPromptId instanceof NextResponse) {
+    return parsedPromptId
   }
 
   const { getPrompt } = getAdminRuntime().useCases
-  const result = await getPrompt(parsePromptId(parsedPromptId.data), null)
-  if (result.isErr()) {
-    return NextResponse.json(
-      { error: result.error.message },
-      { status: toHttpStatus(result.error) }
-    )
-  }
-  return NextResponse.json(result.value)
+  return toAdminResultResponse(
+    await getPrompt(parsePromptId(parsedPromptId), null)
+  )
 })
 
 export const PUT = withAdminAuth(async (req, context) => {
   const { id } = await context.params
-  const parsedPromptId = promptIdParamSchema.safeParse(id)
-  if (!parsedPromptId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedPromptId = parseAdminRouteParam(id, promptIdParamSchema)
+  if (parsedPromptId instanceof NextResponse) {
+    return parsedPromptId
   }
 
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
-  }
-
-  const parsed = updatePromptBodySchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
+  const parsed = await parseAdminJsonBody(req, updatePromptBodySchema)
+  if (parsed instanceof NextResponse) {
+    return parsed
   }
 
   const { updatePrompt } = getAdminRuntime().useCases
-  const result = await updatePrompt(
-    parsePromptId(parsedPromptId.data),
-    parsed.data
+  return toAdminResultResponse(
+    await updatePrompt(parsePromptId(parsedPromptId), parsed)
   )
-  if (result.isErr()) {
-    return NextResponse.json(
-      { error: result.error.message },
-      { status: toHttpStatus(result.error) }
-    )
-  }
-  return NextResponse.json(result.value)
 })
 
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const parsedPromptId = promptIdParamSchema.safeParse(id)
-  if (!parsedPromptId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedPromptId = parseAdminRouteParam(id, promptIdParamSchema)
+  if (parsedPromptId instanceof NextResponse) {
+    return parsedPromptId
   }
 
   const { deletePrompt } = getAdminRuntime().useCases
-  await deletePrompt(parsePromptId(parsedPromptId.data))
+  await deletePrompt(parsePromptId(parsedPromptId))
   return NextResponse.json({ ok: true })
 })

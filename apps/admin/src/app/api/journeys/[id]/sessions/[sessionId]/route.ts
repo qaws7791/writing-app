@@ -4,70 +4,55 @@ import {
   sessionIdParamSchema,
   updateSessionBodySchema,
 } from "@workspace/core/modules/journeys"
-import { parseSessionId, toHttpStatus } from "@workspace/core"
+import { parseSessionId } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
+import {
+  parseAdminJsonBody,
+  parseAdminRouteParam,
+  toAdminResultResponse,
+} from "@/lib/api/admin-route"
 import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { sessionId } = await context.params
-  const parsedSessionId = sessionIdParamSchema.safeParse(sessionId)
-  if (!parsedSessionId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedSessionId = parseAdminRouteParam(sessionId, sessionIdParamSchema)
+  if (parsedSessionId instanceof NextResponse) {
+    return parsedSessionId
   }
 
   const { getSessionDetail } = getAdminRuntime().useCases
-  const result = await getSessionDetail(parseSessionId(parsedSessionId.data))
-  if (result.isErr()) {
-    return NextResponse.json(
-      { error: result.error.message },
-      { status: toHttpStatus(result.error) }
-    )
-  }
-  return NextResponse.json(result.value)
+  return toAdminResultResponse(
+    await getSessionDetail(parseSessionId(parsedSessionId))
+  )
 })
 
 export const PUT = withAdminAuth(async (req, context) => {
   const { sessionId } = await context.params
-  const parsedSessionId = sessionIdParamSchema.safeParse(sessionId)
-  if (!parsedSessionId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedSessionId = parseAdminRouteParam(sessionId, sessionIdParamSchema)
+  if (parsedSessionId instanceof NextResponse) {
+    return parsedSessionId
   }
 
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
-  }
-
-  const parsed = updateSessionBodySchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
+  const parsed = await parseAdminJsonBody(req, updateSessionBodySchema)
+  if (parsed instanceof NextResponse) {
+    return parsed
   }
 
   const { updateSession } = getAdminRuntime().useCases
-  const result = await updateSession(
-    parseSessionId(parsedSessionId.data),
-    parsed.data
+  return toAdminResultResponse(
+    await updateSession(parseSessionId(parsedSessionId), parsed)
   )
-  if (result.isErr()) {
-    return NextResponse.json(
-      { error: result.error.message },
-      { status: toHttpStatus(result.error) }
-    )
-  }
-  return NextResponse.json(result.value)
 })
 
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { sessionId } = await context.params
-  const parsedSessionId = sessionIdParamSchema.safeParse(sessionId)
-  if (!parsedSessionId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedSessionId = parseAdminRouteParam(sessionId, sessionIdParamSchema)
+  if (parsedSessionId instanceof NextResponse) {
+    return parsedSessionId
   }
 
   const { deleteSession } = getAdminRuntime().useCases
-  await deleteSession(parseSessionId(parsedSessionId.data))
+  await deleteSession(parseSessionId(parsedSessionId))
   return NextResponse.json({ ok: true })
 })

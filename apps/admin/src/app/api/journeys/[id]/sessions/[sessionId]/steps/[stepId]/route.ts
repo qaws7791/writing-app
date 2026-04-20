@@ -5,74 +5,71 @@ import {
   stepIdParamSchema,
   updateStepBodySchema,
 } from "@workspace/core/modules/journeys"
-import { parseSessionId, parseStepId, toHttpStatus } from "@workspace/core"
+import { parseSessionId, parseStepId } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
+import {
+  parseAdminJsonBody,
+  parseAdminRouteParam,
+  toAdminResultResponse,
+} from "@/lib/api/admin-route"
 import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { sessionId, stepId } = await context.params
-  const parsedSessionId = sessionIdParamSchema.safeParse(sessionId)
-  const parsedStepId = stepIdParamSchema.safeParse(stepId)
+  const parsedSessionId = parseAdminRouteParam(sessionId, sessionIdParamSchema)
+  if (parsedSessionId instanceof NextResponse) {
+    return parsedSessionId
+  }
 
-  if (!parsedSessionId.success || !parsedStepId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedStepId = parseAdminRouteParam(stepId, stepIdParamSchema)
+  if (parsedStepId instanceof NextResponse) {
+    return parsedStepId
   }
 
   const { getSessionDetail } = getAdminRuntime().useCases
-  const result = await getSessionDetail(parseSessionId(parsedSessionId.data))
-  if (result.isErr()) {
-    return NextResponse.json(
-      { error: result.error.message },
-      { status: toHttpStatus(result.error) }
-    )
-  }
-  const stepIdValue = parseStepId(parsedStepId.data)
-  const step = result.value.steps.find((s) => s.id === stepIdValue)
-  if (!step) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 })
-  }
-  return NextResponse.json(step)
+  const stepIdValue = parseStepId(parsedStepId)
+  return toAdminResultResponse(
+    await getSessionDetail(parseSessionId(parsedSessionId)),
+    {
+      successResponse: (session) => {
+        const step = session.steps.find((item) => item.id === stepIdValue)
+        if (!step) {
+          return NextResponse.json({ error: "Not found" }, { status: 404 })
+        }
+
+        return NextResponse.json(step)
+      },
+    }
+  )
 })
 
 export const PUT = withAdminAuth(async (req, context) => {
   const { stepId } = await context.params
-  const parsedStepId = stepIdParamSchema.safeParse(stepId)
-  if (!parsedStepId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedStepId = parseAdminRouteParam(stepId, stepIdParamSchema)
+  if (parsedStepId instanceof NextResponse) {
+    return parsedStepId
   }
 
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
-  }
-
-  const parsed = updateStepBodySchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
+  const parsed = await parseAdminJsonBody(req, updateStepBodySchema)
+  if (parsed instanceof NextResponse) {
+    return parsed
   }
 
   const { updateStep } = getAdminRuntime().useCases
-  const result = await updateStep(parseStepId(parsedStepId.data), parsed.data)
-  if (result.isErr()) {
-    return NextResponse.json(
-      { error: result.error.message },
-      { status: toHttpStatus(result.error) }
-    )
-  }
-  return NextResponse.json(result.value)
+  return toAdminResultResponse(
+    await updateStep(parseStepId(parsedStepId), parsed)
+  )
 })
 
 export const DELETE = withAdminAuth(async (_req, context) => {
   const { stepId } = await context.params
-  const parsedStepId = stepIdParamSchema.safeParse(stepId)
-  if (!parsedStepId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedStepId = parseAdminRouteParam(stepId, stepIdParamSchema)
+  if (parsedStepId instanceof NextResponse) {
+    return parsedStepId
   }
 
   const { deleteStep } = getAdminRuntime().useCases
-  await deleteStep(parseStepId(parsedStepId.data))
+  await deleteStep(parseStepId(parsedStepId))
   return NextResponse.json({ ok: true })
 })

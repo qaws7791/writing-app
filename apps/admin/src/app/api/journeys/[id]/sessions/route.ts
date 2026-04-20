@@ -4,59 +4,49 @@ import {
   createSessionBodySchema,
   journeyIdParamSchema,
 } from "@workspace/core/modules/journeys"
-import { parseJourneyId, toHttpStatus } from "@workspace/core"
+import { parseJourneyId } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
+import {
+  parseAdminJsonBody,
+  parseAdminRouteParam,
+  toAdminResultResponse,
+} from "@/lib/api/admin-route"
 import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 export const GET = withAdminAuth(async (_req, context) => {
   const { id } = await context.params
-  const parsedJourneyId = journeyIdParamSchema.safeParse(id)
-  if (!parsedJourneyId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedJourneyId = parseAdminRouteParam(id, journeyIdParamSchema)
+  if (parsedJourneyId instanceof NextResponse) {
+    return parsedJourneyId
   }
 
   const { listSessions } = getAdminRuntime().useCases
-  const result = await listSessions(parseJourneyId(parsedJourneyId.data))
-  return result.match(
-    (items) => NextResponse.json({ items }),
-    () =>
-      NextResponse.json(
-        { error: "관리자 요청 처리 중 오류가 발생했습니다." },
-        { status: 500 }
-      )
+  return toAdminResultResponse(
+    await listSessions(parseJourneyId(parsedJourneyId)),
+    {
+      mapData: (items) => ({ items }),
+    }
   )
 })
 
 export const POST = withAdminAuth(async (req, context) => {
   const { id } = await context.params
-  const parsedJourneyId = journeyIdParamSchema.safeParse(id)
-  if (!parsedJourneyId.success) {
-    return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+  const parsedJourneyId = parseAdminRouteParam(id, journeyIdParamSchema)
+  if (parsedJourneyId instanceof NextResponse) {
+    return parsedJourneyId
   }
 
-  let body: unknown
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
-  }
-
-  const parsed = createSessionBodySchema.safeParse(body)
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 })
+  const parsed = await parseAdminJsonBody(req, createSessionBodySchema)
+  if (parsed instanceof NextResponse) {
+    return parsed
   }
 
   const { createSession } = getAdminRuntime().useCases
-  const result = await createSession(
-    parseJourneyId(parsedJourneyId.data),
-    parsed.data
+  return toAdminResultResponse(
+    await createSession(parseJourneyId(parsedJourneyId), parsed),
+    {
+      status: 201,
+    }
   )
-  if (result.isErr()) {
-    return NextResponse.json(
-      { error: result.error.message },
-      { status: toHttpStatus(result.error) }
-    )
-  }
-  return NextResponse.json(result.value, { status: 201 })
 })
