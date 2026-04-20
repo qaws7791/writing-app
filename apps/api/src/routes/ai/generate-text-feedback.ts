@@ -11,7 +11,6 @@ import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { createRateLimitMiddleware } from "../../middleware/rate-limit-middleware"
 import type { RateLimitBackend } from "../../rate-limit/rate-limit-backend"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { GenerateFeedbackUseCase } from "../../runtime/modules/ai"
 
 export function createGenerateTextFeedbackRoute(
@@ -43,12 +42,11 @@ export function createGenerateTextFeedbackRoute(
     },
     handler: async ({ generateFeedback, body, context }) => {
       const userId = requireUserId(context)
-      const result = await generateFeedback({
+      return generateFeedback({
         userId,
         bodyPlainText: body.text,
         level: body.level,
       })
-      return unwrapOrThrow(result)
     },
   })
 }

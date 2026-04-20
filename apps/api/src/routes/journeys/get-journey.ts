@@ -7,7 +7,6 @@ import { parseJourneyId } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { GetJourneyUseCase } from "../../runtime/modules/journeys"
 
 export default route({
@@ -27,7 +26,6 @@ export default route({
   },
   handler: async ({ getJourney, params, context }) => {
     const userId = context.get("userId")
-    const result = await getJourney(parseJourneyId(params.journeyId), userId)
-    return unwrapOrThrow(result)
+    return getJourney(parseJourneyId(params.journeyId), userId)
   },
 })

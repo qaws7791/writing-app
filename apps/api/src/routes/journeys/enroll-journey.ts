@@ -9,7 +9,6 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { EnrollJourneyUseCase } from "../../runtime/modules/journeys"
 
 export default route({
@@ -26,7 +25,6 @@ export default route({
   },
   handler: async ({ enrollJourney, params, context }) => {
     const userId = requireUserId(context)
-    const result = await enrollJourney(userId, parseJourneyId(params.journeyId))
-    return unwrapOrThrow(result)
+    return enrollJourney(userId, parseJourneyId(params.journeyId))
   },
 })

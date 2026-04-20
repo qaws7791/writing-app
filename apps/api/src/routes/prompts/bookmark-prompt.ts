@@ -11,7 +11,6 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { BookmarkPromptUseCase } from "../../runtime/modules/prompts"
 
 export default route({
@@ -31,8 +30,11 @@ export default route({
   },
   handler: async ({ bookmarkPrompt, params, context }) => {
     const userId = requireUserId(context)
-    const result = await bookmarkPrompt(userId, parsePromptId(params.promptId))
-    const { savedAt } = unwrapOrThrow(result)
-    return { kind: "bookmarked" as const, savedAt }
+    return (await bookmarkPrompt(userId, parsePromptId(params.promptId))).map(
+      ({ savedAt }) => ({
+        kind: "bookmarked" as const,
+        savedAt,
+      })
+    )
   },
 })

@@ -6,7 +6,6 @@ import {
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import {
   ListJourneysUseCase,
   ListUserJourneysUseCase,
@@ -30,13 +29,15 @@ export default route({
   handler: async ({ listJourneys, listUserJourneys, query, context }) => {
     if (query.status === "in_progress" || query.status === "completed") {
       const userId = requireUserId(context)
-      const journeys = unwrapOrThrow(
-        await listUserJourneys(userId, query.status)
-      )
-      return { items: journeys }
+      return (await listUserJourneys(userId, query.status)).map((journeys) => ({
+        items: journeys,
+      }))
     }
-    const result = await listJourneys({ category: query.category })
-    const journeys = unwrapOrThrow(result)
-    return { items: journeys }
+
+    return (await listJourneys({ category: query.category })).map(
+      (journeys) => ({
+        items: journeys,
+      })
+    )
   },
 })

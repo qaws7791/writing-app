@@ -11,7 +11,6 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { GetPromptUseCase } from "../../runtime/modules/prompts"
 
 export default route({
@@ -28,7 +27,6 @@ export default route({
   },
   handler: async ({ getPrompt, params, context }) => {
     const userId = requireUserId(context)
-    const result = await getPrompt(parsePromptId(params.promptId), userId)
-    return unwrapOrThrow(result)
+    return getPrompt(parsePromptId(params.promptId), userId)
   },
 })

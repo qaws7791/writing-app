@@ -11,7 +11,6 @@ import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { createRateLimitMiddleware } from "../../middleware/rate-limit-middleware"
 import type { RateLimitBackend } from "../../rate-limit/rate-limit-backend"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { CompareRevisionsUseCase } from "../../runtime/modules/ai"
 
 export function createCompareTextsRoute(rateLimitBackend: RateLimitBackend) {
@@ -41,12 +40,11 @@ export function createCompareTextsRoute(rateLimitBackend: RateLimitBackend) {
     },
     handler: async ({ compareRevisions, body, context }) => {
       const userId = requireUserId(context)
-      const result = await compareRevisions({
+      return compareRevisions({
         userId,
         originalText: body.originalText,
         revisedText: body.revisedText,
       })
-      return unwrapOrThrow(result)
     },
   })
 }

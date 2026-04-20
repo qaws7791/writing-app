@@ -9,7 +9,6 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { StartSessionUseCase } from "../../runtime/modules/sessions"
 
 export default route({
@@ -26,7 +25,6 @@ export default route({
   },
   handler: async ({ startSession, params, context }) => {
     const userId = requireUserId(context)
-    const result = await startSession(userId, parseSessionId(params.sessionId))
-    return unwrapOrThrow(result)
+    return startSession(userId, parseSessionId(params.sessionId))
   },
 })

@@ -10,7 +10,6 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { ListPromptsUseCase } from "../../runtime/modules/prompts"
 
 export default route({
@@ -31,12 +30,11 @@ export default route({
   },
   handler: async ({ listPrompts, query, context }) => {
     const userId = requireUserId(context)
-    const result = await listPrompts(userId, {
+    return listPrompts(userId, {
       promptType: query.promptType,
       cursor:
         query.cursor === undefined ? undefined : parsePromptId(query.cursor),
       limit: query.limit,
     })
-    return unwrapOrThrow(result)
   },
 })

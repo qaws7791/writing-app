@@ -9,7 +9,6 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { RetrySessionStepAiUseCase } from "../../runtime/modules/sessions"
 
 export default route({
@@ -31,13 +30,8 @@ export default route({
   },
   handler: async ({ retrySessionStepAi, params, context }) => {
     const userId = requireUserId(context)
-    const result = await retrySessionStepAi(
-      userId,
-      parseSessionId(params.sessionId),
-      {
-        stepOrder: params.stepOrder,
-      }
-    )
-    return unwrapOrThrow(result)
+    return retrySessionStepAi(userId, parseSessionId(params.sessionId), {
+      stepOrder: params.stepOrder,
+    })
   },
 })

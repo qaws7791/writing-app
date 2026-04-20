@@ -10,7 +10,6 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { CreateWritingUseCase } from "../../runtime/modules/writings"
 
 export default route({
@@ -27,7 +26,7 @@ export default route({
   },
   handler: async ({ createWriting, body, context }) => {
     const userId = requireUserId(context)
-    const result = await createWriting(userId, {
+    return createWriting(userId, {
       title: body.title,
       bodyJson: body.bodyJson,
       bodyPlainText: body.bodyPlainText,
@@ -37,6 +36,5 @@ export default route({
           ? undefined
           : parsePromptId(body.sourcePromptId),
     })
-    return unwrapOrThrow(result)
   },
 })

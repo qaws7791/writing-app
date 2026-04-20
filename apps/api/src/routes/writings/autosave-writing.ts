@@ -13,7 +13,6 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { AutosaveWritingUseCase } from "../../runtime/modules/writings"
 
 export default route({
@@ -37,12 +36,11 @@ export default route({
   },
   handler: async ({ autosaveWriting, body, params, context }) => {
     const userId = requireUserId(context)
-    const result = await autosaveWriting(
-      userId,
-      parseWritingId(params.writingId),
-      body
-    )
-    const writing = unwrapOrThrow(result)
-    return { writing, kind: "autosaved" as const }
+    return (
+      await autosaveWriting(userId, parseWritingId(params.writingId), body)
+    ).map((writing) => ({
+      writing,
+      kind: "autosaved" as const,
+    }))
   },
 })

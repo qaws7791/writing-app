@@ -11,7 +11,6 @@ import {
   defaultErrorResponse,
 } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { ListPromptWritingsUseCase } from "../../runtime/modules/prompts"
 
 export default route({
@@ -36,11 +35,6 @@ export default route({
   },
   handler: async ({ listPromptWritings, params, query, context }) => {
     const userId = context.get("userId")
-    const result = await listPromptWritings(
-      parsePromptId(params.promptId),
-      userId,
-      query
-    )
-    return unwrapOrThrow(result)
+    return listPromptWritings(parsePromptId(params.promptId), userId, query)
   },
 })

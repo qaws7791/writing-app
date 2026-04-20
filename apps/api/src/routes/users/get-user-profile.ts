@@ -1,4 +1,5 @@
 import { z } from "@hono/zod-openapi"
+import { err, ok } from "neverthrow"
 
 import {
   cookieSecurity,
@@ -6,7 +7,6 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import { AuthUser } from "../../runtime/modules/auth"
 import { ListCompletedJourneysUseCase } from "../../runtime/modules/journeys"
 import { ListWritingsUseCase } from "../../runtime/modules/writings"
@@ -42,29 +42,37 @@ export default route({
     context,
   }) => {
     const userId = requireUserId(context)
-    const completedJourneys = unwrapOrThrow(await listCompletedJourneys(userId))
+    const completedJourneysResult = await listCompletedJourneys(userId)
+
+    if (completedJourneysResult.isErr()) {
+      return err(completedJourneysResult.error)
+    }
 
     let cursor: string | undefined
     let writingCount = 0
 
     do {
-      const page = unwrapOrThrow(
-        await listWritings(userId, {
-          cursor,
-          limit: 100,
-        })
-      )
+      const pageResult = await listWritings(userId, {
+        cursor,
+        limit: 100,
+      })
+
+      if (pageResult.isErr()) {
+        return err(pageResult.error)
+      }
+
+      const page = pageResult.value
       writingCount += page.items.length
       cursor = page.nextCursor ?? undefined
     } while (cursor)
 
-    return {
-      completedJourneyCount: completedJourneys.length,
+    return ok({
+      completedJourneyCount: completedJourneysResult.value.length,
       email: authUser?.email ?? "",
       emailVerified: authUser?.emailVerified ?? false,
       image: authUser?.image ?? null,
       name: authUser?.name ?? "",
       writingCount,
-    }
+    })
   },
 })
