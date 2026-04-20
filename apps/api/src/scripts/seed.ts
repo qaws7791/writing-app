@@ -1,53 +1,21 @@
-import { hashPassword } from "better-auth/crypto"
+import { migrateDatabase } from "@workspace/database"
 
 import {
-  migrateDatabase,
-  openDb,
-  seedDatabase,
-  seedTestUsers,
-  type SeedTestUser,
-} from "@workspace/database"
-import journeySeeds from "../../data/journey-seeds.json"
+  createSeedScriptContext,
+  getDevTestUserEmails,
+  seedDatabaseWithTestData,
+} from "./seed-helpers.js"
 
-import { readApiEnvironment } from "../runtime/bootstrap.js"
-import { createApiLogger } from "../observability/logger.js"
-
-const DEV_TEST_USERS = [
-  {
-    email: "test@example.com",
-    name: "테스트 사용자",
-    password: "testpassword1234",
-  },
-] as const
-
-const environment = readApiEnvironment()
-const logger = createApiLogger({
-  level: environment.logLevel,
-}).child({
-  script: "seed",
-})
-
-const database = openDb(environment.databasePath)
+const { database, environment, logger } = createSeedScriptContext("seed")
 
 try {
   await migrateDatabase(database.db)
-  await seedDatabase(database.db, journeySeeds.journeys)
-
-  const testUserSeeds: SeedTestUser[] = await Promise.all(
-    DEV_TEST_USERS.map(async (u, i) => ({
-      accountRecordId: `dev-account-${i + 1}`,
-      email: u.email,
-      name: u.name,
-      passwordHash: await hashPassword(u.password),
-      userId: `dev-user-${i + 1}`,
-    }))
-  )
-  await seedTestUsers(database.db, testUserSeeds)
+  await seedDatabaseWithTestData(database.db)
 
   logger.info(
     {
       databasePath: environment.databasePath,
-      testUserEmails: DEV_TEST_USERS.map((u) => u.email),
+      testUserEmails: getDevTestUserEmails(),
     },
     "database seed completed"
   )
@@ -58,5 +26,5 @@ try {
   )
   throw error
 } finally {
-  database.close()
+  await database.close()
 }
