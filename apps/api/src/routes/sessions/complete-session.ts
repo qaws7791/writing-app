@@ -8,7 +8,7 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { CompleteSessionUseCase } from "../../runtime/tokens"
+import { CompleteSessionUseCase } from "../../runtime/modules/sessions"
 
 const completeSessionBodySchema = z.object({
   journeyId: z.number().int().positive(),

@@ -10,7 +10,7 @@ import {
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
-import { EnrollJourneyUseCase } from "../../runtime/tokens"
+import { EnrollJourneyUseCase } from "../../runtime/modules/journeys"
 
 export default route({
   method: "post",

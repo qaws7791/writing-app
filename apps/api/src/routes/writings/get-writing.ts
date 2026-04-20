@@ -11,7 +11,7 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { GetWritingUseCase } from "../../runtime/tokens"
+import { GetWritingUseCase } from "../../runtime/modules/writings"
 
 export default route({
   method: "get",

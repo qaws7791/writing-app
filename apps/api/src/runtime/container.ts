@@ -15,42 +15,57 @@ import { createDevEmailInbox, type EmailSender } from "../auth/auth-email"
 import type { ApiLogger } from "../observability/logger"
 import type { RateLimitBackend } from "../rate-limit/rate-limit-backend"
 import type { ApiEnvironment } from "./bootstrap"
-import { registerInfrastructure } from "./modules/infrastructure"
-import { registerAuth } from "./modules/auth"
-import { registerRepositories } from "./modules/repositories"
 import {
   AI_USE_CASE_KEYS,
-  HOME_USE_CASE_KEYS,
-  JOURNEY_USE_CASE_KEYS,
-  PROMPT_USE_CASE_KEYS,
-  SESSION_USE_CASE_KEYS,
-  WRITING_USE_CASE_KEYS,
-  registerUseCases,
-  type AutosaveWritingUseCase,
-  type BookmarkPromptUseCase,
+  registerAiModule,
   type CompareRevisionsUseCase,
-  type CompleteSessionUseCase,
-  type CreateWritingUseCase,
-  type DeleteWritingUseCase,
-  type EnrollJourneyUseCase,
   type GenerateFeedbackUseCase,
+} from "./modules/ai"
+import { registerAuth } from "./modules/auth"
+import {
+  HOME_USE_CASE_KEYS,
+  registerHomeModule,
   type GetHomeUseCase,
   type HealthCheckUseCase,
+} from "./modules/home"
+import { registerInfrastructure } from "./modules/infrastructure"
+import {
+  JOURNEY_USE_CASE_KEYS,
+  registerJourneyModule,
+  type EnrollJourneyUseCase,
   type GetJourneyUseCase,
-  type GetPromptUseCase,
-  type GetSessionDetailUseCase,
-  type GetWritingUseCase,
   type ListCompletedJourneysUseCase,
   type ListJourneysUseCase,
   type ListUserJourneysUseCase,
+} from "./modules/journeys"
+import {
+  PROMPT_USE_CASE_KEYS,
+  registerPromptModule,
+  type BookmarkPromptUseCase,
+  type GetPromptUseCase,
   type ListPromptWritingsUseCase,
   type ListPromptsUseCase,
-  type ListWritingsUseCase,
+  type UnbookmarkPromptUseCase,
+} from "./modules/prompts"
+import { registerRepositories } from "./modules/repositories"
+import {
+  SESSION_USE_CASE_KEYS,
+  registerSessionModule,
+  type CompleteSessionUseCase,
+  type GetSessionDetailUseCase,
   type RetrySessionStepAiUseCase,
   type StartSessionUseCase,
   type SubmitStepUseCase,
-  type UnbookmarkPromptUseCase,
-} from "./modules/use-cases"
+} from "./modules/sessions"
+import {
+  WRITING_USE_CASE_KEYS,
+  registerWritingModule,
+  type AutosaveWritingUseCase,
+  type CreateWritingUseCase,
+  type DeleteWritingUseCase,
+  type GetWritingUseCase,
+  type ListWritingsUseCase,
+} from "./modules/writings"
 
 export type ApiCradle = {
   // --- Configuration ---
@@ -139,7 +154,12 @@ export function createApiContainer(
   registerInfrastructure(container, environment)
   registerAuth(container)
   registerRepositories(container)
-  registerUseCases(container)
+  registerWritingModule(container)
+  registerPromptModule(container)
+  registerHomeModule(container)
+  registerJourneyModule(container)
+  registerSessionModule(container)
+  registerAiModule(container)
 
   return container
 }

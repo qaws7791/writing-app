@@ -8,7 +8,7 @@ import { parseJourneyId } from "@workspace/core"
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
-import { GetJourneyUseCase } from "../../runtime/tokens"
+import { GetJourneyUseCase } from "../../runtime/modules/journeys"
 
 export default route({
   method: "get",

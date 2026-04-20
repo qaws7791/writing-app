@@ -11,7 +11,7 @@ import {
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
-import { CreateWritingUseCase } from "../../runtime/tokens"
+import { CreateWritingUseCase } from "../../runtime/modules/writings"
 
 export default route({
   method: "post",

@@ -7,7 +7,24 @@ import {
   makeListWritingsUseCase,
 } from "@workspace/core/modules/writings"
 
-import type { ApiCradle } from "../../container"
+import type { AppVariables } from "../../app-env"
+import { createToken } from "../../lib/injection-token"
+import type { ApiCradle } from "../container"
+
+export const AutosaveWritingUseCase = createToken<
+  AppVariables["autosaveWritingUseCase"]
+>("autosaveWritingUseCase")
+export const CreateWritingUseCase = createToken<
+  AppVariables["createWritingUseCase"]
+>("createWritingUseCase")
+export const DeleteWritingUseCase = createToken<
+  AppVariables["deleteWritingUseCase"]
+>("deleteWritingUseCase")
+export const GetWritingUseCase =
+  createToken<AppVariables["getWritingUseCase"]>("getWritingUseCase")
+export const ListWritingsUseCase = createToken<
+  AppVariables["listWritingsUseCase"]
+>("listWritingsUseCase")
 
 export type AutosaveWritingUseCase = ReturnType<
   typeof makeAutosaveWritingUseCase
@@ -25,7 +42,7 @@ export const WRITING_USE_CASE_KEYS = [
   "listWritingsUseCase",
 ] as const satisfies readonly (keyof ApiCradle)[]
 
-export function registerWritingUseCases(container: AwilixContainer<ApiCradle>) {
+export function registerWritingModule(container: AwilixContainer<ApiCradle>) {
   container.register({
     createWritingUseCase: asFunction(
       ({ writingRepository, transactionManager }: ApiCradle) =>

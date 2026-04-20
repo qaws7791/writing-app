@@ -10,7 +10,7 @@ import {
   defaultErrorResponse,
 } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
-import { AuthSession, AuthUser } from "../../runtime/tokens"
+import { AuthSession, AuthUser } from "../../runtime/modules/auth"
 
 const meResponseSchema = z.object({
   session: authenticatedSessionSchema,

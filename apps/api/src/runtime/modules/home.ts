@@ -1,7 +1,16 @@
 import { asFunction, type AwilixContainer } from "awilix"
 import { makeGetHomeUseCase } from "@workspace/core/modules/home"
 
-import type { ApiCradle } from "../../container"
+import type { AppVariables } from "../../app-env"
+import { createToken } from "../../lib/injection-token"
+import type { ApiCradle } from "../container"
+
+export const HealthCheckUseCase =
+  createToken<AppVariables["healthCheckUseCase"]>("healthCheckUseCase")
+export const GetHomeUseCase =
+  createToken<AppVariables["getHomeUseCase"]>("getHomeUseCase")
+export const SqliteVersion =
+  createToken<AppVariables["sqliteVersion"]>("sqliteVersion")
 
 export type GetHomeUseCase = ReturnType<typeof makeGetHomeUseCase>
 
@@ -49,7 +58,7 @@ export const HOME_USE_CASE_KEYS = [
   "sqliteVersion",
 ] as const satisfies readonly (keyof ApiCradle)[]
 
-export function registerHomeUseCases(container: AwilixContainer<ApiCradle>) {
+export function registerHomeModule(container: AwilixContainer<ApiCradle>) {
   container.register({
     getHomeUseCase: asFunction(({ progressRepository }: ApiCradle) =>
       makeGetHomeUseCase({

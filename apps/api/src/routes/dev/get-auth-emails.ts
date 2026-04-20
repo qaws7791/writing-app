@@ -3,7 +3,7 @@ import { NotFoundError } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
-import { ReadLatestAuthEmail } from "../../runtime/tokens"
+import { ReadLatestAuthEmail } from "../../runtime/modules/auth"
 
 const authEmailResponseSchema = z.object({
   email: z.string(),

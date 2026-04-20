@@ -2,7 +2,7 @@ import { z } from "@hono/zod-openapi"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
-import { HealthCheckUseCase } from "../../runtime/tokens"
+import { HealthCheckUseCase } from "../../runtime/modules/home"
 
 const healthResponseSchema = z.object({
   ai: z.object({

@@ -7,7 +7,7 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { ListWritingsUseCase } from "../../runtime/tokens"
+import { ListWritingsUseCase } from "../../runtime/modules/writings"
 
 export default route({
   method: "get",

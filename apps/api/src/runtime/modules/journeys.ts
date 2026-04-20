@@ -9,7 +9,24 @@ import {
   makeListUserJourneysUseCase,
 } from "@workspace/core/modules/progress"
 
-import type { ApiCradle } from "../../container"
+import type { AppVariables } from "../../app-env"
+import { createToken } from "../../lib/injection-token"
+import type { ApiCradle } from "../container"
+
+export const EnrollJourneyUseCase = createToken<
+  AppVariables["enrollJourneyUseCase"]
+>("enrollJourneyUseCase")
+export const GetJourneyUseCase =
+  createToken<AppVariables["getJourneyUseCase"]>("getJourneyUseCase")
+export const ListCompletedJourneysUseCase = createToken<
+  AppVariables["listCompletedJourneysUseCase"]
+>("listCompletedJourneysUseCase")
+export const ListJourneysUseCase = createToken<
+  AppVariables["listJourneysUseCase"]
+>("listJourneysUseCase")
+export const ListUserJourneysUseCase = createToken<
+  AppVariables["listUserJourneysUseCase"]
+>("listUserJourneysUseCase")
 
 export type ListJourneysUseCase = ReturnType<typeof makeListJourneysUseCase>
 export type GetJourneyUseCase = ReturnType<typeof makeGetJourneyUseCase>
@@ -29,7 +46,7 @@ export const JOURNEY_USE_CASE_KEYS = [
   "listCompletedJourneysUseCase",
 ] as const satisfies readonly (keyof ApiCradle)[]
 
-export function registerJourneyUseCases(container: AwilixContainer<ApiCradle>) {
+export function registerJourneyModule(container: AwilixContainer<ApiCradle>) {
   container.register({
     listJourneysUseCase: asFunction(({ journeyRepository }: ApiCradle) =>
       makeListJourneysUseCase({ journeyRepository })

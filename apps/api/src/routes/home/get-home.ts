@@ -6,7 +6,7 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { GetHomeUseCase } from "../../runtime/tokens"
+import { GetHomeUseCase } from "../../runtime/modules/home"
 
 export default route({
   method: "get",

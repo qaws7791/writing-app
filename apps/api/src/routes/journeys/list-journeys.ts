@@ -10,7 +10,7 @@ import { unwrapOrThrow } from "../../http/unwrap-or-throw"
 import {
   ListJourneysUseCase,
   ListUserJourneysUseCase,
-} from "../../runtime/tokens"
+} from "../../runtime/modules/journeys"
 
 export default route({
   method: "get",

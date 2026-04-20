@@ -11,7 +11,7 @@ import {
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
-import { ListPromptsUseCase } from "../../runtime/tokens"
+import { ListPromptsUseCase } from "../../runtime/modules/prompts"
 
 export default route({
   method: "get",

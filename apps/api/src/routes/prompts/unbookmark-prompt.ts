@@ -8,7 +8,7 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { UnbookmarkPromptUseCase } from "../../runtime/tokens"
+import { UnbookmarkPromptUseCase } from "../../runtime/modules/prompts"
 
 export default route({
   method: "delete",

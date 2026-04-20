@@ -12,7 +12,7 @@ import { route } from "../../http/route"
 import { createRateLimitMiddleware } from "../../middleware/rate-limit-middleware"
 import type { RateLimitBackend } from "../../rate-limit/rate-limit-backend"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
-import { GenerateFeedbackUseCase } from "../../runtime/tokens"
+import { GenerateFeedbackUseCase } from "../../runtime/modules/ai"
 
 export function createGenerateTextFeedbackRoute(
   rateLimitBackend: RateLimitBackend

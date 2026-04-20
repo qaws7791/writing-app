@@ -7,7 +7,23 @@ import {
 } from "@workspace/core/modules/prompts"
 import { makeListPromptWritingsUseCase } from "@workspace/core/modules/writings"
 
-import type { ApiCradle } from "../../container"
+import type { AppVariables } from "../../app-env"
+import { createToken } from "../../lib/injection-token"
+import type { ApiCradle } from "../container"
+
+export const BookmarkPromptUseCase = createToken<
+  AppVariables["bookmarkPromptUseCase"]
+>("bookmarkPromptUseCase")
+export const GetPromptUseCase =
+  createToken<AppVariables["getPromptUseCase"]>("getPromptUseCase")
+export const ListPromptWritingsUseCase = createToken<
+  AppVariables["listPromptWritingsUseCase"]
+>("listPromptWritingsUseCase")
+export const ListPromptsUseCase =
+  createToken<AppVariables["listPromptsUseCase"]>("listPromptsUseCase")
+export const UnbookmarkPromptUseCase = createToken<
+  AppVariables["unbookmarkPromptUseCase"]
+>("unbookmarkPromptUseCase")
 
 export type GetPromptUseCase = ReturnType<typeof makeGetPromptUseCase>
 export type ListPromptsUseCase = ReturnType<typeof makeListPromptsUseCase>
@@ -27,7 +43,7 @@ export const PROMPT_USE_CASE_KEYS = [
   "unbookmarkPromptUseCase",
 ] as const satisfies readonly (keyof ApiCradle)[]
 
-export function registerPromptUseCases(container: AwilixContainer<ApiCradle>) {
+export function registerPromptModule(container: AwilixContainer<ApiCradle>) {
   container.register({
     getPromptUseCase: asFunction(({ promptRepository }: ApiCradle) =>
       makeGetPromptUseCase({ promptRepository })

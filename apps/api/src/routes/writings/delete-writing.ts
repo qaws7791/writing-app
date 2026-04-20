@@ -8,7 +8,7 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { DeleteWritingUseCase } from "../../runtime/tokens"
+import { DeleteWritingUseCase } from "../../runtime/modules/writings"
 
 export default route({
   method: "delete",

@@ -10,7 +10,7 @@ import {
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
-import { RetrySessionStepAiUseCase } from "../../runtime/tokens"
+import { RetrySessionStepAiUseCase } from "../../runtime/modules/sessions"
 
 export default route({
   method: "post",

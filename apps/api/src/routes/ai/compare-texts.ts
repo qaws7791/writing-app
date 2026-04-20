@@ -12,7 +12,7 @@ import { route } from "../../http/route"
 import { createRateLimitMiddleware } from "../../middleware/rate-limit-middleware"
 import type { RateLimitBackend } from "../../rate-limit/rate-limit-backend"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
-import { CompareRevisionsUseCase } from "../../runtime/tokens"
+import { CompareRevisionsUseCase } from "../../runtime/modules/ai"
 
 export function createCompareTextsRoute(rateLimitBackend: RateLimitBackend) {
   const aiRateLimiter = createRateLimitMiddleware(rateLimitBackend, {

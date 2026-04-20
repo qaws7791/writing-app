@@ -7,11 +7,9 @@ import {
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
-import {
-  AuthUser,
-  ListCompletedJourneysUseCase,
-  ListWritingsUseCase,
-} from "../../runtime/tokens"
+import { AuthUser } from "../../runtime/modules/auth"
+import { ListCompletedJourneysUseCase } from "../../runtime/modules/journeys"
+import { ListWritingsUseCase } from "../../runtime/modules/writings"
 
 const userProfileSchema = z.object({
   completedJourneyCount: z.number().int(),

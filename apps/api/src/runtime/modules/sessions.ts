@@ -7,7 +7,24 @@ import {
   makeSubmitStepUseCase,
 } from "@workspace/core/modules/progress"
 
-import type { ApiCradle } from "../../container"
+import type { AppVariables } from "../../app-env"
+import { createToken } from "../../lib/injection-token"
+import type { ApiCradle } from "../container"
+
+export const GetSessionDetailUseCase = createToken<
+  AppVariables["getSessionDetailUseCase"]
+>("getSessionDetailUseCase")
+export const CompleteSessionUseCase = createToken<
+  AppVariables["completeSessionUseCase"]
+>("completeSessionUseCase")
+export const RetrySessionStepAiUseCase = createToken<
+  AppVariables["retrySessionStepAiUseCase"]
+>("retrySessionStepAiUseCase")
+export const StartSessionUseCase = createToken<
+  AppVariables["startSessionUseCase"]
+>("startSessionUseCase")
+export const SubmitStepUseCase =
+  createToken<AppVariables["submitStepUseCase"]>("submitStepUseCase")
 
 export type GetSessionDetailUseCase = ReturnType<
   typeof makeGetSessionRuntimeUseCase
@@ -29,7 +46,7 @@ export const SESSION_USE_CASE_KEYS = [
   "completeSessionUseCase",
 ] as const satisfies readonly (keyof ApiCradle)[]
 
-export function registerSessionUseCases(container: AwilixContainer<ApiCradle>) {
+export function registerSessionModule(container: AwilixContainer<ApiCradle>) {
   container.register({
     getSessionDetailUseCase: asFunction(
       ({ journeyRepository, progressRepository }: ApiCradle) =>

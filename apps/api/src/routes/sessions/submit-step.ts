@@ -13,7 +13,7 @@ import {
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { withStatus } from "../../lib/hono/define-route"
-import { SubmitStepUseCase } from "../../runtime/tokens"
+import { SubmitStepUseCase } from "../../runtime/modules/sessions"
 
 export default route({
   method: "post",

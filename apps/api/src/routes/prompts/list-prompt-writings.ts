@@ -12,7 +12,7 @@ import {
 } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
-import { ListPromptWritingsUseCase } from "../../runtime/tokens"
+import { ListPromptWritingsUseCase } from "../../runtime/modules/prompts"
 
 export default route({
   method: "get",
