@@ -24,10 +24,12 @@ description: 이 모노레포에서 환경 변수를 저장, 노출, 검증, 캐
 
 ## 파일 규칙
 
-- 로컬 개발: 각 앱 아래 `.env.development.local`
+- 로컬 개발: 각 앱 아래 `.env.development.local` 또는 앱 전용 개발 파일
+- `apps/api/.env.development`는 로컬 전용 파일이며 `.gitignore`로 제외하고 커밋하지 않음
 - 공통 예시: 커밋 가능한 `.env.example`
 - 실제 비밀 값: 저장소에 커밋하지 않음
 - 루트 `.env`는 과도기에는 가능하지만 장기 기준으로는 권장하지 않음
+- 실수로 추적된 비밀 파일은 `git rm --cached <path>`로 인덱스에서 제거한 뒤 예시 파일만 유지함
 
 ## 구현 규칙
 
@@ -40,32 +42,36 @@ description: 이 모노레포에서 환경 변수를 저장, 노출, 검증, 캐
 
 ## 현재 변수 등록표
 
-| 앱           | 변수                           | 상태   | 설명                                               |
-| ------------ | ------------------------------ | ------ | -------------------------------------------------- |
-| `apps/api`   | `API_BASE_URL`                 | 사용중 | API 서버 기본 URL                                  |
-| `apps/api`   | `API_AUTH_BASE_URL`            | 사용중 | 인증 서버 기본 URL                                 |
-| `apps/api`   | `API_AUTH_SECRET`              | 사용중 | 인증 비밀 키 (32자 이상)                           |
-| `apps/api`   | `API_DATABASE_PATH`            | 사용중 | SQLite 연결 문자열                                 |
-| `apps/api`   | `API_LOG_LEVEL`                | 사용중 | 로그 레벨 (기본: info)                             |
-| `apps/api`   | `API_PORT`                     | 사용중 | API 서버 포트                                      |
-| `apps/api`   | `API_RATE_LIMIT_REDIS_PREFIX`  | 사용중 | Redis rate limiter 키 prefix                       |
-| `apps/api`   | `API_REDIS_URL`                | 사용중 | Redis 연결 URL (`redis://` 또는 `rediss://`)       |
-| `apps/api`   | `API_WEB_BASE_URL`             | 사용중 | 프론트엔드 기본 URL                                |
-| `apps/api`   | `GOOGLE_GENERATIVE_AI_API_KEY` | 사용중 | Google Generative AI API 키 (소크라테스식 AI 코칭) |
-| `apps/api`   | `RESEND_API_KEY`               | 사용중 | Resend 이메일 API 키 (프로덕션 필수)               |
-| `apps/api`   | `RESEND_FROM_ADDRESS`          | 사용중 | 발신 이메일 주소 (프로덕션 필수)                   |
-| `apps/admin` | `DATABASE_URL`                 | 사용중 | 관리자 앱이 공유 SQLite DB에 연결할 경로           |
-| `apps/admin` | `ADMIN_JWT_SECRET`             | 사용중 | 관리자 세션 JWT 서명 비밀 키                       |
-| `apps/admin` | `ADMIN_EMAIL`                  | 사용중 | 어드민 시드 스크립트 기본 로그인 이메일            |
-| `apps/admin` | `ADMIN_PASSWORD`               | 사용중 | 어드민 시드 스크립트 초기 비밀번호                 |
-| `apps/admin` | `ADMIN_NAME`                   | 사용중 | 어드민 시드 스크립트 표시 이름                     |
-| `apps/admin` | `STORAGE_ENDPOINT`             | 사용중 | RustFS 또는 S3 호환 스토리지 API 엔드포인트        |
-| `apps/admin` | `STORAGE_ACCESS_KEY`           | 사용중 | 관리자 운영 이미지 업로드용 Access Key             |
-| `apps/admin` | `STORAGE_SECRET_KEY`           | 사용중 | 관리자 운영 이미지 업로드용 Secret Key             |
-| `apps/admin` | `STORAGE_PUBLIC_BUCKET`        | 사용중 | 공개 읽기 가능한 운영 이미지 버킷 이름             |
-| `apps/admin` | `STORAGE_REGION`               | 사용중 | S3 호환 스토리지 region                            |
-| `apps/admin` | `STORAGE_PUBLIC_URL`           | 사용중 | 브라우저가 직접 읽는 공개 자산 베이스 URL          |
-| `apps/web`   | 없음                           | 미사용 | 아직 API/분석/인증 환경 변수가 없음                |
+| 앱           | 변수                             | 상태   | 설명                                         |
+| ------------ | -------------------------------- | ------ | -------------------------------------------- |
+| `apps/api`   | `API_BASE_URL`                   | 사용중 | API 서버 기본 URL                            |
+| `apps/api`   | `API_AUTH_BASE_URL`              | 사용중 | 인증 서버 기본 URL                           |
+| `apps/api`   | `API_AUTH_SECRET`                | 사용중 | 인증 비밀 키 (32자 이상)                     |
+| `apps/api`   | `API_DATABASE_PATH`              | 사용중 | SQLite 연결 문자열                           |
+| `apps/api`   | `API_LOG_LEVEL`                  | 사용중 | 로그 레벨 (기본: info)                       |
+| `apps/api`   | `API_PORT`                       | 사용중 | API 서버 포트                                |
+| `apps/api`   | `API_RATE_LIMIT_REDIS_PREFIX`    | 사용중 | Redis rate limiter 키 prefix                 |
+| `apps/api`   | `API_REDIS_URL`                  | 사용중 | Redis 연결 URL (`redis://` 또는 `rediss://`) |
+| `apps/api`   | `API_WEB_BASE_URL`               | 사용중 | 프론트엔드 기본 URL                          |
+| `apps/api`   | `API_ALLOWED_ORIGINS`            | 선택   | CORS 추가 허용 오리진 목록 (쉼표 구분)       |
+| `apps/api`   | `GOOGLE_VERTEX_PROJECT`          | 사용중 | Vertex AI 호출 대상 Google Cloud 프로젝트 ID |
+| `apps/api`   | `GOOGLE_VERTEX_LOCATION`         | 사용중 | Vertex AI 리전 (기본: `us-central1`)         |
+| `apps/api`   | `GOOGLE_APPLICATION_CREDENTIALS` | 사용중 | 서비스 계정 키 파일 경로                     |
+| `apps/api`   | `GOOGLE_GENERATIVE_AI_API_KEY`   | 선택   | Google Generative AI API 키                  |
+| `apps/api`   | `RESEND_API_KEY`                 | 사용중 | Resend 이메일 API 키 (프로덕션 필수)         |
+| `apps/api`   | `RESEND_FROM_ADDRESS`            | 사용중 | 발신 이메일 주소 (프로덕션 필수)             |
+| `apps/admin` | `DATABASE_URL`                   | 사용중 | 관리자 앱이 공유 SQLite DB에 연결할 경로     |
+| `apps/admin` | `ADMIN_JWT_SECRET`               | 사용중 | 관리자 세션 JWT 서명 비밀 키                 |
+| `apps/admin` | `ADMIN_EMAIL`                    | 사용중 | 어드민 시드 스크립트 기본 로그인 이메일      |
+| `apps/admin` | `ADMIN_PASSWORD`                 | 사용중 | 어드민 시드 스크립트 초기 비밀번호           |
+| `apps/admin` | `ADMIN_NAME`                     | 사용중 | 어드민 시드 스크립트 표시 이름               |
+| `apps/admin` | `STORAGE_ENDPOINT`               | 사용중 | RustFS 또는 S3 호환 스토리지 API 엔드포인트  |
+| `apps/admin` | `STORAGE_ACCESS_KEY`             | 사용중 | 관리자 운영 이미지 업로드용 Access Key       |
+| `apps/admin` | `STORAGE_SECRET_KEY`             | 사용중 | 관리자 운영 이미지 업로드용 Secret Key       |
+| `apps/admin` | `STORAGE_PUBLIC_BUCKET`          | 사용중 | 공개 읽기 가능한 운영 이미지 버킷 이름       |
+| `apps/admin` | `STORAGE_REGION`                 | 사용중 | S3 호환 스토리지 region                      |
+| `apps/admin` | `STORAGE_PUBLIC_URL`             | 사용중 | 브라우저가 직접 읽는 공개 자산 베이스 URL    |
+| `apps/web`   | 없음                             | 미사용 | 아직 API/분석/인증 환경 변수가 없음          |
 
 ## 새 변수 추가 절차
 
