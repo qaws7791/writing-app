@@ -1,10 +1,10 @@
 import { z } from "@hono/zod-openapi"
 import {
-  parseSessionId,
-  sessionIdParamSchema,
   sessionRuntimeSchema,
   submitStepBodySchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/progress"
+import { sessionIdParamSchema } from "@workspace/core/modules/journeys"
+import { parseSessionId } from "@workspace/core"
 
 import {
   cookieSecurity,

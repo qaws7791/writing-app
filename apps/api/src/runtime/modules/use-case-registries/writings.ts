@@ -5,7 +5,7 @@ import {
   makeDeleteWritingUseCase,
   makeGetWritingUseCase,
   makeListWritingsUseCase,
-} from "@workspace/core"
+} from "@workspace/core/modules/writings"
 
 import type { ApiCradle } from "../../container"
 

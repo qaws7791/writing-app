@@ -1,17 +1,15 @@
+import type { JourneyId, SessionId, UserId } from "@workspace/core"
+import type { JourneyCategory } from "@workspace/core/modules/journeys"
 import type {
-  JourneyCategory,
-  JourneyId,
   JourneyProgressStatus,
   SessionAiStateStatus,
-  SessionId,
   SessionProgressStatus,
   StepResponseMap,
-  UserId,
   UserJourneyListItem,
   UserJourneyProgress,
   UserSessionProgress,
   UserSessionStepAiState,
-} from "@workspace/core"
+} from "@workspace/core/modules/progress"
 
 import {
   parseSessionAiResultJson,

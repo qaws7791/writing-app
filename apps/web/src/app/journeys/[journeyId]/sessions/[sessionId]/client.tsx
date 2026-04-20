@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import type { SessionStepPayload } from "@workspace/core"
+import type { SessionStepPayload } from "@workspace/core/modules/journeys"
 
 import { useJourneyDetail } from "@/features/journeys"
 import {

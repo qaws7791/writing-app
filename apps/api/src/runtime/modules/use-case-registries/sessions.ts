@@ -5,7 +5,7 @@ import {
   makeRetrySessionStepAiUseCase,
   makeStartSessionUseCase,
   makeSubmitStepUseCase,
-} from "@workspace/core"
+} from "@workspace/core/modules/progress"
 
 import type { ApiCradle } from "../../container"
 

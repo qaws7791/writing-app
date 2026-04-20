@@ -1,5 +1,5 @@
 import type { Context } from "hono"
-import { UnauthorizedError, type UserId } from "@workspace/core"
+import { UnauthorizedError, type UserId } from "@workspace/core/shared"
 
 import type { AppEnv } from "../app-env"
 

@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from "vitest"
 
+import type { AiCoachingGateway } from "@workspace/core/modules/ai-feedback"
 import type {
-  AiCoachingGateway,
   ProgressRepository,
   SessionAiResult,
   UserSessionStepAiState,
-} from "@workspace/core"
-import { toSessionId, toUserId } from "@workspace/core"
+} from "@workspace/core/modules/progress"
+import { toSessionId, toUserId } from "@workspace/core/shared"
 
 import { createCapturedLogger } from "../test-support/capture-logger.js"
 import { createSessionAiWorker } from "./session-ai-worker.js"

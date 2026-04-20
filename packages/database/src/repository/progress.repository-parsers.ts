@@ -1,16 +1,18 @@
 import {
   comparisonSessionStepAiStateSchema,
-  createValidationError,
   feedbackSessionStepAiStateSchema,
-  type RevisionComparison,
   stepResponseMapSchema,
-  type WritingFeedback,
-} from "@workspace/core"
+} from "@workspace/core/modules/progress"
 import type {
   SessionAiResult,
   SessionAiStateKind,
   StepResponseMap,
-} from "@workspace/core"
+} from "@workspace/core/modules/progress"
+import type {
+  RevisionComparison,
+  WritingFeedback,
+} from "@workspace/core/modules/ai-feedback"
+import { createValidationError } from "@workspace/core/shared"
 
 export function parseStepResponsesJson(input: unknown): StepResponseMap {
   const parsed = stepResponseMapSchema.safeParse(input ?? {})

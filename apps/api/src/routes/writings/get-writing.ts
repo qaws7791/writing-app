@@ -1,9 +1,9 @@
 import { z } from "@hono/zod-openapi"
 import {
-  parseWritingId,
   writingDetailSchema,
   writingIdParamSchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/writings"
+import { parseWritingId } from "@workspace/core"
 
 import {
   cookieSecurity,

@@ -2,7 +2,7 @@ import { asFunction, asValue, type AwilixContainer } from "awilix"
 import {
   makeCompareRevisionsUseCase,
   makeGenerateFeedbackUseCase,
-} from "@workspace/core"
+} from "@workspace/core/modules/ai-feedback"
 
 import { createAiCoachingGateway } from "../../../services/ai-services"
 import type { ApiCradle } from "../../container"

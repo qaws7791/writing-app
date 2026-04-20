@@ -1,7 +1,7 @@
 import {
   journeyFiltersQuerySchema,
   journeyListResponseSchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/journeys"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"

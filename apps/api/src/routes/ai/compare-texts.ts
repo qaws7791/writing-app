@@ -1,7 +1,7 @@
 import {
   compareRevisionsBodySchema,
   revisionComparisonSchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/ai-feedback"
 
 import {
   cookieSecurity,

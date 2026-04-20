@@ -1,9 +1,6 @@
 import { z } from "@hono/zod-openapi"
-import {
-  parseJourneyId,
-  parseSessionId,
-  sessionIdParamSchema,
-} from "@workspace/core"
+import { sessionIdParamSchema } from "@workspace/core/modules/journeys"
+import { parseJourneyId, parseSessionId } from "@workspace/core"
 
 import {
   cookieSecurity,

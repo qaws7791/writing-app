@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { toHttpStatus, type DomainError } from "@workspace/core"
+import { toHttpStatus, type DomainError } from "@workspace/core/shared"
 import { ZodError } from "zod"
 
 import {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { ValidationError } from "@workspace/core"
+import { ValidationError } from "@workspace/core/shared"
 import { z } from "zod"
 
 import { createDefaultHook } from "./default-hook"

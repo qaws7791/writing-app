@@ -1,5 +1,5 @@
 import { type Hook } from "@hono/zod-openapi"
-import { ValidationError } from "@workspace/core"
+import { ValidationError } from "@workspace/core/shared"
 import type { Env } from "hono"
 
 export function createDefaultHook<TEnv extends Env = Env>(): Hook<

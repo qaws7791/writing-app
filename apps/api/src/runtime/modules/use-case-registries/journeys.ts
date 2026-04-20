@@ -1,11 +1,13 @@
 import { asFunction, type AwilixContainer } from "awilix"
 import {
-  makeEnrollJourneyUseCase,
   makeGetJourneyUseCase,
-  makeListCompletedJourneysUseCase,
   makeListJourneysUseCase,
+} from "@workspace/core/modules/journeys"
+import {
+  makeEnrollJourneyUseCase,
+  makeListCompletedJourneysUseCase,
   makeListUserJourneysUseCase,
-} from "@workspace/core"
+} from "@workspace/core/modules/progress"
 
 import type { ApiCradle } from "../../container"
 

@@ -1,7 +1,7 @@
 import {
   generateTextFeedbackBodySchema,
   writingFeedbackSchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/ai-feedback"
 
 import {
   cookieSecurity,

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, test } from "vitest"
 import { APIError } from "better-auth/api"
-import { createValidationError } from "@workspace/core"
+import { createValidationError } from "@workspace/core/shared"
 
 import { createTestApi } from "./test-support/create-test-app.js"
 import { createCapturedLogger } from "./test-support/capture-logger.js"

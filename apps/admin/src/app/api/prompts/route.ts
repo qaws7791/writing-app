@@ -2,9 +2,9 @@ import { NextResponse } from "next/server"
 
 import {
   createPromptBodySchema,
-  parsePromptId,
   promptFiltersQuerySchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/prompts"
+import { parsePromptId } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
 import { getAdminRuntime } from "@/lib/runtime/admin-composition"

@@ -1,9 +1,9 @@
 import {
   comparisonSessionStepAiStateSchema,
   feedbackSessionStepAiStateSchema,
-  type AiCoachingGateway,
   type ProgressRepository,
-} from "@workspace/core"
+} from "@workspace/core/modules/progress"
+import type { AiCoachingGateway } from "@workspace/core/modules/ai-feedback"
 
 import type { ApiLogger } from "../observability/logger"
 

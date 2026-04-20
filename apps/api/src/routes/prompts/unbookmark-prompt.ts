@@ -1,5 +1,6 @@
 import { z } from "@hono/zod-openapi"
-import { parsePromptId, promptIdParamSchema } from "@workspace/core"
+import { parsePromptId } from "@workspace/core"
+import { promptIdParamSchema } from "@workspace/core/modules/prompts"
 
 import {
   cookieSecurity,

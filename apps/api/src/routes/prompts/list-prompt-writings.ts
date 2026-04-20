@@ -1,9 +1,9 @@
+import { promptIdParamSchema } from "@workspace/core/modules/prompts"
 import {
-  parsePromptId,
   promptWritingsQuerySchema,
   promptWritingsResponseSchema,
-  promptIdParamSchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/writings"
+import { parsePromptId } from "@workspace/core"
 import { z } from "@hono/zod-openapi"
 
 import {

@@ -4,7 +4,7 @@ import type {
   AiCoachingGateway,
   GenerateFeedbackInput,
   CompareRevisionsInput,
-} from "@workspace/core"
+} from "@workspace/core/modules/ai-feedback"
 
 import { buildFeedbackPrompt } from "./prompts/feedback-prompt"
 import { buildComparePrompt } from "./prompts/compare-prompt"

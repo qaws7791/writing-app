@@ -1,5 +1,8 @@
 import { APIError } from "better-auth/api"
-import { toApplicationErrorStatus, ValidationError } from "@workspace/core"
+import {
+  toApplicationErrorStatus,
+  ValidationError,
+} from "@workspace/core/shared"
 import { HTTPException } from "hono/http-exception"
 
 import type { ErrorResponse } from "./error-schema"

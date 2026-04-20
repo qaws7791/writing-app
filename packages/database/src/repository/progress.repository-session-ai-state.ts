@@ -1,13 +1,12 @@
 import { and, asc, eq } from "drizzle-orm"
 
 import type {
-  ProgressRepository,
   SessionAiResult,
   SessionAiStateKind,
   SessionAiStateStatus,
-  SessionId,
-  UserId,
-} from "@workspace/core"
+  ProgressRepository,
+} from "@workspace/core/modules/progress"
+import type { SessionId, UserId } from "@workspace/core"
 
 import { userSessionStepAiState } from "../schema/user-session-step-ai-state"
 import type { DbExecutor } from "../types/index"

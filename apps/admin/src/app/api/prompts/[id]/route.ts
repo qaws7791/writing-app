@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server"
 
 import {
-  parsePromptId,
   promptIdParamSchema,
-  toHttpStatus,
   updatePromptBodySchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/prompts"
+import { parsePromptId, toHttpStatus } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
 import { getAdminRuntime } from "@/lib/runtime/admin-composition"

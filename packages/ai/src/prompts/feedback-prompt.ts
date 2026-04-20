@@ -1,4 +1,4 @@
-import type { UserLevel } from "@workspace/core"
+import type { UserLevel } from "@workspace/core/modules/ai-feedback"
 
 const levelGuide: Record<UserLevel, string> = {
   beginner:

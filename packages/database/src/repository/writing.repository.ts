@@ -1,10 +1,8 @@
 import { and, desc, eq, lt, or } from "drizzle-orm"
 
-import { toWritingId } from "@workspace/core"
+import { toWritingId } from "@workspace/core/shared"
+import type { WritingId, UserId, PromptId } from "@workspace/core"
 import type {
-  WritingId,
-  UserId,
-  PromptId,
   WritingRepository,
   WritingDetail,
   WritingSummary,
@@ -15,7 +13,7 @@ import type {
   WritingAccessResult,
   WritingUpdateResult,
   WritingDeleteResult,
-} from "@workspace/core"
+} from "@workspace/core/modules/writings"
 
 import { writings } from "../schema/writings"
 import { writingPrompts } from "../schema/writing-prompts"

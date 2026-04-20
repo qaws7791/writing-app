@@ -1,4 +1,4 @@
-import { homeSnapshotSchema } from "@workspace/core"
+import { homeSnapshotSchema } from "@workspace/core/modules/home"
 
 import {
   cookieSecurity,

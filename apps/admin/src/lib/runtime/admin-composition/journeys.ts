@@ -12,7 +12,7 @@ import {
   makeUpdateJourneyUseCase,
   makeUpdateSessionUseCase,
   makeUpdateStepUseCase,
-} from "@workspace/core"
+} from "@workspace/core/modules/journeys"
 import type { createJourneyRepository } from "@workspace/database"
 
 type JourneyRepository = ReturnType<typeof createJourneyRepository>

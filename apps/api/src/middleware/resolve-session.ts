@@ -1,5 +1,5 @@
 import type { MiddlewareHandler } from "hono"
-import { parseUserId } from "@workspace/core"
+import { parseUserId } from "@workspace/core/shared"
 
 import type { AppEnv, GetSession } from "../app-env"
 

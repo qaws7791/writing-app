@@ -3,7 +3,7 @@ import { NextResponse } from "next/server"
 import {
   createJourneyBodySchema,
   journeyFiltersQuerySchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/journeys"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
 import { getAdminRuntime } from "@/lib/runtime/admin-composition"

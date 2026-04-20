@@ -6,7 +6,8 @@ import {
   unique,
 } from "drizzle-orm/sqlite-core"
 
-import { stepTypeValues, type SessionId, type StepId } from "@workspace/core"
+import type { SessionId, StepId } from "@workspace/core"
+import { stepTypeValues } from "@workspace/core/modules/journeys"
 
 import { journeySessions } from "./journey-sessions"
 

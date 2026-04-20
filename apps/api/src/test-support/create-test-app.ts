@@ -7,13 +7,13 @@ import {
   toStepId,
   toUserId,
   toWritingId,
-} from "@workspace/core"
+} from "@workspace/core/shared"
 import {
   writingNotFound,
   writingForbidden,
 } from "@workspace/core/modules/writings"
 import { promptNotFound } from "@workspace/core/modules/prompts"
-import { journeyNotFound } from "@workspace/core"
+import { journeyNotFound } from "@workspace/core/modules/journeys"
 import { okAsync, errAsync } from "neverthrow"
 import { cors } from "hono/cors"
 

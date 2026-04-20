@@ -1,4 +1,4 @@
-import type { ProgressRepository } from "@workspace/core"
+import type { ProgressRepository } from "@workspace/core/modules/progress"
 
 import type { DbExecutor } from "../types/index"
 import { createJourneyProgressMethods } from "./progress.repository-journey-progress"

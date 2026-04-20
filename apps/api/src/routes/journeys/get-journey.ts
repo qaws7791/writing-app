@@ -2,8 +2,8 @@ import { z } from "@hono/zod-openapi"
 import {
   journeyDetailWithProgressSchema,
   journeyIdParamSchema,
-  parseJourneyId,
-} from "@workspace/core"
+} from "@workspace/core/modules/journeys"
+import { parseJourneyId } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { route } from "../../http/route"

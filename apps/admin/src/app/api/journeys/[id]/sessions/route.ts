@@ -3,9 +3,8 @@ import { NextResponse } from "next/server"
 import {
   createSessionBodySchema,
   journeyIdParamSchema,
-  parseJourneyId,
-  toHttpStatus,
-} from "@workspace/core"
+} from "@workspace/core/modules/journeys"
+import { parseJourneyId, toHttpStatus } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
 import { getAdminRuntime } from "@/lib/runtime/admin-composition"

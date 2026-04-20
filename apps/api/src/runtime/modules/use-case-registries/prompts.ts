@@ -2,10 +2,10 @@ import { asFunction, type AwilixContainer } from "awilix"
 import {
   makeBookmarkPromptUseCase,
   makeGetPromptUseCase,
-  makeListPromptWritingsUseCase,
   makeListPromptsUseCase,
   makeUnbookmarkPromptUseCase,
-} from "@workspace/core"
+} from "@workspace/core/modules/prompts"
+import { makeListPromptWritingsUseCase } from "@workspace/core/modules/writings"
 
 import type { ApiCradle } from "../../container"
 

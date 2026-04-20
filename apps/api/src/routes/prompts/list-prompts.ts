@@ -1,8 +1,8 @@
 import {
-  parsePromptId,
   promptFiltersQuerySchema,
   promptListPageResponseSchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/prompts"
+import { parsePromptId } from "@workspace/core"
 
 import {
   cookieSecurity,

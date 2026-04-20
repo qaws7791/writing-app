@@ -1,8 +1,8 @@
 import {
   createWritingBodySchema,
-  parsePromptId,
   writingDetailSchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/writings"
+import { parsePromptId } from "@workspace/core"
 
 import {
   cookieSecurity,

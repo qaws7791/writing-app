@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server"
 
 import {
-  parseSessionId,
   sessionIdParamSchema,
-  toHttpStatus,
   updateSessionBodySchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/journeys"
+import { parseSessionId, toHttpStatus } from "@workspace/core"
 
 import { withAdminAuth } from "@/lib/auth/require-admin"
 import { getAdminRuntime } from "@/lib/runtime/admin-composition"

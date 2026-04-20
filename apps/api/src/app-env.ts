@@ -1,5 +1,5 @@
 import type { z } from "zod"
-import type { UserId } from "@workspace/core"
+import type { UserId } from "@workspace/core/shared"
 
 import type {
   authenticatedSessionSchema,

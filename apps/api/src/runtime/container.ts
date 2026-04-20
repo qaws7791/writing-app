@@ -6,10 +6,8 @@ import {
   createWritingRepository,
   openDb,
 } from "@workspace/database"
-import type {
-  AiCoachingGateway,
-  RepositoryTransactionManager,
-} from "@workspace/core"
+import type { AiCoachingGateway } from "@workspace/core/modules/ai-feedback"
+import type { RepositoryTransactionManager } from "@workspace/core/shared"
 import type Redis from "ioredis"
 
 import { createAuth } from "../auth/auth"

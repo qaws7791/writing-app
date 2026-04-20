@@ -4,7 +4,7 @@ import {
   makeGetPromptUseCase,
   makeListPromptsUseCase,
   makeUpdatePromptUseCase,
-} from "@workspace/core"
+} from "@workspace/core/modules/prompts"
 import type { createWritingPromptRepository } from "@workspace/database"
 
 type PromptRepository = ReturnType<typeof createWritingPromptRepository>

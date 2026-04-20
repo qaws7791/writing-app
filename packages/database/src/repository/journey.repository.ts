@@ -1,9 +1,7 @@
 import { asc, count, eq, inArray } from "drizzle-orm"
 
+import type { JourneyId, SessionId, StepId } from "@workspace/core"
 import type {
-  JourneyId,
-  SessionId,
-  StepId,
   JourneyRepository,
   JourneySummary,
   JourneyDetail,
@@ -18,11 +16,9 @@ import type {
   UpdateSessionInput,
   CreateStepInput,
   UpdateStepInput,
-} from "@workspace/core"
-import {
-  createValidationError,
-  sessionStepPayloadSchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/journeys"
+import { createValidationError } from "@workspace/core/shared"
+import { sessionStepPayloadSchema } from "@workspace/core/modules/journeys"
 
 import { journeys } from "../schema/journeys"
 import { journeySessions } from "../schema/journey-sessions"

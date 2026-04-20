@@ -16,7 +16,7 @@ import type {
   SessionStepContentType as SessionStepType,
   ShortAnswerStepContent as ShortAnswerContent,
   WritingStepContent as WritingContent,
-} from "@workspace/core"
+} from "@workspace/core/modules/journeys"
 
 export type CTAConfig = StepCTAConfig
 export type StepContent = SessionStepContent

@@ -1,5 +1,5 @@
 import { asFunction, type AwilixContainer } from "awilix"
-import { makeGetHomeUseCase } from "@workspace/core"
+import { makeGetHomeUseCase } from "@workspace/core/modules/home"
 
 import type { ApiCradle } from "../../container"
 

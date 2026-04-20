@@ -1,7 +1,7 @@
 import type { Context, Env, MiddlewareHandler } from "hono"
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import type { ZodType, z } from "zod"
-import type { DomainError } from "@workspace/core"
+import type { DomainError } from "@workspace/core/shared"
 import type { Result } from "neverthrow"
 import type { InjectionToken } from "../injection-token"
 import { createOpenApiApp } from "../../http/create-openapi-app"

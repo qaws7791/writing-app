@@ -1,7 +1,5 @@
-import {
-  cursorPageQuerySchema,
-  writingListResponseSchema,
-} from "@workspace/core"
+import { writingListResponseSchema } from "@workspace/core/modules/writings"
+import { cursorPageQuerySchema } from "@workspace/core"
 
 import {
   cookieSecurity,

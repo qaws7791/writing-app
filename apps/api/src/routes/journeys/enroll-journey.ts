@@ -1,9 +1,7 @@
 import { z } from "@hono/zod-openapi"
-import {
-  journeyIdParamSchema,
-  parseJourneyId,
-  userJourneyProgressSchema,
-} from "@workspace/core"
+import { userJourneyProgressSchema } from "@workspace/core/modules/progress"
+import { journeyIdParamSchema } from "@workspace/core/modules/journeys"
+import { parseJourneyId } from "@workspace/core"
 
 import {
   cookieSecurity,

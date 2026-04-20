@@ -1,6 +1,6 @@
 import type { MiddlewareHandler } from "hono"
 
-import { toApplicationErrorStatus } from "@workspace/core"
+import { toApplicationErrorStatus } from "@workspace/core/shared"
 
 import type { AppEnv } from "../app-env"
 import type { ApiLogger } from "../observability/logger"

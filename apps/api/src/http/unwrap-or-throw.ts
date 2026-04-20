@@ -1,4 +1,4 @@
-import { toApplicationError, type DomainError } from "@workspace/core"
+import { toApplicationError, type DomainError } from "@workspace/core/shared"
 import type { Result } from "neverthrow"
 
 /**

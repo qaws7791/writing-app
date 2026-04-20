@@ -1,8 +1,7 @@
 import { and, asc, eq, gt, sql } from "drizzle-orm"
 
+import type { PromptId, UserId } from "@workspace/core"
 import type {
-  PromptId,
-  UserId,
   PromptRepository,
   PromptSummary,
   PromptListFilters,
@@ -10,7 +9,7 @@ import type {
   PromptBookmarkResult,
   CreatePromptInput,
   UpdatePromptInput,
-} from "@workspace/core"
+} from "@workspace/core/modules/prompts"
 
 import { writingPrompts } from "../schema/writing-prompts"
 import { savedPrompts } from "../schema/saved-prompts"

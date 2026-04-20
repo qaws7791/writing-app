@@ -1,5 +1,5 @@
 import { createAiCoachingService, createAIModel } from "@workspace/ai"
-import type { AiCoachingGateway } from "@workspace/core"
+import type { AiCoachingGateway } from "@workspace/core/modules/ai-feedback"
 
 import { apiEnv } from "../config/env"
 

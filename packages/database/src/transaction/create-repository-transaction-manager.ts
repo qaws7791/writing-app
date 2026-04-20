@@ -1,7 +1,7 @@
 import type {
   RepositoryTransactionManager,
   RepositoryTransactionScope,
-} from "@workspace/core"
+} from "@workspace/core/shared"
 
 import { createJourneyRepository } from "../repository/journey.repository"
 import { createProgressRepository } from "../repository/progress.repository"

@@ -1,7 +1,7 @@
 import {
   PROMPT_CATEGORIES,
   promptCategoriesResponseSchema,
-} from "@workspace/core"
+} from "@workspace/core/modules/prompts"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { route } from "../../http/route"

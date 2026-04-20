@@ -12,8 +12,8 @@ import {
   toStepId,
   toUserId,
   toWritingId,
-  journeyNotFound,
-} from "@workspace/core"
+} from "@workspace/core/shared"
+import { journeyNotFound } from "@workspace/core/modules/journeys"
 
 import {
   createUseCaseMiddleware,

@@ -1,12 +1,11 @@
 import { and, eq } from "drizzle-orm"
 
+import type { SessionId, UserId } from "@workspace/core"
 import type {
   ProgressRepository,
-  SessionId,
   SessionProgressStatus,
   StepResponseMap,
-  UserId,
-} from "@workspace/core"
+} from "@workspace/core/modules/progress"
 
 import { journeySessions } from "../schema/journey-sessions"
 import { userSessionProgress } from "../schema/user-session-progress"

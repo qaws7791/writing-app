@@ -5,10 +5,14 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./shared": "./src/shared/index.ts",
+    "./modules/journeys": "./src/modules/journeys/index.ts",
+    "./modules/progress": "./src/modules/progress/index.ts",
     "./modules/prompts": "./src/modules/prompts/index.ts",
     "./modules/prompts/testing": "./src/modules/prompts/testing/index.ts",
     "./modules/home": "./src/modules/home/index.ts",
     "./modules/home/testing": "./src/modules/home/testing/index.ts",
+    "./modules/ai-feedback": "./src/modules/ai-feedback/index.ts",
     "./modules/daily-recommendation": "./src/modules/daily-recommendation/index.ts",
     "./modules/writings": "./src/modules/writings/index.ts",
     "./modules/ai-assistant": "./src/modules/ai-assistant/index.ts"

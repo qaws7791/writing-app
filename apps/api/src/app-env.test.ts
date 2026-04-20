@@ -1,6 +1,6 @@
 import { describe, expectTypeOf, test } from "vitest"
 
-import type { UserId } from "@workspace/core"
+import type { UserId } from "@workspace/core/shared"
 
 import type { ApiLogger } from "./observability/logger"
 import type {
