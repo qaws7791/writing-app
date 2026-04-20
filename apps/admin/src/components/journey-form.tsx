@@ -20,6 +20,10 @@ import {
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 import { ImageUpload } from "@/components/image-upload"
+import {
+  finishAdminMutation,
+  runAdminMutation,
+} from "@/lib/forms/admin-mutation"
 
 type JourneyFormValues = {
   title: string
@@ -57,23 +61,19 @@ export function JourneyForm({ defaultValues, journeyId }: Props) {
     setError(null)
     setIsPending(true)
     try {
-      const url = isEdit ? `/api/journeys/${journeyId}` : "/api/journeys"
-      const method = isEdit ? "PUT" : "POST"
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const result = await runAdminMutation({
+        body: {
           ...values,
           thumbnailUrl: values.thumbnailUrl || null,
-        }),
+        },
+        method: isEdit ? "PUT" : "POST",
+        url: isEdit ? `/api/journeys/${journeyId}` : "/api/journeys",
       })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(JSON.stringify(data))
+      if (!result.ok) {
+        setError(result.error)
         return
       }
-      router.push("/journeys")
-      router.refresh()
+      finishAdminMutation(router, "/journeys")
     } catch {
       setError("서버 오류가 발생했습니다")
     } finally {
@@ -86,15 +86,17 @@ export function JourneyForm({ defaultValues, journeyId }: Props) {
     if (!confirm("정말 삭제하시겠습니까?")) return
     setIsPending(true)
     try {
-      const res = await fetch(`/api/journeys/${journeyId}`, {
+      const result = await runAdminMutation({
         method: "DELETE",
+        url: `/api/journeys/${journeyId}`,
       })
-      if (!res.ok) {
-        setError("삭제에 실패했습니다")
+      if (!result.ok) {
+        setError(result.error)
         return
       }
-      router.push("/journeys")
-      router.refresh()
+      finishAdminMutation(router, "/journeys")
+    } catch {
+      setError("서버 오류가 발생했습니다")
     } finally {
       setIsPending(false)
     }

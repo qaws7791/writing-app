@@ -13,6 +13,10 @@ import { Input } from "@workspace/ui/components/ui/input"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 import { ImageUpload } from "@/components/image-upload"
+import {
+  finishAdminMutation,
+  runAdminMutation,
+} from "@/lib/forms/admin-mutation"
 
 type PromptType = "sensory" | "reflection" | "opinion"
 
@@ -52,23 +56,19 @@ export function PromptForm({ defaultValues, promptId }: Props) {
     setError(null)
     setIsPending(true)
     try {
-      const url = isEdit ? `/api/prompts/${promptId}` : "/api/prompts"
-      const method = isEdit ? "PUT" : "POST"
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const result = await runAdminMutation({
+        body: {
           ...values,
           thumbnailUrl: values.thumbnailUrl || null,
-        }),
+        },
+        method: isEdit ? "PUT" : "POST",
+        url: isEdit ? `/api/prompts/${promptId}` : "/api/prompts",
       })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(JSON.stringify(data))
+      if (!result.ok) {
+        setError(result.error)
         return
       }
-      router.push("/prompts")
-      router.refresh()
+      finishAdminMutation(router, "/prompts")
     } catch {
       setError("서버 오류가 발생했습니다")
     } finally {
@@ -81,13 +81,17 @@ export function PromptForm({ defaultValues, promptId }: Props) {
     if (!confirm("정말 삭제하시겠습니까?")) return
     setIsPending(true)
     try {
-      const res = await fetch(`/api/prompts/${promptId}`, { method: "DELETE" })
-      if (!res.ok) {
-        setError("삭제에 실패했습니다")
+      const result = await runAdminMutation({
+        method: "DELETE",
+        url: `/api/prompts/${promptId}`,
+      })
+      if (!result.ok) {
+        setError(result.error)
         return
       }
-      router.push("/prompts")
-      router.refresh()
+      finishAdminMutation(router, "/prompts")
+    } catch {
+      setError("서버 오류가 발생했습니다")
     } finally {
       setIsPending(false)
     }

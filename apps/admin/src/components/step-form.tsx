@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import type { StepType } from "@workspace/core/modules/journeys"
 
 import { Button } from "@workspace/ui/components/ui/button"
 import {
@@ -12,20 +13,15 @@ import {
 import { Input } from "@workspace/ui/components/ui/input"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
-type StepType =
-  | "INTRO"
-  | "COMPLETION"
-  | "CONCEPT"
-  | "EXAMPLE"
-  | "MULTIPLE_CHOICE"
-  | "FILL_IN_THE_BLANK"
-  | "ORDERING"
-  | "HIGHLIGHT"
-  | "SHORT_ANSWER"
-  | "WRITING"
-  | "REWRITING"
-  | "AI_FEEDBACK"
-  | "AI_COMPARISON"
+import {
+  finishAdminMutation,
+  runAdminMutation,
+} from "@/lib/forms/admin-mutation"
+import {
+  parseStepContentJson,
+  serializeStepContentJson,
+  stepTypeOptions,
+} from "@/lib/forms/step-form-helpers"
 
 type StepFormValues = {
   type: StepType
@@ -44,22 +40,6 @@ type Props = {
   stepId?: number
 }
 
-const stepTypeOptions: { value: StepType; label: string }[] = [
-  { value: "INTRO", label: "인트로" },
-  { value: "COMPLETION", label: "완료" },
-  { value: "CONCEPT", label: "개념" },
-  { value: "EXAMPLE", label: "예시" },
-  { value: "MULTIPLE_CHOICE", label: "객관식" },
-  { value: "FILL_IN_THE_BLANK", label: "빈칸 채우기" },
-  { value: "ORDERING", label: "순서 배열" },
-  { value: "HIGHLIGHT", label: "하이라이트" },
-  { value: "SHORT_ANSWER", label: "단답형" },
-  { value: "WRITING", label: "글쓰기" },
-  { value: "REWRITING", label: "퇴고" },
-  { value: "AI_FEEDBACK", label: "AI 피드백" },
-  { value: "AI_COMPARISON", label: "AI 비교" },
-]
-
 export function StepForm({
   journeyId,
   sessionId,
@@ -73,7 +53,7 @@ export function StepForm({
     type: defaultValues?.type ?? "INTRO",
     order: defaultValues?.order ?? 1,
     contentJson: defaultValues?.contentJson
-      ? JSON.stringify(defaultValues.contentJson, null, 2)
+      ? serializeStepContentJson(defaultValues.contentJson)
       : "{}",
   })
   const [error, setError] = useState<string | null>(null)
@@ -83,36 +63,33 @@ export function StepForm({
     e.preventDefault()
     setError(null)
 
-    let contentJson: unknown
-    try {
-      contentJson = JSON.parse(values.contentJson)
-    } catch {
-      setError("contentJson이 올바른 JSON 형식이 아닙니다")
+    const parsedContentJson = parseStepContentJson(values.contentJson)
+    if (!parsedContentJson.ok) {
+      setError(parsedContentJson.error)
       return
     }
 
     setIsPending(true)
     try {
-      const url = isEdit
-        ? `/api/journeys/${journeyId}/sessions/${sessionId}/steps/${stepId}`
-        : `/api/journeys/${journeyId}/sessions/${sessionId}/steps`
-      const method = isEdit ? "PUT" : "POST"
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const result = await runAdminMutation({
+        body: {
           type: values.type,
           order: values.order,
-          contentJson,
-        }),
+          contentJson: parsedContentJson.value,
+        },
+        method: isEdit ? "PUT" : "POST",
+        url: isEdit
+          ? `/api/journeys/${journeyId}/sessions/${sessionId}/steps/${stepId}`
+          : `/api/journeys/${journeyId}/sessions/${sessionId}/steps`,
       })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(JSON.stringify(data))
+      if (!result.ok) {
+        setError(result.error)
         return
       }
-      router.push(`/journeys/${journeyId}/sessions/${sessionId}`)
-      router.refresh()
+      finishAdminMutation(
+        router,
+        `/journeys/${journeyId}/sessions/${sessionId}`
+      )
     } catch {
       setError("서버 오류가 발생했습니다")
     } finally {
@@ -125,16 +102,20 @@ export function StepForm({
     if (!confirm("정말 삭제하시겠습니까?")) return
     setIsPending(true)
     try {
-      const res = await fetch(
-        `/api/journeys/${journeyId}/sessions/${sessionId}/steps/${stepId}`,
-        { method: "DELETE" }
-      )
-      if (!res.ok) {
-        setError("삭제에 실패했습니다")
+      const result = await runAdminMutation({
+        method: "DELETE",
+        url: `/api/journeys/${journeyId}/sessions/${sessionId}/steps/${stepId}`,
+      })
+      if (!result.ok) {
+        setError(result.error)
         return
       }
-      router.push(`/journeys/${journeyId}/sessions/${sessionId}`)
-      router.refresh()
+      finishAdminMutation(
+        router,
+        `/journeys/${journeyId}/sessions/${sessionId}`
+      )
+    } catch {
+      setError("서버 오류가 발생했습니다")
     } finally {
       setIsPending(false)
     }

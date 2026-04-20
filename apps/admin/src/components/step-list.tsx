@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { StepType } from "@workspace/core/modules/journeys"
 
 import {
   Table,
@@ -9,11 +10,13 @@ import {
   TableRow,
 } from "@workspace/ui/components/ui/table"
 
+import { stepTypeLabels } from "@/lib/forms/step-form-helpers"
+
 type Step = {
   id: number
   sessionId: number
   order: number
-  type: string
+  type: StepType
   contentJson: unknown
 }
 
@@ -21,22 +24,6 @@ type Props = {
   steps: Step[]
   journeyId: number
   sessionId: number
-}
-
-const stepTypeLabels: Record<string, string> = {
-  INTRO: "인트로",
-  COMPLETION: "완료",
-  CONCEPT: "개념",
-  EXAMPLE: "예시",
-  MULTIPLE_CHOICE: "객관식",
-  FILL_IN_THE_BLANK: "빈칸 채우기",
-  ORDERING: "순서 배열",
-  HIGHLIGHT: "하이라이트",
-  SHORT_ANSWER: "단답형",
-  WRITING: "글쓰기",
-  REWRITING: "퇴고",
-  AI_FEEDBACK: "AI 피드백",
-  AI_COMPARISON: "AI 비교",
 }
 
 export function StepList({ steps, journeyId, sessionId }: Props) {

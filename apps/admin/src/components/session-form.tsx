@@ -12,6 +12,11 @@ import {
 import { Input } from "@workspace/ui/components/ui/input"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
+import {
+  finishAdminMutation,
+  runAdminMutation,
+} from "@/lib/forms/admin-mutation"
+
 type SessionFormValues = {
   title: string
   description: string
@@ -43,22 +48,18 @@ export function SessionForm({ journeyId, defaultValues, sessionId }: Props) {
     setError(null)
     setIsPending(true)
     try {
-      const url = isEdit
-        ? `/api/journeys/${journeyId}/sessions/${sessionId}`
-        : `/api/journeys/${journeyId}/sessions`
-      const method = isEdit ? "PUT" : "POST"
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+      const result = await runAdminMutation({
+        body: values,
+        method: isEdit ? "PUT" : "POST",
+        url: isEdit
+          ? `/api/journeys/${journeyId}/sessions/${sessionId}`
+          : `/api/journeys/${journeyId}/sessions`,
       })
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}))
-        setError(JSON.stringify(data))
+      if (!result.ok) {
+        setError(result.error)
         return
       }
-      router.push(`/journeys/${journeyId}`)
-      router.refresh()
+      finishAdminMutation(router, `/journeys/${journeyId}`)
     } catch {
       setError("서버 오류가 발생했습니다")
     } finally {
@@ -71,16 +72,17 @@ export function SessionForm({ journeyId, defaultValues, sessionId }: Props) {
     if (!confirm("정말 삭제하시겠습니까?")) return
     setIsPending(true)
     try {
-      const res = await fetch(
-        `/api/journeys/${journeyId}/sessions/${sessionId}`,
-        { method: "DELETE" }
-      )
-      if (!res.ok) {
-        setError("삭제에 실패했습니다")
+      const result = await runAdminMutation({
+        method: "DELETE",
+        url: `/api/journeys/${journeyId}/sessions/${sessionId}`,
+      })
+      if (!result.ok) {
+        setError(result.error)
         return
       }
-      router.push(`/journeys/${journeyId}`)
-      router.refresh()
+      finishAdminMutation(router, `/journeys/${journeyId}`)
+    } catch {
+      setError("서버 오류가 발생했습니다")
     } finally {
       setIsPending(false)
     }
