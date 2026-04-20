@@ -2,17 +2,16 @@ import type { Context, Env, MiddlewareHandler } from "hono"
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import type { ZodType, z } from "zod"
 import type { DomainError } from "@workspace/core/shared"
+import { toApplicationError } from "@workspace/core/shared"
 import type { Result } from "neverthrow"
 import type { InjectionToken } from "../injection-token"
 import { createOpenApiApp } from "../../http/create-openapi-app"
-import { buildHandlerInput } from "./build-handler-input"
 import { buildRouteConfig } from "./build-route-config"
 import {
   RouteStatusResponse,
   type SuccessStatusCode,
   withStatus,
 } from "./route-status-response"
-import { resolveHandlerValue } from "./resolve-handler-value"
 
 // ── Type Utilities ──
 
@@ -30,6 +29,10 @@ export type ResponseMap = {
 }
 
 export type InjectMap = Record<string, InjectionToken<unknown>>
+
+type ValidatedRequest = {
+  valid(target: "json" | "param" | "query"): unknown
+}
 
 type SuccessData<R extends ResponseMap> = {
   [K in keyof R & SuccessStatusCode]: R[K] extends ZodType
@@ -98,6 +101,37 @@ type RouteOptions<
   timeoutMs?: number
 }
 
+function isResult(value: unknown): value is Result<unknown, unknown> {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "isOk" in value &&
+    "isErr" in value &&
+    typeof (value as { isOk: unknown }).isOk === "function"
+  )
+}
+
+function resolveHandlerValue(value: unknown): {
+  data: unknown
+  status?: SuccessStatusCode
+} {
+  if (isResult(value)) {
+    if (value.isErr()) {
+      const error = value.error
+      if (error instanceof Error) throw error
+      throw toApplicationError(error as DomainError)
+    }
+
+    return resolveHandlerValue(value.value)
+  }
+
+  if (value instanceof RouteStatusResponse) {
+    return { data: value.data, status: value.status }
+  }
+
+  return { data: value }
+}
+
 // ── Factory ──
 
 /**
@@ -160,12 +194,23 @@ export function defineRoute<TEnv extends Env>() {
     // expressed when building routes dynamically.
 
     app.openapi(route, async (c) => {
-      const input = buildHandlerInput<TEnv, TBody, TQuery, TParams, TInject>(
-        c,
-        inject,
-        request
+      const input: Record<string, unknown> = { context: c }
+      const contextVariables = c.var as Record<string, unknown>
+      const validatedRequest = c.req as ValidatedRequest
+
+      if (inject) {
+        for (const [handlerKey, token] of Object.entries(inject)) {
+          input[handlerKey] = contextVariables[token.key]
+        }
+      }
+
+      if (request?.body) input.body = validatedRequest.valid("json")
+      if (request?.query) input.query = validatedRequest.valid("query")
+      if (request?.params) input.params = validatedRequest.valid("param")
+
+      const raw = await handler(
+        input as HandlerInput<TEnv, TBody, TQuery, TParams, TInject>
       )
-      const raw = await handler(input)
       const { data, status } = resolveHandlerValue(raw)
       const finalStatus = status ?? defaultSuccessStatus
 
