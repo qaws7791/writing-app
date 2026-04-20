@@ -28,6 +28,7 @@ export function ThemeSwitcher() {
           {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
             <button
               key={value}
+              type="button"
               aria-label={label}
               onClick={() => setTheme(value)}
               className={`flex h-7 w-7 items-center justify-center rounded-full transition-colors ${

@@ -27,6 +27,7 @@ export function SessionCard({
     return (
       <div className="overflow-hidden rounded-[2.375rem] bg-accent">
         <button
+          type="button"
           onClick={() => setIsOpen((v) => !v)}
           className="flex w-full items-center p-6"
         >
@@ -64,6 +65,7 @@ export function SessionCard({
     return (
       <div className="flex flex-col overflow-hidden rounded-[2.375rem] bg-accent">
         <button
+          type="button"
           onClick={() => setIsOpen((v) => !v)}
           className="flex w-full items-start justify-between gap-4 p-6"
         >

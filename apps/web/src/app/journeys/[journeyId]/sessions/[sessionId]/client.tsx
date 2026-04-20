@@ -144,6 +144,7 @@ export default function SessionDetailClientPage({
           세션 정보를 불러오지 못했어요.
         </p>
         <button
+          type="button"
           onClick={() => router.push(`/journeys/${journeyId}`)}
           className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background"
         >
@@ -162,6 +163,7 @@ export default function SessionDetailClientPage({
           아직 준비 중인 세션이에요.
         </p>
         <button
+          type="button"
           onClick={() => router.push(`/journeys/${journeyId}`)}
           className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background"
         >

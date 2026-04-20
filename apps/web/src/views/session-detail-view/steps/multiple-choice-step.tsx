@@ -71,6 +71,7 @@ export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
           return (
             <button
               key={opt.id}
+              type="button"
               onClick={() => toggleOption(opt.id)}
               disabled={checked}
               className={`flex items-start gap-3 rounded-xl border-2 px-4 py-3 text-left transition-all ${borderClass} ${bgClass}`}

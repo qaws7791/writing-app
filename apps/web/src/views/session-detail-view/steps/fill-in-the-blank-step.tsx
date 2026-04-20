@@ -111,6 +111,7 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
               return (
                 <button
                   key={opt.id}
+                  type="button"
                   onClick={() => selectOption(blank.id, opt.id)}
                   disabled={checked}
                   className={cls}

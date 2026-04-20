@@ -54,6 +54,7 @@ export default function MyJourneysView() {
           나의 여정
         </h1>
         <button
+          type="button"
           onClick={() => router.push("/journeys")}
           className="text-sm leading-5 font-medium text-muted-foreground"
         >

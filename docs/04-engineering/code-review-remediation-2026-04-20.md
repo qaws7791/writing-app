@@ -35,7 +35,7 @@ description: code-review (1).md 기준 후속 조치 현황과 실제 코드 기
 | 9    | `handleSaveAndLeave` 묵음 에러 처리           | 완료   | 저장 실패 토스트와 다이얼로그 재오픈 적용           |
 | 10   | Admin API 공통 에러 핸들러                    | 완료   | `withAdminAuth`에 공통 에러 JSON 변환 추가          |
 | 11   | Writing Step 제한 시간 표시 정합성            | 완료   | 구현 전까지 오해를 주는 제한 시간 UI 제거           |
-| 12   | `SettingRow` 버튼 `type` 명시                 | 대기   | `setting-row.tsx`                                   |
+| 12   | `SettingRow` 버튼 `type` 명시                 | 완료   | `react/button-has-type` 추가 + 누락 버튼 정리       |
 | 13   | Next.js `Image` 미사용 이미지 교체            | 대기   | `journey-card.tsx`, `journey-hero.tsx`              |
 | 14   | API 타입 생성 자동화                          | 대기   | `turbo.json`, `packages/api-client`                 |
 | 15   | Lefthook 패키지별 lint 중복 제거              | 대기   | `lefthook.yml`                                      |

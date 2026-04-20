@@ -45,6 +45,7 @@ export default function JourneyDetailClientPage({
           여정 정보를 불러오지 못했어요.
         </p>
         <button
+          type="button"
           onClick={() => router.push("/journeys")}
           className="rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background"
         >

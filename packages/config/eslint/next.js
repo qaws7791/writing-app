@@ -41,6 +41,7 @@ export const nextJsConfig = [
     },
     settings: { react: { version: "detect" } },
     rules: {
+      "react/button-has-type": "error",
       ...pluginReactHooks.configs.recommended.rules,
       "react/no-array-index-key": "warn",
       // React scope no longer necessary with new JSX transform.

@@ -87,6 +87,7 @@ export default function ProfileView() {
 
           {/* 로그아웃 */}
           <button
+            type="button"
             className="flex items-center justify-center py-5 opacity-70"
             onClick={handleLogout}
           >

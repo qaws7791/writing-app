@@ -16,6 +16,7 @@ export function SettingRow({
 }) {
   return (
     <button
+      type="button"
       className="flex w-full items-center gap-4 px-6 py-5 text-left"
       onClick={onClick}
     >
