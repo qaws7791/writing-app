@@ -37,7 +37,7 @@ description: code-review (1).md 기준 후속 조치 현황과 실제 코드 기
 | 11   | Writing Step 제한 시간 표시 정합성            | 완료   | 구현 전까지 오해를 주는 제한 시간 UI 제거           |
 | 12   | `SettingRow` 버튼 `type` 명시                 | 완료   | `react/button-has-type` 추가 + 누락 버튼 정리       |
 | 13   | Next.js `Image` 미사용 이미지 교체            | 완료   | `web`/`admin` 이미지 교체 + `no-img-element` 추가   |
-| 14   | API 타입 생성 자동화                          | 대기   | `turbo.json`, `packages/api-client`                 |
+| 14   | API 타입 생성 자동화                          | 완료   | OpenAPI 생성 스크립트 + turbo 체인 + drift 검사     |
 | 15   | Lefthook 패키지별 lint 중복 제거              | 대기   | `lefthook.yml`                                      |
 | 16   | Admin 환경 변수 검증 시점                     | 기해결 | `apps/admin/src/env.ts`는 이미 `createEnv` 사용     |
 | 17   | `define-route.ts` 책임 분리                   | 대기   | `apps/api/src/lib/hono`                             |

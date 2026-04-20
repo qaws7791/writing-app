@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "api:generate": "bun run --filter=@workspace/api-client api:generate",
-    "api:fetch": "bun run --filter=@workspace/api-client api:fetch",
+    "api:generate": "cd ../../ && bun run api:generate",
+    "api:fetch": "cd ../../ && bun run api:fetch",
     "dev": "bun --env-file=.env.development --bun next dev",
     "dev:local": "bun --env-file=.env.local-mode --bun next dev",
     "build": "bun --env-file=.env.development --bun next build",

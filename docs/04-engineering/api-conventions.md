@@ -114,8 +114,9 @@ description: apps/api가 core 계약 스키마와 use case를 HTTP/OpenAPI 경�
 
 - `@workspace/api-client` 패키지: 서버 OpenAPI 스펙에서 `openapi-typescript`로 자동 생성한 타입과 클라이언트를 포함합니다.
 - `apps/web/foundation/api/client.ts`: `@workspace/api-client`를 래핑하여 baseUrl과 쿠키 기반 인증을 주입합니다.
-- 타입 생성 명령: `bun run api:generate` (API 서버 실행 필요, `@workspace/api-client` 스크립트 실행)
-- 서버 API 스키마가 변경되면 반드시 `bun run api:generate`를 실행하여 타입을 갱신합니다.
+- 타입 생성 명령: `bun run api:generate`
+- 이 명령은 `turbo`로 `apps/api`의 OpenAPI 문서 생성과 `@workspace/api-client` 타입 생성을 순서대로 실행합니다.
+- 서버 API 스키마가 변경되면 반드시 `bun run api:generate`를 실행하고, CI/로컬 검증에서는 `bun run api:check-generated`로 생성물 drift를 확인합니다.
 - 개발 전용 라우트는 운영 앱 라우트와 운영 OpenAPI 스펙에 포함하지 않습니다.
 - 프론트엔드에서 `fetch`를 직접 사용하지 않고 `foundation/api/client`를 통해 API를 호출합니다.
 

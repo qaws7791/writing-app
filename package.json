@@ -7,6 +7,9 @@
     "packages/*"
   ],
   "scripts": {
+    "api:fetch": "turbo run api:fetch --filter=@workspace/api-client",
+    "api:generate": "turbo run api:generate --filter=@workspace/api-client",
+    "api:check-generated": "bun run api:generate && git diff --exit-code -- packages/api-client/src/openapi.json packages/api-client/src/schema.d.ts",
     "build": "turbo build",
     "build-storybook": "bun --filter storybook build",
     "dev": "turbo dev",

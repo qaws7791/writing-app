@@ -5,6 +5,7 @@
     "ADMIN_JWT_SECRET",
     "ADMIN_NAME",
     "ADMIN_PASSWORD",
+    "API_BASE_URL",
     "CI",
     "DATABASE_URL",
     "NODE_ENV",
@@ -25,6 +26,17 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "openapi:write": {
+      "outputs": [".generated/openapi.json"]
+    },
+    "api:fetch": {
+      "dependsOn": ["api#openapi:write"],
+      "outputs": ["src/openapi.json"]
+    },
+    "api:generate": {
+      "dependsOn": ["api:fetch"],
+      "outputs": ["src/schema.d.ts"]
     },
     "lint": {
       "dependsOn": ["^lint"]

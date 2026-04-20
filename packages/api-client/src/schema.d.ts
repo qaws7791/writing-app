@@ -1154,7 +1154,164 @@ export interface paths {
                   | "write"
                   | "feedback"
                   | "revise"
-                contentJson?: unknown
+                contentJson: {
+                  /** @enum {string} */
+                  type?:
+                    | "INTRO"
+                    | "COMPLETION"
+                    | "CONCEPT"
+                    | "EXAMPLE"
+                    | "MULTIPLE_CHOICE"
+                    | "FILL_IN_THE_BLANK"
+                    | "ORDERING"
+                    | "HIGHLIGHT"
+                    | "SHORT_ANSWER"
+                    | "WRITING"
+                    | "REWRITING"
+                    | "AI_FEEDBACK"
+                    | "AI_COMPARISON"
+                  content:
+                    | {
+                        /** @enum {string} */
+                        type: "INTRO"
+                        title: string
+                        description: string
+                        keywords?: string[]
+                        estimatedMinutes: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "COMPLETION"
+                        congratsMessage: string
+                        summaryPoints: string[]
+                        nextSessionPreview?: {
+                          title: string
+                          teaser: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "CONCEPT"
+                        title: string
+                        body: string
+                        keyTakeaway?: string
+                        imageUrl?: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "EXAMPLE"
+                        title: string
+                        examples: {
+                          label?: string
+                          text: string
+                          highlights?: {
+                            startOffset: number
+                            endOffset: number
+                            comment: string
+                          }[]
+                        }[]
+                        commentary?: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "MULTIPLE_CHOICE"
+                        question: string
+                        passage?: string
+                        options: {
+                          id: string
+                          text: string
+                        }[]
+                        correctOptionIds: string[]
+                        multiSelect: boolean
+                        explanations: {
+                          [key: string]: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "FILL_IN_THE_BLANK"
+                        instruction: string
+                        sentence: string
+                        blanks: {
+                          id: string
+                          options: {
+                            id: string
+                            text: string
+                          }[]
+                          correctOptionId: string
+                        }[]
+                        explanation: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "ORDERING"
+                        instruction: string
+                        items: {
+                          id: string
+                          text: string
+                        }[]
+                        correctOrder: string[]
+                        explanation: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "HIGHLIGHT"
+                        instruction: string
+                        passage: string
+                        selectableRanges: {
+                          id: string
+                          startOffset: number
+                          endOffset: number
+                        }[]
+                        correctRangeIds: string[]
+                        explanations: {
+                          [key: string]: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "SHORT_ANSWER"
+                        question: string
+                        context?: string
+                        placeholder?: string
+                        minLength: number
+                        maxLength: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "WRITING"
+                        prompt: string
+                        guideline?: string
+                        minLength: number
+                        recommendedLength: number
+                        timeLimitSeconds: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "REWRITING"
+                        instruction: string
+                        originalWritingStepId: string
+                        feedbackStepId: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "AI_FEEDBACK"
+                        targetStepId: string
+                        loadingMessage: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "AI_COMPARISON"
+                        originalStepId: string
+                        rewritingStepId: string
+                        loadingMessage: string
+                      }
+                  cta: {
+                    label: string
+                    /** @enum {string} */
+                    variant: "primary" | "secondary"
+                  }
+                }
               }[]
               currentStepOrder: number
               /** @enum {string} */
@@ -1310,7 +1467,164 @@ export interface paths {
                   | "write"
                   | "feedback"
                   | "revise"
-                contentJson?: unknown
+                contentJson: {
+                  /** @enum {string} */
+                  type?:
+                    | "INTRO"
+                    | "COMPLETION"
+                    | "CONCEPT"
+                    | "EXAMPLE"
+                    | "MULTIPLE_CHOICE"
+                    | "FILL_IN_THE_BLANK"
+                    | "ORDERING"
+                    | "HIGHLIGHT"
+                    | "SHORT_ANSWER"
+                    | "WRITING"
+                    | "REWRITING"
+                    | "AI_FEEDBACK"
+                    | "AI_COMPARISON"
+                  content:
+                    | {
+                        /** @enum {string} */
+                        type: "INTRO"
+                        title: string
+                        description: string
+                        keywords?: string[]
+                        estimatedMinutes: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "COMPLETION"
+                        congratsMessage: string
+                        summaryPoints: string[]
+                        nextSessionPreview?: {
+                          title: string
+                          teaser: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "CONCEPT"
+                        title: string
+                        body: string
+                        keyTakeaway?: string
+                        imageUrl?: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "EXAMPLE"
+                        title: string
+                        examples: {
+                          label?: string
+                          text: string
+                          highlights?: {
+                            startOffset: number
+                            endOffset: number
+                            comment: string
+                          }[]
+                        }[]
+                        commentary?: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "MULTIPLE_CHOICE"
+                        question: string
+                        passage?: string
+                        options: {
+                          id: string
+                          text: string
+                        }[]
+                        correctOptionIds: string[]
+                        multiSelect: boolean
+                        explanations: {
+                          [key: string]: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "FILL_IN_THE_BLANK"
+                        instruction: string
+                        sentence: string
+                        blanks: {
+                          id: string
+                          options: {
+                            id: string
+                            text: string
+                          }[]
+                          correctOptionId: string
+                        }[]
+                        explanation: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "ORDERING"
+                        instruction: string
+                        items: {
+                          id: string
+                          text: string
+                        }[]
+                        correctOrder: string[]
+                        explanation: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "HIGHLIGHT"
+                        instruction: string
+                        passage: string
+                        selectableRanges: {
+                          id: string
+                          startOffset: number
+                          endOffset: number
+                        }[]
+                        correctRangeIds: string[]
+                        explanations: {
+                          [key: string]: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "SHORT_ANSWER"
+                        question: string
+                        context?: string
+                        placeholder?: string
+                        minLength: number
+                        maxLength: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "WRITING"
+                        prompt: string
+                        guideline?: string
+                        minLength: number
+                        recommendedLength: number
+                        timeLimitSeconds: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "REWRITING"
+                        instruction: string
+                        originalWritingStepId: string
+                        feedbackStepId: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "AI_FEEDBACK"
+                        targetStepId: string
+                        loadingMessage: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "AI_COMPARISON"
+                        originalStepId: string
+                        rewritingStepId: string
+                        loadingMessage: string
+                      }
+                  cta: {
+                    label: string
+                    /** @enum {string} */
+                    variant: "primary" | "secondary"
+                  }
+                }
               }[]
               currentStepOrder: number
               /** @enum {string} */
@@ -1508,7 +1822,164 @@ export interface paths {
                   | "write"
                   | "feedback"
                   | "revise"
-                contentJson?: unknown
+                contentJson: {
+                  /** @enum {string} */
+                  type?:
+                    | "INTRO"
+                    | "COMPLETION"
+                    | "CONCEPT"
+                    | "EXAMPLE"
+                    | "MULTIPLE_CHOICE"
+                    | "FILL_IN_THE_BLANK"
+                    | "ORDERING"
+                    | "HIGHLIGHT"
+                    | "SHORT_ANSWER"
+                    | "WRITING"
+                    | "REWRITING"
+                    | "AI_FEEDBACK"
+                    | "AI_COMPARISON"
+                  content:
+                    | {
+                        /** @enum {string} */
+                        type: "INTRO"
+                        title: string
+                        description: string
+                        keywords?: string[]
+                        estimatedMinutes: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "COMPLETION"
+                        congratsMessage: string
+                        summaryPoints: string[]
+                        nextSessionPreview?: {
+                          title: string
+                          teaser: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "CONCEPT"
+                        title: string
+                        body: string
+                        keyTakeaway?: string
+                        imageUrl?: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "EXAMPLE"
+                        title: string
+                        examples: {
+                          label?: string
+                          text: string
+                          highlights?: {
+                            startOffset: number
+                            endOffset: number
+                            comment: string
+                          }[]
+                        }[]
+                        commentary?: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "MULTIPLE_CHOICE"
+                        question: string
+                        passage?: string
+                        options: {
+                          id: string
+                          text: string
+                        }[]
+                        correctOptionIds: string[]
+                        multiSelect: boolean
+                        explanations: {
+                          [key: string]: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "FILL_IN_THE_BLANK"
+                        instruction: string
+                        sentence: string
+                        blanks: {
+                          id: string
+                          options: {
+                            id: string
+                            text: string
+                          }[]
+                          correctOptionId: string
+                        }[]
+                        explanation: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "ORDERING"
+                        instruction: string
+                        items: {
+                          id: string
+                          text: string
+                        }[]
+                        correctOrder: string[]
+                        explanation: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "HIGHLIGHT"
+                        instruction: string
+                        passage: string
+                        selectableRanges: {
+                          id: string
+                          startOffset: number
+                          endOffset: number
+                        }[]
+                        correctRangeIds: string[]
+                        explanations: {
+                          [key: string]: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "SHORT_ANSWER"
+                        question: string
+                        context?: string
+                        placeholder?: string
+                        minLength: number
+                        maxLength: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "WRITING"
+                        prompt: string
+                        guideline?: string
+                        minLength: number
+                        recommendedLength: number
+                        timeLimitSeconds: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "REWRITING"
+                        instruction: string
+                        originalWritingStepId: string
+                        feedbackStepId: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "AI_FEEDBACK"
+                        targetStepId: string
+                        loadingMessage: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "AI_COMPARISON"
+                        originalStepId: string
+                        rewritingStepId: string
+                        loadingMessage: string
+                      }
+                  cta: {
+                    label: string
+                    /** @enum {string} */
+                    variant: "primary" | "secondary"
+                  }
+                }
               }[]
               currentStepOrder: number
               /** @enum {string} */
@@ -1614,7 +2085,164 @@ export interface paths {
                   | "write"
                   | "feedback"
                   | "revise"
-                contentJson?: unknown
+                contentJson: {
+                  /** @enum {string} */
+                  type?:
+                    | "INTRO"
+                    | "COMPLETION"
+                    | "CONCEPT"
+                    | "EXAMPLE"
+                    | "MULTIPLE_CHOICE"
+                    | "FILL_IN_THE_BLANK"
+                    | "ORDERING"
+                    | "HIGHLIGHT"
+                    | "SHORT_ANSWER"
+                    | "WRITING"
+                    | "REWRITING"
+                    | "AI_FEEDBACK"
+                    | "AI_COMPARISON"
+                  content:
+                    | {
+                        /** @enum {string} */
+                        type: "INTRO"
+                        title: string
+                        description: string
+                        keywords?: string[]
+                        estimatedMinutes: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "COMPLETION"
+                        congratsMessage: string
+                        summaryPoints: string[]
+                        nextSessionPreview?: {
+                          title: string
+                          teaser: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "CONCEPT"
+                        title: string
+                        body: string
+                        keyTakeaway?: string
+                        imageUrl?: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "EXAMPLE"
+                        title: string
+                        examples: {
+                          label?: string
+                          text: string
+                          highlights?: {
+                            startOffset: number
+                            endOffset: number
+                            comment: string
+                          }[]
+                        }[]
+                        commentary?: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "MULTIPLE_CHOICE"
+                        question: string
+                        passage?: string
+                        options: {
+                          id: string
+                          text: string
+                        }[]
+                        correctOptionIds: string[]
+                        multiSelect: boolean
+                        explanations: {
+                          [key: string]: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "FILL_IN_THE_BLANK"
+                        instruction: string
+                        sentence: string
+                        blanks: {
+                          id: string
+                          options: {
+                            id: string
+                            text: string
+                          }[]
+                          correctOptionId: string
+                        }[]
+                        explanation: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "ORDERING"
+                        instruction: string
+                        items: {
+                          id: string
+                          text: string
+                        }[]
+                        correctOrder: string[]
+                        explanation: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "HIGHLIGHT"
+                        instruction: string
+                        passage: string
+                        selectableRanges: {
+                          id: string
+                          startOffset: number
+                          endOffset: number
+                        }[]
+                        correctRangeIds: string[]
+                        explanations: {
+                          [key: string]: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "SHORT_ANSWER"
+                        question: string
+                        context?: string
+                        placeholder?: string
+                        minLength: number
+                        maxLength: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "WRITING"
+                        prompt: string
+                        guideline?: string
+                        minLength: number
+                        recommendedLength: number
+                        timeLimitSeconds: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "REWRITING"
+                        instruction: string
+                        originalWritingStepId: string
+                        feedbackStepId: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "AI_FEEDBACK"
+                        targetStepId: string
+                        loadingMessage: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "AI_COMPARISON"
+                        originalStepId: string
+                        rewritingStepId: string
+                        loadingMessage: string
+                      }
+                  cta: {
+                    label: string
+                    /** @enum {string} */
+                    variant: "primary" | "secondary"
+                  }
+                }
               }[]
               currentStepOrder: number
               /** @enum {string} */
@@ -1769,7 +2397,164 @@ export interface paths {
                   | "write"
                   | "feedback"
                   | "revise"
-                contentJson?: unknown
+                contentJson: {
+                  /** @enum {string} */
+                  type?:
+                    | "INTRO"
+                    | "COMPLETION"
+                    | "CONCEPT"
+                    | "EXAMPLE"
+                    | "MULTIPLE_CHOICE"
+                    | "FILL_IN_THE_BLANK"
+                    | "ORDERING"
+                    | "HIGHLIGHT"
+                    | "SHORT_ANSWER"
+                    | "WRITING"
+                    | "REWRITING"
+                    | "AI_FEEDBACK"
+                    | "AI_COMPARISON"
+                  content:
+                    | {
+                        /** @enum {string} */
+                        type: "INTRO"
+                        title: string
+                        description: string
+                        keywords?: string[]
+                        estimatedMinutes: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "COMPLETION"
+                        congratsMessage: string
+                        summaryPoints: string[]
+                        nextSessionPreview?: {
+                          title: string
+                          teaser: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "CONCEPT"
+                        title: string
+                        body: string
+                        keyTakeaway?: string
+                        imageUrl?: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "EXAMPLE"
+                        title: string
+                        examples: {
+                          label?: string
+                          text: string
+                          highlights?: {
+                            startOffset: number
+                            endOffset: number
+                            comment: string
+                          }[]
+                        }[]
+                        commentary?: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "MULTIPLE_CHOICE"
+                        question: string
+                        passage?: string
+                        options: {
+                          id: string
+                          text: string
+                        }[]
+                        correctOptionIds: string[]
+                        multiSelect: boolean
+                        explanations: {
+                          [key: string]: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "FILL_IN_THE_BLANK"
+                        instruction: string
+                        sentence: string
+                        blanks: {
+                          id: string
+                          options: {
+                            id: string
+                            text: string
+                          }[]
+                          correctOptionId: string
+                        }[]
+                        explanation: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "ORDERING"
+                        instruction: string
+                        items: {
+                          id: string
+                          text: string
+                        }[]
+                        correctOrder: string[]
+                        explanation: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "HIGHLIGHT"
+                        instruction: string
+                        passage: string
+                        selectableRanges: {
+                          id: string
+                          startOffset: number
+                          endOffset: number
+                        }[]
+                        correctRangeIds: string[]
+                        explanations: {
+                          [key: string]: string
+                        }
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "SHORT_ANSWER"
+                        question: string
+                        context?: string
+                        placeholder?: string
+                        minLength: number
+                        maxLength: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "WRITING"
+                        prompt: string
+                        guideline?: string
+                        minLength: number
+                        recommendedLength: number
+                        timeLimitSeconds: number
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "REWRITING"
+                        instruction: string
+                        originalWritingStepId: string
+                        feedbackStepId: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "AI_FEEDBACK"
+                        targetStepId: string
+                        loadingMessage: string
+                      }
+                    | {
+                        /** @enum {string} */
+                        type: "AI_COMPARISON"
+                        originalStepId: string
+                        rewritingStepId: string
+                        loadingMessage: string
+                      }
+                  cta: {
+                    label: string
+                    /** @enum {string} */
+                    variant: "primary" | "secondary"
+                  }
+                }
               }[]
               currentStepOrder: number
               /** @enum {string} */
