@@ -12,6 +12,14 @@ export default defineConfig({
   },
   plugins: [tsconfigPaths()],
   test: {
+    coverage: {
+      thresholds: {
+        branches: 45,
+        functions: 100,
+        lines: 70,
+        statements: 70,
+      },
+    },
     css: true,
     environment: "jsdom",
     exclude: [...configDefaults.exclude, "e2e/**"],
