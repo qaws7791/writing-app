@@ -1,12 +1,15 @@
 import { cn } from "@workspace/ui/utils"
+import type { FillInTheBlankStepContent } from "@workspace/core/modules/journeys"
 
 import type {
-  FillInTheBlankContent,
   FillInTheBlankState,
   InteractiveStepProps,
 } from "@/views/session-detail-view/types"
 
-type Props = InteractiveStepProps<FillInTheBlankContent, FillInTheBlankState>
+type Props = InteractiveStepProps<
+  FillInTheBlankStepContent,
+  FillInTheBlankState
+>
 
 function createSentencePartKeys(sentence: string): string[] {
   const parts = sentence.split(/(\{\{[^}]+\}\})/)

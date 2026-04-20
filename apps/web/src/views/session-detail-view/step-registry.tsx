@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import type { paths } from "@workspace/api-client"
+import type { StepType } from "@workspace/core/modules/journeys"
 
 import { AIComparisonStep } from "@/views/session-detail-view/steps/ai-comparison-step"
 import { AIFeedbackStep } from "@/views/session-detail-view/steps/ai-feedback-step"
@@ -28,7 +29,6 @@ import type {
   Step,
   StepOfType,
   StepState,
-  StepType,
 } from "@/views/session-detail-view/types"
 
 type SessionStepResponse =

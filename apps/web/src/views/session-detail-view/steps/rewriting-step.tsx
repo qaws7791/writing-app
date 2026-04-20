@@ -1,18 +1,18 @@
 import { Textarea } from "@workspace/ui/components/ui/textarea"
+import type { RewritingStepContent } from "@workspace/core/modules/journeys"
 
 import {
   getStepState,
   isInputStepState,
 } from "@/views/session-detail-view/step-state"
 import type {
-  RewritingContent,
   InputStepState,
   Step,
   StepState,
 } from "@/views/session-detail-view/types"
 
 interface RewritingStepProps {
-  content: RewritingContent
+  content: RewritingStepContent
   state: InputStepState | undefined
   onStateChange: (state: InputStepState) => void
   allStepStates: Record<string, StepState>

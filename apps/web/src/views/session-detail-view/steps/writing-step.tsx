@@ -1,12 +1,12 @@
 import { Textarea } from "@workspace/ui/components/ui/textarea"
+import type { WritingStepContent } from "@workspace/core/modules/journeys"
 
 import type {
-  WritingContent,
   InputStepState,
   InteractiveStepProps,
 } from "@/views/session-detail-view/types"
 
-type Props = InteractiveStepProps<WritingContent, InputStepState>
+type Props = InteractiveStepProps<WritingStepContent, InputStepState>
 
 export function WritingStep({ content, state, onStateChange }: Props) {
   const text = state?.text ?? ""

@@ -1,12 +1,12 @@
 import { Textarea } from "@workspace/ui/components/ui/textarea"
+import type { ShortAnswerStepContent } from "@workspace/core/modules/journeys"
 
 import type {
-  ShortAnswerContent,
   InputStepState,
   InteractiveStepProps,
 } from "@/views/session-detail-view/types"
 
-type Props = InteractiveStepProps<ShortAnswerContent, InputStepState>
+type Props = InteractiveStepProps<ShortAnswerStepContent, InputStepState>
 
 export function ShortAnswerStep({ content, state, onStateChange }: Props) {
   const text = state?.text ?? ""

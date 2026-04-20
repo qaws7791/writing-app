@@ -1,59 +1,39 @@
 import type { paths } from "@workspace/api-client"
 import type {
-  AIComparisonStepContent as AIComparisonContent,
-  AIFeedbackStepContent as AIFeedbackContent,
-  CTAConfig as StepCTAConfig,
-  CompletionStepContent as CompletionContent,
-  ConceptStepContent as ConceptContent,
-  ExampleStepContent as ExampleContent,
-  FillInTheBlankStepContent as FillInTheBlankContent,
-  HighlightStepContent as HighlightContent,
-  IntroStepContent as IntroContent,
-  MultipleChoiceStepContent as MultipleChoiceContent,
-  OrderingStepContent as OrderingContent,
-  RewritingStepContent as RewritingContent,
-  SessionStepContent,
-  SessionStepContentType as SessionStepType,
-  ShortAnswerStepContent as ShortAnswerContent,
-  WritingStepContent as WritingContent,
+  AIComparisonStepContent,
+  AIFeedbackStepContent,
+  CTAConfig,
+  CompletionStepContent,
+  ConceptStepContent,
+  ExampleStepContent,
+  FillInTheBlankStepContent,
+  HighlightStepContent,
+  IntroStepContent,
+  MultipleChoiceStepContent,
+  OrderingStepContent,
+  RewritingStepContent,
+  SessionStepContentType,
+  ShortAnswerStepContent,
+  WritingStepContent,
 } from "@workspace/core/modules/journeys"
 
-export type CTAConfig = StepCTAConfig
-export type StepContent = SessionStepContent
-export type StepType = SessionStepType
-export type {
-  IntroContent,
-  CompletionContent,
-  ConceptContent,
-  ExampleContent,
-  MultipleChoiceContent,
-  FillInTheBlankContent,
-  OrderingContent,
-  HighlightContent,
-  ShortAnswerContent,
-  WritingContent,
-  RewritingContent,
-  AIFeedbackContent,
-  AIComparisonContent,
-}
-
 export type StepContentMap = {
-  INTRO: IntroContent
-  COMPLETION: CompletionContent
-  CONCEPT: ConceptContent
-  EXAMPLE: ExampleContent
-  MULTIPLE_CHOICE: MultipleChoiceContent
-  FILL_IN_THE_BLANK: FillInTheBlankContent
-  ORDERING: OrderingContent
-  HIGHLIGHT: HighlightContent
-  SHORT_ANSWER: ShortAnswerContent
-  WRITING: WritingContent
-  REWRITING: RewritingContent
-  AI_FEEDBACK: AIFeedbackContent
-  AI_COMPARISON: AIComparisonContent
+  INTRO: IntroStepContent
+  COMPLETION: CompletionStepContent
+  CONCEPT: ConceptStepContent
+  EXAMPLE: ExampleStepContent
+  MULTIPLE_CHOICE: MultipleChoiceStepContent
+  FILL_IN_THE_BLANK: FillInTheBlankStepContent
+  ORDERING: OrderingStepContent
+  HIGHLIGHT: HighlightStepContent
+  SHORT_ANSWER: ShortAnswerStepContent
+  WRITING: WritingStepContent
+  REWRITING: RewritingStepContent
+  AI_FEEDBACK: AIFeedbackStepContent
+  AI_COMPARISON: AIComparisonStepContent
 }
 
-export interface StepOfType<T extends StepType> {
+export interface StepOfType<T extends SessionStepContentType> {
   id: string
   type: T
   order: number
@@ -62,8 +42,8 @@ export interface StepOfType<T extends StepType> {
 }
 
 export type Step = {
-  [T in StepType]: StepOfType<T>
-}[StepType]
+  [T in SessionStepContentType]: StepOfType<T>
+}[SessionStepContentType]
 
 export type NonEmptyArray<T> = [T, ...T[]]
 
@@ -117,16 +97,13 @@ export type StepState =
 
 // ─── Step Component Props ───────────────────────────────────────────────
 
-export interface InteractiveStepProps<
-  TContent extends StepContent,
-  TState extends StepState,
-> {
+export interface InteractiveStepProps<TContent, TState extends StepState> {
   content: TContent
   state: TState | undefined
   onStateChange: (state: TState) => void
 }
 
-export interface CrossReferenceStepProps<TContent extends StepContent> {
+export interface CrossReferenceStepProps<TContent> {
   content: TContent
   allStepStates: Record<string, StepState>
   isRetryingAi?: boolean

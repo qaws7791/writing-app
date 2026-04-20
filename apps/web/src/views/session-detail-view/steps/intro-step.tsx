@@ -1,8 +1,7 @@
 import { Chip } from "@workspace/ui/components/ui/chip"
+import type { IntroStepContent } from "@workspace/core/modules/journeys"
 
-import type { IntroContent } from "@/views/session-detail-view/types"
-
-export function IntroStep({ content }: { content: IntroContent }) {
+export function IntroStep({ content }: { content: IntroStepContent }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">

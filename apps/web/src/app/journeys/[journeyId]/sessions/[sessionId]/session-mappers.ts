@@ -1,4 +1,7 @@
-import type { SessionStepPayload } from "@workspace/core/modules/journeys"
+import type {
+  SessionStepPayload,
+  StepType,
+} from "@workspace/core/modules/journeys"
 
 import {
   deserializeStepResponses,
@@ -10,7 +13,6 @@ import type {
   Step,
   StepContentMap,
   StepState,
-  StepType,
 } from "@/views/session-detail-view/types"
 
 export type SessionRuntime = Awaited<ReturnType<typeof fetchSessionDetail>>

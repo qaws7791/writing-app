@@ -1,13 +1,13 @@
 import { ChevronUp, ChevronDown, Check, X } from "lucide-react"
+import type { OrderingStepContent } from "@workspace/core/modules/journeys"
 import { Button } from "@workspace/ui/components/ui/button"
 
 import type {
-  OrderingContent,
   OrderingState,
   InteractiveStepProps,
 } from "@/views/session-detail-view/types"
 
-type Props = InteractiveStepProps<OrderingContent, OrderingState>
+type Props = InteractiveStepProps<OrderingStepContent, OrderingState>
 
 export function OrderingStep({ content, state, onStateChange }: Props) {
   const checked = state?.checked === true

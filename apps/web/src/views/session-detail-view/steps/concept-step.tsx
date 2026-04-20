@@ -1,7 +1,7 @@
-import type { ConceptContent } from "@/views/session-detail-view/types"
+import type { ConceptStepContent } from "@workspace/core/modules/journeys"
 import { MarkdownRenderer } from "@/views/session-detail-view/markdown-renderer"
 
-export function ConceptStep({ content }: { content: ConceptContent }) {
+export function ConceptStep({ content }: { content: ConceptStepContent }) {
   return (
     <div className="flex flex-col gap-5">
       <h2 className="text-xl leading-8 font-semibold text-foreground">

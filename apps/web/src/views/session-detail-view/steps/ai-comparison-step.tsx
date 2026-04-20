@@ -1,17 +1,15 @@
 import { Button } from "@workspace/ui/components/ui/button"
 import { Spinner } from "@workspace/ui/components/ui/spinner"
+import type { AIComparisonStepContent } from "@workspace/core/modules/journeys"
 
 import {
   getStepState,
   isInputStepState,
   isSessionAiStepState,
 } from "@/views/session-detail-view/step-state"
-import type {
-  AIComparisonContent,
-  CrossReferenceStepProps,
-} from "@/views/session-detail-view/types"
+import type { CrossReferenceStepProps } from "@/views/session-detail-view/types"
 
-type Props = CrossReferenceStepProps<AIComparisonContent>
+type Props = CrossReferenceStepProps<AIComparisonStepContent>
 
 export function AIComparisonStep({
   content,

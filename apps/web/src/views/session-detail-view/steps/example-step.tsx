@@ -1,6 +1,6 @@
-import type { ExampleContent } from "@/views/session-detail-view/types"
+import type { ExampleStepContent } from "@workspace/core/modules/journeys"
 
-export function ExampleStep({ content }: { content: ExampleContent }) {
+export function ExampleStep({ content }: { content: ExampleStepContent }) {
   return (
     <div className="flex flex-col gap-5">
       <h2 className="text-xl leading-8 font-semibold text-foreground">

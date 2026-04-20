@@ -2,18 +2,16 @@
 
 import { Button } from "@workspace/ui/components/ui/button"
 import { Spinner } from "@workspace/ui/components/ui/spinner"
+import type { AIFeedbackStepContent } from "@workspace/core/modules/journeys"
 
 import {
   getStepState,
   isInputStepState,
   isSessionAiStepState,
 } from "@/views/session-detail-view/step-state"
-import type {
-  AIFeedbackContent,
-  CrossReferenceStepProps,
-} from "@/views/session-detail-view/types"
+import type { CrossReferenceStepProps } from "@/views/session-detail-view/types"
 
-type Props = CrossReferenceStepProps<AIFeedbackContent>
+type Props = CrossReferenceStepProps<AIFeedbackStepContent>
 
 export function AIFeedbackStep({
   content,

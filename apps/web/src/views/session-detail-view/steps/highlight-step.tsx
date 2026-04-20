@@ -1,12 +1,12 @@
 import { cn } from "@workspace/ui/utils"
+import type { HighlightStepContent } from "@workspace/core/modules/journeys"
 
 import type {
-  HighlightContent,
   HighlightState,
   InteractiveStepProps,
 } from "@/views/session-detail-view/types"
 
-type Props = InteractiveStepProps<HighlightContent, HighlightState>
+type Props = InteractiveStepProps<HighlightStepContent, HighlightState>
 
 export function HighlightStep({ content, state, onStateChange }: Props) {
   const selectedIds = state?.selected ?? []

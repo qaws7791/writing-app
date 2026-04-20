@@ -1,12 +1,15 @@
 import { Check, X } from "lucide-react"
+import type { MultipleChoiceStepContent } from "@workspace/core/modules/journeys"
 
 import type {
-  MultipleChoiceContent,
   MultipleChoiceState,
   InteractiveStepProps,
 } from "@/views/session-detail-view/types"
 
-type Props = InteractiveStepProps<MultipleChoiceContent, MultipleChoiceState>
+type Props = InteractiveStepProps<
+  MultipleChoiceStepContent,
+  MultipleChoiceState
+>
 
 export function MultipleChoiceStep({ content, state, onStateChange }: Props) {
   const selected = state?.selected ?? []

@@ -1,8 +1,11 @@
 import { Check } from "lucide-react"
+import type { CompletionStepContent } from "@workspace/core/modules/journeys"
 
-import type { CompletionContent } from "@/views/session-detail-view/types"
-
-export function CompletionStep({ content }: { content: CompletionContent }) {
+export function CompletionStep({
+  content,
+}: {
+  content: CompletionStepContent
+}) {
   return (
     <div className="flex flex-col items-center gap-8 pt-8 text-center">
       <div className="flex size-20 items-center justify-center rounded-full bg-accent/50">
