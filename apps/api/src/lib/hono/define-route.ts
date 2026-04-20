@@ -14,12 +14,6 @@ import { TimeoutError } from "../../http/timeout-error"
 
 // ── Type Utilities ──
 
-type Vars<TEnv extends Env> = TEnv extends {
-  Variables: infer V extends Record<string, unknown>
-}
-  ? V
-  : Record<string, never>
-
 type HttpMethod = "delete" | "get" | "patch" | "post" | "put"
 
 type SuccessStatusCode = 200 | 201 | 202 | 204
@@ -35,7 +29,7 @@ type ResponseMap = {
   default?: ResponseDescriptor
 }
 
-type InjectMap = Record<string, InjectionToken<any>>
+type InjectMap = Record<string, InjectionToken<unknown>>
 
 type SuccessData<R extends ResponseMap> = {
   [K in keyof R & SuccessStatusCode]: R[K] extends ZodType
@@ -181,6 +175,10 @@ function isResponseDescriptor(value: unknown): value is ResponseDescriptor {
   )
 }
 
+type ValidatedRequest = {
+  valid(target: "json" | "param" | "query"): unknown
+}
+
 function buildResponses(response: ResponseMap) {
   const out: Record<string, unknown> = {}
   for (const [key, value] of Object.entries(response)) {
@@ -302,18 +300,20 @@ export function defineRoute<TEnv extends Env>() {
     // requires exact route-to-handler type correspondence which cannot be
     // expressed when building routes dynamically.
 
-    app.openapi(route, async (c: any) => {
+    app.openapi(route, async (c) => {
       const input: Record<string, unknown> = { context: c }
+      const contextVariables = c.var as Record<string, unknown>
+      const validatedRequest = c.req as ValidatedRequest
 
       if (inject) {
         for (const [handlerKey, token] of Object.entries(inject)) {
-          input[handlerKey] = c.var[token.key]
+          input[handlerKey] = contextVariables[token.key]
         }
       }
 
-      if (request?.body) input.body = c.req.valid("json")
-      if (request?.query) input.query = c.req.valid("query")
-      if (request?.params) input.params = c.req.valid("param")
+      if (request?.body) input.body = validatedRequest.valid("json")
+      if (request?.query) input.query = validatedRequest.valid("query")
+      if (request?.params) input.params = validatedRequest.valid("param")
 
       const raw = await handler(
         input as HandlerInput<TEnv, TBody, TQuery, TParams, TInject>
