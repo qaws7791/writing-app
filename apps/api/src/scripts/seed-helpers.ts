@@ -8,9 +8,10 @@ import {
   type OpenedDb,
   type SeedTestUser,
 } from "@workspace/database"
+import { createServerLogger, type AppLogger } from "@workspace/logging"
 import journeySeeds from "../../data/journey-seeds.json"
 
-import { createApiLogger } from "../observability/logger.js"
+import { API_SERVICE_NAME } from "../observability/service-name.js"
 import {
   readApiEnvironment,
   type ApiEnvironment,
@@ -27,13 +28,14 @@ const DEV_TEST_USERS = [
 export type SeedScriptContext = {
   database: OpenedDb
   environment: ApiEnvironment
-  logger: ReturnType<typeof createApiLogger>
+  logger: AppLogger
 }
 
 export function createSeedScriptContext(script: string): SeedScriptContext {
   const environment = readApiEnvironment()
-  const logger = createApiLogger({
+  const logger = createServerLogger({
     level: environment.logLevel,
+    service: API_SERVICE_NAME,
   }).child({
     script,
   })

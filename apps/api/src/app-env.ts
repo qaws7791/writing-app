@@ -1,12 +1,12 @@
 import type { z } from "zod"
 import type { UserId } from "@workspace/core/shared"
+import type { AppLogger } from "@workspace/logging"
 
 import type {
   authenticatedSessionSchema,
   authenticatedUserSchema,
 } from "./auth/auth-schemas"
 import type { DevEmailInbox } from "./auth/auth-email"
-import type { ApiLogger } from "./observability/logger"
 import type { ApiCradleUseCases } from "./runtime/container"
 
 export type AuthenticatedSession = z.infer<typeof authenticatedSessionSchema>
@@ -32,7 +32,7 @@ export type AppVariables = AppUseCases & {
   authSession: AuthenticatedSession | null
   authUser: AuthenticatedUser | null
   requestId: string
-  requestLogger: ApiLogger
+  requestLogger: AppLogger
   userId: UserId | null
 }
 

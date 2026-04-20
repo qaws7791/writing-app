@@ -1,8 +1,8 @@
 import { describe, expectTypeOf, test } from "vitest"
 
 import type { UserId } from "@workspace/core/shared"
+import type { AppLogger } from "@workspace/logging"
 
-import type { ApiLogger } from "./observability/logger"
 import type {
   AppEnv,
   AppUseCases,
@@ -41,8 +41,8 @@ describe("AppEnv 타입 계약", () => {
       expectTypeOf<AppVariables["requestId"]>().toEqualTypeOf<string>()
     })
 
-    test("requestLogger: ApiLogger", () => {
-      expectTypeOf<AppVariables["requestLogger"]>().toEqualTypeOf<ApiLogger>()
+    test("requestLogger: AppLogger", () => {
+      expectTypeOf<AppVariables["requestLogger"]>().toEqualTypeOf<AppLogger>()
     })
 
     test("userId: UserId | null", () => {

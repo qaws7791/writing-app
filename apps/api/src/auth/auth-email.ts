@@ -1,6 +1,5 @@
 import type { EmailSender } from "@workspace/email"
-
-import type { ApiLogger } from "../observability/logger.js"
+import type { AppLogger } from "@workspace/logging"
 
 export type { EmailSender }
 
@@ -62,7 +61,7 @@ export function createDevEmailInbox(): DevEmailInboxWriter {
 export function createDevEmailPort(input: {
   exposeSensitiveData: boolean
   inbox: DevEmailInboxWriter
-  logger: ApiLogger
+  logger: AppLogger
 }): EmailSender {
   function storeMessage(message: AuthEmailMessage): void {
     input.inbox.store(message)

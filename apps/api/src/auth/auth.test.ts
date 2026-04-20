@@ -4,6 +4,7 @@ import { memoryAdapter } from "better-auth/adapters/memory"
 import { okAsync, errAsync } from "neverthrow"
 import { cors } from "hono/cors"
 import type { OpenAPIHono } from "@hono/zod-openapi"
+import { createSilentLogger } from "@workspace/logging"
 
 import {
   toJourneyId,
@@ -24,7 +25,7 @@ import { createApp } from "../lib/hono/create-app.js"
 import { createRequestLoggerMiddleware } from "../middleware/request-logger.js"
 import { createResolveSessionMiddleware } from "../middleware/resolve-session.js"
 import { createDevEmailInbox, createDevEmailPort } from "./auth-email.js"
-import { createSilentLogger } from "../observability/logger.js"
+import { API_SERVICE_NAME } from "../observability/service-name.js"
 import { createMemoryRateLimitBackend } from "../rate-limit/rate-limit-backend.js"
 import getAuthEmails from "../routes/dev/get-auth-emails.js"
 import { allRoutes } from "../routes/index.js"
@@ -45,7 +46,7 @@ function setup(): { app: TestApp } {
   const emailPort = createDevEmailPort({
     exposeSensitiveData: true,
     inbox,
-    logger: createSilentLogger(),
+    logger: createSilentLogger({ service: API_SERVICE_NAME }),
   })
   const auth = betterAuth({
     baseURL: "http://127.0.0.1:3010/api/auth",
@@ -85,7 +86,7 @@ function setup(): { app: TestApp } {
 
   cleanupTasks.push(() => inbox.clear())
 
-  const logger = createSilentLogger()
+  const logger = createSilentLogger({ service: API_SERVICE_NAME })
   const rateLimitBackend = createMemoryRateLimitBackend()
 
   const stubWriting = {

@@ -7,12 +7,12 @@ import {
   openDb,
 } from "@workspace/database"
 import type { AiCoachingGateway } from "@workspace/core/modules/ai-feedback"
+import type { AppLogger } from "@workspace/logging"
 import type { RepositoryTransactionManager } from "@workspace/core/shared"
 import type Redis from "ioredis"
 
 import { createAuth } from "../auth/auth"
 import { createDevEmailInbox, type EmailSender } from "../auth/auth-email"
-import type { ApiLogger } from "../observability/logger"
 import type { RateLimitBackend } from "../rate-limit/rate-limit-backend"
 import type { ApiEnvironment } from "./bootstrap"
 import {
@@ -74,7 +74,7 @@ export type ApiCradle = {
   isProduction: boolean
 
   // --- Infrastructure ---
-  logger: ApiLogger
+  logger: AppLogger
   database: ReturnType<typeof openDb>
   redisClient: Redis
   rateLimitBackend: RateLimitBackend

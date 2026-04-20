@@ -12,6 +12,7 @@ import {
   writingNotFound,
   writingForbidden,
 } from "@workspace/core/modules/writings"
+import { createSilentLogger, type AppLogger } from "@workspace/logging"
 import { promptNotFound } from "@workspace/core/modules/prompts"
 import { journeyNotFound } from "@workspace/core/modules/journeys"
 import { okAsync, errAsync } from "neverthrow"
@@ -25,7 +26,7 @@ import {
 import { createApp } from "../lib/hono/create-app.js"
 import { createRequestLoggerMiddleware } from "../middleware/request-logger.js"
 import { createResolveSessionMiddleware } from "../middleware/resolve-session.js"
-import { createSilentLogger, type ApiLogger } from "../observability/logger.js"
+import { API_SERVICE_NAME } from "../observability/service-name.js"
 import { createMemoryRateLimitBackend } from "../rate-limit/rate-limit-backend.js"
 import { allRoutes } from "../routes/index.js"
 import type { AppEnv } from "../app-env.js"
@@ -161,7 +162,7 @@ function createStubSessionRuntime(userId: string, sessionId: number) {
 
 export function createTestApi(input?: {
   homeError?: Error
-  logger?: ApiLogger
+  logger?: AppLogger
   sessionDetailError?: DomainError
 }) {
   const prompts = seedPrompts.map((prompt) => ({ ...prompt }))
@@ -193,7 +194,8 @@ export function createTestApi(input?: {
     "http://127.0.0.1:3000",
     "http://localhost:3000",
   ])
-  const logger = input?.logger ?? createSilentLogger()
+  const logger =
+    input?.logger ?? createSilentLogger({ service: API_SERVICE_NAME })
   const rateLimitBackend = createMemoryRateLimitBackend()
 
   const app = createApp<AppEnv>({

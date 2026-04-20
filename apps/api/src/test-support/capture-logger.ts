@@ -1,12 +1,11 @@
 import pino from "pino"
-
-import type { ApiLogger } from "../observability/logger.js"
+import type { AppLogger } from "@workspace/logging"
 
 export type CapturedLog = Record<string, unknown>
 
 export function createCapturedLogger(): {
   entries: CapturedLog[]
-  logger: ApiLogger
+  logger: AppLogger
 } {
   const entries: CapturedLog[] = []
 

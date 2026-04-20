@@ -1,18 +1,18 @@
 import type { Context, MiddlewareHandler } from "hono"
 import { timeout } from "hono/timeout"
+import type { AppLogger } from "@workspace/logging"
 
 import type { AppEnv, AppUseCases, AppVariables } from "./app-env"
 import { errorToResponse } from "./http/error-response"
 import { TimeoutError } from "./http/timeout-error"
-import type { ApiLogger } from "./observability/logger"
 
 type ApiErrorResult = ReturnType<typeof errorToResponse>
 type ApiErrorStatus = 400 | 401 | 403 | 404 | 408 | 409 | 422 | 429 | 500
 
 function resolveRequestLogger(
   context: Context<AppEnv>,
-  logger: ApiLogger
-): ApiLogger {
+  logger: AppLogger
+): AppLogger {
   const requestLogger = context.get("requestLogger")
 
   if (requestLogger) {
@@ -28,7 +28,7 @@ function resolveRequestLogger(
 }
 
 function logRequestFailure(
-  requestLogger: ApiLogger,
+  requestLogger: AppLogger,
   error: unknown,
   response: ApiErrorResult,
   message: string,
@@ -62,7 +62,7 @@ const DEFAULT_TIMEOUT_MS = 60_000
 export function handleRequestError(
   c: Context<AppEnv>,
   error: unknown,
-  logger: ApiLogger,
+  logger: AppLogger,
   message: string
 ) {
   const response = errorToResponse(error)

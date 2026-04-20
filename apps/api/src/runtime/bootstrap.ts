@@ -1,4 +1,5 @@
 import { migrateDatabase, seedDatabase } from "@workspace/database"
+import type { AppLogLevel } from "@workspace/logging"
 import { apiReference } from "@scalar/hono-api-reference"
 import { OpenAPIHono } from "@hono/zod-openapi"
 import { cors } from "hono/cors"
@@ -14,7 +15,6 @@ import { apiEnv } from "../config/env"
 import { createApp } from "../lib/hono/create-app"
 import { createRequestLoggerMiddleware } from "../middleware/request-logger"
 import { createResolveSessionMiddleware } from "../middleware/resolve-session"
-import type { ApiLogLevel } from "../observability/logger"
 import getAuthEmails from "../routes/dev/get-auth-emails"
 import { allRoutes } from "../routes"
 import { createApiContainer, extractUseCases } from "./container"
@@ -26,7 +26,7 @@ export type ApiEnvironment = {
   authDebugEnabled: boolean
   authSecret: string
   databasePath: string
-  logLevel: ApiLogLevel
+  logLevel: AppLogLevel
   port: number
   rateLimitRedisPrefix: string
   redisUrl: string

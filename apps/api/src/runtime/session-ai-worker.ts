@@ -4,8 +4,7 @@ import {
   type ProgressRepository,
 } from "@workspace/core/modules/progress"
 import type { AiCoachingGateway } from "@workspace/core/modules/ai-feedback"
-
-import type { ApiLogger } from "../observability/logger"
+import type { AppLogger } from "@workspace/logging"
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
@@ -52,7 +51,7 @@ function isFeedbackInput(input: Record<string, unknown>): input is {
 export function createSessionAiWorker(input: {
   aiCoachingGateway: AiCoachingGateway
   batchSize?: number
-  logger: ApiLogger
+  logger: AppLogger
   pollMs?: number
   progressRepository: ProgressRepository
 }) {

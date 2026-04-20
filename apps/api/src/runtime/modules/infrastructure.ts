@@ -1,8 +1,9 @@
 import { asFunction, asValue, type AwilixContainer } from "awilix"
 import { openDb } from "@workspace/database"
+import { createServerLogger } from "@workspace/logging"
 import Redis from "ioredis"
 
-import { createApiLogger } from "../../observability/logger"
+import { API_SERVICE_NAME } from "../../observability/service-name"
 import { createRedisRateLimitBackend } from "../../rate-limit/rate-limit-backend"
 import type { ApiCradle } from "../container"
 
@@ -25,7 +26,10 @@ export function registerInfrastructure(
     isProduction: asValue(process.env.NODE_ENV === "production"),
 
     logger: asFunction(({ environment }: ApiCradle) =>
-      createApiLogger({ level: environment.logLevel })
+      createServerLogger({
+        level: environment.logLevel,
+        service: API_SERVICE_NAME,
+      })
     ).singleton(),
 
     database: asFunction(({ environment }: ApiCradle) =>

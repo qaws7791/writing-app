@@ -1,12 +1,12 @@
 import type { MiddlewareHandler } from "hono"
 
 import { toApplicationErrorStatus } from "@workspace/core/shared"
+import type { AppLogger } from "@workspace/logging"
 
 import type { AppEnv } from "../app-env"
-import type { ApiLogger } from "../observability/logger"
 
 export function createRequestLoggerMiddleware(
-  logger: ApiLogger
+  logger: AppLogger
 ): MiddlewareHandler<AppEnv> {
   return async (context, next) => {
     const startedAt = Date.now()
