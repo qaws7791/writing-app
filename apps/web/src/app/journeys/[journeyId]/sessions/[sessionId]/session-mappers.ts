@@ -3,10 +3,8 @@ import type {
   StepType,
 } from "@workspace/core/modules/journeys"
 
-import {
-  deserializeStepResponses,
-  fetchSessionDetail,
-} from "@/features/sessions"
+import { deserializeStepResponses } from "@/features/sessions"
+import { fetchSessionDetail } from "@/features/sessions/repositories/session.repository"
 import type {
   Session,
   SessionAiStepState,

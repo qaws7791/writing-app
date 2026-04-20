@@ -7,10 +7,3 @@ export {
   deserializeStepResponses,
   serializeStepResponse,
 } from "./session-step-response"
-export {
-  fetchSessionDetail,
-  startSession,
-  submitSessionStep,
-  retrySessionStepAi,
-  completeSession,
-} from "./repositories/session.repository"

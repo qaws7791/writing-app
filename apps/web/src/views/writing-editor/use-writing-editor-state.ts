@@ -21,6 +21,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "@workspace/ui/components/ui/sonner"
 
 import { appendReturnTo, navigateBack } from "@/foundation/navigation"
+import { formatLongKoreanDate } from "@/foundation/utils"
 import { usePromptDetail } from "@/features/prompts/hooks/use-prompt-detail"
 import {
   useCreateWriting,
@@ -28,15 +29,6 @@ import {
   useSaveWriting,
   useWritingDetail,
 } from "@/features/writings"
-
-function formatKoreanDate(date: Date): string {
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    weekday: "long",
-  }).format(date)
-}
 
 export function useWritingEditorState({
   promptId,
@@ -231,7 +223,7 @@ export function useWritingEditorState({
   }, [])
 
   return {
-    dateLabel: formatKoreanDate(today),
+    dateLabel: formatLongKoreanDate(today),
     editor,
     handleBack,
     handleDelete,

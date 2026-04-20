@@ -1,1 +1,1 @@
-export { ThemeProvider } from "@/foundation/ui/theme-provider"
+export { ThemeProvider } from "@workspace/ui/components/ui/theme-provider"

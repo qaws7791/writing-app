@@ -5,6 +5,7 @@ import type { AppLogger } from "@workspace/logging"
 import type { AppEnv, AppUseCases, AppVariables } from "./app-env"
 import { errorToResponse } from "./http/error-response"
 import { TimeoutError } from "./http/timeout-error"
+import { USE_CASE_KEYS } from "./runtime/use-case-keys"
 
 type ApiErrorResult = ReturnType<typeof errorToResponse>
 type ApiErrorStatus = 400 | 401 | 403 | 404 | 408 | 409 | 422 | 429 | 500
@@ -58,6 +59,19 @@ function logRequestFailure(
 }
 
 const DEFAULT_TIMEOUT_MS = 60_000
+const APP_USE_CASE_KEYS = [
+  ...USE_CASE_KEYS,
+  "authHandler",
+  "readLatestAuthEmail",
+] as const satisfies readonly (keyof AppUseCases)[]
+
+function setAppVariable<Key extends keyof AppVariables>(
+  context: Context<AppEnv>,
+  key: Key,
+  value: AppVariables[Key]
+) {
+  context.set(key, value)
+}
 
 export function handleRequestError(
   c: Context<AppEnv>,
@@ -89,11 +103,8 @@ export function createUseCaseMiddleware(
   useCases: AppUseCases
 ): MiddlewareHandler<AppEnv> {
   return async (c, next) => {
-    for (const [key, value] of Object.entries(useCases) as [
-      keyof AppVariables,
-      AppVariables[keyof AppVariables],
-    ][]) {
-      c.set(key, value)
+    for (const key of APP_USE_CASE_KEYS) {
+      setAppVariable(c, key, useCases[key])
     }
     return next()
   }

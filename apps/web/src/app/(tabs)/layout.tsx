@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import BottomNav from "@/foundation/ui/bottom-nav"
 
 export default function TabsLayout({
@@ -6,9 +7,11 @@ export default function TabsLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <div className="flex-1 pb-24">{children}</div>
-      <BottomNav />
-    </div>
+    <Suspense>
+      <div className="flex min-h-screen flex-col bg-background">
+        <div className="flex-1 pb-24">{children}</div>
+        <BottomNav />
+      </div>
+    </Suspense>
   )
 }

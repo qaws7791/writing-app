@@ -2,7 +2,7 @@ import { Geist_Mono } from "next/font/google"
 
 import "./globals.css"
 import { QueryProvider } from "@/foundation/api/query-provider"
-import { ThemeProvider } from "@/foundation/ui/theme-provider"
+import { ThemeProvider } from "@/foundation/ui"
 import { Toaster } from "@workspace/ui/components/ui/sonner"
 import { cn } from "@workspace/ui/lib/utils"
 

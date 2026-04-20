@@ -16,21 +16,18 @@ import { createDevEmailInbox, type EmailSender } from "../auth/auth-email"
 import type { RateLimitBackend } from "../rate-limit/rate-limit-backend"
 import type { ApiEnvironment } from "./bootstrap"
 import {
-  AI_USE_CASE_KEYS,
   registerAiModule,
   type CompareRevisionsUseCase,
   type GenerateFeedbackUseCase,
 } from "./modules/ai"
 import { registerAuth } from "./modules/auth"
 import {
-  HOME_USE_CASE_KEYS,
   registerHomeModule,
   type GetHomeUseCase,
   type HealthCheckUseCase,
 } from "./modules/home"
 import { registerInfrastructure } from "./modules/infrastructure"
 import {
-  JOURNEY_USE_CASE_KEYS,
   registerJourneyModule,
   type EnrollJourneyUseCase,
   type GetJourneyUseCase,
@@ -39,7 +36,6 @@ import {
   type ListUserJourneysUseCase,
 } from "./modules/journeys"
 import {
-  PROMPT_USE_CASE_KEYS,
   registerPromptModule,
   type BookmarkPromptUseCase,
   type GetPromptUseCase,
@@ -49,7 +45,6 @@ import {
 } from "./modules/prompts"
 import { registerRepositories } from "./modules/repositories"
 import {
-  SESSION_USE_CASE_KEYS,
   registerSessionModule,
   type CompleteSessionUseCase,
   type GetSessionDetailUseCase,
@@ -58,7 +53,6 @@ import {
   type SubmitStepUseCase,
 } from "./modules/sessions"
 import {
-  WRITING_USE_CASE_KEYS,
   registerWritingModule,
   type AutosaveWritingUseCase,
   type CountWritingsUseCase,
@@ -67,6 +61,7 @@ import {
   type GetWritingUseCase,
   type ListWritingsUseCase,
 } from "./modules/writings"
+import { USE_CASE_KEYS, type UseCaseKey } from "./use-case-keys"
 
 export type ApiCradle = {
   // --- Configuration ---
@@ -128,16 +123,7 @@ export type ApiCradle = {
   compareRevisionsUseCase: CompareRevisionsUseCase
 }
 
-export const USE_CASE_KEYS = [
-  ...WRITING_USE_CASE_KEYS,
-  ...PROMPT_USE_CASE_KEYS,
-  ...HOME_USE_CASE_KEYS,
-  ...JOURNEY_USE_CASE_KEYS,
-  ...SESSION_USE_CASE_KEYS,
-  ...AI_USE_CASE_KEYS,
-] as const satisfies readonly (keyof ApiCradle)[]
-
-export type ApiCradleUseCases = Pick<ApiCradle, (typeof USE_CASE_KEYS)[number]>
+export type ApiCradleUseCases = Pick<ApiCradle, UseCaseKey>
 
 export function extractUseCases(cradle: ApiCradle): ApiCradleUseCases {
   return Object.fromEntries(

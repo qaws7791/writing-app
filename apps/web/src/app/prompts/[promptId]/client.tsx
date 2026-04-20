@@ -3,11 +3,7 @@
 import { useRouter } from "next/navigation"
 import PromptDetailView from "@/views/prompt-detail-view"
 import { usePromptDetail, usePromptWritings } from "@/features/prompts"
-
-function formatDate(isoString: string): string {
-  const date = new Date(isoString)
-  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`
-}
+import { formatShortDate } from "@/foundation/utils"
 
 export default function PromptDetailClientPage({
   promptId,
@@ -21,7 +17,7 @@ export default function PromptDetailClientPage({
 
   const essays = writings.map((item) => ({
     id: item.id,
-    date: formatDate(item.createdAt),
+    date: formatShortDate(item.createdAt),
     wordCount: item.wordCount,
     title: item.title,
     preview: item.preview,
