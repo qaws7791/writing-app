@@ -27,10 +27,17 @@ describe("health", () => {
   test("reports server status", async () => {
     const { app } = setup()
     const response = await app.request("/health")
-    const body = await readJson<{ status: string }>(response)
+    const body = await readJson<{
+      ai: { status: string }
+      db: { latencyMs: number | null; status: string }
+      status: string
+    }>(response)
 
     expect(response.status).toBe(200)
     expect(body.status).toBe("ok")
+    expect(body.db.status).toBe("ok")
+    expect(body.db.latencyMs).toEqual(expect.any(Number))
+    expect(body.ai.status).toBe("degraded")
   })
 
   test("allows the local web origin through cors", async () => {

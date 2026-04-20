@@ -31,6 +31,7 @@ import {
   type EnrollJourneyUseCase,
   type GenerateFeedbackUseCase,
   type GetHomeUseCase,
+  type HealthCheckUseCase,
   type GetJourneyUseCase,
   type GetPromptUseCase,
   type GetSessionDetailUseCase,
@@ -89,6 +90,7 @@ export type ApiCradle = {
   unbookmarkPromptUseCase: UnbookmarkPromptUseCase
 
   getHomeUseCase: GetHomeUseCase
+  healthCheckUseCase: HealthCheckUseCase
 
   listJourneysUseCase: ListJourneysUseCase
   listUserJourneysUseCase: ListUserJourneysUseCase
@@ -120,6 +122,7 @@ export const USE_CASE_KEYS = [
   "enrollJourneyUseCase",
   "generateFeedbackUseCase",
   "getHomeUseCase",
+  "healthCheckUseCase",
   "getJourneyUseCase",
   "getPromptUseCase",
   "getSessionDetailUseCase",

@@ -199,6 +199,20 @@ function setup(): { app: TestApp } {
             showWritingSuggestion: true,
           })
         },
+        healthCheckUseCase() {
+          return {
+            ai: {
+              reason: "probe_not_configured" as const,
+              status: "degraded" as const,
+            },
+            db: {
+              latencyMs: 1,
+              status: "ok" as const,
+            },
+            sqliteVersion: "memory",
+            status: "ok" as const,
+          }
+        },
         getJourneyUseCase() {
           return errAsync(journeyNotFound("여정을 찾을 수 없습니다."))
         },

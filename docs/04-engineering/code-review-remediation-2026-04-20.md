@@ -42,7 +42,7 @@ description: code-review (1).md 기준 후속 조치 현황과 실제 코드 기
 | 16   | Admin 환경 변수 검증 시점                     | 기해결 | `apps/admin/src/env.ts`는 이미 `createEnv` 사용     |
 | 17   | `define-route.ts` 책임 분리                   | 완료   | route 구성, 입력 조립, 결과 언래핑 모듈로 분리      |
 | 18   | `writing-editor-view.tsx` 거대 컴포넌트 분리  | 완료   | 상태 훅 + 헤더/본문/이탈 다이얼로그 분리            |
-| 19   | Health check 심화                             | 대기   | `/health` 응답 확장 필요                            |
+| 19   | Health check 심화                             | 완료   | DB 쿼리 상태·지연 시간·AI 서브상태를 응답에 포함    |
 | 20   | Session AI Worker 메트릭/로그 보강            | 대기   | 처리 시간, 결과 로그 필요                           |
 
 ## 메모

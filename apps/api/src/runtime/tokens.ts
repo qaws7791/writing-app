@@ -27,6 +27,8 @@ export const EnrollJourneyUseCase = createToken<
 export const GenerateFeedbackUseCase = createToken<
   AppVariables["generateFeedbackUseCase"]
 >("generateFeedbackUseCase")
+export const HealthCheckUseCase =
+  createToken<AppVariables["healthCheckUseCase"]>("healthCheckUseCase")
 export const GetHomeUseCase =
   createToken<AppVariables["getHomeUseCase"]>("getHomeUseCase")
 export const GetJourneyUseCase =

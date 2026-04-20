@@ -342,6 +342,20 @@ export function createTestApi(input?: {
             showWritingSuggestion: true,
           })
         },
+        healthCheckUseCase() {
+          return {
+            ai: {
+              reason: "probe_not_configured" as const,
+              status: "degraded" as const,
+            },
+            db: {
+              latencyMs: 1,
+              status: "ok" as const,
+            },
+            sqliteVersion: "3.46.0",
+            status: "ok" as const,
+          }
+        },
         listPromptWritingsUseCase(_promptId, _userId, _params) {
           return okAsync({ items: [], nextCursor: null, hasMore: false })
         },

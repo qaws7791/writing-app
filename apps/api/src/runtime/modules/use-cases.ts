@@ -80,6 +80,44 @@ export type ListUserJourneysUseCase = ReturnType<
   typeof makeListUserJourneysUseCase
 >
 
+function createHealthCheckUseCase({ database, sqliteVersion }: ApiCradle) {
+  return () => {
+    const startedAt = performance.now()
+
+    try {
+      database.sql.query("SELECT 1").get()
+
+      return {
+        ai: {
+          reason: "probe_not_configured" as const,
+          status: "degraded" as const,
+        },
+        db: {
+          latencyMs: Math.round(performance.now() - startedAt),
+          status: "ok" as const,
+        },
+        sqliteVersion,
+        status: "ok" as const,
+      }
+    } catch {
+      return {
+        ai: {
+          reason: "probe_not_configured" as const,
+          status: "degraded" as const,
+        },
+        db: {
+          latencyMs: null,
+          status: "degraded" as const,
+        },
+        sqliteVersion,
+        status: "degraded" as const,
+      }
+    }
+  }
+}
+
+export type HealthCheckUseCase = ReturnType<typeof createHealthCheckUseCase>
+
 export function registerUseCases(container: AwilixContainer<ApiCradle>) {
   container.register({
     // --- AI Coaching Gateway ---
@@ -138,6 +176,8 @@ export function registerUseCases(container: AwilixContainer<ApiCradle>) {
         progressRepository,
       })
     ).singleton(),
+
+    healthCheckUseCase: asFunction(createHealthCheckUseCase).singleton(),
 
     // --- Journeys ---
 
