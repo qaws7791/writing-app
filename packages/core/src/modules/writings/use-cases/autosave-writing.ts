@@ -1,4 +1,4 @@
-import { err, ok, ResultAsync } from "neverthrow"
+import { err, errAsync, ok, ResultAsync } from "neverthrow"
 import { match } from "ts-pattern"
 
 import type { WritingId, UserId } from "../../../shared/brand/index"
@@ -33,11 +33,9 @@ export function makeAutosaveWritingUseCase(deps: AutosaveWritingDeps) {
       input.bodyJson === undefined &&
       input.bodyPlainText === undefined
     ) {
-      return ResultAsync.fromSafePromise(
-        Promise.resolve(
-          err(writingValidationFailed("변경할 제목 또는 본문이 필요합니다."))
-        )
-      ).andThen((r) => r)
+      return errAsync(
+        writingValidationFailed("변경할 제목 또는 본문이 필요합니다.")
+      )
     }
 
     return ResultAsync.fromSafePromise(
