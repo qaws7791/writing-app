@@ -75,12 +75,12 @@ export function AIFeedbackStep({
 
       {feedback && (
         <div className="flex flex-col gap-3">
-          {feedback.strengths.map((strength, i) => (
+          {feedback.strengths.map((strength, index) => (
             <div
-              key={i}
+              key={strength}
               className="border-success/30 bg-success/10 rounded-2xl border p-4"
             >
-              {i === 0 && (
+              {index === 0 && (
                 <p className="text-success-foreground mb-2 text-xs leading-5 font-semibold tracking-wide">
                   강점
                 </p>
@@ -90,12 +90,12 @@ export function AIFeedbackStep({
               </p>
             </div>
           ))}
-          {feedback.improvements.map((improvement, i) => (
+          {feedback.improvements.map((improvement, index) => (
             <div
-              key={i}
+              key={improvement}
               className="border-warning/30 bg-warning/10 rounded-2xl border p-4"
             >
-              {i === 0 && (
+              {index === 0 && (
                 <p className="text-warning-foreground mb-2 text-xs leading-5 font-semibold tracking-wide">
                   개선점
                 </p>

@@ -12,9 +12,9 @@ export function CompletionStep({ content }: { content: CompletionContent }) {
         {content.congratsMessage}
       </h1>
       <div className="flex w-full flex-col gap-3 text-left">
-        {content.summaryPoints.map((point, i) => (
+        {content.summaryPoints.map((point) => (
           <div
-            key={i}
+            key={point}
             className="flex items-start gap-3 rounded-xl bg-muted px-4 py-3"
           >
             <Check

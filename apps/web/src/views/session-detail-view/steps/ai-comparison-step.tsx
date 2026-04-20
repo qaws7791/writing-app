@@ -87,7 +87,7 @@ export function AIComparisonStep({
         <div className="flex flex-col gap-3">
           {comparison.improvements.map((improvement, index) => (
             <div
-              key={`${improvement}-${index}`}
+              key={improvement}
               className="rounded-2xl border border-accent/30 bg-accent/50 p-4"
             >
               {index === 0 && (

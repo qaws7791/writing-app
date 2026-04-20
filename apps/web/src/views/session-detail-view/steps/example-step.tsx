@@ -7,8 +7,11 @@ export function ExampleStep({ content }: { content: ExampleContent }) {
         {content.title}
       </h2>
       <div className="flex flex-col gap-4">
-        {content.examples.map((ex, i) => (
-          <div key={i} className="flex flex-col gap-2 rounded-2xl bg-muted p-4">
+        {content.examples.map((ex) => (
+          <div
+            key={ex.label ? `${ex.label}-${ex.text}` : ex.text}
+            className="flex flex-col gap-2 rounded-2xl bg-muted p-4"
+          >
             {ex.label && (
               <span className="text-xs leading-5 font-semibold tracking-wide text-muted-foreground/80 uppercase">
                 {ex.label}
@@ -19,13 +22,13 @@ export function ExampleStep({ content }: { content: ExampleContent }) {
             </p>
             {ex.highlights && ex.highlights.length > 0 && (
               <div className="mt-2 flex flex-col gap-1.5 border-t border-border/80 pt-2">
-                {ex.highlights.map((h, hi) => (
+                {ex.highlights.map((highlight) => (
                   <p
-                    key={hi}
+                    key={highlight.comment}
                     className="text-xs leading-5 font-medium text-muted-foreground"
                   >
                     <span className="font-[500] text-muted-foreground">*</span>{" "}
-                    {h.comment}
+                    {highlight.comment}
                   </p>
                 ))}
               </div>

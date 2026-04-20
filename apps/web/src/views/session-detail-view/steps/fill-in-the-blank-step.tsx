@@ -8,6 +8,17 @@ import type {
 
 type Props = InteractiveStepProps<FillInTheBlankContent, FillInTheBlankState>
 
+function createSentencePartKeys(sentence: string): string[] {
+  const parts = sentence.split(/(\{\{[^}]+\}\})/)
+  let cursor = 0
+
+  return parts.map((part) => {
+    const key = `part-${cursor}`
+    cursor += part.length
+    return key
+  })
+}
+
 export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
   const selections = state?.selections ?? {}
   const checked = state?.checked === true
@@ -24,6 +35,7 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
   }
 
   const parts = content.sentence.split(/(\{\{[^}]+\}\})/)
+  const partKeys = createSentencePartKeys(content.sentence)
 
   return (
     <div className="flex flex-col gap-5">
@@ -32,15 +44,16 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
       </p>
 
       <div className="rounded-2xl bg-muted p-4 text-sm leading-6 text-foreground">
-        {parts.map((part, i) => {
+        {parts.map((part, index) => {
+          const partKey = partKeys[index] ?? part
           const match = part.match(/\{\{(.+)\}\}/)
-          if (!match) return <span key={i}>{part}</span>
+          if (!match) return <span key={partKey}>{part}</span>
 
           const [, blankId] = match
-          if (!blankId) return <span key={i}>{part}</span>
+          if (!blankId) return <span key={partKey}>{part}</span>
 
           const blank = content.blanks.find((b) => b.id === blankId)
-          if (!blank) return <span key={i}>{part}</span>
+          if (!blank) return <span key={partKey}>{part}</span>
 
           const selectedId = selections[blankId]
           const selectedOpt = blank.options.find((o) => o.id === selectedId)
@@ -56,7 +69,7 @@ export function FillInTheBlankStep({ content, state, onStateChange }: Props) {
           )
 
           return (
-            <span key={i} className={style}>
+            <span key={partKey} className={style}>
               {selectedOpt ? selectedOpt.text : "______"}
             </span>
           )

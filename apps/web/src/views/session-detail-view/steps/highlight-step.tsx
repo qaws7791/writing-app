@@ -28,20 +28,27 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
     (a, b) => a.startOffset - b.startOffset
   )
 
-  const segments: Array<{ text: string; rangeId?: string }> = []
+  const segments: Array<{ id: string; text: string; rangeId?: string }> = []
   let lastEnd = 0
   for (const r of sortedRanges) {
     if (r.startOffset > lastEnd) {
-      segments.push({ text: content.passage.slice(lastEnd, r.startOffset) })
+      segments.push({
+        id: `plain-${lastEnd}-${r.startOffset}`,
+        text: content.passage.slice(lastEnd, r.startOffset),
+      })
     }
     segments.push({
+      id: `range-${r.id}`,
       text: content.passage.slice(r.startOffset, r.endOffset),
       rangeId: r.id,
     })
     lastEnd = r.endOffset
   }
   if (lastEnd < content.passage.length) {
-    segments.push({ text: content.passage.slice(lastEnd) })
+    segments.push({
+      id: `plain-${lastEnd}-${content.passage.length}`,
+      text: content.passage.slice(lastEnd),
+    })
   }
 
   return (
@@ -50,10 +57,10 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
         {content.instruction}
       </p>
       <div className="rounded-2xl bg-muted p-4 text-sm leading-6 text-foreground">
-        {segments.map((seg, i) => {
+        {segments.map((seg) => {
           const rangeId = seg.rangeId
           if (!rangeId) {
-            return <span key={i}>{seg.text}</span>
+            return <span key={seg.id}>{seg.text}</span>
           }
 
           const isSelected = selectedIds.includes(rangeId)
@@ -79,7 +86,7 @@ export function HighlightStep({ content, state, onStateChange }: Props) {
 
           return (
             <span
-              key={i}
+              key={seg.id}
               role="button"
               tabIndex={checked ? -1 : 0}
               aria-pressed={isSelected}

@@ -5,13 +5,18 @@ export function ProgressSegments({
   total: number
   completed: number
 }) {
+  const segments = Array.from({ length: total }, (_, index) => ({
+    id: `segment-${index + 1}`,
+    filled: index < completed,
+  }))
+
   return (
     <div className="flex gap-2">
-      {Array.from({ length: total }, (_, i) => (
+      {segments.map((segment) => (
         <div
-          key={i}
+          key={segment.id}
           className={`h-1.5 flex-1 rounded-full transition-colors ${
-            i < completed ? "bg-accent" : "bg-surface-tertiary"
+            segment.filled ? "bg-accent" : "bg-surface-tertiary"
           }`}
         />
       ))}
