@@ -26,13 +26,13 @@ export default route({
   response: { 200: authEmailResponseSchema, default: defaultErrorResponse },
   meta: {
     description:
-      "개발 환경에서 전송된 인증 메일을 조회합니다. 프로덕션에서는 비활성화됩니다.",
+      "로컬 또는 테스트 환경에서 전송된 인증 메일을 조회합니다. 운영 앱에는 등록되지 않습니다.",
     summary: "인증 메일 조회 (개발용)",
     tags: ["개발"],
   },
   handler: ({ readLatestAuthEmail, query }) => {
     if (!readLatestAuthEmail) {
-      throw new NotFoundError("개발 환경에서만 사용할 수 있습니다.")
+      throw new NotFoundError("인증 메일 inbox가 구성되지 않았습니다.")
     }
     const message = readLatestAuthEmail({
       email: query.email,

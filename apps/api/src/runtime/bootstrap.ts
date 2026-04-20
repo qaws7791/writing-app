@@ -17,7 +17,7 @@ import { createResolveSessionMiddleware } from "../middleware/resolve-session"
 import type { ApiLogLevel } from "../observability/logger"
 import { createApiContainer, extractUseCases } from "./container"
 import { createSessionAiWorker } from "./session-ai-worker"
-import getAuthEmails from "../routes/dev/get-auth-emails"
+import { devRoutes } from "../routes/dev"
 import { allRoutes } from "../routes"
 
 export type ApiEnvironment = {
@@ -124,7 +124,7 @@ export async function createApiDependencies(
       handleRequestError(c, error, logger, "request failed"),
     routes: [
       ...allRoutes({ rateLimitBackend }),
-      ...(environment.authDebugEnabled ? [getAuthEmails] : []),
+      ...(environment.authDebugEnabled ? devRoutes() : []),
     ],
     notFound: (c) =>
       c.json(

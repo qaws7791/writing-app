@@ -27,7 +27,7 @@ import { createDevEmailInbox, createDevEmailPort } from "./auth-email.js"
 import { createSilentLogger } from "../observability/logger.js"
 import { createMemoryRateLimitBackend } from "../rate-limit/rate-limit-backend.js"
 import { allRoutes } from "../routes/index.js"
-import getAuthEmails from "../routes/dev/get-auth-emails.js"
+import { devRoutes } from "../routes/dev/index.js"
 import type { AppEnv } from "../app-env.js"
 
 type TestApp = OpenAPIHono<AppEnv>
@@ -258,7 +258,7 @@ function setup(): { app: TestApp } {
       }
       return handleRequestError(c, error, logger, "request failed")
     },
-    routes: [...allRoutes({ rateLimitBackend }), getAuthEmails],
+    routes: [...allRoutes({ rateLimitBackend }), ...devRoutes()],
     notFound: (c) =>
       c.json(
         {

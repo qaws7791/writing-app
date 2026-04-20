@@ -6,13 +6,17 @@ const {
   createApiContainerMock,
   createAppMock,
   createAllRoutesMock,
+  createDevRoutesMock,
   migrateDatabaseMock,
   seedDatabaseMock,
 } = vi.hoisted(() => {
+  const publicRoute = { openapi: vi.fn(), route: vi.fn() }
+  const devRoute = { openapi: vi.fn(), route: vi.fn() }
   return {
     createApiContainerMock: vi.fn(),
     createAppMock: vi.fn(),
-    createAllRoutesMock: vi.fn(() => []),
+    createAllRoutesMock: vi.fn(() => [publicRoute]),
+    createDevRoutesMock: vi.fn(() => [devRoute]),
     migrateDatabaseMock: vi.fn(),
     seedDatabaseMock: vi.fn(),
   }
@@ -71,6 +75,10 @@ vi.mock("./container.js", () => ({
 
 vi.mock("../routes/index.js", () => ({
   allRoutes: createAllRoutesMock,
+}))
+
+vi.mock("../routes/dev/index.js", () => ({
+  devRoutes: createDevRoutesMock,
 }))
 
 vi.mock("../config/env.js", () => ({
@@ -200,6 +208,55 @@ describe("bootstrap", () => {
     })
 
     expect(seedDatabaseMock).not.toHaveBeenCalled()
+  })
+
+  test("does not register dev routes when auth debug is disabled", async () => {
+    await createApiDependencies({
+      apiBaseUrl: "http://127.0.0.1:3010",
+      authBaseUrl: "http://127.0.0.1:3010",
+      authDebugEnabled: false,
+      authSecret: "test-secret-test-secret-test-secret",
+      databasePath: "memory:test",
+      logLevel: "info",
+      port: 3010,
+      rateLimitRedisPrefix: "test:rate-limit",
+      redisUrl: "redis://127.0.0.1:6379",
+      seedOnStartup: false,
+      webBaseUrl: "http://127.0.0.1:3000",
+    })
+
+    expect(createDevRoutesMock).not.toHaveBeenCalled()
+    expect(createAppMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        routes: createAllRoutesMock.mock.results[0]?.value,
+      })
+    )
+  })
+
+  test("registers dev routes only when auth debug is enabled", async () => {
+    await createApiDependencies({
+      apiBaseUrl: "http://127.0.0.1:3010",
+      authBaseUrl: "http://127.0.0.1:3010",
+      authDebugEnabled: true,
+      authSecret: "test-secret-test-secret-test-secret",
+      databasePath: "memory:test",
+      logLevel: "info",
+      port: 3010,
+      rateLimitRedisPrefix: "test:rate-limit",
+      redisUrl: "redis://127.0.0.1:6379",
+      seedOnStartup: false,
+      webBaseUrl: "http://127.0.0.1:3000",
+    })
+
+    expect(createDevRoutesMock).toHaveBeenCalledTimes(1)
+    expect(createAppMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        routes: [
+          ...(createAllRoutesMock.mock.results[0]?.value ?? []),
+          ...(createDevRoutesMock.mock.results[0]?.value ?? []),
+        ],
+      })
+    )
   })
 
   test("derives seedOnStartup and authDebugEnabled from NODE_ENV", () => {

@@ -27,6 +27,7 @@ description: "글필 플랫폼의 보안 위협 모델과 대응 원칙. 계정 
 
 - better-auth 세션: HttpOnly 쿠키, CSRF 미들웨어 최전단 적용
 - 모든 API 엔드포인트: 인증 확인 + 소유권 검증 필수
+- 개발 전용 엔드포인트: 운영 환경에서는 의존성 주입 여부가 아니라 라우트 등록 자체로 차단하고, 운영 OpenAPI 문서에도 포함하지 않음
 - 글 본문·AI 피드백 내용: 로그·관측 시스템에 수집 금지 (→ [[../03-architecture/observability-architecture|관측 아키텍처]])
 - 파일 저장소(R2): 서명 URL 단기 수명, 사용자 직접 업로드 금지 (→ [[../03-architecture/file-storage-strategy|파일 저장 전략]])
 - 앱 전용 개발 환경 파일(`apps/api/.env.development` 등): `.gitignore`로 제외하고 `.env.example`만 추적

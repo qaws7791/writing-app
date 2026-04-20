@@ -112,6 +112,7 @@ description: apps/api가 core 계약 스키마와 use case를 HTTP/OpenAPI 경�
 - `apps/web/foundation/api/client.ts`: `@workspace/api-client`를 래핑하여 baseUrl과 쿠키 기반 인증을 주입합니다.
 - 타입 생성 명령: `bun run api:generate` (API 서버 실행 필요, `@workspace/api-client` 스크립트 실행)
 - 서버 API 스키마가 변경되면 반드시 `bun run api:generate`를 실행하여 타입을 갱신합니다.
+- 개발 전용 라우트는 운영 앱 라우트와 운영 OpenAPI 스펙에 포함하지 않습니다.
 - 프론트엔드에서 `fetch`를 직접 사용하지 않고 `foundation/api/client`를 통해 API를 호출합니다.
 
 ## 관련 문서
