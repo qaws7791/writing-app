@@ -1,7 +1,11 @@
 import { SignJWT, jwtVerify } from "jose"
 import { cookies } from "next/headers"
+import { eq } from "drizzle-orm"
+
+import { adminUsers } from "@workspace/database"
 
 import { env } from "@/env"
+import { getDb } from "@/lib/db"
 
 export const ADMIN_SESSION_COOKIE = "admin_session"
 const SESSION_DURATION_SECONDS = 60 * 60 * 8 // 8 hours
@@ -16,6 +20,35 @@ function getSecret() {
   return new TextEncoder().encode(env.ADMIN_JWT_SECRET)
 }
 
+async function readCurrentAdminSession(adminId: number): Promise<{
+  session: AdminSession
+  updatedAt: Date
+} | null> {
+  const [admin] = await getDb()
+    .select({
+      id: adminUsers.id,
+      email: adminUsers.email,
+      name: adminUsers.name,
+      updatedAt: adminUsers.updatedAt,
+    })
+    .from(adminUsers)
+    .where(eq(adminUsers.id, adminId))
+    .limit(1)
+
+  if (!admin) {
+    return null
+  }
+
+  return {
+    session: {
+      adminId: admin.id,
+      email: admin.email,
+      name: admin.name,
+    },
+    updatedAt: admin.updatedAt,
+  }
+}
+
 export async function createSessionToken(
   payload: AdminSession
 ): Promise<string> {
@@ -27,15 +60,40 @@ export async function createSessionToken(
 }
 
 export async function verifySessionToken(
-  token: string
+  token: string,
+  options?: {
+    skipFreshnessCheck?: boolean
+  }
 ): Promise<AdminSession | null> {
   try {
     const { payload } = await jwtVerify(token, getSecret())
-    return {
-      adminId: payload.adminId as number,
-      email: payload.email as string,
-      name: payload.name as string,
+    const adminId = payload.adminId
+
+    if (typeof adminId !== "number") {
+      return null
     }
+
+    const currentAdmin = await readCurrentAdminSession(adminId)
+
+    if (!currentAdmin) {
+      return null
+    }
+
+    if (options?.skipFreshnessCheck) {
+      return currentAdmin.session
+    }
+
+    if (typeof payload.iat !== "number") {
+      return null
+    }
+
+    const issuedAt = payload.iat * 1000
+
+    if (currentAdmin.updatedAt.getTime() > issuedAt) {
+      return null
+    }
+
+    return currentAdmin.session
   } catch {
     return null
   }

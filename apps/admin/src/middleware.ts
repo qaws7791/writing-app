@@ -16,7 +16,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  const session = await verifySessionToken(token)
+  const session = await verifySessionToken(token, {
+    skipFreshnessCheck: true,
+  })
   if (!session) {
     const response = NextResponse.redirect(new URL("/login", request.url))
     response.cookies.delete(ADMIN_SESSION_COOKIE)
