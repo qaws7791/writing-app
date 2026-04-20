@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from "vitest"
 import { APIError } from "better-auth/api"
+import { createValidationError } from "@workspace/core"
 
 import { createTestApi } from "./test-support/create-test-app.js"
 import { createCapturedLogger } from "./test-support/capture-logger.js"
@@ -447,6 +448,22 @@ describe("sessions", () => {
       headers: { "content-type": "application/json" },
       method: "POST",
     })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.code).toBe("validation_error")
+  })
+
+  test("returns validation error when session ai state is corrupted", async () => {
+    const api = createTestApi({
+      sessionDetailError: createValidationError(
+        "손상된 세션 AI 결과 데이터입니다.",
+        "resultJson"
+      ),
+    })
+    createdApps.push(api)
+
+    const response = await api.app.request("/sessions/1")
     const body = await readJson<{ error: { code: string } }>(response)
 
     expect(response.status).toBe(400)

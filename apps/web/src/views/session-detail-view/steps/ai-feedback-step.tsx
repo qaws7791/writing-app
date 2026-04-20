@@ -7,21 +7,9 @@ import type {
   AIFeedbackContent,
   CrossReferenceStepProps,
   SessionAiStepState,
-  WritingFeedbackResult,
 } from "@/views/session-detail-view/types"
 
 type Props = CrossReferenceStepProps<AIFeedbackContent>
-
-function isWritingFeedbackResult(
-  value: SessionAiStepState["resultJson"]
-): value is WritingFeedbackResult {
-  return (
-    value !== null &&
-    "strengths" in value &&
-    "improvements" in value &&
-    "question" in value
-  )
-}
 
 export function AIFeedbackStep({
   content,
@@ -36,8 +24,7 @@ export function AIFeedbackStep({
   const userText = targetState?.text ?? ""
   const aiState = allStepStates[step.id] as SessionAiStepState | undefined
   const feedback =
-    aiState?.status === "succeeded" &&
-    isWritingFeedbackResult(aiState.resultJson)
+    aiState?.kind === "feedback" && aiState.status === "succeeded"
       ? aiState.resultJson
       : null
 

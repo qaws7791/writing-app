@@ -17,6 +17,8 @@ export type {
 
 // Schemas
 export {
+  comparisonSessionStepAiStateSchema,
+  feedbackSessionStepAiStateSchema,
   journeyProgressStatusSchema,
   sessionProgressStatusSchema,
   sessionAiStateKindSchema,

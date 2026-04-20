@@ -1,4 +1,9 @@
-import type { AiCoachingGateway, ProgressRepository } from "@workspace/core"
+import {
+  comparisonSessionStepAiStateSchema,
+  feedbackSessionStepAiStateSchema,
+  type AiCoachingGateway,
+  type ProgressRepository,
+} from "@workspace/core"
 
 import type { ApiLogger } from "../observability/logger"
 
@@ -13,6 +18,9 @@ function getErrorMessage(error: unknown): string {
 
   return "AI 작업 처리 중 오류가 발생했습니다."
 }
+
+const INVALID_AI_RESULT_MESSAGE =
+  "AI 응답 형식이 올바르지 않아 결과를 저장하지 못했습니다."
 
 function toWorkerKey(input: {
   userId: string
@@ -104,6 +112,41 @@ export function createSessionAiWorker(input: {
             })()
 
       const resolved = await result
+      const resultJsonSchema =
+        step.kind === "feedback"
+          ? feedbackSessionStepAiStateSchema.shape.resultJson
+          : comparisonSessionStepAiStateSchema.shape.resultJson
+      const parsedResult = resultJsonSchema.safeParse(resolved)
+
+      if (!parsedResult.success || parsedResult.data === null) {
+        input.logger.warn(
+          {
+            issues: parsedResult.success ? [] : parsedResult.error.issues,
+            scope: "session-ai-worker",
+            sessionId: step.sessionId,
+            stepOrder: step.stepOrder,
+            userId: step.userId,
+          },
+          "session ai result validation failed"
+        )
+
+        await input.progressRepository.saveSessionStepAiState(
+          step.userId,
+          step.sessionId,
+          step.stepOrder,
+          {
+            kind: step.kind,
+            sourceStepOrder: step.sourceStepOrder,
+            status: "failed",
+            attemptCount,
+            inputJson: step.inputJson,
+            resultJson: null,
+            errorMessage: INVALID_AI_RESULT_MESSAGE,
+          }
+        )
+
+        return
+      }
 
       await input.progressRepository.saveSessionStepAiState(
         step.userId,
@@ -115,7 +158,7 @@ export function createSessionAiWorker(input: {
           status: "succeeded",
           attemptCount,
           inputJson: step.inputJson,
-          resultJson: resolved as Record<string, unknown>,
+          resultJson: parsedResult.data,
           errorMessage: null,
         }
       )

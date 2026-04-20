@@ -66,25 +66,42 @@ export type UserSessionProgress = {
 }
 
 export type SessionAiResult = RevisionComparison | WritingFeedback
-
-export type UserSessionStepAiState = {
+type UserSessionStepAiStateBase = {
   readonly userId: UserId
   readonly sessionId: SessionId
   readonly stepOrder: number
-  readonly kind: SessionAiStateKind
   readonly sourceStepOrder: number
   readonly status: SessionAiStateStatus
   readonly attemptCount: number
   readonly inputJson: Record<string, unknown>
-  readonly resultJson: SessionAiResult | null
   readonly errorMessage: string | null
   readonly updatedAt: string
 }
 
-export type SessionStepAiState = Omit<
-  UserSessionStepAiState,
+export type UserSessionStepAiState =
+  | (UserSessionStepAiStateBase & {
+      readonly kind: "comparison"
+      readonly resultJson: RevisionComparison | null
+    })
+  | (UserSessionStepAiStateBase & {
+      readonly kind: "feedback"
+      readonly resultJson: WritingFeedback | null
+    })
+
+type SessionStepAiStateBase = Omit<
+  UserSessionStepAiStateBase,
   "inputJson" | "sessionId" | "userId"
 >
+
+export type SessionStepAiState =
+  | (SessionStepAiStateBase & {
+      readonly kind: "comparison"
+      readonly resultJson: RevisionComparison | null
+    })
+  | (SessionStepAiStateBase & {
+      readonly kind: "feedback"
+      readonly resultJson: WritingFeedback | null
+    })
 
 export type SessionRuntime = JourneySessionDetail & {
   readonly currentStepOrder: number

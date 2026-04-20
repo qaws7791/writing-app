@@ -1,6 +1,13 @@
 import { and, asc, count, eq } from "drizzle-orm"
 
-import { createValidationError, stepResponseMapSchema } from "@workspace/core"
+import {
+  comparisonSessionStepAiStateSchema,
+  createValidationError,
+  feedbackSessionStepAiStateSchema,
+  type RevisionComparison,
+  stepResponseMapSchema,
+  type WritingFeedback,
+} from "@workspace/core"
 import type {
   JourneyId,
   ProgressRepository,
@@ -37,6 +44,32 @@ function parseStepResponsesJson(input: unknown): StepResponseMap {
     "손상된 세션 응답 데이터입니다.",
     "stepResponsesJson"
   )
+}
+
+function parseSessionAiResultJson(
+  kind: "feedback",
+  input: unknown
+): WritingFeedback | null
+function parseSessionAiResultJson(
+  kind: "comparison",
+  input: unknown
+): RevisionComparison | null
+function parseSessionAiResultJson(
+  kind: SessionAiStateKind,
+  input: unknown
+): SessionAiResult | null {
+  const resultJsonSchema =
+    kind === "feedback"
+      ? feedbackSessionStepAiStateSchema.shape.resultJson
+      : comparisonSessionStepAiStateSchema.shape.resultJson
+
+  const parsed = resultJsonSchema.safeParse(input ?? null)
+
+  if (parsed.success) {
+    return parsed.data
+  }
+
+  throw createValidationError("손상된 세션 AI 결과 데이터입니다.", "resultJson")
 }
 
 function mapJourneyProgress(row: {
@@ -108,18 +141,30 @@ function mapSessionStepAiState(row: {
   errorMessage: string | null
   updatedAt: Date
 }): UserSessionStepAiState {
-  return {
+  const common = {
     userId: row.userId,
     sessionId: row.sessionId,
     stepOrder: row.stepOrder,
-    kind: row.kind as SessionAiStateKind,
     sourceStepOrder: row.sourceStepOrder,
     status: row.status as SessionAiStateStatus,
     attemptCount: row.attemptCount,
     inputJson: (row.inputJson ?? {}) as Record<string, unknown>,
-    resultJson: (row.resultJson ?? null) as SessionAiResult | null,
     errorMessage: row.errorMessage,
     updatedAt: row.updatedAt.toISOString(),
+  }
+
+  if (row.kind === "feedback") {
+    return {
+      ...common,
+      kind: "feedback",
+      resultJson: parseSessionAiResultJson("feedback", row.resultJson),
+    }
+  }
+
+  return {
+    ...common,
+    kind: "comparison",
+    resultJson: parseSessionAiResultJson("comparison", row.resultJson),
   }
 }
 
@@ -457,7 +502,7 @@ export function createProgressRepository(
         status: SessionAiStateStatus
         attemptCount: number
         inputJson: Record<string, unknown>
-        resultJson: Record<string, unknown> | null
+        resultJson: SessionAiResult | null
         errorMessage: string | null
       }
     ): Promise<void> {

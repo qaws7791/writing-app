@@ -4,17 +4,10 @@ import { Spinner } from "@workspace/ui/components/ui/spinner"
 import type {
   AIComparisonContent,
   CrossReferenceStepProps,
-  RevisionComparisonResult,
   SessionAiStepState,
 } from "@/views/session-detail-view/types"
 
 type Props = CrossReferenceStepProps<AIComparisonContent>
-
-function isRevisionComparisonResult(
-  value: SessionAiStepState["resultJson"]
-): value is RevisionComparisonResult {
-  return value !== null && "improvements" in value && "summary" in value
-}
 
 export function AIComparisonStep({
   content,
@@ -34,8 +27,7 @@ export function AIComparisonStep({
   const originalText = originalState?.text ?? "(초안 없음)"
   const rewrittenText = rewritingState?.text ?? "(수정본 없음)"
   const comparison =
-    aiState?.status === "succeeded" &&
-    isRevisionComparisonResult(aiState.resultJson)
+    aiState?.kind === "comparison" && aiState.status === "succeeded"
       ? aiState.resultJson
       : null
 

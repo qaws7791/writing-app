@@ -99,16 +99,33 @@ export const sessionAiResultSchema = z
   .union([writingFeedbackSchema, revisionComparisonSchema])
   .nullable()
 
-export const sessionStepAiStateSchema = z.object({
+const sessionStepAiStateBaseSchema = z.object({
   stepOrder: z.number().int().min(1),
-  kind: sessionAiStateKindSchema,
   sourceStepOrder: z.number().int().min(1),
   status: sessionAiStateStatusSchema,
   attemptCount: z.number().int().min(0),
-  resultJson: sessionAiResultSchema,
   errorMessage: z.string().nullable(),
   updatedAt: z.string(),
 })
+
+export const feedbackSessionStepAiStateSchema = sessionStepAiStateBaseSchema
+  .extend({
+    kind: z.literal("feedback"),
+    resultJson: writingFeedbackSchema.nullable(),
+  })
+  .strict()
+
+export const comparisonSessionStepAiStateSchema = sessionStepAiStateBaseSchema
+  .extend({
+    kind: z.literal("comparison"),
+    resultJson: revisionComparisonSchema.nullable(),
+  })
+  .strict()
+
+export const sessionStepAiStateSchema = z.discriminatedUnion("kind", [
+  feedbackSessionStepAiStateSchema,
+  comparisonSessionStepAiStateSchema,
+])
 
 export const sessionRuntimeSchema = journeySessionDetailSchema.unwrap().extend({
   currentStepOrder: z.number().int().min(1),

@@ -1199,28 +1199,39 @@ export interface paths {
                       text: string
                     }
               }
-              stepAiStates: {
-                stepOrder: number
-                /** @enum {string} */
-                kind: "feedback" | "comparison"
-                sourceStepOrder: number
-                /** @enum {string} */
-                status: "pending" | "succeeded" | "failed"
-                attemptCount: number
-                resultJson:
-                  | {
+              stepAiStates: (
+                | {
+                    stepOrder: number
+                    sourceStepOrder: number
+                    /** @enum {string} */
+                    status: "pending" | "succeeded" | "failed"
+                    attemptCount: number
+                    errorMessage: string | null
+                    updatedAt: string
+                    /** @enum {string} */
+                    kind: "feedback"
+                    resultJson: {
                       strengths: string[]
                       improvements: string[]
                       question: string
-                    }
-                  | {
+                    } | null
+                  }
+                | {
+                    stepOrder: number
+                    sourceStepOrder: number
+                    /** @enum {string} */
+                    status: "pending" | "succeeded" | "failed"
+                    attemptCount: number
+                    errorMessage: string | null
+                    updatedAt: string
+                    /** @enum {string} */
+                    kind: "comparison"
+                    resultJson: {
                       improvements: string[]
                       summary: string
-                    }
-                  | unknown
-                errorMessage: string | null
-                updatedAt: string
-              }[]
+                    } | null
+                  }
+              )[]
             }
           }
         }
@@ -1344,28 +1355,39 @@ export interface paths {
                       text: string
                     }
               }
-              stepAiStates: {
-                stepOrder: number
-                /** @enum {string} */
-                kind: "feedback" | "comparison"
-                sourceStepOrder: number
-                /** @enum {string} */
-                status: "pending" | "succeeded" | "failed"
-                attemptCount: number
-                resultJson:
-                  | {
+              stepAiStates: (
+                | {
+                    stepOrder: number
+                    sourceStepOrder: number
+                    /** @enum {string} */
+                    status: "pending" | "succeeded" | "failed"
+                    attemptCount: number
+                    errorMessage: string | null
+                    updatedAt: string
+                    /** @enum {string} */
+                    kind: "feedback"
+                    resultJson: {
                       strengths: string[]
                       improvements: string[]
                       question: string
-                    }
-                  | {
+                    } | null
+                  }
+                | {
+                    stepOrder: number
+                    sourceStepOrder: number
+                    /** @enum {string} */
+                    status: "pending" | "succeeded" | "failed"
+                    attemptCount: number
+                    errorMessage: string | null
+                    updatedAt: string
+                    /** @enum {string} */
+                    kind: "comparison"
+                    resultJson: {
                       improvements: string[]
                       summary: string
-                    }
-                  | unknown
-                errorMessage: string | null
-                updatedAt: string
-              }[]
+                    } | null
+                  }
+              )[]
             }
           }
         }
@@ -1531,28 +1553,39 @@ export interface paths {
                       text: string
                     }
               }
-              stepAiStates: {
-                stepOrder: number
-                /** @enum {string} */
-                kind: "feedback" | "comparison"
-                sourceStepOrder: number
-                /** @enum {string} */
-                status: "pending" | "succeeded" | "failed"
-                attemptCount: number
-                resultJson:
-                  | {
+              stepAiStates: (
+                | {
+                    stepOrder: number
+                    sourceStepOrder: number
+                    /** @enum {string} */
+                    status: "pending" | "succeeded" | "failed"
+                    attemptCount: number
+                    errorMessage: string | null
+                    updatedAt: string
+                    /** @enum {string} */
+                    kind: "feedback"
+                    resultJson: {
                       strengths: string[]
                       improvements: string[]
                       question: string
-                    }
-                  | {
+                    } | null
+                  }
+                | {
+                    stepOrder: number
+                    sourceStepOrder: number
+                    /** @enum {string} */
+                    status: "pending" | "succeeded" | "failed"
+                    attemptCount: number
+                    errorMessage: string | null
+                    updatedAt: string
+                    /** @enum {string} */
+                    kind: "comparison"
+                    resultJson: {
                       improvements: string[]
                       summary: string
-                    }
-                  | unknown
-                errorMessage: string | null
-                updatedAt: string
-              }[]
+                    } | null
+                  }
+              )[]
             }
           }
         }
@@ -1626,28 +1659,39 @@ export interface paths {
                       text: string
                     }
               }
-              stepAiStates: {
-                stepOrder: number
-                /** @enum {string} */
-                kind: "feedback" | "comparison"
-                sourceStepOrder: number
-                /** @enum {string} */
-                status: "pending" | "succeeded" | "failed"
-                attemptCount: number
-                resultJson:
-                  | {
+              stepAiStates: (
+                | {
+                    stepOrder: number
+                    sourceStepOrder: number
+                    /** @enum {string} */
+                    status: "pending" | "succeeded" | "failed"
+                    attemptCount: number
+                    errorMessage: string | null
+                    updatedAt: string
+                    /** @enum {string} */
+                    kind: "feedback"
+                    resultJson: {
                       strengths: string[]
                       improvements: string[]
                       question: string
-                    }
-                  | {
+                    } | null
+                  }
+                | {
+                    stepOrder: number
+                    sourceStepOrder: number
+                    /** @enum {string} */
+                    status: "pending" | "succeeded" | "failed"
+                    attemptCount: number
+                    errorMessage: string | null
+                    updatedAt: string
+                    /** @enum {string} */
+                    kind: "comparison"
+                    resultJson: {
                       improvements: string[]
                       summary: string
-                    }
-                  | unknown
-                errorMessage: string | null
-                updatedAt: string
-              }[]
+                    } | null
+                  }
+              )[]
             }
           }
         }
@@ -1770,28 +1814,39 @@ export interface paths {
                       text: string
                     }
               }
-              stepAiStates: {
-                stepOrder: number
-                /** @enum {string} */
-                kind: "feedback" | "comparison"
-                sourceStepOrder: number
-                /** @enum {string} */
-                status: "pending" | "succeeded" | "failed"
-                attemptCount: number
-                resultJson:
-                  | {
+              stepAiStates: (
+                | {
+                    stepOrder: number
+                    sourceStepOrder: number
+                    /** @enum {string} */
+                    status: "pending" | "succeeded" | "failed"
+                    attemptCount: number
+                    errorMessage: string | null
+                    updatedAt: string
+                    /** @enum {string} */
+                    kind: "feedback"
+                    resultJson: {
                       strengths: string[]
                       improvements: string[]
                       question: string
-                    }
-                  | {
+                    } | null
+                  }
+                | {
+                    stepOrder: number
+                    sourceStepOrder: number
+                    /** @enum {string} */
+                    status: "pending" | "succeeded" | "failed"
+                    attemptCount: number
+                    errorMessage: string | null
+                    updatedAt: string
+                    /** @enum {string} */
+                    kind: "comparison"
+                    resultJson: {
                       improvements: string[]
                       summary: string
-                    }
-                  | unknown
-                errorMessage: string | null
-                updatedAt: string
-              }[]
+                    } | null
+                  }
+              )[]
             }
           }
         }

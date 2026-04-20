@@ -48,7 +48,9 @@ description: 홈 진입부터 글감 선택, 여정 진행, 글쓰기, 자동 �
 - `stepResponsesJson`은 사용자 응답만 저장한다. 저장 shape는 `StepResponse` discriminated union이다.
 - `INTRO`, `COMPLETION`, `CONCEPT`, `EXAMPLE`, `AI_FEEDBACK`, `AI_COMPARISON` 스텝은 응답을 저장하지 않는다.
 - `AI_FEEDBACK`, `AI_COMPARISON`의 pending/result/error는 `user_session_step_ai_state`에만 저장한다.
+- `stepAiStates`는 `kind`를 discriminator로 사용하는 분기형 계약이다. `feedback`은 피드백 결과만, `comparison`은 비교 결과만 담는다.
 - 세션 조회와 저장 시 `stepResponsesJson`은 Zod로 재파싱한다. 레거시 AI 상태 객체나 임의 JSON이 섞여 있으면 `validation_error`로 즉시 실패한다.
+- 세션 AI 결과(`resultJson`)도 저장 전과 세션 조회 시점에 `kind`별 결과 스키마로 재검증한다. AI 응답이 계약과 다르거나 DB에 손상된 JSON이 있으면 자동 복구하지 않고 `validation_error`로 즉시 실패한다.
 
 ## 4. 글 작성과 자동 저장
 
@@ -69,9 +71,11 @@ description: 홈 진입부터 글감 선택, 여정 진행, 글쓰기, 자동 �
    - 강점 1~2개: 구체적으로 잘된 부분과 이유
    - 개선점 1~2개: 문제 지적 + 방향 힌트 (답을 주지 않음)
    - 사고 촉발 질문 1개: 글의 깊이를 확장하는 메타인지 질문
-5. 피드백은 세션 AI 상태를 `succeeded` 또는 `failed`로 갱신한다.
-6. 클라이언트는 세션 조회 응답만으로 pending/result/error를 복원한다.
-7. 사용자 수준에 따라 강점:개선점 비율이 조정된다 (입문 2:1, 중급 1:1, 상급 1:2).
+5. 워커는 AI 응답을 저장하기 전에 `kind`에 대응하는 결과 스키마로 검증한다.
+6. 계약에 맞는 결과만 `succeeded`로 저장한다. 형식이 맞지 않으면 결과를 버리고 `failed` 상태와 고정 에러 메시지를 저장한다.
+7. 세션 조회는 저장된 `resultJson`을 다시 검증하며, 손상된 결과는 즉시 `validation_error`로 실패한다.
+8. 클라이언트는 세션 조회 응답만으로 pending/result/error를 복원한다.
+9. 사용자 수준에 따라 강점:개선점 비율이 조정된다 (입문 2:1, 중급 1:1, 상급 1:2).
 
 ### 수정 후 비교 분석
 
@@ -79,8 +83,9 @@ description: 홈 진입부터 글감 선택, 여정 진행, 글쓰기, 자동 �
 2. API는 검증된 `REWRITING` 응답을 저장하고 비교 분석용 세션 AI 작업을 `pending` 상태로 저장한다.
 3. 워커가 초안과 수정본을 AI에 함께 전달한다.
 4. AI는 초안 대비 개선된 부분을 명시적으로 언급하는 비교 피드백을 생성한다.
-5. 비교 결과는 세션 스냅샷에 저장되어 재진입 시에도 복원된다.
-6. 실패한 비교 분석은 세션 재시도 엔드포인트가 같은 입력을 다시 큐잉한다.
+5. 비교 결과도 동일한 스키마 검증을 통과한 경우에만 저장된다.
+6. 비교 결과는 세션 스냅샷에 저장되어 재진입 시에도 복원된다.
+7. 실패한 비교 분석은 세션 재시도 엔드포인트가 같은 입력을 다시 큐잉한다.
 
 ## 6. 세션 완료와 여정 진행
 

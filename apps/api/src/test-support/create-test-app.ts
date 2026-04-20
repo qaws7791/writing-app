@@ -1,5 +1,6 @@
 import {
   createValidationError,
+  type DomainError,
   toJourneyId,
   toPromptId,
   toSessionId,
@@ -161,6 +162,7 @@ function createStubSessionRuntime(userId: string, sessionId: number) {
 export function createTestApi(input?: {
   homeError?: Error
   logger?: ApiLogger
+  sessionDetailError?: DomainError
 }) {
   const prompts = seedPrompts.map((prompt) => ({ ...prompt }))
   const writings: StoredWriting[] = []
@@ -424,6 +426,10 @@ export function createTestApi(input?: {
           )
         },
         getSessionDetailUseCase(_userId, sessionId) {
+          if (input?.sessionDetailError) {
+            return errAsync(input.sessionDetailError)
+          }
+
           return okAsync(
             createStubSessionRuntime("dev-user", Number(sessionId))
           )

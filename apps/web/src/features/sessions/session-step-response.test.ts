@@ -82,6 +82,7 @@ describe("serializeStepResponse", () => {
 
   it("안내/AI 스텝과 AI 상태는 제출하지 않는다", () => {
     const aiState: StepState = {
+      stepOrder: 2,
       kind: "feedback",
       status: "succeeded",
       sourceStepOrder: 1,

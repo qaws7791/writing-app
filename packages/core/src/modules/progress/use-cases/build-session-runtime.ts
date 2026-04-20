@@ -28,15 +28,29 @@ export async function buildSessionRuntime(input: {
     currentStepOrder: progress?.currentStepOrder ?? 1,
     status: progress?.status ?? "in_progress",
     stepResponsesJson: progress?.stepResponsesJson ?? {},
-    stepAiStates: stepAiStates.map<SessionStepAiState>((state) => ({
-      attemptCount: state.attemptCount,
-      errorMessage: state.errorMessage,
-      kind: state.kind,
-      resultJson: state.resultJson,
-      sourceStepOrder: state.sourceStepOrder,
-      status: state.status,
-      stepOrder: state.stepOrder,
-      updatedAt: state.updatedAt,
-    })),
+    stepAiStates: stepAiStates.map<SessionStepAiState>((state) => {
+      const common = {
+        attemptCount: state.attemptCount,
+        errorMessage: state.errorMessage,
+        sourceStepOrder: state.sourceStepOrder,
+        status: state.status,
+        stepOrder: state.stepOrder,
+        updatedAt: state.updatedAt,
+      }
+
+      if (state.kind === "feedback") {
+        return {
+          ...common,
+          kind: "feedback",
+          resultJson: state.resultJson,
+        }
+      }
+
+      return {
+        ...common,
+        kind: "comparison",
+        resultJson: state.resultJson,
+      }
+    }),
   }
 }

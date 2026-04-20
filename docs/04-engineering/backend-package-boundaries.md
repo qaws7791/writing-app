@@ -78,6 +78,14 @@ packages/ai -> packages/core
   - 테이블 내부 세부 구현
   - SQL mapper 세부사항
 
+#### 세션 AI 상태 저장 계약
+
+- `packages/core`의 세션 AI 상태 스키마는 `kind`를 discriminator로 사용하며, 각 variant가 자기 결과 스키마를 직접 가진다.
+- 세션 조회 응답의 `stepAiStates`는 `kind` 기준 discriminated union만 사용한다. 프론트엔드의 별도 런타임 타입가드나 레거시 fallback shape는 유지하지 않는다.
+- `apps/api` 워커는 AI provider 응답을 저장 전에 이 스키마로 검증한다.
+- `packages/database`는 `user_session_step_ai_state.resultJson`을 조회 시점에 다시 파싱한다.
+- 손상된 `resultJson`은 로컬 보정 없이 `ValidationError(field: "resultJson")`로 즉시 실패시켜 오염된 상태가 API와 웹으로 전파되지 않게 한다.
+
 ### `packages/ai`
 
 - 공개 대상

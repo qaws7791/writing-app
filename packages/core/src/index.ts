@@ -230,6 +230,8 @@ export type {
   ListUserJourneysDeps,
 } from "./modules/progress/index"
 export {
+  comparisonSessionStepAiStateSchema,
+  feedbackSessionStepAiStateSchema,
   journeyProgressStatusSchema,
   sessionProgressStatusSchema,
   sessionAiStateKindSchema,

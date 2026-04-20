@@ -1,3 +1,5 @@
+import type { paths } from "@workspace/api-client"
+
 // ─── 안내 계열 (Guide) ───────────────────────────────────────────────────
 
 export interface IntroContent {
@@ -200,26 +202,8 @@ export interface InputStepState {
   hasInput: boolean
 }
 
-export interface WritingFeedbackResult {
-  strengths: string[]
-  improvements: string[]
-  question: string
-}
-
-export interface RevisionComparisonResult {
-  improvements: string[]
-  summary: string
-}
-
-export interface SessionAiStepState {
-  kind: "feedback" | "comparison"
-  status: "pending" | "succeeded" | "failed"
-  sourceStepOrder: number
-  attemptCount: number
-  resultJson: WritingFeedbackResult | RevisionComparisonResult | null
-  errorMessage: string | null
-  updatedAt: string
-}
+export type SessionAiStepState =
+  paths["/sessions/{sessionId}"]["get"]["responses"][200]["content"]["application/json"]["stepAiStates"][number]
 
 export type StepState =
   | MultipleChoiceState

@@ -1,5 +1,6 @@
 import type { UserId, JourneyId, SessionId } from "../../shared/brand/index"
 import type {
+  SessionAiResult,
   SessionAiStateKind,
   SessionAiStateStatus,
   JourneyProgressStatus,
@@ -91,7 +92,7 @@ export interface ProgressRepository {
       status: SessionAiStateStatus
       attemptCount: number
       inputJson: Record<string, unknown>
-      resultJson: Record<string, unknown> | null
+      resultJson: SessionAiResult | null
       errorMessage: string | null
     }
   ): Promise<void>
