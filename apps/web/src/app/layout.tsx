@@ -3,6 +3,7 @@ import { Geist_Mono } from "next/font/google"
 import "./globals.css"
 import { QueryProvider } from "@/foundation/api/query-provider"
 import { ThemeProvider } from "@/foundation/ui/theme-provider"
+import { Toaster } from "@workspace/ui/components/ui/sonner"
 import { cn } from "@workspace/ui/lib/utils"
 
 const fontMono = Geist_Mono({
@@ -29,7 +30,10 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeProvider>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            {children}
+            <Toaster />
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

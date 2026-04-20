@@ -34,6 +34,7 @@ import {
   DialogTitle,
 } from "@workspace/ui/components/ui/dialog"
 import { Button } from "@workspace/ui/components/ui/button"
+import { toast } from "@workspace/ui/components/ui/sonner"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -231,7 +232,8 @@ export default function WritingEditorView({
         })
       }
     } catch {
-      // save failed — stay on page
+      setShowLeaveDialog(true)
+      toast.error("저장에 실패했습니다.")
     }
   }, [fallbackPath, performSave, returnTo, router])
 
