@@ -387,7 +387,7 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  "/session": {
+  "/me": {
     parameters: {
       query?: never
       header?: never
@@ -1160,7 +1160,44 @@ export interface paths {
               /** @enum {string} */
               status: "locked" | "in_progress" | "completed"
               stepResponsesJson: {
-                [key: string]: unknown
+                [key: string]:
+                  | {
+                      /** @enum {string} */
+                      type: "MULTIPLE_CHOICE"
+                      selected: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "FILL_IN_THE_BLANK"
+                      selections: {
+                        [key: string]: string
+                      }
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "ORDERING"
+                      order: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "HIGHLIGHT"
+                      selected: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "SHORT_ANSWER"
+                      text: string
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "WRITING"
+                      text: string
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "REWRITING"
+                      text: string
+                    }
               }
               stepAiStates: {
                 stepOrder: number
@@ -1268,7 +1305,44 @@ export interface paths {
               /** @enum {string} */
               status: "locked" | "in_progress" | "completed"
               stepResponsesJson: {
-                [key: string]: unknown
+                [key: string]:
+                  | {
+                      /** @enum {string} */
+                      type: "MULTIPLE_CHOICE"
+                      selected: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "FILL_IN_THE_BLANK"
+                      selections: {
+                        [key: string]: string
+                      }
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "ORDERING"
+                      order: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "HIGHLIGHT"
+                      selected: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "SHORT_ANSWER"
+                      text: string
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "WRITING"
+                      text: string
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "REWRITING"
+                      text: string
+                    }
               }
               stepAiStates: {
                 stepOrder: number
@@ -1345,12 +1419,49 @@ export interface paths {
       requestBody: {
         content: {
           "application/json": {
-            response?: unknown
+            response?:
+              | {
+                  /** @enum {string} */
+                  type: "MULTIPLE_CHOICE"
+                  selected: string[]
+                }
+              | {
+                  /** @enum {string} */
+                  type: "FILL_IN_THE_BLANK"
+                  selections: {
+                    [key: string]: string
+                  }
+                }
+              | {
+                  /** @enum {string} */
+                  type: "ORDERING"
+                  order: string[]
+                }
+              | {
+                  /** @enum {string} */
+                  type: "HIGHLIGHT"
+                  selected: string[]
+                }
+              | {
+                  /** @enum {string} */
+                  type: "SHORT_ANSWER"
+                  text: string
+                }
+              | {
+                  /** @enum {string} */
+                  type: "WRITING"
+                  text: string
+                }
+              | {
+                  /** @enum {string} */
+                  type: "REWRITING"
+                  text: string
+                }
           }
         }
       }
       responses: {
-        /** @description 스텝 제출 완료 */
+        /** @description 성공 */
         200: {
           headers: {
             [name: string]: unknown
@@ -1381,7 +1492,44 @@ export interface paths {
               /** @enum {string} */
               status: "locked" | "in_progress" | "completed"
               stepResponsesJson: {
-                [key: string]: unknown
+                [key: string]:
+                  | {
+                      /** @enum {string} */
+                      type: "MULTIPLE_CHOICE"
+                      selected: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "FILL_IN_THE_BLANK"
+                      selections: {
+                        [key: string]: string
+                      }
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "ORDERING"
+                      order: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "HIGHLIGHT"
+                      selected: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "SHORT_ANSWER"
+                      text: string
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "WRITING"
+                      text: string
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "REWRITING"
+                      text: string
+                    }
               }
               stepAiStates: {
                 stepOrder: number
@@ -1408,7 +1556,7 @@ export interface paths {
             }
           }
         }
-        /** @description AI 처리 수락 */
+        /** @description 처리 수락 */
         202: {
           headers: {
             [name: string]: unknown
@@ -1439,7 +1587,44 @@ export interface paths {
               /** @enum {string} */
               status: "locked" | "in_progress" | "completed"
               stepResponsesJson: {
-                [key: string]: unknown
+                [key: string]:
+                  | {
+                      /** @enum {string} */
+                      type: "MULTIPLE_CHOICE"
+                      selected: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "FILL_IN_THE_BLANK"
+                      selections: {
+                        [key: string]: string
+                      }
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "ORDERING"
+                      order: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "HIGHLIGHT"
+                      selected: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "SHORT_ANSWER"
+                      text: string
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "WRITING"
+                      text: string
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "REWRITING"
+                      text: string
+                    }
               }
               stepAiStates: {
                 stepOrder: number
@@ -1546,7 +1731,44 @@ export interface paths {
               /** @enum {string} */
               status: "locked" | "in_progress" | "completed"
               stepResponsesJson: {
-                [key: string]: unknown
+                [key: string]:
+                  | {
+                      /** @enum {string} */
+                      type: "MULTIPLE_CHOICE"
+                      selected: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "FILL_IN_THE_BLANK"
+                      selections: {
+                        [key: string]: string
+                      }
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "ORDERING"
+                      order: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "HIGHLIGHT"
+                      selected: string[]
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "SHORT_ANSWER"
+                      text: string
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "WRITING"
+                      text: string
+                    }
+                  | {
+                      /** @enum {string} */
+                      type: "REWRITING"
+                      text: string
+                    }
               }
               stepAiStates: {
                 stepOrder: number
@@ -2019,144 +2241,6 @@ export interface paths {
         }
       }
     }
-    trace?: never
-  }
-  "/writings/{writingId}/feedback": {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * AI 피드백 생성
-     * @description AI 소크라테스식 피드백을 생성합니다.
-     */
-    post: {
-      parameters: {
-        query?: never
-        header?: never
-        path: {
-          writingId: number
-        }
-        cookie?: never
-      }
-      requestBody: {
-        content: {
-          "application/json": {
-            /**
-             * @default beginner
-             * @enum {string}
-             */
-            level?: "beginner" | "intermediate" | "advanced"
-          }
-        }
-      }
-      responses: {
-        /** @description 성공 */
-        200: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            "application/json": {
-              strengths: string[]
-              improvements: string[]
-              question: string
-            }
-          }
-        }
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            "application/json": {
-              error: {
-                code: string
-                details?: unknown
-                message: string
-                requestId?: string
-              }
-            }
-          }
-        }
-      }
-    }
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  "/writings/{writingId}/compare": {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get?: never
-    put?: never
-    /**
-     * 글 버전 비교
-     * @description 두 버전의 글을 비교하여 개선 사항을 분석합니다.
-     */
-    post: {
-      parameters: {
-        query?: never
-        header?: never
-        path: {
-          writingId: number
-        }
-        cookie?: never
-      }
-      requestBody: {
-        content: {
-          "application/json": {
-            originalText: string
-            revisedText: string
-          }
-        }
-      }
-      responses: {
-        /** @description 성공 */
-        200: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            "application/json": {
-              improvements: string[]
-              summary: string
-            }
-          }
-        }
-        /** @description 에러 응답 */
-        default: {
-          headers: {
-            [name: string]: unknown
-          }
-          content: {
-            "application/json": {
-              error: {
-                code: string
-                details?: unknown
-                message: string
-                requestId?: string
-              }
-            }
-          }
-        }
-      }
-    }
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
     trace?: never
   }
   "/ai/feedback": {

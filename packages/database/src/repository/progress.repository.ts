@@ -1,5 +1,6 @@
 import { and, asc, count, eq } from "drizzle-orm"
 
+import { createValidationError, stepResponseMapSchema } from "@workspace/core"
 import type {
   JourneyId,
   ProgressRepository,
@@ -11,6 +12,7 @@ import type {
   SessionAiStateStatus,
   SessionAiResult,
   SessionId,
+  StepResponseMap,
   UserId,
   UserJourneyProgress,
   UserSessionProgress,
@@ -23,6 +25,19 @@ import { userSessionProgress } from "../schema/user-session-progress"
 import { userSessionStepAiState } from "../schema/user-session-step-ai-state"
 import { journeySessions } from "../schema/journey-sessions"
 import type { DbExecutor } from "../types/index"
+
+function parseStepResponsesJson(input: unknown): StepResponseMap {
+  const parsed = stepResponseMapSchema.safeParse(input ?? {})
+
+  if (parsed.success) {
+    return parsed.data
+  }
+
+  throw createValidationError(
+    "손상된 세션 응답 데이터입니다.",
+    "stepResponsesJson"
+  )
+}
 
 function mapJourneyProgress(row: {
   userId: UserId
@@ -76,7 +91,7 @@ function mapSessionProgress(row: {
     sessionId: row.sessionId,
     currentStepOrder: row.currentStepOrder,
     status: row.status as SessionProgressStatus,
-    stepResponsesJson: (row.stepResponsesJson ?? {}) as Record<string, unknown>,
+    stepResponsesJson: parseStepResponsesJson(row.stepResponsesJson),
   }
 }
 
@@ -351,9 +366,14 @@ export function createProgressRepository(
       update: {
         currentStepOrder?: number
         status?: SessionProgressStatus
-        stepResponsesJson?: Record<string, unknown>
+        stepResponsesJson?: StepResponseMap
       }
     ): Promise<void> {
+      const stepResponsesJson =
+        update.stepResponsesJson !== undefined
+          ? parseStepResponsesJson(update.stepResponsesJson)
+          : undefined
+
       await database
         .update(userSessionProgress)
         .set({
@@ -361,8 +381,8 @@ export function createProgressRepository(
             currentStepOrder: update.currentStepOrder,
           }),
           ...(update.status !== undefined && { status: update.status }),
-          ...(update.stepResponsesJson !== undefined && {
-            stepResponsesJson: update.stepResponsesJson,
+          ...(stepResponsesJson !== undefined && {
+            stepResponsesJson,
           }),
           updatedAt: new Date(),
         })

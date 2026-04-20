@@ -4,6 +4,7 @@ import type {
   SessionAiStateStatus,
   JourneyProgressStatus,
   SessionProgressStatus,
+  StepResponseMap,
   UserJourneyListItem,
   UserJourneyProgress,
   UserSessionProgress,
@@ -61,7 +62,7 @@ export interface ProgressRepository {
     update: {
       currentStepOrder?: number
       status?: SessionProgressStatus
-      stepResponsesJson?: Record<string, unknown>
+      stepResponsesJson?: StepResponseMap
     }
   ): Promise<void>
 

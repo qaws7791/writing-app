@@ -415,6 +415,45 @@ describe("writings", () => {
   })
 })
 
+describe("sessions", () => {
+  test("rejects malformed submit-step payloads at the route boundary", async () => {
+    const { app } = setup()
+    const response = await app.request("/sessions/1/steps/1/submit", {
+      body: JSON.stringify({
+        response: {
+          type: "WRITING",
+          text: "본문",
+          hasInput: true,
+        },
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.code).toBe("validation_error")
+  })
+
+  test("rejects step-type mismatches from submit-step use case", async () => {
+    const { app } = setup()
+    const response = await app.request("/sessions/1/steps/1/submit", {
+      body: JSON.stringify({
+        response: {
+          type: "SHORT_ANSWER",
+          text: "잘못된 타입",
+        },
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+    const body = await readJson<{ error: { code: string } }>(response)
+
+    expect(response.status).toBe(400)
+    expect(body.error.code).toBe("validation_error")
+  })
+})
+
 describe("fallbacks", () => {
   test("returns not found for unsupported routes", async () => {
     const { app } = setup()

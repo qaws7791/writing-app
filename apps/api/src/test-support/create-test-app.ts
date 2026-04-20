@@ -1,4 +1,5 @@
 import {
+  createValidationError,
   toJourneyId,
   toPromptId,
   toSessionId,
@@ -442,6 +443,26 @@ export function createTestApi(input?: {
           )
         },
         submitStepUseCase(userId, sessionId, _input) {
+          if (_input.stepOrder === 1) {
+            if (_input.response?.type !== "WRITING") {
+              return errAsync(
+                createValidationError(
+                  "현재 스텝 타입과 맞지 않는 응답입니다.",
+                  "response"
+                )
+              )
+            }
+          }
+
+          if (_input.stepOrder === 2 && _input.response !== undefined) {
+            return errAsync(
+              createValidationError(
+                "응답을 제출할 수 없는 스텝입니다.",
+                "response"
+              )
+            )
+          }
+
           return okAsync({
             acceptedAi: false,
             runtime: createStubSessionRuntime(

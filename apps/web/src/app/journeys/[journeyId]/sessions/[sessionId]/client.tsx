@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation"
 
 import { useJourneyDetail } from "@/features/journeys"
 import {
+  deserializeStepResponses,
   fetchSessionDetail,
+  serializeStepResponse,
   useRetrySessionStepAi,
   useSessionDetail,
   useStartSession,
@@ -64,12 +66,7 @@ function mapStepStates(
     return {}
   }
 
-  const stepStates = Object.fromEntries(
-    Object.entries(runtime.stepResponsesJson).map(([stepId, response]) => [
-      stepId,
-      response as StepState,
-    ])
-  )
+  const stepStates = deserializeStepResponses(runtime.stepResponsesJson)
 
   for (const aiState of runtime.stepAiStates) {
     stepStates[String(aiState.stepOrder)] = aiState as SessionAiStepState
@@ -185,11 +182,14 @@ export default function SessionDetailClientPage({
     steps: [firstStep, ...remainingSteps],
   }
 
-  async function handleSubmitStep(stepOrder: number, response: unknown) {
+  async function handleSubmitStep(stepOrder: number, response: StepState) {
+    const step = mappedSteps.find((item) => item.order === stepOrder)
+
     await submitSessionStep.mutateAsync({
       sessionId: sessionDetail.id,
       stepOrder,
-      response,
+      response:
+        step === undefined ? undefined : serializeStepResponse(step, response),
     })
   }
 

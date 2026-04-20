@@ -19,7 +19,7 @@ interface SessionDetailViewProps {
   onRetryAi?: (stepOrder: number) => Promise<void>
   session: Session
   onExit: () => void
-  onSubmitStep?: (stepOrder: number, response: unknown) => Promise<void>
+  onSubmitStep?: (stepOrder: number, response: StepState) => Promise<void>
 }
 
 const SELECTION_TYPES: StepType[] = [

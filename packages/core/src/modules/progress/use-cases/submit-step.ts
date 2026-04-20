@@ -7,7 +7,11 @@ import type { RepositoryTransactionManager } from "../../../shared/transaction/i
 import type { JourneyRepository } from "../../journeys/journey-port"
 import type { StepSummary } from "../../journeys/journey-types"
 import type { ProgressRepository } from "../progress-port"
-import type { SessionRuntime } from "../progress-types"
+import type {
+  SessionRuntime,
+  StepResponse,
+  StepResponseMap,
+} from "../progress-types"
 import { buildSessionRuntime } from "./build-session-runtime"
 
 export type SubmitStepDeps = {
@@ -18,7 +22,7 @@ export type SubmitStepDeps = {
 
 export type SubmitStepInput = {
   readonly stepOrder: number
-  readonly response: unknown
+  readonly response?: StepResponse
 }
 
 export type SubmitStepResult = {
@@ -38,13 +42,15 @@ function isDomainError(error: unknown): error is DomainError {
   )
 }
 
-function extractTextResponse(response: unknown): string | null {
-  if (typeof response === "string") {
-    const trimmed = response.trim()
-    return trimmed.length > 0 ? trimmed : null
-  }
-
-  if (!isRecord(response) || typeof response.text !== "string") {
+function extractTextResponse(
+  response: StepResponse | undefined
+): string | null {
+  if (
+    response === undefined ||
+    (response.type !== "SHORT_ANSWER" &&
+      response.type !== "WRITING" &&
+      response.type !== "REWRITING")
+  ) {
     return null
   }
 
@@ -61,6 +67,52 @@ function getContent(step: StepSummary): Record<string, unknown> {
 function resolveAiKind(step: StepSummary): "comparison" | "feedback" {
   const payload = isRecord(step.contentJson) ? step.contentJson : {}
   return payload.type === "AI_COMPARISON" ? "comparison" : "feedback"
+}
+
+function resolveExpectedResponseType(
+  step: StepSummary
+): StepResponse["type"] | null {
+  const payload = isRecord(step.contentJson) ? step.contentJson : {}
+
+  switch (payload.type) {
+    case "MULTIPLE_CHOICE":
+    case "FILL_IN_THE_BLANK":
+    case "ORDERING":
+    case "HIGHLIGHT":
+    case "SHORT_ANSWER":
+    case "WRITING":
+    case "REWRITING":
+      return payload.type
+    default:
+      return null
+  }
+}
+
+function validateStepResponse(
+  step: StepSummary,
+  response: StepResponse | undefined
+): StepResponse | undefined {
+  const expectedResponseType = resolveExpectedResponseType(step)
+
+  if (expectedResponseType === null) {
+    if (response !== undefined) {
+      throw createValidationError(
+        "응답을 제출할 수 없는 스텝입니다.",
+        "response"
+      )
+    }
+
+    return undefined
+  }
+
+  if (response === undefined || response.type !== expectedResponseType) {
+    throw createValidationError(
+      "현재 스텝 타입과 맞지 않는 응답입니다.",
+      "response"
+    )
+  }
+
+  return response
 }
 
 function normalizeError(error: unknown): DomainError {
@@ -90,12 +142,6 @@ export function makeSubmitStepUseCase(deps: SubmitStepDeps) {
               throw createValidationError("세션을 찾을 수 없습니다.", "session")
             }
 
-            const current = progress?.stepResponsesJson ?? {}
-            const updated = {
-              ...current,
-              [String(input.stepOrder)]: input.response,
-            }
-
             const currentStep = session.steps.find(
               (step) => step.order === input.stepOrder
             )
@@ -105,6 +151,19 @@ export function makeSubmitStepUseCase(deps: SubmitStepDeps) {
                 "stepOrder"
               )
             }
+
+            const current = progress?.stepResponsesJson ?? {}
+            const validatedResponse = validateStepResponse(
+              currentStep,
+              input.response
+            )
+            const updated: StepResponseMap =
+              validatedResponse === undefined
+                ? current
+                : {
+                    ...current,
+                    [String(input.stepOrder)]: validatedResponse,
+                  }
 
             const nextStep = session.steps.find(
               (step) => step.order === input.stepOrder + 1
@@ -118,7 +177,7 @@ export function makeSubmitStepUseCase(deps: SubmitStepDeps) {
 
             if (shouldQueueAi && nextStep) {
               const kind = resolveAiKind(nextStep)
-              const submittedText = extractTextResponse(input.response)
+              const submittedText = extractTextResponse(validatedResponse)
 
               if (submittedText === null) {
                 throw createValidationError(

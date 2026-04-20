@@ -5,6 +5,67 @@ import {
 } from "../ai-feedback/ai-feedback-schemas"
 import { journeySessionDetailSchema } from "../journeys/journey-schemas"
 
+const multipleChoiceResponseSchema = z
+  .object({
+    type: z.literal("MULTIPLE_CHOICE"),
+    selected: z.array(z.string()),
+  })
+  .strict()
+
+const fillInTheBlankResponseSchema = z
+  .object({
+    type: z.literal("FILL_IN_THE_BLANK"),
+    selections: z.record(z.string(), z.string()),
+  })
+  .strict()
+
+const orderingResponseSchema = z
+  .object({
+    type: z.literal("ORDERING"),
+    order: z.array(z.string()),
+  })
+  .strict()
+
+const highlightResponseSchema = z
+  .object({
+    type: z.literal("HIGHLIGHT"),
+    selected: z.array(z.string()),
+  })
+  .strict()
+
+const shortAnswerResponseSchema = z
+  .object({
+    type: z.literal("SHORT_ANSWER"),
+    text: z.string(),
+  })
+  .strict()
+
+const writingResponseSchema = z
+  .object({
+    type: z.literal("WRITING"),
+    text: z.string(),
+  })
+  .strict()
+
+const rewritingResponseSchema = z
+  .object({
+    type: z.literal("REWRITING"),
+    text: z.string(),
+  })
+  .strict()
+
+export const stepResponseSchema = z.discriminatedUnion("type", [
+  multipleChoiceResponseSchema,
+  fillInTheBlankResponseSchema,
+  orderingResponseSchema,
+  highlightResponseSchema,
+  shortAnswerResponseSchema,
+  writingResponseSchema,
+  rewritingResponseSchema,
+])
+
+export const stepResponseMapSchema = z.record(z.string(), stepResponseSchema)
+
 export const journeyProgressStatusSchema = z.enum(["in_progress", "completed"])
 export const sessionProgressStatusSchema = z.enum([
   "locked",
@@ -31,7 +92,7 @@ export const userSessionProgressSchema = z.object({
   sessionId: z.number().int(),
   currentStepOrder: z.number().int(),
   status: sessionProgressStatusSchema,
-  stepResponsesJson: z.record(z.string(), z.unknown()),
+  stepResponsesJson: stepResponseMapSchema,
 })
 
 export const sessionAiResultSchema = z
@@ -52,10 +113,12 @@ export const sessionStepAiStateSchema = z.object({
 export const sessionRuntimeSchema = journeySessionDetailSchema.unwrap().extend({
   currentStepOrder: z.number().int().min(1),
   status: sessionProgressStatusSchema,
-  stepResponsesJson: z.record(z.string(), z.unknown()),
+  stepResponsesJson: stepResponseMapSchema,
   stepAiStates: z.array(sessionStepAiStateSchema),
 })
 
-export const submitStepBodySchema = z.object({
-  response: z.unknown(),
-})
+export const submitStepBodySchema = z
+  .object({
+    response: stepResponseSchema.optional(),
+  })
+  .strict()

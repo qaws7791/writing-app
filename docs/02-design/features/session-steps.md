@@ -159,6 +159,10 @@ status: active
 - 세션 진행 중 앱 종료 시 마지막 완료 스텝까지 자동 저장 (REQ-SES-007)
 - 재진입 시 해당 스텝부터 재개
 - WRITE 스텝에서 입력한 내용은 별도 보존
+- 세션 진행 상태의 `stepResponsesJson`에는 사용자 응답만 저장한다.
+- 저장 응답은 스텝 콘텐츠 타입과 동일한 discriminant를 사용한다.
+- AI 피드백/비교 분석 상태는 별도 AI 상태 저장소에서 복원하며, 응답 JSON에 섞이지 않는다.
+- 세션 조회 시 저장된 응답 JSON이 계약을 벗어나면 `validation_error`로 즉시 실패한다.
 
 ## 연결 screens
 

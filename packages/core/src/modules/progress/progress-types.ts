@@ -25,12 +25,44 @@ export type UserJourneyListItem = JourneySummary & {
   readonly status: JourneyProgressStatus
 }
 
+export type StepResponse =
+  | {
+      readonly type: "MULTIPLE_CHOICE"
+      readonly selected: string[]
+    }
+  | {
+      readonly type: "FILL_IN_THE_BLANK"
+      readonly selections: Record<string, string>
+    }
+  | {
+      readonly type: "ORDERING"
+      readonly order: string[]
+    }
+  | {
+      readonly type: "HIGHLIGHT"
+      readonly selected: string[]
+    }
+  | {
+      readonly type: "SHORT_ANSWER"
+      readonly text: string
+    }
+  | {
+      readonly type: "WRITING"
+      readonly text: string
+    }
+  | {
+      readonly type: "REWRITING"
+      readonly text: string
+    }
+
+export type StepResponseMap = Record<string, StepResponse>
+
 export type UserSessionProgress = {
   readonly userId: UserId
   readonly sessionId: SessionId
   readonly currentStepOrder: number
   readonly status: SessionProgressStatus
-  readonly stepResponsesJson: Record<string, unknown>
+  readonly stepResponsesJson: StepResponseMap
 }
 
 export type SessionAiResult = RevisionComparison | WritingFeedback
@@ -57,6 +89,6 @@ export type SessionStepAiState = Omit<
 export type SessionRuntime = JourneySessionDetail & {
   readonly currentStepOrder: number
   readonly status: SessionProgressStatus
-  readonly stepResponsesJson: Record<string, unknown>
+  readonly stepResponsesJson: StepResponseMap
   readonly stepAiStates: SessionStepAiState[]
 }

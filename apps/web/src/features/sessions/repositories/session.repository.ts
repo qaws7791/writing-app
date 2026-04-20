@@ -2,6 +2,8 @@ import type { ApiClient, paths } from "@workspace/api-client"
 
 type SessionRuntime =
   paths["/sessions/{sessionId}"]["get"]["responses"][200]["content"]["application/json"]
+type SubmitStepBody =
+  paths["/sessions/{sessionId}/steps/{stepOrder}/submit"]["post"]["requestBody"]["content"]["application/json"]
 
 export async function fetchSessionDetail(
   client: ApiClient,
@@ -36,7 +38,7 @@ export async function submitSessionStep(
   input: {
     sessionId: number
     stepOrder: number
-    response?: unknown
+    response?: SubmitStepBody["response"]
   }
 ): Promise<SessionRuntime> {
   const { data, error } = await client.POST(
@@ -48,7 +50,12 @@ export async function submitSessionStep(
           stepOrder: input.stepOrder,
         },
       },
-      body: { response: input.response },
+      body:
+        input.response === undefined
+          ? {}
+          : {
+              response: input.response,
+            },
     }
   )
   if (error) throw error

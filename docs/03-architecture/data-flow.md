@@ -43,6 +43,13 @@ description: 홈 진입부터 글감 선택, 여정 진행, 글쓰기, 자동 �
 | AI 피드백         | WRITE 제출 → 세션 서버가 AI 작업 생성 → 세션 조회로 상태/결과 복원        |
 | 수정 (REVISE)     | 서버 → 피드백 참조 + 에디터 → 수정 후 재제출 → 세션 조회로 비교 분석 복원 |
 
+### 세션 응답 저장 규칙
+
+- `stepResponsesJson`은 사용자 응답만 저장한다. 저장 shape는 `StepResponse` discriminated union이다.
+- `INTRO`, `COMPLETION`, `CONCEPT`, `EXAMPLE`, `AI_FEEDBACK`, `AI_COMPARISON` 스텝은 응답을 저장하지 않는다.
+- `AI_FEEDBACK`, `AI_COMPARISON`의 pending/result/error는 `user_session_step_ai_state`에만 저장한다.
+- 세션 조회와 저장 시 `stepResponsesJson`은 Zod로 재파싱한다. 레거시 AI 상태 객체나 임의 JSON이 섞여 있으면 `validation_error`로 즉시 실패한다.
+
 ## 4. 글 작성과 자동 저장
 
 1. 사용자가 제목과 본문을 입력하면 편집 상태가 먼저 클라이언트 메모리에 반영된다.
@@ -56,7 +63,7 @@ description: 홈 진입부터 글감 선택, 여정 진행, 글쓰기, 자동 �
 ### 글 제출 후 피드백
 
 1. 사용자가 글쓰기(WRITE) 스텝에서 글을 제출한다.
-2. API는 세션 진행 상태를 갱신하고 FEEDBACK 스텝용 AI 작업을 `pending` 상태로 저장한다.
+2. API는 검증된 `WRITING` 응답만 세션 진행 상태에 저장하고, FEEDBACK 스텝용 AI 작업을 `pending` 상태로 저장한다.
 3. API 프로세스 내부 워커가 글 내용과 사용자 수준 정보를 AI 제공자(Google Gemini)에 전달한다.
 4. AI는 소크라테스식 코칭 원칙에 따라 피드백을 생성한다.
    - 강점 1~2개: 구체적으로 잘된 부분과 이유
@@ -69,7 +76,7 @@ description: 홈 진입부터 글감 선택, 여정 진행, 글쓰기, 자동 �
 ### 수정 후 비교 분석
 
 1. 사용자가 피드백을 참고해 글을 수정하고 재제출한다.
-2. API는 비교 분석용 세션 AI 작업을 `pending` 상태로 저장한다.
+2. API는 검증된 `REWRITING` 응답을 저장하고 비교 분석용 세션 AI 작업을 `pending` 상태로 저장한다.
 3. 워커가 초안과 수정본을 AI에 함께 전달한다.
 4. AI는 초안 대비 개선된 부분을 명시적으로 언급하는 비교 피드백을 생성한다.
 5. 비교 결과는 세션 스냅샷에 저장되어 재진입 시에도 복원된다.
