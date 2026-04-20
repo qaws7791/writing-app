@@ -1,8 +1,6 @@
-import { eq } from "drizzle-orm"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
-import { journeys, journeySessions, steps } from "@workspace/database"
 import { parseJourneyId, parseSessionId, parseStepId } from "@workspace/core"
 import {
   Breadcrumb,
@@ -14,7 +12,8 @@ import {
 } from "@workspace/ui/components/ui/breadcrumb"
 
 import { StepForm } from "@/components/step-form"
-import { getDb } from "@/lib/db"
+import { unwrapAdminPageResult } from "@/lib/runtime/admin-page-result"
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 type Props = {
   params: Promise<{ id: string; sessionId: string; stepId: string }>
@@ -38,18 +37,14 @@ export default async function StepDetailPage({ params }: Props) {
   const sessionIdNum = parseSessionId(rawSessionId)
   const stepIdNum = parseStepId(rawStepId)
 
-  const db = getDb()
-  const [[journey], [session], [step]] = await Promise.all([
-    db.select().from(journeys).where(eq(journeys.id, journeyId)).limit(1),
-    db
-      .select()
-      .from(journeySessions)
-      .where(eq(journeySessions.id, sessionIdNum))
-      .limit(1),
-    db.select().from(steps).where(eq(steps.id, stepIdNum)).limit(1),
+  const { getJourneyFull, getSessionDetail } = getAdminRuntime().useCases
+  const [journey, session] = await Promise.all([
+    unwrapAdminPageResult(getJourneyFull(journeyId)),
+    unwrapAdminPageResult(getSessionDetail(sessionIdNum)),
   ])
+  const step = session.steps.find((currentStep) => currentStep.id === stepIdNum)
 
-  if (!journey || !session || !step) notFound()
+  if (!step) notFound()
 
   return (
     <div className="space-y-5">

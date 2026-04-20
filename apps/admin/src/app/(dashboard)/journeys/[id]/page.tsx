@@ -1,8 +1,6 @@
-import { eq } from "drizzle-orm"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
-import { journeys, journeySessions } from "@workspace/database"
 import { parseJourneyId } from "@workspace/core"
 import { cn } from "@workspace/ui"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
@@ -24,7 +22,8 @@ import {
 } from "@workspace/ui/components/ui/table"
 
 import { JourneyForm } from "@/components/journey-form"
-import { getDb } from "@/lib/db"
+import { unwrapAdminPageResult } from "@/lib/runtime/admin-page-result"
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -34,20 +33,9 @@ export default async function JourneyDetailPage({ params }: Props) {
   if (!Number.isInteger(rawId) || rawId <= 0) notFound()
   const journeyId = parseJourneyId(rawId)
 
-  const db = getDb()
-  const [journey] = await db
-    .select()
-    .from(journeys)
-    .where(eq(journeys.id, journeyId))
-    .limit(1)
-
-  if (!journey) notFound()
-
-  const sessions = await db
-    .select()
-    .from(journeySessions)
-    .where(eq(journeySessions.journeyId, journeyId))
-    .orderBy(journeySessions.order)
+  const { getJourneyFull } = getAdminRuntime().useCases
+  const journey = await unwrapAdminPageResult(getJourneyFull(journeyId))
+  const sessions = [...journey.sessions]
 
   return (
     <div className="space-y-8">

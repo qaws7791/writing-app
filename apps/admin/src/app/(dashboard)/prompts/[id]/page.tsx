@@ -1,8 +1,6 @@
-import { eq } from "drizzle-orm"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 
-import { writingPrompts } from "@workspace/database"
 import { parsePromptId } from "@workspace/core"
 import {
   Breadcrumb,
@@ -14,7 +12,8 @@ import {
 } from "@workspace/ui/components/ui/breadcrumb"
 
 import { PromptForm } from "@/components/prompt-form"
-import { getDb } from "@/lib/db"
+import { unwrapAdminPageResult } from "@/lib/runtime/admin-page-result"
+import { getAdminRuntime } from "@/lib/runtime/admin-composition"
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -24,14 +23,8 @@ export default async function PromptDetailPage({ params }: Props) {
   if (!Number.isInteger(rawId) || rawId <= 0) notFound()
   const promptId = parsePromptId(rawId)
 
-  const db = getDb()
-  const [prompt] = await db
-    .select()
-    .from(writingPrompts)
-    .where(eq(writingPrompts.id, promptId))
-    .limit(1)
-
-  if (!prompt) notFound()
+  const { getPrompt } = getAdminRuntime().useCases
+  const prompt = await unwrapAdminPageResult(getPrompt(promptId, null))
 
   return (
     <div className="space-y-5">
