@@ -1,69 +1,10 @@
 "use client"
 
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react"
-import { useEditor, EditorContent } from "@tiptap/react"
-import type { JSONContent } from "@tiptap/react"
-import Document from "@tiptap/extension-document"
-import Paragraph from "@tiptap/extension-paragraph"
-import Text from "@tiptap/extension-text"
-import Bold from "@tiptap/extension-bold"
-import History from "@tiptap/extension-history"
-import Placeholder from "@tiptap/extension-placeholder"
-import Typography from "@tiptap/extension-typography"
-import CharacterCount from "@tiptap/extension-character-count"
-import {
-  ArrowLeft,
-  MoreVertical,
-  Check,
-  Trash2,
-  Lightbulb,
-  FileTextIcon,
-} from "lucide-react"
-import { useRouter, useSearchParams } from "next/navigation"
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@workspace/ui/components/ui/dialog"
-import { Button } from "@workspace/ui/components/ui/button"
-import { toast } from "@workspace/ui/components/ui/sonner"
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@workspace/ui/components/ui/dropdown-menu"
-
-import { appendReturnTo, navigateBack } from "@/foundation/navigation"
-import { usePromptDetail } from "@/features/prompts/hooks/use-prompt-detail"
-import {
-  useCreateWriting,
-  useDeleteWriting,
-  useSaveWriting,
-  useWritingDetail,
-} from "@/features/writings"
-import {
-  PromptBanner,
-  PromptBannerSkeleton,
-} from "@/features/writings/components"
 import PromptBottomSheet from "@/views/prompt-bottom-sheet"
-
-function formatKoreanDate(date: Date): string {
-  return new Intl.DateTimeFormat("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    weekday: "long",
-  }).format(date)
-}
+import { LeaveConfirmDialog } from "@/views/writing-editor/leave-confirm-dialog"
+import { useWritingEditorState } from "@/views/writing-editor/use-writing-editor-state"
+import { WritingEditorBody } from "@/views/writing-editor/writing-editor-body"
+import { WritingEditorHeader } from "@/views/writing-editor/writing-editor-header"
 
 export default function WritingEditorView({
   promptId,
@@ -72,341 +13,69 @@ export default function WritingEditorView({
   promptId?: number
   writingId?: string
 }) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [title, setTitle] = useState("")
-  const [today] = useState(() => new Date())
-  const titleRef = useRef<HTMLTextAreaElement>(null)
-  const [isDirty, setIsDirty] = useState(false)
-  const [showLeaveDialog, setShowLeaveDialog] = useState(false)
-  const [promptCollapsed, setPromptCollapsed] = useState(false)
-  const [showPromptSheet, setShowPromptSheet] = useState(false)
-  const [sheetPromptId, setSheetPromptId] = useState<number | undefined>(
-    undefined
-  )
-  const [wordCount, setWordCount] = useState(0)
-  const hasPopulatedRef = useRef(false)
-  const isSettingInitialContentRef = useRef(false)
-
-  const writingIdNumber = writingId ? Number(writingId) : undefined
-  const effectivePromptId = sheetPromptId ?? promptId
-  const fallbackPath = writingIdNumber ? "/writings" : "/writings/new"
-  const returnTo = searchParams.get("returnTo")
-
-  const editor = useEditor({
-    extensions: [
-      Document,
-      Paragraph,
-      Text,
-      Bold,
-      History,
-      CharacterCount.configure(),
-      Placeholder.configure({
-        placeholder: "글을 시작하세요.",
-      }),
-      Typography,
-    ],
-    onUpdate: ({ editor }) => {
-      if (!isSettingInitialContentRef.current) {
-        setIsDirty(true)
-      }
-      setWordCount(editor.storage.characterCount.words())
-    },
-    immediatelyRender: false,
-  })
-
-  const promptQuery = usePromptDetail(effectivePromptId)
-  const writingQuery = useWritingDetail(writingIdNumber)
-  const createWriting = useCreateWriting()
-  const saveWriting = useSaveWriting()
-  const deleteWriting = useDeleteWriting()
-  const isSaving = createWriting.isPending || saveWriting.isPending
-
-  const isPromptEnabled = effectivePromptId != null
-  const prompt =
-    isPromptEnabled && promptQuery.data != null ? promptQuery.data : null
-  const isPromptLoading = isPromptEnabled && promptQuery.isLoading
-
-  useEffect(() => {
-    if (!editor || !writingQuery.data || hasPopulatedRef.current) return
-    hasPopulatedRef.current = true
-    const { title: loadedTitle, bodyJson } = writingQuery.data
-    startTransition(() => {
-      setTitle(loadedTitle)
-    })
-    if (bodyJson) {
-      isSettingInitialContentRef.current = true
-      editor.commands.setContent(bodyJson as JSONContent)
-      isSettingInitialContentRef.current = false
-    }
-  }, [editor, writingQuery.data])
-
-  useEffect(() => {
-    if (!isDirty) return
-    const handler = (e: BeforeUnloadEvent) => {
-      e.preventDefault()
-    }
-    window.addEventListener("beforeunload", handler)
-    return () => window.removeEventListener("beforeunload", handler)
-  }, [isDirty])
-
-  const performSave = useCallback(async (): Promise<number | undefined> => {
-    const bodyJson = editor?.getJSON()
-    const bodyPlainText = editor?.getText()
-    const words = editor?.storage.characterCount.words() ?? 0
-
-    if (writingIdNumber) {
-      await saveWriting.mutateAsync({
-        writingId: writingIdNumber,
-        title,
-        bodyJson,
-        bodyPlainText,
-        wordCount: words,
-      })
-      setIsDirty(false)
-      return writingIdNumber
-    } else {
-      const created = await createWriting.mutateAsync({
-        title,
-        bodyJson,
-        bodyPlainText,
-        wordCount: words,
-        sourcePromptId: effectivePromptId,
-      })
-      setIsDirty(false)
-      return created?.id
-    }
-  }, [
+  const {
+    dateLabel,
     editor,
-    writingIdNumber,
+    handleBack,
+    handleDelete,
+    handleLeaveWithoutSave,
+    handleSave,
+    handleSaveAndLeave,
+    handleSelectPrompt,
+    handleTitleChange,
+    isPromptLoading,
+    isSaving,
+    prompt,
+    promptCollapsed,
+    setPromptCollapsed,
+    setShowLeaveDialog,
+    setShowPromptSheet,
+    showLeaveDialog,
+    showPromptSheet,
     title,
-    effectivePromptId,
-    saveWriting,
-    createWriting,
-  ])
-
-  const handleSave = useCallback(async () => {
-    const savedId = await performSave()
-    if (savedId != null) {
-      router.push(appendReturnTo(`/writings/${savedId}`, returnTo ?? ""))
-    } else {
-      navigateBack(router, {
-        returnTo,
-        fallbackPath,
-      })
-    }
-  }, [fallbackPath, performSave, returnTo, router])
-
-  const handleBack = useCallback(() => {
-    if (isDirty) {
-      setShowLeaveDialog(true)
-    } else {
-      navigateBack(router, {
-        returnTo,
-        fallbackPath,
-      })
-    }
-  }, [fallbackPath, isDirty, returnTo, router])
-
-  const handleLeaveWithoutSave = useCallback(() => {
-    setShowLeaveDialog(false)
-    setIsDirty(false)
-    navigateBack(router, {
-      returnTo,
-      fallbackPath,
-    })
-  }, [fallbackPath, returnTo, router])
-
-  const handleSaveAndLeave = useCallback(async () => {
-    setShowLeaveDialog(false)
-    try {
-      const savedWritingId = await performSave()
-      if (savedWritingId != null) {
-        router.push(
-          appendReturnTo(`/writings/${savedWritingId}`, returnTo ?? "")
-        )
-      } else {
-        navigateBack(router, {
-          returnTo,
-          fallbackPath,
-        })
-      }
-    } catch {
-      setShowLeaveDialog(true)
-      toast.error("저장에 실패했습니다.")
-    }
-  }, [fallbackPath, performSave, returnTo, router])
-
-  const handleDelete = useCallback(async () => {
-    if (!writingIdNumber) return
-    await deleteWriting.mutateAsync(writingIdNumber)
-    router.replace("/writings")
-  }, [writingIdNumber, deleteWriting, router])
-
-  const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const el = e.target
-    setTitle(el.value)
-    setIsDirty(true)
-    el.style.height = "auto"
-    el.style.height = `${el.scrollHeight}px`
-  }
+    titleRef,
+    wordCount,
+    writingIdNumber,
+  } = useWritingEditorState({
+    promptId,
+    writingId,
+  })
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 flex items-center justify-between bg-background px-4 py-3">
-        <Button
-          size="icon"
-          variant="ghost"
-          aria-label="뒤로 가기"
-          onClick={handleBack}
-        >
-          <ArrowLeft size={24} strokeWidth={1.5} />
-        </Button>
-
-        <span className="flex-1 truncate px-2 text-center text-sm leading-5 font-medium text-foreground">
-          {title || "새 글"}
-        </span>
-
-        <div className="flex items-center gap-2">
-          {writingIdNumber && (
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button size="icon" variant="ghost" aria-label="더보기" />
-                }
-              >
-                <MoreVertical size={24} strokeWidth={1.5} />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="bottom" align="end">
-                <DropdownMenuItem variant="destructive" onClick={handleDelete}>
-                  <Trash2 size={20} strokeWidth={1.5} />
-                  삭제
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-          <Button
-            size="icon"
-            variant="default"
-            aria-label="저장"
-            onClick={handleSave}
-            disabled={isSaving}
-          >
-            <Check size={24} strokeWidth={2} />
-          </Button>
-        </div>
-      </header>
-
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto px-6 pb-16">
-        {/* Prompt banner */}
-        {isPromptLoading && (
-          <div className="pt-6">
-            <PromptBannerSkeleton />
-          </div>
-        )}
-        {prompt && (
-          <div className="pt-6">
-            <PromptBanner
-              title={prompt.title}
-              body={prompt.body}
-              collapsed={promptCollapsed}
-              onToggle={() => setPromptCollapsed((v) => !v)}
-            />
-          </div>
-        )}
-        {/* "아이디어가 필요하신가요?" button */}
-        {!prompt && !isPromptLoading && wordCount === 0 && !writingIdNumber && (
-          <div className="pt-6">
-            <button
-              type="button"
-              onClick={() => setShowPromptSheet(true)}
-              className="flex w-full items-center gap-3 rounded-2xl bg-muted px-5 py-4 text-left transition-colors hover:bg-accent"
-            >
-              <Lightbulb
-                size={20}
-                strokeWidth={1.5}
-                className="shrink-0 text-muted-foreground"
-              />
-              <span className="text-sm leading-6 text-muted-foreground">
-                아이디어가 필요하신가요?
-              </span>
-            </button>
-          </div>
-        )}
-        {/* Date + Title block */}
-        <section className="flex flex-col gap-2 pt-6">
-          <p className="text-sm leading-5 font-medium text-muted-foreground/80">
-            {formatKoreanDate(today)}
-          </p>
-          <textarea
-            ref={titleRef}
-            value={title}
-            onChange={handleTitleChange}
-            placeholder="제목"
-            rows={1}
-            className="w-full resize-none overflow-hidden bg-transparent text-3xl leading-tight font-semibold text-foreground outline-none placeholder:text-muted-foreground/80"
-          />
-        </section>
-
-        {/* Body editor */}
-        <div className="writing-editor mt-12">
-          <EditorContent editor={editor} />
-        </div>
-
-        {/* Word count */}
-        <p className="mt-6 text-right text-sm leading-5 font-medium text-muted-foreground/80">
-          {wordCount} 단어
-        </p>
-      </div>
-
-      {/* Unsaved changes dialog */}
-      <Dialog open={showLeaveDialog} onOpenChange={setShowLeaveDialog}>
-        <DialogContent showCloseButton={false}>
-          <DialogHeader>
-            <DialogTitle>작성 중인 수필이 있어요</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex size-14 items-center justify-center rounded-[20px] bg-muted">
-              <FileTextIcon />
-            </div>
-            <p className="text-center text-sm leading-6 text-muted-foreground/80">
-              지금 나가면 저장되지 않은 내용이 사라질 수 있습니다.
-              <br />
-              저장 후 나가시겠어요?
-            </p>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="secondary"
-              size="lg"
-              onClick={handleLeaveWithoutSave}
-              className="flex-1"
-            >
-              그냥 나가기
-            </Button>
-            <Button
-              variant="default"
-              size="lg"
-              onClick={handleSaveAndLeave}
-              disabled={isSaving}
-              className="flex-1"
-            >
-              임시 저장 후 나가기
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Prompt selection bottom sheet */}
+      <WritingEditorHeader
+        title={title}
+        writingIdNumber={writingIdNumber}
+        isSaving={isSaving}
+        onBack={handleBack}
+        onDelete={handleDelete}
+        onSave={handleSave}
+      />
+      <WritingEditorBody
+        dateLabel={dateLabel}
+        editor={editor}
+        handleTitleChange={handleTitleChange}
+        isPromptLoading={isPromptLoading}
+        onOpenPromptSheet={() => setShowPromptSheet(true)}
+        onTogglePromptCollapsed={() => setPromptCollapsed((value) => !value)}
+        prompt={prompt}
+        promptCollapsed={promptCollapsed}
+        title={title}
+        titleRef={titleRef}
+        wordCount={wordCount}
+        writingIdNumber={writingIdNumber}
+      />
+      <LeaveConfirmDialog
+        open={showLeaveDialog}
+        onOpenChange={setShowLeaveDialog}
+        onLeaveWithoutSave={handleLeaveWithoutSave}
+        onSaveAndLeave={handleSaveAndLeave}
+        isSaving={isSaving}
+      />
       <PromptBottomSheet
         open={showPromptSheet}
         onOpenChange={setShowPromptSheet}
-        onSelectPrompt={(selectedPromptId) => {
-          setSheetPromptId(selectedPromptId)
-          setShowPromptSheet(false)
-        }}
+        onSelectPrompt={handleSelectPrompt}
       />
     </div>
   )
