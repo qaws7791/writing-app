@@ -1,24 +1,26 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { useApiClient } from "@/foundation/api"
+import {
+  createDetailQueryKey,
+  getPositiveId,
+  requirePositiveId,
+  useApiClient,
+} from "@/foundation/api"
 
 import { fetchJourneyDetail } from "../repositories/journey.repository"
 
 export function useJourneyDetail(journeyId: number | undefined) {
   const apiClient = useApiClient()
-  const validJourneyId =
-    journeyId !== undefined && journeyId > 0 ? journeyId : null
+  const validJourneyId = getPositiveId(journeyId)
 
   return useQuery({
-    queryKey: ["journeys", "detail", journeyId],
+    queryKey: createDetailQueryKey("journeys", journeyId),
     queryFn: () => {
-      if (validJourneyId === null) {
-        throw new Error("유효한 여정 ID가 필요합니다.")
-      }
-
-      return fetchJourneyDetail(apiClient, validJourneyId)
+      return fetchJourneyDetail(
+        apiClient,
+        requirePositiveId(validJourneyId, "유효한 여정 ID가 필요합니다.")
+      )
     },
     enabled: validJourneyId !== null,
-    staleTime: 60_000,
   })
 }

@@ -9,7 +9,7 @@ description: 2026-04-21 기준 글필 모노레포를 탐색해 단순하고 안
 - 범위: `apps/web`, `apps/api`, `apps/admin`, `packages/core`, `packages/database`
 - 목적: 동작 변경 없이 구조 복잡도와 숨은 변환을 줄이기 위한 후속 작업 후보를 정리합니다.
 - 전제: 현재는 개발 단계이므로 마이그레이션 비용이나 하위 호환성보다 구현 단순성과 구조 명확성을 우선합니다.
-- 진행 현황: 1번 항목(스텝 타입 모델 통일), 2번 항목(세션 상세 화면 step registry 정리), 3번 항목(`progress.repository`와 `submit-step` 분리)은 2026-04-21에 구현 완료했습니다.
+- 진행 현황: 1번 항목(스텝 타입 모델 통일), 2번 항목(세션 상세 화면 step registry 정리), 3번 항목(`progress.repository`와 `submit-step` 분리), 4번 항목(웹 API/Query 보일러플레이트 축소)은 2026-04-21에 구현 완료했습니다.
 - 기준 원칙: 지역성 확보, 조기 추상화 방지(AHA), 단일 책임, 명시적 설계, 순수 함수, 얕은 계층, 불변성, 의존성 명시화, 일관된 추상화 수준, 작은 변경 단위, 규약 우선, 파일 크기 제한
 
 ## 요약
@@ -19,7 +19,7 @@ description: 2026-04-21 기준 글필 모노레포를 탐색해 단순하고 안
 | 완료     | 스텝 타입 모델을 하나로 통일                      | Explicit over Implicit, Convention over Configuration, Locality of Behavior | `packages/core/src/modules/journeys/journey-types.ts`, `packages/core/src/modules/journeys/journey-schemas.ts`, `apps/web/src/app/journeys/[journeyId]/sessions/[sessionId]/client.tsx`, `apps/admin/src/components/step-form.tsx` |
 | 완료     | 세션 상세 화면의 스텝별 규칙을 한 곳으로 모으기   | Locality of Behavior, SRP, Consistent Level of Abstraction                  | `apps/web/src/views/session-detail-view/session-detail-view.tsx`, `apps/web/src/views/session-detail-view/step-renderer.tsx`, `apps/web/src/features/sessions/session-step-response.ts`                                            |
 | 완료     | `progress` 저장소와 `submit-step` 유즈케이스 분리 | SRP, Limit File/Module Size, Prefer Pure Functions                          | `packages/database/src/repository/progress.repository.ts`, `packages/core/src/modules/progress/use-cases/submit-step.ts`                                                                                                           |
-| 중간     | 웹 API 호출 보일러플레이트를 작은 유틸로 축소     | AHA, Explicit Dependencies, Small Changesets                                | `apps/web/src/features/*/repositories/*.ts`, `apps/web/src/features/*/hooks/*.ts`                                                                                                                                                  |
+| 완료     | 웹 API 호출 보일러플레이트를 작은 유틸로 축소     | AHA, Explicit Dependencies, Small Changesets                                | `apps/web/src/features/*/repositories/*.ts`, `apps/web/src/features/*/hooks/*.ts`                                                                                                                                                  |
 | 중간     | DI/라우트/토큰 등록을 모듈 단위로 국소화          | Locality of Behavior, Explicit Dependencies, Small Changesets               | `apps/api/src/runtime/container.ts`, `apps/api/src/runtime/modules/use-cases.ts`, `apps/api/src/runtime/tokens.ts`, `apps/api/src/routes/index.ts`, `apps/admin/src/lib/runtime/admin-composition.ts`                              |
 | 중간     | `@workspace/core` 루트 배럴을 더 좁게 만들기      | Explicit Dependencies, SRP, Limit File/Module Size                          | `packages/core/src/index.ts`                                                                                                                                                                                                       |
 | 낮음     | 관리자 CRUD 폼의 네트워크/라우팅/파싱 중복 줄이기 | AHA, SRP, Small Changesets                                                  | `apps/admin/src/components/journey-form.tsx`, `apps/admin/src/components/step-form.tsx`                                                                                                                                            |
@@ -106,6 +106,12 @@ description: 2026-04-21 기준 글필 모노레포를 탐색해 단순하고 안
 4. 큰 파일을 남기기보다 호출부까지 함께 정리해 구조를 끝냅니다.
 
 ## 4. 웹 API 호출 보일러플레이트를 작은 유틸로 축소
+
+### 작업 결과
+
+- 완료 상태: 구현 완료
+- `apps/web/src/foundation/api/result.ts`, `query-helpers.ts`를 추가해 API 결과 해제, positive ID 처리, detail cache 갱신을 공통화했습니다.
+- 반복도가 높았던 detail query 훅과 session mutation 훅, 주요 repository들의 에러 처리 패턴을 같은 유틸로 정리했습니다.
 
 ### 현재 증상
 

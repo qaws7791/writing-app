@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { useApiClient } from "@/foundation/api"
+import { setDetailQueryData, useApiClient } from "@/foundation/api"
 
 import type { SessionStepResponse } from "../session-step-response"
 import { submitSessionStep } from "../repositories/session.repository"
@@ -16,7 +16,7 @@ export function useSubmitSessionStep() {
       response?: SessionStepResponse
     }) => submitSessionStep(apiClient, input),
     onSuccess: (data, input) => {
-      queryClient.setQueryData(["sessions", "detail", input.sessionId], data)
+      setDetailQueryData(queryClient, "sessions", input.sessionId, data)
     },
   })
 }

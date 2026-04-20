@@ -1,5 +1,10 @@
 import type { ApiClient, paths } from "@workspace/api-client"
 
+import {
+  unwrapApiResult,
+  unwrapRequiredApiResult,
+} from "@/foundation/api/result"
+
 type SessionRuntime =
   paths["/sessions/{sessionId}"]["get"]["responses"][200]["content"]["application/json"]
 type SubmitStepBody =
@@ -9,28 +14,24 @@ export async function fetchSessionDetail(
   client: ApiClient,
   sessionId: number
 ): Promise<SessionRuntime> {
-  const { data, error } = await client.GET("/sessions/{sessionId}", {
-    params: { path: { sessionId } },
-  })
-  if (error) throw error
-  if (!data) {
-    throw new Error("세션 런타임 응답이 비어 있습니다.")
-  }
-  return data
+  return unwrapRequiredApiResult(
+    await client.GET("/sessions/{sessionId}", {
+      params: { path: { sessionId } },
+    }),
+    "세션 런타임 응답이 비어 있습니다."
+  )
 }
 
 export async function startSession(
   client: ApiClient,
   sessionId: number
 ): Promise<SessionRuntime> {
-  const { data, error } = await client.POST("/sessions/{sessionId}/start", {
-    params: { path: { sessionId } },
-  })
-  if (error) throw error
-  if (!data) {
-    throw new Error("세션 시작 응답이 비어 있습니다.")
-  }
-  return data
+  return unwrapRequiredApiResult(
+    await client.POST("/sessions/{sessionId}/start", {
+      params: { path: { sessionId } },
+    }),
+    "세션 시작 응답이 비어 있습니다."
+  )
 }
 
 export async function submitSessionStep(
@@ -41,9 +42,8 @@ export async function submitSessionStep(
     response?: SubmitStepBody["response"]
   }
 ): Promise<SessionRuntime> {
-  const { data, error } = await client.POST(
-    "/sessions/{sessionId}/steps/{stepOrder}/submit",
-    {
+  return unwrapRequiredApiResult(
+    await client.POST("/sessions/{sessionId}/steps/{stepOrder}/submit", {
       params: {
         path: {
           sessionId: input.sessionId,
@@ -56,13 +56,9 @@ export async function submitSessionStep(
           : {
               response: input.response,
             },
-    }
+    }),
+    "스텝 제출 응답이 비어 있습니다."
   )
-  if (error) throw error
-  if (!data) {
-    throw new Error("스텝 제출 응답이 비어 있습니다.")
-  }
-  return data
 }
 
 export async function retrySessionStepAi(
@@ -72,22 +68,17 @@ export async function retrySessionStepAi(
     stepOrder: number
   }
 ): Promise<SessionRuntime> {
-  const { data, error } = await client.POST(
-    "/sessions/{sessionId}/steps/{stepOrder}/retry",
-    {
+  return unwrapRequiredApiResult(
+    await client.POST("/sessions/{sessionId}/steps/{stepOrder}/retry", {
       params: {
         path: {
           sessionId: input.sessionId,
           stepOrder: input.stepOrder,
         },
       },
-    }
+    }),
+    "AI 재시도 응답이 비어 있습니다."
   )
-  if (error) throw error
-  if (!data) {
-    throw new Error("AI 재시도 응답이 비어 있습니다.")
-  }
-  return data
 }
 
 export async function completeSession(
@@ -99,13 +90,14 @@ export async function completeSession(
     totalSessions: number
   }
 ) {
-  const { error } = await client.POST("/sessions/{sessionId}/complete", {
-    params: { path: { sessionId: input.sessionId } },
-    body: {
-      journeyId: input.journeyId,
-      nextSessionOrder: input.nextSessionOrder,
-      totalSessions: input.totalSessions,
-    },
-  })
-  if (error) throw error
+  unwrapApiResult(
+    await client.POST("/sessions/{sessionId}/complete", {
+      params: { path: { sessionId: input.sessionId } },
+      body: {
+        journeyId: input.journeyId,
+        nextSessionOrder: input.nextSessionOrder,
+        totalSessions: input.totalSessions,
+      },
+    })
+  )
 }

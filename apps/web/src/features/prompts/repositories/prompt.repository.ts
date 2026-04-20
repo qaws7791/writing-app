@@ -1,5 +1,7 @@
 import type { ApiClient } from "@workspace/api-client"
 
+import { unwrapRequiredApiResult } from "@/foundation/api/result"
+
 type PromptWritingsData = {
   items: readonly {
     id: number
@@ -14,9 +16,10 @@ type PromptWritingsData = {
 }
 
 export async function fetchPromptCategories(client: ApiClient) {
-  const { data, error } = await client.GET("/prompts/categories")
-  if (error) throw error
-  return data
+  return unwrapRequiredApiResult(
+    await client.GET("/prompts/categories"),
+    "글감 카테고리 응답이 비어 있습니다."
+  )
 }
 
 export async function fetchPromptList(
@@ -27,19 +30,21 @@ export async function fetchPromptList(
     limit?: number
   }
 ) {
-  const { data, error } = await client.GET("/prompts", {
-    params: { query: params },
-  })
-  if (error) throw error
-  return data
+  return unwrapRequiredApiResult(
+    await client.GET("/prompts", {
+      params: { query: params },
+    }),
+    "글감 목록 응답이 비어 있습니다."
+  )
 }
 
 export async function fetchPromptDetail(client: ApiClient, promptId: number) {
-  const { data, error } = await client.GET("/prompts/{promptId}", {
-    params: { path: { promptId } },
-  })
-  if (error) throw error
-  return data
+  return unwrapRequiredApiResult(
+    await client.GET("/prompts/{promptId}", {
+      params: { path: { promptId } },
+    }),
+    "글감 상세 응답이 비어 있습니다."
+  )
 }
 
 export async function fetchPromptWritings(
@@ -47,9 +52,10 @@ export async function fetchPromptWritings(
   promptId: number,
   params?: { cursor?: string; limit?: number }
 ): Promise<PromptWritingsData> {
-  const { data, error } = await client.GET("/prompts/{promptId}/writings", {
-    params: { path: { promptId }, query: params },
-  })
-  if (error) throw error
-  return data as PromptWritingsData
+  return unwrapRequiredApiResult(
+    await client.GET("/prompts/{promptId}/writings", {
+      params: { path: { promptId }, query: params },
+    }),
+    "글감별 글 목록 응답이 비어 있습니다."
+  ) as PromptWritingsData
 }

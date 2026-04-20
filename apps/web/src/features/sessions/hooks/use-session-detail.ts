@@ -1,6 +1,11 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { useApiClient } from "@/foundation/api"
+import {
+  createDetailQueryKey,
+  getPositiveId,
+  requirePositiveId,
+  useApiClient,
+} from "@/foundation/api"
 
 import { fetchSessionDetail } from "../repositories/session.repository"
 
@@ -14,21 +19,18 @@ function hasPendingSessionAi(
 
 export function useSessionDetail(sessionId: number | undefined) {
   const apiClient = useApiClient()
-  const validSessionId =
-    sessionId !== undefined && sessionId > 0 ? sessionId : null
+  const validSessionId = getPositiveId(sessionId)
 
   return useQuery({
-    queryKey: ["sessions", "detail", sessionId],
+    queryKey: createDetailQueryKey("sessions", sessionId),
     queryFn: () => {
-      if (validSessionId === null) {
-        throw new Error("유효한 세션 ID가 필요합니다.")
-      }
-
-      return fetchSessionDetail(apiClient, validSessionId)
+      return fetchSessionDetail(
+        apiClient,
+        requirePositiveId(validSessionId, "유효한 세션 ID가 필요합니다.")
+      )
     },
     enabled: validSessionId !== null,
     refetchInterval: (query) =>
       hasPendingSessionAi(query.state.data) ? 1_000 : false,
-    staleTime: 60_000,
   })
 }

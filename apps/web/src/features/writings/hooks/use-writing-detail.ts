@@ -1,22 +1,25 @@
 import { useQuery } from "@tanstack/react-query"
 
-import { useApiClient } from "@/foundation/api"
+import {
+  createDetailQueryKey,
+  getPositiveId,
+  requirePositiveId,
+  useApiClient,
+} from "@/foundation/api"
 
 import { fetchWritingDetail } from "../repositories/writing.repository"
 
 export function useWritingDetail(writingId: number | undefined) {
   const apiClient = useApiClient()
-  const validWritingId =
-    writingId !== undefined && writingId > 0 ? writingId : null
+  const validWritingId = getPositiveId(writingId)
 
   return useQuery({
-    queryKey: ["writings", "detail", writingId],
+    queryKey: createDetailQueryKey("writings", writingId),
     queryFn: () => {
-      if (validWritingId === null) {
-        throw new Error("유효한 글 ID가 필요합니다.")
-      }
-
-      return fetchWritingDetail(apiClient, validWritingId)
+      return fetchWritingDetail(
+        apiClient,
+        requirePositiveId(validWritingId, "유효한 글 ID가 필요합니다.")
+      )
     },
     enabled: validWritingId !== null,
     staleTime: 30_000,
