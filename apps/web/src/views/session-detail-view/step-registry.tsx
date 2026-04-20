@@ -1,24 +1,5 @@
 import type { ReactNode } from "react"
 import type { paths } from "@workspace/api-client"
-import type {
-  AIComparisonContent,
-  AIFeedbackContent,
-  CompletionContent,
-  ConceptContent,
-  ExampleContent,
-  FillInTheBlankContent,
-  FillInTheBlankState,
-  HighlightContent,
-  HighlightState,
-  IntroContent,
-  MultipleChoiceContent,
-  MultipleChoiceState,
-  OrderingContent,
-  OrderingState,
-  RewritingContent,
-  ShortAnswerContent,
-  WritingContent,
-} from "@/views/session-detail-view/types"
 
 import { AIComparisonStep } from "@/views/session-detail-view/steps/ai-comparison-step"
 import { AIFeedbackStep } from "@/views/session-detail-view/steps/ai-feedback-step"
@@ -39,9 +20,15 @@ import {
   isSessionAiStepState,
 } from "@/views/session-detail-view/step-state"
 import type {
+  FillInTheBlankState,
+  HighlightState,
   InputStepState,
+  MultipleChoiceState,
+  OrderingState,
   Step,
+  StepOfType,
   StepState,
+  StepType,
 } from "@/views/session-detail-view/types"
 
 type SessionStepResponse =
@@ -49,13 +36,15 @@ type SessionStepResponse =
 
 type StepResponse = Exclude<SessionStepResponse, undefined>
 
-type StepRenderContext = {
+type StepResponseFor<T extends StepType> = Extract<StepResponse, { type: T }>
+
+type StepRenderContext<T extends StepType = StepType> = {
   allStepStates: Record<string, StepState>
   isRetryingAi?: boolean
   onRetryAi?: (stepOrder: number) => Promise<void>
   onStateChange: (state: StepState) => void
   sessionId: string
-  step: Step
+  step: StepOfType<T>
   stepState: StepState
   steps: Step[]
 }
@@ -66,26 +55,34 @@ type StepCtaState = {
   label: string
 }
 
-type StepCtaContext = {
+type StepCtaContext<T extends StepType = StepType> = {
   handleNext: () => void
   isSubmitting: boolean
   state: StepState
-  step: Step
+  step: StepOfType<T>
   updateState: (state: StepState) => void
 }
 
-type StepDefinition = {
-  deserialize?: (response: StepResponse) => StepState | undefined
-  getCta: (context: StepCtaContext) => StepCtaState
-  render: (context: StepRenderContext) => ReactNode
-  serialize?: (state: StepState) => StepResponse | undefined
+type StepRenderInput = Omit<StepRenderContext, "step"> & {
+  step: Step
 }
 
-function createDefaultCta({
+type StepCtaInput = Omit<StepCtaContext, "step"> & {
+  step: Step
+}
+
+type StepDefinition<T extends StepType> = {
+  deserialize?: (response: StepResponseFor<T>) => StepState | undefined
+  getCta: (context: StepCtaContext<T>) => StepCtaState
+  render: (context: StepRenderContext<T>) => ReactNode
+  serialize?: (state: StepState) => StepResponseFor<T> | undefined
+}
+
+function createDefaultCta<T extends StepType>({
   handleNext,
   isSubmitting,
   step,
-}: StepCtaContext): StepCtaState {
+}: StepCtaContext<T>): StepCtaState {
   return {
     label: step.cta.label,
     enabled: !isSubmitting,
@@ -93,13 +90,13 @@ function createDefaultCta({
   }
 }
 
-function createSelectionCta({
+function createSelectionCta<T extends StepType>({
   handleNext,
   isSubmitting,
   state,
   step,
   updateState,
-}: StepCtaContext): StepCtaState {
+}: StepCtaContext<T>): StepCtaState {
   const selectionState = isSelectionStepState(state) ? state : undefined
 
   if (selectionState?.checked) {
@@ -126,12 +123,12 @@ function createSelectionCta({
   }
 }
 
-function createInputCta({
+function createInputCta<T extends StepType>({
   handleNext,
   isSubmitting,
   state,
   step,
-}: StepCtaContext): StepCtaState {
+}: StepCtaContext<T>): StepCtaState {
   const inputState = isInputStepState(state) ? state : undefined
 
   return {
@@ -141,12 +138,12 @@ function createInputCta({
   }
 }
 
-function createAiCta({
+function createAiCta<T extends StepType>({
   handleNext,
   isSubmitting,
   state,
   step,
-}: StepCtaContext): StepCtaState {
+}: StepCtaContext<T>): StepCtaState {
   const aiState = isSessionAiStepState(state) ? state : undefined
 
   return {
@@ -163,7 +160,9 @@ function createInputState(text: string): InputStepState {
   }
 }
 
-function isMultipleChoiceState(value: StepState): value is MultipleChoiceState {
+function isSelectedListState(
+  value: StepState
+): value is MultipleChoiceState | HighlightState {
   return (
     isSelectionStepState(value) &&
     "selected" in value &&
@@ -171,7 +170,17 @@ function isMultipleChoiceState(value: StepState): value is MultipleChoiceState {
   )
 }
 
-function isFillInTheBlankState(value: StepState): value is FillInTheBlankState {
+function isOrderingStepState(value: StepState): value is OrderingState {
+  return (
+    isSelectionStepState(value) &&
+    "order" in value &&
+    Array.isArray(value.order)
+  )
+}
+
+function isFillInTheBlankStepState(
+  value: StepState
+): value is FillInTheBlankState {
   return (
     isSelectionStepState(value) &&
     "selections" in value &&
@@ -180,68 +189,45 @@ function isFillInTheBlankState(value: StepState): value is FillInTheBlankState {
   )
 }
 
-function isOrderingState(value: StepState): value is OrderingState {
-  return (
-    isSelectionStepState(value) &&
-    "order" in value &&
-    Array.isArray(value.order)
-  )
-}
-
-function isHighlightState(value: StepState): value is HighlightState {
-  return (
-    isSelectionStepState(value) &&
-    "selected" in value &&
-    Array.isArray(value.selected)
-  )
-}
-
-function getStepDefinition(step: Step): StepDefinition {
-  return stepRegistry[step.type]
+function toTypedStateChange<T extends Exclude<StepState, undefined>>(
+  onStateChange: (state: StepState) => void
+) {
+  return (state: T) => onStateChange(state)
 }
 
 const stepRegistry = {
   INTRO: {
     getCta: createDefaultCta,
-    render: ({ step }) => <IntroStep content={step.content as IntroContent} />,
+    render: ({ step }) => <IntroStep content={step.content} />,
   },
   COMPLETION: {
     getCta: createDefaultCta,
-    render: ({ step }) => (
-      <CompletionStep content={step.content as CompletionContent} />
-    ),
+    render: ({ step }) => <CompletionStep content={step.content} />,
   },
   CONCEPT: {
     getCta: createDefaultCta,
-    render: ({ step }) => (
-      <ConceptStep content={step.content as ConceptContent} />
-    ),
+    render: ({ step }) => <ConceptStep content={step.content} />,
   },
   EXAMPLE: {
     getCta: createDefaultCta,
-    render: ({ step }) => (
-      <ExampleStep content={step.content as ExampleContent} />
-    ),
+    render: ({ step }) => <ExampleStep content={step.content} />,
   },
   MULTIPLE_CHOICE: {
-    deserialize: (response) =>
-      response.type === "MULTIPLE_CHOICE"
-        ? {
-            selected: response.selected,
-            hasSelection: response.selected.length > 0,
-            checked: true,
-          }
-        : undefined,
+    deserialize: (response) => ({
+      selected: response.selected,
+      hasSelection: response.selected.length > 0,
+      checked: true,
+    }),
     getCta: createSelectionCta,
     render: ({ onStateChange, step, stepState }) => (
       <MultipleChoiceStep
-        content={step.content as MultipleChoiceContent}
-        state={isMultipleChoiceState(stepState) ? stepState : undefined}
-        onStateChange={onStateChange as (state: MultipleChoiceState) => void}
+        content={step.content}
+        state={isSelectedListState(stepState) ? stepState : undefined}
+        onStateChange={toTypedStateChange(onStateChange)}
       />
     ),
     serialize: (state) =>
-      isSelectionStepState(state) && "selected" in state
+      isSelectedListState(state)
         ? {
             type: "MULTIPLE_CHOICE",
             selected: state.selected,
@@ -249,29 +235,21 @@ const stepRegistry = {
         : undefined,
   },
   FILL_IN_THE_BLANK: {
-    deserialize: (response) =>
-      response.type === "FILL_IN_THE_BLANK"
-        ? {
-            selections: response.selections,
-            hasSelection: Object.keys(response.selections).length > 0,
-            checked: true,
-          }
-        : undefined,
+    deserialize: (response) => ({
+      selections: response.selections,
+      hasSelection: Object.keys(response.selections).length > 0,
+      checked: true,
+    }),
     getCta: createSelectionCta,
     render: ({ onStateChange, step, stepState }) => (
       <FillInTheBlankStep
-        content={step.content as FillInTheBlankContent}
-        state={isFillInTheBlankState(stepState) ? stepState : undefined}
-        onStateChange={onStateChange as (state: FillInTheBlankState) => void}
+        content={step.content}
+        state={isFillInTheBlankStepState(stepState) ? stepState : undefined}
+        onStateChange={toTypedStateChange(onStateChange)}
       />
     ),
     serialize: (state) =>
-      state !== undefined &&
-      typeof state === "object" &&
-      state !== null &&
-      "selections" in state &&
-      state.selections !== null &&
-      typeof state.selections === "object"
+      isFillInTheBlankStepState(state)
         ? {
             type: "FILL_IN_THE_BLANK",
             selections: state.selections,
@@ -279,28 +257,21 @@ const stepRegistry = {
         : undefined,
   },
   ORDERING: {
-    deserialize: (response) =>
-      response.type === "ORDERING"
-        ? {
-            order: response.order,
-            hasSelection: response.order.length > 0,
-            checked: true,
-          }
-        : undefined,
+    deserialize: (response) => ({
+      order: response.order,
+      hasSelection: response.order.length > 0,
+      checked: true,
+    }),
     getCta: createSelectionCta,
     render: ({ onStateChange, step, stepState }) => (
       <OrderingStep
-        content={step.content as OrderingContent}
-        state={isOrderingState(stepState) ? stepState : undefined}
-        onStateChange={onStateChange as (state: OrderingState) => void}
+        content={step.content}
+        state={isOrderingStepState(stepState) ? stepState : undefined}
+        onStateChange={toTypedStateChange(onStateChange)}
       />
     ),
     serialize: (state) =>
-      state !== undefined &&
-      typeof state === "object" &&
-      state !== null &&
-      "order" in state &&
-      Array.isArray(state.order)
+      isOrderingStepState(state)
         ? {
             type: "ORDERING",
             order: state.order,
@@ -308,24 +279,21 @@ const stepRegistry = {
         : undefined,
   },
   HIGHLIGHT: {
-    deserialize: (response) =>
-      response.type === "HIGHLIGHT"
-        ? {
-            selected: response.selected,
-            hasSelection: response.selected.length > 0,
-            checked: true,
-          }
-        : undefined,
+    deserialize: (response) => ({
+      selected: response.selected,
+      hasSelection: response.selected.length > 0,
+      checked: true,
+    }),
     getCta: createSelectionCta,
     render: ({ onStateChange, step, stepState }) => (
       <HighlightStep
-        content={step.content as HighlightContent}
-        state={isHighlightState(stepState) ? stepState : undefined}
-        onStateChange={onStateChange as (state: HighlightState) => void}
+        content={step.content}
+        state={isSelectedListState(stepState) ? stepState : undefined}
+        onStateChange={toTypedStateChange(onStateChange)}
       />
     ),
     serialize: (state) =>
-      isSelectionStepState(state) && "selected" in state
+      isSelectedListState(state)
         ? {
             type: "HIGHLIGHT",
             selected: state.selected,
@@ -333,16 +301,13 @@ const stepRegistry = {
         : undefined,
   },
   SHORT_ANSWER: {
-    deserialize: (response) =>
-      response.type === "SHORT_ANSWER"
-        ? createInputState(response.text)
-        : undefined,
+    deserialize: (response) => createInputState(response.text),
     getCta: createInputCta,
     render: ({ onStateChange, step, stepState }) => (
       <ShortAnswerStep
-        content={step.content as ShortAnswerContent}
+        content={step.content}
         state={isInputStepState(stepState) ? stepState : undefined}
-        onStateChange={onStateChange}
+        onStateChange={toTypedStateChange(onStateChange)}
       />
     ),
     serialize: (state) =>
@@ -354,14 +319,13 @@ const stepRegistry = {
         : undefined,
   },
   WRITING: {
-    deserialize: (response) =>
-      response.type === "WRITING" ? createInputState(response.text) : undefined,
+    deserialize: (response) => createInputState(response.text),
     getCta: createInputCta,
     render: ({ onStateChange, step, stepState }) => (
       <WritingStep
-        content={step.content as WritingContent}
+        content={step.content}
         state={isInputStepState(stepState) ? stepState : undefined}
-        onStateChange={onStateChange}
+        onStateChange={toTypedStateChange(onStateChange)}
       />
     ),
     serialize: (state) =>
@@ -373,16 +337,13 @@ const stepRegistry = {
         : undefined,
   },
   REWRITING: {
-    deserialize: (response) =>
-      response.type === "REWRITING"
-        ? createInputState(response.text)
-        : undefined,
+    deserialize: (response) => createInputState(response.text),
     getCta: createInputCta,
     render: ({ allStepStates, onStateChange, step, stepState, steps }) => (
       <RewritingStep
-        content={step.content as RewritingContent}
+        content={step.content}
         state={isInputStepState(stepState) ? stepState : undefined}
-        onStateChange={onStateChange}
+        onStateChange={toTypedStateChange(onStateChange)}
         allStepStates={allStepStates}
         steps={steps}
       />
@@ -406,7 +367,7 @@ const stepRegistry = {
       steps,
     }) => (
       <AIFeedbackStep
-        content={step.content as AIFeedbackContent}
+        content={step.content}
         allStepStates={allStepStates}
         isRetryingAi={isRetryingAi}
         onRetryAi={onRetryAi}
@@ -427,7 +388,7 @@ const stepRegistry = {
       steps,
     }) => (
       <AIComparisonStep
-        content={step.content as AIComparisonContent}
+        content={step.content}
         allStepStates={allStepStates}
         isRetryingAi={isRetryingAi}
         onRetryAi={onRetryAi}
@@ -437,25 +398,130 @@ const stepRegistry = {
       />
     ),
   },
-} as const satisfies Record<Step["type"], StepDefinition>
+} as const satisfies { [T in StepType]: StepDefinition<T> }
 
-export function getStepCta(context: StepCtaContext): StepCtaState {
-  return getStepDefinition(context.step).getCta(context)
+export function getStepCta(context: StepCtaInput): StepCtaState {
+  const step = context.step
+
+  switch (step.type) {
+    case "INTRO":
+      return stepRegistry.INTRO.getCta({ ...context, step })
+    case "COMPLETION":
+      return stepRegistry.COMPLETION.getCta({ ...context, step })
+    case "CONCEPT":
+      return stepRegistry.CONCEPT.getCta({ ...context, step })
+    case "EXAMPLE":
+      return stepRegistry.EXAMPLE.getCta({ ...context, step })
+    case "MULTIPLE_CHOICE":
+      return stepRegistry.MULTIPLE_CHOICE.getCta({ ...context, step })
+    case "FILL_IN_THE_BLANK":
+      return stepRegistry.FILL_IN_THE_BLANK.getCta({ ...context, step })
+    case "ORDERING":
+      return stepRegistry.ORDERING.getCta({ ...context, step })
+    case "HIGHLIGHT":
+      return stepRegistry.HIGHLIGHT.getCta({ ...context, step })
+    case "SHORT_ANSWER":
+      return stepRegistry.SHORT_ANSWER.getCta({ ...context, step })
+    case "WRITING":
+      return stepRegistry.WRITING.getCta({ ...context, step })
+    case "REWRITING":
+      return stepRegistry.REWRITING.getCta({ ...context, step })
+    case "AI_FEEDBACK":
+      return stepRegistry.AI_FEEDBACK.getCta({ ...context, step })
+    case "AI_COMPARISON":
+      return stepRegistry.AI_COMPARISON.getCta({ ...context, step })
+  }
 }
 
-export function renderStep(context: StepRenderContext): ReactNode {
-  return getStepDefinition(context.step).render(context)
+export function renderStep(context: StepRenderInput): ReactNode {
+  const step = context.step
+
+  if (step.type === "INTRO") {
+    return stepRegistry.INTRO.render({ ...context, step })
+  }
+  if (step.type === "COMPLETION") {
+    return stepRegistry.COMPLETION.render({ ...context, step })
+  }
+  if (step.type === "CONCEPT") {
+    return stepRegistry.CONCEPT.render({ ...context, step })
+  }
+  if (step.type === "EXAMPLE") {
+    return stepRegistry.EXAMPLE.render({ ...context, step })
+  }
+  if (step.type === "MULTIPLE_CHOICE") {
+    return stepRegistry.MULTIPLE_CHOICE.render({ ...context, step })
+  }
+  if (step.type === "FILL_IN_THE_BLANK") {
+    return stepRegistry.FILL_IN_THE_BLANK.render({ ...context, step })
+  }
+  if (step.type === "ORDERING") {
+    return stepRegistry.ORDERING.render({ ...context, step })
+  }
+  if (step.type === "HIGHLIGHT") {
+    return stepRegistry.HIGHLIGHT.render({ ...context, step })
+  }
+  if (step.type === "SHORT_ANSWER") {
+    return stepRegistry.SHORT_ANSWER.render({ ...context, step })
+  }
+  if (step.type === "WRITING") {
+    return stepRegistry.WRITING.render({ ...context, step })
+  }
+  if (step.type === "REWRITING") {
+    return stepRegistry.REWRITING.render({ ...context, step })
+  }
+  if (step.type === "AI_FEEDBACK") {
+    return stepRegistry.AI_FEEDBACK.render({ ...context, step })
+  }
+
+  return stepRegistry.AI_COMPARISON.render({ ...context, step })
 }
 
 export function serializeStepState(
   step: Step,
   state: StepState
 ): StepResponse | undefined {
-  return getStepDefinition(step).serialize?.(state)
+  switch (step.type) {
+    case "MULTIPLE_CHOICE":
+      return stepRegistry.MULTIPLE_CHOICE.serialize?.(state)
+    case "FILL_IN_THE_BLANK":
+      return stepRegistry.FILL_IN_THE_BLANK.serialize?.(state)
+    case "ORDERING":
+      return stepRegistry.ORDERING.serialize?.(state)
+    case "HIGHLIGHT":
+      return stepRegistry.HIGHLIGHT.serialize?.(state)
+    case "SHORT_ANSWER":
+      return stepRegistry.SHORT_ANSWER.serialize?.(state)
+    case "WRITING":
+      return stepRegistry.WRITING.serialize?.(state)
+    case "REWRITING":
+      return stepRegistry.REWRITING.serialize?.(state)
+    case "INTRO":
+    case "COMPLETION":
+    case "CONCEPT":
+    case "EXAMPLE":
+    case "AI_FEEDBACK":
+    case "AI_COMPARISON":
+      return undefined
+  }
 }
 
 export function deserializeStepResponse(
   response: StepResponse
 ): StepState | undefined {
-  return stepRegistry[response.type].deserialize?.(response)
+  switch (response.type) {
+    case "MULTIPLE_CHOICE":
+      return stepRegistry.MULTIPLE_CHOICE.deserialize?.(response)
+    case "FILL_IN_THE_BLANK":
+      return stepRegistry.FILL_IN_THE_BLANK.deserialize?.(response)
+    case "ORDERING":
+      return stepRegistry.ORDERING.deserialize?.(response)
+    case "HIGHLIGHT":
+      return stepRegistry.HIGHLIGHT.deserialize?.(response)
+    case "SHORT_ANSWER":
+      return stepRegistry.SHORT_ANSWER.deserialize?.(response)
+    case "WRITING":
+      return stepRegistry.WRITING.deserialize?.(response)
+    case "REWRITING":
+      return stepRegistry.REWRITING.deserialize?.(response)
+  }
 }

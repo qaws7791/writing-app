@@ -10,7 +10,7 @@ description: 2026-04-21 기준 글필 모노레포를 탐색해 단순하고 안
 - 목적: 동작 변경 없이 구조 복잡도와 숨은 변환을 줄이기 위한 후속 작업 후보를 정리합니다.
 - 전제: 현재는 개발 단계이므로 마이그레이션 비용이나 하위 호환성보다 구현 단순성과 구조 명확성을 우선합니다.
 - 후속 작업: `codebase-simplification-review.md` 기준 순차 개선을 2026-04-21부터 진행합니다.
-- 현재 작업: `SessionDetailClientPage`의 책임을 분리하는 작업을 완료했습니다.
+- 현재 작업: `step-registry`의 타입 단언과 중복 타입 검사를 줄이는 작업을 완료했습니다.
 - 진행 현황: 1번 항목(스텝 타입 모델 통일), 2번 항목(세션 상세 화면 step registry 정리), 3번 항목(`progress.repository`와 `submit-step` 분리), 4번 항목(웹 API/Query 보일러플레이트 축소), 5번 항목(DI/라우트/토큰 등록 국소화), 6번 항목(`@workspace/core` 루트 배럴 축소), 7번 항목(관리자 CRUD 폼 정리)은 2026-04-21에 구현 완료했습니다.
 - 기준 원칙: 지역성 확보, 조기 추상화 방지(AHA), 단일 책임, 명시적 설계, 순수 함수, 얕은 계층, 불변성, 의존성 명시화, 일관된 추상화 수준, 작은 변경 단위, 규약 우선, 파일 크기 제한
 
@@ -26,6 +26,7 @@ description: 2026-04-21 기준 글필 모노레포를 탐색해 단순하고 안
 | 완료 | Admin 폼 상태 관리 규약 명시          | `AGENTS.md`, `docs/04-engineering/frontend-architecture-guide.md`                                                                               | `apps/admin`은 controlled `useState` + form helper 규약을 유지한다는 기준을 문서화하고 `git diff --check` 검증 완료                     |
 | 완료 | Service Worker TypeScript 전환        | `apps/web/src/service-worker/sw.ts`, `apps/web/public/sw.js`, `apps/web/package.json`                                                           | TS 소스에서 `public/sw.js`를 생성하고 모듈 전역 mutable cache를 제거한 뒤 `web` build:service-worker·typecheck·lint 검증 완료           |
 | 완료 | SessionDetailClientPage 책임 분리     | `apps/web/src/app/journeys/[journeyId]/sessions/[sessionId]/client.tsx`                                                                         | 순수 매핑과 세션 러너 훅을 분리해 라우트 진입 컴포넌트는 상태 분기와 화면 조립만 담당하게 정리하고 `web` 타입체크·테스트·린트 검증 완료 |
+| 완료 | `step-registry` 타입 관계 정리        | `apps/web/src/views/session-detail-view/types.ts`, `apps/web/src/views/session-detail-view/step-registry.tsx`                                   | `Step`를 content-aware union으로 정리하고 registry의 `as` 단언/중복 타입 가드를 줄인 뒤 `web` 타입체크·테스트·린트 검증 완료            |
 
 ## 요약
 

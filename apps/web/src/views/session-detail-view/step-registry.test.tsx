@@ -4,37 +4,48 @@ import { getStepCta } from "@/views/session-detail-view/step-registry"
 import type { Step, StepState } from "@/views/session-detail-view/types"
 
 function createStep(type: Step["type"]): Step {
-  return {
-    id: "1",
-    type,
-    order: 1,
-    content:
-      type === "WRITING"
-        ? {
-            type,
-            prompt: "글을 써보세요",
-            minLength: 1,
-            recommendedLength: 10,
-            timeLimitSeconds: 0,
-          }
-        : type === "AI_FEEDBACK"
-          ? {
-              type,
-              targetStepId: "0",
-              loadingMessage: "분석 중",
-            }
-          : {
-              type: "MULTIPLE_CHOICE",
-              question: "정답을 고르세요",
-              options: [{ id: "a", text: "A" }],
-              correctOptionIds: ["a"],
-              multiSelect: false,
-              explanations: { a: "정답" },
-            },
-    cta: {
-      label: "확인",
-      variant: "primary",
-    },
+  switch (type) {
+    case "WRITING":
+      return {
+        id: "1",
+        type,
+        order: 1,
+        content: {
+          type,
+          prompt: "글을 써보세요",
+          minLength: 1,
+          recommendedLength: 10,
+          timeLimitSeconds: 0,
+        },
+        cta: { label: "확인", variant: "primary" },
+      }
+    case "AI_FEEDBACK":
+      return {
+        id: "1",
+        type,
+        order: 1,
+        content: {
+          type,
+          targetStepId: "0",
+          loadingMessage: "분석 중",
+        },
+        cta: { label: "확인", variant: "primary" },
+      }
+    default:
+      return {
+        id: "1",
+        type: "MULTIPLE_CHOICE",
+        order: 1,
+        content: {
+          type: "MULTIPLE_CHOICE",
+          question: "정답을 고르세요",
+          options: [{ id: "a", text: "A" }],
+          correctOptionIds: ["a"],
+          multiSelect: false,
+          explanations: { a: "정답" },
+        },
+        cta: { label: "확인", variant: "primary" },
+      }
   }
 }
 

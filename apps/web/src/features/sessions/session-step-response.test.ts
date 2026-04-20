@@ -7,52 +7,75 @@ import {
 import type { Step, StepState } from "@/views/session-detail-view/types"
 
 function createStep(type: Step["type"]): Step {
-  return {
-    id: "1",
-    type,
-    order: 1,
-    content:
-      type === "WRITING"
-        ? {
-            type,
-            prompt: "테스트 프롬프트",
-            minLength: 1,
-            recommendedLength: 10,
-            timeLimitSeconds: 0,
-          }
-        : type === "SHORT_ANSWER"
-          ? {
-              type,
-              question: "테스트 질문",
-              minLength: 1,
-              maxLength: 100,
-            }
-          : type === "REWRITING"
-            ? {
-                type,
-                instruction: "다시 써보세요",
-                originalWritingStepId: "0",
-                feedbackStepId: "2",
-              }
-            : type === "MULTIPLE_CHOICE"
-              ? {
-                  type,
-                  question: "정답을 고르세요",
-                  options: [{ id: "a", text: "A" }],
-                  correctOptionIds: ["a"],
-                  multiSelect: false,
-                  explanations: { a: "정답" },
-                }
-              : {
-                  type: "INTRO",
-                  title: "세션 소개",
-                  description: "설명",
-                  estimatedMinutes: 10,
-                },
-    cta: {
-      label: "다음",
-      variant: "primary",
-    },
+  switch (type) {
+    case "WRITING":
+      return {
+        id: "1",
+        type,
+        order: 1,
+        content: {
+          type,
+          prompt: "테스트 프롬프트",
+          minLength: 1,
+          recommendedLength: 10,
+          timeLimitSeconds: 0,
+        },
+        cta: { label: "다음", variant: "primary" },
+      }
+    case "SHORT_ANSWER":
+      return {
+        id: "1",
+        type,
+        order: 1,
+        content: {
+          type,
+          question: "테스트 질문",
+          minLength: 1,
+          maxLength: 100,
+        },
+        cta: { label: "다음", variant: "primary" },
+      }
+    case "REWRITING":
+      return {
+        id: "1",
+        type,
+        order: 1,
+        content: {
+          type,
+          instruction: "다시 써보세요",
+          originalWritingStepId: "0",
+          feedbackStepId: "2",
+        },
+        cta: { label: "다음", variant: "primary" },
+      }
+    case "MULTIPLE_CHOICE":
+      return {
+        id: "1",
+        type,
+        order: 1,
+        content: {
+          type,
+          question: "정답을 고르세요",
+          options: [{ id: "a", text: "A" }],
+          correctOptionIds: ["a"],
+          multiSelect: false,
+          explanations: { a: "정답" },
+        },
+        cta: { label: "다음", variant: "primary" },
+      }
+    default:
+      return {
+        id: "1",
+        type: "INTRO",
+        order: 1,
+        content: {
+          type: "INTRO",
+          title: "세션 소개",
+          description: "설명",
+          estimatedMinutes: 10,
+        },
+        cta: { label: "다음", variant: "primary" },
+      }
   }
 }
 

@@ -37,13 +37,33 @@ export type {
   AIComparisonContent,
 }
 
-export interface Step {
+export type StepContentMap = {
+  INTRO: IntroContent
+  COMPLETION: CompletionContent
+  CONCEPT: ConceptContent
+  EXAMPLE: ExampleContent
+  MULTIPLE_CHOICE: MultipleChoiceContent
+  FILL_IN_THE_BLANK: FillInTheBlankContent
+  ORDERING: OrderingContent
+  HIGHLIGHT: HighlightContent
+  SHORT_ANSWER: ShortAnswerContent
+  WRITING: WritingContent
+  REWRITING: RewritingContent
+  AI_FEEDBACK: AIFeedbackContent
+  AI_COMPARISON: AIComparisonContent
+}
+
+export interface StepOfType<T extends StepType> {
   id: string
-  type: StepType
+  type: T
   order: number
-  content: StepContent
+  content: StepContentMap[T]
   cta: CTAConfig
 }
+
+export type Step = {
+  [T in StepType]: StepOfType<T>
+}[StepType]
 
 export type NonEmptyArray<T> = [T, ...T[]]
 
