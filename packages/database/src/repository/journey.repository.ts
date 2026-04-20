@@ -19,6 +19,10 @@ import type {
   CreateStepInput,
   UpdateStepInput,
 } from "@workspace/core"
+import {
+  createValidationError,
+  sessionStepPayloadSchema,
+} from "@workspace/core"
 
 import { journeys } from "../schema/journeys"
 import { journeySessions } from "../schema/journey-sessions"
@@ -37,12 +41,21 @@ function mapSessionSummary(row: JourneySessionRow): JourneySessionSummary {
 }
 
 function mapStepSummary(step: StepRow): StepSummary {
+  const parsedContentJson = sessionStepPayloadSchema.safeParse(step.contentJson)
+
+  if (!parsedContentJson.success) {
+    throw createValidationError(
+      "손상된 스텝 콘텐츠 데이터입니다.",
+      "contentJson"
+    )
+  }
+
   return {
     id: step.id,
     sessionId: step.sessionId,
     order: step.order,
     type: step.type as StepSummary["type"],
-    contentJson: step.contentJson,
+    contentJson: parsedContentJson.data,
   }
 }
 

@@ -5,7 +5,10 @@ import { createValidationError } from "../../../shared/error/index"
 import type { SessionId, UserId } from "../../../shared/brand/index"
 import type { RepositoryTransactionManager } from "../../../shared/transaction/index"
 import type { JourneyRepository } from "../../journeys/journey-port"
-import type { StepSummary } from "../../journeys/journey-types"
+import type {
+  SessionStepContentType,
+  StepSummary,
+} from "../../journeys/journey-types"
 import type { ProgressRepository } from "../progress-port"
 import type {
   SessionRuntime,
@@ -59,22 +62,22 @@ function extractTextResponse(
 }
 
 function getContent(step: StepSummary): Record<string, unknown> {
-  const contentJson = isRecord(step.contentJson) ? step.contentJson : {}
-  const content = contentJson.content
-  return isRecord(content) ? content : {}
+  return step.contentJson.content
 }
 
 function resolveAiKind(step: StepSummary): "comparison" | "feedback" {
-  const payload = isRecord(step.contentJson) ? step.contentJson : {}
-  return payload.type === "AI_COMPARISON" ? "comparison" : "feedback"
+  return step.contentJson.content.type === "AI_COMPARISON"
+    ? "comparison"
+    : "feedback"
 }
 
 function resolveExpectedResponseType(
   step: StepSummary
 ): StepResponse["type"] | null {
-  const payload = isRecord(step.contentJson) ? step.contentJson : {}
+  const payloadType: SessionStepContentType =
+    step.contentJson.type ?? step.contentJson.content.type
 
-  switch (payload.type) {
+  switch (payloadType) {
     case "MULTIPLE_CHOICE":
     case "FILL_IN_THE_BLANK":
     case "ORDERING":
@@ -82,7 +85,7 @@ function resolveExpectedResponseType(
     case "SHORT_ANSWER":
     case "WRITING":
     case "REWRITING":
-      return payload.type
+      return payloadType
     default:
       return null
   }

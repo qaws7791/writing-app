@@ -4,6 +4,7 @@ import {
   createJourneyBodySchema,
   createSessionBodySchema,
   createStepBodySchema,
+  stepSummarySchema,
   stepIdParamSchema,
   updateJourneyBodySchema,
   updateSessionBodySchema,
@@ -90,5 +91,54 @@ describe("journey-schemas", () => {
     expect(stepIdParamSchema.parse("3")).toBe(3)
     expect(stepIdParamSchema.safeParse("0").success).toBe(false)
     expect(stepIdParamSchema.safeParse("not-a-number").success).toBe(false)
+  })
+
+  test("parses typed session step payloads from step summaries", () => {
+    expect(
+      stepSummarySchema.safeParse({
+        id: 1,
+        sessionId: 1,
+        order: 1,
+        type: "write",
+        contentJson: {
+          type: "WRITING",
+          content: {
+            type: "WRITING",
+            prompt: "오늘의 장면을 써 보세요.",
+            minLength: 50,
+            recommendedLength: 200,
+            timeLimitSeconds: 0,
+          },
+          cta: {
+            label: "제출하기",
+            variant: "primary",
+          },
+        },
+      }).success
+    ).toBe(true)
+  })
+
+  test("rejects mismatched step payload type and content type", () => {
+    expect(
+      stepSummarySchema.safeParse({
+        id: 1,
+        sessionId: 1,
+        order: 1,
+        type: "feedback",
+        contentJson: {
+          type: "AI_FEEDBACK",
+          content: {
+            type: "AI_COMPARISON",
+            originalStepId: "1",
+            rewritingStepId: "2",
+            loadingMessage: "비교 중",
+          },
+          cta: {
+            label: "다음",
+            variant: "primary",
+          },
+        },
+      }).success
+    ).toBe(false)
   })
 })

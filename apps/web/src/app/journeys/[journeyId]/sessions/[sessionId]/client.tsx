@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
+import type { SessionStepPayload } from "@workspace/core"
 
 import { useJourneyDetail } from "@/features/journeys"
 import {
@@ -39,11 +40,7 @@ function mapSessionStep(step: {
   type: string
   contentJson?: unknown
 }): Step {
-  const payload = (step.contentJson ?? {}) as {
-    cta?: { label?: string; variant?: "primary" | "secondary" }
-    content?: StepContent
-    type?: StepType
-  }
+  const payload = (step.contentJson ?? {}) as Partial<SessionStepPayload>
 
   const type = payload.type ?? FALLBACK_STEP_TYPE[step.type] ?? "CONCEPT"
 

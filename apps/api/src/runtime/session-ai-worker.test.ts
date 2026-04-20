@@ -59,7 +59,8 @@ function createProgressRepositoryDouble(
       getSessionStepAiState: vi.fn(),
       listSessionStepAiStates: vi.fn(),
       listPendingSessionStepAiStates: vi.fn(async () => pendingSteps),
-      claimPendingSessionStepAiState,
+      claimPendingSessionStepAiState:
+        claimPendingSessionStepAiState as ProgressRepository["claimPendingSessionStepAiState"],
       saveSessionStepAiState,
     } satisfies ProgressRepository,
     claimPendingSessionStepAiState,

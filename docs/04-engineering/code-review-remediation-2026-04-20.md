@@ -29,7 +29,7 @@ description: code-review (1).md 기준 후속 조치 현황과 실제 코드 기
 | 3    | Admin 세션 스택 통합                          | 완료   | DB 재검증으로 오래된 JWT 세션 무효화                |
 | 4    | 테스트 커버리지 임계값 강제                   | 완료   | 루트 coverage 실행 복구 + 프로젝트별 threshold 추가 |
 | 5    | 완료/내 여정 목록의 묵음 삭제                 | 기해결 | 현재 구현은 `listUserJourneyItems` 직접 사용        |
-| 6    | 스텝 콘텐츠 타입 중복 제거                    | 대기   | `packages/core` 타입 재사용 필요                    |
+| 6    | 스텝 콘텐츠 타입 중복 제거                    | 완료   | 코어 Zod 스키마를 스텝 콘텐츠 타입 원천으로 승격    |
 | 7    | 배열 인덱스 key 제거                          | 대기   | 세션 스텝 UI 전반                                   |
 | 8    | 인라인 타입 단언 축소                         | 대기   | 세션 스텝 상태 접근 헬퍼 필요                       |
 | 9    | `handleSaveAndLeave` 묵음 에러 처리           | 대기   | `writing-editor-view.tsx`                           |
