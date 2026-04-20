@@ -1,6 +1,7 @@
 import { asFunction, type AwilixContainer } from "awilix"
 import {
   makeAutosaveWritingUseCase,
+  makeCountWritingsUseCase,
   makeCreateWritingUseCase,
   makeDeleteWritingUseCase,
   makeGetWritingUseCase,
@@ -14,6 +15,9 @@ import type { ApiCradle } from "../container"
 export const AutosaveWritingUseCase = createToken<
   AppVariables["autosaveWritingUseCase"]
 >("autosaveWritingUseCase")
+export const CountWritingsUseCase = createToken<
+  AppVariables["countWritingsUseCase"]
+>("countWritingsUseCase")
 export const CreateWritingUseCase = createToken<
   AppVariables["createWritingUseCase"]
 >("createWritingUseCase")
@@ -29,6 +33,7 @@ export const ListWritingsUseCase = createToken<
 export type AutosaveWritingUseCase = ReturnType<
   typeof makeAutosaveWritingUseCase
 >
+export type CountWritingsUseCase = ReturnType<typeof makeCountWritingsUseCase>
 export type CreateWritingUseCase = ReturnType<typeof makeCreateWritingUseCase>
 export type DeleteWritingUseCase = ReturnType<typeof makeDeleteWritingUseCase>
 export type GetWritingUseCase = ReturnType<typeof makeGetWritingUseCase>
@@ -36,6 +41,7 @@ export type ListWritingsUseCase = ReturnType<typeof makeListWritingsUseCase>
 
 export const WRITING_USE_CASE_KEYS = [
   "autosaveWritingUseCase",
+  "countWritingsUseCase",
   "createWritingUseCase",
   "deleteWritingUseCase",
   "getWritingUseCase",
@@ -44,6 +50,10 @@ export const WRITING_USE_CASE_KEYS = [
 
 export function registerWritingModule(container: AwilixContainer<ApiCradle>) {
   container.register({
+    countWritingsUseCase: asFunction(({ writingRepository }: ApiCradle) =>
+      makeCountWritingsUseCase({ writingRepository })
+    ).singleton(),
+
     createWritingUseCase: asFunction(
       ({ writingRepository, transactionManager }: ApiCradle) =>
         makeCreateWritingUseCase({ writingRepository, transactionManager })

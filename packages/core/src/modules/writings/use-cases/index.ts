@@ -13,6 +13,9 @@ export { makeGetWritingUseCase } from "./get-writing"
 export type { ListWritingsDeps, ListWritingsParams } from "./list-writings"
 export { makeListWritingsUseCase } from "./list-writings"
 
+export type { CountWritingsDeps } from "./count-writings"
+export { makeCountWritingsUseCase } from "./count-writings"
+
 export type { DeleteWritingDeps } from "./delete-writing"
 export { makeDeleteWritingUseCase } from "./delete-writing"
 

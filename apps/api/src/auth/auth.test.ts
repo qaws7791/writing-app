@@ -168,6 +168,9 @@ function setup(): { app: TestApp } {
             savedAt: "2026-03-20T00:00:00.000Z",
           })
         },
+        countWritingsUseCase() {
+          return okAsync(0)
+        },
         compareRevisionsUseCase() {
           return okAsync({ improvements: [], summary: "" })
         },

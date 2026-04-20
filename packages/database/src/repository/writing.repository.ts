@@ -1,4 +1,4 @@
-import { and, desc, eq, lt, or } from "drizzle-orm"
+import { and, count, desc, eq, lt, or } from "drizzle-orm"
 
 import { toWritingId } from "@workspace/core/shared"
 import type { WritingId, UserId, PromptId } from "@workspace/core"
@@ -115,6 +115,15 @@ export function createWritingRepository(
       if (!row) return { kind: "not-found" }
       if (row.userId !== userId) return { kind: "forbidden" }
       return { kind: "writing", writing: mapWritingDetail(row) }
+    },
+
+    async countByUserId(userId: UserId): Promise<number> {
+      const [row] = await database
+        .select({ count: count() })
+        .from(writings)
+        .where(eq(writings.userId, userId))
+
+      return Number(row?.count ?? 0)
     },
 
     async list(

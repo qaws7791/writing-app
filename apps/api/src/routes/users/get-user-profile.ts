@@ -1,5 +1,5 @@
 import { z } from "@hono/zod-openapi"
-import { err, ok } from "neverthrow"
+import { ResultAsync } from "neverthrow"
 
 import {
   cookieSecurity,
@@ -9,7 +9,7 @@ import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { AuthUser } from "../../runtime/modules/auth"
 import { ListCompletedJourneysUseCase } from "../../runtime/modules/journeys"
-import { ListWritingsUseCase } from "../../runtime/modules/writings"
+import { CountWritingsUseCase } from "../../runtime/modules/writings"
 
 const userProfileSchema = z.object({
   completedJourneyCount: z.number().int(),
@@ -25,8 +25,8 @@ export default route({
   path: "/users/profile",
   inject: {
     authUser: AuthUser,
+    countWritings: CountWritingsUseCase,
     listCompletedJourneys: ListCompletedJourneysUseCase,
-    listWritings: ListWritingsUseCase,
   },
   response: { 200: userProfileSchema, default: defaultErrorResponse },
   meta: {
@@ -37,42 +37,21 @@ export default route({
   },
   handler: async ({
     authUser,
+    countWritings,
     listCompletedJourneys,
-    listWritings,
     context,
   }) => {
     const userId = requireUserId(context)
-    const completedJourneysResult = await listCompletedJourneys(userId)
-
-    if (completedJourneysResult.isErr()) {
-      return err(completedJourneysResult.error)
-    }
-
-    let cursor: string | undefined
-    let writingCount = 0
-
-    do {
-      const pageResult = await listWritings(userId, {
-        cursor,
-        limit: 100,
-      })
-
-      if (pageResult.isErr()) {
-        return err(pageResult.error)
-      }
-
-      const page = pageResult.value
-      writingCount += page.items.length
-      cursor = page.nextCursor ?? undefined
-    } while (cursor)
-
-    return ok({
-      completedJourneyCount: completedJourneysResult.value.length,
+    return ResultAsync.combine([
+      listCompletedJourneys(userId),
+      countWritings(userId),
+    ]).map(([completedJourneys, writingCount]) => ({
+      completedJourneyCount: completedJourneys.length,
       email: authUser?.email ?? "",
       emailVerified: authUser?.emailVerified ?? false,
       image: authUser?.image ?? null,
       name: authUser?.name ?? "",
       writingCount,
-    })
+    }))
   },
 })

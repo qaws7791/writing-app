@@ -14,6 +14,7 @@ import type {
 export interface WritingRepository {
   create(userId: UserId, input: WritingCreateInput): Promise<WritingDetail>
   getById(userId: UserId, writingId: WritingId): Promise<WritingAccessResult>
+  countByUserId(userId: UserId): Promise<number>
   list(
     userId: UserId,
     params?: { limit?: number; cursor?: string }

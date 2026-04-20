@@ -255,6 +255,12 @@ export function createTestApi(input?: {
 
           return okAsync(serializeWriting(current))
         },
+        countWritingsUseCase(userId) {
+          return okAsync(
+            writings.filter((writing) => writing.ownerId === String(userId))
+              .length
+          )
+        },
         createWritingUseCase(userId, createInput) {
           const bodyPlainText = createInput.bodyPlainText ?? ""
           const now = new Date().toISOString()

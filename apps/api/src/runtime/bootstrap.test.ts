@@ -37,6 +37,7 @@ vi.mock("./container.js", () => ({
     const {
       aiUseCases,
       autosaveWritingUseCase,
+      countWritingsUseCase,
       createWritingUseCase,
       deleteWritingUseCase,
       getHomeUseCase,
@@ -55,6 +56,7 @@ vi.mock("./container.js", () => ({
     return {
       aiUseCases,
       autosaveWritingUseCase,
+      countWritingsUseCase,
       createWritingUseCase,
       deleteWritingUseCase,
       getHomeUseCase,
@@ -133,6 +135,7 @@ function createMockContainer() {
     sqliteVersion: "3.46.0",
     aiUseCases: {},
     autosaveWritingUseCase: vi.fn(),
+    countWritingsUseCase: vi.fn(),
     createWritingUseCase: vi.fn(),
     deleteWritingUseCase: vi.fn(),
     getHomeUseCase: vi.fn(),

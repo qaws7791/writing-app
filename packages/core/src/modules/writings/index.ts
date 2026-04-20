@@ -56,6 +56,7 @@ export type {
   GetWritingDeps,
   ListWritingsDeps,
   ListWritingsParams,
+  CountWritingsDeps,
   DeleteWritingDeps,
   ListPromptWritingsDeps,
 } from "./use-cases/index"
@@ -64,6 +65,7 @@ export {
   makeAutosaveWritingUseCase,
   makeGetWritingUseCase,
   makeListWritingsUseCase,
+  makeCountWritingsUseCase,
   makeDeleteWritingUseCase,
   makeListPromptWritingsUseCase,
 } from "./use-cases/index"

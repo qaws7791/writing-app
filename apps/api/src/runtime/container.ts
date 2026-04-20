@@ -61,6 +61,7 @@ import {
   WRITING_USE_CASE_KEYS,
   registerWritingModule,
   type AutosaveWritingUseCase,
+  type CountWritingsUseCase,
   type CreateWritingUseCase,
   type DeleteWritingUseCase,
   type GetWritingUseCase,
@@ -96,6 +97,7 @@ export type ApiCradle = {
 
   // --- Use Cases ---
   autosaveWritingUseCase: AutosaveWritingUseCase
+  countWritingsUseCase: CountWritingsUseCase
   createWritingUseCase: CreateWritingUseCase
   deleteWritingUseCase: DeleteWritingUseCase
   getWritingUseCase: GetWritingUseCase
