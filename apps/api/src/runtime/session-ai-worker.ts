@@ -22,6 +22,8 @@ function getErrorMessage(error: unknown): string {
 const INVALID_AI_RESULT_MESSAGE =
   "AI 응답 형식이 올바르지 않아 결과를 저장하지 못했습니다."
 
+type StepProcessingResult = "failed" | "skipped" | "succeeded"
+
 function toWorkerKey(input: {
   userId: string
   sessionId: number
@@ -83,10 +85,11 @@ export function createSessionAiWorker(input: {
     step: Awaited<
       ReturnType<ProgressRepository["listPendingSessionStepAiStates"]>
     >[number]
-  ) {
+  ): Promise<StepProcessingResult> {
+    const startedAt = performance.now()
     const key = toWorkerKey(step)
     if (inFlight.has(key)) {
-      return
+      return "skipped"
     }
 
     inFlight.add(key)
@@ -101,7 +104,7 @@ export function createSessionAiWorker(input: {
         })
 
       if (!claimed) {
-        return
+        return "skipped"
       }
 
       const attemptCount = step.attemptCount + 1
@@ -154,6 +157,9 @@ export function createSessionAiWorker(input: {
         input.logger.warn(
           {
             issues: parsedResult.success ? [] : parsedResult.error.issues,
+            attemptCount,
+            durationMs: Math.round(performance.now() - startedAt),
+            kind: step.kind,
             scope: "session-ai-worker",
             sessionId: step.sessionId,
             stepOrder: step.stepOrder,
@@ -177,7 +183,7 @@ export function createSessionAiWorker(input: {
           }
         )
 
-        return
+        return "failed"
       }
 
       await input.progressRepository.saveSessionStepAiState(
@@ -194,10 +200,28 @@ export function createSessionAiWorker(input: {
           errorMessage: null,
         }
       )
+
+      input.logger.info(
+        {
+          attemptCount,
+          durationMs: Math.round(performance.now() - startedAt),
+          kind: step.kind,
+          scope: "session-ai-worker",
+          sessionId: step.sessionId,
+          stepOrder: step.stepOrder,
+          userId: step.userId,
+        },
+        "session ai work succeeded"
+      )
+
+      return "succeeded"
     } catch (error) {
       input.logger.warn(
         {
+          attemptCount: step.attemptCount + 1,
+          durationMs: Math.round(performance.now() - startedAt),
           err: error,
+          kind: step.kind,
           scope: "session-ai-worker",
           sessionId: step.sessionId,
           stepOrder: step.stepOrder,
@@ -220,6 +244,8 @@ export function createSessionAiWorker(input: {
           errorMessage: getErrorMessage(error),
         }
       )
+
+      return "failed"
     } finally {
       inFlight.delete(key)
     }
@@ -233,6 +259,7 @@ export function createSessionAiWorker(input: {
     isRunning = true
 
     try {
+      const startedAt = performance.now()
       const pendingSteps =
         await input.progressRepository.listPendingSessionStepAiStates(batchSize)
 
@@ -240,8 +267,28 @@ export function createSessionAiWorker(input: {
         return
       }
 
-      await Promise.all(
+      const results = await Promise.all(
         pendingSteps.map((pendingStep) => processPendingStep(pendingStep))
+      )
+
+      const processedCount = results.filter(
+        (result) => result !== "skipped"
+      ).length
+      const succeededCount = results.filter(
+        (result) => result === "succeeded"
+      ).length
+      const failedCount = results.filter((result) => result === "failed").length
+
+      input.logger.info(
+        {
+          durationMs: Math.round(performance.now() - startedAt),
+          failedCount,
+          pendingCount: pendingSteps.length,
+          processedCount,
+          scope: "session-ai-worker",
+          succeededCount,
+        },
+        "session ai worker tick completed"
       )
     } catch (error) {
       input.logger.error(

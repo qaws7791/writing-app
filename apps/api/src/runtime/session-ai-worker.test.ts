@@ -79,7 +79,7 @@ describe("createSessionAiWorker", () => {
       generateFeedback: vi.fn(async () => feedbackResult),
       compareRevisions: vi.fn(),
     }
-    const { logger } = createCapturedLogger()
+    const { entries, logger } = createCapturedLogger()
     const {
       repository,
       claimPendingSessionStepAiState,
@@ -113,6 +113,33 @@ describe("createSessionAiWorker", () => {
         status: "succeeded",
         resultJson: feedbackResult,
         errorMessage: null,
+      })
+    )
+    expect(
+      entries.find((entry) => entry.msg === "session ai work succeeded")
+    ).toEqual(
+      expect.objectContaining({
+        attemptCount: 1,
+        durationMs: expect.any(Number),
+        kind: "feedback",
+        level: 30,
+        scope: "session-ai-worker",
+        sessionId: 1,
+        stepOrder: 2,
+        userId: "dev-user",
+      })
+    )
+    expect(
+      entries.find((entry) => entry.msg === "session ai worker tick completed")
+    ).toEqual(
+      expect.objectContaining({
+        durationMs: expect.any(Number),
+        failedCount: 0,
+        level: 30,
+        pendingCount: 1,
+        processedCount: 1,
+        scope: "session-ai-worker",
+        succeededCount: 1,
       })
     )
   })
@@ -164,6 +191,16 @@ describe("createSessionAiWorker", () => {
         stepOrder: 2,
         userId: "dev-user",
         issues: expect.any(Array),
+      })
+    )
+    expect(
+      entries.find((entry) => entry.msg === "session ai worker tick completed")
+    ).toEqual(
+      expect.objectContaining({
+        failedCount: 1,
+        pendingCount: 1,
+        processedCount: 1,
+        succeededCount: 0,
       })
     )
   })
