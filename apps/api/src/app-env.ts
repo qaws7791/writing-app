@@ -21,7 +21,7 @@ export type GetSession = (request: Request) => Promise<AuthSession | null>
 
 /**
  * Hono 컨텍스트로 노출되는 유스케이스 + 특수 핸들러 집합.
- * 유스케이스 목록은 `runtime/container.ts`의 `USE_CASE_KEYS`에서 단일 관리됩니다.
+ * 공개 키 목록은 도메인별 registry를 합쳐 관리합니다.
  */
 export type AppUseCases = ApiCradleUseCases & {
   authHandler: (request: Request) => Promise<Response>

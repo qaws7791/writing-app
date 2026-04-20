@@ -21,6 +21,12 @@ import { registerInfrastructure } from "./modules/infrastructure"
 import { registerAuth } from "./modules/auth"
 import { registerRepositories } from "./modules/repositories"
 import {
+  AI_USE_CASE_KEYS,
+  HOME_USE_CASE_KEYS,
+  JOURNEY_USE_CASE_KEYS,
+  PROMPT_USE_CASE_KEYS,
+  SESSION_USE_CASE_KEYS,
+  WRITING_USE_CASE_KEYS,
   registerUseCases,
   type AutosaveWritingUseCase,
   type BookmarkPromptUseCase,
@@ -107,37 +113,13 @@ export type ApiCradle = {
   compareRevisionsUseCase: CompareRevisionsUseCase
 }
 
-/**
- * cradle에서 컨텍스트로 노출할 유스케이스 키 목록.
- * 새 유스케이스를 추가할 때는 여기만 수정하면 ApiCradleUseCases 타입과
- * extractUseCases 함수가 자동으로 동기화됩니다.
- */
 export const USE_CASE_KEYS = [
-  "autosaveWritingUseCase",
-  "bookmarkPromptUseCase",
-  "compareRevisionsUseCase",
-  "completeSessionUseCase",
-  "createWritingUseCase",
-  "deleteWritingUseCase",
-  "enrollJourneyUseCase",
-  "generateFeedbackUseCase",
-  "getHomeUseCase",
-  "healthCheckUseCase",
-  "getJourneyUseCase",
-  "getPromptUseCase",
-  "getSessionDetailUseCase",
-  "getWritingUseCase",
-  "listCompletedJourneysUseCase",
-  "listJourneysUseCase",
-  "listUserJourneysUseCase",
-  "listPromptWritingsUseCase",
-  "listPromptsUseCase",
-  "listWritingsUseCase",
-  "retrySessionStepAiUseCase",
-  "sqliteVersion",
-  "startSessionUseCase",
-  "submitStepUseCase",
-  "unbookmarkPromptUseCase",
+  ...WRITING_USE_CASE_KEYS,
+  ...PROMPT_USE_CASE_KEYS,
+  ...HOME_USE_CASE_KEYS,
+  ...JOURNEY_USE_CASE_KEYS,
+  ...SESSION_USE_CASE_KEYS,
+  ...AI_USE_CASE_KEYS,
 ] as const satisfies readonly (keyof ApiCradle)[]
 
 export type ApiCradleUseCases = Pick<ApiCradle, (typeof USE_CASE_KEYS)[number]>
