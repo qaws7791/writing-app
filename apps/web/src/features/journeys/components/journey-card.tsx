@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { CheckCircle2, Layers } from "lucide-react"
 import { appendReturnTo } from "@/foundation/navigation"
@@ -47,10 +48,12 @@ export function JourneyCard(props: JourneyCardProps) {
         onClick={() => router.push(detailPath)}
         className="flex h-32 w-full items-center gap-5 rounded-3xl bg-muted p-4 text-left transition-colors hover:bg-accent"
       >
-        <div className="size-24 shrink-0 overflow-hidden rounded-[32px] bg-accent">
-          <img
+        <div className="relative size-24 shrink-0 overflow-hidden rounded-[32px] bg-accent">
+          <Image
             src={props.imageUrl}
             alt={props.title}
+            fill
+            sizes="96px"
             className="size-full object-cover"
           />
         </div>
@@ -86,10 +89,12 @@ export function JourneyCard(props: JourneyCardProps) {
         onClick={() => router.push(detailPath)}
         className="flex h-32 w-full items-center gap-5 rounded-3xl bg-muted p-4 text-left transition-colors hover:bg-accent"
       >
-        <div className="size-24 shrink-0 overflow-hidden rounded-[18px] bg-accent">
-          <img
+        <div className="relative size-24 shrink-0 overflow-hidden rounded-[18px] bg-accent">
+          <Image
             src={props.imageUrl}
             alt={props.title}
+            fill
+            sizes="96px"
             className="size-full object-cover"
           />
         </div>
@@ -124,10 +129,12 @@ export function JourneyCard(props: JourneyCardProps) {
       onClick={() => router.push(detailPath)}
       className="flex items-center gap-4 rounded-3xl bg-muted p-4 text-left transition-colors hover:bg-accent"
     >
-      <div className="size-16 shrink-0 overflow-hidden rounded-2xl bg-accent">
-        <img
+      <div className="relative size-16 shrink-0 overflow-hidden rounded-2xl bg-accent">
+        <Image
           src={props.imageUrl}
           alt={props.title}
+          fill
+          sizes="64px"
           className="size-full object-cover"
         />
       </div>

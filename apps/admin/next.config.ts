@@ -9,6 +9,9 @@ const workspaceRoot = path.join(
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@workspace/ui", "@workspace/storage"],
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "**" }],
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "6mb",

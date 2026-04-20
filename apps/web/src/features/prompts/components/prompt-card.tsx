@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { Bookmark } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@workspace/ui/components/ui/button"
@@ -43,11 +44,13 @@ export function PromptCard({ card }: { card: PromptCardData }) {
         onClick={() => router.push(`/prompts/${card.id}`)}
         className="relative h-64 w-full overflow-hidden rounded-[3rem] bg-background transition-opacity hover:opacity-90"
       >
-        <div className="absolute inset-8 flex items-center justify-center opacity-80">
-          <img
+        <div className="absolute inset-8 overflow-hidden opacity-80">
+          <Image
             src={card.thumbnailUrl}
             alt={card.title}
-            className="h-full w-auto object-contain"
+            fill
+            sizes="(max-width: 768px) 100vw, 384px"
+            className="object-contain"
           />
         </div>
       </button>

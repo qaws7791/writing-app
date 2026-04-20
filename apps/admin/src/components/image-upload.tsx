@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import { useRef, useState } from "react"
 
 import { Button } from "@workspace/ui/components/ui/button"
@@ -98,9 +99,11 @@ export function ImageUpload({
 
       {value ? (
         <div className="space-y-2">
-          <img
+          <Image
             src={value}
             alt="썸네일 미리보기"
+            width={320}
+            height={160}
             className="h-40 w-auto rounded-xl border border-border object-cover"
           />
           <div className="flex gap-2">

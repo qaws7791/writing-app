@@ -9,6 +9,9 @@ const workspaceRoot = path.join(
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@workspace/ui"],
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "**" }],
+  },
   reactCompiler: true,
   turbopack: {
     root: workspaceRoot,

@@ -1,3 +1,5 @@
+import Image from "next/image"
+
 export function JourneyHero({
   thumbnailUrl,
   title,
@@ -9,10 +11,12 @@ export function JourneyHero({
 }) {
   return (
     <>
-      <div className="mx-4 aspect-4/3 overflow-hidden rounded-[2rem] bg-accent">
-        <img
+      <div className="relative mx-4 aspect-4/3 overflow-hidden rounded-[2rem] bg-accent">
+        <Image
           src={thumbnailUrl}
           alt={title}
+          fill
+          sizes="(max-width: 768px) 100vw, 768px"
           className="size-full object-cover"
         />
       </div>

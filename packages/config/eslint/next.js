@@ -41,6 +41,7 @@ export const nextJsConfig = [
     },
     settings: { react: { version: "detect" } },
     rules: {
+      "@next/next/no-img-element": "error",
       "react/button-has-type": "error",
       ...pluginReactHooks.configs.recommended.rules,
       "react/no-array-index-key": "warn",
