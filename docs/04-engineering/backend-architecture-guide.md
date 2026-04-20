@@ -101,12 +101,11 @@ apps/
     src/
       app.ts
       index.ts
-      shared/
-        http/
-        middleware/
-        context/
-        openapi/
-        presenters/
+      http/
+        create-openapi-app.ts
+        default-hook.ts
+        error-response.ts
+        openapi-helpers.ts
       composition/
         create-app-deps.ts
         create-modules.ts
@@ -209,11 +208,18 @@ packages/
 
 1. `packages/core/modules/*/contracts`에서 zod 계약 스키마를 정의합니다.
 2. `apps/api/modules/*/routes`에서 `createRoute()`로 OpenAPI route를 선언합니다.
-3. `apps/api/modules/*/*-app.ts`에서 `new OpenAPIHono()`로 모듈 app을 만듭니다.
+3. `apps/api`는 `apps/api/src/http/create-openapi-app.ts`의 중앙 팩토리로만 OpenAPI app을 생성합니다.
 4. `app.openapi()`에서 handler를 route와 연결합니다.
 5. handler는 `Context`를 use case 입력으로 변환합니다.
 6. use case는 포트를 주입받아 순수 연산과 adapter 호출 순서를 조합합니다.
 7. presenter가 `Result`를 HTTP 성공 응답 또는 Problem Details로 변환합니다.
+
+## HTTP 검증 실패 정책
+
+- `apps/api/src/http/default-hook.ts`의 `createDefaultHook()`이 Zod 검증 실패를 `ValidationError`로 변환하는 유일한 구현입니다.
+- `apps/api/src/http/create-openapi-app.ts`의 `createOpenApiApp()`이 `defaultHook`이 설정된 `OpenAPIHono`를 생성하는 유일한 진입점입니다.
+- `apps/api` 내부에서 `new OpenAPIHono()` 또는 `defaultHook`을 직접 작성하는 패턴은 금지합니다.
+- 이 규칙은 ESLint와 구조 가드 테스트로 강제합니다.
 
 ## 데이터와 함수 기준
 

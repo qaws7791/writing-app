@@ -1,16 +1,13 @@
 import type { Context, Env, MiddlewareHandler } from "hono"
 import { timeout } from "hono/timeout"
-import { createRoute, OpenAPIHono } from "@hono/zod-openapi"
+import { createRoute, type OpenAPIHono } from "@hono/zod-openapi"
 import type { RouteConfig } from "@hono/zod-openapi"
 import type { ZodType, z } from "zod"
-import {
-  ValidationError,
-  toApplicationError,
-  type DomainError,
-} from "@workspace/core"
+import { toApplicationError, type DomainError } from "@workspace/core"
 import type { Result } from "neverthrow"
 import type { InjectionToken } from "../injection-token"
 import { TimeoutError } from "../../http/timeout-error"
+import { createOpenApiApp } from "../../http/create-openapi-app"
 
 // ── Type Utilities ──
 
@@ -284,16 +281,7 @@ export function defineRoute<TEnv extends Env>() {
       ...meta,
     } as RouteConfig)
 
-    const app = new OpenAPIHono<TEnv>({
-      defaultHook: (result) => {
-        if (result.success) return
-        const details = result.error.issues.map((issue) => ({
-          message: issue.message,
-          path: issue.path.map(String).join("."),
-        }))
-        throw new ValidationError("유효하지 않은 요청입니다.", details)
-      },
-    })
+    const app = createOpenApiApp<TEnv>()
 
     // Type safety is enforced by defineRoute's generic signature.
     // The internal handler uses a loose context type because @hono/zod-openapi

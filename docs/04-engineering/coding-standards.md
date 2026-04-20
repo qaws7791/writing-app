@@ -63,6 +63,8 @@ description: 이 저장소에서 일관된 품질과 경계 명확성을 유지�
 - 서버 로그는 `@workspace/logging` 같은 공용 구조화 로거 경계로 모읍니다.
 - Drizzle의 식별자 PK/FK 컬럼은 `.$type<>()`으로 domain brand를 보존합니다.
 - `apps/api`는 HTTP 조립과 매핑만 담당합니다.
+- `apps/api`에서 `OpenAPIHono` 직접 생성은 금지하고 `src/http/create-openapi-app.ts`만 사용합니다.
+- `apps/api`에서 `defaultHook` 직접 정의는 금지하고 `src/http/default-hook.ts`의 `createDefaultHook()`만 사용합니다.
 - `core`는 포트와 계약 스키마, 비즈니스 규칙만 담당합니다.
 - 인프라 구현은 `packages/database`, `packages/ai`로 분리합니다.
 - 패키지 간 책임 침범과 구현체 직접 참조를 허용하지 않습니다.

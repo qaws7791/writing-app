@@ -10,6 +10,7 @@ description: apps/api가 core 계약 스키마와 use case를 HTTP/OpenAPI 경�
 - 프론트엔드는 `openapi-typescript`와 `openapi-fetch`를 사용하여 타입 세이프 HTTP 클라이언트를 구성합니다.
 - 이 문서는 서버 API 규약과 프론트엔드 API 클라이언트 규약을 함께 정의합니다.
 - 글필(Geulpil) 피벗에 따라 여정, 세션, 글감, AI 피드백 도메인이 추가되었습니다.
+- Zod 검증 실패 정책은 `apps/api/src/http/default-hook.ts`와 `apps/api/src/http/create-openapi-app.ts`로 중앙화되었습니다.
 
 ## 역할
 
@@ -20,7 +21,8 @@ description: apps/api가 core 계약 스키마와 use case를 HTTP/OpenAPI 경�
 
 ## 모듈 구성 규칙
 
-- 각 도메인 모듈은 `new OpenAPIHono()`로 독립 app을 만듭니다.
+- 각 도메인 모듈은 `apps/api/src/http/create-openapi-app.ts`의 `createOpenApiApp()`으로만 OpenAPI app을 생성합니다.
+- `OpenAPIHono` 직접 생성과 `defaultHook` 직접 정의는 금지합니다.
 - route 선언은 `routes/*` 파일에 둡니다.
 - `app.openapi()`에서 route와 handler를 연결합니다.
 - handler는 `Context`를 use case 입력으로 바꾸는 역할만 합니다.
@@ -47,6 +49,7 @@ description: apps/api가 core 계약 스키마와 use case를 HTTP/OpenAPI 경�
 - 날짜와 시간은 UTC ISO 8601 문자열로 주고받습니다.
 - 목록 조회 쿼리는 `cursor`, `limit`, `sort`, 도메인 필터 키를 사용합니다.
 - 경계 검증은 `@hono/zod-openapi` route 스키마를 기준으로 수행합니다.
+- 검증 실패 시 `createDefaultHook()`이 `ValidationError`를 던지며, 이 정책은 라우터/앱/route 정의 전 경로에서 동일하게 적용되어야 합니다.
 - 쿠키 인증이 필요한 OpenAPI route는 `apps/api/src/http/openapi-helpers.ts`의 `cookieSecurity`를 재사용합니다.
 
 ## 성공 응답 규칙
