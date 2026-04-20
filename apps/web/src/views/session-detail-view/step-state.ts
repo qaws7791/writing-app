@@ -26,6 +26,23 @@ export function isInputStepState(value: StepState): value is InputStepState {
   )
 }
 
+export function isSelectionStepState(
+  value: StepState
+): value is Exclude<
+  StepState,
+  undefined | InputStepState | SessionAiStepState
+> {
+  return (
+    value !== undefined &&
+    typeof value === "object" &&
+    value !== null &&
+    "checked" in value &&
+    "hasSelection" in value &&
+    typeof value.checked === "boolean" &&
+    typeof value.hasSelection === "boolean"
+  )
+}
+
 export function isSessionAiStepState(
   value: StepState
 ): value is SessionAiStepState {

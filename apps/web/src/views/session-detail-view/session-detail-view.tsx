@@ -2,13 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import type {
-  Session,
-  StepState,
-  StepType,
-} from "@/views/session-detail-view/types"
+import type { Session, StepState } from "@/views/session-detail-view/types"
+import { getStepCta } from "@/views/session-detail-view/step-registry"
 import { StepRenderer } from "@/views/session-detail-view/step-renderer"
-import { isSessionAiStepState } from "@/views/session-detail-view/step-state"
 import { SessionHeader, SessionCtaBar } from "@/features/sessions/components"
 
 interface SessionDetailViewProps {
@@ -21,16 +17,6 @@ interface SessionDetailViewProps {
   onExit: () => void
   onSubmitStep?: (stepOrder: number, response: StepState) => Promise<void>
 }
-
-const SELECTION_TYPES: StepType[] = [
-  "MULTIPLE_CHOICE",
-  "FILL_IN_THE_BLANK",
-  "ORDERING",
-  "HIGHLIGHT",
-]
-
-const AI_TYPES: StepType[] = ["AI_FEEDBACK", "AI_COMPARISON"]
-const INPUT_TYPES: StepType[] = ["WRITING", "SHORT_ANSWER", "REWRITING"]
 
 export default function SessionDetailView({
   initialCurrentStepOrder = 1,
@@ -109,57 +95,13 @@ export default function SessionDetailView({
   }, [currentStepIndex])
 
   const ctaState = useMemo(() => {
-    const state = getStepState(currentStep.id)
-    const stateFlags =
-      typeof state === "object" && state !== null
-        ? (state as {
-            checked?: boolean
-            hasSelection?: boolean
-            hasInput?: boolean
-          })
-        : undefined
-    const isChecked = stateFlags?.checked === true
-
-    if (SELECTION_TYPES.includes(currentStep.type)) {
-      if (isChecked) {
-        return { label: "다음", enabled: true, action: handleNext }
-      }
-      const hasSelection = stateFlags?.hasSelection === true
-      return {
-        label: currentStep.cta.label,
-        enabled: hasSelection && !isSubmitting,
-        action: () =>
-          updateStepState(currentStep.id, {
-            ...stateFlags,
-            checked: true,
-          } as StepState),
-      }
-    }
-
-    if (INPUT_TYPES.includes(currentStep.type)) {
-      const hasInput = stateFlags?.hasInput === true
-      return {
-        label: currentStep.cta.label,
-        enabled: hasInput && !isSubmitting,
-        action: handleNext,
-      }
-    }
-
-    if (AI_TYPES.includes(currentStep.type)) {
-      const aiState = isSessionAiStepState(state) ? state : undefined
-
-      return {
-        label: currentStep.cta.label,
-        enabled: aiState?.status === "succeeded" && !isSubmitting,
-        action: handleNext,
-      }
-    }
-
-    return {
-      label: currentStep.cta.label,
-      enabled: !isSubmitting,
-      action: handleNext,
-    }
+    return getStepCta({
+      handleNext,
+      isSubmitting,
+      state: getStepState(currentStep.id),
+      step: currentStep,
+      updateState: (state) => updateStepState(currentStep.id, state),
+    })
   }, [currentStep, getStepState, handleNext, isSubmitting, updateStepState])
 
   return (
