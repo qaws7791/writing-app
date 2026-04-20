@@ -3,10 +3,14 @@
 import { Button } from "@workspace/ui/components/ui/button"
 import { Spinner } from "@workspace/ui/components/ui/spinner"
 
+import {
+  getStepState,
+  isInputStepState,
+  isSessionAiStepState,
+} from "@/views/session-detail-view/step-state"
 import type {
   AIFeedbackContent,
   CrossReferenceStepProps,
-  SessionAiStepState,
 } from "@/views/session-detail-view/types"
 
 type Props = CrossReferenceStepProps<AIFeedbackContent>
@@ -18,11 +22,13 @@ export function AIFeedbackStep({
   onRetryAi,
   step,
 }: Props) {
-  const targetState = allStepStates[content.targetStepId] as
-    | { text?: string }
-    | undefined
+  const targetState = getStepState(
+    allStepStates,
+    content.targetStepId,
+    isInputStepState
+  )
   const userText = targetState?.text ?? ""
-  const aiState = allStepStates[step.id] as SessionAiStepState | undefined
+  const aiState = getStepState(allStepStates, step.id, isSessionAiStepState)
   const feedback =
     aiState?.kind === "feedback" && aiState.status === "succeeded"
       ? aiState.resultJson

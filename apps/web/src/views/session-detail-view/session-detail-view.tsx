@@ -4,11 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 
 import type {
   Session,
-  SessionAiStepState,
   StepState,
   StepType,
 } from "@/views/session-detail-view/types"
 import { StepRenderer } from "@/views/session-detail-view/step-renderer"
+import { isSessionAiStepState } from "@/views/session-detail-view/step-state"
 import { SessionHeader, SessionCtaBar } from "@/features/sessions/components"
 
 interface SessionDetailViewProps {
@@ -31,16 +31,6 @@ const SELECTION_TYPES: StepType[] = [
 
 const AI_TYPES: StepType[] = ["AI_FEEDBACK", "AI_COMPARISON"]
 const INPUT_TYPES: StepType[] = ["WRITING", "SHORT_ANSWER", "REWRITING"]
-
-function isSessionAiStepState(value: StepState): value is SessionAiStepState {
-  return (
-    value !== undefined &&
-    typeof value === "object" &&
-    value !== null &&
-    "status" in value &&
-    "kind" in value
-  )
-}
 
 export default function SessionDetailView({
   initialCurrentStepOrder = 1,

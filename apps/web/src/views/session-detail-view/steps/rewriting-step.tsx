@@ -1,5 +1,9 @@
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
+import {
+  getStepState,
+  isInputStepState,
+} from "@/views/session-detail-view/step-state"
 import type {
   RewritingContent,
   InputStepState,
@@ -23,9 +27,11 @@ export function RewritingStep({
 }: RewritingStepProps) {
   const text = state?.text ?? ""
 
-  const originalState = allStepStates[content.originalWritingStepId] as
-    | { text?: string }
-    | undefined
+  const originalState = getStepState(
+    allStepStates,
+    content.originalWritingStepId,
+    isInputStepState
+  )
   const originalText = originalState?.text ?? ""
 
   const displayText = text || originalText

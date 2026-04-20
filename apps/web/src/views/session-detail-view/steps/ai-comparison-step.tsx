@@ -1,10 +1,14 @@
 import { Button } from "@workspace/ui/components/ui/button"
 import { Spinner } from "@workspace/ui/components/ui/spinner"
 
+import {
+  getStepState,
+  isInputStepState,
+  isSessionAiStepState,
+} from "@/views/session-detail-view/step-state"
 import type {
   AIComparisonContent,
   CrossReferenceStepProps,
-  SessionAiStepState,
 } from "@/views/session-detail-view/types"
 
 type Props = CrossReferenceStepProps<AIComparisonContent>
@@ -16,13 +20,17 @@ export function AIComparisonStep({
   onRetryAi,
   step,
 }: Props) {
-  const originalState = allStepStates[content.originalStepId] as
-    | { text?: string }
-    | undefined
-  const rewritingState = allStepStates[content.rewritingStepId] as
-    | { text?: string }
-    | undefined
-  const aiState = allStepStates[step.id] as SessionAiStepState | undefined
+  const originalState = getStepState(
+    allStepStates,
+    content.originalStepId,
+    isInputStepState
+  )
+  const rewritingState = getStepState(
+    allStepStates,
+    content.rewritingStepId,
+    isInputStepState
+  )
+  const aiState = getStepState(allStepStates, step.id, isSessionAiStepState)
 
   const originalText = originalState?.text ?? "(초안 없음)"
   const rewrittenText = rewritingState?.text ?? "(수정본 없음)"

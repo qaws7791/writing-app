@@ -31,7 +31,7 @@ description: code-review (1).md 기준 후속 조치 현황과 실제 코드 기
 | 5    | 완료/내 여정 목록의 묵음 삭제                 | 기해결 | 현재 구현은 `listUserJourneyItems` 직접 사용        |
 | 6    | 스텝 콘텐츠 타입 중복 제거                    | 완료   | 코어 Zod 스키마를 스텝 콘텐츠 타입 원천으로 승격    |
 | 7    | 배열 인덱스 key 제거                          | 완료   | 콘텐츠 기반 key와 lint 경고 추가                    |
-| 8    | 인라인 타입 단언 축소                         | 대기   | 세션 스텝 상태 접근 헬퍼 필요                       |
+| 8    | 인라인 타입 단언 축소                         | 완료   | `getStepState()`와 guard 기반 상태 접근으로 전환    |
 | 9    | `handleSaveAndLeave` 묵음 에러 처리           | 대기   | `writing-editor-view.tsx`                           |
 | 10   | Admin API 공통 에러 핸들러                    | 대기   | `apps/admin/src/app/api/**`                         |
 | 11   | Writing Step 제한 시간 표시 정합성            | 대기   | `writing-step.tsx`                                  |
