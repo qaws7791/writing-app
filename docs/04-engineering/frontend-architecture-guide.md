@@ -73,6 +73,15 @@ features/{feature-name}/
 - `index.ts`에 공개 API만 명시적으로 re-export합니다. 외부에서 내부 파일을 직접 import하지 않습니다.
 - feature 간 직접 import는 금지합니다. 공유가 필요하면 `domain/` 또는 `foundation/`으로 내립니다.
 
+### `apps/admin` 폼 규약
+
+`apps/admin`의 CRUD 폼은 `react-hook-form`을 기본 규약으로 사용하지 않습니다. 현재 관리자 화면은 필드 수가 적고 구조가 평평하며, 제출/삭제/에러 처리는 `@/lib/forms/admin-mutation`과 `step-form-helpers`가 이미 공통화하고 있으므로 controlled `useState` 패턴이 더 작은 변경 범위를 유지합니다.
+
+- 관리자 폼은 로컬 입력 상태를 `useState`로 직접 소유합니다.
+- 제출과 삭제는 `@/lib/forms/admin-mutation` helper를 통해 처리합니다.
+- JSON payload 파싱처럼 폼 바깥으로 뺄 수 있는 규칙은 `@/lib/forms/*-helpers.ts`로 이동합니다.
+- `react-hook-form` 도입은 동적 필드 배열, 스키마 기반 에러 매핑, 복수 폼 간 공유 훅이 실제로 필요해질 때만 검토합니다.
+
 ### `domain/` — 비즈니스 엔티티 계층
 
 핵심 데이터 구조와 **순수 비즈니스 규칙**을 정의합니다. React, HTTP, UI에 의존하지 않습니다.
