@@ -61,7 +61,11 @@ description: 이 모노레포를 로컬에서 설치, 실행, 점검할 때 필�
 
 ## Docker 로컬 인프라 설정
 
-저장소 루트에서 `docker compose up -d`를 실행하면 Redis와 RustFS가 함께 시작됩니다.
+저장소 루트에서 아래 순서로 실행하면 Redis와 RustFS가 함께 시작됩니다.
+
+1. `.env.docker.example`을 `.env.docker`로 복사합니다.
+2. `.env.docker`에 RustFS 로컬 자격 증명을 직접 채웁니다.
+3. `docker compose up -d`를 실행합니다.
 
 ### Redis (AI Rate Limiter)
 
@@ -88,9 +92,7 @@ API_RATE_LIMIT_REDIS_PREFIX=writing-app:rate-limit
 
 - **S3 API**: `http://localhost:9000`
 - **웹 콘솔**: `http://localhost:9001`
-- **자격증명**:
-  - Access Key: `rustfsadmin`
-  - Secret Key: `rustfsadmin`
+- **자격증명**: `.env.docker`에 넣은 `RUSTFS_ACCESS_KEY`, `RUSTFS_SECRET_KEY`
 
 ### 데이터 저장
 
@@ -104,12 +106,12 @@ RustFS 데이터는 프로젝트의 `./data` 디렉토리에 저장됩니다. �
 
 ### 스토리지 환경 변수
 
-`apps/admin` 앱의 `.env.development.local` 또는 `.env.example`을 참고하여 아래 변수를 설정합니다.
+`apps/admin` 앱의 `.env.development.local` 또는 `.env.example`을 참고하여 아래 변수를 설정합니다. `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY`는 `.env.docker`와 같은 값을 사용합니다.
 
 ```
 STORAGE_ENDPOINT=http://localhost:9000
-STORAGE_ACCESS_KEY=rustfsadmin
-STORAGE_SECRET_KEY=rustfsadmin
+STORAGE_ACCESS_KEY=<copy-from-.env.docker>
+STORAGE_SECRET_KEY=<copy-from-.env.docker>
 STORAGE_PUBLIC_BUCKET=writing-app-public-assets
 STORAGE_REGION=us-east-1
 STORAGE_PUBLIC_URL=http://localhost:9000

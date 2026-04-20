@@ -36,6 +36,7 @@ use `@types/bun` instead of `@types/node`
 저장소 루트에서 다음 명령을 실행합니다:
 
 ```bash
+cp .env.docker.example .env.docker
 docker compose up -d
 ```
 
@@ -43,7 +44,7 @@ RustFS가 시작되면 다음 주소로 접근할 수 있습니다:
 
 - **S3 API**: `http://localhost:9000`
 - **웹 콘솔**: `http://localhost:9001`
-- **자격증명**: `rustfsadmin` / `rustfsadmin`
+- **자격증명**: `.env.docker`에 설정한 값
 
 ### 2. 어드민 개발 서버
 

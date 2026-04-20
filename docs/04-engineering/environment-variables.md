@@ -26,6 +26,7 @@ description: 이 모노레포에서 환경 변수를 저장, 노출, 검증, 캐
 
 - 로컬 개발: 각 앱 아래 `.env.development.local` 또는 앱 전용 개발 파일
 - `apps/api/.env.development`는 로컬 전용 파일이며 `.gitignore`로 제외하고 커밋하지 않음
+- 루트 Docker 로컬 인프라 자격 증명은 `.env.docker`에 두고, 저장소에는 `.env.docker.example`만 추적함
 - 공통 예시: 커밋 가능한 `.env.example`
 - 실제 비밀 값: 저장소에 커밋하지 않음
 - 루트 `.env`는 과도기에는 가능하지만 장기 기준으로는 권장하지 않음

@@ -30,6 +30,7 @@ description: "글필 플랫폼의 보안 위협 모델과 대응 원칙. 계정 
 - 글 본문·AI 피드백 내용: 로그·관측 시스템에 수집 금지 (→ [[../03-architecture/observability-architecture|관측 아키텍처]])
 - 파일 저장소(R2): 서명 URL 단기 수명, 사용자 직접 업로드 금지 (→ [[../03-architecture/file-storage-strategy|파일 저장 전략]])
 - 앱 전용 개발 환경 파일(`apps/api/.env.development` 등): `.gitignore`로 제외하고 `.env.example`만 추적
+- 로컬 Docker 자격 증명 파일(`.env.docker`)도 `.gitignore`로 제외하고, 저장소에는 `.env.docker.example`만 유지
 - 실제 클라우드 프로젝트 ID, 서비스 계정 경로, API 키가 노출되면 즉시 인덱스에서 제거하고 필요한 자격 증명은 교체
 
 ## 제품 반영 원칙

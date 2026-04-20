@@ -4,8 +4,8 @@ set -eu
 
 readonly alias_name="local"
 readonly endpoint="http://rustfs:9000"
-readonly access_key="rustfsadmin"
-readonly secret_key="rustfsadmin"
+readonly access_key="${RUSTFS_ACCESS_KEY:?RUSTFS_ACCESS_KEY is required}"
+readonly secret_key="${RUSTFS_SECRET_KEY:?RUSTFS_SECRET_KEY is required}"
 readonly bucket_name="writing-app-public-assets"
 
 until mc alias set "$alias_name" "$endpoint" "$access_key" "$secret_key" >/dev/null 2>&1; do
