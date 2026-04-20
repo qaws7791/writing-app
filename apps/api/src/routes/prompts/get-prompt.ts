@@ -5,7 +5,10 @@ import {
   promptIdParamSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
@@ -21,7 +24,7 @@ export default route({
     description: "특정 글감의 상세 정보를 조회합니다.",
     summary: "글감 상세 조회",
     tags: ["글감"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ getPrompt, params, context }) => {
     const userId = requireUserId(context)

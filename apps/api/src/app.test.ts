@@ -669,6 +669,13 @@ describe("logging", () => {
     expect(body.paths).toHaveProperty("/writings")
     expect(body.paths).toHaveProperty("/journeys")
     expect(body.paths).toHaveProperty("/home")
+    expect(body.paths?.["/home"]).toEqual(
+      expect.objectContaining({
+        get: expect.objectContaining({
+          security: [{ cookieAuth: [] }],
+        }),
+      })
+    )
     expect(body.paths).not.toHaveProperty("/dev/auth-emails")
     expect(failed).toBeUndefined()
   })

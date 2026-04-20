@@ -6,7 +6,10 @@ import {
   submitStepBodySchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { withStatus } from "../../lib/hono/define-route"
@@ -32,7 +35,7 @@ export default route({
     description: "스텝 응답을 제출하고 갱신된 세션 스냅샷을 반환합니다.",
     summary: "스텝 제출",
     tags: ["세션"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ submitStep, params, body, context }) => {
     const userId = requireUserId(context)

@@ -5,7 +5,10 @@ import {
   sessionIdParamSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
@@ -24,7 +27,7 @@ export default route({
     description: "특정 세션의 런타임 스냅샷을 조회합니다.",
     summary: "세션 상세 조회",
     tags: ["세션"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ getSessionDetail, params, context }) => {
     const userId = requireUserId(context)

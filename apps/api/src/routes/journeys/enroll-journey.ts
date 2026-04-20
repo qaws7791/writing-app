@@ -5,7 +5,10 @@ import {
   userJourneyProgressSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
@@ -21,7 +24,7 @@ export default route({
     description: "여정에 등록합니다.",
     summary: "여정 등록",
     tags: ["여정"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ enrollJourney, params, context }) => {
     const userId = requireUserId(context)

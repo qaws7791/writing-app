@@ -91,7 +91,7 @@ type HandlerReturn<TData> =
 type RouteMeta = {
   deprecated?: boolean
   description?: string
-  security?: Record<string, string[]>[]
+  security?: ReadonlyArray<Record<string, readonly string[]>>
   summary?: string
   tags?: string[]
 }
@@ -221,7 +221,7 @@ function pickSuccessStatus(response: ResponseMap): SuccessStatusCode {
  *   inject: { createWriting: "createWritingUseCase" },
  *   request: { body: createWritingBodySchema },
  *   response: { 201: writingDetailSchema, default: defaultErrorResponse },
- *   meta: { summary: "글 생성", tags: ["글"], security: [{ cookieAuth: [] }] },
+ *   meta: { summary: "글 생성", tags: ["글"], security: cookieSecurity },
  *   handler: ({ createWriting, body }) => createWriting(body),
  * })
  * ```

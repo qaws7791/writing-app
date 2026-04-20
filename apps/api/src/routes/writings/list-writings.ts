@@ -3,7 +3,10 @@ import {
   writingListResponseSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { ListWritingsUseCase } from "../../runtime/tokens"
@@ -18,7 +21,7 @@ export default route({
     description: "현재 사용자의 글 목록을 최근 수정 순으로 조회합니다.",
     summary: "글 목록 조회",
     tags: ["글"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ listWritings, query, context }) => {
     const userId = requireUserId(context)

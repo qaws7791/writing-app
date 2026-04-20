@@ -7,7 +7,10 @@ import {
 } from "@workspace/core"
 
 import { BODY_LIMITS, withBodyLimit } from "../../http/body-limit-middleware"
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
@@ -30,7 +33,7 @@ export default route({
     description: "글의 제목 또는 본문을 자동 저장합니다.",
     summary: "글 자동 저장",
     tags: ["글"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ autosaveWriting, body, params, context }) => {
     const userId = requireUserId(context)

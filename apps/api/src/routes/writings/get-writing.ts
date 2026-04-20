@@ -5,7 +5,10 @@ import {
   writingIdParamSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { GetWritingUseCase } from "../../runtime/tokens"
@@ -20,7 +23,7 @@ export default route({
     description: "특정 글의 전체 내용을 조회합니다.",
     summary: "글 상세 조회",
     tags: ["글"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ getWriting, params, context }) => {
     const userId = requireUserId(context)

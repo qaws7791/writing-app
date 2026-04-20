@@ -3,7 +3,10 @@ import {
   writingFeedbackSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { createRateLimitMiddleware } from "../../middleware/rate-limit-middleware"
@@ -36,7 +39,7 @@ export function createGenerateTextFeedbackRoute(
       description: "텍스트에 대한 AI 소크라테스식 피드백을 생성합니다.",
       summary: "AI 텍스트 피드백 생성",
       tags: ["AI"],
-      security: [{ cookieAuth: [] }],
+      security: cookieSecurity,
     },
     handler: async ({ generateFeedback, body, context }) => {
       const userId = requireUserId(context)

@@ -5,7 +5,7 @@ description: apps/api가 core 계약 스키마와 use case를 HTTP/OpenAPI 경�
 
 ## 상태
 
-- 기준 시점: 2026-04-06
+- 기준 시점: 2026-04-20
 - 현재 `apps/api`는 Hono + `@hono/zod-openapi`로 구현되어 있습니다.
 - 프론트엔드는 `openapi-typescript`와 `openapi-fetch`를 사용하여 타입 세이프 HTTP 클라이언트를 구성합니다.
 - 이 문서는 서버 API 규약과 프론트엔드 API 클라이언트 규약을 함께 정의합니다.
@@ -47,6 +47,7 @@ description: apps/api가 core 계약 스키마와 use case를 HTTP/OpenAPI 경�
 - 날짜와 시간은 UTC ISO 8601 문자열로 주고받습니다.
 - 목록 조회 쿼리는 `cursor`, `limit`, `sort`, 도메인 필터 키를 사용합니다.
 - 경계 검증은 `@hono/zod-openapi` route 스키마를 기준으로 수행합니다.
+- 쿠키 인증이 필요한 OpenAPI route는 `apps/api/src/http/openapi-helpers.ts`의 `cookieSecurity`를 재사용합니다.
 
 ## 성공 응답 규칙
 

@@ -18,4 +18,4 @@ export const jsonContent = <TSchema>(schema: TSchema) =>
     },
   }) as const
 
-export const bearerSecurity = [{ cookieAuth: [] }] as const
+export const cookieSecurity = [{ cookieAuth: [] }] as const

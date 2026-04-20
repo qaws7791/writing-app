@@ -1,6 +1,9 @@
 import { z } from "@hono/zod-openapi"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
@@ -32,7 +35,7 @@ export default route({
     description: "현재 로그인한 사용자의 프로필과 기본 통계를 조회합니다.",
     summary: "프로필 조회",
     tags: ["사용자"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({
     authUser,

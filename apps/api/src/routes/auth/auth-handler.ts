@@ -1,7 +1,10 @@
 import { z } from "@hono/zod-openapi"
 
 import { createRouter } from "../../http/create-router"
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 
 const app = createRouter()
 
@@ -103,7 +106,10 @@ app.openAPIRegistry.registerPath({
     },
     default: defaultErrorResponse,
   },
-  security: [{ cookieAuth: [] }],
+  security: cookieSecurity.map((requirement) => ({
+    ...requirement,
+    cookieAuth: [...requirement.cookieAuth],
+  })),
   summary: "로그아웃",
   tags: ["인증"],
 })

@@ -3,7 +3,10 @@ import {
   revisionComparisonSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { createRateLimitMiddleware } from "../../middleware/rate-limit-middleware"
@@ -34,7 +37,7 @@ export function createCompareTextsRoute(rateLimitBackend: RateLimitBackend) {
       description: "두 텍스트를 비교하여 개선 사항을 분석합니다.",
       summary: "AI 텍스트 비교 분석",
       tags: ["AI"],
-      security: [{ cookieAuth: [] }],
+      security: cookieSecurity,
     },
     handler: async ({ compareRevisions, body, context }) => {
       const userId = requireUserId(context)

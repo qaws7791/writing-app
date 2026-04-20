@@ -4,7 +4,10 @@ import {
   writingDetailSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
@@ -20,7 +23,7 @@ export default route({
     description: "새 글을 생성합니다. 글감을 기반으로 생성할 수 있습니다.",
     summary: "글 생성",
     tags: ["글"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ createWriting, body, context }) => {
     const userId = requireUserId(context)

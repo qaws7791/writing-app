@@ -259,6 +259,36 @@ describe("bootstrap", () => {
     )
   })
 
+  test("registers the cookie auth security scheme for the OpenAPI document", async () => {
+    await createApiDependencies({
+      apiBaseUrl: "http://127.0.0.1:3010",
+      authBaseUrl: "http://127.0.0.1:3010",
+      authDebugEnabled: false,
+      authSecret: "test-secret-test-secret-test-secret",
+      databasePath: "memory:test",
+      logLevel: "info",
+      port: 3010,
+      rateLimitRedisPrefix: "test:rate-limit",
+      redisUrl: "redis://127.0.0.1:6379",
+      seedOnStartup: false,
+      webBaseUrl: "http://127.0.0.1:3000",
+    })
+
+    const app = createAppMock.mock.results[0]?.value
+
+    expect(app.openAPIRegistry.registerComponent).toHaveBeenCalledWith(
+      "securitySchemes",
+      "cookieAuth",
+      {
+        description:
+          "better-auth가 관리하는 세션 쿠키입니다. /api/auth/sign-in/email 로그인 후 자동으로 설정됩니다.",
+        in: "cookie",
+        name: "better-auth.session_token",
+        type: "apiKey",
+      }
+    )
+  })
+
   test("derives seedOnStartup and authDebugEnabled from NODE_ENV", () => {
     vi.stubEnv("NODE_ENV", "production")
     expect(readApiEnvironment().seedOnStartup).toBe(false)

@@ -1,7 +1,10 @@
 import { z } from "@hono/zod-openapi"
 import { parsePromptId, promptIdParamSchema } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { UnbookmarkPromptUseCase } from "../../runtime/tokens"
@@ -16,7 +19,7 @@ export default route({
     description: "글감 북마크를 해제합니다.",
     summary: "글감 북마크 해제",
     tags: ["글감"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ unbookmarkPrompt, params, context }) => {
     const userId = requireUserId(context)

@@ -1,7 +1,10 @@
 import { z } from "@hono/zod-openapi"
 import { parseWritingId, writingIdParamSchema } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { DeleteWritingUseCase } from "../../runtime/tokens"
@@ -16,7 +19,7 @@ export default route({
     description: "특정 글을 영구적으로 삭제합니다.",
     summary: "글 삭제",
     tags: ["글"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ deleteWriting, params, context }) => {
     const userId = requireUserId(context)

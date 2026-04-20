@@ -5,7 +5,10 @@ import {
   sessionRuntimeSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
@@ -21,7 +24,7 @@ export default route({
     description: "세션을 시작합니다.",
     summary: "세션 시작",
     tags: ["세션"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ startSession, params, context }) => {
     const userId = requireUserId(context)

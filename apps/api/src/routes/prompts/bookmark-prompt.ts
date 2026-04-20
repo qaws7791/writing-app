@@ -5,7 +5,10 @@ import {
   promptBookmarkResponseSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
@@ -24,7 +27,7 @@ export default route({
     description: "글감을 북마크에 추가합니다.",
     summary: "글감 북마크",
     tags: ["글감"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ bookmarkPrompt, params, context }) => {
     const userId = requireUserId(context)

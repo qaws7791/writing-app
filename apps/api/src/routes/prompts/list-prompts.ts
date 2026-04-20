@@ -4,7 +4,10 @@ import {
   promptListPageResponseSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
@@ -24,7 +27,7 @@ export default route({
       "카테고리(promptType) 필터와 커서 기반 페이지네이션으로 글감 목록을 조회합니다.",
     summary: "글감 목록 조회",
     tags: ["글감"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ listPrompts, query, context }) => {
     const userId = requireUserId(context)

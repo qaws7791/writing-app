@@ -5,7 +5,10 @@ import {
   authenticatedSessionSchema,
   authenticatedUserSchema,
 } from "../../auth/auth-schemas"
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { route } from "../../http/route"
 import { AuthSession, AuthUser } from "../../runtime/tokens"
 
@@ -23,7 +26,7 @@ export default route({
     description: "현재 인증된 사용자의 세션 정보를 반환합니다.",
     summary: "세션 조회",
     tags: ["인증"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: ({ authUser, authSession }) => {
     if (!authUser || !authSession) {

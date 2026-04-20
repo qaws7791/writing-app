@@ -5,7 +5,10 @@ import {
   sessionRuntimeSchema,
 } from "@workspace/core"
 
-import { defaultErrorResponse } from "../../http/openapi-helpers"
+import {
+  cookieSecurity,
+  defaultErrorResponse,
+} from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
 import { unwrapOrThrow } from "../../http/unwrap-or-throw"
@@ -26,7 +29,7 @@ export default route({
     description: "실패한 세션 AI 작업을 다시 시작합니다.",
     summary: "세션 AI 재시도",
     tags: ["세션"],
-    security: [{ cookieAuth: [] }],
+    security: cookieSecurity,
   },
   handler: async ({ retrySessionStepAi, params, context }) => {
     const userId = requireUserId(context)
