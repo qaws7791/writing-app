@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 
 import { useJourneyDetail } from "@/features/journeys"
 import { useSessionDetail } from "@/features/sessions"
-import SessionDetailView from "@/views/session-detail-view"
+import SessionDetailView from "@/views/session-detail-view/session-detail-view"
 
 import { mapSession } from "./session-mappers"
 import { useSessionRunner } from "./use-session-runner"
