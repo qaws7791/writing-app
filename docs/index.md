@@ -1,6 +1,6 @@
 ---
 title: 문서 인덱스
-description: 글필(Geulpil) wiki의 모든 페이지를 카테고리별로 나열한 탐색 기점. 쿼리 응답 전 이 파일을 먼저 읽고 관련 페이지를 드릴다운한다.
+description: 글숨 Labs wiki의 모든 페이지를 카테고리별로 나열한 탐색 기점. 쿼리 응답 전 이 파일을 먼저 읽고 관련 페이지를 드릴다운한다.
 ---
 
 ## 사용 방법
@@ -11,19 +11,20 @@ description: 글필(Geulpil) wiki의 모든 페이지를 카테고리별로 나�
 
 ## 00 · PRD (제품 요구 사항)
 
-| 파일          | 요약                                                  |
-| ------------- | ----------------------------------------------------- |
-| [[00-prd/v2]] | 현행 PRD. 핵심 기능, 설계 원칙, 여정 시스템 상세 명세 |
-| [[00-prd/v1]] | 피벗 이전 PRD. 참고용 아카이브                        |
+| 파일          | 요약                                                     |
+| ------------- | -------------------------------------------------------- |
+| [[00-prd/v3]] | 현행 PRD. 글숨 Labs Calm UX와 첫 문장 루프 중심 MVP 명세 |
+| [[00-prd/v2]] | 이전 PRD. 글필 여정 중심 학습 플랫폼 명세. 참고용        |
+| [[00-prd/v1]] | 피벗 이전 PRD. 참고용 아카이브                           |
 
 ---
 
 ## 01 · 제품
 
-| 파일                   | 요약                                                                 |
-| ---------------------- | -------------------------------------------------------------------- |
-| [[01-product/problem]] | 숏폼 문화·AI 남용에 의한 사고력 저하, 기존 도구 한계, 시장 기회 분석 |
-| [[01-product/persona]] | 타겟 3개 페르소나와 세그먼트 우선순위 정의                           |
+| 파일                   | 요약                                                            |
+| ---------------------- | --------------------------------------------------------------- |
+| [[01-product/problem]] | 빈 화면, 관찰의 언어화, AI 대필로 인한 자기 언어 상실 문제 정의 |
+| [[01-product/persona]] | 사진 기반 첫 문장 루프를 사용할 핵심 사용자와 우선순위 정의     |
 
 ---
 
@@ -31,39 +32,36 @@ description: 글필(Geulpil) wiki의 모든 페이지를 카테고리별로 나�
 
 ### 기준 문서
 
-| 파일                              | 요약                                       |
-| --------------------------------- | ------------------------------------------ |
-| [[02-design/design-principles]]   | 모든 UX/UI 설계 판단의 기준 원칙           |
-| [[02-design/content-style-guide]] | 화면 문구·안내 문체·마이크로카피 작성 기준 |
+| 파일                                   | 요약                                                |
+| -------------------------------------- | --------------------------------------------------- |
+| [[02-design/design-principles]]        | Calm Mode, 화면 복잡도 예산, 모바일 우선 설계 기준  |
+| [[02-design/information-architecture]] | 홈/사진/정원/더보기 기반 정보 구조와 창작 화면 경계 |
+| [[02-design/content-style-guide]]      | 화면 문구·안내 문체·마이크로카피 작성 기준          |
 
 ### 기능 (features)
 
-| 파일                                  | 요약                                      |
-| ------------------------------------- | ----------------------------------------- |
-| [[02-design/features/README]]         | 기능 문서 허브 및 연결 구조               |
-| [[02-design/features/journey-system]] | 여정 시스템 — 진행률, 세션 잠금/해제 규칙 |
-| [[02-design/features/session-steps]]  | 세션/스텝 타입 정의 및 상태 전이 규칙     |
-| [[02-design/features/ai-feedback]]    | AI 소크라테스식 코칭 피드백 설계          |
-| [[02-design/features/editor-library]] | 에디터 & 서재 — 자동 저장, 검색           |
-| [[02-design/features/gamification]]   | 게이미피케이션 — 진행률, 스트릭, 뱃지     |
+| 파일                                  | 요약                                          |
+| ------------------------------------- | --------------------------------------------- |
+| [[02-design/features/README]]         | 기능 문서 허브. 글숨 Labs 피벗 반영 필요      |
+| [[02-design/features/journey-system]] | 이전 여정 시스템 문서. replaced               |
+| [[02-design/features/session-steps]]  | 이전 세션/스텝 문서. replaced                 |
+| [[02-design/features/ai-feedback]]    | 이전 AI 코칭 문서. 재료/힌트 중심 재작성 필요 |
+| [[02-design/features/editor-library]] | 이전 에디터/서재 문서. replaced               |
+| [[02-design/features/gamification]]   | 이전 게이미피케이션 문서. MVP 비범위          |
 
 ### 사용자 흐름 (user-flows)
 
-| 파일                                     | 요약                                    |
-| ---------------------------------------- | --------------------------------------- |
-| [[02-design/user-flows/README]]          | 사용자 흐름 허브                        |
-| [[02-design/user-flows/onboarding]]      | 온보딩 흐름 — 가입부터 첫 여정 시작까지 |
-| [[02-design/user-flows/journey-session]] | 여정 세션 진행 흐름                     |
+| 파일                                     | 요약                                       |
+| ---------------------------------------- | ------------------------------------------ |
+| [[02-design/user-flows/README]]          | 사용자 흐름 허브. 글숨 Labs 피벗 반영 필요 |
+| [[02-design/user-flows/onboarding]]      | 이전 온보딩 흐름. 피벗 반영 필요           |
+| [[02-design/user-flows/journey-session]] | 이전 여정 세션 흐름. replaced              |
 
 ### 화면 명세 (screens)
 
-| 파일                                 | 요약                |
-| ------------------------------------ | ------------------- |
-| [[02-design/screens/README]]         | 화면 명세 허브      |
-| [[02-design/screens/my-journeys]]    | 내 여정 화면 명세   |
-| [[02-design/screens/journey-detail]] | 여정 상세 화면 명세 |
-| [[02-design/screens/session-flow]]   | 세션 진행 화면 명세 |
-| [[02-design/screens/profile]]        | 프로필 화면 명세    |
+| 파일                         | 요약                                                   |
+| ---------------------------- | ------------------------------------------------------ |
+| [[02-design/screens/README]] | 글숨 Labs MVP 화면 명세 허브와 기존 화면 replaced 상태 |
 
 ---
 
@@ -74,11 +72,13 @@ description: 글필(Geulpil) wiki의 모든 페이지를 카테고리별로 나�
 | [[03-architecture/README]]                     | 아키텍처 섹션 허브 및 포함 문서 목록                              |
 | [[03-architecture/tech-stack]]                 | 채택 기술과 선택 이유                                             |
 | [[03-architecture/auth-and-session]]           | Google/Kakao 소셜 로그인, 세션 유지, 권한 검사 정책               |
-| [[03-architecture/data-flow]]                  | 홈 진입→글감 선택→여정 진행→AI 피드백까지 데이터 흐름             |
+| [[03-architecture/data-flow]]                  | 데이터 흐름 문서. 글숨 Labs 피벗 반영 필요                        |
 | [[03-architecture/deployment-strategy]]        | 환경별 배포·롤백 전략                                             |
 | [[03-architecture/file-storage-strategy]]      | 파일 저장·접근 통제 정책                                          |
 | [[03-architecture/error-handling]]             | Result 기반 오류 처리와 HTTP 변환 원칙                            |
 | [[03-architecture/observability-architecture]] | 저장 실패·인증·AI 지연·여정 오류 감지를 위한 로그·메트릭·트레이스 |
+| [[03-architecture/api-overview]]               | 사진, 표현 재료, 문장 씨앗, 문체 정원 리소스의 API 경계           |
+| [[03-architecture/domain-model]]               | 사진, 표현 재료, 문장 씨앗, 문체 정원 중심 도메인 모델            |
 
 ### 다이어그램
 
@@ -118,6 +118,7 @@ description: 글필(Geulpil) wiki의 모든 페이지를 카테고리별로 나�
 | [[04-engineering/logging-guide]]                      | 요청 추적·운영 디버깅·보안 대응을 위한 로그 기준           |
 | [[04-engineering/error-message-guidelines]]           | 사용자·API 오류 응답 일관 설계 기준                        |
 | [[04-engineering/core-refactoring-plan]]              | packages/core 모듈 확장 계획 (피벗 대응)                   |
+| [[04-engineering/geulsoom-labs-pivot-plan]]           | 글숨 Labs PRD v1.1 기반 전체 프로젝트 피벗 작업 체크리스트 |
 | [[04-engineering/code-review-remediation-2026-04-20]] | 2026-04-20 코드 리뷰 후속 조치 현황                        |
 | [[04-engineering/codebase-simplification-review]]     | 2026-04-21 기준 코드베이스 단순화 우선 개선 포인트         |
 

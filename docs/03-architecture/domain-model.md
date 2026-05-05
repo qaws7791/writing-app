@@ -1,163 +1,229 @@
 ---
 title: 도메인 모델
-description: 글필(Geulpil) 플랫폼의 핵심 엔티티와 관계, 책임 경계를 immutable 데이터 모델 기준으로 정의합니다.
+description: 글숨 Labs의 사진, 표현 재료, 문장 씨앗, 문체 정원 중심 도메인 모델을 정의합니다.
 ---
+
+상태: active
+기준 PRD: [[00-prd/v3]]
 
 ## 모델링 원칙
 
-- 플랫폼의 중심 도메인은 여정(Journey) 기반 글쓰기 학습이다.
-- 기능 위계: **Core(여정) > Secondary(글쓰기) > Tertiary(글감)**. 이 위계가 화면 설계, 탭 구조, API 우선순위에 반영된다.
-- AI는 독립 저자가 아니라 소크라테스식 코칭을 수행하는 보조 기능으로 모델링한다.
-- 여정-세션-스텝의 계층 구조가 학습 흐름의 골격이다.
-- 사용자의 글은 버전 가능한 형태로 다루며, AI 피드백은 버전에 연결한다.
+- 플랫폼의 중심 도메인은 첫 문장 루프다.
+- 핵심 흐름은 `Scene → MaterialNode → MaterialSelection → SentenceSeed → SentenceDraft → GardenCard`로 표현한다.
+- AI는 완성문 작성자가 아니라 재료 생성, 씨앗 생성, 수정 힌트 제공자로 제한한다.
+- 모든 저장 자산은 `Provenance`를 가진다.
+- 사진 저장과 삭제, 민감 추론 금지, 인물 식별 금지는 도메인 규칙으로 취급한다.
 - 구현 기준에서 모델은 클래스 인스턴스보다 immutable plain object로 표현한다.
-- 상태 전이는 모델 내부 메서드보다 순수 함수와 operation 계층에서 처리한다.
-- 인프라 저장 모델과 제품 도메인 모델은 같은 이름을 써도 같은 타입으로 취급하지 않는다.
+- 상태 전이는 모델 내부 메서드보다 순수 함수와 use case 계층에서 처리한다.
+- better-auth의 사용자, 계정, 세션 스키마는 인증 서브도메인으로 유지한다.
 
 ## 핵심 엔티티
 
 ### User
 
-- 플랫폼을 사용하는 기본 주체
-- 프로필, 온보딩 데이터(관심사, 글쓰기 수준), 구독 티어를 가진다.
-- 하나 이상의 인증 수단을 연결할 수 있다.
-- 구현상 better-auth의 `user` 테이블과 대응한다.
-- `email`, `emailVerified`, `image` 같은 필드는 인증 기본 정보이면서 동시에 최소 프로필 정보다.
+플랫폼을 사용하는 기본 주체다. Better Auth의 `user` 테이블과 대응한다.
+
+역할:
+
+- Scene을 생성한다.
+- MaterialSelection을 남긴다.
+- SentenceDraft와 GardenCard를 소유한다.
+- 사진 저장 동의와 데이터 삭제 요청의 주체다.
 
 ### AuthAccount
 
-- Google 로그인, Kakao 로그인 같은 인증 수단
-- 한 `User`에 여러 `AuthAccount`가 연결될 수 있다.
-- 인증 수단 자체와 사용자 프로필을 분리해 관리한다.
-- 구현상 better-auth의 `account` 테이블과 대응한다.
-- `providerId`, `accountId`는 외부 인증 공급자 식별자다.
+외부 인증 수단이다. Better Auth의 `account` 테이블과 대응한다.
+
+제품 도메인과 직접 섞지 않고 인증 경계에 둔다.
 
 ### Session
 
-- 현재 로그인 상태를 나타내는 보안 컨텍스트
-- 만료 시각, 최근 활동 시각, 기기 메타데이터를 가진다.
-- `User`에 종속되지만 생명주기는 독립적이다.
-- 구현상 better-auth의 `session` 테이블과 대응한다.
-- 세션 토큰은 글쓰기 도메인 식별자가 아니라 인증 인프라 식별자다.
+로그인 상태를 나타내는 보안 컨텍스트다. Better Auth의 `session` 테이블과 대응한다.
 
-### WritingPrompt
+글숨 Labs의 `Scene`과 이름이 겹치지 않도록 제품 도메인에서는 장면을 `Scene`으로, 인증 세션은 `AuthSession` 또는 인프라 session으로 구분한다.
 
-- 사용자의 사고를 촉발하는 질문·주제·상황 카드
-- 유형(감각/회고/의견), 제목, 본문, 응답 수를 가진다.
-- Tertiary 기능으로 글쓰기 진입 화면과 에디터 내 Bottom Sheet에서만 노출된다.
-- 글감 기반 자유 글쓰기의 출발점이자, 세션 글쓰기 스텝의 프롬프트로 활용된다.
+### Scene
 
-### Journey
+사용자가 올린 사진 한 장과 분석 상태를 나타낸다.
 
-- 특정 글쓰기 역량 향상을 목표로 한 구조화된 커리큘럼
-- 제목, 설명, 카테고리(글쓰기 기술/마음챙김/기술), 썸네일, 세션 수를 가진다.
-- 여러 세션으로 구성되며, 세션은 선형 진행 구조를 따른다.
+주요 필드:
 
-### JourneySession
+- `sceneId`
+- `userId`
+- `photoObjectKey`
+- `photoRetentionStatus`
+- `analysisStatus`
+- `activeLayer`
+- `createdAt`
 
-- 여정 내 하나의 학습 노드. 10~20분 완결형
-- 여정 내 순서(order), 제목, 설명, 예상 소요 시간을 가진다.
-- 여러 스텝으로 구성된다.
+상태:
 
-### Step
+- `idle`
+- `uploading`
+- `analyzing`
+- `ready`
+- `failed`
+- `photo_deleted`
 
-- 세션 내 하나의 마이크로 활동 단위
-- 세션 내 순서(order)와 유형을 가진다.
-- 유형: `LEARN` | `READ` | `GUIDED_QUESTION` | `WRITE` | `FEEDBACK` | `REVISE`
-- 유형별 구조화된 콘텐츠를 JSON으로 저장한다.
+### MaterialNode
 
-### Writing
+사진에서 추출되거나 사용자가 직접 입력한 표현 재료다.
 
-- 사용자가 작성한 에세이의 현재 상태
-- 제목, 본문, 단어 수를 가진다.
-- 글감(WritingPrompt) 또는 세션(JourneySession)에 연결될 수 있다.
-- 플랫폼의 핵심 애그리게이트다.
+유형:
 
-### WritingVersion
+- `visible_object`
+- `sense`
+- `mood`
+- `movement`
+- `question`
+- `sentence_seed`
 
-- 특정 시점의 글 상태 스냅샷
-- 본문, 단어 수, 버전 번호를 가진다.
-- AI 피드백(JSON)을 포함할 수 있다.
-- `Writing`의 이력을 보존한다.
+규칙:
 
-### UserJourneyProgress
+- 사진 업로드 후 3초 안에 1차 MaterialNode 3~5개를 제공한다.
+- 전체 레이어 데이터는 10초 안에 준비되는 것을 목표로 한다.
+- 인물 식별과 민감 속성 추론 결과를 MaterialNode로 저장하지 않는다.
 
-- 사용자의 여정 참여 상태를 추적한다.
-- 현재 세션 순서, 완료율, 진행 상태(IN_PROGRESS | COMPLETED)를 가진다.
+### MaterialSelection
 
-### UserSessionProgress
+사용자가 선택하거나 버린 재료 신호다.
 
-- 사용자의 세션 진행 상태를 추적한다.
-- 현재 스텝 순서, 진행 상태(LOCKED | IN_PROGRESS | COMPLETED)를 가진다.
-- 각 스텝에 대한 사용자 응답을 JSON으로 저장한다.
+주요 필드:
+
+- `selectionId`
+- `sceneId`
+- `materialNodeId`
+- `userId`
+- `action`: `selected` 또는 `dismissed`
+- `order`
+- `createdAt`
+
+규칙:
+
+- 재료 3개 이상 선택 시 SentenceSeed 생성이 가능하다.
+- 버린 재료는 개인화 신호로 저장할 수 있지만 사용자에게 과도하게 드러내지 않는다.
+
+### SentenceSeed
+
+선택 재료를 문장 작성 직전의 작은 구조로 바꾼 후보값이다.
+
+규칙:
+
+- 사용자가 선택한 재료를 반드시 포함한다.
+- 후보는 최대 3개만 제공한다.
+- 완성문이 아니라 수정 가능한 씨앗으로 표시한다.
+
+### SentenceDraft
+
+사용자가 직접 작성 중인 한 문장이다.
+
+주요 필드:
+
+- `draftId`
+- `sceneId`
+- `userId`
+- `seedId`
+- `body`
+- `authorship`: `user_written` 또는 `ai_example_based`
+- `status`: `draft` 또는 `saved`
+- `createdAt`
+- `updatedAt`
+
+규칙:
+
+- 저장 가능한 핵심 단위는 긴 글이 아니라 한 문장이다.
+- AI 힌트는 문장을 직접 고쳐 쓰지 않고 사용자가 수정할 수 있는 방향을 제안한다.
+
+### GardenCard
+
+문체 정원에 저장되는 표현 자산이다.
+
+유형:
+
+- `word`
+- `sense`
+- `question`
+- `sentence_seed`
+- `sentence`
+- `scene`
+- `rhythm`
+
+규칙:
+
+- 모든 GardenCard는 Provenance를 가진다.
+- 사용자는 카드를 삭제할 수 있다.
+- 카드는 한 문장 에디터에서 다시 불러올 수 있다.
+
+### Provenance
+
+표현 카드의 출처 정보다.
+
+출처 유형:
+
+- `photo`
+- `manual_input`
+- `sentence`
+- `game`
+- `rhythm`
+
+주요 필드:
+
+- `sourceType`
+- `sourceId`
+- `sceneId`
+- `materialNodeIds`
+- `seedId`
+- `createdBy`: `user` 또는 `ai_assisted`
 
 ## 관계 요약
 
-- `User` 1:N `AuthAccount`
-- `User` 1:N `Session`
-- `User` 1:N `Writing`
-- `User` 1:N `UserJourneyProgress`
-- `User` 1:N `UserSessionProgress`
-- `Journey` 1:N `JourneySession`
-- `JourneySession` 1:N `Step`
-- `WritingPrompt` 0..N → `Writing`
-- `JourneySession` 0..N → `Writing`
-- `Writing` 1:N `WritingVersion`
-- `UserJourneyProgress` N:1 `Journey`
-- `UserSessionProgress` N:1 `JourneySession`
+- `User` 1:N `Scene`
+- `Scene` 1:N `MaterialNode`
+- `User` 1:N `MaterialSelection`
+- `Scene` 1:N `MaterialSelection`
+- `MaterialSelection` N:1 `MaterialNode`
+- `Scene` 1:N `SentenceSeed`
+- `SentenceSeed` N:M `MaterialNode`
+- `SentenceSeed` 0..N `SentenceDraft`
+- `User` 1:N `SentenceDraft`
+- `User` 1:N `GardenCard`
+- `GardenCard` 1:1 `Provenance`
 
-## 상태 모델
+## 주요 상태 흐름
 
-### Writing 상태
+```text
+idle
+→ uploading
+→ analyzing
+→ ready
+→ collecting
+→ seed_ready
+→ drafting
+→ saved
+```
 
-- `draft`: 작성 중인 글
-- `completed`: 작성이 완료된 글
-- `archived`: 사용자에게서 숨겨졌지만 기록은 유지되는 상태
+| 상태       | 도메인 의미                                   |
+| ---------- | --------------------------------------------- |
+| idle       | Scene 생성 전 또는 사진 선택 전               |
+| uploading  | 사진 업로드 중                                |
+| analyzing  | MaterialNode 생성 중                          |
+| ready      | 1차 MaterialNode 표시 가능                    |
+| collecting | MaterialSelection이 1개 이상 있음             |
+| seed_ready | 선택 재료 3개 이상으로 SentenceSeed 생성 가능 |
+| drafting   | SentenceDraft 작성 중                         |
+| saved      | GardenCard 생성 완료                          |
 
-### UserJourneyProgress 상태
+## 보안과 개인정보 규칙
 
-- `IN_PROGRESS`: 여정 진행 중
-- `COMPLETED`: 모든 세션을 완료한 상태
+- 인물 식별을 하지 않는다.
+- 민감 속성을 추론하지 않는다.
+- 사진 저장 동의를 명시적으로 관리한다.
+- 사용자가 사진 삭제를 요청하면 원본 사진 접근을 제거한다.
+- 사진 삭제 후에도 사용자가 동의한 GardenCard와 Provenance는 보존할 수 있으나, 원본 사진 재식별이 가능하면 안 된다.
 
-### UserSessionProgress 상태
+## 관련 문서
 
-- `LOCKED`: 이전 세션이 완료되지 않아 접근 불가
-- `IN_PROGRESS`: 세션을 진행 중
-- `COMPLETED`: 세션의 모든 스텝을 완료
-
-### WritingPrompt 유형
-
-- `SENSORY`: 감각적 경험에서 출발하는 자유 글쓰기
-- `REFLECTION`: 과거 경험을 되돌아보는 성찰적 글쓰기
-- `OPINION`: 특정 주제에 대한 입장을 논증하는 글쓰기
-
-### Journey 카테고리
-
-- `WRITING_SKILL`: 에세이 구조, 문단 구성, 퇴고 전략 등 기술적 역량
-- `MINDFULNESS`: 감정 탐색, 자기 성찰, 일상 관찰 중심
-- `PRACTICAL`: 특정 직무·상황 맞춤형 글쓰기
-
-### Step 유형
-
-- `LEARN`: 핵심 개념 설명과 예시
-- `READ`: 모범 에세이 또는 문단 읽기와 분석
-- `GUIDED_QUESTION`: 메타인지 촉발 질문에 답하기
-- `WRITE`: 글감/프롬프트에 따른 글쓰기
-- `FEEDBACK`: AI 피드백 확인 (강점/개선점/질문)
-- `REVISE`: 피드백 기반 수정
-
-## 경계에 대한 메모
-
-- better-auth의 `user`, `account`, `session`은 인증 서브도메인의 영속성 모델이다.
-- 글쓰기 제품 문서에서는 이를 `User`, `AuthAccount`, `Session`으로 표현하되, 구현 스키마와의 대응 관계를 유지한다.
-- `packages/core`는 제품 도메인 모델을 정의하고, `packages/database`는 영속성 모델과 매핑을 담당한다.
-- Hono request/response 타입은 도메인 모델에 직접 섞지 않는다.
-- 커뮤니티 피드백과 소셜 기능은 현재 범위 밖이며, 추후 별도 서브도메인으로 확장한다.
-- 통계용 집계 값은 원천 엔티티를 대체하지 않고 파생 데이터로 취급한다.
-- 구독 티어(FREE/PRO)는 `User`에 포함하되, 결제 인프라는 별도 서브도메인으로 분리한다.
-
-## 관련 다이어그램
-
-- [[03-architecture/diagrams/domain-relationship]]
-- [[03-architecture/diagrams/writing-runtime-flow]]
+- [[00-prd/v3]]
+- [[03-architecture/api-overview]]
+- [[02-design/information-architecture]]
 - [[04-engineering/backend-core-guide]]

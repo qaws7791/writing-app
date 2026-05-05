@@ -1,36 +1,35 @@
 ---
 title: API 개요
-description: 글필(Geulpil) 플랫폼에서 apps/api가 core와 인프라 패키지를 HTTP/OpenAPI 경계로 연결하는 방식을 정의합니다.
+description: 글숨 Labs MVP에서 apps/api가 사진, 표현 재료, 문장 씨앗, 문체 정원 리소스를 HTTP/OpenAPI 경계로 제공하는 방식을 정의합니다.
 ---
+
+상태: active
+기준 PRD: [[00-prd/v3]]
 
 ## API의 역할
 
-API는 화면을 렌더링하지 않고, 다음 책임에 집중한다.
+API는 화면을 렌더링하지 않고 다음 책임에 집중한다.
 
 - 인증과 세션 검증
-- 글감, 여정, 세션, 스텝, 글쓰기 같은 도메인 리소스 제공
-- 여정 진행 상태 추적과 잠금 해제 로직
-- AI 코칭 피드백 요청의 검증과 오케스트레이션
+- 사진 업로드와 삭제 요청의 오케스트레이션
+- 표현 재료, 선택, 문장 씨앗, 문장 저장 리소스 제공
+- AI 분석과 힌트 생성을 안전한 계약으로 제한
+- 저장 자산의 출처와 사용자 소유권 보존
 - 감사 이벤트와 운영 이벤트 기록
 
 ## 계층 경계
 
 - `apps/api`는 HTTP 전송 계층이자 composition root다.
 - 라우트는 요청 파싱, 검증, 인증 확인, 응답 매핑까지만 담당한다.
-- 비즈니스 규칙은 `packages/core`로 이동한다.
-- 외부 AI, 데이터베이스 연결은 `packages/ai`, `packages/database`로 분리한다.
-- 내부 표준은 구현이 아니라 포트와 계약 스키마에 의존하는 구조다.
+- 비즈니스 규칙은 `packages/core`에 둔다.
+- 외부 AI, 데이터베이스, 스토리지는 `packages/ai`, `packages/database`, `packages/storage`로 분리한다.
+- API 계약은 완성 긴 글 생성이 아니라 재료, 씨앗, 힌트, 카드 저장을 중심으로 설계한다.
 
-## 계약과 실행 흐름
-
-- API 계약에 쓰는 zod 스키마는 `packages/core/modules/*/contracts`에 둔다.
-- `apps/api`는 `@hono/zod-openapi`의 `createRoute()`로 route를 선언한다.
-- 각 기능 모듈은 `new OpenAPIHono()`로 app을 만들고 `app.openapi()`로 handler를 연결한다.
-- handler는 HTTP 입력을 use case 입력으로 변환하고, presenter는 use case 결과를 HTTP 응답으로 변환한다.
-
-## 주요 리소스
+## MVP 리소스
 
 ### 인증
+
+기존 Better Auth 기반 인증 API를 유지한다.
 
 - `POST /api/auth/sign-in/email`
 - `POST /api/auth/sign-up/email`
@@ -39,98 +38,114 @@ API는 화면을 렌더링하지 않고, 다음 책임에 집중한다.
 
 ### 사용자
 
+- `GET /me`
 - `GET /users/profile`
 
 ### 홈
 
-- `GET /home` — v2.1: 진행 중인 여정 카드 목록 우선, 첫 여정 시작 CTA 플래그, 글쓰기 제안 보조 카드. 오늘의 추천 글감 필드 제거
+- `GET /home`
 
-### 글감
+응답은 시작 행동 선택에 필요한 최소 정보만 포함한다.
 
-- `GET /prompts`
-- `GET /prompts/categories`
-- `GET /prompts/{promptId}`
-- `GET /prompts/{promptId}/writings` — **deprecated (v2.1):** 글감 상세 화면이 제거되어 프론트엔드에서 미사용
-- `PUT /prompts/{promptId}/bookmark`
-- `DELETE /prompts/{promptId}/bookmark`
+- 오늘의 진입 카드 3개
+- 최근 작업 1개
+- 문체 정원 요약 1개
 
-### 여정
+여정 진행률, 배지, 스트릭, 업그레이드 카드는 MVP 홈 응답에 포함하지 않는다.
 
-- `GET /journeys`
-- `GET /journeys/{journeyId}`
-- `POST /journeys/{journeyId}/enroll`
+### 장면
 
-### 세션과 스텝
+- `POST /scenes`
+- `GET /scenes/{sceneId}`
+- `DELETE /scenes/{sceneId}/photo`
 
-- `GET /sessions/{sessionId}`
-- `POST /sessions/{sessionId}/start`
-- `POST /sessions/{sessionId}/steps/{stepOrder}/submit`
-- `POST /sessions/{sessionId}/steps/{stepOrder}/retry`
-- `POST /sessions/{sessionId}/complete`
+`POST /scenes`는 사진 업로드 메타데이터와 저장 동의를 받아 Scene을 만든다. 실제 파일 업로드 방식은 스토리지 adapter 구현 단계에서 확정한다.
 
-세션 API는 정적 세션 정보만이 아니라 사용자 진행 상태, 스텝 응답, 세션 내부 AI 상태와 결과를 포함한 런타임 스냅샷을 반환한다.
-`GET /sessions/{sessionId}`와 `POST /sessions/{sessionId}/start`는 같은 스냅샷 형태를 반환하고, `POST /sessions/{sessionId}/steps/{stepOrder}/submit`은 일반 제출 시 `200`, AI 작업 수락 시 `202`를 반환한다.
+`DELETE /scenes/{sceneId}/photo`는 원본 사진 접근을 제거한다. 이미 사용자가 저장한 GardenCard는 Provenance 정책에 따라 유지할 수 있다.
 
-### 글쓰기
+### 표현 재료
 
-- `GET /writings`
-- `POST /writings`
-- `GET /writings/{writingId}`
-- `PATCH /writings/{writingId}`
-- `DELETE /writings/{writingId}`
+- `GET /scenes/{sceneId}/materials`
+- `POST /scenes/{sceneId}/materials/manual`
 
-### AI 피드백
+`GET /scenes/{sceneId}/materials`는 현재 준비된 MaterialNode를 반환한다. 1차 응답은 3~5개를 목표로 하고, 전체 레이어는 준비된 범위만 먼저 노출할 수 있다.
 
-- `POST /writings/{writingId}/feedback`
-- `POST /writings/{writingId}/compare`
+분석 실패 시 `POST /scenes/{sceneId}/materials/manual`로 사용자가 직접 재료를 입력할 수 있어야 한다.
 
-자유 글쓰기용 AI 피드백은 위 리소스를 유지한다. 여정 세션 내부 AI는 별도 `/ai/*` 공개 API 대신 세션 API 안에서만 실행되고 복원된다.
+### 재료 선택
 
-### 데이터 내보내기
+- `POST /scenes/{sceneId}/material-selections`
+- `DELETE /scenes/{sceneId}/material-selections/{selectionId}`
+- `PATCH /scenes/{sceneId}/material-selections/order`
 
-- `POST /me/exports`
+선택과 버림 신호를 모두 저장할 수 있다. 버림 신호는 개인화에 사용할 수 있으나 응답에서 과도하게 드러내지 않는다.
+
+### 문장 씨앗
+
+- `POST /sentence-seeds`
+- `GET /scenes/{sceneId}/sentence-seeds`
+
+선택 재료 3개 이상일 때 생성 가능하다. 응답 후보는 최대 3개다. 후보는 완성문이 아니라 수정 가능한 씨앗이다.
+
+### 한 문장 에디터
+
+- `POST /sentence-drafts`
+- `PATCH /sentence-drafts/{draftId}`
+- `POST /sentence-drafts/{draftId}/hints`
+
+AI 힌트는 최대 3개만 반환한다. AI가 문장을 대신 고쳐 쓴 완성문을 기본 응답으로 제공하지 않는다.
+
+### 문체 정원
+
+- `POST /garden-cards`
+- `GET /garden-cards`
+- `GET /garden-cards/{cardId}`
+- `DELETE /garden-cards/{cardId}`
+
+모든 GardenCard는 Provenance를 가진다. 목록은 조용한 아카이브로 쓰기 위해 오늘 저장한 카드, 최근 문장 카드, 다시 써볼 카드 중심으로 반환한다.
+
+## 제거되는 기존 공개 리소스
+
+글숨 Labs MVP 기준에서 다음 기존 글필 리소스는 제거 또는 replaced 대상이다.
+
+- `/journeys`
+- `/sessions`
+- `/prompts`
+- `/writings`의 긴 글 중심 흐름
+- `/writings/{writingId}/feedback`
+- `/writings/{writingId}/compare`
+
+기존 인증, 사용자, 헬스체크, OpenAPI 인프라는 유지한다.
 
 ## 응답 설계 원칙
 
-- 리소스 식별자와 메타데이터는 분리해 표현한다.
-- 날짜와 시간은 모두 UTC 기준 ISO 8601 문자열로 반환한다.
-- 목록 응답은 페이지네이션 또는 커서 기반 탐색을 지원한다.
-- UI 전용 문구는 가능한 한 서버보다 클라이언트에서 조합한다.
-- 오류 응답은 RFC 7807/9457 Problem Details 형식을 사용한다.
-- 내부 use case는 예외보다 `Result` 기반 실패 값을 우선 사용한다.
+- 리소스 식별자와 메타데이터를 분리한다.
+- 날짜와 시간은 UTC 기준 ISO 8601 문자열로 반환한다.
+- 목록 응답은 커서 기반 탐색을 우선한다.
+- 오류 응답은 Problem Details 형식을 사용한다.
+- 내부 use case는 예외보다 명시적 Result 기반 실패 값을 우선 사용한다.
+- UI 전용 문구는 가능한 한 클라이언트에서 조합한다.
 
-## 글쓰기 요청의 특징
+## AI 안전 계약
 
-- 자동 저장과 명시적 저장을 구분한다.
-- 자동 저장은 조용히 실패를 처리할 수 있어야 하므로 충돌 정보와 재시도 가능 여부를 함께 반환한다.
-- 버전 기록은 글 본문 전체와 변경 메타데이터를 함께 다룬다.
-- 세션 스텝의 글쓰기는 세션 진행 상태와 연결되어 자동 저장된다.
+AI adapter는 다음을 하지 않는다.
 
-## 여정 진행 요청의 특징
+- 인물 식별
+- 민감 속성 추론
+- 긴 글 전체 대필
+- 사용자의 문장 자동 수정
+- 저장 동의 없는 사진 장기 보관 전제 응답
 
-- 세션 시작, 스텝 제출, 세션 완료는 순서를 보장해야 한다.
-- 이전 세션이 완료되지 않은 상태에서 다음 세션 시작을 시도하면 403을 반환한다.
-- 스텝 응답 제출 시 서버에서 유형별 검증을 수행한다.
-- WRITE/REVISE 제출은 세션 내부 AI 작업을 비동기로 시작하고, 후속 FEEDBACK 상태를 세션 스냅샷으로 노출한다.
-- AI 실패 시 세션 범위 재시도 엔드포인트로만 재실행한다.
+AI adapter는 다음만 반환한다.
 
-## 보안 원칙
+- 표현 재료
+- 문장 씨앗
+- 수정 힌트
+- 실패 시 직접 입력으로 이어질 수 있는 오류 정보
 
-- 상태 변경 요청에는 인증과 CSRF 방어를 적용한다.
-- 사용자 소유 리소스는 식별자만 맞아도 접근되는 구조를 허용하지 않는다.
-- 운영용 엔드포인트는 일반 사용자 API와 분리한다.
+## 관련 문서
 
-## 비범위
-
-- 서버가 HTML 화면을 직접 렌더링하는 책임
-- AI가 글 전체를 대신 작성해 반환하는 기능
-- 앱 간 직접 상대 경로 의존을 전제로 한 API 설계
-- `apps/api` 안에 비즈니스 규칙이나 인프라 구현을 직접 누적하는 구조
-
-## 관련 다이어그램
-
-- [[03-architecture/diagrams/system-context]]
-- [[03-architecture/diagrams/container-view]]
-- [[03-architecture/diagrams/writing-runtime-flow]]
-- [[04-engineering/backend-architecture-guide]]
+- [[00-prd/v3]]
+- [[03-architecture/domain-model]]
+- [[04-engineering/api-conventions]]
 - [[04-engineering/backend-package-boundaries]]
