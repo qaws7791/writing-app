@@ -9,7 +9,6 @@ import {
   type SeedTestUser,
 } from "@workspace/database"
 import { createServerLogger, type AppLogger } from "@workspace/logging"
-import journeySeeds from "../../data/journey-seeds.json"
 
 import { API_SERVICE_NAME } from "../observability/service-name.js"
 import {
@@ -48,7 +47,7 @@ export function createSeedScriptContext(script: string): SeedScriptContext {
 }
 
 export async function seedDatabaseWithTestData(database: DbClient) {
-  await seedDatabase(database, journeySeeds.journeys)
+  await seedDatabase(database)
   await seedTestUsers(database, await buildTestUserSeeds())
 }
 

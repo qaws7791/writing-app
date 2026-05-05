@@ -1,16 +1,23 @@
-import type { JourneyId } from "../../shared/brand/index"
-
-export type ActiveJourneySummary = {
-  readonly journeyId: JourneyId
+export type HomeStartAction = {
+  readonly id: "photo" | "garden" | "manual"
   readonly title: string
   readonly description: string
-  readonly thumbnailUrl: string | null
-  readonly completionRate: number
-  readonly currentSessionOrder: number
+  readonly href: string
+}
+
+export type RecentWorkSummary = {
+  readonly sceneId: string
+  readonly title: string
+  readonly updatedAt: string
+}
+
+export type GardenSummary = {
+  readonly cardCount: number
+  readonly sentenceCount: number
 }
 
 export type HomeSnapshot = {
-  readonly activeJourneys: ActiveJourneySummary[]
-  readonly showStartJourneyCta: boolean
-  readonly showWritingSuggestion: boolean
+  readonly startActions: HomeStartAction[]
+  readonly recentWork: RecentWorkSummary | null
+  readonly garden: GardenSummary
 }

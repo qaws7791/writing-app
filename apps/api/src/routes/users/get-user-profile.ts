@@ -1,5 +1,4 @@
 import { userProfileSchema } from "@workspace/core/modules/users"
-import { ResultAsync } from "neverthrow"
 
 import {
   cookieSecurity,
@@ -7,17 +6,13 @@ import {
 } from "../../http/openapi-helpers"
 import { requireUserId } from "../../http/require-user-id"
 import { route } from "../../http/route"
-import { AuthUser } from "../../runtime/modules/auth"
-import { ListCompletedJourneysUseCase } from "../../runtime/modules/journeys"
-import { CountWritingsUseCase } from "../../runtime/modules/writings"
+import { AuthUser } from "../../runtime/modules/auth-tokens"
 
 export default route({
   method: "get",
   path: "/users/profile",
   inject: {
     authUser: AuthUser,
-    countWritings: CountWritingsUseCase,
-    listCompletedJourneys: ListCompletedJourneysUseCase,
   },
   response: { 200: userProfileSchema, default: defaultErrorResponse },
   meta: {
@@ -26,23 +21,15 @@ export default route({
     tags: ["사용자"],
     security: cookieSecurity,
   },
-  handler: async ({
-    authUser,
-    countWritings,
-    listCompletedJourneys,
-    context,
-  }) => {
-    const userId = requireUserId(context)
-    return ResultAsync.combine([
-      listCompletedJourneys(userId),
-      countWritings(userId),
-    ]).map(([completedJourneys, writingCount]) => ({
-      completedJourneyCount: completedJourneys.length,
+  handler: async ({ authUser, context }) => {
+    requireUserId(context)
+    return {
       email: authUser?.email ?? "",
       emailVerified: authUser?.emailVerified ?? false,
+      gardenCardCount: 0,
       image: authUser?.image ?? null,
       name: authUser?.name ?? "",
-      writingCount,
-    }))
+      sentenceCount: 0,
+    }
   },
 })

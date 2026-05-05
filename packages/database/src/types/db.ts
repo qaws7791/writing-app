@@ -1,18 +1,9 @@
-import type { InferInsertModel, InferSelectModel } from "drizzle-orm"
+import type { InferSelectModel } from "drizzle-orm"
 import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
 
 import type {
-  journeys,
-  journeySessions,
-  savedPrompts,
-  steps,
-  userJourneyProgress,
-  userSessionProgress,
-  writings,
-  writingPrompts,
-  writingVersions,
-  schema,
   account,
+  schema,
   session,
   user,
   verification,
@@ -28,32 +19,6 @@ export type DbTransaction = Parameters<DbClient["transaction"]>[0] extends (
 export type DbExecutor = DbClient | DbTransaction
 
 export type AccountRow = InferSelectModel<typeof account>
-export type JourneyInsert = InferInsertModel<typeof journeys>
-export type JourneyRow = InferSelectModel<typeof journeys>
-export type JourneySessionInsert = InferInsertModel<typeof journeySessions>
-export type JourneySessionRow = InferSelectModel<typeof journeySessions>
-export type SavedPromptInsert = InferInsertModel<typeof savedPrompts>
-export type SavedPromptRow = InferSelectModel<typeof savedPrompts>
 export type SessionRow = InferSelectModel<typeof session>
-export type StepInsert = InferInsertModel<typeof steps>
-export type StepRow = InferSelectModel<typeof steps>
-export type UserJourneyProgressInsert = InferInsertModel<
-  typeof userJourneyProgress
->
-export type UserJourneyProgressRow = InferSelectModel<
-  typeof userJourneyProgress
->
 export type UserRow = InferSelectModel<typeof user>
-export type UserSessionProgressInsert = InferInsertModel<
-  typeof userSessionProgress
->
-export type UserSessionProgressRow = InferSelectModel<
-  typeof userSessionProgress
->
 export type VerificationRow = InferSelectModel<typeof verification>
-export type WritingInsert = InferInsertModel<typeof writings>
-export type WritingRow = InferSelectModel<typeof writings>
-export type WritingPromptInsert = InferInsertModel<typeof writingPrompts>
-export type WritingPromptRow = InferSelectModel<typeof writingPrompts>
-export type WritingVersionInsert = InferInsertModel<typeof writingVersions>
-export type WritingVersionRow = InferSelectModel<typeof writingVersions>

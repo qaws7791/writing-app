@@ -8,8 +8,8 @@ import {
 
 describe("isSafeInternalPath", () => {
   it("accepts internal relative paths with query strings", () => {
-    expect(isSafeInternalPath("/journeys?tab=active")).toBe(true)
-    expect(isSafeInternalPath("/writings/new?returnTo=%2Fhome")).toBe(true)
+    expect(isSafeInternalPath("/photo?mode=manual")).toBe(true)
+    expect(isSafeInternalPath("/garden?returnTo=%2Fhome")).toBe(true)
   })
 
   it("rejects external or invalid values", () => {
@@ -24,15 +24,13 @@ describe("isSafeInternalPath", () => {
 
 describe("appendReturnTo", () => {
   it("appends encoded returnTo while preserving existing query strings", () => {
-    expect(
-      appendReturnTo("/writings/new/editor?promptId=1", "/writings/new")
-    ).toBe("/writings/new/editor?promptId=1&returnTo=%2Fwritings%2Fnew")
+    expect(appendReturnTo("/photo?mode=manual", "/home")).toBe(
+      "/photo?mode=manual&returnTo=%2Fhome"
+    )
   })
 
   it("skips invalid returnTo values", () => {
-    expect(
-      appendReturnTo("/writings/new/editor?promptId=1", "https://external.com")
-    ).toBe("/writings/new/editor?promptId=1")
+    expect(appendReturnTo("/photo", "https://external.com")).toBe("/photo")
   })
 })
 
@@ -44,7 +42,7 @@ describe("navigateBack", () => {
 
     navigateBack(router, {
       returnTo: "/home",
-      fallbackPath: "/journeys",
+      fallbackPath: "/photo",
     })
 
     expect(router.replace).toHaveBeenCalledWith("/home")
@@ -57,10 +55,10 @@ describe("navigateBack", () => {
 
     navigateBack(router, {
       returnTo: "https://external.com",
-      fallbackPath: "/journeys",
+      fallbackPath: "/photo",
     })
 
-    expect(router.replace).toHaveBeenCalledWith("/journeys")
+    expect(router.replace).toHaveBeenCalledWith("/photo")
   })
 
   it("falls back when returnTo is protocol-relative", () => {
@@ -70,10 +68,10 @@ describe("navigateBack", () => {
 
     navigateBack(router, {
       returnTo: "//external.com",
-      fallbackPath: "/journeys",
+      fallbackPath: "/photo",
     })
 
-    expect(router.replace).toHaveBeenCalledWith("/journeys")
+    expect(router.replace).toHaveBeenCalledWith("/photo")
   })
 
   it("falls back when returnTo is empty", () => {
@@ -83,9 +81,9 @@ describe("navigateBack", () => {
 
     navigateBack(router, {
       returnTo: "",
-      fallbackPath: "/writings",
+      fallbackPath: "/garden",
     })
 
-    expect(router.replace).toHaveBeenCalledWith("/writings")
+    expect(router.replace).toHaveBeenCalledWith("/garden")
   })
 })

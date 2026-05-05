@@ -1,8 +1,8 @@
 import { match } from "ts-pattern"
 
-import type { WritingId, PromptId, UserId } from "../brand/index"
+import type { UserId } from "../brand/index"
 
-type EntityId = WritingId | PromptId | UserId | number | string
+type EntityId = UserId | number | string
 
 export type ValidationError = {
   readonly code: "VALIDATION_ERROR"

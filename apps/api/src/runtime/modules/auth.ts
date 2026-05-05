@@ -3,25 +3,10 @@ import { authSchema } from "@workspace/database"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { createResendEmailSender } from "@workspace/email"
 
-import type { AppVariables } from "../../app-env"
 import { createAuth } from "../../auth/auth"
 import { createDevEmailInbox, createDevEmailPort } from "../../auth/auth-email"
 import { apiEnv } from "../../config/env"
-import { createToken } from "../../lib/injection-token"
 import type { ApiCradle } from "../container"
-
-export const AuthHandler =
-  createToken<AppVariables["authHandler"]>("authHandler")
-export const AuthSession =
-  createToken<AppVariables["authSession"]>("authSession")
-export const AuthUser = createToken<AppVariables["authUser"]>("authUser")
-export const ReadLatestAuthEmail = createToken<
-  AppVariables["readLatestAuthEmail"]
->("readLatestAuthEmail")
-export const RequestId = createToken<AppVariables["requestId"]>("requestId")
-export const RequestLogger =
-  createToken<AppVariables["requestLogger"]>("requestLogger")
-export const UserId = createToken<AppVariables["userId"]>("userId")
 
 function requireValue(value: string | undefined | null, name: string): string {
   if (!value) {

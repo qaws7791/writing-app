@@ -14,7 +14,7 @@ export default route({
   inject: { getHome: GetHomeUseCase },
   response: { 200: homeSnapshotSchema, default: defaultErrorResponse },
   meta: {
-    description: "진행 중인 여정 목록과 글쓰기 제안 여부를 조회합니다.",
+    description: "첫 문장 루프 시작 행동과 문체 정원 요약을 조회합니다.",
     summary: "홈 조회",
     tags: ["홈"],
     security: cookieSecurity,

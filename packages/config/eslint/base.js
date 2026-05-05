@@ -48,7 +48,7 @@ export const config = [
           selector:
             "TSAsExpression > TSAsExpression[typeAnnotation.type='TSUnknownKeyword']",
           message:
-            "'as unknown as T' bypasses type safety. Use branded constructors (toUserId, toJourneyId, etc.) or .$type<>() in the Drizzle schema.",
+            "'as unknown as T' bypasses type safety. Use branded constructors (toUserId, etc.) or .$type<>() in the Drizzle schema.",
         },
       ],
     },

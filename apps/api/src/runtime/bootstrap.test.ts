@@ -1,7 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from "vitest"
 
-import journeySeeds from "../../data/journey-seeds.json"
-
 const {
   createApiContainerMock,
   createAppMock,
@@ -34,43 +32,11 @@ vi.mock("../lib/hono/create-app.js", () => ({
 vi.mock("./container.js", () => ({
   createApiContainer: createApiContainerMock,
   extractUseCases: (cradle: Record<string, unknown>) => {
-    const {
-      aiUseCases,
-      autosaveWritingUseCase,
-      countWritingsUseCase,
-      createWritingUseCase,
-      deleteWritingUseCase,
-      getHomeUseCase,
-      getPromptUseCase,
-      getVersionUseCase,
-      getWritingUseCase,
-      listPromptsUseCase,
-      listVersionsUseCase,
-      listWritingsUseCase,
-      pullDocumentUseCase,
-      pushTransactionsUseCase,
-      savePromptUseCase,
-      sqliteVersion,
-      unsavePromptUseCase,
-    } = cradle
+    const { getHomeUseCase, healthCheckUseCase, sqliteVersion } = cradle
     return {
-      aiUseCases,
-      autosaveWritingUseCase,
-      countWritingsUseCase,
-      createWritingUseCase,
-      deleteWritingUseCase,
       getHomeUseCase,
-      getPromptUseCase,
-      getVersionUseCase,
-      getWritingUseCase,
-      listPromptsUseCase,
-      listVersionsUseCase,
-      listWritingsUseCase,
-      pullDocumentUseCase,
-      pushTransactionsUseCase,
-      savePromptUseCase,
+      healthCheckUseCase,
       sqliteVersion,
-      unsavePromptUseCase,
     }
   },
 }))
@@ -133,22 +99,8 @@ function createMockContainer() {
       ping: vi.fn().mockResolvedValue("PONG"),
     },
     sqliteVersion: "3.46.0",
-    aiUseCases: {},
-    autosaveWritingUseCase: vi.fn(),
-    countWritingsUseCase: vi.fn(),
-    createWritingUseCase: vi.fn(),
-    deleteWritingUseCase: vi.fn(),
     getHomeUseCase: vi.fn(),
-    getPromptUseCase: vi.fn(),
-    getVersionUseCase: vi.fn(),
-    getWritingUseCase: vi.fn(),
-    listPromptsUseCase: vi.fn(),
-    listVersionsUseCase: vi.fn(),
-    listWritingsUseCase: vi.fn(),
-    pullDocumentUseCase: vi.fn(),
-    pushTransactionsUseCase: vi.fn(),
-    savePromptUseCase: vi.fn(),
-    unsavePromptUseCase: vi.fn(),
+    healthCheckUseCase: vi.fn(),
   }
 
   return {
@@ -189,10 +141,7 @@ describe("bootstrap", () => {
     })
 
     expect(seedDatabaseMock).toHaveBeenCalledTimes(1)
-    expect(seedDatabaseMock).toHaveBeenCalledWith(
-      { name: "db" },
-      journeySeeds.journeys
-    )
+    expect(seedDatabaseMock).toHaveBeenCalledWith({ name: "db" })
   })
 
   test("skips database seeding on startup when disabled", async () => {

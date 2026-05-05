@@ -8,6 +8,11 @@ description: geulsoom_labs_prd_v1_1_calm.md 기반 전체 프로젝트 피벗을
 작성일: 2026-05-05
 최종 갱신일: 2026-05-05
 
+작업 로그:
+
+- 2026-05-05: `2. 코드 절단선 확정`의 삭제 대상 제거 작업을 시작했다.
+- 2026-05-05: 확정된 삭제 대상 모듈을 제거하고, 유지 경계가 typecheck와 unit test를 통과하도록 연결부를 정리했다.
+
 ## 목표
 
 글숨 Labs 피벗의 목표는 기존 글필의 여정 중심 학습 플랫폼을 새 PRD의 첫 문장 루프 중심 제품으로 바꾸는 것이다.
@@ -255,6 +260,24 @@ AI 호출은 공개 `/ai/*` 라우트로 두지 않고, 장면 분석, 씨앗 �
 - `photo-consents.ts`
 
 `packages/database/src/schema/index.ts`는 auth export와 새 제품 스키마 export만 포함한다.
+
+### 2.8 삭제 완료 결과
+
+2026-05-05 기준 다음 제거 작업을 완료했다.
+
+- 기존 `journeys`, `sessions`, `prompts`, `writings`, `ai-feedback` core 모듈을 삭제했다.
+- 기존 journey/session/prompt/writing/feedback API 라우트 그룹을 삭제했다.
+- 기존 Web journey/session/prompt/writing feature, route, view 그룹을 삭제했다.
+- 기존 제품 DB schema, repository, seed-data 구현을 삭제하고 auth schema만 남겼다.
+- 홈과 프로필은 삭제된 제품 카운터와 라우트에 의존하지 않도록 첫 문장 루프 초기 상태로 축소했다.
+- OpenAPI spec과 `packages/api-client` 타입을 삭제 후 공개 API 기준으로 재생성했다.
+
+검증:
+
+- `bun run typecheck`: 통과
+- `bun run test:unit`: 통과
+- 변경 범위 lint: `api`, `web`, `@workspace/core`, `@workspace/database`, `@workspace/api-client`, `@workspace/ai` 통과
+- `bun run lint`: Storybook story의 기존 unused import 오류로 실패. 삭제 작업 범위 밖의 `apps/storybook/src/stories/components/*` 파일에서 발생한다.
 
 ## 3. 데이터 모델 재설계
 

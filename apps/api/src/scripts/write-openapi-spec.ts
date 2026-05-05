@@ -2,7 +2,6 @@ import fs from "node:fs"
 import path from "node:path"
 
 import { createApp } from "../lib/hono/create-app"
-import { createMemoryRateLimitBackend } from "../rate-limit/rate-limit-backend"
 import { allRoutes } from "../routes"
 
 const DEFAULT_OUTPUT_PATH = path.resolve(
@@ -28,21 +27,17 @@ async function main() {
   const app = createApp({
     openapi: {
       description:
-        "글쓰기 플랫폼 API입니다. 글감 탐색, 글 작성, 자동 저장 등 에세이 작성 워크플로우를 지원합니다.",
+        "글숨 Labs API입니다. 첫 문장 루프와 문체 정원 중심 워크플로우를 지원합니다.",
       servers: [
         {
           description: "API 서버",
           url: process.env.API_BASE_URL ?? "http://localhost:3010",
         },
       ],
-      title: "Writing App API",
+      title: "Geulsoom Labs API",
       version: "1.0.0",
     },
-    routes: [
-      ...allRoutes({
-        rateLimitBackend: createMemoryRateLimitBackend(),
-      }),
-    ],
+    routes: [...allRoutes()],
   })
 
   const response = await app.request("/openapi.json")

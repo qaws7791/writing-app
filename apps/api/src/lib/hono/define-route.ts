@@ -145,7 +145,7 @@ function resolveHandlerValue(value: unknown): {
  *
  * export default defineRoute({
  *   method: "post",
- *   path: "/writings",
+ *   path: "/home",
  *   inject: { createWriting: "createWritingUseCase" },
  *   request: { body: createWritingBodySchema },
  *   response: { 201: writingDetailSchema, default: defaultErrorResponse },

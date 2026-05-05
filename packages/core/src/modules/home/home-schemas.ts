@@ -1,18 +1,27 @@
 import { z } from "zod"
 
-export const activeJourneySummarySchema = z.object({
-  journeyId: z.number().int(),
+export const homeStartActionSchema = z.object({
+  id: z.enum(["photo", "garden", "manual"]),
   title: z.string(),
   description: z.string(),
-  thumbnailUrl: z.string().nullable(),
-  completionRate: z.number(),
-  currentSessionOrder: z.number().int(),
+  href: z.string(),
+})
+
+export const recentWorkSummarySchema = z.object({
+  sceneId: z.string(),
+  title: z.string(),
+  updatedAt: z.string(),
+})
+
+export const gardenSummarySchema = z.object({
+  cardCount: z.number().int(),
+  sentenceCount: z.number().int(),
 })
 
 export const homeSnapshotSchema = z.object({
-  activeJourneys: z.array(activeJourneySummarySchema),
-  showStartJourneyCta: z.boolean(),
-  showWritingSuggestion: z.boolean(),
+  startActions: z.array(homeStartActionSchema),
+  recentWork: recentWorkSummarySchema.nullable(),
+  garden: gardenSummarySchema,
 })
 
 export const healthCheckAiStatusSchema = z.object({

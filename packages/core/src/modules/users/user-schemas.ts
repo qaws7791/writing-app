@@ -1,10 +1,10 @@
 import { z } from "zod"
 
 export const userProfileSchema = z.object({
-  completedJourneyCount: z.number().int(),
   email: z.string().email(),
   emailVerified: z.boolean(),
+  gardenCardCount: z.number().int(),
   image: z.string().nullable().optional(),
   name: z.string(),
-  writingCount: z.number().int(),
+  sentenceCount: z.number().int(),
 })

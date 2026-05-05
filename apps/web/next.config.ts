@@ -9,25 +9,6 @@ const workspaceRoot = path.join(
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@workspace/ui"],
-  async redirects() {
-    return [
-      {
-        source: "/library",
-        destination: "/writings",
-        permanent: false,
-      },
-      {
-        source: "/my-journeys",
-        destination: "/journeys",
-        permanent: false,
-      },
-      {
-        source: "/prompts/:promptId",
-        destination: "/writings",
-        permanent: false,
-      },
-    ]
-  },
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**" }],
   },

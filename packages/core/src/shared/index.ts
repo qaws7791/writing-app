@@ -23,8 +23,6 @@ export {
   NotFoundError,
   UnauthorizedError,
   ValidationError,
-  createEmptyWritingContent,
-  extractWritingTextMetrics,
   toApplicationError,
   toApplicationErrorStatus,
 } from "./utilities/index"

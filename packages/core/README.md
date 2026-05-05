@@ -1,57 +1,18 @@
 # core
 
-비즈니스 로직의 중심입니다. 순수 함수와 immutable 데이터 구조로 구현됩니다.
+글숨 Labs 도메인 로직의 중심입니다. 순수 함수와 immutable 데이터 구조로 구현됩니다.
 
 ## 구조
 
 - `shared/`: 모든 모듈이 공유하는 타입, 유틸리티, 포트
-  - `brand/`: 도메인 식별자 (UserId, WritingId 등)
-  - `types/`: 공통 타입 (Result, DomainError 등)
-  - `schema/`: zod 계약 스키마
-  - `utilities/`: 순수 헬퍼 함수
-  - `ports/`: 외부 의존성 인터페이스
-  - `testing/`: 테스트 유틸리티
-
+  - `brand/`: 공통 식별자 브랜드 타입
+  - `error/`: 도메인 오류 타입
+  - `pagination/`: 커서 페이지네이션 타입
+  - `transaction/`: 트랜잭션 경계 포트
+  - `utilities/`: 공통 순수 헬퍼 함수
 - `modules/`: 기능별 모듈
-  - `writings/`: 글 관리
-  - `prompts/`: 글감 관리
-  - `home/`: 홈 페이지
+  - `auth/`: 인증 응답 스키마
+  - `home/`: 첫 문장 루프 홈 스냅샷
+  - `users/`: 사용자 프로필 스키마
 
-각 모듈은 동일한 구조를 따릅니다:
-
-- `contracts/`: 모듈의 공개 API
-- `model/`: 도메인 엔티티 (plain objects, readonly)
-- `operations/`: 순수 함수 (상태 전이, 검증)
-- `use-cases/`: 포트 주입 use-cases
-- `ports/`: 로컬 포트 (선택사항)
-- `errors/`: 모듈 전용 에러
-- `fixtures/`: 테스트 fixture
-
-## 설계 원칙
-
-- **Immutable Data**: 모든 데이터 구조는 readonly
-- **Pure Functions**: 부수 효과 없는 로직
-- **Discriminated Unions**: 에러를 boolean 대신 union으로
-- **Ports and Adapters**: 외부 의존성은 포트로 분리
-- **Tidy First**: 함수 5줄 이내, clear naming
-
-## 사용 예
-
-```ts
-import {
-  createWritingUseCase,
-  getWritingUseCase,
-  type CreateWritingInput,
-} from "@workspace/core"
-
-// dependency 주입
-const createWriting = (input: CreateWritingInput) =>
-  createWritingUseCase(
-    userId,
-    input,
-    writingRepository,
-    promptExists,
-    () => createId(),
-    () => new Date().toISOString()
-  )
-```
+피벗 삭제 작업 이후 `journeys`, `progress`, `prompts`, `writings`, `ai-feedback` 모듈은 제거되었습니다. 새 제품 도메인은 `scenes`, `materials`, `sentence-seeds`, `sentence-drafts`, `garden` 순서로 추가합니다.

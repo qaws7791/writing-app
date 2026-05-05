@@ -3,13 +3,13 @@
 import type { LucideIcon } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, BookOpen, PenLine, User } from "lucide-react"
+import { Home, Camera, Sprout, Menu } from "lucide-react"
 
 const NAV_ITEMS: { icon: LucideIcon; label: string; href: string }[] = [
   { icon: Home, label: "홈", href: "/home" },
-  { icon: BookOpen, label: "여정", href: "/journeys" },
-  { icon: PenLine, label: "글쓰기", href: "/writings" },
-  { icon: User, label: "프로필", href: "/profile" },
+  { icon: Camera, label: "사진", href: "/photo" },
+  { icon: Sprout, label: "정원", href: "/garden" },
+  { icon: Menu, label: "더보기", href: "/profile" },
 ]
 
 function NavItem({

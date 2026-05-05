@@ -1,11 +1,18 @@
 // Types
-export type { HomeSnapshot, ActiveJourneySummary } from "./home-types"
+export type {
+  GardenSummary,
+  HomeSnapshot,
+  HomeStartAction,
+  RecentWorkSummary,
+} from "./home-types"
 
 // Schemas
 export {
+  gardenSummarySchema,
   homeSnapshotSchema,
-  activeJourneySummarySchema,
+  homeStartActionSchema,
   healthCheckResponseSchema,
+  recentWorkSummarySchema,
 } from "./home-schemas"
 
 // Use Cases

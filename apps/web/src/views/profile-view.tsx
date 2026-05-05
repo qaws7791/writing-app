@@ -36,8 +36,8 @@ export default function ProfileView() {
       <div className="flex-1 overflow-y-auto pb-6">
         <ProfileHeader data={data} isPending={isPending} isError={isError} />
         <StatsCards
-          completedJourneyCount={data?.completedJourneyCount ?? 0}
-          writingCount={data?.writingCount ?? 0}
+          gardenCardCount={data?.gardenCardCount ?? 0}
+          sentenceCount={data?.sentenceCount ?? 0}
         />
 
         {/* 설정 그룹 */}

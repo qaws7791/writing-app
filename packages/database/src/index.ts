@@ -8,40 +8,15 @@ export {
   type SeedTestUser,
 } from "./connection/index"
 export {
-  createJourneyRepository,
-  createProgressRepository,
-  createWritingPromptRepository,
-  createWritingRepository,
-  createWritingVersionRepository,
-} from "./repository/index"
-export {
   createRepositoryTransactionManager,
   createRepositoryTransactionManager as createTransactionManager,
 } from "./transaction/index"
 export {
   account,
   authSchema,
-  journeyCategories,
-  journeyProgressStatuses,
-  journeys,
-  journeySessions,
-  promptTypes,
-  savedPrompts,
   schema,
   session,
-  sessionProgressStatuses,
-  sessionStepAiStateKinds,
-  sessionStepAiStateStatuses,
-  stepTypes,
-  steps,
   user,
-  userJourneyProgress,
-  userSessionProgress,
-  userSessionStepAiState,
   verification,
-  writings,
-  writingPrompts,
-  writingStatuses,
-  writingVersions,
 } from "./schema/index"
 export type { DbClient, DbSchema } from "./types/index"

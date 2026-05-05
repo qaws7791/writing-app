@@ -1,20 +1,10 @@
 import { afterEach, describe, expect, test } from "vitest"
 import { betterAuth } from "better-auth"
 import { memoryAdapter } from "better-auth/adapters/memory"
-import { okAsync, errAsync } from "neverthrow"
+import { okAsync } from "neverthrow"
 import { cors } from "hono/cors"
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { createSilentLogger } from "@workspace/logging"
-
-import {
-  toJourneyId,
-  toPromptId,
-  toSessionId,
-  toStepId,
-  toUserId,
-  toWritingId,
-} from "@workspace/core/shared"
-import { journeyNotFound } from "@workspace/core/modules/journeys"
 
 import {
   createUseCaseMiddleware,
@@ -26,7 +16,6 @@ import { createRequestLoggerMiddleware } from "../middleware/request-logger.js"
 import { createResolveSessionMiddleware } from "../middleware/resolve-session.js"
 import { createDevEmailInbox, createDevEmailPort } from "./auth-email.js"
 import { API_SERVICE_NAME } from "../observability/service-name.js"
-import { createMemoryRateLimitBackend } from "../rate-limit/rate-limit-backend.js"
 import getAuthEmails from "../routes/dev/get-auth-emails.js"
 import { allRoutes } from "../routes/index.js"
 import type { AppEnv } from "../app-env.js"
@@ -40,6 +29,36 @@ afterEach(() => {
     cleanupTasks.pop()?.()
   }
 })
+
+function createHomeSnapshot() {
+  return {
+    startActions: [
+      {
+        id: "photo" as const,
+        title: "사진으로 시작",
+        description: "한 장면에서 표현 재료를 찾습니다.",
+        href: "/photo",
+      },
+      {
+        id: "manual" as const,
+        title: "직접 재료 쓰기",
+        description: "떠오른 감각과 단어로 시작합니다.",
+        href: "/photo",
+      },
+      {
+        id: "garden" as const,
+        title: "문체 정원 보기",
+        description: "저장한 표현 카드를 다시 살펴봅니다.",
+        href: "/garden",
+      },
+    ],
+    recentWork: null,
+    garden: {
+      cardCount: 0,
+      sentenceCount: 0,
+    },
+  }
+}
 
 function setup(): { app: TestApp } {
   const inbox = createDevEmailInbox()
@@ -87,62 +106,6 @@ function setup(): { app: TestApp } {
   cleanupTasks.push(() => inbox.clear())
 
   const logger = createSilentLogger({ service: API_SERVICE_NAME })
-  const rateLimitBackend = createMemoryRateLimitBackend()
-
-  const stubWriting = {
-    id: toWritingId(1),
-    title: "",
-    preview: "",
-    wordCount: 0,
-    sourcePromptId: null,
-    createdAt: "2026-03-20T00:00:00.000Z",
-    updatedAt: "2026-03-20T00:00:00.000Z",
-    bodyJson: null,
-    bodyPlainText: "",
-  }
-
-  const stubPrompt = {
-    id: toPromptId(1),
-    promptType: "reflection" as const,
-    title: "테스트 글감",
-    body: "테스트 내용",
-    thumbnailUrl: "",
-    responseCount: 0,
-    isBookmarked: false,
-  }
-
-  const stubSessionRuntime = {
-    id: toSessionId(1),
-    journeyId: toJourneyId(1),
-    order: 1,
-    title: "테스트 세션",
-    description: "테스트용 세션 설명",
-    estimatedMinutes: 10,
-    steps: [
-      {
-        id: toStepId(1),
-        sessionId: toSessionId(1),
-        order: 1,
-        type: "WRITING" as const,
-        contentJson: {
-          cta: { label: "다음", variant: "primary" as const },
-          content: {
-            type: "WRITING" as const,
-            guideline: "테스트 가이드",
-            minLength: 1,
-            prompt: "테스트 글을 작성해 주세요.",
-            recommendedLength: 10,
-            timeLimitSeconds: 0,
-          },
-          type: "WRITING" as const,
-        },
-      },
-    ],
-    currentStepOrder: 1,
-    status: "in_progress" as const,
-    stepResponsesJson: {},
-    stepAiStates: [],
-  }
 
   const app = createApp<AppEnv>({
     globalMiddleware: [
@@ -160,48 +123,8 @@ function setup(): { app: TestApp } {
       ),
       createUseCaseMiddleware({
         authHandler: auth.handler,
-        autosaveWritingUseCase(_userId, _writingId, _input) {
-          return okAsync(stubWriting)
-        },
-        bookmarkPromptUseCase() {
-          return okAsync({
-            kind: "bookmarked" as const,
-            savedAt: "2026-03-20T00:00:00.000Z",
-          })
-        },
-        countWritingsUseCase() {
-          return okAsync(0)
-        },
-        compareRevisionsUseCase() {
-          return okAsync({ improvements: [], summary: "" })
-        },
-        completeSessionUseCase() {
-          return okAsync(undefined as void)
-        },
-        createWritingUseCase() {
-          return okAsync(stubWriting)
-        },
-        deleteWritingUseCase() {
-          return okAsync(undefined as void)
-        },
-        enrollJourneyUseCase() {
-          return okAsync({
-            userId: toUserId("user-1"),
-            journeyId: toJourneyId(1),
-            currentSessionOrder: 1,
-            completionRate: 0,
-            status: "in_progress" as const,
-          })
-        },
-        generateFeedbackUseCase() {
-          return okAsync({ strengths: [], improvements: [], question: "" })
-        },
         getHomeUseCase() {
-          return okAsync({
-            activeJourneys: [],
-            showStartJourneyCta: true,
-            showWritingSuggestion: true,
-          })
+          return okAsync(createHomeSnapshot())
         },
         healthCheckUseCase() {
           return {
@@ -217,53 +140,8 @@ function setup(): { app: TestApp } {
             status: "ok" as const,
           }
         },
-        getJourneyUseCase() {
-          return errAsync(journeyNotFound("여정을 찾을 수 없습니다."))
-        },
-        getPromptUseCase() {
-          return okAsync(stubPrompt)
-        },
-        getSessionDetailUseCase() {
-          return okAsync(stubSessionRuntime)
-        },
-        getWritingUseCase() {
-          return okAsync(stubWriting)
-        },
-        listJourneysUseCase() {
-          return okAsync([])
-        },
-        listCompletedJourneysUseCase() {
-          return okAsync([])
-        },
-        listUserJourneysUseCase() {
-          return okAsync([])
-        },
-        listPromptWritingsUseCase() {
-          return okAsync({ items: [], nextCursor: null, hasMore: false })
-        },
-        listPromptsUseCase() {
-          return okAsync({ items: [], nextCursor: null })
-        },
-        listWritingsUseCase() {
-          return okAsync({ items: [], nextCursor: null })
-        },
         readLatestAuthEmail: inbox.readLatestMessage,
         sqliteVersion: "memory",
-        startSessionUseCase() {
-          return okAsync(stubSessionRuntime)
-        },
-        submitStepUseCase() {
-          return okAsync({
-            acceptedAi: false,
-            runtime: stubSessionRuntime,
-          })
-        },
-        retrySessionStepAiUseCase() {
-          return okAsync(stubSessionRuntime)
-        },
-        unbookmarkPromptUseCase() {
-          return okAsync(undefined as void)
-        },
       }),
       createTimeoutMiddleware(),
     ],
@@ -276,7 +154,7 @@ function setup(): { app: TestApp } {
       }
       return handleRequestError(c, error, logger, "request failed")
     },
-    routes: [...allRoutes({ rateLimitBackend }), getAuthEmails],
+    routes: [...allRoutes(), getAuthEmails],
     notFound: (c) =>
       c.json(
         {

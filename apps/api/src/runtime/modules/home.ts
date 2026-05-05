@@ -60,11 +60,7 @@ export const HOME_USE_CASE_KEYS = [
 
 export function registerHomeModule(container: AwilixContainer<ApiCradle>) {
   container.register({
-    getHomeUseCase: asFunction(({ progressRepository }: ApiCradle) =>
-      makeGetHomeUseCase({
-        progressRepository,
-      })
-    ).singleton(),
+    getHomeUseCase: asFunction(() => makeGetHomeUseCase({})).singleton(),
 
     healthCheckUseCase: asFunction(createHealthCheckUseCase).singleton(),
   })

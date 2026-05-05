@@ -6,7 +6,7 @@ import { NotFoundError } from "@workspace/core"
 
 import { defaultErrorResponse } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
-import { ReadLatestAuthEmail } from "../../runtime/modules/auth"
+import { ReadLatestAuthEmail } from "../../runtime/modules/auth-tokens"
 
 export default route({
   method: "get",

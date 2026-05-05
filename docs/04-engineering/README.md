@@ -13,6 +13,7 @@ description: 글숨 Labs 모노레포 개발 규칙과 프론트엔드, 백엔�
 - 핵심 루프는 사진 업로드 → 표현 재료 선택 → 문장 씨앗 조립 → 한 문장 작성 → 표현 카드 저장입니다.
 - 기존 글필의 여정(Journey), 세션(Session), 스텝(Step), 글감(WritingPrompt), 긴 글 작성 도메인은 제거 또는 replaced 대상입니다.
 - 코드 절단선은 [[geulsoom-labs-pivot-plan]]의 `2. 코드 절단선 확정`에 확정되어 있습니다.
+- 확정된 삭제 대상 모듈은 2026-05-05에 제거되었고, 현재 제품 코드는 auth, health, home, users 기반 골격만 남긴 상태입니다.
 - 유지 대상은 Bun/Turbo 모노레포, Hono API 골격, Better Auth, DB 연결/트랜잭션 유틸, OpenAPI/API client 생성 흐름, `packages/ui` 기반 UI 컴포넌트입니다.
 - `packages/core`는 scenes, materials, sentence-seeds, garden 중심으로 재구성할 예정입니다.
 - `packages/database`는 Better Auth 스키마를 유지하고 제품 테이블은 새 도메인 모델로 초기화할 예정입니다.

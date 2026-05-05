@@ -6,7 +6,7 @@ import {
   defaultErrorResponse,
 } from "../../http/openapi-helpers"
 import { route } from "../../http/route"
-import { AuthSession, AuthUser } from "../../runtime/modules/auth"
+import { AuthSession, AuthUser } from "../../runtime/modules/auth-tokens"
 
 export default route({
   method: "get",

@@ -3,7 +3,6 @@ import type { AppLogLevel } from "@workspace/logging"
 import { apiReference } from "@scalar/hono-api-reference"
 import { OpenAPIHono } from "@hono/zod-openapi"
 import { cors } from "hono/cors"
-import journeySeeds from "../../data/journey-seeds.json"
 
 import type { AppEnv, AppUseCases } from "../app-env"
 import {
@@ -18,7 +17,6 @@ import { createResolveSessionMiddleware } from "../middleware/resolve-session"
 import getAuthEmails from "../routes/dev/get-auth-emails"
 import { allRoutes } from "../routes"
 import { createApiContainer, extractUseCases } from "./container"
-import { createSessionAiWorker } from "./session-ai-worker"
 
 export type ApiEnvironment = {
   apiBaseUrl: string
@@ -61,20 +59,13 @@ export async function createApiDependencies(
   environment: ApiEnvironment
 ): Promise<AppDependencies> {
   const container = createApiContainer(environment)
-  const {
-    auth,
-    database,
-    devEmailInbox,
-    logger,
-    rateLimitBackend,
-    redisClient,
-    sqliteVersion,
-  } = container.cradle
+  const { auth, database, devEmailInbox, logger, redisClient, sqliteVersion } =
+    container.cradle
 
   await redisClient.ping()
   await migrateDatabase(database.db)
   if (environment.seedOnStartup) {
-    await seedDatabase(database.db, journeySeeds.journeys)
+    await seedDatabase(database.db)
   }
 
   const useCases: AppUseCases = {
@@ -82,11 +73,6 @@ export async function createApiDependencies(
     authHandler: auth.handler,
     readLatestAuthEmail: devEmailInbox?.readLatestMessage,
   }
-  const sessionAiWorker = createSessionAiWorker({
-    aiCoachingGateway: container.cradle.aiCoachingGateway,
-    logger,
-    progressRepository: container.cradle.progressRepository,
-  })
 
   logger.info(
     {
@@ -123,7 +109,7 @@ export async function createApiDependencies(
     errorHandler: (error, c) =>
       handleRequestError(c, error, logger, "request failed"),
     routes: [
-      ...allRoutes({ rateLimitBackend }),
+      ...allRoutes(),
       ...(environment.authDebugEnabled ? [getAuthEmails] : []),
     ],
     notFound: (c) =>
@@ -138,9 +124,9 @@ export async function createApiDependencies(
       ),
     openapi: {
       description:
-        "글쓰기 플랫폼 API입니다. 글감 탐색, 글 작성, 자동 저장 등 에세이 작성 워크플로우를 지원합니다.",
+        "글숨 Labs API입니다. 첫 문장 루프와 문체 정원 중심 워크플로우를 지원합니다.",
       servers: [{ description: "API 서버", url: environment.apiBaseUrl }],
-      title: "Writing App API",
+      title: "Geulsoom Labs API",
       version: "1.0.0",
     },
   })
@@ -156,18 +142,15 @@ export async function createApiDependencies(
   app.get(
     "/docs",
     apiReference({
-      pageTitle: "Writing App API",
+      pageTitle: "Geulsoom Labs API",
       url: "/openapi.json",
       theme: "kepler",
     })
   )
 
-  sessionAiWorker.start()
-
   return {
     app,
     close: () => {
-      sessionAiWorker.stop()
       void container.dispose()
     },
     sqliteVersion,
