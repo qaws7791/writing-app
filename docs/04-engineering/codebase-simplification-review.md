@@ -6,7 +6,8 @@ description: 2026-04-21 기준 글필 모노레포를 탐색해 단순하고 안
 ## 상태
 
 - 기준 시점: 2026-04-21
-- 범위: `apps/web`, `apps/api`, `apps/admin`, `packages/core`, `packages/database`
+- 최신 상태: 2026-05-05에 `apps/admin` 앱을 제거했습니다. 아래 Admin 관련 완료 항목은 제거 전 이력으로만 유지합니다.
+- 범위: `apps/web`, `apps/api`, `packages/core`, `packages/database`
 - 목적: 동작 변경 없이 구조 복잡도와 숨은 변환을 줄이기 위한 후속 작업 후보를 정리합니다.
 - 전제: 현재는 개발 단계이므로 마이그레이션 비용이나 하위 호환성보다 구현 단순성과 구조 명확성을 우선합니다.
 - 후속 작업: `codebase-simplification-review.md` 기준 순차 개선을 2026-04-21부터 진행합니다.

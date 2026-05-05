@@ -1,15 +1,14 @@
 ---
 title: 의존성 주입 가이드
-description: 백엔드 패키지들을 인터페이스와 포트로 연결하고 apps/api, apps/admin에서 최종 조립하는 기준을 정의합니다.
+description: 백엔드 패키지들을 인터페이스와 포트로 연결하고 apps/api에서 최종 조립하는 기준을 정의합니다.
 ---
 
 ## 상태
 
-- 기준 시점: 2026-04-20
+- 기준 시점: 2026-05-05
 - `apps/api/src/runtime/container.ts`에 Awilix 기반 DI 컨테이너가 도입되었습니다.
 - `apps/api/src/runtime/modules/` 아래 네 개의 모듈로 등록 로직이 분리되어 있습니다.
 - `apps/api/src/runtime/bootstrap.ts`는 컨테이너를 생성하고 마이그레이션/시딩 등 오케스트레이션만 담당합니다.
-- `apps/admin/src/lib/runtime/admin-composition.ts`는 관리자 앱의 singleton composition root입니다.
 - 중간 서비스 레이어(`services/writing-services.ts`, `services/prompt-services.ts`)가 제거되었습니다.
 - 각 use case는 컨테이너에 개별 토큰으로 등록되며, Hono context에 직접 주입됩니다.
 - 글필(Geulpil) 피벗으로 여정, 세션, AI 피드백 use case가 추가될 예정입니다.
@@ -41,13 +40,6 @@ description: 백엔드 패키지들을 인터페이스와 포트로 연결하고
 - 모듈별 dependency 묶음 조립
 - handler에 use case 개별 주입
 - 요청 스코프 값과 장수명 객체 연결
-
-### `apps/admin`
-
-- 관리자 앱 전용 singleton runtime 생성
-- DB, repository factory, transaction manager, core use case 조립
-- Next.js route와 서버 컴포넌트는 runtime 또는 그 파생 helper만 사용
-- route body/query parsing은 `@workspace/core` schema를 재사용
 
 ## 요청 스코프와 장수명 dependency
 

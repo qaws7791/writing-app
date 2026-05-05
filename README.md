@@ -46,16 +46,6 @@ RustFS가 시작되면 다음 주소로 접근할 수 있습니다:
 - **웹 콘솔**: `http://localhost:9001`
 - **자격증명**: `.env.docker`에 설정한 값
 
-### 2. 어드민 개발 서버
-
-```bash
-bun dev
-```
-
-### 3. 이미지 업로드 테스트
-
-`http://localhost:3020/prompts/new` 에서 이미지 업로드를 테스트할 수 있습니다.
-
 자세한 설정은 [로컬 개발 가이드](docs/04-engineering/local-development.md)를 참고하세요.
 
 ## packs repository for agent

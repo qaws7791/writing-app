@@ -19,7 +19,6 @@ export {
   createRepositoryTransactionManager as createTransactionManager,
 } from "./transaction/index"
 export {
-  adminUsers,
   account,
   authSchema,
   journeyCategories,

@@ -7,7 +7,7 @@ description: 글필(Geulpil) 모노레포 개발 규칙과 프론트엔드, 백�
 
 ## 상태
 
-- 기준 시점: 2026-04-20
+- 기준 시점: 2026-05-05
 - 제품은 글필(Geulpil) — 한국어 에세이 글쓰기 학습 플랫폼으로 피벗했습니다.
 - 핵심 도메인은 여정(Journey)-세션(Session)-스텝(Step) 기반 학습, 글감(WritingPrompt), 글쓰기(Writing), AI 소크라테스식 코칭입니다.
 - `apps/web`은 홈, 여정, 글쓰기(서재 포함), 에디터, 인증 화면의 프로토타입을 포함합니다.
@@ -15,7 +15,7 @@ description: 글필(Geulpil) 모노레포 개발 규칙과 프론트엔드, 백�
 - `packages/core`는 writings, prompts, home, journeys, progress, ai-feedback 모듈의 비즈니스 코어를 포함합니다.
 - `packages/database`는 SQLite + Drizzle ORM 기반 영속성 계층입니다.
 - `packages/ai`는 AI SDK + Google Gemini 기반 AI 어댑터입니다.
-- 여정, 세션, 스텝, AI 피드백 흐름은 `apps/web`, `apps/api`, `apps/admin`, `packages/core`, `packages/database`에 부분 도입되어 있습니다.
+- 여정, 세션, 스텝, AI 피드백 흐름은 `apps/web`, `apps/api`, `packages/core`, `packages/database`에 부분 도입되어 있습니다.
 
 ## 포함 문서
 

@@ -105,7 +105,6 @@ When editing code:
 - Always design for mobile users
 - Platform theme: use glassmorphism and floating appropriately for editorial, to reduce frustration
 - Avoid using temporary values (bracket pattern) in apps/web
-- `apps/admin` form components use controlled `useState` state with `@/lib/forms/admin-mutation` helpers by default. Do not introduce `react-hook-form` there unless a task explicitly requires schema-driven field composition or reusable field-array behavior.
 
 ## Local Development
 

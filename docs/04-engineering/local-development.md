@@ -5,7 +5,7 @@ description: 이 모노레포를 로컬에서 설치, 실행, 점검할 때 필�
 
 ## 상태
 
-- 기준 시점: 2026-04-20
+- 기준 시점: 2026-05-05
 - 현재 로컬 개발의 중심은 `apps/web` 화면 프로토타입 및 `apps/api` 기능 구현입니다.
 - `packages/core`, `packages/database`, `packages/ai`가 생성되어 있으며 개발 중입니다.
 - 데이터베이스는 SQLite을 사용합니다.
@@ -103,19 +103,6 @@ RustFS 데이터는 프로젝트의 `./data` 디렉토리에 저장됩니다. �
 - `docker compose up -d`는 `writing-app-public-assets` 버킷을 자동 생성합니다.
 - 같은 초기화 단계에서 해당 버킷에 익명 읽기 정책을 적용합니다.
 - 기존 `writing-app-images` 버킷은 비공개 용도로 유지되며, 공개 미리보기 URL에 사용하지 않습니다.
-
-### 스토리지 환경 변수
-
-`apps/admin` 앱의 `.env.development.local` 또는 `.env.example`을 참고하여 아래 변수를 설정합니다. `STORAGE_ACCESS_KEY`, `STORAGE_SECRET_KEY`는 `.env.docker`와 같은 값을 사용합니다.
-
-```
-STORAGE_ENDPOINT=http://localhost:9000
-STORAGE_ACCESS_KEY=<copy-from-.env.docker>
-STORAGE_SECRET_KEY=<copy-from-.env.docker>
-STORAGE_PUBLIC_BUCKET=writing-app-public-assets
-STORAGE_REGION=us-east-1
-STORAGE_PUBLIC_URL=http://localhost:9000
-```
 
 ## 작업 흐름 권장
 

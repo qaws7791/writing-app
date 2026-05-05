@@ -5,10 +5,10 @@ description: 트랜잭션 없는 다단계 DB 작업 현황을 조사하고, 시
 
 ## 상태
 
-- 기준 시점: 2026-04-20
+- 기준 시점: 2026-05-05
 - 범위:
   - 운영 요청 경로(`apps/api` → `packages/core` → `packages/database`)
-  - 관리/초기화 스크립트(`packages/database/src/connection`, `apps/admin/src/scripts`)
+  - 초기화 스크립트(`packages/database/src/connection`)
 - 목표:
   - 트랜잭션 없는 다단계 DB 쓰기 작업을 새 코드에서 원천적으로 막는다.
   - 기존 위험 구간을 모두 원자적(atomic) 경계 안으로 옮긴다.
@@ -19,7 +19,7 @@ description: 트랜잭션 없는 다단계 DB 작업 현황을 조사하고, 시
 - 보조 스크립트에서 확인된 위험 구간: 3곳
 - 구조적 원인:
   - `packages/core` 포트에 트랜잭션 경계 개념이 없다.
-  - `apps/api`와 `apps/admin`은 트랜잭션 스코프가 아닌 전역 repository를 조립한다.
+  - `apps/api`는 트랜잭션 스코프가 아닌 전역 repository를 조립한다.
   - repository API가 너무 세분화되어 있어 use case가 여러 쓰기 작업을 임의 조합할 수 있다.
   - 문서상으로는 `packages/database`가 transaction runner를 공개해야 하지만 실제 export는 없다.
 
@@ -102,7 +102,6 @@ description: 트랜잭션 없는 다단계 DB 작업 현황을 조사하고, 시
 ### 2. repository가 트랜잭션 스코프가 아닌 전역 DB 클라이언트에 묶여 있음
 
 - `apps/api/src/runtime/modules/repositories.ts:11-28`는 `database.db` 기반 singleton repository를 등록한다.
-- `apps/admin/src/lib/repositories.ts:8-13`도 동일하게 전역 DB 기반 repository를 조립한다.
 - 이 구조에서는 use case가 "같은 트랜잭션 안의 repository"를 받기가 어렵다.
 
 ### 3. 문서와 실제 구현이 어긋나 있음
@@ -135,7 +134,7 @@ export interface TransactionScope {
 
 - `packages/database`는 `db.transaction(...)` 위에 `createTransactionManager(db)`를 구현한다.
 - `TransactionScope` 안의 repository는 반드시 같은 `tx` 객체를 공유하도록 factory 기반으로 생성한다.
-- `apps/api`, `apps/admin`은 더 이상 "전역 singleton mutating repository"만 주입하지 말고, `transactionManager`도 함께 조립한다.
+- `apps/api`는 더 이상 "전역 singleton mutating repository"만 주입하지 말고, `transactionManager`도 함께 조립한다.
 - 다단계 쓰기 유스케이스(`enrollJourney`, `completeSession`, `submitStep`, `createWriting`)는 이 runner 안에서만 상태 전이를 수행한다.
 
 이 방안의 핵심은 "트랜잭션을 쓸 수 있다"가 아니라 "다단계 쓰기는 transaction runner 없이는 구현할 수 없다"로 구조를 바꾸는 것이다.
@@ -221,7 +220,7 @@ export interface TransactionScope {
 
 ## 권장 적용 순서
 
-1. `packages/database`에 transaction runner를 추가하고 `apps/api`, `apps/admin` 조립 계층에 연결한다.
+1. `packages/database`에 transaction runner를 추가하고 `apps/api` 조립 계층에 연결한다.
 2. 아래 운영 경로를 우선 마이그레이션한다.
    - `enrollJourney`
    - `submitStep`
