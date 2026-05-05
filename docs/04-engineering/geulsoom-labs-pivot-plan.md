@@ -3,9 +3,10 @@ title: 글숨 Labs 피벗 작업 계획
 description: geulsoom_labs_prd_v1_1_calm.md 기반 전체 프로젝트 피벗을 추적하기 위한 실행 체크리스트입니다.
 ---
 
-상태: proposed
+상태: in-progress
 기준 PRD: repository root의 `geulsoom_labs_prd_v1_1_calm.md`
 작성일: 2026-05-05
+최종 갱신일: 2026-05-05
 
 ## 목표
 
@@ -62,13 +63,198 @@ MVP 성공 조건은 신규 사용자가 5~10분 안에 AI가 대신 쓴 문장�
 
 ## 2. 코드 절단선 확정
 
-- [ ] 삭제 대상 모듈 목록을 확정한다.
-- [ ] 유지 대상 shared 모듈 목록을 확정한다.
-- [ ] `apps/api/src/routes/index.ts`에서 제거할 라우트 그룹을 확정한다.
-- [ ] `apps/web/src/features`에서 제거할 feature 그룹을 확정한다.
-- [ ] `apps/web/src/views`에서 제거할 view 그룹을 확정한다.
-- [ ] `packages/core/src/modules`에서 새 모듈 이름과 export 경계를 확정한다.
-- [ ] `packages/database/src/schema`에서 유지할 auth 스키마와 제거할 제품 스키마를 구분한다.
+- [x] 삭제 대상 모듈 목록을 확정한다.
+- [x] 유지 대상 shared 모듈 목록을 확정한다.
+- [x] `apps/api/src/routes/index.ts`에서 제거할 라우트 그룹을 확정한다.
+- [x] `apps/web/src/features`에서 제거할 feature 그룹을 확정한다.
+- [x] `apps/web/src/views`에서 제거할 view 그룹을 확정한다.
+- [x] `packages/core/src/modules`에서 새 모듈 이름과 export 경계를 확정한다.
+- [x] `packages/database/src/schema`에서 유지할 auth 스키마와 제거할 제품 스키마를 구분한다.
+
+### 2.1 삭제 대상 모듈
+
+다음 모듈은 기존 여정 중심 제품 표면이므로 새 MVP 구현 전에 삭제 또는 같은 경로의 replaced 구현으로 교체한다.
+
+- `apps/api/src/routes/journeys`
+- `apps/api/src/routes/sessions`
+- `apps/api/src/routes/prompts`
+- `apps/api/src/routes/writings`
+- `apps/api/src/routes/ai`의 기존 긴 글 피드백, 문장 비교 라우트
+- `apps/api/src/runtime/modules/journeys.ts`
+- `apps/api/src/runtime/modules/sessions.ts`
+- `apps/api/src/runtime/modules/prompts.ts`
+- `apps/api/src/runtime/modules/writings.ts`
+- `packages/core/src/modules/journeys`
+- `packages/core/src/modules/progress`
+- `packages/core/src/modules/prompts`
+- `packages/core/src/modules/writings`
+- `packages/core/src/modules/ai-feedback`
+- `packages/database/src/repository/journey.repository.ts`
+- `packages/database/src/repository/progress.repository*.ts`
+- `packages/database/src/repository/writing*.repository.ts`
+- `packages/database/src/seed-data/journeys.ts`
+- `packages/database/src/seed-data/writing-prompts.ts`
+- `apps/web/src/app/(tabs)/journeys`
+- `apps/web/src/app/journeys`
+- `apps/web/src/app/prompts`
+- `apps/web/src/app/writings`
+- `apps/web/src/data/journey-sessions.json`
+
+### 2.2 유지 대상 shared 모듈
+
+다음 모듈은 제품 도메인과 분리된 런타임 골격이므로 유지한다. 단, 응답 모델이나 문구가 기존 글필 도메인에 묶인 경우 해당 파일만 새 도메인으로 갱신한다.
+
+- `packages/core/src/shared/brand`
+- `packages/core/src/shared/error`
+- `packages/core/src/shared/pagination`
+- `packages/core/src/shared/transaction`
+- `packages/core/src/shared/utilities/application-errors.ts`
+- `packages/core/src/modules/auth`
+- `packages/core/src/modules/users`
+- `packages/config`
+- `packages/logging`
+- `packages/storage`
+- `packages/ui`
+- `packages/api-client`의 생성 흐름
+- `packages/database/src/connection`
+- `packages/database/src/testing`
+- `packages/database/src/transaction`
+- `apps/api/src/auth`
+- `apps/api/src/http`
+- `apps/api/src/middleware`
+- `apps/api/src/observability`
+- `apps/api/src/rate-limit`
+- `apps/web/src/foundation`
+
+`packages/core/src/shared/schema/writing-content-schema.ts`와 `packages/core/src/shared/utilities/writing-content-utilities.ts`는 긴 글 작성 도메인에 묶여 있으므로 shared 유지 대상에서 제외하고 문장 단위 모델 구현 시 삭제한다.
+
+### 2.3 API 라우트 절단선
+
+`apps/api/src/routes/index.ts`는 다음 라우트만 유지한다.
+
+- `getHealth`
+- `authHandler`
+- `getMe`
+- `getHome`
+- `getUserProfile`
+
+다음 라우트 그룹은 제거한다.
+
+- `promptRoutes()`
+- `journeyRoutes()`
+- `sessionRoutes()`
+- `writingRoutes()`
+- 기존 `aiRoutes({ rateLimitBackend })`
+
+새 MVP 라우트 그룹은 다음 이름으로 추가한다.
+
+- `sceneRoutes()`
+- `materialRoutes()`
+- `materialSelectionRoutes()`
+- `sentenceSeedRoutes()`
+- `sentenceDraftRoutes()`
+- `gardenCardRoutes()`
+
+AI 호출은 공개 `/ai/*` 라우트로 두지 않고, 장면 분석, 씨앗 생성, 문장 힌트 use case 내부 포트로 연결한다.
+
+### 2.4 Web feature 절단선
+
+`apps/web/src/features`에서 다음 feature 그룹을 제거한다.
+
+- `journeys`
+- `sessions`
+- `prompts`
+- `writings`
+- `ai`
+
+다음 feature 그룹은 유지하되 새 홈/프로필 요구사항에 맞게 응답 매핑만 갱신한다.
+
+- `home`
+- `users`
+
+새 MVP feature 그룹은 다음 이름으로 추가한다.
+
+- `scenes`
+- `materials`
+- `sentence-seeds`
+- `sentence-drafts`
+- `garden`
+
+### 2.5 Web view 절단선
+
+`apps/web/src/views`에서 다음 view를 제거한다.
+
+- `journey-archive-view.tsx`
+- `journey-detail-view.tsx`
+- `journeys-view.tsx`
+- `my-journeys-view.tsx`
+- `prompt-archive-view.tsx`
+- `prompt-bottom-sheet.tsx`
+- `prompt-detail-view.tsx`
+- `writing-entry-view.tsx`
+- `writing-editor-view.tsx`
+- `writings-list-view.tsx`
+- `session-detail-view`
+- `writing-editor`
+
+다음 view는 유지하되 새 정보 구조로 다시 작성한다.
+
+- `home-view.tsx`
+- `profile-view.tsx`
+
+새 MVP view는 다음 이름으로 추가한다.
+
+- `scene-capture-view.tsx`
+- `material-basket-view.tsx`
+- `sentence-seed-composer-view.tsx`
+- `sentence-editor-view.tsx`
+- `garden-view.tsx`
+
+### 2.6 Core 모듈 경계
+
+`packages/core/src/modules`의 새 export 경계는 다음으로 확정한다.
+
+- `scenes`: `Scene`, 사진 보관 상태, 분석 상태, 장면 생성, 사진 삭제, 장면 조회 use case, `SceneRepository`, `ScenePhotoStoragePort`
+- `materials`: `MaterialNode`, `MaterialSelection`, 재료 조회, 수동 재료 추가, 선택/버림/정렬 use case, `MaterialRepository`, `SceneMaterialAnalyzerPort`
+- `sentence-seeds`: `SentenceSeed`, 씨앗 생성/조회 use case, `SentenceSeedRepository`, `SentenceSeedGeneratorPort`
+- `sentence-drafts`: `SentenceDraft`, 한 문장 저장 전 초안 생성/수정, 힌트 요청 use case, `SentenceDraftRepository`, `SentenceHintGeneratorPort`
+- `garden`: `GardenCard`, `Provenance`, 카드 저장/목록/상세/삭제 use case, `GardenRepository`
+- `home`: 홈 snapshot을 시작 카드 3개, 최근 작업 1개, 정원 요약 1개로 재정의
+- `auth`: Better Auth 응답 스키마 유지
+- `users`: 사용자 프로필 스키마 유지
+
+모든 새 모듈은 `index.ts`에서 type, schema, error, port, use case를 명시적으로 export한다. 기존 `ai-feedback` 모듈은 독립 도메인으로 유지하지 않고 `materials`, `sentence-seeds`, `sentence-drafts`의 포트로 흡수한다.
+
+### 2.7 Database 스키마 절단선
+
+`packages/database/src/schema/auth.ts`는 유지한다. 이 파일의 `user`, `account`, `session`, `verification`은 Better Auth 소유 스키마로 남긴다.
+
+다음 제품 스키마는 제거한다.
+
+- `journeys.ts`
+- `journey-sessions.ts`
+- `steps.ts`
+- `saved-prompts.ts`
+- `user-journey-progress.ts`
+- `user-session-progress.ts`
+- `user-session-step-ai-state.ts`
+- `writing-prompts.ts`
+- `writings.ts`
+- `writing-versions.ts`
+
+새 제품 스키마는 다음 파일로 추가한다.
+
+- `scenes.ts`
+- `material-nodes.ts`
+- `material-selections.ts`
+- `sentence-seeds.ts`
+- `sentence-seed-materials.ts`
+- `sentence-drafts.ts`
+- `garden-cards.ts`
+- `provenance.ts`
+- `photo-consents.ts`
+
+`packages/database/src/schema/index.ts`는 auth export와 새 제품 스키마 export만 포함한다.
 
 ## 3. 데이터 모델 재설계
 
