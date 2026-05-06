@@ -7,7 +7,6 @@ import {
   InputGroupInput,
   InputGroupButton,
 } from "@/components/ui/input-group"
-import { Button } from "@/components/ui/button"
 
 const meta: Meta<typeof InputGroup> = {
   title: "Components/InputGroup",

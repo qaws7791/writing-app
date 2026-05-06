@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { ChevronsUpDown, Plus, X } from "lucide-react"
+import { ChevronsUpDown } from "lucide-react"
 
 import {
   Collapsible,

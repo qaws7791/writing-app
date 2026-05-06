@@ -106,21 +106,22 @@ description: 글숨 Labs wiki의 모든 페이지를 카테고리별로 나열�
 
 ### 백엔드
 
-| 파일                                                  | 요약                                                       |
-| ----------------------------------------------------- | ---------------------------------------------------------- |
-| [[04-engineering/backend-architecture-guide]]         | DOP·패키지 경계 중심 백엔드 구조 정의                      |
-| [[04-engineering/backend-core-guide]]                 | packages/core 모듈 구조, DOP 패턴, 포트 설계, vitest 기준  |
-| [[04-engineering/backend-package-boundaries]]         | apps/api·core·database·ai 패키지 책임과 금지 의존성        |
-| [[04-engineering/api-conventions]]                    | core 계약 스키마와 use case를 HTTP/OpenAPI에 연결하는 규약 |
-| [[04-engineering/dependency-injection]]               | 인터페이스·포트 연결 및 apps/api 최종 조립 기준            |
-| [[04-engineering/transaction-boundary-audit]]         | 트랜잭션 없는 다단계 DB 작업 감사와 시스템 차단 전략       |
-| [[04-engineering/journey-list-n-plus-one-options]]    | 완료 여정/내 여정 목록 N+1 제거 접근 비교                  |
-| [[04-engineering/logging-guide]]                      | 요청 추적·운영 디버깅·보안 대응을 위한 로그 기준           |
-| [[04-engineering/error-message-guidelines]]           | 사용자·API 오류 응답 일관 설계 기준                        |
-| [[04-engineering/core-refactoring-plan]]              | packages/core 모듈 확장 계획 (피벗 대응)                   |
-| [[04-engineering/geulsoom-labs-pivot-plan]]           | 글숨 Labs PRD v1.1 기반 전체 프로젝트 피벗 작업 체크리스트 |
-| [[04-engineering/code-review-remediation-2026-04-20]] | 2026-04-20 코드 리뷰 후속 조치 현황                        |
-| [[04-engineering/codebase-simplification-review]]     | 2026-04-21 기준 코드베이스 단순화 우선 개선 포인트         |
+| 파일                                                     | 요약                                                       |
+| -------------------------------------------------------- | ---------------------------------------------------------- |
+| [[04-engineering/backend-architecture-guide]]            | DOP·패키지 경계 중심 백엔드 구조 정의                      |
+| [[04-engineering/backend-core-guide]]                    | packages/core 모듈 구조, DOP 패턴, 포트 설계, vitest 기준  |
+| [[04-engineering/backend-package-boundaries]]            | apps/api·core·database·ai 패키지 책임과 금지 의존성        |
+| [[04-engineering/api-conventions]]                       | core 계약 스키마와 use case를 HTTP/OpenAPI에 연결하는 규약 |
+| [[04-engineering/dependency-injection]]                  | 인터페이스·포트 연결 및 apps/api 최종 조립 기준            |
+| [[04-engineering/transaction-boundary-audit]]            | 트랜잭션 없는 다단계 DB 작업 감사와 시스템 차단 전략       |
+| [[04-engineering/journey-list-n-plus-one-options]]       | 완료 여정/내 여정 목록 N+1 제거 접근 비교                  |
+| [[04-engineering/logging-guide]]                         | 요청 추적·운영 디버깅·보안 대응을 위한 로그 기준           |
+| [[04-engineering/error-message-guidelines]]              | 사용자·API 오류 응답 일관 설계 기준                        |
+| [[04-engineering/core-refactoring-plan]]                 | packages/core 모듈 확장 계획 (피벗 대응)                   |
+| [[04-engineering/geulsoom-labs-pivot-plan]]              | 글숨 Labs PRD v1.1 기반 전체 프로젝트 피벗 작업 체크리스트 |
+| [[04-engineering/code-review-remediation-2026-04-20]]    | 2026-04-20 코드 리뷰 후속 조치 현황                        |
+| [[04-engineering/codebase-simplification-review]]        | 2026-04-21 기준 코드베이스 단순화 우선 개선 포인트         |
+| [[04-engineering/storybook-lint-remediation-2026-05-07]] | 2026-05-07 Storybook lint push 차단 조치 현황              |
 
 ### 프론트엔드
 

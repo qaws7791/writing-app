@@ -11,7 +11,6 @@ import {
   ItemGroup,
   ItemSeparator,
 } from "@/components/ui/item"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
 const meta: Meta = {

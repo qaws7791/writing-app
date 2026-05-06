@@ -37,6 +37,7 @@ description: 글숨 Labs 모노레포 개발 규칙과 프론트엔드, 백엔�
 - [[logging-guide]]: 구조화 로그와 요청 추적 기준
 - [[code-review-remediation-2026-04-20]]: 2026-04-20 코드 리뷰 후속 조치와 항목별 처리 현황
 - [[codebase-simplification-review]]: 2026-04-21 기준 코드베이스 단순화 우선 개선 포인트
+- [[storybook-lint-remediation-2026-05-07]]: 2026-05-07 Storybook lint push 차단 조치 현황
 
 ## 읽는 순서
 
