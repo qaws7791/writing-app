@@ -23,3 +23,15 @@
   relevant workspace ESLint tasks.
 - The previous formatter and secondary linter binaries are no longer part of
   the toolchain.
+
+## Next.js Apps
+
+- `apps/web` uses the package name `@workspace/web` and is managed through Bun
+  workspace filters.
+- Next.js apps extend `@workspace/config/typescript/nextjs.json` and
+  `@workspace/config/eslint/next-js`.
+- App-level Tailwind entry files import `@workspace/ui/globals.css` instead of
+  duplicating design tokens.
+- Shared components, styles, and utilities are imported from `@workspace/ui`.
+- Each Next.js app should expose `dev`, `build`, `start`, `lint`, and
+  `typecheck` scripts so Turbo can validate the workspace consistently.
