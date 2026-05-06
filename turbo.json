@@ -1,32 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": [
-    "API_BASE_URL",
-    "CI",
-    "DATABASE_URL",
-    "NODE_ENV",
-    "API_RATE_LIMIT_REDIS_PREFIX",
-    "API_REDIS_URL",
-    "RESEND_API_KEY",
-    "RESEND_FROM_ADDRESS"
-  ],
+  "globalEnv": ["CI", "NODE_ENV"],
   "ui": "tui",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
-    },
-    "openapi:write": {
-      "outputs": [".generated/openapi.json"]
-    },
-    "api:fetch": {
-      "dependsOn": ["api#openapi:write"],
-      "outputs": ["src/openapi.json"]
-    },
-    "api:generate": {
-      "dependsOn": ["api:fetch"],
-      "outputs": ["src/schema.d.ts"]
+      "outputs": ["dist/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]

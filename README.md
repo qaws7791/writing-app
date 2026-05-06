@@ -1,13 +1,19 @@
-# shadcn/ui monorepo template
+# Writing App UI Workspace
 
-This is a Next.js monorepo template with shadcn/ui.
+This repository has been reset to a Storybook and UI package workspace.
+
+## Current structure
+
+- `apps/storybook`: Storybook workbench for `@workspace/ui`
+- `packages/ui`: shared UI components, styles, and utilities
+- `packages/config`: shared ESLint and TypeScript configuration
 
 ## Adding components
 
-To add components to your app, run the following command at the root of your `web` app:
+To add components to the UI package, run the following command from the repository root:
 
 ```bash
-bunx shadcn@latest add button -c apps/web
+bunx shadcn@latest add button -c packages/ui
 ```
 
 This will place the ui components in the `packages/ui/src/components` directory.
@@ -22,34 +28,17 @@ import { Button } from "@workspace/ui/components/button"
 
 ## Scripts
 
-`bun dev --filter=web` to run the web app.
-`bun dev --filter=web...` to run the web app and all its dependencies.
+`bun storybook` runs the Storybook development server.
+`bun build-storybook` builds the static Storybook output.
+`bun typecheck` typechecks the remaining workspaces.
+`bun lint` runs lint for the remaining workspaces.
 
 ## use bun
 
 use `@types/bun` instead of `@types/node`
 
-## 스토리지 로컬 실행 방법
-
-### 1. RustFS 시작
-
-저장소 루트에서 다음 명령을 실행합니다:
-
-```bash
-cp .env.docker.example .env.docker
-docker compose up -d
-```
-
-RustFS가 시작되면 다음 주소로 접근할 수 있습니다:
-
-- **S3 API**: `http://localhost:9000`
-- **웹 콘솔**: `http://localhost:9001`
-- **자격증명**: `.env.docker`에 설정한 값
-
-자세한 설정은 [로컬 개발 가이드](docs/04-engineering/local-development.md)를 참고하세요.
-
 ## packs repository for agent
 
 ```
-npx repomix@latest -i ".agent, .agents, .claude, .tmp, .vscode, docs, apps/web/src/data/journey-sessions.json,  apps/api/src/openapi.json, **/*.d.ts, **/*.test.ts, packages/database/drizzle/meta/, apps/storybook, **/*.spec.ts"
+npx repomix@latest -i ".agent, .agents, .claude, .tmp, .vscode, docs, **/*.d.ts, **/*.test.ts, apps/storybook, packages/ui, packages/config, **/*.spec.ts"
 ```

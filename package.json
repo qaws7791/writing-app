@@ -7,30 +7,18 @@
     "packages/*"
   ],
   "scripts": {
-    "api:fetch": "turbo run api:fetch --filter=@workspace/api-client",
-    "api:generate": "turbo run api:generate --filter=@workspace/api-client",
-    "api:check-generated": "bun run api:generate && git diff --exit-code -- packages/api-client/src/openapi.json packages/api-client/src/schema.d.ts",
     "build": "turbo build",
     "build-storybook": "bun --filter storybook build",
     "dev": "turbo dev",
-    "dev:local": "bun --filter web dev:local",
-    "db:reset": "bun --filter api db:reset",
     "lint": "turbo lint",
     "lint:oxlint": "oxlint",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "seed": "bun --filter api seed",
     "storybook": "bun --filter storybook dev",
-    "test": "bun run typecheck:apps && bun run test:unit && bun run test:e2e",
+    "test": "turbo test",
     "test:coverage": "node ./node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --coverage",
-    "test:e2e": "bun --filter web test:e2e",
-    "test:unit": "turbo test --filter=api --filter=web --filter=@workspace/core --filter=@workspace/database",
-    "typecheck:apps": "turbo typecheck --filter=api --filter=web --filter=@workspace/core --filter=@workspace/database",
     "typecheck": "turbo typecheck",
     "prepare": "lefthook install"
-  },
-  "dependencies": {
-    "openapi-fetch": "^0.17.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
@@ -45,14 +33,12 @@
     "eslint-plugin-oxlint": "^1.57.0",
     "jsdom": "^29.0.0",
     "lefthook": "^2.1.3",
-    "openapi-typescript": "^7.13.0",
     "oxfmt": "^0.42.0",
     "oxlint": "^1.57.0",
     "turbo": "^2.8.8",
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.0",
-    "web": "workspace:*"
+    "vitest": "^4.1.0"
   },
   "engines": {
     "node": "20.x"
