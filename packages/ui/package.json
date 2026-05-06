@@ -20,9 +20,8 @@
     "./components/ui/*": "./src/components/ui/*.tsx"
   },
   "scripts": {
-    "format": "oxfmt .",
+    "format": "prettier --write . --ignore-path ../../.gitignore",
     "lint": "eslint .",
-    "lint:oxlint": "oxlint",
     "test": "vitest run --config vitest.config.ts",
     "test:watch": "vitest watch --config vitest.config.ts",
     "typecheck": "tsc --noEmit"

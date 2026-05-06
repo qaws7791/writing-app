@@ -1,5 +1,4 @@
 import js from "@eslint/js"
-import oxlint from "eslint-plugin-oxlint"
 import turboPlugin from "eslint-plugin-turbo"
 import unusedImports from "eslint-plugin-unused-imports"
 import tseslint from "typescript-eslint"
@@ -25,8 +24,10 @@ export const config = [
       "unused-imports": unusedImports,
     },
     rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/no-non-null-assertion": "error",
       "@typescript-eslint/no-unused-vars": "off",
+      "no-console": "error",
       "no-unused-vars": "off",
       "unused-imports/no-unused-imports": "error",
       "unused-imports/no-unused-vars": [
@@ -57,10 +58,16 @@ export const config = [
     ignores: [
       "dist/**",
       ".next/**",
+      "**/.source/**",
       "**/.turbo/**",
       "**/coverage/**",
       "**/next-env.d.ts",
     ],
   },
-  ...oxlint.buildFromOxlintConfigFile("../../.oxlintrc.json"),
+  {
+    files: ["scripts/**/*.{js,jsx,ts,tsx,cjs,mjs}"],
+    rules: {
+      "no-console": "off",
+    },
+  },
 ]

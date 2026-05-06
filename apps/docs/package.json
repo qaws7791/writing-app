@@ -8,7 +8,7 @@
     "start": "serve out",
     "types:check": "fumadocs-mdx && next typegen && tsc --noEmit",
     "postinstall": "fumadocs-mdx",
-    "lint": "oxlint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@orama/orama": "^3.1.18",
@@ -28,7 +28,8 @@
     "@types/node": "^25.6.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "oxlint": "^1.62.0",
+    "@workspace/config": "workspace:*",
+    "eslint": "^9.39.2",
     "postcss": "^8.5.13",
     "serve": "^14.2.6",
     "tailwindcss": "^4.2.4",

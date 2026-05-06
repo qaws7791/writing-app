@@ -1,6 +1,5 @@
 import js from "@eslint/js"
 import pluginNext from "@next/eslint-plugin-next"
-import oxlint from "eslint-plugin-oxlint"
 import pluginReact from "eslint-plugin-react"
 import pluginReactHooks from "eslint-plugin-react-hooks"
 import globals from "globals"
@@ -50,5 +49,4 @@ export const nextJsConfig = [
       "react/prop-types": "off",
     },
   },
-  ...oxlint.buildFromOxlintConfigFile("../../.oxlintrc.json"),
 ]

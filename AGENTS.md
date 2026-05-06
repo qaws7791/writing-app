@@ -1,5 +1,4 @@
-
-- 2026-06-01: 글필_PRD_v1.0.md를 기반으로 전체 프로젝트를 피봇하는 중
+- 2026-06-01: 글필\_PRD_v1.0.md를 기반으로 전체 프로젝트를 피봇하는 중
 
 # Project Structure Guide
 
@@ -58,9 +57,9 @@
 
 ### Code Style
 
-- Use oxfmt for formatting only
-- Use oxlint + ESLint to enforce linting rules (ESLint for turbo env-var rules, oxlint for everything else)
-- eslint-plugin-oxlint disables ESLint rules already covered by oxlint
+- Use Prettier for formatting only
+- Keep one Prettier configuration at the repository root
+- Use ESLint for linting across the monorepo
 - Do not bikeshed formatting in reviews
 - Optimize reviews for correctness, naming, coupling, and boundary clarity
 

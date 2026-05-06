@@ -3,17 +3,10 @@
 pre-commit:
   parallel: true
   commands:
-    # format all files with oxfmt (excluding packages/ui CSS which uses @apply)
+    # format all staged files with the root Prettier config
     format:
-      glob: "**/*.{ts,tsx,js,jsx,cjs,mjs,json,md,yaml,yml}"
-      exclude: "packages/ui/**/*.css"
-      run: bunx oxfmt --no-error-on-unmatched-pattern {staged_files}
-      stage_fixed: true
-
-    # oxlint for all staged files
-    oxlint:
-      glob: "**/*.{ts,tsx,js,jsx}"
-      run: bunx oxlint --fix {staged_files}
+      glob: "**/*.{ts,tsx,js,jsx,cjs,mjs,json,md,mdx,yaml,yml,css}"
+      run: bun prettier --write --ignore-path .gitignore {staged_files}
       stage_fixed: true
 
     workspace-lint:
