@@ -1,6 +1,6 @@
 # @workspace/web
 
-Next.js frontend app for the writing platform.
+Empty Next.js frontend workspace for the writing platform.
 
 ## Scripts
 
@@ -11,9 +11,14 @@ bun --filter @workspace/web lint
 bun --filter @workspace/web typecheck
 ```
 
+## Structure
+
+- `src/app/layout.tsx`: required App Router root layout.
+- `src/app/page.tsx`: empty root route.
+- `src/app/globals.css`: imports shared UI globals from `@workspace/ui`.
+
 ## Conventions
 
-- Shared UI imports come from `@workspace/ui`.
+- Keep app-only code under `src`.
+- Use absolute imports when new app code is added.
 - ESLint and TypeScript extend `@workspace/config`.
-- Global styles import `@workspace/ui/globals.css`.
-- Use absolute imports and keep app-only files under `src`.
