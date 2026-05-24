@@ -5,3 +5,4 @@ Rules:
 - shadcn/ui-based primitives live here
 - this package should remain domain-agnostic
 - avoid embedding essay-specific product language here
+- Important: don't edit without user request

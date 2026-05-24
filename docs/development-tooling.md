@@ -10,28 +10,28 @@
 
 ## Linting
 
-- Use ESLint for linting.
-- Shared ESLint rules live in `packages/config/eslint`.
-- Each app or package keeps a local `eslint.config.*` file and imports the
-  shared config that matches its runtime.
+- Use ESLint for linting across the monorepo.
 - Run `bun run lint` from the repository root to lint every workspace through
   Turbo.
+- App and package lint scripts should stay local to the workspace and be invoked
+  by Turbo from the root.
+
+## Typechecking and Builds
+
+- Run `bun run typecheck` from the repository root to typecheck all workspaces.
+- Run `bun run build` from the repository root to build all configured
+  workspaces.
+- `apps/web` exposes `dev`, `build`, `start`, `lint`, and `typecheck` scripts so
+  it can be validated consistently through Turbo.
 
 ## Git Hooks
 
-- `bun lefthook run pre-commit` formats staged files with Prettier and runs the
-  relevant workspace ESLint tasks.
-- The previous formatter and secondary linter binaries are no longer part of
-  the toolchain.
+- `bun lefthook run pre-commit` can be used before committing to run the
+  repository pre-commit checks.
+- If a hook updates files, inspect `git status --short` and keep the resulting
+  changes in the matching commit.
 
-## Next.js Apps
+## Runtime
 
-- `apps/web` uses the package name `@workspace/web` and is managed through Bun
-  workspace filters.
-- Next.js apps extend `@workspace/config/typescript/nextjs.json` and
-  `@workspace/config/eslint/next-js`.
-- App-level Tailwind entry files import `@workspace/ui/globals.css` instead of
-  duplicating design tokens.
-- Shared components, styles, and utilities are imported from `@workspace/ui`.
-- Each Next.js app should expose `dev`, `build`, `start`, `lint`, and
-  `typecheck` scripts so Turbo can validate the workspace consistently.
+- Use Bun `1.3.10`, as declared by the root `packageManager` field.
+- Use Node.js `20.x`, as declared by the root `engines` field.

@@ -1,17 +1,12 @@
-- 2026-06-01: 글필\_PRD_v1.0.md를 기반으로 전체 프로젝트를 피봇하는 중
-
 # Project Structure Guide
 
-- This repository is monorepo for essay writing-platform project.
+- This repository is monorepo for writing learning platform project.
 - This repository is a bun-managed monorepo with the following structure:
 
 ## Overview
 
-- apps/api: hono based api server
-- apps/web: nextjs frontend server
+- apps/web: nextjs fullstack server
 - packages/ui: base-ui,reactjs,tailwindcss based shadcn library
-- packages/eslint-config: eslint config
-- packages/typescript-config: typescript config
 
 ## Task Guide
 
@@ -28,13 +23,6 @@
 - Avoid unrelated refactoring, large-scale renaming, and formatting-only changes
 - Code is readable and maintainable
 - Every package must have a narrow and obvious purpose
-- Use a one-way dependency structure
-  - apps → packages
-  - frontend → UI, SDK, domain
-  - API → application, domain, infrastructure
-  - application → domain
-  - infrastructure → domain
-  - UI ✗ application / infrastructure
 - Limit changes to the smallest possible diff as much as possible
 - Related files keep close to each other
 - Prefer self-describing code over explanatory comments
@@ -95,21 +83,3 @@ When editing code:
 - [detailed description of changes 2(optional)]
 -
 ```
-
-## UI Design Principles
-
-- Non-intrusive editorial design
-- Universal design for all ages and genders
-- Thorough contrast ratios for readability
-- Always design for mobile users
-- Platform theme: use glassmorphism and floating appropriately for editorial, to reduce frustration
-- Avoid using temporary values (bracket pattern) in apps/web
-
-## Local Development
-
-use test account to log in to the app and test features.
-
-Test Account:
-
-- email: `test@example.com`
-- password: `testpassword1234`
