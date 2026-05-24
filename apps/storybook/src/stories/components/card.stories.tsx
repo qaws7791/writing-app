@@ -26,8 +26,8 @@ export const Default: Story = {
   render: () => (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>Card Title</CardTitle>
-        <CardDescription>Card Description</CardDescription>
+        <CardTitle>Filled Card</CardTitle>
+        <CardDescription>The default Card variant.</CardDescription>
       </CardHeader>
       <CardContent>
         <p>Card Content</p>
@@ -35,6 +35,34 @@ export const Default: Story = {
       <CardFooter>
         <p>Card Footer</p>
       </CardFooter>
+    </Card>
+  ),
+}
+
+export const Filled: Story = {
+  render: () => (
+    <Card className="w-[350px]" variant="filled">
+      <CardHeader>
+        <CardTitle>Filled Card</CardTitle>
+        <CardDescription>Uses a filled surface treatment.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>Card Content</p>
+      </CardContent>
+    </Card>
+  ),
+}
+
+export const Outlined: Story = {
+  render: () => (
+    <Card className="w-[350px]" variant="outlined">
+      <CardHeader>
+        <CardTitle>Outlined Card</CardTitle>
+        <CardDescription>Uses a visible boundary.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>Card Content</p>
+      </CardContent>
     </Card>
   ),
 }
@@ -85,7 +113,7 @@ export const WithAction: Story = {
 
 export const Small: Story = {
   render: () => (
-    <Card className="w-[350px]" size="sm">
+    <Card className="w-[350px]" size="sm" variant="filled">
       <CardHeader>
         <CardTitle>Small Card</CardTitle>
         <CardDescription>A more compact card variant.</CardDescription>
