@@ -159,3 +159,45 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  .typo-heading1 {
+    @apply text-3xl/9 font-bold tracking-[-0.02em];
+  }
+
+  .typo-heading2 {
+    @apply text-2xl/8 font-bold tracking-[-0.01em];
+  }
+
+  .typo-heading3 {
+    @apply text-xl/7 font-semibold tracking-[-0.005em];
+  }
+
+  .typo-title {
+    @apply text-lg/6 font-semibold tracking-normal;
+  }
+
+  .typo-body-large {
+    @apply text-lg/7 font-normal tracking-normal;
+  }
+
+  .typo-body {
+    @apply text-base/6 font-normal tracking-normal;
+  }
+
+  .typo-body-small {
+    @apply text-sm/5 font-normal tracking-normal;
+  }
+
+  .typo-label {
+    @apply text-sm/5 font-medium tracking-normal;
+  }
+
+  .typo-caption {
+    @apply text-xs/4 font-normal tracking-normal;
+  }
+
+  .typo-code {
+    @apply text-base/6 font-mono tracking-normal;
+  }
+}
