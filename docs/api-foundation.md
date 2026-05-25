@@ -20,3 +20,4 @@
 - 콘텐츠 서비스는 저장소의 잘못된 시드 DTO를 `invalid-content` 결과로 반환하고, 저장소 호출 실패를 `unavailable` 결과로 반환한다.
 - 과정과 레슨 조회 경계는 `CourseId`, `LessonId` 브랜드 타입을 사용한다.
 - `packages/logger`에 Pino 기반 로거와 요청 로그 필드 생성을 추가하고 패키지 테스트, 타입 검사, 린트, 포맷 검사를 통과시켰다.
+- `packages/db`에 Drizzle 콘텐츠 저장소 매핑을 추가하고 과정 목록, 과정 상세, 레슨 조회 테스트로 검증했다.

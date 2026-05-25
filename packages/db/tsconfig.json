@@ -4,7 +4,10 @@
     "baseUrl": ".",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "paths": { "@/*": ["./src/*"] },
+    "paths": {
+      "@/content/*": ["../core/src/content/*"],
+      "@/*": ["./src/*"]
+    },
     "types": ["bun"]
   },
   "include": ["src/**/*.ts", "vitest.config.ts"],
