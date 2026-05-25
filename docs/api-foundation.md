@@ -12,6 +12,9 @@
 
 ## 2026-05-26 진행
 
+- `packages/db` 콘텐츠 스키마와 마이그레이션, 시드 작업을 시작했다.
+- `packages/db`에 Drizzle SQLite 콘텐츠 스키마, 초기 마이그레이션, 결정적 콘텐츠 시드 구현을 추가했다.
+- `packages/db` 콘텐츠 시드는 테스트, 타입 검사, 린트로 검증했다. SQL 파일은 현재 루트 Prettier 구성에 SQL 파서가 없어 명시 포맷 검사에서 제외 사유가 남았다.
 - `packages/core`에 콘텐츠 DTO, 브랜드 ID, 저장소 포트, 읽기 서비스를 추가했다.
 - 콘텐츠 서비스는 저장소의 잘못된 시드 DTO를 `invalid-content` 결과로 반환하고, 저장소 호출 실패를 `unavailable` 결과로 반환한다.
 - 과정과 레슨 조회 경계는 `CourseId`, `LessonId` 브랜드 타입을 사용한다.
