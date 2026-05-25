@@ -2,7 +2,12 @@
   "extends": "@workspace/config/typescript/base.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": { "@/*": ["./src/*"] },
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@/content/*": ["../../packages/core/src/content/*"],
+      "@/*": ["./src/*"]
+    },
     "types": ["bun"]
   },
   "include": ["src/**/*.ts", "vitest.config.ts"],
