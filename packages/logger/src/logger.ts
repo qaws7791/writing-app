@@ -28,15 +28,5 @@ export const createLogger = ({
       service,
     },
     level,
-    ...(environment === "production"
-      ? {}
-      : {
-          transport: {
-            options: {
-              colorize: true,
-            },
-            target: "pino-pretty",
-          },
-        }),
   })
 }
