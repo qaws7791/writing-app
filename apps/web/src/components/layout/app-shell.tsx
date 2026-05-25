@@ -1,6 +1,20 @@
+"use client"
+
+import { usePathname } from "next/navigation"
+
 import { GlobalNav } from "@/components/layout/global-nav"
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const isLessonRoute =
+    pathname === "/lesson" || pathname.startsWith("/lesson/")
+
+  if (isLessonRoute) {
+    return (
+      <div className="min-h-svh bg-background text-foreground">{children}</div>
+    )
+  }
+
   return (
     <div className="min-h-svh bg-background text-foreground">
       <GlobalNav />
