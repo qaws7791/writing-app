@@ -83,3 +83,7 @@ When editing code:
 - [detailed description of changes 2(optional)]
 -
 ```
+
+## After the task is finished
+
+- Safely terminate all processes used for the task, such as Node.js and the bash.
