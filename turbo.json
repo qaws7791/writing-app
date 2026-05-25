@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["CI", "NODE_ENV"],
+  "globalEnv": ["CI", "DATABASE_URL", "NODE_ENV"],
   "ui": "tui",
   "tasks": {
     "build": {

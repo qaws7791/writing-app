@@ -1,3 +1,5 @@
+pragma foreign_keys = on;
+
 create table if not exists course_categories (
   id text primary key,
   title text not null,
@@ -24,7 +26,7 @@ create table if not exists course_chapters (
 create table if not exists course_lessons (
   id text primary key,
   chapter_id text not null references course_chapters(id),
-  lesson_id text not null,
+  lesson_id text not null references lessons(id),
   title text not null,
   description text not null,
   sort_order integer not null
@@ -34,9 +36,9 @@ create table if not exists lessons (
   id text primary key,
   course_id text not null references courses(id),
   title text not null,
-  category_id text not null,
+  category_id text not null references course_categories(id),
   unit_number integer not null,
-  next_lesson_id text
+  next_lesson_id text references lessons(id)
 );
 
 create table if not exists lesson_steps (
