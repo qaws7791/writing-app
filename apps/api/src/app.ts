@@ -11,6 +11,7 @@ import { registerOpenApiRoute } from "@/routes/openapi.route"
 export interface ApiAppDependencies {
   checkDatabase(): Promise<boolean>
   contentService: ContentService
+  corsOrigins?: string[]
 }
 
 export function createApiApp(dependencies: ApiAppDependencies) {
@@ -19,7 +20,10 @@ export function createApiApp(dependencies: ApiAppDependencies) {
   app.use(
     "*",
     cors({
-      origin: ["http://localhost:3000", "http://localhost:3001"],
+      origin: dependencies.corsOrigins ?? [
+        "http://localhost:3000",
+        "http://localhost:3001",
+      ],
     })
   )
 

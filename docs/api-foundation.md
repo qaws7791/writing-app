@@ -24,3 +24,4 @@
 - 손상된 레슨 단계 콘텐츠는 데이터베이스 장애가 아니라 `invalid-content`로 분류되도록 저장소와 서비스 검증 경계를 보정했다.
 - `apps/api`에 Hono 앱 팩토리와 버전 없는 `/health`, `/openapi.json`, `/courses`, `/courses/:courseId`, `/lessons/:lessonId` 라우트를 추가했다.
 - API 라우트는 콘텐츠 서비스 결과를 명시적인 HTTP 상태와 오류 DTO로 매핑하고, OpenAPI 3.1 문서에 현재 경로를 노출한다.
+- `apps/api` 실행 루트를 구성해 환경 변수 파싱, SQLite 초기화, 마이그레이션, 시드, 콘텐츠 서비스 연결, 서버 시작 로깅을 한 곳에서 처리한다.

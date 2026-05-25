@@ -5,7 +5,16 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
+      "@/client": ["../../packages/db/src/client.ts"],
       "@/content/*": ["../../packages/core/src/content/*"],
+      "@/logger": ["../../packages/logger/src/logger.ts"],
+      "@/migrations/*": ["../../packages/db/src/migrations/*"],
+      "@/repositories/*": ["../../packages/db/src/repositories/*"],
+      "@/request-logger": ["../../packages/logger/src/request-logger.ts"],
+      "@/schema": ["../../packages/db/src/schema/index.ts"],
+      "@/schema/*": ["../../packages/db/src/schema/*"],
+      "@/seeds": ["../../packages/db/src/seeds/index.ts"],
+      "@/seeds/*": ["../../packages/db/src/seeds/*"],
       "@/*": ["./src/*"]
     },
     "types": ["bun"]
