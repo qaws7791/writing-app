@@ -64,6 +64,7 @@ import type {
   IntroContent,
   Lesson,
   LessonStep,
+  LessonStepId,
   LessonTone,
   LongWriteContent,
   MatchContent,
@@ -155,12 +156,14 @@ interface LessonExperienceProps {
   lesson: Lesson
 }
 
+type WrittenStepResponses = Partial<Record<LessonStepId, string>>
+
 export function LessonExperience({ lesson }: LessonExperienceProps) {
   const router = useRouter()
   const [currentStepIndex, setCurrentStepIndex] = React.useState(0)
   const [showExitDialog, setShowExitDialog] = React.useState(false)
-  const [shortWriteText, setShortWriteText] = React.useState("")
-  const [longWriteText, setLongWriteText] = React.useState("")
+  const [writtenResponses, setWrittenResponses] =
+    React.useState<WrittenStepResponses>({})
   const contentRef = React.useRef<HTMLDivElement | null>(null)
 
   const currentStep = lesson.steps[currentStepIndex] ?? lesson.steps[0]
@@ -179,20 +182,61 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
     scrollToTop()
   }, [lesson.steps.length, scrollToTop])
 
-  const handleRevise = React.useCallback(() => {
-    const writeStepIndex = findStepIndexByType(lesson.steps, "SHORT_WRITE")
+  const handleRevise = React.useCallback(
+    (sourceStepId: LessonStepId) => {
+      const writeStepIndex = lesson.steps.findIndex(
+        (step) => step.id === sourceStepId
+      )
 
-    if (writeStepIndex >= 0) {
-      setCurrentStepIndex(writeStepIndex)
-      scrollToTop()
-    }
-  }, [lesson.steps, scrollToTop])
+      if (writeStepIndex >= 0) {
+        setCurrentStepIndex(writeStepIndex)
+        scrollToTop()
+        return
+      }
+
+      const fallbackWriteStepIndex =
+        findStepIndexByType(lesson.steps, "SHORT_WRITE") >= 0
+          ? findStepIndexByType(lesson.steps, "SHORT_WRITE")
+          : findStepIndexByType(lesson.steps, "LONG_WRITE")
+
+      if (fallbackWriteStepIndex >= 0) {
+        setCurrentStepIndex(fallbackWriteStepIndex)
+        scrollToTop()
+      }
+    },
+    [lesson.steps, scrollToTop]
+  )
+
+  const saveWrittenResponse = React.useCallback(
+    (stepId: LessonStepId, text: string) => {
+      setWrittenResponses((current) => ({
+        ...current,
+        [stepId]: text,
+      }))
+    },
+    []
+  )
 
   const goToCourses = React.useCallback(() => {
     setCurrentStepIndex(0)
     setShowExitDialog(false)
     router.push("/courses")
   }, [router])
+
+  const continueAfterComplete = React.useCallback(() => {
+    if (lesson.nextLessonId) {
+      router.push(`/lesson?lesson_id=${lesson.nextLessonId}`)
+      return
+    }
+
+    router.push("/courses")
+  }, [lesson.nextLessonId, router])
+
+  React.useEffect(() => {
+    setCurrentStepIndex(0)
+    setWrittenResponses({})
+    contentRef.current?.scrollTo({ top: 0 })
+  }, [lesson.id])
 
   if (!currentStep) {
     return null
@@ -208,13 +252,13 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
       <div ref={contentRef} className="h-svh overflow-y-auto pt-14">
         <LessonStepRenderer
           step={currentStep}
-          shortWriteText={shortWriteText}
-          longWriteText={longWriteText}
+          lessonTitle={lesson.title}
+          writtenResponses={writtenResponses}
           onNext={handleNext}
           onRevise={handleRevise}
-          onSaveShortWrite={setShortWriteText}
-          onSaveLongWrite={setLongWriteText}
+          onSaveWrite={saveWrittenResponse}
           onHome={goToCourses}
+          onContinue={continueAfterComplete}
         />
       </div>
       <ExitLessonDialog
@@ -325,22 +369,22 @@ function ExitLessonDialog({
 
 function LessonStepRenderer({
   step,
-  shortWriteText,
-  longWriteText,
+  lessonTitle,
+  writtenResponses,
   onNext,
   onRevise,
-  onSaveShortWrite,
-  onSaveLongWrite,
+  onSaveWrite,
   onHome,
+  onContinue,
 }: {
   step: LessonStep
-  shortWriteText: string
-  longWriteText: string
+  lessonTitle: string
+  writtenResponses: WrittenStepResponses
   onNext: () => void
-  onRevise: () => void
-  onSaveShortWrite: (text: string) => void
-  onSaveLongWrite: (text: string) => void
+  onRevise: (sourceStepId: LessonStepId) => void
+  onSaveWrite: (stepId: LessonStepId, text: string) => void
   onHome: () => void
+  onContinue: () => void
 }) {
   switch (step.type) {
     case "INTRO":
@@ -407,25 +451,28 @@ function LessonStepRenderer({
     case "SHORT_WRITE":
       return (
         <ShortWriteStep
+          stepId={step.id}
           content={step.content}
           onNext={onNext}
-          onSaveWrite={onSaveShortWrite}
+          onSaveWrite={onSaveWrite}
+          savedText={writtenResponses[step.id] ?? ""}
         />
       )
     case "LONG_WRITE":
       return (
         <LongWriteStep
+          stepId={step.id}
           content={step.content}
           onNext={onNext}
-          onSaveWrite={onSaveLongWrite}
-          savedText={longWriteText}
+          onSaveWrite={onSaveWrite}
+          savedText={writtenResponses[step.id] ?? ""}
         />
       )
     case "AI_FEEDBACK":
       return (
         <AiFeedbackStep
           content={step.content}
-          userWrite={shortWriteText}
+          userWrite={writtenResponses[step.content.sourceStepId] ?? ""}
           onNext={onNext}
           onRevise={onRevise}
         />
@@ -441,7 +488,14 @@ function LessonStepRenderer({
     case "TRANSCRIBE":
       return <TranscribeStep content={step.content} onNext={onNext} />
     case "COMPLETE":
-      return <CompleteStep content={step.content} onHome={onHome} />
+      return (
+        <CompleteStep
+          content={step.content}
+          lessonTitle={lessonTitle}
+          onHome={onHome}
+          onContinue={onContinue}
+        />
+      )
   }
 }
 
@@ -589,7 +643,11 @@ function IntroStep({ content }: { content: IntroContent }) {
             label="학습 스텝"
             bordered
           />
-          <IntroStat value="135 XP" label="획득 가능" bordered />
+          <IntroStat
+            value={`${content.xpAvailable} XP`}
+            label="획득 가능"
+            bordered
+          />
         </CardContent>
       </Card>
     </StepFrame>
@@ -1586,23 +1644,37 @@ function ClassifyStep({
 }
 
 function ShortWriteStep({
+  stepId,
   content,
   onNext,
   onSaveWrite,
+  savedText,
 }: {
+  stepId: LessonStepId
   content: ShortWriteContent
   onNext: () => void
-  onSaveWrite: (text: string) => void
+  onSaveWrite: (stepId: LessonStepId, text: string) => void
+  savedText: string
 }) {
-  const [text, setText] = React.useState("")
+  const [text, setText] = React.useState(savedText)
   const [submitted, setSubmitted] = React.useState(false)
   const [showReference, setShowReference] = React.useState(false)
+  const activeStepIdRef = React.useRef(stepId)
   const canSubmit = text.length >= content.minChars
+
+  React.useEffect(() => {
+    if (activeStepIdRef.current !== stepId) {
+      activeStepIdRef.current = stepId
+      setText(savedText)
+      setSubmitted(false)
+      setShowReference(false)
+    }
+  }, [savedText, stepId])
 
   const submit = () => {
     if (!submitted) {
       setSubmitted(true)
-      onSaveWrite(text)
+      onSaveWrite(stepId, text)
 
       if (content.showReferenceAfterSubmit) {
         setShowReference(true)
@@ -1658,27 +1730,40 @@ function ShortWriteStep({
 }
 
 function LongWriteStep({
+  stepId,
   content,
   onNext,
   onSaveWrite,
   savedText,
 }: {
+  stepId: LessonStepId
   content: LongWriteContent
   onNext: () => void
-  onSaveWrite: (text: string) => void
+  onSaveWrite: (stepId: LessonStepId, text: string) => void
   savedText: string
 }) {
   const [text, setText] = React.useState(savedText)
   const [submitted, setSubmitted] = React.useState(false)
   const [showGuide, setShowGuide] = React.useState(false)
   const [draftSaved, setDraftSaved] = React.useState(false)
+  const activeStepIdRef = React.useRef(stepId)
   const canSubmit = text.length >= content.minChars
   const progress = Math.min((text.length / content.targetChars) * 100, 100)
+
+  React.useEffect(() => {
+    if (activeStepIdRef.current !== stepId) {
+      activeStepIdRef.current = stepId
+      setText(savedText)
+      setSubmitted(false)
+      setDraftSaved(false)
+      setShowGuide(false)
+    }
+  }, [savedText, stepId])
 
   const submit = () => {
     if (!submitted) {
       setSubmitted(true)
-      onSaveWrite(text)
+      onSaveWrite(stepId, text)
       return
     }
 
@@ -1744,7 +1829,7 @@ function LongWriteStep({
         {!submitted && content.draftSaveEnabled ? (
           <SecondaryActionButton
             onClick={() => {
-              onSaveWrite(text)
+              onSaveWrite(stepId, text)
               setDraftSaved(true)
             }}
           >
@@ -1768,7 +1853,7 @@ function AiFeedbackStep({
   content: AiFeedbackContent
   userWrite: string
   onNext: () => void
-  onRevise: () => void
+  onRevise: (sourceStepId: LessonStepId) => void
 }) {
   const [loading, setLoading] = React.useState(true)
   const feedback = React.useMemo(() => getMockAiFeedback(), [])
@@ -1854,7 +1939,7 @@ function AiFeedbackStep({
       ) : null}
       <BottomActionBar>
         {content.allowRevision ? (
-          <SecondaryActionButton onClick={onRevise}>
+          <SecondaryActionButton onClick={() => onRevise(content.sourceStepId)}>
             다시 쓰기
           </SecondaryActionButton>
         ) : null}
@@ -2247,10 +2332,14 @@ function TranscribeStep({
 
 function CompleteStep({
   content,
+  lessonTitle,
   onHome,
+  onContinue,
 }: {
   content: CompleteContent
+  lessonTitle: string
   onHome: () => void
+  onContinue: () => void
 }) {
   const { xp, showConfetti, confettiPieces } = useCompleteCelebration(
     content.xpEarned
@@ -2281,7 +2370,7 @@ function CompleteStep({
         <div className="flex flex-col gap-2">
           <h1 className="m-0 text-3xl/10 font-bold">레슨 완료!</h1>
           <p className="m-0 text-sm text-muted-foreground">
-            피동문과 능동문 마스터!
+            {lessonTitle} 마스터!
           </p>
         </div>
         <div className="animate-in zoom-in-95 inline-flex items-center gap-2 rounded-full border-2 border-primary bg-primary/15 px-8 py-4 duration-500">
@@ -2323,7 +2412,7 @@ function CompleteStep({
       </div>
       <BottomActionBar>
         <SecondaryActionButton onClick={onHome}>홈으로</SecondaryActionButton>
-        <PrimaryActionButton onClick={onHome}>계속하기</PrimaryActionButton>
+        <PrimaryActionButton onClick={onContinue}>계속하기</PrimaryActionButton>
       </BottomActionBar>
     </StepFrame>
   )

@@ -1,5 +1,46 @@
 # Lesson Page
 
+## 2026-05-25 Start — Full Course Lesson Data
+
+- Expanding `/lesson` from the single prototype lesson to lesson-specific
+  rendering for every lesson reachable from the 11 routed course detail pages.
+- The implementation will generate authored static lesson data for all 139
+  course lesson IDs, keep the existing 20-step renderer model, and validate
+  that course curriculum IDs and lesson data stay in sync.
+- The route will resolve `lesson_id` from async `searchParams`, render a
+  default lesson when omitted, and show a route-level not-found UI for unknown
+  lesson IDs.
+- The lesson player will keep writing responses by step ID so AI feedback and
+  revision jumps target the correct writing step in each lesson.
+- Validation target: web typecheck, web lint, web build, formatting check,
+  `git diff --check`, and a browser smoke check.
+
+## 2026-05-25 Finish — Full Course Lesson Data
+
+- Replaced the single prototype lesson data source with a generated lesson
+  catalog for all 139 lesson IDs reachable from the 11 routed course detail
+  pages.
+- Added course-specific learning profiles and per-lesson authored step flows
+  using the existing lesson step renderer types; catalog validation now checks
+  curriculum coverage, duplicate IDs, step order, intro totals, complete steps,
+  and AI feedback source references.
+- Updated `/lesson` to resolve `lesson_id` from async `searchParams`, render
+  the default lesson when omitted, and show a lesson-specific not-found screen
+  for unknown IDs.
+- Updated the lesson player to store writing responses by step ID, feed
+  `AI_FEEDBACK` from its declared `sourceStepId`, jump revision back to the
+  correct source writing step, and continue to the next lesson when available.
+- Synced home lesson IDs and links to the same `/lesson?lesson_id=...` route
+  used by course detail pages.
+- Validation passed: catalog import check returned 139 lessons,
+  `bun --filter @workspace/web typecheck`, `bun --filter @workspace/web lint`,
+  `bun --filter @workspace/web build`, `bun run format:check`,
+  `git diff --check`, and `bun lefthook run pre-commit`.
+- Browser smoke passed on `http://localhost:3210`: verified
+  `/lesson?lesson_id=expression-05`, `/lesson?lesson_id=business-email-18`,
+  `/lesson?lesson_id=not-real`, and `/home` lesson links. The temporary dev
+  server was terminated after testing.
+
 ## 2026-05-25 Start
 
 - Porting the 20-step lesson prototype from `sonnet-to-react/prototype.html`

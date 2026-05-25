@@ -120,7 +120,7 @@ function LessonRow({
 
   return (
     <Link
-      href="/lesson"
+      href={`/lesson?lesson_id=${lesson.id}`}
       className={cn(
         "-mx-3 flex items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition-colors hover:bg-muted/60 active:bg-muted",
         lesson.status === "next-up"

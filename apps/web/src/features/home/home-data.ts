@@ -43,13 +43,13 @@ export const inProgressCourses: readonly InProgressCourse[] = [
     progressPercent: 41.6,
     lessons: [
       {
-        id: lessonId("basic-sentence-writing-lesson-6"),
-        name: "6강. 형용사 꾸밈과 명사의 배치",
+        id: lessonId("basic-sentence-writing-05"),
+        name: "5강. 형용사 꾸밈과 명사의 배치",
         status: "completed",
       },
       {
-        id: lessonId("basic-sentence-writing-lesson-7"),
-        name: "7강. 부사구를 활용한 구체적인 묘사",
+        id: lessonId("basic-sentence-writing-06"),
+        name: "6강. 부사어로 상황 더하기",
         status: "next-up",
       },
     ],
@@ -64,13 +64,13 @@ export const inProgressCourses: readonly InProgressCourse[] = [
     progressPercent: 20,
     lessons: [
       {
-        id: lessonId("emotion-writing-lesson-3"),
-        name: "3강. 미묘한 감정 변화와 어휘 사전",
+        id: lessonId("emotion-writing-02"),
+        name: "2강. 감정 강도 표현",
         status: "completed",
       },
       {
-        id: lessonId("emotion-writing-lesson-4"),
-        name: "4강. 대상을 통해 감정 이입하기",
+        id: lessonId("emotion-writing-03"),
+        name: "3강. 미묘한 감정 변화",
         status: "next-up",
       },
     ],
@@ -85,13 +85,13 @@ export const inProgressCourses: readonly InProgressCourse[] = [
     progressPercent: 0,
     lessons: [
       {
-        id: lessonId("business-email-lesson-1"),
-        name: "1강. 제목의 핵심 표현과 목적 정리",
+        id: lessonId("business-email-01"),
+        name: "1강. 제목의 핵심 표현",
         status: "next-up",
       },
       {
-        id: lessonId("business-email-lesson-2"),
-        name: "2강. 핵심 요약(Key Summary) 구성하기",
+        id: lessonId("business-email-02"),
+        name: "2강. 첫 문장 목적 정리",
         status: "locked",
       },
     ],

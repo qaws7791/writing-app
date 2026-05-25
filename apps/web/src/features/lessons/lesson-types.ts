@@ -20,6 +20,7 @@ export interface Lesson {
   categoryId: string
   courseId: string
   unitNumber: number
+  nextLessonId?: LessonId
   steps: readonly LessonStep[]
 }
 
@@ -39,6 +40,7 @@ export interface IntroContent {
   bullets: readonly string[]
   estimatedMinutes: number
   totalSteps: number
+  xpAvailable: number
 }
 
 export interface ConceptContent {
