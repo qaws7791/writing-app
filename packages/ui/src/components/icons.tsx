@@ -1,7 +1,10 @@
 export {
   BookOpenIcon,
+  CheckCircleIcon,
   CheckIcon,
+  ChevronDownIcon,
   ChevronRightIcon,
+  CircleIcon,
   HomeIcon,
   LanguagesIcon as LogoIcon,
   LockIcon,

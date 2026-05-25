@@ -1,4 +1,4 @@
-type Brand<TValue, TBrand extends string> = TValue & {
+export type Brand<TValue, TBrand extends string> = TValue & {
   readonly __brand: TBrand
 }
 
@@ -18,7 +18,7 @@ export interface CourseCategory {
   courses: readonly Course[]
 }
 
-function courseId(value: string): CourseId {
+export function courseId(value: string): CourseId {
   return value as CourseId
 }
 
