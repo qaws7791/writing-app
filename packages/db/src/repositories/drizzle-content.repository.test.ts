@@ -1,7 +1,11 @@
 import { Database } from "bun:sqlite"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { courseId, lessonId } from "@workspace/core/content"
+import {
+  courseId,
+  createContentService,
+  lessonId,
+} from "@workspace/core/content"
 
 import { createDatabase } from "@/client"
 import { runContentMigration } from "@/migrations/run-content-migration"
@@ -61,5 +65,22 @@ describe("createDrizzleContentRepository", () => {
       "SUMMARY",
       "COMPLETE",
     ])
+  })
+
+  it("reports invalid content when lesson step JSON is malformed", async () => {
+    sqlite
+      .query("update lesson_steps set content_json = ? where id = ?")
+      .run("not-json", "sentence-structure-01-step-1")
+    const repository = createDrizzleContentRepository(createDatabase(sqlite))
+    const service = createContentService({ repository })
+
+    const result = await service.getLesson(lessonId("sentence-structure-01"))
+
+    expect(result).toMatchObject({
+      status: "invalid-content",
+      error: {
+        code: "invalid-content-seed",
+      },
+    })
   })
 })

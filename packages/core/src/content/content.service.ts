@@ -13,7 +13,10 @@ import type {
   LessonNotFoundErrorDto,
 } from "@/content/content.errors"
 import type { CourseId, LessonId } from "@/content/content.ids"
-import type { ContentRepository } from "@/content/content.repository"
+import type {
+  ContentRepository,
+  ContentRepositoryLessonDto,
+} from "@/content/content.repository"
 
 type OkResult<TValue> = {
   status: "ok"
@@ -123,7 +126,7 @@ export function createContentService({
       return { status: "ok", value: parsedCourse.data }
     },
     async getLesson(lessonId) {
-      let lesson: LessonDto | undefined
+      let lesson: ContentRepositoryLessonDto | undefined
       try {
         lesson = await repository.findLesson(lessonId)
       } catch {

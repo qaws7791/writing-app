@@ -2,10 +2,10 @@ import { asc, count, eq, inArray } from "drizzle-orm"
 
 import type {
   ContentRepository,
+  ContentRepositoryLessonDto,
+  ContentRepositoryLessonStepDto,
   CourseCategoryListDto,
   CourseDetailDto,
-  LessonDto,
-  LessonStepDto,
 } from "@workspace/core/content"
 
 import type { WritingAppDatabase } from "@/client"
@@ -136,7 +136,7 @@ export function createDrizzleContentRepository(
         unitNumber: lesson.unitNumber,
         nextLessonId: lesson.nextLessonId ?? undefined,
         steps: stepRows.map(mapLessonStep),
-      } satisfies LessonDto
+      } satisfies ContentRepositoryLessonDto
     },
   }
 }
@@ -166,13 +166,21 @@ function mapCourseLesson(lesson: CourseLessonRow) {
   }
 }
 
-function mapLessonStep(step: LessonStepRow): LessonStepDto {
+function mapLessonStep(step: LessonStepRow): ContentRepositoryLessonStepDto {
   return {
     id: step.id,
     type: step.type,
     order: step.sortOrder,
     points: step.points,
     required: step.required,
-    content: JSON.parse(step.contentJson) as LessonStepDto["content"],
-  } as LessonStepDto
+    content: parseContentJson(step.contentJson),
+  }
+}
+
+function parseContentJson(contentJson: string): unknown {
+  try {
+    return JSON.parse(contentJson)
+  } catch {
+    return null
+  }
 }

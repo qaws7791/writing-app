@@ -255,6 +255,42 @@ describe("createContentService", () => {
     })
   })
 
+  it("returns invalid-content when lesson step content is not valid JSON content", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async findLesson() {
+          const result = await repository.findLesson(
+            lessonId("sentence-structure-01")
+          )
+          if (!result) {
+            return undefined
+          }
+          const firstStep = result.steps[0]
+          if (!firstStep) {
+            return undefined
+          }
+
+          return {
+            ...result,
+            steps: [{ ...firstStep, content: null }],
+          }
+        },
+      },
+    })
+
+    const result = await service.getLesson(lessonId("sentence-structure-01"))
+
+    expect(result).toEqual({
+      status: "invalid-content",
+      error: {
+        code: "invalid-content-seed",
+        message: "Content seed is invalid.",
+        lessonId: "sentence-structure-01",
+      },
+    })
+  })
+
   it("returns unavailable when listing categories fails", async () => {
     const service = createContentService({
       repository: {
