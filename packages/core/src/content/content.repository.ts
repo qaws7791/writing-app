@@ -3,9 +3,10 @@ import type {
   CourseDetailDto,
   LessonDto,
 } from "@/content/content.dto"
+import type { CourseId, LessonId } from "@/content/content.ids"
 
 export interface ContentRepository {
   listCourseCategories(): Promise<CourseCategoryListDto>
-  findCourseDetail(courseId: string): Promise<CourseDetailDto | undefined>
-  findLesson(lessonId: string): Promise<LessonDto | undefined>
+  findCourseDetail(courseId: CourseId): Promise<CourseDetailDto | undefined>
+  findLesson(lessonId: LessonId): Promise<LessonDto | undefined>
 }

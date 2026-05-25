@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 
+import { courseId, lessonId } from "@/content/content.ids"
 import { createContentService } from "@/content/content.service"
 import type { ContentRepository } from "@/content/content.repository"
 
@@ -105,7 +106,7 @@ describe("createContentService", () => {
   it("returns an explicit course-not-found result", async () => {
     const service = createContentService({ repository })
 
-    const result = await service.getCourseDetail("not-real")
+    const result = await service.getCourseDetail(courseId("not-real"))
 
     expect(result).toEqual({
       status: "not-found",
@@ -120,7 +121,7 @@ describe("createContentService", () => {
   it("returns an explicit lesson-not-found result", async () => {
     const service = createContentService({ repository })
 
-    const result = await service.getLesson("not-real")
+    const result = await service.getLesson(lessonId("not-real"))
 
     expect(result).toEqual({
       status: "not-found",
@@ -137,7 +138,9 @@ describe("createContentService", () => {
       repository: {
         ...repository,
         async findLesson() {
-          const result = await repository.findLesson("sentence-structure-01")
+          const result = await repository.findLesson(
+            lessonId("sentence-structure-01")
+          )
           if (!result) {
             return undefined
           }
@@ -154,7 +157,7 @@ describe("createContentService", () => {
       },
     })
 
-    const result = await service.getLesson("sentence-structure-01")
+    const result = await service.getLesson(lessonId("sentence-structure-01"))
 
     expect(result).toEqual({
       status: "invalid-content",
@@ -162,6 +165,155 @@ describe("createContentService", () => {
         code: "invalid-content-seed",
         message: "Lesson steps must use contiguous order starting at 1.",
         lessonId: "sentence-structure-01",
+      },
+    })
+  })
+
+  it("returns invalid-content when course category DTOs are invalid", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async listCourseCategories() {
+          return JSON.parse(
+            JSON.stringify({
+              categories: [{ id: "", title: "", courses: [] }],
+            })
+          )
+        },
+      },
+    })
+
+    const result = await service.listCourseCategories()
+
+    expect(result).toEqual({
+      status: "invalid-content",
+      error: {
+        code: "invalid-content-seed",
+        message: "Content seed is invalid.",
+      },
+    })
+  })
+
+  it("returns invalid-content when course detail DTOs are invalid", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async findCourseDetail() {
+          return JSON.parse(
+            JSON.stringify({
+              id: "",
+              title: "",
+              description: "",
+              thumbnail: "",
+              lessonCount: -1,
+              chapters: [],
+            })
+          )
+        },
+      },
+    })
+
+    const result = await service.getCourseDetail(courseId("sentence-structure"))
+
+    expect(result).toEqual({
+      status: "invalid-content",
+      error: {
+        code: "invalid-content-seed",
+        message: "Content seed is invalid.",
+      },
+    })
+  })
+
+  it("returns invalid-content when lesson DTOs are invalid", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async findLesson() {
+          return JSON.parse(
+            JSON.stringify({
+              id: "",
+              title: "",
+              categoryId: "",
+              courseId: "",
+              unitNumber: 0,
+              steps: [],
+            })
+          )
+        },
+      },
+    })
+
+    const result = await service.getLesson(lessonId("sentence-structure-01"))
+
+    expect(result).toEqual({
+      status: "invalid-content",
+      error: {
+        code: "invalid-content-seed",
+        message: "Content seed is invalid.",
+        lessonId: "sentence-structure-01",
+      },
+    })
+  })
+
+  it("returns unavailable when listing categories fails", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async listCourseCategories() {
+          throw new Error("database unavailable")
+        },
+      },
+    })
+
+    const result = await service.listCourseCategories()
+
+    expect(result).toEqual({
+      status: "unavailable",
+      error: {
+        code: "database-unavailable",
+        message: "Database is unavailable.",
+      },
+    })
+  })
+
+  it("returns unavailable when finding a course fails", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async findCourseDetail() {
+          throw new Error("database unavailable")
+        },
+      },
+    })
+
+    const result = await service.getCourseDetail(courseId("sentence-structure"))
+
+    expect(result).toEqual({
+      status: "unavailable",
+      error: {
+        code: "database-unavailable",
+        message: "Database is unavailable.",
+      },
+    })
+  })
+
+  it("returns unavailable when finding a lesson fails", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async findLesson() {
+          throw new Error("database unavailable")
+        },
+      },
+    })
+
+    const result = await service.getLesson(lessonId("sentence-structure-01"))
+
+    expect(result).toEqual({
+      status: "unavailable",
+      error: {
+        code: "database-unavailable",
+        message: "Database is unavailable.",
       },
     })
   })

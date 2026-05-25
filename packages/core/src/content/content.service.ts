@@ -9,8 +9,10 @@ import {
 import type {
   ContentErrorDto,
   CourseNotFoundErrorDto,
+  DatabaseUnavailableErrorDto,
   LessonNotFoundErrorDto,
 } from "@/content/content.errors"
+import type { CourseId, LessonId } from "@/content/content.ids"
 import type { ContentRepository } from "@/content/content.repository"
 
 type OkResult<TValue> = {
@@ -30,21 +32,46 @@ type InvalidContentResult = {
   error: Extract<ContentErrorDto, { code: "invalid-content-seed" }>
 }
 
+type UnavailableResult = {
+  status: "unavailable"
+  error: DatabaseUnavailableErrorDto
+}
+
 export type ContentServiceResult<TValue> =
   | OkResult<TValue>
   | NotFoundResult<CourseNotFoundErrorDto | LessonNotFoundErrorDto>
   | InvalidContentResult
+  | UnavailableResult
 
 export interface ContentService {
   listCourseCategories(): Promise<ContentServiceResult<CourseCategoryListDto>>
   getCourseDetail(
-    courseId: string
+    courseId: CourseId
   ): Promise<ContentServiceResult<CourseDetailDto>>
-  getLesson(lessonId: string): Promise<ContentServiceResult<LessonDto>>
+  getLesson(lessonId: LessonId): Promise<ContentServiceResult<LessonDto>>
 }
 
 interface ContentServiceDependencies {
   repository: ContentRepository
+}
+
+const unavailableResult: UnavailableResult = {
+  status: "unavailable",
+  error: {
+    code: "database-unavailable",
+    message: "Database is unavailable.",
+  },
+}
+
+function invalidContentResult(lessonId?: string): InvalidContentResult {
+  return {
+    status: "invalid-content",
+    error: {
+      code: "invalid-content-seed",
+      message: "Content seed is invalid.",
+      ...(lessonId ? { lessonId } : {}),
+    },
+  }
 }
 
 export function createContentService({
@@ -52,14 +79,31 @@ export function createContentService({
 }: ContentServiceDependencies): ContentService {
   return {
     async listCourseCategories() {
-      const categories = await repository.listCourseCategories()
+      let categories: CourseCategoryListDto
+      try {
+        categories = await repository.listCourseCategories()
+      } catch {
+        return unavailableResult
+      }
+
+      const parsedCategories = courseCategoryListDtoSchema.safeParse(categories)
+      if (!parsedCategories.success) {
+        return invalidContentResult()
+      }
+
       return {
         status: "ok",
-        value: courseCategoryListDtoSchema.parse(categories),
+        value: parsedCategories.data,
       }
     },
     async getCourseDetail(courseId) {
-      const course = await repository.findCourseDetail(courseId)
+      let course: CourseDetailDto | undefined
+      try {
+        course = await repository.findCourseDetail(courseId)
+      } catch {
+        return unavailableResult
+      }
+
       if (!course) {
         return {
           status: "not-found",
@@ -71,10 +115,21 @@ export function createContentService({
         }
       }
 
-      return { status: "ok", value: courseDetailDtoSchema.parse(course) }
+      const parsedCourse = courseDetailDtoSchema.safeParse(course)
+      if (!parsedCourse.success) {
+        return invalidContentResult()
+      }
+
+      return { status: "ok", value: parsedCourse.data }
     },
     async getLesson(lessonId) {
-      const lesson = await repository.findLesson(lessonId)
+      let lesson: LessonDto | undefined
+      try {
+        lesson = await repository.findLesson(lessonId)
+      } catch {
+        return unavailableResult
+      }
+
       if (!lesson) {
         return {
           status: "not-found",
@@ -86,7 +141,12 @@ export function createContentService({
         }
       }
 
-      const parsedLesson = lessonDtoSchema.parse(lesson)
+      const parsedLessonResult = lessonDtoSchema.safeParse(lesson)
+      if (!parsedLessonResult.success) {
+        return invalidContentResult(lessonId)
+      }
+
+      const parsedLesson = parsedLessonResult.data
       const invalidOrder = parsedLesson.steps.some(
         (step, index) => step.order !== index + 1
       )
