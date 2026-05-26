@@ -6,18 +6,18 @@
 
 ## Core Principles Summary
 
-| Principle | Summary |
-|---|---|
-| Vertical First | Group by feature, not by technical type |
-| Colocation | Code that changes together stays together |
-| Public API | Limit external exposure to a single entry point |
-| Contract-First | The API spec is the single source of truth |
-| Dependency Inversion | High-level modules don't depend on low-level implementations |
-| Server First | Client adoption is a conscious decision |
-| Parse, Don't Validate | Prefer parsing that confirms types over plain validation |
-| Test Through Seams | Isolate externals via replaceable adapters |
-| YAGNI | Add abstraction only after need is proven |
-| Automate Boundaries | Enforce dependency rules with tools |
+| Principle             | Summary                                                      |
+| --------------------- | ------------------------------------------------------------ |
+| Vertical First        | Group by feature, not by technical type                      |
+| Colocation            | Code that changes together stays together                    |
+| Public API            | Limit external exposure to a single entry point              |
+| Contract-First        | The API spec is the single source of truth                   |
+| Dependency Inversion  | High-level modules don't depend on low-level implementations |
+| Server First          | Client adoption is a conscious decision                      |
+| Parse, Don't Validate | Prefer parsing that confirms types over plain validation     |
+| Test Through Seams    | Isolate externals via replaceable adapters                   |
+| YAGNI                 | Add abstraction only after need is proven                    |
+| Automate Boundaries   | Enforce dependency rules with tools                          |
 
 ## 1. Core Philosophy
 
@@ -118,12 +118,12 @@ The Next.js app package is an **orchestrator**. It contains no business logic. I
 
 Inside each vertical, separate these four concerns:
 
-| Layer | Description |
-|---|---|
-| **Utilities** | Pure functions. No business logic, no external deps. Always testable. |
-| **Domain Logic** | Business rules. Framework-agnostic, React-agnostic, API-agnostic. Pure TypeScript. |
+| Layer                 | Description                                                                                                                                              |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Utilities**         | Pure functions. No business logic, no external deps. Always testable.                                                                                    |
+| **Domain Logic**      | Business rules. Framework-agnostic, React-agnostic, API-agnostic. Pure TypeScript.                                                                       |
 | **Application Logic** | Connects domain logic to the outside world. Query options, mutations, form schemas. Depends on React and API clients, but not on specific UI components. |
-| **External Adapters** | API clients, browser APIs, local storage. Hidden behind interfaces (ports). Replaceable with mocks or fakes for testing. |
+| **External Adapters** | API clients, browser APIs, local storage. Hidden behind interfaces (ports). Replaceable with mocks or fakes for testing.                                 |
 
 ### 4.2 Dependency Direction
 
@@ -170,6 +170,14 @@ This confines backend API changes to the transformation layer. Code outside rema
 OpenAPI types provide compile-time safety. Runtime safety requires separate validation. Parse API responses through Zod schemas. Parsing failures indicate contract violations and are handled as explicit errors.
 
 > **Parse, don't validate.** Deriving types through parsing is safer than validating and reusing raw types.
+
+### 5.5 현재 웹 API 클라이언트 구조
+
+`apps/web`는 `apps/docs/openapi/writing-app-api.json`에서 `openapi-typescript`로 생성한 타입을 사용한다. 생성 타입은 `apps/web/src/lib/api/generated`에만 두고 UI 컴포넌트는 직접 import하지 않는다.
+
+실제 HTTP 연결은 `openapi-fetch` 기반 HTTP 어댑터가 담당한다. 화면과 feature 로직은 `WritingAppApi` 포트만 사용하며, 테스트와 백엔드 없는 로컬 실행은 fake 어댑터로 같은 포트를 구현한다.
+
+로컬 기본값은 fake 모드다. 백엔드 연동 검증 시 `WEB_API_MODE=http`, `NEXT_PUBLIC_API_MODE=http`, `WEB_API_BASE_URL=http://localhost:4000`, `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000`을 명시한다.
 
 ---
 
@@ -232,12 +240,12 @@ Keep auth logic from scattering across verticals. Access auth state only through
 
 ### 7.1 State Kinds & Placement
 
-| State | Tool | Location |
-|---|---|---|
-| Server State | TanStack Query | Client cache |
-| UI State | `useState`, `useReducer` | Component or Context |
-| URL State | `searchParams`, `useRouter` | URL |
-| Form State | React Hook Form | Form component |
+| State        | Tool                        | Location             |
+| ------------ | --------------------------- | -------------------- |
+| Server State | TanStack Query              | Client cache         |
+| UI State     | `useState`, `useReducer`    | Component or Context |
+| URL State    | `searchParams`, `useRouter` | URL                  |
+| Form State   | React Hook Form             | Form component       |
 
 Never treat server state as client state (`useState`). Data from the server is managed by TanStack Query.
 
@@ -306,12 +314,12 @@ React Hook Form state stays inside the form component. Never lift form state to 
 
 ### 9.1 Error Types & Handling Location
 
-| Error | Handler |
-|---|---|
-| Network/API errors | TanStack Query `onError` or Error Boundary |
-| Validation errors | Detected early at Zod parsing, converted to proper error types |
-| Expected business errors | API `4xx` responses; modeled as domain error types |
-| Unexpected errors | Error Boundary as last defense |
+| Error                    | Handler                                                        |
+| ------------------------ | -------------------------------------------------------------- |
+| Network/API errors       | TanStack Query `onError` or Error Boundary                     |
+| Validation errors        | Detected early at Zod parsing, converted to proper error types |
+| Expected business errors | API `4xx` responses; modeled as domain error types             |
+| Unexpected errors        | Error Boundary as last defense                                 |
 
 ### 9.2 Error Boundary Principles
 
@@ -333,12 +341,12 @@ Testability isn't added later; the architecture guarantees it. Dependency invers
 
 ### 10.2 Test Pyramid & Layer Rules
 
-| Test | Target |
-|---|---|
-| **Unit** | Pure functions, Zod schemas, domain logic. Zero external deps. Fast, stable. Should be the majority. |
-| **Integration** | Query options and components with Mock Service Worker (MSW). Simulate actual fetch without real HTTP. Verify "when API returns X, component renders Y." |
-| **Contract** | Verify frontend expectations match actual backend responses against the Hono OpenAPI spec. Fails when backend breaks the contract. Essential safety net when frontend and backend are separate apps. |
-| **E2E** | Only critical paths. Sign-up → login → core purchase flow. E2E is expensive and slow. |
+| Test            | Target                                                                                                                                                                                               |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Unit**        | Pure functions, Zod schemas, domain logic. Zero external deps. Fast, stable. Should be the majority.                                                                                                 |
+| **Integration** | Query options and components with Mock Service Worker (MSW). Simulate actual fetch without real HTTP. Verify "when API returns X, component renders Y."                                              |
+| **Contract**    | Verify frontend expectations match actual backend responses against the Hono OpenAPI spec. Fails when backend breaks the contract. Essential safety net when frontend and backend are separate apps. |
+| **E2E**         | Only critical paths. Sign-up → login → core purchase flow. E2E is expensive and slow.                                                                                                                |
 
 ### 10.3 Mock Strategy
 

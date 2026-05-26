@@ -1,6 +1,14 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalEnv": ["CI", "DATABASE_URL", "NODE_ENV"],
+  "globalEnv": [
+    "CI",
+    "DATABASE_URL",
+    "NEXT_PUBLIC_API_BASE_URL",
+    "NEXT_PUBLIC_API_MODE",
+    "NODE_ENV",
+    "WEB_API_BASE_URL",
+    "WEB_API_MODE"
+  ],
   "ui": "tui",
   "tasks": {
     "build": {
