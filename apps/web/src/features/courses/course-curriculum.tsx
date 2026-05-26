@@ -152,7 +152,7 @@ function ChapterStatus({
 function LessonRow({ lesson }: { lesson: CourseLesson }) {
   return (
     <Link
-      href={`/lesson?lesson_id=${lesson.lessonId}`}
+      href={`/app/lesson?lesson_id=${lesson.lessonId}`}
       className="group relative flex min-h-12 w-full items-center gap-3.5 rounded-xl px-3 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:px-3.5"
     >
       <span

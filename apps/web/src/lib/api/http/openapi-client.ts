@@ -10,6 +10,7 @@ export type ApiFetch = (
 export interface CreateOpenApiClientInput {
   baseUrl: string
   fetch?: ApiFetch
+  headers?: HeadersInit
 }
 
 export function createOpenApiClient(input: CreateOpenApiClientInput) {
@@ -17,5 +18,6 @@ export function createOpenApiClient(input: CreateOpenApiClientInput) {
     baseUrl: input.baseUrl,
     credentials: "include",
     fetch: input.fetch,
+    headers: input.headers,
   })
 }

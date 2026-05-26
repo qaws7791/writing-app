@@ -7,7 +7,7 @@ import { GlobalNav } from "@/components/layout/global-nav"
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const isLessonRoute =
-    pathname === "/lesson" || pathname.startsWith("/lesson/")
+    pathname === "/app/lesson" || pathname.startsWith("/app/lesson/")
 
   if (isLessonRoute) {
     return (

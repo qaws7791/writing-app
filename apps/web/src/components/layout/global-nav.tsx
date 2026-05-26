@@ -23,13 +23,13 @@ interface NavItem {
 
 const primaryNavItems: NavItem[] = [
   {
-    href: "/",
+    href: "/app",
     label: "홈",
     icon: HomeIcon,
     id: "nav-home",
   },
   {
-    href: "/courses",
+    href: "/app/courses",
     label: "배우기",
     icon: BookOpenIcon,
     id: "nav-courses",
@@ -37,7 +37,7 @@ const primaryNavItems: NavItem[] = [
 ]
 
 const profileNavItem: NavItem = {
-  href: "/profile",
+  href: "/app/profile",
   label: "프로필",
   icon: UserIcon,
   id: "nav-profile",
@@ -47,7 +47,7 @@ const mobileNavItems: NavItem[] = [...primaryNavItems, profileNavItem]
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/") {
-    return pathname === "/" || pathname === "/home"
+    return pathname === "/"
   }
 
   return pathname === href || pathname.startsWith(`${href}/`)
@@ -62,7 +62,7 @@ export function GlobalNav() {
         <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-8 px-6">
           <div className="flex flex-1 items-center gap-8">
             <Link
-              href="/"
+              href="/app"
               className="flex shrink-0 items-center text-primary transition-opacity hover:opacity-80"
               aria-label="홈으로 이동"
               id="header-logo"
@@ -110,14 +110,14 @@ export function GlobalNav() {
             </Button>
 
             <Link
-              href="/profile"
+              href="/app/profile"
               className={cn(
                 "flex size-9 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
-                isActivePath(pathname, "/profile") && "text-foreground"
+                isActivePath(pathname, "/app/profile") && "text-foreground"
               )}
               aria-label="프로필"
               aria-current={
-                isActivePath(pathname, "/profile") ? "page" : undefined
+                isActivePath(pathname, "/app/profile") ? "page" : undefined
               }
               id="header-profile-btn"
             >

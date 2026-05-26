@@ -14,7 +14,7 @@ export default function NotFound() {
           선택해 주세요.
         </p>
       </div>
-      <Button nativeButton={false} render={<Link href="/courses" />}>
+      <Button nativeButton={false} render={<Link href="/app/courses" />}>
         코스 목록으로 돌아가기
       </Button>
     </div>

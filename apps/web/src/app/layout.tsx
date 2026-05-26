@@ -4,8 +4,6 @@ import { Noto_Sans_KR } from "next/font/google"
 import { ThemeProvider } from "@workspace/ui/components/ui/theme-provider"
 import { Toaster } from "@workspace/ui/components/ui/sonner"
 
-import { AppShell } from "@/components/layout/app-shell"
-
 import "./globals.css"
 
 const notoSansKr = Noto_Sans_KR({
@@ -29,7 +27,7 @@ export default function RootLayout({
     <html lang="ko" className={notoSansKr.className} suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <AppShell>{children}</AppShell>
+          {children}
           <Toaster />
         </ThemeProvider>
       </body>

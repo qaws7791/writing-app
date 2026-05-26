@@ -13,7 +13,7 @@ interface CourseCardProps {
 export function CourseCard({ course }: CourseCardProps) {
   return (
     <Link
-      href={`/courses/${course.id}`}
+      href={`/app/courses/${course.id}`}
       className="group block h-full rounded-3xl outline-none transition-transform active:scale-[0.99] focus-visible:ring-3 focus-visible:ring-ring/30"
       aria-label={`${course.title} — 레슨 ${course.lessonCount}개`}
       id={`course-card-${course.id}`}

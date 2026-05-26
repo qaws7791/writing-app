@@ -13,7 +13,7 @@ export default function NotFound() {
           요청한 레슨이 없거나 아직 연결되지 않았습니다. 코스 목록에서 다시
           선택해주세요.
         </p>
-        <Button nativeButton={false} render={<Link href="/courses" />}>
+        <Button nativeButton={false} render={<Link href="/app/courses" />}>
           코스 목록으로 돌아가기
         </Button>
       </div>

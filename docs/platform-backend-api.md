@@ -95,3 +95,18 @@
 - OpenAI Structured Outputs 호출은 `scoreRange` tuple schema가 OpenAI 지원 schema 형태와 맞지 않아 `invalid_json_schema`로 실패했다. OpenAI 요청용 schema만 배열 길이 2 형식으로 보정하고, 반환값은 기존 도메인 DTO로 다시 검증하도록 했다.
 - 최종 스모크 테스트에서 `POST /ai-feedback`는 실제 OpenAI 호출을 포함해 `200`을 반환했고, 응답은 `score`, `scoreRange`, `summary`를 포함했다.
 - 검증 후 스모크 테스트용 API 프로세스는 모두 종료했고, 임시 SQLite 파일도 삭제했다.
+
+## 2026-05-27 프론트엔드 연결 가능성 검토 시작
+
+- 현재 백엔드 API 구현 현황을 코드, 문서, 테스트 기준으로 다시 점검한다.
+- 검토 범위는 공개 콘텐츠 API, 인증 API, 학습 진행 API, AI 피드백 API, OpenAPI 문서, 프론트엔드 정적 데이터 구조와의 연결 가능성이다.
+- 코드 변경은 하지 않고, 프론트 연결 전에 필요한 보강 지점을 식별한다.
+
+## 2026-05-27 프론트엔드 연결 가능성 검토 완료
+
+- `apps/api`는 공개 콘텐츠 조회, Better Auth 인증, 현재 사용자, 프로필, 진행 조회, 레슨 진행 저장, 답변 저장, 레슨 완료, AI 피드백 API를 실제 서비스와 SQLite 저장소까지 연결한다.
+- `packages/core`와 `packages/db`는 콘텐츠, 학습 진행, 답변, 피드백 시도 저장을 테스트로 검증하고 있다.
+- `apps/docs/openapi/writing-app-api.json` 생성 파이프라인과 `/openapi.json` 라우트가 있어 프론트 API 클라이언트 계약의 기준점으로 사용할 수 있다.
+- `apps/web`는 아직 API 호출 계층 없이 `course-data.ts`, `course-detail-data.ts`, `lesson-data.ts`의 정적 데이터로 화면을 구성한다.
+- 프론트 연결은 가능하지만, 코스/레슨 DTO 매핑, 인증 쿠키 포함 fetch 설정, 진행 상태 병합, AI 피드백 호출 UI 상태, API base URL 환경 변수 정의가 선행되어야 한다.
+- 검증은 `PATH=/Users/mac/.bun/bin:$PATH`를 명시해 `@workspace/api`, `@workspace/core`, `@workspace/db`의 test/typecheck/lint를 실행했다. `@workspace/api` lint는 기존 `turbo/no-undeclared-env-vars` 경고 2건만 남고 종료 코드 0을 반환했다.

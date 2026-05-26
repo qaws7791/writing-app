@@ -89,7 +89,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
                   nativeButton={false}
                   render={
                     <Link
-                      href={`/lesson?lesson_id=${course.nextLesson.lessonId}`}
+                      href={`/app/lesson?lesson_id=${course.nextLesson.lessonId}`}
                     />
                   }
                   size="lg"

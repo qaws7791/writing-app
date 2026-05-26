@@ -55,7 +55,7 @@ function CourseProgressItem({
   return (
     <article className="flex flex-col">
       <Link
-        href={`/courses/${course.id}`}
+        href={`/app/courses/${course.id}`}
         className="group -mx-3 mb-2 flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-muted/70 active:bg-muted"
         aria-label={`${course.title} 코스 상세로 이동`}
       >
@@ -120,7 +120,7 @@ function LessonRow({
 
   return (
     <Link
-      href={`/lesson?lesson_id=${lesson.id}`}
+      href={`/app/lesson?lesson_id=${lesson.id}`}
       className={cn(
         "-mx-3 flex items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition-colors hover:bg-muted/60 active:bg-muted",
         lesson.status === "next-up"

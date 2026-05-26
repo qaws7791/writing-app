@@ -251,16 +251,16 @@ export function LessonExperience({ lesson, api }: LessonExperienceProps) {
   const goToCourses = React.useCallback(() => {
     setCurrentStepIndex(0)
     setShowExitDialog(false)
-    router.push("/courses")
+    router.push("/app/courses")
   }, [router])
 
   const continueAfterComplete = React.useCallback(() => {
     if (lesson.nextLessonId) {
-      router.push(`/lesson?lesson_id=${lesson.nextLessonId}`)
+      router.push(`/app/lesson?lesson_id=${lesson.nextLessonId}`)
       return
     }
 
-    router.push("/courses")
+    router.push("/app/courses")
   }, [lesson.nextLessonId, router])
 
   React.useEffect(() => {

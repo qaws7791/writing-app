@@ -37,7 +37,7 @@ function CourseSection({ category }: CourseSectionProps) {
           {category.title}
         </h2>
         <Link
-          href={`/courses?category=${category.id}`}
+          href={`/app/courses?category=${category.id}`}
           className="group flex shrink-0 items-center gap-1 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
           id={`see-all-${category.id}`}
           aria-label={`${category.title} 전체 보기`}
