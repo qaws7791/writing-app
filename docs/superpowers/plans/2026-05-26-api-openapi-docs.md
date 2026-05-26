@@ -43,8 +43,8 @@
 - 수정: `apps/docs/lib/source.ts`
   - `openapiPlugin()`을 loader plugin에 추가한다.
 
-- 수정: `apps/docs/app/docs/[[...slug]]/page.tsx`
-  - OpenAPI 페이지는 `APIPage`로 렌더링한다.
+- 수정: `apps/docs/components/mdx.tsx`
+  - 생성된 OpenAPI MDX가 사용할 `APIPage`를 등록한다.
 
 - 수정: `apps/docs/app/global.css`
   - `fumadocs-openapi/css/preset.css`를 추가한다.
@@ -134,7 +134,6 @@ describe("createOpenApiDocument", () => {
     expect(document.openapi).toBe("3.1.0")
     expect(document.info.title).toBe("Writing App API")
     expect(document.paths).toHaveProperty("/health")
-    expect(document.paths).toHaveProperty("/openapi.json")
     expect(document.paths).toHaveProperty("/courses")
     expect(document.paths).toHaveProperty("/courses/search")
     expect(document.paths).toHaveProperty("/courses/{courseId}")
@@ -434,8 +433,11 @@ Expected: `apps/docs/content/docs/api` 아래에 OpenAPI 기반 MDX 문서와 `m
 - Create: `apps/docs/components/api-page.client.tsx`
 - Create: `apps/docs/components/api-page.tsx`
 - Modify: `apps/docs/lib/source.ts`
+- Modify: `apps/docs/source.config.ts`
+- Modify: `apps/docs/components/mdx.tsx`
 - Modify: `apps/docs/app/docs/[[...slug]]/page.tsx`
 - Modify: `apps/docs/app/global.css`
+- Modify: `apps/docs/eslint.config.mjs`
 
 - [ ] **Step 1: OpenAPI 클라이언트 설정을 추가한다**
 
@@ -481,30 +483,22 @@ export const source = loader({
 })
 ```
 
-- [ ] **Step 4: OpenAPI 페이지 렌더링 분기를 추가한다**
+- [ ] **Step 4: OpenAPI MDX 컴포넌트를 등록한다**
 
-Modify `apps/docs/app/docs/[[...slug]]/page.tsx` inside `Page()` after `markdownUrl`:
-
-```typescript
-  if (page.data.type === "openapi") {
-    return (
-      <DocsPage toc={page.data.toc} full>
-        <DocsTitle>{page.data.title}</DocsTitle>
-        <DocsDescription className="mb-0">
-          {page.data.description}
-        </DocsDescription>
-        <DocsBody>
-          <APIPage {...page.data.getAPIPageProps()} />
-        </DocsBody>
-      </DocsPage>
-    )
-  }
-```
-
-Also add the import:
+Modify `apps/docs/components/mdx.tsx`:
 
 ```typescript
 import { APIPage } from "@/components/api-page"
+import defaultMdxComponents from "fumadocs-ui/mdx"
+import type { MDXComponents } from "mdx/types"
+
+export function getMDXComponents(components?: MDXComponents): MDXComponents {
+  return {
+    ...defaultMdxComponents,
+    APIPage,
+    ...components,
+  }
+}
 ```
 
 - [ ] **Step 5: OpenAPI CSS preset을 추가한다**
@@ -518,7 +512,59 @@ Modify `apps/docs/app/global.css`:
 @import "fumadocs-openapi/css/preset.css";
 ```
 
-- [ ] **Step 6: docs 타입 검사를 실행한다**
+- [ ] **Step 6: relative link 타입 경계를 보정한다**
+
+If `createRelativeLink(source, page)` fails after adding `openapiPlugin()`, replace it with a small local component that calls the already typed `source.resolveHref()`:
+
+```typescript
+function RelativeLink({ href, ...props }: ComponentProps<"a">) {
+  return <a href={href ? source.resolveHref(href, page) : href} {...props} />
+}
+```
+
+Keep the narrowed page in a separate `currentPage` constant so the nested component does not see `undefined`.
+
+- [ ] **Step 7: Fumadocs server collection 생성을 보정한다**
+
+If `.source/server.ts` is generated as an empty file, update `apps/docs/source.config.ts` to use async docs loading:
+
+```typescript
+export const docs = defineDocs({
+  dir: "content/docs",
+  docs: {
+    async: true,
+    schema: pageSchema,
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
+  },
+})
+```
+
+- [ ] **Step 8: async collection 렌더링을 보정한다**
+
+When `async: true` is enabled, update `apps/docs/app/docs/[[...slug]]/page.tsx`:
+
+```typescript
+const { body: MDX, toc } = await page.data.load()
+```
+
+and pass `toc` to `DocsPage`.
+
+- [ ] **Step 9: docs 타입 검사를 실행한다**
+
+- [ ] **Step 10: docs build output을 lint 대상에서 제외한다**
+
+Update `apps/docs/eslint.config.mjs`:
+
+```javascript
+export default [
+  {
+    ignores: ["out/**"],
+  },
+  ...nextJsConfig,
+]
+```
 
 Run:
 

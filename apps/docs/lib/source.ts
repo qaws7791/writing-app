@@ -1,12 +1,13 @@
 import { docs } from "collections/server"
 import { loader } from "fumadocs-core/source"
+import { openapiPlugin } from "fumadocs-openapi/server"
 import { docsContentRoute, docsImageRoute, docsRoute } from "./shared"
 
 // See https://fumadocs.dev/docs/headless/source-api for more info
 export const source = loader({
   baseUrl: docsRoute,
   source: docs.toFumadocsSource(),
-  plugins: [],
+  plugins: [openapiPlugin()],
 })
 
 export function getPageImage(page: (typeof source)["$inferPage"]) {

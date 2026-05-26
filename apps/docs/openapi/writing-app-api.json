@@ -1,0 +1,3581 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Writing App API",
+    "description": "Development documentation",
+    "version": "0.0.1"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "responses": {
+          "200": {
+            "description": "Database connection is available.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "database": {
+                      "type": "string",
+                      "const": "ok"
+                    },
+                    "status": {
+                      "type": "string",
+                      "const": "ok"
+                    }
+                  },
+                  "required": ["database", "status"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database connection is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses": {
+      "get": {
+        "operationId": "getCourses",
+        "responses": {
+          "200": {
+            "description": "Course categories.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "categories": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "title": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "courses": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "title": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "description": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "lessonCount": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "maximum": 9007199254740991
+                                },
+                                "thumbnail": {
+                                  "type": "string",
+                                  "minLength": 1
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "title",
+                                "description",
+                                "lessonCount",
+                                "thumbnail"
+                              ]
+                            }
+                          }
+                        },
+                        "required": ["id", "title", "courses"]
+                      }
+                    }
+                  },
+                  "required": ["categories"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/search": {
+      "get": {
+        "operationId": "getCoursesSearch",
+        "responses": {
+          "200": {
+            "description": "Course search results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "courses": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "title": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "description": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "lessonCount": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "thumbnail": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title",
+                          "description",
+                          "lessonCount",
+                          "thumbnail"
+                        ]
+                      }
+                    }
+                  },
+                  "required": ["courses"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Search query is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-request"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/{courseId}": {
+      "get": {
+        "operationId": "getCoursesByCourseId",
+        "responses": {
+          "200": {
+            "description": "Course detail.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "description": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "thumbnail": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "firstLessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "chapters": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "title": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "lessons": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "lessonId": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "title": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "description": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "order": {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "lessonId",
+                                "title",
+                                "description",
+                                "order"
+                              ]
+                            }
+                          }
+                        },
+                        "required": ["id", "label", "title", "lessons"]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "description",
+                    "thumbnail",
+                    "lessonCount",
+                    "chapters"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "course-not-found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Course was not found."
+                    },
+                    "courseId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message", "courseId"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "courseId",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/lessons/{lessonId}": {
+      "get": {
+        "operationId": "getLessonsByLessonId",
+        "responses": {
+          "200": {
+            "description": "Lesson detail.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "categoryId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "courseId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "unitNumber": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "nextLessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "INTRO"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "title": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "category": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "tagTone": {
+                                    "type": "string",
+                                    "enum": [
+                                      "primary",
+                                      "success",
+                                      "info",
+                                      "warning",
+                                      "danger",
+                                      "neutral"
+                                    ]
+                                  },
+                                  "bullets": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "estimatedMinutes": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "totalSteps": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "xpAvailable": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "category",
+                                  "tagTone",
+                                  "bullets",
+                                  "estimatedMinutes",
+                                  "totalSteps",
+                                  "xpAvailable"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "CONCEPT"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "subtitle": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "body": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "highlight": {
+                                    "type": "object",
+                                    "properties": {
+                                      "icon": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "text": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "tone": {
+                                        "type": "string",
+                                        "enum": [
+                                          "primary",
+                                          "success",
+                                          "info",
+                                          "warning",
+                                          "danger",
+                                          "neutral"
+                                        ]
+                                      }
+                                    },
+                                    "required": ["icon", "text", "tone"]
+                                  },
+                                  "keyTerms": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "term": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "definition": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": ["term", "definition"]
+                                    }
+                                  }
+                                },
+                                "required": ["subtitle", "body"]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "READING_PASSAGE"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "title": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "source": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "text": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "estimatedReadMinutes": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "highlightEnabled": {
+                                    "type": "boolean"
+                                  },
+                                  "focusQuestion": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "title",
+                                  "text",
+                                  "estimatedReadMinutes",
+                                  "highlightEnabled"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "EXAMPLE_REVEAL"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "bad": {
+                                    "type": "object",
+                                    "properties": {
+                                      "label": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "text": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": ["label", "text"]
+                                  },
+                                  "good": {
+                                    "type": "object",
+                                    "properties": {
+                                      "label": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "text": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": ["label", "text"]
+                                  },
+                                  "analysis": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "revealTrigger": {
+                                    "type": "string",
+                                    "const": "button"
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "good",
+                                  "analysis",
+                                  "revealTrigger"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "COMPARE"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "versions": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "label": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "text": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "tone": {
+                                          "type": "string",
+                                          "enum": [
+                                            "primary",
+                                            "success",
+                                            "info",
+                                            "warning",
+                                            "danger",
+                                            "neutral"
+                                          ]
+                                        }
+                                      },
+                                      "required": ["label", "text", "tone"]
+                                    }
+                                  },
+                                  "analysis": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "discussionQuestion": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "versions",
+                                  "analysis"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "MULTIPLE_CHOICE"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "context": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "question": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "options": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "text": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "isCorrect": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": ["id", "text", "isCorrect"]
+                                    }
+                                  },
+                                  "explanation": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "allowMultiple": {
+                                    "type": "boolean",
+                                    "const": false
+                                  },
+                                  "shuffleOptions": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "question",
+                                  "options",
+                                  "explanation",
+                                  "allowMultiple",
+                                  "shuffleOptions"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "FILL_BLANK"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "template": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "blanks": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "correctAnswers": {
+                                          "type": "array",
+                                          "items": {
+                                            "type": "string",
+                                            "minLength": 1
+                                          }
+                                        },
+                                        "hint": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": ["id", "correctAnswers"]
+                                    }
+                                  },
+                                  "inputMode": {
+                                    "type": "string",
+                                    "const": "word-bank"
+                                  },
+                                  "wordBank": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "explanation": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "caseSensitive": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "template",
+                                  "blanks",
+                                  "inputMode",
+                                  "wordBank",
+                                  "explanation",
+                                  "caseSensitive"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "WORD_SELECT"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "markedText": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "globalExplanation": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "spanExplanations": {
+                                    "type": "object",
+                                    "propertyNames": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    },
+                                    "additionalProperties": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "markedText",
+                                  "globalExplanation",
+                                  "spanExplanations"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "REORDER"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "text": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "correctOrder": {
+                                          "type": "integer",
+                                          "exclusiveMinimum": 0,
+                                          "maximum": 9007199254740991
+                                        }
+                                      },
+                                      "required": ["id", "text", "correctOrder"]
+                                    }
+                                  },
+                                  "itemType": {
+                                    "type": "string",
+                                    "const": "sentence"
+                                  },
+                                  "explanation": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "showNumberHint": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "items",
+                                  "itemType",
+                                  "explanation",
+                                  "showNumberHint"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "MATCH"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "pairs": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "left": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "right": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": ["id", "left", "right"]
+                                    }
+                                  },
+                                  "shuffleRight": {
+                                    "type": "boolean"
+                                  },
+                                  "displayMode": {
+                                    "type": "string",
+                                    "const": "tap-connect"
+                                  },
+                                  "explanation": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "pairs",
+                                  "shuffleRight",
+                                  "displayMode",
+                                  "explanation"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "CLASSIFY"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "categories": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "label": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "tone": {
+                                          "type": "string",
+                                          "enum": [
+                                            "primary",
+                                            "success",
+                                            "info",
+                                            "warning",
+                                            "danger",
+                                            "neutral"
+                                          ]
+                                        }
+                                      },
+                                      "required": ["id", "label", "tone"]
+                                    }
+                                  },
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "text": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "correctCategoryId": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "text",
+                                        "correctCategoryId"
+                                      ]
+                                    }
+                                  },
+                                  "globalExplanation": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "categories",
+                                  "items",
+                                  "globalExplanation"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "SHORT_WRITE"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "prompt": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "sourceText": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "maxChars": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "minChars": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "referenceAnswer": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "aiEvaluationEnabled": {
+                                    "type": "boolean"
+                                  },
+                                  "showReferenceAfterSubmit": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "prompt",
+                                  "maxChars",
+                                  "minChars",
+                                  "referenceAnswer",
+                                  "aiEvaluationEnabled",
+                                  "showReferenceAfterSubmit"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "LONG_WRITE"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "topic": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "context": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "structureGuide": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "minChars": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "targetChars": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "maxChars": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "aiEvaluationEnabled": {
+                                    "type": "boolean"
+                                  },
+                                  "evaluationCriteria": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "draftSaveEnabled": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "topic",
+                                  "minChars",
+                                  "targetChars",
+                                  "maxChars",
+                                  "aiEvaluationEnabled",
+                                  "evaluationCriteria",
+                                  "draftSaveEnabled"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "AI_FEEDBACK"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "sourceStepId": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "feedbackPrompt": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "focusAreas": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "enum": ["clarity", "expression"]
+                                    }
+                                  },
+                                  "showScore": {
+                                    "type": "boolean"
+                                  },
+                                  "scoreRange": {
+                                    "type": "array",
+                                    "prefixItems": [
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    ]
+                                  },
+                                  "allowRevision": {
+                                    "type": "boolean"
+                                  },
+                                  "maxRevisions": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "sourceStepId",
+                                  "feedbackPrompt",
+                                  "focusAreas",
+                                  "showScore",
+                                  "scoreRange",
+                                  "allowRevision",
+                                  "maxRevisions"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "REVISION"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "revisionTask": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "originalText": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "hints": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "revisionType": {
+                                    "type": "string",
+                                    "const": "targeted"
+                                  },
+                                  "referenceRevision": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "aiEvaluationEnabled": {
+                                    "type": "boolean"
+                                  },
+                                  "evaluationCriteria": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "revisionTask",
+                                  "originalText",
+                                  "hints",
+                                  "revisionType",
+                                  "referenceRevision",
+                                  "aiEvaluationEnabled",
+                                  "evaluationCriteria"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "CHECKLIST"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "items": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "text": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "required": {
+                                          "type": "boolean"
+                                        },
+                                        "tip": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": ["id", "text", "required"]
+                                    }
+                                  },
+                                  "completionMode": {
+                                    "type": "string",
+                                    "enum": ["minimum", "all", "any"]
+                                  },
+                                  "minimumChecks": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "saveResponses": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "items",
+                                  "completionMode",
+                                  "minimumChecks",
+                                  "saveResponses"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "REFLECTION"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "question": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "context": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "promptStarters": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string",
+                                      "minLength": 1
+                                    }
+                                  },
+                                  "minChars": {
+                                    "type": "integer",
+                                    "exclusiveMinimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "saveToJournal": {
+                                    "type": "boolean"
+                                  },
+                                  "category": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "isSkippable": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "question",
+                                  "promptStarters",
+                                  "minChars",
+                                  "saveToJournal",
+                                  "category",
+                                  "isSkippable"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "SUMMARY"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "points": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "number": {
+                                          "type": "integer",
+                                          "exclusiveMinimum": 0,
+                                          "maximum": 9007199254740991
+                                        },
+                                        "text": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        },
+                                        "icon": {
+                                          "type": "string",
+                                          "minLength": 1
+                                        }
+                                      },
+                                      "required": ["number", "text"]
+                                    }
+                                  },
+                                  "nextLesson": {
+                                    "type": "object",
+                                    "properties": {
+                                      "title": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      },
+                                      "description": {
+                                        "type": "string",
+                                        "minLength": 1
+                                      }
+                                    },
+                                    "required": ["title"]
+                                  },
+                                  "shareableQuote": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": ["points"]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "TRANSCRIBE"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "instruction": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "sourceText": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "source": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  },
+                                  "showMatchRate": {
+                                    "type": "boolean"
+                                  },
+                                  "caseSensitive": {
+                                    "type": "boolean"
+                                  },
+                                  "punctuationSensitive": {
+                                    "type": "boolean"
+                                  },
+                                  "focusNote": {
+                                    "type": "string",
+                                    "minLength": 1
+                                  }
+                                },
+                                "required": [
+                                  "instruction",
+                                  "sourceText",
+                                  "showMatchRate",
+                                  "caseSensitive",
+                                  "punctuationSensitive"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "type": {
+                                "type": "string",
+                                "const": "COMPLETE"
+                              },
+                              "order": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "points": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "required": {
+                                "type": "boolean"
+                              },
+                              "content": {
+                                "type": "object",
+                                "properties": {
+                                  "celebrationStyle": {
+                                    "type": "string",
+                                    "const": "confetti"
+                                  },
+                                  "xpEarned": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 9007199254740991
+                                  },
+                                  "showStreak": {
+                                    "type": "boolean"
+                                  },
+                                  "lessonStats": {
+                                    "type": "object",
+                                    "properties": {
+                                      "correctRate": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 100
+                                      },
+                                      "writingCount": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      },
+                                      "aiFeedbackCount": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "maximum": 9007199254740991
+                                      }
+                                    }
+                                  },
+                                  "nextAction": {
+                                    "type": "string",
+                                    "const": "next-lesson"
+                                  }
+                                },
+                                "required": [
+                                  "celebrationStyle",
+                                  "xpEarned",
+                                  "showStreak",
+                                  "lessonStats",
+                                  "nextAction"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "type",
+                              "order",
+                              "points",
+                              "required",
+                              "content"
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "categoryId",
+                    "courseId",
+                    "unitNumber",
+                    "steps"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lesson was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "lesson-not-found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Lesson was not found."
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message", "lessonId"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "lessonId",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/me": {
+      "get": {
+        "operationId": "getMe",
+        "responses": {
+          "200": {
+            "description": "Current authenticated user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "email": {
+                      "type": "string",
+                      "format": "email",
+                      "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                    },
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "image": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["email", "id", "image", "name"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profile": {
+      "get": {
+        "operationId": "getProfile",
+        "responses": {
+          "200": {
+            "description": "Current learner profile summary.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "courseCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "completedLessonCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": ["courseCount", "completedLessonCount"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/progress": {
+      "get": {
+        "operationId": "getProgress",
+        "responses": {
+          "200": {
+            "description": "Current learner course progress list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "courses": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "completedCount": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "courseId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "nextLessonId": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "progressPercent": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 100
+                          },
+                          "totalLessons": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "completedCount",
+                          "courseId",
+                          "progressPercent",
+                          "totalLessons"
+                        ]
+                      }
+                    }
+                  },
+                  "required": ["courses"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/{courseId}/progress": {
+      "get": {
+        "operationId": "getCoursesByCourseIdProgress",
+        "responses": {
+          "200": {
+            "description": "Current learner course progress.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "completedCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "courseId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "nextLessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "progressPercent": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "totalLessons": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "completedCount",
+                    "courseId",
+                    "progressPercent",
+                    "totalLessons"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "course-not-found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Course was not found."
+                    },
+                    "courseId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message", "courseId"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "courseId",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/lessons/{lessonId}/progress": {
+      "get": {
+        "operationId": "getLessonsByLessonIdProgress",
+        "responses": {
+          "200": {
+            "description": "Current learner lesson progress.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "answers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "answer": {
+                            "type": "string"
+                          },
+                          "stepId": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": ["answer", "stepId"]
+                      }
+                    },
+                    "currentStepId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["not-started", "in-progress", "completed"]
+                    },
+                    "stepOrder": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "answers",
+                    "currentStepId",
+                    "lessonId",
+                    "status",
+                    "stepOrder"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lesson was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "lesson-not-found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Lesson was not found."
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message", "lessonId"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "lessonId",
+            "required": true
+          }
+        ]
+      },
+      "put": {
+        "operationId": "putLessonsByLessonIdProgress",
+        "responses": {
+          "200": {
+            "description": "Saved lesson progress.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "answers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "answer": {
+                            "type": "string"
+                          },
+                          "stepId": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": ["answer", "stepId"]
+                      }
+                    },
+                    "currentStepId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["not-started", "in-progress", "completed"]
+                    },
+                    "stepOrder": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "answers",
+                    "currentStepId",
+                    "lessonId",
+                    "status",
+                    "stepOrder"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-request"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lesson was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "lesson-not-found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Lesson was not found."
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message", "lessonId"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "lessonId",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/lessons/{lessonId}/answers": {
+      "put": {
+        "operationId": "putLessonsByLessonIdAnswers",
+        "responses": {
+          "200": {
+            "description": "Saved lesson answer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "saved": {
+                      "type": "boolean",
+                      "const": true
+                    }
+                  },
+                  "required": ["saved"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-request"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lesson was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "lesson-not-found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Lesson was not found."
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message", "lessonId"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "lessonId",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/lessons/{lessonId}/complete": {
+      "post": {
+        "operationId": "postLessonsByLessonIdComplete",
+        "responses": {
+          "200": {
+            "description": "Completed lesson.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "completedAt": {
+                      "type": "string"
+                    },
+                    "completedCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "type": "string",
+                      "const": "completed"
+                    },
+                    "wasAlreadyCompleted": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "completedAt",
+                    "completedCount",
+                    "lessonId",
+                    "status",
+                    "wasAlreadyCompleted"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lesson was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "lesson-not-found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Lesson was not found."
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message", "lessonId"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "lessonId",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/ai-feedback": {
+      "post": {
+        "operationId": "postAiFeedback",
+        "responses": {
+          "200": {
+            "description": "AI feedback result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "improvements": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "nextAction": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "score": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "scoreRange": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      ]
+                    },
+                    "strengths": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "improvements",
+                    "nextAction",
+                    "score",
+                    "scoreRange",
+                    "strengths",
+                    "summary"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-request"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Lesson, feedback step, or answer was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "lesson-not-found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Lesson was not found."
+                        },
+                        "lessonId": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": ["code", "message", "lessonId"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "answer-not-found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Answer was not found."
+                        }
+                      },
+                      "required": ["code", "message"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "feedback-step-not-found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Feedback step was not found."
+                        }
+                      },
+                      "required": ["code", "message"]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Feedback retry limit was exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "feedback-retry-limit-exceeded"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Feedback retry limit was exceeded."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI feedback or database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "ai-feedback-unavailable"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "AI feedback is unavailable."
+                        }
+                      },
+                      "required": ["code", "message"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "database-unavailable"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Database is unavailable."
+                        }
+                      },
+                      "required": ["code", "message"]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {}
+}
