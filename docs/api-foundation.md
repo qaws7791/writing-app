@@ -27,3 +27,17 @@
 - `apps/api` 실행 루트를 구성해 환경 변수 파싱, SQLite 초기화, 마이그레이션, 시드, 콘텐츠 서비스 연결, 서버 시작 로깅을 한 곳에서 처리한다.
 - 개발 기본 환경에서 API가 외부 pretty transport 해석 없이 시작되도록 로거 구성을 보정했다.
 - SQLite 데이터베이스 경로가 `:memory:` 또는 파일명만 있는 형태일 때 디렉터리 생성을 건너뛰도록 보정했다.
+
+## 2026-05-26 완료
+
+- `apps/api`를 백엔드 조립 루트로 추가하고 Hono 앱 생성, 환경 변수 파싱, SQLite 데이터베이스 열기, 서비스 구성, 프로세스 시작 책임을 배치했다.
+- 버전 접두사 없는 `/health`, `/openapi.json`, `/courses`, `/courses/:courseId`, `/lessons/:lessonId` 라우트를 추가했다.
+- `packages/core`, `packages/db`, `packages/logger`를 추가해 도메인 계약, Drizzle SQLite 영속성, Pino 로깅 책임을 분리했다.
+- 데이터베이스 스키마, 마이그레이션 SQL, 시드 데이터, 저장소 구현은 Drizzle SQLite를 사용한다.
+- 첫 번째 슬라이스는 작성된 과정과 레슨 콘텐츠 조회만 저장하며 인증, 진행 상태, 답변 저장, AI, 업로드, 관리자 기능은 제외했다.
+- `apps/web`은 변경하지 않았다.
+- 패키지 단위 검증은 모두 통과했다: `bun --filter @workspace/core test`, `bun --filter @workspace/logger test`, `bun --filter @workspace/db test`, `bun --filter @workspace/api test`, 각 패키지 `typecheck`, 각 패키지 `lint`.
+- 루트 검증 중 `bun run test`, `bun run lint`, `git diff --check`, `bun lefthook run pre-commit`은 통과했다.
+- 루트 `bun run typecheck`는 기존 `@workspace/ui`의 `packages/ui/src/lib/utils.ts` `clsx` 모듈 타입 해석 실패로 종료 코드 2를 반환했다. 이번 작업은 `packages/ui`를 변경하지 않았다.
+- 루트 `bun run format:check`는 기존 포맷 불일치 파일 197개로 종료 코드 1을 반환했다. 변경 파일인 `BACKEND.md`와 `docs/api-foundation.md`는 별도 Prettier 검사에서 통과했다.
+- 임시 포트에서 `DATABASE_URL=:memory:`로 API 스모크를 실행했고 `/health`, `/courses`, `/courses/sentence-structure`, `/lessons/sentence-structure-01`, `/openapi.json` 모두 HTTP 200을 반환했다.
