@@ -13,6 +13,7 @@
 - `apps/api`에 OpenAPI JSON 파일 생성 스크립트를 추가했다.
 - 생성 파일은 `apps/docs/openapi/writing-app-api.json`에 저장된다.
 - `apps/docs`는 `fumadocs-openapi`로 `apps/docs/content/docs/api` 문서를 생성한다.
+- docs OpenAPI 생성 스크립트는 생성된 MDX/JSON을 Prettier로 정리해 빌드 이후 작업 트리가 불필요하게 변경되지 않게 한다.
 - docs 앱은 생성된 OpenAPI MDX의 `APIPage` 컴포넌트를 렌더링하며 정적 export 구조를 유지한다.
 - `apps/docs` Fumadocs collection은 async 로딩으로 전환해 OpenAPI MDX가 포함된 server collection을 안정적으로 생성한다.
 - 검증 통과:
