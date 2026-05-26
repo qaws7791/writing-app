@@ -64,6 +64,16 @@ describe("createDrizzleContentRepository", () => {
     expect(vocabularyBasics?.lessonCount).toBe(10)
   })
 
+  it("searches courses by title and description", async () => {
+    const repository = createDrizzleContentRepository(createDatabase(sqlite))
+
+    const result = await repository.searchCourses("문장")
+
+    expect(result.courses.map((course) => course.id)).toContain(
+      "sentence-structure"
+    )
+  })
+
   it("finds playable seed lessons beyond the first lesson", async () => {
     const repository = createDrizzleContentRepository(createDatabase(sqlite))
 

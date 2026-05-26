@@ -24,6 +24,21 @@ const repository: ContentRepository = {
       ],
     }
   },
+  async searchCourses(query) {
+    return {
+      courses: query
+        ? [
+            {
+              id: "sentence-structure",
+              title: "문장 구조의 기본",
+              description: "문장의 뼈대를 이해합니다.",
+              lessonCount: 12,
+              thumbnail: "/course-thumbnails/sentence-structure.png",
+            },
+          ]
+        : [],
+    }
+  },
   async findCourseDetail(courseId) {
     if (courseId !== "sentence-structure") {
       return undefined
@@ -101,6 +116,50 @@ describe("createContentService", () => {
         "sentence-structure"
       )
     }
+  })
+
+  it("searches courses by query", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async searchCourses(query) {
+          expect(query).toBe("문장")
+
+          return {
+            courses: [
+              {
+                id: "sentence-structure",
+                title: "문장 구조의 기본",
+                description: "문장의 뼈대를 이해합니다.",
+                lessonCount: 12,
+                thumbnail: "/course-thumbnails/sentence-structure.png",
+              },
+            ],
+          }
+        },
+      },
+    })
+
+    const result = await service.searchCourses("문장")
+
+    expect(result.status).toBe("ok")
+    if (result.status === "ok") {
+      expect(result.value.courses).toHaveLength(1)
+    }
+  })
+
+  it("rejects blank course search queries", async () => {
+    const service = createContentService({ repository })
+
+    const result = await service.searchCourses("   ")
+
+    expect(result).toEqual({
+      status: "invalid-request",
+      error: {
+        code: "invalid-request",
+        message: "Search query is required.",
+      },
+    })
   })
 
   it("returns an explicit course-not-found result", async () => {

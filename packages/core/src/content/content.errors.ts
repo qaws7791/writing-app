@@ -46,15 +46,27 @@ export type InvalidContentSeedErrorDto = {
   lessonId?: string
 }
 
+export const invalidRequestErrorDtoSchema = z.object({
+  code: z.literal("invalid-request"),
+  message: z.string().min(1),
+})
+
+export type InvalidRequestErrorDto = {
+  code: "invalid-request"
+  message: string
+}
+
 export type ContentErrorDto =
   | CourseNotFoundErrorDto
   | LessonNotFoundErrorDto
   | DatabaseUnavailableErrorDto
   | InvalidContentSeedErrorDto
+  | InvalidRequestErrorDto
 
 export const contentErrorDtoSchema = z.discriminatedUnion("code", [
   courseNotFoundErrorDtoSchema,
   lessonNotFoundErrorDtoSchema,
   databaseUnavailableErrorDtoSchema,
   invalidContentSeedErrorDtoSchema,
+  invalidRequestErrorDtoSchema,
 ])

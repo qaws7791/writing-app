@@ -78,6 +78,26 @@ const fakeContentService: ContentService = {
   async listCourseCategories() {
     return { status: "ok", value: courseCategories }
   },
+  async searchCourses(query) {
+    if (!query.trim()) {
+      return {
+        status: "invalid-request",
+        error: {
+          code: "invalid-request",
+          message: "Search query is required.",
+        },
+      }
+    }
+
+    return {
+      status: "ok",
+      value: {
+        courses: courseCategories.categories.flatMap(
+          (category) => category.courses
+        ),
+      },
+    }
+  },
   async getCourseDetail(courseId) {
     if (String(courseId) !== "sentence-structure") {
       return {
@@ -143,6 +163,29 @@ describe("createApiApp", () => {
 
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual(courseCategories)
+  })
+
+  it("returns public course search results", async () => {
+    const app = createTestApp()
+
+    const response = await app.request("/courses/search?q=문장")
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      courses: courseCategories.categories[0]?.courses,
+    })
+  })
+
+  it("returns invalid-request for blank course search queries", async () => {
+    const app = createTestApp()
+
+    const response = await app.request("/courses/search?q=%20")
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      code: "invalid-request",
+      message: "Search query is required.",
+    })
   })
 
   it("returns a course-not-found DTO for an unknown course", async () => {

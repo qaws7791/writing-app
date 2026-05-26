@@ -6,8 +6,10 @@ import {
   courseDetailDtoSchema,
   courseId,
   courseNotFoundErrorDtoSchema,
+  courseSearchResultDtoSchema,
   databaseUnavailableErrorDtoSchema,
   invalidContentSeedErrorDtoSchema,
+  invalidRequestErrorDtoSchema,
 } from "@workspace/core/content"
 
 import type { ApiAppDependencies } from "@/app"
@@ -45,6 +47,52 @@ export function registerCoursesRoutes(
       switch (result.status) {
         case "ok":
           return context.json(result.value)
+        case "unavailable":
+          return context.json(result.error, 503)
+        case "invalid-content":
+          return context.json(result.error, 500)
+        case "not-found":
+          return context.json(result.error, 404)
+      }
+    }
+  )
+
+  app.get(
+    "/courses/search",
+    describeRoute({
+      responses: {
+        200: {
+          description: "Course search results.",
+          content: {
+            "application/json": {
+              schema: resolver(courseSearchResultDtoSchema),
+            },
+          },
+        },
+        400: {
+          description: "Search query is required.",
+          content: jsonErrorResponse(invalidRequestErrorDtoSchema),
+        },
+        500: {
+          description: "Content seed is invalid.",
+          content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
+        },
+        503: {
+          description: "Database is unavailable.",
+          content: jsonErrorResponse(databaseUnavailableErrorDtoSchema),
+        },
+      },
+    }),
+    async (context) => {
+      const result = await contentService.searchCourses(
+        context.req.query("q") ?? ""
+      )
+
+      switch (result.status) {
+        case "ok":
+          return context.json(result.value)
+        case "invalid-request":
+          return context.json(result.error, 400)
         case "unavailable":
           return context.json(result.error, 503)
         case "invalid-content":

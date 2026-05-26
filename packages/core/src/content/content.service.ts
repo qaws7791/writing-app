@@ -1,15 +1,18 @@
 import {
   courseCategoryListDtoSchema,
   courseDetailDtoSchema,
+  courseSearchResultDtoSchema,
   lessonDtoSchema,
   type CourseCategoryListDto,
   type CourseDetailDto,
+  type CourseSearchResultDto,
   type LessonDto,
 } from "@/content/content.dto"
 import type {
   ContentErrorDto,
   CourseNotFoundErrorDto,
   DatabaseUnavailableErrorDto,
+  InvalidRequestErrorDto,
   LessonNotFoundErrorDto,
 } from "@/content/content.errors"
 import type { CourseId, LessonId } from "@/content/content.ids"
@@ -40,14 +43,23 @@ type UnavailableResult = {
   error: DatabaseUnavailableErrorDto
 }
 
+type InvalidRequestResult = {
+  status: "invalid-request"
+  error: InvalidRequestErrorDto
+}
+
 export type ContentServiceResult<TValue> =
   | OkResult<TValue>
   | NotFoundResult<CourseNotFoundErrorDto | LessonNotFoundErrorDto>
   | InvalidContentResult
   | UnavailableResult
+  | InvalidRequestResult
 
 export interface ContentService {
   listCourseCategories(): Promise<ContentServiceResult<CourseCategoryListDto>>
+  searchCourses(
+    query: string
+  ): Promise<ContentServiceResult<CourseSearchResultDto>>
   getCourseDetail(
     courseId: CourseId
   ): Promise<ContentServiceResult<CourseDetailDto>>
@@ -97,6 +109,36 @@ export function createContentService({
       return {
         status: "ok",
         value: parsedCategories.data,
+      }
+    },
+    async searchCourses(query) {
+      const trimmedQuery = query.trim()
+
+      if (!trimmedQuery) {
+        return {
+          status: "invalid-request",
+          error: {
+            code: "invalid-request",
+            message: "Search query is required.",
+          },
+        }
+      }
+
+      let result: CourseSearchResultDto
+      try {
+        result = await repository.searchCourses(trimmedQuery)
+      } catch {
+        return unavailableResult
+      }
+
+      const parsedResult = courseSearchResultDtoSchema.safeParse(result)
+      if (!parsedResult.success) {
+        return invalidContentResult()
+      }
+
+      return {
+        status: "ok",
+        value: parsedResult.data,
       }
     },
     async getCourseDetail(courseId) {

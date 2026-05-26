@@ -27,6 +27,10 @@ export const courseCategoryListDtoSchema = z.object({
   categories: z.array(courseCategoryDtoSchema),
 })
 
+export const courseSearchResultDtoSchema = z.object({
+  courses: z.array(courseSummaryDtoSchema),
+})
+
 export const courseLessonDtoSchema = z.object({
   id: z.string().min(1),
   lessonId: z.string().min(1),
@@ -368,6 +372,7 @@ export const lessonDtoSchema = z.object({
 export type CourseSummaryDto = z.infer<typeof courseSummaryDtoSchema>
 export type CourseCategoryDto = z.infer<typeof courseCategoryDtoSchema>
 export type CourseCategoryListDto = z.infer<typeof courseCategoryListDtoSchema>
+export type CourseSearchResultDto = z.infer<typeof courseSearchResultDtoSchema>
 export type CourseLessonDto = z.infer<typeof courseLessonDtoSchema>
 export type CourseChapterDto = z.infer<typeof courseChapterDtoSchema>
 export type CourseDetailDto = z.infer<typeof courseDetailDtoSchema>

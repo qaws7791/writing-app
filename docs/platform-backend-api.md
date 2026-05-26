@@ -31,3 +31,9 @@
 - 구현 계획은 `docs/superpowers/plans/2026-05-26-platform-backend-api.md`에 작성했다.
 - 계획은 의존성과 환경 변수 빠른 실패, 콘텐츠 검색, Better Auth 인증 경계, 인증과 학습 상태 마이그레이션, 학습 서비스, 학습 저장소, 프로필과 진행 API, AI 피드백 서비스, OpenAI provider, OpenAPI와 문서 갱신, 최종 검증으로 나눴다.
 - 계획 자체 검토에서 자리표시자와 모순되는 오류 계약을 제거했다.
+
+## 2026-05-26 구현 시작
+
+- `codex/platform-backend-api` 브랜치에서 승인된 구현 계획을 Inline Execution 방식으로 실행한다.
+- Task 1에서 Better Auth와 OpenAI SDK 의존성을 추가하고, 필수 환경 변수 누락 시 서버가 즉시 실패하도록 `apps/api` 환경 검증을 강화했다.
+- 기존 API startup 테스트가 Bun 전용 `import.meta.dir`와 고정 포트에 의존해 로컬 검증을 막고 있어, 표준 URL 기반 cwd와 동적 포트 할당으로 보정했다.

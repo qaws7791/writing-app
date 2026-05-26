@@ -1,4 +1,4 @@
-import { asc, count, eq, inArray } from "drizzle-orm"
+import { asc, count, eq, inArray, like, or } from "drizzle-orm"
 
 import type {
   ContentRepository,
@@ -64,6 +64,30 @@ export function createDrizzleContentRepository(
             })),
         })),
       } satisfies CourseCategoryListDto
+    },
+
+    async searchCourses(query) {
+      const courseRows = await db
+        .select()
+        .from(courses)
+        .where(
+          or(
+            like(courses.title, `%${query}%`),
+            like(courses.description, `%${query}%`)
+          )
+        )
+        .orderBy(asc(courses.sortOrder))
+      const lessonCountsByCourseId = await countLessonsByCourseId(db)
+
+      return {
+        courses: courseRows.map((course) => ({
+          id: course.id,
+          title: course.title,
+          description: course.description,
+          lessonCount: lessonCountsByCourseId.get(course.id) ?? 0,
+          thumbnail: course.thumbnailPath,
+        })),
+      }
     },
 
     async findCourseDetail(courseId) {
@@ -154,6 +178,19 @@ async function listCourseLessons(
     .from(courseLessons)
     .where(inArray(courseLessons.chapterId, chapterIds))
     .orderBy(asc(courseLessons.sortOrder))
+}
+
+async function countLessonsByCourseId(db: WritingAppDatabase) {
+  const lessonCountRows = await db
+    .select({
+      courseId: courseChapters.courseId,
+      lessonCount: count(courseLessons.id),
+    })
+    .from(courseChapters)
+    .leftJoin(courseLessons, eq(courseLessons.chapterId, courseChapters.id))
+    .groupBy(courseChapters.courseId)
+
+  return new Map(lessonCountRows.map((row) => [row.courseId, row.lessonCount]))
 }
 
 function mapCourseLesson(lesson: CourseLessonRow) {
