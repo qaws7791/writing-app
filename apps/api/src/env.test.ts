@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { parseApiEnv } from "@/env"
+import { ensureDatabaseDirectory, parseApiEnv } from "@/env"
 
 describe("parseApiEnv", () => {
   it("uses stable local defaults", () => {
@@ -23,5 +23,12 @@ describe("parseApiEnv", () => {
 
     expect(env.databasePath).toBe("data/test-api.sqlite")
     expect(env.port).toBe(4100)
+  })
+})
+
+describe("ensureDatabaseDirectory", () => {
+  it("skips in-memory and bare filename database paths", () => {
+    expect(ensureDatabaseDirectory(":memory:")).toBe(false)
+    expect(ensureDatabaseDirectory("api.sqlite")).toBe(false)
   })
 })

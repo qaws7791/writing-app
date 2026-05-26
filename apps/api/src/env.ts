@@ -1,3 +1,5 @@
+import { mkdirSync } from "node:fs"
+import { dirname } from "node:path"
 import { z } from "zod"
 
 const localCorsOrigins = "http://localhost:3000,http://localhost:3001"
@@ -28,4 +30,16 @@ export function parseApiEnv(rawEnv: Record<string, string | undefined>) {
     logLevel: env.LOG_LEVEL,
     port: env.PORT,
   }
+}
+
+export function ensureDatabaseDirectory(databasePath: string) {
+  const databaseDirectory = dirname(databasePath)
+
+  if (databasePath === ":memory:" || databaseDirectory === ".") {
+    return false
+  }
+
+  mkdirSync(databaseDirectory, { recursive: true })
+
+  return true
 }

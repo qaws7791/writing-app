@@ -1,5 +1,3 @@
-import { mkdirSync } from "node:fs"
-import { dirname } from "node:path"
 import Database from "bun:sqlite"
 
 import { createContentService } from "@workspace/core/content"
@@ -12,7 +10,7 @@ import {
 import { createLogger } from "@workspace/logger"
 
 import { createApiApp } from "@/app"
-import { parseApiEnv } from "@/env"
+import { ensureDatabaseDirectory, parseApiEnv } from "@/env"
 
 const env = parseApiEnv(Bun.env)
 const logger = createLogger({
@@ -21,7 +19,7 @@ const logger = createLogger({
   service: "api",
 })
 
-mkdirSync(dirname(env.databasePath), { recursive: true })
+ensureDatabaseDirectory(env.databasePath)
 
 const sqlite = new Database(env.databasePath, { create: true })
 runContentMigration(sqlite)
