@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
-import { getDefaultLesson, getLessonById } from "@/features/lessons/lesson-data"
+import { getDefaultLesson, lessonId } from "@/features/lessons/lesson-data"
 import { LessonPage } from "@/features/lessons/lesson-page"
+import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
 type LessonRouteProps = {
   searchParams: Promise<{
@@ -13,9 +14,13 @@ type LessonRouteProps = {
 export async function generateMetadata({
   searchParams,
 }: LessonRouteProps): Promise<Metadata> {
-  const lesson = resolveLesson(await searchParams)
+  const lessonIdParam = getLessonIdParam((await searchParams).lesson_id)
+  const api = getServerWritingAppApi()
+  const lesson = lessonIdParam
+    ? await api.getLesson(lessonId(lessonIdParam))
+    : await api.getLesson(getDefaultLesson().id)
 
-  if (!lesson) {
+  if (lesson.status === "error") {
     return {
       title: "레슨을 찾을 수 없습니다 — 한글쓰기",
       description: "요청한 한국어 글쓰기 레슨을 찾을 수 없습니다.",
@@ -23,31 +28,27 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${lesson.title} — 한글쓰기`,
+    title: `${lesson.value.title} — 한글쓰기`,
     description: "한국어 글쓰기 레슨을 단계별로 학습합니다.",
   }
 }
 
 export default async function Page({ searchParams }: LessonRouteProps) {
-  const lesson = resolveLesson(await searchParams)
+  const lessonIdParam = getLessonIdParam((await searchParams).lesson_id)
+  const api = getServerWritingAppApi()
+  const lesson = lessonIdParam
+    ? await api.getLesson(lessonId(lessonIdParam))
+    : await api.getLesson(getDefaultLesson().id)
 
-  if (!lesson) {
-    notFound()
+  if (lesson.status === "error") {
+    if (lesson.error.code === "not-found") {
+      notFound()
+    }
+
+    throw new Error(lesson.error.message)
   }
 
-  return <LessonPage lesson={lesson} />
-}
-
-function resolveLesson(
-  searchParams: Awaited<LessonRouteProps["searchParams"]>
-) {
-  const lessonIdParam = getLessonIdParam(searchParams.lesson_id)
-
-  if (!lessonIdParam) {
-    return getDefaultLesson()
-  }
-
-  return getLessonById(lessonIdParam)
+  return <LessonPage lesson={lesson.value} />
 }
 
 function getLessonIdParam(value: string | string[] | undefined) {

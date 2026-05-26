@@ -1,11 +1,13 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
+import { courseId } from "@/features/courses/course-data"
 import {
   getCourseDetailById,
   getCourseDetailStaticParams,
 } from "@/features/courses/course-detail-data"
 import { CourseDetailPage } from "@/features/courses/course-detail-page"
+import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
 type CoursePageProps = {
   params: Promise<{ id: string }>
@@ -35,11 +37,16 @@ export async function generateMetadata({
 
 export default async function Page({ params }: CoursePageProps) {
   const { id } = await params
-  const course = getCourseDetailById(id)
+  const api = getServerWritingAppApi()
+  const course = await api.getCourseDetail(courseId(id))
 
-  if (!course) {
-    notFound()
+  if (course.status === "error") {
+    if (course.error.code === "not-found") {
+      notFound()
+    }
+
+    throw new Error(course.error.message)
   }
 
-  return <CourseDetailPage course={course} />
+  return <CourseDetailPage course={course.value} />
 }

@@ -1,7 +1,11 @@
-import { courseCategories } from "@/features/courses/course-data"
+import type { CourseCategory } from "@/features/courses/course-data"
 import { CourseFeed } from "@/features/courses/course-feed"
 
-export function CoursesPage() {
+interface CoursesPageProps {
+  categories: readonly CourseCategory[]
+}
+
+export function CoursesPage({ categories }: CoursesPageProps) {
   return (
     <div className="w-full bg-background text-foreground">
       <div className="mx-auto flex max-w-6xl flex-col px-4 pt-6 pb-12 sm:px-6 sm:pt-9 md:px-8 md:pt-12 md:pb-20">
@@ -14,7 +18,7 @@ export function CoursesPage() {
           </p>
         </header>
 
-        <CourseFeed categories={courseCategories} />
+        <CourseFeed categories={categories} />
       </div>
     </div>
   )

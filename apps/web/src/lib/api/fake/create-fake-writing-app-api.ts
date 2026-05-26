@@ -103,6 +103,12 @@ export function createFakeWritingAppApi(): WritingAppApi {
         })
       }
       const firstStep = lesson.steps[0]
+      if (!firstStep) {
+        return apiFailure({
+          code: "contract-error",
+          message: "Lesson does not include steps.",
+        })
+      }
 
       return apiOk({
         answers: [],
