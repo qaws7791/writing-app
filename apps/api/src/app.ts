@@ -2,15 +2,19 @@ import { Hono } from "hono"
 import { cors } from "hono/cors"
 
 import type { ContentService } from "@workspace/core/content"
+import type { LearningService } from "@workspace/core/learning"
 import { createRequestLogFields } from "@workspace/logger"
 
 import type { AuthRuntime } from "@/auth/session"
 import { registerAuthRoute } from "@/routes/auth.route"
 import { registerCoursesRoutes } from "@/routes/courses.route"
 import { registerHealthRoute } from "@/routes/health.route"
+import { registerLearningRoute } from "@/routes/learning.route"
 import { registerLessonsRoutes } from "@/routes/lessons.route"
 import { registerMeRoute } from "@/routes/me.route"
 import { registerOpenApiRoute } from "@/routes/openapi.route"
+import { registerProfileRoute } from "@/routes/profile.route"
+import { registerProgressRoute } from "@/routes/progress.route"
 
 export interface ApiLogger {
   error(fields: object, message: string): void
@@ -22,6 +26,7 @@ export interface ApiAppDependencies {
   checkDatabase(): Promise<boolean>
   contentService: ContentService
   corsOrigins?: string[]
+  learningService: LearningService
   logger: ApiLogger
 }
 
@@ -79,6 +84,9 @@ export function createApiApp(dependencies: ApiAppDependencies) {
   registerCoursesRoutes(app, dependencies)
   registerLessonsRoutes(app, dependencies)
   registerMeRoute(app, dependencies.auth)
+  registerProfileRoute(app, dependencies)
+  registerProgressRoute(app, dependencies)
+  registerLearningRoute(app, dependencies)
   registerOpenApiRoute(app)
 
   return app

@@ -1,8 +1,12 @@
 import type {
   ContentService,
   CourseId,
+  CourseNotFoundErrorDto,
+  InvalidContentSeedErrorDto,
+  InvalidRequestErrorDto,
   LessonDto,
   LessonId,
+  LessonNotFoundErrorDto,
   LessonStepDto,
 } from "@/content"
 import { lessonId } from "@/content"
@@ -10,6 +14,8 @@ import type {
   CompleteLessonDto,
   CourseProgressDto,
   LessonProgressDto,
+  ProfileDto,
+  ProgressCourseListDto,
   SaveLessonAnswerRequestDto,
   SaveLessonProgressRequestDto,
 } from "@/learning/learning.dto"
@@ -35,12 +41,46 @@ type UnavailableResult = {
   error: LearningDatabaseUnavailableErrorDto
 }
 
+type NotFoundResult = {
+  status: "not-found"
+  error: CourseNotFoundErrorDto | LessonNotFoundErrorDto
+}
+
+type InvalidContentResult = {
+  status: "invalid-content"
+  error: InvalidContentSeedErrorDto
+}
+
 type LearningServiceResult<TValue> =
   | OkResult<TValue>
   | InvalidRequestResult
+  | NotFoundResult
+  | InvalidContentResult
   | UnavailableResult
 
+type ContentFailureResult =
+  | {
+      status: "not-found"
+      error: CourseNotFoundErrorDto | LessonNotFoundErrorDto
+    }
+  | {
+      status: "invalid-content"
+      error: InvalidContentSeedErrorDto
+    }
+  | {
+      status: "invalid-request"
+      error: InvalidRequestErrorDto
+    }
+  | {
+      status: "unavailable"
+      error: LearningDatabaseUnavailableErrorDto
+    }
+
 export interface LearningService {
+  getProfile(userId: UserId): Promise<LearningServiceResult<ProfileDto>>
+  listProgress(
+    userId: UserId
+  ): Promise<LearningServiceResult<ProgressCourseListDto>>
   getCourseProgress(
     userId: UserId,
     courseId: CourseId
@@ -90,11 +130,64 @@ export function createLearningService({
   contentService,
   repository,
 }: LearningServiceDependencies): LearningService {
-  return {
+  const service: LearningService = {
+    async getProfile(userId) {
+      try {
+        const courses = await repository.listInProgressCourses(userId)
+
+        return {
+          status: "ok",
+          value: {
+            completedLessonCount: courses.reduce(
+              (sum, course) => sum + course.completedCount,
+              0
+            ),
+            courseCount: courses.length,
+          },
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
+
+    async listProgress(userId) {
+      let courses
+      try {
+        courses = await repository.listInProgressCourses(userId)
+      } catch {
+        return unavailableResult
+      }
+
+      const progressResults = await Promise.all(
+        courses.map((course) =>
+          service.getCourseProgress(userId, course.courseId)
+        )
+      )
+      const unavailable = progressResults.find(
+        (result) => result.status !== "ok"
+      )
+      if (unavailable) {
+        return unavailableResult
+      }
+
+      return {
+        status: "ok",
+        value: {
+          courses: progressResults.map((result) => {
+            if (result.status !== "ok") {
+              throw new Error("Progress result must be ok.")
+            }
+
+            return result.value
+          }),
+        },
+      }
+    },
+
     async getCourseProgress(userId, courseId) {
       const courseResult = await contentService.getCourseDetail(courseId)
       if (courseResult.status !== "ok") {
-        return unavailableResult
+        return contentFailureResult(courseResult)
       }
 
       const lessons = courseResult.value.chapters.flatMap(
@@ -136,7 +229,7 @@ export function createLearningService({
     async getLessonProgress(userId, lessonId) {
       const lessonResult = await contentService.getLesson(lessonId)
       if (lessonResult.status !== "ok") {
-        return unavailableResult
+        return contentFailureResult(lessonResult)
       }
 
       try {
@@ -181,7 +274,7 @@ export function createLearningService({
     async saveLessonProgress(userId, lessonId, request) {
       const lessonResult = await contentService.getLesson(lessonId)
       if (lessonResult.status !== "ok") {
-        return unavailableResult
+        return contentFailureResult(lessonResult)
       }
 
       const targetStep = findStep(lessonResult.value, request.currentStepId)
@@ -222,7 +315,7 @@ export function createLearningService({
     async saveLessonAnswer(userId, lessonId, request) {
       const lessonResult = await contentService.getLesson(lessonId)
       if (lessonResult.status !== "ok") {
-        return unavailableResult
+        return contentFailureResult(lessonResult)
       }
 
       const targetStep = findStep(lessonResult.value, request.stepId)
@@ -254,7 +347,7 @@ export function createLearningService({
     async completeLesson(userId, lessonId) {
       const lessonResult = await contentService.getLesson(lessonId)
       if (lessonResult.status !== "ok") {
-        return unavailableResult
+        return contentFailureResult(lessonResult)
       }
 
       const finalStep = getFinalStep(lessonResult.value)
@@ -283,6 +376,8 @@ export function createLearningService({
       }
     },
   }
+
+  return service
 }
 
 function findStep(lesson: LessonDto, stepId: string) {
@@ -314,5 +409,24 @@ function invalidRequest(message: string): InvalidRequestResult {
       code: "invalid-request",
       message,
     },
+  }
+}
+
+function contentFailureResult(
+  result: ContentFailureResult
+):
+  | InvalidRequestResult
+  | NotFoundResult
+  | InvalidContentResult
+  | UnavailableResult {
+  switch (result.status) {
+    case "invalid-request":
+      return result
+    case "not-found":
+      return result
+    case "invalid-content":
+      return result
+    case "unavailable":
+      return unavailableResult
   }
 }

@@ -309,4 +309,59 @@ describe("createLearningService", () => {
       })
     }
   })
+
+  it("returns profile summary from in-progress courses", async () => {
+    const repository = {
+      ...createRepository(),
+      listInProgressCourses: vi.fn(async () => [
+        {
+          completedCount: 1,
+          courseId: courseId("sentence-structure"),
+          lastLessonId: lessonId("sentence-structure-01"),
+        },
+      ]),
+    }
+    const service = createLearningService({ contentService, repository })
+
+    const result = await service.getProfile(userId("user-1"))
+
+    expect(result).toEqual({
+      status: "ok",
+      value: {
+        completedLessonCount: 1,
+        courseCount: 1,
+      },
+    })
+  })
+
+  it("returns overall progress for in-progress courses", async () => {
+    const repository = {
+      ...createRepository(),
+      listInProgressCourses: vi.fn(async () => [
+        {
+          completedCount: 1,
+          courseId: courseId("sentence-structure"),
+          lastLessonId: lessonId("sentence-structure-01"),
+        },
+      ]),
+    }
+    const service = createLearningService({ contentService, repository })
+
+    const result = await service.listProgress(userId("user-1"))
+
+    expect(result).toEqual({
+      status: "ok",
+      value: {
+        courses: [
+          {
+            completedCount: 1,
+            courseId: "sentence-structure",
+            nextLessonId: "sentence-structure-02",
+            progressPercent: 50,
+            totalLessons: 2,
+          },
+        ],
+      },
+    })
+  })
 })

@@ -1,9 +1,11 @@
 import Database from "bun:sqlite"
 
 import { createContentService } from "@workspace/core/content"
+import { createLearningService } from "@workspace/core/learning"
 import {
   createDatabase,
   createDrizzleContentRepository,
+  createDrizzleLearningRepository,
   runContentMigration,
   seedContent,
 } from "@workspace/db"
@@ -31,6 +33,10 @@ await seedContent(db)
 const contentService = createContentService({
   repository: createDrizzleContentRepository(db),
 })
+const learningService = createLearningService({
+  contentService,
+  repository: createDrizzleLearningRepository(db),
+})
 const auth = createAuthRuntime({
   baseUrl: env.betterAuthUrl,
   db,
@@ -54,6 +60,7 @@ const app = createApiApp({
   },
   contentService,
   corsOrigins: env.corsOrigins,
+  learningService,
   logger,
 })
 

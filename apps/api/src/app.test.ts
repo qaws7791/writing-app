@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import type { ContentService } from "@workspace/core/content"
+import type { LearningService } from "@workspace/core/learning"
 
 import type { CurrentAuthSession } from "@/auth/session"
 import { createApiApp, type ApiLogger } from "@/app"
@@ -129,14 +130,106 @@ const fakeContentService: ContentService = {
   },
 }
 
+const fakeLearningService: LearningService = {
+  async completeLesson() {
+    return {
+      status: "ok",
+      value: {
+        completedAt: "2026-05-26T00:00:00.000Z",
+        completedCount: 1,
+        lessonId: "sentence-structure-01",
+        status: "completed",
+        wasAlreadyCompleted: false,
+      },
+    }
+  },
+  async getCourseProgress() {
+    return {
+      status: "ok",
+      value: {
+        completedCount: 1,
+        courseId: "sentence-structure",
+        nextLessonId: "sentence-structure-02",
+        progressPercent: 50,
+        totalLessons: 2,
+      },
+    }
+  },
+  async getLessonProgress() {
+    return {
+      status: "ok",
+      value: {
+        answers: [],
+        currentStepId: "sentence-structure-01-step-1",
+        lessonId: "sentence-structure-01",
+        status: "not-started",
+        stepOrder: 1,
+      },
+    }
+  },
+  async getProfile() {
+    return {
+      status: "ok",
+      value: {
+        completedLessonCount: 1,
+        courseCount: 1,
+      },
+    }
+  },
+  async listProgress() {
+    return {
+      status: "ok",
+      value: {
+        courses: [
+          {
+            completedCount: 1,
+            courseId: "sentence-structure",
+            nextLessonId: "sentence-structure-02",
+            progressPercent: 50,
+            totalLessons: 2,
+          },
+        ],
+      },
+    }
+  },
+  async saveLessonAnswer() {
+    return { status: "ok", value: { saved: true } }
+  },
+  async saveLessonProgress() {
+    return {
+      status: "ok",
+      value: {
+        answers: [],
+        currentStepId: "sentence-structure-01-step-2",
+        lessonId: "sentence-structure-01",
+        status: "in-progress",
+        stepOrder: 2,
+      },
+    }
+  },
+}
+
 const silentLogger: ApiLogger = {
   error() {},
   info() {},
 }
 
+const testSession: CurrentAuthSession = {
+  session: {
+    id: "session-1",
+  },
+  user: {
+    email: "learner@example.com",
+    id: "user-1",
+    image: null,
+    name: "학습자",
+  },
+}
+
 function createTestApp(
   logger: ApiLogger = silentLogger,
-  session: CurrentAuthSession | null = null
+  session: CurrentAuthSession | null = null,
+  learningService: LearningService = fakeLearningService
 ) {
   return createApiApp({
     auth: {
@@ -151,6 +244,7 @@ function createTestApp(
       return true
     },
     contentService: fakeContentService,
+    learningService,
     logger,
   })
 }
@@ -181,17 +275,7 @@ describe("createApiApp", () => {
   })
 
   it("returns the current user for /me with a session", async () => {
-    const app = createTestApp(silentLogger, {
-      session: {
-        id: "session-1",
-      },
-      user: {
-        email: "learner@example.com",
-        id: "user-1",
-        image: null,
-        name: "학습자",
-      },
-    })
+    const app = createTestApp(silentLogger, testSession)
 
     const response = await app.request("/me")
 
@@ -201,6 +285,130 @@ describe("createApiApp", () => {
       id: "user-1",
       image: null,
       name: "학습자",
+    })
+  })
+
+  it("requires auth for /profile", async () => {
+    const app = createTestApp()
+
+    const response = await app.request("/profile")
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({
+      code: "unauthorized",
+      message: "Authentication is required.",
+    })
+  })
+
+  it("returns profile summary for an authenticated user", async () => {
+    const app = createTestApp(silentLogger, testSession)
+
+    const response = await app.request("/profile")
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      completedLessonCount: 1,
+      courseCount: 1,
+    })
+  })
+
+  it("returns overall progress for an authenticated user", async () => {
+    const app = createTestApp(silentLogger, testSession)
+
+    const response = await app.request("/progress")
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      courses: [
+        {
+          completedCount: 1,
+          courseId: "sentence-structure",
+          nextLessonId: "sentence-structure-02",
+          progressPercent: 50,
+          totalLessons: 2,
+        },
+      ],
+    })
+  })
+
+  it("saves lesson progress for an authenticated user", async () => {
+    const learningService = {
+      ...fakeLearningService,
+      saveLessonProgress: vi.fn(fakeLearningService.saveLessonProgress),
+    } satisfies LearningService
+    const app = createTestApp(silentLogger, testSession, learningService)
+
+    const response = await app.request(
+      "/lessons/sentence-structure-01/progress",
+      {
+        body: JSON.stringify({
+          currentStepId: "sentence-structure-01-step-2",
+          stepOrder: 2,
+        }),
+        headers: { "content-type": "application/json" },
+        method: "PUT",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    expect(learningService.saveLessonProgress).toHaveBeenCalledWith(
+      "user-1",
+      "sentence-structure-01",
+      {
+        currentStepId: "sentence-structure-01-step-2",
+        stepOrder: 2,
+      }
+    )
+  })
+
+  it("saves lesson answers for an authenticated user", async () => {
+    const learningService = {
+      ...fakeLearningService,
+      saveLessonAnswer: vi.fn(fakeLearningService.saveLessonAnswer),
+    } satisfies LearningService
+    const app = createTestApp(silentLogger, testSession, learningService)
+
+    const response = await app.request(
+      "/lessons/sentence-structure-01/answers",
+      {
+        body: JSON.stringify({
+          answer: "문장을 고쳤습니다.",
+          stepId: "sentence-structure-01-step-2",
+        }),
+        headers: { "content-type": "application/json" },
+        method: "PUT",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({ saved: true })
+    expect(learningService.saveLessonAnswer).toHaveBeenCalledWith(
+      "user-1",
+      "sentence-structure-01",
+      {
+        answer: "문장을 고쳤습니다.",
+        stepId: "sentence-structure-01-step-2",
+      }
+    )
+  })
+
+  it("completes lessons idempotently for an authenticated user", async () => {
+    const app = createTestApp(silentLogger, testSession)
+
+    const response = await app.request(
+      "/lessons/sentence-structure-01/complete",
+      {
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      completedAt: "2026-05-26T00:00:00.000Z",
+      completedCount: 1,
+      lessonId: "sentence-structure-01",
+      status: "completed",
+      wasAlreadyCompleted: false,
     })
   })
 
