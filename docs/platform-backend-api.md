@@ -65,3 +65,15 @@
 - API 스모크 테스트는 임시 포트 `4100`에서 `/health`, `/courses`, `/courses/search?q=문장`, `/me`를 확인했다. 공개 API는 `200`, 인증 없는 `/me`는 `401 unauthorized`를 반환했다.
 - 전체 워크스페이스 검증 중 `bun run typecheck`는 기존 `@workspace/ui`의 `clsx` 타입 해석 실패로 중단됐다.
 - 전체 워크스페이스 `bun run format:check`는 기존 `codebase.md`, `FRONTEND.md`, `docs/platform-product-feature-spec.md` 포맷 불일치 때문에 실패했다. 이번 작업에서 작성한 구현 계획 문서는 Prettier로 정리했다.
+
+## 2026-05-26 API 환경 변수 문서화 시작
+
+- `apps/api/src/env.ts`에만 남아 있던 API 환경 변수 목록을 실행 예시 파일과 백엔드 문서로 함께 관리한다.
+- 문서화 대상은 Better Auth, Google OAuth, OpenAI 피드백, SQLite 데이터베이스, CORS, 로그, 포트, 실행 환경 변수다.
+- 런타임 검증 스키마는 변경하지 않고, 현재 필수/선택 변수의 의미와 로컬 예시값만 명시한다.
+
+## 2026-05-26 API 환경 변수 문서화 완료
+
+- `apps/api/.env.example`을 추가해 API 앱에 필요한 모든 환경 변수 이름과 로컬 개발용 예시값을 한 곳에 모았다.
+- `BACKEND.md`의 `apps/api` 섹션에 환경 변수 표를 추가해 필수 여부, 기본값 또는 예시, 용도를 문서화했다.
+- `DATABASE_URL`은 예시 파일에서 `file:data/api.sqlite`를 사용하지만 런타임에서는 필수 입력이라는 점을 명확히 했다.
