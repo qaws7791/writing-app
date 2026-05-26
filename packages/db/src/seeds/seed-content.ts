@@ -30,6 +30,13 @@ export async function seedContent(db: WritingAppDatabase) {
         sortOrder: course.sortOrder,
       })
 
+      const courseLessonRefs = course.chapters.flatMap((chapter) =>
+        chapter.lessons.map((lesson) => ({
+          chapter,
+          lesson,
+        }))
+      )
+
       for (const chapter of course.chapters) {
         chapterRows.push({
           id: chapter.id,
@@ -38,49 +45,49 @@ export async function seedContent(db: WritingAppDatabase) {
           title: chapter.title,
           sortOrder: chapter.sortOrder,
         })
+      }
 
-        for (const [index, lesson] of chapter.lessons.entries()) {
-          const nextLesson = chapter.lessons[index + 1]
+      for (const [index, { chapter, lesson }] of courseLessonRefs.entries()) {
+        const nextLesson = courseLessonRefs[index + 1]?.lesson
 
-          lessonRows.push({
-            id: lesson.id,
-            categoryId: category.id,
-            courseId: course.id,
-            title: lesson.title,
-            unitNumber: lesson.sortOrder,
-            nextLessonId: nextLesson?.id,
-          })
+        lessonRows.push({
+          id: lesson.id,
+          categoryId: category.id,
+          courseId: course.id,
+          title: lesson.title,
+          unitNumber: chapter.sortOrder,
+          nextLessonId: nextLesson?.id,
+        })
 
-          courseLessonRows.push({
-            id: lesson.id,
-            chapterId: chapter.id,
-            lessonId: lesson.id,
-            title: lesson.title,
-            description: lesson.description,
-            sortOrder: lesson.sortOrder,
-          })
+        courseLessonRows.push({
+          id: lesson.id,
+          chapterId: chapter.id,
+          lessonId: lesson.id,
+          title: lesson.title,
+          description: lesson.description,
+          sortOrder: lesson.sortOrder,
+        })
 
-          const steps = createSeedLessonSteps({
-            categoryTitle: category.title,
-            courseId: course.id,
-            lessonDescription: lesson.description,
-            lessonId: lesson.id,
-            lessonTitle: lesson.title,
-            nextLessonTitle: nextLesson?.title,
-          })
+        const steps = createSeedLessonSteps({
+          categoryTitle: category.title,
+          courseId: course.id,
+          lessonDescription: lesson.description,
+          lessonId: lesson.id,
+          lessonTitle: lesson.title,
+          nextLessonTitle: nextLesson?.title,
+        })
 
-          lessonStepRows.push(
-            ...steps.map((step) => ({
-              id: step.id,
-              contentJson: JSON.stringify(step.content),
-              lessonId: step.lessonId,
-              points: step.points,
-              required: step.required,
-              sortOrder: step.sortOrder,
-              type: step.type,
-            }))
-          )
-        }
+        lessonStepRows.push(
+          ...steps.map((step) => ({
+            id: step.id,
+            contentJson: JSON.stringify(step.content),
+            lessonId: step.lessonId,
+            points: step.points,
+            required: step.required,
+            sortOrder: step.sortOrder,
+            type: step.type,
+          }))
+        )
       }
     }
   }

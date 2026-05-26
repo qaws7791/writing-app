@@ -1,9 +1,16 @@
 import type { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 
-import { lessonDtoSchema, lessonId } from "@workspace/core/content"
+import {
+  databaseUnavailableErrorDtoSchema,
+  invalidContentSeedErrorDtoSchema,
+  lessonDtoSchema,
+  lessonId,
+  lessonNotFoundErrorDtoSchema,
+} from "@workspace/core/content"
 
 import type { ApiAppDependencies } from "@/app"
+import { jsonErrorResponse } from "@/routes/error-response"
 
 export function registerLessonsRoutes(
   app: Hono,
@@ -23,12 +30,15 @@ export function registerLessonsRoutes(
         },
         404: {
           description: "Lesson was not found.",
+          content: jsonErrorResponse(lessonNotFoundErrorDtoSchema),
         },
         500: {
           description: "Content seed is invalid.",
+          content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
           description: "Database is unavailable.",
+          content: jsonErrorResponse(databaseUnavailableErrorDtoSchema),
         },
       },
     }),

@@ -5,9 +5,13 @@ import {
   courseCategoryListDtoSchema,
   courseDetailDtoSchema,
   courseId,
+  courseNotFoundErrorDtoSchema,
+  databaseUnavailableErrorDtoSchema,
+  invalidContentSeedErrorDtoSchema,
 } from "@workspace/core/content"
 
 import type { ApiAppDependencies } from "@/app"
+import { jsonErrorResponse } from "@/routes/error-response"
 
 export function registerCoursesRoutes(
   app: Hono,
@@ -24,6 +28,14 @@ export function registerCoursesRoutes(
               schema: resolver(courseCategoryListDtoSchema),
             },
           },
+        },
+        500: {
+          description: "Content seed is invalid.",
+          content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
+        },
+        503: {
+          description: "Database is unavailable.",
+          content: jsonErrorResponse(databaseUnavailableErrorDtoSchema),
         },
       },
     }),
@@ -57,12 +69,15 @@ export function registerCoursesRoutes(
         },
         404: {
           description: "Course was not found.",
+          content: jsonErrorResponse(courseNotFoundErrorDtoSchema),
         },
         500: {
           description: "Content seed is invalid.",
+          content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
           description: "Database is unavailable.",
+          content: jsonErrorResponse(databaseUnavailableErrorDtoSchema),
         },
       },
     }),

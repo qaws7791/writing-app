@@ -1,8 +1,8 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import type { ContentService } from "@workspace/core/content"
 
-import { createApiApp } from "@/app"
+import { createApiApp, type ApiLogger } from "@/app"
 
 const courseCategories = {
   categories: [
@@ -108,12 +108,18 @@ const fakeContentService: ContentService = {
   },
 }
 
-function createTestApp() {
+const silentLogger: ApiLogger = {
+  error() {},
+  info() {},
+}
+
+function createTestApp(logger: ApiLogger = silentLogger) {
   return createApiApp({
     async checkDatabase() {
       return true
     },
     contentService: fakeContentService,
+    logger,
   })
 }
 
@@ -165,6 +171,33 @@ describe("createApiApp", () => {
     })
   })
 
+  it("logs request fields through the injected logger", async () => {
+    const logger = {
+      error: vi.fn(),
+      info: vi.fn(),
+    } satisfies ApiLogger
+    const app = createTestApp(logger)
+
+    const response = await app.request("/courses", {
+      headers: {
+        "x-request-id": "request-1",
+      },
+    })
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("x-request-id")).toBe("request-1")
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.objectContaining({
+        durationMs: expect.any(Number),
+        method: "GET",
+        path: "/courses",
+        requestId: "request-1",
+        status: 200,
+      }),
+      "API request completed"
+    )
+  })
+
   it("returns OpenAPI paths without versioned routes", async () => {
     const app = createTestApp()
 
@@ -178,5 +211,43 @@ describe("createApiApp", () => {
     expect(
       Object.keys(document.paths).some((path) => path.startsWith("/v"))
     ).toBe(false)
+  })
+
+  it("documents error response schemas in OpenAPI", async () => {
+    const app = createTestApp()
+
+    const response = await app.request("/openapi.json")
+    const document = (await response.json()) as {
+      paths: Record<
+        string,
+        {
+          get?: {
+            responses?: Record<
+              string,
+              {
+                content?: Record<
+                  string,
+                  {
+                    schema?: unknown
+                  }
+                >
+              }
+            >
+          }
+        }
+      >
+    }
+
+    expect(response.status).toBe(200)
+    expect(
+      document.paths["/courses/{courseId}"]?.get?.responses?.["404"]?.content?.[
+        "application/json"
+      ]?.schema
+    ).toBeDefined()
+    expect(
+      document.paths["/lessons/{lessonId}"]?.get?.responses?.["503"]?.content?.[
+        "application/json"
+      ]?.schema
+    ).toBeDefined()
   })
 })

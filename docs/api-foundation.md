@@ -41,3 +41,13 @@
 - 루트 `bun run typecheck`는 기존 `@workspace/ui`의 `packages/ui/src/lib/utils.ts` `clsx` 모듈 타입 해석 실패로 종료 코드 2를 반환했다. 이번 작업은 `packages/ui`를 변경하지 않았다.
 - 루트 `bun run format:check`는 기존 포맷 불일치 파일 197개로 종료 코드 1을 반환했다. 변경 파일인 `BACKEND.md`와 `docs/api-foundation.md`는 별도 Prettier 검사에서 통과했다.
 - 임시 포트에서 `DATABASE_URL=:memory:`로 API 스모크를 실행했고 `/health`, `/courses`, `/courses/sentence-structure`, `/lessons/sentence-structure-01`, `/openapi.json` 모두 HTTP 200을 반환했다.
+
+## 2026-05-26 최종 리뷰 반영
+
+- `packages/db` 콘텐츠 시드는 현재 `apps/web` 정적 카탈로그와 상세 화면에서 사용하는 과정, 챕터, 레슨 ID를 API가 안정적으로 반환할 수 있도록 확장했다.
+- `/courses`는 `sentence-structure`, `vocabulary-basics`, `reading-comprehension`, `grammar-complete`, `expression`, `essay-writing`, `business-writing`, `creative-writing` 요약을 포함한다. 상세 데이터에만 존재하는 `basic-sentence-writing`, `emotion-writing`, `business-email`은 `home` 카테고리로 시드해 상세/레슨 ID 조회가 끊기지 않게 했다.
+- 시드 레슨은 아직 프론트 프로토타입의 전체 본문을 복제하지 않는다. 각 레슨은 API 계약과 플레이 가능성을 확인하기 위한 `INTRO`, `SUMMARY`, `COMPLETE` 기본 단계만 제공한다.
+- `sentence-structure` 상세는 12개 레슨을 반환하며, `sentence-structure-02` 같은 후속 레슨도 `/lessons/:lessonId`에서 조회 가능하다.
+- 레슨 step DTO는 프론트 레슨 모델의 대표 타입인 `CONCEPT`, `MULTIPLE_CHOICE`를 포함해 현재 step type 전체를 수용한다.
+- `apps/api`는 주입된 logger로 요청 ID, method, path, status, duration을 기록한다. 예상치 못한 요청 처리 오류는 같은 request id와 함께 오류 로그를 남긴다.
+- OpenAPI 문서의 404, 500, 503 오류 응답은 core의 오류 DTO Zod schema를 재사용해 JSON schema를 노출한다.

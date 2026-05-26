@@ -25,12 +25,70 @@ describe("createDrizzleContentRepository", () => {
     const repository = createDrizzleContentRepository(createDatabase(sqlite))
 
     const result = await repository.listCourseCategories()
+    const beginnerCourses = result.categories.find(
+      (category) => category.id === "beginner"
+    )?.courses
 
     expect(result.categories[0]?.id).toBe("beginner")
-    expect(result.categories[0]?.courses[0]).toMatchObject({
+    expect(beginnerCourses?.[0]).toMatchObject({
       id: "sentence-structure",
-      lessonCount: 1,
+      lessonCount: 12,
     })
+    expect(beginnerCourses?.map((course) => course.id)).toContain(
+      "vocabulary-basics"
+    )
+    expect(
+      beginnerCourses?.find((course) => course.id === "vocabulary-basics")
+    ).toMatchObject({
+      lessonCount: 10,
+    })
+  })
+
+  it("finds current frontend catalog course details", async () => {
+    const repository = createDrizzleContentRepository(createDatabase(sqlite))
+
+    const sentenceStructure = await repository.findCourseDetail(
+      courseId("sentence-structure")
+    )
+    const vocabularyBasics = await repository.findCourseDetail(
+      courseId("vocabulary-basics")
+    )
+
+    expect(sentenceStructure?.lessonCount).toBe(12)
+    expect(
+      sentenceStructure?.chapters.flatMap((chapter) =>
+        chapter.lessons.map((lesson) => lesson.lessonId)
+      )
+    ).toContain("sentence-structure-12")
+    expect(vocabularyBasics?.firstLessonId).toBe("vocabulary-basics-01")
+    expect(vocabularyBasics?.lessonCount).toBe(10)
+  })
+
+  it("finds playable seed lessons beyond the first lesson", async () => {
+    const repository = createDrizzleContentRepository(createDatabase(sqlite))
+
+    const result = await repository.findLesson(
+      lessonId("sentence-structure-02")
+    )
+
+    expect(result?.id).toBe("sentence-structure-02")
+    expect(result?.steps.map((step) => step.type)).toEqual([
+      "INTRO",
+      "SUMMARY",
+      "COMPLETE",
+    ])
+    expect(result?.steps).toHaveLength(3)
+    expect(result?.nextLessonId).toBe("sentence-structure-03")
+  })
+
+  it("links the next lesson across chapter boundaries", async () => {
+    const repository = createDrizzleContentRepository(createDatabase(sqlite))
+
+    const result = await repository.findLesson(
+      lessonId("sentence-structure-04")
+    )
+
+    expect(result?.nextLessonId).toBe("sentence-structure-05")
   })
 
   it("finds course detail by ID", async () => {

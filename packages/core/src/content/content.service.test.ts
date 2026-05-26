@@ -169,6 +169,92 @@ describe("createContentService", () => {
     })
   })
 
+  it("accepts representative frontend lesson step types", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async findLesson() {
+          const result = await repository.findLesson(
+            lessonId("sentence-structure-01")
+          )
+          if (!result) {
+            return undefined
+          }
+          const firstStep = result.steps[0]
+          if (!firstStep) {
+            return undefined
+          }
+
+          return {
+            ...result,
+            steps: [
+              firstStep,
+              {
+                id: "sentence-structure-01-step-2",
+                type: "CONCEPT",
+                order: 2,
+                points: 10,
+                required: true,
+                content: {
+                  subtitle: "문장 성분의 기준",
+                  body: "문장은 성분 사이의 관계로 읽습니다.",
+                  highlight: {
+                    icon: "!",
+                    text: "주어와 서술어가 맞물리는지 확인합니다.",
+                    tone: "info",
+                  },
+                  keyTerms: [
+                    {
+                      term: "주어",
+                      definition: "문장에서 동작이나 상태의 주체입니다.",
+                    },
+                  ],
+                },
+              },
+              {
+                id: "sentence-structure-01-step-3",
+                type: "MULTIPLE_CHOICE",
+                order: 3,
+                points: 10,
+                required: true,
+                content: {
+                  context: "주어와 서술어 찾기",
+                  question: "문장 구조를 확인하는 기준은 무엇인가요?",
+                  options: [
+                    {
+                      id: "A",
+                      text: "주어와 서술어의 호응을 확인한다.",
+                      isCorrect: true,
+                    },
+                    {
+                      id: "B",
+                      text: "문장을 무조건 길게 쓴다.",
+                      isCorrect: false,
+                    },
+                  ],
+                  explanation: "주어와 서술어의 관계가 문장의 뼈대입니다.",
+                  allowMultiple: false,
+                  shuffleOptions: false,
+                },
+              },
+            ],
+          }
+        },
+      },
+    })
+
+    const result = await service.getLesson(lessonId("sentence-structure-01"))
+
+    expect(result.status).toBe("ok")
+    if (result.status === "ok") {
+      expect(result.value.steps.map((step) => step.type)).toEqual([
+        "INTRO",
+        "CONCEPT",
+        "MULTIPLE_CHOICE",
+      ])
+    }
+  })
+
   it("returns invalid-content when course category DTOs are invalid", async () => {
     const service = createContentService({
       repository: {

@@ -45,6 +45,7 @@ const app = createApiApp({
   },
   contentService,
   corsOrigins: env.corsOrigins,
+  logger,
 })
 
 Bun.serve({

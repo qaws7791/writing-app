@@ -32,6 +32,10 @@ bun --filter @workspace/api dev
 
 `packages/db`는 Drizzle SQLite 기반 영속성 패키지다. 콘텐츠 스키마, 마이그레이션 SQL, 시드 데이터, 데이터베이스 클라이언트 생성, 저장소 구현을 제공한다. 첫 번째 슬라이스의 과정과 레슨 조회 데이터는 시드된 작성 콘텐츠에서 가져온다.
 
+콘텐츠 시드는 현재 웹 정적 카탈로그와 과정 상세 화면의 과정/챕터/레슨 ID를 명시적으로 보관한다. API는 `vocabulary-basics` 같은 기존 과정 요약과 `sentence-structure-02` 같은 후속 레슨 ID를 반환할 수 있다. 다만 모든 레슨의 프로토타입 본문을 복제하지는 않으며, 각 레슨은 현재 `INTRO`, `SUMMARY`, `COMPLETE` 기본 단계로 플레이 가능성만 보장한다.
+
 ### `packages/logger`
 
 `packages/logger`는 Pino 로거 생성과 요청 로그 필드 헬퍼를 제공한다. API 조립 루트와 라우트 주변부에서 공통 로그 형식을 재사용할 수 있게 한다.
+
+`apps/api`는 앱 생성 시 logger를 주입받아 요청 ID, method, path, status, duration을 요청 단위로 기록한다. 클라이언트가 `x-request-id`를 보내면 같은 값을 응답 헤더와 로그에 사용하고, 없으면 API가 새 request id를 생성한다.
