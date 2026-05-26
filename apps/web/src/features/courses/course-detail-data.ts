@@ -2,7 +2,7 @@ import {
   courseId,
   type Brand,
   type CourseId,
-} from "@/features/courses/course-data"
+} from "@/features/courses/course-ids"
 
 export type CourseChapterId = Brand<string, "course-chapter-id">
 export type CourseLessonId = Brand<string, "course-lesson-id">

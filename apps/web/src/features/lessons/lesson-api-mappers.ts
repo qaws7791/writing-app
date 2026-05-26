@@ -1,4 +1,4 @@
-import { lessonId, lessonStepId } from "@/features/lessons/lesson-data"
+import { lessonId, lessonStepId } from "@/features/lessons/lesson-ids"
 import type {
   AiFeedbackContent,
   Lesson,

@@ -3,6 +3,7 @@ import {
   courseDetails,
   getCourseDetailById,
 } from "@/features/courses/course-detail-data"
+import { inProgressCourses } from "@/features/home/home-fake-data"
 import { getLessonById } from "@/features/lessons/lesson-data"
 import { getMockAiFeedback } from "@/features/lessons/lesson-logic"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
@@ -73,6 +74,19 @@ export function createFakeWritingAppApi(): WritingAppApi {
           (progress) => progress.status === "completed"
         ).length,
         courseCount: courseDetails.length,
+      })
+    },
+    async listProgress() {
+      return apiOk({
+        courses: inProgressCourses.map((course) => ({
+          completedLessons: course.completedLessons,
+          courseId: course.id as never,
+          nextLessonId: course.lessons.find(
+            (lesson) => lesson.status === "next-up"
+          )?.id as never,
+          percentage: Math.round(course.progressPercent),
+          totalLessons: course.totalLessons,
+        })),
       })
     },
     async getCourseProgress(courseId) {

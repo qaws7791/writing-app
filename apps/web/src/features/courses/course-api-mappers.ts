@@ -1,8 +1,5 @@
-import {
-  courseId,
-  type Course,
-  type CourseCategory,
-} from "@/features/courses/course-data"
+import { courseId } from "@/features/courses/course-ids"
+import type { Course, CourseCategory } from "@/features/courses/course-data"
 import type {
   CourseChapter,
   CourseDetail,

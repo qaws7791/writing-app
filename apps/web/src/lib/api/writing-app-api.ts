@@ -1,6 +1,7 @@
 import type { Course, CourseCategory } from "@/features/courses/course-data"
 import type {
   CourseDetail,
+  CourseNextLesson,
   CourseProgress,
 } from "@/features/courses/course-detail-data"
 import type {
@@ -20,6 +21,18 @@ export interface CurrentUser {
 export interface ProfileSummary {
   completedLessonCount: number
   courseCount: number
+}
+
+export interface ProgressCourse {
+  completedLessons: number
+  courseId: Course["id"]
+  nextLessonId?: CourseNextLesson["lessonId"]
+  percentage: number
+  totalLessons: number
+}
+
+export interface ProgressCourseList {
+  courses: readonly ProgressCourse[]
 }
 
 export interface LessonAnswer {
@@ -75,6 +88,7 @@ export interface WritingAppApi {
   getLesson(lessonId: LessonId): Promise<ApiResult<Lesson>>
   getCurrentUser(): Promise<ApiResult<CurrentUser>>
   getProfile(): Promise<ApiResult<ProfileSummary>>
+  listProgress(): Promise<ApiResult<ProgressCourseList>>
   getCourseProgress(courseId: Course["id"]): Promise<ApiResult<CourseProgress>>
   getLessonProgress(lessonId: LessonId): Promise<ApiResult<LessonProgress>>
   saveLessonProgress(

@@ -103,3 +103,18 @@
 - 회귀 테스트로 Google social auth 호출 대상, callback URL 보정, 안전하지 않은 callback fallback을 검증했다.
 - 검증 명령은 `bun --filter @workspace/web test`, `bun --filter @workspace/web typecheck`, `bun --filter @workspace/web lint`, `bun --filter @workspace/web build`를 실행했다.
 - 인앱 브라우저에서 `/login?next=%2Fapp%2Fcourses` 화면의 Google 로그인 버튼과 회원가입 링크 렌더링을 확인했다.
+
+## 2026-05-27 프로토타입 데이터 참조 조사 완료
+
+- 회원가입 후 홈에서 기존 진행 중 코스가 보이는 원인을 확장해, `apps/web` 런타임의 로컬 프로토타입 데이터 참조를 조사했다.
+- 상세 결과는 `docs/frontend-prototype-data-audit.md`에 기록했다.
+- 홈 화면은 API를 호출하지 않고 `inProgressCourses` 정적 배열을 직접 렌더링하는 확정 문제다.
+- 서버와 브라우저 API 클라이언트의 기본값이 각각 fake라서, 실제 API 검증 시 `WEB_API_MODE=http`와 `NEXT_PUBLIC_API_MODE=http`를 함께 지정해야 한다.
+
+## 2026-05-27 API 모드 실제 데이터 전환 완료
+
+- `WritingAppApi`에 진행 목록 조회를 추가하고 HTTP 어댑터가 백엔드 `/progress`를 호출하도록 연결했다.
+- `/app` 홈은 진행 목록과 코스 상세를 API 포트에서 가져오며, 새 사용자처럼 진행 목록이 없으면 빈 상태를 렌더링한다.
+- 코스 상세 metadata/static params와 레슨 기본값 fallback의 로컬 데이터 참조는 fake 모드에서만 동적 import하도록 제한했다.
+- API 매퍼가 ID helper만 쓰려고 프로토타입 데이터 모듈을 로드하지 않도록 코스/레슨 ID helper를 별도 파일로 분리했다.
+- API 클라이언트 factory의 fake 어댑터 참조도 동적 import로 바꿔 API 모드에서 fake 카탈로그가 로드되지 않게 했다.

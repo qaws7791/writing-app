@@ -4,6 +4,7 @@ import {
   type CourseDetail,
   type CourseLesson,
 } from "@/features/courses/course-detail-data"
+import { lessonId, lessonStepId } from "@/features/lessons/lesson-ids"
 import type {
   Lesson,
   LessonId,
@@ -12,13 +13,7 @@ import type {
   LessonTone,
 } from "@/features/lessons/lesson-types"
 
-export function lessonId(value: string): LessonId {
-  return value as LessonId
-}
-
-export function lessonStepId(value: string): LessonStepId {
-  return value as LessonStepId
-}
+export { lessonId, lessonStepId } from "@/features/lessons/lesson-ids"
 
 type LessonPattern =
   | "sentence"

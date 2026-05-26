@@ -1,11 +1,14 @@
 import { cookies } from "next/headers"
 
-import { createFakeWritingAppApi } from "@/lib/api/fake/create-fake-writing-app-api"
+import { isServerFakeApiMode } from "@/lib/api/api-mode"
 import { createHttpWritingAppApi } from "@/lib/api/http/create-http-writing-app-api"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
 
 export async function getServerWritingAppApi(): Promise<WritingAppApi> {
-  if ((process.env["WEB_API_MODE"] ?? "fake") === "fake") {
+  if (isServerFakeApiMode()) {
+    const { createFakeWritingAppApi } =
+      await import("@/lib/api/fake/create-fake-writing-app-api")
+
     return createFakeWritingAppApi()
   }
 

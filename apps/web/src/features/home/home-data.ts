@@ -1,9 +1,7 @@
-type Brand<TValue, TBrand extends string> = TValue & {
-  readonly __brand: TBrand
-}
-
-export type CourseId = Brand<string, "course-id">
-export type LessonId = Brand<string, "lesson-id">
+import type { CourseDetail } from "@/features/courses/course-detail-data"
+import type { CourseId } from "@/features/courses/course-ids"
+import { lessonId } from "@/features/lessons/lesson-ids"
+import type { LessonId } from "@/features/lessons/lesson-types"
 
 export type LessonStatus = "completed" | "next-up" | "locked"
 
@@ -24,76 +22,55 @@ export interface InProgressCourse {
   lessons: readonly HomeLesson[]
 }
 
-function courseId(value: string): CourseId {
-  return value as CourseId
+export function createInProgressCourse(course: CourseDetail): InProgressCourse {
+  return {
+    id: course.id,
+    title: course.title,
+    description: course.description,
+    thumbnail: course.thumbnail,
+    completedLessons: course.progress.completedLessons,
+    totalLessons: course.progress.totalLessons,
+    progressPercent: course.progress.percentage,
+    lessons: createHomeLessons(course),
+  }
 }
 
-function lessonId(value: string): LessonId {
-  return value as LessonId
-}
+function createHomeLessons(course: CourseDetail): readonly HomeLesson[] {
+  const lessons = course.chapters.flatMap((chapter) =>
+    chapter.lessons.map((lesson) => ({
+      ...lesson,
+      name: `${chapter.label}. ${lesson.title}`,
+    }))
+  )
+  const nextLessonIndex = lessons.findIndex(
+    (lesson) => lesson.lessonId === course.nextLesson.lessonId
+  )
+  const rows: HomeLesson[] = []
+  const completedLesson = [
+    ...lessons.slice(
+      0,
+      nextLessonIndex >= 0 ? nextLessonIndex : lessons.length
+    ),
+  ]
+    .reverse()
+    .find((lesson) => lesson.completed)
 
-export const inProgressCourses: readonly InProgressCourse[] = [
-  {
-    id: courseId("basic-sentence-writing"),
-    title: "기초 문장 만들기",
-    description: "주어, 서술어, 목적어의 긴밀한 관계 탐구",
-    thumbnail: "/course-thumbnails/basic-sentence-writing.png",
-    completedLessons: 5,
-    totalLessons: 12,
-    progressPercent: 41.6,
-    lessons: [
-      {
-        id: lessonId("basic-sentence-writing-05"),
-        name: "5강. 형용사 꾸밈과 명사의 배치",
-        status: "completed",
-      },
-      {
-        id: lessonId("basic-sentence-writing-06"),
-        name: "6강. 부사어로 상황 더하기",
-        status: "next-up",
-      },
-    ],
-  },
-  {
-    id: courseId("emotion-writing"),
-    title: "감정 표현 글쓰기",
-    description: "추상적 상태를 정확한 서술어로 기술하는 법",
-    thumbnail: "/course-thumbnails/emotion-writing.png",
-    completedLessons: 2,
-    totalLessons: 10,
-    progressPercent: 20,
-    lessons: [
-      {
-        id: lessonId("emotion-writing-02"),
-        name: "2강. 감정 강도 표현",
-        status: "completed",
-      },
-      {
-        id: lessonId("emotion-writing-03"),
-        name: "3강. 미묘한 감정 변화",
-        status: "next-up",
-      },
-    ],
-  },
-  {
-    id: courseId("business-email"),
-    title: "비즈니스 이메일 작성법",
-    description: "업무 격식과 명확한 전개로 신뢰감 구축",
-    thumbnail: "/course-thumbnails/business-email.png",
-    completedLessons: 0,
-    totalLessons: 18,
-    progressPercent: 0,
-    lessons: [
-      {
-        id: lessonId("business-email-01"),
-        name: "1강. 제목의 핵심 표현",
-        status: "next-up",
-      },
-      {
-        id: lessonId("business-email-02"),
-        name: "2강. 첫 문장 목적 정리",
-        status: "locked",
-      },
-    ],
-  },
-]
+  if (completedLesson) {
+    rows.push({
+      id: lessonId(String(completedLesson.lessonId)),
+      name: completedLesson.name,
+      status: "completed",
+    })
+  }
+
+  const nextLesson = lessons[nextLessonIndex]
+  if (nextLesson) {
+    rows.push({
+      id: lessonId(String(nextLesson.lessonId)),
+      name: nextLesson.name,
+      status: "next-up",
+    })
+  }
+
+  return rows
+}

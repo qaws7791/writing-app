@@ -1,8 +1,7 @@
-export type Brand<TValue, TBrand extends string> = TValue & {
-  readonly __brand: TBrand
-}
+import { courseId, type CourseId } from "@/features/courses/course-ids"
 
-export type CourseId = Brand<string, "course-id">
+export { courseId }
+export type { Brand, CourseId } from "@/features/courses/course-ids"
 
 export interface Course {
   id: CourseId
@@ -16,10 +15,6 @@ export interface CourseCategory {
   id: string
   title: string
   courses: readonly Course[]
-}
-
-export function courseId(value: string): CourseId {
-  return value as CourseId
 }
 
 export const courseCategories: readonly CourseCategory[] = [

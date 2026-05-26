@@ -85,6 +85,9 @@ export function createHttpWritingAppApi(
         (value) => value as ProfileSummary
       )
     },
+    async listProgress() {
+      return request(() => client.GET("/progress"), mapProgressCourseList)
+    },
     async getCourseProgress(courseId) {
       return request(
         () =>
@@ -145,6 +148,26 @@ export function createHttpWritingAppApi(
         mapAiFeedbackResult
       )
     },
+  }
+}
+
+function mapProgressCourseList(value: {
+  courses: readonly {
+    completedCount: number
+    courseId: string
+    nextLessonId?: string
+    progressPercent: number
+    totalLessons: number
+  }[]
+}) {
+  return {
+    courses: value.courses.map((course) => ({
+      completedLessons: course.completedCount,
+      courseId: course.courseId as never,
+      nextLessonId: course.nextLessonId as never,
+      percentage: course.progressPercent,
+      totalLessons: course.totalLessons,
+    })),
   }
 }
 

@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 
-import { getDefaultLesson, lessonId } from "@/features/lessons/lesson-data"
+import { lessonId } from "@/features/lessons/lesson-ids"
 import { LessonPage } from "@/features/lessons/lesson-page"
+import { isServerFakeApiMode } from "@/lib/api/api-mode"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
 type LessonRouteProps = {
@@ -14,13 +15,15 @@ type LessonRouteProps = {
 export async function generateMetadata({
   searchParams,
 }: LessonRouteProps): Promise<Metadata> {
-  const lessonIdParam = getLessonIdParam((await searchParams).lesson_id)
+  const resolvedLessonId = await getRouteLessonId(
+    (await searchParams).lesson_id
+  )
   const api = await getServerWritingAppApi()
-  const lesson = lessonIdParam
-    ? await api.getLesson(lessonId(lessonIdParam))
-    : await api.getLesson(getDefaultLesson().id)
+  const lesson = resolvedLessonId
+    ? await api.getLesson(resolvedLessonId)
+    : undefined
 
-  if (lesson.status === "error") {
+  if (!lesson || lesson.status === "error") {
     return {
       title: "레슨을 찾을 수 없습니다 — 한글쓰기",
       description: "요청한 한국어 글쓰기 레슨을 찾을 수 없습니다.",
@@ -34,11 +37,15 @@ export async function generateMetadata({
 }
 
 export default async function Page({ searchParams }: LessonRouteProps) {
-  const lessonIdParam = getLessonIdParam((await searchParams).lesson_id)
+  const resolvedLessonId = await getRouteLessonId(
+    (await searchParams).lesson_id
+  )
+  if (!resolvedLessonId) {
+    notFound()
+  }
+
   const api = await getServerWritingAppApi()
-  const lesson = lessonIdParam
-    ? await api.getLesson(lessonId(lessonIdParam))
-    : await api.getLesson(getDefaultLesson().id)
+  const lesson = await api.getLesson(resolvedLessonId)
 
   if (lesson.status === "error") {
     if (lesson.error.code === "not-found") {
@@ -53,4 +60,20 @@ export default async function Page({ searchParams }: LessonRouteProps) {
 
 function getLessonIdParam(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value
+}
+
+async function getRouteLessonId(value: string | string[] | undefined) {
+  const lessonIdParam = getLessonIdParam(value)
+
+  if (lessonIdParam) {
+    return lessonId(lessonIdParam)
+  }
+
+  if (!isServerFakeApiMode()) {
+    return null
+  }
+
+  const { getDefaultLesson } = await import("@/features/lessons/lesson-data")
+
+  return getDefaultLesson().id
 }

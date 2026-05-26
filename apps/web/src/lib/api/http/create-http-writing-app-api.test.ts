@@ -53,4 +53,50 @@ describe("createHttpWritingAppApi", () => {
       },
     })
   })
+
+  it("requests the authenticated learner progress list", async () => {
+    const fetch = vi.fn(async (input: RequestInfo | URL) => {
+      expect(input).toBeDefined()
+
+      return Response.json({
+        courses: [
+          {
+            completedCount: 1,
+            courseId: "sentence-structure",
+            nextLessonId: "sentence-structure-02",
+            progressPercent: 50,
+            totalLessons: 2,
+          },
+        ],
+      })
+    })
+    const api = createHttpWritingAppApi({
+      baseUrl: "http://localhost:4000",
+      fetch,
+    })
+
+    const result = await api.listProgress()
+
+    expect(result).toEqual({
+      status: "ok",
+      value: {
+        courses: [
+          {
+            completedLessons: 1,
+            courseId: "sentence-structure",
+            nextLessonId: "sentence-structure-02",
+            percentage: 50,
+            totalLessons: 2,
+          },
+        ],
+      },
+    })
+
+    const request = fetch.mock.calls[0]?.[0]
+    expect(request).toBeInstanceOf(Request)
+    if (!(request instanceof Request)) {
+      throw new Error("Expected openapi-fetch to call fetch with a Request.")
+    }
+    expect(request.url).toBe("http://localhost:4000/progress")
+  })
 })

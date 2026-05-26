@@ -1,3 +1,4 @@
+import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -12,13 +13,16 @@ import {
 import { cn } from "@workspace/ui/lib/utils"
 
 import {
-  inProgressCourses,
   type HomeLesson,
   type InProgressCourse,
   type LessonStatus,
 } from "@/features/home/home-data"
 
-export function HomePage() {
+interface HomePageProps {
+  courses: readonly InProgressCourse[]
+}
+
+export function HomePage({ courses }: HomePageProps) {
   return (
     <div className="w-full bg-background text-foreground">
       <div className="mx-auto flex max-w-[778px] flex-col px-4 pt-6 pb-10 sm:pt-8">
@@ -27,21 +31,44 @@ export function HomePage() {
             진행 중인 코스
           </h1>
           <p className="m-0 shrink-0 text-sm font-medium text-muted-foreground">
-            총 {inProgressCourses.length}개 진행 중
+            총 {courses.length}개 진행 중
           </p>
         </header>
 
         <main className="flex flex-col">
-          {inProgressCourses.map((course, index) => (
-            <CourseProgressItem
-              key={course.id}
-              course={course}
-              isLast={index === inProgressCourses.length - 1}
-            />
-          ))}
+          {courses.length > 0 ? (
+            courses.map((course, index) => (
+              <CourseProgressItem
+                key={course.id}
+                course={course}
+                isLast={index === courses.length - 1}
+              />
+            ))
+          ) : (
+            <EmptyProgressState />
+          )}
         </main>
       </div>
     </div>
+  )
+}
+
+function EmptyProgressState() {
+  return (
+    <section className="rounded-lg border border-dashed border-border px-5 py-10 text-center">
+      <h2 className="m-0 text-lg/7 font-semibold tracking-normal">
+        아직 진행 중인 코스가 없습니다.
+      </h2>
+      <p className="m-0 mt-2 text-sm/6 text-muted-foreground">
+        코스를 둘러보고 첫 레슨을 시작해 보세요.
+      </p>
+      <Link
+        className="mt-5 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+        href="/app/courses"
+      >
+        코스 둘러보기
+      </Link>
+    </section>
   )
 }
 
