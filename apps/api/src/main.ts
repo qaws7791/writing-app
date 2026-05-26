@@ -10,6 +10,7 @@ import {
 import { createLogger } from "@workspace/logger"
 
 import { createApiApp } from "@/app"
+import { createAuthRuntime } from "@/auth/auth"
 import { ensureDatabaseDirectory, parseApiEnv } from "@/env"
 
 const env = parseApiEnv(Bun.env)
@@ -30,8 +31,16 @@ await seedContent(db)
 const contentService = createContentService({
   repository: createDrizzleContentRepository(db),
 })
+const auth = createAuthRuntime({
+  baseUrl: env.betterAuthUrl,
+  db,
+  googleClientId: env.googleClientId,
+  googleClientSecret: env.googleClientSecret,
+  secret: env.betterAuthSecret,
+})
 
 const app = createApiApp({
+  auth,
   async checkDatabase() {
     try {
       sqlite.query("select 1").get()

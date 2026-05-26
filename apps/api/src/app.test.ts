@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import type { ContentService } from "@workspace/core/content"
 
+import type { CurrentAuthSession } from "@/auth/session"
 import { createApiApp, type ApiLogger } from "@/app"
 
 const courseCategories = {
@@ -133,8 +134,19 @@ const silentLogger: ApiLogger = {
   info() {},
 }
 
-function createTestApp(logger: ApiLogger = silentLogger) {
+function createTestApp(
+  logger: ApiLogger = silentLogger,
+  session: CurrentAuthSession | null = null
+) {
   return createApiApp({
+    auth: {
+      async getSession() {
+        return session
+      },
+      async handler() {
+        return new Response(null, { status: 404 })
+      },
+    },
     async checkDatabase() {
       return true
     },
@@ -153,6 +165,42 @@ describe("createApiApp", () => {
     await expect(response.json()).resolves.toEqual({
       database: "ok",
       status: "ok",
+    })
+  })
+
+  it("returns unauthorized for /me without a session", async () => {
+    const app = createTestApp()
+
+    const response = await app.request("/me")
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({
+      code: "unauthorized",
+      message: "Authentication is required.",
+    })
+  })
+
+  it("returns the current user for /me with a session", async () => {
+    const app = createTestApp(silentLogger, {
+      session: {
+        id: "session-1",
+      },
+      user: {
+        email: "learner@example.com",
+        id: "user-1",
+        image: null,
+        name: "학습자",
+      },
+    })
+
+    const response = await app.request("/me")
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      email: "learner@example.com",
+      id: "user-1",
+      image: null,
+      name: "학습자",
     })
   })
 

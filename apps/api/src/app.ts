@@ -4,9 +4,12 @@ import { cors } from "hono/cors"
 import type { ContentService } from "@workspace/core/content"
 import { createRequestLogFields } from "@workspace/logger"
 
+import type { AuthRuntime } from "@/auth/session"
+import { registerAuthRoute } from "@/routes/auth.route"
 import { registerCoursesRoutes } from "@/routes/courses.route"
 import { registerHealthRoute } from "@/routes/health.route"
 import { registerLessonsRoutes } from "@/routes/lessons.route"
+import { registerMeRoute } from "@/routes/me.route"
 import { registerOpenApiRoute } from "@/routes/openapi.route"
 
 export interface ApiLogger {
@@ -15,6 +18,7 @@ export interface ApiLogger {
 }
 
 export interface ApiAppDependencies {
+  auth: AuthRuntime
   checkDatabase(): Promise<boolean>
   contentService: ContentService
   corsOrigins?: string[]
@@ -60,6 +64,9 @@ export function createApiApp(dependencies: ApiAppDependencies) {
   app.use(
     "*",
     cors({
+      allowHeaders: ["Content-Type", "Authorization"],
+      allowMethods: ["GET", "POST", "PUT", "OPTIONS"],
+      credentials: true,
       origin: dependencies.corsOrigins ?? [
         "http://localhost:3000",
         "http://localhost:3001",
@@ -67,9 +74,11 @@ export function createApiApp(dependencies: ApiAppDependencies) {
     })
   )
 
+  registerAuthRoute(app, dependencies.auth)
   registerHealthRoute(app, dependencies)
   registerCoursesRoutes(app, dependencies)
   registerLessonsRoutes(app, dependencies)
+  registerMeRoute(app, dependencies.auth)
   registerOpenApiRoute(app)
 
   return app
