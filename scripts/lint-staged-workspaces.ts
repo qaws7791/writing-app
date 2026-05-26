@@ -48,7 +48,11 @@ if (workspaceRoots.length === 0) {
   process.exit(0)
 }
 
-const turboBinary = path.resolve(process.cwd(), "node_modules/.bin/turbo.exe")
+const turboBinary = path.resolve(
+  process.cwd(),
+  "node_modules/.bin",
+  process.platform === "win32" ? "turbo.exe" : "turbo"
+)
 const filters = workspaceRoots.flatMap((workspaceRoot) => [
   "--filter",
   `{./${workspaceRoot}}`,

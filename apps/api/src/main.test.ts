@@ -1,5 +1,8 @@
+import { createServer } from "node:net"
 import { rm } from "node:fs/promises"
 import { spawn } from "node:child_process"
+import { fileURLToPath } from "node:url"
+import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 
 const smokeDatabasePath = "data/test-startup.sqlite"
@@ -10,16 +13,22 @@ afterEach(async () => {
 
 describe("api startup", () => {
   it("starts with the default development environment", async () => {
-    const port = 4423
+    const port = await getAvailablePort()
     const env = {
       ...process.env,
+      BETTER_AUTH_SECRET: "test-secret-with-enough-length",
+      BETTER_AUTH_URL: `http://localhost:${port}`,
       DATABASE_URL: `file:${smokeDatabasePath}`,
+      GOOGLE_CLIENT_ID: "google-client-id",
+      GOOGLE_CLIENT_SECRET: "google-client-secret",
+      OPENAI_API_KEY: "openai-api-key",
+      OPENAI_MODEL: "gpt-5-mini",
       PORT: String(port),
     }
     delete env.NODE_ENV
 
-    const apiProcess = spawn("bun", ["src/main.ts"], {
-      cwd: `${import.meta.dir}/..`,
+    const apiProcess = spawn(resolveBunExecutable(), ["src/main.ts"], {
+      cwd: fileURLToPath(new URL("..", import.meta.url)),
       env,
     })
     let stderr = ""
@@ -74,4 +83,27 @@ async function waitForHealth(
 
 function sleep(milliseconds: number) {
   return new Promise((resolve) => setTimeout(resolve, milliseconds))
+}
+
+function resolveBunExecutable() {
+  return (
+    process.env.BUN_EXECUTABLE ?? join(process.env.HOME ?? "", ".bun/bin/bun")
+  )
+}
+
+function getAvailablePort() {
+  return new Promise<number>((resolve, reject) => {
+    const server = createServer()
+
+    server.on("error", reject)
+    server.listen(0, "127.0.0.1", () => {
+      const address = server.address()
+      if (!address || typeof address === "string") {
+        server.close(() => reject(new Error("Failed to allocate a test port.")))
+        return
+      }
+
+      server.close(() => resolve(address.port))
+    })
+  })
 }
