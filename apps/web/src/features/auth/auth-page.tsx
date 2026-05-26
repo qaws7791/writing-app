@@ -20,7 +20,11 @@ import {
 } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 
-import { requestEmailAuth, type AuthMode } from "@/lib/auth/auth-client"
+import {
+  requestEmailAuth,
+  requestGoogleAuth,
+  type AuthMode,
+} from "@/lib/auth/auth-client"
 import { getSafeNextPath } from "@/lib/auth/auth-navigation"
 
 interface AuthPageProps {
@@ -50,6 +54,7 @@ export function AuthPage({ apiBaseUrl, mode, nextPath }: AuthPageProps) {
   const router = useRouter()
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [pending, setPending] = React.useState(false)
+  const [googlePending, setGooglePending] = React.useState(false)
   const safeNextPath = getSafeNextPath(nextPath)
   const copy = authCopy[mode]
 
@@ -76,6 +81,21 @@ export function AuthPage({ apiBaseUrl, mode, nextPath }: AuthPageProps) {
 
     router.replace(safeNextPath)
     router.refresh()
+  }
+
+  async function handleGoogleAuth() {
+    setErrorMessage(null)
+    setGooglePending(true)
+
+    try {
+      await requestGoogleAuth({
+        baseUrl: apiBaseUrl,
+        callbackPath: safeNextPath,
+      })
+    } catch {
+      setGooglePending(false)
+      setErrorMessage("Google 로그인 요청에 실패했습니다.")
+    }
   }
 
   return (
@@ -131,13 +151,33 @@ export function AuthPage({ apiBaseUrl, mode, nextPath }: AuthPageProps) {
 
             <Button
               className="w-full"
-              disabled={pending}
+              disabled={pending || googlePending}
               size="lg"
               type="submit"
             >
               {pending ? "처리 중..." : copy.submitLabel}
             </Button>
           </form>
+
+          <div className="my-6 flex items-center gap-3 text-xs/5 text-muted-foreground">
+            <div className="h-px flex-1 bg-border" />
+            <span>또는</span>
+            <div className="h-px flex-1 bg-border" />
+          </div>
+
+          <Button
+            className="w-full"
+            disabled={pending || googlePending}
+            onClick={handleGoogleAuth}
+            size="lg"
+            type="button"
+            variant="outline"
+          >
+            <span className="flex size-5 items-center justify-center rounded-full border border-border bg-background text-sm font-bold text-foreground">
+              G
+            </span>
+            {googlePending ? "Google로 이동 중..." : "Google로 계속하기"}
+          </Button>
 
           <p className="m-0 mt-6 text-center text-sm/6 text-muted-foreground">
             <span>

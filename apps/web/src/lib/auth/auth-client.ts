@@ -1,9 +1,28 @@
+import { createAuthClient } from "better-auth/react"
+
+import { getSafeNextPath } from "@/lib/auth/auth-navigation"
+
 export type AuthMode = "login" | "signup"
 
 export type AuthFetch = (
   input: RequestInfo | URL,
   init?: RequestInit
 ) => Promise<Response>
+
+export type SocialAuthClient = {
+  signIn: {
+    social: (input: GoogleSocialAuthInput) => Promise<unknown>
+  }
+}
+
+export type CreateSocialAuthClient = (input: {
+  baseURL: string
+}) => SocialAuthClient
+
+export type GoogleSocialAuthInput = {
+  callbackURL: string
+  provider: "google"
+}
 
 export type EmailAuthResult =
   | {
@@ -22,6 +41,18 @@ export interface RequestEmailAuthInput {
   name?: string
   password: string
 }
+
+export interface RequestGoogleAuthInput {
+  appOrigin?: string
+  baseUrl: string
+  callbackPath?: string
+  createClient?: CreateSocialAuthClient
+}
+
+const createBetterAuthSocialClient: CreateSocialAuthClient = ({ baseURL }) =>
+  createAuthClient({
+    baseURL,
+  })
 
 export async function requestEmailAuth({
   baseUrl,
@@ -50,11 +81,49 @@ export async function requestEmailAuth({
   }
 }
 
+export async function requestGoogleAuth({
+  appOrigin,
+  baseUrl,
+  callbackPath,
+  createClient = createBetterAuthSocialClient,
+}: RequestGoogleAuthInput) {
+  const client = createClient({ baseURL: normalizeBaseUrl(baseUrl) })
+
+  await client.signIn.social({
+    callbackURL: getGoogleCallbackUrl({
+      appOrigin: appOrigin ?? getCurrentOrigin(),
+      callbackPath,
+    }),
+    provider: "google",
+  })
+}
+
 function getEmailAuthUrl(baseUrl: string, mode: AuthMode) {
   const path =
     mode === "login" ? "/api/auth/sign-in/email" : "/api/auth/sign-up/email"
 
-  return `${baseUrl.replace(/\/$/, "")}${path}`
+  return `${normalizeBaseUrl(baseUrl)}${path}`
+}
+
+function normalizeBaseUrl(baseUrl: string) {
+  return baseUrl.replace(/\/$/, "")
+}
+
+function getGoogleCallbackUrl({
+  appOrigin,
+  callbackPath,
+}: Pick<RequestGoogleAuthInput, "appOrigin" | "callbackPath">) {
+  const safePath = getSafeNextPath(callbackPath)
+
+  if (!appOrigin || appOrigin === "null") {
+    return safePath
+  }
+
+  return `${normalizeBaseUrl(appOrigin)}${safePath}`
+}
+
+function getCurrentOrigin() {
+  return globalThis.location?.origin
 }
 
 function getEmailAuthBody({

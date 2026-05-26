@@ -88,3 +88,18 @@
 - 수정 후 브라우저에서 회원가입 재시도 시 `/api/auth/sign-up/email`은 `200`, 세션 기반 `/me`는 `200`을 반환했다.
 - 회원가입 성공 후 `/app`으로 이동했고, 보호된 `/app/profile`에서 새 사용자 이름이 포함된 프로필 화면을 확인했다.
 - 검증 명령은 `bun --filter @workspace/api test`, `bun --filter @workspace/api typecheck`, `bun --filter @workspace/api lint`를 실행했다. 린트는 기존 `turbo/no-undeclared-env-vars` 경고 2건만 남고 종료 코드 0을 반환했다.
+
+## 2026-05-27 구글 로그인 시작
+
+- 백엔드 Better Auth Google provider 설정을 유지하고, 웹 로그인/회원가입 화면에서 Google OAuth 시작 액션을 추가한다.
+- Google OAuth 완료 후에는 기존 이메일 인증과 동일하게 `next` 쿼리로 보정된 `/app...` 경로로 복귀한다.
+- 공식 Better Auth 클라이언트의 `signIn.social` 흐름을 사용해 OAuth 요청 URL과 리다이렉트 처리를 직접 조립하지 않는다.
+
+## 2026-05-27 구글 로그인 완료
+
+- `apps/web`에 `better-auth` 클라이언트 의존성을 명시하고, 로그인/회원가입 화면에 `Google로 계속하기` 버튼을 추가했다.
+- Google OAuth 시작 시 API origin과 웹 origin이 다른 구조를 고려해 `callbackURL`을 현재 웹 origin이 포함된 절대 URL로 전달한다.
+- `next` 쿼리는 기존 `getSafeNextPath` 보정을 그대로 사용해 `/app...` 내부 경로만 Google 로그인 후 복귀 대상으로 허용한다.
+- 회귀 테스트로 Google social auth 호출 대상, callback URL 보정, 안전하지 않은 callback fallback을 검증했다.
+- 검증 명령은 `bun --filter @workspace/web test`, `bun --filter @workspace/web typecheck`, `bun --filter @workspace/web lint`, `bun --filter @workspace/web build`를 실행했다.
+- 인앱 브라우저에서 `/login?next=%2Fapp%2Fcourses` 화면의 Google 로그인 버튼과 회원가입 링크 렌더링을 확인했다.
