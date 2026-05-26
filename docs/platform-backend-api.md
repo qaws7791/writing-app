@@ -45,3 +45,4 @@
 - Task 7에서 인증이 필요한 `/profile`, `/progress`, 코스/레슨 진행, 답변 저장, 레슨 완료 API를 추가했다.
 - Task 8에서 AI 피드백 core 서비스와 `feedback_attempts` Drizzle 저장소를 추가했다.
 - Task 9에서 OpenAI Responses API 기반 피드백 provider와 인증이 필요한 `POST /ai-feedback` API를 추가했다.
+- Task 10에서 새 학습자 API 경로가 OpenAPI 문서에 포함되는지 검증하고, `BACKEND.md`에 인증 경계, 환경 변수, 테이블, OpenAI 피드백 경계를 갱신했다.
