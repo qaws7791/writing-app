@@ -29,6 +29,8 @@
 - `POST /lessons/:lessonId/complete`
 - `POST /ai-feedback`
 
+API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. 공유 패키지는 Zod 검증, 빈 문자열 정규화, 오류 메시지 형식만 담당한다. `DATABASE_URL`의 `file:` prefix 제거, `CORS_ORIGIN` 분리 같은 앱별 의미 변환은 `apps/api/src/env.ts`에 유지한다.
+
 필수 환경 변수는 누락 시 서버 시작 단계에서 즉시 실패한다. 기능을 숨기거나 다른 동작으로 대체하지 않는다.
 
 - `DATABASE_URL`
