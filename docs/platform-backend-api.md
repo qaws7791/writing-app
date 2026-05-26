@@ -46,3 +46,22 @@
 - Task 8에서 AI 피드백 core 서비스와 `feedback_attempts` Drizzle 저장소를 추가했다.
 - Task 9에서 OpenAI Responses API 기반 피드백 provider와 인증이 필요한 `POST /ai-feedback` API를 추가했다.
 - Task 10에서 새 학습자 API 경로가 OpenAPI 문서에 포함되는지 검증하고, `BACKEND.md`에 인증 경계, 환경 변수, 테이블, OpenAI 피드백 경계를 갱신했다.
+- Task 11에서 패키지별 테스트, 타입체크, 린트와 API 스모크 테스트를 실행했다.
+- 통과한 검증:
+  - `bun --filter @workspace/core test`
+  - `bun --filter @workspace/db test`
+  - `bun --filter @workspace/logger test`
+  - `bun --filter @workspace/api test`
+  - `bun --filter @workspace/core typecheck`
+  - `bun --filter @workspace/db typecheck`
+  - `bun --filter @workspace/api typecheck`
+  - `bun --filter @workspace/core lint`
+  - `bun --filter @workspace/db lint`
+  - `bun --filter @workspace/api lint`
+  - `bun run test`
+  - `bun run lint`
+  - `git diff --check`
+  - `bun lefthook run pre-commit`
+- API 스모크 테스트는 임시 포트 `4100`에서 `/health`, `/courses`, `/courses/search?q=문장`, `/me`를 확인했다. 공개 API는 `200`, 인증 없는 `/me`는 `401 unauthorized`를 반환했다.
+- 전체 워크스페이스 검증 중 `bun run typecheck`는 기존 `@workspace/ui`의 `clsx` 타입 해석 실패로 중단됐다.
+- 전체 워크스페이스 `bun run format:check`는 기존 `codebase.md`, `FRONTEND.md`, `docs/platform-product-feature-spec.md` 포맷 불일치 때문에 실패했다. 이번 작업에서 작성한 구현 계획 문서는 Prettier로 정리했다.

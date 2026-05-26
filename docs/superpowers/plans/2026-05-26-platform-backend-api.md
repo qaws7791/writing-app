@@ -248,9 +248,7 @@ export const courseSearchResultDtoSchema = z.object({
   courses: z.array(courseSummaryDtoSchema),
 })
 
-export type CourseSearchResultDto = z.infer<
-  typeof courseSearchResultDtoSchema
->
+export type CourseSearchResultDto = z.infer<typeof courseSearchResultDtoSchema>
 ```
 
 `content.repository.ts`에 추가한다.
@@ -303,18 +301,22 @@ const rows = await db
 `apps/api/src/routes/courses.route.ts`에서 `/courses/:courseId`보다 먼저 `/courses/search`를 등록한다.
 
 ```ts
-app.get("/courses/search", describeRoute({
-  responses: {
-    200: { description: "Course search results." },
-    400: { description: "Search query is required." },
-    500: { description: "Content seed is invalid." },
-    503: { description: "Database is unavailable." },
-  },
-}), async (context) => {
-  const query = context.req.query("q") ?? ""
-  const result = await contentService.searchCourses(query)
-  // ok -> 200, invalid-request -> 400, unavailable -> 503, invalid-content -> 500
-})
+app.get(
+  "/courses/search",
+  describeRoute({
+    responses: {
+      200: { description: "Course search results." },
+      400: { description: "Search query is required." },
+      500: { description: "Content seed is invalid." },
+      503: { description: "Database is unavailable." },
+    },
+  }),
+  async (context) => {
+    const query = context.req.query("q") ?? ""
+    const result = await contentService.searchCourses(query)
+    // ok -> 200, invalid-request -> 400, unavailable -> 503, invalid-content -> 500
+  }
+)
 ```
 
 - [ ] **Step 9: 검색 관련 테스트 통과 확인**
@@ -706,10 +708,7 @@ Expected: learning 모듈 없음으로 실패.
 
 ```ts
 export type UserId = Brand<string, "user-id">
-export type LessonProgressStatus =
-  | "not-started"
-  | "in-progress"
-  | "completed"
+export type LessonProgressStatus = "not-started" | "in-progress" | "completed"
 
 export function userId(value: string): UserId {
   return value as UserId
