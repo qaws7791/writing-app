@@ -28,7 +28,7 @@ import {
 import { getSafeNextPath } from "@/lib/auth/auth-navigation"
 
 interface AuthPageProps {
-  apiBaseUrl: string
+  authBaseUrl?: string
   mode: AuthMode
   nextPath?: string
 }
@@ -50,7 +50,7 @@ const authCopy = {
   },
 } satisfies Record<AuthMode, Record<string, string>>
 
-export function AuthPage({ apiBaseUrl, mode, nextPath }: AuthPageProps) {
+export function AuthPage({ authBaseUrl, mode, nextPath }: AuthPageProps) {
   const router = useRouter()
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [pending, setPending] = React.useState(false)
@@ -65,7 +65,7 @@ export function AuthPage({ apiBaseUrl, mode, nextPath }: AuthPageProps) {
 
     const formData = new FormData(event.currentTarget)
     const result = await requestEmailAuth({
-      baseUrl: apiBaseUrl,
+      baseUrl: authBaseUrl,
       email: String(formData.get("email") ?? ""),
       mode,
       name: String(formData.get("name") ?? ""),
@@ -89,7 +89,7 @@ export function AuthPage({ apiBaseUrl, mode, nextPath }: AuthPageProps) {
 
     try {
       await requestGoogleAuth({
-        baseUrl: apiBaseUrl,
+        baseUrl: authBaseUrl,
         callbackPath: safeNextPath,
       })
     } catch {

@@ -16,7 +16,7 @@ export type SocialAuthClient = {
 }
 
 export type CreateSocialAuthClient = (input: {
-  baseURL: string
+  baseURL?: string
 }) => SocialAuthClient
 
 export type GoogleSocialAuthInput = {
@@ -34,7 +34,7 @@ export type EmailAuthResult =
     }
 
 export interface RequestEmailAuthInput {
-  baseUrl: string
+  baseUrl?: string
   email: string
   fetch?: AuthFetch
   mode: AuthMode
@@ -44,15 +44,13 @@ export interface RequestEmailAuthInput {
 
 export interface RequestGoogleAuthInput {
   appOrigin?: string
-  baseUrl: string
+  baseUrl?: string
   callbackPath?: string
   createClient?: CreateSocialAuthClient
 }
 
 const createBetterAuthSocialClient: CreateSocialAuthClient = ({ baseURL }) =>
-  createAuthClient({
-    baseURL,
-  })
+  createAuthClient(baseURL ? { baseURL } : {})
 
 export async function requestEmailAuth({
   baseUrl,
@@ -87,7 +85,8 @@ export async function requestGoogleAuth({
   callbackPath,
   createClient = createBetterAuthSocialClient,
 }: RequestGoogleAuthInput) {
-  const client = createClient({ baseURL: normalizeBaseUrl(baseUrl) })
+  const baseURL = normalizeBaseUrl(baseUrl)
+  const client = createClient(baseURL ? { baseURL } : {})
 
   await client.signIn.social({
     callbackURL: getGoogleCallbackUrl({
@@ -98,14 +97,14 @@ export async function requestGoogleAuth({
   })
 }
 
-function getEmailAuthUrl(baseUrl: string, mode: AuthMode) {
+function getEmailAuthUrl(baseUrl: string | undefined, mode: AuthMode) {
   const path =
     mode === "login" ? "/api/auth/sign-in/email" : "/api/auth/sign-up/email"
 
   return `${normalizeBaseUrl(baseUrl)}${path}`
 }
 
-function normalizeBaseUrl(baseUrl: string) {
+function normalizeBaseUrl(baseUrl = "") {
   return baseUrl.replace(/\/$/, "")
 }
 

@@ -46,4 +46,24 @@ describe("createAuthRuntime", () => {
       })
     )
   })
+
+  it("trusts proxy headers for auth requests proxied by the web app", () => {
+    const input = {
+      baseUrl: "http://localhost:4000",
+      db: {} as WritingAppDatabase,
+      googleClientId: "google-client-id",
+      googleClientSecret: "google-client-secret",
+      secret: "test-secret-with-enough-length",
+    }
+
+    createAuthRuntime(input)
+
+    expect(authMocks.betterAuth).toHaveBeenCalledWith(
+      expect.objectContaining({
+        advanced: expect.objectContaining({
+          trustedProxyHeaders: true,
+        }),
+      })
+    )
+  })
 })

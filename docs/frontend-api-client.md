@@ -118,3 +118,30 @@
 - 코스 상세 metadata/static params와 레슨 기본값 fallback의 로컬 데이터 참조는 fake 모드에서만 동적 import하도록 제한했다.
 - API 매퍼가 ID helper만 쓰려고 프로토타입 데이터 모듈을 로드하지 않도록 코스/레슨 ID helper를 별도 파일로 분리했다.
 - API 클라이언트 factory의 fake 어댑터 참조도 동적 import로 바꿔 API 모드에서 fake 카탈로그가 로드되지 않게 했다.
+
+## 2026-05-27 Better Auth와 Next.js 통합 보정 시작
+
+- 로그인 후 앱을 다시 방문하면 세션이 사라진 것처럼 보이는 문제를 조사한다.
+- 원인 후보는 브라우저 인증 요청이 API origin으로 직접 전송되어 세션 쿠키가 웹 앱 origin과 분리되는 구조다.
+- 목표는 인증 진입점을 웹 앱의 `/api/auth/*` same-origin 경로로 고정하고, Next.js route handler가 백엔드 Better Auth 핸들러로 요청을 프록시하도록 보정하는 것이다.
+
+## 2026-05-27 Better Auth와 Next.js 통합 보정 완료
+
+- 로그인과 회원가입 요청의 기본 대상은 웹 앱 same-origin `/api/auth/*`로 변경했다.
+- `apps/web`에 `/api/auth/[...path]` route handler를 추가해 Next.js가 백엔드 API의 Better Auth 핸들러로 인증 요청을 프록시한다.
+- 프록시 요청은 원래 웹 origin을 `x-forwarded-host`, `x-forwarded-proto`로 전달하고, API의 Better Auth 설정은 `trustedProxyHeaders`를 활성화한다.
+- 이 구조에서는 Better Auth의 `Set-Cookie`가 브라우저 기준 웹 앱 origin에 저장되어, `/app` 재방문 시 Next 서버가 `cookies()`로 세션 쿠키를 읽고 `/me` 검증에 전달할 수 있다.
+- 회귀 테스트는 same-origin 인증 URL 기본값, 프록시의 `Set-Cookie` 보존, API의 프록시 헤더 신뢰 설정을 검증한다.
+- 로컬 스모크 테스트에서 `http://localhost:3000/api/auth/sign-up/email` 회원가입이 `200`을 반환했고, 저장된 쿠키로 `http://localhost:3000/app/profile`이 `200`을 반환하며 사용자 이름을 렌더링했다.
+
+## 2026-05-27 인증 페이지 재방문 리다이렉트 보정 시작
+
+- 로그인된 사용자가 `/login` 또는 `/signup`을 다시 방문해도 인증 폼이 보이는 문제를 보정한다.
+- 인증 페이지 서버 컴포넌트에서 현재 세션을 확인하고, 세션이 있으면 안전한 `next` 경로 또는 `/app`으로 즉시 이동하게 한다.
+
+## 2026-05-27 인증 페이지 재방문 리다이렉트 보정 완료
+
+- `getAuthenticatedAppRedirectPath`를 추가해 현재 사용자 세션이 있으면 안전한 앱 내부 경로를 반환하게 했다.
+- `/login`과 `/signup` 서버 컴포넌트는 렌더링 전에 서버 API로 현재 사용자를 확인하고, 인증된 사용자는 폼 대신 `next` 또는 `/app`으로 redirect한다.
+- 회귀 테스트는 인증된 사용자, 비인증 사용자, 외부 `next` 경로 보정 케이스를 검증한다.
+- 로컬 스모크 테스트에서 세션 쿠키가 있는 상태의 `/login?next=%2Fapp%2Fcourses`는 `307 /app/courses`, `/signup?next=%2Fapp%2Fprofile`은 `307 /app/profile`을 반환했다.

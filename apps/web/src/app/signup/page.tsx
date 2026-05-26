@@ -1,7 +1,10 @@
 import type { Metadata } from "next"
+import { redirect } from "next/navigation"
 
 import { AuthPage } from "@/features/auth/auth-page"
 import { getSafeNextPath } from "@/lib/auth/auth-navigation"
+import { getAuthenticatedAppRedirectPath } from "@/lib/auth/get-authenticated-app-redirect-path"
+import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
 export const metadata: Metadata = {
   title: "회원가입 — 한글쓰기",
@@ -16,16 +19,16 @@ type SignupPageProps = {
 
 export default async function Page({ searchParams }: SignupPageProps) {
   const nextPath = getNextPath((await searchParams).next)
-
-  return (
-    <AuthPage
-      apiBaseUrl={
-        process.env["NEXT_PUBLIC_API_BASE_URL"] ?? "http://localhost:4000"
-      }
-      mode="signup"
-      nextPath={nextPath}
-    />
+  const authenticatedRedirectPath = await getAuthenticatedAppRedirectPath(
+    await getServerWritingAppApi(),
+    nextPath
   )
+
+  if (authenticatedRedirectPath) {
+    redirect(authenticatedRedirectPath)
+  }
+
+  return <AuthPage mode="signup" nextPath={nextPath} />
 }
 
 function getNextPath(value: string | string[] | undefined) {

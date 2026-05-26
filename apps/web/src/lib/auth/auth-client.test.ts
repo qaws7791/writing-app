@@ -31,6 +31,21 @@ describe("requestEmailAuth", () => {
     )
   })
 
+  it("uses the same-origin Better Auth endpoint by default", async () => {
+    const fetch = vi.fn<AuthFetch>(async () =>
+      Response.json({ user: { id: "user-1" } })
+    )
+
+    await requestEmailAuth({
+      email: "learner@example.com",
+      fetch,
+      mode: "login",
+      password: "password-1234",
+    })
+
+    expect(fetch.mock.calls[0]?.[0]).toBe("/api/auth/sign-in/email")
+  })
+
   it("posts signup requests with the learner name", async () => {
     const fetch = vi.fn<AuthFetch>(async () =>
       Response.json({ user: { id: "user-1" } })
@@ -78,6 +93,27 @@ describe("requestEmailAuth", () => {
 })
 
 describe("requestGoogleAuth", () => {
+  it("starts Google social auth through the same-origin auth route by default", async () => {
+    const social = vi.fn(async () => undefined)
+    const createClient = vi.fn<CreateSocialAuthClient>(() => ({
+      signIn: {
+        social,
+      },
+    }))
+
+    await requestGoogleAuth({
+      appOrigin: "http://localhost:3001",
+      callbackPath: "/app/courses",
+      createClient,
+    })
+
+    expect(createClient).toHaveBeenCalledWith({})
+    expect(social).toHaveBeenCalledWith({
+      callbackURL: "http://localhost:3001/app/courses",
+      provider: "google",
+    })
+  })
+
   it("starts Google social auth with the requested app callback path", async () => {
     const social = vi.fn(async () => undefined)
     const createClient = vi.fn<CreateSocialAuthClient>(() => ({

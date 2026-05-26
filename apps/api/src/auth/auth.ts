@@ -16,6 +16,9 @@ interface CreateAuthRuntimeInput {
 
 export function createAuthRuntime(input: CreateAuthRuntimeInput): AuthRuntime {
   const auth = betterAuth({
+    advanced: {
+      trustedProxyHeaders: true,
+    },
     baseURL: input.baseUrl,
     database: drizzleAdapter(input.db, {
       provider: "sqlite",
