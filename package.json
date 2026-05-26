@@ -17,7 +17,8 @@
     "test": "turbo test",
     "test:coverage": "node ./node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --coverage",
     "typecheck": "turbo typecheck",
-    "prepare": "lefthook install"
+    "prepare": "lefthook install",
+    "repomix": "bunx repomix --style markdown --output codebase.md --remove-empty-lines --ignore 'sonnet-to-react, .agents, apps/docs, apps/storybook, docs, packages/config, scripts'"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
