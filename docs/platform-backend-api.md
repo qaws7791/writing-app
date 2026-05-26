@@ -19,3 +19,15 @@
 - 학습 상태 테이블 이름은 짧고 도메인 의미가 분명한 `course_progress`, `lesson_progress`, `lesson_answers`, `feedback_attempts`로 정리했다.
 - 필수 환경 변수는 `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `DATABASE_URL`로 정했다.
 - 다음 단계는 설계 리뷰 후 구현 계획을 작성하는 것이다.
+
+## 2026-05-26 구현 계획 시작
+
+- 승인된 설계 문서를 기준으로 구현 계획을 작성한다.
+- 계획은 공개 콘텐츠 API 유지, Better Auth 실제 인증, 인증 사용자 상태 API, 학습 진행 저장, 답변 저장, OpenAI 피드백, 문서 갱신, 검증 순서로 나눈다.
+- 구현자는 각 태스크를 테스트 먼저 진행하고, 태스크 단위로 검증 가능한 상태를 만든다.
+
+## 2026-05-26 구현 계획 완료
+
+- 구현 계획은 `docs/superpowers/plans/2026-05-26-platform-backend-api.md`에 작성했다.
+- 계획은 의존성과 환경 변수 빠른 실패, 콘텐츠 검색, Better Auth 인증 경계, 인증과 학습 상태 마이그레이션, 학습 서비스, 학습 저장소, 프로필과 진행 API, AI 피드백 서비스, OpenAI provider, OpenAPI와 문서 갱신, 최종 검증으로 나눴다.
+- 계획 자체 검토에서 자리표시자와 모순되는 오류 계약을 제거했다.
