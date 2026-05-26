@@ -2,11 +2,19 @@
 
 - This repository is monorepo for writing learning platform project.
 - This repository is a bun-managed monorepo with the following structure:
+- Don't Edit `/prototype` directory, which contains experimental code and is not part of the main project structure.
+- All documents must be written in Korean.
 
 ## Overview
 
 - apps/web: nextjs fullstack server
 - packages/ui: base-ui,reactjs,tailwindcss based shadcn library
+- CONTEXT.md: project context
+- ARCHITECTURE.md: project architecture
+- DOMAIN.md: project domain
+- GLOSSARY.md: project glossary
+- FRONTEND.md: frontend development guide
+- BACKEND.md: backend development guide
 
 ## Task Guide
 
