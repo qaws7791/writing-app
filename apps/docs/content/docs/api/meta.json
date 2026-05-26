@@ -1,0 +1,18 @@
+{
+  "pages": [
+    "getHealth",
+    "getCourses",
+    "getCoursesSearch",
+    "getCoursesByCourseId",
+    "getLessonsByLessonId",
+    "getMe",
+    "getProfile",
+    "getProgress",
+    "getCoursesByCourseIdProgress",
+    "getLessonsByLessonIdProgress",
+    "putLessonsByLessonIdProgress",
+    "putLessonsByLessonIdAnswers",
+    "postLessonsByLessonIdComplete",
+    "postAiFeedback"
+  ]
+}

@@ -10,35 +10,44 @@ import {
 import { notFound } from "next/navigation"
 import { getMDXComponents } from "@/components/mdx"
 import type { Metadata } from "next"
-import { createRelativeLink } from "fumadocs-ui/mdx"
+import type { ComponentProps } from "react"
 import { gitConfig } from "@/lib/shared"
 
 export default async function Page(props: PageProps<"/docs/[[...slug]]">) {
   const params = await props.params
   const page = source.getPage(params.slug)
   if (!page) notFound()
+  const currentPage = page
 
-  const MDX = page.data.body
-  const markdownUrl = getPageMarkdownUrl(page).url
+  const { body: MDX, toc } = await currentPage.data.load()
+  const markdownUrl = getPageMarkdownUrl(currentPage).url
+  function RelativeLink({ href, ...props }: ComponentProps<"a">) {
+    return (
+      <a
+        href={href ? source.resolveHref(href, currentPage) : href}
+        {...props}
+      />
+    )
+  }
 
   return (
-    <DocsPage toc={page.data.toc} full={page.data.full}>
-      <DocsTitle>{page.data.title}</DocsTitle>
+    <DocsPage toc={toc} full={currentPage.data.full}>
+      <DocsTitle>{currentPage.data.title}</DocsTitle>
       <DocsDescription className="mb-0">
-        {page.data.description}
+        {currentPage.data.description}
       </DocsDescription>
       <div className="flex flex-row items-center gap-2 border-b pb-6">
         <MarkdownCopyButton markdownUrl={markdownUrl} />
         <ViewOptionsPopover
           markdownUrl={markdownUrl}
-          githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/content/docs/${page.path}`}
+          githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/content/docs/${currentPage.path}`}
         />
       </div>
       <DocsBody>
         <MDX
           components={getMDXComponents({
             // this allows you to link to other pages with relative file paths
-            a: createRelativeLink(source, page),
+            a: RelativeLink,
           })}
         />
       </DocsBody>
