@@ -5,6 +5,8 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
+      "@/ai-feedback": ["../../packages/core/src/ai-feedback/index.ts"],
+      "@/ai-feedback/*": ["../../packages/core/src/ai-feedback/*"],
       "@/client": ["../../packages/db/src/client.ts"],
       "@/content": ["../../packages/core/src/content/index.ts"],
       "@/content/*": ["../../packages/core/src/content/*"],
