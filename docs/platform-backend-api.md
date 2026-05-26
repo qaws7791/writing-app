@@ -37,3 +37,7 @@
 - `codex/platform-backend-api` 브랜치에서 승인된 구현 계획을 Inline Execution 방식으로 실행한다.
 - Task 1에서 Better Auth와 OpenAI SDK 의존성을 추가하고, 필수 환경 변수 누락 시 서버가 즉시 실패하도록 `apps/api` 환경 검증을 강화했다.
 - 기존 API startup 테스트가 Bun 전용 `import.meta.dir`와 고정 포트에 의존해 로컬 검증을 막고 있어, 표준 URL 기반 cwd와 동적 포트 할당으로 보정했다.
+- Task 2에서 공개 코스 검색 API를 추가하고, 빈 검색어는 `invalid-request`로 명시적으로 거절하도록 했다.
+- Task 3에서 Better Auth 런타임을 실제로 조립하고 `/api/auth/*`, `/me` 인증 경계를 추가했다.
+- Task 4에서 Better Auth 인증 테이블과 학습 상태 테이블 마이그레이션을 추가했다.
+- Task 5에서 학습 진행, 레슨 답변, 레슨 완료를 다루는 core 학습 도메인 서비스를 추가했다.
