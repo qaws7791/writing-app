@@ -3,4 +3,4 @@ export {
   formatEnvIssues,
   parseEnv,
   type RawEnv,
-} from "@/parse-env"
+} from "./parse-env"

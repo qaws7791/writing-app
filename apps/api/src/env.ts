@@ -1,5 +1,6 @@
 import { mkdirSync } from "node:fs"
 import { dirname } from "node:path"
+import { parseEnv, type RawEnv } from "@workspace/env"
 import { z } from "zod"
 
 const localCorsOrigins = "http://localhost:3000,http://localhost:3001"
@@ -22,8 +23,11 @@ const apiEnvSchema = z.object({
 
 export type ApiEnv = ReturnType<typeof parseApiEnv>
 
-export function parseApiEnv(rawEnv: Record<string, string | undefined>) {
-  const env = apiEnvSchema.parse(rawEnv)
+export function parseApiEnv(rawEnv: RawEnv) {
+  const env = parseEnv({
+    schema: apiEnvSchema,
+    runtimeEnv: rawEnv,
+  })
 
   return {
     betterAuthSecret: env.BETTER_AUTH_SECRET,
