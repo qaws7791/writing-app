@@ -6,7 +6,10 @@
     "moduleResolution": "Bundler",
     "paths": {
       "@/client": ["../../packages/db/src/client.ts"],
+      "@/content": ["../../packages/core/src/content/index.ts"],
       "@/content/*": ["../../packages/core/src/content/*"],
+      "@/learning": ["../../packages/core/src/learning/index.ts"],
+      "@/learning/*": ["../../packages/core/src/learning/*"],
       "@/logger": ["../../packages/logger/src/logger.ts"],
       "@/migrations/*": ["../../packages/db/src/migrations/*"],
       "@/repositories/*": ["../../packages/db/src/repositories/*"],

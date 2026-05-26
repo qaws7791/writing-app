@@ -5,7 +5,10 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
+      "@/content": ["../core/src/content/index.ts"],
       "@/content/*": ["../core/src/content/*"],
+      "@/learning": ["../core/src/learning/index.ts"],
+      "@/learning/*": ["../core/src/learning/*"],
       "@/*": ["./src/*"]
     },
     "types": ["bun"]

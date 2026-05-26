@@ -1,5 +1,6 @@
 export * from "@/client"
 export * from "@/migrations/run-content-migration"
 export * from "@/repositories/drizzle-content.repository"
+export * from "@/repositories/drizzle-learning.repository"
 export * from "@/schema"
 export * from "@/seeds"
