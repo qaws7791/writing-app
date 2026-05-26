@@ -74,3 +74,17 @@
 - 랜딩의 주요 CTA는 로그인 페이지로 이동하되, 인증 후 앱 홈 또는 코스 목록으로 이어지도록 `next` 값을 포함한다.
 - 브라우저 검증에서 비인증 `/app` 접근은 `/login?next=%2Fapp`으로 이동했고, `/login`, `/signup` 폼 렌더링을 확인했다.
 - 자동 브라우저 입력은 도구의 가상 클립보드 오류로 끝까지 수행하지 못해, 실제 회원가입 API와 세션 확인은 동일 서버에 대한 HTTP 스모크 테스트로 검증했다.
+
+## 2026-05-27 회원가입 브라우저 검증 시작
+
+- 실제 API 모드로 `apps/api`와 `apps/web`을 함께 실행하고, 브라우저에서 `/signup?next=%2Fapp` 회원가입 흐름을 실제 사용자 입력 방식으로 검증한다.
+- 검증 범위는 회원가입 폼 렌더링, 이메일/비밀번호 회원가입 요청, Better Auth 세션 쿠키 저장, 보호된 `/app` 진입 여부다.
+- 첫 제출에서 API CORS preflight는 통과했지만 Better Auth가 `http://localhost:3001` origin을 신뢰하지 않아 `Invalid origin`으로 403을 반환하는 문제를 확인했다.
+
+## 2026-05-27 회원가입 브라우저 검증 완료
+
+- `createAuthRuntime`이 API의 `CORS_ORIGIN` 목록을 Better Auth `trustedOrigins`로 함께 전달하도록 보정했다.
+- 회귀 테스트로 Better Auth 설정에 프론트 origin이 전달되는지 검증했다.
+- 수정 후 브라우저에서 회원가입 재시도 시 `/api/auth/sign-up/email`은 `200`, 세션 기반 `/me`는 `200`을 반환했다.
+- 회원가입 성공 후 `/app`으로 이동했고, 보호된 `/app/profile`에서 새 사용자 이름이 포함된 프로필 화면을 확인했다.
+- 검증 명령은 `bun --filter @workspace/api test`, `bun --filter @workspace/api typecheck`, `bun --filter @workspace/api lint`를 실행했다. 린트는 기존 `turbo/no-undeclared-env-vars` 경고 2건만 남고 종료 코드 0을 반환했다.

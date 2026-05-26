@@ -55,6 +55,7 @@ const auth = createAuthRuntime({
   googleClientId: env.googleClientId,
   googleClientSecret: env.googleClientSecret,
   secret: env.betterAuthSecret,
+  trustedOrigins: env.corsOrigins,
 })
 
 const app = createApiApp({

@@ -11,6 +11,7 @@ interface CreateAuthRuntimeInput {
   googleClientId: string
   googleClientSecret: string
   secret: string
+  trustedOrigins?: string[]
 }
 
 export function createAuthRuntime(input: CreateAuthRuntimeInput): AuthRuntime {
@@ -29,6 +30,7 @@ export function createAuthRuntime(input: CreateAuthRuntimeInput): AuthRuntime {
         clientSecret: input.googleClientSecret,
       },
     },
+    trustedOrigins: input.trustedOrigins,
   })
 
   return {
