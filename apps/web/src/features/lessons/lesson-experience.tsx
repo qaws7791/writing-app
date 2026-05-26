@@ -40,7 +40,6 @@ import {
   getDeterministicOrder,
   getLessonProgress,
   getMatchRate,
-  getMockAiFeedback,
   isSelectedChoiceCorrect,
   parseFillBlankTemplate,
   parseMarkedText,
@@ -63,6 +62,7 @@ import type {
   FillBlankContent,
   IntroContent,
   Lesson,
+  LessonId,
   LessonStep,
   LessonStepId,
   LessonTone,
@@ -78,6 +78,8 @@ import type {
   TranscribeContent,
   WordSelectContent,
 } from "@/features/lessons/lesson-types"
+import { getBrowserWritingAppApi } from "@/lib/api/get-browser-writing-app-api"
+import type { AiFeedbackResult, WritingAppApi } from "@/lib/api/writing-app-api"
 
 const lessonMaxWidthClassName = "mx-auto w-full max-w-[680px]"
 const actionHeightClassName = "h-[52px]"
@@ -154,17 +156,25 @@ const confettiToneClasses: Record<LessonTone, string> = {
 
 interface LessonExperienceProps {
   lesson: Lesson
+  api?: Pick<
+    WritingAppApi,
+    | "saveLessonProgress"
+    | "saveLessonAnswer"
+    | "completeLesson"
+    | "createAiFeedback"
+  >
 }
 
 type WrittenStepResponses = Partial<Record<LessonStepId, string>>
 
-export function LessonExperience({ lesson }: LessonExperienceProps) {
+export function LessonExperience({ lesson, api }: LessonExperienceProps) {
   const router = useRouter()
   const [currentStepIndex, setCurrentStepIndex] = React.useState(0)
   const [showExitDialog, setShowExitDialog] = React.useState(false)
   const [writtenResponses, setWrittenResponses] =
     React.useState<WrittenStepResponses>({})
   const contentRef = React.useRef<HTMLDivElement | null>(null)
+  const apiRef = React.useRef(api ?? getBrowserWritingAppApi())
 
   const currentStep = lesson.steps[currentStepIndex] ?? lesson.steps[0]
   const progress = getLessonProgress(currentStepIndex, lesson.steps.length)
@@ -173,14 +183,31 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
     contentRef.current?.scrollTo({ top: 0, behavior: "smooth" })
   }, [])
 
+  const createAiFeedback = React.useCallback<WritingAppApi["createAiFeedback"]>(
+    (input) => apiRef.current.createAiFeedback(input),
+    []
+  )
+
   const handleNext = React.useCallback(() => {
     setCurrentStepIndex((index) => {
       const nextIndex = Math.min(index + 1, lesson.steps.length - 1)
+      const nextStep = lesson.steps[nextIndex]
+
+      if (nextStep) {
+        void apiRef.current.saveLessonProgress(lesson.id, {
+          currentStepId: nextStep.id,
+          stepOrder: nextStep.order,
+        })
+      }
+
+      if (nextStep?.type === "COMPLETE") {
+        void apiRef.current.completeLesson(lesson.id)
+      }
 
       return nextIndex
     })
     scrollToTop()
-  }, [lesson.steps.length, scrollToTop])
+  }, [lesson.id, lesson.steps, scrollToTop])
 
   const handleRevise = React.useCallback(
     (sourceStepId: LessonStepId) => {
@@ -213,8 +240,12 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
         ...current,
         [stepId]: text,
       }))
+      void apiRef.current.saveLessonAnswer(lesson.id, {
+        stepId,
+        answer: text,
+      })
     },
-    []
+    [lesson.id]
   )
 
   const goToCourses = React.useCallback(() => {
@@ -259,6 +290,8 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
           onSaveWrite={saveWrittenResponse}
           onHome={goToCourses}
           onContinue={continueAfterComplete}
+          createAiFeedback={createAiFeedback}
+          lessonId={lesson.id}
         />
       </div>
       <ExitLessonDialog
@@ -376,6 +409,8 @@ function LessonStepRenderer({
   onSaveWrite,
   onHome,
   onContinue,
+  createAiFeedback,
+  lessonId,
 }: {
   step: LessonStep
   lessonTitle: string
@@ -385,6 +420,8 @@ function LessonStepRenderer({
   onSaveWrite: (stepId: LessonStepId, text: string) => void
   onHome: () => void
   onContinue: () => void
+  createAiFeedback: WritingAppApi["createAiFeedback"]
+  lessonId: LessonId
 }) {
   switch (step.type) {
     case "INTRO":
@@ -472,6 +509,9 @@ function LessonStepRenderer({
       return (
         <AiFeedbackStep
           content={step.content}
+          createAiFeedback={createAiFeedback}
+          lessonId={lessonId}
+          stepId={step.id}
           userWrite={writtenResponses[step.content.sourceStepId] ?? ""}
           onNext={onNext}
           onRevise={onRevise}
@@ -1846,24 +1886,56 @@ function LongWriteStep({
 
 function AiFeedbackStep({
   content,
+  createAiFeedback,
+  lessonId,
+  stepId,
   userWrite,
   onNext,
   onRevise,
 }: {
   content: AiFeedbackContent
+  createAiFeedback: WritingAppApi["createAiFeedback"]
+  lessonId: LessonId
+  stepId: LessonStepId
   userWrite: string
   onNext: () => void
   onRevise: (sourceStepId: LessonStepId) => void
 }) {
   const [loading, setLoading] = React.useState(true)
-  const feedback = React.useMemo(() => getMockAiFeedback(), [])
-  const score = 82
+  const [feedback, setFeedback] = React.useState<AiFeedbackResult | null>(null)
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    const timer = window.setTimeout(() => setLoading(false), 2000)
+    let active = true
 
-    return () => window.clearTimeout(timer)
-  }, [])
+    async function loadFeedback() {
+      setLoading(true)
+      const result = await createAiFeedback({
+        answer: userWrite || undefined,
+        feedbackStepId: stepId,
+        lessonId,
+      })
+
+      if (!active) {
+        return
+      }
+
+      if (result.status === "ok") {
+        setFeedback(result.value)
+        setErrorMessage(null)
+      } else {
+        setFeedback(null)
+        setErrorMessage(result.error.message)
+      }
+      setLoading(false)
+    }
+
+    void loadFeedback()
+
+    return () => {
+      active = false
+    }
+  }, [createAiFeedback, lessonId, stepId, userWrite])
 
   if (loading) {
     return (
@@ -1887,7 +1959,13 @@ function AiFeedbackStep({
   return (
     <StepFrame>
       <h2 className="m-0 text-xl/7 font-bold">AI 피드백</h2>
-      {content.showScore ? (
+      {errorMessage ? (
+        <FeedbackPanel tone="danger">
+          <p className="m-0 font-bold">피드백을 불러오지 못했습니다</p>
+          <p className="m-0 text-sm/6 text-foreground">{errorMessage}</p>
+        </FeedbackPanel>
+      ) : null}
+      {content.showScore && feedback ? (
         <div className="flex items-center gap-4 rounded-xl border border-border/70 bg-card p-4">
           <div className="relative size-16">
             <svg viewBox="0 0 36 36" className="size-16 -rotate-90">
@@ -1906,34 +1984,41 @@ function AiFeedbackStep({
                 fill="none"
                 className="stroke-primary"
                 strokeWidth="3"
-                strokeDasharray={`${score} 100`}
+                strokeDasharray={`${feedback.score} 100`}
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-lg font-bold">{score}</span>
+              <span className="text-lg font-bold">{feedback.score}</span>
             </div>
           </div>
           <div className="flex min-w-0 flex-col gap-1">
             <p className="m-0 text-lg font-bold">전체 평가</p>
             <p className="m-0 text-sm text-muted-foreground">
-              능동태 전환이 잘 됐어요!
+              {feedback.summary}
             </p>
           </div>
         </div>
       ) : null}
-      <FeedbackList
-        label="잘된 점"
-        tone="primary"
-        marker="✓"
-        items={feedback.good}
-      />
-      <FeedbackList
-        label="개선 포인트"
-        tone="warning"
-        marker="→"
-        items={feedback.improve}
-      />
+      {feedback ? (
+        <>
+          <FeedbackList
+            label="잘된 점"
+            tone="primary"
+            marker="✓"
+            items={feedback.strengths}
+          />
+          <FeedbackList
+            label="개선 포인트"
+            tone="warning"
+            marker="→"
+            items={feedback.improvements}
+          />
+          <ToneCallout tone="info" label="다음 행동">
+            {feedback.nextAction}
+          </ToneCallout>
+        </>
+      ) : null}
       {userWrite ? (
         <SourcePanel label="내가 쓴 글">{userWrite}</SourcePanel>
       ) : null}
