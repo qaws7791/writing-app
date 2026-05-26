@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import type { ContentService } from "@workspace/core/content"
+import type { AiFeedbackService } from "@workspace/core/ai-feedback"
 import type { LearningService } from "@workspace/core/learning"
 
 import type { CurrentAuthSession } from "@/auth/session"
@@ -209,6 +210,22 @@ const fakeLearningService: LearningService = {
   },
 }
 
+const fakeAiFeedbackService: AiFeedbackService = {
+  async createFeedback() {
+    return {
+      status: "ok",
+      value: {
+        improvements: ["근거를 더 구체화하세요."],
+        nextAction: "첫 문장에 기준을 추가하세요.",
+        score: 4,
+        scoreRange: [0, 5],
+        strengths: ["핵심 문장이 분명합니다."],
+        summary: "문장의 목적은 잘 드러납니다.",
+      },
+    }
+  },
+}
+
 const silentLogger: ApiLogger = {
   error() {},
   info() {},
@@ -229,9 +246,11 @@ const testSession: CurrentAuthSession = {
 function createTestApp(
   logger: ApiLogger = silentLogger,
   session: CurrentAuthSession | null = null,
-  learningService: LearningService = fakeLearningService
+  learningService: LearningService = fakeLearningService,
+  aiFeedbackService: AiFeedbackService = fakeAiFeedbackService
 ) {
   return createApiApp({
+    aiFeedbackService,
     auth: {
       async getSession() {
         return session
@@ -259,6 +278,97 @@ describe("createApiApp", () => {
     await expect(response.json()).resolves.toEqual({
       database: "ok",
       status: "ok",
+    })
+  })
+
+  it("requires auth for /ai-feedback", async () => {
+    const app = createTestApp()
+
+    const response = await app.request("/ai-feedback", {
+      body: JSON.stringify({
+        feedbackStepId: "sentence-structure-01-step-2",
+        lessonId: "sentence-structure-01",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({
+      code: "unauthorized",
+      message: "Authentication is required.",
+    })
+  })
+
+  it("creates AI feedback for an authenticated user", async () => {
+    const aiFeedbackService = {
+      createFeedback: vi.fn(fakeAiFeedbackService.createFeedback),
+    } satisfies AiFeedbackService
+    const app = createTestApp(
+      silentLogger,
+      testSession,
+      fakeLearningService,
+      aiFeedbackService
+    )
+
+    const response = await app.request("/ai-feedback", {
+      body: JSON.stringify({
+        answer: "문장의 기준을 먼저 세운다.",
+        feedbackStepId: "sentence-structure-01-step-2",
+        lessonId: "sentence-structure-01",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      improvements: ["근거를 더 구체화하세요."],
+      nextAction: "첫 문장에 기준을 추가하세요.",
+      score: 4,
+      scoreRange: [0, 5],
+      strengths: ["핵심 문장이 분명합니다."],
+      summary: "문장의 목적은 잘 드러납니다.",
+    })
+    expect(aiFeedbackService.createFeedback).toHaveBeenCalledWith("user-1", {
+      answer: "문장의 기준을 먼저 세운다.",
+      feedbackStepId: "sentence-structure-01-step-2",
+      lessonId: "sentence-structure-01",
+    })
+  })
+
+  it("returns 429 when feedback retry limit is exceeded", async () => {
+    const aiFeedbackService: AiFeedbackService = {
+      async createFeedback() {
+        return {
+          status: "retry-limit-exceeded",
+          error: {
+            code: "feedback-retry-limit-exceeded",
+            message: "Feedback retry limit was exceeded.",
+          },
+        }
+      },
+    }
+    const app = createTestApp(
+      silentLogger,
+      testSession,
+      fakeLearningService,
+      aiFeedbackService
+    )
+
+    const response = await app.request("/ai-feedback", {
+      body: JSON.stringify({
+        feedbackStepId: "sentence-structure-01-step-2",
+        lessonId: "sentence-structure-01",
+      }),
+      headers: { "content-type": "application/json" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(429)
+    await expect(response.json()).resolves.toEqual({
+      code: "feedback-retry-limit-exceeded",
+      message: "Feedback retry limit was exceeded.",
     })
   })
 

@@ -1,10 +1,12 @@
 import Database from "bun:sqlite"
 
+import { createAiFeedbackService } from "@workspace/core/ai-feedback"
 import { createContentService } from "@workspace/core/content"
 import { createLearningService } from "@workspace/core/learning"
 import {
   createDatabase,
   createDrizzleContentRepository,
+  createDrizzleFeedbackRepository,
   createDrizzleLearningRepository,
   runContentMigration,
   seedContent,
@@ -14,6 +16,7 @@ import { createLogger } from "@workspace/logger"
 import { createApiApp } from "@/app"
 import { createAuthRuntime } from "@/auth/auth"
 import { ensureDatabaseDirectory, parseApiEnv } from "@/env"
+import { createOpenAiFeedbackProvider } from "@/openai/openai-feedback-provider"
 
 const env = parseApiEnv(Bun.env)
 const logger = createLogger({
@@ -37,6 +40,15 @@ const learningService = createLearningService({
   contentService,
   repository: createDrizzleLearningRepository(db),
 })
+const aiFeedbackService = createAiFeedbackService({
+  contentService,
+  feedbackRepository: createDrizzleFeedbackRepository(db),
+  learningRepository: createDrizzleLearningRepository(db),
+  provider: createOpenAiFeedbackProvider({
+    apiKey: env.openAiApiKey,
+    model: env.openAiModel,
+  }),
+})
 const auth = createAuthRuntime({
   baseUrl: env.betterAuthUrl,
   db,
@@ -46,6 +58,7 @@ const auth = createAuthRuntime({
 })
 
 const app = createApiApp({
+  aiFeedbackService,
   auth,
   async checkDatabase() {
     try {

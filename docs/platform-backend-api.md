@@ -44,3 +44,4 @@
 - Task 6에서 학습 진행, 레슨 답변, 레슨 완료를 저장하는 Drizzle SQLite 저장소를 추가했다.
 - Task 7에서 인증이 필요한 `/profile`, `/progress`, 코스/레슨 진행, 답변 저장, 레슨 완료 API를 추가했다.
 - Task 8에서 AI 피드백 core 서비스와 `feedback_attempts` Drizzle 저장소를 추가했다.
+- Task 9에서 OpenAI Responses API 기반 피드백 provider와 인증이 필요한 `POST /ai-feedback` API를 추가했다.

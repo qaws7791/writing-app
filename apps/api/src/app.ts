@@ -1,11 +1,13 @@
 import { Hono } from "hono"
 import { cors } from "hono/cors"
 
+import type { AiFeedbackService } from "@workspace/core/ai-feedback"
 import type { ContentService } from "@workspace/core/content"
 import type { LearningService } from "@workspace/core/learning"
 import { createRequestLogFields } from "@workspace/logger"
 
 import type { AuthRuntime } from "@/auth/session"
+import { registerAiFeedbackRoute } from "@/routes/ai-feedback.route"
 import { registerAuthRoute } from "@/routes/auth.route"
 import { registerCoursesRoutes } from "@/routes/courses.route"
 import { registerHealthRoute } from "@/routes/health.route"
@@ -22,6 +24,7 @@ export interface ApiLogger {
 }
 
 export interface ApiAppDependencies {
+  aiFeedbackService: AiFeedbackService
   auth: AuthRuntime
   checkDatabase(): Promise<boolean>
   contentService: ContentService
@@ -87,6 +90,7 @@ export function createApiApp(dependencies: ApiAppDependencies) {
   registerProfileRoute(app, dependencies)
   registerProgressRoute(app, dependencies)
   registerLearningRoute(app, dependencies)
+  registerAiFeedbackRoute(app, dependencies)
   registerOpenApiRoute(app)
 
   return app
