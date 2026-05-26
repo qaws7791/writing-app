@@ -1,5 +1,6 @@
 import OpenAI from "openai"
 import { zodTextFormat } from "openai/helpers/zod"
+import { z } from "zod"
 
 import type { AiFeedbackProvider } from "@workspace/core/ai-feedback"
 import { aiFeedbackResultDtoSchema } from "@workspace/core/ai-feedback"
@@ -11,6 +12,10 @@ interface OpenAiFeedbackClient {
     }>
   }
 }
+
+const openAiFeedbackResultDtoSchema = aiFeedbackResultDtoSchema.extend({
+  scoreRange: z.array(z.number().int()).length(2),
+})
 
 export function createOpenAiFeedbackProvider(input: {
   apiKey?: string
@@ -41,7 +46,7 @@ export function createOpenAiFeedbackProvider(input: {
         ],
         model: input.model,
         text: {
-          format: zodTextFormat(aiFeedbackResultDtoSchema, "ai_feedback"),
+          format: zodTextFormat(openAiFeedbackResultDtoSchema, "ai_feedback"),
         },
       })
       const parsed = aiFeedbackResultDtoSchema.safeParse(response.output_parsed)

@@ -38,7 +38,7 @@ describe("seedContent", () => {
     )
     expect(
       stepRows.filter((step) => step.lessonId === "sentence-structure-01")
-    ).toHaveLength(3)
+    ).toHaveLength(5)
   })
 
   it("restores declared seed values when seeded rows are stale", async () => {

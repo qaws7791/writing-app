@@ -69,9 +69,9 @@ bun --filter @workspace/api dev
 - `lesson_answers`: 사용자별 레슨 스텝 답변
 - `feedback_attempts`: AI 피드백 완료 시도와 구조화 결과
 
-콘텐츠 시드는 현재 웹 정적 카탈로그와 과정 상세 화면의 과정/챕터/레슨 ID를 명시적으로 보관한다. API는 `vocabulary-basics` 같은 기존 과정 요약과 `sentence-structure-02` 같은 후속 레슨 ID를 반환할 수 있다. 다만 모든 레슨의 프로토타입 본문을 복제하지는 않으며, 각 레슨은 현재 `INTRO`, `SUMMARY`, `COMPLETE` 기본 단계로 플레이 가능성만 보장한다.
+콘텐츠 시드는 현재 웹 정적 카탈로그와 과정 상세 화면의 과정/챕터/레슨 ID를 명시적으로 보관한다. API는 `vocabulary-basics` 같은 기존 과정 요약과 `sentence-structure-02` 같은 후속 레슨 ID를 반환할 수 있다. 다만 모든 레슨의 프로토타입 본문을 복제하지는 않으며, 각 레슨은 현재 `INTRO`, `SHORT_WRITE`, `AI_FEEDBACK`, `SUMMARY`, `COMPLETE` 기본 단계로 플레이 가능성과 학습 상태 저장 경로를 보장한다.
 
-AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structured Outputs를 호출하고, `packages/core`의 AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다.
+AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structured Outputs를 호출하고, `packages/core`의 AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다. OpenAI 요청용 구조화 출력 schema는 OpenAI가 지원하는 JSON Schema 부분집합에 맞추고, provider 응답은 도메인 DTO schema로 다시 검증한다.
 
 ### `packages/logger`
 

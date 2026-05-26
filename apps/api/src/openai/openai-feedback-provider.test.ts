@@ -4,7 +4,7 @@ import { createOpenAiFeedbackProvider } from "@/openai/openai-feedback-provider"
 
 describe("createOpenAiFeedbackProvider", () => {
   it("requests structured AI feedback from OpenAI", async () => {
-    const parse = vi.fn(async () => ({
+    const parse = vi.fn(async (_input: unknown) => ({
       output_parsed: {
         improvements: ["근거를 더 구체화하세요."],
         nextAction: "첫 문장에 기준을 추가하세요.",
@@ -34,5 +34,28 @@ describe("createOpenAiFeedbackProvider", () => {
         model: "gpt-5-mini",
       })
     )
+    const request = parse.mock.calls[0]?.[0] as {
+      text?: {
+        format?: {
+          schema?: {
+            properties?: {
+              scoreRange?: {
+                items?: unknown
+                maxItems?: number
+                minItems?: number
+              }
+            }
+          }
+        }
+      }
+    }
+    const scoreRangeSchema =
+      request.text?.format?.schema?.properties?.scoreRange
+
+    expect(Array.isArray(scoreRangeSchema?.items)).toBe(false)
+    expect(scoreRangeSchema).toMatchObject({
+      maxItems: 2,
+      minItems: 2,
+    })
   })
 })

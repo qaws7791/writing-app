@@ -77,3 +77,21 @@
 - `apps/api/.env.example`을 추가해 API 앱에 필요한 모든 환경 변수 이름과 로컬 개발용 예시값을 한 곳에 모았다.
 - `BACKEND.md`의 `apps/api` 섹션에 환경 변수 표를 추가해 필수 여부, 기본값 또는 예시, 용도를 문서화했다.
 - `DATABASE_URL`은 예시 파일에서 `file:data/api.sqlite`를 사용하지만 런타임에서는 필수 입력이라는 점을 명확히 했다.
+
+## 2026-05-26 로컬 API 실동작 검증 시작
+
+- 실제 로컬 환경 변수 세팅 이후 `apps/api` 서버가 정상 시작되는지 확인한다.
+- 공개 API, 인증 경계, OpenAPI 문서, 가능하면 인증 플로우와 인증 필요 API를 실제 HTTP 요청으로 검증한다.
+- 검증 중 발견되는 실패는 로그와 응답을 기준으로 원인을 확인한 뒤, 코드 변경 없이 환경 또는 실행 절차 문제인지 먼저 분리한다.
+
+## 2026-05-26 로컬 API 실동작 검증 완료
+
+- `apps/api/.env`를 사용해 로컬 API 서버가 시작되고 `/health`가 `200`과 `database: ok`를 반환함을 확인했다.
+- 공개 API는 `/courses`, `/courses/search?q=문장`, `/courses/sentence-structure`, `/lessons/sentence-structure-01`, `/openapi.json`을 실제 HTTP 요청으로 검증했다.
+- 인증 없는 `/me`는 `401 unauthorized`를 반환했고, Better Auth 이메일 회원가입과 로그인이 각각 `200`을 반환했다.
+- 인증 세션으로 `/me`, `/profile`, `PUT /lessons/sentence-structure-01/progress`, `PUT /lessons/sentence-structure-01/answers`, `POST /lessons/sentence-structure-01/complete`, `/courses/sentence-structure/progress`를 검증했다.
+- 초기 검증에서 실제 시드 레슨이 `INTRO`, `SUMMARY`, `COMPLETE`만 포함해 답변 저장과 AI 피드백 성공 경로를 만들 수 없는 문제가 확인됐다.
+- 시드 레슨 단계에 `SHORT_WRITE`와 `AI_FEEDBACK`을 추가해 실제 로컬 API에서 답변 저장과 AI 피드백을 검증할 수 있게 했다.
+- OpenAI Structured Outputs 호출은 `scoreRange` tuple schema가 OpenAI 지원 schema 형태와 맞지 않아 `invalid_json_schema`로 실패했다. OpenAI 요청용 schema만 배열 길이 2 형식으로 보정하고, 반환값은 기존 도메인 DTO로 다시 검증하도록 했다.
+- 최종 스모크 테스트에서 `POST /ai-feedback`는 실제 OpenAI 호출을 포함해 `200`을 반환했고, 응답은 `score`, `scoreRange`, `summary`를 포함했다.
+- 검증 후 스모크 테스트용 API 프로세스는 모두 종료했고, 임시 SQLite 파일도 삭제했다.

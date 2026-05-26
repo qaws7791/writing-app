@@ -84,10 +84,12 @@ describe("createDrizzleContentRepository", () => {
     expect(result?.id).toBe("sentence-structure-02")
     expect(result?.steps.map((step) => step.type)).toEqual([
       "INTRO",
+      "SHORT_WRITE",
+      "AI_FEEDBACK",
       "SUMMARY",
       "COMPLETE",
     ])
-    expect(result?.steps).toHaveLength(3)
+    expect(result?.steps).toHaveLength(5)
     expect(result?.nextLessonId).toBe("sentence-structure-03")
   })
 
@@ -130,6 +132,8 @@ describe("createDrizzleContentRepository", () => {
     expect(result?.id).toBe("sentence-structure-01")
     expect(result?.steps.map((step) => step.type)).toEqual([
       "INTRO",
+      "SHORT_WRITE",
+      "AI_FEEDBACK",
       "SUMMARY",
       "COMPLETE",
     ])

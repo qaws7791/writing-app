@@ -46,8 +46,14 @@
 
 - `packages/db` 콘텐츠 시드는 현재 `apps/web` 정적 카탈로그와 상세 화면에서 사용하는 과정, 챕터, 레슨 ID를 API가 안정적으로 반환할 수 있도록 확장했다.
 - `/courses`는 `sentence-structure`, `vocabulary-basics`, `reading-comprehension`, `grammar-complete`, `expression`, `essay-writing`, `business-writing`, `creative-writing` 요약을 포함한다. 상세 데이터에만 존재하는 `basic-sentence-writing`, `emotion-writing`, `business-email`은 `home` 카테고리로 시드해 상세/레슨 ID 조회가 끊기지 않게 했다.
-- 시드 레슨은 아직 프론트 프로토타입의 전체 본문을 복제하지 않는다. 각 레슨은 API 계약과 플레이 가능성을 확인하기 위한 `INTRO`, `SUMMARY`, `COMPLETE` 기본 단계만 제공한다.
+- 시드 레슨은 아직 프론트 프로토타입의 전체 본문을 복제하지 않는다. 각 레슨은 API 계약과 플레이 가능성을 확인하기 위한 `INTRO`, `SHORT_WRITE`, `AI_FEEDBACK`, `SUMMARY`, `COMPLETE` 기본 단계를 제공한다.
 - `sentence-structure` 상세는 12개 레슨을 반환하며, `sentence-structure-02` 같은 후속 레슨도 `/lessons/:lessonId`에서 조회 가능하다.
 - 레슨 step DTO는 프론트 레슨 모델의 대표 타입인 `CONCEPT`, `MULTIPLE_CHOICE`를 포함해 현재 step type 전체를 수용한다.
 - `apps/api`는 주입된 logger로 요청 ID, method, path, status, duration을 기록한다. 예상치 못한 요청 처리 오류는 같은 request id와 함께 오류 로그를 남긴다.
 - OpenAPI 문서의 404, 500, 503 오류 응답은 core의 오류 DTO Zod schema를 재사용해 JSON schema를 노출한다.
+
+## 2026-05-26 로컬 실동작 검증 반영
+
+- 환경 변수 세팅 후 실제 로컬 API 스모크 테스트에서 답변 저장과 AI 피드백 성공 경로를 검증할 수 있도록 시드 레슨에 작성형 단계와 AI 피드백 단계를 포함했다.
+- `POST /ai-feedback`는 OpenAI Structured Outputs가 지원하는 배열 schema 형태를 사용해 `scoreRange`를 요청하고, 응답은 기존 도메인 DTO로 다시 검증한다.
+- 최종 로컬 검증에서 공개 콘텐츠 조회, Better Auth 이메일 회원가입/로그인, 인증 사용자 조회, 진행 저장, 답변 저장, 레슨 완료, 실제 OpenAI AI 피드백 요청이 정상 응답을 반환했다.
