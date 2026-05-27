@@ -71,19 +71,18 @@ bun --filter @workspace/api dev
 
 필수 환경 변수는 누락 시 서버 시작 단계에서 즉시 실패한다.
 
-| 변수                        | 필수 여부 | 기본값 또는 예시                 | 용도                                                            |
-| --------------------------- | --------- | -------------------------------- | --------------------------------------------------------------- |
-| `ADMIN_BETTER_AUTH_SECRET`  | 필수      | `replace-with-admin-auth-secret` | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값      |
-| `ADMIN_BETTER_AUTH_URL`     | 필수      | `http://localhost:4001`          | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL |
-| `ADMIN_CORS_ORIGIN`         | 선택      | `http://localhost:3001`          | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin           |
-| `DATABASE_URL`              | 필수      | `file:data/api.sqlite`           | 플랫폼과 공유하는 SQLite 데이터베이스 위치                      |
-| `LOG_LEVEL`                 | 선택      | `info`                           | Pino 로그 레벨                                                  |
-| `NODE_ENV`                  | 선택      | `development`                    | 실행 환경 이름                                                  |
-| `PORT`                      | 선택      | `4001`                           | 어드민 API 서버가 수신할 포트                                   |
-| `ADMIN_SEED_EMAIL`          | seed 필수 | `admin@example.com`              | 최초 관리자 계정 seed에 사용할 이메일                           |
-| `ADMIN_SEED_PASSWORD`       | seed 필수 | `password-1234`                  | 최초 관리자 계정 seed에 사용할 비밀번호                         |
-| `ADMIN_SEED_NAME`           | seed 선택 | `관리자`                         | 최초 관리자 계정 seed에 사용할 이름                             |
-| `ADMIN_SEED_EMAIL_VERIFIED` | seed 선택 | `true`                           | 최초 관리자 계정의 이메일 인증 여부                             |
+| 변수                       | 필수 여부 | 기본값 또는 예시                 | 용도                                                            |
+| -------------------------- | --------- | -------------------------------- | --------------------------------------------------------------- |
+| `ADMIN_BETTER_AUTH_SECRET` | 필수      | `replace-with-admin-auth-secret` | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값      |
+| `ADMIN_BETTER_AUTH_URL`    | 필수      | `http://localhost:4001`          | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL |
+| `ADMIN_CORS_ORIGIN`        | 선택      | `http://localhost:3001`          | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin           |
+| `DATABASE_URL`             | 필수      | `file:data/api.sqlite`           | 플랫폼과 공유하는 SQLite 데이터베이스 위치                      |
+| `LOG_LEVEL`                | 선택      | `info`                           | Pino 로그 레벨                                                  |
+| `NODE_ENV`                 | 선택      | `development`                    | 실행 환경 이름                                                  |
+| `PORT`                     | 선택      | `4001`                           | 어드민 API 서버가 수신할 포트                                   |
+| `ADMIN_SEED_EMAIL`         | 시드 필수 | `admin@example.com`              | 최초 관리자 계정 시드에 사용할 이메일                           |
+| `ADMIN_SEED_PASSWORD`      | 시드 필수 | `password-1234`                  | 최초 관리자 계정 시드에 사용할 비밀번호                         |
+| `ADMIN_SEED_NAME`          | 시드 선택 | `관리자`                         | 최초 관리자 계정 시드에 사용할 이름                             |
 
 ```bash
 bun --filter @workspace/admin-api dev
@@ -92,7 +91,7 @@ bun --filter @workspace/admin-api dev
 최초 관리자 계정은 다음 명령으로 생성한다. 같은 이메일이 이미 있으면 중복 생성하지 않는다.
 
 ```bash
-bun --filter @workspace/admin-api seed:admin
+bun --filter @workspace/admin-api 시드:admin
 ```
 
 ### `packages/core`

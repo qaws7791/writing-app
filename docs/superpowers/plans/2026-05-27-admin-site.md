@@ -1,12 +1,12 @@
-# 어드민 사이트 Implementation Plan
+# 어드민 사이트 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **에이전트 작업자 안내:** 이 계획은 작업 단위로 구현한다. `superpowers:subagent-driven-development` 사용을 권장하며, 대안으로 `superpowers:executing-plans`를 사용할 수 있다. 진행 상황은 체크박스(`- [ ]`) 문법으로 추적한다.
 
-**Goal:** 관리자 로그인, 왼쪽 사이드바 레이아웃, 콘텐츠 계층 조회, 사용자 목록 조회를 제공하는 읽기 전용 어드민 MVP를 만든다.
+**목표:** 관리자 로그인, 왼쪽 사이드바 레이아웃, 콘텐츠 계층 조회, 사용자 목록 조회를 제공하는 읽기 전용 어드민 MVP를 만든다.
 
-**Architecture:** `apps/admin` Next.js 앱과 `apps/admin-api` Hono API 서버를 새로 만들고, 기존 플랫폼 `apps/web`과 `apps/api`는 어드민 런타임을 참조하지 않는다. DB는 공유하지만 Better Auth 관리자 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`으로 분리한다. 어드민 UI는 `packages/ui`의 shadcn Sidebar 컴포넌트를 사용하고 `sidebar-07` 블록의 구조만 참고한다.
+**아키텍처:** `apps/admin` Next.js 앱과 `apps/admin-api` Hono API 서버를 새로 만들고, 기존 플랫폼 `apps/web`과 `apps/api`는 어드민 런타임을 참조하지 않는다. DB는 공유하지만 Better Auth 관리자 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`으로 분리한다. 어드민 UI는 `packages/ui`의 shadcn Sidebar 컴포넌트를 사용하고 `sidebar-07` 블록의 구조만 참고한다.
 
-**Tech Stack:** Bun 1.3.10, Node 20, TypeScript 5.9, Next.js 16 App Router, Hono, hono-openapi, Better Auth, Drizzle SQLite, Vitest, Testing Library, shadcn/ui.
+**기술 스택:** Bun 1.3.10, Node 20, TypeScript 5.9, Next.js 16 App Router, Hono, hono-openapi, Better Auth, Drizzle SQLite, Vitest, Testing Library, shadcn/ui.
 
 ---
 
@@ -22,89 +22,89 @@
 
 ### 새 앱
 
-- Create: `apps/admin/package.json` — 어드민 Next.js 앱 스크립트와 의존성
-- Create: `apps/admin/tsconfig.json` — Next.js 앱 TypeScript 설정
-- Create: `apps/admin/eslint.config.mjs` — monorepo Next lint 설정
-- Create: `apps/admin/next.config.ts` — Next.js 설정
-- Create: `apps/admin/postcss.config.mjs` — Tailwind v4 postcss 설정
-- Create: `apps/admin/components.json` — shadcn 경로 설정
-- Create: `apps/admin/src/app/globals.css` — UI 패키지 스타일 import
-- Create: `apps/admin/src/app/layout.tsx` — root layout
-- Create: `apps/admin/src/app/page.tsx` — `/courses` 리다이렉트
-- Create: `apps/admin/src/app/login/page.tsx` — 관리자 로그인 route
-- Create: `apps/admin/src/app/(admin)/layout.tsx` — 보호된 어드민 layout
-- Create: `apps/admin/src/app/(admin)/courses/page.tsx` — 콘텐츠 계층 조회 화면
-- Create: `apps/admin/src/app/(admin)/users/page.tsx` — 사용자 목록 화면
-- Create: `apps/admin/src/app/api/auth/[...path]/route.ts` — same-origin Better Auth proxy
-- Create: `apps/admin/src/components/admin-sidebar.tsx` — sidebar-07 기반 사이드바
-- Create: `apps/admin/src/components/admin-shell.tsx` — SidebarProvider와 SidebarInset 조립
-- Create: `apps/admin/src/features/auth/admin-auth-page.tsx` — 관리자 로그인 폼
-- Create: `apps/admin/src/features/courses/admin-courses-page.tsx` — 콘텐츠 트리 UI
-- Create: `apps/admin/src/features/users/admin-users-page.tsx` — 사용자 테이블 UI
-- Create: `apps/admin/src/lib/api/admin-api.ts` — admin API 포트
-- Create: `apps/admin/src/lib/api/http-admin-api.ts` — fetch 기반 HTTP 어댑터
-- Create: `apps/admin/src/lib/api/get-server-admin-api.ts` — 서버 컴포넌트용 API factory
-- Create: `apps/admin/src/lib/auth/admin-auth-client.ts` — 로그인 요청 helper
-- Create: `apps/admin/src/lib/auth/admin-auth-navigation.ts` — 안전한 next 경로 보정
-- Create: `apps/admin/src/lib/auth/admin-auth-proxy.ts` — backend auth proxy helper
-- Create: `apps/admin/vitest.config.ts` — jsdom 테스트 설정
+- 생성: `apps/admin/package.json` — 어드민 Next.js 앱 스크립트와 의존성
+- 생성: `apps/admin/tsconfig.json` — Next.js 앱 TypeScript 설정
+- 생성: `apps/admin/eslint.config.mjs` — monorepo Next lint 설정
+- 생성: `apps/admin/next.config.ts` — Next.js 설정
+- 생성: `apps/admin/postcss.config.mjs` — Tailwind v4 postcss 설정
+- 생성: `apps/admin/components.json` — shadcn 경로 설정
+- 생성: `apps/admin/src/app/globals.css` — UI 패키지 스타일 import
+- 생성: `apps/admin/src/app/layout.tsx` — root layout
+- 생성: `apps/admin/src/app/page.tsx` — `/courses` 리다이렉트
+- 생성: `apps/admin/src/app/login/page.tsx` — 관리자 로그인 route
+- 생성: `apps/admin/src/app/(admin)/layout.tsx` — 보호된 어드민 layout
+- 생성: `apps/admin/src/app/(admin)/courses/page.tsx` — 콘텐츠 계층 조회 화면
+- 생성: `apps/admin/src/app/(admin)/users/page.tsx` — 사용자 목록 화면
+- 생성: `apps/admin/src/app/api/auth/[...path]/route.ts` — same-origin Better Auth proxy
+- 생성: `apps/admin/src/components/admin-sidebar.tsx` — sidebar-07 기반 사이드바
+- 생성: `apps/admin/src/components/admin-shell.tsx` — SidebarProvider와 SidebarInset 조립
+- 생성: `apps/admin/src/features/auth/admin-auth-page.tsx` — 관리자 로그인 폼
+- 생성: `apps/admin/src/features/courses/admin-courses-page.tsx` — 콘텐츠 트리 UI
+- 생성: `apps/admin/src/features/users/admin-users-page.tsx` — 사용자 테이블 UI
+- 생성: `apps/admin/src/lib/api/admin-api.ts` — admin API 포트
+- 생성: `apps/admin/src/lib/api/http-admin-api.ts` — fetch 기반 HTTP 어댑터
+- 생성: `apps/admin/src/lib/api/get-server-admin-api.ts` — 서버 컴포넌트용 API factory
+- 생성: `apps/admin/src/lib/auth/admin-auth-client.ts` — 로그인 요청 helper
+- 생성: `apps/admin/src/lib/auth/admin-auth-navigation.ts` — 안전한 next 경로 보정
+- 생성: `apps/admin/src/lib/auth/admin-auth-proxy.ts` — backend auth proxy helper
+- 생성: `apps/admin/vitest.config.ts` — jsdom 테스트 설정
 
 ### 새 API
 
-- Create: `apps/admin-api/package.json` — Hono API 스크립트와 의존성
-- Create: `apps/admin-api/tsconfig.json` — API TypeScript 설정
-- Create: `apps/admin-api/eslint.config.mjs` — monorepo lint 설정
-- Create: `apps/admin-api/vitest.config.ts` — API 테스트 설정
-- Create: `apps/admin-api/.env.example` — 로컬 환경 변수 예시
-- Create: `apps/admin-api/src/app.ts` — Hono 앱 조립
-- Create: `apps/admin-api/src/main.ts` — 서버 시작점
-- Create: `apps/admin-api/src/env.ts` — 환경 변수 파싱
-- Create: `apps/admin-api/src/auth/admin-auth.ts` — Better Auth runtime
-- Create: `apps/admin-api/src/auth/admin-session.ts` — 세션 타입과 guard
-- Create: `apps/admin-api/src/routes/auth.route.ts` — `/api/auth/*`
-- Create: `apps/admin-api/src/routes/courses.route.ts` — `GET /courses?include=chapters,lessons`
-- Create: `apps/admin-api/src/routes/users.route.ts` — `GET /users`
-- Create: `apps/admin-api/src/routes/health.route.ts` — `GET /health`
-- Create: `apps/admin-api/src/routes/openapi.route.ts` — `GET /openapi.json`
-- Create: `apps/admin-api/src/routes/error-response.ts` — 공통 JSON 오류 응답 schema
-- Create: `apps/admin-api/src/scripts/seed-admin.ts` — 최초 관리자 seed 명령
+- 생성: `apps/admin-api/package.json` — Hono API 스크립트와 의존성
+- 생성: `apps/admin-api/tsconfig.json` — API TypeScript 설정
+- 생성: `apps/admin-api/eslint.config.mjs` — monorepo lint 설정
+- 생성: `apps/admin-api/vitest.config.ts` — API 테스트 설정
+- 생성: `apps/admin-api/.env.example` — 로컬 환경 변수 예시
+- 생성: `apps/admin-api/src/app.ts` — Hono 앱 조립
+- 생성: `apps/admin-api/src/main.ts` — 서버 시작점
+- 생성: `apps/admin-api/src/env.ts` — 환경 변수 파싱
+- 생성: `apps/admin-api/src/auth/admin-auth.ts` — Better Auth runtime
+- 생성: `apps/admin-api/src/auth/admin-session.ts` — 세션 타입과 guard
+- 생성: `apps/admin-api/src/routes/auth.route.ts` — `/api/auth/*`
+- 생성: `apps/admin-api/src/routes/courses.route.ts` — `GET /courses?include=chapters,lessons`
+- 생성: `apps/admin-api/src/routes/users.route.ts` — `GET /users`
+- 생성: `apps/admin-api/src/routes/health.route.ts` — `GET /health`
+- 생성: `apps/admin-api/src/routes/openapi.route.ts` — `GET /openapi.json`
+- 생성: `apps/admin-api/src/routes/error-response.ts` — 공통 JSON 오류 응답 schema
+- 생성: `apps/admin-api/src/scripts/시드-admin.ts` — 최초 관리자 시드 명령
 
 ### 공유 패키지
 
-- Create: `packages/core/src/admin/admin.dto.ts` — 어드민 응답 DTO와 Zod schema
-- Create: `packages/core/src/admin/admin.errors.ts` — 어드민 오류 DTO
-- Create: `packages/core/src/admin/admin.repository.ts` — 어드민 조회 repository port
-- Create: `packages/core/src/admin/admin.service.ts` — 어드민 조회 service
-- Create: `packages/core/src/admin/admin.service.test.ts` — service 테스트
-- Create: `packages/core/src/admin/index.ts` — admin public export
-- Modify: `packages/core/src/index.ts` — admin export 추가
-- Create: `packages/db/src/schema/admin-auth.schema.ts` — 관리자 Better Auth 테이블
-- Modify: `packages/db/src/schema/index.ts` — admin auth schema export
-- Create: `packages/db/src/migrations/0002-admin-auth.sql` — 관리자 auth 테이블 migration
-- Modify: `packages/db/src/migrations/run-content-migration.ts` — admin migration 실행
-- Create: `packages/db/src/repositories/drizzle-admin.repository.ts` — 콘텐츠/사용자 읽기 repository
-- Create: `packages/db/src/repositories/drizzle-admin.repository.test.ts` — repository 테스트
-- Modify: `packages/db/src/index.ts` — admin repository export
-- Modify: `package.json` — `dev:admin` 스크립트 추가
-- Modify: `turbo.json` — 새 앱 task가 기존 pipeline에 맞게 동작하는지 확인
-- Modify: `vitest.workspace.ts` — admin과 admin-api 테스트 포함
-- Modify: `ARCHITECTURE.md` — 실제 앱 구조와 포트 반영
-- Modify: `BACKEND.md` — 어드민 API 범위 반영
-- Modify: `FRONTEND.md` — 어드민 레이아웃과 API 클라이언트 원칙 반영
-- Modify: `docs/admin-site.md` — 구현 시작/완료 기록
+- 생성: `packages/core/src/admin/admin.dto.ts` — 어드민 응답 DTO와 Zod schema
+- 생성: `packages/core/src/admin/admin.errors.ts` — 어드민 오류 DTO
+- 생성: `packages/core/src/admin/admin.repository.ts` — 어드민 조회 repository port
+- 생성: `packages/core/src/admin/admin.service.ts` — 어드민 조회 service
+- 생성: `packages/core/src/admin/admin.service.test.ts` — service 테스트
+- 생성: `packages/core/src/admin/index.ts` — admin 공개 export
+- 수정: `packages/core/src/index.ts` — admin export 추가
+- 생성: `packages/db/src/schema/admin-auth.schema.ts` — 관리자 Better Auth 테이블
+- 수정: `packages/db/src/schema/index.ts` — admin auth schema export
+- 생성: `packages/db/src/migrations/0002-admin-auth.sql` — 관리자 auth 테이블 migration
+- 수정: `packages/db/src/migrations/run-content-migration.ts` — admin migration 실행
+- 생성: `packages/db/src/repositories/drizzle-admin.repository.ts` — 콘텐츠/사용자 읽기 repository
+- 생성: `packages/db/src/repositories/drizzle-admin.repository.test.ts` — repository 테스트
+- 수정: `packages/db/src/index.ts` — admin repository export
+- 수정: `package.json` — `dev:admin` 스크립트 추가
+- 수정: `turbo.json` — 새 앱 task가 기존 pipeline에 맞게 동작하는지 확인
+- 수정: `vitest.workspace.ts` — admin과 admin-api 테스트 포함
+- 수정: `ARCHITECTURE.md` — 실제 앱 구조와 포트 반영
+- 수정: `BACKEND.md` — 어드민 API 범위 반영
+- 수정: `FRONTEND.md` — 어드민 레이아웃과 API 클라이언트 원칙 반영
+- 수정: `docs/admin-site.md` — 구현 시작/완료 기록
 
 ---
 
-### Task 1: 문서 시작 기록과 workspace 설정
+### 작업 1: 문서 시작 기록과 workspace 설정
 
-**Files:**
+**파일:**
 
-- Modify: `docs/admin-site.md`
-- Modify: `package.json`
-- Modify: `vitest.workspace.ts`
-- Modify: `turbo.json`
+- 수정: `docs/admin-site.md`
+- 수정: `package.json`
+- 수정: `vitest.workspace.ts`
+- 수정: `turbo.json`
 
-- [ ] **Step 1: 문서에 구현 시작 기록 추가**
+- [ ] **단계 1: 문서에 구현 시작 기록 추가**
 
 `docs/admin-site.md` 끝에 다음을 추가한다.
 
@@ -112,11 +112,11 @@
 ## 2026-05-27 구현 시작
 
 - `apps/admin`과 `apps/admin-api`를 추가해 어드민을 플랫폼과 별도 런타임으로 구현한다.
-- 구현 순서는 `docs/superpowers/plans/2026-05-27-admin-site.md`의 Task 1부터 Task 10까지 따른다.
+- 구현 순서는 `docs/superpowers/plans/2026-05-27-admin-site.md`의 작업 1부터 작업 10까지 따른다.
 - 1차 구현 범위는 관리자 로그인, 보호된 사이드바 레이아웃, 콘텐츠 계층 조회, 사용자 기본 목록 조회다.
 ```
 
-- [ ] **Step 2: root script 추가**
+- [ ] **단계 2: 루트 스크립트 추가**
 
 `package.json`의 `scripts`에 다음 항목을 추가한다.
 
@@ -128,9 +128,9 @@
 
 기존 script는 유지하고 새 key만 추가한다.
 
-- [ ] **Step 3: vitest workspace 형태 유지**
+- [ ] **단계 3: vitest workspace 형태 유지**
 
-현재 `vitest.workspace.ts`는 root coverage script에서 `--config vitest.workspace.ts`로 로드되므로 plain array가 아니라 `defineConfig({ test: { projects } })` 형태를 유지한다. Task 1에서는 아직 `apps/admin-api/vitest.config.ts`와 `apps/admin/vitest.config.ts`가 존재하지 않으므로 새 프로젝트 경로를 추가하지 않는다. 해당 경로는 각 앱의 `vitest.config.ts`가 생성되는 Task 5와 Task 8에서 추가한다.
+현재 `vitest.workspace.ts`는 root coverage script에서 `--config vitest.workspace.ts`로 로드되므로 일반 배열이 아니라 `defineConfig({ test: { projects } })` 형태를 유지한다. 작업 1에서는 아직 `apps/admin-api/vitest.config.ts`와 `apps/admin/vitest.config.ts`가 존재하지 않으므로 새 프로젝트 경로를 추가하지 않는다. 해당 경로는 각 앱의 `vitest.config.ts`가 생성되는 작업 5와 작업 8에서 추가한다.
 
 ```ts
 import { defineConfig } from "vitest/config"
@@ -150,18 +150,18 @@ export default defineConfig({
 })
 ```
 
-- [ ] **Step 4: workspace 설정 검증**
+- [ ] **단계 4: workspace 설정 검증**
 
-Run:
+실행:
 
 ```bash
 bun install --frozen-lockfile
 bunx prettier --check package.json vitest.workspace.ts docs/admin-site.md
 ```
 
-Expected: 두 명령 모두 exit code `0`.
+예상 결과: 두 명령 모두 종료 코드 `0`.
 
-- [ ] **Step 5: Commit**
+- [ ] **단계 5: 커밋**
 
 ```bash
 git add package.json vitest.workspace.ts docs/admin-site.md
@@ -170,17 +170,17 @@ git commit -m "어드민 구현 시작 설정 추가"
 
 ---
 
-### Task 2: 관리자 인증 DB 테이블 추가
+### 작업 2: 관리자 인증 DB 테이블 추가
 
-**Files:**
+**파일:**
 
-- Create: `packages/db/src/schema/admin-auth.schema.ts`
-- Modify: `packages/db/src/schema/index.ts`
-- Create: `packages/db/src/migrations/0002-admin-auth.sql`
-- Modify: `packages/db/src/migrations/run-content-migration.ts`
-- Test: `packages/db/src/client.test.ts`
+- 생성: `packages/db/src/schema/admin-auth.schema.ts`
+- 수정: `packages/db/src/schema/index.ts`
+- 생성: `packages/db/src/migrations/0002-admin-auth.sql`
+- 수정: `packages/db/src/migrations/run-content-migration.ts`
+- 테스트: `packages/db/src/client.test.ts`
 
-- [ ] **Step 1: 실패 테스트 작성**
+- [ ] **단계 1: 실패 테스트 작성**
 
 `packages/db/src/client.test.ts`에 다음 테스트를 추가한다.
 
@@ -223,17 +223,17 @@ describe("admin auth schema", () => {
 })
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [ ] **단계 2: 실패 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/db test -- client.test.ts
 ```
 
-Expected: `adminUser` export 또는 `admin_user` table이 없어서 FAIL.
+예상 결과: `adminUser` export 또는 `admin_user` table이 없어서 실패.
 
-- [ ] **Step 3: 관리자 schema 작성**
+- [ ] **단계 3: 관리자 schema 작성**
 
 `packages/db/src/schema/admin-auth.schema.ts`를 생성한다.
 
@@ -295,7 +295,7 @@ export const adminVerification = sqliteTable("admin_verification", {
 })
 ```
 
-- [ ] **Step 4: schema export 추가**
+- [ ] **단계 4: schema export 추가**
 
 `packages/db/src/schema/index.ts`를 다음 형태로 만든다.
 
@@ -306,7 +306,7 @@ export * from "@/schema/content.schema"
 export * from "@/schema/learning.schema"
 ```
 
-- [ ] **Step 5: migration SQL 추가**
+- [ ] **단계 5: migration SQL 추가**
 
 `packages/db/src/migrations/0002-admin-auth.sql`을 생성한다.
 
@@ -360,7 +360,7 @@ create table if not exists admin_verification (
 );
 ```
 
-- [ ] **Step 6: migration runner 수정**
+- [ ] **단계 6: migration runner 수정**
 
 `packages/db/src/migrations/run-content-migration.ts`에 admin migration을 추가한다.
 
@@ -388,18 +388,18 @@ export function runContentMigration(sqlite: Database) {
 }
 ```
 
-- [ ] **Step 7: 테스트 통과 확인**
+- [ ] **단계 7: 테스트 통과 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/db test -- client.test.ts
 bun --filter @workspace/db typecheck
 ```
 
-Expected: PASS.
+예상 결과: 통과.
 
-- [ ] **Step 8: Commit**
+- [ ] **단계 8: 커밋**
 
 ```bash
 git add packages/db/src/schema/admin-auth.schema.ts packages/db/src/schema/index.ts packages/db/src/migrations/0002-admin-auth.sql packages/db/src/migrations/run-content-migration.ts packages/db/src/client.test.ts
@@ -408,19 +408,19 @@ git commit -m "관리자 인증 테이블 추가"
 
 ---
 
-### Task 3: 어드민 core DTO와 service 추가
+### 작업 3: 어드민 core DTO와 service 추가
 
-**Files:**
+**파일:**
 
-- Create: `packages/core/src/admin/admin.dto.ts`
-- Create: `packages/core/src/admin/admin.errors.ts`
-- Create: `packages/core/src/admin/admin.repository.ts`
-- Create: `packages/core/src/admin/admin.service.ts`
-- Create: `packages/core/src/admin/admin.service.test.ts`
-- Create: `packages/core/src/admin/index.ts`
-- Modify: `packages/core/src/index.ts`
+- 생성: `packages/core/src/admin/admin.dto.ts`
+- 생성: `packages/core/src/admin/admin.errors.ts`
+- 생성: `packages/core/src/admin/admin.repository.ts`
+- 생성: `packages/core/src/admin/admin.service.ts`
+- 생성: `packages/core/src/admin/admin.service.test.ts`
+- 생성: `packages/core/src/admin/index.ts`
+- 수정: `packages/core/src/index.ts`
 
-- [ ] **Step 1: service 실패 테스트 작성**
+- [ ] **단계 1: service 실패 테스트 작성**
 
 `packages/core/src/admin/admin.service.test.ts`를 생성한다.
 
@@ -511,17 +511,17 @@ describe("createAdminService", () => {
 })
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [ ] **단계 2: 실패 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/core test -- admin.service.test.ts
 ```
 
-Expected: `@/admin/admin.service`를 찾지 못해 FAIL.
+예상 결과: `@/admin/admin.service`를 찾지 못해 실패.
 
-- [ ] **Step 3: DTO 작성**
+- [ ] **단계 3: DTO 작성**
 
 `packages/core/src/admin/admin.dto.ts`를 생성한다.
 
@@ -574,7 +574,7 @@ export type AdminCourseTreeDto = z.infer<typeof adminCourseTreeDtoSchema>
 export type AdminUserListDto = z.infer<typeof adminUserListDtoSchema>
 ```
 
-- [ ] **Step 4: 오류 타입 작성**
+- [ ] **단계 4: 오류 타입 작성**
 
 `packages/core/src/admin/admin.errors.ts`를 생성한다.
 
@@ -603,7 +603,7 @@ export type AdminErrorDto =
   | AdminInvalidRequestErrorDto
 ```
 
-- [ ] **Step 5: repository port 작성**
+- [ ] **단계 5: repository port 작성**
 
 `packages/core/src/admin/admin.repository.ts`를 생성한다.
 
@@ -616,7 +616,7 @@ export interface AdminRepository {
 }
 ```
 
-- [ ] **Step 6: service 작성**
+- [ ] **단계 6: service 작성**
 
 `packages/core/src/admin/admin.service.ts`를 생성한다.
 
@@ -689,7 +689,7 @@ export function createAdminService({
 }
 ```
 
-- [ ] **Step 7: public export 추가**
+- [ ] **단계 7: 공개 export 추가**
 
 `packages/core/src/admin/index.ts`를 생성한다.
 
@@ -709,18 +709,18 @@ export * from "@/content"
 export * from "@/learning"
 ```
 
-- [ ] **Step 8: 테스트 통과 확인**
+- [ ] **단계 8: 테스트 통과 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/core test -- admin.service.test.ts
 bun --filter @workspace/core typecheck
 ```
 
-Expected: PASS.
+예상 결과: 통과.
 
-- [ ] **Step 9: Commit**
+- [ ] **단계 9: 커밋**
 
 ```bash
 git add packages/core/src/admin packages/core/src/index.ts
@@ -729,15 +729,15 @@ git commit -m "어드민 조회 서비스 계약 추가"
 
 ---
 
-### Task 4: DB 어드민 조회 repository 추가
+### 작업 4: DB 어드민 조회 repository 추가
 
-**Files:**
+**파일:**
 
-- Create: `packages/db/src/repositories/drizzle-admin.repository.ts`
-- Create: `packages/db/src/repositories/drizzle-admin.repository.test.ts`
-- Modify: `packages/db/src/index.ts`
+- 생성: `packages/db/src/repositories/drizzle-admin.repository.ts`
+- 생성: `packages/db/src/repositories/drizzle-admin.repository.test.ts`
+- 수정: `packages/db/src/index.ts`
 
-- [ ] **Step 1: repository 실패 테스트 작성**
+- [ ] **단계 1: repository 실패 테스트 작성**
 
 `packages/db/src/repositories/drizzle-admin.repository.test.ts`를 생성한다.
 
@@ -749,7 +749,7 @@ import {
   createDatabase,
   createDrizzleAdminRepository,
   runContentMigration,
-  seedContent,
+  시드Content,
 } from "@/index"
 import { user } from "@/schema"
 
@@ -758,7 +758,7 @@ describe("createDrizzleAdminRepository", () => {
     const sqlite = new Database(":memory:")
     runContentMigration(sqlite)
     const db = createDatabase(sqlite)
-    await seedContent(db)
+    await 시드Content(db)
 
     const repository = createDrizzleAdminRepository(db)
     const result = await repository.listCourseTree()
@@ -800,17 +800,17 @@ describe("createDrizzleAdminRepository", () => {
 })
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [ ] **단계 2: 실패 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/db test -- drizzle-admin.repository.test.ts
 ```
 
-Expected: `createDrizzleAdminRepository` export가 없어서 FAIL.
+예상 결과: `createDrizzleAdminRepository` export가 없어서 실패.
 
-- [ ] **Step 3: repository 구현**
+- [ ] **단계 3: repository 구현**
 
 `packages/db/src/repositories/drizzle-admin.repository.ts`를 생성한다.
 
@@ -878,7 +878,7 @@ export function createDrizzleAdminRepository(
 }
 ```
 
-- [ ] **Step 4: export 추가**
+- [ ] **단계 4: export 추가**
 
 `packages/db/src/index.ts`에 admin repository export를 추가한다.
 
@@ -890,21 +890,21 @@ export * from "@/repositories/drizzle-content.repository"
 export * from "@/repositories/drizzle-feedback.repository"
 export * from "@/repositories/drizzle-learning.repository"
 export * from "@/schema"
-export * from "@/seeds"
+export * from "@/시드s"
 ```
 
-- [ ] **Step 5: 테스트 통과 확인**
+- [ ] **단계 5: 테스트 통과 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/db test -- drizzle-admin.repository.test.ts
 bun --filter @workspace/db typecheck
 ```
 
-Expected: PASS.
+예상 결과: 통과.
 
-- [ ] **Step 6: Commit**
+- [ ] **단계 6: 커밋**
 
 ```bash
 git add packages/db/src/repositories/drizzle-admin.repository.ts packages/db/src/repositories/drizzle-admin.repository.test.ts packages/db/src/index.ts
@@ -913,26 +913,26 @@ git commit -m "어드민 조회 저장소 추가"
 
 ---
 
-### Task 5: admin-api 앱 뼈대와 인증 runtime 추가
+### 작업 5: admin-api 앱 뼈대와 인증 runtime 추가
 
-**Files:**
+**파일:**
 
-- Create: `apps/admin-api/package.json`
-- Create: `apps/admin-api/tsconfig.json`
-- Create: `apps/admin-api/eslint.config.mjs`
-- Create: `apps/admin-api/vitest.config.ts`
-- Create: `apps/admin-api/.env.example`
-- Create: `apps/admin-api/src/env.ts`
-- Create: `apps/admin-api/src/auth/admin-session.ts`
-- Create: `apps/admin-api/src/auth/admin-auth.ts`
-- Create: `apps/admin-api/src/app.ts`
-- Create: `apps/admin-api/src/main.ts`
-- Create: `apps/admin-api/src/routes/auth.route.ts`
-- Create: `apps/admin-api/src/routes/health.route.ts`
-- Test: `apps/admin-api/src/env.test.ts`
-- Test: `apps/admin-api/src/auth/admin-auth.test.ts`
+- 생성: `apps/admin-api/package.json`
+- 생성: `apps/admin-api/tsconfig.json`
+- 생성: `apps/admin-api/eslint.config.mjs`
+- 생성: `apps/admin-api/vitest.config.ts`
+- 생성: `apps/admin-api/.env.example`
+- 생성: `apps/admin-api/src/env.ts`
+- 생성: `apps/admin-api/src/auth/admin-session.ts`
+- 생성: `apps/admin-api/src/auth/admin-auth.ts`
+- 생성: `apps/admin-api/src/app.ts`
+- 생성: `apps/admin-api/src/main.ts`
+- 생성: `apps/admin-api/src/routes/auth.route.ts`
+- 생성: `apps/admin-api/src/routes/health.route.ts`
+- 테스트: `apps/admin-api/src/env.test.ts`
+- 테스트: `apps/admin-api/src/auth/admin-auth.test.ts`
 
-- [ ] **Step 1: package와 config 생성**
+- [ ] **단계 1: package와 config 생성**
 
 `apps/admin-api/package.json`을 생성한다.
 
@@ -1007,7 +1007,7 @@ export default defineConfig({
 })
 ```
 
-- [ ] **Step 2: 환경 변수 테스트 작성**
+- [ ] **단계 2: 환경 변수 테스트 작성**
 
 `apps/admin-api/src/env.test.ts`를 생성한다.
 
@@ -1038,17 +1038,17 @@ describe("parseAdminApiEnv", () => {
 })
 ```
 
-- [ ] **Step 3: 실패 확인**
+- [ ] **단계 3: 실패 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/admin-api test -- env.test.ts
 ```
 
-Expected: `@/env`가 없어서 FAIL.
+예상 결과: `@/env`가 없어서 실패.
 
-- [ ] **Step 4: env 구현**
+- [ ] **단계 4: env 구현**
 
 `apps/admin-api/src/env.ts`를 생성한다.
 
@@ -1108,7 +1108,7 @@ export function ensureDatabaseDirectory(databasePath: string) {
 }
 ```
 
-- [ ] **Step 5: Better Auth runtime 작성**
+- [ ] **단계 5: Better Auth runtime 작성**
 
 `apps/admin-api/src/auth/admin-session.ts`를 생성한다.
 
@@ -1239,7 +1239,7 @@ export function createAdminAuthRuntime(
 }
 ```
 
-- [ ] **Step 6: route와 app 뼈대 구현**
+- [ ] **단계 6: route와 app 뼈대 구현**
 
 `apps/admin-api/src/routes/auth.route.ts`를 생성한다.
 
@@ -1358,7 +1358,7 @@ export function createAdminApiApp(dependencies: AdminApiAppDependencies) {
 }
 ```
 
-- [ ] **Step 7: main과 env example 작성**
+- [ ] **단계 7: main과 env example 작성**
 
 `apps/admin-api/src/main.ts`를 생성한다.
 
@@ -1436,18 +1436,18 @@ NODE_ENV=development
 PORT=4001
 ```
 
-- [ ] **Step 8: 테스트와 타입체크**
+- [ ] **단계 8: 테스트와 타입체크**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/admin-api test -- env.test.ts
 bun --filter @workspace/admin-api typecheck
 ```
 
-Expected: PASS.
+예상 결과: 통과.
 
-- [ ] **Step 9: Commit**
+- [ ] **단계 9: 커밋**
 
 ```bash
 git add apps/admin-api
@@ -1456,18 +1456,18 @@ git commit -m "어드민 API 기본 구조 추가"
 
 ---
 
-### Task 6: admin-api REST 조회 route와 OpenAPI 추가
+### 작업 6: admin-api REST 조회 route와 OpenAPI 추가
 
-**Files:**
+**파일:**
 
-- Create: `apps/admin-api/src/routes/error-response.ts`
-- Create: `apps/admin-api/src/routes/courses.route.ts`
-- Create: `apps/admin-api/src/routes/users.route.ts`
-- Create: `apps/admin-api/src/routes/openapi.route.ts`
-- Modify: `apps/admin-api/src/app.ts`
-- Test: `apps/admin-api/src/app.test.ts`
+- 생성: `apps/admin-api/src/routes/error-response.ts`
+- 생성: `apps/admin-api/src/routes/courses.route.ts`
+- 생성: `apps/admin-api/src/routes/users.route.ts`
+- 생성: `apps/admin-api/src/routes/openapi.route.ts`
+- 수정: `apps/admin-api/src/app.ts`
+- 테스트: `apps/admin-api/src/app.test.ts`
 
-- [ ] **Step 1: route 실패 테스트 작성**
+- [ ] **단계 1: route 실패 테스트 작성**
 
 `apps/admin-api/src/app.test.ts`를 생성한다.
 
@@ -1581,17 +1581,17 @@ describe("admin api app", () => {
 })
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [ ] **단계 2: 실패 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/admin-api test -- app.test.ts
 ```
 
-Expected: `/courses` 또는 `/users`가 404로 FAIL.
+예상 결과: `/courses` 또는 `/users`가 404로 실패.
 
-- [ ] **Step 3: 오류 응답 helper 작성**
+- [ ] **단계 3: 오류 응답 helper 작성**
 
 `apps/admin-api/src/routes/error-response.ts`를 생성한다.
 
@@ -1608,7 +1608,7 @@ export function jsonErrorResponse(schema: ZodType) {
 }
 ```
 
-- [ ] **Step 4: courses route 작성**
+- [ ] **단계 4: courses route 작성**
 
 `apps/admin-api/src/routes/courses.route.ts`를 생성한다.
 
@@ -1677,7 +1677,7 @@ export function registerCoursesRoute(
 }
 ```
 
-- [ ] **Step 5: users route 작성**
+- [ ] **단계 5: users route 작성**
 
 `apps/admin-api/src/routes/users.route.ts`를 생성한다.
 
@@ -1734,7 +1734,7 @@ export function registerUsersRoute(
 }
 ```
 
-- [ ] **Step 6: OpenAPI route 작성**
+- [ ] **단계 6: OpenAPI route 작성**
 
 `apps/admin-api/src/routes/openapi.route.ts`를 생성한다.
 
@@ -1758,7 +1758,7 @@ export function registerOpenApiRoute(app: Hono) {
 }
 ```
 
-- [ ] **Step 7: app에 route 등록**
+- [ ] **단계 7: app에 route 등록**
 
 `apps/admin-api/src/app.ts`에 imports와 route 등록을 추가한다.
 
@@ -1776,9 +1776,9 @@ registerUsersRoute(app, dependencies)
 registerOpenApiRoute(app)
 ```
 
-- [ ] **Step 8: 테스트 통과 확인**
+- [ ] **단계 8: 테스트 통과 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/admin-api test -- app.test.ts
@@ -1786,9 +1786,9 @@ bun --filter @workspace/admin-api typecheck
 bun --filter @workspace/admin-api lint
 ```
 
-Expected: PASS.
+예상 결과: 통과.
 
-- [ ] **Step 9: Commit**
+- [ ] **단계 9: 커밋**
 
 ```bash
 git add apps/admin-api/src
@@ -1797,17 +1797,17 @@ git commit -m "어드민 API 조회 라우트 추가"
 
 ---
 
-### Task 7: 최초 관리자 seed 명령 추가
+### 작업 7: 최초 관리자 시드 명령 추가
 
-**Files:**
+**파일:**
 
-- Create: `apps/admin-api/src/scripts/seed-admin.ts`
-- Modify: `apps/admin-api/package.json`
-- Test: `apps/admin-api/src/scripts/seed-admin.test.ts`
+- 생성: `apps/admin-api/src/scripts/시드-admin.ts`
+- 수정: `apps/admin-api/package.json`
+- 테스트: `apps/admin-api/src/scripts/시드-admin.test.ts`
 
-- [ ] **Step 1: seed helper 실패 테스트 작성**
+- [ ] **단계 1: 시드 helper 실패 테스트 작성**
 
-`apps/admin-api/src/scripts/seed-admin.test.ts`를 생성한다.
+`apps/admin-api/src/scripts/시드-admin.test.ts`를 생성한다.
 
 ```ts
 import { Database } from "bun:sqlite"
@@ -1815,21 +1815,21 @@ import { describe, expect, it } from "vitest"
 
 import { createDatabase, runContentMigration, adminUser } from "@workspace/db"
 
-import { seedAdminUser } from "@/scripts/seed-admin"
+import { 시드AdminUser } from "@/scripts/시드-admin"
 
-describe("seedAdminUser", () => {
+describe("시드AdminUser", () => {
   it("creates the first admin once", async () => {
     const sqlite = new Database(":memory:")
     runContentMigration(sqlite)
     const db = createDatabase(sqlite)
 
-    const first = await seedAdminUser({
+    const first = await 시드AdminUser({
       db,
       email: "admin@example.com",
       name: "운영자",
       password: "password-1234",
     })
-    const second = await seedAdminUser({
+    const second = await 시드AdminUser({
       db,
       email: "admin@example.com",
       name: "운영자",
@@ -1844,19 +1844,19 @@ describe("seedAdminUser", () => {
 })
 ```
 
-- [ ] **Step 2: 실패 확인**
+- [ ] **단계 2: 실패 확인**
 
-Run:
+실행:
 
 ```bash
-bun --filter @workspace/admin-api test -- seed-admin.test.ts
+bun --filter @workspace/admin-api test -- 시드-admin.test.ts
 ```
 
-Expected: `@/scripts/seed-admin`가 없어서 FAIL.
+예상 결과: `@/scripts/시드-admin`가 없어서 실패.
 
-- [ ] **Step 3: seed script 구현**
+- [ ] **단계 3: 시드 script 구현**
 
-`apps/admin-api/src/scripts/seed-admin.ts`를 생성한다.
+`apps/admin-api/src/scripts/시드-admin.ts`를 생성한다.
 
 ```ts
 import Database from "bun:sqlite"
@@ -1884,7 +1884,7 @@ export type SeedAdminUserResult =
   | { status: "created"; adminId: string }
   | { status: "already-exists"; adminId: string }
 
-export async function seedAdminUser({
+export async function 시드AdminUser({
   db,
   email,
   name,
@@ -1944,97 +1944,97 @@ if (import.meta.main) {
   const env = parseAdminApiEnv(Bun.env)
   const email = Bun.env["ADMIN_SEED_EMAIL"]
   const name = Bun.env["ADMIN_SEED_NAME"] ?? "관리자"
-  const password = Bun.env["ADMIN_SEED_PASSWORD"]
+  const password = Bun.env["ADMIN_SEED_통과WORD"]
 
   if (!email || !password) {
-    throw new Error("ADMIN_SEED_EMAIL and ADMIN_SEED_PASSWORD are required.")
+    throw new Error("ADMIN_SEED_EMAIL and ADMIN_SEED_통과WORD are required.")
   }
 
   ensureDatabaseDirectory(env.databasePath)
   const sqlite = new Database(env.databasePath, { create: true })
   runContentMigration(sqlite)
   const db = createDatabase(sqlite)
-  const result = await seedAdminUser({ db, email, name, password })
+  const result = await 시드AdminUser({ db, email, name, password })
 
   console.info(JSON.stringify(result))
 }
 ```
 
-- [ ] **Step 4: package script 추가**
+- [ ] **단계 4: package script 추가**
 
 `apps/admin-api/package.json`의 scripts에 추가한다.
 
 ```json
 {
-  "seed:admin": "bun src/scripts/seed-admin.ts"
+  "시드:admin": "bun src/scripts/시드-admin.ts"
 }
 ```
 
-- [ ] **Step 5: 테스트 통과 확인**
+- [ ] **단계 5: 테스트 통과 확인**
 
-Run:
+실행:
 
 ```bash
-bun --filter @workspace/admin-api test -- seed-admin.test.ts
+bun --filter @workspace/admin-api test -- 시드-admin.test.ts
 bun --filter @workspace/admin-api typecheck
 ```
 
-Expected: PASS.
+예상 결과: 통과.
 
-- [ ] **Step 6: 실제 Better Auth 로그인 스모크 확인**
+- [ ] **단계 6: 실제 Better Auth 로그인 스모크 확인**
 
-Run:
+실행:
 
 ```bash
 ADMIN_BETTER_AUTH_SECRET=admin-secret \
 ADMIN_BETTER_AUTH_URL=http://localhost:4001 \
 DATABASE_URL=file:data/admin-smoke.sqlite \
 ADMIN_SEED_EMAIL=admin@example.com \
-ADMIN_SEED_PASSWORD=password-1234 \
-bun --filter @workspace/admin-api seed:admin
+ADMIN_SEED_통과WORD=password-1234 \
+bun --filter @workspace/admin-api 시드:admin
 ```
 
-Expected: `{"status":"created",...}` 또는 두 번째 실행 시 `{"status":"already-exists",...}`.
+예상 결과: `{"status":"created",...}` 또는 두 번째 실행 시 `{"status":"already-exists",...}`.
 
-- [ ] **Step 7: Commit**
+- [ ] **단계 7: 커밋**
 
 ```bash
 git add apps/admin-api/src/scripts apps/admin-api/package.json
-git commit -m "최초 관리자 seed 명령 추가"
+git commit -m "최초 관리자 시드 명령 추가"
 ```
 
 ---
 
-### Task 8: admin Next.js 앱 뼈대와 API 클라이언트 추가
+### 작업 8: admin Next.js 앱 뼈대와 API 클라이언트 추가
 
-**Files:**
+**파일:**
 
-- Create: `apps/admin/package.json`
-- Create: `apps/admin/tsconfig.json`
-- Create: `apps/admin/eslint.config.mjs`
-- Create: `apps/admin/next.config.ts`
-- Create: `apps/admin/postcss.config.mjs`
-- Create: `apps/admin/components.json`
-- Create: `apps/admin/vitest.config.ts`
-- Create: `apps/admin/src/app/globals.css`
-- Create: `apps/admin/src/app/layout.tsx`
-- Create: `apps/admin/src/lib/api/admin-api.ts`
-- Create: `apps/admin/src/lib/api/http-admin-api.ts`
-- Create: `apps/admin/src/lib/api/get-server-admin-api.ts`
-- Test: `apps/admin/src/lib/api/http-admin-api.test.ts`
+- 생성: `apps/admin/package.json`
+- 생성: `apps/admin/tsconfig.json`
+- 생성: `apps/admin/eslint.config.mjs`
+- 생성: `apps/admin/next.config.ts`
+- 생성: `apps/admin/postcss.config.mjs`
+- 생성: `apps/admin/components.json`
+- 생성: `apps/admin/vitest.config.ts`
+- 생성: `apps/admin/src/app/globals.css`
+- 생성: `apps/admin/src/app/layout.tsx`
+- 생성: `apps/admin/src/lib/api/admin-api.ts`
+- 생성: `apps/admin/src/lib/api/http-admin-api.ts`
+- 생성: `apps/admin/src/lib/api/get-server-admin-api.ts`
+- 테스트: `apps/admin/src/lib/api/http-admin-api.test.ts`
 
-- [ ] **Step 1: Next.js 문서 확인**
+- [ ] **단계 1: Next.js 문서 확인**
 
-Run:
+실행:
 
 ```bash
 ls node_modules/next/dist/docs
 rg -n "App Router|Route Handlers|cookies" node_modules/next/dist/docs | sed -n '1,80p'
 ```
 
-Expected: Next 16 문서 파일이 존재한다. route handler와 cookies 관련 문서 위치를 확인한다.
+예상 결과: Next 16 문서 파일이 존재한다. route handler와 cookies 관련 문서 위치를 확인한다.
 
-- [ ] **Step 2: 앱 package와 config 생성**
+- [ ] **단계 2: 앱 package와 config 생성**
 
 `apps/admin/package.json`을 생성한다.
 
@@ -2161,7 +2161,7 @@ export default config
 }
 ```
 
-- [ ] **Step 3: root layout 작성**
+- [ ] **단계 3: root layout 작성**
 
 `apps/admin/src/app/globals.css`를 생성한다.
 
@@ -2194,7 +2194,7 @@ export default function RootLayout({
 }
 ```
 
-- [ ] **Step 4: API 클라이언트 실패 테스트 작성**
+- [ ] **단계 4: API 클라이언트 실패 테스트 작성**
 
 `apps/admin/src/lib/api/http-admin-api.test.ts`를 생성한다.
 
@@ -2230,17 +2230,17 @@ describe("createHttpAdminApi", () => {
 })
 ```
 
-- [ ] **Step 5: 실패 확인**
+- [ ] **단계 5: 실패 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/admin test -- http-admin-api.test.ts
 ```
 
-Expected: `@/lib/api/http-admin-api`가 없어서 FAIL.
+예상 결과: `@/lib/api/http-admin-api`가 없어서 실패.
 
-- [ ] **Step 6: API 포트와 HTTP 어댑터 작성**
+- [ ] **단계 6: API 포트와 HTTP 어댑터 작성**
 
 `apps/admin/src/lib/api/admin-api.ts`를 생성한다.
 
@@ -2357,18 +2357,18 @@ export async function getServerAdminApi() {
 }
 ```
 
-- [ ] **Step 7: 테스트 통과 확인**
+- [ ] **단계 7: 테스트 통과 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/admin test -- http-admin-api.test.ts
 bun --filter @workspace/admin typecheck
 ```
 
-Expected: PASS.
+예상 결과: 통과.
 
-- [ ] **Step 8: Commit**
+- [ ] **단계 8: 커밋**
 
 ```bash
 git add apps/admin
@@ -2377,24 +2377,24 @@ git commit -m "어드민 웹 앱 기본 구조 추가"
 
 ---
 
-### Task 9: 관리자 로그인과 보호된 sidebar shell 구현
+### 작업 9: 관리자 로그인과 보호된 사이드바 셸 구현
 
-**Files:**
+**파일:**
 
-- Create: `apps/admin/src/lib/auth/admin-auth-navigation.ts`
-- Create: `apps/admin/src/lib/auth/admin-auth-client.ts`
-- Create: `apps/admin/src/lib/auth/admin-auth-proxy.ts`
-- Create: `apps/admin/src/app/api/auth/[...path]/route.ts`
-- Create: `apps/admin/src/features/auth/admin-auth-page.tsx`
-- Create: `apps/admin/src/app/login/page.tsx`
-- Create: `apps/admin/src/app/(admin)/layout.tsx`
-- Create: `apps/admin/src/app/page.tsx`
-- Create: `apps/admin/src/components/admin-sidebar.tsx`
-- Create: `apps/admin/src/components/admin-shell.tsx`
-- Test: `apps/admin/src/lib/auth/admin-auth-navigation.test.ts`
-- Test: `apps/admin/src/features/auth/admin-auth-page.test.tsx`
+- 생성: `apps/admin/src/lib/auth/admin-auth-navigation.ts`
+- 생성: `apps/admin/src/lib/auth/admin-auth-client.ts`
+- 생성: `apps/admin/src/lib/auth/admin-auth-proxy.ts`
+- 생성: `apps/admin/src/app/api/auth/[...path]/route.ts`
+- 생성: `apps/admin/src/features/auth/admin-auth-page.tsx`
+- 생성: `apps/admin/src/app/login/page.tsx`
+- 생성: `apps/admin/src/app/(admin)/layout.tsx`
+- 생성: `apps/admin/src/app/page.tsx`
+- 생성: `apps/admin/src/components/admin-sidebar.tsx`
+- 생성: `apps/admin/src/components/admin-shell.tsx`
+- 테스트: `apps/admin/src/lib/auth/admin-auth-navigation.test.ts`
+- 테스트: `apps/admin/src/features/auth/admin-auth-page.test.tsx`
 
-- [ ] **Step 1: auth navigation 실패 테스트 작성**
+- [ ] **단계 1: auth navigation 실패 테스트 작성**
 
 `apps/admin/src/lib/auth/admin-auth-navigation.test.ts`를 생성한다.
 
@@ -2414,7 +2414,7 @@ describe("getSafeAdminNextPath", () => {
 })
 ```
 
-- [ ] **Step 2: auth navigation 구현**
+- [ ] **단계 2: auth navigation 구현**
 
 `apps/admin/src/lib/auth/admin-auth-navigation.ts`를 생성한다.
 
@@ -2438,7 +2438,7 @@ export function getAdminLoginPath(nextPath = fallbackPath) {
 }
 ```
 
-- [ ] **Step 3: 로그인 client와 proxy 작성**
+- [ ] **단계 3: 로그인 client와 proxy 작성**
 
 `apps/admin/src/lib/auth/admin-auth-client.ts`를 생성한다.
 
@@ -2555,7 +2555,7 @@ async function proxy(request: Request, context: AuthRouteContext) {
 }
 ```
 
-- [ ] **Step 4: 로그인 page 작성**
+- [ ] **단계 4: 로그인 page 작성**
 
 `apps/admin/src/features/auth/admin-auth-page.tsx`를 생성한다.
 
@@ -2693,7 +2693,7 @@ export default async function Page({ searchParams }: LoginPageProps) {
 }
 ```
 
-- [ ] **Step 5: sidebar shell 작성**
+- [ ] **단계 5: 사이드바 셸 작성**
 
 `apps/admin/src/components/admin-sidebar.tsx`를 생성한다.
 
@@ -2797,7 +2797,7 @@ export function AdminShell({ children }: AdminShellProps) {
 }
 ```
 
-- [ ] **Step 6: 보호 layout 작성**
+- [ ] **단계 6: 보호 layout 작성**
 
 `apps/admin/src/app/(admin)/layout.tsx`를 생성한다.
 
@@ -2834,9 +2834,9 @@ export default function Page() {
 }
 ```
 
-- [ ] **Step 7: 테스트와 타입체크**
+- [ ] **단계 7: 테스트와 타입체크**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/admin test -- admin-auth-navigation.test.ts
@@ -2844,9 +2844,9 @@ bun --filter @workspace/admin typecheck
 bun --filter @workspace/admin lint
 ```
 
-Expected: PASS.
+예상 결과: 통과.
 
-- [ ] **Step 8: Commit**
+- [ ] **단계 8: 커밋**
 
 ```bash
 git add apps/admin/src
@@ -2855,18 +2855,18 @@ git commit -m "어드민 로그인과 사이드바 레이아웃 추가"
 
 ---
 
-### Task 10: 콘텐츠와 사용자 조회 화면 구현
+### 작업 10: 콘텐츠와 사용자 조회 화면 구현
 
-**Files:**
+**파일:**
 
-- Create: `apps/admin/src/features/courses/admin-courses-page.tsx`
-- Create: `apps/admin/src/features/users/admin-users-page.tsx`
-- Create: `apps/admin/src/app/(admin)/courses/page.tsx`
-- Create: `apps/admin/src/app/(admin)/users/page.tsx`
-- Test: `apps/admin/src/features/courses/admin-courses-page.test.tsx`
-- Test: `apps/admin/src/features/users/admin-users-page.test.tsx`
+- 생성: `apps/admin/src/features/courses/admin-courses-page.tsx`
+- 생성: `apps/admin/src/features/users/admin-users-page.tsx`
+- 생성: `apps/admin/src/app/(admin)/courses/page.tsx`
+- 생성: `apps/admin/src/app/(admin)/users/page.tsx`
+- 테스트: `apps/admin/src/features/courses/admin-courses-page.test.tsx`
+- 테스트: `apps/admin/src/features/users/admin-users-page.test.tsx`
 
-- [ ] **Step 1: 콘텐츠 화면 실패 테스트 작성**
+- [ ] **단계 1: 콘텐츠 화면 실패 테스트 작성**
 
 `apps/admin/src/features/courses/admin-courses-page.test.tsx`를 생성한다.
 
@@ -2914,7 +2914,7 @@ describe("AdminCoursesPage", () => {
 })
 ```
 
-- [ ] **Step 2: 사용자 화면 실패 테스트 작성**
+- [ ] **단계 2: 사용자 화면 실패 테스트 작성**
 
 `apps/admin/src/features/users/admin-users-page.test.tsx`를 생성한다.
 
@@ -2948,17 +2948,17 @@ describe("AdminUsersPage", () => {
 })
 ```
 
-- [ ] **Step 3: 실패 확인**
+- [ ] **단계 3: 실패 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/admin test -- admin-courses-page.test.tsx admin-users-page.test.tsx
 ```
 
-Expected: feature components가 없어서 FAIL.
+예상 결과: 기능 컴포넌트가 없어서 실패.
 
-- [ ] **Step 4: 콘텐츠 화면 구현**
+- [ ] **단계 4: 콘텐츠 화면 구현**
 
 `apps/admin/src/features/courses/admin-courses-page.tsx`를 생성한다.
 
@@ -3034,7 +3034,7 @@ export function AdminCoursesPage({ courses }: AdminCoursesPageProps) {
 }
 ```
 
-- [ ] **Step 5: 사용자 화면 구현**
+- [ ] **단계 5: 사용자 화면 구현**
 
 `apps/admin/src/features/users/admin-users-page.tsx`를 생성한다.
 
@@ -3099,7 +3099,7 @@ export function AdminUsersPage({ users }: AdminUsersPageProps) {
 }
 ```
 
-- [ ] **Step 6: route page 연결**
+- [ ] **단계 6: 라우트 페이지 연결**
 
 `apps/admin/src/app/(admin)/courses/page.tsx`를 생성한다.
 
@@ -3143,9 +3143,9 @@ export default async function Page() {
 }
 ```
 
-- [ ] **Step 7: 테스트 통과 확인**
+- [ ] **단계 7: 테스트 통과 확인**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/admin test -- admin-courses-page.test.tsx admin-users-page.test.tsx
@@ -3153,9 +3153,9 @@ bun --filter @workspace/admin typecheck
 bun --filter @workspace/admin lint
 ```
 
-Expected: PASS.
+예상 결과: 통과.
 
-- [ ] **Step 8: Commit**
+- [ ] **단계 8: 커밋**
 
 ```bash
 git add apps/admin/src
@@ -3164,16 +3164,16 @@ git commit -m "어드민 조회 화면 추가"
 
 ---
 
-### Task 11: 문서 갱신과 전체 검증
+### 작업 11: 문서 갱신과 전체 검증
 
-**Files:**
+**파일:**
 
-- Modify: `ARCHITECTURE.md`
-- Modify: `BACKEND.md`
-- Modify: `FRONTEND.md`
-- Modify: `docs/admin-site.md`
+- 수정: `ARCHITECTURE.md`
+- 수정: `BACKEND.md`
+- 수정: `FRONTEND.md`
+- 수정: `docs/admin-site.md`
 
-- [ ] **Step 1: `ARCHITECTURE.md` 갱신**
+- [ ] **단계 1: `ARCHITECTURE.md` 갱신**
 
 앱 목록과 포트를 실제 구조에 맞게 보정한다.
 
@@ -3201,7 +3201,7 @@ git commit -m "어드민 조회 화면 추가"
 - database: 플랫폼과 같은 SQLite 파일을 사용하되 관리자 인증 테이블은 `admin_*`로 분리한다.
 ```
 
-- [ ] **Step 2: `BACKEND.md` 갱신**
+- [ ] **단계 2: `BACKEND.md` 갱신**
 
 어드민 API 섹션을 추가한다.
 
@@ -3221,7 +3221,7 @@ git commit -m "어드민 조회 화면 추가"
 관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다.
 ```
 
-- [ ] **Step 3: `FRONTEND.md` 갱신**
+- [ ] **단계 3: `FRONTEND.md` 갱신**
 
 어드민 프론트엔드 원칙을 추가한다.
 
@@ -3233,7 +3233,7 @@ git commit -m "어드민 조회 화면 추가"
 어드민 앱은 `apps/admin-api`만 호출하며 플랫폼 `apps/api`를 직접 호출하지 않는다. 어드민 API가 내려가면 어드민 화면은 오류 또는 로그인 필요 상태를 표시하지만, 학습자 플랫폼 기능에는 영향을 주지 않는다.
 ```
 
-- [ ] **Step 4: `docs/admin-site.md` 완료 기록 추가**
+- [ ] **단계 4: `docs/admin-site.md` 완료 기록 추가**
 
 `docs/admin-site.md` 끝에 추가한다.
 
@@ -3242,15 +3242,15 @@ git commit -m "어드민 조회 화면 추가"
 
 - `apps/admin`과 `apps/admin-api`를 추가했다.
 - 관리자 Better Auth 테이블은 `admin_*`로 분리했다.
-- 최초 관리자 계정은 `bun --filter @workspace/admin-api seed:admin`으로 생성한다.
+- 최초 관리자 계정은 `bun --filter @workspace/admin-api 시드:admin`으로 생성한다.
 - 어드민 화면은 shadcn Sidebar 기반 왼쪽 사이드바 레이아웃을 사용한다.
 - 콘텐츠 계층 조회와 사용자 기본 정보 조회를 읽기 전용으로 제공한다.
 - 전체 검증은 admin, admin-api, platform API, platform web 테스트와 pre-commit으로 확인했다.
 ```
 
-- [ ] **Step 5: 전체 검증 실행**
+- [ ] **단계 5: 전체 검증 실행**
 
-Run:
+실행:
 
 ```bash
 bun --filter @workspace/core test
@@ -3270,11 +3270,11 @@ bun --filter @workspace/web lint
 bun lefthook run pre-commit
 ```
 
-Expected: 모든 명령 exit code `0`. 기존 lint 경고가 exit code `0`을 유지하면 문서에 기록한다.
+예상 결과: 모든 명령 종료 코드 `0`. 기존 lint 경고가 종료 코드 `0`을 유지하면 문서에 기록한다.
 
-- [ ] **Step 6: 로컬 동작 검증**
+- [ ] **단계 6: 로컬 동작 검증**
 
-Run:
+실행:
 
 ```bash
 ADMIN_BETTER_AUTH_SECRET=admin-secret \
@@ -3282,25 +3282,25 @@ ADMIN_BETTER_AUTH_URL=http://localhost:4001 \
 ADMIN_CORS_ORIGIN=http://localhost:3001 \
 DATABASE_URL=file:data/api.sqlite \
 ADMIN_SEED_EMAIL=admin@example.com \
-ADMIN_SEED_PASSWORD=password-1234 \
-bun --filter @workspace/admin-api seed:admin
+ADMIN_SEED_통과WORD=password-1234 \
+bun --filter @workspace/admin-api 시드:admin
 ```
 
-Run:
+실행:
 
 ```bash
 bun dev:admin
 ```
 
-Expected:
+예상 결과:
 
 - `apps/admin-api`는 `http://localhost:4001`에서 실행된다.
 - `apps/admin`은 `http://localhost:3001`에서 실행된다.
-- `/login`에서 seed 계정으로 로그인할 수 있다.
+- `/login`에서 시드 계정으로 로그인할 수 있다.
 - `/courses`에서 콘텐츠 계층을 볼 수 있다.
 - `/users`에서 사용자 목록을 볼 수 있다.
 
-- [ ] **Step 7: 플랫폼 독립성 검증**
+- [ ] **단계 7: 플랫폼 독립성 검증**
 
 어드민 서버를 종료한 뒤 실행한다.
 
@@ -3309,9 +3309,9 @@ bun --filter @workspace/api test
 bun --filter @workspace/web test
 ```
 
-Expected: PASS. 어드민 런타임이 없어도 플랫폼 테스트가 통과한다.
+예상 결과: 통과. 어드민 런타임이 없어도 플랫폼 테스트가 통과한다.
 
-- [ ] **Step 8: Commit**
+- [ ] **단계 8: 커밋**
 
 ```bash
 git add ARCHITECTURE.md BACKEND.md FRONTEND.md docs/admin-site.md
@@ -3322,16 +3322,16 @@ git commit -m "어드민 구현 문서 갱신"
 
 ## 실행 순서 요약
 
-1. Task 1로 workspace와 문서 시작 기록을 추가한다.
-2. Task 2-4로 공유 DB와 core/admin 계약을 만든다.
-3. Task 5-7로 `apps/admin-api` 인증, 조회 API, seed를 만든다.
-4. Task 8-10으로 `apps/admin` 로그인, sidebar shell, 조회 화면을 만든다.
-5. Task 11로 문서와 전체 검증을 마무리한다.
+1. 작업 1로 workspace와 문서 시작 기록을 추가한다.
+2. 작업 2-4로 공유 DB와 core/admin 계약을 만든다.
+3. 작업 5-7로 `apps/admin-api` 인증, 조회 API, 시드를 만든다.
+4. 작업 8-10으로 `apps/admin` 로그인, 사이드바 셸, 조회 화면을 만든다.
+5. 작업 11로 문서와 전체 검증을 마무리한다.
 
 각 task는 커밋 단위로 끝낸다. 실패 테스트를 먼저 만들고, 실패를 확인한 뒤 최소 구현으로 통과시킨다.
 
-## Self-Review
+## 자체 검토
 
-- Spec coverage: 별도 Next.js 앱, 별도 Hono API, 공유 DB, 관리자 auth 테이블 분리, Better Auth ID/password, seed 생성, RESTful 조회 API, shadcn sidebar-07 기반 layout, 플랫폼 독립성 검증이 모두 task에 포함되어 있다.
-- Placeholder scan: `TBD`, `TODO`, `implement later`, `fill in details` 표현은 없다.
-- Type consistency: `AdminRepository`, `AdminService`, `AdminApi`, `AdminCourseTreeDto`, `AdminUserListDto` 이름을 task 전반에서 일관되게 사용한다.
+- 스펙 범위: 별도 Next.js 앱, 별도 Hono API, 공유 DB, 관리자 auth 테이블 분리, Better Auth ID/password, 시드 생성, RESTful 조회 API, shadcn sidebar-07 기반 layout, 플랫폼 독립성 검증이 모두 task에 포함되어 있다.
+- 플레이스홀더 점검: `TBD`, `TODO`, `implement later`, `fill in details` 표현은 없다.
+- 타입 일관성: `AdminRepository`, `AdminService`, `AdminApi`, `AdminCourseTreeDto`, `AdminUserListDto` 이름을 task 전반에서 일관되게 사용한다.
