@@ -1,5 +1,19 @@
 # 어드민 사이트
 
+## 2026-05-28 학습 진행 버전 귀속 구현 시작
+
+- 커리큘럼 버전 관리 로드맵 3단계 구현을 시작한다.
+- `course_progress`와 `lesson_progress`에 `curriculum_version_id`를 기록해 기존 학습자가 자신의 진행 버전을 유지할 수 있게 한다.
+- 관리자 발행 API와 학습자 업그레이드 UX는 아직 추가하지 않고, 진행 저장과 계산 경계만 먼저 고정한다.
+
+## 2026-05-28 학습 진행 버전 귀속 구현 완료
+
+- `CurriculumVersionId` 브랜드 타입과 학습 repository 계약을 추가했다.
+- 새 학습 진행은 최신 published 버전을 선택하고, 기존 진행은 저장된 `course_progress.curriculum_version_id`를 유지한다.
+- 코스 진행률과 다음 레슨은 진행 버전의 active 레슨 배치를 기준으로 계산한다.
+- `lesson_progress.curriculum_version_id`를 저장하고, 완료 카운트는 같은 진행 버전의 완료 레슨만 집계한다.
+- SQLite migration은 기존 진행 row를 코스별 `v1` published 버전으로 backfill할 수 있게 구성했다.
+
 ## 2026-05-28 학습 진행 버전 귀속 구현 계획 시작
 
 - 커리큘럼 버전 관리 로드맵의 3단계인 학습 진행 버전 귀속 계획을 작성한다.
