@@ -361,6 +361,26 @@ export function createLearningService({
       }
 
       try {
+        const curriculumVersionId = await resolveCurriculumVersionId(
+          repository,
+          userId,
+          lessonResult.value.courseId as CourseId
+        )
+        if (!curriculumVersionId) {
+          return invalidRequest("Published curriculum version was not found.")
+        }
+
+        const isVersionLesson =
+          await repository.curriculumVersionIncludesLesson(
+            curriculumVersionId,
+            lessonId
+          )
+        if (!isVersionLesson) {
+          return invalidRequest(
+            "Lesson is not part of the learner curriculum version."
+          )
+        }
+
         await repository.upsertLessonAnswer({
           answer: request.answer,
           lessonId,

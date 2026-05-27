@@ -363,6 +363,32 @@ describe("createLearningService", () => {
     )
   })
 
+  it("rejects answers for a lesson outside the learner curriculum version", async () => {
+    const repository = {
+      ...createRepository(),
+      curriculumVersionIncludesLesson: vi.fn(async () => false),
+    }
+    const service = createLearningService({ contentService, repository })
+
+    const result = await service.saveLessonAnswer(
+      userId("user-1"),
+      lessonId("sentence-structure-01"),
+      {
+        answer: "문장을 고쳤습니다.",
+        stepId: "sentence-structure-01-step-2",
+      }
+    )
+
+    expect(result).toEqual({
+      status: "invalid-request",
+      error: {
+        code: "invalid-request",
+        message: "Lesson is not part of the learner curriculum version.",
+      },
+    })
+    expect(repository.upsertLessonAnswer).not.toHaveBeenCalled()
+  })
+
   it("rejects answers for non-writing step types", async () => {
     const repository = createRepository()
     const service = createLearningService({ contentService, repository })
