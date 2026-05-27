@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import type { ContentService, LessonDto } from "@/content"
-import { lessonId } from "@/content"
+import { curriculumVersionId, lessonId } from "@/content"
 import type { LearningRepository } from "@/learning"
 import { userId } from "@/learning"
 
@@ -87,8 +87,15 @@ const contentService: ContentService = {
 function createLearningRepository(): LearningRepository {
   return {
     completeLesson: vi.fn(),
+    curriculumVersionIncludesLesson: vi.fn(async () => true),
     findCourseProgress: vi.fn(),
+    findLatestPublishedCurriculumVersionId: vi.fn(async () =>
+      curriculumVersionId("sentence-structure-v1")
+    ),
     findLessonProgress: vi.fn(),
+    listCurriculumVersionLessonIds: vi.fn(async () => [
+      lessonId("sentence-structure-01"),
+    ]),
     listInProgressCourses: vi.fn(),
     listLessonAnswers: vi.fn(async () => [
       {

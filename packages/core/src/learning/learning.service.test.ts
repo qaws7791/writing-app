@@ -434,6 +434,7 @@ describe("createLearningService", () => {
         {
           completedCount: 1,
           courseId: courseId("sentence-structure"),
+          curriculumVersionId: curriculumVersionId("sentence-structure-v1"),
           lastLessonId: lessonId("sentence-structure-01"),
         },
       ]),
@@ -458,6 +459,7 @@ describe("createLearningService", () => {
         {
           completedCount: 1,
           courseId: courseId("sentence-structure"),
+          curriculumVersionId: curriculumVersionId("sentence-structure-v1"),
           lastLessonId: lessonId("sentence-structure-01"),
         },
       ]),
