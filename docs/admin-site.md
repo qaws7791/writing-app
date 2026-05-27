@@ -1,5 +1,18 @@
 # 어드민 사이트
 
+## 2026-05-28 커리큘럼 버전 모델 추가 시작
+
+- 커리큘럼 버전 관리 로드맵 2단계 구현을 시작한다.
+- 기존 코스 콘텐츠를 코스별 `v1` published 버전에 귀속시키고, 공개 조회는 최신 published 버전의 active 스냅샷을 기준으로 계산하도록 바꾼다.
+- 작업은 스키마와 마이그레이션, seed, 공개 repository, 문서와 전체 검증 단위로 나누어 커밋한다.
+
+## 2026-05-28 커리큘럼 버전 모델 추가 완료
+
+- `curriculum_versions`, `curriculum_version_chapters`, `curriculum_version_lessons` Drizzle 스키마와 SQLite 마이그레이션을 추가했다.
+- 콘텐츠 seed는 기존 코스 구조와 함께 코스별 `v1` published 커리큘럼 버전 스냅샷을 생성한다.
+- 공개 콘텐츠 목록, 검색, 상세 repository는 코스별 최신 published 버전의 active 챕터와 레슨 배치를 기준으로 `lessonCount`, `firstLessonId`, `chapters`를 계산한다.
+- 학습 진행의 버전 귀속, 관리자 발행 API, 마이그레이션 맵, 학습자 업그레이드 UX는 다음 단계로 남긴다.
+
 ## 2026-05-28 커리큘럼 버전 모델 구현 계획 시작
 
 - 커리큘럼 버전 관리 로드맵의 2단계인 커리큘럼 버전 모델 추가 계획을 작성한다.

@@ -105,18 +105,18 @@ bun --filter @workspace/admin-api seed:admin
 
 콘텐츠 변경 정책의 단일 출처는 `DOMAIN.md`다. 백엔드 구현은 이 정책을 기준으로 학습자 완료 성취를 보존해야 한다.
 
-현재 구현은 아직 커리큘럼 버전 스키마를 갖지 않는다. 공개 콘텐츠 조회는 최신 seed 콘텐츠를 읽고, 학습 진행은 `course_progress`, `lesson_progress`가 `course_id`, `lesson_id`에 직접 연결된다. 이 구조에서는 관리자 수정 기능을 먼저 추가하면 코스 구조 변경이 진행률과 다음 레슨 계산에 바로 영향을 줄 수 있다.
+현재 구현은 `curriculum_versions`, `curriculum_version_chapters`, `curriculum_version_lessons` 스키마를 갖고, 공개 콘텐츠 목록/검색/상세 조회는 최신 published 커리큘럼 버전의 active 챕터와 레슨 배치 스냅샷을 기준으로 계산한다. 다만 학습 진행은 아직 `course_progress`, `lesson_progress`가 `course_id`, `lesson_id`에 직접 연결된다. 이 상태에서 관리자 구조 변경 기능을 먼저 추가하면 기존 학습자의 진행률과 다음 레슨 계산이 여전히 영향을 받을 수 있다.
 
 따라서 관리자 콘텐츠 생성, 수정, 삭제 API를 추가하기 전에 다음 제약을 먼저 지킨다.
 
-- 구조 변경은 `curriculum_versions` 기반 버전 경계가 생긴 뒤 허용한다.
+- 구조 변경은 관리자 발행 플로우와 학습 진행의 버전 귀속이 생긴 뒤 허용한다.
 - 신규 학습자는 최신 published 버전으로 시작한다.
 - 기존 학습자는 명시적 업그레이드 전까지 자신의 진행 버전을 유지한다.
 - 레슨과 챕터 삭제는 실제 delete가 아니라 `deprecated` 또는 `archived` 상태 전환으로 처리한다.
 - 이미 완료한 레슨은 archived 상태가 되더라도 완료 성취와 카운트에서 사라지지 않는다.
 - 진행 마이그레이션은 관리자 지정 매핑이 있을 때만 수행한다.
 
-이 정책이 구현되기 전까지 어드민 API는 콘텐츠 조회 중심으로 유지하고, published 콘텐츠 구조를 직접 바꾸는 관리 API를 제공하지 않는다.
+진행 버전 귀속, 관리자 발행 플로우, 마이그레이션 맵이 구현되기 전까지 어드민 API는 콘텐츠 조회 중심으로 유지하고, published 콘텐츠 구조를 직접 바꾸는 관리 API를 제공하지 않는다.
 
 ### `packages/db`
 
@@ -130,8 +130,11 @@ bun --filter @workspace/admin-api seed:admin
 - `lesson_progress`: 사용자별 레슨 현재 위치와 완료 상태
 - `lesson_answers`: 사용자별 레슨 스텝 답변
 - `feedback_attempts`: AI 피드백 완료 시도와 구조화 결과
+- `curriculum_versions`: 코스별 커리큘럼 버전과 `draft`, `published`, `archived` 상태
+- `curriculum_version_chapters`: 특정 커리큘럼 버전에 포함된 챕터 스냅샷
+- `curriculum_version_lessons`: 특정 커리큘럼 버전에 포함된 레슨 배치 스냅샷
 
-콘텐츠 시드는 현재 웹 정적 카탈로그와 과정 상세 화면의 과정/챕터/레슨 ID를 명시적으로 보관한다. API는 `vocabulary-basics` 같은 기존 과정 요약과 `sentence-structure-02` 같은 후속 레슨 ID를 반환할 수 있다. 다만 모든 레슨의 프로토타입 본문을 복제하지는 않으며, 각 레슨은 현재 `INTRO`, `SHORT_WRITE`, `AI_FEEDBACK`, `SUMMARY`, `COMPLETE` 기본 단계로 플레이 가능성과 학습 상태 저장 경로를 보장한다.
+콘텐츠 시드는 현재 웹 정적 카탈로그와 과정 상세 화면의 과정/챕터/레슨 ID를 명시적으로 보관하고, 각 코스의 기존 구조를 `v1` published 커리큘럼 버전으로 함께 생성한다. 공개 콘텐츠 목록, 검색, 상세 API는 코스별 published 버전 중 가장 큰 `version_number`를 최신 버전으로 보고 그 버전의 active 챕터와 레슨 배치로 `lessonCount`, `firstLessonId`, `chapters`를 계산한다. 레슨 플레이 본문은 아직 `lessons`, `lesson_steps`를 `lessonId`로 조회하며, 모든 레슨은 현재 `INTRO`, `SHORT_WRITE`, `AI_FEEDBACK`, `SUMMARY`, `COMPLETE` 기본 단계로 플레이 가능성과 학습 상태 저장 경로를 보장한다.
 
 AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structured Outputs를 호출하고, `packages/core`의 AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다. OpenAI 요청용 구조화 출력 schema는 OpenAI가 지원하는 JSON Schema 부분집합에 맞추고, provider 응답은 도메인 DTO schema로 다시 검증한다.
 

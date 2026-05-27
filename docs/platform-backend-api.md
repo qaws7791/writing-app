@@ -1,5 +1,18 @@
 # 플랫폼 백엔드 API
 
+## 2026-05-28 커리큘럼 버전 모델 추가 시작
+
+- 공개 콘텐츠 API가 관리자 구조 변경의 영향을 직접 받지 않도록 커리큘럼 버전 스냅샷 모델을 추가한다.
+- 이번 단계는 코스별 `v1` published 버전 생성과 최신 published 버전 기준 공개 조회로 한정한다.
+- 학습 진행 테이블의 버전 귀속과 학습자 업그레이드 UX는 이후 단계에서 별도로 구현한다.
+
+## 2026-05-28 커리큘럼 버전 모델 추가 완료
+
+- DB 마이그레이션은 `curriculum_versions`, `curriculum_version_chapters`, `curriculum_version_lessons`를 생성한다.
+- 콘텐츠 seed는 현재 코스/챕터/레슨 구조를 코스별 `v1` published 버전으로 함께 생성한다.
+- `GET /courses`, `GET /courses/search`, `GET /courses/:courseId`는 published 버전 중 가장 큰 `version_number`를 최신 버전으로 사용한다.
+- 공개 조회는 최신 버전의 active 챕터와 레슨 배치로 목록 요약과 상세 구조를 계산하며, 레슨 본문 조회는 기존 `lessonId` 기반 경로를 유지한다.
+
 ## 2026-05-28 콘텐츠 변경 정책 문서화 시작
 
 - 학습자 진행 API가 향후 커리큘럼 버전 기준으로 동작해야 하므로, 코드 변경 전에 콘텐츠 변경 정책을 문서화한다.
