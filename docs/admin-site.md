@@ -1,5 +1,16 @@
 # 어드민 사이트
 
+## 2026-05-28 관리자 커리큘럼 발행 워크플로우 구현 계획 시작
+
+- 커리큘럼 버전 관리 로드맵 6단계 구현 계획을 작성한다.
+- 이번 단계는 draft 생성, 버전 조회, draft publish의 최소 발행 경계만 구현하고 draft 구조 편집 API는 제외한다.
+
+## 2026-05-28 관리자 커리큘럼 발행 워크플로우 구현 계획 완료
+
+- 설계 문서는 `docs/superpowers/specs/2026-05-28-admin-curriculum-publish-workflow-design.md`에 작성한다.
+- 구현 계획은 `docs/superpowers/plans/2026-05-28-admin-curriculum-publish-workflow.md`에 작성한다.
+- published 구조 직접 수정 없이 최신 published 복제 draft를 만들고 publish하는 수직 경로로 제한한다.
+
 ## 2026-05-28 커리큘럼 노드 상태 정책 구현 시작
 
 - 커리큘럼 버전 관리 로드맵 5단계 구현을 시작한다.
