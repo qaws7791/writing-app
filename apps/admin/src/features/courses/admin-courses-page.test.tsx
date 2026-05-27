@@ -10,6 +10,7 @@ type AnchorProps = React.ComponentProps<"a">
 type ButtonProps = React.ComponentProps<"button">
 type DivProps = React.ComponentProps<"div">
 type InputProps = React.ComponentProps<"input">
+type ImgProps = React.ComponentProps<"img">
 type SpanProps = React.ComponentProps<"span">
 type TableProps = React.ComponentProps<"table">
 type TableBodyProps = React.ComponentProps<"tbody">
@@ -39,6 +40,18 @@ vi.mock("@workspace/ui/components/ui/badge", async () => {
   return {
     Badge: ({ children, ...props }: SpanProps) =>
       ReactModule.createElement("span", props, children),
+  }
+})
+
+vi.mock("@workspace/ui/components/ui/avatar", async () => {
+  const ReactModule = await import("react")
+  const DivComponent = ({ children, ...props }: DivProps) =>
+    ReactModule.createElement("div", props, children)
+
+  return {
+    Avatar: DivComponent,
+    AvatarFallback: DivComponent,
+    AvatarImage: (props: ImgProps) => ReactModule.createElement("img", props),
   }
 })
 
@@ -157,6 +170,7 @@ describe("AdminCoursesPage", () => {
         id: "course-1",
         title: "문장 구조",
         description: "문장 학습",
+        thumbnailPath: "/course-thumbnails/sentence-structure.png",
         sortOrder: 1,
       },
     ]
@@ -184,6 +198,12 @@ describe("AdminCoursesPage", () => {
     expect(screen.getByRole("link", { name: "문장 구조" })).toHaveProperty(
       "href",
       expect.stringContaining("/courses/course-1")
+    )
+    expect(
+      screen.getByRole("img", { name: "문장 구조 썸네일" })
+    ).toHaveProperty(
+      "src",
+      expect.stringContaining("/course-thumbnails/sentence-structure.png")
     )
     expect(screen.getByText("문장 학습")).toBeTruthy()
     expect(screen.getByText("Page 1 of 1")).toBeTruthy()

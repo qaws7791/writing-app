@@ -26,6 +26,7 @@ export function createDrizzleAdminRepository(
             id: courses.id,
             title: courses.title,
             description: courses.description,
+            thumbnailPath: courses.thumbnailPath,
             sortOrder: courses.sortOrder,
           })
           .from(courses)

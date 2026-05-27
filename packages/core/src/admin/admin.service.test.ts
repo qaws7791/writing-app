@@ -40,6 +40,7 @@ const repository: AdminRepository = {
           id: "sentence-structure",
           title: "문장 구조의 기본",
           description: "문장의 뼈대를 이해합니다.",
+          thumbnailPath: "/course-thumbnails/sentence-structure.png",
           sortOrder: 1,
         },
       ],
@@ -78,7 +79,12 @@ describe("createAdminService", () => {
     ).resolves.toMatchObject({
       status: "ok",
       value: {
-        courses: [{ id: "sentence-structure" }],
+        courses: [
+          {
+            id: "sentence-structure",
+            thumbnailPath: "/course-thumbnails/sentence-structure.png",
+          },
+        ],
         pagination: {
           page: 1,
           pageSize: 10,

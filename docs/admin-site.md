@@ -20,6 +20,22 @@
 - `/courses/[id]`는 챕터와 레슨 상세 조회 전 빈 자리 화면으로 추가했다.
 - 검증은 core, db, admin-api, admin의 집중 테스트와 admin 타입체크, lint로 확인했다.
 
+## 2026-05-28 코스 목록 썸네일 표시 시작
+
+- 코스 목록 DataTable의 코스명 셀에 작은 썸네일을 함께 표시한다.
+- 목록 API row에 `thumbnailPath`를 포함해 UI가 DB에 저장된 코스 썸네일 경로를 사용하도록 한다.
+- 코스명 셀은 shadcn `Avatar`를 사용해 32px 썸네일, 코스명 링크, 이미지 fallback을 함께 렌더링한다.
+- 어드민 앱에서 `/course-thumbnails/*` 경로가 실제 썸네일 이미지를 제공하도록 로컬 public asset 경계를 보정한다.
+
+## 2026-05-28 코스 목록 썸네일 표시 완료
+
+- `AdminCourseListDto`와 목록 repository 응답에 `thumbnailPath`를 추가했다.
+- 어드민 코스 목록 API는 코스명, 설명, 정렬 순서와 함께 썸네일 경로를 반환한다.
+- 코스명 셀은 shadcn `Avatar`, `AvatarImage`, `AvatarFallback` 조합으로 썸네일과 코스명 링크를 함께 표시한다.
+- 어드민 앱의 `/course-thumbnails/[name]` route가 웹 앱 public 썸네일 파일을 읽어 `image/png`로 반환한다.
+- 잘못된 썸네일 파일명은 404로 처리해 경로 탐색을 막는다.
+- 검증은 core, db, admin-api, admin 집중 테스트와 타입체크, admin lint로 확인했다.
+
 ## 2026-05-27 설계 시작
 
 - 어드민 사이트는 학습자 플랫폼과 분리된 운영 도구로 설계한다.

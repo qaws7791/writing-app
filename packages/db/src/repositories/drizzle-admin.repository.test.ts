@@ -60,6 +60,7 @@ describe("createDrizzleAdminRepository", () => {
           id: "course-sentence-11",
           title: "마지막 결과",
           description: "문장 검색 설명",
+          thumbnailPath: "/images/course-sentence-11.png",
           sortOrder: 12,
         },
       ],

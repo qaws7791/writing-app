@@ -46,6 +46,7 @@ export const adminCourseListItemDtoSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   description: z.string().min(1),
+  thumbnailPath: z.string().min(1),
   sortOrder: z.number().int().positive(),
 })
 
