@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./admin": "./src/admin/index.ts",
     "./ai-feedback": "./src/ai-feedback/index.ts",
     "./content": "./src/content/index.ts",
     "./learning": "./src/learning/index.ts"

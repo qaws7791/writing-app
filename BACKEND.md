@@ -2,7 +2,7 @@
 
 ## 아키텍처
 
-백엔드는 모듈러 모놀리스로 구성한다. 런타임은 하나의 API 프로세스로 시작하지만, 도메인 규칙, 데이터 접근, 로깅, 프로세스 조립 책임을 패키지 단위로 분리한다. 현재 백엔드 슬라이스는 학습자용 API를 다루며, 공개 콘텐츠 조회, Better Auth 인증, 학습 진행/답변 저장, OpenAI 기반 AI 피드백을 포함한다. 관리자 콘텐츠 관리 기능은 아직 범위에 포함하지 않는다.
+백엔드는 모듈러 모놀리스로 구성한다. 도메인 규칙, 데이터 접근, 로깅, 프로세스 조립 책임을 패키지 단위로 분리하고, 런타임은 학습자용 API와 관리자용 API를 별도 Hono 앱으로 실행한다. 현재 학습자 API는 공개 콘텐츠 조회, Better Auth 인증, 학습 진행/답변 저장, OpenAI 기반 AI 피드백을 포함한다. 관리자 API는 1차 범위에서 관리자 인증, 콘텐츠 계층 조회, 사용자 기본 정보 조회만 제공하며 생성, 수정, 삭제 관리 기능은 포함하지 않는다.
 
 ## 앱과 패키지 책임
 
@@ -53,6 +53,47 @@ API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검�
 bun --filter @workspace/api dev
 ```
 
+### `apps/admin-api`
+
+`apps/admin-api`는 관리자용 백엔드 조립 루트다. 플랫폼 API와 별도 Hono 런타임으로 실행되며, 꺼져 있어도 학습자 플랫폼 API는 정상 동작해야 한다.
+
+초기 라우트는 다음과 같다.
+
+- `GET /health`
+- `GET /openapi.json`
+- `GET /api/auth/*`, `POST /api/auth/*`
+- `GET /courses?include=chapters,lessons`
+- `GET /users`
+
+관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다.
+
+어드민 API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL`의 `file:` prefix 제거, `ADMIN_CORS_ORIGIN` 분리, 기본 포트 `4001` 같은 앱별 의미 변환은 `apps/admin-api/src/env.ts`에 유지한다.
+
+필수 환경 변수는 누락 시 서버 시작 단계에서 즉시 실패한다.
+
+| 변수                       | 필수 여부 | 기본값 또는 예시                 | 용도                                                            |
+| -------------------------- | --------- | -------------------------------- | --------------------------------------------------------------- |
+| `ADMIN_BETTER_AUTH_SECRET` | 필수      | `replace-with-admin-auth-secret` | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값      |
+| `ADMIN_BETTER_AUTH_URL`    | 필수      | `http://localhost:4001`          | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL |
+| `ADMIN_CORS_ORIGIN`        | 선택      | `http://localhost:3001`          | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin           |
+| `DATABASE_URL`             | 필수      | `file:data/api.sqlite`           | 플랫폼과 공유하는 SQLite 데이터베이스 위치                      |
+| `LOG_LEVEL`                | 선택      | `info`                           | Pino 로그 레벨                                                  |
+| `NODE_ENV`                 | 선택      | `development`                    | 실행 환경 이름                                                  |
+| `PORT`                     | 선택      | `4001`                           | 어드민 API 서버가 수신할 포트                                   |
+| `ADMIN_SEED_EMAIL`         | 시드 필수 | `admin@example.com`              | 최초 관리자 계정 시드에 사용할 이메일                           |
+| `ADMIN_SEED_PASSWORD`      | 시드 필수 | `password-1234`                  | 최초 관리자 계정 시드에 사용할 비밀번호                         |
+| `ADMIN_SEED_NAME`          | 시드 선택 | `관리자`                         | 최초 관리자 계정 시드에 사용할 이름                             |
+
+```bash
+bun --filter @workspace/admin-api dev
+```
+
+최초 관리자 계정은 다음 명령으로 생성한다. 같은 이메일이 이미 있으면 중복 생성하지 않는다.
+
+```bash
+bun --filter @workspace/admin-api 시드:admin
+```
+
 ### `packages/core`
 
 `packages/core`는 도메인 중심 계약을 담는다. 콘텐츠, 학습 진행, AI 피드백 DTO, `CourseId`, `LessonId`, `UserId` 같은 브랜드 ID, 저장소 포트, 명시적 결과 변형, 도메인 서비스를 제공한다. 외부 런타임이나 데이터베이스 구현에 의존하지 않고 API와 데이터베이스 패키지가 공유하는 도메인 경계를 정의한다.
@@ -64,6 +105,7 @@ bun --filter @workspace/api dev
 인증과 학습자 상태 테이블은 다음 이름을 사용한다.
 
 - `user`, `session`, `account`, `verification`: Better Auth 테이블
+- `admin_user`, `admin_session`, `admin_account`, `admin_verification`: 관리자 Better Auth 테이블
 - `course_progress`: 사용자별 코스 진행 요약
 - `lesson_progress`: 사용자별 레슨 현재 위치와 완료 상태
 - `lesson_answers`: 사용자별 레슨 스텝 답변

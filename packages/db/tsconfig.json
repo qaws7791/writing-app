@@ -5,6 +5,8 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
+      "@/admin": ["../core/src/admin/index.ts"],
+      "@/admin/*": ["../core/src/admin/*"],
       "@/ai-feedback": ["../core/src/ai-feedback/index.ts"],
       "@/ai-feedback/*": ["../core/src/ai-feedback/*"],
       "@/content": ["../core/src/content/index.ts"],
