@@ -102,3 +102,15 @@
 
 - Better Auth 로그인 조회와 맞도록 seed 이메일을 소문자로 정규화한다.
 - `apps/admin-api` 테스트는 기존 Vitest 설정을 유지하고, seed 단위 테스트는 SQLite runtime에 직접 묶이지 않도록 분리한다.
+
+## 2026-05-28 Task 8 시작
+
+- `apps/admin` Next.js 앱 뼈대와 어드민 API 클라이언트를 추가한다.
+- 기존 `apps/web` 설정과 Next 16 문서의 async `cookies()` 사용 방식을 확인한 뒤 같은 패턴으로 구성한다.
+- API 클라이언트는 실패 테스트를 먼저 작성해 요청 URL, credential 전달, 오류 결과 매핑을 고정한다.
+
+## 2026-05-28 Task 8 완료
+
+- `apps/admin` workspace 패키지와 Next.js, ESLint, PostCSS, shadcn, Vitest 설정을 추가했다.
+- 어드민 앱 root layout은 한국어 metadata, `Noto_Sans_KR`, `ThemeProvider`, `Toaster`를 기존 web 앱 패턴과 맞춰 구성했다.
+- fetch 기반 어드민 API 클라이언트와 서버 쿠키 전달 helper를 추가하고, 콘텐츠 트리와 사용자 목록 요청, non-ok 오류 결과 매핑을 테스트로 검증했다.

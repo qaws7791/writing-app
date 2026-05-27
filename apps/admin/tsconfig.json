@@ -1,0 +1,23 @@
+{
+  "extends": "@workspace/config/typescript/nextjs.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "incremental": true,
+    "types": ["bun"],
+    "paths": {
+      "@/admin": ["../../packages/core/src/admin/index.ts"],
+      "@/admin/*": ["../../packages/core/src/admin/*"],
+      "@workspace/core/admin": ["../../packages/core/src/admin/index.ts"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}
