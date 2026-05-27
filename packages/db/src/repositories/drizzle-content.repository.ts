@@ -1,4 +1,4 @@
-import { asc, count, eq, inArray, like, or } from "drizzle-orm"
+import { and, asc, count, desc, eq, inArray, like, or } from "drizzle-orm"
 
 import type {
   ContentRepository,
@@ -11,14 +11,16 @@ import type {
 import type { WritingAppDatabase } from "@/client"
 import {
   courseCategories,
-  courseChapters,
-  courseLessons,
   courses,
+  curriculumVersionChapters,
+  curriculumVersionLessons,
+  curriculumVersions,
   lessons,
   lessonSteps,
 } from "@/schema"
 
-type CourseLessonRow = typeof courseLessons.$inferSelect
+type CourseLessonRow = typeof curriculumVersionLessons.$inferSelect
+type CurriculumVersionRow = typeof curriculumVersions.$inferSelect
 type LessonStepRow = typeof lessonSteps.$inferSelect
 
 export function createDrizzleContentRepository(
@@ -26,27 +28,18 @@ export function createDrizzleContentRepository(
 ): ContentRepository {
   return {
     async listCourseCategories() {
-      const [categoryRows, courseRows, lessonCountRows] = await Promise.all([
-        db
-          .select()
-          .from(courseCategories)
-          .orderBy(asc(courseCategories.sortOrder)),
-        db.select().from(courses).orderBy(asc(courses.sortOrder)),
-        db
-          .select({
-            courseId: courseChapters.courseId,
-            lessonCount: count(courseLessons.id),
-          })
-          .from(courseChapters)
-          .leftJoin(
-            courseLessons,
-            eq(courseLessons.chapterId, courseChapters.id)
-          )
-          .groupBy(courseChapters.courseId),
-      ])
-
-      const lessonCountsByCourseId = new Map(
-        lessonCountRows.map((row) => [row.courseId, row.lessonCount])
+      const [categoryRows, courseRows, latestVersionsByCourseId] =
+        await Promise.all([
+          db
+            .select()
+            .from(courseCategories)
+            .orderBy(asc(courseCategories.sortOrder)),
+          db.select().from(courses).orderBy(asc(courses.sortOrder)),
+          listLatestPublishedVersionsByCourseId(db),
+        ])
+      const lessonCountsByVersionId = await countLessonsByCurriculumVersionId(
+        db,
+        [...latestVersionsByCourseId.values()].map((version) => version.id)
       )
 
       return {
@@ -55,38 +48,64 @@ export function createDrizzleContentRepository(
           title: category.title,
           courses: courseRows
             .filter((course) => course.categoryId === category.id)
-            .map((course) => ({
-              id: course.id,
-              title: course.title,
-              description: course.description,
-              lessonCount: lessonCountsByCourseId.get(course.id) ?? 0,
-              thumbnail: course.thumbnailPath,
-            })),
+            .flatMap((course) => {
+              const version = latestVersionsByCourseId.get(course.id)
+
+              if (!version) {
+                return []
+              }
+
+              return [
+                {
+                  id: course.id,
+                  title: course.title,
+                  description: course.description,
+                  lessonCount: lessonCountsByVersionId.get(version.id) ?? 0,
+                  thumbnail: course.thumbnailPath,
+                },
+              ]
+            }),
         })),
       } satisfies CourseCategoryListDto
     },
 
     async searchCourses(query) {
-      const courseRows = await db
-        .select()
-        .from(courses)
-        .where(
-          or(
-            like(courses.title, `%${query}%`),
-            like(courses.description, `%${query}%`)
+      const [courseRows, latestVersionsByCourseId] = await Promise.all([
+        db
+          .select()
+          .from(courses)
+          .where(
+            or(
+              like(courses.title, `%${query}%`),
+              like(courses.description, `%${query}%`)
+            )
           )
-        )
-        .orderBy(asc(courses.sortOrder))
-      const lessonCountsByCourseId = await countLessonsByCourseId(db)
+          .orderBy(asc(courses.sortOrder)),
+        listLatestPublishedVersionsByCourseId(db),
+      ])
+      const lessonCountsByVersionId = await countLessonsByCurriculumVersionId(
+        db,
+        [...latestVersionsByCourseId.values()].map((version) => version.id)
+      )
 
       return {
-        courses: courseRows.map((course) => ({
-          id: course.id,
-          title: course.title,
-          description: course.description,
-          lessonCount: lessonCountsByCourseId.get(course.id) ?? 0,
-          thumbnail: course.thumbnailPath,
-        })),
+        courses: courseRows.flatMap((course) => {
+          const version = latestVersionsByCourseId.get(course.id)
+
+          if (!version) {
+            return []
+          }
+
+          return [
+            {
+              id: course.id,
+              title: course.title,
+              description: course.description,
+              lessonCount: lessonCountsByVersionId.get(version.id) ?? 0,
+              thumbnail: course.thumbnailPath,
+            },
+          ]
+        }),
       }
     },
 
@@ -101,11 +120,25 @@ export function createDrizzleContentRepository(
         return undefined
       }
 
+      const curriculumVersion = await findLatestPublishedVersion(db, courseId)
+
+      if (!curriculumVersion) {
+        return undefined
+      }
+
       const chapterRows = await db
         .select()
-        .from(courseChapters)
-        .where(eq(courseChapters.courseId, courseId))
-        .orderBy(asc(courseChapters.sortOrder))
+        .from(curriculumVersionChapters)
+        .where(
+          and(
+            eq(
+              curriculumVersionChapters.curriculumVersionId,
+              curriculumVersion.id
+            ),
+            eq(curriculumVersionChapters.status, "active")
+          )
+        )
+        .orderBy(asc(curriculumVersionChapters.sortOrder))
 
       const lessonRows = await listCourseLessons(
         db,
@@ -175,22 +208,80 @@ async function listCourseLessons(
 
   return db
     .select()
-    .from(courseLessons)
-    .where(inArray(courseLessons.chapterId, chapterIds))
-    .orderBy(asc(courseLessons.sortOrder))
+    .from(curriculumVersionLessons)
+    .where(
+      and(
+        inArray(curriculumVersionLessons.chapterId, chapterIds),
+        eq(curriculumVersionLessons.status, "active")
+      )
+    )
+    .orderBy(asc(curriculumVersionLessons.sortOrder))
 }
 
-async function countLessonsByCourseId(db: WritingAppDatabase) {
+async function listLatestPublishedVersionsByCourseId(db: WritingAppDatabase) {
+  const versionRows = await db
+    .select()
+    .from(curriculumVersions)
+    .where(eq(curriculumVersions.status, "published"))
+    .orderBy(
+      asc(curriculumVersions.courseId),
+      asc(curriculumVersions.versionNumber)
+    )
+
+  return versionRows.reduce((versionsByCourseId, version) => {
+    versionsByCourseId.set(version.courseId, version)
+
+    return versionsByCourseId
+  }, new Map<string, CurriculumVersionRow>())
+}
+
+async function findLatestPublishedVersion(
+  db: WritingAppDatabase,
+  courseId: string
+) {
+  const [version] = await db
+    .select()
+    .from(curriculumVersions)
+    .where(
+      and(
+        eq(curriculumVersions.courseId, courseId),
+        eq(curriculumVersions.status, "published")
+      )
+    )
+    .orderBy(desc(curriculumVersions.versionNumber))
+    .limit(1)
+
+  return version
+}
+
+async function countLessonsByCurriculumVersionId(
+  db: WritingAppDatabase,
+  curriculumVersionIds: string[]
+) {
+  if (curriculumVersionIds.length === 0) {
+    return new Map<string, number>()
+  }
+
   const lessonCountRows = await db
     .select({
-      courseId: courseChapters.courseId,
-      lessonCount: count(courseLessons.id),
+      curriculumVersionId: curriculumVersionLessons.curriculumVersionId,
+      lessonCount: count(curriculumVersionLessons.id),
     })
-    .from(courseChapters)
-    .leftJoin(courseLessons, eq(courseLessons.chapterId, courseChapters.id))
-    .groupBy(courseChapters.courseId)
+    .from(curriculumVersionLessons)
+    .where(
+      and(
+        inArray(
+          curriculumVersionLessons.curriculumVersionId,
+          curriculumVersionIds
+        ),
+        eq(curriculumVersionLessons.status, "active")
+      )
+    )
+    .groupBy(curriculumVersionLessons.curriculumVersionId)
 
-  return new Map(lessonCountRows.map((row) => [row.courseId, row.lessonCount]))
+  return new Map(
+    lessonCountRows.map((row) => [row.curriculumVersionId, row.lessonCount])
+  )
 }
 
 function mapCourseLesson(lesson: CourseLessonRow) {

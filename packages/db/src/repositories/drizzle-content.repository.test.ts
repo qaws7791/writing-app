@@ -10,6 +10,11 @@ import {
 import { createDatabase } from "@/client"
 import { runContentMigration } from "@/migrations/run-content-migration"
 import { createDrizzleContentRepository } from "@/repositories/drizzle-content.repository"
+import {
+  curriculumVersionChapters,
+  curriculumVersionLessons,
+  curriculumVersions,
+} from "@/schema"
 import { seedContent } from "@/seeds/seed-content"
 
 describe("createDrizzleContentRepository", () => {
@@ -62,6 +67,68 @@ describe("createDrizzleContentRepository", () => {
     ).toContain("sentence-structure-12")
     expect(vocabularyBasics?.firstLessonId).toBe("vocabulary-basics-01")
     expect(vocabularyBasics?.lessonCount).toBe(10)
+  })
+
+  it("uses the latest published curriculum version for course summaries and detail", async () => {
+    const db = createDatabase(sqlite)
+    await db.insert(curriculumVersions).values({
+      id: "sentence-structure-v2",
+      courseId: "sentence-structure",
+      versionNumber: 2,
+      status: "published",
+      title: "문장 구조의 기본 v2",
+      changelog: "공개 조회 기준 검증",
+      publishedAt: new Date("2026-05-28T00:00:00.000Z"),
+      createdAt: new Date("2026-05-28T00:00:00.000Z"),
+    })
+    await db.insert(curriculumVersionChapters).values({
+      id: "sentence-structure-chapter-1-v2",
+      curriculumVersionId: "sentence-structure-v2",
+      sourceChapterId: "sentence-structure-chapter-1",
+      label: "1단원",
+      title: "새 문장의 뼈대",
+      sortOrder: 1,
+      status: "active",
+    })
+    await db.insert(curriculumVersionLessons).values({
+      id: "sentence-structure-01-v2",
+      curriculumVersionId: "sentence-structure-v2",
+      chapterId: "sentence-structure-chapter-1-v2",
+      lessonId: "sentence-structure-01",
+      title: "새 주어와 서술어 찾기",
+      description: "최신 published 버전의 레슨 설명입니다.",
+      sortOrder: 1,
+      status: "active",
+    })
+    const repository = createDrizzleContentRepository(db)
+
+    const categories = await repository.listCourseCategories()
+    const sentenceStructure = categories.categories
+      .flatMap((category) => category.courses)
+      .find((course) => course.id === "sentence-structure")
+    const detail = await repository.findCourseDetail(
+      courseId("sentence-structure")
+    )
+
+    expect(sentenceStructure?.lessonCount).toBe(1)
+    expect(detail?.lessonCount).toBe(1)
+    expect(detail?.firstLessonId).toBe("sentence-structure-01")
+    expect(detail?.chapters).toEqual([
+      {
+        id: "sentence-structure-chapter-1-v2",
+        label: "1단원",
+        title: "새 문장의 뼈대",
+        lessons: [
+          {
+            id: "sentence-structure-01-v2",
+            lessonId: "sentence-structure-01",
+            title: "새 주어와 서술어 찾기",
+            description: "최신 published 버전의 레슨 설명입니다.",
+            order: 1,
+          },
+        ],
+      },
+    ])
   })
 
   it("searches courses by title and description", async () => {
