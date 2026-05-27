@@ -111,4 +111,46 @@ describe("AdminCoursesPage", () => {
     expect(screen.getByRole("status", { name: "코스 없음" })).toBeTruthy()
     expect(screen.getByText("등록된 코스가 없습니다.")).toBeTruthy()
   })
+
+  it("renders a nested empty state when a course has no chapters", () => {
+    const courses: AdminCourseTreeDto["courses"] = [
+      {
+        id: "course-1",
+        title: "기초 한글",
+        description: "한글을 처음 배우는 학습자를 위한 코스",
+        sortOrder: 1,
+        chapters: [],
+      },
+    ]
+
+    render(<AdminCoursesPage courses={courses} />)
+
+    expect(screen.getByText("기초 한글")).toBeTruthy()
+    expect(screen.getByText("등록된 챕터가 없습니다.")).toBeTruthy()
+  })
+
+  it("renders a nested empty state when a chapter has no lessons", () => {
+    const courses: AdminCourseTreeDto["courses"] = [
+      {
+        id: "course-1",
+        title: "기초 한글",
+        description: "한글을 처음 배우는 학습자를 위한 코스",
+        sortOrder: 1,
+        chapters: [
+          {
+            id: "chapter-1",
+            label: "1장",
+            title: "모음 만나기",
+            sortOrder: 1,
+            lessons: [],
+          },
+        ],
+      },
+    ]
+
+    render(<AdminCoursesPage courses={courses} />)
+
+    expect(screen.getByText("모음 만나기")).toBeTruthy()
+    expect(screen.getByText("등록된 레슨이 없습니다.")).toBeTruthy()
+  })
 })
