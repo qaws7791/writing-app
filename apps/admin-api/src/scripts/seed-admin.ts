@@ -1,4 +1,5 @@
 import { hashPassword } from "better-auth/crypto"
+import { and, eq } from "drizzle-orm"
 
 import { adminAccount, adminUser } from "@workspace/db/schema"
 
@@ -14,6 +15,9 @@ type AdminUserEmailFilter = {
     }
   ): unknown
 }
+type AdminAccountUpdate = Partial<
+  Pick<AdminAccountInsert, "password" | "updatedAt">
+>
 type SqliteDatabase = {
   close(): void
   exec(sql: string): unknown
@@ -43,6 +47,11 @@ export interface AdminSeedDatabase {
       insert(table: typeof adminAccount): {
         values(value: AdminAccountInsert): Promise<unknown>
       }
+      update(table: typeof adminAccount): {
+        set(value: AdminAccountUpdate): {
+          where(condition: unknown): Promise<unknown>
+        }
+      }
     }) => Promise<T>
   ): Promise<T>
 }
@@ -54,11 +63,15 @@ export type SeedAdminUserResult =
   | {
       status: "already-exists"
     }
+  | {
+      status: "password-updated"
+    }
 
 interface SeedAdminUserInput {
   email: string
   name: string
   password: string
+  resetExistingPassword?: boolean
 }
 
 export async function seedAdminUser(
@@ -70,13 +83,33 @@ export async function seedAdminUser(
     where: (user, { eq }) => eq(user.email, normalizedEmail),
   })
 
-  if (existingUser) {
+  if (existingUser && !input.resetExistingPassword) {
     return { status: "already-exists" }
   }
 
   const now = new Date()
-  const userId = crypto.randomUUID()
   const passwordHash = await hashPassword(input.password)
+
+  if (existingUser) {
+    await db.transaction(async (tx) => {
+      await tx
+        .update(adminAccount)
+        .set({
+          password: passwordHash,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(adminAccount.userId, existingUser.id),
+            eq(adminAccount.providerId, "credential")
+          )
+        )
+    })
+
+    return { status: "password-updated" }
+  }
+
+  const userId = crypto.randomUUID()
 
   await db.transaction(async (tx) => {
     await tx.insert(adminUser).values({
@@ -137,6 +170,7 @@ async function runSeedAdminScript() {
       email: parseRequiredSeedValue(Bun.env, "ADMIN_SEED_EMAIL"),
       name: Bun.env["ADMIN_SEED_NAME"] || "관리자",
       password: parseRequiredSeedValue(Bun.env, "ADMIN_SEED_PASSWORD"),
+      resetExistingPassword: Bun.env["ADMIN_SEED_RESET_PASSWORD"] === "true",
     })
 
     // eslint-disable-next-line no-console

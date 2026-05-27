@@ -187,3 +187,36 @@
 - `apps/admin`에 `ADMIN_API_BASE_URL` 예시 환경 파일을 추가한다.
 - `apps/admin-api/.env.example`에 운영에서 반드시 교체해야 하는 관리자 인증 비밀값과 최초 관리자 시드 변수를 명시한다.
 - `docs/operations-environment.md`에 학습자 플랫폼과 어드민의 dev/prod 환경 변수, 비밀값 분리 원칙, 배포 체크리스트를 정리한다.
+
+## 2026-05-28 공유 SQLite 경로 정리 시작
+
+- 플랫폼 API와 어드민 API가 같은 로컬 SQLite 파일을 보도록 기본 개발 경로를 저장소 루트 `data/api.sqlite`로 통일한다.
+- 앱별 `data` 디렉터리에 DB가 따로 생성되지 않도록 환경 변수 예시와 DB 시드 기본 경로를 함께 보정한다.
+
+## 2026-05-28 공유 SQLite 경로 정리 완료
+
+- `apps/api/.env.example`과 `apps/admin-api/.env.example`의 `DATABASE_URL`을 앱 패키지 기준 `file:../../data/api.sqlite`로 맞췄다.
+- `packages/db`의 콘텐츠 시드 기본 경로와 Drizzle 기본 DB 경로도 저장소 루트 `data/api.sqlite`를 가리키도록 보정했다.
+- 로컬 검증용 SQLite는 루트 `data/api.sqlite`로 합치고 앱별 `data` 디렉터리는 백업 후 제거한다.
+
+## 2026-05-28 개발용 어드민 부트스트랩 시작
+
+- SQLite 파일이 없는 상태에서 `bun run dev:admin`만 실행해도 로컬 어드민에 로그인할 수 있어야 한다.
+- 개발 실행 전에 루트 `data/api.sqlite`에 콘텐츠 시드와 개발용 관리자 계정을 보장하도록 스크립트를 보정한다.
+
+## 2026-05-28 개발용 어드민 부트스트랩 완료
+
+- 루트 `dev:admin` 스크립트가 먼저 `dev:admin:setup`을 실행하도록 변경했다.
+- `dev:admin:setup`은 콘텐츠 시드와 `admin@example.com / password-1234` 개발용 관리자 계정을 루트 `data/api.sqlite`에 생성한다.
+- 같은 이메일이 이미 있으면 관리자 시드는 중복 생성하지 않는다.
+
+## 2026-05-28 개발용 관리자 비밀번호 동기화 시작
+
+- `ADMIN_SEED_PASSWORD`를 지정해 `bun run dev:admin`을 실행하면 해당 비밀번호로 로그인할 수 있어야 한다.
+- 기존 관리자 계정이 있더라도 개발 setup에서는 seed 비밀번호를 현재 환경 변수 값으로 맞춘다.
+
+## 2026-05-28 개발용 관리자 비밀번호 동기화 완료
+
+- `dev:admin`과 `dev:admin:setup`은 외부에서 전달된 `ADMIN_SEED_EMAIL`, `ADMIN_SEED_PASSWORD`, `DATABASE_URL`, 관리자 인증 환경 변수를 우선 사용한다.
+- `dev:admin:setup`은 `ADMIN_SEED_RESET_PASSWORD=true`로 seed를 실행해 기존 개발 관리자 credential 비밀번호를 현재 `ADMIN_SEED_PASSWORD` 값으로 갱신한다.
+- 운영용 `seed:admin`은 `ADMIN_SEED_RESET_PASSWORD=true`를 명시하지 않으면 기존 관리자 비밀번호를 바꾸지 않는다.

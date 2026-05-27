@@ -33,21 +33,21 @@ API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검�
 
 필수 환경 변수는 누락 시 서버 시작 단계에서 즉시 실패한다. 기능을 숨기거나 다른 동작으로 대체하지 않는다. 로컬 실행에 필요한 전체 예시는 `apps/api/.env.example`을 기준으로 관리하고, 운영 환경 값과 배포 체크리스트는 `docs/operations-environment.md`를 기준으로 관리한다.
 
-| 변수                   | 필수 여부 | 기본값 또는 예시                              | 용도                                                                                   |
-| ---------------------- | --------- | --------------------------------------------- | -------------------------------------------------------------------------------------- |
-| `BETTER_AUTH_SECRET`   | 필수      | `replace-with-local-auth-secret`              | Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                                    |
-| `BETTER_AUTH_URL`      | 필수      | `http://localhost:4000`                       | Better Auth가 콜백과 인증 URL을 계산할 때 사용하는 API 기준 URL                        |
-| `CORS_ORIGIN`          | 선택      | `http://localhost:3000,http://localhost:3001` | 자격 증명 포함 요청을 허용할 프론트엔드 origin 목록. 쉼표로 여러 값을 구분한다.        |
-| `DATABASE_URL`         | 필수      | `file:data/api.sqlite`                        | SQLite 데이터베이스 위치. `file:` 접두사는 API 시작 시 파일 경로로 변환한다.           |
-| `GOOGLE_CLIENT_ID`     | 필수      | `replace-with-google-client-id`               | Google OAuth 클라이언트 ID                                                             |
-| `GOOGLE_CLIENT_SECRET` | 필수      | `replace-with-google-client-secret`           | Google OAuth 클라이언트 secret                                                         |
-| `LOG_LEVEL`            | 선택      | `info`                                        | Pino 로그 레벨. `trace`, `debug`, `info`, `warn`, `error`, `fatal` 중 하나를 사용한다. |
-| `NODE_ENV`             | 선택      | `development`                                 | 실행 환경 이름. 로거와 런타임 환경 구분에 사용한다.                                    |
-| `OPENAI_API_KEY`       | 필수      | `replace-with-openai-api-key`                 | AI 피드백 provider가 OpenAI Responses API를 호출할 때 사용하는 API 키                  |
-| `OPENAI_MODEL`         | 필수      | `gpt-5-mini`                                  | AI 피드백 생성에 사용할 OpenAI 모델 이름                                               |
-| `PORT`                 | 선택      | `4000`                                        | API 서버가 수신할 포트                                                                 |
+| 변수                   | 필수 여부 | 기본값 또는 예시                              | 용도                                                                                                       |
+| ---------------------- | --------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`   | 필수      | `replace-with-local-auth-secret`              | Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                                                        |
+| `BETTER_AUTH_URL`      | 필수      | `http://localhost:4000`                       | Better Auth가 콜백과 인증 URL을 계산할 때 사용하는 API 기준 URL                                            |
+| `CORS_ORIGIN`          | 선택      | `http://localhost:3000,http://localhost:3001` | 자격 증명 포함 요청을 허용할 프론트엔드 origin 목록. 쉼표로 여러 값을 구분한다.                            |
+| `DATABASE_URL`         | 필수      | `file:../../data/api.sqlite`                  | 저장소 루트 `data/api.sqlite` SQLite 데이터베이스 위치. `file:` 접두사는 API 시작 시 파일 경로로 변환한다. |
+| `GOOGLE_CLIENT_ID`     | 필수      | `replace-with-google-client-id`               | Google OAuth 클라이언트 ID                                                                                 |
+| `GOOGLE_CLIENT_SECRET` | 필수      | `replace-with-google-client-secret`           | Google OAuth 클라이언트 secret                                                                             |
+| `LOG_LEVEL`            | 선택      | `info`                                        | Pino 로그 레벨. `trace`, `debug`, `info`, `warn`, `error`, `fatal` 중 하나를 사용한다.                     |
+| `NODE_ENV`             | 선택      | `development`                                 | 실행 환경 이름. 로거와 런타임 환경 구분에 사용한다.                                                        |
+| `OPENAI_API_KEY`       | 필수      | `replace-with-openai-api-key`                 | AI 피드백 provider가 OpenAI Responses API를 호출할 때 사용하는 API 키                                      |
+| `OPENAI_MODEL`         | 필수      | `gpt-5-mini`                                  | AI 피드백 생성에 사용할 OpenAI 모델 이름                                                                   |
+| `PORT`                 | 선택      | `4000`                                        | API 서버가 수신할 포트                                                                                     |
 
-기본값이 있는 선택 환경 변수는 `PORT`, `LOG_LEVEL`, `CORS_ORIGIN`, `NODE_ENV`이다. `DATABASE_URL`은 예시 파일에서 로컬 SQLite 파일 `data/api.sqlite`를 사용하지만, 런타임 검증에서는 명시 입력을 요구한다.
+기본값이 있는 선택 환경 변수는 `PORT`, `LOG_LEVEL`, `CORS_ORIGIN`, `NODE_ENV`이다. `DATABASE_URL`은 예시 파일에서 앱 패키지 기준 상대 경로 `../../data/api.sqlite`를 사용해 저장소 루트 `data/api.sqlite`를 가리키지만, 런타임 검증에서는 명시 입력을 요구한다.
 
 ```bash
 bun --filter @workspace/api dev
@@ -71,18 +71,19 @@ bun --filter @workspace/api dev
 
 필수 환경 변수는 누락 시 서버 시작 단계에서 즉시 실패한다. 운영 환경 값과 배포 체크리스트는 `docs/operations-environment.md`를 기준으로 관리한다.
 
-| 변수                       | 필수 여부 | 기본값 또는 예시                 | 용도                                                            |
-| -------------------------- | --------- | -------------------------------- | --------------------------------------------------------------- |
-| `ADMIN_BETTER_AUTH_SECRET` | 필수      | `replace-with-admin-auth-secret` | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값      |
-| `ADMIN_BETTER_AUTH_URL`    | 필수      | `http://localhost:4001`          | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL |
-| `ADMIN_CORS_ORIGIN`        | 선택      | `http://localhost:3001`          | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin           |
-| `DATABASE_URL`             | 필수      | `file:data/api.sqlite`           | 플랫폼과 공유하는 SQLite 데이터베이스 위치                      |
-| `LOG_LEVEL`                | 선택      | `info`                           | Pino 로그 레벨                                                  |
-| `NODE_ENV`                 | 선택      | `development`                    | 실행 환경 이름                                                  |
-| `PORT`                     | 선택      | `4001`                           | 어드민 API 서버가 수신할 포트                                   |
-| `ADMIN_SEED_EMAIL`         | 시드 필수 | `admin@example.com`              | 최초 관리자 계정 시드에 사용할 이메일                           |
-| `ADMIN_SEED_PASSWORD`      | 시드 필수 | `password-1234`                  | 최초 관리자 계정 시드에 사용할 비밀번호                         |
-| `ADMIN_SEED_NAME`          | 시드 선택 | `관리자`                         | 최초 관리자 계정 시드에 사용할 이름                             |
+| 변수                        | 필수 여부 | 기본값 또는 예시                 | 용도                                                                      |
+| --------------------------- | --------- | -------------------------------- | ------------------------------------------------------------------------- |
+| `ADMIN_BETTER_AUTH_SECRET`  | 필수      | `replace-with-admin-auth-secret` | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                |
+| `ADMIN_BETTER_AUTH_URL`     | 필수      | `http://localhost:4001`          | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL           |
+| `ADMIN_CORS_ORIGIN`         | 선택      | `http://localhost:3001`          | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin                     |
+| `DATABASE_URL`              | 필수      | `file:../../data/api.sqlite`     | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치 |
+| `LOG_LEVEL`                 | 선택      | `info`                           | Pino 로그 레벨                                                            |
+| `NODE_ENV`                  | 선택      | `development`                    | 실행 환경 이름                                                            |
+| `PORT`                      | 선택      | `4001`                           | 어드민 API 서버가 수신할 포트                                             |
+| `ADMIN_SEED_EMAIL`          | 시드 필수 | `admin@example.com`              | 최초 관리자 계정 시드에 사용할 이메일                                     |
+| `ADMIN_SEED_PASSWORD`       | 시드 필수 | `password-1234`                  | 최초 관리자 계정 시드에 사용할 비밀번호                                   |
+| `ADMIN_SEED_NAME`           | 시드 선택 | `관리자`                         | 최초 관리자 계정 시드에 사용할 이름                                       |
+| `ADMIN_SEED_RESET_PASSWORD` | 시드 선택 | `false`                          | `true`일 때 기존 관리자 credential 비밀번호를 시드 비밀번호로 갱신        |
 
 ```bash
 bun --filter @workspace/admin-api dev
@@ -93,6 +94,8 @@ bun --filter @workspace/admin-api dev
 ```bash
 bun --filter @workspace/admin-api seed:admin
 ```
+
+로컬 통합 실행에서는 루트 `bun run dev:admin`이 `bun run dev:admin:setup`을 먼저 실행한다. 이 개발용 setup은 콘텐츠 시드와 개발용 관리자 계정을 저장소 루트 `data/api.sqlite`에 보장한다. 기본 계정은 `admin@example.com / password-1234`이며, `ADMIN_SEED_EMAIL`과 `ADMIN_SEED_PASSWORD`를 지정하면 기존 개발 계정도 해당 비밀번호로 갱신한다.
 
 ### `packages/core`
 

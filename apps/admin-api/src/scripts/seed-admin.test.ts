@@ -56,10 +56,32 @@ function createSeedTestDatabase() {
         insert(table: typeof adminAccount): {
           values(value: AdminAccountInsert): Promise<void>
         }
+        update(table: typeof adminAccount): {
+          set(value: Partial<AdminAccountInsert>): {
+            where(condition: unknown): Promise<void>
+          }
+        }
       }) => Promise<T>
     ) {
       return callback({
         insert,
+        update(table: typeof adminAccount) {
+          return {
+            set(value: Partial<AdminAccountInsert>) {
+              return {
+                async where(_condition: unknown) {
+                  if (table !== adminAccount) {
+                    return
+                  }
+
+                  for (const account of accounts) {
+                    Object.assign(account, value)
+                  }
+                },
+              }
+            },
+          }
+        },
       })
     },
   }
@@ -122,5 +144,37 @@ describe("seedAdminUser", () => {
         email: "admin@example.com",
       },
     ])
+  })
+
+  test("옵션이 켜지면 기존 관리자 credential 비밀번호를 갱신한다", async () => {
+    const { accounts, db } = createSeedTestDatabase()
+
+    await seedAdminUser(db, {
+      email: "admin@example.com",
+      name: "관리자",
+      password: "old-password",
+    })
+
+    const result = await seedAdminUser(db, {
+      email: "admin@example.com",
+      name: "관리자",
+      password: "new-password",
+      resetExistingPassword: true,
+    })
+
+    expect(result).toEqual({ status: "password-updated" })
+    expect(accounts).toHaveLength(1)
+    expect(
+      await verifyPassword({
+        hash: accounts[0]?.password ?? "",
+        password: "new-password",
+      })
+    ).toBe(true)
+    expect(
+      await verifyPassword({
+        hash: accounts[0]?.password ?? "",
+        password: "old-password",
+      })
+    ).toBe(false)
   })
 })
