@@ -155,6 +155,67 @@ const adminService: AdminService = {
       },
     }
   },
+  async createCurriculumMigration() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure-v1-to-sentence-structure-v2",
+        fromVersionId: "sentence-structure-v1",
+        toVersionId: "sentence-structure-v2",
+        status: "active",
+        createdAt: "2026-05-28T00:00:00.000Z",
+        mappings: [
+          {
+            id: "sentence-structure-v1-to-sentence-structure-v2-1",
+            fromLessonId: "sentence-structure-01",
+            toLessonId: "sentence-structure-01",
+            mappingType: "equivalent",
+          },
+        ],
+      },
+    }
+  },
+  async getCurriculumMigration() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure-v1-to-sentence-structure-v2",
+        fromVersionId: "sentence-structure-v1",
+        toVersionId: "sentence-structure-v2",
+        status: "active",
+        createdAt: "2026-05-28T00:00:00.000Z",
+        mappings: [
+          {
+            id: "sentence-structure-v1-to-sentence-structure-v2-1",
+            fromLessonId: "sentence-structure-01",
+            toLessonId: "sentence-structure-01",
+            mappingType: "equivalent",
+          },
+        ],
+      },
+    }
+  },
+  async applyCurriculumMigration() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure-v1-to-sentence-structure-v2-user-1",
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        userId: "user-1",
+        courseId: "sentence-structure",
+        fromVersionId: "sentence-structure-v1",
+        toVersionId: "sentence-structure-v2",
+        status: "completed",
+        completedLessonCount: 1,
+        completedLessonIds: ["sentence-structure-01"],
+        preservedLessonIds: [],
+        skippedLessonIds: [],
+        errorMessage: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        updatedAt: "2026-05-28T00:00:00.000Z",
+      },
+    }
+  },
   async listUsers() {
     return {
       status: "ok",
@@ -404,6 +465,126 @@ describe("admin api app", () => {
     })
   })
 
+  it("creates a protected curriculum migration map", async () => {
+    const response = await createTestApp().request("/curriculum-migrations", {
+      body: JSON.stringify({
+        fromVersionId: "sentence-structure-v1",
+        toVersionId: "sentence-structure-v2",
+        mappings: [
+          {
+            fromLessonId: "sentence-structure-01",
+            toLessonId: "sentence-structure-01",
+            mappingType: "equivalent",
+          },
+        ],
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(201)
+    await expect(response.json()).resolves.toMatchObject({
+      id: "sentence-structure-v1-to-sentence-structure-v2",
+      mappings: [{ mappingType: "equivalent" }],
+    })
+  })
+
+  it("returns a protected curriculum migration map", async () => {
+    const response = await createTestApp().request(
+      "/curriculum-migrations/sentence-structure-v1-to-sentence-structure-v2"
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      id: "sentence-structure-v1-to-sentence-structure-v2",
+      status: "active",
+    })
+  })
+
+  it("applies a protected curriculum migration map", async () => {
+    const response = await createTestApp().request(
+      "/curriculum-migrations/sentence-structure-v1-to-sentence-structure-v2/apply",
+      {
+        body: JSON.stringify({ userId: "user-1" }),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      completedLessonCount: 1,
+      completedLessonIds: ["sentence-structure-01"],
+      userId: "user-1",
+    })
+  })
+
+  it("maps invalid curriculum migration creation to bad request", async () => {
+    const response = await createTestApp({
+      adminService: {
+        ...adminService,
+        async createCurriculumMigration() {
+          return {
+            status: "invalid-request",
+            error: {
+              code: "invalid-request",
+              message: "Removed mappings must not include a target lesson.",
+            },
+          }
+        },
+      },
+    }).request("/curriculum-migrations", {
+      body: JSON.stringify({
+        fromVersionId: "sentence-structure-v1",
+        toVersionId: "sentence-structure-v2",
+        mappings: [
+          {
+            fromLessonId: "sentence-structure-01",
+            toLessonId: "sentence-structure-01",
+            mappingType: "removed",
+          },
+        ],
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      code: "invalid-request",
+      message: "Removed mappings must not include a target lesson.",
+    })
+  })
+
+  it("maps missing curriculum migrations to not found", async () => {
+    const response = await createTestApp({
+      adminService: {
+        ...adminService,
+        async getCurriculumMigration() {
+          return {
+            status: "not-found",
+            error: {
+              code: "not-found",
+              message: "Curriculum migration was not found.",
+            },
+          }
+        },
+      },
+    }).request("/curriculum-migrations/missing-migration")
+
+    expect(response.status).toBe(404)
+    await expect(response.json()).resolves.toEqual({
+      code: "not-found",
+      message: "Curriculum migration was not found.",
+    })
+  })
+
   it("rejects unauthenticated admin route access", async () => {
     const response = await createTestApp({
       auth: {
@@ -463,6 +644,13 @@ describe("admin api app", () => {
     expect(document.paths).toHaveProperty("/curriculum-versions/{versionId}")
     expect(document.paths).toHaveProperty(
       "/curriculum-versions/{versionId}/publish"
+    )
+    expect(document.paths).toHaveProperty("/curriculum-migrations")
+    expect(document.paths).toHaveProperty(
+      "/curriculum-migrations/{migrationId}"
+    )
+    expect(document.paths).toHaveProperty(
+      "/curriculum-migrations/{migrationId}/apply"
     )
     expect(document.paths).toHaveProperty("/users")
   })
