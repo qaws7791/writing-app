@@ -1,5 +1,16 @@
 # 어드민 사이트
 
+## 2026-05-28 버전 인식 읽기 경로 구현 계획 시작
+
+- 커리큘럼 버전 관리 로드맵 4단계 구현 계획을 작성한다.
+- 공개 콘텐츠 API는 최신 published 버전을 유지하고, 인증된 진행 API는 학습자의 진행 버전을 유지하는 경계를 실제 API 통합 테스트로 고정한다.
+
+## 2026-05-28 버전 인식 읽기 경로 구현 계획 완료
+
+- 설계 문서는 `docs/superpowers/specs/2026-05-28-version-aware-read-path-design.md`에 작성한다.
+- 구현 계획은 `docs/superpowers/plans/2026-05-28-version-aware-read-path.md`에 작성한다.
+- 공개 DTO 변경 없이 real DB 기반 API 통합 테스트와 `saveLessonAnswer` 버전 검증을 추가하는 범위로 제한한다.
+
 ## 2026-05-28 학습 진행 버전 귀속 구현 시작
 
 - 커리큘럼 버전 관리 로드맵 3단계 구현을 시작한다.
