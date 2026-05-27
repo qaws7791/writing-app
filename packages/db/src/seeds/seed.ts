@@ -1,5 +1,6 @@
 import { mkdirSync } from "node:fs"
 import { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
 import { Database } from "bun:sqlite"
 
 import { createDatabase } from "@/client"
@@ -8,7 +9,9 @@ import { seedContent } from "@/seeds/seed-content"
 
 function parseDatabasePath(databaseUrl: string | undefined) {
   if (!databaseUrl) {
-    return "data/api.sqlite"
+    return fileURLToPath(
+      new URL("../../../../data/api.sqlite", import.meta.url)
+    )
   }
 
   if (databaseUrl.startsWith("file:")) {

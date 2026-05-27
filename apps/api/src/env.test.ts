@@ -11,7 +11,7 @@ describe("parseApiEnv", () => {
     const env = parseApiEnv({
       BETTER_AUTH_SECRET: "test-secret-with-enough-length",
       BETTER_AUTH_URL: "http://localhost:4000",
-      DATABASE_URL: "file:data/api.sqlite",
+      DATABASE_URL: "file:../../data/api.sqlite",
       GOOGLE_CLIENT_ID: "google-client-id",
       GOOGLE_CLIENT_SECRET: "google-client-secret",
       OPENAI_API_KEY: "openai-api-key",
@@ -20,7 +20,7 @@ describe("parseApiEnv", () => {
 
     expect(env).toMatchObject({
       corsOrigins: ["http://localhost:3000", "http://localhost:3001"],
-      databasePath: "data/api.sqlite",
+      databasePath: "../../data/api.sqlite",
       environment: "development",
       logLevel: "info",
       port: 4000,

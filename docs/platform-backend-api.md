@@ -76,7 +76,7 @@
 
 - `apps/api/.env.example`을 추가해 API 앱에 필요한 모든 환경 변수 이름과 로컬 개발용 예시값을 한 곳에 모았다.
 - `BACKEND.md`의 `apps/api` 섹션에 환경 변수 표를 추가해 필수 여부, 기본값 또는 예시, 용도를 문서화했다.
-- `DATABASE_URL`은 예시 파일에서 `file:data/api.sqlite`를 사용하지만 런타임에서는 필수 입력이라는 점을 명확히 했다.
+- `DATABASE_URL`은 예시 파일에서 앱 패키지 기준 `file:../../data/api.sqlite`를 사용해 저장소 루트 `data/api.sqlite`를 가리키지만 런타임에서는 필수 입력이라는 점을 명확히 했다.
 
 ## 2026-05-26 로컬 API 실동작 검증 시작
 
