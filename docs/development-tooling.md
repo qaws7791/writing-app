@@ -4,8 +4,21 @@
 
 - 포맷팅에는 Prettier를 사용한다.
 - Prettier 설정은 저장소 루트의 `.prettierrc.json` 하나만 유지한다.
+- 포맷 대상 제외 정책은 저장소 루트의 `.prettierignore`에서 관리한다.
 - 모노레포 전체를 포맷하려면 저장소 루트에서 `bun run format`을 실행한다.
 - 포맷 상태를 확인하려면 저장소 루트에서 `bun run format:check`를 실행한다.
+
+## 2026-05-28 Prettier 명령 정리 시작
+
+- 루트 `package.json`의 `format`, `format:check` 스크립트가 포맷 대상 glob과 ignore 경로를 직접 나열해 읽기 어렵다.
+- 포맷 제외 정책은 `.prettierignore`로 옮기고, 스크립트는 `prettier --write .`, `prettier --check .`로 단순화한다.
+- `prototype/`, agent 작업 공간, 빌드 산출물, 로컬 DB, credentials, docs 앱 생성 파일은 포맷 대상에서 제외한다.
+
+## 2026-05-28 Prettier 명령 정리 완료
+
+- 루트 `.prettierignore`를 추가해 포맷 제외 정책을 한 곳에서 관리한다.
+- 루트 `format`은 `prettier --write .`, `format:check`는 `prettier --check .`로 단순화했다.
+- `prototype/`, `.agent`, `.agents`, `.worktrees/`, `.vscode/`, 빌드 산출물, 로컬 데이터, credentials는 포맷 대상에서 제외한다.
 
 ## 린트
 

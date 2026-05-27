@@ -1,0 +1,53 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Local env files
+.env
+.env.docker
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+apps/api/.env.development
+apps/api/.generated/
+
+# Testing
+coverage
+
+# Turbo and worktrees
+.turbo
+.worktrees/
+.vscode/
+
+# Vercel and build outputs
+.vercel
+.next/
+out/
+build
+dist
+*.tsbuildinfo
+
+# Docs app generated content
+apps/docs/.source
+apps/docs/next-env.d.ts
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Misc
+.DS_Store
+*.pem
+docs/.obsidian/
+
+# Agent and prototype workspaces
+.agent
+.agents
+prototype/
+
+# Local database and credentials
+data
+credentials
