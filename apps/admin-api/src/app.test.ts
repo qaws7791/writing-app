@@ -80,6 +80,81 @@ const adminService: AdminService = {
       },
     }
   },
+  async listCurriculumVersions() {
+    return {
+      status: "ok",
+      value: {
+        versions: [
+          {
+            id: "sentence-structure-v2",
+            courseId: "sentence-structure",
+            versionNumber: 2,
+            status: "draft",
+            title: "문장 구조의 기본",
+            changelog: "Draft from v1",
+            publishedAt: null,
+            createdAt: "2026-05-28T00:00:00.000Z",
+          },
+          {
+            id: "sentence-structure-v1",
+            courseId: "sentence-structure",
+            versionNumber: 1,
+            status: "published",
+            title: "문장 구조의 기본",
+            changelog: "초기 버전",
+            publishedAt: "2026-05-28T00:00:00.000Z",
+            createdAt: "2026-05-28T00:00:00.000Z",
+          },
+        ],
+      },
+    }
+  },
+  async createCurriculumDraft() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+      },
+    }
+  },
+  async getCurriculumVersionDetail() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        chapters: [],
+      },
+    }
+  },
+  async publishCurriculumVersion() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "published",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: "2026-05-28T00:00:00.000Z",
+        createdAt: "2026-05-28T00:00:00.000Z",
+      },
+    }
+  },
   async listUsers() {
     return {
       status: "ok",
@@ -100,9 +175,11 @@ const adminService: AdminService = {
   },
 }
 
-function createTestApp(input?: Partial<{ auth: AdminAuthRuntime }>) {
+function createTestApp(
+  input?: Partial<{ adminService: AdminService; auth: AdminAuthRuntime }>
+) {
   return createAdminApiApp({
-    adminService,
+    adminService: input?.adminService ?? adminService,
     auth: input?.auth ?? auth,
     async checkDatabase() {
       return true
@@ -197,6 +274,136 @@ describe("admin api app", () => {
     })
   })
 
+  it("returns protected curriculum versions for a course", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/curriculum-versions"
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      versions: [
+        {
+          id: "sentence-structure-v2",
+          courseId: "sentence-structure",
+          versionNumber: 2,
+          status: "draft",
+          title: "문장 구조의 기본",
+          changelog: "Draft from v1",
+          publishedAt: null,
+          createdAt: "2026-05-28T00:00:00.000Z",
+        },
+        {
+          id: "sentence-structure-v1",
+          courseId: "sentence-structure",
+          versionNumber: 1,
+          status: "published",
+          title: "문장 구조의 기본",
+          changelog: "초기 버전",
+          publishedAt: "2026-05-28T00:00:00.000Z",
+          createdAt: "2026-05-28T00:00:00.000Z",
+        },
+      ],
+    })
+  })
+
+  it("creates a protected curriculum draft", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/curriculum-versions",
+      {
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(201)
+    await expect(response.json()).resolves.toMatchObject({
+      id: "sentence-structure-v2",
+      status: "draft",
+    })
+  })
+
+  it("returns protected curriculum version detail", async () => {
+    const response = await createTestApp().request(
+      "/curriculum-versions/sentence-structure-v2"
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      id: "sentence-structure-v2",
+      courseId: "sentence-structure",
+      versionNumber: 2,
+      status: "draft",
+      title: "문장 구조의 기본",
+      changelog: "Draft from v1",
+      publishedAt: null,
+      createdAt: "2026-05-28T00:00:00.000Z",
+      chapters: [],
+    })
+  })
+
+  it("publishes a protected curriculum draft", async () => {
+    const response = await createTestApp().request(
+      "/curriculum-versions/sentence-structure-v2/publish",
+      {
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      id: "sentence-structure-v2",
+      status: "published",
+      publishedAt: "2026-05-28T00:00:00.000Z",
+    })
+  })
+
+  it("maps invalid curriculum draft creation to bad request", async () => {
+    const response = await createTestApp({
+      adminService: {
+        ...adminService,
+        async createCurriculumDraft() {
+          return {
+            status: "invalid-request",
+            error: {
+              code: "invalid-request",
+              message: "Draft curriculum version already exists.",
+            },
+          }
+        },
+      },
+    }).request("/courses/sentence-structure/curriculum-versions", {
+      method: "POST",
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      code: "invalid-request",
+      message: "Draft curriculum version already exists.",
+    })
+  })
+
+  it("maps missing curriculum versions to not found", async () => {
+    const response = await createTestApp({
+      adminService: {
+        ...adminService,
+        async getCurriculumVersionDetail() {
+          return {
+            status: "not-found",
+            error: {
+              code: "not-found",
+              message: "Curriculum version was not found.",
+            },
+          }
+        },
+      },
+    }).request("/curriculum-versions/missing-version")
+
+    expect(response.status).toBe(404)
+    await expect(response.json()).resolves.toEqual({
+      code: "not-found",
+      message: "Curriculum version was not found.",
+    })
+  })
+
   it("rejects unauthenticated admin route access", async () => {
     const response = await createTestApp({
       auth: {
@@ -250,6 +457,13 @@ describe("admin api app", () => {
       version: "0.0.1",
     })
     expect(document.paths).toHaveProperty("/courses")
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum-versions"
+    )
+    expect(document.paths).toHaveProperty("/curriculum-versions/{versionId}")
+    expect(document.paths).toHaveProperty(
+      "/curriculum-versions/{versionId}/publish"
+    )
     expect(document.paths).toHaveProperty("/users")
   })
 })
