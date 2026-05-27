@@ -1,12 +1,18 @@
 import { Database } from "bun:sqlite"
+import { eq } from "drizzle-orm"
 import { describe, expect, it } from "vitest"
+
+import { courseId } from "@workspace/core/content"
 
 import {
   createDatabase,
   createDrizzleAdminRepository,
+  createDrizzleContentRepository,
   runContentMigration,
+  seedContent,
 } from "@/index"
 import {
+  courseProgress,
   courseCategories,
   courseChapters,
   courseLessons,
@@ -452,4 +458,173 @@ describe("createDrizzleAdminRepository", () => {
       },
     ])
   })
+
+  it("creates a curriculum draft by copying the latest published snapshot", async () => {
+    const now = new Date("2026-05-29T00:00:00.000Z")
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db, { now: () => now })
+
+    const result = await repository.createCurriculumDraft("sentence-structure")
+
+    expect(result).toEqual({
+      status: "created",
+      version: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: null,
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+    })
+
+    const draft = await repository.getCurriculumVersionDetail(
+      "sentence-structure-v2"
+    )
+
+    expect(draft).toMatchObject({
+      id: "sentence-structure-v2",
+      status: "draft",
+    })
+    expect(draft?.chapters[0]).toMatchObject({
+      id: "sentence-structure-chapter-1-v2",
+      status: "active",
+    })
+    expect(draft?.chapters[0]?.lessons[0]).toMatchObject({
+      id: "sentence-structure-01-v2",
+      lessonId: "sentence-structure-01",
+      status: "active",
+    })
+    expect(draft?.chapters).toHaveLength(3)
+    expect(draft?.chapters.flatMap((chapter) => chapter.lessons)).toHaveLength(
+      12
+    )
+  })
+
+  it("lists curriculum versions newest first", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db, {
+      now: () => new Date("2026-05-29T00:00:00.000Z"),
+    })
+
+    await repository.createCurriculumDraft("sentence-structure")
+
+    const result = await repository.listCurriculumVersions("sentence-structure")
+
+    expect(result.versions.map((version) => version.id)).toEqual([
+      "sentence-structure-v2",
+      "sentence-structure-v1",
+    ])
+    expect(result.versions.map((version) => version.status)).toEqual([
+      "draft",
+      "published",
+    ])
+  })
+
+  it("rejects creating a second draft for the same course", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+
+    await repository.createCurriculumDraft("sentence-structure")
+
+    await expect(
+      repository.createCurriculumDraft("sentence-structure")
+    ).resolves.toEqual({
+      status: "invalid-request",
+      error: {
+        code: "invalid-request",
+        message: "Draft curriculum version already exists.",
+      },
+    })
+  })
+
+  it("publishes a draft as the latest public curriculum without moving existing learner progress", async () => {
+    const now = new Date("2026-05-29T00:00:00.000Z")
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db, { now: () => now })
+    await db.insert(user).values({
+      id: "existing-learner",
+      name: "기존 학습자",
+      email: "existing@example.com",
+      emailVerified: true,
+      image: null,
+      createdAt: now,
+      updatedAt: now,
+    })
+    await db.insert(courseProgress).values({
+      userId: "existing-learner",
+      courseId: "sentence-structure",
+      curriculumVersionId: "sentence-structure-v1",
+      startedAt: now,
+      lastLessonId: "sentence-structure-01",
+      completedCount: 3,
+      updatedAt: now,
+    })
+
+    await repository.createCurriculumDraft("sentence-structure")
+    await db
+      .update(curriculumVersionLessons)
+      .set({
+        title: "발행된 새 레슨 제목",
+      })
+      .where(eq(curriculumVersionLessons.id, "sentence-structure-01-v2"))
+
+    const result = await repository.publishCurriculumVersion(
+      "sentence-structure-v2"
+    )
+
+    expect(result).toEqual({
+      status: "published",
+      version: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "published",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: "2026-05-29T00:00:00.000Z",
+        createdAt: "2026-05-29T00:00:00.000Z",
+      },
+    })
+
+    const publicCourse = await createDrizzleContentRepository(
+      db
+    ).findCourseDetail(courseId("sentence-structure"))
+    const [progress] = await db
+      .select()
+      .from(courseProgress)
+      .where(eq(courseProgress.userId, "existing-learner"))
+
+    expect(publicCourse?.chapters[0]?.lessons[0]).toMatchObject({
+      id: "sentence-structure-01-v2",
+      title: "발행된 새 레슨 제목",
+    })
+    expect(progress?.curriculumVersionId).toBe("sentence-structure-v1")
+  })
+
+  it("rejects publishing a non-draft curriculum version", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+
+    await expect(
+      repository.publishCurriculumVersion("sentence-structure-v1")
+    ).resolves.toEqual({
+      status: "invalid-request",
+      error: {
+        code: "invalid-request",
+        message: "Only draft curriculum versions can be published.",
+      },
+    })
+  })
 })
+
+async function createSeededDatabase() {
+  const sqlite = new Database(":memory:")
+  runContentMigration(sqlite)
+  const db = createDatabase(sqlite)
+  await seedContent(db)
+
+  return db
+}
