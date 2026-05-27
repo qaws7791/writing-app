@@ -4,6 +4,9 @@ import {
   courseChapters,
   courseLessons,
   courses,
+  curriculumVersionChapters,
+  curriculumVersionLessons,
+  curriculumVersions,
   lessons,
   lessonSteps,
 } from "@/schema"
@@ -15,7 +18,13 @@ export async function seedContent(db: WritingAppDatabase) {
   const chapterRows: (typeof courseChapters.$inferInsert)[] = []
   const lessonRows: (typeof lessons.$inferInsert)[] = []
   const courseLessonRows: (typeof courseLessons.$inferInsert)[] = []
+  const curriculumVersionRows: (typeof curriculumVersions.$inferInsert)[] = []
+  const curriculumVersionChapterRows: (typeof curriculumVersionChapters.$inferInsert)[] =
+    []
+  const curriculumVersionLessonRows: (typeof curriculumVersionLessons.$inferInsert)[] =
+    []
   const lessonStepRows: (typeof lessonSteps.$inferInsert)[] = []
+  const seedPublishedAt = new Date("2026-05-28T00:00:00.000Z")
 
   for (const category of contentSeed.categories) {
     categoryRows.push(category)
@@ -28,6 +37,19 @@ export async function seedContent(db: WritingAppDatabase) {
         description: course.description,
         thumbnailPath: course.thumbnail,
         sortOrder: course.sortOrder,
+      })
+
+      const curriculumVersionId = `${course.id}-v1`
+
+      curriculumVersionRows.push({
+        id: curriculumVersionId,
+        courseId: course.id,
+        versionNumber: 1,
+        status: "published",
+        title: course.title,
+        changelog: "초기 커리큘럼 버전",
+        publishedAt: seedPublishedAt,
+        createdAt: seedPublishedAt,
       })
 
       const courseLessonRefs = course.chapters.flatMap((chapter) =>
@@ -44,6 +66,16 @@ export async function seedContent(db: WritingAppDatabase) {
           label: chapter.label,
           title: chapter.title,
           sortOrder: chapter.sortOrder,
+        })
+
+        curriculumVersionChapterRows.push({
+          id: `${chapter.id}-v1`,
+          curriculumVersionId,
+          sourceChapterId: chapter.id,
+          label: chapter.label,
+          title: chapter.title,
+          sortOrder: chapter.sortOrder,
+          status: "active",
         })
       }
 
@@ -66,6 +98,17 @@ export async function seedContent(db: WritingAppDatabase) {
           title: lesson.title,
           description: lesson.description,
           sortOrder: lesson.sortOrder,
+        })
+
+        curriculumVersionLessonRows.push({
+          id: `${lesson.id}-v1`,
+          curriculumVersionId,
+          chapterId: `${chapter.id}-v1`,
+          lessonId: lesson.id,
+          title: lesson.title,
+          description: lesson.description,
+          sortOrder: lesson.sortOrder,
+          status: "active",
         })
 
         const steps = createSeedLessonSteps({
@@ -94,6 +137,9 @@ export async function seedContent(db: WritingAppDatabase) {
 
   await db.transaction(async (tx) => {
     await tx.delete(lessonSteps)
+    await tx.delete(curriculumVersionLessons)
+    await tx.delete(curriculumVersionChapters)
+    await tx.delete(curriculumVersions)
     await tx.delete(courseLessons)
     await tx.delete(lessons)
     await tx.delete(courseChapters)
@@ -105,6 +151,13 @@ export async function seedContent(db: WritingAppDatabase) {
     await tx.insert(courseChapters).values(chapterRows)
     await tx.insert(lessons).values(lessonRows)
     await tx.insert(courseLessons).values(courseLessonRows)
+    await tx.insert(curriculumVersions).values(curriculumVersionRows)
+    await tx
+      .insert(curriculumVersionChapters)
+      .values(curriculumVersionChapterRows)
+    await tx
+      .insert(curriculumVersionLessons)
+      .values(curriculumVersionLessonRows)
     await tx.insert(lessonSteps).values(lessonStepRows)
   })
 }
