@@ -96,7 +96,7 @@
 
 - `apps/admin-api`에 최초 관리자 계정 시드 스크립트와 테스트를 추가했다.
 - 시드는 Better Auth 공개 password hash API로 credential account를 만들고, 같은 이메일이 있으면 중복 생성하지 않는다.
-- `시드:admin` 명령으로 마이그레이션 실행 후 시드 결과를 JSON으로 출력하도록 연결했다.
+- `seed:admin` 명령으로 마이그레이션 실행 후 시드 결과를 JSON으로 출력하도록 연결했다.
 
 ## 2026-05-28 작업 7 리뷰 반영
 
@@ -165,7 +165,7 @@
 
 - `apps/admin`과 `apps/admin-api`를 추가했다.
 - 관리자 Better Auth 테이블은 `admin_*`로 분리했다.
-- 최초 관리자 계정은 `bun --filter @workspace/admin-api 시드:admin`으로 생성한다.
+- 최초 관리자 계정은 `bun --filter @workspace/admin-api seed:admin`으로 생성한다.
 - 어드민 화면은 shadcn Sidebar 기반 왼쪽 사이드바 레이아웃을 사용한다.
 - 콘텐츠 계층 조회와 사용자 기본 정보 조회를 읽기 전용으로 제공한다.
 - 전체 검증은 admin, admin-api, platform API, platform web 테스트와 pre-commit으로 확인한다.
@@ -181,3 +181,9 @@
 
 - `BACKEND.md`의 최초 관리자 시드 환경 변수 표에서 실제 구현에 없는 `ADMIN_SEED_EMAIL_VERIFIED` 항목을 제거한다.
 - 구현 계획 문서의 영어 라벨을 한국어로 정리해 문서 작성 규칙을 맞춘다.
+
+## 2026-05-28 운영 환경 설정 정리
+
+- `apps/admin`에 `ADMIN_API_BASE_URL` 예시 환경 파일을 추가한다.
+- `apps/admin-api/.env.example`에 운영에서 반드시 교체해야 하는 관리자 인증 비밀값과 최초 관리자 시드 변수를 명시한다.
+- `docs/operations-environment.md`에 학습자 플랫폼과 어드민의 dev/prod 환경 변수, 비밀값 분리 원칙, 배포 체크리스트를 정리한다.

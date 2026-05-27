@@ -67,7 +67,7 @@
 - 생성: `apps/admin-api/src/routes/health.route.ts` — `GET /health`
 - 생성: `apps/admin-api/src/routes/openapi.route.ts` — `GET /openapi.json`
 - 생성: `apps/admin-api/src/routes/error-response.ts` — 공통 JSON 오류 응답 schema
-- 생성: `apps/admin-api/src/scripts/시드-admin.ts` — 최초 관리자 시드 명령
+- 생성: `apps/admin-api/src/scripts/seed-admin.ts` — 최초 관리자 시드 명령
 
 ### 공유 패키지
 
@@ -1801,13 +1801,13 @@ git commit -m "어드민 API 조회 라우트 추가"
 
 **파일:**
 
-- 생성: `apps/admin-api/src/scripts/시드-admin.ts`
+- 생성: `apps/admin-api/src/scripts/seed-admin.ts`
 - 수정: `apps/admin-api/package.json`
-- 테스트: `apps/admin-api/src/scripts/시드-admin.test.ts`
+- 테스트: `apps/admin-api/src/scripts/seed-admin.test.ts`
 
 - [ ] **단계 1: 시드 helper 실패 테스트 작성**
 
-`apps/admin-api/src/scripts/시드-admin.test.ts`를 생성한다.
+`apps/admin-api/src/scripts/seed-admin.test.ts`를 생성한다.
 
 ```ts
 import { Database } from "bun:sqlite"
@@ -1815,21 +1815,21 @@ import { describe, expect, it } from "vitest"
 
 import { createDatabase, runContentMigration, adminUser } from "@workspace/db"
 
-import { 시드AdminUser } from "@/scripts/시드-admin"
+import { seedAdminUser } from "@/scripts/seed-admin"
 
-describe("시드AdminUser", () => {
+describe("seedAdminUser", () => {
   it("creates the first admin once", async () => {
     const sqlite = new Database(":memory:")
     runContentMigration(sqlite)
     const db = createDatabase(sqlite)
 
-    const first = await 시드AdminUser({
+    const first = await seedAdminUser({
       db,
       email: "admin@example.com",
       name: "운영자",
       password: "password-1234",
     })
-    const second = await 시드AdminUser({
+    const second = await seedAdminUser({
       db,
       email: "admin@example.com",
       name: "운영자",
@@ -1849,14 +1849,14 @@ describe("시드AdminUser", () => {
 실행:
 
 ```bash
-bun --filter @workspace/admin-api test -- 시드-admin.test.ts
+bun --filter @workspace/admin-api test -- seed-admin.test.ts
 ```
 
-예상 결과: `@/scripts/시드-admin`가 없어서 실패.
+예상 결과: `@/scripts/seed-admin`가 없어서 실패.
 
 - [ ] **단계 3: 시드 script 구현**
 
-`apps/admin-api/src/scripts/시드-admin.ts`를 생성한다.
+`apps/admin-api/src/scripts/seed-admin.ts`를 생성한다.
 
 ```ts
 import Database from "bun:sqlite"
@@ -1884,7 +1884,7 @@ export type SeedAdminUserResult =
   | { status: "created"; adminId: string }
   | { status: "already-exists"; adminId: string }
 
-export async function 시드AdminUser({
+export async function seedAdminUser({
   db,
   email,
   name,
@@ -1944,17 +1944,17 @@ if (import.meta.main) {
   const env = parseAdminApiEnv(Bun.env)
   const email = Bun.env["ADMIN_SEED_EMAIL"]
   const name = Bun.env["ADMIN_SEED_NAME"] ?? "관리자"
-  const password = Bun.env["ADMIN_SEED_통과WORD"]
+  const password = Bun.env["ADMIN_SEED_PASSWORD"]
 
   if (!email || !password) {
-    throw new Error("ADMIN_SEED_EMAIL and ADMIN_SEED_통과WORD are required.")
+    throw new Error("ADMIN_SEED_EMAIL and ADMIN_SEED_PASSWORD are required.")
   }
 
   ensureDatabaseDirectory(env.databasePath)
   const sqlite = new Database(env.databasePath, { create: true })
   runContentMigration(sqlite)
   const db = createDatabase(sqlite)
-  const result = await 시드AdminUser({ db, email, name, password })
+  const result = await seedAdminUser({ db, email, name, password })
 
   console.info(JSON.stringify(result))
 }
@@ -1966,7 +1966,7 @@ if (import.meta.main) {
 
 ```json
 {
-  "시드:admin": "bun src/scripts/시드-admin.ts"
+  "seed:admin": "bun src/scripts/seed-admin.ts"
 }
 ```
 
@@ -1975,7 +1975,7 @@ if (import.meta.main) {
 실행:
 
 ```bash
-bun --filter @workspace/admin-api test -- 시드-admin.test.ts
+bun --filter @workspace/admin-api test -- seed-admin.test.ts
 bun --filter @workspace/admin-api typecheck
 ```
 
@@ -1990,8 +1990,8 @@ ADMIN_BETTER_AUTH_SECRET=admin-secret \
 ADMIN_BETTER_AUTH_URL=http://localhost:4001 \
 DATABASE_URL=file:data/admin-smoke.sqlite \
 ADMIN_SEED_EMAIL=admin@example.com \
-ADMIN_SEED_통과WORD=password-1234 \
-bun --filter @workspace/admin-api 시드:admin
+ADMIN_SEED_PASSWORD=password-1234 \
+bun --filter @workspace/admin-api seed:admin
 ```
 
 예상 결과: `{"status":"created",...}` 또는 두 번째 실행 시 `{"status":"already-exists",...}`.
@@ -3242,7 +3242,7 @@ git commit -m "어드민 조회 화면 추가"
 
 - `apps/admin`과 `apps/admin-api`를 추가했다.
 - 관리자 Better Auth 테이블은 `admin_*`로 분리했다.
-- 최초 관리자 계정은 `bun --filter @workspace/admin-api 시드:admin`으로 생성한다.
+- 최초 관리자 계정은 `bun --filter @workspace/admin-api seed:admin`으로 생성한다.
 - 어드민 화면은 shadcn Sidebar 기반 왼쪽 사이드바 레이아웃을 사용한다.
 - 콘텐츠 계층 조회와 사용자 기본 정보 조회를 읽기 전용으로 제공한다.
 - 전체 검증은 admin, admin-api, platform API, platform web 테스트와 pre-commit으로 확인했다.
@@ -3282,8 +3282,8 @@ ADMIN_BETTER_AUTH_URL=http://localhost:4001 \
 ADMIN_CORS_ORIGIN=http://localhost:3001 \
 DATABASE_URL=file:data/api.sqlite \
 ADMIN_SEED_EMAIL=admin@example.com \
-ADMIN_SEED_통과WORD=password-1234 \
-bun --filter @workspace/admin-api 시드:admin
+ADMIN_SEED_PASSWORD=password-1234 \
+bun --filter @workspace/admin-api seed:admin
 ```
 
 실행:
