@@ -5,6 +5,10 @@
 - Don't Edit `/prototype` directory, which contains experimental code and is not part of the main project structure.
 - All documents must be written in Korean.
 
+## First Principle
+
+Prefer explicitness over implicitness and choose simplicity over cleverness and favor consistency over convenience and prioritize local change over widespread impact and pursue immutability over mutable state and value clear intent over clever optimization and trust convention over reinventing decisions and choose transparent behavior over hidden magic and aim for small cohesive units over large all-purpose modules and consider reversible decisions before irreversible ones and build observable systems over black boxes and guarantee deterministic behavior over unpredictable outcomes and design isolated failures over cascading ones and write expressive code over code that depends on comments and trust resilient structures over those that rely solely on perfect prevention.
+
 ## Overview
 
 - apps/web: nextjs fullstack server
