@@ -46,8 +46,8 @@ const profileNavItem: NavItem = {
 const mobileNavItems: NavItem[] = [...primaryNavItems, profileNavItem]
 
 function isActivePath(pathname: string, href: string) {
-  if (href === "/") {
-    return pathname === "/"
+  if (href === "/" || href === "/app") {
+    return pathname === href
   }
 
   return pathname === href || pathname.startsWith(`${href}/`)
