@@ -75,3 +75,14 @@
 - 어드민 전용 환경 변수 파서, DB 디렉터리 생성 helper, Hono 앱, health/auth 라우트, 서버 entrypoint를 추가했다.
 - Better Auth runtime은 관리자 인증 테이블과 `writing-app-admin` 쿠키 prefix를 사용하도록 분리했다.
 - `vitest.workspace.ts`에 어드민 API 테스트 프로젝트를 연결했다.
+
+## 2026-05-28 Task 6 시작
+
+- `apps/admin-api`에 관리자 인증으로 보호되는 콘텐츠 계층 조회와 사용자 목록 조회 REST route를 추가한다.
+- OpenAPI JSON route를 함께 등록해 어드민 API 조회 surface를 문서화한다.
+
+## 2026-05-28 Task 6 완료
+
+- `GET /courses?include=chapters,lessons`와 `GET /users`를 관리자 세션 필수 route로 등록했다.
+- `GET /courses`의 누락되거나 다른 include query는 `invalid-request` 400 응답으로 처리한다.
+- `GET /openapi.json`에서 어드민 API OpenAPI 3.1 문서를 반환하도록 등록했다.

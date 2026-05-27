@@ -33,6 +33,7 @@
         "@workspace/logger": "workspace:*",
         "better-auth": "^1.6.0",
         "hono": "^4.10.0",
+        "hono-openapi": "^1.1.0",
         "zod": "^4.2.0",
       },
       "devDependencies": {

@@ -6,7 +6,10 @@ import { createRequestLogFields } from "@workspace/logger"
 
 import type { AdminAuthRuntime } from "@/auth/admin-session"
 import { registerAuthRoute } from "@/routes/auth.route"
+import { registerCoursesRoute } from "@/routes/courses.route"
 import { registerHealthRoute } from "@/routes/health.route"
+import { registerOpenApiRoute } from "@/routes/openapi.route"
+import { registerUsersRoute } from "@/routes/users.route"
 
 export interface AdminApiLogger {
   error(fields: object, message: string): void
@@ -68,7 +71,10 @@ export function createAdminApiApp(dependencies: AdminApiAppDependencies) {
   )
 
   registerAuthRoute(app, dependencies.auth)
+  registerCoursesRoute(app, dependencies)
   registerHealthRoute(app, dependencies)
+  registerUsersRoute(app, dependencies)
+  registerOpenApiRoute(app)
 
   return app
 }
