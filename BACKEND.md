@@ -136,7 +136,7 @@ bun --filter @workspace/admin-api seed:admin
 
 콘텐츠 시드는 현재 웹 정적 카탈로그와 과정 상세 화면의 과정/챕터/레슨 ID를 명시적으로 보관하고, 각 코스의 기존 구조를 `v1` published 커리큘럼 버전으로 함께 생성한다. 공개 콘텐츠 목록, 검색, 상세 API는 코스별 published 버전 중 가장 큰 `version_number`를 최신 버전으로 보고 그 버전의 active 챕터와 레슨 배치로 `lessonCount`, `firstLessonId`, `chapters`를 계산한다. 레슨 플레이 본문은 아직 `lessons`, `lesson_steps`를 `lessonId`로 조회하며, 모든 레슨은 현재 `INTRO`, `SHORT_WRITE`, `AI_FEEDBACK`, `SUMMARY`, `COMPLETE` 기본 단계로 플레이 가능성과 학습 상태 저장 경로를 보장한다.
 
-인증된 학습 진행 API는 새 코스 진행을 만들 때 최신 published 커리큘럼 버전을 선택하고, 이미 진행 중인 코스가 있으면 저장된 `course_progress.curriculum_version_id`를 유지한다. 코스 진행률과 다음 레슨은 공개 최신 버전이 아니라 해당 진행 버전의 active 레슨 배치를 기준으로 계산한다. 레슨 진행 저장과 완료 처리는 대상 레슨이 학습자의 진행 버전에 포함되는지 확인한 뒤 저장한다.
+인증된 학습 진행 API는 새 코스 진행을 만들 때 최신 published 커리큘럼 버전을 선택하고, 이미 진행 중인 코스가 있으면 저장된 `course_progress.curriculum_version_id`를 유지한다. 코스 진행률과 다음 레슨은 공개 최신 버전이 아니라 해당 진행 버전의 active 레슨 배치를 기준으로 계산한다. 레슨 진행 저장, 완료, 답변 저장은 대상 레슨이 학습자의 진행 버전에 포함되는지 확인한 뒤 처리한다.
 
 AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structured Outputs를 호출하고, `packages/core`의 AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다. OpenAI 요청용 구조화 출력 schema는 OpenAI가 지원하는 JSON Schema 부분집합에 맞추고, provider 응답은 도메인 DTO schema로 다시 검증한다.
 

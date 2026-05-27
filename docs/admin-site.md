@@ -1,15 +1,28 @@
 # 어드민 사이트
 
+## 2026-05-28 버전 인식 읽기 경로 구현 시작
+
+- 커리큘럼 버전 관리 로드맵 4단계 구현을 시작한다.
+- 공개 콘텐츠 조회는 최신 published 버전을 유지하고, 학습자 진행 조회와 쓰기는 저장된 진행 버전을 유지하도록 경계를 고정한다.
+- 실제 버전 계산은 core/db 테스트가 검증하고, API route 통합 테스트는 공개 응답과 진행 응답이 섞이지 않는지 확인한다.
+
+## 2026-05-28 버전 인식 읽기 경로 구현 완료
+
+- `saveLessonAnswer`도 진행 저장과 완료 처리처럼 대상 레슨이 학습자의 진행 버전에 포함되는지 확인한다.
+- API route 통합 테스트는 공개 `GET /courses/:courseId`와 인증된 진행 API가 서로 다른 service 결과를 유지하는지 검증한다.
+- 진행 버전 밖 레슨에 대한 진행 저장, 답변 저장, 완료 요청은 모두 `400 invalid-request`로 매핑된다.
+- 공개 DTO에 `curriculumVersionId`를 노출하지 않고 내부 service/repository 경계에서 버전 정책을 유지한다.
+
 ## 2026-05-28 버전 인식 읽기 경로 구현 계획 시작
 
 - 커리큘럼 버전 관리 로드맵 4단계 구현 계획을 작성한다.
-- 공개 콘텐츠 API는 최신 published 버전을 유지하고, 인증된 진행 API는 학습자의 진행 버전을 유지하는 경계를 실제 API 통합 테스트로 고정한다.
+- 공개 콘텐츠 API는 최신 published 버전을 유지하고, 인증된 진행 API는 학습자의 진행 버전을 유지하는 경계를 API route 통합 테스트와 core/db 테스트 조합으로 고정한다.
 
 ## 2026-05-28 버전 인식 읽기 경로 구현 계획 완료
 
 - 설계 문서는 `docs/superpowers/specs/2026-05-28-version-aware-read-path-design.md`에 작성한다.
 - 구현 계획은 `docs/superpowers/plans/2026-05-28-version-aware-read-path.md`에 작성한다.
-- 공개 DTO 변경 없이 real DB 기반 API 통합 테스트와 `saveLessonAnswer` 버전 검증을 추가하는 범위로 제한한다.
+- 공개 DTO 변경 없이 API route 통합 테스트, core/db 검증, `saveLessonAnswer` 버전 검증을 추가하는 범위로 제한한다.
 
 ## 2026-05-28 학습 진행 버전 귀속 구현 시작
 

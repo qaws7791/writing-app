@@ -1,5 +1,17 @@
 # 플랫폼 백엔드 API
 
+## 2026-05-28 버전 인식 읽기 경로 구현 시작
+
+- 공개 콘텐츠 API와 인증된 학습 진행 API가 서로 다른 커리큘럼 버전 기준을 유지하도록 4단계 구현을 시작한다.
+- `saveLessonAnswer`도 진행 저장과 완료 처리와 같은 진행 버전 포함 여부 검증을 적용한다.
+
+## 2026-05-28 버전 인식 읽기 경로 구현 완료
+
+- 공개 `GET /courses/:courseId`는 최신 published 커리큘럼 버전 기준 응답을 유지한다.
+- 인증된 `GET /courses/:courseId/progress`와 `GET /progress`는 학습자의 `course_progress.curriculum_version_id`에 저장된 진행 버전 기준 응답을 유지한다.
+- `PUT /lessons/:lessonId/progress`, `PUT /lessons/:lessonId/answers`, `POST /lessons/:lessonId/complete`는 진행 버전 밖 레슨에 대해 `400 invalid-request`를 반환한다.
+- API route 통합 테스트는 Hono route의 응답 분리와 오류 매핑을 검증하고, 실제 버전 계산은 core/db 테스트가 담당한다.
+
 ## 2026-05-28 버전 인식 읽기 경로 구현 계획 시작
 
 - 공개 최신 커리큘럼과 인증된 진행 커리큘럼이 API 경계에서 섞이지 않도록 통합 테스트 계획을 작성한다.

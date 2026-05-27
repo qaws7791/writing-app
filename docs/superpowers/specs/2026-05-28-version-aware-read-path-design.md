@@ -10,7 +10,7 @@
 
 - 공개 콘텐츠 API는 최신 published 커리큘럼 버전을 유지한다.
 - 인증된 진행 API는 `course_progress.curriculum_version_id`에 저장된 진행 버전을 유지한다.
-- 새 published 버전이 생겨도 기존 학습자의 `totalLessons`, `completedCount`, `nextLessonId`, `progressPercent`가 진행 버전 기준으로 계산됨을 API 통합 테스트로 검증한다.
+- 새 published 버전이 생겨도 기존 학습자의 `totalLessons`, `completedCount`, `nextLessonId`, `progressPercent`가 진행 버전 기준으로 계산됨을 core/db 테스트와 API route 통합 테스트 조합으로 검증한다.
 - 진행 버전에 포함되지 않은 레슨에 대한 진행 저장, 완료, 답변 저장을 거절한다.
 - 공개 API 응답 DTO에는 아직 `curriculumVersionId`를 노출하지 않는다.
 
@@ -26,9 +26,15 @@
 
 인메모리 SQLite에 seed를 넣고, 실제 content/learning repository와 service를 `createApiApp`에 연결한다. 테스트 안에서 `v2` published 버전을 추가해 공개 API와 진행 API가 서로 다른 기준을 쓰는지 확인한다.
 
-장점은 이번 단계의 핵심 위험을 가장 직접적으로 검증한다. 단점은 API 테스트 fixture가 약간 길어진다.
+장점은 이번 단계의 핵심 위험을 가장 직접적으로 검증한다. 단점은 `apps/api` 테스트가 Node Vitest로 실행되고 SQLite 접근은 Bun 런타임에 묶여 있어 테스트 런타임 전환이 필요하다는 점이다. 이 전환은 이번 변경보다 파급이 크다.
 
-### 대안 C: API 응답에 버전 ID 노출
+### 대안 C: Core/DB 실동작 테스트와 API route 통합 테스트 분리
+
+Core와 DB 테스트는 실제 version repository와 진행 계산을 검증하고, API 테스트는 Hono route가 공개 콘텐츠 결과와 인증 진행 결과를 섞지 않고 각각 반환하는지 검증한다.
+
+장점은 기존 테스트 런타임 경계를 유지하면서 각 레이어의 책임을 명확히 검증한다. 단점은 단일 테스트가 모든 레이어를 한 번에 지나가지는 않는다.
+
+### 대안 D: API 응답에 버전 ID 노출
 
 공개 콘텐츠와 진행 응답에 `curriculumVersionId`를 노출해 클라이언트도 기준을 알 수 있게 한다.
 
@@ -36,46 +42,37 @@
 
 ## 결정
 
-대안 B를 채택한다. 이번 단계는 새 제품 기능보다 경계 안정성에 가깝다. 실제 API 조립 상태에서 공개 최신 버전과 학습자 진행 버전이 분리되는지 검증하는 것이 가장 큰 가치를 낸다.
+대안 C를 채택한다. 이번 단계는 새 제품 기능보다 경계 안정성에 가깝다. 실제 version 계산은 core/db 테스트로 검증하고, API route는 공개 콘텐츠 응답과 학습자 진행 응답을 분리해 반환하는지 검증한다. API 테스트 런타임을 Bun으로 바꾸는 것은 별도 인프라 결정으로 남긴다.
 
 DTO에는 버전 ID를 노출하지 않는다. 공개 API와 진행 API의 외부 응답 형태는 유지하고, 내부 service/repository 경계에서만 버전을 사용한다.
 
 ## 상세 설계
 
-### API 통합 테스트 fixture
+### API route 통합 테스트 fixture
 
-`apps/api/src/versioned-learning.integration.test.ts`를 추가한다. 테스트는 다음 조합을 실제로 만든다.
+`apps/api/src/versioned-learning.integration.test.ts`를 추가한다. 테스트는 기존 API 테스트와 같은 방식으로 fake content/learning service를 `createApiApp`에 연결한다.
 
-- 인메모리 SQLite
-- `runContentMigration`
-- `seedContent`
-- 테스트 사용자 row
-- `createDrizzleContentRepository`
-- `createDrizzleLearningRepository`
-- `createContentService`
-- `createLearningService`
 - fake auth session
+- latest public content를 반환하는 content service
+- learner version progress를 반환하는 learning service
 - no-op AI feedback service
 
-테스트 helper는 `sentence-structure-v2` published 버전을 만들 수 있어야 한다. 이 버전은 `sentence-structure-01`만 active 레슨으로 포함해 공개 최신 구조와 기존 `v1` 진행 구조의 차이를 선명하게 만든다.
+DB와 repository의 실제 version 계산은 이미 `packages/db`와 `packages/core` 테스트가 검증한다. API route 테스트는 공개 응답과 진행 응답이 서로 다른 DTO를 그대로 반환하는지, 그리고 진행 버전 밖 쓰기 거절이 `400 invalid-request`로 매핑되는지 확인한다.
 
 ### 공개 최신 버전과 진행 버전 분리
 
-첫 번째 통합 테스트는 다음 순서로 동작한다.
+첫 번째 API route 통합 테스트는 다음을 검증한다.
 
-1. seed 직후 `POST /lessons/sentence-structure-01/complete`를 호출해 사용자의 진행을 `sentence-structure-v1`에 귀속시킨다.
-2. 이후 `sentence-structure-v2` published 버전을 추가한다.
-3. 공개 `GET /courses/sentence-structure`는 최신 v2 기준으로 `lessonCount: 1`을 반환한다.
-4. 인증된 `GET /courses/sentence-structure/progress`는 기존 v1 기준으로 `totalLessons: 12`, `completedCount: 1`, `nextLessonId: "sentence-structure-02"`를 반환한다.
+1. 공개 `GET /courses/sentence-structure`는 최신 공개 콘텐츠 service 결과인 `lessonCount: 1`을 반환한다.
+2. 인증된 `GET /courses/sentence-structure/progress`는 학습자 진행 service 결과인 `totalLessons: 12`, `completedCount: 1`, `nextLessonId: "sentence-structure-02"`를 반환한다.
+3. 인증된 `GET /progress`도 같은 진행 버전 기준 값을 반환한다.
 
 ### 진행 버전 밖 레슨 거절
 
-두 번째 통합 테스트는 다음 순서로 동작한다.
+두 번째 API route 통합 테스트는 다음을 검증한다.
 
-1. 먼저 `sentence-structure-v2` published 버전을 추가한다.
-2. `PUT /lessons/sentence-structure-01/progress`를 호출해 사용자의 진행을 최신 v2에 귀속시킨다.
-3. v2에 포함되지 않은 `sentence-structure-12`에 대해 진행 저장을 시도한다.
-4. API는 `400 invalid-request`를 반환한다.
+1. learning service가 진행 버전 밖 쓰기를 `invalid-request`로 반환한다.
+2. `PUT /lessons/:lessonId/progress`, `PUT /lessons/:lessonId/answers`, `POST /lessons/:lessonId/complete`가 모두 `400 invalid-request`로 매핑된다.
 
 ### 답변 저장 버전 검증
 
@@ -92,7 +89,7 @@ DTO에는 버전 ID를 노출하지 않는다. 공개 API와 진행 API의 외�
 
 - Core learning service 테스트
   - 진행 버전 밖 레슨 답변 저장이 거절되는지 검증한다.
-- API 통합 테스트
+- API route 통합 테스트
   - 공개 상세는 최신 published 버전 기준인지 검증한다.
   - 인증 진행은 기존 진행 버전 기준인지 검증한다.
   - 진행 버전 밖 레슨 진행 저장은 400인지 검증한다.
