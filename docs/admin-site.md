@@ -133,3 +133,9 @@
 - `/api/auth/[...path]` route handler가 어드민 API 인증 route로 GET/POST 요청을 전달하도록 연결했다.
 - 로그인 페이지, 보호 layout, 왼쪽 사이드바 기반 `AdminShell`, 루트 `/courses` redirect를 추가했다.
 - 로그인 성공/실패와 인증 navigation/proxy/client 동작을 테스트로 검증했다.
+
+## 2026-05-28 Task 9 리뷰 반영
+
+- 사이드바 메뉴는 1차 범위인 콘텐츠와 사용자 조회로 제한한다.
+- 동작 없는 관리자 footer 버튼을 제거한다.
+- 로그인 요청 중 중복 제출을 막는 guard를 추가한다.

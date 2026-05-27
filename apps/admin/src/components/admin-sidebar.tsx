@@ -2,18 +2,11 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  BookOpenIcon,
-  GraduationCapIcon,
-  LayoutDashboardIcon,
-  UsersIcon,
-} from "lucide-react"
+import { BookOpenIcon, LayoutDashboardIcon, UsersIcon } from "lucide-react"
 
-import { Avatar, AvatarFallback } from "@workspace/ui/components/ui/avatar"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -22,7 +15,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarSeparator,
 } from "@workspace/ui/components/ui/sidebar"
 
 const contentItems = [
@@ -30,11 +22,6 @@ const contentItems = [
     href: "/courses",
     icon: BookOpenIcon,
     title: "코스",
-  },
-  {
-    href: "/lessons",
-    icon: GraduationCapIcon,
-    title: "레슨",
   },
 ]
 
@@ -108,19 +95,6 @@ export function AdminSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarSeparator />
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" tooltip="관리자">
-              <Avatar size="sm">
-                <AvatarFallback>관</AvatarFallback>
-              </Avatar>
-              <span>관리자</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

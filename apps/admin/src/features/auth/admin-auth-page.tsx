@@ -32,9 +32,16 @@ export function AdminAuthPage({ authBaseUrl, nextPath }: AdminAuthPageProps) {
   const safeNextPath = getSafeAdminNextPath(nextPath)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
   const [pending, setPending] = React.useState(false)
+  const pendingRef = React.useRef(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
+
+    if (pendingRef.current) {
+      return
+    }
+
+    pendingRef.current = true
     setErrorMessage(null)
     setPending(true)
 
@@ -45,15 +52,18 @@ export function AdminAuthPage({ authBaseUrl, nextPath }: AdminAuthPageProps) {
       password: String(formData.get("password") ?? ""),
     })
 
-    setPending(false)
+    try {
+      if (result.status === "error") {
+        setErrorMessage(result.message)
+        return
+      }
 
-    if (result.status === "error") {
-      setErrorMessage(result.message)
-      return
+      router.replace(safeNextPath)
+      router.refresh()
+    } finally {
+      pendingRef.current = false
+      setPending(false)
     }
-
-    router.replace(safeNextPath)
-    router.refresh()
   }
 
   return (

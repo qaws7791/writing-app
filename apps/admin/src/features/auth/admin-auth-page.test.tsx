@@ -123,4 +123,28 @@ describe("AdminAuthPage", () => {
     expect(replace).not.toHaveBeenCalled()
     expect(refresh).not.toHaveBeenCalled()
   })
+
+  it("prevents duplicate login requests while a request is pending", async () => {
+    let resolveResponse: (response: Response) => void = () => undefined
+    const fetch = vi.fn<AdminAuthFetch>(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolveResponse = resolve
+        })
+    )
+    vi.stubGlobal("fetch", fetch)
+
+    const user = userEvent.setup()
+    render(<AdminAuthPage nextPath="/users" />)
+
+    await user.type(screen.getByLabelText("이메일"), "admin@example.com")
+    await user.type(screen.getByLabelText("비밀번호"), "password-1234")
+    const form = screen.getByRole("button", { name: "로그인" }).closest("form")
+
+    form?.requestSubmit()
+    form?.requestSubmit()
+
+    await waitFor(() => expect(fetch).toHaveBeenCalledOnce())
+    resolveResponse(Response.json({ user: { id: "admin-1" } }))
+  })
 })
