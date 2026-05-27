@@ -6,7 +6,12 @@ import { describe, expect, it } from "vitest"
 
 import { createDatabase } from "@/client"
 import { runContentMigration } from "@/migrations/run-content-migration"
-import { adminUser } from "@/schema"
+import {
+  adminUser,
+  curriculumVersionChapters,
+  curriculumVersionLessons,
+  curriculumVersions,
+} from "@/schema"
 
 describe("createDatabase", () => {
   it("enables foreign key enforcement for fresh sqlite connections", () => {
@@ -63,5 +68,27 @@ describe("admin auth schema", () => {
     expect(tables).toContain("admin_session")
     expect(tables).toContain("admin_account")
     expect(tables).toContain("admin_verification")
+  })
+})
+
+describe("curriculum version schema", () => {
+  it("creates curriculum version tables", async () => {
+    const sqlite = new Database(":memory:")
+    runContentMigration(sqlite)
+    createDatabase(sqlite)
+
+    const tables = sqlite
+      .query<{ name: string }, []>(
+        "select name from sqlite_master where type = 'table' order by name"
+      )
+      .all()
+      .map((row) => row.name)
+
+    expect(tables).toContain("curriculum_versions")
+    expect(tables).toContain("curriculum_version_chapters")
+    expect(tables).toContain("curriculum_version_lessons")
+    expect(curriculumVersions).toBeDefined()
+    expect(curriculumVersionChapters).toBeDefined()
+    expect(curriculumVersionLessons).toBeDefined()
   })
 })
