@@ -140,32 +140,34 @@ describe("createAdminService", () => {
   })
 
   it("returns unavailable when course tree repository returns an invalid node status", async () => {
-    const service = createAdminService({
-      repository: {
-        ...repository,
-        async listCourseTree() {
-          return {
-            courses: [
-              {
-                id: "sentence-structure",
-                title: "문장 구조의 기본",
-                description: "문장의 뼈대를 이해합니다.",
-                sortOrder: 1,
-                chapters: [
-                  {
-                    id: "sentence-structure-chapter-1",
-                    label: "1단원",
-                    title: "문장의 뼈대",
-                    sortOrder: 1,
-                    status: "deleted",
-                    lessons: [],
-                  },
-                ],
-              },
-            ],
-          }
-        },
+    const invalidNodeStatus: "active" = JSON.parse('"deleted"')
+    const invalidStatusRepository = {
+      ...repository,
+      async listCourseTree() {
+        return {
+          courses: [
+            {
+              id: "sentence-structure",
+              title: "문장 구조의 기본",
+              description: "문장의 뼈대를 이해합니다.",
+              sortOrder: 1,
+              chapters: [
+                {
+                  id: "sentence-structure-chapter-1",
+                  label: "1단원",
+                  title: "문장의 뼈대",
+                  sortOrder: 1,
+                  status: invalidNodeStatus,
+                  lessons: [],
+                },
+              ],
+            },
+          ],
+        }
       },
+    }
+    const service = createAdminService({
+      repository: invalidStatusRepository,
     })
 
     await expect(service.listCourseTree()).resolves.toMatchObject({
