@@ -1,6 +1,6 @@
 # 커리큘럼 마이그레이션 맵 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]` / `- [x]`) syntax for tracking.
 
 **Goal:** 관리자가 커리큘럼 버전 사이의 레슨 마이그레이션 맵을 만들고, 특정 사용자 진행을 맵 기준으로 새 버전에 적용할 수 있게 한다.
 
@@ -66,11 +66,11 @@
 - 수정: `docs/admin-site.md`
 - 수정: `docs/platform-backend-api.md`
 
-- [ ] **단계 1: 문서 로그 추가**
+- [x] **단계 1: 문서 로그 추가**
 
 `docs/admin-site.md`와 `docs/platform-backend-api.md` 상단에 7단계 구현 계획 시작/완료 로그를 추가한다.
 
-- [ ] **단계 2: 포맷과 커밋**
+- [x] **단계 2: 포맷과 커밋**
 
 ```bash
 bun prettier --write docs/superpowers/specs/2026-05-28-curriculum-migration-map-design.md docs/superpowers/plans/2026-05-28-curriculum-migration-map.md docs/admin-site.md docs/platform-backend-api.md
@@ -89,11 +89,11 @@ git commit -m "커리큘럼 마이그레이션 맵 계획 문서화"
 - 수정: `packages/db/src/schema/index.ts`
 - 수정: `packages/db/src/client.test.ts`
 
-- [ ] **단계 1: 실패 테스트 작성**
+- [x] **단계 1: 실패 테스트 작성**
 
 `packages/db/src/client.test.ts`에 migration map tables 생성 테스트를 추가한다.
 
-- [ ] **단계 2: 실패 확인**
+- [x] **단계 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/db test -- client.test.ts
@@ -101,7 +101,7 @@ bun --filter @workspace/db test -- client.test.ts
 
 기대 결과: 새 schema export와 tables가 없어 실패한다.
 
-- [ ] **단계 3: schema와 migration 구현**
+- [x] **단계 3: schema와 migration 구현**
 
 세 테이블을 추가한다.
 
@@ -109,7 +109,7 @@ bun --filter @workspace/db test -- client.test.ts
 - `lesson_migration_mappings`
 - `curriculum_migration_applications`
 
-- [ ] **단계 4: 통과 확인과 커밋**
+- [x] **단계 4: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/db test -- client.test.ts
@@ -128,7 +128,7 @@ git commit -m "커리큘럼 마이그레이션 맵 스키마 추가"
 - 수정: `packages/core/src/admin/admin.service.ts`
 - 수정: `packages/core/src/admin/admin.service.test.ts`
 
-- [ ] **단계 1: 실패 테스트 작성**
+- [x] **단계 1: 실패 테스트 작성**
 
 admin service 테스트에 다음 동작을 추가한다.
 
@@ -137,7 +137,7 @@ admin service 테스트에 다음 동작을 추가한다.
 - `applyCurriculumMigration`
 - invalid/not-found 결과 보존
 
-- [ ] **단계 2: 실패 확인**
+- [x] **단계 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/core test -- admin.service.test.ts
@@ -145,11 +145,11 @@ bun --filter @workspace/core test -- admin.service.test.ts
 
 기대 결과: 새 service/repository 메서드가 없어 실패한다.
 
-- [ ] **단계 3: DTO와 service 구현**
+- [x] **단계 3: DTO와 service 구현**
 
 mapping type enum, migration detail DTO, application DTO, repository result union을 추가한다.
 
-- [ ] **단계 4: 통과 확인과 커밋**
+- [x] **단계 4: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/core test -- admin.service.test.ts
@@ -167,7 +167,7 @@ git commit -m "관리자 커리큘럼 마이그레이션 계약 추가"
 - 수정: `packages/db/src/repositories/drizzle-admin.repository.ts`
 - 수정: `packages/db/src/repositories/drizzle-admin.repository.test.ts`
 
-- [ ] **단계 1: 실패 테스트 작성**
+- [x] **단계 1: 실패 테스트 작성**
 
 repository 테스트에 다음을 추가한다.
 
@@ -177,7 +177,7 @@ repository 테스트에 다음을 추가한다.
 - 재실행 idempotency
 - 실패 application row 기록
 
-- [ ] **단계 2: 실패 확인**
+- [x] **단계 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/db test -- drizzle-admin.repository.test.ts
@@ -185,11 +185,11 @@ bun --filter @workspace/db test -- drizzle-admin.repository.test.ts
 
 기대 결과: repository 메서드가 없어 실패한다.
 
-- [ ] **단계 3: repository 구현**
+- [x] **단계 3: repository 구현**
 
 `createCurriculumMigration`, `getCurriculumMigration`, `applyCurriculumMigration`을 transaction 중심으로 구현한다.
 
-- [ ] **단계 4: 통과 확인과 커밋**
+- [x] **단계 4: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/db test -- drizzle-admin.repository.test.ts
@@ -208,7 +208,7 @@ git commit -m "커리큘럼 마이그레이션 적용 저장소 구현"
 - 수정: `apps/admin-api/src/app.ts`
 - 수정: `apps/admin-api/src/app.test.ts`
 
-- [ ] **단계 1: 실패 테스트 작성**
+- [x] **단계 1: 실패 테스트 작성**
 
 `apps/admin-api/src/app.test.ts`에 다음 route 테스트를 추가한다.
 
@@ -219,7 +219,7 @@ git commit -m "커리큘럼 마이그레이션 적용 저장소 구현"
 - not-found는 404
 - unauthenticated는 401
 
-- [ ] **단계 2: 실패 확인**
+- [x] **단계 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/admin-api test -- app.test.ts
@@ -227,11 +227,11 @@ bun --filter @workspace/admin-api test -- app.test.ts
 
 기대 결과: route가 등록되지 않아 404로 실패한다.
 
-- [ ] **단계 3: route 구현**
+- [x] **단계 3: route 구현**
 
 `requireAdminSession`, `describeRoute`, Zod request parsing을 사용한다.
 
-- [ ] **단계 4: 통과 확인과 커밋**
+- [x] **단계 4: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/admin-api test -- app.test.ts
@@ -253,11 +253,11 @@ git commit -m "관리자 커리큘럼 마이그레이션 API 추가"
 - 수정: `docs/platform-backend-api.md`
 - 수정: `docs/superpowers/plans/2026-05-28-curriculum-migration-map.md`
 
-- [ ] **단계 1: 문서 갱신**
+- [x] **단계 1: 문서 갱신**
 
 7단계 구현 완료 로그와 현재 상태를 갱신한다.
 
-- [ ] **단계 2: 전체 검증**
+- [x] **단계 2: 전체 검증**
 
 ```bash
 bun prettier --write DOMAIN.md BACKEND.md docs/curriculum-change-policy.md docs/admin-site.md docs/platform-backend-api.md docs/superpowers/specs/2026-05-28-curriculum-migration-map-design.md docs/superpowers/plans/2026-05-28-curriculum-migration-map.md packages/core/src/admin/admin.dto.ts packages/core/src/admin/admin.repository.ts packages/core/src/admin/admin.service.ts packages/core/src/admin/admin.service.test.ts packages/db/src/repositories/drizzle-admin.repository.ts packages/db/src/repositories/drizzle-admin.repository.test.ts apps/admin-api/src/app.ts apps/admin-api/src/app.test.ts apps/admin-api/src/routes/curriculum-migrations.route.ts
@@ -270,7 +270,7 @@ bun run typecheck
 git diff --check
 ```
 
-- [ ] **단계 3: 커밋**
+- [x] **단계 3: 커밋**
 
 ```bash
 git add DOMAIN.md BACKEND.md docs/curriculum-change-policy.md docs/admin-site.md docs/platform-backend-api.md docs/superpowers/plans/2026-05-28-curriculum-migration-map.md

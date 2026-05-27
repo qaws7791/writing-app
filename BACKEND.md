@@ -116,6 +116,8 @@ bun --filter @workspace/admin-api seed:admin
 
 관리자 발행 API는 최신 published 버전의 snapshot에서 draft를 만들고, draft를 published 상태로 승격한다. publish 후 공개 콘텐츠 조회는 코스에서 가장 큰 published `version_number`를 최신 버전으로 사용한다. 기존 학습자 진행 row는 자동 마이그레이션하지 않고 저장된 `course_progress.curriculum_version_id`를 유지한다.
 
+관리자 마이그레이션 API는 published 버전 사이의 레슨 매핑을 생성하고 특정 사용자 진행에 적용한다. `equivalent`와 `split`은 완료 source lesson을 target lesson 완료로 이전하고, `merged`는 같은 target lesson에 연결된 모든 source lesson이 완료된 경우에만 target을 완료로 인정한다. `removed`는 새 버전에 대응 레슨을 만들지 않고 기존 완료 row를 보존 목록에 기록한다. 적용 결과는 `curriculum_migration_applications`에 저장하며, 성공 application은 재실행해도 같은 결과를 반환한다.
+
 따라서 관리자 콘텐츠 생성, 수정, 삭제 API를 추가하기 전에 다음 제약을 먼저 지킨다.
 
 - 구조 변경은 draft/published 발행 플로우와 명시적 마이그레이션 정책을 기준으로 허용한다.
@@ -124,8 +126,9 @@ bun --filter @workspace/admin-api seed:admin
 - 레슨과 챕터 삭제는 실제 delete가 아니라 `deprecated` 또는 `archived` 상태 전환으로 처리한다.
 - 이미 완료한 레슨은 archived 상태가 되더라도 완료 성취와 카운트에서 사라지지 않는다.
 - 진행 마이그레이션은 관리자 지정 매핑이 있을 때만 수행한다.
+- 부분 진행과 lesson answer는 아직 마이그레이션하지 않는다.
 
-마이그레이션 맵과 학습자 업그레이드 UX가 구현되기 전까지 publish는 신규 공개 조회의 최신 버전만 바꾸며, 기존 학습자의 진행 버전을 자동 변경하지 않는다. 어드민 API는 published 콘텐츠 구조를 직접 수정하는 관리 API를 제공하지 않는다.
+학습자 업그레이드 UX가 구현되기 전까지 publish는 신규 공개 조회의 최신 버전만 바꾸며, 기존 학습자의 진행 버전을 자동 변경하지 않는다. 어드민 API는 published 콘텐츠 구조를 직접 수정하는 관리 API를 제공하지 않는다.
 
 ### `packages/db`
 
@@ -142,6 +145,9 @@ bun --filter @workspace/admin-api seed:admin
 - `curriculum_versions`: 코스별 커리큘럼 버전과 `draft`, `published`, `archived` 상태
 - `curriculum_version_chapters`: 특정 커리큘럼 버전에 포함된 챕터 스냅샷
 - `curriculum_version_lessons`: 특정 커리큘럼 버전에 포함된 레슨 배치 스냅샷
+- `curriculum_version_migrations`: source/target 커리큘럼 버전 사이의 active 마이그레이션 맵
+- `lesson_migration_mappings`: 마이그레이션 맵 안의 레슨 단위 `equivalent`, `split`, `merged`, `removed` 매핑
+- `curriculum_migration_applications`: 특정 사용자에게 마이그레이션을 적용한 completed/failed 결과
 
 콘텐츠 시드는 현재 웹 정적 카탈로그와 과정 상세 화면의 과정/챕터/레슨 ID를 명시적으로 보관하고, 각 코스의 기존 구조를 `v1` published 커리큘럼 버전으로 함께 생성한다. 공개 콘텐츠 목록, 검색, 상세 API는 코스별 published 버전 중 가장 큰 `version_number`를 최신 버전으로 보고 그 버전의 active 챕터와 active 레슨 배치로 `lessonCount`, `firstLessonId`, `chapters`를 계산한다. 레슨 플레이 본문은 아직 `lessons`, `lesson_steps`를 `lessonId`로 조회하며, 모든 레슨은 현재 `INTRO`, `SHORT_WRITE`, `AI_FEEDBACK`, `SUMMARY`, `COMPLETE` 기본 단계로 플레이 가능성과 학습 상태 저장 경로를 보장한다.
 

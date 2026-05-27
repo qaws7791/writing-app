@@ -1,5 +1,20 @@
 # 어드민 사이트
 
+## 2026-05-28 커리큘럼 마이그레이션 맵 구현 시작
+
+- 커리큘럼 버전 관리 로드맵 7단계 구현을 시작한다.
+- 관리자 API가 커리큘럼 버전 사이의 레슨 매핑을 만들고, 특정 사용자 진행을 맵 기준으로 적용할 수 있게 한다.
+- 학습자 업그레이드 선택 UX와 learner-facing route는 다음 단계로 남긴다.
+
+## 2026-05-28 커리큘럼 마이그레이션 맵 구현 완료
+
+- `curriculum_version_migrations`, `lesson_migration_mappings`, `curriculum_migration_applications` 스키마와 migration을 추가했다.
+- Core admin 계약에 마이그레이션 맵 생성, 조회, 사용자 단위 적용 DTO와 service 결과를 추가했다.
+- DB admin repository는 `equivalent`, `split`, `merged`, `removed` 매핑 정책으로 완료 레슨만 새 버전 진행에 이전한다.
+- 마이그레이션 적용은 재실행해도 기존 완료 application 결과를 반환하며, 잘못된 source version 적용 시도는 failed application row로 남긴다.
+- Admin API는 `POST /curriculum-migrations`, `GET /curriculum-migrations/:migrationId`, `POST /curriculum-migrations/:migrationId/apply`를 제공한다.
+- 부분 진행과 lesson answer 이전, 여러 사용자 일괄 적용, 학습자 UX는 아직 제공하지 않는다.
+
 ## 2026-05-28 커리큘럼 마이그레이션 맵 구현 계획 시작
 
 - 커리큘럼 버전 관리 로드맵 7단계 구현 계획을 작성한다.

@@ -44,7 +44,7 @@
 
 ## 현재 상태
 
-현재 저장소는 6단계 관리자 draft/published 발행 워크플로우까지 구현했다.
+현재 저장소는 7단계 커리큘럼 마이그레이션 맵까지 구현했다.
 
 - 코스별 기존 콘텐츠는 `v1` published 커리큘럼 버전으로 시드된다.
 - 공개 콘텐츠 API는 최신 published 버전의 active 챕터와 active 레슨만 신규 학습 경로로 반환한다.
@@ -54,5 +54,8 @@
 - 관리자 코스 트리 조회는 최신 published 버전의 `active`, `deprecated`, `archived` 상태를 표시한다.
 - 관리자 API는 코스별 커리큘럼 버전 목록 조회, 최신 published snapshot 기반 draft 생성, 버전 상세 조회, draft publish를 제공한다.
 - draft publish 후 신규 공개 조회는 새 최신 published 버전을 사용하지만, 기존 학습자 진행 row의 버전은 자동 변경하지 않는다.
+- 관리자 API는 마이그레이션 맵 생성, 조회, 특정 사용자 적용 route를 제공한다.
+- 마이그레이션 적용은 `equivalent`, `split`, `merged`, `removed` 매핑 정책으로 완료 레슨만 이전한다.
+- 적용 결과는 `curriculum_migration_applications`에 기록되고, 성공 application은 재실행해도 같은 결과를 반환한다.
 - 실제 delete API와 archive mutation API는 아직 제공하지 않는다.
-- draft 구조 편집, 마이그레이션 맵, 학습자 업그레이드 UX는 아직 제공하지 않는다.
+- draft 구조 편집, 학습자 업그레이드 UX, 부분 진행과 answer 이전은 아직 제공하지 않는다.

@@ -1,5 +1,19 @@
 # 플랫폼 백엔드 API
 
+## 2026-05-28 커리큘럼 마이그레이션 맵 구현 시작
+
+- 커리큘럼 버전 관리 로드맵 7단계 구현을 시작한다.
+- 관리자 지정 마이그레이션 맵으로 기존 학습자의 완료 진행을 새 버전에 이전하는 저장소 경계를 추가한다.
+
+## 2026-05-28 커리큘럼 마이그레이션 맵 구현 완료
+
+- DB에 마이그레이션 맵, 레슨 매핑, 적용 결과 application 테이블을 추가했다.
+- Admin API에 마이그레이션 맵 생성, 조회, 특정 사용자 적용 route를 추가했다.
+- `equivalent`와 `split`은 완료 source lesson을 target lesson 완료로 이전하고, `merged`는 같은 target에 연결된 모든 source lesson이 완료됐을 때만 이전한다.
+- `removed`는 기존 완료 성취 row를 삭제하지 않고 application 결과의 보존 목록에 기록한다.
+- 적용 성공 후 `course_progress.curriculum_version_id`는 target version으로 이동하고, 재실행하면 같은 completed application 결과를 반환한다.
+- 학습자가 직접 업그레이드를 선택하는 API와 UX는 아직 제공하지 않는다.
+
 ## 2026-05-28 커리큘럼 마이그레이션 맵 구현 계획 시작
 
 - 커리큘럼 버전 관리 로드맵 7단계 구현 계획을 작성한다.
