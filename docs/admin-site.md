@@ -51,3 +51,15 @@
 - 어드민 조회 repository port와 service를 추가하고 repository 응답 검증 실패를 DB 사용 불가 결과로 처리한다.
 - `packages/core` public export와 `@workspace/core/admin` subpath export에 어드민 모듈을 연결했다.
 - 코드 품질 리뷰 반영으로 repository 예외, 사용자 이메일, 사용자 일시 DTO 검증 실패가 모두 `database-unavailable` 결과로 변환되는지 테스트를 보강했다.
+
+## 2026-05-28 Task 4 시작
+
+- `packages/db`에 어드민 콘텐츠 계층 조회와 플랫폼 사용자 목록 조회 repository 구현을 추가한다.
+- 구현 전 실패 테스트로 `AdminRepository` 계약과 DB row 매핑을 검증한다.
+
+## 2026-05-28 Task 4 완료
+
+- `createDrizzleAdminRepository`를 추가해 콘텐츠 코스, 챕터, 레슨 계층과 플랫폼 사용자 목록을 조회한다.
+- `@workspace/db` root export에서 어드민 repository를 사용할 수 있게 연결했다.
+- `packages/db` typecheck가 `@workspace/core/admin` subpath를 해석하도록 admin path mapping을 추가했다.
+- 수동 fixture 기반 테스트로 코스, 챕터, 레슨의 정확한 row mapping과 정렬 순서, 사용자 createdAt 오름차순 정렬을 검증한다.
