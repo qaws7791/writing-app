@@ -179,6 +179,16 @@ OpenAPI types provide compile-time safety. Runtime safety requires separate vali
 
 로컬 기본값은 fake 모드다. 백엔드 연동 검증 시 `WEB_API_MODE=http`, `NEXT_PUBLIC_API_MODE=http`, `WEB_API_BASE_URL=http://localhost:4000`, `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000`을 명시한다.
 
+### 5.6 어드민 프론트엔드
+
+`apps/admin`은 운영 도구이므로 전통적인 왼쪽 사이드바 대시보드 구조를 사용한다. `packages/ui`의 shadcn Sidebar 컴포넌트를 조합하고, shadcn `sidebar-07` 블록은 구조 참고용으로만 사용한다.
+
+어드민 앱은 `apps/admin-api`만 호출하며 플랫폼 `apps/api`를 직접 호출하지 않는다. 어드민 API가 내려가면 어드민 화면은 오류 또는 로그인 필요 상태를 표시하지만, 학습자 플랫폼 기능에는 영향을 주지 않는다.
+
+관리자 로그인은 same-origin `/api/auth/*` 프록시를 통해 `apps/admin-api`의 Better Auth endpoint로 전달한다. 서버 컴포넌트의 콘텐츠와 사용자 조회는 `getServerAdminApi()`가 현재 요청 쿠키를 어드민 API로 전달해 인증 상태를 유지한다.
+
+1차 화면은 읽기 전용으로 유지한다. `/courses`는 코스-챕터-레슨 계층을 표시하고, `/users`는 이름, 이메일, 이메일 인증 상태, 가입일만 표시한다. 생성, 수정, 삭제 UI는 2차 관리 기능으로 분리한다.
+
 ---
 
 ## 6. Rendering Strategy Principles

@@ -155,3 +155,24 @@
 
 - 콘텐츠 조회 화면은 코스에 챕터가 없거나 챕터에 레슨이 없을 때도 중첩 빈 상태 문구를 표시한다.
 - 중첩 빈 상태 테스트를 추가해 빈 카드나 빈 레슨 목록이 렌더링되지 않도록 검증한다.
+
+## 2026-05-28 Task 11 시작
+
+- 어드민 앱과 어드민 API가 추가된 현재 구조를 `ARCHITECTURE.md`, `BACKEND.md`, `FRONTEND.md`에 반영한다.
+- 전체 테스트, 타입체크, 린트, pre-commit, 로컬 실행, 플랫폼 독립성 검증으로 1차 구현을 마무리한다.
+
+## 2026-05-28 구현 완료
+
+- `apps/admin`과 `apps/admin-api`를 추가했다.
+- 관리자 Better Auth 테이블은 `admin_*`로 분리했다.
+- 최초 관리자 계정은 `bun --filter @workspace/admin-api seed:admin`으로 생성한다.
+- 어드민 화면은 shadcn Sidebar 기반 왼쪽 사이드바 레이아웃을 사용한다.
+- 콘텐츠 계층 조회와 사용자 기본 정보 조회를 읽기 전용으로 제공한다.
+- 전체 검증은 admin, admin-api, platform API, platform web 테스트와 pre-commit으로 확인한다.
+
+## 2026-05-28 Task 11 검증 보정
+
+- `packages/db` root export가 어드민 repository를 노출하면서 플랫폼 API 타입체크도 `@workspace/core/admin` subpath를 해석해야 한다.
+- `apps/api` TypeScript path mapping에 core admin 도메인을 추가해 플랫폼 API 타입체크가 workspace source export를 일관되게 해석하도록 보정한다.
+- `bun dev:admin` 실행 시 Turbo strict env가 어드민 API 인증 환경 변수를 전달하도록 `turbo.json` 전역 환경 변수 목록을 보강한다.
+- `apps/api` lint는 기존 `BUN_EXECUTABLE`, `HOME` Turbo env 경고 2개를 출력하지만 exit code `0`으로 통과한다.

@@ -1,80 +1,130 @@
-# Architecture Overview
+# 아키텍처 개요
 
-Keep this living guide updated so contributors can quickly understand, navigate, and improve the codebase from day one.
+이 문서는 writing learning platform의 현재 구조를 빠르게 파악하기 위한 living guide다. 구조가 바뀌면 함께 갱신한다.
 
-## Project Structure
+## 프로젝트 구조
 
-```
+```text
 [project root]/
 ├── apps/
-│   ├── docs/     # Next.js 16 Fumadocs for documentation
-│   ├── website/  # Next.js 16 - Learning platform for users
-│   ├── api/  # Hono Server - API Server for learning platform
-│   └── admin/    # Next.js 16 - Admin dashboard for managing content and users
+│   ├── web/        # Next.js 16 - 학습자 플랫폼
+│   ├── api/        # Hono - 학습자 플랫폼 API
+│   ├── admin/      # Next.js 16 - 관리자 운영 대시보드
+│   ├── admin-api/  # Hono - 관리자 API
+│   ├── docs/       # Next.js 16 Fumadocs 문서 앱
+│   └── storybook/  # UI 컴포넌트 개발 환경
 ├── packages/
-│   ├── ui/     # Shared UI components and design system
-│   ├── db/     # drizzle schema + db client
-│   ├── logger/ # pino logger with pino-pretty
-│   └── core/   # Shared types, zod schemas, and business logic
+│   ├── ui/      # 공유 UI 컴포넌트와 디자인 시스템
+│   ├── db/      # Drizzle schema, migration, repository, db client
+│   ├── logger/  # pino logger와 요청 로그 helper
+│   ├── env/     # 환경 변수 parsing helper
+│   └── core/    # 공유 DTO, Zod schema, domain service, port
 └── docs/
 ```
 
-## Apps
+## 공통 기술
 
-### Common technology
-
-- frontend: Next.js 16 with App Router
-- backend: Hono with OpenAPI 3.1 spec, @hono/zod-openapi
-- api client: openapi-typescript
+- frontend: Next.js 16 App Router
+- backend: Hono, OpenAPI 3.1
 - auth: Better Auth
 - database: Drizzle with SQLite
 - logging: pino with pino-pretty
-- storage: RustFS with presigned uploads
+- package manager: Bun monorepo
 
-### website
+## 앱
 
-provide learning services to users
+### web
 
-- port: `3000 port`
-- auth: email/password + Google
+학습자가 사용하는 학습 플랫폼이다.
+
+- port: `3000`
+- auth: Better Auth 기반 email/password + Google
+- backend: `apps/api`
+- 주요 기능:
+  - 공개 콘텐츠 조회
+  - 학습 진행 저장
+  - 레슨 답변 저장
+  - OpenAI 기반 AI 피드백
+
+### api
+
+학습자 플랫폼용 Hono API 서버다.
+
+- port: `4000`
+- auth: 플랫폼 Better Auth 테이블
+- database: SQLite 파일을 사용한다.
+- 주요 기능:
+  - 콘텐츠 조회
+  - 학습자 인증과 세션 조회
+  - 학습 진행과 답변 저장
+  - AI 피드백 생성과 결과 저장
 
 ### admin
 
-Manages the platform, including content and users
+관리자용 운영 대시보드다.
 
-- port: `3001 port`
-- auth: id/password
-- features:
-  - user management
-  - content management content editor
+- port: `3001`
+- auth: Better Auth 기반 ID/password
+- backend: `apps/admin-api`
+- layout: 왼쪽 사이드바 기반 대시보드
+- 1차 기능:
+  - 코스-챕터-레슨 계층형 조회
+  - 사용자 기본 정보 조회
+
+### admin-api
+
+관리자용 Hono API 서버다.
+
+- port: `4001`
+- auth: 관리자 전용 Better Auth 테이블
+- database: 플랫폼과 같은 SQLite 파일을 사용하되 관리자 인증 테이블은 `admin_*`로 분리한다.
+- 주요 기능:
+  - 관리자 인증
+  - 코스-챕터-레슨 계층형 조회
+  - 사용자 기본 정보 조회
+  - 최초 관리자 계정 seed
 
 ### docs
 
-provide knowledge about the project and API documentation
+프로젝트와 API 문서를 제공하는 문서 앱이다.
 
-- port: `3002 port`
-- framework: fumadocs (Next 16)
+- port: `3002`
+- framework: Fumadocs on Next.js 16
 
-## Packages
+### storybook
 
-### UI
+공유 UI 컴포넌트를 독립적으로 확인하는 개발 환경이다.
 
-- Design System(based shadcn and mui/base-ui) with custom theming and components
+## 패키지
 
-### Database
+### ui
 
-- Drizzle-ORM with SQLite, zod schemas
+`packages/ui`는 shadcn 기반 공유 UI 컴포넌트와 디자인 시스템을 제공한다.
 
-### Storage
+### core
 
-- RustFS with presigned uploads
+`packages/core`는 프레임워크와 데이터베이스 구현에 의존하지 않는 DTO, Zod schema, 브랜드 ID, repository port, domain service를 제공한다.
 
-### AI
+### db
 
-- OpenAI Responses API + Structured Outputs
+`packages/db`는 Drizzle SQLite 기반 schema, migration, seed data, repository 구현, database client 생성을 제공한다.
 
-## Deployment
+### env
 
-- Ubuntu server with systemd for process management
-- Caddy for reverse proxy and TLS
-- SQLite backup strategy for data durability
+`packages/env`는 앱별 환경 변수 schema를 안전하게 parsing하기 위한 공통 helper를 제공한다. 앱별 의미 변환은 각 앱 내부에서 담당한다.
+
+### logger
+
+`packages/logger`는 API 런타임에서 공유하는 pino logger와 요청 로그 필드 helper를 제공한다.
+
+## 런타임 분리
+
+학습자 플랫폼과 어드민은 프론트엔드와 백엔드를 모두 별도 앱으로 실행한다. `apps/admin`과 `apps/admin-api`가 실행되지 않아도 `apps/web`과 `apps/api`의 학습자 기능은 정상 동작해야 한다.
+
+공유 DB는 사용하지만 인증 테이블은 플랫폼용 `user`, `session`, `account`, `verification`과 관리자용 `admin_user`, `admin_session`, `admin_account`, `admin_verification`으로 분리한다.
+
+## 배포
+
+- Ubuntu server와 systemd로 프로세스를 관리한다.
+- Caddy로 reverse proxy와 TLS를 담당한다.
+- SQLite backup 전략으로 데이터 내구성을 보장한다.
