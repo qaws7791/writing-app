@@ -1,3 +1,4 @@
+import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -20,6 +21,8 @@ interface CourseDetailPageProps {
 }
 
 export function CourseDetailPage({ course }: CourseDetailPageProps) {
+  const isNotStarted = course.progress.completedLessons === 0
+
   return (
     <div className="w-full bg-background text-foreground">
       <div className="mx-auto flex max-w-[720px] flex-col px-5 pt-8 pb-20 sm:px-6 sm:pt-10 sm:pb-28">
@@ -49,34 +52,38 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             </div>
 
             <Card variant="filled" className="rounded-4xl">
-              <CardHeader className="gap-3">
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    전체 진행률
-                  </span>
-                  <span className="shrink-0 text-2xl font-bold text-primary">
-                    {course.progress.percentage}%
-                  </span>
-                </div>
-                <ProgressBar
-                  value={course.progress.percentage}
-                  aria-label={`${course.title} 전체 진행률`}
-                  className="gap-0 [&_[data-slot=progress-indicator]]:bg-primary [&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-track]]:bg-muted"
-                />
-                <p className="m-0 text-sm font-medium text-muted-foreground">
-                  {course.progress.completedLessons} /{" "}
-                  {course.progress.totalLessons} 완료
-                </p>
-              </CardHeader>
+              {!isNotStarted && (
+                <>
+                  <CardHeader className="gap-3">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <span className="text-sm font-medium text-muted-foreground">
+                        전체 진행률
+                      </span>
+                      <span className="shrink-0 text-2xl font-bold text-primary">
+                        {course.progress.percentage}%
+                      </span>
+                    </div>
+                    <ProgressBar
+                      value={course.progress.percentage}
+                      aria-label={`${course.title} 전체 진행률`}
+                      className="gap-0 [&_[data-slot=progress-indicator]]:bg-primary [&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-track]]:bg-muted"
+                    />
+                    <p className="m-0 text-sm font-medium text-muted-foreground">
+                      {course.progress.completedLessons} /{" "}
+                      {course.progress.totalLessons} 완료
+                    </p>
+                  </CardHeader>
 
-              <CardContent>
-                <Separator />
-              </CardContent>
+                  <CardContent>
+                    <Separator />
+                  </CardContent>
+                </>
+              )}
 
               <CardFooter className="flex-col items-stretch gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex min-w-0 flex-col gap-1">
                   <span className="text-xs font-bold text-primary uppercase">
-                    이어서 학습하기
+                    {isNotStarted ? "첫 레슨 시작" : "이어서 학습하기"}
                   </span>
                   <h2 className="m-0 text-base/6 font-semibold tracking-normal">
                     {course.nextLesson.chapterLabel} · {course.nextLesson.title}
@@ -95,7 +102,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
                   size="lg"
                   className="w-full sm:w-auto"
                 >
-                  <span>이어하기</span>
+                  <span>{isNotStarted ? "시작하기" : "이어하기"}</span>
                   <PlayIcon data-icon="inline-end" className="fill-current" />
                 </Button>
               </CardFooter>
