@@ -56,6 +56,26 @@ vi.mock("@workspace/ui/components/ui/table", async () => {
   }
 })
 
+vi.mock("@/components/admin-header", async () => {
+  const ReactModule = await import("react")
+
+  return {
+    AdminHeader: ({
+      description,
+      title,
+    }: {
+      description?: string
+      title: string
+    }) =>
+      ReactModule.createElement("header", null, [
+        ReactModule.createElement("h1", { key: "title" }, title),
+        description
+          ? ReactModule.createElement("p", { key: "description" }, description)
+          : null,
+      ]),
+  }
+})
+
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
@@ -78,6 +98,12 @@ describe("AdminUsersPage", () => {
 
     render(<AdminUsersPage users={users} />)
 
+    expect(screen.getByRole("heading", { name: "사용자" })).toBeTruthy()
+    expect(
+      screen.getByText(
+        "학습자 계정의 기본 정보와 이메일 인증 상태를 확인합니다."
+      )
+    ).toBeTruthy()
     expect(screen.getByText("김관리")).toBeTruthy()
     expect(screen.getByText("user@example.com")).toBeTruthy()
     expect(screen.getByText("인증됨")).toBeTruthy()

@@ -60,6 +60,26 @@ vi.mock("@workspace/ui/components/ui/empty", async () => {
   }
 })
 
+vi.mock("@/components/admin-header", async () => {
+  const ReactModule = await import("react")
+
+  return {
+    AdminHeader: ({
+      description,
+      title,
+    }: {
+      description?: string
+      title: string
+    }) =>
+      ReactModule.createElement("header", null, [
+        ReactModule.createElement("h1", { key: "title" }, title),
+        description
+          ? ReactModule.createElement("p", { key: "description" }, description)
+          : null,
+      ]),
+  }
+})
+
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
@@ -95,6 +115,10 @@ describe("AdminCoursesPage", () => {
 
     render(<AdminCoursesPage courses={courses} />)
 
+    expect(screen.getByRole("heading", { name: "콘텐츠" })).toBeTruthy()
+    expect(
+      screen.getByText("코스, 챕터, 레슨 계층을 읽기 전용으로 확인합니다.")
+    ).toBeTruthy()
     expect(screen.getByText("기초 한글")).toBeTruthy()
     expect(
       screen.getByText("한글을 처음 배우는 학습자를 위한 코스")
