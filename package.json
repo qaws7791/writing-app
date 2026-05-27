@@ -10,6 +10,7 @@
     "build": "turbo build",
     "build-storybook": "bun --filter storybook build",
     "dev": "turbo dev",
+    "dev:admin": "turbo dev --filter=@workspace/admin --filter=@workspace/admin-api",
     "dev:app": "turbo dev --filter=@workspace/web --filter=@workspace/api",
     "docs": "bun --filter docs dev",
     "lint": "turbo lint",

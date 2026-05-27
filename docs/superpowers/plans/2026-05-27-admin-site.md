@@ -128,22 +128,26 @@
 
 기존 script는 유지하고 새 key만 추가한다.
 
-- [ ] **Step 3: vitest workspace에 새 프로젝트 추가**
+- [ ] **Step 3: vitest workspace 형태 유지**
 
-`vitest.workspace.ts`에 다음 항목이 포함되게 한다.
+현재 `vitest.workspace.ts`는 root coverage script에서 `--config vitest.workspace.ts`로 로드되므로 plain array가 아니라 `defineConfig({ test: { projects } })` 형태를 유지한다. Task 1에서는 아직 `apps/admin-api/vitest.config.ts`와 `apps/admin/vitest.config.ts`가 존재하지 않으므로 새 프로젝트 경로를 추가하지 않는다. 해당 경로는 각 앱의 `vitest.config.ts`가 생성되는 Task 5와 Task 8에서 추가한다.
 
 ```ts
-export default [
-  "apps/api/vitest.config.ts",
-  "apps/admin-api/vitest.config.ts",
-  "apps/admin/vitest.config.ts",
-  "apps/web/vitest.config.ts",
-  "packages/core/vitest.config.ts",
-  "packages/db/vitest.config.ts",
-  "packages/env/vitest.config.ts",
-  "packages/logger/vitest.config.ts",
-  "packages/ui/vitest.config.ts",
-]
+import { defineConfig } from "vitest/config"
+
+export default defineConfig({
+  test: {
+    projects: [
+      "packages/ui/vitest.config.ts",
+      "packages/core/vitest.config.ts",
+      "packages/logger/vitest.config.ts",
+      "packages/db/vitest.config.ts",
+      "packages/env/vitest.config.ts",
+      "apps/api/vitest.config.ts",
+      "apps/web/vitest.config.ts",
+    ],
+  },
+})
 ```
 
 - [ ] **Step 4: workspace 설정 검증**
