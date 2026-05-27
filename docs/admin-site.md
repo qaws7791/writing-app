@@ -220,3 +220,13 @@
 - `dev:admin`과 `dev:admin:setup`은 외부에서 전달된 `ADMIN_SEED_EMAIL`, `ADMIN_SEED_PASSWORD`, `DATABASE_URL`, 관리자 인증 환경 변수를 우선 사용한다.
 - `dev:admin:setup`은 `ADMIN_SEED_RESET_PASSWORD=true`로 seed를 실행해 기존 개발 관리자 credential 비밀번호를 현재 `ADMIN_SEED_PASSWORD` 값으로 갱신한다.
 - 운영용 `seed:admin`은 `ADMIN_SEED_RESET_PASSWORD=true`를 명시하지 않으면 기존 관리자 비밀번호를 바꾸지 않는다.
+
+## 2026-05-28 Windows Bun SQLite 디렉터리 보장 수정 시작
+
+- Windows Bun 환경에서 이미 존재하는 상대 상위 디렉터리에 `mkdirSync(..., { recursive: true })`를 다시 호출하면 `EEXIST`가 발생할 수 있다.
+- API와 어드민 API의 SQLite 부모 디렉터리 보장 로직이 기존 디렉터리를 정상 상태로 처리하도록 보정한다.
+
+## 2026-05-28 Windows Bun SQLite 디렉터리 보장 수정 완료
+
+- `ensureDatabaseDirectory`가 SQLite 부모 경로를 절대 경로로 정규화한 뒤 기존 디렉터리 여부를 먼저 확인하도록 변경했다.
+- 기존 DB 파일이 있는 상대 상위 디렉터리 경로에서도 API와 어드민 API 환경 테스트가 실패하지 않도록 회귀 테스트를 추가했다.

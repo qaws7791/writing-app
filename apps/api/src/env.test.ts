@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { mkdirSync, rmSync, writeFileSync } from "node:fs"
 
 import { ensureDatabaseDirectory, parseApiEnv } from "@/env"
 
@@ -70,5 +71,21 @@ describe("ensureDatabaseDirectory", () => {
   it("skips in-memory and bare filename database paths", () => {
     expect(ensureDatabaseDirectory(":memory:")).toBe(false)
     expect(ensureDatabaseDirectory("api.sqlite")).toBe(false)
+  })
+
+  it("keeps existing parent directories with relative parent segments", () => {
+    const databaseDirectory = "../../.tmp-api-existing-data"
+
+    rmSync(databaseDirectory, { force: true, recursive: true })
+    mkdirSync(databaseDirectory, { recursive: true })
+    writeFileSync(`${databaseDirectory}/api.sqlite`, "")
+
+    try {
+      expect(ensureDatabaseDirectory(`${databaseDirectory}/api.sqlite`)).toBe(
+        false
+      )
+    } finally {
+      rmSync(databaseDirectory, { force: true, recursive: true })
+    }
   })
 })

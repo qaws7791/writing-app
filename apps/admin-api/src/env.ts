@@ -1,5 +1,5 @@
-import { mkdirSync } from "node:fs"
-import { dirname } from "node:path"
+import { mkdirSync, statSync } from "node:fs"
+import { dirname, resolve } from "node:path"
 import { parseEnv, type RawEnv } from "@workspace/env"
 import { z } from "zod"
 
@@ -45,7 +45,24 @@ export function ensureDatabaseDirectory(databasePath: string) {
     return false
   }
 
-  mkdirSync(databaseDirectory, { recursive: true })
+  const resolvedDatabaseDirectory = resolve(databaseDirectory)
+
+  try {
+    if (statSync(resolvedDatabaseDirectory).isDirectory()) {
+      return false
+    }
+  } catch (error) {
+    if (
+      typeof error !== "object" ||
+      error === null ||
+      !("code" in error) ||
+      error.code !== "ENOENT"
+    ) {
+      throw error
+    }
+  }
+
+  mkdirSync(resolvedDatabaseDirectory, { recursive: true })
 
   return true
 }
