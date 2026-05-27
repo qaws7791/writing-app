@@ -39,3 +39,15 @@
 - 관리자 인증 Drizzle 스키마와 `0002-admin-auth.sql` 마이그레이션을 추가했다.
 - 콘텐츠 마이그레이션 실행 시 관리자 인증 테이블도 함께 생성되도록 연결했다.
 - `packages/db` 클라이언트 테스트에서 관리자 인증 테이블 생성과 `admin_user` insert를 검증한다.
+
+## 2026-05-28 Task 3 시작
+
+- `packages/core`에 어드민 콘텐츠 계층 조회와 사용자 목록 조회 계약을 추가한다.
+- 어드민 API가 구현될 때 사용할 DTO, 오류 DTO, repository port, service를 먼저 고정한다.
+
+## 2026-05-28 Task 3 완료
+
+- 어드민 콘텐츠 트리와 사용자 목록 DTO 스키마를 추가했다.
+- 어드민 조회 repository port와 service를 추가하고 repository 응답 검증 실패를 DB 사용 불가 결과로 처리한다.
+- `packages/core` public export와 `@workspace/core/admin` subpath export에 어드민 모듈을 연결했다.
+- 코드 품질 리뷰 반영으로 repository 예외, 사용자 이메일, 사용자 일시 DTO 검증 실패가 모두 `database-unavailable` 결과로 변환되는지 테스트를 보강했다.
