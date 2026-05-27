@@ -8,6 +8,18 @@
 - 이번 작업의 코스 상세 페이지는 실제 하위 데이터 표시 전 빈 자리 화면으로만 구현한다.
 - 설계 문서는 `docs/superpowers/specs/2026-05-28-admin-course-list-data-table-design.md`에 작성한다.
 
+## 2026-05-28 코스 목록 Data Table 개선 완료
+
+- 어드민 Core, DB repository, Admin API에 코스 목록 전용 조회 계약을 추가했다.
+- `GET /courses?page=1&pageSize=10&query=...`는 코스 단위 목록과 `pagination` 메타데이터를 반환한다.
+- 기존 `GET /courses?include=chapters,lessons` 트리 조회는 유지한다.
+- 코스 검색은 서버측에서 코스명과 설명을 대상으로 수행한다.
+- 페이지네이션은 서버측 `limit`, `offset`, `totalCount` 조회로 수행한다.
+- 어드민 코스 목록 화면은 shadcn Data Table 가이드와 지정 dashboard DataTable 템플릿의 Table, 컬럼 표시, 페이지 크기 선택, 첫/이전/다음/마지막 페이지 버튼 구조를 기반으로 구현했다.
+- TanStack Table은 `manualPagination`, `manualFiltering`, `rowCount`, `getCoreRowModel()` 설정으로 서버 응답만 렌더링한다.
+- `/courses/[id]`는 챕터와 레슨 상세 조회 전 빈 자리 화면으로 추가했다.
+- 검증은 core, db, admin-api, admin의 집중 테스트와 admin 타입체크, lint로 확인했다.
+
 ## 2026-05-27 설계 시작
 
 - 어드민 사이트는 학습자 플랫폼과 분리된 운영 도구로 설계한다.

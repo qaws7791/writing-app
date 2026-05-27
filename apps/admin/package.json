@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@tanstack/react-table": "^8.21.3",
     "@workspace/core": "workspace:*",
     "@workspace/ui": "workspace:*",
     "better-auth": "^1.6.0",

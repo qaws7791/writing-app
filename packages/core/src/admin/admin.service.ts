@@ -1,6 +1,9 @@
 import {
+  adminCourseListDtoSchema,
   adminCourseTreeDtoSchema,
   adminUserListDtoSchema,
+  type AdminCourseListDto,
+  type AdminCourseListInputDto,
   type AdminCourseTreeDto,
   type AdminUserListDto,
 } from "@/admin/admin.dto"
@@ -20,6 +23,9 @@ type UnavailableResult = {
 export type AdminServiceResult<TValue> = OkResult<TValue> | UnavailableResult
 
 export interface AdminService {
+  listCourses(
+    input: AdminCourseListInputDto
+  ): Promise<AdminServiceResult<AdminCourseListDto>>
   listCourseTree(): Promise<AdminServiceResult<AdminCourseTreeDto>>
   listUsers(): Promise<AdminServiceResult<AdminUserListDto>>
 }
@@ -40,6 +46,18 @@ export function createAdminService({
   repository,
 }: AdminServiceDependencies): AdminService {
   return {
+    async listCourses(input) {
+      try {
+        return {
+          status: "ok",
+          value: adminCourseListDtoSchema.parse(
+            await repository.listCourses(input)
+          ),
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
     async listCourseTree() {
       try {
         return {

@@ -16,6 +16,63 @@ import {
 } from "@/schema"
 
 describe("createDrizzleAdminRepository", () => {
+  it("lists paginated courses filtered by title or description", async () => {
+    const sqlite = new Database(":memory:")
+    runContentMigration(sqlite)
+    const db = createDatabase(sqlite)
+    await db.insert(courseCategories).values({
+      id: "category-writing",
+      title: "글쓰기",
+      sortOrder: 1,
+    })
+    await db.insert(courses).values([
+      {
+        id: "course-unmatched",
+        categoryId: "category-writing",
+        title: "어휘 기초",
+        description: "검색되지 않는 코스",
+        thumbnailPath: "/images/course-unmatched.png",
+        sortOrder: 1,
+      },
+      ...Array.from({ length: 11 }, (_, index) => ({
+        id: `course-sentence-${index + 1}`,
+        categoryId: "category-writing",
+        title:
+          index === 10
+            ? "마지막 결과"
+            : `문장 구조 ${String(index + 1).padStart(2, "0")}`,
+        description: index === 10 ? "문장 검색 설명" : "문장 학습 코스",
+        thumbnailPath: `/images/course-sentence-${index + 1}.png`,
+        sortOrder: index + 2,
+      })),
+    ])
+
+    const repository = createDrizzleAdminRepository(db)
+    const result = await repository.listCourses({
+      page: 2,
+      pageSize: 10,
+      query: "문장",
+    })
+
+    expect(result).toEqual({
+      courses: [
+        {
+          id: "course-sentence-11",
+          title: "마지막 결과",
+          description: "문장 검색 설명",
+          sortOrder: 12,
+        },
+      ],
+      pagination: {
+        page: 2,
+        pageSize: 10,
+        totalCount: 11,
+        totalPages: 2,
+      },
+      query: "문장",
+    })
+  })
+
   it("lists courses with chapters and lessons", async () => {
     const sqlite = new Database(":memory:")
     runContentMigration(sqlite)

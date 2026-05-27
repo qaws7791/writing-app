@@ -33,6 +33,25 @@ const repository: AdminRepository = {
       ],
     }
   },
+  async listCourses() {
+    return {
+      courses: [
+        {
+          id: "sentence-structure",
+          title: "문장 구조의 기본",
+          description: "문장의 뼈대를 이해합니다.",
+          sortOrder: 1,
+        },
+      ],
+      pagination: {
+        page: 1,
+        pageSize: 10,
+        totalCount: 1,
+        totalPages: 1,
+      },
+      query: "문장",
+    }
+  },
   async listUsers() {
     return {
       users: [
@@ -51,6 +70,26 @@ const repository: AdminRepository = {
 }
 
 describe("createAdminService", () => {
+  it("returns paginated courses", async () => {
+    const service = createAdminService({ repository })
+
+    await expect(
+      service.listCourses({ page: 1, pageSize: 10, query: "문장" })
+    ).resolves.toMatchObject({
+      status: "ok",
+      value: {
+        courses: [{ id: "sentence-structure" }],
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          totalCount: 1,
+          totalPages: 1,
+        },
+        query: "문장",
+      },
+    })
+  })
+
   it("returns a course tree", async () => {
     const service = createAdminService({ repository })
 

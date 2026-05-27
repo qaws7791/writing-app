@@ -22,6 +22,34 @@ function getRequest(fetchMock: ReturnType<typeof vi.fn<typeof fetch>>) {
 }
 
 describe("createHttpAdminApi", () => {
+  it("requests paginated courses with query", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({
+        courses: [],
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          totalCount: 0,
+          totalPages: 1,
+        },
+        query: "문장",
+      })
+    )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.listCourses({ page: 1, pageSize: 10, query: "문장" })
+
+    const request = getRequest(fetchMock)
+    expect(request.url).toBe(
+      "http://localhost:4001/courses?page=1&pageSize=10&query=%EB%AC%B8%EC%9E%A5"
+    )
+    expect(request.credentials).toBe("include")
+    expect(request.method).toBe("GET")
+  })
+
   it("requests the course tree with credentials included", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       createJsonResponse({

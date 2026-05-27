@@ -25,6 +25,17 @@ export function createHttpAdminApi({
   headers,
 }: CreateHttpAdminApiInput): AdminApi {
   return {
+    listCourses(input) {
+      const url = createAdminApiUrl(baseUrl, "/courses")
+      url.searchParams.set("page", String(input.page))
+      url.searchParams.set("pageSize", String(input.pageSize))
+
+      if (input.query.trim().length > 0) {
+        url.searchParams.set("query", input.query.trim())
+      }
+
+      return requestJson(fetcher, url, headers)
+    },
     listCourseTree() {
       const url = createAdminApiUrl(baseUrl, "/courses")
       url.searchParams.set("include", courseTreeInclude)

@@ -1,4 +1,6 @@
 import type {
+  AdminCourseListDto,
+  AdminCourseListInputDto,
   AdminCourseTreeDto,
   AdminErrorDto,
   AdminUserListDto,
@@ -27,6 +29,9 @@ export type AdminApiResult<TValue> =
   | AdminApiErrorResult
 
 export interface AdminApi {
+  listCourses(
+    input: AdminCourseListInputDto
+  ): Promise<AdminApiResult<AdminCourseListDto>>
   listCourseTree(): Promise<AdminApiResult<AdminCourseTreeDto>>
   listUsers(): Promise<AdminApiResult<AdminUserListDto>>
 }

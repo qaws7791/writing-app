@@ -23,6 +23,28 @@ const auth: AdminAuthRuntime = {
 }
 
 const adminService: AdminService = {
+  async listCourses() {
+    return {
+      status: "ok",
+      value: {
+        courses: [
+          {
+            id: "sentence-structure",
+            title: "문장 구조의 기본",
+            description: "문장의 뼈대를 이해합니다.",
+            sortOrder: 1,
+          },
+        ],
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          totalCount: 1,
+          totalPages: 1,
+        },
+        query: "문장",
+      },
+    }
+  },
   async listCourseTree() {
     return {
       status: "ok",
@@ -90,6 +112,31 @@ function createTestApp(input?: Partial<{ auth: AdminAuthRuntime }>) {
 }
 
 describe("admin api app", () => {
+  it("returns protected paginated courses", async () => {
+    const response = await createTestApp().request(
+      "/courses?page=1&pageSize=10&query=%EB%AC%B8%EC%9E%A5"
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      courses: [
+        {
+          id: "sentence-structure",
+          title: "문장 구조의 기본",
+          description: "문장의 뼈대를 이해합니다.",
+          sortOrder: 1,
+        },
+      ],
+      pagination: {
+        page: 1,
+        pageSize: 10,
+        totalCount: 1,
+        totalPages: 1,
+      },
+      query: "문장",
+    })
+  })
+
   it("returns a protected course tree", async () => {
     const response = await createTestApp().request(
       "/courses?include=chapters,lessons"
@@ -161,7 +208,7 @@ describe("admin api app", () => {
     })
   })
 
-  it.each(["/courses", "/courses?include=chapters"])(
+  it.each(["/courses?include=chapters"])(
     "rejects invalid course include query: %s",
     async (path) => {
       const response = await createTestApp().request(path)
@@ -173,6 +220,19 @@ describe("admin api app", () => {
       })
     }
   )
+
+  it("rejects invalid course list pagination query", async () => {
+    const response = await createTestApp().request(
+      "/courses?page=0&pageSize=15"
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      code: "invalid-request",
+      message:
+        "page must be positive and pageSize must be one of 10,20,30,40,50.",
+    })
+  })
 
   it("returns the Admin API OpenAPI document", async () => {
     const response = await createTestApp().request("/openapi.json")
