@@ -16,3 +16,9 @@
 - 최초 관리자 계정은 DB seed 명령으로 생성한다.
 - 어드민 API는 별도 서버 자체를 boundary로 보고 `/admin` prefix 없이 `GET /courses?include=chapters,lessons`, `GET /users` 같은 RESTful 리소스 경로를 사용한다.
 - 어드민 UI는 shadcn `sidebar-07` 블록 구조를 참고한 왼쪽 사이드바 대시보드 레이아웃을 사용한다.
+
+## 2026-05-27 구현 계획 완료
+
+- 구현 계획은 `docs/superpowers/plans/2026-05-27-admin-site.md`에 작성했다.
+- 계획은 공유 DB와 core 계약, `apps/admin-api`, `apps/admin`, 문서와 전체 검증 순서로 나뉜다.
+- 각 task는 실패 테스트 작성, 실패 확인, 최소 구현, 검증, 커밋 단위로 진행한다.
