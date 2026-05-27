@@ -8,9 +8,12 @@ import { createDatabase } from "@/client"
 import { runContentMigration } from "@/migrations/run-content-migration"
 import {
   adminUser,
+  curriculumMigrationApplications,
+  curriculumVersionMigrations,
   curriculumVersionChapters,
   curriculumVersionLessons,
   curriculumVersions,
+  lessonMigrationMappings,
 } from "@/schema"
 
 describe("createDatabase", () => {
@@ -90,5 +93,27 @@ describe("curriculum version schema", () => {
     expect(curriculumVersions).toBeDefined()
     expect(curriculumVersionChapters).toBeDefined()
     expect(curriculumVersionLessons).toBeDefined()
+  })
+})
+
+describe("curriculum migration schema", () => {
+  it("creates curriculum migration tables", async () => {
+    const sqlite = new Database(":memory:")
+    runContentMigration(sqlite)
+    createDatabase(sqlite)
+
+    const tables = sqlite
+      .query<{ name: string }, []>(
+        "select name from sqlite_master where type = 'table' order by name"
+      )
+      .all()
+      .map((row) => row.name)
+
+    expect(tables).toContain("curriculum_version_migrations")
+    expect(tables).toContain("lesson_migration_mappings")
+    expect(tables).toContain("curriculum_migration_applications")
+    expect(curriculumVersionMigrations).toBeDefined()
+    expect(lessonMigrationMappings).toBeDefined()
+    expect(curriculumMigrationApplications).toBeDefined()
   })
 })

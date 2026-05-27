@@ -21,6 +21,10 @@ const progressCurriculumVersionMigrationSql = readFileSync(
   new URL("./0004-progress-curriculum-version.sql", import.meta.url),
   "utf8"
 )
+const curriculumMigrationMapSql = readFileSync(
+  new URL("./0005-curriculum-migration-map.sql", import.meta.url),
+  "utf8"
+)
 
 export function runContentMigration(sqlite: Database) {
   sqlite.exec(contentMigrationSql)
@@ -40,6 +44,7 @@ export function runContentMigration(sqlite: Database) {
     "alter table lesson_progress add column curriculum_version_id text references curriculum_versions(id)"
   )
   sqlite.exec(progressCurriculumVersionMigrationSql)
+  sqlite.exec(curriculumMigrationMapSql)
 }
 
 function addColumnIfMissing(
