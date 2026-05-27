@@ -66,6 +66,73 @@ export const adminCurriculumVersionDetailDtoSchema =
     chapters: z.array(adminCurriculumVersionChapterDtoSchema),
   })
 
+export const adminLessonMigrationMappingTypeSchema = z.enum([
+  "equivalent",
+  "split",
+  "merged",
+  "removed",
+])
+
+export const adminCurriculumMigrationStatusSchema = z.enum([
+  "active",
+  "archived",
+])
+
+export const adminCurriculumMigrationMappingDtoSchema = z.object({
+  id: z.string().min(1),
+  fromLessonId: z.string().min(1),
+  toLessonId: z.string().min(1).nullable(),
+  mappingType: adminLessonMigrationMappingTypeSchema,
+})
+
+export const adminCreateCurriculumMigrationMappingDtoSchema = z.object({
+  fromLessonId: z.string().min(1),
+  toLessonId: z.string().min(1).nullable(),
+  mappingType: adminLessonMigrationMappingTypeSchema,
+})
+
+export const adminCreateCurriculumMigrationRequestDtoSchema = z.object({
+  fromVersionId: z.string().min(1),
+  toVersionId: z.string().min(1),
+  mappings: z.array(adminCreateCurriculumMigrationMappingDtoSchema).min(1),
+})
+
+export const adminCurriculumMigrationDetailDtoSchema = z.object({
+  id: z.string().min(1),
+  fromVersionId: z.string().min(1),
+  toVersionId: z.string().min(1),
+  status: adminCurriculumMigrationStatusSchema,
+  createdAt: z.string().datetime(),
+  mappings: z.array(adminCurriculumMigrationMappingDtoSchema),
+})
+
+export const adminApplyCurriculumMigrationRequestDtoSchema = z.object({
+  migrationId: z.string().min(1),
+  userId: z.string().min(1),
+})
+
+export const adminCurriculumMigrationApplicationStatusSchema = z.enum([
+  "completed",
+  "failed",
+])
+
+export const adminCurriculumMigrationApplicationDtoSchema = z.object({
+  id: z.string().min(1),
+  migrationId: z.string().min(1),
+  userId: z.string().min(1),
+  courseId: z.string().min(1),
+  fromVersionId: z.string().min(1),
+  toVersionId: z.string().min(1),
+  status: adminCurriculumMigrationApplicationStatusSchema,
+  completedLessonCount: z.number().int().nonnegative(),
+  completedLessonIds: z.array(z.string().min(1)),
+  preservedLessonIds: z.array(z.string().min(1)),
+  skippedLessonIds: z.array(z.string().min(1)),
+  errorMessage: z.string().min(1).nullable(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime(),
+})
+
 export const adminCourseListPageSizeSchema = z.union([
   z.literal(10),
   z.literal(20),
@@ -118,6 +185,18 @@ export type AdminCourseListInputDto = z.infer<
   typeof adminCourseListInputDtoSchema
 >
 export type AdminCourseTreeDto = z.infer<typeof adminCourseTreeDtoSchema>
+export type AdminApplyCurriculumMigrationRequestDto = z.infer<
+  typeof adminApplyCurriculumMigrationRequestDtoSchema
+>
+export type AdminCreateCurriculumMigrationRequestDto = z.infer<
+  typeof adminCreateCurriculumMigrationRequestDtoSchema
+>
+export type AdminCurriculumMigrationApplicationDto = z.infer<
+  typeof adminCurriculumMigrationApplicationDtoSchema
+>
+export type AdminCurriculumMigrationDetailDto = z.infer<
+  typeof adminCurriculumMigrationDetailDtoSchema
+>
 export type AdminCurriculumVersionDetailDto = z.infer<
   typeof adminCurriculumVersionDetailDtoSchema
 >

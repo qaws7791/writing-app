@@ -114,6 +114,64 @@ const repository: AdminRepository = {
       },
     }
   },
+  async createCurriculumMigration() {
+    return {
+      status: "created",
+      migration: {
+        id: "sentence-structure-v1-to-sentence-structure-v2",
+        fromVersionId: "sentence-structure-v1",
+        toVersionId: "sentence-structure-v2",
+        status: "active",
+        createdAt: "2026-05-28T00:00:00.000Z",
+        mappings: [
+          {
+            id: "sentence-structure-v1-to-sentence-structure-v2-1",
+            fromLessonId: "sentence-structure-01",
+            toLessonId: "sentence-structure-01",
+            mappingType: "equivalent",
+          },
+        ],
+      },
+    }
+  },
+  async getCurriculumMigration() {
+    return {
+      id: "sentence-structure-v1-to-sentence-structure-v2",
+      fromVersionId: "sentence-structure-v1",
+      toVersionId: "sentence-structure-v2",
+      status: "active",
+      createdAt: "2026-05-28T00:00:00.000Z",
+      mappings: [
+        {
+          id: "sentence-structure-v1-to-sentence-structure-v2-1",
+          fromLessonId: "sentence-structure-01",
+          toLessonId: "sentence-structure-01",
+          mappingType: "equivalent",
+        },
+      ],
+    }
+  },
+  async applyCurriculumMigration() {
+    return {
+      status: "applied",
+      application: {
+        id: "sentence-structure-v1-to-sentence-structure-v2-user-1",
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        userId: "user-1",
+        courseId: "sentence-structure",
+        fromVersionId: "sentence-structure-v1",
+        toVersionId: "sentence-structure-v2",
+        status: "completed",
+        completedLessonCount: 1,
+        completedLessonIds: ["sentence-structure-01"],
+        preservedLessonIds: [],
+        skippedLessonIds: [],
+        errorMessage: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        updatedAt: "2026-05-28T00:00:00.000Z",
+      },
+    }
+  },
   async listUsers() {
     return {
       users: [
@@ -388,6 +446,128 @@ describe("createAdminService", () => {
       error: {
         code: "invalid-request",
         message: "Only draft curriculum versions can be published.",
+      },
+    })
+  })
+
+  it("creates a curriculum migration map", async () => {
+    const service = createAdminService({ repository })
+
+    await expect(
+      service.createCurriculumMigration({
+        fromVersionId: "sentence-structure-v1",
+        toVersionId: "sentence-structure-v2",
+        mappings: [
+          {
+            fromLessonId: "sentence-structure-01",
+            toLessonId: "sentence-structure-01",
+            mappingType: "equivalent",
+          },
+        ],
+      })
+    ).resolves.toMatchObject({
+      status: "ok",
+      value: {
+        id: "sentence-structure-v1-to-sentence-structure-v2",
+        mappings: [
+          {
+            fromLessonId: "sentence-structure-01",
+            mappingType: "equivalent",
+            toLessonId: "sentence-structure-01",
+          },
+        ],
+      },
+    })
+  })
+
+  it("returns a curriculum migration map", async () => {
+    const service = createAdminService({ repository })
+
+    await expect(
+      service.getCurriculumMigration(
+        "sentence-structure-v1-to-sentence-structure-v2"
+      )
+    ).resolves.toMatchObject({
+      status: "ok",
+      value: {
+        id: "sentence-structure-v1-to-sentence-structure-v2",
+        status: "active",
+        mappings: [{ mappingType: "equivalent" }],
+      },
+    })
+  })
+
+  it("returns not found when a curriculum migration map is missing", async () => {
+    const service = createAdminService({
+      repository: {
+        ...repository,
+        async getCurriculumMigration() {
+          return undefined
+        },
+      },
+    })
+
+    await expect(service.getCurriculumMigration("missing")).resolves.toEqual({
+      status: "not-found",
+      error: {
+        code: "not-found",
+        message: "Curriculum migration was not found.",
+      },
+    })
+  })
+
+  it("applies a curriculum migration to a learner", async () => {
+    const service = createAdminService({ repository })
+
+    await expect(
+      service.applyCurriculumMigration({
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        userId: "user-1",
+      })
+    ).resolves.toMatchObject({
+      status: "ok",
+      value: {
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        userId: "user-1",
+        completedLessonIds: ["sentence-structure-01"],
+        completedLessonCount: 1,
+      },
+    })
+  })
+
+  it("preserves invalid curriculum migration requests", async () => {
+    const service = createAdminService({
+      repository: {
+        ...repository,
+        async createCurriculumMigration() {
+          return {
+            status: "invalid-request",
+            error: {
+              code: "invalid-request",
+              message: "Removed mappings must not include a target lesson.",
+            },
+          }
+        },
+      },
+    })
+
+    await expect(
+      service.createCurriculumMigration({
+        fromVersionId: "sentence-structure-v1",
+        toVersionId: "sentence-structure-v2",
+        mappings: [
+          {
+            fromLessonId: "sentence-structure-01",
+            toLessonId: "sentence-structure-01",
+            mappingType: "removed",
+          },
+        ],
+      })
+    ).resolves.toEqual({
+      status: "invalid-request",
+      error: {
+        code: "invalid-request",
+        message: "Removed mappings must not include a target lesson.",
       },
     })
   })

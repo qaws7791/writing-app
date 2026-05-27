@@ -1,7 +1,11 @@
 import type {
+  AdminApplyCurriculumMigrationRequestDto,
   AdminCourseListDto,
   AdminCourseListInputDto,
   AdminCourseTreeDto,
+  AdminCreateCurriculumMigrationRequestDto,
+  AdminCurriculumMigrationApplicationDto,
+  AdminCurriculumMigrationDetailDto,
   AdminCurriculumVersionDetailDto,
   AdminCurriculumVersionListDto,
   AdminCurriculumVersionSummaryDto,
@@ -40,6 +44,34 @@ export type AdminPublishCurriculumVersionRepositoryResult =
       error: AdminNotFoundErrorDto
     }
 
+export type AdminCreateCurriculumMigrationRepositoryResult =
+  | {
+      status: "created"
+      migration: AdminCurriculumMigrationDetailDto
+    }
+  | {
+      status: "invalid-request"
+      error: AdminInvalidRequestErrorDto
+    }
+  | {
+      status: "not-found"
+      error: AdminNotFoundErrorDto
+    }
+
+export type AdminApplyCurriculumMigrationRepositoryResult =
+  | {
+      status: "applied"
+      application: AdminCurriculumMigrationApplicationDto
+    }
+  | {
+      status: "invalid-request"
+      error: AdminInvalidRequestErrorDto
+    }
+  | {
+      status: "not-found"
+      error: AdminNotFoundErrorDto
+    }
+
 export interface AdminRepository {
   listCourses(input: AdminCourseListInputDto): Promise<AdminCourseListDto>
   listCourseTree(): Promise<AdminCourseTreeDto>
@@ -55,5 +87,14 @@ export interface AdminRepository {
   publishCurriculumVersion(
     versionId: string
   ): Promise<AdminPublishCurriculumVersionRepositoryResult>
+  createCurriculumMigration(
+    input: AdminCreateCurriculumMigrationRequestDto
+  ): Promise<AdminCreateCurriculumMigrationRepositoryResult>
+  getCurriculumMigration(
+    migrationId: string
+  ): Promise<AdminCurriculumMigrationDetailDto | undefined>
+  applyCurriculumMigration(
+    input: AdminApplyCurriculumMigrationRequestDto
+  ): Promise<AdminApplyCurriculumMigrationRepositoryResult>
   listUsers(): Promise<AdminUserListDto>
 }

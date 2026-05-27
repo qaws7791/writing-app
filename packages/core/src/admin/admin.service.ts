@@ -1,13 +1,19 @@
 import {
+  adminCurriculumMigrationApplicationDtoSchema,
+  adminCurriculumMigrationDetailDtoSchema,
   adminCourseListDtoSchema,
   adminCourseTreeDtoSchema,
   adminCurriculumVersionDetailDtoSchema,
   adminCurriculumVersionListDtoSchema,
   adminCurriculumVersionSummaryDtoSchema,
   adminUserListDtoSchema,
+  type AdminApplyCurriculumMigrationRequestDto,
   type AdminCourseListDto,
   type AdminCourseListInputDto,
   type AdminCourseTreeDto,
+  type AdminCreateCurriculumMigrationRequestDto,
+  type AdminCurriculumMigrationApplicationDto,
+  type AdminCurriculumMigrationDetailDto,
   type AdminCurriculumVersionDetailDto,
   type AdminCurriculumVersionListDto,
   type AdminCurriculumVersionSummaryDto,
@@ -69,6 +75,21 @@ export interface AdminService {
     versionId: string
   ): Promise<
     AdminCurriculumVersionServiceResult<AdminCurriculumVersionSummaryDto>
+  >
+  createCurriculumMigration(
+    input: AdminCreateCurriculumMigrationRequestDto
+  ): Promise<
+    AdminCurriculumVersionServiceResult<AdminCurriculumMigrationDetailDto>
+  >
+  getCurriculumMigration(
+    migrationId: string
+  ): Promise<
+    AdminCurriculumVersionServiceResult<AdminCurriculumMigrationDetailDto>
+  >
+  applyCurriculumMigration(
+    input: AdminApplyCurriculumMigrationRequestDto
+  ): Promise<
+    AdminCurriculumVersionServiceResult<AdminCurriculumMigrationApplicationDto>
   >
   listUsers(): Promise<AdminServiceResult<AdminUserListDto>>
 }
@@ -182,6 +203,72 @@ export function createAdminService({
         return {
           status: "ok",
           value: adminCurriculumVersionSummaryDtoSchema.parse(result.version),
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
+    async createCurriculumMigration(input) {
+      try {
+        const result = await repository.createCurriculumMigration(input)
+
+        if (result.status === "invalid-request") {
+          return result
+        }
+
+        if (result.status === "not-found") {
+          return result
+        }
+
+        return {
+          status: "ok",
+          value: adminCurriculumMigrationDetailDtoSchema.parse(
+            result.migration
+          ),
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
+    async getCurriculumMigration(migrationId) {
+      try {
+        const migration = await repository.getCurriculumMigration(migrationId)
+
+        if (!migration) {
+          return {
+            status: "not-found",
+            error: {
+              code: "not-found",
+              message: "Curriculum migration was not found.",
+            },
+          }
+        }
+
+        return {
+          status: "ok",
+          value: adminCurriculumMigrationDetailDtoSchema.parse(migration),
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
+    async applyCurriculumMigration(input) {
+      try {
+        const result = await repository.applyCurriculumMigration(input)
+
+        if (result.status === "invalid-request") {
+          return result
+        }
+
+        if (result.status === "not-found") {
+          return result
+        }
+
+        return {
+          status: "ok",
+          value: adminCurriculumMigrationApplicationDtoSchema.parse(
+            result.application
+          ),
         }
       } catch {
         return unavailableResult
