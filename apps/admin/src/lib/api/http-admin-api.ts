@@ -42,25 +42,36 @@ async function requestJson<TValue>(
   url: URL,
   headers: HeadersInit | undefined
 ): Promise<AdminApiResult<TValue>> {
-  const response = await fetcher(
-    new Request(url, {
-      credentials: "include",
-      headers,
-      method: "GET",
-    })
-  )
+  try {
+    const response = await fetcher(
+      new Request(url, {
+        credentials: "include",
+        headers,
+        method: "GET",
+      })
+    )
 
-  if (!response.ok) {
+    if (!response.ok) {
+      return {
+        status: "error",
+        error: await readError(response),
+        httpStatus: response.status,
+      }
+    }
+
+    return {
+      status: "ok",
+      value: (await response.json()) as TValue,
+    }
+  } catch {
     return {
       status: "error",
-      error: await readError(response),
-      httpStatus: response.status,
+      error: {
+        code: "unknown-error",
+        message: "Admin API request failed.",
+      },
+      httpStatus: 0,
     }
-  }
-
-  return {
-    status: "ok",
-    value: (await response.json()) as TValue,
   }
 }
 

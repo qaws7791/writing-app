@@ -114,3 +114,9 @@
 - `apps/admin` workspace 패키지와 Next.js, ESLint, PostCSS, shadcn, Vitest 설정을 추가했다.
 - 어드민 앱 root layout은 한국어 metadata, `Noto_Sans_KR`, `ThemeProvider`, `Toaster`를 기존 web 앱 패턴과 맞춰 구성했다.
 - fetch 기반 어드민 API 클라이언트와 서버 쿠키 전달 helper를 추가하고, 콘텐츠 트리와 사용자 목록 요청, non-ok 오류 결과 매핑을 테스트로 검증했다.
+
+## 2026-05-28 Task 8 리뷰 반영
+
+- `ADMIN_API_BASE_URL`을 Turbo 전역 환경 변수에 추가해 어드민 앱 lint 경고를 제거한다.
+- 어드민 API 클라이언트는 네트워크 실패와 잘못된 JSON 응답을 명시적 오류 결과로 반환한다.
+- 새 어드민 앱에 TypeScript 빌드 산출물 ignore 설정을 추가한다.
