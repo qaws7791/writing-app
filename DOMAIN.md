@@ -94,9 +94,9 @@ type LessonMigrationMappingType = "equivalent" | "split" | "merged" | "removed"
 
 ## 현재 구현 상태
 
-현재 저장소는 커리큘럼 버전 스키마, 학습 진행 버전 귀속, 버전 인식 읽기 경로, 커리큘럼 노드 상태 읽기 정책을 구현했다. 공개 콘텐츠와 학습 진행 경로는 active 노드만 신규 학습 경로로 사용하고, 관리자 코스 트리 조회는 최신 published 버전의 active/deprecated/archived 상태를 표시한다.
+현재 저장소는 커리큘럼 버전 스키마, 학습 진행 버전 귀속, 버전 인식 읽기 경로, 커리큘럼 노드 상태 읽기 정책, 관리자 draft/published 발행 워크플로우를 구현했다. 공개 콘텐츠와 학습 진행 경로는 active 노드만 신규 학습 경로로 사용하고, 관리자 코스 트리 조회는 최신 published 버전의 active/deprecated/archived 상태를 표시한다. 관리자는 최신 published snapshot에서 draft를 만들고 draft를 published로 승격할 수 있다.
 
-따라서 관리자 콘텐츠 수정 기능을 만들기 전, 다음 순서로 구현한다.
+다음 로드맵 순서는 마이그레이션 맵과 학습자 업그레이드 UX다.
 
 1. 콘텐츠 변경 정책 문서화
 2. 커리큘럼 버전 모델 추가

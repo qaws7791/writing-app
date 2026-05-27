@@ -44,7 +44,7 @@
 
 ## 현재 상태
 
-현재 저장소는 5단계 아카이빙과 상태 정책까지 구현했다.
+현재 저장소는 6단계 관리자 draft/published 발행 워크플로우까지 구현했다.
 
 - 코스별 기존 콘텐츠는 `v1` published 커리큘럼 버전으로 시드된다.
 - 공개 콘텐츠 API는 최신 published 버전의 active 챕터와 active 레슨만 신규 학습 경로로 반환한다.
@@ -52,4 +52,7 @@
 - 진행 저장, 답변 저장, 완료 처리는 진행 버전의 active 레슨에 대해서만 허용한다.
 - 이미 완료된 archived 레슨은 완료 카운트에서 사라지지 않는다.
 - 관리자 코스 트리 조회는 최신 published 버전의 `active`, `deprecated`, `archived` 상태를 표시한다.
+- 관리자 API는 코스별 커리큘럼 버전 목록 조회, 최신 published snapshot 기반 draft 생성, 버전 상세 조회, draft publish를 제공한다.
+- draft publish 후 신규 공개 조회는 새 최신 published 버전을 사용하지만, 기존 학습자 진행 row의 버전은 자동 변경하지 않는다.
 - 실제 delete API와 archive mutation API는 아직 제공하지 않는다.
+- draft 구조 편집, 마이그레이션 맵, 학습자 업그레이드 UX는 아직 제공하지 않는다.

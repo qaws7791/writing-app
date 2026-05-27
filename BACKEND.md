@@ -2,7 +2,7 @@
 
 ## 아키텍처
 
-백엔드는 모듈러 모놀리스로 구성한다. 도메인 규칙, 데이터 접근, 로깅, 프로세스 조립 책임을 패키지 단위로 분리하고, 런타임은 학습자용 API와 관리자용 API를 별도 Hono 앱으로 실행한다. 현재 학습자 API는 공개 콘텐츠 조회, Better Auth 인증, 학습 진행/답변 저장, OpenAI 기반 AI 피드백을 포함한다. 관리자 API는 1차 범위에서 관리자 인증, 콘텐츠 계층 조회, 사용자 기본 정보 조회만 제공하며 생성, 수정, 삭제 관리 기능은 포함하지 않는다.
+백엔드는 모듈러 모놀리스로 구성한다. 도메인 규칙, 데이터 접근, 로깅, 프로세스 조립 책임을 패키지 단위로 분리하고, 런타임은 학습자용 API와 관리자용 API를 별도 Hono 앱으로 실행한다. 현재 학습자 API는 공개 콘텐츠 조회, Better Auth 인증, 학습 진행/답변 저장, OpenAI 기반 AI 피드백을 포함한다. 관리자 API는 관리자 인증, 콘텐츠 계층 조회, 사용자 기본 정보 조회, 커리큘럼 버전 draft 생성과 publish를 제공한다. 콘텐츠 본문과 구조를 직접 생성, 수정, 삭제하는 관리 API는 아직 포함하지 않는다.
 
 ## 앱과 패키지 책임
 
@@ -57,12 +57,17 @@ bun --filter @workspace/api dev
 
 `apps/admin-api`는 관리자용 백엔드 조립 루트다. 플랫폼 API와 별도 Hono 런타임으로 실행되며, 꺼져 있어도 학습자 플랫폼 API는 정상 동작해야 한다.
 
-초기 라우트는 다음과 같다.
+주요 라우트는 다음과 같다.
 
 - `GET /health`
 - `GET /openapi.json`
 - `GET /api/auth/*`, `POST /api/auth/*`
+- `GET /courses?page=...&pageSize=...&query=...`
 - `GET /courses?include=chapters,lessons`
+- `GET /courses/:courseId/curriculum-versions`
+- `POST /courses/:courseId/curriculum-versions`
+- `GET /curriculum-versions/:versionId`
+- `POST /curriculum-versions/:versionId/publish`
 - `GET /users`
 
 관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다.
@@ -109,16 +114,18 @@ bun --filter @workspace/admin-api seed:admin
 
 관리자 코스 트리 조회는 최신 published 커리큘럼 버전의 챕터와 레슨을 `active`, `deprecated`, `archived` 상태와 함께 반환한다. 공개 콘텐츠와 학습 진행 경로는 active 노드만 신규 학습 경로로 사용하지만, 이미 저장된 완료 진행 row는 archived 여부와 관계없이 완료 성취로 남긴다.
 
+관리자 발행 API는 최신 published 버전의 snapshot에서 draft를 만들고, draft를 published 상태로 승격한다. publish 후 공개 콘텐츠 조회는 코스에서 가장 큰 published `version_number`를 최신 버전으로 사용한다. 기존 학습자 진행 row는 자동 마이그레이션하지 않고 저장된 `course_progress.curriculum_version_id`를 유지한다.
+
 따라서 관리자 콘텐츠 생성, 수정, 삭제 API를 추가하기 전에 다음 제약을 먼저 지킨다.
 
-- 구조 변경은 관리자 발행 플로우와 명시적 마이그레이션 정책이 생긴 뒤 허용한다.
+- 구조 변경은 draft/published 발행 플로우와 명시적 마이그레이션 정책을 기준으로 허용한다.
 - 신규 학습자는 최신 published 버전으로 시작한다.
 - 기존 학습자는 명시적 업그레이드 전까지 자신의 진행 버전을 유지한다.
 - 레슨과 챕터 삭제는 실제 delete가 아니라 `deprecated` 또는 `archived` 상태 전환으로 처리한다.
 - 이미 완료한 레슨은 archived 상태가 되더라도 완료 성취와 카운트에서 사라지지 않는다.
 - 진행 마이그레이션은 관리자 지정 매핑이 있을 때만 수행한다.
 
-관리자 발행 플로우, 마이그레이션 맵, 학습자 업그레이드 UX가 구현되기 전까지 어드민 API는 콘텐츠 조회 중심으로 유지하고, published 콘텐츠 구조를 직접 바꾸는 관리 API를 제공하지 않는다.
+마이그레이션 맵과 학습자 업그레이드 UX가 구현되기 전까지 publish는 신규 공개 조회의 최신 버전만 바꾸며, 기존 학습자의 진행 버전을 자동 변경하지 않는다. 어드민 API는 published 콘텐츠 구조를 직접 수정하는 관리 API를 제공하지 않는다.
 
 ### `packages/db`
 

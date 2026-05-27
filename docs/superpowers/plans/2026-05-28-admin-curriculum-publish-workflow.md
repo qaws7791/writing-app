@@ -1,6 +1,6 @@
 # 관리자 커리큘럼 발행 워크플로우 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]` / `- [x]`) syntax for tracking.
 
 **Goal:** 관리자가 최신 published 커리큘럼 버전에서 draft를 만들고, draft를 publish해 신규 학습자용 최신 버전으로 승격할 수 있게 한다.
 
@@ -64,7 +64,7 @@
 - 수정: `docs/admin-site.md`
 - 수정: `docs/platform-backend-api.md`
 
-- [ ] **단계 1: 문서 로그 추가**
+- [x] **단계 1: 문서 로그 추가**
 
 `docs/admin-site.md` 상단에 계획 시작/완료 로그를 추가한다.
 
@@ -94,7 +94,7 @@
 - 학습자 public DTO에는 version metadata를 노출하지 않는다.
 ```
 
-- [ ] **단계 2: 포맷과 커밋**
+- [x] **단계 2: 포맷과 커밋**
 
 ```bash
 bun prettier --write docs/superpowers/specs/2026-05-28-admin-curriculum-publish-workflow-design.md docs/superpowers/plans/2026-05-28-admin-curriculum-publish-workflow.md docs/admin-site.md docs/platform-backend-api.md
@@ -113,7 +113,7 @@ git commit -m "관리자 커리큘럼 발행 워크플로우 계획 문서화"
 - 수정: `packages/core/src/admin/admin.service.ts`
 - 수정: `packages/core/src/admin/admin.service.test.ts`
 
-- [ ] **단계 1: 실패 테스트 작성**
+- [x] **단계 1: 실패 테스트 작성**
 
 `packages/core/src/admin/admin.service.test.ts`의 repository fixture에 다음 메서드를 추가하고 service 테스트를 작성한다.
 
@@ -181,7 +181,7 @@ async publishCurriculumVersion() {
 
 테스트는 `listCurriculumVersions`, `createCurriculumDraft`, `getCurriculumVersionDetail`, `publishCurriculumVersion`의 `ok` 결과와 invalid/not-found 결과 보존을 검증한다.
 
-- [ ] **단계 2: 실패 확인**
+- [x] **단계 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/core test -- admin.service.test.ts
@@ -189,7 +189,7 @@ bun --filter @workspace/core test -- admin.service.test.ts
 
 기대 결과: `AdminRepository`와 `AdminService`에 새 메서드가 없어 실패한다.
 
-- [ ] **단계 3: 구현**
+- [x] **단계 3: 구현**
 
 `packages/core/src/admin/admin.dto.ts`에 다음 schema를 추가한다.
 
@@ -225,7 +225,7 @@ getCurriculumVersionDetail(versionId: string): Promise<AdminCurriculumVersionDet
 publishCurriculumVersion(versionId: string): Promise<AdminPublishCurriculumVersionRepositoryResult>
 ```
 
-- [ ] **단계 4: 통과 확인과 커밋**
+- [x] **단계 4: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/core test -- admin.service.test.ts
@@ -242,7 +242,7 @@ git commit -m "관리자 커리큘럼 버전 발행 계약 추가"
 - 수정: `packages/db/src/repositories/drizzle-admin.repository.test.ts`
 - 수정: `packages/db/src/repositories/drizzle-admin.repository.ts`
 
-- [ ] **단계 1: 실패 테스트 작성**
+- [x] **단계 1: 실패 테스트 작성**
 
 `drizzle-admin.repository.test.ts`에 다음을 검증하는 테스트를 추가한다.
 
@@ -252,7 +252,7 @@ git commit -m "관리자 커리큘럼 버전 발행 계약 추가"
 - `publishCurriculumVersion("sentence-structure-v2")` 후 content repository가 v2를 최신 published로 본다.
 - 기존 `course_progress.curriculum_version_id`는 v1로 남는다.
 
-- [ ] **단계 2: 실패 확인**
+- [x] **단계 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/db test -- drizzle-admin.repository.test.ts
@@ -260,7 +260,7 @@ bun --filter @workspace/db test -- drizzle-admin.repository.test.ts
 
 기대 결과: repository에 새 메서드가 없어 실패한다.
 
-- [ ] **단계 3: 구현**
+- [x] **단계 3: 구현**
 
 `createDrizzleAdminRepository`에 새 메서드를 구현한다.
 
@@ -274,7 +274,7 @@ bun --filter @workspace/db test -- drizzle-admin.repository.test.ts
 - lesson id는 `${lesson.lessonId}-v${nextVersionNumber}`
 - publish는 draft만 허용
 
-- [ ] **단계 4: 통과 확인과 커밋**
+- [x] **단계 4: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/db test -- drizzle-admin.repository.test.ts
@@ -291,7 +291,7 @@ git commit -m "관리자 커리큘럼 draft 생성과 발행 구현"
 - 수정: `apps/admin-api/src/app.ts`
 - 수정: `apps/admin-api/src/app.test.ts`
 
-- [ ] **단계 1: 실패 테스트 작성**
+- [x] **단계 1: 실패 테스트 작성**
 
 `apps/admin-api/src/app.test.ts`의 fake `adminService`에 새 메서드를 추가하고 다음 route 테스트를 작성한다.
 
@@ -303,7 +303,7 @@ git commit -m "관리자 커리큘럼 draft 생성과 발행 구현"
 - invalid-request는 400
 - not-found는 404
 
-- [ ] **단계 2: 실패 확인**
+- [x] **단계 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/admin-api test -- app.test.ts
@@ -311,7 +311,7 @@ bun --filter @workspace/admin-api test -- app.test.ts
 
 기대 결과: route가 등록되지 않아 404 또는 타입 오류로 실패한다.
 
-- [ ] **단계 3: 구현**
+- [x] **단계 3: 구현**
 
 `curriculum-versions.route.ts`를 생성해 `requireAdminSession`과 `describeRoute`를 사용한다. service 결과 매핑은 다음과 같다.
 
@@ -322,7 +322,7 @@ bun --filter @workspace/admin-api test -- app.test.ts
 
 `app.ts`에 route registration을 추가한다.
 
-- [ ] **단계 4: 통과 확인과 커밋**
+- [x] **단계 4: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/admin-api test -- app.test.ts
@@ -341,11 +341,11 @@ git commit -m "관리자 커리큘럼 버전 발행 API 추가"
 - 수정: `docs/admin-site.md`
 - 수정: `docs/platform-backend-api.md`
 
-- [ ] **단계 1: 문서 갱신**
+- [x] **단계 1: 문서 갱신**
 
 6단계 구현 시작/완료 로그를 `/docs` 상단에 추가하고, `DOMAIN.md`, `BACKEND.md`, `docs/curriculum-change-policy.md`의 현재 상태를 draft/published 발행 워크플로우까지 갱신한다.
 
-- [ ] **단계 2: 전체 검증**
+- [x] **단계 2: 전체 검증**
 
 ```bash
 bun prettier --write DOMAIN.md BACKEND.md docs/curriculum-change-policy.md docs/admin-site.md docs/platform-backend-api.md docs/superpowers/specs/2026-05-28-admin-curriculum-publish-workflow-design.md docs/superpowers/plans/2026-05-28-admin-curriculum-publish-workflow.md packages/core/src/admin/admin.dto.ts packages/core/src/admin/admin.errors.ts packages/core/src/admin/admin.repository.ts packages/core/src/admin/admin.service.ts packages/core/src/admin/admin.service.test.ts packages/db/src/repositories/drizzle-admin.repository.ts packages/db/src/repositories/drizzle-admin.repository.test.ts apps/admin-api/src/app.ts apps/admin-api/src/app.test.ts apps/admin-api/src/routes/curriculum-versions.route.ts
@@ -360,7 +360,7 @@ git diff --check
 
 기대 결과: 모든 명령이 종료 코드 0으로 끝난다. `bun run lint`에서 기존 `apps/api/src/main.test.ts` env warning 2개가 보일 수 있지만 error는 없어야 한다.
 
-- [ ] **단계 3: 커밋**
+- [x] **단계 3: 커밋**
 
 ```bash
 git add DOMAIN.md BACKEND.md docs/curriculum-change-policy.md docs/admin-site.md docs/platform-backend-api.md

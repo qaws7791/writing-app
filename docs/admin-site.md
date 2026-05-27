@@ -1,5 +1,20 @@
 # 어드민 사이트
 
+## 2026-05-28 관리자 커리큘럼 발행 워크플로우 구현 시작
+
+- 커리큘럼 버전 관리 로드맵 6단계 구현을 시작한다.
+- 관리자 API가 최신 published 버전에서 draft를 만들고, draft를 published로 승격할 수 있게 한다.
+- 기존 학습자의 `course_progress.curriculum_version_id`는 publish 후에도 자동 변경하지 않는 것을 검증한다.
+
+## 2026-05-28 관리자 커리큘럼 발행 워크플로우 구현 완료
+
+- Core admin 계약에 커리큘럼 버전 목록, draft 생성, 상세 조회, publish DTO와 service 결과를 추가했다.
+- DB admin repository는 최신 published 버전의 챕터와 레슨 snapshot을 트랜잭션으로 복제해 draft를 만든다.
+- draft가 이미 있으면 `invalid-request`, source published 버전이 없으면 `not-found`로 반환한다.
+- Admin API는 `GET /courses/:courseId/curriculum-versions`, `POST /courses/:courseId/curriculum-versions`, `GET /curriculum-versions/:versionId`, `POST /curriculum-versions/:versionId/publish`를 제공한다.
+- publish 후 공개 콘텐츠 조회는 새 최신 published 버전을 사용하고, 기존 학습자 진행 row는 이전 버전을 유지하는 회귀 테스트를 추가했다.
+- draft 구조 편집, 마이그레이션 맵, 학습자 업그레이드 UX는 다음 단계로 남긴다.
+
 ## 2026-05-28 관리자 커리큘럼 발행 워크플로우 구현 계획 시작
 
 - 커리큘럼 버전 관리 로드맵 6단계 구현 계획을 작성한다.

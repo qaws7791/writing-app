@@ -1,5 +1,18 @@
 # 플랫폼 백엔드 API
 
+## 2026-05-28 관리자 커리큘럼 발행 워크플로우 구현 시작
+
+- 관리자 발행 API가 새 published 버전을 만들 때 공개 최신 버전과 기존 학습자 진행 버전이 분리되는지 검증한다.
+- 학습자 public DTO에는 커리큘럼 버전 metadata를 계속 노출하지 않는다.
+
+## 2026-05-28 관리자 커리큘럼 발행 워크플로우 구현 완료
+
+- Admin API에 커리큘럼 버전 목록 조회, draft 생성, 버전 상세 조회, draft publish route를 추가했다.
+- draft 생성은 최신 published 버전의 챕터와 레슨 snapshot을 복제하며, 이미 draft가 있는 코스는 중복 draft 생성을 거절한다.
+- draft publish 후 신규 공개 콘텐츠 조회는 새 최신 published 버전을 사용한다.
+- 기존 학습자의 `course_progress.curriculum_version_id`는 publish 후에도 자동 변경하지 않는다.
+- 구조 편집 API, 마이그레이션 맵, 학습자 업그레이드 UX는 아직 제공하지 않는다.
+
 ## 2026-05-28 관리자 커리큘럼 발행 워크플로우 구현 계획 시작
 
 - 관리자 draft publish 후 신규 학습자는 새 최신 published 버전으로 시작하고, 기존 학습자는 저장된 진행 버전을 유지하는지 검증한다.
