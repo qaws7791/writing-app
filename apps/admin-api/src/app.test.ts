@@ -62,6 +62,7 @@ const adminService: AdminService = {
                 label: "1단원",
                 title: "문장의 뼈대",
                 sortOrder: 1,
+                status: "active",
                 lessons: [
                   {
                     id: "sentence-structure-01",
@@ -69,6 +70,7 @@ const adminService: AdminService = {
                     title: "주어와 서술어 찾기",
                     description: "중심 성분을 구분합니다.",
                     sortOrder: 1,
+                    status: "active",
                   },
                 ],
               },
@@ -158,6 +160,7 @@ describe("admin api app", () => {
               label: "1단원",
               title: "문장의 뼈대",
               sortOrder: 1,
+              status: "active",
               lessons: [
                 {
                   id: "sentence-structure-01",
@@ -165,6 +168,7 @@ describe("admin api app", () => {
                   title: "주어와 서술어 찾기",
                   description: "중심 성분을 구분합니다.",
                   sortOrder: 1,
+                  status: "active",
                 },
               ],
             },

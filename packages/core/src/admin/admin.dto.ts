@@ -1,11 +1,18 @@
 import { z } from "zod"
 
+export const adminCurriculumNodeStatusSchema = z.enum([
+  "active",
+  "deprecated",
+  "archived",
+])
+
 export const adminLessonSummaryDtoSchema = z.object({
   id: z.string().min(1),
   lessonId: z.string().min(1),
   title: z.string().min(1),
   description: z.string().min(1),
   sortOrder: z.number().int().positive(),
+  status: adminCurriculumNodeStatusSchema,
 })
 
 export const adminChapterSummaryDtoSchema = z.object({
@@ -13,6 +20,7 @@ export const adminChapterSummaryDtoSchema = z.object({
   label: z.string().min(1),
   title: z.string().min(1),
   sortOrder: z.number().int().positive(),
+  status: adminCurriculumNodeStatusSchema,
   lessons: z.array(adminLessonSummaryDtoSchema),
 })
 

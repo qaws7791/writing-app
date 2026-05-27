@@ -1,8 +1,10 @@
 import type { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
+import { z } from "zod"
 
 import {
   adminCourseListDtoSchema,
+  adminCourseTreeDtoSchema,
   adminDatabaseUnavailableErrorDtoSchema,
   adminInvalidRequestErrorDtoSchema,
   type AdminCourseListInputDto,
@@ -30,7 +32,9 @@ export function registerCoursesRoute(
           description: "Admin course list or course tree.",
           content: {
             "application/json": {
-              schema: resolver(adminCourseListDtoSchema),
+              schema: resolver(
+                z.union([adminCourseListDtoSchema, adminCourseTreeDtoSchema])
+              ),
             },
           },
         },

@@ -18,6 +18,7 @@ const repository: AdminRepository = {
               label: "1단원",
               title: "문장의 뼈대",
               sortOrder: 1,
+              status: "active",
               lessons: [
                 {
                   id: "sentence-structure-lesson-1",
@@ -25,6 +26,7 @@ const repository: AdminRepository = {
                   title: "주어와 서술어 찾기",
                   description: "중심 성분을 구분합니다.",
                   sortOrder: 1,
+                  status: "active",
                 },
               ],
             },
@@ -107,7 +109,10 @@ describe("createAdminService", () => {
             id: "sentence-structure",
             chapters: [
               {
-                lessons: [{ lessonId: "sentence-structure-01" }],
+                lessons: [
+                  { lessonId: "sentence-structure-01", status: "active" },
+                ],
+                status: "active",
               },
             ],
           },
@@ -122,6 +127,43 @@ describe("createAdminService", () => {
         ...repository,
         async listCourseTree() {
           throw new Error("database unavailable")
+        },
+      },
+    })
+
+    await expect(service.listCourseTree()).resolves.toMatchObject({
+      status: "unavailable",
+      error: {
+        code: "database-unavailable",
+      },
+    })
+  })
+
+  it("returns unavailable when course tree repository returns an invalid node status", async () => {
+    const service = createAdminService({
+      repository: {
+        ...repository,
+        async listCourseTree() {
+          return {
+            courses: [
+              {
+                id: "sentence-structure",
+                title: "문장 구조의 기본",
+                description: "문장의 뼈대를 이해합니다.",
+                sortOrder: 1,
+                chapters: [
+                  {
+                    id: "sentence-structure-chapter-1",
+                    label: "1단원",
+                    title: "문장의 뼈대",
+                    sortOrder: 1,
+                    status: "deleted",
+                    lessons: [],
+                  },
+                ],
+              },
+            ],
+          }
         },
       },
     })
