@@ -547,7 +547,7 @@ function StepFrame({
   centered?: boolean
 }) {
   return (
-    <section className="animate-in fade-in slide-in-from-bottom-4 px-5 pt-6 pb-28 duration-300">
+    <section className="px-5 pt-6 pb-28">
       <div
         className={cn(
           lessonMaxWidthClassName,

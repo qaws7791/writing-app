@@ -1,5 +1,32 @@
 # Lesson Page
 
+## 2026-05-27 시작 — 레슨 CTA 고정 레이아웃 수정
+
+- 하단 CTA가 transform 애니메이션이 적용된 `StepFrame` 내부에 있어 스텝 진입 중 화면 중간에 배치되는 문제를 수정한다.
+- 수정 범위는 `apps/web` 레슨 플레이어와 회귀 테스트, 문서 갱신으로 제한한다.
+
+## 2026-05-27 완료 — 레슨 CTA 고정 레이아웃 수정
+
+- `StepFrame`에서 `animate-in` 기반 진입 애니메이션을 제거해 transform 기반 containing block이 생기지 않게 했다.
+- 하단 CTA는 기존 `position: fixed` 구조를 유지하면서 스텝 진입 직후부터 viewport 하단에 고정된다.
+- 1차로 `slide-in-from-bottom-4`만 제거했을 때도 `animate-in`이 identity transform을 만들어 CTA 기준점을 바꾸는 것을 확인했고, 최종 수정에서는 `StepFrame`의 transform 유발 애니메이션 전체를 제거했다.
+- 회귀 테스트와 브라우저 스모크로 선택형 스텝과 완료 화면의 CTA 위치를 확인했다.
+
+## 2026-05-27 시작 — 레슨 CTA 위치 튐 원인 조사
+
+- 다음 스텝으로 이동할 때 하단 CTA가 화면 중간에 잠깐 표시된 뒤 다시 하단으로 내려가는 현상을 조사한다.
+- 조사 범위는 `/prototype`을 제외하고 `apps/web`의 레슨 플레이어 렌더링 구조와 실제 브라우저 재현으로 한정한다.
+- 코드 수정 없이 원인과 재현 근거를 먼저 확인한다.
+
+## 2026-05-27 완료 — 레슨 CTA 위치 튐 원인 조사
+
+- 원인은 `BottomActionBar`의 `position: fixed`가 `StepFrame`의 진입 애니메이션 transform 영향을 받는 구조다.
+- `StepFrame`은 `animate-in fade-in slide-in-from-bottom-4`를 사용하고, 문제 스텝들은 `BottomActionBar`를 `StepFrame` 내부에 렌더링한다.
+- CSS transform이 적용된 조상은 fixed 자식의 containing block이 될 수 있어, 애니메이션 중 CTA가 viewport 하단이 아니라 `StepFrame` 하단 기준으로 배치된다.
+- 브라우저 재현에서 문제 스텝 진입 직후 CTA fixed 컨테이너는 `top=289px`, `bottom=374px`에 있었고, 약 480ms 뒤 transform이 사라진 후 `top=1317px`, `bottom=1402px`로 viewport 하단에 재배치됐다.
+- 완료 화면도 같은 패턴으로 `CompleteStep` 안의 `StepFrame` 내부에 `BottomActionBar`가 있어 동일 증상이 발생한다.
+- 수정 방향은 CTA를 애니메이션이 걸린 `StepFrame` 밖에서 렌더링하거나, CTA를 포함하는 조상에 transform 기반 진입 애니메이션을 적용하지 않는 것이다.
+
 ## 2026-05-25 Start — Full Course Lesson Data
 
 - Expanding `/lesson` from the single prototype lesson to lesson-specific
