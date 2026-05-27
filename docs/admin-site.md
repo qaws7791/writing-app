@@ -63,3 +63,15 @@
 - `@workspace/db` root export에서 어드민 repository를 사용할 수 있게 연결했다.
 - `packages/db` typecheck가 `@workspace/core/admin` subpath를 해석하도록 admin path mapping을 추가했다.
 - 수동 fixture 기반 테스트로 코스, 챕터, 레슨의 정확한 row mapping과 정렬 순서, 사용자 createdAt 오름차순 정렬을 검증한다.
+
+## 2026-05-28 Task 5 시작
+
+- `apps/admin-api` Hono 앱 뼈대와 관리자 인증 runtime을 추가한다.
+- 플랫폼 API 패턴을 따르되 Better Auth 테이블, 쿠키 prefix, CORS origin은 어드민 전용 설정으로 분리한다.
+
+## 2026-05-28 Task 5 완료
+
+- `apps/admin-api` workspace 패키지와 TypeScript, ESLint, Vitest 설정을 추가했다.
+- 어드민 전용 환경 변수 파서, DB 디렉터리 생성 helper, Hono 앱, health/auth 라우트, 서버 entrypoint를 추가했다.
+- Better Auth runtime은 관리자 인증 테이블과 `writing-app-admin` 쿠키 prefix를 사용하도록 분리했다.
+- `vitest.workspace.ts`에 어드민 API 테스트 프로젝트를 연결했다.
