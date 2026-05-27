@@ -1,9 +1,17 @@
-import { asc, count, like, or } from "drizzle-orm"
+import { asc, count, eq, inArray, like, or } from "drizzle-orm"
 
 import type { AdminRepository } from "@workspace/core/admin"
 
 import type { WritingAppDatabase } from "@/client"
-import { courseChapters, courseLessons, courses, user } from "@/schema"
+import {
+  courses,
+  curriculumVersionChapters,
+  curriculumVersionLessons,
+  curriculumVersions,
+  user,
+} from "@/schema"
+
+type CurriculumVersionRow = typeof curriculumVersions.$inferSelect
 
 export function createDrizzleAdminRepository(
   db: WritingAppDatabase
@@ -55,25 +63,61 @@ export function createDrizzleAdminRepository(
       }
     },
     async listCourseTree() {
-      const [courseRows, chapterRows, lessonRows] = await Promise.all([
-        db.select().from(courses).orderBy(asc(courses.sortOrder)),
-        db.select().from(courseChapters).orderBy(asc(courseChapters.sortOrder)),
-        db.select().from(courseLessons).orderBy(asc(courseLessons.sortOrder)),
-      ])
+      const courseRows = await db
+        .select()
+        .from(courses)
+        .orderBy(asc(courses.sortOrder))
+      const latestVersionsByCourseId =
+        await listLatestPublishedVersionsByCourseId(db)
+      const curriculumVersionIds = [...latestVersionsByCourseId.values()].map(
+        (version) => version.id
+      )
+      const [chapterRows, lessonRows] =
+        curriculumVersionIds.length === 0
+          ? [[], []]
+          : await Promise.all([
+              db
+                .select()
+                .from(curriculumVersionChapters)
+                .where(
+                  inArray(
+                    curriculumVersionChapters.curriculumVersionId,
+                    curriculumVersionIds
+                  )
+                )
+                .orderBy(asc(curriculumVersionChapters.sortOrder)),
+              db
+                .select()
+                .from(curriculumVersionLessons)
+                .where(
+                  inArray(
+                    curriculumVersionLessons.curriculumVersionId,
+                    curriculumVersionIds
+                  )
+                )
+                .orderBy(asc(curriculumVersionLessons.sortOrder)),
+            ])
 
       return {
-        courses: courseRows.map((course) => ({
-          id: course.id,
-          title: course.title,
-          description: course.description,
-          sortOrder: course.sortOrder,
-          chapters: chapterRows
-            .filter((chapter) => chapter.courseId === course.id)
-            .map((chapter) => ({
+        courses: courseRows.map((course) => {
+          const version = latestVersionsByCourseId.get(course.id)
+          const courseChapters = version
+            ? chapterRows.filter(
+                (chapter) => chapter.curriculumVersionId === version.id
+              )
+            : []
+
+          return {
+            id: course.id,
+            title: course.title,
+            description: course.description,
+            sortOrder: course.sortOrder,
+            chapters: courseChapters.map((chapter) => ({
               id: chapter.id,
               label: chapter.label,
               title: chapter.title,
               sortOrder: chapter.sortOrder,
+              status: chapter.status,
               lessons: lessonRows
                 .filter((lesson) => lesson.chapterId === chapter.id)
                 .map((lesson) => ({
@@ -82,9 +126,11 @@ export function createDrizzleAdminRepository(
                   title: lesson.title,
                   description: lesson.description,
                   sortOrder: lesson.sortOrder,
+                  status: lesson.status,
                 })),
             })),
-        })),
+          }
+        }),
       }
     },
     async listUsers() {
@@ -103,4 +149,21 @@ export function createDrizzleAdminRepository(
       }
     },
   }
+}
+
+async function listLatestPublishedVersionsByCourseId(db: WritingAppDatabase) {
+  const versionRows = await db
+    .select()
+    .from(curriculumVersions)
+    .where(eq(curriculumVersions.status, "published"))
+    .orderBy(
+      asc(curriculumVersions.courseId),
+      asc(curriculumVersions.versionNumber)
+    )
+
+  return versionRows.reduce((versionsByCourseId, version) => {
+    versionsByCourseId.set(version.courseId, version)
+
+    return versionsByCourseId
+  }, new Map<string, CurriculumVersionRow>())
 }

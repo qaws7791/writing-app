@@ -11,6 +11,9 @@ import {
   courseChapters,
   courseLessons,
   courses,
+  curriculumVersionChapters,
+  curriculumVersionLessons,
+  curriculumVersions,
   lessons,
   user,
 } from "@/schema"
@@ -74,10 +77,11 @@ describe("createDrizzleAdminRepository", () => {
     })
   })
 
-  it("lists courses with chapters and lessons", async () => {
+  it("lists latest published curriculum tree with node statuses", async () => {
     const sqlite = new Database(":memory:")
     runContentMigration(sqlite)
     const db = createDatabase(sqlite)
+    const now = new Date("2026-05-28T00:00:00.000Z")
     await db.insert(courseCategories).values({
       id: "category-writing",
       title: "글쓰기",
@@ -192,6 +196,128 @@ describe("createDrizzleAdminRepository", () => {
         sortOrder: 1,
       },
     ])
+    await db.insert(curriculumVersions).values([
+      {
+        id: "course-earlier-v1",
+        courseId: "course-earlier",
+        versionNumber: 1,
+        status: "published",
+        title: "먼저 코스 v1",
+        changelog: "이전 버전",
+        publishedAt: now,
+        createdAt: now,
+      },
+      {
+        id: "course-earlier-v2",
+        courseId: "course-earlier",
+        versionNumber: 2,
+        status: "published",
+        title: "먼저 코스 v2",
+        changelog: "상태 표시 검증",
+        publishedAt: now,
+        createdAt: now,
+      },
+      {
+        id: "course-later-v1",
+        courseId: "course-later",
+        versionNumber: 1,
+        status: "published",
+        title: "나중 코스 v1",
+        changelog: "상태 표시 검증",
+        publishedAt: now,
+        createdAt: now,
+      },
+    ])
+    await db.insert(curriculumVersionChapters).values([
+      {
+        id: "version-chapter-first-v1",
+        curriculumVersionId: "course-earlier-v1",
+        sourceChapterId: "chapter-first",
+        label: "1장",
+        title: "이전 문장 시작하기",
+        sortOrder: 1,
+        status: "active",
+      },
+      {
+        id: "version-chapter-first-v2",
+        curriculumVersionId: "course-earlier-v2",
+        sourceChapterId: "chapter-first",
+        label: "1장",
+        title: "문장 시작하기",
+        sortOrder: 1,
+        status: "deprecated",
+      },
+      {
+        id: "version-chapter-second-v2",
+        curriculumVersionId: "course-earlier-v2",
+        sourceChapterId: "chapter-second",
+        label: "2장",
+        title: "퇴고하기",
+        sortOrder: 2,
+        status: "archived",
+      },
+      {
+        id: "version-chapter-other-v1",
+        curriculumVersionId: "course-later-v1",
+        sourceChapterId: "chapter-other-course",
+        label: "1장",
+        title: "다른 코스 챕터",
+        sortOrder: 1,
+        status: "active",
+      },
+    ])
+    await db.insert(curriculumVersionLessons).values([
+      {
+        id: "version-lesson-first-v1",
+        curriculumVersionId: "course-earlier-v1",
+        chapterId: "version-chapter-first-v1",
+        lessonId: "lesson-first",
+        title: "이전 첫째 표시 레슨",
+        description: "이전 버전의 첫 레슨",
+        sortOrder: 1,
+        status: "active",
+      },
+      {
+        id: "version-lesson-first-v2",
+        curriculumVersionId: "course-earlier-v2",
+        chapterId: "version-chapter-first-v2",
+        lessonId: "lesson-first",
+        title: "첫째 표시 레슨",
+        description: "첫 번째로 정렬되는 레슨",
+        sortOrder: 1,
+        status: "active",
+      },
+      {
+        id: "version-lesson-second-v2",
+        curriculumVersionId: "course-earlier-v2",
+        chapterId: "version-chapter-first-v2",
+        lessonId: "lesson-second",
+        title: "둘째 표시 레슨",
+        description: "두 번째로 정렬되는 레슨",
+        sortOrder: 2,
+        status: "archived",
+      },
+      {
+        id: "version-lesson-third-v2",
+        curriculumVersionId: "course-earlier-v2",
+        chapterId: "version-chapter-second-v2",
+        lessonId: "lesson-third",
+        title: "셋째 표시 레슨",
+        description: "둘째 챕터의 첫 레슨",
+        sortOrder: 1,
+        status: "deprecated",
+      },
+      {
+        id: "version-lesson-other-v1",
+        curriculumVersionId: "course-later-v1",
+        chapterId: "version-chapter-other-v1",
+        lessonId: "lesson-other-course",
+        title: "다른 코스 표시 레슨",
+        description: "다른 코스에 속한 레슨",
+        sortOrder: 1,
+        status: "active",
+      },
+    ])
 
     const repository = createDrizzleAdminRepository(db)
     const result = await repository.listCourseTree()
@@ -205,39 +331,44 @@ describe("createDrizzleAdminRepository", () => {
           sortOrder: 1,
           chapters: [
             {
-              id: "chapter-first",
+              id: "version-chapter-first-v2",
               label: "1장",
               title: "문장 시작하기",
               sortOrder: 1,
+              status: "deprecated",
               lessons: [
                 {
-                  id: "course-lesson-first",
+                  id: "version-lesson-first-v2",
                   lessonId: "lesson-first",
                   title: "첫째 표시 레슨",
                   description: "첫 번째로 정렬되는 레슨",
                   sortOrder: 1,
+                  status: "active",
                 },
                 {
-                  id: "course-lesson-second",
+                  id: "version-lesson-second-v2",
                   lessonId: "lesson-second",
                   title: "둘째 표시 레슨",
                   description: "두 번째로 정렬되는 레슨",
                   sortOrder: 2,
+                  status: "archived",
                 },
               ],
             },
             {
-              id: "chapter-second",
+              id: "version-chapter-second-v2",
               label: "2장",
               title: "퇴고하기",
               sortOrder: 2,
+              status: "archived",
               lessons: [
                 {
-                  id: "course-lesson-third",
+                  id: "version-lesson-third-v2",
                   lessonId: "lesson-third",
                   title: "셋째 표시 레슨",
                   description: "둘째 챕터의 첫 레슨",
                   sortOrder: 1,
+                  status: "deprecated",
                 },
               ],
             },
@@ -250,17 +381,19 @@ describe("createDrizzleAdminRepository", () => {
           sortOrder: 2,
           chapters: [
             {
-              id: "chapter-other-course",
+              id: "version-chapter-other-v1",
               label: "1장",
               title: "다른 코스 챕터",
               sortOrder: 1,
+              status: "active",
               lessons: [
                 {
-                  id: "course-lesson-other-course",
+                  id: "version-lesson-other-v1",
                   lessonId: "lesson-other-course",
                   title: "다른 코스 표시 레슨",
                   description: "다른 코스에 속한 레슨",
                   sortOrder: 1,
+                  status: "active",
                 },
               ],
             },
