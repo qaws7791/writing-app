@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import type { ContentService, LessonDto } from "@/content"
-import { courseId, lessonId } from "@/content"
+import { courseId, curriculumVersionId, lessonId } from "@/content"
 import type { LearningRepository } from "@/learning/learning.repository"
 import { createLearningService } from "@/learning/learning.service"
 import { userId } from "@/learning/learning.ids"
@@ -145,13 +145,22 @@ function createRepository(): LearningRepository {
       completedCount: 1,
       wasAlreadyCompleted: false,
     })),
+    curriculumVersionIncludesLesson: vi.fn(async () => true),
     findCourseProgress: vi.fn(async () => undefined),
+    findLatestPublishedCurriculumVersionId: vi.fn(async () =>
+      curriculumVersionId("sentence-structure-v1")
+    ),
     findLessonProgress: vi.fn(async () => undefined),
+    listCurriculumVersionLessonIds: vi.fn(async () => [
+      lessonId("sentence-structure-01"),
+      lessonId("sentence-structure-02"),
+    ]),
     listInProgressCourses: vi.fn(async () => []),
     listLessonAnswers: vi.fn(async () => []),
     listLessonProgressByCourse: vi.fn(async () => [
       {
         courseId: courseId("sentence-structure"),
+        curriculumVersionId: curriculumVersionId("sentence-structure-v1"),
         currentStepId: "sentence-structure-01-step-4",
         lessonId: lessonId("sentence-structure-01"),
         status: "completed" as const,
@@ -163,6 +172,7 @@ function createRepository(): LearningRepository {
     upsertLessonProgress: vi.fn(async (input) => ({
       completedAt: null,
       courseId: input.courseId,
+      curriculumVersionId: input.curriculumVersionId,
       currentStepId: input.currentStepId,
       lessonId: input.lessonId,
       status: input.status,
@@ -222,6 +232,113 @@ describe("createLearningService", () => {
         stepOrder: 2,
       })
     )
+  })
+
+  it("calculates course progress from the learner curriculum version", async () => {
+    const repository = {
+      ...createRepository(),
+      findCourseProgress: vi.fn(async () => ({
+        completedCount: 1,
+        courseId: courseId("sentence-structure"),
+        curriculumVersionId: curriculumVersionId("sentence-structure-v1"),
+        lastLessonId: lessonId("sentence-structure-01"),
+      })),
+      listCurriculumVersionLessonIds: vi.fn(async () => [
+        lessonId("sentence-structure-01"),
+        lessonId("sentence-structure-02"),
+      ]),
+      listLessonProgressByCourse: vi.fn(async () => [
+        {
+          courseId: courseId("sentence-structure"),
+          curriculumVersionId: curriculumVersionId("sentence-structure-v1"),
+          currentStepId: "sentence-structure-01-step-4",
+          lessonId: lessonId("sentence-structure-01"),
+          status: "completed" as const,
+          stepOrder: 4,
+        },
+      ]),
+    }
+    const service = createLearningService({ contentService, repository })
+
+    const result = await service.getCourseProgress(
+      userId("user-1"),
+      courseId("sentence-structure")
+    )
+
+    expect(result).toMatchObject({
+      status: "ok",
+      value: {
+        completedCount: 1,
+        nextLessonId: "sentence-structure-02",
+        progressPercent: 50,
+        totalLessons: 2,
+      },
+    })
+    expect(repository.listCurriculumVersionLessonIds).toHaveBeenCalledWith(
+      curriculumVersionId("sentence-structure-v1")
+    )
+    expect(repository.listLessonProgressByCourse).toHaveBeenCalledWith(
+      userId("user-1"),
+      courseId("sentence-structure"),
+      curriculumVersionId("sentence-structure-v1")
+    )
+  })
+
+  it("starts new lesson progress on the latest published curriculum version", async () => {
+    const repository = {
+      ...createRepository(),
+      findLatestPublishedCurriculumVersionId: vi.fn(async () =>
+        curriculumVersionId("sentence-structure-v2")
+      ),
+    }
+    const service = createLearningService({ contentService, repository })
+
+    const result = await service.saveLessonProgress(
+      userId("user-1"),
+      lessonId("sentence-structure-01"),
+      {
+        currentStepId: "sentence-structure-01-step-2",
+        stepOrder: 2,
+      }
+    )
+
+    expect(result.status).toBe("ok")
+    expect(repository.upsertCourseProgress).toHaveBeenCalledWith(
+      expect.objectContaining({
+        curriculumVersionId: "sentence-structure-v2",
+      })
+    )
+    expect(repository.upsertLessonProgress).toHaveBeenCalledWith(
+      expect.objectContaining({
+        curriculumVersionId: "sentence-structure-v2",
+      })
+    )
+  })
+
+  it("rejects progress for a lesson outside the learner curriculum version", async () => {
+    const repository = {
+      ...createRepository(),
+      curriculumVersionIncludesLesson: vi.fn(async () => false),
+    }
+    const service = createLearningService({ contentService, repository })
+
+    const result = await service.saveLessonProgress(
+      userId("user-1"),
+      lessonId("sentence-structure-01"),
+      {
+        currentStepId: "sentence-structure-01-step-2",
+        stepOrder: 2,
+      }
+    )
+
+    expect(result).toEqual({
+      status: "invalid-request",
+      error: {
+        code: "invalid-request",
+        message: "Lesson is not part of the learner curriculum version.",
+      },
+    })
+    expect(repository.upsertLessonProgress).not.toHaveBeenCalled()
   })
 
   it("upserts allowed lesson answers", async () => {

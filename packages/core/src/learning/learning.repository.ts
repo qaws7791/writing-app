@@ -1,15 +1,17 @@
-import type { CourseId, LessonId } from "@/content"
+import type { CourseId, CurriculumVersionId, LessonId } from "@/content"
 import type { UserId, LessonProgressStatus } from "@/learning/learning.ids"
 
 export interface CourseProgressRecord {
   completedCount: number
   courseId: CourseId
+  curriculumVersionId: CurriculumVersionId
   lastLessonId?: LessonId
 }
 
 export interface LessonProgressRecord {
   completedAt?: Date | null
   courseId: CourseId
+  curriculumVersionId: CurriculumVersionId
   currentStepId: string
   lessonId: LessonId
   status: LessonProgressStatus
@@ -24,12 +26,14 @@ export interface LessonAnswerRecord {
 
 export interface UpsertCourseProgressInput {
   courseId: CourseId
+  curriculumVersionId: CurriculumVersionId
   lastLessonId: LessonId
   userId: UserId
 }
 
 export interface UpsertLessonProgressInput {
   courseId: CourseId
+  curriculumVersionId: CurriculumVersionId
   currentStepId: string
   lessonId: LessonId
   status: LessonProgressStatus
@@ -46,6 +50,7 @@ export interface UpsertLessonAnswerInput {
 
 export interface CompleteLessonInput {
   courseId: CourseId
+  curriculumVersionId: CurriculumVersionId
   finalStepId: string
   lessonId: LessonId
   stepOrder: number
@@ -73,8 +78,19 @@ export interface LearningRepository {
   ): Promise<LessonProgressRecord>
   listLessonProgressByCourse(
     userId: UserId,
-    courseId: CourseId
+    courseId: CourseId,
+    curriculumVersionId: CurriculumVersionId
   ): Promise<LessonProgressRecord[]>
+  findLatestPublishedCurriculumVersionId(
+    courseId: CourseId
+  ): Promise<CurriculumVersionId | undefined>
+  listCurriculumVersionLessonIds(
+    curriculumVersionId: CurriculumVersionId
+  ): Promise<LessonId[]>
+  curriculumVersionIncludesLesson(
+    curriculumVersionId: CurriculumVersionId,
+    lessonId: LessonId
+  ): Promise<boolean>
   listInProgressCourses(userId: UserId): Promise<CourseProgressRecord[]>
   listLessonAnswers(
     userId: UserId,

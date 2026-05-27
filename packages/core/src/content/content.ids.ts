@@ -5,6 +5,7 @@ export type Brand<TValue, TBrand extends string> = TValue & {
 export type CourseId = Brand<string, "course-id">
 export type CourseCategoryId = Brand<string, "course-category-id">
 export type CourseChapterId = Brand<string, "course-chapter-id">
+export type CurriculumVersionId = Brand<string, "curriculum-version-id">
 export type LessonId = Brand<string, "lesson-id">
 export type LessonStepId = Brand<string, "lesson-step-id">
 
@@ -18,6 +19,10 @@ export function courseCategoryId(value: string): CourseCategoryId {
 
 export function courseChapterId(value: string): CourseChapterId {
   return value as CourseChapterId
+}
+
+export function curriculumVersionId(value: string): CurriculumVersionId {
+  return value as CurriculumVersionId
 }
 
 export function lessonId(value: string): LessonId {

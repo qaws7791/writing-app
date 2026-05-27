@@ -2,6 +2,7 @@ import type {
   ContentService,
   CourseId,
   CourseNotFoundErrorDto,
+  CurriculumVersionId,
   InvalidContentSeedErrorDto,
   InvalidRequestErrorDto,
   LessonDto,
@@ -9,7 +10,6 @@ import type {
   LessonNotFoundErrorDto,
   LessonStepDto,
 } from "@/content"
-import { lessonId } from "@/content"
 import type {
   CompleteLessonDto,
   CourseProgressDto,
@@ -190,15 +190,27 @@ export function createLearningService({
         return contentFailureResult(courseResult)
       }
 
-      const lessons = courseResult.value.chapters.flatMap(
-        (chapter) => chapter.lessons
-      )
+      let curriculumVersionId: CurriculumVersionId | undefined
+      let lessonIds: LessonId[]
       let lessonProgress
       try {
-        lessonProgress = await repository.listLessonProgressByCourse(
+        curriculumVersionId = await resolveCurriculumVersionId(
+          repository,
           userId,
           courseId
         )
+        if (!curriculumVersionId) {
+          return invalidRequest("Published curriculum version was not found.")
+        }
+
+        ;[lessonIds, lessonProgress] = await Promise.all([
+          repository.listCurriculumVersionLessonIds(curriculumVersionId),
+          repository.listLessonProgressByCourse(
+            userId,
+            courseId,
+            curriculumVersionId
+          ),
+        ])
       } catch {
         return unavailableResult
       }
@@ -209,9 +221,8 @@ export function createLearningService({
           .map((progress) => progress.lessonId)
       )
       const completedCount = completedLessonIds.size
-      const nextLesson = lessons.find(
-        (courseLesson) =>
-          !completedLessonIds.has(lessonId(courseLesson.lessonId))
+      const nextLessonId = lessonIds.find(
+        (lessonId) => !completedLessonIds.has(lessonId)
       )
 
       return {
@@ -219,9 +230,9 @@ export function createLearningService({
         value: {
           completedCount,
           courseId,
-          nextLessonId: nextLesson?.lessonId,
-          progressPercent: getProgressPercent(completedCount, lessons.length),
-          totalLessons: lessons.length,
+          nextLessonId,
+          progressPercent: getProgressPercent(completedCount, lessonIds.length),
+          totalLessons: lessonIds.length,
         },
       }
     },
@@ -283,13 +294,35 @@ export function createLearningService({
       }
 
       try {
+        const curriculumVersionId = await resolveCurriculumVersionId(
+          repository,
+          userId,
+          lessonResult.value.courseId as CourseId
+        )
+        if (!curriculumVersionId) {
+          return invalidRequest("Published curriculum version was not found.")
+        }
+
+        const isVersionLesson =
+          await repository.curriculumVersionIncludesLesson(
+            curriculumVersionId,
+            lessonId
+          )
+        if (!isVersionLesson) {
+          return invalidRequest(
+            "Lesson is not part of the learner curriculum version."
+          )
+        }
+
         await repository.upsertCourseProgress({
           courseId: lessonResult.value.courseId as CourseId,
+          curriculumVersionId,
           lastLessonId: lessonId,
           userId,
         })
         const progress = await repository.upsertLessonProgress({
           courseId: lessonResult.value.courseId as CourseId,
+          curriculumVersionId,
           currentStepId: targetStep.id,
           lessonId,
           status: "in-progress",
@@ -353,8 +386,29 @@ export function createLearningService({
       const finalStep = getFinalStep(lessonResult.value)
 
       try {
+        const curriculumVersionId = await resolveCurriculumVersionId(
+          repository,
+          userId,
+          lessonResult.value.courseId as CourseId
+        )
+        if (!curriculumVersionId) {
+          return invalidRequest("Published curriculum version was not found.")
+        }
+
+        const isVersionLesson =
+          await repository.curriculumVersionIncludesLesson(
+            curriculumVersionId,
+            lessonId
+          )
+        if (!isVersionLesson) {
+          return invalidRequest(
+            "Lesson is not part of the learner curriculum version."
+          )
+        }
+
         const completed = await repository.completeLesson({
           courseId: lessonResult.value.courseId as CourseId,
+          curriculumVersionId,
           finalStepId: finalStep.id,
           lessonId,
           stepOrder: finalStep.order,
@@ -378,6 +432,20 @@ export function createLearningService({
   }
 
   return service
+}
+
+async function resolveCurriculumVersionId(
+  repository: LearningRepository,
+  userId: UserId,
+  courseId: CourseId
+): Promise<CurriculumVersionId | undefined> {
+  const existingProgress = await repository.findCourseProgress(userId, courseId)
+
+  if (existingProgress) {
+    return existingProgress.curriculumVersionId
+  }
+
+  return repository.findLatestPublishedCurriculumVersionId(courseId)
 }
 
 function findStep(lesson: LessonDto, stepId: string) {
