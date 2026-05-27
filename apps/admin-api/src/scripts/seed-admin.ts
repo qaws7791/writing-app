@@ -1,15 +1,51 @@
-import Database from "bun:sqlite"
 import { hashPassword } from "better-auth/crypto"
 
-import {
-  adminAccount,
-  adminUser,
-  createDatabase,
-  runContentMigration,
-  type WritingAppDatabase,
-} from "@workspace/db"
+import { adminAccount, adminUser } from "@workspace/db/schema"
 
 import { ensureDatabaseDirectory, parseAdminApiEnv } from "@/env"
+
+type AdminUserInsert = typeof adminUser.$inferInsert
+type AdminAccountInsert = typeof adminAccount.$inferInsert
+type AdminUserEmailFilter = {
+  where(
+    user: typeof adminUser,
+    operators: {
+      eq(left: typeof adminUser.email, right: string): unknown
+    }
+  ): unknown
+}
+type SqliteDatabase = {
+  close(): void
+  exec(sql: string): unknown
+}
+type SqliteDatabaseConstructor = new (
+  filename: string,
+  options: { create: boolean }
+) => SqliteDatabase
+type AdminDbRuntime = {
+  createDatabase(sqlite: SqliteDatabase): AdminSeedDatabase
+  runContentMigration(sqlite: SqliteDatabase): void
+}
+
+export interface AdminSeedDatabase {
+  query: {
+    adminUser: {
+      findFirst(
+        input: AdminUserEmailFilter
+      ): Promise<{ id: string } | undefined>
+    }
+  }
+  transaction<T>(
+    callback: (tx: {
+      insert(table: typeof adminUser): {
+        values(value: AdminUserInsert): Promise<unknown>
+      }
+      insert(table: typeof adminAccount): {
+        values(value: AdminAccountInsert): Promise<unknown>
+      }
+    }) => Promise<T>
+  ): Promise<T>
+}
 
 export type SeedAdminUserResult =
   | {
@@ -26,11 +62,12 @@ interface SeedAdminUserInput {
 }
 
 export async function seedAdminUser(
-  db: WritingAppDatabase,
+  db: AdminSeedDatabase,
   input: SeedAdminUserInput
 ): Promise<SeedAdminUserResult> {
+  const normalizedEmail = input.email.toLowerCase()
   const existingUser = await db.query.adminUser.findFirst({
-    where: (user, { eq }) => eq(user.email, input.email),
+    where: (user, { eq }) => eq(user.email, normalizedEmail),
   })
 
   if (existingUser) {
@@ -44,7 +81,7 @@ export async function seedAdminUser(
   await db.transaction(async (tx) => {
     await tx.insert(adminUser).values({
       createdAt: now,
-      email: input.email,
+      email: normalizedEmail,
       emailVerified: true,
       id: userId,
       name: input.name,
@@ -79,6 +116,16 @@ function parseRequiredSeedValue(
 }
 
 async function runSeedAdminScript() {
+  const sqliteModuleName = "bun:sqlite"
+  const { default: Database } = (await import(
+    /* @vite-ignore */
+    sqliteModuleName
+  )) as { default: SqliteDatabaseConstructor }
+  const dbModuleName = "@workspace/db"
+  const { createDatabase, runContentMigration } = (await import(
+    /* @vite-ignore */
+    dbModuleName
+  )) as AdminDbRuntime
   const env = parseAdminApiEnv(Bun.env)
 
   ensureDatabaseDirectory(env.databasePath)

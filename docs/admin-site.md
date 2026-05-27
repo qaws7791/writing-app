@@ -97,3 +97,8 @@
 - `apps/admin-api`에 최초 관리자 계정 seed 스크립트와 테스트를 추가했다.
 - seed는 Better Auth 공개 password hash API로 credential account를 만들고, 같은 이메일이 있으면 중복 생성하지 않는다.
 - `seed:admin` 명령으로 마이그레이션 실행 후 seed 결과를 JSON으로 출력하도록 연결했다.
+
+## 2026-05-28 Task 7 리뷰 반영
+
+- Better Auth 로그인 조회와 맞도록 seed 이메일을 소문자로 정규화한다.
+- `apps/admin-api` 테스트는 기존 Vitest 설정을 유지하고, seed 단위 테스트는 SQLite runtime에 직접 묶이지 않도록 분리한다.
