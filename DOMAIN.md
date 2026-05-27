@@ -94,7 +94,7 @@ type LessonMigrationMappingType = "equivalent" | "split" | "merged" | "removed"
 
 ## 현재 구현 상태
 
-현재 저장소는 아직 커리큘럼 버전 스키마를 구현하지 않았다. `courses`, `course_chapters`, `course_lessons`, `lessons`, `lesson_steps`가 직접 연결되어 있고, `course_progress`, `lesson_progress`는 콘텐츠 ID에 직접 귀속된다.
+현재 저장소는 커리큘럼 버전 스키마, 학습 진행 버전 귀속, 버전 인식 읽기 경로, 커리큘럼 노드 상태 읽기 정책을 구현했다. 공개 콘텐츠와 학습 진행 경로는 active 노드만 신규 학습 경로로 사용하고, 관리자 코스 트리 조회는 최신 published 버전의 active/deprecated/archived 상태를 표시한다.
 
 따라서 관리자 콘텐츠 수정 기능을 만들기 전, 다음 순서로 구현한다.
 

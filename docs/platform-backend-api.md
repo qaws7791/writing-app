@@ -1,5 +1,18 @@
 # 플랫폼 백엔드 API
 
+## 2026-05-28 커리큘럼 노드 상태 정책 구현 시작
+
+- 공개 콘텐츠와 학습 진행 API가 커리큘럼 노드 상태를 읽기 정책으로 따르도록 5단계 구현을 시작한다.
+- archived/deprecated 노드는 신규 학습 경로에서 제외하고, 이미 저장된 완료 성취는 유지한다.
+
+## 2026-05-28 커리큘럼 노드 상태 정책 구현 완료
+
+- 공개 `GET /courses`, `GET /courses/search`, `GET /courses/:courseId`는 최신 published 버전의 active 챕터와 active 레슨만 기준으로 `lessonCount`, `firstLessonId`, `chapters`를 계산한다.
+- 학습 진행 조회와 저장 검증은 진행 버전의 active 레슨만 다음 학습 후보와 저장 가능 레슨으로 사용한다.
+- 이미 완료된 archived 레슨은 학습자의 완료 카운트에 남는다.
+- 관리자 API의 `GET /courses?include=chapters,lessons`는 최신 published 버전의 노드 상태를 반환한다.
+- delete API와 archive mutation API는 아직 제공하지 않는다.
+
 ## 2026-05-28 커리큘럼 노드 상태 정책 구현 계획 시작
 
 - 공개 콘텐츠 API와 학습 진행 API가 archived/deprecated 노드를 신규 학습 경로에서 제외하도록 5단계 계획을 작성한다.

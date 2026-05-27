@@ -107,6 +107,8 @@ bun --filter @workspace/admin-api seed:admin
 
 현재 구현은 `curriculum_versions`, `curriculum_version_chapters`, `curriculum_version_lessons` 스키마를 갖고, 공개 콘텐츠 목록/검색/상세 조회는 최신 published 커리큘럼 버전의 active 챕터와 레슨 배치 스냅샷을 기준으로 계산한다. 학습 진행은 `course_progress.curriculum_version_id`를 기준으로 학습자가 시작한 커리큘럼 버전을 유지하고, `lesson_progress.curriculum_version_id`에 각 레슨 진행의 기준 버전을 함께 기록한다.
 
+관리자 코스 트리 조회는 최신 published 커리큘럼 버전의 챕터와 레슨을 `active`, `deprecated`, `archived` 상태와 함께 반환한다. 공개 콘텐츠와 학습 진행 경로는 active 노드만 신규 학습 경로로 사용하지만, 이미 저장된 완료 진행 row는 archived 여부와 관계없이 완료 성취로 남긴다.
+
 따라서 관리자 콘텐츠 생성, 수정, 삭제 API를 추가하기 전에 다음 제약을 먼저 지킨다.
 
 - 구조 변경은 관리자 발행 플로우와 명시적 마이그레이션 정책이 생긴 뒤 허용한다.
@@ -134,7 +136,7 @@ bun --filter @workspace/admin-api seed:admin
 - `curriculum_version_chapters`: 특정 커리큘럼 버전에 포함된 챕터 스냅샷
 - `curriculum_version_lessons`: 특정 커리큘럼 버전에 포함된 레슨 배치 스냅샷
 
-콘텐츠 시드는 현재 웹 정적 카탈로그와 과정 상세 화면의 과정/챕터/레슨 ID를 명시적으로 보관하고, 각 코스의 기존 구조를 `v1` published 커리큘럼 버전으로 함께 생성한다. 공개 콘텐츠 목록, 검색, 상세 API는 코스별 published 버전 중 가장 큰 `version_number`를 최신 버전으로 보고 그 버전의 active 챕터와 레슨 배치로 `lessonCount`, `firstLessonId`, `chapters`를 계산한다. 레슨 플레이 본문은 아직 `lessons`, `lesson_steps`를 `lessonId`로 조회하며, 모든 레슨은 현재 `INTRO`, `SHORT_WRITE`, `AI_FEEDBACK`, `SUMMARY`, `COMPLETE` 기본 단계로 플레이 가능성과 학습 상태 저장 경로를 보장한다.
+콘텐츠 시드는 현재 웹 정적 카탈로그와 과정 상세 화면의 과정/챕터/레슨 ID를 명시적으로 보관하고, 각 코스의 기존 구조를 `v1` published 커리큘럼 버전으로 함께 생성한다. 공개 콘텐츠 목록, 검색, 상세 API는 코스별 published 버전 중 가장 큰 `version_number`를 최신 버전으로 보고 그 버전의 active 챕터와 active 레슨 배치로 `lessonCount`, `firstLessonId`, `chapters`를 계산한다. 레슨 플레이 본문은 아직 `lessons`, `lesson_steps`를 `lessonId`로 조회하며, 모든 레슨은 현재 `INTRO`, `SHORT_WRITE`, `AI_FEEDBACK`, `SUMMARY`, `COMPLETE` 기본 단계로 플레이 가능성과 학습 상태 저장 경로를 보장한다.
 
 인증된 학습 진행 API는 새 코스 진행을 만들 때 최신 published 커리큘럼 버전을 선택하고, 이미 진행 중인 코스가 있으면 저장된 `course_progress.curriculum_version_id`를 유지한다. 코스 진행률과 다음 레슨은 공개 최신 버전이 아니라 해당 진행 버전의 active 레슨 배치를 기준으로 계산한다. 레슨 진행 저장, 완료, 답변 저장은 대상 레슨이 학습자의 진행 버전에 포함되는지 확인한 뒤 처리한다.
 
