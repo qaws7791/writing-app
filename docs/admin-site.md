@@ -1,5 +1,16 @@
 # 어드민 사이트
 
+## 2026-05-28 커리큘럼 노드 상태 정책 구현 계획 시작
+
+- 커리큘럼 버전 관리 로드맵 5단계 구현 계획을 작성한다.
+- 실제 delete API를 열지 않고, 챕터와 레슨 노드의 `active`, `deprecated`, `archived` 상태를 읽기 계약으로 고정한다.
+
+## 2026-05-28 커리큘럼 노드 상태 정책 구현 계획 완료
+
+- 설계 문서는 `docs/superpowers/specs/2026-05-28-curriculum-node-status-policy-design.md`에 작성한다.
+- 구현 계획은 `docs/superpowers/plans/2026-05-28-curriculum-node-status-policy.md`에 작성한다.
+- 관리자 코스 트리는 최신 published 커리큘럼 버전의 노드 상태를 표시하고, 공개/학습자 경로는 active 노드만 사용하는 범위로 제한한다.
+
 ## 2026-05-28 버전 인식 읽기 경로 구현 시작
 
 - 커리큘럼 버전 관리 로드맵 4단계 구현을 시작한다.
