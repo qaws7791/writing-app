@@ -120,3 +120,16 @@
 - `ADMIN_API_BASE_URL`을 Turbo 전역 환경 변수에 추가해 어드민 앱 lint 경고를 제거한다.
 - 어드민 API 클라이언트는 네트워크 실패와 잘못된 JSON 응답을 명시적 오류 결과로 반환한다.
 - 새 어드민 앱에 TypeScript 빌드 산출물 ignore 설정을 추가한다.
+
+## 2026-05-28 Task 9 시작
+
+- 관리자 로그인 페이지와 same-origin 인증 프록시를 추가한다.
+- 보호된 어드민 영역은 세션 확인 후 왼쪽 사이드바 shell로 렌더링한다.
+- 루트 경로는 콘텐츠 운영의 기본 진입점인 `/courses`로 연결한다.
+
+## 2026-05-28 Task 9 완료
+
+- 관리자 로그인 next path 검증, 이메일 로그인 클라이언트, same-origin 인증 프록시를 추가했다.
+- `/api/auth/[...path]` route handler가 어드민 API 인증 route로 GET/POST 요청을 전달하도록 연결했다.
+- 로그인 페이지, 보호 layout, 왼쪽 사이드바 기반 `AdminShell`, 루트 `/courses` redirect를 추가했다.
+- 로그인 성공/실패와 인증 navigation/proxy/client 동작을 테스트로 검증했다.
