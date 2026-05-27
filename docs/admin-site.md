@@ -86,3 +86,14 @@
 - `GET /courses?include=chapters,lessons`와 `GET /users`를 관리자 세션 필수 route로 등록했다.
 - `GET /courses`의 누락되거나 다른 include query는 `invalid-request` 400 응답으로 처리한다.
 - `GET /openapi.json`에서 어드민 API OpenAPI 3.1 문서를 반환하도록 등록했다.
+
+## 2026-05-28 Task 7 시작
+
+- 최초 관리자 계정을 생성하는 어드민 API seed 명령을 추가한다.
+- 동일 이메일 seed 실행은 중복 생성 없이 기존 계정 존재 결과를 반환하도록 검증한다.
+
+## 2026-05-28 Task 7 완료
+
+- `apps/admin-api`에 최초 관리자 계정 seed 스크립트와 테스트를 추가했다.
+- seed는 Better Auth 공개 password hash API로 credential account를 만들고, 같은 이메일이 있으면 중복 생성하지 않는다.
+- `seed:admin` 명령으로 마이그레이션 실행 후 seed 결과를 JSON으로 출력하도록 연결했다.
