@@ -12,6 +12,7 @@ import {
   seedContent,
 } from "@/index"
 import {
+  curriculumMigrationApplications,
   courseProgress,
   courseCategories,
   courseChapters,
@@ -21,6 +22,7 @@ import {
   curriculumVersionLessons,
   curriculumVersions,
   lessons,
+  lessonProgress,
   user,
 } from "@/schema"
 
@@ -618,6 +620,250 @@ describe("createDrizzleAdminRepository", () => {
       },
     })
   })
+
+  it("creates and returns a curriculum migration map", async () => {
+    const now = new Date("2026-05-29T00:00:00.000Z")
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db, { now: () => now })
+    await createPublishedV2(repository)
+
+    const result = await repository.createCurriculumMigration({
+      fromVersionId: "sentence-structure-v1",
+      toVersionId: "sentence-structure-v2",
+      mappings: [
+        {
+          fromLessonId: "sentence-structure-01",
+          toLessonId: "sentence-structure-01",
+          mappingType: "equivalent",
+        },
+        {
+          fromLessonId: "sentence-structure-05",
+          toLessonId: null,
+          mappingType: "removed",
+        },
+      ],
+    })
+
+    expect(result).toEqual({
+      status: "created",
+      migration: {
+        id: "sentence-structure-v1-to-sentence-structure-v2",
+        fromVersionId: "sentence-structure-v1",
+        toVersionId: "sentence-structure-v2",
+        status: "active",
+        createdAt: "2026-05-29T00:00:00.000Z",
+        mappings: [
+          {
+            id: "sentence-structure-v1-to-sentence-structure-v2-1",
+            fromLessonId: "sentence-structure-01",
+            toLessonId: "sentence-structure-01",
+            mappingType: "equivalent",
+          },
+          {
+            id: "sentence-structure-v1-to-sentence-structure-v2-2",
+            fromLessonId: "sentence-structure-05",
+            toLessonId: null,
+            mappingType: "removed",
+          },
+        ],
+      },
+    })
+    expect(result.status).toBe("created")
+
+    if (result.status !== "created") {
+      throw new Error("Migration result must be created.")
+    }
+
+    await expect(
+      repository.getCurriculumMigration(
+        "sentence-structure-v1-to-sentence-structure-v2"
+      )
+    ).resolves.toEqual(result.migration)
+  })
+
+  it("rejects removed migration mappings with a target lesson", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+    await createPublishedV2(repository)
+
+    await expect(
+      repository.createCurriculumMigration({
+        fromVersionId: "sentence-structure-v1",
+        toVersionId: "sentence-structure-v2",
+        mappings: [
+          {
+            fromLessonId: "sentence-structure-01",
+            toLessonId: "sentence-structure-01",
+            mappingType: "removed",
+          },
+        ],
+      })
+    ).resolves.toEqual({
+      status: "invalid-request",
+      error: {
+        code: "invalid-request",
+        message: "Removed mappings must not include a target lesson.",
+      },
+    })
+  })
+
+  it("applies equivalent split merged and removed migration mappings idempotently", async () => {
+    const now = new Date("2026-05-29T00:00:00.000Z")
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db, { now: () => now })
+    await createPublishedV2(repository)
+    await createLearnerProgress(db, {
+      completedLessonIds: [
+        "sentence-structure-01",
+        "sentence-structure-02",
+        "sentence-structure-03",
+        "sentence-structure-04",
+        "sentence-structure-05",
+      ],
+      userId: "learner-migration",
+    })
+    await repository.createCurriculumMigration({
+      fromVersionId: "sentence-structure-v1",
+      toVersionId: "sentence-structure-v2",
+      mappings: [
+        {
+          fromLessonId: "sentence-structure-01",
+          toLessonId: "sentence-structure-01",
+          mappingType: "equivalent",
+        },
+        {
+          fromLessonId: "sentence-structure-02",
+          toLessonId: "sentence-structure-02",
+          mappingType: "split",
+        },
+        {
+          fromLessonId: "sentence-structure-02",
+          toLessonId: "sentence-structure-03",
+          mappingType: "split",
+        },
+        {
+          fromLessonId: "sentence-structure-03",
+          toLessonId: "sentence-structure-04",
+          mappingType: "merged",
+        },
+        {
+          fromLessonId: "sentence-structure-04",
+          toLessonId: "sentence-structure-04",
+          mappingType: "merged",
+        },
+        {
+          fromLessonId: "sentence-structure-05",
+          toLessonId: null,
+          mappingType: "removed",
+        },
+      ],
+    })
+
+    const firstResult = await repository.applyCurriculumMigration({
+      migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+      userId: "learner-migration",
+    })
+    const secondResult = await repository.applyCurriculumMigration({
+      migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+      userId: "learner-migration",
+    })
+    const [progress] = await db
+      .select()
+      .from(courseProgress)
+      .where(eq(courseProgress.userId, "learner-migration"))
+    const migratedLessons = await db
+      .select()
+      .from(lessonProgress)
+      .where(eq(lessonProgress.curriculumVersionId, "sentence-structure-v2"))
+    const applications = await db
+      .select()
+      .from(curriculumMigrationApplications)
+      .where(
+        eq(
+          curriculumMigrationApplications.migrationId,
+          "sentence-structure-v1-to-sentence-structure-v2"
+        )
+      )
+
+    expect(firstResult).toEqual(secondResult)
+    expect(firstResult).toMatchObject({
+      status: "applied",
+      application: {
+        completedLessonCount: 4,
+        completedLessonIds: [
+          "sentence-structure-01",
+          "sentence-structure-02",
+          "sentence-structure-03",
+          "sentence-structure-04",
+        ],
+        preservedLessonIds: ["sentence-structure-05"],
+        skippedLessonIds: [],
+      },
+    })
+    expect(progress).toMatchObject({
+      completedCount: 4,
+      curriculumVersionId: "sentence-structure-v2",
+      lastLessonId: "sentence-structure-04",
+    })
+    expect(migratedLessons.map((lesson) => lesson.lessonId).sort()).toEqual([
+      "sentence-structure-01",
+      "sentence-structure-02",
+      "sentence-structure-03",
+      "sentence-structure-04",
+    ])
+    expect(applications).toHaveLength(1)
+    expect(applications[0]).toMatchObject({
+      completedLessonCount: 4,
+      errorMessage: null,
+      status: "completed",
+    })
+  })
+
+  it("records failed curriculum migration applications", async () => {
+    const now = new Date("2026-05-29T00:00:00.000Z")
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db, { now: () => now })
+    await createPublishedV2(repository)
+    await createLearnerProgress(db, {
+      completedLessonIds: [],
+      curriculumVersionId: "sentence-structure-v2",
+      userId: "learner-wrong-version",
+    })
+    await repository.createCurriculumMigration({
+      fromVersionId: "sentence-structure-v1",
+      toVersionId: "sentence-structure-v2",
+      mappings: [
+        {
+          fromLessonId: "sentence-structure-01",
+          toLessonId: "sentence-structure-01",
+          mappingType: "equivalent",
+        },
+      ],
+    })
+
+    const result = await repository.applyCurriculumMigration({
+      migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+      userId: "learner-wrong-version",
+    })
+    const [application] = await db
+      .select()
+      .from(curriculumMigrationApplications)
+      .where(
+        eq(curriculumMigrationApplications.userId, "learner-wrong-version")
+      )
+
+    expect(result).toEqual({
+      status: "invalid-request",
+      error: {
+        code: "invalid-request",
+        message: "Course progress is not on the migration source version.",
+      },
+    })
+    expect(application).toMatchObject({
+      errorMessage: "Course progress is not on the migration source version.",
+      status: "failed",
+    })
+  })
 })
 
 async function createSeededDatabase() {
@@ -627,4 +873,61 @@ async function createSeededDatabase() {
   await seedContent(db)
 
   return db
+}
+
+async function createPublishedV2(
+  repository: ReturnType<typeof createDrizzleAdminRepository>
+) {
+  await repository.createCurriculumDraft("sentence-structure")
+  await repository.publishCurriculumVersion("sentence-structure-v2")
+}
+
+async function createLearnerProgress(
+  db: Awaited<ReturnType<typeof createSeededDatabase>>,
+  input: {
+    completedLessonIds: string[]
+    curriculumVersionId?: string
+    userId: string
+  }
+) {
+  const now = new Date("2026-05-29T00:00:00.000Z")
+  const curriculumVersionId =
+    input.curriculumVersionId ?? "sentence-structure-v1"
+
+  await db.insert(user).values({
+    id: input.userId,
+    name: "마이그레이션 학습자",
+    email: `${input.userId}@example.com`,
+    emailVerified: true,
+    image: null,
+    createdAt: now,
+    updatedAt: now,
+  })
+  await db.insert(courseProgress).values({
+    userId: input.userId,
+    courseId: "sentence-structure",
+    curriculumVersionId,
+    startedAt: now,
+    lastLessonId: input.completedLessonIds.at(-1) ?? null,
+    completedCount: input.completedLessonIds.length,
+    updatedAt: now,
+  })
+
+  if (input.completedLessonIds.length === 0) {
+    return
+  }
+
+  const progressRows = input.completedLessonIds.map((lessonId) => ({
+    userId: input.userId,
+    lessonId,
+    courseId: "sentence-structure",
+    curriculumVersionId,
+    currentStepId: `${lessonId}-step-5`,
+    stepOrder: 5,
+    status: "completed",
+    completedAt: now,
+    updatedAt: now,
+  })) satisfies (typeof lessonProgress.$inferInsert)[]
+
+  await db.insert(lessonProgress).values(progressRows)
 }
