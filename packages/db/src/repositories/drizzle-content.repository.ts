@@ -264,20 +264,25 @@ async function countLessonsByCurriculumVersionId(
 
   const lessonCountRows = await db
     .select({
-      curriculumVersionId: curriculumVersionLessons.curriculumVersionId,
+      curriculumVersionId: curriculumVersionChapters.curriculumVersionId,
       lessonCount: count(curriculumVersionLessons.id),
     })
-    .from(curriculumVersionLessons)
+    .from(curriculumVersionChapters)
+    .innerJoin(
+      curriculumVersionLessons,
+      eq(curriculumVersionLessons.chapterId, curriculumVersionChapters.id)
+    )
     .where(
       and(
         inArray(
-          curriculumVersionLessons.curriculumVersionId,
+          curriculumVersionChapters.curriculumVersionId,
           curriculumVersionIds
         ),
+        eq(curriculumVersionChapters.status, "active"),
         eq(curriculumVersionLessons.status, "active")
       )
     )
-    .groupBy(curriculumVersionLessons.curriculumVersionId)
+    .groupBy(curriculumVersionChapters.curriculumVersionId)
 
   return new Map(
     lessonCountRows.map((row) => [row.curriculumVersionId, row.lessonCount])

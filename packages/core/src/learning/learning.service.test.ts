@@ -284,6 +284,42 @@ describe("createLearningService", () => {
     )
   })
 
+  it("keeps completed archived lessons in the learner progress count", async () => {
+    const repository = {
+      ...createRepository(),
+      listCurriculumVersionLessonIds: vi.fn(async () => [
+        lessonId("sentence-structure-02"),
+      ]),
+      listLessonProgressByCourse: vi.fn(async () => [
+        {
+          courseId: courseId("sentence-structure"),
+          curriculumVersionId: curriculumVersionId("sentence-structure-v1"),
+          currentStepId: "sentence-structure-01-step-4",
+          lessonId: lessonId("sentence-structure-01"),
+          status: "completed" as const,
+          stepOrder: 4,
+        },
+      ]),
+    }
+    const service = createLearningService({ contentService, repository })
+
+    const result = await service.getCourseProgress(
+      userId("user-1"),
+      courseId("sentence-structure")
+    )
+
+    expect(result).toEqual({
+      status: "ok",
+      value: {
+        completedCount: 1,
+        courseId: courseId("sentence-structure"),
+        nextLessonId: lessonId("sentence-structure-02"),
+        progressPercent: 100,
+        totalLessons: 1,
+      },
+    })
+  })
+
   it("starts new lesson progress on the latest published curriculum version", async () => {
     const repository = {
       ...createRepository(),

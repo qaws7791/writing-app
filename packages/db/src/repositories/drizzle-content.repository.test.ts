@@ -131,6 +131,106 @@ describe("createDrizzleContentRepository", () => {
     ])
   })
 
+  it("hides archived and deprecated nodes from public curriculum paths", async () => {
+    const db = createDatabase(sqlite)
+    await db.insert(curriculumVersions).values({
+      id: "sentence-structure-v2",
+      courseId: "sentence-structure",
+      versionNumber: 2,
+      status: "published",
+      title: "문장 구조의 기본 v2",
+      changelog: "상태 정책 검증",
+      publishedAt: new Date("2026-05-28T00:00:00.000Z"),
+      createdAt: new Date("2026-05-28T00:00:00.000Z"),
+    })
+    await db.insert(curriculumVersionChapters).values([
+      {
+        id: "sentence-structure-active-chapter-v2",
+        curriculumVersionId: "sentence-structure-v2",
+        sourceChapterId: "sentence-structure-chapter-1",
+        label: "1단원",
+        title: "공개 챕터",
+        sortOrder: 1,
+        status: "active",
+      },
+      {
+        id: "sentence-structure-archived-chapter-v2",
+        curriculumVersionId: "sentence-structure-v2",
+        sourceChapterId: "sentence-structure-chapter-2",
+        label: "2단원",
+        title: "숨김 챕터",
+        sortOrder: 2,
+        status: "archived",
+      },
+    ])
+    await db.insert(curriculumVersionLessons).values([
+      {
+        id: "sentence-structure-active-lesson-v2",
+        curriculumVersionId: "sentence-structure-v2",
+        chapterId: "sentence-structure-active-chapter-v2",
+        lessonId: "sentence-structure-01",
+        title: "공개 레슨",
+        description: "공개되는 레슨입니다.",
+        sortOrder: 1,
+        status: "active",
+      },
+      {
+        id: "sentence-structure-deprecated-lesson-v2",
+        curriculumVersionId: "sentence-structure-v2",
+        chapterId: "sentence-structure-active-chapter-v2",
+        lessonId: "sentence-structure-02",
+        title: "대체 예정 레슨",
+        description: "공개 경로에서는 숨깁니다.",
+        sortOrder: 2,
+        status: "deprecated",
+      },
+      {
+        id: "sentence-structure-archived-lesson-v2",
+        curriculumVersionId: "sentence-structure-v2",
+        chapterId: "sentence-structure-archived-chapter-v2",
+        lessonId: "sentence-structure-03",
+        title: "숨김 레슨",
+        description: "숨김 챕터 하위 레슨입니다.",
+        sortOrder: 1,
+        status: "active",
+      },
+    ])
+    const repository = createDrizzleContentRepository(db)
+
+    const categories = await repository.listCourseCategories()
+    const search = await repository.searchCourses("문장")
+    const detail = await repository.findCourseDetail(
+      courseId("sentence-structure")
+    )
+
+    const summary = categories.categories
+      .flatMap((category) => category.courses)
+      .find((course) => course.id === "sentence-structure")
+    const searchSummary = search.courses.find(
+      (course) => course.id === "sentence-structure"
+    )
+
+    expect(summary?.lessonCount).toBe(1)
+    expect(searchSummary?.lessonCount).toBe(1)
+    expect(detail?.lessonCount).toBe(1)
+    expect(detail?.chapters).toEqual([
+      {
+        id: "sentence-structure-active-chapter-v2",
+        label: "1단원",
+        title: "공개 챕터",
+        lessons: [
+          {
+            id: "sentence-structure-active-lesson-v2",
+            lessonId: "sentence-structure-01",
+            title: "공개 레슨",
+            description: "공개되는 레슨입니다.",
+            order: 1,
+          },
+        ],
+      },
+    ])
+  })
+
   it("searches courses by title and description", async () => {
     const repository = createDrizzleContentRepository(createDatabase(sqlite))
 

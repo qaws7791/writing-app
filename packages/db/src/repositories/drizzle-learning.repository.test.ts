@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm"
 import { Database } from "bun:sqlite"
 import { beforeEach, describe, expect, it } from "vitest"
 
@@ -274,6 +275,30 @@ describe("createDrizzleLearningRepository", () => {
     expect(latest).toBe("sentence-structure-v2")
     expect(lessonIds).toEqual([lessonId("sentence-structure-01")])
     expect(includesLesson).toBe(true)
+  })
+
+  it("uses only active curriculum nodes as learner-version lesson candidates", async () => {
+    const repository = createDrizzleLearningRepository(db, { now: () => now })
+    await db
+      .update(curriculumVersionLessons)
+      .set({ status: "archived" })
+      .where(eq(curriculumVersionLessons.id, "sentence-structure-02-v1"))
+    await db
+      .update(curriculumVersionLessons)
+      .set({ status: "deprecated" })
+      .where(eq(curriculumVersionLessons.id, "sentence-structure-03-v1"))
+
+    const lessonIds = await repository.listCurriculumVersionLessonIds(
+      curriculumVersionId("sentence-structure-v1")
+    )
+    const includesArchived = await repository.curriculumVersionIncludesLesson(
+      curriculumVersionId("sentence-structure-v1"),
+      lessonId("sentence-structure-02")
+    )
+
+    expect(lessonIds).not.toContain(lessonId("sentence-structure-02"))
+    expect(lessonIds).not.toContain(lessonId("sentence-structure-03"))
+    expect(includesArchived).toBe(false)
   })
 
   it("counts completed lessons only inside the selected curriculum version", async () => {
