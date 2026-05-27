@@ -207,7 +207,7 @@
 ## 2026-05-28 개발용 어드민 부트스트랩 완료
 
 - 루트 `dev:admin` 스크립트가 먼저 `dev:admin:setup`을 실행하도록 변경했다.
-- `dev:admin:setup`은 콘텐츠 시드와 `admin@example.com / password-1234` 개발용 관리자 계정을 루트 `data/api.sqlite`에 생성한다.
+- `dev:admin:setup`은 콘텐츠 시드와 명시된 관리자 시드 계정을 루트 `data/api.sqlite`에 생성한다.
 - 같은 이메일이 이미 있으면 관리자 시드는 중복 생성하지 않는다.
 
 ## 2026-05-28 개발용 관리자 비밀번호 동기화 시작
@@ -217,8 +217,8 @@
 
 ## 2026-05-28 개발용 관리자 비밀번호 동기화 완료
 
-- `dev:admin`과 `dev:admin:setup`은 외부에서 전달된 `ADMIN_SEED_EMAIL`, `ADMIN_SEED_PASSWORD`, `DATABASE_URL`, 관리자 인증 환경 변수를 우선 사용한다.
-- `dev:admin:setup`은 `ADMIN_SEED_RESET_PASSWORD=true`로 seed를 실행해 기존 개발 관리자 credential 비밀번호를 현재 `ADMIN_SEED_PASSWORD` 값으로 갱신한다.
+- `dev:admin`과 `dev:admin:setup`은 외부에서 전달된 `ADMIN_SEED_EMAIL`, `ADMIN_SEED_PASSWORD`, `DATABASE_URL`, 관리자 인증 환경 변수만 사용한다.
+- 기존 개발 관리자 credential 비밀번호를 갱신해야 할 때는 실행자가 `ADMIN_SEED_RESET_PASSWORD=true`를 직접 명시한다.
 - 운영용 `seed:admin`은 `ADMIN_SEED_RESET_PASSWORD=true`를 명시하지 않으면 기존 관리자 비밀번호를 바꾸지 않는다.
 
 ## 2026-05-28 Windows Bun SQLite 디렉터리 보장 수정 시작
@@ -241,3 +241,17 @@
 - `AdminShell`은 사이드바와 본문 레이아웃만 담당하고 페이지 제목을 렌더링하지 않는다.
 - `AdminHeader`를 추가해 각 페이지가 제목, 설명, 우측 액션 영역을 직접 전달하도록 했다.
 - 콘텐츠와 사용자 조회 화면은 각각 `콘텐츠`, `사용자` 헤더를 직접 렌더링한다.
+
+## 2026-05-28 package.json 환경 변수 경계 정리 시작
+
+- 루트 `package.json`의 `dev:admin`, `dev:admin:setup`에서 환경 변수 기본값을 암시적으로 주입하는 패턴을 제거한다.
+- `package.json`은 명령 조합과 Turbo filter만 담당하고, 환경 변수 값은 `.env`, 셸, CI, 배포 환경에서 명시적으로 제공한다.
+- 필수 환경 변수가 없으면 앱별 환경 변수 파서와 시드 스크립트가 시작 단계에서 실패하도록 기존 경계를 유지한다.
+
+## 2026-05-28 package.json 환경 변수 경계 정리 완료
+
+- 루트 `dev:admin`, `dev:admin:setup`에서 `ADMIN_*`, `DATABASE_URL`, `ADMIN_SEED_*` 환경 변수 주입을 제거했다.
+- 어드민 로컬 통합 실행은 환경 변수가 준비된 상태에서만 setup과 dev server를 실행한다.
+- 필수 환경 변수 누락은 `@workspace/env` 기반 어드민 API 환경 검증 또는 관리자 시드 스크립트의 필수 시드 값 검증에서 명시적으로 실패한다.
+- `ADMIN_SEED_RESET_PASSWORD=true`는 더 이상 루트 스크립트가 대신 설정하지 않으며, 기존 관리자 비밀번호 갱신이 필요한 실행자가 직접 명시한다.
+- 검증 중 Bun의 앱별 `.env` 자동 로딩을 확인했으며, `.env`를 끈 상태에서는 필수 환경 변수 누락이 `Invalid environment variables`로 실패한다.

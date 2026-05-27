@@ -71,19 +71,19 @@ bun --filter @workspace/api dev
 
 필수 환경 변수는 누락 시 서버 시작 단계에서 즉시 실패한다. 운영 환경 값과 배포 체크리스트는 `docs/operations-environment.md`를 기준으로 관리한다.
 
-| 변수                        | 필수 여부 | 기본값 또는 예시                 | 용도                                                                      |
-| --------------------------- | --------- | -------------------------------- | ------------------------------------------------------------------------- |
-| `ADMIN_BETTER_AUTH_SECRET`  | 필수      | `replace-with-admin-auth-secret` | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                |
-| `ADMIN_BETTER_AUTH_URL`     | 필수      | `http://localhost:4001`          | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL           |
-| `ADMIN_CORS_ORIGIN`         | 선택      | `http://localhost:3001`          | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin                     |
-| `DATABASE_URL`              | 필수      | `file:../../data/api.sqlite`     | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치 |
-| `LOG_LEVEL`                 | 선택      | `info`                           | Pino 로그 레벨                                                            |
-| `NODE_ENV`                  | 선택      | `development`                    | 실행 환경 이름                                                            |
-| `PORT`                      | 선택      | `4001`                           | 어드민 API 서버가 수신할 포트                                             |
-| `ADMIN_SEED_EMAIL`          | 시드 필수 | `admin@example.com`              | 최초 관리자 계정 시드에 사용할 이메일                                     |
-| `ADMIN_SEED_PASSWORD`       | 시드 필수 | `password-1234`                  | 최초 관리자 계정 시드에 사용할 비밀번호                                   |
-| `ADMIN_SEED_NAME`           | 시드 선택 | `관리자`                         | 최초 관리자 계정 시드에 사용할 이름                                       |
-| `ADMIN_SEED_RESET_PASSWORD` | 시드 선택 | `false`                          | `true`일 때 기존 관리자 credential 비밀번호를 시드 비밀번호로 갱신        |
+| 변수                        | 필수 여부 | 기본값 또는 예시                    | 용도                                                                      |
+| --------------------------- | --------- | ----------------------------------- | ------------------------------------------------------------------------- |
+| `ADMIN_BETTER_AUTH_SECRET`  | 필수      | `replace-with-admin-auth-secret`    | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                |
+| `ADMIN_BETTER_AUTH_URL`     | 필수      | `http://localhost:4001`             | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL           |
+| `ADMIN_CORS_ORIGIN`         | 선택      | `http://localhost:3001`             | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin                     |
+| `DATABASE_URL`              | 필수      | `file:../../data/api.sqlite`        | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치 |
+| `LOG_LEVEL`                 | 선택      | `info`                              | Pino 로그 레벨                                                            |
+| `NODE_ENV`                  | 선택      | `development`                       | 실행 환경 이름                                                            |
+| `PORT`                      | 선택      | `4001`                              | 어드민 API 서버가 수신할 포트                                             |
+| `ADMIN_SEED_EMAIL`          | 시드 필수 | `admin@example.com`                 | 최초 관리자 계정 시드에 사용할 이메일                                     |
+| `ADMIN_SEED_PASSWORD`       | 시드 필수 | `replace-with-local-admin-password` | 최초 관리자 계정 시드에 사용할 비밀번호                                   |
+| `ADMIN_SEED_NAME`           | 시드 선택 | `관리자`                            | 최초 관리자 계정 시드에 사용할 이름                                       |
+| `ADMIN_SEED_RESET_PASSWORD` | 시드 선택 | `false`                             | `true`일 때 기존 관리자 credential 비밀번호를 시드 비밀번호로 갱신        |
 
 ```bash
 bun --filter @workspace/admin-api dev
@@ -95,7 +95,7 @@ bun --filter @workspace/admin-api dev
 bun --filter @workspace/admin-api seed:admin
 ```
 
-로컬 통합 실행에서는 루트 `bun run dev:admin`이 `bun run dev:admin:setup`을 먼저 실행한다. 이 개발용 setup은 콘텐츠 시드와 개발용 관리자 계정을 저장소 루트 `data/api.sqlite`에 보장한다. 기본 계정은 `admin@example.com / password-1234`이며, `ADMIN_SEED_EMAIL`과 `ADMIN_SEED_PASSWORD`를 지정하면 기존 개발 계정도 해당 비밀번호로 갱신한다.
+로컬 통합 실행에서는 루트 `bun run dev:admin`이 `bun run dev:admin:setup`을 먼저 실행한다. 이 setup은 콘텐츠 시드와 관리자 계정 시드를 실행하지만, 환경 변수 값은 루트 `package.json`에서 주입하지 않는다. `DATABASE_URL`, `ADMIN_BETTER_AUTH_SECRET`, `ADMIN_BETTER_AUTH_URL`, `ADMIN_SEED_EMAIL`, `ADMIN_SEED_PASSWORD` 같은 필수 값은 `.env`, 셸, CI에서 명시적으로 제공한다. 필수 값이 없으면 시작 단계에서 실패한다.
 
 ### `packages/core`
 

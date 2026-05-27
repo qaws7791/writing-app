@@ -21,7 +21,8 @@
 | 어드민 통합 실행 | `3001`, `4001` | `bun dev:admin`                         |
 
 로컬 예시는 각 앱의 `.env.example`을 기준으로 만든다. API 앱 패키지에서 실행되는 `DATABASE_URL=file:../../data/api.sqlite`는 저장소 루트의 `data/api.sqlite`를 가리킨다.
-`bun dev:admin`은 실행 전에 `bun run dev:admin:setup`으로 콘텐츠 시드와 개발용 관리자 계정을 루트 SQLite에 보장한다. 개발 기본 계정은 `admin@example.com / password-1234`이며, `ADMIN_SEED_EMAIL`과 `ADMIN_SEED_PASSWORD`를 지정하면 해당 값으로 생성하거나 기존 개발 계정 비밀번호를 갱신한다.
+
+루트 `package.json`은 환경 변수 값을 주입하지 않는다. `bun dev:admin`은 실행 전에 `bun run dev:admin:setup`으로 콘텐츠 시드와 관리자 계정 시드를 실행하지만, 필요한 값은 `.env`, 셸, CI 같은 실행 환경에서 명시적으로 제공되어야 한다. 필수 환경 변수가 없으면 `apps/admin-api/src/env.ts` 또는 `apps/admin-api/src/scripts/seed-admin.ts`에서 즉시 실패한다.
 
 - `apps/api/.env.example`
 - `apps/admin/.env.example`
@@ -44,6 +45,22 @@
 | `PORT`                 | `4000`                                 | systemd/Caddy 설정과 맞춘다.                   |
 | `LOG_LEVEL`            | `info`                                 | 장애 분석 시 일시적으로 높인다.                |
 | `NODE_ENV`             | `production`                           | 운영에서는 `production`을 사용한다.            |
+
+## 어드민 로컬 실행 전 준비
+
+`bun dev:admin`을 실행하기 전에 다음 값을 명시적으로 준비한다.
+
+```env
+ADMIN_API_BASE_URL=http://localhost:4001
+ADMIN_BETTER_AUTH_SECRET=replace-with-32-byte-random-secret
+ADMIN_BETTER_AUTH_URL=http://localhost:4001
+ADMIN_CORS_ORIGIN=http://localhost:3001
+DATABASE_URL=file:../../data/api.sqlite
+ADMIN_SEED_EMAIL=admin@example.com
+ADMIN_SEED_PASSWORD=replace-with-local-admin-password
+```
+
+기존 관리자 계정 비밀번호를 시드 값으로 갱신해야 할 때만 `ADMIN_SEED_RESET_PASSWORD=true`를 명시한다. 루트 스크립트는 이 값을 대신 설정하지 않는다.
 
 ## 어드민 API 환경 변수
 
@@ -85,6 +102,6 @@ bun --filter @workspace/admin-api seed:admin
 - `apps/api`의 `CORS_ORIGIN`에는 학습자 웹 origin만 둔다.
 - `apps/admin-api`의 `ADMIN_CORS_ORIGIN`에는 어드민 웹 origin만 둔다.
 - `apps/admin`의 `ADMIN_API_BASE_URL`은 `apps/admin-api`의 외부 또는 내부 접근 URL과 일치한다.
-- `DATABASE_URL`이 두 API에서 같은 SQLite 파일을 가리키며, 로컬 기본값은 저장소 루트 `data/api.sqlite`다.
+- `DATABASE_URL`이 두 API에서 같은 SQLite 파일을 가리키며, 로컬 예시는 저장소 루트 `data/api.sqlite`다.
 - 단일 SQLite 파일의 권한과 백업 정책을 API 프로세스 계정 기준으로 확인한다.
 - `bun --filter @workspace/admin-api seed:admin` 실행 후 최초 관리자 비밀번호를 교체한다.
