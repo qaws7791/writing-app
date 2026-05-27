@@ -55,6 +55,65 @@ const repository: AdminRepository = {
       query: "문장",
     }
   },
+  async listCurriculumVersions() {
+    return {
+      versions: [
+        {
+          id: "sentence-structure-v1",
+          courseId: "sentence-structure",
+          versionNumber: 1,
+          status: "published",
+          title: "문장 구조의 기본",
+          changelog: "초기 버전",
+          publishedAt: "2026-05-28T00:00:00.000Z",
+          createdAt: "2026-05-28T00:00:00.000Z",
+        },
+      ],
+    }
+  },
+  async createCurriculumDraft() {
+    return {
+      status: "created",
+      version: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+      },
+    }
+  },
+  async getCurriculumVersionDetail() {
+    return {
+      id: "sentence-structure-v2",
+      courseId: "sentence-structure",
+      versionNumber: 2,
+      status: "draft",
+      title: "문장 구조의 기본",
+      changelog: "Draft from v1",
+      publishedAt: null,
+      createdAt: "2026-05-28T00:00:00.000Z",
+      chapters: [],
+    }
+  },
+  async publishCurriculumVersion() {
+    return {
+      status: "published",
+      version: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "published",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: "2026-05-28T00:00:00.000Z",
+        createdAt: "2026-05-28T00:00:00.000Z",
+      },
+    }
+  },
   async listUsers() {
     return {
       users: [
@@ -185,6 +244,150 @@ describe("createAdminService", () => {
       status: "ok",
       value: {
         users: [{ email: "user@example.com" }],
+      },
+    })
+  })
+
+  it("returns curriculum versions for a course", async () => {
+    const service = createAdminService({ repository })
+
+    await expect(
+      service.listCurriculumVersions("sentence-structure")
+    ).resolves.toEqual({
+      status: "ok",
+      value: {
+        versions: [
+          {
+            id: "sentence-structure-v1",
+            courseId: "sentence-structure",
+            versionNumber: 1,
+            status: "published",
+            title: "문장 구조의 기본",
+            changelog: "초기 버전",
+            publishedAt: "2026-05-28T00:00:00.000Z",
+            createdAt: "2026-05-28T00:00:00.000Z",
+          },
+        ],
+      },
+    })
+  })
+
+  it("creates a curriculum draft", async () => {
+    const service = createAdminService({ repository })
+
+    await expect(
+      service.createCurriculumDraft("sentence-structure")
+    ).resolves.toMatchObject({
+      status: "ok",
+      value: {
+        id: "sentence-structure-v2",
+        status: "draft",
+        versionNumber: 2,
+      },
+    })
+  })
+
+  it("preserves invalid draft creation requests", async () => {
+    const service = createAdminService({
+      repository: {
+        ...repository,
+        async createCurriculumDraft() {
+          return {
+            status: "invalid-request",
+            error: {
+              code: "invalid-request",
+              message: "Draft curriculum version already exists.",
+            },
+          }
+        },
+      },
+    })
+
+    await expect(
+      service.createCurriculumDraft("sentence-structure")
+    ).resolves.toEqual({
+      status: "invalid-request",
+      error: {
+        code: "invalid-request",
+        message: "Draft curriculum version already exists.",
+      },
+    })
+  })
+
+  it("returns a curriculum version detail", async () => {
+    const service = createAdminService({ repository })
+
+    await expect(
+      service.getCurriculumVersionDetail("sentence-structure-v2")
+    ).resolves.toMatchObject({
+      status: "ok",
+      value: {
+        id: "sentence-structure-v2",
+        status: "draft",
+        chapters: [],
+      },
+    })
+  })
+
+  it("returns not found when curriculum version detail is missing", async () => {
+    const service = createAdminService({
+      repository: {
+        ...repository,
+        async getCurriculumVersionDetail() {
+          return undefined
+        },
+      },
+    })
+
+    await expect(
+      service.getCurriculumVersionDetail("missing-version")
+    ).resolves.toEqual({
+      status: "not-found",
+      error: {
+        code: "not-found",
+        message: "Curriculum version was not found.",
+      },
+    })
+  })
+
+  it("publishes a curriculum draft", async () => {
+    const service = createAdminService({ repository })
+
+    await expect(
+      service.publishCurriculumVersion("sentence-structure-v2")
+    ).resolves.toMatchObject({
+      status: "ok",
+      value: {
+        id: "sentence-structure-v2",
+        status: "published",
+        publishedAt: "2026-05-28T00:00:00.000Z",
+      },
+    })
+  })
+
+  it("preserves invalid publish requests", async () => {
+    const service = createAdminService({
+      repository: {
+        ...repository,
+        async publishCurriculumVersion() {
+          return {
+            status: "invalid-request",
+            error: {
+              code: "invalid-request",
+              message: "Only draft curriculum versions can be published.",
+            },
+          }
+        },
+      },
+    })
+
+    await expect(
+      service.publishCurriculumVersion("sentence-structure-v1")
+    ).resolves.toEqual({
+      status: "invalid-request",
+      error: {
+        code: "invalid-request",
+        message: "Only draft curriculum versions can be published.",
       },
     })
   })

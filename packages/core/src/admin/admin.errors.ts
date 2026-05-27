@@ -10,13 +10,20 @@ export const adminInvalidRequestErrorDtoSchema = z.object({
   message: z.string().min(1),
 })
 
+export const adminNotFoundErrorDtoSchema = z.object({
+  code: z.literal("not-found"),
+  message: z.string().min(1),
+})
+
 export type AdminDatabaseUnavailableErrorDto = z.infer<
   typeof adminDatabaseUnavailableErrorDtoSchema
 >
 export type AdminInvalidRequestErrorDto = z.infer<
   typeof adminInvalidRequestErrorDtoSchema
 >
+export type AdminNotFoundErrorDto = z.infer<typeof adminNotFoundErrorDtoSchema>
 
 export type AdminErrorDto =
   | AdminDatabaseUnavailableErrorDto
   | AdminInvalidRequestErrorDto
+  | AdminNotFoundErrorDto

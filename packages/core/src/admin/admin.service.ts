@@ -1,13 +1,23 @@
 import {
   adminCourseListDtoSchema,
   adminCourseTreeDtoSchema,
+  adminCurriculumVersionDetailDtoSchema,
+  adminCurriculumVersionListDtoSchema,
+  adminCurriculumVersionSummaryDtoSchema,
   adminUserListDtoSchema,
   type AdminCourseListDto,
   type AdminCourseListInputDto,
   type AdminCourseTreeDto,
+  type AdminCurriculumVersionDetailDto,
+  type AdminCurriculumVersionListDto,
+  type AdminCurriculumVersionSummaryDto,
   type AdminUserListDto,
 } from "@/admin/admin.dto"
-import type { AdminDatabaseUnavailableErrorDto } from "@/admin/admin.errors"
+import type {
+  AdminDatabaseUnavailableErrorDto,
+  AdminInvalidRequestErrorDto,
+  AdminNotFoundErrorDto,
+} from "@/admin/admin.errors"
 import type { AdminRepository } from "@/admin/admin.repository"
 
 type OkResult<TValue> = {
@@ -20,13 +30,46 @@ type UnavailableResult = {
   error: AdminDatabaseUnavailableErrorDto
 }
 
+type InvalidRequestResult = {
+  status: "invalid-request"
+  error: AdminInvalidRequestErrorDto
+}
+
+type NotFoundResult = {
+  status: "not-found"
+  error: AdminNotFoundErrorDto
+}
+
 export type AdminServiceResult<TValue> = OkResult<TValue> | UnavailableResult
+
+type AdminCurriculumVersionServiceResult<TValue> =
+  | AdminServiceResult<TValue>
+  | InvalidRequestResult
+  | NotFoundResult
 
 export interface AdminService {
   listCourses(
     input: AdminCourseListInputDto
   ): Promise<AdminServiceResult<AdminCourseListDto>>
   listCourseTree(): Promise<AdminServiceResult<AdminCourseTreeDto>>
+  listCurriculumVersions(
+    courseId: string
+  ): Promise<AdminServiceResult<AdminCurriculumVersionListDto>>
+  createCurriculumDraft(
+    courseId: string
+  ): Promise<
+    AdminCurriculumVersionServiceResult<AdminCurriculumVersionSummaryDto>
+  >
+  getCurriculumVersionDetail(
+    versionId: string
+  ): Promise<
+    AdminCurriculumVersionServiceResult<AdminCurriculumVersionDetailDto>
+  >
+  publishCurriculumVersion(
+    versionId: string
+  ): Promise<
+    AdminCurriculumVersionServiceResult<AdminCurriculumVersionSummaryDto>
+  >
   listUsers(): Promise<AdminServiceResult<AdminUserListDto>>
 }
 
@@ -65,6 +108,80 @@ export function createAdminService({
           value: adminCourseTreeDtoSchema.parse(
             await repository.listCourseTree()
           ),
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
+    async listCurriculumVersions(courseId) {
+      try {
+        return {
+          status: "ok",
+          value: adminCurriculumVersionListDtoSchema.parse(
+            await repository.listCurriculumVersions(courseId)
+          ),
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
+    async createCurriculumDraft(courseId) {
+      try {
+        const result = await repository.createCurriculumDraft(courseId)
+
+        if (result.status === "invalid-request") {
+          return result
+        }
+
+        if (result.status === "not-found") {
+          return result
+        }
+
+        return {
+          status: "ok",
+          value: adminCurriculumVersionSummaryDtoSchema.parse(result.version),
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
+    async getCurriculumVersionDetail(versionId) {
+      try {
+        const version = await repository.getCurriculumVersionDetail(versionId)
+
+        if (!version) {
+          return {
+            status: "not-found",
+            error: {
+              code: "not-found",
+              message: "Curriculum version was not found.",
+            },
+          }
+        }
+
+        return {
+          status: "ok",
+          value: adminCurriculumVersionDetailDtoSchema.parse(version),
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
+    async publishCurriculumVersion(versionId) {
+      try {
+        const result = await repository.publishCurriculumVersion(versionId)
+
+        if (result.status === "invalid-request") {
+          return result
+        }
+
+        if (result.status === "not-found") {
+          return result
+        }
+
+        return {
+          status: "ok",
+          value: adminCurriculumVersionSummaryDtoSchema.parse(result.version),
         }
       } catch {
         return unavailableResult

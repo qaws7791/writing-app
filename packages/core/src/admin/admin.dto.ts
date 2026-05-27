@@ -6,6 +6,27 @@ export const adminCurriculumNodeStatusSchema = z.enum([
   "archived",
 ])
 
+export const adminCurriculumVersionStatusSchema = z.enum([
+  "draft",
+  "published",
+  "archived",
+])
+
+export const adminCurriculumVersionSummaryDtoSchema = z.object({
+  id: z.string().min(1),
+  courseId: z.string().min(1),
+  versionNumber: z.number().int().positive(),
+  status: adminCurriculumVersionStatusSchema,
+  title: z.string().min(1),
+  changelog: z.string().min(1),
+  publishedAt: z.string().datetime().nullable(),
+  createdAt: z.string().datetime(),
+})
+
+export const adminCurriculumVersionListDtoSchema = z.object({
+  versions: z.array(adminCurriculumVersionSummaryDtoSchema),
+})
+
 export const adminLessonSummaryDtoSchema = z.object({
   id: z.string().min(1),
   lessonId: z.string().min(1),
@@ -35,6 +56,15 @@ export const adminCourseTreeItemDtoSchema = z.object({
 export const adminCourseTreeDtoSchema = z.object({
   courses: z.array(adminCourseTreeItemDtoSchema),
 })
+
+export const adminCurriculumVersionLessonDtoSchema = adminLessonSummaryDtoSchema
+export const adminCurriculumVersionChapterDtoSchema =
+  adminChapterSummaryDtoSchema
+
+export const adminCurriculumVersionDetailDtoSchema =
+  adminCurriculumVersionSummaryDtoSchema.extend({
+    chapters: z.array(adminCurriculumVersionChapterDtoSchema),
+  })
 
 export const adminCourseListPageSizeSchema = z.union([
   z.literal(10),
@@ -88,4 +118,13 @@ export type AdminCourseListInputDto = z.infer<
   typeof adminCourseListInputDtoSchema
 >
 export type AdminCourseTreeDto = z.infer<typeof adminCourseTreeDtoSchema>
+export type AdminCurriculumVersionDetailDto = z.infer<
+  typeof adminCurriculumVersionDetailDtoSchema
+>
+export type AdminCurriculumVersionListDto = z.infer<
+  typeof adminCurriculumVersionListDtoSchema
+>
+export type AdminCurriculumVersionSummaryDto = z.infer<
+  typeof adminCurriculumVersionSummaryDtoSchema
+>
 export type AdminUserListDto = z.infer<typeof adminUserListDtoSchema>
