@@ -100,6 +100,7 @@ export interface AdminService {
   >
   getCourseLessonDetail(
     courseId: string,
+    versionId: string,
     lessonId: string
   ): Promise<AdminCurriculumVersionServiceResult<AdminEditorLessonDetailDto>>
   restoreCurriculumDraft(
@@ -281,10 +282,11 @@ export function createAdminService({
         return unavailableResult
       }
     },
-    async getCourseLessonDetail(courseId, lessonId) {
+    async getCourseLessonDetail(courseId, versionId, lessonId) {
       try {
         const lesson = await repository.getCourseLessonDetail(
           courseId,
+          versionId,
           lessonId
         )
 

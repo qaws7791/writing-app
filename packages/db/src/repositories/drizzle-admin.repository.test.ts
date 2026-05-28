@@ -20,6 +20,7 @@ import {
   courses,
   curriculumVersionChapters,
   curriculumVersionLessons,
+  curriculumVersionSteps,
   curriculumVersions,
   lessons,
   lessonProgress,
@@ -901,11 +902,43 @@ describe("createDrizzleAdminRepository", () => {
     const repository = createDrizzleAdminRepository(db)
     const lesson = await repository.getCourseLessonDetail(
       "sentence-structure",
+      "sentence-structure-v1",
       "sentence-structure-01"
     )
 
     expect(lesson?.courseId).toBe("sentence-structure")
     expect(lesson?.steps[0]?.content).toEqual(expect.any(Object))
+  })
+
+  it("keeps draft step changes isolated from published step snapshots", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+    const draft = await repository.createCurriculumDraft("sentence-structure")
+
+    if (draft.status !== "created") {
+      throw new Error("Expected draft.")
+    }
+
+    await db
+      .update(curriculumVersionSteps)
+      .set({ contentJson: JSON.stringify({ title: "draft only" }) })
+      .where(eq(curriculumVersionSteps.curriculumVersionId, draft.version.id))
+
+    const draftLesson = await repository.getCourseLessonDetail(
+      "sentence-structure",
+      draft.version.id,
+      "sentence-structure-01"
+    )
+    const publishedLesson = await repository.getCourseLessonDetail(
+      "sentence-structure",
+      "sentence-structure-v1",
+      "sentence-structure-01"
+    )
+
+    expect(draftLesson?.steps[0]?.content).toEqual({ title: "draft only" })
+    expect(publishedLesson?.steps[0]?.content).not.toEqual({
+      title: "draft only",
+    })
   })
 
   it("tracks curriculum revision and active lesson step status", async () => {
@@ -920,6 +953,7 @@ describe("createDrizzleAdminRepository", () => {
 
     const lesson = await repository.getCourseLessonDetail(
       "sentence-structure",
+      "sentence-structure-v1",
       "sentence-structure-01"
     )
 

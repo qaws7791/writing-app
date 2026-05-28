@@ -129,6 +129,7 @@ export interface AdminRepository {
   ): Promise<AdminEditorCurriculumVersionDetailDto | undefined>
   getCourseLessonDetail(
     courseId: string,
+    versionId: string,
     lessonId: string
   ): Promise<AdminEditorLessonDetailDto | undefined>
   restoreCurriculumDraft(

@@ -178,3 +178,55 @@ export const lessonSteps = sqliteTable("lesson_steps", {
     .default("active"),
   contentJson: text("content_json").notNull(),
 })
+
+export const curriculumVersionSteps = sqliteTable(
+  "curriculum_version_steps",
+  {
+    id: text("id").primaryKey(),
+    curriculumVersionId: text("curriculum_version_id")
+      .notNull()
+      .references(() => curriculumVersions.id),
+    lessonId: text("lesson_id")
+      .notNull()
+      .references(() => lessons.id),
+    sourceStepId: text("source_step_id").references(() => lessonSteps.id),
+    type: text("type", {
+      enum: [
+        "INTRO",
+        "CONCEPT",
+        "READING_PASSAGE",
+        "EXAMPLE_REVEAL",
+        "COMPARE",
+        "MULTIPLE_CHOICE",
+        "FILL_BLANK",
+        "WORD_SELECT",
+        "REORDER",
+        "MATCH",
+        "CLASSIFY",
+        "SHORT_WRITE",
+        "LONG_WRITE",
+        "AI_FEEDBACK",
+        "REVISION",
+        "CHECKLIST",
+        "REFLECTION",
+        "SUMMARY",
+        "TRANSCRIBE",
+        "COMPLETE",
+      ],
+    }).notNull(),
+    sortOrder: integer("sort_order").notNull(),
+    points: integer("points").notNull(),
+    required: integer("required", { mode: "boolean" }).notNull(),
+    status: text("status", {
+      enum: ["active", "deprecated", "archived"],
+    }).notNull(),
+    contentJson: text("content_json").notNull(),
+  },
+  (table) => [
+    uniqueIndex("curriculum_version_steps_version_lesson_sort_idx").on(
+      table.curriculumVersionId,
+      table.lessonId,
+      table.sortOrder
+    ),
+  ]
+)

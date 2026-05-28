@@ -6,6 +6,7 @@ import {
   courses,
   curriculumVersionChapters,
   curriculumVersionLessons,
+  curriculumVersionSteps,
   curriculumVersions,
   lessons,
   lessonSteps,
@@ -22,6 +23,8 @@ export async function seedContent(db: WritingAppDatabase) {
   const curriculumVersionChapterRows: (typeof curriculumVersionChapters.$inferInsert)[] =
     []
   const curriculumVersionLessonRows: (typeof curriculumVersionLessons.$inferInsert)[] =
+    []
+  const curriculumVersionStepRows: (typeof curriculumVersionSteps.$inferInsert)[] =
     []
   const lessonStepRows: (typeof lessonSteps.$inferInsert)[] = []
   const seedPublishedAt = new Date("2026-05-28T00:00:00.000Z")
@@ -131,11 +134,26 @@ export async function seedContent(db: WritingAppDatabase) {
             type: step.type,
           }))
         )
+        curriculumVersionStepRows.push(
+          ...steps.map((step) => ({
+            id: `${step.id}-v1`,
+            curriculumVersionId,
+            lessonId: step.lessonId,
+            sourceStepId: step.id,
+            contentJson: JSON.stringify(step.content),
+            points: step.points,
+            required: step.required,
+            sortOrder: step.sortOrder,
+            status: "active" as const,
+            type: step.type,
+          }))
+        )
       }
     }
   }
 
   await db.transaction(async (tx) => {
+    await tx.delete(curriculumVersionSteps)
     await tx.delete(lessonSteps)
     await tx.delete(curriculumVersionLessons)
     await tx.delete(curriculumVersionChapters)
@@ -159,5 +177,6 @@ export async function seedContent(db: WritingAppDatabase) {
       .insert(curriculumVersionLessons)
       .values(curriculumVersionLessonRows)
     await tx.insert(lessonSteps).values(lessonStepRows)
+    await tx.insert(curriculumVersionSteps).values(curriculumVersionStepRows)
   })
 }

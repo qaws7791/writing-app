@@ -8,6 +8,7 @@ import {
   courses,
   curriculumVersionChapters,
   curriculumVersionLessons,
+  curriculumVersionSteps,
   curriculumVersions,
   lessons,
   lessonSteps,
@@ -19,6 +20,7 @@ const sqlite = new Database(":memory:")
 const db = createDatabase(sqlite)
 
 afterEach(() => {
+  sqlite.exec("delete from curriculum_version_steps")
   sqlite.exec("delete from lesson_steps")
   sqlite.exec("delete from curriculum_version_lessons")
   sqlite.exec("delete from curriculum_version_chapters")
@@ -42,6 +44,7 @@ describe("seedContent", () => {
     const versionRows = await db.select().from(curriculumVersions)
     const versionChapterRows = await db.select().from(curriculumVersionChapters)
     const versionLessonRows = await db.select().from(curriculumVersionLessons)
+    const versionStepRows = await db.select().from(curriculumVersionSteps)
 
     expect(courseRows.map((course) => course.id)).toContain(
       "sentence-structure"
@@ -77,6 +80,22 @@ describe("seedContent", () => {
         id: "sentence-structure-01-v1",
         chapterId: "sentence-structure-chapter-1-v1",
         lessonId: "sentence-structure-01",
+        status: "active",
+      })
+    )
+    expect(
+      versionStepRows.filter(
+        (step) => step.curriculumVersionId === "sentence-structure-v1"
+      )
+    ).toHaveLength(
+      stepRows.filter((step) => step.lessonId.startsWith("sentence-structure"))
+        .length
+    )
+    expect(versionStepRows).toContainEqual(
+      expect.objectContaining({
+        id: "sentence-structure-01-step-1-v1",
+        lessonId: "sentence-structure-01",
+        sourceStepId: "sentence-structure-01-step-1",
         status: "active",
       })
     )

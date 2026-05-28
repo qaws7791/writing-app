@@ -21,8 +21,8 @@ import {
   curriculumVersionMigrations,
   curriculumVersionChapters,
   curriculumVersionLessons,
+  curriculumVersionSteps,
   curriculumVersions,
-  lessonSteps,
   lessonMigrationMappings,
   lessons,
   user,
@@ -31,11 +31,11 @@ import {
 type CurriculumVersionRow = typeof curriculumVersions.$inferSelect
 type CurriculumVersionChapterRow = typeof curriculumVersionChapters.$inferSelect
 type CurriculumVersionLessonRow = typeof curriculumVersionLessons.$inferSelect
+type CurriculumVersionStepRow = typeof curriculumVersionSteps.$inferSelect
 type CurriculumVersionMigrationRow =
   typeof curriculumVersionMigrations.$inferSelect
 type LessonMigrationMappingRow = typeof lessonMigrationMappings.$inferSelect
 type LessonRow = typeof lessons.$inferSelect
-type LessonStepRow = typeof lessonSteps.$inferSelect
 type CurriculumVersionSummaryRow = Pick<
   CurriculumVersionRow,
   | "id"
@@ -287,6 +287,28 @@ export function createDrizzleAdminRepository(
                   )
                 )
                 .orderBy(asc(curriculumVersionLessons.sortOrder))
+        const sourceSteps =
+          sourceLessons.length === 0
+            ? []
+            : await tx
+                .select()
+                .from(curriculumVersionSteps)
+                .where(
+                  and(
+                    eq(
+                      curriculumVersionSteps.curriculumVersionId,
+                      sourceVersion.id
+                    ),
+                    inArray(
+                      curriculumVersionSteps.lessonId,
+                      sourceLessons.map((lesson) => lesson.lessonId)
+                    )
+                  )
+                )
+                .orderBy(
+                  asc(curriculumVersionSteps.lessonId),
+                  asc(curriculumVersionSteps.sortOrder)
+                )
         const draftChapterIdBySourceChapterId = new Map<string, string>()
         const draftChapters = sourceChapters.map((chapter) => {
           const sourceChapterId = chapter.sourceChapterId ?? chapter.id
@@ -323,6 +345,27 @@ export function createDrizzleAdminRepository(
 
         if (draftLessons.length > 0) {
           await tx.insert(curriculumVersionLessons).values(draftLessons)
+        }
+
+        const draftSteps = sourceSteps.map((step) => {
+          const sourceStepId = step.sourceStepId ?? step.id
+
+          return {
+            id: `${sourceStepId}-v${versionNumber}`,
+            curriculumVersionId: draftVersion.id,
+            lessonId: step.lessonId,
+            sourceStepId,
+            type: step.type,
+            sortOrder: step.sortOrder,
+            points: step.points,
+            required: step.required,
+            status: step.status,
+            contentJson: step.contentJson,
+          } satisfies typeof curriculumVersionSteps.$inferInsert
+        })
+
+        if (draftSteps.length > 0) {
+          await tx.insert(curriculumVersionSteps).values(draftSteps)
         }
 
         return {
@@ -402,14 +445,20 @@ export function createDrizzleAdminRepository(
           ? []
           : await db
               .select()
-              .from(lessonSteps)
+              .from(curriculumVersionSteps)
               .where(
-                inArray(
-                  lessonSteps.lessonId,
-                  lessonRows.map((lesson) => lesson.lessonId)
+                and(
+                  eq(curriculumVersionSteps.curriculumVersionId, version.id),
+                  inArray(
+                    curriculumVersionSteps.lessonId,
+                    lessonRows.map((lesson) => lesson.lessonId)
+                  )
                 )
               )
-              .orderBy(asc(lessonSteps.lessonId), asc(lessonSteps.sortOrder))
+              .orderBy(
+                asc(curriculumVersionSteps.lessonId),
+                asc(curriculumVersionSteps.sortOrder)
+              )
 
       return mapEditorCurriculumVersionDetail(
         version,
@@ -418,7 +467,22 @@ export function createDrizzleAdminRepository(
         stepRows
       )
     },
-    async getCourseLessonDetail(courseId, lessonId) {
+    async getCourseLessonDetail(courseId, versionId, lessonId) {
+      const [versionLesson] = await db
+        .select()
+        .from(curriculumVersionLessons)
+        .where(
+          and(
+            eq(curriculumVersionLessons.curriculumVersionId, versionId),
+            eq(curriculumVersionLessons.lessonId, lessonId)
+          )
+        )
+        .limit(1)
+
+      if (!versionLesson) {
+        return undefined
+      }
+
       const [lesson] = await db
         .select()
         .from(lessons)
@@ -431,9 +495,14 @@ export function createDrizzleAdminRepository(
 
       const stepRows = await db
         .select()
-        .from(lessonSteps)
-        .where(eq(lessonSteps.lessonId, lesson.id))
-        .orderBy(asc(lessonSteps.sortOrder))
+        .from(curriculumVersionSteps)
+        .where(
+          and(
+            eq(curriculumVersionSteps.curriculumVersionId, versionId),
+            eq(curriculumVersionSteps.lessonId, lesson.id)
+          )
+        )
+        .orderBy(asc(curriculumVersionSteps.sortOrder))
 
       return mapEditorLessonDetail(lesson, stepRows)
     },
@@ -656,7 +725,7 @@ function mapEditorCurriculumVersionDetail(
   version: CurriculumVersionRow,
   chapters: CurriculumVersionChapterRow[],
   lessons: CurriculumVersionLessonRow[],
-  steps: LessonStepRow[]
+  steps: CurriculumVersionStepRow[]
 ): AdminEditorCurriculumVersionDetailDto {
   return {
     ...mapCurriculumVersionDetail(version, chapters, lessons),
@@ -694,7 +763,7 @@ function mapCurriculumVersionDetail(
 
 function mapEditorLessonDetail(
   lesson: LessonRow,
-  steps: LessonStepRow[]
+  steps: CurriculumVersionStepRow[]
 ): AdminEditorLessonDetailDto {
   return {
     id: lesson.id,
@@ -710,7 +779,9 @@ function mapEditorLessonDetail(
   }
 }
 
-function mapEditorStepSummary(step: LessonStepRow): AdminEditorStepSummaryDto {
+function mapEditorStepSummary(
+  step: CurriculumVersionStepRow
+): AdminEditorStepSummaryDto {
   return {
     id: step.id,
     lessonId: step.lessonId,

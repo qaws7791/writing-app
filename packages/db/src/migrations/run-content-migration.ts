@@ -29,8 +29,8 @@ const curriculumUpgradeDismissalSql = readFileSync(
   new URL("./0006-curriculum-upgrade-dismissal.sql", import.meta.url),
   "utf8"
 )
-const adminCourseEditorSql = readFileSync(
-  new URL("./0007-admin-course-editor.sql", import.meta.url),
+const curriculumVersionStepsSql = readFileSync(
+  new URL("./0008-curriculum-version-steps.sql", import.meta.url),
   "utf8"
 )
 
@@ -54,7 +54,19 @@ export function runContentMigration(sqlite: Database) {
   sqlite.exec(progressCurriculumVersionMigrationSql)
   sqlite.exec(curriculumMigrationMapSql)
   sqlite.exec(curriculumUpgradeDismissalSql)
-  sqlite.exec(adminCourseEditorSql)
+  addColumnIfMissing(
+    sqlite,
+    "curriculum_versions",
+    "revision",
+    "alter table curriculum_versions add column revision integer not null default 1"
+  )
+  addColumnIfMissing(
+    sqlite,
+    "lesson_steps",
+    "status",
+    "alter table lesson_steps add column status text not null default 'active'"
+  )
+  sqlite.exec(curriculumVersionStepsSql)
 }
 
 function addColumnIfMissing(
