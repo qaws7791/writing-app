@@ -48,6 +48,12 @@
 - 각 스텝 폼은 타입별 도메인 필드 라벨을 제공하고 공통 필드 helper로 content 값을 안전하게 읽는다.
 - INTRO부터 COMPLETE까지 모든 스텝 타입이 전용 편집 섹션을 렌더링하는지 테스트로 고정했다.
 
+## 2026-05-28 코스 에디터 미리보기 연결 완료
+
+- Lesson Preview는 서버 호출 없이 working copy 스텝 목록을 기준으로 학습 흐름을 표시한다.
+- Course Studio shell은 URL view가 `preview`이면 미리보기를, `step`이면 Step Workspace를, 기본값이면 Lesson Workspace를 렌더링한다.
+- 상단 에디터 헤더는 dirty count와 saving 상태를 받아 저장 버튼 활성화를 제어하도록 바꿨다.
+
 ## 2026-05-28 어드민 코스 상세 에디터 구현 계획 시작
 
 - 설계 문서 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md` 승인 후 구현 계획을 작성한다.

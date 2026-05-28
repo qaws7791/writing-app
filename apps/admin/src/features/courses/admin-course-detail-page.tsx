@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 
 import type {
@@ -23,10 +25,20 @@ export function AdminCourseDetailPage({
   urlState,
   version,
 }: AdminCourseDetailPageProps) {
+  const handleSave = React.useCallback(() => {}, [])
+  const handleOpenVersionMenu = React.useCallback(() => {}, [])
+
   return (
     <>
       <AdminHeader
-        actions={<CourseEditorHeader version={version} />}
+        actions={
+          <CourseEditorHeader
+            dirtyCount={0}
+            isSaving={false}
+            onOpenVersionMenu={handleOpenVersionMenu}
+            onSave={handleSave}
+          />
+        }
         description={`${course.title} 커리큘럼을 draft 기준으로 편집합니다.`}
         title="Course Studio"
       />

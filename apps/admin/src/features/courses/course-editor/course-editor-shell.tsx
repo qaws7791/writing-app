@@ -9,7 +9,9 @@ import { CourseSummaryPanel } from "@/features/courses/course-editor/course-summ
 import { CurriculumMap } from "@/features/courses/course-editor/curriculum-map"
 import { getEditorChangeKind } from "@/features/courses/course-editor/editor-change-kind"
 import type { CourseEditorUrlState } from "@/features/courses/course-editor/editor-url-state"
+import { LessonPreview } from "@/features/courses/course-editor/lesson-preview"
 import { LessonWorkspace } from "@/features/courses/course-editor/lesson-workspace"
+import { StepWorkspace } from "@/features/courses/course-editor/step-workspace"
 
 type CourseEditorShellProps = {
   course: AdminCourseDetailDto
@@ -32,6 +34,14 @@ export function CourseEditorShell({
   const selectedLessonSteps = selectedLessonId
     ? version.steps.filter((step) => step.lessonId === selectedLessonId)
     : []
+  const selectedLessonStepsWithContent = selectedLessonSteps.map((step) => ({
+    ...step,
+    content: {},
+  }))
+  const selectedStep =
+    selectedLessonStepsWithContent.find(
+      (step) => step.id === urlState.stepId
+    ) ?? null
   const changeKind = getEditorChangeKind({
     addedStepCount: 0,
     archivedChapterCount: 0,
@@ -56,12 +66,24 @@ export function CourseEditorShell({
           <p className="text-xs font-medium text-muted-foreground">
             {selectedVersionId} · {urlState.view}
           </p>
-          <LessonWorkspace
-            changeKind={changeKind}
-            lesson={selectedLesson}
-            selectedStepId={urlState.stepId}
-            steps={selectedLessonSteps}
-          />
+          {urlState.view === "preview" && selectedLesson ? (
+            <LessonPreview
+              lessonTitle={selectedLesson.title}
+              steps={selectedLessonStepsWithContent}
+            />
+          ) : urlState.view === "step" && selectedStep ? (
+            <StepWorkspace
+              lessonSteps={selectedLessonStepsWithContent}
+              step={selectedStep}
+            />
+          ) : (
+            <LessonWorkspace
+              changeKind={changeKind}
+              lesson={selectedLesson}
+              selectedStepId={urlState.stepId}
+              steps={selectedLessonSteps}
+            />
+          )}
         </div>
       </section>
     </div>

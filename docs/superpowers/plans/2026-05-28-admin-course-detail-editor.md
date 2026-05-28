@@ -1776,7 +1776,7 @@ git commit -m "스텝 타입 전용 폼 구현"
 - Modify: `apps/admin/src/features/courses/course-editor/course-editor-shell.tsx`
 - Create: `apps/admin/src/features/courses/course-editor/lesson-preview.test.tsx`
 
-- [ ] **Step 1: Write failing preview and save tests**
+- [x] **Step 1: Write failing preview and save tests**
 
 Create `lesson-preview.test.tsx`.
 
@@ -1806,17 +1806,19 @@ it("renders preview from working copy lesson steps", () => {
 })
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `bun --filter @workspace/admin test -- lesson-preview.test.tsx`
 
 Expected: FAIL because component does not exist.
 
-- [ ] **Step 3: Implement LessonPreview**
+Actual: `lesson-preview` import가 없어 테스트 suite가 실패하는 것을 확인했다.
+
+- [x] **Step 3: Implement LessonPreview**
 
 Render a neutral preview list with step type badges and content summaries. Do not call the server from this component.
 
-- [ ] **Step 4: Connect header actions**
+- [x] **Step 4: Connect header actions**
 
 In `course-editor-header.tsx`, expose props:
 
@@ -1831,13 +1833,15 @@ type CourseEditorHeaderProps = {
 
 Disable `저장` when `dirtyCount === 0` or `isSaving` is true.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run: `bun --filter @workspace/admin test -- lesson-preview.test.tsx admin-course-detail-page.test.tsx`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+Actual: focused preview/page tests, `bun --filter @workspace/admin test`, and `bun --filter @workspace/admin typecheck` passed.
+
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/admin/src/features/courses/course-editor/lesson-preview.tsx apps/admin/src/features/courses/course-editor/lesson-preview.test.tsx apps/admin/src/features/courses/course-editor/course-editor-header.tsx apps/admin/src/features/courses/course-editor/course-editor-shell.tsx
