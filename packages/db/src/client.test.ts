@@ -8,6 +8,7 @@ import { createDatabase } from "@/client"
 import { runContentMigration } from "@/migrations/run-content-migration"
 import {
   adminUser,
+  curriculumUpgradeDismissals,
   curriculumMigrationApplications,
   curriculumVersionMigrations,
   curriculumVersionChapters,
@@ -112,8 +113,10 @@ describe("curriculum migration schema", () => {
     expect(tables).toContain("curriculum_version_migrations")
     expect(tables).toContain("lesson_migration_mappings")
     expect(tables).toContain("curriculum_migration_applications")
+    expect(tables).toContain("curriculum_upgrade_dismissals")
     expect(curriculumVersionMigrations).toBeDefined()
     expect(lessonMigrationMappings).toBeDefined()
     expect(curriculumMigrationApplications).toBeDefined()
+    expect(curriculumUpgradeDismissals).toBeDefined()
   })
 })

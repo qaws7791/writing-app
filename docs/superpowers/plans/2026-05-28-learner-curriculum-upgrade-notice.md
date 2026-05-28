@@ -19,11 +19,11 @@
 - Modify: `docs/admin-site.md`
 - Modify: `docs/platform-backend-api.md`
 
-- [ ] **Step 1: 문서 로그와 설계/계획 작성**
+- [x] **Step 1: 문서 로그와 설계/계획 작성**
 
 8단계 시작 로그, 설계 문서, 구현 계획을 작성한다.
 
-- [ ] **Step 2: 포맷과 커밋**
+- [x] **Step 2: 포맷과 커밋**
 
 ```bash
 bun prettier --write docs/superpowers/specs/2026-05-28-learner-curriculum-upgrade-notice-design.md docs/superpowers/plans/2026-05-28-learner-curriculum-upgrade-notice.md docs/admin-site.md docs/platform-backend-api.md
@@ -41,11 +41,11 @@ git commit -m "학습자 커리큘럼 업그레이드 계획 문서화"
 - Modify: `packages/db/src/migrations/run-content-migration.ts`
 - Modify: `packages/db/src/client.test.ts`
 
-- [ ] **Step 1: 실패 테스트 작성**
+- [x] **Step 1: 실패 테스트 작성**
 
 `packages/db/src/client.test.ts`에서 `curriculum_upgrade_dismissals` 테이블 생성과 컬럼 존재를 검증한다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/db test -- client.test.ts
@@ -53,11 +53,11 @@ bun --filter @workspace/db test -- client.test.ts
 
 기대 결과: 새 테이블이 없어 실패한다.
 
-- [ ] **Step 3: schema와 migration 구현**
+- [x] **Step 3: schema와 migration 구현**
 
 `curriculum_upgrade_dismissals` Drizzle schema와 SQLite migration을 추가하고 migration runner에 포함한다.
 
-- [ ] **Step 4: 통과 확인과 커밋**
+- [x] **Step 4: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/db test -- client.test.ts

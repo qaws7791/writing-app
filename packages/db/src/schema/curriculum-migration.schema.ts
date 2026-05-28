@@ -91,3 +91,32 @@ export const curriculumMigrationApplications = sqliteTable(
     ),
   ]
 )
+
+export const curriculumUpgradeDismissals = sqliteTable(
+  "curriculum_upgrade_dismissals",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    courseId: text("course_id")
+      .notNull()
+      .references(() => courses.id),
+    fromVersionId: text("from_version_id")
+      .notNull()
+      .references(() => curriculumVersions.id),
+    toVersionId: text("to_version_id")
+      .notNull()
+      .references(() => curriculumVersions.id),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("curriculum_upgrade_dismissals_pair_idx").on(
+      table.userId,
+      table.courseId,
+      table.fromVersionId,
+      table.toVersionId
+    ),
+  ]
+)

@@ -25,6 +25,10 @@ const curriculumMigrationMapSql = readFileSync(
   new URL("./0005-curriculum-migration-map.sql", import.meta.url),
   "utf8"
 )
+const curriculumUpgradeDismissalSql = readFileSync(
+  new URL("./0006-curriculum-upgrade-dismissal.sql", import.meta.url),
+  "utf8"
+)
 
 export function runContentMigration(sqlite: Database) {
   sqlite.exec(contentMigrationSql)
@@ -45,6 +49,7 @@ export function runContentMigration(sqlite: Database) {
   )
   sqlite.exec(progressCurriculumVersionMigrationSql)
   sqlite.exec(curriculumMigrationMapSql)
+  sqlite.exec(curriculumUpgradeDismissalSql)
 }
 
 function addColumnIfMissing(
