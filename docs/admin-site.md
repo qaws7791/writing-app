@@ -1,5 +1,17 @@
 # 어드민 사이트
 
+## 2026-05-28 어드민 코스 상세 에디터 구현 계획 시작
+
+- 설계 문서 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md` 승인 후 구현 계획을 작성한다.
+- 계획은 DB 스키마, core/admin 계약, admin-api route, admin UI, 검증 순서로 분리한다.
+- 구현 계획 문서는 `docs/superpowers/plans/2026-05-28-admin-course-detail-editor.md`에 작성한다.
+
+## 2026-05-28 어드민 코스 상세 에디터 구현 계획 완료
+
+- 구현 계획은 14개 작업으로 나누고 각 작업은 테스트, 구현, 검증, 커밋 단계를 포함한다.
+- `curriculum_versions.revision`과 `lesson_steps.status`를 추가해 충돌 감지와 스텝 아카이브를 지원하는 방향으로 정리했다.
+- UI 구현은 Course Studio shell, Curriculum Map, Lesson Workspace, Step Workspace, Lesson Preview 순서로 진행한다.
+
 ## 2026-05-28 어드민 코스 상세 에디터 설계 시작
 
 - 코스 상세 페이지를 draft 기반 커리큘럼 편집 도구로 설계한다.
