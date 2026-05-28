@@ -11,11 +11,16 @@ import { userId } from "@workspace/core/learning"
 
 import { createDatabase } from "@/client"
 import { runContentMigration } from "@/migrations/run-content-migration"
+import { createDrizzleAdminRepository } from "@/repositories/drizzle-admin.repository"
 import { createDrizzleLearningRepository } from "@/repositories/drizzle-learning.repository"
 import {
+  courseProgress,
+  curriculumVersionMigrations,
   curriculumVersionChapters,
   curriculumVersionLessons,
   curriculumVersions,
+  curriculumUpgradeDismissals,
+  lessonMigrationMappings,
   lessonProgress,
   user,
 } from "@/schema"
@@ -356,4 +361,158 @@ describe("createDrizzleLearningRepository", () => {
 
     expect(completed.completedCount).toBe(1)
   })
+
+  it("finds an available curriculum upgrade from the learner progress version to the latest published version", async () => {
+    const repository = createDrizzleLearningRepository(db, { now: () => now })
+    await repository.completeLesson({
+      courseId: courseId("sentence-structure"),
+      curriculumVersionId: curriculumVersionId("sentence-structure-v1"),
+      finalStepId: "sentence-structure-01-step-5",
+      lessonId: lessonId("sentence-structure-01"),
+      stepOrder: 5,
+      userId: userId("user-1"),
+    })
+    await createPublishedV2(db, now)
+    await createActiveMigration(db, now)
+
+    const upgrade = await repository.findCurriculumUpgrade(
+      userId("user-1"),
+      courseId("sentence-structure")
+    )
+
+    expect(upgrade).toEqual({
+      completedCount: 1,
+      courseId: courseId("sentence-structure"),
+      fromVersion: {
+        id: curriculumVersionId("sentence-structure-v1"),
+        title: "문장 구조의 기본",
+        versionNumber: 1,
+      },
+      migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+      toVersion: {
+        changelog: "Draft from v1",
+        id: curriculumVersionId("sentence-structure-v2"),
+        title: "문장 구조의 기본",
+        versionNumber: 2,
+      },
+      totalLessons: 12,
+    })
+  })
+
+  it("hides a dismissed curriculum upgrade for the same version pair", async () => {
+    const repository = createDrizzleLearningRepository(db, { now: () => now })
+    await repository.completeLesson({
+      courseId: courseId("sentence-structure"),
+      curriculumVersionId: curriculumVersionId("sentence-structure-v1"),
+      finalStepId: "sentence-structure-01-step-5",
+      lessonId: lessonId("sentence-structure-01"),
+      stepOrder: 5,
+      userId: userId("user-1"),
+    })
+    await createPublishedV2(db, now)
+    await createActiveMigration(db, now)
+
+    const dismissed = await repository.dismissCurriculumUpgrade(
+      userId("user-1"),
+      courseId("sentence-structure")
+    )
+    const upgrade = await repository.findCurriculumUpgrade(
+      userId("user-1"),
+      courseId("sentence-structure")
+    )
+    const dismissals = await db.select().from(curriculumUpgradeDismissals)
+
+    expect(dismissed).toEqual({
+      status: "dismissed",
+      dismissal: {
+        courseId: courseId("sentence-structure"),
+        dismissedAt: now,
+        fromVersionId: curriculumVersionId("sentence-structure-v1"),
+        toVersionId: curriculumVersionId("sentence-structure-v2"),
+      },
+    })
+    expect(upgrade).toBeUndefined()
+    expect(dismissals).toHaveLength(1)
+  })
+
+  it("applies an available curriculum upgrade with the shared migration policy", async () => {
+    const repository = createDrizzleLearningRepository(db, { now: () => now })
+    await repository.completeLesson({
+      courseId: courseId("sentence-structure"),
+      curriculumVersionId: curriculumVersionId("sentence-structure-v1"),
+      finalStepId: "sentence-structure-01-step-5",
+      lessonId: lessonId("sentence-structure-01"),
+      stepOrder: 5,
+      userId: userId("user-1"),
+    })
+    await createPublishedV2(db, now)
+    await createActiveMigration(db, now)
+
+    const result = await repository.applyCurriculumUpgrade(
+      userId("user-1"),
+      courseId("sentence-structure")
+    )
+    const [progress] = await db
+      .select()
+      .from(courseProgress)
+      .where(eq(courseProgress.userId, "user-1"))
+
+    expect(result).toMatchObject({
+      status: "applied",
+      application: {
+        completedLessonCount: 1,
+        completedLessonIds: ["sentence-structure-01"],
+        courseId: "sentence-structure",
+        fromVersionId: "sentence-structure-v1",
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        skippedLessonIds: ["sentence-structure-02"],
+        status: "completed",
+        toVersionId: "sentence-structure-v2",
+      },
+    })
+    expect(progress).toMatchObject({
+      completedCount: 1,
+      curriculumVersionId: "sentence-structure-v2",
+      lastLessonId: "sentence-structure-01",
+    })
+  })
 })
+
+async function createPublishedV2(
+  db: ReturnType<typeof createDatabase>,
+  now: Date
+) {
+  const adminRepository = createDrizzleAdminRepository(db, { now: () => now })
+
+  await adminRepository.createCurriculumDraft("sentence-structure")
+  await adminRepository.publishCurriculumVersion("sentence-structure-v2")
+}
+
+async function createActiveMigration(
+  db: ReturnType<typeof createDatabase>,
+  now: Date
+) {
+  await db.insert(curriculumVersionMigrations).values({
+    id: "sentence-structure-v1-to-sentence-structure-v2",
+    fromVersionId: "sentence-structure-v1",
+    toVersionId: "sentence-structure-v2",
+    status: "active",
+    createdAt: now,
+  })
+  await db.insert(lessonMigrationMappings).values([
+    {
+      id: "sentence-structure-v1-to-sentence-structure-v2-1",
+      migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+      fromLessonId: "sentence-structure-01",
+      toLessonId: "sentence-structure-01",
+      mappingType: "equivalent",
+    },
+    {
+      id: "sentence-structure-v1-to-sentence-structure-v2-2",
+      migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+      fromLessonId: "sentence-structure-02",
+      toLessonId: "sentence-structure-02",
+      mappingType: "equivalent",
+    },
+  ])
+}

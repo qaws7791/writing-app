@@ -110,11 +110,11 @@ git commit -m "학습자 커리큘럼 업그레이드 계약 추가"
 - Modify: `packages/db/src/repositories/drizzle-learning.repository.ts`
 - Modify: `packages/db/src/repositories/drizzle-learning.repository.test.ts`
 
-- [ ] **Step 1: 실패 테스트 작성**
+- [x] **Step 1: 실패 테스트 작성**
 
 `drizzle-learning.repository.test.ts`에 available notice, dismiss 후 숨김, learner apply가 진행 버전을 target으로 이동하는 테스트를 추가한다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/db test -- drizzle-learning.repository.test.ts
@@ -122,15 +122,15 @@ bun --filter @workspace/db test -- drizzle-learning.repository.test.ts
 
 기대 결과: learning repository 메서드가 없어 실패한다.
 
-- [ ] **Step 3: shared helper 추출**
+- [x] **Step 3: shared helper 추출**
 
 admin repository의 마이그레이션 적용 알고리즘을 `curriculum-migration-application.ts`로 옮기고 admin repository가 helper를 호출하도록 정리한다.
 
-- [ ] **Step 4: learning repository 구현**
+- [x] **Step 4: learning repository 구현**
 
 진행 버전, latest published version, active migration, dismiss row를 기준으로 available upgrade를 계산하고, apply/dismiss 메서드를 구현한다.
 
-- [ ] **Step 5: 통과 확인과 커밋**
+- [x] **Step 5: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/db test -- drizzle-admin.repository.test.ts drizzle-learning.repository.test.ts
