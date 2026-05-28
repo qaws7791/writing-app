@@ -18,6 +18,12 @@
 - draft 생성, 복원, content 저장, 발행, 폐기는 `courses/:courseId/curriculum` 하위 action route로 제공한다.
 - 저장 요청은 route param과 body의 course/version 식별자가 일치해야 하며, revision 충돌은 HTTP 409로 매핑한다.
 
+## 2026-05-28 어드민 코스 상세 에디터 클라이언트 추가 완료
+
+- Admin 앱 HTTP client에 코스 상세, 커리큘럼 버전, 레슨 상세 조회 메서드를 추가했다.
+- draft 생성, 복원, 저장, 발행, 폐기 요청은 Admin API의 action route와 동일한 URL/method/body 계약을 사용한다.
+- Admin API 오류 판별에 `not-found`와 `conflict`를 포함해 editor 저장 충돌을 클라이언트에서 명시적으로 처리할 수 있게 했다.
+
 ## 2026-05-28 어드민 코스 상세 에디터 구현 계획 시작
 
 - 설계 문서 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md` 승인 후 구현 계획을 작성한다.

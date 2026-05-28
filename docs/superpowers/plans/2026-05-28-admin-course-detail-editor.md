@@ -1052,7 +1052,7 @@ git commit -m "어드민 코스 에디터 API 추가"
 - Modify: `apps/admin/src/lib/api/http-admin-api.ts`
 - Modify: `apps/admin/src/lib/api/http-admin-api.test.ts`
 
-- [ ] **Step 1: Write failing client tests**
+- [x] **Step 1: Write failing client tests**
 
 Add tests to `apps/admin/src/lib/api/http-admin-api.test.ts`.
 
@@ -1126,17 +1126,19 @@ it("saves curriculum content with PUT body", async () => {
 })
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `bun --filter @workspace/admin test -- http-admin-api.test.ts -t "course detail|saves curriculum"`
 
 Expected: FAIL because client methods are missing.
 
-- [ ] **Step 3: Extend AdminApi interface**
+Actual: 새 client 메서드 호출 테스트가 `api.getCourseDetail is not a function` 등으로 실패하는 것을 확인했다.
+
+- [x] **Step 3: Extend AdminApi interface**
 
 In `apps/admin/src/lib/api/admin-api.ts`, add methods for course detail, version detail, lesson detail, draft, restore, save, publish, discard.
 
-- [ ] **Step 4: Add requestJson method support**
+- [x] **Step 4: Add requestJson method support**
 
 Change `requestJson` to accept a method and body.
 
@@ -1164,7 +1166,7 @@ async function requestJson<TValue>(
 }
 ```
 
-- [ ] **Step 5: Implement client methods**
+- [x] **Step 5: Implement client methods**
 
 Add URL builders matching the API routes. Example:
 
@@ -1192,13 +1194,15 @@ saveCurriculumVersionContent(input) {
 },
 ```
 
-- [ ] **Step 6: Run admin client tests**
+- [x] **Step 6: Run admin client tests**
 
 Run: `bun --filter @workspace/admin test -- http-admin-api.test.ts`
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+Actual: focused client tests, `bun --filter @workspace/admin test`, and `bun --filter @workspace/admin typecheck` passed.
+
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/admin/src/lib/api/admin-api.ts apps/admin/src/lib/api/http-admin-api.ts apps/admin/src/lib/api/http-admin-api.test.ts

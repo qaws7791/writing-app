@@ -92,6 +92,256 @@ describe("createHttpAdminApi", () => {
     expect(request.method).toBe("GET")
   })
 
+  it("requests course detail", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({
+        id: "sentence-structure",
+        title: "기초 문장 만들기",
+        description: "설명",
+        thumbnailPath: "/course-thumbnails/sentence.png",
+        sortOrder: 1,
+      })
+    )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.getCourseDetail("sentence-structure")
+
+    const request = getRequest(fetchMock)
+    expect(request.url).toBe("http://localhost:4001/courses/sentence-structure")
+    expect(request.method).toBe("GET")
+  })
+
+  it("requests course curriculum version detail", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "v2",
+        changelog: "draft",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 2,
+        chapters: [],
+        steps: [],
+      })
+    )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.getCourseCurriculumVersionDetail(
+      "sentence-structure",
+      "sentence-structure-v2"
+    )
+
+    const request = getRequest(fetchMock)
+    expect(request.url).toBe(
+      "http://localhost:4001/courses/sentence-structure/curriculum/versions/sentence-structure-v2"
+    )
+    expect(request.method).toBe("GET")
+  })
+
+  it("requests lesson detail for a selected curriculum version", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({
+        id: "sentence-structure-01",
+        courseId: "sentence-structure",
+        title: "주어와 서술어 찾기",
+        categoryId: "grammar",
+        unitNumber: 1,
+        nextLessonId: null,
+        steps: [],
+      })
+    )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.getCourseLessonDetail(
+      "sentence-structure",
+      "sentence-structure-v2",
+      "sentence-structure-01"
+    )
+
+    const request = getRequest(fetchMock)
+    expect(request.url).toBe(
+      "http://localhost:4001/courses/sentence-structure/lessons/sentence-structure-01?version=sentence-structure-v2"
+    )
+    expect(request.method).toBe("GET")
+  })
+
+  it("creates a curriculum draft with an explicit action route", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "v2",
+        changelog: "draft",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+      })
+    )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.createCurriculumDraft("sentence-structure")
+
+    const request = getRequest(fetchMock)
+    expect(request.url).toBe(
+      "http://localhost:4001/courses/sentence-structure/curriculum/drafts"
+    )
+    expect(request.method).toBe("POST")
+  })
+
+  it("restores a curriculum draft with a POST body", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({
+        id: "sentence-structure-v3",
+        courseId: "sentence-structure",
+        versionNumber: 3,
+        status: "draft",
+        title: "v3",
+        changelog: "restored",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+      })
+    )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.restoreCurriculumDraft("sentence-structure", {
+      sourceVersionId: "sentence-structure-v1",
+      replaceDraft: true,
+    })
+
+    const request = getRequest(fetchMock)
+    expect(request.url).toBe(
+      "http://localhost:4001/courses/sentence-structure/curriculum/restores"
+    )
+    expect(request.method).toBe("POST")
+    expect(request.headers.get("content-type")).toBe("application/json")
+    await expect(request.json()).resolves.toEqual({
+      sourceVersionId: "sentence-structure-v1",
+      replaceDraft: true,
+    })
+  })
+
+  it("saves curriculum content with PUT body", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "v2",
+        changelog: "draft",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 2,
+        chapters: [],
+        steps: [],
+      })
+    )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.saveCurriculumVersionContent({
+      courseId: "sentence-structure",
+      versionId: "sentence-structure-v2",
+      baseRevision: 1,
+      course: {
+        title: "기초 문장 만들기",
+        description: "설명",
+        thumbnailPath: "/course-thumbnails/sentence.png",
+        sortOrder: 1,
+      },
+      chapters: [],
+      lessons: [],
+      steps: [],
+    })
+
+    const request = getRequest(fetchMock)
+    expect(request.url).toBe(
+      "http://localhost:4001/courses/sentence-structure/curriculum/versions/sentence-structure-v2/content"
+    )
+    expect(request.method).toBe("PUT")
+    expect(request.headers.get("content-type")).toBe("application/json")
+    await expect(request.json()).resolves.toMatchObject({
+      baseRevision: 1,
+    })
+  })
+
+  it("publishes and discards curriculum drafts through explicit action routes", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        createJsonResponse({
+          id: "sentence-structure-v2",
+          courseId: "sentence-structure",
+          versionNumber: 2,
+          status: "published",
+          title: "v2",
+          changelog: "draft",
+          publishedAt: "2026-05-28T00:00:00.000Z",
+          createdAt: "2026-05-28T00:00:00.000Z",
+        })
+      )
+      .mockResolvedValueOnce(
+        createJsonResponse({
+          versionId: "sentence-structure-v2",
+        })
+      )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.publishCurriculumVersion(
+      "sentence-structure",
+      "sentence-structure-v2"
+    )
+    await api.discardCurriculumVersion(
+      "sentence-structure",
+      "sentence-structure-v2"
+    )
+
+    const publishRequest = fetchMock.mock.calls[0]?.[0]
+    const discardRequest = fetchMock.mock.calls[1]?.[0]
+    expect(publishRequest).toBeInstanceOf(Request)
+    expect(discardRequest).toBeInstanceOf(Request)
+
+    if (
+      !(publishRequest instanceof Request) ||
+      !(discardRequest instanceof Request)
+    ) {
+      throw new Error("Expected fetch to be called with Requests.")
+    }
+
+    expect(publishRequest.url).toBe(
+      "http://localhost:4001/courses/sentence-structure/curriculum/versions/sentence-structure-v2/publish"
+    )
+    expect(publishRequest.method).toBe("POST")
+    expect(discardRequest.url).toBe(
+      "http://localhost:4001/courses/sentence-structure/curriculum/versions/sentence-structure-v2/discard"
+    )
+    expect(discardRequest.method).toBe("POST")
+  })
+
   it("passes configured headers to the API request", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       createJsonResponse({

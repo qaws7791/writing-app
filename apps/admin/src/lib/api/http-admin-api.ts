@@ -42,6 +42,109 @@ export function createHttpAdminApi({
 
       return requestJson(fetcher, url, headers)
     },
+    getCourseDetail(courseId) {
+      return requestJson(
+        fetcher,
+        createAdminApiUrl(baseUrl, `/courses/${encodePathSegment(courseId)}`),
+        headers
+      )
+    },
+    listCurriculumVersions(courseId) {
+      return requestJson(
+        fetcher,
+        createAdminApiUrl(
+          baseUrl,
+          `/courses/${encodePathSegment(courseId)}/curriculum/versions`
+        ),
+        headers
+      )
+    },
+    getCourseCurriculumVersionDetail(courseId, versionId) {
+      return requestJson(
+        fetcher,
+        createAdminApiUrl(
+          baseUrl,
+          `/courses/${encodePathSegment(courseId)}/curriculum/versions/${encodePathSegment(versionId)}`
+        ),
+        headers
+      )
+    },
+    getCourseLessonDetail(courseId, versionId, lessonId) {
+      const url = createAdminApiUrl(
+        baseUrl,
+        `/courses/${encodePathSegment(courseId)}/lessons/${encodePathSegment(lessonId)}`
+      )
+      url.searchParams.set("version", versionId)
+
+      return requestJson(fetcher, url, headers)
+    },
+    createCurriculumDraft(courseId) {
+      return requestJson(
+        fetcher,
+        createAdminApiUrl(
+          baseUrl,
+          `/courses/${encodePathSegment(courseId)}/curriculum/drafts`
+        ),
+        headers,
+        {
+          method: "POST",
+        }
+      )
+    },
+    restoreCurriculumDraft(courseId, input) {
+      return requestJson(
+        fetcher,
+        createAdminApiUrl(
+          baseUrl,
+          `/courses/${encodePathSegment(courseId)}/curriculum/restores`
+        ),
+        headers,
+        {
+          body: input,
+          method: "POST",
+        }
+      )
+    },
+    saveCurriculumVersionContent(input) {
+      return requestJson(
+        fetcher,
+        createAdminApiUrl(
+          baseUrl,
+          `/courses/${encodePathSegment(input.courseId)}/curriculum/versions/${encodePathSegment(input.versionId)}/content`
+        ),
+        headers,
+        {
+          body: input,
+          method: "PUT",
+        }
+      )
+    },
+    publishCurriculumVersion(courseId, versionId) {
+      return requestJson(
+        fetcher,
+        createAdminApiUrl(
+          baseUrl,
+          `/courses/${encodePathSegment(courseId)}/curriculum/versions/${encodePathSegment(versionId)}/publish`
+        ),
+        headers,
+        {
+          method: "POST",
+        }
+      )
+    },
+    discardCurriculumVersion(courseId, versionId) {
+      return requestJson(
+        fetcher,
+        createAdminApiUrl(
+          baseUrl,
+          `/courses/${encodePathSegment(courseId)}/curriculum/versions/${encodePathSegment(versionId)}/discard`
+        ),
+        headers,
+        {
+          method: "POST",
+        }
+      )
+    },
     listUsers() {
       return requestJson(fetcher, createAdminApiUrl(baseUrl, "/users"), headers)
     },
@@ -51,14 +154,22 @@ export function createHttpAdminApi({
 async function requestJson<TValue>(
   fetcher: AdminApiFetch,
   url: URL,
-  headers: HeadersInit | undefined
+  headers: HeadersInit | undefined,
+  init: { method?: string; body?: unknown } = {}
 ): Promise<AdminApiResult<TValue>> {
   try {
+    const requestHeaders = new Headers(headers)
+
+    if (init.body !== undefined) {
+      requestHeaders.set("content-type", "application/json")
+    }
+
     const response = await fetcher(
       new Request(url, {
+        body: init.body === undefined ? undefined : JSON.stringify(init.body),
         credentials: "include",
-        headers,
-        method: "GET",
+        headers: requestHeaders,
+        method: init.method ?? "GET",
       })
     )
 
@@ -94,6 +205,10 @@ function withTrailingSlash(value: string) {
   return value.endsWith("/") ? value : `${value}/`
 }
 
+function encodePathSegment(value: string) {
+  return encodeURIComponent(value)
+}
+
 async function readError(response: Response): Promise<AdminApiErrorDto> {
   const body = await readJson(response)
 
@@ -121,8 +236,10 @@ function isAdminApiErrorDto(value: unknown): value is AdminApiErrorDto {
   }
 
   return (
+    value.code === "conflict" ||
     value.code === "database-unavailable" ||
     value.code === "invalid-request" ||
+    value.code === "not-found" ||
     value.code === "unknown-error"
   )
 }
