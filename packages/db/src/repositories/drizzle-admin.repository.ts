@@ -5,6 +5,9 @@ import type {
   AdminCurriculumMigrationDetailDto,
   AdminCurriculumVersionDetailDto,
   AdminCurriculumVersionSummaryDto,
+  AdminEditorCurriculumVersionDetailDto,
+  AdminEditorLessonDetailDto,
+  AdminEditorStepSummaryDto,
   AdminRepository,
 } from "@workspace/core/admin"
 
@@ -19,7 +22,9 @@ import {
   curriculumVersionChapters,
   curriculumVersionLessons,
   curriculumVersions,
+  lessonSteps,
   lessonMigrationMappings,
+  lessons,
   user,
 } from "@/schema"
 
@@ -29,6 +34,8 @@ type CurriculumVersionLessonRow = typeof curriculumVersionLessons.$inferSelect
 type CurriculumVersionMigrationRow =
   typeof curriculumVersionMigrations.$inferSelect
 type LessonMigrationMappingRow = typeof lessonMigrationMappings.$inferSelect
+type LessonRow = typeof lessons.$inferSelect
+type LessonStepRow = typeof lessonSteps.$inferSelect
 type CurriculumVersionSummaryRow = Pick<
   CurriculumVersionRow,
   | "id"
@@ -52,6 +59,21 @@ export function createDrizzleAdminRepository(
   const now = options.now ?? (() => new Date())
 
   return {
+    async getCourseDetail(courseId) {
+      const [course] = await db
+        .select({
+          id: courses.id,
+          title: courses.title,
+          description: courses.description,
+          thumbnailPath: courses.thumbnailPath,
+          sortOrder: courses.sortOrder,
+        })
+        .from(courses)
+        .where(eq(courses.id, courseId))
+        .limit(1)
+
+      return course
+    },
     async listCourses(input) {
       const trimmedQuery = input.query.trim()
       const searchCondition =
@@ -341,6 +363,80 @@ export function createDrizzleAdminRepository(
 
       return mapCurriculumVersionDetail(version, chapterRows, lessonRows)
     },
+    async getCourseCurriculumVersionDetail(courseId, versionId) {
+      const [version] = await db
+        .select()
+        .from(curriculumVersions)
+        .where(
+          and(
+            eq(curriculumVersions.id, versionId),
+            eq(curriculumVersions.courseId, courseId)
+          )
+        )
+        .limit(1)
+
+      if (!version) {
+        return undefined
+      }
+
+      const chapterRows = await db
+        .select()
+        .from(curriculumVersionChapters)
+        .where(eq(curriculumVersionChapters.curriculumVersionId, version.id))
+        .orderBy(asc(curriculumVersionChapters.sortOrder))
+      const lessonRows =
+        chapterRows.length === 0
+          ? []
+          : await db
+              .select()
+              .from(curriculumVersionLessons)
+              .where(
+                inArray(
+                  curriculumVersionLessons.chapterId,
+                  chapterRows.map((chapter) => chapter.id)
+                )
+              )
+              .orderBy(asc(curriculumVersionLessons.sortOrder))
+      const stepRows =
+        lessonRows.length === 0
+          ? []
+          : await db
+              .select()
+              .from(lessonSteps)
+              .where(
+                inArray(
+                  lessonSteps.lessonId,
+                  lessonRows.map((lesson) => lesson.lessonId)
+                )
+              )
+              .orderBy(asc(lessonSteps.lessonId), asc(lessonSteps.sortOrder))
+
+      return mapEditorCurriculumVersionDetail(
+        version,
+        chapterRows,
+        lessonRows,
+        stepRows
+      )
+    },
+    async getCourseLessonDetail(courseId, lessonId) {
+      const [lesson] = await db
+        .select()
+        .from(lessons)
+        .where(and(eq(lessons.id, lessonId), eq(lessons.courseId, courseId)))
+        .limit(1)
+
+      if (!lesson) {
+        return undefined
+      }
+
+      const stepRows = await db
+        .select()
+        .from(lessonSteps)
+        .where(eq(lessonSteps.lessonId, lesson.id))
+        .orderBy(asc(lessonSteps.sortOrder))
+
+      return mapEditorLessonDetail(lesson, stepRows)
+    },
     async publishCurriculumVersion(versionId) {
       return db.transaction(async (tx) => {
         const [version] = await tx
@@ -556,6 +652,19 @@ function mapCurriculumVersionSummary(
   }
 }
 
+function mapEditorCurriculumVersionDetail(
+  version: CurriculumVersionRow,
+  chapters: CurriculumVersionChapterRow[],
+  lessons: CurriculumVersionLessonRow[],
+  steps: LessonStepRow[]
+): AdminEditorCurriculumVersionDetailDto {
+  return {
+    ...mapCurriculumVersionDetail(version, chapters, lessons),
+    revision: version.revision,
+    steps: steps.map(mapEditorStepSummary),
+  }
+}
+
 function mapCurriculumVersionDetail(
   version: CurriculumVersionRow,
   chapters: CurriculumVersionChapterRow[],
@@ -580,6 +689,37 @@ function mapCurriculumVersionDetail(
           status: lesson.status,
         })),
     })),
+  }
+}
+
+function mapEditorLessonDetail(
+  lesson: LessonRow,
+  steps: LessonStepRow[]
+): AdminEditorLessonDetailDto {
+  return {
+    id: lesson.id,
+    courseId: lesson.courseId,
+    title: lesson.title,
+    categoryId: lesson.categoryId,
+    unitNumber: lesson.unitNumber,
+    nextLessonId: lesson.nextLessonId,
+    steps: steps.map((step) => ({
+      ...mapEditorStepSummary(step),
+      content: JSON.parse(step.contentJson) as unknown,
+    })),
+  }
+}
+
+function mapEditorStepSummary(step: LessonStepRow): AdminEditorStepSummaryDto {
+  return {
+    id: step.id,
+    lessonId: step.lessonId,
+    type: step.type,
+    title: step.type,
+    sortOrder: step.sortOrder,
+    points: step.points,
+    required: step.required,
+    status: step.status,
   }
 }
 

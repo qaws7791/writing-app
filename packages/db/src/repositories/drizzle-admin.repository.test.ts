@@ -865,6 +865,49 @@ describe("createDrizzleAdminRepository", () => {
     })
   })
 
+  it("returns course detail for a course", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+
+    await expect(
+      repository.getCourseDetail("sentence-structure")
+    ).resolves.toMatchObject({
+      id: "sentence-structure",
+      title: "문장 구조의 기본",
+      thumbnailPath: expect.stringContaining("course-thumbnails"),
+    })
+  })
+
+  it("returns curriculum version detail with step summaries", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+    const version = await repository.getCourseCurriculumVersionDetail(
+      "sentence-structure",
+      "sentence-structure-v1"
+    )
+
+    expect(version?.status).toBe("published")
+    expect(version?.revision).toBe(1)
+    expect(version?.chapters.length).toBeGreaterThan(0)
+    expect(version?.steps.length).toBeGreaterThan(0)
+    expect(version?.steps[0]).toMatchObject({
+      required: expect.any(Boolean),
+      status: "active",
+    })
+  })
+
+  it("returns lesson detail with parsed step content", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+    const lesson = await repository.getCourseLessonDetail(
+      "sentence-structure",
+      "sentence-structure-01"
+    )
+
+    expect(lesson?.courseId).toBe("sentence-structure")
+    expect(lesson?.steps[0]?.content).toEqual(expect.any(Object))
+  })
+
   it("tracks curriculum revision and active lesson step status", async () => {
     const db = await createSeededDatabase()
     const repository = createDrizzleAdminRepository(db)
