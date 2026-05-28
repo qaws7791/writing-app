@@ -15,6 +15,7 @@ import { CourseEditorShell } from "@/features/courses/course-editor/course-edito
 import {
   createCourseEditorSaveInput,
   createCourseEditorWorkingCopy,
+  moveLesson,
   updateCourseField,
   updateLessonField,
   updateStepContentField,
@@ -111,6 +112,19 @@ export function AdminCourseDetailPage({
 
     navigateToVersion(result.value.id)
   }, [api, course.id, navigateToVersion])
+
+  React.useEffect(() => {
+    const hasDraft = versions.some(
+      (curriculumVersion) => curriculumVersion.status === "draft"
+    )
+
+    if (workingCopy.version.status === "draft" || hasDraft) {
+      return
+    }
+
+    setStatusMessage("편집 가능한 draft를 준비하는 중입니다.")
+    void handleCreateDraft()
+  }, [handleCreateDraft, versions, workingCopy.version.status])
 
   const handlePublishDraft = React.useCallback(async () => {
     const result = await api.publishCurriculumVersion(
@@ -286,6 +300,11 @@ export function AdminCourseDetailPage({
           onUpdateLessonField={(lessonId, field, value) =>
             updateWorkingCopy((current) =>
               updateLessonField(current, lessonId, field, value)
+            )
+          }
+          onMoveLesson={(lessonId, targetIndex) =>
+            updateWorkingCopy((current) =>
+              moveLesson(current, lessonId, targetIndex)
             )
           }
           onOpenPreview={(lessonId) =>

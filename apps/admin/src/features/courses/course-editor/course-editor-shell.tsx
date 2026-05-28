@@ -12,6 +12,7 @@ import { StepWorkspace } from "@/features/courses/course-editor/step-workspace"
 type CourseEditorShellProps = {
   onOpenPreview?: (lessonId: string) => void
   onOpenSettings?: () => void
+  onMoveLesson?: (lessonId: string, targetIndex: number) => void
   onSelectLesson?: (lessonId: string) => void
   onSelectStep?: (lessonId: string, stepId: string) => void
   onUpdateCourseField?: (
@@ -32,6 +33,7 @@ type CourseEditorShellProps = {
 export function CourseEditorShell({
   onOpenPreview,
   onOpenSettings,
+  onMoveLesson,
   onSelectLesson,
   onSelectStep,
   onUpdateCourseField,
@@ -71,6 +73,7 @@ export function CourseEditorShell({
           />
           <CurriculumMap
             chapters={version.chapters}
+            onMoveLesson={onMoveLesson}
             onSelectLesson={onSelectLesson}
             selectedLessonId={selectedLessonId}
           />

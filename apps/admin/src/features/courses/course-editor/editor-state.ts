@@ -166,6 +166,56 @@ export function moveItem<TItem>(
   return nextItems
 }
 
+export function moveLesson(
+  workingCopy: CourseEditorWorkingCopy,
+  lessonId: string,
+  targetIndex: number
+): CourseEditorWorkingCopy {
+  const flatLessons = workingCopy.version.chapters.flatMap(
+    (chapter) => chapter.lessons
+  )
+  const fromIndex = flatLessons.findIndex(
+    (lesson) => lesson.lessonId === lessonId
+  )
+
+  if (
+    fromIndex < 0 ||
+    targetIndex < 0 ||
+    targetIndex >= flatLessons.length ||
+    fromIndex === targetIndex
+  ) {
+    return workingCopy
+  }
+
+  const movedLessons = moveItem(flatLessons, fromIndex, targetIndex)
+  let lessonCursor = 0
+
+  return withChangedField(
+    {
+      ...workingCopy,
+      version: {
+        ...workingCopy.version,
+        chapters: workingCopy.version.chapters.map((chapter) => {
+          const nextLessons = movedLessons
+            .slice(lessonCursor, lessonCursor + chapter.lessons.length)
+            .map((lesson, index) => ({
+              ...lesson,
+              sortOrder: index + 1,
+            }))
+
+          lessonCursor += chapter.lessons.length
+
+          return {
+            ...chapter,
+            lessons: nextLessons,
+          }
+        }),
+      },
+    },
+    "lesson.order"
+  )
+}
+
 function withChangedField(
   workingCopy: CourseEditorWorkingCopy,
   field: string

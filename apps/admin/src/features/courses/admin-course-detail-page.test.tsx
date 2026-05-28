@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cleanup, render, screen } from "@testing-library/react"
+import { cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
@@ -110,6 +110,56 @@ describe("AdminCourseDetailPage", () => {
     expect(screen.getByText("Course Studio")).toBeTruthy()
     expect(screen.getByDisplayValue("기초 문장 만들기")).toBeTruthy()
     expect(screen.getByRole("button", { name: "저장" })).toBeTruthy()
+  })
+
+  it("creates an editable draft when the course has only a published version", async () => {
+    const createCurriculumDraft = vi.fn<AdminApi["createCurriculumDraft"]>(
+      async () => ({
+        status: "ok",
+        value: {
+          ...versionSummaryFixture,
+          id: "sentence-structure-v3",
+          versionNumber: 3,
+        },
+      })
+    )
+
+    render(
+      <AdminCourseDetailPage
+        adminApi={createAdminApiMock({
+          createCurriculumDraft,
+        })}
+        course={courseFixture}
+        selectedVersionId="sentence-structure-v1"
+        urlState={{
+          versionId: "sentence-structure-v1",
+          view: "lesson",
+          lessonId: "sentence-structure-01",
+          stepId: null,
+        }}
+        versions={[
+          {
+            ...versionSummaryFixture,
+            id: "sentence-structure-v1",
+            status: "published",
+            versionNumber: 1,
+          },
+        ]}
+        version={{
+          ...versionFixture,
+          id: "sentence-structure-v1",
+          status: "published",
+          versionNumber: 1,
+        }}
+      />
+    )
+
+    await waitFor(() => {
+      expect(createCurriculumDraft).toHaveBeenCalledWith("sentence-structure")
+    })
+    expect(routerReplace).toHaveBeenCalledWith(
+      "/courses/sentence-structure?version=sentence-structure-v3"
+    )
   })
 
   it("saves edited course and lesson fields through the admin API", async () => {

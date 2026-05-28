@@ -6,6 +6,7 @@ import {
   createCourseEditorWorkingCopy,
   getDirtyState,
   moveItem,
+  moveLesson,
   updateCourseField,
   updateLessonField,
   updateStepContentField,
@@ -54,6 +55,72 @@ describe("course editor state", () => {
 
     expect(moveItem(items, 0, 2)).toEqual(["practice", "summary", "intro"])
     expect(items).toEqual(["intro", "practice", "summary"])
+  })
+
+  it("moves a lesson and marks the working copy dirty", () => {
+    const workingCopy = moveLesson(
+      createCourseEditorWorkingCopy({
+        course: {
+          id: "course-1",
+          title: "원본 코스",
+          description: "원본 설명",
+          thumbnailPath: "/course.png",
+          sortOrder: 1,
+        },
+        version: {
+          id: "course-1-v2",
+          courseId: "course-1",
+          versionNumber: 2,
+          status: "draft",
+          title: "v2",
+          changelog: "draft",
+          publishedAt: null,
+          createdAt: "2026-05-28T00:00:00.000Z",
+          revision: 3,
+          chapters: [
+            {
+              id: "chapter-1",
+              label: "1",
+              title: "첫 챕터",
+              sortOrder: 1,
+              status: "active",
+              lessons: [
+                {
+                  id: "version-lesson-1",
+                  lessonId: "lesson-1",
+                  title: "첫 레슨",
+                  description: "레슨 설명",
+                  sortOrder: 1,
+                  status: "active",
+                },
+                {
+                  id: "version-lesson-2",
+                  lessonId: "lesson-2",
+                  title: "둘째 레슨",
+                  description: "레슨 설명",
+                  sortOrder: 2,
+                  status: "active",
+                },
+              ],
+            },
+          ],
+          steps: [],
+        },
+      }),
+      "lesson-1",
+      1
+    )
+
+    expect(
+      workingCopy.version.chapters[0]?.lessons.map((lesson) => ({
+        lessonId: lesson.lessonId,
+        sortOrder: lesson.sortOrder,
+      }))
+    ).toEqual([
+      { lessonId: "lesson-2", sortOrder: 1 },
+      { lessonId: "lesson-1", sortOrder: 2 },
+    ])
+    expect(workingCopy.dirty.changedFields).toContain("lesson.order")
   })
 
   it("returns dirty state from changed fields", () => {
