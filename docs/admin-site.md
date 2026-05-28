@@ -12,6 +12,12 @@
 - draft 저장 API는 원본 `lesson_steps`를 직접 수정하지 않고, 대상 draft 버전의 스텝 snapshot만 갱신한다.
 - 공개/학습자 레슨 읽기 경로도 published 또는 학습자 진행 버전의 스텝 snapshot을 읽도록 후속 구현 범위에 포함한다.
 
+## 2026-05-28 어드민 코스 상세 에디터 API 추가 완료
+
+- Admin API에 코스 상세, 코스별 커리큘럼 버전 상세, 버전별 레슨 상세 조회 route를 추가했다.
+- draft 생성, 복원, content 저장, 발행, 폐기는 `courses/:courseId/curriculum` 하위 action route로 제공한다.
+- 저장 요청은 route param과 body의 course/version 식별자가 일치해야 하며, revision 충돌은 HTTP 409로 매핑한다.
+
 ## 2026-05-28 어드민 코스 상세 에디터 구현 계획 시작
 
 - 설계 문서 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md` 승인 후 구현 계획을 작성한다.

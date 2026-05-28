@@ -23,7 +23,7 @@
 - `packages/db/src/repositories/drizzle-admin.repository.ts`: editor 조회, 저장, 복원, 폐기 구현.
 - `packages/db/src/repositories/drizzle-admin.repository.test.ts`: DB 트랜잭션과 버전 정책 테스트.
 - `apps/admin-api/src/routes/curriculum-editor.route.ts`: 새 editor route.
-- `apps/admin-api/src/routes/curriculum-editor.route.test.ts`: route 인증, 성공, 오류 매핑 테스트.
+- `apps/admin-api/src/app.test.ts`: editor route 인증, 성공, 오류 매핑 테스트.
 - `apps/admin-api/src/app.ts`: 새 route 등록.
 - `apps/admin/src/lib/api/admin-api.ts`: admin client port 확장.
 - `apps/admin/src/lib/api/http-admin-api.ts`: HTTP adapter 메서드 추가.
@@ -204,7 +204,7 @@ Run: `bun --filter @workspace/db test -- drizzle-admin.repository.test.ts -t "tr
 
 Expected: FAIL because repository methods are still missing.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add packages/db/src/schema/content.schema.ts packages/db/src/migrations/0007-admin-course-editor.sql packages/db/src/repositories/drizzle-admin.repository.test.ts
@@ -915,7 +915,7 @@ git commit -m "어드민 코스 에디터 저장 구현"
 - Modify: `apps/admin-api/src/app.ts`
 - Modify: `apps/admin-api/src/app.test.ts`
 
-- [ ] **Step 1: Write failing route tests**
+- [x] **Step 1: Write failing route tests**
 
 Append tests to `apps/admin-api/src/app.test.ts`, using the existing `createTestApp()` helper and the existing `adminService` fixture in that file.
 
@@ -959,13 +959,15 @@ it("returns 400 for invalid restore body", async () => {
 })
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `bun --filter @workspace/admin-api test -- app.test.ts -t "course editor|restore body"`
 
 Expected: FAIL because the route file is not registered.
 
-- [ ] **Step 3: Implement route file**
+Actual: `app.test.ts`의 새 editor route 테스트가 404와 OpenAPI 경로 누락으로 실패하는 것을 확인했다.
+
+- [x] **Step 3: Implement route file**
 
 Create `apps/admin-api/src/routes/curriculum-editor.route.ts`.
 
@@ -1021,17 +1023,19 @@ POST /courses/:courseId/curriculum/versions/:versionId/discard
 
 For `PUT .../content`, map service `conflict` to HTTP 409.
 
-- [ ] **Step 4: Register route**
+- [x] **Step 4: Register route**
 
 In `apps/admin-api/src/app.ts`, import and call `registerCurriculumEditorRoute` after auth route and before broader course routes if path conflicts require precedence.
 
-- [ ] **Step 5: Run admin-api tests**
+- [x] **Step 5: Run admin-api tests**
 
 Run: `bun --filter @workspace/admin-api test -- app.test.ts -t "course editor|restore body"`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+Actual: focused editor route tests passed. `bun --filter @workspace/admin-api test` and `bun --filter @workspace/admin-api typecheck` also passed.
+
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/admin-api/src/routes/curriculum-editor.route.ts apps/admin-api/src/app.ts apps/admin-api/src/app.test.ts

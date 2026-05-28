@@ -23,6 +23,18 @@ const auth: AdminAuthRuntime = {
 }
 
 const adminService: AdminService = {
+  async getCourseDetail() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure",
+        title: "문장 구조의 기본",
+        description: "문장의 뼈대를 이해합니다.",
+        thumbnailPath: "/course-thumbnails/sentence-structure.png",
+        sortOrder: 1,
+      },
+    }
+  },
   async listCourses() {
     return {
       status: "ok",
@@ -137,6 +149,122 @@ const adminService: AdminService = {
         publishedAt: null,
         createdAt: "2026-05-28T00:00:00.000Z",
         chapters: [],
+      },
+    }
+  },
+  async getCourseCurriculumVersionDetail() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 2,
+        chapters: [
+          {
+            id: "sentence-structure-chapter-1",
+            label: "1단원",
+            title: "문장의 뼈대",
+            sortOrder: 1,
+            status: "active",
+            lessons: [
+              {
+                id: "sentence-structure-01",
+                lessonId: "sentence-structure-01",
+                title: "주어와 서술어 찾기",
+                description: "중심 성분을 구분합니다.",
+                sortOrder: 1,
+                status: "active",
+              },
+            ],
+          },
+        ],
+        steps: [
+          {
+            id: "sentence-structure-step-1",
+            lessonId: "sentence-structure-01",
+            type: "INTRO",
+            title: "도입",
+            sortOrder: 1,
+            points: 0,
+            required: true,
+            status: "active",
+          },
+        ],
+      },
+    }
+  },
+  async getCourseLessonDetail() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure-01",
+        courseId: "sentence-structure",
+        title: "주어와 서술어 찾기",
+        categoryId: "grammar",
+        unitNumber: 1,
+        nextLessonId: null,
+        steps: [
+          {
+            id: "sentence-structure-step-1",
+            lessonId: "sentence-structure-01",
+            type: "INTRO",
+            title: "도입",
+            sortOrder: 1,
+            points: 0,
+            required: true,
+            status: "active",
+            content: {
+              body: "문장의 중심 성분을 찾습니다.",
+            },
+          },
+        ],
+      },
+    }
+  },
+  async restoreCurriculumDraft() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure-v3",
+        courseId: "sentence-structure",
+        versionNumber: 3,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Restored from v1",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+      },
+    }
+  },
+  async saveCurriculumVersionContent() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 3,
+        chapters: [],
+        steps: [],
+      },
+    }
+  },
+  async discardCurriculumVersion() {
+    return {
+      status: "ok",
+      value: {
+        versionId: "sentence-structure-v2",
       },
     }
   },
@@ -367,9 +495,42 @@ describe("admin api app", () => {
     })
   })
 
+  it("returns protected restful curriculum versions for a course", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/curriculum/versions"
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual(
+      expect.objectContaining({
+        versions: expect.arrayContaining([
+          expect.objectContaining({
+            id: "sentence-structure-v2",
+            status: "draft",
+          }),
+        ]),
+      })
+    )
+  })
+
   it("creates a protected curriculum draft", async () => {
     const response = await createTestApp().request(
       "/courses/sentence-structure/curriculum-versions",
+      {
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(201)
+    await expect(response.json()).resolves.toMatchObject({
+      id: "sentence-structure-v2",
+      status: "draft",
+    })
+  })
+
+  it("creates a protected curriculum draft through the explicit draft action", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/curriculum/drafts",
       {
         method: "POST",
       }
@@ -401,6 +562,73 @@ describe("admin api app", () => {
     })
   })
 
+  it("returns protected course detail for the editor", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure"
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      id: "sentence-structure",
+      title: "문장 구조의 기본",
+      description: "문장의 뼈대를 이해합니다.",
+      thumbnailPath: "/course-thumbnails/sentence-structure.png",
+      sortOrder: 1,
+    })
+  })
+
+  it("returns protected course curriculum version detail for the editor", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/curriculum/versions/sentence-structure-v2"
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      id: "sentence-structure-v2",
+      courseId: "sentence-structure",
+      revision: 2,
+      chapters: [
+        {
+          id: "sentence-structure-chapter-1",
+          lessons: [{ lessonId: "sentence-structure-01" }],
+        },
+      ],
+      steps: [{ id: "sentence-structure-step-1", type: "INTRO" }],
+    })
+  })
+
+  it("returns protected lesson detail for a selected curriculum version", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/lessons/sentence-structure-01?version=sentence-structure-v2"
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      id: "sentence-structure-01",
+      courseId: "sentence-structure",
+      steps: [
+        {
+          id: "sentence-structure-step-1",
+          content: {
+            body: "문장의 중심 성분을 찾습니다.",
+          },
+        },
+      ],
+    })
+  })
+
+  it("rejects lesson detail without a curriculum version query", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/lessons/sentence-structure-01"
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      code: "invalid-request",
+      message: "version query is required.",
+    })
+  })
+
   it("publishes a protected curriculum draft", async () => {
     const response = await createTestApp().request(
       "/curriculum-versions/sentence-structure-v2/publish",
@@ -414,6 +642,89 @@ describe("admin api app", () => {
       id: "sentence-structure-v2",
       status: "published",
       publishedAt: "2026-05-28T00:00:00.000Z",
+    })
+  })
+
+  it("publishes a protected curriculum draft through the course-scoped action", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/curriculum/versions/sentence-structure-v2/publish",
+      {
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      id: "sentence-structure-v2",
+      status: "published",
+    })
+  })
+
+  it("restores a protected curriculum draft through the explicit restore action", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/curriculum/restores",
+      {
+        body: JSON.stringify({
+          sourceVersionId: "sentence-structure-v1",
+          replaceDraft: true,
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(201)
+    await expect(response.json()).resolves.toMatchObject({
+      id: "sentence-structure-v3",
+      status: "draft",
+    })
+  })
+
+  it("saves protected curriculum version content", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/curriculum/versions/sentence-structure-v2/content",
+      {
+        body: JSON.stringify({
+          courseId: "sentence-structure",
+          versionId: "sentence-structure-v2",
+          baseRevision: 2,
+          course: {
+            title: "문장 구조의 기본",
+            description: "문장의 뼈대를 이해합니다.",
+            thumbnailPath: "/course-thumbnails/sentence-structure.png",
+            sortOrder: 1,
+          },
+          chapters: [],
+          lessons: [],
+          steps: [],
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "PUT",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      id: "sentence-structure-v2",
+      revision: 3,
+    })
+  })
+
+  it("discards a protected curriculum draft through the explicit discard action", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/curriculum/versions/sentence-structure-v2/discard",
+      {
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      versionId: "sentence-structure-v2",
     })
   })
 
@@ -439,6 +750,105 @@ describe("admin api app", () => {
     await expect(response.json()).resolves.toEqual({
       code: "invalid-request",
       message: "Draft curriculum version already exists.",
+    })
+  })
+
+  it("rejects invalid curriculum restore body", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/curriculum/restores",
+      {
+        body: JSON.stringify({
+          sourceVersionId: "",
+          replaceDraft: true,
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      code: "invalid-request",
+      message: "Curriculum restore request body is invalid.",
+    })
+  })
+
+  it("maps curriculum save conflicts to conflict", async () => {
+    const response = await createTestApp({
+      adminService: {
+        ...adminService,
+        async saveCurriculumVersionContent() {
+          return {
+            status: "conflict",
+            error: {
+              code: "conflict",
+              message: "Curriculum version has changed.",
+            },
+          }
+        },
+      },
+    }).request(
+      "/courses/sentence-structure/curriculum/versions/sentence-structure-v2/content",
+      {
+        body: JSON.stringify({
+          courseId: "sentence-structure",
+          versionId: "sentence-structure-v2",
+          baseRevision: 2,
+          course: {
+            title: "문장 구조의 기본",
+            description: "문장의 뼈대를 이해합니다.",
+            thumbnailPath: "/course-thumbnails/sentence-structure.png",
+            sortOrder: 1,
+          },
+          chapters: [],
+          lessons: [],
+          steps: [],
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "PUT",
+      }
+    )
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toEqual({
+      code: "conflict",
+      message: "Curriculum version has changed.",
+    })
+  })
+
+  it("rejects curriculum save body that does not match route params", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/curriculum/versions/sentence-structure-v2/content",
+      {
+        body: JSON.stringify({
+          courseId: "another-course",
+          versionId: "sentence-structure-v2",
+          baseRevision: 2,
+          course: {
+            title: "문장 구조의 기본",
+            description: "문장의 뼈대를 이해합니다.",
+            thumbnailPath: "/course-thumbnails/sentence-structure.png",
+            sortOrder: 1,
+          },
+          chapters: [],
+          lessons: [],
+          steps: [],
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "PUT",
+      }
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      code: "invalid-request",
+      message: "Route params must match request body.",
     })
   })
 
@@ -638,8 +1048,33 @@ describe("admin api app", () => {
       version: "0.0.1",
     })
     expect(document.paths).toHaveProperty("/courses")
+    expect(document.paths).toHaveProperty("/courses/{courseId}")
     expect(document.paths).toHaveProperty(
       "/courses/{courseId}/curriculum-versions"
+    )
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum/versions"
+    )
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum/drafts"
+    )
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum/restores"
+    )
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum/versions/{versionId}"
+    )
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum/versions/{versionId}/content"
+    )
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum/versions/{versionId}/publish"
+    )
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum/versions/{versionId}/discard"
+    )
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/lessons/{lessonId}"
     )
     expect(document.paths).toHaveProperty("/curriculum-versions/{versionId}")
     expect(document.paths).toHaveProperty(

@@ -7,6 +7,7 @@ import { createRequestLogFields } from "@workspace/logger"
 import type { AdminAuthRuntime } from "@/auth/admin-session"
 import { registerAuthRoute } from "@/routes/auth.route"
 import { registerCoursesRoute } from "@/routes/courses.route"
+import { registerCurriculumEditorRoute } from "@/routes/curriculum-editor.route"
 import { registerCurriculumMigrationsRoute } from "@/routes/curriculum-migrations.route"
 import { registerCurriculumVersionsRoute } from "@/routes/curriculum-versions.route"
 import { registerHealthRoute } from "@/routes/health.route"
@@ -73,6 +74,7 @@ export function createAdminApiApp(dependencies: AdminApiAppDependencies) {
   )
 
   registerAuthRoute(app, dependencies.auth)
+  registerCurriculumEditorRoute(app, dependencies)
   registerCoursesRoute(app, dependencies)
   registerCurriculumMigrationsRoute(app, dependencies)
   registerCurriculumVersionsRoute(app, dependencies)
