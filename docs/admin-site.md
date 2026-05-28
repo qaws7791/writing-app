@@ -24,6 +24,12 @@
 - draft 생성, 복원, 저장, 발행, 폐기 요청은 Admin API의 action route와 동일한 URL/method/body 계약을 사용한다.
 - Admin API 오류 판별에 `not-found`와 `conflict`를 포함해 editor 저장 충돌을 클라이언트에서 명시적으로 처리할 수 있게 했다.
 
+## 2026-05-28 어드민 코스 상세 에디터 상태 로직 추가 완료
+
+- URL query의 `version`, `view`, `lessonId`, `stepId`를 editor 내부 화면 상태로 해석하는 순수 함수를 추가했다.
+- 변경 유형은 additive, structural, major revision으로 분류해 저장/버전 UI가 변경 성격을 표시할 수 있게 했다.
+- working copy UI에서 사용할 dirty 상태와 불변 순서 이동 helper를 추가했다.
+
 ## 2026-05-28 어드민 코스 상세 에디터 구현 계획 시작
 
 - 설계 문서 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md` 승인 후 구현 계획을 작성한다.

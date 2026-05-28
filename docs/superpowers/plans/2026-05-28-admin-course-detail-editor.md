@@ -1220,7 +1220,7 @@ git commit -m "어드민 코스 에디터 클라이언트 추가"
 - Create: `apps/admin/src/features/courses/course-editor/editor-state.ts`
 - Create: `apps/admin/src/features/courses/course-editor/editor-state.test.ts`
 
-- [ ] **Step 1: Write failing pure logic tests**
+- [x] **Step 1: Write failing pure logic tests**
 
 Create `apps/admin/src/features/courses/course-editor/editor-state.test.ts`.
 
@@ -1260,13 +1260,15 @@ describe("course editor state", () => {
 })
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `bun --filter @workspace/admin test -- editor-state.test.ts`
 
 Expected: FAIL because files do not exist.
 
-- [ ] **Step 3: Implement URL state**
+Actual: `editor-change-kind`, `editor-state`, `editor-url-state` import가 없어 테스트 suite가 실패하는 것을 확인했다.
+
+- [x] **Step 3: Implement URL state**
 
 Create `editor-url-state.ts`.
 
@@ -1305,7 +1307,7 @@ export function parseEditorUrlState(
 }
 ```
 
-- [ ] **Step 4: Implement change kind**
+- [x] **Step 4: Implement change kind**
 
 Create `editor-change-kind.ts`.
 
@@ -1347,7 +1349,7 @@ export function getEditorChangeKind(
 }
 ```
 
-- [ ] **Step 5: Implement editor-state reducer**
+- [x] **Step 5: Implement editor-state reducer**
 
 Create `editor-state.ts` with a minimal reducer used by UI.
 
@@ -1381,13 +1383,15 @@ export function moveItem<TItem>(
 }
 ```
 
-- [ ] **Step 6: Run tests**
+- [x] **Step 6: Run tests**
 
 Run: `bun --filter @workspace/admin test -- editor-state.test.ts`
 
 Expected: PASS.
 
-- [ ] **Step 7: Commit**
+Actual: focused state logic tests passed.
+
+- [x] **Step 7: Commit**
 
 ```bash
 git add apps/admin/src/features/courses/course-editor/editor-url-state.ts apps/admin/src/features/courses/course-editor/editor-change-kind.ts apps/admin/src/features/courses/course-editor/editor-state.ts apps/admin/src/features/courses/course-editor/editor-state.test.ts
