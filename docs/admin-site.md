@@ -36,6 +36,12 @@
 - 상세 페이지 placeholder를 제거하고 `Course Studio` 헤더, 버전/저장 action, 2컬럼 editor shell을 렌더링하도록 바꿨다.
 - 왼쪽 정보 영역에는 썸네일, 제목, 설명, 챕터/레슨/스텝 수를 표시하는 코스 요약 패널을 추가했다.
 
+## 2026-05-28 코스 커리큘럼 작업대 구현 완료
+
+- 왼쪽 커리큘럼 맵을 챕터/레슨 트리로 분리하고 `dnd-kit` 기반 sortable lesson row를 추가했다.
+- 오른쪽 레슨 작업대는 레슨 제목, 학습 의도, 변경 유형, learning sequence, 미리보기/설정/스텝 추가 버튼을 표시한다.
+- Course Studio shell은 선택 레슨 기준으로 커리큘럼 맵과 레슨 작업대에 데이터를 나누어 전달한다.
+
 ## 2026-05-28 어드민 코스 상세 에디터 구현 계획 시작
 
 - 설계 문서 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md` 승인 후 구현 계획을 작성한다.

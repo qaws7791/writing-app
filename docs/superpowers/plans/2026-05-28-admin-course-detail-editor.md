@@ -1507,7 +1507,7 @@ git commit -m "어드민 코스 스튜디오 셸 구현"
 - Create: `apps/admin/src/features/courses/course-editor/curriculum-map.test.tsx`
 - Create: `apps/admin/src/features/courses/course-editor/lesson-workspace.test.tsx`
 
-- [ ] **Step 1: Write failing component tests**
+- [x] **Step 1: Write failing component tests**
 
 Create tests asserting active lesson, add buttons, and sequence rows.
 
@@ -1543,13 +1543,15 @@ it("renders chapters and selected lesson in the curriculum map", () => {
 })
 ```
 
-- [ ] **Step 2: Run tests to verify they fail**
+- [x] **Step 2: Run tests to verify they fail**
 
 Run: `bun --filter @workspace/admin test -- curriculum-map.test.tsx lesson-workspace.test.tsx`
 
 Expected: FAIL because components do not exist.
 
-- [ ] **Step 3: Implement CurriculumMap**
+Actual: `curriculum-map`과 `lesson-workspace` import가 없어 테스트 suite가 실패하는 것을 확인했다.
+
+- [x] **Step 3: Implement CurriculumMap**
 
 Use `@dnd-kit/sortable` for sortable wrappers. Keep DnD handlers controlled through props:
 
@@ -1562,17 +1564,19 @@ type CurriculumMapProps = {
 }
 ```
 
-- [ ] **Step 4: Implement LessonWorkspace**
+- [x] **Step 4: Implement LessonWorkspace**
 
 Render lesson title, learning intent area, change summary, and `LEARNING SEQUENCE` rows from step summaries. Include `학습 화면 미리보기`, `레슨 설정`, and `스텝 추가` buttons.
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run: `bun --filter @workspace/admin test -- curriculum-map.test.tsx lesson-workspace.test.tsx`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+Actual: focused workspace tests, `bun --filter @workspace/admin test`, and `bun --filter @workspace/admin typecheck` passed.
+
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/admin/src/features/courses/course-editor/curriculum-map.tsx apps/admin/src/features/courses/course-editor/lesson-workspace.tsx apps/admin/src/features/courses/course-editor/course-editor-shell.tsx apps/admin/src/features/courses/course-editor/curriculum-map.test.tsx apps/admin/src/features/courses/course-editor/lesson-workspace.test.tsx
