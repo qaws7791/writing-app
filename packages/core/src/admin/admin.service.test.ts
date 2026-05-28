@@ -55,6 +55,15 @@ const repository: AdminRepository = {
       query: "문장",
     }
   },
+  async getCourseDetail() {
+    return {
+      id: "sentence-structure",
+      title: "문장 구조의 기본",
+      description: "문장의 뼈대를 이해합니다.",
+      thumbnailPath: "/course-thumbnails/sentence-structure.png",
+      sortOrder: 1,
+    }
+  },
   async listCurriculumVersions() {
     return {
       versions: [
@@ -69,6 +78,32 @@ const repository: AdminRepository = {
           createdAt: "2026-05-28T00:00:00.000Z",
         },
       ],
+    }
+  },
+  async getCourseCurriculumVersionDetail() {
+    return {
+      id: "sentence-structure-v2",
+      courseId: "sentence-structure",
+      versionNumber: 2,
+      status: "draft",
+      title: "문장 구조의 기본",
+      changelog: "Draft from v1",
+      publishedAt: null,
+      createdAt: "2026-05-28T00:00:00.000Z",
+      revision: 1,
+      chapters: [],
+      steps: [],
+    }
+  },
+  async getCourseLessonDetail() {
+    return {
+      id: "sentence-structure-01",
+      courseId: "sentence-structure",
+      title: "주어와 서술어 찾기",
+      categoryId: "category-writing",
+      unitNumber: 1,
+      nextLessonId: null,
+      steps: [],
     }
   },
   async createCurriculumDraft() {
@@ -97,6 +132,45 @@ const repository: AdminRepository = {
       publishedAt: null,
       createdAt: "2026-05-28T00:00:00.000Z",
       chapters: [],
+    }
+  },
+  async restoreCurriculumDraft() {
+    return {
+      status: "created",
+      version: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Restored from v1",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+      },
+    }
+  },
+  async saveCurriculumVersionContent() {
+    return {
+      status: "saved",
+      version: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 2,
+        chapters: [],
+        steps: [],
+      },
+    }
+  },
+  async discardCurriculumVersion() {
+    return {
+      status: "discarded",
+      versionId: "sentence-structure-v2",
     }
   },
   async publishCurriculumVersion() {
