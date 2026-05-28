@@ -864,6 +864,24 @@ describe("createDrizzleAdminRepository", () => {
       status: "failed",
     })
   })
+
+  it("tracks curriculum revision and active lesson step status", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+    const version = await repository.getCourseCurriculumVersionDetail(
+      "sentence-structure",
+      "sentence-structure-v1"
+    )
+
+    expect(version?.revision).toBe(1)
+
+    const lesson = await repository.getCourseLessonDetail(
+      "sentence-structure",
+      "sentence-structure-01"
+    )
+
+    expect(lesson?.steps[0]?.status).toBe("active")
+  })
 })
 
 async function createSeededDatabase() {

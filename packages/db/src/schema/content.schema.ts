@@ -36,6 +36,7 @@ export const curriculumVersions = sqliteTable(
     }).notNull(),
     title: text("title").notNull(),
     changelog: text("changelog").notNull(),
+    revision: integer("revision").notNull().default(1),
     publishedAt: integer("published_at", { mode: "timestamp" }),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   },
@@ -170,5 +171,10 @@ export const lessonSteps = sqliteTable("lesson_steps", {
   sortOrder: integer("sort_order").notNull(),
   points: integer("points").notNull(),
   required: integer("required", { mode: "boolean" }).notNull(),
+  status: text("status", {
+    enum: ["active", "deprecated", "archived"],
+  })
+    .notNull()
+    .default("active"),
   contentJson: text("content_json").notNull(),
 })
