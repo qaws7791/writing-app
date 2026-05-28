@@ -1,5 +1,11 @@
 # 어드민 사이트
 
+## 2026-05-28 어드민 코스 상세 에디터 구현 시작
+
+- 설계 문서 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md`를 기준으로 구현을 시작한다.
+- 구현은 DB 스키마, core/admin 계약, admin-api route, admin UI 순서로 진행한다.
+- 코스 상세 편집은 draft 커리큘럼 버전에만 적용하고, 상단 저장에서 전체 snapshot을 반영한다.
+
 ## 2026-05-28 어드민 코스 상세 에디터 구현 계획 시작
 
 - 설계 문서 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md` 승인 후 구현 계획을 작성한다.
