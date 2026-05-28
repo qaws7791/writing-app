@@ -125,7 +125,7 @@ POST /courses/:courseId/curriculum/versions/:versionId/discard
 
 `GET /courses/:courseId/curriculum/versions/:versionId`는 선택한 커리큘럼 버전의 챕터와 레슨 snapshot을 반환한다. 에디터에서 필요한 step 요약도 포함한다.
 
-`GET /courses/:courseId/lessons/:lessonId`는 레슨 상세와 스텝 content를 반환한다. 에디터는 선택된 레슨의 상세 content를 지연 조회할 수 있다.
+`GET /courses/:courseId/lessons/:lessonId`는 선택한 커리큘럼 버전의 레슨 상세와 스텝 content를 반환한다. 요청은 `version` query를 포함하고, 서버는 해당 버전의 `curriculum_version_steps` snapshot을 읽는다. 에디터는 선택된 레슨의 상세 content를 지연 조회할 수 있다.
 
 ### 작업
 
@@ -162,7 +162,7 @@ type RestoreCurriculumDraftRequest = {
 4. 코스 기본 정보 변경을 반영한다.
 5. 챕터 snapshot을 반영한다.
 6. 레슨 snapshot을 반영한다.
-7. 레슨 스텝 content와 정렬을 반영한다.
+7. 버전별 스텝 snapshot content와 정렬을 반영한다.
 8. 새 revision을 반환한다.
 
 충돌이 발생하면 저장하지 않고 `409 conflict`를 반환한다. UI는 최신 서버 상태를 다시 불러오거나 현재 변경을 폐기하는 선택지를 제공한다.
@@ -205,7 +205,7 @@ type CommonStepFields = {
 }
 ```
 
-타입별 폼은 `packages/core/src/content/content.dto.ts`의 discriminated union 구조를 기준으로 만든다.
+타입별 폼은 `packages/core/src/content/content.dto.ts`의 discriminated union 구조를 기준으로 만든다. 저장 대상은 전역 `lesson_steps`가 아니라 `curriculum_version_steps` snapshot이다. draft 저장 API는 published 버전의 스텝 snapshot이나 원본 `lesson_steps`를 직접 수정하지 않는다.
 
 ```text
 step-forms/

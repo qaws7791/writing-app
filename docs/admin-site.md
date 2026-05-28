@@ -6,6 +6,12 @@
 - 구현은 DB 스키마, core/admin 계약, admin-api route, admin UI 순서로 진행한다.
 - 코스 상세 편집은 draft 커리큘럼 버전에만 적용하고, 상단 저장에서 전체 snapshot을 반영한다.
 
+## 2026-05-28 어드민 코스 상세 에디터 구현 계획 보강
+
+- draft 스텝 content가 기존 published 레슨에 섞이지 않도록 `curriculum_version_steps` snapshot을 추가하는 방향으로 보강한다.
+- draft 저장 API는 원본 `lesson_steps`를 직접 수정하지 않고, 대상 draft 버전의 스텝 snapshot만 갱신한다.
+- 공개/학습자 레슨 읽기 경로도 published 또는 학습자 진행 버전의 스텝 snapshot을 읽도록 후속 구현 범위에 포함한다.
+
 ## 2026-05-28 어드민 코스 상세 에디터 구현 계획 시작
 
 - 설계 문서 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md` 승인 후 구현 계획을 작성한다.

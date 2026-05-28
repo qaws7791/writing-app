@@ -13,7 +13,7 @@
 ## File Structure
 
 - `docs/admin-site.md`: 구현 시작과 완료 기록.
-- `packages/db/src/schema/content.schema.ts`: `curriculum_versions.revision`, `lesson_steps.status` 추가.
+- `packages/db/src/schema/content.schema.ts`: `curriculum_versions.revision`, `lesson_steps.status`, `curriculum_version_steps` 추가.
 - `packages/db/src/migrations/0007-admin-course-editor.sql`: 기존 row backfill migration.
 - `packages/core/src/admin/admin.dto.ts`: course detail, editor version detail, lesson detail, save snapshot, restore request DTO 추가.
 - `packages/core/src/admin/admin.errors.ts`: conflict error DTO 추가.
@@ -689,6 +689,54 @@ git commit -m "어드민 코스 에디터 조회 구현"
 
 ### Task 6: DB repository 저장, 복원, 폐기 구현
 
+### Task 5.5: 버전별 스텝 snapshot 추가
+
+**Files:**
+
+- Modify: `packages/db/src/schema/content.schema.ts`
+- Create: `packages/db/src/migrations/0008-curriculum-version-steps.sql`
+- Modify: `packages/db/src/migrations/run-content-migration.ts`
+- Modify: `packages/db/src/seeds/seed-content.ts`
+- Modify: `packages/db/src/repositories/drizzle-admin.repository.ts`
+- Modify: `packages/db/src/repositories/drizzle-admin.repository.test.ts`
+
+- [ ] **Step 1: Write failing snapshot isolation test**
+
+Add a DB test that creates a draft, changes a draft step snapshot, and verifies the published version still reads the original step content.
+
+Run: `bun --filter @workspace/db test -- drizzle-admin.repository.test.ts -t "keeps draft step changes isolated"`
+
+Expected: FAIL because `curriculum_version_steps` does not exist yet.
+
+- [ ] **Step 2: Add schema and migration**
+
+Add `curriculumVersionSteps` with `curriculumVersionId`, `lessonId`, `sourceStepId`, step type, sort order, points, required, status, and `contentJson`. Use `0008-curriculum-version-steps.sql` to create the table and copy existing `lesson_steps` rows into every current curriculum version that includes the lesson.
+
+- [ ] **Step 3: Populate seed snapshots**
+
+Update `seedContent` so seeded `v1` rows include version step snapshots. Keep original `lesson_steps` as immutable source rows for backfill and compatibility.
+
+- [ ] **Step 4: Read editor steps from version snapshots**
+
+Update `getCourseCurriculumVersionDetail` and `getCourseLessonDetail` to read `curriculum_version_steps` for the requested version. `getCourseLessonDetail` must take the current editor version ID through the admin API route and service path before UI work starts.
+
+- [ ] **Step 5: Clone step snapshots with drafts**
+
+Update `createCurriculumDraft` and `restoreCurriculumDraft` so draft versions receive copied step snapshots from the source version.
+
+- [ ] **Step 6: Run focused DB tests**
+
+Run: `bun --filter @workspace/db test -- drizzle-admin.repository.test.ts -t "step snapshot|returns curriculum version detail|returns lesson detail"`
+
+Expected: PASS.
+
+- [ ] **Step 7: Commit**
+
+```bash
+git add packages/db/src/schema/content.schema.ts packages/db/src/migrations/0008-curriculum-version-steps.sql packages/db/src/migrations/run-content-migration.ts packages/db/src/seeds/seed-content.ts packages/db/src/repositories/drizzle-admin.repository.ts packages/db/src/repositories/drizzle-admin.repository.test.ts
+git commit -m "커리큘럼 버전 스텝 스냅샷 추가"
+```
+
 **Files:**
 
 - Modify: `packages/db/src/repositories/drizzle-admin.repository.ts`
@@ -834,7 +882,7 @@ if (version.revision !== input.baseRevision) {
 }
 ```
 
-Then update `courses`, replace draft chapter and lesson snapshot rows, upsert `lessons` and `lesson_steps`, increment `curriculum_versions.revision`, and return the fresh editor version detail.
+Then update `courses`, replace draft chapter and lesson snapshot rows, replace draft `curriculum_version_steps`, increment `curriculum_versions.revision`, and return the fresh editor version detail. Do not update original `lesson_steps` from the draft save path.
 
 Implement `discardCurriculumVersion` so it only accepts draft versions for the course. Remove draft snapshot rows and the draft version row in one transaction.
 
@@ -1863,4 +1911,4 @@ git commit -m "어드민 코스 상세 에디터 구현 완료"
 - Spec coverage: The plan covers draft-only editing, RESTful course curriculum routes, full snapshot save, restore from published, URL state, working copy, 20 dedicated step forms, DnD-ready curriculum map, preview, docs, and validation.
 - Scope control: The plan keeps one route page as the product surface but splits implementation into schema, core, db, route, client, state, and UI tasks.
 - Type consistency: Plan names use `AdminEditorCurriculumVersionDetailDto`, `AdminEditorLessonDetailDto`, `AdminSaveCurriculumVersionContentRequestDto`, and `AdminRestoreCurriculumDraftRequestDto` consistently.
-- Risk note: `lesson_steps.status` affects public content reads. When implementing Task 2 and Task 5, update public content queries to filter archived steps only if tests reveal existing learner paths now expose archived steps.
+- Risk note: draft 스텝 content는 `curriculum_version_steps`에만 저장한다. Public and learner lesson reads must be moved to version step snapshots before published step edits are considered complete.
