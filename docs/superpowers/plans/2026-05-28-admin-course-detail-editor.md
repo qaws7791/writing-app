@@ -1593,7 +1593,7 @@ git commit -m "코스 커리큘럼 작업대 구현"
 - Create: `apps/admin/src/features/courses/course-editor/step-forms/*.tsx`
 - Create: `apps/admin/src/features/courses/course-editor/step-workspace.test.tsx`
 
-- [ ] **Step 1: Write failing step workspace test**
+- [x] **Step 1: Write failing step workspace test**
 
 Create `step-workspace.test.tsx`.
 
@@ -1641,13 +1641,15 @@ it.each([
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `bun --filter @workspace/admin test -- step-workspace.test.tsx`
 
 Expected: FAIL because `StepWorkspace` does not exist.
 
-- [ ] **Step 3: Create form registry**
+Actual: `step-workspace` import가 없어 테스트 suite가 실패하는 것을 확인했다.
+
+- [x] **Step 3: Create form registry**
 
 In `step-workspace.tsx`, map step type to form components.
 
@@ -1676,7 +1678,7 @@ const stepFormByType = {
 } satisfies Record<AdminEditorStepType, React.ComponentType<StepFormProps>>
 ```
 
-- [ ] **Step 4: Implement each dedicated form**
+- [x] **Step 4: Implement each dedicated form**
 
 Create `apps/admin/src/features/courses/course-editor/step-forms/step-form-fields.ts`.
 
@@ -1748,13 +1750,15 @@ export function ShortWriteStepForm({ step }: StepFormProps) {
 }
 ```
 
-- [ ] **Step 5: Run tests**
+- [x] **Step 5: Run tests**
 
 Run: `bun --filter @workspace/admin test -- step-workspace.test.tsx`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+Actual: focused step workspace tests, `bun --filter @workspace/admin test`, and `bun --filter @workspace/admin typecheck` passed.
+
+- [x] **Step 6: Commit**
 
 ```bash
 git add apps/admin/src/features/courses/course-editor/step-workspace.tsx apps/admin/src/features/courses/course-editor/step-forms apps/admin/src/features/courses/course-editor/step-workspace.test.tsx
