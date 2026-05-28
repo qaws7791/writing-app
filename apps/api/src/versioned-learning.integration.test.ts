@@ -71,12 +71,30 @@ const latestPublicContentService: ContentService = {
 }
 
 const learnerVersionProgressService: LearningService = {
+  async applyCurriculumUpgrade() {
+    return {
+      status: "not-found",
+      error: {
+        code: "not-found",
+        message: "Curriculum upgrade was not found.",
+      },
+    }
+  },
   async completeLesson() {
     return {
       status: "invalid-request",
       error: {
         code: "invalid-request",
         message: "Lesson is not part of the learner curriculum version.",
+      },
+    }
+  },
+  async dismissCurriculumUpgrade() {
+    return {
+      status: "not-found",
+      error: {
+        code: "not-found",
+        message: "Curriculum upgrade was not found.",
       },
     }
   },
@@ -89,6 +107,15 @@ const learnerVersionProgressService: LearningService = {
         nextLessonId: "sentence-structure-02",
         progressPercent: 8,
         totalLessons: 12,
+      },
+    }
+  },
+  async getCurriculumUpgrade() {
+    return {
+      status: "ok",
+      value: {
+        courseId: "sentence-structure",
+        status: "not-available",
       },
     }
   },

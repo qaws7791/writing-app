@@ -149,11 +149,11 @@ git commit -m "학습자 커리큘럼 업그레이드 저장소 구현"
 - Modify: `apps/api/src/openapi/openapi-document.test.ts`
 - Modify: `apps/api/src/openapi/openapi-document.ts`
 
-- [ ] **Step 1: 실패 테스트 작성**
+- [x] **Step 1: 실패 테스트 작성**
 
 `apps/api/src/app.test.ts`에 세 route의 auth, GET available/not-available, POST apply, POST dismiss 테스트를 추가한다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/api test -- app.test.ts
@@ -161,11 +161,11 @@ bun --filter @workspace/api test -- app.test.ts
 
 기대 결과: route가 없어 404로 실패한다.
 
-- [ ] **Step 3: route 구현**
+- [x] **Step 3: route 구현**
 
 `require auth`, `describeRoute`, Zod response schema를 사용해 route를 추가하고 `createApiApp`에 등록한다.
 
-- [ ] **Step 4: OpenAPI 확인과 커밋**
+- [x] **Step 4: OpenAPI 확인과 커밋**
 
 ```bash
 bun --filter @workspace/api test -- app.test.ts openapi-document.test.ts

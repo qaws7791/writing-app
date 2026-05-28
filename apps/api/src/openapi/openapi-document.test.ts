@@ -17,6 +17,12 @@ describe("createOpenApiDocument", () => {
     expect(document.paths).toHaveProperty("/profile")
     expect(document.paths).toHaveProperty("/progress")
     expect(document.paths).toHaveProperty("/courses/{courseId}/progress")
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum-upgrade"
+    )
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum-upgrade/dismiss"
+    )
     expect(document.paths).toHaveProperty("/lessons/{lessonId}/progress")
     expect(document.paths).toHaveProperty("/lessons/{lessonId}/answers")
     expect(document.paths).toHaveProperty("/lessons/{lessonId}/complete")

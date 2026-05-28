@@ -144,6 +144,37 @@ const fakeLearningService: LearningService = {
       },
     }
   },
+  async applyCurriculumUpgrade() {
+    return {
+      status: "ok",
+      value: {
+        completedLessonCount: 1,
+        completedLessonIds: ["sentence-structure-01"],
+        courseId: "sentence-structure",
+        createdAt: "2026-05-28T00:00:00.000Z",
+        fromVersionId: "sentence-structure-v1",
+        id: "sentence-structure-v1-to-sentence-structure-v2-user-1",
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        preservedLessonIds: [],
+        skippedLessonIds: ["sentence-structure-02"],
+        status: "completed",
+        toVersionId: "sentence-structure-v2",
+        updatedAt: "2026-05-28T00:00:00.000Z",
+      },
+    }
+  },
+  async dismissCurriculumUpgrade() {
+    return {
+      status: "ok",
+      value: {
+        courseId: "sentence-structure",
+        dismissedAt: "2026-05-28T00:00:00.000Z",
+        fromVersionId: "sentence-structure-v1",
+        status: "dismissed",
+        toVersionId: "sentence-structure-v2",
+      },
+    }
+  },
   async getCourseProgress() {
     return {
       status: "ok",
@@ -152,6 +183,30 @@ const fakeLearningService: LearningService = {
         courseId: "sentence-structure",
         nextLessonId: "sentence-structure-02",
         progressPercent: 50,
+        totalLessons: 2,
+      },
+    }
+  },
+  async getCurriculumUpgrade() {
+    return {
+      status: "ok",
+      value: {
+        completedCount: 1,
+        courseId: "sentence-structure",
+        fromVersion: {
+          id: "sentence-structure-v1",
+          title: "문장 구조의 기본",
+          versionNumber: 1,
+        },
+        message: "새 커리큘럼에는 새 예제와 복습 경로를 추가했습니다.",
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        status: "available",
+        toVersion: {
+          changelog: "새 예제와 복습 경로를 추가했습니다.",
+          id: "sentence-structure-v2",
+          title: "문장 구조의 기본 v2",
+          versionNumber: 2,
+        },
         totalLessons: 2,
       },
     }
@@ -441,6 +496,106 @@ describe("createApiApp", () => {
     })
   })
 
+  it("requires auth for curriculum upgrade notice", async () => {
+    const app = createTestApp()
+
+    const response = await app.request(
+      "/courses/sentence-structure/curriculum-upgrade"
+    )
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({
+      code: "unauthorized",
+      message: "Authentication is required.",
+    })
+  })
+
+  it("returns curriculum upgrade notice for an authenticated user", async () => {
+    const app = createTestApp(silentLogger, testSession)
+
+    const response = await app.request(
+      "/courses/sentence-structure/curriculum-upgrade"
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      completedCount: 1,
+      courseId: "sentence-structure",
+      fromVersion: {
+        id: "sentence-structure-v1",
+        title: "문장 구조의 기본",
+        versionNumber: 1,
+      },
+      message: "새 커리큘럼에는 새 예제와 복습 경로를 추가했습니다.",
+      migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+      status: "available",
+      toVersion: {
+        changelog: "새 예제와 복습 경로를 추가했습니다.",
+        id: "sentence-structure-v2",
+        title: "문장 구조의 기본 v2",
+        versionNumber: 2,
+      },
+      totalLessons: 2,
+    })
+  })
+
+  it("applies curriculum upgrade for the authenticated user", async () => {
+    const learningService = {
+      ...fakeLearningService,
+      applyCurriculumUpgrade: vi.fn(fakeLearningService.applyCurriculumUpgrade),
+    } satisfies LearningService
+    const app = createTestApp(silentLogger, testSession, learningService)
+
+    const response = await app.request(
+      "/courses/sentence-structure/curriculum-upgrade",
+      {
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      completedLessonCount: 1,
+      completedLessonIds: ["sentence-structure-01"],
+      status: "completed",
+      toVersionId: "sentence-structure-v2",
+    })
+    expect(learningService.applyCurriculumUpgrade).toHaveBeenCalledWith(
+      "user-1",
+      "sentence-structure"
+    )
+  })
+
+  it("dismisses curriculum upgrade for the authenticated user", async () => {
+    const learningService = {
+      ...fakeLearningService,
+      dismissCurriculumUpgrade: vi.fn(
+        fakeLearningService.dismissCurriculumUpgrade
+      ),
+    } satisfies LearningService
+    const app = createTestApp(silentLogger, testSession, learningService)
+
+    const response = await app.request(
+      "/courses/sentence-structure/curriculum-upgrade/dismiss",
+      {
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      courseId: "sentence-structure",
+      dismissedAt: "2026-05-28T00:00:00.000Z",
+      fromVersionId: "sentence-structure-v1",
+      status: "dismissed",
+      toVersionId: "sentence-structure-v2",
+    })
+    expect(learningService.dismissCurriculumUpgrade).toHaveBeenCalledWith(
+      "user-1",
+      "sentence-structure"
+    )
+  })
+
   it("saves lesson progress for an authenticated user", async () => {
     const learningService = {
       ...fakeLearningService,
@@ -622,6 +777,12 @@ describe("createApiApp", () => {
     expect(document.paths).toHaveProperty("/profile")
     expect(document.paths).toHaveProperty("/progress")
     expect(document.paths).toHaveProperty("/courses/{courseId}/progress")
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum-upgrade"
+    )
+    expect(document.paths).toHaveProperty(
+      "/courses/{courseId}/curriculum-upgrade/dismiss"
+    )
     expect(document.paths).toHaveProperty("/lessons/{lessonId}/progress")
     expect(document.paths).toHaveProperty("/lessons/{lessonId}/answers")
     expect(document.paths).toHaveProperty("/lessons/{lessonId}/complete")

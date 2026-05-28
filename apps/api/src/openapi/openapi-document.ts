@@ -34,10 +34,19 @@ const openApiContentService: ContentService = {
 }
 
 const openApiLearningService: LearningService = {
+  async applyCurriculumUpgrade() {
+    throw openApiGenerationError
+  },
   async completeLesson() {
     throw openApiGenerationError
   },
+  async dismissCurriculumUpgrade() {
+    throw openApiGenerationError
+  },
   async getCourseProgress() {
+    throw openApiGenerationError
+  },
+  async getCurriculumUpgrade() {
     throw openApiGenerationError
   },
   async getLessonProgress() {
