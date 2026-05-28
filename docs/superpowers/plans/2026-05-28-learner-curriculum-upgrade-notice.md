@@ -257,11 +257,11 @@ git commit -m "코스 상세 커리큘럼 업그레이드 공지 추가"
 - Modify: `docs/platform-backend-api.md`
 - Modify: `docs/superpowers/plans/2026-05-28-learner-curriculum-upgrade-notice.md`
 
-- [ ] **Step 1: 문서 갱신**
+- [x] **Step 1: 문서 갱신**
 
 8단계 완료 상태, learner API, dismiss 정책, 코스 상세 UX를 문서에 반영한다.
 
-- [ ] **Step 2: 전체 검증**
+- [x] **Step 2: 전체 검증**
 
 ```bash
 bun --filter @workspace/core test
@@ -274,7 +274,7 @@ bun run typecheck
 git diff --check
 ```
 
-- [ ] **Step 3: 커밋**
+- [x] **Step 3: 커밋**
 
 ```bash
 git add DOMAIN.md BACKEND.md FRONTEND.md docs/curriculum-change-policy.md docs/admin-site.md docs/platform-backend-api.md docs/superpowers/plans/2026-05-28-learner-curriculum-upgrade-notice.md

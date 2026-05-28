@@ -6,6 +6,15 @@
 - 관리자 마이그레이션 맵을 학습자 선택 UX에서 사용할 수 있도록 learner-facing 업그레이드 API와 웹 공지를 추가한다.
 - 관리자 API의 마이그레이션 맵 생성/조회/사용자 적용 기능은 유지하고, 학습자 선택 흐름은 별도 경계에서 구현한다.
 
+## 2026-05-28 학습자 커리큘럼 업그레이드 UX 구현 완료
+
+- `curriculum_upgrade_dismissals` 스키마를 추가해 학습자가 나중에 결정한 사용자/코스/source/target 버전 쌍을 보존한다.
+- Core learning 계약에 업그레이드 공지 조회, 직접 적용, 공지 숨김 DTO와 service 결과를 추가했다.
+- 관리자 적용 로직과 학습자 적용 로직이 같은 마이그레이션 helper를 사용하도록 분리했다.
+- Learner API는 `GET /courses/:courseId/curriculum-upgrade`, `POST /courses/:courseId/curriculum-upgrade`, `POST /courses/:courseId/curriculum-upgrade/dismiss`를 제공한다.
+- 웹 코스 상세 화면은 업그레이드 가능 상태일 때만 공지를 표시하고, 업그레이드 또는 나중에 결정 후 데이터를 새로고침한다.
+- OpenAPI 문서와 웹 생성 타입에 새 learner route를 반영했다.
+
 ## 2026-05-28 커리큘럼 마이그레이션 맵 구현 시작
 
 - 커리큘럼 버전 관리 로드맵 7단계 구현을 시작한다.

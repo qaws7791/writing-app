@@ -179,6 +179,10 @@ OpenAPI types provide compile-time safety. Runtime safety requires separate vali
 
 로컬 기본값은 fake 모드다. 백엔드 연동 검증 시 `WEB_API_MODE=http`, `NEXT_PUBLIC_API_MODE=http`, `WEB_API_BASE_URL=http://localhost:4000`, `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000`을 명시한다.
 
+코스 상세 화면은 서버 컴포넌트에서 코스 상세와 학습자 커리큘럼 업그레이드 상태를 병렬 조회한다. 업그레이드 상태가 `available`일 때만 `CourseUpgradeNotice` 클라이언트 컴포넌트를 렌더링하고, 사용자의 업그레이드 또는 나중에 결정 액션은 `WritingAppApi`의 `applyCurriculumUpgrade`, `dismissCurriculumUpgrade` 메서드를 통해 Hono API로 전달한 뒤 `router.refresh()`로 서버 데이터를 다시 읽는다.
+
+fake API도 같은 포트를 구현한다. fake 모드에서는 코스 상세 UI와 테스트가 백엔드 없이 업그레이드 공지, 적용 후 숨김, 나중에 결정 후 숨김 흐름을 검증할 수 있다.
+
 ### 5.6 어드민 프론트엔드
 
 `apps/admin`은 운영 도구이므로 전통적인 왼쪽 사이드바 대시보드 구조를 사용한다. `packages/ui`의 shadcn Sidebar 컴포넌트를 조합하고, shadcn `sidebar-07` 블록은 구조 참고용으로만 사용한다.
