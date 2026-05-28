@@ -1,5 +1,20 @@
 # 어드민 사이트
 
+## 2026-05-28 어드민 코스 상세 에디터 설계 시작
+
+- 코스 상세 페이지를 draft 기반 커리큘럼 편집 도구로 설계한다.
+- 코스 기본 정보, 챕터, 레슨, 스텝까지 한 화면에서 관리하되 자동 저장 없이 상단 저장으로 일괄 반영한다.
+- published 버전은 직접 수정하지 않고, 과거 published 복원은 새 draft 생성으로 처리한다.
+- 설계 문서는 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md`에 작성한다.
+
+## 2026-05-28 어드민 코스 상세 에디터 설계 완료
+
+- 코스 상세 화면은 기존 어드민 셸 안에서 코스 제작 요약, Curriculum Map, Lesson Workspace로 구성한다.
+- URL query는 현재 버전, 작업대 화면, 선택 레슨, 선택 스텝을 저장해 새로고침 후 같은 내부 위치로 돌아오게 한다.
+- API는 `courses/:courseId/curriculum` 하위 경계로 커리큘럼 버전 조회, draft 생성, 복원, 저장, 발행, 폐기를 표현한다.
+- 변경사항은 클라이언트 `workingCopy`에 쌓고, `PUT /courses/:courseId/curriculum/versions/:versionId/content`에서 전체 snapshot으로 저장한다.
+- 20개 레슨 스텝 타입은 모두 전용 폼으로 편집하고, 미리보기는 저장 전 작업 상태를 기준으로 렌더링한다.
+
 ## 2026-05-28 학습자 커리큘럼 업그레이드 브라우저 검증 완료
 
 - 로컬 웹 앱을 실제 브라우저에서 열어 코스 상세의 새 커리큘럼 공지, 업그레이드 버튼, 나중에 결정 버튼을 시각적으로 확인했다.

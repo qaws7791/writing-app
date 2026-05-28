@@ -42,6 +42,7 @@ docs/.obsidian/
 
 # Agent skills (Antigravity)
 .agent
+.superpowers/
 
 # local database
 /data
