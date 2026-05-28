@@ -24,7 +24,12 @@ export function CourseUpgradeNotice({ upgrade }: CourseUpgradeNoticeProps) {
     "apply" | "dismiss" | null
   >(null)
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null)
+  const [isHidden, setIsHidden] = React.useState(false)
   const isPending = pendingAction !== null
+
+  React.useEffect(() => {
+    setIsHidden(false)
+  }, [upgrade.migrationId])
 
   async function runUpgradeAction(action: "apply" | "dismiss") {
     setPendingAction(action)
@@ -43,7 +48,12 @@ export function CourseUpgradeNotice({ upgrade }: CourseUpgradeNoticeProps) {
       return
     }
 
+    setIsHidden(true)
     router.refresh()
+  }
+
+  if (isHidden) {
+    return null
   }
 
   return (
