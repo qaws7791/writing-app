@@ -1,5 +1,13 @@
 # 어드민 사이트
 
+## 2026-05-28 어드민 코스 상세 에디터 구현 완료
+
+- 어드민 코스 상세 페이지를 Course Studio 구조로 구현했다.
+- draft 기반 커리큘럼 조회, 복원, 저장, 발행, 폐기 API와 admin 클라이언트 연결을 추가했다.
+- 코스 기본 정보, Curriculum Map, Lesson Workspace, Step Workspace, Lesson Preview를 추가했다.
+- 스텝 20개 타입은 전용 편집 폼으로 표시한다.
+- 변경사항은 working copy에 쌓고 상단 저장으로 전체 snapshot을 반영한다.
+
 ## 2026-05-28 어드민 코스 상세 에디터 구현 시작
 
 - 설계 문서 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md`를 기준으로 구현을 시작한다.

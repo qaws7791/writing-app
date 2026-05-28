@@ -898,7 +898,7 @@ Run: `bun --filter @workspace/db test`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add packages/db/src/repositories/drizzle-admin.repository.ts packages/db/src/repositories/drizzle-admin.repository.test.ts
@@ -1856,7 +1856,7 @@ git commit -m "코스 에디터 미리보기 연결"
 
 - Modify: `docs/admin-site.md`
 
-- [ ] **Step 1: Add completion document entry**
+- [x] **Step 1: Add completion document entry**
 
 Add this section near the top of `docs/admin-site.md`.
 
@@ -1870,7 +1870,7 @@ Add this section near the top of `docs/admin-site.md`.
 - 변경사항은 working copy에 쌓고 상단 저장으로 전체 snapshot을 반영한다.
 ```
 
-- [ ] **Step 2: Run focused package tests**
+- [x] **Step 2: Run focused package tests**
 
 Run:
 
@@ -1883,7 +1883,9 @@ bun --filter @workspace/admin test
 
 Expected: PASS for all commands.
 
-- [ ] **Step 3: Run typecheck and lint**
+Actual: core 57 tests, db 52 tests, admin-api 36 tests, admin 64 tests passed.
+
+- [x] **Step 3: Run typecheck and lint**
 
 Run:
 
@@ -1896,7 +1898,9 @@ bun --filter @workspace/admin-api lint
 
 Expected: PASS for all commands.
 
-- [ ] **Step 4: Run formatting checks**
+Actual: admin/admin-api typecheck and lint exited with code 0.
+
+- [x] **Step 4: Run formatting checks**
 
 Run:
 
@@ -1907,7 +1911,9 @@ git diff --check
 
 Expected: Prettier reports all matched files use Prettier style and `git diff --check` prints no output.
 
-- [ ] **Step 5: Browser smoke check**
+Actual: Prettier reported all matched files use Prettier code style and `git diff --check` produced no output.
+
+- [x] **Step 5: Browser smoke check**
 
 Run:
 
@@ -1925,7 +1931,9 @@ Open the admin app, sign in with the seeded admin account, and visit `/courses/s
 
 Stop the dev server after verification.
 
-- [ ] **Step 6: Commit**
+Actual: `bun run dev:admin`은 기존 3001/4001 서버가 이미 실행 중이라 포트 충돌로 새 서버를 시작하지 않았다. 기존 서버를 사용해 Chrome headless로 Course Studio shell, lesson view URL 복원, step view URL 복원, 저장 버튼 disabled 상태를 확인했다. 1440px desktop viewport에서 main 1184px, left 520px, right 664px로 렌더링되고 horizontal scroll이 없음을 확인했다. 새로 시작한 dev server 프로세스는 없고 Playwright/Chrome 세션은 종료했다.
+
+- [x] **Step 6: Commit**
 
 ```bash
 git add docs/admin-site.md
