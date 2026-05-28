@@ -35,6 +35,55 @@ export interface ProgressCourseList {
   courses: readonly ProgressCourse[]
 }
 
+export interface CurriculumUpgradeVersion {
+  id: string
+  title: string
+  versionNumber: number
+}
+
+export interface CurriculumUpgradeTargetVersion extends CurriculumUpgradeVersion {
+  changelog: string
+}
+
+export type CurriculumUpgradeNotice =
+  | {
+      courseId: Course["id"]
+      status: "not-available"
+    }
+  | {
+      completedCount: number
+      courseId: Course["id"]
+      fromVersion: CurriculumUpgradeVersion
+      message: string
+      migrationId: string
+      status: "available"
+      toVersion: CurriculumUpgradeTargetVersion
+      totalLessons: number
+    }
+
+export interface CurriculumUpgradeApplication {
+  completedLessonCount: number
+  completedLessonIds: readonly LessonId[]
+  courseId: Course["id"]
+  createdAt: string
+  fromVersionId: string
+  id: string
+  migrationId: string
+  preservedLessonIds: readonly LessonId[]
+  skippedLessonIds: readonly LessonId[]
+  status: "completed"
+  toVersionId: string
+  updatedAt: string
+}
+
+export interface DismissCurriculumUpgradeResult {
+  courseId: Course["id"]
+  dismissedAt: string
+  fromVersionId: string
+  status: "dismissed"
+  toVersionId: string
+}
+
 export interface LessonAnswer {
   answer: string
   stepId: LessonStepId
@@ -90,6 +139,15 @@ export interface WritingAppApi {
   getProfile(): Promise<ApiResult<ProfileSummary>>
   listProgress(): Promise<ApiResult<ProgressCourseList>>
   getCourseProgress(courseId: Course["id"]): Promise<ApiResult<CourseProgress>>
+  getCurriculumUpgrade(
+    courseId: Course["id"]
+  ): Promise<ApiResult<CurriculumUpgradeNotice>>
+  applyCurriculumUpgrade(
+    courseId: Course["id"]
+  ): Promise<ApiResult<CurriculumUpgradeApplication>>
+  dismissCurriculumUpgrade(
+    courseId: Course["id"]
+  ): Promise<ApiResult<DismissCurriculumUpgradeResult>>
   getLessonProgress(lessonId: LessonId): Promise<ApiResult<LessonProgress>>
   saveLessonProgress(
     lessonId: LessonId,

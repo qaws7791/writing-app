@@ -14,14 +14,21 @@ import { Separator } from "@workspace/ui/components/ui/separator"
 import { PlayIcon } from "@workspace/ui/components/icons"
 
 import { CourseCurriculum } from "@/features/courses/course-curriculum"
+import { CourseUpgradeNotice } from "@/features/courses/course-upgrade-notice"
 import type { CourseDetail } from "@/features/courses/course-detail-data"
+import type { CurriculumUpgradeNotice } from "@/lib/api/writing-app-api"
 
 interface CourseDetailPageProps {
   course: CourseDetail
+  curriculumUpgrade?: CurriculumUpgradeNotice
 }
 
-export function CourseDetailPage({ course }: CourseDetailPageProps) {
+export function CourseDetailPage({
+  course,
+  curriculumUpgrade,
+}: CourseDetailPageProps) {
   const isNotStarted = course.progress.completedLessons === 0
+  const hasCurriculumUpgrade = curriculumUpgrade?.status === "available"
 
   return (
     <div className="w-full bg-background text-foreground">
@@ -50,6 +57,10 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
                 {course.description}
               </p>
             </div>
+
+            {hasCurriculumUpgrade ? (
+              <CourseUpgradeNotice upgrade={curriculumUpgrade} />
+            ) : null}
 
             <Card variant="filled" className="rounded-4xl">
               {!isNotStarted && (

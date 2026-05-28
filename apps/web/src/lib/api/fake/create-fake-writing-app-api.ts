@@ -16,6 +16,7 @@ import type {
 export function createFakeWritingAppApi(): WritingAppApi {
   const progressByLesson = new Map<string, LessonProgress>()
   const answersByLesson = new Map<string, SaveLessonAnswerInput[]>()
+  const hiddenUpgradeCourseIds = new Set<string>()
 
   return {
     async listCourseCategories() {
@@ -87,6 +88,66 @@ export function createFakeWritingAppApi(): WritingAppApi {
           percentage: Math.round(course.progressPercent),
           totalLessons: course.totalLessons,
         })),
+      })
+    },
+    async getCurriculumUpgrade(courseId) {
+      if (
+        String(courseId) !== "sentence-structure" ||
+        hiddenUpgradeCourseIds.has(String(courseId))
+      ) {
+        return apiOk({
+          courseId,
+          status: "not-available",
+        })
+      }
+
+      return apiOk({
+        completedCount: 1,
+        courseId,
+        fromVersion: {
+          id: "sentence-structure-v1",
+          title: "문장 구조의 기본",
+          versionNumber: 1,
+        },
+        message: "새 커리큘럼에는 새 예제와 복습 경로를 추가했습니다.",
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        status: "available",
+        toVersion: {
+          changelog: "새 예제와 복습 경로를 추가했습니다.",
+          id: "sentence-structure-v2",
+          title: "문장 구조의 기본 v2",
+          versionNumber: 2,
+        },
+        totalLessons: 12,
+      })
+    },
+    async applyCurriculumUpgrade(courseId) {
+      hiddenUpgradeCourseIds.add(String(courseId))
+
+      return apiOk({
+        completedLessonCount: 1,
+        completedLessonIds: ["sentence-structure-01" as never],
+        courseId,
+        createdAt: new Date(0).toISOString(),
+        fromVersionId: "sentence-structure-v1",
+        id: "sentence-structure-v1-to-sentence-structure-v2-fake-user",
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        preservedLessonIds: [],
+        skippedLessonIds: ["sentence-structure-02" as never],
+        status: "completed",
+        toVersionId: "sentence-structure-v2",
+        updatedAt: new Date(0).toISOString(),
+      })
+    },
+    async dismissCurriculumUpgrade(courseId) {
+      hiddenUpgradeCourseIds.add(String(courseId))
+
+      return apiOk({
+        courseId,
+        dismissedAt: new Date(0).toISOString(),
+        fromVersionId: "sentence-structure-v1",
+        status: "dismissed",
+        toVersionId: "sentence-structure-v2",
       })
     },
     async getCourseProgress(courseId) {

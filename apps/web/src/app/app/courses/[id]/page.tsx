@@ -42,7 +42,10 @@ export async function generateMetadata({
 export default async function Page({ params }: CoursePageProps) {
   const { id } = await params
   const api = await getServerWritingAppApi()
-  const course = await api.getCourseDetail(courseId(id))
+  const [course, curriculumUpgrade] = await Promise.all([
+    api.getCourseDetail(courseId(id)),
+    api.getCurriculumUpgrade(courseId(id)),
+  ])
 
   if (course.status === "error") {
     if (course.error.code === "not-found") {
@@ -52,7 +55,14 @@ export default async function Page({ params }: CoursePageProps) {
     throw new Error(course.error.message)
   }
 
-  return <CourseDetailPage course={course.value} />
+  return (
+    <CourseDetailPage
+      course={course.value}
+      curriculumUpgrade={
+        curriculumUpgrade.status === "ok" ? curriculumUpgrade.value : undefined
+      }
+    />
+  )
 }
 
 async function getCourseMetadataSource(id: string) {

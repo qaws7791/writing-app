@@ -2544,6 +2544,621 @@
         }
       }
     },
+    "/courses/{courseId}/curriculum-upgrade": {
+      "get": {
+        "operationId": "getCoursesByCourseIdCurriculumUpgrade",
+        "responses": {
+          "200": {
+            "description": "Current learner curriculum upgrade notice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "courseId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "status": {
+                          "type": "string",
+                          "const": "not-available"
+                        }
+                      },
+                      "required": ["courseId", "status"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "completedCount": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "courseId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "fromVersion": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "title": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "versionNumber": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": ["id", "title", "versionNumber"]
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "migrationId": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "status": {
+                          "type": "string",
+                          "const": "available"
+                        },
+                        "toVersion": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "title": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "versionNumber": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "changelog": {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "title",
+                            "versionNumber",
+                            "changelog"
+                          ]
+                        },
+                        "totalLessons": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "completedCount",
+                        "courseId",
+                        "fromVersion",
+                        "message",
+                        "migrationId",
+                        "status",
+                        "toVersion",
+                        "totalLessons"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "course-not-found"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Course was not found."
+                    },
+                    "courseId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message", "courseId"]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "courseId",
+            "required": true
+          }
+        ]
+      },
+      "post": {
+        "operationId": "postCoursesByCourseIdCurriculumUpgrade",
+        "responses": {
+          "200": {
+            "description": "Applied current learner curriculum upgrade.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "completedLessonCount": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "completedLessonIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "courseId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "fromVersionId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "migrationId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "preservedLessonIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "skippedLessonIds": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    },
+                    "status": {
+                      "type": "string",
+                      "const": "completed"
+                    },
+                    "toVersionId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "completedLessonCount",
+                    "completedLessonIds",
+                    "courseId",
+                    "createdAt",
+                    "fromVersionId",
+                    "id",
+                    "migrationId",
+                    "preservedLessonIds",
+                    "skippedLessonIds",
+                    "status",
+                    "toVersionId",
+                    "updatedAt"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid upgrade request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-request"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course or curriculum upgrade was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "course-not-found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Course was not found."
+                        },
+                        "courseId": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": ["code", "message", "courseId"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "not-found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": ["code", "message"]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "courseId",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/courses/{courseId}/curriculum-upgrade/dismiss": {
+      "post": {
+        "operationId": "postCoursesByCourseIdCurriculumUpgradeDismiss",
+        "responses": {
+          "200": {
+            "description": "Dismissed current learner curriculum upgrade notice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "courseId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "dismissedAt": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "fromVersionId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "status": {
+                      "type": "string",
+                      "const": "dismissed"
+                    },
+                    "toVersionId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "courseId",
+                    "dismissedAt",
+                    "fromVersionId",
+                    "status",
+                    "toVersionId"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "unauthorized"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Course or curriculum upgrade was not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "course-not-found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "const": "Course was not found."
+                        },
+                        "courseId": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": ["code", "message", "courseId"]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "const": "not-found"
+                        },
+                        "message": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "required": ["code", "message"]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Content seed is invalid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "invalid-content-seed"
+                    },
+                    "message": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "lessonId": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Database is unavailable.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "const": "database-unavailable"
+                    },
+                    "message": {
+                      "type": "string",
+                      "const": "Database is unavailable."
+                    }
+                  },
+                  "required": ["code", "message"]
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "courseId",
+            "required": true
+          }
+        ]
+      }
+    },
     "/courses/{courseId}/progress": {
       "get": {
         "operationId": "getCoursesByCourseIdProgress",

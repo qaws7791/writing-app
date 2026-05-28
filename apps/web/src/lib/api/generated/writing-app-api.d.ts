@@ -132,6 +132,38 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/courses/{courseId}/curriculum-upgrade": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get: operations["getCoursesByCourseIdCurriculumUpgrade"]
+    put?: never
+    post: operations["postCoursesByCourseIdCurriculumUpgrade"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/courses/{courseId}/curriculum-upgrade/dismiss": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post: operations["postCoursesByCourseIdCurriculumUpgradeDismiss"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/courses/{courseId}/progress": {
     parameters: {
       query?: never
@@ -1089,6 +1121,311 @@ export interface operations {
             /** @constant */
             code: "unauthorized"
             message: string
+          }
+        }
+      }
+      /** @description Database is unavailable. */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            code: "database-unavailable"
+            /** @constant */
+            message: "Database is unavailable."
+          }
+        }
+      }
+    }
+  }
+  getCoursesByCourseIdCurriculumUpgrade: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        courseId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Current learner curriculum upgrade notice. */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json":
+            | {
+                courseId: string
+                /** @constant */
+                status: "not-available"
+              }
+            | {
+                completedCount: number
+                courseId: string
+                fromVersion: {
+                  id: string
+                  title: string
+                  versionNumber: number
+                }
+                message: string
+                migrationId: string
+                /** @constant */
+                status: "available"
+                toVersion: {
+                  id: string
+                  title: string
+                  versionNumber: number
+                  changelog: string
+                }
+                totalLessons: number
+              }
+        }
+      }
+      /** @description Authentication is required. */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            code: "unauthorized"
+            message: string
+          }
+        }
+      }
+      /** @description Course was not found. */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            code: "course-not-found"
+            /** @constant */
+            message: "Course was not found."
+            courseId: string
+          }
+        }
+      }
+      /** @description Content seed is invalid. */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            code: "invalid-content-seed"
+            message: string
+            lessonId?: string
+          }
+        }
+      }
+      /** @description Database is unavailable. */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            code: "database-unavailable"
+            /** @constant */
+            message: "Database is unavailable."
+          }
+        }
+      }
+    }
+  }
+  postCoursesByCourseIdCurriculumUpgrade: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        courseId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Applied current learner curriculum upgrade. */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            completedLessonCount: number
+            completedLessonIds: string[]
+            courseId: string
+            createdAt: string
+            fromVersionId: string
+            id: string
+            migrationId: string
+            preservedLessonIds: string[]
+            skippedLessonIds: string[]
+            /** @constant */
+            status: "completed"
+            toVersionId: string
+            updatedAt: string
+          }
+        }
+      }
+      /** @description Invalid upgrade request. */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            code: "invalid-request"
+            message: string
+          }
+        }
+      }
+      /** @description Authentication is required. */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            code: "unauthorized"
+            message: string
+          }
+        }
+      }
+      /** @description Course or curriculum upgrade was not found. */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json":
+            | {
+                /** @constant */
+                code: "course-not-found"
+                /** @constant */
+                message: "Course was not found."
+                courseId: string
+              }
+            | {
+                /** @constant */
+                code: "not-found"
+                message: string
+              }
+        }
+      }
+      /** @description Content seed is invalid. */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            code: "invalid-content-seed"
+            message: string
+            lessonId?: string
+          }
+        }
+      }
+      /** @description Database is unavailable. */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            code: "database-unavailable"
+            /** @constant */
+            message: "Database is unavailable."
+          }
+        }
+      }
+    }
+  }
+  postCoursesByCourseIdCurriculumUpgradeDismiss: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        courseId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description Dismissed current learner curriculum upgrade notice. */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            courseId: string
+            dismissedAt: string
+            fromVersionId: string
+            /** @constant */
+            status: "dismissed"
+            toVersionId: string
+          }
+        }
+      }
+      /** @description Authentication is required. */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            code: "unauthorized"
+            message: string
+          }
+        }
+      }
+      /** @description Course or curriculum upgrade was not found. */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json":
+            | {
+                /** @constant */
+                code: "course-not-found"
+                /** @constant */
+                message: "Course was not found."
+                courseId: string
+              }
+            | {
+                /** @constant */
+                code: "not-found"
+                message: string
+              }
+        }
+      }
+      /** @description Content seed is invalid. */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            /** @constant */
+            code: "invalid-content-seed"
+            message: string
+            lessonId?: string
           }
         }
       }

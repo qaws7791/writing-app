@@ -183,12 +183,14 @@ git commit -m "학습자 커리큘럼 업그레이드 API 추가"
 - Modify: `apps/web/src/lib/api/http/create-http-writing-app-api.test.ts`
 - Modify: `apps/web/src/lib/api/fake/create-fake-writing-app-api.ts`
 - Modify: `apps/web/src/lib/api/fake/create-fake-writing-app-api.test.ts`
+- Modify: `apps/web/src/lib/api/generated/writing-app-api.d.ts`
+- Modify: `apps/docs/openapi/writing-app-api.json`
 
-- [ ] **Step 1: 실패 테스트 작성**
+- [x] **Step 1: 실패 테스트 작성**
 
 HTTP client와 fake API 테스트에 curriculum upgrade 조회, apply, dismiss 동작을 추가한다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/web test -- create-http-writing-app-api.test.ts create-fake-writing-app-api.test.ts
@@ -196,11 +198,11 @@ bun --filter @workspace/web test -- create-http-writing-app-api.test.ts create-f
 
 기대 결과: API interface 메서드가 없어 실패한다.
 
-- [ ] **Step 3: client 구현**
+- [x] **Step 3: client 구현**
 
 `WritingAppApi`에 세 메서드를 추가하고 HTTP/fake 구현을 맞춘다.
 
-- [ ] **Step 4: 통과 확인과 커밋**
+- [x] **Step 4: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/web test -- create-http-writing-app-api.test.ts create-fake-writing-app-api.test.ts
@@ -214,16 +216,15 @@ git commit -m "웹 커리큘럼 업그레이드 API 클라이언트 추가"
 **Files:**
 
 - Create: `apps/web/src/features/courses/course-upgrade-notice.tsx`
-- Modify: `apps/web/src/features/courses/course-detail-data.ts`
 - Modify: `apps/web/src/features/courses/course-detail-page.tsx`
 - Modify: `apps/web/src/features/courses/course-detail-page.test.tsx`
 - Modify: `apps/web/src/app/app/courses/[id]/page.tsx`
 
-- [ ] **Step 1: 실패 테스트 작성**
+- [x] **Step 1: 실패 테스트 작성**
 
 `course-detail-page.test.tsx`에 available notice가 보이고 not-available이면 숨겨지는 테스트를 추가한다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/web test -- course-detail-page.test.tsx
@@ -231,11 +232,11 @@ bun --filter @workspace/web test -- course-detail-page.test.tsx
 
 기대 결과: 공지 props/component가 없어 실패한다.
 
-- [ ] **Step 3: UI 구현**
+- [x] **Step 3: UI 구현**
 
 서버 page에서 course detail과 upgrade status를 병렬 조회하고, available일 때만 `CourseUpgradeNotice`를 렌더링한다. 업그레이드/나중에 결정 버튼은 client component에서 API 호출 후 `router.refresh()`를 실행한다.
 
-- [ ] **Step 4: 통과 확인과 커밋**
+- [x] **Step 4: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/web test -- course-detail-page.test.tsx

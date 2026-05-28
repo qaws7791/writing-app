@@ -49,6 +49,15 @@ function createLazyFakeWritingAppApi(): WritingAppApi {
     async getCourseProgress(courseId) {
       return (await getApi()).getCourseProgress(courseId)
     },
+    async getCurriculumUpgrade(courseId) {
+      return (await getApi()).getCurriculumUpgrade(courseId)
+    },
+    async applyCurriculumUpgrade(courseId) {
+      return (await getApi()).applyCurriculumUpgrade(courseId)
+    },
+    async dismissCurriculumUpgrade(courseId) {
+      return (await getApi()).dismissCurriculumUpgrade(courseId)
+    },
     async getLessonProgress(lessonId) {
       return (await getApi()).getLessonProgress(lessonId)
     },
