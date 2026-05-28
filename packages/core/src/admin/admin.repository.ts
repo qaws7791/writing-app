@@ -1,5 +1,6 @@
 import type {
   AdminApplyCurriculumMigrationRequestDto,
+  AdminCourseDetailDto,
   AdminCourseListDto,
   AdminCourseListInputDto,
   AdminCourseTreeDto,
@@ -9,9 +10,14 @@ import type {
   AdminCurriculumVersionDetailDto,
   AdminCurriculumVersionListDto,
   AdminCurriculumVersionSummaryDto,
+  AdminEditorCurriculumVersionDetailDto,
+  AdminEditorLessonDetailDto,
+  AdminRestoreCurriculumDraftRequestDto,
+  AdminSaveCurriculumVersionContentRequestDto,
   AdminUserListDto,
 } from "@/admin/admin.dto"
 import type {
+  AdminConflictErrorDto,
   AdminInvalidRequestErrorDto,
   AdminNotFoundErrorDto,
 } from "@/admin/admin.errors"
@@ -72,7 +78,40 @@ export type AdminApplyCurriculumMigrationRepositoryResult =
       error: AdminNotFoundErrorDto
     }
 
+export type AdminSaveCurriculumVersionContentRepositoryResult =
+  | {
+      status: "saved"
+      version: AdminEditorCurriculumVersionDetailDto
+    }
+  | {
+      status: "conflict"
+      error: AdminConflictErrorDto
+    }
+  | {
+      status: "invalid-request"
+      error: AdminInvalidRequestErrorDto
+    }
+  | {
+      status: "not-found"
+      error: AdminNotFoundErrorDto
+    }
+
+export type AdminDiscardCurriculumVersionRepositoryResult =
+  | {
+      status: "discarded"
+      versionId: string
+    }
+  | {
+      status: "invalid-request"
+      error: AdminInvalidRequestErrorDto
+    }
+  | {
+      status: "not-found"
+      error: AdminNotFoundErrorDto
+    }
+
 export interface AdminRepository {
+  getCourseDetail(courseId: string): Promise<AdminCourseDetailDto | undefined>
   listCourses(input: AdminCourseListInputDto): Promise<AdminCourseListDto>
   listCourseTree(): Promise<AdminCourseTreeDto>
   listCurriculumVersions(
@@ -84,6 +123,25 @@ export interface AdminRepository {
   getCurriculumVersionDetail(
     versionId: string
   ): Promise<AdminCurriculumVersionDetailDto | undefined>
+  getCourseCurriculumVersionDetail(
+    courseId: string,
+    versionId: string
+  ): Promise<AdminEditorCurriculumVersionDetailDto | undefined>
+  getCourseLessonDetail(
+    courseId: string,
+    lessonId: string
+  ): Promise<AdminEditorLessonDetailDto | undefined>
+  restoreCurriculumDraft(
+    courseId: string,
+    input: AdminRestoreCurriculumDraftRequestDto
+  ): Promise<AdminCreateCurriculumDraftRepositoryResult>
+  saveCurriculumVersionContent(
+    input: AdminSaveCurriculumVersionContentRequestDto
+  ): Promise<AdminSaveCurriculumVersionContentRepositoryResult>
+  discardCurriculumVersion(
+    courseId: string,
+    versionId: string
+  ): Promise<AdminDiscardCurriculumVersionRepositoryResult>
   publishCurriculumVersion(
     versionId: string
   ): Promise<AdminPublishCurriculumVersionRepositoryResult>

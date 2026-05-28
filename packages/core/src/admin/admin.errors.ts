@@ -15,6 +15,11 @@ export const adminNotFoundErrorDtoSchema = z.object({
   message: z.string().min(1),
 })
 
+export const adminConflictErrorDtoSchema = z.object({
+  code: z.literal("conflict"),
+  message: z.string().min(1),
+})
+
 export type AdminDatabaseUnavailableErrorDto = z.infer<
   typeof adminDatabaseUnavailableErrorDtoSchema
 >
@@ -22,8 +27,10 @@ export type AdminInvalidRequestErrorDto = z.infer<
   typeof adminInvalidRequestErrorDtoSchema
 >
 export type AdminNotFoundErrorDto = z.infer<typeof adminNotFoundErrorDtoSchema>
+export type AdminConflictErrorDto = z.infer<typeof adminConflictErrorDtoSchema>
 
 export type AdminErrorDto =
   | AdminDatabaseUnavailableErrorDto
   | AdminInvalidRequestErrorDto
   | AdminNotFoundErrorDto
+  | AdminConflictErrorDto
