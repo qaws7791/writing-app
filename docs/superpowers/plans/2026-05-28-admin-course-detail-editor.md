@@ -1411,7 +1411,7 @@ git commit -m "코스 에디터 상태 로직 추가"
 - Create: `apps/admin/src/features/courses/course-editor/course-summary-panel.tsx`
 - Modify: `apps/admin/src/features/courses/admin-course-detail-page.test.tsx`
 
-- [ ] **Step 1: Write failing page test**
+- [x] **Step 1: Write failing page test**
 
 Replace the placeholder expectation in `admin-course-detail-page.test.tsx` with editor shell expectations.
 
@@ -1455,17 +1455,19 @@ it("renders course studio shell", () => {
 })
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `bun --filter @workspace/admin test -- admin-course-detail-page.test.tsx`
 
 Expected: FAIL because props and shell do not exist.
 
-- [ ] **Step 3: Update route props**
+Actual: 기존 placeholder가 렌더링되어 `Course Studio`를 찾지 못하는 실패를 확인했다.
+
+- [x] **Step 3: Update route props**
 
 In `apps/admin/src/app/(admin)/courses/[id]/page.tsx`, read `searchParams` and pass parsed URL state. Fetch course, versions, and selected version through `getServerAdminApi`. Redirect to login on API error.
 
-- [ ] **Step 4: Implement shell components**
+- [x] **Step 4: Implement shell components**
 
 Create `course-editor-shell.tsx` with the two-column layout. Use `@workspace/ui` primitives and lucide icons already available in the project. Keep cards to individual repeated items and avoid nested cards.
 
@@ -1478,13 +1480,15 @@ Create `course-editor-header.tsx` with:
 
 Create `course-summary-panel.tsx` with compact thumbnail, title, description, and counts.
 
-- [ ] **Step 5: Run UI test**
+- [x] **Step 5: Run UI test**
 
 Run: `bun --filter @workspace/admin test -- admin-course-detail-page.test.tsx`
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+Actual: focused page test, `bun --filter @workspace/admin test`, and `bun --filter @workspace/admin typecheck` passed.
+
+- [x] **Step 6: Commit**
 
 ```bash
 git add 'apps/admin/src/app/(admin)/courses/[id]/page.tsx' apps/admin/src/features/courses/admin-course-detail-page.tsx apps/admin/src/features/courses/admin-course-detail-page.test.tsx apps/admin/src/features/courses/course-editor/course-editor-shell.tsx apps/admin/src/features/courses/course-editor/course-editor-header.tsx apps/admin/src/features/courses/course-editor/course-summary-panel.tsx

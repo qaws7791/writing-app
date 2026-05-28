@@ -1,36 +1,42 @@
 import * as React from "react"
 
-import {
-  Empty,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from "@workspace/ui/components/ui/empty"
+import type {
+  AdminCourseDetailDto,
+  AdminEditorCurriculumVersionDetailDto,
+} from "@workspace/core/admin"
 
 import { AdminHeader } from "@/components/admin-header"
+import { CourseEditorHeader } from "@/features/courses/course-editor/course-editor-header"
+import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
+import type { CourseEditorUrlState } from "@/features/courses/course-editor/editor-url-state"
 
 type AdminCourseDetailPageProps = {
-  courseId: string
+  course: AdminCourseDetailDto
+  selectedVersionId: string
+  urlState: CourseEditorUrlState
+  version: AdminEditorCurriculumVersionDetailDto
 }
 
 export function AdminCourseDetailPage({
-  courseId,
+  course,
+  selectedVersionId,
+  urlState,
+  version,
 }: AdminCourseDetailPageProps) {
   return (
     <>
       <AdminHeader
-        description="챕터와 레슨 데이터는 이후 이 화면에서 확인합니다."
-        title="코스 상세"
+        actions={<CourseEditorHeader version={version} />}
+        description={`${course.title} 커리큘럼을 draft 기준으로 편집합니다.`}
+        title="Course Studio"
       />
-      <main className="flex flex-col gap-6 p-6">
-        <Empty aria-label="코스 상세 준비 중" className="rounded-lg border">
-          <EmptyHeader>
-            <EmptyTitle>상세 화면 준비 중</EmptyTitle>
-            <EmptyDescription>
-              선택한 코스 ID: <span className="font-medium">{courseId}</span>
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
+      <main className="min-h-0 flex-1">
+        <CourseEditorShell
+          course={course}
+          selectedVersionId={selectedVersionId}
+          urlState={urlState}
+          version={version}
+        />
       </main>
     </>
   )

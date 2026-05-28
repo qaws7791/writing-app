@@ -30,6 +30,12 @@
 - 변경 유형은 additive, structural, major revision으로 분류해 저장/버전 UI가 변경 성격을 표시할 수 있게 했다.
 - working copy UI에서 사용할 dirty 상태와 불변 순서 이동 helper를 추가했다.
 
+## 2026-05-28 어드민 코스 스튜디오 셸 구현 완료
+
+- 코스 상세 route가 search params를 editor URL 상태로 파싱하고, 코스/버전 데이터를 Admin API에서 조회하도록 연결했다.
+- 상세 페이지 placeholder를 제거하고 `Course Studio` 헤더, 버전/저장 action, 2컬럼 editor shell을 렌더링하도록 바꿨다.
+- 왼쪽 정보 영역에는 썸네일, 제목, 설명, 챕터/레슨/스텝 수를 표시하는 코스 요약 패널을 추가했다.
+
 ## 2026-05-28 어드민 코스 상세 에디터 구현 계획 시작
 
 - 설계 문서 `docs/superpowers/specs/2026-05-28-admin-course-detail-editor-design.md` 승인 후 구현 계획을 작성한다.
