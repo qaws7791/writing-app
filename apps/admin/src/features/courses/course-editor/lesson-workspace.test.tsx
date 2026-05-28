@@ -44,6 +44,7 @@ describe("LessonWorkspace", () => {
             points: 0,
             required: true,
             status: "active",
+            content: {},
           },
           {
             id: "step-2",
@@ -54,12 +55,13 @@ describe("LessonWorkspace", () => {
             points: 10,
             required: true,
             status: "active",
+            content: {},
           },
         ]}
       />
     )
 
-    expect(screen.getByText("목적어 붙이기")).toBeTruthy()
+    expect(screen.getByDisplayValue("목적어 붙이기")).toBeTruthy()
     expect(screen.getByText("LEARNING SEQUENCE")).toBeTruthy()
     expect(screen.getByText("도입")).toBeTruthy()
     expect(screen.getByText("짧은 연습")).toBeTruthy()

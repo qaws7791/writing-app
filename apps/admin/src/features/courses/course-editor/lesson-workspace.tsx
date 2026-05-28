@@ -14,17 +14,27 @@ type LessonSummary =
 type LessonWorkspaceProps = {
   changeKind: EditorChangeKind
   lesson: LessonSummary | null
+  onOpenPreview?: () => void
+  onOpenSettings?: () => void
   selectedStepId: string | null
   steps: AdminEditorCurriculumVersionDetailDto["steps"]
   onSelectStep?: (stepId: string) => void
+  onUpdateLessonField?: (
+    lessonId: string,
+    field: "description" | "title",
+    value: string
+  ) => void
 }
 
 export function LessonWorkspace({
   changeKind,
   lesson,
+  onOpenPreview,
+  onOpenSettings,
   selectedStepId,
   steps,
   onSelectStep,
+  onUpdateLessonField,
 }: LessonWorkspaceProps) {
   if (!lesson) {
     return (
@@ -44,19 +54,42 @@ export function LessonWorkspace({
             <p className="text-xs font-medium text-muted-foreground">
               {lesson.status} · {changeKind}
             </p>
-            <h2 id="lesson-workspace" className="text-3xl font-semibold">
-              {lesson.title}
-            </h2>
-            <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-              {lesson.description}
-            </p>
+            <label className="grid gap-2 text-sm">
+              레슨 제목
+              <input
+                id="lesson-workspace"
+                className="rounded-md border bg-background px-3 py-2 text-2xl font-semibold"
+                value={lesson.title}
+                onChange={(event) =>
+                  onUpdateLessonField?.(
+                    lesson.lessonId,
+                    "title",
+                    event.currentTarget.value
+                  )
+                }
+              />
+            </label>
+            <label className="grid max-w-2xl gap-2 text-sm">
+              레슨 설명
+              <textarea
+                className="min-h-20 rounded-md border bg-background px-3 py-2 leading-6"
+                value={lesson.description}
+                onChange={(event) =>
+                  onUpdateLessonField?.(
+                    lesson.lessonId,
+                    "description",
+                    event.currentTarget.value
+                  )
+                }
+              />
+            </label>
           </div>
           <div className="flex items-center gap-2">
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" onClick={onOpenPreview}>
               <Eye aria-hidden="true" />
               학습 화면 미리보기
             </Button>
-            <Button type="button" variant="outline">
+            <Button type="button" variant="outline" onClick={onOpenSettings}>
               <Settings aria-hidden="true" />
               레슨 설정
             </Button>

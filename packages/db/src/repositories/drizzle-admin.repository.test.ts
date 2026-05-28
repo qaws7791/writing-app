@@ -895,6 +895,7 @@ describe("createDrizzleAdminRepository", () => {
       required: expect.any(Boolean),
       status: "active",
     })
+    expect(version?.steps[0]?.content).toEqual(expect.any(Object))
   })
 
   it("returns lesson detail with parsed step content", async () => {

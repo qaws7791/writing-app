@@ -194,6 +194,9 @@ const adminService: AdminService = {
             points: 0,
             required: true,
             status: "active",
+            content: {
+              body: "문장의 중심 성분을 찾습니다.",
+            },
           },
         ],
       },
@@ -593,7 +596,15 @@ describe("admin api app", () => {
           lessons: [{ lessonId: "sentence-structure-01" }],
         },
       ],
-      steps: [{ id: "sentence-structure-step-1", type: "INTRO" }],
+      steps: [
+        {
+          id: "sentence-structure-step-1",
+          type: "INTRO",
+          content: {
+            body: "문장의 중심 성분을 찾습니다.",
+          },
+        },
+      ],
     })
   })
 

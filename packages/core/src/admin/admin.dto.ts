@@ -202,6 +202,11 @@ export const adminEditorStepSummaryDtoSchema = z.object({
   status: adminCurriculumNodeStatusSchema,
 })
 
+export const adminEditorStepDetailDtoSchema =
+  adminEditorStepSummaryDtoSchema.extend({
+    content: z.unknown(),
+  })
+
 export const adminEditorLessonDetailDtoSchema = z.object({
   id: z.string().min(1),
   courseId: z.string().min(1),
@@ -209,17 +214,13 @@ export const adminEditorLessonDetailDtoSchema = z.object({
   categoryId: z.string().min(1),
   unitNumber: z.number().int().positive(),
   nextLessonId: z.string().min(1).nullable(),
-  steps: z.array(
-    adminEditorStepSummaryDtoSchema.extend({
-      content: z.unknown(),
-    })
-  ),
+  steps: z.array(adminEditorStepDetailDtoSchema),
 })
 
 export const adminEditorCurriculumVersionDetailDtoSchema =
   adminCurriculumVersionDetailDtoSchema.extend({
     revision: z.number().int().positive(),
-    steps: z.array(adminEditorStepSummaryDtoSchema),
+    steps: z.array(adminEditorStepDetailDtoSchema),
   })
 
 export const adminRestoreCurriculumDraftRequestDtoSchema = z.object({
@@ -245,11 +246,7 @@ export const adminSaveCurriculumVersionContentRequestDtoSchema = z.object({
       chapterId: z.string().min(1),
     })
   ),
-  steps: z.array(
-    adminEditorStepSummaryDtoSchema.extend({
-      content: z.unknown(),
-    })
-  ),
+  steps: z.array(adminEditorStepDetailDtoSchema),
 })
 
 export const adminUserListItemDtoSchema = z.object({
@@ -281,6 +278,9 @@ export type AdminCreateCurriculumMigrationRequestDto = z.infer<
 export type AdminEditorStepType = z.infer<typeof adminEditorStepTypeSchema>
 export type AdminEditorStepSummaryDto = z.infer<
   typeof adminEditorStepSummaryDtoSchema
+>
+export type AdminEditorStepDetailDto = z.infer<
+  typeof adminEditorStepDetailDtoSchema
 >
 export type AdminEditorLessonDetailDto = z.infer<
   typeof adminEditorLessonDetailDtoSchema

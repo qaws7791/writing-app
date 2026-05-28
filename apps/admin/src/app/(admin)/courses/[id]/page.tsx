@@ -50,6 +50,7 @@ export default async function CourseDetailRoute({
 
   return (
     <AdminCourseDetailPage
+      adminApiBaseUrl={process.env["ADMIN_API_BASE_URL"]}
       course={course.value}
       selectedVersionId={selectedVersionId}
       urlState={{
@@ -57,6 +58,7 @@ export default async function CourseDetailRoute({
         versionId: selectedVersionId,
       }}
       version={version.value}
+      versions={versions.value.versions}
     />
   )
 }

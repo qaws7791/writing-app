@@ -4,6 +4,7 @@ import type { AdminEditorLessonDetailDto } from "@workspace/core/admin"
 
 export type StepFormProps = {
   lessonSteps: AdminEditorLessonDetailDto["steps"]
+  onUpdateContent?: (key: string, value: string) => void
   step: AdminEditorLessonDetailDto["steps"][number]
 }
 
@@ -14,7 +15,7 @@ type StepFormField = {
 }
 
 export function createStepForm(type: string, fields: StepFormField[]) {
-  return function StepForm({ step }: StepFormProps) {
+  return function StepForm({ onUpdateContent, step }: StepFormProps) {
     return (
       <section aria-label={`${type} 편집`} className="space-y-4">
         <div className="space-y-1">
@@ -30,11 +31,17 @@ export function createStepForm(type: string, fields: StepFormField[]) {
                   className="h-9 rounded-md border bg-background px-3"
                   defaultValue={String(getNumberField(step.content, field.key))}
                   inputMode="numeric"
+                  onChange={(event) =>
+                    onUpdateContent?.(field.key, event.currentTarget.value)
+                  }
                 />
               ) : (
                 <textarea
                   className="min-h-20 rounded-md border bg-background px-3 py-2"
                   defaultValue={getFieldValue(step.content, field)}
+                  onChange={(event) =>
+                    onUpdateContent?.(field.key, event.currentTarget.value)
+                  }
                 />
               )}
             </label>

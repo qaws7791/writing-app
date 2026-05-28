@@ -6,6 +6,7 @@ import { History, Save } from "lucide-react"
 import { Button } from "@workspace/ui/components/ui/button"
 
 type CourseEditorHeaderProps = {
+  canSave: boolean
   dirtyCount: number
   isSaving: boolean
   onOpenVersionMenu: () => void
@@ -13,6 +14,7 @@ type CourseEditorHeaderProps = {
 }
 
 export function CourseEditorHeader({
+  canSave,
   dirtyCount,
   isSaving,
   onOpenVersionMenu,
@@ -29,7 +31,7 @@ export function CourseEditorHeader({
       </Button>
       <Button
         type="button"
-        disabled={dirtyCount === 0 || isSaving}
+        disabled={!canSave || dirtyCount === 0 || isSaving}
         onClick={onSave}
       >
         <Save aria-hidden="true" />

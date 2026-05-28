@@ -31,6 +31,7 @@ import { WordSelectStepForm } from "@/features/courses/course-editor/step-forms/
 
 type StepWorkspaceProps = {
   lessonSteps: AdminEditorLessonDetailDto["steps"]
+  onUpdateStepContent?: (stepId: string, key: string, value: string) => void
   step: AdminEditorLessonDetailDto["steps"][number]
 }
 
@@ -57,7 +58,11 @@ const stepFormByType = {
   COMPLETE: CompleteStepForm,
 } satisfies Record<AdminEditorStepType, React.ComponentType<StepFormProps>>
 
-export function StepWorkspace({ lessonSteps, step }: StepWorkspaceProps) {
+export function StepWorkspace({
+  lessonSteps,
+  onUpdateStepContent,
+  step,
+}: StepWorkspaceProps) {
   const StepForm = stepFormByType[step.type]
 
   return (
@@ -71,7 +76,13 @@ export function StepWorkspace({ lessonSteps, step }: StepWorkspaceProps) {
           {step.points} XP · {step.required ? "필수 스텝" : "선택 스텝"}
         </p>
       </header>
-      <StepForm lessonSteps={lessonSteps} step={step} />
+      <StepForm
+        lessonSteps={lessonSteps}
+        onUpdateContent={(key, value) =>
+          onUpdateStepContent?.(step.id, key, value)
+        }
+        step={step}
+      />
     </div>
   )
 }

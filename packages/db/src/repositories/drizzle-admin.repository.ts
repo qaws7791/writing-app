@@ -579,7 +579,7 @@ export function createDrizzleAdminRepository(
                 .filter((lesson) => lesson.chapterId === chapter.id)
                 .map(({ chapterId: _chapterId, ...lesson }) => lesson),
             })),
-            steps: input.steps.map(({ content: _content, ...step }) => step),
+            steps: input.steps,
           },
         }
       })
@@ -995,7 +995,7 @@ function mapEditorCurriculumVersionDetail(
   return {
     ...mapCurriculumVersionDetail(version, chapters, lessons),
     revision: version.revision,
-    steps: steps.map(mapEditorStepSummary),
+    steps: steps.map(mapEditorStepDetail),
   }
 }
 
@@ -1037,10 +1037,14 @@ function mapEditorLessonDetail(
     categoryId: lesson.categoryId,
     unitNumber: lesson.unitNumber,
     nextLessonId: lesson.nextLessonId,
-    steps: steps.map((step) => ({
-      ...mapEditorStepSummary(step),
-      content: JSON.parse(step.contentJson) as unknown,
-    })),
+    steps: steps.map(mapEditorStepDetail),
+  }
+}
+
+function mapEditorStepDetail(step: CurriculumVersionStepRow) {
+  return {
+    ...mapEditorStepSummary(step),
+    content: JSON.parse(step.contentJson) as unknown,
   }
 }
 
