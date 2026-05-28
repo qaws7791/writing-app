@@ -1,5 +1,9 @@
 import type { CourseId, CurriculumVersionId, LessonId } from "@/content"
 import type { UserId, LessonProgressStatus } from "@/learning/learning.ids"
+import type {
+  LearningInvalidRequestErrorDto,
+  LearningNotFoundErrorDto,
+} from "@/learning/learning.errors"
 
 export interface CourseProgressRecord {
   completedCount: number
@@ -63,11 +67,88 @@ export interface CompleteLessonRecord {
   wasAlreadyCompleted: boolean
 }
 
+export interface CurriculumUpgradeVersionRecord {
+  id: CurriculumVersionId
+  title: string
+  versionNumber: number
+}
+
+export interface CurriculumUpgradeTargetVersionRecord extends CurriculumUpgradeVersionRecord {
+  changelog: string
+}
+
+export interface CurriculumUpgradeNoticeRecord {
+  completedCount: number
+  courseId: CourseId
+  fromVersion: CurriculumUpgradeVersionRecord
+  migrationId: string
+  toVersion: CurriculumUpgradeTargetVersionRecord
+  totalLessons: number
+}
+
+export interface CurriculumUpgradeApplicationRecord {
+  completedLessonCount: number
+  completedLessonIds: LessonId[]
+  courseId: CourseId
+  createdAt: Date
+  fromVersionId: CurriculumVersionId
+  id: string
+  migrationId: string
+  preservedLessonIds: LessonId[]
+  skippedLessonIds: LessonId[]
+  status: "completed"
+  toVersionId: CurriculumVersionId
+  updatedAt: Date
+}
+
+export interface CurriculumUpgradeDismissalRecord {
+  courseId: CourseId
+  dismissedAt: Date
+  fromVersionId: CurriculumVersionId
+  toVersionId: CurriculumVersionId
+}
+
+export type ApplyCurriculumUpgradeResult =
+  | {
+      status: "applied"
+      application: CurriculumUpgradeApplicationRecord
+    }
+  | {
+      status: "invalid-request"
+      error: LearningInvalidRequestErrorDto
+    }
+  | {
+      status: "not-found"
+      error: LearningNotFoundErrorDto
+    }
+
+export type DismissCurriculumUpgradeResult =
+  | {
+      status: "dismissed"
+      dismissal: CurriculumUpgradeDismissalRecord
+    }
+  | {
+      status: "not-found"
+      error: LearningNotFoundErrorDto
+    }
+
 export interface LearningRepository {
   findCourseProgress(
     userId: UserId,
     courseId: CourseId
   ): Promise<CourseProgressRecord | undefined>
+  findCurriculumUpgrade(
+    userId: UserId,
+    courseId: CourseId
+  ): Promise<CurriculumUpgradeNoticeRecord | undefined>
+  applyCurriculumUpgrade(
+    userId: UserId,
+    courseId: CourseId
+  ): Promise<ApplyCurriculumUpgradeResult>
+  dismissCurriculumUpgrade(
+    userId: UserId,
+    courseId: CourseId
+  ): Promise<DismissCurriculumUpgradeResult>
   upsertCourseProgress(input: UpsertCourseProgressInput): Promise<void>
   findLessonProgress(
     userId: UserId,

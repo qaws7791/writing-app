@@ -140,13 +140,28 @@ const contentService: ContentService = {
 
 function createRepository(): LearningRepository {
   return {
+    applyCurriculumUpgrade: vi.fn(async () => ({
+      error: {
+        code: "not-found" as const,
+        message: "Curriculum upgrade was not found.",
+      },
+      status: "not-found" as const,
+    })),
     completeLesson: vi.fn(async () => ({
       completedAt: new Date("2026-05-26T00:00:00.000Z"),
       completedCount: 1,
       wasAlreadyCompleted: false,
     })),
     curriculumVersionIncludesLesson: vi.fn(async () => true),
+    dismissCurriculumUpgrade: vi.fn(async () => ({
+      error: {
+        code: "not-found" as const,
+        message: "Curriculum upgrade was not found.",
+      },
+      status: "not-found" as const,
+    })),
     findCourseProgress: vi.fn(async () => undefined),
+    findCurriculumUpgrade: vi.fn(async () => undefined),
     findLatestPublishedCurriculumVersionId: vi.fn(async () =>
       curriculumVersionId("sentence-structure-v1")
     ),
@@ -542,6 +557,158 @@ describe("createLearningService", () => {
             totalLessons: 2,
           },
         ],
+      },
+    })
+  })
+
+  it("returns an available curriculum upgrade notice", async () => {
+    const repository = {
+      ...createRepository(),
+      findCurriculumUpgrade: vi.fn(async () => ({
+        completedCount: 1,
+        courseId: courseId("sentence-structure"),
+        fromVersion: {
+          id: curriculumVersionId("sentence-structure-v1"),
+          title: "문장 구조의 기본",
+          versionNumber: 1,
+        },
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        toVersion: {
+          changelog: "새 예제와 복습 경로를 추가했습니다.",
+          id: curriculumVersionId("sentence-structure-v2"),
+          title: "문장 구조의 기본 v2",
+          versionNumber: 2,
+        },
+        totalLessons: 2,
+      })),
+    }
+    const service = createLearningService({ contentService, repository })
+
+    const result = await service.getCurriculumUpgrade(
+      userId("user-1"),
+      courseId("sentence-structure")
+    )
+
+    expect(result).toEqual({
+      status: "ok",
+      value: {
+        completedCount: 1,
+        courseId: "sentence-structure",
+        fromVersion: {
+          id: "sentence-structure-v1",
+          title: "문장 구조의 기본",
+          versionNumber: 1,
+        },
+        message: "새 커리큘럼에는 새 예제와 복습 경로를 추가했습니다.",
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        status: "available",
+        toVersion: {
+          changelog: "새 예제와 복습 경로를 추가했습니다.",
+          id: "sentence-structure-v2",
+          title: "문장 구조의 기본 v2",
+          versionNumber: 2,
+        },
+        totalLessons: 2,
+      },
+    })
+  })
+
+  it("returns not-available when no curriculum upgrade can be applied", async () => {
+    const repository = {
+      ...createRepository(),
+      findCurriculumUpgrade: vi.fn(async () => undefined),
+    }
+    const service = createLearningService({ contentService, repository })
+
+    const result = await service.getCurriculumUpgrade(
+      userId("user-1"),
+      courseId("sentence-structure")
+    )
+
+    expect(result).toEqual({
+      status: "ok",
+      value: {
+        courseId: "sentence-structure",
+        status: "not-available",
+      },
+    })
+  })
+
+  it("applies an available curriculum upgrade", async () => {
+    const repository = {
+      ...createRepository(),
+      applyCurriculumUpgrade: vi.fn(async () => ({
+        application: {
+          completedLessonCount: 1,
+          completedLessonIds: [lessonId("sentence-structure-01")],
+          courseId: courseId("sentence-structure"),
+          createdAt: new Date("2026-05-28T00:00:00.000Z"),
+          fromVersionId: curriculumVersionId("sentence-structure-v1"),
+          id: "sentence-structure-v1-to-sentence-structure-v2-user-1",
+          migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+          preservedLessonIds: [],
+          skippedLessonIds: [lessonId("sentence-structure-02")],
+          status: "completed" as const,
+          toVersionId: curriculumVersionId("sentence-structure-v2"),
+          updatedAt: new Date("2026-05-28T00:00:00.000Z"),
+        },
+        status: "applied" as const,
+      })),
+    }
+    const service = createLearningService({ contentService, repository })
+
+    const result = await service.applyCurriculumUpgrade(
+      userId("user-1"),
+      courseId("sentence-structure")
+    )
+
+    expect(result).toEqual({
+      status: "ok",
+      value: {
+        completedLessonCount: 1,
+        completedLessonIds: ["sentence-structure-01"],
+        courseId: "sentence-structure",
+        createdAt: "2026-05-28T00:00:00.000Z",
+        fromVersionId: "sentence-structure-v1",
+        id: "sentence-structure-v1-to-sentence-structure-v2-user-1",
+        migrationId: "sentence-structure-v1-to-sentence-structure-v2",
+        preservedLessonIds: [],
+        skippedLessonIds: ["sentence-structure-02"],
+        status: "completed",
+        toVersionId: "sentence-structure-v2",
+        updatedAt: "2026-05-28T00:00:00.000Z",
+      },
+    })
+  })
+
+  it("dismisses an available curriculum upgrade without changing progress", async () => {
+    const repository = {
+      ...createRepository(),
+      dismissCurriculumUpgrade: vi.fn(async () => ({
+        dismissal: {
+          courseId: courseId("sentence-structure"),
+          dismissedAt: new Date("2026-05-28T00:00:00.000Z"),
+          fromVersionId: curriculumVersionId("sentence-structure-v1"),
+          toVersionId: curriculumVersionId("sentence-structure-v2"),
+        },
+        status: "dismissed" as const,
+      })),
+    }
+    const service = createLearningService({ contentService, repository })
+
+    const result = await service.dismissCurriculumUpgrade(
+      userId("user-1"),
+      courseId("sentence-structure")
+    )
+
+    expect(result).toEqual({
+      status: "ok",
+      value: {
+        courseId: "sentence-structure",
+        dismissedAt: "2026-05-28T00:00:00.000Z",
+        fromVersionId: "sentence-structure-v1",
+        status: "dismissed",
+        toVersionId: "sentence-structure-v2",
       },
     })
   })

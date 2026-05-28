@@ -86,9 +86,24 @@ const contentService: ContentService = {
 
 function createLearningRepository(): LearningRepository {
   return {
+    applyCurriculumUpgrade: vi.fn(async () => ({
+      error: {
+        code: "not-found" as const,
+        message: "Curriculum upgrade was not found.",
+      },
+      status: "not-found" as const,
+    })),
     completeLesson: vi.fn(),
     curriculumVersionIncludesLesson: vi.fn(async () => true),
+    dismissCurriculumUpgrade: vi.fn(async () => ({
+      error: {
+        code: "not-found" as const,
+        message: "Curriculum upgrade was not found.",
+      },
+      status: "not-found" as const,
+    })),
     findCourseProgress: vi.fn(),
+    findCurriculumUpgrade: vi.fn(async () => undefined),
     findLatestPublishedCurriculumVersionId: vi.fn(async () =>
       curriculumVersionId("sentence-structure-v1")
     ),

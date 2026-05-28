@@ -75,11 +75,11 @@ git commit -m "커리큘럼 업그레이드 숨김 스키마 추가"
 - Modify: `packages/core/src/learning/learning.service.ts`
 - Modify: `packages/core/src/learning/learning.service.test.ts`
 
-- [ ] **Step 1: 실패 테스트 작성**
+- [x] **Step 1: 실패 테스트 작성**
 
 `learning.service.test.ts`에 `getCurriculumUpgrade`, `applyCurriculumUpgrade`, `dismissCurriculumUpgrade` 동작을 추가한다.
 
-- [ ] **Step 2: 실패 확인**
+- [x] **Step 2: 실패 확인**
 
 ```bash
 bun --filter @workspace/core test -- learning.service.test.ts
@@ -87,11 +87,11 @@ bun --filter @workspace/core test -- learning.service.test.ts
 
 기대 결과: 새 service/repository 메서드와 DTO가 없어 실패한다.
 
-- [ ] **Step 3: DTO와 service 구현**
+- [x] **Step 3: DTO와 service 구현**
 
 `status: "available" | "not-available"` 업그레이드 조회 DTO, application DTO, dismissed DTO, repository record/result 타입, service 메서드를 추가한다.
 
-- [ ] **Step 4: 통과 확인과 커밋**
+- [x] **Step 4: 통과 확인과 커밋**
 
 ```bash
 bun --filter @workspace/core test -- learning.service.test.ts
