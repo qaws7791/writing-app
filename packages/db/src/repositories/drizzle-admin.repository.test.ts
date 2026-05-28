@@ -941,6 +941,133 @@ describe("createDrizzleAdminRepository", () => {
     })
   })
 
+  it("saves draft content snapshot and increments revision", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+    const draft = await repository.createCurriculumDraft("sentence-structure")
+
+    expect(draft.status).toBe("created")
+    if (draft.status !== "created") {
+      throw new Error("Expected draft.")
+    }
+
+    const result = await repository.saveCurriculumVersionContent({
+      courseId: "sentence-structure",
+      versionId: draft.version.id,
+      baseRevision: 1,
+      course: {
+        title: "문장 구조의 기본 수정",
+        description: "수정된 설명",
+        thumbnailPath: "/course-thumbnails/sentence-structure.png",
+        sortOrder: 1,
+      },
+      chapters: [],
+      lessons: [],
+      steps: [],
+    })
+
+    expect(result.status).toBe("saved")
+    if (result.status === "saved") {
+      expect(result.version.revision).toBe(2)
+      expect(result.version.chapters).toEqual([])
+    }
+  })
+
+  it("rejects save when base revision is stale", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+    const draft = await repository.createCurriculumDraft("sentence-structure")
+
+    if (draft.status !== "created") {
+      throw new Error("Expected draft.")
+    }
+
+    const result = await repository.saveCurriculumVersionContent({
+      courseId: "sentence-structure",
+      versionId: draft.version.id,
+      baseRevision: 999,
+      course: {
+        title: "문장 구조의 기본",
+        description: "설명",
+        thumbnailPath: "/course-thumbnails/sentence-structure.png",
+        sortOrder: 1,
+      },
+      chapters: [],
+      lessons: [],
+      steps: [],
+    })
+
+    expect(result).toEqual({
+      status: "conflict",
+      error: {
+        code: "conflict",
+        message: "Curriculum version has changed.",
+      },
+    })
+  })
+
+  it("rejects published curriculum version saves", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+    const result = await repository.saveCurriculumVersionContent({
+      courseId: "sentence-structure",
+      versionId: "sentence-structure-v1",
+      baseRevision: 1,
+      course: {
+        title: "문장 구조의 기본",
+        description: "설명",
+        thumbnailPath: "/course-thumbnails/sentence-structure.png",
+        sortOrder: 1,
+      },
+      chapters: [],
+      lessons: [],
+      steps: [],
+    })
+
+    expect(result).toEqual({
+      status: "invalid-request",
+      error: {
+        code: "invalid-request",
+        message: "Only draft curriculum versions can be saved.",
+      },
+    })
+  })
+
+  it("restores a published version into a new draft", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+
+    const result = await repository.restoreCurriculumDraft(
+      "sentence-structure",
+      {
+        sourceVersionId: "sentence-structure-v1",
+        replaceDraft: false,
+      }
+    )
+
+    expect(result.status).toBe("created")
+  })
+
+  it("discards a draft curriculum version", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+    const draft = await repository.createCurriculumDraft("sentence-structure")
+
+    if (draft.status !== "created") {
+      throw new Error("Expected draft.")
+    }
+
+    await expect(
+      repository.discardCurriculumVersion(
+        "sentence-structure",
+        draft.version.id
+      )
+    ).resolves.toEqual({
+      status: "discarded",
+      versionId: draft.version.id,
+    })
+  })
+
   it("tracks curriculum revision and active lesson step status", async () => {
     const db = await createSeededDatabase()
     const repository = createDrizzleAdminRepository(db)

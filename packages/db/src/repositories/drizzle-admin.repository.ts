@@ -52,6 +52,11 @@ interface DrizzleAdminRepositoryOptions {
   now?: () => Date
 }
 
+type AdminEditorTransaction = Pick<
+  WritingAppDatabase,
+  "delete" | "insert" | "select" | "update"
+>
+
 export function createDrizzleAdminRepository(
   db: WritingAppDatabase,
   options: DrizzleAdminRepositoryOptions = {}
@@ -254,119 +259,76 @@ export function createDrizzleAdminRepository(
           .limit(1)
         const versionNumber =
           (latestVersion?.versionNumber ?? sourceVersion.versionNumber) + 1
-        const draftVersion = {
-          id: `${courseId}-v${versionNumber}`,
+        const draftVersion = await createDraftVersionFromSource(tx, {
           courseId,
-          versionNumber,
-          status: "draft",
-          title: sourceVersion.title,
-          changelog: `Draft from v${sourceVersion.versionNumber}`,
-          publishedAt: null,
           createdAt: now(),
-        } satisfies typeof curriculumVersions.$inferInsert
+          sourceVersion,
+          versionNumber,
+        })
 
-        await tx.insert(curriculumVersions).values(draftVersion)
-
-        const sourceChapters = await tx
+        return {
+          status: "created",
+          version: mapCurriculumVersionSummary(draftVersion),
+        }
+      })
+    },
+    async restoreCurriculumDraft(courseId, input) {
+      return db.transaction(async (tx) => {
+        const [sourceVersion] = await tx
           .select()
-          .from(curriculumVersionChapters)
+          .from(curriculumVersions)
           .where(
-            eq(curriculumVersionChapters.curriculumVersionId, sourceVersion.id)
+            and(
+              eq(curriculumVersions.id, input.sourceVersionId),
+              eq(curriculumVersions.courseId, courseId),
+              eq(curriculumVersions.status, "published")
+            )
           )
-          .orderBy(asc(curriculumVersionChapters.sortOrder))
-        const sourceLessons =
-          sourceChapters.length === 0
-            ? []
-            : await tx
-                .select()
-                .from(curriculumVersionLessons)
-                .where(
-                  inArray(
-                    curriculumVersionLessons.chapterId,
-                    sourceChapters.map((chapter) => chapter.id)
-                  )
-                )
-                .orderBy(asc(curriculumVersionLessons.sortOrder))
-        const sourceSteps =
-          sourceLessons.length === 0
-            ? []
-            : await tx
-                .select()
-                .from(curriculumVersionSteps)
-                .where(
-                  and(
-                    eq(
-                      curriculumVersionSteps.curriculumVersionId,
-                      sourceVersion.id
-                    ),
-                    inArray(
-                      curriculumVersionSteps.lessonId,
-                      sourceLessons.map((lesson) => lesson.lessonId)
-                    )
-                  )
-                )
-                .orderBy(
-                  asc(curriculumVersionSteps.lessonId),
-                  asc(curriculumVersionSteps.sortOrder)
-                )
-        const draftChapterIdBySourceChapterId = new Map<string, string>()
-        const draftChapters = sourceChapters.map((chapter) => {
-          const sourceChapterId = chapter.sourceChapterId ?? chapter.id
-          const id = `${sourceChapterId}-v${versionNumber}`
-          draftChapterIdBySourceChapterId.set(chapter.id, id)
+          .limit(1)
 
+        if (!sourceVersion) {
           return {
-            id,
-            curriculumVersionId: draftVersion.id,
-            sourceChapterId: chapter.sourceChapterId,
-            label: chapter.label,
-            title: chapter.title,
-            sortOrder: chapter.sortOrder,
-            status: chapter.status,
-          } satisfies typeof curriculumVersionChapters.$inferInsert
+            status: "not-found",
+            error: {
+              code: "not-found",
+              message: "Published curriculum version was not found.",
+            },
+          }
+        }
+
+        const [existingDraft] = await tx
+          .select()
+          .from(curriculumVersions)
+          .where(
+            and(
+              eq(curriculumVersions.courseId, courseId),
+              eq(curriculumVersions.status, "draft")
+            )
+          )
+          .limit(1)
+
+        if (existingDraft && !input.replaceDraft) {
+          return invalidRequest("Draft curriculum version already exists.")
+        }
+
+        if (existingDraft) {
+          await deleteDraftVersion(tx, existingDraft.id)
+        }
+
+        const [latestVersion] = await tx
+          .select()
+          .from(curriculumVersions)
+          .where(eq(curriculumVersions.courseId, courseId))
+          .orderBy(desc(curriculumVersions.versionNumber))
+          .limit(1)
+        const versionNumber =
+          (latestVersion?.versionNumber ?? sourceVersion.versionNumber) + 1
+        const draftVersion = await createDraftVersionFromSource(tx, {
+          courseId,
+          createdAt: now(),
+          sourceVersion,
+          versionNumber,
         })
-
-        if (draftChapters.length > 0) {
-          await tx.insert(curriculumVersionChapters).values(draftChapters)
-        }
-
-        const draftLessons = sourceLessons.map((lesson) => ({
-          id: `${lesson.lessonId}-v${versionNumber}`,
-          curriculumVersionId: draftVersion.id,
-          chapterId:
-            draftChapterIdBySourceChapterId.get(lesson.chapterId) ??
-            lesson.chapterId,
-          lessonId: lesson.lessonId,
-          title: lesson.title,
-          description: lesson.description,
-          sortOrder: lesson.sortOrder,
-          status: lesson.status,
-        })) satisfies (typeof curriculumVersionLessons.$inferInsert)[]
-
-        if (draftLessons.length > 0) {
-          await tx.insert(curriculumVersionLessons).values(draftLessons)
-        }
-
-        const draftSteps = sourceSteps.map((step) => {
-          const sourceStepId = step.sourceStepId ?? step.id
-
-          return {
-            id: `${sourceStepId}-v${versionNumber}`,
-            curriculumVersionId: draftVersion.id,
-            lessonId: step.lessonId,
-            sourceStepId,
-            type: step.type,
-            sortOrder: step.sortOrder,
-            points: step.points,
-            required: step.required,
-            status: step.status,
-            contentJson: step.contentJson,
-          } satisfies typeof curriculumVersionSteps.$inferInsert
-        })
-
-        if (draftSteps.length > 0) {
-          await tx.insert(curriculumVersionSteps).values(draftSteps)
-        }
 
         return {
           status: "created",
@@ -505,6 +467,159 @@ export function createDrizzleAdminRepository(
         .orderBy(asc(curriculumVersionSteps.sortOrder))
 
       return mapEditorLessonDetail(lesson, stepRows)
+    },
+    async saveCurriculumVersionContent(input) {
+      return db.transaction(async (tx) => {
+        const [version] = await tx
+          .select()
+          .from(curriculumVersions)
+          .where(
+            and(
+              eq(curriculumVersions.id, input.versionId),
+              eq(curriculumVersions.courseId, input.courseId)
+            )
+          )
+          .limit(1)
+
+        if (!version) {
+          return {
+            status: "not-found",
+            error: {
+              code: "not-found",
+              message: "Curriculum version was not found.",
+            },
+          }
+        }
+
+        if (version.status !== "draft") {
+          return invalidRequest("Only draft curriculum versions can be saved.")
+        }
+
+        if (version.revision !== input.baseRevision) {
+          return {
+            status: "conflict",
+            error: {
+              code: "conflict",
+              message: "Curriculum version has changed.",
+            },
+          }
+        }
+
+        await tx
+          .update(courses)
+          .set({
+            title: input.course.title,
+            description: input.course.description,
+            thumbnailPath: input.course.thumbnailPath,
+            sortOrder: input.course.sortOrder,
+          })
+          .where(eq(courses.id, input.courseId))
+        await deleteDraftSnapshot(tx, version.id)
+
+        if (input.chapters.length > 0) {
+          await tx.insert(curriculumVersionChapters).values(
+            input.chapters.map((chapter) => ({
+              id: chapter.id,
+              curriculumVersionId: version.id,
+              sourceChapterId: null,
+              label: chapter.label,
+              title: chapter.title,
+              sortOrder: chapter.sortOrder,
+              status: chapter.status,
+            }))
+          )
+        }
+
+        if (input.lessons.length > 0) {
+          await tx.insert(curriculumVersionLessons).values(
+            input.lessons.map((lesson) => ({
+              id: lesson.id,
+              curriculumVersionId: version.id,
+              chapterId: lesson.chapterId,
+              lessonId: lesson.lessonId,
+              title: lesson.title,
+              description: lesson.description,
+              sortOrder: lesson.sortOrder,
+              status: lesson.status,
+            }))
+          )
+        }
+
+        if (input.steps.length > 0) {
+          await tx.insert(curriculumVersionSteps).values(
+            input.steps.map((step) => ({
+              id: step.id,
+              curriculumVersionId: version.id,
+              lessonId: step.lessonId,
+              sourceStepId: null,
+              type: step.type,
+              sortOrder: step.sortOrder,
+              points: step.points,
+              required: step.required,
+              status: step.status,
+              contentJson: JSON.stringify(step.content),
+            }))
+          )
+        }
+
+        const nextRevision = version.revision + 1
+        await tx
+          .update(curriculumVersions)
+          .set({ revision: nextRevision })
+          .where(eq(curriculumVersions.id, version.id))
+
+        return {
+          status: "saved",
+          version: {
+            ...mapCurriculumVersionSummary(version),
+            revision: nextRevision,
+            chapters: input.chapters.map((chapter) => ({
+              ...chapter,
+              lessons: input.lessons
+                .filter((lesson) => lesson.chapterId === chapter.id)
+                .map(({ chapterId: _chapterId, ...lesson }) => lesson),
+            })),
+            steps: input.steps.map(({ content: _content, ...step }) => step),
+          },
+        }
+      })
+    },
+    async discardCurriculumVersion(courseId, versionId) {
+      return db.transaction(async (tx) => {
+        const [version] = await tx
+          .select()
+          .from(curriculumVersions)
+          .where(
+            and(
+              eq(curriculumVersions.id, versionId),
+              eq(curriculumVersions.courseId, courseId)
+            )
+          )
+          .limit(1)
+
+        if (!version) {
+          return {
+            status: "not-found",
+            error: {
+              code: "not-found",
+              message: "Curriculum version was not found.",
+            },
+          }
+        }
+
+        if (version.status !== "draft") {
+          return invalidRequest(
+            "Only draft curriculum versions can be discarded."
+          )
+        }
+
+        await deleteDraftVersion(tx, version.id)
+
+        return {
+          status: "discarded",
+          versionId: version.id,
+        }
+      })
     },
     async publishCurriculumVersion(versionId) {
       return db.transaction(async (tx) => {
@@ -704,6 +819,156 @@ export function createDrizzleAdminRepository(
       }
     },
   }
+}
+
+async function createDraftVersionFromSource(
+  tx: AdminEditorTransaction,
+  input: {
+    courseId: string
+    createdAt: Date
+    sourceVersion: CurriculumVersionRow
+    versionNumber: number
+  }
+) {
+  const draftVersion = {
+    id: `${input.courseId}-v${input.versionNumber}`,
+    courseId: input.courseId,
+    versionNumber: input.versionNumber,
+    status: "draft",
+    title: input.sourceVersion.title,
+    changelog: `Draft from v${input.sourceVersion.versionNumber}`,
+    publishedAt: null,
+    createdAt: input.createdAt,
+  } satisfies typeof curriculumVersions.$inferInsert
+
+  await tx.insert(curriculumVersions).values(draftVersion)
+
+  const sourceChapters = await tx
+    .select()
+    .from(curriculumVersionChapters)
+    .where(
+      eq(curriculumVersionChapters.curriculumVersionId, input.sourceVersion.id)
+    )
+    .orderBy(asc(curriculumVersionChapters.sortOrder))
+  const sourceLessons =
+    sourceChapters.length === 0
+      ? []
+      : await tx
+          .select()
+          .from(curriculumVersionLessons)
+          .where(
+            inArray(
+              curriculumVersionLessons.chapterId,
+              sourceChapters.map((chapter) => chapter.id)
+            )
+          )
+          .orderBy(asc(curriculumVersionLessons.sortOrder))
+  const sourceSteps =
+    sourceLessons.length === 0
+      ? []
+      : await tx
+          .select()
+          .from(curriculumVersionSteps)
+          .where(
+            and(
+              eq(
+                curriculumVersionSteps.curriculumVersionId,
+                input.sourceVersion.id
+              ),
+              inArray(
+                curriculumVersionSteps.lessonId,
+                sourceLessons.map((lesson) => lesson.lessonId)
+              )
+            )
+          )
+          .orderBy(
+            asc(curriculumVersionSteps.lessonId),
+            asc(curriculumVersionSteps.sortOrder)
+          )
+  const draftChapterIdBySourceChapterId = new Map<string, string>()
+  const draftChapters = sourceChapters.map((chapter) => {
+    const sourceChapterId = chapter.sourceChapterId ?? chapter.id
+    const id = `${sourceChapterId}-v${input.versionNumber}`
+    draftChapterIdBySourceChapterId.set(chapter.id, id)
+
+    return {
+      id,
+      curriculumVersionId: draftVersion.id,
+      sourceChapterId: chapter.sourceChapterId,
+      label: chapter.label,
+      title: chapter.title,
+      sortOrder: chapter.sortOrder,
+      status: chapter.status,
+    } satisfies typeof curriculumVersionChapters.$inferInsert
+  })
+
+  if (draftChapters.length > 0) {
+    await tx.insert(curriculumVersionChapters).values(draftChapters)
+  }
+
+  const draftLessons = sourceLessons.map((lesson) => ({
+    id: `${lesson.lessonId}-v${input.versionNumber}`,
+    curriculumVersionId: draftVersion.id,
+    chapterId:
+      draftChapterIdBySourceChapterId.get(lesson.chapterId) ?? lesson.chapterId,
+    lessonId: lesson.lessonId,
+    title: lesson.title,
+    description: lesson.description,
+    sortOrder: lesson.sortOrder,
+    status: lesson.status,
+  })) satisfies (typeof curriculumVersionLessons.$inferInsert)[]
+
+  if (draftLessons.length > 0) {
+    await tx.insert(curriculumVersionLessons).values(draftLessons)
+  }
+
+  const draftSteps = sourceSteps.map((step) => {
+    const sourceStepId = step.sourceStepId ?? step.id
+
+    return {
+      id: `${sourceStepId}-v${input.versionNumber}`,
+      curriculumVersionId: draftVersion.id,
+      lessonId: step.lessonId,
+      sourceStepId,
+      type: step.type,
+      sortOrder: step.sortOrder,
+      points: step.points,
+      required: step.required,
+      status: step.status,
+      contentJson: step.contentJson,
+    } satisfies typeof curriculumVersionSteps.$inferInsert
+  })
+
+  if (draftSteps.length > 0) {
+    await tx.insert(curriculumVersionSteps).values(draftSteps)
+  }
+
+  return draftVersion
+}
+
+async function deleteDraftSnapshot(
+  tx: AdminEditorTransaction,
+  versionId: string
+) {
+  await tx
+    .delete(curriculumVersionSteps)
+    .where(eq(curriculumVersionSteps.curriculumVersionId, versionId))
+  await tx
+    .delete(curriculumVersionLessons)
+    .where(eq(curriculumVersionLessons.curriculumVersionId, versionId))
+  await tx
+    .delete(curriculumVersionChapters)
+    .where(eq(curriculumVersionChapters.curriculumVersionId, versionId))
+}
+
+async function deleteDraftVersion(
+  tx: AdminEditorTransaction,
+  versionId: string
+) {
+  await deleteDraftSnapshot(tx, versionId)
+  await tx
+    .delete(curriculumVersions)
+    .where(eq(curriculumVersions.id, versionId))
 }
 
 function mapCurriculumVersionSummary(
