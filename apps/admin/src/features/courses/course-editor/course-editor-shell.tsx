@@ -15,6 +15,7 @@ import { StepWorkspace } from "@/features/courses/course-editor/step-workspace"
 
 type CourseEditorShellProps = {
   isReadOnly?: boolean
+  isThumbnailUploading?: boolean
   onAddChapter?: () => void
   onAddLesson?: (chapterId: string) => void
   onArchiveChapter?: (chapterId: string) => void
@@ -27,6 +28,7 @@ type CourseEditorShellProps = {
   onMoveStep?: (lessonId: string, stepId: string, targetIndex: number) => void
   onSelectLesson?: (lessonId: string) => void
   onSelectStep?: (lessonId: string, stepId: string) => void
+  onSelectThumbnailFile?: (file: File) => void
   onUpdateChapterField?: (
     chapterId: string,
     field: "label" | "title",
@@ -39,12 +41,14 @@ type CourseEditorShellProps = {
     value: string
   ) => void
   onUpdateStepContent?: (stepId: string, key: string, value: unknown) => void
+  thumbnailUploadError?: string | null
   urlState: CourseEditorUrlState
   workingCopy: CourseEditorWorkingCopy
 }
 
 export function CourseEditorShell({
   isReadOnly = false,
+  isThumbnailUploading = false,
   onAddChapter,
   onAddLesson,
   onArchiveChapter,
@@ -57,10 +61,12 @@ export function CourseEditorShell({
   onMoveStep,
   onSelectLesson,
   onSelectStep,
+  onSelectThumbnailFile,
   onUpdateChapterField,
   onUpdateCourseField,
   onUpdateLessonField,
   onUpdateStepContent,
+  thumbnailUploadError = null,
   urlState,
   workingCopy,
 }: CourseEditorShellProps) {
@@ -136,7 +142,10 @@ export function CourseEditorShell({
             <CourseSummaryPanel
               course={course}
               isReadOnly={isReadOnly}
+              isThumbnailUploading={isThumbnailUploading}
+              onSelectThumbnailFile={onSelectThumbnailFile}
               onUpdateCourseField={onUpdateCourseField}
+              thumbnailUploadError={thumbnailUploadError}
             />
             <CurriculumMap
               chapters={version.chapters}

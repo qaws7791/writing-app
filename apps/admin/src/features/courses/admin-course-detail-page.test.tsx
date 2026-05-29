@@ -228,6 +228,141 @@ describe("AdminCourseDetailPage", () => {
     expect(screen.getByText("저장되었습니다.")).toBeTruthy()
   })
 
+  it("uploads a selected thumbnail immediately and saves the uploaded path later", async () => {
+    const user = userEvent.setup()
+    const createCourseThumbnailUpload = vi.fn<
+      AdminApi["createCourseThumbnailUpload"]
+    >(async () => ({
+      status: "ok",
+      value: {
+        uploadUrl: "http://signed-upload.local",
+        method: "PUT",
+        headers: {
+          "content-type": "image/png",
+        },
+        thumbnailPath:
+          "http://localhost:9000/writing-app-public-assets/course-thumbnails/asset-1.png",
+      },
+    }))
+    const saveCourseEditorDocument = vi.fn<
+      AdminApi["saveCourseEditorDocument"]
+    >(async (input) => ({
+      status: "ok",
+      value: {
+        ...versionFixture,
+        revision: input.baseRevision + 1,
+        steps: input.steps,
+      },
+    }))
+    const uploadFetch = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response(null, { status: 200 }))
+
+    render(
+      <AdminCourseDetailPage
+        adminApi={createAdminApiMock({
+          createCourseThumbnailUpload,
+          saveCourseEditorDocument,
+        })}
+        course={courseFixture}
+        selectedVersionId="sentence-structure-v2"
+        urlState={{
+          versionId: "sentence-structure-v2",
+          view: "lesson",
+          lessonId: "sentence-structure-01",
+          stepId: null,
+        }}
+        versions={[versionSummaryFixture]}
+        version={versionFixture}
+      />
+    )
+
+    const file = new File(["image"], "thumbnail.png", { type: "image/png" })
+    await user.upload(screen.getByLabelText("썸네일 파일"), file)
+
+    await waitFor(() => {
+      expect(createCourseThumbnailUpload).toHaveBeenCalledWith({
+        fileName: "thumbnail.png",
+        contentType: "image/png",
+        contentLength: file.size,
+      })
+    })
+    expect(uploadFetch).toHaveBeenCalledWith(
+      "http://signed-upload.local",
+      expect.objectContaining({
+        body: file,
+        headers: {
+          "content-type": "image/png",
+        },
+        method: "PUT",
+      })
+    )
+    await waitFor(() => {
+      expect(
+        screen.getByText("썸네일을 업로드했습니다. 저장하면 반영됩니다.")
+      ).toBeTruthy()
+    })
+
+    await user.click(screen.getByRole("button", { name: "저장" }))
+
+    expect(saveCourseEditorDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        course: expect.objectContaining({
+          thumbnailPath:
+            "http://localhost:9000/writing-app-public-assets/course-thumbnails/asset-1.png",
+        }),
+      })
+    )
+  })
+
+  it("does not dirty the editor when thumbnail upload fails", async () => {
+    const user = userEvent.setup()
+    const saveCourseEditorDocument = vi.fn<
+      AdminApi["saveCourseEditorDocument"]
+    >(async (input) => ({
+      status: "ok",
+      value: {
+        ...versionFixture,
+        revision: input.baseRevision + 1,
+        steps: input.steps,
+      },
+    }))
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(null, { status: 500 })
+    )
+
+    render(
+      <AdminCourseDetailPage
+        adminApi={createAdminApiMock({
+          saveCourseEditorDocument,
+        })}
+        course={courseFixture}
+        selectedVersionId="sentence-structure-v2"
+        urlState={{
+          versionId: "sentence-structure-v2",
+          view: "lesson",
+          lessonId: "sentence-structure-01",
+          stepId: null,
+        }}
+        versions={[versionSummaryFixture]}
+        version={versionFixture}
+      />
+    )
+
+    const file = new File(["image"], "thumbnail.png", { type: "image/png" })
+    await user.upload(screen.getByLabelText("썸네일 파일"), file)
+
+    await waitFor(() => {
+      expect(screen.getByText("썸네일 업로드에 실패했습니다.")).toBeTruthy()
+    })
+
+    expect(
+      (screen.getByRole("button", { name: "저장" }) as HTMLButtonElement)
+        .disabled
+    ).toBe(true)
+    expect(saveCourseEditorDocument).not.toHaveBeenCalled()
+  })
+
   it("saves edited step content through the admin API", async () => {
     const user = userEvent.setup()
     const saveCourseEditorDocument = vi.fn<
@@ -665,6 +800,20 @@ const versionFixture = {
 
 function createAdminApiMock(overrides: Partial<AdminApi> = {}): AdminApi {
   return {
+    async createCourseThumbnailUpload() {
+      return {
+        status: "ok",
+        value: {
+          uploadUrl: "http://signed-upload.local",
+          method: "PUT",
+          headers: {
+            "content-type": "image/png",
+          },
+          thumbnailPath:
+            "http://localhost:9000/writing-app-public-assets/course-thumbnails/asset-1.png",
+        },
+      }
+    },
     async createCurriculumDraft() {
       return { status: "ok", value: versionSummaryFixture }
     },

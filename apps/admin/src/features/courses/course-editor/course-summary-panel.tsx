@@ -5,16 +5,36 @@ import type { AdminCourseDetailDto } from "@workspace/core/admin"
 type CourseSummaryPanelProps = {
   course: AdminCourseDetailDto
   isReadOnly?: boolean
-  onRequestThumbnailUpload?: () => void
+  isThumbnailUploading?: boolean
+  onSelectThumbnailFile?: (file: File) => void
   onUpdateCourseField?: (field: "description" | "title", value: string) => void
+  thumbnailUploadError?: string | null
 }
 
 export function CourseSummaryPanel({
   course,
   isReadOnly = false,
-  onRequestThumbnailUpload,
+  isThumbnailUploading = false,
+  onSelectThumbnailFile,
   onUpdateCourseField,
+  thumbnailUploadError = null,
 }: CourseSummaryPanelProps) {
+  const fileInputRef = React.useRef<HTMLInputElement | null>(null)
+  const handleUploadButtonClick = React.useCallback(() => {
+    fileInputRef.current?.click()
+  }, [])
+  const handleFileChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.currentTarget.files?.[0]
+      event.currentTarget.value = ""
+
+      if (file) {
+        onSelectThumbnailFile?.(file)
+      }
+    },
+    [onSelectThumbnailFile]
+  )
+
   return (
     <section className="flex flex-col gap-4" aria-labelledby="course-summary">
       <div className="space-y-3">
@@ -24,14 +44,26 @@ export function CourseSummaryPanel({
           role="img"
           style={{ backgroundImage: `url(${course.thumbnailPath})` }}
         />
+        <input
+          ref={fileInputRef}
+          accept="image/png,image/jpeg,image/webp"
+          aria-label="썸네일 파일"
+          className="sr-only"
+          disabled={isReadOnly || isThumbnailUploading}
+          type="file"
+          onChange={handleFileChange}
+        />
         <button
           type="button"
           className="w-full rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={isReadOnly}
-          onClick={onRequestThumbnailUpload}
+          disabled={isReadOnly || isThumbnailUploading}
+          onClick={handleUploadButtonClick}
         >
-          썸네일 변경
+          {isThumbnailUploading ? "업로드 중..." : "썸네일 변경"}
         </button>
+        {thumbnailUploadError ? (
+          <p className="text-sm text-destructive">{thumbnailUploadError}</p>
+        ) : null}
       </div>
       <div className="space-y-2">
         <label className="grid min-w-0 gap-1 text-sm">
