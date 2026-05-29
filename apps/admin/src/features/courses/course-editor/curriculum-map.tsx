@@ -10,15 +10,35 @@ import {
 import { CSS } from "@dnd-kit/utilities"
 import {
   Archive,
-  ChevronDown,
-  ChevronUp,
+  ChevronRight,
   GripVertical,
+  MoreHorizontal,
+  Pencil,
   Plus,
 } from "lucide-react"
 
 import type { AdminEditorCurriculumVersionDetailDto } from "@workspace/core/admin"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@workspace/ui/components/ui/collapsible"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@workspace/ui/components/ui/dropdown-menu"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@workspace/ui/components/ui/popover"
 
 import { getNodeStatusLabel } from "@/features/courses/course-editor/editor-labels"
+
+type Chapter = AdminEditorCurriculumVersionDetailDto["chapters"][number]
+type Lesson = Chapter["lessons"][number]
 
 type CurriculumMapProps = {
   chapters: AdminEditorCurriculumVersionDetailDto["chapters"]
@@ -50,9 +70,6 @@ export function CurriculumMap({
   onUpdateChapterField,
 }: CurriculumMapProps) {
   const flatLessons = chapters.flatMap((chapter) => chapter.lessons)
-  const lessonIndexById = new Map(
-    flatLessons.map((lesson, index) => [lesson.lessonId, index])
-  )
 
   function handleDragEnd(event: DragEndEvent) {
     if (!event.over || event.active.id === event.over.id) {
@@ -70,126 +87,200 @@ export function CurriculumMap({
   }
 
   return (
-    <section className="space-y-3" aria-labelledby="curriculum-map">
-      <div className="flex items-center justify-between gap-3">
-        <h2
-          id="curriculum-map"
-          className="text-xs font-semibold text-muted-foreground"
-        >
-          커리큘럼
-        </h2>
+    <section className="space-y-2" aria-labelledby="curriculum-map">
+      <h2
+        id="curriculum-map"
+        className="text-xs font-semibold text-muted-foreground"
+      >
+        커리큘럼
+      </h2>
+      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <div className="space-y-1">
+          {chapters.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              챕터가 없습니다.
+            </p>
+          ) : (
+            chapters.map((chapter) => (
+              <ChapterSection
+                key={chapter.id}
+                chapter={chapter}
+                isReadOnly={isReadOnly}
+                selectedLessonId={selectedLessonId}
+                onAddLesson={onAddLesson}
+                onArchiveChapter={onArchiveChapter}
+                onArchiveLesson={onArchiveLesson}
+                onSelectLesson={onSelectLesson}
+                onUpdateChapterField={onUpdateChapterField}
+              />
+            ))
+          )}
+        </div>
+      </DndContext>
+      {!isReadOnly && (
         <button
           type="button"
-          className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={isReadOnly}
+          className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
           onClick={onAddChapter}
         >
           <Plus aria-hidden="true" className="size-3.5" />
           챕터 추가
         </button>
-      </div>
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="space-y-5">
-          {chapters.map((chapter) => (
-            <div key={chapter.id} className="space-y-2">
-              <div className="grid gap-2">
-                <div className="flex items-center justify-between gap-2">
-                  <label className="grid min-w-0 flex-1 gap-1 text-sm">
-                    <span className="sr-only">{chapter.title} 챕터 제목</span>
-                    <input
-                      aria-label={`${chapter.title} 챕터 제목`}
-                      className="min-w-0 rounded-md border bg-background px-2 py-1.5 font-medium disabled:cursor-not-allowed disabled:opacity-70"
-                      disabled={isReadOnly}
-                      value={chapter.title}
-                      onChange={(event) =>
-                        onUpdateChapterField?.(
-                          chapter.id,
-                          "title",
-                          event.currentTarget.value
-                        )
-                      }
-                    />
-                  </label>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {getNodeStatusLabel(chapter.status)}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={isReadOnly}
-                    onClick={() => onAddLesson?.(chapter.id)}
-                  >
-                    <Plus aria-hidden="true" className="size-3.5" />
-                    {chapter.title} 레슨 추가
-                  </button>
-                  <button
-                    type="button"
-                    className="inline-flex items-center gap-1 rounded-md border px-2 py-1 text-xs text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={isReadOnly}
-                    onClick={() => onArchiveChapter?.(chapter.id)}
-                  >
-                    <Archive aria-hidden="true" className="size-3.5" />
-                    {chapter.title} 챕터 보관
-                  </button>
-                </div>
-              </div>
-              <SortableContext
-                items={chapter.lessons.map((lesson) => lesson.lessonId)}
-                strategy={verticalListSortingStrategy}
-              >
-                <div className="space-y-1 border-l pl-3">
-                  {chapter.lessons.map((lesson) => (
-                    <SortableLessonButton
-                      key={lesson.id}
-                      canMoveDown={
-                        (lessonIndexById.get(lesson.lessonId) ?? 0) <
-                        flatLessons.length - 1
-                      }
-                      canMoveUp={
-                        (lessonIndexById.get(lesson.lessonId) ?? 0) > 0
-                      }
-                      index={lessonIndexById.get(lesson.lessonId) ?? 0}
-                      isSelected={lesson.lessonId === selectedLessonId}
-                      isReadOnly={isReadOnly}
-                      lesson={lesson}
-                      onArchiveLesson={onArchiveLesson}
-                      onMoveLesson={onMoveLesson}
-                      onSelectLesson={onSelectLesson}
-                    />
-                  ))}
-                </div>
-              </SortableContext>
-            </div>
-          ))}
-        </div>
-      </DndContext>
+      )}
     </section>
   )
 }
 
+type ChapterSectionProps = {
+  chapter: Chapter
+  isReadOnly: boolean
+  selectedLessonId: string | null
+  onAddLesson?: (chapterId: string) => void
+  onArchiveChapter?: (chapterId: string) => void
+  onArchiveLesson?: (lessonId: string) => void
+  onSelectLesson?: (lessonId: string) => void
+  onUpdateChapterField?: (
+    chapterId: string,
+    field: "label" | "title",
+    value: string
+  ) => void
+}
+
+function ChapterSection({
+  chapter,
+  isReadOnly,
+  selectedLessonId,
+  onAddLesson,
+  onArchiveChapter,
+  onArchiveLesson,
+  onSelectLesson,
+  onUpdateChapterField,
+}: ChapterSectionProps) {
+  const [isOpen, setIsOpen] = React.useState(true)
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <div className="group flex items-center gap-1 rounded-md py-0.5 pr-1">
+        <CollapsibleTrigger
+          aria-label={`${chapter.title} 챕터 펼치기`}
+          className="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <ChevronRight
+            aria-hidden="true"
+            className={`size-3.5 transition-transform${isOpen ? " rotate-90" : ""}`}
+          />
+        </CollapsibleTrigger>
+        <span className="min-w-0 flex-1 truncate text-sm font-medium">
+          {chapter.title}
+        </span>
+        {!isReadOnly && (
+          <Popover>
+            <PopoverTrigger
+              aria-label={`${chapter.title} 챕터 편집`}
+              className="rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100"
+            >
+              <Pencil aria-hidden="true" className="size-3.5" />
+            </PopoverTrigger>
+            <PopoverContent side="bottom" align="end" className="w-56 gap-3">
+              <p className="text-sm font-medium">챕터 편집</p>
+              <div className="space-y-3">
+                <label className="grid gap-1.5 text-xs text-muted-foreground">
+                  레이블
+                  <input
+                    className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                    value={chapter.label}
+                    onChange={(event) =>
+                      onUpdateChapterField?.(
+                        chapter.id,
+                        "label",
+                        event.currentTarget.value
+                      )
+                    }
+                  />
+                </label>
+                <label className="grid gap-1.5 text-xs text-muted-foreground">
+                  제목
+                  <input
+                    aria-label={`${chapter.title} 챕터 제목`}
+                    className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
+                    value={chapter.title}
+                    onChange={(event) =>
+                      onUpdateChapterField?.(
+                        chapter.id,
+                        "title",
+                        event.currentTarget.value
+                      )
+                    }
+                  />
+                </label>
+                <div className="border-t pt-2">
+                  <button
+                    type="button"
+                    aria-label={`${chapter.title} 챕터 보관`}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                    onClick={() => onArchiveChapter?.(chapter.id)}
+                  >
+                    <Archive aria-hidden="true" className="size-3.5" />
+                    챕터 보관
+                  </button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
+      <CollapsibleContent>
+        <SortableContext
+          items={chapter.lessons.map((lesson) => lesson.lessonId)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-0.5 border-l pl-3">
+            {chapter.lessons.length === 0 && (
+              <p className="py-2 pl-1 text-xs text-muted-foreground">
+                레슨이 없습니다.
+              </p>
+            )}
+            {chapter.lessons.map((lesson) => (
+              <SortableLessonButton
+                key={lesson.id}
+                isSelected={lesson.lessonId === selectedLessonId}
+                isReadOnly={isReadOnly}
+                lesson={lesson}
+                onArchiveLesson={onArchiveLesson}
+                onSelectLesson={onSelectLesson}
+              />
+            ))}
+            {!isReadOnly && (
+              <button
+                type="button"
+                aria-label={`${chapter.title} 레슨 추가`}
+                className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+                onClick={() => onAddLesson?.(chapter.id)}
+              >
+                <Plus aria-hidden="true" className="size-3" />
+                레슨 추가
+              </button>
+            )}
+          </div>
+        </SortableContext>
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
 type SortableLessonButtonProps = {
-  canMoveDown: boolean
-  canMoveUp: boolean
-  index: number
   isSelected: boolean
   isReadOnly: boolean
-  lesson: AdminEditorCurriculumVersionDetailDto["chapters"][number]["lessons"][number]
+  lesson: Lesson
   onArchiveLesson?: (lessonId: string) => void
-  onMoveLesson?: (lessonId: string, targetIndex: number) => void
   onSelectLesson?: (lessonId: string) => void
 }
 
 function SortableLessonButton({
-  canMoveDown,
-  canMoveUp,
-  index,
   isSelected,
   isReadOnly,
   lesson,
   onArchiveLesson,
-  onMoveLesson,
   onSelectLesson,
 }: SortableLessonButtonProps) {
   const {
@@ -204,63 +295,53 @@ function SortableLessonButton({
   return (
     <div
       ref={setNodeRef}
-      className="grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-1"
+      className="group flex items-center gap-0.5"
       style={{
         transform: CSS.Transform.toString(transform),
         transition,
       }}
     >
+      {!isReadOnly && (
+        <button
+          ref={setActivatorNodeRef}
+          type="button"
+          aria-label={`${lesson.title} 순서 변경`}
+          title={`${lesson.title} 순서 변경`}
+          className="rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical aria-hidden="true" className="size-3.5" />
+        </button>
+      )}
       <button
         type="button"
         aria-label={`${lesson.title} ${getNodeStatusLabel(lesson.status)}`}
         aria-current={isSelected ? "true" : undefined}
-        className="flex min-w-0 items-center justify-between rounded-md px-3 py-2 text-left text-sm transition hover:bg-muted aria-current:bg-muted aria-current:text-foreground"
+        className="min-w-0 flex-1 truncate rounded-md px-2 py-1.5 text-left text-sm transition hover:bg-muted aria-current:bg-muted aria-current:font-medium"
         onClick={() => onSelectLesson?.(lesson.lessonId)}
       >
-        <span className="min-w-0 truncate">{lesson.title}</span>
-        <span className="ml-3 text-xs text-muted-foreground">
-          {getNodeStatusLabel(lesson.status)}
-        </span>
+        {lesson.title}
       </button>
-      <button
-        type="button"
-        aria-label={`${lesson.title} 위로 이동`}
-        className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
-        disabled={isReadOnly || !canMoveUp}
-        onClick={() => onMoveLesson?.(lesson.lessonId, index - 1)}
-      >
-        <ChevronUp aria-hidden="true" className="size-4" />
-      </button>
-      <button
-        type="button"
-        aria-label={`${lesson.title} 아래로 이동`}
-        className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
-        disabled={isReadOnly || !canMoveDown}
-        onClick={() => onMoveLesson?.(lesson.lessonId, index + 1)}
-      >
-        <ChevronDown aria-hidden="true" className="size-4" />
-      </button>
-      <button
-        type="button"
-        aria-label={`${lesson.title} 레슨 보관`}
-        className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40"
-        disabled={isReadOnly}
-        onClick={() => onArchiveLesson?.(lesson.lessonId)}
-      >
-        <Archive aria-hidden="true" className="size-4" />
-      </button>
-      <button
-        ref={setActivatorNodeRef}
-        type="button"
-        aria-label={`${lesson.title} 순서 변경`}
-        title={`${lesson.title} 순서 변경`}
-        className="rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-        disabled={isReadOnly}
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical aria-hidden="true" className="size-4" />
-      </button>
+      {!isReadOnly && (
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-label={`${lesson.title} 메뉴`}
+            className="rounded p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100"
+          >
+            <MoreHorizontal aria-hidden="true" className="size-3.5" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="right" align="start">
+            <DropdownMenuItem
+              aria-label={`${lesson.title} 레슨 보관`}
+              onClick={() => onArchiveLesson?.(lesson.lessonId)}
+            >
+              <Archive className="size-4" />
+              레슨 보관
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   )
 }
