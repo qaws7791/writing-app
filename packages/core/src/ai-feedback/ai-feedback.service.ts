@@ -83,7 +83,7 @@ const aiFeedbackUnavailableResult: UnavailableResult = {
   status: "unavailable",
   error: {
     code: "ai-feedback-unavailable",
-    message: "AI feedback is unavailable.",
+    message: "인공지능 피드백을 사용할 수 없습니다.",
   },
 }
 
@@ -91,7 +91,7 @@ const databaseUnavailableResult: UnavailableResult = {
   status: "unavailable",
   error: {
     code: "database-unavailable",
-    message: "Database is unavailable.",
+    message: "데이터베이스를 사용할 수 없습니다.",
   },
 }
 
@@ -112,7 +112,7 @@ export function createAiFeedbackService({
           status: "not-found",
           error: {
             code: "lesson-not-found",
-            message: "Lesson was not found.",
+            message: "레슨을 찾을 수 없습니다.",
             lessonId: request.lessonId,
           },
         }
@@ -133,7 +133,7 @@ export function createAiFeedbackService({
           status: "feedback-step-not-found",
           error: {
             code: "feedback-step-not-found",
-            message: "Feedback step was not found.",
+            message: "피드백 스텝을 찾을 수 없습니다.",
           },
         }
       }
@@ -154,7 +154,7 @@ export function createAiFeedbackService({
           status: "retry-limit-exceeded",
           error: {
             code: "feedback-retry-limit-exceeded",
-            message: "Feedback retry limit was exceeded.",
+            message: "피드백 재시도 한도를 초과했습니다.",
           },
         }
       }
@@ -174,7 +174,7 @@ export function createAiFeedbackService({
           status: "answer-not-found",
           error: {
             code: "answer-not-found",
-            message: "Answer was not found.",
+            message: "답변을 찾을 수 없습니다.",
           },
         }
       }

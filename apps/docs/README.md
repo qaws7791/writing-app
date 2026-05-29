@@ -36,7 +36,7 @@ A `source.config.ts` config file has been included, you can customise different 
 
 Read the [Introduction](https://fumadocs.dev/docs/mdx) for further details.
 
-## Learn More
+## Learn 더 보기
 
 To learn more about Next.js and Fumadocs, take a look at the following
 resources:

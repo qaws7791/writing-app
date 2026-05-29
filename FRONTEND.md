@@ -4,6 +4,10 @@
 
 ---
 
+## 텍스트 현지화
+
+모든 화면 텍스트와 접근성 텍스트는 한국어로 제공한다. 상세 원칙은 `docs/text-localization-policy.md`를 따른다.
+
 ## Core Principles Summary
 
 | Principle             | Summary                                                      |

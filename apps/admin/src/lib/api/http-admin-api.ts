@@ -216,7 +216,7 @@ async function requestJson<TValue>(
       status: "error",
       error: {
         code: "unknown-error",
-        message: "Admin API request failed.",
+        message: "관리자 API 요청에 실패했습니다.",
       },
       httpStatus: 0,
     }
@@ -244,7 +244,7 @@ async function readError(response: Response): Promise<AdminApiErrorDto> {
 
   return {
     code: "unknown-error",
-    message: `Admin API request failed with status ${response.status}.`,
+    message: `관리자 API 요청에 실패했습니다. 상태: ${response.status}.`,
   }
 }
 

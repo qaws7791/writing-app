@@ -107,7 +107,10 @@ describe("AdminAuthPage", () => {
 
   it("shows an error message when login fails", async () => {
     const fetch = vi.fn<AdminAuthFetch>(async () =>
-      Response.json({ message: "Invalid password." }, { status: 401 })
+      Response.json(
+        { message: "비밀번호가 올바르지 않습니다." },
+        { status: 401 }
+      )
     )
     vi.stubGlobal("fetch", fetch)
 

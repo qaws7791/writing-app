@@ -139,11 +139,11 @@ DELETE /lessons/:lessonId
 
 ## 사이드바 레이아웃
 
-사이드바는 shadcn `sidebar-07` 블록의 구조를 참고한다. 이 블록은 `SidebarProvider`, `SidebarInset`, 축소 가능한 `Sidebar`, 접히는 주 메뉴, footer 사용자 메뉴를 제공한다.
+사이드바는 shadcn `sidebar-07` 블록의 구조를 참고한다. 이 블록은 `사이드바Provider`, `사이드바Inset`, 축소 가능한 `사이드바`, 접히는 주 메뉴, footer 사용자 메뉴를 제공한다.
 
 구현은 원본 블록을 그대로 복사하지 않고, 현재 `packages/ui`의 shadcn 컴포넌트를 조합한다.
 
-- `SidebarProvider` 안에 `AdminSidebar`와 `SidebarInset`을 배치한다.
+- `사이드바Provider` 안에 `Admin사이드바`와 `사이드바Inset`을 배치한다.
 - 사이드바는 `collapsible="icon"` 형태로 축소 가능하게 둔다.
 - `TeamSwitcher` 영역은 팀 전환이 아니라 서비스 식별 영역으로 단순화한다.
 - 주 메뉴는 콘텐츠와 사용자만 둔다.

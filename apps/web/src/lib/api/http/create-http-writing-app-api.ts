@@ -318,7 +318,7 @@ async function request<TData, TValue>(
     if (data === undefined) {
       return apiFailure({
         code: "contract-error",
-        message: "API response did not include data.",
+        message: "서버 응답에 데이터가 없습니다.",
       })
     }
 

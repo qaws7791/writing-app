@@ -135,7 +135,7 @@ const unavailableResult: UnavailableResult = {
   status: "unavailable",
   error: {
     code: "database-unavailable",
-    message: "Database is unavailable.",
+    message: "데이터베이스를 사용할 수 없습니다.",
   },
 }
 
@@ -221,7 +221,7 @@ export function createLearningService({
           courseId
         )
         if (!curriculumVersionId) {
-          return invalidRequest("Published curriculum version was not found.")
+          return invalidRequest("발행된 커리큘럼 버전을 찾을 수 없습니다.")
         }
 
         ;[lessonIds, lessonProgress] = await Promise.all([
@@ -425,7 +425,7 @@ export function createLearningService({
 
       const targetStep = findStep(lessonResult.value, request.currentStepId)
       if (!targetStep || targetStep.order !== request.stepOrder) {
-        return invalidRequest("Lesson step was not found.")
+        return invalidRequest("레슨 스텝을 찾을 수 없습니다.")
       }
 
       try {
@@ -435,7 +435,7 @@ export function createLearningService({
           lessonResult.value.courseId as CourseId
         )
         if (!curriculumVersionId) {
-          return invalidRequest("Published curriculum version was not found.")
+          return invalidRequest("발행된 커리큘럼 버전을 찾을 수 없습니다.")
         }
 
         const isVersionLesson =
@@ -445,7 +445,7 @@ export function createLearningService({
           )
         if (!isVersionLesson) {
           return invalidRequest(
-            "Lesson is not part of the learner curriculum version."
+            "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다."
           )
         }
 
@@ -488,11 +488,11 @@ export function createLearningService({
 
       const targetStep = findStep(lessonResult.value, request.stepId)
       if (!targetStep) {
-        return invalidRequest("Lesson step was not found.")
+        return invalidRequest("레슨 스텝을 찾을 수 없습니다.")
       }
 
       if (!answerStepTypes.has(targetStep.type)) {
-        return invalidRequest("This lesson step does not accept saved answers.")
+        return invalidRequest("이 레슨 스텝은 답변 저장을 지원하지 않습니다.")
       }
 
       try {
@@ -502,7 +502,7 @@ export function createLearningService({
           lessonResult.value.courseId as CourseId
         )
         if (!curriculumVersionId) {
-          return invalidRequest("Published curriculum version was not found.")
+          return invalidRequest("발행된 커리큘럼 버전을 찾을 수 없습니다.")
         }
 
         const isVersionLesson =
@@ -512,7 +512,7 @@ export function createLearningService({
           )
         if (!isVersionLesson) {
           return invalidRequest(
-            "Lesson is not part of the learner curriculum version."
+            "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다."
           )
         }
 
@@ -547,7 +547,7 @@ export function createLearningService({
           lessonResult.value.courseId as CourseId
         )
         if (!curriculumVersionId) {
-          return invalidRequest("Published curriculum version was not found.")
+          return invalidRequest("발행된 커리큘럼 버전을 찾을 수 없습니다.")
         }
 
         const isVersionLesson =
@@ -557,7 +557,7 @@ export function createLearningService({
           )
         if (!isVersionLesson) {
           return invalidRequest(
-            "Lesson is not part of the learner curriculum version."
+            "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다."
           )
         }
 

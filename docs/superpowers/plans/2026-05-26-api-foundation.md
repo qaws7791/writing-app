@@ -433,7 +433,7 @@ describe("createContentService", () => {
       status: "not-found",
       error: {
         code: "course-not-found",
-        message: "Course was not found.",
+        message: "코스를 찾을 수 없습니다.",
         courseId: "not-real",
       },
     })
@@ -448,7 +448,7 @@ describe("createContentService", () => {
       status: "not-found",
       error: {
         code: "lesson-not-found",
-        message: "Lesson was not found.",
+        message: "레슨을 찾을 수 없습니다.",
         lessonId: "not-real",
       },
     })
@@ -478,7 +478,7 @@ describe("createContentService", () => {
       status: "invalid-content",
       error: {
         code: "invalid-content-seed",
-        message: "Lesson steps must use contiguous order starting at 1.",
+        message: "레슨 스텝 순서는 1부터 빈틈없이 이어져야 합니다.",
         lessonId: "sentence-structure-01",
       },
     })
@@ -537,19 +537,19 @@ Create `packages/core/src/content/content.errors.ts`:
 ```ts
 export type CourseNotFoundErrorDto = {
   code: "course-not-found"
-  message: "Course was not found."
+  message: "코스를 찾을 수 없습니다."
   courseId: string
 }
 
 export type LessonNotFoundErrorDto = {
   code: "lesson-not-found"
-  message: "Lesson was not found."
+  message: "레슨을 찾을 수 없습니다."
   lessonId: string
 }
 
 export type DatabaseUnavailableErrorDto = {
   code: "database-unavailable"
-  message: "Database is unavailable."
+  message: "데이터베이스를 사용할 수 없습니다."
 }
 
 export type InvalidContentSeedErrorDto = {
@@ -802,7 +802,7 @@ export function createContentService({
           status: "not-found",
           error: {
             code: "course-not-found",
-            message: "Course was not found.",
+            message: "코스를 찾을 수 없습니다.",
             courseId,
           },
         }
@@ -817,7 +817,7 @@ export function createContentService({
           status: "not-found",
           error: {
             code: "lesson-not-found",
-            message: "Lesson was not found.",
+            message: "레슨을 찾을 수 없습니다.",
             lessonId,
           },
         }
@@ -833,7 +833,7 @@ export function createContentService({
           status: "invalid-content",
           error: {
             code: "invalid-content-seed",
-            message: "Lesson steps must use contiguous order starting at 1.",
+            message: "레슨 스텝 순서는 1부터 빈틈없이 이어져야 합니다.",
             lessonId,
           },
         }
@@ -1749,7 +1749,7 @@ const contentService: ContentService = {
         status: "not-found",
         error: {
           code: "course-not-found",
-          message: "Course was not found.",
+          message: "코스를 찾을 수 없습니다.",
           courseId,
         },
       }
@@ -1774,7 +1774,7 @@ const contentService: ContentService = {
         status: "not-found",
         error: {
           code: "lesson-not-found",
-          message: "Lesson was not found.",
+          message: "레슨을 찾을 수 없습니다.",
           lessonId,
         },
       }
@@ -1825,7 +1825,7 @@ describe("createApiApp", () => {
     expect(response.status).toBe(404)
     expect(await response.json()).toEqual({
       code: "course-not-found",
-      message: "Course was not found.",
+      message: "코스를 찾을 수 없습니다.",
       courseId: "not-real",
     })
   })
@@ -1836,7 +1836,7 @@ describe("createApiApp", () => {
     expect(response.status).toBe(404)
     expect(await response.json()).toEqual({
       code: "lesson-not-found",
-      message: "Lesson was not found.",
+      message: "레슨을 찾을 수 없습니다.",
       lessonId: "not-real",
     })
   })

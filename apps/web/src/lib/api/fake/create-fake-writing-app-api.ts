@@ -27,7 +27,7 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!normalizedQuery) {
         return apiFailure({
           code: "invalid-request",
-          message: "Search query is required.",
+          message: "검색어를 입력해야 합니다.",
         })
       }
 
@@ -44,7 +44,7 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!course) {
         return apiFailure({
           code: "not-found",
-          message: "Course was not found.",
+          message: "코스를 찾을 수 없습니다.",
         })
       }
 
@@ -55,7 +55,7 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!lesson) {
         return apiFailure({
           code: "not-found",
-          message: "Lesson was not found.",
+          message: "레슨을 찾을 수 없습니다.",
         })
       }
 
@@ -155,7 +155,7 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!course) {
         return apiFailure({
           code: "not-found",
-          message: "Course was not found.",
+          message: "코스를 찾을 수 없습니다.",
         })
       }
 
@@ -174,14 +174,14 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!lesson) {
         return apiFailure({
           code: "not-found",
-          message: "Lesson was not found.",
+          message: "레슨을 찾을 수 없습니다.",
         })
       }
       const firstStep = lesson.steps[0]
       if (!firstStep) {
         return apiFailure({
           code: "contract-error",
-          message: "Lesson does not include steps.",
+          message: "레슨에 스텝이 없습니다.",
         })
       }
 
@@ -219,14 +219,14 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!lesson) {
         return apiFailure({
           code: "not-found",
-          message: "Lesson was not found.",
+          message: "레슨을 찾을 수 없습니다.",
         })
       }
       const finalStep = lesson.steps.at(-1)
       if (!finalStep) {
         return apiFailure({
           code: "contract-error",
-          message: "Lesson does not include steps.",
+          message: "레슨에 스텝이 없습니다.",
         })
       }
 

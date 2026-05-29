@@ -2,36 +2,36 @@ import { z } from "zod"
 
 export const courseNotFoundErrorDtoSchema = z.object({
   code: z.literal("course-not-found"),
-  message: z.literal("Course was not found."),
+  message: z.literal("코스를 찾을 수 없습니다."),
   courseId: z.string().min(1),
 })
 
 export type CourseNotFoundErrorDto = {
   code: "course-not-found"
-  message: "Course was not found."
+  message: "코스를 찾을 수 없습니다."
   courseId: string
 }
 
 export const lessonNotFoundErrorDtoSchema = z.object({
   code: z.literal("lesson-not-found"),
-  message: z.literal("Lesson was not found."),
+  message: z.literal("레슨을 찾을 수 없습니다."),
   lessonId: z.string().min(1),
 })
 
 export type LessonNotFoundErrorDto = {
   code: "lesson-not-found"
-  message: "Lesson was not found."
+  message: "레슨을 찾을 수 없습니다."
   lessonId: string
 }
 
 export const databaseUnavailableErrorDtoSchema = z.object({
   code: z.literal("database-unavailable"),
-  message: z.literal("Database is unavailable."),
+  message: z.literal("데이터베이스를 사용할 수 없습니다."),
 })
 
 export type DatabaseUnavailableErrorDto = {
   code: "database-unavailable"
-  message: "Database is unavailable."
+  message: "데이터베이스를 사용할 수 없습니다."
 }
 
 export const invalidContentSeedErrorDtoSchema = z.object({

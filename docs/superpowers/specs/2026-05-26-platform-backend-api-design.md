@@ -94,7 +94,7 @@ Better Auth 설정은 다음 기능을 켠다.
 ```json
 {
   "code": "unauthorized",
-  "message": "Authentication is required."
+  "message": "로그인이 필요합니다."
 }
 ```
 

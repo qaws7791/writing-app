@@ -35,7 +35,7 @@ describe("createHttpWritingAppApi", () => {
       return Response.json(
         {
           code: "unauthorized",
-          message: "Authentication is required.",
+          message: "로그인이 필요합니다.",
         },
         { status: 401 }
       )
@@ -49,7 +49,7 @@ describe("createHttpWritingAppApi", () => {
       status: "error",
       error: {
         code: "unauthorized",
-        message: "Authentication is required.",
+        message: "로그인이 필요합니다.",
       },
     })
   })

@@ -41,7 +41,7 @@ export function registerAiFeedbackRoute(
     describeRoute({
       responses: {
         200: {
-          description: "AI feedback result.",
+          description: "인공지능 피드백 결과입니다.",
           content: {
             "application/json": {
               schema: resolver(aiFeedbackResultDtoSchema),
@@ -49,15 +49,15 @@ export function registerAiFeedbackRoute(
           },
         },
         400: {
-          description: "Invalid request.",
+          description: "요청이 올바르지 않습니다.",
           content: jsonErrorResponse(learningInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Authentication is required.",
+          description: "로그인이 필요합니다.",
           content: jsonErrorResponse(unauthorizedErrorDtoSchema),
         },
         404: {
-          description: "Lesson, feedback step, or answer was not found.",
+          description: "레슨, 피드백 스텝 또는 답변을 찾을 수 없습니다.",
           content: jsonErrorResponse(
             z.union([
               lessonNotFoundErrorDtoSchema,
@@ -67,15 +67,16 @@ export function registerAiFeedbackRoute(
           ),
         },
         429: {
-          description: "Feedback retry limit was exceeded.",
+          description: "피드백 재시도 한도를 초과했습니다.",
           content: jsonErrorResponse(feedbackRetryLimitExceededErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "AI feedback or database is unavailable.",
+          description:
+            "인공지능 피드백 또는 데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(
             z.union([
               aiFeedbackUnavailableErrorDtoSchema,
@@ -98,7 +99,7 @@ export function registerAiFeedbackRoute(
         return context.json(
           {
             code: "invalid-request",
-            message: "Invalid AI feedback body.",
+            message: "인공지능 피드백 요청 본문이 올바르지 않습니다.",
           },
           400
         )

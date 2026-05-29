@@ -535,7 +535,7 @@
 - `apps/admin`과 `apps/admin-api`를 추가했다.
 - 관리자 Better Auth 테이블은 `admin_*`로 분리했다.
 - 최초 관리자 계정은 `bun --filter @workspace/admin-api seed:admin`으로 생성한다.
-- 어드민 화면은 shadcn Sidebar 기반 왼쪽 사이드바 레이아웃을 사용한다.
+- 어드민 화면은 shadcn 사이드바 기반 왼쪽 사이드바 레이아웃을 사용한다.
 - 콘텐츠 계층 조회와 사용자 기본 정보 조회를 읽기 전용으로 제공한다.
 - 전체 검증은 admin, admin-api, platform API, platform web 테스트와 pre-commit으로 확인한다.
 

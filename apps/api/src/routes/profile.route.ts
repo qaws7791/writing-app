@@ -29,7 +29,7 @@ export function registerProfileRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Current learner profile summary.",
+          description: "현재 학습자의 프로필 요약입니다.",
           content: {
             "application/json": {
               schema: resolver(profileDtoSchema),
@@ -37,11 +37,11 @@ export function registerProfileRoute(
           },
         },
         401: {
-          description: "Authentication is required.",
+          description: "로그인이 필요합니다.",
           content: jsonErrorResponse(unauthorizedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(learningDatabaseUnavailableErrorDtoSchema),
         },
       },

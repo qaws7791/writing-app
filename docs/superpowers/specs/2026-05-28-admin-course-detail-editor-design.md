@@ -61,7 +61,7 @@
 
 ```text
 AdminShell
-  Sidebar
+  사이드바
   CourseDetailPage
     FixedHeader
     Content

@@ -46,7 +46,7 @@ export function createAdminApiApp(dependencies: AdminApiAppDependencies) {
           error,
           requestId,
         },
-        "Admin API request failed"
+        "관리자 API 요청에 실패했습니다"
       )
       throw error
     } finally {

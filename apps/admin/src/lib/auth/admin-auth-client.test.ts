@@ -53,7 +53,10 @@ describe("requestAdminEmailAuth", () => {
 
   it("maps failed responses and fetch failures to the admin login error", async () => {
     const nonOkFetch = vi.fn<AdminAuthFetch>(async () =>
-      Response.json({ message: "Invalid password." }, { status: 401 })
+      Response.json(
+        { message: "비밀번호가 올바르지 않습니다." },
+        { status: 401 }
+      )
     )
     const rejectedFetch = vi
       .fn<AdminAuthFetch>()

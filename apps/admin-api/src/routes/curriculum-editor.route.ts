@@ -31,7 +31,7 @@ export function registerCurriculumEditorRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Admin course editor document.",
+          description: "관리자 코스 편집 문서입니다.",
           content: {
             "application/json": {
               schema: resolver(adminCourseEditorDetailDtoSchema),
@@ -39,14 +39,14 @@ export function registerCurriculumEditorRoute(
           },
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Course editor document was not found.",
+          description: "코스 편집 문서를 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -76,7 +76,7 @@ export function registerCurriculumEditorRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Saved admin course editor document.",
+          description: "관리자 코스 편집 문서를 저장했습니다.",
           content: {
             "application/json": {
               schema: resolver(adminEditorCurriculumVersionDetailDtoSchema),
@@ -84,22 +84,22 @@ export function registerCurriculumEditorRoute(
           },
         },
         400: {
-          description: "Editor save request is invalid.",
+          description: "편집 저장 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Course editor document was not found.",
+          description: "코스 편집 문서를 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         409: {
-          description: "Curriculum version was changed by another edit.",
+          description: "커리큘럼 버전이 다른 편집으로 변경되었습니다.",
           content: jsonErrorResponse(adminConflictErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -112,7 +112,7 @@ export function registerCurriculumEditorRoute(
         return context.json(
           {
             code: "invalid-request",
-            message: "Course editor save request body is invalid.",
+            message: "코스 편집 저장 요청 본문이 올바르지 않습니다.",
           },
           400
         )
@@ -122,7 +122,7 @@ export function registerCurriculumEditorRoute(
         return context.json(
           {
             code: "invalid-request",
-            message: "Route params must match request body.",
+            message: "경로 매개변수와 요청 본문이 일치해야 합니다.",
           },
           400
         )
@@ -151,7 +151,7 @@ export function registerCurriculumEditorRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Admin course detail for the editor.",
+          description: "편집기용 관리자 코스 상세입니다.",
           content: {
             "application/json": {
               schema: resolver(adminCourseDetailDtoSchema),
@@ -159,14 +159,14 @@ export function registerCurriculumEditorRoute(
           },
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Course was not found.",
+          description: "코스를 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -195,7 +195,7 @@ export function registerCurriculumEditorRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Admin curriculum versions for a course.",
+          description: "코스의 관리자 커리큘럼 버전 목록입니다.",
           content: {
             "application/json": {
               schema: resolver(adminCurriculumVersionListDtoSchema),
@@ -203,10 +203,10 @@ export function registerCurriculumEditorRoute(
           },
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -231,7 +231,7 @@ export function registerCurriculumEditorRoute(
     describeRoute({
       responses: {
         201: {
-          description: "Created admin curriculum draft.",
+          description: "관리자 커리큘럼 초안을 생성했습니다.",
           content: {
             "application/json": {
               schema: resolver(adminCurriculumVersionSummaryDtoSchema),
@@ -239,18 +239,18 @@ export function registerCurriculumEditorRoute(
           },
         },
         400: {
-          description: "Draft creation request is invalid.",
+          description: "초안 생성 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Published curriculum version was not found.",
+          description: "발행된 커리큘럼 버전을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -279,7 +279,7 @@ export function registerCurriculumEditorRoute(
     describeRoute({
       responses: {
         201: {
-          description: "Restored admin curriculum draft.",
+          description: "관리자 커리큘럼 초안을 복원했습니다.",
           content: {
             "application/json": {
               schema: resolver(adminCurriculumVersionSummaryDtoSchema),
@@ -287,18 +287,18 @@ export function registerCurriculumEditorRoute(
           },
         },
         400: {
-          description: "Restore request is invalid.",
+          description: "복원 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Source curriculum version was not found.",
+          description: "원본 커리큘럼 버전을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -311,7 +311,7 @@ export function registerCurriculumEditorRoute(
         return context.json(
           {
             code: "invalid-request",
-            message: "Curriculum restore request body is invalid.",
+            message: "커리큘럼 복원 요청 본문이 올바르지 않습니다.",
           },
           400
         )
@@ -341,7 +341,7 @@ export function registerCurriculumEditorRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Admin course curriculum version detail for the editor.",
+          description: "편집기용 관리자 코스 커리큘럼 버전 상세입니다.",
           content: {
             "application/json": {
               schema: resolver(adminEditorCurriculumVersionDetailDtoSchema),
@@ -349,14 +349,14 @@ export function registerCurriculumEditorRoute(
           },
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Curriculum version was not found.",
+          description: "커리큘럼 버전을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -386,7 +386,7 @@ export function registerCurriculumEditorRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Saved admin curriculum version content.",
+          description: "관리자 커리큘럼 버전 콘텐츠를 저장했습니다.",
           content: {
             "application/json": {
               schema: resolver(adminEditorCurriculumVersionDetailDtoSchema),
@@ -394,22 +394,22 @@ export function registerCurriculumEditorRoute(
           },
         },
         400: {
-          description: "Save request is invalid.",
+          description: "저장 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Curriculum version was not found.",
+          description: "커리큘럼 버전을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         409: {
-          description: "Curriculum version was changed by another edit.",
+          description: "커리큘럼 버전이 다른 편집으로 변경되었습니다.",
           content: jsonErrorResponse(adminConflictErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -423,7 +423,7 @@ export function registerCurriculumEditorRoute(
         return context.json(
           {
             code: "invalid-request",
-            message: "Curriculum save request body is invalid.",
+            message: "커리큘럼 저장 요청 본문이 올바르지 않습니다.",
           },
           400
         )
@@ -436,7 +436,7 @@ export function registerCurriculumEditorRoute(
         return context.json(
           {
             code: "invalid-request",
-            message: "Route params must match request body.",
+            message: "경로 매개변수와 요청 본문이 일치해야 합니다.",
           },
           400
         )
@@ -465,7 +465,7 @@ export function registerCurriculumEditorRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Published admin curriculum draft.",
+          description: "관리자 커리큘럼 초안을 발행했습니다.",
           content: {
             "application/json": {
               schema: resolver(adminCurriculumVersionSummaryDtoSchema),
@@ -473,18 +473,18 @@ export function registerCurriculumEditorRoute(
           },
         },
         400: {
-          description: "Publish request is invalid.",
+          description: "발행 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Curriculum version was not found.",
+          description: "커리큘럼 버전을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -513,21 +513,21 @@ export function registerCurriculumEditorRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Discarded admin curriculum draft.",
+          description: "관리자 커리큘럼 초안을 폐기했습니다.",
         },
         400: {
-          description: "Discard request is invalid.",
+          description: "폐기 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Curriculum version was not found.",
+          description: "커리큘럼 버전을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -557,7 +557,7 @@ export function registerCurriculumEditorRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Admin lesson detail for a selected curriculum version.",
+          description: "선택한 커리큘럼 버전의 관리자 레슨 상세입니다.",
           content: {
             "application/json": {
               schema: resolver(adminEditorLessonDetailDtoSchema),
@@ -565,18 +565,18 @@ export function registerCurriculumEditorRoute(
           },
         },
         400: {
-          description: "Lesson detail request is invalid.",
+          description: "레슨 상세 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Lesson was not found.",
+          description: "레슨을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -588,7 +588,7 @@ export function registerCurriculumEditorRoute(
         return context.json(
           {
             code: "invalid-request",
-            message: "version query is required.",
+            message: "버전 쿼리를 입력해야 합니다.",
           },
           400
         )

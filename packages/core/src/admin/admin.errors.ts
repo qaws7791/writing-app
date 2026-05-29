@@ -2,7 +2,7 @@ import { z } from "zod"
 
 export const adminDatabaseUnavailableErrorDtoSchema = z.object({
   code: z.literal("database-unavailable"),
-  message: z.literal("Database is unavailable."),
+  message: z.literal("데이터베이스를 사용할 수 없습니다."),
 })
 
 export const adminInvalidRequestErrorDtoSchema = z.object({

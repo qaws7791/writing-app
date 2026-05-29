@@ -98,7 +98,7 @@ export const Default: Story = {
                 <DropdownMenuItem>Email</DropdownMenuItem>
                 <DropdownMenuItem>Message</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>More...</DropdownMenuItem>
+                <DropdownMenuItem>더 보기...</DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
@@ -159,7 +159,9 @@ export const Submenu: Story = {
                 <DropdownMenuItem>Email</DropdownMenuItem>
                 <DropdownMenuItem>Message</DropdownMenuItem>
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>More options</DropdownMenuSubTrigger>
+                  <DropdownMenuSubTrigger>
+                    더 보기 options
+                  </DropdownMenuSubTrigger>
                   <DropdownMenuPortal>
                     <DropdownMenuSubContent>
                       <DropdownMenuItem>Calendly</DropdownMenuItem>
@@ -502,8 +504,7 @@ export const ComplexExample = () => {
                   </DropdownMenuItem>
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger>
-                      <MoreHorizontalIcon />
-                      More Projects
+                      <MoreHorizontalIcon />더 보기 Projects
                     </DropdownMenuSubTrigger>
                     <DropdownMenuPortal>
                       <DropdownMenuSubContent>
@@ -551,7 +552,7 @@ export const ComplexExample = () => {
             }
           >
             <EyeIcon />
-            Show Sidebar
+            Show 사이드바
           </DropdownMenuCheckboxItem>
           <DropdownMenuCheckboxItem
             checked={notifications.sms}

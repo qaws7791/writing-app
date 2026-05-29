@@ -261,7 +261,7 @@ it("maps save draft content conflicts", async () => {
         status: "conflict",
         error: {
           code: "conflict",
-          message: "Curriculum version has changed.",
+          message: "커리큘럼 버전이 변경되었습니다.",
         },
       }),
     },
@@ -286,7 +286,7 @@ it("maps save draft content conflicts", async () => {
     status: "conflict",
     error: {
       code: "conflict",
-      message: "Curriculum version has changed.",
+      message: "커리큘럼 버전이 변경되었습니다.",
     },
   })
 })
@@ -549,7 +549,7 @@ async getCourseDetail(courseId) {
         status: "not-found",
         error: {
           code: "not-found",
-          message: "Course was not found.",
+          message: "코스를 찾을 수 없습니다.",
         },
       }
     }
@@ -798,7 +798,7 @@ it("rejects save when base revision is stale", async () => {
     status: "invalid-request",
     error: {
       code: "invalid-request",
-      message: "Only draft curriculum versions can be saved.",
+      message: "초안 커리큘럼 버전만 저장할 수 있습니다.",
     },
   })
 })
@@ -856,7 +856,7 @@ if (!version) {
     status: "not-found",
     error: {
       code: "not-found",
-      message: "Curriculum version was not found.",
+      message: "커리큘럼 버전을 찾을 수 없습니다.",
     },
   }
 }
@@ -866,7 +866,7 @@ if (version.status !== "draft") {
     status: "invalid-request",
     error: {
       code: "invalid-request",
-      message: "Only draft curriculum versions can be saved.",
+      message: "초안 커리큘럼 버전만 저장할 수 있습니다.",
     },
   }
 }
@@ -876,7 +876,7 @@ if (version.revision !== input.baseRevision) {
     status: "conflict",
     error: {
       code: "conflict",
-      message: "Curriculum version has changed.",
+      message: "커리큘럼 버전이 변경되었습니다.",
     },
   }
 }

@@ -4,7 +4,7 @@
 
 **목표:** 관리자 로그인, 왼쪽 사이드바 레이아웃, 콘텐츠 계층 조회, 사용자 목록 조회를 제공하는 읽기 전용 어드민 MVP를 만든다.
 
-**아키텍처:** `apps/admin` Next.js 앱과 `apps/admin-api` Hono API 서버를 새로 만들고, 기존 플랫폼 `apps/web`과 `apps/api`는 어드민 런타임을 참조하지 않는다. DB는 공유하지만 Better Auth 관리자 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`으로 분리한다. 어드민 UI는 `packages/ui`의 shadcn Sidebar 컴포넌트를 사용하고 `sidebar-07` 블록의 구조만 참고한다.
+**아키텍처:** `apps/admin` Next.js 앱과 `apps/admin-api` Hono API 서버를 새로 만들고, 기존 플랫폼 `apps/web`과 `apps/api`는 어드민 런타임을 참조하지 않는다. DB는 공유하지만 Better Auth 관리자 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`으로 분리한다. 어드민 UI는 `packages/ui`의 shadcn 사이드바 컴포넌트를 사용하고 `sidebar-07` 블록의 구조만 참고한다.
 
 **기술 스택:** Bun 1.3.10, Node 20, TypeScript 5.9, Next.js 16 App Router, Hono, hono-openapi, Better Auth, Drizzle SQLite, Vitest, Testing Library, shadcn/ui.
 
@@ -37,7 +37,7 @@
 - 생성: `apps/admin/src/app/(admin)/users/page.tsx` — 사용자 목록 화면
 - 생성: `apps/admin/src/app/api/auth/[...path]/route.ts` — same-origin Better Auth proxy
 - 생성: `apps/admin/src/components/admin-sidebar.tsx` — sidebar-07 기반 사이드바
-- 생성: `apps/admin/src/components/admin-shell.tsx` — SidebarProvider와 SidebarInset 조립
+- 생성: `apps/admin/src/components/admin-shell.tsx` — 사이드바Provider와 사이드바Inset 조립
 - 생성: `apps/admin/src/features/auth/admin-auth-page.tsx` — 관리자 로그인 폼
 - 생성: `apps/admin/src/features/courses/admin-courses-page.tsx` — 콘텐츠 트리 UI
 - 생성: `apps/admin/src/features/users/admin-users-page.tsx` — 사용자 테이블 UI
@@ -583,7 +583,7 @@ import { z } from "zod"
 
 export const adminDatabaseUnavailableErrorDtoSchema = z.object({
   code: z.literal("database-unavailable"),
-  message: z.literal("Database is unavailable."),
+  message: z.literal("데이터베이스를 사용할 수 없습니다."),
 })
 
 export const adminInvalidRequestErrorDtoSchema = z.object({
@@ -655,7 +655,7 @@ const unavailableResult: UnavailableResult = {
   status: "unavailable",
   error: {
     code: "database-unavailable",
-    message: "Database is unavailable.",
+    message: "데이터베이스를 사용할 수 없습니다.",
   },
 }
 
@@ -1142,7 +1142,7 @@ export function requireAdminSession(auth: AdminAuthRuntime) {
       return context.json(
         {
           code: "unauthorized",
-          message: "Admin authentication is required.",
+          message: "관리자 로그인이 필요합니다.",
         },
         401
       )
@@ -1324,7 +1324,7 @@ export function createAdminApiApp(dependencies: AdminApiAppDependencies) {
     } catch (error) {
       dependencies.logger.error(
         { error, requestId },
-        "Admin API request failed"
+        "관리자 API 요청에 실패했습니다"
       )
       throw error
     } finally {
@@ -1643,10 +1643,10 @@ export function registerCoursesRoute(
           },
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -1658,7 +1658,7 @@ export function registerCoursesRoute(
         return context.json(
           {
             code: "invalid-request",
-            message: "include must be chapters,lessons.",
+            message: "쿼리 include는 chapters,lessons여야 합니다.",
           },
           400
         )
@@ -1704,7 +1704,7 @@ export function registerUsersRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Admin user list.",
+          description: "관리자 사용자 목록입니다.",
           content: {
             "application/json": {
               schema: resolver(adminUserListDtoSchema),
@@ -1712,10 +1712,10 @@ export function registerUsersRoute(
           },
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -2319,7 +2319,7 @@ export function createHttpAdminApi({
     if (!response.ok) {
       return {
         status: "error" as const,
-        message: `Admin API request failed with ${response.status}.`,
+        message: `관리자 API 요청에 실패했습니다. 상태: ${response.status}.`,
       }
     }
 
@@ -2704,59 +2704,59 @@ import Link from "next/link"
 import { BookOpenIcon, UsersIcon } from "lucide-react"
 
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
+  사이드바,
+  사이드바Content,
+  사이드바Footer,
+  사이드바Group,
+  사이드바GroupLabel,
+  사이드바Header,
+  사이드바Menu,
+  사이드바MenuButton,
+  사이드바MenuItem,
+  사이드바Rail,
 } from "@workspace/ui/components/ui/sidebar"
 
-export function AdminSidebar() {
+export function Admin사이드바() {
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild size="lg">
+    <사이드바 collapsible="icon">
+      <사이드바Header>
+        <사이드바Menu>
+          <사이드바MenuItem>
+            <사이드바MenuButton asChild size="lg">
               <Link href="/courses">
                 <BookOpenIcon />
                 <span>한글쓰기 어드민</span>
               </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>운영</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="콘텐츠">
+            </사이드바MenuButton>
+          </사이드바MenuItem>
+        </사이드바Menu>
+      </사이드바Header>
+      <사이드바Content>
+        <사이드바Group>
+          <사이드바GroupLabel>운영</사이드바GroupLabel>
+          <사이드바Menu>
+            <사이드바MenuItem>
+              <사이드바MenuButton asChild tooltip="콘텐츠">
                 <Link href="/courses">
                   <BookOpenIcon />
                   <span>콘텐츠</span>
                 </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild tooltip="사용자">
+              </사이드바MenuButton>
+            </사이드바MenuItem>
+            <사이드바MenuItem>
+              <사이드바MenuButton asChild tooltip="사용자">
                 <Link href="/users">
                   <UsersIcon />
                   <span>사용자</span>
                 </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter />
-      <SidebarRail />
-    </Sidebar>
+              </사이드바MenuButton>
+            </사이드바MenuItem>
+          </사이드바Menu>
+        </사이드바Group>
+      </사이드바Content>
+      <사이드바Footer />
+      <사이드바Rail />
+    </사이드바>
   )
 }
 ```
@@ -2765,13 +2765,13 @@ export function AdminSidebar() {
 
 ```tsx
 import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
+  사이드바Inset,
+  사이드바Provider,
+  사이드바Trigger,
 } from "@workspace/ui/components/ui/sidebar"
 import { Separator } from "@workspace/ui/components/ui/separator"
 
-import { AdminSidebar } from "@/components/admin-sidebar"
+import { Admin사이드바 } from "@/components/admin-sidebar"
 
 interface AdminShellProps {
   children: React.ReactNode
@@ -2779,11 +2779,11 @@ interface AdminShellProps {
 
 export function AdminShell({ children }: AdminShellProps) {
   return (
-    <SidebarProvider>
-      <AdminSidebar />
-      <SidebarInset>
+    <사이드바Provider>
+      <Admin사이드바 />
+      <사이드바Inset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-          <SidebarTrigger className="-ml-1" />
+          <사이드바Trigger className="-ml-1" />
           <Separator
             orientation="vertical"
             className="mr-2 data-[orientation=vertical]:h-4"
@@ -2791,8 +2791,8 @@ export function AdminShell({ children }: AdminShellProps) {
           <span className="text-sm font-medium">운영 콘솔</span>
         </header>
         <main className="flex flex-1 flex-col gap-6 p-6">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+      </사이드바Inset>
+    </사이드바Provider>
   )
 }
 ```
@@ -3228,7 +3228,7 @@ git commit -m "어드민 조회 화면 추가"
 ```md
 ## 어드민 프론트엔드
 
-`apps/admin`은 운영 도구이므로 전통적인 왼쪽 사이드바 대시보드 구조를 사용한다. `packages/ui`의 shadcn Sidebar 컴포넌트를 조합하고, shadcn `sidebar-07` 블록은 구조 참고용으로만 사용한다.
+`apps/admin`은 운영 도구이므로 전통적인 왼쪽 사이드바 대시보드 구조를 사용한다. `packages/ui`의 shadcn 사이드바 컴포넌트를 조합하고, shadcn `sidebar-07` 블록은 구조 참고용으로만 사용한다.
 
 어드민 앱은 `apps/admin-api`만 호출하며 플랫폼 `apps/api`를 직접 호출하지 않는다. 어드민 API가 내려가면 어드민 화면은 오류 또는 로그인 필요 상태를 표시하지만, 학습자 플랫폼 기능에는 영향을 주지 않는다.
 ```
@@ -3243,7 +3243,7 @@ git commit -m "어드민 조회 화면 추가"
 - `apps/admin`과 `apps/admin-api`를 추가했다.
 - 관리자 Better Auth 테이블은 `admin_*`로 분리했다.
 - 최초 관리자 계정은 `bun --filter @workspace/admin-api seed:admin`으로 생성한다.
-- 어드민 화면은 shadcn Sidebar 기반 왼쪽 사이드바 레이아웃을 사용한다.
+- 어드민 화면은 shadcn 사이드바 기반 왼쪽 사이드바 레이아웃을 사용한다.
 - 콘텐츠 계층 조회와 사용자 기본 정보 조회를 읽기 전용으로 제공한다.
 - 전체 검증은 admin, admin-api, platform API, platform web 테스트와 pre-commit으로 확인했다.
 ```

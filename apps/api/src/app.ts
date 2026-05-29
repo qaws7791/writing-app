@@ -53,7 +53,7 @@ export function createApiApp(dependencies: ApiAppDependencies) {
           error,
           requestId,
         },
-        "API request failed"
+        "API 요청에 실패했습니다"
       )
       throw error
     } finally {

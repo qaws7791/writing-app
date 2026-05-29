@@ -116,7 +116,7 @@ export async function applyCurriculumMigrationToUser(
       status: "not-found",
       error: {
         code: "not-found",
-        message: "Curriculum migration was not found.",
+        message: "커리큘럼 마이그레이션을 찾을 수 없습니다.",
       },
     }
   }
@@ -142,7 +142,7 @@ export async function applyCurriculumMigrationToUser(
       status: "not-found",
       error: {
         code: "not-found",
-        message: "Curriculum version was not found.",
+        message: "커리큘럼 버전을 찾을 수 없습니다.",
       },
     }
   }
@@ -182,13 +182,13 @@ export async function applyCurriculumMigrationToUser(
       status: "not-found",
       error: {
         code: "not-found",
-        message: "Course progress was not found.",
+        message: "코스 진행을 찾을 수 없습니다.",
       },
     }
   }
 
   if (progress.curriculumVersionId !== migration.fromVersionId) {
-    const message = "Course progress is not on the migration source version."
+    const message = "코스 진행이 마이그레이션 원본 버전에 속해 있지 않습니다."
     await recordFailedCurriculumMigrationApplication(db, {
       courseId: fromVersion.courseId,
       errorMessage: message,

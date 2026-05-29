@@ -20,7 +20,7 @@ export function registerUsersRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Admin user list.",
+          description: "관리자 사용자 목록입니다.",
           content: {
             "application/json": {
               schema: resolver(adminUserListDtoSchema),
@@ -28,10 +28,10 @@ export function registerUsersRoute(
           },
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },

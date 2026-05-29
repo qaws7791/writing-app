@@ -128,7 +128,7 @@ const contentService: ContentService = {
         status: "not-found",
         error: {
           code: "lesson-not-found",
-          message: "Lesson was not found.",
+          message: "레슨을 찾을 수 없습니다.",
           lessonId: targetLessonId,
         },
       }
@@ -143,7 +143,7 @@ function createRepository(): LearningRepository {
     applyCurriculumUpgrade: vi.fn(async () => ({
       error: {
         code: "not-found" as const,
-        message: "Curriculum upgrade was not found.",
+        message: "커리큘럼 업그레이드를 찾을 수 없습니다.",
       },
       status: "not-found" as const,
     })),
@@ -156,7 +156,7 @@ function createRepository(): LearningRepository {
     dismissCurriculumUpgrade: vi.fn(async () => ({
       error: {
         code: "not-found" as const,
-        message: "Curriculum upgrade was not found.",
+        message: "커리큘럼 업그레이드를 찾을 수 없습니다.",
       },
       status: "not-found" as const,
     })),
@@ -386,7 +386,7 @@ describe("createLearningService", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Lesson is not part of the learner curriculum version.",
+        message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
       },
     })
     expect(repository.upsertLessonProgress).not.toHaveBeenCalled()
@@ -434,7 +434,7 @@ describe("createLearningService", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Lesson is not part of the learner curriculum version.",
+        message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
       },
     })
     expect(repository.upsertLessonAnswer).not.toHaveBeenCalled()
@@ -457,7 +457,7 @@ describe("createLearningService", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "This lesson step does not accept saved answers.",
+        message: "이 레슨 스텝은 답변 저장을 지원하지 않습니다.",
       },
     })
     expect(repository.upsertLessonAnswer).not.toHaveBeenCalled()

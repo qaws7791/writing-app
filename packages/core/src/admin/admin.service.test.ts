@@ -517,7 +517,7 @@ describe("createAdminService", () => {
             status: "conflict",
             error: {
               code: "conflict",
-              message: "Curriculum version has changed.",
+              message: "커리큘럼 버전이 변경되었습니다.",
             },
           }
         },
@@ -543,7 +543,7 @@ describe("createAdminService", () => {
       status: "conflict",
       error: {
         code: "conflict",
-        message: "Curriculum version has changed.",
+        message: "커리큘럼 버전이 변경되었습니다.",
       },
     })
   })
@@ -599,7 +599,7 @@ describe("createAdminService", () => {
             status: "conflict",
             error: {
               code: "conflict",
-              message: "Curriculum version has changed.",
+              message: "커리큘럼 버전이 변경되었습니다.",
             },
           }
         },
@@ -625,7 +625,7 @@ describe("createAdminService", () => {
       status: "conflict",
       error: {
         code: "conflict",
-        message: "Curriculum version has changed.",
+        message: "커리큘럼 버전이 변경되었습니다.",
       },
     })
   })
@@ -678,7 +678,7 @@ describe("createAdminService", () => {
             status: "invalid-request",
             error: {
               code: "invalid-request",
-              message: "Draft curriculum version already exists.",
+              message: "이미 커리큘럼 초안 버전이 있습니다.",
             },
           }
         },
@@ -691,7 +691,7 @@ describe("createAdminService", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Draft curriculum version already exists.",
+        message: "이미 커리큘럼 초안 버전이 있습니다.",
       },
     })
   })
@@ -727,7 +727,7 @@ describe("createAdminService", () => {
       status: "not-found",
       error: {
         code: "not-found",
-        message: "Curriculum version was not found.",
+        message: "커리큘럼 버전을 찾을 수 없습니다.",
       },
     })
   })
@@ -756,7 +756,7 @@ describe("createAdminService", () => {
             status: "invalid-request",
             error: {
               code: "invalid-request",
-              message: "Only draft curriculum versions can be published.",
+              message: "초안 커리큘럼 버전만 발행할 수 있습니다.",
             },
           }
         },
@@ -769,7 +769,7 @@ describe("createAdminService", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Only draft curriculum versions can be published.",
+        message: "초안 커리큘럼 버전만 발행할 수 있습니다.",
       },
     })
   })
@@ -835,7 +835,7 @@ describe("createAdminService", () => {
       status: "not-found",
       error: {
         code: "not-found",
-        message: "Curriculum migration was not found.",
+        message: "커리큘럼 마이그레이션을 찾을 수 없습니다.",
       },
     })
   })
@@ -868,7 +868,7 @@ describe("createAdminService", () => {
             status: "invalid-request",
             error: {
               code: "invalid-request",
-              message: "Removed mappings must not include a target lesson.",
+              message: "제거 매핑에는 대상 레슨을 포함할 수 없습니다.",
             },
           }
         },
@@ -891,7 +891,7 @@ describe("createAdminService", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Removed mappings must not include a target lesson.",
+        message: "제거 매핑에는 대상 레슨을 포함할 수 없습니다.",
       },
     })
   })

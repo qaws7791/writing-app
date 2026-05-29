@@ -74,7 +74,10 @@ describe("requestEmailAuth", () => {
 
   it("returns a readable error when authentication fails", async () => {
     const fetch = vi.fn<AuthFetch>(async () =>
-      Response.json({ message: "Invalid password." }, { status: 401 })
+      Response.json(
+        { message: "비밀번호가 올바르지 않습니다." },
+        { status: 401 }
+      )
     )
 
     await expect(
@@ -87,7 +90,7 @@ describe("requestEmailAuth", () => {
       })
     ).resolves.toEqual({
       status: "error",
-      message: "Invalid password.",
+      message: "비밀번호가 올바르지 않습니다.",
     })
   })
 })

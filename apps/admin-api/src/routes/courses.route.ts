@@ -29,7 +29,7 @@ export function registerCoursesRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Admin course list or course tree.",
+          description: "관리자 코스 목록 또는 코스 트리입니다.",
           content: {
             "application/json": {
               schema: resolver(
@@ -39,14 +39,14 @@ export function registerCoursesRoute(
           },
         },
         400: {
-          description: "Course include query is invalid.",
+          description: "코스 include 쿼리가 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -86,7 +86,7 @@ export function registerCoursesRoute(
         return context.json(
           {
             code: "invalid-request",
-            message: "include must be chapters,lessons.",
+            message: "쿼리 include는 chapters,lessons여야 합니다.",
           },
           400
         )

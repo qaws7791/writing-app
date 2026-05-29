@@ -161,7 +161,7 @@ const unavailableResult: UnavailableResult = {
   status: "unavailable",
   error: {
     code: "database-unavailable",
-    message: "Database is unavailable.",
+    message: "데이터베이스를 사용할 수 없습니다.",
   },
 }
 
@@ -178,7 +178,7 @@ export function createAdminService({
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Course was not found.",
+              message: "코스를 찾을 수 없습니다.",
             },
           }
         }
@@ -215,7 +215,7 @@ export function createAdminService({
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Course editor document was not found.",
+              message: "코스 편집 문서를 찾을 수 없습니다.",
             },
           }
         }
@@ -281,7 +281,7 @@ export function createAdminService({
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Curriculum version was not found.",
+              message: "커리큘럼 버전을 찾을 수 없습니다.",
             },
           }
         }
@@ -306,7 +306,7 @@ export function createAdminService({
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Curriculum version was not found.",
+              message: "커리큘럼 버전을 찾을 수 없습니다.",
             },
           }
         }
@@ -332,7 +332,7 @@ export function createAdminService({
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Lesson was not found.",
+              message: "레슨을 찾을 수 없습니다.",
             },
           }
         }
@@ -491,7 +491,7 @@ export function createAdminService({
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Curriculum migration was not found.",
+              message: "커리큘럼 마이그레이션을 찾을 수 없습니다.",
             },
           }
         }

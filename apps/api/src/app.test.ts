@@ -87,7 +87,7 @@ const fakeContentService: ContentService = {
         status: "invalid-request",
         error: {
           code: "invalid-request",
-          message: "Search query is required.",
+          message: "검색어를 입력해야 합니다.",
         },
       }
     }
@@ -107,7 +107,7 @@ const fakeContentService: ContentService = {
         status: "not-found",
         error: {
           code: "course-not-found",
-          message: "Course was not found.",
+          message: "코스를 찾을 수 없습니다.",
           courseId: String(courseId),
         },
       }
@@ -121,7 +121,7 @@ const fakeContentService: ContentService = {
         status: "not-found",
         error: {
           code: "lesson-not-found",
-          message: "Lesson was not found.",
+          message: "레슨을 찾을 수 없습니다.",
           lessonId: String(lessonId),
         },
       }
@@ -351,7 +351,7 @@ describe("createApiApp", () => {
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
       code: "unauthorized",
-      message: "Authentication is required.",
+      message: "로그인이 필요합니다.",
     })
   })
 
@@ -399,7 +399,7 @@ describe("createApiApp", () => {
           status: "retry-limit-exceeded",
           error: {
             code: "feedback-retry-limit-exceeded",
-            message: "Feedback retry limit was exceeded.",
+            message: "피드백 재시도 한도를 초과했습니다.",
           },
         }
       },
@@ -423,7 +423,7 @@ describe("createApiApp", () => {
     expect(response.status).toBe(429)
     await expect(response.json()).resolves.toEqual({
       code: "feedback-retry-limit-exceeded",
-      message: "Feedback retry limit was exceeded.",
+      message: "피드백 재시도 한도를 초과했습니다.",
     })
   })
 
@@ -435,7 +435,7 @@ describe("createApiApp", () => {
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
       code: "unauthorized",
-      message: "Authentication is required.",
+      message: "로그인이 필요합니다.",
     })
   })
 
@@ -461,7 +461,7 @@ describe("createApiApp", () => {
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
       code: "unauthorized",
-      message: "Authentication is required.",
+      message: "로그인이 필요합니다.",
     })
   })
 
@@ -506,7 +506,7 @@ describe("createApiApp", () => {
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
       code: "unauthorized",
-      message: "Authentication is required.",
+      message: "로그인이 필요합니다.",
     })
   })
 
@@ -705,7 +705,7 @@ describe("createApiApp", () => {
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "Search query is required.",
+      message: "검색어를 입력해야 합니다.",
     })
   })
 
@@ -717,7 +717,7 @@ describe("createApiApp", () => {
     expect(response.status).toBe(404)
     await expect(response.json()).resolves.toEqual({
       code: "course-not-found",
-      message: "Course was not found.",
+      message: "코스를 찾을 수 없습니다.",
       courseId: "not-real",
     })
   })
@@ -730,7 +730,7 @@ describe("createApiApp", () => {
     expect(response.status).toBe(404)
     await expect(response.json()).resolves.toEqual({
       code: "lesson-not-found",
-      message: "Lesson was not found.",
+      message: "레슨을 찾을 수 없습니다.",
       lessonId: "not-real",
     })
   })

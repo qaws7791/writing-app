@@ -24,7 +24,7 @@ export function registerCurriculumVersionsRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Admin curriculum versions for a course.",
+          description: "코스의 관리자 커리큘럼 버전 목록입니다.",
           content: {
             "application/json": {
               schema: resolver(adminCurriculumVersionListDtoSchema),
@@ -32,10 +32,10 @@ export function registerCurriculumVersionsRoute(
           },
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -60,7 +60,7 @@ export function registerCurriculumVersionsRoute(
     describeRoute({
       responses: {
         201: {
-          description: "Created admin curriculum draft.",
+          description: "관리자 커리큘럼 초안을 생성했습니다.",
           content: {
             "application/json": {
               schema: resolver(adminCurriculumVersionSummaryDtoSchema),
@@ -68,18 +68,18 @@ export function registerCurriculumVersionsRoute(
           },
         },
         400: {
-          description: "Draft creation request is invalid.",
+          description: "초안 생성 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Published curriculum version was not found.",
+          description: "발행된 커리큘럼 버전을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -108,7 +108,7 @@ export function registerCurriculumVersionsRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Admin curriculum version detail.",
+          description: "관리자 커리큘럼 버전 상세입니다.",
           content: {
             "application/json": {
               schema: resolver(adminCurriculumVersionDetailDtoSchema),
@@ -116,14 +116,14 @@ export function registerCurriculumVersionsRoute(
           },
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Curriculum version was not found.",
+          description: "커리큘럼 버전을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -152,7 +152,7 @@ export function registerCurriculumVersionsRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Published admin curriculum draft.",
+          description: "관리자 커리큘럼 초안을 발행했습니다.",
           content: {
             "application/json": {
               schema: resolver(adminCurriculumVersionSummaryDtoSchema),
@@ -160,18 +160,18 @@ export function registerCurriculumVersionsRoute(
           },
         },
         400: {
-          description: "Publish request is invalid.",
+          description: "발행 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Curriculum version was not found.",
+          description: "커리큘럼 버전을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },

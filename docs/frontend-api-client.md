@@ -40,7 +40,7 @@
 - 브라우저에서 `/courses`, `/courses/sentence-structure`, `/lesson?lesson_id=sentence-structure-01` 화면 렌더링과 레슨 단계 전환을 확인했다.
 - 공개 API 호출은 `/health`, `/courses`, `/courses/sentence-structure`, `/lessons/sentence-structure-01`이 `200`을 반환했다.
 - 실제 API 모드의 브라우저 레슨 진행 저장, 답변 저장, 레슨 완료, AI 피드백 호출은 인증 세션이 없어 `401 unauthorized`를 반환했다.
-- 현재 `apps/web`에는 로그인 또는 회원가입 화면이 없어 브라우저에서 실제 인증 세션을 만들 수 없고, AI 피드백 단계에는 `Authentication is required.` 오류가 표시된다.
+- 현재 `apps/web`에는 로그인 또는 회원가입 화면이 없어 브라우저에서 실제 인증 세션을 만들 수 없고, AI 피드백 단계에는 `로그인이 필요합니다.` 오류가 표시된다.
 - 같은 API 서버에서 테스트 계정 쿠키로 직접 호출한 인증 API는 진행 저장, 답변 저장, AI 피드백 모두 `200`을 반환해 백엔드 기능 자체는 정상 동작함을 확인했다.
 - 다음 작업은 실제 API 모드에서 사용할 프론트 인증 진입점과 인증 필요 상태의 UX를 추가한 뒤 브라우저에서 저장/AI 피드백 성공 경로를 다시 검증하는 것이다.
 

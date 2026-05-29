@@ -227,7 +227,7 @@ it("rejects blank course search queries", async () => {
     status: "invalid-request",
     error: {
       code: "invalid-request",
-      message: "Search query is required.",
+      message: "검색어를 입력해야 합니다.",
     },
   })
 })
@@ -305,10 +305,10 @@ app.get(
   "/courses/search",
   describeRoute({
     responses: {
-      200: { description: "Course search results." },
-      400: { description: "Search query is required." },
-      500: { description: "Content seed is invalid." },
-      503: { description: "Database is unavailable." },
+      200: { description: "코스 검색 결과입니다." },
+      400: { description: "검색어를 입력해야 합니다." },
+      500: { description: "콘텐츠 시드가 올바르지 않습니다." },
+      503: { description: "데이터베이스를 사용할 수 없습니다." },
     },
   }),
   async (context) => {
@@ -358,7 +358,7 @@ it("returns unauthorized for /me without a session", async () => {
   expect(response.status).toBe(401)
   await expect(response.json()).resolves.toEqual({
     code: "unauthorized",
-    message: "Authentication is required.",
+    message: "로그인이 필요합니다.",
   })
 })
 
@@ -421,7 +421,7 @@ export interface AuthRuntime {
 
 export const unauthorizedError = {
   code: "unauthorized",
-  message: "Authentication is required.",
+  message: "로그인이 필요합니다.",
 } as const
 ```
 

@@ -458,7 +458,7 @@ describe("createHttpAdminApi", () => {
       createJsonResponse(
         {
           code: "database-unavailable",
-          message: "Database is unavailable.",
+          message: "데이터베이스를 사용할 수 없습니다.",
         },
         { status: 503 }
       )
@@ -472,7 +472,7 @@ describe("createHttpAdminApi", () => {
       status: "error",
       error: {
         code: "database-unavailable",
-        message: "Database is unavailable.",
+        message: "데이터베이스를 사용할 수 없습니다.",
       },
       httpStatus: 503,
     })
@@ -491,7 +491,7 @@ describe("createHttpAdminApi", () => {
       status: "error",
       error: {
         code: "unknown-error",
-        message: "Admin API request failed.",
+        message: "관리자 API 요청에 실패했습니다.",
       },
       httpStatus: 0,
     })
@@ -510,7 +510,7 @@ describe("createHttpAdminApi", () => {
       status: "error",
       error: {
         code: "unknown-error",
-        message: "Admin API request failed.",
+        message: "관리자 API 요청에 실패했습니다.",
       },
       httpStatus: 0,
     })

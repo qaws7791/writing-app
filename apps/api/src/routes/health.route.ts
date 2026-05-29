@@ -11,7 +11,7 @@ const healthDtoSchema = z.object({
 
 const databaseUnavailableDtoSchema = z.object({
   code: z.literal("database-unavailable"),
-  message: z.literal("Database is unavailable."),
+  message: z.literal("데이터베이스를 사용할 수 없습니다."),
 })
 
 export function registerHealthRoute(
@@ -23,7 +23,7 @@ export function registerHealthRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Database connection is available.",
+          description: "데이터베이스 연결이 가능합니다.",
           content: {
             "application/json": {
               schema: resolver(healthDtoSchema),
@@ -31,7 +31,7 @@ export function registerHealthRoute(
           },
         },
         503: {
-          description: "Database connection is unavailable.",
+          description: "데이터베이스 연결을 사용할 수 없습니다.",
           content: {
             "application/json": {
               schema: resolver(databaseUnavailableDtoSchema),
@@ -47,7 +47,7 @@ export function registerHealthRoute(
         return context.json(
           {
             code: "database-unavailable",
-            message: "Database is unavailable.",
+            message: "데이터베이스를 사용할 수 없습니다.",
           },
           503
         )

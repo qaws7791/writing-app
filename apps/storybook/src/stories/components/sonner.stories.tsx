@@ -78,7 +78,7 @@ export const Loading: Story = {
         setTimeout(() => toast.success("File uploaded!", { id }), 2000)
       }}
     >
-      Loading Toast
+      로딩 중 토스트
     </Button>
   ),
 }

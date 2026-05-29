@@ -157,7 +157,7 @@ describe("createContentService", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Search query is required.",
+        message: "검색어를 입력해야 합니다.",
       },
     })
   })
@@ -171,7 +171,7 @@ describe("createContentService", () => {
       status: "not-found",
       error: {
         code: "course-not-found",
-        message: "Course was not found.",
+        message: "코스를 찾을 수 없습니다.",
         courseId: "not-real",
       },
     })
@@ -186,7 +186,7 @@ describe("createContentService", () => {
       status: "not-found",
       error: {
         code: "lesson-not-found",
-        message: "Lesson was not found.",
+        message: "레슨을 찾을 수 없습니다.",
         lessonId: "not-real",
       },
     })
@@ -222,7 +222,7 @@ describe("createContentService", () => {
       status: "invalid-content",
       error: {
         code: "invalid-content-seed",
-        message: "Lesson steps must use contiguous order starting at 1.",
+        message: "레슨 스텝 순서는 1부터 빈틈없이 이어져야 합니다.",
         lessonId: "sentence-structure-01",
       },
     })
@@ -334,7 +334,7 @@ describe("createContentService", () => {
       status: "invalid-content",
       error: {
         code: "invalid-content-seed",
-        message: "Content seed is invalid.",
+        message: "콘텐츠 시드가 올바르지 않습니다.",
       },
     })
   })
@@ -364,7 +364,7 @@ describe("createContentService", () => {
       status: "invalid-content",
       error: {
         code: "invalid-content-seed",
-        message: "Content seed is invalid.",
+        message: "콘텐츠 시드가 올바르지 않습니다.",
       },
     })
   })
@@ -394,7 +394,7 @@ describe("createContentService", () => {
       status: "invalid-content",
       error: {
         code: "invalid-content-seed",
-        message: "Content seed is invalid.",
+        message: "콘텐츠 시드가 올바르지 않습니다.",
         lessonId: "sentence-structure-01",
       },
     })
@@ -430,7 +430,7 @@ describe("createContentService", () => {
       status: "invalid-content",
       error: {
         code: "invalid-content-seed",
-        message: "Content seed is invalid.",
+        message: "콘텐츠 시드가 올바르지 않습니다.",
         lessonId: "sentence-structure-01",
       },
     })
@@ -452,7 +452,7 @@ describe("createContentService", () => {
       status: "unavailable",
       error: {
         code: "database-unavailable",
-        message: "Database is unavailable.",
+        message: "데이터베이스를 사용할 수 없습니다.",
       },
     })
   })
@@ -473,7 +473,7 @@ describe("createContentService", () => {
       status: "unavailable",
       error: {
         code: "database-unavailable",
-        message: "Database is unavailable.",
+        message: "데이터베이스를 사용할 수 없습니다.",
       },
     })
   })
@@ -494,7 +494,7 @@ describe("createContentService", () => {
       status: "unavailable",
       error: {
         code: "database-unavailable",
-        message: "Database is unavailable.",
+        message: "데이터베이스를 사용할 수 없습니다.",
       },
     })
   })

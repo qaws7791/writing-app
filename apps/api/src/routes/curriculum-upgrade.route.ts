@@ -43,7 +43,7 @@ export function registerCurriculumUpgradeRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Current learner curriculum upgrade notice.",
+          description: "현재 학습자의 커리큘럼 업그레이드 공지입니다.",
           content: {
             "application/json": {
               schema: resolver(curriculumUpgradeNoticeDtoSchema),
@@ -51,19 +51,19 @@ export function registerCurriculumUpgradeRoute(
           },
         },
         401: {
-          description: "Authentication is required.",
+          description: "로그인이 필요합니다.",
           content: jsonErrorResponse(unauthorizedErrorDtoSchema),
         },
         404: {
-          description: "Course was not found.",
+          description: "코스를 찾을 수 없습니다.",
           content: jsonErrorResponse(courseNotFoundErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(learningDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -89,7 +89,7 @@ export function registerCurriculumUpgradeRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Applied current learner curriculum upgrade.",
+          description: "현재 학습자의 커리큘럼 업그레이드를 적용했습니다.",
           content: {
             "application/json": {
               schema: resolver(curriculumUpgradeApplicationDtoSchema),
@@ -97,23 +97,23 @@ export function registerCurriculumUpgradeRoute(
           },
         },
         400: {
-          description: "Invalid upgrade request.",
+          description: "업그레이드 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(learningInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Authentication is required.",
+          description: "로그인이 필요합니다.",
           content: jsonErrorResponse(unauthorizedErrorDtoSchema),
         },
         404: {
-          description: "Course or curriculum upgrade was not found.",
+          description: "코스 또는 커리큘럼 업그레이드를 찾을 수 없습니다.",
           content: jsonErrorResponse(curriculumUpgradeNotFoundErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(learningDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -139,7 +139,7 @@ export function registerCurriculumUpgradeRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Dismissed current learner curriculum upgrade notice.",
+          description: "현재 학습자의 커리큘럼 업그레이드 공지를 숨겼습니다.",
           content: {
             "application/json": {
               schema: resolver(dismissCurriculumUpgradeDtoSchema),
@@ -147,19 +147,19 @@ export function registerCurriculumUpgradeRoute(
           },
         },
         401: {
-          description: "Authentication is required.",
+          description: "로그인이 필요합니다.",
           content: jsonErrorResponse(unauthorizedErrorDtoSchema),
         },
         404: {
-          description: "Course or curriculum upgrade was not found.",
+          description: "코스 또는 커리큘럼 업그레이드를 찾을 수 없습니다.",
           content: jsonErrorResponse(curriculumUpgradeNotFoundErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(learningDatabaseUnavailableErrorDtoSchema),
         },
       },

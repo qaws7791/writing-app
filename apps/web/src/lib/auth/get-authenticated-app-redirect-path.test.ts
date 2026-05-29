@@ -42,7 +42,7 @@ describe("getAuthenticatedAppRedirectPath", () => {
       getCurrentUser: async () =>
         apiFailure({
           code: "unauthorized",
-          message: "Authentication is required.",
+          message: "로그인이 필요합니다.",
         }),
     })
 

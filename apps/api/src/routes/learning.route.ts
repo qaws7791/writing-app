@@ -41,7 +41,7 @@ export function registerLearningRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Current learner course progress.",
+          description: "현재 학습자의 코스 진행입니다.",
           content: {
             "application/json": {
               schema: resolver(courseProgressDtoSchema),
@@ -49,19 +49,19 @@ export function registerLearningRoute(
           },
         },
         401: {
-          description: "Authentication is required.",
+          description: "로그인이 필요합니다.",
           content: jsonErrorResponse(unauthorizedErrorDtoSchema),
         },
         404: {
-          description: "Course was not found.",
+          description: "코스를 찾을 수 없습니다.",
           content: jsonErrorResponse(courseNotFoundErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(learningDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -87,7 +87,7 @@ export function registerLearningRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Current learner lesson progress.",
+          description: "현재 학습자의 레슨 진행입니다.",
           content: {
             "application/json": {
               schema: resolver(lessonProgressDtoSchema),
@@ -95,19 +95,19 @@ export function registerLearningRoute(
           },
         },
         401: {
-          description: "Authentication is required.",
+          description: "로그인이 필요합니다.",
           content: jsonErrorResponse(unauthorizedErrorDtoSchema),
         },
         404: {
-          description: "Lesson was not found.",
+          description: "레슨을 찾을 수 없습니다.",
           content: jsonErrorResponse(lessonNotFoundErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(learningDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -133,7 +133,7 @@ export function registerLearningRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Saved lesson progress.",
+          description: "레슨 진행을 저장했습니다.",
           content: {
             "application/json": {
               schema: resolver(lessonProgressDtoSchema),
@@ -141,23 +141,23 @@ export function registerLearningRoute(
           },
         },
         400: {
-          description: "Invalid request.",
+          description: "요청이 올바르지 않습니다.",
           content: jsonErrorResponse(learningInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Authentication is required.",
+          description: "로그인이 필요합니다.",
           content: jsonErrorResponse(unauthorizedErrorDtoSchema),
         },
         404: {
-          description: "Lesson was not found.",
+          description: "레슨을 찾을 수 없습니다.",
           content: jsonErrorResponse(lessonNotFoundErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(learningDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -193,7 +193,7 @@ export function registerLearningRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Saved lesson answer.",
+          description: "레슨 답변을 저장했습니다.",
           content: {
             "application/json": {
               schema: resolver(z.object({ saved: z.literal(true) })),
@@ -201,23 +201,23 @@ export function registerLearningRoute(
           },
         },
         400: {
-          description: "Invalid request.",
+          description: "요청이 올바르지 않습니다.",
           content: jsonErrorResponse(learningInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Authentication is required.",
+          description: "로그인이 필요합니다.",
           content: jsonErrorResponse(unauthorizedErrorDtoSchema),
         },
         404: {
-          description: "Lesson was not found.",
+          description: "레슨을 찾을 수 없습니다.",
           content: jsonErrorResponse(lessonNotFoundErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(learningDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -250,7 +250,7 @@ export function registerLearningRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Completed lesson.",
+          description: "레슨을 완료했습니다.",
           content: {
             "application/json": {
               schema: resolver(completeLessonDtoSchema),
@@ -258,19 +258,19 @@ export function registerLearningRoute(
           },
         },
         401: {
-          description: "Authentication is required.",
+          description: "로그인이 필요합니다.",
           content: jsonErrorResponse(unauthorizedErrorDtoSchema),
         },
         404: {
-          description: "Lesson was not found.",
+          description: "레슨을 찾을 수 없습니다.",
           content: jsonErrorResponse(lessonNotFoundErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(learningDatabaseUnavailableErrorDtoSchema),
         },
       },

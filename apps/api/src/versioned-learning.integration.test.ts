@@ -58,7 +58,7 @@ const latestPublicContentService: ContentService = {
       error: {
         code: "lesson-not-found",
         lessonId: "not-used",
-        message: "Lesson was not found.",
+        message: "레슨을 찾을 수 없습니다.",
       },
     }
   },
@@ -76,7 +76,7 @@ const learnerVersionProgressService: LearningService = {
       status: "not-found",
       error: {
         code: "not-found",
-        message: "Curriculum upgrade was not found.",
+        message: "커리큘럼 업그레이드를 찾을 수 없습니다.",
       },
     }
   },
@@ -85,7 +85,7 @@ const learnerVersionProgressService: LearningService = {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Lesson is not part of the learner curriculum version.",
+        message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
       },
     }
   },
@@ -94,7 +94,7 @@ const learnerVersionProgressService: LearningService = {
       status: "not-found",
       error: {
         code: "not-found",
-        message: "Curriculum upgrade was not found.",
+        message: "커리큘럼 업그레이드를 찾을 수 없습니다.",
       },
     }
   },
@@ -161,7 +161,7 @@ const learnerVersionProgressService: LearningService = {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Lesson is not part of the learner curriculum version.",
+        message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
       },
     }
   },
@@ -170,7 +170,7 @@ const learnerVersionProgressService: LearningService = {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Lesson is not part of the learner curriculum version.",
+        message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
       },
     }
   },
@@ -262,17 +262,17 @@ describe("version-aware learning API", () => {
     expect(progressResponse.status).toBe(400)
     await expect(progressResponse.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "Lesson is not part of the learner curriculum version.",
+      message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
     })
     expect(answerResponse.status).toBe(400)
     await expect(answerResponse.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "Lesson is not part of the learner curriculum version.",
+      message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
     })
     expect(completeResponse.status).toBe(400)
     await expect(completeResponse.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "Lesson is not part of the learner curriculum version.",
+      message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
     })
   })
 })

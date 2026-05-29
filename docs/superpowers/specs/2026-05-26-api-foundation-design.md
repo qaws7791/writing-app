@@ -256,7 +256,7 @@ Unknown course IDs return `404` with:
 ```json
 {
   "code": "course-not-found",
-  "message": "Course was not found.",
+  "message": "코스를 찾을 수 없습니다.",
   "courseId": "not-real"
 }
 ```
@@ -299,7 +299,7 @@ Unknown lesson IDs return `404` with:
 ```json
 {
   "code": "lesson-not-found",
-  "message": "Lesson was not found.",
+  "message": "레슨을 찾을 수 없습니다.",
   "lessonId": "not-real"
 }
 ```

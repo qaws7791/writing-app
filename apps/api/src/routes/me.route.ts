@@ -24,7 +24,7 @@ export function registerMeRoute(app: Hono, auth: AuthRuntime) {
     describeRoute({
       responses: {
         200: {
-          description: "Current authenticated user.",
+          description: "현재 인증된 사용자입니다.",
           content: {
             "application/json": {
               schema: resolver(currentUserDtoSchema),
@@ -32,7 +32,7 @@ export function registerMeRoute(app: Hono, auth: AuthRuntime) {
           },
         },
         401: {
-          description: "Authentication is required.",
+          description: "로그인이 필요합니다.",
           content: jsonErrorResponse(unauthorizedErrorDtoSchema),
         },
       },

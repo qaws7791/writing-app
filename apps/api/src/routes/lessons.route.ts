@@ -21,7 +21,7 @@ export function registerLessonsRoutes(
     describeRoute({
       responses: {
         200: {
-          description: "Lesson detail.",
+          description: "레슨 상세입니다.",
           content: {
             "application/json": {
               schema: resolver(lessonDtoSchema),
@@ -29,15 +29,15 @@ export function registerLessonsRoutes(
           },
         },
         404: {
-          description: "Lesson was not found.",
+          description: "레슨을 찾을 수 없습니다.",
           content: jsonErrorResponse(lessonNotFoundErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(databaseUnavailableErrorDtoSchema),
         },
       },

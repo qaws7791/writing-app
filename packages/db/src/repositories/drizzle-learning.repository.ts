@@ -609,7 +609,7 @@ function curriculumUpgradeNotFound() {
     status: "not-found",
     error: {
       code: "not-found",
-      message: "Curriculum upgrade was not found.",
+      message: "커리큘럼 업그레이드를 찾을 수 없습니다.",
     },
   } as const
 }

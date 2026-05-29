@@ -265,7 +265,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Database connection is available. */
+      /** @description 데이터베이스 연결이 가능합니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -279,7 +279,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database connection is unavailable. */
+      /** @description 데이터베이스 연결을 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -289,7 +289,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -304,7 +304,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Course categories. */
+      /** @description 코스 카테고리 목록입니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -325,7 +325,7 @@ export interface operations {
           }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -339,7 +339,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -349,7 +349,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -364,7 +364,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Course search results. */
+      /** @description 코스 검색 결과입니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -381,7 +381,7 @@ export interface operations {
           }
         }
       }
-      /** @description Search query is required. */
+      /** @description 검색어를 입력해야 합니다. */
       400: {
         headers: {
           [name: string]: unknown
@@ -394,7 +394,7 @@ export interface operations {
           }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -408,7 +408,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -418,7 +418,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -435,7 +435,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Course detail. */
+      /** @description 코스 상세입니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -463,7 +463,7 @@ export interface operations {
           }
         }
       }
-      /** @description Course was not found. */
+      /** @description 코스를 찾을 수 없습니다. */
       404: {
         headers: {
           [name: string]: unknown
@@ -473,12 +473,12 @@ export interface operations {
             /** @constant */
             code: "course-not-found"
             /** @constant */
-            message: "Course was not found."
+            message: "코스를 찾을 수 없습니다."
             courseId: string
           }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -492,7 +492,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -502,7 +502,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -519,7 +519,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Lesson detail. */
+      /** @description 레슨 상세입니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -951,7 +951,7 @@ export interface operations {
           }
         }
       }
-      /** @description Lesson was not found. */
+      /** @description 레슨을 찾을 수 없습니다. */
       404: {
         headers: {
           [name: string]: unknown
@@ -961,12 +961,12 @@ export interface operations {
             /** @constant */
             code: "lesson-not-found"
             /** @constant */
-            message: "Lesson was not found."
+            message: "레슨을 찾을 수 없습니다."
             lessonId: string
           }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -980,7 +980,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -990,7 +990,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -1005,7 +1005,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Current authenticated user. */
+      /** @description 현재 인증된 사용자입니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1020,7 +1020,7 @@ export interface operations {
           }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1044,7 +1044,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Current learner profile summary. */
+      /** @description 현재 학습자의 프로필 요약입니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1056,7 +1056,7 @@ export interface operations {
           }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1069,7 +1069,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -1079,7 +1079,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -1094,7 +1094,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Current learner course progress list. */
+      /** @description 현재 학습자의 코스 진행 목록입니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1111,7 +1111,7 @@ export interface operations {
           }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1124,7 +1124,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -1134,7 +1134,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -1151,7 +1151,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Current learner curriculum upgrade notice. */
+      /** @description 현재 학습자의 커리큘럼 업그레이드 공지입니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1185,7 +1185,7 @@ export interface operations {
               }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1198,7 +1198,7 @@ export interface operations {
           }
         }
       }
-      /** @description Course was not found. */
+      /** @description 코스를 찾을 수 없습니다. */
       404: {
         headers: {
           [name: string]: unknown
@@ -1208,12 +1208,12 @@ export interface operations {
             /** @constant */
             code: "course-not-found"
             /** @constant */
-            message: "Course was not found."
+            message: "코스를 찾을 수 없습니다."
             courseId: string
           }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -1227,7 +1227,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -1237,7 +1237,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -1254,7 +1254,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Applied current learner curriculum upgrade. */
+      /** @description 현재 학습자의 커리큘럼 업그레이드를 적용했습니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1277,7 +1277,7 @@ export interface operations {
           }
         }
       }
-      /** @description Invalid upgrade request. */
+      /** @description 업그레이드 요청이 올바르지 않습니다. */
       400: {
         headers: {
           [name: string]: unknown
@@ -1290,7 +1290,7 @@ export interface operations {
           }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1303,7 +1303,7 @@ export interface operations {
           }
         }
       }
-      /** @description Course or curriculum upgrade was not found. */
+      /** @description 코스 또는 커리큘럼 업그레이드를 찾을 수 없습니다. */
       404: {
         headers: {
           [name: string]: unknown
@@ -1314,7 +1314,7 @@ export interface operations {
                 /** @constant */
                 code: "course-not-found"
                 /** @constant */
-                message: "Course was not found."
+                message: "코스를 찾을 수 없습니다."
                 courseId: string
               }
             | {
@@ -1324,7 +1324,7 @@ export interface operations {
               }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -1338,7 +1338,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -1348,7 +1348,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -1365,7 +1365,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Dismissed current learner curriculum upgrade notice. */
+      /** @description 현재 학습자의 커리큘럼 업그레이드 공지를 숨겼습니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1381,7 +1381,7 @@ export interface operations {
           }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1394,7 +1394,7 @@ export interface operations {
           }
         }
       }
-      /** @description Course or curriculum upgrade was not found. */
+      /** @description 코스 또는 커리큘럼 업그레이드를 찾을 수 없습니다. */
       404: {
         headers: {
           [name: string]: unknown
@@ -1405,7 +1405,7 @@ export interface operations {
                 /** @constant */
                 code: "course-not-found"
                 /** @constant */
-                message: "Course was not found."
+                message: "코스를 찾을 수 없습니다."
                 courseId: string
               }
             | {
@@ -1415,7 +1415,7 @@ export interface operations {
               }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -1429,7 +1429,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -1439,7 +1439,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -1456,7 +1456,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Current learner course progress. */
+      /** @description 현재 학습자의 코스 진행입니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1471,7 +1471,7 @@ export interface operations {
           }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1484,7 +1484,7 @@ export interface operations {
           }
         }
       }
-      /** @description Course was not found. */
+      /** @description 코스를 찾을 수 없습니다. */
       404: {
         headers: {
           [name: string]: unknown
@@ -1494,12 +1494,12 @@ export interface operations {
             /** @constant */
             code: "course-not-found"
             /** @constant */
-            message: "Course was not found."
+            message: "코스를 찾을 수 없습니다."
             courseId: string
           }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -1513,7 +1513,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -1523,7 +1523,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -1540,7 +1540,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Current learner lesson progress. */
+      /** @description 현재 학습자의 레슨 진행입니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1559,7 +1559,7 @@ export interface operations {
           }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1572,7 +1572,7 @@ export interface operations {
           }
         }
       }
-      /** @description Lesson was not found. */
+      /** @description 레슨을 찾을 수 없습니다. */
       404: {
         headers: {
           [name: string]: unknown
@@ -1582,12 +1582,12 @@ export interface operations {
             /** @constant */
             code: "lesson-not-found"
             /** @constant */
-            message: "Lesson was not found."
+            message: "레슨을 찾을 수 없습니다."
             lessonId: string
           }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -1601,7 +1601,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -1611,7 +1611,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -1628,7 +1628,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Saved lesson progress. */
+      /** @description 레슨 진행을 저장했습니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1647,7 +1647,7 @@ export interface operations {
           }
         }
       }
-      /** @description Invalid request. */
+      /** @description 요청이 올바르지 않습니다. */
       400: {
         headers: {
           [name: string]: unknown
@@ -1660,7 +1660,7 @@ export interface operations {
           }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1673,7 +1673,7 @@ export interface operations {
           }
         }
       }
-      /** @description Lesson was not found. */
+      /** @description 레슨을 찾을 수 없습니다. */
       404: {
         headers: {
           [name: string]: unknown
@@ -1683,12 +1683,12 @@ export interface operations {
             /** @constant */
             code: "lesson-not-found"
             /** @constant */
-            message: "Lesson was not found."
+            message: "레슨을 찾을 수 없습니다."
             lessonId: string
           }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -1702,7 +1702,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -1712,7 +1712,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -1729,7 +1729,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Saved lesson answer. */
+      /** @description 레슨 답변을 저장했습니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1741,7 +1741,7 @@ export interface operations {
           }
         }
       }
-      /** @description Invalid request. */
+      /** @description 요청이 올바르지 않습니다. */
       400: {
         headers: {
           [name: string]: unknown
@@ -1754,7 +1754,7 @@ export interface operations {
           }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1767,7 +1767,7 @@ export interface operations {
           }
         }
       }
-      /** @description Lesson was not found. */
+      /** @description 레슨을 찾을 수 없습니다. */
       404: {
         headers: {
           [name: string]: unknown
@@ -1777,12 +1777,12 @@ export interface operations {
             /** @constant */
             code: "lesson-not-found"
             /** @constant */
-            message: "Lesson was not found."
+            message: "레슨을 찾을 수 없습니다."
             lessonId: string
           }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -1796,7 +1796,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -1806,7 +1806,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -1823,7 +1823,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description Completed lesson. */
+      /** @description 레슨을 완료했습니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1839,7 +1839,7 @@ export interface operations {
           }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1852,7 +1852,7 @@ export interface operations {
           }
         }
       }
-      /** @description Lesson was not found. */
+      /** @description 레슨을 찾을 수 없습니다. */
       404: {
         headers: {
           [name: string]: unknown
@@ -1862,12 +1862,12 @@ export interface operations {
             /** @constant */
             code: "lesson-not-found"
             /** @constant */
-            message: "Lesson was not found."
+            message: "레슨을 찾을 수 없습니다."
             lessonId: string
           }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -1881,7 +1881,7 @@ export interface operations {
           }
         }
       }
-      /** @description Database is unavailable. */
+      /** @description 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -1891,7 +1891,7 @@ export interface operations {
             /** @constant */
             code: "database-unavailable"
             /** @constant */
-            message: "Database is unavailable."
+            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }
@@ -1906,7 +1906,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description AI feedback result. */
+      /** @description 인공지능 피드백 결과입니다. */
       200: {
         headers: {
           [name: string]: unknown
@@ -1922,7 +1922,7 @@ export interface operations {
           }
         }
       }
-      /** @description Invalid request. */
+      /** @description 요청이 올바르지 않습니다. */
       400: {
         headers: {
           [name: string]: unknown
@@ -1935,7 +1935,7 @@ export interface operations {
           }
         }
       }
-      /** @description Authentication is required. */
+      /** @description 로그인이 필요합니다. */
       401: {
         headers: {
           [name: string]: unknown
@@ -1948,7 +1948,7 @@ export interface operations {
           }
         }
       }
-      /** @description Lesson, feedback step, or answer was not found. */
+      /** @description 레슨, 피드백 스텝 또는 답변을 찾을 수 없습니다. */
       404: {
         headers: {
           [name: string]: unknown
@@ -1959,24 +1959,24 @@ export interface operations {
                 /** @constant */
                 code: "lesson-not-found"
                 /** @constant */
-                message: "Lesson was not found."
+                message: "레슨을 찾을 수 없습니다."
                 lessonId: string
               }
             | {
                 /** @constant */
                 code: "answer-not-found"
                 /** @constant */
-                message: "Answer was not found."
+                message: "답변을 찾을 수 없습니다."
               }
             | {
                 /** @constant */
                 code: "feedback-step-not-found"
                 /** @constant */
-                message: "Feedback step was not found."
+                message: "피드백 스텝을 찾을 수 없습니다."
               }
         }
       }
-      /** @description Feedback retry limit was exceeded. */
+      /** @description 피드백 재시도 한도를 초과했습니다. */
       429: {
         headers: {
           [name: string]: unknown
@@ -1986,11 +1986,11 @@ export interface operations {
             /** @constant */
             code: "feedback-retry-limit-exceeded"
             /** @constant */
-            message: "Feedback retry limit was exceeded."
+            message: "피드백 재시도 한도를 초과했습니다."
           }
         }
       }
-      /** @description Content seed is invalid. */
+      /** @description 콘텐츠 시드가 올바르지 않습니다. */
       500: {
         headers: {
           [name: string]: unknown
@@ -2004,7 +2004,7 @@ export interface operations {
           }
         }
       }
-      /** @description AI feedback or database is unavailable. */
+      /** @description 인공지능 피드백 또는 데이터베이스를 사용할 수 없습니다. */
       503: {
         headers: {
           [name: string]: unknown
@@ -2015,13 +2015,13 @@ export interface operations {
                 /** @constant */
                 code: "ai-feedback-unavailable"
                 /** @constant */
-                message: "AI feedback is unavailable."
+                message: "인공지능 피드백을 사용할 수 없습니다."
               }
             | {
                 /** @constant */
                 code: "database-unavailable"
                 /** @constant */
-                message: "Database is unavailable."
+                message: "데이터베이스를 사용할 수 없습니다."
               }
         }
       }

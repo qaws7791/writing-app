@@ -24,7 +24,7 @@ export function registerCoursesRoutes(
     describeRoute({
       responses: {
         200: {
-          description: "Course categories.",
+          description: "코스 카테고리 목록입니다.",
           content: {
             "application/json": {
               schema: resolver(courseCategoryListDtoSchema),
@@ -32,11 +32,11 @@ export function registerCoursesRoutes(
           },
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(databaseUnavailableErrorDtoSchema),
         },
       },
@@ -62,7 +62,7 @@ export function registerCoursesRoutes(
     describeRoute({
       responses: {
         200: {
-          description: "Course search results.",
+          description: "코스 검색 결과입니다.",
           content: {
             "application/json": {
               schema: resolver(courseSearchResultDtoSchema),
@@ -70,15 +70,15 @@ export function registerCoursesRoutes(
           },
         },
         400: {
-          description: "Search query is required.",
+          description: "검색어를 입력해야 합니다.",
           content: jsonErrorResponse(invalidRequestErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(databaseUnavailableErrorDtoSchema),
         },
       },
@@ -108,7 +108,7 @@ export function registerCoursesRoutes(
     describeRoute({
       responses: {
         200: {
-          description: "Course detail.",
+          description: "코스 상세입니다.",
           content: {
             "application/json": {
               schema: resolver(courseDetailDtoSchema),
@@ -116,15 +116,15 @@ export function registerCoursesRoutes(
           },
         },
         404: {
-          description: "Course was not found.",
+          description: "코스를 찾을 수 없습니다.",
           content: jsonErrorResponse(courseNotFoundErrorDtoSchema),
         },
         500: {
-          description: "Content seed is invalid.",
+          description: "콘텐츠 시드가 올바르지 않습니다.",
           content: jsonErrorResponse(invalidContentSeedErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(databaseUnavailableErrorDtoSchema),
         },
       },

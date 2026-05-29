@@ -63,7 +63,7 @@ const contentService: ContentService = {
       status: "not-found",
       error: {
         code: "course-not-found",
-        message: "Course was not found.",
+        message: "코스를 찾을 수 없습니다.",
         courseId: "not-used",
       },
     }
@@ -74,7 +74,7 @@ const contentService: ContentService = {
         status: "not-found",
         error: {
           code: "lesson-not-found",
-          message: "Lesson was not found.",
+          message: "레슨을 찾을 수 없습니다.",
           lessonId: targetLessonId,
         },
       }
@@ -89,7 +89,7 @@ function createLearningRepository(): LearningRepository {
     applyCurriculumUpgrade: vi.fn(async () => ({
       error: {
         code: "not-found" as const,
-        message: "Curriculum upgrade was not found.",
+        message: "커리큘럼 업그레이드를 찾을 수 없습니다.",
       },
       status: "not-found" as const,
     })),
@@ -98,7 +98,7 @@ function createLearningRepository(): LearningRepository {
     dismissCurriculumUpgrade: vi.fn(async () => ({
       error: {
         code: "not-found" as const,
-        message: "Curriculum upgrade was not found.",
+        message: "커리큘럼 업그레이드를 찾을 수 없습니다.",
       },
       status: "not-found" as const,
     })),
@@ -224,7 +224,7 @@ describe("createAiFeedbackService", () => {
       status: "answer-not-found",
       error: {
         code: "answer-not-found",
-        message: "Answer was not found.",
+        message: "답변을 찾을 수 없습니다.",
       },
     })
     expect(provider.createFeedback).not.toHaveBeenCalled()
@@ -252,7 +252,7 @@ describe("createAiFeedbackService", () => {
       status: "retry-limit-exceeded",
       error: {
         code: "feedback-retry-limit-exceeded",
-        message: "Feedback retry limit was exceeded.",
+        message: "피드백 재시도 한도를 초과했습니다.",
       },
     })
     expect(provider.createFeedback).not.toHaveBeenCalled()
@@ -281,7 +281,7 @@ describe("createAiFeedbackService", () => {
       status: "unavailable",
       error: {
         code: "ai-feedback-unavailable",
-        message: "AI feedback is unavailable.",
+        message: "인공지능 피드백을 사용할 수 없습니다.",
       },
     })
     expect(feedbackRepository.createCompletedAttempt).not.toHaveBeenCalled()

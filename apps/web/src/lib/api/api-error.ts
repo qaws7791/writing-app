@@ -62,19 +62,19 @@ export function apiErrorFromResponseBody(
     code === "database-unavailable" ||
     code === "ai-feedback-unavailable"
   ) {
-    return { code: "unavailable", message: "API is unavailable." }
+    return { code: "unavailable", message: "서버를 사용할 수 없습니다." }
   }
 
   return {
     code: "contract-error",
-    message: "API response did not match the expected contract.",
+    message: "서버 응답이 예상한 계약과 일치하지 않습니다.",
   }
 }
 
 export function networkApiError(): ApiError {
   return {
     code: "network-error",
-    message: "Network request failed.",
+    message: "네트워크 요청에 실패했습니다.",
   }
 }
 
@@ -91,7 +91,7 @@ function readMessage(body: unknown) {
     return body.message
   }
 
-  return "API request failed."
+  return "API 요청에 실패했습니다."
 }
 
 function hasStringProperty<TKey extends string>(

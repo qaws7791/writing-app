@@ -183,25 +183,25 @@ describe("api-error", () => {
     expect(
       apiErrorFromResponseBody(401, {
         code: "unauthorized",
-        message: "Authentication is required.",
+        message: "로그인이 필요합니다.",
       })
     ).toEqual({
       code: "unauthorized",
-      message: "Authentication is required.",
+      message: "로그인이 필요합니다.",
     })
   })
 
   it("maps unknown server responses to unavailable", () => {
     expect(apiErrorFromResponseBody(503, { message: "down" })).toEqual({
       code: "unavailable",
-      message: "API is unavailable.",
+      message: "서버를 사용할 수 없습니다.",
     })
   })
 
   it("maps fetch failures to network errors", () => {
     expect(networkApiError()).toEqual({
       code: "network-error",
-      message: "Network request failed.",
+      message: "네트워크 요청에 실패했습니다.",
     })
   })
 })
@@ -318,19 +318,19 @@ export function apiErrorFromResponseBody(
     code === "database-unavailable" ||
     code === "ai-feedback-unavailable"
   ) {
-    return { code: "unavailable", message: "API is unavailable." }
+    return { code: "unavailable", message: "서버를 사용할 수 없습니다." }
   }
 
   return {
     code: "contract-error",
-    message: "API response did not match the expected contract.",
+    message: "서버 응답이 예상한 계약과 일치하지 않습니다.",
   }
 }
 
 export function networkApiError(): ApiError {
   return {
     code: "network-error",
-    message: "Network request failed.",
+    message: "네트워크 요청에 실패했습니다.",
   }
 }
 
@@ -347,7 +347,7 @@ function readMessage(body: unknown) {
     return body.message
   }
 
-  return "API request failed."
+  return "API 요청에 실패했습니다."
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -908,7 +908,7 @@ describe("createHttpWritingAppApi", () => {
       Response.json(
         {
           code: "unauthorized",
-          message: "Authentication is required.",
+          message: "로그인이 필요합니다.",
         },
         { status: 401 }
       )
@@ -922,7 +922,7 @@ describe("createHttpWritingAppApi", () => {
       status: "error",
       error: {
         code: "unauthorized",
-        message: "Authentication is required.",
+        message: "로그인이 필요합니다.",
       },
     })
   })
@@ -1130,7 +1130,7 @@ async function request<TData, TValue>(
     if (data === undefined) {
       return apiFailure({
         code: "contract-error",
-        message: "API response did not include data.",
+        message: "서버 응답에 데이터가 없습니다.",
       })
     }
 
@@ -1275,7 +1275,7 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!normalizedQuery) {
         return apiFailure({
           code: "invalid-request",
-          message: "Search query is required.",
+          message: "검색어를 입력해야 합니다.",
         })
       }
 
@@ -1292,7 +1292,7 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!course) {
         return apiFailure({
           code: "not-found",
-          message: "Course was not found.",
+          message: "코스를 찾을 수 없습니다.",
         })
       }
 
@@ -1303,7 +1303,7 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!lesson) {
         return apiFailure({
           code: "not-found",
-          message: "Lesson was not found.",
+          message: "레슨을 찾을 수 없습니다.",
         })
       }
 
@@ -1330,7 +1330,7 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!course) {
         return apiFailure({
           code: "not-found",
-          message: "Course was not found.",
+          message: "코스를 찾을 수 없습니다.",
         })
       }
 
@@ -1349,7 +1349,7 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!lesson) {
         return apiFailure({
           code: "not-found",
-          message: "Lesson was not found.",
+          message: "레슨을 찾을 수 없습니다.",
         })
       }
       const firstStep = lesson.steps[0]
@@ -1388,14 +1388,14 @@ export function createFakeWritingAppApi(): WritingAppApi {
       if (!lesson) {
         return apiFailure({
           code: "not-found",
-          message: "Lesson was not found.",
+          message: "레슨을 찾을 수 없습니다.",
         })
       }
       const finalStep = lesson.steps.at(-1)
       if (!finalStep) {
         return apiFailure({
           code: "contract-error",
-          message: "Lesson does not include steps.",
+          message: "레슨에 스텝이 없습니다.",
         })
       }
 
@@ -1769,7 +1769,7 @@ function AiFeedbackStep({
       } else {
         setErrorMessage(result.error.message)
       }
-      setLoading(false)
+      set로딩 중(false)
     }
 
     void loadFeedback()

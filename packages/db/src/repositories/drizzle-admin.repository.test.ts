@@ -538,7 +538,7 @@ describe("createDrizzleAdminRepository", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Draft curriculum version already exists.",
+        message: "이미 커리큘럼 초안 버전이 있습니다.",
       },
     })
   })
@@ -617,7 +617,7 @@ describe("createDrizzleAdminRepository", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Only draft curriculum versions can be published.",
+        message: "초안 커리큘럼 버전만 발행할 수 있습니다.",
       },
     })
   })
@@ -703,7 +703,7 @@ describe("createDrizzleAdminRepository", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Removed mappings must not include a target lesson.",
+        message: "제거 매핑에는 대상 레슨을 포함할 수 없습니다.",
       },
     })
   })
@@ -857,11 +857,11 @@ describe("createDrizzleAdminRepository", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Course progress is not on the migration source version.",
+        message: "코스 진행이 마이그레이션 원본 버전에 속해 있지 않습니다.",
       },
     })
     expect(application).toMatchObject({
-      errorMessage: "Course progress is not on the migration source version.",
+      errorMessage: "코스 진행이 마이그레이션 원본 버전에 속해 있지 않습니다.",
       status: "failed",
     })
   })
@@ -1133,7 +1133,7 @@ describe("createDrizzleAdminRepository", () => {
       status: "conflict",
       error: {
         code: "conflict",
-        message: "Curriculum version has changed.",
+        message: "커리큘럼 버전이 변경되었습니다.",
       },
     })
   })
@@ -1160,7 +1160,7 @@ describe("createDrizzleAdminRepository", () => {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "Only draft curriculum versions can be saved.",
+        message: "초안 커리큘럼 버전만 저장할 수 있습니다.",
       },
     })
   })

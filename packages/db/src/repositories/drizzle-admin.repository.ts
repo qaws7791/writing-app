@@ -276,7 +276,7 @@ export function createDrizzleAdminRepository(
             status: "invalid-request",
             error: {
               code: "invalid-request",
-              message: "Draft curriculum version already exists.",
+              message: "이미 커리큘럼 초안 버전이 있습니다.",
             },
           }
         }
@@ -298,7 +298,7 @@ export function createDrizzleAdminRepository(
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Published curriculum version was not found.",
+              message: "발행된 커리큘럼 버전을 찾을 수 없습니다.",
             },
           }
         }
@@ -343,7 +343,7 @@ export function createDrizzleAdminRepository(
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Published curriculum version was not found.",
+              message: "발행된 커리큘럼 버전을 찾을 수 없습니다.",
             },
           }
         }
@@ -360,7 +360,7 @@ export function createDrizzleAdminRepository(
           .limit(1)
 
         if (existingDraft && !input.replaceDraft) {
-          return invalidRequest("Draft curriculum version already exists.")
+          return invalidRequest("이미 커리큘럼 초안 버전이 있습니다.")
         }
 
         if (existingDraft) {
@@ -548,15 +548,13 @@ export function createDrizzleAdminRepository(
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Curriculum version was not found.",
+              message: "커리큘럼 버전을 찾을 수 없습니다.",
             },
           }
         }
 
         if (version.status !== "draft") {
-          return invalidRequest(
-            "Only draft curriculum versions can be discarded."
-          )
+          return invalidRequest("초안 커리큘럼 버전만 폐기할 수 있습니다.")
         }
 
         await deleteDraftVersion(tx, version.id)
@@ -580,7 +578,7 @@ export function createDrizzleAdminRepository(
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Curriculum version was not found.",
+              message: "커리큘럼 버전을 찾을 수 없습니다.",
             },
           }
         }
@@ -590,7 +588,7 @@ export function createDrizzleAdminRepository(
             status: "invalid-request",
             error: {
               code: "invalid-request",
-              message: "Only draft curriculum versions can be published.",
+              message: "초안 커리큘럼 버전만 발행할 수 있습니다.",
             },
           }
         }
@@ -644,13 +642,15 @@ export function createDrizzleAdminRepository(
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Curriculum version was not found.",
+              message: "커리큘럼 버전을 찾을 수 없습니다.",
             },
           }
         }
 
         if (fromVersion.id === toVersion.id) {
-          return invalidRequest("Migration versions must be different.")
+          return invalidRequest(
+            "마이그레이션의 원본 버전과 대상 버전은 달라야 합니다."
+          )
         }
 
         if (fromVersion.courseId !== toVersion.courseId) {
@@ -667,7 +667,7 @@ export function createDrizzleAdminRepository(
           .limit(1)
 
         if (existingMigration) {
-          return invalidRequest("Curriculum migration already exists.")
+          return invalidRequest("커리큘럼 마이그레이션이 이미 있습니다.")
         }
 
         const [fromLessonIds, toLessonIds] = await Promise.all([
@@ -678,13 +678,13 @@ export function createDrizzleAdminRepository(
         for (const mapping of input.mappings) {
           if (!fromLessonIds.has(mapping.fromLessonId)) {
             return invalidRequest(
-              "Source lesson is not part of the source curriculum version."
+              "원본 레슨이 원본 커리큘럼 버전에 포함되어 있지 않습니다."
             )
           }
 
           if (mapping.toLessonId && !toLessonIds.has(mapping.toLessonId)) {
             return invalidRequest(
-              "Target lesson is not part of the target curriculum version."
+              "대상 레슨이 대상 커리큘럼 버전에 포함되어 있지 않습니다."
             )
           }
         }
@@ -980,13 +980,13 @@ async function saveEditorDocumentSnapshot(
       status: "not-found",
       error: {
         code: "not-found",
-        message: "Curriculum version was not found.",
+        message: "커리큘럼 버전을 찾을 수 없습니다.",
       },
     } as const
   }
 
   if (version.status !== "draft") {
-    return invalidRequest("Only draft curriculum versions can be saved.")
+    return invalidRequest("초안 커리큘럼 버전만 저장할 수 있습니다.")
   }
 
   if (version.revision !== input.baseRevision) {
@@ -994,7 +994,7 @@ async function saveEditorDocumentSnapshot(
       status: "conflict",
       error: {
         code: "conflict",
-        message: "Curriculum version has changed.",
+        message: "커리큘럼 버전이 변경되었습니다.",
       },
     } as const
   }
@@ -1278,9 +1278,7 @@ function validateMigrationMappings(
 ) {
   for (const mapping of mappings) {
     if (mapping.mappingType === "removed" && mapping.toLessonId) {
-      return invalidRequest(
-        "Removed mappings must not include a target lesson."
-      )
+      return invalidRequest("제거 매핑에는 대상 레슨을 포함할 수 없습니다.")
     }
 
     if (mapping.mappingType !== "removed" && !mapping.toLessonId) {

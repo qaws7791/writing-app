@@ -204,7 +204,7 @@ it("rejects progress for a lesson outside the learner curriculum version", async
     status: "invalid-request",
     error: {
       code: "invalid-request",
-      message: "Lesson is not part of the learner curriculum version.",
+      message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
     },
   })
   expect(repository.upsertLessonProgress).not.toHaveBeenCalled()
@@ -329,7 +329,7 @@ const curriculumVersionId = await resolveCurriculumVersionId(
 )
 
 if (!curriculumVersionId) {
-  return invalidRequest("Published curriculum version was not found.")
+  return invalidRequest("발행된 커리큘럼 버전을 찾을 수 없습니다.")
 }
 
 const isVersionLesson = await repository.curriculumVersionIncludesLesson(
@@ -338,7 +338,9 @@ const isVersionLesson = await repository.curriculumVersionIncludesLesson(
 )
 
 if (!isVersionLesson) {
-  return invalidRequest("Lesson is not part of the learner curriculum version.")
+  return invalidRequest(
+    "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다."
+  )
 }
 ```
 

@@ -29,7 +29,7 @@ export function registerCurriculumMigrationsRoute(
     describeRoute({
       responses: {
         201: {
-          description: "Created admin curriculum migration map.",
+          description: "관리자 커리큘럼 마이그레이션 맵을 생성했습니다.",
           content: {
             "application/json": {
               schema: resolver(adminCurriculumMigrationDetailDtoSchema),
@@ -37,18 +37,18 @@ export function registerCurriculumMigrationsRoute(
           },
         },
         400: {
-          description: "Migration request is invalid.",
+          description: "마이그레이션 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Curriculum version was not found.",
+          description: "커리큘럼 버전을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -62,7 +62,7 @@ export function registerCurriculumMigrationsRoute(
         return context.json(
           {
             code: "invalid-request",
-            message: "Migration request body is invalid.",
+            message: "마이그레이션 요청 본문이 올바르지 않습니다.",
           },
           400
         )
@@ -89,7 +89,7 @@ export function registerCurriculumMigrationsRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Admin curriculum migration map.",
+          description: "관리자 커리큘럼 마이그레이션 맵입니다.",
           content: {
             "application/json": {
               schema: resolver(adminCurriculumMigrationDetailDtoSchema),
@@ -97,14 +97,14 @@ export function registerCurriculumMigrationsRoute(
           },
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
-          description: "Curriculum migration was not found.",
+          description: "커리큘럼 마이그레이션을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -133,7 +133,7 @@ export function registerCurriculumMigrationsRoute(
     describeRoute({
       responses: {
         200: {
-          description: "Applied admin curriculum migration map.",
+          description: "관리자 커리큘럼 마이그레이션 맵을 적용했습니다.",
           content: {
             "application/json": {
               schema: resolver(adminCurriculumMigrationApplicationDtoSchema),
@@ -141,19 +141,19 @@ export function registerCurriculumMigrationsRoute(
           },
         },
         400: {
-          description: "Migration apply request is invalid.",
+          description: "마이그레이션 적용 요청이 올바르지 않습니다.",
           content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
         },
         401: {
-          description: "Admin authentication is required.",
+          description: "관리자 로그인이 필요합니다.",
         },
         404: {
           description:
-            "Curriculum migration or learner progress was not found.",
+            "커리큘럼 마이그레이션 또는 학습자 진행을 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
         },
         503: {
-          description: "Database is unavailable.",
+          description: "데이터베이스를 사용할 수 없습니다.",
           content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
         },
       },
@@ -166,7 +166,7 @@ export function registerCurriculumMigrationsRoute(
         return context.json(
           {
             code: "invalid-request",
-            message: "Migration apply request body is invalid.",
+            message: "마이그레이션 적용 요청 본문이 올바르지 않습니다.",
           },
           400
         )

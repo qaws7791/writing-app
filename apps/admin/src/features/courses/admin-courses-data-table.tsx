@@ -213,7 +213,7 @@ export function AdminCoursesDataTable({
         </div>
         <div className="flex w-full items-center gap-8 lg:w-fit">
           <div className="hidden items-center gap-2 lg:flex">
-            <span className="text-sm font-medium">Rows per page</span>
+            <span className="text-sm font-medium">페이지당 행 수</span>
             <Select
               onValueChange={navigateToPageSize}
               value={String(pagination.pageSize)}
@@ -242,7 +242,7 @@ export function AdminCoursesDataTable({
               type="button"
               variant="outline"
             >
-              <span className="sr-only">Go to first page</span>
+              <span className="sr-only">첫 페이지로 이동</span>
               <ChevronsLeftIcon />
             </Button>
             <Button
@@ -253,7 +253,7 @@ export function AdminCoursesDataTable({
               type="button"
               variant="outline"
             >
-              <span className="sr-only">Go to previous page</span>
+              <span className="sr-only">이전 페이지로 이동</span>
               <ChevronLeftIcon />
             </Button>
             <Button
@@ -266,7 +266,7 @@ export function AdminCoursesDataTable({
               type="button"
               variant="outline"
             >
-              <span className="sr-only">Go to next page</span>
+              <span className="sr-only">다음 페이지로 이동</span>
               <ChevronRightIcon />
             </Button>
             <Button
@@ -277,7 +277,7 @@ export function AdminCoursesDataTable({
               type="button"
               variant="outline"
             >
-              <span className="sr-only">Go to last page</span>
+              <span className="sr-only">마지막 페이지로 이동</span>
               <ChevronsRightIcon />
             </Button>
           </div>

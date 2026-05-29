@@ -716,7 +716,7 @@ describe("admin api app", () => {
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "version query is required.",
+      message: "버전 쿼리를 입력해야 합니다.",
     })
   })
 
@@ -865,7 +865,7 @@ describe("admin api app", () => {
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "Route params must match request body.",
+      message: "경로 매개변수와 요청 본문이 일치해야 합니다.",
     })
   })
 
@@ -892,7 +892,7 @@ describe("admin api app", () => {
             status: "invalid-request",
             error: {
               code: "invalid-request",
-              message: "Draft curriculum version already exists.",
+              message: "이미 커리큘럼 초안 버전이 있습니다.",
             },
           }
         },
@@ -904,7 +904,7 @@ describe("admin api app", () => {
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "Draft curriculum version already exists.",
+      message: "이미 커리큘럼 초안 버전이 있습니다.",
     })
   })
 
@@ -926,7 +926,7 @@ describe("admin api app", () => {
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "Curriculum restore request body is invalid.",
+      message: "커리큘럼 복원 요청 본문이 올바르지 않습니다.",
     })
   })
 
@@ -939,7 +939,7 @@ describe("admin api app", () => {
             status: "conflict",
             error: {
               code: "conflict",
-              message: "Curriculum version has changed.",
+              message: "커리큘럼 버전이 변경되었습니다.",
             },
           }
         },
@@ -971,7 +971,7 @@ describe("admin api app", () => {
     expect(response.status).toBe(409)
     await expect(response.json()).resolves.toEqual({
       code: "conflict",
-      message: "Curriculum version has changed.",
+      message: "커리큘럼 버전이 변경되었습니다.",
     })
   })
 
@@ -1003,7 +1003,7 @@ describe("admin api app", () => {
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "Route params must match request body.",
+      message: "경로 매개변수와 요청 본문이 일치해야 합니다.",
     })
   })
 
@@ -1016,7 +1016,7 @@ describe("admin api app", () => {
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Curriculum version was not found.",
+              message: "커리큘럼 버전을 찾을 수 없습니다.",
             },
           }
         },
@@ -1026,7 +1026,7 @@ describe("admin api app", () => {
     expect(response.status).toBe(404)
     await expect(response.json()).resolves.toEqual({
       code: "not-found",
-      message: "Curriculum version was not found.",
+      message: "커리큘럼 버전을 찾을 수 없습니다.",
     })
   })
 
@@ -1097,7 +1097,7 @@ describe("admin api app", () => {
             status: "invalid-request",
             error: {
               code: "invalid-request",
-              message: "Removed mappings must not include a target lesson.",
+              message: "제거 매핑에는 대상 레슨을 포함할 수 없습니다.",
             },
           }
         },
@@ -1123,7 +1123,7 @@ describe("admin api app", () => {
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "Removed mappings must not include a target lesson.",
+      message: "제거 매핑에는 대상 레슨을 포함할 수 없습니다.",
     })
   })
 
@@ -1136,7 +1136,7 @@ describe("admin api app", () => {
             status: "not-found",
             error: {
               code: "not-found",
-              message: "Curriculum migration was not found.",
+              message: "커리큘럼 마이그레이션을 찾을 수 없습니다.",
             },
           }
         },
@@ -1146,7 +1146,7 @@ describe("admin api app", () => {
     expect(response.status).toBe(404)
     await expect(response.json()).resolves.toEqual({
       code: "not-found",
-      message: "Curriculum migration was not found.",
+      message: "커리큘럼 마이그레이션을 찾을 수 없습니다.",
     })
   })
 
@@ -1163,7 +1163,7 @@ describe("admin api app", () => {
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
       code: "unauthorized",
-      message: "Admin authentication is required.",
+      message: "관리자 로그인이 필요합니다.",
     })
   })
 
@@ -1175,7 +1175,7 @@ describe("admin api app", () => {
       expect(response.status).toBe(400)
       await expect(response.json()).resolves.toEqual({
         code: "invalid-request",
-        message: "include must be chapters,lessons.",
+        message: "쿼리 include는 chapters,lessons여야 합니다.",
       })
     }
   )
