@@ -36,7 +36,6 @@ const latestPublicContentService: ContentService = {
         chapters: [
           {
             id: "sentence-structure-chapter-1-v2",
-            label: "1단원",
             title: "새 문장의 뼈대",
             lessons: [
               {

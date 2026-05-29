@@ -228,7 +228,6 @@ export function createDrizzleAdminRepository(
             sortOrder: course.sortOrder,
             chapters: courseChapters.map((chapter) => ({
               id: chapter.id,
-              label: chapter.label,
               title: chapter.title,
               sortOrder: chapter.sortOrder,
               status: chapter.status,
@@ -841,7 +840,6 @@ async function createDraftVersionFromSource(
       id,
       curriculumVersionId: draftVersion.id,
       sourceChapterId: chapter.sourceChapterId,
-      label: chapter.label,
       title: chapter.title,
       sortOrder: chapter.sortOrder,
       status: chapter.status,
@@ -1017,7 +1015,6 @@ async function saveEditorDocumentSnapshot(
         id: chapter.id,
         curriculumVersionId: version.id,
         sourceChapterId: null,
-        label: chapter.label,
         title: chapter.title,
         sortOrder: chapter.sortOrder,
         status: chapter.status,
@@ -1194,7 +1191,6 @@ function mapCurriculumVersionDetail(
     ...mapCurriculumVersionSummary(version),
     chapters: chapters.map((chapter) => ({
       id: chapter.id,
-      label: chapter.label,
       title: chapter.title,
       sortOrder: chapter.sortOrder,
       status: chapter.status,

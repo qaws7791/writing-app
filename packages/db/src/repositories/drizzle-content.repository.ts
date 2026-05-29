@@ -159,7 +159,6 @@ export function createDrizzleContentRepository(
         firstLessonId,
         chapters: chapterRows.map((chapter) => ({
           id: chapter.id,
-          label: chapter.label,
           title: chapter.title,
           lessons: lessonRows
             .filter((lesson) => lesson.chapterId === chapter.id)

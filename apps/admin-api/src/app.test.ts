@@ -111,7 +111,6 @@ const adminService: AdminService = {
             chapters: [
               {
                 id: "sentence-structure-chapter-1",
-                label: "1단원",
                 title: "문장의 뼈대",
                 sortOrder: 1,
                 status: "active",
@@ -208,7 +207,6 @@ const adminService: AdminService = {
         chapters: [
           {
             id: "sentence-structure-chapter-1",
-            label: "1단원",
             title: "문장의 뼈대",
             sortOrder: 1,
             status: "active",
@@ -507,7 +505,6 @@ describe("admin api app", () => {
           chapters: [
             {
               id: "sentence-structure-chapter-1",
-              label: "1단원",
               title: "문장의 뼈대",
               sortOrder: 1,
               status: "active",

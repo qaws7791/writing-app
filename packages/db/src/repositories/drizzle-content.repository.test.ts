@@ -85,7 +85,6 @@ describe("createDrizzleContentRepository", () => {
       id: "sentence-structure-chapter-1-v2",
       curriculumVersionId: "sentence-structure-v2",
       sourceChapterId: "sentence-structure-chapter-1",
-      label: "1단원",
       title: "새 문장의 뼈대",
       sortOrder: 1,
       status: "active",
@@ -116,7 +115,6 @@ describe("createDrizzleContentRepository", () => {
     expect(detail?.chapters).toEqual([
       {
         id: "sentence-structure-chapter-1-v2",
-        label: "1단원",
         title: "새 문장의 뼈대",
         lessons: [
           {
@@ -148,7 +146,6 @@ describe("createDrizzleContentRepository", () => {
         id: "sentence-structure-active-chapter-v2",
         curriculumVersionId: "sentence-structure-v2",
         sourceChapterId: "sentence-structure-chapter-1",
-        label: "1단원",
         title: "공개 챕터",
         sortOrder: 1,
         status: "active",
@@ -157,7 +154,6 @@ describe("createDrizzleContentRepository", () => {
         id: "sentence-structure-archived-chapter-v2",
         curriculumVersionId: "sentence-structure-v2",
         sourceChapterId: "sentence-structure-chapter-2",
-        label: "2단원",
         title: "숨김 챕터",
         sortOrder: 2,
         status: "archived",
@@ -216,7 +212,6 @@ describe("createDrizzleContentRepository", () => {
     expect(detail?.chapters).toEqual([
       {
         id: "sentence-structure-active-chapter-v2",
-        label: "1단원",
         title: "공개 챕터",
         lessons: [
           {

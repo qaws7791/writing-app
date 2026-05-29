@@ -118,21 +118,18 @@ describe("createDrizzleAdminRepository", () => {
       {
         id: "chapter-second",
         courseId: "course-earlier",
-        label: "2장",
         title: "퇴고하기",
         sortOrder: 2,
       },
       {
         id: "chapter-other-course",
         courseId: "course-later",
-        label: "1장",
         title: "다른 코스 챕터",
         sortOrder: 1,
       },
       {
         id: "chapter-first",
         courseId: "course-earlier",
-        label: "1장",
         title: "문장 시작하기",
         sortOrder: 1,
       },
@@ -242,7 +239,6 @@ describe("createDrizzleAdminRepository", () => {
         id: "version-chapter-first-v1",
         curriculumVersionId: "course-earlier-v1",
         sourceChapterId: "chapter-first",
-        label: "1장",
         title: "이전 문장 시작하기",
         sortOrder: 1,
         status: "active",
@@ -251,7 +247,6 @@ describe("createDrizzleAdminRepository", () => {
         id: "version-chapter-first-v2",
         curriculumVersionId: "course-earlier-v2",
         sourceChapterId: "chapter-first",
-        label: "1장",
         title: "문장 시작하기",
         sortOrder: 1,
         status: "deprecated",
@@ -260,7 +255,6 @@ describe("createDrizzleAdminRepository", () => {
         id: "version-chapter-second-v2",
         curriculumVersionId: "course-earlier-v2",
         sourceChapterId: "chapter-second",
-        label: "2장",
         title: "퇴고하기",
         sortOrder: 2,
         status: "archived",
@@ -269,7 +263,6 @@ describe("createDrizzleAdminRepository", () => {
         id: "version-chapter-other-v1",
         curriculumVersionId: "course-later-v1",
         sourceChapterId: "chapter-other-course",
-        label: "1장",
         title: "다른 코스 챕터",
         sortOrder: 1,
         status: "active",
@@ -341,7 +334,6 @@ describe("createDrizzleAdminRepository", () => {
           chapters: [
             {
               id: "version-chapter-first-v2",
-              label: "1장",
               title: "문장 시작하기",
               sortOrder: 1,
               status: "deprecated",
@@ -366,7 +358,6 @@ describe("createDrizzleAdminRepository", () => {
             },
             {
               id: "version-chapter-second-v2",
-              label: "2장",
               title: "퇴고하기",
               sortOrder: 2,
               status: "archived",
@@ -391,7 +382,6 @@ describe("createDrizzleAdminRepository", () => {
           chapters: [
             {
               id: "version-chapter-other-v1",
-              label: "1장",
               title: "다른 코스 챕터",
               sortOrder: 1,
               status: "active",
@@ -949,7 +939,6 @@ describe("createDrizzleAdminRepository", () => {
       chapters: [
         {
           id: "draft-chapter-1",
-          label: "새 단원",
           title: "새 챕터",
           sortOrder: 1,
           status: "active",
@@ -998,7 +987,6 @@ describe("createDrizzleAdminRepository", () => {
     expect(document?.version.chapters).toEqual([
       {
         id: "draft-chapter-1",
-        label: "새 단원",
         title: "새 챕터",
         sortOrder: 1,
         status: "active",
