@@ -21,44 +21,26 @@ export default async function CourseDetailRoute({
   const urlState = parseEditorUrlState(toUrlSearchParams(paramsRecord))
   const api = await getServerAdminApi()
 
-  const [course, versions] = await Promise.all([
-    api.getCourseDetail(id),
-    api.listCurriculumVersions(id),
-  ])
-
-  if (course.status === "error" || versions.status === "error") {
-    redirect(getAdminLoginPath(`/courses/${id}`))
-  }
-
-  const selectedVersionId =
-    urlState.versionId ??
-    versions.value.versions.find((version) => version.status === "draft")?.id ??
-    versions.value.versions[0]?.id
-
-  if (!selectedVersionId) {
-    redirect("/courses")
-  }
-
-  const version = await api.getCourseCurriculumVersionDetail(
+  const editorDocument = await api.getCourseEditorDocument(
     id,
-    selectedVersionId
+    urlState.versionId
   )
 
-  if (version.status === "error") {
+  if (editorDocument.status === "error") {
     redirect(getAdminLoginPath(`/courses/${id}`))
   }
 
   return (
     <AdminCourseDetailPage
       adminApiBaseUrl={process.env["ADMIN_API_BASE_URL"]}
-      course={course.value}
-      selectedVersionId={selectedVersionId}
+      course={editorDocument.value.course}
+      selectedVersionId={editorDocument.value.version.id}
       urlState={{
         ...urlState,
-        versionId: selectedVersionId,
+        versionId: editorDocument.value.version.id,
       }}
-      version={version.value}
-      versions={versions.value.versions}
+      version={editorDocument.value.version}
+      versions={editorDocument.value.versions}
     />
   )
 }

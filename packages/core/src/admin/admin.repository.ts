@@ -1,5 +1,7 @@
 import type {
   AdminApplyCurriculumMigrationRequestDto,
+  AdminCourseEditorDetailDto,
+  AdminCourseEditorSaveRequestDto,
   AdminCourseDetailDto,
   AdminCourseListDto,
   AdminCourseListInputDto,
@@ -112,6 +114,10 @@ export type AdminDiscardCurriculumVersionRepositoryResult =
 
 export interface AdminRepository {
   getCourseDetail(courseId: string): Promise<AdminCourseDetailDto | undefined>
+  getCourseEditorDocument(
+    courseId: string,
+    versionId: string | null
+  ): Promise<AdminCourseEditorDetailDto | undefined>
   listCourses(input: AdminCourseListInputDto): Promise<AdminCourseListDto>
   listCourseTree(): Promise<AdminCourseTreeDto>
   listCurriculumVersions(
@@ -138,6 +144,9 @@ export interface AdminRepository {
   ): Promise<AdminCreateCurriculumDraftRepositoryResult>
   saveCurriculumVersionContent(
     input: AdminSaveCurriculumVersionContentRequestDto
+  ): Promise<AdminSaveCurriculumVersionContentRepositoryResult>
+  saveCourseEditorDocument(
+    input: AdminCourseEditorSaveRequestDto
   ): Promise<AdminSaveCurriculumVersionContentRepositoryResult>
   discardCurriculumVersion(
     courseId: string,

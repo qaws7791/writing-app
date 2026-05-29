@@ -95,6 +95,42 @@ const repository: AdminRepository = {
       steps: [],
     }
   },
+  async getCourseEditorDocument() {
+    return {
+      course: {
+        id: "sentence-structure",
+        title: "문장 구조의 기본",
+        description: "문장의 뼈대를 이해합니다.",
+        thumbnailPath: "/course-thumbnails/sentence-structure.png",
+        sortOrder: 1,
+      },
+      versions: [
+        {
+          id: "sentence-structure-v2",
+          courseId: "sentence-structure",
+          versionNumber: 2,
+          status: "draft",
+          title: "문장 구조의 기본",
+          changelog: "Draft from v1",
+          publishedAt: null,
+          createdAt: "2026-05-28T00:00:00.000Z",
+        },
+      ],
+      version: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 1,
+        chapters: [],
+        steps: [],
+      },
+    }
+  },
   async getCourseLessonDetail() {
     return {
       id: "sentence-structure-01",
@@ -150,6 +186,24 @@ const repository: AdminRepository = {
     }
   },
   async saveCurriculumVersionContent() {
+    return {
+      status: "saved",
+      version: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 2,
+        chapters: [],
+        steps: [],
+      },
+    }
+  },
+  async saveCourseEditorDocument() {
     return {
       status: "saved",
       version: {
@@ -406,6 +460,132 @@ describe("createAdminService", () => {
         description: "문장의 뼈대를 세웁니다.",
         thumbnailPath: "/course-thumbnails/sentence.png",
         sortOrder: 1,
+      },
+    })
+  })
+
+  it("returns an editor document for a course", async () => {
+    const service = createAdminService({ repository })
+
+    await expect(
+      service.getCourseEditorDocument("sentence-structure", null)
+    ).resolves.toEqual({
+      status: "ok",
+      value: {
+        course: {
+          id: "sentence-structure",
+          title: "문장 구조의 기본",
+          description: "문장의 뼈대를 이해합니다.",
+          thumbnailPath: "/course-thumbnails/sentence-structure.png",
+          sortOrder: 1,
+        },
+        versions: [
+          {
+            id: "sentence-structure-v2",
+            courseId: "sentence-structure",
+            versionNumber: 2,
+            status: "draft",
+            title: "문장 구조의 기본",
+            changelog: "Draft from v1",
+            publishedAt: null,
+            createdAt: "2026-05-28T00:00:00.000Z",
+          },
+        ],
+        version: {
+          id: "sentence-structure-v2",
+          courseId: "sentence-structure",
+          versionNumber: 2,
+          status: "draft",
+          title: "문장 구조의 기본",
+          changelog: "Draft from v1",
+          publishedAt: null,
+          createdAt: "2026-05-28T00:00:00.000Z",
+          revision: 1,
+          chapters: [],
+          steps: [],
+        },
+      },
+    })
+  })
+
+  it("maps editor document save conflicts", async () => {
+    const service = createAdminService({
+      repository: {
+        ...repository,
+        async saveCourseEditorDocument() {
+          return {
+            status: "conflict",
+            error: {
+              code: "conflict",
+              message: "Curriculum version has changed.",
+            },
+          }
+        },
+      },
+    })
+
+    await expect(
+      service.saveCourseEditorDocument({
+        courseId: "sentence-structure",
+        versionId: "sentence-structure-v2",
+        baseRevision: 1,
+        course: {
+          title: "문장 구조의 기본",
+          description: "문장의 뼈대를 이해합니다.",
+          thumbnailPath: "/course-thumbnails/sentence-structure.png",
+          sortOrder: 1,
+        },
+        chapters: [],
+        lessons: [],
+        steps: [],
+      })
+    ).resolves.toEqual({
+      status: "conflict",
+      error: {
+        code: "conflict",
+        message: "Curriculum version has changed.",
+      },
+    })
+  })
+
+  it("returns unavailable when editor document repository returns invalid data", async () => {
+    const service = createAdminService({
+      repository: {
+        ...repository,
+        async getCourseEditorDocument() {
+          return {
+            course: {
+              id: "sentence-structure",
+              title: "",
+              description: "문장의 뼈대를 이해합니다.",
+              thumbnailPath: "/course-thumbnails/sentence-structure.png",
+              sortOrder: 1,
+            },
+            versions: [],
+            version: {
+              id: "sentence-structure-v2",
+              courseId: "sentence-structure",
+              versionNumber: 2,
+              status: "draft",
+              title: "문장 구조의 기본",
+              changelog: "Draft from v1",
+              publishedAt: null,
+              createdAt: "2026-05-28T00:00:00.000Z",
+              revision: 1,
+              chapters: [],
+              steps: [],
+            },
+          }
+        },
+      },
+    })
+
+    await expect(
+      service.getCourseEditorDocument("sentence-structure", null)
+    ).resolves.toMatchObject({
+      status: "unavailable",
+      error: {
+        code: "database-unavailable",
       },
     })
   })

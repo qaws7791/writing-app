@@ -35,6 +35,45 @@ const adminService: AdminService = {
       },
     }
   },
+  async getCourseEditorDocument() {
+    return {
+      status: "ok",
+      value: {
+        course: {
+          id: "sentence-structure",
+          title: "문장 구조의 기본",
+          description: "문장의 뼈대를 이해합니다.",
+          thumbnailPath: "/course-thumbnails/sentence-structure.png",
+          sortOrder: 1,
+        },
+        versions: [
+          {
+            id: "sentence-structure-v2",
+            courseId: "sentence-structure",
+            versionNumber: 2,
+            status: "draft",
+            title: "문장 구조의 기본",
+            changelog: "Draft from v1",
+            publishedAt: null,
+            createdAt: "2026-05-28T00:00:00.000Z",
+          },
+        ],
+        version: {
+          id: "sentence-structure-v2",
+          courseId: "sentence-structure",
+          versionNumber: 2,
+          status: "draft",
+          title: "문장 구조의 기본",
+          changelog: "Draft from v1",
+          publishedAt: null,
+          createdAt: "2026-05-28T00:00:00.000Z",
+          revision: 2,
+          chapters: [],
+          steps: [],
+        },
+      },
+    }
+  },
   async listCourses() {
     return {
       status: "ok",
@@ -246,6 +285,24 @@ const adminService: AdminService = {
     }
   },
   async saveCurriculumVersionContent() {
+    return {
+      status: "ok",
+      value: {
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "문장 구조의 기본",
+        changelog: "Draft from v1",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 3,
+        chapters: [],
+        steps: [],
+      },
+    }
+  },
+  async saveCourseEditorDocument() {
     return {
       status: "ok",
       value: {
@@ -580,6 +637,29 @@ describe("admin api app", () => {
     })
   })
 
+  it("returns protected course editor document", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/editor?version=sentence-structure-v2"
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      course: {
+        id: "sentence-structure",
+      },
+      version: {
+        id: "sentence-structure-v2",
+        revision: 2,
+      },
+      versions: [
+        {
+          id: "sentence-structure-v2",
+          status: "draft",
+        },
+      ],
+    })
+  })
+
   it("returns protected course curriculum version detail for the editor", async () => {
     const response = await createTestApp().request(
       "/courses/sentence-structure/curriculum/versions/sentence-structure-v2"
@@ -722,6 +802,70 @@ describe("admin api app", () => {
     await expect(response.json()).resolves.toMatchObject({
       id: "sentence-structure-v2",
       revision: 3,
+    })
+  })
+
+  it("saves protected course editor document", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/editor",
+      {
+        body: JSON.stringify({
+          courseId: "sentence-structure",
+          versionId: "sentence-structure-v2",
+          baseRevision: 2,
+          course: {
+            title: "문장 구조의 기본",
+            description: "문장의 뼈대를 이해합니다.",
+            thumbnailPath: "/course-thumbnails/sentence-structure.png",
+            sortOrder: 1,
+          },
+          chapters: [],
+          lessons: [],
+          steps: [],
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "PUT",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      id: "sentence-structure-v2",
+      revision: 3,
+    })
+  })
+
+  it("rejects course editor save body that does not match route params", async () => {
+    const response = await createTestApp().request(
+      "/courses/sentence-structure/editor",
+      {
+        body: JSON.stringify({
+          courseId: "another-course",
+          versionId: "sentence-structure-v2",
+          baseRevision: 2,
+          course: {
+            title: "문장 구조의 기본",
+            description: "문장의 뼈대를 이해합니다.",
+            thumbnailPath: "/course-thumbnails/sentence-structure.png",
+            sortOrder: 1,
+          },
+          chapters: [],
+          lessons: [],
+          steps: [],
+        }),
+        headers: {
+          "content-type": "application/json",
+        },
+        method: "PUT",
+      }
+    )
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      code: "invalid-request",
+      message: "Route params must match request body.",
     })
   })
 
@@ -1060,6 +1204,7 @@ describe("admin api app", () => {
     })
     expect(document.paths).toHaveProperty("/courses")
     expect(document.paths).toHaveProperty("/courses/{courseId}")
+    expect(document.paths).toHaveProperty("/courses/{courseId}/editor")
     expect(document.paths).toHaveProperty(
       "/courses/{courseId}/curriculum-versions"
     )

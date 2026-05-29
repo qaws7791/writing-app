@@ -1,51 +1,136 @@
 import * as React from "react"
 
-import type { AdminEditorLessonDetailDto } from "@workspace/core/admin"
+import type {
+  AdminEditorLessonDetailDto,
+  AdminEditorStepType,
+} from "@workspace/core/admin"
+
+import {
+  getStepDisplayTitle,
+  getStepTypeLabel,
+} from "@/features/courses/course-editor/editor-labels"
 
 export type StepFormProps = {
+  isReadOnly?: boolean
   lessonSteps: AdminEditorLessonDetailDto["steps"]
-  onUpdateContent?: (key: string, value: string) => void
+  onUpdateContent?: (key: string, value: unknown) => void
   step: AdminEditorLessonDetailDto["steps"][number]
 }
 
 type StepFormField = {
   key: string
   label: string
-  type?: "array" | "number" | "text"
+  type?: "boolean" | "json" | "number" | "step-select" | "string-array" | "text"
 }
 
-export function createStepForm(type: string, fields: StepFormField[]) {
-  return function StepForm({ onUpdateContent, step }: StepFormProps) {
+export function createStepForm(
+  type: AdminEditorStepType,
+  fields: StepFormField[]
+) {
+  return function StepForm({
+    isReadOnly = false,
+    lessonSteps,
+    onUpdateContent,
+    step,
+  }: StepFormProps) {
+    const stepTypeLabel = getStepTypeLabel(type)
+
     return (
-      <section aria-label={`${type} 편집`} className="space-y-4">
+      <section aria-label={`${stepTypeLabel} 편집`} className="space-y-4">
         <div className="space-y-1">
-          <h2 className="text-sm font-medium">{type} 편집</h2>
-          <p className="text-xs text-muted-foreground">{step.title}</p>
+          <h2 className="text-sm font-medium">{stepTypeLabel} 편집</h2>
+          <p className="text-xs text-muted-foreground">
+            {getStepDisplayTitle(step)}
+          </p>
         </div>
         <div className="grid gap-4">
-          {fields.map((field) => (
-            <label key={field.key} className="grid gap-2 text-sm">
-              {field.label}
-              {field.type === "number" ? (
-                <input
-                  className="h-9 rounded-md border bg-background px-3"
-                  defaultValue={String(getNumberField(step.content, field.key))}
-                  inputMode="numeric"
-                  onChange={(event) =>
-                    onUpdateContent?.(field.key, event.currentTarget.value)
-                  }
-                />
-              ) : (
+          {fields.map((field) => {
+            const fieldValue = getRecordField(step.content, field.key)
+
+            if (field.type === "boolean") {
+              return (
+                <label
+                  key={field.key}
+                  className="flex items-center gap-2 text-sm"
+                >
+                  <input
+                    className="size-4"
+                    defaultChecked={fieldValue === true}
+                    disabled={isReadOnly}
+                    type="checkbox"
+                    onChange={(event) =>
+                      onUpdateContent?.(field.key, event.currentTarget.checked)
+                    }
+                  />
+                  {field.label}
+                </label>
+              )
+            }
+
+            if (field.type === "number") {
+              return (
+                <label key={field.key} className="grid gap-2 text-sm">
+                  {field.label}
+                  <input
+                    className="h-9 rounded-md border bg-background px-3"
+                    defaultValue={String(
+                      getNumberField(step.content, field.key)
+                    )}
+                    disabled={isReadOnly}
+                    inputMode="numeric"
+                    onChange={(event) =>
+                      onUpdateContent?.(
+                        field.key,
+                        Number(event.currentTarget.value)
+                      )
+                    }
+                  />
+                </label>
+              )
+            }
+
+            if (field.type === "step-select") {
+              return (
+                <label key={field.key} className="grid gap-2 text-sm">
+                  {field.label}
+                  <select
+                    className="h-9 rounded-md border bg-background px-3"
+                    defaultValue={getTextField(step.content, field.key)}
+                    disabled={isReadOnly}
+                    onChange={(event) =>
+                      onUpdateContent?.(field.key, event.currentTarget.value)
+                    }
+                  >
+                    <option value="">선택 안 함</option>
+                    {lessonSteps
+                      .filter((lessonStep) => lessonStep.id !== step.id)
+                      .map((lessonStep) => (
+                        <option key={lessonStep.id} value={lessonStep.id}>
+                          {getStepDisplayTitle(lessonStep)}
+                        </option>
+                      ))}
+                  </select>
+                </label>
+              )
+            }
+
+            return (
+              <label key={field.key} className="grid gap-2 text-sm">
+                {field.label}
                 <textarea
                   className="min-h-20 rounded-md border bg-background px-3 py-2"
                   defaultValue={getFieldValue(step.content, field)}
+                  disabled={isReadOnly}
                   onChange={(event) =>
-                    onUpdateContent?.(field.key, event.currentTarget.value)
+                    onUpdateContent?.(
+                      field.key,
+                      parseFieldValue(field, event.currentTarget.value)
+                    )
                   }
                 />
-              )}
-            </label>
-          ))}
+              </label>
+            )
+          })}
         </div>
       </section>
     )
@@ -69,13 +154,42 @@ export function getArrayField(content: unknown, key: string): unknown[] {
 }
 
 function getFieldValue(content: unknown, field: StepFormField) {
-  if (field.type === "array") {
+  if (field.type === "json") {
+    const value = getRecordField(content, field.key)
+
+    return value === undefined ? "" : JSON.stringify(value, null, 2)
+  }
+
+  if (field.type === "string-array") {
     return getArrayField(content, field.key)
       .map((item) => String(item))
       .join("\n")
   }
 
   return getTextField(content, field.key)
+}
+
+function parseFieldValue(field: StepFormField, rawValue: string) {
+  if (field.type === "json") {
+    try {
+      return JSON.parse(rawValue) as unknown
+    } catch {
+      return rawValue
+    }
+  }
+
+  if (field.type === "string-array") {
+    return rawValue
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+  }
+
+  return rawValue
+}
+
+function getRecordField(content: unknown, key: string): unknown {
+  return isRecord(content) ? content[key] : undefined
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

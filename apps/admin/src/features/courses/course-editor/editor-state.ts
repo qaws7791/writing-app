@@ -1,4 +1,5 @@
 import type {
+  AdminEditorStepType,
   AdminCourseDetailDto,
   AdminEditorCurriculumVersionDetailDto,
   AdminSaveCurriculumVersionContentRequestDto,
@@ -18,7 +19,25 @@ export type CourseEditorWorkingCopy = {
 }
 
 type CourseEditableField = "description" | "thumbnailPath" | "title"
+type ChapterEditableField = "label" | "title"
 type LessonEditableField = "description" | "title"
+type ChapterInput = {
+  id: string
+  label: string
+  title: string
+}
+type LessonInput = {
+  description: string
+  id: string
+  lessonId: string
+  title: string
+}
+type StepInput = {
+  id: string
+  lessonId: string
+  title: string
+  type: AdminEditorStepType
+}
 
 export function getDirtyState(changedFields: string[]): CourseEditorDirtyState {
   return {
@@ -95,11 +114,31 @@ export function updateLessonField(
   )
 }
 
+export function updateChapterField(
+  workingCopy: CourseEditorWorkingCopy,
+  chapterId: string,
+  field: ChapterEditableField,
+  value: string
+): CourseEditorWorkingCopy {
+  return withChangedField(
+    {
+      ...workingCopy,
+      version: {
+        ...workingCopy.version,
+        chapters: workingCopy.version.chapters.map((chapter) =>
+          chapter.id === chapterId ? { ...chapter, [field]: value } : chapter
+        ),
+      },
+    },
+    `chapter.${chapterId}.${field}`
+  )
+}
+
 export function updateStepContentField(
   workingCopy: CourseEditorWorkingCopy,
   stepId: string,
   field: string,
-  value: string
+  value: unknown
 ): CourseEditorWorkingCopy {
   return withChangedField(
     {
@@ -117,6 +156,146 @@ export function updateStepContentField(
       ),
     },
     `step.${stepId}.content.${field}`
+  )
+}
+
+export function addChapter(
+  workingCopy: CourseEditorWorkingCopy,
+  chapter: ChapterInput
+): CourseEditorWorkingCopy {
+  return withChangedField(
+    {
+      ...workingCopy,
+      version: {
+        ...workingCopy.version,
+        chapters: [
+          ...workingCopy.version.chapters,
+          {
+            ...chapter,
+            sortOrder: workingCopy.version.chapters.length + 1,
+            status: "active",
+            lessons: [],
+          },
+        ],
+      },
+    },
+    "chapter.add"
+  )
+}
+
+export function archiveChapter(
+  workingCopy: CourseEditorWorkingCopy,
+  chapterId: string
+): CourseEditorWorkingCopy {
+  return withChangedField(
+    {
+      ...workingCopy,
+      version: {
+        ...workingCopy.version,
+        chapters: workingCopy.version.chapters.map((chapter) =>
+          chapter.id === chapterId
+            ? { ...chapter, status: "archived" }
+            : chapter
+        ),
+      },
+    },
+    `chapter.${chapterId}.status`
+  )
+}
+
+export function addLesson(
+  workingCopy: CourseEditorWorkingCopy,
+  chapterId: string,
+  lesson: LessonInput
+): CourseEditorWorkingCopy {
+  return withChangedField(
+    {
+      ...workingCopy,
+      version: {
+        ...workingCopy.version,
+        chapters: workingCopy.version.chapters.map((chapter) =>
+          chapter.id === chapterId
+            ? {
+                ...chapter,
+                lessons: [
+                  ...chapter.lessons,
+                  {
+                    ...lesson,
+                    sortOrder: chapter.lessons.length + 1,
+                    status: "active",
+                  },
+                ],
+              }
+            : chapter
+        ),
+      },
+    },
+    "lesson.add"
+  )
+}
+
+export function archiveLesson(
+  workingCopy: CourseEditorWorkingCopy,
+  lessonId: string
+): CourseEditorWorkingCopy {
+  return withChangedField(
+    {
+      ...workingCopy,
+      version: {
+        ...workingCopy.version,
+        chapters: workingCopy.version.chapters.map((chapter) => ({
+          ...chapter,
+          lessons: chapter.lessons.map((lesson) =>
+            lesson.lessonId === lessonId
+              ? { ...lesson, status: "archived" }
+              : lesson
+          ),
+        })),
+      },
+    },
+    `lesson.${lessonId}.status`
+  )
+}
+
+export function addStep(
+  workingCopy: CourseEditorWorkingCopy,
+  step: StepInput
+): CourseEditorWorkingCopy {
+  const lessonStepCount = workingCopy.steps.filter(
+    (currentStep) => currentStep.lessonId === step.lessonId
+  ).length
+
+  return withChangedField(
+    {
+      ...workingCopy,
+      steps: [
+        ...workingCopy.steps,
+        {
+          ...step,
+          content: {},
+          points: 0,
+          required: true,
+          sortOrder: lessonStepCount + 1,
+          status: "active",
+        },
+      ],
+    },
+    "step.add"
+  )
+}
+
+export function archiveStep(
+  workingCopy: CourseEditorWorkingCopy,
+  stepId: string
+): CourseEditorWorkingCopy {
+  return withChangedField(
+    {
+      ...workingCopy,
+      steps: workingCopy.steps.map((step) =>
+        step.id === stepId ? { ...step, status: "archived" } : step
+      ),
+    },
+    `step.${stepId}.status`
   )
 }
 
@@ -213,6 +392,51 @@ export function moveLesson(
       },
     },
     "lesson.order"
+  )
+}
+
+export function moveStep(
+  workingCopy: CourseEditorWorkingCopy,
+  lessonId: string,
+  stepId: string,
+  targetIndex: number
+): CourseEditorWorkingCopy {
+  const lessonSteps = workingCopy.steps.filter(
+    (step) => step.lessonId === lessonId
+  )
+  const fromIndex = lessonSteps.findIndex((step) => step.id === stepId)
+
+  if (
+    fromIndex < 0 ||
+    targetIndex < 0 ||
+    targetIndex >= lessonSteps.length ||
+    fromIndex === targetIndex
+  ) {
+    return workingCopy
+  }
+
+  const movedLessonSteps = moveItem(lessonSteps, fromIndex, targetIndex).map(
+    (step, index) => ({
+      ...step,
+      sortOrder: index + 1,
+    })
+  )
+  const movedStepById = new Map(movedLessonSteps.map((step) => [step.id, step]))
+
+  return withChangedField(
+    {
+      ...workingCopy,
+      steps: workingCopy.steps
+        .map((step) => movedStepById.get(step.id) ?? step)
+        .sort((left, right) => {
+          if (left.lessonId !== right.lessonId) {
+            return 0
+          }
+
+          return left.sortOrder - right.sortOrder
+        }),
+    },
+    "step.order"
   )
 }
 

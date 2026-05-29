@@ -1,5 +1,7 @@
 import type {
   AdminCourseDetailDto,
+  AdminCourseEditorDetailDto,
+  AdminCourseEditorSaveRequestDto,
   AdminCourseListDto,
   AdminCourseListInputDto,
   AdminCourseTreeDto,
@@ -43,6 +45,10 @@ export interface AdminApi {
   getCourseDetail(
     courseId: string
   ): Promise<AdminApiResult<AdminCourseDetailDto>>
+  getCourseEditorDocument(
+    courseId: string,
+    versionId: string | null
+  ): Promise<AdminApiResult<AdminCourseEditorDetailDto>>
   listCurriculumVersions(
     courseId: string
   ): Promise<AdminApiResult<AdminCurriculumVersionListDto>>
@@ -64,6 +70,9 @@ export interface AdminApi {
   ): Promise<AdminApiResult<AdminCurriculumVersionSummaryDto>>
   saveCurriculumVersionContent(
     input: AdminSaveCurriculumVersionContentRequestDto
+  ): Promise<AdminApiResult<AdminEditorCurriculumVersionDetailDto>>
+  saveCourseEditorDocument(
+    input: AdminCourseEditorSaveRequestDto
   ): Promise<AdminApiResult<AdminEditorCurriculumVersionDetailDto>>
   publishCurriculumVersion(
     courseId: string,

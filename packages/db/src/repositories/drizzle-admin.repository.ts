@@ -7,6 +7,7 @@ import type {
   AdminCurriculumVersionSummaryDto,
   AdminEditorCurriculumVersionDetailDto,
   AdminEditorLessonDetailDto,
+  AdminSaveCurriculumVersionContentRequestDto,
   AdminEditorStepSummaryDto,
   AdminRepository,
 } from "@workspace/core/admin"
@@ -78,6 +79,57 @@ export function createDrizzleAdminRepository(
         .limit(1)
 
       return course
+    },
+    async getCourseEditorDocument(courseId, versionId) {
+      const [course, versionList] = await Promise.all([
+        db
+          .select({
+            id: courses.id,
+            title: courses.title,
+            description: courses.description,
+            thumbnailPath: courses.thumbnailPath,
+            sortOrder: courses.sortOrder,
+          })
+          .from(courses)
+          .where(eq(courses.id, courseId))
+          .limit(1),
+        db
+          .select()
+          .from(curriculumVersions)
+          .where(eq(curriculumVersions.courseId, courseId))
+          .orderBy(desc(curriculumVersions.versionNumber)),
+      ])
+
+      const courseRow = course[0]
+
+      if (!courseRow || versionList.length === 0) {
+        return undefined
+      }
+
+      const selectedVersion =
+        (versionId
+          ? versionList.find((version) => version.id === versionId)
+          : versionList.find((version) => version.status === "draft")) ??
+        versionList[0]
+
+      if (!selectedVersion) {
+        return undefined
+      }
+
+      const version = await getEditorVersionDetailRows(db, {
+        courseId,
+        versionId: selectedVersion.id,
+      })
+
+      if (!version) {
+        return undefined
+      }
+
+      return {
+        course: courseRow,
+        versions: versionList.map(mapCurriculumVersionSummary),
+        version,
+      }
     },
     async listCourses(input) {
       const trimmedQuery = input.query.trim()
@@ -470,118 +522,12 @@ export function createDrizzleAdminRepository(
     },
     async saveCurriculumVersionContent(input) {
       return db.transaction(async (tx) => {
-        const [version] = await tx
-          .select()
-          .from(curriculumVersions)
-          .where(
-            and(
-              eq(curriculumVersions.id, input.versionId),
-              eq(curriculumVersions.courseId, input.courseId)
-            )
-          )
-          .limit(1)
-
-        if (!version) {
-          return {
-            status: "not-found",
-            error: {
-              code: "not-found",
-              message: "Curriculum version was not found.",
-            },
-          }
-        }
-
-        if (version.status !== "draft") {
-          return invalidRequest("Only draft curriculum versions can be saved.")
-        }
-
-        if (version.revision !== input.baseRevision) {
-          return {
-            status: "conflict",
-            error: {
-              code: "conflict",
-              message: "Curriculum version has changed.",
-            },
-          }
-        }
-
-        await tx
-          .update(courses)
-          .set({
-            title: input.course.title,
-            description: input.course.description,
-            thumbnailPath: input.course.thumbnailPath,
-            sortOrder: input.course.sortOrder,
-          })
-          .where(eq(courses.id, input.courseId))
-        await deleteDraftSnapshot(tx, version.id)
-
-        if (input.chapters.length > 0) {
-          await tx.insert(curriculumVersionChapters).values(
-            input.chapters.map((chapter) => ({
-              id: chapter.id,
-              curriculumVersionId: version.id,
-              sourceChapterId: null,
-              label: chapter.label,
-              title: chapter.title,
-              sortOrder: chapter.sortOrder,
-              status: chapter.status,
-            }))
-          )
-        }
-
-        if (input.lessons.length > 0) {
-          await tx.insert(curriculumVersionLessons).values(
-            input.lessons.map((lesson) => ({
-              id: lesson.id,
-              curriculumVersionId: version.id,
-              chapterId: lesson.chapterId,
-              lessonId: lesson.lessonId,
-              title: lesson.title,
-              description: lesson.description,
-              sortOrder: lesson.sortOrder,
-              status: lesson.status,
-            }))
-          )
-        }
-
-        if (input.steps.length > 0) {
-          await tx.insert(curriculumVersionSteps).values(
-            input.steps.map((step) => ({
-              id: step.id,
-              curriculumVersionId: version.id,
-              lessonId: step.lessonId,
-              sourceStepId: null,
-              type: step.type,
-              sortOrder: step.sortOrder,
-              points: step.points,
-              required: step.required,
-              status: step.status,
-              contentJson: JSON.stringify(step.content),
-            }))
-          )
-        }
-
-        const nextRevision = version.revision + 1
-        await tx
-          .update(curriculumVersions)
-          .set({ revision: nextRevision })
-          .where(eq(curriculumVersions.id, version.id))
-
-        return {
-          status: "saved",
-          version: {
-            ...mapCurriculumVersionSummary(version),
-            revision: nextRevision,
-            chapters: input.chapters.map((chapter) => ({
-              ...chapter,
-              lessons: input.lessons
-                .filter((lesson) => lesson.chapterId === chapter.id)
-                .map(({ chapterId: _chapterId, ...lesson }) => lesson),
-            })),
-            steps: input.steps,
-          },
-        }
+        return saveEditorDocumentSnapshot(tx, input)
+      })
+    },
+    async saveCourseEditorDocument(input) {
+      return db.transaction(async (tx) => {
+        return saveEditorDocumentSnapshot(tx, input)
       })
     },
     async discardCurriculumVersion(courseId, versionId) {
@@ -946,6 +892,246 @@ async function createDraftVersionFromSource(
   return draftVersion
 }
 
+async function getEditorVersionDetailRows(
+  db: Pick<WritingAppDatabase, "select">,
+  input: {
+    courseId: string
+    versionId: string
+  }
+) {
+  const [version] = await db
+    .select()
+    .from(curriculumVersions)
+    .where(
+      and(
+        eq(curriculumVersions.id, input.versionId),
+        eq(curriculumVersions.courseId, input.courseId)
+      )
+    )
+    .limit(1)
+
+  if (!version) {
+    return undefined
+  }
+
+  const chapterRows = await db
+    .select()
+    .from(curriculumVersionChapters)
+    .where(eq(curriculumVersionChapters.curriculumVersionId, version.id))
+    .orderBy(asc(curriculumVersionChapters.sortOrder))
+  const lessonRows =
+    chapterRows.length === 0
+      ? []
+      : await db
+          .select()
+          .from(curriculumVersionLessons)
+          .where(
+            inArray(
+              curriculumVersionLessons.chapterId,
+              chapterRows.map((chapter) => chapter.id)
+            )
+          )
+          .orderBy(asc(curriculumVersionLessons.sortOrder))
+  const stepRows =
+    lessonRows.length === 0
+      ? []
+      : await db
+          .select()
+          .from(curriculumVersionSteps)
+          .where(
+            and(
+              eq(curriculumVersionSteps.curriculumVersionId, version.id),
+              inArray(
+                curriculumVersionSteps.lessonId,
+                lessonRows.map((lesson) => lesson.lessonId)
+              )
+            )
+          )
+          .orderBy(
+            asc(curriculumVersionSteps.lessonId),
+            asc(curriculumVersionSteps.sortOrder)
+          )
+
+  return mapEditorCurriculumVersionDetail(
+    version,
+    chapterRows,
+    lessonRows,
+    stepRows
+  )
+}
+
+async function saveEditorDocumentSnapshot(
+  tx: AdminEditorTransaction,
+  input: AdminSaveCurriculumVersionContentRequestDto
+) {
+  const [version] = await tx
+    .select()
+    .from(curriculumVersions)
+    .where(
+      and(
+        eq(curriculumVersions.id, input.versionId),
+        eq(curriculumVersions.courseId, input.courseId)
+      )
+    )
+    .limit(1)
+
+  if (!version) {
+    return {
+      status: "not-found",
+      error: {
+        code: "not-found",
+        message: "Curriculum version was not found.",
+      },
+    } as const
+  }
+
+  if (version.status !== "draft") {
+    return invalidRequest("Only draft curriculum versions can be saved.")
+  }
+
+  if (version.revision !== input.baseRevision) {
+    return {
+      status: "conflict",
+      error: {
+        code: "conflict",
+        message: "Curriculum version has changed.",
+      },
+    } as const
+  }
+
+  await ensureEditorLessons(tx, input)
+  await tx
+    .update(courses)
+    .set({
+      title: input.course.title,
+      description: input.course.description,
+      thumbnailPath: input.course.thumbnailPath,
+      sortOrder: input.course.sortOrder,
+    })
+    .where(eq(courses.id, input.courseId))
+  await deleteDraftSnapshot(tx, version.id)
+
+  if (input.chapters.length > 0) {
+    await tx.insert(curriculumVersionChapters).values(
+      input.chapters.map((chapter) => ({
+        id: chapter.id,
+        curriculumVersionId: version.id,
+        sourceChapterId: null,
+        label: chapter.label,
+        title: chapter.title,
+        sortOrder: chapter.sortOrder,
+        status: chapter.status,
+      }))
+    )
+  }
+
+  if (input.lessons.length > 0) {
+    await tx.insert(curriculumVersionLessons).values(
+      input.lessons.map((lesson) => ({
+        id: lesson.id,
+        curriculumVersionId: version.id,
+        chapterId: lesson.chapterId,
+        lessonId: lesson.lessonId,
+        title: lesson.title,
+        description: lesson.description,
+        sortOrder: lesson.sortOrder,
+        status: lesson.status,
+      }))
+    )
+  }
+
+  if (input.steps.length > 0) {
+    await tx.insert(curriculumVersionSteps).values(
+      input.steps.map((step) => ({
+        id: step.id,
+        curriculumVersionId: version.id,
+        lessonId: step.lessonId,
+        sourceStepId: null,
+        type: step.type,
+        sortOrder: step.sortOrder,
+        points: step.points,
+        required: step.required,
+        status: step.status,
+        contentJson: JSON.stringify(step.content),
+      }))
+    )
+  }
+
+  const nextRevision = version.revision + 1
+  await tx
+    .update(curriculumVersions)
+    .set({ revision: nextRevision })
+    .where(eq(curriculumVersions.id, version.id))
+
+  return {
+    status: "saved",
+    version: {
+      ...mapCurriculumVersionSummary(version),
+      revision: nextRevision,
+      chapters: input.chapters.map((chapter) => ({
+        ...chapter,
+        lessons: input.lessons
+          .filter((lesson) => lesson.chapterId === chapter.id)
+          .map(({ chapterId: _chapterId, ...lesson }) => lesson),
+      })),
+      steps: input.steps,
+    },
+  } as const
+}
+
+async function ensureEditorLessons(
+  tx: AdminEditorTransaction,
+  input: AdminSaveCurriculumVersionContentRequestDto
+) {
+  if (input.lessons.length === 0) {
+    return
+  }
+
+  const [course] = await tx
+    .select({
+      categoryId: courses.categoryId,
+    })
+    .from(courses)
+    .where(eq(courses.id, input.courseId))
+    .limit(1)
+
+  if (!course) {
+    return
+  }
+
+  const existingLessons = await tx
+    .select({
+      id: lessons.id,
+      unitNumber: lessons.unitNumber,
+    })
+    .from(lessons)
+    .where(eq(lessons.courseId, input.courseId))
+  const existingLessonIds = new Set(existingLessons.map((lesson) => lesson.id))
+  const missingLessons = input.lessons.filter(
+    (lesson) => !existingLessonIds.has(lesson.lessonId)
+  )
+
+  if (missingLessons.length === 0) {
+    return
+  }
+
+  const maxUnitNumber = Math.max(
+    0,
+    ...existingLessons.map((lesson) => lesson.unitNumber)
+  )
+
+  await tx.insert(lessons).values(
+    missingLessons.map((lesson, index) => ({
+      id: lesson.lessonId,
+      courseId: input.courseId,
+      title: lesson.title,
+      categoryId: course.categoryId,
+      unitNumber: maxUnitNumber + index + 1,
+      nextLessonId: null,
+    }))
+  )
+}
+
 async function deleteDraftSnapshot(
   tx: AdminEditorTransaction,
   versionId: string
@@ -1055,12 +1241,32 @@ function mapEditorStepSummary(
     id: step.id,
     lessonId: step.lessonId,
     type: step.type,
-    title: step.type,
+    title: getStepDisplayTitle(step),
     sortOrder: step.sortOrder,
     points: step.points,
     required: step.required,
     status: step.status,
   }
+}
+
+function getStepDisplayTitle(step: CurriculumVersionStepRow) {
+  try {
+    const content = JSON.parse(step.contentJson) as unknown
+
+    if (
+      typeof content === "object" &&
+      content !== null &&
+      "title" in content &&
+      typeof content.title === "string" &&
+      content.title.trim().length > 0
+    ) {
+      return content.title
+    }
+  } catch {
+    return step.type
+  }
+
+  return step.type
 }
 
 function validateMigrationMappings(

@@ -898,6 +898,137 @@ describe("createDrizzleAdminRepository", () => {
     expect(version?.steps[0]?.content).toEqual(expect.any(Object))
   })
 
+  it("returns an editor document using the draft version by default", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+
+    await repository.createCurriculumDraft("sentence-structure")
+
+    const document = await repository.getCourseEditorDocument(
+      "sentence-structure",
+      null
+    )
+
+    expect(document).toMatchObject({
+      course: {
+        id: "sentence-structure",
+        title: "문장 구조의 기본",
+      },
+      version: {
+        id: "sentence-structure-v2",
+        status: "draft",
+      },
+      versions: [
+        {
+          id: "sentence-structure-v2",
+          status: "draft",
+        },
+        {
+          id: "sentence-structure-v1",
+          status: "published",
+        },
+      ],
+    })
+  })
+
+  it("saves new editor document chapters lessons and steps", async () => {
+    const db = await createSeededDatabase()
+    const repository = createDrizzleAdminRepository(db)
+    await repository.createCurriculumDraft("sentence-structure")
+
+    const result = await repository.saveCourseEditorDocument({
+      courseId: "sentence-structure",
+      versionId: "sentence-structure-v2",
+      baseRevision: 1,
+      course: {
+        title: "문장 구조의 기본",
+        description: "설명",
+        thumbnailPath: "/course-thumbnails/sentence-structure.png",
+        sortOrder: 1,
+      },
+      chapters: [
+        {
+          id: "draft-chapter-1",
+          label: "새 단원",
+          title: "새 챕터",
+          sortOrder: 1,
+          status: "active",
+        },
+      ],
+      lessons: [
+        {
+          id: "draft-version-lesson-1",
+          lessonId: "draft-lesson-1",
+          chapterId: "draft-chapter-1",
+          title: "새 레슨",
+          description: "새 레슨 설명",
+          sortOrder: 1,
+          status: "active",
+        },
+      ],
+      steps: [
+        {
+          id: "draft-step-1",
+          lessonId: "draft-lesson-1",
+          type: "INTRO",
+          title: "도입",
+          sortOrder: 1,
+          points: 0,
+          required: true,
+          status: "active",
+          content: {
+            title: "도입",
+            bullets: ["첫 기준"],
+          },
+        },
+      ],
+    })
+
+    expect(result.status).toBe("saved")
+    const document = await repository.getCourseEditorDocument(
+      "sentence-structure",
+      "sentence-structure-v2"
+    )
+    const [lesson] = await db
+      .select()
+      .from(lessons)
+      .where(eq(lessons.id, "draft-lesson-1"))
+
+    expect(document?.version.revision).toBe(2)
+    expect(document?.version.chapters).toEqual([
+      {
+        id: "draft-chapter-1",
+        label: "새 단원",
+        title: "새 챕터",
+        sortOrder: 1,
+        status: "active",
+        lessons: [
+          {
+            id: "draft-version-lesson-1",
+            lessonId: "draft-lesson-1",
+            title: "새 레슨",
+            description: "새 레슨 설명",
+            sortOrder: 1,
+            status: "active",
+          },
+        ],
+      },
+    ])
+    expect(document?.version.steps[0]).toMatchObject({
+      id: "draft-step-1",
+      lessonId: "draft-lesson-1",
+      title: "도입",
+      content: {
+        bullets: ["첫 기준"],
+      },
+    })
+    expect(lesson).toMatchObject({
+      id: "draft-lesson-1",
+      courseId: "sentence-structure",
+      title: "새 레슨",
+    })
+  })
+
   it("returns lesson detail with parsed step content", async () => {
     const db = await createSeededDatabase()
     const repository = createDrizzleAdminRepository(db)

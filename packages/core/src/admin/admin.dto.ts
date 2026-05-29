@@ -223,6 +223,15 @@ export const adminEditorCurriculumVersionDetailDtoSchema =
     steps: z.array(adminEditorStepDetailDtoSchema),
   })
 
+export const adminCourseEditorDocumentDtoSchema = z.object({
+  course: adminCourseDetailDtoSchema,
+  versions: z.array(adminCurriculumVersionSummaryDtoSchema),
+  version: adminEditorCurriculumVersionDetailDtoSchema,
+})
+
+export const adminCourseEditorDetailDtoSchema =
+  adminCourseEditorDocumentDtoSchema
+
 export const adminRestoreCurriculumDraftRequestDtoSchema = z.object({
   sourceVersionId: z.string().min(1),
   replaceDraft: z.boolean(),
@@ -249,6 +258,9 @@ export const adminSaveCurriculumVersionContentRequestDtoSchema = z.object({
   steps: z.array(adminEditorStepDetailDtoSchema),
 })
 
+export const adminCourseEditorSaveRequestDtoSchema =
+  adminSaveCurriculumVersionContentRequestDtoSchema
+
 export const adminUserListItemDtoSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -264,6 +276,15 @@ export const adminUserListDtoSchema = z.object({
 })
 
 export type AdminCourseDetailDto = z.infer<typeof adminCourseDetailDtoSchema>
+export type AdminCourseEditorDetailDto = z.infer<
+  typeof adminCourseEditorDetailDtoSchema
+>
+export type AdminCourseEditorDocumentDto = z.infer<
+  typeof adminCourseEditorDocumentDtoSchema
+>
+export type AdminCourseEditorSaveRequestDto = z.infer<
+  typeof adminCourseEditorSaveRequestDtoSchema
+>
 export type AdminCourseListDto = z.infer<typeof adminCourseListDtoSchema>
 export type AdminCourseListInputDto = z.infer<
   typeof adminCourseListInputDtoSchema

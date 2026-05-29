@@ -114,6 +114,50 @@ describe("createHttpAdminApi", () => {
     expect(request.method).toBe("GET")
   })
 
+  it("requests an editor document with an optional selected version", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({
+        course: {
+          id: "sentence-structure",
+          title: "문장 구조의 기본",
+          description: "설명",
+          thumbnailPath: "/course-thumbnails/sentence.png",
+          sortOrder: 1,
+        },
+        versions: [],
+        version: {
+          id: "sentence-structure-v2",
+          courseId: "sentence-structure",
+          versionNumber: 2,
+          status: "draft",
+          title: "v2",
+          changelog: "draft",
+          publishedAt: null,
+          createdAt: "2026-05-28T00:00:00.000Z",
+          revision: 2,
+          chapters: [],
+          steps: [],
+        },
+      })
+    )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.getCourseEditorDocument(
+      "sentence-structure",
+      "sentence-structure-v2"
+    )
+
+    const request = getRequest(fetchMock)
+    expect(request.url).toBe(
+      "http://localhost:4001/courses/sentence-structure/editor?version=sentence-structure-v2"
+    )
+    expect(request.method).toBe("GET")
+    expect(request.credentials).toBe("include")
+  })
+
   it("requests course curriculum version detail", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       createJsonResponse({
@@ -283,6 +327,53 @@ describe("createHttpAdminApi", () => {
     expect(request.headers.get("content-type")).toBe("application/json")
     await expect(request.json()).resolves.toMatchObject({
       baseRevision: 1,
+    })
+  })
+
+  it("saves an editor document with PUT body", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({
+        id: "sentence-structure-v2",
+        courseId: "sentence-structure",
+        versionNumber: 2,
+        status: "draft",
+        title: "v2",
+        changelog: "draft",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 2,
+        chapters: [],
+        steps: [],
+      })
+    )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.saveCourseEditorDocument({
+      courseId: "sentence-structure",
+      versionId: "sentence-structure-v2",
+      baseRevision: 1,
+      course: {
+        title: "기초 문장 만들기",
+        description: "설명",
+        thumbnailPath: "/course-thumbnails/sentence.png",
+        sortOrder: 1,
+      },
+      chapters: [],
+      lessons: [],
+      steps: [],
+    })
+
+    const request = getRequest(fetchMock)
+    expect(request.url).toBe(
+      "http://localhost:4001/courses/sentence-structure/editor"
+    )
+    expect(request.method).toBe("PUT")
+    expect(request.headers.get("content-type")).toBe("application/json")
+    await expect(request.json()).resolves.toMatchObject({
+      versionId: "sentence-structure-v2",
     })
   })
 

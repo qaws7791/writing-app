@@ -49,6 +49,18 @@ export function createHttpAdminApi({
         headers
       )
     },
+    getCourseEditorDocument(courseId, versionId) {
+      const url = createAdminApiUrl(
+        baseUrl,
+        `/courses/${encodePathSegment(courseId)}/editor`
+      )
+
+      if (versionId) {
+        url.searchParams.set("version", versionId)
+      }
+
+      return requestJson(fetcher, url, headers)
+    },
     listCurriculumVersions(courseId) {
       return requestJson(
         fetcher,
@@ -111,6 +123,20 @@ export function createHttpAdminApi({
         createAdminApiUrl(
           baseUrl,
           `/courses/${encodePathSegment(input.courseId)}/curriculum/versions/${encodePathSegment(input.versionId)}/content`
+        ),
+        headers,
+        {
+          body: input,
+          method: "PUT",
+        }
+      )
+    },
+    saveCourseEditorDocument(input) {
+      return requestJson(
+        fetcher,
+        createAdminApiUrl(
+          baseUrl,
+          `/courses/${encodePathSegment(input.courseId)}/editor`
         ),
         headers,
         {

@@ -3,6 +3,8 @@ import { describeRoute, resolver } from "hono-openapi"
 
 import {
   adminConflictErrorDtoSchema,
+  adminCourseEditorDetailDtoSchema,
+  adminCourseEditorSaveRequestDtoSchema,
   adminCourseDetailDtoSchema,
   adminCurriculumVersionListDtoSchema,
   adminCurriculumVersionSummaryDtoSchema,
@@ -23,6 +25,126 @@ export function registerCurriculumEditorRoute(
   app: Hono,
   { adminService, auth }: Pick<AdminApiAppDependencies, "adminService" | "auth">
 ) {
+  app.get(
+    "/courses/:courseId/editor",
+    requireAdminSession(auth),
+    describeRoute({
+      responses: {
+        200: {
+          description: "Admin course editor document.",
+          content: {
+            "application/json": {
+              schema: resolver(adminCourseEditorDetailDtoSchema),
+            },
+          },
+        },
+        401: {
+          description: "Admin authentication is required.",
+        },
+        404: {
+          description: "Course editor document was not found.",
+          content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
+        },
+        503: {
+          description: "Database is unavailable.",
+          content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
+        },
+      },
+    }),
+    async (context) => {
+      const result = await adminService.getCourseEditorDocument(
+        context.req.param("courseId"),
+        context.req.query("version") ?? null
+      )
+
+      switch (result.status) {
+        case "ok":
+          return context.json(result.value)
+        case "invalid-request":
+          return context.json(result.error, 400)
+        case "not-found":
+          return context.json(result.error, 404)
+        case "unavailable":
+          return context.json(result.error, 503)
+      }
+    }
+  )
+
+  app.put(
+    "/courses/:courseId/editor",
+    requireAdminSession(auth),
+    describeRoute({
+      responses: {
+        200: {
+          description: "Saved admin course editor document.",
+          content: {
+            "application/json": {
+              schema: resolver(adminEditorCurriculumVersionDetailDtoSchema),
+            },
+          },
+        },
+        400: {
+          description: "Editor save request is invalid.",
+          content: jsonErrorResponse(adminInvalidRequestErrorDtoSchema),
+        },
+        401: {
+          description: "Admin authentication is required.",
+        },
+        404: {
+          description: "Course editor document was not found.",
+          content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
+        },
+        409: {
+          description: "Curriculum version was changed by another edit.",
+          content: jsonErrorResponse(adminConflictErrorDtoSchema),
+        },
+        503: {
+          description: "Database is unavailable.",
+          content: jsonErrorResponse(adminDatabaseUnavailableErrorDtoSchema),
+        },
+      },
+    }),
+    async (context) => {
+      const body = await readJsonBody(context.req.raw)
+      const input = adminCourseEditorSaveRequestDtoSchema.safeParse(body)
+
+      if (!input.success) {
+        return context.json(
+          {
+            code: "invalid-request",
+            message: "Course editor save request body is invalid.",
+          },
+          400
+        )
+      }
+
+      if (input.data.courseId !== context.req.param("courseId")) {
+        return context.json(
+          {
+            code: "invalid-request",
+            message: "Route params must match request body.",
+          },
+          400
+        )
+      }
+
+      const result = await adminService.saveCourseEditorDocument(input.data)
+
+      switch (result.status) {
+        case "ok":
+          return context.json(result.value)
+        case "invalid-request":
+          return context.json(result.error, 400)
+        case "not-found":
+          return context.json(result.error, 404)
+        case "conflict":
+          return context.json(result.error, 409)
+        case "unavailable":
+          return context.json(result.error, 503)
+      }
+    }
+  )
+
   app.get(
     "/courses/:courseId",
     requireAdminSession(auth),

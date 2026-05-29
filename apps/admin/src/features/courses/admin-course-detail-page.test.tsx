@@ -107,7 +107,8 @@ describe("AdminCourseDetailPage", () => {
       />
     )
 
-    expect(screen.getByText("Course Studio")).toBeTruthy()
+    expect(screen.getByText("코스 편집")).toBeTruthy()
+    expect(screen.getByText("v2 · 초안")).toBeTruthy()
     expect(screen.getByDisplayValue("기초 문장 만들기")).toBeTruthy()
     expect(screen.getByRole("button", { name: "저장" })).toBeTruthy()
   })
@@ -164,8 +165,8 @@ describe("AdminCourseDetailPage", () => {
 
   it("saves edited course and lesson fields through the admin API", async () => {
     const user = userEvent.setup()
-    const saveCurriculumVersionContent = vi.fn<
-      AdminApi["saveCurriculumVersionContent"]
+    const saveCourseEditorDocument = vi.fn<
+      AdminApi["saveCourseEditorDocument"]
     >(async (input) => ({
       status: "ok",
       value: {
@@ -175,7 +176,7 @@ describe("AdminCourseDetailPage", () => {
       },
     }))
     const adminApi = createAdminApiMock({
-      saveCurriculumVersionContent,
+      saveCourseEditorDocument,
     })
 
     render(
@@ -200,7 +201,7 @@ describe("AdminCourseDetailPage", () => {
     await user.type(screen.getByLabelText("레슨 제목"), "수정 레슨")
     await user.click(screen.getByRole("button", { name: "저장" }))
 
-    expect(saveCurriculumVersionContent).toHaveBeenCalledWith(
+    expect(saveCourseEditorDocument).toHaveBeenCalledWith(
       expect.objectContaining({
         courseId: "sentence-structure",
         versionId: "sentence-structure-v2",
@@ -218,7 +219,7 @@ describe("AdminCourseDetailPage", () => {
           expect.objectContaining({
             id: "sentence-structure-step-1",
             content: expect.objectContaining({
-              objectives: ["원본 목표"],
+              bullets: ["원본 목표"],
             }),
           }),
         ],
@@ -229,8 +230,8 @@ describe("AdminCourseDetailPage", () => {
 
   it("saves edited step content through the admin API", async () => {
     const user = userEvent.setup()
-    const saveCurriculumVersionContent = vi.fn<
-      AdminApi["saveCurriculumVersionContent"]
+    const saveCourseEditorDocument = vi.fn<
+      AdminApi["saveCourseEditorDocument"]
     >(async (input) => ({
       status: "ok",
       value: {
@@ -243,7 +244,7 @@ describe("AdminCourseDetailPage", () => {
     render(
       <AdminCourseDetailPage
         adminApi={createAdminApiMock({
-          saveCurriculumVersionContent,
+          saveCourseEditorDocument,
         })}
         course={courseFixture}
         selectedVersionId="sentence-structure-v2"
@@ -258,17 +259,17 @@ describe("AdminCourseDetailPage", () => {
       />
     )
 
-    await user.clear(screen.getByLabelText("학습 목표"))
-    await user.type(screen.getByLabelText("학습 목표"), "수정 목표")
+    await user.clear(screen.getByLabelText("학습 포인트"))
+    await user.type(screen.getByLabelText("학습 포인트"), "수정 목표")
     await user.click(screen.getByRole("button", { name: "저장" }))
 
-    expect(saveCurriculumVersionContent).toHaveBeenCalledWith(
+    expect(saveCourseEditorDocument).toHaveBeenCalledWith(
       expect.objectContaining({
         steps: [
           expect.objectContaining({
             id: "sentence-structure-step-1",
             content: expect.objectContaining({
-              objectives: "수정 목표",
+              bullets: ["수정 목표"],
             }),
           }),
         ],
@@ -276,10 +277,81 @@ describe("AdminCourseDetailPage", () => {
     )
   })
 
+  it("saves added and archived curriculum nodes through the admin API", async () => {
+    const user = userEvent.setup()
+    const saveCourseEditorDocument = vi.fn<
+      AdminApi["saveCourseEditorDocument"]
+    >(async (input) => ({
+      status: "ok",
+      value: {
+        ...versionFixture,
+        revision: input.baseRevision + 1,
+        chapters: input.chapters.map((chapter) => ({
+          ...chapter,
+          lessons: input.lessons
+            .filter((lesson) => lesson.chapterId === chapter.id)
+            .map((lesson) => ({
+              id: lesson.id,
+              lessonId: lesson.lessonId,
+              title: lesson.title,
+              description: lesson.description,
+              sortOrder: lesson.sortOrder,
+              status: lesson.status,
+            })),
+        })),
+        steps: input.steps,
+      },
+    }))
+    vi.spyOn(window, "confirm").mockReturnValue(true)
+
+    render(
+      <AdminCourseDetailPage
+        adminApi={createAdminApiMock({
+          saveCourseEditorDocument,
+        })}
+        course={courseFixture}
+        selectedVersionId="sentence-structure-v2"
+        urlState={{
+          versionId: "sentence-structure-v2",
+          view: "lesson",
+          lessonId: "sentence-structure-01",
+          stepId: null,
+        }}
+        versions={[versionSummaryFixture]}
+        version={versionFixture}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "챕터 추가" }))
+    await user.click(screen.getByRole("button", { name: "첫 챕터 레슨 추가" }))
+    await user.click(screen.getByRole("button", { name: "첫 레슨 레슨 보관" }))
+    await user.click(screen.getByRole("button", { name: "저장" }))
+
+    expect(saveCourseEditorDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        chapters: expect.arrayContaining([
+          expect.objectContaining({
+            title: "새 챕터",
+          }),
+        ]),
+        lessons: expect.arrayContaining([
+          expect.objectContaining({
+            lessonId: "sentence-structure-01",
+            status: "archived",
+          }),
+          expect.objectContaining({
+            title: "새 레슨",
+            status: "active",
+          }),
+        ]),
+      })
+    )
+  })
+
   it("navigates between lesson, step, and preview editor views", async () => {
     const user = userEvent.setup()
-    const saveCurriculumVersionContent = vi.fn<
-      AdminApi["saveCurriculumVersionContent"]
+    const saveCourseEditorDocument = vi.fn<
+      AdminApi["saveCourseEditorDocument"]
     >(async (input) => ({
       status: "ok",
       value: {
@@ -292,7 +364,7 @@ describe("AdminCourseDetailPage", () => {
     render(
       <AdminCourseDetailPage
         adminApi={createAdminApiMock({
-          saveCurriculumVersionContent,
+          saveCourseEditorDocument,
         })}
         course={courseFixture}
         selectedVersionId="sentence-structure-v2"
@@ -316,7 +388,7 @@ describe("AdminCourseDetailPage", () => {
     render(
       <AdminCourseDetailPage
         adminApi={createAdminApiMock({
-          saveCurriculumVersionContent,
+          saveCourseEditorDocument,
         })}
         course={courseFixture}
         selectedVersionId="sentence-structure-v2"
@@ -333,21 +405,70 @@ describe("AdminCourseDetailPage", () => {
 
     await user.clear(screen.getByLabelText("코스 제목"))
     await user.type(screen.getByLabelText("코스 제목"), "전환 중 보존")
-    await user.click(screen.getByRole("button", { name: /도입/ }))
+    await user.click(screen.getByRole("button", { name: "도입 스텝 열기" }))
     expect(routerReplace).not.toHaveBeenCalled()
     expect(window.location.pathname + window.location.search).toBe(
       "/courses/sentence-structure?version=sentence-structure-v2&view=step&lessonId=sentence-structure-01&stepId=sentence-structure-step-1"
     )
-    expect(screen.getByLabelText("학습 목표")).toBeTruthy()
+    expect(screen.getByLabelText("학습 포인트")).toBeTruthy()
 
     await user.click(screen.getByRole("button", { name: "저장" }))
-    expect(saveCurriculumVersionContent).toHaveBeenCalledWith(
+    expect(saveCourseEditorDocument).toHaveBeenCalledWith(
       expect.objectContaining({
         course: expect.objectContaining({
           title: "전환 중 보존",
         }),
       })
     )
+  })
+
+  it("renders the lesson settings view from settings URL state", () => {
+    render(
+      <AdminCourseDetailPage
+        adminApi={createAdminApiMock()}
+        course={courseFixture}
+        selectedVersionId="sentence-structure-v2"
+        urlState={{
+          versionId: "sentence-structure-v2",
+          view: "settings",
+          lessonId: "sentence-structure-01",
+          stepId: null,
+        }}
+        versions={[versionSummaryFixture]}
+        version={versionFixture}
+      />
+    )
+
+    expect(screen.getByRole("heading", { name: "레슨 설정" })).toBeTruthy()
+    expect(screen.queryByText("학습 흐름")).toBeNull()
+  })
+
+  it("guards browser unload when the working copy has unsaved changes", async () => {
+    const user = userEvent.setup()
+
+    render(
+      <AdminCourseDetailPage
+        adminApi={createAdminApiMock()}
+        course={courseFixture}
+        selectedVersionId="sentence-structure-v2"
+        urlState={{
+          versionId: "sentence-structure-v2",
+          view: "lesson",
+          lessonId: "sentence-structure-01",
+          stepId: null,
+        }}
+        versions={[versionSummaryFixture]}
+        version={versionFixture}
+      />
+    )
+
+    await user.clear(screen.getByLabelText("코스 제목"))
+    await user.type(screen.getByLabelText("코스 제목"), "저장 전 변경")
+
+    const event = new Event("beforeunload", { cancelable: true })
+    window.dispatchEvent(event)
+
+    expect(event.defaultPrevented).toBe(true)
   })
 
   it("runs version actions from the version menu", async () => {
@@ -388,6 +509,7 @@ describe("AdminCourseDetailPage", () => {
         },
       })
     )
+    vi.spyOn(window, "confirm").mockReturnValue(true)
 
     render(
       <AdminCourseDetailPage
@@ -420,19 +542,19 @@ describe("AdminCourseDetailPage", () => {
     )
 
     await user.click(screen.getByRole("button", { name: "버전 메뉴" }))
-    await user.click(screen.getByRole("button", { name: "새 draft 생성" }))
+    await user.click(screen.getByRole("button", { name: "새 초안 생성" }))
     expect(createCurriculumDraft).toHaveBeenCalledWith("sentence-structure")
     expect(routerReplace).toHaveBeenCalledWith(
       "/courses/sentence-structure?version=sentence-structure-v3"
     )
 
-    await user.click(screen.getByRole("button", { name: "현재 draft 발행" }))
+    await user.click(screen.getByRole("button", { name: "현재 초안 발행" }))
     expect(publishCurriculumVersion).toHaveBeenCalledWith(
       "sentence-structure",
       "sentence-structure-v2"
     )
 
-    await user.click(screen.getByRole("button", { name: "현재 draft 폐기" }))
+    await user.click(screen.getByRole("button", { name: "현재 초안 폐기" }))
     expect(discardCurriculumVersion).toHaveBeenCalledWith(
       "sentence-structure",
       "sentence-structure-v2"
@@ -443,6 +565,40 @@ describe("AdminCourseDetailPage", () => {
       replaceDraft: true,
       sourceVersionId: "sentence-structure-v1",
     })
+  })
+
+  it("does not run destructive version actions when confirmation is cancelled", async () => {
+    const user = userEvent.setup()
+    const discardCurriculumVersion = vi.fn<
+      AdminApi["discardCurriculumVersion"]
+    >(async () => ({
+      status: "ok",
+      value: { versionId: "sentence-structure-v2" },
+    }))
+    vi.spyOn(window, "confirm").mockReturnValue(false)
+
+    render(
+      <AdminCourseDetailPage
+        adminApi={createAdminApiMock({
+          discardCurriculumVersion,
+        })}
+        course={courseFixture}
+        selectedVersionId="sentence-structure-v2"
+        urlState={{
+          versionId: "sentence-structure-v2",
+          view: "lesson",
+          lessonId: "sentence-structure-01",
+          stepId: null,
+        }}
+        versions={[versionSummaryFixture]}
+        version={versionFixture}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "버전 메뉴" }))
+    await user.click(screen.getByRole("button", { name: "현재 초안 폐기" }))
+
+    expect(discardCurriculumVersion).not.toHaveBeenCalled()
   })
 })
 
@@ -498,7 +654,10 @@ const versionFixture = {
       required: true,
       status: "active" as const,
       content: {
-        objectives: ["원본 목표"],
+        title: "도입",
+        category: "문법",
+        bullets: ["원본 목표"],
+        estimatedMinutes: 8,
       },
     },
   ],
@@ -517,6 +676,16 @@ function createAdminApiMock(overrides: Partial<AdminApi> = {}): AdminApi {
     },
     async getCourseDetail() {
       return { status: "ok", value: courseFixture }
+    },
+    async getCourseEditorDocument() {
+      return {
+        status: "ok",
+        value: {
+          course: courseFixture,
+          versions: [versionSummaryFixture],
+          version: versionFixture,
+        },
+      }
     },
     async getCourseLessonDetail() {
       return {
@@ -570,6 +739,16 @@ function createAdminApiMock(overrides: Partial<AdminApi> = {}): AdminApi {
       return { status: "ok", value: versionSummaryFixture }
     },
     async saveCurriculumVersionContent(input) {
+      return {
+        status: "ok",
+        value: {
+          ...versionFixture,
+          revision: input.baseRevision + 1,
+          steps: input.steps,
+        },
+      }
+    },
+    async saveCourseEditorDocument(input) {
       return {
         status: "ok",
         value: {

@@ -2,6 +2,12 @@ import * as React from "react"
 
 import type { AdminEditorLessonDetailDto } from "@workspace/core/admin"
 
+import {
+  formatPointLabel,
+  getStepDisplayTitle,
+  getStepTypeLabel,
+} from "@/features/courses/course-editor/editor-labels"
+
 type LessonPreviewProps = {
   lessonTitle: string
   steps: AdminEditorLessonDetailDto["steps"]
@@ -13,12 +19,12 @@ export function LessonPreview({ lessonTitle, steps }: LessonPreviewProps) {
   return (
     <section className="space-y-6" aria-labelledby="lesson-preview">
       <div className="space-y-2 border-b pb-4">
-        <p className="text-xs font-medium text-muted-foreground">Preview</p>
+        <p className="text-xs font-medium text-muted-foreground">미리보기</p>
         <h2 id="lesson-preview" className="text-3xl font-semibold">
           {lessonTitle}
         </h2>
         <p className="text-sm text-muted-foreground">
-          저장 전 working copy 기준으로 학습 흐름을 확인합니다.
+          저장 전 편집본 기준으로 학습 흐름을 확인합니다.
         </p>
       </div>
       <div className="space-y-3">
@@ -29,13 +35,15 @@ export function LessonPreview({ lessonTitle, steps }: LessonPreviewProps) {
           >
             <div className="flex items-center justify-between gap-3">
               <span className="rounded-full border px-2 py-1 text-xs text-muted-foreground">
-                {step.type}
+                {getStepTypeLabel(step.type)}
               </span>
               <span className="text-xs text-muted-foreground">
-                {step.points} XP
+                {formatPointLabel(step.points)}
               </span>
             </div>
-            <h3 className="mt-3 text-base font-medium">{step.title}</h3>
+            <h3 className="mt-3 text-base font-medium">
+              {getStepDisplayTitle(step)}
+            </h3>
             <p className="mt-2 text-sm text-muted-foreground">
               {summarizeContent(step.content)}
             </p>

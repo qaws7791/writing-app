@@ -18,7 +18,7 @@ describe("LessonPreview", () => {
             id: "step-1",
             lessonId: "lesson-1",
             type: "INTRO",
-            title: "도입",
+            title: "INTRO",
             sortOrder: 1,
             points: 0,
             required: true,
@@ -30,6 +30,12 @@ describe("LessonPreview", () => {
     )
 
     expect(screen.getByText("목적어 붙이기")).toBeTruthy()
-    expect(screen.getByText("도입")).toBeTruthy()
+    expect(screen.getAllByText("도입").length).toBeGreaterThan(0)
+    expect(screen.getByText("미리보기")).toBeTruthy()
+    expect(screen.getByText("0점")).toBeTruthy()
+    expect(screen.queryByText("Preview")).toBeNull()
+    expect(screen.queryByText("working copy")).toBeNull()
+    expect(screen.queryByText("INTRO")).toBeNull()
+    expect(screen.queryByText("0 XP")).toBeNull()
   })
 })

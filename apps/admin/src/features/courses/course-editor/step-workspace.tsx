@@ -7,6 +7,11 @@ import type {
   AdminEditorStepType,
 } from "@workspace/core/admin"
 
+import {
+  formatPointLabel,
+  getNodeStatusLabel,
+  getStepDisplayTitle,
+} from "@/features/courses/course-editor/editor-labels"
 import { AiFeedbackStepForm } from "@/features/courses/course-editor/step-forms/ai-feedback-step-form"
 import { ChecklistStepForm } from "@/features/courses/course-editor/step-forms/checklist-step-form"
 import { ClassifyStepForm } from "@/features/courses/course-editor/step-forms/classify-step-form"
@@ -30,8 +35,9 @@ import { TranscribeStepForm } from "@/features/courses/course-editor/step-forms/
 import { WordSelectStepForm } from "@/features/courses/course-editor/step-forms/word-select-step-form"
 
 type StepWorkspaceProps = {
+  isReadOnly?: boolean
   lessonSteps: AdminEditorLessonDetailDto["steps"]
-  onUpdateStepContent?: (stepId: string, key: string, value: string) => void
+  onUpdateStepContent?: (stepId: string, key: string, value: unknown) => void
   step: AdminEditorLessonDetailDto["steps"][number]
 }
 
@@ -59,24 +65,25 @@ const stepFormByType = {
 } satisfies Record<AdminEditorStepType, React.ComponentType<StepFormProps>>
 
 export function StepWorkspace({
+  isReadOnly = false,
   lessonSteps,
   onUpdateStepContent,
   step,
 }: StepWorkspaceProps) {
   const StepForm = stepFormByType[step.type]
+  const stepTitle = getStepDisplayTitle(step)
 
   return (
     <div className="space-y-6">
       <header className="space-y-2 border-b pb-4">
         <p className="text-xs font-medium text-muted-foreground">
-          {step.type} · {step.status}
+          {getNodeStatusLabel(step.status)} · {formatPointLabel(step.points)} ·{" "}
+          {step.required ? "필수 스텝" : "선택 스텝"}
         </p>
-        <h1 className="text-2xl font-semibold">{step.title}</h1>
-        <p className="text-sm text-muted-foreground">
-          {step.points} XP · {step.required ? "필수 스텝" : "선택 스텝"}
-        </p>
+        <h1 className="text-2xl font-semibold">{stepTitle}</h1>
       </header>
       <StepForm
+        isReadOnly={isReadOnly}
         lessonSteps={lessonSteps}
         onUpdateContent={(key, value) =>
           onUpdateStepContent?.(step.id, key, value)

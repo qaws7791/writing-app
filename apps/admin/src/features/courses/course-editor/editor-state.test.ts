@@ -2,15 +2,27 @@ import { describe, expect, it } from "vitest"
 
 import { getEditorChangeKind } from "@/features/courses/course-editor/editor-change-kind"
 import {
+  addChapter,
+  addLesson,
+  addStep,
+  archiveChapter,
+  archiveLesson,
+  archiveStep,
   createCourseEditorSaveInput,
   createCourseEditorWorkingCopy,
   getDirtyState,
   moveItem,
   moveLesson,
+  moveStep,
+  updateChapterField,
   updateCourseField,
   updateLessonField,
   updateStepContentField,
 } from "@/features/courses/course-editor/editor-state"
+import {
+  getNodeStatusLabel,
+  getStepTypeLabel,
+} from "@/features/courses/course-editor/editor-labels"
 import { parseEditorUrlState } from "@/features/courses/course-editor/editor-url-state"
 
 describe("course editor state", () => {
@@ -48,6 +60,12 @@ describe("course editor state", () => {
         archivedChapterCount: 0,
       })
     ).toBe("structural")
+  })
+
+  it("maps internal editor labels to Korean display text", () => {
+    expect(getNodeStatusLabel("active")).toBe("활성")
+    expect(getNodeStatusLabel("archived")).toBe("보관됨")
+    expect(getStepTypeLabel("SHORT_WRITE")).toBe("짧은 글쓰기")
   })
 
   it("moves an item without mutating the original list", () => {
@@ -121,6 +139,192 @@ describe("course editor state", () => {
       { lessonId: "lesson-1", sortOrder: 2 },
     ])
     expect(workingCopy.dirty.changedFields).toContain("lesson.order")
+  })
+
+  it("adds and archives chapters lessons and steps", () => {
+    const initial = createCourseEditorWorkingCopy({
+      course: {
+        id: "course-1",
+        title: "원본 코스",
+        description: "원본 설명",
+        thumbnailPath: "/course.png",
+        sortOrder: 1,
+      },
+      version: {
+        id: "course-1-v2",
+        courseId: "course-1",
+        versionNumber: 2,
+        status: "draft",
+        title: "v2",
+        changelog: "draft",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 3,
+        chapters: [],
+        steps: [],
+      },
+    })
+    const withChapter = addChapter(initial, {
+      id: "draft-chapter",
+      label: "새 단원",
+      title: "새 챕터",
+    })
+    const withLesson = addLesson(withChapter, "draft-chapter", {
+      id: "draft-version-lesson",
+      lessonId: "draft-lesson",
+      title: "새 레슨",
+      description: "새 설명",
+    })
+    const withStep = addStep(withLesson, {
+      id: "draft-step",
+      lessonId: "draft-lesson",
+      type: "INTRO",
+      title: "도입",
+    })
+    const archived = archiveStep(
+      archiveLesson(archiveChapter(withStep, "draft-chapter"), "draft-lesson"),
+      "draft-step"
+    )
+
+    expect(archived.version.chapters[0]).toMatchObject({
+      id: "draft-chapter",
+      sortOrder: 1,
+      status: "archived",
+      lessons: [
+        {
+          lessonId: "draft-lesson",
+          sortOrder: 1,
+          status: "archived",
+        },
+      ],
+    })
+    expect(archived.steps[0]).toMatchObject({
+      id: "draft-step",
+      sortOrder: 1,
+      status: "archived",
+    })
+    expect(archived.dirty.changedFields).toEqual([
+      "chapter.add",
+      "lesson.add",
+      "step.add",
+      "chapter.draft-chapter.status",
+      "lesson.draft-lesson.status",
+      "step.draft-step.status",
+    ])
+  })
+
+  it("updates chapter fields without mutating the original working copy", () => {
+    const initial = createCourseEditorWorkingCopy({
+      course: {
+        id: "course-1",
+        title: "원본 코스",
+        description: "원본 설명",
+        thumbnailPath: "/course.png",
+        sortOrder: 1,
+      },
+      version: {
+        id: "course-1-v2",
+        courseId: "course-1",
+        versionNumber: 2,
+        status: "draft",
+        title: "v2",
+        changelog: "draft",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 3,
+        chapters: [
+          {
+            id: "chapter-1",
+            label: "1",
+            title: "첫 챕터",
+            sortOrder: 1,
+            status: "active",
+            lessons: [],
+          },
+        ],
+        steps: [],
+      },
+    })
+
+    const edited = updateChapterField(
+      initial,
+      "chapter-1",
+      "title",
+      "수정 챕터"
+    )
+
+    expect(initial.version.chapters[0]?.title).toBe("첫 챕터")
+    expect(edited.version.chapters[0]?.title).toBe("수정 챕터")
+    expect(edited.dirty.changedFields).toContain("chapter.chapter-1.title")
+  })
+
+  it("moves steps and preserves typed content field values", () => {
+    const workingCopy = createCourseEditorWorkingCopy({
+      course: {
+        id: "course-1",
+        title: "원본 코스",
+        description: "원본 설명",
+        thumbnailPath: "/course.png",
+        sortOrder: 1,
+      },
+      version: {
+        id: "course-1-v2",
+        courseId: "course-1",
+        versionNumber: 2,
+        status: "draft",
+        title: "v2",
+        changelog: "draft",
+        publishedAt: null,
+        createdAt: "2026-05-28T00:00:00.000Z",
+        revision: 3,
+        chapters: [],
+        steps: [
+          {
+            id: "step-1",
+            lessonId: "lesson-1",
+            type: "INTRO",
+            title: "도입",
+            sortOrder: 1,
+            points: 0,
+            required: true,
+            status: "active",
+            content: {},
+          },
+          {
+            id: "step-2",
+            lessonId: "lesson-1",
+            type: "SUMMARY",
+            title: "정리",
+            sortOrder: 2,
+            points: 10,
+            required: true,
+            status: "active",
+            content: {},
+          },
+        ],
+      },
+    })
+
+    const edited = updateStepContentField(
+      updateStepContentField(
+        moveStep(workingCopy, "lesson-1", "step-1", 1),
+        "step-1",
+        "estimatedMinutes",
+        8
+      ),
+      "step-1",
+      "bullets",
+      ["첫 기준", "둘째 기준"]
+    )
+
+    expect(edited.steps.map((step) => step.id)).toEqual(["step-2", "step-1"])
+    expect(edited.steps[1]).toMatchObject({
+      sortOrder: 2,
+      content: {
+        estimatedMinutes: 8,
+        bullets: ["첫 기준", "둘째 기준"],
+      },
+    })
   })
 
   it("returns dirty state from changed fields", () => {

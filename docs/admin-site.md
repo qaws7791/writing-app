@@ -1,5 +1,17 @@
 # 어드민 사이트
 
+## 2026-05-29 어드민 코스 에디터 정정 설계 시작
+
+- 감사 결과를 바탕으로 코스 상세 에디터의 UI, 상태 모델, API 계약, DB 저장 정책을 함께 정정한다.
+- 기존 구조를 부분 보정하는 대신 draft editor document를 중심으로 챕터, 레슨, 스텝 편집 경계를 다시 정리한다.
+- 설계 문서는 `docs/superpowers/specs/2026-05-29-admin-course-editor-correction-design.md`에 작성한다.
+
+## 2026-05-29 어드민 코스 상세 UI 감사 완료
+
+- 코스 상세 에디터 화면을 실제 브라우저와 코드 기준으로 점검했다.
+- 사용자 식별 문제 외에 반응형 레이아웃, 미동작 버튼, 위험 작업 확인 부재, published 버전 편집 가능 표시, 스텝 content schema 불일치 문제를 추가로 확인했다.
+- 상세 조사 결과는 `docs/admin-course-detail-ui-audit.md`에 정리했다.
+
 ## 2026-05-28 어드민 코스 상세 에디터 동작 보정 완료
 
 - 커리큘럼 레슨 row의 선택 버튼과 drag handle을 분리해 레슨 클릭이 드래그 센서에 막히지 않도록 했다.
@@ -612,3 +624,12 @@
 - 필수 환경 변수 누락은 `@workspace/env` 기반 어드민 API 환경 검증 또는 관리자 시드 스크립트의 필수 시드 값 검증에서 명시적으로 실패한다.
 - `ADMIN_SEED_RESET_PASSWORD=true`는 더 이상 루트 스크립트가 대신 설정하지 않으며, 기존 관리자 비밀번호 갱신이 필요한 실행자가 직접 명시한다.
 - 검증 중 Bun의 앱별 `.env` 자동 로딩을 확인했으며, `.env`를 끈 상태에서는 필수 환경 변수 누락이 `Invalid environment variables`로 실패한다.
+
+## 2026-05-29 어드민 코스 상세 에디터 정정 완료
+
+- 코스 상세 화면을 editor document 기반으로 조회하고 저장하도록 core, DB, admin-api, admin HTTP client 계약을 확장했다.
+- 코스 기본 정보, 챕터, 레슨, 스텝을 draft 기준으로 추가, 수정, 정렬, 아카이브할 수 있는 UI와 상태 갱신 로직을 추가했다.
+- 상단 제목, 버전 상태, 커리큘럼, 레슨 작업대, 미리보기, 스텝 상세 폼의 영문 enum과 개발 용어를 한국어 운영 라벨로 교체했다.
+- published 버전은 읽기 전용으로 표시하고, 발행, 폐기, 복원, 이탈 같은 위험 작업에는 확인 흐름을 추가했다.
+- 모바일에서 커리큘럼과 작업대를 전환할 수 있도록 레이아웃을 수정해 오른쪽 작업대가 사라지는 문제를 제거했다.
+- 감사 결과와 설계, 구현 계획은 `docs/admin-course-detail-ui-audit.md`, `docs/superpowers/specs/2026-05-29-admin-course-editor-correction-design.md`, `docs/superpowers/plans/2026-05-29-admin-course-editor-correction.md`에 기록했다.

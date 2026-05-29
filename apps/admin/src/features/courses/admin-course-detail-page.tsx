@@ -12,10 +12,19 @@ import type {
 import { AdminHeader } from "@/components/admin-header"
 import { CourseEditorHeader } from "@/features/courses/course-editor/course-editor-header"
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
+import { getVersionStatusLabel } from "@/features/courses/course-editor/editor-labels"
 import {
+  addChapter,
+  addLesson,
+  addStep,
+  archiveChapter,
+  archiveLesson,
+  archiveStep,
   createCourseEditorSaveInput,
   createCourseEditorWorkingCopy,
   moveLesson,
+  moveStep,
+  updateChapterField,
   updateCourseField,
   updateLessonField,
   updateStepContentField,
@@ -65,12 +74,28 @@ export function AdminCourseDetailPage({
     setLocalUrlState(urlState)
   }, [urlState])
 
+  React.useEffect(() => {
+    if (!workingCopy.dirty.hasChanges) {
+      return
+    }
+
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault()
+      event.returnValue = ""
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload)
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload)
+    }
+  }, [workingCopy.dirty.hasChanges])
+
   const handleSave = React.useCallback(async () => {
     setIsSaving(true)
     setStatusMessage(null)
 
     try {
-      const result = await api.saveCurriculumVersionContent(
+      const result = await api.saveCourseEditorDocument(
         createCourseEditorSaveInput(workingCopy)
       )
 
@@ -96,13 +121,27 @@ export function AdminCourseDetailPage({
 
   const navigateToVersion = React.useCallback(
     (versionId: string) => {
+      if (
+        workingCopy.dirty.hasChanges &&
+        !window.confirm("저장하지 않은 변경사항을 버리고 이동하시겠습니까?")
+      ) {
+        return
+      }
+
       router.replace(`/courses/${course.id}?version=${versionId}`)
       router.refresh()
     },
-    [course.id, router]
+    [course.id, router, workingCopy.dirty.hasChanges]
   )
 
   const handleCreateDraft = React.useCallback(async () => {
+    if (
+      workingCopy.dirty.hasChanges &&
+      !window.confirm("저장하지 않은 변경사항을 버리고 새 초안을 만들까요?")
+    ) {
+      return
+    }
+
     const result = await api.createCurriculumDraft(course.id)
 
     if (result.status === "error") {
@@ -111,7 +150,7 @@ export function AdminCourseDetailPage({
     }
 
     navigateToVersion(result.value.id)
-  }, [api, course.id, navigateToVersion])
+  }, [api, course.id, navigateToVersion, workingCopy.dirty.hasChanges])
 
   React.useEffect(() => {
     const hasDraft = versions.some(
@@ -122,11 +161,15 @@ export function AdminCourseDetailPage({
       return
     }
 
-    setStatusMessage("편집 가능한 draft를 준비하는 중입니다.")
+    setStatusMessage("편집 가능한 초안을 준비하는 중입니다.")
     void handleCreateDraft()
   }, [handleCreateDraft, versions, workingCopy.version.status])
 
   const handlePublishDraft = React.useCallback(async () => {
+    if (!window.confirm("현재 초안을 발행하시겠습니까?")) {
+      return
+    }
+
     const result = await api.publishCurriculumVersion(
       course.id,
       selectedVersionId
@@ -142,6 +185,10 @@ export function AdminCourseDetailPage({
   }, [api, course.id, router, selectedVersionId])
 
   const handleDiscardDraft = React.useCallback(async () => {
+    if (!window.confirm("현재 초안을 폐기하시겠습니까?")) {
+      return
+    }
+
     const result = await api.discardCurriculumVersion(
       course.id,
       selectedVersionId
@@ -152,13 +199,17 @@ export function AdminCourseDetailPage({
       return
     }
 
-    setStatusMessage("draft를 폐기했습니다.")
+    setStatusMessage("초안을 폐기했습니다.")
     router.replace(`/courses/${course.id}`)
     router.refresh()
   }, [api, course.id, router, selectedVersionId])
 
   const handleRestoreDraft = React.useCallback(
     async (sourceVersionId: string) => {
+      if (!window.confirm("선택한 버전에서 초안을 복원하시겠습니까?")) {
+        return
+      }
+
       const result = await api.restoreCurriculumDraft(course.id, {
         replaceDraft: true,
         sourceVersionId,
@@ -208,12 +259,92 @@ export function AdminCourseDetailPage({
     [course.id, selectedVersionId]
   )
 
-  function updateWorkingCopy(
-    updater: (current: CourseEditorWorkingCopy) => CourseEditorWorkingCopy
-  ) {
-    setStatusMessage(null)
-    setWorkingCopy((current) => updater(current))
-  }
+  const updateWorkingCopy = React.useCallback(
+    (
+      updater: (current: CourseEditorWorkingCopy) => CourseEditorWorkingCopy
+    ) => {
+      setStatusMessage(null)
+      setWorkingCopy((current) => {
+        if (current.version.status !== "draft") {
+          return current
+        }
+
+        return updater(current)
+      })
+    },
+    []
+  )
+
+  const handleAddChapter = React.useCallback(() => {
+    updateWorkingCopy((current) =>
+      addChapter(current, {
+        id: createDraftId("draft-chapter"),
+        label: `${current.version.chapters.length + 1}단원`,
+        title: "새 챕터",
+      })
+    )
+  }, [updateWorkingCopy])
+
+  const handleAddLesson = React.useCallback(
+    (chapterId: string) => {
+      updateWorkingCopy((current) =>
+        addLesson(current, chapterId, {
+          id: createDraftId("draft-version-lesson"),
+          lessonId: createDraftId("draft-lesson"),
+          title: "새 레슨",
+          description: "새 레슨 설명을 입력하세요.",
+        })
+      )
+    },
+    [updateWorkingCopy]
+  )
+
+  const handleAddStep = React.useCallback(
+    (lessonId: string) => {
+      updateWorkingCopy((current) =>
+        addStep(current, {
+          id: createDraftId("draft-step"),
+          lessonId,
+          type: "INTRO",
+          title: "새 스텝",
+        })
+      )
+    },
+    [updateWorkingCopy]
+  )
+
+  const handleArchiveChapter = React.useCallback(
+    (chapterId: string) => {
+      if (!window.confirm("이 챕터를 보관하시겠습니까?")) {
+        return
+      }
+
+      updateWorkingCopy((current) => archiveChapter(current, chapterId))
+    },
+    [updateWorkingCopy]
+  )
+
+  const handleArchiveLesson = React.useCallback(
+    (lessonId: string) => {
+      if (!window.confirm("이 레슨을 보관하시겠습니까?")) {
+        return
+      }
+
+      updateWorkingCopy((current) => archiveLesson(current, lessonId))
+    },
+    [updateWorkingCopy]
+  )
+
+  const handleArchiveStep = React.useCallback(
+    (stepId: string) => {
+      if (!window.confirm("이 스텝을 보관하시겠습니까?")) {
+        return
+      }
+
+      updateWorkingCopy((current) => archiveStep(current, stepId))
+    },
+    [updateWorkingCopy]
+  )
 
   return (
     <>
@@ -225,10 +356,12 @@ export function AdminCourseDetailPage({
             isSaving={isSaving}
             onOpenVersionMenu={handleOpenVersionMenu}
             onSave={handleSave}
+            versionNumber={workingCopy.version.versionNumber}
+            versionStatus={workingCopy.version.status}
           />
         }
-        description={`${workingCopy.course.title} 커리큘럼을 draft 기준으로 편집합니다.`}
-        title="Course Studio"
+        description="초안 기준으로 커리큘럼을 편집합니다."
+        title="코스 편집"
       />
       {statusMessage ? (
         <p className="border-b px-6 py-2 text-sm text-muted-foreground">
@@ -247,7 +380,7 @@ export function AdminCourseDetailPage({
               className="rounded-md border px-3 py-2"
               onClick={handleCreateDraft}
             >
-              새 draft 생성
+              새 초안 생성
             </button>
             <button
               type="button"
@@ -255,7 +388,7 @@ export function AdminCourseDetailPage({
               disabled={workingCopy.version.status !== "draft"}
               onClick={handlePublishDraft}
             >
-              현재 draft 발행
+              현재 초안 발행
             </button>
             <button
               type="button"
@@ -263,13 +396,13 @@ export function AdminCourseDetailPage({
               disabled={workingCopy.version.status !== "draft"}
               onClick={handleDiscardDraft}
             >
-              현재 draft 폐기
+              현재 초안 폐기
             </button>
             {versions.map((curriculumVersion) => (
               <React.Fragment key={curriculumVersion.id}>
                 <span className="rounded-md border px-2 py-1 text-xs text-muted-foreground">
                   v{curriculumVersion.versionNumber} ·{" "}
-                  {curriculumVersion.status}
+                  {getVersionStatusLabel(curriculumVersion.status)}
                 </span>
                 {curriculumVersion.status === "published" ? (
                   <button
@@ -292,9 +425,21 @@ export function AdminCourseDetailPage({
       ) : null}
       <main className="min-h-0 flex-1">
         <CourseEditorShell
+          isReadOnly={workingCopy.version.status !== "draft"}
+          onAddChapter={handleAddChapter}
+          onAddLesson={handleAddLesson}
+          onAddStep={handleAddStep}
+          onArchiveChapter={handleArchiveChapter}
+          onArchiveLesson={handleArchiveLesson}
+          onArchiveStep={handleArchiveStep}
           onUpdateCourseField={(field, value) =>
             updateWorkingCopy((current) =>
               updateCourseField(current, field, value)
+            )
+          }
+          onUpdateChapterField={(chapterId, field, value) =>
+            updateWorkingCopy((current) =>
+              updateChapterField(current, chapterId, field, value)
             )
           }
           onUpdateLessonField={(lessonId, field, value) =>
@@ -307,14 +452,20 @@ export function AdminCourseDetailPage({
               moveLesson(current, lessonId, targetIndex)
             )
           }
+          onMoveStep={(lessonId, stepId, targetIndex) =>
+            updateWorkingCopy((current) =>
+              moveStep(current, lessonId, stepId, targetIndex)
+            )
+          }
           onOpenPreview={(lessonId) =>
             replaceEditorUrl({
               lessonId,
               view: "preview",
             })
           }
-          onOpenSettings={() =>
+          onOpenSettings={(lessonId) =>
             replaceEditorUrl({
+              lessonId,
               view: "settings",
             })
           }
@@ -336,11 +487,17 @@ export function AdminCourseDetailPage({
               updateStepContentField(current, stepId, key, value)
             )
           }
-          selectedVersionId={selectedVersionId}
           urlState={localUrlState}
           workingCopy={workingCopy}
         />
       </main>
     </>
   )
+}
+
+function createDraftId(prefix: string) {
+  const randomId =
+    globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 12)
+
+  return `${prefix}-${randomId}`
 }

@@ -1,5 +1,6 @@
 import {
   adminCourseDetailDtoSchema,
+  adminCourseEditorDetailDtoSchema,
   adminCurriculumMigrationApplicationDtoSchema,
   adminCurriculumMigrationDetailDtoSchema,
   adminCourseListDtoSchema,
@@ -11,6 +12,8 @@ import {
   adminEditorLessonDetailDtoSchema,
   adminUserListDtoSchema,
   type AdminApplyCurriculumMigrationRequestDto,
+  type AdminCourseEditorDetailDto,
+  type AdminCourseEditorSaveRequestDto,
   type AdminCourseDetailDto,
   type AdminCourseListDto,
   type AdminCourseListInputDto,
@@ -75,6 +78,10 @@ export interface AdminService {
   getCourseDetail(
     courseId: string
   ): Promise<AdminCurriculumVersionServiceResult<AdminCourseDetailDto>>
+  getCourseEditorDocument(
+    courseId: string,
+    versionId: string | null
+  ): Promise<AdminCurriculumVersionServiceResult<AdminCourseEditorDetailDto>>
   listCourses(
     input: AdminCourseListInputDto
   ): Promise<AdminServiceResult<AdminCourseListDto>>
@@ -111,6 +118,11 @@ export interface AdminService {
   >
   saveCurriculumVersionContent(
     input: AdminSaveCurriculumVersionContentRequestDto
+  ): Promise<
+    AdminCurriculumEditorServiceResult<AdminEditorCurriculumVersionDetailDto>
+  >
+  saveCourseEditorDocument(
+    input: AdminCourseEditorSaveRequestDto
   ): Promise<
     AdminCurriculumEditorServiceResult<AdminEditorCurriculumVersionDetailDto>
   >
@@ -186,6 +198,31 @@ export function createAdminService({
           value: adminCourseListDtoSchema.parse(
             await repository.listCourses(input)
           ),
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
+    async getCourseEditorDocument(courseId, versionId) {
+      try {
+        const document = await repository.getCourseEditorDocument(
+          courseId,
+          versionId
+        )
+
+        if (!document) {
+          return {
+            status: "not-found",
+            error: {
+              code: "not-found",
+              message: "Course editor document was not found.",
+            },
+          }
+        }
+
+        return {
+          status: "ok",
+          value: adminCourseEditorDetailDtoSchema.parse(document),
         }
       } catch {
         return unavailableResult
@@ -331,6 +368,32 @@ export function createAdminService({
     async saveCurriculumVersionContent(input) {
       try {
         const result = await repository.saveCurriculumVersionContent(input)
+
+        if (result.status === "invalid-request") {
+          return result
+        }
+
+        if (result.status === "not-found") {
+          return result
+        }
+
+        if (result.status === "conflict") {
+          return result
+        }
+
+        return {
+          status: "ok",
+          value: adminEditorCurriculumVersionDetailDtoSchema.parse(
+            result.version
+          ),
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
+    async saveCourseEditorDocument(input) {
+      try {
+        const result = await repository.saveCourseEditorDocument(input)
 
         if (result.status === "invalid-request") {
           return result
