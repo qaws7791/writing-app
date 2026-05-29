@@ -15,7 +15,6 @@ const repository: AdminRepository = {
           chapters: [
             {
               id: "sentence-structure-chapter-1",
-              label: "1단원",
               title: "문장의 뼈대",
               sortOrder: 1,
               status: "active",
@@ -399,7 +398,6 @@ describe("createAdminService", () => {
               chapters: [
                 {
                   id: "sentence-structure-chapter-1",
-                  label: "1단원",
                   title: "문장의 뼈대",
                   sortOrder: 1,
                   status: invalidNodeStatus,

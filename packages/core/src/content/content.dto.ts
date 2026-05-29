@@ -41,7 +41,6 @@ export const courseLessonDtoSchema = z.object({
 
 export const courseChapterDtoSchema = z.object({
   id: z.string().min(1),
-  label: z.string().min(1),
   title: z.string().min(1),
   lessons: z.array(courseLessonDtoSchema),
 })

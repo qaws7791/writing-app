@@ -38,7 +38,6 @@ export const adminLessonSummaryDtoSchema = z.object({
 
 export const adminChapterSummaryDtoSchema = z.object({
   id: z.string().min(1),
-  label: z.string().min(1),
   title: z.string().min(1),
   sortOrder: z.number().int().positive(),
   status: adminCurriculumNodeStatusSchema,

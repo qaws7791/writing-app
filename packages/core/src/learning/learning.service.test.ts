@@ -99,7 +99,6 @@ const contentService: ContentService = {
         chapters: [
           {
             id: "sentence-structure-chapter-1",
-            label: "1단원",
             title: "문장의 뼈대",
             lessons: [
               {

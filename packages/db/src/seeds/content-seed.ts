@@ -7,7 +7,6 @@ type SeedLesson = {
 
 type SeedChapter = {
   id: string
-  label: string
   title: string
   sortOrder: number
   lessons: SeedLesson[]
@@ -38,14 +37,12 @@ function lesson(
 
 function chapter(
   id: string,
-  label: string,
   title: string,
   sortOrder: number,
   lessons: SeedLesson[]
 ): SeedChapter {
   return {
     id,
-    label,
     title,
     sortOrder,
     lessons,
@@ -84,7 +81,7 @@ export const contentSeed = {
           "/course-thumbnails/sentence-structure.png",
           1,
           [
-            chapter("sentence-structure-chapter-1", "1단원", "문장의 뼈대", 1, [
+            chapter("sentence-structure-chapter-1", "문장의 뼈대", 1, [
               lesson(
                 "sentence-structure-01",
                 "주어와 서술어 찾기",
@@ -110,7 +107,7 @@ export const contentSeed = {
                 4
               ),
             ]),
-            chapter("sentence-structure-chapter-2", "2단원", "문장의 연결", 2, [
+            chapter("sentence-structure-chapter-2", "문장의 연결", 2, [
               lesson(
                 "sentence-structure-05",
                 "이어진 문장의 기본",
@@ -136,38 +133,32 @@ export const contentSeed = {
                 4
               ),
             ]),
-            chapter(
-              "sentence-structure-chapter-3",
-              "3단원",
-              "문단으로 확장",
-              3,
-              [
-                lesson(
-                  "sentence-structure-09",
-                  "중심 문장 세우기",
-                  "문단의 핵심 문장을 먼저 정하고 뒷문장을 연결합니다.",
-                  1
-                ),
-                lesson(
-                  "sentence-structure-10",
-                  "근거 문장 배치",
-                  "예시와 설명을 중심 문장 뒤에 자연스럽게 놓습니다.",
-                  2
-                ),
-                lesson(
-                  "sentence-structure-11",
-                  "전환 문장 만들기",
-                  "다음 문단으로 넘어가는 연결 문장을 작성합니다.",
-                  3
-                ),
-                lesson(
-                  "sentence-structure-12",
-                  "구조 중심 퇴고",
-                  "문장 성분과 문단 흐름을 함께 점검하며 글을 고칩니다.",
-                  4
-                ),
-              ]
-            ),
+            chapter("sentence-structure-chapter-3", "문단으로 확장", 3, [
+              lesson(
+                "sentence-structure-09",
+                "중심 문장 세우기",
+                "문단의 핵심 문장을 먼저 정하고 뒷문장을 연결합니다.",
+                1
+              ),
+              lesson(
+                "sentence-structure-10",
+                "근거 문장 배치",
+                "예시와 설명을 중심 문장 뒤에 자연스럽게 놓습니다.",
+                2
+              ),
+              lesson(
+                "sentence-structure-11",
+                "전환 문장 만들기",
+                "다음 문단으로 넘어가는 연결 문장을 작성합니다.",
+                3
+              ),
+              lesson(
+                "sentence-structure-12",
+                "구조 중심 퇴고",
+                "문장 성분과 문단 흐름을 함께 점검하며 글을 고칩니다.",
+                4
+              ),
+            ]),
           ]
         ),
         course(
@@ -177,82 +168,70 @@ export const contentSeed = {
           "/course-thumbnails/vocabulary-basics.png",
           2,
           [
-            chapter(
-              "vocabulary-basics-chapter-1",
-              "1단원",
-              "정확한 단어 선택",
-              1,
-              [
-                lesson(
-                  "vocabulary-basics-01",
-                  "비슷한 말의 차이",
-                  "의미가 가까운 단어들의 뉘앙스와 사용 장면을 구분합니다.",
-                  1
-                ),
-                lesson(
-                  "vocabulary-basics-02",
-                  "막연한 표현 바꾸기",
-                  "좋다, 많다, 크다처럼 넓은 표현을 구체적인 단어로 고칩니다.",
-                  2
-                ),
-                lesson(
-                  "vocabulary-basics-03",
-                  "감각어 늘리기",
-                  "시각, 청각, 촉각을 활용해 묘사의 해상도를 높입니다.",
-                  3
-                ),
-                lesson(
-                  "vocabulary-basics-04",
-                  "상황에 맞는 높임 어휘",
-                  "격식과 관계에 따라 어휘의 높낮이를 조절합니다.",
-                  4
-                ),
-                lesson(
-                  "vocabulary-basics-05",
-                  "단어장 작성법",
-                  "외운 단어가 아니라 실제 문장에 쓸 수 있는 단어장을 만듭니다.",
-                  5
-                ),
-              ]
-            ),
-            chapter(
-              "vocabulary-basics-chapter-2",
-              "2단원",
-              "문맥 안에서 쓰기",
-              2,
-              [
-                lesson(
-                  "vocabulary-basics-06",
-                  "문맥 단서 읽기",
-                  "앞뒤 문장을 보고 가장 어울리는 단어를 추론합니다.",
-                  1
-                ),
-                lesson(
-                  "vocabulary-basics-07",
-                  "관용 표현 익히기",
-                  "자주 쓰이는 관용 표현의 의미와 자연스러운 활용을 배웁니다.",
-                  2
-                ),
-                lesson(
-                  "vocabulary-basics-08",
-                  "군더더기 어휘 줄이기",
-                  "의미가 겹치는 단어를 정리해 문장을 선명하게 만듭니다.",
-                  3
-                ),
-                lesson(
-                  "vocabulary-basics-09",
-                  "주제별 어휘 묶기",
-                  "감정, 관계, 일상 주제에 맞춰 어휘를 분류합니다.",
-                  4
-                ),
-                lesson(
-                  "vocabulary-basics-10",
-                  "새 단어로 짧은 글 쓰기",
-                  "새로 익힌 단어를 활용해 짧은 단락을 완성합니다.",
-                  5
-                ),
-              ]
-            ),
+            chapter("vocabulary-basics-chapter-1", "정확한 단어 선택", 1, [
+              lesson(
+                "vocabulary-basics-01",
+                "비슷한 말의 차이",
+                "의미가 가까운 단어들의 뉘앙스와 사용 장면을 구분합니다.",
+                1
+              ),
+              lesson(
+                "vocabulary-basics-02",
+                "막연한 표현 바꾸기",
+                "좋다, 많다, 크다처럼 넓은 표현을 구체적인 단어로 고칩니다.",
+                2
+              ),
+              lesson(
+                "vocabulary-basics-03",
+                "감각어 늘리기",
+                "시각, 청각, 촉각을 활용해 묘사의 해상도를 높입니다.",
+                3
+              ),
+              lesson(
+                "vocabulary-basics-04",
+                "상황에 맞는 높임 어휘",
+                "격식과 관계에 따라 어휘의 높낮이를 조절합니다.",
+                4
+              ),
+              lesson(
+                "vocabulary-basics-05",
+                "단어장 작성법",
+                "외운 단어가 아니라 실제 문장에 쓸 수 있는 단어장을 만듭니다.",
+                5
+              ),
+            ]),
+            chapter("vocabulary-basics-chapter-2", "문맥 안에서 쓰기", 2, [
+              lesson(
+                "vocabulary-basics-06",
+                "문맥 단서 읽기",
+                "앞뒤 문장을 보고 가장 어울리는 단어를 추론합니다.",
+                1
+              ),
+              lesson(
+                "vocabulary-basics-07",
+                "관용 표현 익히기",
+                "자주 쓰이는 관용 표현의 의미와 자연스러운 활용을 배웁니다.",
+                2
+              ),
+              lesson(
+                "vocabulary-basics-08",
+                "군더더기 어휘 줄이기",
+                "의미가 겹치는 단어를 정리해 문장을 선명하게 만듭니다.",
+                3
+              ),
+              lesson(
+                "vocabulary-basics-09",
+                "주제별 어휘 묶기",
+                "감정, 관계, 일상 주제에 맞춰 어휘를 분류합니다.",
+                4
+              ),
+              lesson(
+                "vocabulary-basics-10",
+                "새 단어로 짧은 글 쓰기",
+                "새로 익힌 단어를 활용해 짧은 단락을 완성합니다.",
+                5
+              ),
+            ]),
           ]
         ),
         course(
@@ -262,70 +241,58 @@ export const contentSeed = {
           "/course-thumbnails/reading-comprehension.png",
           3,
           [
-            chapter(
-              "reading-comprehension-chapter-1",
-              "1단원",
-              "정독의 기술",
-              1,
-              [
-                lesson(
-                  "reading-comprehension-01",
-                  "빠르게 읽기와 깊이 읽기",
-                  "읽기 목적에 따라 속도와 집중 지점을 달리하는 법을 배웁니다.",
-                  1
-                ),
-                lesson(
-                  "reading-comprehension-02",
-                  "밑줄 긋기의 기준",
-                  "핵심 주장, 근거, 전환 표현을 표시하는 기준을 세웁니다.",
-                  2
-                ),
-                lesson(
-                  "reading-comprehension-03",
-                  "한 문단 세 번 읽기",
-                  "표면 의미, 구조, 의도를 차례로 파악합니다.",
-                  3
-                ),
-                lesson(
-                  "reading-comprehension-04",
-                  "작가의 선택에 주목하기",
-                  "왜 이 단어와 순서를 선택했는지 질문하며 읽습니다.",
-                  4
-                ),
-              ]
-            ),
-            chapter(
-              "reading-comprehension-chapter-2",
-              "2단원",
-              "요약의 구조",
-              2,
-              [
-                lesson(
-                  "reading-comprehension-05",
-                  "중심 문장 찾기",
-                  "문단마다 반드시 남겨야 할 핵심 정보를 구분합니다.",
-                  1
-                ),
-                lesson(
-                  "reading-comprehension-06",
-                  "세부 정보 덜어내기",
-                  "예시, 반복, 부연 설명을 요약문에서 정리합니다.",
-                  2
-                ),
-                lesson(
-                  "reading-comprehension-07",
-                  "한 문장 요약하기",
-                  "글 전체의 주장과 근거를 하나의 문장으로 압축합니다.",
-                  3
-                ),
-                lesson(
-                  "reading-comprehension-08",
-                  "요약문 퇴고",
-                  "원문의 의미를 유지하면서 더 짧고 정확하게 고칩니다.",
-                  4
-                ),
-              ]
-            ),
+            chapter("reading-comprehension-chapter-1", "정독의 기술", 1, [
+              lesson(
+                "reading-comprehension-01",
+                "빠르게 읽기와 깊이 읽기",
+                "읽기 목적에 따라 속도와 집중 지점을 달리하는 법을 배웁니다.",
+                1
+              ),
+              lesson(
+                "reading-comprehension-02",
+                "밑줄 긋기의 기준",
+                "핵심 주장, 근거, 전환 표현을 표시하는 기준을 세웁니다.",
+                2
+              ),
+              lesson(
+                "reading-comprehension-03",
+                "한 문단 세 번 읽기",
+                "표면 의미, 구조, 의도를 차례로 파악합니다.",
+                3
+              ),
+              lesson(
+                "reading-comprehension-04",
+                "작가의 선택에 주목하기",
+                "왜 이 단어와 순서를 선택했는지 질문하며 읽습니다.",
+                4
+              ),
+            ]),
+            chapter("reading-comprehension-chapter-2", "요약의 구조", 2, [
+              lesson(
+                "reading-comprehension-05",
+                "중심 문장 찾기",
+                "문단마다 반드시 남겨야 할 핵심 정보를 구분합니다.",
+                1
+              ),
+              lesson(
+                "reading-comprehension-06",
+                "세부 정보 덜어내기",
+                "예시, 반복, 부연 설명을 요약문에서 정리합니다.",
+                2
+              ),
+              lesson(
+                "reading-comprehension-07",
+                "한 문장 요약하기",
+                "글 전체의 주장과 근거를 하나의 문장으로 압축합니다.",
+                3
+              ),
+              lesson(
+                "reading-comprehension-08",
+                "요약문 퇴고",
+                "원문의 의미를 유지하면서 더 짧고 정확하게 고칩니다.",
+                4
+              ),
+            ]),
           ]
         ),
       ],
@@ -342,7 +309,7 @@ export const contentSeed = {
           "/course-thumbnails/grammar-complete.png",
           1,
           [
-            chapter("grammar-complete-chapter-1", "1단원", "맞춤법의 기본", 1, [
+            chapter("grammar-complete-chapter-1", "맞춤법의 기본", 1, [
               lesson(
                 "grammar-complete-01",
                 "자주 틀리는 받침",
@@ -374,7 +341,7 @@ export const contentSeed = {
                 5
               ),
             ]),
-            chapter("grammar-complete-chapter-2", "2단원", "띄어쓰기", 2, [
+            chapter("grammar-complete-chapter-2", "띄어쓰기", 2, [
               lesson(
                 "grammar-complete-06",
                 "조사와 어미",
@@ -406,44 +373,38 @@ export const contentSeed = {
                 5
               ),
             ]),
-            chapter(
-              "grammar-complete-chapter-3",
-              "3단원",
-              "문장 부호와 문체",
-              3,
-              [
-                lesson(
-                  "grammar-complete-11",
-                  "쉼표의 역할",
-                  "나열, 삽입, 호흡 조절에 맞게 쉼표를 씁니다.",
-                  1
-                ),
-                lesson(
-                  "grammar-complete-12",
-                  "따옴표와 인용",
-                  "직접 인용과 간접 인용의 표기 방식을 익힙니다.",
-                  2
-                ),
-                lesson(
-                  "grammar-complete-13",
-                  "문장 끝맺음",
-                  "평서, 의문, 청유의 끝맺음을 문체에 맞춥니다.",
-                  3
-                ),
-                lesson(
-                  "grammar-complete-14",
-                  "문체 일관성",
-                  "높임과 어조가 섞이지 않도록 한 글 안의 문체를 통일합니다.",
-                  4
-                ),
-                lesson(
-                  "grammar-complete-15",
-                  "최종 교정 실습",
-                  "맞춤법, 띄어쓰기, 부호를 한 번에 점검합니다.",
-                  5
-                ),
-              ]
-            ),
+            chapter("grammar-complete-chapter-3", "문장 부호와 문체", 3, [
+              lesson(
+                "grammar-complete-11",
+                "쉼표의 역할",
+                "나열, 삽입, 호흡 조절에 맞게 쉼표를 씁니다.",
+                1
+              ),
+              lesson(
+                "grammar-complete-12",
+                "따옴표와 인용",
+                "직접 인용과 간접 인용의 표기 방식을 익힙니다.",
+                2
+              ),
+              lesson(
+                "grammar-complete-13",
+                "문장 끝맺음",
+                "평서, 의문, 청유의 끝맺음을 문체에 맞춥니다.",
+                3
+              ),
+              lesson(
+                "grammar-complete-14",
+                "문체 일관성",
+                "높임과 어조가 섞이지 않도록 한 글 안의 문체를 통일합니다.",
+                4
+              ),
+              lesson(
+                "grammar-complete-15",
+                "최종 교정 실습",
+                "맞춤법, 띄어쓰기, 부호를 한 번에 점검합니다.",
+                5
+              ),
+            ]),
           ]
         ),
         course(
@@ -453,7 +414,7 @@ export const contentSeed = {
           "/course-thumbnails/expression.png",
           2,
           [
-            chapter("expression-chapter-1", "1단원", "선명한 묘사", 1, [
+            chapter("expression-chapter-1", "선명한 묘사", 1, [
               lesson(
                 "expression-01",
                 "구체적인 명사 고르기",
@@ -479,7 +440,7 @@ export const contentSeed = {
                 4
               ),
             ]),
-            chapter("expression-chapter-2", "2단원", "문장의 힘 조절", 2, [
+            chapter("expression-chapter-2", "문장의 힘 조절", 2, [
               lesson(
                 "expression-05",
                 "피동 표현 다듬기",
@@ -505,7 +466,7 @@ export const contentSeed = {
                 4
               ),
             ]),
-            chapter("expression-chapter-3", "3단원", "비유와 어조", 3, [
+            chapter("expression-chapter-3", "비유와 어조", 3, [
               lesson(
                 "expression-09",
                 "좋은 비유의 조건",
@@ -541,7 +502,7 @@ export const contentSeed = {
           "/course-thumbnails/essay-writing.png",
           1,
           [
-            chapter("essay-writing-chapter-1", "1단원", "주제와 관점", 1, [
+            chapter("essay-writing-chapter-1", "주제와 관점", 1, [
               lesson(
                 "essay-writing-01",
                 "쓸 만한 질문 찾기",
@@ -573,7 +534,7 @@ export const contentSeed = {
                 5
               ),
             ]),
-            chapter("essay-writing-chapter-2", "2단원", "구성과 전개", 2, [
+            chapter("essay-writing-chapter-2", "구성과 전개", 2, [
               lesson(
                 "essay-writing-06",
                 "도입부 설계",
@@ -605,7 +566,7 @@ export const contentSeed = {
                 5
               ),
             ]),
-            chapter("essay-writing-chapter-3", "3단원", "퇴고와 완성", 3, [
+            chapter("essay-writing-chapter-3", "퇴고와 완성", 3, [
               lesson(
                 "essay-writing-11",
                 "초고 읽기",
@@ -640,39 +601,33 @@ export const contentSeed = {
           "/course-thumbnails/business-writing.png",
           2,
           [
-            chapter(
-              "business-writing-chapter-1",
-              "1단원",
-              "업무 문장의 기본",
-              1,
-              [
-                lesson(
-                  "business-writing-01",
-                  "목적 먼저 쓰기",
-                  "문서의 목적을 첫 문장에 분명하게 드러냅니다.",
-                  1
-                ),
-                lesson(
-                  "business-writing-02",
-                  "요청과 공유 구분",
-                  "상대가 해야 할 일과 알아야 할 일을 분리합니다.",
-                  2
-                ),
-                lesson(
-                  "business-writing-03",
-                  "모호한 표현 줄이기",
-                  "가능한 빨리, 적절히 같은 표현을 구체적인 조건으로 바꿉니다.",
-                  3
-                ),
-                lesson(
-                  "business-writing-04",
-                  "격식 있는 어조",
-                  "딱딱하지 않지만 신뢰를 주는 업무 문체를 연습합니다.",
-                  4
-                ),
-              ]
-            ),
-            chapter("business-writing-chapter-2", "2단원", "보고와 제안", 2, [
+            chapter("business-writing-chapter-1", "업무 문장의 기본", 1, [
+              lesson(
+                "business-writing-01",
+                "목적 먼저 쓰기",
+                "문서의 목적을 첫 문장에 분명하게 드러냅니다.",
+                1
+              ),
+              lesson(
+                "business-writing-02",
+                "요청과 공유 구분",
+                "상대가 해야 할 일과 알아야 할 일을 분리합니다.",
+                2
+              ),
+              lesson(
+                "business-writing-03",
+                "모호한 표현 줄이기",
+                "가능한 빨리, 적절히 같은 표현을 구체적인 조건으로 바꿉니다.",
+                3
+              ),
+              lesson(
+                "business-writing-04",
+                "격식 있는 어조",
+                "딱딱하지 않지만 신뢰를 주는 업무 문체를 연습합니다.",
+                4
+              ),
+            ]),
+            chapter("business-writing-chapter-2", "보고와 제안", 2, [
               lesson(
                 "business-writing-05",
                 "핵심 요약 만들기",
@@ -704,38 +659,32 @@ export const contentSeed = {
                 5
               ),
             ]),
-            chapter(
-              "business-writing-chapter-3",
-              "3단원",
-              "실무 문서 퇴고",
-              3,
-              [
-                lesson(
-                  "business-writing-10",
-                  "읽는 순서 점검",
-                  "상사가 빠르게 읽어도 핵심이 남는 구조를 만듭니다.",
-                  1
-                ),
-                lesson(
-                  "business-writing-11",
-                  "리스크 표현",
-                  "문제를 숨기지 않으면서도 대응 방향을 함께 제시합니다.",
-                  2
-                ),
-                lesson(
-                  "business-writing-12",
-                  "문서 제목 개선",
-                  "목적과 결론이 보이는 제목으로 바꿉니다.",
-                  3
-                ),
-                lesson(
-                  "business-writing-13",
-                  "최종 검토 체크",
-                  "수신자, 근거, 요청, 일정이 모두 드러나는지 확인합니다.",
-                  4
-                ),
-              ]
-            ),
+            chapter("business-writing-chapter-3", "실무 문서 퇴고", 3, [
+              lesson(
+                "business-writing-10",
+                "읽는 순서 점검",
+                "상사가 빠르게 읽어도 핵심이 남는 구조를 만듭니다.",
+                1
+              ),
+              lesson(
+                "business-writing-11",
+                "리스크 표현",
+                "문제를 숨기지 않으면서도 대응 방향을 함께 제시합니다.",
+                2
+              ),
+              lesson(
+                "business-writing-12",
+                "문서 제목 개선",
+                "목적과 결론이 보이는 제목으로 바꿉니다.",
+                3
+              ),
+              lesson(
+                "business-writing-13",
+                "최종 검토 체크",
+                "수신자, 근거, 요청, 일정이 모두 드러나는지 확인합니다.",
+                4
+              ),
+            ]),
           ]
         ),
         course(
@@ -745,7 +694,7 @@ export const contentSeed = {
           "/course-thumbnails/creative-writing.png",
           3,
           [
-            chapter("creative-writing-chapter-1", "1단원", "발상과 관찰", 1, [
+            chapter("creative-writing-chapter-1", "발상과 관찰", 1, [
               lesson(
                 "creative-writing-01",
                 "낯설게 보기",
@@ -771,7 +720,7 @@ export const contentSeed = {
                 4
               ),
             ]),
-            chapter("creative-writing-chapter-2", "2단원", "인물과 장면", 2, [
+            chapter("creative-writing-chapter-2", "인물과 장면", 2, [
               lesson(
                 "creative-writing-05",
                 "인물의 욕망",
@@ -797,7 +746,7 @@ export const contentSeed = {
                 4
               ),
             ]),
-            chapter("creative-writing-chapter-3", "3단원", "플롯과 전개", 3, [
+            chapter("creative-writing-chapter-3", "플롯과 전개", 3, [
               lesson(
                 "creative-writing-09",
                 "사건의 압력",
@@ -823,7 +772,7 @@ export const contentSeed = {
                 4
               ),
             ]),
-            chapter("creative-writing-chapter-4", "4단원", "형식 실험", 4, [
+            chapter("creative-writing-chapter-4", "형식 실험", 4, [
               lesson(
                 "creative-writing-13",
                 "짧은 소설 쓰기",
@@ -865,102 +814,84 @@ export const contentSeed = {
           "/course-thumbnails/basic-sentence-writing.png",
           1,
           [
-            chapter(
-              "basic-sentence-writing-chapter-1",
-              "1단원",
-              "문장 성분 익히기",
-              1,
-              [
-                lesson(
-                  "basic-sentence-writing-01",
-                  "누가 무엇을 하는가",
-                  "주어와 서술어를 중심으로 가장 작은 문장을 만듭니다.",
-                  1
-                ),
-                lesson(
-                  "basic-sentence-writing-02",
-                  "목적어 붙이기",
-                  "행동의 대상을 더해 문장의 의미를 완성합니다.",
-                  2
-                ),
-                lesson(
-                  "basic-sentence-writing-03",
-                  "필수 성분과 선택 성분",
-                  "문장에서 꼭 필요한 말과 덧붙이는 말을 구분합니다.",
-                  3
-                ),
-                lesson(
-                  "basic-sentence-writing-04",
-                  "짧은 문장 10개 쓰기",
-                  "기본 구조를 반복해 안정적인 문장 감각을 만듭니다.",
-                  4
-                ),
-              ]
-            ),
-            chapter(
-              "basic-sentence-writing-chapter-2",
-              "2단원",
-              "꾸밈과 확장",
-              2,
-              [
-                lesson(
-                  "basic-sentence-writing-05",
-                  "형용사 꾸밈과 명사의 배치",
-                  "명사를 꾸미는 말의 위치와 범위를 확인합니다.",
-                  1
-                ),
-                lesson(
-                  "basic-sentence-writing-06",
-                  "부사어로 상황 더하기",
-                  "시간, 장소, 방법 정보를 자연스럽게 붙입니다.",
-                  2
-                ),
-                lesson(
-                  "basic-sentence-writing-07",
-                  "중복 꾸밈 줄이기",
-                  "같은 의미가 반복되는 꾸밈말을 덜어냅니다.",
-                  3
-                ),
-                lesson(
-                  "basic-sentence-writing-08",
-                  "한 문장 확장 실습",
-                  "짧은 문장을 목적에 맞게 길게 확장합니다.",
-                  4
-                ),
-              ]
-            ),
-            chapter(
-              "basic-sentence-writing-chapter-3",
-              "3단원",
-              "문장 다듬기",
-              3,
-              [
-                lesson(
-                  "basic-sentence-writing-09",
-                  "어색한 호응 찾기",
-                  "주어와 서술어, 목적어와 서술어의 호응을 점검합니다.",
-                  1
-                ),
-                lesson(
-                  "basic-sentence-writing-10",
-                  "문장 순서 바꾸기",
-                  "정보의 우선순위에 따라 문장 성분을 재배치합니다.",
-                  2
-                ),
-                lesson(
-                  "basic-sentence-writing-11",
-                  "간결하게 고치기",
-                  "불필요한 반복과 군더더기를 삭제합니다.",
-                  3
-                ),
-                lesson(
-                  "basic-sentence-writing-12",
-                  "문장 묶어 문단 만들기",
-                  "완성한 문장을 연결해 짧은 문단을 씁니다.",
-                  4
-                ),
-              ]
-            ),
+            chapter("basic-sentence-writing-chapter-1", "문장 성분 익히기", 1, [
+              lesson(
+                "basic-sentence-writing-01",
+                "누가 무엇을 하는가",
+                "주어와 서술어를 중심으로 가장 작은 문장을 만듭니다.",
+                1
+              ),
+              lesson(
+                "basic-sentence-writing-02",
+                "목적어 붙이기",
+                "행동의 대상을 더해 문장의 의미를 완성합니다.",
+                2
+              ),
+              lesson(
+                "basic-sentence-writing-03",
+                "필수 성분과 선택 성분",
+                "문장에서 꼭 필요한 말과 덧붙이는 말을 구분합니다.",
+                3
+              ),
+              lesson(
+                "basic-sentence-writing-04",
+                "짧은 문장 10개 쓰기",
+                "기본 구조를 반복해 안정적인 문장 감각을 만듭니다.",
+                4
+              ),
+            ]),
+            chapter("basic-sentence-writing-chapter-2", "꾸밈과 확장", 2, [
+              lesson(
+                "basic-sentence-writing-05",
+                "형용사 꾸밈과 명사의 배치",
+                "명사를 꾸미는 말의 위치와 범위를 확인합니다.",
+                1
+              ),
+              lesson(
+                "basic-sentence-writing-06",
+                "부사어로 상황 더하기",
+                "시간, 장소, 방법 정보를 자연스럽게 붙입니다.",
+                2
+              ),
+              lesson(
+                "basic-sentence-writing-07",
+                "중복 꾸밈 줄이기",
+                "같은 의미가 반복되는 꾸밈말을 덜어냅니다.",
+                3
+              ),
+              lesson(
+                "basic-sentence-writing-08",
+                "한 문장 확장 실습",
+                "짧은 문장을 목적에 맞게 길게 확장합니다.",
+                4
+              ),
+            ]),
+            chapter("basic-sentence-writing-chapter-3", "문장 다듬기", 3, [
+              lesson(
+                "basic-sentence-writing-09",
+                "어색한 호응 찾기",
+                "주어와 서술어, 목적어와 서술어의 호응을 점검합니다.",
+                1
+              ),
+              lesson(
+                "basic-sentence-writing-10",
+                "문장 순서 바꾸기",
+                "정보의 우선순위에 따라 문장 성분을 재배치합니다.",
+                2
+              ),
+              lesson(
+                "basic-sentence-writing-11",
+                "간결하게 고치기",
+                "불필요한 반복과 군더더기를 삭제합니다.",
+                3
+              ),
+              lesson(
+                "basic-sentence-writing-12",
+                "문장 묶어 문단 만들기",
+                "완성한 문장을 연결해 짧은 문단을 씁니다.",
+                4
+              ),
+            ]),
           ]
         ),
         course(
@@ -970,7 +901,7 @@ export const contentSeed = {
           "/course-thumbnails/emotion-writing.png",
           2,
           [
-            chapter("emotion-writing-chapter-1", "1단원", "감정의 이름", 1, [
+            chapter("emotion-writing-chapter-1", "감정의 이름", 1, [
               lesson(
                 "emotion-writing-01",
                 "기본 감정 나누기",
@@ -1002,44 +933,38 @@ export const contentSeed = {
                 5
               ),
             ]),
-            chapter(
-              "emotion-writing-chapter-2",
-              "2단원",
-              "장면으로 표현하기",
-              2,
-              [
-                lesson(
-                  "emotion-writing-06",
-                  "대상을 통해 감정 이입하기",
-                  "사물과 공간을 활용해 감정의 방향을 드러냅니다.",
-                  1
-                ),
-                lesson(
-                  "emotion-writing-07",
-                  "대화 속 감정",
-                  "말의 내용보다 말투와 간격으로 감정을 표현합니다.",
-                  2
-                ),
-                lesson(
-                  "emotion-writing-08",
-                  "감정 과잉 덜어내기",
-                  "직접 설명을 줄이고 장면의 증거를 남깁니다.",
-                  3
-                ),
-                lesson(
-                  "emotion-writing-09",
-                  "반대 감정 함께 쓰기",
-                  "기쁨 속 불안처럼 섞인 감정을 자연스럽게 씁니다.",
-                  4
-                ),
-                lesson(
-                  "emotion-writing-10",
-                  "감정 장면 완성",
-                  "인물, 행동, 배경을 묶어 짧은 감정 장면을 씁니다.",
-                  5
-                ),
-              ]
-            ),
+            chapter("emotion-writing-chapter-2", "장면으로 표현하기", 2, [
+              lesson(
+                "emotion-writing-06",
+                "대상을 통해 감정 이입하기",
+                "사물과 공간을 활용해 감정의 방향을 드러냅니다.",
+                1
+              ),
+              lesson(
+                "emotion-writing-07",
+                "대화 속 감정",
+                "말의 내용보다 말투와 간격으로 감정을 표현합니다.",
+                2
+              ),
+              lesson(
+                "emotion-writing-08",
+                "감정 과잉 덜어내기",
+                "직접 설명을 줄이고 장면의 증거를 남깁니다.",
+                3
+              ),
+              lesson(
+                "emotion-writing-09",
+                "반대 감정 함께 쓰기",
+                "기쁨 속 불안처럼 섞인 감정을 자연스럽게 씁니다.",
+                4
+              ),
+              lesson(
+                "emotion-writing-10",
+                "감정 장면 완성",
+                "인물, 행동, 배경을 묶어 짧은 감정 장면을 씁니다.",
+                5
+              ),
+            ]),
           ]
         ),
         course(
@@ -1049,7 +974,7 @@ export const contentSeed = {
           "/course-thumbnails/business-email.png",
           3,
           [
-            chapter("business-email-chapter-1", "1단원", "이메일의 첫인상", 1, [
+            chapter("business-email-chapter-1", "이메일의 첫인상", 1, [
               lesson(
                 "business-email-01",
                 "제목의 핵심 표현",
@@ -1087,7 +1012,7 @@ export const contentSeed = {
                 6
               ),
             ]),
-            chapter("business-email-chapter-2", "2단원", "요청과 회신", 2, [
+            chapter("business-email-chapter-2", "요청과 회신", 2, [
               lesson(
                 "business-email-07",
                 "명확한 요청 문장",
@@ -1125,7 +1050,7 @@ export const contentSeed = {
                 6
               ),
             ]),
-            chapter("business-email-chapter-3", "3단원", "상황별 이메일", 3, [
+            chapter("business-email-chapter-3", "상황별 이메일", 3, [
               lesson(
                 "business-email-13",
                 "회의 일정 조율",

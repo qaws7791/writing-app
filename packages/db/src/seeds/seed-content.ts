@@ -66,7 +66,6 @@ export async function seedContent(db: WritingAppDatabase) {
         chapterRows.push({
           id: chapter.id,
           courseId: course.id,
-          label: chapter.label,
           title: chapter.title,
           sortOrder: chapter.sortOrder,
         })
@@ -75,7 +74,6 @@ export async function seedContent(db: WritingAppDatabase) {
           id: `${chapter.id}-v1`,
           curriculumVersionId,
           sourceChapterId: chapter.id,
-          label: chapter.label,
           title: chapter.title,
           sortOrder: chapter.sortOrder,
           status: "active",
