@@ -1,31 +1,4 @@
 services:
-  redis:
-    image: redis:7-alpine
-    container_name: writing-app-redis-local
-    command: ["redis-server", "--appendonly", "yes"]
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-    restart: unless-stopped
-    volumes:
-      - redis_data:/data
-
-  redisinsight:
-    image: redis/redisinsight:latest
-    container_name: writing-app-redisinsight-local
-    depends_on:
-      redis:
-        condition: service_healthy
-    ports:
-      - "5540:5540"
-    restart: unless-stopped
-    volumes:
-      - redisinsight_data:/data
-
   rustfs_perms:
     image: alpine
     user: root
@@ -65,7 +38,3 @@ services:
     entrypoint: ["/bin/sh", "/init-public-assets-bucket.sh"]
     volumes:
       - ./scripts/init-public-assets-bucket.sh:/init-public-assets-bucket.sh:ro
-
-volumes:
-  redis_data:
-  redisinsight_data:
