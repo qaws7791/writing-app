@@ -12,13 +12,15 @@
 
 로컬 기본 포트는 다음과 같다.
 
-| 앱               | 포트           | 실행 명령                               |
-| ---------------- | -------------- | --------------------------------------- |
-| 학습자 웹        | `3000`         | `bun --filter @workspace/web dev`       |
-| 학습자 API       | `4000`         | `bun --filter @workspace/api dev`       |
-| 어드민 웹        | `3001`         | `bun --filter @workspace/admin dev`     |
-| 어드민 API       | `4001`         | `bun --filter @workspace/admin-api dev` |
-| 어드민 통합 실행 | `3001`, `4001` | `bun dev:admin`                         |
+| 앱               | 포트           | 실행 명령                                            |
+| ---------------- | -------------- | ---------------------------------------------------- |
+| 학습자 웹        | `3000`         | `bun --filter @workspace/web dev`                    |
+| 학습자 API       | `4000`         | `bun --filter @workspace/api dev`                    |
+| 어드민 웹        | `3001`         | `bun --filter @workspace/admin dev`                  |
+| 어드민 API       | `4001`         | `bun --filter @workspace/admin-api dev`              |
+| 어드민 통합 실행 | `3001`, `4001` | `bun dev:admin`                                      |
+| RustFS S3 API    | `9000`         | `docker compose up rustfs rustfs_public_assets_init` |
+| RustFS Console   | `9001`         | `docker compose up rustfs`                           |
 
 로컬 예시는 각 앱의 `.env.example`을 기준으로 만든다. API 앱 패키지에서 실행되는 `DATABASE_URL=file:../../data/api.sqlite`는 저장소 루트의 `data/api.sqlite`를 가리킨다.
 
@@ -58,6 +60,12 @@ ADMIN_CORS_ORIGIN=http://localhost:3001
 DATABASE_URL=file:../../data/api.sqlite
 ADMIN_SEED_EMAIL=admin@example.com
 ADMIN_SEED_PASSWORD=replace-with-local-admin-password
+ADMIN_ASSET_S3_ENDPOINT=http://localhost:9000
+ADMIN_ASSET_S3_REGION=us-east-1
+ADMIN_ASSET_S3_BUCKET=writing-app-public-assets
+ADMIN_ASSET_PUBLIC_BASE_URL=http://localhost:9000/writing-app-public-assets
+ADMIN_ASSET_S3_ACCESS_KEY=replace-with-local-rustfs-access-key
+ADMIN_ASSET_S3_SECRET_KEY=replace-with-local-rustfs-secret-key
 ```
 
 기존 관리자 계정 비밀번호를 시드 값으로 갱신해야 할 때만 `ADMIN_SEED_RESET_PASSWORD=true`를 명시한다. 루트 스크립트는 이 값을 대신 설정하지 않는다.
@@ -66,19 +74,25 @@ ADMIN_SEED_PASSWORD=replace-with-local-admin-password
 
 `apps/admin-api`는 관리자 전용 백엔드다.
 
-| 변수                        | 운영 값 예시                           | 비고                                                                            |
-| --------------------------- | -------------------------------------- | ------------------------------------------------------------------------------- |
-| `ADMIN_BETTER_AUTH_SECRET`  | 32바이트 이상 랜덤 문자열              | 플랫폼 `BETTER_AUTH_SECRET`과 공유하지 않는다.                                  |
-| `ADMIN_BETTER_AUTH_URL`     | `https://admin-api.example.com`        | 어드민 API의 외부 접근 URL                                                      |
-| `ADMIN_CORS_ORIGIN`         | `https://admin.example.com`            | 어드민 웹 origin만 허용한다.                                                    |
-| `DATABASE_URL`              | `file:/var/lib/writing-app/app.sqlite` | 플랫폼 API와 같은 단일 SQLite 파일을 사용한다.                                  |
-| `PORT`                      | `4001`                                 | systemd/Caddy 설정과 맞춘다.                                                    |
-| `LOG_LEVEL`                 | `info`                                 | 장애 분석 시 일시적으로 높인다.                                                 |
-| `NODE_ENV`                  | `production`                           | 운영에서는 `production`을 사용한다.                                             |
-| `ADMIN_SEED_EMAIL`          | 최초 관리자 이메일                     | 최초 시드 실행 시에만 필요하다.                                                 |
-| `ADMIN_SEED_PASSWORD`       | 최초 관리자 임시 비밀번호              | 시드 후 즉시 교체한다.                                                          |
-| `ADMIN_SEED_NAME`           | 최초 관리자 이름                       | 생략하면 `관리자`를 사용한다.                                                   |
-| `ADMIN_SEED_RESET_PASSWORD` | `false`                                | `true`일 때 기존 관리자 credential 비밀번호를 `ADMIN_SEED_PASSWORD`로 갱신한다. |
+| 변수                          | 운영 값 예시                                           | 비고                                                                            |
+| ----------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| `ADMIN_BETTER_AUTH_SECRET`    | 32바이트 이상 랜덤 문자열                              | 플랫폼 `BETTER_AUTH_SECRET`과 공유하지 않는다.                                  |
+| `ADMIN_BETTER_AUTH_URL`       | `https://admin-api.example.com`                        | 어드민 API의 외부 접근 URL                                                      |
+| `ADMIN_CORS_ORIGIN`           | `https://admin.example.com`                            | 어드민 웹 origin만 허용한다.                                                    |
+| `DATABASE_URL`                | `file:/var/lib/writing-app/app.sqlite`                 | 플랫폼 API와 같은 단일 SQLite 파일을 사용한다.                                  |
+| `PORT`                        | `4001`                                                 | systemd/Caddy 설정과 맞춘다.                                                    |
+| `LOG_LEVEL`                   | `info`                                                 | 장애 분석 시 일시적으로 높인다.                                                 |
+| `NODE_ENV`                    | `production`                                           | 운영에서는 `production`을 사용한다.                                             |
+| `ADMIN_ASSET_S3_ENDPOINT`     | `https://s3.example.com`                               | RustFS 또는 S3-compatible API endpoint                                          |
+| `ADMIN_ASSET_S3_REGION`       | `us-east-1`                                            | S3 signed URL 생성에 사용할 region                                              |
+| `ADMIN_ASSET_S3_BUCKET`       | `writing-app-public-assets`                            | 코스 썸네일을 저장할 공개 에셋 버킷                                             |
+| `ADMIN_ASSET_PUBLIC_BASE_URL` | `https://assets.example.com/writing-app-public-assets` | DB에 저장할 공개 썸네일 URL의 기준 경로                                         |
+| `ADMIN_ASSET_S3_ACCESS_KEY`   | S3 access key                                          | signed URL 발급용 서버 전용 access key                                          |
+| `ADMIN_ASSET_S3_SECRET_KEY`   | S3 secret key                                          | signed URL 발급용 서버 전용 secret key                                          |
+| `ADMIN_SEED_EMAIL`            | 최초 관리자 이메일                                     | 최초 시드 실행 시에만 필요하다.                                                 |
+| `ADMIN_SEED_PASSWORD`         | 최초 관리자 임시 비밀번호                              | 시드 후 즉시 교체한다.                                                          |
+| `ADMIN_SEED_NAME`             | 최초 관리자 이름                                       | 생략하면 `관리자`를 사용한다.                                                   |
+| `ADMIN_SEED_RESET_PASSWORD`   | `false`                                                | `true`일 때 기존 관리자 credential 비밀번호를 `ADMIN_SEED_PASSWORD`로 갱신한다. |
 
 최초 관리자 계정은 운영 배포 직후 한 번만 생성한다.
 
@@ -103,5 +117,7 @@ bun --filter @workspace/admin-api seed:admin
 - `apps/admin-api`의 `ADMIN_CORS_ORIGIN`에는 어드민 웹 origin만 둔다.
 - `apps/admin`의 `ADMIN_API_BASE_URL`은 `apps/admin-api`의 외부 또는 내부 접근 URL과 일치한다.
 - `DATABASE_URL`이 두 API에서 같은 SQLite 파일을 가리키며, 로컬 예시는 저장소 루트 `data/api.sqlite`다.
+- `ADMIN_ASSET_S3_ACCESS_KEY`와 `ADMIN_ASSET_S3_SECRET_KEY`는 RustFS 또는 운영 S3-compatible 스토리지 credential과 일치한다.
+- `ADMIN_ASSET_PUBLIC_BASE_URL`은 공개 다운로드가 가능한 bucket 또는 CDN 경로를 가리킨다.
 - 단일 SQLite 파일의 권한과 백업 정책을 API 프로세스 계정 기준으로 확인한다.
 - `bun --filter @workspace/admin-api seed:admin` 실행 후 최초 관리자 비밀번호를 교체한다.

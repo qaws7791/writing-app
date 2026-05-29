@@ -633,3 +633,15 @@
 - published 버전은 읽기 전용으로 표시하고, 발행, 폐기, 복원, 이탈 같은 위험 작업에는 확인 흐름을 추가했다.
 - 모바일에서 커리큘럼과 작업대를 전환할 수 있도록 레이아웃을 수정해 오른쪽 작업대가 사라지는 문제를 제거했다.
 - 감사 결과와 설계, 구현 계획은 `docs/admin-course-detail-ui-audit.md`, `docs/superpowers/specs/2026-05-29-admin-course-editor-correction-design.md`, `docs/superpowers/plans/2026-05-29-admin-course-editor-correction.md`에 기록했다.
+
+## 2026-05-29 어드민 코스 썸네일 업로드 시작
+
+- 코스 상세 페이지의 `썸네일 변경` 버튼을 signed URL 기반 즉시 업로드 흐름으로 연결한다.
+- 로컬 개발 환경은 RustFS의 S3-compatible API와 `writing-app-public-assets` 공개 버킷을 사용한다.
+- 업로드 성공 후에는 기존 코스 편집 저장 버튼을 통해 DB의 `thumbnailPath`를 반영한다.
+
+## 2026-05-29 어드민 코스 썸네일 업로드 완료
+
+- 어드민 API에 `POST /course-thumbnails/uploads`를 추가해 RustFS PUT signed URL을 발급한다.
+- 어드민 웹은 파일 선택 즉시 signed URL로 이미지를 업로드하고, 성공한 공개 URL을 dirty 상태의 `thumbnailPath`로 반영한다.
+- 저장하지 않고 이탈한 경우 미참조 객체가 남을 수 있으며, 자동 정리는 이번 범위에 포함하지 않는다.
