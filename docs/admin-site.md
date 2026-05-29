@@ -1,5 +1,18 @@
 # 어드민 사이트
 
+## 2026-05-30 어드민 커리큘럼 맵 UI 테스트 보강 시작
+
+- 노션 스타일 커리큘럼 맵 UI 변경에 맞춰 `curriculum-map.test.tsx`를 새 상호작용 기준으로 갱신한다.
+- 챕터 편집 Popover, 챕터 접기/펼치기, 레슨 DropdownMenu 보관, 빈 상태, 읽기 전용 상태를 테스트로 고정한다.
+- 검증 범위는 어드민 앱 타깃 테스트와 가능한 범위의 lint/typecheck/pre-commit 확인으로 제한한다.
+
+## 2026-05-30 어드민 커리큘럼 맵 UI 테스트 보강 완료
+
+- 커리큘럼 맵 테스트를 새 챕터 편집 Popover, 레슨 케밥 메뉴, 읽기 전용 제어 숨김, 챕터/레슨 빈 상태 기준으로 갱신했다.
+- 코스 상세 통합 테스트도 레슨 보관을 케밥 메뉴 경유 흐름으로 수정했다.
+- 어드민 테스트에서 base-ui overlay primitive를 안정적으로 다루기 위한 테스트 전용 mock helper를 추가했다.
+- 검증은 `bun --filter @workspace/admin test`, `bun --filter @workspace/admin typecheck`, `bun --filter @workspace/admin lint`, `bun lefthook run pre-commit`로 확인했다.
+
 ## 2026-05-30 로컬 썸네일 변경 검증 시작
 
 - 로컬 개발 환경에서 Docker Compose 기반 RustFS와 어드민 앱, 어드민 API를 함께 실행해 코스 썸네일 변경 흐름을 실제 브라우저로 검증한다.

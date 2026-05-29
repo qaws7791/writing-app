@@ -3,6 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import "@/test/ui-overlay-mocks"
 import { AdminCourseDetailPage } from "@/features/courses/admin-course-detail-page"
 import type { AdminApi } from "@/lib/api/admin-api"
 
@@ -459,6 +460,7 @@ describe("AdminCourseDetailPage", () => {
 
     await user.click(screen.getByRole("button", { name: "챕터 추가" }))
     await user.click(screen.getByRole("button", { name: "첫 챕터 레슨 추가" }))
+    await user.click(screen.getByRole("button", { name: "첫 레슨 메뉴" }))
     await user.click(screen.getByRole("button", { name: "첫 레슨 레슨 보관" }))
     await user.click(screen.getByRole("button", { name: "저장" }))
 

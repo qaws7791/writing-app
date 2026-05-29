@@ -98,7 +98,7 @@ export function CurriculumMap({
         <div className="space-y-1">
           {chapters.length === 0 ? (
             <p className="py-6 text-center text-sm text-muted-foreground">
-              챕터가 없습니다.
+              챕터를 추가하세요
             </p>
           ) : (
             chapters.map((chapter) => (
@@ -237,7 +237,7 @@ function ChapterSection({
           <div className="space-y-0.5 border-l pl-3">
             {chapter.lessons.length === 0 && (
               <p className="py-2 pl-1 text-xs text-muted-foreground">
-                레슨이 없습니다.
+                이 챕터에 레슨을 추가하세요
               </p>
             )}
             {chapter.lessons.map((lesson) => (
