@@ -1,11 +1,14 @@
 import * as React from "react"
+import { AlertCircle } from "lucide-react"
+
+import type { AdminEditorStepType } from "@workspace/core/admin"
 
 import { CourseSummaryPanel } from "@/features/courses/course-editor/course-summary-panel"
 import { CurriculumMap } from "@/features/courses/course-editor/curriculum-map"
 import { getEditorChangeKind } from "@/features/courses/course-editor/editor-change-kind"
 import {
-  getEditorViewLabel,
   getNodeStatusLabel,
+  getStepDisplayTitle,
 } from "@/features/courses/course-editor/editor-labels"
 import type { CourseEditorWorkingCopy } from "@/features/courses/course-editor/editor-state"
 import type { CourseEditorUrlState } from "@/features/courses/course-editor/editor-url-state"
@@ -20,10 +23,9 @@ type CourseEditorShellProps = {
   onAddLesson?: (chapterId: string) => void
   onArchiveChapter?: (chapterId: string) => void
   onArchiveLesson?: (lessonId: string) => void
-  onAddStep?: (lessonId: string) => void
+  onAddStep?: (lessonId: string, type: AdminEditorStepType) => void
   onArchiveStep?: (stepId: string) => void
   onOpenPreview?: (lessonId: string) => void
-  onOpenSettings?: (lessonId: string) => void
   onMoveLesson?: (lessonId: string, targetIndex: number) => void
   onMoveStep?: (lessonId: string, stepId: string, targetIndex: number) => void
   onSelectLesson?: (lessonId: string) => void
@@ -56,7 +58,6 @@ export function CourseEditorShell({
   onAddStep,
   onArchiveStep,
   onOpenPreview,
-  onOpenSettings,
   onMoveLesson,
   onMoveStep,
   onSelectLesson,
@@ -92,6 +93,12 @@ export function CourseEditorShell({
     reorderedLessonCount: 0,
   })
 
+  // 브레드크럼용 챕터 찾기
+  const selectedChapter =
+    version.chapters.find((chapter) =>
+      chapter.lessons.some((lesson) => lesson.lessonId === selectedLessonId)
+    ) ?? null
+
   const handleSelectLesson = React.useCallback(
     (lessonId: string) => {
       setMobilePane("workspace")
@@ -112,6 +119,11 @@ export function CourseEditorShell({
     [onSelectStep, selectedLessonId]
   )
 
+  const handleBackToLesson = React.useCallback(() => {
+    if (!selectedLessonId) return
+    onSelectLesson?.(selectedLessonId)
+  }, [onSelectLesson, selectedLessonId])
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
       <div className="grid grid-cols-2 gap-1 border-b bg-background p-2 lg:hidden">
@@ -129,7 +141,7 @@ export function CourseEditorShell({
           className="rounded-md px-3 py-2 text-sm font-medium aria-pressed:bg-muted"
           onClick={() => setMobilePane("workspace")}
         >
-          작업대
+          편집
         </button>
       </div>
       <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[minmax(360px,520px)_1fr]">
@@ -166,27 +178,37 @@ export function CourseEditorShell({
             mobilePane === "workspace" ? "block" : "hidden"
           }`}
         >
+          {isReadOnly && (
+            <div className="flex items-center gap-2 border-b bg-amber-50 px-6 py-2.5 text-sm text-amber-800 dark:bg-amber-950/30 dark:text-amber-400">
+              <AlertCircle aria-hidden="true" className="size-4 shrink-0" />
+              <span>
+                발행된 버전은 편집할 수 없습니다. 편집하려면 새 초안을 만드세요.
+              </span>
+            </div>
+          )}
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-8">
-            <p className="text-xs font-medium text-muted-foreground">
-              v{version.versionNumber} · {getEditorViewLabel(urlState.view)}
-            </p>
+            <WorkspaceBreadcrumb
+              chapterTitle={selectedChapter?.title ?? null}
+              lessonTitle={selectedLesson?.title ?? null}
+              lessonStatus={selectedLesson?.status ?? null}
+              stepTitle={
+                selectedStep ? getStepDisplayTitle(selectedStep) : null
+              }
+              view={urlState.view}
+            />
             {urlState.view === "preview" && selectedLesson ? (
               <LessonPreview
                 lessonTitle={selectedLesson.title}
+                onBack={handleBackToLesson}
                 steps={selectedLessonSteps}
               />
             ) : urlState.view === "step" && selectedStep ? (
               <StepWorkspace
                 isReadOnly={isReadOnly}
                 lessonSteps={selectedLessonSteps}
+                onBack={handleBackToLesson}
                 onUpdateStepContent={onUpdateStepContent}
                 step={selectedStep}
-              />
-            ) : urlState.view === "settings" && selectedLesson ? (
-              <LessonSettingsWorkspace
-                isReadOnly={isReadOnly}
-                lesson={selectedLesson}
-                onUpdateLessonField={onUpdateLessonField}
               />
             ) : (
               <LessonWorkspace
@@ -195,7 +217,7 @@ export function CourseEditorShell({
                 lesson={selectedLesson}
                 onAddStep={
                   selectedLessonId
-                    ? () => onAddStep?.(selectedLessonId)
+                    ? (type) => onAddStep?.(selectedLessonId, type)
                     : undefined
                 }
                 onArchiveStep={onArchiveStep}
@@ -208,11 +230,6 @@ export function CourseEditorShell({
                 onOpenPreview={
                   selectedLessonId
                     ? () => onOpenPreview?.(selectedLessonId)
-                    : undefined
-                }
-                onOpenSettings={
-                  selectedLessonId
-                    ? () => onOpenSettings?.(selectedLessonId)
                     : undefined
                 }
                 onSelectStep={handleSelectStep}
@@ -228,69 +245,65 @@ export function CourseEditorShell({
   )
 }
 
-type LessonSettingsWorkspaceProps = {
-  isReadOnly: boolean
-  lesson: CourseEditorWorkingCopy["version"]["chapters"][number]["lessons"][number]
-  onUpdateLessonField?: (
-    lessonId: string,
-    field: "description" | "title",
-    value: string
-  ) => void
+type WorkspaceBreadcrumbProps = {
+  chapterTitle: string | null
+  lessonTitle: string | null
+  lessonStatus: string | null
+  stepTitle: string | null
+  view: CourseEditorUrlState["view"]
 }
 
-function LessonSettingsWorkspace({
-  isReadOnly,
-  lesson,
-  onUpdateLessonField,
-}: LessonSettingsWorkspaceProps) {
+function WorkspaceBreadcrumb({
+  chapterTitle,
+  lessonTitle,
+  lessonStatus,
+  stepTitle,
+  view,
+}: WorkspaceBreadcrumbProps) {
+  const isStepView = view === "step" && stepTitle !== null
+  const isPreviewView = view === "preview"
+
   return (
-    <section className="space-y-6" aria-labelledby="lesson-settings">
-      <header className="space-y-2 border-b pb-4">
-        <p className="text-xs font-medium text-muted-foreground">
-          {getEditorViewLabel("settings")} · {getNodeStatusLabel(lesson.status)}
-        </p>
-        <h1 id="lesson-settings" className="text-2xl font-semibold">
-          레슨 설정
-        </h1>
-      </header>
-      <div className="grid max-w-2xl gap-4">
-        <label className="grid gap-2 text-sm">
-          레슨 제목
-          <input
-            className="rounded-md border bg-background px-3 py-2 disabled:cursor-not-allowed disabled:opacity-70"
-            disabled={isReadOnly}
-            value={lesson.title}
-            onChange={(event) =>
-              onUpdateLessonField?.(
-                lesson.lessonId,
-                "title",
-                event.currentTarget.value
-              )
+    <nav
+      aria-label="편집 위치"
+      className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground"
+    >
+      {chapterTitle && (
+        <>
+          <span>{chapterTitle}</span>
+          <span aria-hidden="true">/</span>
+        </>
+      )}
+      {lessonTitle && (
+        <>
+          <span
+            className={
+              isStepView || isPreviewView ? "" : "font-medium text-foreground"
             }
-          />
-        </label>
-        <label className="grid gap-2 text-sm">
-          레슨 설명
-          <textarea
-            className="min-h-24 rounded-md border bg-background px-3 py-2 disabled:cursor-not-allowed disabled:opacity-70"
-            disabled={isReadOnly}
-            value={lesson.description}
-            onChange={(event) =>
-              onUpdateLessonField?.(
-                lesson.lessonId,
-                "description",
-                event.currentTarget.value
-              )
-            }
-          />
-        </label>
-        <div className="grid gap-1 text-sm">
-          <span className="text-xs text-muted-foreground">레슨 상태</span>
-          <span className="font-medium">
-            {getNodeStatusLabel(lesson.status)}
+          >
+            {lessonTitle}
           </span>
-        </div>
-      </div>
-    </section>
+          {lessonStatus && (
+            <span className="rounded-full border px-1.5 py-0.5 text-[10px]">
+              {getNodeStatusLabel(
+                lessonStatus as "active" | "archived" | "deprecated"
+              )}
+            </span>
+          )}
+        </>
+      )}
+      {isStepView && stepTitle && (
+        <>
+          <span aria-hidden="true">/</span>
+          <span className="font-medium text-foreground">{stepTitle}</span>
+        </>
+      )}
+      {isPreviewView && (
+        <>
+          <span aria-hidden="true">/</span>
+          <span className="font-medium text-foreground">미리보기</span>
+        </>
+      )}
+    </nav>
   )
 }

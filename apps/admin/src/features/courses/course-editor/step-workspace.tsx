@@ -1,11 +1,13 @@
 "use client"
 
 import * as React from "react"
+import { ArrowLeft } from "lucide-react"
 
 import type {
   AdminEditorLessonDetailDto,
   AdminEditorStepType,
 } from "@workspace/core/admin"
+import { Button } from "@workspace/ui/components/ui/button"
 
 import {
   formatPointLabel,
@@ -37,6 +39,7 @@ import { WordSelectStepForm } from "@/features/courses/course-editor/step-forms/
 type StepWorkspaceProps = {
   isReadOnly?: boolean
   lessonSteps: AdminEditorLessonDetailDto["steps"]
+  onBack?: () => void
   onUpdateStepContent?: (stepId: string, key: string, value: unknown) => void
   step: AdminEditorLessonDetailDto["steps"][number]
 }
@@ -67,6 +70,7 @@ const stepFormByType = {
 export function StepWorkspace({
   isReadOnly = false,
   lessonSteps,
+  onBack,
   onUpdateStepContent,
   step,
 }: StepWorkspaceProps) {
@@ -75,12 +79,26 @@ export function StepWorkspace({
 
   return (
     <div className="space-y-6">
-      <header className="space-y-2 border-b pb-4">
-        <p className="text-xs font-medium text-muted-foreground">
-          {getNodeStatusLabel(step.status)} · {formatPointLabel(step.points)} ·{" "}
-          {step.required ? "필수 스텝" : "선택 스텝"}
-        </p>
-        <h1 className="text-2xl font-semibold">{stepTitle}</h1>
+      <header className="space-y-3 border-b pb-4">
+        {onBack && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="-ml-2 text-muted-foreground"
+            onClick={onBack}
+          >
+            <ArrowLeft aria-hidden="true" className="size-4" />
+            레슨으로 돌아가기
+          </Button>
+        )}
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">
+            {getNodeStatusLabel(step.status)} · {formatPointLabel(step.points)}{" "}
+            · {step.required ? "필수 스텝" : "선택 스텝"}
+          </p>
+          <h1 className="text-2xl font-semibold">{stepTitle}</h1>
+        </div>
       </header>
       <StepForm
         isReadOnly={isReadOnly}

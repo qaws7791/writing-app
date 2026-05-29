@@ -1,6 +1,8 @@
 import * as React from "react"
+import { ArrowLeft } from "lucide-react"
 
 import type { AdminEditorLessonDetailDto } from "@workspace/core/admin"
+import { Button } from "@workspace/ui/components/ui/button"
 
 import {
   formatPointLabel,
@@ -10,22 +12,41 @@ import {
 
 type LessonPreviewProps = {
   lessonTitle: string
+  onBack?: () => void
   steps: AdminEditorLessonDetailDto["steps"]
 }
 
-export function LessonPreview({ lessonTitle, steps }: LessonPreviewProps) {
+export function LessonPreview({
+  lessonTitle,
+  onBack,
+  steps,
+}: LessonPreviewProps) {
   const sortedSteps = [...steps].sort((a, b) => a.sortOrder - b.sortOrder)
 
   return (
     <section className="space-y-6" aria-labelledby="lesson-preview">
-      <div className="space-y-2 border-b pb-4">
-        <p className="text-xs font-medium text-muted-foreground">미리보기</p>
-        <h2 id="lesson-preview" className="text-3xl font-semibold">
-          {lessonTitle}
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          저장 전 편집본 기준으로 학습 흐름을 확인합니다.
-        </p>
+      <div className="space-y-3 border-b pb-4">
+        {onBack && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="-ml-2 text-muted-foreground"
+            onClick={onBack}
+          >
+            <ArrowLeft aria-hidden="true" className="size-4" />
+            레슨으로 돌아가기
+          </Button>
+        )}
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted-foreground">미리보기</p>
+          <h2 id="lesson-preview" className="text-3xl font-semibold">
+            {lessonTitle}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            저장 전 편집본 기준으로 학습 흐름을 확인합니다.
+          </p>
+        </div>
       </div>
       <div className="space-y-3">
         {sortedSteps.map((step) => (

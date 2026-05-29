@@ -2,12 +2,14 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { CheckCircle2, XCircle } from "lucide-react"
 
 import type {
   AdminCourseDetailDto,
   AdminCourseThumbnailContentType,
   AdminCurriculumVersionSummaryDto,
   AdminEditorCurriculumVersionDetailDto,
+  AdminEditorStepType,
 } from "@workspace/core/admin"
 
 import { AdminHeader } from "@/components/admin-header"
@@ -361,12 +363,12 @@ export function AdminCourseDetailPage({
   )
 
   const handleAddStep = React.useCallback(
-    (lessonId: string) => {
+    (lessonId: string, type: AdminEditorStepType) => {
       updateWorkingCopy((current) =>
         addStep(current, {
           id: createDraftId("draft-step"),
           lessonId,
-          type: "INTRO",
+          type,
           title: "새 스텝",
         })
       )
@@ -424,11 +426,10 @@ export function AdminCourseDetailPage({
         description="초안 기준으로 커리큘럼을 편집합니다."
         title="코스 편집"
       />
-      {statusMessage ? (
-        <p className="border-b px-6 py-2 text-sm text-muted-foreground">
-          {statusMessage}
-        </p>
-      ) : null}
+      <StatusToast
+        message={statusMessage}
+        onDismiss={() => setStatusMessage(null)}
+      />
       {isVersionMenuOpen ? (
         <section
           aria-label="버전 메뉴"
@@ -525,12 +526,6 @@ export function AdminCourseDetailPage({
               view: "preview",
             })
           }
-          onOpenSettings={(lessonId) =>
-            replaceEditorUrl({
-              lessonId,
-              view: "settings",
-            })
-          }
           onSelectLesson={(lessonId) =>
             replaceEditorUrl({
               lessonId,
@@ -556,6 +551,46 @@ export function AdminCourseDetailPage({
         />
       </main>
     </>
+  )
+}
+
+type StatusToastProps = {
+  message: string | null
+  onDismiss: () => void
+}
+
+function StatusToast({ message, onDismiss }: StatusToastProps) {
+  React.useEffect(() => {
+    if (!message) return
+    const timer = setTimeout(onDismiss, 4000)
+    return () => clearTimeout(timer)
+  }, [message, onDismiss])
+
+  if (!message) return null
+
+  const isError =
+    message.includes("실패") ||
+    message.includes("오류") ||
+    message.includes("못했") ||
+    message.includes("없습니다")
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg ${
+        isError
+          ? "border-destructive/20 bg-destructive/10 text-destructive"
+          : "border-green-200 bg-green-50 text-green-800 dark:border-green-800/30 dark:bg-green-950/30 dark:text-green-400"
+      }`}
+    >
+      {isError ? (
+        <XCircle aria-hidden="true" className="size-4 shrink-0" />
+      ) : (
+        <CheckCircle2 aria-hidden="true" className="size-4 shrink-0" />
+      )}
+      {message}
+    </div>
   )
 }
 
