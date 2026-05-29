@@ -17,7 +17,6 @@ export interface CourseLesson {
 
 export interface CourseChapter {
   id: CourseChapterId
-  label: string
   title: string
   lessons: readonly CourseLesson[]
 }
@@ -29,7 +28,6 @@ export interface CourseProgress {
 }
 
 export interface CourseNextLesson {
-  chapterLabel: string
   title: string
   description: string
   lessonId: CourseLessonId
@@ -78,33 +76,26 @@ function lesson(
 
 function chapter(
   id: string,
-  label: string,
   title: string,
   lessons: readonly CourseLesson[]
 ): CourseChapter {
   return {
     id: chapterId(id),
-    label,
     title,
     lessons,
   }
 }
 
 function createCourseDetail(input: CourseDetailInput): CourseDetail {
-  const lessonsWithChapter = input.chapters.flatMap((courseChapter) =>
-    courseChapter.lessons.map((courseLesson) => ({
-      chapterLabel: courseChapter.label,
-      lesson: courseLesson,
-    }))
+  const lessons = input.chapters.flatMap(
+    (courseChapter) => courseChapter.lessons
   )
-  const totalLessons = lessonsWithChapter.length
-  const completedLessons = lessonsWithChapter.filter(
-    ({ lesson: courseLesson }) => courseLesson.completed
+  const totalLessons = lessons.length
+  const completedLessons = lessons.filter(
+    (courseLesson) => courseLesson.completed
   ).length
   const nextLessonSource =
-    lessonsWithChapter.find(
-      ({ lesson: courseLesson }) => !courseLesson.completed
-    ) ?? lessonsWithChapter[0]
+    lessons.find((courseLesson) => !courseLesson.completed) ?? lessons[0]
 
   if (!nextLessonSource) {
     throw new Error(
@@ -120,10 +111,9 @@ function createCourseDetail(input: CourseDetailInput): CourseDetail {
       percentage: Math.round((completedLessons / totalLessons) * 100),
     },
     nextLesson: {
-      chapterLabel: nextLessonSource.chapterLabel,
-      title: nextLessonSource.lesson.title,
-      description: nextLessonSource.lesson.description,
-      lessonId: nextLessonSource.lesson.lessonId,
+      title: nextLessonSource.title,
+      description: nextLessonSource.description,
+      lessonId: nextLessonSource.lessonId,
     },
   }
 }
@@ -136,7 +126,7 @@ export const courseDetails: readonly CourseDetail[] = [
       "한국어 문장의 뼈대를 이해하고 주어, 서술어, 목적어의 관계를 파악해 올바른 문장을 작성하는 방법을 배웁니다.",
     thumbnail: "/course-thumbnails/sentence-structure.png",
     chapters: [
-      chapter("sentence-structure-chapter-1", "1단원", "문장의 뼈대", [
+      chapter("sentence-structure-chapter-1", "문장의 뼈대", [
         lesson(
           "sentence-structure-01",
           "주어와 서술어 찾기",
@@ -158,7 +148,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "짧은 문장을 분석하며 빠진 성분과 불필요한 성분을 찾습니다."
         ),
       ]),
-      chapter("sentence-structure-chapter-2", "2단원", "문장의 연결", [
+      chapter("sentence-structure-chapter-2", "문장의 연결", [
         lesson(
           "sentence-structure-05",
           "이어진 문장의 기본",
@@ -180,7 +170,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "반복되는 주어와 서술어를 정리해 문장을 간결하게 다듬습니다."
         ),
       ]),
-      chapter("sentence-structure-chapter-3", "3단원", "문단으로 확장", [
+      chapter("sentence-structure-chapter-3", "문단으로 확장", [
         lesson(
           "sentence-structure-09",
           "중심 문장 세우기",
@@ -211,7 +201,7 @@ export const courseDetails: readonly CourseDetail[] = [
       "일상적인 글쓰기에 필요한 핵심 어휘를 익히고, 다양한 상황에서 정확한 단어를 선택하는 감각을 기릅니다.",
     thumbnail: "/course-thumbnails/vocabulary-basics.png",
     chapters: [
-      chapter("vocabulary-basics-chapter-1", "1단원", "정확한 단어 선택", [
+      chapter("vocabulary-basics-chapter-1", "정확한 단어 선택", [
         lesson(
           "vocabulary-basics-01",
           "비슷한 말의 차이",
@@ -238,7 +228,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "외운 단어가 아니라 실제 문장에 쓸 수 있는 단어장을 만듭니다."
         ),
       ]),
-      chapter("vocabulary-basics-chapter-2", "2단원", "문맥 안에서 쓰기", [
+      chapter("vocabulary-basics-chapter-2", "문맥 안에서 쓰기", [
         lesson(
           "vocabulary-basics-06",
           "문맥 단서 읽기",
@@ -274,7 +264,7 @@ export const courseDetails: readonly CourseDetail[] = [
       "글의 핵심 내용을 파악하고 간결하게 요약하는 능력을 키웁니다. 다양한 장르의 텍스트를 읽고 분석합니다.",
     thumbnail: "/course-thumbnails/reading-comprehension.png",
     chapters: [
-      chapter("reading-comprehension-chapter-1", "1단원", "정독의 기술", [
+      chapter("reading-comprehension-chapter-1", "정독의 기술", [
         lesson(
           "reading-comprehension-01",
           "빠르게 읽기와 깊이 읽기",
@@ -296,7 +286,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "왜 이 단어와 순서를 선택했는지 질문하며 읽습니다."
         ),
       ]),
-      chapter("reading-comprehension-chapter-2", "2단원", "요약의 구조", [
+      chapter("reading-comprehension-chapter-2", "요약의 구조", [
         lesson(
           "reading-comprehension-05",
           "중심 문장 찾기",
@@ -327,7 +317,7 @@ export const courseDetails: readonly CourseDetail[] = [
       "맞춤법, 띄어쓰기, 문장 부호 등 한국어 표기법의 핵심 규칙을 체계적으로 정리하고 실습합니다.",
     thumbnail: "/course-thumbnails/grammar-complete.png",
     chapters: [
-      chapter("grammar-complete-chapter-1", "1단원", "맞춤법의 기본", [
+      chapter("grammar-complete-chapter-1", "맞춤법의 기본", [
         lesson(
           "grammar-complete-01",
           "자주 틀리는 받침",
@@ -354,7 +344,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "글을 제출하기 전 확인할 맞춤법 체크리스트를 만듭니다."
         ),
       ]),
-      chapter("grammar-complete-chapter-2", "2단원", "띄어쓰기", [
+      chapter("grammar-complete-chapter-2", "띄어쓰기", [
         lesson(
           "grammar-complete-06",
           "조사와 어미",
@@ -381,7 +371,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "짧은 글의 띄어쓰기 오류를 찾아 수정합니다."
         ),
       ]),
-      chapter("grammar-complete-chapter-3", "3단원", "문장 부호와 문체", [
+      chapter("grammar-complete-chapter-3", "문장 부호와 문체", [
         lesson(
           "grammar-complete-11",
           "쉼표의 역할",
@@ -417,7 +407,7 @@ export const courseDetails: readonly CourseDetail[] = [
       "같은 내용을 더 풍부하고 생동감 있게 전달하는 표현 방법을 연습합니다. 피동문, 사동문, 비유 표현을 다룹니다.",
     thumbnail: "/course-thumbnails/expression.png",
     chapters: [
-      chapter("expression-chapter-1", "1단원", "선명한 묘사", [
+      chapter("expression-chapter-1", "선명한 묘사", [
         lesson(
           "expression-01",
           "구체적인 명사 고르기",
@@ -439,7 +429,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "독자가 장면을 상상하게 만드는 문장과 정보를 주는 문장을 나눕니다."
         ),
       ]),
-      chapter("expression-chapter-2", "2단원", "문장의 힘 조절", [
+      chapter("expression-chapter-2", "문장의 힘 조절", [
         lesson(
           "expression-05",
           "피동 표현 다듬기",
@@ -461,7 +451,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "문장 길이와 반복을 조절해 읽는 맛을 만듭니다."
         ),
       ]),
-      chapter("expression-chapter-3", "3단원", "비유와 어조", [
+      chapter("expression-chapter-3", "비유와 어조", [
         lesson(
           "expression-09",
           "좋은 비유의 조건",
@@ -487,7 +477,7 @@ export const courseDetails: readonly CourseDetail[] = [
       "주제 선정부터 개요 작성, 본문 전개, 마무리까지 설득력 있는 에세이를 완성하는 전 과정을 익힙니다.",
     thumbnail: "/course-thumbnails/essay-writing.png",
     chapters: [
-      chapter("essay-writing-chapter-1", "1단원", "주제와 관점", [
+      chapter("essay-writing-chapter-1", "주제와 관점", [
         lesson(
           "essay-writing-01",
           "쓸 만한 질문 찾기",
@@ -514,7 +504,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "글을 읽고 남아야 할 한 문장을 정합니다."
         ),
       ]),
-      chapter("essay-writing-chapter-2", "2단원", "구성과 전개", [
+      chapter("essay-writing-chapter-2", "구성과 전개", [
         lesson(
           "essay-writing-06",
           "도입부 설계",
@@ -541,7 +531,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "반복이 아니라 확장으로 끝나는 마무리를 연습합니다."
         ),
       ]),
-      chapter("essay-writing-chapter-3", "3단원", "퇴고와 완성", [
+      chapter("essay-writing-chapter-3", "퇴고와 완성", [
         lesson(
           "essay-writing-11",
           "초고 읽기",
@@ -572,7 +562,7 @@ export const courseDetails: readonly CourseDetail[] = [
       "이메일, 보고서, 제안서 등 업무 환경에서 요구되는 명확하고 전문적인 문서 작성 스킬을 기릅니다.",
     thumbnail: "/course-thumbnails/business-writing.png",
     chapters: [
-      chapter("business-writing-chapter-1", "1단원", "업무 문장의 기본", [
+      chapter("business-writing-chapter-1", "업무 문장의 기본", [
         lesson(
           "business-writing-01",
           "목적 먼저 쓰기",
@@ -594,7 +584,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "딱딱하지 않지만 신뢰를 주는 업무 문체를 연습합니다."
         ),
       ]),
-      chapter("business-writing-chapter-2", "2단원", "보고와 제안", [
+      chapter("business-writing-chapter-2", "보고와 제안", [
         lesson(
           "business-writing-05",
           "핵심 요약 만들기",
@@ -621,7 +611,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "담당자, 일정, 다음 행동을 빠짐없이 적습니다."
         ),
       ]),
-      chapter("business-writing-chapter-3", "3단원", "실무 문서 퇴고", [
+      chapter("business-writing-chapter-3", "실무 문서 퇴고", [
         lesson(
           "business-writing-10",
           "읽는 순서 점검",
@@ -652,7 +642,7 @@ export const courseDetails: readonly CourseDetail[] = [
       "상상력을 자극하는 글쓰기 기법을 배웁니다. 단편 소설, 시, 수필 등 다양한 창작 형식을 탐구합니다.",
     thumbnail: "/course-thumbnails/creative-writing.png",
     chapters: [
-      chapter("creative-writing-chapter-1", "1단원", "발상과 관찰", [
+      chapter("creative-writing-chapter-1", "발상과 관찰", [
         lesson(
           "creative-writing-01",
           "낯설게 보기",
@@ -674,7 +664,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "작은 감정을 이야기의 출발점으로 삼습니다."
         ),
       ]),
-      chapter("creative-writing-chapter-2", "2단원", "인물과 장면", [
+      chapter("creative-writing-chapter-2", "인물과 장면", [
         lesson(
           "creative-writing-05",
           "인물의 욕망",
@@ -696,7 +686,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "인물마다 다른 말투와 침묵을 설계합니다."
         ),
       ]),
-      chapter("creative-writing-chapter-3", "3단원", "플롯과 전개", [
+      chapter("creative-writing-chapter-3", "플롯과 전개", [
         lesson(
           "creative-writing-09",
           "사건의 압력",
@@ -718,7 +708,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "해결, 여운, 열린 결말의 효과를 비교합니다."
         ),
       ]),
-      chapter("creative-writing-chapter-4", "4단원", "형식 실험", [
+      chapter("creative-writing-chapter-4", "형식 실험", [
         lesson(
           "creative-writing-13",
           "짧은 소설 쓰기",
@@ -748,7 +738,7 @@ export const courseDetails: readonly CourseDetail[] = [
     description: "주어, 서술어, 목적어의 긴밀한 관계 탐구",
     thumbnail: "/course-thumbnails/basic-sentence-writing.png",
     chapters: [
-      chapter("basic-sentence-writing-chapter-1", "1단원", "문장 성분 익히기", [
+      chapter("basic-sentence-writing-chapter-1", "문장 성분 익히기", [
         lesson(
           "basic-sentence-writing-01",
           "누가 무엇을 하는가",
@@ -774,7 +764,7 @@ export const courseDetails: readonly CourseDetail[] = [
           true
         ),
       ]),
-      chapter("basic-sentence-writing-chapter-2", "2단원", "꾸밈과 확장", [
+      chapter("basic-sentence-writing-chapter-2", "꾸밈과 확장", [
         lesson(
           "basic-sentence-writing-05",
           "형용사 꾸밈과 명사의 배치",
@@ -797,7 +787,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "짧은 문장을 목적에 맞게 길게 확장합니다."
         ),
       ]),
-      chapter("basic-sentence-writing-chapter-3", "3단원", "문장 다듬기", [
+      chapter("basic-sentence-writing-chapter-3", "문장 다듬기", [
         lesson(
           "basic-sentence-writing-09",
           "어색한 호응 찾기",
@@ -827,7 +817,7 @@ export const courseDetails: readonly CourseDetail[] = [
     description: "추상적 상태를 정확한 서술어로 기술하는 법",
     thumbnail: "/course-thumbnails/emotion-writing.png",
     chapters: [
-      chapter("emotion-writing-chapter-1", "1단원", "감정의 이름", [
+      chapter("emotion-writing-chapter-1", "감정의 이름", [
         lesson(
           "emotion-writing-01",
           "기본 감정 나누기",
@@ -856,7 +846,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "자주 쓰는 감정 단어를 상황별로 정리합니다."
         ),
       ]),
-      chapter("emotion-writing-chapter-2", "2단원", "장면으로 표현하기", [
+      chapter("emotion-writing-chapter-2", "장면으로 표현하기", [
         lesson(
           "emotion-writing-06",
           "대상을 통해 감정 이입하기",
@@ -891,7 +881,7 @@ export const courseDetails: readonly CourseDetail[] = [
     description: "업무 격식과 명확한 전개로 신뢰감 구축",
     thumbnail: "/course-thumbnails/business-email.png",
     chapters: [
-      chapter("business-email-chapter-1", "1단원", "이메일의 첫인상", [
+      chapter("business-email-chapter-1", "이메일의 첫인상", [
         lesson(
           "business-email-01",
           "제목의 핵심 표현",
@@ -923,7 +913,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "한 단락에 하나의 목적만 담도록 정리합니다."
         ),
       ]),
-      chapter("business-email-chapter-2", "2단원", "요청과 회신", [
+      chapter("business-email-chapter-2", "요청과 회신", [
         lesson(
           "business-email-07",
           "명확한 요청 문장",
@@ -955,7 +945,7 @@ export const courseDetails: readonly CourseDetail[] = [
           "상대의 확인이 필요한 항목을 빠짐없이 묶습니다."
         ),
       ]),
-      chapter("business-email-chapter-3", "3단원", "상황별 이메일", [
+      chapter("business-email-chapter-3", "상황별 이메일", [
         lesson(
           "business-email-13",
           "회의 일정 조율",

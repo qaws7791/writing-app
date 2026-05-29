@@ -879,7 +879,7 @@ function longWriteContent(input: LessonBuildInput) {
   return {
     instruction: `${input.lesson.title} 글쓰기 과제`,
     topic: `${input.lesson.description} 이 목표가 드러나도록 150자 안팎의 문단을 작성하세요.`,
-    context: `${input.chapter.label} "${input.chapter.title}" 단원의 흐름을 떠올리며 ${input.profile.goodLabel}을 남겨보세요.`,
+    context: `"${input.chapter.title}" 단원의 흐름을 떠올리며 ${input.profile.goodLabel}을 남겨보세요.`,
     structureGuide: [
       `첫 문장: ${input.profile.coreSkill}을 드러내기`,
       `중간 문장: ${input.profile.avoidLabel}을 피하고 구체화하기`,

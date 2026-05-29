@@ -1,5 +1,17 @@
 # 개발 도구
 
+## 2026-05-30 웹 fake 개발 서버 스크립트 추가 시작
+
+- `apps/web`을 백엔드 없이 fake API 모드로 실행하는 개발 스크립트를 추가한다.
+- 스크립트는 서버와 브라우저 API 모드를 모두 fake로 명시해 실행 의도를 package.json에서 바로 확인할 수 있게 한다.
+- 변경 후 개발 서버 기동과 웹 페이지 응답을 확인한다.
+
+## 2026-05-30 웹 fake 개발 서버 스크립트 추가 완료
+
+- `apps/web/package.json`에 `dev:fake` 스크립트를 추가했다.
+- `dev:fake`는 `WEB_API_MODE=fake`, `NEXT_PUBLIC_API_MODE=fake`를 명시하고 `next dev`를 실행한다.
+- 로컬 검증에서 `bun run dev:fake -- --port 3100`으로 개발 서버를 띄우고 `/` 요청이 `200`을 반환하는지 확인했다.
+
 ## 2026-05-30 README 로컬 시작 가이드 갱신 시작
 
 - 클론 직후 필요한 도구, 환경 변수 파일 생성, Docker Compose 기반 RustFS 실행, DB seed, 관리자 계정 seed, 개발 서버 실행 순서를 README에 정리한다.

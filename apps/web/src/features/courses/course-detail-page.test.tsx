@@ -74,7 +74,6 @@ const notStartedCourse = {
     percentage: 0,
   },
   nextLesson: {
-    chapterLabel: "1단원",
     title: "주어와 서술어 찾기",
     description: "문장의 중심 성분을 구분합니다.",
     lessonId: "sentence-structure-01" as CourseLessonId,

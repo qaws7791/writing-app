@@ -78,9 +78,6 @@ export function CourseCurriculum({ course }: CourseCurriculumProps) {
               <article className="mb-8 sm:mb-0">
                 <CollapsibleTrigger className="flex min-h-16 w-full items-center justify-between rounded-3xl border-0 bg-transparent px-1 py-3 text-left font-[inherit] text-inherit transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-[0.998] sm:p-6">
                   <span className="flex min-w-0 flex-col gap-1.5">
-                    <span className="text-xs font-semibold text-muted-foreground uppercase">
-                      {chapter.label}
-                    </span>
                     <span className="truncate text-lg/7 font-semibold tracking-normal text-foreground">
                       {chapter.title}
                     </span>

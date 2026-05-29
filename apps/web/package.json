@@ -7,6 +7,7 @@
     "api:generate": "openapi-typescript ../../apps/docs/openapi/writing-app-api.json -o src/lib/api/generated/writing-app-api.d.ts",
     "build": "next build",
     "dev": "next dev",
+    "dev:fake": "WEB_API_MODE=fake NEXT_PUBLIC_API_MODE=fake next dev",
     "lint": "eslint .",
     "start": "next start",
     "test": "vitest run --config vitest.config.ts",

@@ -39,7 +39,7 @@ function createHomeLessons(course: CourseDetail): readonly HomeLesson[] {
   const lessons = course.chapters.flatMap((chapter) =>
     chapter.lessons.map((lesson) => ({
       ...lesson,
-      name: `${chapter.label}. ${lesson.title}`,
+      name: lesson.title,
     }))
   )
   const nextLessonIndex = lessons.findIndex(

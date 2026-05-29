@@ -97,7 +97,7 @@ export function CourseDetailPage({
                     {isNotStarted ? "첫 레슨 시작" : "이어서 학습하기"}
                   </span>
                   <h2 className="m-0 text-base/6 font-semibold tracking-normal">
-                    {course.nextLesson.chapterLabel} · {course.nextLesson.title}
+                    {course.nextLesson.title}
                   </h2>
                   <p className="m-0 text-sm/6 text-muted-foreground">
                     {course.nextLesson.description}

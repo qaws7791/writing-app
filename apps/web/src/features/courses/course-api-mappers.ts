@@ -32,7 +32,6 @@ interface CourseDetailDto {
   firstLessonId?: string
   chapters: readonly {
     id: string
-    label: string
     title: string
     lessons: readonly {
       id: string
@@ -71,7 +70,6 @@ export function mapCourseDetailDto(dto: CourseDetailDto): CourseDetail {
   const chapters = dto.chapters.map(
     (chapter): CourseChapter => ({
       id: chapter.id as CourseChapter["id"],
-      label: chapter.label,
       title: chapter.title,
       lessons: chapter.lessons.map(
         (lesson): CourseLesson => ({
@@ -84,12 +82,7 @@ export function mapCourseDetailDto(dto: CourseDetailDto): CourseDetail {
       ),
     })
   )
-  const firstLesson = chapters.flatMap((chapter) =>
-    chapter.lessons.map((lesson) => ({
-      chapterLabel: chapter.label,
-      lesson,
-    }))
-  )[0]
+  const firstLesson = chapters.flatMap((chapter) => chapter.lessons)[0]
 
   if (!firstLesson) {
     throw new Error(`Course detail must include at least one lesson: ${dto.id}`)
@@ -106,10 +99,9 @@ export function mapCourseDetailDto(dto: CourseDetailDto): CourseDetail {
       percentage: 0,
     },
     nextLesson: {
-      chapterLabel: firstLesson.chapterLabel,
-      title: firstLesson.lesson.title,
-      description: firstLesson.lesson.description,
-      lessonId: firstLesson.lesson.lessonId,
+      title: firstLesson.title,
+      description: firstLesson.description,
+      lessonId: firstLesson.lessonId,
     },
     chapters,
   }
@@ -136,19 +128,9 @@ export function mergeCourseProgress(
   }))
   const nextLessonSource =
     chapters
-      .flatMap((chapter) =>
-        chapter.lessons.map((lesson) => ({
-          chapterLabel: chapter.label,
-          lesson,
-        }))
-      )
-      .find(({ lesson }) => lesson.lessonId === progress.nextLessonId) ??
-    chapters.flatMap((chapter) =>
-      chapter.lessons.map((lesson) => ({
-        chapterLabel: chapter.label,
-        lesson,
-      }))
-    )[0]
+      .flatMap((chapter) => chapter.lessons)
+      .find((lesson) => lesson.lessonId === progress.nextLessonId) ??
+    chapters.flatMap((chapter) => chapter.lessons)[0]
 
   return {
     ...course,
@@ -156,10 +138,9 @@ export function mergeCourseProgress(
     progress: mapCourseProgressDto(progress),
     nextLesson: nextLessonSource
       ? {
-          chapterLabel: nextLessonSource.chapterLabel,
-          title: nextLessonSource.lesson.title,
-          description: nextLessonSource.lesson.description,
-          lessonId: nextLessonSource.lesson.lessonId,
+          title: nextLessonSource.title,
+          description: nextLessonSource.description,
+          lessonId: nextLessonSource.lessonId,
         }
       : course.nextLesson,
   }
