@@ -31,7 +31,6 @@ const editorViewLabels = {
   lesson: "레슨",
   step: "스텝",
   preview: "미리보기",
-  settings: "설정",
 } satisfies Record<CourseEditorView, string>
 
 const stepTypeLabels = {

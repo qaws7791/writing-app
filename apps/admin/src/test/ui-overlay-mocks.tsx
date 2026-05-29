@@ -140,21 +140,33 @@ vi.mock("@workspace/ui/components/ui/dropdown-menu", async () => {
   }
 
   function DropdownMenuTrigger({
+    asChild,
     children,
     onClick,
     ...props
-  }: React.ComponentPropsWithoutRef<"button">) {
+  }: React.ComponentPropsWithoutRef<"button"> & { asChild?: boolean }) {
     const { isOpen, setIsOpen } = React.useContext(DropdownMenuContext)
+    const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) => {
+      onClick?.(event)
+      setIsOpen(!isOpen)
+    }
+
+    if (asChild && React.isValidElement(children)) {
+      const child = children as React.ReactElement<
+        React.ComponentPropsWithoutRef<"button">
+      >
+
+      return React.cloneElement(child, {
+        ...props,
+        onClick: (event) => {
+          child.props.onClick?.(event)
+          handleClick(event)
+        },
+      })
+    }
 
     return (
-      <button
-        type="button"
-        {...props}
-        onClick={(event) => {
-          onClick?.(event)
-          setIsOpen(!isOpen)
-        }}
-      >
+      <button type="button" {...props} onClick={handleClick}>
         {children}
       </button>
     )
@@ -181,10 +193,25 @@ vi.mock("@workspace/ui/components/ui/dropdown-menu", async () => {
     )
   }
 
+  function DropdownMenuLabel({
+    children,
+    ...props
+  }: React.ComponentPropsWithoutRef<"div">) {
+    return <div {...props}>{children}</div>
+  }
+
+  function DropdownMenuSeparator({
+    ...props
+  }: React.ComponentPropsWithoutRef<"div">) {
+    return <div role="separator" {...props} />
+  }
+
   return {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
     DropdownMenuTrigger,
   }
 })

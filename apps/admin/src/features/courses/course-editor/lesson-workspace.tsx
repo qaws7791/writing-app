@@ -23,7 +23,7 @@ import type {
   AdminEditorCurriculumVersionDetailDto,
   AdminEditorStepType,
 } from "@workspace/core/admin"
-import { Button } from "@workspace/ui/components/ui/button"
+import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -211,12 +211,12 @@ export function LessonWorkspace({
           </h3>
           {!isReadOnly && (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button type="button" variant="outline">
-                  <Plus aria-hidden="true" />
-                  스텝 추가
-                  <ChevronDown aria-hidden="true" className="ml-1 size-3.5" />
-                </Button>
+              <DropdownMenuTrigger
+                className={buttonVariants({ variant: "outline" })}
+              >
+                <Plus aria-hidden="true" />
+                스텝 추가
+                <ChevronDown aria-hidden="true" className="ml-1 size-3.5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 {stepTypeGroups.map((group, groupIndex) => (

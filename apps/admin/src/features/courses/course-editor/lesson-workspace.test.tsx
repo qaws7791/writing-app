@@ -3,6 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import "@/test/ui-overlay-mocks"
 import { LessonWorkspace } from "@/features/courses/course-editor/lesson-workspace"
 
 type ButtonProps = React.ComponentProps<"button">
@@ -13,6 +14,7 @@ vi.mock("@workspace/ui/components/ui/button", async () => {
   return {
     Button: ({ children, ...props }: ButtonProps) =>
       ReactModule.createElement("button", props, children),
+    buttonVariants: () => "",
   }
 })
 
@@ -65,6 +67,17 @@ describe("LessonWorkspace", () => {
             status: "active",
             content: {},
           },
+          {
+            id: "step-3",
+            lessonId: "lesson-1",
+            type: "SUMMARY",
+            title: "숨긴 정리",
+            sortOrder: 3,
+            points: 0,
+            required: true,
+            status: "archived",
+            content: {},
+          },
         ]}
       />
     )
@@ -79,19 +92,18 @@ describe("LessonWorkspace", () => {
     expect(screen.queryByText("INTRO")).toBeNull()
     expect(screen.queryByText("SHORT_WRITE")).toBeNull()
     expect(screen.queryByText("10 XP")).toBeNull()
-    expect(screen.getAllByText("도입").length).toBeGreaterThan(0)
-    expect(
-      screen.getByRole("button", { name: "학습 화면 미리보기" })
-    ).toBeTruthy()
-    expect(screen.getByRole("button", { name: "레슨 설정" })).toBeTruthy()
+    expect(screen.queryByText("숨긴 정리")).toBeNull()
+    expect(screen.getByText("보관된 스텝 1개 보기")).toBeTruthy()
+    expect(screen.getByRole("button", { name: "미리보기" })).toBeTruthy()
+    expect(screen.queryByRole("button", { name: "레슨 설정" })).toBeNull()
     expect(screen.getByRole("button", { name: "스텝 추가" })).toBeTruthy()
+    expect(screen.getByRole("button", { name: "도입 순서 변경" })).toBeTruthy()
   })
 
-  it("calls step add archive and move callbacks", async () => {
+  it("calls step add and archive callbacks", async () => {
     const user = userEvent.setup()
     const onAddStep = vi.fn()
     const onArchiveStep = vi.fn()
-    const onMoveStep = vi.fn()
 
     render(
       <LessonWorkspace
@@ -106,7 +118,6 @@ describe("LessonWorkspace", () => {
         }}
         onAddStep={onAddStep}
         onArchiveStep={onArchiveStep}
-        onMoveStep={onMoveStep}
         selectedStepId="step-1"
         steps={[
           {
@@ -136,11 +147,10 @@ describe("LessonWorkspace", () => {
     )
 
     await user.click(screen.getByRole("button", { name: "스텝 추가" }))
-    await user.click(screen.getByRole("button", { name: "도입 아래로 이동" }))
+    await user.click(screen.getByRole("button", { name: "긴 글쓰기" }))
     await user.click(screen.getByRole("button", { name: "도입 스텝 보관" }))
 
-    expect(onAddStep).toHaveBeenCalled()
-    expect(onMoveStep).toHaveBeenCalledWith("step-1", 1)
+    expect(onAddStep).toHaveBeenCalledWith("LONG_WRITE")
     expect(onArchiveStep).toHaveBeenCalledWith("step-1")
   })
 })

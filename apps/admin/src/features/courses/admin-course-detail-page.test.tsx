@@ -15,6 +15,7 @@ vi.mock("@workspace/ui/components/ui/button", async () => {
   return {
     Button: ({ children, ...props }: ButtonProps) =>
       ReactModule.createElement("button", props, children),
+    buttonVariants: () => "",
   }
 })
 
@@ -516,7 +517,7 @@ describe("AdminCourseDetailPage", () => {
       />
     )
 
-    await user.click(screen.getByRole("button", { name: "학습 화면 미리보기" }))
+    await user.click(screen.getByRole("button", { name: "미리보기" }))
     expect(window.location.pathname + window.location.search).toBe(
       "/courses/sentence-structure?version=sentence-structure-v2&view=preview&lessonId=sentence-structure-01"
     )
@@ -557,27 +558,6 @@ describe("AdminCourseDetailPage", () => {
         }),
       })
     )
-  })
-
-  it("renders the lesson settings view from settings URL state", () => {
-    render(
-      <AdminCourseDetailPage
-        adminApi={createAdminApiMock()}
-        course={courseFixture}
-        selectedVersionId="sentence-structure-v2"
-        urlState={{
-          versionId: "sentence-structure-v2",
-          view: "settings",
-          lessonId: "sentence-structure-01",
-          stepId: null,
-        }}
-        versions={[versionSummaryFixture]}
-        version={versionFixture}
-      />
-    )
-
-    expect(screen.getByRole("heading", { name: "레슨 설정" })).toBeTruthy()
-    expect(screen.queryByText("학습 흐름")).toBeNull()
   })
 
   it("guards browser unload when the working copy has unsaved changes", async () => {

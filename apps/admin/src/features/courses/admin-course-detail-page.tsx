@@ -255,11 +255,7 @@ export function AdminCourseDetailPage({
         stepId: nextView === "step" ? (query["stepId"] ?? null) : null,
         versionId: selectedVersionId,
         view:
-          nextView === "step" ||
-          nextView === "preview" ||
-          nextView === "settings"
-            ? nextView
-            : "lesson",
+          nextView === "step" || nextView === "preview" ? nextView : "lesson",
       })
       window.history.replaceState(window.history.state, "", nextPath)
     },

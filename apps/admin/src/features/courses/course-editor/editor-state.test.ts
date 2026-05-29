@@ -50,6 +50,19 @@ describe("course editor state", () => {
     })
   })
 
+  it("falls back to lesson view for the removed settings view", () => {
+    expect(
+      parseEditorUrlState(
+        new URLSearchParams("view=settings&lessonId=lesson-1")
+      )
+    ).toEqual({
+      versionId: null,
+      view: "lesson",
+      lessonId: "lesson-1",
+      stepId: null,
+    })
+  })
+
   it("classifies lesson reorder as structural", () => {
     expect(
       getEditorChangeKind({

@@ -1,4 +1,4 @@
-export type CourseEditorView = "lesson" | "step" | "preview" | "settings"
+export type CourseEditorView = "lesson" | "step" | "preview"
 
 export type CourseEditorUrlState = {
   versionId: string | null
@@ -7,12 +7,7 @@ export type CourseEditorUrlState = {
   stepId: string | null
 }
 
-const editorViews = new Set<CourseEditorView>([
-  "lesson",
-  "step",
-  "preview",
-  "settings",
-])
+const editorViews = new Set<CourseEditorView>(["lesson", "step", "preview"])
 
 export function parseEditorUrlState(
   searchParams: URLSearchParams
