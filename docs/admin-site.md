@@ -1,5 +1,20 @@
 # 어드민 사이트
 
+## 2026-05-30 로컬 썸네일 변경 검증 시작
+
+- 로컬 개발 환경에서 Docker Compose 기반 RustFS와 어드민 앱, 어드민 API를 함께 실행해 코스 썸네일 변경 흐름을 실제 브라우저로 검증한다.
+- `apps/admin/.env`, `apps/admin-api/.env`, 루트 `.env.docker`가 같은 로컬 포트와 RustFS credential을 사용하도록 맞춘다.
+- 검증 범위는 관리자 로그인, 코스 상세 진입, 썸네일 파일 업로드, 저장, RustFS 공개 URL 반영 확인이다.
+
+## 2026-05-30 로컬 썸네일 변경 검증 완료
+
+- 루트 Docker Compose로 RustFS를 실행하고 `writing-app-public-assets` 공개 버킷 생성을 확인했다.
+- `apps/admin-api/.env`에 로컬 RustFS asset 환경 변수를 추가하고, `apps/admin/.env`에 어드민 API URL을 명시했다.
+- 기존 로컬 관리자 계정 비밀번호가 시드 값과 달라 `ADMIN_SEED_RESET_PASSWORD=true`로 개발 DB의 관리자 비밀번호를 한 번 동기화했다.
+- 브라우저에서 관리자 로그인, 코스 상세 진입, 썸네일 파일 업로드, 저장을 실제로 실행했다.
+- 저장된 썸네일은 RustFS 공개 URL로 반영됐고, 공개 URL이 `200 image/png`으로 응답하는 것을 확인했다.
+- 검증은 `bun --filter @workspace/admin typecheck`, `bun --filter @workspace/admin-api typecheck`, `bun --filter @workspace/admin test -- course-summary-panel admin-course-detail-page`로 확인했다.
+
 ## 2026-05-29 어드민 코스 에디터 정정 설계 시작
 
 - 감사 결과를 바탕으로 코스 상세 에디터의 UI, 상태 모델, API 계약, DB 저장 정책을 함께 정정한다.
