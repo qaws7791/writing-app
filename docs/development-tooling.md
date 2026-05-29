@@ -1,5 +1,16 @@
 # 개발 도구
 
+## 2026-05-30 README 로컬 시작 가이드 갱신 시작
+
+- 클론 직후 필요한 도구, 환경 변수 파일 생성, Docker Compose 기반 RustFS 실행, DB seed, 관리자 계정 seed, 개발 서버 실행 순서를 README에 정리한다.
+- README는 현재 모노레포 구조를 기준으로 한국어로 작성하고, 상세 운영 값은 `docs/operations-environment.md`로 연결한다.
+
+## 2026-05-30 README 로컬 시작 가이드 갱신 완료
+
+- README를 현재 학습자/어드민/문서/Storybook 모노레포 구조에 맞게 다시 작성했다.
+- Node.js, Bun, Docker Desktop, Git 요구사항과 clone 이후 `bun install`, env 파일 생성, RustFS 실행, seed, dev server 실행 순서를 문서화했다.
+- 어드민 로컬 계정 비밀번호 재동기화가 필요한 경우의 PowerShell 명령을 함께 기록했다.
+
 ## 포맷팅
 
 - 포맷팅에는 Prettier를 사용한다.
