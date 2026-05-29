@@ -18,7 +18,6 @@ create table if not exists courses (
 create table if not exists course_chapters (
   id text primary key,
   course_id text not null references courses(id),
-  label text not null,
   title text not null,
   sort_order integer not null
 );

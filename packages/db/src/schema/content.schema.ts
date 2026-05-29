@@ -53,7 +53,6 @@ export const courseChapters = sqliteTable("course_chapters", {
   courseId: text("course_id")
     .notNull()
     .references(() => courses.id),
-  label: text("label").notNull(),
   title: text("title").notNull(),
   sortOrder: integer("sort_order").notNull(),
 })
@@ -68,7 +67,6 @@ export const curriculumVersionChapters = sqliteTable(
     sourceChapterId: text("source_chapter_id").references(
       () => courseChapters.id
     ),
-    label: text("label").notNull(),
     title: text("title").notNull(),
     sortOrder: integer("sort_order").notNull(),
     status: text("status", {

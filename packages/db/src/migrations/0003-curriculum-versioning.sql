@@ -18,7 +18,6 @@ create table if not exists curriculum_version_chapters (
   id text primary key,
   curriculum_version_id text not null references curriculum_versions(id),
   source_chapter_id text references course_chapters(id),
-  label text not null,
   title text not null,
   sort_order integer not null,
   status text not null

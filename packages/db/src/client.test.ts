@@ -94,6 +94,20 @@ describe("curriculum version schema", () => {
     expect(curriculumVersions).toBeDefined()
     expect(curriculumVersionChapters).toBeDefined()
     expect(curriculumVersionLessons).toBeDefined()
+
+    const sourceChapterColumns = sqlite
+      .query<{ name: string }, []>("pragma table_info(course_chapters)")
+      .all()
+      .map((row) => row.name)
+    const versionChapterColumns = sqlite
+      .query<{ name: string }, []>(
+        "pragma table_info(curriculum_version_chapters)"
+      )
+      .all()
+      .map((row) => row.name)
+
+    expect(sourceChapterColumns).not.toContain("label")
+    expect(versionChapterColumns).not.toContain("label")
   })
 })
 

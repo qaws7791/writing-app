@@ -67,6 +67,18 @@ export function runContentMigration(sqlite: Database) {
     "alter table lesson_steps add column status text not null default 'active'"
   )
   sqlite.exec(curriculumVersionStepsSql)
+  dropColumnIfExists(
+    sqlite,
+    "course_chapters",
+    "label",
+    "alter table course_chapters drop column label"
+  )
+  dropColumnIfExists(
+    sqlite,
+    "curriculum_version_chapters",
+    "label",
+    "alter table curriculum_version_chapters drop column label"
+  )
 }
 
 function addColumnIfMissing(
@@ -80,6 +92,23 @@ function addColumnIfMissing(
     .all()
 
   if (columns.some((column) => column.name === columnName)) {
+    return
+  }
+
+  sqlite.exec(alterTableSql)
+}
+
+function dropColumnIfExists(
+  sqlite: Database,
+  tableName: string,
+  columnName: string,
+  alterTableSql: string
+) {
+  const columns = sqlite
+    .query<{ name: string }, []>(`pragma table_info(${tableName})`)
+    .all()
+
+  if (!columns.some((column) => column.name === columnName)) {
     return
   }
 
