@@ -20,6 +20,11 @@ export const adminConflictErrorDtoSchema = z.object({
   message: z.string().min(1),
 })
 
+export const adminStorageUnavailableErrorDtoSchema = z.object({
+  code: z.literal("storage-unavailable"),
+  message: z.literal("스토리지를 사용할 수 없습니다."),
+})
+
 export type AdminDatabaseUnavailableErrorDto = z.infer<
   typeof adminDatabaseUnavailableErrorDtoSchema
 >
@@ -28,9 +33,13 @@ export type AdminInvalidRequestErrorDto = z.infer<
 >
 export type AdminNotFoundErrorDto = z.infer<typeof adminNotFoundErrorDtoSchema>
 export type AdminConflictErrorDto = z.infer<typeof adminConflictErrorDtoSchema>
+export type AdminStorageUnavailableErrorDto = z.infer<
+  typeof adminStorageUnavailableErrorDtoSchema
+>
 
 export type AdminErrorDto =
   | AdminDatabaseUnavailableErrorDto
   | AdminInvalidRequestErrorDto
   | AdminNotFoundErrorDto
   | AdminConflictErrorDto
+  | AdminStorageUnavailableErrorDto
