@@ -52,7 +52,7 @@ type CurriculumMapProps = {
   onMoveLesson?: (lessonId: string, targetIndex: number) => void
   onUpdateChapterField?: (
     chapterId: string,
-    field: "label" | "title",
+    field: "title",
     value: string
   ) => void
 }
@@ -141,7 +141,7 @@ type ChapterSectionProps = {
   onSelectLesson?: (lessonId: string) => void
   onUpdateChapterField?: (
     chapterId: string,
-    field: "label" | "title",
+    field: "title",
     value: string
   ) => void
 }
@@ -184,20 +184,6 @@ function ChapterSection({
             <PopoverContent side="bottom" align="end" className="w-56 gap-3">
               <p className="text-sm font-medium">챕터 편집</p>
               <div className="space-y-3">
-                <label className="grid gap-1.5 text-xs text-muted-foreground">
-                  레이블
-                  <input
-                    className="rounded-md border bg-background px-2 py-1.5 text-sm text-foreground"
-                    value={chapter.label}
-                    onChange={(event) =>
-                      onUpdateChapterField?.(
-                        chapter.id,
-                        "label",
-                        event.currentTarget.value
-                      )
-                    }
-                  />
-                </label>
                 <label className="grid gap-1.5 text-xs text-muted-foreground">
                   제목
                   <input

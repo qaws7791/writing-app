@@ -13,7 +13,6 @@ afterEach(() => {
 const singleChapterWithLessons = [
   {
     id: "chapter-1",
-    label: "1",
     title: "문장 성분 익히기",
     sortOrder: 1,
     status: "active" as const,
@@ -33,7 +32,6 @@ const singleChapterWithLessons = [
 const singleChapterWithTwoLessons = [
   {
     id: "chapter-1",
-    label: "1",
     title: "문장 성분 익히기",
     sortOrder: 1,
     status: "active" as const,
@@ -172,22 +170,14 @@ describe("CurriculumMap", () => {
       screen.getByRole("button", { name: "문장 성분 익히기 챕터 편집" })
     )
 
-    const labelInput = screen.getByLabelText("레이블")
     const titleInput = screen.getByLabelText("문장 성분 익히기 챕터 제목")
     expect(titleInput).toBeTruthy()
+    expect(screen.queryByLabelText("레이블")).toBeNull()
 
-    fireEvent.change(labelInput, {
-      target: { value: "1-1" },
-    })
     fireEvent.change(titleInput, {
       target: { value: "문장 성분 익히기 수정" },
     })
 
-    expect(onUpdateChapterField).toHaveBeenCalledWith(
-      "chapter-1",
-      "label",
-      "1-1"
-    )
     expect(onUpdateChapterField).toHaveBeenCalledWith(
       "chapter-1",
       "title",
@@ -272,7 +262,6 @@ describe("CurriculumMap", () => {
         chapters={[
           {
             id: "chapter-1",
-            label: "1",
             title: "문장 성분 익히기",
             sortOrder: 1,
             status: "active",

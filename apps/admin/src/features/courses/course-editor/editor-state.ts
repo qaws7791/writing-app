@@ -19,11 +19,10 @@ export type CourseEditorWorkingCopy = {
 }
 
 type CourseEditableField = "description" | "thumbnailPath" | "title"
-type ChapterEditableField = "label" | "title"
+type ChapterEditableField = "title"
 type LessonEditableField = "description" | "title"
 type ChapterInput = {
   id: string
-  label: string
   title: string
 }
 type LessonInput = {
@@ -314,7 +313,6 @@ export function createCourseEditorSaveInput(
     },
     chapters: workingCopy.version.chapters.map((chapter) => ({
       id: chapter.id,
-      label: chapter.label,
       sortOrder: chapter.sortOrder,
       status: chapter.status,
       title: chapter.title,

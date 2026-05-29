@@ -98,7 +98,6 @@ describe("course editor state", () => {
           chapters: [
             {
               id: "chapter-1",
-              label: "1",
               title: "첫 챕터",
               sortOrder: 1,
               status: "active",
@@ -166,7 +165,6 @@ describe("course editor state", () => {
     })
     const withChapter = addChapter(initial, {
       id: "draft-chapter",
-      label: "새 단원",
       title: "새 챕터",
     })
     const withLesson = addLesson(withChapter, "draft-chapter", {
@@ -235,7 +233,6 @@ describe("course editor state", () => {
         chapters: [
           {
             id: "chapter-1",
-            label: "1",
             title: "첫 챕터",
             sortOrder: 1,
             status: "active",
@@ -356,7 +353,6 @@ describe("course editor state", () => {
         chapters: [
           {
             id: "chapter-1",
-            label: "1",
             title: "첫 챕터",
             sortOrder: 1,
             status: "active",
@@ -419,7 +415,6 @@ describe("course editor state", () => {
               chapters: [
                 {
                   id: "chapter-1",
-                  label: "1",
                   title: "첫 챕터",
                   sortOrder: 1,
                   status: "active",

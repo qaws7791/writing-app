@@ -31,7 +31,7 @@ type CourseEditorShellProps = {
   onSelectThumbnailFile?: (file: File) => void
   onUpdateChapterField?: (
     chapterId: string,
-    field: "label" | "title",
+    field: "title",
     value: string
   ) => void
   onUpdateCourseField?: (field: "description" | "title", value: string) => void

@@ -764,7 +764,6 @@ const versionFixture = {
   chapters: [
     {
       id: "chapter-1",
-      label: "1",
       title: "첫 챕터",
       sortOrder: 1,
       status: "active" as const,

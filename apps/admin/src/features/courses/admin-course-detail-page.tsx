@@ -341,7 +341,6 @@ export function AdminCourseDetailPage({
     updateWorkingCopy((current) =>
       addChapter(current, {
         id: createDraftId("draft-chapter"),
-        label: `${current.version.chapters.length + 1}단원`,
         title: "새 챕터",
       })
     )
