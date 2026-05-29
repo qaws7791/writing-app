@@ -25,6 +25,17 @@ export function createHttpAdminApi({
   headers,
 }: CreateHttpAdminApiInput): AdminApi {
   return {
+    createCourseThumbnailUpload(input) {
+      return requestJson(
+        fetcher,
+        createAdminApiUrl(baseUrl, "/course-thumbnails/uploads"),
+        headers,
+        {
+          body: input,
+          method: "POST",
+        }
+      )
+    },
     listCourses(input) {
       const url = createAdminApiUrl(baseUrl, "/courses")
       url.searchParams.set("page", String(input.page))
@@ -266,6 +277,7 @@ function isAdminApiErrorDto(value: unknown): value is AdminApiErrorDto {
     value.code === "database-unavailable" ||
     value.code === "invalid-request" ||
     value.code === "not-found" ||
+    value.code === "storage-unavailable" ||
     value.code === "unknown-error"
   )
 }

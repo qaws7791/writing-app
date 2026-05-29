@@ -377,6 +377,40 @@ describe("createHttpAdminApi", () => {
     })
   })
 
+  it("creates a course thumbnail signed upload request", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({
+        uploadUrl: "http://signed-upload.local",
+        method: "PUT",
+        headers: {
+          "content-type": "image/png",
+        },
+        thumbnailPath:
+          "http://localhost:9000/writing-app-public-assets/course-thumbnails/asset-1.png",
+      })
+    )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.createCourseThumbnailUpload({
+      fileName: "thumbnail.png",
+      contentType: "image/png",
+      contentLength: 128,
+    })
+
+    const request = getRequest(fetchMock)
+    expect(request.url).toBe("http://localhost:4001/course-thumbnails/uploads")
+    expect(request.method).toBe("POST")
+    expect(request.headers.get("content-type")).toBe("application/json")
+    await expect(request.json()).resolves.toEqual({
+      fileName: "thumbnail.png",
+      contentType: "image/png",
+      contentLength: 128,
+    })
+  })
+
   it("publishes and discards curriculum drafts through explicit action routes", async () => {
     const fetchMock = vi
       .fn<typeof fetch>()

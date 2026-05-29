@@ -4,6 +4,8 @@ import type {
   AdminCourseEditorSaveRequestDto,
   AdminCourseListDto,
   AdminCourseListInputDto,
+  AdminCreateCourseThumbnailUploadDto,
+  AdminCreateCourseThumbnailUploadRequestDto,
   AdminCourseTreeDto,
   AdminCurriculumVersionListDto,
   AdminCurriculumVersionSummaryDto,
@@ -38,6 +40,9 @@ export type AdminApiResult<TValue> =
   | AdminApiErrorResult
 
 export interface AdminApi {
+  createCourseThumbnailUpload(
+    input: AdminCreateCourseThumbnailUploadRequestDto
+  ): Promise<AdminApiResult<AdminCreateCourseThumbnailUploadDto>>
   listCourses(
     input: AdminCourseListInputDto
   ): Promise<AdminApiResult<AdminCourseListDto>>
