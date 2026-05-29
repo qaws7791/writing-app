@@ -450,7 +450,6 @@ export interface operations {
             firstLessonId?: string
             chapters: {
               id: string
-              label: string
               title: string
               lessons: {
                 id: string

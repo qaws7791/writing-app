@@ -157,7 +157,7 @@ bun --filter @workspace/admin-api seed:admin
 - `lesson_answers`: 사용자별 레슨 스텝 답변
 - `feedback_attempts`: AI 피드백 완료 시도와 구조화 결과
 - `curriculum_versions`: 코스별 커리큘럼 버전과 `draft`, `published`, `archived` 상태
-- `curriculum_version_chapters`: 특정 커리큘럼 버전에 포함된 챕터 스냅샷
+- `curriculum_version_chapters`: 특정 커리큘럼 버전에 포함된 챕터 제목, 정렬 순서, 상태 스냅샷
 - `curriculum_version_lessons`: 특정 커리큘럼 버전에 포함된 레슨 배치 스냅샷
 - `curriculum_version_migrations`: source/target 커리큘럼 버전 사이의 active 마이그레이션 맵
 - `lesson_migration_mappings`: 마이그레이션 맵 안의 레슨 단위 `equivalent`, `split`, `merged`, `removed` 매핑

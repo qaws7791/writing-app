@@ -145,6 +145,12 @@
 - `GET /courses`, `GET /courses/search`, `GET /courses/:courseId`는 published 버전 중 가장 큰 `version_number`를 최신 버전으로 사용한다.
 - 공개 조회는 최신 버전의 active 챕터와 레슨 배치로 목록 요약과 상세 구조를 계산하며, 레슨 본문 조회는 기존 `lessonId` 기반 경로를 유지한다.
 
+## 2026-05-30 챕터 레이블 제거 완료
+
+- 챕터는 별도 라벨 없이 제목과 정렬 순서로만 표현한다.
+- 공개 코스 상세 응답의 챕터 객체에서 `label` 속성을 제거했다.
+- `course_chapters`, `curriculum_version_chapters`의 `label` 컬럼은 새 DB와 기존 DB 마이그레이션 경로에서 제거한다.
+
 ## 2026-05-28 콘텐츠 변경 정책 문서화 시작
 
 - 학습자 진행 API가 향후 커리큘럼 버전 기준으로 동작해야 하므로, 코드 변경 전에 콘텐츠 변경 정책을 문서화한다.
