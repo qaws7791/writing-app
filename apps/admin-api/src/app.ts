@@ -6,6 +6,10 @@ import { createRequestLogFields } from "@workspace/logger"
 
 import type { AdminAuthRuntime } from "@/auth/admin-session"
 import { registerAuthRoute } from "@/routes/auth.route"
+import {
+  registerCourseThumbnailsRoute,
+  type CourseThumbnailUploadService,
+} from "@/routes/course-thumbnails.route"
 import { registerCoursesRoute } from "@/routes/courses.route"
 import { registerCurriculumEditorRoute } from "@/routes/curriculum-editor.route"
 import { registerCurriculumMigrationsRoute } from "@/routes/curriculum-migrations.route"
@@ -24,6 +28,7 @@ export interface AdminApiAppDependencies {
   auth: AdminAuthRuntime
   checkDatabase(): Promise<boolean>
   corsOrigins?: string[]
+  courseThumbnailUploads: CourseThumbnailUploadService
   logger: AdminApiLogger
 }
 
@@ -74,6 +79,7 @@ export function createAdminApiApp(dependencies: AdminApiAppDependencies) {
   )
 
   registerAuthRoute(app, dependencies.auth)
+  registerCourseThumbnailsRoute(app, dependencies)
   registerCurriculumEditorRoute(app, dependencies)
   registerCoursesRoute(app, dependencies)
   registerCurriculumMigrationsRoute(app, dependencies)
