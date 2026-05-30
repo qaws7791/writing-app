@@ -5,12 +5,12 @@ import type {
   AdminCourseListDto,
   AdminCourseListInputDto,
   AdminCourseTreeDto,
-  AdminEditorCurriculumDetailDto,
   AdminEditorLessonDetailDto,
   AdminSaveCurriculumContentRequestDto,
   AdminUserListDto,
 } from "@/admin/admin.dto"
 import type {
+  AdminConflictErrorDto,
   AdminInvalidRequestErrorDto,
   AdminNotFoundErrorDto,
 } from "@/admin/admin.errors"
@@ -18,7 +18,11 @@ import type {
 export type AdminSaveCurriculumContentRepositoryResult =
   | {
       status: "saved"
-      curriculum: AdminEditorCurriculumDetailDto
+      document: AdminCourseEditorDetailDto
+    }
+  | {
+      status: "conflict"
+      error: AdminConflictErrorDto
     }
   | {
       status: "invalid-request"

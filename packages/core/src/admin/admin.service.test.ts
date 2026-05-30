@@ -27,6 +27,7 @@ function createRepository(
           chapters: [],
           steps: [],
         },
+        revision: 0,
       }
     },
     async getCourseLessonDetail() {
@@ -61,18 +62,36 @@ function createRepository(
     async saveCourseEditorDocument() {
       return {
         status: "saved",
-        curriculum: {
-          chapters: [],
-          steps: [],
+        document: {
+          course: {
+            id: "sentence-structure",
+            title: "문장 구조의 기본",
+            description: "문장 구조를 배웁니다.",
+            sortOrder: 1,
+          },
+          revision: 1,
+          curriculum: {
+            chapters: [],
+            steps: [],
+          },
         },
       }
     },
     async saveCurriculumContent() {
       return {
         status: "saved",
-        curriculum: {
-          chapters: [],
-          steps: [],
+        document: {
+          course: {
+            id: "sentence-structure",
+            title: "문장 구조의 기본",
+            description: "문장 구조를 배웁니다.",
+            sortOrder: 1,
+          },
+          revision: 1,
+          curriculum: {
+            chapters: [],
+            steps: [],
+          },
         },
       }
     },
@@ -95,6 +114,7 @@ describe("createAdminService", () => {
           description: "문장 구조를 배웁니다.",
           sortOrder: 1,
         },
+        revision: 0,
         curriculum: {
           chapters: [],
           steps: [],
@@ -106,11 +126,20 @@ describe("createAdminService", () => {
   it("saves the current curriculum without draft or publish state", async () => {
     const saveCourseEditorDocument = vi.fn<
       AdminRepository["saveCourseEditorDocument"]
-    >(async () => ({
+    >(async (input) => ({
       status: "saved",
-      curriculum: {
-        chapters: [],
-        steps: [],
+      document: {
+        course: {
+          id: input.courseId,
+          title: input.course.title,
+          description: input.course.description,
+          sortOrder: input.course.sortOrder,
+        },
+        revision: input.expectedRevision + 1,
+        curriculum: {
+          chapters: [],
+          steps: [],
+        },
       },
     }))
     const service = createAdminService({
@@ -119,6 +148,7 @@ describe("createAdminService", () => {
 
     const result = await service.saveCourseEditorDocument({
       courseId: "sentence-structure",
+      expectedRevision: 0,
       course: {
         title: "문장 구조의 기본",
         description: "문장 구조를 배웁니다.",
@@ -132,12 +162,22 @@ describe("createAdminService", () => {
     expect(result).toEqual({
       status: "ok",
       value: {
-        chapters: [],
-        steps: [],
+        course: {
+          id: "sentence-structure",
+          title: "문장 구조의 기본",
+          description: "문장 구조를 배웁니다.",
+          sortOrder: 1,
+        },
+        revision: 1,
+        curriculum: {
+          chapters: [],
+          steps: [],
+        },
       },
     })
     expect(saveCourseEditorDocument).toHaveBeenCalledWith({
       courseId: "sentence-structure",
+      expectedRevision: 0,
       course: {
         title: "문장 구조의 기본",
         description: "문장 구조를 배웁니다.",
@@ -146,6 +186,42 @@ describe("createAdminService", () => {
       chapters: [],
       lessons: [],
       steps: [],
+    })
+  })
+
+  it("returns conflict when the editor document revision is stale", async () => {
+    const repository = createRepository({
+      async saveCourseEditorDocument() {
+        return {
+          status: "conflict",
+          error: {
+            code: "conflict",
+            message: "다른 관리자가 먼저 저장했습니다.",
+          },
+        }
+      },
+    })
+    const service = createAdminService({ repository })
+
+    const result = await service.saveCourseEditorDocument({
+      courseId: "sentence-structure",
+      expectedRevision: 0,
+      course: {
+        title: "문장 구조의 기본",
+        description: "문장 구조를 배웁니다.",
+        sortOrder: 1,
+      },
+      chapters: [],
+      lessons: [],
+      steps: [],
+    })
+
+    expect(result).toEqual({
+      status: "conflict",
+      error: {
+        code: "conflict",
+        message: "다른 관리자가 먼저 저장했습니다.",
+      },
     })
   })
 

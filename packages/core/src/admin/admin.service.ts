@@ -18,6 +18,7 @@ import {
   type AdminUserListDto,
 } from "@/admin/admin.dto"
 import type {
+  AdminConflictErrorDto,
   AdminDatabaseUnavailableErrorDto,
   AdminInvalidRequestErrorDto,
   AdminNotFoundErrorDto,
@@ -44,12 +45,18 @@ type NotFoundResult = {
   error: AdminNotFoundErrorDto
 }
 
+type ConflictResult = {
+  status: "conflict"
+  error: AdminConflictErrorDto
+}
+
 export type AdminServiceResult<TValue> = OkResult<TValue> | UnavailableResult
 
 type AdminMutationServiceResult<TValue> =
   | AdminServiceResult<TValue>
   | InvalidRequestResult
   | NotFoundResult
+  | ConflictResult
 
 export interface AdminService {
   getCourseDetail(
@@ -71,7 +78,7 @@ export interface AdminService {
   ): Promise<AdminMutationServiceResult<AdminEditorCurriculumDetailDto>>
   saveCourseEditorDocument(
     input: AdminCourseEditorSaveRequestDto
-  ): Promise<AdminMutationServiceResult<AdminEditorCurriculumDetailDto>>
+  ): Promise<AdminMutationServiceResult<AdminCourseEditorDetailDto>>
   listUsers(): Promise<AdminServiceResult<AdminUserListDto>>
 }
 
@@ -181,7 +188,9 @@ export function createAdminService({
 
         return {
           status: "ok",
-          value: adminEditorCurriculumDetailDtoSchema.parse(result.curriculum),
+          value: adminEditorCurriculumDetailDtoSchema.parse(
+            result.document.curriculum
+          ),
         }
       } catch {
         return unavailableResult
@@ -198,7 +207,7 @@ export function createAdminService({
 
         return {
           status: "ok",
-          value: adminEditorCurriculumDetailDtoSchema.parse(result.curriculum),
+          value: adminCourseEditorDetailDtoSchema.parse(result.document),
         }
       } catch {
         return unavailableResult

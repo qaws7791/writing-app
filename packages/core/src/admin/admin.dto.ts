@@ -128,6 +128,7 @@ export const adminEditorCurriculumDetailDtoSchema = z.object({
 
 export const adminCourseEditorDocumentDtoSchema = z.object({
   course: adminCourseDetailDtoSchema,
+  revision: z.number().int().nonnegative(),
   curriculum: adminEditorCurriculumDetailDtoSchema,
 })
 
@@ -136,6 +137,7 @@ export const adminCourseEditorDetailDtoSchema =
 
 export const adminSaveCurriculumContentRequestDtoSchema = z.object({
   courseId: z.string().min(1),
+  expectedRevision: z.number().int().nonnegative(),
   course: z.object({
     title: z.string().min(1),
     description: z.string().min(1),
