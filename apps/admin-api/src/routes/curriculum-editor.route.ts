@@ -2,11 +2,11 @@ import type { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 
 import {
+  adminConflictErrorDtoSchema,
   adminCourseEditorDetailDtoSchema,
   adminCourseEditorSaveRequestDtoSchema,
   adminCourseDetailDtoSchema,
   adminDatabaseUnavailableErrorDtoSchema,
-  adminEditorCurriculumDetailDtoSchema,
   adminEditorLessonDetailDtoSchema,
   adminInvalidRequestErrorDtoSchema,
   adminNotFoundErrorDtoSchema,
@@ -73,7 +73,7 @@ export function registerCurriculumEditorRoute(
           description: "관리자 코스 편집 문서를 저장했습니다.",
           content: {
             "application/json": {
-              schema: resolver(adminEditorCurriculumDetailDtoSchema),
+              schema: resolver(adminCourseEditorDetailDtoSchema),
             },
           },
         },
@@ -87,6 +87,10 @@ export function registerCurriculumEditorRoute(
         404: {
           description: "코스 편집 문서를 찾을 수 없습니다.",
           content: jsonErrorResponse(adminNotFoundErrorDtoSchema),
+        },
+        409: {
+          description: "다른 관리자가 먼저 저장한 편집 문서입니다.",
+          content: jsonErrorResponse(adminConflictErrorDtoSchema),
         },
         503: {
           description: "데이터베이스를 사용할 수 없습니다.",
@@ -127,6 +131,8 @@ export function registerCurriculumEditorRoute(
           return context.json(result.error, 400)
         case "not-found":
           return context.json(result.error, 404)
+        case "conflict":
+          return context.json(result.error, 409)
         case "unavailable":
           return context.json(result.error, 503)
       }

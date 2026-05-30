@@ -65,6 +65,12 @@ const curriculum = {
   ],
 }
 
+const editorDocument = {
+  course,
+  revision: 0,
+  curriculum,
+}
+
 const adminService: AdminService = {
   async getCourseDetail() {
     return { status: "ok", value: course }
@@ -72,10 +78,7 @@ const adminService: AdminService = {
   async getCourseEditorDocument() {
     return {
       status: "ok",
-      value: {
-        course,
-        curriculum,
-      },
+      value: editorDocument,
     }
   },
   async getCourseLessonDetail() {
@@ -147,7 +150,10 @@ const adminService: AdminService = {
   async saveCourseEditorDocument() {
     return {
       status: "ok",
-      value: curriculum,
+      value: {
+        ...editorDocument,
+        revision: 1,
+      },
     }
   },
 }
@@ -235,10 +241,7 @@ describe("admin api app", () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
-      course,
-      curriculum,
-    })
+    await expect(response.json()).resolves.toEqual(editorDocument)
   })
 
   it("returns protected lesson detail without a curriculum version query", async () => {
@@ -267,6 +270,7 @@ describe("admin api app", () => {
       {
         body: JSON.stringify({
           courseId: "sentence-structure",
+          expectedRevision: 0,
           course: {
             title: "문장 구조의 기본",
             description: "문장의 뼈대를 이해합니다.",
@@ -284,7 +288,10 @@ describe("admin api app", () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual(curriculum)
+    await expect(response.json()).resolves.toEqual({
+      ...editorDocument,
+      revision: 1,
+    })
   })
 
   it("rejects course editor save body that does not match route params", async () => {
@@ -293,6 +300,7 @@ describe("admin api app", () => {
       {
         body: JSON.stringify({
           courseId: "another-course",
+          expectedRevision: 0,
           course: {
             title: "문장 구조의 기본",
             description: "문장의 뼈대를 이해합니다.",
@@ -333,6 +341,7 @@ describe("admin api app", () => {
     }).request("/courses/sentence-structure/editor", {
       body: JSON.stringify({
         courseId: "sentence-structure",
+        expectedRevision: 0,
         course: {
           title: "문장 구조의 기본",
           description: "문장의 뼈대를 이해합니다.",
@@ -352,6 +361,46 @@ describe("admin api app", () => {
     await expect(response.json()).resolves.toEqual({
       code: "invalid-request",
       message: "커리큘럼 저장 요청이 올바르지 않습니다.",
+    })
+  })
+
+  it("maps stale course editor saves to conflict", async () => {
+    const response = await createTestApp({
+      adminService: {
+        ...adminService,
+        async saveCourseEditorDocument() {
+          return {
+            status: "conflict",
+            error: {
+              code: "conflict",
+              message: "다른 관리자가 먼저 저장했습니다.",
+            },
+          }
+        },
+      },
+    }).request("/courses/sentence-structure/editor", {
+      body: JSON.stringify({
+        courseId: "sentence-structure",
+        expectedRevision: 0,
+        course: {
+          title: "문장 구조의 기본",
+          description: "문장의 뼈대를 이해합니다.",
+          sortOrder: 1,
+        },
+        chapters: [],
+        lessons: [],
+        steps: [],
+      }),
+      headers: {
+        "content-type": "application/json",
+      },
+      method: "PUT",
+    })
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toEqual({
+      code: "conflict",
+      message: "다른 관리자가 먼저 저장했습니다.",
     })
   })
 
