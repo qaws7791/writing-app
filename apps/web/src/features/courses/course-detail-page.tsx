@@ -1,5 +1,4 @@
 import * as React from "react"
-import Image from "next/image"
 import Link from "next/link"
 
 import {
@@ -34,15 +33,8 @@ export function CourseDetailPage({
     <div className="w-full bg-background text-foreground">
       <div className="mx-auto flex max-w-[720px] flex-col px-5 pt-8 pb-20 sm:px-6 sm:pt-10 sm:pb-28">
         <section className="flex flex-col gap-8" aria-labelledby="course-title">
-          <div className="relative aspect-video w-full overflow-hidden rounded-[20px] bg-muted">
-            <Image
-              src={course.thumbnail}
-              alt={`${course.title} 썸네일`}
-              fill
-              sizes="(max-width: 767px) calc(100vw - 40px), 672px"
-              className="object-cover"
-              preload
-            />
+          <div className="flex min-h-36 items-center justify-center rounded-2xl border bg-muted text-5xl font-bold text-muted-foreground">
+            {course.title.slice(0, 1)}
           </div>
 
           <header className="mb-10 flex flex-col gap-5 sm:mb-12">

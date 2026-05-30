@@ -22,10 +22,7 @@
 
 - Node.js `20.x`
 - Bun `1.3.10`
-- Docker Desktop
 - Git
-
-Docker Desktop은 어드민 썸네일 업로드 검증에 필요한 RustFS S3-compatible storage를 실행할 때 사용한다.
 
 ## 클론 후 초기 세팅
 
@@ -45,48 +42,12 @@ bun install
 로컬 환경 변수 파일을 만든다.
 
 ```bash
-cp .env.docker.example .env.docker
 cp apps/api/.env.example apps/api/.env
 cp apps/admin/.env.example apps/admin/.env
 cp apps/admin-api/.env.example apps/admin-api/.env
 ```
 
-`.env.docker`의 RustFS credential과 `apps/admin-api/.env`의 `ADMIN_ASSET_S3_ACCESS_KEY`, `ADMIN_ASSET_S3_SECRET_KEY`는 같은 값이어야 한다. 로컬 예시는 다음처럼 맞출 수 있다.
-
-```env
-RUSTFS_ACCESS_KEY=writingapp-local-access
-RUSTFS_SECRET_KEY=writingapp-local-secret
-```
-
-```env
-ADMIN_ASSET_S3_ACCESS_KEY=writingapp-local-access
-ADMIN_ASSET_S3_SECRET_KEY=writingapp-local-secret
-```
-
-`apps/api/.env`의 Google OAuth 값과 OpenAI 값은 학습자 API에서 해당 기능을 실제 호출할 때 필요한 값으로 교체한다. 어드민만 먼저 실행할 때는 `apps/admin-api/.env`의 관리자 인증, 시드, asset 값이 핵심이다.
-
-## 로컬 스토리지 실행
-
-어드민 코스 썸네일 업로드를 사용하려면 RustFS를 실행한다.
-
-```bash
-docker compose up -d
-```
-
-Compose는 RustFS API `9000`, Console `9001`을 열고 `writing-app-public-assets` 공개 버킷을 초기화한다.
-
-상태를 확인한다.
-
-```bash
-docker compose ps
-docker compose logs --tail=80 rustfs_public_assets_init
-```
-
-중지할 때는 다음 명령을 사용한다.
-
-```bash
-docker compose down
-```
+`apps/api/.env`의 Google OAuth 값과 OpenAI 값은 학습자 API에서 해당 기능을 실제 호출할 때 필요한 값으로 교체한다. 어드민만 먼저 실행할 때는 `apps/admin-api/.env`의 관리자 인증과 시드 값이 핵심이다.
 
 ## 데이터베이스와 관리자 계정 준비
 
@@ -164,10 +125,8 @@ bun lefthook run pre-commit
 
 ```bash
 bun install
-cp .env.docker.example .env.docker
 cp apps/admin/.env.example apps/admin/.env
 cp apps/admin-api/.env.example apps/admin-api/.env
-docker compose up -d
 bun run dev:admin:setup
 bun run dev:admin
 ```

@@ -150,7 +150,6 @@ export const adminCourseListItemDtoSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   description: z.string().min(1),
-  thumbnailPath: z.string().min(1),
   sortOrder: z.number().int().positive(),
 })
 
@@ -166,31 +165,6 @@ export const adminCourseListDtoSchema = z.object({
 })
 
 export const adminCourseDetailDtoSchema = adminCourseListItemDtoSchema
-
-export const adminCourseThumbnailContentTypeSchema = z.enum([
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-])
-
-export const adminCreateCourseThumbnailUploadRequestDtoSchema = z.object({
-  fileName: z.string().trim().min(1),
-  contentType: adminCourseThumbnailContentTypeSchema,
-  contentLength: z
-    .number()
-    .int()
-    .min(1)
-    .max(5 * 1024 * 1024),
-})
-
-export const adminCreateCourseThumbnailUploadDtoSchema = z.object({
-  uploadUrl: z.string().url(),
-  method: z.literal("PUT"),
-  headers: z.object({
-    "content-type": adminCourseThumbnailContentTypeSchema,
-  }),
-  thumbnailPath: z.string().url(),
-})
 
 export const adminEditorStepTypeSchema = z.enum([
   "INTRO",
@@ -268,7 +242,6 @@ export const adminSaveCurriculumVersionContentRequestDtoSchema = z.object({
   course: z.object({
     title: z.string().min(1),
     description: z.string().min(1),
-    thumbnailPath: z.string().min(1),
     sortOrder: z.number().int().positive(),
   }),
   chapters: z.array(
@@ -308,15 +281,6 @@ export type AdminCourseEditorDocumentDto = z.infer<
 >
 export type AdminCourseEditorSaveRequestDto = z.infer<
   typeof adminCourseEditorSaveRequestDtoSchema
->
-export type AdminCourseThumbnailContentType = z.infer<
-  typeof adminCourseThumbnailContentTypeSchema
->
-export type AdminCreateCourseThumbnailUploadRequestDto = z.infer<
-  typeof adminCreateCourseThumbnailUploadRequestDtoSchema
->
-export type AdminCreateCourseThumbnailUploadDto = z.infer<
-  typeof adminCreateCourseThumbnailUploadDtoSchema
 >
 export type AdminCourseListDto = z.infer<typeof adminCourseListDtoSchema>
 export type AdminCourseListInputDto = z.infer<

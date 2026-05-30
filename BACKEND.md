@@ -74,7 +74,6 @@ bun --filter @workspace/api dev
 - `GET /curriculum-versions/:versionId`
 - `POST /curriculum-versions/:versionId/publish`
 - `GET /users`
-- `POST /course-thumbnails/uploads`
 
 관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다.
 
@@ -82,25 +81,19 @@ bun --filter @workspace/api dev
 
 필수 환경 변수는 누락 시 서버 시작 단계에서 즉시 실패한다. 운영 환경 값과 배포 체크리스트는 `docs/operations-environment.md`를 기준으로 관리한다.
 
-| 변수                          | 필수 여부 | 기본값 또는 예시                                  | 용도                                                                      |
-| ----------------------------- | --------- | ------------------------------------------------- | ------------------------------------------------------------------------- |
-| `ADMIN_BETTER_AUTH_SECRET`    | 필수      | `replace-with-admin-auth-secret`                  | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                |
-| `ADMIN_BETTER_AUTH_URL`       | 필수      | `http://localhost:4001`                           | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL           |
-| `ADMIN_CORS_ORIGIN`           | 선택      | `http://localhost:3001`                           | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin                     |
-| `DATABASE_URL`                | 필수      | `file:../../data/api.sqlite`                      | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치 |
-| `LOG_LEVEL`                   | 선택      | `info`                                            | Pino 로그 레벨                                                            |
-| `NODE_ENV`                    | 선택      | `development`                                     | 실행 환경 이름                                                            |
-| `PORT`                        | 선택      | `4001`                                            | 어드민 API 서버가 수신할 포트                                             |
-| `ADMIN_ASSET_S3_ENDPOINT`     | 필수      | `http://localhost:9000`                           | RustFS 또는 S3-compatible API endpoint                                    |
-| `ADMIN_ASSET_S3_REGION`       | 선택      | `us-east-1`                                       | S3 signed URL 생성에 사용할 region                                        |
-| `ADMIN_ASSET_S3_BUCKET`       | 필수      | `writing-app-public-assets`                       | 코스 썸네일을 저장할 공개 에셋 버킷                                       |
-| `ADMIN_ASSET_PUBLIC_BASE_URL` | 필수      | `http://localhost:9000/writing-app-public-assets` | DB에 저장할 공개 썸네일 URL의 기준 경로                                   |
-| `ADMIN_ASSET_S3_ACCESS_KEY`   | 필수      | `replace-with-local-rustfs-access-key`            | signed URL 발급용 S3 access key                                           |
-| `ADMIN_ASSET_S3_SECRET_KEY`   | 필수      | `replace-with-local-rustfs-secret-key`            | signed URL 발급용 S3 secret key                                           |
-| `ADMIN_SEED_EMAIL`            | 시드 필수 | `admin@example.com`                               | 최초 관리자 계정 시드에 사용할 이메일                                     |
-| `ADMIN_SEED_PASSWORD`         | 시드 필수 | `replace-with-local-admin-password`               | 최초 관리자 계정 시드에 사용할 비밀번호                                   |
-| `ADMIN_SEED_NAME`             | 시드 선택 | `관리자`                                          | 최초 관리자 계정 시드에 사용할 이름                                       |
-| `ADMIN_SEED_RESET_PASSWORD`   | 시드 선택 | `false`                                           | `true`일 때 기존 관리자 credential 비밀번호를 시드 비밀번호로 갱신        |
+| 변수                        | 필수 여부 | 기본값 또는 예시                    | 용도                                                                      |
+| --------------------------- | --------- | ----------------------------------- | ------------------------------------------------------------------------- |
+| `ADMIN_BETTER_AUTH_SECRET`  | 필수      | `replace-with-admin-auth-secret`    | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                |
+| `ADMIN_BETTER_AUTH_URL`     | 필수      | `http://localhost:4001`             | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL           |
+| `ADMIN_CORS_ORIGIN`         | 선택      | `http://localhost:3001`             | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin                     |
+| `DATABASE_URL`              | 필수      | `file:../../data/api.sqlite`        | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치 |
+| `LOG_LEVEL`                 | 선택      | `info`                              | Pino 로그 레벨                                                            |
+| `NODE_ENV`                  | 선택      | `development`                       | 실행 환경 이름                                                            |
+| `PORT`                      | 선택      | `4001`                              | 어드민 API 서버가 수신할 포트                                             |
+| `ADMIN_SEED_EMAIL`          | 시드 필수 | `admin@example.com`                 | 최초 관리자 계정 시드에 사용할 이메일                                     |
+| `ADMIN_SEED_PASSWORD`       | 시드 필수 | `replace-with-local-admin-password` | 최초 관리자 계정 시드에 사용할 비밀번호                                   |
+| `ADMIN_SEED_NAME`           | 시드 선택 | `관리자`                            | 최초 관리자 계정 시드에 사용할 이름                                       |
+| `ADMIN_SEED_RESET_PASSWORD` | 시드 선택 | `false`                             | `true`일 때 기존 관리자 credential 비밀번호를 시드 비밀번호로 갱신        |
 
 ```bash
 bun --filter @workspace/admin-api dev

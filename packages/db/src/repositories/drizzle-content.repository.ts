@@ -61,7 +61,6 @@ export function createDrizzleContentRepository(
                   title: course.title,
                   description: course.description,
                   lessonCount: lessonCountsByVersionId.get(version.id) ?? 0,
-                  thumbnail: course.thumbnailPath,
                 },
               ]
             }),
@@ -102,7 +101,6 @@ export function createDrizzleContentRepository(
               title: course.title,
               description: course.description,
               lessonCount: lessonCountsByVersionId.get(version.id) ?? 0,
-              thumbnail: course.thumbnailPath,
             },
           ]
         }),
@@ -154,7 +152,6 @@ export function createDrizzleContentRepository(
         id: course.id,
         title: course.title,
         description: course.description,
-        thumbnail: course.thumbnailPath,
         lessonCount: lessonRows.length,
         firstLessonId,
         chapters: chapterRows.map((chapter) => ({

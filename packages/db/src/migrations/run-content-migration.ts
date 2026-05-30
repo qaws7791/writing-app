@@ -33,6 +33,10 @@ const curriculumVersionStepsSql = readFileSync(
   new URL("./0008-curriculum-version-steps.sql", import.meta.url),
   "utf8"
 )
+const removeCourseThumbnailSql = readFileSync(
+  new URL("./0010-remove-course-thumbnail.sql", import.meta.url),
+  "utf8"
+)
 
 export function runContentMigration(sqlite: Database) {
   sqlite.exec(contentMigrationSql)
@@ -78,6 +82,12 @@ export function runContentMigration(sqlite: Database) {
     "curriculum_version_chapters",
     "label",
     "alter table curriculum_version_chapters drop column label"
+  )
+  dropColumnIfExists(
+    sqlite,
+    "courses",
+    "thumbnail_path",
+    removeCourseThumbnailSql
   )
 }
 

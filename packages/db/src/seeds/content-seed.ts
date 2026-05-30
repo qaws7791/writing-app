@@ -16,7 +16,6 @@ type SeedCourse = {
   id: string
   title: string
   description: string
-  thumbnail: string
   sortOrder: number
   chapters: SeedChapter[]
 }
@@ -53,7 +52,6 @@ function course(
   id: string,
   title: string,
   description: string,
-  thumbnail: string,
   sortOrder: number,
   chapters: SeedChapter[]
 ): SeedCourse {
@@ -61,7 +59,6 @@ function course(
     id,
     title,
     description,
-    thumbnail,
     sortOrder,
     chapters,
   }
@@ -78,7 +75,6 @@ export const contentSeed = {
           "sentence-structure",
           "문장 구조의 기본",
           "한국어 문장의 뼈대를 이해하고 주어, 서술어, 목적어의 관계를 파악해 올바른 문장을 작성하는 방법을 배웁니다.",
-          "/course-thumbnails/sentence-structure.png",
           1,
           [
             chapter("sentence-structure-chapter-1", "문장의 뼈대", 1, [
@@ -165,7 +161,6 @@ export const contentSeed = {
           "vocabulary-basics",
           "어휘 확장 입문",
           "일상적인 글쓰기에 필요한 핵심 어휘를 익히고, 다양한 상황에서 정확한 단어를 선택하는 감각을 기릅니다.",
-          "/course-thumbnails/vocabulary-basics.png",
           2,
           [
             chapter("vocabulary-basics-chapter-1", "정확한 단어 선택", 1, [
@@ -238,7 +233,6 @@ export const contentSeed = {
           "reading-comprehension",
           "독해와 요약",
           "글의 핵심 내용을 파악하고 간결하게 요약하는 능력을 키웁니다. 다양한 장르의 텍스트를 읽고 분석합니다.",
-          "/course-thumbnails/reading-comprehension.png",
           3,
           [
             chapter("reading-comprehension-chapter-1", "정독의 기술", 1, [
@@ -306,7 +300,6 @@ export const contentSeed = {
           "grammar-complete",
           "문법 완성",
           "맞춤법, 띄어쓰기, 문장 부호 등 한국어 표기법의 핵심 규칙을 체계적으로 정리하고 실습합니다.",
-          "/course-thumbnails/grammar-complete.png",
           1,
           [
             chapter("grammar-complete-chapter-1", "맞춤법의 기본", 1, [
@@ -411,7 +404,6 @@ export const contentSeed = {
           "expression",
           "표현력 향상",
           "같은 내용을 더 풍부하고 생동감 있게 전달하는 표현 방법을 연습합니다. 피동문, 사동문, 비유 표현을 다룹니다.",
-          "/course-thumbnails/expression.png",
           2,
           [
             chapter("expression-chapter-1", "선명한 묘사", 1, [
@@ -499,7 +491,6 @@ export const contentSeed = {
           "essay-writing",
           "에세이 쓰기",
           "주제 선정부터 개요 작성, 본문 전개, 마무리까지 설득력 있는 에세이를 완성하는 전 과정을 익힙니다.",
-          "/course-thumbnails/essay-writing.png",
           1,
           [
             chapter("essay-writing-chapter-1", "주제와 관점", 1, [
@@ -598,7 +589,6 @@ export const contentSeed = {
           "business-writing",
           "비즈니스 글쓰기",
           "이메일, 보고서, 제안서 등 업무 환경에서 요구되는 명확하고 전문적인 문서 작성 스킬을 기릅니다.",
-          "/course-thumbnails/business-writing.png",
           2,
           [
             chapter("business-writing-chapter-1", "업무 문장의 기본", 1, [
@@ -691,7 +681,6 @@ export const contentSeed = {
           "creative-writing",
           "창의적 글쓰기",
           "상상력을 자극하는 글쓰기 기법을 배웁니다. 단편 소설, 시, 수필 등 다양한 창작 형식을 탐구합니다.",
-          "/course-thumbnails/creative-writing.png",
           3,
           [
             chapter("creative-writing-chapter-1", "발상과 관찰", 1, [
@@ -811,7 +800,6 @@ export const contentSeed = {
           "basic-sentence-writing",
           "기초 문장 만들기",
           "주어, 서술어, 목적어의 긴밀한 관계 탐구",
-          "/course-thumbnails/basic-sentence-writing.png",
           1,
           [
             chapter("basic-sentence-writing-chapter-1", "문장 성분 익히기", 1, [
@@ -898,7 +886,6 @@ export const contentSeed = {
           "emotion-writing",
           "감정 표현 글쓰기",
           "추상적 상태를 정확한 서술어로 기술하는 법",
-          "/course-thumbnails/emotion-writing.png",
           2,
           [
             chapter("emotion-writing-chapter-1", "감정의 이름", 1, [
@@ -971,7 +958,6 @@ export const contentSeed = {
           "business-email",
           "비즈니스 이메일 작성법",
           "업무 격식과 명확한 전개로 신뢰감 구축",
-          "/course-thumbnails/business-email.png",
           3,
           [
             chapter("business-email-chapter-1", "이메일의 첫인상", 1, [

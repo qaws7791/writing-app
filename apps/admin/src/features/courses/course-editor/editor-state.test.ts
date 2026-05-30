@@ -95,7 +95,6 @@ describe("course editor state", () => {
           id: "course-1",
           title: "원본 코스",
           description: "원본 설명",
-          thumbnailPath: "/course.png",
           sortOrder: 1,
         },
         version: {
@@ -159,7 +158,6 @@ describe("course editor state", () => {
         id: "course-1",
         title: "원본 코스",
         description: "원본 설명",
-        thumbnailPath: "/course.png",
         sortOrder: 1,
       },
       version: {
@@ -230,7 +228,6 @@ describe("course editor state", () => {
         id: "course-1",
         title: "원본 코스",
         description: "원본 설명",
-        thumbnailPath: "/course.png",
         sortOrder: 1,
       },
       version: {
@@ -274,7 +271,6 @@ describe("course editor state", () => {
         id: "course-1",
         title: "원본 코스",
         description: "원본 설명",
-        thumbnailPath: "/course.png",
         sortOrder: 1,
       },
       version: {
@@ -350,7 +346,6 @@ describe("course editor state", () => {
         id: "course-1",
         title: "원본 코스",
         description: "원본 설명",
-        thumbnailPath: "/course.png",
         sortOrder: 1,
       },
       version: {
@@ -412,7 +407,6 @@ describe("course editor state", () => {
               id: "course-1",
               title: "원본 코스",
               description: "원본 설명",
-              thumbnailPath: "/course.png",
               sortOrder: 1,
             },
             version: {

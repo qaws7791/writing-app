@@ -38,7 +38,6 @@ export async function seedContent(db: WritingAppDatabase) {
         categoryId: category.id,
         title: course.title,
         description: course.description,
-        thumbnailPath: course.thumbnail,
         sortOrder: course.sortOrder,
       })
 

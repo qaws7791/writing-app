@@ -98,7 +98,6 @@ describe("createHttpAdminApi", () => {
         id: "sentence-structure",
         title: "기초 문장 만들기",
         description: "설명",
-        thumbnailPath: "/course-thumbnails/sentence.png",
         sortOrder: 1,
       })
     )
@@ -121,7 +120,6 @@ describe("createHttpAdminApi", () => {
           id: "sentence-structure",
           title: "문장 구조의 기본",
           description: "설명",
-          thumbnailPath: "/course-thumbnails/sentence.png",
           sortOrder: 1,
         },
         versions: [],
@@ -311,7 +309,6 @@ describe("createHttpAdminApi", () => {
       course: {
         title: "기초 문장 만들기",
         description: "설명",
-        thumbnailPath: "/course-thumbnails/sentence.png",
         sortOrder: 1,
       },
       chapters: [],
@@ -358,7 +355,6 @@ describe("createHttpAdminApi", () => {
       course: {
         title: "기초 문장 만들기",
         description: "설명",
-        thumbnailPath: "/course-thumbnails/sentence.png",
         sortOrder: 1,
       },
       chapters: [],
@@ -374,40 +370,6 @@ describe("createHttpAdminApi", () => {
     expect(request.headers.get("content-type")).toBe("application/json")
     await expect(request.json()).resolves.toMatchObject({
       versionId: "sentence-structure-v2",
-    })
-  })
-
-  it("creates a course thumbnail signed upload request", async () => {
-    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
-      createJsonResponse({
-        uploadUrl: "http://signed-upload.local",
-        method: "PUT",
-        headers: {
-          "content-type": "image/png",
-        },
-        thumbnailPath:
-          "http://localhost:9000/writing-app-public-assets/course-thumbnails/asset-1.png",
-      })
-    )
-    const api = createHttpAdminApi({
-      baseUrl: "http://localhost:4001",
-      fetch: fetchMock,
-    })
-
-    await api.createCourseThumbnailUpload({
-      fileName: "thumbnail.png",
-      contentType: "image/png",
-      contentLength: 128,
-    })
-
-    const request = getRequest(fetchMock)
-    expect(request.url).toBe("http://localhost:4001/course-thumbnails/uploads")
-    expect(request.method).toBe("POST")
-    expect(request.headers.get("content-type")).toBe("application/json")
-    await expect(request.json()).resolves.toEqual({
-      fileName: "thumbnail.png",
-      contentType: "image/png",
-      contentLength: 128,
     })
   })
 

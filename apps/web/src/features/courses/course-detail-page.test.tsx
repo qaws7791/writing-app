@@ -67,7 +67,6 @@ const notStartedCourse = {
   id: courseId("sentence-structure"),
   title: "문장 구조의 기본",
   description: "한국어 문장의 뼈대를 이해합니다.",
-  thumbnail: "/course-thumbnails/sentence-structure.png",
   progress: {
     completedLessons: 0,
     totalLessons: 12,

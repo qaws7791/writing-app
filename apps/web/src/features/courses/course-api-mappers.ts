@@ -20,14 +20,12 @@ interface CourseSummaryDto {
   title: string
   description: string
   lessonCount: number
-  thumbnail: string
 }
 
 interface CourseDetailDto {
   id: string
   title: string
   description: string
-  thumbnail: string
   lessonCount: number
   firstLessonId?: string
   chapters: readonly {
@@ -92,7 +90,6 @@ export function mapCourseDetailDto(dto: CourseDetailDto): CourseDetail {
     id: courseId(dto.id),
     title: dto.title,
     description: dto.description,
-    thumbnail: dto.thumbnail,
     progress: {
       completedLessons: 0,
       totalLessons: dto.lessonCount,
@@ -152,7 +149,6 @@ function mapCourseSummaryDto(dto: CourseSummaryDto): Course {
     title: dto.title,
     description: dto.description,
     lessonCount: dto.lessonCount,
-    thumbnail: dto.thumbnail,
   }
 }
 

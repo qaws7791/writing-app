@@ -18,7 +18,7 @@ export type CourseEditorWorkingCopy = {
   steps: AdminEditorCurriculumVersionDetailDto["steps"]
 }
 
-type CourseEditableField = "description" | "thumbnailPath" | "title"
+type CourseEditableField = "description" | "title"
 type ChapterEditableField = "title"
 type LessonEditableField = "description" | "title"
 type ChapterInput = {
@@ -308,7 +308,6 @@ export function createCourseEditorSaveInput(
     course: {
       title: workingCopy.course.title,
       description: workingCopy.course.description,
-      thumbnailPath: workingCopy.course.thumbnailPath,
       sortOrder: workingCopy.course.sortOrder,
     },
     chapters: workingCopy.version.chapters.map((chapter) => ({

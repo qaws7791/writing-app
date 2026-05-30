@@ -319,7 +319,6 @@ export interface operations {
                 title: string
                 description: string
                 lessonCount: number
-                thumbnail: string
               }[]
             }[]
           }
@@ -376,7 +375,6 @@ export interface operations {
               title: string
               description: string
               lessonCount: number
-              thumbnail: string
             }[]
           }
         }
@@ -445,7 +443,6 @@ export interface operations {
             id: string
             title: string
             description: string
-            thumbnail: string
             lessonCount: number
             firstLessonId?: string
             chapters: {

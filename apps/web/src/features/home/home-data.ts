@@ -15,7 +15,6 @@ export interface InProgressCourse {
   id: CourseId
   title: string
   description: string
-  thumbnail: string
   completedLessons: number
   totalLessons: number
   progressPercent: number
@@ -27,7 +26,6 @@ export function createInProgressCourse(course: CourseDetail): InProgressCourse {
     id: course.id,
     title: course.title,
     description: course.description,
-    thumbnail: course.thumbnail,
     completedLessons: course.progress.completedLessons,
     totalLessons: course.progress.totalLessons,
     progressPercent: course.progress.percentage,

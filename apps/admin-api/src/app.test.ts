@@ -4,7 +4,6 @@ import type { AdminService } from "@workspace/core/admin"
 
 import { createAdminApiApp } from "@/app"
 import type { AdminAuthRuntime } from "@/auth/admin-session"
-import type { CourseThumbnailUploadService } from "@/routes/course-thumbnails.route"
 
 const auth: AdminAuthRuntime = {
   async getSession() {
@@ -31,7 +30,6 @@ const adminService: AdminService = {
         id: "sentence-structure",
         title: "문장 구조의 기본",
         description: "문장의 뼈대를 이해합니다.",
-        thumbnailPath: "/course-thumbnails/sentence-structure.png",
         sortOrder: 1,
       },
     }
@@ -44,7 +42,6 @@ const adminService: AdminService = {
           id: "sentence-structure",
           title: "문장 구조의 기본",
           description: "문장의 뼈대를 이해합니다.",
-          thumbnailPath: "/course-thumbnails/sentence-structure.png",
           sortOrder: 1,
         },
         versions: [
@@ -84,7 +81,6 @@ const adminService: AdminService = {
             id: "sentence-structure",
             title: "문장 구조의 기본",
             description: "문장의 뼈대를 이해합니다.",
-            thumbnailPath: "/course-thumbnails/sentence-structure.png",
             sortOrder: 1,
           },
         ],
@@ -423,35 +419,15 @@ const adminService: AdminService = {
   },
 }
 
-const courseThumbnailUploads: CourseThumbnailUploadService = {
-  async create(input) {
-    return {
-      status: "ok",
-      value: {
-        uploadUrl: `http://signed-upload.local/${input.fileName}`,
-        method: "PUT",
-        headers: {
-          "content-type": input.contentType,
-        },
-        thumbnailPath:
-          "http://localhost:9000/writing-app-public-assets/course-thumbnails/asset-1.png",
-      },
-    }
-  },
-}
-
 function createTestApp(
   input?: Partial<{
     adminService: AdminService
     auth: AdminAuthRuntime
-    courseThumbnailUploads: CourseThumbnailUploadService
   }>
 ) {
   return createAdminApiApp({
     adminService: input?.adminService ?? adminService,
     auth: input?.auth ?? auth,
-    courseThumbnailUploads:
-      input?.courseThumbnailUploads ?? courseThumbnailUploads,
     async checkDatabase() {
       return true
     },
@@ -475,7 +451,6 @@ describe("admin api app", () => {
           id: "sentence-structure",
           title: "문장 구조의 기본",
           description: "문장의 뼈대를 이해합니다.",
-          thumbnailPath: "/course-thumbnails/sentence-structure.png",
           sortOrder: 1,
         },
       ],
@@ -653,7 +628,6 @@ describe("admin api app", () => {
       id: "sentence-structure",
       title: "문장 구조의 기본",
       description: "문장의 뼈대를 이해합니다.",
-      thumbnailPath: "/course-thumbnails/sentence-structure.png",
       sortOrder: 1,
     })
   })
@@ -805,7 +779,6 @@ describe("admin api app", () => {
           course: {
             title: "문장 구조의 기본",
             description: "문장의 뼈대를 이해합니다.",
-            thumbnailPath: "/course-thumbnails/sentence-structure.png",
             sortOrder: 1,
           },
           chapters: [],
@@ -837,7 +810,6 @@ describe("admin api app", () => {
           course: {
             title: "문장 구조의 기본",
             description: "문장의 뼈대를 이해합니다.",
-            thumbnailPath: "/course-thumbnails/sentence-structure.png",
             sortOrder: 1,
           },
           chapters: [],
@@ -858,89 +830,6 @@ describe("admin api app", () => {
     })
   })
 
-  it("creates a protected course thumbnail signed upload", async () => {
-    const response = await createTestApp().request(
-      "/course-thumbnails/uploads",
-      {
-        body: JSON.stringify({
-          fileName: "thumbnail.png",
-          contentType: "image/png",
-          contentLength: 128,
-        }),
-        headers: {
-          "content-type": "application/json",
-        },
-        method: "POST",
-      }
-    )
-
-    expect(response.status).toBe(201)
-    await expect(response.json()).resolves.toEqual({
-      uploadUrl: "http://signed-upload.local/thumbnail.png",
-      method: "PUT",
-      headers: {
-        "content-type": "image/png",
-      },
-      thumbnailPath:
-        "http://localhost:9000/writing-app-public-assets/course-thumbnails/asset-1.png",
-    })
-  })
-
-  it("rejects invalid course thumbnail upload metadata", async () => {
-    const response = await createTestApp().request(
-      "/course-thumbnails/uploads",
-      {
-        body: JSON.stringify({
-          fileName: "thumbnail.gif",
-          contentType: "image/gif",
-          contentLength: 128,
-        }),
-        headers: {
-          "content-type": "application/json",
-        },
-        method: "POST",
-      }
-    )
-
-    expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      code: "invalid-request",
-      message: "썸네일 업로드 요청 본문이 올바르지 않습니다.",
-    })
-  })
-
-  it("maps course thumbnail storage failures to unavailable", async () => {
-    const response = await createTestApp({
-      courseThumbnailUploads: {
-        async create() {
-          return {
-            status: "unavailable",
-            error: {
-              code: "storage-unavailable",
-              message: "스토리지를 사용할 수 없습니다.",
-            },
-          }
-        },
-      },
-    }).request("/course-thumbnails/uploads", {
-      body: JSON.stringify({
-        fileName: "thumbnail.png",
-        contentType: "image/png",
-        contentLength: 128,
-      }),
-      headers: {
-        "content-type": "application/json",
-      },
-      method: "POST",
-    })
-
-    expect(response.status).toBe(503)
-    await expect(response.json()).resolves.toEqual({
-      code: "storage-unavailable",
-      message: "스토리지를 사용할 수 없습니다.",
-    })
-  })
-
   it("rejects course editor save body that does not match route params", async () => {
     const response = await createTestApp().request(
       "/courses/sentence-structure/editor",
@@ -952,7 +841,6 @@ describe("admin api app", () => {
           course: {
             title: "문장 구조의 기본",
             description: "문장의 뼈대를 이해합니다.",
-            thumbnailPath: "/course-thumbnails/sentence-structure.png",
             sortOrder: 1,
           },
           chapters: [],
@@ -1058,7 +946,6 @@ describe("admin api app", () => {
           course: {
             title: "문장 구조의 기본",
             description: "문장의 뼈대를 이해합니다.",
-            thumbnailPath: "/course-thumbnails/sentence-structure.png",
             sortOrder: 1,
           },
           chapters: [],
@@ -1090,7 +977,6 @@ describe("admin api app", () => {
           course: {
             title: "문장 구조의 기본",
             description: "문장의 뼈대를 이해합니다.",
-            thumbnailPath: "/course-thumbnails/sentence-structure.png",
             sortOrder: 1,
           },
           chapters: [],
@@ -1307,7 +1193,7 @@ describe("admin api app", () => {
       version: "0.0.1",
     })
     expect(document.paths).toHaveProperty("/courses")
-    expect(document.paths).toHaveProperty("/course-thumbnails/uploads")
+    expect(document.paths).not.toHaveProperty("/course-thumbnails/uploads")
     expect(document.paths).toHaveProperty("/courses/{courseId}")
     expect(document.paths).toHaveProperty("/courses/{courseId}/editor")
     expect(document.paths).toHaveProperty(

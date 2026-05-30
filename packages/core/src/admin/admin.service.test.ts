@@ -41,7 +41,6 @@ const repository: AdminRepository = {
           id: "sentence-structure",
           title: "문장 구조의 기본",
           description: "문장의 뼈대를 이해합니다.",
-          thumbnailPath: "/course-thumbnails/sentence-structure.png",
           sortOrder: 1,
         },
       ],
@@ -59,7 +58,6 @@ const repository: AdminRepository = {
       id: "sentence-structure",
       title: "문장 구조의 기본",
       description: "문장의 뼈대를 이해합니다.",
-      thumbnailPath: "/course-thumbnails/sentence-structure.png",
       sortOrder: 1,
     }
   },
@@ -100,7 +98,6 @@ const repository: AdminRepository = {
         id: "sentence-structure",
         title: "문장 구조의 기본",
         description: "문장의 뼈대를 이해합니다.",
-        thumbnailPath: "/course-thumbnails/sentence-structure.png",
         sortOrder: 1,
       },
       versions: [
@@ -328,7 +325,6 @@ describe("createAdminService", () => {
         courses: [
           {
             id: "sentence-structure",
-            thumbnailPath: "/course-thumbnails/sentence-structure.png",
           },
         ],
         pagination: {
@@ -441,7 +437,6 @@ describe("createAdminService", () => {
             id: "sentence-structure",
             title: "기초 문장 만들기",
             description: "문장의 뼈대를 세웁니다.",
-            thumbnailPath: "/course-thumbnails/sentence.png",
             sortOrder: 1,
           }
         },
@@ -456,7 +451,6 @@ describe("createAdminService", () => {
         id: "sentence-structure",
         title: "기초 문장 만들기",
         description: "문장의 뼈대를 세웁니다.",
-        thumbnailPath: "/course-thumbnails/sentence.png",
         sortOrder: 1,
       },
     })
@@ -474,7 +468,6 @@ describe("createAdminService", () => {
           id: "sentence-structure",
           title: "문장 구조의 기본",
           description: "문장의 뼈대를 이해합니다.",
-          thumbnailPath: "/course-thumbnails/sentence-structure.png",
           sortOrder: 1,
         },
         versions: [
@@ -530,7 +523,6 @@ describe("createAdminService", () => {
         course: {
           title: "문장 구조의 기본",
           description: "문장의 뼈대를 이해합니다.",
-          thumbnailPath: "/course-thumbnails/sentence-structure.png",
           sortOrder: 1,
         },
         chapters: [],
@@ -556,7 +548,6 @@ describe("createAdminService", () => {
               id: "sentence-structure",
               title: "",
               description: "문장의 뼈대를 이해합니다.",
-              thumbnailPath: "/course-thumbnails/sentence-structure.png",
               sortOrder: 1,
             },
             versions: [],
@@ -612,7 +603,6 @@ describe("createAdminService", () => {
         course: {
           title: "기초 문장 만들기",
           description: "문장의 뼈대를 세웁니다.",
-          thumbnailPath: "/course-thumbnails/sentence.png",
           sortOrder: 1,
         },
         chapters: [],

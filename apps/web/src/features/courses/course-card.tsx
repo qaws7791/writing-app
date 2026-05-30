@@ -1,4 +1,3 @@
-import Image from "next/image"
 import Link from "next/link"
 
 import { Card, CardContent } from "@workspace/ui/components/ui/card"
@@ -23,14 +22,8 @@ export function CourseCard({ course }: CourseCardProps) {
         size="sm"
         className="h-full gap-0 rounded-3xl bg-transparent py-0 transition-colors group-hover:bg-muted/60"
       >
-        <div className="relative aspect-[3/2] overflow-hidden rounded-2xl bg-muted">
-          <Image
-            src={course.thumbnail}
-            alt={course.title}
-            fill
-            sizes="(max-width: 559px) calc(100vw - 32px), (max-width: 899px) calc((100vw - 72px) / 2), 352px"
-            className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
-          />
+        <div className="flex aspect-[3/2] items-center justify-center rounded-2xl border bg-muted text-4xl font-bold text-muted-foreground transition-colors group-hover:bg-primary/10 group-hover:text-primary">
+          {course.title.slice(0, 1)}
         </div>
 
         <CardContent className="flex flex-1 flex-col gap-1.5 px-1 pt-4 pb-2">

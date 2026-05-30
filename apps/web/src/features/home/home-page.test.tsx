@@ -26,7 +26,6 @@ describe("HomePage", () => {
             id: "api-course" as never,
             title: "API 코스",
             description: "백엔드에서 받은 코스입니다.",
-            thumbnail: "/course-thumbnails/api-course.png",
             completedLessons: 1,
             totalLessons: 2,
             progressPercent: 50,

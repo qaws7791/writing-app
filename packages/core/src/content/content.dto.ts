@@ -14,7 +14,6 @@ export const courseSummaryDtoSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
   lessonCount: z.number().int().nonnegative(),
-  thumbnail: z.string().min(1),
 })
 
 export const courseCategoryDtoSchema = z.object({
@@ -49,7 +48,6 @@ export const courseDetailDtoSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
   description: z.string().min(1),
-  thumbnail: z.string().min(1),
   lessonCount: z.number().int().nonnegative(),
   firstLessonId: z.string().min(1).optional(),
   chapters: z.array(courseChapterDtoSchema),

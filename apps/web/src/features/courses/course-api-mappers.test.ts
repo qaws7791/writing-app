@@ -19,7 +19,6 @@ describe("course-api-mappers", () => {
               title: "문장 구조",
               description: "문장 구조를 배웁니다.",
               lessonCount: 1,
-              thumbnail: "/course-thumbnails/sentence-structure.png",
             },
           ],
         },
@@ -34,7 +33,6 @@ describe("course-api-mappers", () => {
       id: "sentence-structure",
       title: "문장 구조",
       description: "문장 구조를 배웁니다.",
-      thumbnail: "/course-thumbnails/sentence-structure.png",
       lessonCount: 1,
       firstLessonId: "sentence-structure-01",
       chapters: [

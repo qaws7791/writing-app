@@ -17,7 +17,6 @@ const repository: ContentRepository = {
               title: "문장 구조의 기본",
               description: "문장의 뼈대를 이해합니다.",
               lessonCount: 12,
-              thumbnail: "/course-thumbnails/sentence-structure.png",
             },
           ],
         },
@@ -33,7 +32,6 @@ const repository: ContentRepository = {
               title: "문장 구조의 기본",
               description: "문장의 뼈대를 이해합니다.",
               lessonCount: 12,
-              thumbnail: "/course-thumbnails/sentence-structure.png",
             },
           ]
         : [],
@@ -48,7 +46,6 @@ const repository: ContentRepository = {
       id: "sentence-structure",
       title: "문장 구조의 기본",
       description: "문장의 뼈대를 이해합니다.",
-      thumbnail: "/course-thumbnails/sentence-structure.png",
       lessonCount: 1,
       firstLessonId: "sentence-structure-01",
       chapters: [
@@ -131,7 +128,6 @@ describe("createContentService", () => {
                 title: "문장 구조의 기본",
                 description: "문장의 뼈대를 이해합니다.",
                 lessonCount: 12,
-                thumbnail: "/course-thumbnails/sentence-structure.png",
               },
             ],
           }
@@ -348,7 +344,6 @@ describe("createContentService", () => {
               id: "",
               title: "",
               description: "",
-              thumbnail: "",
               lessonCount: -1,
               chapters: [],
             })

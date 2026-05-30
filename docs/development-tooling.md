@@ -1,5 +1,15 @@
 # 개발 도구
 
+## 2026-05-31 BSSN 썸네일 스토리지 제거 시작
+
+- 코스 썸네일 업로드 제거에 맞춰 로컬 개발 도구 요구사항에서 Docker Compose와 RustFS를 제거한다.
+- README와 운영 환경 문서는 Bun, 앱별 `.env`, SQLite seed만으로 시작하는 흐름을 기준으로 갱신한다.
+
+## 2026-05-31 BSSN 썸네일 스토리지 제거 완료
+
+- 루트 Docker Compose 파일, RustFS 버킷 초기화 스크립트, `.env.docker.example`을 제거했다.
+- 로컬 시작 절차는 Docker 없이 `bun install`, 앱별 `.env`, `bun run dev:admin:setup`, `bun run dev:admin`으로 정리했다.
+
 ## 2026-05-30 웹 fake 개발 서버 스크립트 추가 시작
 
 - `apps/web`을 백엔드 없이 fake API 모드로 실행하는 개발 스크립트를 추가한다.

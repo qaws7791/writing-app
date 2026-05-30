@@ -11,7 +11,6 @@ create table if not exists courses (
   category_id text not null references course_categories(id),
   title text not null,
   description text not null,
-  thumbnail_path text not null,
   sort_order integer not null
 );
 

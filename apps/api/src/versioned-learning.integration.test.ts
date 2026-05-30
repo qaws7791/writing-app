@@ -30,7 +30,6 @@ const latestPublicContentService: ContentService = {
         id: "sentence-structure",
         title: "문장 구조의 기본 v2",
         description: "최신 공개 커리큘럼입니다.",
-        thumbnail: "/course-thumbnails/sentence-structure.png",
         lessonCount: 1,
         firstLessonId: "sentence-structure-01",
         chapters: [

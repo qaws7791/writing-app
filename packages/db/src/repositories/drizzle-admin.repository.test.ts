@@ -43,7 +43,6 @@ describe("createDrizzleAdminRepository", () => {
         categoryId: "category-writing",
         title: "어휘 기초",
         description: "검색되지 않는 코스",
-        thumbnailPath: "/images/course-unmatched.png",
         sortOrder: 1,
       },
       ...Array.from({ length: 11 }, (_, index) => ({
@@ -54,7 +53,6 @@ describe("createDrizzleAdminRepository", () => {
             ? "마지막 결과"
             : `문장 구조 ${String(index + 1).padStart(2, "0")}`,
         description: index === 10 ? "문장 검색 설명" : "문장 학습 코스",
-        thumbnailPath: `/images/course-sentence-${index + 1}.png`,
         sortOrder: index + 2,
       })),
     ])
@@ -72,7 +70,6 @@ describe("createDrizzleAdminRepository", () => {
           id: "course-sentence-11",
           title: "마지막 결과",
           description: "문장 검색 설명",
-          thumbnailPath: "/images/course-sentence-11.png",
           sortOrder: 12,
         },
       ],
@@ -102,7 +99,6 @@ describe("createDrizzleAdminRepository", () => {
         categoryId: "category-writing",
         title: "나중 코스",
         description: "두 번째로 정렬되는 코스",
-        thumbnailPath: "/images/course-later.png",
         sortOrder: 2,
       },
       {
@@ -110,7 +106,6 @@ describe("createDrizzleAdminRepository", () => {
         categoryId: "category-writing",
         title: "먼저 코스",
         description: "첫 번째로 정렬되는 코스",
-        thumbnailPath: "/images/course-earlier.png",
         sortOrder: 1,
       },
     ])
@@ -865,7 +860,6 @@ describe("createDrizzleAdminRepository", () => {
     ).resolves.toMatchObject({
       id: "sentence-structure",
       title: "문장 구조의 기본",
-      thumbnailPath: expect.stringContaining("course-thumbnails"),
     })
   })
 
@@ -933,7 +927,6 @@ describe("createDrizzleAdminRepository", () => {
       course: {
         title: "문장 구조의 기본",
         description: "설명",
-        thumbnailPath: "/course-thumbnails/sentence-structure.png",
         sortOrder: 1,
       },
       chapters: [
@@ -1078,7 +1071,6 @@ describe("createDrizzleAdminRepository", () => {
       course: {
         title: "문장 구조의 기본 수정",
         description: "수정된 설명",
-        thumbnailPath: "/course-thumbnails/sentence-structure.png",
         sortOrder: 1,
       },
       chapters: [],
@@ -1109,7 +1101,6 @@ describe("createDrizzleAdminRepository", () => {
       course: {
         title: "문장 구조의 기본",
         description: "설명",
-        thumbnailPath: "/course-thumbnails/sentence-structure.png",
         sortOrder: 1,
       },
       chapters: [],
@@ -1136,7 +1127,6 @@ describe("createDrizzleAdminRepository", () => {
       course: {
         title: "문장 구조의 기본",
         description: "설명",
-        thumbnailPath: "/course-thumbnails/sentence-structure.png",
         sortOrder: 1,
       },
       chapters: [],

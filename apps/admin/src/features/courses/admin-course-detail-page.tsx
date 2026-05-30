@@ -6,7 +6,6 @@ import { CheckCircle2, XCircle } from "lucide-react"
 
 import type {
   AdminCourseDetailDto,
-  AdminCourseThumbnailContentType,
   AdminCurriculumVersionSummaryDto,
   AdminEditorCurriculumVersionDetailDto,
   AdminEditorStepType,
@@ -66,10 +65,6 @@ export function AdminCourseDetailPage({
   )
   const [isSaving, setIsSaving] = React.useState(false)
   const [statusMessage, setStatusMessage] = React.useState<string | null>(null)
-  const [isThumbnailUploading, setIsThumbnailUploading] = React.useState(false)
-  const [thumbnailUploadError, setThumbnailUploadError] = React.useState<
-    string | null
-  >(null)
   const [isVersionMenuOpen, setIsVersionMenuOpen] = React.useState(false)
   const [localUrlState, setLocalUrlState] = React.useState(urlState)
 
@@ -278,63 +273,6 @@ export function AdminCourseDetailPage({
     []
   )
 
-  const handleSelectThumbnailFile = React.useCallback(
-    async (file: File) => {
-      const fileError = getThumbnailFileError(file)
-
-      setStatusMessage(null)
-      setThumbnailUploadError(null)
-
-      if (fileError) {
-        setThumbnailUploadError(fileError)
-        return
-      }
-
-      if (!isCourseThumbnailContentType(file.type)) {
-        setThumbnailUploadError("허용하지 않는 파일 형식입니다.")
-        return
-      }
-
-      setIsThumbnailUploading(true)
-
-      try {
-        const upload = await api.createCourseThumbnailUpload({
-          fileName: file.name,
-          contentType: file.type,
-          contentLength: file.size,
-        })
-
-        if (upload.status === "error") {
-          setThumbnailUploadError("썸네일 업로드 URL을 만들지 못했습니다.")
-          return
-        }
-
-        const uploadResponse = await fetch(upload.value.uploadUrl, {
-          body: file,
-          headers: upload.value.headers,
-          method: upload.value.method,
-        })
-
-        if (!uploadResponse.ok) {
-          setThumbnailUploadError("썸네일 업로드에 실패했습니다.")
-          return
-        }
-
-        updateWorkingCopy((current) =>
-          updateCourseField(
-            current,
-            "thumbnailPath",
-            upload.value.thumbnailPath
-          )
-        )
-        setStatusMessage("썸네일을 업로드했습니다. 저장하면 반영됩니다.")
-      } finally {
-        setIsThumbnailUploading(false)
-      }
-    },
-    [api, updateWorkingCopy]
-  )
-
   const handleAddChapter = React.useCallback(() => {
     updateWorkingCopy((current) =>
       addChapter(current, {
@@ -484,7 +422,6 @@ export function AdminCourseDetailPage({
       <main className="min-h-0 flex-1">
         <CourseEditorShell
           isReadOnly={workingCopy.version.status !== "draft"}
-          isThumbnailUploading={isThumbnailUploading}
           onAddChapter={handleAddChapter}
           onAddLesson={handleAddLesson}
           onAddStep={handleAddStep}
@@ -535,13 +472,11 @@ export function AdminCourseDetailPage({
               view: "step",
             })
           }
-          onSelectThumbnailFile={handleSelectThumbnailFile}
           onUpdateStepContent={(stepId, key, value) =>
             updateWorkingCopy((current) =>
               updateStepContentField(current, stepId, key, value)
             )
           }
-          thumbnailUploadError={thumbnailUploadError}
           urlState={localUrlState}
           workingCopy={workingCopy}
         />
@@ -595,29 +530,4 @@ function createDraftId(prefix: string) {
     globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 12)
 
   return `${prefix}-${randomId}`
-}
-
-const allowedThumbnailContentTypes = new Set<string>([
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-])
-const maxThumbnailSize = 5 * 1024 * 1024
-
-function getThumbnailFileError(file: File) {
-  if (!isCourseThumbnailContentType(file.type)) {
-    return "허용하지 않는 파일 형식입니다."
-  }
-
-  if (file.size > maxThumbnailSize) {
-    return "파일은 5MB 이하만 업로드할 수 있습니다."
-  }
-
-  return null
-}
-
-function isCourseThumbnailContentType(
-  value: string
-): value is AdminCourseThumbnailContentType {
-  return allowedThumbnailContentTypes.has(value)
 }

@@ -71,7 +71,6 @@ export function createDrizzleAdminRepository(
           id: courses.id,
           title: courses.title,
           description: courses.description,
-          thumbnailPath: courses.thumbnailPath,
           sortOrder: courses.sortOrder,
         })
         .from(courses)
@@ -87,7 +86,6 @@ export function createDrizzleAdminRepository(
             id: courses.id,
             title: courses.title,
             description: courses.description,
-            thumbnailPath: courses.thumbnailPath,
             sortOrder: courses.sortOrder,
           })
           .from(courses)
@@ -148,7 +146,6 @@ export function createDrizzleAdminRepository(
             id: courses.id,
             title: courses.title,
             description: courses.description,
-            thumbnailPath: courses.thumbnailPath,
             sortOrder: courses.sortOrder,
           })
           .from(courses)
@@ -1003,7 +1000,6 @@ async function saveEditorDocumentSnapshot(
     .set({
       title: input.course.title,
       description: input.course.description,
-      thumbnailPath: input.course.thumbnailPath,
       sortOrder: input.course.sortOrder,
     })
     .where(eq(courses.id, input.courseId))

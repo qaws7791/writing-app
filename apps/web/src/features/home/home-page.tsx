@@ -1,5 +1,4 @@
 import * as React from "react"
-import Image from "next/image"
 import Link from "next/link"
 
 import { ProgressBar } from "@workspace/ui/components/ui/progress-bar"
@@ -86,15 +85,12 @@ function CourseProgressItem({
         className="group -mx-3 mb-2 flex items-center gap-4 rounded-xl p-3 transition-colors hover:bg-muted/70 active:bg-muted"
         aria-label={`${course.title} 코스 상세로 이동`}
       >
-        <Image
-          src={course.thumbnail}
-          alt={`${course.title} 썸네일`}
-          width={80}
-          height={80}
-          sizes="80px"
-          className="size-20 shrink-0 rounded-2xl object-cover"
-          priority={course.progressPercent > 40}
-        />
+        <span
+          aria-hidden="true"
+          className="flex size-20 shrink-0 items-center justify-center rounded-2xl border bg-muted text-2xl font-bold text-muted-foreground"
+        >
+          {course.title.slice(0, 1)}
+        </span>
 
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h2 className="m-0 truncate text-lg font-bold tracking-normal">

@@ -4,12 +4,6 @@ import { parseEnv, type RawEnv } from "@workspace/env"
 import { z } from "zod"
 
 const adminApiEnvSchema = z.object({
-  ADMIN_ASSET_PUBLIC_BASE_URL: z.string().url(),
-  ADMIN_ASSET_S3_ACCESS_KEY: z.string().min(1),
-  ADMIN_ASSET_S3_BUCKET: z.string().min(1),
-  ADMIN_ASSET_S3_ENDPOINT: z.string().url(),
-  ADMIN_ASSET_S3_REGION: z.string().min(1).default("us-east-1"),
-  ADMIN_ASSET_S3_SECRET_KEY: z.string().min(1),
   ADMIN_BETTER_AUTH_SECRET: z.string().min(1),
   ADMIN_BETTER_AUTH_URL: z.string().url(),
   ADMIN_CORS_ORIGIN: z.string().default("http://localhost:3001"),
@@ -30,14 +24,6 @@ export function parseAdminApiEnv(rawEnv: RawEnv) {
   })
 
   return {
-    assetStorage: {
-      accessKey: env.ADMIN_ASSET_S3_ACCESS_KEY,
-      bucket: env.ADMIN_ASSET_S3_BUCKET,
-      endpoint: env.ADMIN_ASSET_S3_ENDPOINT,
-      publicBaseUrl: env.ADMIN_ASSET_PUBLIC_BASE_URL,
-      region: env.ADMIN_ASSET_S3_REGION,
-      secretKey: env.ADMIN_ASSET_S3_SECRET_KEY,
-    },
     betterAuthSecret: env.ADMIN_BETTER_AUTH_SECRET,
     betterAuthUrl: env.ADMIN_BETTER_AUTH_URL,
     corsOrigins: env.ADMIN_CORS_ORIGIN.split(",")

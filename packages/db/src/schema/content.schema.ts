@@ -19,7 +19,6 @@ export const courses = sqliteTable("courses", {
     .references(() => courseCategories.id),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  thumbnailPath: text("thumbnail_path").notNull(),
   sortOrder: integer("sort_order").notNull(),
 })
 
