@@ -66,4 +66,22 @@ describe("createAuthRuntime", () => {
       })
     )
   })
+
+  it("does not enable email and password authentication", () => {
+    const input = {
+      baseUrl: "http://localhost:4000",
+      db: {} as WritingAppDatabase,
+      googleClientId: "google-client-id",
+      googleClientSecret: "google-client-secret",
+      secret: "test-secret-with-enough-length",
+    }
+
+    createAuthRuntime(input)
+
+    expect(authMocks.betterAuth).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        emailAndPassword: expect.anything(),
+      })
+    )
+  })
 })

@@ -37,7 +37,7 @@
 학습자가 사용하는 학습 플랫폼이다.
 
 - port: `3000`
-- auth: Better Auth 기반 email/password + Google
+- auth: Better Auth 기반 Google 단일 로그인
 - backend: `apps/api`
 - 주요 기능:
   - 공개 콘텐츠 조회

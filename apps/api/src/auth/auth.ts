@@ -23,9 +23,6 @@ export function createAuthRuntime(input: CreateAuthRuntimeInput): AuthRuntime {
     database: drizzleAdapter(input.db, {
       provider: "sqlite",
     }),
-    emailAndPassword: {
-      enabled: true,
-    },
     secret: input.secret,
     socialProviders: {
       google: {

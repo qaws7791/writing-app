@@ -8,7 +8,7 @@ import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
 export const metadata: Metadata = {
   title: "로그인 — 한글쓰기",
-  description: "한글쓰기 계정으로 로그인하고 학습을 이어갑니다.",
+  description: "Google 계정으로 로그인하고 학습을 이어갑니다.",
 }
 
 type LoginPageProps = {
@@ -28,7 +28,7 @@ export default async function Page({ searchParams }: LoginPageProps) {
     redirect(authenticatedRedirectPath)
   }
 
-  return <AuthPage mode="login" nextPath={nextPath} />
+  return <AuthPage nextPath={nextPath} />
 }
 
 function getNextPath(value: string | string[] | undefined) {

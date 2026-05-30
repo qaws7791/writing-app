@@ -14,6 +14,8 @@
 - 작업 시작: 2026-05-31, 4순위 후보인 별도 docs 앱과 Fumadocs API 문서 사이트 제거를 시작했다. 공개 문서 앱은 제거하고, OpenAPI 정적 JSON은 `docs/openapi` 산출물로 유지한다.
 - 작업 완료: 2026-05-31, `apps/docs` Fumadocs 앱과 docs 실행 스크립트를 제거했다. OpenAPI 정적 계약 파일은 `docs/openapi/writing-app-api.json`에 생성하고, 웹 타입 생성도 이 경로를 기준으로 한다.
 - 작업 검증: 2026-05-31, docs 앱 제거 후 `ARCHITECTURE.md`, OpenAPI 문서, 개발 도구 문서에 남은 최신 구조 표현을 `docs/openapi`와 Markdown 문서 기준으로 정리했다.
+- 작업 시작: 2026-05-31, 5순위 후보인 이메일/비밀번호 로그인 제거와 Google 로그인 단일화를 시작했다. 관리자 인증은 별도 ID/password 영역으로 유지하고, 학습자 플랫폼 인증만 Google OAuth 단일 진입점으로 좁힌다.
+- 작업 완료: 2026-05-31, 학습자 Better Auth 런타임의 email/password 옵션, 웹 이메일 인증 helper, 이메일/비밀번호 로그인 폼, 회원가입 페이지를 제거했다. 학습자 인증 진입점은 `/login`의 Google OAuth 버튼 하나로 고정한다.
 - 기준 철학: Best Simple System for Now
 - 조사 범위: `/prototype`, `node_modules`, 빌드 산출물은 제외하고 현재 모노레포의 앱, 패키지, 문서, 런타임 의존성, 환경 변수, DB 스키마, API 경계를 확인했다.
 
@@ -102,11 +104,11 @@
 
 ### 7. 이메일 로그인 제거와 Google 로그인 단일화
 
-현재는 이메일/비밀번호 로그인과 Google 로그인을 함께 제공한다. 단순화 방향은 Google 로그인을 단일 인증 경로로 두고 이메일/비밀번호 가입, 로그인 폼, 로컬 비밀번호 정책, 비밀번호 복구 정책을 제거하는 것이다.
+2026-05-31 제거를 완료했다. 학습자 인증은 Google 로그인을 단일 인증 경로로 두고, 이메일/비밀번호 가입, 로그인 폼, 로컬 비밀번호 정책, 비밀번호 복구 정책을 운영하지 않는다.
 
 이 선택은 `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, OAuth callback URL 같은 Google 설정을 운영 의존성으로 남긴다. 대신 사용자가 선택해야 하는 로그인 방식이 하나가 되고, 서비스가 직접 비밀번호 UX와 보안 정책을 운영하지 않아도 된다.
 
-이미 이메일/비밀번호 사용자 계정이 있다면 제거 전에 Google 계정 연결 또는 계정 전환 절차가 필요하다. 실제 사용자가 없다면 이메일 credential 경로를 바로 제거할 수 있다.
+관리자 인증은 별도 어드민 Better Auth ID/password 경로로 유지한다. 학습자 실제 이메일 credential 사용자가 생긴 뒤 같은 변경을 한다면 Google 계정 연결 또는 계정 전환 절차가 먼저 필요하다.
 
 ### 8. 검색 제거 또는 지연
 
@@ -203,7 +205,7 @@ bun run dev:app
 2. 완료: 커리큘럼 버전/마이그레이션/업그레이드 UX를 제거하고 단일 현재 커리큘럼으로 되돌린다.
 3. 완료: 웹 runtime fake 모드를 제거하고 테스트 주입 fake만 남긴다.
 4. 완료: docs 앱을 제거하고 Markdown 문서와 `/openapi.json`, `docs/openapi/writing-app-api.json`만 남긴다.
-5. 이메일/비밀번호 로그인 경로를 제거하고 Google 로그인 단일 방식으로 통합한다.
+5. 완료: 이메일/비밀번호 로그인 경로를 제거하고 Google 로그인 단일 방식으로 통합한다.
 6. 프로필, 검색, 레거시 리다이렉트, 장식성 진행 요소를 필요성 기준으로 개별 제거한다.
 7. 남은 구조를 보고 학습자 API와 웹 앱 통합, 관리자 API 통합, core/env/logger 패키지 흡수를 결정한다.
 

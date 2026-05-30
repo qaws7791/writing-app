@@ -6,14 +6,14 @@ describe("proxyAuthRequest", () => {
   it("forwards auth requests to the backend and preserves Set-Cookie", async () => {
     const fetch = vi.fn<AuthProxyFetch>(async (request) => {
       expect(request.url).toBe(
-        "http://localhost:4000/api/auth/sign-in/email?next=%2Fapp"
+        "http://localhost:4000/api/auth/sign-in/social?next=%2Fapp"
       )
       expect(request.method).toBe("POST")
       expect(request.headers.get("x-forwarded-host")).toBe("localhost:3001")
       expect(request.headers.get("x-forwarded-proto")).toBe("http")
       expect(await request.json()).toEqual({
-        email: "learner@example.com",
-        password: "password-1234",
+        callbackURL: "http://localhost:3001/app",
+        provider: "google",
       })
 
       return new Response(null, {
@@ -27,13 +27,13 @@ describe("proxyAuthRequest", () => {
     const response = await proxyAuthRequest({
       apiBaseUrl: "http://localhost:4000",
       fetch,
-      path: ["sign-in", "email"],
+      path: ["sign-in", "social"],
       request: new Request(
-        "http://localhost:3001/api/auth/sign-in/email?next=%2Fapp",
+        "http://localhost:3001/api/auth/sign-in/social?next=%2Fapp",
         {
           body: JSON.stringify({
-            email: "learner@example.com",
-            password: "password-1234",
+            callbackURL: "http://localhost:3001/app",
+            provider: "google",
           }),
           headers: {
             "Content-Type": "application/json",

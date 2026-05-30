@@ -1,5 +1,12 @@
 # 플랫폼 백엔드 API
 
+## 2026-05-31 학습자 Google 단일 로그인 완료
+
+- 학습자 Better Auth 런타임에서 `emailAndPassword` 설정을 제거하고 Google social provider만 인증 진입점으로 남겼다.
+- `/login` 화면은 이메일/비밀번호 폼과 회원가입 링크 없이 `Google로 계속하기` 버튼만 제공한다.
+- `/signup` 학습자 페이지와 웹 이메일 인증 클라이언트는 제거했다.
+- 관리자 인증은 어드민 전용 Better Auth ID/password 경로로 유지한다.
+
 ## 2026-05-31 docs 앱 제거 완료
 
 - OpenAPI 정적 계약 파일 위치를 `apps/docs/openapi/writing-app-api.json`에서 `docs/openapi/writing-app-api.json`으로 옮겼다.
