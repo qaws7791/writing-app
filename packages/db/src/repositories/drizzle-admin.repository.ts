@@ -65,6 +65,7 @@ export function createDrizzleAdminRepository(
           title: courses.title,
           description: courses.description,
           sortOrder: courses.sortOrder,
+          revision: courses.curriculumRevision,
         })
         .from(courses)
         .where(eq(courses.id, courseId))
@@ -77,7 +78,13 @@ export function createDrizzleAdminRepository(
       const curriculum = await getEditorCurriculum(db, courseId)
 
       return {
-        course,
+        course: {
+          id: course.id,
+          title: course.title,
+          description: course.description,
+          sortOrder: course.sortOrder,
+        },
+        revision: course.revision,
         curriculum,
       } satisfies AdminCourseEditorDetailDto
     },
@@ -262,55 +269,124 @@ async function saveCurrentCurriculum(
     } as const
   }
 
-  await ensureEditorLessons(tx, input, course.categoryId)
-  await tx
+  const [updatedCourse] = await tx
     .update(courses)
     .set({
       title: input.course.title,
       description: input.course.description,
       sortOrder: input.course.sortOrder,
+      curriculumRevision: sql`${courses.curriculumRevision} + 1`,
     })
-    .where(eq(courses.id, input.courseId))
+    .where(
+      and(
+        eq(courses.id, input.courseId),
+        eq(courses.curriculumRevision, input.expectedRevision)
+      )
+    )
+    .returning({
+      id: courses.id,
+      title: courses.title,
+      description: courses.description,
+      sortOrder: courses.sortOrder,
+      revision: courses.curriculumRevision,
+    })
+
+  if (!updatedCourse) {
+    return {
+      status: "conflict",
+      error: {
+        code: "conflict",
+        message: "다른 관리자가 먼저 저장했습니다.",
+      },
+    } as const
+  }
+
+  await ensureEditorLessons(tx, input, course.categoryId)
 
   const existingChapters = await tx
     .select({ id: courseChapters.id })
     .from(courseChapters)
     .where(eq(courseChapters.courseId, input.courseId))
   const existingChapterIds = existingChapters.map((chapter) => chapter.id)
+  const inputChapterIds = input.chapters.map((chapter) => chapter.id)
+  const omittedChapterIds = existingChapterIds.filter(
+    (chapterId) => !inputChapterIds.includes(chapterId)
+  )
 
-  if (existingChapterIds.length > 0) {
+  const existingLessons =
+    existingChapterIds.length === 0
+      ? []
+      : await tx
+          .select({ id: courseLessons.id })
+          .from(courseLessons)
+          .where(inArray(courseLessons.chapterId, existingChapterIds))
+  const existingLessonIds = existingLessons.map((lesson) => lesson.id)
+  const inputCourseLessonIds = input.lessons.map((lesson) => lesson.id)
+  const omittedCourseLessonIds = existingLessonIds.filter(
+    (lessonId) => !inputCourseLessonIds.includes(lessonId)
+  )
+
+  if (omittedCourseLessonIds.length > 0) {
     await tx
-      .delete(courseLessons)
-      .where(inArray(courseLessons.chapterId, existingChapterIds))
+      .update(courseLessons)
+      .set({ status: "archived" })
+      .where(inArray(courseLessons.id, omittedCourseLessonIds))
+  }
+
+  if (omittedChapterIds.length > 0) {
     await tx
-      .delete(courseChapters)
-      .where(inArray(courseChapters.id, existingChapterIds))
+      .update(courseChapters)
+      .set({ status: "archived" })
+      .where(inArray(courseChapters.id, omittedChapterIds))
   }
 
   if (input.chapters.length > 0) {
-    await tx.insert(courseChapters).values(
-      input.chapters.map((chapter) => ({
-        id: chapter.id,
-        courseId: input.courseId,
-        title: chapter.title,
-        sortOrder: chapter.sortOrder,
-        status: chapter.status,
-      }))
-    )
+    await tx
+      .insert(courseChapters)
+      .values(
+        input.chapters.map((chapter) => ({
+          id: chapter.id,
+          courseId: input.courseId,
+          title: chapter.title,
+          sortOrder: chapter.sortOrder,
+          status: chapter.status,
+        }))
+      )
+      .onConflictDoUpdate({
+        target: courseChapters.id,
+        set: {
+          title: sql`excluded.title`,
+          sortOrder: sql`excluded.sort_order`,
+          status: sql`excluded.status`,
+        },
+      })
   }
 
   if (input.lessons.length > 0) {
-    await tx.insert(courseLessons).values(
-      input.lessons.map((lesson) => ({
-        id: lesson.id,
-        chapterId: lesson.chapterId,
-        lessonId: lesson.lessonId,
-        title: lesson.title,
-        description: lesson.description,
-        sortOrder: lesson.sortOrder,
-        status: lesson.status,
-      }))
-    )
+    await tx
+      .insert(courseLessons)
+      .values(
+        input.lessons.map((lesson) => ({
+          id: lesson.id,
+          chapterId: lesson.chapterId,
+          lessonId: lesson.lessonId,
+          title: lesson.title,
+          description: lesson.description,
+          sortOrder: lesson.sortOrder,
+          status: lesson.status,
+        }))
+      )
+      .onConflictDoUpdate({
+        target: courseLessons.id,
+        set: {
+          chapterId: sql`excluded.chapter_id`,
+          lessonId: sql`excluded.lesson_id`,
+          title: sql`excluded.title`,
+          description: sql`excluded.description`,
+          sortOrder: sql`excluded.sort_order`,
+          status: sql`excluded.status`,
+        },
+      })
   }
 
   await markMissingStepsArchived(tx, input)
@@ -345,14 +421,23 @@ async function saveCurrentCurriculum(
 
   return {
     status: "saved",
-    curriculum: {
-      chapters: input.chapters.map((chapter) => ({
-        ...chapter,
-        lessons: input.lessons
-          .filter((lesson) => lesson.chapterId === chapter.id)
-          .map(({ chapterId: _chapterId, ...lesson }) => lesson),
-      })),
-      steps: input.steps,
+    document: {
+      course: {
+        id: updatedCourse.id,
+        title: updatedCourse.title,
+        description: updatedCourse.description,
+        sortOrder: updatedCourse.sortOrder,
+      },
+      revision: updatedCourse.revision,
+      curriculum: {
+        chapters: input.chapters.map((chapter) => ({
+          ...chapter,
+          lessons: input.lessons
+            .filter((lesson) => lesson.chapterId === chapter.id)
+            .map(({ chapterId: _chapterId, ...lesson }) => lesson),
+        })),
+        steps: input.steps,
+      },
     },
   } as const
 }
