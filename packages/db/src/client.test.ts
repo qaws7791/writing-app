@@ -4,7 +4,7 @@ import { tmpdir } from "node:os"
 import { Database } from "bun:sqlite"
 import { describe, expect, it } from "vitest"
 
-import { createDatabase } from "@/client"
+import { configureSqliteConnection, createDatabase } from "@/client"
 import { runContentMigration } from "@/migrations/run-content-migration"
 import { adminUser } from "@/schema"
 
@@ -32,6 +32,58 @@ describe("createDatabase", () => {
       expect(foreignKeys?.foreign_keys).toBe(1)
     } finally {
       rmSync(databasePath, { force: true })
+    }
+  })
+
+  it("configures sqlite for shared file based runtime access", () => {
+    const databasePath = join(
+      tmpdir(),
+      `writing-app-client-${crypto.randomUUID()}.sqlite`
+    )
+
+    try {
+      const sqlite = new Database(databasePath, { create: true })
+      configureSqliteConnection(sqlite)
+
+      const foreignKeys = sqlite
+        .query<{ foreign_keys: number }, []>("pragma foreign_keys")
+        .get()
+      const journalMode = sqlite
+        .query<{ journal_mode: string }, []>("pragma journal_mode")
+        .get()
+      const synchronous = sqlite
+        .query<{ synchronous: number }, []>("pragma synchronous")
+        .get()
+      const busyTimeout = sqlite
+        .query<{ timeout: number }, []>("pragma busy_timeout")
+        .get()
+      const walAutocheckpoint = sqlite
+        .query<{ wal_autocheckpoint: number }, []>("pragma wal_autocheckpoint")
+        .get()
+      const journalSizeLimit = sqlite
+        .query<{ journal_size_limit: number }, []>("pragma journal_size_limit")
+        .get()
+      const mmapSize = sqlite
+        .query<{ mmap_size: number }, []>("pragma mmap_size")
+        .get()
+      const tempStore = sqlite
+        .query<{ temp_store: number }, []>("pragma temp_store")
+        .get()
+
+      sqlite.close()
+
+      expect(foreignKeys?.foreign_keys).toBe(1)
+      expect(journalMode?.journal_mode).toBe("wal")
+      expect(synchronous?.synchronous).toBe(1)
+      expect(busyTimeout?.timeout).toBe(5000)
+      expect(walAutocheckpoint?.wal_autocheckpoint).toBe(1000)
+      expect(journalSizeLimit?.journal_size_limit).toBe(67_108_864)
+      expect(mmapSize?.mmap_size).toBe(268_435_456)
+      expect(tempStore?.temp_store).toBe(2)
+    } finally {
+      rmSync(databasePath, { force: true })
+      rmSync(`${databasePath}-shm`, { force: true })
+      rmSync(`${databasePath}-wal`, { force: true })
     }
   })
 })

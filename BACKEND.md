@@ -34,6 +34,7 @@
 - `POST /ai-feedback`
 
 API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL`의 `file:` prefix 제거, `CORS_ORIGIN` 분리 같은 앱별 의미 변환은 `apps/api/src/env.ts`에 유지한다.
+SQLite 연결은 `@workspace/db`의 공통 설정을 사용하며, WAL 모드, 외래키 검사, `busy_timeout`, 체크포인트, 캐시 관련 PRAGMA를 마이그레이션 실행 전에 적용한다.
 
 | 변수                   | 필수 여부 | 기본값 또는 예시                              | 용도                                                                  |
 | ---------------------- | --------- | --------------------------------------------- | --------------------------------------------------------------------- |
@@ -73,6 +74,7 @@ bun --filter @workspace/api dev
 관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다.
 
 어드민 API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL`의 `file:` prefix 제거, `ADMIN_CORS_ORIGIN` 분리, 기본 포트 `4001` 같은 앱별 의미 변환은 `apps/admin-api/src/env.ts`에 유지한다.
+SQLite 연결은 학습자 API와 같은 `@workspace/db` 공통 설정을 사용한다. 따라서 어드민 API도 마이그레이션과 런타임 쿼리 전에 WAL 모드, 외래키 검사, `busy_timeout`, 체크포인트, 캐시 관련 PRAGMA를 적용한다.
 
 | 변수                        | 필수 여부 | 기본값 또는 예시                    | 용도                                                                      |
 | --------------------------- | --------- | ----------------------------------- | ------------------------------------------------------------------------- |

@@ -4,6 +4,7 @@ import { createAiFeedbackService } from "@workspace/core/ai-feedback"
 import { createContentService } from "@workspace/core/content"
 import { createLearningService } from "@workspace/core/learning"
 import {
+  configureSqliteConnection,
   createDatabase,
   createDrizzleContentRepository,
   createDrizzleFeedbackRepository,
@@ -28,6 +29,7 @@ const logger = createLogger({
 ensureDatabaseDirectory(env.databasePath)
 
 const sqlite = new Database(env.databasePath, { create: true })
+configureSqliteConnection(sqlite)
 runContentMigration(sqlite)
 
 const db = createDatabase(sqlite)

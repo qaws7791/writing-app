@@ -3,7 +3,7 @@ import { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Database } from "bun:sqlite"
 
-import { createDatabase } from "@/client"
+import { configureSqliteConnection, createDatabase } from "@/client"
 import { runContentMigration } from "@/migrations/run-content-migration"
 import { seedContent } from "@/seeds/seed-content"
 
@@ -25,6 +25,7 @@ const databasePath = parseDatabasePath(process.env["DATABASE_URL"])
 mkdirSync(dirname(databasePath), { recursive: true })
 
 const sqlite = new Database(databasePath, { create: true })
+configureSqliteConnection(sqlite)
 runContentMigration(sqlite)
 await seedContent(createDatabase(sqlite))
 
