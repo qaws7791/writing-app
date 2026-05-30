@@ -1,5 +1,13 @@
 # 프론트엔드 API 클라이언트 전환
 
+## 2026-05-31 BSSN 6순위 단순화 완료
+
+- `WritingAppApi`에서 `searchCourses`와 `getProfile` 포트를 제거했다.
+- HTTP 어댑터와 fake 테스트 어댑터는 코스 목록, 코스 상세, 레슨 조회, 진행/답변/완료, AI 피드백만 제공한다.
+- `/app/profile` 페이지와 전역 프로필/검색 진입점을 제거했다.
+- 레거시 `/home`, `/courses`, `/courses/[id]`, `/lesson` 리다이렉트 route 파일을 제거하고 `/app`, `/app/courses`, `/app/courses/[id]`, `/app/lesson`만 학습자 앱 경로로 유지한다.
+- 레슨 UI는 생명, XP, 연속 학습, 색종이, 공유 버튼, 완료 통계를 렌더링하지 않는다.
+
 ## 2026-05-31 학습자 인증 진입점 단순화 완료
 
 - 웹 학습자 인증 화면은 Google 로그인 단일 버튼만 렌더링한다.

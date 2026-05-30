@@ -1,7 +1,6 @@
 import type {
   CourseCategoryListDto,
   CourseDetailDto,
-  CourseSearchResultDto,
   LessonDto,
   LessonStepDto,
 } from "@/content/content.dto"
@@ -17,7 +16,6 @@ export type ContentRepositoryLessonDto = Omit<LessonDto, "steps"> & {
 
 export interface ContentRepository {
   listCourseCategories(): Promise<CourseCategoryListDto>
-  searchCourses(query: string): Promise<CourseSearchResultDto>
   findCourseDetail(courseId: CourseId): Promise<CourseDetailDto | undefined>
   findLesson(
     lessonId: LessonId

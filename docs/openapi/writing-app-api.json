@@ -169,124 +169,6 @@
         }
       }
     },
-    "/courses/search": {
-      "get": {
-        "operationId": "getCoursesSearch",
-        "responses": {
-          "200": {
-            "description": "코스 검색 결과입니다.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "courses": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "title": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "description": {
-                            "type": "string",
-                            "minLength": 1
-                          },
-                          "lessonCount": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "maximum": 9007199254740991
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "title",
-                          "description",
-                          "lessonCount"
-                        ]
-                      }
-                    }
-                  },
-                  "required": ["courses"]
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "검색어를 입력해야 합니다.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "const": "invalid-request"
-                    },
-                    "message": {
-                      "type": "string",
-                      "minLength": 1
-                    }
-                  },
-                  "required": ["code", "message"]
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "콘텐츠 시드가 올바르지 않습니다.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "const": "invalid-content-seed"
-                    },
-                    "message": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "lessonId": {
-                      "type": "string",
-                      "minLength": 1
-                    }
-                  },
-                  "required": ["code", "message"]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "데이터베이스를 사용할 수 없습니다.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "const": "database-unavailable"
-                    },
-                    "message": {
-                      "type": "string",
-                      "const": "데이터베이스를 사용할 수 없습니다."
-                    }
-                  },
-                  "required": ["code", "message"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/courses/{courseId}": {
       "get": {
         "operationId": "getCoursesByCourseId",
@@ -570,11 +452,6 @@
                                     "type": "integer",
                                     "exclusiveMinimum": 0,
                                     "maximum": 9007199254740991
-                                  },
-                                  "xpAvailable": {
-                                    "type": "integer",
-                                    "minimum": 0,
-                                    "maximum": 9007199254740991
                                   }
                                 },
                                 "required": [
@@ -583,8 +460,7 @@
                                   "tagTone",
                                   "bullets",
                                   "estimatedMinutes",
-                                  "totalSteps",
-                                  "xpAvailable"
+                                  "totalSteps"
                                 ]
                               }
                             },
@@ -2022,10 +1898,6 @@
                                       }
                                     },
                                     "required": ["title"]
-                                  },
-                                  "shareableQuote": {
-                                    "type": "string",
-                                    "minLength": 1
                                   }
                                 },
                                 "required": ["points"]
@@ -2138,50 +2010,12 @@
                               "content": {
                                 "type": "object",
                                 "properties": {
-                                  "celebrationStyle": {
-                                    "type": "string",
-                                    "const": "confetti"
-                                  },
-                                  "xpEarned": {
-                                    "type": "integer",
-                                    "minimum": 0,
-                                    "maximum": 9007199254740991
-                                  },
-                                  "showStreak": {
-                                    "type": "boolean"
-                                  },
-                                  "lessonStats": {
-                                    "type": "object",
-                                    "properties": {
-                                      "correctRate": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 100
-                                      },
-                                      "writingCount": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 9007199254740991
-                                      },
-                                      "aiFeedbackCount": {
-                                        "type": "integer",
-                                        "minimum": 0,
-                                        "maximum": 9007199254740991
-                                      }
-                                    }
-                                  },
                                   "nextAction": {
                                     "type": "string",
                                     "const": "next-lesson"
                                   }
                                 },
-                                "required": [
-                                  "celebrationStyle",
-                                  "xpEarned",
-                                  "showStreak",
-                                  "lessonStats",
-                                  "nextAction"
-                                ]
+                                "required": ["nextAction"]
                               }
                             },
                             "required": [
@@ -2346,77 +2180,6 @@
                     },
                     "message": {
                       "type": "string"
-                    }
-                  },
-                  "required": ["code", "message"]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/profile": {
-      "get": {
-        "operationId": "getProfile",
-        "responses": {
-          "200": {
-            "description": "현재 학습자의 프로필 요약입니다.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "courseCount": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 9007199254740991
-                    },
-                    "completedLessonCount": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "maximum": 9007199254740991
-                    }
-                  },
-                  "required": ["courseCount", "completedLessonCount"]
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "로그인이 필요합니다.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "const": "unauthorized"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": ["code", "message"]
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "데이터베이스를 사용할 수 없습니다.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "code": {
-                      "type": "string",
-                      "const": "database-unavailable"
-                    },
-                    "message": {
-                      "type": "string",
-                      "const": "데이터베이스를 사용할 수 없습니다."
                     }
                   },
                   "required": ["code", "message"]

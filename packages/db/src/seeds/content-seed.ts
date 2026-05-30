@@ -1108,7 +1108,6 @@ export function createSeedLessonSteps(input: {
         ],
         estimatedMinutes: 8,
         totalSteps: 5,
-        xpAvailable: 30,
       },
     },
     {
@@ -1170,7 +1169,6 @@ export function createSeedLessonSteps(input: {
               title: input.nextLessonTitle,
             }
           : undefined,
-        shareableQuote: `${input.lessonTitle}: 기준을 알고 고친 문장이 좋은 글을 만듭니다.`,
       },
     },
     {
@@ -1181,14 +1179,6 @@ export function createSeedLessonSteps(input: {
       points: 0,
       required: true,
       content: {
-        celebrationStyle: "confetti",
-        xpEarned: 30,
-        showStreak: true,
-        lessonStats: {
-          correctRate: 90,
-          writingCount: 1,
-          aiFeedbackCount: 1,
-        },
         nextAction: "next-lesson",
       },
     },

@@ -43,11 +43,6 @@ export const progressCourseListDtoSchema = z.object({
   courses: z.array(courseProgressDtoSchema),
 })
 
-export const profileDtoSchema = z.object({
-  courseCount: z.number().int().nonnegative(),
-  completedLessonCount: z.number().int().nonnegative(),
-})
-
 export type LessonAnswerDto = z.infer<typeof lessonAnswerDtoSchema>
 export type LessonProgressDto = z.infer<typeof lessonProgressDtoSchema>
 export type SaveLessonProgressRequestDto = z.infer<
@@ -59,4 +54,3 @@ export type SaveLessonAnswerRequestDto = z.infer<
 export type CompleteLessonDto = z.infer<typeof completeLessonDtoSchema>
 export type CourseProgressDto = z.infer<typeof courseProgressDtoSchema>
 export type ProgressCourseListDto = z.infer<typeof progressCourseListDtoSchema>
-export type ProfileDto = z.infer<typeof profileDtoSchema>

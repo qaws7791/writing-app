@@ -1,8 +1,4 @@
-import type {
-  ChoiceOption,
-  LessonStep,
-  LessonTone,
-} from "@/features/lessons/lesson-types"
+import type { ChoiceOption, LessonStep } from "@/features/lessons/lesson-types"
 
 export type ChoiceStatus = "neutral" | "selected" | "correct" | "incorrect"
 export type ClassifyStatus = "neutral" | "correct" | "incorrect"
@@ -32,15 +28,6 @@ export interface MarkedTextSpanPart {
 }
 
 export type MarkedTextPart = MarkedTextPlainPart | MarkedTextSpanPart
-
-export interface ConfettiPiece {
-  id: number
-  tone: LessonTone
-  left: string
-  delay: string
-  duration: string
-  size: string
-}
 
 export function getLessonProgress(
   currentStepIndex: number,
@@ -325,26 +312,6 @@ export function getDeterministicOrder<TItem extends { id: string }>(
 
     return leftHash - rightHash
   })
-}
-
-export function createConfettiPieces(count: number): readonly ConfettiPiece[] {
-  const tones: readonly LessonTone[] = [
-    "primary",
-    "success",
-    "info",
-    "warning",
-    "danger",
-    "neutral",
-  ]
-
-  return Array.from({ length: count }, (_, index) => ({
-    id: index,
-    tone: tones[index % tones.length] ?? "primary",
-    left: `${(index * 37) % 100}%`,
-    delay: `${(index % 8) * 0.16}s`,
-    duration: `${2 + (index % 5) * 0.28}s`,
-    size: `${6 + (index % 4) * 2}px`,
-  }))
 }
 
 function normalizeComparableText({

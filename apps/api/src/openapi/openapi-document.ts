@@ -28,9 +28,6 @@ const openApiContentService: ContentService = {
   async listCourseCategories() {
     throw openApiGenerationError
   },
-  async searchCourses() {
-    throw openApiGenerationError
-  },
 }
 
 const openApiLearningService: LearningService = {
@@ -41,9 +38,6 @@ const openApiLearningService: LearningService = {
     throw openApiGenerationError
   },
   async getLessonProgress() {
-    throw openApiGenerationError
-  },
-  async getProfile() {
     throw openApiGenerationError
   },
   async listProgress() {

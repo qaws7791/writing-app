@@ -1,8 +1,5 @@
 import { courseCategories } from "@/features/courses/course-data"
-import {
-  courseDetails,
-  getCourseDetailById,
-} from "@/features/courses/course-detail-data"
+import { getCourseDetailById } from "@/features/courses/course-detail-data"
 import { inProgressCourses } from "@/features/home/home-fake-data"
 import { getLessonById } from "@/features/lessons/lesson-data"
 import { getMockAiFeedback } from "@/features/lessons/lesson-logic"
@@ -20,23 +17,6 @@ export function createFakeWritingAppApi(): WritingAppApi {
   return {
     async listCourseCategories() {
       return apiOk(courseCategories)
-    },
-    async searchCourses(query) {
-      const normalizedQuery = query.trim()
-      if (!normalizedQuery) {
-        return apiFailure({
-          code: "invalid-request",
-          message: "검색어를 입력해야 합니다.",
-        })
-      }
-
-      return apiOk(
-        courseCategories.flatMap((category) =>
-          category.courses.filter((course) =>
-            `${course.title} ${course.description}`.includes(normalizedQuery)
-          )
-        )
-      )
     },
     async getCourseDetail(courseId) {
       const course = getCourseDetailById(courseId)
@@ -66,14 +46,6 @@ export function createFakeWritingAppApi(): WritingAppApi {
         id: "fake-user",
         image: null,
         name: "학습자",
-      })
-    },
-    async getProfile() {
-      return apiOk({
-        completedLessonCount: [...progressByLesson.values()].filter(
-          (progress) => progress.status === "completed"
-        ).length,
-        courseCount: courseDetails.length,
       })
     },
     async listProgress() {

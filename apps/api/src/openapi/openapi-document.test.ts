@@ -10,11 +10,11 @@ describe("createOpenApiDocument", () => {
     expect(document.info.title).toBe("Writing App API")
     expect(document.paths).toHaveProperty("/health")
     expect(document.paths).toHaveProperty("/courses")
-    expect(document.paths).toHaveProperty("/courses/search")
+    expect(document.paths).not.toHaveProperty("/courses/search")
     expect(document.paths).toHaveProperty("/courses/{courseId}")
     expect(document.paths).toHaveProperty("/lessons/{lessonId}")
     expect(document.paths).toHaveProperty("/me")
-    expect(document.paths).toHaveProperty("/profile")
+    expect(document.paths).not.toHaveProperty("/profile")
     expect(document.paths).toHaveProperty("/progress")
     expect(document.paths).toHaveProperty("/courses/{courseId}/progress")
     expect(document.paths).not.toHaveProperty(

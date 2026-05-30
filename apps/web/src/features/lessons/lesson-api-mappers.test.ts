@@ -25,7 +25,6 @@ describe("lesson-api-mappers", () => {
             bullets: ["주어를 찾습니다."],
             estimatedMinutes: 8,
             totalSteps: 1,
-            xpAvailable: 10,
           },
         },
       ],

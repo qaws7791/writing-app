@@ -1,7 +1,6 @@
 import {
   mapCourseCategoriesDto,
   mapCourseDetailDto,
-  mapCourseSearchDto,
   mergeCourseProgress,
 } from "@/features/courses/course-api-mappers"
 import { mapLessonDto } from "@/features/lessons/lesson-api-mappers"
@@ -13,7 +12,6 @@ import type {
   CompleteLessonResult,
   CurrentUser,
   LessonProgress,
-  ProfileSummary,
   WritingAppApi,
 } from "@/lib/api/writing-app-api"
 import {
@@ -29,15 +27,6 @@ export function createHttpWritingAppApi(
   return {
     async listCourseCategories() {
       return request(() => client.GET("/courses"), mapCourseCategoriesDto)
-    },
-    async searchCourses(query) {
-      return request(
-        () =>
-          client.GET("/courses/search", {
-            params: { query: { q: query } },
-          } as never),
-        mapCourseSearchDto
-      )
     },
     async getCourseDetail(courseId) {
       const course = await request(
@@ -77,12 +66,6 @@ export function createHttpWritingAppApi(
       return request(
         () => client.GET("/me"),
         (value) => value as CurrentUser
-      )
-    },
-    async getProfile() {
-      return request(
-        () => client.GET("/profile"),
-        (value) => value as ProfileSummary
       )
     },
     async listProgress() {

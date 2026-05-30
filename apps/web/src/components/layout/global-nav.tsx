@@ -3,13 +3,10 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { Button } from "@workspace/ui/components/ui/button"
 import {
   BookOpenIcon,
   HomeIcon,
   LogoIcon,
-  SearchIcon,
-  UserIcon,
   type LucideIcon,
 } from "@workspace/ui/components/icons"
 import { cn } from "@workspace/ui/lib/utils"
@@ -35,15 +32,6 @@ const primaryNavItems: NavItem[] = [
     id: "nav-courses",
   },
 ]
-
-const profileNavItem: NavItem = {
-  href: "/app/profile",
-  label: "프로필",
-  icon: UserIcon,
-  id: "nav-profile",
-}
-
-const mobileNavItems: NavItem[] = [...primaryNavItems, profileNavItem]
 
 function isActivePath(pathname: string, href: string) {
   if (href === "/" || href === "/app") {
@@ -98,32 +86,7 @@ export function GlobalNav() {
             </nav>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              aria-label="검색"
-              id="header-search-btn"
-            >
-              <SearchIcon aria-hidden="true" />
-            </Button>
-
-            <Link
-              href="/app/profile"
-              className={cn(
-                "flex size-9 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
-                isActivePath(pathname, "/app/profile") && "text-foreground"
-              )}
-              aria-label="프로필"
-              aria-current={
-                isActivePath(pathname, "/app/profile") ? "page" : undefined
-              }
-              id="header-profile-btn"
-            >
-              <UserIcon className="size-5" aria-hidden="true" />
-            </Link>
-          </div>
+          <div className="flex shrink-0 items-center gap-2" />
         </div>
       </header>
 
@@ -131,7 +94,7 @@ export function GlobalNav() {
         className="fixed inset-x-0 bottom-0 z-40 flex h-[calc(4rem+env(safe-area-inset-bottom))] border-t border-border/70 bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
         aria-label="하단 메뉴"
       >
-        {mobileNavItems.map((item) => {
+        {primaryNavItems.map((item) => {
           const Icon = item.icon
           const active = isActivePath(pathname, item.href)
 

@@ -58,12 +58,6 @@ export function mapCourseCategoriesDto(
   }))
 }
 
-export function mapCourseSearchDto(dto: {
-  courses: readonly CourseSummaryDto[]
-}): readonly Course[] {
-  return dto.courses.map(mapCourseSummaryDto)
-}
-
 export function mapCourseDetailDto(dto: CourseDetailDto): CourseDetail {
   const chapters = dto.chapters.map(
     (chapter): CourseChapter => ({

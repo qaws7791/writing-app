@@ -18,11 +18,6 @@ export interface CurrentUser {
   name: string
 }
 
-export interface ProfileSummary {
-  completedLessonCount: number
-  courseCount: number
-}
-
 export interface ProgressCourse {
   completedLessons: number
   courseId: Course["id"]
@@ -83,11 +78,9 @@ export interface AiFeedbackResult {
 
 export interface WritingAppApi {
   listCourseCategories(): Promise<ApiResult<readonly CourseCategory[]>>
-  searchCourses(query: string): Promise<ApiResult<readonly Course[]>>
   getCourseDetail(courseId: Course["id"]): Promise<ApiResult<CourseDetail>>
   getLesson(lessonId: LessonId): Promise<ApiResult<Lesson>>
   getCurrentUser(): Promise<ApiResult<CurrentUser>>
-  getProfile(): Promise<ApiResult<ProfileSummary>>
   listProgress(): Promise<ApiResult<ProgressCourseList>>
   getCourseProgress(courseId: Course["id"]): Promise<ApiResult<CourseProgress>>
   getLessonProgress(lessonId: LessonId): Promise<ApiResult<LessonProgress>>

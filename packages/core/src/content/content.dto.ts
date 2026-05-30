@@ -26,10 +26,6 @@ export const courseCategoryListDtoSchema = z.object({
   categories: z.array(courseCategoryDtoSchema),
 })
 
-export const courseSearchResultDtoSchema = z.object({
-  courses: z.array(courseSummaryDtoSchema),
-})
-
 export const courseLessonDtoSchema = z.object({
   id: z.string().min(1),
   lessonId: z.string().min(1),
@@ -60,7 +56,6 @@ const introContentSchema = z.object({
   bullets: z.array(z.string().min(1)),
   estimatedMinutes: z.number().int().positive(),
   totalSteps: z.number().int().positive(),
-  xpAvailable: z.number().int().nonnegative(),
 })
 
 const conceptContentSchema = z.object({
@@ -294,7 +289,6 @@ const summaryContentSchema = z.object({
       description: z.string().min(1).optional(),
     })
     .optional(),
-  shareableQuote: z.string().min(1).optional(),
 })
 
 const transcribeContentSchema = z.object({
@@ -308,14 +302,6 @@ const transcribeContentSchema = z.object({
 })
 
 const completeContentSchema = z.object({
-  celebrationStyle: z.literal("confetti"),
-  xpEarned: z.number().int().nonnegative(),
-  showStreak: z.boolean(),
-  lessonStats: z.object({
-    correctRate: z.number().int().min(0).max(100).optional(),
-    writingCount: z.number().int().nonnegative().optional(),
-    aiFeedbackCount: z.number().int().nonnegative().optional(),
-  }),
   nextAction: z.literal("next-lesson"),
 })
 
@@ -369,7 +355,6 @@ export const lessonDtoSchema = z.object({
 export type CourseSummaryDto = z.infer<typeof courseSummaryDtoSchema>
 export type CourseCategoryDto = z.infer<typeof courseCategoryDtoSchema>
 export type CourseCategoryListDto = z.infer<typeof courseCategoryListDtoSchema>
-export type CourseSearchResultDto = z.infer<typeof courseSearchResultDtoSchema>
 export type CourseLessonDto = z.infer<typeof courseLessonDtoSchema>
 export type CourseChapterDto = z.infer<typeof courseChapterDtoSchema>
 export type CourseDetailDto = z.infer<typeof courseDetailDtoSchema>

@@ -68,7 +68,6 @@ const lesson = {
         bullets: ["문장의 중심 성분을 구분합니다."],
         estimatedMinutes: 8,
         totalSteps: 1,
-        xpAvailable: 10,
       },
     },
   ],
@@ -77,26 +76,6 @@ const lesson = {
 const fakeContentService: ContentService = {
   async listCourseCategories() {
     return { status: "ok", value: courseCategories }
-  },
-  async searchCourses(query) {
-    if (!query.trim()) {
-      return {
-        status: "invalid-request",
-        error: {
-          code: "invalid-request",
-          message: "검색어를 입력해야 합니다.",
-        },
-      }
-    }
-
-    return {
-      status: "ok",
-      value: {
-        courses: courseCategories.categories.flatMap(
-          (category) => category.courses
-        ),
-      },
-    }
   },
   async getCourseDetail(courseId) {
     if (String(courseId) !== "sentence-structure") {
@@ -162,15 +141,6 @@ const fakeLearningService: LearningService = {
         lessonId: "sentence-structure-01",
         status: "not-started",
         stepOrder: 1,
-      },
-    }
-  },
-  async getProfile() {
-    return {
-      status: "ok",
-      value: {
-        completedLessonCount: 1,
-        courseCount: 1,
       },
     }
   },
@@ -395,28 +365,12 @@ describe("createApiApp", () => {
     })
   })
 
-  it("requires auth for /profile", async () => {
-    const app = createTestApp()
-
-    const response = await app.request("/profile")
-
-    expect(response.status).toBe(401)
-    await expect(response.json()).resolves.toEqual({
-      code: "unauthorized",
-      message: "로그인이 필요합니다.",
-    })
-  })
-
-  it("returns profile summary for an authenticated user", async () => {
+  it("does not register a learner profile route", async () => {
     const app = createTestApp(silentLogger, testSession)
 
     const response = await app.request("/profile")
 
-    expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
-      completedLessonCount: 1,
-      courseCount: 1,
-    })
+    expect(response.status).toBe(404)
   })
 
   it("returns overall progress for an authenticated user", async () => {
@@ -528,27 +482,12 @@ describe("createApiApp", () => {
     await expect(response.json()).resolves.toEqual(courseCategories)
   })
 
-  it("returns public course search results", async () => {
+  it("does not register public course search", async () => {
     const app = createTestApp()
 
     const response = await app.request("/courses/search?q=문장")
 
-    expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
-      courses: courseCategories.categories[0]?.courses,
-    })
-  })
-
-  it("returns invalid-request for blank course search queries", async () => {
-    const app = createTestApp()
-
-    const response = await app.request("/courses/search?q=%20")
-
-    expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      code: "invalid-request",
-      message: "검색어를 입력해야 합니다.",
-    })
+    expect(response.status).toBe(404)
   })
 
   it("returns a course-not-found DTO for an unknown course", async () => {
@@ -613,10 +552,10 @@ describe("createApiApp", () => {
     expect(response.status).toBe(200)
     expect(document.paths).toHaveProperty("/health")
     expect(document.paths).toHaveProperty("/courses")
-    expect(document.paths).toHaveProperty("/courses/search")
+    expect(document.paths).not.toHaveProperty("/courses/search")
     expect(document.paths).toHaveProperty("/courses/{courseId}")
     expect(document.paths).toHaveProperty("/me")
-    expect(document.paths).toHaveProperty("/profile")
+    expect(document.paths).not.toHaveProperty("/profile")
     expect(document.paths).toHaveProperty("/progress")
     expect(document.paths).toHaveProperty("/courses/{courseId}/progress")
     expect(document.paths).not.toHaveProperty(

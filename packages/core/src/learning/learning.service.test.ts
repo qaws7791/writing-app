@@ -32,7 +32,6 @@ const lesson: LessonDto = {
         bullets: ["문장의 중심을 찾습니다."],
         estimatedMinutes: 3,
         totalSteps: 2,
-        xpAvailable: 0,
       },
     },
     {
@@ -42,10 +41,6 @@ const lesson: LessonDto = {
       points: 0,
       required: true,
       content: {
-        celebrationStyle: "confetti",
-        xpEarned: 0,
-        showStreak: false,
-        lessonStats: {},
         nextAction: "next-lesson",
       },
     },
@@ -100,12 +95,6 @@ function createContentService(
       return {
         status: "ok",
         value: { categories: [] },
-      }
-    },
-    async searchCourses() {
-      return {
-        status: "ok",
-        value: { courses: [] },
       }
     },
     ...overrides,

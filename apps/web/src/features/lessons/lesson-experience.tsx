@@ -24,14 +24,12 @@ import {
 import {
   CheckIcon,
   GripVerticalIcon,
-  HeartIcon,
   SparklesIcon,
   XIcon,
 } from "@workspace/ui/components/icons"
 import { cn } from "@workspace/ui/lib/utils"
 
 import {
-  createConfettiPieces,
   findStepIndexByType,
   getBlankStatus,
   getChecklistComplete,
@@ -143,15 +141,6 @@ const toneClasses: Record<
     solid: "bg-muted",
     solidText: "text-foreground",
   },
-}
-
-const confettiToneClasses: Record<LessonTone, string> = {
-  primary: "bg-primary",
-  success: "bg-primary",
-  info: "bg-chart-2",
-  warning: "bg-chart-3",
-  danger: "bg-destructive",
-  neutral: "bg-foreground",
 }
 
 interface LessonExperienceProps {
@@ -277,7 +266,6 @@ export function LessonExperience({ lesson, api }: LessonExperienceProps) {
     <div className="dark min-h-svh bg-background text-foreground">
       <LessonHeader
         progress={progress}
-        lives={3}
         onExit={() => setShowExitDialog(true)}
       />
       <div ref={contentRef} className="h-svh overflow-y-auto pt-14">
@@ -305,11 +293,9 @@ export function LessonExperience({ lesson, api }: LessonExperienceProps) {
 
 function LessonHeader({
   progress,
-  lives,
   onExit,
 }: {
   progress: number
-  lives: number
   onExit: () => void
 }) {
   return (
@@ -330,24 +316,6 @@ function LessonHeader({
           aria-label="레슨 진행률"
           className="gap-0 [&_[data-slot=progress-indicator]]:bg-primary [&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-track]]:bg-muted"
         />
-      </div>
-
-      <div
-        className="flex shrink-0 items-center gap-1"
-        aria-label={`${lives}개 남음`}
-      >
-        {["heart-1", "heart-2", "heart-3"].map((heartKey, index) => (
-          <HeartIcon
-            key={heartKey}
-            className={cn(
-              "size-4.5",
-              index < lives
-                ? "fill-destructive text-destructive"
-                : "text-muted-foreground"
-            )}
-            aria-hidden="true"
-          />
-        ))}
       </div>
     </header>
   )
@@ -673,7 +641,7 @@ function IntroStep({ content }: { content: IntroContent }) {
         </div>
       </div>
       <Card variant="filled" className="rounded-xl bg-muted py-0">
-        <CardContent className="grid grid-cols-3 px-0 py-4">
+        <CardContent className="grid grid-cols-2 px-0 py-4">
           <IntroStat
             value={`${content.estimatedMinutes}분`}
             label="예상 시간"
@@ -681,11 +649,6 @@ function IntroStep({ content }: { content: IntroContent }) {
           <IntroStat
             value={`${content.totalSteps}개`}
             label="학습 스텝"
-            bordered
-          />
-          <IntroStat
-            value={`${content.xpAvailable} XP`}
-            label="획득 가능"
             bordered
           />
         </CardContent>
@@ -2267,8 +2230,6 @@ function SummaryStep({
   content: SummaryContent
   onNext: () => void
 }) {
-  const [sharing, setSharing] = React.useState(false)
-
   return (
     <StepFrame>
       <h2 className="m-0 text-xl/7 font-bold">오늘 배운 것</h2>
@@ -2298,15 +2259,7 @@ function SummaryStep({
           ) : null}
         </ToneCallout>
       ) : null}
-      {sharing ? (
-        <p className="m-0 text-sm text-primary">공유 문구가 준비됐어요.</p>
-      ) : null}
       <BottomActionBar>
-        {content.shareableQuote ? (
-          <SecondaryActionButton onClick={() => setSharing(true)}>
-            공유하기
-          </SecondaryActionButton>
-        ) : null}
         <PrimaryActionButton onClick={onNext}>
           다음 레슨으로
         </PrimaryActionButton>
@@ -2426,73 +2379,19 @@ function CompleteStep({
   onHome: () => void
   onContinue: () => void
 }) {
-  const { xp, showConfetti, confettiPieces } = useCompleteCelebration(
-    content.xpEarned
-  )
+  void content
 
   return (
     <StepFrame centered>
-      {showConfetti
-        ? confettiPieces.map((piece) => (
-            <span
-              key={piece.id}
-              className={cn(
-                "fixed top-[-20px] rounded-sm animate-[lesson-confetti_3s_ease-in_forwards]",
-                confettiToneClasses[piece.tone]
-              )}
-              style={{
-                left: piece.left,
-                width: piece.size,
-                height: piece.size,
-                animationDelay: piece.delay,
-                animationDuration: piece.duration,
-              }}
-            />
-          ))
-        : null}
       <div className="flex flex-col items-center gap-4 py-10">
-        <div className="text-6xl">🎉</div>
+        <div className="flex size-16 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-2xl font-bold text-primary">
+          ✓
+        </div>
         <div className="flex flex-col gap-2">
           <h1 className="m-0 text-3xl/10 font-bold">레슨 완료!</h1>
           <p className="m-0 text-sm text-muted-foreground">
-            {lessonTitle} 마스터!
+            {lessonTitle} 학습을 마쳤습니다.
           </p>
-        </div>
-        <div className="animate-in zoom-in-95 inline-flex items-center gap-2 rounded-full border-2 border-primary bg-primary/15 px-8 py-4 duration-500">
-          <span className="text-4xl font-bold text-primary">+{xp}</span>
-          <span className="text-xl font-bold">XP</span>
-        </div>
-        {content.showStreak ? (
-          <div className="animate-[lesson-pulse_2s_infinite] inline-flex items-center gap-2 rounded-full border border-border bg-muted px-5 py-2">
-            <span className="text-xl">🔥</span>
-            <span className="text-sm font-bold">7일 연속 학습 중</span>
-          </div>
-        ) : null}
-        <div className="w-full rounded-2xl border border-border/70 bg-card p-5 text-left">
-          <p className="m-0 mb-4 text-xs font-bold tracking-[0.08em] text-muted-foreground uppercase">
-            이번 레슨 요약
-          </p>
-          <div className="flex flex-col gap-3">
-            {content.lessonStats.correctRate !== undefined ? (
-              <SummaryMetric
-                label="정답률"
-                value={`${content.lessonStats.correctRate}%`}
-                progress={content.lessonStats.correctRate}
-              />
-            ) : null}
-            {content.lessonStats.writingCount !== undefined ? (
-              <SummaryMetric
-                label="글쓰기 완료"
-                value={`✦ ${content.lessonStats.writingCount}개`}
-              />
-            ) : null}
-            {content.lessonStats.aiFeedbackCount !== undefined ? (
-              <SummaryMetric
-                label="AI 피드백"
-                value={`✦ ${content.lessonStats.aiFeedbackCount}회`}
-              />
-            ) : null}
-          </div>
         </div>
       </div>
       <BottomActionBar>
@@ -2719,33 +2618,6 @@ function WritingBox({
   )
 }
 
-function SummaryMetric({
-  label,
-  value,
-  progress,
-}: {
-  label: string
-  value: string
-  progress?: number
-}) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <span className="flex items-center gap-2 text-sm font-bold">
-        {progress !== undefined ? (
-          <span className="h-2 w-24 overflow-hidden rounded-full bg-muted">
-            <span
-              className="block h-full rounded-full bg-primary"
-              style={{ width: `${progress}%` }}
-            />
-          </span>
-        ) : null}
-        {value}
-      </span>
-    </div>
-  )
-}
-
 function InlineMarkdown({
   text,
   strongClassName = "text-primary font-bold",
@@ -2819,40 +2691,4 @@ function getClassifyItemClass(status: ClassifyStatus) {
   }
 
   return "border-border bg-muted text-foreground"
-}
-
-function useCompleteCelebration(xpEarned: number) {
-  const [xp, setXp] = React.useState(0)
-  const [showConfetti, setShowConfetti] = React.useState(false)
-  const confettiPieces = React.useMemo(() => createConfettiPieces(24), [])
-
-  React.useEffect(() => {
-    setShowConfetti(true)
-    let animationFrame = 0
-    let start: number | null = null
-    const duration = 1200
-
-    const step = (timestamp: number) => {
-      start ??= timestamp
-
-      const elapsed = timestamp - start
-      const progress = Math.min(elapsed / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3)
-      setXp(Math.floor(eased * xpEarned))
-
-      if (progress < 1) {
-        animationFrame = window.requestAnimationFrame(step)
-      }
-    }
-
-    animationFrame = window.requestAnimationFrame(step)
-    const timer = window.setTimeout(() => setShowConfetti(false), 4000)
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame)
-      window.clearTimeout(timer)
-    }
-  }, [xpEarned])
-
-  return { xp, showConfetti, confettiPieces }
 }

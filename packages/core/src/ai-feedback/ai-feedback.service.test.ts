@@ -55,9 +55,6 @@ const contentService: ContentService = {
   async listCourseCategories() {
     return { status: "ok", value: { categories: [] } }
   },
-  async searchCourses() {
-    return { status: "ok", value: { courses: [] } }
-  },
   async getCourseDetail() {
     return {
       status: "not-found",

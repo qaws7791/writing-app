@@ -40,7 +40,6 @@ export interface IntroContent {
   bullets: readonly string[]
   estimatedMinutes: number
   totalSteps: number
-  xpAvailable: number
 }
 
 export interface ConceptContent {
@@ -245,7 +244,6 @@ export interface SummaryContent {
     title: string
     description?: string
   }
-  shareableQuote?: string
 }
 
 export interface TranscribeContent {
@@ -259,14 +257,6 @@ export interface TranscribeContent {
 }
 
 export interface CompleteContent {
-  celebrationStyle: "confetti"
-  xpEarned: number
-  showStreak: boolean
-  lessonStats: {
-    correctRate?: number
-    writingCount?: number
-    aiFeedbackCount?: number
-  }
   nextAction: "next-lesson"
 }
 

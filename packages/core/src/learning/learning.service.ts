@@ -13,7 +13,6 @@ import type {
   CompleteLessonDto,
   CourseProgressDto,
   LessonProgressDto,
-  ProfileDto,
   ProgressCourseListDto,
   SaveLessonAnswerRequestDto,
   SaveLessonProgressRequestDto,
@@ -82,7 +81,6 @@ type ContentFailureResult =
     }
 
 export interface LearningService {
-  getProfile(userId: UserId): Promise<LearningServiceResult<ProfileDto>>
   listProgress(
     userId: UserId
   ): Promise<LearningServiceResult<ProgressCourseListDto>>
@@ -136,25 +134,6 @@ export function createLearningService({
   repository,
 }: LearningServiceDependencies): LearningService {
   const service: LearningService = {
-    async getProfile(userId) {
-      try {
-        const courses = await repository.listInProgressCourses(userId)
-
-        return {
-          status: "ok",
-          value: {
-            completedLessonCount: courses.reduce(
-              (sum, course) => sum + course.completedCount,
-              0
-            ),
-            courseCount: courses.length,
-          },
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-
     async listProgress(userId) {
       let courses
       try {

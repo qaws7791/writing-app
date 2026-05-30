@@ -1,5 +1,5 @@
 import * as React from "react"
-import { render } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import { beforeAll, describe, expect, it, vi } from "vitest"
 
 import { getDefaultLesson } from "@/features/lessons/lesson-data"
@@ -131,5 +131,12 @@ describe("LessonExperience", () => {
     expect(stepFrame).toBeTruthy()
     expect(stepFrame?.className).not.toContain("animate-in")
     expect(stepFrame?.className).not.toContain("slide-in-from-bottom")
+  })
+
+  it("does not render decorative lives or XP on the lesson screen", () => {
+    render(<LessonExperience lesson={getDefaultLesson()} api={api} />)
+
+    expect(screen.queryByLabelText(/개 남음/)).toBeNull()
+    expect(screen.queryByText(/XP/)).toBeNull()
   })
 })

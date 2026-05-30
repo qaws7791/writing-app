@@ -63,9 +63,6 @@ const latestPublicContentService: ContentService = {
   async listCourseCategories() {
     return { status: "ok", value: { categories: [] } }
   },
-  async searchCourses() {
-    return { status: "ok", value: { courses: [] } }
-  },
 }
 
 const learnerProgressService: LearningService = {
@@ -99,15 +96,6 @@ const learnerProgressService: LearningService = {
         lessonId: "sentence-structure-01",
         status: "not-started",
         stepOrder: 1,
-      },
-    }
-  },
-  async getProfile() {
-    return {
-      status: "ok",
-      value: {
-        completedLessonCount: 1,
-        courseCount: 1,
       },
     }
   },

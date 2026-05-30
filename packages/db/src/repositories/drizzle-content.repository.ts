@@ -1,4 +1,4 @@
-import { and, asc, count, eq, inArray, like, or } from "drizzle-orm"
+import { and, asc, count, eq, inArray } from "drizzle-orm"
 
 import type {
   ContentRepository,
@@ -50,31 +50,6 @@ export function createDrizzleContentRepository(
             })),
         })),
       } satisfies CourseCategoryListDto
-    },
-
-    async searchCourses(query) {
-      const [courseRows, lessonCountsByCourseId] = await Promise.all([
-        db
-          .select()
-          .from(courses)
-          .where(
-            or(
-              like(courses.title, `%${query}%`),
-              like(courses.description, `%${query}%`)
-            )
-          )
-          .orderBy(asc(courses.sortOrder)),
-        countLessonsByCourseId(db),
-      ])
-
-      return {
-        courses: courseRows.map((course) => ({
-          id: course.id,
-          title: course.title,
-          description: course.description,
-          lessonCount: lessonCountsByCourseId.get(course.id) ?? 0,
-        })),
-      }
     },
 
     async findCourseDetail(courseId) {

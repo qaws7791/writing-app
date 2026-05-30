@@ -12,6 +12,9 @@
 - `getServerWritingAppApi`와 `getBrowserWritingAppApi`는 항상 HTTP 어댑터를 생성하며, `WEB_API_MODE`와 `NEXT_PUBLIC_API_MODE`를 읽지 않는다.
 - `apps/web/src/lib/api/api-mode.ts`와 `apps/web`의 `dev:fake` 스크립트는 제거되었다.
 - 코스 상세 metadata와 레슨 기본 ID fallback은 로컬 카탈로그를 참조하지 않는다.
+- `/app/profile`, `WritingAppApi.getProfile`, `WritingAppApi.searchCourses`, 공개 코스 검색 API 의존성은 제거되었다.
+- 레거시 `/home`, `/courses`, `/courses/[id]`, `/lesson` 리다이렉트 route는 제거되었다.
+- 레슨 UI의 생명, XP, 연속 학습, 색종이, 공유 문구, 완료 통계는 더 이상 렌더링하지 않는다.
 - fake 어댑터와 정적 카탈로그는 테스트에서 명시적으로 import해 사용하는 격리 도구로만 남아 있다.
 
 ## 2026-05-27 조사 결과
@@ -60,9 +63,8 @@
 
 ### 프로필
 
-- `apps/web/src/app/app/profile/page.tsx`는 `getServerWritingAppApi().getProfile()`을 사용한다.
-- 현재는 백엔드 프로필 요약을 사용한다.
-- fake 어댑터 직접 사용 테스트에서는 fake 어댑터가 완료 레슨 수를 메모리 진행 상태에서 계산하고, 진행 중인 코스 수를 `courseDetails.length`로 반환한다.
+- 2026-05-31 BSSN 6순위 단순화로 `/app/profile` 페이지와 `getProfile` API 포트를 제거했다.
+- 학습 현황은 홈과 코스 상세의 진행 정보로만 노출한다.
 
 ### 매퍼와 타입 경계의 런타임 결합
 
@@ -85,7 +87,7 @@
 - 제품 런타임에서 직접 프로토타입 데이터를 렌더링하는 확정 지점은 홈 화면이다.
 - 실제 API 모드에서도 남는 직접 정적 참조는 코스 상세 metadata/static params와 레슨 기본 ID 선택이다.
 - API 포트 경유 화면은 환경 변수 기본값 때문에 fake 데이터를 볼 수 있으며, 서버와 브라우저 모드가 따로 설정되어 불일치할 수 있다.
-- fake 어댑터는 코스, 코스 상세, 레슨, 프로필, 진행 저장, 답변 저장, 완료, AI 피드백까지 대부분의 학습 흐름을 로컬 데이터와 메모리 상태로 대체한다.
+- fake 어댑터는 코스, 코스 상세, 레슨, 진행 저장, 답변 저장, 완료, AI 피드백까지 대부분의 학습 흐름을 로컬 데이터와 메모리 상태로 대체한다.
 
 ## 2026-05-27 API 모드 실제 데이터 전환 완료
 

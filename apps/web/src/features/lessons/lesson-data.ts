@@ -44,7 +44,6 @@ interface LessonBuildInput {
   chapter: CourseChapter
   lesson: CourseLesson
   profile: CourseProfile
-  courseLessonIndex: number
   chapterIndex: number
   lessonIndexInChapter: number
   nextLesson?: CourseLesson
@@ -54,7 +53,6 @@ interface CourseLessonRef {
   course: CourseDetail
   chapter: CourseChapter
   lesson: CourseLesson
-  courseLessonIndex: number
   chapterIndex: number
   lessonIndexInChapter: number
   nextLesson?: CourseLesson
@@ -252,10 +250,9 @@ function getCourseLessonRefs(course: CourseDetail): readonly CourseLessonRef[] {
     }))
   )
 
-  return refs.map((ref, courseLessonIndex) => ({
+  return refs.map((ref, index) => ({
     ...ref,
-    courseLessonIndex,
-    nextLesson: refs[courseLessonIndex + 1]?.lesson,
+    nextLesson: refs[index + 1]?.lesson,
   }))
 }
 
@@ -263,8 +260,6 @@ function createLesson(input: LessonBuildInput): Lesson {
   const currentLessonId = lessonId(String(input.lesson.lessonId))
   const middleSteps = createMiddleSteps(input, currentLessonId)
   const totalSteps = middleSteps.length + 3
-  const xpEarned =
-    10 + middleSteps.reduce((total, step) => total + step.points, 0) + 10
   const summaryOrder = totalSteps - 1
 
   const steps: readonly LessonStep[] = [
@@ -279,7 +274,6 @@ function createLesson(input: LessonBuildInput): Lesson {
       ],
       estimatedMinutes: getEstimatedMinutes(input.profile.pattern, totalSteps),
       totalSteps,
-      xpAvailable: xpEarned,
     }),
     ...middleSteps,
     lessonStep(currentLessonId, summaryOrder, "SUMMARY", {
@@ -306,19 +300,8 @@ function createLesson(input: LessonBuildInput): Lesson {
             description: input.nextLesson.description,
           }
         : undefined,
-      shareableQuote: `${input.lesson.title}: 좋은 글은 기준을 알고 고친 문장으로 완성된다.`,
     }),
     lessonStep(currentLessonId, totalSteps, "COMPLETE", {
-      celebrationStyle: "confetti",
-      xpEarned,
-      showStreak: true,
-      lessonStats: {
-        correctRate: 82 + (input.courseLessonIndex % 13),
-        writingCount: getWritingStepCount(middleSteps),
-        aiFeedbackCount: middleSteps.some((step) => step.type === "AI_FEEDBACK")
-          ? 1
-          : 0,
-      },
       nextAction: "next-lesson",
     }),
   ]
@@ -1019,12 +1002,6 @@ function getEstimatedMinutes(pattern: LessonPattern, totalSteps: number) {
   }
 
   return Math.max(8, totalSteps)
-}
-
-function getWritingStepCount(steps: readonly LessonStep[]) {
-  return steps.filter(
-    (step) => step.type === "SHORT_WRITE" || step.type === "LONG_WRITE"
-  ).length
 }
 
 function validateLessonCatalog(catalog: readonly Lesson[]) {

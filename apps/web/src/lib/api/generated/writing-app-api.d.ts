@@ -36,22 +36,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  "/courses/search": {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get: operations["getCoursesSearch"]
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   "/courses/{courseId}": {
     parameters: {
       query?: never
@@ -92,22 +76,6 @@ export interface paths {
       cookie?: never
     }
     get: operations["getMe"]
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  "/profile": {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    get: operations["getProfile"]
     put?: never
     post?: never
     delete?: never
@@ -322,74 +290,6 @@ export interface operations {
       }
     }
   }
-  getCoursesSearch: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description 코스 검색 결과입니다. */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          "application/json": {
-            courses: {
-              id: string
-              title: string
-              description: string
-              lessonCount: number
-            }[]
-          }
-        }
-      }
-      /** @description 검색어를 입력해야 합니다. */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          "application/json": {
-            /** @constant */
-            code: "invalid-request"
-            message: string
-          }
-        }
-      }
-      /** @description 콘텐츠 시드가 올바르지 않습니다. */
-      500: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          "application/json": {
-            /** @constant */
-            code: "invalid-content-seed"
-            message: string
-            lessonId?: string
-          }
-        }
-      }
-      /** @description 데이터베이스를 사용할 수 없습니다. */
-      503: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          "application/json": {
-            /** @constant */
-            code: "database-unavailable"
-            /** @constant */
-            message: "데이터베이스를 사용할 수 없습니다."
-          }
-        }
-      }
-    }
-  }
   getCoursesByCourseId: {
     parameters: {
       query?: never
@@ -518,7 +418,6 @@ export interface operations {
                     bullets: string[]
                     estimatedMinutes: number
                     totalSteps: number
-                    xpAvailable: number
                   }
                 }
               | {
@@ -870,7 +769,6 @@ export interface operations {
                       title: string
                       description?: string
                     }
-                    shareableQuote?: string
                   }
                 }
               | {
@@ -898,15 +796,6 @@ export interface operations {
                   points: number
                   required: boolean
                   content: {
-                    /** @constant */
-                    celebrationStyle: "confetti"
-                    xpEarned: number
-                    showStreak: boolean
-                    lessonStats: {
-                      correctRate?: number
-                      writingCount?: number
-                      aiFeedbackCount?: number
-                    }
                     /** @constant */
                     nextAction: "next-lesson"
                   }
@@ -994,56 +883,6 @@ export interface operations {
             /** @constant */
             code: "unauthorized"
             message: string
-          }
-        }
-      }
-    }
-  }
-  getProfile: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description 현재 학습자의 프로필 요약입니다. */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          "application/json": {
-            courseCount: number
-            completedLessonCount: number
-          }
-        }
-      }
-      /** @description 로그인이 필요합니다. */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          "application/json": {
-            /** @constant */
-            code: "unauthorized"
-            message: string
-          }
-        }
-      }
-      /** @description 데이터베이스를 사용할 수 없습니다. */
-      503: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          "application/json": {
-            /** @constant */
-            code: "database-unavailable"
-            /** @constant */
-            message: "데이터베이스를 사용할 수 없습니다."
           }
         }
       }

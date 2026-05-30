@@ -15,7 +15,6 @@ import { registerLearningRoute } from "@/routes/learning.route"
 import { registerLessonsRoutes } from "@/routes/lessons.route"
 import { registerMeRoute } from "@/routes/me.route"
 import { registerOpenApiRoute } from "@/routes/openapi.route"
-import { registerProfileRoute } from "@/routes/profile.route"
 import { registerProgressRoute } from "@/routes/progress.route"
 
 export interface ApiLogger {
@@ -87,7 +86,6 @@ export function createApiApp(dependencies: ApiAppDependencies) {
   registerCoursesRoutes(app, dependencies)
   registerLessonsRoutes(app, dependencies)
   registerMeRoute(app, dependencies.auth)
-  registerProfileRoute(app, dependencies)
   registerProgressRoute(app, dependencies)
   registerLearningRoute(app, dependencies)
   registerAiFeedbackRoute(app, dependencies)

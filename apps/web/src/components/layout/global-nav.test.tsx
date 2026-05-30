@@ -29,8 +29,6 @@ vi.mock("@workspace/ui/components/icons", () => ({
   BookOpenIcon: () => <span aria-hidden="true" />,
   HomeIcon: () => <span aria-hidden="true" />,
   LogoIcon: () => <span aria-hidden="true" />,
-  SearchIcon: () => <span aria-hidden="true" />,
-  UserIcon: () => <span aria-hidden="true" />,
 }))
 
 describe("GlobalNav", () => {
@@ -53,5 +51,7 @@ describe("GlobalNav", () => {
         .getAllByRole("link", { name: "배우기" })
         .map((link) => link.getAttribute("aria-current"))
     ).toEqual(["page", "page"])
+    expect(screen.queryByRole("button", { name: "검색" })).toBeNull()
+    expect(screen.queryByRole("link", { name: "프로필" })).toBeNull()
   })
 })

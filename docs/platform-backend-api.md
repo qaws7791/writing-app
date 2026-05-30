@@ -1,5 +1,13 @@
 # 플랫폼 백엔드 API
 
+## 2026-05-31 BSSN 6순위 단순화 완료
+
+- 학습자 API에서 `GET /profile`과 공개 `GET /courses/search`를 제거했다.
+- 현재 공개 콘텐츠 API는 `GET /courses`, `GET /courses/:courseId`, `GET /lessons/:lessonId`, `GET /openapi.json`을 기준으로 한다.
+- 인증 API는 `/me`, `/progress`, 코스 진행, 레슨 진행 저장, 답변 저장, 레슨 완료, AI 피드백을 제공한다.
+- `ContentService`와 Drizzle 콘텐츠 repository의 검색 포트를 제거하고, `LearningService`의 프로필 요약 포트를 제거했다.
+- OpenAPI 정적 계약 파일과 웹 생성 타입은 제거된 경로와 장식성 레슨 필드를 포함하지 않는다.
+
 ## 2026-05-31 학습자 Google 단일 로그인 완료
 
 - 학습자 Better Auth 런타임에서 `emailAndPassword` 설정을 제거하고 Google social provider만 인증 진입점으로 남겼다.
