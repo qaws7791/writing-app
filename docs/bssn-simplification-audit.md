@@ -9,6 +9,8 @@
 - 작업 완료: 2026-05-31, 코스 썸네일 필드와 업로드 경로, RustFS/S3 의존성, Docker Compose 로컬 스토리지 구성을 제거했다. 로컬 개발과 배포는 별도 스토리지 서비스 없이 앱, SQLite, 필수 인증/AI 환경 변수만 기준으로 한다.
 - 작업 시작: 2026-05-31, 2순위 후보인 커리큘럼 버전, 마이그레이션, 학습자 업그레이드 UX의 완전 제거를 시작했다. 어드민 코스 편집기는 유지하되 draft/publish 버전 모델이 아니라 현재 커리큘럼 직접 편집 모델로 단순화한다.
 - 작업 완료: 2026-05-31, 커리큘럼 버전/마이그레이션/업그레이드 스키마, API, 서비스, 웹 공지 UX를 제거했다. 코스 구조는 `course_chapters`, `course_lessons`, `lesson_steps`의 현재 커리큘럼 하나로 관리하고, 어드민 편집기는 `GET/PUT /courses/:courseId/editor`에서 전체 스냅샷을 직접 저장한다.
+- 작업 시작: 2026-05-31, 3순위 후보인 웹 runtime fake 모드와 중복 정적 카탈로그의 제품 실행 경로 제거를 시작했다. 테스트용 fake 어댑터는 유지하고, 웹 앱 서버/브라우저 factory는 실제 HTTP API를 기본 경로로 고정한다.
+- 작업 완료: 2026-05-31, `WEB_API_MODE`, `NEXT_PUBLIC_API_MODE`, `api-mode.ts`, 웹 `dev:fake` 스크립트, 코스/레슨 라우트의 fake 전용 정적 fallback을 제거했다. 제품 실행 경로는 HTTP API 하나로 고정하고, fake 어댑터는 직접 import하는 테스트 격리 용도로만 남겼다.
 - 기준 철학: Best Simple System for Now
 - 조사 범위: `/prototype`, `node_modules`, 빌드 산출물은 제외하고 현재 모노레포의 앱, 패키지, 문서, 런타임 의존성, 환경 변수, DB 스키마, API 경계를 확인했다.
 
@@ -77,9 +79,9 @@
 
 ### 4. 웹 runtime fake 모드 제거
 
-`WEB_API_MODE`와 `NEXT_PUBLIC_API_MODE` 기본값이 fake라서 서버 컴포넌트와 브라우저 mutation이 서로 다른 데이터 소스를 볼 수 있다. 문서에도 실제 API 서버가 떠 있어도 환경 변수를 모두 `http`로 지정하지 않으면 fake 데이터가 흐를 수 있다고 기록되어 있다.
+2026-05-31 제거를 완료했다. 더 이상 `WEB_API_MODE`와 `NEXT_PUBLIC_API_MODE`로 서버 컴포넌트와 브라우저 mutation 데이터 소스를 고르지 않는다. 웹 앱의 서버/브라우저 API factory는 모두 HTTP 어댑터만 생성한다.
 
-추천 단순화는 runtime fake 모드를 제거하고, 앱 실행은 항상 실제 API/DB를 사용하게 하는 것이다. 테스트에서는 주입된 fake 객체를 계속 사용할 수 있다. 이렇게 하면 모드 2개, 정적 카탈로그 중복, fake 사용자, 브라우저 메모리 진행 상태, fake AI 피드백을 제품 실행 경로에서 제거한다.
+제품 실행 경로에서 fake 사용자, 브라우저 메모리 진행 상태, fake AI 피드백, 로컬 코스/레슨 카탈로그 fallback을 제거했다. 테스트에서는 `createFakeWritingAppApi()`를 직접 import해 외부 API 없이 포트 계약을 검증할 수 있다.
 
 ### 5. 레슨 스텝 타입 축소 계획 제외
 
@@ -140,9 +142,9 @@
 
 ### 13. 학습자 API와 웹 앱 통합
 
-현재는 `apps/web`과 `apps/api`가 별도 프로세스다. 이 때문에 CORS, same-origin auth proxy, 서버/브라우저 API base URL, `WEB_API_MODE`/`NEXT_PUBLIC_API_MODE`, systemd 프로세스 2개가 필요하다.
+현재는 `apps/web`과 `apps/api`가 별도 프로세스다. 이 때문에 CORS, same-origin auth proxy, 서버/브라우저 API base URL, systemd 프로세스 2개가 필요하다.
 
-추천은 즉시 실행보다 2차 단순화 후보로 둔다. 먼저 썸네일, 커리큘럼 버전, fake runtime, 이메일/비밀번호 인증 경로를 제거한 뒤에도 프로세스 분리가 여전히 부담이면 `apps/web` 안의 route handler 또는 server action으로 API를 합친다. 합치면 배포는 Next 앱 하나와 SQLite 하나로 줄어든다.
+추천은 즉시 실행보다 2차 단순화 후보로 둔다. 먼저 썸네일, 커리큘럼 버전, 이메일/비밀번호 인증 경로를 제거한 뒤에도 프로세스 분리가 여전히 부담이면 `apps/web` 안의 route handler 또는 server action으로 API를 합친다. 합치면 배포는 Next 앱 하나와 SQLite 하나로 줄어든다.
 
 ### 14. 관리자 API와 관리자 앱 통합
 
@@ -194,9 +196,9 @@ bun run dev:app
 
 ## 권장 실행 순서
 
-1. 코스 썸네일과 RustFS/S3/Docker 의존성을 제거한다.
-2. 커리큘럼 버전/마이그레이션/업그레이드 UX를 제거하고 단일 현재 커리큘럼으로 되돌린다.
-3. 웹 runtime fake 모드를 제거하고 테스트 주입 fake만 남긴다.
+1. 완료: 코스 썸네일과 RustFS/S3/Docker 의존성을 제거한다.
+2. 완료: 커리큘럼 버전/마이그레이션/업그레이드 UX를 제거하고 단일 현재 커리큘럼으로 되돌린다.
+3. 완료: 웹 runtime fake 모드를 제거하고 테스트 주입 fake만 남긴다.
 4. docs 앱을 제거하고 Markdown 문서와 `/openapi.json` 또는 단순 JSON 산출물만 남긴다.
 5. 이메일/비밀번호 로그인 경로를 제거하고 Google 로그인 단일 방식으로 통합한다.
 6. 프로필, 검색, 레거시 리다이렉트, 장식성 진행 요소를 필요성 기준으로 개별 제거한다.

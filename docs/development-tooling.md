@@ -10,6 +10,12 @@
 - 루트 Docker Compose 파일, RustFS 버킷 초기화 스크립트, `.env.docker.example`을 제거했다.
 - 로컬 시작 절차는 Docker 없이 `bun install`, 앱별 `.env`, `bun run dev:admin:setup`, `bun run dev:admin`으로 정리했다.
 
+## 2026-05-31 웹 runtime fake 개발 경로 제거 완료
+
+- `apps/web/package.json`에서 `dev:fake` 스크립트를 제거했다.
+- 웹 앱 개발 실행은 `bun run dev:app` 기준으로 실제 API와 함께 실행한다.
+- fake 어댑터는 제품 실행 모드가 아니라 테스트에서 명시적으로 주입하는 용도로만 유지한다.
+
 ## 2026-05-30 웹 fake 개발 서버 스크립트 추가 시작
 
 - `apps/web`을 백엔드 없이 fake API 모드로 실행하는 개발 스크립트를 추가한다.
@@ -21,6 +27,7 @@
 - `apps/web/package.json`에 `dev:fake` 스크립트를 추가했다.
 - `dev:fake`는 `WEB_API_MODE=fake`, `NEXT_PUBLIC_API_MODE=fake`를 명시하고 `next dev`를 실행한다.
 - 로컬 검증에서 `bun run dev:fake -- --port 3100`으로 개발 서버를 띄우고 `/` 요청이 `200`을 반환하는지 확인했다.
+- 2026-05-31 BSSN 3순위 작업에서 이 스크립트는 제거되었다.
 
 ## 2026-05-30 README 로컬 시작 가이드 갱신 시작
 

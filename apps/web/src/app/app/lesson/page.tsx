@@ -3,7 +3,6 @@ import { notFound } from "next/navigation"
 
 import { lessonId } from "@/features/lessons/lesson-ids"
 import { LessonPage } from "@/features/lessons/lesson-page"
-import { isServerFakeApiMode } from "@/lib/api/api-mode"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
 type LessonRouteProps = {
@@ -69,11 +68,5 @@ async function getRouteLessonId(value: string | string[] | undefined) {
     return lessonId(lessonIdParam)
   }
 
-  if (!isServerFakeApiMode()) {
-    return null
-  }
-
-  const { getDefaultLesson } = await import("@/features/lessons/lesson-data")
-
-  return getDefaultLesson().id
+  return null
 }

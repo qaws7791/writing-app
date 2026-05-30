@@ -109,15 +109,23 @@
 - 회원가입 후 홈에서 기존 진행 중 코스가 보이는 원인을 확장해, `apps/web` 런타임의 로컬 프로토타입 데이터 참조를 조사했다.
 - 상세 결과는 `docs/frontend-prototype-data-audit.md`에 기록했다.
 - 홈 화면은 API를 호출하지 않고 `inProgressCourses` 정적 배열을 직접 렌더링하는 확정 문제다.
-- 서버와 브라우저 API 클라이언트의 기본값이 각각 fake라서, 실제 API 검증 시 `WEB_API_MODE=http`와 `NEXT_PUBLIC_API_MODE=http`를 함께 지정해야 한다.
+- 당시 서버와 브라우저 API 클라이언트의 기본값이 각각 fake라서, 실제 API 검증 시 `WEB_API_MODE=http`와 `NEXT_PUBLIC_API_MODE=http`를 함께 지정해야 했다.
 
 ## 2026-05-27 API 모드 실제 데이터 전환 완료
 
 - `WritingAppApi`에 진행 목록 조회를 추가하고 HTTP 어댑터가 백엔드 `/progress`를 호출하도록 연결했다.
 - `/app` 홈은 진행 목록과 코스 상세를 API 포트에서 가져오며, 새 사용자처럼 진행 목록이 없으면 빈 상태를 렌더링한다.
-- 코스 상세 metadata/static params와 레슨 기본값 fallback의 로컬 데이터 참조는 fake 모드에서만 동적 import하도록 제한했다.
+- 당시 코스 상세 metadata/static params와 레슨 기본값 fallback의 로컬 데이터 참조는 fake 모드에서만 동적 import하도록 제한했다.
 - API 매퍼가 ID helper만 쓰려고 프로토타입 데이터 모듈을 로드하지 않도록 코스/레슨 ID helper를 별도 파일로 분리했다.
-- API 클라이언트 factory의 fake 어댑터 참조도 동적 import로 바꿔 API 모드에서 fake 카탈로그가 로드되지 않게 했다.
+- 당시 API 클라이언트 factory의 fake 어댑터 참조도 동적 import로 바꿔 API 모드에서 fake 카탈로그가 로드되지 않게 했다.
+
+## 2026-05-31 runtime fake 모드 제거 완료
+
+- `getServerWritingAppApi`와 `getBrowserWritingAppApi`는 환경 변수 모드 분기 없이 항상 HTTP 어댑터를 생성한다.
+- `WEB_API_MODE`, `NEXT_PUBLIC_API_MODE`, `apps/web/src/lib/api/api-mode.ts`, `dev:fake` 스크립트를 제거했다.
+- 코스 상세 `generateStaticParams`는 빈 배열을 반환하고, metadata는 API 조회 결과로만 만든다.
+- 레슨 라우트는 `lesson_id`가 없을 때 로컬 기본 레슨으로 대체하지 않고 not found로 처리한다.
+- fake 어댑터는 `createFakeWritingAppApi()`를 직접 import하는 테스트 격리 용도로만 유지한다.
 
 ## 2026-05-27 Better Auth와 Next.js 통합 보정 시작
 
