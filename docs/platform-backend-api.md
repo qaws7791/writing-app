@@ -1,5 +1,11 @@
 # 플랫폼 백엔드 API
 
+## 2026-05-31 docs 앱 제거 완료
+
+- OpenAPI 정적 계약 파일 위치를 `apps/docs/openapi/writing-app-api.json`에서 `docs/openapi/writing-app-api.json`으로 옮겼다.
+- API 런타임의 `/openapi.json` 라우트는 유지하되, Fumadocs 기반 공개 API 문서 사이트와 MDX 생성 경로는 제거했다.
+- 웹 OpenAPI 타입 생성은 `docs/openapi/writing-app-api.json`을 기준으로 유지한다.
+
 ## 2026-05-28 학습자 커리큘럼 업그레이드 UX 구현 시작
 
 - 커리큘럼 버전 관리 로드맵 8단계 구현을 시작한다.

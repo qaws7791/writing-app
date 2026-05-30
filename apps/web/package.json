@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "api:generate": "openapi-typescript ../../apps/docs/openapi/writing-app-api.json -o src/lib/api/generated/writing-app-api.d.ts",
+    "api:generate": "openapi-typescript ../../docs/openapi/writing-app-api.json -o src/lib/api/generated/writing-app-api.d.ts",
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint .",

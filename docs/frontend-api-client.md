@@ -11,7 +11,7 @@
 - 설계 문서는 `docs/superpowers/specs/2026-05-27-web-api-client-design.md`에 작성했다.
 - 구현 계획은 `docs/superpowers/plans/2026-05-27-web-api-client.md`에 작성했다.
 - 권장 구조는 `apps/web` 내부에 API 포트, `openapi-fetch` 기반 HTTP 어댑터, 정적 데이터 기반 fake 어댑터를 함께 두는 방식이다.
-- 생성 타입은 `apps/docs/openapi/writing-app-api.json`에서 `apps/web/src/lib/api/generated/writing-app-api.d.ts`로 만든다.
+- 생성 타입은 `docs/openapi/writing-app-api.json`에서 `apps/web/src/lib/api/generated/writing-app-api.d.ts`로 만든다.
 - 화면과 도메인 로직은 생성 타입과 HTTP 클라이언트에 직접 의존하지 않고, 프론트 내부 모델과 API 포트만 사용한다.
 - 테스트는 fake 어댑터로 외부 없이 실행하고, HTTP 어댑터는 주입된 `fetch`로 요청 모양과 오류 매핑을 검증한다.
 

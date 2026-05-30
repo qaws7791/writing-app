@@ -1,5 +1,12 @@
 # API OpenAPI 문서 통합
 
+## 2026-05-31 docs 앱 제거 완료
+
+- 별도 `apps/docs` Fumadocs 앱과 API 레퍼런스 MDX 생성 경로를 제거했다.
+- `apps/api`의 `openapi:generate`는 정적 계약 파일을 `docs/openapi/writing-app-api.json`에 생성한다.
+- `apps/web`의 `api:generate`는 이 JSON 파일을 읽어 `apps/web/src/lib/api/generated/writing-app-api.d.ts`를 갱신한다.
+- 공개 API 문서 사이트는 운영하지 않는다. 현재 기준의 문서 확인은 저장소의 Markdown 문서와 API 런타임의 `/openapi.json`으로 충분하다.
+
 ## 2026-05-26 시작
 
 - `apps/api`가 OpenAPI JSON 파일을 생성하고, `apps/docs`가 이 파일을 읽어 Fumadocs API 문서로 생성하는 파이프라인을 구축한다.

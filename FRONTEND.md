@@ -177,11 +177,11 @@ OpenAPI types provide compile-time safety. Runtime safety requires separate vali
 
 ### 5.5 현재 웹 API 클라이언트 구조
 
-`apps/web`는 `apps/docs/openapi/writing-app-api.json`에서 `openapi-typescript`로 생성한 타입을 사용한다. 생성 타입은 `apps/web/src/lib/api/generated`에만 두고 UI 컴포넌트는 직접 import하지 않는다.
+`apps/web`는 `docs/openapi/writing-app-api.json`에서 `openapi-typescript`로 생성한 타입을 사용한다. 생성 타입은 `apps/web/src/lib/api/generated`에만 두고 UI 컴포넌트는 직접 import하지 않는다.
 
 실제 HTTP 연결은 `openapi-fetch` 기반 HTTP 어댑터가 담당한다. 화면과 feature 로직은 `WritingAppApi` 포트만 사용하며, 테스트와 백엔드 없는 로컬 실행은 fake 어댑터로 같은 포트를 구현한다.
 
-로컬 기본값은 fake 모드다. 백엔드 연동 검증 시 `WEB_API_MODE=http`, `NEXT_PUBLIC_API_MODE=http`, `WEB_API_BASE_URL=http://localhost:4000`, `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000`을 명시한다.
+웹 런타임의 기본 데이터 경로는 HTTP API다. 로컬 백엔드 주소는 `WEB_API_BASE_URL=http://localhost:4000`, `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000`을 기준으로 맞춘다.
 
 코스 상세 화면은 서버 컴포넌트에서 코스 상세와 학습자 진행 상태를 조회한다. 커리큘럼 버전과 학습자 업그레이드 UX는 제거했으므로 코스 상세에서 별도 업그레이드 공지를 조회하거나 렌더링하지 않는다.
 

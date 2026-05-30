@@ -1,5 +1,11 @@
 # 개발 도구
 
+## 2026-05-31 docs 앱 제거 완료
+
+- 루트 `docs` 스크립트와 `apps/docs` 워크스페이스를 제거했다.
+- OpenAPI 정적 JSON은 문서 앱 입력 파일이 아니라 `docs/openapi/writing-app-api.json` 산출물로 관리한다.
+- 별도 문서 개발 서버는 운영하지 않고, 프로젝트 문서는 저장소의 Markdown 파일을 기준으로 확인한다.
+
 ## 2026-05-31 BSSN 썸네일 스토리지 제거 시작
 
 - 코스 썸네일 업로드 제거에 맞춰 로컬 개발 도구 요구사항에서 Docker Compose와 RustFS를 제거한다.
@@ -75,8 +81,7 @@
 ## 앱 실행
 
 - 모든 개발 서버를 실행하려면 저장소 루트에서 `bun run dev`를 실행한다.
-- docs 앱만 실행하려면 저장소 루트에서 `bun run docs` 또는 `npm run docs`를 실행한다.
-- docs 앱 실행 명령은 루트 `package.json`의 `docs` 스크립트이며 내부적으로 `bun --filter docs dev`를 실행한다.
+- 별도 docs 앱은 운영하지 않는다. 문서는 저장소의 Markdown 파일과 API 런타임의 `/openapi.json`을 기준으로 확인한다.
 
 ## Git 훅
 

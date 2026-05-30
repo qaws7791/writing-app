@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url"
 import { createOpenApiDocument } from "@/openapi/openapi-document"
 
 const defaultOutputPath = fileURLToPath(
-  new URL("../../../docs/openapi/writing-app-api.json", import.meta.url)
+  new URL("../../../../docs/openapi/writing-app-api.json", import.meta.url)
 )
 
 const outputPath = process.argv[2] ?? defaultOutputPath

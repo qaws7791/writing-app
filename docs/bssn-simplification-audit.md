@@ -11,6 +11,8 @@
 - 작업 완료: 2026-05-31, 커리큘럼 버전/마이그레이션/업그레이드 스키마, API, 서비스, 웹 공지 UX를 제거했다. 코스 구조는 `course_chapters`, `course_lessons`, `lesson_steps`의 현재 커리큘럼 하나로 관리하고, 어드민 편집기는 `GET/PUT /courses/:courseId/editor`에서 전체 스냅샷을 직접 저장한다.
 - 작업 시작: 2026-05-31, 3순위 후보인 웹 runtime fake 모드와 중복 정적 카탈로그의 제품 실행 경로 제거를 시작했다. 테스트용 fake 어댑터는 유지하고, 웹 앱 서버/브라우저 factory는 실제 HTTP API를 기본 경로로 고정한다.
 - 작업 완료: 2026-05-31, `WEB_API_MODE`, `NEXT_PUBLIC_API_MODE`, `api-mode.ts`, 웹 `dev:fake` 스크립트, 코스/레슨 라우트의 fake 전용 정적 fallback을 제거했다. 제품 실행 경로는 HTTP API 하나로 고정하고, fake 어댑터는 직접 import하는 테스트 격리 용도로만 남겼다.
+- 작업 시작: 2026-05-31, 4순위 후보인 별도 docs 앱과 Fumadocs API 문서 사이트 제거를 시작했다. 공개 문서 앱은 제거하고, OpenAPI 정적 JSON은 `docs/openapi` 산출물로 유지한다.
+- 작업 완료: 2026-05-31, `apps/docs` Fumadocs 앱과 docs 실행 스크립트를 제거했다. OpenAPI 정적 계약 파일은 `docs/openapi/writing-app-api.json`에 생성하고, 웹 타입 생성도 이 경로를 기준으로 한다.
 - 기준 철학: Best Simple System for Now
 - 조사 범위: `/prototype`, `node_modules`, 빌드 산출물은 제외하고 현재 모노레포의 앱, 패키지, 문서, 런타임 의존성, 환경 변수, DB 스키마, API 경계를 확인했다.
 
@@ -28,7 +30,7 @@
 
 ## 관측된 복잡도
 
-- 앱은 `apps/web`, `apps/api`, `apps/admin`, `apps/admin-api`, `apps/docs`, `apps/storybook` 6개다.
+- 앱은 `apps/web`, `apps/api`, `apps/admin`, `apps/admin-api`, `apps/storybook` 5개다.
 - 주요 TypeScript 코드량은 `apps/web` 약 11,719줄, `apps/admin` 약 7,688줄, `packages/db` 약 7,050줄, `packages/core` 약 5,290줄, `packages/ui` 약 4,583줄, `apps/admin-api` 약 3,415줄, `apps/api` 약 2,907줄이다.
 - DB schema에는 26개 테이블이 있다. 이 중 커리큘럼 버전/마이그레이션 계열만 8개 테이블이고, 관리자 인증 계열은 4개 테이블이다.
 - Hono route handler는 학습자 API 18개, 관리자 API 23개다.
@@ -119,9 +121,9 @@
 
 ### 10. 별도 docs 앱 제거
 
-`apps/docs`는 Fumadocs와 OpenAPI 문서 생성을 위해 별도 Next 앱, Orama 검색, OG 이미지, MDX, API 문서 페이지를 유지한다. 공개 API 제품이 아니라면 현재 팀에는 `/docs` Markdown과 API의 `/openapi.json`만으로 충분하다.
+2026-05-31 제거를 완료했다. 더 이상 `apps/docs` Fumadocs 앱, Orama 검색, OG 이미지, API 문서 MDX 생성 경로를 유지하지 않는다. 공개 API 제품이 아니라면 현재 팀에는 저장소의 Markdown 문서와 API의 `/openapi.json`만으로 충분하다.
 
-추천 단순화는 `apps/docs`를 제거하고 OpenAPI JSON 생성 위치를 `apps/api/openapi` 또는 `docs/openapi`로 옮기는 것이다. 웹의 `api:generate`가 `apps/docs/openapi/writing-app-api.json`에 의존하므로 이 경로만 정리하면 된다.
+OpenAPI 정적 계약 파일은 `docs/openapi/writing-app-api.json`에 생성한다. 웹의 `api:generate`도 이 파일을 읽어 생성 타입을 갱신한다.
 
 ### 11. Storybook 제거와 UI 컴포넌트 축소 계획 제외
 
@@ -199,7 +201,7 @@ bun run dev:app
 1. 완료: 코스 썸네일과 RustFS/S3/Docker 의존성을 제거한다.
 2. 완료: 커리큘럼 버전/마이그레이션/업그레이드 UX를 제거하고 단일 현재 커리큘럼으로 되돌린다.
 3. 완료: 웹 runtime fake 모드를 제거하고 테스트 주입 fake만 남긴다.
-4. docs 앱을 제거하고 Markdown 문서와 `/openapi.json` 또는 단순 JSON 산출물만 남긴다.
+4. 완료: docs 앱을 제거하고 Markdown 문서와 `/openapi.json`, `docs/openapi/writing-app-api.json`만 남긴다.
 5. 이메일/비밀번호 로그인 경로를 제거하고 Google 로그인 단일 방식으로 통합한다.
 6. 프로필, 검색, 레거시 리다이렉트, 장식성 진행 요소를 필요성 기준으로 개별 제거한다.
 7. 남은 구조를 보고 학습자 API와 웹 앱 통합, 관리자 API 통합, core/env/logger 패키지 흡수를 결정한다.

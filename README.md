@@ -1,6 +1,6 @@
 # 한글쓰기 학습 플랫폼
 
-한글쓰기 학습 플랫폼 모노레포다. 학습자 웹, 학습자 API, 어드민 웹, 어드민 API, 문서 앱, Storybook, 공유 패키지를 Bun workspace로 관리한다.
+한글쓰기 학습 플랫폼 모노레포다. 학습자 웹, 학습자 API, 어드민 웹, 어드민 API, Storybook, 공유 패키지를 Bun workspace로 관리한다.
 
 ## 프로젝트 구조
 
@@ -8,7 +8,6 @@
 - `apps/api`: 학습자 플랫폼 Hono API
 - `apps/admin`: 관리자용 Next.js 운영 대시보드
 - `apps/admin-api`: 관리자용 Hono API
-- `apps/docs`: 프로젝트와 API 문서 앱
 - `apps/storybook`: 공유 UI 컴포넌트 확인용 Storybook
 - `packages/ui`: shadcn 기반 공유 UI 컴포넌트
 - `packages/core`: DTO, Zod schema, 도메인 서비스, repository port
@@ -97,10 +96,9 @@ bun run dev:admin
 bun run dev
 ```
 
-문서 앱과 Storybook은 별도로 실행할 수 있다.
+Storybook은 별도로 실행할 수 있다.
 
 ```bash
-bun run docs
 bun run storybook
 ```
 
