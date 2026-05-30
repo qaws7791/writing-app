@@ -66,8 +66,13 @@ type CurriculumNodeStatus = "active" | "deprecated" | "archived"
 
 - 코스 편집 문서는 `GET /courses/:courseId/editor`로 조회한다.
 - 저장은 `PUT /courses/:courseId/editor`로 수행한다.
+- 코스 편집 문서는 `revision`을 포함하고, 저장 요청은 관리자가 읽은 기준 `expectedRevision`을 함께 보낸다.
+- 서버의 현재 revision과 저장 요청의 `expectedRevision`이 다르면 저장을 거절하고 `409 conflict`를 반환한다.
 - 별도 draft, publish, discard, restore 단계는 없다.
+- 저장 payload에서 빠진 기존 챕터와 레슨은 삭제하지 않고 `archived`로 전환한다.
 - 저장 payload에서 빠진 기존 스텝은 삭제하지 않고 `archived`로 전환한다.
+
+챕터와 레슨은 삭제 후 재생성하지 않는다. 저장 요청에 포함된 항목은 ID 기준으로 갱신하고, 요청에서 빠진 기존 챕터와 레슨은 `archived` 상태로 전환해 추적 가능한 row ID를 유지한다.
 
 ## 현재 구현 상태
 
