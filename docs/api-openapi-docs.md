@@ -6,6 +6,7 @@
 - `apps/api`의 `openapi:generate`는 정적 계약 파일을 `docs/openapi/writing-app-api.json`에 생성한다.
 - `apps/web`의 `api:generate`는 이 JSON 파일을 읽어 `apps/web/src/lib/api/generated/writing-app-api.d.ts`를 갱신한다.
 - 공개 API 문서 사이트는 운영하지 않는다. 현재 기준의 문서 확인은 저장소의 Markdown 문서와 API 런타임의 `/openapi.json`으로 충분하다.
+- 아래 2026-05-26 기록은 별도 docs 앱이 존재하던 시점의 이력이며, 현재 실행 경로가 아니다.
 
 ## 2026-05-26 시작
 

@@ -18,7 +18,7 @@
 - 업그레이드 공지는 사용자의 현재 진행 버전보다 높은 최신 published 버전과 active 마이그레이션 맵이 있을 때만 `available`로 반환한다.
 - 직접 업그레이드는 관리자 마이그레이션 적용과 동일한 helper를 사용해 완료 레슨만 새 버전으로 이전하고 진행 버전을 target version으로 이동한다.
 - 나중에 결정은 `curriculum_upgrade_dismissals`에 사용자/코스/source/target 버전 쌍을 기록해 같은 공지를 숨긴다.
-- `apps/docs/openapi/writing-app-api.json`와 웹 OpenAPI 생성 타입에 새 route 계약을 반영했다.
+- 당시 `apps/docs/openapi/writing-app-api.json`와 웹 OpenAPI 생성 타입에 새 route 계약을 반영했다. 현재 정적 계약 파일은 `docs/openapi/writing-app-api.json`에 둔다.
 
 ## 2026-05-28 커리큘럼 마이그레이션 맵 구현 시작
 
@@ -274,7 +274,7 @@
 
 - `apps/api`는 공개 콘텐츠 조회, Better Auth 인증, 현재 사용자, 프로필, 진행 조회, 레슨 진행 저장, 답변 저장, 레슨 완료, AI 피드백 API를 실제 서비스와 SQLite 저장소까지 연결한다.
 - `packages/core`와 `packages/db`는 콘텐츠, 학습 진행, 답변, 피드백 시도 저장을 테스트로 검증하고 있다.
-- `apps/docs/openapi/writing-app-api.json` 생성 파이프라인과 `/openapi.json` 라우트가 있어 프론트 API 클라이언트 계약의 기준점으로 사용할 수 있다.
+- `docs/openapi/writing-app-api.json` 생성 파이프라인과 `/openapi.json` 라우트가 있어 프론트 API 클라이언트 계약의 기준점으로 사용할 수 있다.
 - `apps/web`는 아직 API 호출 계층 없이 `course-data.ts`, `course-detail-data.ts`, `lesson-data.ts`의 정적 데이터로 화면을 구성한다.
 - 프론트 연결은 가능하지만, 코스/레슨 DTO 매핑, 인증 쿠키 포함 fetch 설정, 진행 상태 병합, AI 피드백 호출 UI 상태, API base URL 환경 변수 정의가 선행되어야 한다.
 - 검증은 `PATH=/Users/mac/.bun/bin:$PATH`를 명시해 `@workspace/api`, `@workspace/core`, `@workspace/db`의 test/typecheck/lint를 실행했다. `@workspace/api` lint는 기존 `turbo/no-undeclared-env-vars` 경고 2건만 남고 종료 코드 0을 반환했다.

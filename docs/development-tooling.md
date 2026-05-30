@@ -58,7 +58,7 @@
 
 - 루트 `package.json`의 `format`, `format:check` 스크립트가 포맷 대상 glob과 ignore 경로를 직접 나열해 읽기 어렵다.
 - 포맷 제외 정책은 `.prettierignore`로 옮기고, 스크립트는 `prettier --write .`, `prettier --check .`로 단순화한다.
-- `prototype/`, agent 작업 공간, 빌드 산출물, 로컬 DB, credentials, docs 앱 생성 파일은 포맷 대상에서 제외한다.
+- `prototype/`, agent 작업 공간, 빌드 산출물, 로컬 DB, credentials는 포맷 대상에서 제외한다.
 
 ## 2026-05-28 Prettier 명령 정리 완료
 

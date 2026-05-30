@@ -13,6 +13,7 @@
 - 작업 완료: 2026-05-31, `WEB_API_MODE`, `NEXT_PUBLIC_API_MODE`, `api-mode.ts`, 웹 `dev:fake` 스크립트, 코스/레슨 라우트의 fake 전용 정적 fallback을 제거했다. 제품 실행 경로는 HTTP API 하나로 고정하고, fake 어댑터는 직접 import하는 테스트 격리 용도로만 남겼다.
 - 작업 시작: 2026-05-31, 4순위 후보인 별도 docs 앱과 Fumadocs API 문서 사이트 제거를 시작했다. 공개 문서 앱은 제거하고, OpenAPI 정적 JSON은 `docs/openapi` 산출물로 유지한다.
 - 작업 완료: 2026-05-31, `apps/docs` Fumadocs 앱과 docs 실행 스크립트를 제거했다. OpenAPI 정적 계약 파일은 `docs/openapi/writing-app-api.json`에 생성하고, 웹 타입 생성도 이 경로를 기준으로 한다.
+- 작업 검증: 2026-05-31, docs 앱 제거 후 `ARCHITECTURE.md`, OpenAPI 문서, 개발 도구 문서에 남은 최신 구조 표현을 `docs/openapi`와 Markdown 문서 기준으로 정리했다.
 - 기준 철학: Best Simple System for Now
 - 조사 범위: `/prototype`, `node_modules`, 빌드 산출물은 제외하고 현재 모노레포의 앱, 패키지, 문서, 런타임 의존성, 환경 변수, DB 스키마, API 경계를 확인했다.
 

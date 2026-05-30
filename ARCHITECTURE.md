@@ -11,7 +11,6 @@
 │   ├── api/        # Hono - 학습자 플랫폼 API
 │   ├── admin/      # Next.js 16 - 관리자 운영 대시보드
 │   ├── admin-api/  # Hono - 관리자 API
-│   ├── docs/       # Next.js 16 Fumadocs 문서 앱
 │   └── storybook/  # UI 컴포넌트 개발 환경
 ├── packages/
 │   ├── ui/      # 공유 UI 컴포넌트와 디자인 시스템
@@ -19,7 +18,7 @@
 │   ├── logger/  # pino logger와 요청 로그 helper
 │   ├── env/     # 환경 변수 parsing helper
 │   └── core/    # 공유 DTO, Zod schema, domain service, port
-└── docs/
+└── docs/       # 한국어 결정 기록과 OpenAPI 정적 계약 파일
 ```
 
 ## 공통 기술
@@ -83,13 +82,6 @@
   - 코스-챕터-레슨 계층형 조회
   - 사용자 기본 정보 조회
   - 최초 관리자 계정 seed
-
-### docs
-
-프로젝트와 API 문서를 제공하는 문서 앱이다.
-
-- port: `3002`
-- framework: Fumadocs on Next.js 16
 
 ### storybook
 
