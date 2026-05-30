@@ -56,6 +56,7 @@ describe("AdminCourseDetailPage", () => {
       <AdminCourseDetailPage
         adminApi={createAdminApiMock()}
         course={courseFixture}
+        revision={0}
         curriculum={curriculumFixture}
         urlState={{
           view: "lesson",
@@ -80,13 +81,22 @@ describe("AdminCourseDetailPage", () => {
     >(async (input) => ({
       status: "ok",
       value: {
-        chapters: input.chapters.map((chapter) => ({
-          ...chapter,
-          lessons: input.lessons
-            .filter((lesson) => lesson.chapterId === chapter.id)
-            .map((lesson) => lesson),
-        })),
-        steps: input.steps,
+        course: {
+          id: input.courseId,
+          title: input.course.title,
+          description: input.course.description,
+          sortOrder: input.course.sortOrder,
+        },
+        revision: input.expectedRevision + 1,
+        curriculum: {
+          chapters: input.chapters.map((chapter) => ({
+            ...chapter,
+            lessons: input.lessons
+              .filter((lesson) => lesson.chapterId === chapter.id)
+              .map((lesson) => lesson),
+          })),
+          steps: input.steps,
+        },
       },
     }))
 
@@ -96,6 +106,7 @@ describe("AdminCourseDetailPage", () => {
           saveCourseEditorDocument,
         })}
         course={courseFixture}
+        revision={0}
         curriculum={curriculumFixture}
         urlState={{
           view: "lesson",
@@ -114,6 +125,7 @@ describe("AdminCourseDetailPage", () => {
     expect(saveCourseEditorDocument).toHaveBeenCalledWith(
       expect.objectContaining({
         courseId: "sentence-structure",
+        expectedRevision: 0,
         course: expect.objectContaining({
           title: "수정 코스",
         }),
@@ -135,6 +147,47 @@ describe("AdminCourseDetailPage", () => {
     )
     await waitFor(() => {
       expect(screen.getByText("저장되었습니다.")).toBeTruthy()
+    })
+  })
+
+  it("shows a conflict message when another admin saved first", async () => {
+    const user = userEvent.setup()
+
+    render(
+      <AdminCourseDetailPage
+        adminApi={createAdminApiMock({
+          async saveCourseEditorDocument() {
+            return {
+              status: "error",
+              error: {
+                code: "conflict",
+                message: "다른 관리자가 먼저 저장했습니다.",
+              },
+              httpStatus: 409,
+            }
+          },
+        })}
+        course={courseFixture}
+        revision={0}
+        curriculum={curriculumFixture}
+        urlState={{
+          view: "lesson",
+          lessonId: "sentence-structure-01",
+          stepId: null,
+        }}
+      />
+    )
+
+    await user.clear(screen.getByLabelText("코스 제목"))
+    await user.type(screen.getByLabelText("코스 제목"), "충돌 코스")
+    await user.click(screen.getByRole("button", { name: "저장" }))
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "다른 관리자가 먼저 저장했습니다. 최신 내용을 다시 불러온 뒤 변경을 다시 적용하세요."
+        )
+      ).toBeTruthy()
     })
   })
 })
@@ -192,6 +245,7 @@ function createAdminApiMock(overrides: Partial<AdminApi> = {}): AdminApi {
         status: "ok",
         value: {
           course: courseFixture,
+          revision: 0,
           curriculum: curriculumFixture,
         },
       }
@@ -249,7 +303,11 @@ function createAdminApiMock(overrides: Partial<AdminApi> = {}): AdminApi {
     async saveCourseEditorDocument() {
       return {
         status: "ok",
-        value: curriculumFixture,
+        value: {
+          course: courseFixture,
+          revision: 1,
+          curriculum: curriculumFixture,
+        },
       }
     },
     ...overrides,

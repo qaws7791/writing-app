@@ -122,6 +122,7 @@ describe("createHttpAdminApi", () => {
           description: "설명",
           sortOrder: 1,
         },
+        revision: 0,
         curriculum: {
           chapters: [],
           steps: [],
@@ -175,8 +176,17 @@ describe("createHttpAdminApi", () => {
   it("saves an editor document with PUT body", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       createJsonResponse({
-        chapters: [],
-        steps: [],
+        course: {
+          id: "sentence-structure",
+          title: "기초 문장 만들기",
+          description: "설명",
+          sortOrder: 1,
+        },
+        revision: 1,
+        curriculum: {
+          chapters: [],
+          steps: [],
+        },
       })
     )
     const api = createHttpAdminApi({
@@ -186,6 +196,7 @@ describe("createHttpAdminApi", () => {
 
     await api.saveCourseEditorDocument({
       courseId: "sentence-structure",
+      expectedRevision: 0,
       course: {
         title: "기초 문장 만들기",
         description: "설명",
@@ -204,6 +215,7 @@ describe("createHttpAdminApi", () => {
     expect(request.headers.get("content-type")).toBe("application/json")
     await expect(request.json()).resolves.toMatchObject({
       courseId: "sentence-structure",
+      expectedRevision: 0,
     })
   })
 

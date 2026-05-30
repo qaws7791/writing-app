@@ -31,6 +31,7 @@ export default async function CourseDetailRoute({
     <AdminCourseDetailPage
       adminApiBaseUrl={process.env["ADMIN_API_BASE_URL"]}
       course={editorDocument.value.course}
+      revision={editorDocument.value.revision}
       curriculum={editorDocument.value.curriculum}
       urlState={urlState}
     />

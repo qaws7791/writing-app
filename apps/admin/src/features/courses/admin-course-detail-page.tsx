@@ -37,6 +37,7 @@ type AdminCourseDetailPageProps = {
   adminApi?: AdminApi
   adminApiBaseUrl?: string
   course: AdminCourseDetailDto
+  revision: number
   curriculum: AdminEditorCurriculumDetailDto
   urlState: CourseEditorUrlState
 }
@@ -45,6 +46,7 @@ export function AdminCourseDetailPage({
   adminApi,
   adminApiBaseUrl = "http://localhost:4001",
   course,
+  revision,
   curriculum,
   urlState,
 }: AdminCourseDetailPageProps) {
@@ -53,15 +55,17 @@ export function AdminCourseDetailPage({
     [adminApi, adminApiBaseUrl]
   )
   const [workingCopy, setWorkingCopy] = React.useState(() =>
-    createCourseEditorWorkingCopy({ course, curriculum })
+    createCourseEditorWorkingCopy({ course, revision, curriculum })
   )
   const [isSaving, setIsSaving] = React.useState(false)
   const [statusMessage, setStatusMessage] = React.useState<string | null>(null)
   const [localUrlState, setLocalUrlState] = React.useState(urlState)
 
   React.useEffect(() => {
-    setWorkingCopy(createCourseEditorWorkingCopy({ course, curriculum }))
-  }, [course, curriculum])
+    setWorkingCopy(
+      createCourseEditorWorkingCopy({ course, revision, curriculum })
+    )
+  }, [course, revision, curriculum])
 
   React.useEffect(() => {
     setLocalUrlState(urlState)
@@ -93,14 +97,19 @@ export function AdminCourseDetailPage({
       )
 
       if (result.status === "error") {
-        setStatusMessage(result.error.message)
+        setStatusMessage(
+          result.error.code === "conflict"
+            ? "다른 관리자가 먼저 저장했습니다. 최신 내용을 다시 불러온 뒤 변경을 다시 적용하세요."
+            : result.error.message
+        )
         return
       }
 
       setWorkingCopy(
         createCourseEditorWorkingCopy({
-          course: workingCopy.course,
-          curriculum: result.value,
+          course: result.value.course,
+          revision: result.value.revision,
+          curriculum: result.value.curriculum,
         })
       )
       setStatusMessage("저장되었습니다.")

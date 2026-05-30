@@ -13,6 +13,7 @@ export type CourseEditorDirtyState = {
 export type CourseEditorWorkingCopy = {
   course: AdminCourseDetailDto
   dirty: CourseEditorDirtyState
+  revision: number
   curriculum: AdminEditorCurriculumDetailDto
   steps: AdminEditorCurriculumDetailDto["steps"]
 }
@@ -46,11 +47,13 @@ export function getDirtyState(changedFields: string[]): CourseEditorDirtyState {
 
 export function createCourseEditorWorkingCopy(input: {
   course: AdminCourseDetailDto
+  revision: number
   curriculum: AdminEditorCurriculumDetailDto
 }): CourseEditorWorkingCopy {
   return {
     course: { ...input.course },
     dirty: getDirtyState([]),
+    revision: input.revision,
     curriculum: {
       ...input.curriculum,
       chapters: input.curriculum.chapters.map((chapter) => ({
@@ -301,6 +304,7 @@ export function createCourseEditorSaveInput(
 ): AdminSaveCurriculumContentRequestDto {
   return {
     courseId: workingCopy.course.id,
+    expectedRevision: workingCopy.revision,
     course: {
       title: workingCopy.course.title,
       description: workingCopy.course.description,

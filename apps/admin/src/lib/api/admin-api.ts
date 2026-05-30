@@ -5,7 +5,6 @@ import type {
   AdminCourseListDto,
   AdminCourseListInputDto,
   AdminCourseTreeDto,
-  AdminEditorCurriculumDetailDto,
   AdminEditorLessonDetailDto,
   AdminErrorDto,
   AdminUserListDto,
@@ -50,6 +49,6 @@ export interface AdminApi {
   ): Promise<AdminApiResult<AdminEditorLessonDetailDto>>
   saveCourseEditorDocument(
     input: AdminCourseEditorSaveRequestDto
-  ): Promise<AdminApiResult<AdminEditorCurriculumDetailDto>>
+  ): Promise<AdminApiResult<AdminCourseEditorDetailDto>>
   listUsers(): Promise<AdminApiResult<AdminUserListDto>>
 }

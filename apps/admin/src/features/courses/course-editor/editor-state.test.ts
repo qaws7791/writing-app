@@ -134,7 +134,11 @@ describe("course editor state", () => {
   })
 
   it("moves lessons and steps without mutating the original working copy", () => {
-    const workingCopy = createCourseEditorWorkingCopy({ course, curriculum })
+    const workingCopy = createCourseEditorWorkingCopy({
+      course,
+      revision: 0,
+      curriculum,
+    })
     const movedLesson = moveLesson(workingCopy, "lesson-1", 1)
     const movedStep = moveStep(workingCopy, "lesson-1", "step-1", 1)
 
@@ -156,6 +160,7 @@ describe("course editor state", () => {
   it("adds and archives chapters lessons and steps", () => {
     const initial = createCourseEditorWorkingCopy({
       course,
+      revision: 0,
       curriculum: {
         chapters: [],
         steps: [],
@@ -214,7 +219,7 @@ describe("course editor state", () => {
       updateLessonField(
         updateChapterField(
           updateCourseField(
-            createCourseEditorWorkingCopy({ course, curriculum }),
+            createCourseEditorWorkingCopy({ course, revision: 0, curriculum }),
             "title",
             "수정 코스"
           ),
@@ -236,6 +241,7 @@ describe("course editor state", () => {
 
     expect(saveInput).toMatchObject({
       courseId: "course-1",
+      expectedRevision: 0,
       course: {
         title: "수정 코스",
       },
