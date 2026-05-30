@@ -17,7 +17,7 @@ import {
   Plus,
 } from "lucide-react"
 
-import type { AdminEditorCurriculumVersionDetailDto } from "@workspace/core/admin"
+import type { AdminEditorCurriculumDetailDto } from "@workspace/core/admin"
 import {
   Collapsible,
   CollapsibleContent,
@@ -37,11 +37,11 @@ import {
 
 import { getNodeStatusLabel } from "@/features/courses/course-editor/editor-labels"
 
-type Chapter = AdminEditorCurriculumVersionDetailDto["chapters"][number]
+type Chapter = AdminEditorCurriculumDetailDto["chapters"][number]
 type Lesson = Chapter["lessons"][number]
 
 type CurriculumMapProps = {
-  chapters: AdminEditorCurriculumVersionDetailDto["chapters"]
+  chapters: AdminEditorCurriculumDetailDto["chapters"]
   isReadOnly?: boolean
   onAddChapter?: () => void
   onAddLesson?: (chapterId: string) => void

@@ -20,7 +20,7 @@ import { CSS } from "@dnd-kit/utilities"
 import { Archive, ChevronDown, Eye, GripVertical, Plus } from "lucide-react"
 
 import type {
-  AdminEditorCurriculumVersionDetailDto,
+  AdminEditorCurriculumDetailDto,
   AdminEditorStepType,
 } from "@workspace/core/admin"
 import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
@@ -43,7 +43,7 @@ import {
 } from "@/features/courses/course-editor/editor-labels"
 
 type LessonSummary =
-  AdminEditorCurriculumVersionDetailDto["chapters"][number]["lessons"][number]
+  AdminEditorCurriculumDetailDto["chapters"][number]["lessons"][number]
 
 type LessonWorkspaceProps = {
   changeKind: EditorChangeKind
@@ -54,7 +54,7 @@ type LessonWorkspaceProps = {
   onMoveStep?: (stepId: string, targetIndex: number) => void
   onOpenPreview?: () => void
   selectedStepId: string | null
-  steps: AdminEditorCurriculumVersionDetailDto["steps"]
+  steps: AdminEditorCurriculumDetailDto["steps"]
   onSelectStep?: (stepId: string) => void
   onUpdateLessonField?: (
     lessonId: string,
@@ -313,7 +313,7 @@ export function LessonWorkspace({
 type StepRowProps = {
   isReadOnly: boolean
   isSelected: boolean
-  step: AdminEditorCurriculumVersionDetailDto["steps"][number]
+  step: AdminEditorCurriculumDetailDto["steps"][number]
   onArchiveStep?: (stepId: string) => void
   onSelectStep?: (stepId: string) => void
 }

@@ -21,10 +21,7 @@ export default async function CourseDetailRoute({
   const urlState = parseEditorUrlState(toUrlSearchParams(paramsRecord))
   const api = await getServerAdminApi()
 
-  const editorDocument = await api.getCourseEditorDocument(
-    id,
-    urlState.versionId
-  )
+  const editorDocument = await api.getCourseEditorDocument(id)
 
   if (editorDocument.status === "error") {
     redirect(getAdminLoginPath(`/courses/${id}`))
@@ -34,13 +31,8 @@ export default async function CourseDetailRoute({
     <AdminCourseDetailPage
       adminApiBaseUrl={process.env["ADMIN_API_BASE_URL"]}
       course={editorDocument.value.course}
-      selectedVersionId={editorDocument.value.version.id}
-      urlState={{
-        ...urlState,
-        versionId: editorDocument.value.version.id,
-      }}
-      version={editorDocument.value.version}
-      versions={editorDocument.value.versions}
+      curriculum={editorDocument.value.curriculum}
+      urlState={urlState}
     />
   )
 }

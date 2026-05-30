@@ -95,52 +95,8 @@ describe("CourseDetailPage", () => {
     expect(screen.queryByText("이어서 학습하기")).toBeNull()
   })
 
-  it("shows an available curriculum upgrade notice", () => {
-    render(
-      <CourseDetailPage
-        course={notStartedCourse}
-        curriculumUpgrade={{
-          completedCount: 1,
-          courseId: "sentence-structure" as never,
-          fromVersion: {
-            id: "sentence-structure-v1",
-            title: "문장 구조의 기본",
-            versionNumber: 1,
-          },
-          message: "새 커리큘럼에는 새 예제와 복습 경로를 추가했습니다.",
-          migrationId: "sentence-structure-v1-to-sentence-structure-v2",
-          status: "available",
-          toVersion: {
-            changelog: "새 예제와 복습 경로를 추가했습니다.",
-            id: "sentence-structure-v2",
-            title: "문장 구조의 기본 v2",
-            versionNumber: 2,
-          },
-          totalLessons: 12,
-        }}
-      />
-    )
-
-    expect(screen.getByText("새 커리큘럼이 도착했습니다")).toBeDefined()
-    expect(
-      screen.getByText("새 커리큘럼에는 새 예제와 복습 경로를 추가했습니다.")
-    ).toBeDefined()
-    expect(
-      screen.getByRole("button", { name: "새 버전으로 업그레이드" })
-    ).toBeDefined()
-    expect(screen.getByRole("button", { name: "나중에 결정" })).toBeDefined()
-  })
-
-  it("does not show curriculum upgrade notice when it is not available", () => {
-    render(
-      <CourseDetailPage
-        course={notStartedCourse}
-        curriculumUpgrade={{
-          courseId: "sentence-structure" as never,
-          status: "not-available",
-        }}
-      />
-    )
+  it("does not show curriculum upgrade notice", () => {
+    render(<CourseDetailPage course={notStartedCourse} />)
 
     expect(screen.queryByText("새 커리큘럼이 도착했습니다")).toBeNull()
   })

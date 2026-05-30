@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import type { ContentService, LessonDto } from "@/content"
-import { curriculumVersionId, lessonId } from "@/content"
+import { lessonId } from "@/content"
 import type { LearningRepository } from "@/learning"
 import { userId } from "@/learning"
 
@@ -86,31 +86,11 @@ const contentService: ContentService = {
 
 function createLearningRepository(): LearningRepository {
   return {
-    applyCurriculumUpgrade: vi.fn(async () => ({
-      error: {
-        code: "not-found" as const,
-        message: "커리큘럼 업그레이드를 찾을 수 없습니다.",
-      },
-      status: "not-found" as const,
-    })),
     completeLesson: vi.fn(),
-    curriculumVersionIncludesLesson: vi.fn(async () => true),
-    dismissCurriculumUpgrade: vi.fn(async () => ({
-      error: {
-        code: "not-found" as const,
-        message: "커리큘럼 업그레이드를 찾을 수 없습니다.",
-      },
-      status: "not-found" as const,
-    })),
+    courseIncludesLesson: vi.fn(async () => true),
     findCourseProgress: vi.fn(),
-    findCurriculumUpgrade: vi.fn(async () => undefined),
-    findLatestPublishedCurriculumVersionId: vi.fn(async () =>
-      curriculumVersionId("sentence-structure-v1")
-    ),
     findLessonProgress: vi.fn(),
-    listCurriculumVersionLessonIds: vi.fn(async () => [
-      lessonId("sentence-structure-01"),
-    ]),
+    listCourseLessonIds: vi.fn(async () => [lessonId("sentence-structure-01")]),
     listInProgressCourses: vi.fn(),
     listLessonAnswers: vi.fn(async () => [
       {

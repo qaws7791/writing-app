@@ -1,37 +1,23 @@
 import {
   adminCourseDetailDtoSchema,
   adminCourseEditorDetailDtoSchema,
-  adminCurriculumMigrationApplicationDtoSchema,
-  adminCurriculumMigrationDetailDtoSchema,
   adminCourseListDtoSchema,
   adminCourseTreeDtoSchema,
-  adminCurriculumVersionDetailDtoSchema,
-  adminCurriculumVersionListDtoSchema,
-  adminCurriculumVersionSummaryDtoSchema,
-  adminEditorCurriculumVersionDetailDtoSchema,
+  adminEditorCurriculumDetailDtoSchema,
   adminEditorLessonDetailDtoSchema,
   adminUserListDtoSchema,
-  type AdminApplyCurriculumMigrationRequestDto,
   type AdminCourseEditorDetailDto,
   type AdminCourseEditorSaveRequestDto,
   type AdminCourseDetailDto,
   type AdminCourseListDto,
   type AdminCourseListInputDto,
   type AdminCourseTreeDto,
-  type AdminCreateCurriculumMigrationRequestDto,
-  type AdminCurriculumMigrationApplicationDto,
-  type AdminCurriculumMigrationDetailDto,
-  type AdminCurriculumVersionDetailDto,
-  type AdminCurriculumVersionListDto,
-  type AdminCurriculumVersionSummaryDto,
-  type AdminEditorCurriculumVersionDetailDto,
+  type AdminEditorCurriculumDetailDto,
   type AdminEditorLessonDetailDto,
-  type AdminRestoreCurriculumDraftRequestDto,
-  type AdminSaveCurriculumVersionContentRequestDto,
+  type AdminSaveCurriculumContentRequestDto,
   type AdminUserListDto,
 } from "@/admin/admin.dto"
 import type {
-  AdminConflictErrorDto,
   AdminDatabaseUnavailableErrorDto,
   AdminInvalidRequestErrorDto,
   AdminNotFoundErrorDto,
@@ -58,98 +44,34 @@ type NotFoundResult = {
   error: AdminNotFoundErrorDto
 }
 
-type ConflictResult = {
-  status: "conflict"
-  error: AdminConflictErrorDto
-}
-
 export type AdminServiceResult<TValue> = OkResult<TValue> | UnavailableResult
 
-type AdminCurriculumVersionServiceResult<TValue> =
+type AdminMutationServiceResult<TValue> =
   | AdminServiceResult<TValue>
   | InvalidRequestResult
   | NotFoundResult
 
-type AdminCurriculumEditorServiceResult<TValue> =
-  | AdminCurriculumVersionServiceResult<TValue>
-  | ConflictResult
-
 export interface AdminService {
   getCourseDetail(
     courseId: string
-  ): Promise<AdminCurriculumVersionServiceResult<AdminCourseDetailDto>>
+  ): Promise<AdminMutationServiceResult<AdminCourseDetailDto>>
   getCourseEditorDocument(
-    courseId: string,
-    versionId: string | null
-  ): Promise<AdminCurriculumVersionServiceResult<AdminCourseEditorDetailDto>>
+    courseId: string
+  ): Promise<AdminMutationServiceResult<AdminCourseEditorDetailDto>>
   listCourses(
     input: AdminCourseListInputDto
   ): Promise<AdminServiceResult<AdminCourseListDto>>
   listCourseTree(): Promise<AdminServiceResult<AdminCourseTreeDto>>
-  listCurriculumVersions(
-    courseId: string
-  ): Promise<AdminServiceResult<AdminCurriculumVersionListDto>>
-  createCurriculumDraft(
-    courseId: string
-  ): Promise<
-    AdminCurriculumVersionServiceResult<AdminCurriculumVersionSummaryDto>
-  >
-  getCurriculumVersionDetail(
-    versionId: string
-  ): Promise<
-    AdminCurriculumVersionServiceResult<AdminCurriculumVersionDetailDto>
-  >
-  getCourseCurriculumVersionDetail(
-    courseId: string,
-    versionId: string
-  ): Promise<
-    AdminCurriculumVersionServiceResult<AdminEditorCurriculumVersionDetailDto>
-  >
   getCourseLessonDetail(
     courseId: string,
-    versionId: string,
     lessonId: string
-  ): Promise<AdminCurriculumVersionServiceResult<AdminEditorLessonDetailDto>>
-  restoreCurriculumDraft(
-    courseId: string,
-    input: AdminRestoreCurriculumDraftRequestDto
-  ): Promise<
-    AdminCurriculumVersionServiceResult<AdminCurriculumVersionSummaryDto>
-  >
-  saveCurriculumVersionContent(
-    input: AdminSaveCurriculumVersionContentRequestDto
-  ): Promise<
-    AdminCurriculumEditorServiceResult<AdminEditorCurriculumVersionDetailDto>
-  >
+  ): Promise<AdminMutationServiceResult<AdminEditorLessonDetailDto>>
+  saveCurriculumContent(
+    input: AdminSaveCurriculumContentRequestDto
+  ): Promise<AdminMutationServiceResult<AdminEditorCurriculumDetailDto>>
   saveCourseEditorDocument(
     input: AdminCourseEditorSaveRequestDto
-  ): Promise<
-    AdminCurriculumEditorServiceResult<AdminEditorCurriculumVersionDetailDto>
-  >
-  discardCurriculumVersion(
-    courseId: string,
-    versionId: string
-  ): Promise<AdminCurriculumVersionServiceResult<{ versionId: string }>>
-  publishCurriculumVersion(
-    versionId: string
-  ): Promise<
-    AdminCurriculumVersionServiceResult<AdminCurriculumVersionSummaryDto>
-  >
-  createCurriculumMigration(
-    input: AdminCreateCurriculumMigrationRequestDto
-  ): Promise<
-    AdminCurriculumVersionServiceResult<AdminCurriculumMigrationDetailDto>
-  >
-  getCurriculumMigration(
-    migrationId: string
-  ): Promise<
-    AdminCurriculumVersionServiceResult<AdminCurriculumMigrationDetailDto>
-  >
-  applyCurriculumMigration(
-    input: AdminApplyCurriculumMigrationRequestDto
-  ): Promise<
-    AdminCurriculumVersionServiceResult<AdminCurriculumMigrationApplicationDto>
-  >
+  ): Promise<AdminMutationServiceResult<AdminEditorCurriculumDetailDto>>
   listUsers(): Promise<AdminServiceResult<AdminUserListDto>>
 }
 
@@ -174,13 +96,7 @@ export function createAdminService({
         const course = await repository.getCourseDetail(courseId)
 
         if (!course) {
-          return {
-            status: "not-found",
-            error: {
-              code: "not-found",
-              message: "코스를 찾을 수 없습니다.",
-            },
-          }
+          return notFound("코스를 찾을 수 없습니다.")
         }
 
         return {
@@ -191,6 +107,24 @@ export function createAdminService({
         return unavailableResult
       }
     },
+
+    async getCourseEditorDocument(courseId) {
+      try {
+        const document = await repository.getCourseEditorDocument(courseId)
+
+        if (!document) {
+          return notFound("코스 편집 문서를 찾을 수 없습니다.")
+        }
+
+        return {
+          status: "ok",
+          value: adminCourseEditorDetailDtoSchema.parse(document),
+        }
+      } catch {
+        return unavailableResult
+      }
+    },
+
     async listCourses(input) {
       try {
         return {
@@ -203,31 +137,7 @@ export function createAdminService({
         return unavailableResult
       }
     },
-    async getCourseEditorDocument(courseId, versionId) {
-      try {
-        const document = await repository.getCourseEditorDocument(
-          courseId,
-          versionId
-        )
 
-        if (!document) {
-          return {
-            status: "not-found",
-            error: {
-              code: "not-found",
-              message: "코스 편집 문서를 찾을 수 없습니다.",
-            },
-          }
-        }
-
-        return {
-          status: "ok",
-          value: adminCourseEditorDetailDtoSchema.parse(document),
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
     async listCourseTree() {
       try {
         return {
@@ -240,101 +150,16 @@ export function createAdminService({
         return unavailableResult
       }
     },
-    async listCurriculumVersions(courseId) {
-      try {
-        return {
-          status: "ok",
-          value: adminCurriculumVersionListDtoSchema.parse(
-            await repository.listCurriculumVersions(courseId)
-          ),
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-    async createCurriculumDraft(courseId) {
-      try {
-        const result = await repository.createCurriculumDraft(courseId)
 
-        if (result.status === "invalid-request") {
-          return result
-        }
-
-        if (result.status === "not-found") {
-          return result
-        }
-
-        return {
-          status: "ok",
-          value: adminCurriculumVersionSummaryDtoSchema.parse(result.version),
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-    async getCurriculumVersionDetail(versionId) {
-      try {
-        const version = await repository.getCurriculumVersionDetail(versionId)
-
-        if (!version) {
-          return {
-            status: "not-found",
-            error: {
-              code: "not-found",
-              message: "커리큘럼 버전을 찾을 수 없습니다.",
-            },
-          }
-        }
-
-        return {
-          status: "ok",
-          value: adminCurriculumVersionDetailDtoSchema.parse(version),
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-    async getCourseCurriculumVersionDetail(courseId, versionId) {
-      try {
-        const version = await repository.getCourseCurriculumVersionDetail(
-          courseId,
-          versionId
-        )
-
-        if (!version) {
-          return {
-            status: "not-found",
-            error: {
-              code: "not-found",
-              message: "커리큘럼 버전을 찾을 수 없습니다.",
-            },
-          }
-        }
-
-        return {
-          status: "ok",
-          value: adminEditorCurriculumVersionDetailDtoSchema.parse(version),
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-    async getCourseLessonDetail(courseId, versionId, lessonId) {
+    async getCourseLessonDetail(courseId, lessonId) {
       try {
         const lesson = await repository.getCourseLessonDetail(
           courseId,
-          versionId,
           lessonId
         )
 
         if (!lesson) {
-          return {
-            status: "not-found",
-            error: {
-              code: "not-found",
-              message: "레슨을 찾을 수 없습니다.",
-            },
-          }
+          return notFound("레슨을 찾을 수 없습니다.")
         }
 
         return {
@@ -345,187 +170,41 @@ export function createAdminService({
         return unavailableResult
       }
     },
-    async restoreCurriculumDraft(courseId, input) {
+
+    async saveCurriculumContent(input) {
       try {
-        const result = await repository.restoreCurriculumDraft(courseId, input)
+        const result = await repository.saveCurriculumContent(input)
 
-        if (result.status === "invalid-request") {
-          return result
-        }
-
-        if (result.status === "not-found") {
+        if (result.status !== "saved") {
           return result
         }
 
         return {
           status: "ok",
-          value: adminCurriculumVersionSummaryDtoSchema.parse(result.version),
+          value: adminEditorCurriculumDetailDtoSchema.parse(result.curriculum),
         }
       } catch {
         return unavailableResult
       }
     },
-    async saveCurriculumVersionContent(input) {
-      try {
-        const result = await repository.saveCurriculumVersionContent(input)
 
-        if (result.status === "invalid-request") {
-          return result
-        }
-
-        if (result.status === "not-found") {
-          return result
-        }
-
-        if (result.status === "conflict") {
-          return result
-        }
-
-        return {
-          status: "ok",
-          value: adminEditorCurriculumVersionDetailDtoSchema.parse(
-            result.version
-          ),
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
     async saveCourseEditorDocument(input) {
       try {
         const result = await repository.saveCourseEditorDocument(input)
 
-        if (result.status === "invalid-request") {
-          return result
-        }
-
-        if (result.status === "not-found") {
-          return result
-        }
-
-        if (result.status === "conflict") {
+        if (result.status !== "saved") {
           return result
         }
 
         return {
           status: "ok",
-          value: adminEditorCurriculumVersionDetailDtoSchema.parse(
-            result.version
-          ),
+          value: adminEditorCurriculumDetailDtoSchema.parse(result.curriculum),
         }
       } catch {
         return unavailableResult
       }
     },
-    async discardCurriculumVersion(courseId, versionId) {
-      try {
-        const result = await repository.discardCurriculumVersion(
-          courseId,
-          versionId
-        )
 
-        if (result.status === "invalid-request") {
-          return result
-        }
-
-        if (result.status === "not-found") {
-          return result
-        }
-
-        return {
-          status: "ok",
-          value: { versionId: result.versionId },
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-    async publishCurriculumVersion(versionId) {
-      try {
-        const result = await repository.publishCurriculumVersion(versionId)
-
-        if (result.status === "invalid-request") {
-          return result
-        }
-
-        if (result.status === "not-found") {
-          return result
-        }
-
-        return {
-          status: "ok",
-          value: adminCurriculumVersionSummaryDtoSchema.parse(result.version),
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-    async createCurriculumMigration(input) {
-      try {
-        const result = await repository.createCurriculumMigration(input)
-
-        if (result.status === "invalid-request") {
-          return result
-        }
-
-        if (result.status === "not-found") {
-          return result
-        }
-
-        return {
-          status: "ok",
-          value: adminCurriculumMigrationDetailDtoSchema.parse(
-            result.migration
-          ),
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-    async getCurriculumMigration(migrationId) {
-      try {
-        const migration = await repository.getCurriculumMigration(migrationId)
-
-        if (!migration) {
-          return {
-            status: "not-found",
-            error: {
-              code: "not-found",
-              message: "커리큘럼 마이그레이션을 찾을 수 없습니다.",
-            },
-          }
-        }
-
-        return {
-          status: "ok",
-          value: adminCurriculumMigrationDetailDtoSchema.parse(migration),
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-    async applyCurriculumMigration(input) {
-      try {
-        const result = await repository.applyCurriculumMigration(input)
-
-        if (result.status === "invalid-request") {
-          return result
-        }
-
-        if (result.status === "not-found") {
-          return result
-        }
-
-        return {
-          status: "ok",
-          value: adminCurriculumMigrationApplicationDtoSchema.parse(
-            result.application
-          ),
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
     async listUsers() {
       try {
         return {
@@ -535,6 +214,16 @@ export function createAdminService({
       } catch {
         return unavailableResult
       }
+    },
+  }
+}
+
+function notFound(message: string): NotFoundResult {
+  return {
+    status: "not-found",
+    error: {
+      code: "not-found",
+      message,
     },
   }
 }

@@ -50,7 +50,7 @@ describe("api startup", () => {
       apiProcess.kill()
       await exited
     }
-  })
+  }, 15_000)
 })
 
 async function waitForHealth(

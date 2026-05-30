@@ -13,26 +13,6 @@ const adminAuthMigrationSql = readFileSync(
   new URL("./0002-admin-auth.sql", import.meta.url),
   "utf8"
 )
-const curriculumVersioningMigrationSql = readFileSync(
-  new URL("./0003-curriculum-versioning.sql", import.meta.url),
-  "utf8"
-)
-const progressCurriculumVersionMigrationSql = readFileSync(
-  new URL("./0004-progress-curriculum-version.sql", import.meta.url),
-  "utf8"
-)
-const curriculumMigrationMapSql = readFileSync(
-  new URL("./0005-curriculum-migration-map.sql", import.meta.url),
-  "utf8"
-)
-const curriculumUpgradeDismissalSql = readFileSync(
-  new URL("./0006-curriculum-upgrade-dismissal.sql", import.meta.url),
-  "utf8"
-)
-const curriculumVersionStepsSql = readFileSync(
-  new URL("./0008-curriculum-version-steps.sql", import.meta.url),
-  "utf8"
-)
 const removeCourseThumbnailSql = readFileSync(
   new URL("./0010-remove-course-thumbnail.sql", import.meta.url),
   "utf8"
@@ -42,27 +22,17 @@ export function runContentMigration(sqlite: Database) {
   sqlite.exec(contentMigrationSql)
   sqlite.exec(platformBackendMigrationSql)
   sqlite.exec(adminAuthMigrationSql)
-  sqlite.exec(curriculumVersioningMigrationSql)
   addColumnIfMissing(
     sqlite,
-    "course_progress",
-    "curriculum_version_id",
-    "alter table course_progress add column curriculum_version_id text references curriculum_versions(id)"
+    "course_chapters",
+    "status",
+    "alter table course_chapters add column status text not null default 'active'"
   )
   addColumnIfMissing(
     sqlite,
-    "lesson_progress",
-    "curriculum_version_id",
-    "alter table lesson_progress add column curriculum_version_id text references curriculum_versions(id)"
-  )
-  sqlite.exec(progressCurriculumVersionMigrationSql)
-  sqlite.exec(curriculumMigrationMapSql)
-  sqlite.exec(curriculumUpgradeDismissalSql)
-  addColumnIfMissing(
-    sqlite,
-    "curriculum_versions",
-    "revision",
-    "alter table curriculum_versions add column revision integer not null default 1"
+    "course_lessons",
+    "status",
+    "alter table course_lessons add column status text not null default 'active'"
   )
   addColumnIfMissing(
     sqlite,
@@ -70,7 +40,18 @@ export function runContentMigration(sqlite: Database) {
     "status",
     "alter table lesson_steps add column status text not null default 'active'"
   )
-  sqlite.exec(curriculumVersionStepsSql)
+  dropColumnIfExists(
+    sqlite,
+    "course_progress",
+    "curriculum_version_id",
+    "alter table course_progress drop column curriculum_version_id"
+  )
+  dropColumnIfExists(
+    sqlite,
+    "lesson_progress",
+    "curriculum_version_id",
+    "alter table lesson_progress drop column curriculum_version_id"
+  )
   dropColumnIfExists(
     sqlite,
     "course_chapters",
@@ -89,6 +70,14 @@ export function runContentMigration(sqlite: Database) {
     "thumbnail_path",
     removeCourseThumbnailSql
   )
+  sqlite.exec("drop table if exists curriculum_upgrade_dismissals")
+  sqlite.exec("drop table if exists curriculum_migration_applications")
+  sqlite.exec("drop table if exists lesson_migration_mappings")
+  sqlite.exec("drop table if exists curriculum_version_migrations")
+  sqlite.exec("drop table if exists curriculum_version_steps")
+  sqlite.exec("drop table if exists curriculum_version_lessons")
+  sqlite.exec("drop table if exists curriculum_version_chapters")
+  sqlite.exec("drop table if exists curriculum_versions")
 }
 
 function addColumnIfMissing(

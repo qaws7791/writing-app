@@ -18,7 +18,8 @@ create table if not exists course_chapters (
   id text primary key,
   course_id text not null references courses(id),
   title text not null,
-  sort_order integer not null
+  sort_order integer not null,
+  status text not null default 'active'
 );
 
 create table if not exists course_lessons (
@@ -27,7 +28,8 @@ create table if not exists course_lessons (
   lesson_id text not null references lessons(id),
   title text not null,
   description text not null,
-  sort_order integer not null
+  sort_order integer not null,
+  status text not null default 'active'
 );
 
 create table if not exists lessons (
@@ -46,5 +48,6 @@ create table if not exists lesson_steps (
   sort_order integer not null,
   points integer not null,
   required integer not null,
+  status text not null default 'active',
   content_json text not null
 );

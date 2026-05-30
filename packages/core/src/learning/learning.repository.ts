@@ -1,21 +1,15 @@
-import type { CourseId, CurriculumVersionId, LessonId } from "@/content"
+import type { CourseId, LessonId } from "@/content"
 import type { UserId, LessonProgressStatus } from "@/learning/learning.ids"
-import type {
-  LearningInvalidRequestErrorDto,
-  LearningNotFoundErrorDto,
-} from "@/learning/learning.errors"
 
 export interface CourseProgressRecord {
   completedCount: number
   courseId: CourseId
-  curriculumVersionId: CurriculumVersionId
   lastLessonId?: LessonId
 }
 
 export interface LessonProgressRecord {
   completedAt?: Date | null
   courseId: CourseId
-  curriculumVersionId: CurriculumVersionId
   currentStepId: string
   lessonId: LessonId
   status: LessonProgressStatus
@@ -30,14 +24,12 @@ export interface LessonAnswerRecord {
 
 export interface UpsertCourseProgressInput {
   courseId: CourseId
-  curriculumVersionId: CurriculumVersionId
   lastLessonId: LessonId
   userId: UserId
 }
 
 export interface UpsertLessonProgressInput {
   courseId: CourseId
-  curriculumVersionId: CurriculumVersionId
   currentStepId: string
   lessonId: LessonId
   status: LessonProgressStatus
@@ -54,7 +46,6 @@ export interface UpsertLessonAnswerInput {
 
 export interface CompleteLessonInput {
   courseId: CourseId
-  curriculumVersionId: CurriculumVersionId
   finalStepId: string
   lessonId: LessonId
   stepOrder: number
@@ -67,88 +58,11 @@ export interface CompleteLessonRecord {
   wasAlreadyCompleted: boolean
 }
 
-export interface CurriculumUpgradeVersionRecord {
-  id: CurriculumVersionId
-  title: string
-  versionNumber: number
-}
-
-export interface CurriculumUpgradeTargetVersionRecord extends CurriculumUpgradeVersionRecord {
-  changelog: string
-}
-
-export interface CurriculumUpgradeNoticeRecord {
-  completedCount: number
-  courseId: CourseId
-  fromVersion: CurriculumUpgradeVersionRecord
-  migrationId: string
-  toVersion: CurriculumUpgradeTargetVersionRecord
-  totalLessons: number
-}
-
-export interface CurriculumUpgradeApplicationRecord {
-  completedLessonCount: number
-  completedLessonIds: LessonId[]
-  courseId: CourseId
-  createdAt: Date
-  fromVersionId: CurriculumVersionId
-  id: string
-  migrationId: string
-  preservedLessonIds: LessonId[]
-  skippedLessonIds: LessonId[]
-  status: "completed"
-  toVersionId: CurriculumVersionId
-  updatedAt: Date
-}
-
-export interface CurriculumUpgradeDismissalRecord {
-  courseId: CourseId
-  dismissedAt: Date
-  fromVersionId: CurriculumVersionId
-  toVersionId: CurriculumVersionId
-}
-
-export type ApplyCurriculumUpgradeResult =
-  | {
-      status: "applied"
-      application: CurriculumUpgradeApplicationRecord
-    }
-  | {
-      status: "invalid-request"
-      error: LearningInvalidRequestErrorDto
-    }
-  | {
-      status: "not-found"
-      error: LearningNotFoundErrorDto
-    }
-
-export type DismissCurriculumUpgradeResult =
-  | {
-      status: "dismissed"
-      dismissal: CurriculumUpgradeDismissalRecord
-    }
-  | {
-      status: "not-found"
-      error: LearningNotFoundErrorDto
-    }
-
 export interface LearningRepository {
   findCourseProgress(
     userId: UserId,
     courseId: CourseId
   ): Promise<CourseProgressRecord | undefined>
-  findCurriculumUpgrade(
-    userId: UserId,
-    courseId: CourseId
-  ): Promise<CurriculumUpgradeNoticeRecord | undefined>
-  applyCurriculumUpgrade(
-    userId: UserId,
-    courseId: CourseId
-  ): Promise<ApplyCurriculumUpgradeResult>
-  dismissCurriculumUpgrade(
-    userId: UserId,
-    courseId: CourseId
-  ): Promise<DismissCurriculumUpgradeResult>
   upsertCourseProgress(input: UpsertCourseProgressInput): Promise<void>
   findLessonProgress(
     userId: UserId,
@@ -159,19 +73,10 @@ export interface LearningRepository {
   ): Promise<LessonProgressRecord>
   listLessonProgressByCourse(
     userId: UserId,
-    courseId: CourseId,
-    curriculumVersionId: CurriculumVersionId
-  ): Promise<LessonProgressRecord[]>
-  findLatestPublishedCurriculumVersionId(
     courseId: CourseId
-  ): Promise<CurriculumVersionId | undefined>
-  listCurriculumVersionLessonIds(
-    curriculumVersionId: CurriculumVersionId
-  ): Promise<LessonId[]>
-  curriculumVersionIncludesLesson(
-    curriculumVersionId: CurriculumVersionId,
-    lessonId: LessonId
-  ): Promise<boolean>
+  ): Promise<LessonProgressRecord[]>
+  listCourseLessonIds(courseId: CourseId): Promise<LessonId[]>
+  courseIncludesLesson(courseId: CourseId, lessonId: LessonId): Promise<boolean>
   listInProgressCourses(userId: UserId): Promise<CourseProgressRecord[]>
   listLessonAnswers(
     userId: UserId,

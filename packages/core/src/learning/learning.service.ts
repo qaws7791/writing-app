@@ -2,7 +2,6 @@ import type {
   ContentService,
   CourseId,
   CourseNotFoundErrorDto,
-  CurriculumVersionId,
   InvalidContentSeedErrorDto,
   InvalidRequestErrorDto,
   LessonDto,
@@ -13,9 +12,6 @@ import type {
 import type {
   CompleteLessonDto,
   CourseProgressDto,
-  CurriculumUpgradeApplicationDto,
-  CurriculumUpgradeNoticeDto,
-  DismissCurriculumUpgradeDto,
   LessonProgressDto,
   ProfileDto,
   ProgressCourseListDto,
@@ -94,18 +90,6 @@ export interface LearningService {
     userId: UserId,
     courseId: CourseId
   ): Promise<LearningServiceResult<CourseProgressDto>>
-  getCurriculumUpgrade(
-    userId: UserId,
-    courseId: CourseId
-  ): Promise<LearningServiceResult<CurriculumUpgradeNoticeDto>>
-  applyCurriculumUpgrade(
-    userId: UserId,
-    courseId: CourseId
-  ): Promise<LearningServiceResult<CurriculumUpgradeApplicationDto>>
-  dismissCurriculumUpgrade(
-    userId: UserId,
-    courseId: CourseId
-  ): Promise<LearningServiceResult<DismissCurriculumUpgradeDto>>
   getLessonProgress(
     userId: UserId,
     lessonId: LessonId
@@ -211,26 +195,12 @@ export function createLearningService({
         return contentFailureResult(courseResult)
       }
 
-      let curriculumVersionId: CurriculumVersionId | undefined
       let lessonIds: LessonId[]
       let lessonProgress
       try {
-        curriculumVersionId = await resolveCurriculumVersionId(
-          repository,
-          userId,
-          courseId
-        )
-        if (!curriculumVersionId) {
-          return invalidRequest("발행된 커리큘럼 버전을 찾을 수 없습니다.")
-        }
-
         ;[lessonIds, lessonProgress] = await Promise.all([
-          repository.listCurriculumVersionLessonIds(curriculumVersionId),
-          repository.listLessonProgressByCourse(
-            userId,
-            courseId,
-            curriculumVersionId
-          ),
+          repository.listCourseLessonIds(courseId),
+          repository.listLessonProgressByCourse(userId, courseId),
         ])
       } catch {
         return unavailableResult
@@ -255,120 +225,6 @@ export function createLearningService({
           progressPercent: getProgressPercent(completedCount, lessonIds.length),
           totalLessons: lessonIds.length,
         },
-      }
-    },
-
-    async getCurriculumUpgrade(userId, courseId) {
-      const courseResult = await contentService.getCourseDetail(courseId)
-      if (courseResult.status !== "ok") {
-        return contentFailureResult(courseResult)
-      }
-
-      try {
-        const upgrade = await repository.findCurriculumUpgrade(userId, courseId)
-
-        if (!upgrade) {
-          return {
-            status: "ok",
-            value: {
-              courseId,
-              status: "not-available",
-            },
-          }
-        }
-
-        return {
-          status: "ok",
-          value: {
-            completedCount: upgrade.completedCount,
-            courseId: upgrade.courseId,
-            fromVersion: {
-              id: upgrade.fromVersion.id,
-              title: upgrade.fromVersion.title,
-              versionNumber: upgrade.fromVersion.versionNumber,
-            },
-            message: createCurriculumUpgradeMessage(
-              upgrade.toVersion.changelog
-            ),
-            migrationId: upgrade.migrationId,
-            status: "available",
-            toVersion: {
-              changelog: upgrade.toVersion.changelog,
-              id: upgrade.toVersion.id,
-              title: upgrade.toVersion.title,
-              versionNumber: upgrade.toVersion.versionNumber,
-            },
-            totalLessons: upgrade.totalLessons,
-          },
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-
-    async applyCurriculumUpgrade(userId, courseId) {
-      const courseResult = await contentService.getCourseDetail(courseId)
-      if (courseResult.status !== "ok") {
-        return contentFailureResult(courseResult)
-      }
-
-      try {
-        const result = await repository.applyCurriculumUpgrade(userId, courseId)
-
-        switch (result.status) {
-          case "applied":
-            return {
-              status: "ok",
-              value: mapCurriculumUpgradeApplication(result.application),
-            }
-          case "invalid-request":
-            return {
-              status: "invalid-request",
-              error: result.error,
-            }
-          case "not-found":
-            return {
-              status: "not-found",
-              error: result.error,
-            }
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-
-    async dismissCurriculumUpgrade(userId, courseId) {
-      const courseResult = await contentService.getCourseDetail(courseId)
-      if (courseResult.status !== "ok") {
-        return contentFailureResult(courseResult)
-      }
-
-      try {
-        const result = await repository.dismissCurriculumUpgrade(
-          userId,
-          courseId
-        )
-
-        switch (result.status) {
-          case "dismissed":
-            return {
-              status: "ok",
-              value: {
-                courseId: result.dismissal.courseId,
-                dismissedAt: result.dismissal.dismissedAt.toISOString(),
-                fromVersionId: result.dismissal.fromVersionId,
-                status: "dismissed",
-                toVersionId: result.dismissal.toVersionId,
-              },
-            }
-          case "not-found":
-            return {
-              status: "not-found",
-              error: result.error,
-            }
-        }
-      } catch {
-        return unavailableResult
       }
     },
 
@@ -429,35 +285,24 @@ export function createLearningService({
       }
 
       try {
-        const curriculumVersionId = await resolveCurriculumVersionId(
-          repository,
-          userId,
-          lessonResult.value.courseId as CourseId
+        const courseId = lessonResult.value.courseId as CourseId
+        const isCourseLesson = await repository.courseIncludesLesson(
+          courseId,
+          lessonId
         )
-        if (!curriculumVersionId) {
-          return invalidRequest("발행된 커리큘럼 버전을 찾을 수 없습니다.")
-        }
-
-        const isVersionLesson =
-          await repository.curriculumVersionIncludesLesson(
-            curriculumVersionId,
-            lessonId
-          )
-        if (!isVersionLesson) {
+        if (!isCourseLesson) {
           return invalidRequest(
-            "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다."
+            "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다."
           )
         }
 
         await repository.upsertCourseProgress({
-          courseId: lessonResult.value.courseId as CourseId,
-          curriculumVersionId,
+          courseId,
           lastLessonId: lessonId,
           userId,
         })
         const progress = await repository.upsertLessonProgress({
-          courseId: lessonResult.value.courseId as CourseId,
-          curriculumVersionId,
+          courseId,
           currentStepId: targetStep.id,
           lessonId,
           status: "in-progress",
@@ -496,23 +341,13 @@ export function createLearningService({
       }
 
       try {
-        const curriculumVersionId = await resolveCurriculumVersionId(
-          repository,
-          userId,
-          lessonResult.value.courseId as CourseId
+        const isCourseLesson = await repository.courseIncludesLesson(
+          lessonResult.value.courseId as CourseId,
+          lessonId
         )
-        if (!curriculumVersionId) {
-          return invalidRequest("발행된 커리큘럼 버전을 찾을 수 없습니다.")
-        }
-
-        const isVersionLesson =
-          await repository.curriculumVersionIncludesLesson(
-            curriculumVersionId,
-            lessonId
-          )
-        if (!isVersionLesson) {
+        if (!isCourseLesson) {
           return invalidRequest(
-            "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다."
+            "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다."
           )
         }
 
@@ -541,29 +376,19 @@ export function createLearningService({
       const finalStep = getFinalStep(lessonResult.value)
 
       try {
-        const curriculumVersionId = await resolveCurriculumVersionId(
-          repository,
-          userId,
-          lessonResult.value.courseId as CourseId
+        const courseId = lessonResult.value.courseId as CourseId
+        const isCourseLesson = await repository.courseIncludesLesson(
+          courseId,
+          lessonId
         )
-        if (!curriculumVersionId) {
-          return invalidRequest("발행된 커리큘럼 버전을 찾을 수 없습니다.")
-        }
-
-        const isVersionLesson =
-          await repository.curriculumVersionIncludesLesson(
-            curriculumVersionId,
-            lessonId
-          )
-        if (!isVersionLesson) {
+        if (!isCourseLesson) {
           return invalidRequest(
-            "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다."
+            "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다."
           )
         }
 
         const completed = await repository.completeLesson({
-          courseId: lessonResult.value.courseId as CourseId,
-          curriculumVersionId,
+          courseId,
           finalStepId: finalStep.id,
           lessonId,
           stepOrder: finalStep.order,
@@ -589,20 +414,6 @@ export function createLearningService({
   return service
 }
 
-async function resolveCurriculumVersionId(
-  repository: LearningRepository,
-  userId: UserId,
-  courseId: CourseId
-): Promise<CurriculumVersionId | undefined> {
-  const existingProgress = await repository.findCourseProgress(userId, courseId)
-
-  if (existingProgress) {
-    return existingProgress.curriculumVersionId
-  }
-
-  return repository.findLatestPublishedCurriculumVersionId(courseId)
-}
-
 function findStep(lesson: LessonDto, stepId: string) {
   return lesson.steps.find((step) => step.id === stepId)
 }
@@ -623,40 +434,6 @@ function getProgressPercent(completedCount: number, totalLessons: number) {
   }
 
   return Math.round((completedCount / totalLessons) * 100)
-}
-
-function createCurriculumUpgradeMessage(changelog: string) {
-  return `새 커리큘럼에는 ${changelog}`
-}
-
-function mapCurriculumUpgradeApplication(application: {
-  completedLessonCount: number
-  completedLessonIds: LessonId[]
-  courseId: CourseId
-  createdAt: Date
-  fromVersionId: CurriculumVersionId
-  id: string
-  migrationId: string
-  preservedLessonIds: LessonId[]
-  skippedLessonIds: LessonId[]
-  status: "completed"
-  toVersionId: CurriculumVersionId
-  updatedAt: Date
-}): CurriculumUpgradeApplicationDto {
-  return {
-    completedLessonCount: application.completedLessonCount,
-    completedLessonIds: application.completedLessonIds,
-    courseId: application.courseId,
-    createdAt: application.createdAt.toISOString(),
-    fromVersionId: application.fromVersionId,
-    id: application.id,
-    migrationId: application.migrationId,
-    preservedLessonIds: application.preservedLessonIds,
-    skippedLessonIds: application.skippedLessonIds,
-    status: application.status,
-    toVersionId: application.toVersionId,
-    updatedAt: application.updatedAt.toISOString(),
-  }
 }
 
 function invalidRequest(message: string): InvalidRequestResult {

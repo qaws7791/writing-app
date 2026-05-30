@@ -1,5 +1,12 @@
 # 어드민 사이트
 
+## 2026-05-31 커리큘럼 버전 제거 완료
+
+- 어드민 코스 편집기를 draft/publish 버전 모델에서 현재 커리큘럼 직접 편집 모델로 단순화했다.
+- 어드민 API는 `GET /courses/:courseId/editor`, `PUT /courses/:courseId/editor`, `GET /courses/:courseId/lessons/:lessonId`만 코스 편집 경로로 제공한다.
+- 커리큘럼 버전 목록, draft 생성/복원, publish/discard, 마이그레이션 맵 생성/적용 API는 제거했다.
+- 저장 요청은 코스 기본 정보, 챕터, 레슨, 스텝 전체 스냅샷을 현재 테이블에 반영하며, 생략된 기존 스텝은 삭제하지 않고 `archived` 상태로 전환한다.
+
 ## 2026-05-31 코스 썸네일 업로드 제거 시작
 
 - BSSN 단순화 1순위로 어드민 코스 썸네일 업로드 기능을 제거한다.

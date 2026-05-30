@@ -5,13 +5,9 @@ import type {
   AdminCourseListDto,
   AdminCourseListInputDto,
   AdminCourseTreeDto,
-  AdminCurriculumVersionListDto,
-  AdminCurriculumVersionSummaryDto,
-  AdminEditorCurriculumVersionDetailDto,
+  AdminEditorCurriculumDetailDto,
   AdminEditorLessonDetailDto,
   AdminErrorDto,
-  AdminRestoreCurriculumDraftRequestDto,
-  AdminSaveCurriculumVersionContentRequestDto,
   AdminUserListDto,
 } from "@workspace/core/admin"
 
@@ -46,41 +42,14 @@ export interface AdminApi {
     courseId: string
   ): Promise<AdminApiResult<AdminCourseDetailDto>>
   getCourseEditorDocument(
-    courseId: string,
-    versionId: string | null
-  ): Promise<AdminApiResult<AdminCourseEditorDetailDto>>
-  listCurriculumVersions(
     courseId: string
-  ): Promise<AdminApiResult<AdminCurriculumVersionListDto>>
-  getCourseCurriculumVersionDetail(
-    courseId: string,
-    versionId: string
-  ): Promise<AdminApiResult<AdminEditorCurriculumVersionDetailDto>>
+  ): Promise<AdminApiResult<AdminCourseEditorDetailDto>>
   getCourseLessonDetail(
     courseId: string,
-    versionId: string,
     lessonId: string
   ): Promise<AdminApiResult<AdminEditorLessonDetailDto>>
-  createCurriculumDraft(
-    courseId: string
-  ): Promise<AdminApiResult<AdminCurriculumVersionSummaryDto>>
-  restoreCurriculumDraft(
-    courseId: string,
-    input: AdminRestoreCurriculumDraftRequestDto
-  ): Promise<AdminApiResult<AdminCurriculumVersionSummaryDto>>
-  saveCurriculumVersionContent(
-    input: AdminSaveCurriculumVersionContentRequestDto
-  ): Promise<AdminApiResult<AdminEditorCurriculumVersionDetailDto>>
   saveCourseEditorDocument(
     input: AdminCourseEditorSaveRequestDto
-  ): Promise<AdminApiResult<AdminEditorCurriculumVersionDetailDto>>
-  publishCurriculumVersion(
-    courseId: string,
-    versionId: string
-  ): Promise<AdminApiResult<AdminCurriculumVersionSummaryDto>>
-  discardCurriculumVersion(
-    courseId: string,
-    versionId: string
-  ): Promise<AdminApiResult<{ versionId: string }>>
+  ): Promise<AdminApiResult<AdminEditorCurriculumDetailDto>>
   listUsers(): Promise<AdminApiResult<AdminUserListDto>>
 }

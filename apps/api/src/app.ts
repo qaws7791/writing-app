@@ -10,7 +10,6 @@ import type { AuthRuntime } from "@/auth/session"
 import { registerAiFeedbackRoute } from "@/routes/ai-feedback.route"
 import { registerAuthRoute } from "@/routes/auth.route"
 import { registerCoursesRoutes } from "@/routes/courses.route"
-import { registerCurriculumUpgradeRoute } from "@/routes/curriculum-upgrade.route"
 import { registerHealthRoute } from "@/routes/health.route"
 import { registerLearningRoute } from "@/routes/learning.route"
 import { registerLessonsRoutes } from "@/routes/lessons.route"
@@ -90,7 +89,6 @@ export function createApiApp(dependencies: ApiAppDependencies) {
   registerMeRoute(app, dependencies.auth)
   registerProfileRoute(app, dependencies)
   registerProgressRoute(app, dependencies)
-  registerCurriculumUpgradeRoute(app, dependencies)
   registerLearningRoute(app, dependencies)
   registerAiFeedbackRoute(app, dependencies)
   registerOpenApiRoute(app)

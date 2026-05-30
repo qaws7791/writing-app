@@ -6,12 +6,7 @@ import {
 } from "drizzle-orm/sqlite-core"
 
 import { user } from "@/schema/auth.schema"
-import {
-  courses,
-  curriculumVersions,
-  lessons,
-  lessonSteps,
-} from "@/schema/content.schema"
+import { courses, lessons, lessonSteps } from "@/schema/content.schema"
 
 export const courseProgress = sqliteTable(
   "course_progress",
@@ -22,9 +17,6 @@ export const courseProgress = sqliteTable(
     courseId: text("course_id")
       .notNull()
       .references(() => courses.id, { onDelete: "cascade" }),
-    curriculumVersionId: text("curriculum_version_id").references(
-      () => curriculumVersions.id
-    ),
     startedAt: integer("started_at", { mode: "timestamp" }).notNull(),
     lastLessonId: text("last_lesson_id").references(() => lessons.id),
     completedCount: integer("completed_count").notNull().default(0),
@@ -50,9 +42,6 @@ export const lessonProgress = sqliteTable(
     courseId: text("course_id")
       .notNull()
       .references(() => courses.id, { onDelete: "cascade" }),
-    curriculumVersionId: text("curriculum_version_id").references(
-      () => curriculumVersions.id
-    ),
     currentStepId: text("current_step_id")
       .notNull()
       .references(() => lessonSteps.id, { onDelete: "cascade" }),

@@ -6,16 +6,7 @@ import { describe, expect, it } from "vitest"
 
 import { createDatabase } from "@/client"
 import { runContentMigration } from "@/migrations/run-content-migration"
-import {
-  adminUser,
-  curriculumUpgradeDismissals,
-  curriculumMigrationApplications,
-  curriculumVersionMigrations,
-  curriculumVersionChapters,
-  curriculumVersionLessons,
-  curriculumVersions,
-  lessonMigrationMappings,
-} from "@/schema"
+import { adminUser } from "@/schema"
 
 describe("createDatabase", () => {
   it("enables foreign key enforcement for fresh sqlite connections", () => {
@@ -75,8 +66,8 @@ describe("admin auth schema", () => {
   })
 })
 
-describe("curriculum version schema", () => {
-  it("creates curriculum version tables", async () => {
+describe("current curriculum schema", () => {
+  it("does not create curriculum version or migration tables", async () => {
     const sqlite = new Database(":memory:")
     runContentMigration(sqlite)
     createDatabase(sqlite)
@@ -88,49 +79,25 @@ describe("curriculum version schema", () => {
       .all()
       .map((row) => row.name)
 
-    expect(tables).toContain("curriculum_versions")
-    expect(tables).toContain("curriculum_version_chapters")
-    expect(tables).toContain("curriculum_version_lessons")
-    expect(curriculumVersions).toBeDefined()
-    expect(curriculumVersionChapters).toBeDefined()
-    expect(curriculumVersionLessons).toBeDefined()
+    expect(tables).not.toContain("curriculum_versions")
+    expect(tables).not.toContain("curriculum_version_chapters")
+    expect(tables).not.toContain("curriculum_version_lessons")
+    expect(tables).not.toContain("curriculum_version_migrations")
+    expect(tables).not.toContain("lesson_migration_mappings")
+    expect(tables).not.toContain("curriculum_migration_applications")
+    expect(tables).not.toContain("curriculum_upgrade_dismissals")
 
-    const sourceChapterColumns = sqlite
+    const chapterColumns = sqlite
       .query<{ name: string }, []>("pragma table_info(course_chapters)")
       .all()
       .map((row) => row.name)
-    const versionChapterColumns = sqlite
-      .query<{ name: string }, []>(
-        "pragma table_info(curriculum_version_chapters)"
-      )
+    const courseLessonColumns = sqlite
+      .query<{ name: string }, []>("pragma table_info(course_lessons)")
       .all()
       .map((row) => row.name)
 
-    expect(sourceChapterColumns).not.toContain("label")
-    expect(versionChapterColumns).not.toContain("label")
-  })
-})
-
-describe("curriculum migration schema", () => {
-  it("creates curriculum migration tables", async () => {
-    const sqlite = new Database(":memory:")
-    runContentMigration(sqlite)
-    createDatabase(sqlite)
-
-    const tables = sqlite
-      .query<{ name: string }, []>(
-        "select name from sqlite_master where type = 'table' order by name"
-      )
-      .all()
-      .map((row) => row.name)
-
-    expect(tables).toContain("curriculum_version_migrations")
-    expect(tables).toContain("lesson_migration_mappings")
-    expect(tables).toContain("curriculum_migration_applications")
-    expect(tables).toContain("curriculum_upgrade_dismissals")
-    expect(curriculumVersionMigrations).toBeDefined()
-    expect(lessonMigrationMappings).toBeDefined()
-    expect(curriculumMigrationApplications).toBeDefined()
-    expect(curriculumUpgradeDismissals).toBeDefined()
+    expect(chapterColumns).toContain("status")
+    expect(chapterColumns).not.toContain("label")
+    expect(courseLessonColumns).toContain("status")
   })
 })

@@ -68,10 +68,10 @@ export function CourseEditorShell({
   const [mobilePane, setMobilePane] = React.useState<
     "curriculum" | "workspace"
   >("workspace")
-  const { course, version } = workingCopy
+  const { course, curriculum } = workingCopy
   const selectedLessonId =
-    urlState.lessonId ?? version.chapters[0]?.lessons[0]?.lessonId ?? null
-  const lessons = version.chapters.flatMap((chapter) => chapter.lessons)
+    urlState.lessonId ?? curriculum.chapters[0]?.lessons[0]?.lessonId ?? null
+  const lessons = curriculum.chapters.flatMap((chapter) => chapter.lessons)
   const selectedLesson =
     lessons.find((lesson) => lesson.lessonId === selectedLessonId) ?? null
   const selectedLessonSteps = selectedLessonId
@@ -89,7 +89,7 @@ export function CourseEditorShell({
 
   // 브레드크럼용 챕터 찾기
   const selectedChapter =
-    version.chapters.find((chapter) =>
+    curriculum.chapters.find((chapter) =>
       chapter.lessons.some((lesson) => lesson.lessonId === selectedLessonId)
     ) ?? null
 
@@ -151,7 +151,7 @@ export function CourseEditorShell({
               onUpdateCourseField={onUpdateCourseField}
             />
             <CurriculumMap
-              chapters={version.chapters}
+              chapters={curriculum.chapters}
               isReadOnly={isReadOnly}
               onAddChapter={onAddChapter}
               onAddLesson={onAddLesson}
@@ -172,9 +172,7 @@ export function CourseEditorShell({
           {isReadOnly && (
             <div className="flex items-center gap-2 border-b bg-amber-50 px-6 py-2.5 text-sm text-amber-800 dark:bg-amber-950/30 dark:text-amber-400">
               <AlertCircle aria-hidden="true" className="size-4 shrink-0" />
-              <span>
-                발행된 버전은 편집할 수 없습니다. 편집하려면 새 초안을 만드세요.
-              </span>
+              <span>읽기 전용 상태에서는 편집할 수 없습니다.</span>
             </div>
           )}
           <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-8">

@@ -183,9 +183,9 @@ OpenAPI types provide compile-time safety. Runtime safety requires separate vali
 
 로컬 기본값은 fake 모드다. 백엔드 연동 검증 시 `WEB_API_MODE=http`, `NEXT_PUBLIC_API_MODE=http`, `WEB_API_BASE_URL=http://localhost:4000`, `NEXT_PUBLIC_API_BASE_URL=http://localhost:4000`을 명시한다.
 
-코스 상세 화면은 서버 컴포넌트에서 코스 상세와 학습자 커리큘럼 업그레이드 상태를 병렬 조회한다. 업그레이드 상태가 `available`일 때만 `CourseUpgradeNotice` 클라이언트 컴포넌트를 렌더링하고, 사용자의 업그레이드 또는 나중에 결정 액션은 `WritingAppApi`의 `applyCurriculumUpgrade`, `dismissCurriculumUpgrade` 메서드를 통해 Hono API로 전달한 뒤 `router.refresh()`로 서버 데이터를 다시 읽는다.
+코스 상세 화면은 서버 컴포넌트에서 코스 상세와 학습자 진행 상태를 조회한다. 커리큘럼 버전과 학습자 업그레이드 UX는 제거했으므로 코스 상세에서 별도 업그레이드 공지를 조회하거나 렌더링하지 않는다.
 
-fake API도 같은 포트를 구현한다. fake 모드에서는 코스 상세 UI와 테스트가 백엔드 없이 업그레이드 공지, 적용 후 숨김, 나중에 결정 후 숨김 흐름을 검증할 수 있다.
+fake API도 같은 포트를 구현한다. fake 모드는 백엔드 없이 코스 목록, 코스 상세, 레슨 진행, 답변 저장 같은 현재 학습 흐름을 검증하는 테스트/로컬 개발용 어댑터다.
 
 ### 5.6 어드민 프론트엔드
 
@@ -195,7 +195,7 @@ fake API도 같은 포트를 구현한다. fake 모드에서는 코스 상세 UI
 
 관리자 로그인은 same-origin `/api/auth/*` 프록시를 통해 `apps/admin-api`의 Better Auth endpoint로 전달한다. 서버 컴포넌트의 콘텐츠와 사용자 조회는 `getServerAdminApi()`가 현재 요청 쿠키를 어드민 API로 전달해 인증 상태를 유지한다.
 
-1차 화면은 읽기 전용으로 유지한다. `/courses`는 코스-챕터-레슨 계층을 표시하고, `/users`는 이름, 이메일, 이메일 인증 상태, 가입일만 표시한다. 생성, 수정, 삭제 UI는 2차 관리 기능으로 분리한다.
+`/courses`는 코스 목록과 코스 상세 편집기로 연결된다. 코스 상세 편집기는 현재 커리큘럼을 직접 편집하며, 별도 draft/publish 버전 전환 UI를 제공하지 않는다. 저장은 어드민 API의 `PUT /courses/:courseId/editor`로 코스, 챕터, 레슨, 스텝 전체 스냅샷을 전송한다. `/users`는 이름, 이메일, 이메일 인증 상태, 가입일을 표시한다.
 
 ---
 

@@ -1,7 +1,6 @@
 export type CourseEditorView = "lesson" | "step" | "preview"
 
 export type CourseEditorUrlState = {
-  versionId: string | null
   view: CourseEditorView
   lessonId: string | null
   stepId: string | null
@@ -19,7 +18,6 @@ export function parseEditorUrlState(
       : "lesson"
 
   return {
-    versionId: searchParams.get("version"),
     view,
     lessonId: searchParams.get("lessonId"),
     stepId: view === "step" ? searchParams.get("stepId") : null,

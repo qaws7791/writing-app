@@ -7,6 +7,8 @@
 - 수정: 2026-05-31, 제거 우선순위에서 어드민 코스 편집기, 레슨 스텝 타입 축소, Storybook/UI 축소를 제외하고 Google 단일 로그인 계획으로 변경했다.
 - 작업 시작: 2026-05-31, 1순위 후보인 코스 썸네일 업로드, RustFS, S3, Docker Compose 제거를 시작했다.
 - 작업 완료: 2026-05-31, 코스 썸네일 필드와 업로드 경로, RustFS/S3 의존성, Docker Compose 로컬 스토리지 구성을 제거했다. 로컬 개발과 배포는 별도 스토리지 서비스 없이 앱, SQLite, 필수 인증/AI 환경 변수만 기준으로 한다.
+- 작업 시작: 2026-05-31, 2순위 후보인 커리큘럼 버전, 마이그레이션, 학습자 업그레이드 UX의 완전 제거를 시작했다. 어드민 코스 편집기는 유지하되 draft/publish 버전 모델이 아니라 현재 커리큘럼 직접 편집 모델로 단순화한다.
+- 작업 완료: 2026-05-31, 커리큘럼 버전/마이그레이션/업그레이드 스키마, API, 서비스, 웹 공지 UX를 제거했다. 코스 구조는 `course_chapters`, `course_lessons`, `lesson_steps`의 현재 커리큘럼 하나로 관리하고, 어드민 편집기는 `GET/PUT /courses/:courseId/editor`에서 전체 스냅샷을 직접 저장한다.
 - 기준 철학: Best Simple System for Now
 - 조사 범위: `/prototype`, `node_modules`, 빌드 산출물은 제외하고 현재 모노레포의 앱, 패키지, 문서, 런타임 의존성, 환경 변수, DB 스키마, API 경계를 확인했다.
 
@@ -59,9 +61,9 @@
 
 ### 2. 커리큘럼 버전/마이그레이션 제거
 
-현재 구조는 `curriculum_versions`, `curriculum_version_chapters`, `curriculum_version_lessons`, `curriculum_version_steps`, `curriculum_version_migrations`, `lesson_migration_mappings`, `curriculum_migration_applications`, `curriculum_upgrade_dismissals`를 유지한다. 학습 진행도 `curriculum_version_id`에 묶여 있고, 웹 코스 상세는 매번 업그레이드 공지를 함께 조회한다.
+2026-05-31 B안으로 제거를 완료했다. 더 이상 `curriculum_versions`, `curriculum_version_chapters`, `curriculum_version_lessons`, `curriculum_version_steps`, `curriculum_version_migrations`, `lesson_migration_mappings`, `curriculum_migration_applications`, `curriculum_upgrade_dismissals`를 운영하지 않는다. 학습 진행도 `curriculum_version_id`에 묶이지 않고, 웹 코스 상세도 업그레이드 공지를 조회하지 않는다.
 
-추천 단순화는 “현재 공개 커리큘럼 하나”만 두는 것이다. 콘텐츠 변경은 seed 수정과 배포로 처리하고, 초기에는 lesson id를 유지하는 변경만 허용한다. 이미 완료한 레슨 보존이 필요해질 때만 버전 모델을 다시 도입한다.
+현재 정책은 “현재 공개 커리큘럼 하나”만 두는 것이다. 콘텐츠 변경은 seed 또는 어드민 현재 커리큘럼 편집기로 처리하고, 초기에는 lesson id를 유지하는 변경만 허용한다. 이미 완료한 레슨 보존이 필요해질 때만 버전 모델을 다시 도입한다.
 
 조건은 명확하다. 이미 실제 사용자가 많고 콘텐츠 구조 변경이 잦다면 제거하면 안 된다. 하지만 현재 BSSN 관점에서는 미래 변경 비용을 미리 모두 지불하고 있다.
 

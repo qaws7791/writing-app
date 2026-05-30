@@ -5,11 +5,9 @@ import { afterEach, describe, expect, it } from "vitest"
 import { createDatabase } from "@/client"
 import { runContentMigration } from "@/migrations/run-content-migration"
 import {
+  courseChapters,
+  courseLessons,
   courses,
-  curriculumVersionChapters,
-  curriculumVersionLessons,
-  curriculumVersionSteps,
-  curriculumVersions,
   lessons,
   lessonSteps,
 } from "@/schema"
@@ -20,11 +18,7 @@ const sqlite = new Database(":memory:")
 const db = createDatabase(sqlite)
 
 afterEach(() => {
-  sqlite.exec("delete from curriculum_version_steps")
   sqlite.exec("delete from lesson_steps")
-  sqlite.exec("delete from curriculum_version_lessons")
-  sqlite.exec("delete from curriculum_version_chapters")
-  sqlite.exec("delete from curriculum_versions")
   sqlite.exec("delete from course_lessons")
   sqlite.exec("delete from lessons")
   sqlite.exec("delete from course_chapters")
@@ -33,72 +27,34 @@ afterEach(() => {
 })
 
 describe("seedContent", () => {
-  it("inserts deterministic course and lesson rows", async () => {
+  it("inserts deterministic current curriculum rows", async () => {
     runContentMigration(sqlite)
 
     await seedContent(db)
 
     const courseRows = await db.select().from(courses)
+    const chapterRows = await db.select().from(courseChapters)
+    const courseLessonRows = await db.select().from(courseLessons)
     const lessonRows = await db.select().from(lessons)
     const stepRows = await db.select().from(lessonSteps)
-    const versionRows = await db.select().from(curriculumVersions)
-    const versionChapterRows = await db.select().from(curriculumVersionChapters)
-    const versionLessonRows = await db.select().from(curriculumVersionLessons)
-    const versionStepRows = await db.select().from(curriculumVersionSteps)
 
     expect(courseRows.map((course) => course.id)).toContain(
       "sentence-structure"
     )
+    expect(
+      chapterRows.filter((chapter) => chapter.courseId === "sentence-structure")
+    ).toHaveLength(3)
+    expect(
+      courseLessonRows.filter((lesson) =>
+        lesson.id.startsWith("sentence-structure")
+      )
+    ).toHaveLength(12)
     expect(lessonRows.map((lesson) => lesson.id)).toContain(
       "sentence-structure-01"
     )
     expect(
       stepRows.filter((step) => step.lessonId === "sentence-structure-01")
     ).toHaveLength(5)
-    expect(versionRows).toContainEqual(
-      expect.objectContaining({
-        id: "sentence-structure-v1",
-        courseId: "sentence-structure",
-        versionNumber: 1,
-        status: "published",
-        title: "문장 구조의 기본",
-        changelog: "초기 커리큘럼 버전",
-      })
-    )
-    expect(
-      versionChapterRows.filter(
-        (chapter) => chapter.curriculumVersionId === "sentence-structure-v1"
-      )
-    ).toHaveLength(3)
-    expect(
-      versionLessonRows.filter(
-        (lesson) => lesson.curriculumVersionId === "sentence-structure-v1"
-      )
-    ).toHaveLength(12)
-    expect(versionLessonRows).toContainEqual(
-      expect.objectContaining({
-        id: "sentence-structure-01-v1",
-        chapterId: "sentence-structure-chapter-1-v1",
-        lessonId: "sentence-structure-01",
-        status: "active",
-      })
-    )
-    expect(
-      versionStepRows.filter(
-        (step) => step.curriculumVersionId === "sentence-structure-v1"
-      )
-    ).toHaveLength(
-      stepRows.filter((step) => step.lessonId.startsWith("sentence-structure"))
-        .length
-    )
-    expect(versionStepRows).toContainEqual(
-      expect.objectContaining({
-        id: "sentence-structure-01-step-1-v1",
-        lessonId: "sentence-structure-01",
-        sourceStepId: "sentence-structure-01-step-1",
-        status: "active",
-      })
-    )
   })
 
   it("restores declared seed values when seeded rows are stale", async () => {

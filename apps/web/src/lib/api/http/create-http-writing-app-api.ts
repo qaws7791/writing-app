@@ -12,9 +12,6 @@ import type {
   AiFeedbackResult,
   CompleteLessonResult,
   CurrentUser,
-  CurriculumUpgradeApplication,
-  CurriculumUpgradeNotice,
-  DismissCurriculumUpgradeResult,
   LessonProgress,
   ProfileSummary,
   WritingAppApi,
@@ -91,33 +88,6 @@ export function createHttpWritingAppApi(
     async listProgress() {
       return request(() => client.GET("/progress"), mapProgressCourseList)
     },
-    async getCurriculumUpgrade(courseId) {
-      return request(
-        () =>
-          client.GET("/courses/{courseId}/curriculum-upgrade", {
-            params: { path: { courseId } },
-          }),
-        mapCurriculumUpgradeNotice
-      )
-    },
-    async applyCurriculumUpgrade(courseId) {
-      return request(
-        () =>
-          client.POST("/courses/{courseId}/curriculum-upgrade", {
-            params: { path: { courseId } },
-          }),
-        mapCurriculumUpgradeApplication
-      )
-    },
-    async dismissCurriculumUpgrade(courseId) {
-      return request(
-        () =>
-          client.POST("/courses/{courseId}/curriculum-upgrade/dismiss", {
-            params: { path: { courseId } },
-          }),
-        mapDismissCurriculumUpgradeResult
-      )
-    },
     async getCourseProgress(courseId) {
       return request(
         () =>
@@ -178,107 +148,6 @@ export function createHttpWritingAppApi(
         mapAiFeedbackResult
       )
     },
-  }
-}
-
-function mapCurriculumUpgradeNotice(value: {
-  completedCount?: number
-  courseId: string
-  fromVersion?: {
-    id: string
-    title: string
-    versionNumber: number
-  }
-  message?: string
-  migrationId?: string
-  status: "available" | "not-available"
-  toVersion?: {
-    changelog: string
-    id: string
-    title: string
-    versionNumber: number
-  }
-  totalLessons?: number
-}): CurriculumUpgradeNotice {
-  if (value.status === "not-available") {
-    return {
-      courseId: value.courseId as never,
-      status: "not-available",
-    }
-  }
-
-  if (
-    value.completedCount === undefined ||
-    !value.fromVersion ||
-    !value.message ||
-    !value.migrationId ||
-    !value.toVersion ||
-    value.totalLessons === undefined
-  ) {
-    throw new Error("Available curriculum upgrade notice is incomplete.")
-  }
-
-  return {
-    completedCount: value.completedCount,
-    courseId: value.courseId as never,
-    fromVersion: value.fromVersion,
-    message: value.message,
-    migrationId: value.migrationId,
-    status: "available",
-    toVersion: value.toVersion,
-    totalLessons: value.totalLessons,
-  }
-}
-
-function mapCurriculumUpgradeApplication(value: {
-  completedLessonCount: number
-  completedLessonIds: readonly string[]
-  courseId: string
-  createdAt: string
-  fromVersionId: string
-  id: string
-  migrationId: string
-  preservedLessonIds: readonly string[]
-  skippedLessonIds: readonly string[]
-  status: "completed"
-  toVersionId: string
-  updatedAt: string
-}): CurriculumUpgradeApplication {
-  return {
-    completedLessonCount: value.completedLessonCount,
-    completedLessonIds: value.completedLessonIds.map(
-      (lessonId) => lessonId as LessonId
-    ),
-    courseId: value.courseId as never,
-    createdAt: value.createdAt,
-    fromVersionId: value.fromVersionId,
-    id: value.id,
-    migrationId: value.migrationId,
-    preservedLessonIds: value.preservedLessonIds.map(
-      (lessonId) => lessonId as LessonId
-    ),
-    skippedLessonIds: value.skippedLessonIds.map(
-      (lessonId) => lessonId as LessonId
-    ),
-    status: value.status,
-    toVersionId: value.toVersionId,
-    updatedAt: value.updatedAt,
-  }
-}
-
-function mapDismissCurriculumUpgradeResult(value: {
-  courseId: string
-  dismissedAt: string
-  fromVersionId: string
-  status: "dismissed"
-  toVersionId: string
-}): DismissCurriculumUpgradeResult {
-  return {
-    courseId: value.courseId as never,
-    dismissedAt: value.dismissedAt,
-    fromVersionId: value.fromVersionId,
-    status: value.status,
-    toVersionId: value.toVersionId,
   }
 }
 

@@ -68,31 +68,13 @@ const latestPublicContentService: ContentService = {
   },
 }
 
-const learnerVersionProgressService: LearningService = {
-  async applyCurriculumUpgrade() {
-    return {
-      status: "not-found",
-      error: {
-        code: "not-found",
-        message: "커리큘럼 업그레이드를 찾을 수 없습니다.",
-      },
-    }
-  },
+const learnerProgressService: LearningService = {
   async completeLesson() {
     return {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
-      },
-    }
-  },
-  async dismissCurriculumUpgrade() {
-    return {
-      status: "not-found",
-      error: {
-        code: "not-found",
-        message: "커리큘럼 업그레이드를 찾을 수 없습니다.",
+        message: "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다.",
       },
     }
   },
@@ -105,15 +87,6 @@ const learnerVersionProgressService: LearningService = {
         nextLessonId: "sentence-structure-02",
         progressPercent: 8,
         totalLessons: 12,
-      },
-    }
-  },
-  async getCurriculumUpgrade() {
-    return {
-      status: "ok",
-      value: {
-        courseId: "sentence-structure",
-        status: "not-available",
       },
     }
   },
@@ -159,7 +132,7 @@ const learnerVersionProgressService: LearningService = {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
+        message: "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다.",
       },
     }
   },
@@ -168,7 +141,7 @@ const learnerVersionProgressService: LearningService = {
       status: "invalid-request",
       error: {
         code: "invalid-request",
-        message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
+        message: "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다.",
       },
     }
   },
@@ -190,9 +163,9 @@ const fakeAiFeedbackService: AiFeedbackService = {
   },
 }
 
-describe("version-aware learning API", () => {
-  it("keeps public latest content separate from learner progress", async () => {
-    const app = createVersionedLearningTestApp()
+describe("learning API current curriculum", () => {
+  it("keeps public content reads separate from learner progress", async () => {
+    const app = createLearningTestApp()
 
     const publicResponse = await app.request("/courses/sentence-structure")
     const progressResponse = await app.request(
@@ -227,8 +200,8 @@ describe("version-aware learning API", () => {
     })
   })
 
-  it("returns invalid-request for learner-version write rejections", async () => {
-    const app = createVersionedLearningTestApp()
+  it("returns invalid-request for current curriculum write rejections", async () => {
+    const app = createLearningTestApp()
 
     const progressResponse = await app.request(
       "/lessons/sentence-structure-12/progress",
@@ -260,22 +233,22 @@ describe("version-aware learning API", () => {
     expect(progressResponse.status).toBe(400)
     await expect(progressResponse.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
+      message: "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다.",
     })
     expect(answerResponse.status).toBe(400)
     await expect(answerResponse.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
+      message: "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다.",
     })
     expect(completeResponse.status).toBe(400)
     await expect(completeResponse.json()).resolves.toEqual({
       code: "invalid-request",
-      message: "레슨이 학습자의 커리큘럼 버전에 포함되어 있지 않습니다.",
+      message: "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다.",
     })
   })
 })
 
-function createVersionedLearningTestApp() {
+function createLearningTestApp() {
   return createApiApp({
     aiFeedbackService: fakeAiFeedbackService,
     auth: {
@@ -290,7 +263,7 @@ function createVersionedLearningTestApp() {
       return true
     },
     contentService: latestPublicContentService,
-    learningService: learnerVersionProgressService,
+    learningService: learnerProgressService,
     logger: silentLogger,
   })
 }

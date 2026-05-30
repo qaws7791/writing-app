@@ -49,86 +49,24 @@ export function createHttpAdminApi({
         headers
       )
     },
-    getCourseEditorDocument(courseId, versionId) {
-      const url = createAdminApiUrl(
-        baseUrl,
-        `/courses/${encodePathSegment(courseId)}/editor`
-      )
-
-      if (versionId) {
-        url.searchParams.set("version", versionId)
-      }
-
-      return requestJson(fetcher, url, headers)
-    },
-    listCurriculumVersions(courseId) {
+    getCourseEditorDocument(courseId) {
       return requestJson(
         fetcher,
         createAdminApiUrl(
           baseUrl,
-          `/courses/${encodePathSegment(courseId)}/curriculum/versions`
+          `/courses/${encodePathSegment(courseId)}/editor`
         ),
         headers
       )
     },
-    getCourseCurriculumVersionDetail(courseId, versionId) {
+    getCourseLessonDetail(courseId, lessonId) {
       return requestJson(
         fetcher,
         createAdminApiUrl(
           baseUrl,
-          `/courses/${encodePathSegment(courseId)}/curriculum/versions/${encodePathSegment(versionId)}`
+          `/courses/${encodePathSegment(courseId)}/lessons/${encodePathSegment(lessonId)}`
         ),
         headers
-      )
-    },
-    getCourseLessonDetail(courseId, versionId, lessonId) {
-      const url = createAdminApiUrl(
-        baseUrl,
-        `/courses/${encodePathSegment(courseId)}/lessons/${encodePathSegment(lessonId)}`
-      )
-      url.searchParams.set("version", versionId)
-
-      return requestJson(fetcher, url, headers)
-    },
-    createCurriculumDraft(courseId) {
-      return requestJson(
-        fetcher,
-        createAdminApiUrl(
-          baseUrl,
-          `/courses/${encodePathSegment(courseId)}/curriculum/drafts`
-        ),
-        headers,
-        {
-          method: "POST",
-        }
-      )
-    },
-    restoreCurriculumDraft(courseId, input) {
-      return requestJson(
-        fetcher,
-        createAdminApiUrl(
-          baseUrl,
-          `/courses/${encodePathSegment(courseId)}/curriculum/restores`
-        ),
-        headers,
-        {
-          body: input,
-          method: "POST",
-        }
-      )
-    },
-    saveCurriculumVersionContent(input) {
-      return requestJson(
-        fetcher,
-        createAdminApiUrl(
-          baseUrl,
-          `/courses/${encodePathSegment(input.courseId)}/curriculum/versions/${encodePathSegment(input.versionId)}/content`
-        ),
-        headers,
-        {
-          body: input,
-          method: "PUT",
-        }
       )
     },
     saveCourseEditorDocument(input) {
@@ -142,32 +80,6 @@ export function createHttpAdminApi({
         {
           body: input,
           method: "PUT",
-        }
-      )
-    },
-    publishCurriculumVersion(courseId, versionId) {
-      return requestJson(
-        fetcher,
-        createAdminApiUrl(
-          baseUrl,
-          `/courses/${encodePathSegment(courseId)}/curriculum/versions/${encodePathSegment(versionId)}/publish`
-        ),
-        headers,
-        {
-          method: "POST",
-        }
-      )
-    },
-    discardCurriculumVersion(courseId, versionId) {
-      return requestJson(
-        fetcher,
-        createAdminApiUrl(
-          baseUrl,
-          `/courses/${encodePathSegment(courseId)}/curriculum/versions/${encodePathSegment(versionId)}/discard`
-        ),
-        headers,
-        {
-          method: "POST",
         }
       )
     },
