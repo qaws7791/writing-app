@@ -17,6 +17,10 @@ const removeCourseThumbnailSql = readFileSync(
   new URL("./0010-remove-course-thumbnail.sql", import.meta.url),
   "utf8"
 )
+const courseCurriculumRevisionSql = readFileSync(
+  new URL("./0011-course-curriculum-revision.sql", import.meta.url),
+  "utf8"
+)
 
 export function runContentMigration(sqlite: Database) {
   sqlite.exec(contentMigrationSql)
@@ -39,6 +43,12 @@ export function runContentMigration(sqlite: Database) {
     "lesson_steps",
     "status",
     "alter table lesson_steps add column status text not null default 'active'"
+  )
+  addColumnIfMissing(
+    sqlite,
+    "courses",
+    "curriculum_revision",
+    courseCurriculumRevisionSql
   )
   dropColumnIfExists(
     sqlite,

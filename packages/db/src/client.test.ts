@@ -139,6 +139,10 @@ describe("current curriculum schema", () => {
     expect(tables).not.toContain("curriculum_migration_applications")
     expect(tables).not.toContain("curriculum_upgrade_dismissals")
 
+    const courseColumns = sqlite
+      .query<{ name: string }, []>("pragma table_info(courses)")
+      .all()
+      .map((row) => row.name)
     const chapterColumns = sqlite
       .query<{ name: string }, []>("pragma table_info(course_chapters)")
       .all()
@@ -148,6 +152,7 @@ describe("current curriculum schema", () => {
       .all()
       .map((row) => row.name)
 
+    expect(courseColumns).toContain("curriculum_revision")
     expect(chapterColumns).toContain("status")
     expect(chapterColumns).not.toContain("label")
     expect(courseLessonColumns).toContain("status")

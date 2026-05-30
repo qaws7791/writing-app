@@ -19,6 +19,7 @@ export const courses = sqliteTable("courses", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   sortOrder: integer("sort_order").notNull(),
+  curriculumRevision: integer("curriculum_revision").notNull().default(0),
 })
 
 export const courseChapters = sqliteTable("course_chapters", {
