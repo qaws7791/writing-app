@@ -358,6 +358,11 @@
 - 완료 내용: 코스/레슨/홈 progress fixture 데이터를 `lib/api/fake` 경계로 이동하고 fake API가 단일 fixture entrypoint를 통해서만 값을 읽도록 정리했다. feature의 `course-data`, `course-detail-data`, `lesson-data`는 화면과 API 계약에서 쓰는 타입 및 id helper만 export한다.
 - 검증: `bun --filter @workspace/web test src/lib/api/fake/create-fake-writing-app-api.test.ts src/lib/api/get-server-writing-app-api.test.ts src/features/courses/course-curriculum.test.tsx src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint && bun lefthook run pre-commit`
 
+## WEB-TEST-01 작업 메모
+
+- 대상 파일: `apps/web/src/lib/api/fake/*`, `apps/web/test/api/*`, `apps/web/tsconfig.json`, `apps/web/vitest.config.ts`, `apps/web/eslint.config.mjs`
+- 작업 시작: 2026-05-31, 웹 fake API 구현체와 대형 fixture를 제품 `src` 밖의 `apps/web/test` 경계로 옮겨 테스트 지원 코드의 소유권을 명시한다.
+
 ## TEST-02 작업 메모
 
 - 대상 파일: `apps/admin/src/test/ui-mocks.tsx`, `apps/admin/src/features/users/admin-users-page.test.tsx`, `apps/admin/src/features/courses/admin-courses-page.test.tsx`
