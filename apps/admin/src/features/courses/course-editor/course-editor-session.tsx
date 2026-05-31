@@ -16,7 +16,6 @@ import {
   archiveChapter,
   archiveLesson,
   archiveStep,
-  createCourseEditorSaveInput,
   createCourseEditorWorkingCopy,
   moveLesson,
   moveStep,
@@ -27,6 +26,8 @@ import {
   type CourseEditorWorkingCopy,
 } from "@/features/courses/course-editor/editor-state"
 import type { CourseEditorUrlState } from "@/features/courses/course-editor/editor-url-state"
+import { useCourseEditorSaveCommand } from "@/features/courses/course-editor/use-course-editor-save-command"
+import { useCourseEditorUrlState } from "@/features/courses/course-editor/use-course-editor-url-state"
 import type { AdminApi } from "@/lib/api/admin-api"
 
 type CourseEditorSessionState = {
@@ -95,19 +96,17 @@ export function CourseEditorProvider({
   const [workingCopy, setWorkingCopy] = React.useState(() =>
     createCourseEditorWorkingCopy({ course, revision, curriculum })
   )
-  const [isSaving, setIsSaving] = React.useState(false)
   const [statusMessage, setStatusMessage] = React.useState<string | null>(null)
-  const [localUrlState, setLocalUrlState] = React.useState(urlState)
+  const { localUrlState, replaceEditorUrl } = useCourseEditorUrlState({
+    courseId: course.id,
+    urlState,
+  })
 
   React.useEffect(() => {
     setWorkingCopy(
       createCourseEditorWorkingCopy({ course, revision, curriculum })
     )
   }, [course, revision, curriculum])
-
-  React.useEffect(() => {
-    setLocalUrlState(urlState)
-  }, [urlState])
 
   React.useEffect(() => {
     if (!workingCopy.dirty.hasChanges) {
@@ -125,38 +124,6 @@ export function CourseEditorProvider({
     }
   }, [workingCopy.dirty.hasChanges])
 
-  const replaceEditorUrl = React.useCallback(
-    (query: Record<string, string>) => {
-      const searchParams = new URLSearchParams()
-
-      if (query["view"]) {
-        searchParams.set("view", query["view"])
-      }
-      if (query["lessonId"]) {
-        searchParams.set("lessonId", query["lessonId"])
-      }
-      if (query["stepId"]) {
-        searchParams.set("stepId", query["stepId"])
-      }
-
-      const queryString = searchParams.toString()
-      const nextPath =
-        queryString.length > 0
-          ? `/courses/${course.id}?${queryString}`
-          : `/courses/${course.id}`
-      const nextView = query["view"] ?? "lesson"
-
-      setLocalUrlState({
-        lessonId: query["lessonId"] ?? null,
-        stepId: nextView === "step" ? (query["stepId"] ?? null) : null,
-        view:
-          nextView === "step" || nextView === "preview" ? nextView : "lesson",
-      })
-      window.history.replaceState(window.history.state, "", nextPath)
-    },
-    [course.id]
-  )
-
   const updateWorkingCopy = React.useCallback(
     (
       updater: (current: CourseEditorWorkingCopy) => CourseEditorWorkingCopy
@@ -167,36 +134,12 @@ export function CourseEditorProvider({
     []
   )
 
-  const save = React.useCallback(async () => {
-    setIsSaving(true)
-    setStatusMessage(null)
-
-    try {
-      const result = await adminApi.saveCourseEditorDocument(
-        createCourseEditorSaveInput(workingCopy)
-      )
-
-      if (result.status === "error") {
-        setStatusMessage(
-          result.error.code === "conflict"
-            ? "다른 관리자가 먼저 저장했습니다. 최신 내용을 다시 불러온 뒤 변경을 다시 적용하세요."
-            : result.error.message
-        )
-        return
-      }
-
-      setWorkingCopy(
-        createCourseEditorWorkingCopy({
-          course: result.value.course,
-          revision: result.value.revision,
-          curriculum: result.value.curriculum,
-        })
-      )
-      setStatusMessage("저장되었습니다.")
-    } finally {
-      setIsSaving(false)
-    }
-  }, [adminApi, workingCopy])
+  const { isSaving, save } = useCourseEditorSaveCommand({
+    adminApi,
+    replaceWorkingCopy: setWorkingCopy,
+    setStatusMessage,
+    workingCopy,
+  })
 
   const commands = React.useMemo<CourseEditorCommands>(
     () => ({

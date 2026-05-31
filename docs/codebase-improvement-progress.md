@@ -24,6 +24,7 @@
 |    6 | DATA-02   | 완료 | 서버 시작 시 자동 데이터 변경 작업을 분리했다.      |
 |    7 | DATA-03   | 완료 | Step content JSON 계약을 경계별로 엄격히 검증했다.  |
 |    8 | DOMAIN-01 | 완료 | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다. |
+|    9 | ADMIN-01  | 완료 | CourseEditorProvider의 URL/저장 책임을 분리했다.    |
 
 ## ADMIN-08 작업 메모
 
@@ -82,6 +83,14 @@
 - 완료 내용: content service가 lesson DTO parse 이후 playable lesson 불변식을 검증한다. 빈 steps, INTRO first 위반, COMPLETE last 위반, AI feedback source 누락은 `invalid-content`로 반환된다.
 - 검증: `bun --filter @workspace/core test src/content/content.service.test.ts && bun --filter @workspace/core test && bun --filter @workspace/core typecheck && bun --filter @workspace/core lint`
 
+## ADMIN-01 작업 메모
+
+- 대상 파일: `apps/admin/src/features/courses/course-editor/course-editor-session.tsx`, `apps/admin/src/features/courses/course-editor/use-course-editor-url-state.ts`, `apps/admin/src/features/courses/course-editor/use-course-editor-save-command.ts`
+- 조사 방향: CourseEditorProvider가 보유한 URL 동기화, 저장 상태, 저장 API 호출 책임을 동작 변경 없이 분리할 수 있는 가장 작은 경계를 찾는다.
+- 완료 내용: URL 상태/히스토리 갱신은 `useCourseEditorUrlState`로, 저장 명령과 저장 중 상태는 `useCourseEditorSaveCommand`로 분리했다. URL 변경과 저장 성공/충돌 상태를 훅 테스트로 고정했다.
+- 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/course-editor-session-hooks.test.tsx src/features/courses/course-editor/course-editor-shell.test.tsx && bun --filter @workspace/admin lint`
+- 참고: `bun --filter @workspace/admin typecheck`는 기존 admin 테스트 fixture와 `editor-state.ts`의 step content 타입 불일치로 실패한다.
+
 ## 다음 단계
 
-P0 항목은 완료했다. 다음 작업은 P1의 `ADMIN-01`부터 문서 순서대로 진행한다.
+다음 작업은 P1의 `ADMIN-02`를 문서 순서대로 진행한다.
