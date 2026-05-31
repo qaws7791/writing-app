@@ -54,6 +54,7 @@
 |   36 | DATA-09   | 완료 | content repository 출력 신뢰 경계를 명확히 했다.     |
 |   37 | DATA-10   | 완료 | progress summary 변환 흐름을 단일화했다.             |
 |   38 | DOMAIN-03 | 완료 | 구버전 커리큘럼 저장 API 흔적을 제거했다.            |
+|   39 | FE-03     | 완료 | write step 상태 초기화를 key 리마운트로 단순화했다.  |
 
 ## ADMIN-08 작업 메모
 
@@ -332,6 +333,13 @@
 - 완료 내용: core service/repository와 DB repository에서 `saveCurriculumContent`를 제거하고, 저장 요청 DTO와 어드민 에디터 타입명을 `AdminCourseEditorSaveRequestDto` 기준으로 정리했다. 동시성 조사 문서도 현재 단일 저장 API 기준으로 갱신했다.
 - 검증: `bun --filter @workspace/core typecheck && bun --filter @workspace/core test src/admin/admin.service.test.ts && bun --filter @workspace/core lint && bun --filter @workspace/db typecheck && bun --filter @workspace/db test src/repositories/drizzle-admin.repository.test.ts && bun --filter @workspace/db lint && bun --filter @workspace/admin-api typecheck && bun --filter @workspace/admin-api test src/app.test.ts && bun --filter @workspace/admin-api lint && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin test src/features/courses/course-editor/editor-state.test.ts src/features/courses/admin-course-detail-page.test.tsx && bun --filter @workspace/admin lint`
 
+## FE-03 작업 메모
+
+- 대상 파일: `apps/web/src/features/lessons/lesson-step-renderer.tsx`, `apps/web/src/features/lessons/lesson-experience.test.tsx`
+- 조사 방향: ShortWrite/LongWrite step이 `stepId` 변경을 ref/effect로 감지해 local state를 재설정하는 패턴을 확인한다.
+- 완료 내용: `SHORT_WRITE`와 `LONG_WRITE` branch에 `key={step.id}`를 부여해 step 전환 시 상태를 리마운트로 초기화하고, 내부 `activeStepIdRef`/`useEffect` 초기화 코드를 제거했다. 같은 타입 write step이 연속될 때 두 번째 입력이 빈 상태로 시작하는 회귀 테스트를 추가했다.
+- 검증: `bun --filter @workspace/web test src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint`
+
 ## 다음 단계
 
-다음 작업은 P2의 `FE-03`을 문서 순서대로 진행한다.
+다음 작업은 P2의 `FE-04`를 문서 순서대로 진행한다.

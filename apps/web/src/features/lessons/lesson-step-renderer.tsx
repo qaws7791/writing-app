@@ -219,6 +219,7 @@ export function LessonStepRenderer({
     case "SHORT_WRITE":
       return (
         <ShortWriteStep
+          key={step.id}
           stepId={step.id}
           content={step.content}
           onNext={onNext}
@@ -229,6 +230,7 @@ export function LessonStepRenderer({
     case "LONG_WRITE":
       return (
         <LongWriteStep
+          key={step.id}
           stepId={step.id}
           content={step.content}
           onNext={onNext}
@@ -1425,17 +1427,7 @@ function ShortWriteStep({
   const [text, setText] = React.useState(savedText)
   const [submitted, setSubmitted] = React.useState(false)
   const [showReference, setShowReference] = React.useState(false)
-  const activeStepIdRef = React.useRef(stepId)
   const canSubmit = text.length >= content.minChars
-
-  React.useEffect(() => {
-    if (activeStepIdRef.current !== stepId) {
-      activeStepIdRef.current = stepId
-      setText(savedText)
-      setSubmitted(false)
-      setShowReference(false)
-    }
-  }, [savedText, stepId])
 
   const submit = () => {
     if (!submitted) {
@@ -1512,19 +1504,8 @@ function LongWriteStep({
   const [submitted, setSubmitted] = React.useState(false)
   const [showGuide, setShowGuide] = React.useState(false)
   const [draftSaved, setDraftSaved] = React.useState(false)
-  const activeStepIdRef = React.useRef(stepId)
   const canSubmit = text.length >= content.minChars
   const progress = Math.min((text.length / content.targetChars) * 100, 100)
-
-  React.useEffect(() => {
-    if (activeStepIdRef.current !== stepId) {
-      activeStepIdRef.current = stepId
-      setText(savedText)
-      setSubmitted(false)
-      setDraftSaved(false)
-      setShowGuide(false)
-    }
-  }, [savedText, stepId])
 
   const submit = () => {
     if (!submitted) {

@@ -213,6 +213,20 @@ describe("LessonExperience", () => {
     expect(screen.getByText("AI 피드백")).toBeTruthy()
     expect(screen.getByText("문장을 구체적으로 고쳤습니다.")).toBeTruthy()
   })
+
+  it("resets short-write local state when moving to another write step", async () => {
+    const user = userEvent.setup()
+
+    render(<LessonExperience lesson={createTwoShortWriteLesson()} api={api} />)
+
+    await user.click(screen.getByRole("button", { name: "시작하기" }))
+    await user.type(screen.getByRole("textbox"), "첫 문장입니다.")
+    await user.click(screen.getByRole("button", { name: "제출하기" }))
+    await user.click(screen.getByRole("button", { name: "다음" }))
+
+    expect(screen.getByText("두 번째 문장을 쓰세요.")).toBeTruthy()
+    expect(screen.getByRole<HTMLInputElement>("textbox").value).toBe("")
+  })
 })
 
 function createShortWriteFeedbackLesson(): Lesson {
@@ -268,6 +282,75 @@ function createShortWriteFeedbackLesson(): Lesson {
           scoreRange: [0, 100],
           allowRevision: true,
           maxRevisions: 1,
+        },
+      },
+    ],
+  }
+}
+
+function createTwoShortWriteLesson(): Lesson {
+  return {
+    id: "lesson-1" as never,
+    title: "문장 두 번 쓰기",
+    categoryId: "beginner",
+    courseId: "course-1",
+    unitNumber: 1,
+    steps: [
+      {
+        id: "intro-step" as never,
+        type: "INTRO",
+        order: 1,
+        points: 0,
+        required: true,
+        content: {
+          title: "문장 두 번 쓰기",
+          category: "문법",
+          tagTone: "primary",
+          bullets: ["문장을 두 번 씁니다."],
+          estimatedMinutes: 1,
+          totalSteps: 4,
+        },
+      },
+      {
+        id: "first-write-step" as never,
+        type: "SHORT_WRITE",
+        order: 2,
+        points: 10,
+        required: true,
+        content: {
+          instruction: "첫 번째 문장을 쓰세요.",
+          prompt: "첫 번째 문장을 써보세요.",
+          maxChars: 100,
+          minChars: 5,
+          referenceAnswer: "첫 문장 예시입니다.",
+          aiEvaluationEnabled: false,
+          showReferenceAfterSubmit: false,
+        },
+      },
+      {
+        id: "second-write-step" as never,
+        type: "SHORT_WRITE",
+        order: 3,
+        points: 10,
+        required: true,
+        content: {
+          instruction: "두 번째 문장을 쓰세요.",
+          prompt: "두 번째 문장을 써보세요.",
+          maxChars: 100,
+          minChars: 5,
+          referenceAnswer: "두 번째 문장 예시입니다.",
+          aiEvaluationEnabled: false,
+          showReferenceAfterSubmit: false,
+        },
+      },
+      {
+        id: "complete-step" as never,
+        type: "COMPLETE",
+        order: 4,
+        points: 0,
+        required: true,
+        content: {
+          nextAction: "next-lesson",
         },
       },
     ],
