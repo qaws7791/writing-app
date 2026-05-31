@@ -2,15 +2,24 @@ import type { LessonId } from "../content"
 import type { AiFeedbackResultDto } from "./ai-feedback.dto"
 import type { UserId } from "../learning"
 
-export interface CreateCompletedFeedbackAttemptInput {
+export interface CreateNextCompletedFeedbackAttemptInput {
   answerSnapshot: string
-  attemptNumber: number
   feedbackStepId: string
   lessonId: LessonId
+  maxAttempts: number
   result: AiFeedbackResultDto
   sourceStepId: string
   userId: UserId
 }
+
+export type CreateNextCompletedFeedbackAttemptResult =
+  | {
+      status: "created"
+      attemptNumber: number
+    }
+  | {
+      status: "retry-limit-exceeded"
+    }
 
 export interface AiFeedbackRepository {
   countCompletedAttempts(
@@ -18,7 +27,7 @@ export interface AiFeedbackRepository {
     lessonId: LessonId,
     feedbackStepId: string
   ): Promise<number>
-  createCompletedAttempt(
-    input: CreateCompletedFeedbackAttemptInput
-  ): Promise<void>
+  createNextCompletedAttempt(
+    input: CreateNextCompletedFeedbackAttemptInput
+  ): Promise<CreateNextCompletedFeedbackAttemptResult>
 }

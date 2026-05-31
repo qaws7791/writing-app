@@ -95,6 +95,14 @@ const databaseUnavailableResult: UnavailableResult = {
   },
 }
 
+const feedbackRetryLimitExceededResult: RetryLimitExceededResult = {
+  status: "retry-limit-exceeded",
+  error: {
+    code: "feedback-retry-limit-exceeded",
+    message: "피드백 재시도 한도를 초과했습니다.",
+  },
+}
+
 export function createAiFeedbackService({
   contentService,
   feedbackRepository,
@@ -150,13 +158,7 @@ export function createAiFeedbackService({
       }
 
       if (attemptCount >= 3) {
-        return {
-          status: "retry-limit-exceeded",
-          error: {
-            code: "feedback-retry-limit-exceeded",
-            message: "피드백 재시도 한도를 초과했습니다.",
-          },
-        }
+        return feedbackRetryLimitExceededResult
       }
 
       const answer = await resolveAnswer({
@@ -197,15 +199,19 @@ export function createAiFeedbackService({
       }
 
       try {
-        await feedbackRepository.createCompletedAttempt({
+        const attempt = await feedbackRepository.createNextCompletedAttempt({
           answerSnapshot: answer.value,
-          attemptNumber: attemptCount + 1,
           feedbackStepId: feedbackStep.id,
           lessonId: lessonId(request.lessonId),
+          maxAttempts: 3,
           result: feedbackResult.value,
           sourceStepId: feedbackStep.content.sourceStepId,
           userId,
         })
+
+        if (attempt.status === "retry-limit-exceeded") {
+          return feedbackRetryLimitExceededResult
+        }
       } catch {
         return databaseUnavailableResult
       }

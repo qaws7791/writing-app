@@ -37,6 +37,7 @@
 |   19 | AUTH-03   | 완료 | 로그인 다음 경로 검증을 앱별 허용 경로로 강화했다.  |
 |   20 | AUTH-04   | 완료 | 어드민 로그인 실패 원인을 구분해 표시한다.          |
 |   21 | DATA-04   | 완료 | 홈 진행 요약 조회를 단일 읽기 모델로 정리했다.      |
+|   22 | DATA-05   | 완료 | AI 피드백 attempt 번호 생성을 저장소 경계로 옮겼다. |
 
 ## ADMIN-08 작업 메모
 
@@ -193,6 +194,13 @@
 - 완료 내용: `LearningRepository.listProgressSummaries()`를 추가해 코스와 활성 레슨 행을 한 번에 조회하고, core service가 완료 수, 다음 레슨, 레슨 표시 상태를 계산한다. Web 홈은 `/progress` 응답만으로 진행 중 코스 카드를 구성해 코스별 추가 API 호출을 제거했다.
 - 검증: `bun --filter @workspace/core test && bun --filter @workspace/db test && bun --filter @workspace/api test && bun --filter @workspace/web test && bun --filter @workspace/core typecheck && bun --filter @workspace/db typecheck && bun --filter @workspace/api typecheck && bun --filter @workspace/web typecheck && bun --filter @workspace/core lint && bun --filter @workspace/db lint && bun --filter @workspace/api lint && bun --filter @workspace/web lint`
 
+## DATA-05 작업 메모
+
+- 대상 파일: `packages/core/src/ai-feedback/ai-feedback.service.ts`, `packages/core/src/ai-feedback/ai-feedback.repository.ts`, `packages/db/src/repositories/drizzle-feedback.repository.ts`
+- 조사 방향: `countCompletedAttempts()` 뒤 service가 `attemptNumber = count + 1`을 계산하는 흐름을 저장소 단일 명령으로 옮겨, 같은 사용자와 스텝의 중복 요청이 같은 attempt 번호를 만들지 않게 한다.
+- 완료 내용: `createNextCompletedAttempt()` 저장소 명령을 추가하고 service의 attempt 번호 계산 책임을 제거했다. Drizzle 저장소는 transaction 안에서 현재 최대 번호를 읽어 다음 completed attempt를 저장하며, unique constraint 충돌은 짧게 재시도하고 한도 도달은 도메인 결과로 반환한다.
+- 검증: `bun --filter @workspace/core test src/ai-feedback/ai-feedback.service.test.ts && bun --filter @workspace/db test src/repositories/drizzle-feedback.repository.test.ts && bun --filter @workspace/core typecheck && bun --filter @workspace/db typecheck && bun --filter @workspace/core test && bun --filter @workspace/db test && bun --filter @workspace/core lint && bun --filter @workspace/db lint`
+
 ## 다음 단계
 
-다음 작업은 P1의 `DATA-05`를 문서 순서대로 진행한다.
+다음 작업은 P1의 `DATA-06`을 문서 순서대로 진행한다.

@@ -107,7 +107,10 @@ function createLearningRepository(): LearningRepository {
 function createFeedbackRepository(): AiFeedbackRepository {
   return {
     countCompletedAttempts: vi.fn(async () => 0),
-    createCompletedAttempt: vi.fn(async () => undefined),
+    createNextCompletedAttempt: vi.fn(async () => ({
+      attemptNumber: 1,
+      status: "created" as const,
+    })),
   }
 }
 
@@ -152,10 +155,10 @@ describe("createAiFeedbackService", () => {
         scoreRange: [0, 5],
       })
     )
-    expect(feedbackRepository.createCompletedAttempt).toHaveBeenCalledWith(
+    expect(feedbackRepository.createNextCompletedAttempt).toHaveBeenCalledWith(
       expect.objectContaining({
         answerSnapshot: "저장된 답변",
-        attemptNumber: 1,
+        maxAttempts: 3,
         sourceStepId: "sentence-structure-01-step-1",
       })
     )
@@ -209,7 +212,7 @@ describe("createAiFeedbackService", () => {
       },
     })
     expect(provider.createFeedback).not.toHaveBeenCalled()
-    expect(feedbackRepository.createCompletedAttempt).not.toHaveBeenCalled()
+    expect(feedbackRepository.createNextCompletedAttempt).not.toHaveBeenCalled()
   })
 
   it("returns feedback-retry-limit-exceeded after three completed attempts", async () => {
@@ -239,6 +242,35 @@ describe("createAiFeedbackService", () => {
     expect(provider.createFeedback).not.toHaveBeenCalled()
   })
 
+  it("returns feedback-retry-limit-exceeded when the final attempt create reaches the limit", async () => {
+    const provider = createProvider()
+    const service = createAiFeedbackService({
+      contentService,
+      feedbackRepository: {
+        ...createFeedbackRepository(),
+        createNextCompletedAttempt: vi.fn(async () => ({
+          status: "retry-limit-exceeded" as const,
+        })),
+      },
+      learningRepository: createLearningRepository(),
+      provider,
+    })
+
+    const result = await service.createFeedback(userId("user-1"), {
+      feedbackStepId: "sentence-structure-01-step-2",
+      lessonId: "sentence-structure-01",
+    })
+
+    expect(result).toEqual({
+      status: "retry-limit-exceeded",
+      error: {
+        code: "feedback-retry-limit-exceeded",
+        message: "피드백 재시도 한도를 초과했습니다.",
+      },
+    })
+    expect(provider.createFeedback).toHaveBeenCalled()
+  })
+
   it("returns ai-feedback-unavailable when the provider fails", async () => {
     const provider: AiFeedbackProvider = {
       createFeedback: vi.fn(async () => {
@@ -265,7 +297,7 @@ describe("createAiFeedbackService", () => {
         message: "인공지능 피드백을 사용할 수 없습니다.",
       },
     })
-    expect(feedbackRepository.createCompletedAttempt).not.toHaveBeenCalled()
+    expect(feedbackRepository.createNextCompletedAttempt).not.toHaveBeenCalled()
   })
 
   it("does not consume a completed attempt when the provider is rate limited", async () => {
@@ -295,6 +327,6 @@ describe("createAiFeedbackService", () => {
         message: "인공지능 피드백을 사용할 수 없습니다.",
       },
     })
-    expect(feedbackRepository.createCompletedAttempt).not.toHaveBeenCalled()
+    expect(feedbackRepository.createNextCompletedAttempt).not.toHaveBeenCalled()
   })
 })

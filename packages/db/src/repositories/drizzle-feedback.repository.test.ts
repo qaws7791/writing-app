@@ -33,8 +33,8 @@ describe("createDrizzleFeedbackRepository", () => {
   it("counts completed feedback attempts", async () => {
     const repository = createDrizzleFeedbackRepository(db, { now: () => now })
 
-    await repository.createCompletedAttempt(createAttemptInput(1))
-    await repository.createCompletedAttempt(createAttemptInput(2))
+    await repository.createNextCompletedAttempt(createAttemptInput(1))
+    await repository.createNextCompletedAttempt(createAttemptInput(2))
 
     const count = await repository.countCompletedAttempts(
       userId("user-1"),
@@ -48,8 +48,8 @@ describe("createDrizzleFeedbackRepository", () => {
   it("stores completed feedback attempts with incrementing attempt numbers", async () => {
     const repository = createDrizzleFeedbackRepository(db, { now: () => now })
 
-    await repository.createCompletedAttempt(createAttemptInput(1))
-    await repository.createCompletedAttempt(createAttemptInput(2))
+    await repository.createNextCompletedAttempt(createAttemptInput(1))
+    await repository.createNextCompletedAttempt(createAttemptInput(2))
 
     const rows = sqlite
       .query<
@@ -60,14 +60,36 @@ describe("createDrizzleFeedbackRepository", () => {
 
     expect(rows).toEqual([{ attempt_number: 1 }, { attempt_number: 2 }])
   })
+
+  it("rejects the next completed attempt when the retry limit is already reached", async () => {
+    const repository = createDrizzleFeedbackRepository(db, { now: () => now })
+
+    await repository.createNextCompletedAttempt(createAttemptInput(1))
+    await repository.createNextCompletedAttempt(createAttemptInput(2))
+    await repository.createNextCompletedAttempt(createAttemptInput(3))
+
+    const result = await repository.createNextCompletedAttempt(
+      createAttemptInput(4)
+    )
+
+    const rows = sqlite
+      .query<
+        { attempt_number: number },
+        []
+      >("select attempt_number from feedback_attempts")
+      .all()
+
+    expect(result).toEqual({ status: "retry-limit-exceeded" })
+    expect(rows).toHaveLength(3)
+  })
 })
 
 function createAttemptInput(attemptNumber: number) {
   return {
     answerSnapshot: `답변 ${attemptNumber}`,
-    attemptNumber,
     feedbackStepId: "sentence-structure-01-step-2",
     lessonId: lessonId("sentence-structure-01"),
+    maxAttempts: 3,
     result: {
       improvements: ["구체화하세요."],
       nextAction: "수정",
