@@ -24,39 +24,23 @@ import type {
   AdminNotFoundErrorDto,
 } from "./admin.errors"
 import type { AdminRepository } from "./admin.repository"
+import type {
+  ConflictResult,
+  InvalidRequestResult,
+  NotFoundResult,
+  OkResult,
+  UnavailableResult,
+} from "../result"
 
-type OkResult<TValue> = {
-  status: "ok"
-  value: TValue
-}
-
-type UnavailableResult = {
-  status: "unavailable"
-  error: AdminDatabaseUnavailableErrorDto
-}
-
-type InvalidRequestResult = {
-  status: "invalid-request"
-  error: AdminInvalidRequestErrorDto
-}
-
-type NotFoundResult = {
-  status: "not-found"
-  error: AdminNotFoundErrorDto
-}
-
-type ConflictResult = {
-  status: "conflict"
-  error: AdminConflictErrorDto
-}
-
-export type AdminServiceResult<TValue> = OkResult<TValue> | UnavailableResult
+export type AdminServiceResult<TValue> =
+  | OkResult<TValue>
+  | UnavailableResult<AdminDatabaseUnavailableErrorDto>
 
 type AdminMutationServiceResult<TValue> =
   | AdminServiceResult<TValue>
-  | InvalidRequestResult
-  | NotFoundResult
-  | ConflictResult
+  | InvalidRequestResult<AdminInvalidRequestErrorDto>
+  | NotFoundResult<AdminNotFoundErrorDto>
+  | ConflictResult<AdminConflictErrorDto>
 
 export interface AdminService {
   getCourseDetail(
@@ -86,7 +70,7 @@ interface AdminServiceDependencies {
   repository: AdminRepository
 }
 
-const unavailableResult: UnavailableResult = {
+const unavailableResult: UnavailableResult<AdminDatabaseUnavailableErrorDto> = {
   status: "unavailable",
   error: {
     code: "database-unavailable",
@@ -227,7 +211,7 @@ export function createAdminService({
   }
 }
 
-function notFound(message: string): NotFoundResult {
+function notFound(message: string): NotFoundResult<AdminNotFoundErrorDto> {
   return {
     status: "not-found",
     error: {

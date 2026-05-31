@@ -24,65 +24,39 @@ import type {
   LearningRepository,
   ProgressCourseSummaryRecord,
 } from "./learning.repository"
+import type {
+  InvalidContentResult,
+  InvalidRequestResult,
+  NotFoundResult,
+  OkResult,
+  UnavailableResult,
+} from "../result"
 
-type OkResult<TValue> = {
-  status: "ok"
-  value: TValue
+type LearningInvalidRequestError = {
+  code: "invalid-request"
+  message: string
 }
 
-type InvalidRequestResult = {
-  status: "invalid-request"
-  error: {
-    code: "invalid-request"
-    message: string
-  }
-}
-
-type UnavailableResult = {
-  status: "unavailable"
-  error: LearningDatabaseUnavailableErrorDto
-}
-
-type NotFoundResult = {
-  status: "not-found"
-  error:
-    | CourseNotFoundErrorDto
-    | LessonNotFoundErrorDto
-    | {
-        code: "not-found"
-        message: string
-      }
-}
-
-type InvalidContentResult = {
-  status: "invalid-content"
-  error: InvalidContentSeedErrorDto
-}
+type LearningNotFoundError =
+  | CourseNotFoundErrorDto
+  | LessonNotFoundErrorDto
+  | {
+      code: "not-found"
+      message: string
+    }
 
 type LearningServiceResult<TValue> =
   | OkResult<TValue>
-  | InvalidRequestResult
-  | NotFoundResult
-  | InvalidContentResult
-  | UnavailableResult
+  | InvalidRequestResult<LearningInvalidRequestError>
+  | NotFoundResult<LearningNotFoundError>
+  | InvalidContentResult<InvalidContentSeedErrorDto>
+  | UnavailableResult<LearningDatabaseUnavailableErrorDto>
 
 type ContentFailureResult =
-  | {
-      status: "not-found"
-      error: CourseNotFoundErrorDto | LessonNotFoundErrorDto
-    }
-  | {
-      status: "invalid-content"
-      error: InvalidContentSeedErrorDto
-    }
-  | {
-      status: "invalid-request"
-      error: InvalidRequestErrorDto
-    }
-  | {
-      status: "unavailable"
-      error: LearningDatabaseUnavailableErrorDto
-    }
+  | NotFoundResult<CourseNotFoundErrorDto | LessonNotFoundErrorDto>
+  | InvalidContentResult<InvalidContentSeedErrorDto>
+  | InvalidRequestResult<InvalidRequestErrorDto>
+  | UnavailableResult<LearningDatabaseUnavailableErrorDto>
 
 export interface LearningService {
   listProgress(
@@ -117,13 +91,14 @@ interface LearningServiceDependencies {
   repository: LearningRepository
 }
 
-const unavailableResult: UnavailableResult = {
-  status: "unavailable",
-  error: {
-    code: "database-unavailable",
-    message: "데이터베이스를 사용할 수 없습니다.",
-  },
-}
+const unavailableResult: UnavailableResult<LearningDatabaseUnavailableErrorDto> =
+  {
+    status: "unavailable",
+    error: {
+      code: "database-unavailable",
+      message: "데이터베이스를 사용할 수 없습니다.",
+    },
+  }
 
 const answerStepTypes = new Set([
   "SHORT_WRITE",
@@ -432,7 +407,9 @@ function getProgressPercent(completedCount: number, totalLessons: number) {
   return Math.round((completedCount / totalLessons) * 100)
 }
 
-function invalidRequest(message: string): InvalidRequestResult {
+function invalidRequest(
+  message: string
+): InvalidRequestResult<LearningInvalidRequestError> {
   return {
     status: "invalid-request",
     error: {
@@ -445,10 +422,10 @@ function invalidRequest(message: string): InvalidRequestResult {
 function contentFailureResult(
   result: ContentFailureResult
 ):
-  | InvalidRequestResult
-  | NotFoundResult
-  | InvalidContentResult
-  | UnavailableResult {
+  | InvalidRequestResult<InvalidRequestErrorDto>
+  | NotFoundResult<CourseNotFoundErrorDto | LessonNotFoundErrorDto>
+  | InvalidContentResult<InvalidContentSeedErrorDto>
+  | UnavailableResult<LearningDatabaseUnavailableErrorDto> {
   switch (result.status) {
     case "invalid-request":
       return result

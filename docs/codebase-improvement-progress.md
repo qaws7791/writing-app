@@ -50,6 +50,7 @@
 |   32 | ARCH-05   | 완료 | 앱별 API URL 기본값을 env 계층으로 모았다.           |
 |   33 | CODE-02   | 완료 | 디자인/레슨 생성 상수를 명명된 규칙으로 분리했다.    |
 |   34 | DATA-07   | 완료 | admin seed 스크립트의 정적 import 경계를 분리했다.   |
+|   35 | DATA-08   | 완료 | core 서비스 result 타입 껍데기를 공통화했다.         |
 
 ## ADMIN-08 작업 메모
 
@@ -300,6 +301,13 @@
 - 완료 내용: `seedAdminUser`의 순수 정책을 별도 모듈로 옮기고, 실행 스크립트는 `bun:sqlite`와 DB client/migration을 정적으로 import한다. 실제 Drizzle DB는 좁은 `AdminSeedDatabase` 포트로 연결하고, Vitest 설정에는 `bun:sqlite` 외부화를 명시했다.
 - 검증: `bun --filter @workspace/admin-api typecheck && bun --filter @workspace/admin-api test && bun --filter @workspace/admin-api lint && bun --filter @workspace/admin-api seed:admin`
 
+## DATA-08 작업 메모
+
+- 대상 파일: `packages/core/src/result.ts`, `packages/core/src/content/content.service.ts`, `packages/core/src/learning/learning.service.ts`, `packages/core/src/admin/admin.service.ts`
+- 조사 방향: 서비스별 error DTO 조합은 유지하고, `ok`, `not-found`, `invalid-request`, `invalid-content`, `unavailable`, `conflict` result 껍데기만 공통 building block으로 분리한다.
+- 완료 내용: `packages/core/src/result.ts`에 공통 result building block을 추가하고, content/learning/admin 서비스는 도메인별 error DTO union만 조합하도록 정리했다. AI feedback 서비스는 전용 status가 많아 이번 관련 위치 범위에서는 제외했다.
+- 검증: `bun --filter @workspace/core typecheck && bun --filter @workspace/core test && bun --filter @workspace/core lint`
+
 ## 다음 단계
 
-다음 작업은 P2의 `DATA-08`을 문서 순서대로 진행한다.
+다음 작업은 P2의 `DATA-09`를 문서 순서대로 진행한다.

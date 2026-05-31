@@ -17,34 +17,22 @@ import type {
   ContentRepository,
   ContentRepositoryLessonDto,
 } from "./content.repository"
+import type {
+  InvalidContentResult,
+  NotFoundResult,
+  OkResult,
+  UnavailableResult,
+} from "../result"
 
-type OkResult<TValue> = {
-  status: "ok"
-  value: TValue
-}
-
-type NotFoundResult<
-  TError extends CourseNotFoundErrorDto | LessonNotFoundErrorDto,
-> = {
-  status: "not-found"
-  error: TError
-}
-
-type InvalidContentResult = {
-  status: "invalid-content"
-  error: Extract<ContentErrorDto, { code: "invalid-content-seed" }>
-}
-
-type UnavailableResult = {
-  status: "unavailable"
-  error: DatabaseUnavailableErrorDto
-}
+type InvalidContentSeedResult = InvalidContentResult<
+  Extract<ContentErrorDto, { code: "invalid-content-seed" }>
+>
 
 export type ContentServiceResult<TValue> =
   | OkResult<TValue>
   | NotFoundResult<CourseNotFoundErrorDto | LessonNotFoundErrorDto>
-  | InvalidContentResult
-  | UnavailableResult
+  | InvalidContentSeedResult
+  | UnavailableResult<DatabaseUnavailableErrorDto>
 
 export interface ContentService {
   listCourseCategories(): Promise<ContentServiceResult<CourseCategoryListDto>>
@@ -58,7 +46,7 @@ interface ContentServiceDependencies {
   repository: ContentRepository
 }
 
-const unavailableResult: UnavailableResult = {
+const unavailableResult: UnavailableResult<DatabaseUnavailableErrorDto> = {
   status: "unavailable",
   error: {
     code: "database-unavailable",
@@ -69,7 +57,7 @@ const unavailableResult: UnavailableResult = {
 function invalidContentResult(
   lessonId?: string,
   message = "콘텐츠 시드가 올바르지 않습니다."
-): InvalidContentResult {
+): InvalidContentSeedResult {
   return {
     status: "invalid-content",
     error: {
