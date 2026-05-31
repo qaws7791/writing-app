@@ -1,5 +1,5 @@
 import { courseId, type CourseId } from "@/features/courses/course-ids"
-import { courseDetails } from "@/lib/api/fake/__fixtures__/course-detail-data"
+import { courseDetails } from "@test/api/fixtures/course-detail-data"
 
 export { courseId }
 export type { Brand, CourseId } from "@/features/courses/course-ids"
