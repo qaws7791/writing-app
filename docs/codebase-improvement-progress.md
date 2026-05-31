@@ -157,6 +157,13 @@
 - 검증: `bun install && bun pm why react && bun pm why next-themes && bun --filter @workspace/ui typecheck && bun --filter @workspace/ui lint && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint && bun --filter storybook typecheck && bun --filter storybook lint && bun --filter @workspace/web test && bun --filter @workspace/admin test && bun --filter @workspace/web build && bun --filter @workspace/admin build && bun --filter storybook build`
 - 참고: `bun --filter storybook build`는 기존 Storybook/Vite의 `use client` directive, circular chunk, chunk size 경고를 출력하지만 성공한다.
 
+## AUTH-02 작업 메모
+
+- 대상 파일: `packages/auth-proxy`, `apps/web/src/app/api/auth/[...path]/route.ts`, `apps/admin/src/app/api/auth/[...path]/route.ts`
+- 조사 방향: web/admin 인증 프록시에서 중복된 Request 조립 규칙을 앱별 base URL 정책과 분리한다.
+- 완료 내용: `@workspace/auth-proxy` 패키지를 추가하고 auth backend URL 생성, query 보존, forwarded header 설정, GET/HEAD body 제외, streaming body와 `duplex: "half"`, `redirect: "manual"` 처리를 한 곳으로 모았다. web/admin route는 앱별 환경 변수와 기본 포트만 선택하고 같은 `proxyAuthRequest`를 호출한다.
+- 검증: `bun install && bun --filter @workspace/auth-proxy test && bun --filter @workspace/auth-proxy typecheck && bun --filter @workspace/auth-proxy lint && bun --filter @workspace/web typecheck && bun --filter @workspace/web test && bun --filter @workspace/web lint && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin test && bun --filter @workspace/admin lint && bun --filter @workspace/web build && bun --filter @workspace/admin build`
+
 ## 다음 단계
 
-다음 작업은 P1의 `AUTH-02`를 문서 순서대로 진행한다.
+다음 작업은 P1의 `AUTH-03`을 문서 순서대로 진행한다.

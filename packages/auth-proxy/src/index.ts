@@ -7,6 +7,10 @@ export interface ProxyAuthRequestInput {
   request: Request
 }
 
+type RequestInitWithDuplex = RequestInit & {
+  duplex?: "half"
+}
+
 export async function proxyAuthRequest({
   apiBaseUrl,
   fetch = globalThis.fetch,
@@ -53,9 +57,7 @@ function getForwardedHeaders(request: Request) {
   return headers
 }
 
-function getRequestBodyInit(request: Request): RequestInit & {
-  duplex?: "half"
-} {
+function getRequestBodyInit(request: Request): RequestInitWithDuplex {
   if (request.method === "GET" || request.method === "HEAD") {
     return {}
   }

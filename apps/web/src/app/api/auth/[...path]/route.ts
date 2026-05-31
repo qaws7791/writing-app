@@ -1,4 +1,4 @@
-import { proxyAuthRequest } from "@/lib/auth/auth-proxy"
+import { proxyAuthRequest } from "@workspace/auth-proxy"
 
 type AuthRouteContext = {
   params: Promise<{
