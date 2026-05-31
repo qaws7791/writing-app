@@ -1,4 +1,4 @@
-import type { Context, Hono } from "hono"
+import type { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
@@ -20,14 +20,21 @@ import {
   userId,
 } from "@workspace/core/learning"
 
-import { unauthorizedError } from "@/auth/session"
 import type { ApiAppDependencies } from "@/app"
 import { jsonErrorResponse } from "@/routes/error-response"
+import {
+  jsonServiceResult,
+  parseJsonBody,
+  requireUserSession,
+  unauthorizedErrorDtoSchema,
+} from "@/routes/route-helpers"
 
-const unauthorizedErrorDtoSchema = z.object({
-  code: z.literal("unauthorized"),
-  message: z.string(),
-})
+const learningStatusCodes = {
+  "invalid-content": 500,
+  "invalid-request": 400,
+  "not-found": 404,
+  unavailable: 503,
+} as const
 
 export function registerLearningRoute(
   app: Hono,
@@ -67,18 +74,18 @@ export function registerLearningRoute(
       },
     }),
     async (context) => {
-      const session = await auth.getSession(context.req.raw.headers)
+      const sessionResult = await requireUserSession(context, auth)
 
-      if (!session) {
-        return context.json(unauthorizedError, 401)
+      if (sessionResult.status !== "ok") {
+        return sessionResult.response
       }
 
       const result = await learningService.getCourseProgress(
-        userId(session.user.id),
+        userId(sessionResult.session.user.id),
         courseId(context.req.param("courseId"))
       )
 
-      return jsonLearningResult(context, result)
+      return jsonServiceResult(context, result, learningStatusCodes)
     }
   )
 
@@ -113,18 +120,18 @@ export function registerLearningRoute(
       },
     }),
     async (context) => {
-      const session = await auth.getSession(context.req.raw.headers)
+      const sessionResult = await requireUserSession(context, auth)
 
-      if (!session) {
-        return context.json(unauthorizedError, 401)
+      if (sessionResult.status !== "ok") {
+        return sessionResult.response
       }
 
       const result = await learningService.getLessonProgress(
-        userId(session.user.id),
+        userId(sessionResult.session.user.id),
         lessonId(context.req.param("lessonId"))
       )
 
-      return jsonLearningResult(context, result)
+      return jsonServiceResult(context, result, learningStatusCodes)
     }
   )
 
@@ -163,28 +170,28 @@ export function registerLearningRoute(
       },
     }),
     async (context) => {
-      const session = await auth.getSession(context.req.raw.headers)
+      const sessionResult = await requireUserSession(context, auth)
 
-      if (!session) {
-        return context.json(unauthorizedError, 401)
+      if (sessionResult.status !== "ok") {
+        return sessionResult.response
       }
 
-      const body = await readJsonBody(context.req.raw)
-      const request = saveLessonProgressRequestDtoSchema.safeParse(body)
-      if (!request.success) {
-        return context.json(
-          invalidRequest("Invalid lesson progress body."),
-          400
-        )
+      const request = await parseJsonBody(
+        context,
+        saveLessonProgressRequestDtoSchema,
+        "Invalid lesson progress body."
+      )
+      if (request.status !== "ok") {
+        return request.response
       }
 
       const result = await learningService.saveLessonProgress(
-        userId(session.user.id),
+        userId(sessionResult.session.user.id),
         lessonId(context.req.param("lessonId")),
         request.data
       )
 
-      return jsonLearningResult(context, result)
+      return jsonServiceResult(context, result, learningStatusCodes)
     }
   )
 
@@ -223,25 +230,28 @@ export function registerLearningRoute(
       },
     }),
     async (context) => {
-      const session = await auth.getSession(context.req.raw.headers)
+      const sessionResult = await requireUserSession(context, auth)
 
-      if (!session) {
-        return context.json(unauthorizedError, 401)
+      if (sessionResult.status !== "ok") {
+        return sessionResult.response
       }
 
-      const body = await readJsonBody(context.req.raw)
-      const request = saveLessonAnswerRequestDtoSchema.safeParse(body)
-      if (!request.success) {
-        return context.json(invalidRequest("Invalid lesson answer body."), 400)
+      const request = await parseJsonBody(
+        context,
+        saveLessonAnswerRequestDtoSchema,
+        "Invalid lesson answer body."
+      )
+      if (request.status !== "ok") {
+        return request.response
       }
 
       const result = await learningService.saveLessonAnswer(
-        userId(session.user.id),
+        userId(sessionResult.session.user.id),
         lessonId(context.req.param("lessonId")),
         request.data
       )
 
-      return jsonLearningResult(context, result)
+      return jsonServiceResult(context, result, learningStatusCodes)
     }
   )
 
@@ -276,60 +286,18 @@ export function registerLearningRoute(
       },
     }),
     async (context) => {
-      const session = await auth.getSession(context.req.raw.headers)
+      const sessionResult = await requireUserSession(context, auth)
 
-      if (!session) {
-        return context.json(unauthorizedError, 401)
+      if (sessionResult.status !== "ok") {
+        return sessionResult.response
       }
 
       const result = await learningService.completeLesson(
-        userId(session.user.id),
+        userId(sessionResult.session.user.id),
         lessonId(context.req.param("lessonId"))
       )
 
-      return jsonLearningResult(context, result)
+      return jsonServiceResult(context, result, learningStatusCodes)
     }
   )
-}
-
-function jsonLearningResult(
-  context: Context,
-  result: {
-    status:
-      | "ok"
-      | "invalid-request"
-      | "not-found"
-      | "invalid-content"
-      | "unavailable"
-    value?: unknown
-    error?: unknown
-  }
-) {
-  switch (result.status) {
-    case "ok":
-      return context.json(result.value)
-    case "invalid-request":
-      return context.json(result.error, 400)
-    case "not-found":
-      return context.json(result.error, 404)
-    case "invalid-content":
-      return context.json(result.error, 500)
-    case "unavailable":
-      return context.json(result.error, 503)
-  }
-}
-
-async function readJsonBody(request: Request): Promise<unknown> {
-  try {
-    return await request.json()
-  } catch {
-    return null
-  }
-}
-
-function invalidRequest(message: string) {
-  return {
-    code: "invalid-request",
-    message,
-  }
 }

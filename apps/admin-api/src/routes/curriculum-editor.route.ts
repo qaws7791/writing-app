@@ -15,6 +15,14 @@ import {
 import type { AdminApiAppDependencies } from "@/app"
 import { requireAdminSession } from "@/auth/admin-session"
 import { jsonErrorResponse } from "@/routes/error-response"
+import { jsonServiceResult, parseJsonBody } from "@/routes/route-helpers"
+
+const adminEditorStatusCodes = {
+  conflict: 409,
+  "invalid-request": 400,
+  "not-found": 404,
+  unavailable: 503,
+} as const
 
 export function registerCurriculumEditorRoute(
   app: Hono,
@@ -51,16 +59,7 @@ export function registerCurriculumEditorRoute(
         context.req.param("courseId")
       )
 
-      switch (result.status) {
-        case "ok":
-          return context.json(result.value)
-        case "not-found":
-          return context.json(result.error, 404)
-        case "invalid-request":
-          return context.json(result.error, 400)
-        case "unavailable":
-          return context.json(result.error, 503)
-      }
+      return jsonServiceResult(context, result, adminEditorStatusCodes)
     }
   )
 
@@ -99,17 +98,14 @@ export function registerCurriculumEditorRoute(
       },
     }),
     async (context) => {
-      const body = await readJsonBody(context.req.raw)
-      const input = adminCourseEditorSaveRequestDtoSchema.safeParse(body)
+      const input = await parseJsonBody(
+        context,
+        adminCourseEditorSaveRequestDtoSchema,
+        "코스 편집 저장 요청 본문이 올바르지 않습니다."
+      )
 
-      if (!input.success) {
-        return context.json(
-          {
-            code: "invalid-request",
-            message: "코스 편집 저장 요청 본문이 올바르지 않습니다.",
-          },
-          400
-        )
+      if (input.status !== "ok") {
+        return input.response
       }
 
       if (input.data.courseId !== context.req.param("courseId")) {
@@ -124,18 +120,7 @@ export function registerCurriculumEditorRoute(
 
       const result = await adminService.saveCourseEditorDocument(input.data)
 
-      switch (result.status) {
-        case "ok":
-          return context.json(result.value)
-        case "invalid-request":
-          return context.json(result.error, 400)
-        case "not-found":
-          return context.json(result.error, 404)
-        case "conflict":
-          return context.json(result.error, 409)
-        case "unavailable":
-          return context.json(result.error, 503)
-      }
+      return jsonServiceResult(context, result, adminEditorStatusCodes)
     }
   )
 
@@ -170,16 +155,7 @@ export function registerCurriculumEditorRoute(
         context.req.param("courseId")
       )
 
-      switch (result.status) {
-        case "ok":
-          return context.json(result.value)
-        case "invalid-request":
-          return context.json(result.error, 400)
-        case "not-found":
-          return context.json(result.error, 404)
-        case "unavailable":
-          return context.json(result.error, 503)
-      }
+      return jsonServiceResult(context, result, adminEditorStatusCodes)
     }
   )
 
@@ -215,24 +191,7 @@ export function registerCurriculumEditorRoute(
         context.req.param("lessonId")
       )
 
-      switch (result.status) {
-        case "ok":
-          return context.json(result.value)
-        case "invalid-request":
-          return context.json(result.error, 400)
-        case "not-found":
-          return context.json(result.error, 404)
-        case "unavailable":
-          return context.json(result.error, 503)
-      }
+      return jsonServiceResult(context, result, adminEditorStatusCodes)
     }
   )
-}
-
-async function readJsonBody(request: Request) {
-  try {
-    return await request.json()
-  } catch {
-    return null
-  }
 }

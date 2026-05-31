@@ -3,19 +3,17 @@ import { describeRoute, resolver } from "hono-openapi"
 import { z } from "zod"
 
 import type { AuthRuntime } from "@/auth/session"
-import { unauthorizedError } from "@/auth/session"
 import { jsonErrorResponse } from "@/routes/error-response"
+import {
+  requireUserSession,
+  unauthorizedErrorDtoSchema,
+} from "@/routes/route-helpers"
 
 const currentUserDtoSchema = z.object({
   email: z.string().email(),
   id: z.string().min(1),
   image: z.string().nullable(),
   name: z.string().min(1),
-})
-
-const unauthorizedErrorDtoSchema = z.object({
-  code: z.literal("unauthorized"),
-  message: z.string(),
 })
 
 export function registerMeRoute(app: Hono, auth: AuthRuntime) {
@@ -38,13 +36,13 @@ export function registerMeRoute(app: Hono, auth: AuthRuntime) {
       },
     }),
     async (context) => {
-      const session = await auth.getSession(context.req.raw.headers)
+      const sessionResult = await requireUserSession(context, auth)
 
-      if (!session) {
-        return context.json(unauthorizedError, 401)
+      if (sessionResult.status !== "ok") {
+        return sessionResult.response
       }
 
-      return context.json(session.user)
+      return context.json(sessionResult.session.user)
     }
   )
 }

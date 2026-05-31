@@ -20,14 +20,23 @@ import {
   userId,
 } from "@workspace/core/learning"
 
-import { unauthorizedError } from "@/auth/session"
 import type { ApiAppDependencies } from "@/app"
 import { jsonErrorResponse } from "@/routes/error-response"
+import {
+  jsonServiceResult,
+  parseJsonBody,
+  requireUserSession,
+  unauthorizedErrorDtoSchema,
+} from "@/routes/route-helpers"
 
-const unauthorizedErrorDtoSchema = z.object({
-  code: z.literal("unauthorized"),
-  message: z.string(),
-})
+const aiFeedbackStatusCodes = {
+  "answer-not-found": 404,
+  "feedback-step-not-found": 404,
+  "invalid-content": 500,
+  "not-found": 404,
+  "retry-limit-exceeded": 429,
+  unavailable: 503,
+} as const
 
 export function registerAiFeedbackRoute(
   app: Hono,
@@ -87,53 +96,27 @@ export function registerAiFeedbackRoute(
       },
     }),
     async (context) => {
-      const session = await auth.getSession(context.req.raw.headers)
+      const sessionResult = await requireUserSession(context, auth)
 
-      if (!session) {
-        return context.json(unauthorizedError, 401)
+      if (sessionResult.status !== "ok") {
+        return sessionResult.response
       }
 
-      const body = await readJsonBody(context.req.raw)
-      const request = aiFeedbackRequestDtoSchema.safeParse(body)
-      if (!request.success) {
-        return context.json(
-          {
-            code: "invalid-request",
-            message: "인공지능 피드백 요청 본문이 올바르지 않습니다.",
-          },
-          400
-        )
+      const request = await parseJsonBody(
+        context,
+        aiFeedbackRequestDtoSchema,
+        "인공지능 피드백 요청 본문이 올바르지 않습니다."
+      )
+      if (request.status !== "ok") {
+        return request.response
       }
 
       const result = await aiFeedbackService.createFeedback(
-        userId(session.user.id),
+        userId(sessionResult.session.user.id),
         request.data
       )
 
-      switch (result.status) {
-        case "ok":
-          return context.json(result.value)
-        case "answer-not-found":
-          return context.json(result.error, 404)
-        case "feedback-step-not-found":
-          return context.json(result.error, 404)
-        case "retry-limit-exceeded":
-          return context.json(result.error, 429)
-        case "not-found":
-          return context.json(result.error, 404)
-        case "invalid-content":
-          return context.json(result.error, 500)
-        case "unavailable":
-          return context.json(result.error, 503)
-      }
+      return jsonServiceResult(context, result, aiFeedbackStatusCodes)
     }
   )
-}
-
-async function readJsonBody(request: Request): Promise<unknown> {
-  try {
-    return await request.json()
-  } catch {
-    return null
-  }
 }

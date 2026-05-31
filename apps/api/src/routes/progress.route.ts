@@ -1,6 +1,5 @@
 import type { Hono } from "hono"
 import { describeRoute, resolver } from "hono-openapi"
-import { z } from "zod"
 
 import {
   learningDatabaseUnavailableErrorDtoSchema,
@@ -8,14 +7,20 @@ import {
   userId,
 } from "@workspace/core/learning"
 
-import { unauthorizedError } from "@/auth/session"
 import type { ApiAppDependencies } from "@/app"
 import { jsonErrorResponse } from "@/routes/error-response"
+import {
+  jsonServiceResult,
+  requireUserSession,
+  unauthorizedErrorDtoSchema,
+} from "@/routes/route-helpers"
 
-const unauthorizedErrorDtoSchema = z.object({
-  code: z.literal("unauthorized"),
-  message: z.string(),
-})
+const learningStatusCodes = {
+  "invalid-content": 500,
+  "invalid-request": 400,
+  "not-found": 404,
+  unavailable: 503,
+} as const
 
 export function registerProgressRoute(
   app: Hono,
@@ -47,26 +52,17 @@ export function registerProgressRoute(
       },
     }),
     async (context) => {
-      const session = await auth.getSession(context.req.raw.headers)
+      const sessionResult = await requireUserSession(context, auth)
 
-      if (!session) {
-        return context.json(unauthorizedError, 401)
+      if (sessionResult.status !== "ok") {
+        return sessionResult.response
       }
 
-      const result = await learningService.listProgress(userId(session.user.id))
+      const result = await learningService.listProgress(
+        userId(sessionResult.session.user.id)
+      )
 
-      switch (result.status) {
-        case "ok":
-          return context.json(result.value)
-        case "invalid-request":
-          return context.json(result.error, 400)
-        case "not-found":
-          return context.json(result.error, 404)
-        case "invalid-content":
-          return context.json(result.error, 500)
-        case "unavailable":
-          return context.json(result.error, 503)
-      }
+      return jsonServiceResult(context, result, learningStatusCodes)
     }
   )
 }

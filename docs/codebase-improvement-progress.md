@@ -125,6 +125,14 @@
 - 완료 내용: `createStepForm()`의 field key를 step type별 content key로 제한했다. 에디터 working copy step은 published DTO와 분리된 draft content 타입을 사용하도록 정리하고, workspace/preview/form props도 draft step 타입을 받도록 맞췄다.
 - 검증: `bun --filter @workspace/admin test src/features/courses/admin-course-detail-page.test.tsx src/features/courses/course-editor/step-workspace.test.tsx src/features/courses/course-editor/lesson-workspace.test.tsx src/features/courses/course-editor/lesson-preview.test.tsx src/features/courses/course-editor/editor-state.test.ts src/features/courses/course-editor/course-editor-session-hooks.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
 
+## API-02 작업 메모
+
+- 대상 파일: `apps/api/src/routes/*`, `apps/admin-api/src/routes/curriculum-editor.route.ts`, 각 앱의 `routes/route-helpers.ts`
+- 조사 방향: 사용자 API의 세션 확인, JSON 본문 파싱, 서비스 결과 매핑 반복과 관리자 API의 편집 라우트 결과 매핑 반복을 앱 내부 helper로 줄인다.
+- 완료 내용: 사용자 API에 `requireUserSession`, `parseJsonBody`, `jsonServiceResult`를 추가하고 `me`, `progress`, `learning`, `ai-feedback` 라우트에 적용했다. 관리자 API는 기존 관리자 세션 미들웨어를 유지하고 편집 라우트의 본문 파싱과 결과 매핑만 공통 helper로 이동했다.
+- 검증: `bun --filter @workspace/api typecheck && bun --filter @workspace/admin-api typecheck && bun --filter @workspace/api test && bun --filter @workspace/admin-api test && bun --filter @workspace/api lint && bun --filter @workspace/admin-api lint`
+- 참고: `bun --filter @workspace/api lint`는 기존 `apps/api/src/main.test.ts`의 `turbo/no-undeclared-env-vars` 경고 2건을 유지한 채 성공한다.
+
 ## 다음 단계
 
-다음 작업은 P1의 `API-02`를 문서 순서대로 진행한다.
+다음 작업은 P1의 `API-03`을 문서 순서대로 진행한다.
