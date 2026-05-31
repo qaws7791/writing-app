@@ -1,6 +1,8 @@
 import * as React from "react"
 
-export function useIsMobile(mobileBreakpoint = 768) {
+import { MOBILE_BREAKPOINT_PX } from "@/config/breakpoints"
+
+export function useIsMobile(mobileBreakpoint = MOBILE_BREAKPOINT_PX) {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
 
   React.useEffect(() => {

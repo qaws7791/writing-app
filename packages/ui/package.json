@@ -12,6 +12,7 @@
     "./globals.css": "./src/styles/globals.css",
     "./postcss.config": "./postcss.config.mjs",
     "./next": "./src/next/index.ts",
+    "./config/*": "./src/config/*.ts",
     "./lib/*": "./src/lib/*.ts",
     "./hooks/*": "./src/hooks/*.ts",
     "./utils": "./src/utils/index.ts",

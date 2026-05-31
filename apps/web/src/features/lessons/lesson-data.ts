@@ -4,6 +4,22 @@ import {
   type CourseDetail,
   type CourseLesson,
 } from "@/features/courses/course-detail-data"
+import {
+  AI_FEEDBACK_MAX_REVISIONS,
+  AI_FEEDBACK_SCORE_RANGE,
+  CHECKLIST_MINIMUM_REQUIRED_CHECKS,
+  DEFAULT_LESSON_ESTIMATE,
+  EXTENDED_LESSON_ESTIMATE,
+  FIRST_MIDDLE_STEP_ORDER,
+  LESSON_BOUNDARY_STEP_COUNT,
+  LESSON_STEP_DEFAULT_POINTS,
+  LONG_WRITE_LENGTH_LIMIT,
+  MEDIUM_LESSON_ESTIMATE,
+  OPTIONAL_REFLECTION_POINTS,
+  REFLECTION_LENGTH_LIMIT,
+  SHORT_WRITE_LENGTH_LIMIT,
+  SUMMARY_STEP_OFFSET_FROM_END,
+} from "@/features/lessons/lesson-generation-rules"
 import { lessonId, lessonStepId } from "@/features/lessons/lesson-ids"
 import type {
   Lesson,
@@ -259,8 +275,8 @@ function getCourseLessonRefs(course: CourseDetail): readonly CourseLessonRef[] {
 function createLesson(input: LessonBuildInput): Lesson {
   const currentLessonId = lessonId(String(input.lesson.lessonId))
   const middleSteps = createMiddleSteps(input, currentLessonId)
-  const totalSteps = middleSteps.length + 3
-  const summaryOrder = totalSteps - 1
+  const totalSteps = middleSteps.length + LESSON_BOUNDARY_STEP_COUNT
+  const summaryOrder = totalSteps - SUMMARY_STEP_OFFSET_FROM_END
 
   const steps: readonly LessonStep[] = [
     lessonStep(currentLessonId, 1, "INTRO", {
@@ -384,7 +400,10 @@ function createVocabularySteps(
   add("CLASSIFY", classifyContent(input))
   const writeStep = add("SHORT_WRITE", shortWriteContent(input))
   add("AI_FEEDBACK", aiFeedbackContent(input, writeStep.id))
-  add("REFLECTION", reflectionContent(input), { required: false, points: 5 })
+  add("REFLECTION", reflectionContent(input), {
+    required: false,
+    points: OPTIONAL_REFLECTION_POINTS,
+  })
 
   return steps
 }
@@ -470,7 +489,10 @@ function createEssaySteps(
   const writeStep = add("LONG_WRITE", longWriteContent(input))
   add("AI_FEEDBACK", aiFeedbackContent(input, writeStep.id))
   add("REVISION", revisionContent(input))
-  add("REFLECTION", reflectionContent(input), { required: false, points: 5 })
+  add("REFLECTION", reflectionContent(input), {
+    required: false,
+    points: OPTIONAL_REFLECTION_POINTS,
+  })
 
   return steps
 }
@@ -520,7 +542,10 @@ function createCreativeSteps(
   add("CLASSIFY", classifyContent(input))
   const writeStep = add("LONG_WRITE", longWriteContent(input))
   add("AI_FEEDBACK", aiFeedbackContent(input, writeStep.id))
-  add("REFLECTION", reflectionContent(input), { required: false, points: 5 })
+  add("REFLECTION", reflectionContent(input), {
+    required: false,
+    points: OPTIONAL_REFLECTION_POINTS,
+  })
 
   return steps
 }
@@ -542,7 +567,10 @@ function createEmotionSteps(
   const writeStep = add("LONG_WRITE", longWriteContent(input))
   add("AI_FEEDBACK", aiFeedbackContent(input, writeStep.id))
   add("REVISION", revisionContent(input))
-  add("REFLECTION", reflectionContent(input), { required: false, points: 5 })
+  add("REFLECTION", reflectionContent(input), {
+    required: false,
+    points: OPTIONAL_REFLECTION_POINTS,
+  })
 
   return steps
 }
@@ -556,7 +584,7 @@ function createStepAdder(steps: LessonStep[], currentLessonId: LessonId) {
       required?: boolean
     }
   ): Extract<LessonStep, { type: TType }> {
-    const order = steps.length + 2
+    const order = steps.length + FIRST_MIDDLE_STEP_ORDER
     const step = {
       id: lessonStepId(`${currentLessonId}-step-${order}`),
       type,
@@ -850,8 +878,8 @@ function shortWriteContent(input: LessonBuildInput) {
     instruction: `${input.lesson.title} 짧은 쓰기`,
     prompt: `${input.lesson.description} 이 기준을 반영해 한 문장을 새로 써보세요.`,
     sourceText: `${input.profile.avoidLabel}: ${input.lesson.title}은 중요해서 잘 써야 한다.`,
-    maxChars: 220,
-    minChars: 20,
+    maxChars: SHORT_WRITE_LENGTH_LIMIT.maxChars,
+    minChars: SHORT_WRITE_LENGTH_LIMIT.minChars,
     referenceAnswer: `${input.profile.coreSkill}을 먼저 확인한 뒤, ${input.profile.writingGoal}으로 문장을 다듬는다.`,
     aiEvaluationEnabled: false,
     showReferenceAfterSubmit: true,
@@ -861,16 +889,16 @@ function shortWriteContent(input: LessonBuildInput) {
 function longWriteContent(input: LessonBuildInput) {
   return {
     instruction: `${input.lesson.title} 글쓰기 과제`,
-    topic: `${input.lesson.description} 이 목표가 드러나도록 150자 안팎의 문단을 작성하세요.`,
+    topic: `${input.lesson.description} 이 목표가 드러나도록 ${LONG_WRITE_LENGTH_LIMIT.targetChars}자 안팎의 문단을 작성하세요.`,
     context: `"${input.chapter.title}" 단원의 흐름을 떠올리며 ${input.profile.goodLabel}을 남겨보세요.`,
     structureGuide: [
       `첫 문장: ${input.profile.coreSkill}을 드러내기`,
       `중간 문장: ${input.profile.avoidLabel}을 피하고 구체화하기`,
       `마지막 문장: ${input.profile.writingGoal}으로 마무리하기`,
     ],
-    minChars: 80,
-    targetChars: 150,
-    maxChars: 360,
+    minChars: LONG_WRITE_LENGTH_LIMIT.minChars,
+    targetChars: LONG_WRITE_LENGTH_LIMIT.targetChars,
+    maxChars: LONG_WRITE_LENGTH_LIMIT.maxChars,
     aiEvaluationEnabled: false,
     evaluationCriteria: `${input.profile.coreSkill}, ${input.profile.goodLabel}, 문장 흐름`,
     draftSaveEnabled: true,
@@ -886,9 +914,9 @@ function aiFeedbackContent(
     feedbackPrompt: `${input.lesson.title} 과제에서 ${input.profile.coreSkill}이 드러나는지 평가합니다.`,
     focusAreas: ["clarity", "expression"],
     showScore: true,
-    scoreRange: [0, 100],
+    scoreRange: AI_FEEDBACK_SCORE_RANGE,
     allowRevision: true,
-    maxRevisions: 2,
+    maxRevisions: AI_FEEDBACK_MAX_REVISIONS,
   } satisfies Extract<LessonStep, { type: "AI_FEEDBACK" }>["content"]
 }
 
@@ -935,7 +963,7 @@ function checklistContent(input: LessonBuildInput) {
       },
     ],
     completionMode: "minimum",
-    minimumChecks: 2,
+    minimumChecks: CHECKLIST_MINIMUM_REQUIRED_CHECKS,
     saveResponses: true,
   } satisfies Extract<LessonStep, { type: "CHECKLIST" }>["content"]
 }
@@ -949,7 +977,7 @@ function reflectionContent(input: LessonBuildInput) {
       "다음 글에서 먼저 확인할 것은...",
       "오늘 가장 도움이 된 기준은...",
     ],
-    minChars: 20,
+    minChars: REFLECTION_LENGTH_LIMIT.minChars,
     saveToJournal: true,
     category: input.profile.categoryLabel,
     isSkippable: true,
@@ -969,39 +997,28 @@ function transcribeContent(input: LessonBuildInput) {
 }
 
 function getDefaultPoints(type: LessonStep["type"]) {
-  if (type === "INTRO" || type === "SUMMARY") {
-    return 10
-  }
-
-  if (type === "COMPLETE") {
-    return 0
-  }
-
-  if (type === "SHORT_WRITE" || type === "REVISION") {
-    return 15
-  }
-
-  if (type === "LONG_WRITE") {
-    return 25
-  }
-
-  if (type === "AI_FEEDBACK") {
-    return 5
-  }
-
-  return 10
+  return LESSON_STEP_DEFAULT_POINTS[type]
 }
 
 function getEstimatedMinutes(pattern: LessonPattern, totalSteps: number) {
-  if (pattern === "essay" || pattern === "creative" || pattern === "business") {
-    return Math.max(12, totalSteps + 4)
+  if (EXTENDED_LESSON_ESTIMATE.patterns.some((value) => value === pattern)) {
+    return Math.max(
+      EXTENDED_LESSON_ESTIMATE.minimumMinutes,
+      totalSteps + EXTENDED_LESSON_ESTIMATE.extraMinutes
+    )
   }
 
-  if (pattern === "expression" || pattern === "emotion") {
-    return Math.max(10, totalSteps + 2)
+  if (MEDIUM_LESSON_ESTIMATE.patterns.some((value) => value === pattern)) {
+    return Math.max(
+      MEDIUM_LESSON_ESTIMATE.minimumMinutes,
+      totalSteps + MEDIUM_LESSON_ESTIMATE.extraMinutes
+    )
   }
 
-  return Math.max(8, totalSteps)
+  return Math.max(
+    DEFAULT_LESSON_ESTIMATE.minimumMinutes,
+    totalSteps + DEFAULT_LESSON_ESTIMATE.extraMinutes
+  )
 }
 
 function validateLessonCatalog(catalog: readonly Lesson[]) {

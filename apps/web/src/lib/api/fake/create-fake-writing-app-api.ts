@@ -2,6 +2,7 @@ import { courseCategories } from "@/features/courses/course-data"
 import { getCourseDetailById } from "@/features/courses/course-detail-data"
 import { inProgressCourses } from "@/features/home/home-fake-data"
 import { getLessonById } from "@/features/lessons/lesson-data"
+import { AI_FEEDBACK_SCORE_RANGE } from "@/features/lessons/lesson-generation-rules"
 import { getMockAiFeedback } from "@/features/lessons/lesson-logic"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
 import type {
@@ -173,7 +174,7 @@ export function createFakeWritingAppApi(): WritingAppApi {
         improvements: feedback.improve,
         nextAction: "개선 포인트 중 하나를 골라 다시 써보세요.",
         score: 82,
-        scoreRange: [0, 100],
+        scoreRange: AI_FEEDBACK_SCORE_RANGE,
         strengths: feedback.good,
         summary: input.answer
           ? "작성 답변의 의도는 분명합니다."

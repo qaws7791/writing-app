@@ -48,6 +48,7 @@
 |   30 | ARCH-03   | 완료 | 비어 있거나 오래된 문서를 현재 코드 상태로 갱신했다. |
 |   31 | ARCH-04   | 완료 | Repomix 합본 프로필을 코드/분석 관점으로 분리했다.   |
 |   32 | ARCH-05   | 완료 | 앱별 API URL 기본값을 env 계층으로 모았다.           |
+|   33 | CODE-02   | 완료 | 디자인/레슨 생성 상수를 명명된 규칙으로 분리했다.    |
 
 ## ADMIN-08 작업 메모
 
@@ -284,6 +285,13 @@
 - 완료 내용: `parseWebEnv()`와 `parseAdminWebEnv()`를 추가해 로컬 API 기본값을 앱 env 계층으로 모았다. 웹/어드민 API client와 auth proxy는 파싱된 env 값을 사용하고, 어드민 코스 상세 client는 서버가 넘긴 `adminApiBaseUrl`만 사용한다.
 - 검증: `bun --filter @workspace/web test src/env.test.ts src/lib/api/get-server-writing-app-api.test.ts src/lib/api/get-browser-writing-app-api.test.ts && bun --filter @workspace/admin test src/env.test.ts src/features/courses/admin-course-detail-page.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/admin typecheck && bun --filter @workspace/web lint && bun --filter @workspace/admin lint`
 
+## CODE-02 작업 메모
+
+- 대상 파일: `packages/ui/src/hooks/use-mobile.ts`, `apps/web/src/features/lessons/lesson-data.ts`
+- 조사 방향: 디자인 시스템 규칙과 레슨 생성 규칙을 실제 변경 가능한 상수로 분리하고, 단순 콘텐츠/픽스처 숫자는 데이터 의미를 유지한다.
+- 완료 내용: UI mobile breakpoint를 UI config 상수로 옮겼고, 레슨 생성의 step frame, default points, reflection points, 글자 수 제한, AI score range, 예상 시간 규칙을 인접 도메인 상수로 분리했다. 코스 카드의 `lessonCount`는 상세 레슨 데이터에서 파생해 중복 입력을 제거했다.
+- 검증: `bun --filter @workspace/web test && bun --filter @workspace/ui test && bun --filter @workspace/web typecheck && bun --filter @workspace/ui typecheck && bun --filter @workspace/web lint && bun --filter @workspace/ui lint && bun prettier --check packages/ui/package.json packages/ui/src/config/breakpoints.ts packages/ui/src/hooks/use-mobile.ts apps/web/src/features/courses/course-data.ts apps/web/src/features/lessons/lesson-generation-rules.ts apps/web/src/features/lessons/lesson-data.ts apps/web/src/lib/api/fake/create-fake-writing-app-api.ts docs/codebase-improvement-progress.md`
+
 ## 다음 단계
 
-다음 작업은 P2의 `CODE-02`를 문서 순서대로 진행한다.
+다음 작업은 P2의 `DATA-07`을 문서 순서대로 진행한다.
