@@ -10,6 +10,7 @@ const userId = "user-1" as UserId
 const sentenceCourseId = courseId("sentence-structure")
 const firstLessonId = lessonId("sentence-structure-01")
 const secondLessonId = lessonId("sentence-structure-02")
+const thirdLessonId = lessonId("sentence-structure-03")
 
 const lesson: LessonDto = {
   id: firstLessonId,
@@ -173,6 +174,10 @@ describe("createLearningService", () => {
                   lessonId: secondLessonId,
                   title: "목적어와 보어의 자리",
                 },
+                {
+                  lessonId: thirdLessonId,
+                  title: "꾸밈말이 놓이는 위치",
+                },
               ],
             },
           ]
@@ -202,15 +207,74 @@ describe("createLearningService", () => {
                 status: "next-up",
                 title: "목적어와 보어의 자리",
               },
+              {
+                lessonId: thirdLessonId,
+                status: "locked",
+                title: "꾸밈말이 놓이는 위치",
+              },
             ],
             nextLessonId: secondLessonId,
-            progressPercent: 50,
-            totalLessons: 2,
+            progressPercent: 33,
+            totalLessons: 3,
           },
         ],
       },
     })
     expect(getCourseDetail).not.toHaveBeenCalled()
+  })
+
+  it("handles completed and empty progress summaries without next-up fallback", async () => {
+    const service = createLearningService({
+      contentService: createContentService(),
+      repository: createRepository({
+        async listProgressSummaries() {
+          return [
+            {
+              courseDescription: "문장 구조를 배웁니다.",
+              courseId: sentenceCourseId,
+              courseTitle: "문장 구조의 기본",
+              lessons: [
+                {
+                  lessonId: firstLessonId,
+                  progressStatus: "completed",
+                  title: "주어와 서술어 찾기",
+                },
+                {
+                  lessonId: secondLessonId,
+                  progressStatus: "completed",
+                  title: "목적어와 보어의 자리",
+                },
+              ],
+            },
+            {
+              courseDescription: "비어 있는 코스입니다.",
+              courseId: courseId("empty-course"),
+              courseTitle: "빈 코스",
+              lessons: [],
+            },
+          ]
+        },
+      }),
+    })
+
+    const result = await service.listProgress(userId)
+
+    expect(result.status).toBe("ok")
+    if (result.status === "ok") {
+      expect(result.value.courses[0]).toMatchObject({
+        completedCount: 2,
+        nextLessonId: undefined,
+        progressPercent: 100,
+        totalLessons: 2,
+      })
+      expect(result.value.courses[1]).toMatchObject({
+        completedCount: 0,
+        lessons: [],
+        nextLessonId: undefined,
+        progressPercent: 0,
+        totalLessons: 0,
+      })
+    }
   })
 
   it("calculates course progress from the current course curriculum", async () => {

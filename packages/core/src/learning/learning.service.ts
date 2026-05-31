@@ -357,20 +357,28 @@ export function createLearningService({
 function mapProgressCourseSummary(
   summary: ProgressCourseSummaryRecord
 ): ProgressCourseDto {
-  const lessons: ProgressCourseDto["lessons"] = summary.lessons.map(
-    (lesson) => ({
+  const lessons: ProgressCourseDto["lessons"] = []
+  let completedCount = 0
+  let nextLessonId: LessonId | undefined
+
+  for (const lesson of summary.lessons) {
+    if (lesson.progressStatus === "completed") {
+      completedCount += 1
+      lessons.push({
+        lessonId: lesson.lessonId,
+        status: "completed",
+        title: lesson.title,
+      })
+      continue
+    }
+
+    const isNextLesson = !nextLessonId
+    nextLessonId ??= lesson.lessonId
+    lessons.push({
       lessonId: lesson.lessonId,
-      status: lesson.progressStatus === "completed" ? "completed" : "locked",
+      status: isNextLesson ? "next-up" : "locked",
       title: lesson.title,
     })
-  )
-  const completedCount = lessons.filter(
-    (lesson) => lesson.status === "completed"
-  ).length
-  const nextLesson = lessons.find((lesson) => lesson.status !== "completed")
-
-  if (nextLesson) {
-    nextLesson.status = "next-up"
   }
 
   return {
@@ -379,7 +387,7 @@ function mapProgressCourseSummary(
     courseId: summary.courseId,
     courseTitle: summary.courseTitle,
     lessons,
-    nextLessonId: nextLesson?.lessonId,
+    nextLessonId,
     progressPercent: getProgressPercent(completedCount, lessons.length),
     totalLessons: lessons.length,
   }

@@ -52,6 +52,7 @@
 |   34 | DATA-07   | 완료 | admin seed 스크립트의 정적 import 경계를 분리했다.   |
 |   35 | DATA-08   | 완료 | core 서비스 result 타입 껍데기를 공통화했다.         |
 |   36 | DATA-09   | 완료 | content repository 출력 신뢰 경계를 명확히 했다.     |
+|   37 | DATA-10   | 완료 | progress summary 변환 흐름을 단일화했다.             |
 
 ## ADMIN-08 작업 메모
 
@@ -316,6 +317,13 @@
 - 완료 내용: `ContentRepository` 반환 타입을 raw/unknown 중심으로 낮추고, content service의 임시 값도 parse 전에는 DTO로 신뢰하지 않게 했다. Drizzle repository 테스트는 필요한 지점에서 schema parse 후 구조를 검증한다.
 - 검증: `bun --filter @workspace/core test src/content/content.service.test.ts && bun --filter @workspace/db test src/repositories/drizzle-content.repository.test.ts && bun --filter @workspace/core typecheck && bun --filter @workspace/db typecheck && bun --filter @workspace/core lint && bun --filter @workspace/db lint`
 
+## DATA-10 작업 메모
+
+- 대상 파일: `packages/core/src/learning/learning.service.ts`
+- 조사 방향: `listProgress`의 summary 변환에서 완료 수, 다음 레슨, 표시 상태 계산이 여러 순회와 mutation에 흩어진 지점을 확인한다.
+- 완료 내용: progress summary lesson 변환을 단일 루프로 정리하고, 다음 레슨 표시를 변환 후 객체 mutation으로 보정하지 않게 했다. 모든 레슨 완료와 빈 레슨 목록 케이스도 명시적으로 검증했다.
+- 검증: `bun --filter @workspace/core test src/learning/learning.service.test.ts && bun --filter @workspace/core typecheck && bun --filter @workspace/core lint`
+
 ## 다음 단계
 
-다음 작업은 P2의 `DATA-10`을 문서 순서대로 진행한다.
+다음 작업은 P2의 `DOMAIN-03`을 문서 순서대로 진행한다.
