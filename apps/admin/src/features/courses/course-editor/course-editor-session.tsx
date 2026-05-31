@@ -9,6 +9,7 @@ import type {
 } from "@workspace/core/admin"
 
 import { getEditorChangeKind } from "@/features/courses/course-editor/editor-change-kind"
+import { createCourseEditorSelection } from "@/features/courses/course-editor/editor-selectors"
 import {
   addChapter,
   addLesson,
@@ -248,35 +249,15 @@ export function CourseEditorProvider({
   )
 
   const state = React.useMemo<CourseEditorSessionState>(() => {
-    const { curriculum: currentCurriculum } = workingCopy
-    const selectedLessonId =
-      localUrlState.lessonId ??
-      currentCurriculum.chapters[0]?.lessons[0]?.lessonId ??
-      null
-    const lessons = currentCurriculum.chapters.flatMap(
-      (chapter) => chapter.lessons
-    )
-    const selectedLesson =
-      lessons.find((lesson) => lesson.lessonId === selectedLessonId) ?? null
-    const selectedLessonSteps = selectedLessonId
-      ? workingCopy.steps.filter((step) => step.lessonId === selectedLessonId)
-      : []
-    const selectedStep =
-      selectedLessonSteps.find((step) => step.id === localUrlState.stepId) ??
-      null
-    const selectedChapter =
-      currentCurriculum.chapters.find((chapter) =>
-        chapter.lessons.some((lesson) => lesson.lessonId === selectedLessonId)
-      ) ?? null
+    const selection = createCourseEditorSelection({
+      urlState: localUrlState,
+      workingCopy,
+    })
 
     return {
       isReadOnly,
       isSaving,
-      selectedChapter,
-      selectedLesson,
-      selectedLessonId,
-      selectedLessonSteps,
-      selectedStep,
+      ...selection,
       statusMessage,
       urlState: localUrlState,
       workingCopy,

@@ -10,12 +10,19 @@ export type CourseEditorDirtyState = {
   changedFields: string[]
 }
 
+type CourseEditorCurriculumWorkingCopy = Omit<
+  AdminEditorCurriculumDetailDto,
+  "steps"
+>
+
+export type CourseEditorStep = AdminEditorCurriculumDetailDto["steps"][number]
+
 export type CourseEditorWorkingCopy = {
   course: AdminCourseDetailDto
   dirty: CourseEditorDirtyState
   revision: number
-  curriculum: AdminEditorCurriculumDetailDto
-  steps: AdminEditorCurriculumDetailDto["steps"]
+  curriculum: CourseEditorCurriculumWorkingCopy
+  steps: CourseEditorStep[]
 }
 
 type CourseEditableField = "description" | "title"
@@ -55,14 +62,9 @@ export function createCourseEditorWorkingCopy(input: {
     dirty: getDirtyState([]),
     revision: input.revision,
     curriculum: {
-      ...input.curriculum,
       chapters: input.curriculum.chapters.map((chapter) => ({
         ...chapter,
         lessons: chapter.lessons.map((lesson) => ({ ...lesson })),
-      })),
-      steps: input.curriculum.steps.map((step) => ({
-        ...step,
-        content: cloneJsonValue(step.content),
       })),
     },
     steps: input.curriculum.steps.map((step) => ({

@@ -70,7 +70,12 @@ const curriculum = {
       required: true,
       status: "active" as const,
       content: {
-        body: "원본 본문",
+        title: "첫 레슨",
+        category: "문장",
+        tagTone: "primary" as const,
+        bullets: ["문장 구조를 확인합니다."],
+        estimatedMinutes: 5,
+        totalSteps: 2,
       },
     },
     {
@@ -82,7 +87,14 @@ const curriculum = {
       points: 10,
       required: true,
       status: "active" as const,
-      content: {},
+      content: {
+        points: [
+          {
+            number: 1,
+            text: "목적어를 붙였습니다.",
+          },
+        ],
+      },
     },
   ],
 }
@@ -232,8 +244,8 @@ describe("course editor state", () => {
         "수정 레슨"
       ),
       "step-1",
-      "body",
-      "수정 본문"
+      "title",
+      "수정 도입"
     )
 
     expect(getDirtyState(workingCopy.dirty.changedFields).hasChanges).toBe(true)
@@ -265,11 +277,23 @@ describe("course editor state", () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: "step-1",
-          content: {
-            body: "수정 본문",
-          },
+          content: expect.objectContaining({
+            title: "수정 도입",
+          }),
         }),
       ])
     )
+  })
+
+  it("keeps steps as the only working copy step source", () => {
+    const workingCopy = createCourseEditorWorkingCopy({
+      course,
+      revision: 0,
+      curriculum,
+    })
+
+    expect("steps" in workingCopy.curriculum).toBe(false)
+    expect(workingCopy.steps).not.toBe(curriculum.steps)
+    expect(workingCopy.steps[0]?.content).not.toBe(curriculum.steps[0]?.content)
   })
 })

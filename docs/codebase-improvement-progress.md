@@ -25,6 +25,7 @@
 |    7 | DATA-03   | 완료 | Step content JSON 계약을 경계별로 엄격히 검증했다.  |
 |    8 | DOMAIN-01 | 완료 | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다. |
 |    9 | ADMIN-01  | 완료 | CourseEditorProvider의 URL/저장 책임을 분리했다.    |
+|   10 | ADMIN-02  | 완료 | 에디터 선택 파생 계산과 step source를 정리했다.     |
 
 ## ADMIN-08 작업 메모
 
@@ -91,6 +92,14 @@
 - 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/course-editor-session-hooks.test.tsx src/features/courses/course-editor/course-editor-shell.test.tsx && bun --filter @workspace/admin lint`
 - 참고: `bun --filter @workspace/admin typecheck`는 기존 admin 테스트 fixture와 `editor-state.ts`의 step content 타입 불일치로 실패한다.
 
+## ADMIN-02 작업 메모
+
+- 대상 파일: `apps/admin/src/features/courses/course-editor/editor-state.ts`, `apps/admin/src/features/courses/course-editor/editor-selectors.ts`, `apps/admin/src/features/courses/course-editor/course-editor-session.tsx`
+- 조사 방향: working copy 안의 step 데이터 원천이 중복되는 지점과 선택 상태 계산이 전체 트리를 반복 순회하는 지점을 찾는다.
+- 완료 내용: working copy 내부 curriculum에서 `steps` 복제본을 제거하고 `workingCopy.steps`를 단일 step source로 고정했다. 선택 chapter/lesson/step 계산은 `createCourseEditorSelection` selector로 분리하고, lesson/step 인덱스를 한 번 구성해 조회한다.
+- 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/editor-selectors.test.ts src/features/courses/course-editor/editor-state.test.ts src/features/courses/course-editor/course-editor-shell.test.tsx && bun --filter @workspace/admin lint`
+- 참고: `bun --filter @workspace/admin typecheck`는 기존 admin fixture와 draft step content 타입 불일치로 실패한다. step form의 content 타입 정리는 `ADMIN-07`에서 별도로 처리한다.
+
 ## 다음 단계
 
-다음 작업은 P1의 `ADMIN-02`를 문서 순서대로 진행한다.
+다음 작업은 P1의 `ADMIN-03`을 문서 순서대로 진행한다.
