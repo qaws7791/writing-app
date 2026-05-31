@@ -59,6 +59,7 @@
 |   41 | TEST-02   | 완료 | admin 목록 테스트의 반복 UI mock을 공통화했다.       |
 |   42 | TEST-03   | 완료 | React dedupe 설정의 유지 이유를 명시했다.            |
 |   43 | UI-01     | 완료 | ProgressBar 래퍼를 제거하고 Progress로 통일했다.     |
+|   44 | UI-02     | 완료 | TooltipProvider 문서 전제를 실제 layout과 맞췄다.    |
 
 ## ADMIN-08 작업 메모
 
@@ -372,6 +373,13 @@
 - 완료 내용: 웹의 홈, 코스 상세, 레슨 헤더 진행률 사용처를 `Progress`로 전환하고 `ProgressBar` 래퍼 파일을 제거했다. `ProgressBar.Track`과 `ProgressBar.Fill` 정적 멤버는 실제 사용처가 없어 함께 제거했다.
 - 검증: `bun --filter @workspace/web test src/features/home/home-page.test.tsx src/features/courses/course-detail-page.test.tsx src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/ui typecheck && bun --filter @workspace/web lint && bun --filter @workspace/ui lint`
 
+## UI-02 작업 메모
+
+- 대상 파일: `packages/ui/README.md`, `packages/ui/src/components/ui/tooltip.tsx`, 앱 root layout
+- 조사 방향: TooltipProvider가 앱 root layout의 필수 provider인지, 아니면 Tooltip 기본값 조정용 선택 provider인지 확인한다.
+- 완료 내용: README의 root layout 예제를 실제 앱처럼 `ThemeProvider`와 `Toaster` 중심으로 고치고, `TooltipProvider`는 delay 같은 tooltip 전역 기본값을 조정할 때만 선택적으로 추가한다고 명시했다.
+- 검증: `bun --filter @workspace/ui typecheck && bun --filter @workspace/ui lint && bun prettier --check packages/ui/README.md docs/codebase-improvement-progress.md`
+
 ## 다음 단계
 
-다음 작업은 P2의 `UI-02`를 문서 순서대로 진행한다.
+다음 작업은 P2의 `UI-03`을 문서 순서대로 진행한다.
