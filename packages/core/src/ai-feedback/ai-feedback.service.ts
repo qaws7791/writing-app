@@ -179,9 +179,9 @@ export function createAiFeedbackService({
         }
       }
 
-      let feedback
+      let feedbackResult
       try {
-        feedback = await provider.createFeedback({
+        feedbackResult = await provider.createFeedback({
           answer: answer.value,
           criteria: feedbackStep.content.focusAreas.join(", "),
           focusAreas: feedbackStep.content.focusAreas,
@@ -192,13 +192,17 @@ export function createAiFeedbackService({
         return aiFeedbackUnavailableResult
       }
 
+      if (feedbackResult.status !== "ok") {
+        return aiFeedbackUnavailableResult
+      }
+
       try {
         await feedbackRepository.createCompletedAttempt({
           answerSnapshot: answer.value,
           attemptNumber: attemptCount + 1,
           feedbackStepId: feedbackStep.id,
           lessonId: lessonId(request.lessonId),
-          result: feedback,
+          result: feedbackResult.value,
           sourceStepId: feedbackStep.content.sourceStepId,
           userId,
         })
@@ -208,7 +212,7 @@ export function createAiFeedbackService({
 
       return {
         status: "ok",
-        value: feedback,
+        value: feedbackResult.value,
       }
     },
   }

@@ -113,12 +113,15 @@ function createFeedbackRepository(): AiFeedbackRepository {
 function createProvider(): AiFeedbackProvider {
   return {
     createFeedback: vi.fn(async () => ({
-      improvements: ["예시를 하나 더 추가하세요."],
-      nextAction: "수정해 보기",
-      score: 4,
-      scoreRange: [0, 5] as [number, number],
-      strengths: ["핵심이 분명합니다."],
-      summary: "명확한 문장입니다.",
+      status: "ok" as const,
+      value: {
+        improvements: ["예시를 하나 더 추가하세요."],
+        nextAction: "수정해 보기",
+        score: 4,
+        scoreRange: [0, 5] as [number, number],
+        strengths: ["핵심이 분명합니다."],
+        summary: "명확한 문장입니다.",
+      },
     })),
   }
 }
@@ -240,6 +243,36 @@ describe("createAiFeedbackService", () => {
       createFeedback: vi.fn(async () => {
         throw new Error("provider failed")
       }),
+    }
+    const feedbackRepository = createFeedbackRepository()
+    const service = createAiFeedbackService({
+      contentService,
+      feedbackRepository,
+      learningRepository: createLearningRepository(),
+      provider,
+    })
+
+    const result = await service.createFeedback(userId("user-1"), {
+      feedbackStepId: "sentence-structure-01-step-2",
+      lessonId: "sentence-structure-01",
+    })
+
+    expect(result).toEqual({
+      status: "unavailable",
+      error: {
+        code: "ai-feedback-unavailable",
+        message: "인공지능 피드백을 사용할 수 없습니다.",
+      },
+    })
+    expect(feedbackRepository.createCompletedAttempt).not.toHaveBeenCalled()
+  })
+
+  it("does not consume a completed attempt when the provider is rate limited", async () => {
+    const provider: AiFeedbackProvider = {
+      createFeedback: vi.fn(async () => ({
+        kind: "rate-limited" as const,
+        status: "error" as const,
+      })),
     }
     const feedbackRepository = createFeedbackRepository()
     const service = createAiFeedbackService({

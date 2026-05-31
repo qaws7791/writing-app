@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
+import { APIConnectionTimeoutError } from "openai/core/error"
 
 import { createOpenAiFeedbackProvider } from "@/openai/openai-feedback-provider"
 
@@ -28,7 +29,12 @@ describe("createOpenAiFeedbackProvider", () => {
       scoreRange: [0, 5],
     })
 
-    expect(result.score).toBe(4)
+    expect(result).toMatchObject({
+      status: "ok",
+      value: {
+        score: 4,
+      },
+    })
     expect(parse).toHaveBeenCalledWith(
       expect.objectContaining({
         model: "gpt-5-mini",
@@ -56,6 +62,112 @@ describe("createOpenAiFeedbackProvider", () => {
     expect(scoreRangeSchema).toMatchObject({
       maxItems: 2,
       minItems: 2,
+    })
+  })
+
+  it("classifies invalid structured output as a provider response error", async () => {
+    const provider = createOpenAiFeedbackProvider({
+      client: {
+        responses: {
+          parse: vi.fn(async () => ({
+            output_parsed: {
+              summary: "",
+            },
+          })),
+        },
+      },
+      model: "gpt-5-mini",
+    })
+
+    const result = await provider.createFeedback({
+      answer: "문장의 기준을 먼저 세운다.",
+      criteria: "명확성",
+      focusAreas: ["clarity"],
+      prompt: "답변을 평가합니다.",
+      scoreRange: [0, 5],
+    })
+
+    expect(result).toEqual({
+      kind: "provider-invalid-response",
+      status: "error",
+    })
+  })
+
+  it("classifies provider rate limits without throwing", async () => {
+    const provider = createOpenAiFeedbackProvider({
+      client: {
+        responses: {
+          parse: vi.fn(async () => {
+            throw { status: 429 }
+          }),
+        },
+      },
+      model: "gpt-5-mini",
+    })
+
+    const result = await provider.createFeedback({
+      answer: "문장의 기준을 먼저 세운다.",
+      criteria: "명확성",
+      focusAreas: ["clarity"],
+      prompt: "답변을 평가합니다.",
+      scoreRange: [0, 5],
+    })
+
+    expect(result).toEqual({
+      kind: "rate-limited",
+      status: "error",
+    })
+  })
+
+  it("classifies provider request errors without throwing", async () => {
+    const provider = createOpenAiFeedbackProvider({
+      client: {
+        responses: {
+          parse: vi.fn(async () => {
+            throw { status: 400 }
+          }),
+        },
+      },
+      model: "gpt-5-mini",
+    })
+
+    const result = await provider.createFeedback({
+      answer: "문장의 기준을 먼저 세운다.",
+      criteria: "명확성",
+      focusAreas: ["clarity"],
+      prompt: "답변을 평가합니다.",
+      scoreRange: [0, 5],
+    })
+
+    expect(result).toEqual({
+      kind: "provider-invalid-request",
+      status: "error",
+    })
+  })
+
+  it("classifies provider timeouts without throwing", async () => {
+    const provider = createOpenAiFeedbackProvider({
+      client: {
+        responses: {
+          parse: vi.fn(async () => {
+            throw new APIConnectionTimeoutError()
+          }),
+        },
+      },
+      model: "gpt-5-mini",
+    })
+
+    const result = await provider.createFeedback({
+      answer: "문장의 기준을 먼저 세운다.",
+      criteria: "명확성",
+      focusAreas: ["clarity"],
+      prompt: "답변을 평가합니다.",
+      scoreRange: [0, 5],
+    })
+
+    expect(result).toEqual({
+      kind: "timeout",
+      status: "error",
     })
   })
 })

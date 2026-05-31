@@ -141,6 +141,14 @@
 - 검증: `bun --filter @workspace/api test src/app.test.ts && bun --filter @workspace/admin-api test src/app.test.ts && bun --filter @workspace/api typecheck && bun --filter @workspace/admin-api typecheck && bun --filter @workspace/api test && bun --filter @workspace/admin-api test && bun --filter @workspace/api lint && bun --filter @workspace/admin-api lint`
 - 참고: `bun --filter @workspace/api lint`는 기존 `apps/api/src/main.test.ts`의 `turbo/no-undeclared-env-vars` 경고 2건을 유지한 채 성공한다.
 
+## API-04 작업 메모
+
+- 대상 파일: `packages/core/src/ai-feedback/ai-feedback.provider.ts`, `packages/core/src/ai-feedback/ai-feedback.service.ts`, `apps/api/src/openai/openai-feedback-provider.ts`
+- 조사 방향: 외부 API 응답 계약을 흔들지 않고 provider 실패 원인을 timeout, rate limit, provider request 오류, provider response 오류, 일반 unavailable로 분류할 수 있는 내부 경계를 찾는다.
+- 완료 내용: `AiFeedbackProvider` 포트를 성공/오류 result union으로 바꾸고 OpenAI provider가 SDK timeout, 429, 400/401/403/422, invalid structured output을 명시적으로 분류하게 했다. 서비스는 성공 결과만 completed attempt로 저장하고 모든 provider 실패는 기존 `ai-feedback-unavailable` 응답으로 접어 HTTP 계약을 유지한다.
+- 검증: `bun --filter @workspace/core test src/ai-feedback/ai-feedback.service.test.ts && bun --filter @workspace/api test src/openai/openai-feedback-provider.test.ts && bun --filter @workspace/core typecheck && bun --filter @workspace/api typecheck && bun --filter @workspace/core test && bun --filter @workspace/api test && bun --filter @workspace/core lint && bun --filter @workspace/api lint`
+- 참고: `bun --filter @workspace/api lint`는 기존 `apps/api/src/main.test.ts`의 `turbo/no-undeclared-env-vars` 경고 2건을 유지한 채 성공한다.
+
 ## 다음 단계
 
-다음 작업은 P1의 `API-04`를 문서 순서대로 진행한다.
+다음 작업은 P1의 `ARCH-02`를 문서 순서대로 진행한다.
