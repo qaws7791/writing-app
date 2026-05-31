@@ -6,7 +6,6 @@ import {
   courseId,
   courseCategoryListDtoSchema,
   courseDetailDtoSchema,
-  createContentService,
   lessonDtoSchema,
   lessonId,
 } from "@workspace/core/content"
@@ -29,9 +28,12 @@ describe("createDrizzleContentRepository", () => {
   it("lists course categories with current curriculum lesson counts", async () => {
     const repository = createDrizzleContentRepository(createDatabase(sqlite))
 
-    const result = courseCategoryListDtoSchema.parse(
-      await repository.listCourseCategories()
-    )
+    const repositoryResult = await repository.listCourseCategories()
+    expect(repositoryResult.status).toBe("ok")
+    if (repositoryResult.status !== "ok") {
+      throw new Error("Expected course category list to be valid.")
+    }
+    const result = courseCategoryListDtoSchema.parse(repositoryResult.value)
     const beginnerCourses = result.categories.find(
       (category) => category.id === "beginner"
     )?.courses
@@ -46,9 +48,14 @@ describe("createDrizzleContentRepository", () => {
   it("finds current course details from course chapters and lessons", async () => {
     const repository = createDrizzleContentRepository(createDatabase(sqlite))
 
-    const result = courseDetailDtoSchema.parse(
-      await repository.findCourseDetail(courseId("sentence-structure"))
+    const repositoryResult = await repository.findCourseDetail(
+      courseId("sentence-structure")
     )
+    expect(repositoryResult.status).toBe("ok")
+    if (repositoryResult.status !== "ok") {
+      throw new Error("Expected course detail to be valid.")
+    }
+    const result = courseDetailDtoSchema.parse(repositoryResult.value)
 
     expect(result?.firstLessonId).toBe("sentence-structure-01")
     expect(result?.lessonCount).toBe(12)
@@ -71,9 +78,14 @@ describe("createDrizzleContentRepository", () => {
       .where(eq(courseLessons.id, "sentence-structure-02"))
     const repository = createDrizzleContentRepository(db)
 
-    const detail = courseDetailDtoSchema.parse(
-      await repository.findCourseDetail(courseId("sentence-structure"))
+    const repositoryResult = await repository.findCourseDetail(
+      courseId("sentence-structure")
     )
+    expect(repositoryResult.status).toBe("ok")
+    if (repositoryResult.status !== "ok") {
+      throw new Error("Expected course detail to be valid.")
+    }
+    const detail = courseDetailDtoSchema.parse(repositoryResult.value)
 
     expect(detail?.chapters.map((chapter) => chapter.id)).not.toContain(
       "sentence-structure-chapter-2"
@@ -88,9 +100,14 @@ describe("createDrizzleContentRepository", () => {
   it("finds playable lesson content by ID", async () => {
     const repository = createDrizzleContentRepository(createDatabase(sqlite))
 
-    const result = lessonDtoSchema.parse(
-      await repository.findLesson(lessonId("sentence-structure-01"))
+    const repositoryResult = await repository.findLesson(
+      lessonId("sentence-structure-01")
     )
+    expect(repositoryResult.status).toBe("ok")
+    if (repositoryResult.status !== "ok") {
+      throw new Error("Expected lesson to be valid.")
+    }
+    const result = lessonDtoSchema.parse(repositoryResult.value)
 
     expect(result?.id).toBe("sentence-structure-01")
     expect(result?.steps.map((step) => step.type)).toEqual([
@@ -107,15 +124,13 @@ describe("createDrizzleContentRepository", () => {
       .query("update lesson_steps set content_json = ? where id = ?")
       .run("not-json", "sentence-structure-01-step-1")
     const repository = createDrizzleContentRepository(createDatabase(sqlite))
-    const service = createContentService({ repository })
 
-    const result = await service.getLesson(lessonId("sentence-structure-01"))
+    const result = await repository.findLesson(
+      lessonId("sentence-structure-01")
+    )
 
-    expect(result).toMatchObject({
+    expect(result).toEqual({
       status: "invalid-content",
-      error: {
-        code: "invalid-content-seed",
-      },
     })
   })
 })

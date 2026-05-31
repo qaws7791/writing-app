@@ -64,6 +64,7 @@
 |   46 | ARCH-06   | 완료 | UI 패키지의 불필요한 .gitkeep을 제거했다.            |
 |   47 | CODE-01   | 완료 | 응답 JSON Promise assertion 패턴을 명시화했다.       |
 |   48 | UI-04     | 완료 | 어드민 pagination 문구를 한국어로 바꿨다.            |
+|   49 | DATA-11   | 완료 | content repository 결과 타입을 명시화했다.           |
 
 ## ADMIN-08 작업 메모
 
@@ -413,6 +414,14 @@
 - 조사 방향: 어드민 화면에 남아 있는 `Page n of m` 영문 pagination 문구를 한국어 화면 문구로 바꾼다.
 - 완료 내용: 코스 목록 pagination 현재/전체 페이지 표시를 `{현재} / {전체} 페이지` 형식으로 바꾸고 테스트 기대값을 갱신했다.
 - 검증: `bun --filter @workspace/admin test src/features/courses/admin-courses-page.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
+
+## DATA-11 작업 메모
+
+- 대상 파일: `packages/core/src/content/content.repository.ts`, `packages/core/src/content/content.service.ts`, `packages/db/src/repositories/drizzle-content.repository.ts`
+- 조사 방향: content repository 포트가 `unknown` raw 값을 서비스로 흘려보내는 지점을 제거하고, DB adapter 경계에서 DTO 검증과 실패 분류를 끝낸다.
+- 시작 내용: Repository Result 계약을 도입해 `ok`, `not-found`, `invalid-content`, `unavailable`을 타입으로 드러내는 방향으로 수정한다.
+- 완료 내용: `ContentRepository`는 검증된 DTO를 담은 `ok` 또는 명시적 실패 Result만 반환한다. Drizzle adapter는 `content_json` 파싱 직후 DTO schema를 검증하고, content service는 DTO 재파싱 대신 저장소 Result를 서비스 Result로 변환한 뒤 playable lesson 불변식만 확인한다.
+- 검증: `bun --filter @workspace/core test src/content/content.service.test.ts && bun --filter @workspace/db test src/repositories/drizzle-content.repository.test.ts && bun --filter @workspace/core typecheck && bun --filter @workspace/db typecheck`
 
 ## API-05 작업 메모
 

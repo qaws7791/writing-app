@@ -4,8 +4,11 @@ import type {
   ContentRepository,
   CourseCategoryListDto,
   CourseDetailDto,
-  RawContentRepositoryLesson,
-  RawContentRepositoryLessonStep,
+} from "@workspace/core/content"
+import {
+  courseCategoryListDtoSchema,
+  courseDetailDtoSchema,
+  lessonDtoSchema,
 } from "@workspace/core/content"
 
 import type { WritingAppDatabase } from "../client"
@@ -26,111 +29,135 @@ export function createDrizzleContentRepository(
 ): ContentRepository {
   return {
     async listCourseCategories() {
-      const [categoryRows, courseRows, lessonCountsByCourseId] =
-        await Promise.all([
-          db
-            .select()
-            .from(courseCategories)
-            .orderBy(asc(courseCategories.sortOrder)),
-          db.select().from(courses).orderBy(asc(courses.sortOrder)),
-          countLessonsByCourseId(db),
-        ])
+      try {
+        const [categoryRows, courseRows, lessonCountsByCourseId] =
+          await Promise.all([
+            db
+              .select()
+              .from(courseCategories)
+              .orderBy(asc(courseCategories.sortOrder)),
+            db.select().from(courses).orderBy(asc(courses.sortOrder)),
+            countLessonsByCourseId(db),
+          ])
 
-      return {
-        categories: categoryRows.map((category) => ({
-          id: category.id,
-          title: category.title,
-          courses: courseRows
-            .filter((course) => course.categoryId === category.id)
-            .map((course) => ({
-              id: course.id,
-              title: course.title,
-              description: course.description,
-              lessonCount: lessonCountsByCourseId.get(course.id) ?? 0,
-            })),
-        })),
-      } satisfies CourseCategoryListDto
+        const result = courseCategoryListDtoSchema.safeParse({
+          categories: categoryRows.map((category) => ({
+            id: category.id,
+            title: category.title,
+            courses: courseRows
+              .filter((course) => course.categoryId === category.id)
+              .map((course) => ({
+                id: course.id,
+                title: course.title,
+                description: course.description,
+                lessonCount: lessonCountsByCourseId.get(course.id) ?? 0,
+              })),
+          })),
+        } satisfies CourseCategoryListDto)
+
+        return result.success
+          ? { status: "ok", value: result.data }
+          : { status: "invalid-content" }
+      } catch {
+        return { status: "unavailable" }
+      }
     },
 
     async findCourseDetail(courseId) {
-      const [course] = await db
-        .select()
-        .from(courses)
-        .where(eq(courses.id, courseId))
-        .limit(1)
+      try {
+        const [course] = await db
+          .select()
+          .from(courses)
+          .where(eq(courses.id, courseId))
+          .limit(1)
 
-      if (!course) {
-        return undefined
-      }
+        if (!course) {
+          return { status: "not-found" }
+        }
 
-      const chapterRows = await db
-        .select()
-        .from(courseChapters)
-        .where(
-          and(
-            eq(courseChapters.courseId, courseId),
-            eq(courseChapters.status, "active")
+        const chapterRows = await db
+          .select()
+          .from(courseChapters)
+          .where(
+            and(
+              eq(courseChapters.courseId, courseId),
+              eq(courseChapters.status, "active")
+            )
           )
-        )
-        .orderBy(asc(courseChapters.sortOrder))
+          .orderBy(asc(courseChapters.sortOrder))
 
-      const lessonRows = await listCourseLessons(
-        db,
-        chapterRows.map(({ id }) => id)
-      )
-      const firstLessonId = chapterRows
-        .flatMap((chapter) =>
-          lessonRows.filter((lesson) => lesson.chapterId === chapter.id)
+        const lessonRows = await listCourseLessons(
+          db,
+          chapterRows.map(({ id }) => id)
         )
-        .at(0)?.lessonId
+        const firstLessonId = chapterRows
+          .flatMap((chapter) =>
+            lessonRows.filter((lesson) => lesson.chapterId === chapter.id)
+          )
+          .at(0)?.lessonId
 
-      return {
-        id: course.id,
-        title: course.title,
-        description: course.description,
-        lessonCount: lessonRows.length,
-        firstLessonId,
-        chapters: chapterRows.map((chapter) => ({
-          id: chapter.id,
-          title: chapter.title,
-          lessons: lessonRows
-            .filter((lesson) => lesson.chapterId === chapter.id)
-            .map(mapCourseLesson),
-        })),
-      } satisfies CourseDetailDto
+        const result = courseDetailDtoSchema.safeParse({
+          id: course.id,
+          title: course.title,
+          description: course.description,
+          lessonCount: lessonRows.length,
+          firstLessonId,
+          chapters: chapterRows.map((chapter) => ({
+            id: chapter.id,
+            title: chapter.title,
+            lessons: lessonRows
+              .filter((lesson) => lesson.chapterId === chapter.id)
+              .map(mapCourseLesson),
+          })),
+        } satisfies CourseDetailDto)
+
+        return result.success
+          ? { status: "ok", value: result.data }
+          : { status: "invalid-content" }
+      } catch {
+        return { status: "unavailable" }
+      }
     },
 
     async findLesson(lessonId) {
-      const [lesson] = await db
-        .select()
-        .from(lessons)
-        .where(eq(lessons.id, lessonId))
-        .limit(1)
+      try {
+        const [lesson] = await db
+          .select()
+          .from(lessons)
+          .where(eq(lessons.id, lessonId))
+          .limit(1)
 
-      if (!lesson) {
-        return undefined
-      }
+        if (!lesson) {
+          return { status: "not-found" }
+        }
 
-      const stepRows = await db
-        .select()
-        .from(lessonSteps)
-        .where(
-          and(
-            eq(lessonSteps.lessonId, lessonId),
-            eq(lessonSteps.status, "active")
+        const stepRows = await db
+          .select()
+          .from(lessonSteps)
+          .where(
+            and(
+              eq(lessonSteps.lessonId, lessonId),
+              eq(lessonSteps.status, "active")
+            )
           )
-        )
-        .orderBy(asc(lessonSteps.sortOrder))
+          .orderBy(asc(lessonSteps.sortOrder))
 
-      return {
-        id: lesson.id,
-        title: lesson.title,
-        categoryId: lesson.categoryId,
-        courseId: lesson.courseId,
-        unitNumber: lesson.unitNumber,
-        nextLessonId: lesson.nextLessonId ?? undefined,
-        steps: stepRows.map(mapLessonStep),
-      } satisfies RawContentRepositoryLesson
+        const result = lessonDtoSchema.safeParse({
+          id: lesson.id,
+          title: lesson.title,
+          categoryId: lesson.categoryId,
+          courseId: lesson.courseId,
+          unitNumber: lesson.unitNumber,
+          nextLessonId: lesson.nextLessonId ?? undefined,
+          steps: stepRows.map(mapLessonStep),
+        })
+
+        return result.success
+          ? { status: "ok", value: result.data }
+          : { status: "invalid-content" }
+      } catch {
+        return { status: "unavailable" }
+      }
     },
   }
 }
@@ -184,7 +211,7 @@ function mapCourseLesson(lesson: CourseLessonRow) {
   }
 }
 
-function mapLessonStep(step: LessonStepRow): RawContentRepositoryLessonStep {
+function mapLessonStep(step: LessonStepRow) {
   return {
     id: step.id,
     type: step.type,
