@@ -39,6 +39,7 @@
 |   21 | DATA-04   | 완료 | 홈 진행 요약 조회를 단일 읽기 모델로 정리했다.      |
 |   22 | DATA-05   | 완료 | AI 피드백 attempt 번호 생성을 저장소 경계로 옮겼다. |
 |   23 | DATA-06   | 완료 | DB 스키마 명명 규칙을 문서화했다.                   |
+|   24 | DOMAIN-02 | 완료 | 어드민 스텝 타입 메타데이터 registry를 추가했다.    |
 
 ## ADMIN-08 작업 메모
 
@@ -209,6 +210,14 @@
 - 완료 내용: Better Auth 계열 테이블은 provider convention을 유지하고, 직접 관리 테이블은 SQL 이름에 snake_case를 쓰며 Drizzle TypeScript 속성은 camelCase로 매핑한다는 규칙을 문서화했다. `BACKEND.md`의 `packages/db` 설명에서 해당 문서를 참조한다.
 - 검증: `bun lefthook run pre-commit`
 
+## DOMAIN-02 작업 메모
+
+- 대상 파일: `apps/admin/src/features/courses/course-editor/step-definitions.ts`, `apps/admin/src/features/courses/course-editor/step-form-registry.tsx`, 어드민 course editor 사용처
+- 조사 방향: 어드민 에디터의 step type label, group, form component, 기본 metadata가 각각 다른 파일에 흩어진 지점을 확인하고, core/db step schema 변경 없이 앱 내부 registry로 먼저 응집한다.
+- 완료 내용: 순수 metadata는 `step-definitions.ts`로, React form component 매핑은 `step-form-registry.tsx`로 분리했다. label, add-step group, step workspace form 선택, 새 step 기본 points는 registry를 통해 읽도록 연결했다.
+- 범위 제외: core/content DTO와 DB enum 통합, 학습자 lesson renderer 분리는 영향 범위가 커서 `FE-01`과 후속 도메인 정리에서 별도로 다룬다.
+- 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/editor-state.test.ts src/features/courses/course-editor/lesson-workspace.test.tsx src/features/courses/course-editor/step-workspace.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
+
 ## 다음 단계
 
-다음 작업은 P1의 `DOMAIN-02`를 문서 순서대로 진행한다.
+다음 작업은 P1의 `FE-01`을 문서 순서대로 진행한다.

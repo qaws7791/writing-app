@@ -5,6 +5,10 @@ import type {
 
 import type { EditorChangeKind } from "@/features/courses/course-editor/editor-change-kind"
 import type { CourseEditorView } from "@/features/courses/course-editor/editor-url-state"
+import {
+  getStepTypeLabel as getStepDefinitionLabel,
+  isStepTypeValue,
+} from "@/features/courses/course-editor/step-definitions"
 
 const nodeStatusLabels: Record<AdminCurriculumNodeStatus, string> = {
   active: "활성",
@@ -25,29 +29,6 @@ const editorViewLabels = {
   preview: "미리보기",
 } satisfies Record<CourseEditorView, string>
 
-const stepTypeLabels = {
-  INTRO: "도입",
-  CONCEPT: "개념",
-  READING_PASSAGE: "읽기 지문",
-  EXAMPLE_REVEAL: "예시 공개",
-  COMPARE: "비교",
-  MULTIPLE_CHOICE: "객관식",
-  FILL_BLANK: "빈칸 채우기",
-  WORD_SELECT: "단어 선택",
-  REORDER: "순서 배열",
-  MATCH: "짝 맞추기",
-  CLASSIFY: "분류",
-  SHORT_WRITE: "짧은 글쓰기",
-  LONG_WRITE: "긴 글쓰기",
-  AI_FEEDBACK: "AI 피드백",
-  REVISION: "퇴고",
-  CHECKLIST: "체크리스트",
-  REFLECTION: "성찰",
-  SUMMARY: "정리",
-  TRANSCRIBE: "따라 쓰기",
-  COMPLETE: "완료",
-} satisfies Record<AdminEditorStepType, string>
-
 export function getNodeStatusLabel(status: AdminCurriculumNodeStatus) {
   return nodeStatusLabels[status]
 }
@@ -61,7 +42,7 @@ export function getEditorViewLabel(view: CourseEditorView) {
 }
 
 export function getStepTypeLabel(type: AdminEditorStepType) {
-  return stepTypeLabels[type]
+  return getStepDefinitionLabel(type)
 }
 
 export function getStepDisplayTitle(step: {
@@ -83,8 +64,4 @@ export function getStepDisplayTitle(step: {
 
 export function formatPointLabel(points: number) {
   return `${points}점`
-}
-
-function isStepTypeValue(value: string): value is AdminEditorStepType {
-  return value in stepTypeLabels
 }

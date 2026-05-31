@@ -27,6 +27,7 @@ import {
   getStepTypeLabel,
 } from "@/features/courses/course-editor/editor-labels"
 import { parseEditorUrlState } from "@/features/courses/course-editor/editor-url-state"
+import { getStepDefaultPoints } from "@/features/courses/course-editor/step-definitions"
 
 const course = {
   id: "course-1",
@@ -298,6 +299,8 @@ describe("course editor state", () => {
     })
     expect(archived.steps[0]).toMatchObject({
       id: "draft-step",
+      points: getStepDefaultPoints("INTRO"),
+      required: true,
       sortOrder: 1,
       status: "archived",
     })

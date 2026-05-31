@@ -6,6 +6,7 @@ import type {
 } from "@workspace/core/admin"
 
 import type { EditorChange } from "@/features/courses/course-editor/editor-change-kind"
+import { getStepDefaultPoints } from "@/features/courses/course-editor/step-definitions"
 
 export type CourseEditorDirtyState = {
   changes: EditorChange[]
@@ -320,7 +321,7 @@ export function addStep(
         {
           ...step,
           content: {},
-          points: 0,
+          points: getStepDefaultPoints(step.type),
           required: true,
           sortOrder: lessonStepCount + 1,
           status: "active",

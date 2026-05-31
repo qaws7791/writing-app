@@ -42,6 +42,7 @@ import {
   getStepTypeLabel,
 } from "@/features/courses/course-editor/editor-labels"
 import type { CourseEditorStep } from "@/features/courses/course-editor/editor-state"
+import { STEP_TYPE_GROUPS } from "@/features/courses/course-editor/step-definitions"
 
 type LessonSummary =
   AdminEditorCurriculumDetailDto["chapters"][number]["lessons"][number]
@@ -63,39 +64,6 @@ type LessonWorkspaceProps = {
     value: string
   ) => void
 }
-
-/** 스텝 타입 카테고리 */
-const stepTypeGroups: { label: string; types: AdminEditorStepType[] }[] = [
-  {
-    label: "도입 · 설명",
-    types: ["INTRO", "CONCEPT", "READING_PASSAGE", "EXAMPLE_REVEAL", "COMPARE"],
-  },
-  {
-    label: "퀴즈 · 연습",
-    types: [
-      "MULTIPLE_CHOICE",
-      "FILL_BLANK",
-      "WORD_SELECT",
-      "REORDER",
-      "MATCH",
-      "CLASSIFY",
-    ],
-  },
-  {
-    label: "글쓰기",
-    types: [
-      "SHORT_WRITE",
-      "LONG_WRITE",
-      "AI_FEEDBACK",
-      "REVISION",
-      "TRANSCRIBE",
-    ],
-  },
-  {
-    label: "마무리",
-    types: ["CHECKLIST", "REFLECTION", "SUMMARY", "COMPLETE"],
-  },
-]
 
 export function LessonWorkspace({
   changeKind,
@@ -220,7 +188,7 @@ export function LessonWorkspace({
                 <ChevronDown aria-hidden="true" className="ml-1 size-3.5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
-                {stepTypeGroups.map((group, groupIndex) => (
+                {STEP_TYPE_GROUPS.map((group, groupIndex) => (
                   <React.Fragment key={group.label}>
                     {groupIndex > 0 && <DropdownMenuSeparator />}
                     <DropdownMenuLabel className="text-xs text-muted-foreground">
