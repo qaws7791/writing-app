@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
+import { lessonId } from "@/features/lessons/lesson-ids"
 import { createHttpWritingAppApi } from "@/lib/api/http/create-http-writing-app-api"
 
 describe("createHttpWritingAppApi", () => {
@@ -50,6 +51,46 @@ describe("createHttpWritingAppApi", () => {
       error: {
         code: "unauthorized",
         message: "로그인이 필요합니다.",
+      },
+    })
+  })
+
+  it("maps invalid success response bodies to contract errors", async () => {
+    const fetch = vi.fn(async (input: RequestInfo | URL) => {
+      expect(input).toBeDefined()
+
+      return Response.json({
+        id: "sentence-structure-01",
+        title: "주어 찾기",
+        categoryId: "beginner",
+        courseId: "sentence-structure",
+        unitNumber: 1,
+        steps: [
+          {
+            id: "sentence-structure-01-step-1",
+            type: "INTRO",
+            order: 1,
+            points: 10,
+            required: true,
+            content: {
+              title: "주어 찾기",
+            },
+          },
+        ],
+      })
+    })
+    const api = createHttpWritingAppApi({
+      baseUrl: "http://localhost:4000",
+      fetch,
+    })
+
+    await expect(
+      api.getLesson(lessonId("sentence-structure-01"))
+    ).resolves.toEqual({
+      status: "error",
+      error: {
+        code: "contract-error",
+        message: "서버 응답이 예상한 계약과 일치하지 않습니다.",
       },
     })
   })

@@ -93,7 +93,7 @@ const apiErrorResponseBodySchema = z.object({
   message: z.string(),
 })
 
-function contractApiError(): ApiError {
+export function contractApiError(): ApiError {
   return {
     code: "contract-error",
     message: "서버 응답이 예상한 계약과 일치하지 않습니다.",

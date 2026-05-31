@@ -17,8 +17,8 @@
 | 순서 | ID        | 상태    | 요약                                                |
 | ---: | --------- | ------- | --------------------------------------------------- |
 |    1 | ADMIN-08  | 완료    | 체크박스 필드를 제어 컴포넌트로 전환했다.           |
-|    2 | API-01    | 진행 중 | 프론트 HTTP API 응답 런타임 파싱을 도입한다.        |
-|    3 | ARCH-01   | 대기    | 패키지 공개 경계와 내부 경로 직접 참조를 정리한다.  |
+|    2 | API-01    | 완료    | 프론트 HTTP API 응답 런타임 파싱을 도입했다.        |
+|    3 | ARCH-01   | 진행 중 | 패키지 공개 경계와 내부 경로 직접 참조를 정리한다.  |
 |    4 | AUTH-01   | 대기    | 어드민 인증 확인을 전용 세션 API로 분리한다.        |
 |    5 | DATA-01   | 대기    | 마이그레이션 적용 이력 관리를 도입한다.             |
 |    6 | DATA-02   | 대기    | 서버 시작 시 자동 데이터 변경 작업을 분리한다.      |
@@ -36,4 +36,11 @@
 
 - 대상 파일: `apps/web/src/lib/api/http/create-http-writing-app-api.ts`, `apps/web/src/features/lessons/lesson-api-mappers.ts`
 - 조사 방향: OpenAPI 타입 단언 뒤 mapper로 넘기는 응답 경계를 찾고, 프론트 내부에서 재사용 가능한 schema parse 지점을 정한다.
-- 완료 조건: HTTP 응답이 내부 모델로 변환되기 전에 런타임 schema로 검증되고, 계약 위반이 명시적 API 오류로 노출된다.
+- 완료 내용: HTTP 성공 응답이 내부 모델로 변환되기 전에 Zod schema로 검증되고, 계약 위반이 명시적 `contract-error`로 노출된다.
+- 검증: `bun --filter @workspace/web test src/lib/api/http/create-http-writing-app-api.test.ts && bun --filter @workspace/web typecheck`
+
+## ARCH-01 작업 메모
+
+- 대상 파일: `packages/core/src/index.ts`, `packages/db/src/index.ts`, 각 앱의 `tsconfig.json`, 경계 우회 import 사용처
+- 조사 방향: public subpath export로 대체 가능한 내부 `src` 경로 alias와 넓은 root export를 찾는다.
+- 완료 조건: 앱이 패키지 내부 `src` 경로를 직접 참조하지 않고, 필요한 도메인 subpath export를 명시적으로 사용한다.
