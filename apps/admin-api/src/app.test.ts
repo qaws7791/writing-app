@@ -177,6 +177,24 @@ function createTestApp(
 }
 
 describe("admin api app", () => {
+  it("allows credentialed auth preflight requests from the admin web origin", async () => {
+    const response = await createTestApp().request("/api/auth/sign-in/email", {
+      headers: {
+        "Access-Control-Request-Method": "POST",
+        Origin: "http://localhost:3001",
+      },
+      method: "OPTIONS",
+    })
+
+    expect(response.status).toBe(204)
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      "http://localhost:3001"
+    )
+    expect(response.headers.get("access-control-allow-credentials")).toBe(
+      "true"
+    )
+  })
+
   it("returns admin health status when the database is available", async () => {
     const response = await createTestApp().request("/health")
 
