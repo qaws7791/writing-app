@@ -27,7 +27,7 @@ import type {
   LessonStepId,
   LessonTone,
 } from "@/features/lessons/lesson-types"
-import { courseDetails } from "@/lib/api/fake/__fixtures__/course-detail-data"
+import { courseDetails } from "@test/api/fixtures/course-detail-data"
 
 export { lessonId, lessonStepId } from "@/features/lessons/lesson-ids"
 

@@ -64,6 +64,7 @@
 |   46 | ARCH-06   | 완료 | UI 패키지의 불필요한 .gitkeep을 제거했다.            |
 |   47 | CODE-01   | 완료 | 응답 JSON Promise assertion 패턴을 명시화했다.       |
 |   48 | UI-04     | 완료 | 어드민 pagination 문구를 한국어로 바꿨다.            |
+|   49 | DATA-11   | 완료 | content repository 결과 타입을 명시화했다.           |
 
 ## ADMIN-08 작업 메모
 
@@ -357,6 +358,13 @@
 - 완료 내용: 코스/레슨/홈 progress fixture 데이터를 `lib/api/fake` 경계로 이동하고 fake API가 단일 fixture entrypoint를 통해서만 값을 읽도록 정리했다. feature의 `course-data`, `course-detail-data`, `lesson-data`는 화면과 API 계약에서 쓰는 타입 및 id helper만 export한다.
 - 검증: `bun --filter @workspace/web test src/lib/api/fake/create-fake-writing-app-api.test.ts src/lib/api/get-server-writing-app-api.test.ts src/features/courses/course-curriculum.test.tsx src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint && bun lefthook run pre-commit`
 
+## WEB-TEST-01 작업 메모
+
+- 대상 파일: `apps/web/src/lib/api/fake/*`, `apps/web/test/api/*`, `apps/web/tsconfig.json`, `apps/web/vitest.config.ts`, `apps/web/eslint.config.mjs`
+- 작업 시작: 2026-05-31, 웹 fake API 구현체와 대형 fixture를 제품 `src` 밖의 `apps/web/test` 경계로 옮겨 테스트 지원 코드의 소유권을 명시한다.
+- 완료 내용: fake API 구현체와 course/lesson/home fixture를 `apps/web/test/api`로 이동했다. 테스트 전용 import는 `@test/*` alias로 명시하고, 제품 `src`가 테스트 경계를 import하지 못하도록 ESLint guardrail을 추가했다.
+- 검증: `bun --filter @workspace/web test && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint && bun --filter @workspace/web build`
+
 ## TEST-02 작업 메모
 
 - 대상 파일: `apps/admin/src/test/ui-mocks.tsx`, `apps/admin/src/features/users/admin-users-page.test.tsx`, `apps/admin/src/features/courses/admin-courses-page.test.tsx`
@@ -413,6 +421,14 @@
 - 조사 방향: 어드민 화면에 남아 있는 `Page n of m` 영문 pagination 문구를 한국어 화면 문구로 바꾼다.
 - 완료 내용: 코스 목록 pagination 현재/전체 페이지 표시를 `{현재} / {전체} 페이지` 형식으로 바꾸고 테스트 기대값을 갱신했다.
 - 검증: `bun --filter @workspace/admin test src/features/courses/admin-courses-page.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
+
+## DATA-11 작업 메모
+
+- 대상 파일: `packages/core/src/content/content.repository.ts`, `packages/core/src/content/content.service.ts`, `packages/db/src/repositories/drizzle-content.repository.ts`
+- 조사 방향: content repository 포트가 `unknown` raw 값을 서비스로 흘려보내는 지점을 제거하고, DB adapter 경계에서 DTO 검증과 실패 분류를 끝낸다.
+- 시작 내용: Repository Result 계약을 도입해 `ok`, `not-found`, `invalid-content`, `unavailable`을 타입으로 드러내는 방향으로 수정한다.
+- 완료 내용: `ContentRepository`는 검증된 DTO를 담은 `ok` 또는 명시적 실패 Result만 반환한다. Drizzle adapter는 `content_json` 파싱 직후 DTO schema를 검증하고, content service는 DTO 재파싱 대신 저장소 Result를 서비스 Result로 변환한 뒤 playable lesson 불변식만 확인한다.
+- 검증: `bun --filter @workspace/core test src/content/content.service.test.ts && bun --filter @workspace/db test src/repositories/drizzle-content.repository.test.ts && bun --filter @workspace/core typecheck && bun --filter @workspace/db typecheck`
 
 ## API-05 작업 메모
 

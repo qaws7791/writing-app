@@ -6,7 +6,7 @@ import {
   getLessonById,
   getMockAiFeedback,
   inProgressCourses,
-} from "@/lib/api/fake/fake-writing-app-fixtures"
+} from "@test/api/fakes/fake-writing-app-fixtures"
 import type {
   LessonProgress,
   SaveLessonAnswerInput,

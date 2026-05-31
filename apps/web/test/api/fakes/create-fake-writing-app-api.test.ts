@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { createFakeWritingAppApi } from "@/lib/api/fake/create-fake-writing-app-api"
+import { createFakeWritingAppApi } from "@test/api/fakes/create-fake-writing-app-api"
 
 describe("createFakeWritingAppApi", () => {
   it("serves course and lesson data without a backend", async () => {

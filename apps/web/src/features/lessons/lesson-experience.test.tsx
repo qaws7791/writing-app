@@ -6,8 +6,8 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 import { LessonExperience } from "@/features/lessons/lesson-experience"
 import type { Lesson } from "@/features/lessons/lesson-types"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
-import { getDefaultLesson } from "@/lib/api/fake/__fixtures__/lesson-data"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
+import { getDefaultLesson } from "@test/api/fixtures/lesson-data"
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
