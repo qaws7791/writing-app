@@ -6,8 +6,8 @@ import {
   adminSession,
   adminUser,
   adminVerification,
-  type WritingAppDatabase,
-} from "@workspace/db"
+} from "@workspace/db/schema"
+import type { WritingAppDatabase } from "@workspace/db/client"
 
 import type { AdminAuthRuntime } from "@/auth/admin-session"
 

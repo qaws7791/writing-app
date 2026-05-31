@@ -4,11 +4,11 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { lessonId } from "@workspace/core/content"
 import { userId } from "@workspace/core/learning"
 
-import { createDatabase } from "@/client"
-import { runContentMigration } from "@/migrations/run-content-migration"
-import { createDrizzleFeedbackRepository } from "@/repositories/drizzle-feedback.repository"
-import { user } from "@/schema"
-import { seedContent } from "@/seeds/seed-content"
+import { createDatabase } from "../client"
+import { runContentMigration } from "../migrations/run-content-migration"
+import { createDrizzleFeedbackRepository } from "./drizzle-feedback.repository"
+import { user } from "../schema"
+import { seedContent } from "../seeds/seed-content"
 
 describe("createDrizzleFeedbackRepository", () => {
   const now = new Date("2026-05-26T00:00:00.000Z")

@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  courseDetailDtoSchema,
-  courseSummaryDtoSchema,
-} from "@/content/content.dto"
+import { courseDetailDtoSchema, courseSummaryDtoSchema } from "./content.dto"
 
 describe("courseSummaryDtoSchema", () => {
   it("accepts course summaries without thumbnail assets", () => {

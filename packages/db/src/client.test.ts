@@ -4,9 +4,9 @@ import { tmpdir } from "node:os"
 import { Database } from "bun:sqlite"
 import { describe, expect, it } from "vitest"
 
-import { configureSqliteConnection, createDatabase } from "@/client"
-import { runContentMigration } from "@/migrations/run-content-migration"
-import { adminUser } from "@/schema"
+import { configureSqliteConnection, createDatabase } from "./client"
+import { runContentMigration } from "./migrations/run-content-migration"
+import { adminUser } from "./schema"
 
 describe("createDatabase", () => {
   it("enables foreign key enforcement for fresh sqlite connections", () => {

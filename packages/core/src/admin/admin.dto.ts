@@ -3,7 +3,7 @@ import { z } from "zod"
 import {
   curriculumNodeStatusSchema,
   type CurriculumNodeStatus,
-} from "@/content/curriculum-node-status"
+} from "../content/curriculum-node-status"
 
 export const adminCurriculumNodeStatusSchema = curriculumNodeStatusSchema
 export type AdminCurriculumNodeStatus = CurriculumNodeStatus

@@ -1,5 +1,5 @@
-import type { CourseId, LessonId } from "@/content"
-import type { UserId, LessonProgressStatus } from "@/learning/learning.ids"
+import type { CourseId, LessonId } from "../content"
+import type { UserId, LessonProgressStatus } from "./learning.ids"
 
 export interface CourseProgressRecord {
   completedCount: number

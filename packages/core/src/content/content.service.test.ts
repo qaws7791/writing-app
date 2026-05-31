@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import { courseId, lessonId } from "@/content/content.ids"
-import { createContentService } from "@/content/content.service"
-import type { ContentRepository } from "@/content/content.repository"
+import { courseId, lessonId } from "./content.ids"
+import { createContentService } from "./content.service"
+import type { ContentRepository } from "./content.repository"
 
 const repository: ContentRepository = {
   async listCourseCategories() {

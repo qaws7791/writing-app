@@ -8,12 +8,12 @@ import type {
   AdminEditorLessonDetailDto,
   AdminSaveCurriculumContentRequestDto,
   AdminUserListDto,
-} from "@/admin/admin.dto"
+} from "./admin.dto"
 import type {
   AdminConflictErrorDto,
   AdminInvalidRequestErrorDto,
   AdminNotFoundErrorDto,
-} from "@/admin/admin.errors"
+} from "./admin.errors"
 
 export type AdminSaveCurriculumContentRepositoryResult =
   | {

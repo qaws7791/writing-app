@@ -1,6 +1,6 @@
-import type { LessonId } from "@/content"
-import type { AiFeedbackResultDto } from "@/ai-feedback/ai-feedback.dto"
-import type { UserId } from "@/learning"
+import type { LessonId } from "../content"
+import type { AiFeedbackResultDto } from "./ai-feedback.dto"
+import type { UserId } from "../learning"
 
 export interface CreateCompletedFeedbackAttemptInput {
   answerSnapshot: string

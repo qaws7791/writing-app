@@ -8,7 +8,7 @@ import type {
   LessonId,
   LessonNotFoundErrorDto,
   LessonStepDto,
-} from "@/content"
+} from "../content"
 import type {
   CompleteLessonDto,
   CourseProgressDto,
@@ -16,10 +16,10 @@ import type {
   ProgressCourseListDto,
   SaveLessonAnswerRequestDto,
   SaveLessonProgressRequestDto,
-} from "@/learning/learning.dto"
-import type { LearningDatabaseUnavailableErrorDto } from "@/learning/learning.errors"
-import type { UserId } from "@/learning/learning.ids"
-import type { LearningRepository } from "@/learning/learning.repository"
+} from "./learning.dto"
+import type { LearningDatabaseUnavailableErrorDto } from "./learning.errors"
+import type { UserId } from "./learning.ids"
+import type { LearningRepository } from "./learning.repository"
 
 type OkResult<TValue> = {
   status: "ok"

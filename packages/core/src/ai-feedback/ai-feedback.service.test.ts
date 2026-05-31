@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest"
 
-import type { ContentService, LessonDto } from "@/content"
-import { lessonId } from "@/content"
-import type { LearningRepository } from "@/learning"
-import { userId } from "@/learning"
+import type { ContentService, LessonDto } from "../content"
+import { lessonId } from "../content"
+import type { LearningRepository } from "../learning"
+import { userId } from "../learning"
 
-import type { AiFeedbackProvider } from "@/ai-feedback/ai-feedback.provider"
-import type { AiFeedbackRepository } from "@/ai-feedback/ai-feedback.repository"
-import { createAiFeedbackService } from "@/ai-feedback/ai-feedback.service"
+import type { AiFeedbackProvider } from "./ai-feedback.provider"
+import type { AiFeedbackRepository } from "./ai-feedback.repository"
+import { createAiFeedbackService } from "./ai-feedback.service"
 
 const lesson: LessonDto = {
   id: "sentence-structure-01",

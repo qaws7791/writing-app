@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import {
   curriculumNodeStatusSchema,
   curriculumNodeStatuses,
-} from "@/content/curriculum-node-status"
+} from "./curriculum-node-status"
 
 describe("curriculum-node-status", () => {
   it("uses one status list for runtime values and Zod validation", () => {

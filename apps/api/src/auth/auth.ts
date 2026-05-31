@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
-import type { WritingAppDatabase } from "@workspace/db"
+import type { WritingAppDatabase } from "@workspace/db/client"
 
 import type { AuthRuntime } from "@/auth/session"
 

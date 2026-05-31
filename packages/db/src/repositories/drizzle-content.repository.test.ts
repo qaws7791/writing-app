@@ -8,11 +8,11 @@ import {
   lessonId,
 } from "@workspace/core/content"
 
-import { createDatabase } from "@/client"
-import { runContentMigration } from "@/migrations/run-content-migration"
-import { createDrizzleContentRepository } from "@/repositories/drizzle-content.repository"
-import { courseChapters, courseLessons } from "@/schema"
-import { seedContent } from "@/seeds/seed-content"
+import { createDatabase } from "../client"
+import { runContentMigration } from "../migrations/run-content-migration"
+import { createDrizzleContentRepository } from "./drizzle-content.repository"
+import { courseChapters, courseLessons } from "../schema"
+import { seedContent } from "../seeds/seed-content"
 
 describe("createDrizzleContentRepository", () => {
   let sqlite: Database

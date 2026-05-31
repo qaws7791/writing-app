@@ -1,4 +1,4 @@
-import type { AiFeedbackResultDto } from "@/ai-feedback/ai-feedback.dto"
+import type { AiFeedbackResultDto } from "./ai-feedback.dto"
 
 export interface AiFeedbackProvider {
   createFeedback(input: {

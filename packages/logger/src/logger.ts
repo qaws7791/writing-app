@@ -1,7 +1,7 @@
 import pino from "pino"
 
-export { createRequestLogFields } from "@/request-logger"
-export type { RequestLogFieldsInput } from "@/request-logger"
+export { createRequestLogFields } from "./request-logger"
+export type { RequestLogFieldsInput } from "./request-logger"
 
 export type LoggerLevel =
   | "trace"

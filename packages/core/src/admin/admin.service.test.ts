@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { createAdminService } from "@/admin/admin.service"
-import type { AdminRepository } from "@/admin/admin.repository"
+import { createAdminService } from "./admin.service"
+import type { AdminRepository } from "./admin.repository"
 
 function createRepository(
   overrides: Partial<AdminRepository> = {}

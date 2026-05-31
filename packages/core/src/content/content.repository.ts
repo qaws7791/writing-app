@@ -3,8 +3,8 @@ import type {
   CourseDetailDto,
   LessonDto,
   LessonStepDto,
-} from "@/content/content.dto"
-import type { CourseId, LessonId } from "@/content/content.ids"
+} from "./content.dto"
+import type { CourseId, LessonId } from "./content.ids"
 
 export type ContentRepositoryLessonStepDto = Omit<LessonStepDto, "content"> & {
   content: unknown

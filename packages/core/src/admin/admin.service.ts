@@ -16,14 +16,14 @@ import {
   type AdminEditorLessonDetailDto,
   type AdminSaveCurriculumContentRequestDto,
   type AdminUserListDto,
-} from "@/admin/admin.dto"
+} from "./admin.dto"
 import type {
   AdminConflictErrorDto,
   AdminDatabaseUnavailableErrorDto,
   AdminInvalidRequestErrorDto,
   AdminNotFoundErrorDto,
-} from "@/admin/admin.errors"
-import type { AdminRepository } from "@/admin/admin.repository"
+} from "./admin.errors"
+import type { AdminRepository } from "./admin.repository"
 
 type OkResult<TValue> = {
   status: "ok"

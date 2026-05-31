@@ -2,21 +2,21 @@ import { Database } from "bun:sqlite"
 import { eq } from "drizzle-orm"
 import { afterEach, describe, expect, it } from "vitest"
 
-import { createDatabase } from "@/client"
-import { runContentMigration } from "@/migrations/run-content-migration"
+import { createDatabase } from "../client"
+import { runContentMigration } from "../migrations/run-content-migration"
 import {
   courseChapters,
   courseLessons,
   courses,
   lessons,
   lessonSteps,
-} from "@/schema"
+} from "../schema"
 import {
   contentSeed,
   createSeedLessonSteps,
   parseContentSeedData,
-} from "@/seeds/content-seed"
-import { seedContent } from "@/seeds/seed-content"
+} from "./content-seed"
+import { seedContent } from "./seed-content"
 
 const sqlite = new Database(":memory:")
 const db = createDatabase(sqlite)

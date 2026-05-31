@@ -5,6 +5,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./migrations/*": "./src/migrations/*.ts",
+    "./repositories/*": "./src/repositories/*.ts",
     "./schema": "./src/schema/index.ts",
     "./seed": "./src/seeds/index.ts"
   },

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { WritingAppDatabase } from "@workspace/db"
+import type { WritingAppDatabase } from "@workspace/db/client"
 
 const authMocks = vi.hoisted(() => ({
   betterAuth: vi.fn(() => ({

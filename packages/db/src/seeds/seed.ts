@@ -3,9 +3,9 @@ import { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Database } from "bun:sqlite"
 
-import { configureSqliteConnection, createDatabase } from "@/client"
-import { runContentMigration } from "@/migrations/run-content-migration"
-import { seedContent } from "@/seeds/seed-content"
+import { configureSqliteConnection, createDatabase } from "../client"
+import { runContentMigration } from "../migrations/run-content-migration"
+import { seedContent } from "./seed-content"
 
 function parseDatabasePath(databaseUrl: string | undefined) {
   if (!databaseUrl) {

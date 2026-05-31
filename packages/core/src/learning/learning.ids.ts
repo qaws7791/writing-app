@@ -1,4 +1,4 @@
-import type { Brand } from "@/content"
+import type { Brand } from "../content"
 
 export type UserId = Brand<string, "user-id">
 export type LessonProgressStatus = "not-started" | "in-progress" | "completed"

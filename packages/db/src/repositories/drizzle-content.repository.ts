@@ -8,7 +8,7 @@ import type {
   CourseDetailDto,
 } from "@workspace/core/content"
 
-import type { WritingAppDatabase } from "@/client"
+import type { WritingAppDatabase } from "../client"
 import {
   courseCategories,
   courseChapters,
@@ -16,7 +16,7 @@ import {
   courses,
   lessons,
   lessonSteps,
-} from "@/schema"
+} from "../schema"
 
 type CourseLessonRow = typeof courseLessons.$inferSelect
 type LessonStepRow = typeof lessonSteps.$inferSelect

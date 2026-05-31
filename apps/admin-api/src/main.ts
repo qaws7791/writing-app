@@ -1,12 +1,9 @@
 import Database from "bun:sqlite"
 
 import { createAdminService } from "@workspace/core/admin"
-import {
-  configureSqliteConnection,
-  createDatabase,
-  createDrizzleAdminRepository,
-  runContentMigration,
-} from "@workspace/db"
+import { configureSqliteConnection, createDatabase } from "@workspace/db/client"
+import { runContentMigration } from "@workspace/db/migrations/run-content-migration"
+import { createDrizzleAdminRepository } from "@workspace/db/repositories/drizzle-admin.repository"
 import { createLogger } from "@workspace/logger"
 
 import { createAdminApiApp } from "@/app"

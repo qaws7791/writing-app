@@ -4,22 +4,22 @@ import type {
   LessonId,
   LessonNotFoundErrorDto,
   LessonStepDto,
-} from "@/content"
-import { lessonId } from "@/content"
+} from "../content"
+import { lessonId } from "../content"
 import type {
   AiFeedbackRequestDto,
   AiFeedbackResultDto,
-} from "@/ai-feedback/ai-feedback.dto"
+} from "./ai-feedback.dto"
 import type {
   AiFeedbackUnavailableErrorDto,
   AnswerNotFoundErrorDto,
   FeedbackRetryLimitExceededErrorDto,
   FeedbackStepNotFoundErrorDto,
-} from "@/ai-feedback/ai-feedback.errors"
-import type { AiFeedbackProvider } from "@/ai-feedback/ai-feedback.provider"
-import type { AiFeedbackRepository } from "@/ai-feedback/ai-feedback.repository"
-import type { LearningDatabaseUnavailableErrorDto } from "@/learning"
-import type { LearningRepository, UserId } from "@/learning"
+} from "./ai-feedback.errors"
+import type { AiFeedbackProvider } from "./ai-feedback.provider"
+import type { AiFeedbackRepository } from "./ai-feedback.repository"
+import type { LearningDatabaseUnavailableErrorDto } from "../learning"
+import type { LearningRepository, UserId } from "../learning"
 
 type OkResult = {
   status: "ok"

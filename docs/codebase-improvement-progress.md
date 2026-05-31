@@ -18,8 +18,8 @@
 | ---: | --------- | ------- | --------------------------------------------------- |
 |    1 | ADMIN-08  | 완료    | 체크박스 필드를 제어 컴포넌트로 전환했다.           |
 |    2 | API-01    | 완료    | 프론트 HTTP API 응답 런타임 파싱을 도입했다.        |
-|    3 | ARCH-01   | 진행 중 | 패키지 공개 경계와 내부 경로 직접 참조를 정리한다.  |
-|    4 | AUTH-01   | 대기    | 어드민 인증 확인을 전용 세션 API로 분리한다.        |
+|    3 | ARCH-01   | 완료    | 패키지 공개 경계와 내부 경로 직접 참조를 정리했다.  |
+|    4 | AUTH-01   | 진행 중 | 어드민 인증 확인을 전용 세션 API로 분리한다.        |
 |    5 | DATA-01   | 대기    | 마이그레이션 적용 이력 관리를 도입한다.             |
 |    6 | DATA-02   | 대기    | 서버 시작 시 자동 데이터 변경 작업을 분리한다.      |
 |    7 | DATA-03   | 대기    | Step content JSON 계약을 경계별로 엄격히 검증한다.  |
@@ -43,4 +43,12 @@
 
 - 대상 파일: `packages/core/src/index.ts`, `packages/db/src/index.ts`, 각 앱의 `tsconfig.json`, 경계 우회 import 사용처
 - 조사 방향: public subpath export로 대체 가능한 내부 `src` 경로 alias와 넓은 root export를 찾는다.
-- 완료 조건: 앱이 패키지 내부 `src` 경로를 직접 참조하지 않고, 필요한 도메인 subpath export를 명시적으로 사용한다.
+- 완료 내용: 앱의 core/db 내부 `src` path alias를 제거하고, DB client/migration/repository 사용처를 명시적 subpath export로 이동했다. `@workspace/core` root export는 비우고 domain subpath 사용을 강제한다.
+- 범위 제외: `@workspace/ui` 내부 alias는 `UI-03`에서 별도 처리한다.
+- 검증: `bun --filter @workspace/api typecheck && bun --filter @workspace/admin-api typecheck && bun --filter @workspace/admin typecheck && bun --filter @workspace/db typecheck && bun --filter @workspace/core typecheck && bun --filter @workspace/logger typecheck`
+
+## AUTH-01 작업 메모
+
+- 대상 파일: `apps/admin-api/src/routes/session.route.ts`, `apps/admin-api/src/app.ts`, `apps/admin/src/lib/api/*`, `apps/admin/src/app/(admin)/layout.tsx`
+- 조사 방향: `api.listUsers()`로 인증을 확인하는 흐름을 현재 관리자 세션 조회 API로 분리한다.
+- 완료 조건: 보호 레이아웃은 사용자 목록 조회 없이 세션 API만 호출하고, 사용자 페이지의 데이터 조회 실패는 인증 실패와 분리된다.

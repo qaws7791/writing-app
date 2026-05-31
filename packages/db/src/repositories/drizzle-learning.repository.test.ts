@@ -4,11 +4,11 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { courseId, lessonId } from "@workspace/core/content"
 import { userId } from "@workspace/core/learning"
 
-import { createDatabase } from "@/client"
-import { runContentMigration } from "@/migrations/run-content-migration"
-import { createDrizzleLearningRepository } from "@/repositories/drizzle-learning.repository"
-import { user } from "@/schema"
-import { seedContent } from "@/seeds/seed-content"
+import { createDatabase } from "../client"
+import { runContentMigration } from "../migrations/run-content-migration"
+import { createDrizzleLearningRepository } from "./drizzle-learning.repository"
+import { user } from "../schema"
+import { seedContent } from "../seeds/seed-content"
 
 const now = new Date("2026-05-31T00:00:00.000Z")
 const learnerId = userId("learner-1")

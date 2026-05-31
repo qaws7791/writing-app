@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { courseId, lessonId } from "@/content"
-import type { ContentService, LessonDto } from "@/content"
-import { createLearningService } from "@/learning/learning.service"
-import type { LearningRepository } from "@/learning/learning.repository"
-import type { UserId } from "@/learning/learning.ids"
+import { courseId, lessonId } from "../content"
+import type { ContentService, LessonDto } from "../content"
+import { createLearningService } from "./learning.service"
+import type { LearningRepository } from "./learning.repository"
+import type { UserId } from "./learning.ids"
 
 const userId = "user-1" as UserId
 const sentenceCourseId = courseId("sentence-structure")

@@ -5,18 +5,18 @@ import {
   type CourseCategoryListDto,
   type CourseDetailDto,
   type LessonDto,
-} from "@/content/content.dto"
+} from "./content.dto"
 import type {
   ContentErrorDto,
   CourseNotFoundErrorDto,
   DatabaseUnavailableErrorDto,
   LessonNotFoundErrorDto,
-} from "@/content/content.errors"
-import type { CourseId, LessonId } from "@/content/content.ids"
+} from "./content.errors"
+import type { CourseId, LessonId } from "./content.ids"
 import type {
   ContentRepository,
   ContentRepositoryLessonDto,
-} from "@/content/content.repository"
+} from "./content.repository"
 
 type OkResult<TValue> = {
   status: "ok"

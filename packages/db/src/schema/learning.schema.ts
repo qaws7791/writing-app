@@ -5,8 +5,8 @@ import {
   uniqueIndex,
 } from "drizzle-orm/sqlite-core"
 
-import { user } from "@/schema/auth.schema"
-import { courses, lessons, lessonSteps } from "@/schema/content.schema"
+import { user } from "./auth.schema"
+import { courses, lessons, lessonSteps } from "./content.schema"
 
 export const courseProgress = sqliteTable(
   "course_progress",

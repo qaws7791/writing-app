@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { createLogger, createRequestLogFields } from "@/logger"
+import { createLogger, createRequestLogFields } from "./logger"
 
 describe("createLogger", () => {
   it("creates a pino-compatible logger with the configured level", () => {

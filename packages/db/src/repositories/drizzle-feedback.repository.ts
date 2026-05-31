@@ -5,8 +5,8 @@ import type {
   CreateCompletedFeedbackAttemptInput,
 } from "@workspace/core/ai-feedback"
 
-import type { WritingAppDatabase } from "@/client"
-import { feedbackAttempts } from "@/schema/learning.schema"
+import type { WritingAppDatabase } from "../client"
+import { feedbackAttempts } from "../schema/learning.schema"
 
 export interface DrizzleFeedbackRepositoryOptions {
   now?: () => Date

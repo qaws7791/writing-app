@@ -8,13 +8,13 @@ import type {
   LessonProgressRecord,
 } from "@workspace/core/learning"
 
-import type { WritingAppDatabase } from "@/client"
-import { courseChapters, courseLessons } from "@/schema/content.schema"
+import type { WritingAppDatabase } from "../client"
+import { courseChapters, courseLessons } from "../schema/content.schema"
 import {
   courseProgress,
   lessonAnswers,
   lessonProgress,
-} from "@/schema/learning.schema"
+} from "../schema/learning.schema"
 
 type CourseProgressRow = typeof courseProgress.$inferSelect
 type LessonProgressRow = typeof lessonProgress.$inferSelect

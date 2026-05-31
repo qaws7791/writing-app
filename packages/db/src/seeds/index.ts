@@ -1,2 +1,2 @@
-export * from "@/seeds/content-seed"
-export * from "@/seeds/seed-content"
+export * from "./content-seed"
+export * from "./seed-content"

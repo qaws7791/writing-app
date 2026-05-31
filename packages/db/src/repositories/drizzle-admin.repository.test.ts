@@ -2,11 +2,11 @@ import { Database } from "bun:sqlite"
 import { eq } from "drizzle-orm"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import { createDatabase } from "@/client"
-import { runContentMigration } from "@/migrations/run-content-migration"
-import { createDrizzleAdminRepository } from "@/repositories/drizzle-admin.repository"
-import { courseChapters, courseLessons, courses, lessonSteps } from "@/schema"
-import { seedContent } from "@/seeds/seed-content"
+import { createDatabase } from "../client"
+import { runContentMigration } from "../migrations/run-content-migration"
+import { createDrizzleAdminRepository } from "./drizzle-admin.repository"
+import { courseChapters, courseLessons, courses, lessonSteps } from "../schema"
+import { seedContent } from "../seeds/seed-content"
 
 describe("createDrizzleAdminRepository", () => {
   let sqlite: Database

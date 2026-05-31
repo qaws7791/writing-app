@@ -19,7 +19,7 @@ import type {
   AdminSaveCurriculumContentRequestDto,
 } from "@workspace/core/admin"
 
-import type { WritingAppDatabase } from "@/client"
+import type { WritingAppDatabase } from "../client"
 import {
   courseChapters,
   courseLessons,
@@ -27,7 +27,7 @@ import {
   lessons,
   lessonSteps,
   user,
-} from "@/schema"
+} from "../schema"
 
 type CourseChapterRow = typeof courseChapters.$inferSelect
 type CourseLessonRow = typeof courseLessons.$inferSelect

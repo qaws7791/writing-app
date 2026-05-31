@@ -3,15 +3,12 @@ import Database from "bun:sqlite"
 import { createAiFeedbackService } from "@workspace/core/ai-feedback"
 import { createContentService } from "@workspace/core/content"
 import { createLearningService } from "@workspace/core/learning"
-import {
-  configureSqliteConnection,
-  createDatabase,
-  createDrizzleContentRepository,
-  createDrizzleFeedbackRepository,
-  createDrizzleLearningRepository,
-  runContentMigration,
-  seedContent,
-} from "@workspace/db"
+import { configureSqliteConnection, createDatabase } from "@workspace/db/client"
+import { runContentMigration } from "@workspace/db/migrations/run-content-migration"
+import { createDrizzleContentRepository } from "@workspace/db/repositories/drizzle-content.repository"
+import { createDrizzleFeedbackRepository } from "@workspace/db/repositories/drizzle-feedback.repository"
+import { createDrizzleLearningRepository } from "@workspace/db/repositories/drizzle-learning.repository"
+import { seedContent } from "@workspace/db/seed"
 import { createLogger } from "@workspace/logger"
 
 import { createApiApp } from "@/app"

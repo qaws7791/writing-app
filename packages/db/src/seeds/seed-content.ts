@@ -1,4 +1,4 @@
-import type { WritingAppDatabase } from "@/client"
+import type { WritingAppDatabase } from "../client"
 import {
   courseCategories,
   courseChapters,
@@ -6,8 +6,8 @@ import {
   courses,
   lessons,
   lessonSteps,
-} from "@/schema"
-import { contentSeed, createSeedLessonSteps } from "@/seeds/content-seed"
+} from "../schema"
+import { contentSeed, createSeedLessonSteps } from "./content-seed"
 
 export async function seedContent(db: WritingAppDatabase) {
   const categoryRows: (typeof courseCategories.$inferInsert)[] = []
