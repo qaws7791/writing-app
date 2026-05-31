@@ -121,7 +121,7 @@ describe("AdminAuthPage", () => {
     await userEvent.click(screen.getByRole("button", { name: "로그인" }))
 
     expect(
-      await screen.findByText("관리자 로그인에 실패했습니다.")
+      await screen.findByText("이메일 또는 비밀번호가 올바르지 않습니다.")
     ).toBeTruthy()
     expect(replace).not.toHaveBeenCalled()
     expect(refresh).not.toHaveBeenCalled()

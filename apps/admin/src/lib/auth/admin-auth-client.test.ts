@@ -51,37 +51,96 @@ describe("requestAdminEmailAuth", () => {
     )
   })
 
-  it("maps failed responses and fetch failures to the admin login error", async () => {
-    const nonOkFetch = vi.fn<AdminAuthFetch>(async () =>
+  it("maps invalid credentials to a specific login error", async () => {
+    const fetch = vi.fn<AdminAuthFetch>(async () =>
       Response.json(
         { message: "비밀번호가 올바르지 않습니다." },
         { status: 401 }
       )
     )
-    const rejectedFetch = vi
+
+    await expect(
+      requestAdminEmailAuth({
+        email: "admin@example.com",
+        fetch,
+        password: "wrong-password",
+      })
+    ).resolves.toEqual({
+      kind: "invalid-credentials",
+      message: "이메일 또는 비밀번호가 올바르지 않습니다.",
+      status: "error",
+    })
+  })
+
+  it("maps rate limits to a specific login error", async () => {
+    const fetch = vi.fn<AdminAuthFetch>(async () =>
+      Response.json({ message: "Too many requests" }, { status: 429 })
+    )
+
+    await expect(
+      requestAdminEmailAuth({
+        email: "admin@example.com",
+        fetch,
+        password: "password-1234",
+      })
+    ).resolves.toEqual({
+      kind: "rate-limited",
+      message: "로그인 요청이 너무 많습니다. 잠시 후 다시 시도해 주세요.",
+      status: "error",
+    })
+  })
+
+  it("uses a parsed error body code when status is too generic", async () => {
+    const fetch = vi.fn<AdminAuthFetch>(async () =>
+      Response.json({ code: "INVALID_CREDENTIALS" }, { status: 400 })
+    )
+
+    await expect(
+      requestAdminEmailAuth({
+        email: "admin@example.com",
+        fetch,
+        password: "wrong-password",
+      })
+    ).resolves.toEqual({
+      kind: "invalid-credentials",
+      message: "이메일 또는 비밀번호가 올바르지 않습니다.",
+      status: "error",
+    })
+  })
+
+  it("maps server failures to a specific login error", async () => {
+    const fetch = vi.fn<AdminAuthFetch>(async () =>
+      Response.json({ message: "Internal server error" }, { status: 503 })
+    )
+
+    await expect(
+      requestAdminEmailAuth({
+        email: "admin@example.com",
+        fetch,
+        password: "password-1234",
+      })
+    ).resolves.toEqual({
+      kind: "server-unavailable",
+      message: "관리자 인증 서버를 사용할 수 없습니다.",
+      status: "error",
+    })
+  })
+
+  it("maps fetch failures to a network login error", async () => {
+    const fetch = vi
       .fn<AdminAuthFetch>()
       .mockRejectedValue(new Error("connection refused"))
 
     await expect(
       requestAdminEmailAuth({
         email: "admin@example.com",
-        fetch: nonOkFetch,
+        fetch,
         password: "wrong-password",
       })
     ).resolves.toEqual({
+      kind: "network-error",
+      message: "네트워크 연결을 확인한 뒤 다시 시도해 주세요.",
       status: "error",
-      message: "관리자 로그인에 실패했습니다.",
-    })
-
-    await expect(
-      requestAdminEmailAuth({
-        email: "admin@example.com",
-        fetch: rejectedFetch,
-        password: "wrong-password",
-      })
-    ).resolves.toEqual({
-      status: "error",
-      message: "관리자 로그인에 실패했습니다.",
     })
   })
 })

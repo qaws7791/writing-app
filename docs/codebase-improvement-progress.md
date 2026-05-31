@@ -171,6 +171,13 @@
 - 완료 내용: learner 앱은 `/app`, `/app/`, `/app?`만 허용해 `/app.evil` 같은 경로를 기본 `/app`으로 되돌린다. admin 앱은 `/`, `/courses`, `/users` 계열만 허용하는 allowlist로 바꿔 auth/api/미정의 화면으로의 redirect를 차단한다.
 - 검증: `bun --filter @workspace/web test src/lib/auth/auth-navigation.test.ts && bun --filter @workspace/admin test src/lib/auth/admin-auth-navigation.test.ts && bun --filter @workspace/web typecheck && bun --filter @workspace/admin typecheck && bun --filter @workspace/web test && bun --filter @workspace/web lint && bun --filter @workspace/admin test && bun --filter @workspace/admin lint`
 
+## AUTH-04 작업 메모
+
+- 대상 파일: `apps/admin/src/lib/auth/admin-auth-client.ts`, `apps/admin/src/features/auth/admin-auth-page.test.tsx`
+- 조사 방향: 어드민 이메일 로그인 실패를 HTTP status와 응답 body code 기준으로 구분하고, UI에는 원인별 안내 메시지를 표시한다.
+- 완료 내용: 로그인 실패 결과에 `kind`를 추가하고 401/403 및 `INVALID_CREDENTIALS` 계열 body code는 `invalid-credentials`, 429는 `rate-limited`, 5xx는 `server-unavailable`, fetch 예외는 `network-error`로 매핑했다. 로그인 화면 테스트는 잘못된 인증 정보에 대한 구체 메시지를 검증한다.
+- 검증: `bun --filter @workspace/admin test src/lib/auth/admin-auth-client.test.ts src/features/auth/admin-auth-page.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin test && bun --filter @workspace/admin lint`
+
 ## 다음 단계
 
-다음 작업은 P1의 `AUTH-04`를 문서 순서대로 진행한다.
+다음 작업은 P1의 `DATA-04`를 문서 순서대로 진행한다.
