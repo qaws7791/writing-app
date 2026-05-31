@@ -6,7 +6,7 @@ import {
 } from "@/lib/auth/auth-client"
 
 describe("requestGoogleAuth", () => {
-  it("starts Google social auth through the same-origin auth route by default", async () => {
+  it("starts Google social auth through the configured API auth route", async () => {
     const social = vi.fn(async () => undefined)
     const createClient = vi.fn<CreateSocialAuthClient>(() => ({
       signIn: {
@@ -15,14 +15,17 @@ describe("requestGoogleAuth", () => {
     }))
 
     await requestGoogleAuth({
-      appOrigin: "http://localhost:3001",
+      appOrigin: "http://localhost:3000",
+      baseUrl: "http://localhost:4000",
       callbackPath: "/app/courses",
       createClient,
     })
 
-    expect(createClient).toHaveBeenCalledWith({})
+    expect(createClient).toHaveBeenCalledWith({
+      baseURL: "http://localhost:4000",
+    })
     expect(social).toHaveBeenCalledWith({
-      callbackURL: "http://localhost:3001/app/courses",
+      callbackURL: "http://localhost:3000/app/courses",
       provider: "google",
     })
   })

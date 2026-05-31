@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
+import * as React from "react"
 import { redirect } from "next/navigation"
 
+import { getWebEnv } from "@/env"
 import { AuthPage } from "@/features/auth/auth-page"
 import { getSafeNextPath } from "@/lib/auth/auth-navigation"
 import { getAuthenticatedAppRedirectPath } from "@/lib/auth/get-authenticated-app-redirect-path"
@@ -28,7 +30,9 @@ export default async function Page({ searchParams }: LoginPageProps) {
     redirect(authenticatedRedirectPath)
   }
 
-  return <AuthPage nextPath={nextPath} />
+  const env = getWebEnv()
+
+  return <AuthPage authBaseUrl={env.browserApiBaseUrl} nextPath={nextPath} />
 }
 
 function getNextPath(value: string | string[] | undefined) {

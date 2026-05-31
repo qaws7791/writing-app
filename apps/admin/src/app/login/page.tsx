@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
+import * as React from "react"
 
+import { getAdminWebEnv } from "@/env"
 import { AdminAuthPage } from "@/features/auth/admin-auth-page"
 import { getSafeAdminNextPath } from "@/lib/auth/admin-auth-navigation"
 
@@ -16,8 +18,9 @@ type LoginPageProps = {
 
 export default async function Page({ searchParams }: LoginPageProps) {
   const nextPath = getNextPath((await searchParams).next)
+  const env = getAdminWebEnv()
 
-  return <AdminAuthPage nextPath={nextPath} />
+  return <AdminAuthPage authBaseUrl={env.adminApiBaseUrl} nextPath={nextPath} />
 }
 
 function getNextPath(value: string | string[] | undefined) {
