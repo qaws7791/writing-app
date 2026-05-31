@@ -1,122 +1,43 @@
 import * as React from "react"
 import { AlertCircle } from "lucide-react"
 
-import type { AdminEditorStepType } from "@workspace/core/admin"
-
-import { CourseSummaryPanel } from "@/features/courses/course-editor/course-summary-panel"
-import { CurriculumMap } from "@/features/courses/course-editor/curriculum-map"
-import { getEditorChangeKind } from "@/features/courses/course-editor/editor-change-kind"
+import {
+  CourseSummaryPanelContainer,
+  CurriculumMapPanel,
+  LessonPreviewPanel,
+  LessonWorkspacePanel,
+  StepWorkspacePanel,
+} from "@/features/courses/course-editor/course-editor-panel"
+import {
+  useCourseEditorCommands,
+  useCourseEditorState,
+} from "@/features/courses/course-editor/course-editor-session"
 import {
   getNodeStatusLabel,
   getStepDisplayTitle,
 } from "@/features/courses/course-editor/editor-labels"
-import type { CourseEditorWorkingCopy } from "@/features/courses/course-editor/editor-state"
 import type { CourseEditorUrlState } from "@/features/courses/course-editor/editor-url-state"
-import { LessonPreview } from "@/features/courses/course-editor/lesson-preview"
-import { LessonWorkspace } from "@/features/courses/course-editor/lesson-workspace"
-import { StepWorkspace } from "@/features/courses/course-editor/step-workspace"
 
-type CourseEditorShellProps = {
-  isReadOnly?: boolean
-  onAddChapter?: () => void
-  onAddLesson?: (chapterId: string) => void
-  onArchiveChapter?: (chapterId: string) => void
-  onArchiveLesson?: (lessonId: string) => void
-  onAddStep?: (lessonId: string, type: AdminEditorStepType) => void
-  onArchiveStep?: (stepId: string) => void
-  onOpenPreview?: (lessonId: string) => void
-  onMoveLesson?: (lessonId: string, targetIndex: number) => void
-  onMoveStep?: (lessonId: string, stepId: string, targetIndex: number) => void
-  onSelectLesson?: (lessonId: string) => void
-  onSelectStep?: (lessonId: string, stepId: string) => void
-  onUpdateChapterField?: (
-    chapterId: string,
-    field: "title",
-    value: string
-  ) => void
-  onUpdateCourseField?: (field: "description" | "title", value: string) => void
-  onUpdateLessonField?: (
-    lessonId: string,
-    field: "description" | "title",
-    value: string
-  ) => void
-  onUpdateStepContent?: (stepId: string, key: string, value: unknown) => void
-  urlState: CourseEditorUrlState
-  workingCopy: CourseEditorWorkingCopy
-}
-
-export function CourseEditorShell({
-  isReadOnly = false,
-  onAddChapter,
-  onAddLesson,
-  onArchiveChapter,
-  onArchiveLesson,
-  onAddStep,
-  onArchiveStep,
-  onOpenPreview,
-  onMoveLesson,
-  onMoveStep,
-  onSelectLesson,
-  onSelectStep,
-  onUpdateChapterField,
-  onUpdateCourseField,
-  onUpdateLessonField,
-  onUpdateStepContent,
-  urlState,
-  workingCopy,
-}: CourseEditorShellProps) {
+export function CourseEditorShell() {
   const [mobilePane, setMobilePane] = React.useState<
     "curriculum" | "workspace"
   >("workspace")
-  const { course, curriculum } = workingCopy
-  const selectedLessonId =
-    urlState.lessonId ?? curriculum.chapters[0]?.lessons[0]?.lessonId ?? null
-  const lessons = curriculum.chapters.flatMap((chapter) => chapter.lessons)
-  const selectedLesson =
-    lessons.find((lesson) => lesson.lessonId === selectedLessonId) ?? null
-  const selectedLessonSteps = selectedLessonId
-    ? workingCopy.steps.filter((step) => step.lessonId === selectedLessonId)
-    : []
-  const selectedStep =
-    selectedLessonSteps.find((step) => step.id === urlState.stepId) ?? null
-  const changeKind = getEditorChangeKind({
-    addedStepCount: 0,
-    archivedChapterCount: 0,
-    archivedLessonCount: 0,
-    courseChanged: false,
-    reorderedLessonCount: 0,
-  })
-
-  // 브레드크럼용 챕터 찾기
-  const selectedChapter =
-    curriculum.chapters.find((chapter) =>
-      chapter.lessons.some((lesson) => lesson.lessonId === selectedLessonId)
-    ) ?? null
+  const {
+    isReadOnly,
+    selectedChapter,
+    selectedLesson,
+    selectedStep,
+    urlState,
+  } = useCourseEditorState()
+  const commands = useCourseEditorCommands()
 
   const handleSelectLesson = React.useCallback(
     (lessonId: string) => {
       setMobilePane("workspace")
-      onSelectLesson?.(lessonId)
+      commands.selectLesson(lessonId)
     },
-    [onSelectLesson]
+    [commands]
   )
-
-  const handleSelectStep = React.useCallback(
-    (stepId: string) => {
-      if (!selectedLessonId) {
-        return
-      }
-
-      setMobilePane("workspace")
-      onSelectStep?.(selectedLessonId, stepId)
-    },
-    [onSelectStep, selectedLessonId]
-  )
-
-  const handleBackToLesson = React.useCallback(() => {
-    if (!selectedLessonId) return
-    onSelectLesson?.(selectedLessonId)
-  }, [onSelectLesson, selectedLessonId])
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden">
@@ -145,23 +66,8 @@ export function CourseEditorShell({
           }`}
         >
           <div className="flex flex-col gap-8 p-6">
-            <CourseSummaryPanel
-              course={course}
-              isReadOnly={isReadOnly}
-              onUpdateCourseField={onUpdateCourseField}
-            />
-            <CurriculumMap
-              chapters={curriculum.chapters}
-              isReadOnly={isReadOnly}
-              onAddChapter={onAddChapter}
-              onAddLesson={onAddLesson}
-              onArchiveChapter={onArchiveChapter}
-              onArchiveLesson={onArchiveLesson}
-              onMoveLesson={onMoveLesson}
-              onSelectLesson={handleSelectLesson}
-              onUpdateChapterField={onUpdateChapterField}
-              selectedLessonId={selectedLessonId}
-            />
+            <CourseSummaryPanelContainer />
+            <CurriculumMapPanel onSelectLesson={handleSelectLesson} />
           </div>
         </aside>
         <section
@@ -186,46 +92,11 @@ export function CourseEditorShell({
               view={urlState.view}
             />
             {urlState.view === "preview" && selectedLesson ? (
-              <LessonPreview
-                lessonTitle={selectedLesson.title}
-                onBack={handleBackToLesson}
-                steps={selectedLessonSteps}
-              />
+              <LessonPreviewPanel />
             ) : urlState.view === "step" && selectedStep ? (
-              <StepWorkspace
-                isReadOnly={isReadOnly}
-                lessonSteps={selectedLessonSteps}
-                onBack={handleBackToLesson}
-                onUpdateStepContent={onUpdateStepContent}
-                step={selectedStep}
-              />
+              <StepWorkspacePanel />
             ) : (
-              <LessonWorkspace
-                changeKind={changeKind}
-                isReadOnly={isReadOnly}
-                lesson={selectedLesson}
-                onAddStep={
-                  selectedLessonId
-                    ? (type) => onAddStep?.(selectedLessonId, type)
-                    : undefined
-                }
-                onArchiveStep={onArchiveStep}
-                onMoveStep={
-                  selectedLessonId
-                    ? (stepId, targetIndex) =>
-                        onMoveStep?.(selectedLessonId, stepId, targetIndex)
-                    : undefined
-                }
-                onOpenPreview={
-                  selectedLessonId
-                    ? () => onOpenPreview?.(selectedLessonId)
-                    : undefined
-                }
-                onSelectStep={handleSelectStep}
-                onUpdateLessonField={onUpdateLessonField}
-                selectedStepId={urlState.stepId}
-                steps={selectedLessonSteps}
-              />
+              <LessonWorkspacePanel />
             )}
           </div>
         </section>

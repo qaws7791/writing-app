@@ -1,5 +1,29 @@
 # 어드민 사이트
 
+## 2026-05-31 어드민 에디터 Prop Drilling 개선 완료
+
+- 편집 세션 Provider를 추가해 `workingCopy`, 저장 상태, URL 상태, 편집 명령을 한 경계로 모았다.
+- `CourseEditorShell`에서 편집 명령 콜백 props를 제거하고 레이아웃과 view 전환 책임만 남겼다.
+- 커리큘럼, 레슨, 스텝 작업대는 도메인별 패널 컨테이너를 통해 기존 순수 UI 컴포넌트와 연결한다.
+
+## 2026-05-31 어드민 에디터 Prop Drilling 개선 시작
+
+- 조사 문서의 권장안에 따라 편집 세션 Provider와 도메인별 패널 컨테이너를 도입한다.
+- `CourseEditorShell`은 레이아웃과 view 전환에 집중하고, 편집 명령 중계 책임을 제거한다.
+- 기존 저장, URL 전환, 커리큘럼/레슨/스텝 편집 동작은 유지한다.
+
+## 2026-05-31 어드민 에디터 Prop Drilling 조사 완료
+
+- `CourseEditorShell`이 15개 편집 콜백을 중계하는 구조를 코드 기준으로 조사했다.
+- React Context와 reducer/context 패턴을 기준으로 편집 세션 Provider와 도메인별 패널 컨테이너를 권장 접근으로 정리했다.
+- 상세 조사 결과는 `docs/admin-editor-prop-drilling-research.md`에 작성했다.
+
+## 2026-05-31 어드민 에디터 Prop Drilling 조사 시작
+
+- 코스 편집기의 props 전달 구조가 응집성, 가독성, 직교성을 훼손하는지 확인한다.
+- `admin-course-detail-page.tsx`, `course-editor-shell.tsx`, `curriculum-map.tsx`, `lesson-workspace.tsx`의 상태 변경 콜백 흐름을 추적한다.
+- 구현 전 조사 범위로 제한하고, 해결 방향은 문서로 먼저 정리한다.
+
 ## 2026-05-31 어드민 편집 저장 동시성 개선 완료
 
 - 코스 편집 문서에 `revision`을 포함하고 저장 요청에 `expectedRevision`을 요구하도록 했다.
