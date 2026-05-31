@@ -5,6 +5,8 @@ import {
   text,
 } from "drizzle-orm/sqlite-core"
 
+import { curriculumNodeStatuses } from "@workspace/core/content"
+
 export const courseCategories = sqliteTable("course_categories", {
   id: text("id").primaryKey(),
   title: text("title").notNull(),
@@ -30,7 +32,7 @@ export const courseChapters = sqliteTable("course_chapters", {
   title: text("title").notNull(),
   sortOrder: integer("sort_order").notNull(),
   status: text("status", {
-    enum: ["active", "deprecated", "archived"],
+    enum: curriculumNodeStatuses,
   })
     .notNull()
     .default("active"),
@@ -48,7 +50,7 @@ export const courseLessons = sqliteTable("course_lessons", {
   description: text("description").notNull(),
   sortOrder: integer("sort_order").notNull(),
   status: text("status", {
-    enum: ["active", "deprecated", "archived"],
+    enum: curriculumNodeStatuses,
   })
     .notNull()
     .default("active"),
@@ -102,7 +104,7 @@ export const lessonSteps = sqliteTable("lesson_steps", {
   points: integer("points").notNull(),
   required: integer("required", { mode: "boolean" }).notNull(),
   status: text("status", {
-    enum: ["active", "deprecated", "archived"],
+    enum: curriculumNodeStatuses,
   })
     .notNull()
     .default("active"),

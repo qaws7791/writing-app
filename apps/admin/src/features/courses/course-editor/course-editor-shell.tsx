@@ -1,6 +1,8 @@
 import * as React from "react"
 import { AlertCircle } from "lucide-react"
 
+import type { AdminCurriculumNodeStatus } from "@workspace/core/admin"
+
 import {
   CourseSummaryPanelContainer,
   CurriculumMapPanel,
@@ -108,7 +110,7 @@ export function CourseEditorShell() {
 type WorkspaceBreadcrumbProps = {
   chapterTitle: string | null
   lessonTitle: string | null
-  lessonStatus: string | null
+  lessonStatus: AdminCurriculumNodeStatus | null
   stepTitle: string | null
   view: CourseEditorUrlState["view"]
 }
@@ -145,9 +147,7 @@ function WorkspaceBreadcrumb({
           </span>
           {lessonStatus && (
             <span className="rounded-full border px-1.5 py-0.5 text-[10px]">
-              {getNodeStatusLabel(
-                lessonStatus as "active" | "archived" | "deprecated"
-              )}
+              {getNodeStatusLabel(lessonStatus)}
             </span>
           )}
         </>

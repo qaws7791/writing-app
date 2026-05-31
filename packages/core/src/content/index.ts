@@ -1,3 +1,4 @@
+export * from "@/content/curriculum-node-status"
 export * from "@/content/content.dto"
 export * from "@/content/content.errors"
 export * from "@/content/content.ids"

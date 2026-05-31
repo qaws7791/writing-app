@@ -1,3 +1,5 @@
+import { z } from "zod"
+
 export type ApiError =
   | {
       code: "unauthorized"
@@ -32,8 +34,17 @@ export function apiErrorFromResponseBody(
   status: number,
   body: unknown
 ): ApiError {
-  const code = readCode(body)
-  const message = readMessage(body)
+  const parsedBody = apiErrorResponseBodySchema.safeParse(body)
+
+  if (!parsedBody.success) {
+    if (status >= 500) {
+      return { code: "unavailable", message: "서버를 사용할 수 없습니다." }
+    }
+
+    return contractApiError()
+  }
+
+  const { code, message } = parsedBody.data
 
   if (code === "unauthorized") {
     return { code: "unauthorized", message }
@@ -66,8 +77,7 @@ export function apiErrorFromResponseBody(
   }
 
   return {
-    code: "contract-error",
-    message: "서버 응답이 예상한 계약과 일치하지 않습니다.",
+    ...contractApiError(),
   }
 }
 
@@ -78,30 +88,14 @@ export function networkApiError(): ApiError {
   }
 }
 
-function readCode(body: unknown) {
-  if (hasStringProperty(body, "code")) {
-    return body.code
+const apiErrorResponseBodySchema = z.object({
+  code: z.string(),
+  message: z.string(),
+})
+
+function contractApiError(): ApiError {
+  return {
+    code: "contract-error",
+    message: "서버 응답이 예상한 계약과 일치하지 않습니다.",
   }
-
-  return undefined
-}
-
-function readMessage(body: unknown) {
-  if (hasStringProperty(body, "message")) {
-    return body.message
-  }
-
-  return "API 요청에 실패했습니다."
-}
-
-function hasStringProperty<TKey extends string>(
-  value: unknown,
-  key: TKey
-): value is { readonly [TProperty in TKey]: string } {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    key in value &&
-    typeof value[key as keyof typeof value] === "string"
-  )
 }

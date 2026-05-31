@@ -1,15 +1,16 @@
-import type { AdminEditorStepType } from "@workspace/core/admin"
+import type {
+  AdminCurriculumNodeStatus,
+  AdminEditorStepType,
+} from "@workspace/core/admin"
 
 import type { EditorChangeKind } from "@/features/courses/course-editor/editor-change-kind"
 import type { CourseEditorView } from "@/features/courses/course-editor/editor-url-state"
 
-type NodeStatus = "active" | "archived" | "deprecated"
-
-const nodeStatusLabels = {
+const nodeStatusLabels: Record<AdminCurriculumNodeStatus, string> = {
   active: "활성",
   archived: "보관됨",
   deprecated: "사용 중단",
-} satisfies Record<NodeStatus, string>
+}
 
 const changeKindLabels = {
   "minor-edit": "문구 수정",
@@ -47,7 +48,7 @@ const stepTypeLabels = {
   COMPLETE: "완료",
 } satisfies Record<AdminEditorStepType, string>
 
-export function getNodeStatusLabel(status: NodeStatus) {
+export function getNodeStatusLabel(status: AdminCurriculumNodeStatus) {
   return nodeStatusLabels[status]
 }
 

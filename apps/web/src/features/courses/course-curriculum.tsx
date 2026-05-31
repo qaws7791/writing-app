@@ -1,13 +1,6 @@
-"use client"
-
-import { useState } from "react"
+import * as React from "react"
 import Link from "next/link"
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@workspace/ui/components/ui/collapsible"
 import { Separator } from "@workspace/ui/components/ui/separator"
 import {
   CheckCircleIcon,
@@ -29,21 +22,7 @@ interface CourseCurriculumProps {
 }
 
 export function CourseCurriculum({ course }: CourseCurriculumProps) {
-  const [openChapterIds, setOpenChapterIds] = useState<
-    readonly CourseChapterId[]
-  >(() => [getInitialOpenChapterId(course.chapters)])
-
-  function setChapterOpen(chapterId: CourseChapterId, open: boolean) {
-    setOpenChapterIds((current) => {
-      if (open) {
-        return current.includes(chapterId) ? current : [...current, chapterId]
-      }
-
-      return current.filter(
-        (currentChapterId) => currentChapterId !== chapterId
-      )
-    })
-  }
+  const initialOpenChapterId = getInitialOpenChapterId(course.chapters)
 
   return (
     <section className="w-full" aria-labelledby="course-curriculum-title">
@@ -61,22 +40,20 @@ export function CourseCurriculum({ course }: CourseCurriculumProps) {
 
       <div className="flex flex-col">
         {course.chapters.map((chapter, index) => {
-          const open = openChapterIds.includes(chapter.id)
           const completedLessons = chapter.lessons.filter(
             (lesson) => lesson.completed
           ).length
           const complete = completedLessons === chapter.lessons.length
 
           return (
-            <Collapsible
+            <details
               key={chapter.id}
-              open={open}
-              onOpenChange={(nextOpen) => setChapterOpen(chapter.id, nextOpen)}
-              className="flex flex-col"
+              className="group flex flex-col"
+              open={chapter.id === initialOpenChapterId}
             >
               {index > 0 ? <Separator className="opacity-50" /> : null}
               <article className="mb-8 sm:mb-0">
-                <CollapsibleTrigger className="flex min-h-16 w-full items-center justify-between rounded-3xl border-0 bg-transparent px-1 py-3 text-left font-[inherit] text-inherit transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-[0.998] sm:p-6">
+                <summary className="flex min-h-16 w-full cursor-pointer list-none items-center justify-between rounded-3xl border-0 bg-transparent px-1 py-3 text-left font-[inherit] text-inherit transition-colors hover:bg-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring active:scale-[0.998] sm:p-6 [&::-webkit-details-marker]:hidden">
                   <span className="flex min-w-0 flex-col gap-1.5">
                     <span className="truncate text-lg/7 font-semibold tracking-normal text-foreground">
                       {chapter.title}
@@ -91,28 +68,22 @@ export function CourseCurriculum({ course }: CourseCurriculumProps) {
                     />
                     <span
                       className={cn(
-                        "flex size-9 items-center justify-center rounded-full text-muted-foreground transition-transform duration-300",
-                        open && "rotate-180"
+                        "flex size-9 items-center justify-center rounded-full text-muted-foreground transition-transform duration-300 group-open:rotate-180"
                       )}
                       aria-hidden="true"
                     >
                       <ChevronDownIcon className="size-5" />
                     </span>
                   </span>
-                </CollapsibleTrigger>
+                </summary>
 
-                <CollapsibleContent
-                  keepMounted
-                  className="overflow-hidden transition-[height,opacity] duration-300 ease-out data-[closed]:h-0 data-[closed]:opacity-0 data-[open]:h-[var(--collapsible-panel-height)] data-[open]:opacity-100 data-[starting-style]:h-0 data-[starting-style]:opacity-0"
-                >
-                  <div className="flex flex-col pt-2.5 pr-0 pb-1.5 pl-1 sm:pl-3">
-                    {chapter.lessons.map((lesson) => (
-                      <LessonRow key={lesson.id} lesson={lesson} />
-                    ))}
-                  </div>
-                </CollapsibleContent>
+                <div className="flex flex-col overflow-hidden pt-2.5 pr-0 pb-1.5 pl-1 sm:pl-3">
+                  {chapter.lessons.map((lesson) => (
+                    <LessonRow key={lesson.id} lesson={lesson} />
+                  ))}
+                </div>
               </article>
-            </Collapsible>
+            </details>
           )
         })}
       </div>

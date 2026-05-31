@@ -51,6 +51,7 @@ import {
 } from "@workspace/ui/components/ui/table"
 
 import { adminCourseColumns } from "@/features/courses/admin-course-columns"
+import { createAdminCourseListPath } from "@/features/courses/admin-course-list-search-params"
 
 type AdminCoursesDataTableProps = {
   courses: AdminCourseListDto["courses"]
@@ -93,7 +94,7 @@ export function AdminCoursesDataTable({
 
   function navigateToPage(page: number) {
     router.push(
-      createCoursesPath({ page, pageSize: pagination.pageSize, query })
+      createAdminCourseListPath({ page, pageSize: pagination.pageSize, query })
     )
   }
 
@@ -102,7 +103,9 @@ export function AdminCoursesDataTable({
       return
     }
 
-    router.push(createCoursesPath({ page: 1, pageSize: Number(value), query }))
+    router.push(
+      createAdminCourseListPath({ page: 1, pageSize: Number(value), query })
+    )
   }
 
   return (
@@ -285,20 +288,4 @@ export function AdminCoursesDataTable({
       </div>
     </div>
   )
-}
-
-function createCoursesPath(input: {
-  page: number
-  pageSize: number
-  query: string
-}) {
-  const params = new URLSearchParams()
-  params.set("page", String(input.page))
-  params.set("pageSize", String(input.pageSize))
-
-  if (input.query.trim().length > 0) {
-    params.set("query", input.query.trim())
-  }
-
-  return `/courses?${params.toString()}`
 }

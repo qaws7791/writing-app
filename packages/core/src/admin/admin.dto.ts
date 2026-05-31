@@ -1,10 +1,12 @@
 import { z } from "zod"
 
-export const adminCurriculumNodeStatusSchema = z.enum([
-  "active",
-  "deprecated",
-  "archived",
-])
+import {
+  curriculumNodeStatusSchema,
+  type CurriculumNodeStatus,
+} from "@/content/curriculum-node-status"
+
+export const adminCurriculumNodeStatusSchema = curriculumNodeStatusSchema
+export type AdminCurriculumNodeStatus = CurriculumNodeStatus
 
 export const adminLessonSummaryDtoSchema = z.object({
   id: z.string().min(1),

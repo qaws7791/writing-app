@@ -22,6 +22,18 @@ describe("api-error", () => {
     })
   })
 
+  it("rejects malformed backend error contracts", () => {
+    expect(
+      apiErrorFromResponseBody(401, {
+        code: "unauthorized",
+        message: 401,
+      })
+    ).toEqual({
+      code: "contract-error",
+      message: "서버 응답이 예상한 계약과 일치하지 않습니다.",
+    })
+  })
+
   it("maps fetch failures to network errors", () => {
     expect(networkApiError()).toEqual({
       code: "network-error",
