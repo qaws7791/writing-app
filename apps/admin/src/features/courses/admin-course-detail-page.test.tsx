@@ -190,6 +190,78 @@ describe("AdminCourseDetailPage", () => {
       ).toBeTruthy()
     })
   })
+
+  it("confirms lesson archive in a dialog before saving archived status", async () => {
+    const user = userEvent.setup()
+    const confirmSpy = vi.spyOn(window, "confirm")
+    const saveCourseEditorDocument = vi.fn<
+      AdminApi["saveCourseEditorDocument"]
+    >(async (input) => ({
+      status: "ok",
+      value: {
+        course: courseFixture,
+        revision: input.expectedRevision + 1,
+        curriculum: {
+          chapters: input.chapters.map((chapter) => ({
+            ...chapter,
+            lessons: input.lessons
+              .filter((lesson) => lesson.chapterId === chapter.id)
+              .map((lesson) => lesson),
+          })),
+          steps: input.steps,
+        },
+      },
+    }))
+
+    render(
+      <AdminCourseDetailPage
+        adminApi={createAdminApiMock({
+          saveCourseEditorDocument,
+        })}
+        course={courseFixture}
+        revision={0}
+        curriculum={curriculumFixture}
+        urlState={{
+          view: "lesson",
+          lessonId: "sentence-structure-01",
+          stepId: null,
+        }}
+      />
+    )
+
+    await user.click(
+      screen.getByRole("button", { name: "주어와 서술어 찾기 메뉴" })
+    )
+    await user.click(
+      screen.getByRole("button", { name: "주어와 서술어 찾기 레슨 보관" })
+    )
+
+    expect(confirmSpy).not.toHaveBeenCalled()
+    expect(screen.getByRole("alertdialog").textContent).toContain(
+      '"주어와 서술어 찾기" 레슨을 보관하시겠습니까?'
+    )
+
+    await user.click(screen.getByRole("button", { name: "취소" }))
+    expect(screen.queryByRole("alertdialog")).toBeNull()
+    expect(saveCourseEditorDocument).not.toHaveBeenCalled()
+
+    await user.click(
+      screen.getByRole("button", { name: "주어와 서술어 찾기 레슨 보관" })
+    )
+    await user.click(screen.getByRole("button", { name: "보관" }))
+    await user.click(screen.getByRole("button", { name: "저장" }))
+
+    expect(saveCourseEditorDocument).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        lessons: [
+          expect.objectContaining({
+            lessonId: "sentence-structure-01",
+            status: "archived",
+          }),
+        ],
+      })
+    )
+  })
 })
 
 const courseFixture = {

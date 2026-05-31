@@ -9,6 +9,7 @@ import type {
 
 import { AdminHeader } from "@/components/admin-header"
 import {
+  CourseEditorArchiveDialog,
   CourseEditorHeaderContainer,
   CourseEditorStatusToast,
 } from "@/features/courses/course-editor/course-editor-panel"
@@ -53,6 +54,7 @@ export function AdminCourseDetailPage({
         description="현재 공개 커리큘럼을 직접 편집합니다."
         title="코스 편집"
       />
+      <CourseEditorArchiveDialog />
       <CourseEditorStatusToast />
       <main className="min-h-0 flex-1">
         <CourseEditorShell />

@@ -36,6 +36,7 @@ import { useCourseEditorUrlState } from "@/features/courses/course-editor/use-co
 import type { AdminApi } from "@/lib/api/admin-api"
 
 type CourseEditorSessionState = {
+  archiveRequest: CourseEditorArchiveRequest | null
   isReadOnly: boolean
   isSaving: boolean
   selectedChapter: AdminEditorCurriculumDetailDto["chapters"][number] | null
@@ -57,6 +58,8 @@ type CourseEditorCommands = {
   archiveChapter: (chapterId: string) => void
   archiveLesson: (lessonId: string) => void
   archiveStep: (stepId: string) => void
+  cancelArchive: () => void
+  confirmArchive: () => void
   dismissStatus: () => void
   moveLesson: (lessonId: string, targetIndex: number) => void
   moveStep: (lessonId: string, stepId: string, targetIndex: number) => void
@@ -72,6 +75,12 @@ type CourseEditorCommands = {
     value: string
   ) => void
   updateStepContent: (stepId: string, key: string, value: unknown) => void
+}
+
+type CourseEditorArchiveRequest = {
+  id: string
+  kind: "chapter" | "lesson" | "step"
+  title: string
 }
 
 type CourseEditorProviderProps = {
@@ -101,6 +110,8 @@ export function CourseEditorProvider({
   const [workingCopy, setWorkingCopy] = React.useState(() =>
     createCourseEditorWorkingCopy({ course, revision, curriculum })
   )
+  const [archiveRequest, setArchiveRequest] =
+    React.useState<CourseEditorArchiveRequest | null>(null)
   const [status, setStatus] = React.useState<CourseEditorStatus | null>(null)
   const { localUrlState, replaceEditorUrl } = useCourseEditorUrlState({
     courseId: course.id,
@@ -111,6 +122,7 @@ export function CourseEditorProvider({
     setWorkingCopy(
       createCourseEditorWorkingCopy({ course, revision, curriculum })
     )
+    setArchiveRequest(null)
   }, [course, revision, curriculum])
 
   React.useEffect(() => {
@@ -177,25 +189,34 @@ export function CourseEditorProvider({
         )
       },
       archiveChapter(chapterId) {
-        if (!window.confirm("이 챕터를 보관하시겠습니까?")) {
-          return
-        }
-
-        updateWorkingCopy((current) => archiveChapter(current, chapterId))
+        setArchiveRequest(
+          createArchiveRequest(workingCopy, "chapter", chapterId)
+        )
       },
       archiveLesson(lessonId) {
-        if (!window.confirm("이 레슨을 보관하시겠습니까?")) {
-          return
-        }
-
-        updateWorkingCopy((current) => archiveLesson(current, lessonId))
+        setArchiveRequest(createArchiveRequest(workingCopy, "lesson", lessonId))
       },
       archiveStep(stepId) {
-        if (!window.confirm("이 스텝을 보관하시겠습니까?")) {
-          return
-        }
+        setArchiveRequest(createArchiveRequest(workingCopy, "step", stepId))
+      },
+      cancelArchive() {
+        setArchiveRequest(null)
+      },
+      confirmArchive() {
+        if (!archiveRequest) return
 
-        updateWorkingCopy((current) => archiveStep(current, stepId))
+        updateWorkingCopy((current) => {
+          if (archiveRequest.kind === "chapter") {
+            return archiveChapter(current, archiveRequest.id)
+          }
+
+          if (archiveRequest.kind === "lesson") {
+            return archiveLesson(current, archiveRequest.id)
+          }
+
+          return archiveStep(current, archiveRequest.id)
+        })
+        setArchiveRequest(null)
       },
       dismissStatus() {
         setStatus(null)
@@ -249,7 +270,7 @@ export function CourseEditorProvider({
         )
       },
     }),
-    [replaceEditorUrl, save, updateWorkingCopy]
+    [archiveRequest, replaceEditorUrl, save, updateWorkingCopy, workingCopy]
   )
 
   const state = React.useMemo<CourseEditorSessionState>(() => {
@@ -259,6 +280,7 @@ export function CourseEditorProvider({
     })
 
     return {
+      archiveRequest,
       isReadOnly,
       isSaving,
       ...selection,
@@ -266,7 +288,7 @@ export function CourseEditorProvider({
       urlState: localUrlState,
       workingCopy,
     }
-  }, [isReadOnly, isSaving, localUrlState, status, workingCopy])
+  }, [archiveRequest, isReadOnly, isSaving, localUrlState, status, workingCopy])
 
   return (
     <CourseEditorStateContext.Provider value={state}>
@@ -312,4 +334,39 @@ function createDraftId(prefix: string) {
     globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 12)
 
   return `${prefix}-${randomId}`
+}
+
+function createArchiveRequest(
+  workingCopy: CourseEditorWorkingCopy,
+  kind: CourseEditorArchiveRequest["kind"],
+  id: string
+): CourseEditorArchiveRequest {
+  if (kind === "chapter") {
+    return {
+      id,
+      kind,
+      title:
+        workingCopy.curriculum.chapters.find((chapter) => chapter.id === id)
+          ?.title ?? "선택한 챕터",
+    }
+  }
+
+  if (kind === "lesson") {
+    const lesson = workingCopy.curriculum.chapters
+      .flatMap((chapter) => chapter.lessons)
+      .find((item) => item.lessonId === id)
+
+    return {
+      id,
+      kind,
+      title: lesson?.title ?? "선택한 레슨",
+    }
+  }
+
+  return {
+    id,
+    kind,
+    title:
+      workingCopy.steps.find((step) => step.id === id)?.title ?? "선택한 스텝",
+  }
 }

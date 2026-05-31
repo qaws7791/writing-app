@@ -44,6 +44,7 @@
 |   26 | FE-02     | 완료 | 레슨 진행 저장 정책을 hook으로 분리했다.            |
 |   27 | TEST-01   | 완료 | 테스트 무음 통과 예외와 커버리지 하한을 정리했다.   |
 |   28 | ADMIN-05  | 완료 | 에디터 저장 상태 toast를 typed status로 전환했다.   |
+|   29 | ADMIN-06  | 완료 | 보관 확인을 command layer에서 화면 dialog로 옮겼다. |
 
 ## ADMIN-08 작업 메모
 
@@ -252,6 +253,13 @@
 - 완료 내용: `CourseEditorStatus` 타입을 추가하고 저장 성공/실패가 각각 `success`와 `error` 상태를 직접 만들도록 했다. Toast는 문자열 검색을 제거하고 `status.kind`로 스타일, 아이콘, 접근성 role을 결정한다.
 - 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/course-editor-shell.test.tsx src/features/courses/course-editor/course-editor-session-hooks.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
 
+## ADMIN-06 작업 메모
+
+- 대상 파일: `apps/admin/src/features/courses/course-editor/course-editor-session.tsx`, `apps/admin/src/features/courses/course-editor/course-editor-panel.tsx`
+- 조사 방향: 챕터/레슨/스텝 보관 command가 `window.confirm()`을 직접 호출하는 흐름을 확인하고, 기존 UI 패키지의 `AlertDialog` 컴포넌트를 화면 계층에서 사용할 수 있는지 확인한다.
+- 완료 내용: 보관 command는 `archiveRequest`만 설정하고, `CourseEditorArchiveDialog`가 취소/확인을 처리하도록 분리했다. 확인 시 `confirmArchive()`가 보관 상태를 적용하며, 브라우저 confirm 의존성은 제거했다.
+- 검증: `bun --filter @workspace/admin test src/features/courses/admin-course-detail-page.test.tsx src/features/courses/course-editor/course-editor-shell.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
+
 ## 다음 단계
 
-다음 작업은 P2의 `ADMIN-06`을 문서 순서대로 진행한다.
+다음 작업은 P2의 `ARCH-03`을 문서 순서대로 진행한다.

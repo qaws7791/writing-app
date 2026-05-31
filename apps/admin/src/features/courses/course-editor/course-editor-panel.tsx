@@ -1,9 +1,20 @@
 "use client"
 
 import * as React from "react"
-import { CheckCircle2, XCircle } from "lucide-react"
+import { Archive, CheckCircle2, XCircle } from "lucide-react"
 
 import type { AdminEditorStepType } from "@workspace/core/admin"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from "@workspace/ui/components/ui/alert-dialog"
 
 import { CourseEditorHeader } from "@/features/courses/course-editor/course-editor-header"
 import { CourseSummaryPanel } from "@/features/courses/course-editor/course-summary-panel"
@@ -68,6 +79,52 @@ export function CourseEditorStatusToast() {
   )
 }
 
+export function CourseEditorArchiveDialog() {
+  const { archiveRequest } = useCourseEditorState()
+  const commands = useCourseEditorCommands()
+
+  const targetLabel = archiveRequest
+    ? getArchiveTargetLabel(archiveRequest.kind)
+    : "항목"
+
+  return (
+    <AlertDialog
+      open={archiveRequest !== null}
+      onOpenChange={(open) => {
+        if (!open) {
+          commands.cancelArchive()
+        }
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogMedia className="text-destructive">
+            <Archive aria-hidden="true" />
+          </AlertDialogMedia>
+          <AlertDialogTitle>{targetLabel} 보관</AlertDialogTitle>
+          <AlertDialogDescription>
+            {archiveRequest
+              ? `"${archiveRequest.title}" ${targetLabel}을 보관하시겠습니까?`
+              : "선택한 항목을 보관하시겠습니까?"}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={commands.cancelArchive}>
+            취소
+          </AlertDialogCancel>
+          <AlertDialogAction
+            type="button"
+            variant="destructive"
+            onClick={commands.confirmArchive}
+          >
+            보관
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+}
+
 export function CourseSummaryPanelContainer() {
   const { isReadOnly, workingCopy } = useCourseEditorState()
   const commands = useCourseEditorCommands()
@@ -79,6 +136,12 @@ export function CourseSummaryPanelContainer() {
       onUpdateCourseField={commands.updateCourseField}
     />
   )
+}
+
+function getArchiveTargetLabel(kind: "chapter" | "lesson" | "step") {
+  if (kind === "chapter") return "챕터"
+  if (kind === "lesson") return "레슨"
+  return "스텝"
 }
 
 export function CurriculumMapPanel({

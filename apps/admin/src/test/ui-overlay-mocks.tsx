@@ -215,3 +215,105 @@ vi.mock("@workspace/ui/components/ui/dropdown-menu", async () => {
     DropdownMenuTrigger,
   }
 })
+
+vi.mock("@workspace/ui/components/ui/alert-dialog", async () => {
+  const React = await import("react")
+  const AlertDialogContext = React.createContext<{
+    isOpen: boolean
+    setIsOpen: (isOpen: boolean) => void
+  }>({
+    isOpen: false,
+    setIsOpen: () => undefined,
+  })
+
+  function AlertDialog({
+    children,
+    open,
+    onOpenChange,
+  }: React.PropsWithChildren<{
+    open?: boolean
+    onOpenChange?: (isOpen: boolean) => void
+  }>) {
+    function setIsOpen(nextOpen: boolean) {
+      onOpenChange?.(nextOpen)
+    }
+
+    return (
+      <AlertDialogContext.Provider value={{ isOpen: open ?? false, setIsOpen }}>
+        {children}
+      </AlertDialogContext.Provider>
+    )
+  }
+
+  function AlertDialogContent({
+    children,
+    ...props
+  }: React.ComponentPropsWithoutRef<"div">) {
+    const { isOpen } = React.useContext(AlertDialogContext)
+
+    return isOpen ? (
+      <div role="alertdialog" {...props}>
+        {children}
+      </div>
+    ) : null
+  }
+
+  function AlertDialogCancel({
+    children,
+    onClick,
+    ...props
+  }: React.ComponentPropsWithoutRef<"button">) {
+    const { setIsOpen } = React.useContext(AlertDialogContext)
+
+    return (
+      <button
+        type="button"
+        {...props}
+        onClick={(event) => {
+          onClick?.(event)
+          setIsOpen(false)
+        }}
+      >
+        {children}
+      </button>
+    )
+  }
+
+  function AlertDialogAction({
+    children,
+    onClick,
+    ...props
+  }: React.ComponentPropsWithoutRef<"button">) {
+    return (
+      <button type="button" {...props} onClick={onClick}>
+        {children}
+      </button>
+    )
+  }
+
+  function AlertDialogMedia({
+    children,
+    ...props
+  }: React.ComponentPropsWithoutRef<"div">) {
+    return <div {...props}>{children}</div>
+  }
+
+  function AlertDialogPassthrough({
+    children,
+    ...props
+  }: React.ComponentPropsWithoutRef<"div">) {
+    return <div {...props}>{children}</div>
+  }
+
+  return {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription: AlertDialogPassthrough,
+    AlertDialogFooter: AlertDialogPassthrough,
+    AlertDialogHeader: AlertDialogPassthrough,
+    AlertDialogMedia,
+    AlertDialogTitle: AlertDialogPassthrough,
+  }
+})
