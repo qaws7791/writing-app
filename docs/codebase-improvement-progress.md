@@ -14,16 +14,16 @@
 
 ## 현재 진행 상태
 
-| 순서 | ID        | 상태    | 요약                                                |
-| ---: | --------- | ------- | --------------------------------------------------- |
-|    1 | ADMIN-08  | 완료    | 체크박스 필드를 제어 컴포넌트로 전환했다.           |
-|    2 | API-01    | 완료    | 프론트 HTTP API 응답 런타임 파싱을 도입했다.        |
-|    3 | ARCH-01   | 완료    | 패키지 공개 경계와 내부 경로 직접 참조를 정리했다.  |
-|    4 | AUTH-01   | 완료    | 어드민 인증 확인을 전용 세션 API로 분리했다.        |
-|    5 | DATA-01   | 완료    | 마이그레이션 적용 이력 관리를 도입했다.             |
-|    6 | DATA-02   | 완료    | 서버 시작 시 자동 데이터 변경 작업을 분리했다.      |
-|    7 | DATA-03   | 완료    | Step content JSON 계약을 경계별로 엄격히 검증했다.  |
-|    8 | DOMAIN-01 | 진행 중 | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다. |
+| 순서 | ID        | 상태 | 요약                                                |
+| ---: | --------- | ---- | --------------------------------------------------- |
+|    1 | ADMIN-08  | 완료 | 체크박스 필드를 제어 컴포넌트로 전환했다.           |
+|    2 | API-01    | 완료 | 프론트 HTTP API 응답 런타임 파싱을 도입했다.        |
+|    3 | ARCH-01   | 완료 | 패키지 공개 경계와 내부 경로 직접 참조를 정리했다.  |
+|    4 | AUTH-01   | 완료 | 어드민 인증 확인을 전용 세션 API로 분리했다.        |
+|    5 | DATA-01   | 완료 | 마이그레이션 적용 이력 관리를 도입했다.             |
+|    6 | DATA-02   | 완료 | 서버 시작 시 자동 데이터 변경 작업을 분리했다.      |
+|    7 | DATA-03   | 완료 | Step content JSON 계약을 경계별로 엄격히 검증했다.  |
+|    8 | DOMAIN-01 | 완료 | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다. |
 
 ## ADMIN-08 작업 메모
 
@@ -79,4 +79,9 @@
 
 - 대상 파일: `packages/core/src/content/content.dto.ts`, `packages/core/src/learning/learning.service.ts`, 관련 core 테스트
 - 조사 방향: playable lesson의 최소 step 수, INTRO first, COMPLETE last, step order, AI feedback source reference를 core 경계에서 검증한다.
-- 완료 조건: 비어 있거나 플레이 불가능한 lesson은 progress 생성/학습 경계에서 명시적 invalid-content 오류가 된다.
+- 완료 내용: content service가 lesson DTO parse 이후 playable lesson 불변식을 검증한다. 빈 steps, INTRO first 위반, COMPLETE last 위반, AI feedback source 누락은 `invalid-content`로 반환된다.
+- 검증: `bun --filter @workspace/core test src/content/content.service.test.ts && bun --filter @workspace/core test && bun --filter @workspace/core typecheck && bun --filter @workspace/core lint`
+
+## 다음 단계
+
+P0 항목은 완료했다. 다음 작업은 P1의 `ADMIN-01`부터 문서 순서대로 진행한다.

@@ -76,7 +76,17 @@ const repository: ContentRepository = {
             tagTone: "info",
             bullets: ["문장의 중심 성분을 구분합니다."],
             estimatedMinutes: 8,
-            totalSteps: 1,
+            totalSteps: 2,
+          },
+        },
+        {
+          id: "sentence-structure-01-step-2",
+          type: "COMPLETE",
+          order: 2,
+          points: 0,
+          required: true,
+          content: {
+            nextAction: "next-lesson",
           },
         },
       ],
@@ -233,6 +243,16 @@ describe("createContentService", () => {
                   shuffleOptions: false,
                 },
               },
+              {
+                id: "sentence-structure-01-step-4",
+                type: "COMPLETE",
+                order: 4,
+                points: 0,
+                required: true,
+                content: {
+                  nextAction: "next-lesson",
+                },
+              },
             ],
           }
         },
@@ -247,6 +267,7 @@ describe("createContentService", () => {
         "INTRO",
         "CONCEPT",
         "MULTIPLE_CHOICE",
+        "COMPLETE",
       ])
     }
   })
@@ -331,6 +352,161 @@ describe("createContentService", () => {
       error: {
         code: "invalid-content-seed",
         message: "콘텐츠 시드가 올바르지 않습니다.",
+        lessonId: "sentence-structure-01",
+      },
+    })
+  })
+
+  it("returns invalid-content when a lesson has no steps", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async findLesson() {
+          const result = await repository.findLesson(
+            lessonId("sentence-structure-01")
+          )
+
+          return result ? { ...result, steps: [] } : undefined
+        },
+      },
+    })
+
+    const result = await service.getLesson(lessonId("sentence-structure-01"))
+
+    expect(result).toEqual({
+      status: "invalid-content",
+      error: {
+        code: "invalid-content-seed",
+        message: "레슨에는 하나 이상의 스텝이 필요합니다.",
+        lessonId: "sentence-structure-01",
+      },
+    })
+  })
+
+  it("returns invalid-content when a playable lesson does not start with intro", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async findLesson() {
+          const result = await repository.findLesson(
+            lessonId("sentence-structure-01")
+          )
+          if (!result) {
+            return undefined
+          }
+
+          return {
+            ...result,
+            steps: result.steps.map((step, index) =>
+              index === 0
+                ? {
+                    id: "summary-step",
+                    type: "SUMMARY" as const,
+                    order: 1,
+                    points: 0,
+                    required: true,
+                    content: {
+                      points: [{ number: 1, text: "정리합니다." }],
+                    },
+                  }
+                : step
+            ),
+          }
+        },
+      },
+    })
+
+    const result = await service.getLesson(lessonId("sentence-structure-01"))
+
+    expect(result).toEqual({
+      status: "invalid-content",
+      error: {
+        code: "invalid-content-seed",
+        message: "레슨은 INTRO 스텝으로 시작해야 합니다.",
+        lessonId: "sentence-structure-01",
+      },
+    })
+  })
+
+  it("returns invalid-content when a playable lesson does not end with complete", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async findLesson() {
+          const result = await repository.findLesson(
+            lessonId("sentence-structure-01")
+          )
+
+          return result
+            ? { ...result, steps: result.steps.slice(0, 1) }
+            : undefined
+        },
+      },
+    })
+
+    const result = await service.getLesson(lessonId("sentence-structure-01"))
+
+    expect(result).toEqual({
+      status: "invalid-content",
+      error: {
+        code: "invalid-content-seed",
+        message: "레슨은 COMPLETE 스텝으로 끝나야 합니다.",
+        lessonId: "sentence-structure-01",
+      },
+    })
+  })
+
+  it("returns invalid-content when an AI feedback source step is missing", async () => {
+    const service = createContentService({
+      repository: {
+        ...repository,
+        async findLesson() {
+          const result = await repository.findLesson(
+            lessonId("sentence-structure-01")
+          )
+          if (!result) {
+            return undefined
+          }
+          const introStep = result.steps[0]
+          const completeStep = result.steps[1]
+          if (!introStep || !completeStep) {
+            return undefined
+          }
+
+          return {
+            ...result,
+            steps: [
+              introStep,
+              {
+                id: "feedback-step",
+                type: "AI_FEEDBACK" as const,
+                order: 2,
+                points: 0,
+                required: true,
+                content: {
+                  sourceStepId: "missing-step",
+                  feedbackPrompt: "명확성을 평가합니다.",
+                  focusAreas: ["clarity" as const],
+                  showScore: true,
+                  scoreRange: [0, 100] as const,
+                  allowRevision: true,
+                  maxRevisions: 1,
+                },
+              },
+              { ...completeStep, order: 3 },
+            ],
+          }
+        },
+      },
+    })
+
+    const result = await service.getLesson(lessonId("sentence-structure-01"))
+
+    expect(result).toEqual({
+      status: "invalid-content",
+      error: {
+        code: "invalid-content-seed",
+        message: "AI 피드백 스텝이 참조하는 원본 스텝을 찾을 수 없습니다.",
         lessonId: "sentence-structure-01",
       },
     })

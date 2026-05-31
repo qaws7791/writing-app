@@ -66,12 +66,15 @@ const unavailableResult: UnavailableResult = {
   },
 }
 
-function invalidContentResult(lessonId?: string): InvalidContentResult {
+function invalidContentResult(
+  lessonId?: string,
+  message = "콘텐츠 시드가 올바르지 않습니다."
+): InvalidContentResult {
   return {
     status: "invalid-content",
     error: {
       code: "invalid-content-seed",
-      message: "콘텐츠 시드가 올바르지 않습니다.",
+      message,
       ...(lessonId ? { lessonId } : {}),
     },
   }
@@ -155,17 +158,46 @@ export function createContentService({
       )
 
       if (invalidOrder) {
-        return {
-          status: "invalid-content",
-          error: {
-            code: "invalid-content-seed",
-            message: "레슨 스텝 순서는 1부터 빈틈없이 이어져야 합니다.",
-            lessonId,
-          },
-        }
+        return invalidContentResult(
+          lessonId,
+          "레슨 스텝 순서는 1부터 빈틈없이 이어져야 합니다."
+        )
+      }
+
+      const playableLessonError = validatePlayableLesson(parsedLesson)
+      if (playableLessonError) {
+        return invalidContentResult(lessonId, playableLessonError)
       }
 
       return { status: "ok", value: parsedLesson }
     },
   }
+}
+
+function validatePlayableLesson(lesson: LessonDto): string | null {
+  if (lesson.steps.length === 0) {
+    return "레슨에는 하나 이상의 스텝이 필요합니다."
+  }
+
+  const firstStep = lesson.steps[0]
+  if (firstStep?.type !== "INTRO") {
+    return "레슨은 INTRO 스텝으로 시작해야 합니다."
+  }
+
+  const lastStep = lesson.steps.at(-1)
+  if (lastStep?.type !== "COMPLETE") {
+    return "레슨은 COMPLETE 스텝으로 끝나야 합니다."
+  }
+
+  const stepIds = new Set(lesson.steps.map((step) => step.id))
+  const hasMissingAiFeedbackSource = lesson.steps.some(
+    (step) =>
+      step.type === "AI_FEEDBACK" && !stepIds.has(step.content.sourceStepId)
+  )
+
+  if (hasMissingAiFeedbackSource) {
+    return "AI 피드백 스텝이 참조하는 원본 스텝을 찾을 수 없습니다."
+  }
+
+  return null
 }
