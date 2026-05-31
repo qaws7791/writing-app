@@ -45,6 +45,7 @@ export function registerAiFeedbackRoute(
     auth,
   }: Pick<ApiAppDependencies, "aiFeedbackService" | "auth">
 ) {
+  // TODO: OpenAI 과금 보호를 위해 /ai-feedback 앞단 rate limiting 정책을 추후 결정한다.
   app.post(
     "/ai-feedback",
     describeRoute({

@@ -414,6 +414,13 @@
 - 완료 내용: 코스 목록 pagination 현재/전체 페이지 표시를 `{현재} / {전체} 페이지` 형식으로 바꾸고 테스트 기대값을 갱신했다.
 - 검증: `bun --filter @workspace/admin test src/features/courses/admin-courses-page.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
 
+## API-05 작업 메모
+
+- 대상 파일: `apps/api/src/routes/ai-feedback.route.ts`
+- 조사 방향: `POST /ai-feedback` 앞단 rate limiting 부재는 OpenAI 과금 보호와 API 복원성 관점에서 개선 필요가 있으나, Redis/Upstash 같은 외부 store의 네트워크 지연과 단일 서버 인메모리 제한의 tradeoff를 추후 운영 구조와 함께 판단한다.
+- 완료 내용: 가장 가까운 `/ai-feedback` 라우트 등록 지점에 rate limiting 정책 결정을 보류한 TODO 주석을 남겼다.
+- 검증: `bun prettier --check apps/api/src/routes/ai-feedback.route.ts docs/codebase-improvement-progress.md && bun --filter @workspace/api lint`
+
 ## 다음 단계
 
 `combined-codebase-improvements.md`의 개선 항목을 모두 처리했다.
