@@ -362,6 +362,8 @@
 
 - 대상 파일: `apps/web/src/lib/api/fake/*`, `apps/web/test/api/*`, `apps/web/tsconfig.json`, `apps/web/vitest.config.ts`, `apps/web/eslint.config.mjs`
 - 작업 시작: 2026-05-31, 웹 fake API 구현체와 대형 fixture를 제품 `src` 밖의 `apps/web/test` 경계로 옮겨 테스트 지원 코드의 소유권을 명시한다.
+- 완료 내용: fake API 구현체와 course/lesson/home fixture를 `apps/web/test/api`로 이동했다. 테스트 전용 import는 `@test/*` alias로 명시하고, 제품 `src`가 테스트 경계를 import하지 못하도록 ESLint guardrail을 추가했다.
+- 검증: `bun --filter @workspace/web test && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint && bun --filter @workspace/web build`
 
 ## TEST-02 작업 메모
 

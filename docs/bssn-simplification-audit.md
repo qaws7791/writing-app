@@ -90,6 +90,8 @@
 
 제품 실행 경로에서 fake 사용자, 브라우저 메모리 진행 상태, fake AI 피드백, 로컬 코스/레슨 카탈로그 fallback을 제거했다. 테스트에서는 `createFakeWritingAppApi()`를 직접 import해 외부 API 없이 포트 계약을 검증할 수 있다.
 
+2026-05-31 후속 정리로 fake API 구현체와 대형 fixture를 `apps/web/test/api`로 이동했다. 제품 `src`에는 HTTP API factory와 포트 계약만 남기고, fake 데이터는 테스트 지원 경계에서만 참조한다.
+
 ### 5. 레슨 스텝 타입 축소 계획 제외
 
 현재 제품/웹 fake 데이터는 20개 스텝 타입을 표현하지만 실제 DB seed는 5개 타입만 만든다. 따라서 지금 서비스의 기본 학습 흐름은 `INTRO`, `SHORT_WRITE`, `AI_FEEDBACK`, `SUMMARY`, `COMPLETE`로 이미 충분히 동작한다.
