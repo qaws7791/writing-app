@@ -8,7 +8,10 @@ import type {
   AdminEditorStepType,
 } from "@workspace/core/admin"
 
-import { getEditorChangeKind } from "@/features/courses/course-editor/editor-change-kind"
+import {
+  getEditorChangeKind,
+  summarizeEditorChanges,
+} from "@/features/courses/course-editor/editor-change-kind"
 import { createCourseEditorSelection } from "@/features/courses/course-editor/editor-selectors"
 import {
   addChapter,
@@ -298,13 +301,9 @@ export function useCourseEditorCommands() {
 }
 
 export function useCourseEditorChangeKind() {
-  return getEditorChangeKind({
-    addedStepCount: 0,
-    archivedChapterCount: 0,
-    archivedLessonCount: 0,
-    courseChanged: false,
-    reorderedLessonCount: 0,
-  })
+  const { workingCopy } = useCourseEditorState()
+
+  return getEditorChangeKind(summarizeEditorChanges(workingCopy.dirty.changes))
 }
 
 function createDraftId(prefix: string) {

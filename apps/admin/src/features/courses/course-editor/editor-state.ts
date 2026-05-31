@@ -5,7 +5,10 @@ import type {
   AdminSaveCurriculumContentRequestDto,
 } from "@workspace/core/admin"
 
+import type { EditorChange } from "@/features/courses/course-editor/editor-change-kind"
+
 export type CourseEditorDirtyState = {
+  changes: EditorChange[]
   hasChanges: boolean
   changedFields: string[]
 }
@@ -45,8 +48,12 @@ type StepInput = {
   type: AdminEditorStepType
 }
 
-export function getDirtyState(changedFields: string[]): CourseEditorDirtyState {
+export function getDirtyState(
+  changedFields: string[],
+  changes: EditorChange[] = []
+): CourseEditorDirtyState {
   return {
+    changes,
     hasChanges: changedFields.length > 0,
     changedFields,
   }
@@ -87,7 +94,11 @@ export function updateCourseField(
         [field]: value,
       },
     },
-    `course.${field}`
+    `course.${field}`,
+    {
+      type: "course-field-updated",
+      field,
+    }
   )
 }
 
@@ -112,7 +123,12 @@ export function updateLessonField(
         })),
       },
     },
-    `lesson.${lessonId}.${field}`
+    `lesson.${lessonId}.${field}`,
+    {
+      type: "lesson-field-updated",
+      lessonId,
+      field,
+    }
   )
 }
 
@@ -132,7 +148,12 @@ export function updateChapterField(
         ),
       },
     },
-    `chapter.${chapterId}.${field}`
+    `chapter.${chapterId}.${field}`,
+    {
+      type: "chapter-field-updated",
+      chapterId,
+      field,
+    }
   )
 }
 
@@ -157,7 +178,12 @@ export function updateStepContentField(
           : step
       ),
     },
-    `step.${stepId}.content.${field}`
+    `step.${stepId}.content.${field}`,
+    {
+      type: "step-content-updated",
+      stepId,
+      field,
+    }
   )
 }
 
@@ -181,7 +207,11 @@ export function addChapter(
         ],
       },
     },
-    "chapter.add"
+    "chapter.add",
+    {
+      type: "chapter-added",
+      chapterId: chapter.id,
+    }
   )
 }
 
@@ -201,7 +231,11 @@ export function archiveChapter(
         ),
       },
     },
-    `chapter.${chapterId}.status`
+    `chapter.${chapterId}.status`,
+    {
+      type: "chapter-archived",
+      chapterId,
+    }
   )
 }
 
@@ -232,7 +266,11 @@ export function addLesson(
         ),
       },
     },
-    "lesson.add"
+    "lesson.add",
+    {
+      type: "lesson-added",
+      lessonId: lesson.lessonId,
+    }
   )
 }
 
@@ -255,7 +293,11 @@ export function archiveLesson(
         })),
       },
     },
-    `lesson.${lessonId}.status`
+    `lesson.${lessonId}.status`,
+    {
+      type: "lesson-archived",
+      lessonId,
+    }
   )
 }
 
@@ -282,7 +324,11 @@ export function addStep(
         },
       ],
     },
-    "step.add"
+    "step.add",
+    {
+      type: "step-added",
+      stepId: step.id,
+    }
   )
 }
 
@@ -297,7 +343,11 @@ export function archiveStep(
         step.id === stepId ? { ...step, status: "archived" } : step
       ),
     },
-    `step.${stepId}.status`
+    `step.${stepId}.status`,
+    {
+      type: "step-archived",
+      stepId,
+    }
   )
 }
 
@@ -390,7 +440,12 @@ export function moveLesson(
         }),
       },
     },
-    "lesson.order"
+    "lesson.order",
+    {
+      type: "lesson-reordered",
+      lessonId,
+      targetIndex,
+    }
   )
 }
 
@@ -435,21 +490,62 @@ export function moveStep(
           return left.sortOrder - right.sortOrder
         }),
     },
-    "step.order"
+    "step.order",
+    {
+      type: "step-reordered",
+      stepId,
+      targetIndex,
+    }
   )
 }
 
 function withChangedField(
   workingCopy: CourseEditorWorkingCopy,
-  field: string
+  field: string,
+  change: EditorChange
 ): CourseEditorWorkingCopy {
   const changedFields = workingCopy.dirty.changedFields.includes(field)
     ? workingCopy.dirty.changedFields
     : [...workingCopy.dirty.changedFields, field]
+  const changes = workingCopy.dirty.changes.some((currentChange) =>
+    isSameEditorChange(currentChange, change)
+  )
+    ? workingCopy.dirty.changes
+    : [...workingCopy.dirty.changes, change]
 
   return {
     ...workingCopy,
-    dirty: getDirtyState(changedFields),
+    dirty: getDirtyState(changedFields, changes),
+  }
+}
+
+function isSameEditorChange(left: EditorChange, right: EditorChange) {
+  return getEditorChangeKey(left) === getEditorChangeKey(right)
+}
+
+function getEditorChangeKey(change: EditorChange): string {
+  switch (change.type) {
+    case "course-field-updated":
+      return `${change.type}:${change.field}`
+    case "chapter-added":
+    case "chapter-archived":
+      return `${change.type}:${change.chapterId}`
+    case "chapter-field-updated":
+      return `${change.type}:${change.chapterId}:${change.field}`
+    case "lesson-added":
+    case "lesson-archived":
+      return `${change.type}:${change.lessonId}`
+    case "lesson-field-updated":
+      return `${change.type}:${change.lessonId}:${change.field}`
+    case "step-added":
+    case "step-archived":
+      return `${change.type}:${change.stepId}`
+    case "step-content-updated":
+      return `${change.type}:${change.stepId}:${change.field}`
+    case "lesson-reordered":
+      return `${change.type}:${change.lessonId}:${change.targetIndex}`
+    case "step-reordered":
+      return `${change.type}:${change.stepId}:${change.targetIndex}`
   }
 }
 

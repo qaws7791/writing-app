@@ -27,6 +27,7 @@
 |    9 | ADMIN-01  | 완료 | CourseEditorProvider의 URL/저장 책임을 분리했다.    |
 |   10 | ADMIN-02  | 완료 | 에디터 선택 파생 계산과 step source를 정리했다.     |
 |   11 | ADMIN-03  | 완료 | 커리큘럼 맵 내부 prop 전달을 줄였다.                |
+|   12 | ADMIN-04  | 완료 | dirty 변경 내역과 change kind 계산을 연결했다.      |
 
 ## ADMIN-08 작업 메모
 
@@ -108,6 +109,14 @@
 - 완료 내용: `CurriculumMap` 외부 props 계약은 유지하고, 파일 내부에 private context를 추가해 `ChapterSection`과 `SortableLessonButton`이 읽기 전용 상태와 액션 콜백을 직접 읽도록 정리했다.
 - 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/curriculum-map.test.tsx src/features/courses/course-editor/course-editor-shell.test.tsx && bun --filter @workspace/admin lint`
 
+## ADMIN-04 작업 메모
+
+- 대상 파일: `apps/admin/src/features/courses/course-editor/editor-change-kind.ts`, `apps/admin/src/features/courses/course-editor/editor-state.ts`, `apps/admin/src/features/courses/course-editor/course-editor-session.tsx`
+- 조사 방향: 기존 `useCourseEditorChangeKind()`가 빈 요약값을 사용해 실제 dirty 변경 내역과 연결되지 않는 지점을 확인한다.
+- 완료 내용: dirty state에 `EditorChange` 판별 union을 추가하고, 기존 `changedFields`는 헤더 카운트 호환을 위해 유지했다. change kind는 `workingCopy.dirty.changes`를 요약해 계산한다.
+- 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/editor-state.test.ts src/features/courses/course-editor/course-editor-shell.test.tsx && bun --filter @workspace/admin lint`
+- 참고: 전체 `bun --filter @workspace/admin typecheck`는 기존 admin fixture와 draft step content 타입 불일치로 실패한다.
+
 ## 다음 단계
 
-다음 작업은 P1의 `ADMIN-04`를 문서 순서대로 진행한다.
+다음 작업은 P1의 `ADMIN-07`을 문서 순서대로 진행한다.

@@ -1,10 +1,15 @@
 import * as React from "react"
 import { cleanup, render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import "@/test/ui-overlay-mocks"
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
-import { CourseEditorProvider } from "@/features/courses/course-editor/course-editor-session"
+import {
+  CourseEditorProvider,
+  useCourseEditorChangeKind,
+  useCourseEditorCommands,
+} from "@/features/courses/course-editor/course-editor-session"
 import type { AdminApi } from "@/lib/api/admin-api"
 
 type ButtonProps = React.ComponentProps<"button">
@@ -43,7 +48,46 @@ describe("CourseEditorShell", () => {
     expect(screen.getByDisplayValue("기초 문장 만들기")).toBeTruthy()
     expect(screen.getByDisplayValue("목적어 붙이기")).toBeTruthy()
   })
+
+  it("returns additive change kind after adding a step", async () => {
+    const user = userEvent.setup()
+
+    render(
+      <CourseEditorProvider
+        adminApi={createAdminApiMock()}
+        course={courseFixture}
+        curriculum={curriculumFixture}
+        revision={0}
+        urlState={{ view: "lesson", lessonId: "lesson-1", stepId: null }}
+      >
+        <ChangeKindHarness />
+      </CourseEditorProvider>
+    )
+
+    expect(screen.getByTestId("change-kind").textContent).toBe("minor-edit")
+
+    await user.click(screen.getByRole("button", { name: "스텝 추가" }))
+
+    expect(screen.getByTestId("change-kind").textContent).toBe("additive")
+  })
 })
+
+function ChangeKindHarness() {
+  const changeKind = useCourseEditorChangeKind()
+  const commands = useCourseEditorCommands()
+
+  return (
+    <>
+      <output data-testid="change-kind">{changeKind}</output>
+      <button
+        type="button"
+        onClick={() => commands.addStep("lesson-1", "CONCEPT")}
+      >
+        스텝 추가
+      </button>
+    </>
+  )
+}
 
 const courseFixture = {
   id: "sentence-structure",
