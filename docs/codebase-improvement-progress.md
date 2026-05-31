@@ -57,6 +57,7 @@
 |   39 | FE-03     | 완료 | write step 상태 초기화를 key 리마운트로 단순화했다.  |
 |   40 | FE-04     | 완료 | fake API fixture 데이터를 fake API 경계로 옮겼다.    |
 |   41 | TEST-02   | 완료 | admin 목록 테스트의 반복 UI mock을 공통화했다.       |
+|   42 | TEST-03   | 완료 | React dedupe 설정의 유지 이유를 명시했다.            |
 
 ## ADMIN-08 작업 메모
 
@@ -356,6 +357,13 @@
 - 완료 내용: admin 목록 화면 테스트에서 반복하던 badge, button, dropdown-menu, empty, input, select, table mock을 `@/test/ui-mocks` side-effect helper로 모았다. 상호작용 상태가 필요한 overlay mock은 기존 `ui-overlay-mocks` 경계에 그대로 둔다.
 - 검증: `bun --filter @workspace/admin test src/features/users/admin-users-page.test.tsx src/features/courses/admin-courses-page.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
 
+## TEST-03 작업 메모
+
+- 대상 파일: `apps/admin/vitest.config.ts`, `packages/ui/package.json`, `docs/codebase-improvement-progress.md`
+- 조사 방향: UI 패키지의 React 소유권과 admin Vitest의 alias/dedupe 설정이 현재 코드에서 어떤 역할을 하는지 확인한다.
+- 완료 내용: `@workspace/ui`의 `react`, `react-dom`은 이미 peer/dev dependency로 정리되어 있고, admin Vitest의 React alias/dedupe는 UI source 번들링 시 앱 React 인스턴스로 고정하기 위한 방어막이다. 설정 주석에 Invalid hook call 방지 이유를 명시했다.
+- 검증: `bun --filter @workspace/admin test src/features/users/admin-users-page.test.tsx src/features/courses/admin-courses-page.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
+
 ## 다음 단계
 
-다음 작업은 P2의 `TEST-03`을 문서 순서대로 진행한다.
+다음 작업은 P2의 `UI-01`을 문서 순서대로 진행한다.
