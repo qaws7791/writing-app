@@ -149,6 +149,14 @@
 - 검증: `bun --filter @workspace/core test src/ai-feedback/ai-feedback.service.test.ts && bun --filter @workspace/api test src/openai/openai-feedback-provider.test.ts && bun --filter @workspace/core typecheck && bun --filter @workspace/api typecheck && bun --filter @workspace/core test && bun --filter @workspace/api test && bun --filter @workspace/core lint && bun --filter @workspace/api lint`
 - 참고: `bun --filter @workspace/api lint`는 기존 `apps/api/src/main.test.ts`의 `turbo/no-undeclared-env-vars` 경고 2건을 유지한 채 성공한다.
 
+## ARCH-02 작업 메모
+
+- 대상 파일: `packages/ui/package.json`, `packages/ui/src/next/*`, 앱 layout, Storybook 설정
+- 조사 방향: UI primitive 패키지와 Next 앱 통합 컴포넌트의 공개 경계를 분리하고, React 런타임 소유권을 host 앱으로 명시한다.
+- 완료 내용: `ThemeProvider`, `Toaster`, `toast`를 `@workspace/ui/next` subpath로 이동하고 기존 `components/ui` export에서 제거했다. `react`, `react-dom`, `next-themes`는 UI 패키지의 peer/dev dependency로 바꾸고 실제 Next 앱과 Storybook이 `next-themes`를 직접 의존하게 했다. Admin Vitest의 React dedupe 설정은 source 번들링 방어막으로 남기되 이유를 주석으로 기록했다.
+- 검증: `bun install && bun pm why react && bun pm why next-themes && bun --filter @workspace/ui typecheck && bun --filter @workspace/ui lint && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint && bun --filter storybook typecheck && bun --filter storybook lint && bun --filter @workspace/web test && bun --filter @workspace/admin test && bun --filter @workspace/web build && bun --filter @workspace/admin build && bun --filter storybook build`
+- 참고: `bun --filter storybook build`는 기존 Storybook/Vite의 `use client` directive, circular chunk, chunk size 경고를 출력하지만 성공한다.
+
 ## 다음 단계
 
-다음 작업은 P1의 `ARCH-02`를 문서 순서대로 진행한다.
+다음 작업은 P1의 `AUTH-02`를 문서 순서대로 진행한다.

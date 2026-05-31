@@ -1,8 +1,7 @@
 import type { Metadata } from "next"
 import { Noto_Sans_KR } from "next/font/google"
 
-import { ThemeProvider } from "@workspace/ui/components/ui/theme-provider"
-import { Toaster } from "@workspace/ui/components/ui/sonner"
+import { ThemeProvider, Toaster } from "@workspace/ui/next"
 
 import "./globals.css"
 

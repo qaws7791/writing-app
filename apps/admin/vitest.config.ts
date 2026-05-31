@@ -5,6 +5,7 @@ import tsconfigPaths from "vite-tsconfig-paths"
 import { defineConfig } from "vitest/config"
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url))
+// UI 패키지는 source로 테스트 번들에 들어오므로 React는 앱의 인스턴스로 고정한다.
 const reactPath = path.resolve(__dirname, "node_modules/react")
 const reactDomPath = path.resolve(__dirname, "node_modules/react-dom")
 

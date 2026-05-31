@@ -5,7 +5,7 @@ import {
 } from "@storybook/addon-docs/blocks"
 import type { Preview } from "@storybook/react-vite"
 import { addons } from "storybook/preview-api"
-import { ThemeProvider } from "@workspace/ui/components/ui/theme-provider"
+import { ThemeProvider } from "@workspace/ui/next"
 
 import "../styles.css"
 import { getStorybookTheme, type ThemeName } from "./storybook-theme"
