@@ -1,9 +1,11 @@
 import * as React from "react"
-import { render, screen } from "@testing-library/react"
-import { beforeAll, describe, expect, it, vi } from "vitest"
+import { cleanup, render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 
 import { getDefaultLesson } from "@/features/lessons/lesson-data"
 import { LessonExperience } from "@/features/lessons/lesson-experience"
+import type { Lesson } from "@/features/lessons/lesson-types"
 import { apiOk } from "@/lib/api/api-result"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
 
@@ -120,6 +122,10 @@ beforeAll(() => {
   })
 })
 
+afterEach(() => {
+  cleanup()
+})
+
 describe("LessonExperience", () => {
   it("does not apply transform-based entrance motion to the step frame", () => {
     const { container } = render(
@@ -139,4 +145,95 @@ describe("LessonExperience", () => {
     expect(screen.queryByLabelText(/개 남음/)).toBeNull()
     expect(screen.queryByText(/XP/)).toBeNull()
   })
+
+  it("passes a saved short-write response into the AI feedback step", async () => {
+    const user = userEvent.setup()
+    const createAiFeedback = vi.fn(api.createAiFeedback)
+    const lesson = createShortWriteFeedbackLesson()
+
+    render(
+      <LessonExperience
+        lesson={lesson}
+        api={{
+          ...api,
+          createAiFeedback,
+        }}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "시작하기" }))
+    await user.type(
+      screen.getByRole("textbox"),
+      "문장을 구체적으로 고쳤습니다."
+    )
+    await user.click(screen.getByRole("button", { name: "제출하기" }))
+    await user.click(screen.getByRole("button", { name: "다음" }))
+
+    await waitFor(() => {
+      expect(createAiFeedback).toHaveBeenCalledWith({
+        answer: "문장을 구체적으로 고쳤습니다.",
+        feedbackStepId: "feedback-step",
+        lessonId: "lesson-1",
+      })
+    })
+  })
 })
+
+function createShortWriteFeedbackLesson(): Lesson {
+  return {
+    id: "lesson-1" as never,
+    title: "문장 다듬기",
+    categoryId: "beginner",
+    courseId: "course-1",
+    unitNumber: 1,
+    steps: [
+      {
+        id: "intro-step" as never,
+        type: "INTRO",
+        order: 1,
+        points: 0,
+        required: true,
+        content: {
+          title: "문장 다듬기",
+          category: "문법",
+          tagTone: "primary",
+          bullets: ["짧은 문장을 씁니다."],
+          estimatedMinutes: 1,
+          totalSteps: 3,
+        },
+      },
+      {
+        id: "write-step" as never,
+        type: "SHORT_WRITE",
+        order: 2,
+        points: 10,
+        required: true,
+        content: {
+          instruction: "문장을 고쳐 쓰세요.",
+          prompt: "구체적인 문장으로 바꿔보세요.",
+          maxChars: 100,
+          minChars: 5,
+          referenceAnswer: "대상을 분명히 드러냅니다.",
+          aiEvaluationEnabled: true,
+          showReferenceAfterSubmit: false,
+        },
+      },
+      {
+        id: "feedback-step" as never,
+        type: "AI_FEEDBACK",
+        order: 3,
+        points: 0,
+        required: true,
+        content: {
+          sourceStepId: "write-step" as never,
+          feedbackPrompt: "명확성을 평가합니다.",
+          focusAreas: ["clarity"],
+          showScore: true,
+          scoreRange: [0, 100],
+          allowRevision: true,
+          maxRevisions: 1,
+        },
+      },
+    ],
+  }
+}

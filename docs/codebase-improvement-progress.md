@@ -40,6 +40,7 @@
 |   22 | DATA-05   | 완료 | AI 피드백 attempt 번호 생성을 저장소 경계로 옮겼다. |
 |   23 | DATA-06   | 완료 | DB 스키마 명명 규칙을 문서화했다.                   |
 |   24 | DOMAIN-02 | 완료 | 어드민 스텝 타입 메타데이터 registry를 추가했다.    |
+|   25 | FE-01     | 완료 | 레슨 경험 step renderer를 shell에서 분리했다.       |
 
 ## ADMIN-08 작업 메모
 
@@ -218,6 +219,14 @@
 - 범위 제외: core/content DTO와 DB enum 통합, 학습자 lesson renderer 분리는 영향 범위가 커서 `FE-01`과 후속 도메인 정리에서 별도로 다룬다.
 - 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/editor-state.test.ts src/features/courses/course-editor/lesson-workspace.test.tsx src/features/courses/course-editor/step-workspace.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
 
+## FE-01 작업 메모
+
+- 대상 파일: `apps/web/src/features/lessons/lesson-experience.tsx`, `apps/web/src/features/lessons/lesson-step-renderer.tsx`
+- 조사 방향: `LessonExperience`가 레슨 세션 상태, 이동, 저장 호출, exit dialog, 20개 step renderer를 모두 포함하는 지점을 확인하고, 저장 정책 변경 없이 renderer 묶음을 먼저 분리한다.
+- 완료 내용: `LessonStepRenderer`와 step별 UI 컴포넌트를 `lesson-step-renderer.tsx`로 이동했다. `LessonExperience`는 현재 step 선택, 진행률, navigation, exit dialog, API callback 연결만 담당한다.
+- 범위 제외: 저장 실패/재시도 정책 분리는 `FE-02`에서 별도로 다룬다.
+- 검증: `bun --filter @workspace/web test src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web test && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint`
+
 ## 다음 단계
 
-다음 작업은 P1의 `FE-01`을 문서 순서대로 진행한다.
+다음 작업은 P1의 `FE-02`를 문서 순서대로 진행한다.
