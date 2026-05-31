@@ -15,7 +15,7 @@ import type {
 import type { CourseId, LessonId } from "./content.ids"
 import type {
   ContentRepository,
-  ContentRepositoryLessonDto,
+  RawContentRepositoryLesson,
 } from "./content.repository"
 import type {
   InvalidContentResult,
@@ -73,7 +73,7 @@ export function createContentService({
 }: ContentServiceDependencies): ContentService {
   return {
     async listCourseCategories() {
-      let categories: CourseCategoryListDto
+      let categories: unknown
       try {
         categories = await repository.listCourseCategories()
       } catch {
@@ -91,7 +91,7 @@ export function createContentService({
       }
     },
     async getCourseDetail(courseId) {
-      let course: CourseDetailDto | undefined
+      let course: unknown | undefined
       try {
         course = await repository.findCourseDetail(courseId)
       } catch {
@@ -117,7 +117,7 @@ export function createContentService({
       return { status: "ok", value: parsedCourse.data }
     },
     async getLesson(lessonId) {
-      let lesson: ContentRepositoryLessonDto | undefined
+      let lesson: RawContentRepositoryLesson | undefined
       try {
         lesson = await repository.findLesson(lessonId)
       } catch {

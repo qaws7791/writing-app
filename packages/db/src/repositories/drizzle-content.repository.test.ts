@@ -4,7 +4,10 @@ import { beforeEach, describe, expect, it } from "vitest"
 
 import {
   courseId,
+  courseCategoryListDtoSchema,
+  courseDetailDtoSchema,
   createContentService,
+  lessonDtoSchema,
   lessonId,
 } from "@workspace/core/content"
 
@@ -26,7 +29,9 @@ describe("createDrizzleContentRepository", () => {
   it("lists course categories with current curriculum lesson counts", async () => {
     const repository = createDrizzleContentRepository(createDatabase(sqlite))
 
-    const result = await repository.listCourseCategories()
+    const result = courseCategoryListDtoSchema.parse(
+      await repository.listCourseCategories()
+    )
     const beginnerCourses = result.categories.find(
       (category) => category.id === "beginner"
     )?.courses
@@ -41,8 +46,8 @@ describe("createDrizzleContentRepository", () => {
   it("finds current course details from course chapters and lessons", async () => {
     const repository = createDrizzleContentRepository(createDatabase(sqlite))
 
-    const result = await repository.findCourseDetail(
-      courseId("sentence-structure")
+    const result = courseDetailDtoSchema.parse(
+      await repository.findCourseDetail(courseId("sentence-structure"))
     )
 
     expect(result?.firstLessonId).toBe("sentence-structure-01")
@@ -66,8 +71,8 @@ describe("createDrizzleContentRepository", () => {
       .where(eq(courseLessons.id, "sentence-structure-02"))
     const repository = createDrizzleContentRepository(db)
 
-    const detail = await repository.findCourseDetail(
-      courseId("sentence-structure")
+    const detail = courseDetailDtoSchema.parse(
+      await repository.findCourseDetail(courseId("sentence-structure"))
     )
 
     expect(detail?.chapters.map((chapter) => chapter.id)).not.toContain(
@@ -83,8 +88,8 @@ describe("createDrizzleContentRepository", () => {
   it("finds playable lesson content by ID", async () => {
     const repository = createDrizzleContentRepository(createDatabase(sqlite))
 
-    const result = await repository.findLesson(
-      lessonId("sentence-structure-01")
+    const result = lessonDtoSchema.parse(
+      await repository.findLesson(lessonId("sentence-structure-01"))
     )
 
     expect(result?.id).toBe("sentence-structure-01")

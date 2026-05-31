@@ -2,10 +2,10 @@ import { and, asc, count, eq, inArray } from "drizzle-orm"
 
 import type {
   ContentRepository,
-  ContentRepositoryLessonDto,
-  ContentRepositoryLessonStepDto,
   CourseCategoryListDto,
   CourseDetailDto,
+  RawContentRepositoryLesson,
+  RawContentRepositoryLessonStep,
 } from "@workspace/core/content"
 
 import type { WritingAppDatabase } from "../client"
@@ -130,7 +130,7 @@ export function createDrizzleContentRepository(
         unitNumber: lesson.unitNumber,
         nextLessonId: lesson.nextLessonId ?? undefined,
         steps: stepRows.map(mapLessonStep),
-      } satisfies ContentRepositoryLessonDto
+      } satisfies RawContentRepositoryLesson
     },
   }
 }
@@ -184,7 +184,7 @@ function mapCourseLesson(lesson: CourseLessonRow) {
   }
 }
 
-function mapLessonStep(step: LessonStepRow): ContentRepositoryLessonStepDto {
+function mapLessonStep(step: LessonStepRow): RawContentRepositoryLessonStep {
   return {
     id: step.id,
     type: step.type,

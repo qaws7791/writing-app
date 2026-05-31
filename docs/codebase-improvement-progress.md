@@ -51,6 +51,7 @@
 |   33 | CODE-02   | 완료 | 디자인/레슨 생성 상수를 명명된 규칙으로 분리했다.    |
 |   34 | DATA-07   | 완료 | admin seed 스크립트의 정적 import 경계를 분리했다.   |
 |   35 | DATA-08   | 완료 | core 서비스 result 타입 껍데기를 공통화했다.         |
+|   36 | DATA-09   | 완료 | content repository 출력 신뢰 경계를 명확히 했다.     |
 
 ## ADMIN-08 작업 메모
 
@@ -308,6 +309,13 @@
 - 완료 내용: `packages/core/src/result.ts`에 공통 result building block을 추가하고, content/learning/admin 서비스는 도메인별 error DTO union만 조합하도록 정리했다. AI feedback 서비스는 전용 status가 많아 이번 관련 위치 범위에서는 제외했다.
 - 검증: `bun --filter @workspace/core typecheck && bun --filter @workspace/core test && bun --filter @workspace/core lint`
 
+## DATA-09 작업 메모
+
+- 대상 파일: `packages/core/src/content/content.repository.ts`, `packages/core/src/content/content.service.ts`, `packages/db/src/repositories/drizzle-content.repository.ts`
+- 조사 방향: content repository 포트는 raw 데이터를 반환하고, service가 DTO schema parse와 플레이 가능 레슨 불변식 검증을 담당하는 단일 검증 경계로 둔다.
+- 완료 내용: `ContentRepository` 반환 타입을 raw/unknown 중심으로 낮추고, content service의 임시 값도 parse 전에는 DTO로 신뢰하지 않게 했다. Drizzle repository 테스트는 필요한 지점에서 schema parse 후 구조를 검증한다.
+- 검증: `bun --filter @workspace/core test src/content/content.service.test.ts && bun --filter @workspace/db test src/repositories/drizzle-content.repository.test.ts && bun --filter @workspace/core typecheck && bun --filter @workspace/db typecheck && bun --filter @workspace/core lint && bun --filter @workspace/db lint`
+
 ## 다음 단계
 
-다음 작업은 P2의 `DATA-09`를 문서 순서대로 진행한다.
+다음 작업은 P2의 `DATA-10`을 문서 순서대로 진행한다.

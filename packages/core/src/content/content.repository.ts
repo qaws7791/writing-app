@@ -1,23 +1,28 @@
-import type {
-  CourseCategoryListDto,
-  CourseDetailDto,
-  LessonDto,
-  LessonStepDto,
-} from "./content.dto"
 import type { CourseId, LessonId } from "./content.ids"
 
-export type ContentRepositoryLessonStepDto = Omit<LessonStepDto, "content"> & {
+export type RawContentRepositoryLessonStep = {
   content: unknown
+  id: unknown
+  order: unknown
+  points: unknown
+  required: unknown
+  type: unknown
 }
 
-export type ContentRepositoryLessonDto = Omit<LessonDto, "steps"> & {
-  steps: ContentRepositoryLessonStepDto[]
+export type RawContentRepositoryLesson = {
+  categoryId: unknown
+  courseId: unknown
+  id: unknown
+  nextLessonId?: unknown
+  steps: RawContentRepositoryLessonStep[]
+  title: unknown
+  unitNumber: unknown
 }
 
 export interface ContentRepository {
-  listCourseCategories(): Promise<CourseCategoryListDto>
-  findCourseDetail(courseId: CourseId): Promise<CourseDetailDto | undefined>
+  listCourseCategories(): Promise<unknown>
+  findCourseDetail(courseId: CourseId): Promise<unknown | undefined>
   findLesson(
     lessonId: LessonId
-  ): Promise<ContentRepositoryLessonDto | undefined>
+  ): Promise<RawContentRepositoryLesson | undefined>
 }
