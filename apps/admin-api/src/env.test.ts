@@ -15,11 +15,28 @@ describe("parseAdminApiEnv", () => {
     ).toEqual({
       betterAuthSecret: "admin-secret",
       betterAuthUrl: "http://localhost:4001",
+      cookieDomain: undefined,
       corsOrigins: ["http://localhost:3001"],
       databasePath: "../../data/api.sqlite",
       environment: "development",
       logLevel: "info",
       port: 4001,
+    })
+  })
+
+  it("parses optional admin Better Auth cookie domain", () => {
+    expect(
+      parseAdminApiEnv({
+        ADMIN_BETTER_AUTH_COOKIE_DOMAIN: "example.com",
+        ADMIN_BETTER_AUTH_SECRET: "admin-secret",
+        ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",
+        ADMIN_CORS_ORIGIN: "https://admin.example.com",
+        DATABASE_URL: "file:../../data/api.sqlite",
+      })
+    ).toMatchObject({
+      betterAuthUrl: "https://admin-api.example.com",
+      cookieDomain: "example.com",
+      corsOrigins: ["https://admin.example.com"],
     })
   })
 })

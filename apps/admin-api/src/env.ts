@@ -4,6 +4,7 @@ import { parseEnv, type RawEnv } from "@workspace/env"
 import { z } from "zod"
 
 const adminApiEnvSchema = z.object({
+  ADMIN_BETTER_AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
   ADMIN_BETTER_AUTH_SECRET: z.string().min(1),
   ADMIN_BETTER_AUTH_URL: z.string().url(),
   ADMIN_CORS_ORIGIN: z.string().default("http://localhost:3001"),
@@ -26,6 +27,7 @@ export function parseAdminApiEnv(rawEnv: RawEnv) {
   return {
     betterAuthSecret: env.ADMIN_BETTER_AUTH_SECRET,
     betterAuthUrl: env.ADMIN_BETTER_AUTH_URL,
+    cookieDomain: env.ADMIN_BETTER_AUTH_COOKIE_DOMAIN,
     corsOrigins: env.ADMIN_CORS_ORIGIN.split(",")
       .map((origin) => origin.trim())
       .filter(Boolean),

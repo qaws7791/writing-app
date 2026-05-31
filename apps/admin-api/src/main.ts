@@ -27,6 +27,7 @@ const adminService = createAdminService({
 })
 const auth = createAdminAuthRuntime({
   baseUrl: env.betterAuthUrl,
+  cookieDomain: env.cookieDomain,
   db,
   secret: env.betterAuthSecret,
   trustedOrigins: env.corsOrigins,

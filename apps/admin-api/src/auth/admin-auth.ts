@@ -13,6 +13,7 @@ import type { AdminAuthRuntime } from "@/auth/admin-session"
 
 interface CreateAdminAuthRuntimeInput {
   baseUrl: string
+  cookieDomain?: string
   db: WritingAppDatabase
   secret: string
   trustedOrigins?: string[]
@@ -25,10 +26,7 @@ export function createAdminAuthRuntime(
     account: {
       modelName: "adminAccount",
     },
-    advanced: {
-      cookiePrefix: "writing-app-admin",
-      trustedProxyHeaders: true,
-    },
+    advanced: getAdvancedAdminAuthOptions(input.cookieDomain),
     baseURL: input.baseUrl,
     database: drizzleAdapter(input.db, {
       provider: "sqlite",
@@ -76,5 +74,23 @@ export function createAdminAuthRuntime(
       }
     },
     handler: auth.handler,
+  }
+}
+
+function getAdvancedAdminAuthOptions(cookieDomain: string | undefined) {
+  const baseOptions = {
+    cookiePrefix: "writing-app-admin",
+  }
+
+  if (!cookieDomain) {
+    return baseOptions
+  }
+
+  return {
+    ...baseOptions,
+    crossSubDomainCookies: {
+      domain: cookieDomain,
+      enabled: true,
+    },
   }
 }
