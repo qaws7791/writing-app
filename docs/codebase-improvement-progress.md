@@ -61,6 +61,7 @@
 |   43 | UI-01     | 완료 | ProgressBar 래퍼를 제거하고 Progress로 통일했다.     |
 |   44 | UI-02     | 완료 | TooltipProvider 문서 전제를 실제 layout과 맞췄다.    |
 |   45 | UI-03     | 완료 | UI primitive 내부 상대 import 예외를 문서화했다.     |
+|   46 | ARCH-06   | 완료 | UI 패키지의 불필요한 .gitkeep을 제거했다.            |
 
 ## ADMIN-08 작업 메모
 
@@ -388,6 +389,13 @@
 - 완료 내용: UI primitive 내부 구현은 생성 코드 관례와 colocation을 유지하기 위해 로컬 상대 import를 허용한다고 `packages/ui/AGENTS.md`와 README에 명시했다. 앱/도메인 코드와 패키지 바깥 경계에는 absolute import 규칙을 유지한다.
 - 검증: `bun prettier --check packages/ui/AGENTS.md packages/ui/README.md docs/codebase-improvement-progress.md && bun --filter @workspace/ui typecheck && bun --filter @workspace/ui lint`
 
+## ARCH-06 작업 메모
+
+- 대상 파일: `packages/ui/src/components/.gitkeep`, `packages/ui/src/hooks/.gitkeep`, `packages/ui/src/lib/.gitkeep`
+- 조사 방향: 빈 디렉터리 보존용 placeholder가 실제 파일이 있는 디렉터리에 남아 있는지 확인한다.
+- 완료 내용: `components`, `hooks`, `lib` 디렉터리에는 실제 소스 파일이 있으므로 빈 디렉터리 보존용 `.gitkeep` 3개를 제거했다.
+- 검증: `bun --filter @workspace/ui typecheck && bun --filter @workspace/ui lint && bun prettier --check docs/codebase-improvement-progress.md`
+
 ## 다음 단계
 
-다음 작업은 P3의 `ARCH-06`을 문서 순서대로 진행한다.
+다음 작업은 P3의 `CODE-01`을 문서 순서대로 진행한다.
