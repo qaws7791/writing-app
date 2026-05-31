@@ -85,7 +85,7 @@ describe("AdminCoursesPage", () => {
       expect.stringContaining("/courses/course-1")
     )
     expect(screen.getByText("문장 학습")).toBeTruthy()
-    expect(screen.getByText("Page 1 of 1")).toBeTruthy()
+    expect(screen.getByText("1 / 1 페이지")).toBeTruthy()
   })
 
   it("renders an accessible empty state when there are no matching courses", () => {

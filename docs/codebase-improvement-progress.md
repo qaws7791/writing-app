@@ -63,6 +63,7 @@
 |   45 | UI-03     | 완료 | UI primitive 내부 상대 import 예외를 문서화했다.     |
 |   46 | ARCH-06   | 완료 | UI 패키지의 불필요한 .gitkeep을 제거했다.            |
 |   47 | CODE-01   | 완료 | 응답 JSON Promise assertion 패턴을 명시화했다.       |
+|   48 | UI-04     | 완료 | 어드민 pagination 문구를 한국어로 바꿨다.            |
 
 ## ADMIN-08 작업 메모
 
@@ -405,6 +406,13 @@
 - 검증: `bun --filter @workspace/admin-api test src/app.test.ts && bun --filter @workspace/api test src/app.test.ts src/versioned-learning.integration.test.ts && bun --filter @workspace/admin test src/lib/api/http-admin-api.test.ts && bun --filter @workspace/db test src/client.test.ts && bun --filter @workspace/admin-api typecheck && bun --filter @workspace/admin-api lint && bun --filter @workspace/api typecheck && bun --filter @workspace/api lint && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint && bun --filter @workspace/db typecheck && bun --filter @workspace/db lint`
 - 참고: `bun --filter @workspace/api lint`는 기존 `apps/api/src/main.test.ts`의 `turbo/no-undeclared-env-vars` 경고 2건을 유지한 채 성공한다.
 
+## UI-04 작업 메모
+
+- 대상 파일: `apps/admin/src/features/courses/admin-courses-data-table.tsx`, `apps/admin/src/features/courses/admin-courses-page.test.tsx`
+- 조사 방향: 어드민 화면에 남아 있는 `Page n of m` 영문 pagination 문구를 한국어 화면 문구로 바꾼다.
+- 완료 내용: 코스 목록 pagination 현재/전체 페이지 표시를 `{현재} / {전체} 페이지` 형식으로 바꾸고 테스트 기대값을 갱신했다.
+- 검증: `bun --filter @workspace/admin test src/features/courses/admin-courses-page.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
+
 ## 다음 단계
 
-다음 작업은 P3의 `UI-04`를 문서 순서대로 진행한다.
+`combined-codebase-improvements.md`의 개선 항목을 모두 처리했다.

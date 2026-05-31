@@ -234,7 +234,7 @@ export function AdminCoursesDataTable({
             </Select>
           </div>
           <div className="flex w-fit items-center justify-center text-sm font-medium">
-            Page {pagination.page} of {pageCount}
+            {pagination.page} / {pageCount} 페이지
           </div>
           <div className="ml-auto flex items-center gap-2 lg:ml-0">
             <Button
