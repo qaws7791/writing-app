@@ -49,6 +49,7 @@
 |   31 | ARCH-04   | 완료 | Repomix 합본 프로필을 코드/분석 관점으로 분리했다.   |
 |   32 | ARCH-05   | 완료 | 앱별 API URL 기본값을 env 계층으로 모았다.           |
 |   33 | CODE-02   | 완료 | 디자인/레슨 생성 상수를 명명된 규칙으로 분리했다.    |
+|   34 | DATA-07   | 완료 | admin seed 스크립트의 정적 import 경계를 분리했다.   |
 
 ## ADMIN-08 작업 메모
 
@@ -292,6 +293,13 @@
 - 완료 내용: UI mobile breakpoint를 UI config 상수로 옮겼고, 레슨 생성의 step frame, default points, reflection points, 글자 수 제한, AI score range, 예상 시간 규칙을 인접 도메인 상수로 분리했다. 코스 카드의 `lessonCount`는 상세 레슨 데이터에서 파생해 중복 입력을 제거했다.
 - 검증: `bun --filter @workspace/web test && bun --filter @workspace/ui test && bun --filter @workspace/web typecheck && bun --filter @workspace/ui typecheck && bun --filter @workspace/web lint && bun --filter @workspace/ui lint && bun prettier --check packages/ui/package.json packages/ui/src/config/breakpoints.ts packages/ui/src/hooks/use-mobile.ts apps/web/src/features/courses/course-data.ts apps/web/src/features/lessons/lesson-generation-rules.ts apps/web/src/features/lessons/lesson-data.ts apps/web/src/lib/api/fake/create-fake-writing-app-api.ts docs/codebase-improvement-progress.md`
 
+## DATA-07 작업 메모
+
+- 대상 파일: `apps/admin-api/src/scripts/seed-admin.ts`, `apps/admin-api/src/scripts/seed-admin-user.ts`, `apps/admin-api/vitest.config.ts`
+- 조사 방향: Bun 전용 DB runtime import와 테스트 가능한 seed 로직을 분리하고, Vitest의 native module 처리 정책을 명시한다.
+- 완료 내용: `seedAdminUser`의 순수 정책을 별도 모듈로 옮기고, 실행 스크립트는 `bun:sqlite`와 DB client/migration을 정적으로 import한다. 실제 Drizzle DB는 좁은 `AdminSeedDatabase` 포트로 연결하고, Vitest 설정에는 `bun:sqlite` 외부화를 명시했다.
+- 검증: `bun --filter @workspace/admin-api typecheck && bun --filter @workspace/admin-api test && bun --filter @workspace/admin-api lint && bun --filter @workspace/admin-api seed:admin`
+
 ## 다음 단계
 
-다음 작업은 P2의 `DATA-07`을 문서 순서대로 진행한다.
+다음 작업은 P2의 `DATA-08`을 문서 순서대로 진행한다.

@@ -1,88 +1,69 @@
 import { verifyPassword } from "better-auth/crypto"
 import { describe, expect, test } from "vitest"
 
-import { adminAccount, adminUser } from "@workspace/db/schema"
+import {
+  type AdminSeedDatabase,
+  seedAdminUser,
+} from "@/scripts/seed-admin-user"
 
-import { type AdminSeedDatabase, seedAdminUser } from "@/scripts/seed-admin"
+interface AdminUserRecord {
+  createdAt: Date
+  email: string
+  emailVerified: boolean
+  id: string
+  name: string
+  updatedAt: Date
+}
 
-type AdminUserInsert = typeof adminUser.$inferInsert
-type AdminAccountInsert = typeof adminAccount.$inferInsert
+interface AdminAccountRecord {
+  accountId: string
+  createdAt: Date
+  id: string
+  password: string
+  providerId: string
+  updatedAt: Date
+  userId: string
+}
 
 function createSeedTestDatabase() {
-  const users: AdminUserInsert[] = []
-  const accounts: AdminAccountInsert[] = []
-
-  function insert(table: typeof adminUser): {
-    values(value: AdminUserInsert): Promise<void>
-  }
-  function insert(table: typeof adminAccount): {
-    values(value: AdminAccountInsert): Promise<void>
-  }
-  function insert(table: typeof adminUser | typeof adminAccount) {
-    return {
-      async values(value: AdminUserInsert | AdminAccountInsert) {
-        if (table === adminUser) {
-          users.push(value as AdminUserInsert)
-          return
-        }
-
-        accounts.push(value as AdminAccountInsert)
-      },
-    }
-  }
+  const users: AdminUserRecord[] = []
+  const accounts: AdminAccountRecord[] = []
 
   const db: AdminSeedDatabase = {
-    query: {
-      adminUser: {
-        async findFirst(input) {
-          let requestedEmail = ""
-
-          input.where(adminUser, {
-            eq(_left, right) {
-              requestedEmail = right
-              return true
-            },
-          })
-
-          return users.find((user) => user.email === requestedEmail)
-        },
-      },
-    },
-    async transaction<T>(
-      callback: (tx: {
-        insert(table: typeof adminUser): {
-          values(value: AdminUserInsert): Promise<void>
-        }
-        insert(table: typeof adminAccount): {
-          values(value: AdminAccountInsert): Promise<void>
-        }
-        update(table: typeof adminAccount): {
-          set(value: Partial<AdminAccountInsert>): {
-            where(condition: unknown): Promise<void>
-          }
-        }
-      }) => Promise<T>
-    ) {
-      return callback({
-        insert,
-        update(table: typeof adminAccount) {
-          return {
-            set(value: Partial<AdminAccountInsert>) {
-              return {
-                async where(_condition: unknown) {
-                  if (table !== adminAccount) {
-                    return
-                  }
-
-                  for (const account of accounts) {
-                    Object.assign(account, value)
-                  }
-                },
-              }
-            },
-          }
-        },
+    async createAdminUserWithCredential(input) {
+      users.push({
+        createdAt: input.createdAt,
+        email: input.email,
+        emailVerified: true,
+        id: input.userId,
+        name: input.name,
+        updatedAt: input.updatedAt,
       })
+
+      accounts.push({
+        accountId: input.userId,
+        createdAt: input.createdAt,
+        id: input.accountId,
+        password: input.passwordHash,
+        providerId: "credential",
+        updatedAt: input.updatedAt,
+        userId: input.userId,
+      })
+    },
+    async findAdminUserByEmail(email) {
+      return users.find((user) => user.email === email)
+    },
+    async updateCredentialPassword(input) {
+      accounts
+        .filter(
+          (account) =>
+            account.userId === input.userId &&
+            account.providerId === "credential"
+        )
+        .forEach((account) => {
+          account.password = input.passwordHash
+          account.updatedAt = input.updatedAt
+        })
     },
   }
 

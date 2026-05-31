@@ -1,142 +1,17 @@
-import { hashPassword } from "better-auth/crypto"
+import Database from "bun:sqlite"
 import { and, eq } from "drizzle-orm"
 
+import { configureSqliteConnection, createDatabase } from "@workspace/db/client"
+import { runContentMigration } from "@workspace/db/migrations/run-content-migration"
 import { adminAccount, adminUser } from "@workspace/db/schema"
 
 import { ensureDatabaseDirectory, parseAdminApiEnv } from "@/env"
+import {
+  type AdminSeedDatabase,
+  seedAdminUser,
+} from "@/scripts/seed-admin-user"
 
-type AdminUserInsert = typeof adminUser.$inferInsert
-type AdminAccountInsert = typeof adminAccount.$inferInsert
-type AdminUserEmailFilter = {
-  where(
-    user: typeof adminUser,
-    operators: {
-      eq(left: typeof adminUser.email, right: string): unknown
-    }
-  ): unknown
-}
-type AdminAccountUpdate = Partial<
-  Pick<AdminAccountInsert, "password" | "updatedAt">
->
-type SqliteDatabase = {
-  close(): void
-  exec(sql: string): unknown
-}
-type SqliteDatabaseConstructor = new (
-  filename: string,
-  options: { create: boolean }
-) => SqliteDatabase
-type AdminDbRuntime = {
-  configureSqliteConnection(sqlite: SqliteDatabase): void
-  createDatabase(sqlite: SqliteDatabase): AdminSeedDatabase
-}
-type AdminMigrationRuntime = {
-  runContentMigration(sqlite: SqliteDatabase): void
-}
-
-export interface AdminSeedDatabase {
-  query: {
-    adminUser: {
-      findFirst(
-        input: AdminUserEmailFilter
-      ): Promise<{ id: string } | undefined>
-    }
-  }
-  transaction<T>(
-    callback: (tx: {
-      insert(table: typeof adminUser): {
-        values(value: AdminUserInsert): Promise<unknown>
-      }
-      insert(table: typeof adminAccount): {
-        values(value: AdminAccountInsert): Promise<unknown>
-      }
-      update(table: typeof adminAccount): {
-        set(value: AdminAccountUpdate): {
-          where(condition: unknown): Promise<unknown>
-        }
-      }
-    }) => Promise<T>
-  ): Promise<T>
-}
-
-export type SeedAdminUserResult =
-  | {
-      status: "created"
-    }
-  | {
-      status: "already-exists"
-    }
-  | {
-      status: "password-updated"
-    }
-
-interface SeedAdminUserInput {
-  email: string
-  name: string
-  password: string
-  resetExistingPassword?: boolean
-}
-
-export async function seedAdminUser(
-  db: AdminSeedDatabase,
-  input: SeedAdminUserInput
-): Promise<SeedAdminUserResult> {
-  const normalizedEmail = input.email.toLowerCase()
-  const existingUser = await db.query.adminUser.findFirst({
-    where: (user, { eq }) => eq(user.email, normalizedEmail),
-  })
-
-  if (existingUser && !input.resetExistingPassword) {
-    return { status: "already-exists" }
-  }
-
-  const now = new Date()
-  const passwordHash = await hashPassword(input.password)
-
-  if (existingUser) {
-    await db.transaction(async (tx) => {
-      await tx
-        .update(adminAccount)
-        .set({
-          password: passwordHash,
-          updatedAt: now,
-        })
-        .where(
-          and(
-            eq(adminAccount.userId, existingUser.id),
-            eq(adminAccount.providerId, "credential")
-          )
-        )
-    })
-
-    return { status: "password-updated" }
-  }
-
-  const userId = crypto.randomUUID()
-
-  await db.transaction(async (tx) => {
-    await tx.insert(adminUser).values({
-      createdAt: now,
-      email: normalizedEmail,
-      emailVerified: true,
-      id: userId,
-      name: input.name,
-      updatedAt: now,
-    })
-
-    await tx.insert(adminAccount).values({
-      accountId: userId,
-      createdAt: now,
-      id: crypto.randomUUID(),
-      password: passwordHash,
-      providerId: "credential",
-      updatedAt: now,
-      userId,
-    })
-  })
-
-  return { status: "created" }
-}
+type AdminDatabase = ReturnType<typeof createDatabase>
 
 function parseRequiredSeedValue(
   env: Record<string, string | undefined>,
@@ -151,22 +26,58 @@ function parseRequiredSeedValue(
   return value
 }
 
+function createAdminSeedDatabase(db: AdminDatabase): AdminSeedDatabase {
+  return {
+    async createAdminUserWithCredential(input) {
+      await db.transaction(async (tx) => {
+        await tx.insert(adminUser).values({
+          createdAt: input.createdAt,
+          email: input.email,
+          emailVerified: true,
+          id: input.userId,
+          name: input.name,
+          updatedAt: input.updatedAt,
+        })
+
+        await tx.insert(adminAccount).values({
+          accountId: input.userId,
+          createdAt: input.createdAt,
+          id: input.accountId,
+          password: input.passwordHash,
+          providerId: "credential",
+          updatedAt: input.updatedAt,
+          userId: input.userId,
+        })
+      })
+    },
+    async findAdminUserByEmail(email) {
+      return db.query.adminUser.findFirst({
+        columns: {
+          id: true,
+        },
+        where: (user, { eq }) => eq(user.email, email),
+      })
+    },
+    async updateCredentialPassword(input) {
+      await db.transaction(async (tx) => {
+        await tx
+          .update(adminAccount)
+          .set({
+            password: input.passwordHash,
+            updatedAt: input.updatedAt,
+          })
+          .where(
+            and(
+              eq(adminAccount.userId, input.userId),
+              eq(adminAccount.providerId, "credential")
+            )
+          )
+      })
+    },
+  }
+}
+
 async function runSeedAdminScript() {
-  const sqliteModuleName = "bun:sqlite"
-  const { default: Database } = (await import(
-    /* @vite-ignore */
-    sqliteModuleName
-  )) as { default: SqliteDatabaseConstructor }
-  const dbClientModuleName = "@workspace/db/client"
-  const { configureSqliteConnection, createDatabase } = (await import(
-    /* @vite-ignore */
-    dbClientModuleName
-  )) as AdminDbRuntime
-  const dbMigrationModuleName = "@workspace/db/migrations/run-content-migration"
-  const { runContentMigration } = (await import(
-    /* @vite-ignore */
-    dbMigrationModuleName
-  )) as AdminMigrationRuntime
   const env = parseAdminApiEnv(Bun.env)
 
   ensureDatabaseDirectory(env.databasePath)
@@ -175,12 +86,15 @@ async function runSeedAdminScript() {
     configureSqliteConnection(sqlite)
     runContentMigration(sqlite)
 
-    const result = await seedAdminUser(createDatabase(sqlite), {
-      email: parseRequiredSeedValue(Bun.env, "ADMIN_SEED_EMAIL"),
-      name: Bun.env["ADMIN_SEED_NAME"] || "관리자",
-      password: parseRequiredSeedValue(Bun.env, "ADMIN_SEED_PASSWORD"),
-      resetExistingPassword: Bun.env["ADMIN_SEED_RESET_PASSWORD"] === "true",
-    })
+    const result = await seedAdminUser(
+      createAdminSeedDatabase(createDatabase(sqlite)),
+      {
+        email: parseRequiredSeedValue(Bun.env, "ADMIN_SEED_EMAIL"),
+        name: Bun.env["ADMIN_SEED_NAME"] || "관리자",
+        password: parseRequiredSeedValue(Bun.env, "ADMIN_SEED_PASSWORD"),
+        resetExistingPassword: Bun.env["ADMIN_SEED_RESET_PASSWORD"] === "true",
+      }
+    )
 
     // eslint-disable-next-line no-console
     console.info(JSON.stringify(result))
