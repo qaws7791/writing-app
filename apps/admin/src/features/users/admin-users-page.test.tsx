@@ -4,57 +4,8 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import type { AdminUserListDto } from "@workspace/core/admin"
 
+import "@/test/ui-mocks"
 import { AdminUsersPage } from "@/features/users/admin-users-page"
-
-type DivProps = React.ComponentProps<"div">
-type SpanProps = React.ComponentProps<"span">
-type TableProps = React.ComponentProps<"table">
-type TableBodyProps = React.ComponentProps<"tbody">
-type TableCellProps = React.ComponentProps<"td">
-type TableHeadProps = React.ComponentProps<"th">
-type TableHeaderProps = React.ComponentProps<"thead">
-type TableRowProps = React.ComponentProps<"tr">
-
-vi.mock("@workspace/ui/components/ui/badge", async () => {
-  const ReactModule = await import("react")
-
-  return {
-    Badge: ({ children, ...props }: SpanProps) =>
-      ReactModule.createElement("span", props, children),
-  }
-})
-
-vi.mock("@workspace/ui/components/ui/empty", async () => {
-  const ReactModule = await import("react")
-  const DivComponent = ({ children, ...props }: DivProps) =>
-    ReactModule.createElement("div", props, children)
-
-  return {
-    Empty: DivComponent,
-    EmptyDescription: DivComponent,
-    EmptyHeader: DivComponent,
-    EmptyTitle: DivComponent,
-  }
-})
-
-vi.mock("@workspace/ui/components/ui/table", async () => {
-  const ReactModule = await import("react")
-
-  return {
-    Table: ({ children, ...props }: TableProps) =>
-      ReactModule.createElement("table", props, children),
-    TableBody: ({ children, ...props }: TableBodyProps) =>
-      ReactModule.createElement("tbody", props, children),
-    TableCell: ({ children, ...props }: TableCellProps) =>
-      ReactModule.createElement("td", props, children),
-    TableHead: ({ children, ...props }: TableHeadProps) =>
-      ReactModule.createElement("th", props, children),
-    TableHeader: ({ children, ...props }: TableHeaderProps) =>
-      ReactModule.createElement("thead", props, children),
-    TableRow: ({ children, ...props }: TableRowProps) =>
-      ReactModule.createElement("tr", props, children),
-  }
-})
 
 vi.mock("@/components/admin-header", async () => {
   const ReactModule = await import("react")

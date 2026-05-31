@@ -4,19 +4,10 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import type { AdminCourseListDto } from "@workspace/core/admin"
 
+import "@/test/ui-mocks"
 import { AdminCoursesPage } from "@/features/courses/admin-courses-page"
 
 type AnchorProps = React.ComponentProps<"a">
-type ButtonProps = React.ComponentProps<"button">
-type DivProps = React.ComponentProps<"div">
-type InputProps = React.ComponentProps<"input">
-type SpanProps = React.ComponentProps<"span">
-type TableProps = React.ComponentProps<"table">
-type TableBodyProps = React.ComponentProps<"tbody">
-type TableCellProps = React.ComponentProps<"td">
-type TableHeadProps = React.ComponentProps<"th">
-type TableHeaderProps = React.ComponentProps<"thead">
-type TableRowProps = React.ComponentProps<"tr">
 
 vi.mock("next/link", async () => {
   const ReactModule = await import("react")
@@ -32,98 +23,6 @@ vi.mock("next/navigation", () => ({
     push: vi.fn(),
   }),
 }))
-
-vi.mock("@workspace/ui/components/ui/badge", async () => {
-  const ReactModule = await import("react")
-
-  return {
-    Badge: ({ children, ...props }: SpanProps) =>
-      ReactModule.createElement("span", props, children),
-  }
-})
-
-vi.mock("@workspace/ui/components/ui/button", async () => {
-  const ReactModule = await import("react")
-
-  return {
-    Button: ({ children, ...props }: ButtonProps) =>
-      ReactModule.createElement("button", props, children),
-  }
-})
-
-vi.mock("@workspace/ui/components/ui/dropdown-menu", async () => {
-  const ReactModule = await import("react")
-  const DivComponent = ({ children, ...props }: DivProps) =>
-    ReactModule.createElement("div", props, children)
-  const TriggerComponent = ({
-    children,
-    render,
-    ...props
-  }: DivProps & { render?: React.ReactNode }) =>
-    ReactModule.createElement("div", props, render ?? children)
-
-  return {
-    DropdownMenu: DivComponent,
-    DropdownMenuCheckboxItem: DivComponent,
-    DropdownMenuContent: DivComponent,
-    DropdownMenuTrigger: TriggerComponent,
-  }
-})
-
-vi.mock("@workspace/ui/components/ui/empty", async () => {
-  const ReactModule = await import("react")
-  const DivComponent = ({ children, ...props }: DivProps) =>
-    ReactModule.createElement("div", props, children)
-
-  return {
-    Empty: DivComponent,
-    EmptyDescription: DivComponent,
-    EmptyHeader: DivComponent,
-    EmptyTitle: DivComponent,
-  }
-})
-
-vi.mock("@workspace/ui/components/ui/input", async () => {
-  const ReactModule = await import("react")
-
-  return {
-    Input: (props: InputProps) => ReactModule.createElement("input", props),
-  }
-})
-
-vi.mock("@workspace/ui/components/ui/select", async () => {
-  const ReactModule = await import("react")
-  const DivComponent = ({ children, ...props }: DivProps) =>
-    ReactModule.createElement("div", props, children)
-
-  return {
-    Select: ({ children }: DivProps) =>
-      ReactModule.createElement("div", null, children),
-    SelectContent: DivComponent,
-    SelectItem: DivComponent,
-    SelectTrigger: DivComponent,
-    SelectValue: DivComponent,
-  }
-})
-
-vi.mock("@workspace/ui/components/ui/table", async () => {
-  const ReactModule = await import("react")
-
-  return {
-    Table: ({ children, ...props }: TableProps) =>
-      ReactModule.createElement("table", props, children),
-    TableBody: ({ children, ...props }: TableBodyProps) =>
-      ReactModule.createElement("tbody", props, children),
-    TableCell: ({ children, ...props }: TableCellProps) =>
-      ReactModule.createElement("td", props, children),
-    TableHead: ({ children, ...props }: TableHeadProps) =>
-      ReactModule.createElement("th", props, children),
-    TableHeader: ({ children, ...props }: TableHeaderProps) =>
-      ReactModule.createElement("thead", props, children),
-    TableRow: ({ children, ...props }: TableRowProps) =>
-      ReactModule.createElement("tr", props, children),
-  }
-})
 
 vi.mock("@/components/admin-header", async () => {
   const ReactModule = await import("react")
