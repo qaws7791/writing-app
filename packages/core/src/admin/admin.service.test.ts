@@ -77,24 +77,6 @@ function createRepository(
         },
       }
     },
-    async saveCurriculumContent() {
-      return {
-        status: "saved",
-        document: {
-          course: {
-            id: "sentence-structure",
-            title: "문장 구조의 기본",
-            description: "문장 구조를 배웁니다.",
-            sortOrder: 1,
-          },
-          revision: 1,
-          curriculum: {
-            chapters: [],
-            steps: [],
-          },
-        },
-      }
-    },
     ...overrides,
   }
 }

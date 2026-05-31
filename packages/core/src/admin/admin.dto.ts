@@ -196,7 +196,7 @@ export const adminCourseEditorDocumentDtoSchema = z.object({
 export const adminCourseEditorDetailDtoSchema =
   adminCourseEditorDocumentDtoSchema
 
-export const adminSaveCurriculumContentRequestDtoSchema = z.object({
+export const adminCourseEditorSaveRequestDtoSchema = z.object({
   courseId: z.string().min(1),
   expectedRevision: z.number().int().nonnegative(),
   course: z.object({
@@ -212,9 +212,6 @@ export const adminSaveCurriculumContentRequestDtoSchema = z.object({
   ),
   steps: z.array(adminEditorStepDetailDtoSchema),
 })
-
-export const adminCourseEditorSaveRequestDtoSchema =
-  adminSaveCurriculumContentRequestDtoSchema
 
 export const adminUserListItemDtoSchema = z.object({
   id: z.string().min(1),
@@ -272,8 +269,5 @@ export type AdminEditorLessonDetailDto = z.infer<
 >
 export type AdminEditorCurriculumDetailDto = z.infer<
   typeof adminEditorCurriculumDetailDtoSchema
->
-export type AdminSaveCurriculumContentRequestDto = z.infer<
-  typeof adminSaveCurriculumContentRequestDtoSchema
 >
 export type AdminUserListDto = z.infer<typeof adminUserListDtoSchema>

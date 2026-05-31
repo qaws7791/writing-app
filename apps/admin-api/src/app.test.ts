@@ -146,12 +146,6 @@ const adminService: AdminService = {
       },
     }
   },
-  async saveCurriculumContent() {
-    return {
-      status: "ok",
-      value: curriculum,
-    }
-  },
   async saveCourseEditorDocument() {
     return {
       status: "ok",

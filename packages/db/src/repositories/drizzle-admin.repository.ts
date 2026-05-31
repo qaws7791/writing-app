@@ -18,7 +18,7 @@ import {
   type AdminEditorStepDetailDto,
   type AdminEditorStepSummaryDto,
   type AdminRepository,
-  type AdminSaveCurriculumContentRequestDto,
+  type AdminCourseEditorSaveRequestDto,
 } from "@workspace/core/admin"
 
 import type { WritingAppDatabase } from "../client"
@@ -186,10 +186,6 @@ export function createDrizzleAdminRepository(
       return mapEditorLessonDetail(lesson, stepRows)
     },
 
-    async saveCurriculumContent(input) {
-      return db.transaction(async (tx) => saveCurrentCurriculum(tx, input))
-    },
-
     async saveCourseEditorDocument(input) {
       return db.transaction(async (tx) => saveCurrentCurriculum(tx, input))
     },
@@ -253,7 +249,7 @@ async function getEditorCurriculum(
 
 async function saveCurrentCurriculum(
   tx: AdminEditorTransaction,
-  input: AdminSaveCurriculumContentRequestDto
+  input: AdminCourseEditorSaveRequestDto
 ) {
   const [course] = await tx
     .select({ categoryId: courses.categoryId })
@@ -446,7 +442,7 @@ async function saveCurrentCurriculum(
 
 async function ensureEditorLessons(
   tx: AdminEditorTransaction,
-  input: AdminSaveCurriculumContentRequestDto,
+  input: AdminCourseEditorSaveRequestDto,
   categoryId: string
 ) {
   if (input.lessons.length === 0) {
@@ -488,7 +484,7 @@ async function ensureEditorLessons(
 
 async function markMissingStepsArchived(
   tx: AdminEditorTransaction,
-  input: AdminSaveCurriculumContentRequestDto
+  input: AdminCourseEditorSaveRequestDto
 ) {
   const lessonIds = [...new Set(input.lessons.map((lesson) => lesson.lessonId))]
   const stepIds = input.steps.map((step) => step.id)

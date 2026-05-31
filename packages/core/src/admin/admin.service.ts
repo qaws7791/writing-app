@@ -3,7 +3,6 @@ import {
   adminCourseEditorDetailDtoSchema,
   adminCourseListDtoSchema,
   adminCourseTreeDtoSchema,
-  adminEditorCurriculumDetailDtoSchema,
   adminEditorLessonDetailDtoSchema,
   adminUserListDtoSchema,
   type AdminCourseEditorDetailDto,
@@ -12,9 +11,7 @@ import {
   type AdminCourseListDto,
   type AdminCourseListInputDto,
   type AdminCourseTreeDto,
-  type AdminEditorCurriculumDetailDto,
   type AdminEditorLessonDetailDto,
-  type AdminSaveCurriculumContentRequestDto,
   type AdminUserListDto,
 } from "./admin.dto"
 import type {
@@ -57,9 +54,6 @@ export interface AdminService {
     courseId: string,
     lessonId: string
   ): Promise<AdminMutationServiceResult<AdminEditorLessonDetailDto>>
-  saveCurriculumContent(
-    input: AdminSaveCurriculumContentRequestDto
-  ): Promise<AdminMutationServiceResult<AdminEditorCurriculumDetailDto>>
   saveCourseEditorDocument(
     input: AdminCourseEditorSaveRequestDto
   ): Promise<AdminMutationServiceResult<AdminCourseEditorDetailDto>>
@@ -156,25 +150,6 @@ export function createAdminService({
         return {
           status: "ok",
           value: adminEditorLessonDetailDtoSchema.parse(lesson),
-        }
-      } catch {
-        return unavailableResult
-      }
-    },
-
-    async saveCurriculumContent(input) {
-      try {
-        const result = await repository.saveCurriculumContent(input)
-
-        if (result.status !== "saved") {
-          return result
-        }
-
-        return {
-          status: "ok",
-          value: adminEditorCurriculumDetailDtoSchema.parse(
-            result.document.curriculum
-          ),
         }
       } catch {
         return unavailableResult

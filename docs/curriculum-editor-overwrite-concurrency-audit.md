@@ -9,7 +9,7 @@
 ## 확인한 구현
 
 - `packages/db/src/repositories/drizzle-admin.repository.ts`
-  - `saveCurriculumContent`와 `saveCourseEditorDocument`가 모두 같은 `saveCurrentCurriculum` 트랜잭션을 호출한다.
+  - `saveCourseEditorDocument`가 `saveCurrentCurriculum` 트랜잭션을 호출한다.
   - `saveCurrentCurriculum`은 `courses`를 `courseId`만으로 갱신한다.
   - 기존 챕터 ID 목록을 조회한 뒤 `course_lessons`를 삭제하고 `course_chapters`를 삭제한다.
   - 이후 요청 본문의 `chapters`, `lessons`를 그대로 삽입한다.

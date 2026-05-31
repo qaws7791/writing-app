@@ -1,8 +1,8 @@
 import type {
   AdminEditorStepType,
   AdminCourseDetailDto,
+  AdminCourseEditorSaveRequestDto,
   AdminEditorCurriculumDetailDto,
-  AdminSaveCurriculumContentRequestDto,
 } from "@workspace/core/admin"
 
 import type { EditorChange } from "@/features/courses/course-editor/editor-change-kind"
@@ -357,7 +357,7 @@ export function archiveStep(
 
 export function createCourseEditorSaveInput(
   workingCopy: CourseEditorWorkingCopy
-): AdminSaveCurriculumContentRequestDto {
+): AdminCourseEditorSaveRequestDto {
   return {
     courseId: workingCopy.course.id,
     expectedRevision: workingCopy.revision,
@@ -582,8 +582,8 @@ function updateCourseEditorStepContent(
 
 function createCourseEditorStepSavePayloads(
   steps: CourseEditorStep[]
-): AdminSaveCurriculumContentRequestDto["steps"] {
-  return steps as AdminSaveCurriculumContentRequestDto["steps"]
+): AdminCourseEditorSaveRequestDto["steps"] {
+  return steps as AdminCourseEditorSaveRequestDto["steps"]
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

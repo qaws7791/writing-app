@@ -6,7 +6,6 @@ import type {
   AdminCourseListInputDto,
   AdminCourseTreeDto,
   AdminEditorLessonDetailDto,
-  AdminSaveCurriculumContentRequestDto,
   AdminUserListDto,
 } from "./admin.dto"
 import type {
@@ -15,7 +14,7 @@ import type {
   AdminNotFoundErrorDto,
 } from "./admin.errors"
 
-export type AdminSaveCurriculumContentRepositoryResult =
+export type AdminCourseEditorSaveRepositoryResult =
   | {
       status: "saved"
       document: AdminCourseEditorDetailDto
@@ -44,11 +43,8 @@ export interface AdminRepository {
     courseId: string,
     lessonId: string
   ): Promise<AdminEditorLessonDetailDto | undefined>
-  saveCurriculumContent(
-    input: AdminSaveCurriculumContentRequestDto
-  ): Promise<AdminSaveCurriculumContentRepositoryResult>
   saveCourseEditorDocument(
     input: AdminCourseEditorSaveRequestDto
-  ): Promise<AdminSaveCurriculumContentRepositoryResult>
+  ): Promise<AdminCourseEditorSaveRepositoryResult>
   listUsers(): Promise<AdminUserListDto>
 }
