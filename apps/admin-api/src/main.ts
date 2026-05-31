@@ -2,7 +2,6 @@ import Database from "bun:sqlite"
 
 import { createAdminService } from "@workspace/core/admin"
 import { configureSqliteConnection, createDatabase } from "@workspace/db/client"
-import { runContentMigration } from "@workspace/db/migrations/run-content-migration"
 import { createDrizzleAdminRepository } from "@workspace/db/repositories/drizzle-admin.repository"
 import { createLogger } from "@workspace/logger"
 
@@ -21,7 +20,6 @@ ensureDatabaseDirectory(env.databasePath)
 
 const sqlite = new Database(env.databasePath, { create: true })
 configureSqliteConnection(sqlite)
-runContentMigration(sqlite)
 
 const db = createDatabase(sqlite)
 const adminService = createAdminService({

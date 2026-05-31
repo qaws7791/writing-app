@@ -21,8 +21,8 @@
 |    3 | ARCH-01   | 완료    | 패키지 공개 경계와 내부 경로 직접 참조를 정리했다.  |
 |    4 | AUTH-01   | 완료    | 어드민 인증 확인을 전용 세션 API로 분리했다.        |
 |    5 | DATA-01   | 완료    | 마이그레이션 적용 이력 관리를 도입했다.             |
-|    6 | DATA-02   | 진행 중 | 서버 시작 시 자동 데이터 변경 작업을 분리한다.      |
-|    7 | DATA-03   | 대기    | Step content JSON 계약을 경계별로 엄격히 검증한다.  |
+|    6 | DATA-02   | 완료    | 서버 시작 시 자동 데이터 변경 작업을 분리했다.      |
+|    7 | DATA-03   | 진행 중 | Step content JSON 계약을 경계별로 엄격히 검증한다.  |
 |    8 | DOMAIN-01 | 대기    | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다. |
 
 ## ADMIN-08 작업 메모
@@ -65,4 +65,11 @@
 
 - 대상 파일: `apps/api/src/main.ts`, `apps/admin-api/src/main.ts`, `packages/db/src/seeds/seed-content.ts`, 운영 문서
 - 조사 방향: 서버 시작이 seed나 migration 같은 데이터 변경 작업을 자동 수행하는 경로를 찾고 명시 실행 단계로 분리한다.
-- 완료 조건: 운영 기본 서버 시작은 콘텐츠 seed를 덮어쓰지 않고, migration 실행 여부는 명시 설정이나 별도 명령으로 관찰 가능하게 분리된다.
+- 완료 내용: API와 Admin API 서버 시작에서 migration/seed 실행을 제거했다. `db:migrate` 명령을 추가하고 로컬 `dev:app`은 명시 setup 후 서버를 시작한다.
+- 검증: `bun --filter @workspace/api test src/main.test.ts && bun --filter @workspace/api typecheck && bun --filter @workspace/admin-api typecheck && bun --filter @workspace/db typecheck && bun --filter @workspace/api lint && bun --filter @workspace/admin-api lint && bun --filter @workspace/db lint`
+
+## DATA-03 작업 메모
+
+- 대상 파일: `packages/core/src/admin/admin.dto.ts`, `packages/db/src/repositories/drizzle-admin.repository.ts`, `apps/admin-api/src/routes/curriculum-editor.route.ts`
+- 조사 방향: admin save/read 경계에서 step type별 content schema를 적용할 수 있는 가장 작은 core 계약을 찾는다.
+- 완료 조건: 잘못된 step content는 저장 시점에 거부되고, DB/admin/frontend 경계가 같은 step content 계약을 공유한다.

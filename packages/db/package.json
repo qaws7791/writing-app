@@ -12,6 +12,7 @@
     "./seed": "./src/seeds/index.ts"
   },
   "scripts": {
+    "db:migrate": "bun src/migrations/migrate.ts",
     "db:seed": "bun src/seeds/seed.ts",
     "lint": "eslint .",
     "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",

@@ -1,6 +1,6 @@
 import { createServer } from "node:net"
 import { rm } from "node:fs/promises"
-import { spawn } from "node:child_process"
+import { spawn, spawnSync } from "node:child_process"
 import { fileURLToPath } from "node:url"
 import { join } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
@@ -9,6 +9,8 @@ const smokeDatabasePath = "data/test-startup.sqlite"
 
 afterEach(async () => {
   await rm(smokeDatabasePath, { force: true })
+  await rm(`${smokeDatabasePath}-shm`, { force: true })
+  await rm(`${smokeDatabasePath}-wal`, { force: true })
 })
 
 describe("api startup", () => {
@@ -46,6 +48,12 @@ describe("api startup", () => {
         database: "ok",
         status: "ok",
       })
+      expect(readTableNames(smokeDatabasePath)).not.toContain(
+        "schema_migrations"
+      )
+      expect(readTableNames(smokeDatabasePath)).not.toContain(
+        "course_categories"
+      )
     } finally {
       apiProcess.kill()
       await exited
@@ -79,6 +87,34 @@ async function waitForHealth(
   }
 
   throw new Error("API did not start before the timeout.")
+}
+
+function readTableNames(databasePath: string) {
+  const result = spawnSync(
+    resolveBunExecutable(),
+    [
+      "--eval",
+      `
+        import { Database } from "bun:sqlite";
+        const sqlite = new Database(${JSON.stringify(databasePath)});
+        const tables = sqlite
+          .query("select name from sqlite_master where type = 'table' order by name")
+          .all()
+          .map((row) => row.name);
+        sqlite.close();
+        console.log(JSON.stringify(tables));
+      `,
+    ],
+    {
+      encoding: "utf8",
+    }
+  )
+
+  if (result.status !== 0) {
+    throw new Error(result.stderr)
+  }
+
+  return JSON.parse(result.stdout) as string[]
 }
 
 function sleep(milliseconds: number) {

@@ -29,6 +29,8 @@ type SqliteDatabaseConstructor = new (
 type AdminDbRuntime = {
   configureSqliteConnection(sqlite: SqliteDatabase): void
   createDatabase(sqlite: SqliteDatabase): AdminSeedDatabase
+}
+type AdminMigrationRuntime = {
   runContentMigration(sqlite: SqliteDatabase): void
 }
 
@@ -155,12 +157,16 @@ async function runSeedAdminScript() {
     /* @vite-ignore */
     sqliteModuleName
   )) as { default: SqliteDatabaseConstructor }
-  const dbModuleName = "@workspace/db"
-  const { configureSqliteConnection, createDatabase, runContentMigration } =
-    (await import(
-      /* @vite-ignore */
-      dbModuleName
-    )) as AdminDbRuntime
+  const dbClientModuleName = "@workspace/db/client"
+  const { configureSqliteConnection, createDatabase } = (await import(
+    /* @vite-ignore */
+    dbClientModuleName
+  )) as AdminDbRuntime
+  const dbMigrationModuleName = "@workspace/db/migrations/run-content-migration"
+  const { runContentMigration } = (await import(
+    /* @vite-ignore */
+    dbMigrationModuleName
+  )) as AdminMigrationRuntime
   const env = parseAdminApiEnv(Bun.env)
 
   ensureDatabaseDirectory(env.databasePath)

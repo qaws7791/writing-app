@@ -11,7 +11,7 @@
 
 ## SQLite 연결 정책
 
-`apps/api`, `apps/admin-api`, 콘텐츠 시드, 관리자 시드는 `@workspace/db`의 공통 SQLite 연결 설정을 사용한다. 설정은 `new Database(...)` 직후와 마이그레이션 실행 전에 적용한다.
+`apps/api`, `apps/admin-api`, 콘텐츠 시드, 관리자 시드는 `@workspace/db`의 공통 SQLite 연결 설정을 사용한다. 설정은 `new Database(...)` 직후 적용한다. 서버 프로세스 시작은 데이터 변경 작업을 수행하지 않으며, 마이그레이션과 시드는 배포 또는 로컬 실행 전에 명시 명령으로 먼저 실행한다.
 
 | PRAGMA               | 값          | 목적                                                                 |
 | -------------------- | ----------- | -------------------------------------------------------------------- |
@@ -41,7 +41,19 @@ SQLite 파일은 API 프로세스와 같은 로컬 디스크에 둔다. 여러 �
 
 로컬 예시는 각 앱의 `.env.example`을 기준으로 만든다. API 앱 패키지에서 실행되는 `DATABASE_URL=file:../../data/api.sqlite`는 저장소 루트의 `data/api.sqlite`를 가리킨다.
 
-루트 `package.json`은 환경 변수 값을 주입하지 않는다. `bun dev:admin`은 실행 전에 `bun run dev:admin:setup`으로 콘텐츠 시드와 관리자 계정 시드를 실행하지만, 필요한 값은 `.env`, 셸, CI 같은 실행 환경에서 명시적으로 제공되어야 한다. 필수 환경 변수가 없으면 `apps/admin-api/src/env.ts` 또는 `apps/admin-api/src/scripts/seed-admin.ts`에서 즉시 실패한다.
+루트 `package.json`은 환경 변수 값을 주입하지 않는다. `bun dev:app`은 실행 전에 `bun run dev:app:setup`으로 콘텐츠 마이그레이션과 시드를 실행한다. `bun dev:admin`은 실행 전에 `bun run dev:admin:setup`으로 콘텐츠 시드와 관리자 계정 시드를 실행한다. 필요한 값은 `.env`, 셸, CI 같은 실행 환경에서 명시적으로 제공되어야 한다. 필수 환경 변수가 없으면 `apps/admin-api/src/env.ts` 또는 `apps/admin-api/src/scripts/seed-admin.ts`에서 즉시 실패한다.
+
+## 데이터베이스 준비 명령
+
+서버 시작 명령은 운영 데이터를 변경하지 않는다. 배포 파이프라인이나 로컬 setup 단계에서 다음 명령을 명시적으로 실행한다.
+
+| 목적                            | 명령                                           | 비고                                                      |
+| ------------------------------- | ---------------------------------------------- | --------------------------------------------------------- |
+| 스키마 마이그레이션만 적용      | `bun --filter @workspace/db db:migrate`        | `schema_migrations`에 적용 이력과 checksum을 기록한다.    |
+| 콘텐츠 마이그레이션과 시드 적용 | `bun --filter @workspace/db db:seed`           | 로컬 개발이나 콘텐츠 초기화가 필요한 환경에서만 사용한다. |
+| 최초 관리자 계정 생성           | `bun --filter @workspace/admin-api seed:admin` | 운영 배포 직후 한 번만 실행한다.                          |
+
+운영에서는 `db:migrate`를 먼저 실행하고, 콘텐츠를 덮어써야 하는 명확한 운영 절차가 있을 때만 `db:seed`를 사용한다.
 
 - `apps/api/.env.example`
 - `apps/admin/.env.example`
