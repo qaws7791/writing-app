@@ -149,7 +149,7 @@ OpenAPI 정적 계약 파일은 `docs/openapi/writing-app-api.json`에 생성한
 
 ### 13. 학습자 API와 웹 앱 통합
 
-현재는 `apps/web`과 `apps/api`가 별도 프로세스다. 이 때문에 CORS, same-origin auth proxy, 서버/브라우저 API base URL, systemd 프로세스 2개가 필요하다.
+현재는 `apps/web`과 `apps/api`가 별도 프로세스다. 이 때문에 CORS, 서버/브라우저 API base URL, systemd 프로세스 2개가 필요하다. 인증 요청은 Next.js 프록시 없이 Hono API의 `/api/auth/*` endpoint를 직접 호출한다.
 
 추천은 즉시 실행보다 2차 단순화 후보로 둔다. 먼저 썸네일, 커리큘럼 버전, 이메일/비밀번호 인증 경로를 제거한 뒤에도 프로세스 분리가 여전히 부담이면 `apps/web` 안의 route handler 또는 server action으로 API를 합친다. 합치면 배포는 Next 앱 하나와 SQLite 하나로 줄어든다.
 

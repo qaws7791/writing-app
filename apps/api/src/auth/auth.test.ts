@@ -47,9 +47,9 @@ describe("createAuthRuntime", () => {
     )
   })
 
-  it("trusts proxy headers for auth requests proxied by the web app", () => {
+  it("does not trust application proxy headers for direct API auth requests", () => {
     const input = {
-      baseUrl: "http://localhost:4000",
+      baseUrl: "https://api.example.com",
       db: {} as WritingAppDatabase,
       googleClientId: "google-client-id",
       googleClientSecret: "google-client-secret",
@@ -60,9 +60,34 @@ describe("createAuthRuntime", () => {
 
     expect(authMocks.betterAuth).toHaveBeenCalledWith(
       expect.objectContaining({
-        advanced: expect.objectContaining({
+        advanced: expect.not.objectContaining({
           trustedProxyHeaders: true,
         }),
+      })
+    )
+  })
+
+  it("enables cross-subdomain cookies when a cookie domain is configured", () => {
+    const input = {
+      baseUrl: "https://api.example.com",
+      cookieDomain: "example.com",
+      db: {} as WritingAppDatabase,
+      googleClientId: "google-client-id",
+      googleClientSecret: "google-client-secret",
+      secret: "test-secret-with-enough-length",
+      trustedOrigins: ["https://app.example.com"],
+    }
+
+    createAuthRuntime(input)
+
+    expect(authMocks.betterAuth).toHaveBeenCalledWith(
+      expect.objectContaining({
+        advanced: {
+          crossSubDomainCookies: {
+            domain: "example.com",
+            enabled: true,
+          },
+        },
       })
     )
   })

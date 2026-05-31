@@ -14,7 +14,7 @@
 
 현재 API 라우트는 버전 접두사 없이 노출한다. 사용자 정보가 필요하지 않은 콘텐츠 조회 API는 공개로 유지하고, 사용자별 데이터가 필요한 API만 Better Auth 세션 인증을 요구한다.
 
-학습자 인증은 Google OAuth를 단일 진입점으로 사용한다. 학습자용 Better Auth 런타임은 이메일/비밀번호 가입과 로그인을 활성화하지 않는다.
+학습자 인증은 Google OAuth를 단일 진입점으로 사용한다. 학습자용 Better Auth 런타임은 이메일/비밀번호 가입과 로그인을 활성화하지 않는다. Next.js 앱은 `/api/auth/*`를 프록시하지 않는다. 인증 요청의 public endpoint는 Hono API 서버이며, CORS origin과 Better Auth trusted origin이 같은 목록을 기준으로 검증한다.
 
 - `GET /health`
 - `GET /openapi.json`
@@ -40,6 +40,7 @@ SQLite 연결은 `@workspace/db`의 공통 설정을 사용하며, WAL 모드, �
 | ---------------------- | --------- | --------------------------------------------- | --------------------------------------------------------------------- |
 | `BETTER_AUTH_SECRET`   | 필수      | `replace-with-local-auth-secret`              | Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                   |
 | `BETTER_AUTH_URL`      | 필수      | `http://localhost:4000`                       | Better Auth가 콜백과 인증 URL을 계산할 때 사용하는 API 기준 URL       |
+| `BETTER_AUTH_COOKIE_DOMAIN` | 선택      | 비움 또는 `example.com`                       | 웹과 API가 같은 parent domain의 서로 다른 서브도메인일 때 Better Auth 세션 쿠키를 공유할 domain |
 | `CORS_ORIGIN`          | 선택      | `http://localhost:3000,http://localhost:3001` | 자격 증명 포함 요청을 허용할 프론트엔드 origin 목록                   |
 | `DATABASE_URL`         | 필수      | `file:../../data/api.sqlite`                  | 저장소 루트 `data/api.sqlite` SQLite 데이터베이스 위치                |
 | `GOOGLE_CLIENT_ID`     | 필수      | `replace-with-google-client-id`               | Google OAuth 클라이언트 ID                                            |
@@ -71,7 +72,7 @@ bun --filter @workspace/api dev
 - `GET /courses/:courseId/lessons/:lessonId`
 - `GET /users`
 
-관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다. `admin_` 테이블 prefix와 Better Auth 컬럼명 보존 규칙은 `docs/schema-conventions.md`를 따른다.
+관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다. `admin_` 테이블 prefix와 Better Auth 컬럼명 보존 규칙은 `docs/schema-conventions.md`를 따른다. Next.js 어드민 앱은 `/api/auth/*`를 프록시하지 않고 어드민 Hono API의 인증 endpoint를 직접 호출한다.
 
 어드민 API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL`의 `file:` prefix 제거, `ADMIN_CORS_ORIGIN` 분리, 기본 포트 `4001` 같은 앱별 의미 변환은 `apps/admin-api/src/env.ts`에 유지한다.
 SQLite 연결은 학습자 API와 같은 `@workspace/db` 공통 설정을 사용한다. 따라서 어드민 API도 마이그레이션과 런타임 쿼리 전에 WAL 모드, 외래키 검사, `busy_timeout`, 체크포인트, 캐시 관련 PRAGMA를 적용한다.
@@ -80,6 +81,7 @@ SQLite 연결은 학습자 API와 같은 `@workspace/db` 공통 설정을 사용
 | --------------------------- | --------- | ----------------------------------- | ------------------------------------------------------------------------- |
 | `ADMIN_BETTER_AUTH_SECRET`  | 필수      | `replace-with-admin-auth-secret`    | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                |
 | `ADMIN_BETTER_AUTH_URL`     | 필수      | `http://localhost:4001`             | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL           |
+| `ADMIN_BETTER_AUTH_COOKIE_DOMAIN` | 선택      | 비움 또는 `example.com`             | 어드민 웹과 어드민 API가 같은 parent domain의 서로 다른 서브도메인일 때 관리자 세션 쿠키를 공유할 domain |
 | `ADMIN_CORS_ORIGIN`         | 선택      | `http://localhost:3001`             | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin                     |
 | `DATABASE_URL`              | 필수      | `file:../../data/api.sqlite`        | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치 |
 | `LOG_LEVEL`                 | 선택      | `info`                              | Pino 로그 레벨                                                            |

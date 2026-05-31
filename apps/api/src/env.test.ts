@@ -58,11 +58,32 @@ describe("parseApiEnv", () => {
     expect(env).toMatchObject({
       betterAuthSecret: "test-secret-with-enough-length",
       betterAuthUrl: "http://localhost:4000",
+      cookieDomain: undefined,
       databasePath: "data/test-api.sqlite",
       googleClientId: "google-client-id",
       googleClientSecret: "google-client-secret",
       openAiApiKey: "openai-api-key",
       openAiModel: "gpt-5-mini",
+    })
+  })
+
+  it("parses optional Better Auth cookie domain", () => {
+    const env = parseApiEnv({
+      BETTER_AUTH_COOKIE_DOMAIN: "example.com",
+      BETTER_AUTH_SECRET: "test-secret-with-enough-length",
+      BETTER_AUTH_URL: "https://api.example.com",
+      CORS_ORIGIN: "https://app.example.com",
+      DATABASE_URL: "file:data/test-api.sqlite",
+      GOOGLE_CLIENT_ID: "google-client-id",
+      GOOGLE_CLIENT_SECRET: "google-client-secret",
+      OPENAI_API_KEY: "openai-api-key",
+      OPENAI_MODEL: "gpt-5-mini",
+    })
+
+    expect(env).toMatchObject({
+      betterAuthUrl: "https://api.example.com",
+      cookieDomain: "example.com",
+      corsOrigins: ["https://app.example.com"],
     })
   })
 })

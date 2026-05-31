@@ -82,7 +82,12 @@ describe("AdminAuthPage", () => {
     )
     vi.stubGlobal("fetch", fetch)
 
-    render(<AdminAuthPage nextPath="/users?status=active" />)
+    render(
+      <AdminAuthPage
+        authBaseUrl="http://localhost:4001"
+        nextPath="/users?status=active"
+      />
+    )
 
     await userEvent.type(screen.getByLabelText("이메일"), "admin@example.com")
     await userEvent.type(screen.getByLabelText("비밀번호"), "password-1234")
@@ -93,7 +98,7 @@ describe("AdminAuthPage", () => {
     )
     expect(refresh).toHaveBeenCalledOnce()
     expect(fetch).toHaveBeenCalledWith(
-      "/api/auth/sign-in/email",
+      "http://localhost:4001/api/auth/sign-in/email",
       expect.objectContaining({
         credentials: "include",
         method: "POST",

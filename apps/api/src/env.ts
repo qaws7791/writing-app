@@ -6,6 +6,7 @@ import { z } from "zod"
 const localCorsOrigins = "http://localhost:3000,http://localhost:3001"
 
 const apiEnvSchema = z.object({
+  BETTER_AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
   BETTER_AUTH_SECRET: z.string().min(1),
   BETTER_AUTH_URL: z.string().url(),
   CORS_ORIGIN: z.string().default(localCorsOrigins),
@@ -32,6 +33,7 @@ export function parseApiEnv(rawEnv: RawEnv) {
   return {
     betterAuthSecret: env.BETTER_AUTH_SECRET,
     betterAuthUrl: env.BETTER_AUTH_URL,
+    cookieDomain: env.BETTER_AUTH_COOKIE_DOMAIN,
     corsOrigins: env.CORS_ORIGIN.split(",")
       .map((origin) => origin.trim())
       .filter(Boolean),
