@@ -54,8 +54,8 @@ export function createStepForm(
                   className="flex items-center gap-2 text-sm"
                 >
                   <input
+                    checked={fieldValue === true}
                     className="size-4"
-                    defaultChecked={fieldValue === true}
                     disabled={isReadOnly}
                     type="checkbox"
                     onChange={(event) =>

@@ -208,6 +208,54 @@ describe("StepWorkspace", () => {
     )
   })
 
+  it("updates boolean field checked state when step content changes", () => {
+    const { rerender } = render(
+      <StepWorkspace
+        lessonSteps={[]}
+        step={{
+          id: "checklist-step",
+          lessonId: "lesson-1",
+          type: "CHECKLIST",
+          title: "점검표",
+          sortOrder: 1,
+          points: 10,
+          required: true,
+          status: "active",
+          content: {
+            saveResponses: false,
+          },
+        }}
+      />
+    )
+
+    expect(
+      (screen.getByLabelText("응답 저장") as HTMLInputElement).checked
+    ).toBe(false)
+
+    rerender(
+      <StepWorkspace
+        lessonSteps={[]}
+        step={{
+          id: "checklist-step",
+          lessonId: "lesson-1",
+          type: "CHECKLIST",
+          title: "점검표",
+          sortOrder: 1,
+          points: 10,
+          required: true,
+          status: "active",
+          content: {
+            saveResponses: true,
+          },
+        }}
+      />
+    )
+
+    expect(
+      (screen.getByLabelText("응답 저장") as HTMLInputElement).checked
+    ).toBe(true)
+  })
+
   it("renders summary point objects without losing their text values", () => {
     render(
       <StepWorkspace
