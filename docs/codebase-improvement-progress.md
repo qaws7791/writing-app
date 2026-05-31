@@ -46,6 +46,7 @@
 |   28 | ADMIN-05  | 완료 | 에디터 저장 상태 toast를 typed status로 전환했다.    |
 |   29 | ADMIN-06  | 완료 | 보관 확인을 command layer에서 화면 dialog로 옮겼다.  |
 |   30 | ARCH-03   | 완료 | 비어 있거나 오래된 문서를 현재 코드 상태로 갱신했다. |
+|   31 | ARCH-04   | 완료 | Repomix 합본 프로필을 코드/분석 관점으로 분리했다.   |
 
 ## ADMIN-08 작업 메모
 
@@ -268,6 +269,13 @@
 - 완료 내용: `CONTEXT.md`에 제품 목표와 런타임 경계를 추가하고, `GLOSSARY.md`에 핵심 도메인/아키텍처 용어를 정의했다. `apps/web/README.md`는 실제 App Router 라우트와 feature 구조 기준으로 갱신했고, `FRONTEND.md`는 현재 구현 기준의 한국어 프론트엔드 가이드로 정리했다.
 - 검증: `bun prettier --check CONTEXT.md GLOSSARY.md FRONTEND.md apps/web/README.md docs/codebase-improvement-progress.md && bun lefthook run pre-commit`
 
+## ARCH-04 작업 메모
+
+- 대상 파일: `package.json`, `.gitignore`
+- 조사 방향: 기존 `repomix` 명령이 `docs`, `packages/config`, `scripts`, `apps/storybook`을 모두 제외하는 단일 코드 중심 합본만 생성하는 지점을 확인한다. 품질 게이트와 아키텍처 리뷰에 필요한 문서, 공통 설정, lint-staged 스크립트, Storybook 설정을 포함하는 별도 프로필을 추가한다.
+- 완료 내용: 기존 `repomix`는 `repomix:code` 별칭으로 유지하고, `repomix:analysis`를 추가해 루트 설계 문서, `docs/*.md`, OpenAPI 정적 계약, `packages/config`, `scripts`, Storybook 설정과 stories를 포함한다. 생성 산출물인 `codebase.md`, `codebase-analysis.md`는 `.gitignore`에 추가했다.
+- 검증: `bun run repomix:code -- --no-files --top-files-len 5 && bun run repomix:analysis -- --no-files --token-count-tree 1 --top-files-len 10 && bun run repomix:analysis && rg -n "^## File: (docs/|packages/config/|scripts/|apps/storybook/)" codebase-analysis.md && rg -n "^## File: (prototype/|\\.worktrees/|docs/superpowers/|apps/storybook/dist/|apps/storybook/\\.turbo/|combined-codebase-improvements\\.md|codebase\\.md|codebase-analysis\\.md)" codebase-analysis.md codebase.md`
+
 ## 다음 단계
 
-다음 작업은 P2의 `ARCH-04`를 문서 순서대로 진행한다.
+다음 작업은 P2의 `ARCH-05`를 문서 순서대로 진행한다.

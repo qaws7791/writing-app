@@ -38,6 +38,8 @@ npm-debug.log*
 # Misc
 .DS_Store
 *.pem
+codebase.md
+codebase-analysis.md
 docs/.obsidian/
 
 # Agent skills (Antigravity)

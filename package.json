@@ -22,7 +22,9 @@
     "test:coverage": "node ./node_modules/vitest/vitest.mjs run --config vitest.workspace.ts --coverage",
     "typecheck": "turbo typecheck",
     "prepare": "lefthook install",
-    "repomix": "bunx repomix --style markdown --output codebase.md --remove-empty-lines --ignore 'sonnet-to-react, .agents, apps/storybook, docs, packages/config, scripts'"
+    "repomix": "bun run repomix:code",
+    "repomix:analysis": "bunx repomix --style markdown --output codebase-analysis.md --remove-empty-lines --include 'AGENTS.md,README.md,CONTEXT.md,ARCHITECTURE.md,DOMAIN.md,FRONTEND.md,BACKEND.md,GLOSSARY.md,docs/*.md,docs/openapi/**/*.json,packages/config/**,scripts/**,apps/storybook/**' --ignore 'prototype/**,.worktrees/**,codebase.md,codebase-analysis.md,combined-codebase-improvements.md,apps/storybook/dist/**,apps/storybook/.turbo/**,apps/storybook/build-output.log'",
+    "repomix:code": "bunx repomix --style markdown --output codebase.md --remove-empty-lines --ignore 'sonnet-to-react, .agents, apps/storybook, docs, packages/config, scripts, prototype, .worktrees, codebase.md, codebase-analysis.md, combined-codebase-improvements.md'"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
