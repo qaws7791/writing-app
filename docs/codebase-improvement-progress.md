@@ -26,6 +26,7 @@
 |    8 | DOMAIN-01 | 완료 | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다. |
 |    9 | ADMIN-01  | 완료 | CourseEditorProvider의 URL/저장 책임을 분리했다.    |
 |   10 | ADMIN-02  | 완료 | 에디터 선택 파생 계산과 step source를 정리했다.     |
+|   11 | ADMIN-03  | 완료 | 커리큘럼 맵 내부 prop 전달을 줄였다.                |
 
 ## ADMIN-08 작업 메모
 
@@ -100,6 +101,13 @@
 - 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/editor-selectors.test.ts src/features/courses/course-editor/editor-state.test.ts src/features/courses/course-editor/course-editor-shell.test.tsx && bun --filter @workspace/admin lint`
 - 참고: `bun --filter @workspace/admin typecheck`는 기존 admin fixture와 draft step content 타입 불일치로 실패한다. step form의 content 타입 정리는 `ADMIN-07`에서 별도로 처리한다.
 
+## ADMIN-03 작업 메모
+
+- 대상 파일: `apps/admin/src/features/courses/course-editor/curriculum-map.tsx`
+- 조사 방향: CourseEditorShell과 panel 경계는 이미 context 기반으로 정리되어 있으므로, 남은 prop drilling이 실제로 발생하는 `CurriculumMap` 내부 private 컴포넌트 계층을 확인한다.
+- 완료 내용: `CurriculumMap` 외부 props 계약은 유지하고, 파일 내부에 private context를 추가해 `ChapterSection`과 `SortableLessonButton`이 읽기 전용 상태와 액션 콜백을 직접 읽도록 정리했다.
+- 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/curriculum-map.test.tsx src/features/courses/course-editor/course-editor-shell.test.tsx && bun --filter @workspace/admin lint`
+
 ## 다음 단계
 
-다음 작업은 P1의 `ADMIN-03`을 문서 순서대로 진행한다.
+다음 작업은 P1의 `ADMIN-04`를 문서 순서대로 진행한다.

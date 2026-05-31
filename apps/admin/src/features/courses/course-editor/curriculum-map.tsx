@@ -57,6 +57,23 @@ type CurriculumMapProps = {
   ) => void
 }
 
+type CurriculumMapContextValue = {
+  isReadOnly: boolean
+  onAddLesson?: (chapterId: string) => void
+  onArchiveChapter?: (chapterId: string) => void
+  onArchiveLesson?: (lessonId: string) => void
+  onSelectLesson?: (lessonId: string) => void
+  onUpdateChapterField?: (
+    chapterId: string,
+    field: "title",
+    value: string
+  ) => void
+  selectedLessonId: string | null
+}
+
+const CurriculumMapContext =
+  React.createContext<CurriculumMapContextValue | null>(null)
+
 export function CurriculumMap({
   chapters,
   isReadOnly = false,
@@ -70,6 +87,26 @@ export function CurriculumMap({
   onUpdateChapterField,
 }: CurriculumMapProps) {
   const flatLessons = chapters.flatMap((chapter) => chapter.lessons)
+  const contextValue = React.useMemo<CurriculumMapContextValue>(
+    () => ({
+      isReadOnly,
+      onAddLesson,
+      onArchiveChapter,
+      onArchiveLesson,
+      onSelectLesson,
+      onUpdateChapterField,
+      selectedLessonId,
+    }),
+    [
+      isReadOnly,
+      onAddLesson,
+      onArchiveChapter,
+      onArchiveLesson,
+      onSelectLesson,
+      onUpdateChapterField,
+      selectedLessonId,
+    ]
+  )
 
   function handleDragEnd(event: DragEndEvent) {
     if (!event.over || event.active.id === event.over.id) {
@@ -94,68 +131,50 @@ export function CurriculumMap({
       >
         커리큘럼
       </h2>
-      <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="space-y-1">
-          {chapters.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted-foreground">
-              챕터를 추가하세요
-            </p>
-          ) : (
-            chapters.map((chapter) => (
-              <ChapterSection
-                key={chapter.id}
-                chapter={chapter}
-                isReadOnly={isReadOnly}
-                selectedLessonId={selectedLessonId}
-                onAddLesson={onAddLesson}
-                onArchiveChapter={onArchiveChapter}
-                onArchiveLesson={onArchiveLesson}
-                onSelectLesson={onSelectLesson}
-                onUpdateChapterField={onUpdateChapterField}
-              />
-            ))
-          )}
-        </div>
-      </DndContext>
-      {!isReadOnly && (
-        <button
-          type="button"
-          className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
-          onClick={onAddChapter}
+      <CurriculumMapContext.Provider value={contextValue}>
+        <DndContext
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
         >
-          <Plus aria-hidden="true" className="size-3.5" />
-          챕터 추가
-        </button>
-      )}
+          <div className="space-y-1">
+            {chapters.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                챕터를 추가하세요
+              </p>
+            ) : (
+              chapters.map((chapter) => (
+                <ChapterSection key={chapter.id} chapter={chapter} />
+              ))
+            )}
+          </div>
+        </DndContext>
+        {!isReadOnly && (
+          <button
+            type="button"
+            className="flex w-full items-center gap-1.5 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+            onClick={onAddChapter}
+          >
+            <Plus aria-hidden="true" className="size-3.5" />
+            챕터 추가
+          </button>
+        )}
+      </CurriculumMapContext.Provider>
     </section>
   )
 }
 
 type ChapterSectionProps = {
   chapter: Chapter
-  isReadOnly: boolean
-  selectedLessonId: string | null
-  onAddLesson?: (chapterId: string) => void
-  onArchiveChapter?: (chapterId: string) => void
-  onArchiveLesson?: (lessonId: string) => void
-  onSelectLesson?: (lessonId: string) => void
-  onUpdateChapterField?: (
-    chapterId: string,
-    field: "title",
-    value: string
-  ) => void
 }
 
-function ChapterSection({
-  chapter,
-  isReadOnly,
-  selectedLessonId,
-  onAddLesson,
-  onArchiveChapter,
-  onArchiveLesson,
-  onSelectLesson,
-  onUpdateChapterField,
-}: ChapterSectionProps) {
+function ChapterSection({ chapter }: ChapterSectionProps) {
+  const {
+    isReadOnly,
+    onAddLesson,
+    onArchiveChapter,
+    onUpdateChapterField,
+    selectedLessonId,
+  } = useCurriculumMapContext()
   const [isOpen, setIsOpen] = React.useState(true)
 
   return (
@@ -230,10 +249,7 @@ function ChapterSection({
               <SortableLessonButton
                 key={lesson.id}
                 isSelected={lesson.lessonId === selectedLessonId}
-                isReadOnly={isReadOnly}
                 lesson={lesson}
-                onArchiveLesson={onArchiveLesson}
-                onSelectLesson={onSelectLesson}
               />
             ))}
             {!isReadOnly && (
@@ -256,19 +272,15 @@ function ChapterSection({
 
 type SortableLessonButtonProps = {
   isSelected: boolean
-  isReadOnly: boolean
   lesson: Lesson
-  onArchiveLesson?: (lessonId: string) => void
-  onSelectLesson?: (lessonId: string) => void
 }
 
 function SortableLessonButton({
   isSelected,
-  isReadOnly,
   lesson,
-  onArchiveLesson,
-  onSelectLesson,
 }: SortableLessonButtonProps) {
+  const { isReadOnly, onArchiveLesson, onSelectLesson } =
+    useCurriculumMapContext()
   const {
     attributes,
     listeners,
@@ -330,4 +342,16 @@ function SortableLessonButton({
       )}
     </div>
   )
+}
+
+function useCurriculumMapContext() {
+  const context = React.useContext(CurriculumMapContext)
+
+  if (!context) {
+    throw new Error(
+      "useCurriculumMapContext must be used within CurriculumMap."
+    )
+  }
+
+  return context
 }
