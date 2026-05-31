@@ -5,6 +5,7 @@ import type {
   AdminCourseListDto,
   AdminCourseListInputDto,
   AdminCourseTreeDto,
+  AdminCurrentSessionDto,
   AdminEditorLessonDetailDto,
   AdminErrorDto,
   AdminUserListDto,
@@ -33,6 +34,7 @@ export type AdminApiResult<TValue> =
   | AdminApiErrorResult
 
 export interface AdminApi {
+  getSession(): Promise<AdminApiResult<AdminCurrentSessionDto>>
   listCourses(
     input: AdminCourseListInputDto
   ): Promise<AdminApiResult<AdminCourseListDto>>

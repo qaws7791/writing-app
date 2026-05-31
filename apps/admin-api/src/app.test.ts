@@ -226,6 +226,28 @@ describe("admin api app", () => {
     })
   })
 
+  it("returns the current admin session without listing users", async () => {
+    const listUsers = vi.fn(adminService.listUsers)
+    const response = await createTestApp({
+      adminService: {
+        ...adminService,
+        listUsers,
+      },
+    }).request("/session")
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      session: { id: "session-1" },
+      user: {
+        email: "admin@example.com",
+        id: "admin-1",
+        image: null,
+        name: "운영자",
+      },
+    })
+    expect(listUsers).not.toHaveBeenCalled()
+  })
+
   it("returns protected course detail for the editor", async () => {
     const response = await createTestApp().request(
       "/courses/sentence-structure"
@@ -421,6 +443,23 @@ describe("admin api app", () => {
     })
   })
 
+  it("rejects unauthenticated admin session access", async () => {
+    const response = await createTestApp({
+      auth: {
+        ...auth,
+        async getSession() {
+          return null
+        },
+      },
+    }).request("/session")
+
+    expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({
+      code: "unauthorized",
+      message: "관리자 로그인이 필요합니다.",
+    })
+  })
+
   it("rejects invalid course list pagination query", async () => {
     const response = await createTestApp().request(
       "/courses?page=0&pageSize=15"
@@ -444,6 +483,7 @@ describe("admin api app", () => {
       version: "0.0.1",
     })
     expect(document.paths).toHaveProperty("/courses")
+    expect(document.paths).toHaveProperty("/session")
     expect(document.paths).toHaveProperty("/courses/{courseId}")
     expect(document.paths).toHaveProperty("/courses/{courseId}/editor")
     expect(document.paths).toHaveProperty(

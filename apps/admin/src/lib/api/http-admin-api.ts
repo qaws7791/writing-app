@@ -25,6 +25,13 @@ export function createHttpAdminApi({
   headers,
 }: CreateHttpAdminApiInput): AdminApi {
   return {
+    getSession() {
+      return requestJson(
+        fetcher,
+        createAdminApiUrl(baseUrl, "/session"),
+        headers
+      )
+    },
     listCourses(input) {
       const url = createAdminApiUrl(baseUrl, "/courses")
       url.searchParams.set("page", String(input.page))
@@ -178,6 +185,7 @@ function isAdminApiErrorDto(value: unknown): value is AdminApiErrorDto {
     value.code === "database-unavailable" ||
     value.code === "invalid-request" ||
     value.code === "not-found" ||
+    value.code === "unauthorized" ||
     value.code === "unknown-error"
   )
 }

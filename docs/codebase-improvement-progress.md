@@ -19,8 +19,8 @@
 |    1 | ADMIN-08  | 완료    | 체크박스 필드를 제어 컴포넌트로 전환했다.           |
 |    2 | API-01    | 완료    | 프론트 HTTP API 응답 런타임 파싱을 도입했다.        |
 |    3 | ARCH-01   | 완료    | 패키지 공개 경계와 내부 경로 직접 참조를 정리했다.  |
-|    4 | AUTH-01   | 진행 중 | 어드민 인증 확인을 전용 세션 API로 분리한다.        |
-|    5 | DATA-01   | 대기    | 마이그레이션 적용 이력 관리를 도입한다.             |
+|    4 | AUTH-01   | 완료    | 어드민 인증 확인을 전용 세션 API로 분리했다.        |
+|    5 | DATA-01   | 진행 중 | 마이그레이션 적용 이력 관리를 도입한다.             |
 |    6 | DATA-02   | 대기    | 서버 시작 시 자동 데이터 변경 작업을 분리한다.      |
 |    7 | DATA-03   | 대기    | Step content JSON 계약을 경계별로 엄격히 검증한다.  |
 |    8 | DOMAIN-01 | 대기    | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다. |
@@ -51,4 +51,11 @@
 
 - 대상 파일: `apps/admin-api/src/routes/session.route.ts`, `apps/admin-api/src/app.ts`, `apps/admin/src/lib/api/*`, `apps/admin/src/app/(admin)/layout.tsx`
 - 조사 방향: `api.listUsers()`로 인증을 확인하는 흐름을 현재 관리자 세션 조회 API로 분리한다.
-- 완료 조건: 보호 레이아웃은 사용자 목록 조회 없이 세션 API만 호출하고, 사용자 페이지의 데이터 조회 실패는 인증 실패와 분리된다.
+- 완료 내용: Admin API에 `GET /session`을 추가하고 보호 레이아웃은 `api.getSession()`만 호출한다. 사용자 페이지는 401만 로그인으로 보내고 나머지 조회 실패는 명시적 오류로 분리한다.
+- 검증: `bun --filter @workspace/admin-api test && bun --filter @workspace/admin test && bun --filter @workspace/admin-api typecheck && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin-api lint && bun --filter @workspace/admin lint`
+
+## DATA-01 작업 메모
+
+- 대상 파일: `packages/db/src/migrations/run-content-migration.ts`, `packages/db/src/migrations/*.sql`, `packages/db/package.json`
+- 조사 방향: 현재 커스텀 migration runner에 적용 이력과 checksum 검증을 추가할 수 있는 가장 작은 경계를 찾는다.
+- 완료 조건: 마이그레이션 적용 이력이 DB 안에 남고, 이미 적용된 파일의 내용 변경은 명시적 오류로 감지된다.

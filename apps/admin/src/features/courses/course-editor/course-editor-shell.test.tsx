@@ -88,6 +88,20 @@ const curriculumFixture = {
 
 function createAdminApiMock(overrides: Partial<AdminApi> = {}): AdminApi {
   return {
+    async getSession() {
+      return {
+        status: "ok",
+        value: {
+          session: { id: "session-1" },
+          user: {
+            email: "admin@example.com",
+            id: "admin-1",
+            image: null,
+            name: "운영자",
+          },
+        },
+      }
+    },
     async getCourseDetail() {
       return { status: "ok", value: courseFixture }
     },

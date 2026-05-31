@@ -171,6 +171,21 @@ export const adminUserListDtoSchema = z.object({
   users: z.array(adminUserListItemDtoSchema),
 })
 
+export const adminCurrentSessionDtoSchema = z.object({
+  session: z.object({
+    id: z.string().min(1),
+  }),
+  user: z.object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    email: z.string().email(),
+    image: z.string().nullable(),
+  }),
+})
+
+export type AdminCurrentSessionDto = z.infer<
+  typeof adminCurrentSessionDtoSchema
+>
 export type AdminCourseDetailDto = z.infer<typeof adminCourseDetailDtoSchema>
 export type AdminCourseEditorDetailDto = z.infer<
   typeof adminCourseEditorDetailDtoSchema

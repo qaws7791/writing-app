@@ -10,9 +10,9 @@ export default async function ProtectedAdminLayout({
   children: React.ReactNode
 }>) {
   const api = await getServerAdminApi()
-  const users = await api.listUsers()
+  const session = await api.getSession()
 
-  if (users.status === "error") {
+  if (session.status === "error") {
     redirect(getAdminLoginPath())
   }
 

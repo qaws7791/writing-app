@@ -92,6 +92,32 @@ describe("createHttpAdminApi", () => {
     expect(request.method).toBe("GET")
   })
 
+  it("requests the current session with credentials included", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
+      createJsonResponse({
+        session: { id: "session-1" },
+        user: {
+          email: "admin@example.com",
+          id: "admin-1",
+          image: null,
+          name: "운영자",
+        },
+      })
+    )
+    const api = createHttpAdminApi({
+      baseUrl: "http://localhost:4001",
+      fetch: fetchMock,
+    })
+
+    await api.getSession()
+
+    expect(fetchMock).toHaveBeenCalledOnce()
+    const request = getRequest(fetchMock)
+    expect(request.url).toBe("http://localhost:4001/session")
+    expect(request.credentials).toBe("include")
+    expect(request.method).toBe("GET")
+  })
+
   it("requests course detail", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       createJsonResponse({

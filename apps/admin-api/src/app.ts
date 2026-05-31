@@ -10,6 +10,7 @@ import { registerCoursesRoute } from "@/routes/courses.route"
 import { registerCurriculumEditorRoute } from "@/routes/curriculum-editor.route"
 import { registerHealthRoute } from "@/routes/health.route"
 import { registerOpenApiRoute } from "@/routes/openapi.route"
+import { registerSessionRoute } from "@/routes/session.route"
 import { registerUsersRoute } from "@/routes/users.route"
 
 export interface AdminApiLogger {
@@ -72,6 +73,7 @@ export function createAdminApiApp(dependencies: AdminApiAppDependencies) {
   )
 
   registerAuthRoute(app, dependencies.auth)
+  registerSessionRoute(app, dependencies)
   registerCurriculumEditorRoute(app, dependencies)
   registerCoursesRoute(app, dependencies)
   registerHealthRoute(app, dependencies)
