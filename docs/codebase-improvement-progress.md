@@ -41,6 +41,7 @@
 |   23 | DATA-06   | 완료 | DB 스키마 명명 규칙을 문서화했다.                   |
 |   24 | DOMAIN-02 | 완료 | 어드민 스텝 타입 메타데이터 registry를 추가했다.    |
 |   25 | FE-01     | 완료 | 레슨 경험 step renderer를 shell에서 분리했다.       |
+|   26 | FE-02     | 완료 | 레슨 진행 저장 정책을 hook으로 분리했다.            |
 
 ## ADMIN-08 작업 메모
 
@@ -227,6 +228,13 @@
 - 범위 제외: 저장 실패/재시도 정책 분리는 `FE-02`에서 별도로 다룬다.
 - 검증: `bun --filter @workspace/web test src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web test && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint`
 
+## FE-02 작업 메모
+
+- 대상 파일: `apps/web/src/features/lessons/use-lesson-persistence.ts`, `apps/web/src/features/lessons/lesson-experience.tsx`
+- 조사 방향: `LessonExperience` 안의 `saveLessonProgress`, `saveLessonAnswer`, `completeLesson` fire-and-forget 호출을 찾고, 화면 이동 정책과 저장 실패 처리 정책을 분리한다.
+- 완료 내용: `useLessonPersistence()` hook을 추가해 best-effort 저장, 저장된 글쓰기 응답 상태, 실패 메시지 기록을 한 곳으로 모았다. `LessonExperience`는 저장 API를 직접 호출하지 않고 hook 명령을 호출하며, 저장 실패는 `role="alert"` 안내로 표시하되 현재 레슨 이동은 막지 않는다.
+- 검증: `bun --filter @workspace/web test src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint`
+
 ## 다음 단계
 
-다음 작업은 P1의 `FE-02`를 문서 순서대로 진행한다.
+다음 작업은 P1의 `TEST-01`을 문서 순서대로 진행한다.

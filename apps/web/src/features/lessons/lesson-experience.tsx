@@ -19,11 +19,9 @@ import {
   findStepIndexByType,
   getLessonProgress,
 } from "@/features/lessons/lesson-logic"
-import {
-  LessonStepRenderer,
-  type WrittenStepResponses,
-} from "@/features/lessons/lesson-step-renderer"
+import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
 import type { Lesson, LessonStepId } from "@/features/lessons/lesson-types"
+import { useLessonPersistence } from "@/features/lessons/use-lesson-persistence"
 import { getBrowserWritingAppApi } from "@/lib/api/get-browser-writing-app-api"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
 
@@ -42,10 +40,19 @@ export function LessonExperience({ lesson, api }: LessonExperienceProps) {
   const router = useRouter()
   const [currentStepIndex, setCurrentStepIndex] = React.useState(0)
   const [showExitDialog, setShowExitDialog] = React.useState(false)
-  const [writtenResponses, setWrittenResponses] =
-    React.useState<WrittenStepResponses>({})
   const contentRef = React.useRef<HTMLDivElement | null>(null)
-  const apiRef = React.useRef(api ?? getBrowserWritingAppApi())
+  const lessonApi = React.useMemo(() => api ?? getBrowserWritingAppApi(), [api])
+  const {
+    completeLesson,
+    errorMessage,
+    resetWrittenResponses,
+    saveLessonProgress,
+    saveWrittenResponse,
+    writtenResponses,
+  } = useLessonPersistence({
+    api: lessonApi,
+    lessonId: lesson.id,
+  })
 
   const currentStep = lesson.steps[currentStepIndex] ?? lesson.steps[0]
   const progress = getLessonProgress(currentStepIndex, lesson.steps.length)
@@ -55,8 +62,8 @@ export function LessonExperience({ lesson, api }: LessonExperienceProps) {
   }, [])
 
   const createAiFeedback = React.useCallback<WritingAppApi["createAiFeedback"]>(
-    (input) => apiRef.current.createAiFeedback(input),
-    []
+    (input) => lessonApi.createAiFeedback(input),
+    [lessonApi]
   )
 
   const handleNext = React.useCallback(() => {
@@ -65,20 +72,17 @@ export function LessonExperience({ lesson, api }: LessonExperienceProps) {
       const nextStep = lesson.steps[nextIndex]
 
       if (nextStep) {
-        void apiRef.current.saveLessonProgress(lesson.id, {
-          currentStepId: nextStep.id,
-          stepOrder: nextStep.order,
-        })
+        saveLessonProgress(nextStep)
       }
 
       if (nextStep?.type === "COMPLETE") {
-        void apiRef.current.completeLesson(lesson.id)
+        completeLesson()
       }
 
       return nextIndex
     })
     scrollToTop()
-  }, [lesson.id, lesson.steps, scrollToTop])
+  }, [completeLesson, lesson.steps, saveLessonProgress, scrollToTop])
 
   const handleRevise = React.useCallback(
     (sourceStepId: LessonStepId) => {
@@ -105,20 +109,6 @@ export function LessonExperience({ lesson, api }: LessonExperienceProps) {
     [lesson.steps, scrollToTop]
   )
 
-  const saveWrittenResponse = React.useCallback(
-    (stepId: LessonStepId, text: string) => {
-      setWrittenResponses((current) => ({
-        ...current,
-        [stepId]: text,
-      }))
-      void apiRef.current.saveLessonAnswer(lesson.id, {
-        stepId,
-        answer: text,
-      })
-    },
-    [lesson.id]
-  )
-
   const goToCourses = React.useCallback(() => {
     setCurrentStepIndex(0)
     setShowExitDialog(false)
@@ -136,9 +126,9 @@ export function LessonExperience({ lesson, api }: LessonExperienceProps) {
 
   React.useEffect(() => {
     setCurrentStepIndex(0)
-    setWrittenResponses({})
+    resetWrittenResponses()
     contentRef.current?.scrollTo({ top: 0 })
-  }, [lesson.id])
+  }, [lesson.id, resetWrittenResponses])
 
   if (!currentStep) {
     return null
@@ -151,6 +141,7 @@ export function LessonExperience({ lesson, api }: LessonExperienceProps) {
         onExit={() => setShowExitDialog(true)}
       />
       <div ref={contentRef} className="h-svh overflow-y-auto pt-14">
+        {errorMessage ? <LessonSaveError message={errorMessage} /> : null}
         <LessonStepRenderer
           step={currentStep}
           lessonTitle={lesson.title}
@@ -170,6 +161,17 @@ export function LessonExperience({ lesson, api }: LessonExperienceProps) {
         onConfirm={goToCourses}
       />
     </div>
+  )
+}
+
+function LessonSaveError({ message }: { message: string }) {
+  return (
+    <p
+      role="alert"
+      className="mx-auto mt-4 w-[calc(100%-2rem)] max-w-[680px] rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+    >
+      {message}
+    </p>
   )
 }
 

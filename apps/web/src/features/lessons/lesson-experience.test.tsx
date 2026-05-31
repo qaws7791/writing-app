@@ -6,7 +6,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 import { getDefaultLesson } from "@/features/lessons/lesson-data"
 import { LessonExperience } from "@/features/lessons/lesson-experience"
 import type { Lesson } from "@/features/lessons/lesson-types"
-import { apiOk } from "@/lib/api/api-result"
+import { apiFailure, apiOk } from "@/lib/api/api-result"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
 
 vi.mock("next/navigation", () => ({
@@ -176,6 +176,42 @@ describe("LessonExperience", () => {
         lessonId: "lesson-1",
       })
     })
+  })
+
+  it("shows a save failure without blocking lesson navigation", async () => {
+    const user = userEvent.setup()
+    const lesson = createShortWriteFeedbackLesson()
+
+    render(
+      <LessonExperience
+        lesson={lesson}
+        api={{
+          ...api,
+          async saveLessonAnswer() {
+            return apiFailure({
+              code: "network-error",
+              message: "답변 저장에 실패했습니다.",
+            })
+          },
+        }}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "시작하기" }))
+    await user.type(
+      screen.getByRole("textbox"),
+      "문장을 구체적으로 고쳤습니다."
+    )
+    await user.click(screen.getByRole("button", { name: "제출하기" }))
+
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "답변 저장에 실패했습니다."
+    )
+
+    await user.click(screen.getByRole("button", { name: "다음" }))
+
+    expect(screen.getByText("AI 피드백")).toBeTruthy()
+    expect(screen.getByText("문장을 구체적으로 고쳤습니다.")).toBeTruthy()
   })
 })
 
