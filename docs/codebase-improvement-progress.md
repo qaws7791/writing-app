@@ -14,37 +14,38 @@
 
 ## 현재 진행 상태
 
-| 순서 | ID        | 상태 | 요약                                                |
-| ---: | --------- | ---- | --------------------------------------------------- |
-|    1 | ADMIN-08  | 완료 | 체크박스 필드를 제어 컴포넌트로 전환했다.           |
-|    2 | API-01    | 완료 | 프론트 HTTP API 응답 런타임 파싱을 도입했다.        |
-|    3 | ARCH-01   | 완료 | 패키지 공개 경계와 내부 경로 직접 참조를 정리했다.  |
-|    4 | AUTH-01   | 완료 | 어드민 인증 확인을 전용 세션 API로 분리했다.        |
-|    5 | DATA-01   | 완료 | 마이그레이션 적용 이력 관리를 도입했다.             |
-|    6 | DATA-02   | 완료 | 서버 시작 시 자동 데이터 변경 작업을 분리했다.      |
-|    7 | DATA-03   | 완료 | Step content JSON 계약을 경계별로 엄격히 검증했다.  |
-|    8 | DOMAIN-01 | 완료 | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다. |
-|    9 | ADMIN-01  | 완료 | CourseEditorProvider의 URL/저장 책임을 분리했다.    |
-|   10 | ADMIN-02  | 완료 | 에디터 선택 파생 계산과 step source를 정리했다.     |
-|   11 | ADMIN-03  | 완료 | 커리큘럼 맵 내부 prop 전달을 줄였다.                |
-|   12 | ADMIN-04  | 완료 | dirty 변경 내역과 change kind 계산을 연결했다.      |
-|   13 | ADMIN-07  | 완료 | 스텝 폼 필드 key와 draft content 타입을 분리했다.   |
-|   14 | API-02    | 완료 | API 라우트 반복 처리 helper를 도입했다.             |
-|   15 | API-03    | 완료 | health check 예외 응답을 명시화했다.                |
-|   16 | API-04    | 완료 | AI feedback provider 오류 분류를 추가했다.          |
-|   17 | ARCH-02   | 완료 | UI 패키지의 Next 통합 경계를 분리했다.              |
-|   18 | AUTH-02   | 완료 | 인증 프록시 요청 조립을 공통 패키지로 분리했다.     |
-|   19 | AUTH-03   | 완료 | 로그인 다음 경로 검증을 앱별 허용 경로로 강화했다.  |
-|   20 | AUTH-04   | 완료 | 어드민 로그인 실패 원인을 구분해 표시한다.          |
-|   21 | DATA-04   | 완료 | 홈 진행 요약 조회를 단일 읽기 모델로 정리했다.      |
-|   22 | DATA-05   | 완료 | AI 피드백 attempt 번호 생성을 저장소 경계로 옮겼다. |
-|   23 | DATA-06   | 완료 | DB 스키마 명명 규칙을 문서화했다.                   |
-|   24 | DOMAIN-02 | 완료 | 어드민 스텝 타입 메타데이터 registry를 추가했다.    |
-|   25 | FE-01     | 완료 | 레슨 경험 step renderer를 shell에서 분리했다.       |
-|   26 | FE-02     | 완료 | 레슨 진행 저장 정책을 hook으로 분리했다.            |
-|   27 | TEST-01   | 완료 | 테스트 무음 통과 예외와 커버리지 하한을 정리했다.   |
-|   28 | ADMIN-05  | 완료 | 에디터 저장 상태 toast를 typed status로 전환했다.   |
-|   29 | ADMIN-06  | 완료 | 보관 확인을 command layer에서 화면 dialog로 옮겼다. |
+| 순서 | ID        | 상태 | 요약                                                 |
+| ---: | --------- | ---- | ---------------------------------------------------- |
+|    1 | ADMIN-08  | 완료 | 체크박스 필드를 제어 컴포넌트로 전환했다.            |
+|    2 | API-01    | 완료 | 프론트 HTTP API 응답 런타임 파싱을 도입했다.         |
+|    3 | ARCH-01   | 완료 | 패키지 공개 경계와 내부 경로 직접 참조를 정리했다.   |
+|    4 | AUTH-01   | 완료 | 어드민 인증 확인을 전용 세션 API로 분리했다.         |
+|    5 | DATA-01   | 완료 | 마이그레이션 적용 이력 관리를 도입했다.              |
+|    6 | DATA-02   | 완료 | 서버 시작 시 자동 데이터 변경 작업을 분리했다.       |
+|    7 | DATA-03   | 완료 | Step content JSON 계약을 경계별로 엄격히 검증했다.   |
+|    8 | DOMAIN-01 | 완료 | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다.  |
+|    9 | ADMIN-01  | 완료 | CourseEditorProvider의 URL/저장 책임을 분리했다.     |
+|   10 | ADMIN-02  | 완료 | 에디터 선택 파생 계산과 step source를 정리했다.      |
+|   11 | ADMIN-03  | 완료 | 커리큘럼 맵 내부 prop 전달을 줄였다.                 |
+|   12 | ADMIN-04  | 완료 | dirty 변경 내역과 change kind 계산을 연결했다.       |
+|   13 | ADMIN-07  | 완료 | 스텝 폼 필드 key와 draft content 타입을 분리했다.    |
+|   14 | API-02    | 완료 | API 라우트 반복 처리 helper를 도입했다.              |
+|   15 | API-03    | 완료 | health check 예외 응답을 명시화했다.                 |
+|   16 | API-04    | 완료 | AI feedback provider 오류 분류를 추가했다.           |
+|   17 | ARCH-02   | 완료 | UI 패키지의 Next 통합 경계를 분리했다.               |
+|   18 | AUTH-02   | 완료 | 인증 프록시 요청 조립을 공통 패키지로 분리했다.      |
+|   19 | AUTH-03   | 완료 | 로그인 다음 경로 검증을 앱별 허용 경로로 강화했다.   |
+|   20 | AUTH-04   | 완료 | 어드민 로그인 실패 원인을 구분해 표시한다.           |
+|   21 | DATA-04   | 완료 | 홈 진행 요약 조회를 단일 읽기 모델로 정리했다.       |
+|   22 | DATA-05   | 완료 | AI 피드백 attempt 번호 생성을 저장소 경계로 옮겼다.  |
+|   23 | DATA-06   | 완료 | DB 스키마 명명 규칙을 문서화했다.                    |
+|   24 | DOMAIN-02 | 완료 | 어드민 스텝 타입 메타데이터 registry를 추가했다.     |
+|   25 | FE-01     | 완료 | 레슨 경험 step renderer를 shell에서 분리했다.        |
+|   26 | FE-02     | 완료 | 레슨 진행 저장 정책을 hook으로 분리했다.             |
+|   27 | TEST-01   | 완료 | 테스트 무음 통과 예외와 커버리지 하한을 정리했다.    |
+|   28 | ADMIN-05  | 완료 | 에디터 저장 상태 toast를 typed status로 전환했다.    |
+|   29 | ADMIN-06  | 완료 | 보관 확인을 command layer에서 화면 dialog로 옮겼다.  |
+|   30 | ARCH-03   | 완료 | 비어 있거나 오래된 문서를 현재 코드 상태로 갱신했다. |
 
 ## ADMIN-08 작업 메모
 
@@ -260,6 +261,13 @@
 - 완료 내용: 보관 command는 `archiveRequest`만 설정하고, `CourseEditorArchiveDialog`가 취소/확인을 처리하도록 분리했다. 확인 시 `confirmArchive()`가 보관 상태를 적용하며, 브라우저 confirm 의존성은 제거했다.
 - 검증: `bun --filter @workspace/admin test src/features/courses/admin-course-detail-page.test.tsx src/features/courses/course-editor/course-editor-shell.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
 
+## ARCH-03 작업 메모
+
+- 대상 파일: `CONTEXT.md`, `GLOSSARY.md`, `FRONTEND.md`, `apps/web/README.md`
+- 조사 방향: 비어 있는 루트 문서와 “empty workspace”로 남아 있는 웹 README, 영문 중심의 프론트엔드 가이드가 현재 라우트와 문서 언어 정책에 맞지 않는 지점을 확인한다.
+- 완료 내용: `CONTEXT.md`에 제품 목표와 런타임 경계를 추가하고, `GLOSSARY.md`에 핵심 도메인/아키텍처 용어를 정의했다. `apps/web/README.md`는 실제 App Router 라우트와 feature 구조 기준으로 갱신했고, `FRONTEND.md`는 현재 구현 기준의 한국어 프론트엔드 가이드로 정리했다.
+- 검증: `bun prettier --check CONTEXT.md GLOSSARY.md FRONTEND.md apps/web/README.md docs/codebase-improvement-progress.md && bun lefthook run pre-commit`
+
 ## 다음 단계
 
-다음 작업은 P2의 `ARCH-03`을 문서 순서대로 진행한다.
+다음 작업은 P2의 `ARCH-04`를 문서 순서대로 진행한다.
