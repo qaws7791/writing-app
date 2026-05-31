@@ -11,7 +11,11 @@ import {
   lessons,
   lessonSteps,
 } from "@/schema"
-import { contentSeed, createSeedLessonSteps } from "@/seeds/content-seed"
+import {
+  contentSeed,
+  createSeedLessonSteps,
+  parseContentSeedData,
+} from "@/seeds/content-seed"
 import { seedContent } from "@/seeds/seed-content"
 
 const sqlite = new Database(":memory:")
@@ -100,5 +104,21 @@ describe("seedContent", () => {
         })[0]?.content
       )
     )
+  })
+})
+
+describe("parseContentSeedData", () => {
+  it("rejects malformed external content seed data", () => {
+    expect(() =>
+      parseContentSeedData({
+        categories: [
+          {
+            id: "beginner",
+            sortOrder: 1,
+            courses: [],
+          },
+        ],
+      })
+    ).toThrow("title")
   })
 })
