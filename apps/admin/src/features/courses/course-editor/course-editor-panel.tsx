@@ -35,26 +35,22 @@ export function CourseEditorHeaderContainer() {
 }
 
 export function CourseEditorStatusToast() {
-  const { statusMessage } = useCourseEditorState()
+  const { status } = useCourseEditorState()
   const commands = useCourseEditorCommands()
 
   React.useEffect(() => {
-    if (!statusMessage) return
+    if (!status) return
     const timer = setTimeout(commands.dismissStatus, 4000)
     return () => clearTimeout(timer)
-  }, [commands.dismissStatus, statusMessage])
+  }, [commands.dismissStatus, status])
 
-  if (!statusMessage) return null
+  if (!status) return null
 
-  const isError =
-    statusMessage.includes("실패") ||
-    statusMessage.includes("오류") ||
-    statusMessage.includes("못했") ||
-    statusMessage.includes("없습니다")
+  const isError = status.kind === "error"
 
   return (
     <div
-      role="status"
+      role={isError ? "alert" : "status"}
       aria-live="polite"
       className={`fixed right-6 bottom-6 z-50 flex items-center gap-2 rounded-lg border px-4 py-3 text-sm shadow-lg ${
         isError
@@ -67,7 +63,7 @@ export function CourseEditorStatusToast() {
       ) : (
         <CheckCircle2 aria-hidden="true" className="size-4 shrink-0" />
       )}
-      {statusMessage}
+      {status.message}
     </div>
   )
 }

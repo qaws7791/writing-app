@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import "@/test/ui-overlay-mocks"
+import { CourseEditorStatusToast } from "@/features/courses/course-editor/course-editor-panel"
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
 import {
   CourseEditorProvider,
@@ -70,6 +71,39 @@ describe("CourseEditorShell", () => {
 
     expect(screen.getByTestId("change-kind").textContent).toBe("additive")
   })
+
+  it("renders save errors as alerts without parsing message text", async () => {
+    const user = userEvent.setup()
+    const adminApi = createAdminApiMock({
+      saveCourseEditorDocument: async () => ({
+        status: "error",
+        error: {
+          code: "unknown-error",
+          message: "권한이 제한됩니다.",
+        },
+        httpStatus: 403,
+      }),
+    })
+
+    render(
+      <CourseEditorProvider
+        adminApi={adminApi}
+        course={courseFixture}
+        curriculum={curriculumFixture}
+        revision={0}
+        urlState={{ view: "lesson", lessonId: "lesson-1", stepId: null }}
+      >
+        <SaveStatusHarness />
+        <CourseEditorStatusToast />
+      </CourseEditorProvider>
+    )
+
+    await user.click(screen.getByRole("button", { name: "저장" }))
+
+    expect((await screen.findByRole("alert")).textContent).toContain(
+      "권한이 제한됩니다."
+    )
+  })
 })
 
 function ChangeKindHarness() {
@@ -86,6 +120,16 @@ function ChangeKindHarness() {
         스텝 추가
       </button>
     </>
+  )
+}
+
+function SaveStatusHarness() {
+  const commands = useCourseEditorCommands()
+
+  return (
+    <button type="button" onClick={() => void commands.save()}>
+      저장
+    </button>
   )
 }
 

@@ -13,6 +13,7 @@ import type {
   AdminEditorCurriculumDetailDto,
 } from "@workspace/core/admin"
 
+import type { CourseEditorStatus } from "@/features/courses/course-editor/course-editor-status"
 import { createCourseEditorWorkingCopy } from "@/features/courses/course-editor/editor-state"
 import type { CourseEditorUrlState } from "@/features/courses/course-editor/editor-url-state"
 import { useCourseEditorSaveCommand } from "@/features/courses/course-editor/use-course-editor-save-command"
@@ -73,6 +74,7 @@ describe("useCourseEditorSaveCommand", () => {
     await waitFor(() => {
       expect(screen.getByTestId("status").textContent).toBe("저장되었습니다.")
     })
+    expect(screen.getByTestId("status-kind").textContent).toBe("success")
     expect(screen.getByTestId("revision").textContent).toBe("2")
   })
 
@@ -96,6 +98,7 @@ describe("useCourseEditorSaveCommand", () => {
         "다른 관리자가 먼저 저장했습니다. 최신 내용을 다시 불러온 뒤 변경을 다시 적용하세요."
       )
     })
+    expect(screen.getByTestId("status-kind").textContent).toBe("error")
     expect(screen.getByTestId("revision").textContent).toBe("1")
   })
 })
@@ -144,18 +147,19 @@ function SaveCommandHarness({ adminApi }: SaveCommandHarnessProps) {
       curriculum: curriculumFixture,
     })
   )
-  const [statusMessage, setStatusMessage] = React.useState<string | null>(null)
+  const [status, setStatus] = React.useState<CourseEditorStatus | null>(null)
   const { save } = useCourseEditorSaveCommand({
     adminApi,
     replaceWorkingCopy: setWorkingCopy,
-    setStatusMessage,
+    setStatus,
     workingCopy,
   })
 
   return (
     <>
       <output data-testid="revision">{workingCopy.revision}</output>
-      <output data-testid="status">{statusMessage}</output>
+      <output data-testid="status-kind">{status?.kind}</output>
+      <output data-testid="status">{status?.message}</output>
       <button type="button" onClick={() => void save()}>
         저장
       </button>

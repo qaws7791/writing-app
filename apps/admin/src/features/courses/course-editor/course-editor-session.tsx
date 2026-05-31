@@ -12,6 +12,7 @@ import {
   getEditorChangeKind,
   summarizeEditorChanges,
 } from "@/features/courses/course-editor/editor-change-kind"
+import type { CourseEditorStatus } from "@/features/courses/course-editor/course-editor-status"
 import { createCourseEditorSelection } from "@/features/courses/course-editor/editor-selectors"
 import {
   addChapter,
@@ -44,7 +45,7 @@ type CourseEditorSessionState = {
   selectedLessonId: string | null
   selectedLessonSteps: CourseEditorWorkingCopy["steps"]
   selectedStep: CourseEditorWorkingCopy["steps"][number] | null
-  statusMessage: string | null
+  status: CourseEditorStatus | null
   urlState: CourseEditorUrlState
   workingCopy: CourseEditorWorkingCopy
 }
@@ -100,7 +101,7 @@ export function CourseEditorProvider({
   const [workingCopy, setWorkingCopy] = React.useState(() =>
     createCourseEditorWorkingCopy({ course, revision, curriculum })
   )
-  const [statusMessage, setStatusMessage] = React.useState<string | null>(null)
+  const [status, setStatus] = React.useState<CourseEditorStatus | null>(null)
   const { localUrlState, replaceEditorUrl } = useCourseEditorUrlState({
     courseId: course.id,
     urlState,
@@ -132,7 +133,7 @@ export function CourseEditorProvider({
     (
       updater: (current: CourseEditorWorkingCopy) => CourseEditorWorkingCopy
     ) => {
-      setStatusMessage(null)
+      setStatus(null)
       setWorkingCopy((current) => updater(current))
     },
     []
@@ -141,7 +142,7 @@ export function CourseEditorProvider({
   const { isSaving, save } = useCourseEditorSaveCommand({
     adminApi,
     replaceWorkingCopy: setWorkingCopy,
-    setStatusMessage,
+    setStatus,
     workingCopy,
   })
 
@@ -197,7 +198,7 @@ export function CourseEditorProvider({
         updateWorkingCopy((current) => archiveStep(current, stepId))
       },
       dismissStatus() {
-        setStatusMessage(null)
+        setStatus(null)
       },
       moveLesson(lessonId, targetIndex) {
         updateWorkingCopy((current) =>
@@ -261,11 +262,11 @@ export function CourseEditorProvider({
       isReadOnly,
       isSaving,
       ...selection,
-      statusMessage,
+      status,
       urlState: localUrlState,
       workingCopy,
     }
-  }, [isReadOnly, isSaving, localUrlState, statusMessage, workingCopy])
+  }, [isReadOnly, isSaving, localUrlState, status, workingCopy])
 
   return (
     <CourseEditorStateContext.Provider value={state}>

@@ -43,6 +43,7 @@
 |   25 | FE-01     | 완료 | 레슨 경험 step renderer를 shell에서 분리했다.       |
 |   26 | FE-02     | 완료 | 레슨 진행 저장 정책을 hook으로 분리했다.            |
 |   27 | TEST-01   | 완료 | 테스트 무음 통과 예외와 커버리지 하한을 정리했다.   |
+|   28 | ADMIN-05  | 완료 | 에디터 저장 상태 toast를 typed status로 전환했다.   |
 
 ## ADMIN-08 작업 메모
 
@@ -244,6 +245,13 @@
 - 검증: `bun --filter @workspace/admin-api test && bun --filter @workspace/api test && bun --filter @workspace/core test -- --coverage && bun --filter @workspace/env test -- --coverage && bun --filter @workspace/db test && bun --filter @workspace/logger test && bun --filter @workspace/ui test && bun --filter @workspace/core lint && bun --filter @workspace/db lint && bun --filter @workspace/env lint && bun --filter @workspace/ui lint`
 - 참고: `bun --filter @workspace/db test -- --coverage`는 현재 `bun --bun` 런타임에서 V8 coverage API를 사용할 수 없어 실패한다. `bun test`는 변경과 무관한 전체 실행에서 출력 없이 장시간 정지해 프로세스를 종료했다.
 
+## ADMIN-05 작업 메모
+
+- 대상 파일: `apps/admin/src/features/courses/course-editor/course-editor-session.tsx`, `apps/admin/src/features/courses/course-editor/use-course-editor-save-command.ts`, `apps/admin/src/features/courses/course-editor/course-editor-panel.tsx`
+- 조사 방향: 저장 훅이 문자열 상태를 만들고 toast가 `includes()`로 오류 여부를 추론하는 흐름을 확인했다. 상태 자체가 성공/오류 의미를 갖도록 `{ kind; message }` 형태로 바꾼다.
+- 완료 내용: `CourseEditorStatus` 타입을 추가하고 저장 성공/실패가 각각 `success`와 `error` 상태를 직접 만들도록 했다. Toast는 문자열 검색을 제거하고 `status.kind`로 스타일, 아이콘, 접근성 role을 결정한다.
+- 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/course-editor-shell.test.tsx src/features/courses/course-editor/course-editor-session-hooks.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
+
 ## 다음 단계
 
-다음 작업은 P2의 `ADMIN-05`를 문서 순서대로 진행한다.
+다음 작업은 P2의 `ADMIN-06`을 문서 순서대로 진행한다.
