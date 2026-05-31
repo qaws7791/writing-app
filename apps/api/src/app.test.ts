@@ -255,7 +255,9 @@ describe("createApiApp", () => {
     const response = await app.request("/health")
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       database: "ok",
       status: "ok",
     })
@@ -279,7 +281,9 @@ describe("createApiApp", () => {
     const response = await app.request("/health")
 
     expect(response.status).toBe(503)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "database-unavailable",
       message: "데이터베이스를 사용할 수 없습니다.",
     })
@@ -304,7 +308,9 @@ describe("createApiApp", () => {
     })
 
     expect(response.status).toBe(401)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "unauthorized",
       message: "로그인이 필요합니다.",
     })
@@ -332,7 +338,9 @@ describe("createApiApp", () => {
     })
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       improvements: ["근거를 더 구체화하세요."],
       nextAction: "첫 문장에 기준을 추가하세요.",
       score: 4,
@@ -376,7 +384,9 @@ describe("createApiApp", () => {
     })
 
     expect(response.status).toBe(429)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "feedback-retry-limit-exceeded",
       message: "피드백 재시도 한도를 초과했습니다.",
     })
@@ -388,7 +398,9 @@ describe("createApiApp", () => {
     const response = await app.request("/me")
 
     expect(response.status).toBe(401)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "unauthorized",
       message: "로그인이 필요합니다.",
     })
@@ -400,7 +412,9 @@ describe("createApiApp", () => {
     const response = await app.request("/me")
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       email: "learner@example.com",
       id: "user-1",
       image: null,
@@ -422,7 +436,9 @@ describe("createApiApp", () => {
     const response = await app.request("/progress")
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       courses: [
         {
           completedCount: 1,
@@ -499,7 +515,9 @@ describe("createApiApp", () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({ saved: true })
+    const body = await response.json()
+
+    expect(body).toEqual({ saved: true })
     expect(learningService.saveLessonAnswer).toHaveBeenCalledWith(
       "user-1",
       "sentence-structure-01",
@@ -521,7 +539,9 @@ describe("createApiApp", () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       completedAt: "2026-05-26T00:00:00.000Z",
       completedCount: 1,
       lessonId: "sentence-structure-01",
@@ -536,7 +556,9 @@ describe("createApiApp", () => {
     const response = await app.request("/courses")
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual(courseCategories)
+    const body = await response.json()
+
+    expect(body).toEqual(courseCategories)
   })
 
   it("does not register public course search", async () => {
@@ -553,7 +575,9 @@ describe("createApiApp", () => {
     const response = await app.request("/courses/not-real")
 
     expect(response.status).toBe(404)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "course-not-found",
       message: "코스를 찾을 수 없습니다.",
       courseId: "not-real",
@@ -566,7 +590,9 @@ describe("createApiApp", () => {
     const response = await app.request("/lessons/not-real")
 
     expect(response.status).toBe(404)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "lesson-not-found",
       message: "레슨을 찾을 수 없습니다.",
       lessonId: "not-real",

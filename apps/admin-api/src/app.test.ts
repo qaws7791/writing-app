@@ -181,7 +181,9 @@ describe("admin api app", () => {
     const response = await createTestApp().request("/health")
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       ok: true,
       service: "admin-api",
     })
@@ -200,7 +202,9 @@ describe("admin api app", () => {
     }).request("/health")
 
     expect(response.status).toBe(503)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       ok: false,
       service: "admin-api",
     })
@@ -218,7 +222,9 @@ describe("admin api app", () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       courses: [course],
       pagination: {
         page: 1,
@@ -236,7 +242,9 @@ describe("admin api app", () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       courses: [
         {
           ...course,
@@ -250,7 +258,9 @@ describe("admin api app", () => {
     const response = await createTestApp().request("/users")
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toMatchObject({
+    const body = await response.json()
+
+    expect(body).toMatchObject({
       users: [
         {
           id: "user-1",
@@ -270,7 +280,9 @@ describe("admin api app", () => {
     }).request("/session")
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       session: { id: "session-1" },
       user: {
         email: "admin@example.com",
@@ -288,7 +300,9 @@ describe("admin api app", () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual(course)
+    const body = await response.json()
+
+    expect(body).toEqual(course)
   })
 
   it("returns the direct current curriculum editor document", async () => {
@@ -297,7 +311,9 @@ describe("admin api app", () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual(editorDocument)
+    const body = await response.json()
+
+    expect(body).toEqual(editorDocument)
   })
 
   it("returns protected lesson detail without a curriculum version query", async () => {
@@ -306,7 +322,9 @@ describe("admin api app", () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toMatchObject({
+    const body = await response.json()
+
+    expect(body).toMatchObject({
       id: "sentence-structure-01",
       courseId: "sentence-structure",
       steps: [
@@ -344,7 +362,9 @@ describe("admin api app", () => {
     )
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       ...editorDocument,
       revision: 1,
     })
@@ -374,7 +394,9 @@ describe("admin api app", () => {
     )
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "invalid-request",
       message: "경로 매개변수와 요청 본문이 일치해야 합니다.",
     })
@@ -414,7 +436,9 @@ describe("admin api app", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "invalid-request",
       message: "커리큘럼 저장 요청이 올바르지 않습니다.",
     })
@@ -454,7 +478,9 @@ describe("admin api app", () => {
     })
 
     expect(response.status).toBe(409)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "conflict",
       message: "다른 관리자가 먼저 저장했습니다.",
     })
@@ -471,7 +497,9 @@ describe("admin api app", () => {
     }).request("/users")
 
     expect(response.status).toBe(401)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "unauthorized",
       message: "관리자 로그인이 필요합니다.",
     })
@@ -488,7 +516,9 @@ describe("admin api app", () => {
     }).request("/session")
 
     expect(response.status).toBe(401)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "unauthorized",
       message: "관리자 로그인이 필요합니다.",
     })
@@ -500,7 +530,9 @@ describe("admin api app", () => {
     )
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
+    const body = await response.json()
+
+    expect(body).toEqual({
       code: "invalid-request",
       message:
         "page must be positive and pageSize must be one of 10,20,30,40,50.",

@@ -62,6 +62,7 @@
 |   44 | UI-02     | 완료 | TooltipProvider 문서 전제를 실제 layout과 맞췄다.    |
 |   45 | UI-03     | 완료 | UI primitive 내부 상대 import 예외를 문서화했다.     |
 |   46 | ARCH-06   | 완료 | UI 패키지의 불필요한 .gitkeep을 제거했다.            |
+|   47 | CODE-01   | 완료 | 응답 JSON Promise assertion 패턴을 명시화했다.       |
 
 ## ADMIN-08 작업 메모
 
@@ -396,6 +397,14 @@
 - 완료 내용: `components`, `hooks`, `lib` 디렉터리에는 실제 소스 파일이 있으므로 빈 디렉터리 보존용 `.gitkeep` 3개를 제거했다.
 - 검증: `bun --filter @workspace/ui typecheck && bun --filter @workspace/ui lint && bun prettier --check docs/codebase-improvement-progress.md`
 
+## CODE-01 작업 메모
+
+- 대상 파일: route handler 테스트와 Promise assertion 사용처
+- 조사 방향: `await expect(response.json()).resolves...`처럼 Promise assertion으로 응답 본문 읽기가 숨은 지점을 명시적 `const body = await response.json()` 흐름으로 바꾼다.
+- 완료 내용: API/Admin API route handler 테스트와 관련 integration 테스트의 `response.json()` Promise assertion을 명시적 body 변수로 바꿨다. Admin HTTP client 테스트의 request body assertion도 같은 방식으로 정리하고, 실제 await가 없는 DB schema 테스트 콜백의 `async`를 제거했다.
+- 검증: `bun --filter @workspace/admin-api test src/app.test.ts && bun --filter @workspace/api test src/app.test.ts src/versioned-learning.integration.test.ts && bun --filter @workspace/admin test src/lib/api/http-admin-api.test.ts && bun --filter @workspace/db test src/client.test.ts && bun --filter @workspace/admin-api typecheck && bun --filter @workspace/admin-api lint && bun --filter @workspace/api typecheck && bun --filter @workspace/api lint && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint && bun --filter @workspace/db typecheck && bun --filter @workspace/db lint`
+- 참고: `bun --filter @workspace/api lint`는 기존 `apps/api/src/main.test.ts`의 `turbo/no-undeclared-env-vars` 경고 2건을 유지한 채 성공한다.
+
 ## 다음 단계
 
-다음 작업은 P3의 `CODE-01`을 문서 순서대로 진행한다.
+다음 작업은 P3의 `UI-04`를 문서 순서대로 진행한다.

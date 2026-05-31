@@ -176,12 +176,16 @@ describe("learning API current curriculum", () => {
     const progressListResponse = await app.request("/progress")
 
     expect(publicResponse.status).toBe(200)
-    await expect(publicResponse.json()).resolves.toMatchObject({
+    const publicBody = await publicResponse.json()
+
+    expect(publicBody).toMatchObject({
       firstLessonId: "sentence-structure-01",
       lessonCount: 1,
     })
     expect(progressResponse.status).toBe(200)
-    await expect(progressResponse.json()).resolves.toEqual({
+    const progressBody = await progressResponse.json()
+
+    expect(progressBody).toEqual({
       completedCount: 1,
       courseId: "sentence-structure",
       nextLessonId: "sentence-structure-02",
@@ -189,7 +193,9 @@ describe("learning API current curriculum", () => {
       totalLessons: 12,
     })
     expect(progressListResponse.status).toBe(200)
-    await expect(progressListResponse.json()).resolves.toEqual({
+    const progressListBody = await progressListResponse.json()
+
+    expect(progressListBody).toEqual({
       courses: [
         {
           completedCount: 1,
@@ -247,17 +253,23 @@ describe("learning API current curriculum", () => {
     )
 
     expect(progressResponse.status).toBe(400)
-    await expect(progressResponse.json()).resolves.toEqual({
+    const progressBody = await progressResponse.json()
+
+    expect(progressBody).toEqual({
       code: "invalid-request",
       message: "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다.",
     })
     expect(answerResponse.status).toBe(400)
-    await expect(answerResponse.json()).resolves.toEqual({
+    const answerBody = await answerResponse.json()
+
+    expect(answerBody).toEqual({
       code: "invalid-request",
       message: "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다.",
     })
     expect(completeResponse.status).toBe(400)
-    await expect(completeResponse.json()).resolves.toEqual({
+    const completeBody = await completeResponse.json()
+
+    expect(completeBody).toEqual({
       code: "invalid-request",
       message: "레슨이 현재 코스 커리큘럼에 포함되어 있지 않습니다.",
     })

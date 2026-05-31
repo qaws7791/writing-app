@@ -239,7 +239,9 @@ describe("createHttpAdminApi", () => {
     )
     expect(request.method).toBe("PUT")
     expect(request.headers.get("content-type")).toBe("application/json")
-    await expect(request.json()).resolves.toMatchObject({
+    const body = await request.json()
+
+    expect(body).toMatchObject({
       courseId: "sentence-structure",
       expectedRevision: 0,
     })

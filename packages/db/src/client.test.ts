@@ -119,7 +119,7 @@ describe("admin auth schema", () => {
 })
 
 describe("current curriculum schema", () => {
-  it("does not create curriculum version or migration tables", async () => {
+  it("does not create curriculum version or migration tables", () => {
     const sqlite = new Database(":memory:")
     runContentMigration(sqlite)
     createDatabase(sqlite)
