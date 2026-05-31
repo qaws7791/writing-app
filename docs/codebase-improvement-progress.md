@@ -60,6 +60,7 @@
 |   42 | TEST-03   | 완료 | React dedupe 설정의 유지 이유를 명시했다.            |
 |   43 | UI-01     | 완료 | ProgressBar 래퍼를 제거하고 Progress로 통일했다.     |
 |   44 | UI-02     | 완료 | TooltipProvider 문서 전제를 실제 layout과 맞췄다.    |
+|   45 | UI-03     | 완료 | UI primitive 내부 상대 import 예외를 문서화했다.     |
 
 ## ADMIN-08 작업 메모
 
@@ -380,6 +381,13 @@
 - 완료 내용: README의 root layout 예제를 실제 앱처럼 `ThemeProvider`와 `Toaster` 중심으로 고치고, `TooltipProvider`는 delay 같은 tooltip 전역 기본값을 조정할 때만 선택적으로 추가한다고 명시했다.
 - 검증: `bun --filter @workspace/ui typecheck && bun --filter @workspace/ui lint && bun prettier --check packages/ui/README.md docs/codebase-improvement-progress.md`
 
+## UI-03 작업 메모
+
+- 대상 파일: `packages/ui/AGENTS.md`, `packages/ui/README.md`, `packages/ui/src/components/ui/*`
+- 조사 방향: generated/shadcn 기반 UI primitive 내부의 상대 import를 전역 absolute import 규칙의 예외로 둘지, 패키지 내부 alias로 일괄 전환할지 확인한다.
+- 완료 내용: UI primitive 내부 구현은 생성 코드 관례와 colocation을 유지하기 위해 로컬 상대 import를 허용한다고 `packages/ui/AGENTS.md`와 README에 명시했다. 앱/도메인 코드와 패키지 바깥 경계에는 absolute import 규칙을 유지한다.
+- 검증: `bun prettier --check packages/ui/AGENTS.md packages/ui/README.md docs/codebase-improvement-progress.md && bun --filter @workspace/ui typecheck && bun --filter @workspace/ui lint`
+
 ## 다음 단계
 
-다음 작업은 P2의 `UI-03`을 문서 순서대로 진행한다.
+다음 작업은 P3의 `ARCH-06`을 문서 순서대로 진행한다.

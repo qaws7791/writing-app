@@ -25,3 +25,11 @@ export default function RootLayout({
 
 `TooltipProvider`는 tooltip delay 같은 전역 기본값을 조정해야 할 때만 선택적으로
 추가한다. 개별 `Tooltip` 사용 자체를 위해 앱 root layout에 항상 추가할 필요는 없다.
+
+## import 규칙
+
+앱과 도메인 패키지는 전역 규칙에 따라 absolute import를 사용한다. 다만
+`src/components/ui` 아래의 shadcn/Base UI primitive 구현 파일은 생성 코드 관례와
+colocation을 유지하기 위해 `../../lib/utils`, `./button` 같은 로컬 상대 import를
+허용한다. 이 예외는 primitive 내부 구현에만 적용하며, 패키지 바깥 경계나 앱 feature
+코드는 absolute import를 유지한다.
