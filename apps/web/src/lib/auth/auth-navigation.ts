@@ -5,13 +5,17 @@ export function getAuthRedirectPath(nextPath: string = defaultAppPath) {
 }
 
 export function getSafeNextPath(value: string | null | undefined) {
-  if (!value?.startsWith("/app")) {
+  if (!value || value.startsWith("//")) {
     return defaultAppPath
   }
 
-  if (value.startsWith("//")) {
-    return defaultAppPath
+  if (
+    value === "/app" ||
+    value.startsWith("/app/") ||
+    value.startsWith("/app?")
+  ) {
+    return value
   }
 
-  return value
+  return defaultAppPath
 }

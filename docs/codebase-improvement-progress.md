@@ -164,6 +164,13 @@
 - 완료 내용: `@workspace/auth-proxy` 패키지를 추가하고 auth backend URL 생성, query 보존, forwarded header 설정, GET/HEAD body 제외, streaming body와 `duplex: "half"`, `redirect: "manual"` 처리를 한 곳으로 모았다. web/admin route는 앱별 환경 변수와 기본 포트만 선택하고 같은 `proxyAuthRequest`를 호출한다.
 - 검증: `bun install && bun --filter @workspace/auth-proxy test && bun --filter @workspace/auth-proxy typecheck && bun --filter @workspace/auth-proxy lint && bun --filter @workspace/web typecheck && bun --filter @workspace/web test && bun --filter @workspace/web lint && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin test && bun --filter @workspace/admin lint && bun --filter @workspace/web build && bun --filter @workspace/admin build`
 
+## AUTH-03 작업 메모
+
+- 대상 파일: `apps/web/src/lib/auth/auth-navigation.ts`, `apps/admin/src/lib/auth/admin-auth-navigation.ts`
+- 조사 방향: 로그인 `next` 경로가 문자열 접두어만으로 허용되지 않게 앱별 허용 경로를 명시한다.
+- 완료 내용: learner 앱은 `/app`, `/app/`, `/app?`만 허용해 `/app.evil` 같은 경로를 기본 `/app`으로 되돌린다. admin 앱은 `/`, `/courses`, `/users` 계열만 허용하는 allowlist로 바꿔 auth/api/미정의 화면으로의 redirect를 차단한다.
+- 검증: `bun --filter @workspace/web test src/lib/auth/auth-navigation.test.ts && bun --filter @workspace/admin test src/lib/auth/admin-auth-navigation.test.ts && bun --filter @workspace/web typecheck && bun --filter @workspace/admin typecheck && bun --filter @workspace/web test && bun --filter @workspace/web lint && bun --filter @workspace/admin test && bun --filter @workspace/admin lint`
+
 ## 다음 단계
 
-다음 작업은 P1의 `AUTH-03`을 문서 순서대로 진행한다.
+다음 작업은 P1의 `AUTH-04`를 문서 순서대로 진행한다.

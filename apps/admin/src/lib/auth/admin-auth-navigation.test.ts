@@ -7,6 +7,7 @@ import {
 
 describe("admin-auth-navigation", () => {
   it("keeps safe internal admin paths", () => {
+    expect(getSafeAdminNextPath("/")).toBe("/")
     expect(getSafeAdminNextPath("/courses")).toBe("/courses")
     expect(getSafeAdminNextPath("/courses?include=chapters")).toBe(
       "/courses?include=chapters"
@@ -23,6 +24,7 @@ describe("admin-auth-navigation", () => {
     expect(getSafeAdminNextPath("/login?next=%2Fusers")).toBe("/courses")
     expect(getSafeAdminNextPath("/api")).toBe("/courses")
     expect(getSafeAdminNextPath("/api/auth/sign-in/email")).toBe("/courses")
+    expect(getSafeAdminNextPath("/settings")).toBe("/courses")
   })
 
   it("builds login paths with an encoded safe next path", () => {

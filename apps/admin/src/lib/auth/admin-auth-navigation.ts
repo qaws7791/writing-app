@@ -9,23 +9,21 @@ export function getSafeAdminNextPath(value: string | null | undefined) {
     return defaultAdminPath
   }
 
-  if (isAuthPath(value) || isApiPath(value)) {
+  if (!isAllowedAdminPath(value)) {
     return defaultAdminPath
   }
 
   return value
 }
 
-function isAuthPath(value: string) {
+function isAllowedAdminPath(value: string) {
   return (
-    value === "/login" ||
-    value.startsWith("/login/") ||
-    value.startsWith("/login?")
-  )
-}
-
-function isApiPath(value: string) {
-  return (
-    value === "/api" || value.startsWith("/api/") || value.startsWith("/api?")
+    value === "/" ||
+    value === "/courses" ||
+    value.startsWith("/courses/") ||
+    value.startsWith("/courses?") ||
+    value === "/users" ||
+    value.startsWith("/users/") ||
+    value.startsWith("/users?")
   )
 }

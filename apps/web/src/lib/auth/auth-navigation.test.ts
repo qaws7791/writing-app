@@ -13,9 +13,12 @@ describe("auth-navigation", () => {
   })
 
   it("keeps only internal app paths as next destinations", () => {
+    expect(getSafeNextPath("/app")).toBe("/app")
+    expect(getSafeNextPath("/app?tab=home")).toBe("/app?tab=home")
     expect(getSafeNextPath("/app/lesson?lesson_id=sentence-structure-01")).toBe(
       "/app/lesson?lesson_id=sentence-structure-01"
     )
+    expect(getSafeNextPath("/app.evil")).toBe("/app")
     expect(getSafeNextPath("https://example.com/app")).toBe("/app")
     expect(getSafeNextPath("/login")).toBe("/app")
   })
