@@ -55,6 +55,7 @@
 |   37 | DATA-10   | 완료 | progress summary 변환 흐름을 단일화했다.             |
 |   38 | DOMAIN-03 | 완료 | 구버전 커리큘럼 저장 API 흔적을 제거했다.            |
 |   39 | FE-03     | 완료 | write step 상태 초기화를 key 리마운트로 단순화했다.  |
+|   40 | FE-04     | 완료 | fake API fixture 데이터를 fake API 경계로 옮겼다.    |
 
 ## ADMIN-08 작업 메모
 
@@ -340,6 +341,13 @@
 - 완료 내용: `SHORT_WRITE`와 `LONG_WRITE` branch에 `key={step.id}`를 부여해 step 전환 시 상태를 리마운트로 초기화하고, 내부 `activeStepIdRef`/`useEffect` 초기화 코드를 제거했다. 같은 타입 write step이 연속될 때 두 번째 입력이 빈 상태로 시작하는 회귀 테스트를 추가했다.
 - 검증: `bun --filter @workspace/web test src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint`
 
+## FE-04 작업 메모
+
+- 대상 파일: `apps/web/src/lib/api/fake/create-fake-writing-app-api.ts`, `apps/web/src/lib/api/fake/fake-writing-app-fixtures.ts`, `apps/web/src/lib/api/fake/__fixtures__/*`, `apps/web/src/lib/api/fake/home-progress-fixtures.ts`
+- 조사 방향: fake API가 feature 내부 fixture 값을 직접 import하는 경계를 확인하고, production feature 모듈에는 타입과 id helper만 남긴다.
+- 완료 내용: 코스/레슨/홈 progress fixture 데이터를 `lib/api/fake` 경계로 이동하고 fake API가 단일 fixture entrypoint를 통해서만 값을 읽도록 정리했다. feature의 `course-data`, `course-detail-data`, `lesson-data`는 화면과 API 계약에서 쓰는 타입 및 id helper만 export한다.
+- 검증: `bun --filter @workspace/web test src/lib/api/fake/create-fake-writing-app-api.test.ts src/lib/api/get-server-writing-app-api.test.ts src/features/courses/course-curriculum.test.tsx src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint && bun lefthook run pre-commit`
+
 ## 다음 단계
 
-다음 작업은 P2의 `FE-04`를 문서 순서대로 진행한다.
+다음 작업은 P2의 `TEST-02`를 문서 순서대로 진행한다.

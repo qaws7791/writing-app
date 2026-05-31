@@ -1,10 +1,12 @@
-import { courseCategories } from "@/features/courses/course-data"
-import { getCourseDetailById } from "@/features/courses/course-detail-data"
-import { inProgressCourses } from "@/features/home/home-fake-data"
-import { getLessonById } from "@/features/lessons/lesson-data"
-import { AI_FEEDBACK_SCORE_RANGE } from "@/features/lessons/lesson-generation-rules"
-import { getMockAiFeedback } from "@/features/lessons/lesson-logic"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
+import {
+  AI_FEEDBACK_SCORE_RANGE,
+  courseCategories,
+  getCourseDetailById,
+  getLessonById,
+  getMockAiFeedback,
+  inProgressCourses,
+} from "@/lib/api/fake/fake-writing-app-fixtures"
 import type {
   LessonProgress,
   SaveLessonAnswerInput,

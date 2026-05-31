@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { CourseCurriculum } from "@/features/courses/course-curriculum"
-import { courseDetails } from "@/features/courses/course-detail-data"
+import { courseDetails } from "@/lib/api/fake/__fixtures__/course-detail-data"
 
 type AnchorProps = React.ComponentProps<"a">
 

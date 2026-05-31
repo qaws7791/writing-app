@@ -3,10 +3,10 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 
-import { getDefaultLesson } from "@/features/lessons/lesson-data"
 import { LessonExperience } from "@/features/lessons/lesson-experience"
 import type { Lesson } from "@/features/lessons/lesson-types"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
+import { getDefaultLesson } from "@/lib/api/fake/__fixtures__/lesson-data"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
 
 vi.mock("next/navigation", () => ({
