@@ -198,6 +198,7 @@
 - 조사 방향: web/admin 인증 프록시에서 중복된 Request 조립 규칙을 앱별 base URL 정책과 분리한다.
 - 완료 내용: `@workspace/auth-proxy` 패키지를 추가하고 auth backend URL 생성, query 보존, forwarded header 설정, GET/HEAD body 제외, streaming body와 `duplex: "half"`, `redirect: "manual"` 처리를 한 곳으로 모았다. web/admin route는 앱별 환경 변수와 기본 포트만 선택하고 같은 `proxyAuthRequest`를 호출한다.
 - 검증: `bun install && bun --filter @workspace/auth-proxy test && bun --filter @workspace/auth-proxy typecheck && bun --filter @workspace/auth-proxy lint && bun --filter @workspace/web typecheck && bun --filter @workspace/web test && bun --filter @workspace/web lint && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin test && bun --filter @workspace/admin lint && bun --filter @workspace/web build && bun --filter @workspace/admin build`
+- 2026-05-31 후속 결정: 인증 프록시 공통화는 임시 복잡도 완화였으나, 최종 구조에서는 프론트엔드가 Hono API의 Better Auth endpoint를 직접 호출하도록 전환한다. `@workspace/auth-proxy`와 Next `/api/auth/*` route는 제거 대상이다.
 
 ## AUTH-03 작업 메모
 

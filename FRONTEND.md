@@ -20,7 +20,6 @@
 - `/app/courses`: 코스 목록과 카테고리.
 - `/app/courses/[id]`: 코스 상세와 커리큘럼.
 - `/app/lesson?lesson_id=...`: step 기반 레슨 진행 화면.
-- `/api/auth/*`: `apps/api` 인증 endpoint로 요청을 전달하는 프록시.
 
 ### 어드민 웹
 
@@ -29,19 +28,22 @@
 - `/courses`: 코스 목록.
 - `/courses/[id]`: 현재 공개 커리큘럼을 직접 편집하는 코스 편집기.
 - `/users`: 사용자 목록.
-- `/api/auth/*`: `apps/admin-api` 인증 endpoint로 요청을 전달하는 프록시.
 
 ## 데이터 접근 경계
 
 `apps/web`는 `WritingAppApi` 포트만 사용한다. HTTP 구현은 `src/lib/api/http`에 있고, 테스트와 일부 로컬 흐름은 fake adapter로 같은 포트를 구현한다. OpenAPI 생성 타입은 `src/lib/api/generated`에 격리하고, feature 컴포넌트는 내부 mapper 결과만 사용한다.
 
-`apps/admin`은 `AdminApi` 포트만 사용한다. 서버 컴포넌트는 `getServerAdminApi()`로 현재 요청 쿠키를 어드민 API에 전달한다. 관리자 로그인은 same-origin `/api/auth/*` 프록시를 통해 처리한다.
+`apps/admin`은 `AdminApi` 포트만 사용한다. 서버 컴포넌트는 `getServerAdminApi()`로 현재 요청 쿠키를 어드민 API에 전달한다. 관리자 로그인은 `ADMIN_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 호출한다.
 
 ## 인증과 redirect
 
 학습자 앱의 보호 라우트는 `apps/web/src/app/app/layout.tsx`에서 현재 사용자를 확인하고, 없으면 `/login`으로 보낸다. 로그인 `next` 값은 `src/lib/auth/auth-navigation.ts`의 허용 규칙을 통과해야 한다.
 
+학습자 로그인은 `NEXT_PUBLIC_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 호출한다. 브라우저 요청은 `credentials: "include"`를 사용하고, API는 `CORS_ORIGIN`과 Better Auth `trustedOrigins`로 학습자 웹 origin을 허용한다.
+
 어드민 앱의 보호 라우트는 `apps/admin/src/app/(admin)/layout.tsx`에서 `GET /session` 결과를 확인한다. 실패하면 어드민 로그인 경로로 redirect한다.
+
+관리자 로그인은 `ADMIN_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 호출한다. 브라우저 요청은 `credentials: "include"`를 사용하고, 어드민 API는 `ADMIN_CORS_ORIGIN`과 Better Auth `trustedOrigins`로 어드민 웹 origin을 허용한다.
 
 ## UI와 접근성
 

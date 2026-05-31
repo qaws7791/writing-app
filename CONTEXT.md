@@ -24,7 +24,8 @@
 
 - 학습자 웹은 `apps/api`만 호출한다.
 - 어드민 웹은 `apps/admin-api`만 호출한다.
-- 인증 프록시는 각 Next 앱의 same-origin `/api/auth/*` route에서 처리한다.
+- 인증 요청은 각 프론트엔드에서 Hono API의 `/api/auth/*` endpoint로 직접 보낸다.
+- 운영에서 웹과 API가 서로 다른 서브도메인을 쓰는 경우 Better Auth cookie domain을 parent domain으로 명시한다.
 - `packages/core`는 DB나 HTTP 구현을 모르는 도메인 경계다.
 - `packages/db`는 core의 repository port를 구현한다.
 

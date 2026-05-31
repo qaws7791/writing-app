@@ -593,6 +593,11 @@
 - 로그인 페이지, 보호 layout, 왼쪽 사이드바 기반 `AdminShell`, 루트 `/courses` redirect를 추가했다.
 - 로그인 성공/실패와 인증 navigation/proxy/client 동작을 테스트로 검증했다.
 
+## 2026-05-31 인증 프록시 제거 반영
+
+- 어드민 로그인은 Next.js same-origin 인증 프록시를 사용하지 않고 `ADMIN_API_BASE_URL`의 어드민 Hono API `/api/auth/*` endpoint를 직접 호출한다.
+- 어드민 API는 `ADMIN_CORS_ORIGIN`과 Better Auth trusted origin으로 어드민 웹 origin을 허용한다.
+
 ## 2026-05-28 작업 9 리뷰 반영
 
 - 사이드바 메뉴는 1차 범위인 콘텐츠와 사용자 조회로 제한한다.

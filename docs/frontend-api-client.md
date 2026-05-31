@@ -1,5 +1,12 @@
 # 프론트엔드 API 클라이언트 전환
 
+## 2026-05-31 인증 프록시 제거와 직접 API 인증 전환
+
+- 웹과 어드민의 Next.js `/api/auth/*` 프록시를 제거했다.
+- 학습자 Google OAuth 시작은 `NEXT_PUBLIC_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 사용한다.
+- 관리자 이메일 로그인은 `ADMIN_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 사용한다.
+- Hono API는 CORS credentials와 Better Auth trusted origin을 유지하고, 운영 서브도메인 배포에서는 cookie domain 환경 변수로 세션 쿠키 공유 범위를 명시한다.
+
 ## 2026-05-31 BSSN 6순위 단순화 완료
 
 - `WritingAppApi`에서 `searchCourses`와 `getProfile` 포트를 제거했다.
@@ -12,7 +19,7 @@
 
 - 웹 학습자 인증 화면은 Google 로그인 단일 버튼만 렌더링한다.
 - 이메일/비밀번호 로그인 폼, 학습자 회원가입 링크, `/signup` 페이지, 이메일 인증 요청 helper를 제거했다.
-- Google OAuth 시작은 기존처럼 웹 앱 same-origin `/api/auth/*` 프록시를 사용하고, 완료 후 안전한 `/app...` 경로로 복귀한다.
+- Google OAuth 시작은 Hono API의 `/api/auth/*` endpoint를 직접 사용하고, 완료 후 안전한 `/app...` 경로로 복귀한다.
 
 ## 2026-05-27 계획 수립 시작
 
