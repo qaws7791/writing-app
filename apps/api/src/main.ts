@@ -45,6 +45,7 @@ const aiFeedbackService = createAiFeedbackService({
 })
 const auth = createAuthRuntime({
   baseUrl: env.betterAuthUrl,
+  cookieDomain: env.cookieDomain,
   db,
   googleClientId: env.googleClientId,
   googleClientSecret: env.googleClientSecret,

@@ -7,6 +7,7 @@ import type { AuthRuntime } from "@/auth/session"
 
 interface CreateAuthRuntimeInput {
   baseUrl: string
+  cookieDomain?: string
   db: WritingAppDatabase
   googleClientId: string
   googleClientSecret: string
@@ -16,9 +17,7 @@ interface CreateAuthRuntimeInput {
 
 export function createAuthRuntime(input: CreateAuthRuntimeInput): AuthRuntime {
   const auth = betterAuth({
-    advanced: {
-      trustedProxyHeaders: true,
-    },
+    advanced: getAdvancedAuthOptions(input.cookieDomain),
     baseURL: input.baseUrl,
     database: drizzleAdapter(input.db, {
       provider: "sqlite",
@@ -54,5 +53,18 @@ export function createAuthRuntime(input: CreateAuthRuntimeInput): AuthRuntime {
       }
     },
     handler: auth.handler,
+  }
+}
+
+function getAdvancedAuthOptions(cookieDomain: string | undefined) {
+  if (!cookieDomain) {
+    return {}
+  }
+
+  return {
+    crossSubDomainCookies: {
+      domain: cookieDomain,
+      enabled: true,
+    },
   }
 }
