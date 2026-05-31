@@ -38,6 +38,7 @@
 |   20 | AUTH-04   | 완료 | 어드민 로그인 실패 원인을 구분해 표시한다.          |
 |   21 | DATA-04   | 완료 | 홈 진행 요약 조회를 단일 읽기 모델로 정리했다.      |
 |   22 | DATA-05   | 완료 | AI 피드백 attempt 번호 생성을 저장소 경계로 옮겼다. |
+|   23 | DATA-06   | 완료 | DB 스키마 명명 규칙을 문서화했다.                   |
 
 ## ADMIN-08 작업 메모
 
@@ -201,6 +202,13 @@
 - 완료 내용: `createNextCompletedAttempt()` 저장소 명령을 추가하고 service의 attempt 번호 계산 책임을 제거했다. Drizzle 저장소는 transaction 안에서 현재 최대 번호를 읽어 다음 completed attempt를 저장하며, unique constraint 충돌은 짧게 재시도하고 한도 도달은 도메인 결과로 반환한다.
 - 검증: `bun --filter @workspace/core test src/ai-feedback/ai-feedback.service.test.ts && bun --filter @workspace/db test src/repositories/drizzle-feedback.repository.test.ts && bun --filter @workspace/core typecheck && bun --filter @workspace/db typecheck && bun --filter @workspace/core test && bun --filter @workspace/db test && bun --filter @workspace/core lint && bun --filter @workspace/db lint`
 
+## DATA-06 작업 메모
+
+- 대상 파일: `docs/schema-conventions.md`, `BACKEND.md`
+- 조사 방향: Better Auth 계열 schema와 직접 관리 schema의 SQL 컬럼 명명 차이를 확인하고, 새 스키마 작성자가 따를 기준을 문서화한다.
+- 완료 내용: Better Auth 계열 테이블은 provider convention을 유지하고, 직접 관리 테이블은 SQL 이름에 snake_case를 쓰며 Drizzle TypeScript 속성은 camelCase로 매핑한다는 규칙을 문서화했다. `BACKEND.md`의 `packages/db` 설명에서 해당 문서를 참조한다.
+- 검증: `bun lefthook run pre-commit`
+
 ## 다음 단계
 
-다음 작업은 P1의 `DATA-06`을 문서 순서대로 진행한다.
+다음 작업은 P1의 `DOMAIN-02`를 문서 순서대로 진행한다.
