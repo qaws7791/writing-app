@@ -8,8 +8,15 @@ export default defineConfig({
     noExternal: ["zod"],
   },
   test: {
+    coverage: {
+      thresholds: {
+        branches: 1,
+        functions: 1,
+        lines: 1,
+        statements: 1,
+      },
+    },
     environment: "node",
     include: ["src/**/*.test.ts"],
-    passWithNoTests: true,
   },
 })

@@ -42,6 +42,7 @@
 |   24 | DOMAIN-02 | 완료 | 어드민 스텝 타입 메타데이터 registry를 추가했다.    |
 |   25 | FE-01     | 완료 | 레슨 경험 step renderer를 shell에서 분리했다.       |
 |   26 | FE-02     | 완료 | 레슨 진행 저장 정책을 hook으로 분리했다.            |
+|   27 | TEST-01   | 완료 | 테스트 무음 통과 예외와 커버리지 하한을 정리했다.   |
 
 ## ADMIN-08 작업 메모
 
@@ -235,6 +236,14 @@
 - 완료 내용: `useLessonPersistence()` hook을 추가해 best-effort 저장, 저장된 글쓰기 응답 상태, 실패 메시지 기록을 한 곳으로 모았다. `LessonExperience`는 저장 API를 직접 호출하지 않고 hook 명령을 호출하며, 저장 실패는 `role="alert"` 안내로 표시하되 현재 레슨 이동은 막지 않는다.
 - 검증: `bun --filter @workspace/web test src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint`
 
+## TEST-01 작업 메모
+
+- 대상 파일: `apps/*/vitest.config.ts`, `packages/*/vitest.config.ts`
+- 조사 방향: 테스트 파일이 있는 패키지의 `passWithNoTests` 예외를 제거하고, 테스트가 아직 없는 패키지에만 이유를 주석으로 남긴다. `packages/core`, `packages/db`, `packages/env`에는 현재 상태를 기준으로 단계적 커버리지 하한을 둔다.
+- 완료 내용: 테스트가 존재하는 admin-api, api, core, db, env, logger 설정에서 `passWithNoTests`를 제거했다. 자체 테스트가 아직 없는 UI 패키지만 주석과 함께 예외를 유지하고, 의미 없는 0% 커버리지 하한은 제거했다. core/env는 현재 측정값보다 낮은 단계적 하한을 추가했고, db는 Bun SQLite 테스트의 coverage 런타임 제약을 고려해 최소 하한부터 둔다.
+- 검증: `bun --filter @workspace/admin-api test && bun --filter @workspace/api test && bun --filter @workspace/core test -- --coverage && bun --filter @workspace/env test -- --coverage && bun --filter @workspace/db test && bun --filter @workspace/logger test && bun --filter @workspace/ui test && bun --filter @workspace/core lint && bun --filter @workspace/db lint && bun --filter @workspace/env lint && bun --filter @workspace/ui lint`
+- 참고: `bun --filter @workspace/db test -- --coverage`는 현재 `bun --bun` 런타임에서 V8 coverage API를 사용할 수 없어 실패한다. `bun test`는 변경과 무관한 전체 실행에서 출력 없이 장시간 정지해 프로세스를 종료했다.
+
 ## 다음 단계
 
-다음 작업은 P1의 `TEST-01`을 문서 순서대로 진행한다.
+다음 작업은 P2의 `ADMIN-05`를 문서 순서대로 진행한다.
