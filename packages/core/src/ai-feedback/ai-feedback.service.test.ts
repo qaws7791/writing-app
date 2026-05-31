@@ -89,6 +89,7 @@ function createLearningRepository(): LearningRepository {
     findLessonProgress: vi.fn(),
     listCourseLessonIds: vi.fn(async () => [lessonId("sentence-structure-01")]),
     listInProgressCourses: vi.fn(),
+    listProgressSummaries: vi.fn(),
     listLessonAnswers: vi.fn(async () => [
       {
         answer: "저장된 답변",

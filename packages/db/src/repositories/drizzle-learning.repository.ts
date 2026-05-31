@@ -9,7 +9,11 @@ import type {
 } from "@workspace/core/learning"
 
 import type { WritingAppDatabase } from "../client"
-import { courseChapters, courseLessons } from "../schema/content.schema"
+import {
+  courseChapters,
+  courseLessons,
+  courses,
+} from "../schema/content.schema"
 import {
   courseProgress,
   lessonAnswers,
@@ -169,6 +173,49 @@ export function createDrizzleLearningRepository(
       return rows.map(mapCourseProgress)
     },
 
+    async listProgressSummaries(userId) {
+      const rows = await db
+        .select({
+          courseDescription: courses.description,
+          courseId: courses.id,
+          courseTitle: courses.title,
+          lessonId: courseLessons.lessonId,
+          lessonStatus: lessonProgress.status,
+          lessonTitle: courseLessons.title,
+        })
+        .from(courseProgress)
+        .innerJoin(courses, eq(courses.id, courseProgress.courseId))
+        .innerJoin(
+          courseChapters,
+          and(
+            eq(courseChapters.courseId, courses.id),
+            eq(courseChapters.status, "active")
+          )
+        )
+        .innerJoin(
+          courseLessons,
+          and(
+            eq(courseLessons.chapterId, courseChapters.id),
+            eq(courseLessons.status, "active")
+          )
+        )
+        .leftJoin(
+          lessonProgress,
+          and(
+            eq(lessonProgress.userId, userId),
+            eq(lessonProgress.lessonId, courseLessons.lessonId)
+          )
+        )
+        .where(eq(courseProgress.userId, userId))
+        .orderBy(
+          desc(courseProgress.updatedAt),
+          asc(courseChapters.sortOrder),
+          asc(courseLessons.sortOrder)
+        )
+
+      return mapProgressSummaryRows(rows)
+    },
+
     async listLessonAnswers(userId, lessonId) {
       const rows = await db
         .select()
@@ -324,6 +371,49 @@ function mapCourseProgress(row: CourseProgressRow) {
     courseId: row.courseId as CourseId,
     lastLessonId: row.lastLessonId ? (row.lastLessonId as LessonId) : undefined,
   }
+}
+
+function mapProgressSummaryRows(
+  rows: {
+    courseDescription: string
+    courseId: string
+    courseTitle: string
+    lessonId: string
+    lessonStatus: "completed" | "in-progress" | "not-started" | null
+    lessonTitle: string
+  }[]
+) {
+  const summaries = new Map<
+    string,
+    {
+      courseDescription: string
+      courseId: CourseId
+      courseTitle: string
+      lessons: {
+        lessonId: LessonId
+        progressStatus?: "completed" | "in-progress" | "not-started"
+        title: string
+      }[]
+    }
+  >()
+
+  for (const row of rows) {
+    const summary = summaries.get(row.courseId) ?? {
+      courseDescription: row.courseDescription,
+      courseId: row.courseId as CourseId,
+      courseTitle: row.courseTitle,
+      lessons: [],
+    }
+
+    summary.lessons.push({
+      lessonId: row.lessonId as LessonId,
+      progressStatus: row.lessonStatus ?? undefined,
+      title: row.lessonTitle,
+    })
+    summaries.set(row.courseId, summary)
+  }
+
+  return [...summaries.values()]
 }
 
 function mapLessonProgress(row: LessonProgressRow): LessonProgressRecord {

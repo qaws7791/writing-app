@@ -7,6 +7,19 @@ export interface CourseProgressRecord {
   lastLessonId?: LessonId
 }
 
+export interface ProgressCourseLessonRecord {
+  lessonId: LessonId
+  progressStatus?: LessonProgressStatus
+  title: string
+}
+
+export interface ProgressCourseSummaryRecord {
+  courseDescription: string
+  courseId: CourseId
+  courseTitle: string
+  lessons: ProgressCourseLessonRecord[]
+}
+
 export interface LessonProgressRecord {
   completedAt?: Date | null
   courseId: CourseId
@@ -78,6 +91,7 @@ export interface LearningRepository {
   listCourseLessonIds(courseId: CourseId): Promise<LessonId[]>
   courseIncludesLesson(courseId: CourseId, lessonId: LessonId): Promise<boolean>
   listInProgressCourses(userId: UserId): Promise<CourseProgressRecord[]>
+  listProgressSummaries(userId: UserId): Promise<ProgressCourseSummaryRecord[]>
   listLessonAnswers(
     userId: UserId,
     lessonId: LessonId

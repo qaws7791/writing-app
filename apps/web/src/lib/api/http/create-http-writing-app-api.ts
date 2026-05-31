@@ -157,19 +157,20 @@ export function createHttpWritingAppApi(
   }
 }
 
-function mapProgressCourseList(value: {
-  courses: readonly {
-    completedCount: number
-    courseId: string
-    nextLessonId?: string
-    progressPercent: number
-    totalLessons: number
-  }[]
-}) {
+function mapProgressCourseList(
+  value: z.infer<typeof progressCourseListDtoSchema>
+) {
   return {
     courses: value.courses.map((course) => ({
       completedLessons: course.completedCount,
+      courseDescription: course.courseDescription,
       courseId: course.courseId as never,
+      courseTitle: course.courseTitle,
+      lessons: course.lessons.map((lesson) => ({
+        lessonId: lesson.lessonId as never,
+        status: lesson.status,
+        title: lesson.title,
+      })),
       nextLessonId: course.nextLessonId as never,
       percentage: course.progressPercent,
       totalLessons: course.totalLessons,
@@ -544,7 +545,16 @@ const progressCourseListDtoSchema = z.object({
   courses: z.array(
     z.object({
       completedCount: z.number().int().nonnegative(),
+      courseDescription: z.string().min(1),
       courseId: z.string().min(1),
+      courseTitle: z.string().min(1),
+      lessons: z.array(
+        z.object({
+          lessonId: z.string().min(1),
+          status: z.enum(["completed", "locked", "next-up"]),
+          title: z.string().min(1),
+        })
+      ),
       nextLessonId: z.string().min(1).optional(),
       progressPercent: z.number().nonnegative(),
       totalLessons: z.number().int().nonnegative(),

@@ -52,7 +52,14 @@ export function createFakeWritingAppApi(): WritingAppApi {
       return apiOk({
         courses: inProgressCourses.map((course) => ({
           completedLessons: course.completedLessons,
+          courseDescription: course.description,
           courseId: course.id as never,
+          courseTitle: course.title,
+          lessons: course.lessons.map((lesson) => ({
+            lessonId: lesson.id as never,
+            status: lesson.status,
+            title: lesson.name,
+          })),
           nextLessonId: course.lessons.find(
             (lesson) => lesson.status === "next-up"
           )?.id as never,

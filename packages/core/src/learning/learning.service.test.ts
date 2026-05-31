@@ -133,6 +133,9 @@ function createRepository(
     async listInProgressCourses() {
       return []
     },
+    async listProgressSummaries() {
+      return []
+    },
     async listLessonAnswers() {
       return []
     },
@@ -149,6 +152,67 @@ function createRepository(
 }
 
 describe("createLearningService", () => {
+  it("lists progress from the repository summary read model", async () => {
+    const getCourseDetail = vi.fn(createContentService().getCourseDetail)
+    const service = createLearningService({
+      contentService: createContentService({ getCourseDetail }),
+      repository: createRepository({
+        async listProgressSummaries() {
+          return [
+            {
+              courseDescription: "문장 구조를 배웁니다.",
+              courseId: sentenceCourseId,
+              courseTitle: "문장 구조의 기본",
+              lessons: [
+                {
+                  lessonId: firstLessonId,
+                  progressStatus: "completed",
+                  title: "주어와 서술어 찾기",
+                },
+                {
+                  lessonId: secondLessonId,
+                  title: "목적어와 보어의 자리",
+                },
+              ],
+            },
+          ]
+        },
+      }),
+    })
+
+    const result = await service.listProgress(userId)
+
+    expect(result).toEqual({
+      status: "ok",
+      value: {
+        courses: [
+          {
+            completedCount: 1,
+            courseDescription: "문장 구조를 배웁니다.",
+            courseId: sentenceCourseId,
+            courseTitle: "문장 구조의 기본",
+            lessons: [
+              {
+                lessonId: firstLessonId,
+                status: "completed",
+                title: "주어와 서술어 찾기",
+              },
+              {
+                lessonId: secondLessonId,
+                status: "next-up",
+                title: "목적어와 보어의 자리",
+              },
+            ],
+            nextLessonId: secondLessonId,
+            progressPercent: 50,
+            totalLessons: 2,
+          },
+        ],
+      },
+    })
+    expect(getCourseDetail).not.toHaveBeenCalled()
+  })
+
   it("calculates course progress from the current course curriculum", async () => {
     const repository = createRepository({
       async listLessonProgressByCourse() {

@@ -13,13 +13,17 @@ import type {
   CompleteLessonDto,
   CourseProgressDto,
   LessonProgressDto,
+  ProgressCourseDto,
   ProgressCourseListDto,
   SaveLessonAnswerRequestDto,
   SaveLessonProgressRequestDto,
 } from "./learning.dto"
 import type { LearningDatabaseUnavailableErrorDto } from "./learning.errors"
 import type { UserId } from "./learning.ids"
-import type { LearningRepository } from "./learning.repository"
+import type {
+  LearningRepository,
+  ProgressCourseSummaryRecord,
+} from "./learning.repository"
 
 type OkResult<TValue> = {
   status: "ok"
@@ -137,33 +141,15 @@ export function createLearningService({
     async listProgress(userId) {
       let courses
       try {
-        courses = await repository.listInProgressCourses(userId)
+        courses = await repository.listProgressSummaries(userId)
       } catch {
-        return unavailableResult
-      }
-
-      const progressResults = await Promise.all(
-        courses.map((course) =>
-          service.getCourseProgress(userId, course.courseId)
-        )
-      )
-      const unavailable = progressResults.find(
-        (result) => result.status !== "ok"
-      )
-      if (unavailable) {
         return unavailableResult
       }
 
       return {
         status: "ok",
         value: {
-          courses: progressResults.map((result) => {
-            if (result.status !== "ok") {
-              throw new Error("Progress result must be ok.")
-            }
-
-            return result.value
-          }),
+          courses: courses.map(mapProgressCourseSummary),
         },
       }
     },
@@ -391,6 +377,37 @@ export function createLearningService({
   }
 
   return service
+}
+
+function mapProgressCourseSummary(
+  summary: ProgressCourseSummaryRecord
+): ProgressCourseDto {
+  const lessons: ProgressCourseDto["lessons"] = summary.lessons.map(
+    (lesson) => ({
+      lessonId: lesson.lessonId,
+      status: lesson.progressStatus === "completed" ? "completed" : "locked",
+      title: lesson.title,
+    })
+  )
+  const completedCount = lessons.filter(
+    (lesson) => lesson.status === "completed"
+  ).length
+  const nextLesson = lessons.find((lesson) => lesson.status !== "completed")
+
+  if (nextLesson) {
+    nextLesson.status = "next-up"
+  }
+
+  return {
+    completedCount,
+    courseDescription: summary.courseDescription,
+    courseId: summary.courseId,
+    courseTitle: summary.courseTitle,
+    lessons,
+    nextLessonId: nextLesson?.lessonId,
+    progressPercent: getProgressPercent(completedCount, lessons.length),
+    totalLessons: lessons.length,
+  }
 }
 
 function findStep(lesson: LessonDto, stepId: string) {

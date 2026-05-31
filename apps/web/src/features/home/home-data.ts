@@ -2,6 +2,7 @@ import type { CourseDetail } from "@/features/courses/course-detail-data"
 import type { CourseId } from "@/features/courses/course-ids"
 import { lessonId } from "@/features/lessons/lesson-ids"
 import type { LessonId } from "@/features/lessons/lesson-types"
+import type { ProgressCourse } from "@/lib/api/writing-app-api"
 
 export type LessonStatus = "completed" | "next-up" | "locked"
 
@@ -30,6 +31,27 @@ export function createInProgressCourse(course: CourseDetail): InProgressCourse {
     totalLessons: course.progress.totalLessons,
     progressPercent: course.progress.percentage,
     lessons: createHomeLessons(course),
+  }
+}
+
+export function createInProgressCourseFromProgress(
+  course: ProgressCourse
+): InProgressCourse {
+  return {
+    id: course.courseId,
+    title: course.courseTitle,
+    description: course.courseDescription,
+    completedLessons: course.completedLessons,
+    totalLessons: course.totalLessons,
+    progressPercent: course.percentage,
+    lessons: course.lessons
+      .filter((lesson) => lesson.status !== "locked")
+      .slice(-2)
+      .map((lesson) => ({
+        id: lessonId(String(lesson.lessonId)),
+        name: lesson.title,
+        status: lesson.status,
+      })),
   }
 }
 

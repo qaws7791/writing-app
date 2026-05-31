@@ -20,7 +20,14 @@ export interface CurrentUser {
 
 export interface ProgressCourse {
   completedLessons: number
+  courseDescription: string
   courseId: Course["id"]
+  courseTitle: string
+  lessons: readonly {
+    lessonId: LessonId
+    status: "completed" | "locked" | "next-up"
+    title: string
+  }[]
   nextLessonId?: CourseNextLesson["lessonId"]
   percentage: number
   totalLessons: number

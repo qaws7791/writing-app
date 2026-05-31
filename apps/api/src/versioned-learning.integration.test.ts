@@ -106,7 +106,21 @@ const learnerProgressService: LearningService = {
         courses: [
           {
             completedCount: 1,
+            courseDescription: "문장의 뼈대를 이해합니다.",
             courseId: "sentence-structure",
+            courseTitle: "문장 구조의 기본",
+            lessons: [
+              {
+                lessonId: "sentence-structure-01",
+                status: "completed",
+                title: "주어와 서술어 찾기",
+              },
+              {
+                lessonId: "sentence-structure-02",
+                status: "next-up",
+                title: "목적어와 보어의 자리",
+              },
+            ],
             nextLessonId: "sentence-structure-02",
             progressPercent: 8,
             totalLessons: 12,
@@ -179,7 +193,21 @@ describe("learning API current curriculum", () => {
       courses: [
         {
           completedCount: 1,
+          courseDescription: "문장의 뼈대를 이해합니다.",
           courseId: "sentence-structure",
+          courseTitle: "문장 구조의 기본",
+          lessons: [
+            {
+              lessonId: "sentence-structure-01",
+              status: "completed",
+              title: "주어와 서술어 찾기",
+            },
+            {
+              lessonId: "sentence-structure-02",
+              status: "next-up",
+              title: "목적어와 보어의 자리",
+            },
+          ],
           nextLessonId: "sentence-structure-02",
           progressPercent: 8,
           totalLessons: 12,

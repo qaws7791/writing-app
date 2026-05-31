@@ -29,6 +29,14 @@
 |   11 | ADMIN-03  | 완료 | 커리큘럼 맵 내부 prop 전달을 줄였다.                |
 |   12 | ADMIN-04  | 완료 | dirty 변경 내역과 change kind 계산을 연결했다.      |
 |   13 | ADMIN-07  | 완료 | 스텝 폼 필드 key와 draft content 타입을 분리했다.   |
+|   14 | API-02    | 완료 | API 라우트 반복 처리 helper를 도입했다.             |
+|   15 | API-03    | 완료 | health check 예외 응답을 명시화했다.                |
+|   16 | API-04    | 완료 | AI feedback provider 오류 분류를 추가했다.          |
+|   17 | ARCH-02   | 완료 | UI 패키지의 Next 통합 경계를 분리했다.              |
+|   18 | AUTH-02   | 완료 | 인증 프록시 요청 조립을 공통 패키지로 분리했다.     |
+|   19 | AUTH-03   | 완료 | 로그인 다음 경로 검증을 앱별 허용 경로로 강화했다.  |
+|   20 | AUTH-04   | 완료 | 어드민 로그인 실패 원인을 구분해 표시한다.          |
+|   21 | DATA-04   | 완료 | 홈 진행 요약 조회를 단일 읽기 모델로 정리했다.      |
 
 ## ADMIN-08 작업 메모
 
@@ -178,6 +186,13 @@
 - 완료 내용: 로그인 실패 결과에 `kind`를 추가하고 401/403 및 `INVALID_CREDENTIALS` 계열 body code는 `invalid-credentials`, 429는 `rate-limited`, 5xx는 `server-unavailable`, fetch 예외는 `network-error`로 매핑했다. 로그인 화면 테스트는 잘못된 인증 정보에 대한 구체 메시지를 검증한다.
 - 검증: `bun --filter @workspace/admin test src/lib/auth/admin-auth-client.test.ts src/features/auth/admin-auth-page.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin test && bun --filter @workspace/admin lint`
 
+## DATA-04 작업 메모
+
+- 대상 파일: `packages/core/src/learning/learning.service.ts`, `packages/db/src/repositories/drizzle-learning.repository.ts`, `apps/web/src/app/app/page.tsx`
+- 조사 방향: 홈 화면이 `/progress` 조회 뒤 코스별 상세와 진행률을 다시 요청하는 N+1 흐름을 확인하고, 기존 `/progress` 계약을 홈 진행 요약 읽기 모델로 확장한다.
+- 완료 내용: `LearningRepository.listProgressSummaries()`를 추가해 코스와 활성 레슨 행을 한 번에 조회하고, core service가 완료 수, 다음 레슨, 레슨 표시 상태를 계산한다. Web 홈은 `/progress` 응답만으로 진행 중 코스 카드를 구성해 코스별 추가 API 호출을 제거했다.
+- 검증: `bun --filter @workspace/core test && bun --filter @workspace/db test && bun --filter @workspace/api test && bun --filter @workspace/web test && bun --filter @workspace/core typecheck && bun --filter @workspace/db typecheck && bun --filter @workspace/api typecheck && bun --filter @workspace/web typecheck && bun --filter @workspace/core lint && bun --filter @workspace/db lint && bun --filter @workspace/api lint && bun --filter @workspace/web lint`
+
 ## 다음 단계
 
-다음 작업은 P1의 `DATA-04`를 문서 순서대로 진행한다.
+다음 작업은 P1의 `DATA-05`를 문서 순서대로 진행한다.

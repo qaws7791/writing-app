@@ -39,8 +39,20 @@ export const courseProgressDtoSchema = z.object({
   totalLessons: z.number().int().nonnegative(),
 })
 
+export const progressCourseDtoSchema = courseProgressDtoSchema.extend({
+  courseDescription: z.string().min(1),
+  courseTitle: z.string().min(1),
+  lessons: z.array(
+    z.object({
+      lessonId: z.string().min(1),
+      status: z.enum(["completed", "locked", "next-up"]),
+      title: z.string().min(1),
+    })
+  ),
+})
+
 export const progressCourseListDtoSchema = z.object({
-  courses: z.array(courseProgressDtoSchema),
+  courses: z.array(progressCourseDtoSchema),
 })
 
 export type LessonAnswerDto = z.infer<typeof lessonAnswerDtoSchema>
@@ -53,4 +65,5 @@ export type SaveLessonAnswerRequestDto = z.infer<
 >
 export type CompleteLessonDto = z.infer<typeof completeLessonDtoSchema>
 export type CourseProgressDto = z.infer<typeof courseProgressDtoSchema>
+export type ProgressCourseDto = z.infer<typeof progressCourseDtoSchema>
 export type ProgressCourseListDto = z.infer<typeof progressCourseListDtoSchema>

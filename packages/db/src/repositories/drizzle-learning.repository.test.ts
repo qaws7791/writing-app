@@ -78,6 +78,46 @@ describe("createDrizzleLearningRepository", () => {
     expect(lessonIds.at(-1)).toBe("sentence-structure-12")
   })
 
+  it("lists progress summaries with course and lesson rows", async () => {
+    const repository = createDrizzleLearningRepository(createDatabase(sqlite), {
+      now: () => now,
+    })
+
+    await repository.upsertCourseProgress({
+      courseId: sentenceCourseId,
+      lastLessonId: firstLessonId,
+      userId: learnerId,
+    })
+    await repository.completeLesson({
+      courseId: sentenceCourseId,
+      finalStepId: "sentence-structure-01-step-5",
+      lessonId: firstLessonId,
+      stepOrder: 5,
+      userId: learnerId,
+    })
+
+    const summaries = await repository.listProgressSummaries(learnerId)
+
+    expect(summaries[0]).toMatchObject({
+      courseDescription:
+        "한국어 문장의 뼈대를 이해하고 주어, 서술어, 목적어의 관계를 파악해 올바른 문장을 작성하는 방법을 배웁니다.",
+      courseId: sentenceCourseId,
+      courseTitle: "문장 구조의 기본",
+    })
+    expect(summaries[0]?.lessons.slice(0, 2)).toEqual([
+      {
+        lessonId: "sentence-structure-01",
+        progressStatus: "completed",
+        title: "주어와 서술어 찾기",
+      },
+      {
+        lessonId: "sentence-structure-02",
+        progressStatus: undefined,
+        title: "목적어와 보어의 자리",
+      },
+    ])
+  })
+
   it("checks whether a lesson belongs to the current course curriculum", async () => {
     const repository = createDrizzleLearningRepository(createDatabase(sqlite))
 

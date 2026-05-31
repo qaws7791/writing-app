@@ -1,5 +1,5 @@
 import { HomePage } from "@/features/home/home-page"
-import { createInProgressCourse } from "@/features/home/home-data"
+import { createInProgressCourseFromProgress } from "@/features/home/home-data"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
 export default async function Page() {
@@ -10,17 +10,7 @@ export default async function Page() {
     throw new Error(progress.error.message)
   }
 
-  const courses = await Promise.all(
-    progress.value.courses.map(async (courseProgress) => {
-      const course = await api.getCourseDetail(courseProgress.courseId)
-
-      if (course.status === "error") {
-        throw new Error(course.error.message)
-      }
-
-      return createInProgressCourse(course.value)
-    })
-  )
+  const courses = progress.value.courses.map(createInProgressCourseFromProgress)
 
   return <HomePage courses={courses} />
 }
