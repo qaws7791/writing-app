@@ -16,7 +16,10 @@ const databaseUnavailableDtoSchema = z.object({
 
 export function registerHealthRoute(
   app: Hono,
-  { checkDatabase }: Pick<ApiAppDependencies, "checkDatabase">
+  {
+    checkDatabase,
+    logger,
+  }: Pick<ApiAppDependencies, "checkDatabase" | "logger">
 ) {
   app.get(
     "/health",
@@ -41,7 +44,13 @@ export function registerHealthRoute(
       },
     }),
     async (context) => {
-      const databaseAvailable = await checkDatabase()
+      let databaseAvailable = false
+
+      try {
+        databaseAvailable = await checkDatabase()
+      } catch (error) {
+        logger.error({ error }, "Database health check failed")
+      }
 
       if (!databaseAvailable) {
         return context.json(

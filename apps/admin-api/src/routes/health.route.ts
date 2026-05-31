@@ -4,10 +4,19 @@ import type { AdminApiAppDependencies } from "@/app"
 
 export function registerHealthRoute(
   app: Hono,
-  { checkDatabase }: Pick<AdminApiAppDependencies, "checkDatabase">
+  {
+    checkDatabase,
+    logger,
+  }: Pick<AdminApiAppDependencies, "checkDatabase" | "logger">
 ) {
   app.get("/health", async (context) => {
-    const databaseAvailable = await checkDatabase()
+    let databaseAvailable = false
+
+    try {
+      databaseAvailable = await checkDatabase()
+    } catch (error) {
+      logger.error({ error }, "Admin database health check failed")
+    }
 
     return context.json(
       {

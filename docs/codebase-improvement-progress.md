@@ -133,6 +133,14 @@
 - 검증: `bun --filter @workspace/api typecheck && bun --filter @workspace/admin-api typecheck && bun --filter @workspace/api test && bun --filter @workspace/admin-api test && bun --filter @workspace/api lint && bun --filter @workspace/admin-api lint`
 - 참고: `bun --filter @workspace/api lint`는 기존 `apps/api/src/main.test.ts`의 `turbo/no-undeclared-env-vars` 경고 2건을 유지한 채 성공한다.
 
+## API-03 작업 메모
+
+- 대상 파일: `apps/api/src/routes/health.route.ts`, `apps/admin-api/src/routes/health.route.ts`, 각 앱의 app 테스트
+- 조사 방향: health route가 `checkDatabase()`의 false 반환뿐 아니라 예외 발생도 명시적인 503 응답과 로그로 처리하는지 확인한다.
+- 완료 내용: API와 Admin API health route가 DB 확인 예외를 route 안에서 잡고 logger에 기록한 뒤 기존 DB unavailable 응답 경로로 내려가도록 했다. 두 앱 모두 예외 발생 시 503을 반환하는 테스트를 추가했다.
+- 검증: `bun --filter @workspace/api test src/app.test.ts && bun --filter @workspace/admin-api test src/app.test.ts && bun --filter @workspace/api typecheck && bun --filter @workspace/admin-api typecheck && bun --filter @workspace/api test && bun --filter @workspace/admin-api test && bun --filter @workspace/api lint && bun --filter @workspace/admin-api lint`
+- 참고: `bun --filter @workspace/api lint`는 기존 `apps/api/src/main.test.ts`의 `turbo/no-undeclared-env-vars` 경고 2건을 유지한 채 성공한다.
+
 ## 다음 단계
 
-다음 작업은 P1의 `API-03`을 문서 순서대로 진행한다.
+다음 작업은 P1의 `API-04`를 문서 순서대로 진행한다.

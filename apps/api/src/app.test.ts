@@ -214,7 +214,8 @@ function createTestApp(
   logger: ApiLogger = silentLogger,
   session: CurrentAuthSession | null = null,
   learningService: LearningService = fakeLearningService,
-  aiFeedbackService: AiFeedbackService = fakeAiFeedbackService
+  aiFeedbackService: AiFeedbackService = fakeAiFeedbackService,
+  checkDatabase = async () => true
 ) {
   return createApiApp({
     aiFeedbackService,
@@ -226,9 +227,7 @@ function createTestApp(
         return new Response(null, { status: 404 })
       },
     },
-    async checkDatabase() {
-      return true
-    },
+    checkDatabase,
     contentService: fakeContentService,
     learningService,
     logger,
@@ -246,6 +245,36 @@ describe("createApiApp", () => {
       database: "ok",
       status: "ok",
     })
+  })
+
+  it("returns database unavailable when the health check throws", async () => {
+    const logger = {
+      error: vi.fn(),
+      info: vi.fn(),
+    } satisfies ApiLogger
+    const app = createTestApp(
+      logger,
+      null,
+      fakeLearningService,
+      fakeAiFeedbackService,
+      async () => {
+        throw new Error("database connection failed")
+      }
+    )
+
+    const response = await app.request("/health")
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      code: "database-unavailable",
+      message: "데이터베이스를 사용할 수 없습니다.",
+    })
+    expect(logger.error).toHaveBeenCalledWith(
+      {
+        error: expect.any(Error),
+      },
+      "Database health check failed"
+    )
   })
 
   it("requires auth for /ai-feedback", async () => {

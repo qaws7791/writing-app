@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import type { AdminService } from "@workspace/core/admin"
 
-import { createAdminApiApp } from "@/app"
+import { createAdminApiApp, type AdminApiLogger } from "@/app"
 import type { AdminAuthRuntime } from "@/auth/admin-session"
 
 const auth: AdminAuthRuntime = {
@@ -167,15 +167,15 @@ function createTestApp(
   input?: Partial<{
     adminService: AdminService
     auth: AdminAuthRuntime
+    checkDatabase: () => Promise<boolean>
+    logger: AdminApiLogger
   }>
 ) {
   return createAdminApiApp({
     adminService: input?.adminService ?? adminService,
     auth: input?.auth ?? auth,
-    async checkDatabase() {
-      return true
-    },
-    logger: {
+    checkDatabase: input?.checkDatabase ?? (async () => true),
+    logger: input?.logger ?? {
       error: vi.fn(),
       info: vi.fn(),
     },
@@ -183,6 +183,41 @@ function createTestApp(
 }
 
 describe("admin api app", () => {
+  it("returns admin health status when the database is available", async () => {
+    const response = await createTestApp().request("/health")
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      service: "admin-api",
+    })
+  })
+
+  it("returns database unavailable when the admin health check throws", async () => {
+    const logger = {
+      error: vi.fn(),
+      info: vi.fn(),
+    }
+    const response = await createTestApp({
+      async checkDatabase() {
+        throw new Error("database connection failed")
+      },
+      logger,
+    }).request("/health")
+
+    expect(response.status).toBe(503)
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      service: "admin-api",
+    })
+    expect(logger.error).toHaveBeenCalledWith(
+      {
+        error: expect.any(Error),
+      },
+      "Admin database health check failed"
+    )
+  })
+
   it("returns protected paginated courses", async () => {
     const response = await createTestApp().request(
       "/courses?page=1&pageSize=10&query=%EB%AC%B8%EC%9E%A5"
