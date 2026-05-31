@@ -158,3 +158,62 @@ describe("current curriculum schema", () => {
     expect(courseLessonColumns).toContain("status")
   })
 })
+
+describe("content migrations", () => {
+  it("records applied migrations with checksums", () => {
+    const sqlite = new Database(":memory:")
+
+    runContentMigration(sqlite)
+
+    const migrations = sqlite
+      .query<
+        { checksum: string; version: string },
+        []
+      >("select version, checksum from schema_migrations order by version")
+      .all()
+
+    expect(migrations).toEqual([
+      {
+        version: "0000-initial-content",
+        checksum: expect.any(String),
+      },
+      {
+        version: "0001-platform-backend",
+        checksum: expect.any(String),
+      },
+      {
+        version: "0002-admin-auth",
+        checksum: expect.any(String),
+      },
+      {
+        version: "0003-curriculum-status-columns",
+        checksum: expect.any(String),
+      },
+      {
+        version: "0010-remove-course-thumbnail",
+        checksum: expect.any(String),
+      },
+      {
+        version: "0011-course-curriculum-revision",
+        checksum: expect.any(String),
+      },
+      {
+        version: "0012-remove-curriculum-versioning",
+        checksum: expect.any(String),
+      },
+    ])
+  })
+
+  it("rejects a previously applied migration with a changed checksum", () => {
+    const sqlite = new Database(":memory:")
+
+    runContentMigration(sqlite)
+    sqlite
+      .query("update schema_migrations set checksum = ? where version = ?")
+      .run("changed-checksum", "0000-initial-content")
+
+    expect(() => runContentMigration(sqlite)).toThrow(
+      "Migration checksum mismatch: 0000-initial-content"
+    )
+  })
+})

@@ -20,8 +20,8 @@
 |    2 | API-01    | 완료    | 프론트 HTTP API 응답 런타임 파싱을 도입했다.        |
 |    3 | ARCH-01   | 완료    | 패키지 공개 경계와 내부 경로 직접 참조를 정리했다.  |
 |    4 | AUTH-01   | 완료    | 어드민 인증 확인을 전용 세션 API로 분리했다.        |
-|    5 | DATA-01   | 진행 중 | 마이그레이션 적용 이력 관리를 도입한다.             |
-|    6 | DATA-02   | 대기    | 서버 시작 시 자동 데이터 변경 작업을 분리한다.      |
+|    5 | DATA-01   | 완료    | 마이그레이션 적용 이력 관리를 도입했다.             |
+|    6 | DATA-02   | 진행 중 | 서버 시작 시 자동 데이터 변경 작업을 분리한다.      |
 |    7 | DATA-03   | 대기    | Step content JSON 계약을 경계별로 엄격히 검증한다.  |
 |    8 | DOMAIN-01 | 대기    | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다. |
 
@@ -58,4 +58,11 @@
 
 - 대상 파일: `packages/db/src/migrations/run-content-migration.ts`, `packages/db/src/migrations/*.sql`, `packages/db/package.json`
 - 조사 방향: 현재 커스텀 migration runner에 적용 이력과 checksum 검증을 추가할 수 있는 가장 작은 경계를 찾는다.
-- 완료 조건: 마이그레이션 적용 이력이 DB 안에 남고, 이미 적용된 파일의 내용 변경은 명시적 오류로 감지된다.
+- 완료 내용: `schema_migrations` ledger를 추가하고 SQL/코드 migration manifest의 checksum을 기록한다. 이미 적용된 migration의 checksum이 바뀌면 명시적 오류로 중단한다.
+- 검증: `bun --filter @workspace/db test src/client.test.ts && bun --filter @workspace/db test && bun --filter @workspace/db typecheck && bun --filter @workspace/db lint`
+
+## DATA-02 작업 메모
+
+- 대상 파일: `apps/api/src/main.ts`, `apps/admin-api/src/main.ts`, `packages/db/src/seeds/seed-content.ts`, 운영 문서
+- 조사 방향: 서버 시작이 seed나 migration 같은 데이터 변경 작업을 자동 수행하는 경로를 찾고 명시 실행 단계로 분리한다.
+- 완료 조건: 운영 기본 서버 시작은 콘텐츠 seed를 덮어쓰지 않고, migration 실행 여부는 명시 설정이나 별도 명령으로 관찰 가능하게 분리된다.
