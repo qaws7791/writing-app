@@ -10,13 +10,15 @@ import {
   sql,
 } from "drizzle-orm"
 
-import type {
-  AdminCourseEditorDetailDto,
-  AdminEditorCurriculumDetailDto,
-  AdminEditorLessonDetailDto,
-  AdminEditorStepSummaryDto,
-  AdminRepository,
-  AdminSaveCurriculumContentRequestDto,
+import {
+  adminEditorStepDetailDtoSchema,
+  type AdminCourseEditorDetailDto,
+  type AdminEditorCurriculumDetailDto,
+  type AdminEditorLessonDetailDto,
+  type AdminEditorStepDetailDto,
+  type AdminEditorStepSummaryDto,
+  type AdminRepository,
+  type AdminSaveCurriculumContentRequestDto,
 } from "@workspace/core/admin"
 
 import type { WritingAppDatabase } from "../client"
@@ -547,11 +549,11 @@ function mapEditorLessonDetail(
   }
 }
 
-function mapEditorStepDetail(step: LessonStepRow) {
-  return {
+function mapEditorStepDetail(step: LessonStepRow): AdminEditorStepDetailDto {
+  return adminEditorStepDetailDtoSchema.parse({
     ...mapEditorStepSummary(step),
     content: JSON.parse(step.contentJson) as unknown,
-  }
+  })
 }
 
 function mapEditorStepSummary(step: LessonStepRow): AdminEditorStepSummaryDto {

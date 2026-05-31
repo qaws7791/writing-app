@@ -22,8 +22,8 @@
 |    4 | AUTH-01   | 완료    | 어드민 인증 확인을 전용 세션 API로 분리했다.        |
 |    5 | DATA-01   | 완료    | 마이그레이션 적용 이력 관리를 도입했다.             |
 |    6 | DATA-02   | 완료    | 서버 시작 시 자동 데이터 변경 작업을 분리했다.      |
-|    7 | DATA-03   | 진행 중 | Step content JSON 계약을 경계별로 엄격히 검증한다.  |
-|    8 | DOMAIN-01 | 대기    | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다. |
+|    7 | DATA-03   | 완료    | Step content JSON 계약을 경계별로 엄격히 검증했다.  |
+|    8 | DOMAIN-01 | 진행 중 | 플레이 가능한 레슨 불변식을 core 경계에서 검증한다. |
 
 ## ADMIN-08 작업 메모
 
@@ -72,4 +72,11 @@
 
 - 대상 파일: `packages/core/src/admin/admin.dto.ts`, `packages/db/src/repositories/drizzle-admin.repository.ts`, `apps/admin-api/src/routes/curriculum-editor.route.ts`
 - 조사 방향: admin save/read 경계에서 step type별 content schema를 적용할 수 있는 가장 작은 core 계약을 찾는다.
-- 완료 조건: 잘못된 step content는 저장 시점에 거부되고, DB/admin/frontend 경계가 같은 step content 계약을 공유한다.
+- 완료 내용: step type별 content schema를 `packages/core/content`에서 export하고 admin editor step DTO가 같은 schema를 사용한다. Admin repository read path도 parsed step DTO를 반환해 DB JSON 계약을 다시 확인한다.
+- 검증: `bun --filter @workspace/admin-api typecheck && bun --filter @workspace/db typecheck && bun --filter @workspace/admin-api test && bun --filter @workspace/db test && bun --filter @workspace/core test && bun --filter @workspace/core lint && bun --filter @workspace/db lint`
+
+## DOMAIN-01 작업 메모
+
+- 대상 파일: `packages/core/src/content/content.dto.ts`, `packages/core/src/learning/learning.service.ts`, 관련 core 테스트
+- 조사 방향: playable lesson의 최소 step 수, INTRO first, COMPLETE last, step order, AI feedback source reference를 core 경계에서 검증한다.
+- 완료 조건: 비어 있거나 플레이 불가능한 lesson은 progress 생성/학습 경계에서 명시적 invalid-content 오류가 된다.

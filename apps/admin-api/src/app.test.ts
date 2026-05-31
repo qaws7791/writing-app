@@ -59,7 +59,12 @@ const curriculum = {
       required: true,
       status: "active" as const,
       content: {
-        body: "문장의 중심 성분을 찾습니다.",
+        title: "주어와 서술어 찾기",
+        category: "문장 구조",
+        tagTone: "info" as const,
+        bullets: ["문장의 중심 성분을 찾습니다."],
+        estimatedMinutes: 8,
+        totalSteps: 1,
       },
     },
   ],
@@ -279,7 +284,7 @@ describe("admin api app", () => {
         {
           id: "sentence-structure-step-1",
           content: {
-            body: "문장의 중심 성분을 찾습니다.",
+            title: "주어와 서술어 찾기",
           },
         },
       ],

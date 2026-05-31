@@ -305,6 +305,29 @@ const completeContentSchema = z.object({
   nextAction: z.literal("next-lesson"),
 })
 
+export const lessonStepContentSchemas = {
+  INTRO: introContentSchema,
+  CONCEPT: conceptContentSchema,
+  READING_PASSAGE: readingPassageContentSchema,
+  EXAMPLE_REVEAL: exampleRevealContentSchema,
+  COMPARE: compareContentSchema,
+  MULTIPLE_CHOICE: multipleChoiceContentSchema,
+  FILL_BLANK: fillBlankContentSchema,
+  WORD_SELECT: wordSelectContentSchema,
+  REORDER: reorderContentSchema,
+  MATCH: matchContentSchema,
+  CLASSIFY: classifyContentSchema,
+  SHORT_WRITE: shortWriteContentSchema,
+  LONG_WRITE: longWriteContentSchema,
+  AI_FEEDBACK: aiFeedbackContentSchema,
+  REVISION: revisionContentSchema,
+  CHECKLIST: checklistContentSchema,
+  REFLECTION: reflectionContentSchema,
+  SUMMARY: summaryContentSchema,
+  TRANSCRIBE: transcribeContentSchema,
+  COMPLETE: completeContentSchema,
+} as const
+
 function lessonStepSchema<TType extends string, TContent extends z.ZodType>(
   type: TType,
   content: TContent

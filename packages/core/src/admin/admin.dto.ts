@@ -4,6 +4,7 @@ import {
   curriculumNodeStatusSchema,
   type CurriculumNodeStatus,
 } from "../content/curriculum-node-status"
+import { lessonStepContentSchemas } from "../content/content.dto"
 
 export const adminCurriculumNodeStatusSchema = curriculumNodeStatusSchema
 export type AdminCurriculumNodeStatus = CurriculumNodeStatus
@@ -108,10 +109,68 @@ export const adminEditorStepSummaryDtoSchema = z.object({
   status: adminCurriculumNodeStatusSchema,
 })
 
-export const adminEditorStepDetailDtoSchema =
-  adminEditorStepSummaryDtoSchema.extend({
-    content: z.unknown(),
+function adminEditorStepDetailSchema<
+  TType extends AdminEditorStepType,
+  TContent extends z.ZodType,
+>(type: TType, content: TContent) {
+  return adminEditorStepSummaryDtoSchema.extend({
+    type: z.literal(type),
+    content,
   })
+}
+
+export const adminEditorStepDetailDtoSchema = z.discriminatedUnion("type", [
+  adminEditorStepDetailSchema("INTRO", lessonStepContentSchemas.INTRO),
+  adminEditorStepDetailSchema("CONCEPT", lessonStepContentSchemas.CONCEPT),
+  adminEditorStepDetailSchema(
+    "READING_PASSAGE",
+    lessonStepContentSchemas.READING_PASSAGE
+  ),
+  adminEditorStepDetailSchema(
+    "EXAMPLE_REVEAL",
+    lessonStepContentSchemas.EXAMPLE_REVEAL
+  ),
+  adminEditorStepDetailSchema("COMPARE", lessonStepContentSchemas.COMPARE),
+  adminEditorStepDetailSchema(
+    "MULTIPLE_CHOICE",
+    lessonStepContentSchemas.MULTIPLE_CHOICE
+  ),
+  adminEditorStepDetailSchema(
+    "FILL_BLANK",
+    lessonStepContentSchemas.FILL_BLANK
+  ),
+  adminEditorStepDetailSchema(
+    "WORD_SELECT",
+    lessonStepContentSchemas.WORD_SELECT
+  ),
+  adminEditorStepDetailSchema("REORDER", lessonStepContentSchemas.REORDER),
+  adminEditorStepDetailSchema("MATCH", lessonStepContentSchemas.MATCH),
+  adminEditorStepDetailSchema("CLASSIFY", lessonStepContentSchemas.CLASSIFY),
+  adminEditorStepDetailSchema(
+    "SHORT_WRITE",
+    lessonStepContentSchemas.SHORT_WRITE
+  ),
+  adminEditorStepDetailSchema(
+    "LONG_WRITE",
+    lessonStepContentSchemas.LONG_WRITE
+  ),
+  adminEditorStepDetailSchema(
+    "AI_FEEDBACK",
+    lessonStepContentSchemas.AI_FEEDBACK
+  ),
+  adminEditorStepDetailSchema("REVISION", lessonStepContentSchemas.REVISION),
+  adminEditorStepDetailSchema("CHECKLIST", lessonStepContentSchemas.CHECKLIST),
+  adminEditorStepDetailSchema(
+    "REFLECTION",
+    lessonStepContentSchemas.REFLECTION
+  ),
+  adminEditorStepDetailSchema("SUMMARY", lessonStepContentSchemas.SUMMARY),
+  adminEditorStepDetailSchema(
+    "TRANSCRIBE",
+    lessonStepContentSchemas.TRANSCRIBE
+  ),
+  adminEditorStepDetailSchema("COMPLETE", lessonStepContentSchemas.COMPLETE),
+])
 
 export const adminEditorLessonDetailDtoSchema = z.object({
   id: z.string().min(1),
