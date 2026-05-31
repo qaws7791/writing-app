@@ -3,10 +3,7 @@
 import * as React from "react"
 import { ArrowLeft } from "lucide-react"
 
-import type {
-  AdminEditorLessonDetailDto,
-  AdminEditorStepType,
-} from "@workspace/core/admin"
+import type { AdminEditorStepType } from "@workspace/core/admin"
 import { Button } from "@workspace/ui/components/ui/button"
 
 import {
@@ -14,6 +11,7 @@ import {
   getNodeStatusLabel,
   getStepDisplayTitle,
 } from "@/features/courses/course-editor/editor-labels"
+import type { CourseEditorStep } from "@/features/courses/course-editor/editor-state"
 import { AiFeedbackStepForm } from "@/features/courses/course-editor/step-forms/ai-feedback-step-form"
 import { ChecklistStepForm } from "@/features/courses/course-editor/step-forms/checklist-step-form"
 import { ClassifyStepForm } from "@/features/courses/course-editor/step-forms/classify-step-form"
@@ -38,10 +36,10 @@ import { WordSelectStepForm } from "@/features/courses/course-editor/step-forms/
 
 type StepWorkspaceProps = {
   isReadOnly?: boolean
-  lessonSteps: AdminEditorLessonDetailDto["steps"]
+  lessonSteps: CourseEditorStep[]
   onBack?: () => void
   onUpdateStepContent?: (stepId: string, key: string, value: unknown) => void
-  step: AdminEditorLessonDetailDto["steps"][number]
+  step: CourseEditorStep
 }
 
 const stepFormByType = {

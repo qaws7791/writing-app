@@ -28,6 +28,7 @@
 |   10 | ADMIN-02  | 완료 | 에디터 선택 파생 계산과 step source를 정리했다.     |
 |   11 | ADMIN-03  | 완료 | 커리큘럼 맵 내부 prop 전달을 줄였다.                |
 |   12 | ADMIN-04  | 완료 | dirty 변경 내역과 change kind 계산을 연결했다.      |
+|   13 | ADMIN-07  | 완료 | 스텝 폼 필드 key와 draft content 타입을 분리했다.   |
 
 ## ADMIN-08 작업 메모
 
@@ -117,6 +118,13 @@
 - 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/editor-state.test.ts src/features/courses/course-editor/course-editor-shell.test.tsx && bun --filter @workspace/admin lint`
 - 참고: 전체 `bun --filter @workspace/admin typecheck`는 기존 admin fixture와 draft step content 타입 불일치로 실패한다.
 
+## ADMIN-07 작업 메모
+
+- 대상 파일: `apps/admin/src/features/courses/course-editor/step-forms/step-form-fields.tsx`, `apps/admin/src/features/courses/course-editor/editor-state.ts`, 에디터 workspace/preview 컴포넌트
+- 조사 방향: step form field key가 문자열로 열려 있는 지점과 에디터 내부 draft content가 published content 타입과 섞이는 지점을 확인한다.
+- 완료 내용: `createStepForm()`의 field key를 step type별 content key로 제한했다. 에디터 working copy step은 published DTO와 분리된 draft content 타입을 사용하도록 정리하고, workspace/preview/form props도 draft step 타입을 받도록 맞췄다.
+- 검증: `bun --filter @workspace/admin test src/features/courses/admin-course-detail-page.test.tsx src/features/courses/course-editor/step-workspace.test.tsx src/features/courses/course-editor/lesson-workspace.test.tsx src/features/courses/course-editor/lesson-preview.test.tsx src/features/courses/course-editor/editor-state.test.ts src/features/courses/course-editor/course-editor-session-hooks.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
+
 ## 다음 단계
 
-다음 작업은 P1의 `ADMIN-07`을 문서 순서대로 진행한다.
+다음 작업은 P1의 `API-02`를 문서 순서대로 진행한다.

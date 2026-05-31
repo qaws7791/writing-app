@@ -1,31 +1,39 @@
 import * as React from "react"
 
-import type {
-  AdminEditorLessonDetailDto,
-  AdminEditorStepType,
-} from "@workspace/core/admin"
+import type { AdminEditorStepType } from "@workspace/core/admin"
 
 import {
   getStepDisplayTitle,
   getStepTypeLabel,
 } from "@/features/courses/course-editor/editor-labels"
+import type { CourseEditorStep } from "@/features/courses/course-editor/editor-state"
 
 export type StepFormProps = {
   isReadOnly?: boolean
-  lessonSteps: AdminEditorLessonDetailDto["steps"]
+  lessonSteps: CourseEditorStep[]
   onUpdateContent?: (key: string, value: unknown) => void
-  step: AdminEditorLessonDetailDto["steps"][number]
+  step: CourseEditorStep
 }
 
-type StepFormField = {
-  key: string
+type StepFormContent<TType extends AdminEditorStepType> = Extract<
+  CourseEditorStep,
+  { type: TType }
+>["content"]
+
+type StepFormContentKey<TType extends AdminEditorStepType> = Extract<
+  keyof StepFormContent<TType>,
+  string
+>
+
+export type StepFormField<TType extends AdminEditorStepType> = {
+  key: StepFormContentKey<TType>
   label: string
   type?: "boolean" | "json" | "number" | "step-select" | "string-array" | "text"
 }
 
-export function createStepForm(
-  type: AdminEditorStepType,
-  fields: StepFormField[]
+export function createStepForm<TType extends AdminEditorStepType>(
+  type: TType,
+  fields: StepFormField<TType>[]
 ) {
   return function StepForm({
     isReadOnly = false,
@@ -153,7 +161,10 @@ export function getArrayField(content: unknown, key: string): unknown[] {
   return isRecord(content) && Array.isArray(content[key]) ? content[key] : []
 }
 
-function getFieldValue(content: unknown, field: StepFormField) {
+function getFieldValue<TType extends AdminEditorStepType>(
+  content: unknown,
+  field: StepFormField<TType>
+) {
   if (field.type === "json") {
     const value = getRecordField(content, field.key)
 
@@ -169,7 +180,10 @@ function getFieldValue(content: unknown, field: StepFormField) {
   return getTextField(content, field.key)
 }
 
-function parseFieldValue(field: StepFormField, rawValue: string) {
+function parseFieldValue<TType extends AdminEditorStepType>(
+  field: StepFormField<TType>,
+  rawValue: string
+) {
   if (field.type === "json") {
     try {
       return JSON.parse(rawValue) as unknown

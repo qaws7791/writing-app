@@ -84,6 +84,7 @@ describe("useCourseEditorSaveCommand", () => {
           code: "conflict",
           message: "Conflict",
         },
+        httpStatus: 409,
       }),
     })
 

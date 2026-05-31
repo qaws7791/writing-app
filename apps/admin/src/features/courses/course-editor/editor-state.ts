@@ -18,7 +18,19 @@ type CourseEditorCurriculumWorkingCopy = Omit<
   "steps"
 >
 
-export type CourseEditorStep = AdminEditorCurriculumDetailDto["steps"][number]
+type PublishedCourseEditorStep = AdminEditorCurriculumDetailDto["steps"][number]
+type CourseEditorStepByType<TType extends AdminEditorStepType> = Omit<
+  Extract<PublishedCourseEditorStep, { type: TType }>,
+  "content"
+> & {
+  content: Partial<
+    Extract<PublishedCourseEditorStep, { type: TType }>["content"]
+  >
+}
+
+export type CourseEditorStep = {
+  [TType in AdminEditorStepType]: CourseEditorStepByType<TType>
+}[AdminEditorStepType]
 
 export type CourseEditorWorkingCopy = {
   course: AdminCourseDetailDto
@@ -74,10 +86,7 @@ export function createCourseEditorWorkingCopy(input: {
         lessons: chapter.lessons.map((lesson) => ({ ...lesson })),
       })),
     },
-    steps: input.curriculum.steps.map((step) => ({
-      ...step,
-      content: cloneJsonValue(step.content),
-    })),
+    steps: input.curriculum.steps.map(cloneCourseEditorStep),
   }
 }
 
@@ -168,13 +177,7 @@ export function updateStepContentField(
       ...workingCopy,
       steps: workingCopy.steps.map((step) =>
         step.id === stepId
-          ? {
-              ...step,
-              content: {
-                ...(isRecord(step.content) ? step.content : {}),
-                [field]: value,
-              },
-            }
+          ? updateCourseEditorStepContent(step, field, value)
           : step
       ),
     },
@@ -374,7 +377,7 @@ export function createCourseEditorSaveInput(
         chapterId: chapter.id,
       }))
     ),
-    steps: workingCopy.steps,
+    steps: createCourseEditorStepSavePayloads(workingCopy.steps),
   }
 }
 
@@ -551,6 +554,35 @@ function getEditorChangeKey(change: EditorChange): string {
 
 function cloneJsonValue<TValue>(value: TValue): TValue {
   return JSON.parse(JSON.stringify(value)) as TValue
+}
+
+function cloneCourseEditorStep(
+  step: PublishedCourseEditorStep
+): CourseEditorStep {
+  return {
+    ...step,
+    content: cloneJsonValue(step.content),
+  } as CourseEditorStep
+}
+
+function updateCourseEditorStepContent(
+  step: CourseEditorStep,
+  field: string,
+  value: unknown
+): CourseEditorStep {
+  return {
+    ...step,
+    content: {
+      ...(isRecord(step.content) ? step.content : {}),
+      [field]: value,
+    },
+  } as CourseEditorStep
+}
+
+function createCourseEditorStepSavePayloads(
+  steps: CourseEditorStep[]
+): AdminSaveCurriculumContentRequestDto["steps"] {
+  return steps as AdminSaveCurriculumContentRequestDto["steps"]
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

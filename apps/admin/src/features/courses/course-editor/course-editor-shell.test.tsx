@@ -125,7 +125,14 @@ const curriculumFixture = {
       points: 0,
       required: true,
       status: "active" as const,
-      content: {},
+      content: {
+        title: "목적어 붙이기",
+        category: "문장 성분",
+        tagTone: "primary" as const,
+        bullets: ["문장에 대상을 더합니다."],
+        estimatedMinutes: 5,
+        totalSteps: 1,
+      },
     },
   ],
 }

@@ -42,8 +42,8 @@ type CourseEditorSessionState = {
     | AdminEditorCurriculumDetailDto["chapters"][number]["lessons"][number]
     | null
   selectedLessonId: string | null
-  selectedLessonSteps: AdminEditorCurriculumDetailDto["steps"]
-  selectedStep: AdminEditorCurriculumDetailDto["steps"][number] | null
+  selectedLessonSteps: CourseEditorWorkingCopy["steps"]
+  selectedStep: CourseEditorWorkingCopy["steps"][number] | null
   statusMessage: string | null
   urlState: CourseEditorUrlState
   workingCopy: CourseEditorWorkingCopy

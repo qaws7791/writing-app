@@ -1,7 +1,6 @@
 import * as React from "react"
 import { ArrowLeft } from "lucide-react"
 
-import type { AdminEditorLessonDetailDto } from "@workspace/core/admin"
 import { Button } from "@workspace/ui/components/ui/button"
 
 import {
@@ -9,11 +8,12 @@ import {
   getStepDisplayTitle,
   getStepTypeLabel,
 } from "@/features/courses/course-editor/editor-labels"
+import type { CourseEditorStep } from "@/features/courses/course-editor/editor-state"
 
 type LessonPreviewProps = {
   lessonTitle: string
   onBack?: () => void
-  steps: AdminEditorLessonDetailDto["steps"]
+  steps: CourseEditorStep[]
 }
 
 export function LessonPreview({

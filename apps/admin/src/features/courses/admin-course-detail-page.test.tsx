@@ -229,7 +229,12 @@ const curriculumFixture = {
       required: true,
       status: "active" as const,
       content: {
+        title: "주어와 서술어 찾기",
+        category: "문장 성분",
+        tagTone: "primary" as const,
         bullets: ["원본 목표"],
+        estimatedMinutes: 5,
+        totalSteps: 1,
       },
     },
   ],

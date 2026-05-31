@@ -41,6 +41,7 @@ import {
   getStepDisplayTitle,
   getStepTypeLabel,
 } from "@/features/courses/course-editor/editor-labels"
+import type { CourseEditorStep } from "@/features/courses/course-editor/editor-state"
 
 type LessonSummary =
   AdminEditorCurriculumDetailDto["chapters"][number]["lessons"][number]
@@ -54,7 +55,7 @@ type LessonWorkspaceProps = {
   onMoveStep?: (stepId: string, targetIndex: number) => void
   onOpenPreview?: () => void
   selectedStepId: string | null
-  steps: AdminEditorCurriculumDetailDto["steps"]
+  steps: CourseEditorStep[]
   onSelectStep?: (stepId: string) => void
   onUpdateLessonField?: (
     lessonId: string,
@@ -313,7 +314,7 @@ export function LessonWorkspace({
 type StepRowProps = {
   isReadOnly: boolean
   isSelected: boolean
-  step: AdminEditorCurriculumDetailDto["steps"][number]
+  step: CourseEditorStep
   onArchiveStep?: (stepId: string) => void
   onSelectStep?: (stepId: string) => void
 }
