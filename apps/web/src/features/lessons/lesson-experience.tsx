@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/ui/dialog"
-import { ProgressBar } from "@workspace/ui/components/ui/progress-bar"
+import { Progress } from "@workspace/ui/components/ui/progress"
 import { XIcon } from "@workspace/ui/components/icons"
 
 import {
@@ -195,7 +195,7 @@ function LessonHeader({
       </Button>
 
       <div className="mx-4 flex-1">
-        <ProgressBar
+        <Progress
           value={progress}
           aria-label="레슨 진행률"
           className="gap-0 [&_[data-slot=progress-indicator]]:bg-primary [&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-track]]:bg-muted"

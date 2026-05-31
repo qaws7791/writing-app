@@ -1,7 +1,7 @@
 import * as React from "react"
 import Link from "next/link"
 
-import { ProgressBar } from "@workspace/ui/components/ui/progress-bar"
+import { Progress } from "@workspace/ui/components/ui/progress"
 import { Separator } from "@workspace/ui/components/ui/separator"
 import {
   CheckIcon,
@@ -100,7 +100,7 @@ function CourseProgressItem({
             {course.description}
           </p>
           <div className="flex w-full items-center gap-3">
-            <ProgressBar
+            <Progress
               value={course.progressPercent}
               aria-label={`${course.title} 진행률`}
               className="flex-1 gap-0 [&_[data-slot=progress-indicator]]:bg-primary [&_[data-slot=progress-track]]:h-1.5"

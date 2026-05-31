@@ -58,6 +58,7 @@
 |   40 | FE-04     | 완료 | fake API fixture 데이터를 fake API 경계로 옮겼다.    |
 |   41 | TEST-02   | 완료 | admin 목록 테스트의 반복 UI mock을 공통화했다.       |
 |   42 | TEST-03   | 완료 | React dedupe 설정의 유지 이유를 명시했다.            |
+|   43 | UI-01     | 완료 | ProgressBar 래퍼를 제거하고 Progress로 통일했다.     |
 
 ## ADMIN-08 작업 메모
 
@@ -364,6 +365,13 @@
 - 완료 내용: `@workspace/ui`의 `react`, `react-dom`은 이미 peer/dev dependency로 정리되어 있고, admin Vitest의 React alias/dedupe는 UI source 번들링 시 앱 React 인스턴스로 고정하기 위한 방어막이다. 설정 주석에 Invalid hook call 방지 이유를 명시했다.
 - 검증: `bun --filter @workspace/admin test src/features/users/admin-users-page.test.tsx src/features/courses/admin-courses-page.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
 
+## UI-01 작업 메모
+
+- 대상 파일: `packages/ui/src/components/ui/progress-bar.tsx`, `packages/ui/src/components/ui/progress.tsx`, 웹 진행률 사용처
+- 조사 방향: `ProgressBar`가 `Progress`와 별도 의미 없이 같은 구조를 반복하는지 확인하고, 앱 사용처를 단일 primitive로 통일한다.
+- 완료 내용: 웹의 홈, 코스 상세, 레슨 헤더 진행률 사용처를 `Progress`로 전환하고 `ProgressBar` 래퍼 파일을 제거했다. `ProgressBar.Track`과 `ProgressBar.Fill` 정적 멤버는 실제 사용처가 없어 함께 제거했다.
+- 검증: `bun --filter @workspace/web test src/features/home/home-page.test.tsx src/features/courses/course-detail-page.test.tsx src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/ui typecheck && bun --filter @workspace/web lint && bun --filter @workspace/ui lint`
+
 ## 다음 단계
 
-다음 작업은 P2의 `UI-01`을 문서 순서대로 진행한다.
+다음 작업은 P2의 `UI-02`를 문서 순서대로 진행한다.

@@ -8,7 +8,7 @@ import {
   CardHeader,
 } from "@workspace/ui/components/ui/card"
 import { Button } from "@workspace/ui/components/ui/button"
-import { ProgressBar } from "@workspace/ui/components/ui/progress-bar"
+import { Progress } from "@workspace/ui/components/ui/progress"
 import { Separator } from "@workspace/ui/components/ui/separator"
 import { PlayIcon } from "@workspace/ui/components/icons"
 
@@ -55,7 +55,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
                         {course.progress.percentage}%
                       </span>
                     </div>
-                    <ProgressBar
+                    <Progress
                       value={course.progress.percentage}
                       aria-label={`${course.title} 전체 진행률`}
                       className="gap-0 [&_[data-slot=progress-indicator]]:bg-primary [&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-track]]:bg-muted"

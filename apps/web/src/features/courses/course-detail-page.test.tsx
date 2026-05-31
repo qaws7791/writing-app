@@ -19,8 +19,8 @@ vi.mock("next/navigation", () => ({
   }),
 }))
 
-vi.mock("@workspace/ui/components/ui/progress-bar", () => ({
-  ProgressBar: ({ value }: { value: number }) => (
+vi.mock("@workspace/ui/components/ui/progress", () => ({
+  Progress: ({ value }: { value: number }) => (
     <div aria-label="progress" data-value={value} />
   ),
 }))
