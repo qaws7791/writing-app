@@ -30,16 +30,23 @@ type AdminCourseDetailPageProps = {
 
 export function AdminCourseDetailPage({
   adminApi,
-  adminApiBaseUrl = "http://localhost:4001",
+  adminApiBaseUrl,
   course,
   revision,
   curriculum,
   urlState,
 }: AdminCourseDetailPageProps) {
-  const api = React.useMemo(
-    () => adminApi ?? createHttpAdminApi({ baseUrl: adminApiBaseUrl }),
-    [adminApi, adminApiBaseUrl]
-  )
+  const api = React.useMemo(() => {
+    if (adminApi) {
+      return adminApi
+    }
+
+    if (!adminApiBaseUrl) {
+      throw new Error("adminApiBaseUrl is required when adminApi is omitted.")
+    }
+
+    return createHttpAdminApi({ baseUrl: adminApiBaseUrl })
+  }, [adminApi, adminApiBaseUrl])
 
   return (
     <CourseEditorProvider

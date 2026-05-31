@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation"
 
+import { getAdminWebEnv } from "@/env"
 import { AdminCourseDetailPage } from "@/features/courses/admin-course-detail-page"
 import { parseEditorUrlState } from "@/features/courses/course-editor/editor-url-state"
 import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
@@ -20,6 +21,7 @@ export default async function CourseDetailRoute({
   const paramsRecord = await searchParams
   const urlState = parseEditorUrlState(toUrlSearchParams(paramsRecord))
   const api = await getServerAdminApi()
+  const env = getAdminWebEnv()
 
   const editorDocument = await api.getCourseEditorDocument(id)
 
@@ -29,7 +31,7 @@ export default async function CourseDetailRoute({
 
   return (
     <AdminCourseDetailPage
-      adminApiBaseUrl={process.env["ADMIN_API_BASE_URL"]}
+      adminApiBaseUrl={env.adminApiBaseUrl}
       course={editorDocument.value.course}
       revision={editorDocument.value.revision}
       curriculum={editorDocument.value.curriculum}

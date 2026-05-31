@@ -47,6 +47,7 @@
 |   29 | ADMIN-06  | 완료 | 보관 확인을 command layer에서 화면 dialog로 옮겼다.  |
 |   30 | ARCH-03   | 완료 | 비어 있거나 오래된 문서를 현재 코드 상태로 갱신했다. |
 |   31 | ARCH-04   | 완료 | Repomix 합본 프로필을 코드/분석 관점으로 분리했다.   |
+|   32 | ARCH-05   | 완료 | 앱별 API URL 기본값을 env 계층으로 모았다.           |
 
 ## ADMIN-08 작업 메모
 
@@ -276,6 +277,13 @@
 - 완료 내용: 기존 `repomix`는 `repomix:code` 별칭으로 유지하고, `repomix:analysis`를 추가해 루트 설계 문서, `docs/*.md`, OpenAPI 정적 계약, `packages/config`, `scripts`, Storybook 설정과 stories를 포함한다. 생성 산출물인 `codebase.md`, `codebase-analysis.md`는 `.gitignore`에 추가했다.
 - 검증: `bun run repomix:code -- --no-files --top-files-len 5 && bun run repomix:analysis -- --no-files --token-count-tree 1 --top-files-len 10 && bun run repomix:analysis && rg -n "^## File: (docs/|packages/config/|scripts/|apps/storybook/)" codebase-analysis.md && rg -n "^## File: (prototype/|\\.worktrees/|docs/superpowers/|apps/storybook/dist/|apps/storybook/\\.turbo/|combined-codebase-improvements\\.md|codebase\\.md|codebase-analysis\\.md)" codebase-analysis.md codebase.md`
 
+## ARCH-05 작업 메모
+
+- 대상 파일: `apps/web/src/env.ts`, `apps/admin/src/env.ts`, 앱별 API 생성/인증 프록시 호출부
+- 조사 방향: `WEB_API_BASE_URL`, `NEXT_PUBLIC_API_BASE_URL`, `ADMIN_API_BASE_URL`의 로컬 기본값이 API client와 auth proxy, 어드민 코스 상세 page/client 경계에 흩어진 지점을 확인한다. 기존 `@workspace/env`와 Zod 기반 raw env parse 패턴을 웹/어드민 앱에도 적용한다.
+- 완료 내용: `parseWebEnv()`와 `parseAdminWebEnv()`를 추가해 로컬 API 기본값을 앱 env 계층으로 모았다. 웹/어드민 API client와 auth proxy는 파싱된 env 값을 사용하고, 어드민 코스 상세 client는 서버가 넘긴 `adminApiBaseUrl`만 사용한다.
+- 검증: `bun --filter @workspace/web test src/env.test.ts src/lib/api/get-server-writing-app-api.test.ts src/lib/api/get-browser-writing-app-api.test.ts && bun --filter @workspace/admin test src/env.test.ts src/features/courses/admin-course-detail-page.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/admin typecheck && bun --filter @workspace/web lint && bun --filter @workspace/admin lint`
+
 ## 다음 단계
 
-다음 작업은 P2의 `ARCH-05`를 문서 순서대로 진행한다.
+다음 작업은 P2의 `CODE-02`를 문서 순서대로 진행한다.

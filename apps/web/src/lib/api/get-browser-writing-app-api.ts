@@ -1,10 +1,13 @@
 "use client"
 
+import { getWebEnv } from "@/env"
 import { createHttpWritingAppApi } from "@/lib/api/http/create-http-writing-app-api"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
 
 export function getBrowserWritingAppApi(): WritingAppApi {
+  const env = getWebEnv()
+
   return createHttpWritingAppApi({
-    baseUrl: process.env["NEXT_PUBLIC_API_BASE_URL"] ?? "http://localhost:4000",
+    baseUrl: env.browserApiBaseUrl,
   })
 }

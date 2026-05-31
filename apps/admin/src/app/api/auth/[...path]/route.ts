@@ -1,6 +1,6 @@
 import { proxyAuthRequest } from "@workspace/auth-proxy"
 
-const defaultAdminApiBaseUrl = "http://localhost:4001"
+import { getAdminWebEnv } from "@/env"
 
 type AdminAuthRouteContext = {
   params: Promise<{
@@ -18,9 +18,10 @@ export async function POST(request: Request, context: AdminAuthRouteContext) {
 
 async function proxyRequest(request: Request, context: AdminAuthRouteContext) {
   const { path } = await context.params
+  const env = getAdminWebEnv()
 
   return proxyAuthRequest({
-    apiBaseUrl: process.env["ADMIN_API_BASE_URL"] ?? defaultAdminApiBaseUrl,
+    apiBaseUrl: env.adminApiBaseUrl,
     path,
     request,
   })

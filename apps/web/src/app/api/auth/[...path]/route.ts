@@ -1,5 +1,7 @@
 import { proxyAuthRequest } from "@workspace/auth-proxy"
 
+import { getWebEnv } from "@/env"
+
 type AuthRouteContext = {
   params: Promise<{
     path: string[]
@@ -19,9 +21,10 @@ async function handleAuthRequest(
   { params }: AuthRouteContext
 ) {
   const { path } = await params
+  const env = getWebEnv()
 
   return proxyAuthRequest({
-    apiBaseUrl: process.env["WEB_API_BASE_URL"] ?? "http://localhost:4000",
+    apiBaseUrl: env.serverApiBaseUrl,
     path,
     request,
   })
