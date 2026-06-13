@@ -2120,6 +2120,19 @@ Expected: 문서 포맷 검증이 통과한다.
 - `git diff --check`: 통과했다.
 - 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
 
+### 2026-06-14 Task 6 완료
+
+- Task 6의 공개 랜딩, 로그인, 앱 홈, 코스 목록, 코스 상세/커리큘럼, 프로필, 전역 내비게이션 화면 구현을 완료했다.
+- `/app` route segment는 인증/session 기반 화면으로 이어질 경계이므로 `dynamic = "force-dynamic"`으로 명시했다.
+- Task 6은 Step 6.1, 6.2, 6.3, 6.4 완료 시점마다 검증 후 커밋했다.
+- `bun --filter @workspace/web test`: 통과했다. 테스트 파일 14개, 테스트 22개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bun --filter @workspace/web build`: 통과했다. `/app`, `/app/courses`, `/app/courses/[id]`, `/app/profile`, `/login`은 dynamic route로 빌드됐다.
+- `bun --filter @workspace/ui typecheck`: 통과했다.
+- `bun --filter @workspace/ui lint`: 통과했다.
+- 이번 Task에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성
