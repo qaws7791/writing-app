@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
+import { ThemeProvider } from "next-themes"
+
 import { InlineStyleAttributeNormalizer } from "@/components/layout/inline-style-attribute-normalizer"
 
 import "@/app/globals.css"
@@ -18,10 +20,17 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <body>
-        <InlineStyleAttributeNormalizer />
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          disableTransitionOnChange
+          enableSystem
+        >
+          <InlineStyleAttributeNormalizer />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

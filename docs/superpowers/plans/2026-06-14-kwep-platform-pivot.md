@@ -124,7 +124,7 @@ Kwep와 제품은 모두 React와 Tailwind CSS를 사용하므로, 이후 화면
 - 기준 날짜: 2026-06-14
 - 작업 브랜치: `codex/kwep-platform-pivot-plan`
 - 플랫폼 프론트엔드 상태: API 연결과 기본 화면 초안은 작성됐지만, Kwep UI 1:1 기준은 미달이다.
-- 다음 프론트엔드 작업 시작점: 사용자 플로우 11번 프로필(`/app/profile`).
+- 다음 프론트엔드 작업 시작점: 사용자 플로우 12번 학습자 플로우 전체 회귀 검증.
 - 시작 시점 변경 상태:
   - `.prettierignore`: 기존 수정 있음
   - `AGENTS.md`: 기존 수정 있음
@@ -1830,7 +1830,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "레슨 완료 화면을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.11: 프로필과 테마 전환을 Kwep와 일치시킨 뒤 커밋**
+- [x] **Step 7R.11: 프로필과 테마 전환을 Kwep와 일치시킨 뒤 커밋**
 
 Kwep 기준:
 
@@ -1849,8 +1849,8 @@ Route: /app/profile
 Source:
   apps/web/src/features/profile/profile-page.tsx
   apps/web/src/features/profile/profile-page.test.tsx
-  apps/web/src/features/theme/theme-toggle.tsx
   apps/web/src/app/app/profile/page.tsx
+  apps/web/src/app/layout.tsx
 ```
 
 비교 항목:
@@ -1869,7 +1869,7 @@ Source:
 bun --filter @workspace/web test -- profile-page
 bun --filter @workspace/web typecheck
 bun --filter @workspace/web lint
-bunx prettier --check apps/web/src/features/profile apps/web/src/features/theme apps/web/src/app/app/profile/page.tsx docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+bunx prettier --check apps/web/src/features/profile apps/web/src/app/app/profile/page.tsx apps/web/src/app/layout.tsx docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
 git diff --check
 ```
 
@@ -1887,7 +1887,7 @@ Expected: 프로필과 테마 전환 UI가 Kwep와 일치한다.
 
 ```bash
 git status --short
-git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md FRONTEND.md apps/web/src/app/app/profile/page.tsx apps/web/src/features/profile apps/web/src/features/theme
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md FRONTEND.md apps/web/src/app/layout.tsx apps/web/src/app/app/profile/page.tsx apps/web/src/features/profile
 git commit -m "프로필과 테마 전환을 Kwep와 일치"
 ```
 
@@ -3355,7 +3355,29 @@ Expected: 문서 포맷 검증이 통과한다.
 - 다음 대상 화면은 Kwep `/profile`과 제품 `/app/profile`이다.
 - Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/Screens.tsx`의 `ProfileScreen`과 `ThemeToggle`이다.
 - 제품 대상 파일은 `apps/web/src/app/app/profile/page.tsx`, `apps/web/src/features/profile/*`, `apps/web/src/app/layout.tsx`의 theme 적용 경계이다.
-- 레슨 완료 화면 커밋 후 Kwep 코드 기준으로 프로필 사용자 정보, 가입일, 완료 레슨, 연속 학습일, 전체 진도, 라이트/다크/시스템 테마 전환 UI와 기능을 같은 구조로 맞춘다.
+- 레슨 완료 화면 커밋 후 Kwep 코드 기준으로 프로필 사용자 정보, 가입일, 완료 레슨, 연속 학습일, 라이트/다크/시스템 테마 전환 UI와 기능을 같은 구조로 맞춘다.
+
+### 2026-06-14 Task 7R Step 7R.11 프로필과 테마 전환 화면 일치 완료
+
+- 제품 `/app/profile` 본문을 Kwep `ProfileScreen`과 같은 `max-w-2xl mx-auto` root, 큰 `✍️` 아바타, 이름, `가입일: yyyy.mm.dd` 구조로 교체했다.
+- 기존 shadcn card/progress/profile image UI를 제거하고 Kwep와 같은 `나의 학습 요약` heading, 완료한 레슨/연속 학습일 2열 surface tile을 사용한다.
+- 제품 `ThemeToggle`은 Kwep와 같은 라이트/다크/시스템 3분할 control, `aria-pressed`, `bg-primary` active 상태, `text-muted hover:bg-surface-hover` inactive 상태를 사용한다.
+- Kwep의 `next-themes` 설정과 같이 root layout에 `ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange`를 연결했다.
+- Kwep의 mounted effect 패턴은 repo lint 규칙과 충돌하므로 `useSyncExternalStore` 기반 mounted snapshot으로 같은 hydration guard를 구현했다.
+- 로그아웃은 Kwep의 button DOM과 `wrong` button style을 유지하되, 제품 인증 경계상 Better Auth sign-out URL(`/api/auth/sign-out?callbackURL=%2F`)로 이동한다.
+- `bun --filter @workspace/web test -- profile-page`: 먼저 기존 card형 프로필에서 `✍️` 아바타가 없어 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 1개가 통과했다.
+- `bun --filter @workspace/web test -- profile-page global-nav auth-navigation`: 통과했다. 테스트 파일 3개, 테스트 3개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bunx prettier --check FRONTEND.md apps/web/src/app/layout.tsx apps/web/src/app/app/profile/page.tsx apps/web/src/features/profile/profile-page.tsx apps/web/src/features/profile/profile-page.test.tsx docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check`: 통과했다.
+- 남은 프로필/테마 HTML/CSS/기능 차이는 없다.
+
+### 2026-06-14 Task 7R Step 7R.12 학습자 플로우 전체 회귀 검증 시작
+
+- 다음 대상은 공개 랜딩부터 프로필까지 커밋된 학습자 사용자 플로우 전체다.
+- Kwep 코드 기준으로 맞춘 화면들이 현재 제품 코드에서 함께 회귀하지 않는지 테스트, 타입체크, lint, 필요한 포맷 검증을 다시 수행한다.
+- 회귀 검증 후에는 Task 7R 완료 상태를 갱신하고 어드민 진입/대시보드 화면으로 넘어간다.
 
 ## 상태 요약
 

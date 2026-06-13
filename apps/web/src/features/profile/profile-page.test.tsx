@@ -1,8 +1,27 @@
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import userEvent from "@testing-library/user-event"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ProfilePage } from "@/features/profile/profile-page"
 import type { LearnerProfile } from "@/features/profile/profile-types"
+
+const { routerPush, setTheme } = vi.hoisted(() => ({
+  routerPush: vi.fn(),
+  setTheme: vi.fn(),
+}))
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: routerPush,
+  }),
+}))
+
+vi.mock("next-themes", () => ({
+  useTheme: () => ({
+    setTheme,
+    theme: "system",
+  }),
+}))
 
 const profile: LearnerProfile = {
   stats: {
@@ -23,23 +42,65 @@ const profile: LearnerProfile = {
 }
 
 describe("프로필 화면", () => {
-  it("사용자 정보와 학습 통계, 로그아웃 액션을 보여준다", () => {
+  beforeEach(() => {
+    routerPush.mockClear()
+    setTheme.mockClear()
+  })
+
+  it("Kwep ProfileScreen과 같은 사용자 정보, 학습 요약, 테마 토글, 로그아웃을 보여준다", async () => {
+    const user = userEvent.setup()
+
     render(<ProfilePage profile={profile} />)
 
-    expect(
-      screen.getByRole("heading", { name: "민지님의 프로필" })
-    ).toBeInTheDocument()
-    expect(screen.getByText("minji@example.com")).toBeInTheDocument()
-    expect(screen.getByText("2026년 6월 1일 가입")).toBeInTheDocument()
-    expect(screen.getByText("4일 연속 학습")).toBeInTheDocument()
-    expect(screen.getByText("완료 레슨 12개")).toBeInTheDocument()
-    expect(screen.getByText("전체 20개 중 12개 완료")).toBeInTheDocument()
-    expect(screen.getByLabelText("프로필 이미지 없음")).toHaveTextContent("민")
-    expect(
-      screen.getByRole("progressbar", { name: "전체 진도" })
-    ).toHaveAttribute("aria-valuenow", "60")
-    expect(screen.getByRole("link", { name: "로그아웃" })).toHaveAttribute(
-      "href",
+    expect(screen.getByText("✍️")).toHaveClass(
+      "w-32",
+      "h-32",
+      "bg-primary",
+      "rounded-[3rem]"
+    )
+    expect(screen.getByRole("heading", { name: "민지" })).toHaveClass(
+      "font-black"
+    )
+    expect(screen.getByText("가입일: 2026.06.01")).toHaveClass(
+      "text-muted",
+      "font-bold"
+    )
+    expect(screen.getByRole("heading", { name: "나의 학습 요약" })).toHaveClass(
+      "font-bold",
+      "mb-6"
+    )
+    expect(screen.getByText("완료한 레슨")).toHaveClass(
+      "text-muted",
+      "font-bold",
+      "mb-2"
+    )
+    expect(screen.getByText("12")).toHaveClass("font-black")
+    expect(screen.getByText("연속 학습일")).toHaveClass(
+      "text-muted",
+      "font-bold",
+      "mb-2"
+    )
+    expect(screen.getByText("🔥 4")).toHaveClass("font-black")
+    expect(screen.getByRole("heading", { name: "화면 테마" })).toHaveClass(
+      "font-bold",
+      "mb-6"
+    )
+
+    const systemThemeButton = screen.getByRole("button", { name: "시스템" })
+
+    expect(screen.getByRole("button", { name: "라이트" })).toHaveClass(
+      "btn-squish",
+      "flex",
+      "flex-col"
+    )
+    expect(systemThemeButton).toHaveAttribute("aria-pressed", "true")
+    expect(systemThemeButton).toHaveClass("bg-primary")
+
+    await user.click(screen.getByRole("button", { name: "다크" }))
+    expect(setTheme).toHaveBeenLastCalledWith("dark")
+
+    await user.click(screen.getByRole("button", { name: "로그아웃" }))
+    expect(routerPush).toHaveBeenLastCalledWith(
       "/api/auth/sign-out?callbackURL=%2F"
     )
   })

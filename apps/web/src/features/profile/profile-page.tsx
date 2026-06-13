@@ -1,123 +1,220 @@
-import Image from "next/image"
-import Link from "next/link"
+"use client"
+
+/* eslint-disable react/button-has-type */
+
+import type { ReactNode, SVGProps } from "react"
+import { useSyncExternalStore } from "react"
+
+import { useRouter } from "next/navigation"
+import { useTheme } from "next-themes"
 
 import type { LearnerProfile } from "@/features/profile/profile-types"
 import { createLogoutPath } from "@/lib/auth/auth-navigation"
-import { buttonVariants } from "@workspace/ui/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/ui/card"
-import { Progress } from "@workspace/ui/components/ui/progress"
 
 type ProfilePageProps = {
   readonly profile: LearnerProfile
 }
 
+const THEME_OPTIONS = [
+  { Icon: SunIcon, label: "라이트", value: "light" },
+  { Icon: MoonIcon, label: "다크", value: "dark" },
+  { Icon: MonitorIcon, label: "시스템", value: "system" },
+] as const
+const noopSubscribe = () => () => {}
+const clientMountedSnapshot = () => true
+const serverMountedSnapshot = () => false
+
 export function ProfilePage({ profile }: ProfilePageProps) {
-  const joinedDate = formatKoreanDate(profile.user.joinedAt)
-  const initial = profile.user.name.trim().slice(0, 1) || "학"
+  const router = useRouter()
+  const joinedDate = formatKwepJoinedDate(profile.user.joinedAt)
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10 sm:px-8 lg:px-10">
-        <section className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-          <div className="flex items-start gap-5">
-            {profile.user.image === null ? (
-              <div
-                aria-label="프로필 이미지 없음"
-                className="flex size-20 shrink-0 items-center justify-center rounded-lg bg-muted text-3xl font-semibold text-primary"
-              >
-                {initial}
-              </div>
-            ) : (
-              <Image
-                alt={`${profile.user.name} 프로필 이미지`}
-                className="size-20 rounded-lg object-cover"
-                height={80}
-                src={profile.user.image}
-                width={80}
-              />
-            )}
-            <div className="flex min-w-0 flex-col gap-2">
-              <p className="text-sm font-medium text-primary">프로필</p>
-              <h1 className="text-3xl font-semibold">
-                {profile.user.name}님의 프로필
-              </h1>
-              <p className="text-muted-foreground">{profile.user.email}</p>
-              <p className="text-sm text-muted-foreground">{joinedDate} 가입</p>
-            </div>
-          </div>
-          <Card>
-            <CardHeader>
-              <CardTitle as="h2">전체 진도</CardTitle>
-              <CardDescription>
-                전체 {profile.stats.totalLessons}개 중{" "}
-                {profile.stats.completedLessons}개 완료
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <Progress
-                aria-label="전체 진도"
-                value={profile.stats.progressPercent}
-              />
-              <p className="text-sm text-muted-foreground">
-                {profile.stats.progressPercent}% 완료
-              </p>
-              <Link
-                className={buttonVariants({ variant: "outline" })}
-                href={createLogoutPath("/")}
-              >
-                로그아웃
-              </Link>
-            </CardContent>
-          </Card>
-        </section>
-
-        <section
-          aria-labelledby="profile-stats-heading"
-          className="grid gap-4 md:grid-cols-3"
+    <div className="max-w-2xl mx-auto">
+      <div className="flex flex-col items-center mb-16 mt-8">
+        <div
+          className="w-32 h-32 bg-primary rounded-[3rem] flex justify-center items-center mb-6"
+          style={{ fontSize: "3rem" }}
         >
-          <h2 className="sr-only" id="profile-stats-heading">
-            학습 통계
-          </h2>
-          <Card>
-            <CardHeader>
-              <CardTitle as="h3">
-                {profile.stats.currentStreakDays}일 연속 학습
-              </CardTitle>
-              <CardDescription>오늘의 학습 루틴 상태입니다.</CardDescription>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle as="h3">
-                완료 레슨 {profile.stats.completedLessons}개
-              </CardTitle>
-              <CardDescription>지금까지 완료한 레슨입니다.</CardDescription>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle as="h3">
-                최근 학습 {profile.stats.lastActiveDate ?? "없음"}
-              </CardTitle>
-              <CardDescription>
-                서버에 기록된 마지막 학습일입니다.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </section>
+          ✍️
+        </div>
+        <h1 className="font-black mb-2" style={{ fontSize: "1.75rem" }}>
+          {profile.user.name}
+        </h1>
+        <p className="text-muted font-bold">가입일: {joinedDate}</p>
       </div>
-    </main>
+      <h3 className="font-bold mb-6" style={{ fontSize: "1.5rem" }}>
+        나의 학습 요약
+      </h3>
+      <div className="grid grid-cols-2 gap-4 mb-12">
+        <div className="bg-surface p-8 rounded-4xl flex flex-col items-center text-center">
+          <span className="text-muted font-bold mb-2">완료한 레슨</span>
+          <span className="font-black" style={{ fontSize: "2.25rem" }}>
+            {profile.stats.completedLessons}
+          </span>
+        </div>
+        <div className="bg-surface p-8 rounded-4xl flex flex-col items-center text-center">
+          <span className="text-muted font-bold mb-2">연속 학습일</span>
+          <span className="font-black" style={{ fontSize: "2.25rem" }}>
+            🔥 {profile.stats.currentStreakDays}
+          </span>
+        </div>
+      </div>
+      <h3 className="font-bold mb-6" style={{ fontSize: "1.5rem" }}>
+        화면 테마
+      </h3>
+      <div className="mb-12">
+        <ThemeToggle />
+      </div>
+      <ProfileButton
+        onClick={() => router.push(createLogoutPath("/"))}
+        variant="wrong"
+      >
+        로그아웃
+      </ProfileButton>
+    </div>
   )
 }
 
-function formatKoreanDate(isoDate: string): string {
-  const [year, month, day] = isoDate.slice(0, 10).split("-")
+function ThemeToggle() {
+  const { setTheme, theme } = useTheme()
+  const mounted = useSyncExternalStore(
+    noopSubscribe,
+    clientMountedSnapshot,
+    serverMountedSnapshot
+  )
+  const active = mounted ? theme : "system"
 
-  return `${Number(year)}년 ${Number(month)}월 ${Number(day)}일`
+  return (
+    <div className="grid grid-cols-3 gap-2 bg-surface p-2 rounded-4xl">
+      {THEME_OPTIONS.map(({ Icon, label, value }) => {
+        const on = active === value
+
+        return (
+          <button
+            aria-pressed={on}
+            className={cx(
+              "btn-squish flex flex-col items-center gap-2 py-4 rounded-[1.75rem] font-bold transition-colors",
+              on ? "bg-primary" : "text-muted hover:bg-surface-hover"
+            )}
+            key={value}
+            onClick={() => setTheme(value)}
+            style={on ? { color: "#2A2621" } : undefined}
+          >
+            <Icon size={22} strokeWidth={2.5} />
+            {label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function ProfileButton({
+  children,
+  disabled,
+  onClick,
+  variant = "primary",
+}: {
+  readonly children: ReactNode
+  readonly disabled?: boolean
+  readonly onClick?: () => void
+  readonly variant?: "primary" | "wrong"
+}) {
+  const variantClassName = {
+    primary: "bg-charcoal text-cream",
+    wrong: "bg-coral-light text-charcoal",
+  }[variant]
+
+  return (
+    <button
+      className={cx(
+        "w-full font-bold py-5 rounded-4xl btn-squish",
+        variantClassName,
+        disabled ? "opacity-50 cursor-not-allowed" : undefined
+      )}
+      disabled={disabled}
+      onClick={onClick}
+      style={{ fontSize: "1.125rem" }}
+      type="button"
+    >
+      {children}
+    </button>
+  )
+}
+
+function formatKwepJoinedDate(isoDate: string): string {
+  return isoDate.slice(0, 10).replaceAll("-", ".")
+}
+
+function cx(...classes: Array<false | null | string | undefined>): string {
+  return classes.filter(Boolean).join(" ")
+}
+
+type KwepIconProps = Omit<SVGProps<SVGSVGElement>, "height" | "width"> & {
+  readonly size?: number
+}
+
+function SunIcon({ className, size = 24, ...props }: KwepIconProps) {
+  return (
+    <KwepSvg className={className} iconName="sun" size={size} {...props}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="m4.93 4.93 1.41 1.41" />
+      <path d="m17.66 17.66 1.41 1.41" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="m6.34 17.66-1.41 1.41" />
+      <path d="m19.07 4.93-1.41 1.41" />
+    </KwepSvg>
+  )
+}
+
+function MoonIcon({ className, size = 24, ...props }: KwepIconProps) {
+  return (
+    <KwepSvg className={className} iconName="moon" size={size} {...props}>
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+    </KwepSvg>
+  )
+}
+
+function MonitorIcon({ className, size = 24, ...props }: KwepIconProps) {
+  return (
+    <KwepSvg className={className} iconName="monitor" size={size} {...props}>
+      <rect height="14" rx="2" width="20" x="2" y="3" />
+      <line x1="8" x2="16" y1="21" y2="21" />
+      <line x1="12" x2="12" y1="17" y2="21" />
+    </KwepSvg>
+  )
+}
+
+function KwepSvg({
+  children,
+  className,
+  iconName,
+  size = 24,
+  ...props
+}: KwepIconProps & {
+  readonly children: ReactNode
+  readonly iconName: string
+}) {
+  const mergedClassName = `lucide lucide-${iconName}${className ? ` ${className}` : ""}`
+
+  return (
+    <svg
+      className={mergedClassName}
+      fill="none"
+      height={size}
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      {children}
+    </svg>
+  )
 }

@@ -263,3 +263,30 @@
 - `bunx prettier --check apps/web/src/app/app/lesson/page.tsx apps/web/src/features/lessons/lesson-experience.tsx apps/web/src/features/lessons/lesson-experience.test.tsx docs/lesson-page.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
 - `git diff --check`: 통과했다.
 - 남은 레슨 완료 HTML/CSS/기능 차이는 없다.
+
+## 프로필과 테마 전환 화면
+
+- 기준 화면: Kwep `/profile`
+- 제품 화면: `/app/profile`
+- 기준 코드:
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/Screens.tsx`의 `ProfileScreen`
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/Screens.tsx`의 `ThemeToggle`
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/App.tsx`의 `ThemeProvider`
+  - 제품: `apps/web/src/features/profile/profile-page.tsx`
+  - 제품: `apps/web/src/app/layout.tsx`
+
+최신 검증 결과:
+
+- 제품 프로필 root는 Kwep와 같은 `max-w-2xl mx-auto` 구조를 사용한다.
+- 제품 사용자 영역은 Kwep와 같은 `w-32 h-32 bg-primary rounded-[3rem]` 아바타, 사용자 이름 heading, `가입일: yyyy.mm.dd` 문구를 사용한다.
+- 제품 학습 요약은 Kwep와 같은 `나의 학습 요약` heading과 완료한 레슨/연속 학습일 2열 `bg-surface p-8 rounded-4xl` tile 구조를 사용한다.
+- 제품 테마 전환은 Kwep와 같은 라이트/다크/시스템 3분할 control, `aria-pressed`, active `bg-primary`, inactive `text-muted hover:bg-surface-hover` 상태를 사용한다.
+- 제품 root layout은 Kwep `ThemeProvider`와 같은 `attribute="class"`, `defaultTheme="system"`, `enableSystem`, `disableTransitionOnChange` 설정을 사용한다.
+- 제품 로그아웃은 Kwep와 같은 button DOM과 `wrong` button style을 유지하되, 제품 인증 경계상 Better Auth sign-out URL로 이동한다.
+- `bun --filter @workspace/web test -- profile-page`: 통과했다. 테스트 파일 1개, 테스트 1개가 통과했다.
+- `bun --filter @workspace/web test -- profile-page global-nav auth-navigation`: 통과했다. 테스트 파일 3개, 테스트 3개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bunx prettier --check FRONTEND.md apps/web/src/app/layout.tsx apps/web/src/app/app/profile/page.tsx apps/web/src/features/profile/profile-page.tsx apps/web/src/features/profile/profile-page.test.tsx docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check`: 통과했다.
+- 남은 프로필/테마 HTML/CSS/기능 차이는 없다.
