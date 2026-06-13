@@ -1,22 +1,44 @@
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import userEvent from "@testing-library/user-event"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { AuthPage } from "@/features/auth/auth-page"
 import { resolveSafeNextPath } from "@/lib/auth/auth-navigation"
 
 describe("로그인 페이지", () => {
-  it("Google 로그인 링크에 안전한 다음 경로를 포함한다", () => {
+  const locationAssign = vi.fn()
+
+  beforeEach(() => {
+    locationAssign.mockClear()
+    vi.stubGlobal("location", {
+      assign: locationAssign,
+    } satisfies Partial<Location>)
+  })
+
+  it("Kwep 로그인 화면과 같은 문구, 구조, Google 버튼을 렌더링한다", async () => {
+    const user = userEvent.setup()
     render(<AuthPage nextPath="/app/courses" />)
 
+    expect(screen.getByRole("heading", { name: "글결." })).toBeInTheDocument()
+    expect(screen.getByText("✍️")).toBeInTheDocument()
     expect(
-      screen.getByRole("heading", { name: "글결에 로그인" })
+      screen.getByText("매일 한 단락씩, 글의 결을 다듬는 한국어 글쓰기 학습")
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText("이메일/비밀번호 가입은 지원하지 않습니다")
     ).toBeInTheDocument()
 
-    const googleLogin = screen.getByRole("link", {
+    const googleLogin = screen.getByRole("button", {
       name: "Google로 계속하기",
     })
-    expect(googleLogin).toHaveAttribute(
-      "href",
+
+    expect(googleLogin).not.toHaveAttribute("type")
+    expect(googleLogin).toHaveClass(
+      "w-full bg-ink text-white font-bold py-5 rounded-4xl btn-squish flex items-center justify-center gap-3"
+    )
+
+    await user.click(googleLogin)
+    expect(locationAssign).toHaveBeenCalledWith(
       "/api/auth/sign-in/google?callbackURL=%2Fapp%2Fcourses"
     )
   })

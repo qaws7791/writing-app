@@ -1,0 +1,108 @@
+[
+  {
+    "area": "items",
+    "index": 1,
+    "issue": "style",
+    "kwep": "font-size: 4rem;",
+    "product": "font-size:4rem"
+  },
+  {
+    "area": "items",
+    "index": 1,
+    "issue": "attrs",
+    "kwep": [
+      ["class", "mb-8"],
+      ["style", "font-size: 4rem;"]
+    ],
+    "product": [
+      ["class", "mb-8"],
+      ["style", "font-size:4rem"]
+    ]
+  },
+  {
+    "area": "items",
+    "index": 2,
+    "issue": "style",
+    "kwep": "font-size: 3rem;",
+    "product": "font-size:3rem"
+  },
+  {
+    "area": "items",
+    "index": 2,
+    "issue": "attrs",
+    "kwep": [
+      ["class", "font-black mb-4 text-center"],
+      ["style", "font-size: 3rem;"]
+    ],
+    "product": [
+      ["class", "font-black mb-4 text-center"],
+      ["style", "font-size:3rem"]
+    ]
+  },
+  {
+    "area": "items",
+    "index": 3,
+    "issue": "style",
+    "kwep": "font-size: 1.125rem;",
+    "product": "font-size:1.125rem"
+  },
+  {
+    "area": "items",
+    "index": 3,
+    "issue": "attrs",
+    "kwep": [
+      ["class", "text-muted font-medium mb-12 text-center"],
+      ["style", "font-size: 1.125rem;"]
+    ],
+    "product": [
+      ["class", "text-muted font-medium mb-12 text-center"],
+      ["style", "font-size:1.125rem"]
+    ]
+  },
+  {
+    "area": "items",
+    "index": 5,
+    "issue": "style",
+    "kwep": "font-size: 1.125rem;",
+    "product": "font-size:1.125rem"
+  },
+  {
+    "area": "items",
+    "index": 5,
+    "issue": "attrs",
+    "kwep": [
+      [
+        "class",
+        "w-full bg-ink text-white font-bold py-5 rounded-4xl btn-squish flex items-center justify-center gap-3"
+      ],
+      ["style", "font-size: 1.125rem;"]
+    ],
+    "product": [
+      [
+        "class",
+        "w-full bg-ink text-white font-bold py-5 rounded-4xl btn-squish flex items-center justify-center gap-3"
+      ],
+      ["style", "font-size:1.125rem"]
+    ]
+  },
+  {
+    "area": "items",
+    "index": 11,
+    "issue": "style",
+    "kwep": "font-size: 0.875rem;",
+    "product": "font-size:0.875rem"
+  },
+  {
+    "area": "items",
+    "index": 11,
+    "issue": "attrs",
+    "kwep": [
+      ["class", "text-center text-muted font-medium"],
+      ["style", "font-size: 0.875rem;"]
+    ],
+    "product": [
+      ["class", "text-center text-muted font-medium"],
+      ["style", "font-size:0.875rem"]
+    ]
+  }
+]

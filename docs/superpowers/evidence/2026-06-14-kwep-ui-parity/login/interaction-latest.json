@@ -1,0 +1,6 @@
+{
+  "googleButton": {
+    "expectedPrefix": "/api/auth/sign-in/google",
+    "productPath": "/api/auth/sign-in/google?callbackURL=%2Fapp%2Fcourses"
+  }
+}

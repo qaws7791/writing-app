@@ -3161,11 +3161,13 @@ Expected: 문서 포맷 검증이 통과한다.
 
 ### 2026-06-14 Task 7R Step 7R.2 로그인 화면 일치 완료
 
-- 제품 로그인 화면을 Kwep `LoginScreen`과 같은 중앙 정렬 구조, ✍️ 표식, `글결.` heading, 설명 문구, Google 버튼, 이메일/비밀번호 미지원 안내로 교체했다.
+- 제품 로그인 화면을 Kwep `LoginScreen`과 같은 screen root 구조, 중앙 정렬, ✍️ 표식, `글결.` heading, 설명 문구, Google 버튼, 이메일/비밀번호 미지원 안내로 교체했다.
 - Kwep와 같은 `an-fi` 진입 애니메이션을 제품 전역 CSS에 추가했다.
+- Kwep에는 없는 제품 card wrapper와 랜딩 복귀 UI를 제거했다.
 - Google 버튼은 Kwep와 같은 `<button>` 구조를 유지하면서 제품 Google 인증 URL로 이동하도록 연결했다.
-- `docs/superpowers/evidence/2026-06-14-kwep-ui-parity/login/capture-login.mjs`로 390x844와 1280x720 캡처와 inventory를 생성했다.
-- Kwep 런타임의 `next-themes` 초기화 스크립트 래퍼 1개를 제외하면, 로그인 화면의 실제 요소 13개는 두 뷰포트 모두 tag, text, class, rect, computed style diff가 0이었다.
+- `docs/superpowers/evidence/2026-06-14-kwep-ui-parity/login/capture-login.mjs`로 390x844와 1280x720 캡처, strict DOM/style diff, 클릭 검증 데이터를 생성했다.
+- 최종 비교에서 390x844와 1280x720 모두 screen root item count `12 / 12`, visible element count `12 / 12`, rect diff 0개, computed style diff 0개를 확인했다.
+- 남은 attribute diff는 Vite/Next inline style 문자열의 공백 직렬화 차이이며, computed style은 동일했다.
 - `bun --filter @workspace/web test -- auth-page`: 통과했다. 테스트 파일 1개, 테스트 2개가 통과했다.
 - `bun --filter @workspace/web typecheck`: 통과했다.
 - `bun --filter @workspace/web lint`: 통과했다.
