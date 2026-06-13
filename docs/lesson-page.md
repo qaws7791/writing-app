@@ -57,7 +57,7 @@
 
 ## 2026-06-14 완료 — Kwep 시작 마커와 write 변형 수용
 
-- `lesson-started` 마커는 첫 스텝이 읽기여도 저장을 허용해 시작 화면에서 실제 학습 스텝으로 진입할 수 있게 했다.
+- JSON 문자열 형태의 `lesson-started` 마커는 첫 스텝이 읽기여도 저장을 허용해 시작 화면에서 실제 학습 스텝으로 진입할 수 있게 했다.
 - Kwep seed의 `write` 스텝은 `guide` 없이 `prompt`, `topic`, `structure`만 가진 변형도 있으므로 core DTO에서 `guide`를 선택값으로 다룬다.
 
 ## 2026-05-31 완료 — 장식성 진행 요소 제거

@@ -145,11 +145,22 @@ function isLessonStartedAnswer(
     readonly stepId: string
   }
 ): boolean {
+  const parsedAnswer =
+    typeof answer === "string" ? parseJsonAnswer(answer) : answer
+
   return (
     stepId === firstStepId &&
-    typeof answer === "object" &&
-    answer !== null &&
-    "kind" in answer &&
-    answer.kind === "lesson-started"
+    typeof parsedAnswer === "object" &&
+    parsedAnswer !== null &&
+    "kind" in parsedAnswer &&
+    parsedAnswer.kind === "lesson-started"
   )
+}
+
+function parseJsonAnswer(answer: string): unknown {
+  try {
+    return JSON.parse(answer)
+  } catch {
+    return answer
+  }
 }
