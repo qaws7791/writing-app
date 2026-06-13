@@ -463,7 +463,7 @@ bun --filter @workspace/db test -- seed-content
 
 Expected: 새 baseline seed가 Kwep 기준 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 생성한다.
 
-- [ ] **Step 2.2: 새 baseline schema 작성**
+- [x] **Step 2.2: 새 baseline schema 작성**
 
 새 baseline migration은 누적 `ALTER TABLE`이 아니라 전체 schema를 한 번에 정의한다.
 
@@ -1696,6 +1696,20 @@ Expected: 문서 포맷 검증이 통과한다.
 - `packages/db/src/seeds/seed-content.test.ts`에 코스 5개, 유닛 15개, 레슨 44개, 스텝 136개 변환 수량과 스텝 타입 분포 검증을 추가했다.
 - `packages/db/src/seeds/seed-content.ts`에 Kwep 필드를 새 baseline row 형태로 변환하는 `createContentSeedRows`와 타입 정규화 함수를 작성했다.
 - `bun --filter @workspace/db test -- seed-content`: 통과했다.
+
+### 2026-06-14 Task 2 Step 2.2 시작
+
+- Step 2.2는 Drizzle SQLite schema, in-memory DB client, baseline migration runner를 새로 작성한다.
+- 먼저 `client` 테스트로 baseline migration이 `courses`, `course_units`, `lessons`, `lesson_steps` 테이블과 foreign key를 생성하는지 고정한다.
+- 이후 `repositories` 테스트로 seed row를 baseline schema에 삽입할 수 있는지 검증하고, 공개 콘텐츠 필터링은 Step 2.4에서 별도 정책 테스트로 확장한다.
+
+### 2026-06-14 Task 2 Step 2.2 완료
+
+- `packages/db/src/schema/content.schema.ts`에 `courses`, `course_units`, `lessons`, `lesson_steps` Drizzle schema를 작성했다.
+- `packages/db/src/client.ts`에 Bun SQLite 기반 `createKwepDatabase`, `createInMemoryKwepDatabase` client를 작성했다.
+- `packages/db/src/migrations/0000-kwep-baseline.sql`와 `packages/db/src/migrations/migrate.ts`에 새 baseline migration을 작성했다.
+- `packages/db/src/client.test.ts`와 `packages/db/src/repositories/content.repository.test.ts`로 migration 적용, foreign key, seed row 삽입을 검증했다.
+- `bun --filter @workspace/db test -- client repositories`: 통과했다.
 
 ## 상태 요약
 
