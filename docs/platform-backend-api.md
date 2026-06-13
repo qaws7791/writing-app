@@ -1,5 +1,11 @@
 # 플랫폼 백엔드 API
 
+## 2026-06-14 Kwep 브라우저 쓰기 요청 CORS 반영
+
+- 학습자 API는 `WEB_ORIGIN` 값을 기준으로 브라우저 요청의 CORS origin을 허용한다.
+- 브라우저 mutation 경로인 `POST /learning/answers`, `POST /learning/lessons/{lessonId}/complete`, `POST /ai-feedback`는 `Authorization`과 `Content-Type` header를 사용하므로 preflight `OPTIONS` 요청이 먼저 통과해야 한다.
+- Hono 앱 조립 루트는 `GET`, `POST`, `OPTIONS`와 credentials 포함 요청을 허용하고, 허용 origin에는 `access-control-allow-origin`을 명시한다.
+
 ## 2026-06-14 Kwep 레슨 완료 API 반영
 
 - 현재 Kwep 플랫폼 API는 `POST /learning/answers`로 스텝 답변을 저장하고, `POST /learning/lessons/{lessonId}/complete`로 레슨 완료를 저장한다.

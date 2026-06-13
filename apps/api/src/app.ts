@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import { cors } from "hono/cors"
 
 import type { SessionResolver } from "@/auth/session"
 import { createAiFeedbackRoute } from "@/routes/ai-feedback.route"
@@ -25,10 +26,21 @@ export type ApiDependencies = {
   readonly profileReader: ProfileReader
   readonly progressReader?: ProgressReader
   readonly sessionResolver: SessionResolver
+  readonly webOrigin?: string
 }
 
 export function createApp(dependencies: ApiDependencies): Hono {
   const app = new Hono()
+
+  app.use(
+    "*",
+    cors({
+      allowHeaders: ["Authorization", "Content-Type"],
+      allowMethods: ["GET", "POST", "OPTIONS"],
+      credentials: true,
+      origin: dependencies.webOrigin ?? "http://localhost:3000",
+    })
+  )
 
   app.route("/health", createHealthRoute())
   app.route("/openapi", createOpenApiRoute())

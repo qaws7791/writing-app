@@ -1093,7 +1093,7 @@ git diff --check
 
 Expected: 플랫폼 프론트엔드 검증이 통과한다.
 
-- [ ] **Step 7.5: 플랫폼 브라우저 스모크**
+- [x] **Step 7.5: 플랫폼 브라우저 스모크**
 
 실행:
 
@@ -2286,6 +2286,21 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/core test -- content.dto learning.service`: 통과했다. 테스트 파일 2개, 테스트 9개가 통과했다.
 - `bun --filter @workspace/db test -- content.repository`: 통과했다. 테스트 파일 1개, 테스트 5개가 통과했다.
 
+### 2026-06-14 Task 7 Step 7.5 브라우저 CORS 복구
+
+- Playwright 스모크에서 브라우저의 `POST /learning/answers`가 preflight `OPTIONS /learning/answers` 404로 차단되는 실패를 확인했다.
+- `apps/api`의 Hono 앱 조립 루트에 `WEB_ORIGIN` 기준 CORS 미들웨어를 추가해 `Authorization`, `Content-Type`, credentials 포함 요청과 `GET`, `POST`, `OPTIONS`를 허용했다.
+- `apps/api/src/app.test.ts`에 브라우저 쓰기 요청 preflight가 `204`와 `access-control-allow-origin`, `access-control-allow-credentials` 헤더를 반환하는 회귀 테스트를 추가했다.
+- `curl -i -X OPTIONS http://localhost:3001/learning/answers`에 `Origin: http://localhost:3000`과 preflight 헤더를 붙여 실제 dev API가 `204`를 반환하는지 확인했다.
+
+### 2026-06-14 Task 7 Step 7.5 완료
+
+- 로컬 Playwright 기본 브라우저가 설치되어 있지 않아 `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` 실행 파일로 headless 스모크를 수행했다.
+- `bun run dev:app`은 루트 `data/api.sqlite`를 seed한 뒤 web `http://localhost:3000`, API `http://localhost:3001`을 실행했다.
+- 스모크 확인 항목은 랜딩, 로그인 Google 버튼, `/app` 보호 redirect, 인증 홈, 코스 목록, 코스 상세, 첫 레슨 시작 화면, 객관식 정답/해설, 글쓰기 저장, AI 환경 오류 안내, 레슨 완료와 다음 레슨 이동이다.
+- `node --input-type=module` Playwright 스모크: 통과했다. 8개 브라우저 체크가 모두 통과했다.
+- `bun --filter @workspace/api test -- app`: 통과했다. 테스트 파일 1개, 테스트 4개가 통과했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성
@@ -2297,9 +2312,9 @@ Expected: 문서 포맷 검증이 통과한다.
 - [x] 시작 문서 갱신
 - [x] 플랫폼 API 구현
 - [x] 플랫폼 API 검증
-- [ ] 플랫폼 프론트엔드 구현
-- [ ] 플랫폼 프론트엔드 검증
-- [ ] 플랫폼 브라우저 스모크
+- [x] 플랫폼 프론트엔드 구현
+- [x] 플랫폼 프론트엔드 검증
+- [x] 플랫폼 브라우저 스모크
 - [ ] 어드민 API 구현
 - [ ] 어드민 API 검증
 - [ ] 어드민 프론트엔드 구현

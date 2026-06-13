@@ -22,6 +22,30 @@ const profileStats = {
 } as const
 
 describe("플랫폼 API profile route", () => {
+  it("브라우저 쓰기 요청 preflight에 CORS 헤더로 응답한다", async () => {
+    const app = createApp({
+      ...createDependencies(),
+      webOrigin: "http://localhost:3000",
+    })
+
+    const response = await app.request("/learning/answers", {
+      headers: {
+        "Access-Control-Request-Headers": "authorization,content-type",
+        "Access-Control-Request-Method": "POST",
+        Origin: "http://localhost:3000",
+      },
+      method: "OPTIONS",
+    })
+
+    expect(response.status).toBe(204)
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      "http://localhost:3000"
+    )
+    expect(response.headers.get("access-control-allow-credentials")).toBe(
+      "true"
+    )
+  })
+
   it("인증 없는 profile 요청은 401이다", async () => {
     const app = createApp(createDependencies())
 

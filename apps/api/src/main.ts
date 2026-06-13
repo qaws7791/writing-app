@@ -52,6 +52,7 @@ const app = createApp({
   profileReader: createProfileReader(database.db),
   progressReader,
   sessionResolver: createBearerSessionResolver(database.db),
+  webOrigin: env.webOrigin,
 })
 
 if (import.meta.main) {
