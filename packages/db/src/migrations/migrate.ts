@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs"
 
 import type { Database } from "bun:sqlite"
 
-import { createKwepDatabase } from "@/client"
+import { createKwepDatabase } from "@workspace/db/client"
 
 const baselineMigrationUrl = new URL(
   "./0000-kwep-baseline.sql",

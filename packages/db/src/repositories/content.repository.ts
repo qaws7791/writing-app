@@ -12,8 +12,13 @@ import {
   type LessonStepDto,
 } from "@workspace/core/content"
 
-import type { KwepDatabase } from "@/client"
-import { courses, courseUnits, lessons, lessonSteps } from "@/schema"
+import type { KwepDatabase } from "@workspace/db/client"
+import {
+  courses,
+  courseUnits,
+  lessons,
+  lessonSteps,
+} from "@workspace/db/schema"
 
 const activeStatus = "active"
 

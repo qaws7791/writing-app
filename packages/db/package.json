@@ -9,7 +9,9 @@
     "./migrations/*": "./src/migrations/*.ts",
     "./repositories/*": "./src/repositories/*.ts",
     "./schema": "./src/schema/index.ts",
-    "./seed": "./src/seeds/index.ts"
+    "./schema/*": "./src/schema/*.ts",
+    "./seed": "./src/seeds/index.ts",
+    "./seeds/*": "./src/seeds/*.ts"
   },
   "scripts": {
     "db:migrate": "bun src/migrations/migrate.ts",

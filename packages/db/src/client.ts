@@ -1,7 +1,7 @@
 import { Database } from "bun:sqlite"
 import { drizzle, type BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
 
-import * as schema from "@/schema"
+import * as schema from "@workspace/db/schema"
 
 export type KwepDatabase = BunSQLiteDatabase<typeof schema>
 

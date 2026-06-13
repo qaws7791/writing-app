@@ -1,1 +1,1 @@
-export * from "@/seeds/seed-content"
+export * from "@workspace/db/seeds/seed-content"

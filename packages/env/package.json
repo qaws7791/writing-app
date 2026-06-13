@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./parse-env": "./src/parse-env.ts"
   },
   "scripts": {
     "lint": "eslint .",

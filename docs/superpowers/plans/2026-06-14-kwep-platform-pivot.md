@@ -551,6 +551,26 @@ bun --filter @workspace/db test -- content.repository
 
 Expected: archived 코스는 학습자 목록에서 제외되고, active 코스의 lesson metadata가 응답된다.
 
+- [x] **Step 2.5: 공통 env/logger와 auth schema 골격 작성**
+
+정책:
+
+- env parser는 API, admin API, 웹 origin, DB URL, Better Auth secret을 명시적으로 검증한다.
+- logger는 pino 기반 JSON logger와 request log helper를 제공한다.
+- 학습자 auth schema와 admin auth schema는 같은 DB package 안에서 분리된 table prefix를 사용한다.
+
+검증:
+
+```bash
+bun --filter @workspace/env test -- parse-env
+bun --filter @workspace/logger test -- logger
+bun --filter @workspace/env typecheck
+bun --filter @workspace/logger typecheck
+bun --filter @workspace/db typecheck
+```
+
+Expected: 공통 env/logger와 auth schema export가 후속 API 작업에서 import 가능한 상태가 된다.
+
 ## Task 3: 플랫폼 API 학습 진행, 답변, 프로필, 연속 학습일
 
 **Files:**
@@ -1739,6 +1759,22 @@ Expected: 문서 포맷 검증이 통과한다.
 - `packages/db/src/index.ts`와 `packages/db/src/seeds/index.ts`에 DB package export를 추가했다.
 - DB package typecheck가 core exported source를 안정적으로 해석하도록 `packages/core/package.json`에 `./content/*`, `./result` export를 추가하고, core 구현 파일의 노출 import를 package self-import로 정리했다.
 - `bun --filter @workspace/db test -- content.repository`: 통과했다.
+
+### 2026-06-14 Task 2 Step 2.5 시작
+
+- Step 2.5는 Task 2 파일 목록 중 아직 작성되지 않은 env parser, logger, 학습자 auth schema, admin auth schema를 마무리하는 보강 단계다.
+- env/logger는 테스트를 먼저 작성해 실패를 확인한 뒤 구현한다.
+- auth schema는 후속 API 인증 작업에서 학습자와 어드민 인증 저장소를 분리할 수 있도록 `auth_*`, `admin_auth_*` table prefix를 사용한다.
+
+### 2026-06-14 Task 2 Step 2.5 완료
+
+- `packages/env/src/parse-env.ts`와 `packages/env/src/index.ts`에 API/admin API port, origin, DB URL, Better Auth secret을 검증하는 env parser를 작성했다.
+- `packages/logger/src/index.ts`와 `packages/logger/src/request-logger.ts`에 pino JSON logger와 request 완료 log helper를 작성했다.
+- `packages/db/src/schema/auth.schema.ts`와 `packages/db/src/schema/admin-auth.schema.ts`에 학습자/어드민 인증 table prefix를 분리한 Drizzle schema를 추가했다.
+- cross-package import 안정성을 위해 `packages/env`, `packages/logger`, `packages/db`의 package export와 노출 구현 파일의 package self-import를 정리했다.
+- `bun --filter @workspace/env test -- parse-env`: 통과했다.
+- `bun --filter @workspace/logger test -- logger`: 통과했다.
+- `bun --filter @workspace/db typecheck`: 통과했다.
 
 ## 상태 요약
 
