@@ -1,18 +1,11 @@
 import { Hono } from "hono"
 
+import { createOpenApiDocument } from "@/openapi/openapi-document"
+
 export function createOpenApiRoute(): Hono {
   const route = new Hono()
 
-  route.get("/", (context) =>
-    context.json({
-      info: {
-        title: "Writing App API",
-        version: "0.0.0",
-      },
-      openapi: "3.1.0",
-      paths: {},
-    })
-  )
+  route.get("/", (context) => context.json(createOpenApiDocument()))
 
   return route
 }

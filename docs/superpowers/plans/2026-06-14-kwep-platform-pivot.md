@@ -808,7 +808,7 @@ Expected:
 - 실패한 OpenAI 호출은 시도 횟수를 소모하지 않는다.
 - 응답은 Kwep의 총평, 잘된 점, 다듬을 점, 다음 시도 UI를 채울 수 있다.
 
-- [ ] **Step 4.2: OpenAPI와 web 생성 타입 갱신**
+- [x] **Step 4.2: OpenAPI와 web 생성 타입 갱신**
 
 ```bash
 bun --filter @workspace/api openapi:generate
@@ -1974,6 +1974,19 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/api typecheck`: 통과했다.
 - `bun --filter @workspace/api lint`: 통과했다.
 - `bunx prettier --check 'apps/api/src/**/*.ts'`: 통과했다.
+- `git diff --check`: 통과했다.
+
+### 2026-06-14 Task 4 Step 4.2 완료
+
+- `apps/api/src/openapi/openapi-document.ts`에 `/profile`, `/progress`, `/ai-feedback`를 포함한 플랫폼 API OpenAPI 3.1 baseline 문서를 작성했다.
+- `/openapi` route가 같은 OpenAPI 문서를 반환하도록 연결했다.
+- `apps/api/src/scripts/generate-openapi.ts`를 추가해 `bun --filter @workspace/api openapi:generate`가 `docs/openapi/writing-app-api.json`을 갱신하도록 했다.
+- `bun --filter @workspace/api openapi:generate`: 통과했다.
+- `bun --filter @workspace/web api:generate`: 통과했고 `apps/web/src/lib/api/generated/writing-app-api.d.ts`를 생성했다.
+- `bun --filter @workspace/api test -- openapi`: 통과했다. 테스트 파일 2개, 테스트 3개가 통과했다.
+- `bun --filter @workspace/api typecheck`: 통과했다.
+- `bun --filter @workspace/api lint`: 통과했다.
+- `bunx prettier --check docs/openapi/writing-app-api.json apps/web/src/lib/api/generated/writing-app-api.d.ts 'apps/api/src/openapi/**/*.ts' 'apps/api/src/scripts/**/*.ts' apps/api/src/routes/openapi.route.ts`: 통과했다.
 - `git diff --check`: 통과했다.
 
 ## 상태 요약
