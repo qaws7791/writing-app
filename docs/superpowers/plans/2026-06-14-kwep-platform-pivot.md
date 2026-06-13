@@ -2237,6 +2237,17 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/web lint`: 통과했다.
 - `git diff --check`: 통과했다.
 
+### 2026-06-14 Task 7 Step 7.5 DB 경로 일관화
+
+- 브라우저 스모크 준비 중 API가 루트 `data/api.sqlite`의 이전 스키마를 열고, `db:seed`는 `packages/db/data/api.sqlite`를 생성해 `auth_users` 테이블을 찾지 못하는 실패를 확인했다.
+- `@workspace/db` 기본 DB 경로를 저장소 루트 `data/api.sqlite` 절대 경로로 고정했다.
+- `DATABASE_URL`이 없을 때는 env parser가 DB 경로를 만들지 않고 DB client 기본값을 사용하게 했다.
+- seed는 이전 개발 DB 스키마가 남아 있으면 로컬 SQLite 파일을 새 baseline으로 재생성한다.
+- `bun --filter @workspace/db test -- client seed`: 통과했다. 테스트 파일 3개, 테스트 7개가 통과했다.
+- `bun --filter @workspace/env test -- parse-env`: 통과했다. 테스트 파일 1개, 테스트 4개가 통과했다.
+- 루트 `data/api.sqlite` 복사본에 `db:seed`를 실행해 기본 학습자 1명, 코스 5개, 레슨 44개가 들어가는지 확인했다.
+- 실제 기본 경로에서 `bun --filter @workspace/db db:seed`를 실행해 루트 `data/api.sqlite`에 기본 학습자 1명, 코스 5개, 레슨 44개가 들어가는지 확인했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성

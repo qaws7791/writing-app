@@ -1,8 +1,10 @@
-import { mkdirSync } from "node:fs"
+import { existsSync, mkdirSync, rmSync } from "node:fs"
 import { dirname } from "node:path"
+import { fileURLToPath } from "node:url"
 
 import {
   createKwepDatabase,
+  getDefaultDatabaseUrl,
   type KwepDatabaseClient,
 } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
@@ -19,16 +21,20 @@ import {
   type KwepCourseSeed,
 } from "@workspace/db/seeds/seed-content"
 
-const defaultDatabaseUrl = "data/api.sqlite"
-
 export async function seedDatabase(
-  databaseUrl = process.env["DATABASE_URL"] ?? defaultDatabaseUrl
+  databaseUrl = process.env["DATABASE_URL"] ?? getDefaultDatabaseUrl()
 ): Promise<void> {
   ensureDatabaseDirectory(databaseUrl)
 
-  const client = createKwepDatabase(databaseUrl)
+  let client = createKwepDatabase(databaseUrl)
 
   try {
+    if (shouldRecreateLegacyDatabase(client, databaseUrl)) {
+      client.close()
+      recreateDatabaseFile(databaseUrl)
+      client = createKwepDatabase(databaseUrl)
+    }
+
     runBaselineMigration(client.sqlite)
     seedDefaultLearner(client)
     clearContentRows(client)
@@ -39,15 +45,99 @@ export async function seedDatabase(
 }
 
 function ensureDatabaseDirectory(databaseUrl: string): void {
-  if (databaseUrl === ":memory:" || databaseUrl.startsWith("file:")) {
+  const databasePath = getDatabaseFilePath(databaseUrl)
+
+  if (databasePath === null) {
     return
   }
 
-  const directory = dirname(databaseUrl)
+  const directory = dirname(databasePath)
 
   if (directory !== ".") {
     mkdirSync(directory, { recursive: true })
   }
+}
+
+function shouldRecreateLegacyDatabase(
+  client: KwepDatabaseClient,
+  databaseUrl: string
+): boolean {
+  const databasePath = getDatabaseFilePath(databaseUrl)
+
+  if (databasePath === null || !existsSync(databasePath)) {
+    return false
+  }
+
+  const tableNames = new Set(
+    client.sqlite
+      .query<{ readonly name: string }, []>(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'"
+      )
+      .all()
+      .map((row) => row.name)
+  )
+
+  if (tableNames.size === 0) {
+    return false
+  }
+
+  const requiredTables = [
+    "auth_users",
+    "course_units",
+    "learner_profiles",
+    "learner_lesson_progress",
+    "learner_lesson_answers",
+  ]
+
+  if (requiredTables.some((tableName) => !tableNames.has(tableName))) {
+    return true
+  }
+
+  const courseColumns = readTableColumns(client, "courses")
+
+  return (
+    courseColumns.length > 0 &&
+    (!courseColumns.includes("category") ||
+      !courseColumns.includes("curriculum_revision"))
+  )
+}
+
+function readTableColumns(
+  client: KwepDatabaseClient,
+  tableName: string
+): readonly string[] {
+  return client.sqlite
+    .query<{ readonly name: string }, []>(`PRAGMA table_info(${tableName})`)
+    .all()
+    .map((row) => row.name)
+}
+
+function recreateDatabaseFile(databaseUrl: string): void {
+  const databasePath = getDatabaseFilePath(databaseUrl)
+
+  if (databasePath === null) {
+    return
+  }
+
+  rmSync(databasePath, { force: true })
+  rmSync(`${databasePath}-shm`, { force: true })
+  rmSync(`${databasePath}-wal`, { force: true })
+}
+
+function getDatabaseFilePath(databaseUrl: string): string | null {
+  if (databaseUrl === ":memory:") {
+    return null
+  }
+
+  if (databaseUrl.startsWith("file://")) {
+    return fileURLToPath(databaseUrl)
+  }
+
+  if (databaseUrl.startsWith("file:")) {
+    return databaseUrl.slice("file:".length)
+  }
+
+  return databaseUrl
 }
 
 function seedDefaultLearner(client: KwepDatabaseClient): void {

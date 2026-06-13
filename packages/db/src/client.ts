@@ -1,3 +1,5 @@
+import { fileURLToPath } from "node:url"
+
 import { Database } from "bun:sqlite"
 import { drizzle, type BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
 
@@ -11,8 +13,12 @@ export type KwepDatabaseClient = {
   readonly close: () => void
 }
 
+export function getDefaultDatabaseUrl(): string {
+  return fileURLToPath(new URL("../../../data/api.sqlite", import.meta.url))
+}
+
 export function createKwepDatabase(
-  url = process.env["DATABASE_URL"] ?? "data/api.sqlite"
+  url = process.env["DATABASE_URL"] ?? getDefaultDatabaseUrl()
 ): KwepDatabaseClient {
   const sqlite = new Database(url)
 

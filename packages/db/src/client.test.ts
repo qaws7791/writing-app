@@ -1,9 +1,26 @@
+import { fileURLToPath } from "node:url"
+
 import { describe, expect, it } from "vitest"
 
-import { createInMemoryKwepDatabase } from "@/client"
+import { createInMemoryKwepDatabase, getDefaultDatabaseUrl } from "@/client"
 import { runBaselineMigration } from "@/migrations/migrate"
 
 describe("Kwep DB client", () => {
+  it("기본 SQLite DB 경로는 실행 위치와 무관하게 저장소 루트 data를 가리킨다", () => {
+    const expectedPath = fileURLToPath(
+      new URL("../../../data/api.sqlite", import.meta.url)
+    )
+    const originalCwd = process.cwd()
+
+    try {
+      process.chdir("/tmp")
+
+      expect(getDefaultDatabaseUrl()).toBe(expectedPath)
+    } finally {
+      process.chdir(originalCwd)
+    }
+  })
+
   it("in-memory SQLite DB에 새 baseline schema를 적용한다", () => {
     const client = createInMemoryKwepDatabase()
 

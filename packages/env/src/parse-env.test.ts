@@ -30,6 +30,14 @@ describe("env parser", () => {
     })
   })
 
+  it("DATABASE_URL이 없으면 DB client 기본 경로를 사용하도록 비워 둔다", () => {
+    expect(
+      parseEnv({
+        BETTER_AUTH_SECRET: validSecret,
+      }).DATABASE_URL
+    ).toBeUndefined()
+  })
+
   it("Better Auth secret은 32자 이상이어야 한다", () => {
     expect(() =>
       parseEnv({

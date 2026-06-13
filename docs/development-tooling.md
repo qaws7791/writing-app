@@ -24,11 +24,12 @@
 
 ## 2026-06-14 Kwep 개발 DB seed 실행 복구 완료
 
-- `@workspace/db`의 `db:seed`는 baseline migration을 적용한 뒤 Kwep 콘텐츠 seed를 `data/api.sqlite`에 삽입한다.
+- `@workspace/db`의 `db:seed`는 baseline migration을 적용한 뒤 Kwep 콘텐츠 seed를 저장소 루트 `data/api.sqlite`에 삽입한다.
 - 반복 실행 시 기본 학습자 `user-1`을 보장하고, 기존 콘텐츠 row를 비운 뒤 다시 삽입해 `bun run dev:app` setup이 결정적으로 동작하게 했다.
+- 이전 개발 DB 스키마가 루트 `data/api.sqlite`에 남아 있으면 seed가 로컬 DB 파일을 새 baseline으로 재생성한다.
 - seed 실행 파일은 `packages/db/src/seeds/seed.ts`이며, `packages/db/src/seeds/seed.test.ts`가 파일 DB에 코스 5개, 레슨 44개, 스텝 136개와 기본 학습자가 들어가는지 검증한다.
 - 로컬 브라우저 스모크에서 인증 세션이 필요하면 `kwep_session=user-1` 쿠키를 설정한다. web은 이 쿠키 값을 API Bearer token으로 전달한다.
-- `packages/db/data`는 로컬 SQLite 산출물 경로이므로 Git 추적 대상에서 제외한다.
+- 루트 `data`와 이전 패키지 상대 경로 산출물인 `packages/db/data`는 로컬 SQLite 산출물 경로이므로 Git 추적 대상에서 제외한다.
 
 ## 2026-05-30 웹 fake 개발 서버 스크립트 추가 시작
 

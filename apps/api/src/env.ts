@@ -1,7 +1,7 @@
 import { parseEnv, type AppEnvInput } from "@workspace/env"
 
 export type ApiEnv = {
-  readonly databaseUrl: string
+  readonly databaseUrl: string | undefined
   readonly nodeEnv: "development" | "test" | "production"
   readonly openAiApiKey: string | undefined
   readonly port: number

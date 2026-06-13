@@ -10,7 +10,7 @@ export const appEnvSchema = z.object({
   ADMIN_ORIGIN: z.url().default("http://localhost:3003"),
   API_PORT: portSchema.default(3001),
   BETTER_AUTH_SECRET: z.string().min(32),
-  DATABASE_URL: z.string().min(1).default("data/api.sqlite"),
+  DATABASE_URL: z.string().min(1).optional(),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
   NODE_ENV: nodeEnvSchema,
