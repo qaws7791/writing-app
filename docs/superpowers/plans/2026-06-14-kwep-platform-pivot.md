@@ -517,7 +517,7 @@ bun --filter @workspace/db test -- client repositories
 
 Expected: 새 DB client, migration runner, content repository 테스트가 baseline schema 기준으로 통과한다.
 
-- [ ] **Step 2.3: 콘텐츠 DTO 작성**
+- [x] **Step 2.3: 콘텐츠 DTO 작성**
 
 응답:
 
@@ -1710,6 +1710,20 @@ Expected: 문서 포맷 검증이 통과한다.
 - `packages/db/src/migrations/0000-kwep-baseline.sql`와 `packages/db/src/migrations/migrate.ts`에 새 baseline migration을 작성했다.
 - `packages/db/src/client.test.ts`와 `packages/db/src/repositories/content.repository.test.ts`로 migration 적용, foreign key, seed row 삽입을 검증했다.
 - `bun --filter @workspace/db test -- client repositories`: 통과했다.
+
+### 2026-06-14 Task 2 Step 2.3 시작
+
+- Step 2.3은 `packages/core`에 콘텐츠 ID brand, DTO schema, repository port, service를 새로 작성한다.
+- API DTO의 스텝 타입은 저장용 표준 타입과 같은 대문자 snake 표기(`READING`, `MULTIPLE_CHOICE`, `AI_FEEDBACK` 등)를 사용한다.
+- 먼저 `content.dto` 테스트로 코스 목록, 코스 상세, 레슨, Kwep 10개 스텝 DTO parse를 고정하고, `content.service` 테스트로 repository 결과와 not-found error 계약을 고정한다.
+
+### 2026-06-14 Task 2 Step 2.3 완료
+
+- `packages/core/src/content/content.ids.ts`에 코스, 유닛, 레슨, 레슨 스텝 brand ID schema를 작성했다.
+- `packages/core/src/content/content.dto.ts`에 코스 목록, 코스 상세, 레슨, Kwep 10개 스텝 DTO schema를 작성했다.
+- `packages/core/src/content/content.repository.ts`와 `packages/core/src/content/content.service.ts`에 콘텐츠 repository port와 service Result 계약을 작성했다.
+- `packages/core/src/result.ts`에 명시적 `Result` 타입과 helper를 추가했다.
+- `bun --filter @workspace/core test -- content.dto content.service`: 통과했다.
 
 ## 상태 요약
 
