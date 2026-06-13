@@ -1,0 +1,19 @@
+import { parseEnv, type AppEnvInput } from "@workspace/env"
+
+export type ApiEnv = {
+  readonly databaseUrl: string
+  readonly nodeEnv: "development" | "test" | "production"
+  readonly port: number
+  readonly webOrigin: string
+}
+
+export function parseApiEnv(input: AppEnvInput): ApiEnv {
+  const env = parseEnv(input)
+
+  return {
+    databaseUrl: env.DATABASE_URL,
+    nodeEnv: env.NODE_ENV,
+    port: env.API_PORT,
+    webOrigin: env.WEB_ORIGIN,
+  }
+}

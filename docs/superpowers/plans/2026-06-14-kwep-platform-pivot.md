@@ -739,6 +739,23 @@ bun --filter @workspace/api test -- progress learning
 
 Expected: Kwep의 다음 레슨 계산과 동일하게 첫 미완료 active lesson이 `available`이 되고 그 뒤 lesson은 `locked`가 된다.
 
+- [x] **Step 3.5: API 실행 골격과 콘텐츠 조회 route 작성**
+
+정책:
+
+- API env는 공통 env parser를 재사용하되 API 실행에 필요한 port와 DB URL을 명시적으로 노출한다.
+- `/health`, `/openapi`, `/auth/session`, `/courses`, `/lessons/:lessonId` route를 후속 프론트엔드 작업이 import 없이 호출할 수 있는 baseline으로 제공한다.
+- `main.ts`는 app factory와 DB-backed repository를 연결하는 실행 진입점만 담당한다.
+
+검증:
+
+```bash
+bun --filter @workspace/api test -- env app courses lessons openapi auth
+bun --filter @workspace/api typecheck
+```
+
+Expected: API 실행 골격과 콘텐츠 조회 route가 import 가능한 상태가 되고, 인증 없는 auth session은 `401`로 응답한다.
+
 ## Task 4: 플랫폼 API AI 코칭과 OpenAPI 갱신
 
 **Files:**
@@ -1882,6 +1899,21 @@ Expected: 문서 포맷 검증이 통과한다.
 - `apps/api/src/routes/progress.route.test.ts`로 Kwep의 첫 미완료 lesson `available` 계산과 이후 lesson `locked` 계산을 검증했다.
 - `apps/api/src/routes/learning.route.test.ts`로 answer 저장 요청 전달과 `invalid-request` HTTP `400` 변환을 검증했다.
 - `bun --filter @workspace/api test -- progress learning`: 통과했다.
+- `bun --filter @workspace/api typecheck`: 통과했다.
+
+### 2026-06-14 Task 3 Step 3.5 시작
+
+- Task 3 파일 목록 중 아직 없는 API env, main, auth/openapi/courses/lessons route, route helper를 마무리하는 보강 단계다.
+- 먼저 env parsing, health/openapi/auth session, course list/detail, lesson detail route 테스트를 작성해 실패를 확인한다.
+- 구현은 후속 Task 4 OpenAPI 확장과 Task 5 웹 연동이 바로 이어질 수 있는 최소 API 골격으로 제한한다.
+
+### 2026-06-14 Task 3 Step 3.5 완료
+
+- `apps/api/src/env.ts`와 `apps/api/src/env.test.ts`에 API 실행 env parser를 추가했다.
+- `apps/api/src/routes/auth.route.ts`, `openapi.route.ts`, `courses.route.ts`, `lessons.route.ts`, `route-helpers.ts`를 추가했다.
+- `apps/api/src/main.ts`에 DB-backed content/learning repository와 session/profile/progress reader를 연결하는 실행 진입점을 작성했다.
+- `apps/api/package.json`에 API에서 직접 사용하는 `drizzle-orm` dependency를 명시하고 `bun install`로 lockfile/workspace link를 갱신했다.
+- `bun --filter @workspace/api test -- env app courses lessons openapi auth`: 통과했다.
 - `bun --filter @workspace/api typecheck`: 통과했다.
 
 ## 상태 요약

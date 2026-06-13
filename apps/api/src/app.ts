@@ -1,8 +1,12 @@
 import { Hono } from "hono"
 
 import type { SessionResolver } from "@/auth/session"
+import { createAuthRoute } from "@/routes/auth.route"
+import { createCoursesRoute } from "@/routes/courses.route"
 import { createHealthRoute } from "@/routes/health.route"
 import { createLearningRoute } from "@/routes/learning.route"
+import { createLessonsRoute } from "@/routes/lessons.route"
+import { createOpenApiRoute } from "@/routes/openapi.route"
 import { createProfileRoute, type ProfileReader } from "@/routes/profile.route"
 import {
   createProgressRoute,
@@ -24,7 +28,26 @@ export function createApp(dependencies: ApiDependencies): Hono {
   const app = new Hono()
 
   app.route("/health", createHealthRoute())
+  app.route("/openapi", createOpenApiRoute())
+  app.route("/auth", createAuthRoute(dependencies.sessionResolver))
   app.route("/profile", createProfileRoute(dependencies))
+
+  if (dependencies.contentRepository !== undefined) {
+    app.route(
+      "/courses",
+      createCoursesRoute({
+        contentRepository: dependencies.contentRepository,
+        sessionResolver: dependencies.sessionResolver,
+      })
+    )
+    app.route(
+      "/lessons",
+      createLessonsRoute({
+        contentRepository: dependencies.contentRepository,
+        sessionResolver: dependencies.sessionResolver,
+      })
+    )
+  }
 
   if (
     dependencies.contentRepository !== undefined &&

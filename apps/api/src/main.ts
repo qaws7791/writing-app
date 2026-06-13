@@ -1,0 +1,152 @@
+import { serve } from "bun"
+import { createLearningService } from "@workspace/core/learning"
+import {
+  createDrizzleContentRepository,
+  createDrizzleLearningRepository,
+  createKwepDatabase,
+  learnerActivityDays,
+  learnerLessonProgress,
+  lessons,
+} from "@workspace/db"
+import { and, count, desc, eq } from "drizzle-orm"
+
+import { createApp } from "@/app"
+import { createBearerSessionResolver } from "@/auth/auth"
+import { parseApiEnv } from "@/env"
+import type { ProfileReader } from "@/routes/profile.route"
+import type { ProgressReader } from "@/routes/progress.route"
+
+const env = parseApiEnv(process.env)
+const database = createKwepDatabase(env.databaseUrl)
+const contentRepository = createDrizzleContentRepository(database.db)
+const learningRepository = createDrizzleLearningRepository(database.db)
+const progressReader = createProgressReader(database.db)
+const app = createApp({
+  contentRepository,
+  learningService: createLearningService({
+    contentRepository,
+    learningRepository,
+  }),
+  profileReader: createProfileReader(database.db),
+  progressReader,
+  sessionResolver: createBearerSessionResolver(database.db),
+})
+
+if (import.meta.main) {
+  serve({
+    fetch: app.fetch,
+    port: env.port,
+  })
+}
+
+export { app }
+
+function createProfileReader(db: typeof database.db): ProfileReader {
+  return {
+    async readProfileStats(userId) {
+      const [completedLessons, totalLessons, activity] = await Promise.all([
+        countCompletedLessons(db, userId),
+        countActiveLessons(db),
+        readActivity(db, userId),
+      ])
+
+      return {
+        completedLessons,
+        currentStreakDays: calculateCurrentStreakDays(
+          activity.map((day) => day.activityDate)
+        ),
+        lastActiveDate: activity[0]?.activityDate ?? null,
+        progressPercent:
+          totalLessons === 0
+            ? 0
+            : Math.round((completedLessons / totalLessons) * 100),
+        totalLessons,
+      }
+    },
+  }
+}
+
+function createProgressReader(db: typeof database.db): ProgressReader {
+  return {
+    async readLearnerProgress(userId) {
+      const [completedLessonRows, activity] = await Promise.all([
+        Promise.resolve(
+          db
+            .select({ lessonId: learnerLessonProgress.lessonId })
+            .from(learnerLessonProgress)
+            .where(
+              and(
+                eq(learnerLessonProgress.userId, userId),
+                eq(learnerLessonProgress.status, "completed")
+              )
+            )
+            .all()
+        ),
+        readActivity(db, userId),
+      ])
+
+      return {
+        completedLessonIds: completedLessonRows.map((row) => row.lessonId),
+        currentStreakDays: calculateCurrentStreakDays(
+          activity.map((day) => day.activityDate)
+        ),
+      }
+    },
+  }
+}
+
+function countCompletedLessons(
+  db: typeof database.db,
+  userId: string
+): Promise<number> {
+  return Promise.resolve(
+    db
+      .select({ value: count() })
+      .from(learnerLessonProgress)
+      .where(
+        and(
+          eq(learnerLessonProgress.userId, userId),
+          eq(learnerLessonProgress.status, "completed")
+        )
+      )
+      .get()?.value ?? 0
+  )
+}
+
+function countActiveLessons(db: typeof database.db): Promise<number> {
+  return Promise.resolve(
+    db
+      .select({ value: count() })
+      .from(lessons)
+      .where(eq(lessons.status, "active"))
+      .get()?.value ?? 0
+  )
+}
+
+function readActivity(db: typeof database.db, userId: string) {
+  return Promise.resolve(
+    db
+      .select({ activityDate: learnerActivityDays.activityDate })
+      .from(learnerActivityDays)
+      .where(eq(learnerActivityDays.userId, userId))
+      .orderBy(desc(learnerActivityDays.activityDate))
+      .all()
+  )
+}
+
+function calculateCurrentStreakDays(activityDates: readonly string[]): number {
+  if (activityDates.length === 0) {
+    return 0
+  }
+
+  const activitySet = new Set(activityDates)
+  const cursor = new Date(`${activityDates[0]}T00:00:00.000Z`)
+  let streak = 0
+
+  while (activitySet.has(cursor.toISOString().slice(0, 10))) {
+    streak += 1
+    cursor.setUTCDate(cursor.getUTCDate() - 1)
+  }
+
+  return streak
+}

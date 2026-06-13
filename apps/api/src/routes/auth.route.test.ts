@@ -1,0 +1,36 @@
+import { describe, expect, it } from "vitest"
+
+import { createApp } from "@/app"
+import { createTestDependencies } from "@/routes/test-dependencies"
+
+describe("플랫폼 API auth route", () => {
+  it("인증 없는 session 요청은 401이다", async () => {
+    const app = createApp(createTestDependencies())
+
+    const response = await app.request("/auth/session")
+
+    expect(response.status).toBe(401)
+  })
+
+  it("인증된 session 요청은 사용자 정보를 반환한다", async () => {
+    const app = createApp(createTestDependencies())
+
+    const response = await app.request("/auth/session", {
+      headers: {
+        Authorization: "Bearer active-token",
+      },
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      user: {
+        email: "learner@example.com",
+        id: "user-1",
+        image: null,
+        joinedAt: "2026-06-14T00:00:00.000Z",
+        name: "학습자",
+        status: "active",
+      },
+    })
+  })
+})
