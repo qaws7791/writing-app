@@ -39,6 +39,7 @@ describe("Kwep DB client", () => {
         "admin_auth_sessions",
         "admin_auth_users",
         "admin_auth_verifications",
+        "admin_settings",
         "ai_feedback_attempts",
         "auth_accounts",
         "auth_sessions",

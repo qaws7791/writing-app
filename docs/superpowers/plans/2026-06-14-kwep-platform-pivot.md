@@ -2096,7 +2096,7 @@ bun --filter @workspace/admin-api test -- courses curriculum-editor
 
 Expected: 생성된 코스는 편집 문서로 열 수 있고, 보관된 코스는 학습자 API에 노출되지 않는다.
 
-- [ ] **Step 8.6: 어드민 API 게이트 검증**
+- [x] **Step 8.6: 어드민 API 게이트 검증**
 
 ```bash
 bun --filter @workspace/core test
@@ -3491,6 +3491,25 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/core typecheck`, `bun --filter @workspace/db typecheck`, `bun --filter @workspace/admin-api typecheck`: 통과했다.
 - `bun --filter @workspace/core lint`, `bun --filter @workspace/db lint`, `bun --filter @workspace/admin-api lint`: 통과했다.
 - `bunx prettier --check apps/admin-api/src/app.test.ts apps/admin-api/src/app.ts apps/admin-api/src/routes/analytics.route.test.ts apps/admin-api/src/routes/courses.route.ts apps/admin-api/src/routes/courses.route.test.ts apps/admin-api/src/routes/curriculum-editor.route.ts apps/admin-api/src/routes/curriculum-editor.route.test.ts apps/admin-api/src/routes/settings.route.test.ts packages/core/src/admin/admin.dto.ts packages/core/src/admin/admin.repository.ts packages/core/src/admin/admin.service.ts packages/core/src/admin/admin.service.test.ts packages/db/src/repositories/admin.repository.ts packages/db/src/repositories/admin.repository.test.ts docs/admin-site.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check`: 통과했다.
+
+### 2026-06-14 Task 8 Step 8.6 어드민 API 게이트 검증 시작
+
+- Task 8의 대시보드, 사용자, 분석, 운영 설정, 코스 생성/보관 API가 함께 통과하는지 전체 package 검증을 실행한다.
+- 계획서 기준 검증 명령은 `bun --filter @workspace/core test`, `bun --filter @workspace/db test`, `bun --filter @workspace/admin-api test`, `bun --filter @workspace/admin-api typecheck`, `bun --filter @workspace/admin-api lint`, `bun run format:check`, `git diff --check`이다.
+- 검증 결과를 이 작업 로그에 기록한 뒤 Task 8 게이트 문서 커밋을 만든다.
+
+### 2026-06-14 Task 8 Step 8.6 어드민 API 게이트 검증 완료
+
+- `bun --filter @workspace/db test`를 처음 실행했을 때 baseline schema 테이블 목록 테스트가 새 `admin_settings` 테이블을 기대하지 않아 실패했다.
+- 원인은 8.4에서 baseline migration에 `admin_settings`를 추가했지만 `packages/db/src/client.test.ts`의 기대 테이블 목록을 갱신하지 않은 것이다.
+- `packages/db/src/client.test.ts`에 `admin_settings` 기대값을 추가했다.
+- `bun --filter @workspace/core test`: 테스트 파일 5개, 테스트 21개가 통과했다.
+- `bun --filter @workspace/db test`: 테스트 파일 7개, 테스트 21개가 통과했다.
+- `bun --filter @workspace/admin-api test`: 테스트 파일 6개, 테스트 28개가 통과했다.
+- `bun --filter @workspace/admin-api typecheck`: 통과했다.
+- `bun --filter @workspace/admin-api lint`: 통과했다.
+- `bun run format:check`: 통과했다.
 - `git diff --check`: 통과했다.
 
 ## 상태 요약
