@@ -14,6 +14,13 @@ export const adminUserSortSchema = z.enum([
   "lessonsDone",
   "streak",
 ])
+export const adminLessonAnalyticsSortSchema = z.enum([
+  "course",
+  "completionRate",
+  "dropOff",
+  "lesson",
+])
+export const adminSortDirectionSchema = z.enum(["asc", "desc"])
 export const adminUpdateUserStatusRequestSchema = z.object({
   status: z.enum(["active", "suspended"]),
 })
@@ -71,11 +78,57 @@ export const adminDeleteUserResultSchema = z.object({
   deleted: z.literal(true),
 })
 
+export const adminLessonAnalyticsItemDtoSchema = z.object({
+  completed: nonNegativeIntegerSchema,
+  completionRate: nonNegativeIntegerSchema.max(100),
+  courseId: z.string(),
+  courseTitle: z.string(),
+  dropOffRate: nonNegativeIntegerSchema.max(100),
+  lessonId: z.string(),
+  lessonTitle: z.string(),
+  started: nonNegativeIntegerSchema,
+})
+
+export const adminAnalyticsDtoSchema = z.object({
+  dailySeries: z.array(
+    z.object({
+      completions: nonNegativeIntegerSchema,
+      date: z.string(),
+      signups: nonNegativeIntegerSchema,
+    })
+  ),
+  streakBuckets: z.array(
+    z.object({
+      count: nonNegativeIntegerSchema,
+      label: z.string(),
+    })
+  ),
+  worstLessons: z.array(adminLessonAnalyticsItemDtoSchema),
+})
+
+export const adminLessonAnalyticsPageDtoSchema = z.object({
+  items: z.array(adminLessonAnalyticsItemDtoSchema),
+  pagination: z.object({
+    page: positiveIntegerSchema,
+    pageSize: positiveIntegerSchema,
+    totalItems: nonNegativeIntegerSchema,
+    totalPages: positiveIntegerSchema,
+  }),
+})
+
+export type AdminAnalyticsDto = z.infer<typeof adminAnalyticsDtoSchema>
 export type AdminUserDetailDto = z.infer<typeof adminUserDetailDtoSchema>
 export type AdminUserListDto = z.infer<typeof adminUserListDtoSchema>
 export type AdminUserListStatusFilter = z.infer<
   typeof adminUserListStatusFilterSchema
 >
+export type AdminLessonAnalyticsPageDto = z.infer<
+  typeof adminLessonAnalyticsPageDtoSchema
+>
+export type AdminLessonAnalyticsSort = z.infer<
+  typeof adminLessonAnalyticsSortSchema
+>
+export type AdminSortDirection = z.infer<typeof adminSortDirectionSchema>
 export type AdminUserSort = z.infer<typeof adminUserSortSchema>
 export type AdminUserStatus = z.infer<typeof adminUserStatusSchema>
 export type AdminUpdateUserStatusRequest = z.infer<

@@ -152,6 +152,128 @@ describe("어드민 DB repository", () => {
       client.close()
     }
   })
+
+  it("기존 학습자와 학습 진행 테이블에서 분석 지표를 계산한다", async () => {
+    const client = createKwepDatabase(":memory:")
+    const now = new Date("2026-06-14T03:00:00.000Z")
+
+    try {
+      runBaselineMigration(client.sqlite)
+      seedDashboardRows(client.db)
+
+      const repository = createDrizzleAdminRepository(client.db)
+
+      await expect(
+        repository.readAnalytics({
+          days: 3,
+          now,
+        })
+      ).resolves.toEqual({
+        dailySeries: [
+          {
+            completions: 0,
+            date: "2026-06-12",
+            signups: 0,
+          },
+          {
+            completions: 1,
+            date: "2026-06-13",
+            signups: 0,
+          },
+          {
+            completions: 1,
+            date: "2026-06-14",
+            signups: 1,
+          },
+        ],
+        streakBuckets: [
+          {
+            count: 0,
+            label: "0일",
+          },
+          {
+            count: 2,
+            label: "1-3일",
+          },
+          {
+            count: 0,
+            label: "4-7일",
+          },
+          {
+            count: 0,
+            label: "8-14일",
+          },
+          {
+            count: 0,
+            label: "15일+",
+          },
+        ],
+        worstLessons: [
+          {
+            completed: 1,
+            completionRate: 50,
+            courseId: "course-1",
+            courseTitle: "활성 코스",
+            dropOffRate: 50,
+            lessonId: "lesson-2",
+            lessonTitle: "둘째 레슨",
+            started: 2,
+          },
+          {
+            completed: 2,
+            completionRate: 100,
+            courseId: "course-1",
+            courseTitle: "활성 코스",
+            dropOffRate: 0,
+            lessonId: "lesson-1",
+            lessonTitle: "첫 레슨",
+            started: 2,
+          },
+        ],
+      })
+
+      await expect(
+        repository.readLessonAnalytics({
+          direction: "asc",
+          page: 1,
+          pageSize: 10,
+          query: "레슨",
+          sort: "completionRate",
+        })
+      ).resolves.toEqual({
+        items: [
+          {
+            completed: 1,
+            completionRate: 50,
+            courseId: "course-1",
+            courseTitle: "활성 코스",
+            dropOffRate: 50,
+            lessonId: "lesson-2",
+            lessonTitle: "둘째 레슨",
+            started: 2,
+          },
+          {
+            completed: 2,
+            completionRate: 100,
+            courseId: "course-1",
+            courseTitle: "활성 코스",
+            dropOffRate: 0,
+            lessonId: "lesson-1",
+            lessonTitle: "첫 레슨",
+            started: 2,
+          },
+        ],
+        pagination: {
+          page: 1,
+          pageSize: 10,
+          totalItems: 2,
+          totalPages: 1,
+        },
+      })
+    } finally {
+      client.close()
+    }
+  })
 })
 
 function seedDashboardRows(db: ReturnType<typeof createKwepDatabase>["db"]) {
@@ -314,6 +436,15 @@ function seedDashboardRows(db: ReturnType<typeof createKwepDatabase>["db"]) {
         startedAt: older,
         status: "completed",
         updatedAt: older,
+        userId: "user-2",
+      },
+      {
+        completedAt: null,
+        currentStepIndex: 1,
+        lessonId: "lesson-2",
+        startedAt: today,
+        status: "in_progress",
+        updatedAt: today,
         userId: "user-2",
       },
     ])

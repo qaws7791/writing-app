@@ -2023,7 +2023,7 @@ bun --filter @workspace/admin-api test -- users
 
 Expected: 검색, 상태 필터, 정렬, 페이지네이션, 상태 변경, 삭제 상태 전환이 통과한다.
 
-- [ ] **Step 8.3: 분석 API 작성**
+- [x] **Step 8.3: 분석 API 작성**
 
 Endpoint:
 
@@ -3415,6 +3415,31 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/core typecheck`, `bun --filter @workspace/db typecheck`, `bun --filter @workspace/admin-api typecheck`: 통과했다.
 - `bun --filter @workspace/core lint`, `bun --filter @workspace/db lint`, `bun --filter @workspace/admin-api lint`: 통과했다.
 - `bunx prettier --check apps/admin-api/src/app.test.ts apps/admin-api/src/app.ts apps/admin-api/src/routes/users.route.ts packages/core/src/admin/admin.dto.ts packages/core/src/admin/admin.repository.ts packages/core/src/admin/admin.service.ts packages/core/src/admin/admin.service.test.ts packages/db/src/repositories/admin.repository.ts packages/db/src/repositories/admin.repository.test.ts docs/admin-site.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check`: 통과했다.
+
+### 2026-06-14 Task 8 Step 8.3 분석 API 시작
+
+- 다음 대상은 어드민 분석 화면의 Kwep `AdminAnalytics.tsx`와 `Kwep/src/app/admin/mockData.ts`에서 파생한 제품 API 계약이다.
+- 제품 대상 파일은 `packages/core/src/admin/*`, `packages/db/src/repositories/admin.repository.ts`, `apps/admin-api/src/app.ts`, `apps/admin-api/src/routes/analytics.route.ts`, 관련 테스트이다.
+- `GET /analytics?days=30`은 일별 가입 수, 일별 레슨 완료 수, 연속 학습일 bucket, 완료율이 낮은 레슨 요약을 제공한다.
+- `GET /analytics/lessons?page=1&pageSize=10&query=&sort=completionRate&direction=asc`는 Kwep 레슨별 완료율 테이블에 필요한 검색, 정렬, 페이지네이션을 제공한다.
+- 완료율은 `completed / started`, 이탈률은 `100 - completionRate`로 계산하고, 시작 수가 0인 레슨은 완료율 0으로 처리한다.
+- production code 수정 전에 core service, admin API route, DB repository 테스트에 실패 기대값을 먼저 추가한다.
+
+### 2026-06-14 Task 8 Step 8.3 분석 API 완료
+
+- `packages/core/src/admin`에 일별 분석, 스트릭 bucket, 레슨별 완료/이탈률, 레슨 분석 페이지 DTO와 repository/service port를 추가했다.
+- `apps/admin-api/src/routes/analytics.route.ts`를 추가하고 `GET /analytics`, `GET /analytics/lessons`를 관리자 세션 뒤에 연결했다.
+- `GET /analytics`는 Kwep 분석 화면의 일별 추이, 연속 학습일 bucket, 완료율이 낮은 레슨 요약을 반환한다.
+- `GET /analytics/lessons`는 Kwep 레슨별 완료율 테이블의 검색, `lesson`/`course`/`completionRate`/`dropOff` 정렬, 페이지네이션을 반환한다.
+- `packages/db/src/repositories/admin.repository.ts`는 삭제되지 않은 학습자, active 코스/유닛/레슨, lesson progress를 기준으로 가입 수, 완료 수, 스트릭 분포, 완료율과 이탈률을 계산한다.
+- `bun --filter @workspace/core test -- admin.service`: 먼저 `service.getAnalytics is not a function`으로 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 3개가 통과했다.
+- `bun --filter @workspace/admin-api test -- app`: 먼저 `/analytics` route가 없어 404로 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 10개가 통과했다.
+- `bun --filter @workspace/db test -- admin.repository`: 먼저 `repository.readAnalytics is not a function`으로 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 3개가 통과했다.
+- `bun --filter @workspace/admin-api test -- analytics`: route 전용 테스트 파일 1개, 테스트 4개가 통과했다.
+- `bun --filter @workspace/core typecheck`, `bun --filter @workspace/db typecheck`, `bun --filter @workspace/admin-api typecheck`: 통과했다.
+- `bun --filter @workspace/core lint`, `bun --filter @workspace/db lint`, `bun --filter @workspace/admin-api lint`: 통과했다.
+- `bunx prettier --check apps/admin-api/src/app.test.ts apps/admin-api/src/app.ts apps/admin-api/src/routes/analytics.route.ts apps/admin-api/src/routes/analytics.route.test.ts packages/core/src/admin/admin.dto.ts packages/core/src/admin/admin.repository.ts packages/core/src/admin/admin.service.ts packages/core/src/admin/admin.service.test.ts packages/db/src/repositories/admin.repository.ts packages/db/src/repositories/admin.repository.test.ts docs/admin-site.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
 - `git diff --check`: 통과했다.
 
 ## 상태 요약

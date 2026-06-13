@@ -1,17 +1,23 @@
 import {
+  adminAnalyticsDtoSchema,
   adminDeleteUserResultSchema,
   adminDashboardDtoSchema,
+  adminLessonAnalyticsPageDtoSchema,
   adminUserDetailDtoSchema,
   adminUserListDtoSchema,
+  type AdminAnalyticsDto,
   type AdminDashboardDto,
   type AdminDeleteUserResultDto,
+  type AdminLessonAnalyticsPageDto,
   type AdminUserDetailDto,
   type AdminUserListDto,
 } from "@workspace/core/admin/admin.dto"
 import type {
   AdminRepository,
   DeleteAdminUserInput,
+  ReadAdminAnalyticsInput,
   ReadAdminDashboardInput,
+  ReadAdminLessonAnalyticsInput,
   ReadAdminUserInput,
   ReadAdminUsersInput,
   UpdateAdminUserStatusInput,
@@ -21,9 +27,15 @@ export type AdminService = {
   readonly deleteUser: (
     input: DeleteAdminUserInput
   ) => Promise<AdminDeleteUserResultDto | null>
+  readonly getAnalytics: (
+    input: ReadAdminAnalyticsInput
+  ) => Promise<AdminAnalyticsDto>
   readonly getDashboard: (
     input: ReadAdminDashboardInput
   ) => Promise<AdminDashboardDto>
+  readonly getLessonAnalytics: (
+    input: ReadAdminLessonAnalyticsInput
+  ) => Promise<AdminLessonAnalyticsPageDto>
   readonly getUser: (
     input: ReadAdminUserInput
   ) => Promise<AdminUserDetailDto | null>
@@ -40,9 +52,19 @@ export function createAdminService(repository: AdminRepository): AdminService {
         .nullable()
         .parse(await repository.deleteUser(input))
     },
+    async getAnalytics(input) {
+      return adminAnalyticsDtoSchema.parse(
+        await repository.readAnalytics(input)
+      )
+    },
     async getDashboard(input) {
       return adminDashboardDtoSchema.parse(
         await repository.readDashboard(input)
+      )
+    },
+    async getLessonAnalytics(input) {
+      return adminLessonAnalyticsPageDtoSchema.parse(
+        await repository.readLessonAnalytics(input)
       )
     },
     async getUser(input) {

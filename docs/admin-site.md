@@ -1,5 +1,13 @@
 # 어드민 사이트
 
+## 2026-06-14 Kwep 어드민 분석 API 완료
+
+- 어드민 API에 `GET /analytics`, `GET /analytics/lessons`를 추가했다.
+- 분석 요약은 Kwep 분석 화면 기준으로 최근 N일 가입 수, 레슨 완료 수, 연속 학습일 bucket, 완료율이 낮은 레슨을 반환한다.
+- 레슨별 분석은 레슨/강의 검색, 완료율/이탈률/레슨/강의 정렬, 페이지네이션을 제공한다.
+- 완료율은 `completed / started`, 이탈률은 `100 - completionRate`로 계산한다.
+- 삭제된 learner profile은 분석 대상에서 제외하고, active 코스/유닛/레슨만 레슨별 완료율 계산에 포함한다.
+
 ## 2026-06-14 Kwep 어드민 사용자 API 완료
 
 - 어드민 API에 `GET /users`, `GET /users/:userId`, `PATCH /users/:userId/status`, `DELETE /users/:userId`를 추가했다.

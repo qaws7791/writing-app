@@ -1,13 +1,19 @@
 import type {
+  AdminAnalyticsDto,
   AdminDashboardDto,
   AdminDeleteUserResultDto,
+  AdminLessonAnalyticsPageDto,
+  AdminLessonAnalyticsSort,
   AdminRepository,
+  AdminSortDirection,
   AdminUserDetailDto,
   AdminUserListDto,
   AdminUserSort,
   AdminUserStatus,
   DeleteAdminUserInput,
+  ReadAdminAnalyticsInput,
   ReadAdminDashboardInput,
+  ReadAdminLessonAnalyticsInput,
   ReadAdminUserInput,
   ReadAdminUsersInput,
   UpdateAdminUserStatusInput,
@@ -34,8 +40,14 @@ export function createDrizzleAdminRepository(
     deleteUser(input) {
       return Promise.resolve(deleteUser(db, input))
     },
+    readAnalytics(input) {
+      return Promise.resolve(readAnalytics(db, input))
+    },
     readDashboard(input) {
       return Promise.resolve(readDashboard(db, input))
+    },
+    readLessonAnalytics(input) {
+      return Promise.resolve(readLessonAnalytics(db, input))
     },
     readUser(input) {
       return Promise.resolve(readUser(db, input))
@@ -166,6 +178,272 @@ function createRecentActivities(
         : (right.lastActiveDate ?? "").localeCompare(left.lastActiveDate ?? "")
     )
     .slice(0, recentActivityLimit)
+}
+
+type AdminLearnerSnapshot = {
+  readonly createdAt: Date
+  readonly id: string
+  readonly status: AdminUserStatus | null
+}
+
+type AdminLessonAnalyticsSnapshot = {
+  readonly completed: number
+  readonly completionRate: number
+  readonly courseId: string
+  readonly courseTitle: string
+  readonly dropOffRate: number
+  readonly lessonId: string
+  readonly lessonTitle: string
+  readonly started: number
+}
+
+const streakBucketRanges = [
+  { label: "0일", max: 0, min: 0 },
+  { label: "1-3일", max: 3, min: 1 },
+  { label: "4-7일", max: 7, min: 4 },
+  { label: "8-14일", max: 14, min: 8 },
+  { label: "15일+", max: Number.POSITIVE_INFINITY, min: 15 },
+] as const
+
+function readAnalytics(
+  db: KwepDatabase,
+  input: ReadAdminAnalyticsInput
+): AdminAnalyticsDto {
+  const lessonAnalytics = createLessonAnalyticsSnapshots(db)
+
+  return {
+    dailySeries: createDailySeries(db, input),
+    streakBuckets: createStreakBuckets(db),
+    worstLessons: [...lessonAnalytics].sort(compareWorstLessons).slice(0, 8),
+  }
+}
+
+function readLessonAnalytics(
+  db: KwepDatabase,
+  input: ReadAdminLessonAnalyticsInput
+): AdminLessonAnalyticsPageDto {
+  const query = input.query.trim().toLowerCase()
+  const filteredLessons = createLessonAnalyticsSnapshots(db)
+    .filter(
+      (lesson) =>
+        query.length === 0 ||
+        lesson.lessonTitle.toLowerCase().includes(query) ||
+        lesson.courseTitle.toLowerCase().includes(query)
+    )
+    .sort((left, right) =>
+      compareLessonAnalytics(left, right, input.sort, input.direction)
+    )
+  const totalItems = filteredLessons.length
+  const totalPages = Math.max(1, Math.ceil(totalItems / input.pageSize))
+  const page = Math.min(Math.max(1, input.page), totalPages)
+  const start = (page - 1) * input.pageSize
+
+  return {
+    items: filteredLessons.slice(start, start + input.pageSize),
+    pagination: {
+      page,
+      pageSize: input.pageSize,
+      totalItems,
+      totalPages,
+    },
+  }
+}
+
+function createDailySeries(
+  db: KwepDatabase,
+  input: ReadAdminAnalyticsInput
+): AdminAnalyticsDto["dailySeries"] {
+  const learnerIds = new Set(readActiveLearners(db).map((user) => user.id))
+  const signupsByDate = countByDate(
+    readActiveLearners(db).map((user) => toDateKey(user.createdAt))
+  )
+  const completionsByDate = countByDate(
+    db
+      .select()
+      .from(learnerLessonProgress)
+      .all()
+      .filter(
+        (progress) =>
+          progress.status === "completed" &&
+          progress.completedAt !== null &&
+          learnerIds.has(progress.userId)
+      )
+      .map((progress) => toDateKey(progress.completedAt as Date))
+  )
+  const startDate = addUtcDays(startOfUtcDay(input.now), -(input.days - 1))
+
+  return Array.from({ length: input.days }, (_, index) => {
+    const date = toDateKey(addUtcDays(startDate, index))
+
+    return {
+      completions: completionsByDate.get(date) ?? 0,
+      date,
+      signups: signupsByDate.get(date) ?? 0,
+    }
+  })
+}
+
+function createStreakBuckets(
+  db: KwepDatabase
+): AdminAnalyticsDto["streakBuckets"] {
+  const activitiesByUserId = groupActivityDatesByUserId(
+    db.select().from(learnerActivityDays).all()
+  )
+  const counts = new Map(streakBucketRanges.map((bucket) => [bucket.label, 0]))
+
+  for (const user of readActiveLearners(db)) {
+    const streak = calculateCurrentStreakDays(
+      activitiesByUserId.get(user.id) ?? []
+    )
+    const bucket = streakBucketRanges.find(
+      (range) => streak >= range.min && streak <= range.max
+    )
+
+    if (bucket !== undefined) {
+      counts.set(bucket.label, (counts.get(bucket.label) ?? 0) + 1)
+    }
+  }
+
+  return streakBucketRanges.map((bucket) => ({
+    count: counts.get(bucket.label) ?? 0,
+    label: bucket.label,
+  }))
+}
+
+function createLessonAnalyticsSnapshots(
+  db: KwepDatabase
+): AdminLessonAnalyticsSnapshot[] {
+  const learnerIds = new Set(readActiveLearners(db).map((user) => user.id))
+  const progressRows = db
+    .select()
+    .from(learnerLessonProgress)
+    .all()
+    .filter((progress) => learnerIds.has(progress.userId))
+
+  return readActiveLessonSnapshots(db).map((lesson) => {
+    const lessonProgressRows = progressRows.filter(
+      (progress) => progress.lessonId === lesson.lessonId
+    )
+    const started = lessonProgressRows.length
+    const completed = lessonProgressRows.filter(
+      (progress) => progress.status === "completed"
+    ).length
+    const completionRate =
+      started === 0 ? 0 : Math.round((completed / started) * 100)
+
+    return {
+      ...lesson,
+      completed,
+      completionRate,
+      dropOffRate: 100 - completionRate,
+      started,
+    }
+  })
+}
+
+function readActiveLearners(db: KwepDatabase): AdminLearnerSnapshot[] {
+  return db
+    .select({
+      createdAt: authUsers.createdAt,
+      id: authUsers.id,
+      status: learnerProfiles.status,
+    })
+    .from(authUsers)
+    .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
+    .all()
+    .filter((user) => user.status !== "deleted")
+}
+
+function readActiveLessonSnapshots(db: KwepDatabase): {
+  readonly courseId: string
+  readonly courseTitle: string
+  readonly lessonId: string
+  readonly lessonTitle: string
+}[] {
+  const activeCourses = db
+    .select()
+    .from(courses)
+    .all()
+    .filter((course) => course.status === "active")
+  const activeCourseById = new Map(
+    activeCourses.map((course) => [course.id, course])
+  )
+  const activeUnitIds = new Set(
+    db
+      .select()
+      .from(courseUnits)
+      .all()
+      .filter(
+        (unit) =>
+          unit.status === "active" && activeCourseById.has(unit.courseId)
+      )
+      .map((unit) => unit.id)
+  )
+
+  return db
+    .select()
+    .from(lessons)
+    .all()
+    .filter(
+      (lesson) =>
+        lesson.status === "active" &&
+        activeCourseById.has(lesson.courseId) &&
+        activeUnitIds.has(lesson.unitId)
+    )
+    .map((lesson) => ({
+      courseId: lesson.courseId,
+      courseTitle: activeCourseById.get(lesson.courseId)?.title ?? "",
+      lessonId: lesson.id,
+      lessonTitle: lesson.title,
+    }))
+}
+
+function countByDate(dates: readonly string[]): Map<string, number> {
+  const counts = new Map<string, number>()
+
+  for (const date of dates) {
+    counts.set(date, (counts.get(date) ?? 0) + 1)
+  }
+
+  return counts
+}
+
+function compareWorstLessons(
+  left: AdminLessonAnalyticsSnapshot,
+  right: AdminLessonAnalyticsSnapshot
+): number {
+  return (
+    left.completionRate - right.completionRate ||
+    right.dropOffRate - left.dropOffRate ||
+    left.lessonTitle.localeCompare(right.lessonTitle)
+  )
+}
+
+function compareLessonAnalytics(
+  left: AdminLessonAnalyticsSnapshot,
+  right: AdminLessonAnalyticsSnapshot,
+  sort: AdminLessonAnalyticsSort,
+  direction: AdminSortDirection
+): number {
+  const byLesson = left.lessonTitle.localeCompare(right.lessonTitle)
+  let result = 0
+
+  switch (sort) {
+    case "course":
+      result = left.courseTitle.localeCompare(right.courseTitle)
+      break
+    case "completionRate":
+      result = left.completionRate - right.completionRate
+      break
+    case "dropOff":
+      result = left.dropOffRate - right.dropOffRate
+      break
+    case "lesson":
+      result = byLesson
+      break
+  }
+
+  return (direction === "asc" ? result : -result) || byLesson
 }
 
 type AdminUserSnapshot = {
