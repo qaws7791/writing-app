@@ -1,0 +1,133 @@
+import type { ContentRepository } from "@workspace/core/content"
+import { lessonDtoSchema } from "@workspace/core/content"
+import {
+  aiFeedbackPayloadSchema,
+  createAiFeedbackCommandSchema,
+  type CreateAiFeedbackCommand,
+  type AiFeedbackResultDto,
+} from "@workspace/core/ai-feedback/ai-feedback.dto"
+import type { AiFeedbackProvider } from "@workspace/core/ai-feedback/ai-feedback.provider"
+import type { AiFeedbackRepository } from "@workspace/core/ai-feedback/ai-feedback.repository"
+import { err, ok, type Result } from "@workspace/core/result"
+
+const maxAiFeedbackAttempts = 3
+
+export type AiFeedbackServiceError =
+  | {
+      readonly kind: "lesson-not-found"
+      readonly lessonId: CreateAiFeedbackCommand["lessonId"]
+    }
+  | {
+      readonly kind: "invalid-request"
+      readonly reason:
+        | "step-feedback-not-supported"
+        | "step-not-found-in-lesson"
+      readonly stepId: CreateAiFeedbackCommand["stepId"]
+    }
+  | {
+      readonly kind: "attempt-limit-exceeded"
+      readonly remainingAttempts: 0
+    }
+  | {
+      readonly kind: "provider-failed"
+      readonly remainingAttempts: number
+    }
+
+export type AiFeedbackService = {
+  readonly createFeedback: (
+    command: CreateAiFeedbackCommand
+  ) => Promise<Result<AiFeedbackResultDto, AiFeedbackServiceError>>
+}
+
+export function createAiFeedbackService({
+  contentRepository,
+  feedbackRepository,
+  provider,
+}: {
+  readonly contentRepository: ContentRepository
+  readonly feedbackRepository: AiFeedbackRepository
+  readonly provider: AiFeedbackProvider
+}): AiFeedbackService {
+  return {
+    async createFeedback(command) {
+      const parsedCommand = createAiFeedbackCommandSchema.parse(command)
+      const lesson = await contentRepository.findLesson(parsedCommand.lessonId)
+
+      if (lesson === null) {
+        return err({
+          kind: "lesson-not-found",
+          lessonId: parsedCommand.lessonId,
+        })
+      }
+
+      const parsedLesson = lessonDtoSchema.parse(lesson)
+      const step = parsedLesson.steps.find(
+        (candidate) => candidate.id === parsedCommand.stepId
+      )
+
+      if (step === undefined) {
+        return err({
+          kind: "invalid-request",
+          reason: "step-not-found-in-lesson",
+          stepId: parsedCommand.stepId,
+        })
+      }
+
+      if (step.type !== "AI_FEEDBACK") {
+        return err({
+          kind: "invalid-request",
+          reason: "step-feedback-not-supported",
+          stepId: parsedCommand.stepId,
+        })
+      }
+
+      const completedAttempts = await feedbackRepository.countCompletedAttempts(
+        {
+          lessonId: parsedCommand.lessonId,
+          stepId: parsedCommand.stepId,
+          userId: parsedCommand.userId,
+        }
+      )
+      const remainingAttempts = Math.max(
+        0,
+        maxAiFeedbackAttempts - completedAttempts
+      )
+
+      if (remainingAttempts === 0) {
+        return err({
+          kind: "attempt-limit-exceeded",
+          remainingAttempts: 0,
+        })
+      }
+
+      const providerResult = await provider.createFeedback({
+        answer: parsedCommand.answer,
+        focus: step.focus,
+        lessonTitle: parsedLesson.title,
+      })
+
+      if (providerResult.kind === "err") {
+        return err({
+          kind: "provider-failed",
+          remainingAttempts,
+        })
+      }
+
+      const result = aiFeedbackPayloadSchema.parse(providerResult.value)
+      const attemptNumber = completedAttempts + 1
+
+      await feedbackRepository.saveAttempt({
+        ...parsedCommand,
+        attemptNumber,
+        result,
+      })
+
+      return ok({
+        ...result,
+        remainingAttempts: maxAiFeedbackAttempts - attemptNumber,
+      })
+    },
+  }
+}
+
+export { maxAiFeedbackAttempts }

@@ -779,7 +779,7 @@ Expected: API 실행 골격과 콘텐츠 조회 route가 import 가능한 상태
 - Modify: `docs/openapi/writing-app-api.json`
 - Create: `apps/web/src/lib/api/generated/writing-app-api.d.ts`
 
-- [ ] **Step 4.1: Kwep AI 코칭 응답 형태와 새 OpenAI 결과를 정렬**
+- [x] **Step 4.1: Kwep AI 코칭 응답 형태와 새 OpenAI 결과를 정렬**
 
 응답 필드:
 
@@ -1932,6 +1932,24 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md apps/api/package.json packages/core/package.json packages/db/package.json 'apps/api/src/**/*.ts' 'packages/core/src/**/*.ts' 'packages/db/src/**/*.ts'`: 통과했다.
 - `git diff --check`: 통과했다.
 - 이번 Task에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
+### 2026-06-14 Task 4 시작
+
+- Task 4는 플랫폼 API에 AI 코칭 시도 정책, OpenAI provider 경계, feedback 저장소, `/ai-feedback` route, OpenAPI 문서 baseline을 추가하는 단계로 진행한다.
+- Step 4.1은 외부 OpenAI 호출 없이 core service와 DB repository의 시도 횟수, 실패 호출 미소모, 응답 DTO 정책을 먼저 테스트로 고정한다.
+- Kwep의 총평, 잘된 점, 개선점, 다음 시도 UI를 채우는 응답 필드를 API 표준 DTO로 유지한다.
+- OpenAI 실제 호출 구현은 provider interface 뒤에 두고, 테스트에서는 deterministic fake provider를 사용한다.
+
+### 2026-06-14 Task 4 Step 4.1 완료
+
+- `packages/core/src/ai-feedback`에 AI feedback DTO, provider port, repository port, service를 추가했다.
+- 최대 3회 완료 시도 정책, provider 실패 시 시도 횟수 미소모, `AI_FEEDBACK` 스텝 전용 검증을 core service 테스트로 고정했다.
+- `packages/core/package.json`에 `./ai-feedback/*` export를 추가했다.
+- `bun --filter @workspace/core test`: 통과했다. 테스트 파일 4개, 테스트 14개가 통과했다.
+- `bun --filter @workspace/core typecheck`: 통과했다.
+- `bun --filter @workspace/core lint`: 통과했다.
+- `bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md packages/core/package.json 'packages/core/src/**/*.ts'`: 통과했다.
+- `git diff --check`: 통과했다.
 
 ## 상태 요약
 
