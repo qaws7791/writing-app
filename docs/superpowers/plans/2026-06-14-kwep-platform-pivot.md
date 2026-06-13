@@ -1080,7 +1080,7 @@ bun --filter @workspace/web test -- lesson-step-renderer lesson-experience
 
 Expected: 성공, 로딩, 재시도 가능, 한도 초과 상태가 모두 테스트된다.
 
-- [ ] **Step 7.4: 플랫폼 프론트엔드 게이트 검증**
+- [x] **Step 7.4: 플랫폼 프론트엔드 게이트 검증**
 
 ```bash
 bun --filter @workspace/web test
@@ -2189,6 +2189,21 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/web test`: 통과했다. 테스트 파일 16개, 테스트 35개가 통과했다.
 - `bun --filter @workspace/web typecheck`: 통과했다.
 - `bun --filter @workspace/web lint`: 통과했다.
+- `bun run format:check`: 통과했다.
+- `git diff --check`: 통과했다.
+- 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
+### 2026-06-14 Task 7 Step 7.4 시작
+
+- Step 7.4는 Task 7에서 추가한 플랫폼 레슨 경험이 web 테스트, 타입체크, 린트, 빌드, 포맷, diff 검증을 통과하는지 확인한다.
+- 코드 변경 없이 검증 결과를 기록하고, 실패가 있으면 원인을 분리해 수정한다.
+
+### 2026-06-14 Task 7 Step 7.4 완료
+
+- `bun --filter @workspace/web test`: 통과했다. 테스트 파일 16개, 테스트 35개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bun --filter @workspace/web build`: 통과했다. `/app/lesson`은 dynamic route로 빌드됐다.
 - `bun run format:check`: 통과했다.
 - `git diff --check`: 통과했다.
 - 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
