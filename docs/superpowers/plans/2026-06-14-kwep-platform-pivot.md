@@ -975,7 +975,7 @@ bun --filter @workspace/web test -- home-page
 
 Expected: progress 응답이 비어 있을 때와 진행 중 코스가 있을 때 모두 한국어 빈 상태와 진행 카드가 렌더링된다.
 
-- [ ] **Step 6.3: 배우기와 코스 상세을 Kwep 콘텐츠에 맞게 갱신**
+- [x] **Step 6.3: 배우기와 코스 상세을 Kwep 콘텐츠에 맞게 갱신**
 
 화면 요구사항:
 
@@ -2082,6 +2082,23 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/ui typecheck`: 통과했다.
 - `bun --filter @workspace/ui lint`: 통과했다.
 - `git diff --check`: 통과했다.
+- 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
+### 2026-06-14 Task 6 Step 6.3 시작
+
+- Step 6.3은 `/app/courses`와 `/app/courses/[id]`를 Kwep 콘텐츠 구조에 맞게 작성한다.
+- 코스 목록은 카테고리별 그룹, 제목, 설명, 레슨 수, 진행률을 표시한다.
+- 코스 상세는 코스 설명, 진행률, 유닛별 접기/펼치기, 레슨 완료/진행 가능/잠김 상태, 이어하기 버튼을 표시한다.
+
+### 2026-06-14 Task 6 Step 6.3 완료
+
+- `apps/web/src/features/courses/courses-page.tsx`에 카테고리별 코스 목록과 코스 카드 진행률을 추가했다.
+- `apps/web/src/features/courses/course-detail-page.tsx`에 코스 상세 설명, 진행률, 이어하기 버튼을 추가했다.
+- `apps/web/src/features/courses/course-curriculum.tsx`에 유닛별 접기/펼치기와 완료/진행 가능/잠김 레슨 상태를 추가했다.
+- `/app/courses`, `/app/courses/[id]` App Router page를 추가하고 list/detail/progress API 요청을 병렬로 시작하게 했다.
+- `bun --filter @workspace/web test`: 통과했다. 테스트 파일 11개, 테스트 19개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
 - 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
 
 ## 상태 요약
