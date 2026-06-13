@@ -1,84 +1,131 @@
-import Link from "next/link"
+"use client"
+
+/* eslint-disable @next/next/no-img-element, react/button-has-type */
+
+import { useRouter } from "next/navigation"
 
 import { CourseCurriculum } from "@/features/courses/course-curriculum"
+import { createCourseImageUrl } from "@/features/courses/course-image-url"
 import type {
   CourseDetail,
+  CourseLessonSummary,
   ProgressCourse,
+  ProgressLesson,
 } from "@/features/courses/course-types"
-import { buttonVariants } from "@workspace/ui/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/ui/card"
-import { Progress } from "@workspace/ui/components/ui/progress"
-import { ArrowRightIcon } from "@workspace/ui/components/icons"
+import { ChevronLeftIcon } from "@workspace/ui/components/icons"
 
 type CourseDetailPageProps = {
   readonly course: CourseDetail
   readonly progressCourse?: ProgressCourse
 }
 
+type NextLesson = CourseLessonSummary & {
+  readonly progressStatus: ProgressLesson["status"]
+}
+
 export function CourseDetailPage({
   course,
   progressCourse,
 }: CourseDetailPageProps) {
+  const router = useRouter()
+  const completedLessonCount = resolveCompletedLessonCount(
+    course,
+    progressCourse
+  )
+  const totalLessonCount = course.progress.totalLessons
   const progressPercent =
-    progressCourse?.progressPercent ?? course.progressPercent
-  const nextLesson = progressCourse?.nextLessons[0]
+    totalLessonCount === 0 ? 0 : (completedLessonCount / totalLessonCount) * 100
+  const nextLesson = resolveNextLesson(course, progressCourse)
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 px-6 py-10 sm:px-8 lg:px-10">
-        <section className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-          <div className="flex flex-col gap-4">
-            <p className="text-sm font-medium text-primary">
-              {course.category}
-            </p>
-            <h1 className="text-3xl font-semibold">{course.title}</h1>
-            <p className="max-w-3xl leading-7 text-muted-foreground">
-              {course.description}
-            </p>
+    <div className="max-w-3xl mx-auto">
+      <button
+        className="flex items-center text-muted font-bold mb-8 hover:text-charcoal btn-squish w-fit"
+        onClick={() => router.push("/app/courses")}
+      >
+        <ChevronLeftIcon className="mr-1" size={20} />
+        돌아가기
+      </button>
+      <div className="bg-surface -mx-3 md:mx-0 rounded-4xl px-5 py-8 md:p-10 mb-12">
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <img
+            alt={course.title}
+            className="w-24 h-24 md:w-32 md:h-32 rounded-2xl md:rounded-3xl object-cover shrink-0"
+            src={createCourseImageUrl(course.id, 240, 240)}
+          />
+        </div>
+        <h1
+          className="font-bold mb-4"
+          style={{ fontSize: "2.5rem", lineHeight: 1.2 }}
+        >
+          {course.title}
+        </h1>
+        <p
+          className="text-charcoal font-medium leading-relaxed mb-8"
+          style={{ fontSize: "1.125rem" }}
+        >
+          {course.description}
+        </p>
+        <div className="flex items-center gap-6 mb-10">
+          <div className="flex-1 bg-charcoal/20 h-4 rounded-full overflow-hidden">
+            <div
+              className="bg-primary h-full rounded-full transition-all"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
-          <Card>
-            <CardHeader>
-              <CardTitle as="h2">학습 진행</CardTitle>
-              <CardDescription>{progressPercent}% 완료</CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <Progress
-                aria-label={`${course.title} 진행률`}
-                value={progressPercent}
-              />
-              <p className="text-sm text-muted-foreground">
-                {course.progress.completedLessons}/
-                {course.progress.totalLessons}개 레슨 완료
-              </p>
-              {nextLesson === undefined ? (
-                <Link
-                  className={buttonVariants({ variant: "outline" })}
-                  href="/app/courses"
-                >
-                  다른 코스 보기
-                </Link>
-              ) : (
-                <Link
-                  aria-label={`${nextLesson.title} 이어하기`}
-                  className={buttonVariants()}
-                  href={`/app/lesson?lesson_id=${nextLesson.id}`}
-                >
-                  {nextLesson.title} 이어하기
-                  <ArrowRightIcon data-icon="inline-end" />
-                </Link>
-              )}
-            </CardContent>
-          </Card>
-        </section>
-
-        <CourseCurriculum course={course} progressCourse={progressCourse} />
+          <span className="font-black" style={{ fontSize: "1.125rem" }}>
+            {completedLessonCount}/{totalLessonCount}
+          </span>
+        </div>
+        {nextLesson === undefined ? null : (
+          <div>
+            <p
+              className="text-muted font-bold mb-4"
+              style={{ fontSize: "0.875rem" }}
+            >
+              {completedLessonCount > 0 ? "다음 레슨" : "첫 번째 레슨"}:{" "}
+              {nextLesson.title}
+            </p>
+            <button
+              className="w-full md:w-auto px-10 py-5 bg-charcoal text-cream font-bold rounded-full btn-squish"
+              onClick={() =>
+                router.push(`/app/lesson?lesson_id=${nextLesson.id}`)
+              }
+              style={{ fontSize: "1.125rem" }}
+            >
+              {completedLessonCount > 0 ? "이어서 학습하기" : "학습 시작하기"}
+            </button>
+          </div>
+        )}
       </div>
-    </main>
+      <CourseCurriculum course={course} progressCourse={progressCourse} />
+    </div>
   )
+}
+
+function resolveCompletedLessonCount(
+  course: CourseDetail,
+  progressCourse: ProgressCourse | undefined
+): number {
+  return (
+    progressCourse?.lessons.filter((lesson) => lesson.status === "completed")
+      .length ?? course.progress.completedLessons
+  )
+}
+
+function resolveNextLesson(
+  course: CourseDetail,
+  progressCourse: ProgressCourse | undefined
+): NextLesson | undefined {
+  const lessons = course.units.flatMap((unit) => unit.lessons)
+
+  return lessons
+    .map((lesson) => ({
+      ...lesson,
+      progressStatus:
+        progressCourse?.lessons.find(
+          (progressLesson) => progressLesson.id === lesson.id
+        )?.status ?? "locked",
+    }))
+    .find((lesson) => lesson.progressStatus === "available")
 }

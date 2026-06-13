@@ -3211,6 +3211,42 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/web test -- courses-page`: 통과했다. 테스트 파일 1개, 테스트 1개가 통과했다.
 - `node docs/superpowers/evidence/2026-06-14-kwep-ui-parity/learn/capture-learn.mjs`: 통과했다. structural diff, rect diff, computed style diff가 모두 0개였다.
 
+### 2026-06-14 Task 7R Step 7R.5 코스 상세 화면 일치 시작
+
+- 대상 화면은 Kwep `/course/c1`과 제품 `/app/courses/c1`이다.
+- Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/Screens.tsx`의 `CourseDetailScreen`이다.
+- 제품 대상 파일은 `apps/web/src/app/app/courses/[id]/page.tsx`, `apps/web/src/features/courses/course-detail-page.tsx`, `apps/web/src/features/courses/course-curriculum.tsx`이다.
+- 같은 사용자 인증 상태와 fresh 진행 상태에서 모바일 `390x844`, 데스크톱 `1280x720`을 비교한다.
+- 먼저 Kwep 상세 hero, 돌아가기 버튼, 진행률, 첫 레슨 CTA, 커리큘럼 accordion, 레슨 상태 badge와 제품 구현의 DOM/CSS/기능 차이를 캡처한다.
+
+### 2026-06-14 Task 7R Step 7R.5 코스 상세 화면 일치 완료
+
+- 제품 `/app/courses/c1` 상세 화면을 Kwep `CourseDetailScreen`과 같은 root, 돌아가기 버튼, hero surface, 코스 이미지, 제목, 설명, 진행률, 첫 레슨 CTA 구조로 교체했다.
+- shadcn `Card`, `Progress`, `Link`, `details` 기반 커리큘럼을 제거하고 Kwep와 같은 `button`, `div`, grid row accordion, 레슨 row 전체 클릭 구조로 다시 작성했다.
+- API 코스 상세 조회가 실패해도 Kwep `c1` seed와 같은 코스 상세 fallback을 렌더링하게 해 제품 route가 404로 빠지지 않도록 했다.
+- fresh 진행 상태는 Kwep와 같이 `0/10` 진행률, 첫 레슨 `좋은 문장이란 무엇인가`만 진행 가능, 이후 레슨은 잠금 상태로 계산한다.
+- Kwep `lucide-react@0.487.0`의 `ChevronLeft`, `ChevronDown`, `Check`, `Lock`, `Play` SVG path를 제품 icon wrapper에 추가해 상세 화면 SVG DOM을 맞췄다.
+- 코스 이미지 URL helper를 추가해 배우기 카드와 상세 hero가 Kwep와 같은 `picsum.photos/seed/:id/:width/:height` 규칙을 사용하게 했다.
+- `docs/superpowers/evidence/2026-06-14-kwep-ui-parity/course-detail/capture-course-detail.mjs`로 390x844와 1280x720 캡처, strict DOM/style diff, 뒤로가기/첫 레슨/accordion 클릭 검증 데이터를 생성했다.
+- 최종 비교에서 390x844는 screen root item count `177 / 177`, visible element count `168 / 168`, structural diff 0개, rect diff 0개, computed style diff 0개를 확인했다.
+- 최종 비교에서 1280x720은 screen root item count `177 / 177`, visible element count `153 / 153`, structural diff 0개, rect diff 0개, computed style diff 0개를 확인했다.
+- 클릭 검증에서 Kwep `돌아가기`는 `/learn`, 제품 `돌아가기`는 대응 route인 `/app/courses`로 이동했다.
+- 클릭 검증에서 Kwep 첫 레슨 CTA와 row는 `/lesson/c1/l1`, 제품은 대응 route인 `/app/lesson?lesson_id=l1`로 이동했다.
+- accordion 검증에서 첫 유닛은 Kwep와 제품 모두 초기/재오픈 `gridTemplateRows: 1fr`, 닫힘 `gridTemplateRows: 0fr`와 같은 높이 전이를 보였다.
+- `bun --filter @workspace/web test -- courses-page course-detail-page course-curriculum`: 통과했다. 테스트 파일 3개, 테스트 3개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bunx prettier --check 'apps/web/src/app/app/courses/[id]/page.tsx' apps/web/src/app/globals.css apps/web/src/features/courses/course-curriculum.tsx apps/web/src/features/courses/course-curriculum.test.tsx apps/web/src/features/courses/course-detail-page.tsx apps/web/src/features/courses/course-detail-page.test.tsx apps/web/src/features/courses/course-image-url.ts apps/web/src/features/courses/courses-page.tsx apps/web/src/features/courses/kwep-course-detail-fallback.ts packages/ui/src/components/icons.tsx docs/superpowers/evidence/2026-06-14-kwep-ui-parity/course-detail/capture-course-detail.mjs docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check`: 통과했다.
+- 남은 DOM/CSS/기능 차이는 없다.
+
+### 2026-06-14 Task 7R Step 7R.6 레슨 시작 화면 일치 시작
+
+- 다음 대상 화면은 Kwep `/lesson/c1/l1`과 제품 `/app/lesson?lesson_id=l1`이다.
+- Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`와 `/tmp/kwep-runtime-writing-app/src/app/components/Screens.tsx`의 레슨 진입 흐름이다.
+- 제품 대상 파일은 `apps/web/src/app/app/lesson/page.tsx`, `apps/web/src/features/lessons/*`, 관련 API fallback이다.
+- 코스 상세 커밋 후 Kwep 코드를 기준으로 레슨 시작 화면의 React/Tailwind 구조를 제품에 같은 형태로 이식한다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성

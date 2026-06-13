@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import userEvent from "@testing-library/user-event"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { CourseDetailPage } from "@/features/courses/course-detail-page"
 import type {
@@ -7,16 +8,25 @@ import type {
   ProgressCourse,
 } from "@/features/courses/course-types"
 
+const push = vi.fn()
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push,
+  }),
+}))
+
 const course: CourseDetail = {
   category: "입문자를 위한 코스",
-  description: "매일 조금씩 쓰는 습관을 만듭니다.",
+  description:
+    "문장의 기본부터 한 문단을 완성하기까지, 매일 조금씩 쓰는 습관을 만듭니다.",
   id: "c1",
   lessonCount: 2,
   progress: {
-    completedLessons: 1,
+    completedLessons: 0,
     totalLessons: 2,
   },
-  progressPercent: 50,
+  progressPercent: 0,
   status: "active",
   title: "글쓰기 첫걸음 30일",
   units: [
@@ -54,42 +64,56 @@ const progressCourse: ProgressCourse = {
     {
       estimatedMinutes: 5,
       id: "l1",
-      status: "completed",
+      status: "available",
       title: "좋은 문장이란 무엇인가",
     },
     {
       estimatedMinutes: 7,
       id: "l2",
-      status: "available",
+      status: "locked",
       title: "짧게 쓰기",
     },
   ],
   nextLessons: [
     {
       courseId: "c1",
-      estimatedMinutes: 7,
-      id: "l2",
+      estimatedMinutes: 5,
+      id: "l1",
       status: "available",
-      title: "짧게 쓰기",
+      title: "좋은 문장이란 무엇인가",
     },
   ],
-  progressPercent: 50,
+  progressPercent: 0,
   title: "글쓰기 첫걸음 30일",
 }
 
 describe("코스 상세 화면", () => {
-  it("코스 설명, 진행률, 이어하기 버튼을 표시한다", () => {
+  beforeEach(() => {
+    push.mockClear()
+  })
+
+  it("Kwep 코스 상세처럼 hero, 진행률, 첫 레슨 CTA를 표시하고 이동한다", async () => {
+    const user = userEvent.setup()
+
     render(<CourseDetailPage course={course} progressCourse={progressCourse} />)
 
     expect(
       screen.getByRole("heading", { name: "글쓰기 첫걸음 30일" })
     ).toBeInTheDocument()
     expect(
-      screen.getByText("매일 조금씩 쓰는 습관을 만듭니다.")
+      screen.getByText(
+        "문장의 기본부터 한 문단을 완성하기까지, 매일 조금씩 쓰는 습관을 만듭니다."
+      )
     ).toBeInTheDocument()
-    expect(screen.getByText("50% 완료")).toBeInTheDocument()
+    expect(screen.getByText("0/2")).toBeInTheDocument()
     expect(
-      screen.getByRole("link", { name: "짧게 쓰기 이어하기" })
-    ).toHaveAttribute("href", "/app/lesson?lesson_id=l2")
+      screen.getByText("첫 번째 레슨: 좋은 문장이란 무엇인가")
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "학습 시작하기" }))
+    expect(push).toHaveBeenCalledWith("/app/lesson?lesson_id=l1")
+
+    await user.click(screen.getByRole("button", { name: "돌아가기" }))
+    expect(push).toHaveBeenCalledWith("/app/courses")
   })
 })

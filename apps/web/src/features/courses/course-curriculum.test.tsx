@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { CourseCurriculum } from "@/features/courses/course-curriculum"
 import type {
@@ -8,9 +8,18 @@ import type {
   ProgressCourse,
 } from "@/features/courses/course-types"
 
+const push = vi.fn()
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push,
+  }),
+}))
+
 const course: CourseDetail = {
   category: "입문자를 위한 코스",
-  description: "매일 조금씩 쓰는 습관을 만듭니다.",
+  description:
+    "문장의 기본부터 한 문단을 완성하기까지, 매일 조금씩 쓰는 습관을 만듭니다.",
   id: "c1",
   lessonCount: 3,
   progress: {
@@ -71,13 +80,13 @@ const progressCourse: ProgressCourse = {
     {
       estimatedMinutes: 5,
       id: "l1",
-      status: "completed",
+      status: "available",
       title: "좋은 문장이란 무엇인가",
     },
     {
       estimatedMinutes: 7,
       id: "l2",
-      status: "available",
+      status: "locked",
       title: "짧게 쓰기",
     },
     {
@@ -90,10 +99,10 @@ const progressCourse: ProgressCourse = {
   nextLessons: [
     {
       courseId: "c1",
-      estimatedMinutes: 7,
-      id: "l2",
+      estimatedMinutes: 5,
+      id: "l1",
       status: "available",
-      title: "짧게 쓰기",
+      title: "좋은 문장이란 무엇인가",
     },
   ],
   progressPercent: 33,
@@ -101,24 +110,52 @@ const progressCourse: ProgressCourse = {
 }
 
 describe("코스 커리큘럼", () => {
-  it("레슨 상태와 유닛 접기/펼치기를 제공한다", async () => {
+  beforeEach(() => {
+    push.mockClear()
+  })
+
+  it("Kwep 커리큘럼처럼 유닛을 접고 펼치며 진행 가능한 레슨만 이동한다", async () => {
     const user = userEvent.setup()
 
     render(<CourseCurriculum course={course} progressCourse={progressCourse} />)
 
-    const firstUnit = screen.getByRole("group", { name: "문장의 기본기" })
-    expect(within(firstUnit).getByText("완료")).toBeInTheDocument()
-    expect(within(firstUnit).getByText("진행 가능")).toBeInTheDocument()
     expect(
-      within(firstUnit).getByRole("link", { name: "짧게 쓰기 시작" })
-    ).toHaveAttribute("href", "/app/lesson?lesson_id=l2")
+      screen.getByRole("heading", { level: 3, name: "커리큘럼" })
+    ).toBeInTheDocument()
+
+    const firstUnitToggle = screen.getByRole("button", {
+      name: /문장의 기본기\s*2개 레슨/,
+    })
+    const firstUnitPanel = firstUnitToggle.nextElementSibling as HTMLElement
+    expect(firstUnitPanel).toHaveStyle({ gridTemplateRows: "1fr" })
+
+    await user.click(firstUnitToggle)
+    expect(firstUnitPanel).toHaveStyle({ gridTemplateRows: "0fr" })
+
+    await user.click(firstUnitToggle)
+    expect(firstUnitPanel).toHaveStyle({ gridTemplateRows: "1fr" })
+
+    const firstLessonRow = screen
+      .getByText("좋은 문장이란 무엇인가")
+      .closest(".cursor-pointer")
+    expect(firstLessonRow).not.toBeNull()
+    await user.click(firstLessonRow as HTMLElement)
+    expect(push).toHaveBeenCalledWith("/app/lesson?lesson_id=l1")
+
+    const lockedLessonRow = screen.getByText("짧게 쓰기").closest("div")
+      ?.parentElement?.parentElement
+    expect(lockedLessonRow).toHaveClass("cursor-not-allowed")
+    await user.click(lockedLessonRow as HTMLElement)
+    expect(push).toHaveBeenCalledTimes(1)
 
     const secondUnitToggle = screen.getByRole("button", {
-      name: "문단의 흐름",
+      name: /문단의 흐름\s*1개 레슨/,
     })
-    await user.click(secondUnitToggle)
+    const secondUnitPanel = secondUnitToggle.nextElementSibling as HTMLElement
+    expect(secondUnitPanel).toHaveStyle({ gridTemplateRows: "0fr" })
 
-    const secondUnit = screen.getByRole("group", { name: "문단의 흐름" })
-    expect(within(secondUnit).getByText("잠김")).toBeInTheDocument()
+    await user.click(secondUnitToggle)
+    expect(secondUnitPanel).toHaveStyle({ gridTemplateRows: "1fr" })
+    expect(within(secondUnitPanel).getByText("문단 만들기")).toBeInTheDocument()
   })
 })

@@ -1,4 +1,10 @@
-import Link from "next/link"
+"use client"
+
+/* eslint-disable react/button-has-type */
+
+import { useState } from "react"
+
+import { useRouter } from "next/navigation"
 
 import type {
   CourseDetail,
@@ -7,86 +13,132 @@ import type {
   LessonProgressStatus,
   ProgressCourse,
 } from "@/features/courses/course-types"
-import { buttonVariants } from "@workspace/ui/components/ui/button"
-import { ArrowRightIcon, CheckCircleIcon } from "@workspace/ui/components/icons"
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  LockIcon,
+  PlayIcon,
+} from "@workspace/ui/components/icons"
 
 type CourseCurriculumProps = {
   readonly course: CourseDetail
   readonly progressCourse?: ProgressCourse
 }
 
-const statusLabel = {
-  available: "진행 가능",
-  completed: "완료",
-  locked: "잠김",
-} as const satisfies Record<LessonProgressStatus, string>
-
 export function CourseCurriculum({
   course,
   progressCourse,
 }: CourseCurriculumProps) {
+  const [openUnits, setOpenUnits] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(
+      course.units.map((unit, index) => [unit.id, index === 0])
+    )
+  )
+
   return (
-    <section aria-labelledby="course-curriculum-heading">
-      <div className="mb-5 flex flex-col gap-1">
-        <h2 className="text-2xl font-semibold" id="course-curriculum-heading">
-          커리큘럼
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          유닛별 레슨 상태를 확인하고 진행 가능한 레슨으로 이동하세요.
-        </p>
-      </div>
-      <div className="flex flex-col gap-4">
+    <>
+      <h3 className="font-bold mb-2" style={{ fontSize: "1.5rem" }}>
+        커리큘럼
+      </h3>
+      <div>
         {course.units.map((unit, unitIndex) => (
           <CurriculumUnit
+            isOpen={openUnits[unit.id] ?? false}
             key={unit.id}
-            initiallyOpen={unitIndex === 0}
+            onToggle={() =>
+              setOpenUnits((current) => ({
+                ...current,
+                [unit.id]: !(current[unit.id] ?? false),
+              }))
+            }
             progressCourse={progressCourse}
             unit={unit}
+            unitIndex={unitIndex}
           />
         ))}
       </div>
-    </section>
+    </>
   )
 }
 
 function CurriculumUnit({
-  initiallyOpen,
+  isOpen,
+  onToggle,
   progressCourse,
   unit,
+  unitIndex,
 }: {
-  readonly initiallyOpen: boolean
+  readonly isOpen: boolean
+  readonly onToggle: () => void
   readonly progressCourse?: ProgressCourse
   readonly unit: CourseUnit
+  readonly unitIndex: number
 }) {
+  const unitDone = unit.lessons.every(
+    (lesson) => resolveLessonStatus(progressCourse, lesson.id) === "completed"
+  )
+
   return (
-    <details
-      aria-labelledby={`course-unit-${unit.id}`}
-      className="rounded-lg border border-border bg-card p-4 text-card-foreground"
-      open={initiallyOpen}
-      role="group"
-    >
-      <summary
-        aria-label={unit.title}
-        className="flex cursor-pointer list-none items-center justify-between gap-4"
-        role="button"
+    <div className="border-b border-charcoal/10">
+      <button
+        className="w-full py-5 flex items-center justify-between text-left"
+        onClick={onToggle}
       >
-        <h3 className="text-lg font-semibold" id={`course-unit-${unit.id}`}>
-          {unit.title}
-        </h3>
-        <span className="text-sm text-muted-foreground">
-          {unit.lessons.length}개 레슨
-        </span>
-      </summary>
-      <ol className="mt-4 flex flex-col gap-3">
-        {unit.lessons.map((lesson) => (
-          <CurriculumLesson
-            key={lesson.id}
-            lesson={lesson}
-            status={resolveLessonStatus(progressCourse, lesson.id)}
-          />
-        ))}
-      </ol>
-    </details>
+        <div className="flex items-center gap-4">
+          <div
+            className={cx(
+              "w-10 h-10 rounded-full flex justify-center items-center font-black shrink-0",
+              unitDone
+                ? "bg-mint-light text-charcoal"
+                : "bg-charcoal/15 text-charcoal"
+            )}
+          >
+            {unitDone ? (
+              <CheckIcon size={18} />
+            ) : (
+              <span style={{ fontSize: "0.875rem" }}>{unitIndex + 1}</span>
+            )}
+          </div>
+          <div>
+            <div className="font-bold" style={{ fontSize: "1.125rem" }}>
+              {unit.title}
+            </div>
+            <div
+              className="text-muted font-medium mt-1"
+              style={{ fontSize: "0.8125rem" }}
+            >
+              {unit.lessons.length}개 레슨
+            </div>
+          </div>
+        </div>
+        <ChevronDownIcon
+          className="transition-transform duration-300 text-muted"
+          size={22}
+          style={{
+            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+          }}
+        />
+      </button>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: isOpen ? "1fr" : "0fr",
+          transition: "grid-template-rows 280ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
+      >
+        <div className="overflow-hidden">
+          <div className="pb-4">
+            {unit.lessons.map((lesson) => (
+              <CurriculumLesson
+                key={lesson.id}
+                lesson={lesson}
+                status={resolveLessonStatus(progressCourse, lesson.id)}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -97,41 +149,59 @@ function CurriculumLesson({
   readonly lesson: CourseLessonSummary
   readonly status: LessonProgressStatus
 }) {
-  const isAvailable = status === "available"
+  const router = useRouter()
+  const done = status === "completed"
+  const locked = status === "locked"
 
   return (
-    <li className="flex flex-col gap-3 rounded-lg border border-border px-4 py-3 md:flex-row md:items-center md:justify-between">
-      <div className="flex min-w-0 flex-col gap-1">
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="font-medium">{lesson.title}</span>
-          <span className="rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-            {statusLabel[status]}
-          </span>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          {lesson.estimatedMinutes}분
-          {lesson.category === null ? "" : ` · ${lesson.category}`}
-        </p>
-      </div>
-      {isAvailable ? (
-        <Link
-          className={buttonVariants({ size: "sm" })}
-          href={`/app/lesson?lesson_id=${lesson.id}`}
-        >
-          {lesson.title} 시작
-          <ArrowRightIcon data-icon="inline-end" />
-        </Link>
-      ) : status === "completed" ? (
-        <span
-          aria-label="완료됨"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground"
-        >
-          <CheckCircleIcon />
-        </span>
-      ) : (
-        <span aria-hidden="true" className="hidden md:block" />
+    <div
+      className={cx(
+        "flex items-center gap-3 py-3 pl-6 -mr-2 pr-2 rounded-2xl transition-colors",
+        locked
+          ? "cursor-not-allowed"
+          : "cursor-pointer hover:bg-charcoal/[0.04]"
       )}
-    </li>
+      onClick={() => {
+        if (!locked) {
+          router.push(`/app/lesson?lesson_id=${lesson.id}`)
+        }
+      }}
+    >
+      <div className="w-7 shrink-0 flex justify-center">
+        <div
+          className={cx(
+            "w-6 h-6 rounded-full flex justify-center items-center",
+            done
+              ? "bg-mint-light text-charcoal"
+              : locked
+                ? "bg-charcoal/10 text-charcoal/40"
+                : "bg-charcoal/10 text-charcoal"
+          )}
+        >
+          {done ? (
+            <CheckIcon size={10} />
+          ) : locked ? (
+            <LockIcon size={10} />
+          ) : (
+            <PlayIcon fill="currentColor" size={9} />
+          )}
+        </div>
+      </div>
+      <div className="flex-1">
+        <div
+          className={cx("font-bold", locked ? "text-muted" : "")}
+          style={{ fontSize: "0.9375rem" }}
+        >
+          {lesson.title}
+        </div>
+        <div
+          className={cx("font-medium", locked ? "text-muted" : "text-muted")}
+          style={{ fontSize: "0.8125rem" }}
+        >
+          {lesson.estimatedMinutes}분
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -143,4 +213,8 @@ function resolveLessonStatus(
     progressCourse?.lessons.find((lesson) => lesson.id === lessonId)?.status ??
     "locked"
   )
+}
+
+function cx(...classes: Array<false | null | string | undefined>): string {
+  return classes.filter(Boolean).join(" ")
 }

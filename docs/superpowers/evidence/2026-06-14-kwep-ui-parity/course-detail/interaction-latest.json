@@ -1,0 +1,55 @@
+{
+  "courseDetail": {
+    "expected": {
+      "kwep": {
+        "backPath": "/learn",
+        "firstLessonPath": "/lesson/c1/l1"
+      },
+      "product": {
+        "backPath": "/app/courses",
+        "firstLessonPath": "/app/lesson",
+        "firstLessonSearch": "?lesson_id=l1"
+      }
+    },
+    "result": {
+      "kwep": {
+        "backPath": "/learn",
+        "ctaPath": "/lesson/c1/l1",
+        "ctaSearch": "",
+        "firstLessonPath": "/lesson/c1/l1",
+        "firstLessonSearch": "",
+        "firstUnitClosed": {
+          "height": 0,
+          "rows": "0fr"
+        },
+        "firstUnitInitial": {
+          "height": 280,
+          "rows": "1fr"
+        },
+        "firstUnitOpen": {
+          "height": 280,
+          "rows": "1fr"
+        }
+      },
+      "product": {
+        "backPath": "/app/courses",
+        "ctaPath": "/app/lesson",
+        "ctaSearch": "?lesson_id=l1",
+        "firstLessonPath": "/app/lesson",
+        "firstLessonSearch": "?lesson_id=l1",
+        "firstUnitClosed": {
+          "height": 0,
+          "rows": "0fr"
+        },
+        "firstUnitInitial": {
+          "height": 280,
+          "rows": "1fr"
+        },
+        "firstUnitOpen": {
+          "height": 280,
+          "rows": "1fr"
+        }
+      }
+    }
+  }
+}

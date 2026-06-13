@@ -6,6 +6,7 @@ import { useState } from "react"
 
 import { useRouter } from "next/navigation"
 
+import { createCourseImageUrl } from "@/features/courses/course-image-url"
 import type { CourseSummary } from "@/features/courses/course-types"
 
 type CoursesPageProps = {
@@ -112,7 +113,7 @@ export function CoursesPage({ courses }: CoursesPageProps) {
                 <img
                   alt={course.title}
                   className="w-full h-full object-cover"
-                  src={courseImageUrl(course.id, 600, 300)}
+                  src={createCourseImageUrl(course.id, 600, 300)}
                 />
               </div>
               <div className="p-4 md:p-6 flex-1 flex flex-col min-w-0">
@@ -143,8 +144,4 @@ export function CoursesPage({ courses }: CoursesPageProps) {
       </div>
     </div>
   )
-}
-
-function courseImageUrl(id: string, width: number, height: number): string {
-  return `https://picsum.photos/seed/${id}/${width}/${height}`
 }
