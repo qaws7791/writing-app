@@ -24,6 +24,7 @@
 ## 공통 기술
 
 - frontend: Next.js 16 App Router
+- UI: React 19, Tailwind CSS 4, `@workspace/ui`
 - backend: Hono, OpenAPI 3.1
 - auth: Better Auth
 - database: Drizzle with SQLite
@@ -40,10 +41,14 @@
 - auth: Better Auth 기반 Google 단일 로그인
 - backend: `apps/api`
 - 주요 기능:
-  - 공개 콘텐츠 조회
+  - 공개 랜딩과 Google 로그인
+  - 학습 홈과 연속 학습일 표시
+  - 공개 콘텐츠 조회와 코스 카테고리 탐색
+  - 코스 상세, 유닛별 커리큘럼, 레슨 잠금 상태 표시
   - 학습 진행 저장
   - 레슨 답변 저장
   - OpenAI 기반 AI 피드백
+  - 프로필과 전체 진도 표시
 
 ### api
 
@@ -56,6 +61,7 @@
   - 콘텐츠 조회
   - 학습자 인증과 세션 조회
   - 학습 진행과 답변 저장
+  - 프로필과 연속 학습일 계산
   - AI 피드백 생성과 결과 저장
 
 ### admin
@@ -66,9 +72,11 @@
 - auth: Better Auth 기반 ID/password
 - backend: `apps/admin-api`
 - layout: 왼쪽 사이드바 기반 대시보드
-- 1차 기능:
-  - 코스-챕터-레슨 계층형 조회
-  - 사용자 기본 정보 조회
+- 주요 기능:
+  - 대시보드 지표와 최근 활동 조회
+  - 콘텐츠 검색, 생성, 보관, 편집
+  - 사용자 검색, 상태 변경, 삭제 요청 처리
+  - 분석과 운영 설정 관리
 
 ### admin-api
 
@@ -79,8 +87,9 @@
 - database: 플랫폼과 같은 SQLite 파일을 사용하되 관리자 인증 테이블은 `admin_*`로 분리한다.
 - 주요 기능:
   - 관리자 인증
-  - 코스-챕터-레슨 계층형 조회
-  - 사용자 기본 정보 조회
+  - 코스-유닛-레슨-스텝 계층형 조회와 편집
+  - 사용자 목록, 상세, 상태 변경, 삭제 상태 전환
+  - 대시보드, 분석, 운영 설정
   - 최초 관리자 계정 seed
 
 ### storybook
@@ -114,6 +123,14 @@
 학습자 플랫폼과 어드민은 프론트엔드와 백엔드를 모두 별도 앱으로 실행한다. `apps/admin`과 `apps/admin-api`가 실행되지 않아도 `apps/web`과 `apps/api`의 학습자 기능은 정상 동작해야 한다.
 
 공유 DB는 사용하지만 인증 테이블은 플랫폼용 `user`, `session`, `account`, `verification`과 관리자용 `admin_user`, `admin_session`, `admin_account`, `admin_verification`으로 분리한다.
+
+## Kwep 피벗 경계
+
+`Kwep/`는 요구사항과 seed 콘텐츠를 읽는 기준으로만 둔다. 제품 런타임은 현재 monorepo의 Next.js, Hono, Better Auth, Drizzle, OpenAPI 경계를 사용하며 `Kwep` 구현 파일을 import하지 않는다.
+
+콘텐츠 구조는 `Course -> Unit -> Lesson -> Step`으로 표현한다. Kwep seed는 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 새 DB baseline seed로 제공한다.
+
+DB migration은 기존 schema를 누적 보정하지 않고 `0000-kwep-baseline.sql` 기준으로 재정의한다. 운영 데이터 이전이 필요해지는 시점에는 별도 데이터 이전 계획을 작성한다.
 
 ## 배포
 

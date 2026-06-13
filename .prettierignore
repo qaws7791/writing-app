@@ -24,6 +24,7 @@ coverage
 # Vercel and build outputs
 .vercel
 .next/
+apps/*/next-env.d.ts
 out/
 build
 dist
@@ -42,7 +43,7 @@ docs/.obsidian/
 # Agent and prototype workspaces
 .agent
 .agents
-prototype/
+Kwep/
 
 # Local database and credentials
 data

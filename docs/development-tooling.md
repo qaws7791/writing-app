@@ -91,4 +91,4 @@
 ## 런타임
 
 - Bun은 루트 `packageManager` 필드에 선언된 `1.3.10`을 사용한다.
-- Node.js는 루트 `engines` 필드에 선언된 `20.x`를 사용한다.
+- Node.js는 루트 `engines` 필드에 선언된 `24.x`를 사용한다.

@@ -4,7 +4,7 @@
 
 백엔드는 모듈러 모놀리스로 구성한다. 도메인 규칙, 데이터 접근, 로깅, 프로세스 조립 책임을 패키지 단위로 분리하고, 런타임은 학습자용 API와 관리자용 API를 별도 Hono 앱으로 실행한다.
 
-현재 학습자 API는 공개 콘텐츠 조회, Better Auth 기반 Google 로그인, 학습 진행/답변 저장, OpenAI 기반 AI 피드백을 포함한다. 관리자 API는 관리자 인증, 콘텐츠 계층 조회, 사용자 기본 정보 조회, 현재 커리큘럼 직접 편집을 제공한다.
+현재 학습자 API는 공개 콘텐츠 조회, Better Auth 기반 Google 로그인, 학습 진행/답변 저장, 프로필과 연속 학습일 계산, OpenAI 기반 AI 코칭을 포함한다. 관리자 API는 관리자 인증, 대시보드, 콘텐츠 계층 조회와 편집, 사용자 운영, 분석, 운영 설정을 제공한다.
 
 사용자 또는 관리자가 받을 수 있는 API 오류 응답의 `message`는 한국어로 작성한다. 상세 원칙은 `docs/text-localization-policy.md`를 따른다.
 
@@ -36,20 +36,20 @@
 API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL`의 `file:` prefix 제거, `CORS_ORIGIN` 분리 같은 앱별 의미 변환은 `apps/api/src/env.ts`에 유지한다.
 SQLite 연결은 `@workspace/db`의 공통 설정을 사용하며, WAL 모드, 외래키 검사, `busy_timeout`, 체크포인트, 캐시 관련 PRAGMA를 마이그레이션 실행 전에 적용한다.
 
-| 변수                   | 필수 여부 | 기본값 또는 예시                              | 용도                                                                  |
-| ---------------------- | --------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| `BETTER_AUTH_SECRET`   | 필수      | `replace-with-local-auth-secret`              | Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                   |
-| `BETTER_AUTH_URL`      | 필수      | `http://localhost:4000`                       | Better Auth가 콜백과 인증 URL을 계산할 때 사용하는 API 기준 URL       |
+| 변수                        | 필수 여부 | 기본값 또는 예시                              | 용도                                                                                            |
+| --------------------------- | --------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`        | 필수      | `replace-with-local-auth-secret`              | Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                                             |
+| `BETTER_AUTH_URL`           | 필수      | `http://localhost:4000`                       | Better Auth가 콜백과 인증 URL을 계산할 때 사용하는 API 기준 URL                                 |
 | `BETTER_AUTH_COOKIE_DOMAIN` | 선택      | 비움 또는 `example.com`                       | 웹과 API가 같은 parent domain의 서로 다른 서브도메인일 때 Better Auth 세션 쿠키를 공유할 domain |
-| `CORS_ORIGIN`          | 선택      | `http://localhost:3000,http://localhost:3001` | 자격 증명 포함 요청을 허용할 프론트엔드 origin 목록                   |
-| `DATABASE_URL`         | 필수      | `file:../../data/api.sqlite`                  | 저장소 루트 `data/api.sqlite` SQLite 데이터베이스 위치                |
-| `GOOGLE_CLIENT_ID`     | 필수      | `replace-with-google-client-id`               | Google OAuth 클라이언트 ID                                            |
-| `GOOGLE_CLIENT_SECRET` | 필수      | `replace-with-google-client-secret`           | Google OAuth 클라이언트 secret                                        |
-| `LOG_LEVEL`            | 선택      | `info`                                        | Pino 로그 레벨                                                        |
-| `NODE_ENV`             | 선택      | `development`                                 | 실행 환경 이름                                                        |
-| `OPENAI_API_KEY`       | 필수      | `replace-with-openai-api-key`                 | AI 피드백 provider가 OpenAI Responses API를 호출할 때 사용하는 API 키 |
-| `OPENAI_MODEL`         | 필수      | `gpt-5-mini`                                  | AI 피드백 생성에 사용할 OpenAI 모델 이름                              |
-| `PORT`                 | 선택      | `4000`                                        | API 서버가 수신할 포트                                                |
+| `CORS_ORIGIN`               | 선택      | `http://localhost:3000,http://localhost:3001` | 자격 증명 포함 요청을 허용할 프론트엔드 origin 목록                                             |
+| `DATABASE_URL`              | 필수      | `file:../../data/api.sqlite`                  | 저장소 루트 `data/api.sqlite` SQLite 데이터베이스 위치                                          |
+| `GOOGLE_CLIENT_ID`          | 필수      | `replace-with-google-client-id`               | Google OAuth 클라이언트 ID                                                                      |
+| `GOOGLE_CLIENT_SECRET`      | 필수      | `replace-with-google-client-secret`           | Google OAuth 클라이언트 secret                                                                  |
+| `LOG_LEVEL`                 | 선택      | `info`                                        | Pino 로그 레벨                                                                                  |
+| `NODE_ENV`                  | 선택      | `development`                                 | 실행 환경 이름                                                                                  |
+| `OPENAI_API_KEY`            | 필수      | `replace-with-openai-api-key`                 | AI 피드백 provider가 OpenAI Responses API를 호출할 때 사용하는 API 키                           |
+| `OPENAI_MODEL`              | 필수      | `gpt-5-mini`                                  | AI 피드백 생성에 사용할 OpenAI 모델 이름                                                        |
+| `PORT`                      | 선택      | `4000`                                        | API 서버가 수신할 포트                                                                          |
 
 ```bash
 bun --filter @workspace/api dev
@@ -64,33 +64,46 @@ bun --filter @workspace/api dev
 - `GET /health`
 - `GET /openapi.json`
 - `GET /api/auth/*`, `POST /api/auth/*`
+- `GET /session`
+- `GET /dashboard`
 - `GET /courses?page=...&pageSize=...&query=...`
-- `GET /courses?include=chapters,lessons`
+- `POST /courses`
+- `GET /courses?include=units,lessons`
 - `GET /courses/:courseId`
 - `GET /courses/:courseId/editor`
 - `PUT /courses/:courseId/editor`
 - `GET /courses/:courseId/lessons/:lessonId`
-- `GET /users`
+- `DELETE /courses/:courseId`
+- `GET /users?page=...&pageSize=...&query=...&status=...&sort=...`
+- `GET /users/:userId`
+- `PATCH /users/:userId/status`
+- `DELETE /users/:userId`
+- `GET /analytics?days=30`
+- `GET /analytics/lessons?page=...&pageSize=...&query=...`
+- `GET /settings`
+- `PUT /settings/notice`
+- `PUT /settings/legal`
+- `POST /settings/content-reset`
 
 관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다. `admin_` 테이블 prefix와 Better Auth 컬럼명 보존 규칙은 `docs/schema-conventions.md`를 따른다. Next.js 어드민 앱은 `/api/auth/*`를 프록시하지 않고 어드민 Hono API의 인증 endpoint를 직접 호출한다.
 
 어드민 API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL`의 `file:` prefix 제거, `ADMIN_CORS_ORIGIN` 분리, 기본 포트 `4001` 같은 앱별 의미 변환은 `apps/admin-api/src/env.ts`에 유지한다.
 SQLite 연결은 학습자 API와 같은 `@workspace/db` 공통 설정을 사용한다. 따라서 어드민 API도 마이그레이션과 런타임 쿼리 전에 WAL 모드, 외래키 검사, `busy_timeout`, 체크포인트, 캐시 관련 PRAGMA를 적용한다.
 
-| 변수                        | 필수 여부 | 기본값 또는 예시                    | 용도                                                                      |
-| --------------------------- | --------- | ----------------------------------- | ------------------------------------------------------------------------- |
-| `ADMIN_BETTER_AUTH_SECRET`  | 필수      | `replace-with-admin-auth-secret`    | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                |
-| `ADMIN_BETTER_AUTH_URL`     | 필수      | `http://localhost:4001`             | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL           |
+| 변수                              | 필수 여부 | 기본값 또는 예시                    | 용도                                                                                                     |
+| --------------------------------- | --------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `ADMIN_BETTER_AUTH_SECRET`        | 필수      | `replace-with-admin-auth-secret`    | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                                               |
+| `ADMIN_BETTER_AUTH_URL`           | 필수      | `http://localhost:4001`             | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL                                          |
 | `ADMIN_BETTER_AUTH_COOKIE_DOMAIN` | 선택      | 비움 또는 `example.com`             | 어드민 웹과 어드민 API가 같은 parent domain의 서로 다른 서브도메인일 때 관리자 세션 쿠키를 공유할 domain |
-| `ADMIN_CORS_ORIGIN`         | 선택      | `http://localhost:3001`             | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin                     |
-| `DATABASE_URL`              | 필수      | `file:../../data/api.sqlite`        | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치 |
-| `LOG_LEVEL`                 | 선택      | `info`                              | Pino 로그 레벨                                                            |
-| `NODE_ENV`                  | 선택      | `development`                       | 실행 환경 이름                                                            |
-| `PORT`                      | 선택      | `4001`                              | 어드민 API 서버가 수신할 포트                                             |
-| `ADMIN_SEED_EMAIL`          | 시드 필수 | `admin@example.com`                 | 최초 관리자 계정 시드에 사용할 이메일                                     |
-| `ADMIN_SEED_PASSWORD`       | 시드 필수 | `replace-with-local-admin-password` | 최초 관리자 계정 시드에 사용할 비밀번호                                   |
-| `ADMIN_SEED_NAME`           | 시드 선택 | `관리자`                            | 최초 관리자 계정 시드에 사용할 이름                                       |
-| `ADMIN_SEED_RESET_PASSWORD` | 시드 선택 | `false`                             | `true`일 때 기존 관리자 credential 비밀번호를 시드 비밀번호로 갱신        |
+| `ADMIN_CORS_ORIGIN`               | 선택      | `http://localhost:3001`             | 자격 증명 포함 요청을 허용할 어드민 프론트엔드 origin                                                    |
+| `DATABASE_URL`                    | 필수      | `file:../../data/api.sqlite`        | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치                                |
+| `LOG_LEVEL`                       | 선택      | `info`                              | Pino 로그 레벨                                                                                           |
+| `NODE_ENV`                        | 선택      | `development`                       | 실행 환경 이름                                                                                           |
+| `PORT`                            | 선택      | `4001`                              | 어드민 API 서버가 수신할 포트                                                                            |
+| `ADMIN_SEED_EMAIL`                | 시드 필수 | `admin@example.com`                 | 최초 관리자 계정 시드에 사용할 이메일                                                                    |
+| `ADMIN_SEED_PASSWORD`             | 시드 필수 | `replace-with-local-admin-password` | 최초 관리자 계정 시드에 사용할 비밀번호                                                                  |
+| `ADMIN_SEED_NAME`                 | 시드 선택 | `관리자`                            | 최초 관리자 계정 시드에 사용할 이름                                                                      |
+| `ADMIN_SEED_RESET_PASSWORD`       | 시드 선택 | `false`                             | `true`일 때 기존 관리자 credential 비밀번호를 시드 비밀번호로 갱신                                       |
 
 ```bash
 bun --filter @workspace/admin-api dev
@@ -108,13 +121,13 @@ bun --filter @workspace/admin-api seed:admin
 
 ## 콘텐츠 변경 정책
 
-콘텐츠 변경 정책의 단일 출처는 `DOMAIN.md`다. 현재 구현은 단일 현재 커리큘럼만 운영한다. 공개 콘텐츠 목록/검색/상세 조회는 `course_chapters`, `course_lessons`, `lesson_steps`의 active 상태를 기준으로 계산한다.
+콘텐츠 변경 정책의 단일 출처는 `DOMAIN.md`다. 현재 구현은 단일 현재 커리큘럼만 운영한다. 공개 콘텐츠 목록/검색/상세 조회는 active 유닛, 레슨, 스텝의 현재 상태를 기준으로 계산한다.
 
 학습 진행은 `courseId`와 `lessonId`에 직접 묶인다. `course_progress`와 `lesson_progress`에는 `curriculum_version_id`를 저장하지 않는다. 레슨 진행 저장, 완료, 답변 저장은 대상 레슨이 현재 코스 커리큘럼에 포함되는지 확인한 뒤 처리한다.
 
 관리자 편집은 현재 커리큘럼 전체 스냅샷을 저장하되 `expectedRevision`을 필수로 받는다. 서버는 `courses.curriculum_revision`과 일치하는 요청만 반영하고, 저장 성공 시 revision을 증가시킨 편집 문서를 반환한다. revision이 다르면 `409 conflict`를 반환하고 커리큘럼 row를 변경하지 않는다.
 
-`PUT /courses/:courseId/editor`는 코스 기본 정보, 챕터, 레슨 배치, 스텝을 현재 테이블에 반영한다. 챕터와 레슨은 삭제 후 삽입하지 않고 ID 기준으로 갱신하며, 저장 요청에서 빠진 기존 챕터, 레슨, 스텝은 삭제하지 않고 `archived` 상태로 바꾼다.
+`PUT /courses/:courseId/editor`는 코스 기본 정보, 유닛, 레슨 배치, 스텝을 현재 테이블에 반영한다. 유닛과 레슨은 삭제 후 삽입하지 않고 ID 기준으로 갱신하며, 저장 요청에서 빠진 기존 유닛, 레슨, 스텝은 삭제하지 않고 `archived` 상태로 바꾼다.
 
 ## `packages/db`
 
@@ -126,15 +139,19 @@ DB 테이블과 컬럼 명명 규칙은 `docs/schema-conventions.md`를 따른�
 
 - `user`, `session`, `account`, `verification`: Better Auth 테이블
 - `admin_user`, `admin_session`, `admin_account`, `admin_verification`: 관리자 Better Auth 테이블
-- `courses`, `course_categories`: 코스와 카테고리
-- `course_chapters`, `course_lessons`: 현재 커리큘럼의 챕터와 레슨 배치
+- `courses`, `course_units`: 코스와 유닛
 - `lessons`, `lesson_steps`: 레슨 본문과 스텝
+- `learner_profiles`: 학습자 앱 소유 프로필과 상태
+- `learner_activity_days`: 사용자별 학습 활동 날짜와 연속 학습일 계산 기준
 - `course_progress`: 사용자별 코스 진행 요약
 - `lesson_progress`: 사용자별 레슨 현재 위치와 완료 상태
 - `lesson_answers`: 사용자별 레슨 스텝 답변
 - `feedback_attempts`: AI 피드백 완료 시도와 구조화 결과
+- `admin_settings`: 공지, 법적 문서, 운영 설정 key-value 저장소
 
-콘텐츠 시드는 현재 웹 카탈로그와 과정 상세 화면의 과정/챕터/레슨 ID를 명시적으로 보관한다. 모든 레슨은 현재 `INTRO`, `SHORT_WRITE`, `AI_FEEDBACK`, `SUMMARY`, `COMPLETE` 기본 단계로 플레이 가능성과 학습 상태 저장 경로를 보장한다.
+콘텐츠 시드는 Kwep 기준 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 명시적으로 보관한다. 표준 스텝 타입은 `READING`, `COMPARE`, `MULTIPLE_CHOICE`, `FILL_BLANK`, `SELECT`, `ORDER`, `WRITE`, `AI_FEEDBACK`, `MATCH`, `CATEGORIZE`다.
+
+DB migration은 피벗 기간 동안 누적 보정 migration이 아니라 `0000-kwep-baseline.sql` 기준 새 baseline으로 관리한다. 운영 데이터 이전이 필요하면 별도 이전 계획을 작성하고 이 baseline 구현에 호환 adapter를 넣지 않는다.
 
 AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structured Outputs를 호출하고, `packages/core`의 AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다.
 
