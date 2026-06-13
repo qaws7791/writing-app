@@ -993,7 +993,7 @@ bun --filter @workspace/web test -- courses-page course-detail-page course-curri
 
 Expected: 5개 Kwep 코스와 15개 유닛 구조가 화면에 맞게 표시된다.
 
-- [ ] **Step 6.4: 프로필 화면 작성**
+- [x] **Step 6.4: 프로필 화면 작성**
 
 프로필 요구사항:
 
@@ -2099,6 +2099,25 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/web test`: 통과했다. 테스트 파일 11개, 테스트 19개가 통과했다.
 - `bun --filter @workspace/web typecheck`: 통과했다.
 - `bun --filter @workspace/web lint`: 통과했다.
+- 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
+### 2026-06-14 Task 6 Step 6.4 시작
+
+- Step 6.4는 `/app/profile` 프로필 화면과 전역 내비게이션의 프로필 진입점을 작성한다.
+- 프로필 화면은 사용자 이름, 이메일, 이미지 또는 대체 이니셜, 가입일, 현재 연속 학습일, 완료 레슨 수, 전체 진도, 로그아웃 액션을 표시한다.
+- auth navigation helper는 로그인 next 경로 정규화와 logout callback URL 생성을 같은 경계에서 관리한다.
+
+### 2026-06-14 Task 6 Step 6.4 완료
+
+- `apps/web/src/features/profile/profile-page.tsx`에 사용자 정보, 프로필 이미지 대체 이니셜, 가입일, 연속 학습일, 완료 레슨, 전체 진도, 로그아웃 액션을 추가했다.
+- `apps/web/src/components/layout/global-nav.tsx`와 `app-shell.tsx`를 추가하고 `/app` layout에 연결했다.
+- `apps/web/src/app/app/profile/page.tsx`를 추가해 profile API 응답 기반 프로필 화면과 실패 시 로그인 진입점을 렌더링한다.
+- `apps/web/src/lib/auth/auth-navigation.ts`에 logout callback URL helper를 추가했다.
+- Google 계정 프로필 이미지를 위해 `apps/web/next.config.ts`에 `googleusercontent.com` remote image pattern을 명시했다.
+- `bun --filter @workspace/web test`: 통과했다. 테스트 파일 14개, 테스트 22개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `git diff --check`: 통과했다.
 - 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
 
 ## 상태 요약
