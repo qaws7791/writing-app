@@ -685,7 +685,7 @@ bun --filter @workspace/core test -- learning.service
 
 Expected: Kwep 퀴즈 타입에 해당하는 저장 요청은 `ok`, 읽기 스텝 저장 요청은 `invalid-request`를 반환한다.
 
-- [ ] **Step 3.3: `/profile` route 작성**
+- [x] **Step 3.3: `/profile` route 작성**
 
 응답 필드:
 
@@ -1852,6 +1852,22 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/core test -- learning.service`: 통과했다.
 - `bun --filter @workspace/core test`: 통과했다.
 - `bun --filter @workspace/core typecheck`: 통과했다.
+
+### 2026-06-14 Task 3 Step 3.3 시작
+
+- Step 3.3은 `apps/api`의 Hono app factory, session resolver 경계, `/profile` route를 새로 작성한다.
+- 첫 API 인증 경계는 `Authorization: Bearer <token>`을 session resolver에 넘기는 명시적 interface로 두고, Better Auth 연결은 후속 auth wiring에서 같은 interface 뒤로 붙인다.
+- `/profile` route는 인증 없음 `401`, active 사용자 profile/stat 응답, `suspended`/`deleted` 사용자 보호 route 차단을 테스트로 먼저 고정한다.
+
+### 2026-06-14 Task 3 Step 3.3 완료
+
+- `apps/api/src/app.ts`에 Hono app factory와 health/profile route 등록을 추가했다.
+- `apps/api/src/auth/session.ts`에 Bearer token 기반 session resolver 경계를 정의했다.
+- `apps/api/src/routes/profile.route.ts`에 `/profile` route와 보호 route 계정 상태 정책을 구현했다.
+- `apps/api/src/routes/error-response.ts`와 `apps/api/src/routes/health.route.ts`에 공통 error response와 health route를 추가했다.
+- `apps/api/src/app.test.ts`로 인증 없음 `401`, active profile 응답, `suspended`/`deleted` 차단을 검증했다.
+- `bun --filter @workspace/api test -- app profile`: 통과했다.
+- `bun --filter @workspace/api typecheck`: 통과했다.
 
 ## 상태 요약
 
