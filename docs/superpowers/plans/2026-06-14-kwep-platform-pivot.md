@@ -939,7 +939,7 @@ Expected: Kwep seed에서 변환한 대표 lesson이 10개 Kwep 타입을 모두
 - Create: `apps/web/src/lib/auth/auth-navigation.ts`
 - Create: `apps/web/src/lib/auth/auth-navigation.test.ts`
 
-- [ ] **Step 6.1: 공개 랜딩을 Kwep `글결` 방향으로 교체**
+- [x] **Step 6.1: 공개 랜딩을 Kwep `글결` 방향으로 교체**
 
 구현 정책:
 
@@ -957,7 +957,7 @@ bun --filter @workspace/web test -- auth-page landing
 
 Expected: 로그인 CTA와 공개 랜딩 핵심 섹션이 렌더링된다.
 
-- [ ] **Step 6.2: 홈 화면을 Kwep 진행 카드 중심으로 재구성**
+- [x] **Step 6.2: 홈 화면을 Kwep 진행 카드 중심으로 재구성**
 
 홈 요구사항:
 
@@ -2061,6 +2061,27 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/web lint`: 통과했다.
 - `bun --filter @workspace/ui typecheck`: 통과했다.
 - `bun --filter @workspace/ui lint`: 통과했다.
+- 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
+### 2026-06-14 Task 6 Step 6.2 시작
+
+- Step 6.2는 `/app` 홈 화면을 Kwep 진행 카드 중심으로 재구성한다.
+- 홈 화면은 사용자 이름 또는 기본 호칭, 현재 연속 학습일, 진행 중인 코스 카드, 코스별 진행률, 다음 레슨 최대 2개, 진행 코스가 없을 때의 시작 진입점을 표시한다.
+- 진행률 표시는 `@workspace/ui`의 progress primitive로 추가하고, 화면 테스트는 API 호출 없이 `ProgressCourseList` 모델을 직접 주입해 검증한다.
+
+### 2026-06-14 Task 6 Step 6.2 완료
+
+- `apps/web/src/features/home/home-page.tsx`에 Kwep 진행 카드 중심 홈 화면을 추가했다.
+- 홈 화면은 사용자 이름 또는 `학습자` 기본 호칭, 현재 연속 학습일, 전체 학습 맥락, 진행 중인 코스, 코스별 진행률, 다음 레슨 최대 2개를 표시한다.
+- 진행 중인 코스가 없으면 `아직 진행 중인 코스가 없습니다.` 빈 상태와 `/app/courses` 진입점을 보여준다.
+- `apps/web/src/app/app/page.tsx`는 profile/progress 요청을 병렬로 시작하고, 실패 시 한국어 API 오류 안내와 빈 진행 상태를 렌더링한다.
+- `@workspace/ui`에 progress primitive를 추가했다.
+- `bun --filter @workspace/web test`: 통과했다. 테스트 파일 8개, 테스트 16개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bun --filter @workspace/ui typecheck`: 통과했다.
+- `bun --filter @workspace/ui lint`: 통과했다.
+- `git diff --check`: 통과했다.
 - 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
 
 ## 상태 요약

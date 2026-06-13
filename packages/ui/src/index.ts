@@ -10,3 +10,10 @@ export {
   CardTitle,
 } from "@/components/ui/card"
 export { Input } from "@/components/ui/input"
+export {
+  Progress,
+  ProgressIndicator,
+  ProgressLabel,
+  ProgressTrack,
+  ProgressValue,
+} from "@/components/ui/progress"
