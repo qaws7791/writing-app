@@ -139,6 +139,12 @@ function createDependencies(): AdminApiDependencies {
   return {
     adminOrigin: "http://localhost:3003",
     dashboardService: {
+      async archiveCourse() {
+        throw new Error("unexpected archive course request")
+      },
+      async createCourse() {
+        throw new Error("unexpected create course request")
+      },
       async deleteUser() {
         throw new Error("unexpected delete user request")
       },
@@ -147,6 +153,9 @@ function createDependencies(): AdminApiDependencies {
       },
       async getDashboard(): Promise<AdminDashboardDto> {
         throw new Error("unexpected dashboard request")
+      },
+      async getCourseEditor() {
+        throw new Error("unexpected course editor request")
       },
       async getLessonAnalytics(): Promise<AdminLessonAnalyticsPageDto> {
         throw new Error("unexpected lesson analytics request")

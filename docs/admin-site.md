@@ -1,5 +1,13 @@
 # 어드민 사이트
 
+## 2026-06-14 Kwep 어드민 코스 생성/보관 API 완료
+
+- 어드민 API에 `POST /courses`, `DELETE /courses/:courseId`, `GET /courses/:courseId/editor`를 추가했다.
+- 새 코스는 기본 유닛 1개, 기본 레슨 1개, `READING`/`WRITE` 기본 스텝과 함께 생성된다.
+- 생성된 코스는 editor 문서로 바로 조회할 수 있다.
+- 코스 보관은 row 삭제 대신 `courses.status = 'archived'`로 처리한다.
+- archived 코스는 학습자 콘텐츠 API에서 제외된다.
+
 ## 2026-06-14 Kwep 어드민 운영 설정 API 완료
 
 - 어드민 API에 `GET /settings`, `PUT /settings/notice`, `PUT /settings/legal`, `POST /settings/content-reset`을 추가했다.

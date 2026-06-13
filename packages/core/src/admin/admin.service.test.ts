@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest"
 
 import type {
   AdminAnalyticsDto,
+  AdminArchiveCourseResultDto,
+  AdminCourseDetailDto,
   AdminContentResetResultDto,
   AdminDashboardDto,
   AdminLessonAnalyticsPageDto,
@@ -159,6 +161,65 @@ const contentResetResult: AdminContentResetResultDto = {
   revision: 1,
 }
 
+const courseDetail: AdminCourseDetailDto = {
+  category: "미분류",
+  description: "강의 설명을 입력하세요.",
+  id: "cmock",
+  revision: 1,
+  status: "active",
+  title: "새 강의",
+  units: [
+    {
+      id: "cmock-u1",
+      lessons: [
+        {
+          category: "미분류",
+          description: "레슨 설명을 입력하세요.",
+          estimatedMinutes: 5,
+          id: "cmock-l1",
+          sortOrder: 1,
+          status: "active",
+          steps: [
+            {
+              contentJson: JSON.stringify({
+                body: "본문을 입력하세요.",
+                title: "새 읽기 스텝",
+                type: "reading",
+              }),
+              id: "cmock-l1-s1",
+              sortOrder: 1,
+              status: "active",
+              type: "READING",
+            },
+            {
+              contentJson: JSON.stringify({
+                goal: 150,
+                max: 500,
+                min: 50,
+                prompt: "주제를 입력하세요.",
+                title: "글쓰기",
+                type: "write",
+              }),
+              id: "cmock-l1-s2",
+              sortOrder: 2,
+              status: "active",
+              type: "WRITE",
+            },
+          ],
+          title: "새 레슨",
+        },
+      ],
+      sortOrder: 1,
+      status: "active",
+      title: "새 유닛",
+    },
+  ],
+}
+
+const archiveCourseResult: AdminArchiveCourseResultDto = {
+  archived: true,
+}
+
 describe("어드민 서비스", () => {
   it("repository 대시보드 스냅샷을 관리자 dashboard DTO로 반환한다", async () => {
     const repository: AdminRepository = createRepository()
@@ -251,10 +312,43 @@ describe("어드민 서비스", () => {
       })
     ).resolves.toEqual(contentResetResult)
   })
+
+  it("repository 코스 생성, editor 조회, 보관 결과를 관리자 DTO로 반환한다", async () => {
+    const repository: AdminRepository = createRepository()
+    const service = createAdminService(repository)
+
+    await expect(
+      service.createCourse({
+        now: new Date("2026-06-14T03:00:00.000Z"),
+      })
+    ).resolves.toEqual(courseDetail)
+    await expect(
+      service.getCourseEditor({
+        courseId: "cmock",
+      })
+    ).resolves.toEqual(courseDetail)
+    await expect(
+      service.archiveCourse({
+        courseId: "cmock",
+        now: new Date("2026-06-14T03:00:00.000Z"),
+      })
+    ).resolves.toEqual(archiveCourseResult)
+  })
 })
 
 function createRepository(): AdminRepository {
   return {
+    async archiveCourse(input) {
+      expect(input).toEqual({
+        courseId: "cmock",
+        now: new Date("2026-06-14T03:00:00.000Z"),
+      })
+      return archiveCourseResult
+    },
+    async createCourse(input) {
+      expect(input.now.toISOString()).toBe("2026-06-14T03:00:00.000Z")
+      return courseDetail
+    },
     async deleteUser(input) {
       expect(input.userId).toBe("user-1")
       return { deleted: true }
@@ -279,6 +373,10 @@ function createRepository(): AdminRepository {
         sort: "completionRate",
       })
       return lessonAnalytics
+    },
+    async readCourseEditor(input) {
+      expect(input.courseId).toBe("cmock")
+      return courseDetail
     },
     async readSettings() {
       return settings

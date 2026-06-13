@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import { createKwepDatabase } from "@/client"
 import { runBaselineMigration } from "@/migrations/migrate"
 import { createDrizzleAdminRepository } from "@/repositories/admin.repository"
+import { createDrizzleContentRepository } from "@/repositories/content.repository"
 import {
   authUsers,
   courseUnits,
@@ -366,6 +367,62 @@ describe("어드민 DB repository", () => {
           .all()
           .filter((step) => step.status === "active")
       ).toHaveLength(136)
+    } finally {
+      client.close()
+    }
+  })
+
+  it("새 코스를 기본 커리큘럼과 함께 만들고 보관하면 학습자 목록에서 제외한다", async () => {
+    const client = createKwepDatabase(":memory:")
+    const now = new Date("2026-06-14T03:00:00.000Z")
+
+    try {
+      runBaselineMigration(client.sqlite)
+
+      const repository = createDrizzleAdminRepository(client.db)
+      const contentRepository = createDrizzleContentRepository(client.db)
+
+      const created = await repository.createCourse({ now })
+
+      expect(created).toMatchObject({
+        category: "미분류",
+        description: "강의 설명을 입력하세요.",
+        id: "cmqd74yo0",
+        revision: 1,
+        status: "active",
+        title: "새 강의",
+      })
+      expect(created.units).toHaveLength(1)
+      expect(created.units[0]?.title).toBe("새 유닛")
+      expect(created.units[0]?.lessons).toHaveLength(1)
+      expect(created.units[0]?.lessons[0]).toMatchObject({
+        estimatedMinutes: 5,
+        id: "cmqd74yo0-l1",
+        title: "새 레슨",
+      })
+      expect(
+        created.units[0]?.lessons[0]?.steps.map((step) => step.type)
+      ).toEqual(["READING", "WRITE"])
+
+      await expect(
+        repository.readCourseEditor({ courseId: "cmqd74yo0" })
+      ).resolves.toEqual(created)
+      await expect(contentRepository.listCourses()).resolves.toEqual([
+        expect.objectContaining({
+          id: "cmqd74yo0",
+          lessonCount: 1,
+        }),
+      ])
+
+      await expect(
+        repository.archiveCourse({ courseId: "cmqd74yo0", now })
+      ).resolves.toEqual({ archived: true })
+      await expect(
+        repository.readCourseEditor({ courseId: "cmqd74yo0" })
+      ).resolves.toBeNull()
+      expect(
+        (await contentRepository.listCourses()).map((course) => course.id)
+      ).not.toContain("cmqd74yo0")
     } finally {
       client.close()
     }

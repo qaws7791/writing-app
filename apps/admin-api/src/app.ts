@@ -3,6 +3,8 @@ import { cors } from "hono/cors"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { createAnalyticsRoute } from "@/routes/analytics.route"
+import { createCoursesRoute } from "@/routes/courses.route"
+import { createCurriculumEditorRoute } from "@/routes/curriculum-editor.route"
 import { createDashboardRoute } from "@/routes/dashboard.route"
 import { createHealthRoute } from "@/routes/health.route"
 import { createSettingsRoute } from "@/routes/settings.route"
@@ -43,6 +45,21 @@ export function createApp(dependencies: AdminApiDependencies): Hono {
     createAnalyticsRoute({
       adminService: dependencies.dashboardService,
       now: dependencies.now ?? (() => new Date()),
+      sessionResolver: dependencies.sessionResolver,
+    })
+  )
+  app.route(
+    "/courses",
+    createCoursesRoute({
+      adminService: dependencies.dashboardService,
+      now: dependencies.now ?? (() => new Date()),
+      sessionResolver: dependencies.sessionResolver,
+    })
+  )
+  app.route(
+    "/courses",
+    createCurriculumEditorRoute({
+      adminService: dependencies.dashboardService,
       sessionResolver: dependencies.sessionResolver,
     })
   )

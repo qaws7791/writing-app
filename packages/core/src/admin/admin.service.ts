@@ -1,14 +1,18 @@
 import {
   adminAnalyticsDtoSchema,
+  adminArchiveCourseResultSchema,
   adminContentResetResultSchema,
+  adminCourseDetailDtoSchema,
   adminDeleteUserResultSchema,
   adminDashboardDtoSchema,
-  adminSettingsDtoSchema,
   adminLessonAnalyticsPageDtoSchema,
+  adminSettingsDtoSchema,
   adminUserDetailDtoSchema,
   adminUserListDtoSchema,
   type AdminAnalyticsDto,
+  type AdminArchiveCourseResultDto,
   type AdminContentResetResultDto,
+  type AdminCourseDetailDto,
   type AdminDashboardDto,
   type AdminDeleteUserResultDto,
   type AdminLessonAnalyticsPageDto,
@@ -18,8 +22,11 @@ import {
 } from "@workspace/core/admin/admin.dto"
 import type {
   AdminRepository,
+  ArchiveAdminCourseInput,
+  CreateAdminCourseInput,
   DeleteAdminUserInput,
   ReadAdminAnalyticsInput,
+  ReadAdminCourseInput,
   ReadAdminDashboardInput,
   ReadAdminLessonAnalyticsInput,
   ReadAdminUserInput,
@@ -31,6 +38,12 @@ import type {
 } from "@workspace/core/admin/admin.repository"
 
 export type AdminService = {
+  readonly archiveCourse: (
+    input: ArchiveAdminCourseInput
+  ) => Promise<AdminArchiveCourseResultDto | null>
+  readonly createCourse: (
+    input: CreateAdminCourseInput
+  ) => Promise<AdminCourseDetailDto>
   readonly deleteUser: (
     input: DeleteAdminUserInput
   ) => Promise<AdminDeleteUserResultDto | null>
@@ -43,6 +56,9 @@ export type AdminService = {
   readonly getLessonAnalytics: (
     input: ReadAdminLessonAnalyticsInput
   ) => Promise<AdminLessonAnalyticsPageDto>
+  readonly getCourseEditor: (
+    input: ReadAdminCourseInput
+  ) => Promise<AdminCourseDetailDto | null>
   readonly getSettings: () => Promise<AdminSettingsDto>
   readonly getUser: (
     input: ReadAdminUserInput
@@ -64,6 +80,16 @@ export type AdminService = {
 
 export function createAdminService(repository: AdminRepository): AdminService {
   return {
+    async archiveCourse(input) {
+      return adminArchiveCourseResultSchema
+        .nullable()
+        .parse(await repository.archiveCourse(input))
+    },
+    async createCourse(input) {
+      return adminCourseDetailDtoSchema.parse(
+        await repository.createCourse(input)
+      )
+    },
     async deleteUser(input) {
       return adminDeleteUserResultSchema
         .nullable()
@@ -83,6 +109,11 @@ export function createAdminService(repository: AdminRepository): AdminService {
       return adminLessonAnalyticsPageDtoSchema.parse(
         await repository.readLessonAnalytics(input)
       )
+    },
+    async getCourseEditor(input) {
+      return adminCourseDetailDtoSchema
+        .nullable()
+        .parse(await repository.readCourseEditor(input))
     },
     async getSettings() {
       return adminSettingsDtoSchema.parse(await repository.readSettings())

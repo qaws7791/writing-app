@@ -2073,7 +2073,7 @@ bun --filter @workspace/admin-api test -- settings
 
 Expected: 설정 저장과 콘텐츠 초기화가 transaction 안에서 동작한다.
 
-- [ ] **Step 8.5: 코스 생성과 보관 API 작성**
+- [x] **Step 8.5: 코스 생성과 보관 API 작성**
 
 Endpoint:
 
@@ -3465,6 +3465,32 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/core typecheck`, `bun --filter @workspace/db typecheck`, `bun --filter @workspace/admin-api typecheck`: 통과했다.
 - `bun --filter @workspace/core lint`, `bun --filter @workspace/db lint`, `bun --filter @workspace/admin-api lint`: 통과했다.
 - `bunx prettier --check apps/admin-api/src/app.test.ts apps/admin-api/src/app.ts apps/admin-api/src/routes/analytics.route.test.ts apps/admin-api/src/routes/settings.route.ts apps/admin-api/src/routes/settings.route.test.ts packages/core/src/admin/admin.dto.ts packages/core/src/admin/admin.repository.ts packages/core/src/admin/admin.service.ts packages/core/src/admin/admin.service.test.ts packages/db/src/schema/admin.schema.ts packages/db/src/schema/index.ts packages/db/src/seeds/seed-content.ts packages/db/src/seeds/seed.ts packages/db/src/repositories/admin.repository.ts packages/db/src/repositories/admin.repository.test.ts docs/admin-site.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check`: 통과했다.
+
+### 2026-06-14 Task 8 Step 8.5 코스 생성과 보관 API 시작
+
+- 다음 대상은 Kwep `AdminCourseList.tsx`, `AdminCourseEditor.tsx`, `Kwep/src/app/admin/content.tsx`의 새 강의 생성, 강의 삭제, 생성 후 편집 진입 흐름이다.
+- 제품 대상 파일은 `packages/core/src/admin/*`, `packages/db/src/repositories/admin.repository.ts`, `apps/admin-api/src/app.ts`, `apps/admin-api/src/routes/courses.route.ts`, `apps/admin-api/src/routes/curriculum-editor.route.ts`, 관련 테스트이다.
+- `POST /courses`는 새 강의, 기본 유닛 1개, 기본 레슨 1개, `READING`/`WRITE` 기본 스텝을 생성한다.
+- `GET /courses/:courseId/editor`는 생성된 코스를 편집 화면에서 열 수 있는 최소 editor 문서를 반환한다.
+- `DELETE /courses/:courseId`는 row 삭제 대신 `courses.status = 'archived'`로 전환하고, 학습자 API에서는 archived 코스가 제외되어야 한다.
+- production code 수정 전에 core service, admin API route, DB repository 테스트에 실패 기대값을 먼저 추가한다.
+
+### 2026-06-14 Task 8 Step 8.5 코스 생성과 보관 API 완료
+
+- `packages/core/src/admin`에 어드민 코스 editor 문서 DTO, 코스 생성, editor 조회, 보관 결과 DTO와 repository/service port를 추가했다.
+- `packages/db/src/repositories/admin.repository.ts`는 새 코스 ID를 요청 시각에서 결정적으로 만들고, 새 강의/새 유닛/새 레슨/`READING`/`WRITE` 기본 스텝을 transaction 안에서 생성한다.
+- `GET /courses/:courseId/editor`는 active 코스의 유닛, 레슨, 스텝을 editor 문서로 반환하고, archived 또는 없는 코스는 `404`로 연결된다.
+- `DELETE /courses/:courseId`는 코스를 `archived` 상태로 전환하며, 학습자 콘텐츠 repository의 코스 목록에서 제외됨을 확인했다.
+- `apps/admin-api/src/routes/courses.route.ts`, `apps/admin-api/src/routes/curriculum-editor.route.ts`를 추가하고 `/courses` 아래에 마운트했다.
+- `bun --filter @workspace/core test -- admin.service`: 먼저 `service.createCourse is not a function`으로 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 5개가 통과했다.
+- `bun --filter @workspace/admin-api test -- courses curriculum-editor`: 먼저 `/courses` route가 없어 404로 실패함을 확인했고, 수정 후 테스트 파일 2개, 테스트 7개가 통과했다.
+- `bun --filter @workspace/admin-api test -- app`: route mount 회귀 테스트 파일 1개, 테스트 10개가 통과했다.
+- `bun --filter @workspace/db test -- admin.repository`: 먼저 `repository.createCourse is not a function`으로 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 5개가 통과했다.
+- `bun --filter @workspace/db test -- content.repository`: archived 코스 제외 회귀 테스트 파일 1개, 테스트 5개가 통과했다.
+- `bun --filter @workspace/core typecheck`, `bun --filter @workspace/db typecheck`, `bun --filter @workspace/admin-api typecheck`: 통과했다.
+- `bun --filter @workspace/core lint`, `bun --filter @workspace/db lint`, `bun --filter @workspace/admin-api lint`: 통과했다.
+- `bunx prettier --check apps/admin-api/src/app.test.ts apps/admin-api/src/app.ts apps/admin-api/src/routes/analytics.route.test.ts apps/admin-api/src/routes/courses.route.ts apps/admin-api/src/routes/courses.route.test.ts apps/admin-api/src/routes/curriculum-editor.route.ts apps/admin-api/src/routes/curriculum-editor.route.test.ts apps/admin-api/src/routes/settings.route.test.ts packages/core/src/admin/admin.dto.ts packages/core/src/admin/admin.repository.ts packages/core/src/admin/admin.service.ts packages/core/src/admin/admin.service.test.ts packages/db/src/repositories/admin.repository.ts packages/db/src/repositories/admin.repository.test.ts docs/admin-site.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
 - `git diff --check`: 통과했다.
 
 ## 상태 요약

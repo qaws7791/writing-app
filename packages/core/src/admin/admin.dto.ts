@@ -140,7 +140,54 @@ export const adminContentResetResultSchema = z.object({
   revision: nonNegativeIntegerSchema,
 })
 
+const adminContentStatusSchema = z.enum(["active", "archived"])
+
+export const adminCourseStepDtoSchema = z.object({
+  contentJson: z.string(),
+  id: z.string(),
+  sortOrder: positiveIntegerSchema,
+  status: adminContentStatusSchema,
+  type: z.string(),
+})
+
+export const adminCourseLessonDtoSchema = z.object({
+  category: z.string().nullable(),
+  description: z.string().nullable(),
+  estimatedMinutes: positiveIntegerSchema,
+  id: z.string(),
+  sortOrder: positiveIntegerSchema,
+  status: adminContentStatusSchema,
+  steps: z.array(adminCourseStepDtoSchema),
+  title: z.string(),
+})
+
+export const adminCourseUnitDtoSchema = z.object({
+  id: z.string(),
+  lessons: z.array(adminCourseLessonDtoSchema),
+  sortOrder: positiveIntegerSchema,
+  status: adminContentStatusSchema,
+  title: z.string(),
+})
+
+export const adminCourseDetailDtoSchema = z.object({
+  category: z.string(),
+  description: z.string(),
+  id: z.string(),
+  revision: nonNegativeIntegerSchema,
+  status: adminContentStatusSchema,
+  title: z.string(),
+  units: z.array(adminCourseUnitDtoSchema),
+})
+
+export const adminArchiveCourseResultSchema = z.object({
+  archived: z.literal(true),
+})
+
 export type AdminAnalyticsDto = z.infer<typeof adminAnalyticsDtoSchema>
+export type AdminArchiveCourseResultDto = z.infer<
+  typeof adminArchiveCourseResultSchema
+>
+export type AdminCourseDetailDto = z.infer<typeof adminCourseDetailDtoSchema>
 export type AdminContentResetResultDto = z.infer<
   typeof adminContentResetResultSchema
 >

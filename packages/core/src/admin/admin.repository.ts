@@ -1,6 +1,8 @@
 import type {
   AdminAnalyticsDto,
+  AdminArchiveCourseResultDto,
   AdminContentResetResultDto,
+  AdminCourseDetailDto,
   AdminDashboardDto,
   AdminDeleteUserResultDto,
   AdminLegalSettingsRequest,
@@ -45,6 +47,19 @@ export type ResetAdminContentInput = {
   readonly now: Date
 }
 
+export type CreateAdminCourseInput = {
+  readonly now: Date
+}
+
+export type ReadAdminCourseInput = {
+  readonly courseId: string
+}
+
+export type ArchiveAdminCourseInput = {
+  readonly courseId: string
+  readonly now: Date
+}
+
 export type ReadAdminUsersInput = {
   readonly page: number
   readonly pageSize: number
@@ -69,6 +84,12 @@ export type DeleteAdminUserInput = {
 }
 
 export type AdminRepository = {
+  readonly archiveCourse: (
+    input: ArchiveAdminCourseInput
+  ) => Promise<AdminArchiveCourseResultDto | null>
+  readonly createCourse: (
+    input: CreateAdminCourseInput
+  ) => Promise<AdminCourseDetailDto>
   readonly deleteUser: (
     input: DeleteAdminUserInput
   ) => Promise<AdminDeleteUserResultDto | null>
@@ -81,6 +102,9 @@ export type AdminRepository = {
   readonly readLessonAnalytics: (
     input: ReadAdminLessonAnalyticsInput
   ) => Promise<AdminLessonAnalyticsPageDto>
+  readonly readCourseEditor: (
+    input: ReadAdminCourseInput
+  ) => Promise<AdminCourseDetailDto | null>
   readonly readSettings: () => Promise<AdminSettingsDto>
   readonly readUser: (
     input: ReadAdminUserInput

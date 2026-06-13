@@ -316,6 +316,12 @@ function createDependencies(): AdminApiDependencies {
   return {
     adminOrigin: "http://localhost:3003",
     dashboardService: {
+      async archiveCourse() {
+        throw new Error("unexpected archive course request")
+      },
+      async createCourse() {
+        throw new Error("unexpected create course request")
+      },
       async deleteUser(input) {
         expect(input.userId).toBe("user-1")
         return { deleted: true }
@@ -329,6 +335,9 @@ function createDependencies(): AdminApiDependencies {
           now: new Date("2026-06-14T03:00:00.000Z"),
         })
         return analytics
+      },
+      async getCourseEditor() {
+        throw new Error("unexpected course editor request")
       },
       async getLessonAnalytics(input) {
         expect(input).toEqual({

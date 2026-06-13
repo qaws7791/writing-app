@@ -1,6 +1,8 @@
 import type {
   AdminAnalyticsDto,
+  AdminArchiveCourseResultDto,
   AdminContentResetResultDto,
+  AdminCourseDetailDto,
   AdminDashboardDto,
   AdminDeleteUserResultDto,
   AdminSettingsDto,
@@ -13,8 +15,11 @@ import type {
   AdminUserListDto,
   AdminUserSort,
   AdminUserStatus,
+  ArchiveAdminCourseInput,
+  CreateAdminCourseInput,
   DeleteAdminUserInput,
   ReadAdminAnalyticsInput,
+  ReadAdminCourseInput,
   ReadAdminDashboardInput,
   ReadAdminLessonAnalyticsInput,
   ReadAdminUserInput,
@@ -45,6 +50,12 @@ export function createDrizzleAdminRepository(
   db: KwepDatabase
 ): AdminRepository {
   return {
+    archiveCourse(input) {
+      return Promise.resolve(archiveCourse(db, input))
+    },
+    createCourse(input) {
+      return Promise.resolve(createCourse(db, input))
+    },
     deleteUser(input) {
       return Promise.resolve(deleteUser(db, input))
     },
@@ -56,6 +67,9 @@ export function createDrizzleAdminRepository(
     },
     readLessonAnalytics(input) {
       return Promise.resolve(readLessonAnalytics(db, input))
+    },
+    readCourseEditor(input) {
+      return Promise.resolve(readCourseEditor(db, input))
     },
     readSettings() {
       return Promise.resolve(readSettings(db))
@@ -464,6 +478,207 @@ function compareLessonAnalytics(
   }
 
   return (direction === "asc" ? result : -result) || byLesson
+}
+
+function createCourse(
+  db: KwepDatabase,
+  input: CreateAdminCourseInput
+): AdminCourseDetailDto {
+  const courseId = `c${input.now.getTime().toString(36)}`
+  const unitId = `${courseId}-u1`
+  const lessonId = `${courseId}-l1`
+  const revision = readNextContentRevision(db)
+  const sortOrder = readNextCourseSortOrder(db)
+
+  db.transaction((transaction) => {
+    transaction
+      .insert(courses)
+      .values({
+        category: "미분류",
+        curriculumRevision: revision,
+        description: "강의 설명을 입력하세요.",
+        id: courseId,
+        sortOrder,
+        status: "active",
+        title: "새 강의",
+      })
+      .run()
+    transaction
+      .insert(courseUnits)
+      .values({
+        courseId,
+        id: unitId,
+        sortOrder: 1,
+        status: "active",
+        title: "새 유닛",
+      })
+      .run()
+    transaction
+      .insert(lessons)
+      .values({
+        category: "미분류",
+        courseId,
+        description: "레슨 설명을 입력하세요.",
+        estimatedMinutes: 5,
+        id: lessonId,
+        sortOrder: 1,
+        status: "active",
+        summaryJson: "[]",
+        title: "새 레슨",
+        unitId,
+      })
+      .run()
+    transaction
+      .insert(lessonSteps)
+      .values([
+        {
+          contentJson: JSON.stringify({
+            body: "본문을 입력하세요.",
+            title: "새 읽기 스텝",
+            type: "reading",
+          }),
+          id: `${lessonId}-s1`,
+          lessonId,
+          sortOrder: 1,
+          status: "active",
+          type: "READING",
+        },
+        {
+          contentJson: JSON.stringify({
+            goal: 150,
+            max: 500,
+            min: 50,
+            prompt: "주제를 입력하세요.",
+            title: "글쓰기",
+            type: "write",
+          }),
+          id: `${lessonId}-s2`,
+          lessonId,
+          sortOrder: 2,
+          status: "active",
+          type: "WRITE",
+        },
+      ])
+      .run()
+  })
+
+  const created = readCourseEditor(db, { courseId })
+
+  if (created === null) {
+    throw new Error("Created course editor document was not found")
+  }
+
+  return created
+}
+
+function readCourseEditor(
+  db: KwepDatabase,
+  input: ReadAdminCourseInput
+): AdminCourseDetailDto | null {
+  const course = db
+    .select()
+    .from(courses)
+    .where(eq(courses.id, input.courseId))
+    .get()
+
+  if (course === undefined || course.status !== "active") {
+    return null
+  }
+
+  const unitRows = db
+    .select()
+    .from(courseUnits)
+    .all()
+    .filter(
+      (unit) => unit.courseId === input.courseId && unit.status === "active"
+    )
+    .sort((left, right) => left.sortOrder - right.sortOrder)
+  const lessonRows = db
+    .select()
+    .from(lessons)
+    .all()
+    .filter(
+      (lesson) =>
+        lesson.courseId === input.courseId && lesson.status === "active"
+    )
+    .sort((left, right) => left.sortOrder - right.sortOrder)
+  const stepRows = db
+    .select()
+    .from(lessonSteps)
+    .all()
+    .filter((step) => step.status === "active")
+    .sort((left, right) => left.sortOrder - right.sortOrder)
+
+  return {
+    category: course.category,
+    description: course.description,
+    id: course.id,
+    revision: course.curriculumRevision,
+    status: course.status,
+    title: course.title,
+    units: unitRows.map((unit) => ({
+      id: unit.id,
+      lessons: lessonRows
+        .filter((lesson) => lesson.unitId === unit.id)
+        .map((lesson) => ({
+          category: lesson.category,
+          description: lesson.description,
+          estimatedMinutes: lesson.estimatedMinutes,
+          id: lesson.id,
+          sortOrder: lesson.sortOrder,
+          status: lesson.status,
+          steps: stepRows
+            .filter((step) => step.lessonId === lesson.id)
+            .map((step) => ({
+              contentJson: step.contentJson,
+              id: step.id,
+              sortOrder: step.sortOrder,
+              status: step.status,
+              type: step.type,
+            })),
+          title: lesson.title,
+        })),
+      sortOrder: unit.sortOrder,
+      status: unit.status,
+      title: unit.title,
+    })),
+  }
+}
+
+function archiveCourse(
+  db: KwepDatabase,
+  input: ArchiveAdminCourseInput
+): AdminArchiveCourseResultDto | null {
+  const course = db
+    .select()
+    .from(courses)
+    .where(eq(courses.id, input.courseId))
+    .get()
+
+  if (course === undefined || course.status === "archived") {
+    return null
+  }
+
+  void input.now
+
+  db.update(courses)
+    .set({
+      status: "archived",
+    })
+    .where(eq(courses.id, input.courseId))
+    .run()
+
+  return { archived: true }
+}
+
+function readNextCourseSortOrder(db: KwepDatabase): number {
+  const sortOrders = db
+    .select()
+    .from(courses)
+    .all()
+    .map((course) => course.sortOrder)
+
+  return Math.max(0, ...sortOrders) + 1
 }
 
 const settingsKeys = {
