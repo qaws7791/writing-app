@@ -1,1 +1,129 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
 @import "@workspace/ui/styles";
+
+@theme {
+  --color-cream: #fdfbf7;
+  --color-surface: #f4efe6;
+  --color-surface-hover: #eae2d3;
+  --color-charcoal: #2a2621;
+  --color-primary: #ffc800;
+  --color-coral: #ff7a6b;
+  --color-mint: #34c759;
+  --color-ink: #2a2621;
+  --color-muted: #524d47;
+  --color-mint-light: #52d86a;
+  --color-coral-light: #ffada7;
+  --color-mint-dark: #084d1c;
+  --color-coral-dark: #8b1d0f;
+  --radius-4xl: 2.5rem;
+  --radius-5xl: 3.5rem;
+  --font-sans:
+    Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+:root {
+  --color-cream: #fdfbf7;
+  --color-surface: #f4efe6;
+  --color-surface-hover: #eae2d3;
+  --color-charcoal: #2a2621;
+  --color-primary: #ffc800;
+  --color-coral: #ff7a6b;
+  --color-mint: #34c759;
+  --color-ink: #2a2621;
+  --color-muted: #524d47;
+  --color-mint-light: #52d86a;
+  --color-coral-light: #ffada7;
+  --color-mint-dark: #084d1c;
+  --color-coral-dark: #8b1d0f;
+  background: var(--color-cream);
+  color: var(--color-charcoal);
+  color-scheme: light;
+  font-family:
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  background: var(--color-cream);
+  color: var(--color-charcoal);
+  font-family:
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    system-ui,
+    sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.dark {
+  --color-cream: #1b1916;
+  --color-surface: #262320;
+  --color-surface-hover: #332f2a;
+  --color-charcoal: #f4efe6;
+  --color-primary: #ffc800;
+  --color-coral: #ff8c7f;
+  --color-mint: #3dd968;
+  --color-muted: #a89f92;
+  --color-mint-light: #1e5b30;
+  --color-coral-light: #6e2a22;
+  --color-mint-dark: #6fe588;
+  --color-coral-dark: #ffada7;
+  color-scheme: dark;
+}
+
+.btn-squish {
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.btn-squish:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+@keyframes landing-marquee-forward {
+  from {
+    transform: translateX(0%);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes landing-marquee-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0%);
+  }
+}
+
+@keyframes landing-pebble-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(calc(var(--landing-pebble-drift, 24px) * -1))
+      rotate(8deg);
+  }
+}
+
+nextjs-portal,
+[data-nextjs-devtools],
+[data-nextjs-devtools-button],
+[data-nextjs-toast],
+[data-nextjs-dialog-overlay] {
+  display: none !important;
+}

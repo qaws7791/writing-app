@@ -4,7 +4,7 @@
 
 **Goal:** `Kwep` 프로토타입에서 확인한 학습자 플랫폼과 어드민 요구사항을 현재 Bun monorepo의 API/웹/어드민 경계에 맞춰 제품 코드로 이식한다.
 
-**Architecture:** `Kwep`는 읽기 전용 요구사항 원천으로만 사용하고, 기술 스택과 monorepo 경계만 재사용한다. 구현 단계에서는 대상 앱과 패키지의 기존 `src` 구현, 기존 테스트, 기존 DB migration 흐름을 제거한 뒤 Kwep 요구사항에 맞는 새 baseline 코드로 다시 작성한다. 구현 순서는 플랫폼 API, 플랫폼 프론트엔드, 플랫폼 통합 검증, 어드민 API, 어드민 프론트엔드, 전체 통합 검증으로 고정한다.
+**Architecture:** `Kwep`는 읽기 전용 요구사항 원천으로만 사용하고, 기술 스택과 monorepo 경계만 재사용한다. 구현 단계에서는 대상 앱과 패키지의 기존 `src` 구현, 기존 테스트, 기존 DB migration 흐름을 제거한 뒤 Kwep 요구사항에 맞는 새 baseline 코드로 다시 작성한다. 2026-06-14 UI 비교 결과, 플랫폼 프론트엔드 초안은 Kwep와 1:1로 일치하지 않으므로 이후 프론트엔드 작업은 사용자 플로우 순서대로 한 화면씩 Kwep와 완전 일치할 때까지 반복 수정하고, 화면 단위 검증과 커밋을 완료한 뒤 다음 화면으로 이동한다.
 
 **Tech Stack:** Bun 1.3.10, Node 24, Next.js 16 App Router, Hono, Better Auth, Drizzle SQLite, OpenAPI 3.1, React 19, Tailwind CSS 4, `@workspace/ui`, Vitest, Playwright 또는 Browser 플러그인 기반 스모크 검증.
 
@@ -28,10 +28,95 @@
 - 커밋 전 `git status --short`로 범위를 확인하고, 사용자 기존 변경이나 다음 Task의 미완성 변경을 섞지 않는다.
 - 검증 실패, 커밋 범위 불명확, 사용자 변경과 분리 불가 상태에서는 커밋하지 않고 작업 로그에 사유를 남긴다.
 
+## Kwep UI 1:1 재작업 운영 규칙
+
+2026-06-14 브라우저 비교 결과, 현재 플랫폼 프론트엔드 구현은 Kwep 프로토타입의 UI, 사용자 흐름, 상호작용과 다수 불일치한다. 따라서 Task 6과 Task 7의 “완료” 상태는 API 연결과 기본 화면 초안 완료로만 해석하고, 제품 UI 완료 판정은 아래 재작업 게이트를 통과한 화면에만 부여한다.
+
+### 화면 일치의 정의
+
+화면이 Kwep와 일치한다는 것은 “비슷해 보인다”가 아니라, 같은 viewport와 같은 상태에서 사용자에게 노출되는 화면 영역의 HTML 구조, CSS 스타일링, 기능이 모두 일치한다는 뜻이다.
+
+- HTML 일치: 사용자 화면 root 내부의 모든 보이는 요소가 Kwep와 같은 순서, 계층, 태그 역할, 텍스트, 속성, 접근성 role/state, 입력 상태, disabled/selected/expanded 상태로 배치되어야 한다. Next.js runtime wrapper, script, product 인증 URL처럼 화면 의미와 배치를 바꾸지 않는 제품 경계 요소만 예외로 허용하고, 예외는 작업 로그에 명시한다.
+- 배치 일치: 각 요소의 좌표, 크기, stacking, scroll 영역, fixed/sticky 위치, safe-area 처리, overflow, responsive breakpoint 결과가 Kwep와 일치해야 한다. 스크린샷에서 확인되는 위치 차이는 모두 미완료 차이로 기록하고 수정한다.
+- CSS 일치: 각 요소의 computed style 중 `display`, `position`, `flex/grid`, `width`, `height`, `margin`, `padding`, `gap`, `font`, `line-height`, `color`, `background`, `border`, `border-radius`, `box-shadow`, `opacity`, `transform`, `transition`, `z-index`, `cursor`, `outline`, hover/focus/active/disabled 스타일이 Kwep와 일치해야 한다.
+- 기능 일치: 클릭, 탭, 키보드 입력, 선택, 제출, validation, disabled 해제, feedback panel, modal, navigation, 자동 저장, 복원, loading, error, 완료 상태 전이가 Kwep와 같은 조건과 순서로 동작해야 한다.
+- 완료 판정: DOM snapshot, computed style 비교, 스크린샷 비교, scripted interaction 결과에 알려진 차이가 하나도 남지 않아야 한다. 남은 차이가 있으면 화면은 완료가 아니며 커밋하거나 다음 화면으로 넘어가지 않는다.
+
+### 화면 작업 순서
+
+화면은 반드시 사용자 플로우 순서로 작업한다. 앞 화면이 Kwep와 완전히 일치하지 않으면 다음 화면으로 넘어가지 않는다.
+
+| 순서 | 사용자 플로우 화면     | Kwep 기준 route         | 제품 route                         | 주요 기준 파일                                                                |
+| ---: | ---------------------- | ----------------------- | ---------------------------------- | ----------------------------------------------------------------------------- |
+|    1 | 공개 랜딩              | `/`                     | `/`                                | `Kwep/src/app/components/landing/*`, `apps/web/src/features/landing/*`        |
+|    2 | 로그인                 | `/login`                | `/login`                           | `Kwep/src/app/components/Screens.tsx`, `apps/web/src/features/auth/*`         |
+|    3 | 홈 fresh 상태          | `/home`                 | `/app`                             | `Kwep/src/app/components/Screens.tsx`, `apps/web/src/features/home/*`         |
+|    4 | 배우기                 | `/learn`                | `/app/courses`                     | `Kwep/src/app/components/Screens.tsx`, `apps/web/src/features/courses/*`      |
+|    5 | 코스 상세              | `/course/c1`            | `/app/courses/c1`                  | `Kwep/src/app/components/Screens.tsx`, `apps/web/src/features/courses/*`      |
+|    6 | 레슨 시작              | `/lesson/c1/l1`         | `/app/lesson?lesson_id=l1`         | `Kwep/src/app/components/LessonShell.tsx`, `apps/web/src/features/lessons/*`  |
+|    7 | 읽기 스텝              | `/lesson/c1/l1` 시작 후 | `/app/lesson?lesson_id=l1` 시작 후 | `Kwep/src/app/components/StepRenderer.tsx`, `apps/web/src/features/lessons/*` |
+|    8 | 매칭/분류/쓰기 레슨    | `/lesson/c1/l-new`      | `/app/lesson?lesson_id=l-new`      | `Kwep/src/app/components/{MatchStep,CategorizeStep,StepRenderer}.tsx`         |
+|    9 | 객관식 확인 레슨       | `/lesson/c1/l2`         | `/app/lesson?lesson_id=l2`         | `Kwep/src/app/components/LessonShell.tsx`, `apps/web/src/features/lessons/*`  |
+|   10 | 레슨 완료              | 레슨 마지막 스텝 완료   | 레슨 마지막 스텝 완료              | `Kwep/src/app/components/SessionDone.tsx`, `apps/web/src/features/lessons/*`  |
+|   11 | 프로필                 | `/profile`              | `/app/profile`                     | `Kwep/src/app/components/Screens.tsx`, `apps/web/src/features/profile/*`      |
+|   12 | 테마 전환              | `/profile`              | `/app/profile`                     | `Kwep/src/app/components/Screens.tsx`, `apps/web/src/app/layout.tsx`          |
+|   13 | 어드민 진입과 대시보드 | `/admin`                | 어드민 제품 route                  | `Kwep/src/app/components/admin/*`, `apps/admin/**`, `apps/admin-api/**`       |
+
+### 화면별 완료 게이트
+
+각 화면은 다음 조건을 모두 만족해야 완료로 표시한다.
+
+- 작업 시작 전에 이 문서 `작업 로그`에 대상 화면, Kwep route, 제품 route, 예상 수정 파일을 기록한다.
+- Kwep와 제품을 같은 viewport, 같은 인증 상태, 같은 seed 상태로 띄운다.
+- 화면 비교 viewport는 기본 `390x844` 모바일을 우선 사용하고, 해당 Kwep 화면이 데스크톱 responsive UI를 가진 경우 `1280x720`도 추가한다.
+- Kwep 화면의 전체 사용자 화면 root DOM inventory를 제품 화면과 대조한다. inventory에는 요소 순서, 계층, 태그, role, 텍스트, 주요 attribute, aria state, form value, disabled/selected/expanded 상태를 포함한다.
+- Kwep 화면의 computed style inventory를 제품 화면과 대조한다. inventory에는 레이아웃, spacing, typography, color, background, border, radius, shadow, opacity, transform, responsive 결과, hover/focus/active/disabled 상태를 포함한다.
+- Kwep 화면의 기능 inventory를 제품 화면과 대조한다. inventory에는 버튼/링크, 입력, 선택, 제출, validation, modal, navigation, 저장/복원, loading/error, 완료 전이 흐름을 포함한다.
+- 불일치 항목을 먼저 목록화하고, 그중 최소 하나를 실패 테스트로 고정한다.
+- production code 수정 전에 실패 테스트가 실제로 실패하는지 확인한다.
+- 수정 후 해당 테스트, 관련 package `typecheck`, `lint`, `format:check`, `git diff --check`를 실행한다.
+- Browser 또는 Playwright로 같은 화면을 다시 캡처하고, 남은 불일치가 있으면 같은 화면 안에서 다시 수정한다.
+- URL, 인증 provider, 서버 저장 방식처럼 제품 경계상 달라야 하는 요소를 제외하고 HTML, CSS, 배치, 기능 차이가 없어야 한다.
+- 완료 시 이 문서 `작업 로그`에 비교 증적 위치, 검증 명령, 남은 위험이 없음을 기록한다.
+- 완료된 화면의 변경 파일만 stage하고 한국어 커밋 메시지로 커밋한다.
+- 커밋 후에만 다음 화면 작업을 시작한다.
+
+### 화면별 반복 루프
+
+각 화면은 아래 루프를 따른다.
+
+```text
+1. 작업 로그 시작 기록
+2. Kwep 기준 화면 캡처
+3. 제품 화면 캡처
+4. DOM/CSS/기능 차이 목록 작성
+5. 실패 테스트 작성
+6. 실패 확인
+7. 최소 구현
+8. 테스트/타입체크/린트/포맷 검증
+9. DOM/CSS/기능 브라우저 재비교
+10. 차이가 남아 있으면 4번으로 복귀
+11. 차이가 없으면 작업 로그 완료 기록
+12. git status 범위 확인
+13. 화면 단위 커밋
+14. 다음 화면으로 이동
+```
+
+금지 사항:
+
+- 여러 화면을 한 커밋에 섞지 않는다.
+- Kwep와 제품이 아직 다른 상태에서 다음 화면으로 넘어가지 않는다.
+- 이전 캡처나 이전 테스트 결과로 현재 화면 완료를 주장하지 않는다.
+- `/Kwep` 디렉토리 파일을 수정하지 않는다.
+- 제품 런타임 코드가 `/Kwep` 파일을 import하지 않는다.
+- 테스트 실패를 우회하기 위한 조건문을 추가하지 않는다.
+
 ## 현재 상태
 
 - 기준 날짜: 2026-06-14
 - 작업 브랜치: `codex/kwep-platform-pivot-plan`
+- 플랫폼 프론트엔드 상태: API 연결과 기본 화면 초안은 작성됐지만, Kwep UI 1:1 기준은 미달이다.
+- 다음 프론트엔드 작업 시작점: 사용자 플로우 1번 공개 랜딩(`/`).
 - 시작 시점 변경 상태:
   - `.prettierignore`: 기존 수정 있음
   - `AGENTS.md`: 기존 수정 있음
@@ -944,7 +1029,7 @@ Expected: Kwep seed에서 변환한 대표 lesson이 10개 Kwep 타입을 모두
 구현 정책:
 
 - 루트 `/`는 공개 랜딩이다.
-- 주요 CTA는 `/login?next=/app`로 이동한다.
+- 로고는 `/`, 시작 CTA는 Kwep `/home`에 대응하는 `/app`, 코스 CTA는 Kwep `/learn`에 대응하는 `/app/courses`로 이동한다.
 - 랜딩은 제품명, 가치 제안, 코스 미리보기, 학습 방식, 마지막 CTA를 포함한다.
 - 텍스트는 한국어로 작성한다.
 - Kwep의 장식적 localStorage 동작은 가져오지 않는다.
@@ -1123,6 +1208,720 @@ pkill -f "next dev" || true
 ```
 
 Expected: 사용한 dev server가 모두 종료된다.
+
+## Task 7R: 사용자 플로우 기반 Kwep UI 1:1 재작업
+
+이 Task는 Task 6과 Task 7에서 작성한 플랫폼 프론트엔드 초안을 Kwep 프로토타입과 실제 화면 기준으로 다시 맞추는 재작업이다. 기존 “플랫폼 프론트엔드 검증 통과”는 API 연동과 기본 route 동작 검증일 뿐이며, 이 Task가 완료되기 전까지 학습자 플랫폼 UI는 완료로 보지 않는다.
+
+**Files:**
+
+- Modify: `docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`
+- Modify: `docs/lesson-page.md`
+- Modify: `docs/platform-product-feature-spec.md`
+- Modify: `FRONTEND.md`
+- Modify: `apps/web/src/app/globals.css`
+- Modify: `apps/web/src/app/page.tsx`
+- Modify: `apps/web/src/app/login/page.tsx`
+- Modify: `apps/web/src/app/app/layout.tsx`
+- Modify: `apps/web/src/app/app/page.tsx`
+- Modify: `apps/web/src/app/app/courses/page.tsx`
+- Modify: `apps/web/src/app/app/courses/[id]/page.tsx`
+- Modify: `apps/web/src/app/app/lesson/page.tsx`
+- Modify: `apps/web/src/app/app/profile/page.tsx`
+- Modify: `apps/web/src/components/layout/app-shell.tsx`
+- Modify: `apps/web/src/components/layout/global-nav.tsx`
+- Modify: `apps/web/src/features/landing/landing-page.tsx`
+- Modify: `apps/web/src/features/landing/landing-page.test.tsx`
+- Modify: `apps/web/src/features/auth/auth-page.tsx`
+- Modify: `apps/web/src/features/auth/auth-page.test.tsx`
+- Modify: `apps/web/src/features/home/home-page.tsx`
+- Modify: `apps/web/src/features/home/home-page.test.tsx`
+- Modify: `apps/web/src/features/courses/courses-page.tsx`
+- Modify: `apps/web/src/features/courses/courses-page.test.tsx`
+- Modify: `apps/web/src/features/courses/course-detail-page.tsx`
+- Modify: `apps/web/src/features/courses/course-detail-page.test.tsx`
+- Modify: `apps/web/src/features/courses/course-curriculum.tsx`
+- Modify: `apps/web/src/features/courses/course-curriculum.test.tsx`
+- Modify: `apps/web/src/features/lessons/lesson-experience.tsx`
+- Modify: `apps/web/src/features/lessons/lesson-experience.test.tsx`
+- Modify: `apps/web/src/features/lessons/lesson-step-renderer.tsx`
+- Modify: `apps/web/src/features/lessons/lesson-step-renderer.test.tsx`
+- Modify: `apps/web/src/features/lessons/lesson-types.ts`
+- Modify: `apps/web/src/features/lessons/lesson-api-mappers.ts`
+- Modify: `apps/web/src/features/lessons/lesson-api-mappers.test.ts`
+- Modify: `apps/web/src/features/lessons/lesson-logic.ts`
+- Modify: `apps/web/src/features/lessons/use-lesson-persistence.ts`
+- Modify: `apps/web/src/features/profile/profile-page.tsx`
+- Modify: `apps/web/src/features/profile/profile-page.test.tsx`
+- Create: `apps/web/src/features/lessons/match-step.tsx`
+- Create: `apps/web/src/features/lessons/categorize-step.tsx`
+- Create: `apps/web/src/features/lessons/order-step.tsx`
+- Create: `apps/web/src/features/lessons/session-done.tsx`
+- Create: `apps/web/src/features/theme/theme-toggle.tsx`
+- Create: `docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md`
+
+- [ ] **Step 7R.0: 재작업 시작 기록과 기준 화면 목록 고정**
+
+시작 기록에 포함할 내용:
+
+- Kwep UI 1:1 재작업은 공개 랜딩부터 사용자 플로우 순서로 진행한다.
+- 한 화면이 Kwep와 완전히 일치하기 전에는 다음 화면으로 넘어가지 않는다.
+- 각 화면 완료 시 해당 화면 변경 파일만 커밋한다.
+- 비교 기준 viewport는 모바일 `390x844`를 기본으로 하고, Kwep 화면이 데스크톱 layout을 제공하면 `1280x720`을 추가한다.
+
+검증:
+
+```bash
+bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+```
+
+Expected: 계획 문서 포맷이 통과한다.
+
+- [x] **Step 7R.1: 공개 랜딩(`/`)을 Kwep와 일치시킨 뒤 커밋**
+
+Kwep 기준:
+
+```text
+Route: /
+Source:
+  Kwep/src/app/components/landing/LandingScreen.tsx
+  Kwep/src/app/components/landing/LandingNav.tsx
+  Kwep/src/app/components/landing/Hero.tsx
+  Kwep/src/app/components/landing/Marquee.tsx
+  Kwep/src/app/components/landing/Features.tsx
+  Kwep/src/app/components/landing/HowItWorks.tsx
+  Kwep/src/app/components/landing/Stats.tsx
+  Kwep/src/app/components/landing/Showcase.tsx
+  Kwep/src/app/components/landing/FinalCTA.tsx
+  Kwep/src/app/components/landing/Footer.tsx
+```
+
+제품 대상:
+
+```text
+Route: /
+Source:
+  apps/web/src/features/landing/landing-page.tsx
+  apps/web/src/app/page.tsx
+  apps/web/src/app/globals.css
+```
+
+비교 항목:
+
+- 상단 nav 브랜드와 CTA
+- hero 문구, 버튼, 우측 preview 영역
+- Kwep landing section 순서
+- feature/how-it-works/stat/showcase/final CTA/footer 문구와 레이아웃
+- dark/light 색상, border radius, spacing, typography
+- 클릭 기능은 Kwep 사용자 플로우와 같은 논리 화면으로 이동한다.
+  - 로고: Kwep `/` → 제품 `/`
+  - 시작 CTA: Kwep `/home` → 제품 `/app`
+  - 코스 CTA: Kwep `/learn` → 제품 `/app/courses`
+
+검증:
+
+```bash
+bun --filter @workspace/web test -- landing-page
+bun --filter @workspace/web typecheck
+bun --filter @workspace/web lint
+bunx prettier --check apps/web/src/features/landing apps/web/src/app/globals.css docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+git diff --check
+```
+
+브라우저 검증:
+
+```text
+Kwep: http://127.0.0.1:5173/
+제품: http://localhost:3000/
+viewport: 390x844
+추가 viewport: 1280x720
+```
+
+Expected: 공개 랜딩의 화면, 텍스트, HTML/CSS 배치, 제품 대응 CTA 동작이 Kwep와 일치한다.
+
+커밋:
+
+```bash
+git status --short
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/capture-landing.mjs docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/kwep-390x844.png docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/product-390x844.png docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/kwep-1280x720.png docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/product-1280x720.png docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/kwep-390x844-inventory.json docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/product-390x844-inventory.json docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/kwep-1280x720-inventory.json docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/product-1280x720-inventory.json apps/web/src/app/globals.css apps/web/src/features/landing packages/ui/src/components/icons.tsx
+git commit -m "랜딩 화면을 Kwep와 일치"
+```
+
+- [x] **Step 7R.2: 로그인(`/login`)을 Kwep와 일치시킨 뒤 커밋**
+
+Kwep 기준:
+
+```text
+Route: /login
+Source:
+  Kwep/src/app/components/Screens.tsx
+  LoginScreen
+```
+
+제품 대상:
+
+```text
+Route: /login
+Source:
+  apps/web/src/features/auth/auth-page.tsx
+  apps/web/src/features/auth/auth-page.test.tsx
+  apps/web/src/app/login/page.tsx
+```
+
+비교 항목:
+
+- 중앙 정렬 구조
+- 로고/이모지/제품명 `글결.`
+- 설명 문구
+- Google 계속하기 버튼 형태
+- 이메일/비밀번호 미지원 안내
+- 랜딩 복귀 UI가 Kwep에 없으면 제거한다.
+- Google 버튼 href는 제품 인증 경계인 `/api/auth/sign-in/google?callbackURL=...`을 유지한다.
+
+검증:
+
+```bash
+bun --filter @workspace/web test -- auth-page
+bun --filter @workspace/web typecheck
+bun --filter @workspace/web lint
+bunx prettier --check apps/web/src/features/auth apps/web/src/app/login/page.tsx docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+git diff --check
+```
+
+브라우저 검증:
+
+```text
+Kwep: http://127.0.0.1:5173/login
+제품: http://localhost:3000/login
+viewport: 390x844
+```
+
+Expected: 인증 provider URL을 제외하고 로그인 화면과 문구가 Kwep와 일치한다.
+
+커밋:
+
+```bash
+git status --short
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md apps/web/src/app/login/page.tsx apps/web/src/features/auth
+git commit -m "로그인 화면을 Kwep와 일치"
+```
+
+- [ ] **Step 7R.3: 홈 fresh 상태(`/home` vs `/app`)를 Kwep와 일치시킨 뒤 커밋**
+
+Kwep 기준:
+
+```text
+Route: /home
+Source:
+  Kwep/src/app/components/Screens.tsx
+  HomeScreen
+  Kwep/src/app/components/Chrome.tsx
+```
+
+제품 대상:
+
+```text
+Route: /app
+Source:
+  apps/web/src/features/home/home-page.tsx
+  apps/web/src/components/layout/app-shell.tsx
+  apps/web/src/components/layout/global-nav.tsx
+  apps/web/src/app/app/layout.tsx
+  apps/web/src/app/app/page.tsx
+```
+
+비교 항목:
+
+- Kwep 앱 chrome: 상단 브랜드/아바타, 모바일 하단 nav
+- fresh 상태에서 진행 중 코스가 없을 때 “첫 번째 코스를 선택해 보세요” 카드만 표시
+- 연속 학습일과 완료한 레슨 카드
+- 사용자 이름 표시 규칙
+- 제품이 fresh 상태에서 모든 코스를 진행 중으로 보여주는 현재 동작 제거
+
+검증:
+
+```bash
+bun --filter @workspace/web test -- home-page global-nav
+bun --filter @workspace/web typecheck
+bun --filter @workspace/web lint
+bunx prettier --check apps/web/src/features/home apps/web/src/components/layout apps/web/src/app/app docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+git diff --check
+```
+
+브라우저 검증:
+
+```text
+Kwep: http://127.0.0.1:5173/home
+제품: http://localhost:3000/app
+viewport: 390x844
+state: progress/answers/activity 없음
+```
+
+Expected: fresh 홈의 화면, 빈 상태, nav, 통계가 Kwep와 일치한다.
+
+커밋:
+
+```bash
+git status --short
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md apps/web/src/app/app apps/web/src/components/layout apps/web/src/features/home
+git commit -m "홈 화면 fresh 상태를 Kwep와 일치"
+```
+
+- [ ] **Step 7R.4: 배우기(`/learn` vs `/app/courses`)를 Kwep와 일치시킨 뒤 커밋**
+
+Kwep 기준:
+
+```text
+Route: /learn
+Source:
+  Kwep/src/app/components/Screens.tsx
+  LearnScreen
+```
+
+제품 대상:
+
+```text
+Route: /app/courses
+Source:
+  apps/web/src/features/courses/courses-page.tsx
+  apps/web/src/features/courses/courses-page.test.tsx
+  apps/web/src/app/app/courses/page.tsx
+```
+
+비교 항목:
+
+- 제목 `무엇을 써볼까요?`
+- 설명 문구
+- 가로 스크롤 카테고리 pill
+- 선택된 카테고리의 코스만 표시
+- 코스 이미지, 카드 방향, 레슨 수 표시
+- 하단 nav 유지
+
+검증:
+
+```bash
+bun --filter @workspace/web test -- courses-page
+bun --filter @workspace/web typecheck
+bun --filter @workspace/web lint
+bunx prettier --check apps/web/src/features/courses apps/web/src/app/app/courses/page.tsx docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+git diff --check
+```
+
+브라우저 검증:
+
+```text
+Kwep: http://127.0.0.1:5173/learn
+제품: http://localhost:3000/app/courses
+viewport: 390x844
+```
+
+Expected: 배우기 화면의 카테고리 선택, 카드 UI, 이미지, nav가 Kwep와 일치한다.
+
+커밋:
+
+```bash
+git status --short
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md apps/web/src/app/app/courses/page.tsx apps/web/src/features/courses
+git commit -m "배우기 화면을 Kwep와 일치"
+```
+
+- [ ] **Step 7R.5: 코스 상세(`/course/c1` vs `/app/courses/c1`)를 Kwep와 일치시킨 뒤 커밋**
+
+Kwep 기준:
+
+```text
+Route: /course/c1
+Source:
+  Kwep/src/app/components/Screens.tsx
+  CourseDetailScreen
+```
+
+제품 대상:
+
+```text
+Route: /app/courses/c1
+Source:
+  apps/web/src/features/courses/course-detail-page.tsx
+  apps/web/src/features/courses/course-curriculum.tsx
+  apps/web/src/app/app/courses/[id]/page.tsx
+```
+
+비교 항목:
+
+- 돌아가기 버튼
+- 썸네일 이미지
+- course hero 카드
+- 진행률 bar와 `completed/total`
+- 첫 번째/다음 레슨 CTA 문구
+- 커리큘럼 accordion, 유닛 번호, 완료/잠김/진행 가능 icon
+- 잠김 레슨 click 방지
+
+검증:
+
+```bash
+bun --filter @workspace/web test -- course-detail-page course-curriculum
+bun --filter @workspace/web typecheck
+bun --filter @workspace/web lint
+bunx prettier --check apps/web/src/features/courses apps/web/src/app/app/courses/[id]/page.tsx docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+git diff --check
+```
+
+브라우저 검증:
+
+```text
+Kwep: http://127.0.0.1:5173/course/c1
+제품: http://localhost:3000/app/courses/c1
+viewport: 390x844
+state: c1 진행 없음
+```
+
+Expected: 코스 상세 화면과 커리큘럼 상태 UI가 Kwep와 일치한다.
+
+커밋:
+
+```bash
+git status --short
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md apps/web/src/app/app/courses/[id]/page.tsx apps/web/src/features/courses
+git commit -m "코스 상세 화면을 Kwep와 일치"
+```
+
+- [ ] **Step 7R.6: 레슨 shell과 읽기 스텝을 Kwep와 일치시킨 뒤 커밋**
+
+Kwep 기준:
+
+```text
+Routes:
+  /lesson/c1/l1
+  /lesson/c1/l1 시작 후
+Source:
+  Kwep/src/app/components/LessonShell.tsx
+  Kwep/src/app/components/StepRenderer.tsx
+```
+
+제품 대상:
+
+```text
+Route: /app/lesson?lesson_id=l1
+Source:
+  apps/web/src/features/lessons/lesson-experience.tsx
+  apps/web/src/features/lessons/lesson-step-renderer.tsx
+  apps/web/src/features/lessons/lesson-logic.ts
+  apps/web/src/app/app/lesson/page.tsx
+```
+
+비교 항목:
+
+- 전역 nav 없는 full-screen lesson shell
+- 시작 화면의 X, 제목, 설명, 시간, 스텝 수, 하단 고정 시작 CTA
+- 시작 후 상단 X, progress bar, `1/1`
+- Markdown 렌더링: 굵게, 인용, 목록, 수평선, term/source
+- 읽기/비교 스텝 CTA 문구 `이해했어요`
+- 나가기 confirm modal
+
+검증:
+
+```bash
+bun --filter @workspace/web test -- lesson-experience lesson-step-renderer
+bun --filter @workspace/web typecheck
+bun --filter @workspace/web lint
+bunx prettier --check apps/web/src/features/lessons apps/web/src/app/app/lesson/page.tsx docs/lesson-page.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+git diff --check
+```
+
+브라우저 검증:
+
+```text
+Kwep: http://127.0.0.1:5173/lesson/c1/l1
+제품: http://localhost:3000/app/lesson?lesson_id=l1
+viewport: 390x844
+```
+
+Expected: 레슨 시작 화면과 읽기 스텝이 Kwep와 일치한다.
+
+커밋:
+
+```bash
+git status --short
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/lesson-page.md apps/web/src/app/app/lesson/page.tsx apps/web/src/features/lessons
+git commit -m "레슨 shell과 읽기 스텝을 Kwep와 일치"
+```
+
+- [ ] **Step 7R.7: 매칭/분류/쓰기 레슨(`l-new`)을 Kwep와 일치시킨 뒤 커밋**
+
+Kwep 기준:
+
+```text
+Route: /lesson/c1/l-new
+Source:
+  Kwep/src/app/components/LessonShell.tsx
+  Kwep/src/app/components/StepRenderer.tsx
+  Kwep/src/app/components/MatchStep.tsx
+  Kwep/src/app/components/CategorizeStep.tsx
+```
+
+제품 대상:
+
+```text
+Route: /app/lesson?lesson_id=l-new
+Source:
+  apps/web/src/features/lessons/lesson-experience.tsx
+  apps/web/src/features/lessons/lesson-step-renderer.tsx
+  apps/web/src/features/lessons/match-step.tsx
+  apps/web/src/features/lessons/categorize-step.tsx
+  apps/web/src/features/lessons/lesson-logic.ts
+```
+
+비교 항목:
+
+- `MATCH`: 왼쪽 선택 후 오른쪽 선택, shuffled right order, 확인 전 disabled 상태, 확인 후 correct/wrong 색상
+- `CATEGORIZE`: tag panel, item tap, placement badge, 완료 조건
+- `WRITE`: guide markdown, badge, claim/reference/structure, min/goal/max counter, disabled CTA 조건, sample 표시
+- 답변이 없으면 다음으로 넘어가지 않음
+- 하단 CTA 문구와 바텀 피드백 panel
+- 자동 저장과 복원
+
+검증:
+
+```bash
+bun --filter @workspace/web test -- lesson-experience lesson-step-renderer
+bun --filter @workspace/web typecheck
+bun --filter @workspace/web lint
+bunx prettier --check apps/web/src/features/lessons docs/lesson-page.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+git diff --check
+```
+
+브라우저 검증:
+
+```text
+Kwep: http://127.0.0.1:5173/lesson/c1/l-new
+제품: http://localhost:3000/app/lesson?lesson_id=l-new
+viewport: 390x844
+```
+
+Expected: `l-new`의 4개 스텝 UI, 제출 조건, 저장/복원이 Kwep와 일치한다.
+
+커밋:
+
+```bash
+git status --short
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/lesson-page.md apps/web/src/features/lessons
+git commit -m "매칭 분류 쓰기 레슨을 Kwep와 일치"
+```
+
+- [ ] **Step 7R.8: 객관식 확인 레슨(`l2`)을 Kwep와 일치시킨 뒤 커밋**
+
+Kwep 기준:
+
+```text
+Route: /lesson/c1/l2
+Source:
+  Kwep/src/app/components/LessonShell.tsx
+  Kwep/src/app/components/StepRenderer.tsx
+```
+
+제품 대상:
+
+```text
+Route: /app/lesson?lesson_id=l2
+Source:
+  apps/web/src/features/lessons/lesson-experience.tsx
+  apps/web/src/features/lessons/lesson-step-renderer.tsx
+  apps/web/src/features/lessons/lesson-logic.ts
+```
+
+비교 항목:
+
+- 읽기 스텝 3개 후 객관식 진입
+- 객관식 선택 전 CTA disabled
+- 선택 후 `확인하기`
+- 정답/오답 bottom feedback panel
+- 오답 시 `wrong`, 정답 시 `explanation`
+- 정답 option 강조와 오답 option 표시
+- `계속하기` 후 완료 진입
+
+검증:
+
+```bash
+bun --filter @workspace/web test -- lesson-experience lesson-step-renderer
+bun --filter @workspace/web typecheck
+bun --filter @workspace/web lint
+bunx prettier --check apps/web/src/features/lessons docs/lesson-page.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+git diff --check
+```
+
+브라우저 검증:
+
+```text
+Kwep: http://127.0.0.1:5173/lesson/c1/l2
+제품: http://localhost:3000/app/lesson?lesson_id=l2
+viewport: 390x844
+```
+
+Expected: 객관식 제출과 정오답 피드백 흐름이 Kwep와 일치한다.
+
+커밋:
+
+```bash
+git status --short
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/lesson-page.md apps/web/src/features/lessons
+git commit -m "객관식 확인 흐름을 Kwep와 일치"
+```
+
+- [ ] **Step 7R.9: 레슨 완료 화면을 Kwep와 일치시킨 뒤 커밋**
+
+Kwep 기준:
+
+```text
+Source:
+  Kwep/src/app/components/SessionDone.tsx
+  Kwep/src/app/components/Screens.tsx Completion
+```
+
+제품 대상:
+
+```text
+Source:
+  apps/web/src/features/lessons/session-done.tsx
+  apps/web/src/features/lessons/lesson-experience.tsx
+```
+
+비교 항목:
+
+- 완료 축하 배경과 문구
+- 완료한 레슨 `+1`
+- 코스 진행률 `completed/total`
+- 코스로 돌아가기
+- 다음 레슨 CTA
+- 완료 저장 후 홈/코스 진행 상태 반영
+
+검증:
+
+```bash
+bun --filter @workspace/web test -- lesson-experience
+bun --filter @workspace/web typecheck
+bun --filter @workspace/web lint
+bunx prettier --check apps/web/src/features/lessons docs/lesson-page.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+git diff --check
+```
+
+브라우저 검증:
+
+```text
+Kwep: l1 또는 l2 완료 직후
+제품: l1 또는 l2 완료 직후
+viewport: 390x844
+```
+
+Expected: 완료 화면과 다음 이동 흐름이 Kwep와 일치한다.
+
+커밋:
+
+```bash
+git status --short
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/lesson-page.md apps/web/src/features/lessons
+git commit -m "레슨 완료 화면을 Kwep와 일치"
+```
+
+- [ ] **Step 7R.10: 프로필과 테마 전환을 Kwep와 일치시킨 뒤 커밋**
+
+Kwep 기준:
+
+```text
+Route: /profile
+Source:
+  Kwep/src/app/components/Screens.tsx
+  ProfileScreen
+  ThemeToggle
+```
+
+제품 대상:
+
+```text
+Route: /app/profile
+Source:
+  apps/web/src/features/profile/profile-page.tsx
+  apps/web/src/features/profile/profile-page.test.tsx
+  apps/web/src/features/theme/theme-toggle.tsx
+  apps/web/src/app/app/profile/page.tsx
+```
+
+비교 항목:
+
+- 큰 아바타
+- 이름과 가입일
+- 완료한 레슨/연속 학습일 카드
+- 화면 테마 heading
+- 라이트/다크/시스템 segmented control
+- 로그아웃 버튼
+- 하단 nav
+
+검증:
+
+```bash
+bun --filter @workspace/web test -- profile-page
+bun --filter @workspace/web typecheck
+bun --filter @workspace/web lint
+bunx prettier --check apps/web/src/features/profile apps/web/src/features/theme apps/web/src/app/app/profile/page.tsx docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md
+git diff --check
+```
+
+브라우저 검증:
+
+```text
+Kwep: http://127.0.0.1:5173/profile
+제품: http://localhost:3000/app/profile
+viewport: 390x844
+```
+
+Expected: 프로필과 테마 전환 UI가 Kwep와 일치한다.
+
+커밋:
+
+```bash
+git status --short
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md FRONTEND.md apps/web/src/app/app/profile/page.tsx apps/web/src/features/profile apps/web/src/features/theme
+git commit -m "프로필과 테마 전환을 Kwep와 일치"
+```
+
+- [ ] **Step 7R.11: 학습자 플로우 전체 회귀 검증**
+
+검증 명령:
+
+```bash
+bun --filter @workspace/web test
+bun --filter @workspace/web typecheck
+bun --filter @workspace/web lint
+bun --filter @workspace/web build
+bun --filter @workspace/api test
+bun --filter @workspace/api typecheck
+bun --filter @workspace/api lint
+bun run format:check
+git diff --check
+```
+
+브라우저 회귀:
+
+```text
+1. /
+2. /login
+3. /app
+4. /app/courses
+5. /app/courses/c1
+6. /app/lesson?lesson_id=l1
+7. /app/lesson?lesson_id=l-new
+8. /app/lesson?lesson_id=l2
+9. /app/profile
+```
+
+Expected: 사용자 플로우 1~12번 화면이 Kwep와 일치하고, 모든 dev server가 종료된다.
+
+커밋:
+
+```bash
+git status --short
+git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md FRONTEND.md docs/lesson-page.md docs/platform-product-feature-spec.md
+git commit -m "학습자 플로우 Kwep UI 일치 검증"
+```
 
 ## Task 8: 어드민 API 요구사항 확정과 계약 작성
 
@@ -2319,6 +3118,58 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/core typecheck && bun --filter @workspace/db typecheck && bun --filter @workspace/admin-api typecheck`: 통과했다.
 - `bun --filter @workspace/core lint && bun --filter @workspace/db lint && bun --filter @workspace/admin-api lint`: 통과했다.
 
+### 2026-06-14 Kwep UI 1:1 재작업 계획 수정 시작
+
+- 브라우저 비교 결과, 현재 플랫폼 프론트엔드 초안이 Kwep 프로토타입과 UI, 화면 흐름, 상호작용 기준에서 1:1로 일치하지 않음을 확인했다.
+- 사용자 지시에 따라 학습자 화면 작업 순서를 공개 랜딩(`/`)부터 사용자 플로우 순서로 재정렬한다.
+- 한 화면이 Kwep와 완전히 일치하기 전에는 다음 화면으로 넘어가지 않고, 화면 완료 후 커밋한 뒤 다음 화면을 작업하는 규칙을 계획에 추가한다.
+- Task 6과 Task 7의 완료 상태는 API 연결과 기본 화면 초안 완료로만 해석하고, 실제 UI 완료는 새 Kwep UI 1:1 재작업 Task에서 판정하도록 정정한다.
+
+### 2026-06-14 Kwep UI 1:1 재작업 계획 수정 완료
+
+- `Kwep UI 1:1 재작업 운영 규칙`을 추가해 화면 작업 순서, 화면별 완료 게이트, 반복 루프, 금지 사항을 명시했다.
+- `Task 7R: 사용자 플로우 기반 Kwep UI 1:1 재작업`을 추가해 공개 랜딩부터 로그인, 홈, 배우기, 코스 상세, 레슨, 프로필 순서로 화면별 비교와 커밋 단위를 고정했다.
+- 상태 요약에서 플랫폼 프론트엔드 항목을 초안 구현/검증으로 정정하고, Kwep UI 1:1 사용자 플로우 재작업과 브라우저 검증을 별도 미완료 항목으로 분리했다.
+- `bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check -- docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+
+### 2026-06-14 Kwep UI 1:1 일치 기준 보강
+
+- 사용자 지시에 따라 화면 일치의 정의를 HTML 구조, CSS 스타일링, 기능 동등성의 완전 일치로 명시했다.
+- 사용자 화면 root 내부의 모든 보이는 요소는 Kwep와 같은 순서, 계층, 태그 역할, 텍스트, 속성, 접근성 상태, 입력 상태로 배치되어야 한다.
+- computed style과 배치 비교 항목에 레이아웃, spacing, typography, color, background, border, radius, shadow, opacity, responsive 결과, hover/focus/active/disabled 상태를 포함했다.
+- 기능 비교 항목에 클릭, 탭, 키보드 입력, 선택, 제출, validation, modal, navigation, 자동 저장, 복원, loading, error, 완료 전이 흐름을 포함했다.
+- 알려진 DOM/CSS/기능 차이가 하나라도 남으면 해당 화면은 완료가 아니며 커밋하거나 다음 화면으로 넘어가지 않는다고 명시했다.
+
+### 2026-06-14 Task 7R Step 7R.1 랜딩 화면 일치 완료
+
+- 제품 랜딩을 기존 글결 초안에서 Kwep `Kernel` 공개 랜딩과 같은 섹션, 문구, 색상, spacing, radius, typography, CTA 구성으로 교체했다.
+- Kwep와 같은 Pretendard 웹폰트를 로드해 한글 텍스트 폭과 모바일 CTA 줄 배치를 맞췄다.
+- Kwep `lucide-react@0.487.0`의 `Sparkles` SVG path를 랜딩 내부에서 고정해 보이는 SVG DOM과 폭 차이를 제거했다.
+- 로고 클릭은 Kwep `/`에 대응하는 제품 `/`, 시작 CTA는 Kwep `/home`에 대응하는 제품 `/app`, 코스 CTA는 Kwep `/learn`에 대응하는 제품 `/app/courses`로 이동하도록 기능을 분리했다.
+- `docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/capture-landing.mjs`는 `document.fonts.ready` 이후 Kwep와 제품을 캡처한다.
+- 최종 좌표 비교에서 390x844와 1280x720 모두 visible element count가 일치했고, section/button/image/heading의 rect diff가 0개임을 확인했다.
+- computed style 비교에서 390x844와 1280x720 모두 diff 0개를 확인했다.
+- 스크롤 상호작용 비교에서 `scrollY` `0`, `3600`, `4100`, `4800`의 showcase preview와 final CTA heading 좌표가 Kwep와 제품에서 일치했다.
+- 클릭 검증에서 비로그인 상태의 최종 URL은 Kwep와 제품 모두 `/login`이었다. 내부 논리 route는 Kwep `/home`, `/learn`에 대응해 제품 `/app`, `/app/courses`를 사용한다.
+- 남은 attribute diff는 Vite/Next inline style 문자열의 공백 직렬화 차이이며, computed style은 동일했다.
+- `bun --filter @workspace/web test -- landing-page`: 통과했다. 테스트 파일 1개, 테스트 2개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bunx prettier --check apps/web/src/features/landing apps/web/src/app/globals.css docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/capture-landing.mjs docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` 기반 Playwright 캡처를 다시 생성했다.
+
+### 2026-06-14 Task 7R Step 7R.2 로그인 화면 일치 완료
+
+- 제품 로그인 화면을 Kwep `LoginScreen`과 같은 중앙 정렬 구조, ✍️ 표식, `글결.` heading, 설명 문구, Google 버튼, 이메일/비밀번호 미지원 안내로 교체했다.
+- Kwep와 같은 `an-fi` 진입 애니메이션을 제품 전역 CSS에 추가했다.
+- Google 버튼은 Kwep와 같은 `<button>` 구조를 유지하면서 제품 Google 인증 URL로 이동하도록 연결했다.
+- `docs/superpowers/evidence/2026-06-14-kwep-ui-parity/login/capture-login.mjs`로 390x844와 1280x720 캡처와 inventory를 생성했다.
+- Kwep 런타임의 `next-themes` 초기화 스크립트 래퍼 1개를 제외하면, 로그인 화면의 실제 요소 13개는 두 뷰포트 모두 tag, text, class, rect, computed style diff가 0이었다.
+- `bun --filter @workspace/web test -- auth-page`: 통과했다. 테스트 파일 1개, 테스트 2개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성
@@ -2330,9 +3181,11 @@ Expected: 문서 포맷 검증이 통과한다.
 - [x] 시작 문서 갱신
 - [x] 플랫폼 API 구현
 - [x] 플랫폼 API 검증
-- [x] 플랫폼 프론트엔드 구현
-- [x] 플랫폼 프론트엔드 검증
-- [x] 플랫폼 브라우저 스모크
+- [x] 플랫폼 프론트엔드 초안 구현
+- [x] 플랫폼 프론트엔드 초안 검증
+- [x] 플랫폼 브라우저 스모크(초안)
+- [ ] Kwep UI 1:1 사용자 플로우 재작업
+- [ ] Kwep UI 1:1 브라우저 검증
 - [ ] 어드민 API 구현
 - [ ] 어드민 API 검증
 - [ ] 어드민 프론트엔드 구현
