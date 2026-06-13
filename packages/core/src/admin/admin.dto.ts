@@ -24,6 +24,14 @@ export const adminSortDirectionSchema = z.enum(["asc", "desc"])
 export const adminUpdateUserStatusRequestSchema = z.object({
   status: z.enum(["active", "suspended"]),
 })
+export const adminNoticeSettingsRequestSchema = z.object({
+  announce: z.string(),
+  banner: z.string(),
+})
+export const adminLegalSettingsRequestSchema = z.object({
+  privacy: z.string(),
+  terms: z.string(),
+})
 
 export const adminDashboardDtoSchema = z.object({
   metrics: z.object({
@@ -116,9 +124,35 @@ export const adminLessonAnalyticsPageDtoSchema = z.object({
   }),
 })
 
+export const adminSettingsDtoSchema = z.object({
+  legal: adminLegalSettingsRequestSchema,
+  notice: adminNoticeSettingsRequestSchema,
+})
+
+export const adminContentResetResultSchema = z.object({
+  changed: z.object({
+    archived: nonNegativeIntegerSchema,
+    courses: nonNegativeIntegerSchema,
+    lessons: nonNegativeIntegerSchema,
+    steps: nonNegativeIntegerSchema,
+    units: nonNegativeIntegerSchema,
+  }),
+  revision: nonNegativeIntegerSchema,
+})
+
 export type AdminAnalyticsDto = z.infer<typeof adminAnalyticsDtoSchema>
+export type AdminContentResetResultDto = z.infer<
+  typeof adminContentResetResultSchema
+>
 export type AdminUserDetailDto = z.infer<typeof adminUserDetailDtoSchema>
 export type AdminUserListDto = z.infer<typeof adminUserListDtoSchema>
+export type AdminSettingsDto = z.infer<typeof adminSettingsDtoSchema>
+export type AdminNoticeSettingsRequest = z.infer<
+  typeof adminNoticeSettingsRequestSchema
+>
+export type AdminLegalSettingsRequest = z.infer<
+  typeof adminLegalSettingsRequestSchema
+>
 export type AdminUserListStatusFilter = z.infer<
   typeof adminUserListStatusFilterSchema
 >

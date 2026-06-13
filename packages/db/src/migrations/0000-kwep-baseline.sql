@@ -87,6 +87,12 @@ CREATE TABLE IF NOT EXISTS admin_auth_verifications (
   updated_at INTEGER
 );
 
+CREATE TABLE IF NOT EXISTS admin_settings (
+  key TEXT PRIMARY KEY NOT NULL,
+  value TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS courses (
   id TEXT PRIMARY KEY NOT NULL,
   title TEXT NOT NULL,

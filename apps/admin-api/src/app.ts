@@ -5,6 +5,7 @@ import type { AdminSessionResolver } from "@/auth/admin-session"
 import { createAnalyticsRoute } from "@/routes/analytics.route"
 import { createDashboardRoute } from "@/routes/dashboard.route"
 import { createHealthRoute } from "@/routes/health.route"
+import { createSettingsRoute } from "@/routes/settings.route"
 import { createUsersRoute } from "@/routes/users.route"
 import type { AdminService } from "@workspace/core/admin"
 
@@ -48,6 +49,14 @@ export function createApp(dependencies: AdminApiDependencies): Hono {
   app.route(
     "/users",
     createUsersRoute({
+      adminService: dependencies.dashboardService,
+      now: dependencies.now ?? (() => new Date()),
+      sessionResolver: dependencies.sessionResolver,
+    })
+  )
+  app.route(
+    "/settings",
+    createSettingsRoute({
       adminService: dependencies.dashboardService,
       now: dependencies.now ?? (() => new Date()),
       sessionResolver: dependencies.sessionResolver,

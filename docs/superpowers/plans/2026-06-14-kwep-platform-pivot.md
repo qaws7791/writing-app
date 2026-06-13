@@ -2048,7 +2048,7 @@ bun --filter @workspace/admin-api test -- analytics
 
 Expected: 완료율은 `completed / started`, 이탈률은 `100 - completionRate`로 계산된다.
 
-- [ ] **Step 8.4: 운영 설정 API 작성**
+- [x] **Step 8.4: 운영 설정 API 작성**
 
 Endpoint:
 
@@ -3440,6 +3440,31 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/core typecheck`, `bun --filter @workspace/db typecheck`, `bun --filter @workspace/admin-api typecheck`: 통과했다.
 - `bun --filter @workspace/core lint`, `bun --filter @workspace/db lint`, `bun --filter @workspace/admin-api lint`: 통과했다.
 - `bunx prettier --check apps/admin-api/src/app.test.ts apps/admin-api/src/app.ts apps/admin-api/src/routes/analytics.route.ts apps/admin-api/src/routes/analytics.route.test.ts packages/core/src/admin/admin.dto.ts packages/core/src/admin/admin.repository.ts packages/core/src/admin/admin.service.ts packages/core/src/admin/admin.service.test.ts packages/db/src/repositories/admin.repository.ts packages/db/src/repositories/admin.repository.test.ts docs/admin-site.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check`: 통과했다.
+
+### 2026-06-14 Task 8 Step 8.4 운영 설정 API 시작
+
+- 다음 대상은 어드민 운영 설정 화면의 Kwep `AdminSettings.tsx`, `Kwep/src/app/admin/content.tsx`, `Kwep/src/app/data.ts`에서 파생한 제품 API 계약이다.
+- 제품 대상 파일은 `packages/core/src/admin/*`, `packages/db/src/schema/*`, `packages/db/src/migrations/0000-kwep-baseline.sql`, `packages/db/src/repositories/admin.repository.ts`, `apps/admin-api/src/app.ts`, `apps/admin-api/src/routes/settings.route.ts`, 관련 테스트이다.
+- `GET /settings`는 Kwep localStorage 설정값에 대응하는 `banner`, `announce`, `terms`, `privacy`를 반환한다.
+- `PUT /settings/notice`는 공지/배너를 저장하고, `PUT /settings/legal`은 약관/개인정보처리방침을 저장한다.
+- `POST /settings/content-reset`은 Kwep seed 콘텐츠를 기준으로 active 콘텐츠를 재시드하고, 새 revision과 변경 수를 반환한다.
+- production code 수정 전에 core service, admin API route, DB repository 테스트에 실패 기대값을 먼저 추가한다.
+
+### 2026-06-14 Task 8 Step 8.4 운영 설정 API 완료
+
+- `packages/core/src/admin`에 운영 설정 DTO, 공지/법무 저장 요청 DTO, 콘텐츠 초기화 결과 DTO와 repository/service port를 추가했다.
+- `packages/db/src/schema/admin.schema.ts`와 baseline migration에 `admin_settings` key-value 테이블을 추가했다.
+- `packages/db/src/seeds/seed-content.ts`는 Kwep seed rows 생성 helper를 어드민 reset에서도 재사용할 수 있도록 공개했다.
+- `packages/db/src/repositories/admin.repository.ts`는 `banner`, `announce`, `terms`, `privacy`를 저장/조회하고, Kwep seed 콘텐츠를 transaction 안에서 upsert하며 seed에 없는 기존 콘텐츠는 archived로 전환한다.
+- `apps/admin-api/src/routes/settings.route.ts`를 추가하고 `GET /settings`, `PUT /settings/notice`, `PUT /settings/legal`, `POST /settings/content-reset`를 관리자 세션 뒤에 연결했다.
+- `bun --filter @workspace/core test -- admin.service`: 먼저 `service.getSettings is not a function`으로 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 4개가 통과했다.
+- `bun --filter @workspace/admin-api test -- settings`: 먼저 `/settings` route가 없어 404로 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 6개가 통과했다.
+- `bun --filter @workspace/db test -- admin.repository`: 먼저 `repository.readSettings is not a function`으로 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 4개가 통과했다.
+- `bun --filter @workspace/db test -- seed`: seed 관련 테스트 파일 2개, 테스트 5개가 통과했다.
+- `bun --filter @workspace/core typecheck`, `bun --filter @workspace/db typecheck`, `bun --filter @workspace/admin-api typecheck`: 통과했다.
+- `bun --filter @workspace/core lint`, `bun --filter @workspace/db lint`, `bun --filter @workspace/admin-api lint`: 통과했다.
+- `bunx prettier --check apps/admin-api/src/app.test.ts apps/admin-api/src/app.ts apps/admin-api/src/routes/analytics.route.test.ts apps/admin-api/src/routes/settings.route.ts apps/admin-api/src/routes/settings.route.test.ts packages/core/src/admin/admin.dto.ts packages/core/src/admin/admin.repository.ts packages/core/src/admin/admin.service.ts packages/core/src/admin/admin.service.test.ts packages/db/src/schema/admin.schema.ts packages/db/src/schema/index.ts packages/db/src/seeds/seed-content.ts packages/db/src/seeds/seed.ts packages/db/src/repositories/admin.repository.ts packages/db/src/repositories/admin.repository.test.ts docs/admin-site.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
 - `git diff --check`: 통과했다.
 
 ## 상태 요약

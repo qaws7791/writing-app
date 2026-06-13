@@ -167,11 +167,23 @@ function createDependencies(): AdminApiDependencies {
         })
         return lessonAnalytics
       },
+      async getSettings() {
+        throw new Error("unexpected settings request")
+      },
       async getUser() {
         throw new Error("unexpected user detail request")
       },
       async getUsers() {
         throw new Error("unexpected user list request")
+      },
+      async resetContent() {
+        throw new Error("unexpected content reset request")
+      },
+      async updateLegalSettings() {
+        throw new Error("unexpected legal settings request")
+      },
+      async updateNoticeSettings() {
+        throw new Error("unexpected notice settings request")
       },
       async updateUserStatus() {
         throw new Error("unexpected user status request")

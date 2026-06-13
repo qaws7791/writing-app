@@ -1,11 +1,14 @@
 import type {
   AdminAnalyticsDto,
+  AdminContentResetResultDto,
   AdminDashboardDto,
   AdminDeleteUserResultDto,
+  AdminSettingsDto,
   AdminLessonAnalyticsPageDto,
   AdminLessonAnalyticsSort,
   AdminRepository,
   AdminSortDirection,
+  ResetAdminContentInput,
   AdminUserDetailDto,
   AdminUserListDto,
   AdminUserSort,
@@ -16,18 +19,23 @@ import type {
   ReadAdminLessonAnalyticsInput,
   ReadAdminUserInput,
   ReadAdminUsersInput,
+  SaveAdminLegalSettingsInput,
+  SaveAdminNoticeSettingsInput,
   UpdateAdminUserStatusInput,
 } from "@workspace/core/admin"
 import { eq } from "drizzle-orm"
 
 import type { KwepDatabase } from "@workspace/db/client"
+import { createDefaultContentSeedRows } from "@workspace/db/seeds/seed-content"
 import {
+  adminSettings,
   authUsers,
   courses,
   courseUnits,
   learnerActivityDays,
   learnerLessonProgress,
   learnerProfiles,
+  lessonSteps,
   lessons,
 } from "@workspace/db/schema"
 
@@ -49,11 +57,23 @@ export function createDrizzleAdminRepository(
     readLessonAnalytics(input) {
       return Promise.resolve(readLessonAnalytics(db, input))
     },
+    readSettings() {
+      return Promise.resolve(readSettings(db))
+    },
     readUser(input) {
       return Promise.resolve(readUser(db, input))
     },
     readUsers(input) {
       return Promise.resolve(readUsers(db, input))
+    },
+    resetContent(input) {
+      return resetContent(db, input)
+    },
+    saveLegalSettings(input) {
+      return Promise.resolve(saveLegalSettings(db, input))
+    },
+    saveNoticeSettings(input) {
+      return Promise.resolve(saveNoticeSettings(db, input))
     },
     updateUserStatus(input) {
       return Promise.resolve(updateUserStatus(db, input))
@@ -444,6 +464,233 @@ function compareLessonAnalytics(
   }
 
   return (direction === "asc" ? result : -result) || byLesson
+}
+
+const settingsKeys = {
+  announce: "notice.announce",
+  banner: "notice.banner",
+  privacy: "legal.privacy",
+  terms: "legal.terms",
+} as const
+
+function readSettings(db: KwepDatabase): AdminSettingsDto {
+  const rows = db.select().from(adminSettings).all()
+  const values = new Map(rows.map((row) => [row.key, row.value]))
+
+  return {
+    legal: {
+      privacy: values.get(settingsKeys.privacy) ?? "",
+      terms: values.get(settingsKeys.terms) ?? "",
+    },
+    notice: {
+      announce: values.get(settingsKeys.announce) ?? "",
+      banner: values.get(settingsKeys.banner) ?? "",
+    },
+  }
+}
+
+function saveNoticeSettings(
+  db: KwepDatabase,
+  input: SaveAdminNoticeSettingsInput
+): AdminSettingsDto {
+  saveSettingRows(db, input.now, [
+    [settingsKeys.announce, input.announce],
+    [settingsKeys.banner, input.banner],
+  ])
+
+  return readSettings(db)
+}
+
+function saveLegalSettings(
+  db: KwepDatabase,
+  input: SaveAdminLegalSettingsInput
+): AdminSettingsDto {
+  saveSettingRows(db, input.now, [
+    [settingsKeys.privacy, input.privacy],
+    [settingsKeys.terms, input.terms],
+  ])
+
+  return readSettings(db)
+}
+
+function saveSettingRows(
+  db: KwepDatabase,
+  now: Date,
+  rows: readonly (readonly [key: string, value: string])[]
+): void {
+  for (const [key, value] of rows) {
+    db.insert(adminSettings)
+      .values({
+        key,
+        updatedAt: now,
+        value,
+      })
+      .onConflictDoUpdate({
+        set: {
+          updatedAt: now,
+          value,
+        },
+        target: adminSettings.key,
+      })
+      .run()
+  }
+}
+
+async function resetContent(
+  db: KwepDatabase,
+  input: ResetAdminContentInput
+): Promise<AdminContentResetResultDto> {
+  const seedRows = await createDefaultContentSeedRows()
+  const revision = readNextContentRevision(db)
+
+  return db.transaction((transaction) => {
+    void input.now
+
+    const archived = archiveContentOutsideSeed(transaction, seedRows)
+
+    for (const course of seedRows.courses) {
+      transaction
+        .insert(courses)
+        .values({
+          ...course,
+          curriculumRevision: revision,
+        })
+        .onConflictDoUpdate({
+          set: {
+            category: course.category,
+            curriculumRevision: revision,
+            description: course.description,
+            sortOrder: course.sortOrder,
+            status: "active",
+            title: course.title,
+          },
+          target: courses.id,
+        })
+        .run()
+    }
+    for (const unit of seedRows.units) {
+      transaction
+        .insert(courseUnits)
+        .values(unit)
+        .onConflictDoUpdate({
+          set: {
+            courseId: unit.courseId,
+            sortOrder: unit.sortOrder,
+            status: "active",
+            title: unit.title,
+          },
+          target: courseUnits.id,
+        })
+        .run()
+    }
+    for (const lesson of seedRows.lessons) {
+      transaction
+        .insert(lessons)
+        .values(lesson)
+        .onConflictDoUpdate({
+          set: {
+            category: lesson.category,
+            courseId: lesson.courseId,
+            description: lesson.description,
+            estimatedMinutes: lesson.estimatedMinutes,
+            sortOrder: lesson.sortOrder,
+            status: "active",
+            summaryJson: lesson.summaryJson,
+            title: lesson.title,
+            unitId: lesson.unitId,
+          },
+          target: lessons.id,
+        })
+        .run()
+    }
+    for (const step of seedRows.steps) {
+      transaction
+        .insert(lessonSteps)
+        .values(step)
+        .onConflictDoUpdate({
+          set: {
+            contentJson: step.contentJson,
+            lessonId: step.lessonId,
+            sortOrder: step.sortOrder,
+            status: "active",
+            type: step.type,
+          },
+          target: lessonSteps.id,
+        })
+        .run()
+    }
+
+    return {
+      changed: {
+        archived,
+        courses: seedRows.courses.length,
+        lessons: seedRows.lessons.length,
+        steps: seedRows.steps.length,
+        units: seedRows.units.length,
+      },
+      revision,
+    }
+  })
+}
+
+function readNextContentRevision(db: KwepDatabase): number {
+  const revisions = db
+    .select()
+    .from(courses)
+    .all()
+    .map((course) => course.curriculumRevision)
+
+  return Math.max(0, ...revisions) + 1
+}
+
+function archiveContentOutsideSeed(
+  db: KwepDatabase,
+  seedRows: Awaited<ReturnType<typeof createDefaultContentSeedRows>>
+): number {
+  let archived = 0
+  const seedCourseIds = new Set(seedRows.courses.map((course) => course.id))
+  const seedUnitIds = new Set(seedRows.units.map((unit) => unit.id))
+  const seedLessonIds = new Set(seedRows.lessons.map((lesson) => lesson.id))
+  const seedStepIds = new Set(seedRows.steps.map((step) => step.id))
+
+  for (const course of db.select().from(courses).all()) {
+    if (!seedCourseIds.has(course.id) && course.status !== "archived") {
+      db.update(courses)
+        .set({ status: "archived" })
+        .where(eq(courses.id, course.id))
+        .run()
+      archived += 1
+    }
+  }
+  for (const unit of db.select().from(courseUnits).all()) {
+    if (!seedUnitIds.has(unit.id) && unit.status !== "archived") {
+      db.update(courseUnits)
+        .set({ status: "archived" })
+        .where(eq(courseUnits.id, unit.id))
+        .run()
+      archived += 1
+    }
+  }
+  for (const lesson of db.select().from(lessons).all()) {
+    if (!seedLessonIds.has(lesson.id) && lesson.status !== "archived") {
+      db.update(lessons)
+        .set({ status: "archived" })
+        .where(eq(lessons.id, lesson.id))
+        .run()
+      archived += 1
+    }
+  }
+  for (const step of db.select().from(lessonSteps).all()) {
+    if (!seedStepIds.has(step.id) && step.status !== "archived") {
+      db.update(lessonSteps)
+        .set({ status: "archived" })
+        .where(eq(lessonSteps.id, step.id))
+        .run()
+      archived += 1
+    }
+  }
+
+  return archived
 }
 
 type AdminUserSnapshot = {

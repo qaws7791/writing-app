@@ -1,9 +1,13 @@
 import type {
   AdminAnalyticsDto,
+  AdminContentResetResultDto,
   AdminDashboardDto,
   AdminDeleteUserResultDto,
+  AdminLegalSettingsRequest,
   AdminLessonAnalyticsPageDto,
   AdminLessonAnalyticsSort,
+  AdminNoticeSettingsRequest,
+  AdminSettingsDto,
   AdminSortDirection,
   AdminUserDetailDto,
   AdminUserListDto,
@@ -27,6 +31,18 @@ export type ReadAdminLessonAnalyticsInput = {
   readonly pageSize: number
   readonly query: string
   readonly sort: AdminLessonAnalyticsSort
+}
+
+export type SaveAdminNoticeSettingsInput = AdminNoticeSettingsRequest & {
+  readonly now: Date
+}
+
+export type SaveAdminLegalSettingsInput = AdminLegalSettingsRequest & {
+  readonly now: Date
+}
+
+export type ResetAdminContentInput = {
+  readonly now: Date
 }
 
 export type ReadAdminUsersInput = {
@@ -65,10 +81,20 @@ export type AdminRepository = {
   readonly readLessonAnalytics: (
     input: ReadAdminLessonAnalyticsInput
   ) => Promise<AdminLessonAnalyticsPageDto>
+  readonly readSettings: () => Promise<AdminSettingsDto>
   readonly readUser: (
     input: ReadAdminUserInput
   ) => Promise<AdminUserDetailDto | null>
   readonly readUsers: (input: ReadAdminUsersInput) => Promise<AdminUserListDto>
+  readonly resetContent: (
+    input: ResetAdminContentInput
+  ) => Promise<AdminContentResetResultDto>
+  readonly saveLegalSettings: (
+    input: SaveAdminLegalSettingsInput
+  ) => Promise<AdminSettingsDto>
+  readonly saveNoticeSettings: (
+    input: SaveAdminNoticeSettingsInput
+  ) => Promise<AdminSettingsDto>
   readonly updateUserStatus: (
     input: UpdateAdminUserStatusInput
   ) => Promise<AdminUserDetailDto | null>

@@ -10,6 +10,7 @@ import {
   learnerActivityDays,
   learnerLessonProgress,
   learnerProfiles,
+  lessonSteps,
   lessons,
 } from "@/schema"
 
@@ -270,6 +271,101 @@ describe("어드민 DB repository", () => {
           totalPages: 1,
         },
       })
+    } finally {
+      client.close()
+    }
+  })
+
+  it("운영 설정 저장과 Kwep seed 콘텐츠 초기화를 처리한다", async () => {
+    const client = createKwepDatabase(":memory:")
+    const now = new Date("2026-06-14T03:00:00.000Z")
+
+    try {
+      runBaselineMigration(client.sqlite)
+
+      const repository = createDrizzleAdminRepository(client.db)
+
+      await expect(repository.readSettings()).resolves.toEqual({
+        legal: {
+          privacy: "",
+          terms: "",
+        },
+        notice: {
+          announce: "",
+          banner: "",
+        },
+      })
+      await expect(
+        repository.saveNoticeSettings({
+          announce: "공지 내용",
+          banner: "새 강의가 추가되었어요!",
+          now,
+        })
+      ).resolves.toEqual({
+        legal: {
+          privacy: "",
+          terms: "",
+        },
+        notice: {
+          announce: "공지 내용",
+          banner: "새 강의가 추가되었어요!",
+        },
+      })
+      await expect(
+        repository.saveLegalSettings({
+          now,
+          privacy: "개인정보처리방침",
+          terms: "이용약관",
+        })
+      ).resolves.toEqual({
+        legal: {
+          privacy: "개인정보처리방침",
+          terms: "이용약관",
+        },
+        notice: {
+          announce: "공지 내용",
+          banner: "새 강의가 추가되었어요!",
+        },
+      })
+
+      await expect(repository.resetContent({ now })).resolves.toEqual({
+        changed: {
+          archived: 0,
+          courses: 5,
+          lessons: 44,
+          steps: 136,
+          units: 15,
+        },
+        revision: 1,
+      })
+      expect(
+        client.db
+          .select()
+          .from(courses)
+          .all()
+          .filter((course) => course.status === "active")
+      ).toHaveLength(5)
+      expect(
+        client.db
+          .select()
+          .from(courseUnits)
+          .all()
+          .filter((unit) => unit.status === "active")
+      ).toHaveLength(15)
+      expect(
+        client.db
+          .select()
+          .from(lessons)
+          .all()
+          .filter((lesson) => lesson.status === "active")
+      ).toHaveLength(44)
+      expect(
+        client.db
+          .select()
+          .from(lessonSteps)
+          .all()
+          .filter((step) => step.status === "active")
+      ).toHaveLength(136)
     } finally {
       client.close()
     }

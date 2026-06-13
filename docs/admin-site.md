@@ -1,5 +1,13 @@
 # 어드민 사이트
 
+## 2026-06-14 Kwep 어드민 운영 설정 API 완료
+
+- 어드민 API에 `GET /settings`, `PUT /settings/notice`, `PUT /settings/legal`, `POST /settings/content-reset`을 추가했다.
+- 운영 설정은 `admin_settings` key-value 테이블에 `banner`, `announce`, `terms`, `privacy` 값을 저장한다.
+- 콘텐츠 초기화는 Kwep seed 콘텐츠를 기준으로 active 콘텐츠를 transaction 안에서 재시드한다.
+- 초기화는 기존 seed ID를 upsert해 학습 진행 데이터 손실을 줄이고, seed에 없는 콘텐츠는 `archived`로 전환한다.
+- 초기화 응답은 새 `revision`과 재시드/보관 변경 수를 반환한다.
+
 ## 2026-06-14 Kwep 어드민 분석 API 완료
 
 - 어드민 API에 `GET /analytics`, `GET /analytics/lessons`를 추가했다.

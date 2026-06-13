@@ -180,6 +180,18 @@ export function createContentSeedRows(
   }
 }
 
+export async function readContentSeedData(): Promise<
+  readonly KwepCourseSeed[]
+> {
+  const seedUrl = new URL("./content-seed-data.json", import.meta.url)
+
+  return (await Bun.file(seedUrl).json()) as readonly KwepCourseSeed[]
+}
+
+export async function createDefaultContentSeedRows(): Promise<ContentSeedRows> {
+  return createContentSeedRows(await readContentSeedData())
+}
+
 function parseEstimatedMinutes(time: string): number {
   const minutes = Number.parseInt(time.replace("분", ""), 10)
 

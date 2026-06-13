@@ -16,10 +16,7 @@ import {
   lessons,
   lessonSteps,
 } from "@workspace/db/schema"
-import {
-  createContentSeedRows,
-  type KwepCourseSeed,
-} from "@workspace/db/seeds/seed-content"
+import { createDefaultContentSeedRows } from "@workspace/db/seeds/seed-content"
 
 export async function seedDatabase(
   databaseUrl = process.env["DATABASE_URL"] ?? getDefaultDatabaseUrl()
@@ -193,7 +190,7 @@ function clearContentRows(client: KwepDatabaseClient): void {
 }
 
 async function insertContentRows(client: KwepDatabaseClient): Promise<void> {
-  const rows = createContentSeedRows(await readContentSeedData())
+  const rows = await createDefaultContentSeedRows()
 
   client.db
     .insert(courses)
@@ -211,12 +208,6 @@ async function insertContentRows(client: KwepDatabaseClient): Promise<void> {
     .insert(lessonSteps)
     .values([...rows.steps])
     .run()
-}
-
-async function readContentSeedData(): Promise<readonly KwepCourseSeed[]> {
-  const seedUrl = new URL("./content-seed-data.json", import.meta.url)
-
-  return (await Bun.file(seedUrl).json()) as readonly KwepCourseSeed[]
 }
 
 if (import.meta.main) {

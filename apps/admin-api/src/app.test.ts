@@ -340,6 +340,9 @@ function createDependencies(): AdminApiDependencies {
         })
         return lessonAnalytics
       },
+      async getSettings() {
+        throw new Error("unexpected settings request")
+      },
       async getUser(input) {
         expect(input.userId).toBe("user-1")
         return userDetail
@@ -353,6 +356,15 @@ function createDependencies(): AdminApiDependencies {
           status: "active",
         })
         return userList
+      },
+      async resetContent() {
+        throw new Error("unexpected content reset request")
+      },
+      async updateLegalSettings() {
+        throw new Error("unexpected legal settings request")
+      },
+      async updateNoticeSettings() {
+        throw new Error("unexpected notice settings request")
       },
       async updateUserStatus(input) {
         expect(input.status).toBe("suspended")

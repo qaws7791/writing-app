@@ -1,14 +1,18 @@
 import {
   adminAnalyticsDtoSchema,
+  adminContentResetResultSchema,
   adminDeleteUserResultSchema,
   adminDashboardDtoSchema,
+  adminSettingsDtoSchema,
   adminLessonAnalyticsPageDtoSchema,
   adminUserDetailDtoSchema,
   adminUserListDtoSchema,
   type AdminAnalyticsDto,
+  type AdminContentResetResultDto,
   type AdminDashboardDto,
   type AdminDeleteUserResultDto,
   type AdminLessonAnalyticsPageDto,
+  type AdminSettingsDto,
   type AdminUserDetailDto,
   type AdminUserListDto,
 } from "@workspace/core/admin/admin.dto"
@@ -20,6 +24,9 @@ import type {
   ReadAdminLessonAnalyticsInput,
   ReadAdminUserInput,
   ReadAdminUsersInput,
+  ResetAdminContentInput,
+  SaveAdminLegalSettingsInput,
+  SaveAdminNoticeSettingsInput,
   UpdateAdminUserStatusInput,
 } from "@workspace/core/admin/admin.repository"
 
@@ -36,10 +43,20 @@ export type AdminService = {
   readonly getLessonAnalytics: (
     input: ReadAdminLessonAnalyticsInput
   ) => Promise<AdminLessonAnalyticsPageDto>
+  readonly getSettings: () => Promise<AdminSettingsDto>
   readonly getUser: (
     input: ReadAdminUserInput
   ) => Promise<AdminUserDetailDto | null>
   readonly getUsers: (input: ReadAdminUsersInput) => Promise<AdminUserListDto>
+  readonly resetContent: (
+    input: ResetAdminContentInput
+  ) => Promise<AdminContentResetResultDto>
+  readonly updateLegalSettings: (
+    input: SaveAdminLegalSettingsInput
+  ) => Promise<AdminSettingsDto>
+  readonly updateNoticeSettings: (
+    input: SaveAdminNoticeSettingsInput
+  ) => Promise<AdminSettingsDto>
   readonly updateUserStatus: (
     input: UpdateAdminUserStatusInput
   ) => Promise<AdminUserDetailDto | null>
@@ -67,6 +84,9 @@ export function createAdminService(repository: AdminRepository): AdminService {
         await repository.readLessonAnalytics(input)
       )
     },
+    async getSettings() {
+      return adminSettingsDtoSchema.parse(await repository.readSettings())
+    },
     async getUser(input) {
       return adminUserDetailDtoSchema
         .nullable()
@@ -74,6 +94,21 @@ export function createAdminService(repository: AdminRepository): AdminService {
     },
     async getUsers(input) {
       return adminUserListDtoSchema.parse(await repository.readUsers(input))
+    },
+    async resetContent(input) {
+      return adminContentResetResultSchema.parse(
+        await repository.resetContent(input)
+      )
+    },
+    async updateLegalSettings(input) {
+      return adminSettingsDtoSchema.parse(
+        await repository.saveLegalSettings(input)
+      )
+    },
+    async updateNoticeSettings(input) {
+      return adminSettingsDtoSchema.parse(
+        await repository.saveNoticeSettings(input)
+      )
     },
     async updateUserStatus(input) {
       return adminUserDetailDtoSchema
