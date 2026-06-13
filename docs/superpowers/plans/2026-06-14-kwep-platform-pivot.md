@@ -1916,6 +1916,23 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/api test -- env app courses lessons openapi auth`: 통과했다.
 - `bun --filter @workspace/api typecheck`: 통과했다.
 
+### 2026-06-14 Task 3 완료
+
+- Task 3의 학습 진행 DB 저장, core 답변 저장 계약, `/profile`, `/progress`, `/learning/answers`, API 실행 골격, 콘텐츠 조회 route를 모두 작성했다.
+- Task 3은 검증 가능한 Step 묶음마다 커밋했다.
+- `bun --filter @workspace/db test`: 통과했다. 테스트 파일 4개, 테스트 11개가 통과했다.
+- `bun --filter @workspace/core test`: 통과했다. 테스트 파일 3개, 테스트 10개가 통과했다.
+- `bun --filter @workspace/api test`: 통과했다. 테스트 파일 8개, 테스트 13개가 통과했다.
+- `bun --filter @workspace/db typecheck`: 통과했다.
+- `bun --filter @workspace/core typecheck`: 통과했다.
+- `bun --filter @workspace/api typecheck`: 통과했다.
+- `bun --filter @workspace/db lint`: 통과했다.
+- `bun --filter @workspace/core lint`: 통과했다.
+- `bun --filter @workspace/api lint`: 통과했다.
+- `bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md apps/api/package.json packages/core/package.json packages/db/package.json 'apps/api/src/**/*.ts' 'packages/core/src/**/*.ts' 'packages/db/src/**/*.ts'`: 통과했다.
+- `git diff --check`: 통과했다.
+- 이번 Task에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성
