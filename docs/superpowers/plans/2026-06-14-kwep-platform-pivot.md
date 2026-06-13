@@ -820,7 +820,7 @@ Expected:
 - `docs/openapi/writing-app-api.json`에 `/profile`, `/progress`, `/ai-feedback` 새 계약이 반영된다.
 - `apps/web/src/lib/api/generated/writing-app-api.d.ts`가 생성 계약과 일치한다.
 
-- [ ] **Step 4.3: 플랫폼 API 게이트 검증**
+- [x] **Step 4.3: 플랫폼 API 게이트 검증**
 
 ```bash
 bun --filter @workspace/core test
@@ -1989,6 +1989,19 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bunx prettier --check docs/openapi/writing-app-api.json apps/web/src/lib/api/generated/writing-app-api.d.ts 'apps/api/src/openapi/**/*.ts' 'apps/api/src/scripts/**/*.ts' apps/api/src/routes/openapi.route.ts`: 통과했다.
 - `git diff --check`: 통과했다.
 
+### 2026-06-14 Task 4 완료
+
+- Task 4의 AI 코칭 core 계약, DB 저장소, API route, OpenAI provider, OpenAPI 문서, web 생성 타입을 모두 작성했다.
+- Task 4는 검증 가능한 Step 묶음마다 커밋했다.
+- `bun --filter @workspace/core test`: 통과했다. 테스트 파일 4개, 테스트 14개가 통과했다.
+- `bun --filter @workspace/db test`: 통과했다. 테스트 파일 5개, 테스트 12개가 통과했다.
+- `bun --filter @workspace/api test`: 통과했다. 테스트 파일 11개, 테스트 20개가 통과했다.
+- `bun --filter @workspace/api typecheck`: 통과했다.
+- `bun --filter @workspace/api lint`: 통과했다.
+- `bun run format:check`: 통과했다.
+- `git diff --check`: 통과했다.
+- 이번 Task에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성
@@ -1998,8 +2011,8 @@ Expected: 문서 포맷 검증이 통과한다.
 - [x] 기준선 검증
 - [x] 기존 구현 코드 제거
 - [x] 시작 문서 갱신
-- [ ] 플랫폼 API 구현
-- [ ] 플랫폼 API 검증
+- [x] 플랫폼 API 구현
+- [x] 플랫폼 API 검증
 - [ ] 플랫폼 프론트엔드 구현
 - [ ] 플랫폼 프론트엔드 검증
 - [ ] 플랫폼 브라우저 스모크
