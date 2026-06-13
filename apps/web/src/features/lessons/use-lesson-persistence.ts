@@ -5,12 +5,15 @@ import { useCallback, useState } from "react"
 import {
   createLessonStartedAnswer,
   getFirstLessonStep,
+  type LessonAnswerChange,
 } from "@/features/lessons/lesson-logic"
 import type { Lesson } from "@/features/lessons/lesson-types"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
 
 const LESSON_START_ERROR =
   "레슨 시작을 저장하지 못했습니다. 다시 시도해 주세요."
+const LESSON_ANSWER_ERROR =
+  "답변을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
 
 type UseLessonPersistenceInput = {
   readonly api: WritingAppApi
@@ -22,6 +25,7 @@ export function useLessonPersistence({
   lesson,
 }: UseLessonPersistenceInput) {
   const [isSavingStart, setIsSavingStart] = useState(false)
+  const [answerError, setAnswerError] = useState<null | string>(null)
   const [startError, setStartError] = useState<null | string>(null)
 
   const startLesson = useCallback(async (): Promise<boolean> => {
@@ -51,8 +55,27 @@ export function useLessonPersistence({
     return true
   }, [api, lesson])
 
+  const saveAnswer = useCallback(
+    async ({ answer, stepId }: LessonAnswerChange): Promise<void> => {
+      setAnswerError(null)
+
+      const result = await api.saveLessonAnswer({
+        answer,
+        lessonId: lesson.id,
+        stepId,
+      })
+
+      if (result.status === "error") {
+        setAnswerError(LESSON_ANSWER_ERROR)
+      }
+    },
+    [api, lesson.id]
+  )
+
   return {
+    answerError,
     isSavingStart,
+    saveAnswer,
     startError,
     startLesson,
   }

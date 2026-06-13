@@ -14,6 +14,19 @@
 - 시작 저장은 현재 플랫폼 API 포트의 `saveLessonAnswer`를 사용하며, answer 본문은 `{"kind":"lesson-started"}` JSON 문자열이다.
 - `LessonStepRenderer`는 Step 7.1 범위에서 첫 스텝 내용을 표시하는 최소 렌더러로 두고, 퀴즈형 답변 저장과 AI 코칭 UX는 다음 Step에서 확장한다.
 
+## 2026-06-14 시작 — Kwep 답변 자동 저장
+
+- 답변 가능한 스텝에서 사용자가 값을 바꾸는 즉시 `saveLessonAnswer`를 호출한다.
+- 저장 대상은 현재 Kwep 표준 타입에 있는 객관식, 빈칸, 단어 선택, 순서 배열, 매칭, 분류, 글쓰기다.
+- 각 저장 값은 스텝 타입을 포함한 JSON 문자열로 직렬화해 API 포트 경계로 전달한다.
+
+## 2026-06-14 완료 — Kwep 답변 자동 저장
+
+- `LessonStepRenderer`가 답변 가능한 7개 표준 스텝 타입의 입력 컨트롤을 렌더링한다.
+- 객관식은 선택 option id, 빈칸은 선택 단어 배열, 단어 선택은 선택 index 배열, 순서 배열은 선택 순서 배열, 매칭은 좌우 pair 배열, 분류는 item/category pair 배열, 글쓰기는 입력 text를 저장한다.
+- `LessonExperience`는 스텝 렌더러의 답변 변경 이벤트를 받아 현재 lesson id와 step id로 `saveLessonAnswer`를 호출한다.
+- 저장 실패 시 답변 영역 아래에 한국어 오류를 표시한다.
+
 ## 2026-05-31 완료 — 장식성 진행 요소 제거
 
 - 레슨 상단 헤더에서 남은 생명 표시를 제거하고, 나가기 버튼과 진행률만 남겼다.

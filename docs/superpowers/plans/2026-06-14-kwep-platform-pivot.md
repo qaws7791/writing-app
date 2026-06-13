@@ -1039,7 +1039,7 @@ bun --filter @workspace/web test -- lesson-experience
 
 Expected: 처음 들어온 레슨은 시작 화면을 먼저 보여주고, 시작 후 첫 스텝으로 진입한다.
 
-- [ ] **Step 7.2: 퀴즈형 답변 자동 저장**
+- [x] **Step 7.2: 퀴즈형 답변 자동 저장**
 
 저장 대상:
 
@@ -2147,6 +2147,26 @@ Expected: 문서 포맷 검증이 통과한다.
 - `apps/web/src/features/lessons/lesson-step-renderer.tsx`는 시작 후 첫 스텝을 표시하는 최소 렌더러로 작성했다.
 - `/app/lesson?lesson_id=...` route를 추가해 서버에서 레슨을 조회하고 클라이언트 경험 컴포넌트로 전달한다.
 - `bun --filter @workspace/web test -- lesson-experience`: 통과했다. 테스트 파일 1개, 테스트 2개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bun run format:check`: 통과했다.
+- `git diff --check`: 통과했다.
+- 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
+### 2026-06-14 Task 7 Step 7.2 시작
+
+- Step 7.2는 답변 가능한 Kwep 표준 스텝에서 답변 변경 시 자동 저장을 호출하는 단계로 진행한다.
+- 현재 `LessonStep` 표준 타입에 존재하는 저장 대상은 `MULTIPLE_CHOICE`, `FILL_BLANK`, `SELECT`, `ORDER`, `MATCH`, `CATEGORIZE`, `WRITE`로 한정한다.
+- 계획의 `따라 쓰기`, `체크리스트`, `성찰`은 이전 레슨 모델의 타입명이며 현재 Kwep 10개 표준 타입에는 없으므로 이번 Step에서는 새 타입을 추가하지 않는다.
+- 저장 payload는 `saveLessonAnswer`의 `answer` 필드에 스텝 타입별 JSON 문자열로 전달한다.
+
+### 2026-06-14 Task 7 Step 7.2 완료
+
+- `LessonStepRenderer`를 클라이언트 상호작용 컴포넌트로 확장해 객관식, 빈칸, 단어 선택, 순서 배열, 매칭, 분류, 글쓰기 입력을 지원했다.
+- 각 답변 변경은 `MULTIPLE_CHOICE`, `FILL_BLANK`, `SELECT`, `ORDER`, `MATCH`, `CATEGORIZE`, `WRITE` 타입별 JSON 문자열로 직렬화한다.
+- `useLessonPersistence`에 `saveAnswer`를 추가해 `LessonExperience`에서 첫 스텝 답변 변경을 `saveLessonAnswer`로 자동 저장하게 했다.
+- `bun --filter @workspace/web test -- lesson-experience lesson-step-renderer`: 통과했다. 테스트 파일 2개, 테스트 10개가 통과했다.
+- `bun --filter @workspace/web test`: 통과했다. 테스트 파일 16개, 테스트 32개가 통과했다.
 - `bun --filter @workspace/web typecheck`: 통과했다.
 - `bun --filter @workspace/web lint`: 통과했다.
 - `bun run format:check`: 통과했다.

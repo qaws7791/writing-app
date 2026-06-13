@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
@@ -92,6 +92,52 @@ describe("레슨 경험", () => {
       screen.getByText("레슨 시작을 저장하지 못했습니다. 다시 시도해 주세요.")
     ).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "시작하기" })).toBeEnabled()
+  })
+
+  it("첫 스텝 답변 변경을 saveLessonAnswer로 자동 저장한다", async () => {
+    const user = userEvent.setup()
+    const saveLessonAnswer = vi.fn(async () => apiOk({ saved: true }))
+    const api = createApi({ saveLessonAnswer })
+    const answerableLesson: Lesson = {
+      ...lesson,
+      id: "l-answer",
+      steps: [
+        {
+          correct: "clear",
+          explanation: "구체적인 문장이 더 잘 읽힙니다.",
+          id: "mc-answer",
+          options: [
+            { id: "vague", text: "좋은 글을 씁니다." },
+            { id: "clear", text: "독자가 바로 이해하는 문장을 씁니다." },
+          ],
+          order: 1,
+          question: "더 좋은 문장은 무엇인가요?",
+          type: "MULTIPLE_CHOICE",
+        },
+      ],
+    }
+
+    render(<LessonExperience api={api} lesson={answerableLesson} />)
+
+    await user.click(screen.getByRole("button", { name: "시작하기" }))
+    await waitFor(() => expect(saveLessonAnswer).toHaveBeenCalledTimes(1))
+    saveLessonAnswer.mockClear()
+    await user.click(
+      screen.getByRole("button", {
+        name: "독자가 바로 이해하는 문장을 씁니다.",
+      })
+    )
+
+    await waitFor(() =>
+      expect(saveLessonAnswer).toHaveBeenCalledWith({
+        answer: JSON.stringify({
+          selectedOptionId: "clear",
+          type: "MULTIPLE_CHOICE",
+        }),
+        lessonId: "l-answer",
+        stepId: "mc-answer",
+      })
+    )
   })
 })
 

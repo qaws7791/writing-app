@@ -39,16 +39,19 @@ export function LessonExperience({ api, lesson }: LessonExperienceProps) {
     [api]
   )
   const firstStep = getFirstLessonStep(lesson)
-  const { isSavingStart, startError, startLesson } = useLessonPersistence({
-    api: resolvedApi,
-    lesson,
-  })
+  const { answerError, isSavingStart, saveAnswer, startError, startLesson } =
+    useLessonPersistence({
+      api: resolvedApi,
+      lesson,
+    })
 
   if (hasStarted && firstStep !== null) {
     return (
       <main className="min-h-screen bg-background text-foreground">
         <div className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-10 sm:px-8">
           <LessonStepRenderer
+            answerError={answerError}
+            onAnswerChange={saveAnswer}
             step={firstStep}
             stepIndex={0}
             totalSteps={lesson.steps.length}
