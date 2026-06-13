@@ -1062,7 +1062,7 @@ bun --filter @workspace/web test -- lesson-experience lesson-step-renderer
 
 Expected: 각 답변 가능 스텝에서 답변 변경 시 `saveLessonAnswer`가 타입별 JSON 문자열로 호출된다.
 
-- [ ] **Step 7.3: AI 코칭 retry UX 구현**
+- [x] **Step 7.3: AI 코칭 retry UX 구현**
 
 요구사항:
 
@@ -2167,6 +2167,26 @@ Expected: 문서 포맷 검증이 통과한다.
 - `useLessonPersistence`에 `saveAnswer`를 추가해 `LessonExperience`에서 첫 스텝 답변 변경을 `saveLessonAnswer`로 자동 저장하게 했다.
 - `bun --filter @workspace/web test -- lesson-experience lesson-step-renderer`: 통과했다. 테스트 파일 2개, 테스트 10개가 통과했다.
 - `bun --filter @workspace/web test`: 통과했다. 테스트 파일 16개, 테스트 32개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bun run format:check`: 통과했다.
+- `git diff --check`: 통과했다.
+- 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
+### 2026-06-14 Task 7 Step 7.3 시작
+
+- Step 7.3은 `AI_FEEDBACK` 스텝에서 코칭 요청, 로딩, 결과 표시, 재시도, 한도 초과 오류를 구현하는 단계로 진행한다.
+- `LessonStepRenderer`는 `AI 코칭 받기` 버튼을 표시하고, `LessonExperience`는 API 포트의 `createAiFeedback`으로 요청을 위임한다.
+- 현재 Step 7 범위에서는 작성 답변 히스토리 저장소를 따로 만들지 않고, `AI_FEEDBACK.target` 값을 코칭 요청의 answer로 사용한다.
+
+### 2026-06-14 Task 7 Step 7.3 완료
+
+- `LessonStepRenderer`의 `AI_FEEDBACK` 스텝에 `AI 코칭 받기` 버튼, 로딩 안내, 결과 카드, `다시 받기` 버튼, 오류 메시지를 추가했다.
+- AI 코칭 결과는 총평, 잘된 점, 다듬을 점, 다음 시도, 점수를 표시한다.
+- `useLessonPersistence`에 `requestAiFeedback`을 추가해 `LessonExperience`에서 `createAiFeedback`으로 코칭 요청을 위임한다.
+- 시도 한도 초과 같은 API 실패는 한국어 오류 메시지로 렌더링한다.
+- `bun --filter @workspace/web test -- lesson-step-renderer lesson-experience`: 통과했다. 테스트 파일 2개, 테스트 13개가 통과했다.
+- `bun --filter @workspace/web test`: 통과했다. 테스트 파일 16개, 테스트 35개가 통과했다.
 - `bun --filter @workspace/web typecheck`: 통과했다.
 - `bun --filter @workspace/web lint`: 통과했다.
 - `bun run format:check`: 통과했다.

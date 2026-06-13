@@ -5,6 +5,8 @@ import { useCallback, useState } from "react"
 import {
   createLessonStartedAnswer,
   getFirstLessonStep,
+  type LessonAiFeedbackOutcome,
+  type LessonAiFeedbackRequest,
   type LessonAnswerChange,
 } from "@/features/lessons/lesson-logic"
 import type { Lesson } from "@/features/lessons/lesson-types"
@@ -72,9 +74,36 @@ export function useLessonPersistence({
     [api, lesson.id]
   )
 
+  const requestAiFeedback = useCallback(
+    async ({
+      answer,
+      stepId,
+    }: LessonAiFeedbackRequest): Promise<LessonAiFeedbackOutcome> => {
+      const result = await api.createAiFeedback({
+        answer,
+        lessonId: lesson.id,
+        stepId,
+      })
+
+      if (result.status === "error") {
+        return {
+          message: result.error.message,
+          status: "error",
+        }
+      }
+
+      return {
+        feedback: result.value,
+        status: "ok",
+      }
+    },
+    [api, lesson.id]
+  )
+
   return {
     answerError,
     isSavingStart,
+    requestAiFeedback,
     saveAnswer,
     startError,
     startLesson,

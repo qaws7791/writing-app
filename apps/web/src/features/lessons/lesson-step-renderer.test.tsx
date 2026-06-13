@@ -216,6 +216,83 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
   })
 })
 
+describe("레슨 스텝 렌더러 AI 코칭", () => {
+  it("AI 코칭 요청 중 로딩을 보여주고 결과와 다시 받기 버튼을 표시한다", async () => {
+    const user = userEvent.setup()
+    const feedback = createPendingFeedback()
+    const onAiFeedbackRequest = vi.fn(() => feedback.promise)
+
+    render(
+      <LessonStepRenderer
+        onAiFeedbackRequest={onAiFeedbackRequest}
+        step={aiFeedbackStep}
+        stepIndex={0}
+        totalSteps={1}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
+
+    expect(screen.getByText("AI 코칭을 준비하고 있습니다.")).toBeInTheDocument()
+    expect(onAiFeedbackRequest).toHaveBeenCalledWith({
+      answer: "짧고 명확하게 쓴다",
+      stepId: "ai-1",
+    })
+
+    feedback.resolve({
+      feedback: {
+        improvements: ["근거 문장을 한 문장 더 붙여보세요."],
+        nextAction: "예시를 하나 더 넣어 다시 써보세요.",
+        remainingAttempts: 1,
+        score: 4,
+        scoreRange: [0, 5],
+        showScore: true,
+        strengths: ["핵심 문장이 선명합니다."],
+        summary: "전체 흐름이 선명합니다.",
+      },
+      status: "ok",
+    })
+
+    expect(
+      await screen.findByText("전체 흐름이 선명합니다.")
+    ).toBeInTheDocument()
+    expect(screen.getByText("핵심 문장이 선명합니다.")).toBeInTheDocument()
+    expect(
+      screen.getByText("근거 문장을 한 문장 더 붙여보세요.")
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText("예시를 하나 더 넣어 다시 써보세요.")
+    ).toBeInTheDocument()
+    expect(screen.getByText("4/5점")).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "다시 받기" })
+    ).toBeInTheDocument()
+  })
+
+  it("AI 코칭 시도 한도 초과 오류를 한국어로 표시한다", async () => {
+    const user = userEvent.setup()
+    const onAiFeedbackRequest = vi.fn(async () => ({
+      message: "AI 코칭 시도 횟수를 모두 사용했습니다.",
+      status: "error" as const,
+    }))
+
+    render(
+      <LessonStepRenderer
+        onAiFeedbackRequest={onAiFeedbackRequest}
+        step={aiFeedbackStep}
+        stepIndex={0}
+        totalSteps={1}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
+
+    expect(
+      await screen.findByText("AI 코칭 시도 횟수를 모두 사용했습니다.")
+    ).toBeInTheDocument()
+  })
+})
+
 function renderAnswerableStep(
   step: LessonStep,
   onAnswerChange: (answer: {
@@ -231,4 +308,43 @@ function renderAnswerableStep(
       totalSteps={1}
     />
   )
+}
+
+const aiFeedbackStep: LessonStep = {
+  allowRetry: true,
+  feedback: "초기 코칭 안내입니다.",
+  focus: "문장이 선명한지 확인합니다.",
+  id: "ai-1",
+  order: 1,
+  score: 0,
+  scoreMax: 5,
+  showScore: true,
+  target: "짧고 명확하게 쓴다",
+  type: "AI_FEEDBACK",
+}
+
+type PendingFeedbackOutcome = {
+  readonly feedback: {
+    readonly improvements: readonly string[]
+    readonly nextAction: string
+    readonly remainingAttempts: number
+    readonly score: number
+    readonly scoreRange: readonly [number, number]
+    readonly showScore: boolean
+    readonly strengths: readonly string[]
+    readonly summary: string
+  }
+  readonly status: "ok"
+}
+
+function createPendingFeedback() {
+  let resolve: (value: PendingFeedbackOutcome) => void = () => undefined
+  const promise = new Promise<PendingFeedbackOutcome>((promiseResolve) => {
+    resolve = promiseResolve
+  })
+
+  return {
+    promise,
+    resolve,
+  }
 }

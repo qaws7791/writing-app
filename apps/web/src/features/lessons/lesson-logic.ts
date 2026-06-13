@@ -9,6 +9,32 @@ export type LessonAnswerChange = {
   readonly stepId: string
 }
 
+export type LessonAiFeedback = {
+  readonly improvements: readonly string[]
+  readonly nextAction: string
+  readonly remainingAttempts: number
+  readonly score: number
+  readonly scoreRange: readonly [number, number]
+  readonly showScore: boolean
+  readonly strengths: readonly string[]
+  readonly summary: string
+}
+
+export type LessonAiFeedbackRequest = {
+  readonly answer: string
+  readonly stepId: string
+}
+
+export type LessonAiFeedbackOutcome =
+  | {
+      readonly feedback: LessonAiFeedback
+      readonly status: "ok"
+    }
+  | {
+      readonly message: string
+      readonly status: "error"
+    }
+
 export type LessonStepAnswerPayload =
   | {
       readonly selectedOptionId: string

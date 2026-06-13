@@ -139,6 +139,58 @@ describe("레슨 경험", () => {
       })
     )
   })
+
+  it("AI 코칭 요청을 createAiFeedback으로 위임한다", async () => {
+    const user = userEvent.setup()
+    const createAiFeedback = vi.fn(async () =>
+      apiOk({
+        improvements: ["근거를 더해보세요."],
+        nextAction: "예시를 추가해 다시 시도하세요.",
+        remainingAttempts: 0,
+        score: 3,
+        scoreRange: [0, 5] as const,
+        showScore: true,
+        strengths: ["핵심이 보입니다."],
+        summary: "좋은 출발입니다.",
+      })
+    )
+    const api = createApi({
+      createAiFeedback,
+      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
+    })
+    const coachingLesson: Lesson = {
+      ...lesson,
+      id: "l-coaching",
+      steps: [
+        {
+          allowRetry: true,
+          feedback: "작성한 답변을 바탕으로 코칭합니다.",
+          focus: "문장이 선명한지 확인합니다.",
+          id: "ai-step",
+          order: 1,
+          score: 0,
+          scoreMax: 5,
+          showScore: true,
+          target: "짧고 명확하게 쓴다",
+          type: "AI_FEEDBACK",
+        },
+      ],
+    }
+
+    render(<LessonExperience api={api} lesson={coachingLesson} />)
+
+    await user.click(screen.getByRole("button", { name: "시작하기" }))
+    await user.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
+
+    await waitFor(() =>
+      expect(createAiFeedback).toHaveBeenCalledWith({
+        answer: "짧고 명확하게 쓴다",
+        lessonId: "l-coaching",
+        stepId: "ai-step",
+      })
+    )
+    expect(await screen.findByText("좋은 출발입니다.")).toBeInTheDocument()
+  })
 })
 
 function createApi(overrides: Partial<WritingAppApi>): WritingAppApi {

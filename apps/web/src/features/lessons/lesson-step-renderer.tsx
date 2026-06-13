@@ -4,10 +4,14 @@ import { useState } from "react"
 
 import {
   createLessonStepAnswer,
+  type LessonAiFeedback,
+  type LessonAiFeedbackOutcome,
+  type LessonAiFeedbackRequest,
   type LessonAnswerChange,
   type LessonStepAnswerPayload,
 } from "@/features/lessons/lesson-logic"
 import type {
+  AiFeedbackStep,
   CategorizeStep,
   FillBlankStep,
   MatchStep,
@@ -31,11 +35,15 @@ type LessonStepRendererProps = {
   readonly stepIndex: number
   readonly totalSteps: number
   readonly answerError?: null | string
+  readonly onAiFeedbackRequest?: (
+    request: LessonAiFeedbackRequest
+  ) => Promise<LessonAiFeedbackOutcome>
   readonly onAnswerChange?: (change: LessonAnswerChange) => Promise<void> | void
 }
 
 export function LessonStepRenderer({
   answerError,
+  onAiFeedbackRequest,
   onAnswerChange,
   step,
   stepIndex,
@@ -56,7 +64,10 @@ export function LessonStepRenderer({
           <CardDescription>{getStepDescription(step)}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          {renderStepContent(step, onAnswerChange)}
+          {renderStepContent(step, {
+            onAiFeedbackRequest,
+            onAnswerChange,
+          })}
           {answerError === undefined || answerError === null ? null : (
             <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {answerError}
@@ -109,22 +120,26 @@ function getStepDescription(step: LessonStep): string {
 
 function renderStepContent(
   step: LessonStep,
-  onAnswerChange: LessonStepRendererProps["onAnswerChange"]
+  handlers: {
+    readonly onAiFeedbackRequest: LessonStepRendererProps["onAiFeedbackRequest"]
+    readonly onAnswerChange: LessonStepRendererProps["onAnswerChange"]
+  }
 ) {
   switch (step.type) {
     case "AI_FEEDBACK":
       return (
-        <div className="flex flex-col gap-3">
-          <p className="leading-7">{step.feedback}</p>
-          {step.showScore ? (
-            <p className="text-sm text-muted-foreground">
-              {step.score}/{step.scoreMax}점
-            </p>
-          ) : null}
-        </div>
+        <AiFeedbackAnswer
+          onAiFeedbackRequest={handlers.onAiFeedbackRequest}
+          step={step}
+        />
       )
     case "CATEGORIZE":
-      return <CategorizeAnswer step={step} onAnswerChange={onAnswerChange} />
+      return (
+        <CategorizeAnswer
+          onAnswerChange={handlers.onAnswerChange}
+          step={step}
+        />
+      )
     case "COMPARE":
       return (
         <div className="grid gap-3 md:grid-cols-2">
@@ -142,15 +157,24 @@ function renderStepContent(
         </div>
       )
     case "FILL_BLANK":
-      return <FillBlankAnswer step={step} onAnswerChange={onAnswerChange} />
+      return (
+        <FillBlankAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
+      )
     case "MATCH":
-      return <MatchAnswer step={step} onAnswerChange={onAnswerChange} />
+      return (
+        <MatchAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
+      )
     case "MULTIPLE_CHOICE":
       return (
-        <MultipleChoiceAnswer step={step} onAnswerChange={onAnswerChange} />
+        <MultipleChoiceAnswer
+          onAnswerChange={handlers.onAnswerChange}
+          step={step}
+        />
       )
     case "ORDER":
-      return <OrderAnswer step={step} onAnswerChange={onAnswerChange} />
+      return (
+        <OrderAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
+      )
     case "READING":
       return (
         <div className="flex flex-col gap-3">
@@ -161,10 +185,123 @@ function renderStepContent(
         </div>
       )
     case "SELECT":
-      return <SelectAnswer step={step} onAnswerChange={onAnswerChange} />
+      return (
+        <SelectAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
+      )
     case "WRITE":
-      return <WriteAnswer step={step} onAnswerChange={onAnswerChange} />
+      return (
+        <WriteAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
+      )
   }
+}
+
+function AiFeedbackAnswer({
+  onAiFeedbackRequest,
+  step,
+}: {
+  readonly onAiFeedbackRequest: LessonStepRendererProps["onAiFeedbackRequest"]
+  readonly step: AiFeedbackStep
+}) {
+  const [error, setError] = useState<null | string>(null)
+  const [feedback, setFeedback] = useState<LessonAiFeedback | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  async function handleRequest() {
+    if (onAiFeedbackRequest === undefined) {
+      setError("AI 코칭을 사용할 수 없습니다.")
+      return
+    }
+
+    setError(null)
+    setIsLoading(true)
+
+    const result = await onAiFeedbackRequest({
+      answer: step.target,
+      stepId: step.id,
+    })
+
+    setIsLoading(false)
+
+    if (result.status === "error") {
+      setError(result.message)
+      return
+    }
+
+    setFeedback(result.feedback)
+  }
+
+  const canRetry =
+    feedback !== null && step.allowRetry && feedback.remainingAttempts > 0
+
+  return (
+    <div className="flex flex-col gap-4">
+      <p className="leading-7">{step.feedback}</p>
+      <Button disabled={isLoading} onClick={handleRequest}>
+        {feedback === null ? "AI 코칭 받기" : "다시 받기"}
+      </Button>
+      {isLoading ? (
+        <p className="rounded-lg border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
+          AI 코칭을 준비하고 있습니다.
+        </p>
+      ) : null}
+      {error === null ? null : (
+        <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      {feedback === null ? null : <AiFeedbackResultView feedback={feedback} />}
+      {canRetry ? null : feedback === null ? null : (
+        <p className="text-sm text-muted-foreground">
+          남은 AI 코칭 시도 횟수가 없습니다.
+        </p>
+      )}
+    </div>
+  )
+}
+
+function AiFeedbackResultView({
+  feedback,
+}: {
+  readonly feedback: LessonAiFeedback
+}) {
+  return (
+    <div className="flex flex-col gap-4 rounded-lg border border-border px-4 py-4">
+      <div className="flex flex-col gap-2">
+        <h2 className="font-medium">총평</h2>
+        <p className="leading-7 text-muted-foreground">{feedback.summary}</p>
+        {feedback.showScore ? (
+          <p className="text-sm text-muted-foreground">
+            {feedback.score}/{feedback.scoreRange[1]}점
+          </p>
+        ) : null}
+      </div>
+      <FeedbackList items={feedback.strengths} title="잘된 점" />
+      <FeedbackList items={feedback.improvements} title="다듬을 점" />
+      <div className="flex flex-col gap-2">
+        <h2 className="font-medium">다음 시도</h2>
+        <p className="leading-7 text-muted-foreground">{feedback.nextAction}</p>
+      </div>
+    </div>
+  )
+}
+
+function FeedbackList({
+  items,
+  title,
+}: {
+  readonly items: readonly string[]
+  readonly title: string
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 className="font-medium">{title}</h2>
+      <ul className="flex flex-col gap-1 text-muted-foreground">
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  )
 }
 
 function MultipleChoiceAnswer({
