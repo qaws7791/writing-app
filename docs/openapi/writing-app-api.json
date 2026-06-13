@@ -854,11 +854,203 @@
                       "items": {
                         "additionalProperties": false,
                         "properties": {
+                          "allowRetry": {
+                            "type": "boolean"
+                          },
+                          "analysis": {
+                            "type": "string"
+                          },
+                          "answer": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "body": {
+                            "type": "string"
+                          },
+                          "categories": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["id", "label"],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "correct": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              {
+                                "items": {
+                                  "type": "integer"
+                                },
+                                "type": "array"
+                              }
+                            ]
+                          },
+                          "draft": {
+                            "type": "boolean"
+                          },
+                          "explanation": {
+                            "type": "string"
+                          },
+                          "feedback": {
+                            "type": "string"
+                          },
+                          "focus": {
+                            "type": "string"
+                          },
+                          "goal": {
+                            "type": "integer"
+                          },
+                          "guide": {
+                            "type": "string"
+                          },
                           "id": {
                             "type": "string"
                           },
+                          "items": {
+                            "anyOf": [
+                              {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "categoryId": {
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["categoryId", "id", "text"],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              }
+                            ]
+                          },
+                          "layout": {
+                            "type": "string"
+                          },
+                          "max": {
+                            "type": "integer"
+                          },
+                          "min": {
+                            "type": "integer"
+                          },
+                          "mode": {
+                            "type": "string"
+                          },
+                          "options": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "text": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["id", "text"],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "pairs": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "left": {
+                                  "type": "string"
+                                },
+                                "right": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["left", "right"],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "placeholder": {
+                            "type": "string"
+                          },
+                          "prompt": {
+                            "type": "string"
+                          },
+                          "question": {
+                            "type": "string"
+                          },
+                          "reference": {
+                            "type": "string"
+                          },
+                          "sample": {
+                            "type": "string"
+                          },
+                          "score": {
+                            "type": "integer"
+                          },
+                          "scoreMax": {
+                            "type": "integer"
+                          },
+                          "segments": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "showNumbers": {
+                            "type": "boolean"
+                          },
+                          "showScore": {
+                            "type": "boolean"
+                          },
                           "sortOrder": {
                             "type": "integer"
+                          },
+                          "source": {
+                            "type": "string"
+                          },
+                          "structure": {
+                            "type": "string"
+                          },
+                          "target": {
+                            "type": "string"
+                          },
+                          "template": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "topic": {
+                            "type": "string"
                           },
                           "type": {
                             "enum": [
@@ -874,6 +1066,31 @@
                               "CATEGORIZE"
                             ],
                             "type": "string"
+                          },
+                          "versions": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "label": {
+                                  "type": "string"
+                                },
+                                "text": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["label", "text"],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "wrong": {
+                            "type": "string"
+                          },
+                          "words": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
                           }
                         },
                         "required": ["id", "sortOrder", "type"],

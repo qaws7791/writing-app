@@ -539,8 +539,58 @@ export interface operations {
             estimatedMinutes: number
             id: string
             steps: {
+              allowRetry?: boolean
+              analysis?: string
+              answer?: string[]
+              body?: string
+              categories?: {
+                id: string
+                label: string
+              }[]
+              correct?: string | string[] | number[]
+              draft?: boolean
+              explanation?: string
+              feedback?: string
+              focus?: string
+              goal?: number
+              guide?: string
               id: string
+              items?:
+                | string[]
+                | {
+                    categoryId: string
+                    id: string
+                    text: string
+                  }[]
+              layout?: string
+              max?: number
+              min?: number
+              mode?: string
+              options?: {
+                id: string
+                text: string
+              }[]
+              pairs?: {
+                left: string
+                right: string
+              }[]
+              placeholder?: string
+              prompt?: string
+              question?: string
+              reference?: string
+              sample?: string
+              score?: number
+              scoreMax?: number
+              segments?: string[]
+              showNumbers?: boolean
+              showScore?: boolean
               sortOrder: number
+              source?: string
+              structure?: string
+              target?: string
+              template?: string
+              title?: string
+              topic?: string
               /** @enum {string} */
               type:
                 | "READING"
@@ -553,6 +603,12 @@ export interface operations {
                 | "AI_FEEDBACK"
                 | "MATCH"
                 | "CATEGORIZE"
+              versions?: {
+                label: string
+                text: string
+              }[]
+              wrong?: string
+              words?: string[]
             }[]
             summary: string[]
             title: string

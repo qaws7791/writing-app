@@ -399,25 +399,99 @@ const courseDetailSchema = objectSchema({
   units: arraySchema(courseUnitSchema),
 })
 
-const lessonStepSchema = objectSchema({
-  id: textSchema,
-  sortOrder: integerSchema,
-  type: {
-    enum: [
-      "READING",
-      "COMPARE",
-      "MULTIPLE_CHOICE",
-      "FILL_BLANK",
-      "SELECT",
-      "ORDER",
-      "WRITE",
-      "AI_FEEDBACK",
-      "MATCH",
-      "CATEGORIZE",
-    ],
-    type: "string",
+const lessonStepSchema = objectSchema(
+  {
+    allowRetry: booleanSchema,
+    analysis: textSchema,
+    answer: arraySchema(textSchema),
+    body: textSchema,
+    categories: arraySchema(
+      objectSchema({
+        id: textSchema,
+        label: textSchema,
+      })
+    ),
+    correct: {
+      anyOf: [textSchema, arraySchema(textSchema), arraySchema(integerSchema)],
+    },
+    draft: booleanSchema,
+    explanation: textSchema,
+    feedback: textSchema,
+    focus: textSchema,
+    goal: integerSchema,
+    guide: textSchema,
+    id: textSchema,
+    items: {
+      anyOf: [
+        arraySchema(textSchema),
+        arraySchema(
+          objectSchema({
+            categoryId: textSchema,
+            id: textSchema,
+            text: textSchema,
+          })
+        ),
+      ],
+    },
+    layout: textSchema,
+    max: integerSchema,
+    min: integerSchema,
+    mode: textSchema,
+    options: arraySchema(
+      objectSchema({
+        id: textSchema,
+        text: textSchema,
+      })
+    ),
+    pairs: arraySchema(
+      objectSchema({
+        left: textSchema,
+        right: textSchema,
+      })
+    ),
+    placeholder: textSchema,
+    prompt: textSchema,
+    question: textSchema,
+    reference: textSchema,
+    sample: textSchema,
+    score: integerSchema,
+    scoreMax: integerSchema,
+    segments: arraySchema(textSchema),
+    showNumbers: booleanSchema,
+    showScore: booleanSchema,
+    sortOrder: integerSchema,
+    source: textSchema,
+    structure: textSchema,
+    target: textSchema,
+    template: textSchema,
+    title: textSchema,
+    topic: textSchema,
+    type: {
+      enum: [
+        "READING",
+        "COMPARE",
+        "MULTIPLE_CHOICE",
+        "FILL_BLANK",
+        "SELECT",
+        "ORDER",
+        "WRITE",
+        "AI_FEEDBACK",
+        "MATCH",
+        "CATEGORIZE",
+      ],
+      type: "string",
+    },
+    versions: arraySchema(
+      objectSchema({
+        label: textSchema,
+        text: textSchema,
+      })
+    ),
+    wrong: textSchema,
+    words: arraySchema(textSchema),
   },
-})
+  ["id", "sortOrder", "type"]
+)
 
 const lessonSchema = objectSchema({
   category: nullableTextSchema,

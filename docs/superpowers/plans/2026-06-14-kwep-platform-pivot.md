@@ -876,7 +876,7 @@ bun --filter @workspace/web test -- create-http-writing-app-api profile-api-mapp
 
 Expected: HTTP adapter가 새 OpenAPI 경로와 응답을 내부 모델로 매핑한다.
 
-- [ ] **Step 5.2: Kwep step content 매핑 작성**
+- [x] **Step 5.2: Kwep step content 매핑 작성**
 
 프론트 내부 처리:
 
@@ -2019,6 +2019,27 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md 'apps/web/src/**/*.ts' apps/web/src/lib/api/generated/writing-app-api.d.ts`: 통과했다.
 - `git diff --check`: 통과했다.
 - `bun --filter @workspace/web typecheck`: 실패했다. 현재 `apps/web/src/app`이 아직 Task 6에서 재작성되기 전이라 Next typegen이 app/pages 디렉토리 부재를 보고하며, 기존 `apps/web/test` fixture가 Task 1에서 삭제된 이전 구현 모듈을 참조한다. 새 Step 5.1 파일에서 보고된 타입 오류는 정리했다.
+
+### 2026-06-14 Task 5 Step 5.2 완료
+
+- `apps/web/src/features/lessons/lesson-types.ts`를 Kwep 10개 step 타입의 discriminated union으로 확장했다.
+- `lesson-api-mappers.ts`가 `READING`, `COMPARE`, `MULTIPLE_CHOICE`, `FILL_BLANK`, `SELECT`, `ORDER`, `WRITE`, `AI_FEEDBACK`, `MATCH`, `CATEGORIZE` content를 내부 lesson model로 보존하도록 했다.
+- OpenAPI lesson step schema에 Kwep step content 필드를 추가하고 `docs/openapi/writing-app-api.json`, `apps/web/src/lib/api/generated/writing-app-api.d.ts`를 다시 생성했다.
+- `bun --filter @workspace/api openapi:generate`: 통과했다.
+- `bun --filter @workspace/web api:generate`: 통과했다.
+- `bun --filter @workspace/web test -- create-http-writing-app-api profile-api-mappers course-api-mappers lesson-api-mappers api-error`: 통과했다. 테스트 파일 5개, 테스트 11개가 통과했다.
+- `bun --filter @workspace/api test -- openapi`: 통과했다. 테스트 파일 2개, 테스트 3개가 통과했다.
+- `bun --filter @workspace/api typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다. Next pages/app 디렉토리 부재 안내는 reset 상태에서 발생하는 warning이며 exit code는 0이다.
+- `bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/openapi/writing-app-api.json apps/web/src/lib/api/generated/writing-app-api.d.ts 'apps/web/src/**/*.ts' 'apps/api/src/openapi/**/*.ts'`: 통과했다.
+- `git diff --check`: 통과했다.
+
+### 2026-06-14 Task 5 완료
+
+- Task 5의 웹 API 포트, HTTP adapter, profile/course/lesson mapper, Kwep step content mapper, OpenAPI generated 타입 갱신을 완료했다.
+- Task 5는 Step 5.1과 Step 5.2 완료 시점에 각각 검증 후 커밋한다.
+- `bun --filter @workspace/web typecheck`: 실패 상태가 남아 있다. 남은 실패는 `apps/web/src/app`이 Task 6 전까지 없는 reset 상태와 기존 `apps/web/test` fixture가 이전 구현 타입/모듈을 참조하는 문제로 분리했다.
+- 이번 Task에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
 
 ## 상태 요약
 
