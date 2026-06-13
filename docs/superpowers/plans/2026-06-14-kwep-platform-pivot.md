@@ -721,7 +721,7 @@ Expected:
 - 인증된 요청은 사용자 정보와 계산된 통계를 반환한다.
 - `suspended` 또는 `deleted` 사용자는 보호 route 정책에서 앱 진입을 막는다.
 
-- [ ] **Step 3.4: progress 응답을 Kwep 홈에 맞게 작성**
+- [x] **Step 3.4: progress 응답을 Kwep 홈에 맞게 작성**
 
 응답 필드:
 
@@ -1867,6 +1867,21 @@ Expected: 문서 포맷 검증이 통과한다.
 - `apps/api/src/routes/error-response.ts`와 `apps/api/src/routes/health.route.ts`에 공통 error response와 health route를 추가했다.
 - `apps/api/src/app.test.ts`로 인증 없음 `401`, active profile 응답, `suspended`/`deleted` 차단을 검증했다.
 - `bun --filter @workspace/api test -- app profile`: 통과했다.
+- `bun --filter @workspace/api typecheck`: 통과했다.
+
+### 2026-06-14 Task 3 Step 3.4 시작
+
+- Step 3.4는 Kwep 홈/코스 화면에 필요한 `/progress` 응답과 답변 저장을 위한 `/learning/answers` route를 작성한다.
+- `/progress`는 active 코스 상세의 lesson 순서와 사용자의 completed lesson id를 기준으로 첫 미완료 lesson만 `available`, 이후 lesson은 `locked`로 계산한다.
+- `/learning/answers`는 인증된 사용자의 answer 저장 요청을 core learning service로 전달하고, `invalid-request`는 HTTP `400`으로 변환한다.
+
+### 2026-06-14 Task 3 Step 3.4 완료
+
+- `apps/api/src/routes/progress.route.ts`에 course progressPercent, nextLessons, lesson estimatedMinutes/status, currentStreakDays 응답을 구현했다.
+- `apps/api/src/routes/learning.route.ts`에 answer 저장 route를 구현하고, `apps/api/src/app.ts`에서 선택적 dependency가 있을 때 route를 등록하도록 확장했다.
+- `apps/api/src/routes/progress.route.test.ts`로 Kwep의 첫 미완료 lesson `available` 계산과 이후 lesson `locked` 계산을 검증했다.
+- `apps/api/src/routes/learning.route.test.ts`로 answer 저장 요청 전달과 `invalid-request` HTTP `400` 변환을 검증했다.
+- `bun --filter @workspace/api test -- progress learning`: 통과했다.
 - `bun --filter @workspace/api typecheck`: 통과했다.
 
 ## 상태 요약

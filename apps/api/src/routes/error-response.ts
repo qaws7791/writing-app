@@ -1,4 +1,8 @@
-export type ErrorCode = "account_unavailable" | "unauthorized"
+export type ErrorCode =
+  | "account_unavailable"
+  | "invalid_request"
+  | "not_found"
+  | "unauthorized"
 
 export type ErrorResponse = {
   readonly error: {
