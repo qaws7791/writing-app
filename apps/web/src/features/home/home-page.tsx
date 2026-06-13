@@ -1,194 +1,217 @@
-import Link from "next/link"
+"use client"
+
+import { useRouter } from "next/navigation"
+import type { ReactNode } from "react"
 
 import type { ProgressCourseList } from "@/features/courses/course-types"
-import { buttonVariants } from "@workspace/ui/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/ui/card"
-import { Progress } from "@workspace/ui/components/ui/progress"
-import {
-  ArrowRightIcon,
-  BookOpenIcon,
-  FlameIcon,
-} from "@workspace/ui/components/icons"
 
 type HomePageProps = {
   readonly learnerName: null | string | undefined
-  readonly notice?: string
   readonly progress: ProgressCourseList
 }
 
-export function HomePage({ learnerName, notice, progress }: HomePageProps) {
-  const displayName = normalizeDisplayName(learnerName)
-  const hasProgress = progress.courses.length > 0
-  const nextLessonCount = progress.courses.reduce(
-    (total, course) => total + course.nextLessons.slice(0, 2).length,
+export function HomePage({ learnerName, progress }: HomePageProps) {
+  const router = useRouter()
+  const firstName = normalizeFirstName(learnerName)
+  const totalDone = progress.courses.reduce(
+    (total, course) =>
+      total +
+      course.lessons.filter((lesson) => lesson.status === "completed").length,
     0
   )
+  const inProgress = progress.courses.filter(
+    (course) =>
+      course.progressPercent > 0 ||
+      course.lessons.some((lesson) => lesson.status === "completed")
+  )
+  const hasProgress = inProgress.length > 0
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-10 sm:px-8 lg:px-10">
-        <section className="flex flex-col gap-4">
-          <p className="text-sm font-medium text-primary">오늘의 학습</p>
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-semibold">
-                안녕하세요, {displayName}님
-              </h1>
-              <p className="max-w-2xl leading-7 text-muted-foreground">
-                이어서 쓰고, 막히는 문장은 AI 코칭으로 다시 다듬어 보세요.
-              </p>
-            </div>
-            <Link
-              className={buttonVariants({ variant: "outline" })}
-              href="/app/courses"
-            >
-              배우기
-              <ArrowRightIcon data-icon="inline-end" />
-            </Link>
-          </div>
-        </section>
-
-        {notice === undefined ? null : (
-          <p className="rounded-lg border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
-            {notice}
+    <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 xl:gap-14">
+      <div className="lg:w-[360px] lg:shrink-0 lg:sticky lg:top-20 lg:self-start">
+        <div className="mb-8">
+          <p
+            className="text-muted font-bold mb-2"
+            style={{ fontSize: "0.9375rem" }}
+          >
+            안녕하세요 👋
           </p>
-        )}
-
-        <section
-          aria-labelledby="learning-context-heading"
-          className="grid gap-4 md:grid-cols-3"
-        >
-          <h2 className="sr-only" id="learning-context-heading">
-            전체 학습 맥락
-          </h2>
-          <Card>
-            <CardHeader>
-              <CardTitle as="h3" className="flex items-center gap-2">
-                <FlameIcon className="text-primary" />
-                {progress.currentStreakDays}일 연속 학습
-              </CardTitle>
-              <CardDescription>
-                오늘 한 스텝만 완료해도 루틴이 이어집니다.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle as="h3">{progress.courses.length}개 코스</CardTitle>
-              <CardDescription>
-                현재 이어서 볼 수 있는 코스입니다.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle as="h3">{nextLessonCount}개 다음 레슨</CardTitle>
-              <CardDescription>
-                코스별로 최대 2개까지 바로 이어갈 수 있습니다.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </section>
-
-        <section aria-labelledby="progress-courses-heading">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <div className="flex flex-col gap-1">
-              <h2
-                className="text-2xl font-semibold"
-                id="progress-courses-heading"
+          <h1
+            className="font-black"
+            style={{ fontSize: "2.25rem", lineHeight: 1.2 }}
+          >
+            {firstName}님,
+            <br />
+            오늘도 함께 써봐요.
+          </h1>
+        </div>
+        <div className="flex gap-3">
+          <div className="flex items-center gap-3 bg-surface rounded-2xl px-5 py-3.5 flex-1">
+            <KwepFlameIcon className="shrink-0 text-muted" size={20} />
+            <div>
+              <p
+                className="font-black"
+                style={{ fontSize: "1.25rem", lineHeight: 1 }}
               >
-                진행 중인 코스
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                완료한 레슨과 다음 레슨을 한눈에 확인합니다.
+                {progress.currentStreakDays}일
+              </p>
+              <p
+                className="font-bold text-muted"
+                style={{ fontSize: "0.6875rem", marginTop: 6 }}
+              >
+                연속 학습
               </p>
             </div>
           </div>
-
-          {hasProgress ? (
-            <div className="grid gap-5 lg:grid-cols-2">
-              {progress.courses.map((course) => (
-                <Card
-                  aria-labelledby={`home-course-${course.id}`}
-                  key={course.id}
-                  role="article"
-                >
-                  <CardHeader>
-                    <CardTitle as="h3" id={`home-course-${course.id}`}>
-                      {course.title}
-                    </CardTitle>
-                    <CardDescription>
-                      {course.progressPercent}% 완료
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex flex-col gap-5">
-                    <Progress
-                      aria-label={`${course.title} 진행률`}
-                      value={course.progressPercent}
-                    />
-                    <div className="flex flex-col gap-3">
-                      <p className="text-sm font-medium">다음 레슨</p>
-                      <div className="flex flex-col gap-2">
-                        {course.nextLessons.slice(0, 2).map((lesson) => (
-                          <Link
-                            aria-label={`${lesson.title} 이어하기`}
-                            className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-sm transition-colors hover:bg-muted"
-                            href={`/app/lesson?lesson_id=${lesson.id}`}
-                            key={lesson.id}
-                          >
-                            <span className="flex items-center gap-2">
-                              <BookOpenIcon className="text-primary" />
-                              <span>{lesson.title}</span>
-                            </span>
-                            <span className="text-muted-foreground">
-                              {lesson.estimatedMinutes}분
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          <div className="flex items-center gap-3 bg-surface rounded-2xl px-5 py-3.5 flex-1">
+            <KwepBookOpenIcon className="shrink-0 text-muted" size={20} />
+            <div>
+              <p
+                className="font-black"
+                style={{ fontSize: "1.25rem", lineHeight: 1 }}
+              >
+                {totalDone}개
+              </p>
+              <p
+                className="font-bold text-muted"
+                style={{ fontSize: "0.6875rem", marginTop: 6 }}
+              >
+                완료한 레슨
+              </p>
             </div>
-          ) : (
-            <Card>
-              <CardHeader>
-                <CardTitle as="h3">아직 진행 중인 코스가 없습니다.</CardTitle>
-                <CardDescription>
-                  글쓰기 첫걸음 코스부터 시작하면 다음 레슨과 진행률이 이곳에
-                  표시됩니다.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Link
-                  className={buttonVariants({ variant: "default" })}
-                  href="/app/courses"
-                >
-                  코스 둘러보기
-                  <ArrowRightIcon data-icon="inline-end" />
-                </Link>
-              </CardContent>
-            </Card>
-          )}
-        </section>
+          </div>
+        </div>
       </div>
-    </main>
+
+      <div className="flex-1 min-w-0">
+        {hasProgress ? (
+          <div className="flex items-baseline justify-between mb-5">
+            <p
+              className="font-bold text-muted"
+              style={{
+                fontSize: "0.75rem",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
+            >
+              이어서 학습하기
+            </p>
+            <p className="font-bold text-muted" style={{ fontSize: "0.75rem" }}>
+              {Math.min(inProgress.length, 5)}개 코스
+            </p>
+          </div>
+        ) : (
+          <div
+            className="bg-surface rounded-4xl p-7 cursor-pointer btn-squish"
+            onClick={() => router.push("/app/courses")}
+          >
+            <div className="flex items-center gap-2 mb-5">
+              <KwepSparklesIcon className="text-muted" size={16} />
+              <span
+                className="text-muted font-bold"
+                style={{ fontSize: "0.875rem" }}
+              >
+                지금 시작해볼까요?
+              </span>
+            </div>
+            <h2
+              className="font-black mb-7"
+              style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
+            >
+              첫 번째 코스를
+              <br />
+              선택해 보세요
+            </h2>
+            <div className="flex items-center justify-between bg-charcoal text-cream px-6 py-4 rounded-full">
+              <span className="font-bold" style={{ fontSize: "1rem" }}>
+                코스 둘러보기
+              </span>
+              <KwepChevronRightIcon size={20} />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
-function normalizeDisplayName(name: null | string | undefined): string {
+function normalizeFirstName(name: null | string | undefined): string {
   const trimmed = name?.trim()
 
-  if (trimmed === undefined || trimmed.length === 0) {
-    return "학습자"
+  if (trimmed === undefined || trimmed.length === 0 || trimmed === "학습자") {
+    return "글쓰기"
   }
 
-  return trimmed
+  return trimmed.split(/\s+/)[0] ?? "글쓰기"
+}
+
+type KwepIconProps = {
+  readonly className?: string
+  readonly size?: number
+}
+
+function KwepFlameIcon({ className, size = 24 }: KwepIconProps) {
+  return (
+    <KwepSvgIcon className={className} name="flame" size={size}>
+      <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+    </KwepSvgIcon>
+  )
+}
+
+function KwepBookOpenIcon({ className, size = 24 }: KwepIconProps) {
+  return (
+    <KwepSvgIcon className={className} name="book-open" size={size}>
+      <path d="M12 7v14" />
+      <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+    </KwepSvgIcon>
+  )
+}
+
+function KwepSparklesIcon({ className, size = 24 }: KwepIconProps) {
+  return (
+    <KwepSvgIcon className={className} name="sparkles" size={size}>
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+      <path d="M20 3v4" />
+      <path d="M22 5h-4" />
+      <path d="M4 17v2" />
+      <path d="M5 18H3" />
+    </KwepSvgIcon>
+  )
+}
+
+function KwepChevronRightIcon({ className, size = 24 }: KwepIconProps) {
+  return (
+    <KwepSvgIcon className={className} name="chevron-right" size={size}>
+      <path d="m9 18 6-6-6-6" />
+    </KwepSvgIcon>
+  )
+}
+
+function KwepSvgIcon({
+  children,
+  className,
+  name,
+  size,
+}: KwepIconProps & {
+  readonly children: ReactNode
+  readonly name: string
+}) {
+  const mergedClassName = `lucide lucide-${name}${className ? ` ${className}` : ""}`
+
+  return (
+    <svg
+      className={mergedClassName}
+      fill="none"
+      height={size}
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      viewBox="0 0 24 24"
+      width={size}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {children}
+    </svg>
+  )
 }

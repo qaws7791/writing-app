@@ -61,6 +61,29 @@ body {
   padding: 0;
 }
 
+*,
+::before,
+::after {
+  border-color: currentcolor;
+}
+
+button:not(:disabled),
+[role="button"]:not(:disabled) {
+  cursor: default;
+}
+
+.border-surface {
+  border-color: var(--color-surface);
+}
+
+.border-surface\/50 {
+  border-color: color-mix(in oklab, var(--color-surface) 50%, transparent);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
 .dark {
   --color-cream: #1b1916;
   --color-surface: #262320;

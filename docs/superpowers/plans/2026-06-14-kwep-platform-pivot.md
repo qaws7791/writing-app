@@ -1406,7 +1406,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "로그인 화면을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.3: 홈 fresh 상태(`/home` vs `/app`)를 Kwep와 일치시킨 뒤 커밋**
+- [x] **Step 7R.3: 홈 fresh 상태(`/home` vs `/app`)를 Kwep와 일치시킨 뒤 커밋**
 
 Kwep 기준:
 
@@ -3152,7 +3152,7 @@ Expected: 문서 포맷 검증이 통과한다.
 - computed style 비교에서 390x844와 1280x720 모두 diff 0개를 확인했다.
 - 스크롤 상호작용 비교에서 `scrollY` `0`, `3600`, `4100`, `4800`의 showcase preview와 final CTA heading 좌표가 Kwep와 제품에서 일치했다.
 - 클릭 검증에서 비로그인 상태의 최종 URL은 Kwep와 제품 모두 `/login`이었다. 내부 논리 route는 Kwep `/home`, `/learn`에 대응해 제품 `/app`, `/app/courses`를 사용한다.
-- 남은 attribute diff는 Vite/Next inline style 문자열의 공백 직렬화 차이이며, computed style은 동일했다.
+- 2026-06-14 strict 기준 보강 후 앱 root layout의 inline style attribute 정규화와 Reveal style 조정을 적용해 390x844와 1280x720 모두 attribute diff 0개, rect diff 0개, computed style diff 0개를 다시 확인했다.
 - `bun --filter @workspace/web test -- landing-page`: 통과했다. 테스트 파일 1개, 테스트 2개가 통과했다.
 - `bun --filter @workspace/web typecheck`: 통과했다.
 - `bun --filter @workspace/web lint`: 통과했다.
@@ -3167,10 +3167,28 @@ Expected: 문서 포맷 검증이 통과한다.
 - Google 버튼은 Kwep와 같은 `<button>` 구조를 유지하면서 제품 Google 인증 URL로 이동하도록 연결했다.
 - `docs/superpowers/evidence/2026-06-14-kwep-ui-parity/login/capture-login.mjs`로 390x844와 1280x720 캡처, strict DOM/style diff, 클릭 검증 데이터를 생성했다.
 - 최종 비교에서 390x844와 1280x720 모두 screen root item count `12 / 12`, visible element count `12 / 12`, rect diff 0개, computed style diff 0개를 확인했다.
-- 남은 attribute diff는 Vite/Next inline style 문자열의 공백 직렬화 차이이며, computed style은 동일했다.
+- 2026-06-14 strict 기준 보강 후 앱 root layout의 inline style attribute 정규화를 적용해 390x844와 1280x720 모두 attribute diff 0개, rect diff 0개, computed style diff 0개를 다시 확인했다.
 - `bun --filter @workspace/web test -- auth-page`: 통과했다. 테스트 파일 1개, 테스트 2개가 통과했다.
 - `bun --filter @workspace/web typecheck`: 통과했다.
 - `bun --filter @workspace/web lint`: 통과했다.
+
+### 2026-06-14 Task 7R Step 7R.3 홈 fresh 화면 일치 완료
+
+- 제품 `/app` shell을 Kwep `Root`와 같은 `bg-cream`, sticky header, max-width main, 모바일 하단 nav 구조로 교체했다.
+- 제품 홈 fresh 상태를 Kwep `HomeScreen`과 같은 인사말, `0일` 연속 학습, `0개` 완료 레슨, 첫 코스 선택 카드 구성으로 맞췄다.
+- API 진행도 조회가 실패하더라도 Kwep fresh 화면과 같은 빈 진행 상태로 렌더링하게 해 오류 안내가 홈 화면 DOM에 끼어들지 않도록 했다.
+- Kwep `lucide-react@0.487.0`의 `Flame`, `BookOpen`, `ChevronRight`, `Home/House`, `User`, `Sparkles` SVG path를 홈과 앱 chrome에서 고정해 SVG DOM과 icon path 차이를 제거했다.
+- 제품 전역 CSS에서 Kwep와 다른 shadcn 기본 `border-color`, 버튼 `cursor` 규칙을 Kwep 기준으로 덮었다.
+- 앱 root layout에 inline style attribute 정규화를 추가해 Vite client render와 Next SSR의 style 문자열 공백/세미콜론 차이를 제거했다.
+- `docs/superpowers/evidence/2026-06-14-kwep-ui-parity/home/capture-home.mjs`로 390x844와 1280x720 캡처, strict DOM/style diff, 클릭 검증 데이터를 생성했다.
+- 최종 비교에서 390x844는 screen root item count `67 / 67`, visible element count `56 / 56`, structural diff 0개, rect diff 0개, computed style diff 0개를 확인했다.
+- 최종 비교에서 1280x720은 screen root item count `67 / 67`, visible element count `41 / 41`, structural diff 0개, rect diff 0개, computed style diff 0개를 확인했다.
+- 클릭 검증에서 Kwep 첫 코스 카드는 `/learn`, 제품 첫 코스 카드는 대응 route인 `/app/courses`로 이동했다.
+- 랜딩과 로그인 화면도 다시 캡처해 각 화면의 diff 파일이 390x844와 1280x720 모두 0개임을 확인했다.
+- `bun --filter @workspace/web test -- home-page global-nav`: 통과했다. 테스트 파일 2개, 테스트 2개가 통과했다.
+- `node docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/capture-landing.mjs`: 통과했다. attribute diff, rect diff, computed style diff가 모두 0개였다.
+- `node docs/superpowers/evidence/2026-06-14-kwep-ui-parity/login/capture-login.mjs`: 통과했다. diff 파일이 모두 0개였다.
+- `node docs/superpowers/evidence/2026-06-14-kwep-ui-parity/home/capture-home.mjs`: 통과했다. structural diff, rect diff, computed style diff가 모두 0개였다.
 
 ## 상태 요약
 

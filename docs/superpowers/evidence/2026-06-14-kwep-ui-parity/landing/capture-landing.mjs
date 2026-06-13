@@ -270,7 +270,7 @@ const collectScrollMetrics = async (page) => {
 
   for (const y of [0, 3600, 4100, 4800]) {
     await page.evaluate((scrollY) => window.scrollTo(0, scrollY), y)
-    await page.waitForTimeout(250)
+    await page.waitForTimeout(900)
     results.push(
       await page.evaluate(() => {
         const rectOf = (element) => {

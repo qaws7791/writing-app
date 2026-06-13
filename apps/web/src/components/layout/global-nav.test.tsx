@@ -1,27 +1,38 @@
 import { render, screen } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import userEvent from "@testing-library/user-event"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { GlobalNav } from "@/components/layout/global-nav"
 
+const routerPush = vi.fn()
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/app/profile",
+  useRouter: () => ({
+    push: routerPush,
+  }),
+}))
+
 describe("전역 내비게이션", () => {
-  it("프로필 진입점을 제공하고 현재 경로를 표시한다", () => {
+  beforeEach(() => {
+    routerPush.mockClear()
+  })
+
+  it("Kwep Header와 같은 홈/배우기/프로필 메뉴 동작을 제공한다", async () => {
+    const user = userEvent.setup()
     render(<GlobalNav currentPath="/app/profile" />)
 
-    expect(screen.getByRole("link", { name: "홈" })).toHaveAttribute(
-      "href",
-      "/app"
-    )
-    expect(screen.getByRole("link", { name: "배우기" })).toHaveAttribute(
-      "href",
-      "/app/courses"
-    )
-    expect(screen.getByRole("link", { name: "프로필" })).toHaveAttribute(
-      "href",
-      "/app/profile"
-    )
-    expect(screen.getByRole("link", { name: "프로필" })).toHaveAttribute(
-      "aria-current",
-      "page"
-    )
+    await user.click(screen.getByRole("button", { name: "글결." }))
+    expect(routerPush).toHaveBeenLastCalledWith("/app")
+
+    await user.click(screen.getByRole("button", { name: "홈" }))
+    expect(routerPush).toHaveBeenLastCalledWith("/app")
+
+    await user.click(screen.getByRole("button", { name: "배우기" }))
+    expect(routerPush).toHaveBeenLastCalledWith("/app/courses")
+
+    await user.click(screen.getByRole("button", { name: "✍️" }))
+    await user.click(screen.getByRole("button", { name: "프로필" }))
+    expect(routerPush).toHaveBeenLastCalledWith("/app/profile")
   })
 })

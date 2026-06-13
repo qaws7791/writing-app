@@ -31,11 +31,6 @@ export default async function AppHomeRoute() {
       learnerName={
         profileResult.status === "ok" ? profileResult.value.user.name : null
       }
-      notice={
-        progressResult.status === "error"
-          ? progressResult.error.message
-          : undefined
-      }
       progress={
         progressResult.status === "ok" ? progressResult.value : emptyProgress
       }

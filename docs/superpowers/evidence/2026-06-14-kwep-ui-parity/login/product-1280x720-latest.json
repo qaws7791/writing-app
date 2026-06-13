@@ -55,7 +55,7 @@
     {
       "attrs": [
         ["class", "mb-8"],
-        ["style", "font-size:4rem"]
+        ["style", "font-size: 4rem;"]
       ],
       "className": "mb-8",
       "index": 0,
@@ -65,7 +65,7 @@
         "x": 608,
         "y": 91
       },
-      "style": "font-size:4rem",
+      "style": "font-size: 4rem;",
       "styles": {
         "display": "block",
         "position": "static",
@@ -105,7 +105,7 @@
     {
       "attrs": [
         ["class", "font-black mb-4 text-center"],
-        ["style", "font-size:3rem"]
+        ["style", "font-size: 3rem;"]
       ],
       "className": "font-black mb-4 text-center",
       "index": 1,
@@ -115,7 +115,7 @@
         "x": 591,
         "y": 219
       },
-      "style": "font-size:3rem",
+      "style": "font-size: 3rem;",
       "styles": {
         "display": "block",
         "position": "static",
@@ -155,7 +155,7 @@
     {
       "attrs": [
         ["class", "text-muted font-medium mb-12 text-center"],
-        ["style", "font-size:1.125rem"]
+        ["style", "font-size: 1.125rem;"]
       ],
       "className": "text-muted font-medium mb-12 text-center",
       "index": 2,
@@ -165,7 +165,7 @@
         "x": 457,
         "y": 307
       },
-      "style": "font-size:1.125rem",
+      "style": "font-size: 1.125rem;",
       "styles": {
         "display": "block",
         "position": "static",
@@ -255,7 +255,7 @@
           "class",
           "w-full bg-ink text-white font-bold py-5 rounded-4xl btn-squish flex items-center justify-center gap-3"
         ],
-        ["style", "font-size:1.125rem"]
+        ["style", "font-size: 1.125rem;"]
       ],
       "className": "w-full bg-ink text-white font-bold py-5 rounded-4xl btn-squish flex items-center justify-center gap-3",
       "index": 4,
@@ -265,7 +265,7 @@
         "x": 448,
         "y": 382
       },
-      "style": "font-size:1.125rem",
+      "style": "font-size: 1.125rem;",
       "styles": {
         "display": "flex",
         "position": "static",
@@ -567,7 +567,7 @@
     {
       "attrs": [
         ["class", "text-center text-muted font-medium"],
-        ["style", "font-size:0.875rem"]
+        ["style", "font-size: 0.875rem;"]
       ],
       "className": "text-center text-muted font-medium",
       "index": 10,
@@ -577,7 +577,7 @@
         "x": 448,
         "y": 465
       },
-      "style": "font-size:0.875rem",
+      "style": "font-size: 0.875rem;",
       "styles": {
         "display": "block",
         "position": "static",

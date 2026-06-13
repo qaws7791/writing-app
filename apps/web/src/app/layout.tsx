@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
+import { InlineStyleAttributeNormalizer } from "@/components/layout/inline-style-attribute-normalizer"
+
 import "@/app/globals.css"
 
 export const metadata: Metadata = {
@@ -17,7 +19,10 @@ export default function RootLayout({
 }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        <InlineStyleAttributeNormalizer />
+        {children}
+      </body>
     </html>
   )
 }

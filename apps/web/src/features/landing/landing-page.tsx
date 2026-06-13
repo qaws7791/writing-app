@@ -341,8 +341,8 @@ function Hero({
             className="font-black"
             style={{
               fontSize: "clamp(2.5rem, 6vw, 4.25rem)",
-              letterSpacing: "-0.03em",
               lineHeight: 1.08,
+              letterSpacing: "-0.03em",
             }}
           >
             <span className="block">매일 한 조각,</span>
@@ -501,8 +501,8 @@ function Features() {
           className="font-black"
           style={{
             fontSize: "clamp(2rem, 4vw, 3rem)",
-            letterSpacing: "-0.02em",
             lineHeight: 1.15,
+            letterSpacing: "-0.02em",
           }}
         >
           학습을 가볍게,
@@ -561,8 +561,8 @@ function HowItWorks() {
           className="font-black mb-16"
           style={{
             fontSize: "clamp(2rem, 4vw, 3rem)",
-            letterSpacing: "-0.02em",
             lineHeight: 1.15,
+            letterSpacing: "-0.02em",
           }}
           y={20}
         >
@@ -695,8 +695,8 @@ function Showcase() {
           className="font-black"
           style={{
             fontSize: "clamp(2rem, 4vw, 3rem)",
-            letterSpacing: "-0.02em",
             lineHeight: 1.15,
+            letterSpacing: "-0.02em",
           }}
         >
           손에 익는 학습 경험
@@ -734,8 +734,8 @@ function FinalCta({ startLearning }: { startLearning: () => void }) {
             className="font-black text-cream"
             style={{
               fontSize: "clamp(2.25rem, 5vw, 3.75rem)",
-              letterSpacing: "-0.02em",
               lineHeight: 1.1,
+              letterSpacing: "-0.02em",
             }}
           >
             오늘의 첫 조각을
@@ -933,7 +933,6 @@ function Reveal({
   as = "div",
   children,
   className,
-  delay = 0,
   onVisible,
   style,
   x = 0,
@@ -997,13 +996,32 @@ function Reveal({
       style={{
         ...style,
         opacity: visible ? 1 : 0,
-        transform: visible ? "none" : `translate(${x}px, ${y}px)`,
-        transition: `opacity 0.6s ease ${delay}ms, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
+        transform: resolveRevealTransform({ visible, x, y }),
       }}
     >
       {children}
     </Element>
   )
+}
+
+function resolveRevealTransform({
+  visible,
+  x,
+  y,
+}: {
+  readonly visible: boolean
+  readonly x: number
+  readonly y: number
+}) {
+  if (visible) {
+    return "none"
+  }
+
+  if (x !== 0) {
+    return `translateX(${x}px)`
+  }
+
+  return `translateY(${y}px)`
 }
 
 function PreviewFrame({

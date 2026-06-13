@@ -1,0 +1,12 @@
+{
+  "courseBrowseCard": {
+    "expected": {
+      "kwep": "/learn",
+      "product": "/app/courses"
+    },
+    "path": {
+      "kwep": "/learn",
+      "product": "/app/courses"
+    }
+  }
+}

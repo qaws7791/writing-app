@@ -1,6 +1,6 @@
 import type { ReactNode } from "react"
 
-import { GlobalNav } from "@/components/layout/global-nav"
+import { GlobalNav, MobileNav } from "@/components/layout/global-nav"
 
 type AppShellProps = {
   readonly children: ReactNode
@@ -9,9 +9,12 @@ type AppShellProps = {
 
 export function AppShell({ children, currentPath }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-cream text-charcoal flex flex-col">
       <GlobalNav currentPath={currentPath} />
-      {children}
+      <main className="flex-1 w-full max-w-6xl mx-auto px-5 md:px-10 pt-6 pb-24 an-fi">
+        {children}
+      </main>
+      <MobileNav currentPath={currentPath} />
     </div>
   )
 }
