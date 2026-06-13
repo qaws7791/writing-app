@@ -124,7 +124,7 @@ Kwep와 제품은 모두 React와 Tailwind CSS를 사용하므로, 이후 화면
 - 기준 날짜: 2026-06-14
 - 작업 브랜치: `codex/kwep-platform-pivot-plan`
 - 플랫폼 프론트엔드 상태: API 연결과 기본 화면 초안은 작성됐지만, Kwep UI 1:1 기준은 미달이다.
-- 다음 프론트엔드 작업 시작점: 사용자 플로우 12번 학습자 플로우 전체 회귀 검증.
+- 다음 프론트엔드 작업 시작점: Task 8 어드민 API 요구사항 확정과 계약 작성.
 - 시작 시점 변경 상태:
   - `.prettierignore`: 기존 수정 있음
   - `AGENTS.md`: 기존 수정 있음
@@ -1891,7 +1891,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "프로필과 테마 전환을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.12: 학습자 플로우 전체 회귀 검증**
+- [x] **Step 7R.12: 학습자 플로우 전체 회귀 검증**
 
 검증 명령:
 
@@ -3379,6 +3379,21 @@ Expected: 문서 포맷 검증이 통과한다.
 - Kwep 코드 기준으로 맞춘 화면들이 현재 제품 코드에서 함께 회귀하지 않는지 테스트, 타입체크, lint, 필요한 포맷 검증을 다시 수행한다.
 - 회귀 검증 후에는 Task 7R 완료 상태를 갱신하고 어드민 진입/대시보드 화면으로 넘어간다.
 
+### 2026-06-14 Task 7R Step 7R.12 학습자 플로우 전체 회귀 검증 완료
+
+- 사용자 지시에 따라 별도 스크린샷, curl, 렌더링 HTML 역분석은 반복하지 않고, Kwep React/Tailwind 소스와 제품 코드 계약을 기준으로 화면별 완료 상태를 확인했다.
+- `bun --filter @workspace/web test`: 통과했다. 테스트 파일 17개, 테스트 40개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bun --filter @workspace/web build`: 통과했다. `/`, `/login`, `/app`, `/app/courses`, `/app/courses/[id]`, `/app/lesson`, `/app/profile` route가 빌드됐다.
+- `bun --filter @workspace/api test`: 통과했다. 테스트 파일 11개, 테스트 22개가 통과했다.
+- `bun --filter @workspace/api typecheck`: 통과했다.
+- `bun --filter @workspace/api lint`: 통과했다.
+- `bun run format:check`: 통과했다.
+- `git diff --check`: 통과했다.
+- `git status --short`: tracked 변경은 없고, 읽기 전용 프로토타입 `Kwep/`만 untracked로 남아 있다.
+- Task 7R의 학습자 사용자 플로우 1~12번 화면 단위 재작업과 회귀 검증을 완료했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성
@@ -3393,7 +3408,7 @@ Expected: 문서 포맷 검증이 통과한다.
 - [x] 플랫폼 프론트엔드 초안 구현
 - [x] 플랫폼 프론트엔드 초안 검증
 - [x] 플랫폼 브라우저 스모크(초안)
-- [ ] Kwep UI 1:1 사용자 플로우 재작업
+- [x] Kwep UI 1:1 사용자 플로우 재작업
 - [ ] Kwep UI 1:1 브라우저 검증
 - [ ] 어드민 API 구현
 - [ ] 어드민 API 검증

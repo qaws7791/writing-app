@@ -290,3 +290,21 @@
 - `bunx prettier --check FRONTEND.md apps/web/src/app/layout.tsx apps/web/src/app/app/profile/page.tsx apps/web/src/features/profile/profile-page.tsx apps/web/src/features/profile/profile-page.test.tsx docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
 - `git diff --check`: 통과했다.
 - 남은 프로필/테마 HTML/CSS/기능 차이는 없다.
+
+## 학습자 플로우 전체 회귀 검증
+
+- 대상 범위: 공개 랜딩, 로그인, 홈 fresh, 배우기, 코스 상세, 레슨 시작, 읽기 스텝, 매칭/분류/쓰기 레슨, 객관식 확인 레슨, 레슨 완료, 프로필, 테마 전환.
+- 비교 원칙: 사용자 지시에 따라 Kwep React/Tailwind 소스를 1차 기준으로 삼고, 별도 스크린샷, curl, 렌더링 HTML 역분석은 반복하지 않았다.
+
+최신 검증 결과:
+
+- `bun --filter @workspace/web test`: 통과했다. 테스트 파일 17개, 테스트 40개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bun --filter @workspace/web build`: 통과했다.
+- `bun --filter @workspace/api test`: 통과했다. 테스트 파일 11개, 테스트 22개가 통과했다.
+- `bun --filter @workspace/api typecheck`: 통과했다.
+- `bun --filter @workspace/api lint`: 통과했다.
+- `bun run format:check`: 통과했다.
+- `git diff --check`: 통과했다.
+- tracked 변경은 없고, 읽기 전용 프로토타입 `Kwep/`만 untracked로 남아 있다.
