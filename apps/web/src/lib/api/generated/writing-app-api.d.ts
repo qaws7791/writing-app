@@ -559,12 +559,15 @@ export interface operations {
               allowRetry?: boolean
               analysis?: string
               answer?: string[]
+              badge?: string
               body?: string
               categories?: {
                 id: string
                 label: string
               }[]
               correct?: string | string[] | number[]
+              claim?: string
+              context?: string
               draft?: boolean
               explanation?: string
               feedback?: string

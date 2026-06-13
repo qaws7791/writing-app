@@ -73,11 +73,21 @@ export type OrderStep = LessonStepBase & {
 }
 
 export type WriteStep = LessonStepBase & {
+  readonly badge?: string
+  readonly claim?: string
+  readonly claimLabel?: string
+  readonly context?: string
+  readonly draft?: boolean
   readonly goal?: number
   readonly guide: string
   readonly max?: number
   readonly min: number
+  readonly mode?: string
+  readonly placeholder?: string
+  readonly prompt?: string
+  readonly reference?: string
   readonly sample?: string
+  readonly structure?: string
   readonly title?: string
   readonly type: "WRITE"
 }

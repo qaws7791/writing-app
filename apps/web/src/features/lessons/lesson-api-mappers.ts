@@ -81,11 +81,20 @@ function mapLessonStep(step: ApiLessonResponse["steps"][number]): LessonStep {
     case "WRITE":
       return {
         ...base,
+        badge: step.badge,
+        claim: step.claim,
+        context: step.context,
+        draft: step.draft,
         goal: step.goal,
         guide: step.guide ?? "",
         max: step.max,
         min: step.min ?? 0,
+        mode: step.mode,
+        placeholder: step.placeholder,
+        prompt: step.prompt,
+        reference: step.reference,
         sample: step.sample,
+        structure: step.structure,
         title: step.title,
         type: step.type,
       }

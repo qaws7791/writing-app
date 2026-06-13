@@ -190,3 +190,29 @@
 - `bun --filter @workspace/web lint`: 통과했다.
 - `bunx prettier --check apps/web/package.json apps/web/src/app/globals.css apps/web/src/features/lessons/lesson-experience.tsx apps/web/src/features/lessons/lesson-experience.test.tsx apps/web/src/features/lessons/lesson-step-renderer.tsx docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md`: 문서 완료 기록 전 코드 기준으로 통과했다.
 - 남은 읽기 스텝 HTML/CSS/기능 차이는 없다.
+
+## 매칭/분류/쓰기 레슨 화면
+
+- 기준 화면: Kwep `/lesson/c1/l-new`
+- 제품 화면: `/app/lesson?lesson_id=l-new`
+- 기준 코드:
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`의 started branch, `getCanSubmit`, `handleCheck`, checked footer
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/MatchStep.tsx`
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/CategorizeStep.tsx`
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/StepRenderer.tsx`의 `write` branch
+  - 제품: `apps/web/src/features/lessons/lesson-experience.tsx`
+  - 제품: `apps/web/src/features/lessons/lesson-step-renderer.tsx`
+  - 제품: `apps/web/src/features/lessons/lesson-api-mappers.ts`, `apps/web/src/features/lessons/lesson-types.ts`
+
+최신 검증 결과:
+
+- 제품 `l-new` shell은 Kwep와 같이 매칭 스텝에서 답이 모두 채워질 때까지 `확인하기` CTA를 secondary disabled 상태로 둔다.
+- 제품 매칭 스텝은 Kwep와 같은 왼쪽 버튼 선택, 오른쪽 버튼 탭, deterministic shuffle, 선택/정답/오답 색상, checked 해설 박스 구조를 사용한다.
+- 제품 checked footer는 Kwep와 같은 상단 gradient, 1px 결과 bar, `완벽해요!`/`아쉽지만 달라요`, 해설 text, `계속하기` CTA 구조를 사용한다.
+- 제품 분류 스텝은 Kwep와 같은 태그 선택 패널, category palette, 항목 탭 배치, tagged chip 구조를 사용한다.
+- 제품 쓰기 스텝은 Kwep와 같은 markdown guide, 참고 원문, 구조 가이드, rounded textarea, 글자 수 카운터, draft/sample 조건부 영역 구조를 사용한다.
+- 제품 OpenAPI와 web 생성 타입은 Kwep write step의 `badge`, `claim`, `context`, `prompt`, `reference`, `structure`, `draft`, `mode`, `placeholder`를 보존한다.
+- `bun --filter @workspace/web test -- lesson-experience lesson-step-renderer`: 통과했다. 테스트 파일 2개, 테스트 15개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- 남은 `l-new` 매칭/분류/쓰기 HTML/CSS/기능 차이는 없다.

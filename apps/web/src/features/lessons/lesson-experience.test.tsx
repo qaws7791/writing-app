@@ -187,13 +187,17 @@ describe("레슨 경험", () => {
     await user.click(screen.getByRole("button", { name: "시작하기" }))
     await user.click(screen.getByRole("button", { name: "이해했어요" }))
 
-    expect(screen.getByText("2/2 스텝")).toBeInTheDocument()
+    expect(screen.getByText("2/2")).toHaveClass(
+      "ml-4",
+      "font-bold",
+      "text-muted"
+    )
     expect(
       screen.getByRole("heading", { name: "내 문장으로 정리하기" })
     ).toBeInTheDocument()
 
     await user.type(
-      screen.getByRole("textbox", { name: "답변 입력" }),
+      screen.getByPlaceholderText("여기에 작성하세요..."),
       "좋은 문장은 바로 이해됩니다."
     )
     await waitFor(() =>
@@ -219,6 +223,98 @@ describe("레슨 경험", () => {
     expect(
       screen.getByRole("link", { name: "다음 레슨 보기" })
     ).toHaveAttribute("href", "/app/courses/c1")
+  })
+
+  it("매칭과 분류가 Kwep 확인 흐름으로 다음 스텝을 연다", async () => {
+    const user = userEvent.setup()
+    const api = createApi({
+      completeLesson: vi.fn(async () => apiOk({ saved: true })),
+      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
+    })
+    const newActivityLesson = {
+      ...lesson,
+      category: "기능 소개",
+      description:
+        "매칭·분류·계획·교정·자가 점검 다섯 가지 활동을 차례로 체험해보세요.",
+      estimatedMinutes: 10,
+      id: "l-new",
+      steps: [
+        {
+          explanation: "접속사는 문장 사이의 논리 관계를 신호로 보여줍니다.",
+          guide: "왼쪽 접속사와 오른쪽 기능을 짝지어 보세요.",
+          id: "match-step",
+          order: 1,
+          pairs: [
+            { left: "그러나", right: "역접" },
+            { left: "따라서", right: "인과" },
+          ],
+          title: "접속사와 기능 짝짓기",
+          type: "MATCH",
+        },
+        {
+          categories: [{ id: "A", label: "주제문" }],
+          explanation:
+            "단락은 주제문 1개, 뒷받침 1~2개, 구체 예시로 구성하면 단단해집니다.",
+          guide: "각 문장이 단락에서 어떤 역할을 하는지 분류하세요.",
+          id: "categorize-step",
+          items: [
+            {
+              categoryId: "A",
+              id: "i1",
+              text: "꾸준한 글쓰기는 사고를 정돈한다.",
+            },
+          ],
+          order: 2,
+          title: "문장 분류하기",
+          type: "CATEGORIZE",
+        },
+        {
+          goal: 80,
+          guide:
+            '"최근 새롭게 도전한 일"에 대해 짧은 글을 쓰려 합니다. 본격 쓰기 전에 재료를 모아보세요.',
+          id: "write-step",
+          min: 20,
+          order: 3,
+          structure:
+            "- **독자**: 이 글을 읽을 대상은 누구인가요?\n- **목적**: 이 글의 목적은 무엇인가요?",
+          title: "쓰기 전 5분 계획",
+          type: "WRITE",
+        },
+      ],
+      summary: ["매칭", "분류", "쓰기"],
+      title: "새 학습 활동 둘러보기",
+    } as Lesson
+
+    render(<LessonExperience api={api} lesson={newActivityLesson} />)
+
+    await user.click(screen.getByRole("button", { name: "시작하기" }))
+
+    expect(screen.getByRole("button", { name: "확인하기" })).toBeDisabled()
+    await user.click(screen.getByRole("button", { name: "그러나" }))
+    await user.click(screen.getByRole("button", { name: "역접" }))
+    await user.click(screen.getByRole("button", { name: "따라서" }))
+    await user.click(screen.getByRole("button", { name: "인과" }))
+
+    expect(screen.getByRole("button", { name: "확인하기" })).toBeEnabled()
+    await user.click(screen.getByRole("button", { name: "확인하기" }))
+
+    expect(screen.getByText("완벽해요!")).toHaveClass("text-mint-dark")
+    expect(
+      screen.getAllByText("접속사는 문장 사이의 논리 관계를 신호로 보여줍니다.")
+    ).toHaveLength(2)
+
+    await user.click(screen.getByRole("button", { name: "계속하기" }))
+
+    expect(screen.getByText("태그 선택")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "다음으로 →" })).toBeDisabled()
+
+    await user.click(screen.getByRole("button", { name: "주제문" }))
+    await user.click(screen.getByText("꾸준한 글쓰기는 사고를 정돈한다."))
+
+    expect(screen.getByRole("button", { name: "다음으로 →" })).toBeEnabled()
+    await user.click(screen.getByRole("button", { name: "다음으로 →" }))
+
+    expect(screen.getByText("구조 가이드")).toBeInTheDocument()
   })
 
   it("AI 코칭 요청을 createAiFeedback으로 위임한다", async () => {

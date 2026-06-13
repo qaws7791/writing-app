@@ -866,6 +866,9 @@
                             },
                             "type": "array"
                           },
+                          "badge": {
+                            "type": "string"
+                          },
                           "body": {
                             "type": "string"
                           },
@@ -903,6 +906,12 @@
                                 "type": "array"
                               }
                             ]
+                          },
+                          "claim": {
+                            "type": "string"
+                          },
+                          "context": {
+                            "type": "string"
                           },
                           "draft": {
                             "type": "boolean"

@@ -425,6 +425,7 @@ const lessonStepSchema = objectSchema(
     allowRetry: booleanSchema,
     analysis: textSchema,
     answer: arraySchema(textSchema),
+    badge: textSchema,
     body: textSchema,
     categories: arraySchema(
       objectSchema({
@@ -435,6 +436,8 @@ const lessonStepSchema = objectSchema(
     correct: {
       anyOf: [textSchema, arraySchema(textSchema), arraySchema(integerSchema)],
     },
+    claim: textSchema,
+    context: textSchema,
     draft: booleanSchema,
     explanation: textSchema,
     feedback: textSchema,

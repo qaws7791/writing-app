@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 import ReactMarkdown from "react-markdown"
 
@@ -37,22 +37,52 @@ type LessonStepRendererProps = {
   readonly stepIndex: number
   readonly totalSteps: number
   readonly answerError?: null | string
+  readonly checked?: LessonStepCheckedState
   readonly onAiFeedbackRequest?: (
     request: LessonAiFeedbackRequest
   ) => Promise<LessonAiFeedbackOutcome>
   readonly onAnswerChange?: (change: LessonAnswerChange) => Promise<void> | void
+  readonly onAnswerPayloadChange?: (change: LessonAnswerPayloadChange) => void
+}
+
+type LessonStepCheckedState =
+  | false
+  | "ai_done"
+  | "correct"
+  | "wrong"
+  | {
+      readonly explanation?: string
+      readonly missed: readonly number[]
+      readonly wrong: readonly number[]
+    }
+
+type LessonAnswerPayloadChange = {
+  readonly payload: LessonStepAnswerPayload
+  readonly stepId: string
 }
 
 export function LessonStepRenderer({
   answerError,
+  checked = false,
   onAiFeedbackRequest,
   onAnswerChange,
+  onAnswerPayloadChange,
   step,
   stepIndex,
   totalSteps,
 }: LessonStepRendererProps) {
-  if (step.type === "READING") {
-    return <ReadingStepView step={step} />
+  if (
+    step.type === "CATEGORIZE" ||
+    step.type === "MATCH" ||
+    step.type === "READING" ||
+    step.type === "WRITE"
+  ) {
+    return renderStepContent(step, {
+      checked,
+      onAiFeedbackRequest,
+      onAnswerChange,
+      onAnswerPayloadChange,
+    })
   }
 
   const headingId = `lesson-step-${step.id}`
@@ -71,8 +101,10 @@ export function LessonStepRenderer({
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {renderStepContent(step, {
+            checked,
             onAiFeedbackRequest,
             onAnswerChange,
+            onAnswerPayloadChange,
           })}
           {answerError === undefined || answerError === null ? null : (
             <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
@@ -128,8 +160,10 @@ function getStepDescription(step: LessonStep): string {
 function renderStepContent(
   step: LessonStep,
   handlers: {
+    readonly checked: LessonStepCheckedState
     readonly onAiFeedbackRequest: LessonStepRendererProps["onAiFeedbackRequest"]
     readonly onAnswerChange: LessonStepRendererProps["onAnswerChange"]
+    readonly onAnswerPayloadChange: LessonStepRendererProps["onAnswerPayloadChange"]
   }
 ) {
   switch (step.type) {
@@ -143,7 +177,9 @@ function renderStepContent(
     case "CATEGORIZE":
       return (
         <CategorizeAnswer
+          checked={handlers.checked}
           onAnswerChange={handlers.onAnswerChange}
+          onAnswerPayloadChange={handlers.onAnswerPayloadChange}
           step={step}
         />
       )
@@ -169,7 +205,12 @@ function renderStepContent(
       )
     case "MATCH":
       return (
-        <MatchAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
+        <MatchAnswer
+          checked={handlers.checked}
+          onAnswerChange={handlers.onAnswerChange}
+          onAnswerPayloadChange={handlers.onAnswerPayloadChange}
+          step={step}
+        />
       )
     case "MULTIPLE_CHOICE":
       return (
@@ -183,14 +224,19 @@ function renderStepContent(
         <OrderAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
       )
     case "READING":
-      return null
+      return <ReadingStepView step={step} />
     case "SELECT":
       return (
         <SelectAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
       )
     case "WRITE":
       return (
-        <WriteAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
+        <WriteAnswer
+          checked={handlers.checked}
+          onAnswerChange={handlers.onAnswerChange}
+          onAnswerPayloadChange={handlers.onAnswerPayloadChange}
+          step={step}
+        />
       )
   }
 }
@@ -492,165 +538,597 @@ function OrderAnswer({
 }
 
 function MatchAnswer({
+  checked,
   onAnswerChange,
+  onAnswerPayloadChange,
   step,
 }: {
+  readonly checked: LessonStepCheckedState
   readonly onAnswerChange: LessonStepRendererProps["onAnswerChange"]
+  readonly onAnswerPayloadChange: LessonStepRendererProps["onAnswerPayloadChange"]
   readonly step: MatchStep
 }) {
-  const [selectedPairs, setSelectedPairs] = useState<
-    Readonly<Record<string, string>>
-  >({})
-  const rightOptions = step.pairs.map((pair) => pair.right)
+  const [matchMap, setMatchMap] = useState<Readonly<Record<number, string>>>({})
+  const [selectedLeft, setSelectedLeft] = useState<null | number>(null)
+  const lefts = step.pairs.map((pair) => pair.left)
+  const rights = step.pairs.map((pair) => pair.right)
 
-  function handleMatch(left: string, right: string) {
-    const nextPairs = {
-      ...selectedPairs,
-      [left]: right,
+  const shuffledRights = useMemo(() => {
+    const seed = step.pairs.map((pair) => pair.right).join("")
+    const nextRights = [...rights]
+    let hash = 0
+
+    for (let index = 0; index < seed.length; index += 1) {
+      hash = (Math.imul(31, hash) + seed.charCodeAt(index)) | 0
     }
 
-    setSelectedPairs(nextPairs)
-    emitAnswer(onAnswerChange, step.id, {
-      pairs: step.pairs.flatMap((pair) => {
-        const right = nextPairs[pair.left]
+    for (let index = nextRights.length - 1; index > 0; index -= 1) {
+      hash = (Math.imul(hash, 1664525) + 1013904223) | 0
+      const swapIndex = Math.abs(hash) % (index + 1)
+      const current = nextRights[index]
+      const swap = nextRights[swapIndex]
 
-        return right === undefined
-          ? []
-          : [
-              {
-                left: pair.left,
-                right,
-              },
-            ]
-      }),
-      type: "MATCH",
-    })
+      if (current !== undefined && swap !== undefined) {
+        nextRights[index] = swap
+        nextRights[swapIndex] = current
+      }
+    }
+
+    return nextRights
+  }, [rights, step.pairs])
+
+  function matchedLeftForRight(right: string): null | number {
+    const entry = Object.entries(matchMap).find(([, value]) => value === right)
+
+    return entry === undefined ? null : Number(entry[0])
+  }
+
+  function handleLeftTap(index: number) {
+    if (checked !== false) {
+      return
+    }
+
+    setSelectedLeft((previous) => (previous === index ? null : index))
+  }
+
+  function handleRightTap(right: string) {
+    if (checked !== false || selectedLeft === null) {
+      return
+    }
+
+    const nextMap: Record<number, string> = {
+      ...matchMap,
+    }
+
+    if (nextMap[selectedLeft] === right) {
+      delete nextMap[selectedLeft]
+    } else {
+      const previousLeft = matchedLeftForRight(right)
+
+      if (previousLeft !== null) {
+        delete nextMap[previousLeft]
+      }
+
+      nextMap[selectedLeft] = right
+    }
+
+    setMatchMap(nextMap)
+    emitAnswer(
+      onAnswerChange,
+      step.id,
+      {
+        pairs: step.pairs.flatMap((pair, index) => {
+          const matchedRight = nextMap[index]
+
+          return matchedRight === undefined
+            ? []
+            : [
+                {
+                  left: pair.left,
+                  right: matchedRight,
+                },
+              ]
+        }),
+        type: "MATCH",
+      },
+      onAnswerPayloadChange
+    )
+    setSelectedLeft(null)
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      {step.pairs.map((pair) => (
-        <label
-          className="grid gap-2 rounded-lg border border-border px-4 py-3 md:grid-cols-2"
-          key={pair.left}
-        >
-          <span className="font-medium">{pair.left}</span>
-          <select
-            aria-label={`${pair.left} 연결`}
-            className="rounded-lg border border-border bg-background px-3 py-2"
-            onChange={(event) => handleMatch(pair.left, event.target.value)}
-            value={selectedPairs[pair.left] ?? ""}
-          >
-            <option value="">선택</option>
-            {rightOptions.map((rightOption) => (
-              <option key={rightOption} value={rightOption}>
-                {rightOption}
-              </option>
-            ))}
-          </select>
-        </label>
-      ))}
+    <div className="an-fi">
+      <h2
+        className="font-bold mb-2"
+        style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
+      >
+        {step.title || "짝을 맞춰보세요"}
+      </h2>
+      {step.guide ? (
+        <div className="prose prose-sm max-w-none mb-6 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-muted prose-p:font-medium prose-strong:text-charcoal prose-li:text-muted prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted">
+          <ReactMarkdown>{step.guide}</ReactMarkdown>
+        </div>
+      ) : (
+        <p className="text-muted font-medium mb-6">
+          왼쪽 단어를 탭하고, 오른쪽에서 알맞은 기능을 탭해 짝을 맞추세요.
+        </p>
+      )}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-3">
+          {lefts.map((left, index) => {
+            const matchedRight = matchMap[index]
+            const isCorrect =
+              checked !== false && matchedRight === rights[index]
+            const isWrong =
+              checked !== false &&
+              matchedRight !== undefined &&
+              matchedRight !== rights[index]
+            const isActive = selectedLeft === index
+            const isPaired = matchedRight !== undefined
+
+            return (
+              <button
+                className={cx(
+                  "w-full rounded-3xl p-4 font-bold text-center transition-all duration-150 active:scale-95",
+                  isCorrect
+                    ? "bg-mint-light text-charcoal"
+                    : isWrong
+                      ? "bg-coral-light text-charcoal"
+                      : isActive
+                        ? "bg-charcoal text-cream shadow-lg scale-[1.02]"
+                        : isPaired
+                          ? "bg-primary text-ink"
+                          : "bg-surface text-charcoal"
+                )}
+                disabled={checked !== false}
+                key={left}
+                onClick={() => handleLeftTap(index)}
+                style={{ fontSize: "1rem", minHeight: "3.5rem" }}
+                type="button"
+              >
+                {left}
+              </button>
+            )
+          })}
+        </div>
+        <div className="flex flex-col gap-3">
+          {shuffledRights.map((right) => {
+            const pairedLeftIndex = matchedLeftForRight(right)
+            const isPaired = pairedLeftIndex !== null
+            const isHighlighted =
+              selectedLeft !== null && matchMap[selectedLeft] === right
+            const isCorrect =
+              checked !== false && isPaired && rights[pairedLeftIndex] === right
+            const isWrong =
+              checked !== false && isPaired && rights[pairedLeftIndex] !== right
+
+            return (
+              <button
+                className={cx(
+                  "w-full rounded-3xl p-4 font-bold text-center transition-all duration-150 active:scale-95",
+                  isCorrect
+                    ? "bg-mint-light text-charcoal"
+                    : isWrong
+                      ? "bg-coral-light text-charcoal"
+                      : isHighlighted
+                        ? "bg-primary text-ink ring-2 ring-charcoal"
+                        : isPaired
+                          ? "bg-primary text-ink"
+                          : selectedLeft !== null
+                            ? "bg-surface text-charcoal hover:bg-primary/50"
+                            : "bg-surface text-muted"
+                )}
+                disabled={checked !== false || selectedLeft === null}
+                key={right}
+                onClick={() => handleRightTap(right)}
+                style={{ fontSize: "1rem", minHeight: "3.5rem" }}
+                type="button"
+              >
+                {right}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+      {checked !== false && step.explanation ? (
+        <div className="mt-6 bg-surface rounded-4xl p-6">
+          <div className="font-bold text-muted mb-2">해설</div>
+          <p className="font-medium">{step.explanation}</p>
+        </div>
+      ) : null}
     </div>
   )
 }
 
+const CATEGORY_PALETTE = [
+  {
+    activeRing: "ring-charcoal/50",
+    base: "bg-charcoal text-cream",
+    cardBg: "bg-charcoal/10",
+  },
+  {
+    activeRing: "ring-primary",
+    base: "bg-primary text-ink",
+    cardBg: "bg-primary/25",
+  },
+  {
+    activeRing: "ring-mint",
+    base: "bg-mint text-ink",
+    cardBg: "bg-mint/20",
+  },
+  {
+    activeRing: "ring-coral/60",
+    base: "bg-coral text-ink",
+    cardBg: "bg-coral/10",
+  },
+] as const
+
+function getCategoryPalette(index: number): (typeof CATEGORY_PALETTE)[number] {
+  return (
+    CATEGORY_PALETTE[index % CATEGORY_PALETTE.length] ??
+    getDefaultCategoryPalette()
+  )
+}
+
+function getDefaultCategoryPalette(): (typeof CATEGORY_PALETTE)[number] {
+  const palette = CATEGORY_PALETTE[0]
+
+  if (palette === undefined) {
+    throw new Error("카테고리 색상 팔레트가 비어 있습니다.")
+  }
+
+  return palette
+}
+
 function CategorizeAnswer({
+  checked,
   onAnswerChange,
+  onAnswerPayloadChange,
   step,
 }: {
+  readonly checked: LessonStepCheckedState
   readonly onAnswerChange: LessonStepRendererProps["onAnswerChange"]
+  readonly onAnswerPayloadChange: LessonStepRendererProps["onAnswerPayloadChange"]
   readonly step: CategorizeStep
 }) {
-  const [selectedCategories, setSelectedCategories] = useState<
+  const [placements, setPlacements] = useState<
     Readonly<Record<string, string>>
   >({})
+  const [activeTagId, setActiveTagId] = useState<null | string>(null)
 
-  function handleCategorize(itemId: string, categoryId: string) {
-    const nextCategories = {
-      ...selectedCategories,
-      [itemId]: categoryId,
+  function getCategoryIndex(categoryId: string): number {
+    return step.categories.findIndex((category) => category.id === categoryId)
+  }
+
+  function handleTagTap(categoryId: string) {
+    if (checked !== false) {
+      return
     }
 
-    setSelectedCategories(nextCategories)
-    emitAnswer(onAnswerChange, step.id, {
-      items: step.items.flatMap((item) => {
-        const categoryId = nextCategories[item.id]
+    setActiveTagId((previous) => (previous === categoryId ? null : categoryId))
+  }
 
-        return categoryId === undefined
-          ? []
-          : [
-              {
-                categoryId,
-                itemId: item.id,
-              },
-            ]
-      }),
-      type: "CATEGORIZE",
-    })
+  function handleItemTap(itemId: string) {
+    if (checked !== false || activeTagId === null) {
+      return
+    }
+
+    const nextPlacements: Record<string, string> = {
+      ...placements,
+    }
+
+    if (nextPlacements[itemId] === activeTagId) {
+      delete nextPlacements[itemId]
+    } else {
+      nextPlacements[itemId] = activeTagId
+    }
+
+    setPlacements(nextPlacements)
+    emitAnswer(
+      onAnswerChange,
+      step.id,
+      {
+        items: step.items.flatMap((item) => {
+          const categoryId = nextPlacements[item.id]
+
+          return categoryId === undefined
+            ? []
+            : [
+                {
+                  categoryId,
+                  itemId: item.id,
+                },
+              ]
+        }),
+        type: "CATEGORIZE",
+      },
+      onAnswerPayloadChange
+    )
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      {step.items.map((item) => (
-        <label
-          className="grid gap-2 rounded-lg border border-border px-4 py-3 md:grid-cols-[1fr_14rem]"
-          key={item.id}
+    <div className="select-none flex flex-col" style={{ minHeight: "100%" }}>
+      <div className="flex-1">
+        <h2
+          className="font-bold mb-2"
+          style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
         >
-          <span>{item.text}</span>
-          <select
-            aria-label={`${item.text} 분류`}
-            className="rounded-lg border border-border bg-background px-3 py-2"
-            onChange={(event) => handleCategorize(item.id, event.target.value)}
-            value={selectedCategories[item.id] ?? ""}
+          {step.title || "항목을 분류하세요"}
+        </h2>
+        {step.guide ? (
+          <div className="prose prose-sm max-w-none mb-5 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-muted prose-p:font-medium prose-strong:text-charcoal prose-li:text-muted prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted">
+            <ReactMarkdown>{step.guide}</ReactMarkdown>
+          </div>
+        ) : null}
+        <div className="flex flex-col gap-3 mb-4">
+          {step.items.map((item) => {
+            const assignedCategoryId = placements[item.id]
+            const categoryIndex =
+              assignedCategoryId === undefined
+                ? -1
+                : getCategoryIndex(assignedCategoryId)
+            const palette =
+              categoryIndex >= 0 ? getCategoryPalette(categoryIndex) : null
+            const category =
+              assignedCategoryId === undefined
+                ? null
+                : step.categories.find(
+                    (candidate) => candidate.id === assignedCategoryId
+                  )
+            const isTagged = assignedCategoryId !== undefined
+            const isCorrect =
+              checked !== false &&
+              isTagged &&
+              item.categoryId === assignedCategoryId
+            const isWrong =
+              checked !== false &&
+              isTagged &&
+              item.categoryId !== assignedCategoryId
+            const isClickable = activeTagId !== null && checked === false
+
+            return (
+              <div
+                className={cx(
+                  "rounded-3xl px-4 py-3.5 transition-all duration-200",
+                  isCorrect
+                    ? "bg-mint-light"
+                    : isWrong
+                      ? "bg-coral-light"
+                      : isTagged && palette !== null
+                        ? palette.cardBg
+                        : "bg-surface",
+                  isClickable ? "cursor-pointer btn-squish" : "",
+                  isClickable && !isTagged
+                    ? "ring-2 ring-charcoal/20 ring-offset-1"
+                    : ""
+                )}
+                key={item.id}
+                onClick={() => handleItemTap(item.id)}
+              >
+                <div className="flex items-center gap-2 flex-wrap">
+                  {isTagged && category != null && palette !== null ? (
+                    <span
+                      className={cx(
+                        "inline-flex items-center rounded-full px-2.5 py-0.5 font-bold shrink-0",
+                        palette.base
+                      )}
+                      style={{ fontSize: "0.75rem" }}
+                    >
+                      {category.label}
+                    </span>
+                  ) : null}
+                  <span
+                    className="font-bold text-charcoal flex-1"
+                    style={{ fontSize: "0.9375rem" }}
+                  >
+                    {item.text}
+                  </span>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        {checked !== false && step.explanation ? (
+          <div className="mt-2 bg-surface rounded-4xl p-6 an-fi">
+            <div className="font-bold text-muted mb-2">해설</div>
+            <p className="font-medium">{step.explanation}</p>
+          </div>
+        ) : null}
+      </div>
+      {checked === false ? (
+        <div
+          className="absolute left-0 right-0 px-6 pt-5 pb-3 bg-gradient-to-t from-cream via-cream to-transparent"
+          style={{ bottom: "128px" }}
+        >
+          <div
+            className="font-bold text-muted mb-2 tracking-widest"
+            style={{ fontSize: "0.75rem" }}
           >
-            <option value="">선택</option>
-            {step.categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      ))}
+            태그 선택
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {step.categories.map((category, index) => {
+              const palette = getCategoryPalette(index)
+              const isActive = activeTagId === category.id
+
+              return (
+                <button
+                  className={cx(
+                    "rounded-full px-4 py-2 font-bold btn-squish transition-all duration-150",
+                    palette.base,
+                    isActive
+                      ? cx("scale-95 ring-4 opacity-75", palette.activeRing)
+                      : ""
+                  )}
+                  key={category.id}
+                  onClick={() => handleTagTap(category.id)}
+                  style={{ fontSize: "0.875rem" }}
+                  type="button"
+                >
+                  {category.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }
 
 function WriteAnswer({
+  checked,
   onAnswerChange,
+  onAnswerPayloadChange,
   step,
 }: {
+  readonly checked: LessonStepCheckedState
   readonly onAnswerChange: LessonStepRendererProps["onAnswerChange"]
+  readonly onAnswerPayloadChange: LessonStepRendererProps["onAnswerPayloadChange"]
   readonly step: WriteStep
 }) {
   const [text, setText] = useState("")
+  const [draftSaved, setDraftSaved] = useState(false)
+  const min = step.min || 20
+  const max = step.max ?? 2000
+  const goal = step.goal
+  const title = step.title ?? step.prompt ?? ""
+  const guide = step.guide || step.context
+  const badge =
+    step.badge ??
+    (step.mode === "counter"
+      ? "반박 쓰기"
+      : step.mode === "self-rebut"
+        ? "자기 반박"
+        : null)
+  const claimLabel =
+    step.claimLabel ?? (step.mode === "self-rebut" ? "내 주장" : "대상 주장")
+  const placeholder =
+    step.placeholder ??
+    (step.mode === "self-rebut"
+      ? "내 주장의 약점을 스스로 짚어보세요..."
+      : "여기에 작성하세요...")
+  const minHeight = goal
+    ? "min-h-[280px]"
+    : step.claim
+      ? "min-h-[200px]"
+      : "min-h-[150px]"
 
   function handleChange(nextText: string) {
-    setText(nextText)
-    emitAnswer(onAnswerChange, step.id, {
-      text: nextText,
-      type: "WRITE",
-    })
+    const slicedText = nextText.slice(0, max)
+
+    setText(slicedText)
+    emitAnswer(
+      onAnswerChange,
+      step.id,
+      {
+        text: slicedText,
+        type: "WRITE",
+      },
+      onAnswerPayloadChange
+    )
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-sm text-muted-foreground">
-        최소 {step.min}자
-        {step.goal === undefined ? "" : `, 목표 ${step.goal}자`}
-        {step.max === undefined ? "" : `, 최대 ${step.max}자`}
-      </p>
+    <div className="an-fi">
+      <h2
+        className="font-bold mb-3"
+        style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
+      >
+        {title}
+      </h2>
+      {badge === null ? null : (
+        <div
+          className="inline-block bg-charcoal/5 text-charcoal font-bold px-4 py-2 rounded-full mb-4"
+          style={{ fontSize: "0.875rem" }}
+        >
+          {badge}
+        </div>
+      )}
+      {step.claim === undefined ? null : (
+        <div className="bg-primary/20 rounded-4xl p-5 mb-4">
+          <div
+            className="font-bold text-muted mb-2"
+            style={{ fontSize: "0.8125rem" }}
+          >
+            {claimLabel}
+          </div>
+          <p className="font-medium" style={{ fontSize: "1.0625rem" }}>
+            {step.claim}
+          </p>
+        </div>
+      )}
+      {guide ? (
+        <div className="prose prose-sm max-w-none mb-4 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-muted prose-p:font-medium prose-strong:text-charcoal prose-li:text-muted prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted">
+          <ReactMarkdown>{guide}</ReactMarkdown>
+        </div>
+      ) : null}
+      {step.reference === undefined ? null : (
+        <div className="bg-surface rounded-4xl p-5 mb-4 text-muted font-medium">
+          <div
+            className="font-bold text-muted mb-2"
+            style={{ fontSize: "0.8125rem" }}
+          >
+            참고 원문
+          </div>
+          {step.reference}
+        </div>
+      )}
+      {step.structure === undefined ? null : (
+        <div className="bg-surface rounded-4xl p-5 mb-4">
+          <div
+            className="font-bold text-muted mb-2"
+            style={{ fontSize: "0.8125rem" }}
+          >
+            구조 가이드
+          </div>
+          <p className="font-medium whitespace-pre-line">{step.structure}</p>
+        </div>
+      )}
       <textarea
-        aria-label="답변 입력"
-        className="min-h-32 rounded-lg border border-border bg-background px-4 py-3 leading-7 outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+        className={`w-full bg-surface rounded-4xl p-6 font-medium outline-none resize-none ${minHeight}`}
+        disabled={checked !== false}
         onChange={(event) => handleChange(event.target.value)}
+        placeholder={placeholder}
+        style={{ fontSize: "1.0625rem" }}
         value={text}
       />
-      {step.sample === undefined ? null : (
-        <blockquote className="rounded-lg border border-border px-4 py-3 text-muted-foreground">
-          {step.sample}
-        </blockquote>
-      )}
+      <div
+        className="mt-4 flex justify-between items-center text-muted font-bold"
+        style={{ fontSize: "0.875rem" }}
+      >
+        <span>
+          {text.length}자 · 최소 {min}
+          {goal === undefined ? "" : ` · 목표 ${goal}`}
+          {` · 최대 ${max}`}
+        </span>
+        <span
+          className={cx(
+            text.length >= min ? "text-mint-dark" : "text-coral-dark"
+          )}
+        >
+          {text.length >= min ? "✓" : "✗"}
+        </span>
+      </div>
+      {step.draft ? (
+        <button
+          className="mt-4 inline-flex items-center gap-2 text-muted font-bold hover:text-charcoal"
+          onClick={() => {
+            setDraftSaved(true)
+            setTimeout(() => setDraftSaved(false), 2000)
+          }}
+          style={{ fontSize: "0.875rem" }}
+          type="button"
+        >
+          {draftSaved ? "저장됨" : "드래프트 저장"}
+        </button>
+      ) : null}
+      {checked !== false && step.sample !== undefined ? (
+        <div className="mt-6 bg-surface rounded-4xl p-6">
+          <div className="font-bold text-muted mb-2">참조 답안</div>
+          <p className="font-medium whitespace-pre-line">{step.sample}</p>
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -658,10 +1136,20 @@ function WriteAnswer({
 function emitAnswer(
   onAnswerChange: LessonStepRendererProps["onAnswerChange"],
   stepId: string,
-  payload: LessonStepAnswerPayload
+  payload: LessonStepAnswerPayload,
+  onAnswerPayloadChange?: LessonStepRendererProps["onAnswerPayloadChange"]
 ) {
+  onAnswerPayloadChange?.({
+    payload,
+    stepId,
+  })
+
   void onAnswerChange?.({
     answer: createLessonStepAnswer(payload),
     stepId,
   })
+}
+
+function cx(...classes: Array<false | null | string | undefined>): string {
+  return classes.filter(Boolean).join(" ")
 }

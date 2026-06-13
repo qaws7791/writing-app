@@ -121,7 +121,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     })
   })
 
-  it("매칭 선택을 타입별 JSON 문자열로 전달한다", async () => {
+  it("매칭 스텝은 Kwep 버튼 페어링 UI로 답을 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step: LessonStep = {
@@ -129,28 +129,35 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
       guide: "왼쪽 표현에 맞는 효과를 고르세요.",
       id: "match-1",
       order: 1,
-      pairs: [{ left: "짧은 문장", right: "속도가 빨라진다" }],
-      title: "표현과 효과 연결",
+      pairs: [{ left: "그러나", right: "역접" }],
+      title: "접속사와 기능 짝짓기",
       type: "MATCH",
     }
 
     renderAnswerableStep(step, onAnswerChange)
 
-    await user.selectOptions(
-      screen.getByRole("combobox", { name: "짧은 문장 연결" }),
-      "속도가 빨라진다"
-    )
+    expect(
+      screen.getByRole("heading", { name: "접속사와 기능 짝짓기" })
+    ).toHaveStyle({ fontSize: "1.625rem", lineHeight: "1.3" })
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "그러나" }))
+    await user.click(screen.getByRole("button", { name: "역접" }))
 
     expect(onAnswerChange).toHaveBeenCalledWith({
       answer: JSON.stringify({
-        pairs: [{ left: "짧은 문장", right: "속도가 빨라진다" }],
+        pairs: [{ left: "그러나", right: "역접" }],
         type: "MATCH",
       }),
       stepId: "match-1",
     })
+    expect(screen.getByRole("button", { name: "그러나" })).toHaveClass(
+      "bg-primary",
+      "text-ink"
+    )
   })
 
-  it("분류 선택을 타입별 JSON 문자열로 전달한다", async () => {
+  it("분류 스텝은 Kwep 태그 패널 UI로 답을 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step: LessonStep = {
@@ -175,10 +182,15 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
 
     renderAnswerableStep(step, onAnswerChange)
 
-    await user.selectOptions(
-      screen.getByRole("combobox", { name: "독자가 바로 이해한다. 분류" }),
-      "good"
+    expect(screen.queryByRole("combobox")).not.toBeInTheDocument()
+    expect(screen.getByText("태그 선택")).toHaveClass(
+      "font-bold",
+      "text-muted",
+      "tracking-widest"
     )
+
+    await user.click(screen.getByRole("button", { name: "좋은 문장" }))
+    await user.click(screen.getByText("독자가 바로 이해한다."))
 
     expect(onAnswerChange).toHaveBeenCalledWith({
       answer: JSON.stringify({
@@ -189,29 +201,44 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     })
   })
 
-  it("글쓰기 입력을 타입별 JSON 문자열로 전달한다", async () => {
+  it("글쓰기 스텝은 Kwep 구조 가이드와 글자 카운터를 보여주고 답을 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
-    const step: LessonStep = {
+    const step = {
+      goal: 80,
       guide: "좋은 문장의 기준을 한 문장으로 적어보세요.",
       id: "write-1",
-      min: 5,
+      min: 20,
       order: 1,
+      structure:
+        "- **독자**: 이 글을 읽을 대상은 누구인가요?\n- **목적**: 이 글의 목적은 무엇인가요?",
       title: "한 문장 쓰기",
       type: "WRITE",
-    }
+    } as LessonStep
 
     renderAnswerableStep(step, onAnswerChange)
 
+    expect(screen.getByText("구조 가이드")).toBeInTheDocument()
+    expect(
+      screen.getByText("0자 · 최소 20 · 목표 80 · 최대 2000").parentElement
+    ).toHaveClass("text-muted", "font-bold")
+    expect(screen.getByText("✗")).toHaveClass("text-coral-dark")
+    expect(screen.getByPlaceholderText("여기에 작성하세요...")).toHaveClass(
+      "w-full",
+      "bg-surface",
+      "rounded-4xl",
+      "p-6"
+    )
+
     await user.type(
-      screen.getByRole("textbox", { name: "답변 입력" }),
-      "짧고 명확하게 쓴다"
+      screen.getByPlaceholderText("여기에 작성하세요..."),
+      "짧고 명확하게 쓰는 문장이 좋다"
     )
 
     await waitFor(() =>
       expect(onAnswerChange).toHaveBeenLastCalledWith({
         answer: JSON.stringify({
-          text: "짧고 명확하게 쓴다",
+          text: "짧고 명확하게 쓰는 문장이 좋다",
           type: "WRITE",
         }),
         stepId: "write-1",

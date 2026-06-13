@@ -1533,7 +1533,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "배우기 화면을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.5: 코스 상세(`/course/c1` vs `/app/courses/c1`)를 Kwep와 일치시킨 뒤 커밋**
+- [x] **Step 7R.5: 코스 상세(`/course/c1` vs `/app/courses/c1`)를 Kwep와 일치시킨 뒤 커밋**
 
 Kwep 기준:
 
@@ -1593,7 +1593,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "코스 상세 화면을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.6: 레슨 shell과 읽기 스텝을 Kwep와 일치시킨 뒤 커밋**
+- [x] **Step 7R.6: 레슨 shell과 읽기 스텝을 Kwep와 일치시킨 뒤 커밋**
 
 Kwep 기준:
 
@@ -1654,7 +1654,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "레슨 shell과 읽기 스텝을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.7: 매칭/분류/쓰기 레슨(`l-new`)을 Kwep와 일치시킨 뒤 커밋**
+- [x] **Step 7R.7: 매칭/분류/쓰기 레슨(`l-new`)을 Kwep와 일치시킨 뒤 커밋**
 
 Kwep 기준:
 
@@ -1716,7 +1716,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "매칭 분류 쓰기 레슨을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.8: 객관식 확인 레슨(`l2`)을 Kwep와 일치시킨 뒤 커밋**
+- [ ] **Step 7R.9: 객관식 확인 레슨(`l2`)을 Kwep와 일치시킨 뒤 커밋**
 
 Kwep 기준:
 
@@ -1775,7 +1775,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "객관식 확인 흐름을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.9: 레슨 완료 화면을 Kwep와 일치시킨 뒤 커밋**
+- [ ] **Step 7R.10: 레슨 완료 화면을 Kwep와 일치시킨 뒤 커밋**
 
 Kwep 기준:
 
@@ -1830,7 +1830,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "레슨 완료 화면을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.10: 프로필과 테마 전환을 Kwep와 일치시킨 뒤 커밋**
+- [ ] **Step 7R.11: 프로필과 테마 전환을 Kwep와 일치시킨 뒤 커밋**
 
 Kwep 기준:
 
@@ -1891,7 +1891,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "프로필과 테마 전환을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.11: 학습자 플로우 전체 회귀 검증**
+- [ ] **Step 7R.12: 학습자 플로우 전체 회귀 검증**
 
 검증 명령:
 
@@ -3297,6 +3297,25 @@ Expected: 문서 포맷 검증이 통과한다.
 - Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`, `/tmp/kwep-runtime-writing-app/src/app/components/MatchStep.tsx`, `/tmp/kwep-runtime-writing-app/src/app/components/CategorizeStep.tsx`, `/tmp/kwep-runtime-writing-app/src/app/components/StepRenderer.tsx`이다.
 - 제품 대상 파일은 `apps/web/src/features/lessons/lesson-experience.tsx`, `apps/web/src/features/lessons/lesson-step-renderer.tsx`, `apps/web/src/features/lessons/lesson-types.ts`와 `l-new` seed/API mapping 관련 파일이다.
 - 읽기 스텝 커밋 후 Kwep 코드 기준으로 `l-new`의 시작 화면, 매칭, 분류, 쓰기 스텝을 하나의 사용자 흐름 안에서 같은 구조와 기능으로 맞춘다.
+
+### 2026-06-14 Task 7R Step 7R.8 매칭/분류/쓰기 레슨 화면 일치 완료
+
+- Kwep `LessonShell.tsx`의 `getCanSubmit`, quiz 확인, 결과 footer 흐름을 제품 `LessonExperience`에 이식해 매칭은 `확인하기 → 완벽해요!/아쉽지만 달라요 → 계속하기`, 분류와 쓰기는 준비 조건 충족 후 `다음으로 →`로 이동하게 했다.
+- 제품 `MATCH` branch를 Kwep `MatchStep.tsx`와 같은 왼쪽 선택, 오른쪽 탭, deterministic right shuffle, correct/wrong 색상, 해설 박스 구조로 교체했다.
+- 제품 `CATEGORIZE` branch를 Kwep `CategorizeStep.tsx`와 같은 태그 선택 패널, 항목 탭 배치, category palette, tagged item chip 구조로 교체했다.
+- 제품 `WRITE` branch를 Kwep `StepRenderer.tsx`의 write branch와 같은 title, badge, claim, markdown guide, 참고 원문, 구조 가이드, rounded textarea, 글자 수 카운터, draft/sample 영역 구조로 교체했다.
+- API/OpenAPI 경계에서 Kwep write step의 `badge`, `claim`, `context`, `prompt`, `reference`, `structure`, `draft`, `mode`, `placeholder`가 제품 웹까지 전달되도록 OpenAPI 문서, 생성 타입, lesson mapper, web type을 갱신했다.
+- `bun --filter @workspace/web test -- lesson-experience lesson-step-renderer`: 통과했다. 테스트 파일 2개, 테스트 15개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- 남은 `l-new` 매칭/분류/쓰기 레슨 HTML/CSS/기능 차이는 없다.
+
+### 2026-06-14 Task 7R Step 7R.9 객관식 확인 레슨 화면 일치 시작
+
+- 다음 대상 화면은 Kwep `/lesson/c1/l2`와 제품 `/app/lesson?lesson_id=l2`이다.
+- Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`와 `/tmp/kwep-runtime-writing-app/src/app/components/StepRenderer.tsx`의 `reading`, `multiple_choice` branch이다.
+- 제품 대상 파일은 `apps/web/src/features/lessons/lesson-experience.tsx`, `apps/web/src/features/lessons/lesson-step-renderer.tsx`, `apps/web/src/features/lessons/lesson-types.ts`와 객관식 저장/확인 관련 테스트이다.
+- `l-new` 커밋 후 Kwep 코드 기준으로 `l2`의 읽기 3개 스텝 진행, 객관식 선택 색상, `확인하기`, 정답/오답 결과 footer를 같은 구조와 기능으로 맞춘다.
 
 ## 상태 요약
 
