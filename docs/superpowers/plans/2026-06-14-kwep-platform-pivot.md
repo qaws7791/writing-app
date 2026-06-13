@@ -2269,6 +2269,13 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/web typecheck`: 통과했다.
 - `bun --filter @workspace/web lint`: 통과했다.
 
+### 2026-06-14 Task 7 Step 7.5 객관식 확인 UX 보강
+
+- 브라우저 스모크 체크리스트의 객관식 확인과 해설 항목을 맞추기 위해 객관식 선택 후 정오답 메시지와 해설을 표시하도록 보강했다.
+- 객관식 해설은 선택 전에는 숨기고, 선택 전 설명은 `답을 선택하면 해설을 확인합니다.` 안내로 바꿨다.
+- `docs/lesson-page.md`에 객관식 정답 확인 동작을 기록했다.
+- `bun --filter @workspace/web test -- lesson-step-renderer`: 통과했다. 테스트 파일 1개, 테스트 9개가 통과했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성

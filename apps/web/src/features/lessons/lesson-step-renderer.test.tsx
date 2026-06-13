@@ -37,6 +37,10 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
       }),
       stepId: "mc-1",
     })
+    expect(screen.getByText("정답입니다.")).toBeInTheDocument()
+    expect(
+      screen.getByText("구체적인 문장이 더 잘 읽힙니다.")
+    ).toBeInTheDocument()
   })
 
   it("빈칸 선택 단어를 타입별 JSON 문자열로 전달한다", async () => {

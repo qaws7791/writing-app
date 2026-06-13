@@ -111,10 +111,11 @@ function getStepDescription(step: LessonStep): string {
     case "COMPARE":
       return step.analysis
     case "FILL_BLANK":
-    case "MULTIPLE_CHOICE":
     case "ORDER":
     case "SELECT":
       return step.explanation
+    case "MULTIPLE_CHOICE":
+      return "답을 선택하면 해설을 확인합니다."
   }
 }
 
@@ -311,23 +312,35 @@ function MultipleChoiceAnswer({
   readonly onAnswerChange: LessonStepRendererProps["onAnswerChange"]
   readonly step: MultipleChoiceStep
 }) {
+  const [selectedOptionId, setSelectedOptionId] = useState<null | string>(null)
+  const isCorrect = selectedOptionId === step.correct
+
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {step.options.map((option) => (
         <Button
           className="h-auto justify-start text-left whitespace-normal"
           key={option.id}
-          onClick={() =>
+          onClick={() => {
+            setSelectedOptionId(option.id)
             emitAnswer(onAnswerChange, step.id, {
               selectedOptionId: option.id,
               type: "MULTIPLE_CHOICE",
             })
-          }
-          variant="outline"
+          }}
+          variant={selectedOptionId === option.id ? "default" : "outline"}
         >
           {option.text}
         </Button>
       ))}
+      {selectedOptionId === null ? null : (
+        <div className="rounded-lg border border-border bg-muted px-4 py-3 text-sm">
+          <p className="font-medium">
+            {isCorrect ? "정답입니다." : "다시 생각해보세요."}
+          </p>
+          <p className="mt-1 text-muted-foreground">{step.explanation}</p>
+        </div>
+      )}
     </div>
   )
 }
