@@ -1023,7 +1023,7 @@ Expected: `/app/profile`은 인증 사용자에게 프로필을 보여주고, �
 - Create: `apps/web/src/features/lessons/lesson-experience.test.tsx`
 - Modify: `docs/lesson-page.md`
 
-- [ ] **Step 7.1: 레슨 시작 화면 추가**
+- [x] **Step 7.1: 레슨 시작 화면 추가**
 
 요구사항:
 
@@ -2132,6 +2132,26 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/ui typecheck`: 통과했다.
 - `bun --filter @workspace/ui lint`: 통과했다.
 - 이번 Task에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
+### 2026-06-14 Task 7 Step 7.1 시작
+
+- Step 7.1은 레슨 시작 화면과 첫 스텝 진입 저장 흐름을 먼저 작성한다.
+- 시작 화면은 제목, 카테고리, 설명, 예상 시간, 스텝 수를 표시한다.
+- `시작하기` 클릭 시 현재 API 포트의 `saveLessonAnswer`에 첫 스텝 기준 `lesson-started` 마커를 저장하고, 저장 실패는 한국어 오류로 화면에 표시한다.
+- 실제 `/app/lesson?lesson_id=...` route는 서버에서 레슨을 조회하고 클라이언트 레슨 경험 컴포넌트에 직렬화 가능한 lesson 데이터만 전달한다.
+
+### 2026-06-14 Task 7 Step 7.1 완료
+
+- `apps/web/src/features/lessons/lesson-experience.tsx`에 레슨 시작 화면과 첫 스텝 진입 상태를 추가했다.
+- `apps/web/src/features/lessons/use-lesson-persistence.ts`는 첫 스텝 기준 `lesson-started` 마커를 `saveLessonAnswer`로 저장하고 실패 시 한국어 오류를 반환한다.
+- `apps/web/src/features/lessons/lesson-step-renderer.tsx`는 시작 후 첫 스텝을 표시하는 최소 렌더러로 작성했다.
+- `/app/lesson?lesson_id=...` route를 추가해 서버에서 레슨을 조회하고 클라이언트 경험 컴포넌트로 전달한다.
+- `bun --filter @workspace/web test -- lesson-experience`: 통과했다. 테스트 파일 1개, 테스트 2개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bun run format:check`: 통과했다.
+- `git diff --check`: 통과했다.
+- 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
 
 ## 상태 요약
 
