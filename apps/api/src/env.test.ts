@@ -10,11 +10,13 @@ describe("API env", () => {
         BETTER_AUTH_SECRET: "x".repeat(32),
         DATABASE_URL: ":memory:",
         NODE_ENV: "test",
+        OPENAI_API_KEY: "sk-test",
         WEB_ORIGIN: "http://localhost:3000",
       })
     ).toEqual({
       databaseUrl: ":memory:",
       nodeEnv: "test",
+      openAiApiKey: "sk-test",
       port: 4101,
       webOrigin: "http://localhost:3000",
     })

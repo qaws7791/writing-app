@@ -1963,6 +1963,19 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md 'packages/db/src/**/*.ts'`: 통과했다.
 - `git diff --check`: 통과했다.
 
+### 2026-06-14 Task 4 AI 피드백 API 연결 완료
+
+- `apps/api/src/routes/ai-feedback.route.ts`에 인증된 AI 코칭 요청 route를 추가했다.
+- `/ai-feedback` route는 core service 결과를 `200`, `400`, `404`, `429`, `503` HTTP 상태로 변환한다.
+- `apps/api/src/openai/openai-feedback-provider.ts`에 OpenAI Responses API adapter와 API key 부재 시 unavailable provider를 추가했다.
+- `apps/api/src/main.ts`에서 DB feedback repository, AI feedback service, OpenAI provider를 연결했다.
+- `apps/api/src/env.ts`는 `OPENAI_API_KEY`를 API 실행 설정으로 명시적으로 노출한다.
+- `bun --filter @workspace/api test`: 통과했다. 테스트 파일 10개, 테스트 18개가 통과했다.
+- `bun --filter @workspace/api typecheck`: 통과했다.
+- `bun --filter @workspace/api lint`: 통과했다.
+- `bunx prettier --check 'apps/api/src/**/*.ts'`: 통과했다.
+- `git diff --check`: 통과했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성

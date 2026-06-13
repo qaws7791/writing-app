@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 
 import type { SessionResolver } from "@/auth/session"
+import { createAiFeedbackRoute } from "@/routes/ai-feedback.route"
 import { createAuthRoute } from "@/routes/auth.route"
 import { createCoursesRoute } from "@/routes/courses.route"
 import { createHealthRoute } from "@/routes/health.route"
@@ -13,9 +14,11 @@ import {
   type ProgressReader,
 } from "@/routes/progress.route"
 import type { ContentRepository } from "@workspace/core/content"
+import type { AiFeedbackService } from "@workspace/core/ai-feedback"
 import type { LearningService } from "@workspace/core/learning"
 
 export type ApiDependencies = {
+  readonly aiFeedbackService?: AiFeedbackService
   readonly contentRepository?: ContentRepository
   readonly learningService?: LearningService
   readonly now?: () => Date
@@ -68,6 +71,17 @@ export function createApp(dependencies: ApiDependencies): Hono {
       "/learning",
       createLearningRoute({
         learningService: dependencies.learningService,
+        now: dependencies.now ?? (() => new Date()),
+        sessionResolver: dependencies.sessionResolver,
+      })
+    )
+  }
+
+  if (dependencies.aiFeedbackService !== undefined) {
+    app.route(
+      "/ai-feedback",
+      createAiFeedbackRoute({
+        aiFeedbackService: dependencies.aiFeedbackService,
         now: dependencies.now ?? (() => new Date()),
         sessionResolver: dependencies.sessionResolver,
       })

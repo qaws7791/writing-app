@@ -1,6 +1,9 @@
 import { serve } from "bun"
+import OpenAI from "openai"
+import { createAiFeedbackService } from "@workspace/core/ai-feedback"
 import { createLearningService } from "@workspace/core/learning"
 import {
+  createDrizzleAiFeedbackRepository,
   createDrizzleContentRepository,
   createDrizzleLearningRepository,
   createKwepDatabase,
@@ -13,15 +16,34 @@ import { and, count, desc, eq } from "drizzle-orm"
 import { createApp } from "@/app"
 import { createBearerSessionResolver } from "@/auth/auth"
 import { parseApiEnv } from "@/env"
+import {
+  createOpenAiFeedbackProvider,
+  createUnavailableAiFeedbackProvider,
+} from "@/openai/openai-feedback-provider"
 import type { ProfileReader } from "@/routes/profile.route"
 import type { ProgressReader } from "@/routes/progress.route"
 
 const env = parseApiEnv(process.env)
 const database = createKwepDatabase(env.databaseUrl)
 const contentRepository = createDrizzleContentRepository(database.db)
+const feedbackRepository = createDrizzleAiFeedbackRepository(database.db)
 const learningRepository = createDrizzleLearningRepository(database.db)
 const progressReader = createProgressReader(database.db)
+const aiFeedbackProvider =
+  env.openAiApiKey === undefined
+    ? createUnavailableAiFeedbackProvider()
+    : createOpenAiFeedbackProvider({
+        client: new OpenAI({
+          apiKey: env.openAiApiKey,
+        }),
+        model: "gpt-5.2",
+      })
 const app = createApp({
+  aiFeedbackService: createAiFeedbackService({
+    contentRepository,
+    feedbackRepository,
+    provider: aiFeedbackProvider,
+  }),
   contentRepository,
   learningService: createLearningService({
     contentRepository,
