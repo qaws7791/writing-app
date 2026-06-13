@@ -22,6 +22,12 @@
 - `packages/db`: Drizzle SQLite schema, migration, seed, repository 구현을 둔다.
 - `packages/ui`: shadcn 기반 공유 UI 컴포넌트와 Next 통합 경계를 제공한다.
 
+## 피벗 reset 상태
+
+Kwep 피벗은 기존 제품 구현을 이어 고치는 방식이 아니라 새 baseline을 작성하는 방식으로 진행한다. 현재 `apps/api`, `apps/web`, `apps/admin-api`, `apps/admin`, `packages/core`, `packages/db`, `packages/ui`, `packages/env`, `packages/logger`의 기존 `src` 구현은 제거했고, package manifest와 TypeScript, ESLint, Vitest, Next/Hono 실행 설정 같은 monorepo 골격만 보존한다.
+
+후속 Task는 보존된 골격 위에 Kwep 요구사항 기준의 새 API, DB, UI 구현을 추가한다.
+
 ## 핵심 런타임 경계
 
 - 학습자 웹은 `apps/api`만 호출한다.

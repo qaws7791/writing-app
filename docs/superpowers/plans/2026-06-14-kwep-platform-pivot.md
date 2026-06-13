@@ -315,7 +315,7 @@ Expected: `All matched files use Prettier code style!`
 - Modify: `BACKEND.md`
 - Modify: `docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`
 
-- [ ] **Step 1.1: 삭제 대상 목록을 확정**
+- [x] **Step 1.1: 삭제 대상 목록을 확정**
 
 삭제 대상은 제품 구현 코드 전체다.
 
@@ -356,7 +356,7 @@ find apps packages -path '*/src' -type d | sort
 
 Expected: 삭제 대상 `src` 디렉토리가 모두 목록에 포함된다.
 
-- [ ] **Step 1.2: 기존 구현 코드 삭제**
+- [x] **Step 1.2: 기존 구현 코드 삭제**
 
 ```bash
 git rm -r apps/api/src apps/web/src apps/admin-api/src apps/admin/src packages/core/src packages/db/src packages/ui/src packages/env/src packages/logger/src
@@ -364,7 +364,7 @@ git rm -r apps/api/src apps/web/src apps/admin-api/src apps/admin/src packages/c
 
 Expected: 대상 구현 파일이 git 삭제 상태가 되고, package 설정 파일은 남아 있다.
 
-- [ ] **Step 1.3: 새 빈 source root 생성**
+- [x] **Step 1.3: 새 빈 source root 생성**
 
 각 source root에는 후속 task가 실제 구현을 추가한다. 이 단계에서는 빈 디렉토리를 git에 직접 남길 수 없으므로, 후속 Task 2에서 첫 파일을 만들기 전까지 디렉토리 없음 상태를 허용한다.
 
@@ -384,7 +384,7 @@ test -f packages/logger/package.json
 
 Expected: package manifest는 모두 보존된다.
 
-- [ ] **Step 1.4: reset 문서 기록**
+- [x] **Step 1.4: reset 문서 기록**
 
 기록 내용:
 
@@ -1667,6 +1667,22 @@ Expected: 문서 포맷 검증이 통과한다.
 - 커밋 전 `git status --short`로 범위를 확인하고, 사용자 기존 변경이나 미완성 변경을 섞지 않는 조건을 추가했다.
 - 검증 실패 또는 커밋 범위가 불명확한 경우에는 커밋하지 않고 작업 로그에 보류 사유를 남기도록 했다.
 
+### 2026-06-14 Task 1 시작
+
+- Task 1은 기존 제품 구현 `src` 디렉토리를 삭제하고, monorepo 실행 골격과 package 설정만 보존하는 reset 작업으로 진행한다.
+- 삭제 대상은 `apps/api/src`, `apps/web/src`, `apps/admin-api/src`, `apps/admin/src`, `packages/core/src`, `packages/db/src`, `packages/ui/src`, `packages/env/src`, `packages/logger/src`로 한정한다.
+- `Kwep/` 디렉토리는 계속 읽기 전용 요구사항 원천으로만 두고 수정하거나 커밋하지 않는다.
+- 이 Task는 새 구현을 추가하기 전 source root를 비우는 단계이므로, 검증은 계획서에 명시된 삭제 대상 확인, package manifest 보존 확인, 문서 포맷 확인으로 제한한다.
+
+### 2026-06-14 Task 1 완료
+
+- `find apps packages -path '*/src' -type d | sort`로 삭제 대상 source root가 존재함을 확인했다. 삭제 전 목록에는 계획상 삭제 대상 9개와 보존 대상 `apps/storybook/src`가 있었다.
+- `git rm -r apps/api/src apps/web/src apps/admin-api/src apps/admin/src packages/core/src packages/db/src packages/ui/src packages/env/src packages/logger/src`로 기존 제품 구현 코드를 제거했다.
+- 삭제 후 `find apps packages -path '*/src' -type d | sort` 결과는 `apps/storybook/src`만 남았다.
+- `apps/api`, `apps/web`, `apps/admin-api`, `apps/admin`, `packages/core`, `packages/db`, `packages/ui`, `packages/env`, `packages/logger`의 `package.json` 보존을 확인했다.
+- `CONTEXT.md`, `ARCHITECTURE.md`, `DOMAIN.md`, `FRONTEND.md`, `BACKEND.md`에 reset 상태와 후속 Task에서 새 baseline 구현을 작성한다는 정책을 기록했다.
+- 전체 typecheck, lint, test는 source root를 비운 이 Task의 완료 조건으로 사용하지 않는다. 후속 Task 2가 새 source root를 만들고 나면 패키지별 검증을 다시 수행한다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성
@@ -1674,7 +1690,7 @@ Expected: 문서 포맷 검증이 통과한다.
 - [x] SSOT 계획 문서 생성
 - [x] 전면 재작성 원칙 반영
 - [x] 기준선 검증
-- [ ] 기존 구현 코드 제거
+- [x] 기존 구현 코드 제거
 - [x] 시작 문서 갱신
 - [ ] 플랫폼 API 구현
 - [ ] 플랫폼 API 검증

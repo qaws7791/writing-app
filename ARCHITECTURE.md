@@ -132,6 +132,8 @@
 
 DB migration은 기존 schema를 누적 보정하지 않고 `0000-kwep-baseline.sql` 기준으로 재정의한다. 운영 데이터 이전이 필요해지는 시점에는 별도 데이터 이전 계획을 작성한다.
 
+현재 피벗 reset 단계에서는 `apps/*/src`와 `packages/*/src`의 제품 구현을 제거하고, `apps/storybook/src`와 각 package 설정 파일만 남긴다. 새 source root는 후속 Task에서 Kwep baseline 구현 파일을 만들 때 다시 생성한다.
+
 ## 배포
 
 - Ubuntu server와 systemd로 프로세스를 관리한다.

@@ -1,5 +1,0 @@
-export * from "./learning.dto"
-export * from "./learning.errors"
-export * from "./learning.ids"
-export * from "./learning.repository"
-export * from "./learning.service"

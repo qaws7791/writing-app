@@ -12,6 +12,8 @@
 
 `apps/api`는 학습자 백엔드 조립 루트다. Hono 앱 생성, 라우트 등록, 환경 변수 파싱, 데이터베이스 열기, 서비스 구성, 프로세스 시작을 이곳에서 수행한다.
 
+현재 reset 단계에서는 기존 `apps/api/src` 구현을 제거했다. 아래 라우트와 정책은 후속 Task에서 새 baseline으로 다시 작성할 목표 계약이다.
+
 현재 API 라우트는 버전 접두사 없이 노출한다. 사용자 정보가 필요하지 않은 콘텐츠 조회 API는 공개로 유지하고, 사용자별 데이터가 필요한 API만 Better Auth 세션 인증을 요구한다.
 
 학습자 인증은 Google OAuth를 단일 진입점으로 사용한다. 학습자용 Better Auth 런타임은 이메일/비밀번호 가입과 로그인을 활성화하지 않는다. Next.js 앱은 `/api/auth/*`를 프록시하지 않는다. 인증 요청의 public endpoint는 Hono API 서버이며, CORS origin과 Better Auth trusted origin이 같은 목록을 기준으로 검증한다.
@@ -58,6 +60,8 @@ bun --filter @workspace/api dev
 ## `apps/admin-api`
 
 `apps/admin-api`는 관리자용 백엔드 조립 루트다. 플랫폼 API와 별도 Hono 런타임으로 실행되며, 꺼져 있어도 학습자 플랫폼 API는 정상 동작해야 한다.
+
+현재 reset 단계에서는 기존 `apps/admin-api/src` 구현을 제거했다. 아래 라우트는 후속 Task에서 새 baseline으로 다시 작성할 목표 계약이다.
 
 주요 라우트는 다음과 같다.
 
@@ -117,7 +121,7 @@ bun --filter @workspace/admin-api seed:admin
 
 ## `packages/core`
 
-`packages/core`는 도메인 중심 계약을 담는다. 콘텐츠, 학습 진행, AI 피드백, 관리자 DTO, 브랜드 ID, 저장소 포트, 명시적 결과 변형, 도메인 서비스를 제공한다. 외부 런타임이나 데이터베이스 구현에 의존하지 않고 API와 데이터베이스 패키지가 공유하는 도메인 경계를 정의한다.
+`packages/core`는 도메인 중심 계약을 담는다. 현재 reset 단계에서는 기존 `packages/core/src` 구현을 제거했고, 후속 Task에서 콘텐츠, 학습 진행, AI 피드백, 관리자 DTO, 브랜드 ID, 저장소 포트, 명시적 결과 변형, 도메인 서비스를 새로 작성한다. 외부 런타임이나 데이터베이스 구현에 의존하지 않고 API와 데이터베이스 패키지가 공유하는 도메인 경계를 정의한다.
 
 ## 콘텐츠 변경 정책
 
@@ -131,7 +135,7 @@ bun --filter @workspace/admin-api seed:admin
 
 ## `packages/db`
 
-`packages/db`는 Drizzle SQLite 기반 영속성 패키지다. 콘텐츠, Better Auth, 학습 진행, AI 피드백 시도 스키마, 마이그레이션 SQL, 시드 데이터, 데이터베이스 클라이언트 생성, 저장소 구현을 제공한다.
+`packages/db`는 Drizzle SQLite 기반 영속성 패키지다. 현재 reset 단계에서는 기존 `packages/db/src` 구현과 기존 migration 파일을 제거했고, 후속 Task에서 콘텐츠, Better Auth, 학습 진행, AI 피드백 시도 스키마, baseline migration SQL, 시드 데이터, 데이터베이스 클라이언트 생성, 저장소 구현을 새로 작성한다.
 
 DB 테이블과 컬럼 명명 규칙은 `docs/schema-conventions.md`를 따른다. Better Auth 계열 테이블은 provider convention을 유지하고, 프로젝트가 직접 관리하는 테이블은 SQL 이름에 snake_case를 사용한다.
 
@@ -157,4 +161,4 @@ AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structu
 
 ## `packages/logger`
 
-`packages/logger`는 Pino 로거 생성과 요청 로그 필드 헬퍼를 제공한다. API 조립 루트와 라우트 주변부에서 공통 로그 형식을 재사용한다.
+`packages/logger`는 Pino 로거 생성과 요청 로그 필드 헬퍼를 제공한다. 현재 reset 단계에서는 기존 `packages/logger/src` 구현을 제거했고, 후속 Task에서 API 조립 루트와 라우트 주변부가 재사용할 공통 로그 형식을 다시 작성한다.
