@@ -2041,6 +2041,28 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/web typecheck`: 실패 상태가 남아 있다. 남은 실패는 `apps/web/src/app`이 Task 6 전까지 없는 reset 상태와 기존 `apps/web/test` fixture가 이전 구현 타입/모듈을 참조하는 문제로 분리했다.
 - 이번 Task에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
 
+### 2026-06-14 Task 6 시작
+
+- Task 6은 플랫폼 웹의 공개 랜딩, 로그인, 앱 shell, 홈, 코스, 프로필 화면을 Kwep `글결` 방향으로 재작성하는 단계로 진행한다.
+- Step 6.1은 루트 `/` 공개 랜딩과 `/login` 화면을 먼저 작성하고, CTA는 `/login?next=/app`로 고정한다.
+- UI primitive는 `@workspace/ui`의 shadcn/base-ui 기반 공용 component로 두되, 화면 feature는 제품 언어와 API 포트 경계에만 의존하게 한다.
+- Step 단위 검증이 끝날 때마다 작업 로그를 갱신하고 커밋한다.
+
+### 2026-06-14 Task 6 Step 6.1 완료
+
+- `@workspace/ui`에 button, card, input primitive와 공용 Tailwind token CSS, icon export, `cn` 유틸을 추가했다.
+- `apps/web/src/app`에 root layout, global CSS import, 공개 `/` 랜딩, `/login` route를 추가했다.
+- 랜딩은 `글결` 제품명, 가치 제안, 코스 미리보기, 학습 방식, CTA를 한국어로 렌더링하고 기존 코스 썸네일 이미지를 hero와 코스 카드 visual asset으로 사용한다.
+- 로그인 화면은 안전한 내부 `next` 경로만 Google 로그인 callback으로 전달하고 외부 URL, 프로토콜 상대 URL, 로그인 재귀 경로를 `/app`으로 정규화한다.
+- `packages/ui`의 React devDependency를 web과 같은 `19.2.4`로 고정해 workspace UI와 web 테스트가 같은 React 인스턴스를 사용하게 했다.
+- reset 이전 `apps/web/test` fixture는 현재 `WritingAppApi` 계약과 Kwep 10개 step 모델 이전의 테스트 지원 코드라서 삭제했다.
+- `bun --filter @workspace/web test`: 통과했다. 테스트 파일 7개, 테스트 14개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bun --filter @workspace/ui typecheck`: 통과했다.
+- `bun --filter @workspace/ui lint`: 통과했다.
+- 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성

@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "incremental": true,
-    "types": ["bun"],
+    "types": ["bun", "@testing-library/jest-dom"],
     "paths": {
       "@/*": ["./src/*"],
       "@test/*": ["./test/*"]
