@@ -436,24 +436,24 @@ Expected: 문서 포맷 검증이 통과한다.
 - Create: `packages/db/src/repositories/content.repository.test.ts`
 - Create: `packages/db/src/index.ts`
 
-- [ ] **Step 2.1: Kwep 콘텐츠 변환 규칙을 테스트로 고정**
+- [x] **Step 2.1: Kwep 콘텐츠 변환 규칙을 테스트로 고정**
 
 검증할 매핑:
 
-| Kwep 필드        | 저장 위치                                           |
-| ---------------- | --------------------------------------------------- |
-| `course.id`      | `courses.id`                                        |
-| `course.title`   | `courses.title`                                     |
-| `course.desc`    | `courses.description`                               |
-| `course.cat`     | `course_categories.title`                           |
-| `unit.id`        | `course_chapters.id`                                |
-| `unit.title`     | `course_chapters.title`                             |
-| `lesson.id`      | `lessons.id`, `course_lessons.lesson_id`            |
-| `lesson.title`   | `lessons.title`, `course_lessons.title`             |
-| `lesson.desc`    | `course_lessons.description`, `lessons.description` |
-| `lesson.time`    | `lessons.estimated_minutes`                         |
-| `lesson.summary` | `lessons.summary_json`                              |
-| `lesson.steps`   | `lesson_steps`                                      |
+| Kwep 필드        | 저장 위치                   |
+| ---------------- | --------------------------- |
+| `course.id`      | `courses.id`                |
+| `course.title`   | `courses.title`             |
+| `course.desc`    | `courses.description`       |
+| `course.cat`     | `courses.category`          |
+| `unit.id`        | `course_units.id`           |
+| `unit.title`     | `course_units.title`        |
+| `lesson.id`      | `lessons.id`                |
+| `lesson.title`   | `lessons.title`             |
+| `lesson.desc`    | `lessons.description`       |
+| `lesson.time`    | `lessons.estimated_minutes` |
+| `lesson.summary` | `lessons.summary_json`      |
+| `lesson.steps`   | `lesson_steps`              |
 
 테스트 명령:
 
@@ -1682,6 +1682,20 @@ Expected: 문서 포맷 검증이 통과한다.
 - `apps/api`, `apps/web`, `apps/admin-api`, `apps/admin`, `packages/core`, `packages/db`, `packages/ui`, `packages/env`, `packages/logger`의 `package.json` 보존을 확인했다.
 - `CONTEXT.md`, `ARCHITECTURE.md`, `DOMAIN.md`, `FRONTEND.md`, `BACKEND.md`에 reset 상태와 후속 Task에서 새 baseline 구현을 작성한다는 정책을 기록했다.
 - 전체 typecheck, lint, test는 source root를 비운 이 Task의 완료 조건으로 사용하지 않는다. 후속 Task 2가 새 source root를 만들고 나면 패키지별 검증을 다시 수행한다.
+
+### 2026-06-14 Task 2 시작
+
+- Task 2는 플랫폼 API의 공통 기반인 env, logger, core 콘텐츠 DTO, DB baseline schema, Kwep 콘텐츠 seed 변환, 공개 콘텐츠 repository를 새 source root에 작성하는 단계로 진행한다.
+- `Kwep/src/app/courses.json`을 읽어 원본 수량이 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝임을 다시 확인했다.
+- Step 2.1 매핑 표를 새 baseline schema와 일치하도록 `courses.category`, `course_units`, `lessons`, `lesson_steps` 기준으로 정정했다.
+- 첫 검증 단위는 `bun --filter @workspace/db test -- seed-content`이며, 실패 테스트를 먼저 작성한 뒤 seed 변환 구현으로 통과시킨다.
+
+### 2026-06-14 Task 2 Step 2.1 완료
+
+- `packages/db/src/seeds/content-seed-data.json`에 Kwep 콘텐츠 seed fixture를 고정했다.
+- `packages/db/src/seeds/seed-content.test.ts`에 코스 5개, 유닛 15개, 레슨 44개, 스텝 136개 변환 수량과 스텝 타입 분포 검증을 추가했다.
+- `packages/db/src/seeds/seed-content.ts`에 Kwep 필드를 새 baseline row 형태로 변환하는 `createContentSeedRows`와 타입 정규화 함수를 작성했다.
+- `bun --filter @workspace/db test -- seed-content`: 통과했다.
 
 ## 상태 요약
 
