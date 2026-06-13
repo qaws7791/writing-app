@@ -604,26 +604,47 @@ Expected: 공통 env/logger와 auth schema export가 후속 API 작업에서 imp
 - Create: `apps/api/src/routes/route-helpers.ts`
 - Create: `apps/api/src/routes/error-response.ts`
 
-- [ ] **Step 3.1: learner activity와 learner profile schema 추가**
+- [x] **Step 3.1: learner activity와 learner profile schema 추가**
 
 새 테이블:
 
 ```sql
 CREATE TABLE learner_profiles (
-  user_id TEXT PRIMARY KEY NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  user_id TEXT PRIMARY KEY NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
   status TEXT NOT NULL DEFAULT 'active',
   display_name TEXT,
   deleted_at INTEGER
 );
 
 CREATE TABLE learner_activity_days (
-  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
   activity_date TEXT NOT NULL,
   first_activity_at INTEGER NOT NULL,
   last_activity_at INTEGER NOT NULL,
   completed_lessons INTEGER NOT NULL DEFAULT 0,
   saved_answers INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (user_id, activity_date)
+);
+
+CREATE TABLE learner_lesson_progress (
+  user_id TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+  current_step_index INTEGER NOT NULL DEFAULT 0,
+  status TEXT NOT NULL DEFAULT 'in_progress',
+  started_at INTEGER NOT NULL,
+  completed_at INTEGER,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, lesson_id)
+);
+
+CREATE TABLE learner_lesson_answers (
+  user_id TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+  step_id TEXT NOT NULL REFERENCES lesson_steps(id) ON DELETE CASCADE,
+  answer_json TEXT NOT NULL,
+  answered_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, step_id)
 );
 ```
 
@@ -1795,6 +1816,25 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md packages/env/src packages/logger/src packages/core/src packages/db/src packages/env/package.json packages/logger/package.json packages/core/package.json packages/db/package.json`: 통과했다.
 - `git diff --check`: 통과했다.
 - 이번 Task에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
+### 2026-06-14 Task 3 시작
+
+- Task 3은 학습 진행, 답변 저장, 학습자 프로필, 연속 학습일 기반을 플랫폼 API 경계에 추가하는 단계다.
+- 현재 작업 위치는 일반 checkout이지만 `codex/kwep-platform-pivot-plan` 브랜치 위에 있으며, 기존 작업 방식에 맞춰 같은 브랜치에서 이어간다.
+- Step 3.1 계획의 FK 대상 `user(id)`를 실제 baseline auth table인 `auth_users(id)`로 정정했다.
+- Step 3.1 검증이 progress 저장, answer 저장, lesson 완료 저장을 요구하므로 `learner_lesson_progress`, `learner_lesson_answers` table을 새 baseline schema 계획에 추가했다.
+- 첫 검증 단위는 `bun --filter @workspace/db test -- learning.repository`이며, 실패 테스트를 먼저 작성한 뒤 DB schema와 repository 구현으로 통과시킨다.
+
+### 2026-06-14 Task 3 Step 3.1 완료
+
+- `packages/db/src/schema/learning.schema.ts`에 `learner_profiles`, `learner_activity_days`, `learner_lesson_progress`, `learner_lesson_answers` schema를 추가했다.
+- `packages/db/src/migrations/0000-kwep-baseline.sql`에 auth/admin-auth table과 learning table을 새 baseline schema로 포함했다.
+- `packages/db/src/repositories/learning.repository.ts`에 progress 저장, step answer 저장, lesson 완료 저장과 활동 날짜 upsert를 구현했다.
+- `packages/db/src/repositories/learning.repository.test.ts`로 progress 저장, answer 저장, lesson 완료가 활동 날짜 row를 생성하거나 갱신하는지 검증했다.
+- `bun --filter @workspace/db test -- learning.repository`: 통과했다.
+- `bun --filter @workspace/db test`: 통과했다.
+- `bun --filter @workspace/db typecheck`: 통과했다.
+- `bun --filter @workspace/db lint`: 통과했다.
 
 ## 상태 요약
 

@@ -18,8 +18,20 @@ describe("Kwep DB client", () => {
         .map((row) => row.name)
 
       expect(tableNames).toEqual([
+        "admin_auth_accounts",
+        "admin_auth_sessions",
+        "admin_auth_users",
+        "admin_auth_verifications",
+        "auth_accounts",
+        "auth_sessions",
+        "auth_users",
+        "auth_verifications",
         "course_units",
         "courses",
+        "learner_activity_days",
+        "learner_lesson_answers",
+        "learner_lesson_progress",
+        "learner_profiles",
         "lesson_steps",
         "lessons",
       ])
