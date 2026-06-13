@@ -1,0 +1,4 @@
+export * from "@workspace/core/learning/learning.dto"
+export * from "@workspace/core/learning/learning.ids"
+export * from "@workspace/core/learning/learning.repository"
+export * from "@workspace/core/learning/learning.service"

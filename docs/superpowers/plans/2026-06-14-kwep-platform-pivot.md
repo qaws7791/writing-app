@@ -651,12 +651,12 @@ CREATE TABLE learner_lesson_answers (
 검증:
 
 ```bash
-bun --filter @workspace/db test -- drizzle-learning.repository
+bun --filter @workspace/db test -- learning.repository
 ```
 
 Expected: progress 저장, answer 저장, lesson 완료가 활동 날짜 row를 생성하거나 갱신한다.
 
-- [ ] **Step 3.2: 모든 답변 가능 스텝 저장 허용**
+- [x] **Step 3.2: 모든 답변 가능 스텝 저장 허용**
 
 저장 허용 타입:
 
@@ -1835,6 +1835,23 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun --filter @workspace/db test`: 통과했다.
 - `bun --filter @workspace/db typecheck`: 통과했다.
 - `bun --filter @workspace/db lint`: 통과했다.
+
+### 2026-06-14 Task 3 Step 3.2 시작
+
+- Step 3.2는 core learning service가 Kwep의 답변 가능한 스텝 타입만 저장 대상으로 허용하도록 작성한다.
+- 검증 명령은 실제 테스트 파일명과 맞춰 `bun --filter @workspace/core test -- learning.service`를 사용한다.
+- service는 content repository에서 active lesson step을 확인하고, `READING`, `COMPARE`처럼 답변 저장 대상이 아닌 콘텐츠형 스텝은 `invalid-request`를 반환한다.
+
+### 2026-06-14 Task 3 Step 3.2 완료
+
+- `packages/core/src/learning/learning.ids.ts`에 학습자 ID brand schema를 추가했다.
+- `packages/core/src/learning/learning.dto.ts`에 JSON answer value와 progress/answer/complete command schema를 추가했다.
+- `packages/core/src/learning/learning.repository.ts`에 learning repository port를 정의했다.
+- `packages/core/src/learning/learning.service.ts`에 Kwep 답변 가능 스텝 타입 검증과 저장 service를 구현했다.
+- `packages/core/src/learning/learning.service.test.ts`로 저장 가능 8개 타입, plain string answer, 콘텐츠형 스텝 거절, lesson에 없는 stepId 거절을 검증했다.
+- `bun --filter @workspace/core test -- learning.service`: 통과했다.
+- `bun --filter @workspace/core test`: 통과했다.
+- `bun --filter @workspace/core typecheck`: 통과했다.
 
 ## 상태 요약
 
