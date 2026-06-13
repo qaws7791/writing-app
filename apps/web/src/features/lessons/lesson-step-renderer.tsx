@@ -2,6 +2,8 @@
 
 import { useState } from "react"
 
+import ReactMarkdown from "react-markdown"
+
 import {
   createLessonStepAnswer,
   type LessonAiFeedback,
@@ -49,6 +51,10 @@ export function LessonStepRenderer({
   stepIndex,
   totalSteps,
 }: LessonStepRendererProps) {
+  if (step.type === "READING") {
+    return <ReadingStepView step={step} />
+  }
+
   const headingId = `lesson-step-${step.id}`
 
   return (
@@ -177,14 +183,7 @@ function renderStepContent(
         <OrderAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
       )
     case "READING":
-      return (
-        <div className="flex flex-col gap-3">
-          <p className="leading-7">{step.body}</p>
-          {step.source === undefined ? null : (
-            <p className="text-sm text-muted-foreground">출처: {step.source}</p>
-          )}
-        </div>
-      )
+      return null
     case "SELECT":
       return (
         <SelectAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
@@ -194,6 +193,33 @@ function renderStepContent(
         <WriteAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
       )
   }
+}
+
+function ReadingStepView({
+  step,
+}: {
+  readonly step: LessonStep & { type: "READING" }
+}) {
+  return (
+    <div className="an-fi">
+      <h2 className="font-bold mb-2" style={{ fontSize: "1.5rem" }}>
+        {step.title}
+      </h2>
+      {step.guide === "" ? null : (
+        <div className="prose prose-sm max-w-none mb-6 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-muted prose-p:font-medium prose-strong:text-charcoal prose-li:text-muted prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted">
+          <ReactMarkdown>{step.guide}</ReactMarkdown>
+        </div>
+      )}
+      <div className="prose prose-sm max-w-none mb-6 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-charcoal/80 prose-p:font-medium prose-strong:text-charcoal prose-li:text-charcoal/80 prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted prose-hr:border-surface">
+        <ReactMarkdown>{step.body}</ReactMarkdown>
+      </div>
+      {step.source === undefined ? null : (
+        <div className="text-muted font-bold" style={{ fontSize: "0.8125rem" }}>
+          출처: {step.source}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function AiFeedbackAnswer({

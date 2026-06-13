@@ -96,6 +96,17 @@ describe("레슨 경험", () => {
     expect(
       screen.getByText("좋은 문장은 독자가 바로 이해할 수 있는 문장입니다.")
     ).toBeInTheDocument()
+    expect(screen.getByText("1/2")).toHaveClass(
+      "ml-4",
+      "font-bold",
+      "text-muted"
+    )
+    expect(screen.getByRole("button", { name: "이해했어요" })).toHaveClass(
+      "bg-charcoal",
+      "text-cream",
+      "rounded-4xl",
+      "btn-squish"
+    )
   })
 
   it("시작 저장이 실패하면 한국어 오류를 보여주고 시작 화면에 머문다", async () => {
@@ -174,7 +185,7 @@ describe("레슨 경험", () => {
     render(<LessonExperience api={api} lesson={lesson} />)
 
     await user.click(screen.getByRole("button", { name: "시작하기" }))
-    await user.click(screen.getByRole("button", { name: "다음" }))
+    await user.click(screen.getByRole("button", { name: "이해했어요" }))
 
     expect(screen.getByText("2/2 스텝")).toBeInTheDocument()
     expect(
@@ -196,7 +207,7 @@ describe("레슨 경험", () => {
       })
     )
 
-    await user.click(screen.getByRole("button", { name: "완료하기" }))
+    await user.click(screen.getByRole("button", { name: "다음으로 →" }))
 
     expect(completeLesson).toHaveBeenCalledWith({
       currentStepIndex: 1,

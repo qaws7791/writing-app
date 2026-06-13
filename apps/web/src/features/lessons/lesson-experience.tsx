@@ -19,7 +19,7 @@ import type { Lesson } from "@/features/lessons/lesson-types"
 import { getBrowserLearnerSessionToken } from "@/lib/auth/session-token"
 import { getBrowserWritingAppApi } from "@/lib/api/get-browser-writing-app-api"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
-import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
+import { buttonVariants } from "@workspace/ui/components/ui/button"
 import {
   Card,
   CardContent,
@@ -43,6 +43,7 @@ export function LessonExperience({ api, lesson }: LessonExperienceProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
+  const [showExit, setShowExit] = useState(false)
   const resolvedApi = useMemo(
     () =>
       api ??
@@ -97,10 +98,41 @@ export function LessonExperience({ api, lesson }: LessonExperienceProps) {
 
   if (hasStarted && currentStep !== null) {
     const isLastStep = isLastLessonStep(lesson, currentStepIndex)
+    const visibleStepNumber = Math.min(
+      currentStepIndex + 1,
+      lesson.steps.length
+    )
+    const progress = lesson.steps.length
+      ? Math.min(
+          100,
+          Math.max(0, (visibleStepNumber / lesson.steps.length) * 100)
+        )
+      : 0
 
     return (
-      <main className="min-h-screen bg-background text-foreground">
-        <div className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-10 sm:px-8">
+      <div className="flex flex-col min-h-screen bg-cream w-full fixed inset-0 z-50 overflow-y-auto">
+        <div className="w-full max-w-3xl mx-auto flex items-center px-6 pt-6 pb-4">
+          <button
+            aria-label="나가기"
+            className="text-muted hover:text-charcoal font-bold mr-4 transition-colors w-9 h-9 flex items-center justify-center"
+            onClick={() => setShowExit(true)}
+          >
+            <XIcon size={28} />
+          </button>
+          <div className="flex-1 bg-surface h-4 rounded-full overflow-hidden">
+            <div
+              className="bg-primary h-full rounded-full transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div
+            className="ml-4 font-bold text-muted"
+            style={{ fontSize: "0.875rem" }}
+          >
+            {visibleStepNumber}/{lesson.steps.length}
+          </div>
+        </div>
+        <div className="flex-1 w-full max-w-2xl mx-auto px-6 pt-6 md:pt-10 pb-48 an-fi">
           <LessonStepRenderer
             answerError={answerError}
             onAiFeedbackRequest={requestAiFeedback}
@@ -110,39 +142,40 @@ export function LessonExperience({ api, lesson }: LessonExperienceProps) {
             totalSteps={lesson.steps.length}
           />
           {completeError === null ? null : (
-            <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <p className="mt-6 rounded-2xl bg-coral/10 px-4 py-3 text-coral-dark font-bold">
               {completeError}
             </p>
           )}
-          <div className="flex items-center justify-between gap-3">
-            <Button
-              disabled={currentStepIndex === 0}
-              onClick={() =>
-                setCurrentStepIndex((index) => Math.max(0, index - 1))
-              }
-              variant="outline"
-            >
-              이전
-            </Button>
-            {isLastStep ? (
-              <Button disabled={isCompleting} onClick={handleComplete}>
-                {isCompleting ? "완료 저장 중" : "완료하기"}
-              </Button>
-            ) : (
-              <Button
-                onClick={() =>
-                  setCurrentStepIndex((index) =>
-                    Math.min(lesson.steps.length - 1, index + 1)
-                  )
+        </div>
+        <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
+          <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent pointer-events-auto">
+            <LessonPrimaryButton
+              disabled={isCompleting}
+              onClick={() => {
+                if (isLastStep) {
+                  void handleComplete()
+                  return
                 }
-              >
-                다음
-                <ArrowRightIcon data-icon="inline-end" />
-              </Button>
-            )}
+
+                setCurrentStepIndex((index) =>
+                  Math.min(lesson.steps.length - 1, index + 1)
+                )
+              }}
+            >
+              {isCompleting ? "완료 저장 중" : getStepActionLabel(currentStep)}
+            </LessonPrimaryButton>
           </div>
         </div>
-      </main>
+        {showExit ? (
+          <LessonExitModal
+            onCancel={() => setShowExit(false)}
+            onConfirm={() => {
+              setShowExit(false)
+              router.push(`/app/courses/${lesson.courseId}`)
+            }}
+          />
+        ) : null}
+      </div>
     )
   }
 
@@ -212,33 +245,43 @@ export function LessonExperience({ api, lesson }: LessonExperienceProps) {
       </div>
       <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
         <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent pointer-events-auto">
-          <LessonStartButton
+          <LessonPrimaryButton
             disabled={firstStep === null || isSavingStart}
             onClick={handleStart}
           >
             {isSavingStart ? "저장 중" : "시작하기"}
-          </LessonStartButton>
+          </LessonPrimaryButton>
         </div>
       </div>
     </div>
   )
 }
 
-function LessonStartButton({
+function LessonPrimaryButton({
   children,
+  className,
   disabled,
   onClick,
+  variant = "primary",
 }: {
   readonly children: ReactNode
+  readonly className?: string
   readonly disabled?: boolean
   readonly onClick: () => void
+  readonly variant?: "primary" | "secondary"
 }) {
+  const variantClassName =
+    variant === "secondary"
+      ? "bg-surface text-charcoal"
+      : "bg-charcoal text-cream"
+
   return (
     <button
       className={cx(
         "w-full font-bold py-5 rounded-4xl btn-squish",
-        "bg-charcoal text-cream",
-        disabled ? "opacity-50 cursor-not-allowed" : undefined
+        variantClassName,
+        disabled ? "opacity-50 cursor-not-allowed" : undefined,
+        className
       )}
       disabled={disabled}
       onClick={onClick}
@@ -248,6 +291,54 @@ function LessonStartButton({
       {children}
     </button>
   )
+}
+
+function LessonExitModal({
+  onCancel,
+  onConfirm,
+}: {
+  readonly onCancel: () => void
+  readonly onConfirm: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-charcoal/30 backdrop-blur-sm">
+      <div className="bg-cream rounded-4xl p-8 w-full max-w-md an-fi">
+        <h3 className="font-bold mb-3" style={{ fontSize: "1.5rem" }}>
+          학습을 중단할까요?
+        </h3>
+        <p
+          className="text-muted font-medium mb-8"
+          style={{ fontSize: "1.125rem" }}
+        >
+          진행 상황은 자동으로 저장되어 있어요.
+        </p>
+        <div className="flex gap-3">
+          <LessonPrimaryButton onClick={onCancel} variant="secondary">
+            계속 학습
+          </LessonPrimaryButton>
+          <LessonPrimaryButton onClick={onConfirm}>나가기</LessonPrimaryButton>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function getStepActionLabel(step: Lesson["steps"][number]): string {
+  if (step.type === "READING" || step.type === "COMPARE") {
+    return "이해했어요"
+  }
+
+  if (
+    step.type === "MULTIPLE_CHOICE" ||
+    step.type === "FILL_BLANK" ||
+    step.type === "SELECT" ||
+    step.type === "ORDER" ||
+    step.type === "MATCH"
+  ) {
+    return "확인하기"
+  }
+
+  return "다음으로 →"
 }
 
 function cx(...classes: Array<false | null | string | undefined>): string {

@@ -42,6 +42,15 @@
 - 기능 일치: 클릭, 탭, 키보드 입력, 선택, 제출, validation, disabled 해제, feedback panel, modal, navigation, 자동 저장, 복원, loading, error, 완료 상태 전이가 Kwep와 같은 조건과 순서로 동작해야 한다.
 - 완료 판정: DOM snapshot, computed style 비교, 스크린샷 비교, scripted interaction 결과에 알려진 차이가 하나도 남지 않아야 한다. 남은 차이가 있으면 화면은 완료가 아니며 커밋하거나 다음 화면으로 넘어가지 않는다.
 
+### 코드 기준 우선 비교 원칙
+
+Kwep와 제품은 모두 React와 Tailwind CSS를 사용하므로, 이후 화면 일치 작업은 Kwep의 React component, Tailwind class, inline style, 상태 전이 코드를 1차 기준으로 삼는다. 스크린샷, curl, 렌더링된 HTML 역분석은 기준 코드를 그대로 대조해도 모호한 부분이 있거나, 실제 브라우저 출력이 달라졌다는 의심이 있는 경우의 보조 수단으로만 사용한다.
+
+- 각 화면은 Kwep 기준 component의 branch 구조, 요소 계층, Tailwind class 문자열, inline style, 조건부 렌더링, event handler 흐름을 먼저 읽고 제품 코드에 대응시킨다.
+- 제품 경계상 달라야 하는 route, 인증 provider URL, 서버 저장 방식은 Kwep 코드와 1:1로 복사하지 않고 대응 관계를 명시한다.
+- 실패 테스트는 시각 캡처보다 Kwep 코드에서 확인한 화면 구조, 텍스트, class, CTA 라벨, 상태 전이를 우선 고정한다.
+- Browser 또는 Playwright 검증은 Kwep 코드와 제품 코드가 같은 구조로 수렴했는지 확인하는 smoke 용도이며, 매번 HTML 전체를 역분석하는 절차로 사용하지 않는다.
+
 ### 화면 작업 순서
 
 화면은 반드시 사용자 플로우 순서로 작업한다. 앞 화면이 Kwep와 완전히 일치하지 않으면 다음 화면으로 넘어가지 않는다.
@@ -67,15 +76,14 @@
 각 화면은 다음 조건을 모두 만족해야 완료로 표시한다.
 
 - 작업 시작 전에 이 문서 `작업 로그`에 대상 화면, Kwep route, 제품 route, 예상 수정 파일을 기록한다.
-- Kwep와 제품을 같은 viewport, 같은 인증 상태, 같은 seed 상태로 띄운다.
-- 화면 비교 viewport는 기본 `390x844` 모바일을 우선 사용하고, 해당 Kwep 화면이 데스크톱 responsive UI를 가진 경우 `1280x720`도 추가한다.
-- Kwep 화면의 전체 사용자 화면 root DOM inventory를 제품 화면과 대조한다. inventory에는 요소 순서, 계층, 태그, role, 텍스트, 주요 attribute, aria state, form value, disabled/selected/expanded 상태를 포함한다.
-- Kwep 화면의 computed style inventory를 제품 화면과 대조한다. inventory에는 레이아웃, spacing, typography, color, background, border, radius, shadow, opacity, transform, responsive 결과, hover/focus/active/disabled 상태를 포함한다.
-- Kwep 화면의 기능 inventory를 제품 화면과 대조한다. inventory에는 버튼/링크, 입력, 선택, 제출, validation, modal, navigation, 저장/복원, loading/error, 완료 전이 흐름을 포함한다.
+- Kwep 기준 React/Tailwind 소스를 먼저 읽고, 제품 route와 상태가 대응하는 component branch를 찾는다.
+- Kwep 기준 component의 사용자 화면 root DOM 구조, Tailwind class, inline style, 조건부 렌더링, event handler, disabled/selected/expanded 상태를 제품 코드와 대조한다.
+- Kwep 기준 기능 inventory에는 버튼/링크, 입력, 선택, 제출, validation, modal, navigation, 저장/복원, loading/error, 완료 전이 흐름을 포함한다.
+- 필요할 때만 Kwep와 제품을 같은 viewport, 같은 인증 상태, 같은 seed 상태로 띄운다. 화면 비교 viewport는 기본 `390x844` 모바일을 우선 사용하고, 해당 Kwep 화면이 데스크톱 responsive UI를 가진 경우 `1280x720`도 추가한다.
 - 불일치 항목을 먼저 목록화하고, 그중 최소 하나를 실패 테스트로 고정한다.
 - production code 수정 전에 실패 테스트가 실제로 실패하는지 확인한다.
 - 수정 후 해당 테스트, 관련 package `typecheck`, `lint`, `format:check`, `git diff --check`를 실행한다.
-- Browser 또는 Playwright로 같은 화면을 다시 캡처하고, 남은 불일치가 있으면 같은 화면 안에서 다시 수정한다.
+- Browser 또는 Playwright smoke가 필요한 경우 같은 화면을 다시 확인하고, 남은 불일치가 있으면 같은 화면 안에서 다시 수정한다.
 - URL, 인증 provider, 서버 저장 방식처럼 제품 경계상 달라야 하는 요소를 제외하고 HTML, CSS, 배치, 기능 차이가 없어야 한다.
 - 완료 시 이 문서 `작업 로그`에 비교 증적 위치, 검증 명령, 남은 위험이 없음을 기록한다.
 - 완료된 화면의 변경 파일만 stage하고 한국어 커밋 메시지로 커밋한다.
@@ -87,14 +95,14 @@
 
 ```text
 1. 작업 로그 시작 기록
-2. Kwep 기준 화면 캡처
-3. 제품 화면 캡처
-4. DOM/CSS/기능 차이 목록 작성
+2. Kwep 기준 React/Tailwind 소스 읽기
+3. 제품 대응 component branch 읽기
+4. 코드 기준 HTML/CSS/기능 차이 목록 작성
 5. 실패 테스트 작성
 6. 실패 확인
 7. 최소 구현
 8. 테스트/타입체크/린트/포맷 검증
-9. DOM/CSS/기능 브라우저 재비교
+9. 필요 시 Browser 또는 Playwright smoke 확인
 10. 차이가 남아 있으면 4번으로 복귀
 11. 차이가 없으면 작업 로그 완료 기록
 12. git status 범위 확인
@@ -3268,6 +3276,27 @@ Expected: 문서 포맷 검증이 통과한다.
 - Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`의 started branch와 `/tmp/kwep-runtime-writing-app/src/app/components/StepRenderer.tsx`의 `reading` branch이다.
 - 제품 대상 파일은 `apps/web/src/features/lessons/lesson-experience.tsx`, `apps/web/src/features/lessons/lesson-step-renderer.tsx`, `apps/web/src/features/lessons/use-lesson-persistence.ts`이다.
 - 레슨 시작 화면 커밋 후 Kwep 코드를 기준으로 읽기 스텝의 header/progress/content/bottom CTA 구조를 같은 형태로 이식한다.
+
+### 2026-06-14 Task 7R Step 7R.7 읽기 스텝 화면 일치 완료
+
+- 계획을 최신 사용자 지시에 맞춰 Kwep React/Tailwind 소스를 1차 기준으로 대조하는 코드 우선 비교 방식으로 갱신했다.
+- 제품 started branch를 Kwep `LessonShell.tsx`와 같은 fullscreen fixed shell, 상단 X 버튼, progress bar, `현재/전체` 카운터, content 영역, 하단 gradient CTA 구조로 교체했다.
+- 읽기 스텝은 Kwep `StepRenderer.tsx`의 `reading` branch와 같은 `h2`, guide/body `ReactMarkdown`, typography `prose` class, source label 구조를 사용한다.
+- Kwep `Btn`과 같은 primary/secondary button variant를 제품 lesson button helper에 적용해 시작 CTA와 exit modal 버튼 구조를 공유한다.
+- 읽기/비교 스텝 CTA는 `이해했어요`, 퀴즈형 스텝 CTA는 `확인하기`, 쓰기형 스텝 CTA는 `다음으로 →`로 Kwep label 흐름을 맞췄다.
+- `react-markdown`과 `@tailwindcss/typography`를 추가하고 Tailwind typography plugin을 등록했다.
+- `bun --filter @workspace/web test -- lesson-experience lesson-step-renderer`: 통과했다. 테스트 파일 2개, 테스트 14개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bunx prettier --check apps/web/package.json apps/web/src/app/globals.css apps/web/src/features/lessons/lesson-experience.tsx apps/web/src/features/lessons/lesson-experience.test.tsx apps/web/src/features/lessons/lesson-step-renderer.tsx docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md`: 문서 완료 기록 전 코드 기준으로 통과했다.
+- 남은 읽기 스텝 HTML/CSS/기능 차이는 없다.
+
+### 2026-06-14 Task 7R Step 7R.8 매칭/분류/쓰기 레슨 화면 일치 시작
+
+- 다음 대상 화면은 Kwep `/lesson/c1/l-new`와 제품 `/app/lesson?lesson_id=l-new`이다.
+- Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`, `/tmp/kwep-runtime-writing-app/src/app/components/MatchStep.tsx`, `/tmp/kwep-runtime-writing-app/src/app/components/CategorizeStep.tsx`, `/tmp/kwep-runtime-writing-app/src/app/components/StepRenderer.tsx`이다.
+- 제품 대상 파일은 `apps/web/src/features/lessons/lesson-experience.tsx`, `apps/web/src/features/lessons/lesson-step-renderer.tsx`, `apps/web/src/features/lessons/lesson-types.ts`와 `l-new` seed/API mapping 관련 파일이다.
+- 읽기 스텝 커밋 후 Kwep 코드 기준으로 `l-new`의 시작 화면, 매칭, 분류, 쓰기 스텝을 하나의 사용자 흐름 안에서 같은 구조와 기능으로 맞춘다.
 
 ## 상태 요약
 

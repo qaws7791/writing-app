@@ -1,5 +1,6 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
 @import "@workspace/ui/styles";
+@plugin "@tailwindcss/typography";
 
 @theme {
   --color-cream: #fdfbf7;

@@ -167,3 +167,26 @@
 - `bun --filter @workspace/web typecheck`: 통과했다.
 - `bun --filter @workspace/web lint`: 통과했다.
 - 남은 DOM/CSS/기능 차이는 없다.
+
+## 읽기 스텝 화면
+
+- 기준 화면: Kwep `/lesson/c1/l1` 시작 후 첫 스텝
+- 제품 화면: `/app/lesson?lesson_id=l1` 시작 후 첫 스텝
+- 기준 코드:
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`의 started branch
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/StepRenderer.tsx`의 `reading` branch
+  - 제품: `apps/web/src/features/lessons/lesson-experience.tsx`의 started branch
+  - 제품: `apps/web/src/features/lessons/lesson-step-renderer.tsx`의 `READING` branch
+
+최신 검증 결과:
+
+- 제품 started branch는 Kwep와 같은 fullscreen fixed lesson shell, 상단 X 버튼, progress bar, `1/2` 카운터, content 영역, 하단 gradient CTA 구조를 사용한다.
+- 제품 읽기 스텝은 Kwep와 같은 `h2`, guide/body `ReactMarkdown`, typography `prose` class, source label 구조를 사용한다.
+- 제품 CTA label은 Kwep와 같이 읽기/비교 `이해했어요`, 퀴즈형 `확인하기`, 쓰기형 `다음으로 →`를 사용한다.
+- 제품 exit modal은 Kwep와 같은 title, description, secondary/primary button 구조를 사용한다.
+- `react-markdown`과 `@tailwindcss/typography`를 추가해 Kwep markdown/prose 렌더링 조건을 맞췄다.
+- `bun --filter @workspace/web test -- lesson-experience lesson-step-renderer`: 통과했다. 테스트 파일 2개, 테스트 14개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bunx prettier --check apps/web/package.json apps/web/src/app/globals.css apps/web/src/features/lessons/lesson-experience.tsx apps/web/src/features/lessons/lesson-experience.test.tsx apps/web/src/features/lessons/lesson-step-renderer.tsx docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md`: 문서 완료 기록 전 코드 기준으로 통과했다.
+- 남은 읽기 스텝 HTML/CSS/기능 차이는 없다.
