@@ -1,5 +1,12 @@
 # 플랫폼 백엔드 API
 
+## 2026-06-14 Kwep 레슨 완료 API 반영
+
+- 현재 Kwep 플랫폼 API는 `POST /learning/answers`로 스텝 답변을 저장하고, `POST /learning/lessons/{lessonId}/complete`로 레슨 완료를 저장한다.
+- `POST /learning/lessons/{lessonId}/complete`는 Bearer 인증을 요구하며, body의 `currentStepIndex`를 기준으로 학습자의 완료 진행과 활동일을 기록한다.
+- `docs/openapi/writing-app-api.json`와 web 생성 타입은 이 완료 endpoint를 포함한다.
+- 학습자 web의 `/app`, `/app/courses`, `/app/courses/{id}`, `/app/lesson`, `/app/profile`은 로컬 `kwep_session` 또는 실제 인증 토큰이 없으면 `/login?next=...`로 redirect한다.
+
 ## 2026-05-31 BSSN 6순위 단순화 완료
 
 - 학습자 API에서 `GET /profile`과 공개 `GET /courses/search`를 제거했다.

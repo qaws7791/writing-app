@@ -1,6 +1,8 @@
 import Link from "next/link"
+import { redirect } from "next/navigation"
 
 import { LessonExperience } from "@/features/lessons/lesson-experience"
+import { createLoginPagePath } from "@/lib/auth/auth-navigation"
 import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
@@ -33,8 +35,15 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
     )
   }
 
+  const nextPath = `/app/lesson?lesson_id=${encodeURIComponent(lessonId)}`
+  const token = await getServerLearnerSessionToken()
+
+  if (token === null) {
+    redirect(createLoginPagePath(nextPath))
+  }
+
   const api = getServerWritingAppApi({
-    tokenProvider: getServerLearnerSessionToken,
+    tokenProvider: () => token,
   })
   const lessonResult = await api.getLesson(lessonId)
 

@@ -2260,6 +2260,15 @@ Expected: 문서 포맷 검증이 통과한다.
 - 포맷 후 `bun --filter @workspace/web test -- create-http-writing-app-api lesson-experience`: 통과했다. 테스트 파일 2개, 테스트 8개가 통과했다.
 - 포맷 후 `bun --filter @workspace/api typecheck && bun --filter @workspace/web typecheck`: 통과했다.
 
+### 2026-06-14 Task 7 Step 7.5 보호 redirect 보강
+
+- 브라우저 스모크 체크리스트의 `/app` 보호 redirect 항목을 맞추기 위해 `/app` 계열 서버 page가 세션 토큰이 없으면 `/login?next=...`로 이동하도록 보강했다.
+- `createLoginPagePath` helper를 추가해 로그인 next 경로 인코딩을 한 곳에서 처리한다.
+- `docs/platform-backend-api.md`와 `docs/platform-product-feature-spec.md`에 보호 redirect와 완료 endpoint를 반영했다.
+- `bun --filter @workspace/web test -- auth-navigation`: 통과했다. 테스트 파일 1개, 테스트 1개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성

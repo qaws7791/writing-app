@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  createLoginPagePath,
   createGoogleLoginPath,
   createLogoutPath,
   resolveSafeNextPath,
@@ -12,6 +13,9 @@ describe("auth navigation", () => {
     expect(resolveSafeNextPath("https://example.com/app")).toBe("/app")
     expect(createGoogleLoginPath("/app/profile")).toBe(
       "/api/auth/sign-in/google?callbackURL=%2Fapp%2Fprofile"
+    )
+    expect(createLoginPagePath("/app/lesson?lesson_id=l1")).toBe(
+      "/login?next=%2Fapp%2Flesson%3Flesson_id%3Dl1"
     )
     expect(createLogoutPath("/")).toBe("/api/auth/sign-out?callbackURL=%2F")
   })

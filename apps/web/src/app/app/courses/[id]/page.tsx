@@ -1,6 +1,7 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 import { CourseDetailPage } from "@/features/courses/course-detail-page"
+import { createLoginPagePath } from "@/lib/auth/auth-navigation"
 import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
@@ -14,8 +15,15 @@ export default async function CourseDetailRoute({
   params,
 }: CourseDetailRouteProps) {
   const { id } = await params
+  const nextPath = `/app/courses/${id}`
+  const token = await getServerLearnerSessionToken()
+
+  if (token === null) {
+    redirect(createLoginPagePath(nextPath))
+  }
+
   const api = getServerWritingAppApi({
-    tokenProvider: getServerLearnerSessionToken,
+    tokenProvider: () => token,
   })
   const [courseResult, progressResult] = await Promise.all([
     api.getCourseDetail(id),
