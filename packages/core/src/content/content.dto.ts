@@ -94,7 +94,7 @@ const orderStepDtoSchema = lessonStepBaseSchema.extend({
 const writeStepDtoSchema = lessonStepBaseSchema.extend({
   type: z.literal("WRITE"),
   title: optionalTextSchema,
-  guide: z.string(),
+  guide: optionalTextSchema,
   min: nonNegativeIntegerSchema,
   goal: nonNegativeIntegerSchema.optional(),
   max: nonNegativeIntegerSchema.optional(),

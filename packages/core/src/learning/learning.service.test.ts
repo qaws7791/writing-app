@@ -92,6 +92,30 @@ describe("학습 서비스", () => {
     expect(savedAnswers[0]?.answer).toBe("나의 문장 답변")
   })
 
+  it("첫 읽기 스텝의 lesson-started 마커 저장을 허용한다", async () => {
+    const savedAnswers: SaveStepAnswerCommand[] = []
+    const service = createService({
+      savedAnswers,
+    })
+
+    await expect(
+      service.saveStepAnswer({
+        answer: { kind: "lesson-started" },
+        lessonId,
+        occurredAt,
+        stepId: lessonStepIdSchema.parse("l1-s1"),
+        userId: learnerId,
+      })
+    ).resolves.toEqual({
+      kind: "ok",
+      value: {
+        saved: true,
+      },
+    })
+
+    expect(savedAnswers[0]?.answer).toEqual({ kind: "lesson-started" })
+  })
+
   it("읽기와 비교 스텝 저장 요청은 invalid-request로 거절한다", async () => {
     const service = createService()
 

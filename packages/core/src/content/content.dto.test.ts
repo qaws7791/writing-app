@@ -121,6 +121,21 @@ describe("콘텐츠 DTO schema", () => {
     )
   })
 
+  it("Kwep write 스텝은 guide 없이 prompt나 topic만 있어도 parse한다", () => {
+    expect(
+      lessonStepDtoSchema.parse({
+        id: "l1-s11",
+        type: "WRITE",
+        sortOrder: 11,
+        prompt: "오늘 배운 내용을 한 문장으로 적어보세요.",
+        min: 30,
+      })
+    ).toMatchObject({
+      id: "l1-s11",
+      type: "WRITE",
+    })
+  })
+
   it("코스 목록과 코스 상세 DTO를 parse한다", () => {
     const summary = {
       id: "c1",

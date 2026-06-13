@@ -111,7 +111,14 @@ export function createLearningService({
         })
       }
 
-      if (!answerableStepTypes.has(step.type)) {
+      const supportsStepAnswer =
+        answerableStepTypes.has(step.type) ||
+        isLessonStartedAnswer(parsedCommand.answer, {
+          firstStepId: parsedLesson.steps[0]?.id,
+          stepId: step.id,
+        })
+
+      if (!supportsStepAnswer) {
         return err({
           kind: "invalid-request",
           reason: "step-answer-not-supported",
@@ -127,3 +134,22 @@ export function createLearningService({
 }
 
 export { answerableStepTypes }
+
+function isLessonStartedAnswer(
+  answer: unknown,
+  {
+    firstStepId,
+    stepId,
+  }: {
+    readonly firstStepId: string | undefined
+    readonly stepId: string
+  }
+): boolean {
+  return (
+    stepId === firstStepId &&
+    typeof answer === "object" &&
+    answer !== null &&
+    "kind" in answer &&
+    answer.kind === "lesson-started"
+  )
+}

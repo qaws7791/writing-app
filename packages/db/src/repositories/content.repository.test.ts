@@ -121,6 +121,23 @@ describe("콘텐츠 baseline repository", () => {
       client.close()
     }
   })
+
+  it("guide가 없는 Kwep write 스텝이 포함된 레슨을 조회한다", async () => {
+    const client = createInMemoryKwepDatabase()
+
+    try {
+      await seedContentRows(client)
+
+      const repository = createDrizzleContentRepository(client.db)
+      const lesson = await repository.findLesson(lessonIdSchema.parse("l6"))
+
+      expect(lesson?.title).toBe("주장과 근거")
+      expect(lesson?.steps.map((step) => step.type)).toContain("WRITE")
+      expect(lesson?.steps).toHaveLength(7)
+    } finally {
+      client.close()
+    }
+  })
 })
 
 async function seedContentRows(client: KwepDatabaseClient): Promise<void> {

@@ -2276,6 +2276,16 @@ Expected: 문서 포맷 검증이 통과한다.
 - `docs/lesson-page.md`에 객관식 정답 확인 동작을 기록했다.
 - `bun --filter @workspace/web test -- lesson-step-renderer`: 통과했다. 테스트 파일 1개, 테스트 9개가 통과했다.
 
+### 2026-06-14 Task 7 Step 7.5 시작 저장과 write 변형 복구
+
+- Playwright 스모크 중 첫 스텝이 `READING`인 레슨에서 `lesson-started` 마커 저장이 API의 답변 가능 스텝 검증에 막혀 레슨에 진입하지 못하는 실패를 확인했다.
+- 같은 스모크에서 `l6` 레슨의 일부 `WRITE` 스텝이 `guide` 없이 `prompt`, `topic`, `structure`만 가져 core DTO 검증이 실패하는 문제를 확인했다.
+- 첫 스텝의 `lesson-started` 마커는 읽기 스텝이어도 저장을 허용하도록 learning service를 보강했다.
+- Kwep `WRITE` DTO의 `guide`를 선택값으로 바꾸고, 실제 seed의 `l6` 레슨이 repository에서 조회되는 회귀 테스트를 추가했다.
+- `docs/lesson-page.md`에 시작 마커와 Kwep write 변형 수용 동작을 기록했다.
+- `bun --filter @workspace/core test -- content.dto learning.service`: 통과했다. 테스트 파일 2개, 테스트 9개가 통과했다.
+- `bun --filter @workspace/db test -- content.repository`: 통과했다. 테스트 파일 1개, 테스트 5개가 통과했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성
