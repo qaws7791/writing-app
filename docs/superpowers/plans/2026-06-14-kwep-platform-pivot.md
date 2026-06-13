@@ -857,7 +857,7 @@ Expected: 플랫폼 API 관련 검증이 통과한다.
 - Create: `apps/web/src/features/profile/profile-api-mappers.ts`
 - Create: `apps/web/src/features/profile/profile-api-mappers.test.ts`
 
-- [ ] **Step 5.1: `WritingAppApi` 포트 작성**
+- [x] **Step 5.1: `WritingAppApi` 포트 작성**
 
 필수 메서드:
 
@@ -2001,6 +2001,24 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun run format:check`: 통과했다.
 - `git diff --check`: 통과했다.
 - 이번 Task에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
+
+### 2026-06-14 Task 5 시작
+
+- Task 5는 플랫폼 웹이 API route를 직접 알지 않도록 `WritingAppApi` 포트, HTTP adapter, API result/error, 코스/레슨/프로필 매퍼를 작성하는 단계로 진행한다.
+- 첫 검증 단위는 `create-http-writing-app-api`, `profile-api-mappers`, `course-api-mappers`, `lesson-api-mappers` 테스트다.
+- OpenAPI generated 타입은 `apps/web/src/lib/api/generated/writing-app-api.d.ts`를 기준으로 사용하되, 화면 내부 모델은 Kwep 도메인 언어에 맞춰 별도 타입으로 둔다.
+- 외부 fetch는 테스트에서 deterministic fake fetch로 대체하고, 구현은 브라우저와 서버에서 모두 사용할 수 있는 명시적 base URL 경계로 작성한다.
+
+### 2026-06-14 Task 5 Step 5.1 완료
+
+- `apps/web/src/lib/api`에 `ApiResult`, `ApiError`, `WritingAppApi` 포트, OpenAPI HTTP client, browser/server API factory를 추가했다.
+- `apps/web/src/features/courses`, `features/lessons`, `features/profile`에 API 응답을 화면 내부 모델로 바꾸는 mapper와 타입을 추가했다.
+- HTTP adapter는 Bearer token header, GET/POST JSON 요청, 실패 응답의 화면용 오류 변환을 테스트로 검증했다.
+- `bun --filter @workspace/web test -- create-http-writing-app-api profile-api-mappers course-api-mappers lesson-api-mappers api-error`: 통과했다. 테스트 파일 5개, 테스트 10개가 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다. Next pages/app 디렉토리 부재 안내는 reset 상태에서 발생하는 warning이며 exit code는 0이다.
+- `bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md 'apps/web/src/**/*.ts' apps/web/src/lib/api/generated/writing-app-api.d.ts`: 통과했다.
+- `git diff --check`: 통과했다.
+- `bun --filter @workspace/web typecheck`: 실패했다. 현재 `apps/web/src/app`이 아직 Task 6에서 재작성되기 전이라 Next typegen이 app/pages 디렉토리 부재를 보고하며, 기존 `apps/web/test` fixture가 Task 1에서 삭제된 이전 구현 모듈을 참조한다. 새 Step 5.1 파일에서 보고된 타입 오류는 정리했다.
 
 ## 상태 요약
 
