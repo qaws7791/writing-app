@@ -86,3 +86,33 @@
 - `1280x720`: screen root item count `67 / 67`, visible element count `41 / 41`, structural diff `0`, rect diff `0`, computed style diff `0`
 - 클릭 검증: Kwep 첫 코스 카드는 `/learn`, 제품 첫 코스 카드는 대응 route인 `/app/courses`로 이동한다.
 - 남은 DOM/CSS/기능 차이는 없다.
+
+## 배우기 화면
+
+- 기준 화면: Kwep `/learn`
+- 제품 화면: `/app/courses`
+- 비교 상태:
+  - Kwep localStorage: `k_user`는 `글쓰기 탐험가`, `k_progress`는 `{}`, `k_streak`는 `0일`
+  - 제품 쿠키: `kwep_session=user-1`
+- 비교 뷰포트: `390x844`, `1280x720`
+- 캡처 스크립트: `learn/capture-learn.mjs`
+- 최종 캡처:
+  - `learn/kwep-390x844-latest.png`
+  - `learn/product-390x844-latest.png`
+  - `learn/kwep-1280x720-latest.png`
+  - `learn/product-1280x720-latest.png`
+- 최종 비교 데이터:
+  - `learn/kwep-390x844-latest.json`
+  - `learn/product-390x844-latest.json`
+  - `learn/diff-390x844-latest.json`
+  - `learn/kwep-1280x720-latest.json`
+  - `learn/product-1280x720-latest.json`
+  - `learn/diff-1280x720-latest.json`
+  - `learn/interaction-latest.json`
+
+최신 검증 결과:
+
+- `390x844`: screen root item count `48 / 48`, visible element count `43 / 43`, structural diff `0`, rect diff `0`, computed style diff `0`
+- `1280x720`: screen root item count `48 / 48`, visible element count `29 / 29`, structural diff `0`, rect diff `0`, computed style diff `0`
+- 클릭 검증: `문법 심화` 카테고리 선택 후 Kwep 코스 카드는 `/course/c2`, 제품 코스 카드는 대응 route인 `/app/courses/c2`로 이동한다.
+- 남은 DOM/CSS/기능 차이는 없다.

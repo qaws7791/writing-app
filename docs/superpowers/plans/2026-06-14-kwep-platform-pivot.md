@@ -1467,7 +1467,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "홈 화면 fresh 상태를 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.4: 배우기(`/learn` vs `/app/courses`)를 Kwep와 일치시킨 뒤 커밋**
+- [x] **Step 7R.4: 배우기(`/learn` vs `/app/courses`)를 Kwep와 일치시킨 뒤 커밋**
 
 Kwep 기준:
 
@@ -3189,6 +3189,27 @@ Expected: 문서 포맷 검증이 통과한다.
 - `node docs/superpowers/evidence/2026-06-14-kwep-ui-parity/landing/capture-landing.mjs`: 통과했다. attribute diff, rect diff, computed style diff가 모두 0개였다.
 - `node docs/superpowers/evidence/2026-06-14-kwep-ui-parity/login/capture-login.mjs`: 통과했다. diff 파일이 모두 0개였다.
 - `node docs/superpowers/evidence/2026-06-14-kwep-ui-parity/home/capture-home.mjs`: 통과했다. structural diff, rect diff, computed style diff가 모두 0개였다.
+
+### 2026-06-14 Task 7R Step 7R.4 배우기 화면 일치 시작
+
+- 대상 화면은 Kwep `/learn`과 제품 `/app/courses`이다.
+- Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/Screens.tsx`의 `LearnScreen`과 course card 관련 컴포넌트이다.
+- 제품 대상 파일은 `apps/web/src/app/app/courses/page.tsx`, `apps/web/src/features/courses/*`, 공통 app shell/nav이다.
+- 같은 사용자 인증 상태와 fresh 진행 상태에서 모바일 `390x844`, 데스크톱 `1280x720`을 비교한다.
+- 먼저 Kwep와 제품의 현재 DOM/CSS/기능 차이를 캡처하고, 제품 API 의존으로 화면이 비는 문제가 있으면 Kwep fresh 화면과 같은 코스 목록을 렌더링하도록 수정한다.
+
+### 2026-06-14 Task 7R Step 7R.4 배우기 화면 일치 완료
+
+- 제품 `/app/courses`를 Kwep `LearnScreen`과 같은 heading, 설명 문구, 카테고리 탭, 코스 카드 그리드 구조로 교체했다.
+- shadcn card/progress/link UI를 제거하고 Kwep와 같은 클릭 가능한 `div` 카드, picsum seed 이미지, 모바일 가로 카드/데스크톱 세로 카드 반응형 구조를 적용했다.
+- API 코스 목록 조회가 실패하거나 비어 있어도 Kwep seed와 같은 5개 코스 요약 fallback을 렌더링하게 해 제품 화면이 비지 않도록 했다.
+- 카테고리 클릭은 Kwep와 같은 active class 전환을 수행하고, 코스 카드 클릭은 Kwep `/course/:id`에 대응해 제품 `/app/courses/:id`로 이동한다.
+- `docs/superpowers/evidence/2026-06-14-kwep-ui-parity/learn/capture-learn.mjs`로 390x844와 1280x720 캡처, strict DOM/style diff, 카테고리/카드 클릭 검증 데이터를 생성했다.
+- 최종 비교에서 390x844는 screen root item count `48 / 48`, visible element count `43 / 43`, structural diff 0개, rect diff 0개, computed style diff 0개를 확인했다.
+- 최종 비교에서 1280x720은 screen root item count `48 / 48`, visible element count `29 / 29`, structural diff 0개, rect diff 0개, computed style diff 0개를 확인했다.
+- 클릭 검증에서 `문법 심화` 선택 후 Kwep는 `/course/c2`, 제품은 대응 route인 `/app/courses/c2`로 이동했다.
+- `bun --filter @workspace/web test -- courses-page`: 통과했다. 테스트 파일 1개, 테스트 1개가 통과했다.
+- `node docs/superpowers/evidence/2026-06-14-kwep-ui-parity/learn/capture-learn.mjs`: 통과했다. structural diff, rect diff, computed style diff가 모두 0개였다.
 
 ## 상태 요약
 
