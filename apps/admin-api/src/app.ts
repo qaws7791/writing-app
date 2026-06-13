@@ -4,6 +4,7 @@ import { cors } from "hono/cors"
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { createDashboardRoute } from "@/routes/dashboard.route"
 import { createHealthRoute } from "@/routes/health.route"
+import { createUsersRoute } from "@/routes/users.route"
 import type { AdminService } from "@workspace/core/admin"
 
 export type AdminApiDependencies = {
@@ -31,6 +32,14 @@ export function createApp(dependencies: AdminApiDependencies): Hono {
     "/dashboard",
     createDashboardRoute({
       dashboardService: dependencies.dashboardService,
+      now: dependencies.now ?? (() => new Date()),
+      sessionResolver: dependencies.sessionResolver,
+    })
+  )
+  app.route(
+    "/users",
+    createUsersRoute({
+      adminService: dependencies.dashboardService,
       now: dependencies.now ?? (() => new Date()),
       sessionResolver: dependencies.sessionResolver,
     })

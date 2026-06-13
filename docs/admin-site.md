@@ -1,5 +1,13 @@
 # 어드민 사이트
 
+## 2026-06-14 Kwep 어드민 사용자 API 완료
+
+- 어드민 API에 `GET /users`, `GET /users/:userId`, `PATCH /users/:userId/status`, `DELETE /users/:userId`를 추가했다.
+- 사용자 목록은 Kwep 사용자 관리 화면 기준으로 이름/이메일 검색, 상태 필터, 최근 접속/가입/완료 레슨/스트릭 정렬, 페이지네이션을 제공한다.
+- 사용자 상세는 가입일, 최근 접속, 현재 스트릭, 완료 레슨, 전체 진도 계산값을 반환한다.
+- `PATCH /users/:userId/status`는 `active`, `suspended`만 허용한다.
+- `DELETE /users/:userId`는 앱 소유 learner profile을 `deleted` 상태로 바꾸며, 학습 진행과 답변 row는 보존한다.
+
 ## 2026-06-14 Kwep 어드민 대시보드 API 시작
 
 - Kwep 피벗 어드민 API baseline의 첫 route로 `GET /dashboard`를 추가했다.

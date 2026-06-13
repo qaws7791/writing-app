@@ -1998,7 +1998,7 @@ bun --filter @workspace/admin-api test -- app dashboard
 
 Expected: 관리자 세션이 없으면 `401`, 세션이 있으면 DB 기반 대시보드 지표를 반환한다.
 
-- [ ] **Step 8.2: 사용자 목록과 상세 API 작성**
+- [x] **Step 8.2: 사용자 목록과 상세 API 작성**
 
 Endpoint:
 
@@ -3393,6 +3393,29 @@ Expected: 문서 포맷 검증이 통과한다.
 - `git diff --check`: 통과했다.
 - `git status --short`: tracked 변경은 없고, 읽기 전용 프로토타입 `Kwep/`만 untracked로 남아 있다.
 - Task 7R의 학습자 사용자 플로우 1~12번 화면 단위 재작업과 회귀 검증을 완료했다.
+
+### 2026-06-14 Task 8 Step 8.2 사용자 목록과 상세 API 시작
+
+- 다음 대상은 어드민 사용자 관리 화면의 Kwep `AdminUserList.tsx`, `AdminUserDetail.tsx`에 대응하는 제품 API 계약이다.
+- 제품 대상 파일은 `packages/core/src/admin/*`, `packages/db/src/repositories/admin.repository.ts`, `apps/admin-api/src/app.ts`, `apps/admin-api/src/routes/users.route.ts`, 관련 테스트이다.
+- 사용자 목록은 검색, 상태 필터, `lastActive`/`joined`/`lessonsDone`/`streak` 정렬, 페이지네이션을 제공한다.
+- 사용자 상세는 가입일, 최근 접속, 현재 스트릭, 완료 레슨, 전체 진도 계산에 필요한 값을 제공한다.
+- 상태 변경은 `active`/`suspended`만 허용하고, 삭제는 프로필 status를 `deleted`로 바꾸며 학습 진행과 답변 row는 보존한다.
+
+### 2026-06-14 Task 8 Step 8.2 사용자 목록과 상세 API 완료
+
+- `packages/core/src/admin`에 어드민 사용자 목록, 상세, 상태 변경, 삭제 결과 DTO와 repository/service port를 추가했다.
+- `packages/db/src/repositories/admin.repository.ts`는 기존 auth user, learner profile, activity day, lesson progress, content table에서 사용자 목록/상세를 계산한다.
+- 사용자 목록은 Kwep `AdminUserList`와 같은 이름/이메일 검색, 상태 필터, `lastActive`/`joined`/`lessonsDone`/`streak` 정렬, 페이지네이션을 지원한다.
+- 사용자 상세는 Kwep `AdminUserDetail`에 필요한 가입일, 최근 접속, 현재 스트릭, 완료 레슨, 전체 진도 계산값을 반환한다.
+- `PATCH /users/:userId/status`는 `active`, `suspended`만 허용하고, `DELETE /users/:userId`는 learner profile을 `deleted`로 바꿔 학습 진행/답변 row를 보존한다.
+- `bun --filter @workspace/core test -- admin.service`: 먼저 `service.getUsers is not a function`으로 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 2개가 통과했다.
+- `bun --filter @workspace/admin-api test -- app`: 먼저 `/users` route가 없어 404로 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 6개가 통과했다.
+- `bun --filter @workspace/db test -- admin.repository`: 먼저 `repository.readUsers is not a function`으로 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 2개가 통과했다.
+- `bun --filter @workspace/core typecheck`, `bun --filter @workspace/db typecheck`, `bun --filter @workspace/admin-api typecheck`: 통과했다.
+- `bun --filter @workspace/core lint`, `bun --filter @workspace/db lint`, `bun --filter @workspace/admin-api lint`: 통과했다.
+- `bunx prettier --check apps/admin-api/src/app.test.ts apps/admin-api/src/app.ts apps/admin-api/src/routes/users.route.ts packages/core/src/admin/admin.dto.ts packages/core/src/admin/admin.repository.ts packages/core/src/admin/admin.service.ts packages/core/src/admin/admin.service.test.ts packages/db/src/repositories/admin.repository.ts packages/db/src/repositories/admin.repository.test.ts docs/admin-site.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check`: 통과했다.
 
 ## 상태 요약
 

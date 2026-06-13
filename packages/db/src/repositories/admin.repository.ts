@@ -1,7 +1,16 @@
 import type {
   AdminDashboardDto,
-  AdminDashboardRepository,
+  AdminDeleteUserResultDto,
+  AdminRepository,
+  AdminUserDetailDto,
+  AdminUserListDto,
+  AdminUserSort,
+  AdminUserStatus,
+  DeleteAdminUserInput,
   ReadAdminDashboardInput,
+  ReadAdminUserInput,
+  ReadAdminUsersInput,
+  UpdateAdminUserStatusInput,
 } from "@workspace/core/admin"
 import { eq } from "drizzle-orm"
 
@@ -20,10 +29,22 @@ const recentActivityLimit = 5
 
 export function createDrizzleAdminRepository(
   db: KwepDatabase
-): AdminDashboardRepository {
+): AdminRepository {
   return {
+    deleteUser(input) {
+      return Promise.resolve(deleteUser(db, input))
+    },
     readDashboard(input) {
       return Promise.resolve(readDashboard(db, input))
+    },
+    readUser(input) {
+      return Promise.resolve(readUser(db, input))
+    },
+    readUsers(input) {
+      return Promise.resolve(readUsers(db, input))
+    },
+    updateUserStatus(input) {
+      return Promise.resolve(updateUserStatus(db, input))
     },
   }
 }
@@ -145,6 +166,219 @@ function createRecentActivities(
         : (right.lastActiveDate ?? "").localeCompare(left.lastActiveDate ?? "")
     )
     .slice(0, recentActivityLimit)
+}
+
+type AdminUserSnapshot = {
+  readonly email: string
+  readonly id: string
+  readonly joined: string
+  readonly lastActive: string | null
+  readonly lessonsDone: number
+  readonly name: string
+  readonly status: AdminUserStatus
+  readonly streak: number
+}
+
+function readUsers(
+  db: KwepDatabase,
+  input: ReadAdminUsersInput
+): AdminUserListDto {
+  const query = input.query.trim().toLowerCase()
+  const filteredUsers = readUserSnapshots(db)
+    .filter((user) =>
+      input.status === "all"
+        ? user.status !== "deleted"
+        : user.status === input.status
+    )
+    .filter(
+      (user) =>
+        query.length === 0 ||
+        user.name.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query)
+    )
+    .sort((left, right) => compareUsers(left, right, input.sort))
+  const totalItems = filteredUsers.length
+  const totalPages = Math.max(1, Math.ceil(totalItems / input.pageSize))
+  const page = Math.min(Math.max(1, input.page), totalPages)
+  const start = (page - 1) * input.pageSize
+
+  return {
+    items: filteredUsers.slice(start, start + input.pageSize),
+    pagination: {
+      page,
+      pageSize: input.pageSize,
+      totalItems,
+      totalPages,
+    },
+  }
+}
+
+function readUser(
+  db: KwepDatabase,
+  input: ReadAdminUserInput
+): AdminUserDetailDto | null {
+  const user = readUserSnapshots(db).find((item) => item.id === input.userId)
+
+  if (user === undefined) {
+    return null
+  }
+
+  const totalLessons = countActiveLessons(db)
+
+  return {
+    ...user,
+    progressPercent:
+      totalLessons === 0
+        ? 0
+        : Math.round((user.lessonsDone / totalLessons) * 100),
+    totalLessons,
+  }
+}
+
+function updateUserStatus(
+  db: KwepDatabase,
+  input: UpdateAdminUserStatusInput
+): AdminUserDetailDto | null {
+  if (readUser(db, input) === null) {
+    return null
+  }
+
+  db.update(learnerProfiles)
+    .set({
+      deletedAt: null,
+      status: input.status,
+    })
+    .where(eq(learnerProfiles.userId, input.userId))
+    .run()
+
+  return readUser(db, input)
+}
+
+function deleteUser(
+  db: KwepDatabase,
+  input: DeleteAdminUserInput
+): AdminDeleteUserResultDto | null {
+  if (readUser(db, input) === null) {
+    return null
+  }
+
+  db.update(learnerProfiles)
+    .set({
+      deletedAt: input.now,
+      status: "deleted",
+    })
+    .where(eq(learnerProfiles.userId, input.userId))
+    .run()
+
+  return { deleted: true }
+}
+
+function readUserSnapshots(db: KwepDatabase): AdminUserSnapshot[] {
+  const userRows = db
+    .select({
+      createdAt: authUsers.createdAt,
+      displayName: learnerProfiles.displayName,
+      email: authUsers.email,
+      id: authUsers.id,
+      name: authUsers.name,
+      status: learnerProfiles.status,
+    })
+    .from(authUsers)
+    .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
+    .all()
+  const activityRows = db.select().from(learnerActivityDays).all()
+  const completedLessonRows = db
+    .select()
+    .from(learnerLessonProgress)
+    .all()
+    .filter((progress) => progress.status === "completed")
+  const activityDatesByUserId = groupActivityDatesByUserId(activityRows)
+
+  return userRows.map((user) => {
+    const activityDates = activityDatesByUserId.get(user.id) ?? []
+
+    return {
+      email: user.email,
+      id: user.id,
+      joined: toDateKey(user.createdAt),
+      lastActive: activityDates[0] ?? null,
+      lessonsDone: completedLessonRows.filter(
+        (progress) => progress.userId === user.id
+      ).length,
+      name: user.displayName ?? user.name,
+      status: user.status ?? "active",
+      streak: calculateCurrentStreakDays(activityDates),
+    }
+  })
+}
+
+function groupActivityDatesByUserId(
+  activities: readonly (typeof learnerActivityDays.$inferSelect)[]
+): Map<string, string[]> {
+  const activityDatesByUserId = new Map<string, string[]>()
+
+  for (const activity of activities) {
+    const activityDates = activityDatesByUserId.get(activity.userId) ?? []
+
+    activityDates.push(activity.activityDate)
+    activityDates.sort((left, right) => right.localeCompare(left))
+    activityDatesByUserId.set(activity.userId, activityDates)
+  }
+
+  return activityDatesByUserId
+}
+
+function countActiveLessons(db: KwepDatabase): number {
+  const activeCourseIds = new Set(
+    db
+      .select()
+      .from(courses)
+      .all()
+      .filter((course) => course.status === "active")
+      .map((course) => course.id)
+  )
+  const activeUnitIds = new Set(
+    db
+      .select()
+      .from(courseUnits)
+      .all()
+      .filter(
+        (unit) => unit.status === "active" && activeCourseIds.has(unit.courseId)
+      )
+      .map((unit) => unit.id)
+  )
+
+  return db
+    .select()
+    .from(lessons)
+    .all()
+    .filter(
+      (lesson) =>
+        lesson.status === "active" &&
+        activeCourseIds.has(lesson.courseId) &&
+        activeUnitIds.has(lesson.unitId)
+    ).length
+}
+
+function compareUsers(
+  left: AdminUserSnapshot,
+  right: AdminUserSnapshot,
+  sort: AdminUserSort
+): number {
+  const byName = left.name.localeCompare(right.name)
+
+  switch (sort) {
+    case "joined":
+      return right.joined.localeCompare(left.joined) || byName
+    case "lastActive":
+      return (
+        (right.lastActive ?? "").localeCompare(left.lastActive ?? "") || byName
+      )
+    case "lessonsDone":
+      return right.lessonsDone - left.lessonsDone || byName
+    case "streak":
+      return right.streak - left.streak || byName
+  }
 }
 
 function calculateCurrentStreakDays(activityDates: readonly string[]): number {

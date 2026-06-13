@@ -55,6 +55,103 @@ describe("어드민 DB repository", () => {
       client.close()
     }
   })
+
+  it("사용자 목록과 상세, 상태 변경, 삭제 상태 전환을 처리한다", async () => {
+    const client = createKwepDatabase(":memory:")
+    const now = new Date("2026-06-14T03:00:00.000Z")
+
+    try {
+      runBaselineMigration(client.sqlite)
+      seedDashboardRows(client.db)
+
+      const repository = createDrizzleAdminRepository(client.db)
+
+      await expect(
+        repository.readUsers({
+          page: 1,
+          pageSize: 1,
+          query: "학습자",
+          sort: "lastActive",
+          status: "all",
+        })
+      ).resolves.toEqual({
+        items: [
+          {
+            email: "learner-one@example.com",
+            id: "user-1",
+            joined: "2026-06-14",
+            lastActive: "2026-06-14",
+            lessonsDone: 2,
+            name: "첫 학습자",
+            status: "active",
+            streak: 3,
+          },
+        ],
+        pagination: {
+          page: 1,
+          pageSize: 1,
+          totalItems: 2,
+          totalPages: 2,
+        },
+      })
+
+      await expect(
+        repository.readUsers({
+          page: 1,
+          pageSize: 12,
+          query: "",
+          sort: "lessonsDone",
+          status: "suspended",
+        })
+      ).resolves.toMatchObject({
+        items: [
+          {
+            email: "learner-two@example.com",
+            id: "user-2",
+            lessonsDone: 1,
+            status: "suspended",
+          },
+        ],
+      })
+
+      await expect(repository.readUser({ userId: "user-1" })).resolves.toEqual({
+        email: "learner-one@example.com",
+        id: "user-1",
+        joined: "2026-06-14",
+        lastActive: "2026-06-14",
+        lessonsDone: 2,
+        name: "첫 학습자",
+        progressPercent: 100,
+        status: "active",
+        streak: 3,
+        totalLessons: 2,
+      })
+
+      await expect(
+        repository.updateUserStatus({
+          now,
+          status: "suspended",
+          userId: "user-1",
+        })
+      ).resolves.toMatchObject({
+        id: "user-1",
+        status: "suspended",
+      })
+
+      await expect(
+        repository.deleteUser({ now, userId: "user-1" })
+      ).resolves.toEqual({ deleted: true })
+      await expect(repository.readUser({ userId: "user-1" })).resolves.toEqual(
+        expect.objectContaining({
+          id: "user-1",
+          lessonsDone: 2,
+          status: "deleted",
+        })
+      )
+    } finally {
+      client.close()
+    }
+  })
 })
 
 function seedDashboardRows(db: ReturnType<typeof createKwepDatabase>["db"]) {
