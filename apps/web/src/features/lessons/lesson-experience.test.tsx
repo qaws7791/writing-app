@@ -317,6 +317,89 @@ describe("레슨 경험", () => {
     expect(screen.getByText("구조 가이드")).toBeInTheDocument()
   })
 
+  it("읽기 후 객관식을 Kwep 확인 footer로 채점한다", async () => {
+    const user = userEvent.setup()
+    const api = createApi({
+      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
+    })
+    const multipleChoiceLesson: Lesson = {
+      ...lesson,
+      description: "주제문과 뒷받침 문장으로 단단한 문단을 만드는 법.",
+      estimatedMinutes: 8,
+      id: "l2",
+      steps: [
+        {
+          body: "문단은 보통 주제문, 뒷받침 문장, 마무리 문장으로 이루어집니다.",
+          guide: "문단의 세 요소를 읽고 각각의 역할이 무엇인지 파악하세요.",
+          id: "l2-reading-1",
+          order: 1,
+          title: "주제문과 뒷받침",
+          type: "READING",
+        },
+        {
+          body: "꾸준한 글쓰기 연습은 사고를 정돈하는 가장 효과적인 방법이다.",
+          guide: "아래 문단에서 주제문이 어디에 있는지 찾아보세요.",
+          id: "l2-reading-2",
+          order: 2,
+          source: "글쓰기 입문 교재",
+          title: "예문 읽기",
+          type: "READING",
+        },
+        {
+          body: "**흐린 주제문**\n\n> 꾸준한 글쓰기 연습은 좋은 점이 많다.\n\n**명확한 주제문**\n\n> 꾸준한 글쓰기 연습은 사고를 정돈하는 가장 효과적인 방법이다.",
+          guide: "두 예시의 주제문을 비교하며 구체성의 차이를 살펴보세요.",
+          id: "l2-reading-3",
+          order: 3,
+          title: "주제문 위치 비교",
+          type: "READING",
+        },
+        {
+          correct: "b",
+          explanation: "하나의 문단에는 단 하나의 핵심 주제문이 들어갑니다.",
+          id: "l2-mc",
+          options: [
+            { id: "a", text: "2개 이상" },
+            { id: "b", text: "정확히 1개" },
+            { id: "c", text: "없어도 된다" },
+          ],
+          order: 4,
+          question: "한 문단에 들어가야 할 주제문의 수는?",
+          type: "MULTIPLE_CHOICE",
+          wrong: "주제가 두 개라면 문단을 나누는 편이 좋습니다.",
+        },
+      ],
+      summary: ["한 문단에는 한 가지 주제만 담는다"],
+      title: "한 문단의 구조",
+    }
+
+    render(<LessonExperience api={api} lesson={multipleChoiceLesson} />)
+
+    await user.click(screen.getByRole("button", { name: "시작하기" }))
+    await user.click(screen.getByRole("button", { name: "이해했어요" }))
+    await user.click(screen.getByRole("button", { name: "이해했어요" }))
+    await user.click(screen.getByRole("button", { name: "이해했어요" }))
+
+    expect(screen.getByText("4/4")).toHaveClass(
+      "ml-4",
+      "font-bold",
+      "text-muted"
+    )
+    expect(screen.getByRole("button", { name: "확인하기" })).toBeDisabled()
+    await user.click(screen.getByRole("button", { name: "정확히 1개" }))
+
+    expect(screen.getByRole("button", { name: "정확히 1개" })).toHaveClass(
+      "bg-primary",
+      "text-ink"
+    )
+    expect(screen.getByRole("button", { name: "확인하기" })).toBeEnabled()
+    await user.click(screen.getByRole("button", { name: "확인하기" }))
+
+    expect(screen.getByText("완벽해요!")).toHaveClass("text-mint-dark")
+    expect(
+      screen.getAllByText("하나의 문단에는 단 하나의 핵심 주제문이 들어갑니다.")
+    ).toHaveLength(1)
+  })
+
   it("AI 코칭 요청을 createAiFeedback으로 위임한다", async () => {
     const user = userEvent.setup()
     const createAiFeedback = vi.fn(async () =>

@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { useMemo, useState } from "react"
 
 import ReactMarkdown from "react-markdown"
@@ -74,6 +75,7 @@ export function LessonStepRenderer({
   if (
     step.type === "CATEGORIZE" ||
     step.type === "MATCH" ||
+    step.type === "MULTIPLE_CHOICE" ||
     step.type === "READING" ||
     step.type === "WRITE"
   ) {
@@ -215,7 +217,9 @@ function renderStepContent(
     case "MULTIPLE_CHOICE":
       return (
         <MultipleChoiceAnswer
+          checked={handlers.checked}
           onAnswerChange={handlers.onAnswerChange}
+          onAnswerPayloadChange={handlers.onAnswerPayloadChange}
           step={step}
         />
       )
@@ -378,44 +382,156 @@ function FeedbackList({
 }
 
 function MultipleChoiceAnswer({
+  checked,
   onAnswerChange,
+  onAnswerPayloadChange,
   step,
 }: {
+  readonly checked: LessonStepCheckedState
   readonly onAnswerChange: LessonStepRendererProps["onAnswerChange"]
+  readonly onAnswerPayloadChange: LessonStepRendererProps["onAnswerPayloadChange"]
   readonly step: MultipleChoiceStep
 }) {
   const [selectedOptionId, setSelectedOptionId] = useState<null | string>(null)
-  const isCorrect = selectedOptionId === step.correct
 
   return (
-    <div className="flex flex-col gap-3">
-      {step.options.map((option) => (
-        <Button
-          className="h-auto justify-start text-left whitespace-normal"
-          key={option.id}
-          onClick={() => {
-            setSelectedOptionId(option.id)
-            emitAnswer(onAnswerChange, step.id, {
-              selectedOptionId: option.id,
-              type: "MULTIPLE_CHOICE",
-            })
-          }}
-          variant={selectedOptionId === option.id ? "default" : "outline"}
-        >
-          {option.text}
-        </Button>
-      ))}
-      {selectedOptionId === null ? null : (
-        <div className="rounded-lg border border-border bg-muted px-4 py-3 text-sm">
-          <p className="font-medium">
-            {isCorrect ? "정답입니다." : "다시 생각해보세요."}
-          </p>
-          <p className="mt-1 text-muted-foreground">{step.explanation}</p>
-        </div>
-      )}
+    <div className="an-fi">
+      <h2
+        className="font-bold mb-8"
+        style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
+      >
+        {step.question}
+      </h2>
+      <div className="space-y-3">
+        {step.options.map((option) => (
+          <MultipleChoiceOptionButton
+            checked={checked}
+            key={option.id}
+            onSelect={() => {
+              if (checked !== false) {
+                return
+              }
+
+              setSelectedOptionId(option.id)
+              emitAnswer(
+                onAnswerChange,
+                step.id,
+                {
+                  selectedOptionId: option.id,
+                  type: "MULTIPLE_CHOICE",
+                },
+                onAnswerPayloadChange
+              )
+            }}
+            optionId={option.id}
+            selectedOptionId={selectedOptionId}
+            step={step}
+          >
+            {option.text}
+          </MultipleChoiceOptionButton>
+        ))}
+      </div>
     </div>
   )
 }
+
+function MultipleChoiceOptionButton({
+  checked,
+  children,
+  onSelect,
+  optionId,
+  selectedOptionId,
+  step,
+}: {
+  readonly checked: LessonStepCheckedState
+  readonly children: ReactNode
+  readonly onSelect: () => void
+  readonly optionId: string
+  readonly selectedOptionId: null | string
+  readonly step: MultipleChoiceStep
+}) {
+  const variant = getMultipleChoiceVariant({
+    checked,
+    optionId,
+    selectedOptionId,
+    step,
+  })
+  const colors = MULTIPLE_CHOICE_COLORS[variant]
+  const faded =
+    checked !== false &&
+    optionId !== step.correct &&
+    selectedOptionId !== optionId
+
+  return (
+    <button
+      className={cx(
+        "w-full px-5 py-4 rounded-3xl text-left font-medium btn-squish transition-colors",
+        colors.bg,
+        colors.text,
+        faded ? "opacity-40" : undefined
+      )}
+      disabled={faded}
+      onClick={onSelect}
+      style={{ fontSize: "1rem" }}
+      type="button"
+    >
+      {children}
+    </button>
+  )
+}
+
+function getMultipleChoiceVariant({
+  checked,
+  optionId,
+  selectedOptionId,
+  step,
+}: {
+  readonly checked: LessonStepCheckedState
+  readonly optionId: string
+  readonly selectedOptionId: null | string
+  readonly step: MultipleChoiceStep
+}): keyof typeof MULTIPLE_CHOICE_COLORS {
+  if (checked === "correct" && optionId === step.correct) {
+    return "correct"
+  }
+
+  if (
+    checked === "wrong" &&
+    selectedOptionId === optionId &&
+    optionId !== step.correct
+  ) {
+    return "wrong"
+  }
+
+  if (checked === "wrong" && optionId === step.correct) {
+    return "correct"
+  }
+
+  if (checked === false && selectedOptionId === optionId) {
+    return "primary"
+  }
+
+  return "secondary"
+}
+
+const MULTIPLE_CHOICE_COLORS = {
+  correct: {
+    bg: "bg-mint-light",
+    text: "text-mint-dark",
+  },
+  primary: {
+    bg: "bg-primary",
+    text: "text-ink",
+  },
+  secondary: {
+    bg: "bg-surface",
+    text: "text-charcoal",
+  },
+  wrong: {
+    bg: "bg-coral-light",
+    text: "text-coral-dark",
+  },
+} as const
 
 function FillBlankAnswer({
   onAnswerChange,

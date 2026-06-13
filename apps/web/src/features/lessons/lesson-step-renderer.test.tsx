@@ -6,7 +6,7 @@ import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
 import type { LessonStep } from "@/features/lessons/lesson-types"
 
 describe("레슨 스텝 렌더러 답변 저장", () => {
-  it("객관식 선택을 타입별 JSON 문자열로 전달한다", async () => {
+  it("객관식 선택을 Kwep 버튼 UI로 타입별 JSON 문자열로 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step: LessonStep = {
@@ -24,6 +24,13 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
 
     renderAnswerableStep(step, onAnswerChange)
 
+    expect(
+      screen.getByRole("heading", { name: "더 좋은 문장은 무엇인가요?" })
+    ).toHaveStyle({ fontSize: "1.625rem", lineHeight: "1.3" })
+    expect(
+      screen.getByRole("button", { name: "좋은 글을 씁니다." })
+    ).toHaveClass("bg-surface", "text-charcoal", "rounded-3xl")
+
     await user.click(
       screen.getByRole("button", {
         name: "독자가 바로 이해하는 문장을 씁니다.",
@@ -37,10 +44,12 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
       }),
       stepId: "mc-1",
     })
-    expect(screen.getByText("정답입니다.")).toBeInTheDocument()
     expect(
-      screen.getByText("구체적인 문장이 더 잘 읽힙니다.")
-    ).toBeInTheDocument()
+      screen.getByRole("button", {
+        name: "독자가 바로 이해하는 문장을 씁니다.",
+      })
+    ).toHaveClass("bg-primary", "text-ink")
+    expect(screen.queryByText("정답입니다.")).not.toBeInTheDocument()
   })
 
   it("빈칸 선택 단어를 타입별 JSON 문자열로 전달한다", async () => {

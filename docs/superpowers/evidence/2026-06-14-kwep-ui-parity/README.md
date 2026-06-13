@@ -216,3 +216,24 @@
 - `bun --filter @workspace/web typecheck`: 통과했다.
 - `bun --filter @workspace/web lint`: 통과했다.
 - 남은 `l-new` 매칭/분류/쓰기 HTML/CSS/기능 차이는 없다.
+
+## 객관식 확인 레슨 화면
+
+- 기준 화면: Kwep `/lesson/c1/l2`
+- 제품 화면: `/app/lesson?lesson_id=l2`
+- 기준 코드:
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`의 started branch, `getCanSubmit`, `handleCheck`, checked footer
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/StepRenderer.tsx`의 `reading`, `multiple_choice` branch
+  - 제품: `apps/web/src/features/lessons/lesson-experience.tsx`
+  - 제품: `apps/web/src/features/lessons/lesson-step-renderer.tsx`
+
+최신 검증 결과:
+
+- 제품 `l2`는 Kwep처럼 읽기 3개 스텝을 `이해했어요` CTA로 진행한 뒤 4번째 객관식 스텝에서 `4/4` progress를 보여준다.
+- 제품 객관식 스텝은 Kwep와 같은 card 없는 `an-fi` root, 질문 `h2`, option button class, selected/correct/wrong/faded 색상 상태를 사용한다.
+- 제품 shell은 Kwep처럼 선택 전 `확인하기` CTA를 secondary disabled 상태로 두고, 선택 후 primary enabled 상태로 바꾼다.
+- 제품 checked footer는 Kwep와 같은 `완벽해요!`/`아쉽지만 달라요`, explanation/wrong text, `계속하기` CTA 구조를 사용한다.
+- `bun --filter @workspace/web test -- lesson-experience lesson-step-renderer`: 통과했다. 테스트 파일 2개, 테스트 16개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- 남은 객관식 확인 레슨 HTML/CSS/기능 차이는 없다.

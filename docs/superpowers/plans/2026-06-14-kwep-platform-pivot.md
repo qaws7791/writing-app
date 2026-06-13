@@ -1716,7 +1716,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "매칭 분류 쓰기 레슨을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.9: 객관식 확인 레슨(`l2`)을 Kwep와 일치시킨 뒤 커밋**
+- [x] **Step 7R.9: 객관식 확인 레슨(`l2`)을 Kwep와 일치시킨 뒤 커밋**
 
 Kwep 기준:
 
@@ -3316,6 +3316,24 @@ Expected: 문서 포맷 검증이 통과한다.
 - Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`와 `/tmp/kwep-runtime-writing-app/src/app/components/StepRenderer.tsx`의 `reading`, `multiple_choice` branch이다.
 - 제품 대상 파일은 `apps/web/src/features/lessons/lesson-experience.tsx`, `apps/web/src/features/lessons/lesson-step-renderer.tsx`, `apps/web/src/features/lessons/lesson-types.ts`와 객관식 저장/확인 관련 테스트이다.
 - `l-new` 커밋 후 Kwep 코드 기준으로 `l2`의 읽기 3개 스텝 진행, 객관식 선택 색상, `확인하기`, 정답/오답 결과 footer를 같은 구조와 기능으로 맞춘다.
+
+### 2026-06-14 Task 7R Step 7R.9 객관식 확인 레슨 화면 일치 완료
+
+- 제품 `MULTIPLE_CHOICE` branch를 Kwep `StepRenderer.tsx`의 `multiple_choice` branch와 같은 card 없는 `an-fi` root, 질문 `h2`, option button class, selected/correct/wrong/faded 색상 상태로 교체했다.
+- 객관식 answer payload를 lesson shell에 전달해 Kwep처럼 선택 전 `확인하기` CTA가 disabled secondary 상태이고, 선택 후 primary enabled 상태가 되게 했다.
+- 객관식 확인 후 Kwep checked footer와 같은 `완벽해요!`/`아쉽지만 달라요`, explanation/wrong text, `계속하기` 흐름을 사용한다.
+- `l2`의 읽기 3개 스텝은 기존 Kwep reading branch를 그대로 사용하고, 4번째 객관식 스텝에서 `4/4` progress와 확인 흐름을 검증했다.
+- `bun --filter @workspace/web test -- lesson-experience lesson-step-renderer`: 통과했다. 테스트 파일 2개, 테스트 16개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- 남은 객관식 확인 레슨 HTML/CSS/기능 차이는 없다.
+
+### 2026-06-14 Task 7R Step 7R.10 레슨 완료 화면 일치 시작
+
+- 다음 대상 화면은 Kwep 레슨 마지막 스텝 완료 후 `SessionDone.tsx`와 제품 레슨 마지막 스텝 완료 후 화면이다.
+- Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/SessionDone.tsx`와 `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`의 `isDone` branch이다.
+- 제품 대상 파일은 `apps/web/src/features/lessons/lesson-experience.tsx`, `apps/web/src/features/lessons/lesson-step-renderer.tsx`, 완료 저장/완료 화면 테스트이다.
+- 객관식 확인 레슨 커밋 후 Kwep 코드 기준으로 완료 화면의 full-screen 구조, 텍스트, CTA, route 대응을 맞춘다.
 
 ## 상태 요약
 
