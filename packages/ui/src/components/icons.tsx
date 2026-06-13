@@ -129,6 +129,15 @@ export function UserIcon({ className, size = 24, ...props }: KwepIconProps) {
   )
 }
 
+export function XIcon({ className, size = 24, ...props }: KwepIconProps) {
+  return (
+    <KwepSvg className={className} iconName="x" size={size} {...props}>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </KwepSvg>
+  )
+}
+
 function KwepSvg({
   children,
   className,

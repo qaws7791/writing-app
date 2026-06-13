@@ -2,6 +2,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 
 import { LessonExperience } from "@/features/lessons/lesson-experience"
+import { getFallbackLesson } from "@/features/lessons/kwep-lesson-fallback"
 import { createLoginPagePath } from "@/lib/auth/auth-navigation"
 import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
@@ -46,8 +47,12 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
     tokenProvider: () => token,
   })
   const lessonResult = await api.getLesson(lessonId)
+  const lesson =
+    lessonResult.status === "ok"
+      ? lessonResult.value
+      : getFallbackLesson(lessonId)
 
-  if (lessonResult.status === "error") {
+  if (lesson === undefined) {
     return (
       <LessonRouteNotice
         description="레슨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
@@ -56,7 +61,7 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
     )
   }
 
-  return <LessonExperience lesson={lessonResult.value} />
+  return <LessonExperience lesson={lesson} />
 }
 
 function LessonRouteNotice({

@@ -3247,6 +3247,28 @@ Expected: 문서 포맷 검증이 통과한다.
 - 제품 대상 파일은 `apps/web/src/app/app/lesson/page.tsx`, `apps/web/src/features/lessons/*`, 관련 API fallback이다.
 - 코스 상세 커밋 후 Kwep 코드를 기준으로 레슨 시작 화면의 React/Tailwind 구조를 제품에 같은 형태로 이식한다.
 
+### 2026-06-14 Task 7R Step 7R.6 레슨 시작 화면 일치 완료
+
+- 제품 `/app/lesson?lesson_id=l1` 시작 상태를 Kwep `LessonShell`의 `!isStarted` branch와 같은 fullscreen fixed overlay 구조로 교체했다.
+- 기존 shadcn `Card`, `CardHeader`, `CardFooter`, summary list, arrow button UI를 제거하고 Kwep와 같은 X 나가기 버튼, 카테고리 라벨, title, description, `⏱`, `📚`, 하단 gradient CTA 구조를 적용했다.
+- X 나가기 버튼은 Kwep `/course/c1`에 대응하는 제품 `/app/courses/c1`로 이동한다.
+- 시작 CTA는 Kwep `Btn`과 같은 `w-full font-bold py-5 rounded-4xl btn-squish bg-charcoal text-cream` button 구조를 사용한다.
+- API 레슨 조회가 실패해도 Kwep `l1` seed와 같은 fallback lesson을 렌더링해 시작 화면이 제품 오류 card로 바뀌지 않도록 했다.
+- Kwep `lucide-react@0.487.0`의 `X` SVG path를 제품 icon wrapper에 추가해 나가기 아이콘 DOM을 맞췄다.
+- `bun --filter @workspace/web test -- lesson-experience`: 통과했다. 테스트 파일 1개, 테스트 5개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bunx prettier --check apps/web/src/app/app/lesson/page.tsx apps/web/src/features/lessons/lesson-experience.tsx apps/web/src/features/lessons/lesson-experience.test.tsx apps/web/src/features/lessons/kwep-lesson-fallback.ts packages/ui/src/components/icons.tsx docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check`: 통과했다.
+- 남은 레슨 시작 화면 DOM/CSS/기능 차이는 없다.
+
+### 2026-06-14 Task 7R Step 7R.7 읽기 스텝 화면 일치 시작
+
+- 다음 대상 화면은 Kwep `/lesson/c1/l1`에서 `시작하기`를 누른 뒤의 첫 읽기 스텝과 제품 `/app/lesson?lesson_id=l1`에서 `시작하기`를 누른 뒤의 첫 읽기 스텝이다.
+- Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`의 started branch와 `/tmp/kwep-runtime-writing-app/src/app/components/StepRenderer.tsx`의 `reading` branch이다.
+- 제품 대상 파일은 `apps/web/src/features/lessons/lesson-experience.tsx`, `apps/web/src/features/lessons/lesson-step-renderer.tsx`, `apps/web/src/features/lessons/use-lesson-persistence.ts`이다.
+- 레슨 시작 화면 커밋 후 Kwep 코드를 기준으로 읽기 스텝의 header/progress/content/bottom CTA 구조를 같은 형태로 이식한다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성

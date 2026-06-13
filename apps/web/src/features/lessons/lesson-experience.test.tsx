@@ -7,10 +7,18 @@ import type { Lesson } from "@/features/lessons/lesson-types"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
 
+const push = vi.fn()
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push,
+  }),
+}))
+
 const lesson: Lesson = {
-  category: "문장",
+  category: "문장의 기본기",
   courseId: "c1",
-  description: "좋은 문장의 기준을 읽고 직접 확인합니다.",
+  description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
   estimatedMinutes: 5,
   id: "l1",
   steps: [
@@ -48,12 +56,29 @@ describe("레슨 경험", () => {
     expect(
       screen.getByRole("heading", { name: "좋은 문장이란 무엇인가" })
     ).toBeInTheDocument()
-    expect(screen.getByText("문장")).toBeInTheDocument()
+    expect(screen.getByText("문장의 기본기")).toHaveClass(
+      "font-bold",
+      "text-muted",
+      "tracking-widest",
+      "mb-4"
+    )
     expect(
-      screen.getByText("좋은 문장의 기준을 읽고 직접 확인합니다.")
+      screen.getByText("명료하고 군더더기 없는 문장을 살펴봅니다.")
     ).toBeInTheDocument()
-    expect(screen.getByText("예상 5분")).toBeInTheDocument()
-    expect(screen.getByText("2개 스텝")).toBeInTheDocument()
+    expect(screen.getByText("⏱ 5분")).toBeInTheDocument()
+    expect(screen.getByText("📚 2개 스텝")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "나가기" })).toHaveClass(
+      "text-muted",
+      "hover:text-charcoal",
+      "font-bold",
+      "mr-4",
+      "transition-colors",
+      "w-9",
+      "h-9",
+      "flex",
+      "items-center",
+      "justify-center"
+    )
 
     await user.click(screen.getByRole("button", { name: "시작하기" }))
 

@@ -1,11 +1,14 @@
 "use client"
 
+/* eslint-disable react/button-has-type */
+
 import Link from "next/link"
+import type { ReactNode } from "react"
 import { useMemo, useState } from "react"
 
+import { useRouter } from "next/navigation"
+
 import {
-  formatEstimatedMinutes,
-  formatStepCount,
   getFirstLessonStep,
   getLessonStep,
   isLastLessonStep,
@@ -21,11 +24,14 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/ui/card"
-import { ArrowRightIcon, CheckCircleIcon } from "@workspace/ui/components/icons"
+import {
+  ArrowRightIcon,
+  CheckCircleIcon,
+  XIcon,
+} from "@workspace/ui/components/icons"
 
 type LessonExperienceProps = {
   readonly api?: WritingAppApi
@@ -33,6 +39,7 @@ type LessonExperienceProps = {
 }
 
 export function LessonExperience({ api, lesson }: LessonExperienceProps) {
+  const router = useRouter()
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
@@ -157,55 +164,92 @@ export function LessonExperience({ api, lesson }: LessonExperienceProps) {
   }
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <div className="mx-auto flex max-w-3xl flex-col gap-6 px-6 py-10 sm:px-8">
-        <section aria-labelledby="lesson-start-heading">
-          <Card>
-            <CardHeader>
-              <p className="text-sm font-medium text-primary">
-                {lesson.category ?? "레슨"}
-              </p>
-              <CardTitle as="h1" id="lesson-start-heading">
-                {lesson.title}
-              </CardTitle>
-              <CardDescription>
-                {lesson.description ?? "바로 시작할 수 있는 학습 레슨입니다."}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-5">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <p className="rounded-lg border border-border px-4 py-3 text-sm">
-                  {formatEstimatedMinutes(lesson.estimatedMinutes)}
-                </p>
-                <p className="rounded-lg border border-border px-4 py-3 text-sm">
-                  {formatStepCount(lesson.steps.length)}
-                </p>
-              </div>
-              {lesson.summary.length > 0 ? (
-                <ul className="flex flex-col gap-2 text-sm text-muted-foreground">
-                  {lesson.summary.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              ) : null}
-              {startError === null ? null : (
-                <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                  {startError}
-                </p>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button
-                disabled={firstStep === null || isSavingStart}
-                onClick={handleStart}
-              >
-                {isSavingStart ? "저장 중" : "시작하기"}
-                <ArrowRightIcon data-icon="inline-end" />
-              </Button>
-            </CardFooter>
-          </Card>
-        </section>
+    <div className="flex flex-col min-h-screen bg-cream w-full fixed inset-0 z-50 overflow-y-auto">
+      <div className="w-full max-w-3xl mx-auto flex items-center px-6 pt-6 pb-4">
+        <button
+          aria-label="나가기"
+          className="text-muted hover:text-charcoal font-bold mr-4 transition-colors w-9 h-9 flex items-center justify-center"
+          onClick={() => router.push(`/app/courses/${lesson.courseId}`)}
+        >
+          <XIcon size={28} />
+        </button>
       </div>
-    </main>
+      <div className="flex-1 w-full max-w-2xl mx-auto px-6 pt-6 md:pt-10 pb-48 an-fi">
+        {lesson.category === null ? null : (
+          <div
+            className="font-bold text-muted tracking-widest mb-4"
+            style={{ fontSize: "0.8125rem" }}
+          >
+            {lesson.category}
+          </div>
+        )}
+        <h1
+          className="font-bold mb-6"
+          style={{ fontSize: "2.5rem", lineHeight: 1.2 }}
+        >
+          {lesson.title}
+        </h1>
+        {lesson.description === null ? null : (
+          <p
+            className="text-muted font-medium mb-8"
+            style={{ fontSize: "1.125rem" }}
+          >
+            {lesson.description}
+          </p>
+        )}
+        <div
+          className="flex gap-6 text-muted font-medium"
+          style={{ fontSize: "0.9375rem" }}
+        >
+          <span>⏱ {lesson.estimatedMinutes}분</span>
+          <span>📚 {lesson.steps.length}개 스텝</span>
+        </div>
+        {startError === null ? null : (
+          <p className="mt-8 rounded-2xl bg-coral/10 px-4 py-3 text-coral-dark font-bold">
+            {startError}
+          </p>
+        )}
+      </div>
+      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
+        <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent pointer-events-auto">
+          <LessonStartButton
+            disabled={firstStep === null || isSavingStart}
+            onClick={handleStart}
+          >
+            {isSavingStart ? "저장 중" : "시작하기"}
+          </LessonStartButton>
+        </div>
+      </div>
+    </div>
   )
+}
+
+function LessonStartButton({
+  children,
+  disabled,
+  onClick,
+}: {
+  readonly children: ReactNode
+  readonly disabled?: boolean
+  readonly onClick: () => void
+}) {
+  return (
+    <button
+      className={cx(
+        "w-full font-bold py-5 rounded-4xl btn-squish",
+        "bg-charcoal text-cream",
+        disabled ? "opacity-50 cursor-not-allowed" : undefined
+      )}
+      disabled={disabled}
+      onClick={onClick}
+      style={{ fontSize: "1.125rem" }}
+      type="button"
+    >
+      {children}
+    </button>
+  )
+}
+
+function cx(...classes: Array<false | null | string | undefined>): string {
+  return classes.filter(Boolean).join(" ")
 }

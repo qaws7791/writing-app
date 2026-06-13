@@ -148,3 +148,22 @@
 - 클릭 검증: Kwep 첫 레슨 CTA와 첫 레슨 row는 `/lesson/c1/l1`, 제품은 대응 route인 `/app/lesson?lesson_id=l1`로 이동한다.
 - accordion 검증: 첫 유닛은 초기/재오픈 `gridTemplateRows: 1fr`, 닫힘 `gridTemplateRows: 0fr`이며 Kwep와 제품 모두 같은 높이로 전환한다.
 - 남은 DOM/CSS/기능 차이는 없다.
+
+## 레슨 시작 화면
+
+- 기준 화면: Kwep `/lesson/c1/l1`
+- 제품 화면: `/app/lesson?lesson_id=l1`
+- 기준 코드:
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`의 `!isStarted` branch
+  - 제품: `apps/web/src/features/lessons/lesson-experience.tsx`의 시작 상태 branch
+
+최신 검증 결과:
+
+- 제품 시작 화면은 Kwep와 같은 fullscreen fixed overlay, X 나가기 버튼, 카테고리 라벨, 제목, 설명, `⏱`/`📚` meta, 하단 gradient CTA 구조를 사용한다.
+- 제품 X 나가기 버튼은 Kwep `/course/c1`에 대응하는 `/app/courses/c1`로 이동한다.
+- 제품 시작 CTA는 Kwep `Btn`과 같은 Tailwind class와 inline font size를 사용한다.
+- API 조회 실패 시에도 Kwep `l1` seed fallback을 렌더링해 오류 card가 시작 화면 DOM에 끼어들지 않는다.
+- `bun --filter @workspace/web test -- lesson-experience`: 통과했다. 테스트 파일 1개, 테스트 5개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- 남은 DOM/CSS/기능 차이는 없다.
