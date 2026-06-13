@@ -7,8 +7,10 @@ import {
 } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import {
+  authUsers,
   courses,
   courseUnits,
+  learnerProfiles,
   lessons,
   lessonSteps,
 } from "@workspace/db/schema"
@@ -28,6 +30,7 @@ export async function seedDatabase(
 
   try {
     runBaselineMigration(client.sqlite)
+    seedDefaultLearner(client)
     clearContentRows(client)
     await insertContentRows(client)
   } finally {
@@ -45,6 +48,51 @@ function ensureDatabaseDirectory(databaseUrl: string): void {
   if (directory !== ".") {
     mkdirSync(directory, { recursive: true })
   }
+}
+
+function seedDefaultLearner(client: KwepDatabaseClient): void {
+  const now = new Date("2026-06-14T00:00:00.000Z")
+
+  client.db
+    .insert(authUsers)
+    .values({
+      createdAt: now,
+      email: "learner@example.com",
+      emailVerified: true,
+      id: "user-1",
+      image: null,
+      name: "학습자",
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      set: {
+        email: "learner@example.com",
+        emailVerified: true,
+        image: null,
+        name: "학습자",
+        updatedAt: now,
+      },
+      target: authUsers.id,
+    })
+    .run()
+
+  client.db
+    .insert(learnerProfiles)
+    .values({
+      deletedAt: null,
+      displayName: "학습자",
+      status: "active",
+      userId: "user-1",
+    })
+    .onConflictDoUpdate({
+      set: {
+        deletedAt: null,
+        displayName: "학습자",
+        status: "active",
+      },
+      target: learnerProfiles.userId,
+    })
+    .run()
 }
 
 function clearContentRows(client: KwepDatabaseClient): void {

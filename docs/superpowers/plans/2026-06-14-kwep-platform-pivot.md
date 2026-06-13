@@ -2224,6 +2224,19 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bunx prettier --check packages/db/src/seeds/seed.ts packages/db/src/seeds/seed.test.ts`: 통과했다.
 - `git diff --check`: 통과했다.
 
+### 2026-06-14 Task 7 Step 7.5 개발 세션 연결
+
+- `db:seed`가 기본 학습자 `user-1`과 active learner profile을 보장하도록 확장했다.
+- web은 `kwep_session` 쿠키 값을 API Bearer token으로 전달한다.
+- 서버 컴포넌트 route는 `getServerLearnerSessionToken`, 브라우저 레슨 저장/AI 코칭은 `getBrowserLearnerSessionToken`을 사용한다.
+- `bun --filter @workspace/db test -- seed`: 통과했다. 테스트 파일 2개, 테스트 4개가 통과했다.
+- `bun --filter @workspace/web test -- session-token lesson-experience`: 통과했다. 테스트 파일 2개, 테스트 6개가 통과했다.
+- `bun --filter @workspace/db typecheck`: 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/db lint`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `git diff --check`: 통과했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성

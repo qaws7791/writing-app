@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { LessonExperience } from "@/features/lessons/lesson-experience"
+import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
 import {
@@ -33,7 +34,7 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
   }
 
   const api = getServerWritingAppApi({
-    tokenProvider: () => null,
+    tokenProvider: getServerLearnerSessionToken,
   })
   const lessonResult = await api.getLesson(lessonId)
 

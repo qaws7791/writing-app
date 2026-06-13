@@ -10,6 +10,7 @@ import {
 import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
 import { useLessonPersistence } from "@/features/lessons/use-lesson-persistence"
 import type { Lesson } from "@/features/lessons/lesson-types"
+import { getBrowserLearnerSessionToken } from "@/lib/auth/session-token"
 import { getBrowserWritingAppApi } from "@/lib/api/get-browser-writing-app-api"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
 import { Button } from "@workspace/ui/components/ui/button"
@@ -34,7 +35,7 @@ export function LessonExperience({ api, lesson }: LessonExperienceProps) {
     () =>
       api ??
       getBrowserWritingAppApi({
-        tokenProvider: () => null,
+        tokenProvider: getBrowserLearnerSessionToken,
       }),
     [api]
   )

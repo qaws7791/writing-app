@@ -1,5 +1,6 @@
 import { HomePage } from "@/features/home/home-page"
 import type { ProgressCourseList } from "@/features/courses/course-types"
+import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
 const emptyProgress: ProgressCourseList = {
@@ -9,7 +10,7 @@ const emptyProgress: ProgressCourseList = {
 
 export default async function AppHomeRoute() {
   const api = getServerWritingAppApi({
-    tokenProvider: () => null,
+    tokenProvider: getServerLearnerSessionToken,
   })
   const [profileResult, progressResult] = await Promise.all([
     api.getProfile(),

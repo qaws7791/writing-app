@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 
 import { CourseDetailPage } from "@/features/courses/course-detail-page"
+import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
 type CourseDetailRouteProps = {
@@ -14,7 +15,7 @@ export default async function CourseDetailRoute({
 }: CourseDetailRouteProps) {
   const { id } = await params
   const api = getServerWritingAppApi({
-    tokenProvider: () => null,
+    tokenProvider: getServerLearnerSessionToken,
   })
   const [courseResult, progressResult] = await Promise.all([
     api.getCourseDetail(id),
