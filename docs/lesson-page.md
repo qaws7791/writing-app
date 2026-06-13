@@ -1,4 +1,4 @@
-# Lesson Page
+# 레슨 페이지
 
 ## 2026-06-14 시작 — Kwep 레슨 시작 화면 피벗
 
@@ -44,10 +44,20 @@
 
 ## 2026-06-14 완료 — Kwep 레슨 이동과 완료 저장
 
-- 레슨 시작 후 현재 스텝 인덱스를 클라이언트 상태로 관리해 `이전`, `다음`, `완료하기` 이동을 제공한다.
-- 마지막 스텝에서 `완료하기`를 누르면 `POST /learning/lessons/{lessonId}/complete`로 완료 상태를 저장한다.
-- 완료 저장이 성공하면 `레슨을 완료했습니다.` 화면과 `다음 레슨 보기` 링크를 보여주며, 링크는 현재 코스 상세로 이동해 서버 진행률 기준 다음 레슨을 이어가게 한다.
+- 레슨 시작 후 현재 스텝 인덱스를 클라이언트 상태로 관리해 Kwep와 같은 하단 CTA로 다음 스텝 이동과 마지막 스텝 완료 저장을 제공한다.
+- 마지막 스텝에서 CTA를 누르면 `POST /learning/lessons/{lessonId}/complete`로 완료 상태를 저장한다.
+- 완료 저장이 성공하면 Kwep `SessionDone`과 같은 `완료!` 화면을 보여준다.
+- 완료 화면은 레슨 핵심 요약, `완료한 레슨 +1`, 코스 진행률, 다음 레슨 CTA, 코스로 돌아가기 CTA를 표시한다.
+- 다음 레슨 CTA는 Kwep `/lesson/:courseId/:lessonId`에 대응해 제품 `/app/lesson?lesson_id=...`로 이동한다.
 - 완료 저장이 실패하면 레슨 화면에 한국어 오류를 표시하고 현재 스텝에 머문다.
+
+## 2026-06-14 완료 — Kwep 레슨 완료 화면 1:1 재작업
+
+- 완료 화면 root는 Kwep와 같은 `bg-primary` fullscreen fixed overlay를 사용한다.
+- 중앙 영역은 `🙌`, `완료!`, `오늘의 학습이 저장되었습니다.` 문구를 Kwep와 같은 class와 inline font size로 표시한다.
+- 레슨 요약이 있으면 Kwep와 같은 `bg-cream rounded-5xl` 카드와 번호 badge 목록을 렌더링한다.
+- `/app/lesson` route는 완료 화면에서 다음 레슨과 진행률을 계산할 수 있도록 레슨의 course detail을 함께 조회한다.
+- 제품 경계상 route만 Kwep와 다르며, `/course/:id`는 `/app/courses/:id`, `/lesson/:courseId/:lessonId`는 `/app/lesson?lesson_id=:lessonId`로 대응한다.
 
 ## 2026-06-14 완료 — Kwep 객관식 정답 확인
 

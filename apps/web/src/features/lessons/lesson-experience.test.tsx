@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
+import type { CourseDetail } from "@/features/courses/course-types"
 import { LessonExperience } from "@/features/lessons/lesson-experience"
 import type { Lesson } from "@/features/lessons/lesson-types"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
@@ -42,6 +43,47 @@ const lesson: Lesson = {
   summary: ["읽기", "쓰기"],
   title: "좋은 문장이란 무엇인가",
   unitId: "u1",
+}
+
+const courseDetail: CourseDetail = {
+  category: "입문자를 위한 코스",
+  description: "문장의 기본부터 한 문단을 완성하기까지.",
+  id: "c1",
+  lessonCount: 2,
+  progress: {
+    completedLessons: 0,
+    totalLessons: 2,
+  },
+  progressPercent: 0,
+  status: "active",
+  title: "글쓰기 첫걸음 30일",
+  units: [
+    {
+      id: "u1",
+      lessons: [
+        {
+          category: "문장의 기본기",
+          description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
+          estimatedMinutes: 5,
+          id: "l1",
+          order: 1,
+          status: "active",
+          title: "좋은 문장이란 무엇인가",
+        },
+        {
+          category: "문장의 기본기",
+          description: "주제문과 뒷받침 문장으로 단단한 문단을 만듭니다.",
+          estimatedMinutes: 8,
+          id: "l2",
+          order: 2,
+          status: "active",
+          title: "한 문단의 구조",
+        },
+      ],
+      order: 1,
+      title: "문장의 기본기",
+    },
+  ],
 }
 
 describe("레슨 경험", () => {
@@ -182,7 +224,9 @@ describe("레슨 경험", () => {
     const saveLessonAnswer = vi.fn(async () => apiOk({ saved: true }))
     const api = createApi({ completeLesson, saveLessonAnswer })
 
-    render(<LessonExperience api={api} lesson={lesson} />)
+    render(
+      <LessonExperience api={api} courseDetail={courseDetail} lesson={lesson} />
+    )
 
     await user.click(screen.getByRole("button", { name: "시작하기" }))
     await user.click(screen.getByRole("button", { name: "이해했어요" }))
@@ -217,12 +261,28 @@ describe("레슨 경험", () => {
       currentStepIndex: 1,
       lessonId: "l1",
     })
-    expect(
-      await screen.findByRole("heading", { name: "레슨을 완료했습니다." })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole("link", { name: "다음 레슨 보기" })
-    ).toHaveAttribute("href", "/app/courses/c1")
+    expect(await screen.findByRole("heading", { name: "완료!" })).toHaveClass(
+      "font-black",
+      "text-ink"
+    )
+    expect(screen.getByText("오늘의 학습이 저장되었습니다.")).toHaveClass(
+      "text-ink",
+      "font-bold"
+    )
+    expect(screen.getByText("이번 레슨 핵심 요약")).toHaveClass(
+      "font-black",
+      "text-muted"
+    )
+    expect(screen.getByText("읽기")).toBeInTheDocument()
+    expect(screen.getByText("쓰기")).toBeInTheDocument()
+    expect(screen.getByText("+1")).toHaveClass("font-black", "text-charcoal")
+    expect(screen.getByText("1/2")).toHaveClass("font-black", "text-charcoal")
+
+    await user.click(screen.getByRole("button", { name: "다음 레슨 →" }))
+    expect(push).toHaveBeenLastCalledWith("/app/lesson?lesson_id=l2")
+
+    await user.click(screen.getByRole("button", { name: "코스로 돌아가기" }))
+    expect(push).toHaveBeenLastCalledWith("/app/courses/c1")
   })
 
   it("매칭과 분류가 Kwep 확인 흐름으로 다음 스텝을 연다", async () => {

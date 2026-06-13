@@ -124,7 +124,7 @@ Kwep와 제품은 모두 React와 Tailwind CSS를 사용하므로, 이후 화면
 - 기준 날짜: 2026-06-14
 - 작업 브랜치: `codex/kwep-platform-pivot-plan`
 - 플랫폼 프론트엔드 상태: API 연결과 기본 화면 초안은 작성됐지만, Kwep UI 1:1 기준은 미달이다.
-- 다음 프론트엔드 작업 시작점: 사용자 플로우 1번 공개 랜딩(`/`).
+- 다음 프론트엔드 작업 시작점: 사용자 플로우 11번 프로필(`/app/profile`).
 - 시작 시점 변경 상태:
   - `.prettierignore`: 기존 수정 있음
   - `AGENTS.md`: 기존 수정 있음
@@ -1775,7 +1775,7 @@ git add docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md docs/superpower
 git commit -m "객관식 확인 흐름을 Kwep와 일치"
 ```
 
-- [ ] **Step 7R.10: 레슨 완료 화면을 Kwep와 일치시킨 뒤 커밋**
+- [x] **Step 7R.10: 레슨 완료 화면을 Kwep와 일치시킨 뒤 커밋**
 
 Kwep 기준:
 
@@ -3334,6 +3334,28 @@ Expected: 문서 포맷 검증이 통과한다.
 - Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/SessionDone.tsx`와 `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`의 `isDone` branch이다.
 - 제품 대상 파일은 `apps/web/src/features/lessons/lesson-experience.tsx`, `apps/web/src/features/lessons/lesson-step-renderer.tsx`, 완료 저장/완료 화면 테스트이다.
 - 객관식 확인 레슨 커밋 후 Kwep 코드 기준으로 완료 화면의 full-screen 구조, 텍스트, CTA, route 대응을 맞춘다.
+
+### 2026-06-14 Task 7R Step 7R.10 레슨 완료 화면 일치 완료
+
+- 제품 레슨 완료 화면을 Kwep `SessionDone.tsx`와 같은 `bg-primary` fullscreen fixed overlay, 중앙 정렬 축하 영역, `🙌`, `완료!`, 저장 완료 문구 구조로 교체했다.
+- 레슨 `summary`가 있으면 Kwep와 같은 `bg-cream rounded-5xl` 요약 카드, 번호 원형 badge, 요약 문장 목록을 표시한다.
+- 완료 통계 카드는 Kwep와 같은 `완료한 레슨 +1`, `코스 진행률 completed/total`, 가운데 구분선 구조를 사용한다.
+- 제품 `/app/lesson` route에서 레슨의 course detail을 함께 조회해 Kwep `courseProg(cid)`와 `getNextLesson(cid, lid)`에 대응하는 진행률과 다음 레슨 CTA를 계산한다.
+- 다음 레슨 CTA는 Kwep `/lesson/:cid/:lid`에 대응해 제품 `/app/lesson?lesson_id=:lid`로 이동하고, 코스로 돌아가기는 `/app/courses/:cid`로 이동한다.
+- `bun --filter @workspace/web test -- lesson-experience`: 먼저 `courseDetail`이 없는 완료 테스트에서 `1/2`와 다음 레슨 CTA가 없어 실패함을 확인했고, 수정 후 테스트 파일 1개, 테스트 7개가 통과했다.
+- `bun --filter @workspace/web test -- lesson-experience lesson-step-renderer`: 통과했다. 테스트 파일 2개, 테스트 16개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bunx prettier --check apps/web/src/app/app/lesson/page.tsx apps/web/src/features/lessons/lesson-experience.tsx apps/web/src/features/lessons/lesson-experience.test.tsx docs/lesson-page.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check`: 통과했다.
+- 남은 레슨 완료 HTML/CSS/기능 차이는 없다.
+
+### 2026-06-14 Task 7R Step 7R.11 프로필과 테마 전환 화면 일치 시작
+
+- 다음 대상 화면은 Kwep `/profile`과 제품 `/app/profile`이다.
+- Kwep 기준 파일은 `/tmp/kwep-runtime-writing-app/src/app/components/Screens.tsx`의 `ProfileScreen`과 `ThemeToggle`이다.
+- 제품 대상 파일은 `apps/web/src/app/app/profile/page.tsx`, `apps/web/src/features/profile/*`, `apps/web/src/app/layout.tsx`의 theme 적용 경계이다.
+- 레슨 완료 화면 커밋 후 Kwep 코드 기준으로 프로필 사용자 정보, 가입일, 완료 레슨, 연속 학습일, 전체 진도, 라이트/다크/시스템 테마 전환 UI와 기능을 같은 구조로 맞춘다.
 
 ## 상태 요약
 

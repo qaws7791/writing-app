@@ -61,7 +61,11 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
     )
   }
 
-  return <LessonExperience lesson={lesson} />
+  const courseDetailResult = await api.getCourseDetail(lesson.courseId)
+  const courseDetail =
+    courseDetailResult.status === "ok" ? courseDetailResult.value : undefined
+
+  return <LessonExperience courseDetail={courseDetail} lesson={lesson} />
 }
 
 function LessonRouteNotice({

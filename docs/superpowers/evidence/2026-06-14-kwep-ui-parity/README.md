@@ -237,3 +237,29 @@
 - `bun --filter @workspace/web typecheck`: 통과했다.
 - `bun --filter @workspace/web lint`: 통과했다.
 - 남은 객관식 확인 레슨 HTML/CSS/기능 차이는 없다.
+
+## 레슨 완료 화면
+
+- 기준 화면: Kwep 레슨 마지막 스텝 완료 후 `SessionDone`
+- 제품 화면: `/app/lesson?lesson_id=l1` 마지막 스텝 완료 후 화면
+- 기준 코드:
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/SessionDone.tsx`
+  - Kwep: `/tmp/kwep-runtime-writing-app/src/app/components/LessonShell.tsx`의 `isDone` branch
+  - 제품: `apps/web/src/features/lessons/lesson-experience.tsx`
+  - 제품: `apps/web/src/app/app/lesson/page.tsx`
+
+최신 검증 결과:
+
+- 제품 완료 화면은 Kwep와 같은 `bg-primary` fullscreen fixed root, 중앙 `an-fi` 영역, `🙌`, `완료!`, `오늘의 학습이 저장되었습니다.` 문구를 사용한다.
+- 제품 요약 카드는 Kwep와 같은 `bg-cream rounded-5xl p-7`, `이번 레슨 핵심 요약`, 번호 badge, 요약 문장 목록 구조를 사용한다.
+- 제품 통계 카드는 Kwep와 같은 `완료한 레슨 +1`, `코스 진행률 completed/total`, 가운데 `w-px h-12 bg-surface` 구분선을 사용한다.
+- 제품 CTA 영역은 Kwep와 같은 `flex flex-col gap-3 w-full max-w-sm` 구조를 사용하며, 다음 레슨이 있으면 `다음 레슨 →`, 항상 `코스로 돌아가기`를 표시한다.
+- 제품 route 차이는 Kwep `/lesson/:cid/:lid`, `/course/:cid`에 대응해 `/app/lesson?lesson_id=:lid`, `/app/courses/:cid`를 사용한다.
+- 제품 `/app/lesson` route는 Kwep `courseProg`와 `getNextLesson`에 대응하도록 레슨의 course detail을 함께 조회해 완료 화면 진행률과 다음 레슨 CTA를 계산한다.
+- `bun --filter @workspace/web test -- lesson-experience`: 통과했다. 테스트 파일 1개, 테스트 7개가 통과했다.
+- `bun --filter @workspace/web test -- lesson-experience lesson-step-renderer`: 통과했다. 테스트 파일 2개, 테스트 16개가 통과했다.
+- `bun --filter @workspace/web typecheck`: 통과했다.
+- `bun --filter @workspace/web lint`: 통과했다.
+- `bunx prettier --check apps/web/src/app/app/lesson/page.tsx apps/web/src/features/lessons/lesson-experience.tsx apps/web/src/features/lessons/lesson-experience.test.tsx docs/lesson-page.md docs/superpowers/evidence/2026-06-14-kwep-ui-parity/README.md docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`: 통과했다.
+- `git diff --check`: 통과했다.
+- 남은 레슨 완료 HTML/CSS/기능 차이는 없다.
