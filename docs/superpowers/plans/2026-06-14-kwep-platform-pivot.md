@@ -1158,7 +1158,7 @@ Expected: 사용한 dev server가 모두 종료된다.
 - Create: `apps/admin-api/src/routes/route-helpers.ts`
 - Create: `apps/admin-api/src/routes/error-response.ts`
 
-- [ ] **Step 8.1: 어드민 dashboard DTO와 route 작성**
+- [x] **Step 8.1: 어드민 dashboard DTO와 route 작성**
 
 응답 필드:
 
@@ -2300,6 +2300,24 @@ Expected: 문서 포맷 검증이 통과한다.
 - 스모크 확인 항목은 랜딩, 로그인 Google 버튼, `/app` 보호 redirect, 인증 홈, 코스 목록, 코스 상세, 첫 레슨 시작 화면, 객관식 정답/해설, 글쓰기 저장, AI 환경 오류 안내, 레슨 완료와 다음 레슨 이동이다.
 - `node --input-type=module` Playwright 스모크: 통과했다. 8개 브라우저 체크가 모두 통과했다.
 - `bun --filter @workspace/api test -- app`: 통과했다. 테스트 파일 1개, 테스트 4개가 통과했다.
+
+### 2026-06-14 Task 8 Step 8.1 시작
+
+- Step 8.1은 어드민 API baseline의 첫 단위로, 대시보드 DTO, core service, DB read repository, `/dashboard` route를 작성한다.
+- 새 테이블을 만들지 않고 기존 학습자 사용자, 활동일, 레슨 진행, 콘텐츠 상태, 관리자 세션 테이블을 읽어 지표를 계산한다.
+- 먼저 core service와 admin-api route 테스트를 실패시키고, 이후 repository 계산 테스트를 추가한다.
+
+### 2026-06-14 Task 8 Step 8.1 완료
+
+- `packages/core/src/admin`에 `AdminDashboardDto`, `AdminDashboardRepository`, `AdminService`를 추가했다.
+- `packages/db/src/repositories/admin.repository.ts`는 기존 학습자 사용자, 프로필, 활동일, 레슨 진행, 콘텐츠 테이블에서 대시보드 지표와 최근 활동을 계산한다.
+- `apps/admin-api/src`에 관리자 Bearer 세션 resolver, CORS 포함 Hono 앱 조립, `/health`, `/dashboard`, env parser를 추가했다.
+- `/dashboard`는 관리자 세션이 없으면 `401 unauthorized`, 세션이 있으면 DB 기반 dashboard DTO를 반환한다.
+- `bun --filter @workspace/core test -- admin.service`: 통과했다. 테스트 파일 1개, 테스트 1개가 통과했다.
+- `bun --filter @workspace/db test -- admin.repository`: 통과했다. 테스트 파일 1개, 테스트 1개가 통과했다.
+- `bun --filter @workspace/admin-api test -- app env`: 통과했다. 테스트 파일 2개, 테스트 3개가 통과했다.
+- `bun --filter @workspace/core typecheck && bun --filter @workspace/db typecheck && bun --filter @workspace/admin-api typecheck`: 통과했다.
+- `bun --filter @workspace/core lint && bun --filter @workspace/db lint && bun --filter @workspace/admin-api lint`: 통과했다.
 
 ## 상태 요약
 
