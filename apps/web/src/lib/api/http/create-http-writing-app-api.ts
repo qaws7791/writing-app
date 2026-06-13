@@ -14,6 +14,7 @@ import {
 import type {
   AiFeedbackResult,
   ApiAiFeedbackResponse,
+  ApiCompleteLessonResponse,
   ApiCourseDetailResponse,
   ApiCourseListResponse,
   ApiLessonResponse,
@@ -39,6 +40,15 @@ export function createHttpWritingAppApi({
   })
 
   return {
+    async completeLesson(input) {
+      return client.requestJson<ApiCompleteLessonResponse>({
+        body: {
+          currentStepIndex: input.currentStepIndex,
+        },
+        method: "POST",
+        path: `/learning/lessons/${input.lessonId}/complete`,
+      })
+    },
     async createAiFeedback(input) {
       return mapApiResult(
         await client.requestJson<ApiAiFeedbackResponse>({

@@ -28,12 +28,18 @@ export type ApiSaveLessonAnswerResponse = ApiResponseBody<
   "saveLessonAnswer",
   200
 >
+export type ApiCompleteLessonResponse = ApiResponseBody<"completeLesson", 200>
 export type ApiAiFeedbackResponse = ApiResponseBody<"createAiFeedback", 200>
 
 export type SaveLessonAnswerInput = {
   readonly answer: string
   readonly lessonId: string
   readonly stepId: string
+}
+
+export type CompleteLessonInput = {
+  readonly currentStepIndex: number
+  readonly lessonId: string
 }
 
 export type CreateAiFeedbackInput = SaveLessonAnswerInput
@@ -50,6 +56,9 @@ export type AiFeedbackResult = {
 }
 
 export type WritingAppApi = {
+  readonly completeLesson: (
+    input: CompleteLessonInput
+  ) => Promise<ApiResult<ApiCompleteLessonResponse>>
   readonly createAiFeedback: (
     input: CreateAiFeedbackInput
   ) => Promise<ApiResult<AiFeedbackResult>>

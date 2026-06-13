@@ -1286,6 +1286,111 @@
         "summary": "레슨 답변 저장"
       }
     },
+    "/learning/lessons/{lessonId}/complete": {
+      "post": {
+        "operationId": "completeLesson",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lessonId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "currentStepIndex": {
+                    "type": "integer"
+                  }
+                },
+                "required": ["currentStepIndex"],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "saved": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["saved"],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "레슨 완료 저장 결과입니다."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["code"],
+                      "type": "object"
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "인증이 필요합니다."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "error": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["code"],
+                      "type": "object"
+                    }
+                  },
+                  "required": ["error"],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "계정을 사용할 수 없습니다."
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "레슨 완료 저장"
+      }
+    },
     "/ai-feedback": {
       "post": {
         "operationId": "createAiFeedback",

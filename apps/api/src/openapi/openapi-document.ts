@@ -252,6 +252,27 @@ export function createOpenApiDocument(): OpenApiDocument {
           summary: "레슨 답변 저장",
         },
       },
+      "/learning/lessons/{lessonId}/complete": {
+        post: {
+          operationId: "completeLesson",
+          parameters: [pathParameter("lessonId")],
+          requestBody: jsonRequest(
+            objectSchema({
+              currentStepIndex: integerSchema,
+            })
+          ),
+          responses: authenticatedResponses(
+            jsonResponse(
+              "레슨 완료 저장 결과입니다.",
+              objectSchema({
+                saved: booleanSchema,
+              })
+            )
+          ),
+          security: authSecurity,
+          summary: "레슨 완료 저장",
+        },
+      },
       "/ai-feedback": {
         post: {
           operationId: "createAiFeedback",

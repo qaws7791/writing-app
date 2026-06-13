@@ -16,6 +16,8 @@ const LESSON_START_ERROR =
   "레슨 시작을 저장하지 못했습니다. 다시 시도해 주세요."
 const LESSON_ANSWER_ERROR =
   "답변을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
+const LESSON_COMPLETE_ERROR =
+  "레슨 완료를 저장하지 못했습니다. 다시 시도해 주세요."
 
 type UseLessonPersistenceInput = {
   readonly api: WritingAppApi
@@ -28,6 +30,8 @@ export function useLessonPersistence({
 }: UseLessonPersistenceInput) {
   const [isSavingStart, setIsSavingStart] = useState(false)
   const [answerError, setAnswerError] = useState<null | string>(null)
+  const [completeError, setCompleteError] = useState<null | string>(null)
+  const [isCompleting, setIsCompleting] = useState(false)
   const [startError, setStartError] = useState<null | string>(null)
 
   const startLesson = useCallback(async (): Promise<boolean> => {
@@ -100,8 +104,33 @@ export function useLessonPersistence({
     [api, lesson.id]
   )
 
+  const completeLesson = useCallback(
+    async (currentStepIndex: number): Promise<boolean> => {
+      setCompleteError(null)
+      setIsCompleting(true)
+
+      const result = await api.completeLesson({
+        currentStepIndex,
+        lessonId: lesson.id,
+      })
+
+      setIsCompleting(false)
+
+      if (result.status === "error") {
+        setCompleteError(LESSON_COMPLETE_ERROR)
+        return false
+      }
+
+      return true
+    },
+    [api, lesson.id]
+  )
+
   return {
     answerError,
+    completeError,
+    completeLesson,
+    isCompleting,
     isSavingStart,
     requestAiFeedback,
     saveAnswer,

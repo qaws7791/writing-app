@@ -140,6 +140,51 @@ describe("레슨 경험", () => {
     )
   })
 
+  it("스텝을 이동하고 마지막 스텝에서 레슨 완료를 저장한다", async () => {
+    const user = userEvent.setup()
+    const completeLesson = vi.fn(async () => apiOk({ saved: true }))
+    const saveLessonAnswer = vi.fn(async () => apiOk({ saved: true }))
+    const api = createApi({ completeLesson, saveLessonAnswer })
+
+    render(<LessonExperience api={api} lesson={lesson} />)
+
+    await user.click(screen.getByRole("button", { name: "시작하기" }))
+    await user.click(screen.getByRole("button", { name: "다음" }))
+
+    expect(screen.getByText("2/2 스텝")).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "내 문장으로 정리하기" })
+    ).toBeInTheDocument()
+
+    await user.type(
+      screen.getByRole("textbox", { name: "답변 입력" }),
+      "좋은 문장은 바로 이해됩니다."
+    )
+    await waitFor(() =>
+      expect(saveLessonAnswer).toHaveBeenLastCalledWith({
+        answer: JSON.stringify({
+          text: "좋은 문장은 바로 이해됩니다.",
+          type: "WRITE",
+        }),
+        lessonId: "l1",
+        stepId: "s2",
+      })
+    )
+
+    await user.click(screen.getByRole("button", { name: "완료하기" }))
+
+    expect(completeLesson).toHaveBeenCalledWith({
+      currentStepIndex: 1,
+      lessonId: "l1",
+    })
+    expect(
+      await screen.findByRole("heading", { name: "레슨을 완료했습니다." })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("link", { name: "다음 레슨 보기" })
+    ).toHaveAttribute("href", "/app/courses/c1")
+  })
+
   it("AI 코칭 요청을 createAiFeedback으로 위임한다", async () => {
     const user = userEvent.setup()
     const createAiFeedback = vi.fn(async () =>
@@ -201,6 +246,7 @@ function createApi(overrides: Partial<WritingAppApi>): WritingAppApi {
     })
 
   return {
+    completeLesson: vi.fn(unavailable),
     createAiFeedback: vi.fn(unavailable),
     getCourseDetail: vi.fn(unavailable),
     getLesson: vi.fn(unavailable),

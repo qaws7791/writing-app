@@ -2248,6 +2248,18 @@ Expected: 문서 포맷 검증이 통과한다.
 - 루트 `data/api.sqlite` 복사본에 `db:seed`를 실행해 기본 학습자 1명, 코스 5개, 레슨 44개가 들어가는지 확인했다.
 - 실제 기본 경로에서 `bun --filter @workspace/db db:seed`를 실행해 루트 `data/api.sqlite`에 기본 학습자 1명, 코스 5개, 레슨 44개가 들어가는지 확인했다.
 
+### 2026-06-14 Task 7 Step 7.5 레슨 완료 흐름 구현
+
+- 브라우저 스모크 체크리스트의 객관식, 글쓰기, AI 코칭, 레슨 완료 항목을 실제 화면에서 확인하려면 시작 후 첫 스텝에 머무는 현재 구현을 확장해야 함을 확인했다.
+- `POST /learning/lessons/{lessonId}/complete` API 계약과 route를 추가해 기존 learning service의 `completeLesson`을 노출했다.
+- web API client와 OpenAPI 산출물을 갱신하고, `LessonExperience`에 이전/다음 이동, 마지막 스텝 완료 저장, 완료 화면, 코스 상세 이동 링크를 추가했다.
+- `docs/lesson-page.md`에 레슨 이동과 완료 저장 동작을 기록했다.
+- `bun --filter @workspace/api test`: 통과했다. 테스트 파일 11개, 테스트 21개가 통과했다.
+- `bun --filter @workspace/web test`: 통과했다. 테스트 파일 17개, 테스트 38개가 통과했다.
+- 포맷 후 `bun --filter @workspace/api test -- learning.route openapi-document`: 통과했다. 테스트 파일 2개, 테스트 5개가 통과했다.
+- 포맷 후 `bun --filter @workspace/web test -- create-http-writing-app-api lesson-experience`: 통과했다. 테스트 파일 2개, 테스트 8개가 통과했다.
+- 포맷 후 `bun --filter @workspace/api typecheck && bun --filter @workspace/web typecheck`: 통과했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성

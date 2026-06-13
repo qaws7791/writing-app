@@ -140,6 +140,23 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/learning/lessons/{lessonId}/complete": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** 레슨 완료 저장 */
+    post: operations["completeLesson"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/ai-feedback": {
     parameters: {
       query?: never
@@ -662,6 +679,62 @@ export interface operations {
     }
     responses: {
       /** @description 답변 저장 결과입니다. */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            saved: boolean
+          }
+        }
+      }
+      /** @description 인증이 필요합니다. */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+            }
+          }
+        }
+      }
+      /** @description 계정을 사용할 수 없습니다. */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+            }
+          }
+        }
+      }
+    }
+  }
+  completeLesson: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        lessonId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        "application/json": {
+          currentStepIndex: number
+        }
+      }
+    }
+    responses: {
+      /** @description 레슨 완료 저장 결과입니다. */
       200: {
         headers: {
           [name: string]: unknown

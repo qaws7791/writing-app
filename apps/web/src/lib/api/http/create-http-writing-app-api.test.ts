@@ -61,11 +61,13 @@ describe("HTTP WritingAppApi", () => {
     expect(requests[0]?.headers.get("Authorization")).toBe("Bearer token-1")
   })
 
-  it("답변 저장과 AI 코칭 생성을 POST 요청으로 전달한다", async () => {
+  it("답변 저장, 레슨 완료, AI 코칭 생성을 POST 요청으로 전달한다", async () => {
     const bodies: unknown[] = []
+    const urls: string[] = []
     const api = createHttpWritingAppApi({
       baseUrl: "https://api.example.test/",
       fetch: async (request) => {
+        urls.push(request.url)
         bodies.push(await request.json())
 
         if (request.url === "https://api.example.test/ai-feedback") {
@@ -101,6 +103,17 @@ describe("HTTP WritingAppApi", () => {
       },
     })
     await expect(
+      api.completeLesson({
+        currentStepIndex: 2,
+        lessonId: "l1",
+      })
+    ).resolves.toEqual({
+      status: "ok",
+      value: {
+        saved: true,
+      },
+    })
+    await expect(
       api.createAiFeedback({
         answer: "나의 답변",
         lessonId: "l1",
@@ -120,10 +133,18 @@ describe("HTTP WritingAppApi", () => {
         stepId: "s1",
       },
       {
+        currentStepIndex: 2,
+      },
+      {
         answer: "나의 답변",
         lessonId: "l1",
         stepId: "s2",
       },
+    ])
+    expect(urls).toEqual([
+      "https://api.example.test/learning/answers",
+      "https://api.example.test/learning/lessons/l1/complete",
+      "https://api.example.test/ai-feedback",
     ])
   })
 

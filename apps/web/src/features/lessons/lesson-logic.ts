@@ -72,7 +72,18 @@ export type LessonStepAnswerPayload =
     }
 
 export function getFirstLessonStep(lesson: Lesson): LessonStep | null {
-  return lesson.steps[0] ?? null
+  return getLessonStep(lesson, 0)
+}
+
+export function getLessonStep(
+  lesson: Lesson,
+  stepIndex: number
+): LessonStep | null {
+  return lesson.steps[stepIndex] ?? null
+}
+
+export function isLastLessonStep(lesson: Lesson, stepIndex: number): boolean {
+  return stepIndex === lesson.steps.length - 1
 }
 
 export function createLessonStartedAnswer(): string {

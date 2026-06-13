@@ -108,6 +108,49 @@ describe("플랫폼 API learning route", () => {
       },
     })
   })
+
+  it("인증된 lesson 완료 요청을 learning service로 전달한다", async () => {
+    const completedCommands: unknown[] = []
+    const app = createApp(
+      createDependencies({
+        learningService: {
+          async completeLesson(command) {
+            completedCommands.push(command)
+
+            return { kind: "ok", value: { saved: true } }
+          },
+          async saveLessonProgress() {
+            return { kind: "ok", value: { saved: true } }
+          },
+          async saveStepAnswer() {
+            return { kind: "ok", value: { saved: true } }
+          },
+        },
+      })
+    )
+
+    const response = await app.request("/learning/lessons/l1/complete", {
+      body: JSON.stringify({
+        currentStepIndex: 2,
+      }),
+      headers: {
+        Authorization: "Bearer active-token",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({ saved: true })
+    expect(completedCommands).toEqual([
+      {
+        currentStepIndex: 2,
+        lessonId: lessonIdSchema.parse("l1"),
+        occurredAt,
+        userId: learnerIdSchema.parse("user-1"),
+      },
+    ])
+  })
 })
 
 function createDependencies({

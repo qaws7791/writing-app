@@ -17,10 +17,14 @@ describe("플랫폼 API OpenAPI 문서", () => {
       "/courses/{courseId}",
       "/lessons/{lessonId}",
       "/learning/answers",
+      "/learning/lessons/{lessonId}/complete",
       "/ai-feedback",
     ])
     expect(document.paths["/profile"]?.get?.operationId).toBe("getProfile")
     expect(document.paths["/progress"]?.get?.operationId).toBe("getProgress")
+    expect(
+      document.paths["/learning/lessons/{lessonId}/complete"]?.post?.operationId
+    ).toBe("completeLesson")
     expect(document.paths["/ai-feedback"]?.post?.operationId).toBe(
       "createAiFeedback"
     )
