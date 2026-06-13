@@ -164,3 +164,14 @@ CREATE TABLE IF NOT EXISTS learner_lesson_answers (
   updated_at INTEGER NOT NULL,
   PRIMARY KEY (user_id, step_id)
 );
+
+CREATE TABLE IF NOT EXISTS ai_feedback_attempts (
+  user_id TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+  step_id TEXT NOT NULL REFERENCES lesson_steps(id) ON DELETE CASCADE,
+  attempt_number INTEGER NOT NULL,
+  answer_text TEXT NOT NULL,
+  result_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, step_id, attempt_number)
+);

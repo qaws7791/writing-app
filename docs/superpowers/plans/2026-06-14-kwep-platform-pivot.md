@@ -1951,6 +1951,18 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md packages/core/package.json 'packages/core/src/**/*.ts'`: 통과했다.
 - `git diff --check`: 통과했다.
 
+### 2026-06-14 Task 4 AI 피드백 DB 저장소 완료
+
+- `packages/db/src/schema/feedback.schema.ts`에 `ai_feedback_attempts` table schema를 추가했다.
+- `packages/db/src/migrations/0000-kwep-baseline.sql`에 AI feedback 시도 저장 table을 새 baseline으로 포함했다.
+- `packages/db/src/repositories/feedback.repository.ts`에 core `AiFeedbackRepository` port 구현을 추가했다.
+- 완료된 AI 코칭 시도 저장과 user/lesson/step 기준 시도 수 집계를 repository 테스트로 검증했다.
+- `bun --filter @workspace/db test`: 통과했다. 테스트 파일 5개, 테스트 12개가 통과했다.
+- `bun --filter @workspace/db typecheck`: 통과했다.
+- `bun --filter @workspace/db lint`: 통과했다.
+- `bunx prettier --check docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md 'packages/db/src/**/*.ts'`: 통과했다.
+- `git diff --check`: 통과했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성
