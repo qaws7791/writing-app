@@ -2208,6 +2208,22 @@ Expected: 문서 포맷 검증이 통과한다.
 - `git diff --check`: 통과했다.
 - 이번 Step에서는 dev server를 실행하지 않았으므로 종료할 장기 실행 프로세스가 없다.
 
+### 2026-06-14 Task 7 Step 7.5 시작
+
+- Step 7.5는 `bun run dev:app`으로 실제 web/API dev 서버를 띄우고 주요 플랫폼 화면을 브라우저로 확인하는 단계다.
+- 첫 실행은 `@workspace/db db:seed`가 `packages/db/src/seeds/seed.ts`를 찾지 못해 실패했다.
+- 스모크 전제 조건을 복구하기 위해 `packages/db/src/seeds/seed.ts`와 회귀 테스트를 추가한다.
+
+### 2026-06-14 Task 7 Step 7.5 seed 실행 복구
+
+- `packages/db/src/seeds/seed.ts`에 baseline migration 적용, 콘텐츠 row 초기화, Kwep 콘텐츠 seed 삽입 실행 함수를 추가했다.
+- `packages/db/src/seeds/seed.test.ts`는 파일 DB에 seed를 실행한 뒤 코스 5개, 레슨 44개, 스텝 136개가 들어가는지 검증한다.
+- `bun --filter @workspace/db test -- seed`: 통과했다. 테스트 파일 2개, 테스트 4개가 통과했다.
+- `bun --filter @workspace/db typecheck`: 통과했다.
+- `bun --filter @workspace/db lint`: 통과했다.
+- `bunx prettier --check packages/db/src/seeds/seed.ts packages/db/src/seeds/seed.test.ts`: 통과했다.
+- `git diff --check`: 통과했다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성

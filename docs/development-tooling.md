@@ -22,6 +22,12 @@
 - 웹 앱 개발 실행은 `bun run dev:app` 기준으로 실제 API와 함께 실행한다.
 - fake 어댑터는 제품 실행 모드가 아니라 테스트에서 명시적으로 주입하는 용도로만 유지한다.
 
+## 2026-06-14 Kwep 개발 DB seed 실행 복구 완료
+
+- `@workspace/db`의 `db:seed`는 baseline migration을 적용한 뒤 Kwep 콘텐츠 seed를 `data/api.sqlite`에 삽입한다.
+- 반복 실행 시 기존 콘텐츠 row를 비우고 다시 삽입해 `bun run dev:app` setup이 결정적으로 동작하게 했다.
+- seed 실행 파일은 `packages/db/src/seeds/seed.ts`이며, `packages/db/src/seeds/seed.test.ts`가 파일 DB에 코스 5개, 레슨 44개, 스텝 136개가 들어가는지 검증한다.
+
 ## 2026-05-30 웹 fake 개발 서버 스크립트 추가 시작
 
 - `apps/web`을 백엔드 없이 fake API 모드로 실행하는 개발 스크립트를 추가한다.
