@@ -1,4 +1,4 @@
-import type { CourseId, LessonId } from "@/content/content.ids"
+import type { CourseId, LessonId } from "@workspace/core/content/content.ids"
 import {
   courseDetailDtoSchema,
   courseListDtoSchema,
@@ -6,9 +6,9 @@ import {
   type CourseDetailDto,
   type CourseListDto,
   type LessonDto,
-} from "@/content/content.dto"
-import type { ContentRepository } from "@/content/content.repository"
-import { err, ok, type Result } from "@/result"
+} from "@workspace/core/content/content.dto"
+import type { ContentRepository } from "@workspace/core/content/content.repository"
+import { err, ok, type Result } from "@workspace/core/result"
 
 export type ContentServiceError =
   | {

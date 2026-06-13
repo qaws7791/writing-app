@@ -8,7 +8,9 @@
     "./admin": "./src/admin/index.ts",
     "./ai-feedback": "./src/ai-feedback/index.ts",
     "./content": "./src/content/index.ts",
-    "./learning": "./src/learning/index.ts"
+    "./content/*": "./src/content/*.ts",
+    "./learning": "./src/learning/index.ts",
+    "./result": "./src/result.ts"
   },
   "scripts": {
     "lint": "eslint .",

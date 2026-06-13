@@ -1,9 +1,9 @@
-import type { CourseId, LessonId } from "@/content/content.ids"
+import type { CourseId, LessonId } from "@workspace/core/content/content.ids"
 import type {
   CourseDetailDto,
   CourseSummaryDto,
   LessonDto,
-} from "@/content/content.dto"
+} from "@workspace/core/content/content.dto"
 
 export type ContentRepository = {
   readonly listCourses: () => Promise<readonly CourseSummaryDto[]>

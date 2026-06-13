@@ -535,7 +535,7 @@ bun --filter @workspace/core test -- content.dto content.service
 
 Expected: DTO schema가 Kwep 변환 콘텐츠를 parse한다.
 
-- [ ] **Step 2.4: 공개 콘텐츠 repository 작성**
+- [x] **Step 2.4: 공개 콘텐츠 repository 작성**
 
 정책:
 
@@ -546,7 +546,7 @@ Expected: DTO schema가 Kwep 변환 콘텐츠를 parse한다.
 검증:
 
 ```bash
-bun --filter @workspace/db test -- drizzle-content.repository
+bun --filter @workspace/db test -- content.repository
 ```
 
 Expected: archived 코스는 학습자 목록에서 제외되고, active 코스의 lesson metadata가 응답된다.
@@ -1724,6 +1724,21 @@ Expected: 문서 포맷 검증이 통과한다.
 - `packages/core/src/content/content.repository.ts`와 `packages/core/src/content/content.service.ts`에 콘텐츠 repository port와 service Result 계약을 작성했다.
 - `packages/core/src/result.ts`에 명시적 `Result` 타입과 helper를 추가했다.
 - `bun --filter @workspace/core test -- content.dto content.service`: 통과했다.
+
+### 2026-06-14 Task 2 Step 2.4 시작
+
+- Step 2.4는 DB package의 Drizzle repository가 학습자 API용 active 콘텐츠만 반환하도록 작성한다.
+- 검증 명령은 실제 테스트 파일명과 맞춰 `bun --filter @workspace/db test -- content.repository`로 정정했다.
+- 기존 seed 삽입 테스트 위에 archived 코스 제외, archived 하위 콘텐츠 제외, active 코스 lesson metadata 응답 테스트를 추가한다.
+
+### 2026-06-14 Task 2 Step 2.4 완료
+
+- `packages/db/src/repositories/content.repository.ts`에 core `ContentRepository` port를 구현하는 Drizzle repository를 작성했다.
+- 코스 목록, 코스 상세, 레슨 조회에서 `active` 상태의 코스, 유닛, 레슨, 스텝만 학습자 응답에 포함하도록 했다.
+- `lesson_steps.content_json`의 Kwep 원본 lowercase 타입은 제거하고 저장용 표준 타입을 사용해 core lesson step DTO로 parse한다.
+- `packages/db/src/index.ts`와 `packages/db/src/seeds/index.ts`에 DB package export를 추가했다.
+- DB package typecheck가 core exported source를 안정적으로 해석하도록 `packages/core/package.json`에 `./content/*`, `./result` export를 추가하고, core 구현 파일의 노출 import를 package self-import로 정리했다.
+- `bun --filter @workspace/db test -- content.repository`: 통과했다.
 
 ## 상태 요약
 
