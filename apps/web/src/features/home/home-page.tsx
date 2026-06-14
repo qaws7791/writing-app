@@ -1,9 +1,19 @@
 "use client"
 
+/* eslint-disable @next/next/no-img-element */
+
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
 
-import type { ProgressCourseList } from "@/features/courses/course-types"
+import { createCourseImageUrl } from "@/features/courses/course-image-url"
+import type {
+  ProgressCourse,
+  ProgressCourseList,
+  ProgressNextLesson,
+} from "@/features/courses/course-types"
+import { PlayIcon } from "@workspace/ui/components/icons"
+
+const CONTINUE_COURSE_LIMIT = 5
 
 type HomePageProps = {
   readonly learnerName: null | string | undefined
@@ -25,6 +35,7 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
       course.lessons.some((lesson) => lesson.status === "completed")
   )
   const hasProgress = inProgress.length > 0
+  const items = inProgress.slice(0, CONTINUE_COURSE_LIMIT)
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 xl:gap-14">
@@ -85,21 +96,52 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
 
       <div className="flex-1 min-w-0">
         {hasProgress ? (
-          <div className="flex items-baseline justify-between mb-5">
-            <p
-              className="font-bold text-muted"
+          <>
+            <div className="flex items-baseline justify-between mb-5">
+              <p
+                className="font-bold text-muted"
+                style={{
+                  fontSize: "0.75rem",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                }}
+              >
+                이어서 학습하기
+              </p>
+              <p
+                className="font-bold text-muted"
+                style={{ fontSize: "0.75rem" }}
+              >
+                {items.length}개 코스
+              </p>
+            </div>
+            <div
+              className="lg:hidden flex overflow-x-auto gap-5 no-scrollbar -mx-4 px-4 pt-1 pb-3"
               style={{
-                fontSize: "0.75rem",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
+                scrollPaddingLeft: "1rem",
+                scrollSnapType: "x mandatory",
               }}
             >
-              이어서 학습하기
-            </p>
-            <p className="font-bold text-muted" style={{ fontSize: "0.75rem" }}>
-              {Math.min(inProgress.length, 5)}개 코스
-            </p>
-          </div>
+              {items.map((course) => (
+                <div
+                  className="last:pr-2"
+                  key={course.id}
+                  style={{ scrollSnapAlign: "start" }}
+                >
+                  <ContinueCourseCard course={course} variant="mobile" />
+                </div>
+              ))}
+            </div>
+            <div className="hidden lg:flex flex-col gap-4">
+              {items.map((course) => (
+                <ContinueCourseCard
+                  course={course}
+                  key={course.id}
+                  variant="desktop"
+                />
+              ))}
+            </div>
+          </>
         ) : (
           <div
             className="bg-surface rounded-4xl p-7 cursor-pointer btn-squish"
@@ -133,6 +175,208 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
       </div>
     </div>
   )
+}
+
+type ContinueCourseCardProps = {
+  readonly course: ProgressCourse
+  readonly variant: "desktop" | "mobile"
+}
+
+function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
+  const router = useRouter()
+  const completedLessonCount = course.lessons.filter(
+    (lesson) => lesson.status === "completed"
+  ).length
+  const totalLessonCount = course.lessons.length
+  const progressPercent = clampProgressPercent(course.progressPercent)
+  const nextLessons = course.nextLessons.slice(0, 2)
+  const isDesktop = variant === "desktop"
+
+  return (
+    <div
+      className={
+        isDesktop
+          ? "bg-surface rounded-[24px] overflow-hidden select-none"
+          : "w-80 sm:w-[22rem] shrink-0 bg-surface rounded-[28px] overflow-hidden flex flex-col select-none"
+      }
+    >
+      {isDesktop ? (
+        <div className="flex">
+          <button
+            className="w-44 shrink-0 cursor-pointer btn-squish"
+            onClick={() => router.push(`/app/courses/${course.id}`)}
+            type="button"
+          >
+            <img
+              alt={course.title}
+              className="w-full h-full object-cover pointer-events-none"
+              draggable={false}
+              src={createCourseImageUrl(course.id, 440, 320)}
+              style={{ minHeight: "7rem" }}
+            />
+          </button>
+          <button
+            className="flex-1 min-w-0 px-5 py-4 cursor-pointer btn-squish text-left"
+            onClick={() => router.push(`/app/courses/${course.id}`)}
+            type="button"
+          >
+            <ContinueCourseSummary
+              completedLessonCount={completedLessonCount}
+              course={course}
+              progressPercent={progressPercent}
+              totalLessonCount={totalLessonCount}
+              titleFontSize="1rem"
+            />
+          </button>
+        </div>
+      ) : (
+        <button
+          className="w-full cursor-pointer btn-squish text-left"
+          onClick={() => router.push(`/app/courses/${course.id}`)}
+          type="button"
+        >
+          <img
+            alt={course.title}
+            className="w-full h-36 object-cover pointer-events-none"
+            draggable={false}
+            src={createCourseImageUrl(course.id, 700, 320)}
+          />
+          <div className="px-6 pt-5 pb-4">
+            <ContinueCourseSummary
+              completedLessonCount={completedLessonCount}
+              course={course}
+              progressPercent={progressPercent}
+              totalLessonCount={totalLessonCount}
+              titleFontSize="1.0625rem"
+            />
+          </div>
+        </button>
+      )}
+      <div
+        className={
+          isDesktop
+            ? "px-3 pb-3 flex flex-col gap-0.5"
+            : "px-3 pb-4 flex flex-col gap-1"
+        }
+      >
+        {nextLessons.length > 0 ? (
+          nextLessons.map((lesson) => (
+            <NextLessonButton
+              isDesktop={isDesktop}
+              key={lesson.id}
+              lesson={lesson}
+            />
+          ))
+        ) : (
+          <div
+            className="px-4 py-3 text-muted font-bold"
+            style={{ fontSize: "0.875rem" }}
+          >
+            모든 레슨을 완료했어요
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ContinueCourseSummary({
+  completedLessonCount,
+  course,
+  progressPercent,
+  titleFontSize,
+  totalLessonCount,
+}: {
+  readonly completedLessonCount: number
+  readonly course: ProgressCourse
+  readonly progressPercent: number
+  readonly titleFontSize: string
+  readonly totalLessonCount: number
+}) {
+  return (
+    <>
+      <p
+        className="font-bold mb-3"
+        style={{
+          display: "-webkit-box",
+          fontSize: titleFontSize,
+          lineHeight: 1.45,
+          overflow: "hidden",
+          WebkitBoxOrient: "vertical",
+          WebkitLineClamp: 2,
+        }}
+      >
+        {course.title}
+      </p>
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-2 bg-charcoal/10 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-charcoal rounded-full transition-all"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <span
+          className="font-bold text-muted shrink-0"
+          style={{ fontSize: "0.75rem" }}
+        >
+          {completedLessonCount}/{totalLessonCount}
+        </span>
+      </div>
+    </>
+  )
+}
+
+function NextLessonButton({
+  isDesktop,
+  lesson,
+}: {
+  readonly isDesktop: boolean
+  readonly lesson: ProgressNextLesson
+}) {
+  const router = useRouter()
+
+  return (
+    <button
+      className={
+        isDesktop
+          ? "text-left flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-charcoal/5 btn-squish"
+          : "text-left flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-charcoal/5 btn-squish"
+      }
+      onClick={() => router.push(`/app/lesson?lesson_id=${lesson.id}`)}
+      type="button"
+    >
+      <span
+        className={
+          isDesktop
+            ? "w-8 h-8 shrink-0 rounded-full bg-charcoal text-cream flex items-center justify-center"
+            : "w-10 h-10 shrink-0 rounded-full bg-charcoal text-cream flex items-center justify-center"
+        }
+      >
+        <PlayIcon fill="currentColor" size={isDesktop ? 12 : 14} />
+      </span>
+      <span className="flex-1 min-w-0">
+        <span
+          className="block font-bold truncate"
+          style={{
+            fontSize: isDesktop ? "0.875rem" : "0.9375rem",
+            lineHeight: 1.4,
+          }}
+        >
+          {lesson.title}
+        </span>
+        <span
+          className="block text-muted font-bold"
+          style={{ fontSize: "0.75rem", marginTop: isDesktop ? 2 : 3 }}
+        >
+          {lesson.estimatedMinutes}분
+        </span>
+      </span>
+    </button>
+  )
+}
+
+function clampProgressPercent(percent: number): number {
+  return Math.min(Math.max(percent, 0), 100)
 }
 
 function normalizeFirstName(name: null | string | undefined): string {
