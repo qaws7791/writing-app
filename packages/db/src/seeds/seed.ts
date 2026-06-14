@@ -2,9 +2,12 @@ import { existsSync, mkdirSync, rmSync } from "node:fs"
 import { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 
+import { sql } from "drizzle-orm"
+
 import {
   createKwepDatabase,
   getDefaultDatabaseUrl,
+  type KwepDatabase,
   type KwepDatabaseClient,
 } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
@@ -16,7 +19,17 @@ import {
   lessons,
   lessonSteps,
 } from "@workspace/db/schema"
-import { createDefaultContentSeedRows } from "@workspace/db/seeds/seed-content"
+import {
+  createDefaultContentSeedRows,
+  type CourseSeedRow,
+  type CourseUnitSeedRow,
+  type LessonSeedRow,
+  type LessonStepSeedRow,
+} from "@workspace/db/seeds/seed-content"
+
+type KwepDatabaseTransaction = Parameters<
+  Parameters<KwepDatabase["transaction"]>[0]
+>[0]
 
 export async function seedDatabase(
   databaseUrl = process.env["DATABASE_URL"] ?? getDefaultDatabaseUrl()
@@ -34,8 +47,7 @@ export async function seedDatabase(
 
     runBaselineMigration(client.sqlite)
     seedDefaultLearner(client)
-    clearContentRows(client)
-    await insertContentRows(client)
+    await upsertContentRows(client)
   } finally {
     client.close()
   }
@@ -182,32 +194,142 @@ function seedDefaultLearner(client: KwepDatabaseClient): void {
     .run()
 }
 
-function clearContentRows(client: KwepDatabaseClient): void {
-  client.db.delete(lessonSteps).run()
-  client.db.delete(lessons).run()
-  client.db.delete(courseUnits).run()
-  client.db.delete(courses).run()
-}
-
-async function insertContentRows(client: KwepDatabaseClient): Promise<void> {
+async function upsertContentRows(client: KwepDatabaseClient): Promise<void> {
   const rows = await createDefaultContentSeedRows()
 
-  client.db
-    .insert(courses)
-    .values([...rows.courses])
-    .run()
-  client.db
-    .insert(courseUnits)
-    .values([...rows.units])
-    .run()
-  client.db
-    .insert(lessons)
-    .values([...rows.lessons])
-    .run()
-  client.db
-    .insert(lessonSteps)
-    .values([...rows.steps])
-    .run()
+  client.db.transaction((transaction) => {
+    archiveMissingContentRows(transaction, rows)
+    upsertCourses(transaction, rows.courses)
+    upsertCourseUnits(transaction, rows.units)
+    upsertLessons(transaction, rows.lessons)
+    upsertLessonSteps(transaction, rows.steps)
+  })
+}
+
+function archiveMissingContentRows(
+  transaction: KwepDatabaseTransaction,
+  rows: Awaited<ReturnType<typeof createDefaultContentSeedRows>>
+): void {
+  const courseIds = rows.courses.map((row) => row.id)
+  const unitIds = rows.units.map((row) => row.id)
+  const lessonIds = rows.lessons.map((row) => row.id)
+  const stepIds = rows.steps.map((row) => row.id)
+
+  archiveRowsNotIn(transaction, "courses", courseIds)
+  archiveRowsNotIn(transaction, "course_units", unitIds)
+  archiveRowsNotIn(transaction, "lessons", lessonIds)
+  archiveRowsNotIn(transaction, "lesson_steps", stepIds)
+}
+
+function archiveRowsNotIn(
+  transaction: KwepDatabaseTransaction,
+  tableName: "course_units" | "courses" | "lesson_steps" | "lessons",
+  activeIds: readonly string[]
+): void {
+  if (activeIds.length === 0) {
+    transaction.run(
+      sql`UPDATE ${sql.identifier(tableName)} SET status = 'archived'`
+    )
+    return
+  }
+
+  const activeIdValues = activeIds.map((id) => sql`${id}`)
+
+  transaction.run(
+    sql`UPDATE ${sql.identifier(tableName)} SET status = 'archived' WHERE id NOT IN (${sql.join(activeIdValues, sql`, `)})`
+  )
+}
+
+function upsertCourses(
+  transaction: KwepDatabaseTransaction,
+  rows: readonly CourseSeedRow[]
+): void {
+  for (const row of rows) {
+    transaction
+      .insert(courses)
+      .values(row)
+      .onConflictDoUpdate({
+        set: {
+          category: row.category,
+          curriculumRevision: row.curriculumRevision,
+          description: row.description,
+          sortOrder: row.sortOrder,
+          status: row.status,
+          title: row.title,
+        },
+        target: courses.id,
+      })
+      .run()
+  }
+}
+
+function upsertCourseUnits(
+  transaction: KwepDatabaseTransaction,
+  rows: readonly CourseUnitSeedRow[]
+): void {
+  for (const row of rows) {
+    transaction
+      .insert(courseUnits)
+      .values(row)
+      .onConflictDoUpdate({
+        set: {
+          courseId: row.courseId,
+          sortOrder: row.sortOrder,
+          status: row.status,
+          title: row.title,
+        },
+        target: courseUnits.id,
+      })
+      .run()
+  }
+}
+
+function upsertLessons(
+  transaction: KwepDatabaseTransaction,
+  rows: readonly LessonSeedRow[]
+): void {
+  for (const row of rows) {
+    transaction
+      .insert(lessons)
+      .values(row)
+      .onConflictDoUpdate({
+        set: {
+          category: row.category,
+          courseId: row.courseId,
+          description: row.description,
+          estimatedMinutes: row.estimatedMinutes,
+          sortOrder: row.sortOrder,
+          status: row.status,
+          summaryJson: row.summaryJson,
+          title: row.title,
+          unitId: row.unitId,
+        },
+        target: lessons.id,
+      })
+      .run()
+  }
+}
+
+function upsertLessonSteps(
+  transaction: KwepDatabaseTransaction,
+  rows: readonly LessonStepSeedRow[]
+): void {
+  for (const row of rows) {
+    transaction
+      .insert(lessonSteps)
+      .values(row)
+      .onConflictDoUpdate({
+        set: {
+          contentJson: row.contentJson,
+          lessonId: row.lessonId,
+          sortOrder: row.sortOrder,
+          status: row.status,
+          type: row.type,
+        },
+        target: lessonSteps.id,
+      })
+      .run()
+  }
 }
 
 if (import.meta.main) {
