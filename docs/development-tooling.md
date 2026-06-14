@@ -1,5 +1,19 @@
 # 개발 도구
 
+## 2026-06-14 앱 사용자 플로우 검증 시작
+
+- 로컬 환경 변수가 준비된 상태에서 `bun run dev:app`으로 플랫폼 API와 웹 앱을 함께 실행한다.
+- 구글 로그인은 브라우저 로그인 페이지에서 사용자가 직접 완료한 뒤, 로그인 이후 학습자 플로우를 검증한다.
+- 검증 중 확인한 서버 포트, 접근 경로, 실패 사항은 같은 문서의 완료 항목에 기록한다.
+
+## 2026-06-14 앱 사용자 플로우 검증 완료
+
+- `bun run dev:app` 실행 시 웹 앱은 `3000`, 플랫폼 API는 로컬 `API_PORT=4000`에서 응답했다.
+- 구글 OAuth 콜백 후 `auth_users` 테이블이 없던 원인은 `DATABASE_URL=file:../../data/api.sqlite`를 API 런타임이 `apps/api/data/api.sqlite`로 해석한 것이었다. DB 클라이언트에서 `file:` URL을 명시적 파일 경로로 정규화해 seed DB와 API DB 경로를 일치시켰다.
+- OAuth 콜백 후 `/app`에서 다시 로그인으로 돌아가던 원인은 성공 콜백의 두 쿠키를 단일 `Set-Cookie` 헤더로 합치고, 웹 클라이언트가 읽어야 하는 `kwep_session`을 `HttpOnly`로 내려준 것이었다. 콜백 쿠키를 개별 `Set-Cookie` 헤더로 append하고, state 쿠키만 `HttpOnly`로 유지했다.
+- 브라우저 검증에서 로그인, 홈, 코스 목록, 코스 상세, 레슨 시작, 레슨 완료, 진행률 반영, 프로필, 로그아웃, 로그아웃 후 보호 라우트 리다이렉트를 확인했다.
+- 영향 패키지 검증으로 `@workspace/api` lint/typecheck/Google OAuth route test와 `@workspace/db` lint/typecheck/client test를 통과시켰다.
+
 ## 2026-06-14 Storybook 현재 UI surface 정리 완료
 
 - Kwep 피벗 중 `packages/ui`를 Button, Card, Input, Progress primitive 중심으로 재정의했다.
