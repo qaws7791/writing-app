@@ -65,6 +65,12 @@ describe("OpenAI AI feedback provider", () => {
     expect(requests[0]?.input).toContain("좋은 문장이란 무엇인가")
     expect(requests[0]?.input).toContain("명확성")
     expect(requests[0]?.input).toContain("나는 매일 조금씩 문장을 고친다.")
+    expect(requests[0]?.text.format.schema.properties.scoreRange.items).toEqual(
+      {
+        enum: [0, 100],
+        type: "integer",
+      }
+    )
   })
 
   it("OpenAI 호출 또는 응답 파싱 실패를 provider-unavailable로 반환한다", async () => {

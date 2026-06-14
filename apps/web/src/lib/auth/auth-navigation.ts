@@ -23,7 +23,7 @@ export function resolveSafeNextPath(
 export function createGoogleLoginPath(nextPath: string): string {
   const callbackPath = resolveSafeNextPath(nextPath)
 
-  return `/api/auth/sign-in/google?callbackURL=${encodeURIComponent(callbackPath)}`
+  return `${getApiBaseUrl()}/api/auth/sign-in/google?callbackURL=${encodeURIComponent(callbackPath)}`
 }
 
 export function createLoginPagePath(nextPath: string): string {
@@ -35,5 +35,9 @@ export function createLoginPagePath(nextPath: string): string {
 export function createLogoutPath(callbackPath: string): string {
   const safeCallbackPath = resolveSafeNextPath(callbackPath)
 
-  return `/api/auth/sign-out?callbackURL=${encodeURIComponent(safeCallbackPath)}`
+  return `${getApiBaseUrl()}/api/auth/sign-out?callbackURL=${encodeURIComponent(safeCallbackPath)}`
+}
+
+function getApiBaseUrl(): string {
+  return (process.env["NEXT_PUBLIC_API_BASE_URL"] ?? "").replace(/\/$/, "")
 }

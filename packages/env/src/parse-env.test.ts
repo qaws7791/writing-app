@@ -20,12 +20,14 @@ describe("env parser", () => {
       ADMIN_API_PORT: 4002,
       ADMIN_ORIGIN: "http://localhost:3003",
       API_PORT: 4001,
+      BETTER_AUTH_URL: undefined,
       BETTER_AUTH_SECRET: validSecret,
       DATABASE_URL: ":memory:",
       GOOGLE_CLIENT_ID: undefined,
       GOOGLE_CLIENT_SECRET: undefined,
       NODE_ENV: "test",
       OPENAI_API_KEY: undefined,
+      OPENAI_MODEL: "gpt-5.2",
       WEB_ORIGIN: "http://localhost:3000",
     })
   })

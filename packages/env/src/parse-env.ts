@@ -9,12 +9,14 @@ export const appEnvSchema = z.object({
   ADMIN_API_PORT: portSchema.default(3002),
   ADMIN_ORIGIN: z.url().default("http://localhost:3003"),
   API_PORT: portSchema.default(3001),
+  BETTER_AUTH_URL: z.url().optional(),
   BETTER_AUTH_SECRET: z.string().min(32),
   DATABASE_URL: z.string().min(1).optional(),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
   NODE_ENV: nodeEnvSchema,
   OPENAI_API_KEY: z.string().min(1).optional(),
+  OPENAI_MODEL: z.string().min(1).default("gpt-5.2"),
   WEB_ORIGIN: z.url().default("http://localhost:3000"),
 })
 

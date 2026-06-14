@@ -6,6 +6,10 @@ import { createAiFeedbackRoute } from "@/routes/ai-feedback.route"
 import { createAuthRoute } from "@/routes/auth.route"
 import { createCoursesRoute } from "@/routes/courses.route"
 import { createHealthRoute } from "@/routes/health.route"
+import {
+  createGoogleOAuthRoute,
+  type GoogleOAuthRouteOptions,
+} from "@/routes/google-oauth.route"
 import { createLearningRoute } from "@/routes/learning.route"
 import { createLessonsRoute } from "@/routes/lessons.route"
 import { createOpenApiRoute } from "@/routes/openapi.route"
@@ -21,6 +25,7 @@ import type { LearningService } from "@workspace/core/learning"
 export type ApiDependencies = {
   readonly aiFeedbackService?: AiFeedbackService
   readonly contentRepository?: ContentRepository
+  readonly googleOAuth?: GoogleOAuthRouteOptions
   readonly learningService?: LearningService
   readonly now?: () => Date
   readonly profileReader: ProfileReader
@@ -44,6 +49,9 @@ export function createApp(dependencies: ApiDependencies): Hono {
 
   app.route("/health", createHealthRoute())
   app.route("/openapi", createOpenApiRoute())
+  if (dependencies.googleOAuth !== undefined) {
+    app.route("/api/auth", createGoogleOAuthRoute(dependencies.googleOAuth))
+  }
   app.route("/auth", createAuthRoute(dependencies.sessionResolver))
   app.route("/profile", createProfileRoute(dependencies))
 

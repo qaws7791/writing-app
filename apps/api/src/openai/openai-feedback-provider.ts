@@ -101,16 +101,10 @@ const aiFeedbackJsonSchema = {
       type: "integer",
     },
     scoreRange: {
-      items: [
-        {
-          const: 0,
-          type: "integer",
-        },
-        {
-          const: 100,
-          type: "integer",
-        },
-      ],
+      items: {
+        enum: [0, 100],
+        type: "integer",
+      },
       maxItems: 2,
       minItems: 2,
       type: "array",

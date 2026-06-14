@@ -36,7 +36,7 @@ const aiFeedbackProvider =
         client: new OpenAI({
           apiKey: env.openAiApiKey,
         }),
-        model: "gpt-5.2",
+        model: env.openAiModel,
       })
 const app = createApp({
   aiFeedbackService: createAiFeedbackService({
@@ -45,6 +45,16 @@ const app = createApp({
     provider: aiFeedbackProvider,
   }),
   contentRepository,
+  googleOAuth:
+    env.googleClientId === undefined || env.googleClientSecret === undefined
+      ? undefined
+      : {
+          authBaseUrl: env.authBaseUrl,
+          clientId: env.googleClientId,
+          clientSecret: env.googleClientSecret,
+          db: database.db,
+          webOrigin: env.webOrigin,
+        },
   learningService: createLearningService({
     contentRepository,
     learningRepository,
