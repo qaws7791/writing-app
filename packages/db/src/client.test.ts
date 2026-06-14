@@ -1,8 +1,15 @@
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import { describe, expect, it } from "vitest"
 
-import { createInMemoryKwepDatabase, getDefaultDatabaseUrl } from "@/client"
+import {
+  createInMemoryKwepDatabase,
+  createKwepDatabase,
+  getDefaultDatabaseUrl,
+} from "@/client"
 import { runBaselineMigration } from "@/migrations/migrate"
 
 describe("Kwep DB client", () => {
@@ -18,6 +25,35 @@ describe("Kwep DB client", () => {
       expect(getDefaultDatabaseUrl()).toBe(expectedPath)
     } finally {
       process.chdir(originalCwd)
+    }
+  })
+
+  it("상대 file: SQLite URL은 현재 실행 위치 기준 파일 경로로 연다", () => {
+    const tempDirectory = mkdtempSync(join(tmpdir(), "kwep-db-client-"))
+    const originalCwd = process.cwd()
+
+    try {
+      mkdirSync(join(tempDirectory, "apps", "api", "data"), {
+        recursive: true,
+      })
+      mkdirSync(join(tempDirectory, "data"), { recursive: true })
+      process.chdir(join(tempDirectory, "apps", "api"))
+
+      const client = createKwepDatabase("file:../../data/api.sqlite")
+
+      try {
+        const databaseFile = client.sqlite
+          .query<{ readonly file: string }, []>("PRAGMA database_list")
+          .all()
+          .at(0)?.file
+
+        expect(databaseFile).toBe(join(tempDirectory, "data", "api.sqlite"))
+      } finally {
+        client.close()
+      }
+    } finally {
+      process.chdir(originalCwd)
+      rmSync(tempDirectory, { force: true, recursive: true })
     }
   })
 
