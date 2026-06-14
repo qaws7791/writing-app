@@ -1,5 +1,12 @@
 # 프론트엔드 API 클라이언트 전환
 
+## 2026-06-14 어드민 API 포트 전환 완료
+
+- 어드민 웹에 `AdminApi` 포트와 HTTP 어댑터를 추가했다.
+- 어드민 화면은 대시보드, 코스 목록/생성/보관/editor 조회, 사용자 목록/상세/상태 변경/삭제, 분석, 레슨 분석, 운영 설정, 콘텐츠 초기화를 모두 `AdminApi` 경계 뒤에서 호출한다.
+- 서버 컴포넌트 요청은 쿠키의 관리자 세션 토큰을 Bearer token으로 전달하고, 로컬 검증에서는 `ADMIN_DEV_SESSION_TOKEN`으로 같은 경계를 대체할 수 있다.
+- HTTP 오류는 `unauthorized`, `forbidden`, `not-found`, `conflict`, `invalid-request`, `network` 등 명시적 오류 코드로 변환해 화면에서 분기한다.
+
 ## 2026-05-31 인증 프록시 제거와 직접 API 인증 전환
 
 - 웹과 어드민의 Next.js `/api/auth/*` 프록시를 제거했다.

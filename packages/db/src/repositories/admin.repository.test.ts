@@ -155,6 +155,93 @@ describe("어드민 DB repository", () => {
     }
   })
 
+  it("코스 목록 검색, 카테고리 필터, 상태 필터, 페이지네이션을 처리한다", async () => {
+    const client = createKwepDatabase(":memory:")
+
+    try {
+      runBaselineMigration(client.sqlite)
+      seedDashboardRows(client.db)
+
+      const repository = createDrizzleAdminRepository(client.db)
+
+      await expect(
+        repository.readCourses({
+          category: "입문",
+          page: 1,
+          pageSize: 20,
+          query: "활성",
+          status: "active",
+        })
+      ).resolves.toEqual({
+        items: [
+          {
+            category: "입문",
+            id: "course-1",
+            lessonCount: 2,
+            revision: 0,
+            status: "active",
+            title: "활성 코스",
+            unitCount: 1,
+          },
+        ],
+        pagination: {
+          page: 1,
+          pageSize: 20,
+          totalItems: 1,
+          totalPages: 1,
+        },
+      })
+
+      await expect(
+        repository.readCourses({
+          category: "",
+          page: 1,
+          pageSize: 1,
+          query: "코스",
+          status: "all",
+        })
+      ).resolves.toEqual({
+        items: [
+          {
+            category: "입문",
+            id: "course-1",
+            lessonCount: 2,
+            revision: 0,
+            status: "active",
+            title: "활성 코스",
+            unitCount: 1,
+          },
+        ],
+        pagination: {
+          page: 1,
+          pageSize: 1,
+          totalItems: 2,
+          totalPages: 2,
+        },
+      })
+
+      await expect(
+        repository.readCourses({
+          category: "",
+          page: 1,
+          pageSize: 20,
+          query: "",
+          status: "archived",
+        })
+      ).resolves.toMatchObject({
+        items: [
+          {
+            id: "course-2",
+            status: "archived",
+            title: "보관 코스",
+          },
+        ],
+      })
+    } finally {
+      client.close()
+    }
+  })
+
   it("기존 학습자와 학습 진행 테이블에서 분석 지표를 계산한다", async () => {
     const client = createKwepDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")

@@ -1,5 +1,20 @@
 # 개발 도구
 
+## 2026-06-14 Storybook 현재 UI surface 정리 완료
+
+- Kwep 피벗 중 `packages/ui`를 Button, Card, Input, Progress primitive 중심으로 재정의했다.
+- Storybook의 이전 shadcn 전체 컴포넌트 스토리는 현재 export와 맞지 않으므로 제거했다.
+- 현재 Storybook은 `apps/storybook/src/stories/components/current-ui.stories.tsx`에서 실제 export되는 UI primitive만 문서화한다.
+- Storybook preview는 `@workspace/ui/next` 래퍼에 의존하지 않고, 전역 `dark` class 토글과 `@workspace/ui/styles` import만 사용한다.
+
+## 2026-06-14 Kwep dev server 스모크 완료
+
+- `bun run dev:app`은 DB seed 후 플랫폼 API를 `3001`, 웹 앱을 `3000`에서 실행한다.
+- `bun run dev:admin`은 DB seed와 관리자 seed 후 어드민 API를 `3002`, 어드민 앱을 `3001`에서 실행한다.
+- 기존 로컬 `.env`의 `CORS_ORIGIN`, `ADMIN_BETTER_AUTH_SECRET`, `ADMIN_CORS_ORIGIN`은 새 실행 env 이름으로 정규화한다.
+- 이전 `PORT` 값은 앱 간 기본 연결을 깨지 않도록 dev server 포트 결정에 사용하지 않고, 포트 변경이 필요하면 `API_PORT` 또는 `ADMIN_API_PORT`를 명시한다.
+- 스모크 종료 후 `bun --watch src/main.ts`와 `next dev` 프로세스가 남아 있으면 종료한다.
+
 ## 2026-05-31 docs 앱 제거 완료
 
 - 루트 `docs` 스크립트와 `apps/docs` 워크스페이스를 제거했다.

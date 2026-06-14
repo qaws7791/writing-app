@@ -3,6 +3,7 @@ import {
   adminArchiveCourseResultSchema,
   adminContentResetResultSchema,
   adminCourseDetailDtoSchema,
+  adminCourseListDtoSchema,
   adminDeleteUserResultSchema,
   adminDashboardDtoSchema,
   adminLessonAnalyticsPageDtoSchema,
@@ -13,6 +14,7 @@ import {
   type AdminArchiveCourseResultDto,
   type AdminContentResetResultDto,
   type AdminCourseDetailDto,
+  type AdminCourseListDto,
   type AdminDashboardDto,
   type AdminDeleteUserResultDto,
   type AdminLessonAnalyticsPageDto,
@@ -27,6 +29,7 @@ import type {
   DeleteAdminUserInput,
   ReadAdminAnalyticsInput,
   ReadAdminCourseInput,
+  ReadAdminCoursesInput,
   ReadAdminDashboardInput,
   ReadAdminLessonAnalyticsInput,
   ReadAdminUserInput,
@@ -59,6 +62,9 @@ export type AdminService = {
   readonly getCourseEditor: (
     input: ReadAdminCourseInput
   ) => Promise<AdminCourseDetailDto | null>
+  readonly getCourses: (
+    input: ReadAdminCoursesInput
+  ) => Promise<AdminCourseListDto>
   readonly getSettings: () => Promise<AdminSettingsDto>
   readonly getUser: (
     input: ReadAdminUserInput
@@ -114,6 +120,9 @@ export function createAdminService(repository: AdminRepository): AdminService {
       return adminCourseDetailDtoSchema
         .nullable()
         .parse(await repository.readCourseEditor(input))
+    },
+    async getCourses(input) {
+      return adminCourseListDtoSchema.parse(await repository.readCourses(input))
     },
     async getSettings() {
       return adminSettingsDtoSchema.parse(await repository.readSettings())

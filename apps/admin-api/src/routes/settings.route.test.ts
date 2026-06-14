@@ -157,6 +157,9 @@ function createDependencies(): AdminApiDependencies {
       async getCourseEditor() {
         throw new Error("unexpected course editor request")
       },
+      async getCourses() {
+        throw new Error("unexpected course list request")
+      },
       async getLessonAnalytics(): Promise<AdminLessonAnalyticsPageDto> {
         throw new Error("unexpected lesson analytics request")
       },

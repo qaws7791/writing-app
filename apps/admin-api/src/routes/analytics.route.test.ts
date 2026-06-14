@@ -163,6 +163,9 @@ function createDependencies(): AdminApiDependencies {
       async getCourseEditor() {
         throw new Error("unexpected course editor request")
       },
+      async getCourses() {
+        throw new Error("unexpected course list request")
+      },
       async getDashboard() {
         throw new Error("unexpected dashboard request")
       },

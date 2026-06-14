@@ -141,6 +141,10 @@ export const adminContentResetResultSchema = z.object({
 })
 
 const adminContentStatusSchema = z.enum(["active", "archived"])
+export const adminCourseListStatusFilterSchema = z.union([
+  z.literal("all"),
+  adminContentStatusSchema,
+])
 
 export const adminCourseStepDtoSchema = z.object({
   contentJson: z.string(),
@@ -179,6 +183,26 @@ export const adminCourseDetailDtoSchema = z.object({
   units: z.array(adminCourseUnitDtoSchema),
 })
 
+export const adminCourseListItemDtoSchema = z.object({
+  category: z.string(),
+  id: z.string(),
+  lessonCount: nonNegativeIntegerSchema,
+  revision: nonNegativeIntegerSchema,
+  status: adminContentStatusSchema,
+  title: z.string(),
+  unitCount: nonNegativeIntegerSchema,
+})
+
+export const adminCourseListDtoSchema = z.object({
+  items: z.array(adminCourseListItemDtoSchema),
+  pagination: z.object({
+    page: positiveIntegerSchema,
+    pageSize: positiveIntegerSchema,
+    totalItems: nonNegativeIntegerSchema,
+    totalPages: positiveIntegerSchema,
+  }),
+})
+
 export const adminArchiveCourseResultSchema = z.object({
   archived: z.literal(true),
 })
@@ -188,6 +212,10 @@ export type AdminArchiveCourseResultDto = z.infer<
   typeof adminArchiveCourseResultSchema
 >
 export type AdminCourseDetailDto = z.infer<typeof adminCourseDetailDtoSchema>
+export type AdminCourseListDto = z.infer<typeof adminCourseListDtoSchema>
+export type AdminCourseListStatusFilter = z.infer<
+  typeof adminCourseListStatusFilterSchema
+>
 export type AdminContentResetResultDto = z.infer<
   typeof adminContentResetResultSchema
 >

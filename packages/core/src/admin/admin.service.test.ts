@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import type {
   AdminAnalyticsDto,
   AdminArchiveCourseResultDto,
+  AdminCourseListDto,
   AdminCourseDetailDto,
   AdminContentResetResultDto,
   AdminDashboardDto,
@@ -220,6 +221,26 @@ const archiveCourseResult: AdminArchiveCourseResultDto = {
   archived: true,
 }
 
+const courseList: AdminCourseListDto = {
+  items: [
+    {
+      category: "입문자를 위한 코스",
+      id: "c1",
+      lessonCount: 10,
+      revision: 2,
+      status: "active",
+      title: "글쓰기 첫걸음 30일",
+      unitCount: 3,
+    },
+  ],
+  pagination: {
+    page: 1,
+    pageSize: 20,
+    totalItems: 1,
+    totalPages: 1,
+  },
+}
+
 describe("어드민 서비스", () => {
   it("repository 대시보드 스냅샷을 관리자 dashboard DTO로 반환한다", async () => {
     const repository: AdminRepository = createRepository()
@@ -313,10 +334,19 @@ describe("어드민 서비스", () => {
     ).resolves.toEqual(contentResetResult)
   })
 
-  it("repository 코스 생성, editor 조회, 보관 결과를 관리자 DTO로 반환한다", async () => {
+  it("repository 코스 목록, 생성, editor 조회, 보관 결과를 관리자 DTO로 반환한다", async () => {
     const repository: AdminRepository = createRepository()
     const service = createAdminService(repository)
 
+    await expect(
+      service.getCourses({
+        category: "입문자를 위한 코스",
+        page: 1,
+        pageSize: 20,
+        query: "글쓰기",
+        status: "active",
+      })
+    ).resolves.toEqual(courseList)
     await expect(
       service.createCourse({
         now: new Date("2026-06-14T03:00:00.000Z"),
@@ -377,6 +407,16 @@ function createRepository(): AdminRepository {
     async readCourseEditor(input) {
       expect(input.courseId).toBe("cmock")
       return courseDetail
+    },
+    async readCourses(input) {
+      expect(input).toEqual({
+        category: "입문자를 위한 코스",
+        page: 1,
+        pageSize: 20,
+        query: "글쓰기",
+        status: "active",
+      })
+      return courseList
     },
     async readSettings() {
       return settings

@@ -25,7 +25,7 @@ export function createApp(dependencies: AdminApiDependencies): Hono {
     "*",
     cors({
       allowHeaders: ["Authorization", "Content-Type"],
-      allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true,
       origin: dependencies.adminOrigin ?? "http://localhost:3003",
     })

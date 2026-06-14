@@ -127,6 +127,9 @@ function createDependencies(): AdminApiDependencies {
         expect(input.courseId).toBe("cmock")
         return courseDetail
       },
+      async getCourses() {
+        throw new Error("unexpected course list request")
+      },
       async getDashboard() {
         throw new Error("unexpected dashboard request")
       },

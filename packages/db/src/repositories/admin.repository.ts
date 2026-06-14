@@ -3,6 +3,7 @@ import type {
   AdminArchiveCourseResultDto,
   AdminContentResetResultDto,
   AdminCourseDetailDto,
+  AdminCourseListDto,
   AdminDashboardDto,
   AdminDeleteUserResultDto,
   AdminSettingsDto,
@@ -20,6 +21,7 @@ import type {
   DeleteAdminUserInput,
   ReadAdminAnalyticsInput,
   ReadAdminCourseInput,
+  ReadAdminCoursesInput,
   ReadAdminDashboardInput,
   ReadAdminLessonAnalyticsInput,
   ReadAdminUserInput,
@@ -70,6 +72,9 @@ export function createDrizzleAdminRepository(
     },
     readCourseEditor(input) {
       return Promise.resolve(readCourseEditor(db, input))
+    },
+    readCourses(input) {
+      return Promise.resolve(readCourses(db, input))
     },
     readSettings() {
       return Promise.resolve(readSettings(db))
@@ -642,6 +647,68 @@ function readCourseEditor(
       status: unit.status,
       title: unit.title,
     })),
+  }
+}
+
+function readCourses(
+  db: KwepDatabase,
+  input: ReadAdminCoursesInput
+): AdminCourseListDto {
+  const query = input.query.trim().toLowerCase()
+  const category = input.category.trim()
+  const unitRows = db.select().from(courseUnits).all()
+  const lessonRows = db.select().from(lessons).all()
+  const filteredCourses = db
+    .select()
+    .from(courses)
+    .all()
+    .filter((course) =>
+      input.status === "all" ? true : course.status === input.status
+    )
+    .filter((course) => category.length === 0 || course.category === category)
+    .filter(
+      (course) =>
+        query.length === 0 ||
+        course.title.toLowerCase().includes(query) ||
+        course.description.toLowerCase().includes(query)
+    )
+    .sort((left, right) => left.sortOrder - right.sortOrder)
+    .map((course) => {
+      const activeUnitIds = unitRows
+        .filter(
+          (unit) => unit.courseId === course.id && unit.status === "active"
+        )
+        .map((unit) => unit.id)
+      const activeUnitIdSet = new Set(activeUnitIds)
+
+      return {
+        category: course.category,
+        id: course.id,
+        lessonCount: lessonRows.filter(
+          (lesson) =>
+            lesson.courseId === course.id &&
+            lesson.status === "active" &&
+            activeUnitIdSet.has(lesson.unitId)
+        ).length,
+        revision: course.curriculumRevision,
+        status: course.status,
+        title: course.title,
+        unitCount: activeUnitIds.length,
+      }
+    })
+  const totalItems = filteredCourses.length
+  const totalPages = Math.max(1, Math.ceil(totalItems / input.pageSize))
+  const page = Math.min(Math.max(1, input.page), totalPages)
+  const start = (page - 1) * input.pageSize
+
+  return {
+    items: filteredCourses.slice(start, start + input.pageSize),
+    pagination: {
+      page,
+      pageSize: input.pageSize,
+      totalItems,
+      totalPages,
+    },
   }
 }
 

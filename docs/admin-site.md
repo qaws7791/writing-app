@@ -1,5 +1,31 @@
 # 어드민 사이트
 
+## 2026-06-14 Kwep 어드민 웹 피벗 완료
+
+- 어드민 웹에 `/`, `/login`, `/courses`, `/courses/[id]`, `/users`, `/users/[id]`, `/analytics`, `/settings` 라우트를 추가했다.
+- 어드민 프론트엔드는 `AdminApi` 포트를 통해 어드민 API와 통신하며, 화면 컴포넌트는 HTTP 세부 구현에 직접 의존하지 않는다.
+- 콘텐츠 관리는 코스 검색, 카테고리/상태 필터, 페이지 크기, 페이지 이동, 새 코스 생성, 코스 보관 확인 흐름을 제공한다.
+- 코스 상세는 코스 정보, 커리큘럼 맵, 레슨 작업대, 10개 Kwep 스텝 타입 편집 폼, 학습자 시작 화면 미리보기를 제공한다.
+- 사용자 관리는 검색, 상태 필터, 정렬, 상세 통계, 정지/복구, 삭제 요청 확인 흐름을 제공한다.
+- 분석은 가입/완료 추이, 연속 학습일 분포, 레슨별 완료율/이탈률 테이블을 제공한다.
+- 운영 설정은 공지/배너, 이용약관, 개인정보처리방침 저장과 콘텐츠 초기화를 제공한다.
+- 로컬 브라우저 스모크에서 인증 세션이 필요하면 `ADMIN_DEV_SESSION_TOKEN=admin-1`을 설정해 개발용 Bearer 세션을 서버 컴포넌트 요청에 주입한다.
+- `bun run dev:admin:setup`은 Kwep 콘텐츠 seed 후 `admin-1` 개발 관리자 계정을 반복 실행 가능하게 생성한다.
+
+## 2026-06-14 Kwep 어드민 코스 목록 API 완료
+
+- 어드민 API에 `GET /courses`를 추가했다.
+- 코스 목록은 검색어, 카테고리, active/archived/all 상태, 페이지, 페이지 크기를 query string으로 받는다.
+- 응답은 코스 기본 정보와 active 유닛 수, active 레슨 수, 커리큘럼 revision, 페이지네이션 metadata를 포함한다.
+- 이 endpoint는 어드민 콘텐츠 관리 화면이 실제 API 기반으로 검색/필터/페이지 이동을 수행하기 위한 관리 전용 계약이다.
+
+## 2026-06-14 Kwep 어드민 브라우저 스모크 완료
+
+- `ADMIN_DEV_SESSION_TOKEN=admin-1 bun run dev:admin`으로 어드민 API와 어드민 Next 앱을 함께 실행했다.
+- 브라우저에서 `/login`, `/`, `/courses`, `/users`, `/users/user-1`, `/analytics`, `/settings` 렌더링을 확인했다.
+- 브라우저 origin에서 어드민 API로 코스 생성, editor 조회, 코스 보관, 사용자 정지/복구, 공지/배너 저장, 약관/개인정보처리방침 저장을 호출했고 모두 `200`을 반환했다.
+- 운영 설정 저장은 `PUT` preflight가 필요하므로 어드민 API CORS 허용 method에 `PUT`을 포함한다.
+
 ## 2026-06-14 Kwep 어드민 코스 생성/보관 API 완료
 
 - 어드민 API에 `POST /courses`, `DELETE /courses/:courseId`, `GET /courses/:courseId/editor`를 추가했다.

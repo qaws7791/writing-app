@@ -1,5 +1,12 @@
 # 플랫폼 백엔드 API
 
+## 2026-06-14 Kwep 플랫폼 브라우저 스모크 완료
+
+- `bun run dev:app`으로 Kwep seed 기반 플랫폼 API와 웹 앱을 함께 실행했다.
+- 브라우저에서 공개 랜딩, Google 로그인 진입, 비인증 보호 route 리다이렉트, `kwep_session=user-1` 쿠키 기반 홈, 배우기, 코스 상세, 레슨 시작 화면 렌더링을 확인했다.
+- 브라우저 origin에서 `POST /learning/answers`와 `POST /learning/lessons/{lessonId}/complete`를 호출했고 모두 `200`을 반환했다.
+- 기존 로컬 `.env`의 `CORS_ORIGIN`은 새 `WEB_ORIGIN`으로 정규화하되, dev server 포트는 `API_PORT` 또는 기본값 `3001`만 사용한다.
+
 ## 2026-06-14 Kwep 브라우저 쓰기 요청 CORS 반영
 
 - 학습자 API는 `WEB_ORIGIN` 값을 기준으로 브라우저 요청의 CORS origin을 허용한다.

@@ -4,6 +4,7 @@ import { createApp, type AdminApiDependencies } from "@/app"
 import type {
   AdminArchiveCourseResultDto,
   AdminCourseDetailDto,
+  AdminCourseListDto,
 } from "@workspace/core/admin"
 
 const courseDetail: AdminCourseDetailDto = {
@@ -65,7 +66,60 @@ const archiveCourseResult: AdminArchiveCourseResultDto = {
   archived: true,
 }
 
+const courseList: AdminCourseListDto = {
+  items: [
+    {
+      category: "입문자를 위한 코스",
+      id: "c1",
+      lessonCount: 10,
+      revision: 2,
+      status: "active",
+      title: "글쓰기 첫걸음 30일",
+      unitCount: 3,
+    },
+  ],
+  pagination: {
+    page: 2,
+    pageSize: 10,
+    totalItems: 1,
+    totalPages: 1,
+  },
+}
+
 describe("어드민 API courses route", () => {
+  it("관리자 세션이 있으면 코스 목록 query를 파싱해 반환한다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request(
+      "/courses?category=%EC%9E%85%EB%AC%B8%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C+%EC%BD%94%EC%8A%A4&page=2&pageSize=10&query=%EA%B8%80%EC%93%B0%EA%B8%B0&status=active",
+      {
+        headers: {
+          Authorization: "Bearer admin-token",
+        },
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual(courseList)
+  })
+
+  it("허용하지 않는 코스 목록 query는 400을 반환한다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request("/courses?page=0", {
+      headers: {
+        Authorization: "Bearer admin-token",
+      },
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_request",
+      },
+    })
+  })
+
   it("관리자 세션이 없으면 코스 생성 요청은 401을 반환한다", async () => {
     const app = createApp(createDependencies())
 
@@ -154,6 +208,16 @@ function createDependencies(): AdminApiDependencies {
       },
       async getCourseEditor() {
         throw new Error("unexpected course editor request")
+      },
+      async getCourses(input) {
+        expect(input).toEqual({
+          category: "입문자를 위한 코스",
+          page: 2,
+          pageSize: 10,
+          query: "글쓰기",
+          status: "active",
+        })
+        return courseList
       },
       async getDashboard() {
         throw new Error("unexpected dashboard request")

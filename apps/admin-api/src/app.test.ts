@@ -135,6 +135,24 @@ const lessonAnalytics: AdminLessonAnalyticsPageDto = {
 }
 
 describe("어드민 API dashboard route", () => {
+  it("운영 설정 저장 preflight에서 PUT method를 허용한다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request("/settings/notice", {
+      headers: {
+        "Access-Control-Request-Headers": "Authorization, Content-Type",
+        "Access-Control-Request-Method": "PUT",
+        Origin: "http://localhost:3003",
+      },
+      method: "OPTIONS",
+    })
+
+    expect(response.status).toBe(204)
+    expect(response.headers.get("access-control-allow-methods")).toContain(
+      "PUT"
+    )
+  })
+
   it("관리자 세션이 없으면 401을 반환한다", async () => {
     const app = createApp(createDependencies())
 
@@ -338,6 +356,9 @@ function createDependencies(): AdminApiDependencies {
       },
       async getCourseEditor() {
         throw new Error("unexpected course editor request")
+      },
+      async getCourses() {
+        throw new Error("unexpected course list request")
       },
       async getLessonAnalytics(input) {
         expect(input).toEqual({

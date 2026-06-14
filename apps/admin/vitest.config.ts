@@ -11,6 +11,10 @@ const reactPath = path.resolve(__dirname, "node_modules/react")
 const reactDomPath = path.resolve(__dirname, "node_modules/react-dom")
 
 export default defineConfig({
+  esbuild: {
+    jsx: "automatic",
+    jsxImportSource: "react",
+  },
   plugins: [tsconfigPaths()],
   resolve: {
     alias: [
@@ -24,5 +28,6 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    setupFiles: ["./vitest.setup.ts"],
   },
 })

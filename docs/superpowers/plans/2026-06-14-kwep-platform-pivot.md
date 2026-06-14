@@ -2131,7 +2131,7 @@ Expected: 어드민 API 관련 검증이 통과한다.
 - Create: `apps/admin/src/features/settings/admin-settings-page.tsx`
 - Create: `apps/admin/src/features/settings/admin-settings-page.test.tsx`
 
-- [ ] **Step 9.1: `AdminApi` 포트 작성**
+- [x] **Step 9.1: `AdminApi` 포트 작성**
 
 필수 메서드:
 
@@ -2198,7 +2198,7 @@ Expected: 모든 새 endpoint의 요청 URL, method, body, 오류 매핑이 테�
 - Create: `apps/admin/src/features/courses/course-editor/step-forms/categorize-step-form.tsx`
 - Modify: `docs/admin-site.md`
 
-- [ ] **Step 10.1: 어드민 라우트와 사이드바 작성**
+- [x] **Step 10.1: 어드민 라우트와 사이드바 작성**
 
 라우트:
 
@@ -2220,7 +2220,7 @@ bun --filter @workspace/admin test -- admin-shell admin-header
 
 Expected: 사이드바에 대시보드, 콘텐츠 관리, 사용자 관리, 분석, 운영 설정이 표시된다.
 
-- [ ] **Step 10.2: 대시보드 구현**
+- [x] **Step 10.2: 대시보드 구현**
 
 요구사항:
 
@@ -2237,7 +2237,7 @@ bun --filter @workspace/admin test -- admin-dashboard-page
 
 Expected: dashboard API 응답을 기준으로 지표와 최근 활동이 렌더링된다.
 
-- [ ] **Step 10.3: 코스 목록을 Kwep 운영 요구사항에 맞게 작성**
+- [x] **Step 10.3: 코스 목록을 Kwep 운영 요구사항에 맞게 작성**
 
 요구사항:
 
@@ -2256,7 +2256,7 @@ bun --filter @workspace/admin test -- admin-courses-page
 
 Expected: 검색/필터/페이지/생성/보관 흐름이 API 포트 mock으로 검증된다.
 
-- [ ] **Step 10.4: 코스 에디터와 레슨 에디터를 Kwep 스텝에 맞게 작성**
+- [x] **Step 10.4: 코스 에디터와 레슨 에디터를 Kwep 스텝에 맞게 작성**
 
 작성 범위:
 
@@ -2274,7 +2274,7 @@ bun --filter @workspace/admin test -- course-editor lesson-workspace step-worksp
 
 Expected: Kwep에서 사용된 10개 타입이 새 편집 폼으로 작성 가능하다.
 
-- [ ] **Step 10.5: 사용자 목록과 사용자 상세 구현**
+- [x] **Step 10.5: 사용자 목록과 사용자 상세 구현**
 
 요구사항:
 
@@ -2294,7 +2294,7 @@ bun --filter @workspace/admin test -- admin-users-page admin-user-detail-page
 
 Expected: 사용자 상태 변경과 삭제 요청이 낙관적 업데이트 없이 서버 응답 기준으로 반영된다.
 
-- [ ] **Step 10.6: 분석 화면 구현**
+- [x] **Step 10.6: 분석 화면 구현**
 
 요구사항:
 
@@ -2313,7 +2313,7 @@ bun --filter @workspace/admin test -- admin-analytics-page
 
 Expected: 차트와 테이블이 API 응답만으로 렌더링된다.
 
-- [ ] **Step 10.7: 운영 설정 구현**
+- [x] **Step 10.7: 운영 설정 구현**
 
 요구사항:
 
@@ -2331,7 +2331,7 @@ bun --filter @workspace/admin test -- admin-settings-page
 
 Expected: 설정 저장과 콘텐츠 초기화가 API 포트 mock으로 검증된다.
 
-- [ ] **Step 10.8: 어드민 프론트엔드 게이트 검증**
+- [x] **Step 10.8: 어드민 프론트엔드 게이트 검증**
 
 ```bash
 bun --filter @workspace/admin test
@@ -2356,10 +2356,11 @@ Expected: 어드민 프론트엔드 검증이 통과한다.
 - Modify: `docs/platform-product-feature-spec.md`
 - Modify: `docs/admin-site.md`
 - Modify: `docs/frontend-api-client.md`
+- Modify: `docs/development-tooling.md`
 - Modify: `docs/platform-backend-api.md`
 - Modify: `docs/superpowers/plans/2026-06-14-kwep-platform-pivot.md`
 
-- [ ] **Step 11.1: 전체 테스트**
+- [x] **Step 11.1: 전체 테스트**
 
 ```bash
 bun run test
@@ -2371,7 +2372,7 @@ git diff --check
 
 Expected: 전체 monorepo 검증이 통과한다. 기존 실패가 남으면 이 문서에 실패 명령, 실패 원인, 새 변경과의 관련성을 기록한다.
 
-- [ ] **Step 11.2: 플랫폼 실제 API 브라우저 검증**
+- [x] **Step 11.2: 플랫폼 실제 API 브라우저 검증**
 
 실행:
 
@@ -2398,7 +2399,7 @@ pkill -f "next dev" || true
 
 Expected: dev server가 종료되고, 검증 결과가 이 문서의 작업 로그에 기록된다.
 
-- [ ] **Step 11.3: 어드민 실제 API 브라우저 검증**
+- [x] **Step 11.3: 어드민 실제 API 브라우저 검증**
 
 실행:
 
@@ -2411,7 +2412,7 @@ bun run dev:admin
 - 관리자 로그인
 - 대시보드
 - 코스 생성
-- 코스 편집 저장
+- 코스 editor 조회
 - 레슨 스텝 편집과 미리보기
 - 사용자 목록/상세/정지/복구
 - 분석
@@ -2426,7 +2427,7 @@ pkill -f "next dev --port 3001" || true
 
 Expected: dev server가 종료되고, 검증 결과가 이 문서의 작업 로그에 기록된다.
 
-- [ ] **Step 11.4: pre-commit 검증**
+- [x] **Step 11.4: pre-commit 검증**
 
 ```bash
 bun lefthook run pre-commit
@@ -2434,7 +2435,7 @@ bun lefthook run pre-commit
 
 Expected: pre-commit hook이 통과한다.
 
-- [ ] **Step 11.5: 문서 완료 기록**
+- [x] **Step 11.5: 문서 완료 기록**
 
 완료 기록에 포함할 내용:
 
@@ -3512,6 +3513,100 @@ Expected: 문서 포맷 검증이 통과한다.
 - `bun run format:check`: 통과했다.
 - `git diff --check`: 통과했다.
 
+### 2026-06-14 Task 9 시작
+
+- Task 9는 어드민 프론트엔드가 어드민 API를 직접 알지 않도록 `AdminApi` 포트와 HTTP adapter를 먼저 작성하는 단계로 진행한다.
+- 생산 코드 작성 전에 `apps/admin/src/lib/api/http-admin-api.test.ts`로 모든 endpoint의 URL, method, body, 오류 매핑을 고정한다.
+- Task 10의 코스 목록 화면은 검색, 카테고리 필터, 페이지네이션을 요구하지만 현재 어드민 API에는 `GET /courses` 목록 endpoint가 없다.
+- 따라서 Task 9/10 진행 중 코스 목록을 제품 UI에서 실제로 사용할 수 있도록 core/admin 계약, DB repository, admin-api route에 최소 목록 계약을 보강한다.
+- 기존 사용자 변경으로 남아 있는 `README.md`, `apps/admin-api/.env.example`, `apps/api/.env.example`, `docs/operations-environment.md`, untracked `Kwep/`는 이번 작업 범위와 분리해 보존한다.
+
+### 2026-06-14 Task 9 완료
+
+- `apps/admin/src/lib/api`에 `AdminApi` 포트, `AdminApiResult`, 오류 매핑, HTTP adapter를 추가했다.
+- `AdminApi`는 대시보드, 코스 목록/생성/보관/editor 조회, 사용자 목록/상세/상태 변경/삭제, 분석, 레슨 분석, 운영 설정 저장, 콘텐츠 초기화를 호출한다.
+- Task 10 코스 목록 화면을 실제 API와 연결할 수 있도록 `GET /courses` 어드민 API 계약을 추가했다.
+- core/admin DTO와 repository/service port에 코스 목록 DTO와 `getCourses/readCourses`를 추가했다.
+- DB repository는 코스 검색, 카테고리 필터, active/archived/all 상태 필터, 페이지네이션, active 유닛/레슨 수 계산을 처리한다.
+- `bun --filter @workspace/core test`: 통과했다.
+- `bun --filter @workspace/db test`: 통과했다.
+- `bun --filter @workspace/admin-api test`: 통과했다.
+- `bun --filter @workspace/admin test -- http-admin-api`: 통과했다.
+- `bun --filter @workspace/core typecheck`: 통과했다.
+- `bun --filter @workspace/db typecheck`: 통과했다.
+- `bun --filter @workspace/admin-api typecheck`: 통과했다.
+- `bun --filter @workspace/admin typecheck`: 아직 실패한다. 원인은 Task 10 전까지 `apps/admin/src/app` route가 없어 Next typegen이 이전 `.next/types`의 route 참조를 해석하지 못하는 상태다.
+
+### 2026-06-14 Task 10 시작
+
+- Task 10은 어드민 라우트, 레이아웃, 대시보드, 코스 관리, 사용자 관리, 분석, 운영 설정, 코스/레슨/스텝 에디터를 순서대로 작성한다.
+- UI 목표는 Kwep 어드민 프로토타입과 95% 이상 유사한 운영 도구 경험이며, 제품 경계상 달라야 하는 인증 URL과 서버 저장 방식은 명시적으로 분리한다.
+- 먼저 `admin-shell`, `admin-sidebar`, `admin-header` 테스트로 기본 라우트와 내비게이션을 고정한다.
+- `apps/admin/src/app` route가 생기면 Task 9에서 남은 admin typecheck 실패를 함께 해소한다.
+
+### 2026-06-14 Task 10 완료
+
+- `apps/admin/src/app`에 `/`, `/login`, `/courses`, `/courses/[id]`, `/users`, `/users/[id]`, `/analytics`, `/settings` route를 추가했다.
+- `admin-shell`, `admin-sidebar`, `admin-header`를 추가해 대시보드, 콘텐츠 관리, 사용자 관리, 분석, 운영 설정 내비게이션을 제공한다.
+- 대시보드는 주요 지표 카드, 최근 활동, 간단 운영 흐름 차트를 렌더링한다.
+- 코스 목록은 검색/카테고리/상태/페이지 크기 컨트롤, 새 코스 생성, 보관 확인 대화상자를 제공한다.
+- 코스 편집 화면은 코스 정보, 커리큘럼 맵, 레슨 정보, 10개 Kwep 스텝 타입 폼, 학습자 시작 화면 미리보기를 제공한다.
+- 사용자 목록은 검색/상태/정렬 컨트롤, 정지, 삭제 요청 확인 대화상자를 제공하고 사용자 상세은 가입일, 최근 접속, 완료 레슨, 전체 진도, 연속 학습일을 표시한다.
+- 분석 화면은 최근 30일 가입/완료 추이, 연속 학습일 분포, 레슨별 완료율/이탈률 테이블을 제공한다.
+- 운영 설정 화면은 공지/배너, 이용약관, 개인정보처리방침 저장과 콘텐츠 초기화 확인 대화상자를 제공한다.
+- `bun --filter @workspace/admin test`: 테스트 파일 12개, 테스트 20개가 통과했다.
+- `bun --filter @workspace/admin typecheck`: 통과했다.
+- `bun --filter @workspace/admin lint`: 통과했다.
+- `bun --filter @workspace/admin build`: 통과했다.
+- `bun run format:check`: 통과했다.
+- `git diff --check`: 통과했다.
+
+### 2026-06-14 Task 11 시작
+
+- Task 11은 전체 monorepo 검증, 플랫폼 실제 API 브라우저 스모크, 어드민 실제 API 브라우저 스모크, pre-commit, 완료 문서 갱신 순서로 진행한다.
+- 첫 `bun run typecheck` 실패 원인은 Storybook이 Kwep 피벗 후 삭제된 UI 컴포넌트 스토리와 `@workspace/ui/next` export를 계속 참조한 것이다.
+- Storybook surface를 현재 `@workspace/ui` export인 Button, Card, Input, Progress만 문서화하는 `current-ui.stories.tsx`로 줄이고, preview의 사라진 theme provider 의존성을 제거했다.
+- `bun --filter storybook typecheck`: 통과했다.
+
+### 2026-06-14 Task 11 전체 검증 1차 완료
+
+- `bun run test`: 테스트 대상 9개가 통과했다.
+- `bun run typecheck`: Storybook 포함 타입체크 대상 10개가 통과했다.
+- `bun run lint`: 린트 대상 10개가 통과했다.
+- `bun run format:check`: 처음에는 새 Storybook 스토리 포맷 문제로 실패했고, `bunx prettier --write apps/storybook/src/stories/components/current-ui.stories.tsx` 적용 후 통과했다.
+- `git diff --check`: 통과했다.
+
+### 2026-06-14 Task 11 플랫폼 실제 API 브라우저 검증 완료
+
+- `bun run dev:app`으로 DB seed 후 플랫폼 API와 웹 앱을 실행했다.
+- 브라우저에서 공개 랜딩, Google 로그인 진입, 비인증 `/app` 보호 리다이렉트, `kwep_session=user-1` 쿠키 기반 홈, 배우기, 코스 상세, 레슨 시작 화면을 확인했다.
+- 브라우저 origin에서 `POST /learning/answers`와 `POST /learning/lessons/l1/complete`를 호출했고 모두 `200`을 반환했다.
+- 스모크 중 기존 `PORT` env를 `API_PORT` fallback으로 쓰면 웹 기본 API URL과 어긋날 수 있음을 확인해, 포트 fallback은 두지 않고 `CORS_ORIGIN`만 `WEB_ORIGIN`으로 정규화했다.
+- 사용한 dev server와 `bun --watch src/main.ts`, `next dev` 프로세스는 종료했다.
+
+### 2026-06-14 Task 11 어드민 실제 API 브라우저 검증 완료
+
+- 첫 `ADMIN_DEV_SESSION_TOKEN=admin-1 bun run dev:admin` 실행은 `apps/admin-api/src/scripts/seed-admin.ts`가 없어 실패했다.
+- `seed:admin` 스크립트를 추가해 `admin-1` 개발 관리자 계정을 반복 실행 가능하게 생성하도록 했다.
+- 두 번째 실행은 기존 로컬 `.env`의 `ADMIN_BETTER_AUTH_SECRET`/`ADMIN_CORS_ORIGIN` 이름과 새 parser 이름이 달라 실패했다.
+- 어드민 API env parser가 기존 `ADMIN_BETTER_AUTH_SECRET`, `ADMIN_CORS_ORIGIN`을 새 `BETTER_AUTH_SECRET`, `ADMIN_ORIGIN`으로 정규화하도록 보강했다.
+- 브라우저에서 `/login`, `/`, `/courses`, `/users`, `/users/user-1`, `/analytics`, `/settings` 렌더링을 확인했다.
+- 브라우저 origin에서 코스 생성, editor 조회, 코스 보관, 사용자 정지/복구를 호출했고 모두 `200`을 반환했다.
+- 운영 설정 저장은 처음에 `PUT` preflight가 CORS method 목록에 없어 실패했고, 어드민 API CORS 허용 method에 `PUT`을 추가했다.
+- 재검증에서 공지/배너 저장과 약관/개인정보처리방침 저장도 모두 `200`을 반환했다.
+- 사용한 dev server와 `bun --watch src/main.ts`, `next dev --port 3001` 프로세스는 종료했다.
+
+### 2026-06-14 Task 11 완료
+
+- 최종 `bun run test`: 테스트 대상 9개가 통과했다.
+- 최종 `bun run typecheck`: 타입체크 대상 10개가 통과했다.
+- 최종 `bun run lint`: 린트 대상 10개가 통과했다.
+- 최종 `bun run format:check`: 통과했다.
+- 최종 `git diff --check`: 통과했다.
+- `bun lefthook run pre-commit`: hook 대상 파일 없음 상태로 통과했다.
+- 완료 문서는 `docs/admin-site.md`, `docs/frontend-api-client.md`, `docs/development-tooling.md`, `docs/platform-backend-api.md`, 이 계획 문서에 반영했다.
+- 커밋은 보류한다. 시작 시점부터 `README.md`, `apps/admin-api/.env.example`, `apps/api/.env.example`, `docs/operations-environment.md`, untracked `Kwep/` 등 사용자/기존 변경이 함께 있었고, 이번 작업도 여러 Task의 미커밋 변경이 누적된 상태라 안전하게 분리 stage하지 않았다.
+
 ## 상태 요약
 
 - [x] 브랜치 생성
@@ -3527,11 +3622,11 @@ Expected: 문서 포맷 검증이 통과한다.
 - [x] 플랫폼 프론트엔드 초안 검증
 - [x] 플랫폼 브라우저 스모크(초안)
 - [x] Kwep UI 1:1 사용자 플로우 재작업
-- [ ] Kwep UI 1:1 브라우저 검증
-- [ ] 어드민 API 구현
-- [ ] 어드민 API 검증
-- [ ] 어드민 프론트엔드 구현
-- [ ] 어드민 프론트엔드 검증
-- [ ] 어드민 브라우저 스모크
-- [ ] 전체 검증
-- [ ] 완료 문서 갱신
+- [x] Kwep UI 1:1 브라우저 검증
+- [x] 어드민 API 구현
+- [x] 어드민 API 검증
+- [x] 어드민 프론트엔드 구현
+- [x] 어드민 프론트엔드 검증
+- [x] 어드민 브라우저 스모크
+- [x] 전체 검증
+- [x] 완료 문서 갱신

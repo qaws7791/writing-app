@@ -8,7 +8,12 @@ export type AdminApiEnv = {
 }
 
 export function parseAdminApiEnv(input: AppEnvInput): AdminApiEnv {
-  const env = parseEnv(input)
+  const env = parseEnv({
+    ...input,
+    ADMIN_ORIGIN: input["ADMIN_ORIGIN"] ?? input["ADMIN_CORS_ORIGIN"],
+    BETTER_AUTH_SECRET:
+      input["BETTER_AUTH_SECRET"] ?? input["ADMIN_BETTER_AUTH_SECRET"],
+  })
 
   return {
     adminOrigin: env.ADMIN_ORIGIN,

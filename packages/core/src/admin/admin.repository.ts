@@ -3,6 +3,8 @@ import type {
   AdminArchiveCourseResultDto,
   AdminContentResetResultDto,
   AdminCourseDetailDto,
+  AdminCourseListDto,
+  AdminCourseListStatusFilter,
   AdminDashboardDto,
   AdminDeleteUserResultDto,
   AdminLegalSettingsRequest,
@@ -49,6 +51,14 @@ export type ResetAdminContentInput = {
 
 export type CreateAdminCourseInput = {
   readonly now: Date
+}
+
+export type ReadAdminCoursesInput = {
+  readonly category: string
+  readonly page: number
+  readonly pageSize: number
+  readonly query: string
+  readonly status: AdminCourseListStatusFilter
 }
 
 export type ReadAdminCourseInput = {
@@ -105,6 +115,9 @@ export type AdminRepository = {
   readonly readCourseEditor: (
     input: ReadAdminCourseInput
   ) => Promise<AdminCourseDetailDto | null>
+  readonly readCourses: (
+    input: ReadAdminCoursesInput
+  ) => Promise<AdminCourseListDto>
   readonly readSettings: () => Promise<AdminSettingsDto>
   readonly readUser: (
     input: ReadAdminUserInput
