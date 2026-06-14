@@ -15,6 +15,7 @@
   },
   "scripts": {
     "db:migrate": "bun src/migrations/migrate.ts",
+    "db:reset": "bun src/scripts/reset-database.ts",
     "db:seed": "bun src/seeds/seed.ts",
     "lint": "eslint .",
     "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
