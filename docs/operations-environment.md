@@ -40,7 +40,7 @@ SQLite 파일은 API 프로세스와 같은 로컬 디스크에 둔다. 여러 �
 
 로컬 예시는 각 앱의 `.env.example`을 기준으로 만든다. API 앱 패키지에서 실행되는 `DATABASE_URL=file:../../data/api.sqlite`는 저장소 루트의 `data/api.sqlite`를 가리킨다.
 
-루트 `package.json`은 포트나 비밀값을 대신 주입하지 않는다. `bun run dev:app`은 실행 전에 `bun run dev:app:setup`으로 콘텐츠 마이그레이션과 시드를 실행한다. `bun run dev:admin`은 목표상 콘텐츠 시드와 관리자 계정 시드 후 어드민 웹/API를 실행하지만, 현재는 관리자 시드 스크립트와 어드민 웹 소스가 없어서 통합 실행 명령으로 사용할 수 없다.
+루트 `package.json`은 포트나 비밀값을 대신 주입하지 않는다. `bun run dev:app`은 학습자 웹과 API 서버만 시작하며 DB를 변경하지 않는다. 최초 준비나 콘텐츠 갱신이 필요하면 `bun run dev:app:setup`을 명시적으로 실행한다. 깨끗한 개발 DB로 시작해야 할 때만 `bun run dev:app:fresh`를 사용한다. `bun run dev:admin`은 목표상 콘텐츠 시드와 관리자 계정 시드 후 어드민 웹/API를 실행하지만, 현재는 관리자 시드 스크립트와 어드민 웹 소스가 없어서 통합 실행 명령으로 사용할 수 없다.
 
 ## 로컬 환경 변수 파일
 
@@ -64,13 +64,14 @@ cp apps/admin/.env.example apps/admin/.env
 
 서버 프로세스 시작 자체는 운영 데이터를 변경하지 않는다. 배포 파이프라인이나 로컬 setup 단계에서 다음 명령을 명시적으로 실행한다.
 
-| 목적                            | 명령                                           | 비고                                                           |
-| ------------------------------- | ---------------------------------------------- | -------------------------------------------------------------- |
-| 스키마 마이그레이션만 적용      | `bun --filter @workspace/db db:migrate`        | `schema_migrations`에 적용 이력과 checksum을 기록한다.         |
-| 콘텐츠 마이그레이션과 시드 적용 | `bun --filter @workspace/db db:seed`           | 로컬 개발이나 콘텐츠 초기화가 필요한 환경에서 사용한다.        |
-| 최초 관리자 계정 생성           | `bun --filter @workspace/admin-api seed:admin` | 현재 스크립트 파일이 없어 실행 불가하며, 별도 구현이 필요하다. |
+| 목적                            | 명령                                           | 비고                                                              |
+| ------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------- |
+| 스키마 마이그레이션만 적용      | `bun --filter @workspace/db db:migrate`        | `schema_migrations`에 적용 이력과 checksum을 기록한다.            |
+| 콘텐츠 마이그레이션과 시드 적용 | `bun run dev:app:setup`                        | 로컬 학습자 앱 준비용 명령이다. 학습 진행과 답변 기록은 보존한다. |
+| 개발 DB 파일 초기화             | `bun run db:reset`                             | 로컬 SQLite 파일과 WAL/SHM 파일을 삭제한다.                       |
+| 최초 관리자 계정 생성           | `bun --filter @workspace/admin-api seed:admin` | 현재 스크립트 파일이 없어 실행 불가하며, 별도 구현이 필요하다.    |
 
-운영에서는 `db:migrate`를 먼저 실행하고, 콘텐츠를 덮어써야 하는 명확한 운영 절차가 있을 때만 `db:seed`를 사용한다.
+운영에서는 `db:migrate`를 먼저 실행하고, 콘텐츠를 갱신해야 하는 명확한 운영 절차가 있을 때만 `db:seed`를 사용한다. `db:reset`과 `dev:app:fresh`는 로컬 개발 DB 초기화용 명령이며 운영에서 사용하지 않는다.
 
 ## 학습자 API 환경 변수
 
