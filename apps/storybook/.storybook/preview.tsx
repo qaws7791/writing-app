@@ -5,7 +5,6 @@ import {
 } from "@storybook/addon-docs/blocks"
 import type { Preview } from "@storybook/react-vite"
 import { addons } from "storybook/preview-api"
-import { ThemeProvider } from "@workspace/ui/next"
 
 import "../styles.css"
 import { getStorybookTheme, type ThemeName } from "./storybook-theme"
@@ -111,20 +110,15 @@ const preview: Preview = {
       }, [theme])
 
       return (
-        <ThemeProvider
-          forcedTheme={theme === "system" ? undefined : theme}
-          defaultTheme={theme}
+        <div
+          className="antialiased"
+          style={{
+            fontFamily:
+              '"Noto Sans KR", "Noto Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif',
+          }}
         >
-          <div
-            className="antialiased"
-            style={{
-              fontFamily:
-                '"Noto Sans KR", "Noto Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif',
-            }}
-          >
-            <Story />
-          </div>
-        </ThemeProvider>
+          <Story />
+        </div>
       )
     },
   ],
