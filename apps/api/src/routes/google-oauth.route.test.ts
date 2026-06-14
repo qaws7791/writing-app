@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 
-import { createGoogleOAuthRoute } from "@/routes/google-oauth.route"
+import {
+  createGoogleCallbackSetCookies,
+  createGoogleOAuthRoute,
+} from "@/routes/google-oauth.route"
 
 describe("Google OAuth route", () => {
   it("Google 로그인 시작 요청을 Google authorization endpoint로 보낸다", async () => {
@@ -43,5 +46,16 @@ describe("Google OAuth route", () => {
     expect(response.headers.get("location")).toContain(
       "https://accounts.google.com/o/oauth2/v2/auth"
     )
+  })
+
+  it("Google 콜백 성공 쿠키를 세션 쿠키와 state 삭제 쿠키로 분리한다", () => {
+    const cookies = createGoogleCallbackSetCookies("session-token")
+
+    expect(cookies).toHaveLength(2)
+    expect(cookies[0]).toContain("kwep_session=session-token")
+    expect(cookies[0]).not.toContain("HttpOnly")
+    expect(cookies[1]).toContain("kwep_oauth_state=")
+    expect(cookies[1]).toContain("Max-Age=0")
+    expect(cookies[1]).toContain("HttpOnly")
   })
 })

@@ -120,21 +120,9 @@ export function createGoogleOAuthRoute(options: GoogleOAuthRouteOptions): Hono {
       userId,
     })
 
-    context.header(
-      "Set-Cookie",
-      [
-        serializeCookie(learnerSessionCookieName, sessionToken, {
-          httpOnly: true,
-          maxAge: sessionMaxAgeSeconds,
-          sameSite: "Lax",
-        }),
-        serializeCookie(oauthStateCookieName, "", {
-          httpOnly: true,
-          maxAge: 0,
-          sameSite: "Lax",
-        }),
-      ].join(", ")
-    )
+    for (const cookie of createGoogleCallbackSetCookies(sessionToken)) {
+      context.header("Set-Cookie", cookie, { append: true })
+    }
 
     return context.redirect(
       createWebUrl(options.webOrigin, state.callbackPath),
@@ -234,6 +222,23 @@ function serializeCookie(
   ]
     .filter(Boolean)
     .join("; ")
+}
+
+export function createGoogleCallbackSetCookies(
+  sessionToken: string
+): readonly [string, string] {
+  return [
+    serializeCookie(learnerSessionCookieName, sessionToken, {
+      httpOnly: false,
+      maxAge: sessionMaxAgeSeconds,
+      sameSite: "Lax",
+    }),
+    serializeCookie(oauthStateCookieName, "", {
+      httpOnly: true,
+      maxAge: 0,
+      sameSite: "Lax",
+    }),
+  ]
 }
 
 function readCookie(cookieHeader: string, name: string): string | null {
