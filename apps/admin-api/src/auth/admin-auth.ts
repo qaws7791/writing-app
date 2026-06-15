@@ -1,8 +1,8 @@
 import { and, eq, gt } from "drizzle-orm"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
-import type { KwepDatabase } from "@workspace/db"
-import { adminAuthSessions, adminAuthUsers } from "@workspace/db"
+import type { KwepDatabase } from "@workspace/db/client"
+import { adminAuthSessions, adminAuthUsers } from "@workspace/db/schema"
 
 export function createAdminBearerSessionResolver(
   db: KwepDatabase,
@@ -36,22 +36,7 @@ export function createAdminBearerSessionResolver(
         }
       }
 
-      const user = db
-        .select({
-          email: adminAuthUsers.email,
-          id: adminAuthUsers.id,
-          name: adminAuthUsers.name,
-          role: adminAuthUsers.role,
-        })
-        .from(adminAuthUsers)
-        .where(eq(adminAuthUsers.id, token))
-        .get()
-
-      return user === undefined
-        ? null
-        : {
-            admin: user,
-          }
+      return null
     },
   }
 }

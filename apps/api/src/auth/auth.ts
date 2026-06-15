@@ -1,8 +1,8 @@
 import { and, eq, gt } from "drizzle-orm"
 
 import type { SessionResolver } from "@/auth/session"
-import type { KwepDatabase } from "@workspace/db"
-import { authSessions, authUsers, learnerProfiles } from "@workspace/db"
+import type { KwepDatabase } from "@workspace/db/client"
+import { authSessions, authUsers, learnerProfiles } from "@workspace/db/schema"
 
 export function createBearerSessionResolver(
   db: KwepDatabase,
@@ -29,23 +29,7 @@ export function createBearerSessionResolver(
         return readUserSession(db, sessionUser)
       }
 
-      const user = db
-        .select({
-          createdAt: authUsers.createdAt,
-          email: authUsers.email,
-          id: authUsers.id,
-          image: authUsers.image,
-          name: authUsers.name,
-        })
-        .from(authUsers)
-        .where(eq(authUsers.id, token))
-        .get()
-
-      if (user === undefined) {
-        return null
-      }
-
-      return readUserSession(db, user)
+      return null
     },
   }
 }
