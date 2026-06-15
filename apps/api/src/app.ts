@@ -21,6 +21,7 @@ import {
 import type { ContentRepository } from "@workspace/core/content"
 import type { AiFeedbackService } from "@workspace/core/ai-feedback"
 import type { LearningService } from "@workspace/core/learning"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 export type ApiDependencies = {
   readonly aiFeedbackService?: AiFeedbackService
@@ -43,7 +44,7 @@ export function createApp(dependencies: ApiDependencies): Hono {
       allowHeaders: ["Authorization", "Content-Type"],
       allowMethods: ["GET", "POST", "OPTIONS"],
       credentials: true,
-      origin: dependencies.webOrigin ?? "http://localhost:3000",
+      origin: dependencies.webOrigin ?? localRuntimeDefaults.learnerWebOrigin,
     })
   )
 

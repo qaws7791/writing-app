@@ -1,4 +1,9 @@
 import { describe, expect, it } from "vitest"
+import {
+  createLocalRuntimeUrl,
+  localRuntimeDefaults,
+  localRuntimePorts,
+} from "@workspace/env"
 
 import { parseApiEnv } from "@/env"
 
@@ -12,10 +17,10 @@ describe("API env", () => {
         NODE_ENV: "test",
         OPENAI_API_KEY: "sk-test",
         OPENAI_MODEL: "gpt-5.4-mini",
-        WEB_ORIGIN: "http://localhost:3000",
+        WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
       })
     ).toEqual({
-      authBaseUrl: "http://localhost:4101",
+      authBaseUrl: createLocalRuntimeUrl(4101),
       databaseUrl: ":memory:",
       googleClientId: undefined,
       googleClientSecret: undefined,
@@ -23,7 +28,7 @@ describe("API env", () => {
       openAiApiKey: "sk-test",
       openAiModel: "gpt-5.4-mini",
       port: 4101,
-      webOrigin: "http://localhost:3000",
+      webOrigin: localRuntimeDefaults.learnerWebOrigin,
     })
   })
 
@@ -31,20 +36,23 @@ describe("API env", () => {
     expect(
       parseApiEnv({
         BETTER_AUTH_SECRET: "x".repeat(32),
-        CORS_ORIGIN: "http://localhost:3000,http://localhost:3001",
+        CORS_ORIGIN: [
+          localRuntimeDefaults.learnerWebOrigin,
+          localRuntimeDefaults.adminWebOrigin,
+        ].join(","),
         DATABASE_URL: ":memory:",
         NODE_ENV: "test",
       })
     ).toEqual({
-      authBaseUrl: "http://localhost:3001",
+      authBaseUrl: localRuntimeDefaults.learnerApiBaseUrl,
       databaseUrl: ":memory:",
       googleClientId: undefined,
       googleClientSecret: undefined,
       nodeEnv: "test",
       openAiApiKey: undefined,
       openAiModel: "gpt-5.2",
-      port: 3001,
-      webOrigin: "http://localhost:3000",
+      port: localRuntimePorts.learnerApi,
+      webOrigin: localRuntimeDefaults.learnerWebOrigin,
     })
   })
 })

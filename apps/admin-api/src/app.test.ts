@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { localRuntimeDefaults } from "@workspace/env"
 
 import { createApp } from "@/app"
 import {
@@ -146,7 +147,7 @@ describe("어드민 API dashboard route", () => {
       headers: {
         "Access-Control-Request-Headers": "Authorization, Content-Type",
         "Access-Control-Request-Method": "PUT",
-        Origin: "http://localhost:3003",
+        Origin: localRuntimeDefaults.adminWebOrigin,
       },
       method: "OPTIONS",
     })

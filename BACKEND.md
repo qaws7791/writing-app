@@ -99,7 +99,7 @@ SQLite 연결은 학습자 API와 같은 `@workspace/db` 공통 설정을 사용
 | `ADMIN_BETTER_AUTH_SECRET`        | 필수      | `replace-with-admin-auth-secret`    | 관리자 Better Auth 세션과 인증 토큰 서명에 사용하는 비밀값                                               |
 | `ADMIN_BETTER_AUTH_URL`           | 필수      | `http://localhost:4001`             | 관리자 Better Auth가 인증 URL을 계산할 때 사용하는 API 기준 URL                                          |
 | `ADMIN_BETTER_AUTH_COOKIE_DOMAIN` | 선택      | 비움 또는 `example.com`             | 어드민 웹과 어드민 API가 같은 parent domain의 서로 다른 서브도메인일 때 관리자 세션 쿠키를 공유할 domain |
-| `ADMIN_ORIGIN`                    | 선택      | `http://localhost:3003`             | 자격 증명 포함 브라우저 API 요청을 허용할 어드민 웹 origin                                               |
+| `ADMIN_ORIGIN`                    | 선택      | `http://localhost:3001`             | 자격 증명 포함 브라우저 API 요청을 허용할 어드민 웹 origin                                               |
 | `DATABASE_URL`                    | 필수      | `file:../../data/api.sqlite`        | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치                                |
 | `LOG_LEVEL`                       | 선택      | `info`                              | Pino 로그 레벨                                                                                           |
 | `NODE_ENV`                        | 선택      | `development`                       | 실행 환경 이름                                                                                           |

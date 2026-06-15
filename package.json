@@ -9,6 +9,7 @@
   "scripts": {
     "build": "turbo build",
     "build-storybook": "bun --filter storybook build",
+    "check:localhost-literals": "bun scripts/check-localhost-literals.ts",
     "dev": "turbo dev",
     "dev:admin": "bun run dev:admin:setup && turbo dev --filter=@workspace/admin --filter=@workspace/admin-api",
     "dev:admin:setup": "bun --filter @workspace/db db:seed && bun --filter @workspace/admin-api seed:admin",

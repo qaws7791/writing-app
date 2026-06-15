@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import type { AdminDashboardDto } from "@workspace/core/admin"
+import { localRuntimeDefaults } from "@workspace/env"
 
 import {
   createTestAdminApiDependencies,
@@ -24,7 +25,7 @@ describe("어드민 API 테스트 의존성", () => {
   it("기본 관리자 세션과 고정 시간을 제공한다", async () => {
     const dependencies = createTestAdminApiDependencies()
 
-    expect(dependencies.adminOrigin).toBe("http://localhost:3003")
+    expect(dependencies.adminOrigin).toBe(localRuntimeDefaults.adminWebOrigin)
     expect(dependencies.now?.()).toEqual(testAdminNow)
     await expect(
       dependencies.sessionResolver.resolveSession("admin-token")

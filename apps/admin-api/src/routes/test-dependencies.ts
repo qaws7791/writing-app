@@ -4,6 +4,7 @@ import type {
   AdminSessionResolver,
 } from "@/auth/admin-session"
 import type { AdminService } from "@workspace/core/admin"
+import { localRuntimeDefaults } from "@workspace/env"
 
 type TestAdminApiDependencyOverrides = {
   readonly adminOrigin?: string
@@ -27,7 +28,7 @@ export function createTestAdminApiDependencies(
   overrides: TestAdminApiDependencyOverrides = {}
 ): AdminApiDependencies {
   return {
-    adminOrigin: overrides.adminOrigin ?? "http://localhost:3003",
+    adminOrigin: overrides.adminOrigin ?? localRuntimeDefaults.adminWebOrigin,
     dashboardService: {
       ...createFailingAdminService(),
       ...overrides.dashboardService,

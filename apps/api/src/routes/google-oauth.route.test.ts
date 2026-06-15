@@ -1,19 +1,24 @@
 import { describe, expect, it } from "vitest"
 import { authAccounts } from "@workspace/db/schema/auth.schema"
+import { localRuntimeDefaults } from "@workspace/env"
 
 import {
   createGoogleCallbackSetCookies,
   createGoogleOAuthRoute,
 } from "@/routes/google-oauth.route"
 
+const authBaseUrl = localRuntimeDefaults.learnerApiBaseUrl
+const webOrigin = localRuntimeDefaults.learnerWebOrigin
+const googleCallbackUrl = `${authBaseUrl}/api/auth/callback/google`
+
 describe("Google OAuth route", () => {
   it("Google 로그인 시작 요청을 Google authorization endpoint로 보낸다", async () => {
     const route = createGoogleOAuthRoute({
-      authBaseUrl: "http://localhost:4000",
+      authBaseUrl,
       clientId: "google-client-id",
       clientSecret: "google-client-secret",
       createStateNonce: () => "state-nonce",
-      webOrigin: "http://localhost:3000",
+      webOrigin,
     })
 
     const response = await route.request(
@@ -25,9 +30,7 @@ describe("Google OAuth route", () => {
     expect(location.origin).toBe("https://accounts.google.com")
     expect(location.pathname).toBe("/o/oauth2/v2/auth")
     expect(location.searchParams.get("client_id")).toBe("google-client-id")
-    expect(location.searchParams.get("redirect_uri")).toBe(
-      "http://localhost:4000/api/auth/callback/google"
-    )
+    expect(location.searchParams.get("redirect_uri")).toBe(googleCallbackUrl)
     expect(location.searchParams.get("response_type")).toBe("code")
     expect(location.searchParams.get("scope")).toBe("openid email profile")
     expect(response.headers.get("set-cookie")).toContain("kwep_oauth_state=")
@@ -35,10 +38,10 @@ describe("Google OAuth route", () => {
 
   it("기본 nonce 생성기를 사용해도 Google 로그인 시작 요청을 처리한다", async () => {
     const route = createGoogleOAuthRoute({
-      authBaseUrl: "http://localhost:4000",
+      authBaseUrl,
       clientId: "google-client-id",
       clientSecret: "google-client-secret",
-      webOrigin: "http://localhost:3000",
+      webOrigin,
     })
 
     const response = await route.request("/sign-in/google")
@@ -97,7 +100,7 @@ describe("Google OAuth route", () => {
     }
 
     const route = createGoogleOAuthRoute({
-      authBaseUrl: "http://localhost:4000",
+      authBaseUrl,
       clientId: "google-client-id",
       clientSecret: "google-client-secret",
       createSessionToken: () => "session-token",
@@ -105,7 +108,7 @@ describe("Google OAuth route", () => {
       db: db as never,
       fetch: createGoogleOAuthTestFetch(),
       now: () => new Date("2026-06-15T10:00:00.000Z"),
-      webOrigin: "http://localhost:3000",
+      webOrigin,
     })
 
     const startResponse = await route.request("/sign-in/google")

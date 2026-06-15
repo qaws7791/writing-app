@@ -2,12 +2,17 @@
   "$schema": "https://turbo.build/schema.json",
   "globalEnv": [
     "ADMIN_API_BASE_URL",
+    "ADMIN_API_PORT",
     "ADMIN_BETTER_AUTH_SECRET",
     "ADMIN_BETTER_AUTH_URL",
     "ADMIN_CORS_ORIGIN",
     "ADMIN_DEV_SESSION_TOKEN",
+    "ADMIN_ORIGIN",
     "ADMIN_SEED_EMAIL",
     "ADMIN_SEED_NAME",
+    "API_PORT",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_URL",
     "CI",
     "CORS_ORIGIN",
     "DATABASE_URL",
@@ -15,7 +20,8 @@
     "NEXT_PUBLIC_API_MODE",
     "NODE_ENV",
     "WEB_API_BASE_URL",
-    "WEB_API_MODE"
+    "WEB_API_MODE",
+    "WEB_ORIGIN"
   ],
   "ui": "tui",
   "tasks": {

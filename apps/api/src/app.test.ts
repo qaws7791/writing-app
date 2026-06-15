@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { localRuntimeDefaults } from "@workspace/env"
 
 import { createApp, type ApiDependencies } from "@/app"
 
@@ -25,21 +26,21 @@ describe("플랫폼 API profile route", () => {
   it("브라우저 쓰기 요청 preflight에 CORS 헤더로 응답한다", async () => {
     const app = createApp({
       ...createDependencies(),
-      webOrigin: "http://localhost:3000",
+      webOrigin: localRuntimeDefaults.learnerWebOrigin,
     })
 
     const response = await app.request("/learning/answers", {
       headers: {
         "Access-Control-Request-Headers": "authorization,content-type",
         "Access-Control-Request-Method": "POST",
-        Origin: "http://localhost:3000",
+        Origin: localRuntimeDefaults.learnerWebOrigin,
       },
       method: "OPTIONS",
     })
 
     expect(response.status).toBe(204)
     expect(response.headers.get("access-control-allow-origin")).toBe(
-      "http://localhost:3000"
+      localRuntimeDefaults.learnerWebOrigin
     )
     expect(response.headers.get("access-control-allow-credentials")).toBe(
       "true"
