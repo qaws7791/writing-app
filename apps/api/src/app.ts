@@ -1,10 +1,12 @@
 import { Hono } from "hono"
 import { cors } from "hono/cors"
+import { ZodError } from "zod"
 
 import type { SessionResolver } from "@/auth/session"
 import { createAiFeedbackRoute } from "@/routes/ai-feedback.route"
 import { createAuthRoute } from "@/routes/auth.route"
 import { createCoursesRoute } from "@/routes/courses.route"
+import { errorResponse } from "@/routes/error-response"
 import { createHealthRoute } from "@/routes/health.route"
 import {
   createGoogleOAuthRoute,
@@ -41,6 +43,14 @@ export type ApiDependencies = {
 
 export function createApp(dependencies: ApiDependencies): Hono {
   const app = new Hono()
+
+  app.onError((error, context) => {
+    if (error instanceof ZodError) {
+      return context.json(errorResponse("invalid_request"), 400)
+    }
+
+    return context.json(errorResponse("internal_error"), 500)
+  })
 
   if (dependencies.requestLogger !== undefined) {
     app.use(

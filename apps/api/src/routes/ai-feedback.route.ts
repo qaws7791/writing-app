@@ -9,6 +9,7 @@ import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
 
 import { readBearerToken, type SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
+import { readJsonBody } from "@/routes/route-helpers"
 
 const createFeedbackBodySchema = z.object({
   answer: z.string().trim().min(1),
@@ -46,9 +47,13 @@ export function createAiFeedbackRoute({
       return context.json(errorResponse("account_unavailable"), 403)
     }
 
-    const bodyResult = createFeedbackBodySchema.safeParse(
-      await context.req.json()
-    )
+    const body = await readJsonBody(context)
+
+    if (body.kind === "err") {
+      return context.json(errorResponse("invalid_request"), 400)
+    }
+
+    const bodyResult = createFeedbackBodySchema.safeParse(body.value)
 
     if (!bodyResult.success) {
       return context.json(errorResponse("invalid_request"), 400)

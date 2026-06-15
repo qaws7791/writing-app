@@ -103,6 +103,43 @@ describe("플랫폼 API AI feedback route", () => {
       },
     })
   })
+
+  it("잘못된 JSON 본문은 invalid_request 400으로 응답한다", async () => {
+    const app = createApp({
+      ...createTestDependencies(),
+      aiFeedbackService: createService({
+        async createFeedback() {
+          return ok({
+            improvements: [],
+            nextAction: "다시 시도하세요.",
+            remainingAttempts: 2,
+            score: 0,
+            scoreRange: [0, 100],
+            showScore: false,
+            strengths: [],
+            summary: "요청이 처리되지 않아야 합니다.",
+          })
+        },
+      }),
+      now: () => now,
+    })
+
+    const response = await app.request("/ai-feedback", {
+      body: "{",
+      headers: {
+        Authorization: "Bearer active-token",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_request",
+      },
+    })
+  })
 })
 
 function createService(service: AiFeedbackService): AiFeedbackService {

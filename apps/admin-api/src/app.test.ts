@@ -213,6 +213,32 @@ describe("어드민 API dashboard route", () => {
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual(dashboard)
   })
+
+  it("서비스 예외를 표준 500 오류 응답으로 변환한다", async () => {
+    const dependencies = createDependencies()
+    const app = createApp({
+      ...dependencies,
+      dashboardService: {
+        ...dependencies.dashboardService,
+        async getDashboard() {
+          throw new Error("database unavailable")
+        },
+      },
+    })
+
+    const response = await app.request("/dashboard", {
+      headers: {
+        Authorization: "Bearer admin-token",
+      },
+    })
+
+    expect(response.status).toBe(500)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "internal_error",
+      },
+    })
+  })
 })
 
 describe("어드민 API analytics route", () => {

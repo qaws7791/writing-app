@@ -9,6 +9,7 @@ import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
 
 import { readBearerToken, type SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
+import { readJsonBody } from "@/routes/route-helpers"
 
 const saveAnswerBodySchema = z.object({
   answer: jsonValueSchema,
@@ -50,7 +51,13 @@ export function createLearningRoute({
       return context.json(errorResponse("account_unavailable"), 403)
     }
 
-    const bodyResult = saveAnswerBodySchema.safeParse(await context.req.json())
+    const body = await readJsonBody(context)
+
+    if (body.kind === "err") {
+      return context.json(errorResponse("invalid_request"), 400)
+    }
+
+    const bodyResult = saveAnswerBodySchema.safeParse(body.value)
 
     if (!bodyResult.success) {
       return context.json(errorResponse("invalid_request"), 400)
@@ -93,9 +100,13 @@ export function createLearningRoute({
     const lessonIdResult = lessonIdSchema.safeParse(
       context.req.param("lessonId")
     )
-    const bodyResult = completeLessonBodySchema.safeParse(
-      await context.req.json()
-    )
+    const body = await readJsonBody(context)
+
+    if (body.kind === "err") {
+      return context.json(errorResponse("invalid_request"), 400)
+    }
+
+    const bodyResult = completeLessonBodySchema.safeParse(body.value)
 
     if (!lessonIdResult.success || !bodyResult.success) {
       return context.json(errorResponse("invalid_request"), 400)

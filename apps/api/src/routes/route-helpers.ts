@@ -54,3 +54,25 @@ export async function resolveActiveSession(
     session,
   }
 }
+
+export type JsonBodyResult =
+  | {
+      readonly kind: "ok"
+      readonly value: unknown
+    }
+  | {
+      readonly kind: "err"
+    }
+
+export async function readJsonBody(context: Context): Promise<JsonBodyResult> {
+  try {
+    return {
+      kind: "ok",
+      value: await context.req.json(),
+    }
+  } catch {
+    return {
+      kind: "err",
+    }
+  }
+}

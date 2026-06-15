@@ -109,6 +109,30 @@ describe("플랫폼 API learning route", () => {
     })
   })
 
+  it("잘못된 answer JSON 본문은 invalid_request 400으로 응답한다", async () => {
+    const app = createApp(
+      createDependencies({
+        learningService: createLearningService(),
+      })
+    )
+
+    const response = await app.request("/learning/answers", {
+      body: "{",
+      headers: {
+        Authorization: "Bearer active-token",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_request",
+      },
+    })
+  })
+
   it("인증된 lesson 완료 요청을 learning service로 전달한다", async () => {
     const completedCommands: unknown[] = []
     const app = createApp(
@@ -151,7 +175,45 @@ describe("플랫폼 API learning route", () => {
       },
     ])
   })
+
+  it("잘못된 lesson 완료 JSON 본문은 invalid_request 400으로 응답한다", async () => {
+    const app = createApp(
+      createDependencies({
+        learningService: createLearningService(),
+      })
+    )
+
+    const response = await app.request("/learning/lessons/l1/complete", {
+      body: "{",
+      headers: {
+        Authorization: "Bearer active-token",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_request",
+      },
+    })
+  })
 })
+
+function createLearningService(): LearningService {
+  return {
+    async completeLesson() {
+      return { kind: "ok", value: { saved: true } }
+    },
+    async saveLessonProgress() {
+      return { kind: "ok", value: { saved: true } }
+    },
+    async saveStepAnswer() {
+      return { kind: "ok", value: { saved: true } }
+    },
+  }
+}
 
 function createDependencies({
   learningService,

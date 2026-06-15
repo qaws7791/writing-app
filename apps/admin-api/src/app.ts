@@ -1,11 +1,13 @@
 import { Hono } from "hono"
 import { cors } from "hono/cors"
+import { ZodError } from "zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { createAnalyticsRoute } from "@/routes/analytics.route"
 import { createCoursesRoute } from "@/routes/courses.route"
 import { createCurriculumEditorRoute } from "@/routes/curriculum-editor.route"
 import { createDashboardRoute } from "@/routes/dashboard.route"
+import { errorResponse } from "@/routes/error-response"
 import { createHealthRoute } from "@/routes/health.route"
 import { createSettingsRoute } from "@/routes/settings.route"
 import { createUsersRoute } from "@/routes/users.route"
@@ -25,6 +27,14 @@ export type AdminApiDependencies = {
 
 export function createApp(dependencies: AdminApiDependencies): Hono {
   const app = new Hono()
+
+  app.onError((error, context) => {
+    if (error instanceof ZodError) {
+      return context.json(errorResponse("invalid_request"), 400)
+    }
+
+    return context.json(errorResponse("internal_error"), 500)
+  })
 
   if (dependencies.requestLogger !== undefined) {
     app.use(
