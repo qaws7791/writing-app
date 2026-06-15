@@ -197,6 +197,9 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
       "text-muted",
       "tracking-widest"
     )
+    expect(screen.getByText("태그 선택").parentElement).not.toHaveClass(
+      "absolute"
+    )
 
     await user.click(screen.getByRole("button", { name: "좋은 문장" }))
     await user.click(screen.getByText("독자가 바로 이해한다."))

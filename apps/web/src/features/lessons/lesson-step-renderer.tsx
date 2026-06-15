@@ -1052,10 +1052,7 @@ function CategorizeAnswer({
         ) : null}
       </div>
       {checked === false ? (
-        <div
-          className="absolute left-0 right-0 px-6 pt-5 pb-3 bg-gradient-to-t from-cream via-cream to-transparent"
-          style={{ bottom: "128px" }}
-        >
+        <div className="-mx-6 mt-auto shrink-0 px-6 pt-5 pb-3 bg-gradient-to-t from-cream via-cream to-transparent">
           <div
             className="font-bold text-muted mb-2 tracking-widest"
             style={{ fontSize: "0.75rem" }}
