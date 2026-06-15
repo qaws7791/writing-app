@@ -3,10 +3,10 @@
 pre-commit:
   parallel: true
   commands:
-    # format all staged files with the root Prettier config
+    # format all staged files with the root Oxfmt config
     format:
       glob: "**/*.{ts,tsx,js,jsx,cjs,mjs,json,md,mdx,yaml,yml,css}"
-      run: bun prettier --write --ignore-path .gitignore {staged_files}
+      run: bun oxfmt --ignore-path .gitignore {staged_files}
       stage_fixed: true
 
     workspace-lint:

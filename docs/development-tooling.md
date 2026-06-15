@@ -98,11 +98,26 @@
 
 ## 포맷팅
 
-- 포맷팅에는 Prettier를 사용한다.
-- Prettier 설정은 저장소 루트의 `.prettierrc.json` 하나만 유지한다.
-- 포맷 대상 제외 정책은 저장소 루트의 `.prettierignore`에서 관리한다.
+- 포맷팅은 Oxfmt로 전환한다.
+- Oxfmt 설정은 저장소 루트의 `.oxfmtrc.json` 하나만 유지한다.
+- 포맷 대상 제외 정책은 루트 `.oxfmtrc.json`의 `ignorePatterns`와 `.gitignore`에서 관리한다.
 - 모노레포 전체를 포맷하려면 저장소 루트에서 `bun run format`을 실행한다.
 - 포맷 상태를 확인하려면 저장소 루트에서 `bun run format:check`를 실행한다.
+- 특정 앱이나 패키지만 포맷해야 할 때는 하위 package script를 추가하지 않고, 루트에서 `bun oxfmt apps/web`처럼 경로를 인자로 넘긴다.
+
+## 2026-06-16 Oxfmt 전환 시작
+
+- 루트 단일 포맷 설정을 유지하기 위해 기존 Prettier 설정과 명령을 Oxfmt로 전환한다.
+- `apps/storybook`, `packages/ui`의 하위 `format` 스크립트는 루트 명령과 중복되므로 제거한다.
+- Lefthook pre-commit 포맷 명령은 루트 Oxfmt 설정을 사용하도록 갱신한다.
+
+## 2026-06-16 Oxfmt 전환 완료
+
+- 루트 `.oxfmtrc.json`을 추가하고 기존 `.prettierrc.json`, `.prettierignore`는 제거했다.
+- 루트 `format`은 `oxfmt`, `format:check`는 `oxfmt --check`를 실행한다.
+- `apps/storybook`, `packages/ui`의 하위 `format` 스크립트는 제거하고, 필요한 경우 루트에서 `bun oxfmt apps/storybook` 또는 `bun oxfmt packages/ui`처럼 실행한다.
+- Lefthook pre-commit 포맷 명령은 `bun oxfmt --ignore-path .gitignore {staged_files}`로 전환했다.
+- 전환 직후 `bun run format:check`에서 489개 파일이 Oxfmt 설정을 통과했다.
 
 ## 2026-05-28 Prettier 명령 정리 시작
 

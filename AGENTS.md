@@ -57,9 +57,9 @@ Prefer explicitness over implicitness and choose simplicity over cleverness and 
 
 ### Code Style
 
-- Use Prettier for formatting only
-- Keep one Prettier configuration at the repository root
-- Use ESLint for linting across the monorepo
+- Use Oxfmt for formatting only
+- Keep one Oxfmt configuration at the repository root
+- Use Oxlint for linting across the monorepo
 - Do not bikeshed formatting in reviews
 - Optimize reviews for correctness, naming, coupling, and boundary clarity
 
