@@ -5,7 +5,7 @@ export type LessonStartedAnswer = {
 }
 
 export type LessonAnswerChange = {
-  readonly answer: string
+  readonly answer: LessonStartedAnswer | LessonStepAnswerPayload
   readonly stepId: string
 }
 
@@ -86,18 +86,16 @@ export function isLastLessonStep(lesson: Lesson, stepIndex: number): boolean {
   return stepIndex === lesson.steps.length - 1
 }
 
-export function createLessonStartedAnswer(): string {
-  const answer: LessonStartedAnswer = {
+export function createLessonStartedAnswer(): LessonStartedAnswer {
+  return {
     kind: "lesson-started",
   }
-
-  return JSON.stringify(answer)
 }
 
 export function createLessonStepAnswer(
   payload: LessonStepAnswerPayload
-): string {
-  return JSON.stringify(payload)
+): LessonStepAnswerPayload {
+  return payload
 }
 
 export function formatEstimatedMinutes(minutes: number): string {

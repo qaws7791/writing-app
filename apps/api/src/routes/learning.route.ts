@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { z } from "zod"
 import {
-  jsonValueSchema,
+  learningAnswerSchema,
   learnerIdSchema,
   type LearningService,
 } from "@workspace/core/learning"
@@ -11,7 +11,7 @@ import { readBearerToken, type SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
 
 const saveAnswerBodySchema = z.object({
-  answer: jsonValueSchema,
+  answer: learningAnswerSchema,
   lessonId: lessonIdSchema,
   stepId: lessonStepIdSchema,
 })

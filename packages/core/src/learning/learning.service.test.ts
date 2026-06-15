@@ -23,28 +23,60 @@ const learnerId = learnerIdSchema.parse("user-1")
 const lessonId = lessonIdSchema.parse("l1")
 
 describe("학습 서비스", () => {
-  it("Kwep 답변 가능 스텝 타입 저장 요청을 허용한다", async () => {
+  it("Kwep 답변 가능 스텝 타입과 일치하는 저장 요청을 허용한다", async () => {
     const savedAnswers: SaveStepAnswerCommand[] = []
     const service = createService({
       savedAnswers,
     })
 
-    for (const stepId of [
-      "l1-s3",
-      "l1-s4",
-      "l1-s5",
-      "l1-s6",
-      "l1-s7",
-      "l1-s8",
-      "l1-s9",
-      "l1-s10",
-    ]) {
+    const answers = [
+      {
+        answer: { selectedOptionId: "b", type: "MULTIPLE_CHOICE" },
+        stepId: "l1-s3",
+      },
+      {
+        answer: { selectedWords: ["관찰"], type: "FILL_BLANK" },
+        stepId: "l1-s4",
+      },
+      {
+        answer: { selectedIndexes: [0, 1], type: "SELECT" },
+        stepId: "l1-s5",
+      },
+      {
+        answer: { orderedItems: ["나는", "책을", "읽었다"], type: "ORDER" },
+        stepId: "l1-s6",
+      },
+      {
+        answer: { text: "나의 문장 답변", type: "WRITE" },
+        stepId: "l1-s7",
+      },
+      {
+        answer: { requested: true, type: "AI_FEEDBACK" },
+        stepId: "l1-s8",
+      },
+      {
+        answer: {
+          pairs: [{ left: "그러나", right: "역접" }],
+          type: "MATCH",
+        },
+        stepId: "l1-s9",
+      },
+      {
+        answer: {
+          items: [{ categoryId: "A", itemId: "i1" }],
+          type: "CATEGORIZE",
+        },
+        stepId: "l1-s10",
+      },
+    ] as const
+
+    for (const answer of answers) {
       await expect(
         service.saveStepAnswer({
-          answer: { value: stepId },
+          answer: answer.answer,
           lessonId,
           occurredAt,
-          stepId: lessonStepIdSchema.parse(stepId),
+          stepId: lessonStepIdSchema.parse(answer.stepId),
           userId: learnerId,
         })
       ).resolves.toEqual({
@@ -68,31 +100,31 @@ describe("학습 서비스", () => {
     ])
   })
 
-  it("plain string answer도 저장 요청으로 전달한다", async () => {
-    const savedAnswers: SaveStepAnswerCommand[] = []
-    const service = createService({
-      savedAnswers,
-    })
+  it("문자열화된 스텝 답변은 invalid-request로 거절한다", async () => {
+    const service = createService()
 
     await expect(
       service.saveStepAnswer({
-        answer: "나의 문장 답변",
+        answer: JSON.stringify({
+          selectedOptionId: "b",
+          type: "MULTIPLE_CHOICE",
+        }),
         lessonId,
         occurredAt,
-        stepId: lessonStepIdSchema.parse("l1-s7"),
+        stepId: lessonStepIdSchema.parse("l1-s3"),
         userId: learnerId,
       })
     ).resolves.toEqual({
-      kind: "ok",
-      value: {
-        saved: true,
+      kind: "err",
+      error: {
+        kind: "invalid-request",
+        reason: "step-answer-shape-invalid",
+        stepId: lessonStepIdSchema.parse("l1-s3"),
       },
     })
-
-    expect(savedAnswers[0]?.answer).toBe("나의 문장 답변")
   })
 
-  it("첫 읽기 스텝의 문자열화된 lesson-started 마커 저장을 허용한다", async () => {
+  it("첫 읽기 스텝의 lesson-started 마커 저장을 허용한다", async () => {
     const savedAnswers: SaveStepAnswerCommand[] = []
     const service = createService({
       savedAnswers,
@@ -100,7 +132,7 @@ describe("학습 서비스", () => {
 
     await expect(
       service.saveStepAnswer({
-        answer: JSON.stringify({ kind: "lesson-started" }),
+        answer: { kind: "lesson-started" },
         lessonId,
         occurredAt,
         stepId: lessonStepIdSchema.parse("l1-s1"),
@@ -113,9 +145,28 @@ describe("학습 서비스", () => {
       },
     })
 
-    expect(savedAnswers[0]?.answer).toBe(
-      JSON.stringify({ kind: "lesson-started" })
-    )
+    expect(savedAnswers[0]?.answer).toEqual({ kind: "lesson-started" })
+  })
+
+  it("스텝 타입과 답변 타입이 다르면 invalid-request로 거절한다", async () => {
+    const service = createService()
+
+    await expect(
+      service.saveStepAnswer({
+        answer: { text: "객관식에 쓰기 답변", type: "WRITE" },
+        lessonId,
+        occurredAt,
+        stepId: lessonStepIdSchema.parse("l1-s3"),
+        userId: learnerId,
+      })
+    ).resolves.toEqual({
+      kind: "err",
+      error: {
+        kind: "invalid-request",
+        reason: "step-answer-shape-invalid",
+        stepId: lessonStepIdSchema.parse("l1-s3"),
+      },
+    })
   })
 
   it("읽기와 비교 스텝 저장 요청은 invalid-request로 거절한다", async () => {

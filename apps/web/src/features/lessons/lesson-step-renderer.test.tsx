@@ -6,7 +6,7 @@ import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
 import type { LessonStep } from "@/features/lessons/lesson-types"
 
 describe("레슨 스텝 렌더러 답변 저장", () => {
-  it("객관식 선택을 Kwep 버튼 UI로 타입별 JSON 문자열로 전달한다", async () => {
+  it("객관식 선택을 Kwep 버튼 UI로 타입별 payload로 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step: LessonStep = {
@@ -38,10 +38,10 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     )
 
     expect(onAnswerChange).toHaveBeenCalledWith({
-      answer: JSON.stringify({
+      answer: {
         selectedOptionId: "clear",
         type: "MULTIPLE_CHOICE",
-      }),
+      },
       stepId: "mc-1",
     })
     expect(
@@ -52,7 +52,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     expect(screen.queryByText("정답입니다.")).not.toBeInTheDocument()
   })
 
-  it("빈칸 선택 단어를 타입별 JSON 문자열로 전달한다", async () => {
+  it("빈칸 선택 단어를 타입별 payload로 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step: LessonStep = {
@@ -70,15 +70,15 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     await user.click(screen.getByRole("button", { name: "군더더기" }))
 
     expect(onAnswerChange).toHaveBeenCalledWith({
-      answer: JSON.stringify({
+      answer: {
         selectedWords: ["군더더기"],
         type: "FILL_BLANK",
-      }),
+      },
       stepId: "blank-1",
     })
   })
 
-  it("단어 선택 인덱스를 타입별 JSON 문자열로 전달한다", async () => {
+  it("단어 선택 인덱스를 타입별 payload로 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step: LessonStep = {
@@ -96,15 +96,15 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     await user.click(screen.getByRole("button", { name: "정말 매우" }))
 
     expect(onAnswerChange).toHaveBeenCalledWith({
-      answer: JSON.stringify({
+      answer: {
         selectedIndexes: [1],
         type: "SELECT",
-      }),
+      },
       stepId: "select-1",
     })
   })
 
-  it("순서 배열 값을 타입별 JSON 문자열로 전달한다", async () => {
+  it("순서 배열 값을 타입별 payload로 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step: LessonStep = {
@@ -122,10 +122,10 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     await user.click(screen.getByRole("button", { name: "원인 순서에 추가" }))
 
     expect(onAnswerChange).toHaveBeenCalledWith({
-      answer: JSON.stringify({
+      answer: {
         orderedItems: ["원인"],
         type: "ORDER",
-      }),
+      },
       stepId: "order-1",
     })
   })
@@ -154,10 +154,10 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     await user.click(screen.getByRole("button", { name: "역접" }))
 
     expect(onAnswerChange).toHaveBeenCalledWith({
-      answer: JSON.stringify({
+      answer: {
         pairs: [{ left: "그러나", right: "역접" }],
         type: "MATCH",
-      }),
+      },
       stepId: "match-1",
     })
     expect(screen.getByRole("button", { name: "그러나" })).toHaveClass(
@@ -205,10 +205,10 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     await user.click(screen.getByText("독자가 바로 이해한다."))
 
     expect(onAnswerChange).toHaveBeenCalledWith({
-      answer: JSON.stringify({
+      answer: {
         items: [{ categoryId: "good", itemId: "item-1" }],
         type: "CATEGORIZE",
-      }),
+      },
       stepId: "categorize-1",
     })
   })
@@ -249,10 +249,10 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
 
     await waitFor(() =>
       expect(onAnswerChange).toHaveBeenLastCalledWith({
-        answer: JSON.stringify({
+        answer: {
           text: "짧고 명확하게 쓰는 문장이 좋다",
           type: "WRITE",
-        }),
+        },
         stepId: "write-1",
       })
     )
@@ -339,7 +339,7 @@ describe("레슨 스텝 렌더러 AI 코칭", () => {
 function renderAnswerableStep(
   step: LessonStep,
   onAnswerChange: (answer: {
-    readonly answer: string
+    readonly answer: object
     readonly stepId: string
   }) => void
 ) {

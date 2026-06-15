@@ -4,6 +4,10 @@ import type {
   ProgressCourseList,
 } from "@/features/courses/course-types"
 import type { Lesson } from "@/features/lessons/lesson-types"
+import type {
+  LessonStartedAnswer,
+  LessonStepAnswerPayload,
+} from "@/features/lessons/lesson-logic"
 import type { LearnerProfile } from "@/features/profile/profile-types"
 import type { ApiResult } from "@/lib/api/api-result"
 import type { operations } from "@/lib/api/generated/writing-app-api"
@@ -32,7 +36,7 @@ export type ApiCompleteLessonResponse = ApiResponseBody<"completeLesson", 200>
 export type ApiAiFeedbackResponse = ApiResponseBody<"createAiFeedback", 200>
 
 export type SaveLessonAnswerInput = {
-  readonly answer: string
+  readonly answer: LessonStartedAnswer | LessonStepAnswerPayload
   readonly lessonId: string
   readonly stepId: string
 }
@@ -42,7 +46,11 @@ export type CompleteLessonInput = {
   readonly lessonId: string
 }
 
-export type CreateAiFeedbackInput = SaveLessonAnswerInput
+export type CreateAiFeedbackInput = {
+  readonly answer: string
+  readonly lessonId: string
+  readonly stepId: string
+}
 
 export type AiFeedbackResult = {
   readonly improvements: readonly string[]

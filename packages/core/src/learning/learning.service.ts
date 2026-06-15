@@ -2,6 +2,8 @@ import type { ContentRepository, LessonStepType } from "@workspace/core/content"
 import { lessonDtoSchema } from "@workspace/core/content"
 import {
   completeLessonCommandSchema,
+  lessonStartedAnswerSchema,
+  lessonStepAnswerSchema,
   saveLessonProgressCommandSchema,
   saveStepAnswerCommandSchema,
   type CompleteLessonCommand,
@@ -29,7 +31,10 @@ export type LearningServiceError =
     }
   | {
       readonly kind: "invalid-request"
-      readonly reason: "step-answer-not-supported" | "step-not-found-in-lesson"
+      readonly reason:
+        | "step-answer-not-supported"
+        | "step-answer-shape-invalid"
+        | "step-not-found-in-lesson"
       readonly stepId: SaveStepAnswerCommand["stepId"]
     }
 
@@ -112,16 +117,17 @@ export function createLearningService({
       }
 
       const supportsStepAnswer =
-        answerableStepTypes.has(step.type) ||
         isLessonStartedAnswer(parsedCommand.answer, {
           firstStepId: parsedLesson.steps[0]?.id,
           stepId: step.id,
-        })
+        }) || isStepAnswerForStepType(parsedCommand.answer, step.type)
 
       if (!supportsStepAnswer) {
         return err({
           kind: "invalid-request",
-          reason: "step-answer-not-supported",
+          reason: answerableStepTypes.has(step.type)
+            ? "step-answer-shape-invalid"
+            : "step-answer-not-supported",
           stepId: parsedCommand.stepId,
         })
       }
@@ -145,22 +151,17 @@ function isLessonStartedAnswer(
     readonly stepId: string
   }
 ): boolean {
-  const parsedAnswer =
-    typeof answer === "string" ? parseJsonAnswer(answer) : answer
-
   return (
     stepId === firstStepId &&
-    typeof parsedAnswer === "object" &&
-    parsedAnswer !== null &&
-    "kind" in parsedAnswer &&
-    parsedAnswer.kind === "lesson-started"
+    lessonStartedAnswerSchema.safeParse(answer).success
   )
 }
 
-function parseJsonAnswer(answer: string): unknown {
-  try {
-    return JSON.parse(answer)
-  } catch {
-    return answer
-  }
+function isStepAnswerForStepType(
+  answer: unknown,
+  stepType: LessonStepType
+): boolean {
+  const parsedAnswer = lessonStepAnswerSchema.safeParse(answer)
+
+  return parsedAnswer.success && parsedAnswer.data.type === stepType
 }

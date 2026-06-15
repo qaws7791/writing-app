@@ -139,7 +139,7 @@ describe("레슨 경험", () => {
     await user.click(screen.getByRole("button", { name: "시작하기" }))
 
     expect(api.saveLessonAnswer).toHaveBeenCalledWith({
-      answer: JSON.stringify({ kind: "lesson-started" }),
+      answer: { kind: "lesson-started" },
       lessonId: "l1",
       stepId: "s1",
     })
@@ -228,10 +228,10 @@ describe("레슨 경험", () => {
 
     await waitFor(() =>
       expect(saveLessonAnswer).toHaveBeenCalledWith({
-        answer: JSON.stringify({
+        answer: {
           selectedOptionId: "clear",
           type: "MULTIPLE_CHOICE",
-        }),
+        },
         lessonId: "l-answer",
         stepId: "mc-answer",
       })
@@ -266,10 +266,10 @@ describe("레슨 경험", () => {
     )
     await waitFor(() =>
       expect(saveLessonAnswer).toHaveBeenLastCalledWith({
-        answer: JSON.stringify({
+        answer: {
           text: "좋은 문장은 바로 이해됩니다.",
           type: "WRITE",
-        }),
+        },
         lessonId: "l1",
         stepId: "s2",
       })

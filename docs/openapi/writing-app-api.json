@@ -1204,7 +1204,166 @@
                 "additionalProperties": false,
                 "properties": {
                   "answer": {
-                    "type": "string"
+                    "anyOf": [
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "kind": {
+                            "enum": ["lesson-started"],
+                            "type": "string"
+                          }
+                        },
+                        "required": ["kind"],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "selectedOptionId": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "enum": ["MULTIPLE_CHOICE"],
+                            "type": "string"
+                          }
+                        },
+                        "required": ["selectedOptionId", "type"],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "selectedWords": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "type": {
+                            "enum": ["FILL_BLANK"],
+                            "type": "string"
+                          }
+                        },
+                        "required": ["selectedWords", "type"],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "selectedIndexes": {
+                            "items": {
+                              "type": "integer"
+                            },
+                            "type": "array"
+                          },
+                          "type": {
+                            "enum": ["SELECT"],
+                            "type": "string"
+                          }
+                        },
+                        "required": ["selectedIndexes", "type"],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "orderedItems": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "type": {
+                            "enum": ["ORDER"],
+                            "type": "string"
+                          }
+                        },
+                        "required": ["orderedItems", "type"],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "pairs": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "left": {
+                                  "type": "string"
+                                },
+                                "right": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["left", "right"],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "type": {
+                            "enum": ["MATCH"],
+                            "type": "string"
+                          }
+                        },
+                        "required": ["pairs", "type"],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "items": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "categoryId": {
+                                  "type": "string"
+                                },
+                                "itemId": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": ["categoryId", "itemId"],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "type": {
+                            "enum": ["CATEGORIZE"],
+                            "type": "string"
+                          }
+                        },
+                        "required": ["items", "type"],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "enum": ["WRITE"],
+                            "type": "string"
+                          }
+                        },
+                        "required": ["text", "type"],
+                        "type": "object"
+                      },
+                      {
+                        "additionalProperties": false,
+                        "properties": {
+                          "requested": {
+                            "type": "boolean"
+                          },
+                          "type": {
+                            "enum": ["AI_FEEDBACK"],
+                            "type": "string"
+                          }
+                        },
+                        "required": ["requested", "type"],
+                        "type": "object"
+                      }
+                    ]
                   },
                   "lessonId": {
                     "type": "string"

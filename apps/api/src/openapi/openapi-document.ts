@@ -235,7 +235,7 @@ export function createOpenApiDocument(): OpenApiDocument {
           operationId: "saveLessonAnswer",
           requestBody: jsonRequest(
             objectSchema({
-              answer: textSchema,
+              answer: lessonAnswerSchema,
               lessonId: textSchema,
               stepId: textSchema,
             })
@@ -528,6 +528,83 @@ const lessonSchema = objectSchema({
   title: textSchema,
   unitId: textSchema,
 })
+
+const lessonAnswerSchema = {
+  anyOf: [
+    objectSchema({
+      kind: {
+        enum: ["lesson-started"],
+        type: "string",
+      },
+    }),
+    objectSchema({
+      selectedOptionId: textSchema,
+      type: {
+        enum: ["MULTIPLE_CHOICE"],
+        type: "string",
+      },
+    }),
+    objectSchema({
+      selectedWords: arraySchema(textSchema),
+      type: {
+        enum: ["FILL_BLANK"],
+        type: "string",
+      },
+    }),
+    objectSchema({
+      selectedIndexes: arraySchema(integerSchema),
+      type: {
+        enum: ["SELECT"],
+        type: "string",
+      },
+    }),
+    objectSchema({
+      orderedItems: arraySchema(textSchema),
+      type: {
+        enum: ["ORDER"],
+        type: "string",
+      },
+    }),
+    objectSchema({
+      pairs: arraySchema(
+        objectSchema({
+          left: textSchema,
+          right: textSchema,
+        })
+      ),
+      type: {
+        enum: ["MATCH"],
+        type: "string",
+      },
+    }),
+    objectSchema({
+      items: arraySchema(
+        objectSchema({
+          categoryId: textSchema,
+          itemId: textSchema,
+        })
+      ),
+      type: {
+        enum: ["CATEGORIZE"],
+        type: "string",
+      },
+    }),
+    objectSchema({
+      text: textSchema,
+      type: {
+        enum: ["WRITE"],
+        type: "string",
+      },
+    }),
+    objectSchema({
+      requested: booleanSchema,
+      type: {
+        enum: ["AI_FEEDBACK"],
+        type: "string",
+      },
+    }),
+  ],
+} as const
 
 const progressLessonSchema = objectSchema({
   estimatedMinutes: integerSchema,
