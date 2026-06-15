@@ -1,6 +1,7 @@
 import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { Database } from "bun:sqlite"
 
 import { describe, expect, it } from "vitest"
@@ -51,7 +52,25 @@ describe("개발 DB seed 실행", () => {
     }
   })
 
-  it("이전 개발 DB 스키마가 남아 있으면 새 baseline으로 재생성한다", async () => {
+  it("production에서는 명시적 허용 조건 없이 seed를 실행하지 않는다", async () => {
+    const tempDirectory = mkdtempSync(join(tmpdir(), "kwep-production-seed-"))
+    const databaseUrl = join(tempDirectory, "api.sqlite")
+
+    try {
+      await expect(
+        seedDatabase({
+          databaseUrl,
+          nodeEnv: "production",
+        })
+      ).rejects.toThrow(
+        "production DB seed 실행은 ALLOW_DATABASE_RESET=true와 --force가 필요합니다."
+      )
+    } finally {
+      rmSync(tempDirectory, { force: true, recursive: true })
+    }
+  })
+
+  it("저장소 data 밖의 이전 DB 파일은 명시적 허용 조건이 있어도 재생성하지 않는다", async () => {
     const tempDirectory = mkdtempSync(join(tmpdir(), "kwep-legacy-seed-"))
     const databaseUrl = join(tempDirectory, "api.sqlite")
     const legacyClient = new Database(databaseUrl)
@@ -91,7 +110,107 @@ describe("개발 DB seed 실행", () => {
       `)
       legacyClient.close()
 
-      await seedDatabase(databaseUrl)
+      await expect(
+        seedDatabase({
+          allowDatabaseReset: true,
+          databaseUrl,
+          forceDatabaseReset: true,
+        })
+      ).rejects.toThrow(
+        "저장소 data 디렉터리 밖의 DB 파일은 재생성할 수 없습니다."
+      )
+    } finally {
+      legacyClient.close(false)
+      rmSync(tempDirectory, { force: true, recursive: true })
+    }
+  })
+
+  it("명시적 허용 조건이 없으면 이전 DB 파일을 삭제하지 않는다", async () => {
+    const databaseUrl = join(
+      fileURLToPath(new URL("../../../../data", import.meta.url)),
+      `seed-guard-${crypto.randomUUID()}.sqlite`
+    )
+    const legacyClient = new Database(databaseUrl)
+
+    try {
+      legacyClient.exec(`
+        CREATE TABLE courses (
+          id TEXT PRIMARY KEY NOT NULL
+        );
+        INSERT INTO courses (id) VALUES ('legacy-course');
+      `)
+      legacyClient.close()
+
+      await expect(seedDatabase(databaseUrl)).rejects.toThrow(
+        "DB 파일 재생성은 ALLOW_DATABASE_RESET=true와 --force가 필요합니다."
+      )
+
+      const existingClient = new Database(databaseUrl, { readonly: true })
+
+      try {
+        expect(
+          existingClient
+            .query<{ readonly id: string }, []>("SELECT id FROM courses")
+            .all()
+        ).toEqual([{ id: "legacy-course" }])
+      } finally {
+        existingClient.close()
+      }
+    } finally {
+      legacyClient.close(false)
+      rmSync(databaseUrl, { force: true })
+      rmSync(`${databaseUrl}-shm`, { force: true })
+      rmSync(`${databaseUrl}-wal`, { force: true })
+    }
+  })
+
+  it("저장소 data 하위 DB는 명시적 허용 조건으로 새 baseline으로 재생성한다", async () => {
+    const databaseUrl = join(
+      fileURLToPath(new URL("../../../../data", import.meta.url)),
+      `seed-reset-${crypto.randomUUID()}.sqlite`
+    )
+    const legacyClient = new Database(databaseUrl)
+
+    try {
+      legacyClient.exec(`
+        PRAGMA foreign_keys = ON;
+        CREATE TABLE courses (
+          id TEXT PRIMARY KEY NOT NULL,
+          category_id TEXT,
+          title TEXT,
+          description TEXT,
+          sort_order INTEGER,
+          curriculum_revision INTEGER
+        );
+        CREATE TABLE lessons (
+          id TEXT PRIMARY KEY NOT NULL,
+          course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+          title TEXT,
+          category_id TEXT,
+          unit_number INTEGER,
+          next_lesson_id TEXT
+        );
+        CREATE TABLE lesson_steps (
+          id TEXT PRIMARY KEY NOT NULL,
+          lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+          type TEXT,
+          sort_order INTEGER,
+          points INTEGER,
+          required INTEGER,
+          content_json TEXT,
+          status TEXT
+        );
+        INSERT INTO courses (id) VALUES ('legacy-course');
+        INSERT INTO lessons (id, course_id) VALUES ('legacy-lesson', 'legacy-course');
+        INSERT INTO lesson_steps (id, lesson_id) VALUES ('legacy-step', 'legacy-lesson');
+      `)
+      legacyClient.close()
+
+      await seedDatabase({
+        allowDatabaseReset: true,
+        databaseUrl,
+        forceDatabaseReset: true,
+      })
 
       const client = createKwepDatabase(databaseUrl)
 
@@ -110,7 +229,9 @@ describe("개발 DB seed 실행", () => {
       }
     } finally {
       legacyClient.close(false)
-      rmSync(tempDirectory, { force: true, recursive: true })
+      rmSync(databaseUrl, { force: true })
+      rmSync(`${databaseUrl}-shm`, { force: true })
+      rmSync(`${databaseUrl}-wal`, { force: true })
     }
   })
 })
