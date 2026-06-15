@@ -21,6 +21,7 @@ import {
 import type {
   AiFeedbackStep,
   CategorizeStep,
+  CompareStep,
   FillBlankStep,
   MatchStep,
   MultipleChoiceStep,
@@ -65,6 +66,27 @@ type LessonStepCheckedState =
 type LessonAnswerPayloadChange = {
   readonly payload: LessonStepAnswerPayload
   readonly stepId: string
+}
+
+type LessonStepContentHandlers = {
+  readonly checked: LessonStepCheckedState
+  readonly onAiFeedbackRequest: LessonStepRendererProps["onAiFeedbackRequest"]
+  readonly onAnswerChange: LessonStepRendererProps["onAnswerChange"]
+  readonly onAnswerPayloadChange: LessonStepRendererProps["onAnswerPayloadChange"]
+}
+
+type LessonStepByType<TType extends LessonStep["type"]> = Extract<
+  LessonStep,
+  { readonly type: TType }
+>
+
+type LessonStepContentRenderer<TType extends LessonStep["type"]> = (
+  step: LessonStepByType<TType>,
+  handlers: LessonStepContentHandlers
+) => ReactNode
+
+type LessonStepContentRendererRegistry = {
+  readonly [TType in LessonStep["type"]]: LessonStepContentRenderer<TType>
 }
 
 export function LessonStepRenderer({
@@ -120,88 +142,82 @@ export function LessonStepRenderer({
 
 function renderStepContent(
   step: LessonStep,
-  handlers: {
-    readonly checked: LessonStepCheckedState
-    readonly onAiFeedbackRequest: LessonStepRendererProps["onAiFeedbackRequest"]
-    readonly onAnswerChange: LessonStepRendererProps["onAnswerChange"]
-    readonly onAnswerPayloadChange: LessonStepRendererProps["onAnswerPayloadChange"]
-  }
+  handlers: LessonStepContentHandlers
 ) {
-  switch (step.type) {
-    case "AI_FEEDBACK":
-      return (
-        <AiFeedbackAnswer
-          onAiFeedbackRequest={handlers.onAiFeedbackRequest}
-          step={step}
-        />
-      )
-    case "CATEGORIZE":
-      return (
-        <CategorizeAnswer
-          checked={handlers.checked}
-          onAnswerChange={handlers.onAnswerChange}
-          onAnswerPayloadChange={handlers.onAnswerPayloadChange}
-          step={step}
-        />
-      )
-    case "COMPARE":
-      return (
-        <div className="grid gap-3 md:grid-cols-2">
-          {step.versions.map((version) => (
-            <div
-              className="rounded-lg border border-border px-4 py-3"
-              key={version.label}
-            >
-              <p className="font-medium">{version.label}</p>
-              <p className="mt-2 leading-7 text-muted-foreground">
-                {version.text}
-              </p>
-            </div>
-          ))}
+  const renderer = stepContentRendererByType[step.type] as (
+    step: LessonStep,
+    handlers: LessonStepContentHandlers
+  ) => ReactNode
+
+  return renderer(step, handlers)
+}
+
+const stepContentRendererByType = {
+  AI_FEEDBACK: (step, handlers) => (
+    <AiFeedbackAnswer
+      onAiFeedbackRequest={handlers.onAiFeedbackRequest}
+      step={step}
+    />
+  ),
+  CATEGORIZE: (step, handlers) => (
+    <CategorizeAnswer
+      checked={handlers.checked}
+      onAnswerChange={handlers.onAnswerChange}
+      onAnswerPayloadChange={handlers.onAnswerPayloadChange}
+      step={step}
+    />
+  ),
+  COMPARE: (step) => <CompareStepView step={step} />,
+  FILL_BLANK: (step, handlers) => (
+    <FillBlankAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
+  ),
+  MATCH: (step, handlers) => (
+    <MatchAnswer
+      checked={handlers.checked}
+      onAnswerChange={handlers.onAnswerChange}
+      onAnswerPayloadChange={handlers.onAnswerPayloadChange}
+      step={step}
+    />
+  ),
+  MULTIPLE_CHOICE: (step, handlers) => (
+    <MultipleChoiceAnswer
+      checked={handlers.checked}
+      onAnswerChange={handlers.onAnswerChange}
+      onAnswerPayloadChange={handlers.onAnswerPayloadChange}
+      step={step}
+    />
+  ),
+  ORDER: (step, handlers) => (
+    <OrderAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
+  ),
+  READING: (step) => <ReadingStepView step={step} />,
+  SELECT: (step, handlers) => (
+    <SelectAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
+  ),
+  WRITE: (step, handlers) => (
+    <WriteAnswer
+      checked={handlers.checked}
+      onAnswerChange={handlers.onAnswerChange}
+      onAnswerPayloadChange={handlers.onAnswerPayloadChange}
+      step={step}
+    />
+  ),
+} satisfies LessonStepContentRendererRegistry
+
+function CompareStepView({ step }: { readonly step: CompareStep }) {
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {step.versions.map((version) => (
+        <div
+          className="rounded-lg border border-border px-4 py-3"
+          key={version.label}
+        >
+          <p className="font-medium">{version.label}</p>
+          <p className="mt-2 leading-7 text-muted-foreground">{version.text}</p>
         </div>
-      )
-    case "FILL_BLANK":
-      return (
-        <FillBlankAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
-      )
-    case "MATCH":
-      return (
-        <MatchAnswer
-          checked={handlers.checked}
-          onAnswerChange={handlers.onAnswerChange}
-          onAnswerPayloadChange={handlers.onAnswerPayloadChange}
-          step={step}
-        />
-      )
-    case "MULTIPLE_CHOICE":
-      return (
-        <MultipleChoiceAnswer
-          checked={handlers.checked}
-          onAnswerChange={handlers.onAnswerChange}
-          onAnswerPayloadChange={handlers.onAnswerPayloadChange}
-          step={step}
-        />
-      )
-    case "ORDER":
-      return (
-        <OrderAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
-      )
-    case "READING":
-      return <ReadingStepView step={step} />
-    case "SELECT":
-      return (
-        <SelectAnswer onAnswerChange={handlers.onAnswerChange} step={step} />
-      )
-    case "WRITE":
-      return (
-        <WriteAnswer
-          checked={handlers.checked}
-          onAnswerChange={handlers.onAnswerChange}
-          onAnswerPayloadChange={handlers.onAnswerPayloadChange}
-          step={step}
-        />
-      )
-  }
+      ))}
+    </div>
+  )
 }
 
 function ReadingStepView({

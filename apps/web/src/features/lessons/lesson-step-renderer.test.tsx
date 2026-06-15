@@ -1,11 +1,23 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import { describe, expect, it, vi } from "vitest"
 
 import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
 import type { LessonStep } from "@/features/lessons/lesson-types"
 
 describe("레슨 스텝 렌더러 답변 저장", () => {
+  it("스텝 타입별 콘텐츠 렌더링은 switch 대신 레지스트리로 연결한다", () => {
+    const source = readFileSync(
+      join(process.cwd(), "src/features/lessons/lesson-step-renderer.tsx"),
+      "utf8"
+    )
+
+    expect(source).toContain("stepContentRendererByType")
+    expect(source).not.toContain("switch (step.type)")
+  })
+
   it("객관식 선택을 Kwep 버튼 UI로 타입별 payload로 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()

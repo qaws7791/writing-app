@@ -12,3 +12,10 @@
 - 호출자에게 반환되는 `ApiResult` 형태는 기존과 동일하게 `network-error`를 유지했다.
 - 검증: `bun --filter @workspace/web test src/lib/api/http/openapi-client.test.ts`
 - 참고: 기존 `create-http-writing-app-api.test.ts`는 현재 Vite가 `@workspace/core/content`를 해석하지 못해 테스트 파일 로딩 단계에서 실패했다.
+
+## Finding #2 완료: 레슨 스텝 콘텐츠 렌더러 레지스트리화
+
+- `renderStepContent`의 타입별 `switch`를 `stepContentRendererByType` 레지스트리로 바꾸고, `satisfies`로 모든 `LessonStep["type"]` 매핑을 컴파일 단계에서 요구하도록 변경했다.
+- 기존 스텝 UI 컴포넌트의 동작은 유지하고, 비교 스텝 JSX만 `CompareStepView`로 분리했다.
+- 검증: `bun --filter @workspace/web test src/features/lessons/lesson-step-renderer.test.tsx`
+- 참고: `bun --filter @workspace/web typecheck`는 현재 `@workspace/core/content`, `@workspace/core/ai-feedback` 해석 실패로 중단된다.
