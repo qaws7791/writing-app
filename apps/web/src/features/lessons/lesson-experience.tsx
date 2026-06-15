@@ -14,6 +14,7 @@ import type {
 import {
   getFirstLessonStep,
   getLessonStep,
+  isValidLessonStepAnswerPayload,
   isLastLessonStep,
   type LessonStepAnswerPayload,
 } from "@/features/lessons/lesson-logic"
@@ -568,36 +569,19 @@ function getCanSubmit(
     case "AI_FEEDBACK":
       return false
     case "CATEGORIZE":
-      return (
-        payload?.type === "CATEGORIZE" &&
-        payload.items.length === step.items.length
-      )
+      return isValidLessonStepAnswerPayload(step, payload)
     case "FILL_BLANK":
-      return (
-        payload?.type === "FILL_BLANK" &&
-        payload.selectedWords.filter(Boolean).length === step.answer.length
-      )
+      return isValidLessonStepAnswerPayload(step, payload)
     case "MATCH":
-      return (
-        payload?.type === "MATCH" &&
-        payload.pairs.length === step.pairs.length &&
-        payload.pairs.every((pair) => pair.right !== "")
-      )
+      return isValidLessonStepAnswerPayload(step, payload)
     case "MULTIPLE_CHOICE":
-      return (
-        payload?.type === "MULTIPLE_CHOICE" && payload.selectedOptionId !== ""
-      )
+      return isValidLessonStepAnswerPayload(step, payload)
     case "ORDER":
-      return (
-        payload?.type === "ORDER" &&
-        payload.orderedItems.length === step.items.length
-      )
+      return isValidLessonStepAnswerPayload(step, payload)
     case "SELECT":
-      return payload?.type === "SELECT" && payload.selectedIndexes.length > 0
+      return isValidLessonStepAnswerPayload(step, payload)
     case "WRITE":
-      return (
-        payload?.type === "WRITE" && payload.text.length >= (step.min || 20)
-      )
+      return isValidLessonStepAnswerPayload(step, payload)
     case "COMPARE":
     case "READING":
       return true

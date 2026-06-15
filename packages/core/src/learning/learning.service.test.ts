@@ -8,6 +8,7 @@ import {
 } from "@workspace/core/content"
 import { lessonDtoSchema, type LessonDto } from "@workspace/core/content"
 import type { ContentRepository } from "@workspace/core/content"
+import type { JsonValue } from "@/learning/learning.dto"
 import { learnerIdSchema } from "@/learning/learning.ids"
 import {
   createLearningService,
@@ -41,7 +42,7 @@ describe("학습 서비스", () => {
     ]) {
       await expect(
         service.saveStepAnswer({
-          answer: { value: stepId },
+          answer: validAnswerByStepId(stepId),
           lessonId,
           occurredAt,
           stepId: lessonStepIdSchema.parse(stepId),
@@ -118,6 +119,93 @@ describe("학습 서비스", () => {
     )
   })
 
+  it("스텝 콘텐츠에 없는 선택형 답변은 저장하지 않는다", async () => {
+    const savedAnswers: SaveStepAnswerCommand[] = []
+    const service = createService({
+      savedAnswers,
+    })
+
+    await expect(
+      service.saveStepAnswer({
+        answer: JSON.stringify({
+          selectedIndexes: [0, 4],
+          type: "SELECT",
+        }),
+        lessonId,
+        occurredAt,
+        stepId: lessonStepIdSchema.parse("l1-s5"),
+        userId: learnerId,
+      })
+    ).resolves.toEqual({
+      kind: "err",
+      error: {
+        kind: "invalid-request",
+        reason: "step-answer-invalid",
+        stepId: lessonStepIdSchema.parse("l1-s5"),
+      },
+    })
+    expect(savedAnswers).toEqual([])
+  })
+
+  it("중복되거나 존재하지 않는 순서 배열 답변은 저장하지 않는다", async () => {
+    const savedAnswers: SaveStepAnswerCommand[] = []
+    const service = createService({
+      savedAnswers,
+    })
+
+    await expect(
+      service.saveStepAnswer({
+        answer: {
+          orderedItems: ["나는", "나는", "없는 항목"],
+          type: "ORDER",
+        },
+        lessonId,
+        occurredAt,
+        stepId: lessonStepIdSchema.parse("l1-s6"),
+        userId: learnerId,
+      })
+    ).resolves.toEqual({
+      kind: "err",
+      error: {
+        kind: "invalid-request",
+        reason: "step-answer-invalid",
+        stepId: lessonStepIdSchema.parse("l1-s6"),
+      },
+    })
+    expect(savedAnswers).toEqual([])
+  })
+
+  it("존재하지 않는 분류 항목과 카테고리 답변은 저장하지 않는다", async () => {
+    const savedAnswers: SaveStepAnswerCommand[] = []
+    const service = createService({
+      savedAnswers,
+    })
+
+    await expect(
+      service.saveStepAnswer({
+        answer: {
+          items: [
+            { categoryId: "A", itemId: "i1" },
+            { categoryId: "missing-category", itemId: "missing-item" },
+          ],
+          type: "CATEGORIZE",
+        },
+        lessonId,
+        occurredAt,
+        stepId: lessonStepIdSchema.parse("l1-s10"),
+        userId: learnerId,
+      })
+    ).resolves.toEqual({
+      kind: "err",
+      error: {
+        kind: "invalid-request",
+        reason: "step-answer-invalid",
+        stepId: lessonStepIdSchema.parse("l1-s10"),
+      },
+    })
+    expect(savedAnswers).toEqual([])
+  })
+
   it("읽기와 비교 스텝 저장 요청은 invalid-request로 거절한다", async () => {
     const service = createService()
 
@@ -162,6 +250,29 @@ describe("학습 서비스", () => {
     })
   })
 })
+
+function validAnswerByStepId(stepId: string): JsonValue {
+  switch (stepId) {
+    case "l1-s3":
+      return { selectedOptionId: "b", type: "MULTIPLE_CHOICE" }
+    case "l1-s4":
+      return { selectedWords: ["관찰"], type: "FILL_BLANK" }
+    case "l1-s5":
+      return { selectedIndexes: [0, 1], type: "SELECT" }
+    case "l1-s6":
+      return { orderedItems: ["나는", "책을", "읽었다"], type: "ORDER" }
+    case "l1-s7":
+      return { text: "나의 문장 답변은 충분히 길다.", type: "WRITE" }
+    case "l1-s8":
+      return "나의 AI 코칭 대상 답변"
+    case "l1-s9":
+      return { pairs: [{ left: "그러나", right: "역접" }], type: "MATCH" }
+    case "l1-s10":
+      return { items: [{ categoryId: "A", itemId: "i1" }], type: "CATEGORIZE" }
+    default:
+      throw new Error(`unexpected step id: ${stepId}`)
+  }
+}
 
 function createService({
   savedAnswers = [],

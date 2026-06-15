@@ -1,5 +1,16 @@
 # 레슨 페이지
 
+## 2026-06-15 시작 — 답변 payload 정합성 검증
+
+- 서버의 학습 저장 서비스가 lesson step content를 기준으로 답변 payload의 option id, 선택 index, 순서 항목, 매칭 pair, 분류 item/category id를 검증하도록 보강한다.
+- 클라이언트 제출 가능 여부도 단순 개수 확인에 머물지 않고 현재 스텝에 존재하는 값만 허용하는 방향으로 점검한다.
+
+## 2026-06-15 완료 — 답변 payload 정합성 검증
+
+- `LearningService`는 저장 전에 스텝 타입별 답변 payload가 현재 lesson step content에 속하는지 검증한다.
+- 선택형 index, 순서 배열 항목, 매칭 pair, 분류 item/category id는 존재 여부와 중복 여부를 확인한 뒤 저장한다.
+- 레슨 클라이언트는 같은 기준의 payload 검증 helper를 사용해 잘못된 선택 상태에서 제출 CTA를 활성화하지 않는다.
+
 ## 2026-06-14 시작 — Kwep 레슨 시작 화면 피벗
 
 - 레슨 화면을 Kwep 피벗 기준의 `/app/lesson?lesson_id=...` route로 다시 작성한다.
