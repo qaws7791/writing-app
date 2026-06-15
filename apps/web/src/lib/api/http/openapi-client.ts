@@ -1,5 +1,20 @@
 import { apiFailure, apiOk, type ApiResult } from "@/lib/api/api-result"
-import { networkApiError, toApiError } from "@/lib/api/api-error"
+import {
+  contractApiError,
+  networkApiError,
+  toApiError,
+} from "@/lib/api/api-error"
+
+type ResponseSchema<TValue> = {
+  readonly safeParse: (value: unknown) =>
+    | {
+        readonly data: TValue
+        readonly success: true
+      }
+    | {
+        readonly success: false
+      }
+}
 
 export type FetchLike = (request: Request) => Promise<Response>
 
@@ -10,6 +25,7 @@ export type OpenApiClient = {
     readonly body?: unknown
     readonly method: "GET" | "POST"
     readonly path: string
+    readonly schema: ResponseSchema<TValue>
   }) => Promise<ApiResult<TValue>>
 }
 
@@ -27,6 +43,7 @@ export function createOpenApiClient({
       readonly body?: unknown
       readonly method: "GET" | "POST"
       readonly path: string
+      readonly schema: ResponseSchema<TValue>
     }) {
       const headers = new Headers()
       const token = await tokenProvider()
@@ -39,25 +56,36 @@ export function createOpenApiClient({
         headers.set("Content-Type", "application/json")
       }
 
-      try {
-        const response = await fetch(
-          new Request(toApiUrl(baseUrl, input.path), {
-            body:
-              input.body === undefined ? undefined : JSON.stringify(input.body),
-            headers,
-            method: input.method,
-          })
-        )
-        const body = await readJson(response)
+      const response = await fetch(
+        new Request(toApiUrl(baseUrl, input.path), {
+          body:
+            input.body === undefined ? undefined : JSON.stringify(input.body),
+          headers,
+          method: input.method,
+        })
+      ).catch(() => null)
 
-        if (!response.ok) {
-          return apiFailure(toApiError(response.status, body))
-        }
-
-        return apiOk(body as TValue)
-      } catch {
+      if (response === null) {
         return apiFailure(networkApiError())
       }
+
+      const bodyResult = await readJson(response)
+
+      if (bodyResult.kind === "err") {
+        return apiFailure(contractApiError(response.status))
+      }
+
+      if (!response.ok) {
+        return apiFailure(toApiError(response.status, bodyResult.value))
+      }
+
+      const parsedBody = input.schema.safeParse(bodyResult.value)
+
+      if (!parsedBody.success) {
+        return apiFailure(contractApiError(response.status))
+      }
+
+      return apiOk(parsedBody.data)
     },
   }
 }
@@ -66,12 +94,32 @@ function toApiUrl(baseUrl: string, path: string): string {
   return `${baseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`
 }
 
-async function readJson(response: Response): Promise<unknown> {
+async function readJson(response: Response): Promise<
+  | {
+      readonly kind: "ok"
+      readonly value: unknown
+    }
+  | {
+      readonly kind: "err"
+    }
+> {
   const text = await response.text()
 
   if (text.length === 0) {
-    return null
+    return {
+      kind: "ok",
+      value: null,
+    }
   }
 
-  return JSON.parse(text)
+  try {
+    return {
+      kind: "ok",
+      value: JSON.parse(text) as unknown,
+    }
+  } catch {
+    return {
+      kind: "err",
+    }
+  }
 }

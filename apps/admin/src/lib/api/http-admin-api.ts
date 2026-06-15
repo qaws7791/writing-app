@@ -1,4 +1,8 @@
-import { networkAdminApiError, toAdminApiError } from "@/lib/api/api-error"
+import {
+  contractAdminApiError,
+  networkAdminApiError,
+  toAdminApiError,
+} from "@/lib/api/api-error"
 import {
   adminApiError,
   adminApiOk,
@@ -12,6 +16,30 @@ import type {
   ReadAdminUsersInput,
   UpdateAdminUserStatusInput,
 } from "@/lib/api/admin-api"
+import {
+  adminAnalyticsDtoSchema,
+  adminArchiveCourseResultSchema,
+  adminContentResetResultSchema,
+  adminCourseDetailDtoSchema,
+  adminCourseListDtoSchema,
+  adminDashboardDtoSchema,
+  adminDeleteUserResultSchema,
+  adminLessonAnalyticsPageDtoSchema,
+  adminSettingsDtoSchema,
+  adminUserDetailDtoSchema,
+  adminUserListDtoSchema,
+} from "@workspace/core/admin"
+
+type ResponseSchema<TValue> = {
+  readonly safeParse: (value: unknown) =>
+    | {
+        readonly data: TValue
+        readonly success: true
+      }
+    | {
+        readonly success: false
+      }
+}
 
 export type AdminFetchLike = (request: Request) => Promise<Response>
 export type AdminTokenProvider = () => Promise<string | null> | string | null
@@ -36,66 +64,77 @@ export function createHttpAdminApi({
       return client.requestJson({
         method: "DELETE",
         path: `/courses/${courseId}`,
+        schema: adminArchiveCourseResultSchema,
       })
     },
     createCourse() {
       return client.requestJson({
         method: "POST",
         path: "/courses",
+        schema: adminCourseDetailDtoSchema,
       })
     },
     deleteUser(userId) {
       return client.requestJson({
         method: "DELETE",
         path: `/users/${userId}`,
+        schema: adminDeleteUserResultSchema,
       })
     },
     getAnalytics(input) {
       return client.requestJson({
         method: "GET",
         path: `/analytics?${analyticsSearchParams(input)}`,
+        schema: adminAnalyticsDtoSchema,
       })
     },
     getCourses(input) {
       return client.requestJson({
         method: "GET",
         path: `/courses?${coursesSearchParams(input)}`,
+        schema: adminCourseListDtoSchema,
       })
     },
     getCourseEditor(courseId) {
       return client.requestJson({
         method: "GET",
         path: `/courses/${courseId}/editor`,
+        schema: adminCourseDetailDtoSchema,
       })
     },
     getDashboard() {
       return client.requestJson({
         method: "GET",
         path: "/dashboard",
+        schema: adminDashboardDtoSchema,
       })
     },
     getLessonAnalytics(input) {
       return client.requestJson({
         method: "GET",
         path: `/analytics/lessons?${lessonAnalyticsSearchParams(input)}`,
+        schema: adminLessonAnalyticsPageDtoSchema,
       })
     },
     getSettings() {
       return client.requestJson({
         method: "GET",
         path: "/settings",
+        schema: adminSettingsDtoSchema,
       })
     },
     getUser(userId) {
       return client.requestJson({
         method: "GET",
         path: `/users/${userId}`,
+        schema: adminUserDetailDtoSchema,
       })
     },
     getUsers(input) {
       return client.requestJson({
         method: "GET",
         path: `/users?${usersSearchParams(input)}`,
+        schema: adminUserListDtoSchema,
       })
     },
     resetContent() {
@@ -103,6 +142,7 @@ export function createHttpAdminApi({
         body: {},
         method: "POST",
         path: "/settings/content-reset",
+        schema: adminContentResetResultSchema,
       })
     },
     saveLegalSettings(input) {
@@ -110,6 +150,7 @@ export function createHttpAdminApi({
         body: input,
         method: "PUT",
         path: "/settings/legal",
+        schema: adminSettingsDtoSchema,
       })
     },
     saveNoticeSettings(input) {
@@ -117,6 +158,7 @@ export function createHttpAdminApi({
         body: input,
         method: "PUT",
         path: "/settings/notice",
+        schema: adminSettingsDtoSchema,
       })
     },
     updateUserStatus(input: UpdateAdminUserStatusInput) {
@@ -126,6 +168,7 @@ export function createHttpAdminApi({
         },
         method: "PATCH",
         path: `/users/${input.userId}/status`,
+        schema: adminUserDetailDtoSchema,
       })
     },
   }
@@ -144,6 +187,7 @@ function createAdminHttpClient({
     readonly body?: unknown
     readonly method: "DELETE" | "GET" | "PATCH" | "POST" | "PUT"
     readonly path: string
+    readonly schema: ResponseSchema<TValue>
   }) => Promise<AdminApiResult<TValue>>
 } {
   const normalizedBaseUrl = baseUrl.replace(/\/+$/, "")
@@ -153,6 +197,7 @@ function createAdminHttpClient({
       readonly body?: unknown
       readonly method: "DELETE" | "GET" | "PATCH" | "POST" | "PUT"
       readonly path: string
+      readonly schema: ResponseSchema<TValue>
     }) {
       const headers = new Headers()
       const token = await tokenProvider()
@@ -171,19 +216,60 @@ function createAdminHttpClient({
         method: input.method,
       })
 
-      try {
-        const response = await fetch(request)
-        const body = await response.json().catch(() => null)
+      const response = await fetch(request).catch(() => null)
 
-        if (!response.ok) {
-          return adminApiError(toAdminApiError(response.status, body))
-        }
-
-        return adminApiOk(body as TValue)
-      } catch {
+      if (response === null) {
         return adminApiError(networkAdminApiError())
       }
+
+      const bodyResult = await readJson(response)
+
+      if (bodyResult.kind === "err") {
+        return adminApiError(contractAdminApiError(response.status))
+      }
+
+      if (!response.ok) {
+        return adminApiError(toAdminApiError(response.status, bodyResult.value))
+      }
+
+      const parsedBody = input.schema.safeParse(bodyResult.value)
+
+      if (!parsedBody.success) {
+        return adminApiError(contractAdminApiError(response.status))
+      }
+
+      return adminApiOk(parsedBody.data)
     },
+  }
+}
+
+async function readJson(response: Response): Promise<
+  | {
+      readonly kind: "ok"
+      readonly value: unknown
+    }
+  | {
+      readonly kind: "err"
+    }
+> {
+  const text = await response.text()
+
+  if (text.length === 0) {
+    return {
+      kind: "ok",
+      value: null,
+    }
+  }
+
+  try {
+    return {
+      kind: "ok",
+      value: JSON.parse(text) as unknown,
+    }
+  } catch {
+    return {
+      kind: "err",
+    }
   }
 }
 

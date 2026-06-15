@@ -11,6 +11,13 @@ import {
   type FetchLike,
   type TokenProvider,
 } from "@/lib/api/http/openapi-client"
+import {
+  courseDetailDtoSchema,
+  courseListDtoSchema,
+  lessonDtoSchema,
+} from "@workspace/core/content"
+import { aiFeedbackResultDtoSchema } from "@workspace/core/ai-feedback"
+import { z } from "zod"
 import type {
   AiFeedbackResult,
   ApiAiFeedbackResponse,
@@ -47,6 +54,7 @@ export function createHttpWritingAppApi({
         },
         method: "POST",
         path: `/learning/lessons/${input.lessonId}/complete`,
+        schema: savedResponseSchema,
       })
     },
     async createAiFeedback(input) {
@@ -55,6 +63,7 @@ export function createHttpWritingAppApi({
           body: input,
           method: "POST",
           path: "/ai-feedback",
+          schema: aiFeedbackResultDtoSchema,
         }),
         mapAiFeedbackResult
       )
@@ -64,6 +73,7 @@ export function createHttpWritingAppApi({
         await client.requestJson<ApiCourseDetailResponse>({
           method: "GET",
           path: `/courses/${courseId}`,
+          schema: courseDetailDtoSchema,
         }),
         mapCourseDetail
       )
@@ -73,6 +83,7 @@ export function createHttpWritingAppApi({
         await client.requestJson<ApiLessonResponse>({
           method: "GET",
           path: `/lessons/${lessonId}`,
+          schema: lessonDtoSchema,
         }),
         mapLesson
       )
@@ -82,6 +93,7 @@ export function createHttpWritingAppApi({
         await client.requestJson<ApiProfileResponse>({
           method: "GET",
           path: "/profile",
+          schema: apiProfileResponseSchema,
         }),
         mapProfile
       )
@@ -91,6 +103,7 @@ export function createHttpWritingAppApi({
         await client.requestJson<ApiProgressResponse>({
           method: "GET",
           path: "/progress",
+          schema: apiProgressResponseSchema,
         }),
         mapProgress
       )
@@ -100,6 +113,7 @@ export function createHttpWritingAppApi({
         await client.requestJson<ApiCourseListResponse>({
           method: "GET",
           path: "/courses",
+          schema: courseListDtoSchema,
         }),
         mapCourseList
       )
@@ -109,10 +123,58 @@ export function createHttpWritingAppApi({
         body: input,
         method: "POST",
         path: "/learning/answers",
+        schema: savedResponseSchema,
       })
     },
   }
 }
+
+const nonNegativeIntegerSchema = z.number().int().nonnegative()
+
+const savedResponseSchema = z.object({
+  saved: z.literal(true),
+})
+
+const apiProfileResponseSchema = z.object({
+  stats: z.object({
+    completedLessons: nonNegativeIntegerSchema,
+    currentStreakDays: nonNegativeIntegerSchema,
+    lastActiveDate: z.string().nullable(),
+    progressPercent: nonNegativeIntegerSchema.max(100),
+    totalLessons: nonNegativeIntegerSchema,
+  }),
+  user: z.object({
+    email: z.email(),
+    id: z.string(),
+    image: z.string().nullable(),
+    joinedAt: z.string(),
+    name: z.string(),
+    status: z.enum(["active", "deleted", "suspended"]),
+  }),
+})
+
+const progressLessonSchema = z.object({
+  courseId: z.string().optional(),
+  estimatedMinutes: z.number().int().positive(),
+  id: z.string(),
+  status: z.enum(["available", "completed", "locked"]),
+  title: z.string(),
+})
+
+const apiProgressResponseSchema = z.object({
+  courses: z.array(
+    z.object({
+      id: z.string(),
+      lessons: z.array(progressLessonSchema),
+      nextLessons: z.array(progressLessonSchema.required({ courseId: true })),
+      progressPercent: nonNegativeIntegerSchema.max(100),
+      title: z.string(),
+    })
+  ),
+  user: z.object({
+    currentStreakDays: nonNegativeIntegerSchema,
+  }),
+})
 
 function mapApiResult<TInput, TOutput>(
   result: ApiResult<TInput>,

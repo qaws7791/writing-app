@@ -50,6 +50,14 @@ export function networkAdminApiError(): AdminApiError {
   }
 }
 
+export function contractAdminApiError(status?: number): AdminApiError {
+  return {
+    code: "contract-error",
+    message: messageByCode["contract-error"],
+    status,
+  }
+}
+
 function readServerErrorCode(body: unknown): AdminApiErrorCode | null {
   if (
     typeof body !== "object" ||

@@ -237,6 +237,29 @@ describe("HTTP AdminApi", () => {
       status: "error",
     })
   })
+
+  it("성공 응답이 계약과 다르면 contract-error를 반환한다", async () => {
+    const api = createHttpAdminApi({
+      baseUrl: "https://admin-api.example.test",
+      fetch: async () =>
+        jsonResponse({
+          metrics: {
+            totalUsers: "12",
+          },
+          recentActivities: [],
+        }),
+      tokenProvider: () => "admin-token",
+    })
+
+    await expect(api.getDashboard()).resolves.toEqual({
+      error: {
+        code: "contract-error",
+        message: "API 응답을 해석할 수 없습니다.",
+        status: 200,
+      },
+      status: "error",
+    })
+  })
 })
 
 function jsonResponse(body: unknown, status = 200): Response {

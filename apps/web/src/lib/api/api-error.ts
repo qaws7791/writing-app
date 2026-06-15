@@ -59,6 +59,14 @@ export function networkApiError(): ApiError {
   }
 }
 
+export function contractApiError(status?: number): ApiError {
+  return {
+    code: "contract-error",
+    message: messageByCode["contract-error"],
+    status,
+  }
+}
+
 function readServerErrorCode(body: unknown): ApiErrorCode | null {
   if (
     typeof body !== "object" ||
