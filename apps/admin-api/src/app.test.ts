@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { createApp, type AdminApiDependencies } from "@/app"
+import { createApp } from "@/app"
+import {
+  createTestAdminApiDependencies,
+  testAdminNow,
+} from "@/routes/test-dependencies"
 import type {
   AdminAnalyticsDto,
   AdminDashboardDto,
@@ -330,35 +334,23 @@ describe("어드민 API users route", () => {
   })
 })
 
-function createDependencies(): AdminApiDependencies {
-  return {
-    adminOrigin: "http://localhost:3003",
+function createDependencies() {
+  return createTestAdminApiDependencies({
     dashboardService: {
-      async archiveCourse() {
-        throw new Error("unexpected archive course request")
-      },
-      async createCourse() {
-        throw new Error("unexpected create course request")
-      },
       async deleteUser(input) {
         expect(input.userId).toBe("user-1")
         return { deleted: true }
       },
-      async getDashboard() {
-        return dashboard
-      },
       async getAnalytics(input) {
         expect(input).toEqual({
           days: 2,
-          now: new Date("2026-06-14T03:00:00.000Z"),
+          now: testAdminNow,
         })
+
         return analytics
       },
-      async getCourseEditor() {
-        throw new Error("unexpected course editor request")
-      },
-      async getCourses() {
-        throw new Error("unexpected course list request")
+      async getDashboard() {
+        return dashboard
       },
       async getLessonAnalytics(input) {
         expect(input).toEqual({
@@ -368,10 +360,8 @@ function createDependencies(): AdminApiDependencies {
           query: "둘째",
           sort: "completionRate",
         })
+
         return lessonAnalytics
-      },
-      async getSettings() {
-        throw new Error("unexpected settings request")
       },
       async getUser(input) {
         expect(input.userId).toBe("user-1")
@@ -387,42 +377,15 @@ function createDependencies(): AdminApiDependencies {
         })
         return userList
       },
-      async resetContent() {
-        throw new Error("unexpected content reset request")
-      },
-      async updateLegalSettings() {
-        throw new Error("unexpected legal settings request")
-      },
-      async updateNoticeSettings() {
-        throw new Error("unexpected notice settings request")
-      },
       async updateUserStatus(input) {
         expect(input.status).toBe("suspended")
         expect(input.userId).toBe("user-1")
+
         return {
           ...userDetail,
           status: "suspended",
         }
       },
     },
-    now() {
-      return new Date("2026-06-14T03:00:00.000Z")
-    },
-    sessionResolver: {
-      async resolveSession(token) {
-        if (token !== "admin-token") {
-          return null
-        }
-
-        return {
-          admin: {
-            email: "admin@example.com",
-            id: "admin-1",
-            name: "관리자",
-            role: "owner",
-          },
-        }
-      },
-    },
-  }
+  })
 }
