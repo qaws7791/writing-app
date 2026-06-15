@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest"
+import { readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
 
 import { createKwepDatabase } from "@/client"
 import { runBaselineMigration } from "@/migrations/migrate"
@@ -16,6 +18,19 @@ import {
 } from "@/schema"
 
 describe("어드민 DB repository", () => {
+  it("사용자 목록 페이지네이션은 JS 배열 slice가 아니라 DB 쿼리 경계에서 처리한다", () => {
+    const repositorySource = readFileSync(
+      fileURLToPath(new URL("admin.repository.ts", import.meta.url)),
+      "utf8"
+    )
+    const readUsersSource = repositorySource.match(
+      /function readUsers[\s\S]*?\n}\n\nfunction readUser/
+    )?.[0]
+
+    expect(readUsersSource).toBeDefined()
+    expect(readUsersSource).not.toContain(".slice(")
+  })
+
   it("기존 학습자와 콘텐츠 테이블에서 dashboard 지표를 계산한다", async () => {
     const client = createKwepDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
