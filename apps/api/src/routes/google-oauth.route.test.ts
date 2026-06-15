@@ -29,6 +29,38 @@ describe("Google OAuth route", () => {
     expect(response.headers.get("set-cookie")).toContain("kwep_oauth_state=")
   })
 
+  it("HTTPS origin에서는 OAuth 상태 쿠키에 Secure 속성을 붙인다", async () => {
+    const route = createGoogleOAuthRoute({
+      authBaseUrl: "https://api.example.test",
+      clientId: "google-client-id",
+      clientSecret: "google-client-secret",
+      createStateNonce: () => "state-nonce",
+      webOrigin: "https://app.example.test",
+    })
+
+    const response = await route.request("/sign-in/google")
+
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly")
+    expect(response.headers.get("set-cookie")).toContain("Secure")
+    expect(response.headers.get("set-cookie")).toContain("SameSite=Lax")
+  })
+
+  it("HTTPS origin에서는 로그아웃 쿠키에도 Secure 속성을 붙인다", async () => {
+    const route = createGoogleOAuthRoute({
+      authBaseUrl: "https://api.example.test",
+      clientId: "google-client-id",
+      clientSecret: "google-client-secret",
+      webOrigin: "https://app.example.test",
+    })
+
+    const response = await route.request("/sign-out")
+
+    expect(response.headers.get("set-cookie")).toContain("kwep_session=")
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly")
+    expect(response.headers.get("set-cookie")).toContain("Secure")
+    expect(response.headers.get("set-cookie")).toContain("SameSite=Lax")
+  })
+
   it("기본 nonce 생성기를 사용해도 Google 로그인 시작 요청을 처리한다", async () => {
     const route = createGoogleOAuthRoute({
       authBaseUrl: "http://localhost:4000",

@@ -34,6 +34,7 @@ export type GoogleOAuthRouteOptions = {
 
 export function createGoogleOAuthRoute(options: GoogleOAuthRouteOptions): Hono {
   const route = new Hono()
+  const secureCookie = shouldUseSecureCookie(options.webOrigin)
 
   route.get("/sign-in/google", (context) => {
     const callbackPath = resolveSafeCallbackPath(
@@ -58,6 +59,7 @@ export function createGoogleOAuthRoute(options: GoogleOAuthRouteOptions): Hono {
         httpOnly: true,
         maxAge: 600,
         sameSite: "Lax",
+        secure: secureCookie,
       })
     )
 
@@ -127,11 +129,13 @@ export function createGoogleOAuthRoute(options: GoogleOAuthRouteOptions): Hono {
           httpOnly: true,
           maxAge: sessionMaxAgeSeconds,
           sameSite: "Lax",
+          secure: secureCookie,
         }),
         serializeCookie(oauthStateCookieName, "", {
           httpOnly: true,
           maxAge: 0,
           sameSite: "Lax",
+          secure: secureCookie,
         }),
       ].join(", ")
     )
@@ -153,6 +157,7 @@ export function createGoogleOAuthRoute(options: GoogleOAuthRouteOptions): Hono {
         httpOnly: true,
         maxAge: 0,
         sameSite: "Lax",
+        secure: secureCookie,
       })
     )
 
@@ -181,6 +186,10 @@ function resolveSafeCallbackPath(callbackPath: string | undefined): string {
 
 function createWebUrl(webOrigin: string, path: string): string {
   return new URL(path, webOrigin).toString()
+}
+
+function shouldUseSecureCookie(webOrigin: string): boolean {
+  return new URL(webOrigin).protocol === "https:"
 }
 
 function encodeState(state: {
@@ -223,6 +232,7 @@ function serializeCookie(
     readonly httpOnly: boolean
     readonly maxAge: number
     readonly sameSite: "Lax"
+    readonly secure: boolean
   }
 ): string {
   return [
@@ -231,6 +241,7 @@ function serializeCookie(
     `Max-Age=${options.maxAge}`,
     `SameSite=${options.sameSite}`,
     options.httpOnly ? "HttpOnly" : "",
+    options.secure ? "Secure" : "",
   ]
     .filter(Boolean)
     .join("; ")
