@@ -1,3 +1,5 @@
+export { readBearerToken } from "@workspace/core/auth"
+
 export type AdminRole = "operator" | "owner"
 
 export type AdminAuthenticatedSession = {
@@ -13,20 +15,4 @@ export type AdminSessionResolver = {
   readonly resolveSession: (
     token: string
   ) => Promise<AdminAuthenticatedSession | null>
-}
-
-export function readBearerToken(
-  authorizationHeader: string | null
-): string | null {
-  if (authorizationHeader === null) {
-    return null
-  }
-
-  const [scheme, token] = authorizationHeader.split(" ")
-
-  if (scheme !== "Bearer" || token === undefined || token.length === 0) {
-    return null
-  }
-
-  return token
 }

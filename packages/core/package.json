@@ -7,6 +7,8 @@
     ".": "./src/index.ts",
     "./admin": "./src/admin/index.ts",
     "./admin/*": "./src/admin/*.ts",
+    "./auth": "./src/auth/index.ts",
+    "./auth/*": "./src/auth/*.ts",
     "./ai-feedback": "./src/ai-feedback/index.ts",
     "./ai-feedback/*": "./src/ai-feedback/*.ts",
     "./content": "./src/content/index.ts",

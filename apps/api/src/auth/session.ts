@@ -1,4 +1,5 @@
 import type { LearnerAccountStatus } from "@workspace/core/status"
+export { readBearerToken } from "@workspace/core/auth"
 
 export type { LearnerAccountStatus } from "@workspace/core/status"
 
@@ -17,20 +18,4 @@ export type SessionResolver = {
   readonly resolveSession: (
     token: string
   ) => Promise<AuthenticatedSession | null>
-}
-
-export function readBearerToken(
-  authorizationHeader: string | null
-): string | null {
-  if (authorizationHeader === null) {
-    return null
-  }
-
-  const [scheme, token] = authorizationHeader.split(" ")
-
-  if (scheme !== "Bearer" || token === undefined || token.length === 0) {
-    return null
-  }
-
-  return token
 }

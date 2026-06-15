@@ -1,7 +1,7 @@
 import type { Context } from "hono"
+import { resolveBearerSession } from "@workspace/core/auth"
 
 import {
-  readBearerToken,
   type AdminAuthenticatedSession,
   type AdminSessionResolver,
 } from "@/auth/admin-session"
@@ -21,29 +21,18 @@ export async function resolveAdminSession(
   context: Context,
   sessionResolver: AdminSessionResolver
 ): Promise<AdminSessionResult> {
-  const token = readBearerToken(context.req.header("Authorization") ?? null)
+  const sessionResult = await resolveBearerSession({
+    authorizationHeader: context.req.header("Authorization") ?? null,
+    sessionResolver,
+  })
 
-  if (token === null) {
-    return {
-      code: "unauthorized",
-      kind: "err",
-      status: 401,
-    }
-  }
-
-  const session = await sessionResolver.resolveSession(token)
-
-  if (session === null) {
-    return {
-      code: "unauthorized",
-      kind: "err",
-      status: 401,
-    }
+  if (sessionResult.kind === "err") {
+    return sessionResult
   }
 
   return {
     kind: "ok",
-    session,
+    session: sessionResult.session,
   }
 }
 

@@ -1,11 +1,8 @@
 import type { Context } from "hono"
+import { resolveBearerSession } from "@workspace/core/auth"
 import { learnerAccountStatuses } from "@workspace/core/status"
 
-import {
-  readBearerToken,
-  type AuthenticatedSession,
-  type SessionResolver,
-} from "@/auth/session"
+import { type AuthenticatedSession, type SessionResolver } from "@/auth/session"
 
 export type ActiveSessionResult =
   | {
@@ -22,27 +19,16 @@ export async function resolveActiveSession(
   context: Context,
   sessionResolver: SessionResolver
 ): Promise<ActiveSessionResult> {
-  const token = readBearerToken(context.req.header("Authorization") ?? null)
+  const sessionResult = await resolveBearerSession({
+    authorizationHeader: context.req.header("Authorization") ?? null,
+    sessionResolver,
+  })
 
-  if (token === null) {
-    return {
-      code: "unauthorized",
-      kind: "err",
-      status: 401,
-    }
+  if (sessionResult.kind === "err") {
+    return sessionResult
   }
 
-  const session = await sessionResolver.resolveSession(token)
-
-  if (session === null) {
-    return {
-      code: "unauthorized",
-      kind: "err",
-      status: 401,
-    }
-  }
-
-  if (session.user.status !== learnerAccountStatuses.active) {
+  if (sessionResult.session.user.status !== learnerAccountStatuses.active) {
     return {
       code: "account_unavailable",
       kind: "err",
@@ -52,7 +38,7 @@ export async function resolveActiveSession(
 
   return {
     kind: "ok",
-    session,
+    session: sessionResult.session,
   }
 }
 

@@ -53,3 +53,12 @@
 - 예외 메시지에 `step.id`를 포함해 손상된 데이터 위치를 추적할 수 있게 했다.
 - 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/step-form-registry.test.tsx`
 - 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/course-editor-shell.test.tsx`
+
+## Finding #8 완료: Bearer 세션 해석 공통 경계
+
+- `@workspace/core/auth`에 `readBearerToken`, `resolveBearerSession`을 추가해 learner API와 admin API가 동일한 토큰 해석 흐름을 공유하도록 변경했다.
+- learner 계정 상태 확인과 admin owner 권한 확인은 각 API의 도메인 helper에 남겨 책임 경계를 유지했다.
+- 검증: `bun --filter @workspace/core test src/auth/bearer-session.test.ts`
+- 검증: `bun --filter @workspace/api test src/routes/route-helpers.test.ts src/routes/auth.route.test.ts src/routes/courses.route.test.ts src/routes/lessons.route.test.ts`
+- 검증: `bun --filter @workspace/admin-api test src/app.test.ts src/routes/courses.route.test.ts src/routes/settings.route.test.ts`
+- 검증: `bun --filter @workspace/core typecheck`

@@ -1,4 +1,5 @@
 export * from "@workspace/core/admin"
+export * from "@workspace/core/auth"
 export * from "@workspace/core/ai-feedback"
 export * from "@workspace/core/content"
 export * from "@workspace/core/learning"
