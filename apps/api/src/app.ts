@@ -1,5 +1,6 @@
-import { Hono } from "hono"
+import { Hono, type Context } from "hono"
 import { cors } from "hono/cors"
+import { z } from "zod"
 
 import type { SessionResolver } from "@/auth/session"
 import { createAiFeedbackRoute } from "@/routes/ai-feedback.route"
@@ -18,6 +19,7 @@ import {
   createProgressRoute,
   type ProgressReader,
 } from "@/routes/progress.route"
+import { errorResponse } from "@/routes/error-response"
 import type { ContentRepository } from "@workspace/core/content"
 import type { AiFeedbackService } from "@workspace/core/ai-feedback"
 import type { LearningService } from "@workspace/core/learning"
@@ -37,6 +39,15 @@ export type ApiDependencies = {
 
 export function createApp(dependencies: ApiDependencies): Hono {
   const app = new Hono()
+
+  app.onError(handleAppError)
+  app.use("*", async (context, next) => {
+    try {
+      await next()
+    } catch (error) {
+      return handleAppError(error, context)
+    }
+  })
 
   app.use(
     "*",
@@ -110,4 +121,12 @@ export function createApp(dependencies: ApiDependencies): Hono {
   }
 
   return app
+}
+
+function handleAppError(error: unknown, context: Context) {
+  if (error instanceof z.ZodError) {
+    return context.json(errorResponse("invalid_request"), 400)
+  }
+
+  return context.json(errorResponse("internal_server_error"), 500)
 }

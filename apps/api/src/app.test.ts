@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env"
+import { z } from "zod"
 
 import { createApp, type ApiDependencies } from "@/app"
 
@@ -93,6 +94,47 @@ describe("플랫폼 API profile route", () => {
         },
       })
     }
+  })
+
+  it("ZodError 예외를 invalid_request JSON 400으로 변환한다", async () => {
+    const app = createApp({
+      ...createDependencies(),
+      learningService: {
+        async completeLesson() {
+          throw new z.ZodError([])
+        },
+        async saveLessonProgress() {
+          throw new z.ZodError([])
+        },
+        async saveStepAnswer() {
+          throw new z.ZodError([])
+        },
+      },
+      now: () => new Date("2026-06-15T09:00:00.000Z"),
+    })
+
+    const response = await app.request("/learning/answers", {
+      body: JSON.stringify({
+        answer: {
+          selectedOptionId: "b",
+          type: "MULTIPLE_CHOICE",
+        },
+        lessonId: "lesson-1",
+        stepId: "step-1",
+      }),
+      headers: {
+        Authorization: "Bearer active-token",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_request",
+      },
+    })
   })
 })
 
