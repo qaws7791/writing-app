@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import type { AnySQLiteTable } from "drizzle-orm/sqlite-core"
 import { authAccounts } from "@workspace/db/schema/auth.schema"
 import { localRuntimeDefaults } from "@workspace/env"
 
@@ -10,6 +11,7 @@ import {
 const authBaseUrl = localRuntimeDefaults.learnerApiBaseUrl
 const webOrigin = localRuntimeDefaults.learnerWebOrigin
 const googleCallbackUrl = `${authBaseUrl}/api/auth/callback/google`
+type AuthAccountInsert = typeof authAccounts.$inferInsert
 
 describe("Google OAuth route", () => {
   it("Google 로그인 시작 요청을 Google authorization endpoint로 보낸다", async () => {
@@ -64,7 +66,10 @@ describe("Google OAuth route", () => {
   })
 
   it("Google 콜백 후 provider token을 DB에 저장하지 않는다", async () => {
-    let savedAccount: unknown = null
+    let savedAccount: AuthAccountInsert | null = null
+    const saveAccount = (account: AuthAccountInsert) => {
+      savedAccount = account
+    }
     const db = {
       delete() {
         return {
@@ -75,22 +80,22 @@ describe("Google OAuth route", () => {
           },
         }
       },
-      insert(table: unknown) {
+      insert(table: AnySQLiteTable) {
         return {
-          values(value: unknown) {
+          values(value: AuthAccountInsert) {
             return {
               onConflictDoUpdate() {
                 return {
                   run() {
                     if (table === authAccounts) {
-                      savedAccount = value
+                      saveAccount(value)
                     }
                   },
                 }
               },
               run() {
                 if (table === authAccounts) {
-                  savedAccount = value
+                  saveAccount(value)
                 }
               },
             }
