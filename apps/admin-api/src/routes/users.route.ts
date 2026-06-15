@@ -2,6 +2,7 @@ import { Hono } from "hono"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { errorResponse } from "@/routes/error-response"
+import { parsePositiveIntegerParam } from "@/routes/query-params"
 import { resolveAdminSession } from "@/routes/route-helpers"
 import {
   adminUpdateUserStatusRequestSchema,
@@ -12,6 +13,7 @@ import {
 
 const defaultPage = 1
 const defaultPageSize = 20
+const maxPageSize = 100
 
 export type UsersRouteDependencies = {
   readonly adminService: AdminService
@@ -141,8 +143,15 @@ function parseUsersQuery(input: {
   readonly sort: "joined" | "lastActive" | "lessonsDone" | "streak"
   readonly status: "active" | "all" | "deleted" | "suspended"
 } | null {
-  const page = parsePositiveInteger(input.page, defaultPage)
-  const pageSize = parsePositiveInteger(input.pageSize, defaultPageSize)
+  const page = parsePositiveIntegerParam({
+    fallback: defaultPage,
+    value: input.page,
+  })
+  const pageSize = parsePositiveIntegerParam({
+    fallback: defaultPageSize,
+    max: maxPageSize,
+    value: input.pageSize,
+  })
   const sortResult = adminUserSortSchema.safeParse(input.sort ?? "lastActive")
   const statusResult = adminUserListStatusFilterSchema.safeParse(
     input.status ?? "all"
@@ -163,21 +172,4 @@ function parseUsersQuery(input: {
     sort: sortResult.data,
     status: statusResult.data,
   }
-}
-
-function parsePositiveInteger(
-  value: string | undefined,
-  fallback: number
-): number | null {
-  if (value === undefined || value.trim() === "") {
-    return fallback
-  }
-
-  const parsed = Number(value)
-
-  if (!Number.isInteger(parsed) || parsed < 1) {
-    return null
-  }
-
-  return parsed
 }

@@ -120,6 +120,23 @@ describe("어드민 API courses route", () => {
     })
   })
 
+  it("코스 목록 페이지 크기 query가 상한을 넘으면 400을 반환한다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request("/courses?pageSize=101", {
+      headers: {
+        Authorization: "Bearer admin-token",
+      },
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_request",
+      },
+    })
+  })
+
   it("관리자 세션이 없으면 코스 생성 요청은 401을 반환한다", async () => {
     const app = createApp(createDependencies())
 

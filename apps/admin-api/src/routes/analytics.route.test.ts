@@ -103,6 +103,23 @@ describe("어드민 API analytics route", () => {
     await expect(response.json()).resolves.toEqual(analytics)
   })
 
+  it("분석 기간 query가 상한을 넘으면 400을 반환한다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request("/analytics?days=366", {
+      headers: {
+        Authorization: "Bearer admin-token",
+      },
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_request",
+      },
+    })
+  })
+
   it("레슨별 분석 query를 파싱해 검색, 정렬, 페이지네이션 결과를 반환한다", async () => {
     const app = createApp(createDependencies())
 
@@ -117,6 +134,23 @@ describe("어드민 API analytics route", () => {
 
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual(lessonAnalytics)
+  })
+
+  it("레슨별 분석 페이지 크기 query가 상한을 넘으면 400을 반환한다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request("/analytics/lessons?pageSize=101", {
+      headers: {
+        Authorization: "Bearer admin-token",
+      },
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_request",
+      },
+    })
   })
 
   it("허용하지 않는 분석 query는 400을 반환한다", async () => {

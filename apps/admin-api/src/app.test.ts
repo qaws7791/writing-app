@@ -309,6 +309,23 @@ describe("어드민 API users route", () => {
     await expect(response.json()).resolves.toEqual(userList)
   })
 
+  it("사용자 목록 페이지 크기 query가 상한을 넘으면 400을 반환한다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request("/users?pageSize=101", {
+      headers: {
+        Authorization: "Bearer admin-token",
+      },
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_request",
+      },
+    })
+  })
+
   it("사용자 상세, 상태 변경, 삭제 상태 전환을 제공한다", async () => {
     const app = createApp(createDependencies())
     const headers = {

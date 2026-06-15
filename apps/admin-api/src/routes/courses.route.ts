@@ -2,6 +2,7 @@ import { Hono } from "hono"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { errorResponse } from "@/routes/error-response"
+import { parsePositiveIntegerParam } from "@/routes/query-params"
 import { resolveAdminSession } from "@/routes/route-helpers"
 import {
   adminCourseListStatusFilterSchema,
@@ -10,6 +11,7 @@ import {
 
 const defaultPage = 1
 const defaultPageSize = 20
+const maxPageSize = 100
 
 export type CoursesRouteDependencies = {
   readonly adminService: AdminService
@@ -104,8 +106,15 @@ function parseCoursesQuery(input: {
   readonly query: string
   readonly status: "active" | "all" | "archived"
 } | null {
-  const page = parsePositiveInteger(input.page, defaultPage)
-  const pageSize = parsePositiveInteger(input.pageSize, defaultPageSize)
+  const page = parsePositiveIntegerParam({
+    fallback: defaultPage,
+    value: input.page,
+  })
+  const pageSize = parsePositiveIntegerParam({
+    fallback: defaultPageSize,
+    max: maxPageSize,
+    value: input.pageSize,
+  })
   const statusResult = adminCourseListStatusFilterSchema.safeParse(
     input.status ?? "all"
   )
@@ -121,21 +130,4 @@ function parseCoursesQuery(input: {
     query: input.query ?? "",
     status: statusResult.data,
   }
-}
-
-function parsePositiveInteger(
-  value: string | undefined,
-  fallback: number
-): number | null {
-  if (value === undefined || value.trim() === "") {
-    return fallback
-  }
-
-  const parsed = Number(value)
-
-  if (!Number.isInteger(parsed) || parsed < 1) {
-    return null
-  }
-
-  return parsed
 }

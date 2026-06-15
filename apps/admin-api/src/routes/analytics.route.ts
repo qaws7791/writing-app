@@ -2,6 +2,7 @@ import { Hono } from "hono"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { errorResponse } from "@/routes/error-response"
+import { parsePositiveIntegerParam } from "@/routes/query-params"
 import { resolveAdminSession } from "@/routes/route-helpers"
 import {
   adminLessonAnalyticsSortSchema,
@@ -12,6 +13,8 @@ import {
 const defaultAnalyticsDays = 30
 const defaultPage = 1
 const defaultPageSize = 10
+const maxAnalyticsDays = 365
+const maxPageSize = 100
 
 export type AnalyticsRouteDependencies = {
   readonly adminService: AdminService
@@ -36,10 +39,11 @@ export function createAnalyticsRoute({
       )
     }
 
-    const days = parsePositiveInteger(
-      context.req.query("days"),
-      defaultAnalyticsDays
-    )
+    const days = parsePositiveIntegerParam({
+      fallback: defaultAnalyticsDays,
+      max: maxAnalyticsDays,
+      value: context.req.query("days"),
+    })
 
     if (days === null) {
       return context.json(errorResponse("invalid_request"), 400)
@@ -97,8 +101,15 @@ function parseLessonAnalyticsQuery(input: {
   const directionResult = adminSortDirectionSchema.safeParse(
     input.direction ?? "asc"
   )
-  const page = parsePositiveInteger(input.page, defaultPage)
-  const pageSize = parsePositiveInteger(input.pageSize, defaultPageSize)
+  const page = parsePositiveIntegerParam({
+    fallback: defaultPage,
+    value: input.page,
+  })
+  const pageSize = parsePositiveIntegerParam({
+    fallback: defaultPageSize,
+    max: maxPageSize,
+    value: input.pageSize,
+  })
   const sortResult = adminLessonAnalyticsSortSchema.safeParse(
     input.sort ?? "completionRate"
   )
@@ -119,21 +130,4 @@ function parseLessonAnalyticsQuery(input: {
     query: input.query ?? "",
     sort: sortResult.data,
   }
-}
-
-function parsePositiveInteger(
-  value: string | undefined,
-  fallback: number
-): number | null {
-  if (value === undefined || value.trim() === "") {
-    return fallback
-  }
-
-  const parsed = Number(value)
-
-  if (!Number.isInteger(parsed) || parsed < 1) {
-    return null
-  }
-
-  return parsed
 }
