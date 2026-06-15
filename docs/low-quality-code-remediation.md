@@ -33,3 +33,10 @@
 - 외부 요청이 타임아웃 또는 네트워크 오류로 실패하면 기존처럼 `null` 결과를 통해 502 응답으로 이어지게 유지했다.
 - 검증: `bun --filter @workspace/api test src/routes/google-oauth.route.test.ts`
 - 참고: `bun --filter @workspace/api typecheck`는 현재 `packages/logger`의 `hono` 타입 해석 실패로 중단된다.
+
+## Finding #5 완료: JSON 본문 파싱 실패 원인 보존
+
+- `readJsonBody`의 `err` 결과에 caught `error`를 포함해 잘못된 JSON 페이로드의 실패 원인을 호출자가 관찰할 수 있게 했다.
+- 기존 라우트의 `kind === "err"` 분기와 HTTP 응답 형태는 유지했다.
+- 검증: `bun --filter @workspace/api test src/routes/route-helpers.test.ts`
+- 검증: `bun --filter @workspace/api test src/routes/learning.route.test.ts src/routes/ai-feedback.route.test.ts`

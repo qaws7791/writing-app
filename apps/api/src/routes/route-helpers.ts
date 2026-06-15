@@ -62,6 +62,7 @@ export type JsonBodyResult =
       readonly value: unknown
     }
   | {
+      readonly error: unknown
       readonly kind: "err"
     }
 
@@ -71,8 +72,9 @@ export async function readJsonBody(context: Context): Promise<JsonBodyResult> {
       kind: "ok",
       value: await context.req.json(),
     }
-  } catch {
+  } catch (error) {
     return {
+      error,
       kind: "err",
     }
   }
