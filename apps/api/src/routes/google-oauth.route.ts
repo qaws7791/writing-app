@@ -20,6 +20,7 @@ const googleUserInfoEndpoint =
 const oauthStateCookieName = "kwep_oauth_state"
 const learnerSessionCookieName = "kwep_session"
 const sessionMaxAgeSeconds = 60 * 60 * 24 * 7
+const googleRequestTimeoutMs = 5_000
 
 export type GoogleOAuthRouteOptions = {
   readonly authBaseUrl: string
@@ -28,6 +29,7 @@ export type GoogleOAuthRouteOptions = {
   readonly createSessionToken?: () => string
   readonly createStateNonce?: () => string
   readonly db?: KwepDatabase
+  readonly externalRequestTimeoutMs?: number
   readonly fetch?: typeof fetch
   readonly now?: () => Date
   readonly webOrigin: string
@@ -89,11 +91,14 @@ export function createGoogleOAuthRoute(options: GoogleOAuthRouteOptions): Hono {
     }
 
     const fetcher = options.fetch ?? fetch
+    const externalRequestTimeoutMs =
+      options.externalRequestTimeoutMs ?? googleRequestTimeoutMs
     const tokenResponse = await exchangeGoogleCode({
       authBaseUrl: options.authBaseUrl,
       clientId: options.clientId,
       clientSecret: options.clientSecret,
       code,
+      externalRequestTimeoutMs,
       fetcher,
     })
 
@@ -101,7 +106,11 @@ export function createGoogleOAuthRoute(options: GoogleOAuthRouteOptions): Hono {
       return context.json({ error: { code: "google_token_unavailable" } }, 502)
     }
 
-    const googleUser = await readGoogleUserInfo(fetcher, tokenResponse)
+    const googleUser = await readGoogleUserInfo({
+      externalRequestTimeoutMs,
+      fetcher,
+      tokenResponse,
+    })
 
     if (googleUser === null) {
       return context.json({ error: { code: "google_user_unavailable" } }, 502)
@@ -274,27 +283,39 @@ async function exchangeGoogleCode({
   clientId,
   clientSecret,
   code,
+  externalRequestTimeoutMs,
   fetcher,
 }: {
   readonly authBaseUrl: string
   readonly clientId: string
   readonly clientSecret: string
   readonly code: string
+  readonly externalRequestTimeoutMs: number
   readonly fetcher: typeof fetch
 }): Promise<GoogleTokenResponse | null> {
-  const response = await fetcher(googleTokenEndpoint, {
-    body: new URLSearchParams({
-      client_id: clientId,
-      client_secret: clientSecret,
-      code,
-      grant_type: "authorization_code",
-      redirect_uri: createGoogleRedirectUri(authBaseUrl),
-    }),
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    method: "POST",
-  })
+  const response = await fetcher(
+    googleTokenEndpoint,
+    withGoogleRequestTimeout(
+      {
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          code,
+          grant_type: "authorization_code",
+          redirect_uri: createGoogleRedirectUri(authBaseUrl),
+        }),
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        method: "POST",
+      },
+      externalRequestTimeoutMs
+    )
+  ).catch(() => null)
+
+  if (response === null) {
+    return null
+  }
 
   if (!response.ok) {
     return null
@@ -316,15 +337,30 @@ async function exchangeGoogleCode({
   }
 }
 
-async function readGoogleUserInfo(
-  fetcher: typeof fetch,
-  tokenResponse: GoogleTokenResponse
-): Promise<GoogleUserInfo | null> {
-  const response = await fetcher(googleUserInfoEndpoint, {
-    headers: {
-      Authorization: `Bearer ${tokenResponse.accessToken}`,
-    },
-  })
+async function readGoogleUserInfo({
+  externalRequestTimeoutMs,
+  fetcher,
+  tokenResponse,
+}: {
+  readonly externalRequestTimeoutMs: number
+  readonly fetcher: typeof fetch
+  readonly tokenResponse: GoogleTokenResponse
+}): Promise<GoogleUserInfo | null> {
+  const response = await fetcher(
+    googleUserInfoEndpoint,
+    withGoogleRequestTimeout(
+      {
+        headers: {
+          Authorization: `Bearer ${tokenResponse.accessToken}`,
+        },
+      },
+      externalRequestTimeoutMs
+    )
+  ).catch(() => null)
+
+  if (response === null) {
+    return null
+  }
 
   if (!response.ok) {
     return null
@@ -342,6 +378,16 @@ async function readGoogleUserInfo(
     image: typeof body.picture === "string" ? body.picture : null,
     name: typeof body.name === "string" ? body.name : body.email,
     sub: body.sub,
+  }
+}
+
+function withGoogleRequestTimeout(
+  init: RequestInit,
+  timeoutMs: number
+): RequestInit {
+  return {
+    ...init,
+    signal: AbortSignal.timeout(timeoutMs),
   }
 }
 

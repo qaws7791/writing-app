@@ -181,11 +181,95 @@ describe("Google OAuth route", () => {
       refreshToken: null,
     })
   })
+
+  it("Google token과 userinfo 요청에 타임아웃 signal을 전달한다", async () => {
+    const signals: AbortSignal[] = []
+    const db = createGoogleCallbackTestDb()
+    const route = createGoogleOAuthRoute({
+      authBaseUrl,
+      clientId: "google-client-id",
+      clientSecret: "google-client-secret",
+      createSessionToken: () => "session-token",
+      createStateNonce: () => "state-nonce",
+      db: db as never,
+      fetch: createGoogleOAuthTestFetch({
+        onRequest: (_input, init) => {
+          if (init?.signal instanceof AbortSignal) {
+            signals.push(init.signal)
+          }
+        },
+      }),
+      now: () => new Date("2026-06-15T10:00:00.000Z"),
+      webOrigin,
+    })
+
+    const startResponse = await route.request("/sign-in/google")
+    const authorizationUrl = new URL(
+      startResponse.headers.get("location") ?? ""
+    )
+    const state = authorizationUrl.searchParams.get("state")
+    const stateCookie = startResponse.headers
+      .get("set-cookie")
+      ?.split(";")
+      .at(0)
+
+    const callbackResponse = await route.request(
+      `/callback/google?code=google-code&state=${state}`,
+      {
+        headers: {
+          Cookie: stateCookie ?? "",
+        },
+      }
+    )
+
+    expect(callbackResponse.status).toBe(302)
+    expect(signals).toHaveLength(2)
+    expect(signals.every((signal) => signal instanceof AbortSignal)).toBe(true)
+  })
 })
 
-function createGoogleOAuthTestFetch(): typeof fetch {
+function createGoogleCallbackTestDb() {
+  return {
+    delete() {
+      return {
+        where() {
+          return {
+            run() {},
+          }
+        },
+      }
+    },
+    insert() {
+      return {
+        values() {
+          return {
+            onConflictDoUpdate() {
+              return {
+                run() {},
+              }
+            },
+            run() {},
+          }
+        },
+      }
+    },
+  }
+}
+
+function createGoogleOAuthTestFetch({
+  onRequest,
+}: {
+  readonly onRequest?: (
+    input: Parameters<typeof fetch>[0],
+    init: Parameters<typeof fetch>[1]
+  ) => void
+} = {}): typeof fetch {
   return Object.assign(
-    async (input: Parameters<typeof fetch>[0]) => {
+    async (
+      input: Parameters<typeof fetch>[0],
+      init?: Parameters<typeof fetch>[1]
+    ) => {
+      onRequest?.(input, init)
       const url = input.toString()
 
       if (url === "https://oauth2.googleapis.com/token") {

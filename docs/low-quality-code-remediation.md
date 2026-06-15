@@ -25,3 +25,11 @@
 - `readCourseEditor`가 전체 `courseUnits`, `lessons`, `lessonSteps` 테이블을 읽은 뒤 필터링하지 않고, 활성 코스의 하위 행만 `where`, `inArray`, `orderBy`로 조회하도록 변경했다.
 - 레슨과 스텝은 부모 ID별 `Map`으로 한 번만 그룹화해 트리를 조립한다.
 - 검증: `bun --filter @workspace/db test src/repositories/admin.repository.test.ts`
+
+## Finding #4 완료: Google OAuth 외부 요청 타임아웃
+
+- Google token 교환과 userinfo 조회 요청에 기본 5초 `AbortSignal.timeout`을 적용했다.
+- 운영 환경별 조정이 가능하도록 `GoogleOAuthRouteOptions.externalRequestTimeoutMs`를 추가했다.
+- 외부 요청이 타임아웃 또는 네트워크 오류로 실패하면 기존처럼 `null` 결과를 통해 502 응답으로 이어지게 유지했다.
+- 검증: `bun --filter @workspace/api test src/routes/google-oauth.route.test.ts`
+- 참고: `bun --filter @workspace/api typecheck`는 현재 `packages/logger`의 `hono` 타입 해석 실패로 중단된다.
