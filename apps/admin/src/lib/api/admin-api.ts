@@ -3,6 +3,7 @@ import type {
   AdminArchiveCourseResultDto,
   AdminContentResetResultDto,
   AdminCourseDetailDto,
+  AdminCourseListStatusFilter,
   AdminDashboardDto,
   AdminDeleteUserResultDto,
   AdminLegalSettingsRequest,
@@ -18,16 +19,17 @@ import type {
   AdminUpdateUserStatusRequest,
 } from "@workspace/core/admin"
 
+import type { ContentStatus } from "@workspace/core/status"
 import type { AdminApiResult } from "@/lib/api/api-result"
 
-export type AdminCourseStatusFilter = "active" | "all" | "archived"
+export type AdminCourseStatusFilter = AdminCourseListStatusFilter
 
 export type AdminCourseListItem = {
   readonly category: string
   readonly id: string
   readonly lessonCount: number
   readonly revision: number
-  readonly status: "active" | "archived"
+  readonly status: ContentStatus
   readonly title: string
   readonly unitCount: number
 }

@@ -6,6 +6,7 @@ import {
 } from "@workspace/core/ai-feedback"
 import { learnerIdSchema } from "@workspace/core/learning"
 import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
+import { learnerAccountStatuses } from "@workspace/core/status"
 
 import { readBearerToken, type SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
@@ -42,7 +43,7 @@ export function createAiFeedbackRoute({
       return context.json(errorResponse("unauthorized"), 401)
     }
 
-    if (session.user.status !== "active") {
+    if (session.user.status !== learnerAccountStatuses.active) {
       return context.json(errorResponse("account_unavailable"), 403)
     }
 

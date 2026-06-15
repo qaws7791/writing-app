@@ -1,9 +1,14 @@
 import { z } from "zod"
+import {
+  contentStatusSchema,
+  learnerAccountStatusSchema,
+  learnerOperationalStatusSchema,
+} from "@workspace/core/status"
 
 const nonNegativeIntegerSchema = z.number().int().nonnegative()
 const positiveIntegerSchema = z.number().int().positive()
 
-export const adminUserStatusSchema = z.enum(["active", "suspended", "deleted"])
+export const adminUserStatusSchema = learnerAccountStatusSchema
 export const adminUserListStatusFilterSchema = z.union([
   z.literal("all"),
   adminUserStatusSchema,
@@ -22,7 +27,7 @@ export const adminLessonAnalyticsSortSchema = z.enum([
 ])
 export const adminSortDirectionSchema = z.enum(["asc", "desc"])
 export const adminUpdateUserStatusRequestSchema = z.object({
-  status: z.enum(["active", "suspended"]),
+  status: learnerOperationalStatusSchema,
 })
 export const adminNoticeSettingsRequestSchema = z.object({
   announce: z.string(),
@@ -140,7 +145,7 @@ export const adminContentResetResultSchema = z.object({
   revision: nonNegativeIntegerSchema,
 })
 
-const adminContentStatusSchema = z.enum(["active", "archived"])
+const adminContentStatusSchema = contentStatusSchema
 export const adminCourseListStatusFilterSchema = z.union([
   z.literal("all"),
   adminContentStatusSchema,

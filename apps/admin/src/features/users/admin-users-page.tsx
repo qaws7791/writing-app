@@ -10,6 +10,10 @@ import type {
   AdminUserDetailDto,
   AdminUserListDto,
 } from "@workspace/core/admin"
+import {
+  learnerAccountStatuses,
+  type LearnerOperationalStatus,
+} from "@workspace/core/status"
 
 export function AdminUsersPage({
   deleteUser,
@@ -22,7 +26,7 @@ export function AdminUsersPage({
   ) => Promise<AdminApiResult<AdminDeleteUserResultDto>>
   readonly filters: ReadAdminUsersInput
   readonly updateUserStatus: (input: {
-    readonly status: "active" | "suspended"
+    readonly status: LearnerOperationalStatus
     readonly userId: string
   }) => Promise<AdminApiResult<AdminUserDetailDto>>
   readonly usersResult: AdminApiResult<AdminUserListDto>
@@ -129,11 +133,14 @@ export function AdminUsersPage({
                     <div className="admin-row-actions">
                       <button
                         className="admin-secondary-button"
-                        disabled={isPending || user.status === "suspended"}
+                        disabled={
+                          isPending ||
+                          user.status === learnerAccountStatuses.suspended
+                        }
                         onClick={() => {
                           startTransition(async () => {
                             const result = await updateUserStatus({
-                              status: "suspended",
+                              status: learnerAccountStatuses.suspended,
                               userId: user.id,
                             })
 

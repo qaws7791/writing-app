@@ -3,6 +3,7 @@ import { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import { sql } from "drizzle-orm"
+import { contentStatuses, learnerAccountStatuses } from "@workspace/core/status"
 
 import {
   createKwepDatabase,
@@ -180,14 +181,14 @@ function seedDefaultLearner(client: KwepDatabaseClient): void {
     .values({
       deletedAt: null,
       displayName: "학습자",
-      status: "active",
+      status: learnerAccountStatuses.active,
       userId: "user-1",
     })
     .onConflictDoUpdate({
       set: {
         deletedAt: null,
         displayName: "학습자",
-        status: "active",
+        status: learnerAccountStatuses.active,
       },
       target: learnerProfiles.userId,
     })
@@ -228,7 +229,7 @@ function archiveRowsNotIn(
 ): void {
   if (activeIds.length === 0) {
     transaction.run(
-      sql`UPDATE ${sql.identifier(tableName)} SET status = 'archived'`
+      sql`UPDATE ${sql.identifier(tableName)} SET status = ${contentStatuses.archived}`
     )
     return
   }
@@ -236,7 +237,7 @@ function archiveRowsNotIn(
   const activeIdValues = activeIds.map((id) => sql`${id}`)
 
   transaction.run(
-    sql`UPDATE ${sql.identifier(tableName)} SET status = 'archived' WHERE id NOT IN (${sql.join(activeIdValues, sql`, `)})`
+    sql`UPDATE ${sql.identifier(tableName)} SET status = ${contentStatuses.archived} WHERE id NOT IN (${sql.join(activeIdValues, sql`, `)})`
   )
 }
 

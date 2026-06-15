@@ -11,6 +11,7 @@ import {
   type LessonDto,
   type LessonStepDto,
 } from "@workspace/core/content"
+import { contentStatuses } from "@workspace/core/status"
 
 import type { KwepDatabase } from "@workspace/db/client"
 import {
@@ -20,7 +21,7 @@ import {
   lessonSteps,
 } from "@workspace/db/schema"
 
-const activeStatus = "active"
+const activeStatus = contentStatuses.active
 
 const rawStepContentSchema = z.object({
   type: z.string(),

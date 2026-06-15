@@ -6,8 +6,8 @@ import {
   lessonStepIdSchema,
   unitIdSchema,
 } from "@workspace/core/content/content.ids"
+import { contentStatusSchema } from "@workspace/core/status"
 
-const contentStatusSchema = z.enum(["active", "archived"])
 const positiveSortOrderSchema = z.number().int().positive()
 const nonNegativeIntegerSchema = z.number().int().nonnegative()
 const optionalTextSchema = z.string().optional()

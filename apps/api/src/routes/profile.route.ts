@@ -1,4 +1,5 @@
 import { Hono } from "hono"
+import { learnerAccountStatuses } from "@workspace/core/status"
 
 import { readBearerToken, type SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
@@ -39,7 +40,7 @@ export function createProfileRoute({
       return context.json(errorResponse("unauthorized"), 401)
     }
 
-    if (session.user.status !== "active") {
+    if (session.user.status !== learnerAccountStatuses.active) {
       return context.json(errorResponse("account_unavailable"), 403)
     }
 

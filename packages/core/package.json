@@ -13,7 +13,8 @@
     "./content/*": "./src/content/*.ts",
     "./learning": "./src/learning/index.ts",
     "./learning/*": "./src/learning/*.ts",
-    "./result": "./src/result.ts"
+    "./result": "./src/result.ts",
+    "./status": "./src/status.ts"
   },
   "scripts": {
     "lint": "eslint .",

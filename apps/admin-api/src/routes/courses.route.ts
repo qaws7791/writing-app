@@ -5,6 +5,7 @@ import { errorResponse } from "@/routes/error-response"
 import { resolveAdminSession } from "@/routes/route-helpers"
 import {
   adminCourseListStatusFilterSchema,
+  type AdminCourseListStatusFilter,
   type AdminService,
 } from "@workspace/core/admin"
 
@@ -102,7 +103,7 @@ function parseCoursesQuery(input: {
   readonly page: number
   readonly pageSize: number
   readonly query: string
-  readonly status: "active" | "all" | "archived"
+  readonly status: AdminCourseListStatusFilter
 } | null {
   const page = parsePositiveInteger(input.page, defaultPage)
   const pageSize = parsePositiveInteger(input.pageSize, defaultPageSize)

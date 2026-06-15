@@ -8,6 +8,11 @@ import type {
   CourseSummaryDto,
   LessonSummaryDto,
 } from "@workspace/core/content"
+import {
+  learnerAccountStatuses,
+  type LessonProgressStatus as PersistedLessonProgressStatus,
+  lessonProgressStatuses,
+} from "@workspace/core/status"
 
 export type LearnerProgressSnapshot = {
   readonly currentStreakDays: number
@@ -17,7 +22,7 @@ export type LearnerProgressSnapshot = {
 export type LearnerLessonProgressSnapshot = {
   readonly currentStepIndex: number
   readonly lessonId: string
-  readonly status: "completed" | "in_progress"
+  readonly status: PersistedLessonProgressStatus
 }
 
 export type ProgressReader = {
@@ -26,7 +31,7 @@ export type ProgressReader = {
   ) => Promise<LearnerProgressSnapshot>
 }
 
-export type LessonProgressStatus = "available" | "completed" | "locked"
+export type LessonAvailabilityStatus = "available" | "completed" | "locked"
 
 export type ProgressRouteDependencies = {
   readonly contentRepository: ContentRepository
@@ -54,7 +59,7 @@ export function createProgressRoute({
       return context.json(errorResponse("unauthorized"), 401)
     }
 
-    if (session.user.status !== "active") {
+    if (session.user.status !== learnerAccountStatuses.active) {
       return context.json(errorResponse("account_unavailable"), 403)
     }
 
@@ -95,7 +100,9 @@ function toCourseProgress(
   )
   const completedLessonIdSet = new Set(
     progressSnapshots
-      .filter((progress) => progress.status === "completed")
+      .filter(
+        (progress) => progress.status === lessonProgressStatuses.completed
+      )
       .map((progress) => progress.lessonId)
   )
   const lessons = courseDetail.units.flatMap((unit) => unit.lessons)
@@ -159,7 +166,7 @@ function getLessonStatus(
   lessonId: string,
   completedLessonIds: ReadonlySet<string>,
   firstIncompleteLessonId: string | undefined
-): LessonProgressStatus {
+): LessonAvailabilityStatus {
   if (completedLessonIds.has(lessonId)) {
     return "completed"
   }

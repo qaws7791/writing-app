@@ -1,24 +1,25 @@
 import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
+import {
+  learnerAccountStatuses,
+  learnerAccountStatusValues,
+  lessonProgressStatuses,
+  lessonProgressStatusValues,
+} from "@workspace/core/status"
 import { authUsers } from "@workspace/db/schema/auth.schema"
 import { lessons, lessonSteps } from "@workspace/db/schema/content.schema"
 
-export const learnerProfileStatusValues = [
-  "active",
-  "suspended",
-  "deleted",
-] as const
-
-export const lessonProgressStatusValues = ["in_progress", "completed"] as const
+export { learnerAccountStatusValues as learnerProfileStatusValues }
+export { lessonProgressStatusValues } from "@workspace/core/status"
 
 export const learnerProfiles = sqliteTable("learner_profiles", {
   userId: text("user_id")
     .primaryKey()
     .notNull()
     .references(() => authUsers.id, { onDelete: "cascade" }),
-  status: text("status", { enum: learnerProfileStatusValues })
+  status: text("status", { enum: learnerAccountStatusValues })
     .notNull()
-    .default("active"),
+    .default(learnerAccountStatuses.active),
   displayName: text("display_name"),
   deletedAt: integer("deleted_at", { mode: "timestamp_ms" }),
 })
@@ -58,7 +59,7 @@ export const learnerLessonProgress = sqliteTable(
     currentStepIndex: integer("current_step_index").notNull().default(0),
     status: text("status", { enum: lessonProgressStatusValues })
       .notNull()
-      .default("in_progress"),
+      .default(lessonProgressStatuses.inProgress),
     startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
     completedAt: integer("completed_at", { mode: "timestamp_ms" }),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),

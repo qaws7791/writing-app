@@ -2,6 +2,10 @@ import { AdminUsersPage } from "@/features/users/admin-users-page"
 import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
 import type { ReadAdminUsersInput } from "@/lib/api/admin-api"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
+import {
+  learnerAccountStatusSchema,
+  type LearnerOperationalStatus,
+} from "@workspace/core/status"
 
 export default async function AdminUsersRoute({
   searchParams,
@@ -16,7 +20,7 @@ export default async function AdminUsersRoute({
   const usersResult = await api.getUsers(filters)
 
   async function updateUserStatus(input: {
-    readonly status: "active" | "suspended"
+    readonly status: LearnerOperationalStatus
     readonly userId: string
   }) {
     "use server"
@@ -80,7 +84,7 @@ function readUserSort(value: string): ReadAdminUsersInput["sort"] {
 }
 
 function readUserStatus(value: string): ReadAdminUsersInput["status"] {
-  return value === "active" || value === "suspended" || value === "deleted"
-    ? value
-    : "all"
+  const status = learnerAccountStatusSchema.safeParse(value)
+
+  return status.success ? status.data : "all"
 }

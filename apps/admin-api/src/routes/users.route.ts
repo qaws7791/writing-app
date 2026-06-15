@@ -7,7 +7,9 @@ import {
   adminUpdateUserStatusRequestSchema,
   adminUserListStatusFilterSchema,
   adminUserSortSchema,
+  type AdminUserListStatusFilter,
   type AdminService,
+  type AdminUserSort,
 } from "@workspace/core/admin"
 
 const defaultPage = 1
@@ -138,8 +140,8 @@ function parseUsersQuery(input: {
   readonly page: number
   readonly pageSize: number
   readonly query: string
-  readonly sort: "joined" | "lastActive" | "lessonsDone" | "streak"
-  readonly status: "active" | "all" | "deleted" | "suspended"
+  readonly sort: AdminUserSort
+  readonly status: AdminUserListStatusFilter
 } | null {
   const page = parsePositiveInteger(input.page, defaultPage)
   const pageSize = parsePositiveInteger(input.pageSize, defaultPageSize)

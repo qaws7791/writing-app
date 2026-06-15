@@ -13,6 +13,7 @@ import type {
   AdminArchiveCourseResultDto,
   AdminCourseDetailDto,
 } from "@workspace/core/admin"
+import { contentStatuses } from "@workspace/core/status"
 
 export function AdminCoursesPage({
   archiveCourse,
@@ -157,7 +158,9 @@ export function AdminCoursesPage({
                   <td>
                     <button
                       className="admin-secondary-button"
-                      disabled={course.status === "archived" || isPending}
+                      disabled={
+                        course.status === contentStatuses.archived || isPending
+                      }
                       onClick={() => setArchiveTarget(course)}
                       type="button"
                     >

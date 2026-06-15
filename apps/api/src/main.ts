@@ -2,6 +2,7 @@ import { serve } from "bun"
 import OpenAI from "openai"
 import { createAiFeedbackService } from "@workspace/core/ai-feedback"
 import { createLearningService } from "@workspace/core/learning"
+import { contentStatuses, lessonProgressStatuses } from "@workspace/core/status"
 import {
   createDrizzleAiFeedbackRepository,
   createDrizzleContentRepository,
@@ -139,7 +140,7 @@ function countCompletedLessons(
       .where(
         and(
           eq(learnerLessonProgress.userId, userId),
-          eq(learnerLessonProgress.status, "completed")
+          eq(learnerLessonProgress.status, lessonProgressStatuses.completed)
         )
       )
       .get()?.value ?? 0
@@ -151,7 +152,7 @@ function countActiveLessons(db: typeof database.db): Promise<number> {
     db
       .select({ value: count() })
       .from(lessons)
-      .where(eq(lessons.status, "active"))
+      .where(eq(lessons.status, contentStatuses.active))
       .get()?.value ?? 0
   )
 }

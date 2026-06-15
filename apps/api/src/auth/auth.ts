@@ -1,4 +1,5 @@
 import { and, eq, gt } from "drizzle-orm"
+import { learnerAccountStatuses } from "@workspace/core/status"
 
 import type { SessionResolver } from "@/auth/session"
 import type { KwepDatabase } from "@workspace/db/client"
@@ -56,7 +57,7 @@ function readUserSession(db: KwepDatabase, user: SessionUserRow) {
       image: user.image,
       joinedAt: user.createdAt.toISOString(),
       name: user.name,
-      status: profile?.status ?? "active",
+      status: profile?.status ?? learnerAccountStatuses.active,
     },
   }
 }

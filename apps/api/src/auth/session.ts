@@ -1,4 +1,6 @@
-export type LearnerAccountStatus = "active" | "suspended" | "deleted"
+import type { LearnerAccountStatus } from "@workspace/core/status"
+
+export type { LearnerAccountStatus } from "@workspace/core/status"
 
 export type AuthenticatedSession = {
   readonly user: {

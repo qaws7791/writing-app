@@ -3,6 +3,7 @@ import { Buffer } from "node:buffer"
 import { eq } from "drizzle-orm"
 import { Hono } from "hono"
 
+import { learnerAccountStatuses } from "@workspace/core/status"
 import type { KwepDatabase } from "@workspace/db/client"
 import {
   authAccounts,
@@ -388,14 +389,14 @@ function upsertGoogleUser(
     .values({
       deletedAt: null,
       displayName: googleUser.name,
-      status: "active",
+      status: learnerAccountStatuses.active,
       userId,
     })
     .onConflictDoUpdate({
       set: {
         deletedAt: null,
         displayName: googleUser.name,
-        status: "active",
+        status: learnerAccountStatuses.active,
       },
       target: learnerProfiles.userId,
     })
