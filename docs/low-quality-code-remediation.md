@@ -19,3 +19,9 @@
 - 기존 스텝 UI 컴포넌트의 동작은 유지하고, 비교 스텝 JSX만 `CompareStepView`로 분리했다.
 - 검증: `bun --filter @workspace/web test src/features/lessons/lesson-step-renderer.test.tsx`
 - 참고: `bun --filter @workspace/web typecheck`는 현재 `@workspace/core/content`, `@workspace/core/ai-feedback` 해석 실패로 중단된다.
+
+## Finding #3 완료: 코스 편집 조회의 메모리 중첩 필터 제거
+
+- `readCourseEditor`가 전체 `courseUnits`, `lessons`, `lessonSteps` 테이블을 읽은 뒤 필터링하지 않고, 활성 코스의 하위 행만 `where`, `inArray`, `orderBy`로 조회하도록 변경했다.
+- 레슨과 스텝은 부모 ID별 `Map`으로 한 번만 그룹화해 트리를 조립한다.
+- 검증: `bun --filter @workspace/db test src/repositories/admin.repository.test.ts`

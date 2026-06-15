@@ -23,12 +23,34 @@ describe("어드민 DB repository", () => {
       fileURLToPath(new URL("admin.repository.ts", import.meta.url)),
       "utf8"
     )
-    const readUsersSource = repositorySource.match(
-      /function readUsers[\s\S]*?\n}\n\nfunction readUser/
-    )?.[0]
+    const readUsersSource = readFunctionSource(repositorySource, "readUsers")
 
     expect(readUsersSource).toBeDefined()
     expect(readUsersSource).not.toContain(".slice(")
+  })
+
+  it("코스 편집 조회는 전체 테이블을 읽은 뒤 중첩 filter로 조합하지 않는다", () => {
+    const repositorySource = readFileSync(
+      fileURLToPath(new URL("admin.repository.ts", import.meta.url)),
+      "utf8"
+    )
+    const readCourseEditorSource = readFunctionSource(
+      repositorySource,
+      "readCourseEditor"
+    )
+
+    expect(readCourseEditorSource).toBeDefined()
+    expect(readCourseEditorSource).not.toMatch(
+      /from\(courseUnits\)[\s\S]*?\.all\(\)[\s\S]*?\.filter/
+    )
+    expect(readCourseEditorSource).not.toMatch(
+      /from\(lessons\)[\s\S]*?\.all\(\)[\s\S]*?\.filter/
+    )
+    expect(readCourseEditorSource).not.toMatch(
+      /from\(lessonSteps\)[\s\S]*?\.all\(\)[\s\S]*?\.filter/
+    )
+    expect(readCourseEditorSource).not.toMatch(/lessonRows[\s\S]*?\.filter/)
+    expect(readCourseEditorSource).not.toMatch(/stepRows[\s\S]*?\.filter/)
   })
 
   it("기존 학습자와 콘텐츠 테이블에서 dashboard 지표를 계산한다", async () => {
@@ -531,6 +553,40 @@ describe("어드민 DB repository", () => {
     }
   })
 })
+
+function readFunctionSource(source: string, name: string): string | undefined {
+  const start = source.indexOf(`function ${name}(`)
+
+  if (start < 0) {
+    return undefined
+  }
+
+  const bodyStart = source.indexOf("{", start)
+
+  if (bodyStart < 0) {
+    return undefined
+  }
+
+  let depth = 0
+
+  for (let index = bodyStart; index < source.length; index += 1) {
+    const char = source[index]
+
+    if (char === "{") {
+      depth += 1
+    }
+
+    if (char === "}") {
+      depth -= 1
+    }
+
+    if (depth === 0) {
+      return source.slice(start, index + 1)
+    }
+  }
+
+  return undefined
+}
 
 function seedDashboardRows(db: ReturnType<typeof createKwepDatabase>["db"]) {
   const today = new Date("2026-06-14T00:30:00.000Z")

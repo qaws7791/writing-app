@@ -71,6 +71,8 @@ import {
 } from "@workspace/db/schema"
 
 const recentActivityLimit = 5
+type LessonRow = typeof lessons.$inferSelect
+type LessonStepRow = typeof lessonSteps.$inferSelect
 
 export function createDrizzleAdminRepository(
   db: KwepDatabase
@@ -692,29 +694,47 @@ function readCourseEditor(
   const unitRows = db
     .select()
     .from(courseUnits)
-    .all()
-    .filter(
-      (unit) =>
-        unit.courseId === input.courseId &&
-        unit.status === contentStatuses.active
+    .where(
+      and(
+        eq(courseUnits.courseId, input.courseId),
+        eq(courseUnits.status, contentStatuses.active)
+      )
     )
-    .sort((left, right) => left.sortOrder - right.sortOrder)
-  const lessonRows = db
-    .select()
-    .from(lessons)
+    .orderBy(asc(courseUnits.sortOrder))
     .all()
-    .filter(
-      (lesson) =>
-        lesson.courseId === input.courseId &&
-        lesson.status === contentStatuses.active
-    )
-    .sort((left, right) => left.sortOrder - right.sortOrder)
-  const stepRows = db
-    .select()
-    .from(lessonSteps)
-    .all()
-    .filter((step) => step.status === contentStatuses.active)
-    .sort((left, right) => left.sortOrder - right.sortOrder)
+  const unitIds = unitRows.map((unit) => unit.id)
+  const lessonRows =
+    unitIds.length === 0
+      ? []
+      : db
+          .select()
+          .from(lessons)
+          .where(
+            and(
+              eq(lessons.courseId, input.courseId),
+              eq(lessons.status, contentStatuses.active),
+              inArray(lessons.unitId, unitIds)
+            )
+          )
+          .orderBy(asc(lessons.sortOrder))
+          .all()
+  const lessonIds = lessonRows.map((lesson) => lesson.id)
+  const stepRows =
+    lessonIds.length === 0
+      ? []
+      : db
+          .select()
+          .from(lessonSteps)
+          .where(
+            and(
+              eq(lessonSteps.status, contentStatuses.active),
+              inArray(lessonSteps.lessonId, lessonIds)
+            )
+          )
+          .orderBy(asc(lessonSteps.sortOrder))
+          .all()
+  const lessonsByUnitId = groupLessonsByUnitId(lessonRows)
+  const stepsByLessonId = groupStepsByLessonId(stepRows)
 
   return {
     category: course.category,
@@ -725,9 +745,8 @@ function readCourseEditor(
     title: course.title,
     units: unitRows.map((unit) => ({
       id: unit.id,
-      lessons: lessonRows
-        .filter((lesson) => lesson.unitId === unit.id)
-        .map((lesson) => ({
+      lessons:
+        lessonsByUnitId.get(unit.id)?.map((lesson) => ({
           category: lesson.category,
           description: lesson.description,
           estimatedMinutes: lesson.estimatedMinutes,
@@ -735,22 +754,51 @@ function readCourseEditor(
           sortOrder: lesson.sortOrder,
           status: lesson.status,
           summary: readJsonStringArray(lesson.summaryJson),
-          steps: stepRows
-            .filter((step) => step.lessonId === lesson.id)
-            .map((step) => ({
+          steps:
+            stepsByLessonId.get(lesson.id)?.map((step) => ({
               contentJson: step.contentJson,
               id: step.id,
               sortOrder: step.sortOrder,
               status: step.status,
               type: step.type,
-            })),
+            })) ?? [],
           title: lesson.title,
-        })),
+        })) ?? [],
       sortOrder: unit.sortOrder,
       status: unit.status,
       title: unit.title,
     })),
   }
+}
+
+function groupLessonsByUnitId(
+  lessonRows: readonly LessonRow[]
+): Map<string, LessonRow[]> {
+  const lessonsByUnitId = new Map<string, LessonRow[]>()
+
+  for (const lesson of lessonRows) {
+    const current = lessonsByUnitId.get(lesson.unitId) ?? []
+
+    current.push(lesson)
+    lessonsByUnitId.set(lesson.unitId, current)
+  }
+
+  return lessonsByUnitId
+}
+
+function groupStepsByLessonId(
+  stepRows: readonly LessonStepRow[]
+): Map<string, LessonStepRow[]> {
+  const stepsByLessonId = new Map<string, LessonStepRow[]>()
+
+  for (const step of stepRows) {
+    const current = stepsByLessonId.get(step.lessonId) ?? []
+
+    current.push(step)
+    stepsByLessonId.set(step.lessonId, current)
+  }
+
+  return stepsByLessonId
 }
 
 function readJsonStringArray(value: string): string[] {
