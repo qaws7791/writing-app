@@ -1,10 +1,7 @@
 import { notFound, redirect } from "next/navigation"
 
+import { AppRouteNotice } from "@/components/app-route-notice"
 import { CourseDetailPage } from "@/features/courses/course-detail-page"
-import {
-  createFallbackProgressCourse,
-  getFallbackCourseDetail,
-} from "@/features/courses/kwep-course-detail-fallback"
 import { createLoginPagePath } from "@/lib/auth/auth-navigation"
 import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
@@ -33,21 +30,38 @@ export default async function CourseDetailRoute({
     api.getCourseDetail(id),
     api.getProgress(),
   ])
-  const course =
-    courseResult.status === "ok"
-      ? courseResult.value
-      : getFallbackCourseDetail(id)
+
+  if (courseResult.status === "error") {
+    if (courseResult.error.code === "not-found") {
+      notFound()
+    }
+
+    return (
+      <AppRouteNotice
+        description="코스 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+        title="코스를 열 수 없습니다."
+      />
+    )
+  }
+
+  if (progressResult.status === "error") {
+    return (
+      <AppRouteNotice
+        description="학습 진행 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+        title="코스를 열 수 없습니다."
+      />
+    )
+  }
+
+  const course = courseResult.value
 
   if (course === undefined) {
     notFound()
   }
 
-  const fallbackProgressCourse = createFallbackProgressCourse(course)
-  const progressCourse =
-    progressResult.status === "ok"
-      ? (progressResult.value.courses.find((item) => item.id === id) ??
-        fallbackProgressCourse)
-      : fallbackProgressCourse
+  const progressCourse = progressResult.value.courses.find(
+    (item) => item.id === id
+  )
 
   return <CourseDetailPage course={course} progressCourse={progressCourse} />
 }
