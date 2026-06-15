@@ -1,5 +1,6 @@
 export type AdminApiErrorCode =
   | "contract-error"
+  | "forbidden"
   | "invalid-request"
   | "network-error"
   | "not-found"
@@ -12,6 +13,7 @@ export type AdminApiError = {
 }
 
 const serverCodeMap = {
+  forbidden: "forbidden",
   invalid_request: "invalid-request",
   not_found: "not-found",
   unauthorized: "unauthorized",
@@ -19,6 +21,7 @@ const serverCodeMap = {
 
 const messageByCode = {
   "contract-error": "API 응답을 해석할 수 없습니다.",
+  forbidden: "관리자 권한이 필요합니다.",
   "invalid-request": "요청 내용을 확인해 주세요.",
   "network-error": "네트워크 연결을 확인해 주세요.",
   "not-found": "요청한 항목을 찾을 수 없습니다.",

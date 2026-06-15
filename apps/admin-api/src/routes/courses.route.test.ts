@@ -167,6 +167,24 @@ describe("어드민 API courses route", () => {
     await expect(response.json()).resolves.toEqual(courseDetail)
   })
 
+  it("운영자는 코스 생성 요청을 실행할 수 없다", async () => {
+    const app = createApp(createDependencies({ role: "operator" }))
+
+    const response = await app.request("/courses", {
+      headers: {
+        Authorization: "Bearer admin-token",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "forbidden",
+      },
+    })
+  })
+
   it("관리자 세션이 있으면 코스를 archived 상태로 전환한다", async () => {
     const app = createApp(createDependencies())
 
@@ -179,6 +197,24 @@ describe("어드민 API courses route", () => {
 
     expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual(archiveCourseResult)
+  })
+
+  it("운영자는 코스 보관 요청을 실행할 수 없다", async () => {
+    const app = createApp(createDependencies({ role: "operator" }))
+
+    const response = await app.request("/courses/cmock", {
+      headers: {
+        Authorization: "Bearer admin-token",
+      },
+      method: "DELETE",
+    })
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "forbidden",
+      },
+    })
   })
 
   it("없는 코스 보관 요청은 404를 반환한다", async () => {
@@ -200,7 +236,11 @@ describe("어드민 API courses route", () => {
   })
 })
 
-function createDependencies(): AdminApiDependencies {
+function createDependencies({
+  role = "owner",
+}: {
+  readonly role?: "operator" | "owner"
+} = {}): AdminApiDependencies {
   return {
     adminOrigin: "http://localhost:3003",
     dashboardService: {
@@ -279,7 +319,7 @@ function createDependencies(): AdminApiDependencies {
             email: "admin@example.com",
             id: "admin-1",
             name: "관리자",
-            role: "owner",
+            role,
           },
         }
       },

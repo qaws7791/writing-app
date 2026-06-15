@@ -3,7 +3,10 @@ import { Hono } from "hono"
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { errorResponse } from "@/routes/error-response"
 import { parsePositiveIntegerParam } from "@/routes/query-params"
-import { resolveAdminSession } from "@/routes/route-helpers"
+import {
+  resolveAdminSession,
+  resolveOwnerAdminSession,
+} from "@/routes/route-helpers"
 import {
   adminUpdateUserStatusRequestSchema,
   adminUserListStatusFilterSchema,
@@ -75,7 +78,10 @@ export function createUsersRoute({
   })
 
   route.patch("/:userId/status", async (context) => {
-    const sessionResult = await resolveAdminSession(context, sessionResolver)
+    const sessionResult = await resolveOwnerAdminSession(
+      context,
+      sessionResolver
+    )
 
     if (sessionResult.kind === "err") {
       return context.json(
@@ -106,7 +112,10 @@ export function createUsersRoute({
   })
 
   route.delete("/:userId", async (context) => {
-    const sessionResult = await resolveAdminSession(context, sessionResolver)
+    const sessionResult = await resolveOwnerAdminSession(
+      context,
+      sessionResolver
+    )
 
     if (sessionResult.kind === "err") {
       return context.json(

@@ -1,4 +1,5 @@
 export type AdminErrorCode =
+  | "forbidden"
   | "internal_error"
   | "invalid_request"
   | "not_found"

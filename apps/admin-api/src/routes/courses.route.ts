@@ -3,7 +3,10 @@ import { Hono } from "hono"
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { errorResponse } from "@/routes/error-response"
 import { parsePositiveIntegerParam } from "@/routes/query-params"
-import { resolveAdminSession } from "@/routes/route-helpers"
+import {
+  resolveAdminSession,
+  resolveOwnerAdminSession,
+} from "@/routes/route-helpers"
 import {
   adminCourseListStatusFilterSchema,
   type AdminService,
@@ -52,7 +55,10 @@ export function createCoursesRoute({
   })
 
   route.post("/", async (context) => {
-    const sessionResult = await resolveAdminSession(context, sessionResolver)
+    const sessionResult = await resolveOwnerAdminSession(
+      context,
+      sessionResolver
+    )
 
     if (sessionResult.kind === "err") {
       return context.json(
@@ -69,7 +75,10 @@ export function createCoursesRoute({
   })
 
   route.delete("/:courseId", async (context) => {
-    const sessionResult = await resolveAdminSession(context, sessionResolver)
+    const sessionResult = await resolveOwnerAdminSession(
+      context,
+      sessionResolver
+    )
 
     if (sessionResult.kind === "err") {
       return context.json(

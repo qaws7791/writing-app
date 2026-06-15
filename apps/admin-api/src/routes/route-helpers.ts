@@ -12,9 +12,9 @@ export type AdminSessionResult =
       readonly session: AdminAuthenticatedSession
     }
   | {
-      readonly code: "unauthorized"
+      readonly code: "forbidden" | "unauthorized"
       readonly kind: "err"
-      readonly status: 401
+      readonly status: 401 | 403
     }
 
 export async function resolveAdminSession(
@@ -45,4 +45,25 @@ export async function resolveAdminSession(
     kind: "ok",
     session,
   }
+}
+
+export async function resolveOwnerAdminSession(
+  context: Context,
+  sessionResolver: AdminSessionResolver
+): Promise<AdminSessionResult> {
+  const sessionResult = await resolveAdminSession(context, sessionResolver)
+
+  if (sessionResult.kind === "err") {
+    return sessionResult
+  }
+
+  if (sessionResult.session.admin.role !== "owner") {
+    return {
+      code: "forbidden",
+      kind: "err",
+      status: 403,
+    }
+  }
+
+  return sessionResult
 }

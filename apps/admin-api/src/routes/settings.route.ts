@@ -2,7 +2,10 @@ import { Hono } from "hono"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { errorResponse } from "@/routes/error-response"
-import { resolveAdminSession } from "@/routes/route-helpers"
+import {
+  resolveAdminSession,
+  resolveOwnerAdminSession,
+} from "@/routes/route-helpers"
 import {
   adminLegalSettingsRequestSchema,
   adminNoticeSettingsRequestSchema,
@@ -36,7 +39,10 @@ export function createSettingsRoute({
   })
 
   route.put("/notice", async (context) => {
-    const sessionResult = await resolveAdminSession(context, sessionResolver)
+    const sessionResult = await resolveOwnerAdminSession(
+      context,
+      sessionResolver
+    )
 
     if (sessionResult.kind === "err") {
       return context.json(
@@ -62,7 +68,10 @@ export function createSettingsRoute({
   })
 
   route.put("/legal", async (context) => {
-    const sessionResult = await resolveAdminSession(context, sessionResolver)
+    const sessionResult = await resolveOwnerAdminSession(
+      context,
+      sessionResolver
+    )
 
     if (sessionResult.kind === "err") {
       return context.json(
@@ -88,7 +97,10 @@ export function createSettingsRoute({
   })
 
   route.post("/content-reset", async (context) => {
-    const sessionResult = await resolveAdminSession(context, sessionResolver)
+    const sessionResult = await resolveOwnerAdminSession(
+      context,
+      sessionResolver
+    )
 
     if (sessionResult.kind === "err") {
       return context.json(

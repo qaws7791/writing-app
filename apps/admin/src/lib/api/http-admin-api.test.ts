@@ -238,6 +238,31 @@ describe("HTTP AdminApi", () => {
     })
   })
 
+  it("권한 실패 응답을 AdminApi 권한 오류로 변환한다", async () => {
+    const api = createHttpAdminApi({
+      baseUrl: "https://admin-api.example.test",
+      fetch: async () =>
+        jsonResponse(
+          {
+            error: {
+              code: "forbidden",
+            },
+          },
+          403
+        ),
+      tokenProvider: () => "admin-token",
+    })
+
+    await expect(api.resetContent()).resolves.toEqual({
+      error: {
+        code: "forbidden",
+        message: "관리자 권한이 필요합니다.",
+        status: 403,
+      },
+      status: "error",
+    })
+  })
+
   it("성공 응답이 계약과 다르면 contract-error를 반환한다", async () => {
     const api = createHttpAdminApi({
       baseUrl: "https://admin-api.example.test",

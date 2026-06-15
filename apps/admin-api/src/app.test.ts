@@ -406,9 +406,48 @@ describe("어드민 API users route", () => {
       },
     })
   })
+
+  it("운영자는 사용자 상태 변경과 삭제를 실행할 수 없다", async () => {
+    const app = createApp(createDependencies({ role: "operator" }))
+    const headers = {
+      Authorization: "Bearer admin-token",
+    }
+
+    const statusResponse = await app.request("/users/user-1/status", {
+      body: JSON.stringify({ status: "suspended" }),
+      headers: {
+        ...headers,
+        "Content-Type": "application/json",
+      },
+      method: "PATCH",
+    })
+
+    expect(statusResponse.status).toBe(403)
+    await expect(statusResponse.json()).resolves.toEqual({
+      error: {
+        code: "forbidden",
+      },
+    })
+
+    const deleteResponse = await app.request("/users/user-1", {
+      headers,
+      method: "DELETE",
+    })
+
+    expect(deleteResponse.status).toBe(403)
+    await expect(deleteResponse.json()).resolves.toEqual({
+      error: {
+        code: "forbidden",
+      },
+    })
+  })
 })
 
-function createDependencies(): AdminApiDependencies {
+function createDependencies({
+  role = "owner",
+}: {
+  readonly role?: "operator" | "owner"
+} = {}): AdminApiDependencies {
   return {
     adminOrigin: "http://localhost:3003",
     dashboardService: {
@@ -497,7 +536,7 @@ function createDependencies(): AdminApiDependencies {
             email: "admin@example.com",
             id: "admin-1",
             name: "관리자",
-            role: "owner",
+            role,
           },
         }
       },
