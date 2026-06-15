@@ -46,3 +46,10 @@
 - `createDrizzleAdminRepository`가 모든 도메인 메서드를 한 객체 리터럴에 직접 나열하지 않고, course, user, analytics, settings 조각을 합성하도록 변경했다.
 - 공개 `AdminRepository` 계약과 개별 DB 함수 구현은 유지해 호출부 영향 없이 생성 책임만 분리했다.
 - 검증: `bun --filter @workspace/db test src/repositories/admin.repository.test.ts`
+
+## Finding #7 완료: 스텝 contentJson 객체 검증 강화
+
+- `readStepContent`가 배열이나 원시 JSON 값을 정상 객체처럼 넘기지 않고 예외를 던지도록 변경했다.
+- 예외 메시지에 `step.id`를 포함해 손상된 데이터 위치를 추적할 수 있게 했다.
+- 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/step-form-registry.test.tsx`
+- 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/course-editor-shell.test.tsx`

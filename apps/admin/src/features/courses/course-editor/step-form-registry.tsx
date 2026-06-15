@@ -38,10 +38,15 @@ export function renderStepForm(step: EditorStep) {
 
 export function readStepContent(step: EditorStep): Record<string, unknown> {
   const parsed = JSON.parse(step.contentJson) as unknown
+  if (isStepContentRecord(parsed)) {
+    return parsed
+  }
 
-  return typeof parsed === "object" && parsed !== null
-    ? (parsed as Record<string, unknown>)
-    : {}
+  throw new Error(`레슨 스텝 contentJson은 객체여야 합니다. stepId=${step.id}`)
+}
+
+function isStepContentRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
 export function StepFormShell({
