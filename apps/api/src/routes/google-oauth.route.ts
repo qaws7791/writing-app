@@ -403,7 +403,7 @@ function upsertGoogleUser(
 
   db.insert(authAccounts)
     .values({
-      accessToken: tokenResponse.accessToken,
+      accessToken: null,
       accountId: googleUser.sub,
       createdAt: now,
       expiresAt:
@@ -411,21 +411,21 @@ function upsertGoogleUser(
           ? null
           : new Date(now.getTime() + tokenResponse.expiresIn * 1000),
       id: `google-${googleUser.sub}`,
-      idToken: tokenResponse.idToken,
+      idToken: null,
       providerId: "google",
-      refreshToken: tokenResponse.refreshToken,
+      refreshToken: null,
       updatedAt: now,
       userId,
     })
     .onConflictDoUpdate({
       set: {
-        accessToken: tokenResponse.accessToken,
+        accessToken: null,
         expiresAt:
           tokenResponse.expiresIn === undefined
             ? null
             : new Date(now.getTime() + tokenResponse.expiresIn * 1000),
-        idToken: tokenResponse.idToken,
-        refreshToken: tokenResponse.refreshToken,
+        idToken: null,
+        refreshToken: null,
         updatedAt: now,
       },
       target: authAccounts.id,
