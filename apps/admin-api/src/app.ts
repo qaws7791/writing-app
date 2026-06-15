@@ -10,16 +10,30 @@ import { createHealthRoute } from "@/routes/health.route"
 import { createSettingsRoute } from "@/routes/settings.route"
 import { createUsersRoute } from "@/routes/users.route"
 import type { AdminService } from "@workspace/core/admin"
+import {
+  createRequestLoggingMiddleware,
+  type RequestLogger,
+} from "@workspace/logger"
 
 export type AdminApiDependencies = {
   readonly adminOrigin?: string
   readonly dashboardService: AdminService
   readonly now?: () => Date
+  readonly requestLogger?: RequestLogger
   readonly sessionResolver: AdminSessionResolver
 }
 
 export function createApp(dependencies: AdminApiDependencies): Hono {
   const app = new Hono()
+
+  if (dependencies.requestLogger !== undefined) {
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        logRequest: dependencies.requestLogger,
+      })
+    )
+  }
 
   app.use(
     "*",

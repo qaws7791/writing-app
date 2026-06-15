@@ -2,6 +2,14 @@ import { describe, expect, it } from "vitest"
 
 import { createApp, type ApiDependencies } from "@/app"
 
+type CapturedRequestLogEvent = {
+  readonly durationMs: number
+  readonly method: string
+  readonly path: string
+  readonly requestId?: string
+  readonly status: number
+}
+
 const activeSession = {
   user: {
     email: "learner@example.com",
@@ -22,6 +30,33 @@ const profileStats = {
 } as const
 
 describe("플랫폼 API profile route", () => {
+  it("요청 완료 로그에 request id와 응답 상태를 남긴다", async () => {
+    const requestEvents: CapturedRequestLogEvent[] = []
+    const app = createApp({
+      ...createDependencies(),
+      requestLogger(event) {
+        requestEvents.push(event)
+      },
+    })
+
+    const response = await app.request("/profile", {
+      headers: {
+        "X-Request-ID": "request-1",
+      },
+    })
+
+    expect(response.status).toBe(401)
+    expect(response.headers.get("x-request-id")).toBe("request-1")
+    expect(requestEvents).toHaveLength(1)
+    expect(requestEvents[0]).toMatchObject({
+      method: "GET",
+      path: "/profile",
+      requestId: "request-1",
+      status: 401,
+    })
+    expect(requestEvents[0]?.durationMs).toBeGreaterThanOrEqual(0)
+  })
+
   it("브라우저 쓰기 요청 preflight에 CORS 헤더로 응답한다", async () => {
     const app = createApp({
       ...createDependencies(),

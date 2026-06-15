@@ -17,6 +17,17 @@
 - 관리자 계정 자동 시드 스크립트 `apps/admin-api/src/scripts/seed-admin.ts`가 아직 없으므로 `bun run dev:admin`은 현재 end-to-end 실행 명령으로 사용할 수 없다.
 - 현재 런타임이 읽는 환경 변수 계약은 `packages/env/src/parse-env.ts`, `apps/api/src/env.ts`, `apps/admin-api/src/env.ts`를 기준으로 한다.
 
+## 2026-06-15 요청 로그 추적성 점검 시작
+
+- 학습자 API와 어드민 API는 요청별 `requestId`, method, path, status, duration을 구조화 로그로 남기는지 확인한다.
+- 공통 logger는 운영 장애 시간축을 복원할 수 있도록 timestamp를 포함해야 한다.
+
+## 2026-06-15 요청 로그 추적성 개선 완료
+
+- 공통 pino logger는 기본 timestamp를 유지해 JSON 로그에 `time` 필드를 포함한다.
+- 학습자 API와 어드민 API는 공통 Hono middleware로 요청 ID를 응답 헤더에 싣고, 요청 완료 시 method, path, status, duration을 구조화 로그로 남긴다.
+- 외부에서 `X-Request-ID`를 전달하면 같은 값을 로그와 응답에 사용하고, 없으면 런타임에서 새 요청 ID를 생성한다.
+
 ## SQLite 연결 정책
 
 `apps/api`, `apps/admin-api`, 콘텐츠 시드는 `@workspace/db`의 공통 SQLite 연결 설정을 사용한다. 설정은 `new Database(...)` 직후 적용한다. 서버 프로세스 시작은 데이터 변경 작업을 수행하지 않으며, 마이그레이션과 시드는 배포 또는 로컬 실행 전에 명시 명령으로 먼저 실행한다.

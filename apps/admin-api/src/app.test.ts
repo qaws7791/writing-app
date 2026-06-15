@@ -9,6 +9,14 @@ import type {
   AdminUserListDto,
 } from "@workspace/core/admin"
 
+type CapturedRequestLogEvent = {
+  readonly durationMs: number
+  readonly method: string
+  readonly path: string
+  readonly requestId?: string
+  readonly status: number
+}
+
 const dashboard: AdminDashboardDto = {
   metrics: {
     activeCourses: 5,
@@ -135,6 +143,33 @@ const lessonAnalytics: AdminLessonAnalyticsPageDto = {
 }
 
 describe("어드민 API dashboard route", () => {
+  it("요청 완료 로그에 request id와 응답 상태를 남긴다", async () => {
+    const requestEvents: CapturedRequestLogEvent[] = []
+    const app = createApp({
+      ...createDependencies(),
+      requestLogger(event) {
+        requestEvents.push(event)
+      },
+    })
+
+    const response = await app.request("/dashboard", {
+      headers: {
+        "X-Request-ID": "admin-request-1",
+      },
+    })
+
+    expect(response.status).toBe(401)
+    expect(response.headers.get("x-request-id")).toBe("admin-request-1")
+    expect(requestEvents).toHaveLength(1)
+    expect(requestEvents[0]).toMatchObject({
+      method: "GET",
+      path: "/dashboard",
+      requestId: "admin-request-1",
+      status: 401,
+    })
+    expect(requestEvents[0]?.durationMs).toBeGreaterThanOrEqual(0)
+  })
+
   it("운영 설정 저장 preflight에서 PUT method를 허용한다", async () => {
     const app = createApp(createDependencies())
 

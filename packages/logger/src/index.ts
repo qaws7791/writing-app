@@ -5,6 +5,10 @@ export {
   type RequestLogger,
   type RequestLogEvent,
 } from "@workspace/logger/request-logger"
+export {
+  createRequestLoggingMiddleware,
+  type RequestLoggingMiddlewareOptions,
+} from "@workspace/logger/hono-request-logger"
 
 export type AppLogger = Logger
 
@@ -21,7 +25,6 @@ export function createAppLogger({
     {
       base: null,
       level,
-      timestamp: false,
     },
     stream
   )

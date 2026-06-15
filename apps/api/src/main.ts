@@ -11,6 +11,7 @@ import {
   learnerLessonProgress,
   lessons,
 } from "@workspace/db"
+import { createAppLogger, createRequestLogger } from "@workspace/logger"
 import { and, count, desc, eq } from "drizzle-orm"
 
 import { createApp } from "@/app"
@@ -25,6 +26,7 @@ import type { ProgressReader } from "@/routes/progress.route"
 
 const env = parseApiEnv(process.env)
 const database = createKwepDatabase(env.databaseUrl)
+const logger = createAppLogger()
 const contentRepository = createDrizzleContentRepository(database.db)
 const feedbackRepository = createDrizzleAiFeedbackRepository(database.db)
 const learningRepository = createDrizzleLearningRepository(database.db)
@@ -61,6 +63,7 @@ const app = createApp({
   }),
   profileReader: createProfileReader(database.db),
   progressReader,
+  requestLogger: createRequestLogger(logger),
   sessionResolver: createBearerSessionResolver(database.db),
   webOrigin: env.webOrigin,
 })

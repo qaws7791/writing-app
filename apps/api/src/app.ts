@@ -21,6 +21,10 @@ import {
 import type { ContentRepository } from "@workspace/core/content"
 import type { AiFeedbackService } from "@workspace/core/ai-feedback"
 import type { LearningService } from "@workspace/core/learning"
+import {
+  createRequestLoggingMiddleware,
+  type RequestLogger,
+} from "@workspace/logger"
 
 export type ApiDependencies = {
   readonly aiFeedbackService?: AiFeedbackService
@@ -30,12 +34,22 @@ export type ApiDependencies = {
   readonly now?: () => Date
   readonly profileReader: ProfileReader
   readonly progressReader?: ProgressReader
+  readonly requestLogger?: RequestLogger
   readonly sessionResolver: SessionResolver
   readonly webOrigin?: string
 }
 
 export function createApp(dependencies: ApiDependencies): Hono {
   const app = new Hono()
+
+  if (dependencies.requestLogger !== undefined) {
+    app.use(
+      "*",
+      createRequestLoggingMiddleware({
+        logRequest: dependencies.requestLogger,
+      })
+    )
+  }
 
   app.use(
     "*",
