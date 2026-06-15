@@ -1,4 +1,5 @@
 import type { Context } from "hono"
+import { learnerAccountStatuses } from "@workspace/core/status"
 
 import {
   readBearerToken,
@@ -41,7 +42,7 @@ export async function resolveActiveSession(
     }
   }
 
-  if (session.user.status !== "active") {
+  if (session.user.status !== learnerAccountStatuses.active) {
     return {
       code: "account_unavailable",
       kind: "err",

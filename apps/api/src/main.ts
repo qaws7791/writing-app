@@ -2,6 +2,7 @@ import { serve } from "bun"
 import OpenAI from "openai"
 import { createAiFeedbackService } from "@workspace/core/ai-feedback"
 import { createLearningService } from "@workspace/core/learning"
+import { contentStatuses, lessonProgressStatuses } from "@workspace/core/status"
 import {
   createDrizzleAiFeedbackRepository,
   createDrizzleContentRepository,
@@ -11,6 +12,7 @@ import {
   learnerLessonProgress,
   lessons,
 } from "@workspace/db"
+import { addLearningCalendarDays } from "@workspace/db/repositories/activity-date"
 import { createAppLogger, createRequestLogger } from "@workspace/logger"
 import { and, count, desc, eq } from "drizzle-orm"
 
@@ -105,27 +107,26 @@ function createProfileReader(db: typeof database.db): ProfileReader {
 function createProgressReader(db: typeof database.db): ProgressReader {
   return {
     async readLearnerProgress(userId) {
-      const [completedLessonRows, activity] = await Promise.all([
+      const [progressRows, activity] = await Promise.all([
         Promise.resolve(
           db
-            .select({ lessonId: learnerLessonProgress.lessonId })
+            .select({
+              currentStepIndex: learnerLessonProgress.currentStepIndex,
+              lessonId: learnerLessonProgress.lessonId,
+              status: learnerLessonProgress.status,
+            })
             .from(learnerLessonProgress)
-            .where(
-              and(
-                eq(learnerLessonProgress.userId, userId),
-                eq(learnerLessonProgress.status, "completed")
-              )
-            )
+            .where(eq(learnerLessonProgress.userId, userId))
             .all()
         ),
         readActivity(db, userId),
       ])
 
       return {
-        completedLessonIds: completedLessonRows.map((row) => row.lessonId),
         currentStreakDays: calculateCurrentStreakDays(
           activity.map((day) => day.activityDate)
         ),
+        lessonProgress: progressRows,
       }
     },
   }
@@ -142,7 +143,7 @@ function countCompletedLessons(
       .where(
         and(
           eq(learnerLessonProgress.userId, userId),
-          eq(learnerLessonProgress.status, "completed")
+          eq(learnerLessonProgress.status, lessonProgressStatuses.completed)
         )
       )
       .get()?.value ?? 0
@@ -154,7 +155,7 @@ function countActiveLessons(db: typeof database.db): Promise<number> {
     db
       .select({ value: count() })
       .from(lessons)
-      .where(eq(lessons.status, "active"))
+      .where(eq(lessons.status, contentStatuses.active))
       .get()?.value ?? 0
   )
 }
@@ -176,12 +177,13 @@ function calculateCurrentStreakDays(activityDates: readonly string[]): number {
   }
 
   const activitySet = new Set(activityDates)
-  const cursor = new Date(`${activityDates[0]}T00:00:00.000Z`)
+  const latestActivityDate = activityDates[0]
   let streak = 0
+  let cursor = latestActivityDate
 
-  while (activitySet.has(cursor.toISOString().slice(0, 10))) {
+  while (cursor !== undefined && activitySet.has(cursor)) {
     streak += 1
-    cursor.setUTCDate(cursor.getUTCDate() - 1)
+    cursor = addLearningCalendarDays(cursor, -1)
   }
 
   return streak

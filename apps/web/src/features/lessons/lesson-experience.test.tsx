@@ -121,11 +121,25 @@ describe("레슨 경험", () => {
       "items-center",
       "justify-center"
     )
+    const startContent = screen.getByRole("main", { name: "레슨 콘텐츠" })
+    const startShell = startContent.parentElement
+
+    expect(startShell).toHaveClass("h-dvh", "overflow-hidden")
+    expect(screen.getByRole("banner", { name: "레슨 진행" })).toHaveClass(
+      "shrink-0"
+    )
+    expect(startContent).toHaveClass("min-h-0", "flex-1", "overflow-y-auto")
+    expect(screen.getByRole("contentinfo", { name: "레슨 행동" })).toHaveClass(
+      "shrink-0"
+    )
+    expect(
+      screen.getByRole("progressbar", { name: "레슨 진행률" })
+    ).toHaveAttribute("aria-valuenow", "0")
 
     await user.click(screen.getByRole("button", { name: "시작하기" }))
 
     expect(api.saveLessonAnswer).toHaveBeenCalledWith({
-      answer: JSON.stringify({ kind: "lesson-started" }),
+      answer: { kind: "lesson-started" },
       lessonId: "l1",
       stepId: "s1",
     })
@@ -143,6 +157,12 @@ describe("레슨 경험", () => {
       "font-bold",
       "text-muted"
     )
+    const stepContent = screen.getByRole("main", { name: "레슨 콘텐츠" })
+
+    expect(stepContent).toHaveClass("min-h-0", "flex-1", "overflow-y-auto")
+    expect(
+      screen.getByRole("progressbar", { name: "레슨 진행률" })
+    ).toHaveAttribute("aria-valuenow", "50")
     expect(screen.getByRole("button", { name: "이해했어요" })).toHaveClass(
       "bg-charcoal",
       "text-cream",
@@ -170,6 +190,35 @@ describe("레슨 경험", () => {
       screen.getByText("레슨 시작을 저장하지 못했습니다. 다시 시도해 주세요.")
     ).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "시작하기" })).toBeEnabled()
+  })
+
+  it("저장된 진행 단계가 있으면 시작 화면 없이 해당 스텝으로 재개한다", () => {
+    const api = createApi({
+      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
+    })
+
+    render(
+      <LessonExperience
+        api={api}
+        initialProgress={{ currentStepIndex: 1 }}
+        lesson={lesson}
+      />
+    )
+
+    expect(
+      screen.queryByRole("button", { name: "시작하기" })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "내 문장으로 정리하기" })
+    ).toBeInTheDocument()
+    expect(screen.getByText("2/2")).toHaveClass(
+      "ml-4",
+      "font-bold",
+      "text-muted"
+    )
+    expect(
+      screen.getByRole("progressbar", { name: "레슨 진행률" })
+    ).toHaveAttribute("aria-valuenow", "100")
   })
 
   it("첫 스텝 답변 변경을 saveLessonAnswer로 자동 저장한다", async () => {
@@ -208,10 +257,10 @@ describe("레슨 경험", () => {
 
     await waitFor(() =>
       expect(saveLessonAnswer).toHaveBeenCalledWith({
-        answer: JSON.stringify({
+        answer: {
           selectedOptionId: "clear",
           type: "MULTIPLE_CHOICE",
-        }),
+        },
         lessonId: "l-answer",
         stepId: "mc-answer",
       })
@@ -246,10 +295,10 @@ describe("레슨 경험", () => {
     )
     await waitFor(() =>
       expect(saveLessonAnswer).toHaveBeenLastCalledWith({
-        answer: JSON.stringify({
+        answer: {
           text: "좋은 문장은 바로 이해됩니다.",
           type: "WRITE",
-        }),
+        },
         lessonId: "l1",
         stepId: "s2",
       })

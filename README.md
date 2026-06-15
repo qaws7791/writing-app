@@ -99,10 +99,10 @@ ADMIN_API_BASE_URL=http://localhost:4001
 학습자 API와 어드민 API는 로컬에서 저장소 루트의 `data/api.sqlite`를 공유한다. 학습자 콘텐츠와 기본 학습자 계정을 준비한다.
 
 ```bash
-bun --filter @workspace/db db:seed
+bun run dev:app:setup
 ```
 
-이 명령은 마이그레이션을 적용하고 기본 학습자 `user-1`, 학습자 프로필, Kwep 콘텐츠를 시드한다.
+이 명령은 마이그레이션을 적용하고 기본 학습자 `user-1`, 학습자 프로필, Kwep 콘텐츠를 보존형 seed로 갱신한다. 기존 학습 진행과 답변 기록은 삭제하지 않는다. 개발 DB를 완전히 초기화해야 할 때만 `bun run db:reset`을 명시적으로 실행한다.
 
 현재 관리자 계정 자동 시드 스크립트는 아직 없다. 어드민 API를 로컬에서 수동 검증해야 할 때는 임시 관리자 사용자를 직접 넣는다. 이 임시 절차는 현재 어드민 API의 로컬 bearer resolver가 관리자 사용자 id를 토큰으로 허용하기 때문에 가능하다.
 
@@ -122,6 +122,7 @@ bun run dev:app
 
 - 학습자 웹: `http://localhost:3000`
 - 학습자 API: `http://localhost:4000`
+- `bun run dev:app`은 서버만 시작하며 DB를 seed하거나 초기화하지 않는다. 처음 실행 전에는 `bun run dev:app:setup`을 먼저 실행한다.
 
 개별 프로세스로 띄울 때는 터미널을 나누어 실행한다.
 
@@ -190,7 +191,7 @@ bun lefthook run pre-commit
 bun install
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
-bun --filter @workspace/db db:seed
+bun run dev:app:setup
 bun run dev:app
 ```
 

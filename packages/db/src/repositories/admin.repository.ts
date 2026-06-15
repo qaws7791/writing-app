@@ -30,9 +30,33 @@ import type {
   SaveAdminNoticeSettingsInput,
   UpdateAdminUserStatusInput,
 } from "@workspace/core/admin"
-import { eq } from "drizzle-orm"
+import {
+  contentStatuses,
+  learnerAccountStatuses,
+  lessonProgressStatuses,
+} from "@workspace/core/status"
+import {
+  and,
+  asc,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  gte,
+  inArray,
+  isNull,
+  lt,
+  lte,
+  ne,
+  or,
+  sql,
+} from "drizzle-orm"
 
 import type { KwepDatabase } from "@workspace/db/client"
+import {
+  addLearningCalendarDays,
+  toLearningDateKey,
+} from "@workspace/db/repositories/activity-date"
 import { createDefaultContentSeedRows } from "@workspace/db/seeds/seed-content"
 import {
   adminSettings,
@@ -104,119 +128,190 @@ function readDashboard(
   db: KwepDatabase,
   input: ReadAdminDashboardInput
 ): AdminDashboardDto {
-  const userRows = db
-    .select({
-      createdAt: authUsers.createdAt,
-      displayName: learnerProfiles.displayName,
-      email: authUsers.email,
-      id: authUsers.id,
-      name: authUsers.name,
-      status: learnerProfiles.status,
-    })
-    .from(authUsers)
-    .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
-    .all()
-  const learnerRows = userRows.filter((user) => user.status !== "deleted")
-  const learnerIds = new Set(learnerRows.map((user) => user.id))
-  const activityRows = db.select().from(learnerActivityDays).all()
-  const courseRows = db.select().from(courses).all()
-  const unitRows = db.select().from(courseUnits).all()
-  const lessonRows = db.select().from(lessons).all()
-  const completedLessonRows = db
-    .select()
-    .from(learnerLessonProgress)
-    .all()
-    .filter(
-      (progress) =>
-        progress.status === "completed" && learnerIds.has(progress.userId)
-    )
-  const activeCourseIds = new Set(
-    courseRows
-      .filter((course) => course.status === "active")
-      .map((course) => course.id)
+  const todayKey = toLearningDateKey(input.now)
+  const last7DaysStart = addLearningCalendarDays(todayKey, -6)
+  const todayStart = new Date(`${todayKey}T00:00:00.000Z`)
+  const tomorrowStart = new Date(
+    `${addLearningCalendarDays(todayKey, 1)}T00:00:00.000Z`
   )
-  const activeUnitIds = new Set(
-    unitRows
-      .filter(
-        (unit) => unit.status === "active" && activeCourseIds.has(unit.courseId)
-      )
-      .map((unit) => unit.id)
-  )
-  const last7DaysStart = toDateKey(addUtcDays(startOfUtcDay(input.now), -6))
-  const todayKey = toDateKey(input.now)
 
   return {
     metrics: {
-      activeCourses: activeCourseIds.size,
-      activeLessons: lessonRows.filter(
-        (lesson) =>
-          lesson.status === "active" &&
-          activeCourseIds.has(lesson.courseId) &&
-          activeUnitIds.has(lesson.unitId)
-      ).length,
-      activeUsersLast7Days: new Set(
-        activityRows
-          .filter(
-            (activity) =>
-              learnerIds.has(activity.userId) &&
-              activity.activityDate >= last7DaysStart &&
-              activity.activityDate <= todayKey
-          )
-          .map((activity) => activity.userId)
-      ).size,
-      completedLessons: completedLessonRows.length,
-      signupsLast7Days: learnerRows.filter(
-        (user) => toDateKey(user.createdAt) >= last7DaysStart
-      ).length,
-      signupsToday: learnerRows.filter(
-        (user) => toDateKey(user.createdAt) === todayKey
-      ).length,
-      totalUsers: learnerRows.length,
+      activeCourses: readActiveCourseCount(db),
+      activeLessons: readActiveLessonCount(db),
+      activeUsersLast7Days: readActiveUsersLast7DaysCount(db, {
+        last7DaysStart,
+        todayKey,
+      }),
+      completedLessons: readCompletedLessonCount(db),
+      signupsLast7Days: readSignupCount(
+        db,
+        new Date(`${last7DaysStart}T00:00:00.000Z`)
+      ),
+      signupsToday: readSignupCount(db, todayStart, tomorrowStart),
+      totalUsers: readLearnerCount(db),
     },
-    recentActivities: createRecentActivities(learnerRows, activityRows),
+    recentActivities: readRecentActivities(db),
   }
 }
 
-function createRecentActivities(
-  users: readonly {
-    readonly displayName: string | null
-    readonly email: string
-    readonly id: string
-    readonly name: string
-  }[],
-  activities: readonly (typeof learnerActivityDays.$inferSelect)[]
-): AdminDashboardDto["recentActivities"] {
-  const activitiesByUserId = new Map<string, string[]>()
+function readActiveCourseCount(db: KwepDatabase): number {
+  return (
+    db
+      .select({ value: count() })
+      .from(courses)
+      .where(eq(courses.status, contentStatuses.active))
+      .get()?.value ?? 0
+  )
+}
 
-  for (const activity of activities) {
-    const userActivities = activitiesByUserId.get(activity.userId) ?? []
-
-    userActivities.push(activity.activityDate)
-    activitiesByUserId.set(activity.userId, userActivities)
-  }
-
-  return users
-    .map((user) => {
-      const activityDates = (activitiesByUserId.get(user.id) ?? []).sort(
-        (left, right) => right.localeCompare(left)
+function readActiveLessonCount(db: KwepDatabase): number {
+  return (
+    db
+      .select({ value: count() })
+      .from(lessons)
+      .innerJoin(courses, eq(courses.id, lessons.courseId))
+      .innerJoin(courseUnits, eq(courseUnits.id, lessons.unitId))
+      .where(
+        and(
+          eq(lessons.status, contentStatuses.active),
+          eq(courses.status, contentStatuses.active),
+          eq(courseUnits.status, contentStatuses.active)
+        )
       )
-      const lastActiveDate = activityDates[0] ?? null
+      .get()?.value ?? 0
+  )
+}
 
-      return {
-        currentStreakDays: calculateCurrentStreakDays(activityDates),
-        email: user.email,
-        lastActiveDate,
-        name: user.displayName ?? user.name,
-        userId: user.id,
-      }
+function readActiveUsersLast7DaysCount(
+  db: KwepDatabase,
+  input: {
+    readonly last7DaysStart: string
+    readonly todayKey: string
+  }
+): number {
+  return (
+    db
+      .select({ value: countDistinct(learnerActivityDays.userId) })
+      .from(learnerActivityDays)
+      .innerJoin(authUsers, eq(authUsers.id, learnerActivityDays.userId))
+      .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
+      .where(
+        and(
+          createActiveLearnerCondition(),
+          gte(learnerActivityDays.activityDate, input.last7DaysStart),
+          lte(learnerActivityDays.activityDate, input.todayKey)
+        )
+      )
+      .get()?.value ?? 0
+  )
+}
+
+function readCompletedLessonCount(db: KwepDatabase): number {
+  return (
+    db
+      .select({ value: count() })
+      .from(learnerLessonProgress)
+      .innerJoin(authUsers, eq(authUsers.id, learnerLessonProgress.userId))
+      .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
+      .where(
+        and(
+          createActiveLearnerCondition(),
+          eq(learnerLessonProgress.status, lessonProgressStatuses.completed)
+        )
+      )
+      .get()?.value ?? 0
+  )
+}
+
+function readSignupCount(db: KwepDatabase, start: Date, end?: Date): number {
+  return (
+    db
+      .select({ value: count() })
+      .from(authUsers)
+      .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
+      .where(
+        and(
+          createActiveLearnerCondition(),
+          gte(authUsers.createdAt, start),
+          end === undefined ? undefined : lt(authUsers.createdAt, end)
+        )
+      )
+      .get()?.value ?? 0
+  )
+}
+
+function readLearnerCount(db: KwepDatabase): number {
+  return (
+    db
+      .select({ value: count() })
+      .from(authUsers)
+      .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
+      .where(createActiveLearnerCondition())
+      .get()?.value ?? 0
+  )
+}
+
+function readRecentActivities(
+  db: KwepDatabase
+): AdminDashboardDto["recentActivities"] {
+  const nameExpression = sql<string>`coalesce(${learnerProfiles.displayName}, ${authUsers.name})`
+  const lastActiveExpression = sql<string>`max(${learnerActivityDays.activityDate})`
+  const rows = db
+    .select({
+      email: authUsers.email,
+      id: authUsers.id,
+      lastActiveDate: lastActiveExpression,
+      name: nameExpression,
     })
-    .filter((activity) => activity.lastActiveDate !== null)
-    .sort((left, right) =>
-      right.lastActiveDate === left.lastActiveDate
-        ? left.name.localeCompare(right.name)
-        : (right.lastActiveDate ?? "").localeCompare(left.lastActiveDate ?? "")
+    .from(authUsers)
+    .innerJoin(
+      learnerActivityDays,
+      eq(learnerActivityDays.userId, authUsers.id)
     )
-    .slice(0, recentActivityLimit)
+    .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
+    .where(createActiveLearnerCondition())
+    .groupBy(
+      authUsers.id,
+      authUsers.email,
+      authUsers.name,
+      learnerProfiles.displayName
+    )
+    .orderBy(desc(lastActiveExpression), asc(nameExpression))
+    .limit(recentActivityLimit)
+    .all()
+  const activityDatesByUserId =
+    rows.length === 0
+      ? new Map<string, string[]>()
+      : groupActivityDatesByUserId(
+          db
+            .select()
+            .from(learnerActivityDays)
+            .where(
+              inArray(
+                learnerActivityDays.userId,
+                rows.map((user) => user.id)
+              )
+            )
+            .all()
+        )
+
+  return rows.map((user) => ({
+    currentStreakDays: calculateCurrentStreakDays(
+      activityDatesByUserId.get(user.id) ?? []
+    ),
+    email: user.email,
+    lastActiveDate: user.lastActiveDate,
+    name: user.name,
+    userId: user.id,
+  }))
+}
+
+function createActiveLearnerCondition() {
+  return or(
+    isNull(learnerProfiles.status),
+    ne(learnerProfiles.status, learnerAccountStatuses.deleted)
+  )
 }
 
 type AdminLearnerSnapshot = {
@@ -294,7 +389,7 @@ function createDailySeries(
 ): AdminAnalyticsDto["dailySeries"] {
   const learnerIds = new Set(readActiveLearners(db).map((user) => user.id))
   const signupsByDate = countByDate(
-    readActiveLearners(db).map((user) => toDateKey(user.createdAt))
+    readActiveLearners(db).map((user) => toLearningDateKey(user.createdAt))
   )
   const completionsByDate = countByDate(
     db
@@ -303,16 +398,19 @@ function createDailySeries(
       .all()
       .filter(
         (progress) =>
-          progress.status === "completed" &&
+          progress.status === lessonProgressStatuses.completed &&
           progress.completedAt !== null &&
           learnerIds.has(progress.userId)
       )
-      .map((progress) => toDateKey(progress.completedAt as Date))
+      .map((progress) => toLearningDateKey(progress.completedAt as Date))
   )
-  const startDate = addUtcDays(startOfUtcDay(input.now), -(input.days - 1))
+  const startDate = addLearningCalendarDays(
+    toLearningDateKey(input.now),
+    -(input.days - 1)
+  )
 
   return Array.from({ length: input.days }, (_, index) => {
-    const date = toDateKey(addUtcDays(startDate, index))
+    const date = addLearningCalendarDays(startDate, index)
 
     return {
       completions: completionsByDate.get(date) ?? 0,
@@ -365,7 +463,7 @@ function createLessonAnalyticsSnapshots(
     )
     const started = lessonProgressRows.length
     const completed = lessonProgressRows.filter(
-      (progress) => progress.status === "completed"
+      (progress) => progress.status === lessonProgressStatuses.completed
     ).length
     const completionRate =
       started === 0 ? 0 : Math.round((completed / started) * 100)
@@ -390,7 +488,7 @@ function readActiveLearners(db: KwepDatabase): AdminLearnerSnapshot[] {
     .from(authUsers)
     .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
     .all()
-    .filter((user) => user.status !== "deleted")
+    .filter((user) => user.status !== learnerAccountStatuses.deleted)
 }
 
 function readActiveLessonSnapshots(db: KwepDatabase): {
@@ -403,7 +501,7 @@ function readActiveLessonSnapshots(db: KwepDatabase): {
     .select()
     .from(courses)
     .all()
-    .filter((course) => course.status === "active")
+    .filter((course) => course.status === contentStatuses.active)
   const activeCourseById = new Map(
     activeCourses.map((course) => [course.id, course])
   )
@@ -414,7 +512,8 @@ function readActiveLessonSnapshots(db: KwepDatabase): {
       .all()
       .filter(
         (unit) =>
-          unit.status === "active" && activeCourseById.has(unit.courseId)
+          unit.status === contentStatuses.active &&
+          activeCourseById.has(unit.courseId)
       )
       .map((unit) => unit.id)
   )
@@ -425,7 +524,7 @@ function readActiveLessonSnapshots(db: KwepDatabase): {
     .all()
     .filter(
       (lesson) =>
-        lesson.status === "active" &&
+        lesson.status === contentStatuses.active &&
         activeCourseById.has(lesson.courseId) &&
         activeUnitIds.has(lesson.unitId)
     )
@@ -504,7 +603,7 @@ function createCourse(
         description: "강의 설명을 입력하세요.",
         id: courseId,
         sortOrder,
-        status: "active",
+        status: contentStatuses.active,
         title: "새 강의",
       })
       .run()
@@ -514,7 +613,7 @@ function createCourse(
         courseId,
         id: unitId,
         sortOrder: 1,
-        status: "active",
+        status: contentStatuses.active,
         title: "새 유닛",
       })
       .run()
@@ -527,7 +626,7 @@ function createCourse(
         estimatedMinutes: 5,
         id: lessonId,
         sortOrder: 1,
-        status: "active",
+        status: contentStatuses.active,
         summaryJson: "[]",
         title: "새 레슨",
         unitId,
@@ -545,7 +644,7 @@ function createCourse(
           id: `${lessonId}-s1`,
           lessonId,
           sortOrder: 1,
-          status: "active",
+          status: contentStatuses.active,
           type: "READING",
         },
         {
@@ -560,7 +659,7 @@ function createCourse(
           id: `${lessonId}-s2`,
           lessonId,
           sortOrder: 2,
-          status: "active",
+          status: contentStatuses.active,
           type: "WRITE",
         },
       ])
@@ -586,7 +685,7 @@ function readCourseEditor(
     .where(eq(courses.id, input.courseId))
     .get()
 
-  if (course === undefined || course.status !== "active") {
+  if (course === undefined || course.status !== contentStatuses.active) {
     return null
   }
 
@@ -595,7 +694,9 @@ function readCourseEditor(
     .from(courseUnits)
     .all()
     .filter(
-      (unit) => unit.courseId === input.courseId && unit.status === "active"
+      (unit) =>
+        unit.courseId === input.courseId &&
+        unit.status === contentStatuses.active
     )
     .sort((left, right) => left.sortOrder - right.sortOrder)
   const lessonRows = db
@@ -604,14 +705,15 @@ function readCourseEditor(
     .all()
     .filter(
       (lesson) =>
-        lesson.courseId === input.courseId && lesson.status === "active"
+        lesson.courseId === input.courseId &&
+        lesson.status === contentStatuses.active
     )
     .sort((left, right) => left.sortOrder - right.sortOrder)
   const stepRows = db
     .select()
     .from(lessonSteps)
     .all()
-    .filter((step) => step.status === "active")
+    .filter((step) => step.status === contentStatuses.active)
     .sort((left, right) => left.sortOrder - right.sortOrder)
 
   return {
@@ -685,7 +787,9 @@ function readCourses(
     .map((course) => {
       const activeUnitIds = unitRows
         .filter(
-          (unit) => unit.courseId === course.id && unit.status === "active"
+          (unit) =>
+            unit.courseId === course.id &&
+            unit.status === contentStatuses.active
         )
         .map((unit) => unit.id)
       const activeUnitIdSet = new Set(activeUnitIds)
@@ -696,7 +800,7 @@ function readCourses(
         lessonCount: lessonRows.filter(
           (lesson) =>
             lesson.courseId === course.id &&
-            lesson.status === "active" &&
+            lesson.status === contentStatuses.active &&
             activeUnitIdSet.has(lesson.unitId)
         ).length,
         revision: course.curriculumRevision,
@@ -731,7 +835,7 @@ function archiveCourse(
     .where(eq(courses.id, input.courseId))
     .get()
 
-  if (course === undefined || course.status === "archived") {
+  if (course === undefined || course.status === contentStatuses.archived) {
     return null
   }
 
@@ -739,7 +843,7 @@ function archiveCourse(
 
   db.update(courses)
     .set({
-      status: "archived",
+      status: contentStatuses.archived,
     })
     .where(eq(courses.id, input.courseId))
     .run()
@@ -852,7 +956,7 @@ async function resetContent(
             curriculumRevision: revision,
             description: course.description,
             sortOrder: course.sortOrder,
-            status: "active",
+            status: contentStatuses.active,
             title: course.title,
           },
           target: courses.id,
@@ -867,7 +971,7 @@ async function resetContent(
           set: {
             courseId: unit.courseId,
             sortOrder: unit.sortOrder,
-            status: "active",
+            status: contentStatuses.active,
             title: unit.title,
           },
           target: courseUnits.id,
@@ -885,7 +989,7 @@ async function resetContent(
             description: lesson.description,
             estimatedMinutes: lesson.estimatedMinutes,
             sortOrder: lesson.sortOrder,
-            status: "active",
+            status: contentStatuses.active,
             summaryJson: lesson.summaryJson,
             title: lesson.title,
             unitId: lesson.unitId,
@@ -903,7 +1007,7 @@ async function resetContent(
             contentJson: step.contentJson,
             lessonId: step.lessonId,
             sortOrder: step.sortOrder,
-            status: "active",
+            status: contentStatuses.active,
             type: step.type,
           },
           target: lessonSteps.id,
@@ -945,36 +1049,42 @@ function archiveContentOutsideSeed(
   const seedStepIds = new Set(seedRows.steps.map((step) => step.id))
 
   for (const course of db.select().from(courses).all()) {
-    if (!seedCourseIds.has(course.id) && course.status !== "archived") {
+    if (
+      !seedCourseIds.has(course.id) &&
+      course.status !== contentStatuses.archived
+    ) {
       db.update(courses)
-        .set({ status: "archived" })
+        .set({ status: contentStatuses.archived })
         .where(eq(courses.id, course.id))
         .run()
       archived += 1
     }
   }
   for (const unit of db.select().from(courseUnits).all()) {
-    if (!seedUnitIds.has(unit.id) && unit.status !== "archived") {
+    if (!seedUnitIds.has(unit.id) && unit.status !== contentStatuses.archived) {
       db.update(courseUnits)
-        .set({ status: "archived" })
+        .set({ status: contentStatuses.archived })
         .where(eq(courseUnits.id, unit.id))
         .run()
       archived += 1
     }
   }
   for (const lesson of db.select().from(lessons).all()) {
-    if (!seedLessonIds.has(lesson.id) && lesson.status !== "archived") {
+    if (
+      !seedLessonIds.has(lesson.id) &&
+      lesson.status !== contentStatuses.archived
+    ) {
       db.update(lessons)
-        .set({ status: "archived" })
+        .set({ status: contentStatuses.archived })
         .where(eq(lessons.id, lesson.id))
         .run()
       archived += 1
     }
   }
   for (const step of db.select().from(lessonSteps).all()) {
-    if (!seedStepIds.has(step.id) && step.status !== "archived") {
+    if (!seedStepIds.has(step.id) && step.status !== contentStatuses.archived) {
       db.update(lessonSteps)
-        .set({ status: "archived" })
+        .set({ status: contentStatuses.archived })
         .where(eq(lessonSteps.id, step.id))
         .run()
       archived += 1
@@ -1000,32 +1110,144 @@ function readUsers(
   input: ReadAdminUsersInput
 ): AdminUserListDto {
   const query = input.query.trim().toLowerCase()
-  const filteredUsers = readUserSnapshots(db)
-    .filter((user) =>
-      input.status === "all"
-        ? user.status !== "deleted"
-        : user.status === input.status
-    )
-    .filter(
-      (user) =>
-        query.length === 0 ||
-        user.name.toLowerCase().includes(query) ||
-        user.email.toLowerCase().includes(query)
-    )
-    .sort((left, right) => compareUsers(left, right, input.sort))
-  const totalItems = filteredUsers.length
+  const nameExpression = sql<string>`coalesce(${learnerProfiles.displayName}, ${authUsers.name})`
+  const statusExpression = sql<AdminUserStatus>`coalesce(${learnerProfiles.status}, ${learnerAccountStatuses.active})`
+  const completedLessonsExpression = sql<number>`count(distinct case when ${learnerLessonProgress.status} = ${lessonProgressStatuses.completed} then ${learnerLessonProgress.lessonId} end)`
+  const lastActiveExpression = sql<
+    string | null
+  >`max(${learnerActivityDays.activityDate})`
+  const whereCondition = createReadUsersWhereCondition(input.status, query)
+  const totalItems =
+    db
+      .select({ value: count() })
+      .from(authUsers)
+      .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
+      .where(whereCondition)
+      .get()?.value ?? 0
   const totalPages = Math.max(1, Math.ceil(totalItems / input.pageSize))
   const page = Math.min(Math.max(1, input.page), totalPages)
-  const start = (page - 1) * input.pageSize
+  const rows = db
+    .select({
+      email: authUsers.email,
+      id: authUsers.id,
+      joinedAt: authUsers.createdAt,
+      lastActive: lastActiveExpression,
+      lessonsDone: completedLessonsExpression,
+      name: nameExpression,
+      status: statusExpression,
+    })
+    .from(authUsers)
+    .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
+    .leftJoin(
+      learnerLessonProgress,
+      eq(learnerLessonProgress.userId, authUsers.id)
+    )
+    .leftJoin(learnerActivityDays, eq(learnerActivityDays.userId, authUsers.id))
+    .where(whereCondition)
+    .groupBy(
+      authUsers.id,
+      authUsers.email,
+      authUsers.createdAt,
+      authUsers.name,
+      learnerProfiles.displayName,
+      learnerProfiles.status
+    )
+    .orderBy(
+      ...createReadUsersOrder(input.sort, {
+        completedLessons: completedLessonsExpression,
+        joinedAt: authUsers.createdAt,
+        lastActive: lastActiveExpression,
+        name: nameExpression,
+      })
+    )
+    .limit(input.pageSize)
+    .offset((page - 1) * input.pageSize)
+    .all()
+  const activityDatesByUserId =
+    rows.length === 0
+      ? new Map<string, string[]>()
+      : groupActivityDatesByUserId(
+          db
+            .select()
+            .from(learnerActivityDays)
+            .where(
+              inArray(
+                learnerActivityDays.userId,
+                rows.map((user) => user.id)
+              )
+            )
+            .all()
+        )
 
   return {
-    items: filteredUsers.slice(start, start + input.pageSize),
+    items: rows.map((user) => ({
+      email: user.email,
+      id: user.id,
+      joined: toLearningDateKey(user.joinedAt),
+      lastActive: user.lastActive,
+      lessonsDone: user.lessonsDone,
+      name: user.name,
+      status: user.status,
+      streak: calculateCurrentStreakDays(
+        activityDatesByUserId.get(user.id) ?? []
+      ),
+    })),
     pagination: {
       page,
       pageSize: input.pageSize,
       totalItems,
       totalPages,
     },
+  }
+}
+
+function createReadUsersWhereCondition(
+  status: ReadAdminUsersInput["status"],
+  query: string
+) {
+  const statusCondition =
+    status === "all"
+      ? or(
+          isNull(learnerProfiles.status),
+          ne(learnerProfiles.status, learnerAccountStatuses.deleted)
+        )
+      : status === learnerAccountStatuses.active
+        ? or(isNull(learnerProfiles.status), eq(learnerProfiles.status, status))
+        : eq(learnerProfiles.status, status)
+  const queryCondition =
+    query.length === 0
+      ? undefined
+      : or(
+          sql`lower(coalesce(${learnerProfiles.displayName}, ${authUsers.name})) like ${`%${query}%`}`,
+          sql`lower(${authUsers.email}) like ${`%${query}%`}`
+        )
+
+  return queryCondition === undefined
+    ? statusCondition
+    : and(statusCondition, queryCondition)
+}
+
+function createReadUsersOrder(
+  sort: AdminUserSort,
+  expressions: {
+    readonly completedLessons: ReturnType<typeof sql<number>>
+    readonly joinedAt: typeof authUsers.createdAt
+    readonly lastActive: ReturnType<typeof sql<string | null>>
+    readonly name: ReturnType<typeof sql<string>>
+  }
+) {
+  switch (sort) {
+    case "joined":
+      return [desc(expressions.joinedAt), asc(expressions.name)] as const
+    case "lastActive":
+      return [desc(expressions.lastActive), asc(expressions.name)] as const
+    case "lessonsDone":
+      return [
+        desc(expressions.completedLessons),
+        asc(expressions.name),
+      ] as const
+    case "streak":
+      return [desc(expressions.lastActive), asc(expressions.name)] as const
   }
 }
 
@@ -1081,7 +1303,7 @@ function deleteUser(
   db.update(learnerProfiles)
     .set({
       deletedAt: input.now,
-      status: "deleted",
+      status: learnerAccountStatuses.deleted,
     })
     .where(eq(learnerProfiles.userId, input.userId))
     .run()
@@ -1107,7 +1329,7 @@ function readUserSnapshots(db: KwepDatabase): AdminUserSnapshot[] {
     .select()
     .from(learnerLessonProgress)
     .all()
-    .filter((progress) => progress.status === "completed")
+    .filter((progress) => progress.status === lessonProgressStatuses.completed)
   const activityDatesByUserId = groupActivityDatesByUserId(activityRows)
 
   return userRows.map((user) => {
@@ -1116,13 +1338,13 @@ function readUserSnapshots(db: KwepDatabase): AdminUserSnapshot[] {
     return {
       email: user.email,
       id: user.id,
-      joined: toDateKey(user.createdAt),
+      joined: toLearningDateKey(user.createdAt),
       lastActive: activityDates[0] ?? null,
       lessonsDone: completedLessonRows.filter(
         (progress) => progress.userId === user.id
       ).length,
       name: user.displayName ?? user.name,
-      status: user.status ?? "active",
+      status: user.status ?? learnerAccountStatuses.active,
       streak: calculateCurrentStreakDays(activityDates),
     }
   })
@@ -1150,7 +1372,7 @@ function countActiveLessons(db: KwepDatabase): number {
       .select()
       .from(courses)
       .all()
-      .filter((course) => course.status === "active")
+      .filter((course) => course.status === contentStatuses.active)
       .map((course) => course.id)
   )
   const activeUnitIds = new Set(
@@ -1159,7 +1381,9 @@ function countActiveLessons(db: KwepDatabase): number {
       .from(courseUnits)
       .all()
       .filter(
-        (unit) => unit.status === "active" && activeCourseIds.has(unit.courseId)
+        (unit) =>
+          unit.status === contentStatuses.active &&
+          activeCourseIds.has(unit.courseId)
       )
       .map((unit) => unit.id)
   )
@@ -1170,31 +1394,10 @@ function countActiveLessons(db: KwepDatabase): number {
     .all()
     .filter(
       (lesson) =>
-        lesson.status === "active" &&
+        lesson.status === contentStatuses.active &&
         activeCourseIds.has(lesson.courseId) &&
         activeUnitIds.has(lesson.unitId)
     ).length
-}
-
-function compareUsers(
-  left: AdminUserSnapshot,
-  right: AdminUserSnapshot,
-  sort: AdminUserSort
-): number {
-  const byName = left.name.localeCompare(right.name)
-
-  switch (sort) {
-    case "joined":
-      return right.joined.localeCompare(left.joined) || byName
-    case "lastActive":
-      return (
-        (right.lastActive ?? "").localeCompare(left.lastActive ?? "") || byName
-      )
-    case "lessonsDone":
-      return right.lessonsDone - left.lessonsDone || byName
-    case "streak":
-      return right.streak - left.streak || byName
-  }
 }
 
 function calculateCurrentStreakDays(activityDates: readonly string[]): number {
@@ -1203,31 +1406,14 @@ function calculateCurrentStreakDays(activityDates: readonly string[]): number {
   }
 
   const activitySet = new Set(activityDates)
-  const cursor = new Date(`${activityDates[0]}T00:00:00.000Z`)
+  const latestActivityDate = activityDates[0]
   let streak = 0
+  let cursor = latestActivityDate
 
-  while (activitySet.has(toDateKey(cursor))) {
+  while (cursor !== undefined && activitySet.has(cursor)) {
     streak += 1
-    cursor.setUTCDate(cursor.getUTCDate() - 1)
+    cursor = addLearningCalendarDays(cursor, -1)
   }
 
   return streak
-}
-
-function startOfUtcDay(date: Date): Date {
-  return new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-  )
-}
-
-function addUtcDays(date: Date, days: number): Date {
-  const result = new Date(date)
-
-  result.setUTCDate(result.getUTCDate() + days)
-
-  return result
-}
-
-function toDateKey(date: Date): string {
-  return date.toISOString().slice(0, 10)
 }

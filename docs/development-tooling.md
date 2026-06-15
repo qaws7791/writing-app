@@ -1,5 +1,28 @@
 # 개발 도구
 
+## 2026-06-15 개발 앱 실행과 DB seed 정책
+
+- `bun run dev:app`은 학습자 웹과 플랫폼 API 개발 서버만 시작한다. 이 명령은 개발 DB를 seed하거나 초기화하지 않는다.
+- 처음 개발 환경을 준비하거나 baseline migration과 기본 콘텐츠 seed를 적용해야 할 때는 `bun run dev:app:setup`을 실행한다.
+- `dev:app:setup`은 migration과 보존형 seed를 실행한다. 보존형 seed는 기본 콘텐츠를 stable id 기준으로 갱신하며, 기존 학습 진행 기록과 답변 기록을 삭제하지 않는다.
+- seed 데이터에서 사라진 콘텐츠는 삭제하지 않고 `archived` 상태로 전환한다.
+- 개발 DB를 완전히 초기화해야 할 때만 `bun run db:reset`을 명시적으로 실행한다.
+- 깨끗한 DB로 앱을 시작해야 할 때는 `bun run dev:app:fresh`를 사용한다. `db:reset`과 `dev:app:fresh`는 기존 개발 DB 파일을 삭제할 수 있으므로, 학습 진행 기록 보존이 필요한 상황에서는 사용하지 않는다.
+
+## 2026-06-14 앱 사용자 플로우 검증 시작
+
+- 로컬 환경 변수가 준비된 상태에서 `bun run dev:app`으로 플랫폼 API와 웹 앱을 함께 실행한다.
+- 구글 로그인은 브라우저 로그인 페이지에서 사용자가 직접 완료한 뒤, 로그인 이후 학습자 플로우를 검증한다.
+- 검증 중 확인한 서버 포트, 접근 경로, 실패 사항은 같은 문서의 완료 항목에 기록한다.
+
+## 2026-06-14 앱 사용자 플로우 검증 완료
+
+- `bun run dev:app` 실행 시 웹 앱은 `3000`, 플랫폼 API는 로컬 `API_PORT=4000`에서 응답했다.
+- 구글 OAuth 콜백 후 `auth_users` 테이블이 없던 원인은 `DATABASE_URL=file:../../data/api.sqlite`를 API 런타임이 `apps/api/data/api.sqlite`로 해석한 것이었다. DB 클라이언트에서 `file:` URL을 명시적 파일 경로로 정규화해 seed DB와 API DB 경로를 일치시켰다.
+- OAuth 콜백 후 `/app`에서 다시 로그인으로 돌아가던 원인은 성공 콜백의 두 쿠키를 단일 `Set-Cookie` 헤더로 합치고, 웹 클라이언트가 읽어야 하는 `kwep_session`을 `HttpOnly`로 내려준 것이었다. 콜백 쿠키를 개별 `Set-Cookie` 헤더로 append하고, state 쿠키만 `HttpOnly`로 유지했다.
+- 브라우저 검증에서 로그인, 홈, 코스 목록, 코스 상세, 레슨 시작, 레슨 완료, 진행률 반영, 프로필, 로그아웃, 로그아웃 후 보호 라우트 리다이렉트를 확인했다.
+- 영향 패키지 검증으로 `@workspace/api` lint/typecheck/Google OAuth route test와 `@workspace/db` lint/typecheck/client test를 통과시켰다.
+
 ## 2026-06-14 Storybook 현재 UI surface 정리 완료
 
 - Kwep 피벗 중 `packages/ui`를 Button, Card, Input, Progress primitive 중심으로 재정의했다.
@@ -9,7 +32,7 @@
 
 ## 2026-06-14 Kwep dev server 스모크 완료
 
-- `bun run dev:app`은 DB seed 후 플랫폼 API를 `3001`, 웹 앱을 `3000`에서 실행한다.
+- 현재 `bun run dev:app`은 DB seed 없이 플랫폼 API와 웹 앱만 실행한다. DB 준비가 필요하면 먼저 `bun run dev:app:setup`을 명시적으로 실행한다.
 - `bun run dev:admin`은 DB seed와 관리자 seed 후 어드민 API를 `3002`, 어드민 앱을 `3001`에서 실행한다.
 - 기존 로컬 `.env`의 `CORS_ORIGIN`, `ADMIN_BETTER_AUTH_SECRET`, `ADMIN_CORS_ORIGIN`은 새 실행 env 이름으로 정규화한다.
 - 이전 `PORT` 값은 앱 간 기본 연결을 깨지 않도록 dev server 포트 결정에 사용하지 않고, 포트 변경이 필요하면 `API_PORT` 또는 `ADMIN_API_PORT`를 명시한다.
@@ -40,7 +63,8 @@
 ## 2026-06-14 Kwep 개발 DB seed 실행 복구 완료
 
 - `@workspace/db`의 `db:seed`는 baseline migration을 적용한 뒤 Kwep 콘텐츠 seed를 저장소 루트 `data/api.sqlite`에 삽입한다.
-- 반복 실행 시 기본 학습자 `user-1`을 보장하고, 기존 콘텐츠 row를 비운 뒤 다시 삽입해 `bun run dev:app` setup이 결정적으로 동작하게 했다.
+- 반복 실행 시 기본 학습자 `user-1`을 보장하고, 콘텐츠 row를 stable id 기준으로 갱신한다. 기존 학습 진행과 답변 기록은 보존한다.
+- seed 데이터에서 제외된 기존 콘텐츠는 삭제하지 않고 `archived` 상태로 전환한다.
 - 이전 개발 DB 스키마가 루트 `data/api.sqlite`에 남아 있으면 seed가 로컬 DB 파일을 새 baseline으로 재생성한다.
 - seed 실행 파일은 `packages/db/src/seeds/seed.ts`이며, `packages/db/src/seeds/seed.test.ts`가 파일 DB에 코스 5개, 레슨 44개, 스텝 136개와 기본 학습자가 들어가는지 검증한다.
 - 로컬 브라우저 스모크에서 인증 세션이 필요하면 `kwep_session=user-1` 쿠키를 설정한다. web은 이 쿠키 값을 API Bearer token으로 전달한다.
@@ -107,6 +131,8 @@
 ## 앱 실행
 
 - 모든 개발 서버를 실행하려면 저장소 루트에서 `bun run dev`를 실행한다.
+- 학습자 앱과 API만 실행하려면 저장소 루트에서 `bun run dev:app`을 실행한다. 이 명령은 DB를 변경하지 않는다.
+- 학습자 앱 DB 준비가 필요하면 `bun run dev:app:setup`을 먼저 실행한다.
 - 별도 docs 앱은 운영하지 않는다. 문서는 저장소의 Markdown 파일과 API 런타임의 `/openapi.json`을 기준으로 확인한다.
 
 ## Git 훅

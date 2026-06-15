@@ -18,6 +18,71 @@ const emptyProgress: ProgressCourseList = {
   currentStreakDays: 0,
 }
 
+const progressWithActiveCourse: ProgressCourseList = {
+  courses: [
+    {
+      id: "c1",
+      lessons: [
+        {
+          currentStepIndex: null,
+          estimatedMinutes: 5,
+          id: "l1",
+          status: "completed",
+          title: "좋은 문장이란 무엇인가",
+        },
+        {
+          currentStepIndex: null,
+          estimatedMinutes: 7,
+          id: "l2",
+          status: "available",
+          title: "짧게 쓰기",
+        },
+        {
+          currentStepIndex: null,
+          estimatedMinutes: 8,
+          id: "l3",
+          status: "locked",
+          title: "문단 다듬기",
+        },
+      ],
+      nextLessons: [
+        {
+          courseId: "c1",
+          currentStepIndex: null,
+          estimatedMinutes: 7,
+          id: "l2",
+          status: "available",
+          title: "짧게 쓰기",
+        },
+      ],
+      progressPercent: 33,
+      title: "글쓰기 첫걸음 30일",
+    },
+  ],
+  currentStreakDays: 2,
+}
+
+const completedProgress: ProgressCourseList = {
+  courses: [
+    {
+      id: "c2",
+      lessons: [
+        {
+          currentStepIndex: null,
+          estimatedMinutes: 5,
+          id: "l4",
+          status: "completed",
+          title: "완료한 레슨",
+        },
+      ],
+      nextLessons: [],
+      progressPercent: 100,
+      title: "완료한 코스",
+    },
+  ],
+  currentStreakDays: 5,
+}
+
 describe("홈 화면", () => {
   beforeEach(() => {
     push.mockClear()
@@ -60,4 +125,49 @@ describe("홈 화면", () => {
 
     expect(push).toHaveBeenCalledWith("/app/courses")
   })
+
+  it("진행 중 코스와 다음 레슨 진입점을 보여준다", async () => {
+    const user = userEvent.setup()
+
+    render(<HomePage learnerName="몽쉘" progress={progressWithActiveCourse} />)
+
+    expect(screen.getByText("이어서 학습하기")).toBeInTheDocument()
+    expect(screen.getByText("1개 코스")).toBeInTheDocument()
+    expect(screen.getAllByText("글쓰기 첫걸음 30일")).toHaveLength(2)
+    expect(screen.getAllByText("1/3")).toHaveLength(2)
+    expect(screen.getAllByText("짧게 쓰기")).toHaveLength(2)
+    expect(document.querySelector(".border-t")).toBeNull()
+
+    await user.click(
+      firstElement(
+        screen.getAllByRole("button", { name: /글쓰기 첫걸음 30일/ })
+      )
+    )
+
+    expect(push).toHaveBeenCalledWith("/app/courses/c1")
+
+    await user.click(
+      firstElement(screen.getAllByRole("button", { name: /짧게 쓰기/ }))
+    )
+
+    expect(push).toHaveBeenCalledWith("/app/lesson?lesson_id=l2")
+  })
+
+  it("다음 레슨이 없는 진행 코스에는 완료 메시지를 보여준다", () => {
+    render(<HomePage learnerName="몽쉘" progress={completedProgress} />)
+
+    expect(screen.getByText("이어서 학습하기")).toBeInTheDocument()
+    expect(screen.getAllByText("완료한 코스")).toHaveLength(2)
+    expect(screen.getAllByText("모든 레슨을 완료했어요")).toHaveLength(2)
+  })
 })
+
+function firstElement<TElement>(elements: readonly TElement[]): TElement {
+  const element = elements[0]
+
+  if (element === undefined) {
+    throw new Error("첫 번째 요소를 찾지 못했습니다.")
+  }
+
+  return element
+}

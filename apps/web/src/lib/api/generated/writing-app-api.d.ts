@@ -349,6 +349,7 @@ export interface operations {
             courses: {
               id: string
               lessons: {
+                currentStepIndex: number | null
                 estimatedMinutes: number
                 id: string
                 /** @enum {string} */
@@ -357,6 +358,7 @@ export interface operations {
               }[]
               nextLessons: {
                 courseId: string
+                currentStepIndex: number | null
                 estimatedMinutes: number
                 id: string
                 /** @enum {string} */
@@ -674,7 +676,57 @@ export interface operations {
     requestBody: {
       content: {
         "application/json": {
-          answer: string
+          answer:
+            | {
+                /** @enum {string} */
+                kind: "lesson-started"
+              }
+            | {
+                selectedOptionId: string
+                /** @enum {string} */
+                type: "MULTIPLE_CHOICE"
+              }
+            | {
+                selectedWords: string[]
+                /** @enum {string} */
+                type: "FILL_BLANK"
+              }
+            | {
+                selectedIndexes: number[]
+                /** @enum {string} */
+                type: "SELECT"
+              }
+            | {
+                orderedItems: string[]
+                /** @enum {string} */
+                type: "ORDER"
+              }
+            | {
+                pairs: {
+                  left: string
+                  right: string
+                }[]
+                /** @enum {string} */
+                type: "MATCH"
+              }
+            | {
+                items: {
+                  categoryId: string
+                  itemId: string
+                }[]
+                /** @enum {string} */
+                type: "CATEGORIZE"
+              }
+            | {
+                text: string
+                /** @enum {string} */
+                type: "WRITE"
+              }
+            | {
+                requested: boolean
+                /** @enum {string} */
+                type: "AI_FEEDBACK"
+              }
           lessonId: string
           stepId: string
         }

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 
 import { createApp, type AdminApiDependencies } from "@/app"
+import {
+  createTestAdminApiDependencies,
+  testAdminNow,
+} from "@/routes/test-dependencies"
 import type {
   AdminArchiveCourseResultDto,
   AdminCourseDetailDto,
@@ -241,11 +245,10 @@ function createDependencies({
 }: {
   readonly role?: "operator" | "owner"
 } = {}): AdminApiDependencies {
-  return {
-    adminOrigin: "http://localhost:3003",
+  return createTestAdminApiDependencies({
     dashboardService: {
       async archiveCourse(input) {
-        expect(input.now).toEqual(new Date("2026-06-14T03:00:00.000Z"))
+        expect(input.now).toEqual(testAdminNow)
 
         if (input.courseId === "missing") {
           return null
@@ -255,17 +258,8 @@ function createDependencies({
         return archiveCourseResult
       },
       async createCourse(input) {
-        expect(input.now).toEqual(new Date("2026-06-14T03:00:00.000Z"))
+        expect(input.now).toEqual(testAdminNow)
         return courseDetail
-      },
-      async deleteUser() {
-        throw new Error("unexpected delete user request")
-      },
-      async getAnalytics() {
-        throw new Error("unexpected analytics request")
-      },
-      async getCourseEditor() {
-        throw new Error("unexpected course editor request")
       },
       async getCourses(input) {
         expect(input).toEqual({
@@ -277,36 +271,6 @@ function createDependencies({
         })
         return courseList
       },
-      async getDashboard() {
-        throw new Error("unexpected dashboard request")
-      },
-      async getLessonAnalytics() {
-        throw new Error("unexpected lesson analytics request")
-      },
-      async getSettings() {
-        throw new Error("unexpected settings request")
-      },
-      async getUser() {
-        throw new Error("unexpected user detail request")
-      },
-      async getUsers() {
-        throw new Error("unexpected user list request")
-      },
-      async resetContent() {
-        throw new Error("unexpected content reset request")
-      },
-      async updateLegalSettings() {
-        throw new Error("unexpected legal settings request")
-      },
-      async updateNoticeSettings() {
-        throw new Error("unexpected notice settings request")
-      },
-      async updateUserStatus() {
-        throw new Error("unexpected user status request")
-      },
-    },
-    now() {
-      return new Date("2026-06-14T03:00:00.000Z")
     },
     sessionResolver: {
       async resolveSession(token) {
@@ -324,5 +288,5 @@ function createDependencies({
         }
       },
     },
-  }
+  })
 }

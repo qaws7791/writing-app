@@ -238,9 +238,9 @@
 
 ## DOMAIN-02 작업 메모
 
-- 대상 파일: `apps/admin/src/features/courses/course-editor/step-definitions.ts`, `apps/admin/src/features/courses/course-editor/step-form-registry.tsx`, 어드민 course editor 사용처
+- 대상 파일: `apps/admin/src/features/courses/course-editor/step-form-registry.tsx`, 어드민 course editor 사용처
 - 조사 방향: 어드민 에디터의 step type label, group, form component, 기본 metadata가 각각 다른 파일에 흩어진 지점을 확인하고, core/db step schema 변경 없이 앱 내부 registry로 먼저 응집한다.
-- 완료 내용: 순수 metadata는 `step-definitions.ts`로, React form component 매핑은 `step-form-registry.tsx`로 분리했다. label, add-step group, step workspace form 선택, 새 step 기본 points는 registry를 통해 읽도록 연결했다.
+- 완료 내용: 어드민 스텝 폼 선택은 `step-form-registry.tsx`로 모았고, LOL-24 후속 작업에서 mapping 기반 registry와 fallback generic form으로 다시 정리했다. 현재 코드에는 별도 `step-definitions.ts` 파일이 없으므로 이 문서는 실제 구조를 기준으로 유지한다.
 - 범위 제외: core/content DTO와 DB enum 통합, 학습자 lesson renderer 분리는 영향 범위가 커서 `FE-01`과 후속 도메인 정리에서 별도로 다룬다.
 - 검증: `bun --filter @workspace/admin test src/features/courses/course-editor/editor-state.test.ts src/features/courses/course-editor/lesson-workspace.test.tsx src/features/courses/course-editor/step-workspace.test.tsx && bun --filter @workspace/admin typecheck && bun --filter @workspace/admin lint`
 

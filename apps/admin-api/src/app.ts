@@ -12,6 +12,7 @@ import { createHealthRoute } from "@/routes/health.route"
 import { createSettingsRoute } from "@/routes/settings.route"
 import { createUsersRoute } from "@/routes/users.route"
 import type { AdminService } from "@workspace/core/admin"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   createRequestLoggingMiddleware,
   type RequestLogger,
@@ -51,7 +52,7 @@ export function createApp(dependencies: AdminApiDependencies): Hono {
       allowHeaders: ["Authorization", "Content-Type"],
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true,
-      origin: dependencies.adminOrigin ?? "http://localhost:3003",
+      origin: dependencies.adminOrigin ?? localRuntimeDefaults.adminWebOrigin,
     })
   )
 

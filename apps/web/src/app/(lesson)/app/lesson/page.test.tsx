@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import LessonRoute from "@/app/app/lesson/page"
+import LessonRoute from "@/app/(lesson)/app/lesson/page"
 import { apiFailure } from "@/lib/api/api-result"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
 

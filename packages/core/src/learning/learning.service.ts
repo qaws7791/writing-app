@@ -2,6 +2,8 @@ import type { ContentRepository, LessonStepType } from "@workspace/core/content"
 import { lessonDtoSchema } from "@workspace/core/content"
 import {
   completeLessonCommandSchema,
+  lessonStartedAnswerSchema,
+  lessonStepAnswerSchema,
   saveLessonProgressCommandSchema,
   saveStepAnswerCommandSchema,
   type CompleteLessonCommand,
@@ -33,6 +35,7 @@ export type LearningServiceError =
       readonly reason:
         | "step-answer-invalid"
         | "step-answer-not-supported"
+        | "step-answer-shape-invalid"
         | "step-not-found-in-lesson"
       readonly stepId: SaveStepAnswerCommand["stepId"]
     }
@@ -116,16 +119,17 @@ export function createLearningService({
       }
 
       const supportsStepAnswer =
-        answerableStepTypes.has(step.type) ||
         isLessonStartedAnswer(parsedCommand.answer, {
           firstStepId: parsedLesson.steps[0]?.id,
           stepId: step.id,
-        })
+        }) || isStepAnswerForStepType(parsedCommand.answer, step.type)
 
       if (!supportsStepAnswer) {
         return err({
           kind: "invalid-request",
-          reason: "step-answer-not-supported",
+          reason: answerableStepTypes.has(step.type)
+            ? "step-answer-shape-invalid"
+            : "step-answer-not-supported",
           stepId: parsedCommand.stepId,
         })
       }
@@ -156,26 +160,23 @@ type UnknownObject = {
 }
 
 function isValidStepAnswer(step: LessonStep, answer: unknown): boolean {
-  const parsedAnswer =
-    typeof answer === "string" ? parseJsonAnswer(answer) : answer
-
   switch (step.type) {
     case "AI_FEEDBACK":
-      return typeof parsedAnswer === "string" && parsedAnswer.trim() !== ""
+      return readTypedObject(answer, "AI_FEEDBACK")?.["requested"] === true
     case "CATEGORIZE":
-      return isValidCategorizeAnswer(step, parsedAnswer)
+      return isValidCategorizeAnswer(step, answer)
     case "FILL_BLANK":
-      return isValidFillBlankAnswer(step, parsedAnswer)
+      return isValidFillBlankAnswer(step, answer)
     case "MATCH":
-      return isValidMatchAnswer(step, parsedAnswer)
+      return isValidMatchAnswer(step, answer)
     case "MULTIPLE_CHOICE":
-      return isValidMultipleChoiceAnswer(step, parsedAnswer)
+      return isValidMultipleChoiceAnswer(step, answer)
     case "ORDER":
-      return isValidOrderAnswer(step, parsedAnswer)
+      return isValidOrderAnswer(step, answer)
     case "SELECT":
-      return isValidSelectAnswer(step, parsedAnswer)
+      return isValidSelectAnswer(step, answer)
     case "WRITE":
-      return isValidWriteAnswer(parsedAnswer)
+      return isValidWriteAnswer(answer)
     case "COMPARE":
     case "READING":
       return false
@@ -349,22 +350,17 @@ function isLessonStartedAnswer(
     readonly stepId: string
   }
 ): boolean {
-  const parsedAnswer =
-    typeof answer === "string" ? parseJsonAnswer(answer) : answer
-
   return (
     stepId === firstStepId &&
-    typeof parsedAnswer === "object" &&
-    parsedAnswer !== null &&
-    "kind" in parsedAnswer &&
-    parsedAnswer.kind === "lesson-started"
+    lessonStartedAnswerSchema.safeParse(answer).success
   )
 }
 
-function parseJsonAnswer(answer: string): unknown {
-  try {
-    return JSON.parse(answer)
-  } catch {
-    return answer
-  }
+function isStepAnswerForStepType(
+  answer: unknown,
+  stepType: LessonStepType
+): boolean {
+  const parsedAnswer = lessonStepAnswerSchema.safeParse(answer)
+
+  return parsedAnswer.success && parsedAnswer.data.type === stepType
 }

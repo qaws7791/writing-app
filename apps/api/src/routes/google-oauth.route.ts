@@ -3,6 +3,7 @@ import { Buffer } from "node:buffer"
 import { eq } from "drizzle-orm"
 import { Hono } from "hono"
 
+import { learnerAccountStatuses } from "@workspace/core/status"
 import type { KwepDatabase } from "@workspace/db/client"
 import {
   authAccounts,
@@ -122,23 +123,12 @@ export function createGoogleOAuthRoute(options: GoogleOAuthRouteOptions): Hono {
       userId,
     })
 
-    context.header(
-      "Set-Cookie",
-      [
-        serializeCookie(learnerSessionCookieName, sessionToken, {
-          httpOnly: true,
-          maxAge: sessionMaxAgeSeconds,
-          sameSite: "Lax",
-          secure: secureCookie,
-        }),
-        serializeCookie(oauthStateCookieName, "", {
-          httpOnly: true,
-          maxAge: 0,
-          sameSite: "Lax",
-          secure: secureCookie,
-        }),
-      ].join(", ")
-    )
+    for (const cookie of createGoogleCallbackSetCookies(
+      sessionToken,
+      secureCookie
+    )) {
+      context.header("Set-Cookie", cookie, { append: true })
+    }
 
     return context.redirect(
       createWebUrl(options.webOrigin, state.callbackPath),
@@ -245,6 +235,26 @@ function serializeCookie(
   ]
     .filter(Boolean)
     .join("; ")
+}
+
+export function createGoogleCallbackSetCookies(
+  sessionToken: string,
+  secureCookie = false
+): readonly [string, string] {
+  return [
+    serializeCookie(learnerSessionCookieName, sessionToken, {
+      httpOnly: true,
+      maxAge: sessionMaxAgeSeconds,
+      sameSite: "Lax",
+      secure: secureCookie,
+    }),
+    serializeCookie(oauthStateCookieName, "", {
+      httpOnly: true,
+      maxAge: 0,
+      sameSite: "Lax",
+      secure: secureCookie,
+    }),
+  ]
 }
 
 function readCookie(cookieHeader: string, name: string): string | null {
@@ -394,14 +404,14 @@ function upsertGoogleUser(
     .values({
       deletedAt: null,
       displayName: googleUser.name,
-      status: "active",
+      status: learnerAccountStatuses.active,
       userId,
     })
     .onConflictDoUpdate({
       set: {
         deletedAt: null,
         displayName: googleUser.name,
-        status: "active",
+        status: learnerAccountStatuses.active,
       },
       target: learnerProfiles.userId,
     })
@@ -409,7 +419,7 @@ function upsertGoogleUser(
 
   db.insert(authAccounts)
     .values({
-      accessToken: tokenResponse.accessToken,
+      accessToken: null,
       accountId: googleUser.sub,
       createdAt: now,
       expiresAt:
@@ -417,21 +427,21 @@ function upsertGoogleUser(
           ? null
           : new Date(now.getTime() + tokenResponse.expiresIn * 1000),
       id: `google-${googleUser.sub}`,
-      idToken: tokenResponse.idToken,
+      idToken: null,
       providerId: "google",
-      refreshToken: tokenResponse.refreshToken,
+      refreshToken: null,
       updatedAt: now,
       userId,
     })
     .onConflictDoUpdate({
       set: {
-        accessToken: tokenResponse.accessToken,
+        accessToken: null,
         expiresAt:
           tokenResponse.expiresIn === undefined
             ? null
             : new Date(now.getTime() + tokenResponse.expiresIn * 1000),
-        idToken: tokenResponse.idToken,
-        refreshToken: tokenResponse.refreshToken,
+        idToken: null,
+        refreshToken: null,
         updatedAt: now,
       },
       target: authAccounts.id,

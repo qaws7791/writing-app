@@ -40,7 +40,10 @@ describe("플랫폼 API learning route", () => {
 
     const response = await app.request("/learning/answers", {
       body: JSON.stringify({
-        answer: { selected: "b" },
+        answer: {
+          selectedOptionId: "b",
+          type: "MULTIPLE_CHOICE",
+        },
         lessonId: "l1",
         stepId: "l1-s3",
       }),
@@ -55,7 +58,10 @@ describe("플랫폼 API learning route", () => {
     await expect(response.json()).resolves.toEqual({ saved: true })
     expect(savedCommands).toEqual([
       {
-        answer: { selected: "b" },
+        answer: {
+          selectedOptionId: "b",
+          type: "MULTIPLE_CHOICE",
+        },
         lessonId: lessonIdSchema.parse("l1"),
         occurredAt,
         stepId: lessonStepIdSchema.parse("l1-s3"),

@@ -14,10 +14,18 @@ import type {
 import {
   getFirstLessonStep,
   getLessonStep,
-  isValidLessonStepAnswerPayload,
   isLastLessonStep,
   type LessonStepAnswerPayload,
 } from "@/features/lessons/lesson-logic"
+import {
+  getLessonStepActionLabel,
+  getLessonStepCheckedResult,
+  getLessonStepExplanation,
+  getLessonStepWrongText,
+  isLessonStepCheckable,
+  isLessonStepSubmittable,
+  type LessonStepCheckedState,
+} from "@/features/lessons/lesson-step-policy"
 import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
 import { useLessonPersistence } from "@/features/lessons/use-lesson-persistence"
 import type { Lesson, LessonStep } from "@/features/lessons/lesson-types"
@@ -29,29 +37,29 @@ import { XIcon } from "@workspace/ui/components/icons"
 type LessonExperienceProps = {
   readonly api?: WritingAppApi
   readonly courseDetail?: CourseDetail
+  readonly initialProgress?: {
+    readonly currentStepIndex: number
+  }
   readonly lesson: Lesson
 }
 
-type LessonCheckedState =
-  | false
-  | "correct"
-  | "wrong"
-  | {
-      readonly explanation?: string
-      readonly missed: readonly number[]
-      readonly wrong: readonly number[]
-    }
+type LessonCheckedState = false | LessonStepCheckedState
 
 export function LessonExperience({
   api,
   courseDetail,
+  initialProgress,
   lesson,
 }: LessonExperienceProps) {
   const router = useRouter()
-  const contentRef = useRef<HTMLDivElement>(null)
-  const [currentStepIndex, setCurrentStepIndex] = useState(0)
+  const contentRef = useRef<HTMLElement>(null)
+  const initialStepIndex = clampLessonStepIndex(
+    lesson,
+    initialProgress?.currentStepIndex ?? 0
+  )
+  const [currentStepIndex, setCurrentStepIndex] = useState(initialStepIndex)
   const [isComplete, setIsComplete] = useState(false)
-  const [hasStarted, setHasStarted] = useState(false)
+  const [hasStarted, setHasStarted] = useState(initialProgress !== undefined)
   const [showExit, setShowExit] = useState(false)
   const [checked, setChecked] = useState<LessonCheckedState>(false)
   const [answerPayloads, setAnswerPayloads] = useState<
@@ -119,36 +127,55 @@ export function LessonExperience({
         )
       : 0
     const currentAnswerPayload = answerPayloads[currentStep.id]
-    const isReady = getCanSubmit(currentStep, currentAnswerPayload)
-    const isQuizStep = isCheckStep(currentStep)
+    const isReady = isLessonStepSubmittable(currentStep, currentAnswerPayload)
+    const isQuizStep = isLessonStepCheckable(currentStep)
 
     return (
-      <div className="flex flex-col min-h-screen bg-cream w-full fixed inset-0 z-50 overflow-y-auto">
-        <div className="w-full max-w-3xl mx-auto flex items-center px-6 pt-6 pb-4">
-          <button
-            aria-label="나가기"
-            className="text-muted hover:text-charcoal font-bold mr-4 transition-colors w-9 h-9 flex items-center justify-center"
-            onClick={() => setShowExit(true)}
-          >
-            <XIcon size={28} />
-          </button>
-          <div className="flex-1 bg-surface h-4 rounded-full overflow-hidden">
-            <div
-              className="bg-primary h-full rounded-full transition-all duration-500"
-              style={{ width: `${progress}%` }}
+      <LessonShell
+        contentRef={contentRef}
+        footer={
+          checked === false ? (
+            <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent">
+              <LessonPrimaryButton
+                disabled={!isReady || isCompleting}
+                onClick={() => {
+                  if (isQuizStep) {
+                    setChecked(
+                      getLessonStepCheckedResult(
+                        currentStep,
+                        currentAnswerPayload
+                      )
+                    )
+                    return
+                  }
+
+                  void handleNextStep(isLastStep)
+                }}
+                variant={isReady ? "primary" : "secondary"}
+              >
+                {isCompleting
+                  ? "완료 저장 중"
+                  : getLessonStepActionLabel(currentStep)}
+              </LessonPrimaryButton>
+            </div>
+          ) : (
+            <LessonCheckedFooter
+              checked={checked}
+              onNext={() => void handleNextStep(isLastStep)}
+              step={currentStep}
             />
-          </div>
-          <div
-            className="ml-4 font-bold text-muted"
-            style={{ fontSize: "0.875rem" }}
-          >
-            {visibleStepNumber}/{lesson.steps.length}
-          </div>
-        </div>
-        <div
-          className="flex-1 w-full max-w-2xl mx-auto px-6 pt-6 md:pt-10 pb-48 an-fi"
-          ref={contentRef}
-        >
+          )
+        }
+        header={
+          <LessonProgressHeader
+            currentStepNumber={visibleStepNumber}
+            onExit={() => setShowExit(true)}
+            progress={progress}
+            totalStepCount={lesson.steps.length}
+          />
+        }
+      >
+        <div className="an-fi">
           <LessonStepRenderer
             answerError={answerError}
             checked={checked}
@@ -171,36 +198,6 @@ export function LessonExperience({
             </p>
           )}
         </div>
-        <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
-          {checked === false ? (
-            <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent pointer-events-auto">
-              <LessonPrimaryButton
-                disabled={!isReady || isCompleting}
-                onClick={() => {
-                  if (isQuizStep) {
-                    setChecked(
-                      getCheckResult(currentStep, currentAnswerPayload)
-                    )
-                    return
-                  }
-
-                  void handleNextStep(isLastStep)
-                }}
-                variant={isReady ? "primary" : "secondary"}
-              >
-                {isCompleting
-                  ? "완료 저장 중"
-                  : getStepActionLabel(currentStep)}
-              </LessonPrimaryButton>
-            </div>
-          ) : (
-            <LessonCheckedFooter
-              checked={checked}
-              onNext={() => void handleNextStep(isLastStep)}
-              step={currentStep}
-            />
-          )}
-        </div>
         {showExit ? (
           <LessonExitModal
             onCancel={() => setShowExit(false)}
@@ -210,7 +207,7 @@ export function LessonExperience({
             }}
           />
         ) : null}
-      </div>
+      </LessonShell>
     )
   }
 
@@ -244,17 +241,27 @@ export function LessonExperience({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-cream w-full fixed inset-0 z-50 overflow-y-auto">
-      <div className="w-full max-w-3xl mx-auto flex items-center px-6 pt-6 pb-4">
-        <button
-          aria-label="나가기"
-          className="text-muted hover:text-charcoal font-bold mr-4 transition-colors w-9 h-9 flex items-center justify-center"
-          onClick={() => router.push(`/app/courses/${lesson.courseId}`)}
-        >
-          <XIcon size={28} />
-        </button>
-      </div>
-      <div className="flex-1 w-full max-w-2xl mx-auto px-6 pt-6 md:pt-10 pb-48 an-fi">
+    <LessonShell
+      footer={
+        <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent">
+          <LessonPrimaryButton
+            disabled={firstStep === null || isSavingStart}
+            onClick={handleStart}
+          >
+            {isSavingStart ? "저장 중" : "시작하기"}
+          </LessonPrimaryButton>
+        </div>
+      }
+      header={
+        <LessonProgressHeader
+          currentStepNumber={0}
+          onExit={() => router.push(`/app/courses/${lesson.courseId}`)}
+          progress={0}
+          totalStepCount={lesson.steps.length}
+        />
+      }
+    >
+      <div className="an-fi">
         {lesson.category === null ? null : (
           <div
             className="font-bold text-muted tracking-widest mb-4"
@@ -290,17 +297,86 @@ export function LessonExperience({
           </p>
         )}
       </div>
-      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
-        <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent pointer-events-auto">
-          <LessonPrimaryButton
-            disabled={firstStep === null || isSavingStart}
-            onClick={handleStart}
-          >
-            {isSavingStart ? "저장 중" : "시작하기"}
-          </LessonPrimaryButton>
+    </LessonShell>
+  )
+}
+
+function LessonShell({
+  children,
+  contentRef,
+  footer,
+  header,
+}: {
+  readonly children: ReactNode
+  readonly contentRef?: React.Ref<HTMLElement>
+  readonly footer: ReactNode
+  readonly header: ReactNode
+}) {
+  return (
+    <div className="flex h-dvh min-h-screen w-full flex-col overflow-hidden bg-cream text-charcoal">
+      {header}
+      <main
+        aria-label="레슨 콘텐츠"
+        className="min-h-0 flex-1 overflow-y-auto"
+        ref={contentRef}
+      >
+        <div className="w-full max-w-2xl mx-auto px-6 pt-6 md:pt-10 pb-8">
+          {children}
         </div>
-      </div>
+      </main>
+      <footer
+        aria-label="레슨 행동"
+        className="shrink-0 w-full flex justify-center"
+      >
+        {footer}
+      </footer>
     </div>
+  )
+}
+
+function LessonProgressHeader({
+  currentStepNumber,
+  onExit,
+  progress,
+  totalStepCount,
+}: {
+  readonly currentStepNumber: number
+  readonly onExit: () => void
+  readonly progress: number
+  readonly totalStepCount: number
+}) {
+  return (
+    <header
+      aria-label="레슨 진행"
+      className="shrink-0 w-full max-w-3xl mx-auto flex items-center px-6 pt-6 pb-4"
+    >
+      <button
+        aria-label="나가기"
+        className="text-muted hover:text-charcoal font-bold mr-4 transition-colors w-9 h-9 flex items-center justify-center"
+        onClick={onExit}
+      >
+        <XIcon size={28} />
+      </button>
+      <div
+        aria-label="레슨 진행률"
+        aria-valuemax={100}
+        aria-valuemin={0}
+        aria-valuenow={Math.round(progress)}
+        className="flex-1 bg-surface h-4 rounded-full overflow-hidden"
+        role="progressbar"
+      >
+        <div
+          className="bg-primary h-full rounded-full transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <div
+        className="ml-4 font-bold text-muted"
+        style={{ fontSize: "0.875rem" }}
+      >
+        {currentStepNumber}/{totalStepCount}
+      </div>
+    </header>
   )
 }
 
@@ -561,94 +637,6 @@ function getNextCourseLesson(
   return lessons[lessonIndex + 1]?.lesson ?? null
 }
 
-function getCanSubmit(
-  step: LessonStep,
-  payload: LessonStepAnswerPayload | undefined
-): boolean {
-  switch (step.type) {
-    case "AI_FEEDBACK":
-      return false
-    case "CATEGORIZE":
-      return isValidLessonStepAnswerPayload(step, payload)
-    case "FILL_BLANK":
-      return isValidLessonStepAnswerPayload(step, payload)
-    case "MATCH":
-      return isValidLessonStepAnswerPayload(step, payload)
-    case "MULTIPLE_CHOICE":
-      return isValidLessonStepAnswerPayload(step, payload)
-    case "ORDER":
-      return isValidLessonStepAnswerPayload(step, payload)
-    case "SELECT":
-      return isValidLessonStepAnswerPayload(step, payload)
-    case "WRITE":
-      return isValidLessonStepAnswerPayload(step, payload)
-    case "COMPARE":
-    case "READING":
-      return true
-  }
-}
-
-function isCheckStep(step: LessonStep): boolean {
-  return (
-    step.type === "FILL_BLANK" ||
-    step.type === "MATCH" ||
-    step.type === "MULTIPLE_CHOICE" ||
-    step.type === "ORDER" ||
-    step.type === "SELECT"
-  )
-}
-
-function getCheckResult(
-  step: LessonStep,
-  payload: LessonStepAnswerPayload | undefined
-): LessonCheckedState {
-  switch (step.type) {
-    case "FILL_BLANK":
-      return payload?.type === "FILL_BLANK" &&
-        JSON.stringify(payload.selectedWords) === JSON.stringify(step.answer)
-        ? "correct"
-        : "wrong"
-    case "MATCH":
-      return payload?.type === "MATCH" &&
-        step.pairs.every((pair) =>
-          payload.pairs.some(
-            (selectedPair) =>
-              selectedPair.left === pair.left &&
-              selectedPair.right === pair.right
-          )
-        )
-        ? "correct"
-        : "wrong"
-    case "MULTIPLE_CHOICE":
-      return payload?.type === "MULTIPLE_CHOICE" &&
-        payload.selectedOptionId === step.correct
-        ? "correct"
-        : "wrong"
-    case "ORDER":
-      return payload?.type === "ORDER" &&
-        JSON.stringify(payload.orderedItems) === JSON.stringify(step.correct)
-        ? "correct"
-        : "wrong"
-    case "SELECT": {
-      const selected =
-        payload?.type === "SELECT"
-          ? new Set(payload.selectedIndexes)
-          : new Set<number>()
-      const correct = new Set(step.correct)
-      const missed = [...correct].filter((index) => !selected.has(index))
-      const wrong = [...selected].filter((index) => !correct.has(index))
-
-      return {
-        explanation: step.explanation,
-        missed,
-        wrong,
-      }
-    }
-    default:
-      return "correct"
-  }
-}
-
 function getCheckedFeedback(
   step: LessonStep,
   checked: Exclude<LessonCheckedState, false>
@@ -659,7 +647,7 @@ function getCheckedFeedback(
 } {
   if (checked === "correct") {
     return {
-      body: getStepExplanation(step),
+      body: getLessonStepExplanation(step),
       isCorrect: true,
       title: "완벽해요!",
     }
@@ -668,8 +656,8 @@ function getCheckedFeedback(
   if (checked === "wrong") {
     return {
       body:
-        getStepWrongText(step) ??
-        getStepExplanation(step) ??
+        getLessonStepWrongText(step) ??
+        getLessonStepExplanation(step) ??
         "다시 생각해보세요.",
       isCorrect: false,
       title: "아쉽지만 달라요",
@@ -687,51 +675,20 @@ function getCheckedFeedback(
   }
 }
 
-function getStepExplanation(step: LessonStep): string {
-  switch (step.type) {
-    case "CATEGORIZE":
-    case "FILL_BLANK":
-    case "MATCH":
-    case "MULTIPLE_CHOICE":
-    case "ORDER":
-    case "SELECT":
-      return step.explanation
-    case "AI_FEEDBACK":
-    case "COMPARE":
-    case "READING":
-    case "WRITE":
-      return ""
-  }
-}
-
-function getStepWrongText(step: LessonStep): string | undefined {
-  return step.type === "MULTIPLE_CHOICE" ? step.wrong : undefined
-}
-
-function getStepActionLabel(step: Lesson["steps"][number]): string {
-  if (step.type === "READING" || step.type === "COMPARE") {
-    return "이해했어요"
-  }
-
-  if (
-    step.type === "MULTIPLE_CHOICE" ||
-    step.type === "FILL_BLANK" ||
-    step.type === "SELECT" ||
-    step.type === "ORDER" ||
-    step.type === "MATCH"
-  ) {
-    return "확인하기"
-  }
-
-  return "다음으로 →"
-}
-
 function scrollWindowToTop() {
   if (navigator.userAgent.toLowerCase().includes("jsdom")) {
     return
   }
 
   window.scrollTo(0, 0)
+}
+
+function clampLessonStepIndex(lesson: Lesson, stepIndex: number): number {
+  if (lesson.steps.length === 0) {
+    return 0
+  }
+
+  return Math.min(lesson.steps.length - 1, Math.max(0, stepIndex))
 }
 
 function cx(...classes: Array<false | null | string | undefined>): string {

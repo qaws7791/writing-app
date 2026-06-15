@@ -1,14 +1,19 @@
 import { z, type ZodError } from "zod"
 
+import {
+  localRuntimeDefaults,
+  localRuntimePorts,
+} from "@workspace/env/local-runtime-defaults"
+
 const nodeEnvSchema = z
   .enum(["development", "test", "production"])
   .default("development")
 const portSchema = z.coerce.number().int().min(1).max(65535)
 
 export const appEnvSchema = z.object({
-  ADMIN_API_PORT: portSchema.default(3002),
-  ADMIN_ORIGIN: z.url().default("http://localhost:3003"),
-  API_PORT: portSchema.default(3001),
+  ADMIN_API_PORT: portSchema.default(localRuntimePorts.adminApi),
+  ADMIN_ORIGIN: z.url().default(localRuntimeDefaults.adminWebOrigin),
+  API_PORT: portSchema.default(localRuntimePorts.learnerApi),
   BETTER_AUTH_URL: z.url().optional(),
   BETTER_AUTH_SECRET: z.string().min(32),
   DATABASE_URL: z.string().min(1).optional(),
@@ -17,7 +22,7 @@ export const appEnvSchema = z.object({
   NODE_ENV: nodeEnvSchema,
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_MODEL: z.string().min(1).default("gpt-5.2"),
-  WEB_ORIGIN: z.url().default("http://localhost:3000"),
+  WEB_ORIGIN: z.url().default(localRuntimeDefaults.learnerWebOrigin),
 })
 
 export type AppEnv = z.infer<typeof appEnvSchema>

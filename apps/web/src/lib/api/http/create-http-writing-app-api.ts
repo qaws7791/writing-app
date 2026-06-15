@@ -155,6 +155,7 @@ const apiProfileResponseSchema = z.object({
 
 const progressLessonSchema = z.object({
   courseId: z.string().optional(),
+  currentStepIndex: nonNegativeIntegerSchema.nullable(),
   estimatedMinutes: z.number().int().positive(),
   id: z.string(),
   status: z.enum(["available", "completed", "locked"]),

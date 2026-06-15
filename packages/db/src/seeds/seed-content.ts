@@ -1,3 +1,5 @@
+import { contentStatuses } from "@workspace/core/status"
+
 export type KwepStepType =
   | "reading"
   | "compare"
@@ -55,7 +57,7 @@ export type CourseSeedRow = {
   readonly title: string
   readonly description: string
   readonly category: string
-  readonly status: "active"
+  readonly status: typeof contentStatuses.active
   readonly sortOrder: number
   readonly curriculumRevision: number
 }
@@ -64,7 +66,7 @@ export type CourseUnitSeedRow = {
   readonly id: string
   readonly courseId: string
   readonly title: string
-  readonly status: "active"
+  readonly status: typeof contentStatuses.active
   readonly sortOrder: number
 }
 
@@ -77,7 +79,7 @@ export type LessonSeedRow = {
   readonly description: string | null
   readonly estimatedMinutes: number
   readonly summaryJson: string
-  readonly status: "active"
+  readonly status: typeof contentStatuses.active
   readonly sortOrder: number
 }
 
@@ -86,7 +88,7 @@ export type LessonStepSeedRow = {
   readonly lessonId: string
   readonly type: StandardLessonStepType
   readonly contentJson: string
-  readonly status: "active"
+  readonly status: typeof contentStatuses.active
   readonly sortOrder: number
 }
 
@@ -130,7 +132,7 @@ export function createContentSeedRows(
       title: course.title,
       description: course.desc,
       category: course.cat,
-      status: "active",
+      status: contentStatuses.active,
       sortOrder: courseIndex + 1,
       curriculumRevision: 0,
     })
@@ -140,7 +142,7 @@ export function createContentSeedRows(
         id: unit.id,
         courseId: course.id,
         title: unit.title,
-        status: "active",
+        status: contentStatuses.active,
         sortOrder: unitIndex + 1,
       })
 
@@ -154,7 +156,7 @@ export function createContentSeedRows(
           description: lesson.desc ?? null,
           estimatedMinutes: parseEstimatedMinutes(lesson.time),
           summaryJson: JSON.stringify(lesson.summary ?? []),
-          status: "active",
+          status: contentStatuses.active,
           sortOrder: lessonIndex + 1,
         })
 
@@ -164,7 +166,7 @@ export function createContentSeedRows(
             lessonId: lesson.id,
             type: toStandardLessonStepType(step.type),
             contentJson: JSON.stringify(step),
-            status: "active",
+            status: contentStatuses.active,
             sortOrder: stepIndex + 1,
           })
         })

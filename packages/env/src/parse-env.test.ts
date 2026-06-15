@@ -1,24 +1,41 @@
 import { describe, expect, it } from "vitest"
 
+import {
+  localRuntimeDefaults,
+  localRuntimePorts,
+} from "@/local-runtime-defaults"
 import { parseEnv } from "@/parse-env"
 
 const validSecret = "x".repeat(32)
 
 describe("env parser", () => {
+  it("로컬 런타임 기본값은 중앙 계약을 따른다", () => {
+    expect(
+      parseEnv({
+        BETTER_AUTH_SECRET: validSecret,
+      })
+    ).toMatchObject({
+      ADMIN_API_PORT: localRuntimePorts.adminApi,
+      ADMIN_ORIGIN: localRuntimeDefaults.adminWebOrigin,
+      API_PORT: localRuntimePorts.learnerApi,
+      WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
+    })
+  })
+
   it("문자열 환경 변수를 런타임 설정으로 검증하고 변환한다", () => {
     expect(
       parseEnv({
         ADMIN_API_PORT: "4002",
-        ADMIN_ORIGIN: "http://localhost:3003",
+        ADMIN_ORIGIN: localRuntimeDefaults.adminWebOrigin,
         API_PORT: "4001",
         BETTER_AUTH_SECRET: validSecret,
         DATABASE_URL: ":memory:",
         NODE_ENV: "test",
-        WEB_ORIGIN: "http://localhost:3000",
+        WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
       })
     ).toEqual({
       ADMIN_API_PORT: 4002,
-      ADMIN_ORIGIN: "http://localhost:3003",
+      ADMIN_ORIGIN: localRuntimeDefaults.adminWebOrigin,
       API_PORT: 4001,
       BETTER_AUTH_URL: undefined,
       BETTER_AUTH_SECRET: validSecret,
@@ -28,7 +45,7 @@ describe("env parser", () => {
       NODE_ENV: "test",
       OPENAI_API_KEY: undefined,
       OPENAI_MODEL: "gpt-5.2",
-      WEB_ORIGIN: "http://localhost:3000",
+      WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
     })
   })
 

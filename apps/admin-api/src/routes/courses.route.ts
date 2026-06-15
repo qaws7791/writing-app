@@ -9,6 +9,7 @@ import {
 } from "@/routes/route-helpers"
 import {
   adminCourseListStatusFilterSchema,
+  type AdminCourseListStatusFilter,
   type AdminService,
 } from "@workspace/core/admin"
 
@@ -113,7 +114,7 @@ function parseCoursesQuery(input: {
   readonly page: number
   readonly pageSize: number
   readonly query: string
-  readonly status: "active" | "all" | "archived"
+  readonly status: AdminCourseListStatusFilter
 } | null {
   const page = parsePositiveIntegerParam({
     fallback: defaultPage,

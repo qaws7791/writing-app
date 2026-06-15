@@ -34,18 +34,21 @@ describe("플랫폼 API progress route", () => {
           id: "c1",
           lessons: [
             {
+              currentStepIndex: 0,
               estimatedMinutes: 5,
               id: "l1",
               status: "completed",
               title: "좋은 문장이란 무엇인가",
             },
             {
+              currentStepIndex: 2,
               estimatedMinutes: 10,
               id: "l-new",
               status: "available",
               title: "새 학습 활동 둘러보기",
             },
             {
+              currentStepIndex: null,
               estimatedMinutes: 5,
               id: "l2",
               status: "locked",
@@ -55,6 +58,7 @@ describe("플랫폼 API progress route", () => {
           nextLessons: [
             {
               courseId: "c1",
+              currentStepIndex: 2,
               estimatedMinutes: 10,
               id: "l-new",
               status: "available",
@@ -162,6 +166,18 @@ function createDependencies(): ApiDependencies {
         return {
           completedLessonIds: ["l1"],
           currentStreakDays: 2,
+          lessonProgress: [
+            {
+              currentStepIndex: 0,
+              lessonId: "l1",
+              status: "completed",
+            },
+            {
+              currentStepIndex: 2,
+              lessonId: "l-new",
+              status: "in_progress",
+            },
+          ],
         }
       },
     },

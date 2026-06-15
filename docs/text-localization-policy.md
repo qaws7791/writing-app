@@ -10,7 +10,7 @@
 
 - `apps/web`의 학습자 화면 텍스트
 - `apps/admin`의 관리자 화면 텍스트
-- `apps/api`와 `apps/admin-api`의 오류 응답 `message`
+- `apps/api`와 `apps/admin-api`가 반환하는 오류 `code`의 화면 표시 메시지
 - `packages/core`와 `packages/db`에서 생성하는 도메인 오류 메시지
 - `packages/ui`의 기본 접근성 텍스트와 보조 텍스트
 - 문서 앱과 생성된 API 타입에 포함되는 사용자 대상 메시지
@@ -28,7 +28,7 @@
 
 ## 구현 규칙
 
-- API 오류 응답의 `message`는 한국어 문장으로 작성한다.
+- API 오류 응답은 안정적인 오류 `code`만 반환하고, 화면 표시 메시지는 `apps/web`와 `apps/admin`에서 한국어로 변환한다.
 - 클라이언트는 알 수 없는 오류도 한국어 fallback 메시지로 표시한다.
 - 접근성 전용 텍스트(`aria-label`, `sr-only`, dialog title)도 한국어로 작성한다.
 - 테스트 fixture와 기대값은 실제 사용자 메시지와 같은 한국어를 사용한다.

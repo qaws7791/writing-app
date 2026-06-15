@@ -1,6 +1,8 @@
 import { and, eq, sql } from "drizzle-orm"
+import { lessonProgressStatuses } from "@workspace/core/status"
 
 import type { KwepDatabase } from "@workspace/db/client"
+import { toLearningDateKey } from "@workspace/db/repositories/activity-date"
 import {
   learnerActivityDays,
   learnerLessonAnswers,
@@ -56,7 +58,7 @@ function saveLessonProgress(
       currentStepIndex: input.currentStepIndex,
       lessonId: input.lessonId,
       startedAt: input.occurredAt,
-      status: "in_progress",
+      status: lessonProgressStatuses.inProgress,
       updatedAt: input.occurredAt,
       userId: input.userId,
     })
@@ -116,7 +118,8 @@ function completeLesson(db: KwepDatabase, input: CompleteLessonInput): void {
       )
     )
     .get()
-  const wasCompleted = existingProgress?.status === "completed"
+  const wasCompleted =
+    existingProgress?.status === lessonProgressStatuses.completed
 
   db.insert(learnerLessonProgress)
     .values({
@@ -124,7 +127,7 @@ function completeLesson(db: KwepDatabase, input: CompleteLessonInput): void {
       currentStepIndex: input.currentStepIndex,
       lessonId: input.lessonId,
       startedAt: input.occurredAt,
-      status: "completed",
+      status: lessonProgressStatuses.completed,
       updatedAt: input.occurredAt,
       userId: input.userId,
     })
@@ -132,7 +135,7 @@ function completeLesson(db: KwepDatabase, input: CompleteLessonInput): void {
       set: {
         completedAt: existingProgress?.completedAt ?? input.occurredAt,
         currentStepIndex: input.currentStepIndex,
-        status: "completed",
+        status: lessonProgressStatuses.completed,
         updatedAt: input.occurredAt,
       },
       target: [learnerLessonProgress.userId, learnerLessonProgress.lessonId],
@@ -158,7 +161,7 @@ function recordActivityDay(
 ): void {
   db.insert(learnerActivityDays)
     .values({
-      activityDate: toActivityDate(input.occurredAt),
+      activityDate: toLearningDateKey(input.occurredAt),
       completedLessons: input.completedLessons,
       firstActivityAt: input.occurredAt,
       lastActivityAt: input.occurredAt,
@@ -174,8 +177,4 @@ function recordActivityDay(
       target: [learnerActivityDays.userId, learnerActivityDays.activityDate],
     })
     .run()
-}
-
-function toActivityDate(date: Date): string {
-  return date.toISOString().slice(0, 10)
 }

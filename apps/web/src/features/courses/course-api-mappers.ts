@@ -59,6 +59,7 @@ export function mapProgress(response: ApiProgressResponse): ProgressCourseList {
     courses: response.courses.map((course) => ({
       id: course.id,
       lessons: course.lessons.map((lesson) => ({
+        currentStepIndex: lesson.currentStepIndex,
         estimatedMinutes: lesson.estimatedMinutes,
         id: lesson.id,
         status: lesson.status,
@@ -66,6 +67,7 @@ export function mapProgress(response: ApiProgressResponse): ProgressCourseList {
       })),
       nextLessons: course.nextLessons.map((lesson) => ({
         courseId: lesson.courseId,
+        currentStepIndex: lesson.currentStepIndex,
         estimatedMinutes: lesson.estimatedMinutes,
         id: lesson.id,
         status: lesson.status,

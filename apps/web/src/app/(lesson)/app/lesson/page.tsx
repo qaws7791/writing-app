@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation"
 
 import { AppRouteNotice } from "@/components/app-route-notice"
+import type { ProgressCourseList } from "@/features/courses/course-types"
 import { LessonExperience } from "@/features/lessons/lesson-experience"
+import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 import { createLoginPagePath } from "@/lib/auth/auth-navigation"
 import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
-import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
 type LessonRouteProps = {
   readonly searchParams: Promise<{
@@ -49,9 +50,43 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
   }
 
   const lesson = lessonResult.value
-  const courseDetailResult = await api.getCourseDetail(lesson.courseId)
+  const [courseDetailResult, progressResult] = await Promise.all([
+    api.getCourseDetail(lesson.courseId),
+    api.getProgress(),
+  ])
   const courseDetail =
     courseDetailResult.status === "ok" ? courseDetailResult.value : undefined
+  const initialProgress =
+    progressResult.status === "ok"
+      ? resolveInitialLessonProgress(progressResult.value, lesson.id)
+      : undefined
 
-  return <LessonExperience courseDetail={courseDetail} lesson={lesson} />
+  return (
+    <LessonExperience
+      courseDetail={courseDetail}
+      initialProgress={initialProgress}
+      lesson={lesson}
+    />
+  )
+}
+
+function resolveInitialLessonProgress(
+  progress: ProgressCourseList,
+  lessonId: string
+): { readonly currentStepIndex: number } | undefined {
+  const progressLesson = progress.courses
+    .flatMap((course) => course.lessons)
+    .find((lesson) => lesson.id === lessonId)
+
+  if (
+    progressLesson === undefined ||
+    progressLesson.status === "completed" ||
+    progressLesson.currentStepIndex === null
+  ) {
+    return undefined
+  }
+
+  return {
+    currentStepIndex: progressLesson.currentStepIndex,
+  }
 }

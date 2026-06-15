@@ -92,7 +92,10 @@ describe("HTTP WritingAppApi", () => {
 
     await expect(
       api.saveLessonAnswer({
-        answer: "나의 답변",
+        answer: {
+          text: "나의 답변",
+          type: "WRITE",
+        },
         lessonId: "l1",
         stepId: "s1",
       })
@@ -128,7 +131,10 @@ describe("HTTP WritingAppApi", () => {
     })
     expect(bodies).toEqual([
       {
-        answer: "나의 답변",
+        answer: {
+          text: "나의 답변",
+          type: "WRITE",
+        },
         lessonId: "l1",
         stepId: "s1",
       },

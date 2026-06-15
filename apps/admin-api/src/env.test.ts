@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { localRuntimeDefaults, localRuntimePorts } from "@workspace/env"
 
 import { parseAdminApiEnv } from "@/env"
 
@@ -7,13 +8,13 @@ describe("어드민 API env", () => {
     expect(
       parseAdminApiEnv({
         ADMIN_API_PORT: "4102",
-        ADMIN_ORIGIN: "http://localhost:3003",
+        ADMIN_ORIGIN: localRuntimeDefaults.adminWebOrigin,
         BETTER_AUTH_SECRET: "x".repeat(32),
         DATABASE_URL: ":memory:",
         NODE_ENV: "test",
       })
     ).toEqual({
-      adminOrigin: "http://localhost:3003",
+      adminOrigin: localRuntimeDefaults.adminWebOrigin,
       databaseUrl: ":memory:",
       nodeEnv: "test",
       port: 4102,
@@ -24,15 +25,15 @@ describe("어드민 API env", () => {
     expect(
       parseAdminApiEnv({
         ADMIN_BETTER_AUTH_SECRET: "x".repeat(32),
-        ADMIN_CORS_ORIGIN: "http://localhost:3001",
+        ADMIN_CORS_ORIGIN: localRuntimeDefaults.adminWebOrigin,
         DATABASE_URL: ":memory:",
         NODE_ENV: "test",
       })
     ).toEqual({
-      adminOrigin: "http://localhost:3001",
+      adminOrigin: localRuntimeDefaults.adminWebOrigin,
       databaseUrl: ":memory:",
       nodeEnv: "test",
-      port: 3002,
+      port: localRuntimePorts.adminApi,
     })
   })
 })

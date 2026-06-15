@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest"
 
 import { createApp, type AdminApiDependencies } from "@/app"
+import {
+  createTestAdminApiDependencies,
+  testAdminNow,
+} from "@/routes/test-dependencies"
 import type {
-  AdminAnalyticsDto,
   AdminContentResetResultDto,
-  AdminDashboardDto,
-  AdminLessonAnalyticsPageDto,
   AdminSettingsDto,
-  AdminUserDetailDto,
-  AdminUserListDto,
 } from "@workspace/core/admin"
 
 const settings: AdminSettingsDto = {
@@ -204,68 +203,33 @@ function createDependencies({
 }: {
   readonly role?: "operator" | "owner"
 } = {}): AdminApiDependencies {
-  return {
-    adminOrigin: "http://localhost:3003",
+  return createTestAdminApiDependencies({
     dashboardService: {
-      async archiveCourse() {
-        throw new Error("unexpected archive course request")
-      },
-      async createCourse() {
-        throw new Error("unexpected create course request")
-      },
-      async deleteUser() {
-        throw new Error("unexpected delete user request")
-      },
-      async getAnalytics(): Promise<AdminAnalyticsDto> {
-        throw new Error("unexpected analytics request")
-      },
-      async getDashboard(): Promise<AdminDashboardDto> {
-        throw new Error("unexpected dashboard request")
-      },
-      async getCourseEditor() {
-        throw new Error("unexpected course editor request")
-      },
-      async getCourses() {
-        throw new Error("unexpected course list request")
-      },
-      async getLessonAnalytics(): Promise<AdminLessonAnalyticsPageDto> {
-        throw new Error("unexpected lesson analytics request")
-      },
       async getSettings() {
         return settings
       },
-      async getUser(): Promise<AdminUserDetailDto | null> {
-        throw new Error("unexpected user detail request")
-      },
-      async getUsers(): Promise<AdminUserListDto> {
-        throw new Error("unexpected user list request")
-      },
       async resetContent(input) {
-        expect(input.now).toEqual(new Date("2026-06-14T03:00:00.000Z"))
+        expect(input.now).toEqual(testAdminNow)
         return contentResetResult
       },
       async updateLegalSettings(input) {
         expect(input).toEqual({
-          now: new Date("2026-06-14T03:00:00.000Z"),
+          now: testAdminNow,
           privacy: "개인정보처리방침",
           terms: "이용약관",
         })
+
         return settings
       },
       async updateNoticeSettings(input) {
         expect(input).toEqual({
           announce: "공지 내용",
           banner: "새 강의가 추가되었어요!",
-          now: new Date("2026-06-14T03:00:00.000Z"),
+          now: testAdminNow,
         })
+
         return settings
       },
-      async updateUserStatus() {
-        throw new Error("unexpected user status request")
-      },
-    },
-    now() {
-      return new Date("2026-06-14T03:00:00.000Z")
     },
     sessionResolver: {
       async resolveSession(token) {
@@ -283,5 +247,5 @@ function createDependencies({
         }
       },
     },
-  }
+  })
 }

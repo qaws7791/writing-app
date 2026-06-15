@@ -8,10 +8,21 @@ import type {
   CourseSummaryDto,
   LessonSummaryDto,
 } from "@workspace/core/content"
+import {
+  learnerAccountStatuses,
+  type LessonProgressStatus as PersistedLessonProgressStatus,
+  lessonProgressStatuses,
+} from "@workspace/core/status"
 
 export type LearnerProgressSnapshot = {
-  readonly completedLessonIds: readonly string[]
   readonly currentStreakDays: number
+  readonly lessonProgress: readonly LearnerLessonProgressSnapshot[]
+}
+
+export type LearnerLessonProgressSnapshot = {
+  readonly currentStepIndex: number
+  readonly lessonId: string
+  readonly status: PersistedLessonProgressStatus
 }
 
 export type ProgressReader = {
@@ -20,7 +31,7 @@ export type ProgressReader = {
   ) => Promise<LearnerProgressSnapshot>
 }
 
-export type LessonProgressStatus = "available" | "completed" | "locked"
+export type LessonAvailabilityStatus = "available" | "completed" | "locked"
 
 export type ProgressRouteDependencies = {
   readonly contentRepository: ContentRepository
@@ -48,7 +59,7 @@ export function createProgressRoute({
       return context.json(errorResponse("unauthorized"), 401)
     }
 
-    if (session.user.status !== "active") {
+    if (session.user.status !== learnerAccountStatuses.active) {
       return context.json(errorResponse("account_unavailable"), 403)
     }
 
@@ -64,11 +75,7 @@ export function createProgressRoute({
           return null
         }
 
-        return toCourseProgress(
-          course,
-          courseDetail,
-          progress.completedLessonIds
-        )
+        return toCourseProgress(course, courseDetail, progress.lessonProgress)
       })
     )
 
@@ -86,15 +93,29 @@ export function createProgressRoute({
 function toCourseProgress(
   course: CourseSummaryDto,
   courseDetail: CourseDetailDto,
-  completedLessonIds: readonly string[]
+  progressSnapshots: readonly LearnerLessonProgressSnapshot[]
 ) {
-  const completedLessonIdSet = new Set(completedLessonIds)
+  const progressByLessonId = new Map(
+    progressSnapshots.map((progress) => [progress.lessonId, progress])
+  )
+  const completedLessonIdSet = new Set(
+    progressSnapshots
+      .filter(
+        (progress) => progress.status === lessonProgressStatuses.completed
+      )
+      .map((progress) => progress.lessonId)
+  )
   const lessons = courseDetail.units.flatMap((unit) => unit.lessons)
   const firstIncompleteLesson = lessons.find(
     (lesson) => !completedLessonIdSet.has(lesson.id)
   )
   const lessonProgress = lessons.map((lesson) =>
-    toLessonProgress(lesson, completedLessonIdSet, firstIncompleteLesson?.id)
+    toLessonProgress(
+      lesson,
+      progressByLessonId.get(lesson.id),
+      completedLessonIdSet,
+      firstIncompleteLesson?.id
+    )
   )
   const completedLessonCount = lessonProgress.filter(
     (lesson) => lesson.status === "completed"
@@ -111,6 +132,7 @@ function toCourseProgress(
       .filter((lesson) => lesson.status === "available")
       .map((lesson) => ({
         courseId: course.id,
+        currentStepIndex: lesson.currentStepIndex,
         estimatedMinutes: lesson.estimatedMinutes,
         id: lesson.id,
         status: lesson.status,
@@ -123,10 +145,12 @@ function toCourseProgress(
 
 function toLessonProgress(
   lesson: LessonSummaryDto,
+  progress: LearnerLessonProgressSnapshot | undefined,
   completedLessonIds: ReadonlySet<string>,
   firstIncompleteLessonId: string | undefined
 ) {
   return {
+    currentStepIndex: progress?.currentStepIndex ?? null,
     estimatedMinutes: lesson.estimatedMinutes,
     id: lesson.id,
     status: getLessonStatus(
@@ -142,7 +166,7 @@ function getLessonStatus(
   lessonId: string,
   completedLessonIds: ReadonlySet<string>,
   firstIncompleteLessonId: string | undefined
-): LessonProgressStatus {
+): LessonAvailabilityStatus {
   if (completedLessonIds.has(lessonId)) {
     return "completed"
   }

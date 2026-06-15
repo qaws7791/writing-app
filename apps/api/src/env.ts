@@ -1,4 +1,8 @@
-import { parseEnv, type AppEnvInput } from "@workspace/env"
+import {
+  createLocalRuntimeUrl,
+  parseEnv,
+  type AppEnvInput,
+} from "@workspace/env"
 
 export type ApiEnv = {
   readonly authBaseUrl: string
@@ -20,7 +24,7 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
   })
 
   return {
-    authBaseUrl: env.BETTER_AUTH_URL ?? `http://localhost:${env.API_PORT}`,
+    authBaseUrl: env.BETTER_AUTH_URL ?? createLocalRuntimeUrl(env.API_PORT),
     databaseUrl: env.DATABASE_URL,
     googleClientId: env.GOOGLE_CLIENT_ID,
     googleClientSecret: env.GOOGLE_CLIENT_SECRET,

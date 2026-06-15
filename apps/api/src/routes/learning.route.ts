@@ -1,18 +1,19 @@
 import { Hono } from "hono"
 import { z } from "zod"
 import {
-  jsonValueSchema,
+  learningAnswerSchema,
   learnerIdSchema,
   type LearningService,
 } from "@workspace/core/learning"
 import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
+import { learnerAccountStatuses } from "@workspace/core/status"
 
 import { readBearerToken, type SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
 import { readJsonBody } from "@/routes/route-helpers"
 
 const saveAnswerBodySchema = z.object({
-  answer: jsonValueSchema,
+  answer: learningAnswerSchema,
   lessonId: lessonIdSchema,
   stepId: lessonStepIdSchema,
 })
@@ -47,7 +48,7 @@ export function createLearningRoute({
       return context.json(errorResponse("unauthorized"), 401)
     }
 
-    if (session.user.status !== "active") {
+    if (session.user.status !== learnerAccountStatuses.active) {
       return context.json(errorResponse("account_unavailable"), 403)
     }
 
@@ -93,7 +94,7 @@ export function createLearningRoute({
       return context.json(errorResponse("unauthorized"), 401)
     }
 
-    if (session.user.status !== "active") {
+    if (session.user.status !== learnerAccountStatuses.active) {
       return context.json(errorResponse("account_unavailable"), 403)
     }
 

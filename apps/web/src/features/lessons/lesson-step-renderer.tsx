@@ -13,6 +13,11 @@ import {
   type LessonAnswerChange,
   type LessonStepAnswerPayload,
 } from "@/features/lessons/lesson-logic"
+import {
+  getLessonStepDescription,
+  getLessonStepTitle,
+  isLessonStepStandalone,
+} from "@/features/lessons/lesson-step-policy"
 import type {
   AiFeedbackStep,
   CategorizeStep,
@@ -72,13 +77,7 @@ export function LessonStepRenderer({
   stepIndex,
   totalSteps,
 }: LessonStepRendererProps) {
-  if (
-    step.type === "CATEGORIZE" ||
-    step.type === "MATCH" ||
-    step.type === "MULTIPLE_CHOICE" ||
-    step.type === "READING" ||
-    step.type === "WRITE"
-  ) {
+  if (isLessonStepStandalone(step)) {
     return renderStepContent(step, {
       checked,
       onAiFeedbackRequest,
@@ -97,9 +96,9 @@ export function LessonStepRenderer({
       <Card>
         <CardHeader>
           <CardTitle as="h1" id={headingId}>
-            {getStepTitle(step)}
+            {getLessonStepTitle(step)}
           </CardTitle>
-          <CardDescription>{getStepDescription(step)}</CardDescription>
+          <CardDescription>{getLessonStepDescription(step)}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {renderStepContent(step, {
@@ -117,46 +116,6 @@ export function LessonStepRenderer({
       </Card>
     </section>
   )
-}
-
-function getStepTitle(step: LessonStep): string {
-  switch (step.type) {
-    case "AI_FEEDBACK":
-      return "AI 코칭"
-    case "CATEGORIZE":
-    case "COMPARE":
-    case "MATCH":
-    case "ORDER":
-    case "READING":
-      return step.title
-    case "FILL_BLANK":
-      return "빈칸 채우기"
-    case "MULTIPLE_CHOICE":
-    case "SELECT":
-      return step.question
-    case "WRITE":
-      return step.title ?? "직접 써보기"
-  }
-}
-
-function getStepDescription(step: LessonStep): string {
-  switch (step.type) {
-    case "AI_FEEDBACK":
-      return step.focus
-    case "CATEGORIZE":
-    case "MATCH":
-    case "READING":
-    case "WRITE":
-      return step.guide
-    case "COMPARE":
-      return step.analysis
-    case "FILL_BLANK":
-    case "ORDER":
-    case "SELECT":
-      return step.explanation
-    case "MULTIPLE_CHOICE":
-      return "답을 선택하면 해설을 확인합니다."
-  }
 }
 
 function renderStepContent(
@@ -1052,10 +1011,7 @@ function CategorizeAnswer({
         ) : null}
       </div>
       {checked === false ? (
-        <div
-          className="absolute left-0 right-0 px-6 pt-5 pb-3 bg-gradient-to-t from-cream via-cream to-transparent"
-          style={{ bottom: "128px" }}
-        >
+        <div className="-mx-6 mt-auto shrink-0 px-6 pt-5 pb-3 bg-gradient-to-t from-cream via-cream to-transparent">
           <div
             className="font-bold text-muted mb-2 tracking-widest"
             style={{ fontSize: "0.75rem" }}

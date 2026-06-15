@@ -1,7 +1,7 @@
 export type ErrorCode =
   | "account_unavailable"
   | "attempt_limit_exceeded"
-  | "internal_error"
+  | "internal_server_error"
   | "invalid_request"
   | "not_found"
   | "provider_unavailable"

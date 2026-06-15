@@ -10,6 +10,9 @@ import { createKwepDatabase } from "@/client"
 import {
   authUsers,
   courses,
+  courseUnits,
+  learnerLessonAnswers,
+  learnerLessonProgress,
   learnerProfiles,
   lessons,
   lessonSteps,
@@ -48,7 +51,182 @@ describe("개발 DB seed 실행", () => {
         client.close()
       }
     } finally {
-      rmSync(tempDirectory, { force: true, recursive: true })
+      removeTempDirectory(tempDirectory)
+    }
+  })
+
+  it("seed 재실행 시 기존 학습 진행과 답변 기록을 보존한다", async () => {
+    const tempDirectory = mkdtempSync(join(tmpdir(), "kwep-seed-preserve-"))
+    const databaseUrl = join(tempDirectory, "api.sqlite")
+
+    try {
+      await seedDatabase(databaseUrl)
+
+      const client = createKwepDatabase(databaseUrl)
+
+      try {
+        const now = new Date("2026-06-15T00:00:00.000Z")
+
+        client.db
+          .insert(learnerLessonProgress)
+          .values({
+            completedAt: now,
+            currentStepIndex: 2,
+            lessonId: "l1",
+            startedAt: now,
+            status: "completed",
+            updatedAt: now,
+            userId: "user-1",
+          })
+          .run()
+
+        client.db
+          .insert(learnerLessonAnswers)
+          .values({
+            answeredAt: now,
+            answerJson: JSON.stringify({ kind: "test-answer" }),
+            lessonId: "l1",
+            stepId: "l1-s1",
+            updatedAt: now,
+            userId: "user-1",
+          })
+          .run()
+      } finally {
+        client.close()
+      }
+
+      await seedDatabase(databaseUrl)
+
+      const reseededClient = createKwepDatabase(databaseUrl)
+
+      try {
+        expect(
+          reseededClient.db.select().from(learnerLessonProgress).all()
+        ).toEqual([
+          expect.objectContaining({
+            lessonId: "l1",
+            status: "completed",
+            userId: "user-1",
+          }),
+        ])
+        expect(
+          reseededClient.db.select().from(learnerLessonAnswers).all()
+        ).toEqual([
+          expect.objectContaining({
+            answerJson: JSON.stringify({ kind: "test-answer" }),
+            lessonId: "l1",
+            stepId: "l1-s1",
+            userId: "user-1",
+          }),
+        ])
+      } finally {
+        reseededClient.close()
+      }
+    } finally {
+      removeTempDirectory(tempDirectory)
+    }
+  })
+
+  it("seed 데이터에 없는 기존 콘텐츠는 삭제하지 않고 archived 처리한다", async () => {
+    const tempDirectory = mkdtempSync(join(tmpdir(), "kwep-seed-archive-"))
+    const databaseUrl = join(tempDirectory, "api.sqlite")
+
+    try {
+      await seedDatabase(databaseUrl)
+
+      const client = createKwepDatabase(databaseUrl)
+
+      try {
+        client.db
+          .insert(courses)
+          .values({
+            category: "legacy",
+            curriculumRevision: 0,
+            description: "이전 개발 콘텐츠",
+            id: "legacy-course",
+            sortOrder: 999,
+            status: "active",
+            title: "이전 코스",
+          })
+          .run()
+        client.db
+          .insert(courseUnits)
+          .values({
+            courseId: "legacy-course",
+            id: "legacy-unit",
+            sortOrder: 1,
+            status: "active",
+            title: "이전 유닛",
+          })
+          .run()
+        client.db
+          .insert(lessons)
+          .values({
+            category: null,
+            courseId: "legacy-course",
+            description: null,
+            estimatedMinutes: 5,
+            id: "legacy-lesson",
+            sortOrder: 1,
+            status: "active",
+            summaryJson: "[]",
+            title: "이전 레슨",
+            unitId: "legacy-unit",
+          })
+          .run()
+        client.db
+          .insert(lessonSteps)
+          .values({
+            contentJson: "{}",
+            id: "legacy-step",
+            lessonId: "legacy-lesson",
+            sortOrder: 1,
+            status: "active",
+            type: "READING",
+          })
+          .run()
+      } finally {
+        client.close()
+      }
+
+      await seedDatabase(databaseUrl)
+
+      const reseededClient = createKwepDatabase(databaseUrl)
+
+      try {
+        expect(
+          reseededClient.db
+            .select()
+            .from(courses)
+            .all()
+            .find((course) => course.id === "legacy-course")
+        ).toEqual(expect.objectContaining({ status: "archived" }))
+        expect(
+          reseededClient.db
+            .select()
+            .from(courseUnits)
+            .all()
+            .find((unit) => unit.id === "legacy-unit")
+        ).toEqual(expect.objectContaining({ status: "archived" }))
+        expect(
+          reseededClient.db
+            .select()
+            .from(lessons)
+            .all()
+            .find((lesson) => lesson.id === "legacy-lesson")
+        ).toEqual(expect.objectContaining({ status: "archived" }))
+        expect(
+          reseededClient.db
+            .select()
+            .from(lessonSteps)
+            .all()
+            .find((step) => step.id === "legacy-step")
+        ).toEqual(expect.objectContaining({ status: "archived" }))
+      } finally {
+        reseededClient.close()
+      }
+    } finally {
+      removeTempDirectory(tempDirectory)
     }
   })
 
@@ -229,9 +407,18 @@ describe("개발 DB seed 실행", () => {
       }
     } finally {
       legacyClient.close(false)
-      rmSync(databaseUrl, { force: true })
-      rmSync(`${databaseUrl}-shm`, { force: true })
-      rmSync(`${databaseUrl}-wal`, { force: true })
+      removeTempDirectory(tempDirectory)
     }
   })
 })
+
+function removeTempDirectory(tempDirectory: string): void {
+  Bun.gc(true)
+
+  rmSync(tempDirectory, {
+    force: true,
+    maxRetries: 3,
+    recursive: true,
+    retryDelay: 100,
+  })
+}

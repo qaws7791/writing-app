@@ -37,6 +37,7 @@ export type CourseDetail = CourseSummary & {
 }
 
 export type ProgressLesson = {
+  readonly currentStepIndex: number | null
   readonly estimatedMinutes: number
   readonly id: string
   readonly status: LessonProgressStatus

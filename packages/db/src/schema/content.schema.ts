@@ -1,6 +1,7 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
-export const contentStatusValues = ["active", "archived"] as const
+import { contentStatuses, contentStatusValues } from "@workspace/core/status"
+export { contentStatusValues } from "@workspace/core/status"
 
 export const courses = sqliteTable("courses", {
   id: text("id").primaryKey().notNull(),
@@ -9,7 +10,7 @@ export const courses = sqliteTable("courses", {
   category: text("category").notNull(),
   status: text("status", { enum: contentStatusValues })
     .notNull()
-    .default("active"),
+    .default(contentStatuses.active),
   sortOrder: integer("sort_order").notNull(),
   curriculumRevision: integer("curriculum_revision").notNull().default(0),
 })
@@ -23,7 +24,7 @@ export const courseUnits = sqliteTable("course_units", {
   sortOrder: integer("sort_order").notNull(),
   status: text("status", { enum: contentStatusValues })
     .notNull()
-    .default("active"),
+    .default(contentStatuses.active),
 })
 
 export const lessons = sqliteTable("lessons", {
@@ -42,7 +43,7 @@ export const lessons = sqliteTable("lessons", {
   sortOrder: integer("sort_order").notNull(),
   status: text("status", { enum: contentStatusValues })
     .notNull()
-    .default("active"),
+    .default(contentStatuses.active),
 })
 
 export const lessonSteps = sqliteTable("lesson_steps", {
@@ -55,5 +56,5 @@ export const lessonSteps = sqliteTable("lesson_steps", {
   contentJson: text("content_json").notNull(),
   status: text("status", { enum: contentStatusValues })
     .notNull()
-    .default("active"),
+    .default(contentStatuses.active),
 })

@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest"
+import { localRuntimeDefaults } from "@workspace/env"
+import { z } from "zod"
 
 import { createApp, type ApiDependencies } from "@/app"
 
@@ -60,21 +62,21 @@ describe("플랫폼 API profile route", () => {
   it("브라우저 쓰기 요청 preflight에 CORS 헤더로 응답한다", async () => {
     const app = createApp({
       ...createDependencies(),
-      webOrigin: "http://localhost:3000",
+      webOrigin: localRuntimeDefaults.learnerWebOrigin,
     })
 
     const response = await app.request("/learning/answers", {
       headers: {
         "Access-Control-Request-Headers": "authorization,content-type",
         "Access-Control-Request-Method": "POST",
-        Origin: "http://localhost:3000",
+        Origin: localRuntimeDefaults.learnerWebOrigin,
       },
       method: "OPTIONS",
     })
 
     expect(response.status).toBe(204)
     expect(response.headers.get("access-control-allow-origin")).toBe(
-      "http://localhost:3000"
+      localRuntimeDefaults.learnerWebOrigin
     )
     expect(response.headers.get("access-control-allow-credentials")).toBe(
       "true"
@@ -127,6 +129,47 @@ describe("플랫폼 API profile route", () => {
         },
       })
     }
+  })
+
+  it("ZodError 예외를 invalid_request JSON 400으로 변환한다", async () => {
+    const app = createApp({
+      ...createDependencies(),
+      learningService: {
+        async completeLesson() {
+          throw new z.ZodError([])
+        },
+        async saveLessonProgress() {
+          throw new z.ZodError([])
+        },
+        async saveStepAnswer() {
+          throw new z.ZodError([])
+        },
+      },
+      now: () => new Date("2026-06-15T09:00:00.000Z"),
+    })
+
+    const response = await app.request("/learning/answers", {
+      body: JSON.stringify({
+        answer: {
+          selectedOptionId: "b",
+          type: "MULTIPLE_CHOICE",
+        },
+        lessonId: "lesson-1",
+        stepId: "step-1",
+      }),
+      headers: {
+        Authorization: "Bearer active-token",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_request",
+      },
+    })
   })
 })
 

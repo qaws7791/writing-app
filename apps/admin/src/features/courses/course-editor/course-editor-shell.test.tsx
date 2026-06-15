@@ -92,6 +92,42 @@ describe("CourseEditorShell", () => {
     expect(screen.getByText("시작 화면")).toBeVisible()
     expect(screen.getByText("7분 · 10개 스텝")).toBeVisible()
   })
+
+  it("전용 폼이 없는 스텝 타입은 generic content JSON 폼으로 렌더링한다", () => {
+    const firstUnit = course.units[0]
+    const firstLesson = firstUnit?.lessons[0]
+
+    if (firstUnit === undefined || firstLesson === undefined) {
+      throw new Error("테스트 코스 fixture에 첫 유닛과 첫 레슨이 필요합니다.")
+    }
+
+    const courseWithUnknownStep: AdminCourseDetailDto = {
+      ...course,
+      units: [
+        {
+          ...firstUnit,
+          lessons: [
+            {
+              ...firstLesson,
+              steps: [
+                step("s99", "VOICE_RECOGNITION", {
+                  prompt: "문장을 읽어보세요.",
+                }),
+              ],
+            },
+          ],
+        },
+      ],
+    }
+
+    render(<CourseEditorShell course={courseWithUnknownStep} />)
+
+    expect(screen.getByText("VOICE_RECOGNITION")).toBeVisible()
+    expect(screen.getByText("content JSON")).toBeVisible()
+    expect(
+      screen.getByDisplayValue('{"prompt":"문장을 읽어보세요."}')
+    ).toBeVisible()
+  })
 })
 
 function step(id: string, type: string, content: unknown) {
