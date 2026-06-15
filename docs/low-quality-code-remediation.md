@@ -62,3 +62,21 @@
 - 검증: `bun --filter @workspace/api test src/routes/route-helpers.test.ts src/routes/auth.route.test.ts src/routes/courses.route.test.ts src/routes/lessons.route.test.ts`
 - 검증: `bun --filter @workspace/admin-api test src/app.test.ts src/routes/courses.route.test.ts src/routes/settings.route.test.ts`
 - 검증: `bun --filter @workspace/core typecheck`
+
+## 2026-06-16 typecheck 문제 해결 시작
+
+- `@workspace/web` typecheck는 `@workspace/core/content`, `@workspace/core/ai-feedback` 모듈 해석 실패로 중단된다.
+- `@workspace/api` typecheck는 `@workspace/logger` 소스의 `hono` 타입 해석 실패로 중단된다.
+- 우선 manifest와 설치 배치를 확인해 실제 의존성 누락과 로컬 설치 상태 문제를 분리한다.
+
+## 2026-06-16 typecheck 문제 해결 완료
+
+- `apps/web/package.json`에 실제 import 대상인 `@workspace/core` 의존성을 추가했다.
+- `bun install`로 lockfile과 workspace node_modules 배치를 갱신해 `@workspace/logger`의 `hono` 타입 해석도 정상화했다.
+- 루트 typecheck에서 추가로 발견된 `packages/db/src/seeds/seed.test.ts`의 미정의 `tempDirectory` 정리 오타를 수정했다.
+- Windows sqlite 파일 잠금에 대응하도록 data 하위 테스트 DB 파일 정리를 `Bun.gc(true)`와 `rmSync` retry helper로 통일했다.
+- 검증: `bun --filter @workspace/web typecheck`
+- 검증: `bun --filter @workspace/api typecheck`
+- 검증: `bun --filter @workspace/db typecheck`
+- 검증: `bun --filter @workspace/db test src/seeds/seed.test.ts`
+- 검증: `bun typecheck`

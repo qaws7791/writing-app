@@ -140,6 +140,7 @@
       "name": "@workspace/web",
       "version": "0.0.0",
       "dependencies": {
+        "@workspace/core": "workspace:*",
         "@workspace/env": "workspace:*",
         "@workspace/ui": "workspace:*",
         "better-auth": "^1.6.0",

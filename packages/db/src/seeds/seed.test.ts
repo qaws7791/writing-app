@@ -336,9 +336,7 @@ describe("개발 DB seed 실행", () => {
       }
     } finally {
       legacyClient.close(false)
-      rmSync(databaseUrl, { force: true })
-      rmSync(`${databaseUrl}-shm`, { force: true })
-      rmSync(`${databaseUrl}-wal`, { force: true })
+      removeDatabaseFiles(databaseUrl)
     }
   })
 
@@ -407,10 +405,26 @@ describe("개발 DB seed 실행", () => {
       }
     } finally {
       legacyClient.close(false)
-      removeTempDirectory(tempDirectory)
+      removeDatabaseFiles(databaseUrl)
     }
   })
 })
+
+function removeDatabaseFiles(databaseUrl: string): void {
+  Bun.gc(true)
+
+  for (const path of [
+    databaseUrl,
+    `${databaseUrl}-shm`,
+    `${databaseUrl}-wal`,
+  ]) {
+    rmSync(path, {
+      force: true,
+      maxRetries: 3,
+      retryDelay: 100,
+    })
+  }
+}
 
 function removeTempDirectory(tempDirectory: string): void {
   Bun.gc(true)
