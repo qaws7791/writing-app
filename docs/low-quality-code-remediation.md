@@ -40,3 +40,9 @@
 - 기존 라우트의 `kind === "err"` 분기와 HTTP 응답 형태는 유지했다.
 - 검증: `bun --filter @workspace/api test src/routes/route-helpers.test.ts`
 - 검증: `bun --filter @workspace/api test src/routes/learning.route.test.ts src/routes/ai-feedback.route.test.ts`
+
+## Finding #6 완료: 어드민 repository 팩터리 책임 분리
+
+- `createDrizzleAdminRepository`가 모든 도메인 메서드를 한 객체 리터럴에 직접 나열하지 않고, course, user, analytics, settings 조각을 합성하도록 변경했다.
+- 공개 `AdminRepository` 계약과 개별 DB 함수 구현은 유지해 호출부 영향 없이 생성 책임만 분리했다.
+- 검증: `bun --filter @workspace/db test src/repositories/admin.repository.test.ts`

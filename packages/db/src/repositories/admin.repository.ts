@@ -73,10 +73,39 @@ import {
 const recentActivityLimit = 5
 type LessonRow = typeof lessons.$inferSelect
 type LessonStepRow = typeof lessonSteps.$inferSelect
+type AdminCourseRepository = Pick<
+  AdminRepository,
+  | "archiveCourse"
+  | "createCourse"
+  | "readCourseEditor"
+  | "readCourses"
+  | "resetContent"
+>
+type AdminUserRepository = Pick<
+  AdminRepository,
+  "deleteUser" | "readUser" | "readUsers" | "updateUserStatus"
+>
+type AdminAnalyticsRepository = Pick<
+  AdminRepository,
+  "readAnalytics" | "readDashboard" | "readLessonAnalytics"
+>
+type AdminSettingsRepository = Pick<
+  AdminRepository,
+  "readSettings" | "saveLegalSettings" | "saveNoticeSettings"
+>
 
 export function createDrizzleAdminRepository(
   db: KwepDatabase
 ): AdminRepository {
+  return {
+    ...createAdminCourseRepository(db),
+    ...createAdminUserRepository(db),
+    ...createAdminAnalyticsRepository(db),
+    ...createAdminSettingsRepository(db),
+  }
+}
+
+function createAdminCourseRepository(db: KwepDatabase): AdminCourseRepository {
   return {
     archiveCourse(input) {
       return Promise.resolve(archiveCourse(db, input))
@@ -84,9 +113,39 @@ export function createDrizzleAdminRepository(
     createCourse(input) {
       return Promise.resolve(createCourse(db, input))
     },
+    readCourseEditor(input) {
+      return Promise.resolve(readCourseEditor(db, input))
+    },
+    readCourses(input) {
+      return Promise.resolve(readCourses(db, input))
+    },
+    resetContent(input) {
+      return resetContent(db, input)
+    },
+  }
+}
+
+function createAdminUserRepository(db: KwepDatabase): AdminUserRepository {
+  return {
     deleteUser(input) {
       return Promise.resolve(deleteUser(db, input))
     },
+    readUser(input) {
+      return Promise.resolve(readUser(db, input))
+    },
+    readUsers(input) {
+      return Promise.resolve(readUsers(db, input))
+    },
+    updateUserStatus(input) {
+      return Promise.resolve(updateUserStatus(db, input))
+    },
+  }
+}
+
+function createAdminAnalyticsRepository(
+  db: KwepDatabase
+): AdminAnalyticsRepository {
+  return {
     readAnalytics(input) {
       return Promise.resolve(readAnalytics(db, input))
     },
@@ -96,32 +155,21 @@ export function createDrizzleAdminRepository(
     readLessonAnalytics(input) {
       return Promise.resolve(readLessonAnalytics(db, input))
     },
-    readCourseEditor(input) {
-      return Promise.resolve(readCourseEditor(db, input))
-    },
-    readCourses(input) {
-      return Promise.resolve(readCourses(db, input))
-    },
+  }
+}
+
+function createAdminSettingsRepository(
+  db: KwepDatabase
+): AdminSettingsRepository {
+  return {
     readSettings() {
       return Promise.resolve(readSettings(db))
-    },
-    readUser(input) {
-      return Promise.resolve(readUser(db, input))
-    },
-    readUsers(input) {
-      return Promise.resolve(readUsers(db, input))
-    },
-    resetContent(input) {
-      return resetContent(db, input)
     },
     saveLegalSettings(input) {
       return Promise.resolve(saveLegalSettings(db, input))
     },
     saveNoticeSettings(input) {
       return Promise.resolve(saveNoticeSettings(db, input))
-    },
-    updateUserStatus(input) {
-      return Promise.resolve(updateUserStatus(db, input))
     },
   }
 }

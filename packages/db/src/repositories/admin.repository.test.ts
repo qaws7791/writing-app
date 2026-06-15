@@ -53,6 +53,26 @@ describe("어드민 DB repository", () => {
     expect(readCourseEditorSource).not.toMatch(/stepRows[\s\S]*?\.filter/)
   })
 
+  it("어드민 repository 팩터리는 도메인별 조각으로 조합한다", () => {
+    const repositorySource = readFileSync(
+      fileURLToPath(new URL("admin.repository.ts", import.meta.url)),
+      "utf8"
+    )
+    const factorySource = readFunctionSource(
+      repositorySource,
+      "createDrizzleAdminRepository"
+    )
+
+    expect(factorySource).toBeDefined()
+    expect(factorySource).toContain("createAdminCourseRepository")
+    expect(factorySource).toContain("createAdminUserRepository")
+    expect(factorySource).toContain("createAdminAnalyticsRepository")
+    expect(factorySource).toContain("createAdminSettingsRepository")
+    expect(factorySource).not.toContain("archiveCourse(input)")
+    expect(factorySource).not.toContain("deleteUser(input)")
+    expect(factorySource).not.toContain("readAnalytics(input)")
+  })
+
   it("기존 학습자와 콘텐츠 테이블에서 dashboard 지표를 계산한다", async () => {
     const client = createKwepDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
