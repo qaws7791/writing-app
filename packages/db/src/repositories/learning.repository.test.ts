@@ -63,6 +63,31 @@ describe("학습 진행 repository", () => {
     }
   })
 
+  it("KST 기준 다음 날 새벽 활동을 해당 학습일로 저장한다", async () => {
+    const client = createInMemoryKwepDatabase()
+
+    try {
+      await seedLearningBaseline(client)
+      const repository = createDrizzleLearningRepository(client.db)
+
+      await repository.saveLessonProgress({
+        currentStepIndex: 1,
+        lessonId: "l1",
+        occurredAt: new Date("2026-06-14T15:30:00.000Z"),
+        userId: "user-1",
+      })
+
+      expect(client.db.select().from(learnerActivityDays).all()).toEqual([
+        expect.objectContaining({
+          activityDate: "2026-06-15",
+          userId: "user-1",
+        }),
+      ])
+    } finally {
+      client.close()
+    }
+  })
+
   it("answer 저장 시 답변과 활동 날짜의 saved_answers를 갱신한다", async () => {
     const client = createInMemoryKwepDatabase()
 

@@ -33,6 +33,10 @@ import type {
 import { eq } from "drizzle-orm"
 
 import type { KwepDatabase } from "@workspace/db/client"
+import {
+  addLearningCalendarDays,
+  toLearningDateKey,
+} from "@workspace/db/repositories/activity-date"
 import { createDefaultContentSeedRows } from "@workspace/db/seeds/seed-content"
 import {
   adminSettings,
@@ -142,8 +146,8 @@ function readDashboard(
       )
       .map((unit) => unit.id)
   )
-  const last7DaysStart = toDateKey(addUtcDays(startOfUtcDay(input.now), -6))
-  const todayKey = toDateKey(input.now)
+  const todayKey = toLearningDateKey(input.now)
+  const last7DaysStart = addLearningCalendarDays(todayKey, -6)
 
   return {
     metrics: {
@@ -166,10 +170,10 @@ function readDashboard(
       ).size,
       completedLessons: completedLessonRows.length,
       signupsLast7Days: learnerRows.filter(
-        (user) => toDateKey(user.createdAt) >= last7DaysStart
+        (user) => toLearningDateKey(user.createdAt) >= last7DaysStart
       ).length,
       signupsToday: learnerRows.filter(
-        (user) => toDateKey(user.createdAt) === todayKey
+        (user) => toLearningDateKey(user.createdAt) === todayKey
       ).length,
       totalUsers: learnerRows.length,
     },
@@ -294,7 +298,7 @@ function createDailySeries(
 ): AdminAnalyticsDto["dailySeries"] {
   const learnerIds = new Set(readActiveLearners(db).map((user) => user.id))
   const signupsByDate = countByDate(
-    readActiveLearners(db).map((user) => toDateKey(user.createdAt))
+    readActiveLearners(db).map((user) => toLearningDateKey(user.createdAt))
   )
   const completionsByDate = countByDate(
     db
@@ -307,12 +311,15 @@ function createDailySeries(
           progress.completedAt !== null &&
           learnerIds.has(progress.userId)
       )
-      .map((progress) => toDateKey(progress.completedAt as Date))
+      .map((progress) => toLearningDateKey(progress.completedAt as Date))
   )
-  const startDate = addUtcDays(startOfUtcDay(input.now), -(input.days - 1))
+  const startDate = addLearningCalendarDays(
+    toLearningDateKey(input.now),
+    -(input.days - 1)
+  )
 
   return Array.from({ length: input.days }, (_, index) => {
-    const date = toDateKey(addUtcDays(startDate, index))
+    const date = addLearningCalendarDays(startDate, index)
 
     return {
       completions: completionsByDate.get(date) ?? 0,
@@ -1107,7 +1114,7 @@ function readUserSnapshots(db: KwepDatabase): AdminUserSnapshot[] {
     return {
       email: user.email,
       id: user.id,
-      joined: toDateKey(user.createdAt),
+      joined: toLearningDateKey(user.createdAt),
       lastActive: activityDates[0] ?? null,
       lessonsDone: completedLessonRows.filter(
         (progress) => progress.userId === user.id
@@ -1194,31 +1201,14 @@ function calculateCurrentStreakDays(activityDates: readonly string[]): number {
   }
 
   const activitySet = new Set(activityDates)
-  const cursor = new Date(`${activityDates[0]}T00:00:00.000Z`)
+  const latestActivityDate = activityDates[0]
   let streak = 0
+  let cursor = latestActivityDate
 
-  while (activitySet.has(toDateKey(cursor))) {
+  while (cursor !== undefined && activitySet.has(cursor)) {
     streak += 1
-    cursor.setUTCDate(cursor.getUTCDate() - 1)
+    cursor = addLearningCalendarDays(cursor, -1)
   }
 
   return streak
-}
-
-function startOfUtcDay(date: Date): Date {
-  return new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
-  )
-}
-
-function addUtcDays(date: Date, days: number): Date {
-  const result = new Date(date)
-
-  result.setUTCDate(result.getUTCDate() + days)
-
-  return result
-}
-
-function toDateKey(date: Date): string {
-  return date.toISOString().slice(0, 10)
 }

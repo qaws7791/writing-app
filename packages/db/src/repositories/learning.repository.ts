@@ -1,6 +1,7 @@
 import { and, eq, sql } from "drizzle-orm"
 
 import type { KwepDatabase } from "@workspace/db/client"
+import { toLearningDateKey } from "@workspace/db/repositories/activity-date"
 import {
   learnerActivityDays,
   learnerLessonAnswers,
@@ -158,7 +159,7 @@ function recordActivityDay(
 ): void {
   db.insert(learnerActivityDays)
     .values({
-      activityDate: toActivityDate(input.occurredAt),
+      activityDate: toLearningDateKey(input.occurredAt),
       completedLessons: input.completedLessons,
       firstActivityAt: input.occurredAt,
       lastActivityAt: input.occurredAt,
@@ -174,8 +175,4 @@ function recordActivityDay(
       target: [learnerActivityDays.userId, learnerActivityDays.activityDate],
     })
     .run()
-}
-
-function toActivityDate(date: Date): string {
-  return date.toISOString().slice(0, 10)
 }
