@@ -46,8 +46,20 @@ describe("Kwep DB client", () => {
           .query<{ readonly file: string }, []>("PRAGMA database_list")
           .all()
           .at(0)?.file
+        const journalMode = client.sqlite
+          .query<{ readonly journal_mode: string }, []>("PRAGMA journal_mode")
+          .get()?.journal_mode
+        const busyTimeout = client.sqlite
+          .query<{ readonly timeout: number }, []>("PRAGMA busy_timeout")
+          .get()?.timeout
+        const synchronous = client.sqlite
+          .query<{ readonly synchronous: number }, []>("PRAGMA synchronous")
+          .get()?.synchronous
 
         expect(databaseFile).toBe(join(tempDirectory, "data", "api.sqlite"))
+        expect(journalMode).toBe("wal")
+        expect(busyTimeout).toBe(5000)
+        expect(synchronous).toBe(1)
       } finally {
         client.close()
       }
