@@ -13,31 +13,27 @@ import type { AdminCourseDetailDto } from "@workspace/core/admin"
 export type EditorStep =
   AdminCourseDetailDto["units"][number]["lessons"][number]["steps"][number]
 
+type StepFormComponent = (props: {
+  readonly step: EditorStep
+}) => React.ReactNode
+
+const stepFormByType: Partial<Record<EditorStep["type"], StepFormComponent>> = {
+  AI_FEEDBACK: AiFeedbackStepForm,
+  CATEGORIZE: CategorizeStepForm,
+  COMPARE: CompareStepForm,
+  FILL_BLANK: FillBlankStepForm,
+  MATCH: MatchStepForm,
+  MULTIPLE_CHOICE: MultipleChoiceStepForm,
+  ORDER: OrderStepForm,
+  READING: ReadingStepForm,
+  SELECT: SelectStepForm,
+  WRITE: WriteStepForm,
+}
+
 export function renderStepForm(step: EditorStep) {
-  switch (step.type) {
-    case "READING":
-      return <ReadingStepForm step={step} />
-    case "COMPARE":
-      return <CompareStepForm step={step} />
-    case "MULTIPLE_CHOICE":
-      return <MultipleChoiceStepForm step={step} />
-    case "FILL_BLANK":
-      return <FillBlankStepForm step={step} />
-    case "SELECT":
-      return <SelectStepForm step={step} />
-    case "ORDER":
-      return <OrderStepForm step={step} />
-    case "WRITE":
-      return <WriteStepForm step={step} />
-    case "AI_FEEDBACK":
-      return <AiFeedbackStepForm step={step} />
-    case "MATCH":
-      return <MatchStepForm step={step} />
-    case "CATEGORIZE":
-      return <CategorizeStepForm step={step} />
-    default:
-      return <GenericStepForm step={step} />
-  }
+  const StepForm = stepFormByType[step.type] ?? GenericStepForm
+
+  return <StepForm step={step} />
 }
 
 export function readStepContent(step: EditorStep): Record<string, unknown> {

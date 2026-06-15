@@ -17,6 +17,15 @@ import {
   isLastLessonStep,
   type LessonStepAnswerPayload,
 } from "@/features/lessons/lesson-logic"
+import {
+  getLessonStepActionLabel,
+  getLessonStepCheckedResult,
+  getLessonStepExplanation,
+  getLessonStepWrongText,
+  isLessonStepCheckable,
+  isLessonStepSubmittable,
+  type LessonStepCheckedState,
+} from "@/features/lessons/lesson-step-policy"
 import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
 import { useLessonPersistence } from "@/features/lessons/use-lesson-persistence"
 import type { Lesson, LessonStep } from "@/features/lessons/lesson-types"
@@ -31,15 +40,7 @@ type LessonExperienceProps = {
   readonly lesson: Lesson
 }
 
-type LessonCheckedState =
-  | false
-  | "correct"
-  | "wrong"
-  | {
-      readonly explanation?: string
-      readonly missed: readonly number[]
-      readonly wrong: readonly number[]
-    }
+type LessonCheckedState = false | LessonStepCheckedState
 
 export function LessonExperience({
   api,
@@ -118,8 +119,8 @@ export function LessonExperience({
         )
       : 0
     const currentAnswerPayload = answerPayloads[currentStep.id]
-    const isReady = getCanSubmit(currentStep, currentAnswerPayload)
-    const isQuizStep = isCheckStep(currentStep)
+    const isReady = isLessonStepSubmittable(currentStep, currentAnswerPayload)
+    const isQuizStep = isLessonStepCheckable(currentStep)
 
     return (
       <LessonShell
@@ -132,7 +133,10 @@ export function LessonExperience({
                 onClick={() => {
                   if (isQuizStep) {
                     setChecked(
-                      getCheckResult(currentStep, currentAnswerPayload)
+                      getLessonStepCheckedResult(
+                        currentStep,
+                        currentAnswerPayload
+                      )
                     )
                     return
                   }
@@ -143,7 +147,7 @@ export function LessonExperience({
               >
                 {isCompleting
                   ? "완료 저장 중"
-                  : getStepActionLabel(currentStep)}
+                  : getLessonStepActionLabel(currentStep)}
               </LessonPrimaryButton>
             </div>
           ) : (
@@ -625,111 +629,6 @@ function getNextCourseLesson(
   return lessons[lessonIndex + 1]?.lesson ?? null
 }
 
-function getCanSubmit(
-  step: LessonStep,
-  payload: LessonStepAnswerPayload | undefined
-): boolean {
-  switch (step.type) {
-    case "AI_FEEDBACK":
-      return false
-    case "CATEGORIZE":
-      return (
-        payload?.type === "CATEGORIZE" &&
-        payload.items.length === step.items.length
-      )
-    case "FILL_BLANK":
-      return (
-        payload?.type === "FILL_BLANK" &&
-        payload.selectedWords.filter(Boolean).length === step.answer.length
-      )
-    case "MATCH":
-      return (
-        payload?.type === "MATCH" &&
-        payload.pairs.length === step.pairs.length &&
-        payload.pairs.every((pair) => pair.right !== "")
-      )
-    case "MULTIPLE_CHOICE":
-      return (
-        payload?.type === "MULTIPLE_CHOICE" && payload.selectedOptionId !== ""
-      )
-    case "ORDER":
-      return (
-        payload?.type === "ORDER" &&
-        payload.orderedItems.length === step.items.length
-      )
-    case "SELECT":
-      return payload?.type === "SELECT" && payload.selectedIndexes.length > 0
-    case "WRITE":
-      return (
-        payload?.type === "WRITE" && payload.text.length >= (step.min || 20)
-      )
-    case "COMPARE":
-    case "READING":
-      return true
-  }
-}
-
-function isCheckStep(step: LessonStep): boolean {
-  return (
-    step.type === "FILL_BLANK" ||
-    step.type === "MATCH" ||
-    step.type === "MULTIPLE_CHOICE" ||
-    step.type === "ORDER" ||
-    step.type === "SELECT"
-  )
-}
-
-function getCheckResult(
-  step: LessonStep,
-  payload: LessonStepAnswerPayload | undefined
-): LessonCheckedState {
-  switch (step.type) {
-    case "FILL_BLANK":
-      return payload?.type === "FILL_BLANK" &&
-        JSON.stringify(payload.selectedWords) === JSON.stringify(step.answer)
-        ? "correct"
-        : "wrong"
-    case "MATCH":
-      return payload?.type === "MATCH" &&
-        step.pairs.every((pair) =>
-          payload.pairs.some(
-            (selectedPair) =>
-              selectedPair.left === pair.left &&
-              selectedPair.right === pair.right
-          )
-        )
-        ? "correct"
-        : "wrong"
-    case "MULTIPLE_CHOICE":
-      return payload?.type === "MULTIPLE_CHOICE" &&
-        payload.selectedOptionId === step.correct
-        ? "correct"
-        : "wrong"
-    case "ORDER":
-      return payload?.type === "ORDER" &&
-        JSON.stringify(payload.orderedItems) === JSON.stringify(step.correct)
-        ? "correct"
-        : "wrong"
-    case "SELECT": {
-      const selected =
-        payload?.type === "SELECT"
-          ? new Set(payload.selectedIndexes)
-          : new Set<number>()
-      const correct = new Set(step.correct)
-      const missed = [...correct].filter((index) => !selected.has(index))
-      const wrong = [...selected].filter((index) => !correct.has(index))
-
-      return {
-        explanation: step.explanation,
-        missed,
-        wrong,
-      }
-    }
-    default:
-      return "correct"
-  }
-}
-
 function getCheckedFeedback(
   step: LessonStep,
   checked: Exclude<LessonCheckedState, false>
@@ -740,7 +639,7 @@ function getCheckedFeedback(
 } {
   if (checked === "correct") {
     return {
-      body: getStepExplanation(step),
+      body: getLessonStepExplanation(step),
       isCorrect: true,
       title: "완벽해요!",
     }
@@ -749,8 +648,8 @@ function getCheckedFeedback(
   if (checked === "wrong") {
     return {
       body:
-        getStepWrongText(step) ??
-        getStepExplanation(step) ??
+        getLessonStepWrongText(step) ??
+        getLessonStepExplanation(step) ??
         "다시 생각해보세요.",
       isCorrect: false,
       title: "아쉽지만 달라요",
@@ -766,45 +665,6 @@ function getCheckedFeedback(
     isCorrect,
     title: isCorrect ? "정확해요!" : "다시 확인해보세요",
   }
-}
-
-function getStepExplanation(step: LessonStep): string {
-  switch (step.type) {
-    case "CATEGORIZE":
-    case "FILL_BLANK":
-    case "MATCH":
-    case "MULTIPLE_CHOICE":
-    case "ORDER":
-    case "SELECT":
-      return step.explanation
-    case "AI_FEEDBACK":
-    case "COMPARE":
-    case "READING":
-    case "WRITE":
-      return ""
-  }
-}
-
-function getStepWrongText(step: LessonStep): string | undefined {
-  return step.type === "MULTIPLE_CHOICE" ? step.wrong : undefined
-}
-
-function getStepActionLabel(step: Lesson["steps"][number]): string {
-  if (step.type === "READING" || step.type === "COMPARE") {
-    return "이해했어요"
-  }
-
-  if (
-    step.type === "MULTIPLE_CHOICE" ||
-    step.type === "FILL_BLANK" ||
-    step.type === "SELECT" ||
-    step.type === "ORDER" ||
-    step.type === "MATCH"
-  ) {
-    return "확인하기"
-  }
-
-  return "다음으로 →"
 }
 
 function scrollWindowToTop() {
