@@ -21,6 +21,7 @@ const courseDetail: AdminCourseDetailDto = {
           id: "cmock-l1",
           sortOrder: 1,
           status: "active",
+          summary: ["새 레슨 요약"],
           steps: [
             {
               contentJson: JSON.stringify({

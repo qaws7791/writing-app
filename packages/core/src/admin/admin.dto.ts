@@ -161,6 +161,7 @@ export const adminCourseLessonDtoSchema = z.object({
   id: z.string(),
   sortOrder: positiveIntegerSchema,
   status: adminContentStatusSchema,
+  summary: z.array(z.string()),
   steps: z.array(adminCourseStepDtoSchema),
   title: z.string(),
 })

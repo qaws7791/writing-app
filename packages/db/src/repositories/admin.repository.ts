@@ -632,6 +632,7 @@ function readCourseEditor(
           id: lesson.id,
           sortOrder: lesson.sortOrder,
           status: lesson.status,
+          summary: readJsonStringArray(lesson.summaryJson),
           steps: stepRows
             .filter((step) => step.lessonId === lesson.id)
             .map((step) => ({
@@ -648,6 +649,14 @@ function readCourseEditor(
       title: unit.title,
     })),
   }
+}
+
+function readJsonStringArray(value: string): string[] {
+  const parsed: unknown = JSON.parse(value)
+
+  return Array.isArray(parsed)
+    ? parsed.filter((item): item is string => typeof item === "string")
+    : []
 }
 
 function readCourses(

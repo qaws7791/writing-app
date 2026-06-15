@@ -485,6 +485,7 @@ describe("어드민 DB repository", () => {
       expect(created.units[0]?.lessons[0]).toMatchObject({
         estimatedMinutes: 5,
         id: "cmqd74yo0-l1",
+        summary: [],
         title: "새 레슨",
       })
       expect(

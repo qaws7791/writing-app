@@ -22,6 +22,7 @@ const course: AdminCourseDetailDto = {
           id: "l1",
           sortOrder: 1,
           status: "active",
+          summary: ["좋은 문장은 모호하지 않다", "문장에는 초점이 필요하다"],
           steps: [
             step("s1", "READING", { body: "읽기 본문", title: "읽기" }),
             step("s2", "COMPARE", { after: "수정", before: "초안" }),
@@ -51,11 +52,20 @@ describe("CourseEditorShell", () => {
   it("코스, 레슨, 10개 스텝 폼과 학습자 시작 미리보기를 렌더링한다", () => {
     render(<CourseEditorShell course={course} />)
 
-    expect(screen.getByRole("heading", { name: "코스 편집" })).toBeVisible()
+    expect(screen.getByRole("heading", { name: "코스 미리보기" })).toBeVisible()
+    expect(screen.getByText("읽기 전용 미리보기")).toBeVisible()
     expect(screen.getByDisplayValue("글쓰기 첫걸음 30일")).toBeVisible()
     expect(screen.getByDisplayValue("첫 레슨")).toBeVisible()
     expect(screen.getByLabelText("예상 시간")).toHaveValue(7)
-    expect(screen.getByLabelText("레슨 요약")).toHaveValue("[]")
+    expect(screen.getByLabelText("레슨 요약")).toHaveValue(
+      JSON.stringify(
+        ["좋은 문장은 모호하지 않다", "문장에는 초점이 필요하다"],
+        null,
+        2
+      )
+    )
+    expect(screen.getByDisplayValue("글쓰기 첫걸음 30일")).toBeDisabled()
+    expect(screen.getByDisplayValue("첫 레슨")).toBeDisabled()
 
     const forms = screen.getByRole("list", { name: "스텝 편집 폼" })
     for (const label of [

@@ -30,7 +30,10 @@ export function LessonWorkspace({ lesson }: { readonly lesson: Lesson }) {
       </label>
       <label className="admin-form-field">
         <span>레슨 요약</span>
-        <textarea aria-label="레슨 요약" defaultValue="[]" />
+        <textarea
+          aria-label="레슨 요약"
+          defaultValue={JSON.stringify(lesson.summary, null, 2)}
+        />
       </label>
     </section>
   )

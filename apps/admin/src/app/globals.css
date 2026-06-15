@@ -653,6 +653,19 @@ a {
   gap: 16px;
 }
 
+.course-editor__read-only {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.course-editor__read-only legend {
+  margin-bottom: 12px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 750;
+}
+
 .course-editor__summary,
 .course-editor__workspace {
   display: grid;
