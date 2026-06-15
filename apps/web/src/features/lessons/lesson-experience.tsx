@@ -47,7 +47,7 @@ export function LessonExperience({
   lesson,
 }: LessonExperienceProps) {
   const router = useRouter()
-  const contentRef = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLElement>(null)
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
   const [hasStarted, setHasStarted] = useState(false)
@@ -122,57 +122,11 @@ export function LessonExperience({
     const isQuizStep = isCheckStep(currentStep)
 
     return (
-      <div className="flex flex-col min-h-screen bg-cream w-full fixed inset-0 z-50 overflow-y-auto">
-        <div className="w-full max-w-3xl mx-auto flex items-center px-6 pt-6 pb-4">
-          <button
-            aria-label="나가기"
-            className="text-muted hover:text-charcoal font-bold mr-4 transition-colors w-9 h-9 flex items-center justify-center"
-            onClick={() => setShowExit(true)}
-          >
-            <XIcon size={28} />
-          </button>
-          <div className="flex-1 bg-surface h-4 rounded-full overflow-hidden">
-            <div
-              className="bg-primary h-full rounded-full transition-all duration-500"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <div
-            className="ml-4 font-bold text-muted"
-            style={{ fontSize: "0.875rem" }}
-          >
-            {visibleStepNumber}/{lesson.steps.length}
-          </div>
-        </div>
-        <div
-          className="flex-1 w-full max-w-2xl mx-auto px-6 pt-6 md:pt-10 pb-48 an-fi"
-          ref={contentRef}
-        >
-          <LessonStepRenderer
-            answerError={answerError}
-            checked={checked}
-            onAiFeedbackRequest={requestAiFeedback}
-            onAnswerChange={saveAnswer}
-            onAnswerPayloadChange={({ payload, stepId }) =>
-              setAnswerPayloads((previous) => ({
-                ...previous,
-                [stepId]: payload,
-              }))
-            }
-            key={currentStepIndex}
-            step={currentStep}
-            stepIndex={currentStepIndex}
-            totalSteps={lesson.steps.length}
-          />
-          {completeError === null ? null : (
-            <p className="mt-6 rounded-2xl bg-coral/10 px-4 py-3 text-coral-dark font-bold">
-              {completeError}
-            </p>
-          )}
-        </div>
-        <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
-          {checked === false ? (
-            <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent pointer-events-auto">
+      <LessonShell
+        contentRef={contentRef}
+        footer={
+          checked === false ? (
+            <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent">
               <LessonPrimaryButton
                 disabled={!isReady || isCompleting}
                 onClick={() => {
@@ -198,6 +152,38 @@ export function LessonExperience({
               onNext={() => void handleNextStep(isLastStep)}
               step={currentStep}
             />
+          )
+        }
+        header={
+          <LessonProgressHeader
+            currentStepNumber={visibleStepNumber}
+            onExit={() => setShowExit(true)}
+            progress={progress}
+            totalStepCount={lesson.steps.length}
+          />
+        }
+      >
+        <div className="an-fi">
+          <LessonStepRenderer
+            answerError={answerError}
+            checked={checked}
+            onAiFeedbackRequest={requestAiFeedback}
+            onAnswerChange={saveAnswer}
+            onAnswerPayloadChange={({ payload, stepId }) =>
+              setAnswerPayloads((previous) => ({
+                ...previous,
+                [stepId]: payload,
+              }))
+            }
+            key={currentStepIndex}
+            step={currentStep}
+            stepIndex={currentStepIndex}
+            totalSteps={lesson.steps.length}
+          />
+          {completeError === null ? null : (
+            <p className="mt-6 rounded-2xl bg-coral/10 px-4 py-3 text-coral-dark font-bold">
+              {completeError}
+            </p>
           )}
         </div>
         {showExit ? (
@@ -209,7 +195,7 @@ export function LessonExperience({
             }}
           />
         ) : null}
-      </div>
+      </LessonShell>
     )
   }
 
@@ -243,17 +229,27 @@ export function LessonExperience({
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-cream w-full fixed inset-0 z-50 overflow-y-auto">
-      <div className="w-full max-w-3xl mx-auto flex items-center px-6 pt-6 pb-4">
-        <button
-          aria-label="나가기"
-          className="text-muted hover:text-charcoal font-bold mr-4 transition-colors w-9 h-9 flex items-center justify-center"
-          onClick={() => router.push(`/app/courses/${lesson.courseId}`)}
-        >
-          <XIcon size={28} />
-        </button>
-      </div>
-      <div className="flex-1 w-full max-w-2xl mx-auto px-6 pt-6 md:pt-10 pb-48 an-fi">
+    <LessonShell
+      footer={
+        <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent">
+          <LessonPrimaryButton
+            disabled={firstStep === null || isSavingStart}
+            onClick={handleStart}
+          >
+            {isSavingStart ? "저장 중" : "시작하기"}
+          </LessonPrimaryButton>
+        </div>
+      }
+      header={
+        <LessonProgressHeader
+          currentStepNumber={0}
+          onExit={() => router.push(`/app/courses/${lesson.courseId}`)}
+          progress={0}
+          totalStepCount={lesson.steps.length}
+        />
+      }
+    >
+      <div className="an-fi">
         {lesson.category === null ? null : (
           <div
             className="font-bold text-muted tracking-widest mb-4"
@@ -289,17 +285,86 @@ export function LessonExperience({
           </p>
         )}
       </div>
-      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
-        <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent pointer-events-auto">
-          <LessonPrimaryButton
-            disabled={firstStep === null || isSavingStart}
-            onClick={handleStart}
-          >
-            {isSavingStart ? "저장 중" : "시작하기"}
-          </LessonPrimaryButton>
+    </LessonShell>
+  )
+}
+
+function LessonShell({
+  children,
+  contentRef,
+  footer,
+  header,
+}: {
+  readonly children: ReactNode
+  readonly contentRef?: React.Ref<HTMLElement>
+  readonly footer: ReactNode
+  readonly header: ReactNode
+}) {
+  return (
+    <div className="flex h-dvh min-h-screen w-full flex-col overflow-hidden bg-cream text-charcoal">
+      {header}
+      <main
+        aria-label="레슨 콘텐츠"
+        className="min-h-0 flex-1 overflow-y-auto"
+        ref={contentRef}
+      >
+        <div className="w-full max-w-2xl mx-auto px-6 pt-6 md:pt-10 pb-8">
+          {children}
         </div>
-      </div>
+      </main>
+      <footer
+        aria-label="레슨 행동"
+        className="shrink-0 w-full flex justify-center"
+      >
+        {footer}
+      </footer>
     </div>
+  )
+}
+
+function LessonProgressHeader({
+  currentStepNumber,
+  onExit,
+  progress,
+  totalStepCount,
+}: {
+  readonly currentStepNumber: number
+  readonly onExit: () => void
+  readonly progress: number
+  readonly totalStepCount: number
+}) {
+  return (
+    <header
+      aria-label="레슨 진행"
+      className="shrink-0 w-full max-w-3xl mx-auto flex items-center px-6 pt-6 pb-4"
+    >
+      <button
+        aria-label="나가기"
+        className="text-muted hover:text-charcoal font-bold mr-4 transition-colors w-9 h-9 flex items-center justify-center"
+        onClick={onExit}
+      >
+        <XIcon size={28} />
+      </button>
+      <div
+        aria-label="레슨 진행률"
+        aria-valuemax={100}
+        aria-valuemin={0}
+        aria-valuenow={Math.round(progress)}
+        className="flex-1 bg-surface h-4 rounded-full overflow-hidden"
+        role="progressbar"
+      >
+        <div
+          className="bg-primary h-full rounded-full transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <div
+        className="ml-4 font-bold text-muted"
+        style={{ fontSize: "0.875rem" }}
+      >
+        {currentStepNumber}/{totalStepCount}
+      </div>
+    </header>
   )
 }
 

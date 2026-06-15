@@ -121,6 +121,20 @@ describe("레슨 경험", () => {
       "items-center",
       "justify-center"
     )
+    const startContent = screen.getByRole("main", { name: "레슨 콘텐츠" })
+    const startShell = startContent.parentElement
+
+    expect(startShell).toHaveClass("h-dvh", "overflow-hidden")
+    expect(screen.getByRole("banner", { name: "레슨 진행" })).toHaveClass(
+      "shrink-0"
+    )
+    expect(startContent).toHaveClass("min-h-0", "flex-1", "overflow-y-auto")
+    expect(screen.getByRole("contentinfo", { name: "레슨 행동" })).toHaveClass(
+      "shrink-0"
+    )
+    expect(
+      screen.getByRole("progressbar", { name: "레슨 진행률" })
+    ).toHaveAttribute("aria-valuenow", "0")
 
     await user.click(screen.getByRole("button", { name: "시작하기" }))
 
@@ -143,6 +157,12 @@ describe("레슨 경험", () => {
       "font-bold",
       "text-muted"
     )
+    const stepContent = screen.getByRole("main", { name: "레슨 콘텐츠" })
+
+    expect(stepContent).toHaveClass("min-h-0", "flex-1", "overflow-y-auto")
+    expect(
+      screen.getByRole("progressbar", { name: "레슨 진행률" })
+    ).toHaveAttribute("aria-valuenow", "50")
     expect(screen.getByRole("button", { name: "이해했어요" })).toHaveClass(
       "bg-charcoal",
       "text-cream",
