@@ -1,5 +1,18 @@
 # 레슨 페이지
 
+## 2026-06-15 시작 — AI 코칭 시도 저장 정합성
+
+- AI 코칭 시도 횟수는 저장소 경계에서 현재 완료 시도 수와 다음 attempt 번호를 함께 결정한다.
+- 동시에 들어온 코칭 요청이 같은 attempt 번호로 저장되어 500으로 번지지 않도록 저장 결과를 명시적 성공/한도 초과로 구분한다.
+- AI 코칭 attempt 기본키는 사용자, 레슨, 스텝, attempt 번호 기준으로 문서화된 집계 기준과 맞춘다.
+
+## 2026-06-15 완료 — AI 코칭 시도 저장 정합성
+
+- AI 코칭 service는 provider 성공 이후 attempt 번호를 직접 계산하지 않고 repository의 저장 결과를 사용한다.
+- repository는 저장 트랜잭션 안에서 현재 완료 시도 수를 확인하고 다음 attempt 번호를 할당한다.
+- 저장 시점에 한도를 넘으면 provider 결과를 500으로 전파하지 않고 `attempt-limit-exceeded` 결과로 변환한다.
+- `ai_feedback_attempts` 기본키는 `user_id`, `lesson_id`, `step_id`, `attempt_number` 조합으로 정렬했다.
+
 ## 2026-06-15 시작 — 답변 payload 정합성 검증
 
 - 서버의 학습 저장 서비스가 lesson step content를 기준으로 답변 payload의 option id, 선택 index, 순서 항목, 매칭 pair, 분류 item/category id를 검증하도록 보강한다.

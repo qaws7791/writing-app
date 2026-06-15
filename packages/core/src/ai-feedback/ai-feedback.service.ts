@@ -114,17 +114,24 @@ export function createAiFeedbackService({
       }
 
       const result = aiFeedbackPayloadSchema.parse(providerResult.value)
-      const attemptNumber = completedAttempts + 1
+      const saveResult = await feedbackRepository.saveCompletedAttempt(
+        {
+          ...parsedCommand,
+          result,
+        },
+        maxAiFeedbackAttempts
+      )
 
-      await feedbackRepository.saveAttempt({
-        ...parsedCommand,
-        attemptNumber,
-        result,
-      })
+      if (saveResult.kind === "limit-exceeded") {
+        return err({
+          kind: "attempt-limit-exceeded",
+          remainingAttempts: 0,
+        })
+      }
 
       return ok({
         ...result,
-        remainingAttempts: maxAiFeedbackAttempts - attemptNumber,
+        remainingAttempts: maxAiFeedbackAttempts - saveResult.attemptNumber,
       })
     },
   }

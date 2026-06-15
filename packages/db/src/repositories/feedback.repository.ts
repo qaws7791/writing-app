@@ -23,18 +23,47 @@ export function createDrizzleAiFeedbackRepository(
           .get()?.value ?? 0
       )
     },
-    async saveAttempt(record) {
-      db.insert(aiFeedbackAttempts)
-        .values({
-          answerText: record.answer,
-          attemptNumber: record.attemptNumber,
-          createdAt: record.occurredAt,
-          lessonId: record.lessonId,
-          resultJson: JSON.stringify(record.result),
-          stepId: record.stepId,
-          userId: record.userId,
-        })
-        .run()
+    async saveCompletedAttempt(record, maxAttempts) {
+      return db.transaction((tx) => {
+        const completedAttempts =
+          tx
+            .select({ value: count() })
+            .from(aiFeedbackAttempts)
+            .where(
+              and(
+                eq(aiFeedbackAttempts.userId, record.userId),
+                eq(aiFeedbackAttempts.lessonId, record.lessonId),
+                eq(aiFeedbackAttempts.stepId, record.stepId)
+              )
+            )
+            .get()?.value ?? 0
+
+        if (completedAttempts >= maxAttempts) {
+          return {
+            completedAttempts,
+            kind: "limit-exceeded",
+          }
+        }
+
+        const attemptNumber = completedAttempts + 1
+
+        tx.insert(aiFeedbackAttempts)
+          .values({
+            answerText: record.answer,
+            attemptNumber,
+            createdAt: record.occurredAt,
+            lessonId: record.lessonId,
+            resultJson: JSON.stringify(record.result),
+            stepId: record.stepId,
+            userId: record.userId,
+          })
+          .run()
+
+        return {
+          attemptNumber,
+          kind: "saved",
+        }
+      })
     },
   }
 }

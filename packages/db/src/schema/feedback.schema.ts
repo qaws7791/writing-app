@@ -22,7 +22,12 @@ export const aiFeedbackAttempts = sqliteTable(
   },
   (table) => [
     primaryKey({
-      columns: [table.userId, table.stepId, table.attemptNumber],
+      columns: [
+        table.userId,
+        table.lessonId,
+        table.stepId,
+        table.attemptNumber,
+      ],
     }),
   ]
 )

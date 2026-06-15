@@ -29,23 +29,75 @@ describe("AI 피드백 repository", () => {
       seedFeedbackBaseline(client)
       const repository = createDrizzleAiFeedbackRepository(client.db)
 
-      await repository.saveAttempt({
-        answer: "문장을 명확하게 고쳤습니다.",
+      await expect(
+        repository.saveCompletedAttempt(
+          {
+            answer: "문장을 명확하게 고쳤습니다.",
+            lessonId,
+            occurredAt: now,
+            result: {
+              improvements: ["근거를 더 붙이세요."],
+              nextAction: "예시 한 문장을 추가하세요.",
+              score: 84,
+              scoreRange: [0, 100],
+              showScore: true,
+              strengths: ["핵심 문장이 앞에 있습니다."],
+              summary: "의도가 분명합니다.",
+            },
+            stepId,
+            userId: learnerId,
+          },
+          3
+        )
+      ).resolves.toEqual({
         attemptNumber: 1,
-        lessonId,
-        occurredAt: now,
-        result: {
-          improvements: ["근거를 더 붙이세요."],
-          nextAction: "예시 한 문장을 추가하세요.",
-          score: 84,
-          scoreRange: [0, 100],
-          showScore: true,
-          strengths: ["핵심 문장이 앞에 있습니다."],
-          summary: "의도가 분명합니다.",
-        },
-        stepId,
-        userId: learnerId,
+        kind: "saved",
       })
+
+      await expect(
+        repository.saveCompletedAttempt(
+          {
+            answer: "두 번째 문장을 명확하게 고쳤습니다.",
+            lessonId,
+            occurredAt: now,
+            result: {
+              improvements: ["문장 길이를 줄이세요."],
+              nextAction: "첫 문장을 둘로 나누세요.",
+              score: 86,
+              scoreRange: [0, 100],
+              showScore: true,
+              strengths: ["주장이 분명합니다."],
+              summary: "구조가 좋아졌습니다.",
+            },
+            stepId,
+            userId: learnerId,
+          },
+          1
+        )
+      ).resolves.toEqual({
+        completedAttempts: 1,
+        kind: "limit-exceeded",
+      })
+
+      await repository.saveCompletedAttempt(
+        {
+          answer: "문장을 명확하게 고쳤습니다.",
+          lessonId,
+          occurredAt: now,
+          result: {
+            improvements: ["근거를 더 붙이세요."],
+            nextAction: "예시 한 문장을 추가하세요.",
+            score: 84,
+            scoreRange: [0, 100],
+            showScore: true,
+            strengths: ["핵심 문장이 앞에 있습니다."],
+            summary: "의도가 분명합니다.",
+          },
+          stepId,
+          userId: learnerId,
+        },
+        3
+      )
 
       await expect(
         repository.countCompletedAttempts({
@@ -53,7 +105,7 @@ describe("AI 피드백 repository", () => {
           stepId,
           userId: learnerId,
         })
-      ).resolves.toBe(1)
+      ).resolves.toBe(2)
       await expect(
         repository.countCompletedAttempts({
           lessonId,
@@ -76,6 +128,13 @@ describe("AI 피드백 repository", () => {
             strengths: ["핵심 문장이 앞에 있습니다."],
             summary: "의도가 분명합니다.",
           }),
+          stepId: "l-ai-s2",
+          userId: "user-1",
+        }),
+        expect.objectContaining({
+          answerText: "문장을 명확하게 고쳤습니다.",
+          attemptNumber: 2,
+          lessonId: "l-ai",
           stepId: "l-ai-s2",
           userId: "user-1",
         }),

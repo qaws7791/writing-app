@@ -117,6 +117,39 @@ describe("AI 피드백 서비스", () => {
     expect(savedAttempts).toEqual([])
   })
 
+  it("저장 시점에 시도 한도를 넘으면 provider 결과를 500으로 만들지 않고 제한 오류를 반환한다", async () => {
+    const providerInputs: AiFeedbackProviderInput[] = []
+    const savedAttempts: AiFeedbackAttemptRecord[] = []
+    const service = createService({
+      completedAttempts: 2,
+      providerInputs,
+      saveResult: {
+        completedAttempts: 3,
+        kind: "limit-exceeded",
+      },
+      savedAttempts,
+    })
+
+    await expect(
+      service.createFeedback({
+        answer: "동시에 세 번째 코칭을 요청합니다.",
+        lessonId,
+        occurredAt,
+        stepId,
+        userId: learnerId,
+      })
+    ).resolves.toEqual({
+      kind: "err",
+      error: {
+        kind: "attempt-limit-exceeded",
+        remainingAttempts: 0,
+      },
+    })
+
+    expect(providerInputs).toHaveLength(1)
+    expect(savedAttempts).toEqual([])
+  })
+
   it("provider 실패는 저장하지 않고 시도 횟수를 소모하지 않는다", async () => {
     const savedAttempts: AiFeedbackAttemptRecord[] = []
     const providerInputs: AiFeedbackProviderInput[] = []
@@ -181,12 +214,16 @@ function createService({
     strengths: ["핵심 문장이 앞에 있어 읽기 쉽습니다."],
     summary: "문장의 의도가 분명합니다.",
   }),
+  saveResult,
   savedAttempts = [],
 }: {
   readonly completedAttempts?: number
   readonly providerInputs?: AiFeedbackProviderInput[]
   readonly providerResult?: Awaited<
     ReturnType<AiFeedbackProvider["createFeedback"]>
+  >
+  readonly saveResult?: Awaited<
+    ReturnType<AiFeedbackRepository["saveCompletedAttempt"]>
   >
   readonly savedAttempts?: AiFeedbackAttemptRecord[]
 } = {}): AiFeedbackService {
@@ -205,8 +242,22 @@ function createService({
     async countCompletedAttempts() {
       return completedAttempts
     },
-    async saveAttempt(record) {
-      savedAttempts.push(record)
+    async saveCompletedAttempt(record) {
+      const attemptNumber =
+        saveResult?.kind === "saved"
+          ? saveResult.attemptNumber
+          : completedAttempts + savedAttempts.length + 1
+
+      if (saveResult?.kind === "limit-exceeded") {
+        return saveResult
+      }
+
+      savedAttempts.push({
+        ...record,
+        attemptNumber,
+      })
+
+      return saveResult ?? { attemptNumber, kind: "saved" }
     },
   }
   const provider: AiFeedbackProvider = {

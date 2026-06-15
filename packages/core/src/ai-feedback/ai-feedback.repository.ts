@@ -13,9 +13,26 @@ export type AiFeedbackAttemptRecord = CreateAiFeedbackCommand & {
   readonly result: AiFeedbackPayload
 }
 
+export type SaveAiFeedbackAttemptInput = CreateAiFeedbackCommand & {
+  readonly result: AiFeedbackPayload
+}
+
+export type SaveAiFeedbackAttemptResult =
+  | {
+      readonly attemptNumber: number
+      readonly kind: "saved"
+    }
+  | {
+      readonly completedAttempts: number
+      readonly kind: "limit-exceeded"
+    }
+
 export type AiFeedbackRepository = {
   readonly countCompletedAttempts: (
     input: CountAiFeedbackAttemptsInput
   ) => Promise<number>
-  readonly saveAttempt: (record: AiFeedbackAttemptRecord) => Promise<void>
+  readonly saveCompletedAttempt: (
+    record: SaveAiFeedbackAttemptInput,
+    maxAttempts: number
+  ) => Promise<SaveAiFeedbackAttemptResult>
 }

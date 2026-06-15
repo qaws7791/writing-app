@@ -179,5 +179,5 @@ CREATE TABLE IF NOT EXISTS ai_feedback_attempts (
   answer_text TEXT NOT NULL,
   result_json TEXT NOT NULL,
   created_at INTEGER NOT NULL,
-  PRIMARY KEY (user_id, step_id, attempt_number)
+  PRIMARY KEY (user_id, lesson_id, step_id, attempt_number)
 );
