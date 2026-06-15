@@ -22,7 +22,7 @@
   },
   "scripts": {
     "format": "prettier --write . --ignore-path ../../.gitignore",
-    "lint": "eslint .",
+    "lint": "oxlint .",
     "test": "vitest run --config vitest.config.ts",
     "test:watch": "vitest watch --config vitest.config.ts",
     "typecheck": "tsc --noEmit"
@@ -56,7 +56,6 @@
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "@workspace/config": "workspace:*",
-    "eslint": "^9.39.2",
     "next-themes": "^0.4.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",

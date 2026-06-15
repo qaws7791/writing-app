@@ -8,7 +8,7 @@
     "build": "storybook build --output-dir dist",
     "serve": "bunx http-server dist -p 6007 -c-1",
     "build:serve": "storybook build --output-dir dist && bunx http-server dist -p 6007 -c-1",
-    "lint": "eslint",
+    "lint": "oxlint .",
     "format": "prettier --write . --ignore-path ../../.gitignore",
     "typecheck": "tsc --noEmit"
   },
@@ -29,7 +29,6 @@
     "@types/react": "^19.2.10",
     "@types/react-dom": "^19.2.3",
     "@workspace/config": "workspace:*",
-    "eslint": "^9.39.2",
     "react-docgen-typescript": "^2.4.0",
     "storybook": "10.2.19",
     "tailwindcss": "^4.1.18",

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev --port 3001",
-    "lint": "eslint .",
+    "lint": "oxlint .",
     "start": "next start --port 3001",
     "test": "vitest run --config vitest.config.ts",
     "typecheck": "next typegen && tsc --noEmit"
@@ -35,7 +35,6 @@
     "@types/react-dom": "^19",
     "@workspace/config": "workspace:*",
     "babel-plugin-react-compiler": "1.0.0",
-    "eslint": "^9",
     "jsdom": "^29.1.1",
     "tailwindcss": "^4",
     "typescript": "5.9.3",

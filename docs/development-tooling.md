@@ -118,9 +118,26 @@
 
 ## 린트
 
-- 모노레포 전체 린트에는 ESLint를 사용한다.
-- 모든 워크스페이스를 Turbo로 린트하려면 저장소 루트에서 `bun run lint`를 실행한다.
-- 앱과 패키지의 린트 스크립트는 각 워크스페이스에 두고, 루트에서는 Turbo를 통해 실행한다.
+- 모노레포 전체 린트에는 Oxlint를 사용한다.
+- 린트 설정은 저장소 루트의 `.oxlintrc.json` 하나에서 관리한다.
+- 전체 앱, 패키지, 루트 스크립트를 린트하려면 저장소 루트에서 `bun run lint`를 실행한다.
+- 자동 수정을 적용하려면 저장소 루트에서 `bun run lint:fix`를 실행한다.
+- 각 워크스페이스의 `lint` 스크립트는 `oxlint .`를 실행하며, Turbo 필터 기반 검증과 lefthook staged workspace 검증에서 사용한다.
+
+## 2026-06-16 Oxlint 전환 시작
+
+- Makerkit의 루트 단일 Oxc 설정 전환 사례를 참고해 모노레포의 ESLint 설정을 루트 Oxlint 설정으로 통합한다.
+- `@workspace/config`의 ESLint preset과 각 워크스페이스 `eslint.config.*`는 루트 `.oxlintrc.json`으로 접는다.
+- oxlint 네이티브 규칙으로 보존 가능한 TypeScript, React, Next.js 규칙은 네이티브 플러그인으로 전환한다.
+- oxlint 네이티브로 직접 대체되지 않는 `turbo/no-undeclared-env-vars`, `unused-imports/*`, React Compiler 계열 hooks 규칙, 프로젝트 고유 `as unknown as T` 금지 규칙은 JS Plugin 또는 로컬 플러그인으로 보존한다.
+
+## 2026-06-16 Oxlint 전환 완료
+
+- 루트 `.oxlintrc.json`에서 TypeScript, React, Next.js oxlint 네이티브 규칙과 JS Plugin 규칙을 함께 관리한다.
+- `turbo/no-undeclared-env-vars`, `unused-imports/*`, React Compiler 계열 hooks 규칙은 루트 devDependency의 ESLint 플러그인을 oxlint JS Plugin으로 로드해 보존한다.
+- 기존 `no-restricted-syntax`로 막던 `as unknown as T` 패턴은 `scripts/oxlint/workspace-rules.mjs`의 로컬 oxlint 플러그인 규칙으로 보존한다.
+- 앱과 패키지의 `eslint.config.*`, 루트 `.eslintrc.js`, `@workspace/config`의 ESLint preset export를 제거했다.
+- 대표 검증 명령은 `bun run lint`이며, 기존 Turbo workspace lint 경로는 각 워크스페이스의 `oxlint .` 스크립트로 유지한다.
 
 ## 타입 검사와 빌드
 

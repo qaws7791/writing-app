@@ -15,5 +15,5 @@ pre-commit:
 
 pre-push:
   commands:
-    turbo-lint:
-      run: bun turbo run lint
+    workspace-lint:
+      run: bun run lint
