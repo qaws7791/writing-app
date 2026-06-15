@@ -349,6 +349,7 @@ export interface operations {
             courses: {
               id: string
               lessons: {
+                currentStepIndex: number | null
                 estimatedMinutes: number
                 id: string
                 /** @enum {string} */
@@ -357,6 +358,7 @@ export interface operations {
               }[]
               nextLessons: {
                 courseId: string
+                currentStepIndex: number | null
                 estimatedMinutes: number
                 id: string
                 /** @enum {string} */

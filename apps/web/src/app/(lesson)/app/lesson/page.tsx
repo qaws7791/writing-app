@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+import type { ProgressCourseList } from "@/features/courses/course-types"
 import { LessonExperience } from "@/features/lessons/lesson-experience"
 import { getFallbackLesson } from "@/features/lessons/kwep-lesson-fallback"
 import { createLoginPagePath } from "@/lib/auth/auth-navigation"
@@ -61,11 +62,45 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
     )
   }
 
-  const courseDetailResult = await api.getCourseDetail(lesson.courseId)
+  const [courseDetailResult, progressResult] = await Promise.all([
+    api.getCourseDetail(lesson.courseId),
+    api.getProgress(),
+  ])
   const courseDetail =
     courseDetailResult.status === "ok" ? courseDetailResult.value : undefined
+  const initialProgress =
+    progressResult.status === "ok"
+      ? resolveInitialLessonProgress(progressResult.value, lesson.id)
+      : undefined
 
-  return <LessonExperience courseDetail={courseDetail} lesson={lesson} />
+  return (
+    <LessonExperience
+      courseDetail={courseDetail}
+      initialProgress={initialProgress}
+      lesson={lesson}
+    />
+  )
+}
+
+function resolveInitialLessonProgress(
+  progress: ProgressCourseList,
+  lessonId: string
+): { readonly currentStepIndex: number } | undefined {
+  const progressLesson = progress.courses
+    .flatMap((course) => course.lessons)
+    .find((lesson) => lesson.id === lessonId)
+
+  if (
+    progressLesson === undefined ||
+    progressLesson.status === "completed" ||
+    progressLesson.currentStepIndex === null
+  ) {
+    return undefined
+  }
+
+  return {
+    currentStepIndex: progressLesson.currentStepIndex,
+  }
 }
 
 function LessonRouteNotice({

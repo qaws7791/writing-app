@@ -192,6 +192,35 @@ describe("레슨 경험", () => {
     expect(screen.getByRole("button", { name: "시작하기" })).toBeEnabled()
   })
 
+  it("저장된 진행 단계가 있으면 시작 화면 없이 해당 스텝으로 재개한다", () => {
+    const api = createApi({
+      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
+    })
+
+    render(
+      <LessonExperience
+        api={api}
+        initialProgress={{ currentStepIndex: 1 }}
+        lesson={lesson}
+      />
+    )
+
+    expect(
+      screen.queryByRole("button", { name: "시작하기" })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "내 문장으로 정리하기" })
+    ).toBeInTheDocument()
+    expect(screen.getByText("2/2")).toHaveClass(
+      "ml-4",
+      "font-bold",
+      "text-muted"
+    )
+    expect(
+      screen.getByRole("progressbar", { name: "레슨 진행률" })
+    ).toHaveAttribute("aria-valuenow", "100")
+  })
+
   it("첫 스텝 답변 변경을 saveLessonAnswer로 자동 저장한다", async () => {
     const user = userEvent.setup()
     const saveLessonAnswer = vi.fn(async () => apiOk({ saved: true }))

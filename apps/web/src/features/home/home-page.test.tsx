@@ -24,18 +24,21 @@ const progressWithActiveCourse: ProgressCourseList = {
       id: "c1",
       lessons: [
         {
+          currentStepIndex: null,
           estimatedMinutes: 5,
           id: "l1",
           status: "completed",
           title: "좋은 문장이란 무엇인가",
         },
         {
+          currentStepIndex: null,
           estimatedMinutes: 7,
           id: "l2",
           status: "available",
           title: "짧게 쓰기",
         },
         {
+          currentStepIndex: null,
           estimatedMinutes: 8,
           id: "l3",
           status: "locked",
@@ -45,6 +48,7 @@ const progressWithActiveCourse: ProgressCourseList = {
       nextLessons: [
         {
           courseId: "c1",
+          currentStepIndex: null,
           estimatedMinutes: 7,
           id: "l2",
           status: "available",
@@ -64,6 +68,7 @@ const completedProgress: ProgressCourseList = {
       id: "c2",
       lessons: [
         {
+          currentStepIndex: null,
           estimatedMinutes: 5,
           id: "l4",
           status: "completed",

@@ -147,6 +147,7 @@ export function createFallbackProgressCourse(
 ): ProgressCourse {
   const lessons = flattenLessons(course)
   const progressLessons = lessons.map((lesson, index) => ({
+    currentStepIndex: null,
     estimatedMinutes: lesson.estimatedMinutes,
     id: lesson.id,
     status: resolveFreshLessonStatus(lessons, index),

@@ -92,12 +92,14 @@ describe("코스 API mapper", () => {
             id: "c1",
             lessons: [
               {
+                currentStepIndex: 1,
                 estimatedMinutes: 5,
                 id: "l1",
                 status: "completed",
                 title: "좋은 문장이란 무엇인가",
               },
               {
+                currentStepIndex: null,
                 estimatedMinutes: 7,
                 id: "l2",
                 status: "available",
@@ -107,6 +109,7 @@ describe("코스 API mapper", () => {
             nextLessons: [
               {
                 courseId: "c1",
+                currentStepIndex: null,
                 estimatedMinutes: 7,
                 id: "l2",
                 status: "available",
@@ -127,6 +130,7 @@ describe("코스 API mapper", () => {
           id: "c1",
           nextLessons: [
             {
+              currentStepIndex: null,
               id: "l2",
               status: "available",
             },

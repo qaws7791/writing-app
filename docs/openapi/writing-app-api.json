@@ -331,6 +331,16 @@
                             "items": {
                               "additionalProperties": false,
                               "properties": {
+                                "currentStepIndex": {
+                                  "anyOf": [
+                                    {
+                                      "type": "integer"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
                                 "estimatedMinutes": {
                                   "type": "integer"
                                 },
@@ -346,6 +356,7 @@
                                 }
                               },
                               "required": [
+                                "currentStepIndex",
                                 "estimatedMinutes",
                                 "id",
                                 "status",
@@ -361,6 +372,16 @@
                               "properties": {
                                 "courseId": {
                                   "type": "string"
+                                },
+                                "currentStepIndex": {
+                                  "anyOf": [
+                                    {
+                                      "type": "integer"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
                                 },
                                 "estimatedMinutes": {
                                   "type": "integer"
@@ -378,6 +399,7 @@
                               },
                               "required": [
                                 "courseId",
+                                "currentStepIndex",
                                 "estimatedMinutes",
                                 "id",
                                 "status",

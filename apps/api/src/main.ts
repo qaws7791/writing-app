@@ -103,27 +103,26 @@ function createProfileReader(db: typeof database.db): ProfileReader {
 function createProgressReader(db: typeof database.db): ProgressReader {
   return {
     async readLearnerProgress(userId) {
-      const [completedLessonRows, activity] = await Promise.all([
+      const [progressRows, activity] = await Promise.all([
         Promise.resolve(
           db
-            .select({ lessonId: learnerLessonProgress.lessonId })
+            .select({
+              currentStepIndex: learnerLessonProgress.currentStepIndex,
+              lessonId: learnerLessonProgress.lessonId,
+              status: learnerLessonProgress.status,
+            })
             .from(learnerLessonProgress)
-            .where(
-              and(
-                eq(learnerLessonProgress.userId, userId),
-                eq(learnerLessonProgress.status, "completed")
-              )
-            )
+            .where(eq(learnerLessonProgress.userId, userId))
             .all()
         ),
         readActivity(db, userId),
       ])
 
       return {
-        completedLessonIds: completedLessonRows.map((row) => row.lessonId),
         currentStreakDays: calculateCurrentStreakDays(
           activity.map((day) => day.activityDate)
         ),
+        lessonProgress: progressRows,
       }
     },
   }

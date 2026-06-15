@@ -62,12 +62,14 @@ const progressCourse: ProgressCourse = {
   id: "c1",
   lessons: [
     {
+      currentStepIndex: null,
       estimatedMinutes: 5,
       id: "l1",
       status: "available",
       title: "좋은 문장이란 무엇인가",
     },
     {
+      currentStepIndex: null,
       estimatedMinutes: 7,
       id: "l2",
       status: "locked",
@@ -77,6 +79,7 @@ const progressCourse: ProgressCourse = {
   nextLessons: [
     {
       courseId: "c1",
+      currentStepIndex: null,
       estimatedMinutes: 5,
       id: "l1",
       status: "available",

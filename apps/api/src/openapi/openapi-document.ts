@@ -606,7 +606,12 @@ const lessonAnswerSchema = {
   ],
 } as const
 
+const nullableIntegerSchema = {
+  anyOf: [integerSchema, { type: "null" }],
+} as const
+
 const progressLessonSchema = objectSchema({
+  currentStepIndex: nullableIntegerSchema,
   estimatedMinutes: integerSchema,
   id: textSchema,
   status: {
@@ -618,6 +623,7 @@ const progressLessonSchema = objectSchema({
 
 const progressNextLessonSchema = objectSchema({
   courseId: textSchema,
+  currentStepIndex: nullableIntegerSchema,
   estimatedMinutes: integerSchema,
   id: textSchema,
   status: {

@@ -37,6 +37,9 @@ import { XIcon } from "@workspace/ui/components/icons"
 type LessonExperienceProps = {
   readonly api?: WritingAppApi
   readonly courseDetail?: CourseDetail
+  readonly initialProgress?: {
+    readonly currentStepIndex: number
+  }
   readonly lesson: Lesson
 }
 
@@ -45,13 +48,18 @@ type LessonCheckedState = false | LessonStepCheckedState
 export function LessonExperience({
   api,
   courseDetail,
+  initialProgress,
   lesson,
 }: LessonExperienceProps) {
   const router = useRouter()
   const contentRef = useRef<HTMLElement>(null)
-  const [currentStepIndex, setCurrentStepIndex] = useState(0)
+  const initialStepIndex = clampLessonStepIndex(
+    lesson,
+    initialProgress?.currentStepIndex ?? 0
+  )
+  const [currentStepIndex, setCurrentStepIndex] = useState(initialStepIndex)
   const [isComplete, setIsComplete] = useState(false)
-  const [hasStarted, setHasStarted] = useState(false)
+  const [hasStarted, setHasStarted] = useState(initialProgress !== undefined)
   const [showExit, setShowExit] = useState(false)
   const [checked, setChecked] = useState<LessonCheckedState>(false)
   const [answerPayloads, setAnswerPayloads] = useState<
@@ -673,6 +681,14 @@ function scrollWindowToTop() {
   }
 
   window.scrollTo(0, 0)
+}
+
+function clampLessonStepIndex(lesson: Lesson, stepIndex: number): number {
+  if (lesson.steps.length === 0) {
+    return 0
+  }
+
+  return Math.min(lesson.steps.length - 1, Math.max(0, stepIndex))
 }
 
 function cx(...classes: Array<false | null | string | undefined>): string {
