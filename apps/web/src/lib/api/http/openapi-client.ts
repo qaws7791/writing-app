@@ -20,6 +20,11 @@ export type FetchLike = (request: Request) => Promise<Response>
 
 export type TokenProvider = () => Promise<string | null> | string | null
 
+export type NetworkErrorReporter = (event: {
+  readonly error: unknown
+  readonly request: Request
+}) => void
+
 export type OpenApiClient = {
   readonly requestJson: <TValue>(input: {
     readonly body?: unknown
@@ -32,10 +37,12 @@ export type OpenApiClient = {
 export function createOpenApiClient({
   baseUrl,
   fetch,
+  reportNetworkError,
   tokenProvider,
 }: {
   readonly baseUrl: string
   readonly fetch: FetchLike
+  readonly reportNetworkError?: NetworkErrorReporter
   readonly tokenProvider: TokenProvider
 }): OpenApiClient {
   return {
@@ -56,14 +63,12 @@ export function createOpenApiClient({
         headers.set("Content-Type", "application/json")
       }
 
-      const response = await fetch(
-        new Request(toApiUrl(baseUrl, input.path), {
-          body:
-            input.body === undefined ? undefined : JSON.stringify(input.body),
-          headers,
-          method: input.method,
-        })
-      ).catch(() => null)
+      const request = new Request(toApiUrl(baseUrl, input.path), {
+        body: input.body === undefined ? undefined : JSON.stringify(input.body),
+        headers,
+        method: input.method,
+      })
+      const response = await fetchJson(request, fetch, reportNetworkError)
 
       if (response === null) {
         return apiFailure(networkApiError())
@@ -92,6 +97,23 @@ export function createOpenApiClient({
 
 function toApiUrl(baseUrl: string, path: string): string {
   return `${baseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`
+}
+
+async function fetchJson(
+  request: Request,
+  fetch: FetchLike,
+  reportNetworkError: NetworkErrorReporter | undefined
+): Promise<Response | null> {
+  try {
+    return await fetch(request)
+  } catch (error) {
+    reportNetworkError?.({
+      error,
+      request,
+    })
+
+    return null
+  }
 }
 
 async function readJson(response: Response): Promise<
