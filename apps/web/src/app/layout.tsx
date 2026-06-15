@@ -3,8 +3,6 @@ import type { ReactNode } from "react"
 
 import { ThemeProvider } from "next-themes"
 
-import { InlineStyleAttributeNormalizer } from "@/components/layout/inline-style-attribute-normalizer"
-
 import "@/app/globals.css"
 
 export const metadata: Metadata = {
@@ -28,7 +26,6 @@ export default function RootLayout({
           disableTransitionOnChange
           enableSystem
         >
-          <InlineStyleAttributeNormalizer />
           {children}
         </ThemeProvider>
       </body>

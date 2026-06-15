@@ -1,9 +1,10 @@
 "use client"
 
-/* eslint-disable @next/next/no-img-element, react/button-has-type */
+/* eslint-disable react/button-has-type */
 
 import { useState } from "react"
 
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 import { createCourseImageUrl } from "@/features/courses/course-image-url"
@@ -109,11 +110,13 @@ export function CoursesPage({ courses }: CoursesPageProps) {
               key={course.id}
               onClick={() => router.push(`/app/courses/${course.id}`)}
             >
-              <div className="w-28 shrink-0 md:w-full md:h-44">
-                <img
+              <div className="relative w-28 shrink-0 md:w-full md:h-44">
+                <Image
                   alt={course.title}
-                  className="w-full h-full object-cover"
-                  src={createCourseImageUrl(course.id, 600, 300)}
+                  className="object-cover"
+                  fill
+                  sizes="(max-width: 768px) 112px, (max-width: 1024px) 50vw, 33vw"
+                  src={createCourseImageUrl(course.id)}
                 />
               </div>
               <div className="p-4 md:p-6 flex-1 flex flex-col min-w-0">

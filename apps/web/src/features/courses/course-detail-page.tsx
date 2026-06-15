@@ -1,7 +1,8 @@
 "use client"
 
-/* eslint-disable @next/next/no-img-element, react/button-has-type */
+/* eslint-disable react/button-has-type */
 
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 import { CourseCurriculum } from "@/features/courses/course-curriculum"
@@ -48,10 +49,13 @@ export function CourseDetailPage({
       </button>
       <div className="bg-surface -mx-3 md:mx-0 rounded-4xl px-5 py-8 md:p-10 mb-12">
         <div className="flex items-start justify-between gap-4 mb-6">
-          <img
+          <Image
             alt={course.title}
             className="w-24 h-24 md:w-32 md:h-32 rounded-2xl md:rounded-3xl object-cover shrink-0"
-            src={createCourseImageUrl(course.id, 240, 240)}
+            height={128}
+            sizes="(max-width: 768px) 96px, 128px"
+            src={createCourseImageUrl(course.id)}
+            width={128}
           />
         </div>
         <h1

@@ -1,7 +1,13 @@
-export function createCourseImageUrl(
-  id: string,
-  width: number,
-  height: number
-): string {
-  return `https://picsum.photos/seed/${id}/${width}/${height}`
+const defaultCourseImageUrl = "/course-thumbnails/basic-sentence-writing.png"
+
+const courseImageUrls = new Map<string, string>([
+  ["c1", defaultCourseImageUrl],
+  ["c2", "/course-thumbnails/grammar-complete.png"],
+  ["c3", "/course-thumbnails/essay-writing.png"],
+  ["c4", "/course-thumbnails/creative-writing.png"],
+  ["c5", "/course-thumbnails/expression.png"],
+])
+
+export function createCourseImageUrl(id: string): string {
+  return courseImageUrls.get(id) ?? defaultCourseImageUrl
 }
