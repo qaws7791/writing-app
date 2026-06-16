@@ -7,10 +7,6 @@ import { createAiFeedbackRoute } from "@/routes/ai-feedback.route"
 import { createAuthRoute } from "@/routes/auth.route"
 import { createCoursesRoute } from "@/routes/courses.route"
 import { createHealthRoute } from "@/routes/health.route"
-import {
-  createGoogleOAuthRoute,
-  type GoogleOAuthRouteOptions,
-} from "@/routes/google-oauth.route"
 import { createLearningRoute } from "@/routes/learning.route"
 import { createLessonsRoute } from "@/routes/lessons.route"
 import { createOpenApiRoute } from "@/routes/openapi.route"
@@ -31,8 +27,8 @@ import {
 
 export type ApiDependencies = {
   readonly aiFeedbackService?: AiFeedbackService
+  readonly authHandler?: (request: Request) => Promise<Response>
   readonly contentRepository?: ContentRepository
-  readonly googleOAuth?: GoogleOAuthRouteOptions
   readonly learningService?: LearningService
   readonly now?: () => Date
   readonly profileReader: ProfileReader
@@ -75,8 +71,15 @@ export function createApp(dependencies: ApiDependencies): Hono {
 
   app.route("/health", createHealthRoute())
   app.route("/openapi", createOpenApiRoute())
-  if (dependencies.googleOAuth !== undefined) {
-    app.route("/api/auth", createGoogleOAuthRoute(dependencies.googleOAuth))
+  if (dependencies.authHandler !== undefined) {
+    const authHandler = dependencies.authHandler
+
+    app.get("/api/auth/sign-in/google", async (context) => {
+      return redirectGoogleSignIn(context.req.raw, authHandler)
+    })
+    app.on(["GET", "POST"], "/api/auth/*", (context) => {
+      return authHandler(context.req.raw)
+    })
   }
   app.route("/auth", createAuthRoute(dependencies.sessionResolver))
   app.route("/profile", createProfileRoute(dependencies))
@@ -135,6 +138,38 @@ export function createApp(dependencies: ApiDependencies): Hono {
   }
 
   return app
+}
+
+async function redirectGoogleSignIn(
+  request: Request,
+  authHandler: (request: Request) => Promise<Response>
+): Promise<Response> {
+  const url = new URL(request.url)
+  const signInUrl = new URL("/api/auth/sign-in/social", url)
+  const response = await authHandler(
+    new Request(signInUrl, {
+      body: JSON.stringify({
+        callbackURL: url.searchParams.get("callbackURL") ?? undefined,
+        provider: "google",
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+  )
+
+  if (!response.ok) {
+    return response
+  }
+
+  const body = (await response.json()) as { readonly url?: unknown }
+
+  if (typeof body.url !== "string") {
+    return response
+  }
+
+  return Response.redirect(body.url, 302)
 }
 
 function handleAppError(error: unknown, context: Context) {

@@ -151,7 +151,7 @@ function shouldRecreateLegacyDatabase(
   }
 
   const requiredTables = [
-    "auth_users",
+    "user",
     "course_units",
     "learner_profiles",
     "learner_lesson_progress",

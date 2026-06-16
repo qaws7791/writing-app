@@ -20,12 +20,6 @@ export function resolveSafeNextPath(
   return candidate
 }
 
-export function createGoogleLoginPath(nextPath: string): string {
-  const callbackPath = resolveSafeNextPath(nextPath)
-
-  return `${getApiBaseUrl()}/api/auth/sign-in/google?callbackURL=${encodeURIComponent(callbackPath)}`
-}
-
 export function createLoginPagePath(nextPath: string): string {
   const safeNextPath = resolveSafeNextPath(nextPath)
 

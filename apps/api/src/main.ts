@@ -17,7 +17,7 @@ import { createAppLogger, createRequestLogger } from "@workspace/logger"
 import { and, count, desc, eq } from "drizzle-orm"
 
 import { createApp } from "@/app"
-import { createBearerSessionResolver } from "@/auth/auth"
+import { createBearerSessionResolver, createLearnerAuth } from "@/auth/auth"
 import { parseApiEnv } from "@/env"
 import {
   createOpenAiFeedbackProvider,
@@ -33,6 +33,15 @@ const contentRepository = createDrizzleContentRepository(database.db)
 const feedbackRepository = createDrizzleAiFeedbackRepository(database.db)
 const learningRepository = createDrizzleLearningRepository(database.db)
 const progressReader = createProgressReader(database.db)
+const auth = createLearnerAuth({
+  authBaseUrl: env.authBaseUrl,
+  cookieDomain: env.cookieDomain,
+  db: database.db,
+  googleClientId: env.googleClientId,
+  googleClientSecret: env.googleClientSecret,
+  secret: env.betterAuthSecret,
+  webOrigin: env.webOrigin,
+})
 const aiFeedbackProvider =
   env.openAiApiKey === undefined
     ? createUnavailableAiFeedbackProvider()
@@ -48,17 +57,8 @@ const app = createApp({
     feedbackRepository,
     provider: aiFeedbackProvider,
   }),
+  authHandler: auth.handler,
   contentRepository,
-  googleOAuth:
-    env.googleClientId === undefined || env.googleClientSecret === undefined
-      ? undefined
-      : {
-          authBaseUrl: env.authBaseUrl,
-          clientId: env.googleClientId,
-          clientSecret: env.googleClientSecret,
-          db: database.db,
-          webOrigin: env.webOrigin,
-        },
   learningService: createLearningService({
     contentRepository,
     learningRepository,

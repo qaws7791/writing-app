@@ -14,9 +14,9 @@
 
 ## Better Auth 계열 테이블
 
-학습자 인증 테이블 `user`, `session`, `account`, `verification`은 Better Auth 런타임과 adapter 계약을 따른다.
+학습자 인증 테이블 `user`, `session`, `account`, `verification`은 Better Auth 런타임과 adapter 계약을 따른다. `account` 테이블은 공식 core schema의 `accessTokenExpiresAt`, `refreshTokenExpiresAt`, `scope`, `password` 필드를 포함한다.
 
-관리자 인증 테이블 `admin_user`, `admin_session`, `admin_account`, `admin_verification`도 같은 Better Auth 컬럼 계약을 유지한다. 테이블 이름에는 관리자 인증 경계를 드러내기 위해 `admin_` prefix를 붙였지만, 컬럼 이름은 `emailVerified`, `createdAt`, `updatedAt`, `userId`, `accountId`, `providerId`처럼 Better Auth convention을 따른다.
+관리자 인증 테이블 `admin_user`, `admin_session`, `admin_account`, `admin_verification`도 같은 Better Auth core schema 형태를 유지한다. 테이블 이름에는 관리자 인증 경계를 드러내기 위해 `admin_` prefix를 붙였고, Drizzle 속성은 Better Auth가 기대하는 `emailVerified`, `createdAt`, `updatedAt`, `userId`, `accountId`, `providerId` 이름을 유지한다. 실제 SQLite 컬럼명은 baseline SQL과 Drizzle schema가 함께 정의하는 이름을 기준으로 한다.
 
 이 테이블의 컬럼을 snake_case로 바꾸려면 Better Auth adapter 설정, 마이그레이션, 기존 세션과 계정 데이터 이전 계획을 함께 검토해야 한다. 단순 정리 작업으로 rename하지 않는다.
 

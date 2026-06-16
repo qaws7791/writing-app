@@ -5,14 +5,17 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { AuthPage } from "@/features/auth/auth-page"
 import { resolveSafeNextPath } from "@/lib/auth/auth-navigation"
 
-describe("로그인 페이지", () => {
-  const locationAssign = vi.fn()
+const authClientMocks = vi.hoisted(() => ({
+  requestGoogleLogin: vi.fn(),
+}))
 
+vi.mock("@/lib/auth/auth-client", () => ({
+  requestGoogleLogin: authClientMocks.requestGoogleLogin,
+}))
+
+describe("로그인 페이지", () => {
   beforeEach(() => {
-    locationAssign.mockClear()
-    vi.stubGlobal("location", {
-      assign: locationAssign,
-    } satisfies Partial<Location>)
+    authClientMocks.requestGoogleLogin.mockClear()
   })
 
   it("Kwep 로그인 화면과 같은 문구, 구조, Google 버튼을 렌더링한다", async () => {
@@ -38,8 +41,8 @@ describe("로그인 페이지", () => {
     )
 
     await user.click(googleLogin)
-    expect(locationAssign).toHaveBeenCalledWith(
-      "/api/auth/sign-in/google?callbackURL=%2Fapp%2Fcourses"
+    expect(authClientMocks.requestGoogleLogin).toHaveBeenCalledWith(
+      "/app/courses"
     )
   })
 

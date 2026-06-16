@@ -3,7 +3,6 @@ import { localRuntimeDefaults } from "@workspace/env"
 
 import {
   createLoginPagePath,
-  createGoogleLoginPath,
   createLogoutPath,
   resolveSafeNextPath,
 } from "@/lib/auth/auth-navigation"
@@ -15,9 +14,6 @@ describe("auth navigation", () => {
 
     expect(resolveSafeNextPath("/app/profile")).toBe("/app/profile")
     expect(resolveSafeNextPath("https://example.com/app")).toBe("/app")
-    expect(createGoogleLoginPath("/app/profile")).toBe(
-      `${localRuntimeDefaults.learnerApiBaseUrl}/api/auth/sign-in/google?callbackURL=%2Fapp%2Fprofile`
-    )
     expect(createLoginPagePath("/app/lesson?lesson_id=l1")).toBe(
       "/login?next=%2Fapp%2Flesson%3Flesson_id%3Dl1"
     )

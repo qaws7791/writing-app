@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 
-import { createAdminBearerSessionResolver } from "@/auth/admin-auth"
+import {
+  createAdminBearerSessionResolver,
+  readBetterAuthAdminSessionToken,
+} from "@/auth/admin-auth"
 import type { KwepDatabase } from "@workspace/db/client"
 
 const now = new Date("2026-06-15T09:00:00.000Z")
@@ -12,6 +15,15 @@ const adminSession = {
 }
 
 describe("Admin Bearer session resolver", () => {
+  it("서명된 Better Auth 쿠키 값에서 세션 토큰만 읽는다", () => {
+    expect(readBetterAuthAdminSessionToken("admin-token-1.signature")).toBe(
+      "admin-token-1"
+    )
+    expect(readBetterAuthAdminSessionToken("admin-token-1")).toBe(
+      "admin-token-1"
+    )
+  })
+
   it("세션 테이블의 유효 토큰으로 관리자 세션을 찾는다", async () => {
     const resolver = createAdminBearerSessionResolver(
       createFakeDatabase([adminSession]),
@@ -19,6 +31,24 @@ describe("Admin Bearer session resolver", () => {
     )
 
     await expect(resolver.resolveSession("admin-token-1")).resolves.toEqual({
+      admin: {
+        email: "admin@example.com",
+        id: "admin-1",
+        name: "관리자",
+        role: "owner",
+      },
+    })
+  })
+
+  it("서명된 Better Auth 쿠키 값에서 세션 토큰만 사용한다", async () => {
+    const resolver = createAdminBearerSessionResolver(
+      createFakeDatabase([adminSession]),
+      () => now
+    )
+
+    await expect(
+      resolver.resolveSession("admin-token-1.signature")
+    ).resolves.toEqual({
       admin: {
         email: "admin@example.com",
         id: "admin-1",

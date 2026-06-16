@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs"
+import { mkdirSync, mkdtempSync, realpathSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -56,7 +56,9 @@ describe("Kwep DB client", () => {
           .query<{ readonly synchronous: number }, []>("PRAGMA synchronous")
           .get()?.synchronous
 
-        expect(databaseFile).toBe(join(tempDirectory, "data", "api.sqlite"))
+        expect(realpathSync(databaseFile ?? "")).toBe(
+          realpathSync(join(tempDirectory, "data", "api.sqlite"))
+        )
         expect(journalMode).toBe("wal")
         expect(busyTimeout).toBe(5000)
         expect(synchronous).toBe(1)
@@ -83,16 +85,13 @@ describe("Kwep DB client", () => {
         .map((row) => row.name)
 
       expect(tableNames).toEqual([
-        "admin_auth_accounts",
-        "admin_auth_sessions",
-        "admin_auth_users",
-        "admin_auth_verifications",
+        "account",
+        "admin_account",
+        "admin_session",
         "admin_settings",
+        "admin_user",
+        "admin_verification",
         "ai_feedback_attempts",
-        "auth_accounts",
-        "auth_sessions",
-        "auth_users",
-        "auth_verifications",
         "course_units",
         "courses",
         "learner_activity_days",
@@ -101,7 +100,40 @@ describe("Kwep DB client", () => {
         "learner_profiles",
         "lesson_steps",
         "lessons",
+        "session",
+        "user",
+        "verification",
       ])
+
+      const accountColumnNames = client.sqlite
+        .query<{ readonly name: string }, []>("PRAGMA table_info(account)")
+        .all()
+        .map((row) => row.name)
+
+      expect(accountColumnNames).toEqual([
+        "id",
+        "user_id",
+        "account_id",
+        "provider_id",
+        "access_token",
+        "refresh_token",
+        "access_token_expires_at",
+        "refresh_token_expires_at",
+        "scope",
+        "id_token",
+        "password",
+        "created_at",
+        "updated_at",
+      ])
+
+      const adminAccountColumnNames = client.sqlite
+        .query<{ readonly name: string }, []>(
+          "PRAGMA table_info(admin_account)"
+        )
+        .all()
+        .map((row) => row.name)
+
+      expect(adminAccountColumnNames).toEqual(accountColumnNames)
 
       const lessonForeignKeys = client.sqlite
         .query<{ readonly table: string }, []>(

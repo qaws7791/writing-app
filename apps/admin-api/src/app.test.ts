@@ -193,6 +193,40 @@ describe("어드민 API dashboard route", () => {
     )
   })
 
+  it("기존 Google 로그인 시작 경로를 Better Auth social sign-in으로 위임한다", async () => {
+    const capturedRequests: Request[] = []
+    const app = createApp({
+      ...createDependencies(),
+      async authHandler(request) {
+        capturedRequests.push(request)
+
+        return Response.json({
+          redirect: true,
+          url: "https://accounts.google.com/o/oauth2/v2/auth",
+        })
+      },
+    })
+
+    const response = await app.request(
+      "/api/auth/sign-in/google?callbackURL=%2F"
+    )
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get("location")).toBe(
+      "https://accounts.google.com/o/oauth2/v2/auth"
+    )
+    const capturedRequest = capturedRequests[0]
+
+    expect(capturedRequest?.method).toBe("POST")
+    expect(new URL(capturedRequest?.url ?? "").pathname).toBe(
+      "/api/auth/sign-in/social"
+    )
+    await expect(capturedRequest?.json()).resolves.toEqual({
+      callbackURL: "/",
+      provider: "google",
+    })
+  })
+
   it("관리자 세션이 없으면 401을 반환한다", async () => {
     const app = createApp(createDependencies())
 

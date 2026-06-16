@@ -132,6 +132,13 @@
 - 검증 명령은 `bun --filter @workspace/web test`, `bun --filter @workspace/web typecheck`, `bun --filter @workspace/web lint`, `bun --filter @workspace/web build`를 실행했다.
 - 인앱 브라우저에서 `/login?next=%2Fapp%2Fcourses` 화면의 Google 로그인 버튼과 회원가입 링크 렌더링을 확인했다.
 
+## 2026-06-16 Better Auth 공식 클라이언트 전환
+
+- 학습자 로그인 버튼은 직접 OAuth URL을 조립하지 않고 Better Auth React client의 `signIn.social` 흐름을 사용한다.
+- 인증 요청은 기존처럼 Hono API origin의 `/api/auth/*` endpoint로 직접 보내며, Next.js 프록시는 두지 않는다.
+- API의 Better Auth 세션 쿠키 이름은 기존 보호 API와의 호환을 위해 `kwep_session`으로 유지한다.
+- 보호 API가 받는 Bearer token은 Better Auth가 서명한 쿠키 값에서 실제 session token만 읽어 `session` 테이블을 조회한다.
+
 ## 2026-05-27 프로토타입 데이터 참조 조사 완료
 
 - 회원가입 후 홈에서 기존 진행 중 코스가 보이는 원인을 확장해, `apps/web` 런타임의 로컬 프로토타입 데이터 참조를 조사했다.

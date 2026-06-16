@@ -20,6 +20,7 @@ import {
 
 export type AdminApiDependencies = {
   readonly adminOrigin?: string
+  readonly authHandler?: (request: Request) => Promise<Response>
   readonly dashboardService: AdminService
   readonly now?: () => Date
   readonly requestLogger?: RequestLogger
@@ -57,6 +58,16 @@ export function createApp(dependencies: AdminApiDependencies): Hono {
   )
 
   app.route("/health", createHealthRoute())
+  if (dependencies.authHandler !== undefined) {
+    const authHandler = dependencies.authHandler
+
+    app.get("/api/auth/sign-in/google", async (context) => {
+      return redirectGoogleSignIn(context.req.raw, authHandler)
+    })
+    app.on(["GET", "POST"], "/api/auth/*", (context) => {
+      return authHandler(context.req.raw)
+    })
+  }
   app.route(
     "/dashboard",
     createDashboardRoute({
@@ -106,4 +117,36 @@ export function createApp(dependencies: AdminApiDependencies): Hono {
   )
 
   return app
+}
+
+async function redirectGoogleSignIn(
+  request: Request,
+  authHandler: (request: Request) => Promise<Response>
+): Promise<Response> {
+  const url = new URL(request.url)
+  const signInUrl = new URL("/api/auth/sign-in/social", url)
+  const response = await authHandler(
+    new Request(signInUrl, {
+      body: JSON.stringify({
+        callbackURL: url.searchParams.get("callbackURL") ?? undefined,
+        provider: "google",
+      }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+  )
+
+  if (!response.ok) {
+    return response
+  }
+
+  const body = (await response.json()) as { readonly url?: unknown }
+
+  if (typeof body.url !== "string") {
+    return response
+  }
+
+  return Response.redirect(body.url, 302)
 }

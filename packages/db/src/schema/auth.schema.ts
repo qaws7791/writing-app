@@ -1,6 +1,6 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
-export const authUsers = sqliteTable("auth_users", {
+export const authUsers = sqliteTable("user", {
   id: text("id").primaryKey().notNull(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -12,7 +12,7 @@ export const authUsers = sqliteTable("auth_users", {
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 })
 
-export const authSessions = sqliteTable("auth_sessions", {
+export const authSessions = sqliteTable("session", {
   id: text("id").primaryKey().notNull(),
   userId: text("user_id")
     .notNull()
@@ -25,7 +25,7 @@ export const authSessions = sqliteTable("auth_sessions", {
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 })
 
-export const authAccounts = sqliteTable("auth_accounts", {
+export const authAccounts = sqliteTable("account", {
   id: text("id").primaryKey().notNull(),
   userId: text("user_id")
     .notNull()
@@ -34,13 +34,20 @@ export const authAccounts = sqliteTable("auth_accounts", {
   providerId: text("provider_id").notNull(),
   accessToken: text("access_token"),
   refreshToken: text("refresh_token"),
+  accessTokenExpiresAt: integer("access_token_expires_at", {
+    mode: "timestamp_ms",
+  }),
+  refreshTokenExpiresAt: integer("refresh_token_expires_at", {
+    mode: "timestamp_ms",
+  }),
+  scope: text("scope"),
   idToken: text("id_token"),
-  expiresAt: integer("expires_at", { mode: "timestamp_ms" }),
+  password: text("password"),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 })
 
-export const authVerifications = sqliteTable("auth_verifications", {
+export const authVerifications = sqliteTable("verification", {
   id: text("id").primaryKey().notNull(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),

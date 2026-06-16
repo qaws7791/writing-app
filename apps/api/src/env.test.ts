@@ -21,6 +21,8 @@ describe("API env", () => {
       })
     ).toEqual({
       authBaseUrl: createLocalRuntimeUrl(4101),
+      betterAuthSecret: "x".repeat(32),
+      cookieDomain: undefined,
       databaseUrl: ":memory:",
       googleClientId: undefined,
       googleClientSecret: undefined,
@@ -45,6 +47,8 @@ describe("API env", () => {
       })
     ).toEqual({
       authBaseUrl: localRuntimeDefaults.learnerApiBaseUrl,
+      betterAuthSecret: "x".repeat(32),
+      cookieDomain: undefined,
       databaseUrl: ":memory:",
       googleClientId: undefined,
       googleClientSecret: undefined,
@@ -54,5 +58,16 @@ describe("API env", () => {
       port: localRuntimePorts.learnerApi,
       webOrigin: localRuntimeDefaults.learnerWebOrigin,
     })
+  })
+
+  it("선택 Better Auth 쿠키 도메인을 읽는다", () => {
+    expect(
+      parseApiEnv({
+        BETTER_AUTH_COOKIE_DOMAIN: "example.com",
+        BETTER_AUTH_SECRET: "x".repeat(32),
+        DATABASE_URL: ":memory:",
+        NODE_ENV: "test",
+      }).cookieDomain
+    ).toBe("example.com")
   })
 })

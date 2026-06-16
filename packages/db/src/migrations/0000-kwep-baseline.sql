@@ -1,6 +1,6 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE IF NOT EXISTS auth_users (
+CREATE TABLE IF NOT EXISTS user (
   id TEXT PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
@@ -10,9 +10,9 @@ CREATE TABLE IF NOT EXISTS auth_users (
   updated_at INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS auth_sessions (
+CREATE TABLE IF NOT EXISTS session (
   id TEXT PRIMARY KEY NOT NULL,
-  user_id TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   token TEXT NOT NULL UNIQUE,
   expires_at INTEGER NOT NULL,
   ip_address TEXT,
@@ -21,20 +21,23 @@ CREATE TABLE IF NOT EXISTS auth_sessions (
   updated_at INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS auth_accounts (
+CREATE TABLE IF NOT EXISTS account (
   id TEXT PRIMARY KEY NOT NULL,
-  user_id TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   account_id TEXT NOT NULL,
   provider_id TEXT NOT NULL,
   access_token TEXT,
   refresh_token TEXT,
+  access_token_expires_at INTEGER,
+  refresh_token_expires_at INTEGER,
+  scope TEXT,
   id_token TEXT,
-  expires_at INTEGER,
+  password TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS auth_verifications (
+CREATE TABLE IF NOT EXISTS verification (
   id TEXT PRIMARY KEY NOT NULL,
   identifier TEXT NOT NULL,
   value TEXT NOT NULL,
@@ -43,7 +46,7 @@ CREATE TABLE IF NOT EXISTS auth_verifications (
   updated_at INTEGER
 );
 
-CREATE TABLE IF NOT EXISTS admin_auth_users (
+CREATE TABLE IF NOT EXISTS admin_user (
   id TEXT PRIMARY KEY NOT NULL,
   name TEXT NOT NULL,
   email TEXT NOT NULL UNIQUE,
@@ -54,9 +57,9 @@ CREATE TABLE IF NOT EXISTS admin_auth_users (
   updated_at INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS admin_auth_sessions (
+CREATE TABLE IF NOT EXISTS admin_session (
   id TEXT PRIMARY KEY NOT NULL,
-  user_id TEXT NOT NULL REFERENCES admin_auth_users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE CASCADE,
   token TEXT NOT NULL UNIQUE,
   expires_at INTEGER NOT NULL,
   ip_address TEXT,
@@ -65,20 +68,23 @@ CREATE TABLE IF NOT EXISTS admin_auth_sessions (
   updated_at INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS admin_auth_accounts (
+CREATE TABLE IF NOT EXISTS admin_account (
   id TEXT PRIMARY KEY NOT NULL,
-  user_id TEXT NOT NULL REFERENCES admin_auth_users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE CASCADE,
   account_id TEXT NOT NULL,
   provider_id TEXT NOT NULL,
   access_token TEXT,
   refresh_token TEXT,
+  access_token_expires_at INTEGER,
+  refresh_token_expires_at INTEGER,
+  scope TEXT,
   id_token TEXT,
-  expires_at INTEGER,
+  password TEXT,
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS admin_auth_verifications (
+CREATE TABLE IF NOT EXISTS admin_verification (
   id TEXT PRIMARY KEY NOT NULL,
   identifier TEXT NOT NULL,
   value TEXT NOT NULL,
@@ -134,14 +140,14 @@ CREATE TABLE IF NOT EXISTS lesson_steps (
 );
 
 CREATE TABLE IF NOT EXISTS learner_profiles (
-  user_id TEXT PRIMARY KEY NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  user_id TEXT PRIMARY KEY NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   status TEXT NOT NULL DEFAULT 'active',
   display_name TEXT,
   deleted_at INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS learner_activity_days (
-  user_id TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   activity_date TEXT NOT NULL,
   first_activity_at INTEGER NOT NULL,
   last_activity_at INTEGER NOT NULL,
@@ -151,7 +157,7 @@ CREATE TABLE IF NOT EXISTS learner_activity_days (
 );
 
 CREATE TABLE IF NOT EXISTS learner_lesson_progress (
-  user_id TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
   current_step_index INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'in_progress',
@@ -162,7 +168,7 @@ CREATE TABLE IF NOT EXISTS learner_lesson_progress (
 );
 
 CREATE TABLE IF NOT EXISTS learner_lesson_answers (
-  user_id TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
   step_id TEXT NOT NULL REFERENCES lesson_steps(id) ON DELETE CASCADE,
   answer_json TEXT NOT NULL,
@@ -172,7 +178,7 @@ CREATE TABLE IF NOT EXISTS learner_lesson_answers (
 );
 
 CREATE TABLE IF NOT EXISTS ai_feedback_attempts (
-  user_id TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
   step_id TEXT NOT NULL REFERENCES lesson_steps(id) ON DELETE CASCADE,
   attempt_number INTEGER NOT NULL,

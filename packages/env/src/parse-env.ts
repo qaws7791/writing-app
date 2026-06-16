@@ -14,6 +14,8 @@ export const appEnvSchema = z.object({
   ADMIN_API_PORT: portSchema.default(localRuntimePorts.adminApi),
   ADMIN_ORIGIN: z.url().default(localRuntimeDefaults.adminWebOrigin),
   API_PORT: portSchema.default(localRuntimePorts.learnerApi),
+  ADMIN_BETTER_AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
+  BETTER_AUTH_COOKIE_DOMAIN: z.string().min(1).optional(),
   BETTER_AUTH_URL: z.url().optional(),
   BETTER_AUTH_SECRET: z.string().min(32),
   DATABASE_URL: z.string().min(1).optional(),

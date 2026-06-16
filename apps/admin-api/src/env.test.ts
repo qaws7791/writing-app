@@ -15,7 +15,12 @@ describe("어드민 API env", () => {
       })
     ).toEqual({
       adminOrigin: localRuntimeDefaults.adminWebOrigin,
+      authBaseUrl: "http://localhost:4102",
+      betterAuthSecret: "x".repeat(32),
+      cookieDomain: undefined,
       databaseUrl: ":memory:",
+      googleClientId: undefined,
+      googleClientSecret: undefined,
       nodeEnv: "test",
       port: 4102,
     })
@@ -25,15 +30,34 @@ describe("어드민 API env", () => {
     expect(
       parseAdminApiEnv({
         ADMIN_BETTER_AUTH_SECRET: "x".repeat(32),
+        ADMIN_BETTER_AUTH_URL: localRuntimeDefaults.adminApiBaseUrl,
         ADMIN_CORS_ORIGIN: localRuntimeDefaults.adminWebOrigin,
         DATABASE_URL: ":memory:",
         NODE_ENV: "test",
       })
     ).toEqual({
       adminOrigin: localRuntimeDefaults.adminWebOrigin,
+      authBaseUrl: localRuntimeDefaults.adminApiBaseUrl,
+      betterAuthSecret: "x".repeat(32),
+      cookieDomain: undefined,
       databaseUrl: ":memory:",
+      googleClientId: undefined,
+      googleClientSecret: undefined,
       nodeEnv: "test",
       port: localRuntimePorts.adminApi,
     })
+  })
+
+  it("선택 관리자 Better Auth 쿠키 도메인을 읽는다", () => {
+    expect(
+      parseAdminApiEnv({
+        ADMIN_BETTER_AUTH_COOKIE_DOMAIN: "example.com",
+        ADMIN_BETTER_AUTH_SECRET: "x".repeat(32),
+        ADMIN_BETTER_AUTH_URL: localRuntimeDefaults.adminApiBaseUrl,
+        ADMIN_CORS_ORIGIN: localRuntimeDefaults.adminWebOrigin,
+        DATABASE_URL: ":memory:",
+        NODE_ENV: "test",
+      }).cookieDomain
+    ).toBe("example.com")
   })
 })

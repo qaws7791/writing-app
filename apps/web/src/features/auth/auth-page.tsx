@@ -2,17 +2,15 @@
 
 /* eslint-disable react/button-has-type */
 
-import { createGoogleLoginPath } from "@/lib/auth/auth-navigation"
+import { requestGoogleLogin } from "@/lib/auth/auth-client"
 
 type AuthPageProps = {
   readonly nextPath: string
 }
 
 export function AuthPage({ nextPath }: AuthPageProps) {
-  const googleLoginPath = createGoogleLoginPath(nextPath)
-
   const loginWithGoogle = () => {
-    globalThis.location.assign(googleLoginPath)
+    void requestGoogleLogin(nextPath)
   }
 
   return (
