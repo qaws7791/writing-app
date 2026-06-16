@@ -25,7 +25,7 @@ export function parseAdminApiEnv(input: AppEnvInput): AdminApiEnv {
       input["BETTER_AUTH_COOKIE_DOMAIN"],
     BETTER_AUTH_URL: input["ADMIN_BETTER_AUTH_URL"] ?? input["BETTER_AUTH_URL"],
     BETTER_AUTH_SECRET:
-      input["BETTER_AUTH_SECRET"] ?? input["ADMIN_BETTER_AUTH_SECRET"],
+      input["ADMIN_BETTER_AUTH_SECRET"] ?? input["BETTER_AUTH_SECRET"],
   })
 
   return {

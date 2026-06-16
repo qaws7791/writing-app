@@ -25,13 +25,3 @@ export function createLoginPagePath(nextPath: string): string {
 
   return `/login?next=${encodeURIComponent(safeNextPath)}`
 }
-
-export function createLogoutPath(callbackPath: string): string {
-  const safeCallbackPath = resolveSafeNextPath(callbackPath)
-
-  return `${getApiBaseUrl()}/api/auth/sign-out?callbackURL=${encodeURIComponent(safeCallbackPath)}`
-}
-
-function getApiBaseUrl(): string {
-  return (process.env["NEXT_PUBLIC_API_BASE_URL"] ?? "").replace(/\/$/, "")
-}

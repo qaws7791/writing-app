@@ -140,7 +140,7 @@ bun --filter @workspace/admin-api dev
 ```
 
 - 어드민 API: `http://localhost:4001`
-- 로컬 수동 검증 토큰: `Authorization: Bearer admin-1`
+- 관리자 인증은 어드민 API의 `/api/auth/*` Better Auth endpoint에서 발급한 httpOnly 세션 쿠키를 사용한다.
 
 어드민 웹은 제품 화면 소스가 추가된 뒤 다음 명령으로 실행한다.
 

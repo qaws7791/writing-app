@@ -215,7 +215,9 @@ function createDependencies(): ApiDependencies {
       },
     },
     sessionResolver: {
-      async resolveSession(token) {
+      async resolveSession(headers) {
+        const token = readTestSessionToken(headers)
+
         if (token === "active-token") {
           return activeSession
         }
@@ -242,4 +244,18 @@ function createDependencies(): ApiDependencies {
       },
     },
   }
+}
+
+function readTestSessionToken(headers: Headers): string | null {
+  const cookieToken = headers
+    .get("Cookie")
+    ?.split(";")
+    .map((cookie) => cookie.trim().split("="))
+    .find(([name]) => name === "kwep_session")?.[1]
+
+  if (cookieToken !== undefined) {
+    return decodeURIComponent(cookieToken)
+  }
+
+  return headers.get("Authorization")?.replace(/^Bearer /, "") ?? null
 }

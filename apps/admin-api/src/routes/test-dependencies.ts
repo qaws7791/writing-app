@@ -47,10 +47,26 @@ export function createTestAdminSessionResolver({
   readonly session?: AdminAuthenticatedSession
 } = {}): AdminSessionResolver {
   return {
-    async resolveSession(token) {
+    async resolveSession(headers) {
+      const token = readTestAdminSessionToken(headers)
+
       return token === activeToken ? session : null
     },
   }
+}
+
+function readTestAdminSessionToken(headers: Headers): string | null {
+  const cookieToken = headers
+    .get("Cookie")
+    ?.split(";")
+    .map((cookie) => cookie.trim().split("="))
+    .find(([name]) => name === "admin_session_token")?.[1]
+
+  if (cookieToken !== undefined) {
+    return decodeURIComponent(cookieToken)
+  }
+
+  return headers.get("Authorization")?.replace(/^Bearer /, "") ?? null
 }
 
 function createFailingAdminService(): AdminService {

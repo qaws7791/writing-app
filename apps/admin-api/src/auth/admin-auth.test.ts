@@ -1,36 +1,32 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
-import {
-  createAdminBearerSessionResolver,
-  readBetterAuthAdminSessionToken,
-} from "@/auth/admin-auth"
-import type { KwepDatabase } from "@workspace/db/client"
+import { createAdminSessionResolver } from "@/auth/admin-auth"
 
-const now = new Date("2026-06-15T09:00:00.000Z")
 const adminSession = {
+  createdAt: new Date("2026-06-15T09:00:00.000Z"),
   email: "admin@example.com",
   id: "admin-1",
+  image: null,
   name: "관리자",
   role: "owner",
+  updatedAt: new Date("2026-06-15T09:00:00.000Z"),
 }
 
-describe("Admin Bearer session resolver", () => {
-  it("서명된 Better Auth 쿠키 값에서 세션 토큰만 읽는다", () => {
-    expect(readBetterAuthAdminSessionToken("admin-token-1.signature")).toBe(
-      "admin-token-1"
-    )
-    expect(readBetterAuthAdminSessionToken("admin-token-1")).toBe(
-      "admin-token-1"
-    )
-  })
+describe("Admin Better Auth session resolver", () => {
+  it("Better Auth getSession 결과를 관리자 세션으로 변환한다", async () => {
+    const getSession = vi.fn(async () => ({
+      user: adminSession,
+    }))
+    const resolver = createAdminSessionResolver({
+      api: {
+        getSession,
+      },
+    })
+    const headers = new Headers({
+      Cookie: "admin_session_token=admin-token-1.signature",
+    })
 
-  it("세션 테이블의 유효 토큰으로 관리자 세션을 찾는다", async () => {
-    const resolver = createAdminBearerSessionResolver(
-      createFakeDatabase([adminSession]),
-      () => now
-    )
-
-    await expect(resolver.resolveSession("admin-token-1")).resolves.toEqual({
+    await expect(resolver.resolveSession(headers)).resolves.toEqual({
       admin: {
         email: "admin@example.com",
         id: "admin-1",
@@ -38,59 +34,18 @@ describe("Admin Bearer session resolver", () => {
         role: "owner",
       },
     })
-  })
-
-  it("서명된 Better Auth 쿠키 값에서 세션 토큰만 사용한다", async () => {
-    const resolver = createAdminBearerSessionResolver(
-      createFakeDatabase([adminSession]),
-      () => now
-    )
-
-    await expect(
-      resolver.resolveSession("admin-token-1.signature")
-    ).resolves.toEqual({
-      admin: {
-        email: "admin@example.com",
-        id: "admin-1",
-        name: "관리자",
-        role: "owner",
-      },
+    expect(getSession).toHaveBeenCalledWith({
+      headers,
     })
   })
 
-  it("관리자 ID를 Bearer 토큰으로 인증하지 않는다", async () => {
-    const resolver = createAdminBearerSessionResolver(
-      createFakeDatabase([undefined, adminSession]),
-      () => now
-    )
+  it("Better Auth 세션이 없으면 관리자 세션도 없다", async () => {
+    const resolver = createAdminSessionResolver({
+      api: {
+        getSession: vi.fn(async () => null),
+      },
+    })
 
-    await expect(resolver.resolveSession("admin-1")).resolves.toBeNull()
+    await expect(resolver.resolveSession(new Headers())).resolves.toBeNull()
   })
 })
-
-function createFakeDatabase(results: readonly unknown[]): KwepDatabase {
-  let queryIndex = 0
-
-  return {
-    select() {
-      const result = results[queryIndex]
-      queryIndex += 1
-      const query = {
-        from() {
-          return query
-        },
-        get() {
-          return result
-        },
-        innerJoin() {
-          return query
-        },
-        where() {
-          return query
-        },
-      }
-
-      return query
-    },
-  } as never
-}

@@ -1,5 +1,3 @@
-export { readBearerToken } from "@workspace/core/auth"
-
 export type AdminRole = "operator" | "owner"
 
 export type AdminAuthenticatedSession = {
@@ -13,6 +11,6 @@ export type AdminAuthenticatedSession = {
 
 export type AdminSessionResolver = {
   readonly resolveSession: (
-    token: string
+    headers: Headers
   ) => Promise<AdminAuthenticatedSession | null>
 }

@@ -1,7 +1,8 @@
 import { Hono } from "hono"
 
-import { readBearerToken, type SessionResolver } from "@/auth/session"
+import type { SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
+import { resolveActiveSession } from "@/routes/route-helpers"
 import type {
   ContentRepository,
   CourseDetailDto,
@@ -9,7 +10,6 @@ import type {
   LessonSummaryDto,
 } from "@workspace/core/content"
 import {
-  learnerAccountStatuses,
   type LessonProgressStatus as PersistedLessonProgressStatus,
   lessonProgressStatuses,
 } from "@workspace/core/status"
@@ -47,25 +47,18 @@ export function createProgressRoute({
   const route = new Hono()
 
   route.get("/", async (context) => {
-    const token = readBearerToken(context.req.header("Authorization") ?? null)
+    const sessionResult = await resolveActiveSession(context, sessionResolver)
 
-    if (token === null) {
-      return context.json(errorResponse("unauthorized"), 401)
-    }
-
-    const session = await sessionResolver.resolveSession(token)
-
-    if (session === null) {
-      return context.json(errorResponse("unauthorized"), 401)
-    }
-
-    if (session.user.status !== learnerAccountStatuses.active) {
-      return context.json(errorResponse("account_unavailable"), 403)
+    if (sessionResult.kind === "err") {
+      return context.json(
+        errorResponse(sessionResult.code),
+        sessionResult.status
+      )
     }
 
     const [courses, progress] = await Promise.all([
       contentRepository.listCourses(),
-      progressReader.readLearnerProgress(session.user.id),
+      progressReader.readLearnerProgress(sessionResult.session.user.id),
     ])
     const courseProgress = await Promise.all(
       courses.map(async (course) => {

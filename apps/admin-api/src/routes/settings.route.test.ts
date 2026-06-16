@@ -232,7 +232,9 @@ function createDependencies({
       },
     },
     sessionResolver: {
-      async resolveSession(token) {
+      async resolveSession(headers) {
+        const token = headers.get("Authorization")?.replace(/^Bearer /, "")
+
         if (token !== "admin-token") {
           return null
         }

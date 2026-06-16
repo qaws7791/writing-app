@@ -17,7 +17,7 @@ import { createAppLogger, createRequestLogger } from "@workspace/logger"
 import { and, count, desc, eq } from "drizzle-orm"
 
 import { createApp } from "@/app"
-import { createBearerSessionResolver, createLearnerAuth } from "@/auth/auth"
+import { createLearnerAuth, createLearnerSessionResolver } from "@/auth/auth"
 import { parseApiEnv } from "@/env"
 import {
   createOpenAiFeedbackProvider,
@@ -66,7 +66,7 @@ const app = createApp({
   profileReader: createProfileReader(database.db),
   progressReader,
   requestLogger: createRequestLogger(logger),
-  sessionResolver: createBearerSessionResolver(database.db),
+  sessionResolver: createLearnerSessionResolver(auth, database.db),
   webOrigin: env.webOrigin,
 })
 

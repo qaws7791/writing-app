@@ -33,9 +33,39 @@ describe("OpenAPI HTTP client", () => {
     expect(reportNetworkError).toHaveBeenCalledWith({
       error,
       request: expect.objectContaining({
+        credentials: "include",
         method: "GET",
         url: "https://api.example.test/profile",
       }),
     })
+  })
+
+  it("세션 토큰이 있으면 Better Auth 쿠키 헤더로 전달한다", async () => {
+    const requests: Request[] = []
+    const client = createOpenApiClient({
+      baseUrl: "https://api.example.test",
+      fetch: async (request) => {
+        requests.push(request)
+
+        return Response.json({ id: "user-1" })
+      },
+      tokenProvider: () => "token-1.signature",
+    })
+
+    await expect(
+      client.requestJson({
+        method: "GET",
+        path: "/profile",
+        schema: z.object({ id: z.string() }),
+      })
+    ).resolves.toMatchObject({
+      status: "ok",
+    })
+
+    expect(requests[0]?.headers.get("Cookie")).toBe(
+      "kwep_session=token-1.signature"
+    )
+    expect(requests[0]?.headers.has("Authorization")).toBe(false)
+    expect(requests[0]?.credentials).toBe("include")
   })
 })

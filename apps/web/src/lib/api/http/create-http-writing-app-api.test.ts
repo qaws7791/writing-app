@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { createHttpWritingAppApi } from "@/lib/api/http/create-http-writing-app-api"
 
 describe("HTTP WritingAppApi", () => {
-  it("profile과 progress를 인증 header와 함께 조회한다", async () => {
+  it("profile과 progress를 Better Auth 쿠키와 함께 조회한다", async () => {
     const requests: Request[] = []
     const api = createHttpWritingAppApi({
       baseUrl: "https://api.example.test",
@@ -58,7 +58,8 @@ describe("HTTP WritingAppApi", () => {
       "https://api.example.test/profile",
       "https://api.example.test/progress",
     ])
-    expect(requests[0]?.headers.get("Authorization")).toBe("Bearer token-1")
+    expect(requests[0]?.headers.get("Cookie")).toBe("kwep_session=token-1")
+    expect(requests[0]?.credentials).toBe("include")
   })
 
   it("답변 저장, 레슨 완료, AI 코칭 생성을 POST 요청으로 전달한다", async () => {

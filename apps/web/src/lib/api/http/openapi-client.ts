@@ -4,6 +4,7 @@ import {
   networkApiError,
   toApiError,
 } from "@/lib/api/api-error"
+import { learnerSessionCookieName } from "@/lib/auth/session-token"
 
 type ResponseSchema<TValue> = {
   readonly safeParse: (value: unknown) =>
@@ -56,7 +57,10 @@ export function createOpenApiClient({
       const token = await tokenProvider()
 
       if (token !== null) {
-        headers.set("Authorization", `Bearer ${token}`)
+        headers.set(
+          "Cookie",
+          `${learnerSessionCookieName}=${encodeURIComponent(token)}`
+        )
       }
 
       if (input.body !== undefined) {
@@ -65,6 +69,7 @@ export function createOpenApiClient({
 
       const request = new Request(toApiUrl(baseUrl, input.path), {
         body: input.body === undefined ? undefined : JSON.stringify(input.body),
+        credentials: "include",
         headers,
         method: input.method,
       })

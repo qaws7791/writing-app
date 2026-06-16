@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import { learnerAccountStatuses } from "@workspace/core/status"
 
-import { readBearerToken, type SessionResolver } from "@/auth/session"
+import type { SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
+import { resolveActiveSession } from "@/routes/route-helpers"
 
 export type LearnerProfileStatsDto = {
   readonly completedLessons: number
@@ -28,27 +28,22 @@ export function createProfileRoute({
   const route = new Hono()
 
   route.get("/", async (context) => {
-    const token = readBearerToken(context.req.header("Authorization") ?? null)
+    const sessionResult = await resolveActiveSession(context, sessionResolver)
 
-    if (token === null) {
-      return context.json(errorResponse("unauthorized"), 401)
+    if (sessionResult.kind === "err") {
+      return context.json(
+        errorResponse(sessionResult.code),
+        sessionResult.status
+      )
     }
 
-    const session = await sessionResolver.resolveSession(token)
-
-    if (session === null) {
-      return context.json(errorResponse("unauthorized"), 401)
-    }
-
-    if (session.user.status !== learnerAccountStatuses.active) {
-      return context.json(errorResponse("account_unavailable"), 403)
-    }
-
-    const stats = await profileReader.readProfileStats(session.user.id)
+    const stats = await profileReader.readProfileStats(
+      sessionResult.session.user.id
+    )
 
     return context.json({
       stats,
-      user: session.user,
+      user: sessionResult.session.user,
     })
   })
 

@@ -8,6 +8,7 @@ import {
   adminApiOk,
   type AdminApiResult,
 } from "@/lib/api/api-result"
+import { adminSessionCookieName } from "@/lib/auth/admin-session-token"
 import type {
   AdminApi,
   ReadAdminAnalyticsInput,
@@ -203,7 +204,10 @@ function createAdminHttpClient({
       const token = await tokenProvider()
 
       if (token !== null) {
-        headers.set("Authorization", `Bearer ${token}`)
+        headers.set(
+          "Cookie",
+          `${adminSessionCookieName}=${encodeURIComponent(token)}`
+        )
       }
 
       if (input.body !== undefined) {
@@ -212,6 +216,7 @@ function createAdminHttpClient({
 
       const request = new Request(`${normalizedBaseUrl}${input.path}`, {
         body: input.body === undefined ? undefined : JSON.stringify(input.body),
+        credentials: "include",
         headers,
         method: input.method,
       })

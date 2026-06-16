@@ -540,7 +540,9 @@ function createDependencies({
       },
     },
     sessionResolver: {
-      async resolveSession(token) {
+      async resolveSession(headers) {
+        const token = readTestAdminSessionToken(headers)
+
         if (token !== "admin-token") {
           return null
         }
@@ -556,4 +558,18 @@ function createDependencies({
       },
     },
   })
+}
+
+function readTestAdminSessionToken(headers: Headers): string | null {
+  const cookieToken = headers
+    .get("Cookie")
+    ?.split(";")
+    .map((cookie) => cookie.trim().split("="))
+    .find(([name]) => name === "admin_session_token")?.[1]
+
+  if (cookieToken !== undefined) {
+    return decodeURIComponent(cookieToken)
+  }
+
+  return headers.get("Authorization")?.replace(/^Bearer /, "") ?? null
 }

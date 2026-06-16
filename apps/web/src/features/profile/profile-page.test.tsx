@@ -5,7 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ProfilePage } from "@/features/profile/profile-page"
 import type { LearnerProfile } from "@/features/profile/profile-types"
 
-const { routerPush, setTheme } = vi.hoisted(() => ({
+const { requestLogout, routerPush, setTheme } = vi.hoisted(() => ({
+  requestLogout: vi.fn(async () => "/"),
   routerPush: vi.fn(),
   setTheme: vi.fn(),
 }))
@@ -21,6 +22,10 @@ vi.mock("next-themes", () => ({
     setTheme,
     theme: "system",
   }),
+}))
+
+vi.mock("@/lib/auth/auth-client", () => ({
+  requestLogout,
 }))
 
 const profile: LearnerProfile = {
@@ -43,6 +48,7 @@ const profile: LearnerProfile = {
 
 describe("프로필 화면", () => {
   beforeEach(() => {
+    requestLogout.mockClear()
     routerPush.mockClear()
     setTheme.mockClear()
   })
@@ -100,8 +106,7 @@ describe("프로필 화면", () => {
     expect(setTheme).toHaveBeenLastCalledWith("dark")
 
     await user.click(screen.getByRole("button", { name: "로그아웃" }))
-    expect(routerPush).toHaveBeenLastCalledWith(
-      "/api/auth/sign-out?callbackURL=%2F"
-    )
+    expect(requestLogout).toHaveBeenLastCalledWith("/")
+    expect(routerPush).toHaveBeenLastCalledWith("/")
   })
 })

@@ -4,10 +4,7 @@ import { createDrizzleAdminRepository, createKwepDatabase } from "@workspace/db"
 import { createAppLogger, createRequestLogger } from "@workspace/logger"
 
 import { createApp } from "@/app"
-import {
-  createAdminAuth,
-  createAdminBearerSessionResolver,
-} from "@/auth/admin-auth"
+import { createAdminAuth, createAdminSessionResolver } from "@/auth/admin-auth"
 import { parseAdminApiEnv } from "@/env"
 
 const env = parseAdminApiEnv(process.env)
@@ -28,7 +25,7 @@ const app = createApp({
   authHandler: auth.handler,
   dashboardService: createAdminService(adminRepository),
   requestLogger: createRequestLogger(logger),
-  sessionResolver: createAdminBearerSessionResolver(database.db),
+  sessionResolver: createAdminSessionResolver(auth),
 })
 
 if (import.meta.main) {

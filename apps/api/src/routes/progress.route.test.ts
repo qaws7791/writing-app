@@ -182,7 +182,9 @@ function createDependencies(): ApiDependencies {
       },
     },
     sessionResolver: {
-      async resolveSession(token) {
+      async resolveSession(headers) {
+        const token = headers.get("Authorization")?.replace(/^Bearer /, "")
+
         return token === "active-token" ? activeSession : null
       },
     },

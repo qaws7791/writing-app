@@ -28,10 +28,18 @@ describe("어드민 API 테스트 의존성", () => {
     expect(dependencies.adminOrigin).toBe(localRuntimeDefaults.adminWebOrigin)
     expect(dependencies.now?.()).toEqual(testAdminNow)
     await expect(
-      dependencies.sessionResolver.resolveSession("admin-token")
+      dependencies.sessionResolver.resolveSession(
+        new Headers({
+          Cookie: "admin_session_token=admin-token",
+        })
+      )
     ).resolves.toEqual(testAdminSession)
     await expect(
-      dependencies.sessionResolver.resolveSession("missing-token")
+      dependencies.sessionResolver.resolveSession(
+        new Headers({
+          Cookie: "admin_session_token=missing-token",
+        })
+      )
     ).resolves.toBeNull()
   })
 

@@ -1,8 +1,7 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { and, eq, gt } from "drizzle-orm"
 
-import type { AdminSessionResolver } from "@/auth/admin-session"
+import type { AdminRole, AdminSessionResolver } from "@/auth/admin-session"
 import type { KwepDatabase } from "@workspace/db/client"
 import {
   adminAuthAccounts,
@@ -75,46 +74,52 @@ export function createAdminAuth(input: CreateAdminAuthInput) {
   })
 }
 
-export function createAdminBearerSessionResolver(
-  db: KwepDatabase,
-  now: () => Date = () => new Date()
+type AdminBetterAuthSessionApi = {
+  readonly api: {
+    readonly getSession: (input: {
+      readonly headers: Headers
+    }) => Promise<AdminBetterAuthSession | null>
+  }
+}
+
+type AdminBetterAuthSession = {
+  readonly user: {
+    readonly email: string
+    readonly id: string
+    readonly name: string
+    readonly role?: unknown
+  }
+}
+
+export function createAdminSessionResolver(
+  auth: AdminBetterAuthSessionApi
 ): AdminSessionResolver {
   return {
-    async resolveSession(token) {
-      const sessionToken = readBetterAuthAdminSessionToken(token)
-      const session = db
-        .select({
-          email: adminAuthUsers.email,
-          id: adminAuthUsers.id,
-          name: adminAuthUsers.name,
-          role: adminAuthUsers.role,
-        })
-        .from(adminAuthSessions)
-        .innerJoin(
-          adminAuthUsers,
-          eq(adminAuthUsers.id, adminAuthSessions.userId)
-        )
-        .where(
-          and(
-            eq(adminAuthSessions.token, sessionToken),
-            gt(adminAuthSessions.expiresAt, now())
-          )
-        )
-        .get()
+    async resolveSession(headers) {
+      const session = await auth.api.getSession({ headers })
 
-      if (session !== undefined) {
-        return {
-          admin: session,
-        }
+      if (session === null) {
+        return null
       }
 
-      return null
+      const role = readAdminRole(session.user.role)
+
+      return role === null
+        ? null
+        : {
+            admin: {
+              email: session.user.email,
+              id: session.user.id,
+              name: session.user.name,
+              role,
+            },
+          }
     },
   }
 }
 
-export function readBetterAuthAdminSessionToken(token: string): string {
-  return token.split(".")[0] ?? token
+function readAdminRole(role: unknown): AdminRole | null {
+  return role === "owner" || role === "operator" ? role : null
 }
 
 function createAdminAdvancedOptions(cookieDomain: string | undefined) {

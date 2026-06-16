@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
 
 import type { LearnerProfile } from "@/features/profile/profile-types"
-import { createLogoutPath } from "@/lib/auth/auth-navigation"
+import { requestLogout } from "@/lib/auth/auth-client"
 
 type ProfilePageProps = {
   readonly profile: LearnerProfile
@@ -66,7 +66,11 @@ export function ProfilePage({ profile }: ProfilePageProps) {
         <ThemeToggle />
       </div>
       <ProfileButton
-        onClick={() => router.push(createLogoutPath("/"))}
+        onClick={() => {
+          void requestLogout("/").then((path) => {
+            router.push(path)
+          })
+        }}
         variant="wrong"
       >
         로그아웃

@@ -6,11 +6,10 @@ import {
 } from "@workspace/core/ai-feedback"
 import { learnerIdSchema } from "@workspace/core/learning"
 import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
-import { learnerAccountStatuses } from "@workspace/core/status"
 
-import { readBearerToken, type SessionResolver } from "@/auth/session"
+import type { SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
-import { readJsonBody } from "@/routes/route-helpers"
+import { readJsonBody, resolveActiveSession } from "@/routes/route-helpers"
 
 const createFeedbackBodySchema = z.object({
   answer: z.string().trim().min(1),
@@ -32,20 +31,13 @@ export function createAiFeedbackRoute({
   const route = new Hono()
 
   route.post("/", async (context) => {
-    const token = readBearerToken(context.req.header("Authorization") ?? null)
+    const sessionResult = await resolveActiveSession(context, sessionResolver)
 
-    if (token === null) {
-      return context.json(errorResponse("unauthorized"), 401)
-    }
-
-    const session = await sessionResolver.resolveSession(token)
-
-    if (session === null) {
-      return context.json(errorResponse("unauthorized"), 401)
-    }
-
-    if (session.user.status !== learnerAccountStatuses.active) {
-      return context.json(errorResponse("account_unavailable"), 403)
+    if (sessionResult.kind === "err") {
+      return context.json(
+        errorResponse(sessionResult.code),
+        sessionResult.status
+      )
     }
 
     const body = await readJsonBody(context)
@@ -64,7 +56,7 @@ export function createAiFeedbackRoute({
       createAiFeedbackCommandSchema.parse({
         ...bodyResult.data,
         occurredAt: now(),
-        userId: learnerIdSchema.parse(session.user.id),
+        userId: learnerIdSchema.parse(sessionResult.session.user.id),
       })
     )
 

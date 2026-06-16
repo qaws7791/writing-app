@@ -1,5 +1,4 @@
 import type { LearnerAccountStatus } from "@workspace/core/status"
-export { readBearerToken } from "@workspace/core/auth"
 
 export type { LearnerAccountStatus } from "@workspace/core/status"
 
@@ -16,6 +15,6 @@ export type AuthenticatedSession = {
 
 export type SessionResolver = {
   readonly resolveSession: (
-    token: string
+    headers: Headers
   ) => Promise<AuthenticatedSession | null>
 }

@@ -11,6 +11,20 @@ export async function requestGoogleLogin(nextPath: string): Promise<void> {
   })
 }
 
+export async function requestLogout(callbackPath: string): Promise<string> {
+  const safeCallbackPath = resolveSafeNextPath(callbackPath)
+  const response = await fetch(`${getApiBaseUrl()}/api/auth/sign-out`, {
+    credentials: "include",
+    method: "POST",
+  })
+
+  if (!response.ok) {
+    throw new Error("Failed to sign out")
+  }
+
+  return safeCallbackPath
+}
+
 function createCallbackUrl(nextPath: string): string {
   const browserOrigin =
     typeof window === "undefined" ? "" : window.location.origin

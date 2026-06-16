@@ -33,11 +33,27 @@ export function createTestDependencies(): ApiDependencies {
       },
     },
     sessionResolver: {
-      async resolveSession(token) {
+      async resolveSession(headers) {
+        const token = readTestSessionToken(headers)
+
         return token === "active-token" ? activeSession : null
       },
     },
   }
+}
+
+function readTestSessionToken(headers: Headers): string | null {
+  const cookieToken = headers
+    .get("Cookie")
+    ?.split(";")
+    .map((cookie) => cookie.trim().split("="))
+    .find(([name]) => name === "kwep_session")?.[1]
+
+  if (cookieToken !== undefined) {
+    return decodeURIComponent(cookieToken)
+  }
+
+  return headers.get("Authorization")?.replace(/^Bearer /, "") ?? null
 }
 
 const contentRepository: ContentRepository = {

@@ -48,6 +48,18 @@ describe("어드민 API env", () => {
     })
   })
 
+  it("공통 secret과 관리자 secret이 모두 있으면 관리자 secret을 사용한다", () => {
+    expect(
+      parseAdminApiEnv({
+        ADMIN_BETTER_AUTH_SECRET: "a".repeat(32),
+        ADMIN_CORS_ORIGIN: localRuntimeDefaults.adminWebOrigin,
+        BETTER_AUTH_SECRET: "x".repeat(32),
+        DATABASE_URL: ":memory:",
+        NODE_ENV: "test",
+      }).betterAuthSecret
+    ).toBe("a".repeat(32))
+  })
+
   it("선택 관리자 Better Auth 쿠키 도메인을 읽는다", () => {
     expect(
       parseAdminApiEnv({

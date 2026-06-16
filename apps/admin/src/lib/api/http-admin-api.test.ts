@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { createHttpAdminApi } from "@/lib/api/http-admin-api"
 
 describe("HTTP AdminApi", () => {
-  it("대시보드, 코스, 사용자, 분석, 설정 endpoint를 인증 header와 함께 호출한다", async () => {
+  it("대시보드, 코스, 사용자, 분석, 설정 endpoint를 Better Auth 쿠키와 함께 호출한다", async () => {
     const requests: Request[] = []
     const bodies: unknown[] = []
     const api = createHttpAdminApi({
@@ -196,7 +196,11 @@ describe("HTTP AdminApi", () => {
       ["PUT", "https://admin-api.example.test/settings/legal"],
       ["POST", "https://admin-api.example.test/settings/content-reset"],
     ])
-    expect(requests[0]?.headers.get("Authorization")).toBe("Bearer admin-token")
+    expect(requests[0]?.headers.get("Cookie")).toBe(
+      "admin_session_token=admin-token"
+    )
+    expect(requests[0]?.headers.has("Authorization")).toBe(false)
+    expect(requests[0]?.credentials).toBe("include")
     expect(bodies).toEqual([
       {
         status: "suspended",

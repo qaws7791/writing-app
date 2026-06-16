@@ -1,10 +1,31 @@
-import { describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import {
-  createBearerSessionResolver,
-  readBetterAuthSessionToken,
-} from "@/auth/auth"
+import { createLearnerAuth, createLearnerSessionResolver } from "@/auth/auth"
 import type { KwepDatabase } from "@workspace/db/client"
+import {
+  authAccounts,
+  authSessions,
+  authUsers,
+  authVerifications,
+} from "@workspace/db/schema"
+
+const authMocks = vi.hoisted(() => ({
+  betterAuth: vi.fn(() => ({
+    api: {
+      getSession: vi.fn(),
+    },
+    handler: vi.fn(),
+  })),
+  drizzleAdapter: vi.fn(() => "drizzle-adapter"),
+}))
+
+vi.mock("better-auth", () => ({
+  betterAuth: authMocks.betterAuth,
+}))
+
+vi.mock("better-auth/adapters/drizzle", () => ({
+  drizzleAdapter: authMocks.drizzleAdapter,
+}))
 
 const now = new Date("2026-06-15T09:00:00.000Z")
 const sessionUser = {
@@ -15,23 +36,50 @@ const sessionUser = {
   name: "학습자",
 }
 
-describe("Bearer session resolver", () => {
-  it("서명된 Better Auth 쿠키 값에서 세션 토큰만 읽는다", () => {
-    expect(readBetterAuthSessionToken("session-token-1.signature")).toBe(
-      "session-token-1"
-    )
-    expect(readBetterAuthSessionToken("session-token-1")).toBe(
-      "session-token-1"
-    )
+describe("학습자 Better Auth", () => {
+  beforeEach(() => {
+    authMocks.betterAuth.mockClear()
+    authMocks.drizzleAdapter.mockClear()
   })
 
-  it("세션 테이블의 유효 토큰으로 학습자 세션을 찾는다", async () => {
-    const resolver = createBearerSessionResolver(
-      createFakeDatabase([sessionUser, undefined]),
-      () => now
-    )
+  it("Drizzle adapter에 Better Auth core model schema key를 명시한다", () => {
+    createLearnerAuth({
+      authBaseUrl: "https://api.example.test",
+      db: createFakeDatabase([undefined]),
+      secret: "x".repeat(32),
+      webOrigin: "https://app.example.test",
+    })
 
-    await expect(resolver.resolveSession("session-token-1")).resolves.toEqual({
+    const adapterConfig = authMocks.drizzleAdapter.mock.calls.at(0)?.at(1)
+
+    expect(adapterConfig).toMatchObject({
+      provider: "sqlite",
+      schema: {
+        account: authAccounts,
+        session: authSessions,
+        user: authUsers,
+        verification: authVerifications,
+      },
+    })
+  })
+
+  it("Better Auth getSession 결과를 학습자 세션으로 변환한다", async () => {
+    const getSession = vi.fn(async () => ({
+      user: sessionUser,
+    }))
+    const resolver = createLearnerSessionResolver(
+      {
+        api: {
+          getSession,
+        },
+      },
+      createFakeDatabase([undefined])
+    )
+    const headers = new Headers({
+      Cookie: "kwep_session=session-token-1.signature",
+    })
+
+    await expect(resolver.resolveSession(headers)).resolves.toEqual({
       user: {
         email: "learner@example.com",
         id: "user-1",
@@ -41,35 +89,22 @@ describe("Bearer session resolver", () => {
         status: "active",
       },
     })
-  })
-
-  it("서명된 Better Auth 쿠키 값에서 세션 토큰만 사용한다", async () => {
-    const resolver = createBearerSessionResolver(
-      createFakeDatabase([sessionUser, undefined]),
-      () => now
-    )
-
-    await expect(
-      resolver.resolveSession("session-token-1.signature")
-    ).resolves.toEqual({
-      user: {
-        email: "learner@example.com",
-        id: "user-1",
-        image: null,
-        joinedAt: now.toISOString(),
-        name: "학습자",
-        status: "active",
-      },
+    expect(getSession).toHaveBeenCalledWith({
+      headers,
     })
   })
 
-  it("사용자 ID를 Bearer 토큰으로 인증하지 않는다", async () => {
-    const resolver = createBearerSessionResolver(
-      createFakeDatabase([undefined, sessionUser, undefined]),
-      () => now
+  it("Better Auth 세션이 없으면 학습자 세션도 없다", async () => {
+    const resolver = createLearnerSessionResolver(
+      {
+        api: {
+          getSession: vi.fn(async () => null),
+        },
+      },
+      createFakeDatabase([])
     )
 
-    await expect(resolver.resolveSession("user-1")).resolves.toBeNull()
+    await expect(resolver.resolveSession(new Headers())).resolves.toBeNull()
   })
 })
 
