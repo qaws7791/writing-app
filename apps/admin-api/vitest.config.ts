@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   ssr: {
     external: ["bun:sqlite"],
+    noExternal: ["zod"],
   },
   test: {
     environment: "node",

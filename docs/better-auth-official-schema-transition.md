@@ -21,4 +21,4 @@
 - 학습자 인증 endpoint는 Hono의 `/api/auth/*`에서 Better Auth handler가 직접 처리한다.
 - 학습자 인증 테이블은 `user`, `session`, `account`, `verification` 이름과 공식 core schema 컬럼을 사용한다.
 - 관리자 인증 테이블은 플랫폼 사용자 테이블과 충돌하지 않도록 `admin_user`, `admin_session`, `admin_account`, `admin_verification` 이름을 쓰며, 컬럼 형태는 Better Auth core schema를 따른다.
-- 기존 보호 API의 Bearer token 경계는 유지하되, Better Auth가 서명한 세션 쿠키 값에서 실제 세션 token을 읽는다.
+- 보호 API는 Bearer token 경계를 사용하지 않고, Better Auth httpOnly 세션 쿠키가 담긴 `Cookie` 헤더를 `auth.api.getSession({ headers })`로 검증한다.

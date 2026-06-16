@@ -15,8 +15,6 @@ export type CreateAdminAuthInput = {
   readonly authBaseUrl: string
   readonly cookieDomain?: string
   readonly db: KwepDatabase
-  readonly googleClientId?: string
-  readonly googleClientSecret?: string
   readonly secret: string
   readonly webOrigin: string
 }
@@ -29,27 +27,16 @@ export function createAdminAuth(input: CreateAdminAuthInput) {
       provider: "sqlite",
       schema: {
         ...dbSchema,
-        account: adminAuthAccounts,
-        session: adminAuthSessions,
-        user: adminAuthUsers,
-        verification: adminAuthVerifications,
+        admin_account: adminAuthAccounts,
+        admin_session: adminAuthSessions,
+        admin_user: adminAuthUsers,
+        admin_verification: adminAuthVerifications,
       },
     }),
     emailAndPassword: {
       enabled: true,
     },
     secret: input.secret,
-    socialProviders:
-      input.googleClientId === undefined ||
-      input.googleClientSecret === undefined
-        ? {}
-        : {
-            google: {
-              clientId: input.googleClientId,
-              clientSecret: input.googleClientSecret,
-              scope: ["openid", "email", "profile"],
-            },
-          },
     session: {
       modelName: "admin_session",
     },

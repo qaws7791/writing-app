@@ -1,12 +1,13 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
+  getBrowserLearnerSessionToken,
   learnerSessionCookieName,
   readLearnerSessionTokenFromCookieHeader,
 } from "@/lib/auth/session-token"
 
 describe("learner session token", () => {
-  it("kwep_session 쿠키 값을 Bearer token으로 사용한다", () => {
+  it("kwep_session 쿠키 값을 서버 요청 Cookie 헤더용 토큰으로 읽는다", () => {
     expect(
       readLearnerSessionTokenFromCookieHeader(
         `theme=dark; ${learnerSessionCookieName}=user-1; other=value`
@@ -20,5 +21,17 @@ describe("learner session token", () => {
       readLearnerSessionTokenFromCookieHeader(`${learnerSessionCookieName}=`)
     ).toBeNull()
     expect(readLearnerSessionTokenFromCookieHeader(null)).toBeNull()
+  })
+
+  it("브라우저 런타임에서는 httpOnly Better Auth 쿠키 값을 직접 읽지 않는다", () => {
+    vi.stubGlobal("document", {
+      cookie: `${learnerSessionCookieName}=session-token`,
+    })
+
+    expect(getBrowserLearnerSessionToken()).toBeNull()
+  })
+
+  afterEach(() => {
+    vi.unstubAllGlobals()
   })
 })

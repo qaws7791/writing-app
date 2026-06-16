@@ -247,10 +247,6 @@
     },
     {
       "files": ["apps/web/src/**/*.{ts,tsx}"],
-      "excludeFiles": [
-        "apps/web/src/**/*.test.ts",
-        "apps/web/src/**/*.test.tsx"
-      ],
       "rules": {
         "no-restricted-imports": [
           "error",
@@ -269,6 +265,12 @@
             ]
           }
         ]
+      }
+    },
+    {
+      "files": ["apps/web/src/**/*.test.ts", "apps/web/src/**/*.test.tsx"],
+      "rules": {
+        "no-restricted-imports": "off"
       }
     },
     {

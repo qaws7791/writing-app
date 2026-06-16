@@ -21,11 +21,7 @@ export function readLearnerSessionTokenFromCookieHeader(
 }
 
 export function getBrowserLearnerSessionToken(): null | string {
-  if (typeof document === "undefined") {
-    return null
-  }
-
-  return readLearnerSessionTokenFromCookieHeader(document.cookie)
+  return null
 }
 
 export function normalizeLearnerSessionToken(

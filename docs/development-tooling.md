@@ -67,7 +67,7 @@
 - seed 데이터에서 제외된 기존 콘텐츠는 삭제하지 않고 `archived` 상태로 전환한다.
 - 이전 개발 DB 스키마가 루트 `data/api.sqlite`에 남아 있으면 seed가 로컬 DB 파일을 새 baseline으로 재생성한다.
 - seed 실행 파일은 `packages/db/src/seeds/seed.ts`이며, `packages/db/src/seeds/seed.test.ts`가 파일 DB에 코스 5개, 레슨 44개, 스텝 136개와 기본 학습자가 들어가는지 검증한다.
-- 로컬 브라우저 스모크에서 인증 세션이 필요하면 `kwep_session=user-1` 쿠키를 설정한다. web은 이 쿠키 값을 API Bearer token으로 전달한다.
+- 로컬 브라우저 스모크에서 인증 세션이 필요하면 Better Auth 세션 쿠키를 설정한다. web은 브라우저에서 쿠키 값을 읽어 Bearer token으로 바꾸지 않고, 서버 요청에서는 `Cookie` 헤더로 전달한다.
 - 브라우저 mutation 스모크 전에는 `OPTIONS /learning/answers`가 `WEB_ORIGIN` 기준 CORS 헤더와 함께 `204`를 반환하는지 확인한다.
 - Playwright 기본 브라우저가 설치되어 있지 않은 로컬 환경에서는 `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`을 실행 파일로 지정해 headless 스모크를 실행할 수 있다.
 - 루트 `data`와 이전 패키지 상대 경로 산출물인 `packages/db/data`는 로컬 SQLite 산출물 경로이므로 Git 추적 대상에서 제외한다.

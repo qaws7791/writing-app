@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 
-import { createAdminSessionResolver } from "@/auth/admin-auth"
+import { createAdminAuth, createAdminSessionResolver } from "@/auth/admin-auth"
+import { createInMemoryKwepDatabase } from "@workspace/db/client"
+import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
 const adminSession = {
   createdAt: new Date("2026-06-15T09:00:00.000Z"),
@@ -13,6 +15,74 @@ const adminSession = {
 }
 
 describe("Admin Better Auth session resolver", () => {
+  it("관리자 email/password 가입 endpoint가 admin Better Auth 테이블을 사용한다", async () => {
+    const database = createInMemoryKwepDatabase()
+
+    try {
+      runBaselineMigration(database.sqlite)
+      const auth = createAdminAuth({
+        authBaseUrl: "http://localhost:4001",
+        db: database.db,
+        secret: "x".repeat(32),
+        webOrigin: "http://localhost:3001",
+      })
+      const response = await auth.handler(
+        new Request("http://localhost:4001/api/auth/sign-up/email", {
+          body: JSON.stringify({
+            email: "admin@example.com",
+            name: "관리자",
+            password: "admin-password-123",
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Origin: "http://localhost:3001",
+          },
+          method: "POST",
+        })
+      )
+
+      expect(response.status).toBe(200)
+      await expect(response.json()).resolves.toMatchObject({
+        user: {
+          email: "admin@example.com",
+          role: "operator",
+        },
+      })
+    } finally {
+      database.close()
+    }
+  })
+
+  it("관리자 인증은 Google social sign-in을 열지 않는다", async () => {
+    const database = createInMemoryKwepDatabase()
+
+    try {
+      runBaselineMigration(database.sqlite)
+      const auth = createAdminAuth({
+        authBaseUrl: "http://localhost:4001",
+        db: database.db,
+        secret: "x".repeat(32),
+        webOrigin: "http://localhost:3001",
+      })
+      const response = await auth.handler(
+        new Request("http://localhost:4001/api/auth/sign-in/social", {
+          body: JSON.stringify({
+            provider: "google",
+          }),
+          headers: {
+            "Content-Type": "application/json",
+            Origin: "http://localhost:3001",
+          },
+          method: "POST",
+        })
+      )
+
+      expect(response.ok).toBe(false)
+    } finally {
+      database.close()
+    }
+  })
+
   it("Better Auth getSession 결과를 관리자 세션으로 변환한다", async () => {
     const getSession = vi.fn(async () => ({
       user: adminSession,

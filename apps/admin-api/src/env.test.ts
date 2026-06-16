@@ -19,8 +19,6 @@ describe("어드민 API env", () => {
       betterAuthSecret: "x".repeat(32),
       cookieDomain: undefined,
       databaseUrl: ":memory:",
-      googleClientId: undefined,
-      googleClientSecret: undefined,
       nodeEnv: "test",
       port: 4102,
     })
@@ -41,8 +39,6 @@ describe("어드민 API env", () => {
       betterAuthSecret: "x".repeat(32),
       cookieDomain: undefined,
       databaseUrl: ":memory:",
-      googleClientId: undefined,
-      googleClientSecret: undefined,
       nodeEnv: "test",
       port: localRuntimePorts.adminApi,
     })

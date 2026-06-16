@@ -1,14 +1,19 @@
-export type SeedAdminUserInput = {
+export type SeedAdminUserRowInput = {
   readonly email: string
   readonly name: string
   readonly now: Date
+}
+
+export type SeedAdminUserInput = SeedAdminUserRowInput & {
+  readonly password: string
+  readonly resetPassword?: boolean
 }
 
 export function createSeedAdminUserRow({
   email,
   name,
   now,
-}: SeedAdminUserInput) {
+}: SeedAdminUserRowInput) {
   return {
     createdAt: now,
     email,

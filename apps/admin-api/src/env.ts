@@ -10,8 +10,6 @@ export type AdminApiEnv = {
   readonly betterAuthSecret: string
   readonly cookieDomain: string | undefined
   readonly databaseUrl: string | undefined
-  readonly googleClientId: string | undefined
-  readonly googleClientSecret: string | undefined
   readonly nodeEnv: "development" | "test" | "production"
   readonly port: number
 }
@@ -35,8 +33,6 @@ export function parseAdminApiEnv(input: AppEnvInput): AdminApiEnv {
     betterAuthSecret: env.BETTER_AUTH_SECRET,
     cookieDomain: env.ADMIN_BETTER_AUTH_COOKIE_DOMAIN,
     databaseUrl: env.DATABASE_URL,
-    googleClientId: env.GOOGLE_CLIENT_ID,
-    googleClientSecret: env.GOOGLE_CLIENT_SECRET,
     nodeEnv: env.NODE_ENV,
     port: env.ADMIN_API_PORT,
   }

@@ -4,14 +4,14 @@
 
 - 어드민 웹에 `AdminApi` 포트와 HTTP 어댑터를 추가했다.
 - 어드민 화면은 대시보드, 코스 목록/생성/보관/editor 조회, 사용자 목록/상세/상태 변경/삭제, 분석, 레슨 분석, 운영 설정, 콘텐츠 초기화를 모두 `AdminApi` 경계 뒤에서 호출한다.
-- 서버 컴포넌트 요청은 쿠키의 관리자 세션 토큰을 Bearer token으로 전달하고, 로컬 검증에서는 `ADMIN_DEV_SESSION_TOKEN`으로 같은 경계를 대체할 수 있다.
+- 서버 컴포넌트 요청은 관리자 세션 토큰을 `Cookie` 헤더로 전달하고, 로컬 검증에서는 `ADMIN_DEV_SESSION_TOKEN`으로 같은 경계를 대체할 수 있다.
 - HTTP 오류는 `unauthorized`, `forbidden`, `not-found`, `conflict`, `invalid-request`, `network` 등 명시적 오류 코드로 변환해 화면에서 분기한다.
 
 ## 2026-05-31 인증 프록시 제거와 직접 API 인증 전환
 
 - 웹과 어드민의 Next.js `/api/auth/*` 프록시를 제거했다.
 - 학습자 Google OAuth 시작은 `NEXT_PUBLIC_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 사용한다.
-- 관리자 이메일 로그인은 `ADMIN_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 사용한다.
+- 관리자 ID/password 로그인은 `ADMIN_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 사용한다.
 - Hono API는 CORS credentials와 Better Auth trusted origin을 유지하고, 운영 서브도메인 배포에서는 cookie domain 환경 변수로 세션 쿠키 공유 범위를 명시한다.
 
 ## 2026-05-31 BSSN 6순위 단순화 완료
@@ -137,7 +137,7 @@
 - 학습자 로그인 버튼은 직접 OAuth URL을 조립하지 않고 Better Auth React client의 `signIn.social` 흐름을 사용한다.
 - 인증 요청은 기존처럼 Hono API origin의 `/api/auth/*` endpoint로 직접 보내며, Next.js 프록시는 두지 않는다.
 - API의 Better Auth 세션 쿠키 이름은 기존 보호 API와의 호환을 위해 `kwep_session`으로 유지한다.
-- 보호 API가 받는 Bearer token은 Better Auth가 서명한 쿠키 값에서 실제 session token만 읽어 `session` 테이블을 조회한다.
+- 보호 API는 Better Auth httpOnly 세션 쿠키를 `Cookie` 헤더로 받아 `auth.api.getSession({ headers })`로 세션을 검증한다.
 
 ## 2026-05-27 프로토타입 데이터 참조 조사 완료
 

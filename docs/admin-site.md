@@ -687,6 +687,15 @@
 - 어드민 로그인은 Next.js same-origin 인증 프록시를 사용하지 않고 `ADMIN_API_BASE_URL`의 어드민 Hono API `/api/auth/*` endpoint를 직접 호출한다.
 - 어드민 API는 `ADMIN_CORS_ORIGIN`과 Better Auth trusted origin으로 어드민 웹 origin을 허용한다.
 
+## 2026-06-16 관리자 ID/password 인증 보완
+
+- 시작 범위는 어드민 Better Auth schema 매핑, 로그인 방식, 최초 관리자 credential 시드, 브라우저 cookie 전달 경계의 불일치 해소다.
+- 어드민 API의 Better Auth adapter schema는 `admin_user`, `admin_session`, `admin_account`, `admin_verification` model key를 명시한다.
+- 어드민 API는 Google social provider를 등록하지 않고 email/password credential 로그인만 허용한다.
+- 어드민 로그인 화면은 이메일과 비밀번호 입력 폼만 제공하고, `ADMIN_API_BASE_URL`의 `POST /api/auth/sign-in/email`을 `credentials: "include"`로 호출한다.
+- 최초 관리자 시드는 `admin_account` credential row를 함께 생성한다. 기존 credential 비밀번호는 `ADMIN_SEED_RESET_PASSWORD=true`를 명시한 경우에만 갱신한다.
+- 완료 검증은 Better Auth sign-up/sign-in 통합 테스트, Google social sign-in 차단 테스트, 어드민 로그인 UI 테스트로 고정했다.
+
 ## 2026-05-28 작업 9 리뷰 반영
 
 - 사이드바 메뉴는 1차 범위인 콘텐츠와 사용자 조회로 제한한다.

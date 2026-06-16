@@ -1,6 +1,15 @@
 import { AdminAuthPage } from "@/features/auth/admin-auth-page"
-import { createAdminGoogleSignInPath } from "@/lib/auth/admin-auth-client"
 
-export default function AdminLoginRoute() {
-  return <AdminAuthPage signInPath={createAdminGoogleSignInPath("/")} />
+type AdminLoginRouteProps = {
+  readonly searchParams?: Promise<{
+    readonly next?: string
+  }>
+}
+
+export default async function AdminLoginRoute({
+  searchParams,
+}: AdminLoginRouteProps) {
+  const query = await searchParams
+
+  return <AdminAuthPage nextPath={query?.next ?? "/"} />
 }

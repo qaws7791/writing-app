@@ -15,8 +15,6 @@ const auth = createAdminAuth({
   authBaseUrl: env.authBaseUrl,
   cookieDomain: env.cookieDomain,
   db: database.db,
-  googleClientId: env.googleClientId,
-  googleClientSecret: env.googleClientSecret,
   secret: env.betterAuthSecret,
   webOrigin: env.adminOrigin,
 })
