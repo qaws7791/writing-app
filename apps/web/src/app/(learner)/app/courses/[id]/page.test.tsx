@@ -3,8 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import CourseDetailRoute from "@/app/(learner)/app/courses/[id]/page"
 import type { CourseDetail } from "@/features/courses/course-types"
+import { networkApiError } from "@/lib/api/api-error"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
+import { createHttpNetworkError } from "@workspace/http-client"
 
 const api: WritingAppApi = {
   completeLesson: vi.fn(),
@@ -106,12 +108,7 @@ describe("코스 상세 route", () => {
   })
 
   it("코스 조회 실패를 fallback 콘텐츠로 숨기지 않는다", async () => {
-    vi.mocked(api.getCourseDetail).mockResolvedValue(
-      apiFailure({
-        code: "network-error",
-        message: "네트워크 연결을 확인해 주세요.",
-      })
-    )
+    vi.mocked(api.getCourseDetail).mockResolvedValue(apiFailure(networkError()))
 
     render(
       await CourseDetailRoute({
@@ -127,3 +124,12 @@ describe("코스 상세 route", () => {
     ).not.toBeInTheDocument()
   })
 })
+
+function networkError() {
+  return networkApiError(
+    createHttpNetworkError(
+      new Request("https://api.example.test/test"),
+      new TypeError("test network failure")
+    )
+  )
+}

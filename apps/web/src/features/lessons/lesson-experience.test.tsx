@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest"
 import type { CourseDetail } from "@/features/courses/course-types"
 import { LessonExperience } from "@/features/lessons/lesson-experience"
 import type { Lesson } from "@/features/lessons/lesson-types"
+import { networkApiError, type ApiError } from "@/lib/api/api-error"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
 import type { ApiResult } from "@/lib/api/api-result"
 import type {
@@ -12,6 +13,7 @@ import type {
   ApiSaveLessonAnswerResponse,
   WritingAppApi,
 } from "@/lib/api/writing-app-api"
+import { createHttpNetworkError } from "@workspace/http-client"
 
 const push = vi.fn()
 
@@ -200,10 +202,7 @@ describe("레슨 경험", () => {
     const user = userEvent.setup()
     const api = createApi({
       saveLessonAnswer: vi.fn(async () =>
-        apiFailure({
-          code: "network-error",
-          message: "네트워크 연결을 확인해 주세요.",
-        })
+        apiFailure(networkError("네트워크 연결을 확인해 주세요."))
       ),
     })
 
@@ -324,12 +323,7 @@ describe("레슨 경험", () => {
       expect(screen.queryByText(LESSON_ANSWER_ERROR)).not.toBeInTheDocument()
     )
 
-    firstSave.resolve(
-      apiFailure({
-        code: "network-error",
-        message: "첫 요청 실패",
-      })
-    )
+    firstSave.resolve(apiFailure(networkError("첫 요청 실패")))
 
     await waitFor(() =>
       expect(screen.queryByText(LESSON_ANSWER_ERROR)).not.toBeInTheDocument()
@@ -377,12 +371,7 @@ describe("레슨 경험", () => {
       screen.getByRole("heading", { name: "다음 읽기" })
     ).toBeInTheDocument()
 
-    answerSave.resolve(
-      apiFailure({
-        code: "network-error",
-        message: "이전 스텝 저장 실패",
-      })
-    )
+    answerSave.resolve(apiFailure(networkError("이전 스텝 저장 실패")))
 
     await waitFor(() =>
       expect(screen.queryByText(LESSON_ANSWER_ERROR)).not.toBeInTheDocument()
@@ -451,12 +440,7 @@ describe("레슨 경험", () => {
     await user.click(screen.getByRole("button", { name: "확인하기" }))
     await user.click(screen.getByRole("button", { name: "계속하기" }))
 
-    answerSave.resolve(
-      apiFailure({
-        code: "network-error",
-        message: "최신 답변 저장 실패",
-      })
-    )
+    answerSave.resolve(apiFailure(networkError("최신 답변 저장 실패")))
 
     await waitFor(() =>
       expect(screen.getByText(LESSON_ANSWER_ERROR)).toBeInTheDocument()
@@ -855,5 +839,17 @@ function createApi(overrides: Partial<WritingAppApi>): WritingAppApi {
     listCourses: vi.fn(unavailable),
     saveLessonAnswer: vi.fn(unavailable),
     ...overrides,
+  }
+}
+
+function networkError(message: string): ApiError {
+  return {
+    ...networkApiError(
+      createHttpNetworkError(
+        new Request("https://api.example.test/test"),
+        new TypeError("test network failure")
+      )
+    ),
+    message,
   }
 }

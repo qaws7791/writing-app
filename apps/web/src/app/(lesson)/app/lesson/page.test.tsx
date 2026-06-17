@@ -2,8 +2,10 @@ import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import LessonRoute from "@/app/(lesson)/app/lesson/page"
+import { networkApiError } from "@/lib/api/api-error"
 import { apiFailure } from "@/lib/api/api-result"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
+import { createHttpNetworkError } from "@workspace/http-client"
 
 const api: WritingAppApi = {
   completeLesson: vi.fn(),
@@ -39,18 +41,8 @@ describe("레슨 route", () => {
   })
 
   it("레슨 조회 실패를 fallback 콘텐츠로 숨기지 않는다", async () => {
-    vi.mocked(api.getLesson).mockResolvedValue(
-      apiFailure({
-        code: "network-error",
-        message: "네트워크 연결을 확인해 주세요.",
-      })
-    )
-    vi.mocked(api.getCourseDetail).mockResolvedValue(
-      apiFailure({
-        code: "network-error",
-        message: "네트워크 연결을 확인해 주세요.",
-      })
-    )
+    vi.mocked(api.getLesson).mockResolvedValue(apiFailure(networkError()))
+    vi.mocked(api.getCourseDetail).mockResolvedValue(apiFailure(networkError()))
 
     render(
       await LessonRoute({
@@ -66,3 +58,12 @@ describe("레슨 route", () => {
     ).not.toBeInTheDocument()
   })
 })
+
+function networkError() {
+  return networkApiError(
+    createHttpNetworkError(
+      new Request("https://api.example.test/test"),
+      new TypeError("test network failure")
+    )
+  )
+}

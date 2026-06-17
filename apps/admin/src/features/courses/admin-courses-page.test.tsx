@@ -7,11 +7,13 @@ import type {
   AdminCourseList,
   ReadAdminCoursesInput,
 } from "@/lib/api/admin-api"
+import { networkAdminApiError } from "@/lib/api/api-error"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminArchiveCourseResultDto,
   AdminCourseDetailDto,
 } from "@workspace/core/admin"
+import { createHttpNetworkError } from "@workspace/http-client"
 
 const filters: ReadAdminCoursesInput = {
   category: "",
@@ -118,10 +120,7 @@ describe("AdminCoursesPage", () => {
       <AdminCoursesPage
         archiveCourse={async () => ok({ archived: true })}
         coursesResult={{
-          error: {
-            code: "network-error",
-            message: "네트워크 연결을 확인해 주세요.",
-          },
+          error: networkError(),
           status: "error",
         }}
         createCourse={async () => ok(courseDetail("new-course"))}
@@ -138,6 +137,15 @@ function ok<TValue>(value: TValue): AdminApiResult<TValue> {
     status: "ok",
     value,
   }
+}
+
+function networkError() {
+  return networkAdminApiError(
+    createHttpNetworkError(
+      new Request("https://admin-api.example.test/test"),
+      new TypeError("test network failure")
+    )
+  )
 }
 
 function courseDetail(id: string): AdminCourseDetailDto {

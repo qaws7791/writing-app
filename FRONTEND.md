@@ -22,6 +22,12 @@
 - 학습자 HTTP 클라이언트는 콘텐츠, 프로필, 진행, 저장, 완료, AI 코칭 성공 응답을 런타임 스키마로 검증한다.
 - JSON 파싱 실패와 스키마 불일치는 `contract-error`로 반환하고, fetch 실패만 `network-error`로 반환한다.
 
+## 2026-06-17 HTTP 네트워크 오류 값 처리
+
+- 학습자 웹과 어드민 웹의 HTTP adapter는 `fetch` 예외를 `null`로 병합하지 않고 `@workspace/http-client`의 명시적 result로 처리한다.
+- `network-error`는 사용자 메시지와 별개로 원인, method, query가 제거된 URL, 실패 분류를 보존한다.
+- 화면은 네트워크 오류 원인을 직접 노출하지 않는다. 로깅, 리포팅, 재시도 정책만 구조화된 `network` 값을 사용한다.
+
 ## 현재 앱 라우트
 
 아래 라우트는 Kwep 피벗의 목표 라우트다. 현재 reset 단계에서는 `apps/web/src`, `apps/admin/src`, `packages/ui/src`의 기존 구현을 제거했고, 후속 Task에서 같은 monorepo 골격 위에 새 화면을 작성한다.

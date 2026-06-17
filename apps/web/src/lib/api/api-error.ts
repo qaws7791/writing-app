@@ -1,3 +1,5 @@
+import type { HttpNetworkError } from "@workspace/http-client"
+
 export type ApiErrorCode =
   | "account-unavailable"
   | "attempt-limit-exceeded"
@@ -8,11 +10,21 @@ export type ApiErrorCode =
   | "provider-unavailable"
   | "unauthorized"
 
-export type ApiError = {
-  readonly code: ApiErrorCode
+export type ApiError =
+  | NetworkApiError
+  | {
+      readonly code: Exclude<ApiErrorCode, "network-error">
+      readonly message: string
+      readonly status?: number
+    }
+
+export type NetworkApiError = {
+  readonly code: "network-error"
   readonly message: string
-  readonly status?: number
+  readonly network: HttpNetworkError
 }
+
+type ServerApiErrorCode = Exclude<ApiErrorCode, "network-error">
 
 const serverCodeMap = {
   account_unavailable: "account-unavailable",
@@ -21,7 +33,7 @@ const serverCodeMap = {
   not_found: "not-found",
   provider_unavailable: "provider-unavailable",
   unauthorized: "unauthorized",
-} as const satisfies Record<string, ApiErrorCode>
+} as const satisfies Record<string, ServerApiErrorCode>
 
 const messageByCode = {
   "account-unavailable": "사용할 수 없는 계정입니다.",
@@ -52,10 +64,11 @@ export function toApiError(status: number, body: unknown): ApiError {
   }
 }
 
-export function networkApiError(): ApiError {
+export function networkApiError(network: HttpNetworkError): ApiError {
   return {
     code: "network-error",
     message: messageByCode["network-error"],
+    network,
   }
 }
 
@@ -67,7 +80,7 @@ export function contractApiError(status?: number): ApiError {
   }
 }
 
-function readServerErrorCode(body: unknown): ApiErrorCode | null {
+function readServerErrorCode(body: unknown): ServerApiErrorCode | null {
   if (
     typeof body !== "object" ||
     body === null ||

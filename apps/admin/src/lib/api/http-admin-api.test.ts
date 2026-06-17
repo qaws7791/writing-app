@@ -298,6 +298,42 @@ describe("HTTP AdminApi", () => {
       status: "error",
     })
   })
+
+  it("fetch 예외를 원인이 보존된 네트워크 오류로 반환한다", async () => {
+    const cause = new TypeError("Network unreachable")
+    const api = createHttpAdminApi({
+      baseUrl: readAdminApiBaseUrl({
+        ADMIN_API_BASE_URL: "https://admin-api.example.test",
+      }),
+      fetch: async () => {
+        throw cause
+      },
+      tokenProvider: () => "admin-token",
+    })
+
+    await expect(
+      api.getUsers({
+        page: 1,
+        pageSize: 20,
+        query: "민지",
+        sort: "lastActive",
+        status: "all",
+      })
+    ).resolves.toEqual({
+      error: {
+        code: "network-error",
+        message: "네트워크 연결을 확인해 주세요.",
+        network: {
+          cause,
+          code: "network-error",
+          kind: "failed",
+          method: "GET",
+          url: "https://admin-api.example.test/users",
+        },
+      },
+      status: "error",
+    })
+  })
 })
 
 function jsonResponse(body: unknown, status = 200): Response {

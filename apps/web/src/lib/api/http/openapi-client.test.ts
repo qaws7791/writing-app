@@ -6,14 +6,14 @@ import { readBrowserApiBaseUrl } from "@/runtime-config"
 
 describe("OpenAPI HTTP client", () => {
   it("fetch 예외를 네트워크 오류로 반환하면서 원인과 요청을 보고한다", async () => {
-    const error = new TypeError("DNS lookup failed")
+    const cause = new TypeError("DNS lookup failed")
     const reportNetworkError = vi.fn()
     const client = createOpenApiClient({
       baseUrl: readBrowserApiBaseUrl({
         NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
       }),
       fetch: async () => {
-        throw error
+        throw cause
       },
       reportNetworkError,
       tokenProvider: () => "token-1",
@@ -29,12 +29,25 @@ describe("OpenAPI HTTP client", () => {
       error: {
         code: "network-error",
         message: "네트워크 연결을 확인해 주세요.",
+        network: {
+          cause,
+          code: "network-error",
+          kind: "failed",
+          method: "GET",
+          url: "https://api.example.test/profile",
+        },
       },
       status: "error",
     })
 
     expect(reportNetworkError).toHaveBeenCalledWith({
-      error,
+      error: {
+        cause,
+        code: "network-error",
+        kind: "failed",
+        method: "GET",
+        url: "https://api.example.test/profile",
+      },
       request: expect.objectContaining({
         credentials: "include",
         method: "GET",

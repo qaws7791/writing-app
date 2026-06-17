@@ -2,11 +2,13 @@ import { render, screen, within } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { AdminAnalyticsPage } from "@/features/analytics/admin-analytics-page"
+import { networkAdminApiError } from "@/lib/api/api-error"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminAnalyticsDto,
   AdminLessonAnalyticsPageDto,
 } from "@workspace/core/admin"
+import { createHttpNetworkError } from "@workspace/http-client"
 
 const analytics: AdminAnalyticsDto = {
   dailySeries: [
@@ -78,10 +80,7 @@ describe("AdminAnalyticsPage", () => {
     render(
       <AdminAnalyticsPage
         analyticsResult={{
-          error: {
-            code: "network-error",
-            message: "네트워크 연결을 확인해 주세요.",
-          },
+          error: networkError(),
           status: "error",
         }}
         lessonAnalyticsResult={ok(lessonAnalytics)}
@@ -97,4 +96,13 @@ function ok<TValue>(value: TValue): AdminApiResult<TValue> {
     status: "ok",
     value,
   }
+}
+
+function networkError() {
+  return networkAdminApiError(
+    createHttpNetworkError(
+      new Request("https://admin-api.example.test/test"),
+      new TypeError("test network failure")
+    )
+  )
 }

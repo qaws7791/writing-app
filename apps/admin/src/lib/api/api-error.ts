@@ -1,3 +1,5 @@
+import type { HttpNetworkError } from "@workspace/http-client"
+
 export type AdminApiErrorCode =
   | "contract-error"
   | "forbidden"
@@ -6,18 +8,28 @@ export type AdminApiErrorCode =
   | "not-found"
   | "unauthorized"
 
-export type AdminApiError = {
-  readonly code: AdminApiErrorCode
+export type AdminApiError =
+  | AdminNetworkApiError
+  | {
+      readonly code: Exclude<AdminApiErrorCode, "network-error">
+      readonly message: string
+      readonly status?: number
+    }
+
+export type AdminNetworkApiError = {
+  readonly code: "network-error"
   readonly message: string
-  readonly status?: number
+  readonly network: HttpNetworkError
 }
+
+type ServerAdminApiErrorCode = Exclude<AdminApiErrorCode, "network-error">
 
 const serverCodeMap = {
   forbidden: "forbidden",
   invalid_request: "invalid-request",
   not_found: "not-found",
   unauthorized: "unauthorized",
-} as const satisfies Record<string, AdminApiErrorCode>
+} as const satisfies Record<string, ServerAdminApiErrorCode>
 
 const messageByCode = {
   "contract-error": "API 응답을 해석할 수 없습니다.",
@@ -46,10 +58,11 @@ export function toAdminApiError(status: number, body: unknown): AdminApiError {
   }
 }
 
-export function networkAdminApiError(): AdminApiError {
+export function networkAdminApiError(network: HttpNetworkError): AdminApiError {
   return {
     code: "network-error",
     message: messageByCode["network-error"],
+    network,
   }
 }
 
@@ -61,7 +74,7 @@ export function contractAdminApiError(status?: number): AdminApiError {
   }
 }
 
-function readServerErrorCode(body: unknown): AdminApiErrorCode | null {
+function readServerErrorCode(body: unknown): ServerAdminApiErrorCode | null {
   if (
     typeof body !== "object" ||
     body === null ||

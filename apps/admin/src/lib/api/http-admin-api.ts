@@ -31,6 +31,7 @@ import {
   adminUserDetailDtoSchema,
   adminUserListDtoSchema,
 } from "@workspace/core/admin"
+import { fetchHttpResponse, type HttpFetch } from "@workspace/http-client"
 
 type ResponseSchema<TValue> = {
   readonly safeParse: (value: unknown) =>
@@ -43,7 +44,7 @@ type ResponseSchema<TValue> = {
       }
 }
 
-export type AdminFetchLike = (request: Request) => Promise<Response>
+export type AdminFetchLike = HttpFetch
 export type AdminTokenProvider = () => Promise<string | null> | string | null
 
 export function createHttpAdminApi({
@@ -220,12 +221,13 @@ function createAdminHttpClient({
         method: input.method,
       })
 
-      const response = await fetch(request).catch(() => null)
+      const fetchResult = await fetchHttpResponse(request, fetch)
 
-      if (response === null) {
-        return adminApiError(networkAdminApiError())
+      if (fetchResult.kind === "network-error") {
+        return adminApiError(networkAdminApiError(fetchResult.error))
       }
 
+      const { response } = fetchResult
       const bodyResult = await readJson(response)
 
       if (bodyResult.kind === "err") {

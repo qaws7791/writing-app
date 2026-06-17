@@ -10,6 +10,11 @@ import {
   type BrowserApiBaseUrl,
   type ServerApiBaseUrl,
 } from "@/runtime-config"
+import {
+  fetchHttpResponse,
+  type HttpFetch,
+  type HttpNetworkError,
+} from "@workspace/http-client"
 
 type ResponseSchema<TValue> = {
   readonly safeParse: (value: unknown) =>
@@ -22,12 +27,12 @@ type ResponseSchema<TValue> = {
       }
 }
 
-export type FetchLike = (request: Request) => Promise<Response>
+export type FetchLike = HttpFetch
 
 export type TokenProvider = () => Promise<string | null> | string | null
 
 export type NetworkErrorReporter = (event: {
-  readonly error: unknown
+  readonly error: HttpNetworkError
   readonly request: Request
 }) => void
 
@@ -78,12 +83,13 @@ export function createOpenApiClient({
         headers,
         method: input.method,
       })
-      const response = await fetchJson(request, fetch, reportNetworkError)
+      const fetchResult = await fetchJson(request, fetch, reportNetworkError)
 
-      if (response === null) {
-        return apiFailure(networkApiError())
+      if (fetchResult.kind === "network-error") {
+        return apiFailure(networkApiError(fetchResult.error))
       }
 
+      const { response } = fetchResult
       const bodyResult = await readJson(response)
 
       if (bodyResult.kind === "err") {
@@ -109,17 +115,17 @@ async function fetchJson(
   request: Request,
   fetch: FetchLike,
   reportNetworkError: NetworkErrorReporter | undefined
-): Promise<Response | null> {
-  try {
-    return await fetch(request)
-  } catch (error) {
+): ReturnType<typeof fetchHttpResponse> {
+  const result = await fetchHttpResponse(request, fetch)
+
+  if (result.kind === "network-error") {
     reportNetworkError?.({
-      error,
+      error: result.error,
       request,
     })
-
-    return null
   }
+
+  return result
 }
 
 async function readJson(response: Response): Promise<
