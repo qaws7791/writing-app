@@ -7,36 +7,20 @@ import { useRouter } from "next/navigation"
 
 import { CourseCurriculum } from "@/features/courses/course-curriculum"
 import { createCourseImageUrl } from "@/features/courses/course-image-url"
-import type {
-  CourseDetail,
-  CourseLessonSummary,
-  ProgressCourse,
-  ProgressLesson,
-} from "@/features/courses/course-types"
+import type { CourseDetail } from "@/features/courses/course-types"
 import { ChevronLeftIcon } from "@workspace/ui/components/icons"
 
 type CourseDetailPageProps = {
   readonly course: CourseDetail
-  readonly progressCourse?: ProgressCourse
 }
 
-type NextLesson = CourseLessonSummary & {
-  readonly progressStatus: ProgressLesson["status"]
-}
-
-export function CourseDetailPage({
-  course,
-  progressCourse,
-}: CourseDetailPageProps) {
+export function CourseDetailPage({ course }: CourseDetailPageProps) {
   const router = useRouter()
-  const completedLessonCount = resolveCompletedLessonCount(
-    course,
-    progressCourse
-  )
+  const completedLessonCount = course.progress.completedLessons
   const totalLessonCount = course.progress.totalLessons
   const progressPercent =
     totalLessonCount === 0 ? 0 : (completedLessonCount / totalLessonCount) * 100
-  const nextLesson = resolveNextLesson(course, progressCourse)
+  const nextLesson = course.progress.nextLesson
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -81,7 +65,7 @@ export function CourseDetailPage({
             {completedLessonCount}/{totalLessonCount}
           </span>
         </div>
-        {nextLesson === undefined ? null : (
+        {nextLesson === null ? null : (
           <div>
             <p
               className="text-muted font-bold mb-4"
@@ -102,34 +86,7 @@ export function CourseDetailPage({
           </div>
         )}
       </div>
-      <CourseCurriculum course={course} progressCourse={progressCourse} />
+      <CourseCurriculum course={course} />
     </div>
   )
-}
-
-function resolveCompletedLessonCount(
-  course: CourseDetail,
-  progressCourse: ProgressCourse | undefined
-): number {
-  return (
-    progressCourse?.lessons.filter((lesson) => lesson.status === "completed")
-      .length ?? course.progress.completedLessons
-  )
-}
-
-function resolveNextLesson(
-  course: CourseDetail,
-  progressCourse: ProgressCourse | undefined
-): NextLesson | undefined {
-  const lessons = course.units.flatMap((unit) => unit.lessons)
-
-  return lessons
-    .map((lesson) => ({
-      ...lesson,
-      progressStatus:
-        progressCourse?.lessons.find(
-          (progressLesson) => progressLesson.id === lesson.id
-        )?.status ?? "locked",
-    }))
-    .find((lesson) => lesson.progressStatus === "available")
 }

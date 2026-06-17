@@ -23,8 +23,8 @@ import {
   createOpenAiFeedbackProvider,
   createUnavailableAiFeedbackProvider,
 } from "@/openai/openai-feedback-provider"
+import type { ProgressReader } from "@/routes/course-progress"
 import type { ProfileReader } from "@/routes/profile.route"
-import type { ProgressReader } from "@/routes/progress.route"
 
 const env = parseApiEnv(process.env)
 const database = createKwepDatabase(env.databaseUrl)

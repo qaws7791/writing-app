@@ -73,4 +73,78 @@ describe("플랫폼 API OpenAPI 문서", () => {
       type: "object",
     })
   })
+
+  it("course 상세 progress schema는 학습자 진행 상태를 노출한다", () => {
+    const document = createOpenApiDocument()
+    const schema =
+      document.paths["/courses/{courseId}"]?.get?.responses["200"]?.content?.[
+        "application/json"
+      ]?.schema
+
+    expect(schema).toMatchObject({
+      properties: {
+        progress: {
+          properties: {
+            completedLessons: {
+              type: "integer",
+            },
+            lessons: {
+              items: {
+                properties: {
+                  currentStepIndex: {
+                    anyOf: [{ type: "integer" }, { type: "null" }],
+                  },
+                  lessonId: {
+                    type: "string",
+                  },
+                  status: {
+                    enum: ["available", "completed", "locked"],
+                    type: "string",
+                  },
+                },
+                type: "object",
+              },
+              type: "array",
+            },
+            nextLesson: {
+              anyOf: [
+                {
+                  properties: {
+                    currentStepIndex: {
+                      anyOf: [{ type: "integer" }, { type: "null" }],
+                    },
+                    estimatedMinutes: {
+                      type: "integer",
+                    },
+                    id: {
+                      type: "string",
+                    },
+                    status: {
+                      enum: ["available", "completed", "locked"],
+                      type: "string",
+                    },
+                    title: {
+                      type: "string",
+                    },
+                  },
+                  type: "object",
+                },
+                { type: "null" },
+              ],
+            },
+            percentage: {
+              maximum: 100,
+              minimum: 0,
+              type: "integer",
+            },
+            totalLessons: {
+              type: "integer",
+            },
+          },
+          type: "object",
+        },
+      },
+      type: "object",
+    })
+  })
 })

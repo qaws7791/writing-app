@@ -26,6 +26,8 @@ const courseDetail: CourseDetailDto = {
   ...courseSummary,
   progress: {
     completedLessons: 0,
+    lessons: [],
+    nextLesson: null,
     totalLessons: 10,
     percentage: 0,
   },

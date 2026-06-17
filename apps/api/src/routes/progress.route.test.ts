@@ -91,6 +91,30 @@ function createDependencies(): ApiDependencies {
           lessonCount: 3,
           progress: {
             completedLessons: 0,
+            lessons: [
+              {
+                currentStepIndex: null,
+                lessonId: "l1",
+                status: "available",
+              },
+              {
+                currentStepIndex: null,
+                lessonId: "l-new",
+                status: "locked",
+              },
+              {
+                currentStepIndex: null,
+                lessonId: "l2",
+                status: "locked",
+              },
+            ],
+            nextLesson: {
+              currentStepIndex: null,
+              estimatedMinutes: 5,
+              id: "l1",
+              status: "available",
+              title: "좋은 문장이란 무엇인가",
+            },
             percentage: 0,
             totalLessons: 3,
           },

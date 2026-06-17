@@ -204,9 +204,31 @@ export const courseListDtoSchema = z.object({
   courses: z.array(courseSummaryDtoSchema),
 })
 
+const learnerCourseLessonStatusSchema = z.enum([
+  "available",
+  "completed",
+  "locked",
+])
+
+const learnerCourseProgressLessonDtoSchema = z.object({
+  lessonId: lessonIdSchema,
+  status: learnerCourseLessonStatusSchema,
+  currentStepIndex: nonNegativeIntegerSchema.nullable(),
+})
+
+const learnerCourseNextLessonDtoSchema = z.object({
+  id: lessonIdSchema,
+  title: z.string(),
+  estimatedMinutes: z.number().int().positive(),
+  status: learnerCourseLessonStatusSchema,
+  currentStepIndex: nonNegativeIntegerSchema.nullable(),
+})
+
 export const courseDetailDtoSchema = courseSummaryDtoSchema.extend({
   progress: z.object({
     completedLessons: nonNegativeIntegerSchema,
+    lessons: z.array(learnerCourseProgressLessonDtoSchema),
+    nextLesson: learnerCourseNextLessonDtoSchema.nullable(),
     totalLessons: nonNegativeIntegerSchema,
     percentage: z.number().min(0).max(100),
   }),

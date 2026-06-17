@@ -660,6 +660,80 @@
                         "completedLessons": {
                           "type": "integer"
                         },
+                        "lessons": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "currentStepIndex": {
+                                "anyOf": [
+                                  {
+                                    "type": "integer"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "lessonId": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "enum": ["available", "completed", "locked"],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "currentStepIndex",
+                              "lessonId",
+                              "status"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "nextLesson": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "currentStepIndex": {
+                                  "anyOf": [
+                                    {
+                                      "type": "integer"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "estimatedMinutes": {
+                                  "type": "integer"
+                                },
+                                "id": {
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "enum": ["available", "completed", "locked"],
+                                  "type": "string"
+                                },
+                                "title": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "currentStepIndex",
+                                "estimatedMinutes",
+                                "id",
+                                "status",
+                                "title"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "type": "null"
+                            }
+                          ]
+                        },
                         "percentage": {
                           "maximum": 100,
                           "minimum": 0,
@@ -671,6 +745,8 @@
                       },
                       "required": [
                         "completedLessons",
+                        "lessons",
+                        "nextLesson",
                         "percentage",
                         "totalLessons"
                       ],

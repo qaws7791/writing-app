@@ -26,10 +26,7 @@ export default async function CourseDetailRoute({
   const api = getServerWritingAppApi({
     tokenProvider: () => token,
   })
-  const [courseResult, progressResult] = await Promise.all([
-    api.getCourseDetail(id),
-    api.getProgress(),
-  ])
+  const courseResult = await api.getCourseDetail(id)
 
   if (courseResult.status === "error") {
     if (courseResult.error.code === "not-found") {
@@ -44,24 +41,11 @@ export default async function CourseDetailRoute({
     )
   }
 
-  if (progressResult.status === "error") {
-    return (
-      <AppRouteNotice
-        description="학습 진행 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
-        title="코스를 열 수 없습니다."
-      />
-    )
-  }
-
   const course = courseResult.value
 
   if (course === undefined) {
     notFound()
   }
 
-  const progressCourse = progressResult.value.courses.find(
-    (item) => item.id === id
-  )
-
-  return <CourseDetailPage course={course} progressCourse={progressCourse} />
+  return <CourseDetailPage course={course} />
 }

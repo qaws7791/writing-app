@@ -155,6 +155,20 @@ describe("콘텐츠 DTO schema", () => {
         ...summary,
         progress: {
           completedLessons: 0,
+          lessons: [
+            {
+              currentStepIndex: null,
+              lessonId: "l1",
+              status: "available",
+            },
+          ],
+          nextLesson: {
+            currentStepIndex: null,
+            estimatedMinutes: 5,
+            id: "l1",
+            status: "available",
+            title: "좋은 문장이란 무엇인가",
+          },
           totalLessons: 10,
           percentage: 0,
         },
@@ -179,7 +193,61 @@ describe("콘텐츠 DTO schema", () => {
       })
     ).toMatchObject({
       id: "c1",
+      progress: {
+        lessons: [{ lessonId: "l1", status: "available" }],
+        nextLesson: { id: "l1", status: "available" },
+      },
       units: [{ id: "u1", lessons: [{ id: "l1" }] }],
+    })
+  })
+
+  it("모든 레슨을 완료한 코스 상세 DTO의 다음 레슨 null을 parse한다", () => {
+    expect(
+      courseDetailDtoSchema.parse({
+        id: "c1",
+        title: "글쓰기 첫걸음 30일",
+        description: "매일 조금씩 쓰는 습관을 만듭니다.",
+        category: "입문자를 위한 코스",
+        lessonCount: 1,
+        status: "active",
+        progress: {
+          completedLessons: 1,
+          lessons: [
+            {
+              currentStepIndex: 0,
+              lessonId: "l1",
+              status: "completed",
+            },
+          ],
+          nextLesson: null,
+          percentage: 100,
+          totalLessons: 1,
+        },
+        units: [
+          {
+            id: "u1",
+            title: "문장의 기본기",
+            sortOrder: 1,
+            lessons: [
+              {
+                id: "l1",
+                title: "좋은 문장이란 무엇인가",
+                category: "문장의 기본기",
+                description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
+                estimatedMinutes: 5,
+                status: "active",
+                sortOrder: 1,
+              },
+            ],
+          },
+        ],
+      })
+    ).toMatchObject({
+      progress: {
+        completedLessons: 1,
+        nextLesson: null,
+        percentage: 100,
+      },
     })
   })
 

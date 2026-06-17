@@ -30,10 +30,26 @@ export type CourseUnit = {
 export type CourseDetail = CourseSummary & {
   readonly progress: {
     readonly completedLessons: number
+    readonly lessons: readonly CourseProgressLesson[]
+    readonly nextLesson: CourseProgressNextLesson | null
     readonly totalLessons: number
   }
   readonly progressPercent: number
   readonly units: readonly CourseUnit[]
+}
+
+export type CourseProgressLesson = {
+  readonly currentStepIndex: number | null
+  readonly lessonId: string
+  readonly status: LessonProgressStatus
+}
+
+export type CourseProgressNextLesson = {
+  readonly currentStepIndex: number | null
+  readonly estimatedMinutes: number
+  readonly id: string
+  readonly status: LessonProgressStatus
+  readonly title: string
 }
 
 export type ProgressLesson = {

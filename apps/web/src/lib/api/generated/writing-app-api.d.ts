@@ -485,6 +485,20 @@ export interface operations {
             title: string
             progress: {
               completedLessons: number
+              lessons: {
+                currentStepIndex: number | null
+                lessonId: string
+                /** @enum {string} */
+                status: "available" | "completed" | "locked"
+              }[]
+              nextLesson: {
+                currentStepIndex: number | null
+                estimatedMinutes: number
+                id: string
+                /** @enum {string} */
+                status: "available" | "completed" | "locked"
+                title: string
+              } | null
               percentage: number
               totalLessons: number
             }

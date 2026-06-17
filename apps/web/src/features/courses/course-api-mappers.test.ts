@@ -42,6 +42,14 @@ describe("코스 API mapper", () => {
         lessonCount: 10,
         progress: {
           completedLessons: 1,
+          lessons: [
+            {
+              currentStepIndex: 0,
+              lessonId: "l1",
+              status: "completed",
+            },
+          ],
+          nextLesson: null,
           percentage: 10,
           totalLessons: 10,
         },
@@ -68,6 +76,18 @@ describe("코스 API mapper", () => {
       })
     ).toMatchObject({
       id: "c1",
+      progress: {
+        completedLessons: 1,
+        lessons: [
+          {
+            currentStepIndex: 0,
+            lessonId: "l1",
+            status: "completed",
+          },
+        ],
+        nextLesson: null,
+        totalLessons: 10,
+      },
       progressPercent: 10,
       units: [
         {

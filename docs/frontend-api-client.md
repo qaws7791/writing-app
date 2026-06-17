@@ -1,5 +1,12 @@
 # 프론트엔드 API 클라이언트 전환
 
+## 2026-06-17 WA-7 코스 상세 진행 계약 전환 완료
+
+- 웹 코스 상세 route는 `getCourseDetail(id)`만 호출하고, 별도 `getProgress()` 호출로 진행 목록을 조합하지 않는다.
+- `CourseDetail.progress`는 백엔드가 계산한 `lessons`와 `nextLesson`을 보존한다.
+- 코스 상세 CTA는 `course.progress.nextLesson`을 사용하고, 커리큘럼 잠금/완료 표시는 `course.progress.lessons`를 기준으로 한다.
+- 프론트엔드는 다음 lesson 또는 lesson 잠금 규칙을 자체 계산하지 않고 API 계약을 렌더링한다.
+
 ## 2026-06-14 어드민 API 포트 전환 완료
 
 - 어드민 웹에 `AdminApi` 포트와 HTTP 어댑터를 추가했다.

@@ -97,6 +97,9 @@ const booleanSchema = { type: "boolean" } as const
 const nullableTextSchema = {
   anyOf: [textSchema, { type: "null" }],
 } as const
+const nullableIntegerSchema = {
+  anyOf: [integerSchema, { type: "null" }],
+} as const
 const authSecurity = [{ bearerAuth: [] }] as const
 
 export function createOpenApiDocument(): OpenApiDocument {
@@ -410,10 +413,34 @@ const courseUnitSchema = objectSchema({
   title: textSchema,
 })
 
+const learnerCourseProgressLessonSchema = objectSchema({
+  currentStepIndex: nullableIntegerSchema,
+  lessonId: textSchema,
+  status: {
+    enum: ["available", "completed", "locked"],
+    type: "string",
+  },
+})
+
+const learnerCourseNextLessonSchema = objectSchema({
+  currentStepIndex: nullableIntegerSchema,
+  estimatedMinutes: integerSchema,
+  id: textSchema,
+  status: {
+    enum: ["available", "completed", "locked"],
+    type: "string",
+  },
+  title: textSchema,
+})
+
 const courseDetailSchema = objectSchema({
   ...courseSummarySchema.properties,
   progress: objectSchema({
     completedLessons: integerSchema,
+    lessons: arraySchema(learnerCourseProgressLessonSchema),
+    nextLesson: {
+      anyOf: [learnerCourseNextLessonSchema, { type: "null" }],
+    },
     percentage: percentSchema,
     totalLessons: integerSchema,
   }),
@@ -604,10 +631,6 @@ const lessonAnswerSchema = {
       },
     }),
   ],
-} as const
-
-const nullableIntegerSchema = {
-  anyOf: [integerSchema, { type: "null" }],
 } as const
 
 const progressLessonSchema = objectSchema({

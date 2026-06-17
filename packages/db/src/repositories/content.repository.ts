@@ -113,6 +113,21 @@ function findCourseDetail(
     status: course.status,
     progress: {
       completedLessons: 0,
+      lessons: lessonRows.map((lesson, index) => ({
+        currentStepIndex: null,
+        lessonId: lesson.id,
+        status: index === 0 ? "available" : "locked",
+      })),
+      nextLesson:
+        lessonRows[0] === undefined
+          ? null
+          : {
+              currentStepIndex: null,
+              estimatedMinutes: lessonRows[0].estimatedMinutes,
+              id: lessonRows[0].id,
+              status: "available",
+              title: lessonRows[0].title,
+            },
       totalLessons: lessonRows.length,
       percentage: 0,
     },

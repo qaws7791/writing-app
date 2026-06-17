@@ -11,10 +11,8 @@ import { createLearningRoute } from "@/routes/learning.route"
 import { createLessonsRoute } from "@/routes/lessons.route"
 import { createOpenApiRoute } from "@/routes/openapi.route"
 import { createProfileRoute, type ProfileReader } from "@/routes/profile.route"
-import {
-  createProgressRoute,
-  type ProgressReader,
-} from "@/routes/progress.route"
+import type { ProgressReader } from "@/routes/course-progress"
+import { createProgressRoute } from "@/routes/progress.route"
 import { errorResponse } from "@/routes/error-response"
 import type { ContentRepository } from "@workspace/core/content"
 import type { AiFeedbackService } from "@workspace/core/ai-feedback"
@@ -89,6 +87,7 @@ export function createApp(dependencies: ApiDependencies): Hono {
       "/courses",
       createCoursesRoute({
         contentRepository: dependencies.contentRepository,
+        progressReader: dependencies.progressReader,
         sessionResolver: dependencies.sessionResolver,
       })
     )

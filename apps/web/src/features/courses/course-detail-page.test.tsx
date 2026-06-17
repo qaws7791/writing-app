@@ -3,10 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { CourseDetailPage } from "@/features/courses/course-detail-page"
-import type {
-  CourseDetail,
-  ProgressCourse,
-} from "@/features/courses/course-types"
+import type { CourseDetail } from "@/features/courses/course-types"
 
 const push = vi.fn()
 
@@ -24,6 +21,25 @@ const course: CourseDetail = {
   lessonCount: 2,
   progress: {
     completedLessons: 0,
+    lessons: [
+      {
+        currentStepIndex: null,
+        lessonId: "l1",
+        status: "available",
+      },
+      {
+        currentStepIndex: null,
+        lessonId: "l2",
+        status: "locked",
+      },
+    ],
+    nextLesson: {
+      currentStepIndex: null,
+      estimatedMinutes: 5,
+      id: "l1",
+      status: "available",
+      title: "좋은 문장이란 무엇인가",
+    },
     totalLessons: 2,
   },
   progressPercent: 0,
@@ -58,38 +74,6 @@ const course: CourseDetail = {
   ],
 }
 
-const progressCourse: ProgressCourse = {
-  id: "c1",
-  lessons: [
-    {
-      currentStepIndex: null,
-      estimatedMinutes: 5,
-      id: "l1",
-      status: "available",
-      title: "좋은 문장이란 무엇인가",
-    },
-    {
-      currentStepIndex: null,
-      estimatedMinutes: 7,
-      id: "l2",
-      status: "locked",
-      title: "짧게 쓰기",
-    },
-  ],
-  nextLessons: [
-    {
-      courseId: "c1",
-      currentStepIndex: null,
-      estimatedMinutes: 5,
-      id: "l1",
-      status: "available",
-      title: "좋은 문장이란 무엇인가",
-    },
-  ],
-  progressPercent: 0,
-  title: "글쓰기 첫걸음 30일",
-}
-
 describe("코스 상세 화면", () => {
   beforeEach(() => {
     push.mockClear()
@@ -98,7 +82,7 @@ describe("코스 상세 화면", () => {
   it("Kwep 코스 상세처럼 hero, 진행률, 첫 레슨 CTA를 표시하고 이동한다", async () => {
     const user = userEvent.setup()
 
-    render(<CourseDetailPage course={course} progressCourse={progressCourse} />)
+    render(<CourseDetailPage course={course} />)
 
     expect(
       screen.getByRole("heading", { name: "글쓰기 첫걸음 30일" })

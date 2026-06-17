@@ -1,37 +1,10 @@
 import { Hono } from "hono"
 
 import type { SessionResolver } from "@/auth/session"
+import { toCourseProgress, type ProgressReader } from "@/routes/course-progress"
 import { errorResponse } from "@/routes/error-response"
 import { resolveActiveSession } from "@/routes/route-helpers"
-import type {
-  ContentRepository,
-  CourseDetailDto,
-  CourseSummaryDto,
-  LessonSummaryDto,
-} from "@workspace/core/content"
-import {
-  type LessonProgressStatus as PersistedLessonProgressStatus,
-  lessonProgressStatuses,
-} from "@workspace/core/status"
-
-export type LearnerProgressSnapshot = {
-  readonly currentStreakDays: number
-  readonly lessonProgress: readonly LearnerLessonProgressSnapshot[]
-}
-
-export type LearnerLessonProgressSnapshot = {
-  readonly currentStepIndex: number
-  readonly lessonId: string
-  readonly status: PersistedLessonProgressStatus
-}
-
-export type ProgressReader = {
-  readonly readLearnerProgress: (
-    userId: string
-  ) => Promise<LearnerProgressSnapshot>
-}
-
-export type LessonAvailabilityStatus = "available" | "completed" | "locked"
+import type { ContentRepository } from "@workspace/core/content"
 
 export type ProgressRouteDependencies = {
   readonly contentRepository: ContentRepository
@@ -81,92 +54,4 @@ export function createProgressRoute({
   })
 
   return route
-}
-
-function toCourseProgress(
-  course: CourseSummaryDto,
-  courseDetail: CourseDetailDto,
-  progressSnapshots: readonly LearnerLessonProgressSnapshot[]
-) {
-  const progressByLessonId = new Map(
-    progressSnapshots.map((progress) => [progress.lessonId, progress])
-  )
-  const completedLessonIdSet = new Set(
-    progressSnapshots
-      .filter(
-        (progress) => progress.status === lessonProgressStatuses.completed
-      )
-      .map((progress) => progress.lessonId)
-  )
-  const lessons = courseDetail.units.flatMap((unit) => unit.lessons)
-  const firstIncompleteLesson = lessons.find(
-    (lesson) => !completedLessonIdSet.has(lesson.id)
-  )
-  const lessonProgress = lessons.map((lesson) =>
-    toLessonProgress(
-      lesson,
-      progressByLessonId.get(lesson.id),
-      completedLessonIdSet,
-      firstIncompleteLesson?.id
-    )
-  )
-  const completedLessonCount = lessonProgress.filter(
-    (lesson) => lesson.status === "completed"
-  ).length
-  const progressPercent =
-    lessonProgress.length === 0
-      ? 0
-      : Math.round((completedLessonCount / lessonProgress.length) * 100)
-
-  return {
-    id: course.id,
-    lessons: lessonProgress,
-    nextLessons: lessonProgress
-      .filter((lesson) => lesson.status === "available")
-      .map((lesson) => ({
-        courseId: course.id,
-        currentStepIndex: lesson.currentStepIndex,
-        estimatedMinutes: lesson.estimatedMinutes,
-        id: lesson.id,
-        status: lesson.status,
-        title: lesson.title,
-      })),
-    progressPercent,
-    title: course.title,
-  }
-}
-
-function toLessonProgress(
-  lesson: LessonSummaryDto,
-  progress: LearnerLessonProgressSnapshot | undefined,
-  completedLessonIds: ReadonlySet<string>,
-  firstIncompleteLessonId: string | undefined
-) {
-  return {
-    currentStepIndex: progress?.currentStepIndex ?? null,
-    estimatedMinutes: lesson.estimatedMinutes,
-    id: lesson.id,
-    status: getLessonStatus(
-      lesson.id,
-      completedLessonIds,
-      firstIncompleteLessonId
-    ),
-    title: lesson.title,
-  }
-}
-
-function getLessonStatus(
-  lessonId: string,
-  completedLessonIds: ReadonlySet<string>,
-  firstIncompleteLessonId: string | undefined
-): LessonAvailabilityStatus {
-  if (completedLessonIds.has(lessonId)) {
-    return "completed"
-  }
-
-  if (lessonId === firstIncompleteLessonId) {
-    return "available"
-  }
-
-  return "locked"
 }

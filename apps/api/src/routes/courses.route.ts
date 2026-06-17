@@ -2,14 +2,20 @@ import { Hono } from "hono"
 import { courseIdSchema, type ContentRepository } from "@workspace/core/content"
 
 import type { SessionResolver } from "@/auth/session"
+import {
+  withLearnerCourseProgress,
+  type ProgressReader,
+} from "@/routes/course-progress"
 import { errorResponse } from "@/routes/error-response"
 import { resolveActiveSession } from "@/routes/route-helpers"
 
 export function createCoursesRoute({
   contentRepository,
+  progressReader,
   sessionResolver,
 }: {
   readonly contentRepository: ContentRepository
+  readonly progressReader?: ProgressReader
   readonly sessionResolver: SessionResolver
 }): Hono {
   const route = new Hono()
@@ -46,7 +52,16 @@ export function createCoursesRoute({
       return context.json(errorResponse("not_found"), 404)
     }
 
-    return context.json(course)
+    const progress =
+      progressReader === undefined
+        ? { lessonProgress: [] }
+        : await progressReader.readLearnerProgress(
+            sessionResult.session.user.id
+          )
+
+    return context.json(
+      withLearnerCourseProgress(course, progress.lessonProgress)
+    )
   })
 
   return route

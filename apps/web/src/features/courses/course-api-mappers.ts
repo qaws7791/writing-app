@@ -32,6 +32,21 @@ export function mapCourseDetail(
     lessonCount: response.lessonCount,
     progress: {
       completedLessons: response.progress.completedLessons,
+      lessons: response.progress.lessons.map((lesson) => ({
+        currentStepIndex: lesson.currentStepIndex,
+        lessonId: lesson.lessonId,
+        status: lesson.status,
+      })),
+      nextLesson:
+        response.progress.nextLesson === null
+          ? null
+          : {
+              currentStepIndex: response.progress.nextLesson.currentStepIndex,
+              estimatedMinutes: response.progress.nextLesson.estimatedMinutes,
+              id: response.progress.nextLesson.id,
+              status: response.progress.nextLesson.status,
+              title: response.progress.nextLesson.title,
+            },
       totalLessons: response.progress.totalLessons,
     },
     progressPercent: response.progress.percentage,

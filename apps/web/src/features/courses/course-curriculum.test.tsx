@@ -3,10 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { CourseCurriculum } from "@/features/courses/course-curriculum"
-import type {
-  CourseDetail,
-  ProgressCourse,
-} from "@/features/courses/course-types"
+import type { CourseDetail } from "@/features/courses/course-types"
 
 const push = vi.fn()
 
@@ -24,6 +21,30 @@ const course: CourseDetail = {
   lessonCount: 3,
   progress: {
     completedLessons: 1,
+    lessons: [
+      {
+        currentStepIndex: null,
+        lessonId: "l1",
+        status: "available",
+      },
+      {
+        currentStepIndex: null,
+        lessonId: "l2",
+        status: "locked",
+      },
+      {
+        currentStepIndex: null,
+        lessonId: "l3",
+        status: "locked",
+      },
+    ],
+    nextLesson: {
+      currentStepIndex: null,
+      estimatedMinutes: 5,
+      id: "l1",
+      status: "available",
+      title: "좋은 문장이란 무엇인가",
+    },
     totalLessons: 3,
   },
   progressPercent: 33,
@@ -74,45 +95,6 @@ const course: CourseDetail = {
   ],
 }
 
-const progressCourse: ProgressCourse = {
-  id: "c1",
-  lessons: [
-    {
-      currentStepIndex: null,
-      estimatedMinutes: 5,
-      id: "l1",
-      status: "available",
-      title: "좋은 문장이란 무엇인가",
-    },
-    {
-      currentStepIndex: null,
-      estimatedMinutes: 7,
-      id: "l2",
-      status: "locked",
-      title: "짧게 쓰기",
-    },
-    {
-      currentStepIndex: null,
-      estimatedMinutes: 8,
-      id: "l3",
-      status: "locked",
-      title: "문단 만들기",
-    },
-  ],
-  nextLessons: [
-    {
-      courseId: "c1",
-      currentStepIndex: null,
-      estimatedMinutes: 5,
-      id: "l1",
-      status: "available",
-      title: "좋은 문장이란 무엇인가",
-    },
-  ],
-  progressPercent: 33,
-  title: "글쓰기 첫걸음 30일",
-}
-
 describe("코스 커리큘럼", () => {
   beforeEach(() => {
     push.mockClear()
@@ -121,7 +103,7 @@ describe("코스 커리큘럼", () => {
   it("Kwep 커리큘럼처럼 유닛을 접고 펼치며 진행 가능한 레슨만 이동한다", async () => {
     const user = userEvent.setup()
 
-    render(<CourseCurriculum course={course} progressCourse={progressCourse} />)
+    render(<CourseCurriculum course={course} />)
 
     expect(
       screen.getByRole("heading", { level: 3, name: "커리큘럼" })

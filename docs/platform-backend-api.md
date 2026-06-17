@@ -1,5 +1,12 @@
 # 플랫폼 백엔드 API
 
+## 2026-06-17 WA-7 코스 상세 진행 계약 확장 완료
+
+- `GET /courses/:courseId`의 `progress`는 현재 인증 학습자 기준 값으로 재정의했다.
+- 코스 상세 `progress`는 `completedLessons`, `totalLessons`, `percentage`, lesson별 `lessons`, nullable `nextLesson`을 포함한다.
+- lesson별 진행 상태와 다음 lesson 계산은 `apps/api/src/routes/course-progress.ts`에서 처리하며, `/progress`와 코스 상세 route가 같은 계산 규칙을 사용한다.
+- 코스 상세 화면은 더 이상 `/progress` 전체 목록을 추가 조회하지 않아도 된다.
+
 ## 2026-06-15 학습 활동일 타임존 보정 시작
 
 - `learner_activity_days.activity_date` 저장과 연속 학습일 계산이 UTC 날짜 문자열에 묶여 있는 문제를 보정한다.

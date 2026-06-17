@@ -69,6 +69,20 @@ const contentRepository: ContentRepository = {
       lessonCount: 3,
       progress: {
         completedLessons: 0,
+        lessons: [
+          {
+            currentStepIndex: null,
+            lessonId: "l1",
+            status: "available",
+          },
+        ],
+        nextLesson: {
+          currentStepIndex: null,
+          estimatedMinutes: 5,
+          id: "l1",
+          status: "available",
+          title: "좋은 문장이란 무엇인가",
+        },
         percentage: 0,
         totalLessons: 3,
       },

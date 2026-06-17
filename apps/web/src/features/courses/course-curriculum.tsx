@@ -2,7 +2,7 @@
 
 /* eslint-disable react/button-has-type */
 
-import { useState } from "react"
+import { useMemo, useState } from "react"
 
 import { useRouter } from "next/navigation"
 
@@ -11,7 +11,6 @@ import type {
   CourseLessonSummary,
   CourseUnit,
   LessonProgressStatus,
-  ProgressCourse,
 } from "@/features/courses/course-types"
 import {
   CheckIcon,
@@ -22,17 +21,23 @@ import {
 
 type CourseCurriculumProps = {
   readonly course: CourseDetail
-  readonly progressCourse?: ProgressCourse
 }
 
-export function CourseCurriculum({
-  course,
-  progressCourse,
-}: CourseCurriculumProps) {
+export function CourseCurriculum({ course }: CourseCurriculumProps) {
   const [openUnits, setOpenUnits] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(
       course.units.map((unit, index) => [unit.id, index === 0])
     )
+  )
+  const progressByLessonId = useMemo(
+    () =>
+      new Map(
+        course.progress.lessons.map((lesson) => [
+          lesson.lessonId,
+          lesson.status,
+        ])
+      ),
+    [course.progress.lessons]
   )
 
   return (
@@ -51,7 +56,7 @@ export function CourseCurriculum({
                 [unit.id]: !(current[unit.id] ?? false),
               }))
             }
-            progressCourse={progressCourse}
+            progressByLessonId={progressByLessonId}
             unit={unit}
             unitIndex={unitIndex}
           />
@@ -64,18 +69,19 @@ export function CourseCurriculum({
 function CurriculumUnit({
   isOpen,
   onToggle,
-  progressCourse,
+  progressByLessonId,
   unit,
   unitIndex,
 }: {
   readonly isOpen: boolean
   readonly onToggle: () => void
-  readonly progressCourse?: ProgressCourse
+  readonly progressByLessonId: ReadonlyMap<string, LessonProgressStatus>
   readonly unit: CourseUnit
   readonly unitIndex: number
 }) {
   const unitDone = unit.lessons.every(
-    (lesson) => resolveLessonStatus(progressCourse, lesson.id) === "completed"
+    (lesson) =>
+      resolveLessonStatus(progressByLessonId, lesson.id) === "completed"
   )
 
   return (
@@ -132,7 +138,7 @@ function CurriculumUnit({
               <CurriculumLesson
                 key={lesson.id}
                 lesson={lesson}
-                status={resolveLessonStatus(progressCourse, lesson.id)}
+                status={resolveLessonStatus(progressByLessonId, lesson.id)}
               />
             ))}
           </div>
@@ -206,13 +212,10 @@ function CurriculumLesson({
 }
 
 function resolveLessonStatus(
-  progressCourse: ProgressCourse | undefined,
+  progressByLessonId: ReadonlyMap<string, LessonProgressStatus>,
   lessonId: string
 ): LessonProgressStatus {
-  return (
-    progressCourse?.lessons.find((lesson) => lesson.id === lessonId)?.status ??
-    "locked"
-  )
+  return progressByLessonId.get(lessonId) ?? "locked"
 }
 
 function cx(...classes: Array<false | null | string | undefined>): string {
