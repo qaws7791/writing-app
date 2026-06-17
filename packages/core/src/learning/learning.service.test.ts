@@ -18,6 +18,7 @@ import type {
   LearningRepository,
   SaveStepAnswerCommand,
 } from "@/learning/learning.repository"
+import type { LearningAnswer } from "@/learning/learning.dto"
 
 const occurredAt = new Date("2026-06-14T09:30:00.000Z")
 const learnerId = learnerIdSchema.parse("user-1")
@@ -81,7 +82,10 @@ describe("학습 서비스", () => {
         },
         stepId: "l1-s10",
       },
-    ] as const
+    ] satisfies readonly {
+      readonly answer: LearningAnswer
+      readonly stepId: string
+    }[]
 
     for (const answer of answers) {
       await expect(
@@ -113,7 +117,7 @@ describe("학습 서비스", () => {
     ])
   })
 
-  it("문자열화된 스텝 답변은 invalid-request로 거절한다", async () => {
+  it("문자열화된 스텝 답변은 command parse 단계에서 거절한다", async () => {
     const service = createService()
 
     await expect(
@@ -121,20 +125,13 @@ describe("학습 서비스", () => {
         answer: JSON.stringify({
           selectedOptionId: "b",
           type: "MULTIPLE_CHOICE",
-        }),
+        }) as never,
         lessonId,
         occurredAt,
         stepId: lessonStepIdSchema.parse("l1-s3"),
         userId: learnerId,
       })
-    ).resolves.toEqual({
-      kind: "err",
-      error: {
-        kind: "invalid-request",
-        reason: "step-answer-shape-invalid",
-        stepId: lessonStepIdSchema.parse("l1-s3"),
-      },
-    })
+    ).rejects.toThrow()
   })
 
   it("첫 읽기 스텝의 lesson-started 마커 저장을 허용한다", async () => {
@@ -275,7 +272,10 @@ describe("학습 서비스", () => {
     for (const stepId of ["l1-s1", "l1-s2"]) {
       await expect(
         service.saveStepAnswer({
-          answer: { read: true },
+          answer: {
+            selectedOptionId: "b",
+            type: "MULTIPLE_CHOICE",
+          },
           lessonId,
           occurredAt,
           stepId: lessonStepIdSchema.parse(stepId),
@@ -297,7 +297,10 @@ describe("학습 서비스", () => {
 
     await expect(
       service.saveStepAnswer({
-        answer: { selected: "b" },
+        answer: {
+          selectedOptionId: "b",
+          type: "MULTIPLE_CHOICE",
+        },
         lessonId,
         occurredAt,
         stepId: lessonStepIdSchema.parse("missing-step"),

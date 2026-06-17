@@ -155,6 +155,8 @@ bun --filter @workspace/admin-api seed:admin
 
 학습 진행은 `courseId`와 `lessonId`에 직접 묶인다. `course_progress`와 `lesson_progress`에는 `curriculum_version_id`를 저장하지 않는다. 레슨 진행 저장, 완료, 답변 저장은 대상 레슨이 현재 코스 커리큘럼에 포함되는지 확인한 뒤 처리한다.
 
+레슨 답변 저장 command의 `answer`는 `learningAnswerSchema`를 통과한 값만 허용한다. API route, core service command, DB learning repository는 같은 학습 답변 계약을 사용하며, 임의 JSON 값은 application boundary 전에 거절한다.
+
 관리자 편집은 현재 커리큘럼 전체 스냅샷을 저장하되 `expectedRevision`을 필수로 받는다. 서버는 `courses.curriculum_revision`과 일치하는 요청만 반영하고, 저장 성공 시 revision을 증가시킨 편집 문서를 반환한다. revision이 다르면 `409 conflict`를 반환하고 커리큘럼 row를 변경하지 않는다.
 
 `PUT /courses/:courseId/editor`는 코스 기본 정보, 유닛, 레슨 배치, 스텝을 현재 테이블에 반영한다. 유닛과 레슨은 삭제 후 삽입하지 않고 ID 기준으로 갱신하며, 저장 요청에서 빠진 기존 유닛, 레슨, 스텝은 삭제하지 않고 `archived` 상태로 바꾼다.

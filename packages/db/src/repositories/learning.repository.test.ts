@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
 
 import { createInMemoryKwepDatabase } from "@/client"
+import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
+import { learnerIdSchema } from "@workspace/core/learning"
 import { runBaselineMigration } from "@/migrations/migrate"
 import { createDrizzleLearningRepository } from "@/repositories/learning.repository"
 import {
@@ -20,6 +22,10 @@ import {
 import type { KwepDatabaseClient } from "@/client"
 
 const now = new Date("2026-06-14T09:30:00.000Z")
+const userId = learnerIdSchema.parse("user-1")
+const lessonId = lessonIdSchema.parse("l1")
+const newLessonId = lessonIdSchema.parse("l-new")
+const newStepId = lessonStepIdSchema.parse("l-new-s3")
 
 async function readSeedData(): Promise<readonly KwepCourseSeed[]> {
   const seedUrl = new URL("../seeds/content-seed-data.json", import.meta.url)
@@ -37,9 +43,9 @@ describe("학습 진행 repository", () => {
 
       await repository.saveLessonProgress({
         currentStepIndex: 2,
-        lessonId: "l1",
+        lessonId,
         occurredAt: now,
-        userId: "user-1",
+        userId,
       })
 
       expect(client.db.select().from(learnerLessonProgress).all()).toEqual([
@@ -72,9 +78,9 @@ describe("학습 진행 repository", () => {
 
       await repository.saveLessonProgress({
         currentStepIndex: 1,
-        lessonId: "l1",
+        lessonId,
         occurredAt: new Date("2026-06-14T15:30:00.000Z"),
-        userId: "user-1",
+        userId,
       })
 
       expect(client.db.select().from(learnerActivityDays).all()).toEqual([
@@ -96,16 +102,22 @@ describe("학습 진행 repository", () => {
       const repository = createDrizzleLearningRepository(client.db)
 
       await repository.saveStepAnswer({
-        answer: { selected: "b" },
-        lessonId: "l-new",
+        answer: {
+          selectedOptionId: "b",
+          type: "MULTIPLE_CHOICE",
+        },
+        lessonId: newLessonId,
         occurredAt: now,
-        stepId: "l-new-s3",
-        userId: "user-1",
+        stepId: newStepId,
+        userId,
       })
 
       expect(client.db.select().from(learnerLessonAnswers).all()).toEqual([
         expect.objectContaining({
-          answerJson: JSON.stringify({ selected: "b" }),
+          answerJson: JSON.stringify({
+            selectedOptionId: "b",
+            type: "MULTIPLE_CHOICE",
+          }),
           lessonId: "l-new",
           stepId: "l-new-s3",
           userId: "user-1",
@@ -132,15 +144,15 @@ describe("학습 진행 repository", () => {
 
       await repository.completeLesson({
         currentStepIndex: 1,
-        lessonId: "l1",
+        lessonId,
         occurredAt: now,
-        userId: "user-1",
+        userId,
       })
       await repository.completeLesson({
         currentStepIndex: 1,
-        lessonId: "l1",
+        lessonId,
         occurredAt: new Date("2026-06-14T10:00:00.000Z"),
-        userId: "user-1",
+        userId,
       })
 
       expect(client.db.select().from(learnerLessonProgress).all()).toEqual([

@@ -1,4 +1,9 @@
 import { and, eq, sql } from "drizzle-orm"
+import type {
+  CompleteLessonCommand,
+  SaveLessonProgressCommand,
+  SaveStepAnswerCommand,
+} from "@workspace/core/learning"
 import { lessonProgressStatuses } from "@workspace/core/status"
 
 import type { KwepDatabase } from "@workspace/db/client"
@@ -9,22 +14,9 @@ import {
   learnerLessonProgress,
 } from "@workspace/db/schema"
 
-export type SaveLessonProgressInput = {
-  readonly currentStepIndex: number
-  readonly lessonId: string
-  readonly occurredAt: Date
-  readonly userId: string
-}
-
-export type SaveStepAnswerInput = {
-  readonly answer: unknown
-  readonly lessonId: string
-  readonly occurredAt: Date
-  readonly stepId: string
-  readonly userId: string
-}
-
-export type CompleteLessonInput = SaveLessonProgressInput
+export type SaveLessonProgressInput = SaveLessonProgressCommand
+export type SaveStepAnswerInput = SaveStepAnswerCommand
+export type CompleteLessonInput = CompleteLessonCommand
 
 export type LearningRepository = {
   readonly completeLesson: (input: CompleteLessonInput) => Promise<void>

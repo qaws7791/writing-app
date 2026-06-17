@@ -83,7 +83,7 @@ export const learningAnswerSchema = z.union([
 ])
 
 export const saveStepAnswerCommandSchema = z.object({
-  answer: jsonValueSchema,
+  answer: learningAnswerSchema,
   lessonId: lessonIdSchema,
   occurredAt: z.date(),
   stepId: lessonStepIdSchema,

@@ -6,10 +6,10 @@ import {
 import {
   completeLessonCommandSchema,
   lessonStartedAnswerSchema,
-  lessonStepAnswerSchema,
   saveLessonProgressCommandSchema,
   saveStepAnswerCommandSchema,
   type CompleteLessonCommand,
+  type LearningAnswer,
   type LessonStepAnswer,
   type SaveLessonProgressCommand,
   type SaveStepAnswerCommand,
@@ -111,15 +111,13 @@ export function createLearningService({
         })
       }
 
-      const parsedStepAnswer = lessonStepAnswerSchema.safeParse(
-        parsedCommand.answer
-      )
+      const answer = parsedCommand.answer
       const supportsStepAnswer =
-        isLessonStartedAnswer(parsedCommand.answer, {
+        isLessonStartedAnswer(answer, {
           firstStepId: parsedLesson.steps[0]?.id,
           stepId: step.id,
         }) ||
-        (parsedStepAnswer.success && parsedStepAnswer.data.type === step.type)
+        (isLessonStepAnswer(answer) && answer.type === step.type)
 
       if (!supportsStepAnswer) {
         return err({
@@ -133,8 +131,7 @@ export function createLearningService({
 
       if (
         answerableLessonStepTypes.has(step.type) &&
-        (!parsedStepAnswer.success ||
-          !isValidStepAnswer(step, parsedStepAnswer.data))
+        (!isLessonStepAnswer(answer) || !isValidStepAnswer(step, answer))
       ) {
         return err({
           kind: "invalid-request",
@@ -186,6 +183,12 @@ function isValidStepAnswer(
     case "READING":
       return false
   }
+}
+
+function isLessonStepAnswer(
+  answer: LearningAnswer
+): answer is LessonStepAnswer {
+  return "type" in answer
 }
 
 function isValidMultipleChoiceAnswer(
