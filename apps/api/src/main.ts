@@ -4,7 +4,10 @@ import {
   createAiFeedbackService,
   defaultAiFeedbackAttemptPolicy,
 } from "@workspace/core/ai-feedback"
-import { createLearningService } from "@workspace/core/learning"
+import {
+  createLearningService,
+  type ProgressReader,
+} from "@workspace/core/learning"
 import { contentStatuses, lessonProgressStatuses } from "@workspace/core/status"
 import {
   createDrizzleAiFeedbackRepository,
@@ -30,7 +33,6 @@ import {
   createOpenAiFeedbackProvider,
   createUnavailableAiFeedbackProvider,
 } from "@/openai/openai-feedback-provider"
-import type { ProgressReader } from "@/routes/course-progress"
 import type { ProfileReader } from "@/routes/profile.route"
 
 const env = parseApiEnv(process.env)

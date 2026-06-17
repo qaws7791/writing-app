@@ -1,10 +1,10 @@
 import { Hono } from "hono"
 
 import type { SessionResolver } from "@/auth/session"
-import { toCourseProgress, type ProgressReader } from "@/routes/course-progress"
 import { errorResponse } from "@/routes/error-response"
 import { resolveActiveSession } from "@/routes/route-helpers"
 import type { ContentRepository } from "@workspace/core/content"
+import { toCourseProgress, type ProgressReader } from "@workspace/core/learning"
 
 export type ProgressRouteDependencies = {
   readonly contentRepository: ContentRepository

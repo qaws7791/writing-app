@@ -191,6 +191,8 @@ DB migration은 피벗 기간 동안 누적 보정 migration이 아니라 `0000-
 
 AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structured Outputs를 호출하고, `packages/core`의 AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. 한국어 글쓰기 코칭 지침과 입력 프롬프트 조립은 `packages/core/src/ai-feedback/ai-feedback.prompt.ts`의 prompt policy가 단일 출처다. 완료 시도 한도는 `packages/core/src/ai-feedback/ai-feedback-attempt-policy.ts`의 attempt policy로 명시하고, API 조립 루트가 기본 정책을 서비스에 주입한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다.
 
+학습 진행 read model 정책은 `packages/core/src/learning/learning-progress-read-model.ts`가 단일 출처다. 첫 미완료 레슨만 `available`로 열고 이후 레슨을 `locked`로 두는 규칙, 완료율 계산, 다음 레슨 projection은 API route가 아니라 core learning interface에서 계산한다.
+
 ## `packages/logger`
 
 `packages/logger`는 Pino 로거 생성, 요청 완료 로그 helper, Hono 요청 로깅 middleware를 제공한다. 요청 로깅 middleware는 외부 `x-request-id`를 보존하고 없으면 request logging runtime의 ID generator로 새 ID를 만든다. duration은 wall clock이 아니라 runtime의 monotonic clock 차이로 계산하며, 학습자 API와 어드민 API 조립 루트가 production default runtime을 명시적으로 주입한다.

@@ -11,12 +11,11 @@ import { createLearningRoute } from "@/routes/learning.route"
 import { createLessonsRoute } from "@/routes/lessons.route"
 import { createOpenApiRoute } from "@/routes/openapi.route"
 import { createProfileRoute, type ProfileReader } from "@/routes/profile.route"
-import type { ProgressReader } from "@/routes/course-progress"
 import { createProgressRoute } from "@/routes/progress.route"
 import { errorResponse } from "@/routes/error-response"
 import type { ContentRepository } from "@workspace/core/content"
 import type { AiFeedbackService } from "@workspace/core/ai-feedback"
-import type { LearningService } from "@workspace/core/learning"
+import type { LearningService, ProgressReader } from "@workspace/core/learning"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   createRequestLoggingMiddleware,

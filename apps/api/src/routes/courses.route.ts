@@ -1,11 +1,11 @@
 import { Hono } from "hono"
 import { courseIdSchema, type ContentRepository } from "@workspace/core/content"
-
-import type { SessionResolver } from "@/auth/session"
 import {
   withLearnerCourseProgress,
   type ProgressReader,
-} from "@/routes/course-progress"
+} from "@workspace/core/learning"
+
+import type { SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
 import { resolveActiveSession } from "@/routes/route-helpers"
 
