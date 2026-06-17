@@ -122,6 +122,8 @@ cp apps/admin/.env.example apps/admin/.env
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:4000` | `https://api.example.com` | 브라우저에서 호출할 API URL  |
 | `WEB_API_BASE_URL`         | `http://localhost:4000` | `https://api.example.com` | 서버 컴포넌트에서 호출할 API |
 
+웹 실행 코드는 `NEXT_PUBLIC_API_BASE_URL`과 `WEB_API_BASE_URL`을 직접 읽지 않는다. `apps/web/src/runtime-config.ts`가 브라우저용 API base URL과 서버용 API base URL을 읽고 정규화하는 단일 경계이며, 인증 client와 API client factory는 이 모듈에서 받은 값을 사용한다.
+
 ## 어드민 API 환경 변수
 
 `apps/admin-api`는 관리자 전용 백엔드다.

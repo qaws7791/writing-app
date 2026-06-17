@@ -1,28 +1,74 @@
 import { createAuthClient } from "better-auth/react"
 
 import { resolveSafeNextPath } from "@/lib/auth/auth-navigation"
+import {
+  buildApiUrl,
+  readBrowserApiBaseUrl,
+  type BrowserApiBaseUrl,
+} from "@/runtime-config"
 
 export async function requestGoogleLogin(nextPath: string): Promise<void> {
-  await createAuthClient({
-    baseURL: getApiBaseUrl(),
-  }).signIn.social({
-    callbackURL: createCallbackUrl(nextPath),
-    provider: "google",
-  })
+  await getDefaultWebAuthClient().requestGoogleLogin(nextPath)
 }
 
 export async function requestLogout(callbackPath: string): Promise<string> {
-  const safeCallbackPath = resolveSafeNextPath(callbackPath)
-  const response = await fetch(`${getApiBaseUrl()}/api/auth/sign-out`, {
-    credentials: "include",
-    method: "POST",
-  })
+  return getDefaultWebAuthClient().requestLogout(callbackPath)
+}
 
-  if (!response.ok) {
-    throw new Error("Failed to sign out")
+export type WebAuthClient = {
+  readonly requestGoogleLogin: (nextPath: string) => Promise<void>
+  readonly requestLogout: (callbackPath: string) => Promise<string>
+}
+
+type BetterAuthClientFactory = (input: { readonly baseURL: string }) => {
+  readonly signIn: {
+    readonly social: (input: {
+      readonly callbackURL: string
+      readonly provider: "google"
+    }) => Promise<unknown>
   }
+}
 
-  return safeCallbackPath
+type FetchImplementation = (
+  input: RequestInfo | URL,
+  init?: RequestInit
+) => Promise<Response>
+
+export function createWebAuthClient({
+  apiBaseUrl,
+  betterAuthClientFactory = createAuthClient,
+  fetchImplementation = globalThis.fetch.bind(globalThis),
+}: {
+  readonly apiBaseUrl: BrowserApiBaseUrl
+  readonly betterAuthClientFactory?: BetterAuthClientFactory
+  readonly fetchImplementation?: FetchImplementation
+}): WebAuthClient {
+  return {
+    async requestGoogleLogin(nextPath) {
+      await betterAuthClientFactory({
+        baseURL: apiBaseUrl,
+      }).signIn.social({
+        callbackURL: createCallbackUrl(nextPath),
+        provider: "google",
+      })
+    },
+    async requestLogout(callbackPath) {
+      const safeCallbackPath = resolveSafeNextPath(callbackPath)
+      const response = await fetchImplementation(
+        buildApiUrl(apiBaseUrl, "/api/auth/sign-out"),
+        {
+          credentials: "include",
+          method: "POST",
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error("Failed to sign out")
+      }
+
+      return safeCallbackPath
+    },
+  }
 }
 
 function createCallbackUrl(nextPath: string): string {
@@ -32,6 +78,8 @@ function createCallbackUrl(nextPath: string): string {
   return new URL(resolveSafeNextPath(nextPath), browserOrigin).toString()
 }
 
-function getApiBaseUrl(): string {
-  return (process.env["NEXT_PUBLIC_API_BASE_URL"] ?? "").replace(/\/$/, "")
+function getDefaultWebAuthClient(): WebAuthClient {
+  return createWebAuthClient({
+    apiBaseUrl: readBrowserApiBaseUrl(),
+  })
 }

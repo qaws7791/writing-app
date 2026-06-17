@@ -1,0 +1,80 @@
+import { readdirSync, readFileSync } from "node:fs"
+import { join, relative } from "node:path"
+import { describe, expect, it } from "vitest"
+import { localRuntimeDefaults } from "@workspace/env"
+
+import {
+  buildApiUrl,
+  readBrowserApiBaseUrl,
+  readServerApiBaseUrl,
+} from "@/runtime-config"
+
+describe("web runtime config", () => {
+  it("브라우저 API base URL을 기본값과 환경 변수에서 명시적으로 읽는다", () => {
+    expect(readBrowserApiBaseUrl({})).toBe(
+      localRuntimeDefaults.learnerApiBaseUrl
+    )
+    expect(
+      readBrowserApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test///",
+      })
+    ).toBe("https://api.example.test")
+  })
+
+  it("서버 API base URL을 기본값과 환경 변수에서 명시적으로 읽는다", () => {
+    expect(readServerApiBaseUrl({})).toBe(
+      localRuntimeDefaults.learnerApiBaseUrl
+    )
+    expect(
+      readServerApiBaseUrl({
+        WEB_API_BASE_URL: "https://internal-api.example.test/",
+      })
+    ).toBe("https://internal-api.example.test")
+  })
+
+  it("API path를 같은 규칙으로 조합한다", () => {
+    expect(buildApiUrl(readBrowserApiBaseUrl({}), "/api/auth/sign-out")).toBe(
+      `${localRuntimeDefaults.learnerApiBaseUrl}/api/auth/sign-out`
+    )
+  })
+
+  it("runtime config 밖의 실행 코드가 API base URL env를 직접 읽지 않는다", () => {
+    const offenders = findRuntimeSourceFiles().filter((filePath) => {
+      if (filePath.endsWith("runtime-config.ts")) {
+        return false
+      }
+
+      const source = readFileSync(filePath, "utf8")
+
+      return /process\.env(?:\[['"](?:NEXT_PUBLIC_API_BASE_URL|WEB_API_BASE_URL)['"]\]|\.(?:NEXT_PUBLIC_API_BASE_URL|WEB_API_BASE_URL))/.test(
+        source
+      )
+    })
+
+    expect(
+      offenders.map((filePath) => relative(process.cwd(), filePath))
+    ).toEqual([])
+  })
+})
+
+function findRuntimeSourceFiles(
+  directory = join(process.cwd(), "src")
+): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = join(directory, entry.name)
+
+    if (entry.isDirectory()) {
+      return findRuntimeSourceFiles(entryPath)
+    }
+
+    if (
+      entry.name.endsWith(".test.ts") ||
+      entry.name.endsWith(".test.tsx") ||
+      (!entry.name.endsWith(".ts") && !entry.name.endsWith(".tsx"))
+    ) {
+      return []
+    }
+
+    return [entryPath]
+  })
+}

@@ -1,11 +1,9 @@
-import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
-
 import { createHttpWritingAppApi } from "@/lib/api/http/create-http-writing-app-api"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
+import { readServerApiBaseUrl } from "@/runtime-config"
 
 export function getServerWritingAppApi({
-  apiBaseUrl = process.env["WEB_API_BASE_URL"] ??
-    localRuntimeDefaults.learnerApiBaseUrl,
+  apiBaseUrl = readServerApiBaseUrl(),
   tokenProvider,
 }: {
   readonly apiBaseUrl?: string
