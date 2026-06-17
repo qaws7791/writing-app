@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  answerableLessonStepTypes,
   courseDetailDtoSchema,
   courseListDtoSchema,
   lessonDtoSchema,
+  lessonStepDefinitions,
   lessonStepDtoSchema,
+  lessonStepTypeSchema,
 } from "@/content/content.dto"
 
 const lessonSteps = [
@@ -134,6 +137,18 @@ describe("콘텐츠 DTO schema", () => {
       id: "l1-s11",
       type: "WRITE",
     })
+  })
+
+  it("스텝 타입별 DTO 정의와 답변 가능 정책을 같은 계약에서 관리한다", () => {
+    expect(Object.keys(lessonStepDefinitions).sort()).toEqual(
+      [...lessonStepTypeSchema.options].sort()
+    )
+
+    expect(
+      lessonStepTypeSchema.options.filter(
+        (stepType) => lessonStepDefinitions[stepType].answerable
+      )
+    ).toEqual([...answerableLessonStepTypes])
   })
 
   it("코스 목록과 코스 상세 DTO를 parse한다", () => {

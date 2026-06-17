@@ -1,5 +1,8 @@
-import type { ContentRepository, LessonStepType } from "@workspace/core/content"
-import { lessonDtoSchema } from "@workspace/core/content"
+import type { ContentRepository } from "@workspace/core/content"
+import {
+  answerableLessonStepTypes,
+  lessonDtoSchema,
+} from "@workspace/core/content"
 import {
   completeLessonCommandSchema,
   lessonStartedAnswerSchema,
@@ -14,17 +17,6 @@ import {
 import type { LearningRepository } from "@workspace/core/learning/learning.repository"
 import { err, ok, type Result } from "@workspace/core/result"
 import type { z } from "zod"
-
-const answerableStepTypes = new Set<LessonStepType>([
-  "MULTIPLE_CHOICE",
-  "FILL_BLANK",
-  "SELECT",
-  "ORDER",
-  "MATCH",
-  "CATEGORIZE",
-  "WRITE",
-  "AI_FEEDBACK",
-])
 
 export type LearningServiceError =
   | {
@@ -132,7 +124,7 @@ export function createLearningService({
       if (!supportsStepAnswer) {
         return err({
           kind: "invalid-request",
-          reason: answerableStepTypes.has(step.type)
+          reason: answerableLessonStepTypes.has(step.type)
             ? "step-answer-shape-invalid"
             : "step-answer-not-supported",
           stepId: parsedCommand.stepId,
@@ -140,7 +132,7 @@ export function createLearningService({
       }
 
       if (
-        answerableStepTypes.has(step.type) &&
+        answerableLessonStepTypes.has(step.type) &&
         (!parsedStepAnswer.success ||
           !isValidStepAnswer(step, parsedStepAnswer.data))
       ) {
@@ -158,7 +150,7 @@ export function createLearningService({
   }
 }
 
-export { answerableStepTypes }
+export { answerableLessonStepTypes as answerableStepTypes }
 
 type LessonStep = z.infer<typeof lessonDtoSchema>["steps"][number]
 
