@@ -4,10 +4,10 @@ import type {
   SaveLessonProgressCommand,
   SaveStepAnswerCommand,
 } from "@workspace/core/learning"
+import { toLearningDateKey } from "@workspace/core/learning"
 import { lessonProgressStatuses } from "@workspace/core/status"
 
 import type { KwepDatabase } from "@workspace/db/client"
-import { toLearningDateKey } from "@workspace/db/repositories/activity-date"
 import {
   learnerActivityDays,
   learnerLessonAnswers,

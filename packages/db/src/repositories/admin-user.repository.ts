@@ -11,6 +11,10 @@ import type {
   UpdateAdminUserStatusInput,
 } from "@workspace/core/admin"
 import {
+  toLearningDateKey,
+  type LearningDateKey,
+} from "@workspace/core/learning"
+import {
   contentStatuses,
   learnerAccountStatuses,
   lessonProgressStatuses,
@@ -29,7 +33,6 @@ import {
 } from "drizzle-orm"
 
 import type { KwepDatabase } from "@workspace/db/client"
-import { toLearningDateKey } from "@workspace/db/repositories/activity-date"
 import {
   calculateCurrentStreakDays,
   groupActivityDatesByUserId,
@@ -139,7 +142,7 @@ function readUsers(
     .all()
   const activityDatesByUserId =
     rows.length === 0
-      ? new Map<string, string[]>()
+      ? new Map<string, LearningDateKey[]>()
       : groupActivityDatesByUserId(
           db
             .select()

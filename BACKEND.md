@@ -193,6 +193,8 @@ AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structu
 
 학습 진행 read model 정책은 `packages/core/src/learning/learning-progress-read-model.ts`가 단일 출처다. 첫 미완료 레슨만 `available`로 열고 이후 레슨을 `locked`로 두는 규칙, 완료율 계산, 다음 레슨 projection은 API route가 아니라 core learning interface에서 계산한다.
 
+학습 활동일 정책은 `packages/core/src/learning/learning-date.ts`가 단일 출처다. `learner_activity_days.activity_date`는 UTC timestamp가 아니라 플랫폼 학습 시간대 `Asia/Seoul` 기준의 `LearningDateKey`이며, DB repository와 API 조립 루트는 이 core 정책으로 저장, 집계, 연속 학습일 계산을 수행한다.
+
 ## `packages/logger`
 
 `packages/logger`는 Pino 로거 생성, 요청 완료 로그 helper, Hono 요청 로깅 middleware를 제공한다. 요청 로깅 middleware는 외부 `x-request-id`를 보존하고 없으면 request logging runtime의 ID generator로 새 ID를 만든다. duration은 wall clock이 아니라 runtime의 monotonic clock 차이로 계산하며, 학습자 API와 어드민 API 조립 루트가 production default runtime을 명시적으로 주입한다.

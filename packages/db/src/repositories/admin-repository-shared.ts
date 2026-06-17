@@ -1,7 +1,10 @@
 import { or, isNull, ne } from "drizzle-orm"
 
+import {
+  calculateCurrentStreakDays,
+  type LearningDateKey,
+} from "@workspace/core/learning"
 import { learnerAccountStatuses } from "@workspace/core/status"
-import { addLearningCalendarDays } from "@workspace/db/repositories/activity-date"
 import { learnerActivityDays, learnerProfiles } from "@workspace/db/schema"
 
 export type PageInput = {
@@ -42,13 +45,13 @@ export function createActiveLearnerCondition() {
 
 export function groupActivityDatesByUserId(
   activities: readonly (typeof learnerActivityDays.$inferSelect)[]
-): Map<string, string[]> {
-  const activityDatesByUserId = new Map<string, string[]>()
+): Map<string, LearningDateKey[]> {
+  const activityDatesByUserId = new Map<string, LearningDateKey[]>()
 
   for (const activity of activities) {
     const activityDates = activityDatesByUserId.get(activity.userId) ?? []
 
-    activityDates.push(activity.activityDate)
+    activityDates.push(activity.activityDate as LearningDateKey)
     activityDates.sort((left, right) => right.localeCompare(left))
     activityDatesByUserId.set(activity.userId, activityDates)
   }
@@ -56,22 +59,4 @@ export function groupActivityDatesByUserId(
   return activityDatesByUserId
 }
 
-export function calculateCurrentStreakDays(
-  activityDates: readonly string[]
-): number {
-  if (activityDates.length === 0) {
-    return 0
-  }
-
-  const activitySet = new Set(activityDates)
-  const latestActivityDate = activityDates[0]
-  let streak = 0
-  let cursor = latestActivityDate
-
-  while (cursor !== undefined && activitySet.has(cursor)) {
-    streak += 1
-    cursor = addLearningCalendarDays(cursor, -1)
-  }
-
-  return streak
-}
+export { calculateCurrentStreakDays }

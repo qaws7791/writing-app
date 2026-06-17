@@ -9,6 +9,11 @@ import type {
   ReadAdminLessonAnalyticsInput,
 } from "@workspace/core/admin"
 import {
+  addLearningCalendarDays,
+  toLearningDateKey,
+  type LearningDateKey,
+} from "@workspace/core/learning"
+import {
   contentStatuses,
   learnerAccountStatuses,
   lessonProgressStatuses,
@@ -16,10 +21,6 @@ import {
 import { and, asc, countDistinct, desc, eq, or, sql } from "drizzle-orm"
 
 import type { KwepDatabase } from "@workspace/db/client"
-import {
-  addLearningCalendarDays,
-  toLearningDateKey,
-} from "@workspace/db/repositories/activity-date"
 import {
   calculateCurrentStreakDays,
   createPageBounds,
@@ -380,8 +381,10 @@ function readActiveLessonSnapshots(db: KwepDatabase): {
     }))
 }
 
-function countByDate(dates: readonly string[]): Map<string, number> {
-  const counts = new Map<string, number>()
+function countByDate(
+  dates: readonly LearningDateKey[]
+): Map<LearningDateKey, number> {
+  const counts = new Map<LearningDateKey, number>()
 
   for (const date of dates) {
     counts.set(date, (counts.get(date) ?? 0) + 1)

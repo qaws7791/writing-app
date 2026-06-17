@@ -3,6 +3,12 @@ import type {
   AdminDashboardRepository,
   ReadAdminDashboardInput,
 } from "@workspace/core/admin"
+import {
+  addLearningCalendarDays,
+  isLearningDateKeyInRange,
+  toLearningDateKey,
+  type LearningDateKey,
+} from "@workspace/core/learning"
 import { contentStatuses, lessonProgressStatuses } from "@workspace/core/status"
 import {
   and,
@@ -13,16 +19,11 @@ import {
   eq,
   gte,
   inArray,
-  lt,
   lte,
   sql,
 } from "drizzle-orm"
 
 import type { KwepDatabase } from "@workspace/db/client"
-import {
-  addLearningCalendarDays,
-  toLearningDateKey,
-} from "@workspace/db/repositories/activity-date"
 import {
   calculateCurrentStreakDays,
   createActiveLearnerCondition,
@@ -56,10 +57,6 @@ function readDashboard(
 ): AdminDashboardDto {
   const todayKey = toLearningDateKey(input.now)
   const last7DaysStart = addLearningCalendarDays(todayKey, -6)
-  const todayStart = new Date(`${todayKey}T00:00:00.000Z`)
-  const tomorrowStart = new Date(
-    `${addLearningCalendarDays(todayKey, 1)}T00:00:00.000Z`
-  )
 
   return {
     metrics: {
@@ -70,11 +67,14 @@ function readDashboard(
         todayKey,
       }),
       completedLessons: readCompletedLessonCount(db),
-      signupsLast7Days: readSignupCount(
-        db,
-        new Date(`${last7DaysStart}T00:00:00.000Z`)
-      ),
-      signupsToday: readSignupCount(db, todayStart, tomorrowStart),
+      signupsLast7Days: readSignupCountByLearningDate(db, {
+        end: todayKey,
+        start: last7DaysStart,
+      }),
+      signupsToday: readSignupCountByLearningDate(db, {
+        end: todayKey,
+        start: todayKey,
+      }),
       totalUsers: readLearnerCount(db),
     },
     recentActivities: readRecentActivities(db),
@@ -150,21 +150,22 @@ function readCompletedLessonCount(db: KwepDatabase): number {
   )
 }
 
-function readSignupCount(db: KwepDatabase, start: Date, end?: Date): number {
-  return (
-    db
-      .select({ value: count() })
-      .from(authUsers)
-      .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
-      .where(
-        and(
-          createActiveLearnerCondition(),
-          gte(authUsers.createdAt, start),
-          end === undefined ? undefined : lt(authUsers.createdAt, end)
-        )
-      )
-      .get()?.value ?? 0
-  )
+function readSignupCountByLearningDate(
+  db: KwepDatabase,
+  range: {
+    readonly end: LearningDateKey
+    readonly start: LearningDateKey
+  }
+): number {
+  return db
+    .select({ createdAt: authUsers.createdAt })
+    .from(authUsers)
+    .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
+    .where(createActiveLearnerCondition())
+    .all()
+    .filter((user) =>
+      isLearningDateKeyInRange(toLearningDateKey(user.createdAt), range)
+    ).length
 }
 
 function readLearnerCount(db: KwepDatabase): number {
@@ -208,7 +209,7 @@ function readRecentActivities(
     .all()
   const activityDatesByUserId =
     rows.length === 0
-      ? new Map<string, string[]>()
+      ? new Map<string, LearningDateKey[]>()
       : groupActivityDatesByUserId(
           db
             .select()

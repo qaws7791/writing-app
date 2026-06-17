@@ -162,6 +162,50 @@ describe("어드민 DB repository", () => {
     }
   })
 
+  it("dashboard 가입자 집계는 UTC 자정이 아니라 학습 활동일 기준으로 계산한다", async () => {
+    const client = createKwepDatabase(":memory:")
+    const now = new Date("2026-06-14T03:00:00.000Z")
+
+    try {
+      runBaselineMigration(client.sqlite)
+      client.db
+        .insert(authUsers)
+        .values([
+          {
+            createdAt: new Date("2026-06-13T15:30:00.000Z"),
+            email: "kst-today-early@example.com",
+            emailVerified: true,
+            id: "kst-today-early",
+            image: null,
+            name: "KST 오늘 새벽 가입자",
+            updatedAt: now,
+          },
+          {
+            createdAt: new Date("2026-06-14T14:30:00.000Z"),
+            email: "kst-today-late@example.com",
+            emailVerified: true,
+            id: "kst-today-late",
+            image: null,
+            name: "KST 오늘 밤 가입자",
+            updatedAt: now,
+          },
+        ])
+        .run()
+
+      const repository = createDrizzleAdminRepository(client.db)
+
+      await expect(repository.readDashboard({ now })).resolves.toMatchObject({
+        metrics: {
+          signupsLast7Days: 2,
+          signupsToday: 2,
+          totalUsers: 2,
+        },
+      })
+    } finally {
+      client.close()
+    }
+  })
+
   it("사용자 목록과 상세, 상태 변경, 삭제 상태 전환을 처리한다", async () => {
     const client = createKwepDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")

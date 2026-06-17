@@ -1,3 +1,4 @@
+export * from "@workspace/core/learning/learning-date"
 export * from "@workspace/core/learning/learning.dto"
 export * from "@workspace/core/learning/learning.ids"
 export * from "@workspace/core/learning/learning-progress-read-model"

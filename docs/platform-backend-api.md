@@ -15,10 +15,11 @@
 
 ## 2026-06-15 학습 활동일 타임존 보정 완료
 
-- `packages/db/src/repositories/activity-date.ts`에 학습 활동일 기준 타임존 `Asia/Seoul`과 `YYYY-MM-DD` 키 생성/일 단위 이동 유틸을 추가했다.
+- `packages/core/src/learning/learning-date.ts`가 학습 활동일 기준 타임존 `Asia/Seoul`, `LearningDateKey`, `YYYY-MM-DD` 키 생성/일 단위 이동/연속 학습일 계산의 단일 출처다.
 - 학습 진행, 답변 저장, 레슨 완료가 `learner_activity_days.activity_date`를 KST 논리 날짜로 기록한다.
 - 관리자 대시보드와 분석의 가입일, 완료일, 최근 7일 집계, 연속 학습일 계산도 같은 학습일 키를 사용한다.
-- 학습자 API 조립 루트의 프로필/진행 streak 계산은 UTC `toISOString().slice(0, 10)` 대신 같은 학습일 calendar key를 사용한다.
+- 학습자 API 조립 루트의 프로필/진행 streak 계산은 DB repository 내부 유틸이 아니라 core 학습일 계약을 사용한다.
+- 관리자 대시보드의 가입자 당일/최근 7일 집계는 UTC 자정 range가 아니라 `LearningDateKey` range로 판단한다.
 
 ## 2026-06-14 Kwep 플랫폼 브라우저 스모크 완료
 

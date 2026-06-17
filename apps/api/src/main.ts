@@ -5,7 +5,9 @@ import {
   defaultAiFeedbackAttemptPolicy,
 } from "@workspace/core/ai-feedback"
 import {
+  calculateCurrentStreakDays,
   createLearningService,
+  type LearningDateKey,
   type ProgressReader,
 } from "@workspace/core/learning"
 import { contentStatuses, lessonProgressStatuses } from "@workspace/core/status"
@@ -18,7 +20,6 @@ import {
   learnerLessonProgress,
   lessons,
 } from "@workspace/db"
-import { addLearningCalendarDays } from "@workspace/db/repositories/activity-date"
 import {
   createAppLogger,
   createRequestLogger,
@@ -179,23 +180,8 @@ function readActivity(db: typeof database.db, userId: string) {
       .where(eq(learnerActivityDays.userId, userId))
       .orderBy(desc(learnerActivityDays.activityDate))
       .all()
+      .map((activity) => ({
+        activityDate: activity.activityDate as LearningDateKey,
+      }))
   )
-}
-
-function calculateCurrentStreakDays(activityDates: readonly string[]): number {
-  if (activityDates.length === 0) {
-    return 0
-  }
-
-  const activitySet = new Set(activityDates)
-  const latestActivityDate = activityDates[0]
-  let streak = 0
-  let cursor = latestActivityDate
-
-  while (cursor !== undefined && activitySet.has(cursor)) {
-    streak += 1
-    cursor = addLearningCalendarDays(cursor, -1)
-  }
-
-  return streak
 }
