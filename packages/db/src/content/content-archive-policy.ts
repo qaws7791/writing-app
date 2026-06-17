@@ -1,8 +1,8 @@
 import { sql } from "drizzle-orm"
 import { contentStatuses } from "@workspace/core/status"
 
-import type { KwepDatabase } from "@/client"
-import type { ContentSeedRows } from "@/seeds/seed-content"
+import type { KwepDatabase } from "@workspace/db/client"
+import type { ContentSeedRows } from "@workspace/db/seeds/seed-content"
 
 type KwepDatabaseTransaction = Parameters<
   Parameters<KwepDatabase["transaction"]>[0]

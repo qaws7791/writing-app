@@ -52,12 +52,17 @@ import {
   sql,
 } from "drizzle-orm"
 
-import { archiveContentRowsOutsideSeed } from "@/content/content-archive-policy"
+import { archiveContentRowsOutsideSeed } from "@workspace/db/content/content-archive-policy"
 import type { KwepDatabase } from "@workspace/db/client"
 import {
   addLearningCalendarDays,
   toLearningDateKey,
 } from "@workspace/db/repositories/activity-date"
+import {
+  createDefaultAdminCourseContentIds,
+  type CreateAdminCourseContentIds,
+  type NewAdminCourseContentIds,
+} from "@workspace/db/repositories/admin-content-ids"
 import { createDefaultContentSeedRows } from "@workspace/db/seeds/seed-content"
 import {
   adminSettings,
@@ -72,6 +77,7 @@ import {
 } from "@workspace/db/schema"
 
 const recentActivityLimit = 5
+const createCourseCollisionRetryLimit = 3
 type LessonRow = typeof lessons.$inferSelect
 type LessonStepRow = typeof lessonSteps.$inferSelect
 type AdminCourseRepository = Pick<
@@ -95,24 +101,50 @@ type AdminSettingsRepository = Pick<
   "readSettings" | "saveLegalSettings" | "saveNoticeSettings"
 >
 
+export type DrizzleAdminRepositoryDependencies = {
+  readonly createCourseContentIds?: CreateAdminCourseContentIds
+}
+
+type ResolvedDrizzleAdminRepositoryDependencies = {
+  readonly createCourseContentIds: CreateAdminCourseContentIds
+}
+
 export function createDrizzleAdminRepository(
-  db: KwepDatabase
+  db: KwepDatabase,
+  dependencies: DrizzleAdminRepositoryDependencies = {}
 ): AdminRepository {
+  const resolvedDependencies =
+    resolveDrizzleAdminRepositoryDependencies(dependencies)
+
   return {
-    ...createAdminCourseRepository(db),
+    ...createAdminCourseRepository(db, resolvedDependencies),
     ...createAdminUserRepository(db),
     ...createAdminAnalyticsRepository(db),
     ...createAdminSettingsRepository(db),
   }
 }
 
-function createAdminCourseRepository(db: KwepDatabase): AdminCourseRepository {
+function resolveDrizzleAdminRepositoryDependencies(
+  dependencies: DrizzleAdminRepositoryDependencies
+): ResolvedDrizzleAdminRepositoryDependencies {
+  return {
+    createCourseContentIds:
+      dependencies.createCourseContentIds ?? createDefaultAdminCourseContentIds,
+  }
+}
+
+function createAdminCourseRepository(
+  db: KwepDatabase,
+  dependencies: ResolvedDrizzleAdminRepositoryDependencies
+): AdminCourseRepository {
   return {
     archiveCourse(input) {
       return Promise.resolve(archiveCourse(db, input))
     },
     createCourse(input) {
-      return Promise.resolve(createCourse(db, input))
+      return Promise.resolve(
+        createCourse(db, input, dependencies.createCourseContentIds)
+      )
     },
     readCourseEditor(input) {
       return Promise.resolve(readCourseEditor(db, input))
@@ -637,11 +669,33 @@ function compareLessonAnalytics(
 
 function createCourse(
   db: KwepDatabase,
-  input: CreateAdminCourseInput
+  input: CreateAdminCourseInput,
+  createContentIds: CreateAdminCourseContentIds
 ): AdminCourseDetailDto {
-  const courseId = `c${input.now.getTime().toString(36)}`
-  const unitId = `${courseId}-u1`
-  const lessonId = `${courseId}-l1`
+  for (let attempt = 1; attempt <= createCourseCollisionRetryLimit; attempt++) {
+    const contentIds = createContentIds()
+
+    try {
+      return insertCourseAggregate(db, input, contentIds)
+    } catch (error) {
+      if (
+        attempt === createCourseCollisionRetryLimit ||
+        !isContentIdCollision(error)
+      ) {
+        throw error
+      }
+    }
+  }
+
+  throw new Error("Course content ID generation retry limit was exceeded")
+}
+
+function insertCourseAggregate(
+  db: KwepDatabase,
+  input: CreateAdminCourseInput,
+  contentIds: NewAdminCourseContentIds
+): AdminCourseDetailDto {
+  const { courseId, lessonId, readingStepId, unitId, writeStepId } = contentIds
   const revision = readNextContentRevision(db)
   const sortOrder = readNextCourseSortOrder(db)
 
@@ -692,7 +746,7 @@ function createCourse(
             title: "새 읽기 스텝",
             type: "reading",
           }),
-          id: `${lessonId}-s1`,
+          id: readingStepId,
           lessonId,
           sortOrder: 1,
           status: contentStatuses.active,
@@ -707,7 +761,7 @@ function createCourse(
             title: "글쓰기",
             type: "write",
           }),
-          id: `${lessonId}-s2`,
+          id: writeStepId,
           lessonId,
           sortOrder: 2,
           status: contentStatuses.active,
@@ -724,6 +778,19 @@ function createCourse(
   }
 
   return created
+}
+
+function isContentIdCollision(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false
+  }
+
+  return (
+    error.message.includes("UNIQUE constraint failed") &&
+    ["courses.id", "course_units.id", "lessons.id", "lesson_steps.id"].some(
+      (column) => error.message.includes(column)
+    )
+  )
 }
 
 function readCourseEditor(

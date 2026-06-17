@@ -7,6 +7,14 @@ import { eq } from "drizzle-orm"
 import { createKwepDatabase } from "@/client"
 import { runBaselineMigration } from "@/migrations/migrate"
 import { createDrizzleAdminRepository } from "@/repositories/admin.repository"
+import {
+  toCourseId,
+  toLessonId,
+  toLessonStepId,
+  toUnitId,
+  type CreateAdminCourseContentIds,
+  type NewAdminCourseContentIds,
+} from "@/repositories/admin-content-ids"
 import { createDrizzleContentRepository } from "@/repositories/content.repository"
 import {
   authUsers,
@@ -588,7 +596,9 @@ describe("어드민 DB repository", () => {
     try {
       runBaselineMigration(client.sqlite)
 
-      const repository = createDrizzleAdminRepository(client.db)
+      const repository = createDrizzleAdminRepository(client.db, {
+        createCourseContentIds: createQueuedCourseContentIds("cmqd74yo0"),
+      })
       const contentRepository = createDrizzleContentRepository(client.db)
 
       const created = await repository.createCourse({ now })
@@ -637,7 +647,104 @@ describe("어드민 DB repository", () => {
       client.close()
     }
   })
+
+  it("새 코스 ID 생성은 요청 시각이 아니라 명시적 factory에 맡긴다", async () => {
+    const client = createKwepDatabase(":memory:")
+    const now = new Date("2026-06-14T03:00:00.000Z")
+
+    try {
+      runBaselineMigration(client.sqlite)
+
+      const repository = createDrizzleAdminRepository(client.db, {
+        createCourseContentIds: createQueuedCourseContentIds(
+          "course-generated-1",
+          "course-generated-2"
+        ),
+      })
+
+      const first = await repository.createCourse({ now })
+      const second = await repository.createCourse({ now })
+
+      expect(first.id).toBe("course-generated-1")
+      expect(second.id).toBe("course-generated-2")
+      expect(
+        client.db
+          .select()
+          .from(courses)
+          .all()
+          .map((course) => course.id)
+          .sort()
+      ).toEqual(["course-generated-1", "course-generated-2"])
+    } finally {
+      client.close()
+    }
+  })
+
+  it("생성된 콘텐츠 ID가 DB unique constraint와 충돌하면 다시 생성한다", async () => {
+    const client = createKwepDatabase(":memory:")
+    const now = new Date("2026-06-14T03:00:00.000Z")
+
+    try {
+      runBaselineMigration(client.sqlite)
+
+      const repository = createDrizzleAdminRepository(client.db, {
+        createCourseContentIds: createQueuedCourseContentIds(
+          "course-collision",
+          "course-collision",
+          "course-retry"
+        ),
+      })
+
+      await expect(repository.createCourse({ now })).resolves.toMatchObject({
+        id: "course-collision",
+      })
+      await expect(repository.createCourse({ now })).resolves.toMatchObject({
+        id: "course-retry",
+      })
+      expect(
+        client.db
+          .select()
+          .from(courses)
+          .all()
+          .map((course) => course.id)
+          .sort()
+      ).toEqual(["course-collision", "course-retry"])
+    } finally {
+      client.close()
+    }
+  })
 })
+
+function createQueuedCourseContentIds(
+  ...courseIds: readonly string[]
+): CreateAdminCourseContentIds {
+  let index = 0
+
+  return () => {
+    const courseId = courseIds[Math.min(index, courseIds.length - 1)]
+    index += 1
+
+    if (courseId === undefined) {
+      throw new Error("테스트 코스 ID가 비어 있습니다.")
+    }
+
+    return createTestCourseContentIds(courseId)
+  }
+}
+
+function createTestCourseContentIds(
+  courseId: string
+): NewAdminCourseContentIds {
+  const lessonId = `${courseId}-l1`
+
+  return {
+    courseId: toCourseId(courseId),
+    lessonId: toLessonId(lessonId),
+    readingStepId: toLessonStepId(`${lessonId}-s1`),
+    unitId: toUnitId(`${courseId}-u1`),
+    writeStepId: toLessonStepId(`${lessonId}-s2`),
+  }
+}
 
 function seedOutsideContentRows(
   db: ReturnType<typeof createKwepDatabase>["db"]
@@ -695,7 +802,37 @@ function readFunctionSource(source: string, name: string): string | undefined {
     return undefined
   }
 
-  const bodyStart = source.indexOf("{", start)
+  const parametersStart = source.indexOf("(", start)
+
+  if (parametersStart < 0) {
+    return undefined
+  }
+
+  let parameterDepth = 0
+  let parametersEnd = -1
+
+  for (let index = parametersStart; index < source.length; index += 1) {
+    const char = source[index]
+
+    if (char === "(") {
+      parameterDepth += 1
+    }
+
+    if (char === ")") {
+      parameterDepth -= 1
+    }
+
+    if (parameterDepth === 0) {
+      parametersEnd = index
+      break
+    }
+  }
+
+  if (parametersEnd < 0) {
+    return undefined
+  }
+
+  const bodyStart = source.indexOf("{", parametersEnd)
 
   if (bodyStart < 0) {
     return undefined
