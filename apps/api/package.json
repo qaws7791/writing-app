@@ -8,8 +8,8 @@
     "start": "bun src/main.ts",
     "openapi:generate": "bun src/scripts/generate-openapi.ts",
     "lint": "oxlint .",
-    "test": "vitest run --config vitest.config.ts",
-    "test:watch": "vitest watch --config vitest.config.ts",
+    "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+    "test:watch": "bun --bun ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

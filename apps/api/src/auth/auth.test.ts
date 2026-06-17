@@ -1,14 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { createLearnerAuth, createLearnerSessionResolver } from "@/auth/auth"
-import type { LearnerProfileRepository } from "@/auth/learner-onboarding"
-import type { KwepDatabase } from "@workspace/db/client"
+import { learnerAccountStatuses } from "@workspace/core/status"
+import { createInMemoryKwepDatabase } from "@workspace/db/client"
+import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import {
   authAccounts,
   authSessions,
   authUsers,
   authVerifications,
+  learnerProfiles,
 } from "@workspace/db/schema"
+import { eq } from "drizzle-orm"
 
 const authMocks = vi.hoisted(() => ({
   betterAuth: vi.fn(() => ({
@@ -44,12 +47,18 @@ describe("학습자 Better Auth", () => {
   })
 
   it("Drizzle adapter에 Better Auth core model schema key를 명시한다", () => {
-    createLearnerAuth({
-      authBaseUrl: "https://api.example.test",
-      db: createFakeDatabase(),
-      secret: "x".repeat(32),
-      webOrigin: "https://app.example.test",
-    })
+    const database = createMigratedTestDatabase()
+
+    try {
+      createLearnerAuth({
+        authBaseUrl: "https://api.example.test",
+        db: database.db,
+        secret: "x".repeat(32),
+        webOrigin: "https://app.example.test",
+      })
+    } finally {
+      database.close()
+    }
 
     const adapterConfig = authMocks.drizzleAdapter.mock.calls.at(0)?.at(1)
 
@@ -65,121 +74,161 @@ describe("학습자 Better Auth", () => {
   })
 
   it("Better Auth getSession 결과를 학습자 세션으로 변환한다", async () => {
+    const database = createMigratedTestDatabase()
     const getSession = vi.fn(async () => ({
       user: sessionUser,
     }))
-    const resolver = createLearnerSessionResolver(
-      {
-        api: {
-          getSession,
-        },
-      },
-      createFakeDatabase(),
-      createFakeProfileRepository([null])
-    )
-    const headers = new Headers({
-      Cookie: "kwep_session=session-token-1.signature",
-    })
 
-    await expect(resolver.resolveSession(headers)).resolves.toEqual({
-      user: {
-        email: "learner@example.com",
-        id: "user-1",
-        image: null,
-        joinedAt: now.toISOString(),
-        name: "학습자",
-        status: "active",
-      },
-    })
-    expect(getSession).toHaveBeenCalledWith({
-      headers,
-    })
+    try {
+      seedSessionUser(database.db)
+      const resolver = createLearnerSessionResolver(
+        {
+          api: {
+            getSession,
+          },
+        },
+        database.db
+      )
+      const headers = new Headers({
+        Cookie: "kwep_session=session-token-1.signature",
+      })
+
+      await expect(resolver.resolveSession(headers)).resolves.toEqual({
+        user: {
+          email: "learner@example.com",
+          id: "user-1",
+          image: null,
+          joinedAt: now.toISOString(),
+          name: "학습자",
+          status: "active",
+        },
+      })
+      expect(getSession).toHaveBeenCalledWith({
+        headers,
+      })
+    } finally {
+      database.close()
+    }
   })
 
   it("기존 프로필 상태를 세션에 반영하고 active로 되돌리지 않는다", async () => {
-    const profileRepository = createFakeProfileRepository([
-      { status: "suspended" },
-    ])
-    const resolver = createLearnerSessionResolver(
-      {
-        api: {
-          getSession: vi.fn(async () => ({
-            user: sessionUser,
-          })),
-        },
-      },
-      createFakeDatabase(),
-      profileRepository
-    )
+    const database = createMigratedTestDatabase()
 
-    await expect(resolver.resolveSession(new Headers())).resolves.toMatchObject(
-      {
+    try {
+      seedSessionUser(database.db)
+      database.db
+        .insert(learnerProfiles)
+        .values({
+          deletedAt: null,
+          displayName: "학습자",
+          status: learnerAccountStatuses.suspended,
+          userId: "user-1",
+        })
+        .run()
+      const resolver = createLearnerSessionResolver(
+        {
+          api: {
+            getSession: vi.fn(async () => ({
+              user: sessionUser,
+            })),
+          },
+        },
+        database.db
+      )
+
+      await expect(
+        resolver.resolveSession(new Headers())
+      ).resolves.toMatchObject({
         user: {
           status: "suspended",
         },
-      }
-    )
-    expect(profileRepository.ensureActiveProfile).not.toHaveBeenCalled()
+      })
+      expect(readLearnerProfileStatus(database.db, "user-1")).toBe("suspended")
+    } finally {
+      database.close()
+    }
   })
 
   it("프로필이 누락된 세션은 active 프로필을 한 번 생성한다", async () => {
-    const profileRepository = createFakeProfileRepository([null])
-    const resolver = createLearnerSessionResolver(
-      {
-        api: {
-          getSession: vi.fn(async () => ({
-            user: sessionUser,
-          })),
-        },
-      },
-      createFakeDatabase(),
-      profileRepository
-    )
+    const database = createMigratedTestDatabase()
 
-    await expect(resolver.resolveSession(new Headers())).resolves.toMatchObject(
-      {
+    try {
+      seedSessionUser(database.db)
+      const resolver = createLearnerSessionResolver(
+        {
+          api: {
+            getSession: vi.fn(async () => ({
+              user: sessionUser,
+            })),
+          },
+        },
+        database.db
+      )
+
+      await expect(
+        resolver.resolveSession(new Headers())
+      ).resolves.toMatchObject({
         user: {
           status: "active",
         },
-      }
-    )
-    expect(profileRepository.ensureActiveProfile).toHaveBeenCalledWith({
-      displayName: "학습자",
-      userId: "user-1",
-    })
+      })
+      expect(readLearnerProfileStatus(database.db, "user-1")).toBe("active")
+    } finally {
+      database.close()
+    }
   })
 
   it("Better Auth 세션이 없으면 학습자 세션도 없다", async () => {
-    const resolver = createLearnerSessionResolver(
-      {
-        api: {
-          getSession: vi.fn(async () => null),
-        },
-      },
-      createFakeDatabase(),
-      createFakeProfileRepository([])
-    )
+    const database = createMigratedTestDatabase()
 
-    await expect(resolver.resolveSession(new Headers())).resolves.toBeNull()
+    try {
+      const resolver = createLearnerSessionResolver(
+        {
+          api: {
+            getSession: vi.fn(async () => null),
+          },
+        },
+        database.db
+      )
+
+      await expect(resolver.resolveSession(new Headers())).resolves.toBeNull()
+    } finally {
+      database.close()
+    }
   })
 })
 
-function createFakeDatabase(): KwepDatabase {
-  return {} as never
+function createMigratedTestDatabase() {
+  const database = createInMemoryKwepDatabase()
+
+  runBaselineMigration(database.sqlite)
+
+  return database
 }
 
-function createFakeProfileRepository(
-  profiles: readonly ({ readonly status: "active" | "suspended" } | null)[]
-): LearnerProfileRepository {
-  let queryIndex = 0
+function seedSessionUser(
+  db: ReturnType<typeof createMigratedTestDatabase>["db"]
+): void {
+  db.insert(authUsers)
+    .values({
+      createdAt: now,
+      email: sessionUser.email,
+      emailVerified: true,
+      id: sessionUser.id,
+      image: sessionUser.image,
+      name: sessionUser.name,
+      updatedAt: now,
+    })
+    .run()
+}
 
-  return {
-    ensureActiveProfile: vi.fn(async () => undefined),
-    findProfileByUserId: vi.fn(async () => {
-      const profile = profiles[queryIndex] ?? null
-      queryIndex += 1
-
-      return profile
-    }),
-  }
+function readLearnerProfileStatus(
+  db: ReturnType<typeof createMigratedTestDatabase>["db"],
+  userId: string
+) {
+  return db
+    .select({ status: learnerProfiles.status })
+    .from(learnerProfiles)
+    .where(eq(learnerProfiles.userId, userId))
+    .get()?.status
 }
