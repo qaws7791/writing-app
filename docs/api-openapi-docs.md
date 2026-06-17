@@ -1,5 +1,18 @@
 # API OpenAPI 문서 통합
 
+## 2026-06-18 시작
+
+- `apps/api` 라우트 정의를 `@hono/zod-openapi` 기반의 선언형 `createRoute` 헬퍼로 전환한다.
+- 하나의 라우트 파일은 하나의 API 엔드포인트만 정의하고, OpenAPI 스펙과 핸들러를 같은 파일에 둔다.
+- 수동 OpenAPI 문서 빌더를 제거하고 실제 Hono 앱에 등록된 라우트에서 OpenAPI JSON을 생성한다.
+
+## 2026-06-18 완료
+
+- `apps/api/src/lib/hono.ts`에 `OpenAPIHono` 기반 `createRoute` 헬퍼를 추가했다.
+- API 엔드포인트 파일은 하나의 파일이 하나의 route spec과 handler를 함께 가지도록 분리했다.
+- `/openapi`와 `openapi:generate`는 수동 문서 빌더가 아니라 실제 앱의 `getOpenAPI31Document()` 결과를 사용한다.
+- `docs/openapi/writing-app-api.json`와 웹 API generated 타입을 새 라우트 registry 기준으로 갱신했다.
+
 ## 2026-05-31 docs 앱 제거 완료
 
 - 별도 `apps/docs` Fumadocs 앱과 API 레퍼런스 MDX 생성 경로를 제거했다.

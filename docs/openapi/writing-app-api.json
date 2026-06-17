@@ -1,5 +1,12 @@
 {
+  "info": {
+    "title": "Writing App API",
+    "version": "0.0.1"
+  },
+  "openapi": "3.1.0",
   "components": {
+    "schemas": {},
+    "parameters": {},
     "securitySchemes": {
       "bearerAuth": {
         "scheme": "bearer",
@@ -7,52 +14,50 @@
       }
     }
   },
-  "info": {
-    "title": "Writing App API",
-    "version": "0.0.1"
-  },
-  "openapi": "3.1.0",
   "paths": {
     "/health": {
       "get": {
         "operationId": "getHealth",
+        "summary": "API 상태 조회",
         "responses": {
           "200": {
+            "description": "API 상태입니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
-                    "database": {
-                      "type": "string"
-                    },
-                    "status": {
-                      "type": "string"
+                    "ok": {
+                      "type": "boolean"
                     }
                   },
-                  "required": ["database", "status"],
-                  "type": "object"
+                  "required": ["ok"]
                 }
               }
-            },
-            "description": "API 상태입니다."
+            }
           }
-        },
-        "summary": "API 상태 조회"
+        }
       }
     },
     "/auth/session": {
       "get": {
         "operationId": "getAuthSession",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "현재 세션 조회",
         "responses": {
           "200": {
+            "description": "현재 인증 세션입니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "user": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "email": {
                           "type": "string"
@@ -61,25 +66,18 @@
                           "type": "string"
                         },
                         "image": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "type": ["string", "null"]
                         },
                         "joinedAt": {
-                          "format": "date-time",
-                          "type": "string"
+                          "type": "string",
+                          "format": "date-time"
                         },
                         "name": {
                           "type": "string"
                         },
                         "status": {
-                          "enum": ["active", "suspended", "deleted"],
-                          "type": "string"
+                          "type": "string",
+                          "enum": ["active", "suspended", "deleted"]
                         }
                       },
                       "required": [
@@ -89,140 +87,128 @@
                         "joinedAt",
                         "name",
                         "status"
-                      ],
-                      "type": "object"
+                      ]
                     }
                   },
-                  "required": ["user"],
-                  "type": "object"
+                  "required": ["user"]
                 }
               }
-            },
-            "description": "현재 인증 세션입니다."
+            }
           },
           "401": {
+            "description": "인증이 필요합니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "error": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "code": {
                           "type": "string"
                         },
                         "detail": {
-                          "additionalProperties": false,
+                          "type": "object",
                           "properties": {
                             "code": {
+                              "type": "string",
                               "enum": [
                                 "invalid_body",
                                 "malformed_json",
                                 "unknown_body_read_error"
-                              ],
-                              "type": "string"
+                              ]
                             }
                           },
-                          "required": ["code"],
-                          "type": "object"
+                          "required": ["code"]
                         }
                       },
-                      "required": ["code"],
-                      "type": "object"
+                      "required": ["code"]
                     }
                   },
-                  "required": ["error"],
-                  "type": "object"
+                  "required": ["error"]
                 }
               }
-            },
-            "description": "인증이 필요합니다."
+            }
           },
           "403": {
+            "description": "계정을 사용할 수 없습니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "error": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "code": {
                           "type": "string"
                         },
                         "detail": {
-                          "additionalProperties": false,
+                          "type": "object",
                           "properties": {
                             "code": {
+                              "type": "string",
                               "enum": [
                                 "invalid_body",
                                 "malformed_json",
                                 "unknown_body_read_error"
-                              ],
-                              "type": "string"
+                              ]
                             }
                           },
-                          "required": ["code"],
-                          "type": "object"
+                          "required": ["code"]
                         }
                       },
-                      "required": ["code"],
-                      "type": "object"
+                      "required": ["code"]
                     }
                   },
-                  "required": ["error"],
-                  "type": "object"
+                  "required": ["error"]
                 }
               }
-            },
-            "description": "계정을 사용할 수 없습니다."
+            }
           }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "현재 세션 조회"
+        }
       }
     },
     "/profile": {
       "get": {
         "operationId": "getProfile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "학습자 프로필 조회",
         "responses": {
           "200": {
+            "description": "학습자 프로필과 통계입니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "stats": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "completedLessons": {
-                          "type": "integer"
+                          "type": "integer",
+                          "minimum": 0
                         },
                         "currentStreakDays": {
-                          "type": "integer"
+                          "type": "integer",
+                          "minimum": 0
                         },
                         "lastActiveDate": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "type": ["string", "null"]
                         },
                         "progressPercent": {
-                          "maximum": 100,
+                          "type": "integer",
                           "minimum": 0,
-                          "type": "integer"
+                          "maximum": 100
                         },
                         "totalLessons": {
-                          "type": "integer"
+                          "type": "integer",
+                          "minimum": 0
                         }
                       },
                       "required": [
@@ -231,11 +217,10 @@
                         "lastActiveDate",
                         "progressPercent",
                         "totalLessons"
-                      ],
-                      "type": "object"
+                      ]
                     },
                     "user": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "email": {
                           "type": "string"
@@ -244,25 +229,18 @@
                           "type": "string"
                         },
                         "image": {
-                          "anyOf": [
-                            {
-                              "type": "string"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
+                          "type": ["string", "null"]
                         },
                         "joinedAt": {
-                          "format": "date-time",
-                          "type": "string"
+                          "type": "string",
+                          "format": "date-time"
                         },
                         "name": {
                           "type": "string"
                         },
                         "status": {
-                          "enum": ["active", "suspended", "deleted"],
-                          "type": "string"
+                          "type": "string",
+                          "enum": ["active", "suspended", "deleted"]
                         }
                       },
                       "required": [
@@ -272,144 +250,1327 @@
                         "joinedAt",
                         "name",
                         "status"
-                      ],
-                      "type": "object"
+                      ]
                     }
                   },
-                  "required": ["stats", "user"],
-                  "type": "object"
+                  "required": ["stats", "user"]
                 }
               }
-            },
-            "description": "학습자 프로필과 통계입니다."
+            }
           },
           "401": {
+            "description": "인증이 필요합니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "error": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "code": {
                           "type": "string"
                         },
                         "detail": {
-                          "additionalProperties": false,
+                          "type": "object",
                           "properties": {
                             "code": {
+                              "type": "string",
                               "enum": [
                                 "invalid_body",
                                 "malformed_json",
                                 "unknown_body_read_error"
-                              ],
-                              "type": "string"
+                              ]
                             }
                           },
-                          "required": ["code"],
-                          "type": "object"
+                          "required": ["code"]
                         }
                       },
-                      "required": ["code"],
-                      "type": "object"
+                      "required": ["code"]
                     }
                   },
-                  "required": ["error"],
-                  "type": "object"
+                  "required": ["error"]
                 }
               }
-            },
-            "description": "인증이 필요합니다."
+            }
           },
           "403": {
+            "description": "계정을 사용할 수 없습니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "error": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "code": {
                           "type": "string"
                         },
                         "detail": {
-                          "additionalProperties": false,
+                          "type": "object",
                           "properties": {
                             "code": {
+                              "type": "string",
                               "enum": [
                                 "invalid_body",
                                 "malformed_json",
                                 "unknown_body_read_error"
-                              ],
-                              "type": "string"
+                              ]
                             }
                           },
-                          "required": ["code"],
-                          "type": "object"
+                          "required": ["code"]
                         }
                       },
-                      "required": ["code"],
-                      "type": "object"
+                      "required": ["code"]
                     }
                   },
-                  "required": ["error"],
-                  "type": "object"
+                  "required": ["error"]
                 }
               }
-            },
-            "description": "계정을 사용할 수 없습니다."
+            }
           }
-        },
+        }
+      }
+    },
+    "/courses": {
+      "get": {
+        "operationId": "getCourses",
         "security": [
           {
             "bearerAuth": []
           }
         ],
-        "summary": "학습자 프로필 조회"
+        "summary": "코스 목록 조회",
+        "responses": {
+          "200": {
+            "description": "학습 가능한 코스 목록입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "courses": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "category": {
+                            "type": "string"
+                          },
+                          "lessonCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": ["active", "archived"]
+                          },
+                          "visualKey": {
+                            "type": "string",
+                            "enum": [
+                              "basic-sentence-writing",
+                              "grammar-complete",
+                              "essay-writing",
+                              "creative-writing",
+                              "expression"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title",
+                          "description",
+                          "category",
+                          "lessonCount",
+                          "status",
+                          "visualKey"
+                        ]
+                      }
+                    }
+                  },
+                  "required": ["courses"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증이 필요합니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "계정을 사용할 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/{courseId}": {
+      "get": {
+        "operationId": "getCourseDetail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "코스 상세 조회",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "courseId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "코스 상세입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "lessonCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": ["active", "archived"]
+                    },
+                    "visualKey": {
+                      "type": "string",
+                      "enum": [
+                        "basic-sentence-writing",
+                        "grammar-complete",
+                        "essay-writing",
+                        "creative-writing",
+                        "expression"
+                      ]
+                    },
+                    "progress": {
+                      "type": "object",
+                      "properties": {
+                        "completedLessons": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "lessons": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "lessonId": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": ["available", "completed", "locked"]
+                              },
+                              "currentStepIndex": {
+                                "type": ["integer", "null"],
+                                "minimum": 0
+                              }
+                            },
+                            "required": [
+                              "lessonId",
+                              "status",
+                              "currentStepIndex"
+                            ]
+                          }
+                        },
+                        "nextLesson": {
+                          "type": ["object", "null"],
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "estimatedMinutes": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": ["available", "completed", "locked"]
+                            },
+                            "currentStepIndex": {
+                              "type": ["integer", "null"],
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "title",
+                            "estimatedMinutes",
+                            "status",
+                            "currentStepIndex"
+                          ]
+                        },
+                        "totalLessons": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "percentage": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        }
+                      },
+                      "required": [
+                        "completedLessons",
+                        "lessons",
+                        "nextLesson",
+                        "totalLessons",
+                        "percentage"
+                      ]
+                    },
+                    "units": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "title": {
+                            "type": "string"
+                          },
+                          "sortOrder": {
+                            "type": "integer",
+                            "exclusiveMinimum": 0
+                          },
+                          "lessons": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "minLength": 1
+                                },
+                                "title": {
+                                  "type": "string"
+                                },
+                                "category": {
+                                  "type": ["string", "null"]
+                                },
+                                "description": {
+                                  "type": ["string", "null"]
+                                },
+                                "estimatedMinutes": {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": ["active", "archived"]
+                                },
+                                "sortOrder": {
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "title",
+                                "category",
+                                "description",
+                                "estimatedMinutes",
+                                "status",
+                                "sortOrder"
+                              ]
+                            }
+                          }
+                        },
+                        "required": ["id", "title", "sortOrder", "lessons"]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "description",
+                    "category",
+                    "lessonCount",
+                    "status",
+                    "visualKey",
+                    "progress",
+                    "units"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증이 필요합니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "계정을 사용할 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "코스를 찾을 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lessons/{lessonId}": {
+      "get": {
+        "operationId": "getLesson",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "레슨 상세 조회",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "lessonId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "레슨 상세입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "courseId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "unitId": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": ["string", "null"]
+                    },
+                    "description": {
+                      "type": ["string", "null"]
+                    },
+                    "estimatedMinutes": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    },
+                    "summary": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "oneOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "sortOrder": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": ["READING"]
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "guide": {
+                                "type": "string"
+                              },
+                              "body": {
+                                "type": "string"
+                              },
+                              "source": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "sortOrder",
+                              "type",
+                              "title",
+                              "guide",
+                              "body"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "sortOrder": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": ["COMPARE"]
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "versions": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "label": {
+                                      "type": "string"
+                                    },
+                                    "text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["label", "text"]
+                                },
+                                "minItems": 2
+                              },
+                              "analysis": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "sortOrder",
+                              "type",
+                              "title",
+                              "versions",
+                              "analysis"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "sortOrder": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": ["MULTIPLE_CHOICE"]
+                              },
+                              "question": {
+                                "type": "string"
+                              },
+                              "options": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "text": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["id", "text"]
+                                },
+                                "minItems": 2
+                              },
+                              "correct": {
+                                "type": "string"
+                              },
+                              "explanation": {
+                                "type": "string"
+                              },
+                              "wrong": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "sortOrder",
+                              "type",
+                              "question",
+                              "options",
+                              "correct",
+                              "explanation"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "sortOrder": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": ["FILL_BLANK"]
+                              },
+                              "template": {
+                                "type": "string"
+                              },
+                              "words": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1
+                              },
+                              "answer": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1
+                              },
+                              "explanation": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "sortOrder",
+                              "type",
+                              "template",
+                              "words",
+                              "answer",
+                              "explanation"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "sortOrder": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": ["SELECT"]
+                              },
+                              "question": {
+                                "type": "string"
+                              },
+                              "segments": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1
+                              },
+                              "correct": {
+                                "type": "array",
+                                "items": {
+                                  "type": "integer",
+                                  "minimum": 0
+                                },
+                                "minItems": 1
+                              },
+                              "explanation": {
+                                "type": "string"
+                              },
+                              "layout": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "sortOrder",
+                              "type",
+                              "question",
+                              "segments",
+                              "correct",
+                              "explanation"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "sortOrder": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": ["ORDER"]
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1
+                              },
+                              "correct": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "minItems": 1
+                              },
+                              "showNumbers": {
+                                "type": "boolean"
+                              },
+                              "explanation": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "sortOrder",
+                              "type",
+                              "title",
+                              "items",
+                              "correct",
+                              "explanation"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "sortOrder": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": ["WRITE"]
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "guide": {
+                                "type": "string"
+                              },
+                              "min": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "goal": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "max": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "badge": {
+                                "type": "string"
+                              },
+                              "claim": {
+                                "type": "string"
+                              },
+                              "context": {
+                                "type": "string"
+                              },
+                              "mode": {
+                                "type": "string"
+                              },
+                              "placeholder": {
+                                "type": "string"
+                              },
+                              "prompt": {
+                                "type": "string"
+                              },
+                              "reference": {
+                                "type": "string"
+                              },
+                              "sample": {
+                                "type": "string"
+                              },
+                              "structure": {
+                                "type": "string"
+                              },
+                              "topic": {
+                                "type": "string"
+                              },
+                              "draft": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": ["id", "sortOrder", "type", "min"]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "sortOrder": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": ["AI_FEEDBACK"]
+                              },
+                              "target": {
+                                "type": "string"
+                              },
+                              "focus": {
+                                "type": "string"
+                              },
+                              "feedback": {
+                                "type": "string"
+                              },
+                              "showScore": {
+                                "type": "boolean"
+                              },
+                              "score": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "scoreMax": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "allowRetry": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "sortOrder",
+                              "type",
+                              "target",
+                              "focus",
+                              "feedback",
+                              "showScore",
+                              "score",
+                              "scoreMax",
+                              "allowRetry"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "sortOrder": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": ["MATCH"]
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "guide": {
+                                "type": "string"
+                              },
+                              "pairs": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "left": {
+                                      "type": "string"
+                                    },
+                                    "right": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["left", "right"]
+                                },
+                                "minItems": 1
+                              },
+                              "explanation": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "sortOrder",
+                              "type",
+                              "title",
+                              "guide",
+                              "pairs",
+                              "explanation"
+                            ]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "string",
+                                "minLength": 1
+                              },
+                              "sortOrder": {
+                                "type": "integer",
+                                "exclusiveMinimum": 0
+                              },
+                              "type": {
+                                "type": "string",
+                                "enum": ["CATEGORIZE"]
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "guide": {
+                                "type": "string"
+                              },
+                              "categories": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "label": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["id", "label"]
+                                },
+                                "minItems": 1
+                              },
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "id": {
+                                      "type": "string"
+                                    },
+                                    "text": {
+                                      "type": "string"
+                                    },
+                                    "categoryId": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": ["id", "text", "categoryId"]
+                                },
+                                "minItems": 1
+                              },
+                              "explanation": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "sortOrder",
+                              "type",
+                              "title",
+                              "guide",
+                              "categories",
+                              "items",
+                              "explanation"
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "courseId",
+                    "unitId",
+                    "title",
+                    "category",
+                    "description",
+                    "estimatedMinutes",
+                    "summary",
+                    "steps"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증이 필요합니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "계정을 사용할 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "레슨을 찾을 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/progress": {
       "get": {
         "operationId": "getProgress",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "학습 진행 조회",
         "responses": {
           "200": {
+            "description": "학습자의 코스별 진행 상태입니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "courses": {
+                      "type": "array",
                       "items": {
-                        "additionalProperties": false,
+                        "type": "object",
                         "properties": {
                           "id": {
                             "type": "string"
                           },
                           "lessons": {
+                            "type": "array",
                             "items": {
-                              "additionalProperties": false,
+                              "type": "object",
                               "properties": {
                                 "currentStepIndex": {
-                                  "anyOf": [
-                                    {
-                                      "type": "integer"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
+                                  "type": ["integer", "null"],
+                                  "minimum": 0
                                 },
                                 "estimatedMinutes": {
-                                  "type": "integer"
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0
                                 },
                                 "id": {
                                   "type": "string"
                                 },
                                 "status": {
-                                  "enum": ["available", "completed", "locked"],
-                                  "type": "string"
+                                  "type": "string",
+                                  "enum": ["available", "completed", "locked"]
                                 },
                                 "title": {
                                   "type": "string"
@@ -421,71 +1582,63 @@
                                 "id",
                                 "status",
                                 "title"
-                              ],
-                              "type": "object"
-                            },
-                            "type": "array"
+                              ]
+                            }
                           },
                           "nextLessons": {
+                            "type": "array",
                             "items": {
-                              "additionalProperties": false,
+                              "type": "object",
                               "properties": {
-                                "courseId": {
-                                  "type": "string"
-                                },
                                 "currentStepIndex": {
-                                  "anyOf": [
-                                    {
-                                      "type": "integer"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
+                                  "type": ["integer", "null"],
+                                  "minimum": 0
                                 },
                                 "estimatedMinutes": {
-                                  "type": "integer"
+                                  "type": "integer",
+                                  "exclusiveMinimum": 0
                                 },
                                 "id": {
                                   "type": "string"
                                 },
                                 "status": {
-                                  "enum": ["available", "completed", "locked"],
-                                  "type": "string"
+                                  "type": "string",
+                                  "enum": ["available", "completed", "locked"]
                                 },
                                 "title": {
+                                  "type": "string"
+                                },
+                                "courseId": {
                                   "type": "string"
                                 }
                               },
                               "required": [
-                                "courseId",
                                 "currentStepIndex",
                                 "estimatedMinutes",
                                 "id",
                                 "status",
-                                "title"
-                              ],
-                              "type": "object"
-                            },
-                            "type": "array"
+                                "title",
+                                "courseId"
+                              ]
+                            }
                           },
                           "progressPercent": {
-                            "maximum": 100,
+                            "type": "integer",
                             "minimum": 0,
-                            "type": "integer"
+                            "maximum": 100
                           },
                           "title": {
                             "type": "string"
                           },
                           "visualKey": {
+                            "type": "string",
                             "enum": [
                               "basic-sentence-writing",
-                              "creative-writing",
+                              "grammar-complete",
                               "essay-writing",
-                              "expression",
-                              "grammar-complete"
-                            ],
-                            "type": "string"
+                              "creative-writing",
+                              "expression"
+                            ]
                           }
                         },
                         "required": [
@@ -495,1109 +1648,200 @@
                           "progressPercent",
                           "title",
                           "visualKey"
-                        ],
-                        "type": "object"
-                      },
-                      "type": "array"
+                        ]
+                      }
                     },
                     "user": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "currentStreakDays": {
-                          "type": "integer"
+                          "type": "integer",
+                          "minimum": 0
                         }
                       },
-                      "required": ["currentStreakDays"],
-                      "type": "object"
+                      "required": ["currentStreakDays"]
                     }
                   },
-                  "required": ["courses", "user"],
-                  "type": "object"
+                  "required": ["courses", "user"]
                 }
               }
-            },
-            "description": "학습자의 코스별 진행 상태입니다."
+            }
           },
           "401": {
+            "description": "인증이 필요합니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "error": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "code": {
                           "type": "string"
                         },
                         "detail": {
-                          "additionalProperties": false,
+                          "type": "object",
                           "properties": {
                             "code": {
+                              "type": "string",
                               "enum": [
                                 "invalid_body",
                                 "malformed_json",
                                 "unknown_body_read_error"
-                              ],
-                              "type": "string"
+                              ]
                             }
                           },
-                          "required": ["code"],
-                          "type": "object"
+                          "required": ["code"]
                         }
                       },
-                      "required": ["code"],
-                      "type": "object"
+                      "required": ["code"]
                     }
                   },
-                  "required": ["error"],
-                  "type": "object"
+                  "required": ["error"]
                 }
               }
-            },
-            "description": "인증이 필요합니다."
+            }
           },
           "403": {
+            "description": "계정을 사용할 수 없습니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "error": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "code": {
                           "type": "string"
                         },
                         "detail": {
-                          "additionalProperties": false,
+                          "type": "object",
                           "properties": {
                             "code": {
+                              "type": "string",
                               "enum": [
                                 "invalid_body",
                                 "malformed_json",
                                 "unknown_body_read_error"
-                              ],
-                              "type": "string"
+                              ]
                             }
                           },
-                          "required": ["code"],
-                          "type": "object"
+                          "required": ["code"]
                         }
                       },
-                      "required": ["code"],
-                      "type": "object"
+                      "required": ["code"]
                     }
                   },
-                  "required": ["error"],
-                  "type": "object"
+                  "required": ["error"]
                 }
               }
-            },
-            "description": "계정을 사용할 수 없습니다."
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "학습 진행 조회"
-      }
-    },
-    "/courses": {
-      "get": {
-        "operationId": "getCourses",
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "courses": {
-                      "items": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "category": {
-                            "type": "string"
-                          },
-                          "description": {
-                            "type": "string"
-                          },
-                          "id": {
-                            "type": "string"
-                          },
-                          "lessonCount": {
-                            "type": "integer"
-                          },
-                          "status": {
-                            "enum": ["active", "archived"],
-                            "type": "string"
-                          },
-                          "title": {
-                            "type": "string"
-                          },
-                          "visualKey": {
-                            "enum": [
-                              "basic-sentence-writing",
-                              "creative-writing",
-                              "essay-writing",
-                              "expression",
-                              "grammar-complete"
-                            ],
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "category",
-                          "description",
-                          "id",
-                          "lessonCount",
-                          "status",
-                          "title",
-                          "visualKey"
-                        ],
-                        "type": "object"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": ["courses"],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "학습 가능한 코스 목록입니다."
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "code": {
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "required": ["code"],
-                          "type": "object"
-                        }
-                      },
-                      "required": ["code"],
-                      "type": "object"
-                    }
-                  },
-                  "required": ["error"],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "인증이 필요합니다."
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "code": {
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "required": ["code"],
-                          "type": "object"
-                        }
-                      },
-                      "required": ["code"],
-                      "type": "object"
-                    }
-                  },
-                  "required": ["error"],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "계정을 사용할 수 없습니다."
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "코스 목록 조회"
-      }
-    },
-    "/courses/{courseId}": {
-      "get": {
-        "operationId": "getCourseDetail",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "courseId",
-            "required": true,
-            "schema": {
-              "type": "string"
             }
           }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "category": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "type": "string"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "lessonCount": {
-                      "type": "integer"
-                    },
-                    "status": {
-                      "enum": ["active", "archived"],
-                      "type": "string"
-                    },
-                    "title": {
-                      "type": "string"
-                    },
-                    "visualKey": {
-                      "enum": [
-                        "basic-sentence-writing",
-                        "creative-writing",
-                        "essay-writing",
-                        "expression",
-                        "grammar-complete"
-                      ],
-                      "type": "string"
-                    },
-                    "progress": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "completedLessons": {
-                          "type": "integer"
-                        },
-                        "lessons": {
-                          "items": {
-                            "additionalProperties": false,
-                            "properties": {
-                              "currentStepIndex": {
-                                "anyOf": [
-                                  {
-                                    "type": "integer"
-                                  },
-                                  {
-                                    "type": "null"
-                                  }
-                                ]
-                              },
-                              "lessonId": {
-                                "type": "string"
-                              },
-                              "status": {
-                                "enum": ["available", "completed", "locked"],
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "currentStepIndex",
-                              "lessonId",
-                              "status"
-                            ],
-                            "type": "object"
-                          },
-                          "type": "array"
-                        },
-                        "nextLesson": {
-                          "anyOf": [
-                            {
-                              "additionalProperties": false,
-                              "properties": {
-                                "currentStepIndex": {
-                                  "anyOf": [
-                                    {
-                                      "type": "integer"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                },
-                                "estimatedMinutes": {
-                                  "type": "integer"
-                                },
-                                "id": {
-                                  "type": "string"
-                                },
-                                "status": {
-                                  "enum": ["available", "completed", "locked"],
-                                  "type": "string"
-                                },
-                                "title": {
-                                  "type": "string"
-                                }
-                              },
-                              "required": [
-                                "currentStepIndex",
-                                "estimatedMinutes",
-                                "id",
-                                "status",
-                                "title"
-                              ],
-                              "type": "object"
-                            },
-                            {
-                              "type": "null"
-                            }
-                          ]
-                        },
-                        "percentage": {
-                          "maximum": 100,
-                          "minimum": 0,
-                          "type": "integer"
-                        },
-                        "totalLessons": {
-                          "type": "integer"
-                        }
-                      },
-                      "required": [
-                        "completedLessons",
-                        "lessons",
-                        "nextLesson",
-                        "percentage",
-                        "totalLessons"
-                      ],
-                      "type": "object"
-                    },
-                    "units": {
-                      "items": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "lessons": {
-                            "items": {
-                              "additionalProperties": false,
-                              "properties": {
-                                "category": {
-                                  "anyOf": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                },
-                                "description": {
-                                  "anyOf": [
-                                    {
-                                      "type": "string"
-                                    },
-                                    {
-                                      "type": "null"
-                                    }
-                                  ]
-                                },
-                                "estimatedMinutes": {
-                                  "type": "integer"
-                                },
-                                "id": {
-                                  "type": "string"
-                                },
-                                "sortOrder": {
-                                  "type": "integer"
-                                },
-                                "status": {
-                                  "enum": ["active", "archived"],
-                                  "type": "string"
-                                },
-                                "title": {
-                                  "type": "string"
-                                }
-                              },
-                              "required": [
-                                "category",
-                                "description",
-                                "estimatedMinutes",
-                                "id",
-                                "sortOrder",
-                                "status",
-                                "title"
-                              ],
-                              "type": "object"
-                            },
-                            "type": "array"
-                          },
-                          "sortOrder": {
-                            "type": "integer"
-                          },
-                          "title": {
-                            "type": "string"
-                          }
-                        },
-                        "required": ["id", "lessons", "sortOrder", "title"],
-                        "type": "object"
-                      },
-                      "type": "array"
-                    }
-                  },
-                  "required": [
-                    "category",
-                    "description",
-                    "id",
-                    "lessonCount",
-                    "status",
-                    "title",
-                    "visualKey",
-                    "progress",
-                    "units"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "코스 상세입니다."
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "code": {
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "required": ["code"],
-                          "type": "object"
-                        }
-                      },
-                      "required": ["code"],
-                      "type": "object"
-                    }
-                  },
-                  "required": ["error"],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "인증이 필요합니다."
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "code": {
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "required": ["code"],
-                          "type": "object"
-                        }
-                      },
-                      "required": ["code"],
-                      "type": "object"
-                    }
-                  },
-                  "required": ["error"],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "계정을 사용할 수 없습니다."
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "코스 상세 조회"
-      }
-    },
-    "/lessons/{lessonId}": {
-      "get": {
-        "operationId": "getLesson",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "lessonId",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "category": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "courseId": {
-                      "type": "string"
-                    },
-                    "description": {
-                      "anyOf": [
-                        {
-                          "type": "string"
-                        },
-                        {
-                          "type": "null"
-                        }
-                      ]
-                    },
-                    "estimatedMinutes": {
-                      "type": "integer"
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "steps": {
-                      "items": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "allowRetry": {
-                            "type": "boolean"
-                          },
-                          "analysis": {
-                            "type": "string"
-                          },
-                          "answer": {
-                            "items": {
-                              "type": "string"
-                            },
-                            "type": "array"
-                          },
-                          "badge": {
-                            "type": "string"
-                          },
-                          "body": {
-                            "type": "string"
-                          },
-                          "categories": {
-                            "items": {
-                              "additionalProperties": false,
-                              "properties": {
-                                "id": {
-                                  "type": "string"
-                                },
-                                "label": {
-                                  "type": "string"
-                                }
-                              },
-                              "required": ["id", "label"],
-                              "type": "object"
-                            },
-                            "type": "array"
-                          },
-                          "correct": {
-                            "anyOf": [
-                              {
-                                "type": "string"
-                              },
-                              {
-                                "items": {
-                                  "type": "string"
-                                },
-                                "type": "array"
-                              },
-                              {
-                                "items": {
-                                  "type": "integer"
-                                },
-                                "type": "array"
-                              }
-                            ]
-                          },
-                          "claim": {
-                            "type": "string"
-                          },
-                          "context": {
-                            "type": "string"
-                          },
-                          "draft": {
-                            "type": "boolean"
-                          },
-                          "explanation": {
-                            "type": "string"
-                          },
-                          "feedback": {
-                            "type": "string"
-                          },
-                          "focus": {
-                            "type": "string"
-                          },
-                          "goal": {
-                            "type": "integer"
-                          },
-                          "guide": {
-                            "type": "string"
-                          },
-                          "id": {
-                            "type": "string"
-                          },
-                          "items": {
-                            "anyOf": [
-                              {
-                                "items": {
-                                  "type": "string"
-                                },
-                                "type": "array"
-                              },
-                              {
-                                "items": {
-                                  "additionalProperties": false,
-                                  "properties": {
-                                    "categoryId": {
-                                      "type": "string"
-                                    },
-                                    "id": {
-                                      "type": "string"
-                                    },
-                                    "text": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "required": ["categoryId", "id", "text"],
-                                  "type": "object"
-                                },
-                                "type": "array"
-                              }
-                            ]
-                          },
-                          "layout": {
-                            "type": "string"
-                          },
-                          "max": {
-                            "type": "integer"
-                          },
-                          "min": {
-                            "type": "integer"
-                          },
-                          "mode": {
-                            "type": "string"
-                          },
-                          "options": {
-                            "items": {
-                              "additionalProperties": false,
-                              "properties": {
-                                "id": {
-                                  "type": "string"
-                                },
-                                "text": {
-                                  "type": "string"
-                                }
-                              },
-                              "required": ["id", "text"],
-                              "type": "object"
-                            },
-                            "type": "array"
-                          },
-                          "pairs": {
-                            "items": {
-                              "additionalProperties": false,
-                              "properties": {
-                                "left": {
-                                  "type": "string"
-                                },
-                                "right": {
-                                  "type": "string"
-                                }
-                              },
-                              "required": ["left", "right"],
-                              "type": "object"
-                            },
-                            "type": "array"
-                          },
-                          "placeholder": {
-                            "type": "string"
-                          },
-                          "prompt": {
-                            "type": "string"
-                          },
-                          "question": {
-                            "type": "string"
-                          },
-                          "reference": {
-                            "type": "string"
-                          },
-                          "sample": {
-                            "type": "string"
-                          },
-                          "score": {
-                            "type": "integer"
-                          },
-                          "scoreMax": {
-                            "type": "integer"
-                          },
-                          "segments": {
-                            "items": {
-                              "type": "string"
-                            },
-                            "type": "array"
-                          },
-                          "showNumbers": {
-                            "type": "boolean"
-                          },
-                          "showScore": {
-                            "type": "boolean"
-                          },
-                          "sortOrder": {
-                            "type": "integer"
-                          },
-                          "source": {
-                            "type": "string"
-                          },
-                          "structure": {
-                            "type": "string"
-                          },
-                          "target": {
-                            "type": "string"
-                          },
-                          "template": {
-                            "type": "string"
-                          },
-                          "title": {
-                            "type": "string"
-                          },
-                          "topic": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "enum": [
-                              "READING",
-                              "COMPARE",
-                              "MULTIPLE_CHOICE",
-                              "FILL_BLANK",
-                              "SELECT",
-                              "ORDER",
-                              "WRITE",
-                              "AI_FEEDBACK",
-                              "MATCH",
-                              "CATEGORIZE"
-                            ],
-                            "type": "string"
-                          },
-                          "versions": {
-                            "items": {
-                              "additionalProperties": false,
-                              "properties": {
-                                "label": {
-                                  "type": "string"
-                                },
-                                "text": {
-                                  "type": "string"
-                                }
-                              },
-                              "required": ["label", "text"],
-                              "type": "object"
-                            },
-                            "type": "array"
-                          },
-                          "wrong": {
-                            "type": "string"
-                          },
-                          "words": {
-                            "items": {
-                              "type": "string"
-                            },
-                            "type": "array"
-                          }
-                        },
-                        "required": ["id", "sortOrder", "type"],
-                        "type": "object"
-                      },
-                      "type": "array"
-                    },
-                    "summary": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "title": {
-                      "type": "string"
-                    },
-                    "unitId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "category",
-                    "courseId",
-                    "description",
-                    "estimatedMinutes",
-                    "id",
-                    "steps",
-                    "summary",
-                    "title",
-                    "unitId"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "레슨 상세입니다."
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "code": {
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "required": ["code"],
-                          "type": "object"
-                        }
-                      },
-                      "required": ["code"],
-                      "type": "object"
-                    }
-                  },
-                  "required": ["error"],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "인증이 필요합니다."
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "code": {
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "required": ["code"],
-                          "type": "object"
-                        }
-                      },
-                      "required": ["code"],
-                      "type": "object"
-                    }
-                  },
-                  "required": ["error"],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "계정을 사용할 수 없습니다."
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "레슨 상세 조회"
+        }
       }
     },
     "/learning/answers": {
       "post": {
         "operationId": "saveLessonAnswer",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "레슨 답변 저장",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "additionalProperties": false,
+                "type": "object",
                 "properties": {
                   "answer": {
                     "anyOf": [
                       {
-                        "additionalProperties": false,
+                        "type": "object",
                         "properties": {
                           "kind": {
-                            "enum": ["lesson-started"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["lesson-started"]
                           }
                         },
-                        "required": ["kind"],
-                        "type": "object"
+                        "required": ["kind"]
                       },
                       {
-                        "additionalProperties": false,
+                        "type": "object",
                         "properties": {
                           "selectedOptionId": {
                             "type": "string"
                           },
                           "type": {
-                            "enum": ["MULTIPLE_CHOICE"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["MULTIPLE_CHOICE"]
                           }
                         },
-                        "required": ["selectedOptionId", "type"],
-                        "type": "object"
+                        "required": ["selectedOptionId", "type"]
                       },
                       {
-                        "additionalProperties": false,
+                        "type": "object",
                         "properties": {
                           "selectedWords": {
+                            "type": "array",
                             "items": {
                               "type": "string"
                             },
-                            "type": "array"
+                            "minItems": 1
                           },
                           "type": {
-                            "enum": ["FILL_BLANK"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["FILL_BLANK"]
                           }
                         },
-                        "required": ["selectedWords", "type"],
-                        "type": "object"
+                        "required": ["selectedWords", "type"]
                       },
                       {
-                        "additionalProperties": false,
+                        "type": "object",
                         "properties": {
                           "selectedIndexes": {
+                            "type": "array",
                             "items": {
-                              "type": "integer"
+                              "type": "integer",
+                              "minimum": 0
                             },
-                            "type": "array"
+                            "minItems": 1
                           },
                           "type": {
-                            "enum": ["SELECT"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["SELECT"]
                           }
                         },
-                        "required": ["selectedIndexes", "type"],
-                        "type": "object"
+                        "required": ["selectedIndexes", "type"]
                       },
                       {
-                        "additionalProperties": false,
+                        "type": "object",
                         "properties": {
                           "orderedItems": {
+                            "type": "array",
                             "items": {
                               "type": "string"
                             },
-                            "type": "array"
+                            "minItems": 1
                           },
                           "type": {
-                            "enum": ["ORDER"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["ORDER"]
                           }
                         },
-                        "required": ["orderedItems", "type"],
-                        "type": "object"
+                        "required": ["orderedItems", "type"]
                       },
                       {
-                        "additionalProperties": false,
+                        "type": "object",
                         "properties": {
                           "pairs": {
+                            "type": "array",
                             "items": {
-                              "additionalProperties": false,
+                              "type": "object",
                               "properties": {
                                 "left": {
                                   "type": "string"
@@ -1606,25 +1850,24 @@
                                   "type": "string"
                                 }
                               },
-                              "required": ["left", "right"],
-                              "type": "object"
+                              "required": ["left", "right"]
                             },
-                            "type": "array"
+                            "minItems": 1
                           },
                           "type": {
-                            "enum": ["MATCH"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["MATCH"]
                           }
                         },
-                        "required": ["pairs", "type"],
-                        "type": "object"
+                        "required": ["pairs", "type"]
                       },
                       {
-                        "additionalProperties": false,
+                        "type": "object",
                         "properties": {
                           "items": {
+                            "type": "array",
                             "items": {
-                              "additionalProperties": false,
+                              "type": "object",
                               "properties": {
                                 "categoryId": {
                                   "type": "string"
@@ -1633,559 +1876,749 @@
                                   "type": "string"
                                 }
                               },
-                              "required": ["categoryId", "itemId"],
-                              "type": "object"
+                              "required": ["categoryId", "itemId"]
                             },
-                            "type": "array"
+                            "minItems": 1
                           },
                           "type": {
-                            "enum": ["CATEGORIZE"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["CATEGORIZE"]
                           }
                         },
-                        "required": ["items", "type"],
-                        "type": "object"
+                        "required": ["items", "type"]
                       },
                       {
-                        "additionalProperties": false,
+                        "type": "object",
                         "properties": {
                           "text": {
                             "type": "string"
                           },
                           "type": {
-                            "enum": ["WRITE"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["WRITE"]
                           }
                         },
-                        "required": ["text", "type"],
-                        "type": "object"
+                        "required": ["text", "type"]
                       },
                       {
-                        "additionalProperties": false,
+                        "type": "object",
                         "properties": {
                           "requested": {
-                            "type": "boolean"
+                            "type": "boolean",
+                            "enum": [true]
                           },
                           "type": {
-                            "enum": ["AI_FEEDBACK"],
-                            "type": "string"
+                            "type": "string",
+                            "enum": ["AI_FEEDBACK"]
                           }
                         },
-                        "required": ["requested", "type"],
-                        "type": "object"
+                        "required": ["requested", "type"]
                       }
                     ]
                   },
                   "lessonId": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   },
                   "stepId": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   }
                 },
-                "required": ["answer", "lessonId", "stepId"],
-                "type": "object"
+                "required": ["answer", "lessonId", "stepId"]
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
+            "description": "답변 저장 결과입니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "saved": {
                       "type": "boolean"
                     }
                   },
-                  "required": ["saved"],
-                  "type": "object"
+                  "required": ["saved"]
                 }
               }
-            },
-            "description": "답변 저장 결과입니다."
+            }
+          },
+          "400": {
+            "description": "잘못된 요청입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
           },
           "401": {
+            "description": "인증이 필요합니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "error": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "code": {
                           "type": "string"
                         },
                         "detail": {
-                          "additionalProperties": false,
+                          "type": "object",
                           "properties": {
                             "code": {
+                              "type": "string",
                               "enum": [
                                 "invalid_body",
                                 "malformed_json",
                                 "unknown_body_read_error"
-                              ],
-                              "type": "string"
+                              ]
                             }
                           },
-                          "required": ["code"],
-                          "type": "object"
+                          "required": ["code"]
                         }
                       },
-                      "required": ["code"],
-                      "type": "object"
+                      "required": ["code"]
                     }
                   },
-                  "required": ["error"],
-                  "type": "object"
+                  "required": ["error"]
                 }
               }
-            },
-            "description": "인증이 필요합니다."
+            }
           },
           "403": {
+            "description": "계정을 사용할 수 없습니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "error": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "code": {
                           "type": "string"
                         },
                         "detail": {
-                          "additionalProperties": false,
+                          "type": "object",
                           "properties": {
                             "code": {
+                              "type": "string",
                               "enum": [
                                 "invalid_body",
                                 "malformed_json",
                                 "unknown_body_read_error"
-                              ],
-                              "type": "string"
+                              ]
                             }
                           },
-                          "required": ["code"],
-                          "type": "object"
+                          "required": ["code"]
                         }
                       },
-                      "required": ["code"],
-                      "type": "object"
+                      "required": ["code"]
                     }
                   },
-                  "required": ["error"],
-                  "type": "object"
+                  "required": ["error"]
                 }
               }
-            },
-            "description": "계정을 사용할 수 없습니다."
+            }
+          },
+          "404": {
+            "description": "레슨을 찾을 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "레슨 답변 저장"
+        }
       }
     },
     "/learning/lessons/{lessonId}/complete": {
       "post": {
         "operationId": "completeLesson",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "레슨 완료 저장",
         "parameters": [
           {
-            "in": "path",
-            "name": "lessonId",
-            "required": true,
             "schema": {
-              "type": "string"
-            }
+              "type": "string",
+              "minLength": 1
+            },
+            "required": true,
+            "name": "lessonId",
+            "in": "path"
           }
         ],
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "additionalProperties": false,
+                "type": "object",
                 "properties": {
                   "currentStepIndex": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                   }
                 },
-                "required": ["currentStepIndex"],
-                "type": "object"
+                "required": ["currentStepIndex"]
               }
             }
-          },
-          "required": true
+          }
         },
         "responses": {
           "200": {
+            "description": "레슨 완료 저장 결과입니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "saved": {
                       "type": "boolean"
                     }
                   },
-                  "required": ["saved"],
-                  "type": "object"
+                  "required": ["saved"]
                 }
               }
-            },
-            "description": "레슨 완료 저장 결과입니다."
+            }
+          },
+          "400": {
+            "description": "잘못된 요청입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
           },
           "401": {
+            "description": "인증이 필요합니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "error": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "code": {
                           "type": "string"
                         },
                         "detail": {
-                          "additionalProperties": false,
+                          "type": "object",
                           "properties": {
                             "code": {
+                              "type": "string",
                               "enum": [
                                 "invalid_body",
                                 "malformed_json",
                                 "unknown_body_read_error"
-                              ],
-                              "type": "string"
+                              ]
                             }
                           },
-                          "required": ["code"],
-                          "type": "object"
+                          "required": ["code"]
                         }
                       },
-                      "required": ["code"],
-                      "type": "object"
+                      "required": ["code"]
                     }
                   },
-                  "required": ["error"],
-                  "type": "object"
+                  "required": ["error"]
                 }
               }
-            },
-            "description": "인증이 필요합니다."
+            }
           },
           "403": {
+            "description": "계정을 사용할 수 없습니다.",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": false,
+                  "type": "object",
                   "properties": {
                     "error": {
-                      "additionalProperties": false,
+                      "type": "object",
                       "properties": {
                         "code": {
                           "type": "string"
                         },
                         "detail": {
-                          "additionalProperties": false,
+                          "type": "object",
                           "properties": {
                             "code": {
+                              "type": "string",
                               "enum": [
                                 "invalid_body",
                                 "malformed_json",
                                 "unknown_body_read_error"
-                              ],
-                              "type": "string"
+                              ]
                             }
                           },
-                          "required": ["code"],
-                          "type": "object"
+                          "required": ["code"]
                         }
                       },
-                      "required": ["code"],
-                      "type": "object"
+                      "required": ["code"]
                     }
                   },
-                  "required": ["error"],
-                  "type": "object"
+                  "required": ["error"]
                 }
               }
-            },
-            "description": "계정을 사용할 수 없습니다."
+            }
+          },
+          "404": {
+            "description": "레슨을 찾을 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "summary": "레슨 완료 저장"
+        }
       }
     },
     "/ai-feedback": {
       "post": {
         "operationId": "createAiFeedback",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "additionalProperties": false,
-                "properties": {
-                  "answer": {
-                    "type": "string"
-                  },
-                  "lessonId": {
-                    "type": "string"
-                  },
-                  "stepId": {
-                    "type": "string"
-                  }
-                },
-                "required": ["answer", "lessonId", "stepId"],
-                "type": "object"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "improvements": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "nextAction": {
-                      "type": "string"
-                    },
-                    "remainingAttempts": {
-                      "type": "integer"
-                    },
-                    "score": {
-                      "maximum": 100,
-                      "minimum": 0,
-                      "type": "integer"
-                    },
-                    "scoreRange": {
-                      "items": [
-                        {
-                          "type": "integer"
-                        },
-                        {
-                          "type": "integer"
-                        }
-                      ],
-                      "maxItems": 2,
-                      "minItems": 2,
-                      "type": "array"
-                    },
-                    "showScore": {
-                      "type": "boolean"
-                    },
-                    "strengths": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "summary": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "improvements",
-                    "nextAction",
-                    "remainingAttempts",
-                    "score",
-                    "scoreRange",
-                    "showScore",
-                    "strengths",
-                    "summary"
-                  ],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "AI 코칭 결과입니다."
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "code": {
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "required": ["code"],
-                          "type": "object"
-                        }
-                      },
-                      "required": ["code"],
-                      "type": "object"
-                    }
-                  },
-                  "required": ["error"],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "인증이 필요합니다."
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "code": {
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "required": ["code"],
-                          "type": "object"
-                        }
-                      },
-                      "required": ["code"],
-                      "type": "object"
-                    }
-                  },
-                  "required": ["error"],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "계정을 사용할 수 없습니다."
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "code": {
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "required": ["code"],
-                          "type": "object"
-                        }
-                      },
-                      "required": ["code"],
-                      "type": "object"
-                    }
-                  },
-                  "required": ["error"],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "AI 코칭 시도 횟수를 모두 사용했습니다."
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": false,
-                  "properties": {
-                    "error": {
-                      "additionalProperties": false,
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "code": {
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ],
-                              "type": "string"
-                            }
-                          },
-                          "required": ["code"],
-                          "type": "object"
-                        }
-                      },
-                      "required": ["code"],
-                      "type": "object"
-                    }
-                  },
-                  "required": ["error"],
-                  "type": "object"
-                }
-              }
-            },
-            "description": "AI provider를 사용할 수 없습니다."
-          }
-        },
         "security": [
           {
             "bearerAuth": []
           }
         ],
-        "summary": "AI 코칭 생성"
+        "summary": "AI 코칭 생성",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "answer": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "lessonId": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "stepId": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": ["answer", "lessonId", "stepId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "AI 코칭 결과입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "improvements": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "minItems": 1
+                    },
+                    "nextAction": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "score": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "scoreRange": {
+                      "type": "array",
+                      "prefixItems": [
+                        {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        }
+                      ]
+                    },
+                    "showScore": {
+                      "type": "boolean"
+                    },
+                    "strengths": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "minItems": 1
+                    },
+                    "summary": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "remainingAttempts": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "improvements",
+                    "nextAction",
+                    "score",
+                    "scoreRange",
+                    "showScore",
+                    "strengths",
+                    "summary",
+                    "remainingAttempts"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 요청입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증이 필요합니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "계정을 사용할 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "레슨을 찾을 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "AI 코칭 시도 횟수를 모두 사용했습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI provider를 사용할 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "detail": {
+                          "type": "object",
+                          "properties": {
+                            "code": {
+                              "type": "string",
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ]
+                            }
+                          },
+                          "required": ["code"]
+                        }
+                      },
+                      "required": ["code"]
+                    }
+                  },
+                  "required": ["error"]
+                }
+              }
+            }
+          }
+        }
       }
     }
-  }
+  },
+  "webhooks": {}
 }

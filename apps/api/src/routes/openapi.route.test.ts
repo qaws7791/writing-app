@@ -10,12 +10,36 @@ describe("플랫폼 API openapi route", () => {
     const response = await app.request("/openapi")
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toMatchObject({
+    const document = (await response.json()) as {
+      readonly components: {
+        readonly securitySchemes: {
+          readonly bearerAuth: {
+            readonly scheme: string
+            readonly type: string
+          }
+        }
+      }
+      readonly info: {
+        readonly title: string
+      }
+      readonly openapi: string
+      readonly paths: Readonly<Record<string, unknown>>
+    }
+
+    expect(document).toMatchObject({
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            scheme: "bearer",
+            type: "http",
+          },
+        },
+      },
       info: {
         title: "Writing App API",
       },
       openapi: "3.1.0",
-      paths: {},
     })
+    expect(document.paths).toHaveProperty("/courses/{courseId}")
   })
 })

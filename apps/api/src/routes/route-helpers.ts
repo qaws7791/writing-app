@@ -1,4 +1,4 @@
-import type { Context } from "hono"
+import type { Context, Next } from "hono"
 import type { z } from "zod"
 import { learnerAccountStatuses } from "@workspace/core/status"
 
@@ -6,6 +6,7 @@ import {
   type AuthenticatedSession,
   type SessionResolver,
 } from "@workspace/core/auth"
+import { errorResponse } from "@/lib/error-response"
 
 export type ActiveSessionResult =
   | {
@@ -90,6 +91,22 @@ export async function readJsonBody(context: Context): Promise<JsonBodyResult> {
       kind: "err",
     }
   }
+}
+
+export async function rejectMalformedJsonBody(
+  context: Context,
+  next: Next
+): Promise<Response | void> {
+  const body = await readJsonBody(context)
+
+  if (body.kind === "err") {
+    return context.json(
+      errorResponse("invalid_request", jsonBodyErrorDetail(body.error)),
+      400
+    )
+  }
+
+  await next()
 }
 
 export async function parseJsonBody<TSchema extends z.ZodType>(

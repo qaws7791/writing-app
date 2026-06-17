@@ -55,23 +55,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  "/progress": {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** 학습 진행 조회 */
-    get: operations["getProgress"]
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   "/courses": {
     parameters: {
       query?: never
@@ -115,6 +98,23 @@ export interface paths {
     }
     /** 레슨 상세 조회 */
     get: operations["getLesson"]
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/progress": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /** 학습 진행 조회 */
+    get: operations["getProgress"]
     put?: never
     post?: never
     delete?: never
@@ -202,8 +202,7 @@ export interface operations {
         }
         content: {
           "application/json": {
-            database: string
-            status: string
+            ok: boolean
           }
         }
       }
@@ -358,99 +357,6 @@ export interface operations {
       }
     }
   }
-  getProgress: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description 학습자의 코스별 진행 상태입니다. */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          "application/json": {
-            courses: {
-              id: string
-              lessons: {
-                currentStepIndex: number | null
-                estimatedMinutes: number
-                id: string
-                /** @enum {string} */
-                status: "available" | "completed" | "locked"
-                title: string
-              }[]
-              nextLessons: {
-                courseId: string
-                currentStepIndex: number | null
-                estimatedMinutes: number
-                id: string
-                /** @enum {string} */
-                status: "available" | "completed" | "locked"
-                title: string
-              }[]
-              progressPercent: number
-              title: string
-              /** @enum {string} */
-              visualKey:
-                | "basic-sentence-writing"
-                | "creative-writing"
-                | "essay-writing"
-                | "expression"
-                | "grammar-complete"
-            }[]
-            user: {
-              currentStreakDays: number
-            }
-          }
-        }
-      }
-      /** @description 인증이 필요합니다. */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
-        }
-      }
-      /** @description 계정을 사용할 수 없습니다. */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
-        }
-      }
-    }
-  }
   getCourses: {
     parameters: {
       query?: never
@@ -468,20 +374,20 @@ export interface operations {
         content: {
           "application/json": {
             courses: {
-              category: string
-              description: string
               id: string
+              title: string
+              description: string
+              category: string
               lessonCount: number
               /** @enum {string} */
               status: "active" | "archived"
-              title: string
               /** @enum {string} */
               visualKey:
                 | "basic-sentence-writing"
-                | "creative-writing"
-                | "essay-writing"
-                | "expression"
                 | "grammar-complete"
+                | "essay-writing"
+                | "creative-writing"
+                | "expression"
             }[]
           }
         }
@@ -546,53 +452,53 @@ export interface operations {
         }
         content: {
           "application/json": {
-            category: string
-            description: string
             id: string
+            title: string
+            description: string
+            category: string
             lessonCount: number
             /** @enum {string} */
             status: "active" | "archived"
-            title: string
             /** @enum {string} */
             visualKey:
               | "basic-sentence-writing"
-              | "creative-writing"
-              | "essay-writing"
-              | "expression"
               | "grammar-complete"
+              | "essay-writing"
+              | "creative-writing"
+              | "expression"
             progress: {
               completedLessons: number
               lessons: {
-                currentStepIndex: number | null
                 lessonId: string
                 /** @enum {string} */
                 status: "available" | "completed" | "locked"
+                currentStepIndex: number | null
               }[]
               nextLesson: {
-                currentStepIndex: number | null
-                estimatedMinutes: number
                 id: string
+                title: string
+                estimatedMinutes: number
                 /** @enum {string} */
                 status: "available" | "completed" | "locked"
-                title: string
+                currentStepIndex: number | null
               } | null
-              percentage: number
               totalLessons: number
+              percentage: number
             }
             units: {
               id: string
+              title: string
+              sortOrder: number
               lessons: {
+                id: string
+                title: string
                 category: string | null
                 description: string | null
                 estimatedMinutes: number
-                id: string
-                sortOrder: number
                 /** @enum {string} */
                 status: "active" | "archived"
-                title: string
+                sortOrder: number
               }[]
-              sortOrder: number
-              title: string
             }[]
           }
         }
@@ -637,6 +543,26 @@ export interface operations {
           }
         }
       }
+      /** @description 코스를 찾을 수 없습니다. */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
+            }
+          }
+        }
+      }
     }
   }
   getLesson: {
@@ -657,89 +583,263 @@ export interface operations {
         }
         content: {
           "application/json": {
-            category: string | null
+            id: string
             courseId: string
+            unitId: string
+            title: string
+            category: string | null
             description: string | null
             estimatedMinutes: number
-            id: string
-            steps: {
-              allowRetry?: boolean
-              analysis?: string
-              answer?: string[]
-              badge?: string
-              body?: string
-              categories?: {
-                id: string
-                label: string
-              }[]
-              correct?: string | string[] | number[]
-              claim?: string
-              context?: string
-              draft?: boolean
-              explanation?: string
-              feedback?: string
-              focus?: string
-              goal?: number
-              guide?: string
-              id: string
-              items?:
-                | string[]
-                | {
-                    categoryId: string
+            summary: string[]
+            steps: (
+              | {
+                  id: string
+                  sortOrder: number
+                  /** @enum {string} */
+                  type: "READING"
+                  title: string
+                  guide: string
+                  body: string
+                  source?: string
+                }
+              | {
+                  id: string
+                  sortOrder: number
+                  /** @enum {string} */
+                  type: "COMPARE"
+                  title: string
+                  versions: {
+                    label: string
+                    text: string
+                  }[]
+                  analysis: string
+                }
+              | {
+                  id: string
+                  sortOrder: number
+                  /** @enum {string} */
+                  type: "MULTIPLE_CHOICE"
+                  question: string
+                  options: {
                     id: string
                     text: string
                   }[]
-              layout?: string
-              max?: number
-              min?: number
-              mode?: string
-              options?: {
+                  correct: string
+                  explanation: string
+                  wrong?: string
+                }
+              | {
+                  id: string
+                  sortOrder: number
+                  /** @enum {string} */
+                  type: "FILL_BLANK"
+                  template: string
+                  words: string[]
+                  answer: string[]
+                  explanation: string
+                }
+              | {
+                  id: string
+                  sortOrder: number
+                  /** @enum {string} */
+                  type: "SELECT"
+                  question: string
+                  segments: string[]
+                  correct: number[]
+                  explanation: string
+                  layout?: string
+                }
+              | {
+                  id: string
+                  sortOrder: number
+                  /** @enum {string} */
+                  type: "ORDER"
+                  title: string
+                  items: string[]
+                  correct: string[]
+                  showNumbers?: boolean
+                  explanation: string
+                }
+              | {
+                  id: string
+                  sortOrder: number
+                  /** @enum {string} */
+                  type: "WRITE"
+                  title?: string
+                  guide?: string
+                  min: number
+                  goal?: number
+                  max?: number
+                  badge?: string
+                  claim?: string
+                  context?: string
+                  mode?: string
+                  placeholder?: string
+                  prompt?: string
+                  reference?: string
+                  sample?: string
+                  structure?: string
+                  topic?: string
+                  draft?: boolean
+                }
+              | {
+                  id: string
+                  sortOrder: number
+                  /** @enum {string} */
+                  type: "AI_FEEDBACK"
+                  target: string
+                  focus: string
+                  feedback: string
+                  showScore: boolean
+                  score: number
+                  scoreMax: number
+                  allowRetry: boolean
+                }
+              | {
+                  id: string
+                  sortOrder: number
+                  /** @enum {string} */
+                  type: "MATCH"
+                  title: string
+                  guide: string
+                  pairs: {
+                    left: string
+                    right: string
+                  }[]
+                  explanation: string
+                }
+              | {
+                  id: string
+                  sortOrder: number
+                  /** @enum {string} */
+                  type: "CATEGORIZE"
+                  title: string
+                  guide: string
+                  categories: {
+                    id: string
+                    label: string
+                  }[]
+                  items: {
+                    id: string
+                    text: string
+                    categoryId: string
+                  }[]
+                  explanation: string
+                }
+            )[]
+          }
+        }
+      }
+      /** @description 인증이 필요합니다. */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
+            }
+          }
+        }
+      }
+      /** @description 계정을 사용할 수 없습니다. */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
+            }
+          }
+        }
+      }
+      /** @description 레슨을 찾을 수 없습니다. */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  getProgress: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 학습자의 코스별 진행 상태입니다. */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            courses: {
+              id: string
+              lessons: {
+                currentStepIndex: number | null
+                estimatedMinutes: number
                 id: string
-                text: string
+                /** @enum {string} */
+                status: "available" | "completed" | "locked"
+                title: string
               }[]
-              pairs?: {
-                left: string
-                right: string
+              nextLessons: {
+                currentStepIndex: number | null
+                estimatedMinutes: number
+                id: string
+                /** @enum {string} */
+                status: "available" | "completed" | "locked"
+                title: string
+                courseId: string
               }[]
-              placeholder?: string
-              prompt?: string
-              question?: string
-              reference?: string
-              sample?: string
-              score?: number
-              scoreMax?: number
-              segments?: string[]
-              showNumbers?: boolean
-              showScore?: boolean
-              sortOrder: number
-              source?: string
-              structure?: string
-              target?: string
-              template?: string
-              title?: string
-              topic?: string
+              progressPercent: number
+              title: string
               /** @enum {string} */
-              type:
-                | "READING"
-                | "COMPARE"
-                | "MULTIPLE_CHOICE"
-                | "FILL_BLANK"
-                | "SELECT"
-                | "ORDER"
-                | "WRITE"
-                | "AI_FEEDBACK"
-                | "MATCH"
-                | "CATEGORIZE"
-              versions?: {
-                label: string
-                text: string
-              }[]
-              wrong?: string
-              words?: string[]
+              visualKey:
+                | "basic-sentence-writing"
+                | "grammar-complete"
+                | "essay-writing"
+                | "creative-writing"
+                | "expression"
             }[]
-            summary: string[]
-            title: string
-            unitId: string
+            user: {
+              currentStreakDays: number
+            }
           }
         }
       }
@@ -842,7 +942,8 @@ export interface operations {
                 type: "WRITE"
               }
             | {
-                requested: boolean
+                /** @enum {boolean} */
+                requested: true
                 /** @enum {string} */
                 type: "AI_FEEDBACK"
               }
@@ -860,6 +961,26 @@ export interface operations {
         content: {
           "application/json": {
             saved: boolean
+          }
+        }
+      }
+      /** @description 잘못된 요청입니다. */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
+            }
           }
         }
       }
@@ -885,6 +1006,26 @@ export interface operations {
       }
       /** @description 계정을 사용할 수 없습니다. */
       403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
+            }
+          }
+        }
+      }
+      /** @description 레슨을 찾을 수 없습니다. */
+      404: {
         headers: {
           [name: string]: unknown
         }
@@ -933,6 +1074,26 @@ export interface operations {
           }
         }
       }
+      /** @description 잘못된 요청입니다. */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
+            }
+          }
+        }
+      }
       /** @description 인증이 필요합니다. */
       401: {
         headers: {
@@ -955,6 +1116,26 @@ export interface operations {
       }
       /** @description 계정을 사용할 수 없습니다. */
       403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
+            }
+          }
+        }
+      }
+      /** @description 레슨을 찾을 수 없습니다. */
+      404: {
         headers: {
           [name: string]: unknown
         }
@@ -1001,12 +1182,32 @@ export interface operations {
           "application/json": {
             improvements: string[]
             nextAction: string
-            remainingAttempts: number
             score: number
             scoreRange: [number, number]
             showScore: boolean
             strengths: string[]
             summary: string
+            remainingAttempts: number
+          }
+        }
+      }
+      /** @description 잘못된 요청입니다. */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
+            }
           }
         }
       }
@@ -1032,6 +1233,26 @@ export interface operations {
       }
       /** @description 계정을 사용할 수 없습니다. */
       403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            error: {
+              code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
+            }
+          }
+        }
+      }
+      /** @description 레슨을 찾을 수 없습니다. */
+      404: {
         headers: {
           [name: string]: unknown
         }
