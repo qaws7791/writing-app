@@ -62,9 +62,19 @@ describe("AI 피드백 서비스", () => {
 
     expect(providerInputs).toEqual([
       {
-        answer: "문장을 더 분명하게 고쳐 보았습니다.",
-        focus: "명확성",
-        lessonTitle: "좋은 문장이란 무엇인가",
+        input: [
+          "레슨 제목: 좋은 문장이란 무엇인가",
+          "코칭 초점: 명확성",
+          "학습자 답변:",
+          "문장을 더 분명하게 고쳐 보았습니다.",
+        ].join("\n"),
+        instructions: [
+          "당신은 한국어 글쓰기 학습자를 돕는 코치입니다.",
+          "답변은 반드시 JSON schema에 맞춰 한국어로 작성합니다.",
+          "칭찬은 구체적으로, 개선점은 다음 시도에서 바로 적용할 수 있게 씁니다.",
+          "점수는 0부터 100 사이 정수로 판단합니다.",
+        ].join("\n"),
+        policyVersion: "kwep-writing-coach-v1",
       },
     ])
     expect(savedAttempts).toEqual([

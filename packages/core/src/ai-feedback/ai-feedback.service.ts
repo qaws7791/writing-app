@@ -7,6 +7,7 @@ import {
   type AiFeedbackResultDto,
 } from "@workspace/core/ai-feedback/ai-feedback.dto"
 import type { AiFeedbackProvider } from "@workspace/core/ai-feedback/ai-feedback.provider"
+import { createAiFeedbackPrompt } from "@workspace/core/ai-feedback/ai-feedback.prompt"
 import type { AiFeedbackRepository } from "@workspace/core/ai-feedback/ai-feedback.repository"
 import { err, ok, type Result } from "@workspace/core/result"
 
@@ -100,11 +101,13 @@ export function createAiFeedbackService({
         })
       }
 
-      const providerResult = await provider.createFeedback({
-        answer: parsedCommand.answer,
-        focus: step.focus,
-        lessonTitle: parsedLesson.title,
-      })
+      const providerResult = await provider.createFeedback(
+        createAiFeedbackPrompt({
+          answer: parsedCommand.answer,
+          focus: step.focus,
+          lessonTitle: parsedLesson.title,
+        })
+      )
 
       if (providerResult.kind === "err") {
         return err({

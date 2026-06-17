@@ -5,6 +5,7 @@ import {
   createUnavailableAiFeedbackProvider,
   type OpenAiResponseCreateRequest,
 } from "@/openai/openai-feedback-provider"
+import { createAiFeedbackPrompt } from "@workspace/core/ai-feedback"
 
 describe("OpenAI AI feedback provider", () => {
   it("Responses API 출력 JSON을 AI feedback payload로 변환한다", async () => {
@@ -33,11 +34,13 @@ describe("OpenAI AI feedback provider", () => {
     })
 
     await expect(
-      provider.createFeedback({
-        answer: "나는 매일 조금씩 문장을 고친다.",
-        focus: "명확성",
-        lessonTitle: "좋은 문장이란 무엇인가",
-      })
+      provider.createFeedback(
+        createAiFeedbackPrompt({
+          answer: "나는 매일 조금씩 문장을 고친다.",
+          focus: "명확성",
+          lessonTitle: "좋은 문장이란 무엇인가",
+        })
+      )
     ).resolves.toEqual({
       kind: "ok",
       value: {
@@ -88,11 +91,13 @@ describe("OpenAI AI feedback provider", () => {
     })
 
     await expect(
-      provider.createFeedback({
-        answer: "초안입니다.",
-        focus: "명확성",
-        lessonTitle: "좋은 문장이란 무엇인가",
-      })
+      provider.createFeedback(
+        createAiFeedbackPrompt({
+          answer: "초안입니다.",
+          focus: "명확성",
+          lessonTitle: "좋은 문장이란 무엇인가",
+        })
+      )
     ).resolves.toEqual({
       error: {
         kind: "provider-unavailable",
@@ -105,11 +110,13 @@ describe("OpenAI AI feedback provider", () => {
     const provider = createUnavailableAiFeedbackProvider()
 
     await expect(
-      provider.createFeedback({
-        answer: "초안입니다.",
-        focus: "명확성",
-        lessonTitle: "좋은 문장이란 무엇인가",
-      })
+      provider.createFeedback(
+        createAiFeedbackPrompt({
+          answer: "초안입니다.",
+          focus: "명확성",
+          lessonTitle: "좋은 문장이란 무엇인가",
+        })
+      )
     ).resolves.toEqual({
       error: {
         kind: "provider-unavailable",

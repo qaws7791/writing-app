@@ -183,7 +183,7 @@ DB 테이블과 컬럼 명명 규칙은 `docs/schema-conventions.md`를 따른�
 
 DB migration은 피벗 기간 동안 누적 보정 migration이 아니라 `0000-kwep-baseline.sql` 기준 새 baseline으로 관리한다. 운영 데이터 이전이 필요하면 별도 이전 계획을 작성하고 이 baseline 구현에 호환 adapter를 넣지 않는다.
 
-AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structured Outputs를 호출하고, `packages/core`의 AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다.
+AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structured Outputs를 호출하고, `packages/core`의 AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. 한국어 글쓰기 코칭 지침과 입력 프롬프트 조립은 `packages/core/src/ai-feedback/ai-feedback.prompt.ts`의 prompt policy가 단일 출처다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다.
 
 ## `packages/logger`
 
