@@ -111,6 +111,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -135,6 +150,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -264,6 +294,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -288,6 +333,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -469,6 +529,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -493,6 +568,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -591,6 +681,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -615,6 +720,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -886,6 +1006,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -910,6 +1045,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -1279,6 +1429,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -1303,6 +1468,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -1539,6 +1719,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -1563,6 +1758,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -1644,6 +1854,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -1668,6 +1893,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -1793,6 +2033,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -1817,6 +2072,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -1841,6 +2111,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],
@@ -1865,6 +2150,21 @@
                       "properties": {
                         "code": {
                           "type": "string"
+                        },
+                        "detail": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "code": {
+                              "enum": [
+                                "invalid_body",
+                                "malformed_json",
+                                "unknown_body_read_error"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": ["code"],
+                          "type": "object"
                         }
                       },
                       "required": ["code"],

@@ -9,7 +9,11 @@ import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
 
 import type { SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
-import { readJsonBody, resolveActiveSession } from "@/routes/route-helpers"
+import {
+  jsonBodyErrorDetail,
+  parseJsonBody,
+  resolveActiveSession,
+} from "@/routes/route-helpers"
 
 const saveAnswerBodySchema = z.object({
   answer: learningAnswerSchema,
@@ -44,20 +48,17 @@ export function createLearningRoute({
       )
     }
 
-    const body = await readJsonBody(context)
+    const bodyResult = await parseJsonBody(context, saveAnswerBodySchema)
 
-    if (body.kind === "err") {
-      return context.json(errorResponse("invalid_request"), 400)
-    }
-
-    const bodyResult = saveAnswerBodySchema.safeParse(body.value)
-
-    if (!bodyResult.success) {
-      return context.json(errorResponse("invalid_request"), 400)
+    if (bodyResult.kind === "err") {
+      return context.json(
+        errorResponse("invalid_request", jsonBodyErrorDetail(bodyResult.error)),
+        400
+      )
     }
 
     const result = await learningService.saveStepAnswer({
-      ...bodyResult.data,
+      ...bodyResult.value,
       occurredAt: now(),
       userId: learnerIdSchema.parse(sessionResult.session.user.id),
     })
@@ -86,20 +87,21 @@ export function createLearningRoute({
     const lessonIdResult = lessonIdSchema.safeParse(
       context.req.param("lessonId")
     )
-    const body = await readJsonBody(context)
+    const bodyResult = await parseJsonBody(context, completeLessonBodySchema)
 
-    if (body.kind === "err") {
+    if (!lessonIdResult.success) {
       return context.json(errorResponse("invalid_request"), 400)
     }
 
-    const bodyResult = completeLessonBodySchema.safeParse(body.value)
-
-    if (!lessonIdResult.success || !bodyResult.success) {
-      return context.json(errorResponse("invalid_request"), 400)
+    if (bodyResult.kind === "err") {
+      return context.json(
+        errorResponse("invalid_request", jsonBodyErrorDetail(bodyResult.error)),
+        400
+      )
     }
 
     const result = await learningService.completeLesson({
-      ...bodyResult.data,
+      ...bodyResult.value,
       lessonId: lessonIdResult.data,
       occurredAt: now(),
       userId: learnerIdSchema.parse(sessionResult.session.user.id),

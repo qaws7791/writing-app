@@ -9,7 +9,11 @@ import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
 
 import type { SessionResolver } from "@/auth/session"
 import { errorResponse } from "@/routes/error-response"
-import { readJsonBody, resolveActiveSession } from "@/routes/route-helpers"
+import {
+  jsonBodyErrorDetail,
+  parseJsonBody,
+  resolveActiveSession,
+} from "@/routes/route-helpers"
 
 const createFeedbackBodySchema = z.object({
   answer: z.string().trim().min(1),
@@ -40,21 +44,18 @@ export function createAiFeedbackRoute({
       )
     }
 
-    const body = await readJsonBody(context)
+    const bodyResult = await parseJsonBody(context, createFeedbackBodySchema)
 
-    if (body.kind === "err") {
-      return context.json(errorResponse("invalid_request"), 400)
-    }
-
-    const bodyResult = createFeedbackBodySchema.safeParse(body.value)
-
-    if (!bodyResult.success) {
-      return context.json(errorResponse("invalid_request"), 400)
+    if (bodyResult.kind === "err") {
+      return context.json(
+        errorResponse("invalid_request", jsonBodyErrorDetail(bodyResult.error)),
+        400
+      )
     }
 
     const result = await aiFeedbackService.createFeedback(
       createAiFeedbackCommandSchema.parse({
-        ...bodyResult.data,
+        ...bodyResult.value,
         occurredAt: now(),
         userId: learnerIdSchema.parse(sessionResult.session.user.id),
       })

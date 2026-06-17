@@ -247,6 +247,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -260,6 +267,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -311,6 +325,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -324,6 +345,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -390,6 +418,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -403,6 +438,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -453,6 +495,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -466,6 +515,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -550,6 +606,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -563,6 +626,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -682,6 +752,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -695,6 +772,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -788,6 +872,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -801,6 +892,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -844,6 +942,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -857,6 +962,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -907,6 +1019,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -920,6 +1039,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -933,6 +1059,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }
@@ -946,6 +1079,13 @@ export interface operations {
           "application/json": {
             error: {
               code: string
+              detail?: {
+                /** @enum {string} */
+                code:
+                  | "invalid_body"
+                  | "malformed_json"
+                  | "unknown_body_read_error"
+              }
             }
           }
         }

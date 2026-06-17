@@ -7,16 +7,28 @@ export type ErrorCode =
   | "provider_unavailable"
   | "unauthorized"
 
+export type ErrorDetailCode =
+  | "invalid_body"
+  | "malformed_json"
+  | "unknown_body_read_error"
+
 export type ErrorResponse = {
   readonly error: {
     readonly code: ErrorCode
+    readonly detail?: {
+      readonly code: ErrorDetailCode
+    }
   }
 }
 
-export function errorResponse(code: ErrorCode): ErrorResponse {
+export function errorResponse(
+  code: ErrorCode,
+  detail?: { readonly code: ErrorDetailCode }
+): ErrorResponse {
   return {
     error: {
       code,
+      ...(detail === undefined ? {} : { detail }),
     },
   }
 }

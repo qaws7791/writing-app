@@ -375,9 +375,18 @@ function pathParameter(name: string) {
 }
 
 const errorResponseSchema = objectSchema({
-  error: objectSchema({
-    code: textSchema,
-  }),
+  error: objectSchema(
+    {
+      code: textSchema,
+      detail: objectSchema({
+        code: {
+          enum: ["invalid_body", "malformed_json", "unknown_body_read_error"],
+          type: "string",
+        },
+      }),
+    },
+    ["code"]
+  ),
 })
 
 const learnerUserSchema = objectSchema({

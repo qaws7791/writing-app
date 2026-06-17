@@ -196,6 +196,32 @@ describe("어드민 API settings route", () => {
     await expect(response.json()).resolves.toEqual({
       error: {
         code: "invalid_request",
+        detail: {
+          code: "invalid_body",
+        },
+      },
+    })
+  })
+
+  it("잘못된 JSON 운영 설정 요청은 malformed_json detail로 응답한다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request("/settings/notice", {
+      body: "{",
+      headers: {
+        Authorization: "Bearer admin-token",
+        "Content-Type": "application/json",
+      },
+      method: "PUT",
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: {
+        code: "invalid_request",
+        detail: {
+          code: "malformed_json",
+        },
       },
     })
   })

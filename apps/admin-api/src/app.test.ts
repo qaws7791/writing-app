@@ -441,6 +441,9 @@ describe("어드민 API users route", () => {
     await expect(response.json()).resolves.toEqual({
       error: {
         code: "invalid_request",
+        detail: {
+          code: "invalid_body",
+        },
       },
     })
   })

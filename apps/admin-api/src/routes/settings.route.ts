@@ -3,6 +3,8 @@ import { Hono } from "hono"
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { errorResponse } from "@/routes/error-response"
 import {
+  jsonBodyErrorDetail,
+  parseJsonBody,
   resolveAdminSession,
   resolveOwnerAdminSession,
 } from "@/routes/route-helpers"
@@ -51,17 +53,21 @@ export function createSettingsRoute({
       )
     }
 
-    const parsedBody = adminNoticeSettingsRequestSchema.safeParse(
-      await context.req.json().catch(() => null)
+    const parsedBody = await parseJsonBody(
+      context,
+      adminNoticeSettingsRequestSchema
     )
 
-    if (!parsedBody.success) {
-      return context.json(errorResponse("invalid_request"), 400)
+    if (parsedBody.kind === "err") {
+      return context.json(
+        errorResponse("invalid_request", jsonBodyErrorDetail(parsedBody.error)),
+        400
+      )
     }
 
     return context.json(
       await adminService.updateNoticeSettings({
-        ...parsedBody.data,
+        ...parsedBody.value,
         now: now(),
       })
     )
@@ -80,17 +86,21 @@ export function createSettingsRoute({
       )
     }
 
-    const parsedBody = adminLegalSettingsRequestSchema.safeParse(
-      await context.req.json().catch(() => null)
+    const parsedBody = await parseJsonBody(
+      context,
+      adminLegalSettingsRequestSchema
     )
 
-    if (!parsedBody.success) {
-      return context.json(errorResponse("invalid_request"), 400)
+    if (parsedBody.kind === "err") {
+      return context.json(
+        errorResponse("invalid_request", jsonBodyErrorDetail(parsedBody.error)),
+        400
+      )
     }
 
     return context.json(
       await adminService.updateLegalSettings({
-        ...parsedBody.data,
+        ...parsedBody.value,
         now: now(),
       })
     )

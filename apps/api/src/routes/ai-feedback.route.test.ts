@@ -104,7 +104,7 @@ describe("플랫폼 API AI feedback route", () => {
     })
   })
 
-  it("잘못된 JSON 본문은 invalid_request 400으로 응답한다", async () => {
+  it("잘못된 JSON 본문은 malformed_json detail로 응답한다", async () => {
     const app = createApp({
       ...createTestDependencies(),
       aiFeedbackService: createService({
@@ -137,6 +137,9 @@ describe("플랫폼 API AI feedback route", () => {
     await expect(response.json()).resolves.toEqual({
       error: {
         code: "invalid_request",
+        detail: {
+          code: "malformed_json",
+        },
       },
     })
   })

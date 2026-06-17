@@ -4,6 +4,8 @@ import type { AdminSessionResolver } from "@/auth/admin-session"
 import { errorResponse } from "@/routes/error-response"
 import { parsePositiveIntegerParam } from "@/routes/query-params"
 import {
+  jsonBodyErrorDetail,
+  parseJsonBody,
   resolveAdminSession,
   resolveOwnerAdminSession,
 } from "@/routes/route-helpers"
@@ -92,17 +94,21 @@ export function createUsersRoute({
       )
     }
 
-    const parsedBody = adminUpdateUserStatusRequestSchema.safeParse(
-      await context.req.json().catch(() => null)
+    const parsedBody = await parseJsonBody(
+      context,
+      adminUpdateUserStatusRequestSchema
     )
 
-    if (!parsedBody.success) {
-      return context.json(errorResponse("invalid_request"), 400)
+    if (parsedBody.kind === "err") {
+      return context.json(
+        errorResponse("invalid_request", jsonBodyErrorDetail(parsedBody.error)),
+        400
+      )
     }
 
     const user = await adminService.updateUserStatus({
       now: now(),
-      status: parsedBody.data.status,
+      status: parsedBody.value.status,
       userId: context.req.param("userId"),
     })
 
