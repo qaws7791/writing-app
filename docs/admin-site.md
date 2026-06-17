@@ -1,5 +1,12 @@
 # 어드민 사이트
 
+## 2026-06-17 어드민 목록 DB 페이징 경계 정리 완료
+
+- 코스 목록 repository는 상태, 카테고리, 검색 조건을 SQL에서 처리하고 active 유닛/레슨 수를 DB 집계로 계산한다.
+- 레슨별 분석 repository는 active 콘텐츠와 삭제되지 않은 학습자 조건을 SQL join과 집계로 계산한다.
+- 코스 목록과 레슨별 분석 목록은 total count query와 page row query를 분리하며, 정렬, `LIMIT`, `OFFSET`은 DB query boundary에서 수행한다.
+- 어드민 목록의 page/pageSize 보정은 repository 내부 공통 helper를 사용해 동일한 페이지 계산 규칙을 따른다.
+
 ## 2026-06-15 어드민 코스 미리보기 계약 정리 시작
 
 - 현재 코스 상세 화면은 저장 가능한 편집기가 아니라 `GET /courses/:courseId/editor` 기반 읽기 전용 미리보기로 정리한다.

@@ -39,6 +39,28 @@ describe("어드민 DB repository", () => {
     expect(readUsersSource).not.toContain(".slice(")
   })
 
+  it("코스와 레슨 분석 목록 페이지네이션은 DB 쿼리 경계에서 처리한다", () => {
+    const repositorySource = readFileSync(
+      fileURLToPath(new URL("admin.repository.ts", import.meta.url)),
+      "utf8"
+    )
+    const readCoursesSource = readFunctionSource(
+      repositorySource,
+      "readCourses"
+    )
+    const readLessonAnalyticsSource = readFunctionSource(
+      repositorySource,
+      "readLessonAnalytics"
+    )
+
+    expect(readCoursesSource).toBeDefined()
+    expect(readLessonAnalyticsSource).toBeDefined()
+    expect(readCoursesSource).not.toContain(".slice(")
+    expect(readCoursesSource).not.toMatch(/\.all\(\)[\s\S]*?\.filter/)
+    expect(readLessonAnalyticsSource).not.toContain(".slice(")
+    expect(readLessonAnalyticsSource).not.toMatch(/\.all\(\)[\s\S]*?\.filter/)
+  })
+
   it("코스 편집 조회는 전체 테이블을 읽은 뒤 중첩 filter로 조합하지 않는다", () => {
     const repositorySource = readFileSync(
       fileURLToPath(new URL("admin.repository.ts", import.meta.url)),

@@ -100,6 +100,17 @@ type AdminSettingsRepository = Pick<
   AdminRepository,
   "readSettings" | "saveLegalSettings" | "saveNoticeSettings"
 >
+type PageInput = {
+  readonly page: number
+  readonly pageSize: number
+}
+type PageBounds = {
+  readonly offset: number
+  readonly page: number
+  readonly pageSize: number
+  readonly totalItems: number
+  readonly totalPages: number
+}
 
 export type DrizzleAdminRepositoryDependencies = {
   readonly createCourseContentIds?: CreateAdminCourseContentIds
@@ -130,6 +141,19 @@ function resolveDrizzleAdminRepositoryDependencies(
   return {
     createCourseContentIds:
       dependencies.createCourseContentIds ?? createDefaultAdminCourseContentIds,
+  }
+}
+
+function createPageBounds(input: PageInput, totalItems: number): PageBounds {
+  const totalPages = Math.max(1, Math.ceil(totalItems / input.pageSize))
+  const page = Math.min(Math.max(1, input.page), totalPages)
+
+  return {
+    offset: (page - 1) * input.pageSize,
+    page,
+    pageSize: input.pageSize,
+    totalItems,
+    totalPages,
   }
 }
 
@@ -440,29 +464,134 @@ function readLessonAnalytics(
   input: ReadAdminLessonAnalyticsInput
 ): AdminLessonAnalyticsPageDto {
   const query = input.query.trim().toLowerCase()
-  const filteredLessons = createLessonAnalyticsSnapshots(db)
-    .filter(
-      (lesson) =>
-        query.length === 0 ||
-        lesson.lessonTitle.toLowerCase().includes(query) ||
-        lesson.courseTitle.toLowerCase().includes(query)
+  const startedExpression = createLessonAnalyticsStartedExpression()
+  const completedExpression = createLessonAnalyticsCompletedExpression()
+  const completionRateExpression =
+    createLessonAnalyticsCompletionRateExpression({
+      completed: completedExpression,
+      started: startedExpression,
+    })
+  const dropOffRateExpression = sql<number>`100 - ${completionRateExpression}`
+  const whereCondition = createReadLessonAnalyticsWhereCondition(query)
+  const totalItems =
+    db
+      .select({ value: countDistinct(lessons.id) })
+      .from(lessons)
+      .innerJoin(courses, eq(courses.id, lessons.courseId))
+      .innerJoin(courseUnits, eq(courseUnits.id, lessons.unitId))
+      .where(whereCondition)
+      .get()?.value ?? 0
+  const pagination = createPageBounds(input, totalItems)
+  const rows = db
+    .select({
+      completed: completedExpression,
+      completionRate: completionRateExpression,
+      courseId: courses.id,
+      courseTitle: courses.title,
+      dropOffRate: dropOffRateExpression,
+      lessonId: lessons.id,
+      lessonTitle: lessons.title,
+      started: startedExpression,
+    })
+    .from(lessons)
+    .innerJoin(courses, eq(courses.id, lessons.courseId))
+    .innerJoin(courseUnits, eq(courseUnits.id, lessons.unitId))
+    .leftJoin(
+      learnerLessonProgress,
+      eq(learnerLessonProgress.lessonId, lessons.id)
     )
-    .sort((left, right) =>
-      compareLessonAnalytics(left, right, input.sort, input.direction)
+    .leftJoin(authUsers, eq(authUsers.id, learnerLessonProgress.userId))
+    .leftJoin(learnerProfiles, eq(learnerProfiles.userId, authUsers.id))
+    .where(whereCondition)
+    .groupBy(lessons.id, lessons.title, courses.id, courses.title)
+    .orderBy(
+      ...createReadLessonAnalyticsOrder(input.sort, input.direction, {
+        completionRate: completionRateExpression,
+        courseTitle: courses.title,
+        dropOffRate: dropOffRateExpression,
+        lessonTitle: lessons.title,
+      })
     )
-  const totalItems = filteredLessons.length
-  const totalPages = Math.max(1, Math.ceil(totalItems / input.pageSize))
-  const page = Math.min(Math.max(1, input.page), totalPages)
-  const start = (page - 1) * input.pageSize
+    .limit(pagination.pageSize)
+    .offset(pagination.offset)
+    .all()
 
   return {
-    items: filteredLessons.slice(start, start + input.pageSize),
+    items: rows,
     pagination: {
-      page,
-      pageSize: input.pageSize,
-      totalItems,
-      totalPages,
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      totalItems: pagination.totalItems,
+      totalPages: pagination.totalPages,
     },
+  }
+}
+
+function createReadLessonAnalyticsWhereCondition(query: string) {
+  const queryCondition =
+    query.length === 0
+      ? undefined
+      : or(
+          sql`lower(${lessons.title}) like ${`%${query}%`}`,
+          sql`lower(${courses.title}) like ${`%${query}%`}`
+        )
+
+  return and(
+    eq(lessons.status, contentStatuses.active),
+    eq(courses.status, contentStatuses.active),
+    eq(courseUnits.status, contentStatuses.active),
+    queryCondition
+  )
+}
+
+function createLessonAnalyticsStartedExpression() {
+  return sql<number>`count(distinct case when ${authUsers.id} is not null and (${learnerProfiles.status} is null or ${learnerProfiles.status} <> ${learnerAccountStatuses.deleted}) then ${learnerLessonProgress.userId} end)`
+}
+
+function createLessonAnalyticsCompletedExpression() {
+  return sql<number>`count(distinct case when ${authUsers.id} is not null and (${learnerProfiles.status} is null or ${learnerProfiles.status} <> ${learnerAccountStatuses.deleted}) and ${learnerLessonProgress.status} = ${lessonProgressStatuses.completed} then ${learnerLessonProgress.userId} end)`
+}
+
+function createLessonAnalyticsCompletionRateExpression({
+  completed,
+  started,
+}: {
+  readonly completed: ReturnType<typeof sql<number>>
+  readonly started: ReturnType<typeof sql<number>>
+}) {
+  return sql<number>`case when ${started} = 0 then 0 else round((${completed} * 100.0) / ${started}) end`
+}
+
+function createReadLessonAnalyticsOrder(
+  sort: AdminLessonAnalyticsSort,
+  direction: AdminSortDirection,
+  expressions: {
+    readonly completionRate: ReturnType<typeof sql<number>>
+    readonly courseTitle: typeof courses.title
+    readonly dropOffRate: ReturnType<typeof sql<number>>
+    readonly lessonTitle: typeof lessons.title
+  }
+) {
+  const applyDirection = direction === "asc" ? asc : desc
+
+  switch (sort) {
+    case "course":
+      return [
+        applyDirection(expressions.courseTitle),
+        asc(expressions.lessonTitle),
+      ] as const
+    case "completionRate":
+      return [
+        applyDirection(expressions.completionRate),
+        asc(expressions.lessonTitle),
+      ] as const
+    case "dropOff":
+      return [
+        applyDirection(expressions.dropOffRate),
+        asc(expressions.lessonTitle),
+      ] as const
+    case "lesson":
+      return [applyDirection(expressions.lessonTitle)] as const
   }
 }
 
@@ -638,33 +767,6 @@ function compareWorstLessons(
     right.dropOffRate - left.dropOffRate ||
     left.lessonTitle.localeCompare(right.lessonTitle)
   )
-}
-
-function compareLessonAnalytics(
-  left: AdminLessonAnalyticsSnapshot,
-  right: AdminLessonAnalyticsSnapshot,
-  sort: AdminLessonAnalyticsSort,
-  direction: AdminSortDirection
-): number {
-  const byLesson = left.lessonTitle.localeCompare(right.lessonTitle)
-  let result = 0
-
-  switch (sort) {
-    case "course":
-      result = left.courseTitle.localeCompare(right.courseTitle)
-      break
-    case "completionRate":
-      result = left.completionRate - right.completionRate
-      break
-    case "dropOff":
-      result = left.dropOffRate - right.dropOffRate
-      break
-    case "lesson":
-      result = byLesson
-      break
-  }
-
-  return (direction === "asc" ? result : -result) || byLesson
 }
 
 function createCourse(
@@ -932,62 +1034,80 @@ function readCourses(
 ): AdminCourseListDto {
   const query = input.query.trim().toLowerCase()
   const category = input.category.trim()
-  const unitRows = db.select().from(courseUnits).all()
-  const lessonRows = db.select().from(lessons).all()
-  const filteredCourses = db
-    .select()
-    .from(courses)
-    .all()
-    .filter((course) =>
-      input.status === "all" ? true : course.status === input.status
-    )
-    .filter((course) => category.length === 0 || course.category === category)
-    .filter(
-      (course) =>
-        query.length === 0 ||
-        course.title.toLowerCase().includes(query) ||
-        course.description.toLowerCase().includes(query)
-    )
-    .sort((left, right) => left.sortOrder - right.sortOrder)
-    .map((course) => {
-      const activeUnitIds = unitRows
-        .filter(
-          (unit) =>
-            unit.courseId === course.id &&
-            unit.status === contentStatuses.active
-        )
-        .map((unit) => unit.id)
-      const activeUnitIdSet = new Set(activeUnitIds)
-
-      return {
-        category: course.category,
-        id: course.id,
-        lessonCount: lessonRows.filter(
-          (lesson) =>
-            lesson.courseId === course.id &&
-            lesson.status === contentStatuses.active &&
-            activeUnitIdSet.has(lesson.unitId)
-        ).length,
-        revision: course.curriculumRevision,
-        status: course.status,
-        title: course.title,
-        unitCount: activeUnitIds.length,
-      }
+  const activeUnitCountExpression = sql<number>`count(distinct case when ${courseUnits.status} = ${contentStatuses.active} then ${courseUnits.id} end)`
+  const activeLessonCountExpression = sql<number>`count(distinct case when ${courseUnits.status} = ${contentStatuses.active} and ${lessons.status} = ${contentStatuses.active} then ${lessons.id} end)`
+  const whereCondition = createReadCoursesWhereCondition({
+    category,
+    query,
+    status: input.status,
+  })
+  const totalItems =
+    db.select({ value: count() }).from(courses).where(whereCondition).get()
+      ?.value ?? 0
+  const pagination = createPageBounds(input, totalItems)
+  const rows = db
+    .select({
+      category: courses.category,
+      id: courses.id,
+      lessonCount: activeLessonCountExpression,
+      revision: courses.curriculumRevision,
+      status: courses.status,
+      title: courses.title,
+      unitCount: activeUnitCountExpression,
     })
-  const totalItems = filteredCourses.length
-  const totalPages = Math.max(1, Math.ceil(totalItems / input.pageSize))
-  const page = Math.min(Math.max(1, input.page), totalPages)
-  const start = (page - 1) * input.pageSize
+    .from(courses)
+    .leftJoin(courseUnits, eq(courseUnits.courseId, courses.id))
+    .leftJoin(
+      lessons,
+      and(eq(lessons.courseId, courses.id), eq(lessons.unitId, courseUnits.id))
+    )
+    .where(whereCondition)
+    .groupBy(
+      courses.id,
+      courses.category,
+      courses.curriculumRevision,
+      courses.status,
+      courses.title,
+      courses.sortOrder
+    )
+    .orderBy(asc(courses.sortOrder))
+    .limit(pagination.pageSize)
+    .offset(pagination.offset)
+    .all()
 
   return {
-    items: filteredCourses.slice(start, start + input.pageSize),
+    items: rows,
     pagination: {
-      page,
-      pageSize: input.pageSize,
-      totalItems,
-      totalPages,
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      totalItems: pagination.totalItems,
+      totalPages: pagination.totalPages,
     },
   }
+}
+
+function createReadCoursesWhereCondition({
+  category,
+  query,
+  status,
+}: {
+  readonly category: string
+  readonly query: string
+  readonly status: ReadAdminCoursesInput["status"]
+}) {
+  const statusCondition =
+    status === "all" ? undefined : eq(courses.status, status)
+  const categoryCondition =
+    category.length === 0 ? undefined : eq(courses.category, category)
+  const queryCondition =
+    query.length === 0
+      ? undefined
+      : or(
+          sql`lower(${courses.title}) like ${`%${query}%`}`,
+          sql`lower(${courses.description}) like ${`%${query}%`}`
+        )
+
+  return and(statusCondition, categoryCondition, queryCondition)
 }
 
 function archiveCourse(
