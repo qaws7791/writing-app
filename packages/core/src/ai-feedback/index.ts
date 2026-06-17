@@ -1,3 +1,4 @@
+export * from "@workspace/core/ai-feedback/ai-feedback-attempt-policy"
 export * from "@workspace/core/ai-feedback/ai-feedback.dto"
 export * from "@workspace/core/ai-feedback/ai-feedback.prompt"
 export * from "@workspace/core/ai-feedback/ai-feedback.provider"

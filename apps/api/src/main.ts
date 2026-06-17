@@ -1,6 +1,9 @@
 import { serve } from "bun"
 import OpenAI from "openai"
-import { createAiFeedbackService } from "@workspace/core/ai-feedback"
+import {
+  createAiFeedbackService,
+  defaultAiFeedbackAttemptPolicy,
+} from "@workspace/core/ai-feedback"
 import { createLearningService } from "@workspace/core/learning"
 import { contentStatuses, lessonProgressStatuses } from "@workspace/core/status"
 import {
@@ -53,6 +56,7 @@ const aiFeedbackProvider =
       })
 const app = createApp({
   aiFeedbackService: createAiFeedbackService({
+    attemptPolicy: defaultAiFeedbackAttemptPolicy,
     contentRepository,
     feedbackRepository,
     provider: aiFeedbackProvider,

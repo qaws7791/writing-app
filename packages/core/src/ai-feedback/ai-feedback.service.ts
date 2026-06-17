@@ -6,12 +6,14 @@ import {
   type CreateAiFeedbackCommand,
   type AiFeedbackResultDto,
 } from "@workspace/core/ai-feedback/ai-feedback.dto"
+import {
+  aiFeedbackAttemptPolicySchema,
+  type AiFeedbackAttemptPolicy,
+} from "@workspace/core/ai-feedback/ai-feedback-attempt-policy"
 import type { AiFeedbackProvider } from "@workspace/core/ai-feedback/ai-feedback.provider"
 import { createAiFeedbackPrompt } from "@workspace/core/ai-feedback/ai-feedback.prompt"
 import type { AiFeedbackRepository } from "@workspace/core/ai-feedback/ai-feedback.repository"
 import { err, ok, type Result } from "@workspace/core/result"
-
-const maxAiFeedbackAttempts = 3
 
 export type AiFeedbackServiceError =
   | {
@@ -42,13 +44,17 @@ export type AiFeedbackService = {
 
 export function createAiFeedbackService({
   contentRepository,
+  attemptPolicy,
   feedbackRepository,
   provider,
 }: {
   readonly contentRepository: ContentRepository
+  readonly attemptPolicy: AiFeedbackAttemptPolicy
   readonly feedbackRepository: AiFeedbackRepository
   readonly provider: AiFeedbackProvider
 }): AiFeedbackService {
+  const parsedAttemptPolicy = aiFeedbackAttemptPolicySchema.parse(attemptPolicy)
+
   return {
     async createFeedback(command) {
       const parsedCommand = createAiFeedbackCommandSchema.parse(command)
@@ -91,7 +97,7 @@ export function createAiFeedbackService({
       )
       const remainingAttempts = Math.max(
         0,
-        maxAiFeedbackAttempts - completedAttempts
+        parsedAttemptPolicy.maxCompletedAttempts - completedAttempts
       )
 
       if (remainingAttempts === 0) {
@@ -122,7 +128,7 @@ export function createAiFeedbackService({
           ...parsedCommand,
           result,
         },
-        maxAiFeedbackAttempts
+        parsedAttemptPolicy.maxCompletedAttempts
       )
 
       if (saveResult.kind === "limit-exceeded") {
@@ -134,10 +140,9 @@ export function createAiFeedbackService({
 
       return ok({
         ...result,
-        remainingAttempts: maxAiFeedbackAttempts - saveResult.attemptNumber,
+        remainingAttempts:
+          parsedAttemptPolicy.maxCompletedAttempts - saveResult.attemptNumber,
       })
     },
   }
 }
-
-export { maxAiFeedbackAttempts }

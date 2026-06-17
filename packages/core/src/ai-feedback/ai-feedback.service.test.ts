@@ -13,6 +13,7 @@ import {
   createAiFeedbackService,
   type AiFeedbackService,
 } from "@/ai-feedback/ai-feedback.service"
+import { defaultAiFeedbackAttemptPolicy } from "@/ai-feedback/ai-feedback-attempt-policy"
 import type {
   AiFeedbackAttemptRecord,
   AiFeedbackRepository,
@@ -127,6 +128,33 @@ describe("AI 피드백 서비스", () => {
     expect(savedAttempts).toEqual([])
   })
 
+  it("주입된 시도 정책으로 남은 횟수와 저장 한도를 계산한다", async () => {
+    const saveMaxAttempts: number[] = []
+    const service = createService({
+      attemptPolicy: {
+        maxCompletedAttempts: 1,
+      },
+      saveMaxAttempts,
+    })
+
+    await expect(
+      service.createFeedback({
+        answer: "첫 번째 코칭을 요청합니다.",
+        lessonId,
+        occurredAt,
+        stepId,
+        userId: learnerId,
+      })
+    ).resolves.toMatchObject({
+      kind: "ok",
+      value: {
+        remainingAttempts: 0,
+      },
+    })
+
+    expect(saveMaxAttempts).toEqual([1])
+  })
+
   it("저장 시점에 시도 한도를 넘으면 provider 결과를 500으로 만들지 않고 제한 오류를 반환한다", async () => {
     const providerInputs: AiFeedbackProviderInput[] = []
     const savedAttempts: AiFeedbackAttemptRecord[] = []
@@ -214,6 +242,7 @@ describe("AI 피드백 서비스", () => {
 
 function createService({
   completedAttempts = 0,
+  attemptPolicy = defaultAiFeedbackAttemptPolicy,
   providerInputs = [],
   providerResult = ok({
     improvements: ["근거를 한 문장 더 붙이면 설득력이 좋아집니다."],
@@ -225,9 +254,13 @@ function createService({
     summary: "문장의 의도가 분명합니다.",
   }),
   saveResult,
+  saveMaxAttempts = [],
   savedAttempts = [],
 }: {
   readonly completedAttempts?: number
+  readonly attemptPolicy?: Parameters<
+    typeof createAiFeedbackService
+  >[0]["attemptPolicy"]
   readonly providerInputs?: AiFeedbackProviderInput[]
   readonly providerResult?: Awaited<
     ReturnType<AiFeedbackProvider["createFeedback"]>
@@ -235,6 +268,7 @@ function createService({
   readonly saveResult?: Awaited<
     ReturnType<AiFeedbackRepository["saveCompletedAttempt"]>
   >
+  readonly saveMaxAttempts?: number[]
   readonly savedAttempts?: AiFeedbackAttemptRecord[]
 } = {}): AiFeedbackService {
   const contentRepository: ContentRepository = {
@@ -252,7 +286,8 @@ function createService({
     async countCompletedAttempts() {
       return completedAttempts
     },
-    async saveCompletedAttempt(record) {
+    async saveCompletedAttempt(record, maxAttempts) {
+      saveMaxAttempts.push(maxAttempts)
       const attemptNumber =
         saveResult?.kind === "saved"
           ? saveResult.attemptNumber
@@ -278,6 +313,7 @@ function createService({
   }
 
   return createAiFeedbackService({
+    attemptPolicy,
     contentRepository,
     feedbackRepository,
     provider,
