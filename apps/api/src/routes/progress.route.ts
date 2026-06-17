@@ -1,20 +1,17 @@
 import { Hono } from "hono"
 
-import type { SessionResolver } from "@/auth/session"
+import type { SessionResolver } from "@workspace/core/auth"
 import { errorResponse } from "@/routes/error-response"
 import { resolveActiveSession } from "@/routes/route-helpers"
-import type { ContentRepository } from "@workspace/core/content"
-import { toCourseProgress, type ProgressReader } from "@workspace/core/learning"
+import type { ProgressService } from "@workspace/core/learning"
 
 export type ProgressRouteDependencies = {
-  readonly contentRepository: ContentRepository
-  readonly progressReader: ProgressReader
+  readonly progressService: ProgressService
   readonly sessionResolver: SessionResolver
 }
 
 export function createProgressRoute({
-  contentRepository,
-  progressReader,
+  progressService,
   sessionResolver,
 }: ProgressRouteDependencies): Hono {
   const route = new Hono()
@@ -29,28 +26,9 @@ export function createProgressRoute({
       )
     }
 
-    const [courses, progress] = await Promise.all([
-      contentRepository.listCourses(),
-      progressReader.readLearnerProgress(sessionResult.session.user.id),
-    ])
-    const courseProgress = await Promise.all(
-      courses.map(async (course) => {
-        const courseDetail = await contentRepository.findCourseDetail(course.id)
-
-        if (courseDetail === null) {
-          return null
-        }
-
-        return toCourseProgress(course, courseDetail, progress.lessonProgress)
-      })
+    return context.json(
+      await progressService.readProgress(sessionResult.session.user.id)
     )
-
-    return context.json({
-      courses: courseProgress.filter((course) => course !== null),
-      user: {
-        currentStreakDays: progress.currentStreakDays,
-      },
-    })
   })
 
   return route

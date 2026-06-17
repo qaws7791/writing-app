@@ -14,14 +14,9 @@ import {
   positiveSortOrderSchema,
 } from "@workspace/core/content/steps/lesson-step-fields"
 import { contentStatusSchema } from "@workspace/core/status"
+import { persistedCourseVisualKeyValues } from "@workspace/db/persisted-values"
 
-export const courseVisualKeySchema = z.enum([
-  "basic-sentence-writing",
-  "grammar-complete",
-  "essay-writing",
-  "creative-writing",
-  "expression",
-])
+export const courseVisualKeySchema = z.enum(persistedCourseVisualKeyValues)
 
 export const lessonSummaryDtoSchema = z.object({
   id: lessonIdSchema,

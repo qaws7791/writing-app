@@ -3,8 +3,9 @@ import type {
   CompleteLessonCommand,
   SaveLessonProgressCommand,
   SaveStepAnswerCommand,
-} from "@workspace/core/learning"
-import { toLearningDateKey } from "@workspace/core/learning"
+} from "@workspace/core/learning/learning.dto"
+import type { LearningRepository } from "@workspace/core/learning/learning.repository"
+import { toLearningDateKey } from "@workspace/core/learning/learning-date"
 import { lessonProgressStatuses } from "@workspace/core/status"
 
 import type { KwepDatabase } from "@workspace/db/client"
@@ -17,12 +18,6 @@ import {
 export type SaveLessonProgressInput = SaveLessonProgressCommand
 export type SaveStepAnswerInput = SaveStepAnswerCommand
 export type CompleteLessonInput = CompleteLessonCommand
-
-export type LearningRepository = {
-  readonly completeLesson: (input: CompleteLessonInput) => Promise<void>
-  readonly saveLessonProgress: (input: SaveLessonProgressInput) => Promise<void>
-  readonly saveStepAnswer: (input: SaveStepAnswerInput) => Promise<void>
-}
 
 export function createDrizzleLearningRepository(
   db: KwepDatabase

@@ -1,5 +1,11 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
-import { adminRoles, adminRoleValues } from "@workspace/core/admin"
+import {
+  persistedAdminRoles,
+  persistedAdminRoleValues,
+} from "@workspace/db/persisted-values"
+
+const adminRoles = persistedAdminRoles
+const adminRoleValues = persistedAdminRoleValues
 
 export const adminAuthUsers = sqliteTable("admin_user", {
   id: text("id").primaryKey().notNull(),

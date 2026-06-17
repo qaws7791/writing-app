@@ -2,8 +2,6 @@ import { existsSync, mkdirSync, rmSync } from "node:fs"
 import { dirname, isAbsolute, relative, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { learnerAccountStatuses } from "@workspace/core/status"
-
 import { archiveContentRowsOutsideSeed } from "@/content/content-archive-policy"
 import {
   createKwepDatabase,
@@ -27,6 +25,7 @@ import {
   type LessonSeedRow,
   type LessonStepSeedRow,
 } from "@workspace/db/seeds/seed-content"
+import { persistedLearnerAccountStatuses } from "@workspace/db/persisted-values"
 
 type KwepDatabaseTransaction = Parameters<
   Parameters<KwepDatabase["transaction"]>[0]
@@ -277,14 +276,14 @@ function seedDefaultLearner(client: KwepDatabaseClient): void {
     .values({
       deletedAt: null,
       displayName: "학습자",
-      status: learnerAccountStatuses.active,
+      status: persistedLearnerAccountStatuses.active,
       userId: "user-1",
     })
     .onConflictDoUpdate({
       set: {
         deletedAt: null,
         displayName: "학습자",
-        status: learnerAccountStatuses.active,
+        status: persistedLearnerAccountStatuses.active,
       },
       target: learnerProfiles.userId,
     })

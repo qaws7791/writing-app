@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest"
 import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
 import { learnerIdSchema } from "@workspace/core/learning"
 
-import { createInMemoryKwepDatabase } from "@/client"
-import { runBaselineMigration } from "@/migrations/migrate"
-import { createDrizzleAiFeedbackRepository } from "@/repositories/feedback.repository"
+import { createInMemoryKwepDatabase } from "@workspace/db/client"
+import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { createDrizzleAiFeedbackRepository } from "@/ai-feedback/ai-feedback-drizzle.repository"
 import {
   aiFeedbackAttempts,
   authUsers,
@@ -12,8 +12,8 @@ import {
   courseUnits,
   lessons,
   lessonSteps,
-} from "@/schema"
-import type { KwepDatabaseClient } from "@/client"
+} from "@workspace/db/schema"
+import type { KwepDatabaseClient } from "@workspace/db/client"
 
 const now = new Date("2026-06-14T10:30:00.000Z")
 const learnerId = learnerIdSchema.parse("user-1")

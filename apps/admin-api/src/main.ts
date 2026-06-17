@@ -1,6 +1,9 @@
 import { serve } from "bun"
-import { createAdminService } from "@workspace/core/admin"
-import { createDrizzleAdminRepository, createKwepDatabase } from "@workspace/db"
+import {
+  createAdminService,
+  createDrizzleAdminRepository,
+} from "@workspace/core/admin"
+import { createKwepDatabase } from "@workspace/db"
 import {
   createAppLogger,
   createRequestLogger,

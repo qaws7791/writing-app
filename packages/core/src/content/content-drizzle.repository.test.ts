@@ -2,21 +2,20 @@ import { describe, expect, it } from "vitest"
 import { eq } from "drizzle-orm"
 import { courseIdSchema, lessonIdSchema } from "@workspace/core/content"
 
-import { createInMemoryKwepDatabase } from "@/client"
-import { runBaselineMigration } from "@/migrations/migrate"
-import { createDrizzleContentRepository } from "@/repositories/content.repository"
-import { courses, courseUnits, lessons, lessonSteps } from "@/schema"
+import { createInMemoryKwepDatabase } from "@workspace/db/client"
+import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { createDrizzleContentRepository } from "@/content/content-drizzle.repository"
+import {
+  courses,
+  courseUnits,
+  lessons,
+  lessonSteps,
+} from "@workspace/db/schema"
 import {
   createContentSeedRows,
-  type KwepCourseSeed,
-} from "@/seeds/seed-content"
-import type { KwepDatabaseClient } from "@/client"
-
-async function readSeedData(): Promise<readonly KwepCourseSeed[]> {
-  const seedUrl = new URL("../seeds/content-seed-data.json", import.meta.url)
-
-  return (await Bun.file(seedUrl).json()) as readonly KwepCourseSeed[]
-}
+  readContentSeedData,
+} from "@workspace/db/seeds/seed-content"
+import type { KwepDatabaseClient } from "@workspace/db/client"
 
 describe("콘텐츠 baseline repository", () => {
   it("Kwep seed row를 baseline schema에 삽입한다", async () => {
@@ -144,7 +143,7 @@ describe("콘텐츠 baseline repository", () => {
 async function seedContentRows(client: KwepDatabaseClient): Promise<void> {
   runBaselineMigration(client.sqlite)
 
-  const rows = createContentSeedRows(await readSeedData())
+  const rows = createContentSeedRows(await readContentSeedData())
 
   client.db
     .insert(courses)

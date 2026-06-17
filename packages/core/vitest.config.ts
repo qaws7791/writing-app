@@ -3,6 +3,10 @@ import { defineConfig } from "vitest/config"
 
 export default defineConfig({
   plugins: [tsconfigPaths()],
+  ssr: {
+    external: ["bun:sqlite"],
+    noExternal: ["zod"],
+  },
   test: {
     coverage: {
       thresholds: {

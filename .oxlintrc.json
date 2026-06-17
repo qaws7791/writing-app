@@ -136,6 +136,7 @@
     "typescript/prefer-namespace-keyword": "error",
     "typescript/triple-slash-reference": "error",
     "typescript/no-non-null-assertion": "error",
+    "workspace/no-invalid-workspace-dependency": "error",
     "workspace/no-unsafe-unknown-cast": "error"
   },
   "overrides": [

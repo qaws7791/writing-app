@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 
-import type { SessionResolver } from "@/auth/session"
+import type { SessionResolver } from "@workspace/core/auth"
 import { errorResponse } from "@/routes/error-response"
 import { resolveActiveSession } from "@/routes/route-helpers"
 

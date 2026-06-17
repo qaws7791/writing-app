@@ -1,7 +1,12 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
-import { contentStatuses, contentStatusValues } from "@workspace/core/status"
-export { contentStatusValues } from "@workspace/core/status"
+import {
+  persistedContentStatuses,
+  persistedContentStatusValues,
+} from "@workspace/db/persisted-values"
+
+const contentStatuses = persistedContentStatuses
+export const contentStatusValues = persistedContentStatusValues
 
 export const courses = sqliteTable("courses", {
   id: text("id").primaryKey().notNull(),

@@ -7,8 +7,8 @@ import {
   createLearnerAuthHooks,
   createLearnerOnboardingService,
   type LearnerProfileRepository,
-} from "@/auth/learner-onboarding"
-import type { SessionResolver } from "@/auth/session"
+} from "@workspace/core/auth/learner-onboarding"
+import type { SessionResolver } from "@workspace/core/auth/learner-session"
 import type { KwepDatabase } from "@workspace/db/client"
 import {
   authAccounts,

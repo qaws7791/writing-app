@@ -2,7 +2,10 @@ import type { Context } from "hono"
 import type { z } from "zod"
 import { learnerAccountStatuses } from "@workspace/core/status"
 
-import { type AuthenticatedSession, type SessionResolver } from "@/auth/session"
+import {
+  type AuthenticatedSession,
+  type SessionResolver,
+} from "@workspace/core/auth"
 
 export type ActiveSessionResult =
   | {

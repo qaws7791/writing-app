@@ -1,23 +1,25 @@
 import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
 import {
-  learnerAccountStatuses,
-  learnerAccountStatusValues,
-  lessonProgressStatuses,
-  lessonProgressStatusValues,
-} from "@workspace/core/status"
+  persistedLearnerAccountStatuses,
+  persistedLearnerAccountStatusValues,
+  persistedLessonProgressStatuses,
+  persistedLessonProgressStatusValues,
+} from "@workspace/db/persisted-values"
 import { authUsers } from "@workspace/db/schema/auth.schema"
 import { lessons, lessonSteps } from "@workspace/db/schema/content.schema"
 
-export { learnerAccountStatusValues as learnerProfileStatusValues }
-export { lessonProgressStatusValues } from "@workspace/core/status"
+const learnerAccountStatuses = persistedLearnerAccountStatuses
+const lessonProgressStatuses = persistedLessonProgressStatuses
+export const learnerProfileStatusValues = persistedLearnerAccountStatusValues
+export const lessonProgressStatusValues = persistedLessonProgressStatusValues
 
 export const learnerProfiles = sqliteTable("learner_profiles", {
   userId: text("user_id")
     .primaryKey()
     .notNull()
     .references(() => authUsers.id, { onDelete: "cascade" }),
-  status: text("status", { enum: learnerAccountStatusValues })
+  status: text("status", { enum: learnerProfileStatusValues })
     .notNull()
     .default(learnerAccountStatuses.active),
   displayName: text("display_name"),

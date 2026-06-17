@@ -1,11 +1,11 @@
 import { z } from "zod"
+import {
+  persistedAdminRoles,
+  persistedAdminRoleValues,
+} from "@workspace/db/persisted-values"
 
-export const adminRoles = {
-  operator: "operator",
-  owner: "owner",
-} as const
-
-export const adminRoleValues = [adminRoles.owner, adminRoles.operator] as const
+export const adminRoles = persistedAdminRoles
+export const adminRoleValues = persistedAdminRoleValues
 
 export const adminRoleSchema = z.enum(adminRoleValues)
 

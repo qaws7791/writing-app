@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
 import { eq } from "drizzle-orm"
-import { contentStatuses } from "@workspace/core/status"
+import { persistedContentStatuses } from "@workspace/db/persisted-values"
 
 import { createKwepDatabase } from "@/client"
 import { archiveContentRowsOutsideSeed } from "@/content/content-archive-policy"
@@ -25,28 +25,28 @@ describe("콘텐츠 보관 정책", () => {
 
       expect(archived).toBe(8)
       expect(readStatuses(client.db, "seed")).toEqual([
-        contentStatuses.active,
-        contentStatuses.active,
-        contentStatuses.active,
-        contentStatuses.active,
+        persistedContentStatuses.active,
+        persistedContentStatuses.active,
+        persistedContentStatuses.active,
+        persistedContentStatuses.active,
       ])
       expect(readStatuses(client.db, "outside-active-one")).toEqual([
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
       ])
       expect(readStatuses(client.db, "outside-active-two")).toEqual([
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
       ])
       expect(readStatuses(client.db, "outside-archived")).toEqual([
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
       ])
     } finally {
       client.close()
@@ -86,22 +86,22 @@ describe("콘텐츠 보관 정책", () => {
 
       expect(archived).toBe(12)
       expect(readStatuses(client.db, "seed")).toEqual([
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
       ])
       expect(readStatuses(client.db, "outside-active-one")).toEqual([
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
       ])
       expect(readStatuses(client.db, "outside-active-two")).toEqual([
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
-        contentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
+        persistedContentStatuses.archived,
       ])
     } finally {
       client.close()
@@ -125,7 +125,7 @@ const seedCourseRow: ContentSeedRows["courses"][number] = {
   description: "seed course",
   id: "seed-course",
   sortOrder: 1,
-  status: contentStatuses.active,
+  status: persistedContentStatuses.active,
   title: "Seed Course",
   visualKey: "basic-sentence-writing",
 }
@@ -134,7 +134,7 @@ const seedUnitRow: ContentSeedRows["units"][number] = {
   courseId: "seed-course",
   id: "seed-unit",
   sortOrder: 1,
-  status: contentStatuses.active,
+  status: persistedContentStatuses.active,
   title: "Seed Unit",
 }
 
@@ -145,7 +145,7 @@ const seedLessonRow: ContentSeedRows["lessons"][number] = {
   estimatedMinutes: 5,
   id: "seed-lesson",
   sortOrder: 1,
-  status: contentStatuses.active,
+  status: persistedContentStatuses.active,
   summaryJson: "[]",
   title: "Seed Lesson",
   unitId: "seed-unit",
@@ -156,7 +156,7 @@ const seedStepRow: ContentSeedRows["steps"][number] = {
   id: "seed-step",
   lessonId: "seed-lesson",
   sortOrder: 1,
-  status: contentStatuses.active,
+  status: persistedContentStatuses.active,
   type: "READING",
 }
 
@@ -180,43 +180,45 @@ function seedContentRows(
   db.insert(courses)
     .values([
       seedCourseRow,
-      createCourseRow("outside-active-one", contentStatuses.active),
-      createCourseRow("outside-active-two", contentStatuses.active),
-      createCourseRow("outside-archived", contentStatuses.archived),
+      createCourseRow("outside-active-one", persistedContentStatuses.active),
+      createCourseRow("outside-active-two", persistedContentStatuses.active),
+      createCourseRow("outside-archived", persistedContentStatuses.archived),
     ])
     .run()
 
   db.insert(courseUnits)
     .values([
       seedUnitRow,
-      createUnitRow("outside-active-one", contentStatuses.active),
-      createUnitRow("outside-active-two", contentStatuses.active),
-      createUnitRow("outside-archived", contentStatuses.archived),
+      createUnitRow("outside-active-one", persistedContentStatuses.active),
+      createUnitRow("outside-active-two", persistedContentStatuses.active),
+      createUnitRow("outside-archived", persistedContentStatuses.archived),
     ])
     .run()
 
   db.insert(lessons)
     .values([
       seedLessonRow,
-      createLessonRow("outside-active-one", contentStatuses.active),
-      createLessonRow("outside-active-two", contentStatuses.active),
-      createLessonRow("outside-archived", contentStatuses.archived),
+      createLessonRow("outside-active-one", persistedContentStatuses.active),
+      createLessonRow("outside-active-two", persistedContentStatuses.active),
+      createLessonRow("outside-archived", persistedContentStatuses.archived),
     ])
     .run()
 
   db.insert(lessonSteps)
     .values([
       seedStepRow,
-      createStepRow("outside-active-one", contentStatuses.active),
-      createStepRow("outside-active-two", contentStatuses.active),
-      createStepRow("outside-archived", contentStatuses.archived),
+      createStepRow("outside-active-one", persistedContentStatuses.active),
+      createStepRow("outside-active-two", persistedContentStatuses.active),
+      createStepRow("outside-archived", persistedContentStatuses.archived),
     ])
     .run()
 }
 
 function createCourseRow(
   namespace: string,
-  status: typeof contentStatuses.active | typeof contentStatuses.archived
+  status:
+    | typeof persistedContentStatuses.active
+    | typeof persistedContentStatuses.archived
 ): typeof courses.$inferInsert {
   return {
     category: "기초",
@@ -231,7 +233,9 @@ function createCourseRow(
 
 function createUnitRow(
   namespace: string,
-  status: typeof contentStatuses.active | typeof contentStatuses.archived
+  status:
+    | typeof persistedContentStatuses.active
+    | typeof persistedContentStatuses.archived
 ): typeof courseUnits.$inferInsert {
   return {
     courseId: `${namespace}-course`,
@@ -244,7 +248,9 @@ function createUnitRow(
 
 function createLessonRow(
   namespace: string,
-  status: typeof contentStatuses.active | typeof contentStatuses.archived
+  status:
+    | typeof persistedContentStatuses.active
+    | typeof persistedContentStatuses.archived
 ): typeof lessons.$inferInsert {
   return {
     category: "기초",
@@ -262,7 +268,9 @@ function createLessonRow(
 
 function createStepRow(
   namespace: string,
-  status: typeof contentStatuses.active | typeof contentStatuses.archived
+  status:
+    | typeof persistedContentStatuses.active
+    | typeof persistedContentStatuses.archived
 ): typeof lessonSteps.$inferInsert {
   return {
     contentJson: "{}",

@@ -4,7 +4,7 @@ import {
   createLearnerAuthHooks,
   createLearnerOnboardingService,
   type LearnerProfileRepository,
-} from "@/auth/learner-onboarding"
+} from "@workspace/core/auth/learner-onboarding"
 
 describe("학습자 온보딩", () => {
   it("회원 가입 후처리를 프로필 저장소 포트로 위임한다", async () => {

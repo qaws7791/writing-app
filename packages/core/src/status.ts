@@ -1,25 +1,19 @@
 import { z } from "zod"
+import {
+  persistedContentStatuses,
+  persistedContentStatusValues,
+  persistedLearnerAccountStatuses,
+  persistedLearnerAccountStatusValues,
+  persistedLessonProgressStatuses,
+  persistedLessonProgressStatusValues,
+} from "@workspace/db/persisted-values"
 
-export const contentStatuses = {
-  active: "active",
-  archived: "archived",
-} as const
-export const contentStatusValues = [
-  contentStatuses.active,
-  contentStatuses.archived,
-] as const
+export const contentStatuses = persistedContentStatuses
+export const contentStatusValues = persistedContentStatusValues
 export const contentStatusSchema = z.enum(contentStatusValues)
 
-export const learnerAccountStatuses = {
-  active: "active",
-  suspended: "suspended",
-  deleted: "deleted",
-} as const
-export const learnerAccountStatusValues = [
-  learnerAccountStatuses.active,
-  learnerAccountStatuses.suspended,
-  learnerAccountStatuses.deleted,
-] as const
+export const learnerAccountStatuses = persistedLearnerAccountStatuses
+export const learnerAccountStatusValues = persistedLearnerAccountStatusValues
 export const learnerAccountStatusSchema = z.enum(learnerAccountStatusValues)
 
 export const learnerOperationalStatusValues = [
@@ -30,14 +24,8 @@ export const learnerOperationalStatusSchema = z.enum(
   learnerOperationalStatusValues
 )
 
-export const lessonProgressStatuses = {
-  inProgress: "in_progress",
-  completed: "completed",
-} as const
-export const lessonProgressStatusValues = [
-  lessonProgressStatuses.inProgress,
-  lessonProgressStatuses.completed,
-] as const
+export const lessonProgressStatuses = persistedLessonProgressStatuses
+export const lessonProgressStatusValues = persistedLessonProgressStatusValues
 export const lessonProgressStatusSchema = z.enum(lessonProgressStatusValues)
 
 export type ContentStatus = z.infer<typeof contentStatusSchema>

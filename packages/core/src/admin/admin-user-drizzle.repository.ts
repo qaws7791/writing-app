@@ -36,7 +36,7 @@ import type { KwepDatabase } from "@workspace/db/client"
 import {
   calculateCurrentStreakDays,
   groupActivityDatesByUserId,
-} from "@workspace/db/repositories/admin-repository-shared"
+} from "@workspace/core/admin/admin-repository-shared"
 import {
   authUsers,
   courses,

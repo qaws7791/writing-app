@@ -19,7 +19,7 @@ import {
   createDefaultAdminCourseContentIds,
   type CreateAdminCourseContentIds,
   type NewAdminCourseContentIds,
-} from "@workspace/db/repositories/admin-content-ids"
+} from "@workspace/core/admin/admin-content-ids"
 import { createDefaultContentSeedRows } from "@workspace/db/seeds/seed-content"
 import {
   courses,
@@ -27,7 +27,7 @@ import {
   lessons,
   lessonSteps,
 } from "@workspace/db/schema"
-import { createPageBounds } from "@workspace/db/repositories/admin-repository-shared"
+import { createPageBounds } from "@workspace/core/admin/admin-repository-shared"
 
 const createCourseCollisionRetryLimit = 3
 type LessonRow = typeof lessons.$inferSelect

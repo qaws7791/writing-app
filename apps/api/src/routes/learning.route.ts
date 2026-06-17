@@ -7,7 +7,7 @@ import {
 } from "@workspace/core/learning"
 import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
 
-import type { SessionResolver } from "@/auth/session"
+import type { SessionResolver } from "@workspace/core/auth"
 import { errorResponse } from "@/routes/error-response"
 import {
   jsonBodyErrorDetail,

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
 
-import { createInMemoryKwepDatabase } from "@/client"
+import { createInMemoryKwepDatabase } from "@workspace/db/client"
 import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
 import { learnerIdSchema } from "@workspace/core/learning"
-import { runBaselineMigration } from "@/migrations/migrate"
-import { createDrizzleLearningRepository } from "@/repositories/learning.repository"
+import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { createDrizzleLearningRepository } from "@/learning/learning-drizzle.repository"
 import {
   authUsers,
   courses,
@@ -14,24 +14,18 @@ import {
   learnerLessonProgress,
   lessons,
   lessonSteps,
-} from "@/schema"
+} from "@workspace/db/schema"
 import {
   createContentSeedRows,
-  type KwepCourseSeed,
-} from "@/seeds/seed-content"
-import type { KwepDatabaseClient } from "@/client"
+  readContentSeedData,
+} from "@workspace/db/seeds/seed-content"
+import type { KwepDatabaseClient } from "@workspace/db/client"
 
 const now = new Date("2026-06-14T09:30:00.000Z")
 const userId = learnerIdSchema.parse("user-1")
 const lessonId = lessonIdSchema.parse("l1")
 const newLessonId = lessonIdSchema.parse("l-new")
 const newStepId = lessonStepIdSchema.parse("l-new-s3")
-
-async function readSeedData(): Promise<readonly KwepCourseSeed[]> {
-  const seedUrl = new URL("../seeds/content-seed-data.json", import.meta.url)
-
-  return (await Bun.file(seedUrl).json()) as readonly KwepCourseSeed[]
-}
 
 describe("학습 진행 repository", () => {
   it("progress 저장 시 학습 활동 날짜 row를 생성한다", async () => {
@@ -191,7 +185,7 @@ async function seedLearningBaseline(client: KwepDatabaseClient): Promise<void> {
     })
     .run()
 
-  const rows = createContentSeedRows(await readSeedData())
+  const rows = createContentSeedRows(await readContentSeedData())
 
   client.db
     .insert(courses)

@@ -1,20 +1,9 @@
 import { Hono } from "hono"
 
-import type { SessionResolver } from "@/auth/session"
+import type { SessionResolver } from "@workspace/core/auth"
+import type { ProfileReader } from "@workspace/core/learning"
 import { errorResponse } from "@/routes/error-response"
 import { resolveActiveSession } from "@/routes/route-helpers"
-
-export type LearnerProfileStatsDto = {
-  readonly completedLessons: number
-  readonly currentStreakDays: number
-  readonly lastActiveDate: string | null
-  readonly progressPercent: number
-  readonly totalLessons: number
-}
-
-export type ProfileReader = {
-  readonly readProfileStats: (userId: string) => Promise<LearnerProfileStatsDto>
-}
 
 export type ProfileRouteDependencies = {
   readonly profileReader: ProfileReader

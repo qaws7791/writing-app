@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm"
-import { contentStatuses } from "@workspace/core/status"
+import { persistedContentStatuses } from "@workspace/db/persisted-values"
 
 import type { KwepDatabase } from "@workspace/db/client"
 import type { ContentSeedRows } from "@workspace/db/seeds/seed-content"
@@ -45,14 +45,14 @@ function archiveRowsNotIn(
 ): number {
   const whereCondition =
     activeIds.length === 0
-      ? sql`${sql.identifier("status")} != ${contentStatuses.archived}`
-      : sql`${sql.identifier("status")} != ${contentStatuses.archived} AND ${sql.identifier("id")} NOT IN (${sql.join(
+      ? sql`${sql.identifier("status")} != ${persistedContentStatuses.archived}`
+      : sql`${sql.identifier("status")} != ${persistedContentStatuses.archived} AND ${sql.identifier("id")} NOT IN (${sql.join(
           activeIds.map((id) => sql`${id}`),
           sql`, `
         )})`
 
   transaction.run(
-    sql`UPDATE ${sql.identifier(tableName)} SET ${sql.identifier("status")} = ${contentStatuses.archived} WHERE ${whereCondition}`
+    sql`UPDATE ${sql.identifier(tableName)} SET ${sql.identifier("status")} = ${persistedContentStatuses.archived} WHERE ${whereCondition}`
   )
 
   return (

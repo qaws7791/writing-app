@@ -4,7 +4,7 @@ import {
   createOpenAiFeedbackProvider,
   createUnavailableAiFeedbackProvider,
   type OpenAiResponseCreateRequest,
-} from "@/openai/openai-feedback-provider"
+} from "@workspace/core/ai-feedback/openai-feedback-provider"
 import { createAiFeedbackPrompt } from "@workspace/core/ai-feedback"
 
 describe("OpenAI AI feedback provider", () => {

@@ -8,7 +8,7 @@
     "./client": "./src/client.ts",
     "./content/*": "./src/content/*.ts",
     "./migrations/*": "./src/migrations/*.ts",
-    "./repositories/*": "./src/repositories/*.ts",
+    "./persisted-values": "./src/persisted-values.ts",
     "./schema": "./src/schema/index.ts",
     "./schema/*": "./src/schema/*.ts",
     "./seed": "./src/seeds/index.ts",
@@ -24,7 +24,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@workspace/core": "workspace:*",
     "drizzle-orm": "^0.45.0",
     "zod": "^4.2.0"
   },

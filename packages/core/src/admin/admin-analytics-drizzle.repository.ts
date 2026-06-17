@@ -25,7 +25,7 @@ import {
   calculateCurrentStreakDays,
   createPageBounds,
   groupActivityDatesByUserId,
-} from "@workspace/db/repositories/admin-repository-shared"
+} from "@workspace/core/admin/admin-repository-shared"
 import {
   authUsers,
   courses,

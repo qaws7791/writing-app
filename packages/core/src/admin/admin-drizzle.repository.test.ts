@@ -4,9 +4,9 @@ import { fileURLToPath } from "node:url"
 
 import { eq } from "drizzle-orm"
 
-import { createKwepDatabase } from "@/client"
-import { runBaselineMigration } from "@/migrations/migrate"
-import { createDrizzleAdminRepository } from "@/repositories/admin.repository"
+import { createKwepDatabase } from "@workspace/db/client"
+import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { createDrizzleAdminRepository } from "@/admin/admin-drizzle.repository"
 import {
   toCourseId,
   toLessonId,
@@ -14,8 +14,8 @@ import {
   toUnitId,
   type CreateAdminCourseContentIds,
   type NewAdminCourseContentIds,
-} from "@/repositories/admin-content-ids"
-import { createDrizzleContentRepository } from "@/repositories/content.repository"
+} from "@/admin/admin-content-ids"
+import { createDrizzleContentRepository } from "@/content/content-drizzle.repository"
 import {
   authUsers,
   courseUnits,
@@ -25,12 +25,14 @@ import {
   learnerProfiles,
   lessonSteps,
   lessons,
-} from "@/schema"
+} from "@workspace/db/schema"
 
 describe("어드민 DB repository", () => {
   it("사용자 목록 페이지네이션은 JS 배열 slice가 아니라 DB 쿼리 경계에서 처리한다", () => {
     const repositorySource = readFileSync(
-      fileURLToPath(new URL("admin-user.repository.ts", import.meta.url)),
+      fileURLToPath(
+        new URL("admin-user-drizzle.repository.ts", import.meta.url)
+      ),
       "utf8"
     )
     const readUsersSource = readFunctionSource(repositorySource, "readUsers")
@@ -41,11 +43,15 @@ describe("어드민 DB repository", () => {
 
   it("코스와 레슨 분석 목록 페이지네이션은 DB 쿼리 경계에서 처리한다", () => {
     const courseRepositorySource = readFileSync(
-      fileURLToPath(new URL("admin-course.repository.ts", import.meta.url)),
+      fileURLToPath(
+        new URL("admin-course-drizzle.repository.ts", import.meta.url)
+      ),
       "utf8"
     )
     const analyticsRepositorySource = readFileSync(
-      fileURLToPath(new URL("admin-analytics.repository.ts", import.meta.url)),
+      fileURLToPath(
+        new URL("admin-analytics-drizzle.repository.ts", import.meta.url)
+      ),
       "utf8"
     )
     const readCoursesSource = readFunctionSource(
@@ -67,7 +73,9 @@ describe("어드민 DB repository", () => {
 
   it("코스 편집 조회는 전체 테이블을 읽은 뒤 중첩 filter로 조합하지 않는다", () => {
     const repositorySource = readFileSync(
-      fileURLToPath(new URL("admin-course.repository.ts", import.meta.url)),
+      fileURLToPath(
+        new URL("admin-course-drizzle.repository.ts", import.meta.url)
+      ),
       "utf8"
     )
     const readCourseEditorSource = readFunctionSource(
@@ -91,7 +99,7 @@ describe("어드민 DB repository", () => {
 
   it("어드민 repository 팩터리는 도메인별 조각으로 조합한다", () => {
     const repositorySource = readFileSync(
-      fileURLToPath(new URL("admin.repository.ts", import.meta.url)),
+      fileURLToPath(new URL("admin-drizzle.repository.ts", import.meta.url)),
       "utf8"
     )
     const factorySource = readFunctionSource(
@@ -112,7 +120,9 @@ describe("어드민 DB repository", () => {
 
   it("콘텐츠 reset은 공유 보관 정책을 사용한다", () => {
     const repositorySource = readFileSync(
-      fileURLToPath(new URL("admin-course.repository.ts", import.meta.url)),
+      fileURLToPath(
+        new URL("admin-course-drizzle.repository.ts", import.meta.url)
+      ),
       "utf8"
     )
 

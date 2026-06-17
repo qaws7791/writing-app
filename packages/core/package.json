@@ -13,6 +13,7 @@
     "./ai-feedback/*": "./src/ai-feedback/*.ts",
     "./content": "./src/content/index.ts",
     "./content/*": "./src/content/*.ts",
+    "./learner-api-core": "./src/learner-api-core.ts",
     "./learning": "./src/learning/index.ts",
     "./learning/*": "./src/learning/*.ts",
     "./result": "./src/result.ts",
@@ -20,11 +21,15 @@
   },
   "scripts": {
     "lint": "oxlint .",
-    "test": "vitest run --config vitest.config.ts",
-    "test:watch": "vitest watch --config vitest.config.ts",
+    "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+    "test:watch": "bun --bun ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@workspace/db": "workspace:*",
+    "better-auth": "^1.6.0",
+    "drizzle-orm": "^0.45.0",
+    "openai": "^6.39.0",
     "zod": "^4.2.0"
   },
   "devDependencies": {

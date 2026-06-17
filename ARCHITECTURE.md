@@ -14,10 +14,10 @@
 │   └── storybook/  # UI 컴포넌트 개발 환경
 ├── packages/
 │   ├── ui/      # 공유 UI 컴포넌트와 디자인 시스템
-│   ├── db/      # Drizzle schema, migration, repository, db client
+│   ├── db/      # Drizzle schema, migration, seed, db client
 │   ├── logger/  # pino logger와 요청 로그 helper
 │   ├── env/     # 환경 변수 parsing helper
-│   └── core/    # 공유 DTO, Zod schema, domain service, port
+│   └── core/    # 공유 DTO, Zod schema, domain service, repository 구현
 └── docs/       # 한국어 결정 기록과 OpenAPI 정적 계약 파일
 ```
 
@@ -104,11 +104,11 @@
 
 ### core
 
-`packages/core`는 프레임워크와 데이터베이스 구현에 의존하지 않는 DTO, Zod schema, 브랜드 ID, repository port, domain service를 제공한다.
+`packages/core`는 프레임워크와 HTTP transport에 의존하지 않는 DTO, Zod schema, 브랜드 ID, domain service, repository port와 구현, 학습자 API 런타임 조립을 제공한다. 학습자 API 방향은 `apps/api -> packages/core -> packages/db`이며, core는 DB primitive를 사용해 유스케이스와 트랜잭션 경계를 소유한다.
 
 ### db
 
-`packages/db`는 Drizzle SQLite 기반 schema, migration, seed data, repository 구현, database client 생성을 제공한다.
+`packages/db`는 Drizzle SQLite 기반 schema, migration, seed data, database client 생성을 제공한다. `packages/db`는 `packages/core`를 import하지 않는 저수준 영속성 패키지다.
 
 ### env
 

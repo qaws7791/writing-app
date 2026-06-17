@@ -2,8 +2,14 @@ import { describe, expect, it } from "vitest"
 import {
   courseDetailDtoSchema,
   courseSummaryDtoSchema,
+  createLearnerContentService,
+  type ContentRepository,
 } from "@workspace/core/content"
 import { readBearerToken } from "@workspace/core/auth"
+import {
+  createProgressService,
+  type ProgressReader,
+} from "@workspace/core/learning"
 
 import { createApp, type ApiDependencies } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"
@@ -171,105 +177,118 @@ function createCourseDetailDependencies(
     readonly status: "completed" | "in_progress"
   }[]
 ): ApiDependencies {
-  return {
-    contentRepository: {
-      async findCourseDetail(courseId) {
-        if (courseId !== "c1") {
-          return null
-        }
+  const contentRepository: ContentRepository = {
+    async findCourseDetail(courseId) {
+      if (courseId !== "c1") {
+        return null
+      }
 
-        return courseDetailDtoSchema.parse({
+      return courseDetailDtoSchema.parse({
+        category: "입문자를 위한 코스",
+        description: "매일 조금씩 쓰는 습관을 만듭니다.",
+        id: "c1",
+        lessonCount: 3,
+        progress: {
+          completedLessons: 0,
+          lessons: [
+            {
+              currentStepIndex: null,
+              lessonId: "l1",
+              status: "available",
+            },
+            {
+              currentStepIndex: null,
+              lessonId: "l-new",
+              status: "locked",
+            },
+            {
+              currentStepIndex: null,
+              lessonId: "l2",
+              status: "locked",
+            },
+          ],
+          nextLesson: {
+            currentStepIndex: null,
+            estimatedMinutes: 5,
+            id: "l1",
+            status: "available",
+            title: "좋은 문장이란 무엇인가",
+          },
+          percentage: 0,
+          totalLessons: 3,
+        },
+        status: "active",
+        title: "글쓰기 첫걸음 30일",
+        visualKey: "basic-sentence-writing",
+        units: [
+          {
+            id: "u1",
+            lessons: [
+              {
+                category: "문장의 기본기",
+                description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
+                estimatedMinutes: 5,
+                id: "l1",
+                sortOrder: 1,
+                status: "active",
+                title: "좋은 문장이란 무엇인가",
+              },
+              {
+                category: "문장의 기본기",
+                description: "새 학습 활동을 살펴봅니다.",
+                estimatedMinutes: 10,
+                id: "l-new",
+                sortOrder: 2,
+                status: "active",
+                title: "새 학습 활동 둘러보기",
+              },
+              {
+                category: "문장의 기본기",
+                description: "한 문장에는 한 생각만 담습니다.",
+                estimatedMinutes: 5,
+                id: "l2",
+                sortOrder: 3,
+                status: "active",
+                title: "한 문장에 한 생각만 담기",
+              },
+            ],
+            sortOrder: 1,
+            title: "문장의 기본기",
+          },
+        ],
+      })
+    },
+    async findLesson() {
+      return null
+    },
+    async listCourses() {
+      return [
+        courseSummaryDtoSchema.parse({
           category: "입문자를 위한 코스",
           description: "매일 조금씩 쓰는 습관을 만듭니다.",
           id: "c1",
           lessonCount: 3,
-          progress: {
-            completedLessons: 0,
-            lessons: [
-              {
-                currentStepIndex: null,
-                lessonId: "l1",
-                status: "available",
-              },
-              {
-                currentStepIndex: null,
-                lessonId: "l-new",
-                status: "locked",
-              },
-              {
-                currentStepIndex: null,
-                lessonId: "l2",
-                status: "locked",
-              },
-            ],
-            nextLesson: {
-              currentStepIndex: null,
-              estimatedMinutes: 5,
-              id: "l1",
-              status: "available",
-              title: "좋은 문장이란 무엇인가",
-            },
-            percentage: 0,
-            totalLessons: 3,
-          },
           status: "active",
           title: "글쓰기 첫걸음 30일",
           visualKey: "basic-sentence-writing",
-          units: [
-            {
-              id: "u1",
-              lessons: [
-                {
-                  category: "문장의 기본기",
-                  description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
-                  estimatedMinutes: 5,
-                  id: "l1",
-                  sortOrder: 1,
-                  status: "active",
-                  title: "좋은 문장이란 무엇인가",
-                },
-                {
-                  category: "문장의 기본기",
-                  description: "새 학습 활동을 살펴봅니다.",
-                  estimatedMinutes: 10,
-                  id: "l-new",
-                  sortOrder: 2,
-                  status: "active",
-                  title: "새 학습 활동 둘러보기",
-                },
-                {
-                  category: "문장의 기본기",
-                  description: "한 문장에는 한 생각만 담습니다.",
-                  estimatedMinutes: 5,
-                  id: "l2",
-                  sortOrder: 3,
-                  status: "active",
-                  title: "한 문장에 한 생각만 담기",
-                },
-              ],
-              sortOrder: 1,
-              title: "문장의 기본기",
-            },
-          ],
-        })
-      },
-      async findLesson() {
-        return null
-      },
-      async listCourses() {
-        return [
-          courseSummaryDtoSchema.parse({
-            category: "입문자를 위한 코스",
-            description: "매일 조금씩 쓰는 습관을 만듭니다.",
-            id: "c1",
-            lessonCount: 3,
-            status: "active",
-            title: "글쓰기 첫걸음 30일",
-            visualKey: "basic-sentence-writing",
-          }),
-        ]
-      },
+        }),
+      ]
     },
+  }
+  const progressReader: ProgressReader = {
+    async readLearnerProgress() {
+      return {
+        currentStreakDays: 2,
+        lessonProgress,
+      }
+    },
+  }
+
+  return {
+    contentService: createLearnerContentService({
+      contentRepository,
+      progressReader,
+    }),
     profileReader: {
       async readProfileStats() {
         return {
@@ -281,14 +300,10 @@ function createCourseDetailDependencies(
         }
       },
     },
-    progressReader: {
-      async readLearnerProgress() {
-        return {
-          currentStreakDays: 2,
-          lessonProgress,
-        }
-      },
-    },
+    progressService: createProgressService({
+      contentRepository,
+      progressReader,
+    }),
     sessionResolver: {
       async resolveSession(headers) {
         const token = readBearerToken(headers.get("Authorization"))

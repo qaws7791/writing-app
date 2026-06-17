@@ -38,7 +38,7 @@
 
 ## `apps/api`
 
-`apps/api`는 학습자 백엔드 조립 루트다. Hono 앱 생성, 라우트 등록, 환경 변수 파싱, 데이터베이스 열기, 서비스 구성, 프로세스 시작을 이곳에서 수행한다.
+`apps/api`는 학습자 HTTP transport 경계다. Hono 앱 생성, 라우트 등록, 미들웨어, 환경 변수 파싱, 인증 헤더 전달, request body 파싱, transport-level validation, core 호출, HTTP response 변환, 에러 매핑, 프로세스 시작만 이곳에서 수행한다.
 
 현재 reset 단계에서는 기존 `apps/api/src` 구현을 제거했다. 아래 라우트와 정책은 후속 Task에서 새 baseline으로 다시 작성할 목표 계약이다.
 
@@ -66,7 +66,7 @@
 - `POST /ai-feedback`
 
 API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL` 기본 경로 위임, `WEB_ORIGIN` 기반 CORS 허용 origin 같은 앱별 의미 변환은 `apps/api/src/env.ts`에 유지한다.
-SQLite 연결은 `@workspace/db`의 공통 설정을 사용하며, WAL 모드, 외래키 검사, `busy_timeout`, 체크포인트, 캐시 관련 PRAGMA를 마이그레이션 실행 전에 적용한다.
+SQLite 연결, repository 조립, Better Auth 영속성 설정, AI feedback provider 조립은 `packages/core`의 학습자 API 런타임 factory가 담당한다. `apps/api`는 `@workspace/db`, Drizzle 구현 패키지, OpenAI SDK를 직접 import하지 않는다.
 
 | 변수                        | 필수 여부 | 기본값 또는 예시                    | 용도                                                                                            |
 | --------------------------- | --------- | ----------------------------------- | ----------------------------------------------------------------------------------------------- |
@@ -153,7 +153,7 @@ bun --filter @workspace/admin-api seed:admin
 
 ## `packages/core`
 
-`packages/core`는 도메인 중심 계약을 담는다. 현재 reset 단계에서는 기존 `packages/core/src` 구현을 제거했고, 후속 Task에서 콘텐츠, 학습 진행, AI 피드백, 관리자 DTO, 브랜드 ID, 저장소 포트, 명시적 결과 변형, 도메인 서비스를 새로 작성한다. 외부 런타임이나 데이터베이스 구현에 의존하지 않고 API와 데이터베이스 패키지가 공유하는 도메인 경계를 정의한다.
+`packages/core`는 도메인 중심 계약과 학습자 API application implementation을 담는다. 콘텐츠, 학습 진행, AI 피드백, 브랜드 ID, repository port와 구현, 명시적 결과 변형, 도메인 서비스, 트랜잭션 경계, DB query, Better Auth profile onboarding, OpenAI feedback provider adapter를 둔다. HTTP transport에는 의존하지 않으며, DB 접근은 `packages/db`의 저수준 primitive를 통해 수행한다.
 
 ## 콘텐츠 변경 정책
 
@@ -169,7 +169,7 @@ bun --filter @workspace/admin-api seed:admin
 
 ## `packages/db`
 
-`packages/db`는 Drizzle SQLite 기반 영속성 패키지다. 현재 reset 단계에서는 기존 `packages/db/src` 구현과 기존 migration 파일을 제거했고, 후속 Task에서 콘텐츠, Better Auth, 학습 진행, AI 피드백 시도 스키마, baseline migration SQL, 시드 데이터, 데이터베이스 클라이언트 생성, 저장소 구현을 새로 작성한다.
+`packages/db`는 Drizzle SQLite 기반 저수준 영속성 패키지다. 콘텐츠, Better Auth, 학습 진행, AI 피드백 시도 스키마, baseline migration SQL, 시드 데이터, 데이터베이스 클라이언트 생성을 제공하되, 도메인 DTO나 repository port를 알지 않는다.
 
 DB 테이블과 컬럼 명명 규칙은 `docs/schema-conventions.md`를 따른다. Better Auth 계열 테이블은 provider convention을 유지하고, 프로젝트가 직접 관리하는 테이블은 SQL 이름에 snake_case를 사용한다.
 
@@ -191,11 +191,11 @@ DB 테이블과 컬럼 명명 규칙은 `docs/schema-conventions.md`를 따른�
 
 DB migration은 피벗 기간 동안 누적 보정 migration이 아니라 `0000-kwep-baseline.sql` 기준 새 baseline으로 관리한다. 운영 데이터 이전이 필요하면 별도 이전 계획을 작성하고 이 baseline 구현에 호환 adapter를 넣지 않는다.
 
-AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structured Outputs를 호출하고, `packages/core`의 AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. 한국어 글쓰기 코칭 지침과 입력 프롬프트 조립은 `packages/core/src/ai-feedback/ai-feedback.prompt.ts`의 prompt policy가 단일 출처다. 완료 시도 한도는 `packages/core/src/ai-feedback/ai-feedback-attempt-policy.ts`의 attempt policy로 명시하고, API 조립 루트가 기본 정책을 서비스에 주입한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다.
+AI 피드백은 `packages/core`의 OpenAI provider adapter가 OpenAI Responses API와 Structured Outputs를 호출하고, core AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. 한국어 글쓰기 코칭 지침과 입력 프롬프트 조립은 `packages/core/src/ai-feedback/ai-feedback.prompt.ts`의 prompt policy가 단일 출처다. 완료 시도 한도는 `packages/core/src/ai-feedback/ai-feedback-attempt-policy.ts`의 attempt policy로 명시하고, core 런타임 factory가 기본 정책을 서비스에 주입한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다.
 
 학습 진행 read model 정책은 `packages/core/src/learning/learning-progress-read-model.ts`가 단일 출처다. 첫 미완료 레슨만 `available`로 열고 이후 레슨을 `locked`로 두는 규칙, 완료율 계산, 다음 레슨 projection은 API route가 아니라 core learning interface에서 계산한다.
 
-학습 활동일 정책은 `packages/core/src/learning/learning-date.ts`가 단일 출처다. `learner_activity_days.activity_date`는 UTC timestamp가 아니라 플랫폼 학습 시간대 `Asia/Seoul` 기준의 `LearningDateKey`이며, DB repository와 API 조립 루트는 이 core 정책으로 저장, 집계, 연속 학습일 계산을 수행한다.
+학습 활동일 정책은 `packages/core/src/learning/learning-date.ts`가 단일 출처다. `learner_activity_days.activity_date`는 UTC timestamp가 아니라 플랫폼 학습 시간대 `Asia/Seoul` 기준의 `LearningDateKey`이며, core repository와 runtime factory는 이 정책으로 저장, 집계, 연속 학습일 계산을 수행한다.
 
 ## `packages/logger`
 

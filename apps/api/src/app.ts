@@ -2,7 +2,7 @@ import { Hono, type Context } from "hono"
 import { cors } from "hono/cors"
 import { z } from "zod"
 
-import type { SessionResolver } from "@/auth/session"
+import type { SessionResolver } from "@workspace/core/auth"
 import { createAiFeedbackRoute } from "@/routes/ai-feedback.route"
 import { createAuthRoute } from "@/routes/auth.route"
 import { createCoursesRoute } from "@/routes/courses.route"
@@ -10,12 +10,16 @@ import { createHealthRoute } from "@/routes/health.route"
 import { createLearningRoute } from "@/routes/learning.route"
 import { createLessonsRoute } from "@/routes/lessons.route"
 import { createOpenApiRoute } from "@/routes/openapi.route"
-import { createProfileRoute, type ProfileReader } from "@/routes/profile.route"
+import { createProfileRoute } from "@/routes/profile.route"
 import { createProgressRoute } from "@/routes/progress.route"
 import { errorResponse } from "@/routes/error-response"
-import type { ContentRepository } from "@workspace/core/content"
+import type { LearnerContentService } from "@workspace/core/content"
 import type { AiFeedbackService } from "@workspace/core/ai-feedback"
-import type { LearningService, ProgressReader } from "@workspace/core/learning"
+import type {
+  LearningService,
+  ProfileReader,
+  ProgressService,
+} from "@workspace/core/learning"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   createRequestLoggingMiddleware,
@@ -26,11 +30,11 @@ import {
 export type ApiDependencies = {
   readonly aiFeedbackService?: AiFeedbackService
   readonly authHandler?: (request: Request) => Promise<Response>
-  readonly contentRepository?: ContentRepository
+  readonly contentService?: LearnerContentService
   readonly learningService?: LearningService
   readonly now?: () => Date
   readonly profileReader: ProfileReader
-  readonly progressReader?: ProgressReader
+  readonly progressService?: ProgressService
   readonly requestLogger?: RequestLogger
   readonly requestLoggingRuntime?: RequestLoggingRuntime
   readonly sessionResolver: SessionResolver
@@ -86,33 +90,28 @@ export function createApp(dependencies: ApiDependencies): Hono {
   app.route("/auth", createAuthRoute(dependencies.sessionResolver))
   app.route("/profile", createProfileRoute(dependencies))
 
-  if (dependencies.contentRepository !== undefined) {
+  if (dependencies.contentService !== undefined) {
     app.route(
       "/courses",
       createCoursesRoute({
-        contentRepository: dependencies.contentRepository,
-        progressReader: dependencies.progressReader,
+        contentService: dependencies.contentService,
         sessionResolver: dependencies.sessionResolver,
       })
     )
     app.route(
       "/lessons",
       createLessonsRoute({
-        contentRepository: dependencies.contentRepository,
+        contentService: dependencies.contentService,
         sessionResolver: dependencies.sessionResolver,
       })
     )
   }
 
-  if (
-    dependencies.contentRepository !== undefined &&
-    dependencies.progressReader !== undefined
-  ) {
+  if (dependencies.progressService !== undefined) {
     app.route(
       "/progress",
       createProgressRoute({
-        contentRepository: dependencies.contentRepository,
-        progressReader: dependencies.progressReader,
+        progressService: dependencies.progressService,
         sessionResolver: dependencies.sessionResolver,
       })
     )

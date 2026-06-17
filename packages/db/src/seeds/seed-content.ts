@@ -1,5 +1,8 @@
-import { contentStatuses } from "@workspace/core/status"
-import type { CourseVisualKey } from "@workspace/core/content"
+import {
+  persistedContentStatuses,
+  type PersistedContentStatus,
+  type PersistedCourseVisualKey,
+} from "@workspace/db/persisted-values"
 
 export type KwepStepType =
   | "reading"
@@ -50,7 +53,7 @@ export type KwepCourseSeed = {
   readonly title: string
   readonly desc: string
   readonly cat: string
-  readonly visualKey: CourseVisualKey
+  readonly visualKey: PersistedCourseVisualKey
   readonly units: readonly KwepUnitSeed[]
 }
 
@@ -59,8 +62,8 @@ export type CourseSeedRow = {
   readonly title: string
   readonly description: string
   readonly category: string
-  readonly visualKey: CourseVisualKey
-  readonly status: typeof contentStatuses.active
+  readonly visualKey: PersistedCourseVisualKey
+  readonly status: PersistedContentStatus
   readonly sortOrder: number
   readonly curriculumRevision: number
 }
@@ -69,7 +72,7 @@ export type CourseUnitSeedRow = {
   readonly id: string
   readonly courseId: string
   readonly title: string
-  readonly status: typeof contentStatuses.active
+  readonly status: PersistedContentStatus
   readonly sortOrder: number
 }
 
@@ -82,7 +85,7 @@ export type LessonSeedRow = {
   readonly description: string | null
   readonly estimatedMinutes: number
   readonly summaryJson: string
-  readonly status: typeof contentStatuses.active
+  readonly status: PersistedContentStatus
   readonly sortOrder: number
 }
 
@@ -91,7 +94,7 @@ export type LessonStepSeedRow = {
   readonly lessonId: string
   readonly type: StandardLessonStepType
   readonly contentJson: string
-  readonly status: typeof contentStatuses.active
+  readonly status: PersistedContentStatus
   readonly sortOrder: number
 }
 
@@ -142,7 +145,7 @@ export function toCourseSeedRow(
     description: course.desc,
     id: course.id,
     sortOrder: courseIndex + 1,
-    status: contentStatuses.active,
+    status: persistedContentStatuses.active,
     title: course.title,
     visualKey: course.visualKey,
   }
@@ -153,7 +156,7 @@ export function toUnitSeedRows(course: KwepCourseSeed): CourseUnitSeedRow[] {
     courseId: course.id,
     id: unit.id,
     sortOrder: unitIndex + 1,
-    status: contentStatuses.active,
+    status: persistedContentStatuses.active,
     title: unit.title,
   }))
 }
@@ -167,7 +170,7 @@ export function toLessonSeedRows(course: KwepCourseSeed): LessonSeedRow[] {
       estimatedMinutes: parseEstimatedMinutes(lesson.time),
       id: lesson.id,
       sortOrder: lessonIndex + 1,
-      status: contentStatuses.active,
+      status: persistedContentStatuses.active,
       summaryJson: JSON.stringify(lesson.summary ?? []),
       title: lesson.title,
       unitId: unit.id,
@@ -189,7 +192,7 @@ export function toLessonStepSeedRows(
     id: `${lesson.id}-s${stepIndex + 1}`,
     lessonId: lesson.id,
     sortOrder: stepIndex + 1,
-    status: contentStatuses.active,
+    status: persistedContentStatuses.active,
     type: toStandardLessonStepType(step.type),
   }))
 }

@@ -1,15 +1,18 @@
 import { Hono } from "hono"
-import { lessonIdSchema, type ContentRepository } from "@workspace/core/content"
+import {
+  lessonIdSchema,
+  type LearnerContentService,
+} from "@workspace/core/content"
 
-import type { SessionResolver } from "@/auth/session"
+import type { SessionResolver } from "@workspace/core/auth"
 import { errorResponse } from "@/routes/error-response"
 import { resolveActiveSession } from "@/routes/route-helpers"
 
 export function createLessonsRoute({
-  contentRepository,
+  contentService,
   sessionResolver,
 }: {
-  readonly contentRepository: ContentRepository
+  readonly contentService: LearnerContentService
   readonly sessionResolver: SessionResolver
 }): Hono {
   const route = new Hono()
@@ -25,13 +28,13 @@ export function createLessonsRoute({
     }
 
     const lessonId = lessonIdSchema.parse(context.req.param("lessonId"))
-    const lesson = await contentRepository.findLesson(lessonId)
+    const result = await contentService.getLesson(lessonId)
 
-    if (lesson === null) {
+    if (result.kind === "err") {
       return context.json(errorResponse("not_found"), 404)
     }
 
-    return context.json(lesson)
+    return context.json(result.value)
   })
 
   return route

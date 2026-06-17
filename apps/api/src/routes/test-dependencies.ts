@@ -1,10 +1,15 @@
 import {
   courseDetailDtoSchema,
   courseSummaryDtoSchema,
+  createLearnerContentService,
   lessonDtoSchema,
   type ContentRepository,
 } from "@workspace/core/content"
 import { readBearerToken } from "@workspace/core/auth"
+import {
+  createProgressService,
+  type ProgressReader,
+} from "@workspace/core/learning"
 
 import type { ApiDependencies } from "@/app"
 
@@ -21,7 +26,10 @@ const activeSession = {
 
 export function createTestDependencies(): ApiDependencies {
   return {
-    contentRepository,
+    contentService: createLearnerContentService({
+      contentRepository,
+      progressReader,
+    }),
     profileReader: {
       async readProfileStats() {
         return {
@@ -33,6 +41,10 @@ export function createTestDependencies(): ApiDependencies {
         }
       },
     },
+    progressService: createProgressService({
+      contentRepository,
+      progressReader,
+    }),
     sessionResolver: {
       async resolveSession(headers) {
         const token = readTestSessionToken(headers)
@@ -41,6 +53,15 @@ export function createTestDependencies(): ApiDependencies {
       },
     },
   }
+}
+
+const progressReader: ProgressReader = {
+  async readLearnerProgress() {
+    return {
+      currentStreakDays: 2,
+      lessonProgress: [],
+    }
+  },
 }
 
 function readTestSessionToken(headers: Headers): string | null {

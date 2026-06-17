@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { createLearnerAuth, createLearnerSessionResolver } from "@/auth/auth"
+import {
+  createLearnerAuth,
+  createLearnerSessionResolver,
+} from "@workspace/core/auth/learner-auth"
 import { learnerAccountStatuses } from "@workspace/core/status"
 import { createInMemoryKwepDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
