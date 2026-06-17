@@ -124,66 +124,78 @@ export function toStandardLessonStepType(
 export function createContentSeedRows(
   courses: readonly KwepCourseSeed[]
 ): ContentSeedRows {
-  const courseRows: CourseSeedRow[] = []
-  const unitRows: CourseUnitSeedRow[] = []
-  const lessonRows: LessonSeedRow[] = []
-  const stepRows: LessonStepSeedRow[] = []
-
-  courses.forEach((course, courseIndex) => {
-    courseRows.push({
-      id: course.id,
-      title: course.title,
-      description: course.desc,
-      category: course.cat,
-      visualKey: course.visualKey,
-      status: contentStatuses.active,
-      sortOrder: courseIndex + 1,
-      curriculumRevision: 0,
-    })
-
-    course.units.forEach((unit, unitIndex) => {
-      unitRows.push({
-        id: unit.id,
-        courseId: course.id,
-        title: unit.title,
-        status: contentStatuses.active,
-        sortOrder: unitIndex + 1,
-      })
-
-      unit.lessons.forEach((lesson, lessonIndex) => {
-        lessonRows.push({
-          id: lesson.id,
-          courseId: course.id,
-          unitId: unit.id,
-          title: lesson.title,
-          category: lesson.cat ?? null,
-          description: lesson.desc ?? null,
-          estimatedMinutes: parseEstimatedMinutes(lesson.time),
-          summaryJson: JSON.stringify(lesson.summary ?? []),
-          status: contentStatuses.active,
-          sortOrder: lessonIndex + 1,
-        })
-
-        lesson.steps.forEach((step, stepIndex) => {
-          stepRows.push({
-            id: `${lesson.id}-s${stepIndex + 1}`,
-            lessonId: lesson.id,
-            type: toStandardLessonStepType(step.type),
-            contentJson: JSON.stringify(step),
-            status: contentStatuses.active,
-            sortOrder: stepIndex + 1,
-          })
-        })
-      })
-    })
-  })
-
   return {
-    courses: courseRows,
-    units: unitRows,
-    lessons: lessonRows,
-    steps: stepRows,
+    courses: courses.map(toCourseSeedRow),
+    units: courses.flatMap(toUnitSeedRows),
+    lessons: courses.flatMap(toLessonSeedRows),
+    steps: courses.flatMap(toStepSeedRows),
   }
+}
+
+export function toCourseSeedRow(
+  course: KwepCourseSeed,
+  courseIndex: number
+): CourseSeedRow {
+  return {
+    category: course.cat,
+    curriculumRevision: 0,
+    description: course.desc,
+    id: course.id,
+    sortOrder: courseIndex + 1,
+    status: contentStatuses.active,
+    title: course.title,
+    visualKey: course.visualKey,
+  }
+}
+
+export function toUnitSeedRows(course: KwepCourseSeed): CourseUnitSeedRow[] {
+  return course.units.map((unit, unitIndex) => ({
+    courseId: course.id,
+    id: unit.id,
+    sortOrder: unitIndex + 1,
+    status: contentStatuses.active,
+    title: unit.title,
+  }))
+}
+
+export function toLessonSeedRows(course: KwepCourseSeed): LessonSeedRow[] {
+  return course.units.flatMap((unit) =>
+    unit.lessons.map((lesson, lessonIndex) => ({
+      category: lesson.cat ?? null,
+      courseId: course.id,
+      description: lesson.desc ?? null,
+      estimatedMinutes: parseEstimatedMinutes(lesson.time),
+      id: lesson.id,
+      sortOrder: lessonIndex + 1,
+      status: contentStatuses.active,
+      summaryJson: JSON.stringify(lesson.summary ?? []),
+      title: lesson.title,
+      unitId: unit.id,
+    }))
+  )
+}
+
+export function toStepSeedRows(course: KwepCourseSeed): LessonStepSeedRow[] {
+  return course.units.flatMap((unit) =>
+    unit.lessons.flatMap(toLessonStepSeedRows)
+  )
+}
+
+export function toLessonStepSeedRows(
+  lesson: KwepLessonSeed
+): LessonStepSeedRow[] {
+  return lesson.steps.map((step, stepIndex) => ({
+    contentJson: normalizeSeedStepContent(step),
+    id: `${lesson.id}-s${stepIndex + 1}`,
+    lessonId: lesson.id,
+    sortOrder: stepIndex + 1,
+    status: contentStatuses.active,
+    type: toStandardLessonStepType(step.type),
+  }))
+}
+
+export function normalizeSeedStepContent(step: KwepStepSeed): string {
+  return JSON.stringify(step)
 }
 
 export async function readContentSeedData(): Promise<
