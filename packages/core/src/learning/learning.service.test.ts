@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { readFileSync } from "node:fs"
 
 import {
   courseIdSchema,
@@ -23,6 +24,18 @@ const learnerId = learnerIdSchema.parse("user-1")
 const lessonId = lessonIdSchema.parse("l1")
 
 describe("학습 서비스", () => {
+  it("스텝 답변 구조 검증을 수동 타입 리더가 아니라 Zod 스키마로 처리한다", () => {
+    const source = readFileSync(
+      new URL("./learning.service.ts", import.meta.url),
+      "utf8"
+    )
+
+    expect(source).not.toContain("function readTypedObject")
+    expect(source).not.toContain("function readStringArray")
+    expect(source).not.toContain("function readNumberArray")
+    expect(source).not.toContain("function readObjectArray")
+  })
+
   it("Kwep 답변 가능 스텝 타입과 일치하는 저장 요청을 허용한다", async () => {
     const savedAnswers: SaveStepAnswerCommand[] = []
     const service = createService({

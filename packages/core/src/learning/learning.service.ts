@@ -7,6 +7,7 @@ import {
   saveLessonProgressCommandSchema,
   saveStepAnswerCommandSchema,
   type CompleteLessonCommand,
+  type LessonStepAnswer,
   type SaveLessonProgressCommand,
   type SaveStepAnswerCommand,
 } from "@workspace/core/learning/learning.dto"
@@ -118,11 +119,15 @@ export function createLearningService({
         })
       }
 
+      const parsedStepAnswer = lessonStepAnswerSchema.safeParse(
+        parsedCommand.answer
+      )
       const supportsStepAnswer =
         isLessonStartedAnswer(parsedCommand.answer, {
           firstStepId: parsedLesson.steps[0]?.id,
           stepId: step.id,
-        }) || isStepAnswerForStepType(parsedCommand.answer, step.type)
+        }) ||
+        (parsedStepAnswer.success && parsedStepAnswer.data.type === step.type)
 
       if (!supportsStepAnswer) {
         return err({
@@ -136,7 +141,8 @@ export function createLearningService({
 
       if (
         answerableStepTypes.has(step.type) &&
-        !isValidStepAnswer(step, parsedCommand.answer)
+        (!parsedStepAnswer.success ||
+          !isValidStepAnswer(step, parsedStepAnswer.data))
       ) {
         return err({
           kind: "invalid-request",
@@ -155,28 +161,35 @@ export function createLearningService({
 export { answerableStepTypes }
 
 type LessonStep = z.infer<typeof lessonDtoSchema>["steps"][number]
-type UnknownObject = {
-  readonly [key: string]: unknown
-}
 
-function isValidStepAnswer(step: LessonStep, answer: unknown): boolean {
+function isValidStepAnswer(
+  step: LessonStep,
+  answer: LessonStepAnswer
+): boolean {
   switch (step.type) {
     case "AI_FEEDBACK":
-      return readTypedObject(answer, "AI_FEEDBACK")?.["requested"] === true
+      return answer.type === "AI_FEEDBACK" && answer.requested === true
     case "CATEGORIZE":
-      return isValidCategorizeAnswer(step, answer)
+      return (
+        answer.type === "CATEGORIZE" && isValidCategorizeAnswer(step, answer)
+      )
     case "FILL_BLANK":
-      return isValidFillBlankAnswer(step, answer)
+      return (
+        answer.type === "FILL_BLANK" && isValidFillBlankAnswer(step, answer)
+      )
     case "MATCH":
-      return isValidMatchAnswer(step, answer)
+      return answer.type === "MATCH" && isValidMatchAnswer(step, answer)
     case "MULTIPLE_CHOICE":
-      return isValidMultipleChoiceAnswer(step, answer)
+      return (
+        answer.type === "MULTIPLE_CHOICE" &&
+        isValidMultipleChoiceAnswer(step, answer)
+      )
     case "ORDER":
-      return isValidOrderAnswer(step, answer)
+      return answer.type === "ORDER" && isValidOrderAnswer(step, answer)
     case "SELECT":
-      return isValidSelectAnswer(step, answer)
+      return answer.type === "SELECT" && isValidSelectAnswer(step, answer)
     case "WRITE":
-      return isValidWriteAnswer(answer)
+      return answer.type === "WRITE" && isValidWriteAnswer(answer)
     case "COMPARE":
     case "READING":
       return false
@@ -185,46 +198,29 @@ function isValidStepAnswer(step: LessonStep, answer: unknown): boolean {
 
 function isValidMultipleChoiceAnswer(
   step: Extract<LessonStep, { readonly type: "MULTIPLE_CHOICE" }>,
-  answer: unknown
+  answer: Extract<LessonStepAnswer, { readonly type: "MULTIPLE_CHOICE" }>
 ): boolean {
-  const selectedOptionId = readTypedObject(answer, "MULTIPLE_CHOICE")?.[
-    "selectedOptionId"
-  ]
-
-  return (
-    typeof selectedOptionId === "string" &&
-    step.options.some((option) => option.id === selectedOptionId)
-  )
+  return step.options.some((option) => option.id === answer.selectedOptionId)
 }
 
 function isValidFillBlankAnswer(
   step: Extract<LessonStep, { readonly type: "FILL_BLANK" }>,
-  answer: unknown
+  answer: Extract<LessonStepAnswer, { readonly type: "FILL_BLANK" }>
 ): boolean {
-  const selectedWords = readStringArray(
-    readTypedObject(answer, "FILL_BLANK")?.["selectedWords"]
-  )
-
   return (
-    selectedWords !== null &&
-    selectedWords.length === step.answer.length &&
-    selectedWords.every((word) => step.words.includes(word))
+    answer.selectedWords.length === step.answer.length &&
+    answer.selectedWords.every((word) => step.words.includes(word))
   )
 }
 
 function isValidSelectAnswer(
   step: Extract<LessonStep, { readonly type: "SELECT" }>,
-  answer: unknown
+  answer: Extract<LessonStepAnswer, { readonly type: "SELECT" }>
 ): boolean {
-  const selectedIndexes = readNumberArray(
-    readTypedObject(answer, "SELECT")?.["selectedIndexes"]
-  )
-
   return (
-    selectedIndexes !== null &&
-    selectedIndexes.length > 0 &&
-    hasUniqueValues(selectedIndexes) &&
-    selectedIndexes.every(
+    answer.selectedIndexes.length > 0 &&
+    hasUniqueValues(answer.selectedIndexes) &&
+    answer.selectedIndexes.every(
       (selectedIndex) =>
         Number.isInteger(selectedIndex) &&
         selectedIndex >= 0 &&
@@ -235,105 +231,53 @@ function isValidSelectAnswer(
 
 function isValidOrderAnswer(
   step: Extract<LessonStep, { readonly type: "ORDER" }>,
-  answer: unknown
+  answer: Extract<LessonStepAnswer, { readonly type: "ORDER" }>
 ): boolean {
-  const orderedItems = readStringArray(
-    readTypedObject(answer, "ORDER")?.["orderedItems"]
-  )
-
   return (
-    orderedItems !== null &&
-    orderedItems.length === step.items.length &&
-    hasUniqueValues(orderedItems) &&
-    orderedItems.every((item) => step.items.includes(item))
+    answer.orderedItems.length === step.items.length &&
+    hasUniqueValues(answer.orderedItems) &&
+    answer.orderedItems.every((item) => step.items.includes(item))
   )
 }
 
 function isValidMatchAnswer(
   step: Extract<LessonStep, { readonly type: "MATCH" }>,
-  answer: unknown
+  answer: Extract<LessonStepAnswer, { readonly type: "MATCH" }>
 ): boolean {
-  const pairs = readObjectArray(readTypedObject(answer, "MATCH")?.["pairs"])
   const leftValues = step.pairs.map((pair) => pair.left)
   const rightValues = step.pairs.map((pair) => pair.right)
 
   return (
-    pairs !== null &&
-    pairs.length === step.pairs.length &&
-    hasUniqueValues(pairs.map((pair) => pair["left"])) &&
-    pairs.every(
+    answer.pairs.length === step.pairs.length &&
+    hasUniqueValues(answer.pairs.map((pair) => pair.left)) &&
+    answer.pairs.every(
       (pair) =>
-        typeof pair["left"] === "string" &&
-        typeof pair["right"] === "string" &&
-        leftValues.includes(pair["left"]) &&
-        rightValues.includes(pair["right"])
+        leftValues.includes(pair.left) && rightValues.includes(pair.right)
     )
   )
 }
 
 function isValidCategorizeAnswer(
   step: Extract<LessonStep, { readonly type: "CATEGORIZE" }>,
-  answer: unknown
+  answer: Extract<LessonStepAnswer, { readonly type: "CATEGORIZE" }>
 ): boolean {
-  const items = readObjectArray(
-    readTypedObject(answer, "CATEGORIZE")?.["items"]
-  )
   const itemIds = step.items.map((item) => item.id)
   const categoryIds = step.categories.map((category) => category.id)
 
   return (
-    items !== null &&
-    items.length === step.items.length &&
-    hasUniqueValues(items.map((item) => item["itemId"])) &&
-    items.every(
+    answer.items.length === step.items.length &&
+    hasUniqueValues(answer.items.map((item) => item.itemId)) &&
+    answer.items.every(
       (item) =>
-        typeof item["itemId"] === "string" &&
-        typeof item["categoryId"] === "string" &&
-        itemIds.includes(item["itemId"]) &&
-        categoryIds.includes(item["categoryId"])
+        itemIds.includes(item.itemId) && categoryIds.includes(item.categoryId)
     )
   )
 }
 
-function isValidWriteAnswer(answer: unknown): boolean {
-  const text =
-    typeof answer === "string"
-      ? answer
-      : readTypedObject(answer, "WRITE")?.["text"]
-
-  return typeof text === "string" && text.trim() !== ""
-}
-
-function readTypedObject(answer: unknown, type: string): UnknownObject | null {
-  if (
-    typeof answer !== "object" ||
-    answer === null ||
-    !("type" in answer) ||
-    answer.type !== type
-  ) {
-    return null
-  }
-
-  return answer as UnknownObject
-}
-
-function readStringArray(value: unknown): readonly string[] | null {
-  return Array.isArray(value) && value.every((item) => typeof item === "string")
-    ? value
-    : null
-}
-
-function readNumberArray(value: unknown): readonly number[] | null {
-  return Array.isArray(value) && value.every((item) => typeof item === "number")
-    ? value
-    : null
-}
-
-function readObjectArray(value: unknown): readonly UnknownObject[] | null {
-  return Array.isArray(value) &&
-    value.every((item) => typeof item === "object" && item !== null)
-    ? (value as readonly UnknownObject[])
-    : null
+function isValidWriteAnswer(
+  answer: Extract<LessonStepAnswer, { readonly type: "WRITE" }>
+): boolean {
+  return answer.text.trim() !== ""
 }
 
 function hasUniqueValues(values: readonly unknown[]): boolean {
@@ -354,13 +298,4 @@ function isLessonStartedAnswer(
     stepId === firstStepId &&
     lessonStartedAnswerSchema.safeParse(answer).success
   )
-}
-
-function isStepAnswerForStepType(
-  answer: unknown,
-  stepType: LessonStepType
-): boolean {
-  const parsedAnswer = lessonStepAnswerSchema.safeParse(answer)
-
-  return parsedAnswer.success && parsedAnswer.data.type === stepType
 }
