@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { createAdminAuth, createAdminSessionResolver } from "@/auth/admin-auth"
+import { adminRoles } from "@workspace/core/admin"
 import { createInMemoryKwepDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
@@ -10,7 +11,7 @@ const adminSession = {
   id: "admin-1",
   image: null,
   name: "관리자",
-  role: "owner",
+  role: adminRoles.owner,
   updatedAt: new Date("2026-06-15T09:00:00.000Z"),
 }
 
@@ -45,7 +46,7 @@ describe("Admin Better Auth session resolver", () => {
       await expect(response.json()).resolves.toMatchObject({
         user: {
           email: "admin@example.com",
-          role: "operator",
+          role: adminRoles.operator,
         },
       })
     } finally {
@@ -101,7 +102,7 @@ describe("Admin Better Auth session resolver", () => {
         email: "admin@example.com",
         id: "admin-1",
         name: "관리자",
-        role: "owner",
+        role: adminRoles.owner,
       },
     })
     expect(getSession).toHaveBeenCalledWith({

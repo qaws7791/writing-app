@@ -3,7 +3,7 @@ import type {
   AdminAuthenticatedSession,
   AdminSessionResolver,
 } from "@/auth/admin-session"
-import type { AdminService } from "@workspace/core/admin"
+import { adminRoles, type AdminService } from "@workspace/core/admin"
 import { readBearerToken } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env"
 
@@ -21,7 +21,7 @@ export const testAdminSession = {
     email: "admin@example.com",
     id: "admin-1",
     name: "관리자",
-    role: "owner",
+    role: adminRoles.owner,
   },
 } as const satisfies AdminAuthenticatedSession
 

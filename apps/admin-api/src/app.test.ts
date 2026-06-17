@@ -11,9 +11,11 @@ import type {
   AdminAnalyticsDto,
   AdminDashboardDto,
   AdminLessonAnalyticsPageDto,
+  AdminRole,
   AdminUserDetailDto,
   AdminUserListDto,
 } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/core/admin"
 
 type CapturedRequestLogEvent = {
   readonly durationMs: number
@@ -444,7 +446,7 @@ describe("어드민 API users route", () => {
   })
 
   it("운영자는 사용자 상태 변경과 삭제를 실행할 수 없다", async () => {
-    const app = createApp(createDependencies({ role: "operator" }))
+    const app = createApp(createDependencies({ role: adminRoles.operator }))
     const headers = {
       Authorization: "Bearer admin-token",
     }
@@ -480,9 +482,9 @@ describe("어드민 API users route", () => {
 })
 
 function createDependencies({
-  role = "owner",
+  role = adminRoles.owner,
 }: {
-  readonly role?: "operator" | "owner"
+  readonly role?: AdminRole
 } = {}): AdminApiDependencies {
   return createTestAdminApiDependencies({
     dashboardService: {

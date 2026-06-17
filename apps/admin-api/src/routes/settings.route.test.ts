@@ -8,8 +8,10 @@ import {
 } from "@/routes/test-dependencies"
 import type {
   AdminContentResetResultDto,
+  AdminRole,
   AdminSettingsDto,
 } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/core/admin"
 
 const settings: AdminSettingsDto = {
   legal: {
@@ -80,7 +82,7 @@ describe("어드민 API settings route", () => {
   })
 
   it("운영자는 공지와 배너 설정을 저장할 수 없다", async () => {
-    const app = createApp(createDependencies({ role: "operator" }))
+    const app = createApp(createDependencies({ role: adminRoles.operator }))
 
     const response = await app.request("/settings/notice", {
       body: JSON.stringify({
@@ -122,7 +124,7 @@ describe("어드민 API settings route", () => {
   })
 
   it("운영자는 약관과 개인정보처리방침 설정을 저장할 수 없다", async () => {
-    const app = createApp(createDependencies({ role: "operator" }))
+    const app = createApp(createDependencies({ role: adminRoles.operator }))
 
     const response = await app.request("/settings/legal", {
       body: JSON.stringify({
@@ -159,7 +161,7 @@ describe("어드민 API settings route", () => {
   })
 
   it("운영자는 콘텐츠 초기화를 실행할 수 없다", async () => {
-    const app = createApp(createDependencies({ role: "operator" }))
+    const app = createApp(createDependencies({ role: adminRoles.operator }))
 
     const response = await app.request("/settings/content-reset", {
       headers: {
@@ -200,9 +202,9 @@ describe("어드민 API settings route", () => {
 })
 
 function createDependencies({
-  role = "owner",
+  role = adminRoles.owner,
 }: {
-  readonly role?: "operator" | "owner"
+  readonly role?: AdminRole
 } = {}): AdminApiDependencies {
   return createTestAdminApiDependencies({
     dashboardService: {

@@ -783,6 +783,15 @@
 - 기존 개발 관리자 credential 비밀번호를 갱신해야 할 때는 실행자가 `ADMIN_SEED_RESET_PASSWORD=true`를 직접 명시한다.
 - 운영용 `seed:admin`은 `ADMIN_SEED_RESET_PASSWORD=true`를 명시하지 않으면 기존 관리자 비밀번호를 바꾸지 않는다.
 
+## 2026-06-17 관리자 role 정책
+
+- 관리자 role 값은 `packages/core/src/admin/admin-role.ts`를 단일 출처로 한다.
+- 현재 role은 `owner`, `operator` 두 가지다.
+- `owner`는 코스 생성/보관, 사용자 삭제, 운영 설정 변경처럼 owner 전용 route에 접근할 수 있다.
+- `operator`는 인증된 관리자 세션으로 일반 조회 route를 사용할 수 있지만 owner 전용 route는 `403 forbidden`으로 거절된다.
+- Better Auth additional field, DB schema enum/default, 관리자 seed, route guard, 테스트 fixture는 모두 core role 정책을 참조한다.
+- 알 수 없는 role 값은 관리자 세션 resolver에서 유효한 세션으로 변환하지 않는다.
+
 ## 2026-05-28 Windows Bun SQLite 디렉터리 보장 수정 시작
 
 - Windows Bun 환경에서 이미 존재하는 상대 상위 디렉터리에 `mkdirSync(..., { recursive: true })`를 다시 호출하면 `EEXIST`가 발생할 수 있다.

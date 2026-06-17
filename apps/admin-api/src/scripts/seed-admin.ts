@@ -4,6 +4,7 @@ import {
   adminAuthUsers,
   type KwepDatabase,
 } from "@workspace/db"
+import { adminRoles } from "@workspace/core/admin"
 import { hashPassword } from "better-auth/crypto"
 
 import {
@@ -26,7 +27,7 @@ export function seedAdminUser(
           emailVerified: true,
           image: null,
           name: row.name,
-          role: "owner",
+          role: adminRoles.owner,
           updatedAt: row.updatedAt,
         },
         target: adminAuthUsers.id,

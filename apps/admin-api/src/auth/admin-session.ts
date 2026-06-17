@@ -1,4 +1,6 @@
-export type AdminRole = "operator" | "owner"
+import type { AdminRole } from "@workspace/core/admin"
+
+export type { AdminRole } from "@workspace/core/admin"
 
 export type AdminAuthenticatedSession = {
   readonly admin: {

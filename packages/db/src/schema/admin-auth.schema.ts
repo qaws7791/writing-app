@@ -1,4 +1,5 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
+import { adminRoles, adminRoleValues } from "@workspace/core/admin"
 
 export const adminAuthUsers = sqliteTable("admin_user", {
   id: text("id").primaryKey().notNull(),
@@ -8,9 +9,9 @@ export const adminAuthUsers = sqliteTable("admin_user", {
     .notNull()
     .default(false),
   image: text("image"),
-  role: text("role", { enum: ["owner", "operator"] })
+  role: text("role", { enum: adminRoleValues })
     .notNull()
-    .default("operator"),
+    .default(adminRoles.operator),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
 })

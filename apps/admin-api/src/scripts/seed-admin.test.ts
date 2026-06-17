@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 import { createAdminAuth } from "@/auth/admin-auth"
 import { createSeedAdminUserRow } from "@/scripts/seed-admin-user"
 import { seedAdminUser } from "@/scripts/seed-admin"
+import { adminRoles } from "@workspace/core/admin"
 import { createInMemoryKwepDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
@@ -23,7 +24,7 @@ describe("seed admin user", () => {
       id: "admin-1",
       image: null,
       name: "관리자",
-      role: "owner",
+      role: adminRoles.owner,
       updatedAt: now,
     })
   })
@@ -63,7 +64,7 @@ describe("seed admin user", () => {
       await expect(response.json()).resolves.toMatchObject({
         user: {
           email: "admin@example.com",
-          role: "owner",
+          role: adminRoles.owner,
         },
       })
     } finally {

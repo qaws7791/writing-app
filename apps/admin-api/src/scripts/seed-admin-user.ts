@@ -1,3 +1,5 @@
+import { adminRoles } from "@workspace/core/admin"
+
 export type SeedAdminUserRowInput = {
   readonly email: string
   readonly name: string
@@ -21,7 +23,7 @@ export function createSeedAdminUserRow({
     id: "admin-1",
     image: null,
     name,
-    role: "owner" as const,
+    role: adminRoles.owner,
     updatedAt: now,
   }
 }

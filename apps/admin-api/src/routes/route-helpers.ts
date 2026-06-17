@@ -1,4 +1,5 @@
 import type { Context } from "hono"
+import { canAccessOwnerAdminRoute } from "@workspace/core/admin"
 
 import {
   type AdminAuthenticatedSession,
@@ -46,7 +47,7 @@ export async function resolveOwnerAdminSession(
     return sessionResult
   }
 
-  if (sessionResult.session.admin.role !== "owner") {
+  if (!canAccessOwnerAdminRoute(sessionResult.session.admin.role)) {
     return {
       code: "forbidden",
       kind: "err",

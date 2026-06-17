@@ -10,7 +10,9 @@ import type {
   AdminArchiveCourseResultDto,
   AdminCourseDetailDto,
   AdminCourseListDto,
+  AdminRole,
 } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/core/admin"
 
 const courseDetail: AdminCourseDetailDto = {
   category: "미분류",
@@ -173,7 +175,7 @@ describe("어드민 API courses route", () => {
   })
 
   it("운영자는 코스 생성 요청을 실행할 수 없다", async () => {
-    const app = createApp(createDependencies({ role: "operator" }))
+    const app = createApp(createDependencies({ role: adminRoles.operator }))
 
     const response = await app.request("/courses", {
       headers: {
@@ -205,7 +207,7 @@ describe("어드민 API courses route", () => {
   })
 
   it("운영자는 코스 보관 요청을 실행할 수 없다", async () => {
-    const app = createApp(createDependencies({ role: "operator" }))
+    const app = createApp(createDependencies({ role: adminRoles.operator }))
 
     const response = await app.request("/courses/cmock", {
       headers: {
@@ -242,9 +244,9 @@ describe("어드민 API courses route", () => {
 })
 
 function createDependencies({
-  role = "owner",
+  role = adminRoles.owner,
 }: {
-  readonly role?: "operator" | "owner"
+  readonly role?: AdminRole
 } = {}): AdminApiDependencies {
   return createTestAdminApiDependencies({
     dashboardService: {

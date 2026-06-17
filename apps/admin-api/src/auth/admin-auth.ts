@@ -1,7 +1,12 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
-import type { AdminRole, AdminSessionResolver } from "@/auth/admin-session"
+import type { AdminSessionResolver } from "@/auth/admin-session"
+import {
+  adminRoles,
+  adminRoleValues,
+  parseAdminRole,
+} from "@workspace/core/admin"
 import type { KwepDatabase } from "@workspace/db/client"
 import {
   adminAuthAccounts,
@@ -46,10 +51,10 @@ export function createAdminAuth(input: CreateAdminAuthInput) {
     user: {
       additionalFields: {
         role: {
-          defaultValue: "operator",
+          defaultValue: adminRoles.operator,
           input: false,
           required: false,
-          type: ["owner", "operator"],
+          type: [...adminRoleValues],
         },
       },
       modelName: "admin_user",
@@ -89,7 +94,7 @@ export function createAdminSessionResolver(
         return null
       }
 
-      const role = readAdminRole(session.user.role)
+      const role = parseAdminRole(session.user.role)
 
       return role === null
         ? null
@@ -103,10 +108,6 @@ export function createAdminSessionResolver(
           }
     },
   }
-}
-
-function readAdminRole(role: unknown): AdminRole | null {
-  return role === "owner" || role === "operator" ? role : null
 }
 
 function createAdminAdvancedOptions(cookieDomain: string | undefined) {
