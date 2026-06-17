@@ -5,6 +5,7 @@ import {
   getLessonStepCheckedResult,
   getLessonStepDescription,
   getLessonStepTitle,
+  type CheckableLessonStep,
   isLessonStepCheckable,
   isLessonStepStandalone,
   isLessonStepSubmittable,
@@ -92,5 +93,216 @@ describe("lesson-step-policy", () => {
         type: "CATEGORIZE",
       })
     ).toBe(true)
+  })
+
+  it("채점 가능한 스텝은 타입별 정책으로 정오답을 판정한다", () => {
+    const cases: readonly {
+      readonly correctPayload: LessonStepAnswerPayload
+      readonly expectedCorrect: ReturnType<typeof getLessonStepCheckedResult>
+      readonly expectedWrong: ReturnType<typeof getLessonStepCheckedResult>
+      readonly name: string
+      readonly step: CheckableLessonStep
+      readonly wrongPayload: LessonStepAnswerPayload
+    }[] = [
+      {
+        correctPayload: {
+          selectedWords: ["명확함", "간결함"],
+          type: "FILL_BLANK",
+        },
+        expectedCorrect: "correct",
+        expectedWrong: "wrong",
+        name: "빈칸",
+        step: {
+          answer: ["명확함", "간결함"],
+          explanation: "순서대로 채워야 합니다.",
+          id: "blank-1",
+          order: 1,
+          template: "좋은 문장은 ___과 ___을 갖춘다.",
+          type: "FILL_BLANK",
+          words: ["명확함", "간결함"],
+        },
+        wrongPayload: {
+          selectedWords: ["간결함", "명확함"],
+          type: "FILL_BLANK",
+        },
+      },
+      {
+        correctPayload: {
+          pairs: [
+            { left: "그러나", right: "역접" },
+            { left: "따라서", right: "결론" },
+          ],
+          type: "MATCH",
+        },
+        expectedCorrect: "correct",
+        expectedWrong: "wrong",
+        name: "매칭",
+        step: {
+          explanation: "짝이 맞아야 합니다.",
+          guide: "맞는 기능을 고르세요.",
+          id: "match-1",
+          order: 1,
+          pairs: [
+            { left: "그러나", right: "역접" },
+            { left: "따라서", right: "결론" },
+          ],
+          title: "접속사",
+          type: "MATCH",
+        },
+        wrongPayload: {
+          pairs: [
+            { left: "그러나", right: "결론" },
+            { left: "따라서", right: "역접" },
+          ],
+          type: "MATCH",
+        },
+      },
+      {
+        correctPayload: {
+          selectedOptionId: "b",
+          type: "MULTIPLE_CHOICE",
+        },
+        expectedCorrect: "correct",
+        expectedWrong: "wrong",
+        name: "객관식",
+        step: {
+          correct: "b",
+          explanation: "B가 정답입니다.",
+          id: "mc-2",
+          options: [
+            { id: "a", text: "A" },
+            { id: "b", text: "B" },
+          ],
+          order: 1,
+          question: "정답은?",
+          type: "MULTIPLE_CHOICE",
+        },
+        wrongPayload: {
+          selectedOptionId: "a",
+          type: "MULTIPLE_CHOICE",
+        },
+      },
+      {
+        correctPayload: {
+          orderedItems: ["원인", "결과"],
+          type: "ORDER",
+        },
+        expectedCorrect: "correct",
+        expectedWrong: "wrong",
+        name: "순서",
+        step: {
+          correct: ["원인", "결과"],
+          explanation: "원인이 먼저 옵니다.",
+          id: "order-1",
+          items: ["결과", "원인"],
+          order: 1,
+          title: "논리 순서",
+          type: "ORDER",
+        },
+        wrongPayload: {
+          orderedItems: ["결과", "원인"],
+          type: "ORDER",
+        },
+      },
+      {
+        correctPayload: {
+          selectedIndexes: [1, 3],
+          type: "SELECT",
+        },
+        expectedCorrect: {
+          explanation: "중복 표현을 고릅니다.",
+          missed: [],
+          wrong: [],
+        },
+        expectedWrong: {
+          explanation: "중복 표현을 고릅니다.",
+          missed: [3],
+          wrong: [0],
+        },
+        name: "단어 선택",
+        step: {
+          correct: [1, 3],
+          explanation: "중복 표현을 고릅니다.",
+          id: "select-1",
+          order: 1,
+          question: "불필요한 표현은?",
+          segments: ["나는", "정말 매우", "기쁘고", "아주"],
+          type: "SELECT",
+        },
+        wrongPayload: {
+          selectedIndexes: [0, 1],
+          type: "SELECT",
+        },
+      },
+    ]
+
+    for (const testCase of cases) {
+      expect(
+        getLessonStepCheckedResult(testCase.step, testCase.correctPayload),
+        `${testCase.name} 정답`
+      ).toEqual(testCase.expectedCorrect)
+      expect(
+        getLessonStepCheckedResult(testCase.step, testCase.wrongPayload),
+        `${testCase.name} 오답`
+      ).toEqual(testCase.expectedWrong)
+    }
+  })
+
+  it("채점 가능한 스텝은 잘못된 payload 타입을 오답으로 판정한다", () => {
+    const wrongTypePayload: LessonStepAnswerPayload = {
+      text: "채점 타입이 아닌 답변입니다.",
+      type: "WRITE",
+    }
+    const steps: readonly CheckableLessonStep[] = [
+      {
+        answer: ["명확함"],
+        explanation: "빈칸 해설",
+        id: "blank-2",
+        order: 1,
+        template: "문장은 ___해야 합니다.",
+        type: "FILL_BLANK",
+        words: ["명확함"],
+      },
+      {
+        explanation: "매칭 해설",
+        guide: "짝을 맞추세요.",
+        id: "match-2",
+        order: 1,
+        pairs: [{ left: "원인", right: "결과" }],
+        title: "짝짓기",
+        type: "MATCH",
+      },
+      {
+        correct: "a",
+        explanation: "객관식 해설",
+        id: "mc-3",
+        options: [{ id: "a", text: "A" }],
+        order: 1,
+        question: "정답은?",
+        type: "MULTIPLE_CHOICE",
+      },
+      {
+        correct: ["처음"],
+        explanation: "순서 해설",
+        id: "order-2",
+        items: ["처음"],
+        order: 1,
+        title: "순서",
+        type: "ORDER",
+      },
+      {
+        correct: [0],
+        explanation: "선택 해설",
+        id: "select-2",
+        order: 1,
+        question: "고르세요.",
+        segments: ["중복"],
+        type: "SELECT",
+      },
+    ]
+
+    for (const step of steps) {
+      expect(getLessonStepCheckedResult(step, wrongTypePayload)).toBe("wrong")
+    }
   })
 })

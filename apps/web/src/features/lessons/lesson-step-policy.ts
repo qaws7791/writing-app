@@ -1,5 +1,24 @@
 import type { LessonStepAnswerPayload } from "@/features/lessons/lesson-logic"
-import type { LessonStep } from "@/features/lessons/lesson-types"
+import type {
+  FillBlankStep,
+  MatchStep,
+  MultipleChoiceStep,
+  OrderStep,
+  SelectStep,
+  LessonStep,
+} from "@/features/lessons/lesson-types"
+
+type CheckableStepType =
+  | "FILL_BLANK"
+  | "MATCH"
+  | "MULTIPLE_CHOICE"
+  | "ORDER"
+  | "SELECT"
+
+export type CheckableLessonStep = Extract<
+  LessonStep,
+  { readonly type: CheckableStepType }
+>
 
 export type LessonStepCheckedState =
   | "correct"
@@ -104,7 +123,9 @@ export function isLessonStepSubmittable(
   }
 }
 
-export function isLessonStepCheckable(step: LessonStep): boolean {
+export function isLessonStepCheckable(
+  step: LessonStep
+): step is CheckableLessonStep {
   return (
     step.type === "FILL_BLANK" ||
     step.type === "MATCH" ||
@@ -115,54 +136,121 @@ export function isLessonStepCheckable(step: LessonStep): boolean {
 }
 
 export function getLessonStepCheckedResult(
-  step: LessonStep,
+  step: CheckableLessonStep,
   payload: LessonStepAnswerPayload | undefined
 ): LessonStepCheckedState {
   switch (step.type) {
     case "FILL_BLANK":
-      return payload?.type === "FILL_BLANK" &&
-        JSON.stringify(payload.selectedWords) === JSON.stringify(step.answer)
-        ? "correct"
-        : "wrong"
+      return checkPolicyByStepType.FILL_BLANK(step, payload)
     case "MATCH":
-      return payload?.type === "MATCH" &&
-        step.pairs.every((pair) =>
-          payload.pairs.some(
-            (selectedPair) =>
-              selectedPair.left === pair.left &&
-              selectedPair.right === pair.right
-          )
-        )
-        ? "correct"
-        : "wrong"
+      return checkPolicyByStepType.MATCH(step, payload)
     case "MULTIPLE_CHOICE":
-      return payload?.type === "MULTIPLE_CHOICE" &&
-        payload.selectedOptionId === step.correct
-        ? "correct"
-        : "wrong"
+      return checkPolicyByStepType.MULTIPLE_CHOICE(step, payload)
     case "ORDER":
-      return payload?.type === "ORDER" &&
-        JSON.stringify(payload.orderedItems) === JSON.stringify(step.correct)
-        ? "correct"
-        : "wrong"
-    case "SELECT": {
-      const selected =
-        payload?.type === "SELECT"
-          ? new Set(payload.selectedIndexes)
-          : new Set<number>()
-      const correct = new Set(step.correct)
-      const missed = [...correct].filter((index) => !selected.has(index))
-      const wrong = [...selected].filter((index) => !correct.has(index))
-
-      return {
-        explanation: step.explanation,
-        missed,
-        wrong,
-      }
-    }
-    default:
-      return "correct"
+      return checkPolicyByStepType.ORDER(step, payload)
+    case "SELECT":
+      return checkPolicyByStepType.SELECT(step, payload)
   }
+}
+
+const checkPolicyByStepType = {
+  FILL_BLANK: getFillBlankCheckedResult,
+  MATCH: getMatchCheckedResult,
+  MULTIPLE_CHOICE: getMultipleChoiceCheckedResult,
+  ORDER: getOrderCheckedResult,
+  SELECT: getSelectCheckedResult,
+} satisfies {
+  readonly [TType in CheckableStepType]: (
+    step: Extract<CheckableLessonStep, { readonly type: TType }>,
+    payload: LessonStepAnswerPayload | undefined
+  ) => LessonStepCheckedState
+}
+
+function getFillBlankCheckedResult(
+  step: FillBlankStep,
+  payload: LessonStepAnswerPayload | undefined
+): LessonStepCheckedState {
+  if (payload?.type !== "FILL_BLANK") {
+    return "wrong"
+  }
+
+  return areOrderedValuesEqual(payload.selectedWords, step.answer)
+    ? "correct"
+    : "wrong"
+}
+
+function getMatchCheckedResult(
+  step: MatchStep,
+  payload: LessonStepAnswerPayload | undefined
+): LessonStepCheckedState {
+  if (payload?.type !== "MATCH") {
+    return "wrong"
+  }
+
+  if (payload.pairs.length !== step.pairs.length) {
+    return "wrong"
+  }
+
+  const isCorrect = step.pairs.every((pair) =>
+    payload.pairs.some(
+      (selectedPair) =>
+        selectedPair.left === pair.left && selectedPair.right === pair.right
+    )
+  )
+
+  return isCorrect ? "correct" : "wrong"
+}
+
+function getMultipleChoiceCheckedResult(
+  step: MultipleChoiceStep,
+  payload: LessonStepAnswerPayload | undefined
+): LessonStepCheckedState {
+  if (payload?.type !== "MULTIPLE_CHOICE") {
+    return "wrong"
+  }
+
+  return payload.selectedOptionId === step.correct ? "correct" : "wrong"
+}
+
+function getOrderCheckedResult(
+  step: OrderStep,
+  payload: LessonStepAnswerPayload | undefined
+): LessonStepCheckedState {
+  if (payload?.type !== "ORDER") {
+    return "wrong"
+  }
+
+  return areOrderedValuesEqual(payload.orderedItems, step.correct)
+    ? "correct"
+    : "wrong"
+}
+
+function getSelectCheckedResult(
+  step: SelectStep,
+  payload: LessonStepAnswerPayload | undefined
+): LessonStepCheckedState {
+  if (payload?.type !== "SELECT") {
+    return "wrong"
+  }
+
+  const selected = new Set(payload.selectedIndexes)
+  const correct = new Set(step.correct)
+
+  return {
+    explanation: step.explanation,
+    missed: [...correct].filter((index) => !selected.has(index)),
+    wrong: [...selected].filter((index) => !correct.has(index)),
+  }
+}
+
+function areOrderedValuesEqual(
+  left: readonly string[],
+  right: readonly string[]
+): boolean {
+  return (
+    left.length === right.length &&
+    left.every((value, index) => value === right[index])
+  )
 }
 
 export function getLessonStepExplanation(step: LessonStep): string {

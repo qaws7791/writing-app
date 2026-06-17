@@ -78,6 +78,14 @@
 - 저장 실패 시 답변 영역 아래에 한국어 오류를 표시한다.
 - `LessonExperience`는 세션 hook, 브라우저 API, 라우팅, 현재 화면 선택만 담당한다. 시작/진행/완료 화면은 `lesson-experience-screens.tsx`, 공통 레슨 shell과 footer primitive는 `lesson-shell.tsx`가 담당한다.
 
+## 2026-06-17 완료 — 레슨 스텝 채점 정책 경계 정리
+
+- 채점 가능한 스텝 타입은 `CheckableLessonStep`과 `isLessonStepCheckable` 타입 가드로 좁힌 뒤 채점한다.
+- `getLessonStepCheckedResult`는 checkable step만 받으며, checkable이 아닌 스텝을 우연히 정답으로 처리하는 fallback을 두지 않는다.
+- 타입별 채점 규칙은 `checkPolicyByStepType` registry와 작은 판정 함수로 분리한다.
+- payload 타입이 현재 스텝과 맞지 않으면 명시적으로 오답을 반환한다.
+- 빈칸과 순서 스텝의 배열 정답 비교는 JSON 직렬화가 아니라 길이와 순서가 드러나는 순수 비교 함수로 처리한다.
+
 ## 2026-06-14 시작 — Kwep AI 코칭 UX
 
 - `AI_FEEDBACK` 스텝은 처음에 `AI 코칭 받기` 버튼을 보여준다.
