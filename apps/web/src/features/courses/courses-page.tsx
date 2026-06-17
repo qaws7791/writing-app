@@ -1,11 +1,9 @@
 "use client"
 
-/* eslint-disable react/button-has-type */
-
 import { useState } from "react"
 
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type { CourseSummary } from "@/features/courses/course-types"
@@ -71,7 +69,6 @@ function cx(...classes: Array<false | null | string | undefined>): string {
 }
 
 export function CoursesPage({ courses }: CoursesPageProps) {
-  const router = useRouter()
   const resolvedCourses = courses.length > 0 ? courses : fallbackCourses
   const categories = Array.from(
     new Set(resolvedCourses.map((course) => course.category))
@@ -101,6 +98,7 @@ export function CoursesPage({ courses }: CoursesPageProps) {
             key={category}
             onClick={() => setActiveCategory(category)}
             style={{ fontSize: "1rem" }}
+            type="button"
           >
             {category}
           </button>
@@ -110,10 +108,10 @@ export function CoursesPage({ courses }: CoursesPageProps) {
         {resolvedCourses
           .filter((course) => course.category === activeCategory)
           .map((course) => (
-            <div
+            <Link
               className="bg-surface rounded-2xl md:rounded-4xl overflow-hidden cursor-pointer btn-squish flex flex-row md:flex-col"
+              href={`/app/courses/${course.id}`}
               key={course.id}
-              onClick={() => router.push(`/app/courses/${course.id}`)}
             >
               <div className="relative w-28 shrink-0 md:w-full md:h-44">
                 <Image
@@ -147,7 +145,7 @@ export function CoursesPage({ courses }: CoursesPageProps) {
                   {course.lessonCount}개 레슨
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
       </div>
     </div>

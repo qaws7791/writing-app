@@ -1,11 +1,10 @@
 "use client"
 
-/* eslint-disable react/button-has-type */
-
 import { useState } from "react"
 import type { ReactNode } from "react"
 
-import { usePathname, useRouter } from "next/navigation"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 
 type GlobalNavProps = {
   readonly currentPath?: string
@@ -37,20 +36,19 @@ function isActive(pathname: string, key: keyof typeof routeMap): boolean {
 
 export function GlobalNav({ currentPath }: GlobalNavProps) {
   const pathname = useActivePath(currentPath)
-  const router = useRouter()
   const [menu, setMenu] = useState(false)
 
   return (
     <header className="w-full bg-cream sticky top-0 z-40 border-b-2 border-surface/50 backdrop-blur-md bg-opacity-90">
       <div className="max-w-6xl mx-auto px-4 md:px-12 h-14 flex items-center justify-between">
         <div className="flex items-center gap-5">
-          <button
+          <Link
             className="font-black tracking-tighter btn-squish"
-            onClick={() => router.push(routeMap.home)}
+            href={routeMap.home}
             style={{ fontSize: "1.375rem" }}
           >
             글결.
-          </button>
+          </Link>
           <nav className="hidden sm:flex gap-2">
             {(
               [
@@ -58,19 +56,20 @@ export function GlobalNav({ currentPath }: GlobalNavProps) {
                 ["learn", "배우기"],
               ] as const
             ).map(([key, label]) => (
-              <button
+              <Link
+                aria-current={isActive(pathname, key) ? "page" : undefined}
                 className={cx(
                   "px-4 py-2 rounded-full font-bold btn-squish",
                   isActive(pathname, key)
                     ? "bg-surface text-charcoal"
                     : "text-muted hover:bg-surface/50"
                 )}
+                href={routeMap[key]}
                 key={key}
-                onClick={() => router.push(routeMap[key])}
                 style={{ fontSize: "0.9375rem" }}
               >
                 {label}
-              </button>
+              </Link>
             ))}
           </nav>
         </div>
@@ -80,29 +79,26 @@ export function GlobalNav({ currentPath }: GlobalNavProps) {
               className="w-9 h-9 bg-primary rounded-full flex justify-center items-center font-black btn-squish ring-2 ring-surface hover:ring-surface-hover"
               onClick={() => setMenu(!menu)}
               style={{ fontSize: "0.9375rem" }}
+              type="button"
             >
               ✍️
             </button>
             {menu ? (
               <div className="absolute right-0 top-12 bg-cream border-2 border-surface rounded-4xl p-4 w-48 z-50">
-                <button
-                  className="w-full text-left font-bold py-3 px-4 rounded-3xl hover:bg-surface"
-                  onClick={() => {
-                    setMenu(false)
-                    router.push(routeMap.profile)
-                  }}
+                <Link
+                  className="block w-full text-left font-bold py-3 px-4 rounded-3xl hover:bg-surface"
+                  href={routeMap.profile}
+                  onClick={() => setMenu(false)}
                 >
                   프로필
-                </button>
-                <button
-                  className="w-full text-left font-bold py-3 px-4 rounded-3xl hover:bg-surface text-coral-dark"
-                  onClick={() => {
-                    setMenu(false)
-                    router.push("/login")
-                  }}
+                </Link>
+                <Link
+                  className="block w-full text-left font-bold py-3 px-4 rounded-3xl hover:bg-surface text-coral-dark"
+                  href="/login"
+                  onClick={() => setMenu(false)}
                 >
                   로그아웃
-                </button>
+                </Link>
               </div>
             ) : null}
           </div>
@@ -114,7 +110,6 @@ export function GlobalNav({ currentPath }: GlobalNavProps) {
 
 export function MobileNav({ currentPath }: GlobalNavProps) {
   const pathname = useActivePath(currentPath)
-  const router = useRouter()
   const items = [
     ["home", "홈", KwepHomeIcon],
     ["learn", "배우기", KwepBookOpenIcon],
@@ -127,13 +122,14 @@ export function MobileNav({ currentPath }: GlobalNavProps) {
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
     >
       {items.map(([key, label, Icon]) => (
-        <button
+        <Link
+          aria-current={isActive(pathname, key) ? "page" : undefined}
           className={cx(
             "flex flex-col items-center gap-0.5 font-bold transition-colors",
             isActive(pathname, key) ? "text-charcoal" : "text-muted"
           )}
+          href={routeMap[key]}
           key={key}
-          onClick={() => router.push(routeMap[key])}
           style={{ fontSize: "0.6875rem" }}
         >
           <div
@@ -145,7 +141,7 @@ export function MobileNav({ currentPath }: GlobalNavProps) {
             <Icon size={16} />
           </div>
           <span className="mt-0.5">{label}</span>
-        </button>
+        </Link>
       ))}
     </nav>
   )

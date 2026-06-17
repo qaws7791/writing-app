@@ -1,9 +1,7 @@
 "use client"
 
-/* eslint-disable react/button-has-type */
-
 import Image from "next/image"
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 import { CourseCurriculum } from "@/features/courses/course-curriculum"
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
@@ -15,7 +13,6 @@ type CourseDetailPageProps = {
 }
 
 export function CourseDetailPage({ course }: CourseDetailPageProps) {
-  const router = useRouter()
   const completedLessonCount = course.progress.completedLessons
   const totalLessonCount = course.progress.totalLessons
   const progressPercent =
@@ -24,13 +21,13 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <button
+      <Link
         className="flex items-center text-muted font-bold mb-8 hover:text-charcoal btn-squish w-fit"
-        onClick={() => router.push("/app/courses")}
+        href="/app/courses"
       >
         <ChevronLeftIcon className="mr-1" size={20} />
         돌아가기
-      </button>
+      </Link>
       <div className="bg-surface -mx-3 md:mx-0 rounded-4xl px-5 py-8 md:p-10 mb-12">
         <div className="flex items-start justify-between gap-4 mb-6">
           <Image
@@ -74,15 +71,13 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
               {completedLessonCount > 0 ? "다음 레슨" : "첫 번째 레슨"}:{" "}
               {nextLesson.title}
             </p>
-            <button
+            <Link
               className="w-full md:w-auto px-10 py-5 bg-charcoal text-cream font-bold rounded-full btn-squish"
-              onClick={() =>
-                router.push(`/app/lesson?lesson_id=${nextLesson.id}`)
-              }
+              href={`/app/lesson?lesson_id=${encodeURIComponent(nextLesson.id)}`}
               style={{ fontSize: "1.125rem" }}
             >
               {completedLessonCount > 0 ? "이어서 학습하기" : "학습 시작하기"}
-            </button>
+            </Link>
           </div>
         )}
       </div>

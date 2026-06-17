@@ -1,17 +1,9 @@
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { CoursesPage } from "@/features/courses/courses-page"
 import type { CourseSummary } from "@/features/courses/course-types"
-
-const push = vi.fn()
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push,
-  }),
-}))
 
 const courses: readonly CourseSummary[] = [
   {
@@ -37,7 +29,7 @@ const courses: readonly CourseSummary[] = [
 ]
 
 describe("코스 목록 화면", () => {
-  it("Kwep 배우기 화면처럼 카테고리와 코스 카드를 보여주고 상세로 이동한다", async () => {
+  it("Kwep 배우기 화면처럼 카테고리와 코스 상세 링크를 보여준다", async () => {
     const user = userEvent.setup()
 
     render(<CoursesPage courses={courses} />)
@@ -61,14 +53,12 @@ describe("코스 목록 화면", () => {
     await user.click(screen.getByRole("button", { name: "문법 심화" }))
 
     const courseTitle = screen.getByText("문장의 기본 문법")
-    const courseCard = courseTitle.closest(".cursor-pointer")
+    const courseCard = courseTitle.closest("a")
+
     expect(courseCard).not.toBeNull()
+    expect(courseCard).toHaveAttribute("href", "/app/courses/c2")
     expect(
       within(courseCard as HTMLElement).getByText("8개 레슨")
     ).toBeInTheDocument()
-
-    await user.click(courseCard as HTMLElement)
-
-    expect(push).toHaveBeenCalledWith("/app/courses/c2")
   })
 })

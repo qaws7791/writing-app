@@ -1,17 +1,8 @@
 import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { CourseDetailPage } from "@/features/courses/course-detail-page"
 import type { CourseDetail } from "@/features/courses/course-types"
-
-const push = vi.fn()
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push,
-  }),
-}))
 
 const course: CourseDetail = {
   category: "입문자를 위한 코스",
@@ -76,13 +67,7 @@ const course: CourseDetail = {
 }
 
 describe("코스 상세 화면", () => {
-  beforeEach(() => {
-    push.mockClear()
-  })
-
-  it("Kwep 코스 상세처럼 hero, 진행률, 첫 레슨 CTA를 표시하고 이동한다", async () => {
-    const user = userEvent.setup()
-
+  it("Kwep 코스 상세처럼 hero, 진행률, 첫 레슨 링크를 표시한다", () => {
     render(<CourseDetailPage course={course} />)
 
     expect(
@@ -98,10 +83,13 @@ describe("코스 상세 화면", () => {
       screen.getByText("첫 번째 레슨: 좋은 문장이란 무엇인가")
     ).toBeInTheDocument()
 
-    await user.click(screen.getByRole("button", { name: "학습 시작하기" }))
-    expect(push).toHaveBeenCalledWith("/app/lesson?lesson_id=l1")
-
-    await user.click(screen.getByRole("button", { name: "돌아가기" }))
-    expect(push).toHaveBeenCalledWith("/app/courses")
+    expect(screen.getByRole("link", { name: "학습 시작하기" })).toHaveAttribute(
+      "href",
+      "/app/lesson?lesson_id=l1"
+    )
+    expect(screen.getByRole("link", { name: "돌아가기" })).toHaveAttribute(
+      "href",
+      "/app/courses"
+    )
   })
 })

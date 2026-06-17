@@ -1,17 +1,9 @@
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { CourseCurriculum } from "@/features/courses/course-curriculum"
 import type { CourseDetail } from "@/features/courses/course-types"
-
-const push = vi.fn()
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push,
-  }),
-}))
 
 const course: CourseDetail = {
   category: "입문자를 위한 코스",
@@ -97,11 +89,7 @@ const course: CourseDetail = {
 }
 
 describe("코스 커리큘럼", () => {
-  beforeEach(() => {
-    push.mockClear()
-  })
-
-  it("Kwep 커리큘럼처럼 유닛을 접고 펼치며 진행 가능한 레슨만 이동한다", async () => {
+  it("Kwep 커리큘럼처럼 유닛을 접고 펼치며 진행 가능한 레슨만 링크로 제공한다", async () => {
     const user = userEvent.setup()
 
     render(<CourseCurriculum course={course} />)
@@ -122,18 +110,17 @@ describe("코스 커리큘럼", () => {
     await user.click(firstUnitToggle)
     expect(firstUnitPanel).toHaveStyle({ gridTemplateRows: "1fr" })
 
-    const firstLessonRow = screen
-      .getByText("좋은 문장이란 무엇인가")
-      .closest(".cursor-pointer")
-    expect(firstLessonRow).not.toBeNull()
-    await user.click(firstLessonRow as HTMLElement)
-    expect(push).toHaveBeenCalledWith("/app/lesson?lesson_id=l1")
+    const firstLessonLink = screen.getByRole("link", {
+      name: /좋은 문장이란 무엇인가/,
+    })
+    expect(firstLessonLink).toHaveAttribute("href", "/app/lesson?lesson_id=l1")
 
     const lockedLessonRow = screen.getByText("짧게 쓰기").closest("div")
       ?.parentElement?.parentElement
     expect(lockedLessonRow).toHaveClass("cursor-not-allowed")
-    await user.click(lockedLessonRow as HTMLElement)
-    expect(push).toHaveBeenCalledTimes(1)
+    expect(
+      screen.queryByRole("link", { name: /짧게 쓰기/ })
+    ).not.toBeInTheDocument()
 
     const secondUnitToggle = screen.getByRole("button", {
       name: /문단의 흐름\s*1개 레슨/,

@@ -1,17 +1,8 @@
 import { render, screen, within } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import { HomePage } from "@/features/home/home-page"
 import type { ProgressCourseList } from "@/features/courses/course-types"
-
-const push = vi.fn()
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push,
-  }),
-}))
 
 const emptyProgress: ProgressCourseList = {
   courses: [],
@@ -86,13 +77,7 @@ const completedProgress: ProgressCourseList = {
 }
 
 describe("홈 화면", () => {
-  beforeEach(() => {
-    push.mockClear()
-  })
-
-  it("Kwep 홈 fresh 상태의 인사, 통계, 첫 코스 진입점을 보여준다", async () => {
-    const user = userEvent.setup()
-
+  it("Kwep 홈 fresh 상태의 인사, 통계, 첫 코스 링크를 보여준다", () => {
     render(<HomePage learnerName="글쓰기 탐험가" progress={emptyProgress} />)
 
     expect(screen.getByText("안녕하세요 👋")).toBeInTheDocument()
@@ -106,31 +91,20 @@ describe("홈 화면", () => {
     expect(screen.getByText("0개")).toBeInTheDocument()
     expect(screen.getByText("완료한 레슨")).toBeInTheDocument()
 
-    const startCard = screen
-      .getByText("지금 시작해볼까요?")
-      .closest("div")?.parentElement
-    expect(startCard).not.toBeNull()
-    expect(startCard?.tagName).toBe("DIV")
+    const startCard = screen.getByRole("link", { name: /코스 둘러보기/ })
+    expect(startCard).toHaveAttribute("href", "/app/courses")
     expect(
-      within(startCard as HTMLElement).getByText("지금 시작해볼까요?")
+      within(startCard).getByText("지금 시작해볼까요?")
     ).toBeInTheDocument()
     expect(
-      within(startCard as HTMLElement).getByRole("heading", {
+      within(startCard).getByRole("heading", {
         name: /첫 번째 코스를\s*선택해 보세요/,
       })
     ).toBeInTheDocument()
-    expect(
-      within(startCard as HTMLElement).getByText("코스 둘러보기")
-    ).toBeInTheDocument()
-
-    await user.click(startCard as HTMLElement)
-
-    expect(push).toHaveBeenCalledWith("/app/courses")
+    expect(within(startCard).getByText("코스 둘러보기")).toBeInTheDocument()
   })
 
-  it("진행 중 코스와 다음 레슨 진입점을 보여준다", async () => {
-    const user = userEvent.setup()
-
+  it("진행 중 코스와 다음 레슨 링크를 보여준다", () => {
     render(<HomePage learnerName="몽쉘" progress={progressWithActiveCourse} />)
 
     expect(screen.getByText("이어서 학습하기")).toBeInTheDocument()
@@ -140,19 +114,12 @@ describe("홈 화면", () => {
     expect(screen.getAllByText("짧게 쓰기")).toHaveLength(2)
     expect(document.querySelector(".border-t")).toBeNull()
 
-    await user.click(
-      firstElement(
-        screen.getAllByRole("button", { name: /글쓰기 첫걸음 30일/ })
-      )
-    )
-
-    expect(push).toHaveBeenCalledWith("/app/courses/c1")
-
-    await user.click(
-      firstElement(screen.getAllByRole("button", { name: /짧게 쓰기/ }))
-    )
-
-    expect(push).toHaveBeenCalledWith("/app/lesson?lesson_id=l2")
+    expect(
+      firstElement(screen.getAllByRole("link", { name: /글쓰기 첫걸음 30일/ }))
+    ).toHaveAttribute("href", "/app/courses/c1")
+    expect(
+      firstElement(screen.getAllByRole("link", { name: /짧게 쓰기/ }))
+    ).toHaveAttribute("href", "/app/lesson?lesson_id=l2")
   })
 
   it("다음 레슨이 없는 진행 코스에는 완료 메시지를 보여준다", () => {

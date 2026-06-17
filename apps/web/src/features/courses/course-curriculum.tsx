@@ -1,10 +1,8 @@
 "use client"
 
-/* eslint-disable react/button-has-type */
-
 import { useMemo, useState } from "react"
 
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 import type {
   CourseDetail,
@@ -89,6 +87,7 @@ function CurriculumUnit({
       <button
         className="w-full py-5 flex items-center justify-between text-left"
         onClick={onToggle}
+        type="button"
       >
         <div className="flex items-center gap-4">
           <div
@@ -155,24 +154,14 @@ function CurriculumLesson({
   readonly lesson: CourseLessonSummary
   readonly status: LessonProgressStatus
 }) {
-  const router = useRouter()
   const done = status === "completed"
   const locked = status === "locked"
-
-  return (
-    <div
-      className={cx(
-        "flex items-center gap-3 py-3 pl-6 -mr-2 pr-2 rounded-2xl transition-colors",
-        locked
-          ? "cursor-not-allowed"
-          : "cursor-pointer hover:bg-charcoal/[0.04]"
-      )}
-      onClick={() => {
-        if (!locked) {
-          router.push(`/app/lesson?lesson_id=${lesson.id}`)
-        }
-      }}
-    >
+  const className = cx(
+    "flex items-center gap-3 py-3 pl-6 -mr-2 pr-2 rounded-2xl transition-colors",
+    locked ? "cursor-not-allowed" : "cursor-pointer hover:bg-charcoal/[0.04]"
+  )
+  const content = (
+    <>
       <div className="w-7 shrink-0 flex justify-center">
         <div
           className={cx(
@@ -207,7 +196,24 @@ function CurriculumLesson({
           {lesson.estimatedMinutes}분
         </div>
       </div>
-    </div>
+    </>
+  )
+
+  if (locked) {
+    return (
+      <div aria-disabled="true" className={className}>
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <Link
+      className={className}
+      href={`/app/lesson?lesson_id=${encodeURIComponent(lesson.id)}`}
+    >
+      {content}
+    </Link>
   )
 }
 

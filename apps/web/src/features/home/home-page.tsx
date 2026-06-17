@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { useRouter } from "next/navigation"
+import Link from "next/link"
 import type { ReactNode } from "react"
 
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
@@ -21,7 +21,6 @@ type HomePageProps = {
 }
 
 export function HomePage({ learnerName, progress }: HomePageProps) {
-  const router = useRouter()
   const firstName = normalizeFirstName(learnerName)
   const totalDone = progress.courses.reduce(
     (total, course) =>
@@ -143,9 +142,9 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
             </div>
           </>
         ) : (
-          <div
+          <Link
             className="bg-surface rounded-4xl p-7 cursor-pointer btn-squish"
-            onClick={() => router.push("/app/courses")}
+            href="/app/courses"
           >
             <div className="flex items-center gap-2 mb-5">
               <KwepSparklesIcon className="text-muted" size={16} />
@@ -170,7 +169,7 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
               </span>
               <KwepChevronRightIcon size={20} />
             </div>
-          </div>
+          </Link>
         )}
       </div>
     </div>
@@ -183,7 +182,6 @@ type ContinueCourseCardProps = {
 }
 
 function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
-  const router = useRouter()
   const completedLessonCount = course.lessons.filter(
     (lesson) => lesson.status === "completed"
   ).length
@@ -191,6 +189,7 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
   const progressPercent = clampProgressPercent(course.progressPercent)
   const nextLessons = course.nextLessons.slice(0, 2)
   const isDesktop = variant === "desktop"
+  const courseHref = `/app/courses/${course.id}`
 
   return (
     <div
@@ -202,10 +201,9 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
     >
       {isDesktop ? (
         <div className="flex">
-          <button
+          <Link
             className="w-44 shrink-0 cursor-pointer btn-squish"
-            onClick={() => router.push(`/app/courses/${course.id}`)}
-            type="button"
+            href={courseHref}
           >
             <img
               alt={course.title}
@@ -214,11 +212,10 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
               src={createCourseImageUrl(course.visualKey)}
               style={{ minHeight: "7rem" }}
             />
-          </button>
-          <button
+          </Link>
+          <Link
             className="flex-1 min-w-0 px-5 py-4 cursor-pointer btn-squish text-left"
-            onClick={() => router.push(`/app/courses/${course.id}`)}
-            type="button"
+            href={courseHref}
           >
             <ContinueCourseSummary
               completedLessonCount={completedLessonCount}
@@ -227,13 +224,12 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
               totalLessonCount={totalLessonCount}
               titleFontSize="1rem"
             />
-          </button>
+          </Link>
         </div>
       ) : (
-        <button
+        <Link
           className="w-full cursor-pointer btn-squish text-left"
-          onClick={() => router.push(`/app/courses/${course.id}`)}
-          type="button"
+          href={courseHref}
         >
           <img
             alt={course.title}
@@ -250,7 +246,7 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
               titleFontSize="1.0625rem"
             />
           </div>
-        </button>
+        </Link>
       )}
       <div
         className={
@@ -261,7 +257,7 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
       >
         {nextLessons.length > 0 ? (
           nextLessons.map((lesson) => (
-            <NextLessonButton
+            <NextLessonLink
               isDesktop={isDesktop}
               key={lesson.id}
               lesson={lesson}
@@ -326,24 +322,21 @@ function ContinueCourseSummary({
   )
 }
 
-function NextLessonButton({
+function NextLessonLink({
   isDesktop,
   lesson,
 }: {
   readonly isDesktop: boolean
   readonly lesson: ProgressNextLesson
 }) {
-  const router = useRouter()
-
   return (
-    <button
+    <Link
       className={
         isDesktop
           ? "text-left flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-charcoal/5 btn-squish"
           : "text-left flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-charcoal/5 btn-squish"
       }
-      onClick={() => router.push(`/app/lesson?lesson_id=${lesson.id}`)}
-      type="button"
+      href={`/app/lesson?lesson_id=${encodeURIComponent(lesson.id)}`}
     >
       <span
         className={
@@ -371,7 +364,7 @@ function NextLessonButton({
           {lesson.estimatedMinutes}분
         </span>
       </span>
-    </button>
+    </Link>
   )
 }
 
