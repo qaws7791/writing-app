@@ -100,12 +100,17 @@ export function LessonStepRenderer({
   totalSteps,
 }: LessonStepRendererProps) {
   if (isLessonStepStandalone(step)) {
-    return renderStepContent(step, {
-      checked,
-      onAiFeedbackRequest,
-      onAnswerChange,
-      onAnswerPayloadChange,
-    })
+    return (
+      <>
+        {renderStepContent(step, {
+          checked,
+          onAiFeedbackRequest,
+          onAnswerChange,
+          onAnswerPayloadChange,
+        })}
+        <LessonAnswerErrorMessage answerError={answerError} />
+      </>
+    )
   }
 
   const headingId = `lesson-step-${step.id}`
@@ -129,14 +134,26 @@ export function LessonStepRenderer({
             onAnswerChange,
             onAnswerPayloadChange,
           })}
-          {answerError === undefined || answerError === null ? null : (
-            <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              {answerError}
-            </p>
-          )}
+          <LessonAnswerErrorMessage answerError={answerError} />
         </CardContent>
       </Card>
     </section>
+  )
+}
+
+function LessonAnswerErrorMessage({
+  answerError,
+}: {
+  readonly answerError?: null | string
+}) {
+  if (answerError === undefined || answerError === null) {
+    return null
+  }
+
+  return (
+    <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+      {answerError}
+    </p>
   )
 }
 

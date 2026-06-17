@@ -52,6 +52,7 @@ import {
   sql,
 } from "drizzle-orm"
 
+import { archiveContentRowsOutsideSeed } from "@/content/content-archive-policy"
 import type { KwepDatabase } from "@workspace/db/client"
 import {
   addLearningCalendarDays,
@@ -1037,7 +1038,7 @@ async function resetContent(
   return db.transaction((transaction) => {
     void input.now
 
-    const archived = archiveContentOutsideSeed(transaction, seedRows)
+    const archived = archiveContentRowsOutsideSeed(transaction, seedRows)
 
     for (const course of seedRows.courses) {
       transaction
@@ -1125,69 +1126,15 @@ async function resetContent(
 }
 
 function readNextContentRevision(db: KwepDatabase): number {
-  const revisions = db
-    .select()
-    .from(courses)
-    .all()
-    .map((course) => course.curriculumRevision)
+  const revision =
+    db
+      .select({
+        value: sql<number>`coalesce(max(${courses.curriculumRevision}), 0)`,
+      })
+      .from(courses)
+      .get()?.value ?? 0
 
-  return Math.max(0, ...revisions) + 1
-}
-
-function archiveContentOutsideSeed(
-  db: KwepDatabase,
-  seedRows: Awaited<ReturnType<typeof createDefaultContentSeedRows>>
-): number {
-  let archived = 0
-  const seedCourseIds = new Set(seedRows.courses.map((course) => course.id))
-  const seedUnitIds = new Set(seedRows.units.map((unit) => unit.id))
-  const seedLessonIds = new Set(seedRows.lessons.map((lesson) => lesson.id))
-  const seedStepIds = new Set(seedRows.steps.map((step) => step.id))
-
-  for (const course of db.select().from(courses).all()) {
-    if (
-      !seedCourseIds.has(course.id) &&
-      course.status !== contentStatuses.archived
-    ) {
-      db.update(courses)
-        .set({ status: contentStatuses.archived })
-        .where(eq(courses.id, course.id))
-        .run()
-      archived += 1
-    }
-  }
-  for (const unit of db.select().from(courseUnits).all()) {
-    if (!seedUnitIds.has(unit.id) && unit.status !== contentStatuses.archived) {
-      db.update(courseUnits)
-        .set({ status: contentStatuses.archived })
-        .where(eq(courseUnits.id, unit.id))
-        .run()
-      archived += 1
-    }
-  }
-  for (const lesson of db.select().from(lessons).all()) {
-    if (
-      !seedLessonIds.has(lesson.id) &&
-      lesson.status !== contentStatuses.archived
-    ) {
-      db.update(lessons)
-        .set({ status: contentStatuses.archived })
-        .where(eq(lessons.id, lesson.id))
-        .run()
-      archived += 1
-    }
-  }
-  for (const step of db.select().from(lessonSteps).all()) {
-    if (!seedStepIds.has(step.id) && step.status !== contentStatuses.archived) {
-      db.update(lessonSteps)
-        .set({ status: contentStatuses.archived })
-        .where(eq(lessonSteps.id, step.id))
-        .run()
-      archived += 1
-    }
-  }
-
-  return archived
+  return revision + 1
 }
 
 type AdminUserSnapshot = {

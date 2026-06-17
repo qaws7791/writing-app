@@ -12,22 +12,13 @@ import type {
   CourseLessonSummary,
 } from "@/features/courses/course-types"
 import {
-  getFirstLessonStep,
-  getLessonStep,
-  isLastLessonStep,
-  type LessonStepAnswerPayload,
-} from "@/features/lessons/lesson-logic"
-import {
   getLessonStepActionLabel,
-  getLessonStepCheckedResult,
   getLessonStepExplanation,
   getLessonStepWrongText,
-  isLessonStepCheckable,
-  isLessonStepSubmittable,
   type LessonStepCheckedState,
 } from "@/features/lessons/lesson-step-policy"
 import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
-import { useLessonPersistence } from "@/features/lessons/use-lesson-persistence"
+import { useLessonSession } from "@/features/lessons/use-lesson-session"
 import type { Lesson, LessonStep } from "@/features/lessons/lesson-types"
 import { getBrowserLearnerSessionToken } from "@/lib/auth/session-token"
 import { getBrowserWritingAppApi } from "@/lib/api/get-browser-writing-app-api"
@@ -53,18 +44,7 @@ export function LessonExperience({
 }: LessonExperienceProps) {
   const router = useRouter()
   const contentRef = useRef<HTMLElement>(null)
-  const initialStepIndex = clampLessonStepIndex(
-    lesson,
-    initialProgress?.currentStepIndex ?? 0
-  )
-  const [currentStepIndex, setCurrentStepIndex] = useState(initialStepIndex)
-  const [isComplete, setIsComplete] = useState(false)
-  const [hasStarted, setHasStarted] = useState(initialProgress !== undefined)
   const [showExit, setShowExit] = useState(false)
-  const [checked, setChecked] = useState<LessonCheckedState>(false)
-  const [answerPayloads, setAnswerPayloads] = useState<
-    Readonly<Record<string, LessonStepAnswerPayload>>
-  >({})
   const resolvedApi = useMemo(
     () =>
       api ??
@@ -73,33 +53,22 @@ export function LessonExperience({
       }),
     [api]
   )
-  const firstStep = getFirstLessonStep(lesson)
-  const {
-    answerError,
-    completeError,
-    completeLesson,
-    isCompleting,
-    isSavingStart,
-    requestAiFeedback,
-    saveAnswer,
-    startError,
-    startLesson,
-  } = useLessonPersistence({
+  const session = useLessonSession({
     api: resolvedApi,
+    initialProgress,
     lesson,
   })
-  const currentStep = getLessonStep(lesson, currentStepIndex)
 
   useEffect(() => {
-    if (!hasStarted) {
+    if (!session.hasStarted) {
       return
     }
 
     contentRef.current?.scrollTo?.({ top: 0 })
     scrollWindowToTop()
-  }, [currentStepIndex, hasStarted])
+  }, [session.currentStepIndex, session.hasStarted])
 
-  if (isComplete) {
+  if (session.isComplete) {
     return (
       <LessonCompleteScreen
         courseDetail={courseDetail}
@@ -114,87 +83,55 @@ export function LessonExperience({
     )
   }
 
-  if (hasStarted && currentStep !== null) {
-    const isLastStep = isLastLessonStep(lesson, currentStepIndex)
-    const visibleStepNumber = Math.min(
-      currentStepIndex + 1,
-      lesson.steps.length
-    )
-    const progress = lesson.steps.length
-      ? Math.min(
-          100,
-          Math.max(0, (visibleStepNumber / lesson.steps.length) * 100)
-        )
-      : 0
-    const currentAnswerPayload = answerPayloads[currentStep.id]
-    const isReady = isLessonStepSubmittable(currentStep, currentAnswerPayload)
-    const isQuizStep = isLessonStepCheckable(currentStep)
-
+  if (session.hasStarted && session.currentStep !== null) {
     return (
       <LessonShell
         contentRef={contentRef}
         footer={
-          checked === false ? (
+          session.checked === false ? (
             <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent">
               <LessonPrimaryButton
-                disabled={!isReady || isCompleting}
-                onClick={() => {
-                  if (isQuizStep) {
-                    setChecked(
-                      getLessonStepCheckedResult(
-                        currentStep,
-                        currentAnswerPayload
-                      )
-                    )
-                    return
-                  }
-
-                  void handleNextStep(isLastStep)
-                }}
-                variant={isReady ? "primary" : "secondary"}
+                disabled={!session.isReady || session.isCompleting}
+                onClick={() => void session.submitCurrentStep()}
+                variant={session.isReady ? "primary" : "secondary"}
               >
-                {isCompleting
+                {session.isCompleting
                   ? "완료 저장 중"
-                  : getLessonStepActionLabel(currentStep)}
+                  : getLessonStepActionLabel(session.currentStep)}
               </LessonPrimaryButton>
             </div>
           ) : (
             <LessonCheckedFooter
-              checked={checked}
-              onNext={() => void handleNextStep(isLastStep)}
-              step={currentStep}
+              checked={session.checked}
+              onNext={() => void session.submitCurrentStep()}
+              step={session.currentStep}
             />
           )
         }
         header={
           <LessonProgressHeader
-            currentStepNumber={visibleStepNumber}
+            currentStepNumber={session.visibleStepNumber}
             onExit={() => setShowExit(true)}
-            progress={progress}
+            progress={session.progress}
             totalStepCount={lesson.steps.length}
           />
         }
       >
         <div className="an-fi">
           <LessonStepRenderer
-            answerError={answerError}
-            checked={checked}
-            onAiFeedbackRequest={requestAiFeedback}
-            onAnswerChange={saveAnswer}
-            onAnswerPayloadChange={({ payload, stepId }) =>
-              setAnswerPayloads((previous) => ({
-                ...previous,
-                [stepId]: payload,
-              }))
-            }
-            key={currentStepIndex}
-            step={currentStep}
-            stepIndex={currentStepIndex}
+            answerError={session.answerError}
+            checked={session.checked}
+            onAiFeedbackRequest={session.requestAiFeedback}
+            onAnswerChange={session.saveAnswer}
+            onAnswerPayloadChange={session.setAnswerPayload}
+            key={session.currentStepIndex}
+            step={session.currentStep}
+            stepIndex={session.currentStepIndex}
             totalSteps={lesson.steps.length}
           />
-          {completeError === null ? null : (
+          {session.completeError === null ? null : (
             <p className="mt-6 rounded-2xl bg-coral/10 px-4 py-3 text-coral-dark font-bold">
-              {completeError}
+              {session.completeError}
             </p>
           )}
         </div>
@@ -211,44 +148,15 @@ export function LessonExperience({
     )
   }
 
-  async function handleStart() {
-    const isStarted = await startLesson()
-
-    if (isStarted) {
-      setCurrentStepIndex(0)
-      setChecked(false)
-      setHasStarted(true)
-    }
-  }
-
-  async function handleNextStep(isLastStep: boolean) {
-    setChecked(false)
-
-    if (isLastStep) {
-      await handleComplete()
-      return
-    }
-
-    setCurrentStepIndex((index) => Math.min(lesson.steps.length - 1, index + 1))
-  }
-
-  async function handleComplete() {
-    const completed = await completeLesson(currentStepIndex)
-
-    if (completed) {
-      setIsComplete(true)
-    }
-  }
-
   return (
     <LessonShell
       footer={
         <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent">
           <LessonPrimaryButton
-            disabled={firstStep === null || isSavingStart}
-            onClick={handleStart}
+            disabled={!session.canStart || session.isSavingStart}
+            onClick={() => void session.startLesson()}
           >
-            {isSavingStart ? "저장 중" : "시작하기"}
+            {session.isSavingStart ? "저장 중" : "시작하기"}
           </LessonPrimaryButton>
         </div>
       }
@@ -291,9 +199,9 @@ export function LessonExperience({
           <span>⏱ {lesson.estimatedMinutes}분</span>
           <span>📚 {lesson.steps.length}개 스텝</span>
         </div>
-        {startError === null ? null : (
+        {session.startError === null ? null : (
           <p className="mt-8 rounded-2xl bg-coral/10 px-4 py-3 text-coral-dark font-bold">
-            {startError}
+            {session.startError}
           </p>
         )}
       </div>
@@ -681,14 +589,6 @@ function scrollWindowToTop() {
   }
 
   window.scrollTo(0, 0)
-}
-
-function clampLessonStepIndex(lesson: Lesson, stepIndex: number): number {
-  if (lesson.steps.length === 0) {
-    return 0
-  }
-
-  return Math.min(lesson.steps.length - 1, Math.max(0, stepIndex))
 }
 
 function cx(...classes: Array<false | null | string | undefined>): string {

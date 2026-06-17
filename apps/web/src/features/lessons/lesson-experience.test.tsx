@@ -6,7 +6,12 @@ import type { CourseDetail } from "@/features/courses/course-types"
 import { LessonExperience } from "@/features/lessons/lesson-experience"
 import type { Lesson } from "@/features/lessons/lesson-types"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
-import type { WritingAppApi } from "@/lib/api/writing-app-api"
+import type { ApiResult } from "@/lib/api/api-result"
+import type {
+  ApiCompleteLessonResponse,
+  ApiSaveLessonAnswerResponse,
+  WritingAppApi,
+} from "@/lib/api/writing-app-api"
 
 const push = vi.fn()
 
@@ -284,6 +289,214 @@ describe("레슨 경험", () => {
         stepId: "mc-answer",
       })
     )
+  })
+
+  it("늦게 실패한 이전 답변 저장은 최신 성공 상태를 덮어쓰지 않는다", async () => {
+    const user = userEvent.setup()
+    const firstSave = createDeferred<ApiResult<ApiSaveLessonAnswerResponse>>()
+    const secondSave = createDeferred<ApiResult<ApiSaveLessonAnswerResponse>>()
+    const saveLessonAnswer = vi
+      .fn()
+      .mockReturnValueOnce(firstSave.promise)
+      .mockReturnValueOnce(secondSave.promise)
+    const api = createApi({ saveLessonAnswer })
+    const answerableLesson = createSingleChoiceLesson()
+
+    render(
+      <LessonExperience
+        api={api}
+        initialProgress={{ currentStepIndex: 0 }}
+        lesson={answerableLesson}
+      />
+    )
+
+    await user.click(screen.getByRole("button", { name: "좋은 글을 씁니다." }))
+    await user.click(
+      screen.getByRole("button", {
+        name: "독자가 바로 이해하는 문장을 씁니다.",
+      })
+    )
+
+    await waitFor(() => expect(saveLessonAnswer).toHaveBeenCalledTimes(2))
+    secondSave.resolve(apiOk({ saved: true }))
+    await waitFor(() =>
+      expect(screen.queryByText(LESSON_ANSWER_ERROR)).not.toBeInTheDocument()
+    )
+
+    firstSave.resolve(
+      apiFailure({
+        code: "network-error",
+        message: "첫 요청 실패",
+      })
+    )
+
+    await waitFor(() =>
+      expect(screen.queryByText(LESSON_ANSWER_ERROR)).not.toBeInTheDocument()
+    )
+  })
+
+  it("이전 스텝의 답변 저장 실패를 다음 스텝에 표시하지 않는다", async () => {
+    const user = userEvent.setup()
+    const answerSave = createDeferred<ApiResult<ApiSaveLessonAnswerResponse>>()
+    const api = createApi({
+      saveLessonAnswer: vi.fn(() => answerSave.promise),
+    })
+    const answerableLesson: Lesson = {
+      ...createSingleChoiceLesson(),
+      steps: [
+        ...createSingleChoiceLesson().steps,
+        {
+          body: "다음 스텝입니다.",
+          guide: "읽고 넘어가세요.",
+          id: "reading-after-choice",
+          order: 2,
+          title: "다음 읽기",
+          type: "READING",
+        },
+      ],
+    }
+
+    render(
+      <LessonExperience
+        api={api}
+        initialProgress={{ currentStepIndex: 0 }}
+        lesson={answerableLesson}
+      />
+    )
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "독자가 바로 이해하는 문장을 씁니다.",
+      })
+    )
+    await user.click(screen.getByRole("button", { name: "확인하기" }))
+    await user.click(screen.getByRole("button", { name: "계속하기" }))
+
+    expect(
+      screen.getByRole("heading", { name: "다음 읽기" })
+    ).toBeInTheDocument()
+
+    answerSave.resolve(
+      apiFailure({
+        code: "network-error",
+        message: "이전 스텝 저장 실패",
+      })
+    )
+
+    await waitFor(() =>
+      expect(screen.queryByText(LESSON_ANSWER_ERROR)).not.toBeInTheDocument()
+    )
+  })
+
+  it("마지막 스텝 완료는 최신 답변 저장이 끝난 뒤 저장한다", async () => {
+    const user = userEvent.setup()
+    const answerSave = createDeferred<ApiResult<ApiSaveLessonAnswerResponse>>()
+    const completeLesson = vi.fn(async () => apiOk({ saved: true }))
+    const api = createApi({
+      completeLesson,
+      saveLessonAnswer: vi.fn(() => answerSave.promise),
+    })
+
+    render(
+      <LessonExperience
+        api={api}
+        initialProgress={{ currentStepIndex: 0 }}
+        lesson={createSingleChoiceLesson()}
+      />
+    )
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "독자가 바로 이해하는 문장을 씁니다.",
+      })
+    )
+    await user.click(screen.getByRole("button", { name: "확인하기" }))
+    await user.click(screen.getByRole("button", { name: "계속하기" }))
+
+    expect(completeLesson).not.toHaveBeenCalled()
+
+    answerSave.resolve(apiOk({ saved: true }))
+
+    await waitFor(() =>
+      expect(completeLesson).toHaveBeenCalledWith({
+        currentStepIndex: 0,
+        lessonId: "l-answer",
+      })
+    )
+  })
+
+  it("최신 답변 저장이 실패하면 레슨 완료를 저장하지 않는다", async () => {
+    const user = userEvent.setup()
+    const answerSave = createDeferred<ApiResult<ApiSaveLessonAnswerResponse>>()
+    const completeLesson = vi.fn(async () => apiOk({ saved: true }))
+    const api = createApi({
+      completeLesson,
+      saveLessonAnswer: vi.fn(() => answerSave.promise),
+    })
+
+    render(
+      <LessonExperience
+        api={api}
+        initialProgress={{ currentStepIndex: 0 }}
+        lesson={createSingleChoiceLesson()}
+      />
+    )
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "독자가 바로 이해하는 문장을 씁니다.",
+      })
+    )
+    await user.click(screen.getByRole("button", { name: "확인하기" }))
+    await user.click(screen.getByRole("button", { name: "계속하기" }))
+
+    answerSave.resolve(
+      apiFailure({
+        code: "network-error",
+        message: "최신 답변 저장 실패",
+      })
+    )
+
+    await waitFor(() =>
+      expect(screen.getByText(LESSON_ANSWER_ERROR)).toBeInTheDocument()
+    )
+    expect(completeLesson).not.toHaveBeenCalled()
+  })
+
+  it("완료 버튼을 빠르게 여러 번 눌러도 완료 저장은 한 번만 호출한다", async () => {
+    const user = userEvent.setup()
+    const completeSave = createDeferred<ApiResult<ApiCompleteLessonResponse>>()
+    const completeLesson = vi.fn(() => completeSave.promise)
+    const api = createApi({
+      completeLesson,
+      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
+    })
+    const readingOnlyLesson: Lesson = {
+      ...lesson,
+      id: "l-reading-only",
+      steps: [
+        {
+          body: "좋은 문장은 독자가 바로 이해할 수 있는 문장입니다.",
+          guide: "핵심 문장을 천천히 읽어보세요.",
+          id: "reading-only-step",
+          order: 1,
+          title: "좋은 문장이란 무엇인가",
+          type: "READING",
+        },
+      ],
+    }
+
+    render(
+      <LessonExperience
+        api={api}
+        initialProgress={{ currentStepIndex: 0 }}
+        lesson={readingOnlyLesson}
+      />
+    )
+
+    await user.dblClick(screen.getByRole("button", { name: "이해했어요" }))
+
+    expect(completeLesson).toHaveBeenCalledTimes(1)
   })
 
   it("스텝을 이동하고 마지막 스텝에서 레슨 완료를 저장한다", async () => {
@@ -580,6 +793,49 @@ describe("레슨 경험", () => {
     expect(await screen.findByText("좋은 출발입니다.")).toBeInTheDocument()
   })
 })
+
+const LESSON_ANSWER_ERROR =
+  "답변을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
+
+function createSingleChoiceLesson(): Lesson {
+  return {
+    ...lesson,
+    id: "l-answer",
+    steps: [
+      {
+        correct: "clear",
+        explanation: "구체적인 문장이 더 잘 읽힙니다.",
+        id: "mc-answer",
+        options: [
+          { id: "vague", text: "좋은 글을 씁니다." },
+          { id: "clear", text: "독자가 바로 이해하는 문장을 씁니다." },
+        ],
+        order: 1,
+        question: "더 좋은 문장은 무엇인가요?",
+        type: "MULTIPLE_CHOICE",
+      },
+    ],
+  }
+}
+
+function createDeferred<T>(): {
+  readonly promise: Promise<T>
+  readonly reject: (error: unknown) => void
+  readonly resolve: (value: T) => void
+} {
+  let reject: (error: unknown) => void = () => {}
+  let resolve: (value: T) => void = () => {}
+  const promise = new Promise<T>((promiseResolve, promiseReject) => {
+    resolve = promiseResolve
+    reject = promiseReject
+  })
+
+  return {
+    promise,
+    reject,
+    resolve,
+  }
+}
 
 function createApi(overrides: Partial<WritingAppApi>): WritingAppApi {
   const unavailable = async () =>

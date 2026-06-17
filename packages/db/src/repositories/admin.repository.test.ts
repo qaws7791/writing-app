@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest"
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
+import { eq } from "drizzle-orm"
+
 import { createKwepDatabase } from "@/client"
 import { runBaselineMigration } from "@/migrations/migrate"
 import { createDrizzleAdminRepository } from "@/repositories/admin.repository"
@@ -71,6 +73,16 @@ describe("어드민 DB repository", () => {
     expect(factorySource).not.toContain("archiveCourse(input)")
     expect(factorySource).not.toContain("deleteUser(input)")
     expect(factorySource).not.toContain("readAnalytics(input)")
+  })
+
+  it("콘텐츠 reset은 공유 보관 정책을 사용한다", () => {
+    const repositorySource = readFileSync(
+      fileURLToPath(new URL("admin.repository.ts", import.meta.url)),
+      "utf8"
+    )
+
+    expect(repositorySource).toContain("archiveContentRowsOutsideSeed")
+    expect(repositorySource).not.toContain("function archiveContentOutsideSeed")
   })
 
   it("기존 학습자와 콘텐츠 테이블에서 dashboard 지표를 계산한다", async () => {
@@ -516,6 +528,59 @@ describe("어드민 DB repository", () => {
     }
   })
 
+  it("콘텐츠 reset은 seed 밖 활성 콘텐츠를 보관하고 변경 수를 반환한다", async () => {
+    const client = createKwepDatabase(":memory:")
+    const now = new Date("2026-06-14T03:00:00.000Z")
+
+    try {
+      runBaselineMigration(client.sqlite)
+      seedOutsideContentRows(client.db)
+
+      const repository = createDrizzleAdminRepository(client.db)
+
+      await expect(repository.resetContent({ now })).resolves.toEqual({
+        changed: {
+          archived: 4,
+          courses: 5,
+          lessons: 44,
+          steps: 136,
+          units: 15,
+        },
+        revision: 1,
+      })
+      expect(
+        client.db
+          .select()
+          .from(courses)
+          .where(eq(courses.id, "outside-course"))
+          .get()?.status
+      ).toBe("archived")
+      expect(
+        client.db
+          .select()
+          .from(courseUnits)
+          .where(eq(courseUnits.id, "outside-unit"))
+          .get()?.status
+      ).toBe("archived")
+      expect(
+        client.db
+          .select()
+          .from(lessons)
+          .where(eq(lessons.id, "outside-lesson"))
+          .get()?.status
+      ).toBe("archived")
+      expect(
+        client.db
+          .select()
+          .from(lessonSteps)
+          .where(eq(lessonSteps.id, "outside-step"))
+          .get()?.status
+      ).toBe("archived")
+    } finally {
+      client.close()
+    }
+  })
+
   it("새 코스를 기본 커리큘럼과 함께 만들고 보관하면 학습자 목록에서 제외한다", async () => {
     const client = createKwepDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
@@ -573,6 +638,55 @@ describe("어드민 DB repository", () => {
     }
   })
 })
+
+function seedOutsideContentRows(
+  db: ReturnType<typeof createKwepDatabase>["db"]
+): void {
+  db.insert(courses)
+    .values({
+      category: "임시",
+      curriculumRevision: 0,
+      description: "seed 밖 코스",
+      id: "outside-course",
+      sortOrder: 1,
+      status: "active",
+      title: "Seed 밖 코스",
+    })
+    .run()
+  db.insert(courseUnits)
+    .values({
+      courseId: "outside-course",
+      id: "outside-unit",
+      sortOrder: 1,
+      status: "active",
+      title: "Seed 밖 유닛",
+    })
+    .run()
+  db.insert(lessons)
+    .values({
+      category: "임시",
+      courseId: "outside-course",
+      description: "seed 밖 레슨",
+      estimatedMinutes: 5,
+      id: "outside-lesson",
+      sortOrder: 1,
+      status: "active",
+      summaryJson: "[]",
+      title: "Seed 밖 레슨",
+      unitId: "outside-unit",
+    })
+    .run()
+  db.insert(lessonSteps)
+    .values({
+      contentJson: "{}",
+      id: "outside-step",
+      lessonId: "outside-lesson",
+      sortOrder: 1,
+      status: "active",
+      type: "READING",
+    })
+    .run()
+}
 
 function readFunctionSource(source: string, name: string): string | undefined {
   const start = source.indexOf(`function ${name}(`)

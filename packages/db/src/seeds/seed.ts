@@ -2,9 +2,9 @@ import { existsSync, mkdirSync, rmSync } from "node:fs"
 import { dirname, isAbsolute, relative, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 
-import { sql } from "drizzle-orm"
-import { contentStatuses, learnerAccountStatuses } from "@workspace/core/status"
+import { learnerAccountStatuses } from "@workspace/core/status"
 
+import { archiveContentRowsOutsideSeed } from "@/content/content-archive-policy"
 import {
   createKwepDatabase,
   getDefaultDatabaseUrl,
@@ -295,46 +295,12 @@ async function upsertContentRows(client: KwepDatabaseClient): Promise<void> {
   const rows = await createDefaultContentSeedRows()
 
   client.db.transaction((transaction) => {
-    archiveMissingContentRows(transaction, rows)
+    archiveContentRowsOutsideSeed(transaction, rows)
     upsertCourses(transaction, rows.courses)
     upsertCourseUnits(transaction, rows.units)
     upsertLessons(transaction, rows.lessons)
     upsertLessonSteps(transaction, rows.steps)
   })
-}
-
-function archiveMissingContentRows(
-  transaction: KwepDatabaseTransaction,
-  rows: Awaited<ReturnType<typeof createDefaultContentSeedRows>>
-): void {
-  const courseIds = rows.courses.map((row) => row.id)
-  const unitIds = rows.units.map((row) => row.id)
-  const lessonIds = rows.lessons.map((row) => row.id)
-  const stepIds = rows.steps.map((row) => row.id)
-
-  archiveRowsNotIn(transaction, "courses", courseIds)
-  archiveRowsNotIn(transaction, "course_units", unitIds)
-  archiveRowsNotIn(transaction, "lessons", lessonIds)
-  archiveRowsNotIn(transaction, "lesson_steps", stepIds)
-}
-
-function archiveRowsNotIn(
-  transaction: KwepDatabaseTransaction,
-  tableName: "course_units" | "courses" | "lesson_steps" | "lessons",
-  activeIds: readonly string[]
-): void {
-  if (activeIds.length === 0) {
-    transaction.run(
-      sql`UPDATE ${sql.identifier(tableName)} SET status = ${contentStatuses.archived}`
-    )
-    return
-  }
-
-  const activeIdValues = activeIds.map((id) => sql`${id}`)
-
-  transaction.run(
-    sql`UPDATE ${sql.identifier(tableName)} SET status = ${contentStatuses.archived} WHERE id NOT IN (${sql.join(activeIdValues, sql`, `)})`
-  )
 }
 
 function upsertCourses(

@@ -259,6 +259,12 @@
 - 완료 내용: `useLessonPersistence()` hook을 추가해 best-effort 저장, 저장된 글쓰기 응답 상태, 실패 메시지 기록을 한 곳으로 모았다. `LessonExperience`는 저장 API를 직접 호출하지 않고 hook 명령을 호출하며, 저장 실패는 `role="alert"` 안내로 표시하되 현재 레슨 이동은 막지 않는다.
 - 검증: `bun --filter @workspace/web test src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web typecheck && bun --filter @workspace/web lint`
 
+### WA-10 후속 메모
+
+- 대상 파일: `apps/web/src/features/lessons/use-lesson-session.ts`, `apps/web/src/features/lessons/lesson-experience.tsx`, `apps/web/src/features/lessons/lesson-step-renderer.tsx`
+- 완료 내용: `useLessonPersistence()`를 `useLessonSession()`으로 대체해 레슨 시작 여부, 현재 스텝, 채점 상태, 답변 payload, 답변 저장 최신성, 완료 저장 생명주기를 한 Module에 모았다. 답변 저장은 request id와 step id로 최신 요청만 화면 상태를 갱신하며, 마지막 완료 저장은 현재 스텝의 최신 답변 저장 성공 이후에만 진행한다.
+- 검증: `bun --filter @workspace/web test src/features/lessons/lesson-experience.test.tsx && bun --filter @workspace/web typecheck && bun lint && bun format:check`
+
 ## TEST-01 작업 메모
 
 - 대상 파일: `apps/*/vitest.config.ts`, `packages/*/vitest.config.ts`
