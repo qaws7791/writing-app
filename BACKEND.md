@@ -189,4 +189,4 @@ AI 피드백은 `apps/api`의 OpenAI provider가 OpenAI Responses API와 Structu
 
 ## `packages/logger`
 
-`packages/logger`는 Pino 로거 생성과 요청 로그 필드 헬퍼를 제공한다. 현재 reset 단계에서는 기존 `packages/logger/src` 구현을 제거했고, 후속 Task에서 API 조립 루트와 라우트 주변부가 재사용할 공통 로그 형식을 다시 작성한다.
+`packages/logger`는 Pino 로거 생성, 요청 완료 로그 helper, Hono 요청 로깅 middleware를 제공한다. 요청 로깅 middleware는 외부 `x-request-id`를 보존하고 없으면 request logging runtime의 ID generator로 새 ID를 만든다. duration은 wall clock이 아니라 runtime의 monotonic clock 차이로 계산하며, 학습자 API와 어드민 API 조립 루트가 production default runtime을 명시적으로 주입한다.

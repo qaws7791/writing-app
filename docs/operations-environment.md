@@ -28,6 +28,13 @@
 - 학습자 API와 어드민 API는 공통 Hono middleware로 요청 ID를 응답 헤더에 싣고, 요청 완료 시 method, path, status, duration을 구조화 로그로 남긴다.
 - 외부에서 `X-Request-ID`를 전달하면 같은 값을 로그와 응답에 사용하고, 없으면 런타임에서 새 요청 ID를 생성한다.
 
+## 2026-06-17 요청 로그 런타임 의존성 명시 완료
+
+- request id 생성과 duration 측정은 `RequestLoggingRuntime` capability로 모델링한다.
+- production 런타임은 `defaultRequestLoggingRuntime`을 조립 루트에서 주입하며, 기본 request id는 `crypto.randomUUID()`로 생성한다.
+- 요청 duration은 wall clock이 아니라 monotonic clock인 `performance.now()` 기준 차이로 계산한다.
+- 테스트는 request id generator와 monotonic clock을 주입해 요청 로그를 결정적으로 검증한다.
+
 ## 2026-06-15 DB 재생성 안전장치 적용 시작
 
 - 콘텐츠 시드 중 기존 SQLite 파일을 삭제해야 하는 경우 production 기본 실행을 차단한다.

@@ -21,6 +21,7 @@ import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   createRequestLoggingMiddleware,
   type RequestLogger,
+  type RequestLoggingRuntime,
 } from "@workspace/logger"
 
 export type ApiDependencies = {
@@ -32,6 +33,7 @@ export type ApiDependencies = {
   readonly profileReader: ProfileReader
   readonly progressReader?: ProgressReader
   readonly requestLogger?: RequestLogger
+  readonly requestLoggingRuntime?: RequestLoggingRuntime
   readonly sessionResolver: SessionResolver
   readonly webOrigin?: string
 }
@@ -52,7 +54,10 @@ export function createApp(dependencies: ApiDependencies): Hono {
     app.use(
       "*",
       createRequestLoggingMiddleware({
+        createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
         logRequest: dependencies.requestLogger,
+        readMonotonicTimeMs:
+          dependencies.requestLoggingRuntime?.readMonotonicTimeMs,
       })
     )
   }

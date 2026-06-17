@@ -16,6 +16,7 @@ import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   createRequestLoggingMiddleware,
   type RequestLogger,
+  type RequestLoggingRuntime,
 } from "@workspace/logger"
 
 export type AdminApiDependencies = {
@@ -24,6 +25,7 @@ export type AdminApiDependencies = {
   readonly dashboardService: AdminService
   readonly now?: () => Date
   readonly requestLogger?: RequestLogger
+  readonly requestLoggingRuntime?: RequestLoggingRuntime
   readonly sessionResolver: AdminSessionResolver
 }
 
@@ -42,7 +44,10 @@ export function createApp(dependencies: AdminApiDependencies): Hono {
     app.use(
       "*",
       createRequestLoggingMiddleware({
+        createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
         logRequest: dependencies.requestLogger,
+        readMonotonicTimeMs:
+          dependencies.requestLoggingRuntime?.readMonotonicTimeMs,
       })
     )
   }

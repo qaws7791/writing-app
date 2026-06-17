@@ -7,7 +7,9 @@ export {
 } from "@workspace/logger/request-logger"
 export {
   createRequestLoggingMiddleware,
+  defaultRequestLoggingRuntime,
   type RequestLoggingMiddlewareOptions,
+  type RequestLoggingRuntime,
 } from "@workspace/logger/hono-request-logger"
 
 export type AppLogger = Logger

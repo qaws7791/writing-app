@@ -16,7 +16,11 @@ import {
   lessons,
 } from "@workspace/db"
 import { addLearningCalendarDays } from "@workspace/db/repositories/activity-date"
-import { createAppLogger, createRequestLogger } from "@workspace/logger"
+import {
+  createAppLogger,
+  createRequestLogger,
+  defaultRequestLoggingRuntime,
+} from "@workspace/logger"
 import { and, count, desc, eq } from "drizzle-orm"
 
 import { createApp } from "@/app"
@@ -70,6 +74,7 @@ const app = createApp({
   profileReader: createProfileReader(database.db),
   progressReader,
   requestLogger: createRequestLogger(logger),
+  requestLoggingRuntime: defaultRequestLoggingRuntime,
   sessionResolver: createLearnerSessionResolver(auth, database.db),
   webOrigin: env.webOrigin,
 })
