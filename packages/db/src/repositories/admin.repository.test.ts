@@ -30,7 +30,7 @@ import {
 describe("어드민 DB repository", () => {
   it("사용자 목록 페이지네이션은 JS 배열 slice가 아니라 DB 쿼리 경계에서 처리한다", () => {
     const repositorySource = readFileSync(
-      fileURLToPath(new URL("admin.repository.ts", import.meta.url)),
+      fileURLToPath(new URL("admin-user.repository.ts", import.meta.url)),
       "utf8"
     )
     const readUsersSource = readFunctionSource(repositorySource, "readUsers")
@@ -40,16 +40,20 @@ describe("어드민 DB repository", () => {
   })
 
   it("코스와 레슨 분석 목록 페이지네이션은 DB 쿼리 경계에서 처리한다", () => {
-    const repositorySource = readFileSync(
-      fileURLToPath(new URL("admin.repository.ts", import.meta.url)),
+    const courseRepositorySource = readFileSync(
+      fileURLToPath(new URL("admin-course.repository.ts", import.meta.url)),
+      "utf8"
+    )
+    const analyticsRepositorySource = readFileSync(
+      fileURLToPath(new URL("admin-analytics.repository.ts", import.meta.url)),
       "utf8"
     )
     const readCoursesSource = readFunctionSource(
-      repositorySource,
+      courseRepositorySource,
       "readCourses"
     )
     const readLessonAnalyticsSource = readFunctionSource(
-      repositorySource,
+      analyticsRepositorySource,
       "readLessonAnalytics"
     )
 
@@ -63,7 +67,7 @@ describe("어드민 DB repository", () => {
 
   it("코스 편집 조회는 전체 테이블을 읽은 뒤 중첩 filter로 조합하지 않는다", () => {
     const repositorySource = readFileSync(
-      fileURLToPath(new URL("admin.repository.ts", import.meta.url)),
+      fileURLToPath(new URL("admin-course.repository.ts", import.meta.url)),
       "utf8"
     )
     const readCourseEditorSource = readFunctionSource(
@@ -98,6 +102,7 @@ describe("어드민 DB repository", () => {
     expect(factorySource).toBeDefined()
     expect(factorySource).toContain("createAdminCourseRepository")
     expect(factorySource).toContain("createAdminUserRepository")
+    expect(factorySource).toContain("createAdminDashboardRepository")
     expect(factorySource).toContain("createAdminAnalyticsRepository")
     expect(factorySource).toContain("createAdminSettingsRepository")
     expect(factorySource).not.toContain("archiveCourse(input)")
@@ -107,7 +112,7 @@ describe("어드민 DB repository", () => {
 
   it("콘텐츠 reset은 공유 보관 정책을 사용한다", () => {
     const repositorySource = readFileSync(
-      fileURLToPath(new URL("admin.repository.ts", import.meta.url)),
+      fileURLToPath(new URL("admin-course.repository.ts", import.meta.url)),
       "utf8"
     )
 

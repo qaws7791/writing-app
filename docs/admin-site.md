@@ -7,6 +7,13 @@
 - 코스 목록과 레슨별 분석 목록은 total count query와 page row query를 분리하며, 정렬, `LIMIT`, `OFFSET`은 DB query boundary에서 수행한다.
 - 어드민 목록의 page/pageSize 보정은 repository 내부 공통 helper를 사용해 동일한 페이지 계산 규칙을 따른다.
 
+## 2026-06-17 어드민 repository 모듈 경계 정리 완료
+
+- `packages/db/src/repositories/admin.repository.ts`는 통합 `createDrizzleAdminRepository()` facade 조립만 담당한다.
+- 대시보드, 분석, 코스, 운영 설정, 사용자 DB 구현은 각각 `admin-dashboard.repository.ts`, `admin-analytics.repository.ts`, `admin-course.repository.ts`, `admin-settings.repository.ts`, `admin-user.repository.ts`에 둔다.
+- 여러 어드민 repository가 공유하는 페이지 계산과 학습자 활동일 helper는 `admin-repository-shared.ts`에 둔다.
+- 새 어드민 DB 기능을 추가할 때는 통합 facade에 구현 함수를 추가하지 않고 해당 도메인 repository 파일에 구현한 뒤 facade에서 조립한다.
+
 ## 2026-06-15 어드민 코스 미리보기 계약 정리 시작
 
 - 현재 코스 상세 화면은 저장 가능한 편집기가 아니라 `GET /courses/:courseId/editor` 기반 읽기 전용 미리보기로 정리한다.
