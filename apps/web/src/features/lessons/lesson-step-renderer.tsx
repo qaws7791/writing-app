@@ -14,6 +14,15 @@ import {
   type LessonStepAnswerPayload,
 } from "@/features/lessons/lesson-logic"
 import {
+  createMatchStepPresentation,
+  findMatchedLeftChoiceIdForRightChoiceId,
+  isCorrectMatchChoice,
+  toMatchAnswerPairs,
+  toggleMatchSelection,
+  type MatchChoiceId,
+  type MatchSelectionMap,
+} from "@workspace/core/learning/learning-match-presentation"
+import {
   getLessonStepDescription,
   getLessonStepTitle,
   isLessonStepStandalone,
@@ -191,6 +200,7 @@ const stepContentRendererByType = {
   MATCH: (step, handlers) => (
     <MatchAnswer
       checked={handlers.checked}
+      key={step.id}
       onAnswerChange={handlers.onAnswerChange}
       onAnswerPayloadChange={handlers.onAnswerPayloadChange}
       step={step}
@@ -656,87 +666,36 @@ function MatchAnswer({
   readonly onAnswerPayloadChange: LessonStepRendererProps["onAnswerPayloadChange"]
   readonly step: MatchStep
 }) {
-  const [matchMap, setMatchMap] = useState<Readonly<Record<number, string>>>({})
-  const [selectedLeft, setSelectedLeft] = useState<null | number>(null)
-  const lefts = step.pairs.map((pair) => pair.left)
-  const rights = step.pairs.map((pair) => pair.right)
+  const [matchMap, setMatchMap] = useState<MatchSelectionMap>({})
+  const [selectedLeft, setSelectedLeft] = useState<MatchChoiceId | null>(null)
+  const presentation = useMemo(() => createMatchStepPresentation(step), [step])
 
-  const shuffledRights = useMemo(() => {
-    const seed = step.pairs.map((pair) => pair.right).join("")
-    const nextRights = [...rights]
-    let hash = 0
-
-    for (let index = 0; index < seed.length; index += 1) {
-      hash = (Math.imul(31, hash) + seed.charCodeAt(index)) | 0
-    }
-
-    for (let index = nextRights.length - 1; index > 0; index -= 1) {
-      hash = (Math.imul(hash, 1664525) + 1013904223) | 0
-      const swapIndex = Math.abs(hash) % (index + 1)
-      const current = nextRights[index]
-      const swap = nextRights[swapIndex]
-
-      if (current !== undefined && swap !== undefined) {
-        nextRights[index] = swap
-        nextRights[swapIndex] = current
-      }
-    }
-
-    return nextRights
-  }, [rights, step.pairs])
-
-  function matchedLeftForRight(right: string): null | number {
-    const entry = Object.entries(matchMap).find(([, value]) => value === right)
-
-    return entry === undefined ? null : Number(entry[0])
-  }
-
-  function handleLeftTap(index: number) {
+  function handleLeftTap(leftChoiceId: MatchChoiceId) {
     if (checked !== false) {
       return
     }
 
-    setSelectedLeft((previous) => (previous === index ? null : index))
+    setSelectedLeft((previous) =>
+      previous === leftChoiceId ? null : leftChoiceId
+    )
   }
 
-  function handleRightTap(right: string) {
+  function handleRightTap(rightChoiceId: MatchChoiceId) {
     if (checked !== false || selectedLeft === null) {
       return
     }
 
-    const nextMap: Record<number, string> = {
-      ...matchMap,
-    }
-
-    if (nextMap[selectedLeft] === right) {
-      delete nextMap[selectedLeft]
-    } else {
-      const previousLeft = matchedLeftForRight(right)
-
-      if (previousLeft !== null) {
-        delete nextMap[previousLeft]
-      }
-
-      nextMap[selectedLeft] = right
-    }
+    const nextMap = toggleMatchSelection(matchMap, {
+      leftChoiceId: selectedLeft,
+      rightChoiceId,
+    })
 
     setMatchMap(nextMap)
     emitAnswer(
       onAnswerChange,
       step.id,
       {
-        pairs: step.pairs.flatMap((pair, index) => {
-          const matchedRight = nextMap[index]
-
-          return matchedRight === undefined
-            ? []
-            : [
-                {
-                  left: pair.left,
-                  right: matchedRight,
-                },
-              ]
-        }),
+        pairs: toMatchAnswerPairs(presentation, nextMap),
         type: "MATCH",
       },
       onAnswerPayloadChange
@@ -763,16 +722,26 @@ function MatchAnswer({
       )}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-3">
-          {lefts.map((left, index) => {
-            const matchedRight = matchMap[index]
+          {presentation.leftChoices.map((leftChoice) => {
+            const matchedRightChoiceId = matchMap[leftChoice.id]
             const isCorrect =
-              checked !== false && matchedRight === rights[index]
+              checked !== false &&
+              matchedRightChoiceId !== undefined &&
+              isCorrectMatchChoice(
+                presentation,
+                leftChoice.id,
+                matchedRightChoiceId
+              )
             const isWrong =
               checked !== false &&
-              matchedRight !== undefined &&
-              matchedRight !== rights[index]
-            const isActive = selectedLeft === index
-            const isPaired = matchedRight !== undefined
+              matchedRightChoiceId !== undefined &&
+              !isCorrectMatchChoice(
+                presentation,
+                leftChoice.id,
+                matchedRightChoiceId
+              )
+            const isActive = selectedLeft === leftChoice.id
+            const isPaired = matchedRightChoiceId !== undefined
 
             return (
               <button
@@ -789,26 +758,41 @@ function MatchAnswer({
                           : "bg-surface text-charcoal"
                 )}
                 disabled={checked !== false}
-                key={left}
-                onClick={() => handleLeftTap(index)}
+                key={leftChoice.id}
+                onClick={() => handleLeftTap(leftChoice.id)}
                 style={{ fontSize: "1rem", minHeight: "3.5rem" }}
                 type="button"
               >
-                {left}
+                {leftChoice.text}
               </button>
             )
           })}
         </div>
         <div className="flex flex-col gap-3">
-          {shuffledRights.map((right) => {
-            const pairedLeftIndex = matchedLeftForRight(right)
-            const isPaired = pairedLeftIndex !== null
+          {presentation.rightChoices.map((rightChoice) => {
+            const pairedLeftChoiceId = findMatchedLeftChoiceIdForRightChoiceId(
+              matchMap,
+              rightChoice.id
+            )
+            const isPaired = pairedLeftChoiceId !== null
             const isHighlighted =
-              selectedLeft !== null && matchMap[selectedLeft] === right
+              selectedLeft !== null && matchMap[selectedLeft] === rightChoice.id
             const isCorrect =
-              checked !== false && isPaired && rights[pairedLeftIndex] === right
+              checked !== false &&
+              pairedLeftChoiceId !== null &&
+              isCorrectMatchChoice(
+                presentation,
+                pairedLeftChoiceId,
+                rightChoice.id
+              )
             const isWrong =
-              checked !== false && isPaired && rights[pairedLeftIndex] !== right
+              checked !== false &&
+              pairedLeftChoiceId !== null &&
+              !isCorrectMatchChoice(
+                presentation,
+                pairedLeftChoiceId,
+                rightChoice.id
+              )
 
             return (
               <button
@@ -827,12 +811,12 @@ function MatchAnswer({
                             : "bg-surface text-muted"
                 )}
                 disabled={checked !== false || selectedLeft === null}
-                key={right}
-                onClick={() => handleRightTap(right)}
+                key={rightChoice.id}
+                onClick={() => handleRightTap(rightChoice.id)}
                 style={{ fontSize: "1rem", minHeight: "3.5rem" }}
                 type="button"
               >
-                {right}
+                {rightChoice.text}
               </button>
             )
           })}

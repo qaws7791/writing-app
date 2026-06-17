@@ -95,6 +95,8 @@ type CurriculumNodeStatus = "active" | "deprecated" | "archived"
 
 상호작용형 스텝 답변은 `lesson_answers`에 저장한다. 답변 본문은 스텝 타입별 JSON으로 저장하고, 타입별 파싱과 검증은 `packages/core`의 DTO와 서비스 계약에서 명시한다.
 
+매칭 스텝은 학습 콘텐츠의 텍스트와 화면 선택지 식별자를 분리한다. 왼쪽과 오른쪽 선택지는 pair index에서 만든 stable choice id를 갖고, 오른쪽 표시 순서는 `packages/core`의 매칭 표시 정책이 결정적으로 섞는다. 중복 텍스트가 있어도 화면 key, 선택 전이, 정답 판정은 텍스트가 아니라 choice id를 기준으로 처리하고, 저장 payload만 기존 `left`, `right` 텍스트 pair로 변환한다.
+
 연속 학습일은 클라이언트 상태가 아니라 서버 이벤트에서 계산한다. 학습 진행 저장, 답변 저장, 레슨 완료 같은 활동은 사용자별 학습 활동 날짜를 갱신하고, 현재 연속 학습일은 조회 시점에 결정적으로 계산한다.
 
 학습 활동 날짜는 UTC timestamp가 아니라 플랫폼 학습 시간대 기준의 논리 날짜다. 현재 플랫폼 학습 시간대는 `Asia/Seoul`이며, 날짜 키 생성과 연속 학습일 계산은 `packages/core`의 `LearningDateKey` 정책을 단일 출처로 사용한다.
