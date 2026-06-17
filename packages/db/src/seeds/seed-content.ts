@@ -1,4 +1,5 @@
 import { contentStatuses } from "@workspace/core/status"
+import type { CourseVisualKey } from "@workspace/core/content"
 
 export type KwepStepType =
   | "reading"
@@ -49,6 +50,7 @@ export type KwepCourseSeed = {
   readonly title: string
   readonly desc: string
   readonly cat: string
+  readonly visualKey: CourseVisualKey
   readonly units: readonly KwepUnitSeed[]
 }
 
@@ -57,6 +59,7 @@ export type CourseSeedRow = {
   readonly title: string
   readonly description: string
   readonly category: string
+  readonly visualKey: CourseVisualKey
   readonly status: typeof contentStatuses.active
   readonly sortOrder: number
   readonly curriculumRevision: number
@@ -132,6 +135,7 @@ export function createContentSeedRows(
       title: course.title,
       description: course.desc,
       category: course.cat,
+      visualKey: course.visualKey,
       status: contentStatuses.active,
       sortOrder: courseIndex + 1,
       curriculumRevision: 0,

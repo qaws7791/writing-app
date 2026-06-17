@@ -50,6 +50,7 @@ const course: CourseDetail = {
   progressPercent: 33,
   status: "active",
   title: "글쓰기 첫걸음 30일",
+  visualKey: "basic-sentence-writing",
   units: [
     {
       id: "u1",

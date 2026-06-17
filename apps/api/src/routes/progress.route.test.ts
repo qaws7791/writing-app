@@ -68,6 +68,7 @@ describe("플랫폼 API progress route", () => {
           ],
           progressPercent: 33,
           title: "글쓰기 첫걸음 30일",
+          visualKey: "basic-sentence-writing",
         },
       ],
       user: {
@@ -121,6 +122,7 @@ function createDependencies(): ApiDependencies {
           },
           status: "active",
           title: "글쓰기 첫걸음 30일",
+          visualKey: "basic-sentence-writing",
           units: [
             {
               id: "u1",
@@ -171,6 +173,7 @@ function createDependencies(): ApiDependencies {
             lessonCount: 3,
             status: "active",
             title: "글쓰기 첫걸음 30일",
+            visualKey: "basic-sentence-writing",
           }),
         ]
       },

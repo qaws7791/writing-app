@@ -15,6 +15,13 @@ const labeledTextSchema = z.object({
   label: z.string(),
   text: z.string(),
 })
+export const courseVisualKeySchema = z.enum([
+  "basic-sentence-writing",
+  "grammar-complete",
+  "essay-writing",
+  "creative-writing",
+  "expression",
+])
 
 export const lessonStepTypeSchema = z.enum([
   "READING",
@@ -198,6 +205,7 @@ export const courseSummaryDtoSchema = z.object({
   category: z.string(),
   lessonCount: nonNegativeIntegerSchema,
   status: contentStatusSchema,
+  visualKey: courseVisualKeySchema,
 })
 
 export const courseListDtoSchema = z.object({
@@ -251,6 +259,7 @@ export type LessonStepType = z.infer<typeof lessonStepTypeSchema>
 export type LessonStepDto = z.infer<typeof lessonStepDtoSchema>
 export type LessonSummaryDto = z.infer<typeof lessonSummaryDtoSchema>
 export type CourseUnitDto = z.infer<typeof courseUnitDtoSchema>
+export type CourseVisualKey = z.infer<typeof courseVisualKeySchema>
 export type CourseSummaryDto = z.infer<typeof courseSummaryDtoSchema>
 export type CourseListDto = z.infer<typeof courseListDtoSchema>
 export type CourseDetailDto = z.infer<typeof courseDetailDtoSchema>

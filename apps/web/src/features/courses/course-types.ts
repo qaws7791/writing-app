@@ -1,3 +1,5 @@
+import type { CourseVisualKey } from "@workspace/core/content"
+
 export type CourseStatus = "active" | "archived"
 export type LessonProgressStatus = "available" | "completed" | "locked"
 
@@ -8,6 +10,7 @@ export type CourseSummary = {
   readonly lessonCount: number
   readonly status: CourseStatus
   readonly title: string
+  readonly visualKey: CourseVisualKey
 }
 
 export type CourseLessonSummary = {
@@ -70,6 +73,7 @@ export type ProgressCourse = {
   readonly nextLessons: readonly ProgressNextLesson[]
   readonly progressPercent: number
   readonly title: string
+  readonly visualKey: CourseVisualKey
 }
 
 export type ProgressCourseList = {

@@ -8,6 +8,7 @@ export const courses = sqliteTable("courses", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   category: text("category").notNull(),
+  visualKey: text("visual_key").notNull().default("basic-sentence-writing"),
   status: text("status", { enum: contentStatusValues })
     .notNull()
     .default(contentStatuses.active),

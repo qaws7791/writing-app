@@ -19,6 +19,7 @@ export function mapCourseList(
     lessonCount: course.lessonCount,
     status: course.status,
     title: course.title,
+    visualKey: course.visualKey,
   }))
 }
 
@@ -52,6 +53,7 @@ export function mapCourseDetail(
     progressPercent: response.progress.percentage,
     status: response.status,
     title: response.title,
+    visualKey: response.visualKey,
     units: response.units.map((unit) => ({
       id: unit.id,
       lessons: unit.lessons.map((lesson) => ({
@@ -90,6 +92,7 @@ export function mapProgress(response: ApiProgressResponse): ProgressCourseList {
       })),
       progressPercent: course.progressPercent,
       title: course.title,
+      visualKey: course.visualKey,
     })),
     currentStreakDays: response.user.currentStreakDays,
   }

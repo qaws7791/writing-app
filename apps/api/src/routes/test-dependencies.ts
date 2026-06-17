@@ -89,6 +89,7 @@ const contentRepository: ContentRepository = {
       },
       status: "active",
       title: "글쓰기 첫걸음 30일",
+      visualKey: "basic-sentence-writing",
       units: [
         {
           id: "u1",
@@ -144,6 +145,7 @@ const contentRepository: ContentRepository = {
         lessonCount: 3,
         status: "active",
         title: "글쓰기 첫걸음 30일",
+        visualKey: "basic-sentence-writing",
       }),
     ]
   },

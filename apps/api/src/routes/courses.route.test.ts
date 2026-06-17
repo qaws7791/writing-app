@@ -36,6 +36,7 @@ describe("플랫폼 API courses route", () => {
           id: "c1",
           lessonCount: 3,
           title: "글쓰기 첫걸음 30일",
+          visualKey: "basic-sentence-writing",
         },
       ],
     })
@@ -213,6 +214,7 @@ function createCourseDetailDependencies(
           },
           status: "active",
           title: "글쓰기 첫걸음 30일",
+          visualKey: "basic-sentence-writing",
           units: [
             {
               id: "u1",
@@ -263,6 +265,7 @@ function createCourseDetailDependencies(
             lessonCount: 3,
             status: "active",
             title: "글쓰기 첫걸음 30일",
+            visualKey: "basic-sentence-writing",
           }),
         ]
       },

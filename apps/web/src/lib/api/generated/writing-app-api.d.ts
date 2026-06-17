@@ -367,6 +367,13 @@ export interface operations {
               }[]
               progressPercent: number
               title: string
+              /** @enum {string} */
+              visualKey:
+                | "basic-sentence-writing"
+                | "creative-writing"
+                | "essay-writing"
+                | "expression"
+                | "grammar-complete"
             }[]
             user: {
               currentStreakDays: number
@@ -426,6 +433,13 @@ export interface operations {
               /** @enum {string} */
               status: "active" | "archived"
               title: string
+              /** @enum {string} */
+              visualKey:
+                | "basic-sentence-writing"
+                | "creative-writing"
+                | "essay-writing"
+                | "expression"
+                | "grammar-complete"
             }[]
           }
         }
@@ -483,6 +497,13 @@ export interface operations {
             /** @enum {string} */
             status: "active" | "archived"
             title: string
+            /** @enum {string} */
+            visualKey:
+              | "basic-sentence-writing"
+              | "creative-writing"
+              | "essay-writing"
+              | "expression"
+              | "grammar-complete"
             progress: {
               completedLessons: number
               lessons: {

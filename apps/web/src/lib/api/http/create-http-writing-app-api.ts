@@ -14,6 +14,7 @@ import {
 import {
   courseDetailDtoSchema,
   courseListDtoSchema,
+  courseVisualKeySchema,
   lessonDtoSchema,
 } from "@workspace/core/content"
 import { aiFeedbackResultDtoSchema } from "@workspace/core/ai-feedback"
@@ -170,6 +171,7 @@ const apiProgressResponseSchema = z.object({
       nextLessons: z.array(progressLessonSchema.required({ courseId: true })),
       progressPercent: nonNegativeIntegerSchema.max(100),
       title: z.string(),
+      visualKey: courseVisualKeySchema,
     })
   ),
   user: z.object({

@@ -54,6 +54,7 @@ export function toCourseProgress(
       })),
     progressPercent,
     title: course.title,
+    visualKey: course.visualKey,
   }
 }
 

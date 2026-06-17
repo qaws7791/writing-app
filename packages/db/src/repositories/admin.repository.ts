@@ -710,6 +710,7 @@ function insertCourseAggregate(
         sortOrder,
         status: contentStatuses.active,
         title: "새 강의",
+        visualKey: "basic-sentence-writing",
       })
       .run()
     transaction

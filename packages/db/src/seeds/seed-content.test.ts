@@ -28,6 +28,7 @@ describe("Kwep 콘텐츠 seed 변환", () => {
       description:
         "문장의 기본부터 한 문단을 완성하기까지, 매일 조금씩 쓰는 습관을 만듭니다.",
       category: "입문자를 위한 코스",
+      visualKey: "basic-sentence-writing",
       status: "active",
       sortOrder: 1,
       curriculumRevision: 0,

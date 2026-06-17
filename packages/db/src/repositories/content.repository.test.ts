@@ -54,6 +54,7 @@ describe("콘텐츠 baseline repository", () => {
         id: "c1",
         lessonCount: 10,
         status: "active",
+        visualKey: "basic-sentence-writing",
       })
     } finally {
       client.close()

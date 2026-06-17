@@ -127,6 +127,7 @@ const seedCourseRow: ContentSeedRows["courses"][number] = {
   sortOrder: 1,
   status: contentStatuses.active,
   title: "Seed Course",
+  visualKey: "basic-sentence-writing",
 }
 
 const seedUnitRow: ContentSeedRows["units"][number] = {

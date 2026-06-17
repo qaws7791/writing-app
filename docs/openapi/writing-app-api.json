@@ -416,6 +416,16 @@
                           },
                           "title": {
                             "type": "string"
+                          },
+                          "visualKey": {
+                            "enum": [
+                              "basic-sentence-writing",
+                              "creative-writing",
+                              "essay-writing",
+                              "expression",
+                              "grammar-complete"
+                            ],
+                            "type": "string"
                           }
                         },
                         "required": [
@@ -423,7 +433,8 @@
                           "lessons",
                           "nextLessons",
                           "progressPercent",
-                          "title"
+                          "title",
+                          "visualKey"
                         ],
                         "type": "object"
                       },
@@ -536,6 +547,16 @@
                           },
                           "title": {
                             "type": "string"
+                          },
+                          "visualKey": {
+                            "enum": [
+                              "basic-sentence-writing",
+                              "creative-writing",
+                              "essay-writing",
+                              "expression",
+                              "grammar-complete"
+                            ],
+                            "type": "string"
                           }
                         },
                         "required": [
@@ -544,7 +565,8 @@
                           "id",
                           "lessonCount",
                           "status",
-                          "title"
+                          "title",
+                          "visualKey"
                         ],
                         "type": "object"
                       },
@@ -652,6 +674,16 @@
                       "type": "string"
                     },
                     "title": {
+                      "type": "string"
+                    },
+                    "visualKey": {
+                      "enum": [
+                        "basic-sentence-writing",
+                        "creative-writing",
+                        "essay-writing",
+                        "expression",
+                        "grammar-complete"
+                      ],
                       "type": "string"
                     },
                     "progress": {
@@ -833,6 +865,7 @@
                     "lessonCount",
                     "status",
                     "title",
+                    "visualKey",
                     "progress",
                     "units"
                   ],

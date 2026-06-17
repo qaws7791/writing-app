@@ -6,7 +6,7 @@ import Image from "next/image"
 import { useRouter } from "next/navigation"
 
 import { CourseCurriculum } from "@/features/courses/course-curriculum"
-import { createCourseImageUrl } from "@/features/courses/course-image-url"
+import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type { CourseDetail } from "@/features/courses/course-types"
 import { ChevronLeftIcon } from "@workspace/ui/components/icons"
 
@@ -38,7 +38,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             className="w-24 h-24 md:w-32 md:h-32 rounded-2xl md:rounded-3xl object-cover shrink-0"
             height={128}
             sizes="(max-width: 768px) 96px, 128px"
-            src={createCourseImageUrl(course.id)}
+            src={createCourseImageUrl(course.visualKey)}
             width={128}
           />
         </div>

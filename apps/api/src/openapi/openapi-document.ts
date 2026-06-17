@@ -100,6 +100,16 @@ const nullableTextSchema = {
 const nullableIntegerSchema = {
   anyOf: [integerSchema, { type: "null" }],
 } as const
+const courseVisualKeySchema = {
+  enum: [
+    "basic-sentence-writing",
+    "creative-writing",
+    "essay-writing",
+    "expression",
+    "grammar-complete",
+  ],
+  type: "string",
+} as const
 const authSecurity = [{ bearerAuth: [] }] as const
 
 export function createOpenApiDocument(): OpenApiDocument {
@@ -184,6 +194,7 @@ export function createOpenApiDocument(): OpenApiDocument {
                     nextLessons: arraySchema(progressNextLessonSchema),
                     progressPercent: percentSchema,
                     title: textSchema,
+                    visualKey: courseVisualKeySchema,
                   })
                 ),
                 user: objectSchema({
@@ -391,6 +402,7 @@ const courseSummarySchema = objectSchema({
     type: "string",
   },
   title: textSchema,
+  visualKey: courseVisualKeySchema,
 })
 
 const lessonSummarySchema = objectSchema({

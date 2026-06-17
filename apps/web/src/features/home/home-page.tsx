@@ -5,7 +5,7 @@
 import { useRouter } from "next/navigation"
 import type { ReactNode } from "react"
 
-import { createCourseImageUrl } from "@/features/courses/course-image-url"
+import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type {
   ProgressCourse,
   ProgressCourseList,
@@ -211,7 +211,7 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
               alt={course.title}
               className="w-full h-full object-cover pointer-events-none"
               draggable={false}
-              src={createCourseImageUrl(course.id)}
+              src={createCourseImageUrl(course.visualKey)}
               style={{ minHeight: "7rem" }}
             />
           </button>
@@ -239,7 +239,7 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
             alt={course.title}
             className="w-full h-36 object-cover pointer-events-none"
             draggable={false}
-            src={createCourseImageUrl(course.id)}
+            src={createCourseImageUrl(course.visualKey)}
           />
           <div className="px-6 pt-5 pb-4">
             <ContinueCourseSummary

@@ -104,6 +104,7 @@ CREATE TABLE IF NOT EXISTS courses (
   title TEXT NOT NULL,
   description TEXT NOT NULL,
   category TEXT NOT NULL,
+  visual_key TEXT NOT NULL DEFAULT 'basic-sentence-writing',
   status TEXT NOT NULL DEFAULT 'active',
   sort_order INTEGER NOT NULL,
   curriculum_revision INTEGER NOT NULL DEFAULT 0

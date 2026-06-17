@@ -7,7 +7,7 @@ import { useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 
-import { createCourseImageUrl } from "@/features/courses/course-image-url"
+import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type { CourseSummary } from "@/features/courses/course-types"
 
 type CoursesPageProps = {
@@ -23,6 +23,7 @@ const fallbackCourses: readonly CourseSummary[] = [
     lessonCount: 10,
     status: "active",
     title: "글쓰기 첫걸음 30일",
+    visualKey: "basic-sentence-writing",
   },
   {
     category: "문법 심화",
@@ -32,6 +33,7 @@ const fallbackCourses: readonly CourseSummary[] = [
     lessonCount: 8,
     status: "active",
     title: "문장의 기본 문법",
+    visualKey: "grammar-complete",
   },
   {
     category: "실전 글쓰기",
@@ -41,6 +43,7 @@ const fallbackCourses: readonly CourseSummary[] = [
     lessonCount: 8,
     status: "active",
     title: "글과 논증을 잘하는 30일",
+    visualKey: "essay-writing",
   },
   {
     category: "중급 글쓰기",
@@ -50,6 +53,7 @@ const fallbackCourses: readonly CourseSummary[] = [
     lessonCount: 9,
     status: "active",
     title: "독자를 사로잡는 글쓰기",
+    visualKey: "creative-writing",
   },
   {
     category: "심화 글쓰기",
@@ -58,6 +62,7 @@ const fallbackCourses: readonly CourseSummary[] = [
     lessonCount: 9,
     status: "active",
     title: "퇴고와 완성의 기술",
+    visualKey: "expression",
   },
 ]
 
@@ -116,7 +121,7 @@ export function CoursesPage({ courses }: CoursesPageProps) {
                   className="object-cover"
                   fill
                   sizes="(max-width: 768px) 112px, (max-width: 1024px) 50vw, 33vw"
-                  src={createCourseImageUrl(course.id)}
+                  src={createCourseImageUrl(course.visualKey)}
                 />
               </div>
               <div className="p-4 md:p-6 flex-1 flex flex-col min-w-0">

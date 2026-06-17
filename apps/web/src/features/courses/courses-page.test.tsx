@@ -22,6 +22,7 @@ const courses: readonly CourseSummary[] = [
     lessonCount: 10,
     status: "active",
     title: "글쓰기 첫걸음 30일",
+    visualKey: "basic-sentence-writing",
   },
   {
     category: "문법 심화",
@@ -31,6 +32,7 @@ const courses: readonly CourseSummary[] = [
     lessonCount: 8,
     status: "active",
     title: "문장의 기본 문법",
+    visualKey: "grammar-complete",
   },
 ]
 

@@ -144,6 +144,7 @@ describe("콘텐츠 DTO schema", () => {
       category: "입문자를 위한 코스",
       lessonCount: 10,
       status: "active",
+      visualKey: "basic-sentence-writing",
     }
 
     expect(courseListDtoSchema.parse({ courses: [summary] })).toEqual({
@@ -210,6 +211,7 @@ describe("콘텐츠 DTO schema", () => {
         category: "입문자를 위한 코스",
         lessonCount: 1,
         status: "active",
+        visualKey: "basic-sentence-writing",
         progress: {
           completedLessons: 1,
           lessons: [

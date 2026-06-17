@@ -18,6 +18,7 @@ describe("코스 API mapper", () => {
             lessonCount: 10,
             status: "active",
             title: "글쓰기 첫걸음 30일",
+            visualKey: "basic-sentence-writing",
           },
         ],
       })
@@ -29,6 +30,7 @@ describe("코스 API mapper", () => {
         lessonCount: 10,
         status: "active",
         title: "글쓰기 첫걸음 30일",
+        visualKey: "basic-sentence-writing",
       },
     ])
   })
@@ -55,6 +57,7 @@ describe("코스 API mapper", () => {
         },
         status: "active",
         title: "글쓰기 첫걸음 30일",
+        visualKey: "basic-sentence-writing",
         units: [
           {
             id: "u1",
@@ -76,6 +79,7 @@ describe("코스 API mapper", () => {
       })
     ).toMatchObject({
       id: "c1",
+      visualKey: "basic-sentence-writing",
       progress: {
         completedLessons: 1,
         lessons: [
@@ -138,6 +142,7 @@ describe("코스 API mapper", () => {
             ],
             progressPercent: 50,
             title: "글쓰기 첫걸음 30일",
+            visualKey: "basic-sentence-writing",
           },
         ],
         user: {
@@ -148,6 +153,7 @@ describe("코스 API mapper", () => {
       courses: [
         {
           id: "c1",
+          visualKey: "basic-sentence-writing",
           nextLessons: [
             {
               currentStepIndex: null,

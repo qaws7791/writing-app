@@ -20,6 +20,7 @@ const courseSummary: CourseSummaryDto = {
   category: "입문자를 위한 코스",
   lessonCount: 10,
   status: "active",
+  visualKey: "basic-sentence-writing",
 }
 
 const courseDetail: CourseDetailDto = {

@@ -52,6 +52,7 @@ function listCourses(db: KwepDatabase): readonly CourseSummaryDto[] {
       title: courses.title,
       description: courses.description,
       category: courses.category,
+      visualKey: courses.visualKey,
       status: courses.status,
       lessonCount: count(lessons.id),
     })
@@ -109,6 +110,7 @@ function findCourseDetail(
     title: course.title,
     description: course.description,
     category: course.category,
+    visualKey: course.visualKey,
     lessonCount: lessonRows.length,
     status: course.status,
     progress: {
