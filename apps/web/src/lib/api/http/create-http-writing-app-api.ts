@@ -11,6 +11,7 @@ import {
   type FetchLike,
   type TokenProvider,
 } from "@/lib/api/http/openapi-client"
+import type { BrowserApiBaseUrl, ServerApiBaseUrl } from "@/runtime-config"
 import {
   courseDetailDtoSchema,
   courseListDtoSchema,
@@ -37,7 +38,7 @@ export function createHttpWritingAppApi({
   fetch,
   tokenProvider,
 }: {
-  readonly baseUrl: string
+  readonly baseUrl: BrowserApiBaseUrl | ServerApiBaseUrl
   readonly fetch: FetchLike
   readonly tokenProvider: TokenProvider
 }): WritingAppApi {

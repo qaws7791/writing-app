@@ -35,6 +35,13 @@
 - 요청 duration은 wall clock이 아니라 monotonic clock인 `performance.now()` 기준 차이로 계산한다.
 - 테스트는 request id generator와 monotonic clock을 주입해 요청 로그를 결정적으로 검증한다.
 
+## 2026-06-17 API URL 조합 경계 정비 완료
+
+- 학습자 웹은 `apps/web/src/runtime-config.ts`에서 브라우저/서버 API base URL을 읽고 정규화한다.
+- 어드민 웹은 `apps/admin/src/runtime-config.ts`에서 어드민 API base URL을 읽고 정규화한다.
+- API endpoint URL 조합은 각 앱의 runtime config helper가 담당하며, auth client와 HTTP client는 환경 변수를 직접 읽거나 문자열로 base URL과 path를 직접 붙이지 않는다.
+- base URL 끝의 slash는 하나 이상이어도 같은 값으로 정규화하고, path 앞 slash 유무와 관계없이 같은 URL을 만든다.
+
 ## 2026-06-15 DB 재생성 안전장치 적용 시작
 
 - 콘텐츠 시드 중 기존 SQLite 파일을 삭제해야 하는 경우 production 기본 실행을 차단한다.
@@ -152,6 +159,8 @@ cp apps/admin/.env.example apps/admin/.env
 | 변수                 | 로컬 값 예시            | 운영 값 예시                    | 비고                  |
 | -------------------- | ----------------------- | ------------------------------- | --------------------- |
 | `ADMIN_API_BASE_URL` | `http://localhost:4001` | `https://admin-api.example.com` | 호출할 어드민 API URL |
+
+어드민 웹 실행 코드는 `ADMIN_API_BASE_URL`을 직접 읽지 않는다. `apps/admin/src/runtime-config.ts`가 어드민 API base URL을 읽고 정규화하는 단일 경계이며, 인증 client와 API client factory는 이 모듈에서 받은 값을 사용한다.
 
 ## 배포 체크리스트
 

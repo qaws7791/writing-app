@@ -1,13 +1,16 @@
 import { describe, expect, it } from "vitest"
 
 import { createHttpAdminApi } from "@/lib/api/http-admin-api"
+import { readAdminApiBaseUrl } from "@/runtime-config"
 
 describe("HTTP AdminApi", () => {
   it("대시보드, 코스, 사용자, 분석, 설정 endpoint를 Better Auth 쿠키와 함께 호출한다", async () => {
     const requests: Request[] = []
     const bodies: unknown[] = []
     const api = createHttpAdminApi({
-      baseUrl: "https://admin-api.example.test/",
+      baseUrl: readAdminApiBaseUrl({
+        ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+      }),
       fetch: async (request) => {
         requests.push(request)
 
@@ -219,7 +222,9 @@ describe("HTTP AdminApi", () => {
 
   it("실패 응답을 AdminApi 오류로 변환한다", async () => {
     const api = createHttpAdminApi({
-      baseUrl: "https://admin-api.example.test",
+      baseUrl: readAdminApiBaseUrl({
+        ADMIN_API_BASE_URL: "https://admin-api.example.test",
+      }),
       fetch: async () =>
         jsonResponse(
           {
@@ -244,7 +249,9 @@ describe("HTTP AdminApi", () => {
 
   it("권한 실패 응답을 AdminApi 권한 오류로 변환한다", async () => {
     const api = createHttpAdminApi({
-      baseUrl: "https://admin-api.example.test",
+      baseUrl: readAdminApiBaseUrl({
+        ADMIN_API_BASE_URL: "https://admin-api.example.test",
+      }),
       fetch: async () =>
         jsonResponse(
           {
@@ -269,7 +276,9 @@ describe("HTTP AdminApi", () => {
 
   it("성공 응답이 계약과 다르면 contract-error를 반환한다", async () => {
     const api = createHttpAdminApi({
-      baseUrl: "https://admin-api.example.test",
+      baseUrl: readAdminApiBaseUrl({
+        ADMIN_API_BASE_URL: "https://admin-api.example.test",
+      }),
       fetch: async () =>
         jsonResponse({
           metrics: {

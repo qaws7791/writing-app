@@ -1,14 +1,12 @@
-import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
-
 import { createHttpAdminApi } from "@/lib/api/http-admin-api"
 import type { AdminApi } from "@/lib/api/admin-api"
+import { readAdminApiBaseUrl, type AdminApiBaseUrl } from "@/runtime-config"
 
 export function getServerAdminApi({
-  apiBaseUrl = process.env["ADMIN_API_BASE_URL"] ??
-    localRuntimeDefaults.adminApiBaseUrl,
+  apiBaseUrl = readAdminApiBaseUrl(),
   tokenProvider,
 }: {
-  readonly apiBaseUrl?: string
+  readonly apiBaseUrl?: AdminApiBaseUrl
   readonly tokenProvider: () => Promise<string | null> | string | null
 }): AdminApi {
   return createHttpAdminApi({

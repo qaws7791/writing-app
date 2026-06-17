@@ -2,13 +2,16 @@ import { describe, expect, it, vi } from "vitest"
 import { z } from "zod"
 
 import { createOpenApiClient } from "@/lib/api/http/openapi-client"
+import { readBrowserApiBaseUrl } from "@/runtime-config"
 
 describe("OpenAPI HTTP client", () => {
   it("fetch 예외를 네트워크 오류로 반환하면서 원인과 요청을 보고한다", async () => {
     const error = new TypeError("DNS lookup failed")
     const reportNetworkError = vi.fn()
     const client = createOpenApiClient({
-      baseUrl: "https://api.example.test",
+      baseUrl: readBrowserApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
+      }),
       fetch: async () => {
         throw error
       },
@@ -43,7 +46,9 @@ describe("OpenAPI HTTP client", () => {
   it("세션 토큰이 있으면 Better Auth 쿠키 헤더로 전달한다", async () => {
     const requests: Request[] = []
     const client = createOpenApiClient({
-      baseUrl: "https://api.example.test",
+      baseUrl: readBrowserApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
+      }),
       fetch: async (request) => {
         requests.push(request)
 

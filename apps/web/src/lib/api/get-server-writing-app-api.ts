@@ -1,12 +1,12 @@
 import { createHttpWritingAppApi } from "@/lib/api/http/create-http-writing-app-api"
 import type { WritingAppApi } from "@/lib/api/writing-app-api"
-import { readServerApiBaseUrl } from "@/runtime-config"
+import { readServerApiBaseUrl, type ServerApiBaseUrl } from "@/runtime-config"
 
 export function getServerWritingAppApi({
   apiBaseUrl = readServerApiBaseUrl(),
   tokenProvider,
 }: {
-  readonly apiBaseUrl?: string
+  readonly apiBaseUrl?: ServerApiBaseUrl
   readonly tokenProvider: () => Promise<string | null> | string | null
 }): WritingAppApi {
   return createHttpWritingAppApi({

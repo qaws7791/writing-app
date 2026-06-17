@@ -36,6 +36,14 @@ describe("web runtime config", () => {
     expect(buildApiUrl(readBrowserApiBaseUrl({}), "/api/auth/sign-out")).toBe(
       `${localRuntimeDefaults.learnerApiBaseUrl}/api/auth/sign-out`
     )
+    expect(
+      buildApiUrl(
+        readBrowserApiBaseUrl({
+          NEXT_PUBLIC_API_BASE_URL: "https://api.example.test///",
+        }),
+        "profile"
+      )
+    ).toBe("https://api.example.test/profile")
   })
 
   it("runtime config 밖의 실행 코드가 API base URL env를 직접 읽지 않는다", () => {

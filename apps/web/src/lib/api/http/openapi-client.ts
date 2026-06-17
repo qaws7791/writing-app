@@ -5,6 +5,11 @@ import {
   toApiError,
 } from "@/lib/api/api-error"
 import { learnerSessionCookieName } from "@/lib/auth/session-token"
+import {
+  buildApiUrl,
+  type BrowserApiBaseUrl,
+  type ServerApiBaseUrl,
+} from "@/runtime-config"
 
 type ResponseSchema<TValue> = {
   readonly safeParse: (value: unknown) =>
@@ -41,7 +46,7 @@ export function createOpenApiClient({
   reportNetworkError,
   tokenProvider,
 }: {
-  readonly baseUrl: string
+  readonly baseUrl: BrowserApiBaseUrl | ServerApiBaseUrl
   readonly fetch: FetchLike
   readonly reportNetworkError?: NetworkErrorReporter
   readonly tokenProvider: TokenProvider
@@ -67,7 +72,7 @@ export function createOpenApiClient({
         headers.set("Content-Type", "application/json")
       }
 
-      const request = new Request(toApiUrl(baseUrl, input.path), {
+      const request = new Request(buildApiUrl(baseUrl, input.path), {
         body: input.body === undefined ? undefined : JSON.stringify(input.body),
         credentials: "include",
         headers,
@@ -98,10 +103,6 @@ export function createOpenApiClient({
       return apiOk(parsedBody.data)
     },
   }
-}
-
-function toApiUrl(baseUrl: string, path: string): string {
-  return `${baseUrl.replace(/\/$/, "")}/${path.replace(/^\//, "")}`
 }
 
 async function fetchJson(

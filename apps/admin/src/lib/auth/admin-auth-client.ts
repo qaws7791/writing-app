@@ -1,6 +1,5 @@
-import { localRuntimeDefaults } from "@workspace/env"
-
 import { resolveSafeAdminNextPath } from "@/lib/auth/admin-auth-navigation"
+import { buildAdminApiUrl, readAdminApiBaseUrl } from "@/runtime-config"
 
 export async function requestAdminPasswordLogin({
   email,
@@ -13,7 +12,7 @@ export async function requestAdminPasswordLogin({
 }): Promise<string> {
   const safeNextPath = resolveSafeAdminNextPath(nextPath)
   const response = await fetch(
-    `${getAdminApiBaseUrl()}/api/auth/sign-in/email`,
+    buildAdminApiUrl(readAdminApiBaseUrl(), "/api/auth/sign-in/email"),
     {
       body: JSON.stringify({
         callbackURL: safeNextPath,
@@ -33,10 +32,4 @@ export async function requestAdminPasswordLogin({
   }
 
   return safeNextPath
-}
-
-function getAdminApiBaseUrl(): string {
-  return (
-    process.env["ADMIN_API_BASE_URL"] ?? localRuntimeDefaults.adminApiBaseUrl
-  ).replace(/\/$/, "")
 }

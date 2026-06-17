@@ -9,6 +9,7 @@ import {
   type AdminApiResult,
 } from "@/lib/api/api-result"
 import { adminSessionCookieName } from "@/lib/auth/admin-session-token"
+import { buildAdminApiUrl, type AdminApiBaseUrl } from "@/runtime-config"
 import type {
   AdminApi,
   ReadAdminAnalyticsInput,
@@ -50,7 +51,7 @@ export function createHttpAdminApi({
   fetch,
   tokenProvider,
 }: {
-  readonly baseUrl: string
+  readonly baseUrl: AdminApiBaseUrl
   readonly fetch: AdminFetchLike
   readonly tokenProvider: AdminTokenProvider
 }): AdminApi {
@@ -180,7 +181,7 @@ function createAdminHttpClient({
   fetch,
   tokenProvider,
 }: {
-  readonly baseUrl: string
+  readonly baseUrl: AdminApiBaseUrl
   readonly fetch: AdminFetchLike
   readonly tokenProvider: AdminTokenProvider
 }): {
@@ -191,8 +192,6 @@ function createAdminHttpClient({
     readonly schema: ResponseSchema<TValue>
   }) => Promise<AdminApiResult<TValue>>
 } {
-  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "")
-
   return {
     async requestJson<TValue>(input: {
       readonly body?: unknown
@@ -214,7 +213,7 @@ function createAdminHttpClient({
         headers.set("Content-Type", "application/json")
       }
 
-      const request = new Request(`${normalizedBaseUrl}${input.path}`, {
+      const request = new Request(buildAdminApiUrl(baseUrl, input.path), {
         body: input.body === undefined ? undefined : JSON.stringify(input.body),
         credentials: "include",
         headers,

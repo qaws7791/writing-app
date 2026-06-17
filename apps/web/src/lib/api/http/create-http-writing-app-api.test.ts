@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest"
 
 import { createHttpWritingAppApi } from "@/lib/api/http/create-http-writing-app-api"
+import { readBrowserApiBaseUrl } from "@/runtime-config"
 
 describe("HTTP WritingAppApi", () => {
   it("profile과 progress를 Better Auth 쿠키와 함께 조회한다", async () => {
     const requests: Request[] = []
     const api = createHttpWritingAppApi({
-      baseUrl: "https://api.example.test",
+      baseUrl: readBrowserApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
+      }),
       fetch: async (request) => {
         requests.push(request)
 
@@ -66,7 +69,9 @@ describe("HTTP WritingAppApi", () => {
     const bodies: unknown[] = []
     const urls: string[] = []
     const api = createHttpWritingAppApi({
-      baseUrl: "https://api.example.test/",
+      baseUrl: readBrowserApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test/",
+      }),
       fetch: async (request) => {
         urls.push(request.url)
         bodies.push(await request.json())
@@ -157,7 +162,9 @@ describe("HTTP WritingAppApi", () => {
 
   it("실패 응답을 ApiFailure로 변환한다", async () => {
     const api = createHttpWritingAppApi({
-      baseUrl: "https://api.example.test",
+      baseUrl: readBrowserApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
+      }),
       fetch: async () =>
         jsonResponse(
           {
@@ -182,7 +189,9 @@ describe("HTTP WritingAppApi", () => {
 
   it("성공 응답이 계약과 다르면 contract-error를 반환한다", async () => {
     const api = createHttpWritingAppApi({
-      baseUrl: "https://api.example.test",
+      baseUrl: readBrowserApiBaseUrl({
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test",
+      }),
       fetch: async () =>
         jsonResponse({
           stats: {
