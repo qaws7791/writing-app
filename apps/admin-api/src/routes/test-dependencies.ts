@@ -4,6 +4,7 @@ import type {
   AdminSessionResolver,
 } from "@/auth/admin-session"
 import type { AdminService } from "@workspace/core/admin"
+import { readBearerToken } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env"
 
 type TestAdminApiDependencyOverrides = {
@@ -66,7 +67,7 @@ function readTestAdminSessionToken(headers: Headers): string | null {
     return decodeURIComponent(cookieToken)
   }
 
-  return headers.get("Authorization")?.replace(/^Bearer /, "") ?? null
+  return readBearerToken(headers.get("Authorization"))
 }
 
 function createFailingAdminService(): AdminService {

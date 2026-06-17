@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { readBearerToken } from "@workspace/core/auth"
 
 import { createApp, type AdminApiDependencies } from "@/app"
 import {
@@ -233,7 +234,7 @@ function createDependencies({
     },
     sessionResolver: {
       async resolveSession(headers) {
-        const token = headers.get("Authorization")?.replace(/^Bearer /, "")
+        const token = readBearerToken(headers.get("Authorization"))
 
         if (token !== "admin-token") {
           return null

@@ -1,12 +1,46 @@
 import { describe, expect, it } from "vitest"
 
-import { readBearerToken, resolveBearerSession } from "@/auth/bearer-session"
+import {
+  parseBearerToken,
+  readBearerToken,
+  resolveBearerSession,
+} from "@/auth/bearer-session"
 
 describe("bearer session helpers", () => {
   it("Bearer authorization header에서 토큰을 읽는다", () => {
     expect(readBearerToken("Bearer session-token")).toBe("session-token")
+    expect(readBearerToken("bearer session-token")).toBe("session-token")
+    expect(readBearerToken("Bearer    session-token")).toBe("session-token")
     expect(readBearerToken("Basic session-token")).toBeNull()
     expect(readBearerToken(null)).toBeNull()
+  })
+
+  it("잘못된 Bearer authorization header를 거절한다", () => {
+    expect(readBearerToken("Bearer")).toBeNull()
+    expect(readBearerToken("Bearer ")).toBeNull()
+    expect(readBearerToken("Bearer session-token extra")).toBeNull()
+    expect(readBearerToken("Bearer session token")).toBeNull()
+    expect(readBearerToken(" Bearer session-token")).toBeNull()
+    expect(readBearerToken("Bearer session-token ")).toBeNull()
+  })
+
+  it("Bearer authorization header 파싱 실패 이유를 구분한다", () => {
+    expect(parseBearerToken(null)).toEqual({
+      kind: "err",
+      reason: "missing",
+    })
+    expect(parseBearerToken("Basic session-token")).toEqual({
+      kind: "err",
+      reason: "invalid-scheme",
+    })
+    expect(parseBearerToken("Bearer session-token extra")).toEqual({
+      kind: "err",
+      reason: "invalid-format",
+    })
+    expect(parseBearerToken("Bearer session-token")).toEqual({
+      kind: "ok",
+      token: "session-token",
+    })
   })
 
   it("토큰이 없거나 세션이 없으면 unauthorized 결과를 반환한다", async () => {

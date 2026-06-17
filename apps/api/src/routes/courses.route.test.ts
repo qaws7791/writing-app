@@ -3,6 +3,7 @@ import {
   courseDetailDtoSchema,
   courseSummaryDtoSchema,
 } from "@workspace/core/content"
+import { readBearerToken } from "@workspace/core/auth"
 
 import { createApp, type ApiDependencies } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"
@@ -287,7 +288,7 @@ function createCourseDetailDependencies(
     },
     sessionResolver: {
       async resolveSession(headers) {
-        const token = headers.get("Authorization")?.replace(/^Bearer /, "")
+        const token = readBearerToken(headers.get("Authorization"))
 
         return token === "active-token" ? activeSession : null
       },

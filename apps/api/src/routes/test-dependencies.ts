@@ -4,6 +4,7 @@ import {
   lessonDtoSchema,
   type ContentRepository,
 } from "@workspace/core/content"
+import { readBearerToken } from "@workspace/core/auth"
 
 import type { ApiDependencies } from "@/app"
 
@@ -53,7 +54,7 @@ function readTestSessionToken(headers: Headers): string | null {
     return decodeURIComponent(cookieToken)
   }
 
-  return headers.get("Authorization")?.replace(/^Bearer /, "") ?? null
+  return readBearerToken(headers.get("Authorization"))
 }
 
 const contentRepository: ContentRepository = {

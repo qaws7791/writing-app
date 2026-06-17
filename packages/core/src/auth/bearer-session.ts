@@ -13,20 +13,58 @@ export type BearerSessionResult<TSession> =
       readonly status: 401
     }
 
+export type BearerTokenParseResult =
+  | {
+      readonly kind: "ok"
+      readonly token: string
+    }
+  | {
+      readonly kind: "err"
+      readonly reason: "invalid-format" | "invalid-scheme" | "missing"
+    }
+
+const bearerTokenPattern = /^Bearer\s+([^\s]+)$/i
+
+export function parseBearerToken(
+  authorizationHeader: string | null
+): BearerTokenParseResult {
+  if (authorizationHeader === null) {
+    return {
+      kind: "err",
+      reason: "missing",
+    }
+  }
+
+  const scheme = authorizationHeader.match(/^([^\s]+)/)?.[1]
+
+  if (scheme?.toLowerCase() !== "bearer") {
+    return {
+      kind: "err",
+      reason: "invalid-scheme",
+    }
+  }
+
+  const token = authorizationHeader.match(bearerTokenPattern)?.[1]
+
+  if (token === undefined) {
+    return {
+      kind: "err",
+      reason: "invalid-format",
+    }
+  }
+
+  return {
+    kind: "ok",
+    token,
+  }
+}
+
 export function readBearerToken(
   authorizationHeader: string | null
 ): string | null {
-  if (authorizationHeader === null) {
-    return null
-  }
+  const result = parseBearerToken(authorizationHeader)
 
-  const [scheme, token] = authorizationHeader.split(" ")
-
-  if (scheme !== "Bearer" || token === undefined || token.length === 0) {
-    return null
-  }
-
-  return token
+  return result.kind === "ok" ? result.token : null
 }
 
 export async function resolveBearerSession<TSession>({

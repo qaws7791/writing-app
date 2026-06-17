@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { readBearerToken } from "@workspace/core/auth"
 import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
 import { learnerIdSchema } from "@workspace/core/learning"
 import type { LearningService } from "@workspace/core/learning"
@@ -242,7 +243,7 @@ function createDependencies({
     },
     sessionResolver: {
       async resolveSession(headers) {
-        const token = headers.get("Authorization")?.replace(/^Bearer /, "")
+        const token = readBearerToken(headers.get("Authorization"))
 
         return token === "active-token" ? activeSession : null
       },

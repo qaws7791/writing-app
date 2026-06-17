@@ -23,6 +23,17 @@
 - resolver와 테스트는 필요한 DB client/schema만 import하도록 좁혀, `@workspace/db` 루트 export를 통한 불필요한 core import를 피했다.
 - resolver 테스트는 fake DB를 사용하는 단위 테스트로 작성해 기본 `bun --filter ... test` 경로에서 실행되게 했다.
 
+## Authorization header 문법
+
+Bearer 인증 경계는 `packages/core/src/auth/bearer-session.ts`의 parser를 단일 기준으로 사용한다.
+
+- 지원 scheme은 `Bearer` 하나이며, scheme 대소문자는 구분하지 않는다.
+- scheme 뒤 공백은 하나 이상 허용한다.
+- token은 공백 없는 한 덩어리만 허용한다.
+- `Bearer`, `Bearer `, `Bearer token extra`, `Basic token`, 앞뒤 공백이 붙은 header는 malformed header로 보고 인증 실패로 접는다.
+- 외부 HTTP 응답은 실패 이유와 관계없이 401로 반환하지만, core parser는 내부 검증과 테스트를 위해 `missing`, `invalid-scheme`, `invalid-format`을 구분한다.
+- API와 admin-api 테스트 fake도 `replace(/^Bearer /, "")` 같은 별도 파싱을 두지 않고 core parser를 사용한다.
+
 ## 검증
 
 - `bun --filter @workspace/api test src/auth/auth.test.ts`

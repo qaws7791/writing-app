@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { readBearerToken } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env"
 import { z } from "zod"
 
@@ -257,5 +258,5 @@ function readTestSessionToken(headers: Headers): string | null {
     return decodeURIComponent(cookieToken)
   }
 
-  return headers.get("Authorization")?.replace(/^Bearer /, "") ?? null
+  return readBearerToken(headers.get("Authorization"))
 }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { readBearerToken } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env"
 
 import { createApp, type AdminApiDependencies } from "@/app"
@@ -567,5 +568,5 @@ function readTestAdminSessionToken(headers: Headers): string | null {
     return decodeURIComponent(cookieToken)
   }
 
-  return headers.get("Authorization")?.replace(/^Bearer /, "") ?? null
+  return readBearerToken(headers.get("Authorization"))
 }
