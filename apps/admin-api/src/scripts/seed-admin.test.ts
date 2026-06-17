@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest"
 
 import { createAdminAuth } from "@/auth/admin-auth"
-import { createSeedAdminUserRow } from "@/scripts/seed-admin-user"
+import {
+  createSeedAdminRows,
+  createSeedAdminUserRow,
+} from "@/scripts/seed-admin-user"
 import { seedAdminUser } from "@/scripts/seed-admin"
 import { adminRoles } from "@workspace/core/admin"
 import { createInMemoryKwepDatabase } from "@workspace/db/client"
@@ -26,6 +29,45 @@ describe("seed admin user", () => {
       name: "관리자",
       role: adminRoles.owner,
       updatedAt: now,
+    })
+  })
+
+  it("개발용 관리자 credential row를 user row와 같은 seed 계약으로 만든다", () => {
+    const now = new Date("2026-06-14T00:00:00.000Z")
+
+    expect(
+      createSeedAdminRows({
+        email: "admin@example.com",
+        name: "관리자",
+        now,
+        passwordHash: "hashed-password",
+      })
+    ).toEqual({
+      account: {
+        accessToken: null,
+        accessTokenExpiresAt: null,
+        accountId: "admin-1",
+        createdAt: now,
+        id: "admin-1-credential",
+        idToken: null,
+        password: "hashed-password",
+        providerId: "credential",
+        refreshToken: null,
+        refreshTokenExpiresAt: null,
+        scope: null,
+        updatedAt: now,
+        userId: "admin-1",
+      },
+      user: {
+        createdAt: now,
+        email: "admin@example.com",
+        emailVerified: true,
+        id: "admin-1",
+        image: null,
+        name: "관리자",
+        role: adminRoles.owner,
+        updatedAt: now,
+      },
     })
   })
 

@@ -4,11 +4,10 @@ import {
   adminAuthUsers,
   type KwepDatabase,
 } from "@workspace/db"
-import { adminRoles } from "@workspace/core/admin"
 import { hashPassword } from "better-auth/crypto"
 
 import {
-  createSeedAdminUserRow,
+  createSeedAdminRows,
   type SeedAdminUserInput,
 } from "@/scripts/seed-admin-user"
 
@@ -16,47 +15,34 @@ export function seedAdminUser(
   db: KwepDatabase,
   input: SeedAdminUserInput
 ): Promise<void> {
-  const row = createSeedAdminUserRow(input)
+  return hashPassword(input.password).then((passwordHash) => {
+    const rows = createSeedAdminRows({
+      ...input,
+      passwordHash,
+    })
 
-  return hashPassword(input.password).then((password) => {
     db.insert(adminAuthUsers)
-      .values(row)
+      .values(rows.user)
       .onConflictDoUpdate({
         set: {
-          email: row.email,
-          emailVerified: true,
-          image: null,
-          name: row.name,
-          role: adminRoles.owner,
-          updatedAt: row.updatedAt,
+          email: rows.user.email,
+          emailVerified: rows.user.emailVerified,
+          image: rows.user.image,
+          name: rows.user.name,
+          role: rows.user.role,
+          updatedAt: rows.user.updatedAt,
         },
         target: adminAuthUsers.id,
       })
       .run()
 
-    const accountRow = {
-      accessToken: null,
-      accessTokenExpiresAt: null,
-      accountId: row.id,
-      createdAt: row.createdAt,
-      id: `${row.id}-credential`,
-      idToken: null,
-      password,
-      providerId: "credential",
-      refreshToken: null,
-      refreshTokenExpiresAt: null,
-      scope: null,
-      updatedAt: row.updatedAt,
-      userId: row.id,
-    }
-
     if (input.resetPassword === true) {
       db.insert(adminAuthAccounts)
-        .values(accountRow)
+        .values(rows.account)
         .onConflictDoUpdate({
           set: {
-            password,
-            updatedAt: row.updatedAt,
+            password: rows.account.password,
+            updatedAt: rows.account.updatedAt,
           },
           target: adminAuthAccounts.id,
         })
@@ -65,7 +51,7 @@ export function seedAdminUser(
     }
 
     db.insert(adminAuthAccounts)
-      .values(accountRow)
+      .values(rows.account)
       .onConflictDoNothing({
         target: adminAuthAccounts.id,
       })

@@ -149,6 +149,8 @@ bun --filter @workspace/admin-api dev
 bun --filter @workspace/admin-api seed:admin
 ```
 
+관리자 seed row는 `apps/admin-api/src/scripts/seed-admin-user.ts`의 명시적 user/account row 계약으로 생성한다. user row는 항상 `admin-1` owner 계정이며, credential account row는 같은 seed aggregate에서 만들어 schema drift가 typecheck에서 드러나야 한다.
+
 ## `packages/core`
 
 `packages/core`는 도메인 중심 계약을 담는다. 현재 reset 단계에서는 기존 `packages/core/src` 구현을 제거했고, 후속 Task에서 콘텐츠, 학습 진행, AI 피드백, 관리자 DTO, 브랜드 ID, 저장소 포트, 명시적 결과 변형, 도메인 서비스를 새로 작성한다. 외부 런타임이나 데이터베이스 구현에 의존하지 않고 API와 데이터베이스 패키지가 공유하는 도메인 경계를 정의한다.
