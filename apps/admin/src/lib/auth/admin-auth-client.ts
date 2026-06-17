@@ -1,5 +1,7 @@
 import { localRuntimeDefaults } from "@workspace/env"
 
+import { resolveSafeAdminNextPath } from "@/lib/auth/admin-auth-navigation"
+
 export async function requestAdminPasswordLogin({
   email,
   nextPath,
@@ -37,12 +39,4 @@ function getAdminApiBaseUrl(): string {
   return (
     process.env["ADMIN_API_BASE_URL"] ?? localRuntimeDefaults.adminApiBaseUrl
   ).replace(/\/$/, "")
-}
-
-function resolveSafeAdminNextPath(nextPath: string): string {
-  return nextPath.startsWith("/") &&
-    !nextPath.startsWith("//") &&
-    !nextPath.startsWith("/login")
-    ? nextPath
-    : "/"
 }

@@ -2,10 +2,12 @@
 
 import { useState, type FormEvent } from "react"
 import { ShieldCheck } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 import { requestAdminPasswordLogin } from "@/lib/auth/admin-auth-client"
 
 export function AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
+  const router = useRouter()
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -25,7 +27,7 @@ export function AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
         password,
       })
 
-      window.location.assign(redirectPath)
+      router.replace(redirectPath)
     } catch {
       setErrorMessage("이메일 또는 비밀번호를 확인하세요.")
     } finally {

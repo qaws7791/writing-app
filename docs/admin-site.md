@@ -14,6 +14,12 @@
 - 여러 어드민 repository가 공유하는 페이지 계산과 학습자 활동일 helper는 `admin-repository-shared.ts`에 둔다.
 - 새 어드민 DB 기능을 추가할 때는 통합 facade에 구현 함수를 추가하지 않고 해당 도메인 repository 파일에 구현한 뒤 facade에서 조립한다.
 
+## 2026-06-17 어드민 인증 SPA 이동 정책 정리 완료
+
+- 관리자 로그인 성공 후 이동은 browser native `window.location.*`가 아니라 Next.js `router.replace()`를 사용한다.
+- 로그인 `next` 경로 검증은 `admin-auth-navigation.ts`의 `resolveSafeAdminNextPath()`가 단일 출처다.
+- 어드민 앱 source에는 `window.location.assign`, `window.location.replace`, `window.location.href`를 직접 사용하지 않는다. 외부 이동이 필요해지면 별도 명시적 wrapper와 예외 테스트를 추가한다.
+
 ## 2026-06-15 어드민 코스 미리보기 계약 정리 시작
 
 - 현재 코스 상세 화면은 저장 가능한 편집기가 아니라 `GET /courses/:courseId/editor` 기반 읽기 전용 미리보기로 정리한다.
