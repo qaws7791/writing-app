@@ -42,6 +42,8 @@
 
 학습자 인증은 Google OAuth를 단일 진입점으로 사용한다. 학습자용 Better Auth 런타임은 이메일/비밀번호 가입과 로그인을 활성화하지 않는다. Next.js 앱은 `/api/auth/*`를 프록시하지 않는다. 인증 요청의 public endpoint는 Hono API 서버이며, Better Auth handler가 `/api/auth/*`를 직접 처리한다. CORS origin과 Better Auth trusted origin은 같은 웹 origin을 기준으로 검증한다. 사용자별 보호 API는 `auth.api.getSession({ headers })`로 Better Auth httpOnly 세션 쿠키를 검증하며, 브라우저 JavaScript가 세션 쿠키 값을 읽어 Bearer 토큰으로 변환하지 않는다.
 
+학습자 가입 후 앱 소유 `learner_profiles` row를 보장하는 책임은 Better Auth 설정 객체 안에 직접 두지 않는다. Better Auth user create hook은 `LearnerOnboardingService`를 호출하는 adapter 역할만 하며, profile 생성과 조회는 `LearnerProfileRepository` 포트를 통해 수행한다. 기존 `suspended` 또는 `deleted` profile은 hook이 `active`로 되돌리지 않고, 세션 해석 중 profile row가 누락된 경우에만 active profile을 한 번 보장한다.
+
 - `GET /health`
 - `GET /openapi.json`
 - `GET /api/auth/*`, `POST /api/auth/*`

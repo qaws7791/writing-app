@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { createLearnerAuth, createLearnerSessionResolver } from "@/auth/auth"
+import type { LearnerProfileRepository } from "@/auth/learner-onboarding"
 import type { KwepDatabase } from "@workspace/db/client"
 import {
   authAccounts,
@@ -45,7 +46,7 @@ describe("학습자 Better Auth", () => {
   it("Drizzle adapter에 Better Auth core model schema key를 명시한다", () => {
     createLearnerAuth({
       authBaseUrl: "https://api.example.test",
-      db: createFakeDatabase([undefined]),
+      db: createFakeDatabase(),
       secret: "x".repeat(32),
       webOrigin: "https://app.example.test",
     })
@@ -73,7 +74,8 @@ describe("학습자 Better Auth", () => {
           getSession,
         },
       },
-      createFakeDatabase([undefined])
+      createFakeDatabase(),
+      createFakeProfileRepository([null])
     )
     const headers = new Headers({
       Cookie: "kwep_session=session-token-1.signature",
@@ -94,6 +96,59 @@ describe("학습자 Better Auth", () => {
     })
   })
 
+  it("기존 프로필 상태를 세션에 반영하고 active로 되돌리지 않는다", async () => {
+    const profileRepository = createFakeProfileRepository([
+      { status: "suspended" },
+    ])
+    const resolver = createLearnerSessionResolver(
+      {
+        api: {
+          getSession: vi.fn(async () => ({
+            user: sessionUser,
+          })),
+        },
+      },
+      createFakeDatabase(),
+      profileRepository
+    )
+
+    await expect(resolver.resolveSession(new Headers())).resolves.toMatchObject(
+      {
+        user: {
+          status: "suspended",
+        },
+      }
+    )
+    expect(profileRepository.ensureActiveProfile).not.toHaveBeenCalled()
+  })
+
+  it("프로필이 누락된 세션은 active 프로필을 한 번 생성한다", async () => {
+    const profileRepository = createFakeProfileRepository([null])
+    const resolver = createLearnerSessionResolver(
+      {
+        api: {
+          getSession: vi.fn(async () => ({
+            user: sessionUser,
+          })),
+        },
+      },
+      createFakeDatabase(),
+      profileRepository
+    )
+
+    await expect(resolver.resolveSession(new Headers())).resolves.toMatchObject(
+      {
+        user: {
+          status: "active",
+        },
+      }
+    )
+    expect(profileRepository.ensureActiveProfile).toHaveBeenCalledWith({
+      displayName: "학습자",
+      userId: "user-1",
+    })
+  })
+
   it("Better Auth 세션이 없으면 학습자 세션도 없다", async () => {
     const resolver = createLearnerSessionResolver(
       {
@@ -101,36 +156,30 @@ describe("학습자 Better Auth", () => {
           getSession: vi.fn(async () => null),
         },
       },
-      createFakeDatabase([])
+      createFakeDatabase(),
+      createFakeProfileRepository([])
     )
 
     await expect(resolver.resolveSession(new Headers())).resolves.toBeNull()
   })
 })
 
-function createFakeDatabase(results: readonly unknown[]): KwepDatabase {
+function createFakeDatabase(): KwepDatabase {
+  return {} as never
+}
+
+function createFakeProfileRepository(
+  profiles: readonly ({ readonly status: "active" | "suspended" } | null)[]
+): LearnerProfileRepository {
   let queryIndex = 0
 
   return {
-    select() {
-      const result = results[queryIndex]
+    ensureActiveProfile: vi.fn(async () => undefined),
+    findProfileByUserId: vi.fn(async () => {
+      const profile = profiles[queryIndex] ?? null
       queryIndex += 1
-      const query = {
-        from() {
-          return query
-        },
-        get() {
-          return result
-        },
-        innerJoin() {
-          return query
-        },
-        where() {
-          return query
-        },
-      }
 
-      return query
-    },
-  } as never
+      return profile
+    }),
+  }
 }

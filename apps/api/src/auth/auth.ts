@@ -1,8 +1,13 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { eq } from "drizzle-orm"
 import { learnerAccountStatuses } from "@workspace/core/status"
 
+import {
+  createDrizzleLearnerProfileRepository,
+  createLearnerAuthHooks,
+  createLearnerOnboardingService,
+  type LearnerProfileRepository,
+} from "@/auth/learner-onboarding"
 import type { SessionResolver } from "@/auth/session"
 import type { KwepDatabase } from "@workspace/db/client"
 import {
@@ -10,7 +15,6 @@ import {
   authSessions,
   authUsers,
   authVerifications,
-  learnerProfiles,
 } from "@workspace/db/schema"
 import * as dbSchema from "@workspace/db/schema"
 
@@ -25,6 +29,13 @@ export type CreateLearnerAuthInput = {
 }
 
 export function createLearnerAuth(input: CreateLearnerAuthInput) {
+  const learnerProfileRepository = createDrizzleLearnerProfileRepository(
+    input.db
+  )
+  const learnerOnboardingService = createLearnerOnboardingService({
+    profileRepository: learnerProfileRepository,
+  })
+
   return betterAuth({
     advanced: createLearnerAdvancedOptions(input.cookieDomain),
     baseURL: input.authBaseUrl,
@@ -38,26 +49,9 @@ export function createLearnerAuth(input: CreateLearnerAuthInput) {
         verification: authVerifications,
       },
     }),
-    databaseHooks: {
-      user: {
-        create: {
-          after: async (user) => {
-            await Promise.resolve(
-              input.db
-                .insert(learnerProfiles)
-                .values({
-                  deletedAt: null,
-                  displayName: user.name,
-                  status: learnerAccountStatuses.active,
-                  userId: user.id,
-                })
-                .onConflictDoNothing()
-                .run()
-            )
-          },
-        },
-      },
-    },
+    databaseHooks: createLearnerAuthHooks({
+      onboardingService: learnerOnboardingService,
+    }),
     secret: input.secret,
     socialProviders:
       input.googleClientId === undefined ||
@@ -99,7 +93,10 @@ type LearnerBetterAuthSession = {
 
 export function createLearnerSessionResolver(
   auth: LearnerBetterAuthSessionApi,
-  db: KwepDatabase
+  db: KwepDatabase,
+  profileRepository: LearnerProfileRepository = createDrizzleLearnerProfileRepository(
+    db
+  )
 ): SessionResolver {
   return {
     async resolveSession(headers) {
@@ -109,7 +106,7 @@ export function createLearnerSessionResolver(
         return null
       }
 
-      return readUserSession(db, session.user)
+      return readUserSession(profileRepository, session.user)
     },
   }
 }
@@ -144,12 +141,18 @@ type SessionUserRow = {
   readonly name: string
 }
 
-function readUserSession(db: KwepDatabase, user: SessionUserRow) {
-  const profile = db
-    .select()
-    .from(learnerProfiles)
-    .where(eq(learnerProfiles.userId, user.id))
-    .get()
+async function readUserSession(
+  profileRepository: LearnerProfileRepository,
+  user: SessionUserRow
+) {
+  const profile = await profileRepository.findProfileByUserId(user.id)
+
+  if (profile === null) {
+    await profileRepository.ensureActiveProfile({
+      displayName: user.name,
+      userId: user.id,
+    })
+  }
 
   return {
     user: {
