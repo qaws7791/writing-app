@@ -10,6 +10,7 @@ export default defineConfig({
       "packages/core/vitest.config.ts",
       "packages/db/vitest.config.ts",
       "packages/env/vitest.config.ts",
+      "packages/hono/vitest.config.ts",
       "packages/logger/vitest.config.ts",
       "packages/ui/vitest.config.ts",
     ],

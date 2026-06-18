@@ -1,0 +1,42 @@
+{
+  "name": "@workspace/hono",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./core": {
+      "types": "./src/core/index.ts",
+      "import": "./src/core/index.ts"
+    },
+    "./errors": {
+      "types": "./src/errors/index.ts",
+      "import": "./src/errors/index.ts"
+    },
+    "./zod": {
+      "types": "./src/zod/index.ts",
+      "import": "./src/zod/index.ts"
+    }
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+    "test:watch": "bun --bun ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@hono/zod-openapi": "^1.4.0",
+    "hono": "^4.10.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@hono/zod-openapi": "^1.4.0",
+    "@types/bun": "^1.3.10",
+    "@workspace/config": "workspace:*",
+    "hono": "^4.10.0",
+    "typescript": "5.9.3",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.0",
+    "zod": "^4.2.0"
+  }
+}
