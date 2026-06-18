@@ -1,1 +1,1 @@
-export * from "@workspace/core/learner-api-core"
+export * from "@workspace/core/modules/learner-api/api"

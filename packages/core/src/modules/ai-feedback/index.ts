@@ -1,1 +1,1 @@
-export * from "@workspace/core/ai-feedback"
+export * from "@workspace/core/modules/ai-feedback/api"

@@ -18,7 +18,7 @@
 │   ├── hono/    # Hono OpenAPI route, validation, error handling 표준 패키지
 │   ├── logger/  # pino logger와 요청 로그 helper
 │   ├── env/     # 환경 변수 parsing helper
-│   └── core/    # 공유 DTO, Zod schema, domain service, repository 구현
+│   └── core/    # shared kernel, module facade, usecase, repository adapter, composition root
 └── docs/       # 한국어 결정 기록과 OpenAPI 정적 계약 파일
 ```
 
@@ -111,9 +111,11 @@
 
 ### core
 
-`packages/core`는 프레임워크와 HTTP transport에 의존하지 않는 DTO, Zod schema, 브랜드 ID, domain service, repository port와 구현, 학습자 API 런타임 조립을 제공한다. 학습자 API 방향은 `apps/api -> packages/core -> packages/db`이며, core는 DB primitive를 사용해 유스케이스와 트랜잭션 경계를 소유한다.
+`packages/core`는 프레임워크와 HTTP transport에 의존하지 않는 비즈니스 로직 패키지다. 학습자 API 방향은 `apps/api -> packages/core -> packages/db`이며, core는 module facade, domain 규칙, usecase, repository port와 adapter, 학습자 API 런타임 조립을 소유한다.
 
-학습자 API는 core 내부 파일 구조에 직접 묶이지 않도록 `@workspace/core/modules/{auth,content,learning,ai-feedback,learner-api}` public facade만 import한다.
+core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 브랜드 타입, Result, 에러, 이벤트 버스, 요청 컨텍스트, Unit of Work 같은 공통 kernel을 제공한다. `modules/*/api/index.ts`는 Hono와 다른 module이 사용할 좁은 public facade이며, `domain`, `application`, `infrastructure` 구현은 이 facade 뒤에 둔다. `composition`은 DI container, event wiring, bootstrap을 담당한다.
+
+학습자 API는 core 내부 파일 구조에 직접 묶이지 않도록 `@workspace/core/modules/{auth,content,learning,ai-feedback,learner-api}` public facade만 import한다. 기존 `@workspace/core/{admin,auth,content,learning,ai-feedback,status}` public import는 source shim이 아니라 package export map으로 새 `modules`와 `shared` 위치에 직접 연결한다.
 
 ### hono
 
