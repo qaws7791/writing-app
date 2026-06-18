@@ -1,7 +1,7 @@
 import type { NotFoundHandler } from "hono"
-import { errorJson } from "@/errors/error-response"
-import type { ErrorResponse } from "@/errors/error-response"
-import { getStatusMessage } from "@/errors/status"
+import { errorJson } from "./error-response"
+import type { ErrorResponse } from "./error-response"
+import { getStatusMessage } from "./status"
 
 export function createNotFoundHandler(): NotFoundHandler {
   return () => {

@@ -4,12 +4,12 @@ import {
   createLearnerContentService,
   lessonDtoSchema,
   type ContentRepository,
-} from "@workspace/core/content"
-import { readBearerToken } from "@workspace/core/auth"
+} from "@workspace/core/modules/content"
+import { readBearerToken } from "@workspace/core/modules/auth"
 import {
   createProgressService,
   type ProgressReader,
-} from "@workspace/core/learning"
+} from "@workspace/core/modules/learning"
 
 import type { ApiDependencies } from "@/app"
 

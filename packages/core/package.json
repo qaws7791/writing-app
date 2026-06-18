@@ -16,6 +16,11 @@
     "./learner-api-core": "./src/learner-api-core.ts",
     "./learning": "./src/learning/index.ts",
     "./learning/*": "./src/learning/*.ts",
+    "./modules/auth": "./src/modules/auth/index.ts",
+    "./modules/ai-feedback": "./src/modules/ai-feedback/index.ts",
+    "./modules/content": "./src/modules/content/index.ts",
+    "./modules/learner-api": "./src/modules/learner-api/index.ts",
+    "./modules/learning": "./src/modules/learning/index.ts",
     "./result": "./src/result.ts",
     "./status": "./src/status.ts"
   },

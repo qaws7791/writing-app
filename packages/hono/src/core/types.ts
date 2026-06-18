@@ -1,4 +1,4 @@
-import type { Env } from "hono"
+import type { Env, MiddlewareHandler } from "hono"
 import type { OpenAPIRoute, RouteConfig, RouteHandler } from "@hono/zod-openapi"
 
 export type AnyRouteConfig = RouteConfig & {
@@ -25,5 +25,6 @@ type CreateAppRoute = {
 export type CreateAppOptions<
   TRoutes extends readonly CreateAppRoute[] = readonly CreateAppRoute[],
 > = {
+  middleware?: readonly MiddlewareHandler[]
   routes: TRoutes
 }

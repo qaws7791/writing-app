@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { readBearerToken } from "@workspace/core/auth"
+import { readBearerToken } from "@workspace/core/modules/auth"
 import { localRuntimeDefaults } from "@workspace/env"
-import { z } from "zod"
 
 import { createApp, type ApiDependencies } from "@/app"
 
@@ -125,9 +124,8 @@ describe("플랫폼 API profile route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -159,38 +157,21 @@ describe("플랫폼 API profile route", () => {
 
       expect(response.status).toBe(403)
       await expect(response.json()).resolves.toEqual({
-        error: {
-          code: "account_unavailable",
-        },
+        code: "ACCOUNT_UNAVAILABLE",
+        message: "Account unavailable",
       })
     }
   })
 
-  it("ZodError 예외를 invalid_request JSON 400으로 변환한다", async () => {
-    const app = createApp({
-      ...createDependencies(),
-      learningService: {
-        async completeLesson() {
-          throw new z.ZodError([])
-        },
-        async saveLessonProgress() {
-          throw new z.ZodError([])
-        },
-        async saveStepAnswer() {
-          throw new z.ZodError([])
-        },
-      },
-      now: () => new Date("2026-06-15T09:00:00.000Z"),
-    })
+  it("transport validation 실패를 VALIDATION_FAILED 오류로 변환한다", async () => {
+    const app = createApp(createDependencies())
 
     const response = await app.request("/learning/answers", {
       body: JSON.stringify({
         answer: {
-          selectedOptionId: "b",
-          type: "MULTIPLE_CHOICE",
+          type: "UNSUPPORTED",
         },
         lessonId: "lesson-1",
-        stepId: "step-1",
       }),
       headers: {
         Authorization: "Bearer active-token",
@@ -200,10 +181,17 @@ describe("플랫폼 API profile route", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
+      errors: expect.arrayContaining([
+        expect.objectContaining({
+          path: "answer",
+        }),
+        expect.objectContaining({
+          path: "stepId",
+        }),
+      ]),
     })
   })
 })

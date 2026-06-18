@@ -1,5 +1,5 @@
-import type { ErrorResponse } from "@/errors/error-response"
-import type { ErrorStatusCode } from "@/errors/status"
+import type { ErrorResponse } from "./error-response"
+import type { ErrorStatusCode } from "./status"
 
 export type AppErrorInput = {
   status: ErrorStatusCode

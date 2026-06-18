@@ -5,7 +5,43 @@
   },
   "openapi": "3.1.0",
   "components": {
-    "schemas": {},
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "example": "VALIDATION_FAILED"
+          },
+          "message": {
+            "type": "string",
+            "example": "Request validation failed"
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "example": "email"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Invalid email"
+                },
+                "code": {
+                  "type": "string",
+                  "example": "invalid_string"
+                }
+              },
+              "required": ["path", "message"]
+            }
+          }
+        },
+        "required": ["code", "message"]
+      }
+    },
     "parameters": {},
     "securitySchemes": {
       "bearerAuth": {
@@ -100,33 +136,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -136,33 +146,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -263,33 +247,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -299,33 +257,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -409,33 +341,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -445,33 +351,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -702,33 +582,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -738,33 +592,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -774,33 +602,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1421,33 +1223,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1457,33 +1233,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1493,33 +1243,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1672,33 +1396,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1708,33 +1406,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1952,33 +1624,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -1988,33 +1634,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2024,33 +1644,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2060,33 +1654,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2153,33 +1721,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2189,33 +1731,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2225,33 +1741,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2261,33 +1751,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2405,33 +1869,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2441,33 +1879,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2477,33 +1889,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2513,33 +1899,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2549,33 +1909,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -2585,33 +1919,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "object",
-                      "properties": {
-                        "code": {
-                          "type": "string"
-                        },
-                        "detail": {
-                          "type": "object",
-                          "properties": {
-                            "code": {
-                              "type": "string",
-                              "enum": [
-                                "invalid_body",
-                                "malformed_json",
-                                "unknown_body_read_error"
-                              ]
-                            }
-                          },
-                          "required": ["code"]
-                        }
-                      },
-                      "required": ["code"]
-                    }
-                  },
-                  "required": ["error"]
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }

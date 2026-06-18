@@ -1,5 +1,5 @@
 import { z } from "@hono/zod-openapi"
-import type { ErrorStatusCode } from "@/errors/status"
+import type { ErrorStatusCode } from "./status"
 
 export const ERROR_JSON_CONTENT_TYPE = "application/json" as const
 

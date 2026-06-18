@@ -177,7 +177,22 @@ export interface paths {
 }
 export type webhooks = Record<string, never>
 export interface components {
-  schemas: never
+  schemas: {
+    ErrorResponse: {
+      /** @example VALIDATION_FAILED */
+      code: string
+      /** @example Request validation failed */
+      message: string
+      errors?: {
+        /** @example email */
+        path: string
+        /** @example Invalid email */
+        message: string
+        /** @example invalid_string */
+        code?: string
+      }[]
+    }
+  }
   responses: never
   parameters: never
   requestBodies: never
@@ -243,18 +258,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 계정을 사용할 수 없습니다. */
@@ -263,18 +267,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
     }
@@ -321,18 +314,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 계정을 사용할 수 없습니다. */
@@ -341,18 +323,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
     }
@@ -398,18 +369,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 계정을 사용할 수 없습니다. */
@@ -418,18 +378,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
     }
@@ -509,18 +458,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 계정을 사용할 수 없습니다. */
@@ -529,18 +467,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 코스를 찾을 수 없습니다. */
@@ -549,18 +476,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
     }
@@ -736,18 +652,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 계정을 사용할 수 없습니다. */
@@ -756,18 +661,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 레슨을 찾을 수 없습니다. */
@@ -776,18 +670,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
     }
@@ -849,18 +732,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 계정을 사용할 수 없습니다. */
@@ -869,18 +741,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
     }
@@ -970,18 +831,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 인증이 필요합니다. */
@@ -990,18 +840,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 계정을 사용할 수 없습니다. */
@@ -1010,18 +849,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 레슨을 찾을 수 없습니다. */
@@ -1030,18 +858,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
     }
@@ -1080,18 +897,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 인증이 필요합니다. */
@@ -1100,18 +906,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 계정을 사용할 수 없습니다. */
@@ -1120,18 +915,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 레슨을 찾을 수 없습니다. */
@@ -1140,18 +924,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
     }
@@ -1197,18 +970,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 인증이 필요합니다. */
@@ -1217,18 +979,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 계정을 사용할 수 없습니다. */
@@ -1237,18 +988,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description 레슨을 찾을 수 없습니다. */
@@ -1257,18 +997,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description AI 코칭 시도 횟수를 모두 사용했습니다. */
@@ -1277,18 +1006,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
       /** @description AI provider를 사용할 수 없습니다. */
@@ -1297,18 +1015,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          "application/json": {
-            error: {
-              code: string
-              detail?: {
-                /** @enum {string} */
-                code:
-                  | "invalid_body"
-                  | "malformed_json"
-                  | "unknown_body_read_error"
-              }
-            }
-          }
+          "application/json": components["schemas"]["ErrorResponse"]
         }
       }
     }

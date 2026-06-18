@@ -1,12 +1,8 @@
 import type { Env } from "hono"
 import { createRoute, defineOpenAPIRoute } from "@hono/zod-openapi"
 import type { RouteHandler } from "@hono/zod-openapi"
-import { assertOpenApiPath } from "@/core/path"
-import type {
-  AnyRouteConfig,
-  DefinedRoute,
-  DefineRouteConfig,
-} from "@/core/types"
+import { assertOpenApiPath } from "./path"
+import type { AnyRouteConfig, DefinedRoute, DefineRouteConfig } from "./types"
 
 /**
  * OpenAPI route config와 handler를 하나의 route 단위로 정의한다.
@@ -37,4 +33,12 @@ export function defineRoute(
     route,
     handler,
   } as DefinedRoute)
+}
+
+export function defineRouteForEnv<E extends Env>() {
+  return function defineEnvRoute<const R extends AnyRouteConfig>(
+    config: DefineRouteConfig<R, E>
+  ): DefinedRoute<R, E> {
+    return defineRoute(config as never) as never
+  }
 }

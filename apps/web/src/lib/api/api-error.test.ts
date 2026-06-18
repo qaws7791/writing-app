@@ -6,14 +6,37 @@ describe("API 오류 매핑", () => {
   it("서버 error code를 화면용 오류로 변환한다", () => {
     expect(
       toApiError(401, {
-        error: {
-          code: "unauthorized",
-        },
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
       })
     ).toEqual({
       code: "unauthorized",
       message: "로그인이 필요합니다.",
       status: 401,
+    })
+  })
+
+  it("검증과 HTTP 예외는 invalid-request 화면 오류로 변환한다", () => {
+    expect(
+      toApiError(400, {
+        code: "VALIDATION_FAILED",
+        message: "Request validation failed",
+      })
+    ).toEqual({
+      code: "invalid-request",
+      message: "요청 내용을 확인해 주세요.",
+      status: 400,
+    })
+
+    expect(
+      toApiError(400, {
+        code: "HTTP_EXCEPTION",
+        message: "Bad Request",
+      })
+    ).toEqual({
+      code: "invalid-request",
+      message: "요청 내용을 확인해 주세요.",
+      status: 400,
     })
   })
 

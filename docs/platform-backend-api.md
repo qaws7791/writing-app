@@ -1,5 +1,15 @@
 # 플랫폼 백엔드 API
 
+## 2026-06-18 API Hono 표준 패키지 전환 완료
+
+- `apps/api`는 `@workspace/hono`의 OpenAPI route 배열 구조를 사용한다.
+- 성공 응답 endpoint와 body는 유지하고, 에러 응답 wire contract는 `{ code, message, errors? }`로 표준화했다.
+- 인증 실패는 `401 UNAUTHORIZED`, 비활성 계정은 `403 ACCOUNT_UNAVAILABLE`로 응답한다.
+- transport validation 실패는 `400 VALIDATION_FAILED`, malformed JSON은 `400 HTTP_EXCEPTION`으로 응답한다.
+- core Result error는 `map-core-error.ts`에서만 HTTP 오류로 변환하며, `INVALID_REQUEST`, `NOT_FOUND`, `ATTEMPT_LIMIT_EXCEEDED`, `PROVIDER_UNAVAILABLE`를 사용한다.
+- `apps/api/src/modules/*`는 HTTP surface module로 유지하며 route, schema, presenter만 둔다. 도메인 규칙, 트랜잭션, repository 선택은 core 책임이다.
+- `apps/api`가 core를 import할 때는 `@workspace/core/modules/*` public facade를 사용한다.
+
 ## 2026-06-17 WA-7 코스 상세 진행 계약 확장 완료
 
 - `GET /courses/:courseId`의 `progress`는 현재 인증 학습자 기준 값으로 재정의했다.

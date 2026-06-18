@@ -168,9 +168,8 @@ describe("HTTP WritingAppApi", () => {
       fetch: async () =>
         jsonResponse(
           {
-            error: {
-              code: "unauthorized",
-            },
+            code: "UNAUTHORIZED",
+            message: "Unauthorized",
           },
           401
         ),

@@ -10,6 +10,10 @@ describe("플랫폼 API auth route", () => {
     const response = await app.request("/auth/session")
 
     expect(response.status).toBe(401)
+    await expect(response.json()).resolves.toEqual({
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
+    })
   })
 
   it("인증된 session 요청은 사용자 정보를 반환한다", async () => {

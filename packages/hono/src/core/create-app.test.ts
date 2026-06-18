@@ -3,7 +3,8 @@ import { HTTPException } from "hono/http-exception"
 import type { RouteHandler } from "@hono/zod-openapi"
 import { describe, expect, it } from "vitest"
 
-import { createApp, defineRoute } from "@workspace/hono/core"
+import { createApp, defineRoute, defineRouteForEnv } from "@workspace/hono/core"
+import type { AnyRouteConfig } from "@workspace/hono/core"
 import { AppError, ErrorResponseSchema } from "@workspace/hono/errors"
 import { z } from "@workspace/hono/zod"
 
@@ -14,6 +15,11 @@ const UserSchema = z.object({
 
 const MeSchema = z.object({
   id: z.string(),
+})
+
+const EnvUserSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
 })
 
 const UserParamsSchema = z.object({
@@ -46,7 +52,7 @@ const getUserRouteConfig = {
       description: "User found",
     },
   },
-} as const
+} satisfies AnyRouteConfig
 
 const getUserHandler: RouteHandler<typeof getUserRouteConfig> = (context) => {
   const { id } = context.req.valid("param")
@@ -204,6 +210,40 @@ const getMeRoute = defineRoute<AuthEnv>({
   },
 })
 
+const defineAuthRoute = defineRouteForEnv<AuthEnv>()
+
+const getEnvUserRouteConfig = {
+  method: "get",
+  middleware: [setUser],
+  path: "/env-users/{id}",
+  request: {
+    params: UserParamsSchema,
+  },
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: EnvUserSchema,
+        },
+      },
+      description: "Env user found",
+    },
+  },
+} satisfies AnyRouteConfig
+
+const getEnvUserHandler: RouteHandler<typeof getEnvUserRouteConfig, AuthEnv> = (
+  context
+) => {
+  const { id } = context.req.valid("param")
+
+  return context.json({ id, userId: context.var.user.id }, 200)
+}
+
+const getEnvUserRoute = defineAuthRoute({
+  ...getEnvUserRouteConfig,
+  handler: getEnvUserHandler,
+})
+
 describe("createApp", () => {
   const app = createApp({
     routes: [
@@ -213,6 +253,7 @@ describe("createApp", () => {
       httpExceptionRoute,
       unexpectedErrorRoute,
       getMeRoute,
+      getEnvUserRoute,
     ] as const,
   })
 
@@ -304,6 +345,50 @@ describe("createApp", () => {
 
     await expect(response.json()).resolves.toEqual({
       id: "user_1",
+    })
+    expect(response.status).toBe(200)
+  })
+
+  it("runs global middleware before routes", async () => {
+    const calls: string[] = []
+    const middlewareApp = createApp({
+      middleware: [
+        async (_context, next) => {
+          calls.push("middleware")
+
+          await next()
+        },
+      ],
+      routes: [
+        defineRoute({
+          method: "get",
+          path: "/middleware-order",
+          responses: {
+            200: {
+              description: "Middleware order",
+            },
+          },
+          handler: (context) => {
+            calls.push("handler")
+
+            return context.text("ok")
+          },
+        }),
+      ] as const,
+    })
+
+    const response = await middlewareApp.request("/middleware-order")
+
+    await expect(response.text()).resolves.toBe("ok")
+    expect(calls).toEqual(["middleware", "handler"])
+  })
+
+  it("supports app-specific Env route builders with validated input", async () => {
+    const response = await app.request("/env-users/user_2")
+
+    await expect(response.json()).resolves.toEqual({
+      id: "user_2",
+      userId: "user_1",
     })
     expect(response.status).toBe(200)
   })

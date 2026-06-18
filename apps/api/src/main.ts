@@ -1,5 +1,5 @@
 import { serve } from "bun"
-import { createLearnerApiCore } from "@workspace/core"
+import { createLearnerApiCore } from "@workspace/core/modules/learner-api"
 import {
   createAppLogger,
   createRequestLogger,
@@ -7,7 +7,7 @@ import {
 } from "@workspace/logger"
 
 import { createApp } from "@/app"
-import { parseApiEnv } from "@/env"
+import { parseApiEnv } from "@/config/env"
 
 const env = parseApiEnv(process.env)
 const logger = createAppLogger()

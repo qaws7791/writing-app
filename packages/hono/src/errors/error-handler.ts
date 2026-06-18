@@ -1,10 +1,10 @@
 import type { ErrorHandler } from "hono"
 import { HTTPException } from "hono/http-exception"
-import { AppError } from "@/errors/app-error"
-import { getStatusMessage, normalizeErrorStatusCode } from "@/errors/status"
-import { errorJson } from "@/errors/error-response"
-import type { ErrorResponse } from "@/errors/error-response"
-import type { ErrorStatusCode } from "@/errors/status"
+import { AppError } from "./app-error"
+import { errorJson } from "./error-response"
+import type { ErrorResponse } from "./error-response"
+import { getStatusMessage, normalizeErrorStatusCode } from "./status"
+import type { ErrorStatusCode } from "./status"
 
 type ErrorResponseResult = {
   status: ErrorStatusCode

@@ -27,12 +27,14 @@ export type NetworkApiError = {
 type ServerApiErrorCode = Exclude<ApiErrorCode, "network-error">
 
 const serverCodeMap = {
-  account_unavailable: "account-unavailable",
-  attempt_limit_exceeded: "attempt-limit-exceeded",
-  invalid_request: "invalid-request",
-  not_found: "not-found",
-  provider_unavailable: "provider-unavailable",
-  unauthorized: "unauthorized",
+  ACCOUNT_UNAVAILABLE: "account-unavailable",
+  ATTEMPT_LIMIT_EXCEEDED: "attempt-limit-exceeded",
+  HTTP_EXCEPTION: "invalid-request",
+  INVALID_REQUEST: "invalid-request",
+  NOT_FOUND: "not-found",
+  PROVIDER_UNAVAILABLE: "provider-unavailable",
+  UNAUTHORIZED: "unauthorized",
+  VALIDATION_FAILED: "invalid-request",
 } as const satisfies Record<string, ServerApiErrorCode>
 
 const messageByCode = {
@@ -84,20 +86,17 @@ function readServerErrorCode(body: unknown): ServerApiErrorCode | null {
   if (
     typeof body !== "object" ||
     body === null ||
-    !("error" in body) ||
-    typeof body.error !== "object" ||
-    body.error === null ||
-    !("code" in body.error) ||
-    typeof body.error.code !== "string"
+    !("code" in body) ||
+    typeof body.code !== "string"
   ) {
     return null
   }
 
-  if (!isServerErrorCode(body.error.code)) {
+  if (!isServerErrorCode(body.code)) {
     return null
   }
 
-  return serverCodeMap[body.error.code]
+  return serverCodeMap[body.code]
 }
 
 function isServerErrorCode(code: string): code is keyof typeof serverCodeMap {

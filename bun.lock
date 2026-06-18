@@ -88,10 +88,10 @@
       "name": "@workspace/api",
       "version": "0.0.0",
       "dependencies": {
-        "@hono/standard-validator": "^0.2.0",
         "@hono/zod-openapi": "^1.4.0",
         "@workspace/core": "workspace:*",
         "@workspace/env": "workspace:*",
+        "@workspace/hono": "workspace:*",
         "@workspace/logger": "workspace:*",
         "hono": "^4.10.0",
         "zod": "^4.2.0",

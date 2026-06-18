@@ -15,6 +15,7 @@
 ├── packages/
 │   ├── ui/      # 공유 UI 컴포넌트와 디자인 시스템
 │   ├── db/      # Drizzle schema, migration, seed, db client
+│   ├── hono/    # Hono OpenAPI route, validation, error handling 표준 패키지
 │   ├── logger/  # pino logger와 요청 로그 helper
 │   ├── env/     # 환경 변수 parsing helper
 │   └── core/    # 공유 DTO, Zod schema, domain service, repository 구현
@@ -63,6 +64,12 @@
   - 학습 진행과 답변 저장
   - 프로필과 연속 학습일 계산
   - AI 피드백 생성과 결과 저장
+- 구조:
+  - `src/http`는 `@workspace/hono` 기반 앱 조립과 OpenAPI 문서 생성을 담당한다.
+  - `src/context`는 request-scoped dependency와 Hono env 타입을 정의한다.
+  - `src/middleware`는 CORS, 인증, 요청 context 설치 같은 transport middleware만 둔다.
+  - `src/modules/*`는 비즈니스 모듈이 아니라 HTTP surface module이며 route, schema, presenter만 포함한다.
+  - `src/errors/map-core-error.ts`만 core Result error를 HTTP `AppError`로 변환한다.
 
 ### admin
 
@@ -105,6 +112,12 @@
 ### core
 
 `packages/core`는 프레임워크와 HTTP transport에 의존하지 않는 DTO, Zod schema, 브랜드 ID, domain service, repository port와 구현, 학습자 API 런타임 조립을 제공한다. 학습자 API 방향은 `apps/api -> packages/core -> packages/db`이며, core는 DB primitive를 사용해 유스케이스와 트랜잭션 경계를 소유한다.
+
+학습자 API는 core 내부 파일 구조에 직접 묶이지 않도록 `@workspace/core/modules/{auth,content,learning,ai-feedback,learner-api}` public facade만 import한다.
+
+### hono
+
+`packages/hono`는 Hono 기반 API 앱의 반복되는 transport 표준을 제공한다. 앱 생성, OpenAPI route 정의, Env 고정 route builder, Zod validation hook, `AppError`, 404와 공통 error handler를 담당한다. 에러 wire contract는 `{ code, message, errors? }`다.
 
 ### db
 

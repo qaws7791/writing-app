@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest"
-import { readBearerToken } from "@workspace/core/auth"
-import { lessonIdSchema, lessonStepIdSchema } from "@workspace/core/content"
-import { learnerIdSchema } from "@workspace/core/learning"
-import type { LearningService } from "@workspace/core/learning"
+import { readBearerToken } from "@workspace/core/modules/auth"
+import {
+  lessonIdSchema,
+  lessonStepIdSchema,
+} from "@workspace/core/modules/content"
+import { learnerIdSchema } from "@workspace/core/modules/learning"
+import type { LearningService } from "@workspace/core/modules/learning"
 
 import { createApp, type ApiDependencies } from "@/app"
 
@@ -113,13 +116,12 @@ describe("플랫폼 API learning route", () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-      },
+      code: "INVALID_REQUEST",
+      message: "Invalid request",
     })
   })
 
-  it("잘못된 answer JSON 본문은 malformed_json detail로 응답한다", async () => {
+  it("잘못된 answer JSON 본문은 HTTP_EXCEPTION으로 응답한다", async () => {
     const app = createApp(
       createDependencies({
         learningService: createLearningService(),
@@ -137,12 +139,8 @@ describe("플랫폼 API learning route", () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-        detail: {
-          code: "malformed_json",
-        },
-      },
+      code: "HTTP_EXCEPTION",
+      message: "Bad Request",
     })
   })
 
@@ -189,7 +187,7 @@ describe("플랫폼 API learning route", () => {
     ])
   })
 
-  it("잘못된 lesson 완료 JSON 본문은 malformed_json detail로 응답한다", async () => {
+  it("잘못된 lesson 완료 JSON 본문은 HTTP_EXCEPTION으로 응답한다", async () => {
     const app = createApp(
       createDependencies({
         learningService: createLearningService(),
@@ -207,12 +205,8 @@ describe("플랫폼 API learning route", () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-        detail: {
-          code: "malformed_json",
-        },
-      },
+      code: "HTTP_EXCEPTION",
+      message: "Bad Request",
     })
   })
 })

@@ -1,0 +1,28 @@
+import { defineApiRoute } from "@/context/hono-env"
+import { authenticatedResponses, jsonResponse } from "@/http/openapi"
+import { requireActiveSession } from "@/middleware/auth.middleware"
+import { progressResponseSchema } from "@/modules/progress/progress.schemas"
+
+export const progressRoute = defineApiRoute({
+  method: "get",
+  middleware: [requireActiveSession],
+  operationId: "getProgress",
+  path: "/progress",
+  responses: authenticatedResponses(
+    jsonResponse("학습자의 코스별 진행 상태입니다.", progressResponseSchema)
+  ),
+  security: [{ bearerAuth: [] }],
+  summary: "학습 진행 조회",
+  handler: async (context) => {
+    const progressService = context.var.requestContext.progressService
+
+    if (progressService === undefined) {
+      throw new Error("Progress service is not configured.")
+    }
+
+    return context.json(
+      await progressService.readProgress(context.var.activeSession.user.id),
+      200
+    )
+  },
+})
