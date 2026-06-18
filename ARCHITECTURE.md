@@ -19,7 +19,7 @@
 │   ├── logger/  # pino logger와 요청 로그 helper
 │   ├── env/     # 환경 변수 parsing helper
 │   └── core/    # shared kernel, module facade, usecase, repository adapter, composition root
-└── docs/       # 한국어 결정 기록과 OpenAPI 정적 계약 파일
+└── docs/       # product, design, engineering 기준 문서
 ```
 
 ## 공통 기술
@@ -81,7 +81,7 @@
 - layout: 왼쪽 사이드바 기반 대시보드
 - 주요 기능:
   - 대시보드 지표와 최근 활동 조회
-  - 콘텐츠 검색, 생성, 보관, 편집
+  - 콘텐츠 검색, 생성, 보관, 미리보기
   - 사용자 검색, 상태 변경, 삭제 요청 처리
   - 분석과 운영 설정 관리
 
@@ -94,7 +94,7 @@
 - database: 플랫폼과 같은 SQLite 파일을 사용하되 관리자 인증 테이블은 `admin_*`로 분리한다.
 - 주요 기능:
   - 관리자 인증
-  - 코스-유닛-레슨-스텝 계층형 조회와 편집
+  - 코스-유닛-레슨-스텝 계층형 조회와 코스 보관
   - 사용자 목록, 상세, 상태 변경, 삭제 상태 전환
   - 대시보드, 분석, 운영 설정
   - 최초 관리자 계정 seed
@@ -147,7 +147,7 @@ core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 �
 
 DB migration은 기존 schema를 누적 보정하지 않고 `0000-kwep-baseline.sql` 기준으로 재정의한다. 운영 데이터 이전이 필요해지는 시점에는 별도 데이터 이전 계획을 작성한다.
 
-현재 피벗 reset 단계에서는 `apps/*/src`와 `packages/*/src`의 제품 구현을 제거하고, `apps/storybook/src`와 각 package 설정 파일만 남긴다. 새 source root는 후속 Task에서 Kwep baseline 구현 파일을 만들 때 다시 생성한다.
+현재 제품 구현은 `apps/*/src`와 `packages/*/src`에 유지한다. 오래된 reset 단계 문구는 현재 구조의 기준으로 사용하지 않는다.
 
 ## 배포
 

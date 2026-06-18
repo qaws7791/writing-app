@@ -30,5 +30,6 @@
 ## 문서 용어
 
 - 설계 문서: `ARCHITECTURE.md`, `DOMAIN.md`, `FRONTEND.md`, `BACKEND.md`처럼 구조와 원칙을 설명하는 문서.
-- 운영 문서: `docs/operations-environment.md`처럼 실행, 배포, 환경 값을 설명하는 문서.
-- 진행 기록: `docs/codebase-improvement-progress.md`처럼 개선 작업의 조사, 완료 내용, 검증을 남기는 문서.
+- 제품 문서: `docs/product`처럼 제품 판단, 기능, 사용자 흐름을 설명하는 문서.
+- 디자인 문서: `docs/design`처럼 화면, 컴포넌트, 접근성, 문구 기준을 설명하는 문서.
+- 엔지니어링 문서: `docs/engineering`처럼 시스템, API, DB, 런타임, 테스트, 운영 값을 설명하는 문서.

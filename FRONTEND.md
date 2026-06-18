@@ -121,4 +121,5 @@
 - `ARCHITECTURE.md`: 모노레포 구조와 공개 경계.
 - `DOMAIN.md`: 도메인 모델과 불변식.
 - `BACKEND.md`: API, DB, 인증, 운영 경계.
-- `docs/text-localization-policy.md`: 텍스트 현지화 원칙.
+- `docs/design`: 브랜드, foundation, component, pattern, asset, accessibility, IA, 화면 UX의 단일 진실 원천.
+- `docs/design/text-localization-policy.md`: 텍스트 현지화 원칙.

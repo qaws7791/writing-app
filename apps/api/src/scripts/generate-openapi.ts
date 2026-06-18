@@ -1,7 +1,7 @@
 import { createApp, createOpenApiDocument, type ApiDependencies } from "@/app"
 
 const outputPath = new URL(
-  "../../../../docs/openapi/writing-app-api.json",
+  "../../../../docs/engineering/contracts/writing-app-api-openapi.json",
   import.meta.url
 )
 

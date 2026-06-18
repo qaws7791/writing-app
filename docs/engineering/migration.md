@@ -1,0 +1,83 @@
+# 마이그레이션
+
+이 문서는 데이터, 스키마, 인프라 마이그레이션 절차와 롤백 조건을 설명하는 단일 진실 원천이다.
+
+## 현재 마이그레이션 모델
+
+- 현재 DB baseline은 `packages/db/src/migrations/0000-kwep-baseline.sql`이다.
+- 마이그레이션 실행 진입점은 `packages/db/src/migrations/migrate.ts`다.
+- 현재 방식은 누적 migration 체인이 아니라 baseline SQL 적용 방식이다.
+- 운영 데이터 이전이 필요해지면 별도 migration 계획과 ADR을 작성한다.
+
+## 명령
+
+| 목적                    | 명령                                    | 사용 환경              |
+| ----------------------- | --------------------------------------- | ---------------------- |
+| baseline migration 적용 | `bun --filter @workspace/db db:migrate` | 로컬, 운영 배포 전     |
+| 콘텐츠 seed 적용        | `bun --filter @workspace/db db:seed`    | 로컬, 명시적 운영 절차 |
+| 학습자 앱 로컬 준비     | `bun run dev:app:setup`                 | 로컬                   |
+| 개발 DB 초기화          | `bun run db:reset`                      | 로컬 전용              |
+| 깨끗한 학습자 앱 시작   | `bun run dev:app:fresh`                 | 로컬 전용              |
+
+## 기본 절차
+
+1. 변경 범위를 정한다.
+2. DB schema와 baseline SQL이 같은 구조를 표현하는지 확인한다.
+3. repository mapping 테스트를 추가하거나 갱신한다.
+4. seed 데이터 변경이 기존 학습 진행/답변을 삭제하지 않는지 확인한다.
+5. 로컬 또는 in-memory DB에 migration을 적용한다.
+6. `bun --filter @workspace/db test`를 실행한다.
+7. 영향을 받는 API/core 테스트를 실행한다.
+8. 문서와 OpenAPI 계약이 영향을 받으면 함께 갱신한다.
+
+## 콘텐츠 seed 마이그레이션
+
+콘텐츠 seed는 stable ID 기준으로 upsert한다.
+
+- 기존 진행과 답변 row는 보존한다.
+- seed에서 빠진 콘텐츠는 `archived`로 전환한다.
+- 콘텐츠 row를 실제 삭제하지 않는다.
+- step type은 표준 10개 타입으로 변환한다.
+- `summary_json`, `content_json`, `answer_json`, `result_json`은 schema/parser 테스트로 계약을 고정한다.
+
+## 레거시 DB 재생성
+
+seed 실행 중 legacy DB 구조가 감지되면 DB 파일 재생성이 필요할 수 있다.
+
+재생성 조건은 모두 만족해야 한다.
+
+- `ALLOW_DATABASE_RESET=true`
+- CLI `--force`
+- DB 파일이 저장소 루트 `data/` 하위 경로
+
+운영 DB에 이 절차를 적용하지 않는다. 운영 데이터 이전이 필요하면 별도 계획을 세운다.
+
+## 운영 마이그레이션 원칙
+
+- 서버 프로세스 시작이 DB 변경을 수행하지 않는다.
+- 배포 전 또는 배포 단계에서 migration을 명시적으로 실행한다.
+- SQLite 파일을 백업한 뒤 migration을 실행한다.
+- 학습자 API와 어드민 API를 같은 DB 파일에 연결하므로, schema 변경은 두 API 호환성을 함께 확인한다.
+- 마이그레이션 중에는 쓰기 트래픽을 제한하거나 maintenance window를 둔다.
+
+## 롤백 조건
+
+아래 상황에서는 배포를 중단하고 롤백 절차를 따른다.
+
+- migration 적용 실패
+- schema와 Drizzle schema 불일치
+- seed가 기존 진행/답변 데이터를 삭제하거나 덮어씀
+- 인증 테이블 또는 session table 손상
+- API route 테스트에서 데이터 계약 실패
+- 운영 smoke에서 주요 읽기/쓰기 경로 실패
+
+## 마이그레이션 ADR 기준
+
+다음 변경은 ADR을 남긴다.
+
+- baseline migration에서 누적 migration 체인으로 전환
+- SQLite에서 다른 DB로 이전
+- 커리큘럼 버전/마이그레이션 모델 재도입
+- 인증 provider schema 변경
+- 사용자 데이터 삭제/익명화 정책 변경
+- 운영 DB 직접 수정 절차 추가

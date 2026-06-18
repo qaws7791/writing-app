@@ -1,0 +1,135 @@
+# API 계약
+
+이 문서는 HTTP API route, 인증 표면, 오류 응답, OpenAPI 생성 흐름을 설명하는 단일 진실 원천이다.
+
+## 기준
+
+- 기준일: 2026-06-19
+- 기준 파일:
+  - `apps/api/src/routes/index.ts`
+  - `apps/api/src/modules/*/*.routes.ts`
+  - `apps/api/src/http/openapi.ts`
+  - `apps/admin-api/src/app.ts`
+  - `apps/admin-api/src/routes/*.route.ts`
+
+## 공통 원칙
+
+- API route는 transport 경계다.
+- 비즈니스 규칙은 core service 또는 domain policy에 둔다.
+- 요청 body와 params는 runtime schema로 검증한다.
+- 사용자 노출 오류 메시지는 한국어를 기본으로 한다.
+- Better Auth raw route는 앱의 OpenAPI route registry와 분리될 수 있다.
+
+## 학습자 API
+
+기준 URL은 환경별 `NEXT_PUBLIC_API_BASE_URL` 또는 `WEB_API_BASE_URL`이 가리키는 `apps/api` origin이다.
+
+현재 route:
+
+| 메서드     | 경로                                    | 인증          | 설명                           |
+| ---------- | --------------------------------------- | ------------- | ------------------------------ |
+| `GET`      | `/health`                               | 없음          | API 상태                       |
+| `GET`      | `/openapi`                              | 없음          | OpenAPI 3.1 문서               |
+| `GET/POST` | `/api/auth/*`                           | Better Auth   | 인증 handler                   |
+| `GET`      | `/api/auth/sign-in/google`              | 없음          | Google sign-in redirect helper |
+| `GET`      | `/auth/session`                         | active 학습자 | 현재 세션                      |
+| `GET`      | `/profile`                              | active 학습자 | 프로필과 통계                  |
+| `GET`      | `/courses`                              | active 학습자 | 코스 목록                      |
+| `GET`      | `/courses/{courseId}`                   | active 학습자 | 코스 상세                      |
+| `GET`      | `/lessons/{lessonId}`                   | active 학습자 | 레슨 상세                      |
+| `GET`      | `/progress`                             | active 학습자 | 학습 진행                      |
+| `POST`     | `/learning/answers`                     | active 학습자 | 스텝 답변 저장                 |
+| `POST`     | `/learning/lessons/{lessonId}/complete` | active 학습자 | 레슨 완료                      |
+| `POST`     | `/ai-feedback`                          | active 학습자 | AI 코칭 생성                   |
+
+## 어드민 API
+
+기준 URL은 `ADMIN_API_BASE_URL`이 가리키는 `apps/admin-api` origin이다.
+
+현재 route:
+
+| 메서드     | 경로                        | 권한        | 설명                  |
+| ---------- | --------------------------- | ----------- | --------------------- |
+| `GET`      | `/health`                   | 없음        | API 상태              |
+| `GET/POST` | `/api/auth/*`               | Better Auth | 관리자 인증 handler   |
+| `GET`      | `/dashboard`                | 관리자      | 대시보드              |
+| `GET`      | `/analytics`                | 관리자      | 분석 요약             |
+| `GET`      | `/analytics/lessons`        | 관리자      | 레슨별 분석           |
+| `GET`      | `/courses`                  | 관리자      | 코스 목록             |
+| `POST`     | `/courses`                  | owner       | 코스 생성             |
+| `DELETE`   | `/courses/:courseId`        | owner       | 코스 보관             |
+| `GET`      | `/courses/:courseId/editor` | 관리자      | 코스 편집 문서 조회   |
+| `GET`      | `/users`                    | 관리자      | 사용자 목록           |
+| `GET`      | `/users/:userId`            | 관리자      | 사용자 상세           |
+| `PATCH`    | `/users/:userId/status`     | owner       | 사용자 상태 변경      |
+| `DELETE`   | `/users/:userId`            | owner       | 사용자 삭제 상태 전환 |
+| `GET`      | `/settings`                 | 관리자      | 설정 조회             |
+| `PUT`      | `/settings/notice`          | owner       | 공지 설정 저장        |
+| `PUT`      | `/settings/legal`           | owner       | 법적 문서 저장        |
+| `POST`     | `/settings/content-reset`   | owner       | 콘텐츠 초기화         |
+
+현재 어드민 API에는 학습자 API와 같은 `/openapi` route가 구현되어 있지 않다.
+
+## 인증 표면
+
+- 학습자 로그인은 Google OAuth를 사용한다.
+- 관리자 로그인은 `POST /api/auth/sign-in/email`을 사용한다.
+- 프론트엔드는 Next.js same-origin auth proxy를 두지 않고 API origin의 Better Auth endpoint를 직접 호출한다.
+- 브라우저 요청은 `credentials: "include"`를 사용한다.
+
+## 오류 응답
+
+학습자 API는 `@workspace/hono/errors`의 표준 오류 응답을 사용한다.
+
+기본 shape:
+
+```json
+{
+  "code": "ERROR_CODE",
+  "message": "오류 메시지",
+  "errors": []
+}
+```
+
+어드민 API는 `errorResponse()` helper를 사용한다.
+
+주요 상태:
+
+- `400 invalid_request`
+- `401 unauthorized`
+- `403 forbidden`
+- `404 not_found`
+- `429` AI 피드백 시도 한도
+- `500 internal_error`
+- `503` AI provider unavailable
+
+JSON body 오류 detail:
+
+- `malformed_json`
+- `invalid_body`
+- `unknown_body_read_error`
+
+## OpenAPI 생성
+
+학습자 API:
+
+- route 정의는 `@hono/zod-openapi` 기반이다.
+- route spec과 handler를 같은 파일 가까이에 둔다.
+- `/openapi`는 실제 Hono 앱에 등록된 route에서 OpenAPI 3.1 문서를 생성한다.
+- 정적 계약 파일은 `docs/engineering/contracts/writing-app-api-openapi.json`이다.
+- 웹 generated 타입은 이 정적 JSON을 기준으로 생성한다.
+
+명령:
+
+```bash
+bun --filter @workspace/api openapi:generate
+bun --filter @workspace/web api:generate
+```
+
+## 계약 변경 절차
+
+1. route schema와 handler를 변경한다.
+2. route 테스트를 갱신한다.
+3. OpenAPI 정적 JSON을 갱신한다.
+4. 웹 generated 타입과 mapper 테스트를 갱신한다.
+5. 관련 engineering 문서를 갱신한다.

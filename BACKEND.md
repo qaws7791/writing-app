@@ -6,7 +6,7 @@
 
 현재 학습자 API는 공개 콘텐츠 조회, Better Auth 기반 Google 로그인, 학습 진행/답변 저장, 프로필과 연속 학습일 계산, OpenAI 기반 AI 코칭을 포함한다. 관리자 API는 관리자 인증, 대시보드, 콘텐츠 계층 조회와 편집, 사용자 운영, 분석, 운영 설정을 제공한다.
 
-사용자 또는 관리자가 받을 수 있는 API 오류 응답의 `message`는 한국어로 작성한다. 상세 원칙은 `docs/text-localization-policy.md`를 따른다.
+사용자 또는 관리자가 받을 수 있는 API 오류 응답의 `message`는 한국어로 작성한다. 상세 원칙은 `docs/design/text-localization-policy.md`를 따른다.
 
 ### API 오류 경계 정비 시작
 
@@ -49,7 +49,7 @@
 학습자 가입 후 앱 소유 `learner_profiles` row를 보장하는 책임은 Better Auth 설정 객체 안에 직접 두지 않는다. Better Auth user create hook은 `LearnerOnboardingService`를 호출하는 adapter 역할만 하며, profile 생성과 조회는 `LearnerProfileRepository` 포트를 통해 수행한다. 기존 `suspended` 또는 `deleted` profile은 hook이 `active`로 되돌리지 않고, 세션 해석 중 profile row가 누락된 경우에만 active profile을 한 번 보장한다.
 
 - `GET /health`
-- `GET /openapi.json`
+- `GET /openapi`
 - `GET /api/auth/*`, `POST /api/auth/*`
 - `GET /courses`
 - `GET /courses/search?q=...`
@@ -96,7 +96,7 @@ bun --filter @workspace/api dev
 주요 라우트는 다음과 같다.
 
 - `GET /health`
-- `GET /openapi.json`
+- `GET /openapi`
 - `GET /api/auth/*`, `POST /api/auth/*`
 - `GET /session`
 - `GET /dashboard`
@@ -119,7 +119,7 @@ bun --filter @workspace/api dev
 - `PUT /settings/legal`
 - `POST /settings/content-reset`
 
-관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 관리자 Better Auth 런타임에는 Google/OAuth social provider를 등록하지 않는다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다. `admin_` 테이블 prefix와 Better Auth 컬럼명 보존 규칙은 `docs/schema-conventions.md`를 따른다. Next.js 어드민 앱은 `/api/auth/*`를 프록시하지 않고 어드민 Hono API의 인증 endpoint를 직접 호출한다. 관리자 보호 API도 `auth.api.getSession({ headers })`로 관리자용 httpOnly 세션 쿠키를 검증하며, `ADMIN_BETTER_AUTH_SECRET`은 공통 `BETTER_AUTH_SECRET`보다 우선한다.
+관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 관리자 Better Auth 런타임에는 Google/OAuth social provider를 등록하지 않는다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다. `admin_` 테이블 prefix와 Better Auth 컬럼명 보존 규칙은 `docs/engineering/schema-conventions.md`를 따른다. Next.js 어드민 앱은 `/api/auth/*`를 프록시하지 않고 어드민 Hono API의 인증 endpoint를 직접 호출한다. 관리자 보호 API도 `auth.api.getSession({ headers })`로 관리자용 httpOnly 세션 쿠키를 검증하며, `ADMIN_BETTER_AUTH_SECRET`은 공통 `BETTER_AUTH_SECRET`보다 우선한다.
 
 어드민 API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL` 기본 경로 위임, `ADMIN_ORIGIN` 기반 CORS 허용 origin, `ADMIN_API_PORT` 같은 앱별 의미 변환은 `apps/admin-api/src/env.ts`에 유지한다.
 SQLite 연결은 학습자 API와 같은 `@workspace/db` 공통 설정을 사용한다. 따라서 어드민 API도 마이그레이션과 런타임 쿼리 전에 WAL 모드, 외래키 검사, `busy_timeout`, 체크포인트, 캐시 관련 PRAGMA를 적용한다.
@@ -133,7 +133,7 @@ SQLite 연결은 학습자 API와 같은 `@workspace/db` 공통 설정을 사용
 | `DATABASE_URL`                    | 필수      | `file:../../data/api.sqlite`        | 저장소 루트 `data/api.sqlite`에 있는 플랫폼 공유 SQLite 데이터베이스 위치                                |
 | `LOG_LEVEL`                       | 선택      | `info`                              | Pino 로그 레벨                                                                                           |
 | `NODE_ENV`                        | 선택      | `development`                       | 실행 환경 이름                                                                                           |
-| `ADMIN_API_PORT`                  | 선택      | `3002`                              | 어드민 API 서버가 수신할 포트                                                                            |
+| `ADMIN_API_PORT`                  | 선택      | `4001`                              | 어드민 API 서버가 수신할 포트                                                                            |
 | `ADMIN_SEED_EMAIL`                | 시드 필수 | `admin@example.com`                 | 최초 관리자 계정 시드에 사용할 이메일                                                                    |
 | `ADMIN_SEED_PASSWORD`             | 시드 필수 | `replace-with-local-admin-password` | 최초 관리자 계정 시드에 사용할 비밀번호                                                                  |
 | `ADMIN_SEED_NAME`                 | 시드 선택 | `관리자`                            | 최초 관리자 계정 시드에 사용할 이름                                                                      |
@@ -163,15 +163,13 @@ bun --filter @workspace/admin-api seed:admin
 
 레슨 답변 저장 command의 `answer`는 `learningAnswerSchema`를 통과한 값만 허용한다. API route, core service command, DB learning repository는 같은 학습 답변 계약을 사용하며, 임의 JSON 값은 application boundary 전에 거절한다.
 
-관리자 편집은 현재 커리큘럼 전체 스냅샷을 저장하되 `expectedRevision`을 필수로 받는다. 서버는 `courses.curriculum_revision`과 일치하는 요청만 반영하고, 저장 성공 시 revision을 증가시킨 편집 문서를 반환한다. revision이 다르면 `409 conflict`를 반환하고 커리큘럼 row를 변경하지 않는다.
-
-`PUT /courses/:courseId/editor`는 코스 기본 정보, 유닛, 레슨 배치, 스텝을 현재 테이블에 반영한다. 유닛과 레슨은 삭제 후 삽입하지 않고 ID 기준으로 갱신하며, 저장 요청에서 빠진 기존 유닛, 레슨, 스텝은 삭제하지 않고 `archived` 상태로 바꾼다.
+어드민 코스 상세는 현재 `GET /courses/:courseId/editor` 기반 읽기 전용 미리보기다. 코스 기본 정보, 유닛, 레슨, 스텝을 조회해 운영자가 확인할 수 있게 하지만 저장형 편집 API는 제공하지 않는다.
 
 ## `packages/db`
 
 `packages/db`는 Drizzle SQLite 기반 저수준 영속성 패키지다. 콘텐츠, Better Auth, 학습 진행, AI 피드백 시도 스키마, baseline migration SQL, 시드 데이터, 데이터베이스 클라이언트 생성을 제공하되, 도메인 DTO나 repository port를 알지 않는다.
 
-DB 테이블과 컬럼 명명 규칙은 `docs/schema-conventions.md`를 따른다. Better Auth 계열 테이블은 provider convention을 유지하고, 프로젝트가 직접 관리하는 테이블은 SQL 이름에 snake_case를 사용한다.
+DB 테이블과 컬럼 명명 규칙은 `docs/engineering/schema-conventions.md`를 따른다. Better Auth 계열 테이블은 provider convention을 유지하고, 프로젝트가 직접 관리하는 테이블은 SQL 이름에 snake_case를 사용한다.
 
 인증과 학습자 상태 테이블은 다음 이름을 사용한다.
 

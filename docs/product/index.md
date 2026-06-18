@@ -26,8 +26,7 @@
 
 - 1순위: 현재 코드, schema, seed 데이터.
 - 2순위: `CONTEXT.md`, `DOMAIN.md`, `ARCHITECTURE.md`, `FRONTEND.md`, `BACKEND.md`.
-- 3순위: `docs` 루트의 최신 완료 기록.
-- 4순위: `docs/superpowers`의 설계, 계획, 증거 문서.
+- 3순위: `docs/product`, `docs/design`, `docs/engineering`의 정식 기준 문서.
 - 충돌 시 현재 코드와 schema를 우선한다.
 
 ## 현재 기준선
@@ -45,6 +44,7 @@
 
 - 모든 문서는 한국어로 작성한다.
 - 파일명은 케밥 케이스를 사용한다.
+- `docs` 바로 아래에는 `product`, `design`, `engineering` 폴더만 둔다.
 - 문장은 짧게 쓴다.
 - 기능은 실제 코드에 있는 단어로 설명한다.
 - 확인되지 않은 시장 가설은 확정 기능처럼 쓰지 않는다.
