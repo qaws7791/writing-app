@@ -8,6 +8,19 @@
 - `apps/api`의 Hono module은 HTTP surface adapter로 제한하고, core 호출과 response 변환만 담당하게 한다.
 - 작업 완료 시 테스트, 타입체크, lint, OpenAPI 생성 결과를 기록한다.
 
+## 2026-06-18 route 테스트 위치 정리 시작
+
+- `apps/api/src/routes/*.route.test.ts`에 남은 route 테스트를 실제 route 구현 파일 근처로 이동한다.
+- HTTP surface module별 테스트는 `apps/api/src/modules/{module}` 안에 두고, `/openapi` route 테스트는 앱 조립 책임이 있는 `apps/api/src/http` 근처에 둔다.
+- 동작 변경 없이 테스트 위치와 문서만 정리한다.
+
+## 2026-06-18 route 테스트 위치 정리 완료
+
+- `ai-feedback`, `auth`, `courses`, `learning`, `lessons`, `progress` route 테스트를 각 `apps/api/src/modules/*` 디렉터리로 이동했다.
+- `/openapi` route 테스트는 `apps/api/src/http/openapi.route.test.ts`로 이동했다.
+- `apps/api/src/routes`에는 route 조립 파일과 테스트 공용 의존성만 남겼다.
+- 검증: `bun --filter @workspace/api test`, `bun --filter @workspace/api typecheck`.
+
 ## 완료 기록
 
 - `@workspace/hono/core`의 `createApp({ middleware, routes })`가 전역 middleware를 route 등록 전에 순서대로 설치하도록 확장했다.
