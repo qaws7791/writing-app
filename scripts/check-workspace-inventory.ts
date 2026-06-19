@@ -22,6 +22,11 @@ const requiredTurboTasks = [
   "test",
   "typecheck",
 ] as const
+const requiredTurboBuildOutputs = [
+  "dist/**",
+  ".next/**",
+  "!.next/cache/**",
+] as const
 
 const repositoryRoot = process.cwd()
 const failures: string[] = []
@@ -203,6 +208,19 @@ function validateTurboTasks() {
   for (const taskName of requiredTurboTasks) {
     if (!isRecord(tasks[taskName])) {
       failures.push(`turbo.json tasks must include ${taskName}.`)
+    }
+  }
+
+  const buildTask = tasks["build"]
+  if (!isRecord(buildTask)) {
+    return
+  }
+
+  const outputs = readStringArray(buildTask["outputs"])
+
+  for (const output of requiredTurboBuildOutputs) {
+    if (!outputs.includes(output)) {
+      failures.push(`turbo.json build outputs must include ${output}.`)
     }
   }
 }
