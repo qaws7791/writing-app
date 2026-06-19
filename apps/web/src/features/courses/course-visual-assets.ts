@@ -1,4 +1,4 @@
-import type { CourseVisualKey } from "@workspace/contracts/content"
+import type { CourseVisualKey } from "@/features/courses/course-types"
 
 const courseVisualAssetUrls = {
   "basic-sentence-writing": "/course-thumbnails/basic-sentence-writing.png",

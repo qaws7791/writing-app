@@ -1,7 +1,15 @@
-import type { CourseVisualKey } from "@workspace/contracts/content"
-
 export type CourseStatus = "active" | "archived"
 export type LessonProgressStatus = "available" | "completed" | "locked"
+
+export const courseVisualKeys = [
+  "basic-sentence-writing",
+  "grammar-complete",
+  "essay-writing",
+  "creative-writing",
+  "expression",
+] as const
+
+export type CourseVisualKey = (typeof courseVisualKeys)[number]
 
 export type CourseSummary = {
   readonly category: string

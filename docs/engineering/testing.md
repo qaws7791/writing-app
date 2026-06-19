@@ -91,6 +91,7 @@ bun run --filter=@workspace/web test
 - 어드민 API는 operator와 owner 권한 차이를 검증한다.
 - JSON body 오류는 malformed JSON과 schema 오류를 구분한다.
 - OpenAPI 생성 route는 실제 등록 route 기준으로 검증한다.
+- 학습자 웹 앱은 `@workspace/core`를 직접 import하지 않는다는 아키텍처 테스트로 API 계약 경계를 고정한다.
 - 어드민 API route의 wire contract schema는 `@workspace/contracts/admin`에서 직접 가져오고, `apps/admin` 화면은 `@workspace/core`와 `@workspace/contracts/admin`을 직접 import하지 않는다는 아키텍처 테스트로 고정한다.
 
 ## DB 테스트 기준
