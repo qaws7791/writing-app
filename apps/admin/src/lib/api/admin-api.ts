@@ -6,10 +6,10 @@ import type {
   AdminCourseListStatusFilter,
   AdminDashboardDto,
   AdminDeleteUserResultDto,
-  AdminLegalSettingsRequest,
+  AdminLegalSettingsRequest as AdminLegalSettingsWireRequest,
   AdminLessonAnalyticsPageDto,
   AdminLessonAnalyticsSort,
-  AdminNoticeSettingsRequest,
+  AdminNoticeSettingsRequest as AdminNoticeSettingsWireRequest,
   AdminSettingsDto,
   AdminSortDirection,
   AdminUserDetailDto,
@@ -22,7 +22,19 @@ import type {
 import type { ContentStatus } from "@workspace/contracts/status"
 import type { AdminApiResult } from "@/lib/api/api-result"
 
+export type AdminAnalytics = AdminAnalyticsDto
+export type AdminArchiveCourseResult = AdminArchiveCourseResultDto
+export type AdminContentResetResult = AdminContentResetResultDto
+export type AdminCourseDetail = AdminCourseDetailDto
 export type AdminCourseStatusFilter = AdminCourseListStatusFilter
+export type AdminDashboard = AdminDashboardDto
+export type AdminDeleteUserResult = AdminDeleteUserResultDto
+export type AdminLegalSettingsRequest = AdminLegalSettingsWireRequest
+export type AdminLessonAnalyticsPage = AdminLessonAnalyticsPageDto
+export type AdminNoticeSettingsRequest = AdminNoticeSettingsWireRequest
+export type AdminSettings = AdminSettingsDto
+export type AdminUserDetail = AdminUserDetailDto
+export type AdminUserList = AdminUserListDto
 
 export type AdminCourseListItem = {
   readonly category: string
@@ -79,41 +91,37 @@ export type UpdateAdminUserStatusInput = AdminUpdateUserStatusRequest & {
 export type AdminApi = {
   readonly archiveCourse: (
     courseId: string
-  ) => Promise<AdminApiResult<AdminArchiveCourseResultDto>>
-  readonly createCourse: () => Promise<AdminApiResult<AdminCourseDetailDto>>
+  ) => Promise<AdminApiResult<AdminArchiveCourseResult>>
+  readonly createCourse: () => Promise<AdminApiResult<AdminCourseDetail>>
   readonly deleteUser: (
     userId: string
-  ) => Promise<AdminApiResult<AdminDeleteUserResultDto>>
+  ) => Promise<AdminApiResult<AdminDeleteUserResult>>
   readonly getAnalytics: (
     input: ReadAdminAnalyticsInput
-  ) => Promise<AdminApiResult<AdminAnalyticsDto>>
+  ) => Promise<AdminApiResult<AdminAnalytics>>
   readonly getCourses: (
     input: ReadAdminCoursesInput
   ) => Promise<AdminApiResult<AdminCourseList>>
   readonly getCourseEditor: (
     courseId: string
-  ) => Promise<AdminApiResult<AdminCourseDetailDto>>
-  readonly getDashboard: () => Promise<AdminApiResult<AdminDashboardDto>>
+  ) => Promise<AdminApiResult<AdminCourseDetail>>
+  readonly getDashboard: () => Promise<AdminApiResult<AdminDashboard>>
   readonly getLessonAnalytics: (
     input: ReadAdminLessonAnalyticsInput
-  ) => Promise<AdminApiResult<AdminLessonAnalyticsPageDto>>
-  readonly getSettings: () => Promise<AdminApiResult<AdminSettingsDto>>
-  readonly getUser: (
-    userId: string
-  ) => Promise<AdminApiResult<AdminUserDetailDto>>
+  ) => Promise<AdminApiResult<AdminLessonAnalyticsPage>>
+  readonly getSettings: () => Promise<AdminApiResult<AdminSettings>>
+  readonly getUser: (userId: string) => Promise<AdminApiResult<AdminUserDetail>>
   readonly getUsers: (
     input: ReadAdminUsersInput
-  ) => Promise<AdminApiResult<AdminUserListDto>>
-  readonly resetContent: () => Promise<
-    AdminApiResult<AdminContentResetResultDto>
-  >
+  ) => Promise<AdminApiResult<AdminUserList>>
+  readonly resetContent: () => Promise<AdminApiResult<AdminContentResetResult>>
   readonly saveLegalSettings: (
     input: AdminLegalSettingsRequest
-  ) => Promise<AdminApiResult<AdminSettingsDto>>
+  ) => Promise<AdminApiResult<AdminSettings>>
   readonly saveNoticeSettings: (
     input: AdminNoticeSettingsRequest
-  ) => Promise<AdminApiResult<AdminSettingsDto>>
+  ) => Promise<AdminApiResult<AdminSettings>>
   readonly updateUserStatus: (
     input: UpdateAdminUserStatusInput
-  ) => Promise<AdminApiResult<AdminUserDetailDto>>
+  ) => Promise<AdminApiResult<AdminUserDetail>>
 }

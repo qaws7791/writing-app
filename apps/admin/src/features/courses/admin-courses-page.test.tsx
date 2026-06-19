@@ -4,15 +4,13 @@ import { describe, expect, it, vi } from "vitest"
 
 import { AdminCoursesPage } from "@/features/courses/admin-courses-page"
 import type {
+  AdminArchiveCourseResult,
+  AdminCourseDetail,
   AdminCourseList,
   ReadAdminCoursesInput,
 } from "@/lib/api/admin-api"
 import { networkAdminApiError } from "@/lib/api/api-error"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type {
-  AdminArchiveCourseResultDto,
-  AdminCourseDetailDto,
-} from "@workspace/contracts/admin"
 import { createHttpNetworkError } from "@workspace/http-client"
 
 const filters: ReadAdminCoursesInput = {
@@ -56,7 +54,7 @@ describe("AdminCoursesPage", () => {
   it("코스 검색, 필터, 페이지 크기, 목록과 보관 대화상자를 렌더링한다", async () => {
     const user = userEvent.setup()
     const archiveCourse = vi.fn<
-      () => Promise<AdminApiResult<AdminArchiveCourseResultDto>>
+      () => Promise<AdminApiResult<AdminArchiveCourseResult>>
     >(async () => ({
       status: "ok",
       value: {
@@ -97,7 +95,7 @@ describe("AdminCoursesPage", () => {
   it("새 코스 생성 결과를 알려준다", async () => {
     const user = userEvent.setup()
     const createCourse = vi.fn<
-      () => Promise<AdminApiResult<AdminCourseDetailDto>>
+      () => Promise<AdminApiResult<AdminCourseDetail>>
     >(async () => ok(courseDetail("new-course")))
 
     render(
@@ -148,7 +146,7 @@ function networkError() {
   )
 }
 
-function courseDetail(id: string): AdminCourseDetailDto {
+function courseDetail(id: string): AdminCourseDetail {
   return {
     category: "미분류",
     description: "강의 설명",

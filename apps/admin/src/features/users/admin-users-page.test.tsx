@@ -4,12 +4,12 @@ import { describe, expect, it, vi } from "vitest"
 
 import { AdminUsersPage } from "@/features/users/admin-users-page"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { ReadAdminUsersInput } from "@/lib/api/admin-api"
 import type {
-  AdminDeleteUserResultDto,
-  AdminUserDetailDto,
-  AdminUserListDto,
-} from "@workspace/contracts/admin"
+  AdminDeleteUserResult,
+  AdminUserDetail,
+  AdminUserList,
+  ReadAdminUsersInput,
+} from "@/lib/api/admin-api"
 
 const filters: ReadAdminUsersInput = {
   page: 1,
@@ -19,7 +19,7 @@ const filters: ReadAdminUsersInput = {
   status: "all",
 }
 
-const users: AdminUserListDto = {
+const users: AdminUserList = {
   items: [
     {
       email: "minji@example.com",
@@ -44,7 +44,7 @@ describe("AdminUsersPage", () => {
   it("검색, 상태 필터, 정렬, 사용자 목록과 상태 변경을 렌더링한다", async () => {
     const user = userEvent.setup()
     const updateUserStatus = vi.fn<
-      () => Promise<AdminApiResult<AdminUserDetailDto>>
+      () => Promise<AdminApiResult<AdminUserDetail>>
     >(async () => ok(userDetail("suspended")))
 
     render(
@@ -78,7 +78,7 @@ describe("AdminUsersPage", () => {
   it("삭제 요청 확인 대화상자를 거쳐 삭제한다", async () => {
     const user = userEvent.setup()
     const deleteUser = vi.fn<
-      () => Promise<AdminApiResult<AdminDeleteUserResultDto>>
+      () => Promise<AdminApiResult<AdminDeleteUserResult>>
     >(async () => ok({ deleted: true }))
 
     render(
@@ -108,7 +108,7 @@ function ok<TValue>(value: TValue): AdminApiResult<TValue> {
   }
 }
 
-function userDetail(status: "active" | "suspended"): AdminUserDetailDto {
+function userDetail(status: "active" | "suspended"): AdminUserDetail {
   const firstUser = users.items[0]
 
   if (firstUser === undefined) {

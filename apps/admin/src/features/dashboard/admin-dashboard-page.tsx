@@ -2,12 +2,12 @@ import { Activity, BookOpen, CheckCircle2, Users } from "lucide-react"
 
 import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminDashboardDto } from "@workspace/contracts/admin"
+import type { AdminDashboard } from "@/lib/api/admin-api"
 
 export function AdminDashboardPage({
   dashboardResult,
 }: {
-  readonly dashboardResult: AdminApiResult<AdminDashboardDto>
+  readonly dashboardResult: AdminApiResult<AdminDashboard>
 }) {
   if (dashboardResult.status === "error") {
     return (

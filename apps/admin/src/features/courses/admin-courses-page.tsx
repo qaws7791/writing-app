@@ -6,13 +6,11 @@ import { useState, useTransition } from "react"
 import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
+  AdminArchiveCourseResult,
+  AdminCourseDetail,
   AdminCourseList,
   ReadAdminCoursesInput,
 } from "@/lib/api/admin-api"
-import type {
-  AdminArchiveCourseResultDto,
-  AdminCourseDetailDto,
-} from "@workspace/contracts/admin"
 import { contentStatuses } from "@workspace/contracts/status"
 
 export function AdminCoursesPage({
@@ -23,9 +21,9 @@ export function AdminCoursesPage({
 }: {
   readonly archiveCourse: (
     courseId: string
-  ) => Promise<AdminApiResult<AdminArchiveCourseResultDto>>
+  ) => Promise<AdminApiResult<AdminArchiveCourseResult>>
   readonly coursesResult: AdminApiResult<AdminCourseList>
-  readonly createCourse: () => Promise<AdminApiResult<AdminCourseDetailDto>>
+  readonly createCourse: () => Promise<AdminApiResult<AdminCourseDetail>>
   readonly filters: ReadAdminCoursesInput
 }) {
   const [archiveTarget, setArchiveTarget] = useState<

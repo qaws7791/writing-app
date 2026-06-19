@@ -8,7 +8,7 @@ import {
 import type {
   AdminAnalyticsDto,
   AdminLessonAnalyticsPageDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
 
 const analytics: AdminAnalyticsDto = {
   dailySeries: [

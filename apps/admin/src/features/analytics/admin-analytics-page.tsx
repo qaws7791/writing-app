@@ -1,16 +1,16 @@
 import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
-  AdminAnalyticsDto,
-  AdminLessonAnalyticsPageDto,
-} from "@workspace/contracts/admin"
+  AdminAnalytics,
+  AdminLessonAnalyticsPage,
+} from "@/lib/api/admin-api"
 
 export function AdminAnalyticsPage({
   analyticsResult,
   lessonAnalyticsResult,
 }: {
-  readonly analyticsResult: AdminApiResult<AdminAnalyticsDto>
-  readonly lessonAnalyticsResult: AdminApiResult<AdminLessonAnalyticsPageDto>
+  readonly analyticsResult: AdminApiResult<AdminAnalytics>
+  readonly lessonAnalyticsResult: AdminApiResult<AdminLessonAnalyticsPage>
 }) {
   if (analyticsResult.status === "error") {
     return (

@@ -8,9 +8,9 @@ import {
 } from "@/routes/test-dependencies"
 import type {
   AdminContentResetResultDto,
-  AdminRole,
   AdminSettingsDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
+import type { AdminRole } from "@workspace/core/admin"
 import { adminRoles } from "@workspace/core/admin"
 
 const settings: AdminSettingsDto = {

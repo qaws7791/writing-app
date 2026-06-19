@@ -1,7 +1,7 @@
-import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
+import type { AdminCourseDetail } from "@/lib/api/admin-api"
 
 export type EditorStep =
-  AdminCourseDetailDto["units"][number]["lessons"][number]["steps"][number]
+  AdminCourseDetail["units"][number]["lessons"][number]["steps"][number]
 
 export type StepFormComponent = (props: {
   readonly step: EditorStep

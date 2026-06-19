@@ -5,11 +5,11 @@ import { useState, useTransition } from "react"
 import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
-  AdminContentResetResultDto,
+  AdminContentResetResult,
   AdminLegalSettingsRequest,
   AdminNoticeSettingsRequest,
-  AdminSettingsDto,
-} from "@workspace/contracts/admin"
+  AdminSettings,
+} from "@/lib/api/admin-api"
 
 export function AdminSettingsPage({
   resetContent,
@@ -17,16 +17,14 @@ export function AdminSettingsPage({
   saveNoticeSettings,
   settingsResult,
 }: {
-  readonly resetContent: () => Promise<
-    AdminApiResult<AdminContentResetResultDto>
-  >
+  readonly resetContent: () => Promise<AdminApiResult<AdminContentResetResult>>
   readonly saveLegalSettings: (
     input: AdminLegalSettingsRequest
-  ) => Promise<AdminApiResult<AdminSettingsDto>>
+  ) => Promise<AdminApiResult<AdminSettings>>
   readonly saveNoticeSettings: (
     input: AdminNoticeSettingsRequest
-  ) => Promise<AdminApiResult<AdminSettingsDto>>
-  readonly settingsResult: AdminApiResult<AdminSettingsDto>
+  ) => Promise<AdminApiResult<AdminSettings>>
+  readonly settingsResult: AdminApiResult<AdminSettings>
 }) {
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<string | null>(null)

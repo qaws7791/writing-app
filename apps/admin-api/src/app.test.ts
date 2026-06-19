@@ -11,10 +11,10 @@ import type {
   AdminAnalyticsDto,
   AdminDashboardDto,
   AdminLessonAnalyticsPageDto,
-  AdminRole,
   AdminUserDetailDto,
   AdminUserListDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
+import type { AdminRole } from "@workspace/core/admin"
 import { adminRoles } from "@workspace/core/admin"
 
 type CapturedRequestLogEvent = {

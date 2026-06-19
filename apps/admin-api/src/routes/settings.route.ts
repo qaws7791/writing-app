@@ -11,8 +11,8 @@ import {
 import {
   adminLegalSettingsRequestSchema,
   adminNoticeSettingsRequestSchema,
-  type AdminService,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
+import { type AdminService } from "@workspace/core/admin"
 
 export type SettingsRouteDependencies = {
   readonly adminService: AdminService

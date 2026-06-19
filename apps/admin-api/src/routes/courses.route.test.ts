@@ -10,8 +10,8 @@ import type {
   AdminArchiveCourseResultDto,
   AdminCourseDetailDto,
   AdminCourseListDto,
-  AdminRole,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
+import type { AdminRole } from "@workspace/core/admin"
 import { adminRoles } from "@workspace/core/admin"
 
 const courseDetail: AdminCourseDetailDto = {

@@ -7,8 +7,10 @@ import { resolveAdminSession } from "@/routes/route-helpers"
 import {
   adminLessonAnalyticsSortSchema,
   adminSortDirectionSchema,
-  type AdminService,
-} from "@workspace/core/admin"
+  type AdminLessonAnalyticsSort,
+  type AdminSortDirection,
+} from "@workspace/contracts/admin"
+import { type AdminService } from "@workspace/core/admin"
 
 const defaultAnalyticsDays = 30
 const defaultPage = 1
@@ -92,11 +94,11 @@ function parseLessonAnalyticsQuery(input: {
   readonly query: string | undefined
   readonly sort: string | undefined
 }): {
-  readonly direction: "asc" | "desc"
+  readonly direction: AdminSortDirection
   readonly page: number
   readonly pageSize: number
   readonly query: string
-  readonly sort: "course" | "completionRate" | "dropOff" | "lesson"
+  readonly sort: AdminLessonAnalyticsSort
 } | null {
   const directionResult = adminSortDirectionSchema.safeParse(
     input.direction ?? "asc"

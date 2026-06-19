@@ -1,8 +1,8 @@
 import { renderStepForm } from "@/features/courses/course-editor/step-form-registry"
-import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
+import type { AdminCourseDetail } from "@/lib/api/admin-api"
 
 type Step =
-  AdminCourseDetailDto["units"][number]["lessons"][number]["steps"][number]
+  AdminCourseDetail["units"][number]["lessons"][number]["steps"][number]
 
 export function StepWorkspace({ steps }: { readonly steps: readonly Step[] }) {
   return (

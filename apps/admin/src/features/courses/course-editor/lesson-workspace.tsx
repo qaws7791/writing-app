@@ -1,6 +1,6 @@
-import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
+import type { AdminCourseDetail } from "@/lib/api/admin-api"
 
-type Lesson = AdminCourseDetailDto["units"][number]["lessons"][number]
+type Lesson = AdminCourseDetail["units"][number]["lessons"][number]
 
 export function LessonWorkspace({ lesson }: { readonly lesson: Lesson }) {
   return (

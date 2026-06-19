@@ -10,8 +10,8 @@ import {
 import {
   adminCourseListStatusFilterSchema,
   type AdminCourseListStatusFilter,
-  type AdminService,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
+import { type AdminService } from "@workspace/core/admin"
 
 const defaultPage = 1
 const defaultPageSize = 20

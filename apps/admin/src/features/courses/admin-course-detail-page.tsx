@@ -1,12 +1,12 @@
 import { AdminHeader } from "@/components/admin-header"
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
+import type { AdminCourseDetail } from "@/lib/api/admin-api"
 
 export function AdminCourseDetailPage({
   courseResult,
 }: {
-  readonly courseResult: AdminApiResult<AdminCourseDetailDto>
+  readonly courseResult: AdminApiResult<AdminCourseDetail>
 }) {
   if (courseResult.status === "error") {
     return (

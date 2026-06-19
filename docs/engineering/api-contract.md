@@ -48,6 +48,8 @@
 
 기준 URL은 `ADMIN_API_BASE_URL`이 가리키는 `apps/admin-api` origin이다.
 
+어드민 request/response DTO와 route query/body contract는 `packages/contracts/admin`의 Zod schema를 기준으로 사용한다. `apps/admin-api` route는 세션, 권한, service 호출을 담당하고 wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `apps/admin`은 core를 직접 import하지 않으며, `@workspace/contracts/admin`은 API 포트 내부 HTTP 응답 검증에만 사용한다. 화면은 `apps/admin/src/lib/api/admin-api.ts`가 노출하는 앱 모델 타입을 소비한다.
+
 현재 route:
 
 | 메서드     | 경로                        | 권한        | 설명                  |

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { createApp } from "@/app"
 import { createTestAdminApiDependencies } from "@/routes/test-dependencies"
-import type { AdminCourseDetailDto } from "@workspace/core/admin"
+import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
 
 const courseDetail: AdminCourseDetailDto = {
   category: "미분류",

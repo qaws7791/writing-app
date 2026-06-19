@@ -1,11 +1,11 @@
 import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminUserDetailDto } from "@workspace/contracts/admin"
+import type { AdminUserDetail } from "@/lib/api/admin-api"
 
 export function AdminUserDetailPage({
   userResult,
 }: {
-  readonly userResult: AdminApiResult<AdminUserDetailDto>
+  readonly userResult: AdminApiResult<AdminUserDetail>
 }) {
   if (userResult.status === "error") {
     return (

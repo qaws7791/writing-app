@@ -1,9 +1,9 @@
-import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
+import type { AdminCourseDetail } from "@/lib/api/admin-api"
 
 export function CurriculumMap({
   course,
 }: {
-  readonly course: AdminCourseDetailDto
+  readonly course: AdminCourseDetail
 }) {
   return (
     <section className="admin-panel">
