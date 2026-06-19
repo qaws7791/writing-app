@@ -102,12 +102,19 @@
 
 ### GlobalNav와 MobileNav
 
-구현 위치: `apps/web/src/components/layout/global-nav.tsx`
+구현 위치:
+
+- `apps/web/src/components/layout/global-nav.tsx`: 데스크톱 상단 nav 조립
+- `apps/web/src/components/layout/global-nav-routes.ts`: route 경로, 메뉴 항목, 활성 상태 정책
+- `apps/web/src/components/layout/global-nav-brand.tsx`: 브랜드 홈 링크
+- `apps/web/src/components/layout/global-nav-account-menu.tsx`: 계정 메뉴와 열림 상태
+- `apps/web/src/components/layout/mobile-nav.tsx`: 모바일 하단 nav
 
 - 상단 브랜드는 `글결.`이다.
 - `홈`, `배우기`, `프로필`의 활성 상태는 `aria-current="page"`로 표시한다.
 - `/app` 홈은 정확히 `/app`에서만 활성화한다.
 - `/app/courses`와 하위 상세는 `배우기`가 활성화된다.
+- `global-nav.tsx`는 외부 import 호환성을 위해 `MobileNav`를 re-export한다.
 
 ### LessonShell
 
