@@ -12,15 +12,12 @@
 - [product-research.md](./product-research.md): 코드와 기존 문서에서 확인한 제품 사실.
 - [personas.md](./personas.md): 학습자와 관리자 유형.
 - [problem-definition.md](./problem-definition.md): 해결 문제와 제약.
-- [product-requirements.md](./product-requirements.md): 현재 제품 요구사항.
-- [feature-specification.md](./feature-specification.md): 학습자 기능과 어드민 기능.
-- [product-behavior.md](./product-behavior.md): 전체 기능의 단일 Gherkin 행동 명세.
+- [user-stories/\_index.md](./user-stories/_index.md): 유저 스토리 목록과 작성 기준.
+- [requirements/\_index.md](./requirements/_index.md): 요구사항 목록과 작성 기준.
 - [content-model.md](./content-model.md): 코스, 유닛, 레슨, 스텝 모델.
-- [user-flows.md](./user-flows.md): 주요 사용자 흐름.
-- [user-stories.md](./user-stories.md): 사용자 스토리와 인수 기준.
-- [screen-specification.md](./screen-specification.md): 화면별 명세.
 - [admin-operations.md](./admin-operations.md): 관리자 권한과 운영 동작.
 - [metrics.md](./metrics.md): 현재 지표와 후보 지표.
+- [codebase-sync-audit.md](./codebase-sync-audit.md): 코드베이스 역추적 결과와 문서 반영 위치.
 
 ## 근거 우선순위
 
@@ -48,4 +45,5 @@
 - 문장은 짧게 쓴다.
 - 기능은 실제 코드에 있는 단어로 설명한다.
 - 확인되지 않은 시장 가설은 확정 기능처럼 쓰지 않는다.
-- 새 기능이 추가되면 관련 제품 문서와 구현 문서를 함께 갱신한다.
+- 계속 증가하는 유저 스토리와 요구사항은 개별 파일로 관리한다.
+- 새 기능이 추가되면 관련 유저 스토리, 요구사항, 화면 명세, 엔지니어링 문서를 함께 갱신한다.
