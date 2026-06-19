@@ -1,6 +1,6 @@
 import type { AdminDashboardDto } from "@workspace/core/modules/admin/domain/admin.dto"
 import type {
-  AdminDashboardRepository,
+  DashboardReader,
   ReadAdminDashboardInput,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
 import {
@@ -46,7 +46,7 @@ const recentActivityLimit = 5
 
 export function createAdminDashboardRepository(
   db: KwepDatabase
-): AdminDashboardRepository {
+): DashboardReader {
   return {
     readDashboard(input) {
       return Promise.resolve(readDashboard(db, input))

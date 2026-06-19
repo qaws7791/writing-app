@@ -23,9 +23,12 @@ import {
   type AdminUserListDto,
 } from "@workspace/core/modules/admin/domain/admin.dto"
 import type {
-  AdminRepository,
+  AnalyticsReader,
   ArchiveAdminCourseInput,
+  ContentResetRepository,
+  CourseAdminRepository,
   CreateAdminCourseInput,
+  DashboardReader,
   DeleteAdminUserInput,
   ReadAdminAnalyticsInput,
   ReadAdminCourseInput,
@@ -37,7 +40,9 @@ import type {
   ResetAdminContentInput,
   SaveAdminLegalSettingsInput,
   SaveAdminNoticeSettingsInput,
+  SettingsRepository,
   UpdateAdminUserStatusInput,
+  UserAdminRepository,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
 
 export type AdminService = {
@@ -84,76 +89,91 @@ export type AdminService = {
   ) => Promise<AdminUserDetailDto | null>
 }
 
-export function createAdminService(repository: AdminRepository): AdminService {
+export type AdminServicePorts = {
+  readonly analyticsReader: AnalyticsReader
+  readonly contentResetRepository: ContentResetRepository
+  readonly courseRepository: CourseAdminRepository
+  readonly dashboardReader: DashboardReader
+  readonly settingsRepository: SettingsRepository
+  readonly userRepository: UserAdminRepository
+}
+
+export function createAdminService(ports: AdminServicePorts): AdminService {
   return {
     async archiveCourse(input) {
       return adminArchiveCourseResultSchema
         .nullable()
-        .parse(await repository.archiveCourse(input))
+        .parse(await ports.courseRepository.archiveCourse(input))
     },
     async createCourse(input) {
       return adminCourseDetailDtoSchema.parse(
-        await repository.createCourse(input)
+        await ports.courseRepository.createCourse(input)
       )
     },
     async deleteUser(input) {
       return adminDeleteUserResultSchema
         .nullable()
-        .parse(await repository.deleteUser(input))
+        .parse(await ports.userRepository.deleteUser(input))
     },
     async getAnalytics(input) {
       return adminAnalyticsDtoSchema.parse(
-        await repository.readAnalytics(input)
+        await ports.analyticsReader.readAnalytics(input)
       )
     },
     async getDashboard(input) {
       return adminDashboardDtoSchema.parse(
-        await repository.readDashboard(input)
+        await ports.dashboardReader.readDashboard(input)
       )
     },
     async getLessonAnalytics(input) {
       return adminLessonAnalyticsPageDtoSchema.parse(
-        await repository.readLessonAnalytics(input)
+        await ports.analyticsReader.readLessonAnalytics(input)
       )
     },
     async getCourseEditor(input) {
       return adminCourseDetailDtoSchema
         .nullable()
-        .parse(await repository.readCourseEditor(input))
+        .parse(await ports.courseRepository.readCourseEditor(input))
     },
     async getCourses(input) {
-      return adminCourseListDtoSchema.parse(await repository.readCourses(input))
+      return adminCourseListDtoSchema.parse(
+        await ports.courseRepository.readCourses(input)
+      )
     },
     async getSettings() {
-      return adminSettingsDtoSchema.parse(await repository.readSettings())
+      return adminSettingsDtoSchema.parse(
+        await ports.settingsRepository.readSettings()
+      )
     },
     async getUser(input) {
       return adminUserDetailDtoSchema
         .nullable()
-        .parse(await repository.readUser(input))
+        .parse(await ports.userRepository.readUser(input))
     },
     async getUsers(input) {
-      return adminUserListDtoSchema.parse(await repository.readUsers(input))
+      return adminUserListDtoSchema.parse(
+        await ports.userRepository.readUsers(input)
+      )
     },
     async resetContent(input) {
       return adminContentResetResultSchema.parse(
-        await repository.resetContent(input)
+        await ports.contentResetRepository.resetContent(input)
       )
     },
     async updateLegalSettings(input) {
       return adminSettingsDtoSchema.parse(
-        await repository.saveLegalSettings(input)
+        await ports.settingsRepository.saveLegalSettings(input)
       )
     },
     async updateNoticeSettings(input) {
       return adminSettingsDtoSchema.parse(
-        await repository.saveNoticeSettings(input)
+        await ports.settingsRepository.saveNoticeSettings(input)
       )
     },
     async updateUserStatus(input) {
       return adminUserDetailDtoSchema
         .nullable()
-        .parse(await repository.updateUserStatus(input))
+        .parse(await ports.userRepository.updateUserStatus(input))
     },
   }
 }

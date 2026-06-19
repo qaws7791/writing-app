@@ -6,11 +6,11 @@ import type {
   AdminUserStatus,
 } from "@workspace/core/modules/admin/domain/admin.dto"
 import type {
-  AdminRepository,
   DeleteAdminUserInput,
   ReadAdminUserInput,
   ReadAdminUsersInput,
   UpdateAdminUserStatusInput,
+  UserAdminRepository,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
 import {
   toLearningDateKey,
@@ -49,14 +49,9 @@ import {
   lessons,
 } from "@workspace/db/schema"
 
-type AdminUserRepository = Pick<
-  AdminRepository,
-  "deleteUser" | "readUser" | "readUsers" | "updateUserStatus"
->
-
 export function createAdminUserRepository(
   db: KwepDatabase
-): AdminUserRepository {
+): UserAdminRepository {
   return {
     deleteUser(input) {
       return Promise.resolve(deleteUser(db, input))

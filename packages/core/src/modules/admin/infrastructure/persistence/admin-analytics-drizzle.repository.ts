@@ -6,7 +6,7 @@ import type {
   AdminUserStatus,
 } from "@workspace/core/modules/admin/domain/admin.dto"
 import type {
-  AdminRepository,
+  AnalyticsReader,
   ReadAdminAnalyticsInput,
   ReadAdminLessonAnalyticsInput,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
@@ -38,14 +38,9 @@ import {
   lessons,
 } from "@workspace/db/schema"
 
-type AdminAnalyticsRepository = Pick<
-  AdminRepository,
-  "readAnalytics" | "readLessonAnalytics"
->
-
 export function createAdminAnalyticsRepository(
   db: KwepDatabase
-): AdminAnalyticsRepository {
+): AnalyticsReader {
   return {
     readAnalytics(input) {
       return Promise.resolve(readAnalytics(db, input))

@@ -1,21 +1,16 @@
 import type { AdminSettingsDto } from "@workspace/core/modules/admin/domain/admin.dto"
 import type {
-  AdminRepository,
   SaveAdminLegalSettingsInput,
   SaveAdminNoticeSettingsInput,
+  SettingsRepository,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
 
 import type { KwepDatabase } from "@workspace/db/client"
 import { adminSettings } from "@workspace/db/schema"
 
-type AdminSettingsRepository = Pick<
-  AdminRepository,
-  "readSettings" | "saveLegalSettings" | "saveNoticeSettings"
->
-
 export function createAdminSettingsRepository(
   db: KwepDatabase
-): AdminSettingsRepository {
+): SettingsRepository {
   return {
     readSettings() {
       return Promise.resolve(readSettings(db))

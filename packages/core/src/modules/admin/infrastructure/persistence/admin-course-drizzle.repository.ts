@@ -5,8 +5,9 @@ import type {
   AdminCourseListDto,
 } from "@workspace/core/modules/admin/domain/admin.dto"
 import type {
-  AdminRepository,
   ArchiveAdminCourseInput,
+  ContentResetRepository,
+  CourseAdminRepository,
   CreateAdminCourseInput,
   ReadAdminCourseInput,
   ReadAdminCoursesInput,
@@ -34,14 +35,6 @@ import { createPageBounds } from "@workspace/core/modules/admin/infrastructure/p
 const createCourseCollisionRetryLimit = 3
 type LessonRow = typeof lessons.$inferSelect
 type LessonStepRow = typeof lessonSteps.$inferSelect
-type AdminCourseRepository = Pick<
-  AdminRepository,
-  | "archiveCourse"
-  | "createCourse"
-  | "readCourseEditor"
-  | "readCourses"
-  | "resetContent"
->
 
 export type DrizzleAdminRepositoryDependencies = {
   readonly createCourseContentIds?: CreateAdminCourseContentIds
@@ -54,7 +47,7 @@ type ResolvedDrizzleAdminRepositoryDependencies = {
 export function createAdminCourseRepository(
   db: KwepDatabase,
   dependencies: DrizzleAdminRepositoryDependencies = {}
-): AdminCourseRepository {
+): CourseAdminRepository & ContentResetRepository {
   const resolvedDependencies =
     resolveDrizzleAdminRepositoryDependencies(dependencies)
 

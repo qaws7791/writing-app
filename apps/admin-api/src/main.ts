@@ -26,7 +26,14 @@ const auth = createAdminAuth({
 const app = createApp({
   adminOrigin: env.adminOrigin,
   authHandler: auth.handler,
-  dashboardService: createAdminService(adminRepository),
+  dashboardService: createAdminService({
+    analyticsReader: adminRepository,
+    contentResetRepository: adminRepository,
+    courseRepository: adminRepository,
+    dashboardReader: adminRepository,
+    settingsRepository: adminRepository,
+    userRepository: adminRepository,
+  }),
   requestLogger: createRequestLogger(logger),
   requestLoggingRuntime: defaultRequestLoggingRuntime,
   sessionResolver: createAdminSessionResolver(auth),
