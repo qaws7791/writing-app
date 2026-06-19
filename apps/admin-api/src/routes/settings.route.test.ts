@@ -43,9 +43,8 @@ describe("어드민 API settings route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -98,9 +97,8 @@ describe("어드민 API settings route", () => {
 
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
   })
 
@@ -140,9 +138,8 @@ describe("어드민 API settings route", () => {
 
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
   })
 
@@ -172,9 +169,8 @@ describe("어드민 API settings route", () => {
 
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
   })
 
@@ -193,13 +189,9 @@ describe("어드민 API settings route", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-        detail: {
-          code: "invalid_body",
-        },
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 
@@ -217,12 +209,8 @@ describe("어드민 API settings route", () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-        detail: {
-          code: "malformed_json",
-        },
-      },
+      code: "HTTP_EXCEPTION",
+      message: "Bad Request",
     })
   })
 })

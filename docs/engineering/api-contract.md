@@ -54,31 +54,31 @@
 
 기준 URL은 `ADMIN_API_BASE_URL`이 가리키는 `apps/admin-api` origin이다.
 
-어드민 request/response DTO와 route query/body contract는 `packages/contracts/admin`의 Zod schema를 기준으로 사용한다. `apps/admin-api` route는 세션, 권한, service 호출을 담당하고 wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `packages/contracts/src/admin` 내부 schema는 dashboard, users, analytics, settings, content reset, courses, shared 파일로 나누고 `@workspace/contracts/admin` entrypoint가 이를 다시 노출한다. `apps/admin`은 core를 직접 import하지 않으며, `@workspace/contracts/admin`은 `apps/admin/src/lib/api/http-admin-api.ts`의 HTTP 응답 검증과 앱 모델 변환에만 사용한다. 화면과 API 포트는 `apps/admin/src/lib/api/admin-api.ts`가 노출하는 앱 모델 타입을 소비한다.
+어드민 request/response DTO와 route query/body contract는 `packages/contracts/admin`의 Zod schema를 기준으로 사용한다. `apps/admin-api` route는 `@workspace/hono/core`의 typed route definition으로 등록하고, 세션, 권한, service 호출을 담당한다. wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `packages/contracts/src/admin` 내부 schema는 dashboard, users, analytics, settings, content reset, courses, shared 파일로 나누고 `@workspace/contracts/admin` entrypoint가 이를 다시 노출한다. `apps/admin`은 core를 직접 import하지 않으며, `@workspace/contracts/admin`은 `apps/admin/src/lib/api/http-admin-api.ts`의 HTTP 응답 검증과 앱 모델 변환에만 사용한다. 화면과 API 포트는 `apps/admin/src/lib/api/admin-api.ts`가 노출하는 앱 모델 타입을 소비한다.
+어드민 API의 query, path params, JSON body 검증은 route config의 zod-openapi `request` schema가 소유한다. Handler는 `context.req.valid("query" | "param" | "json")`로 검증된 값만 읽는다.
 
 현재 route:
 
-| 메서드     | 경로                        | 권한        | 설명                  |
-| ---------- | --------------------------- | ----------- | --------------------- |
-| `GET`      | `/health`                   | 없음        | API 상태              |
-| `GET/POST` | `/api/auth/*`               | Better Auth | 관리자 인증 handler   |
-| `GET`      | `/dashboard`                | 관리자      | 대시보드              |
-| `GET`      | `/analytics`                | 관리자      | 분석 요약             |
-| `GET`      | `/analytics/lessons`        | 관리자      | 레슨별 분석           |
-| `GET`      | `/courses`                  | 관리자      | 코스 목록             |
-| `POST`     | `/courses`                  | owner       | 코스 생성             |
-| `DELETE`   | `/courses/:courseId`        | owner       | 코스 보관             |
-| `GET`      | `/courses/:courseId/editor` | 관리자      | 코스 편집 문서 조회   |
-| `GET`      | `/users`                    | 관리자      | 사용자 목록           |
-| `GET`      | `/users/:userId`            | 관리자      | 사용자 상세           |
-| `PATCH`    | `/users/:userId/status`     | owner       | 사용자 상태 변경      |
-| `DELETE`   | `/users/:userId`            | owner       | 사용자 삭제 상태 전환 |
-| `GET`      | `/settings`                 | 관리자      | 설정 조회             |
-| `PUT`      | `/settings/notice`          | owner       | 공지 설정 저장        |
-| `PUT`      | `/settings/legal`           | owner       | 법적 문서 저장        |
-| `POST`     | `/settings/content-reset`   | owner       | 콘텐츠 초기화         |
-
-현재 어드민 API에는 학습자 API와 같은 `/openapi` route가 구현되어 있지 않다.
+| 메서드     | 경로                         | 권한        | 설명                  |
+| ---------- | ---------------------------- | ----------- | --------------------- |
+| `GET`      | `/health`                    | 없음        | API 상태              |
+| `GET`      | `/openapi`                   | 없음        | OpenAPI 3.1 문서      |
+| `GET/POST` | `/api/auth/*`                | Better Auth | 관리자 인증 handler   |
+| `GET`      | `/dashboard`                 | 관리자      | 대시보드              |
+| `GET`      | `/analytics`                 | 관리자      | 분석 요약             |
+| `GET`      | `/analytics/lessons`         | 관리자      | 레슨별 분석           |
+| `GET`      | `/courses`                   | 관리자      | 코스 목록             |
+| `POST`     | `/courses`                   | owner       | 코스 생성             |
+| `DELETE`   | `/courses/{courseId}`        | owner       | 코스 보관             |
+| `GET`      | `/courses/{courseId}/editor` | 관리자      | 코스 편집 문서 조회   |
+| `GET`      | `/users`                     | 관리자      | 사용자 목록           |
+| `GET`      | `/users/{userId}`            | 관리자      | 사용자 상세           |
+| `PATCH`    | `/users/{userId}/status`     | owner       | 사용자 상태 변경      |
+| `DELETE`   | `/users/{userId}`            | owner       | 사용자 삭제 상태 전환 |
+| `GET`      | `/settings`                  | 관리자      | 설정 조회             |
+| `PUT`      | `/settings/notice`           | owner       | 공지 설정 저장        |
+| `PUT`      | `/settings/legal`            | owner       | 법적 문서 저장        |
+| `POST`     | `/settings/content-reset`    | owner       | 콘텐츠 초기화         |
 
 ## 인증 표면
 
@@ -89,7 +89,7 @@
 
 ## 오류 응답
 
-학습자 API는 `@workspace/hono/errors`의 표준 오류 응답을 사용한다.
+학습자 API와 어드민 API는 `@workspace/hono/errors`의 표준 오류 응답을 사용한다.
 
 기본 shape:
 
@@ -101,23 +101,15 @@
 }
 ```
 
-어드민 API는 `errorResponse()` helper를 사용한다.
-
 주요 상태:
 
-- `400 invalid_request`
-- `401 unauthorized`
-- `403 forbidden`
-- `404 not_found`
+- `400 INVALID_REQUEST` 또는 `VALIDATION_FAILED`
+- `401 UNAUTHORIZED`
+- `403 FORBIDDEN`
+- `404 NOT_FOUND`
 - `429` AI 피드백 시도 한도
-- `500 internal_error`
+- `500 INTERNAL_SERVER_ERROR`
 - `503` AI provider unavailable
-
-JSON body 오류 detail:
-
-- `malformed_json`
-- `invalid_body`
-- `unknown_body_read_error`
 
 ## 클라이언트 API Result 경계
 
@@ -146,6 +138,14 @@ bun --filter=@workspace/api openapi:generate
 bun --filter=@workspace/web api:generate
 bun run check:api-contract
 ```
+
+어드민 API:
+
+- route 정의는 `@workspace/hono/core` 기반이다.
+- route spec과 handler를 같은 route 파일 가까이에 둔다.
+- route schema는 `@workspace/contracts/admin`을 직접 참조한다.
+- Better Auth raw route는 typed route registry 바깥에서 `/api/auth/*`에 등록한다.
+- `/openapi`는 실제 Hono 앱에 등록된 route에서 OpenAPI 3.1 문서를 생성한다.
 
 ## 계약 변경 절차
 

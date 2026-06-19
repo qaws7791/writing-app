@@ -1,26 +1,46 @@
-import { Hono } from "hono"
-
-import type { AdminSessionResolver } from "@/auth/admin-session"
-import { errorResponse } from "@/routes/error-response"
-import { parsePositiveIntegerParam } from "@/routes/query-params"
+import type { AnyRouteConfig } from "@workspace/hono/core"
 import {
-  jsonBodyErrorDetail,
-  parseJsonBody,
-  resolveAdminSession,
-  resolveOwnerAdminSession,
-} from "@/routes/route-helpers"
-import {
+  adminDeleteUserResultSchema,
   adminUpdateUserStatusRequestSchema,
+  adminUserDetailDtoSchema,
+  adminUserListDtoSchema,
   adminUserListStatusFilterSchema,
   adminUserSortSchema,
-  type AdminUserListStatusFilter,
-  type AdminUserSort,
 } from "@workspace/contracts/admin"
 import { type AdminService } from "@workspace/core/admin"
+import { ErrorResponseSchema } from "@workspace/hono/errors"
+import { z } from "@workspace/hono/zod"
+
+import type { AdminSessionResolver } from "@/auth/admin-session"
+import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
+import { notFoundAdminError } from "@/errors/admin-errors"
+import { adminAuthenticatedResponses, jsonResponse } from "@/http/openapi"
+import {
+  createRequireAdminSessionMiddleware,
+  createRequireOwnerAdminSessionMiddleware,
+} from "@/middleware/admin-auth.middleware"
+import { positiveIntegerQuery } from "@/routes/query-schemas"
 
 const defaultPage = 1
 const defaultPageSize = 20
 const maxPageSize = 100
+
+const usersQuerySchema = z.object({
+  page: positiveIntegerQuery({
+    fallback: defaultPage,
+  }),
+  pageSize: positiveIntegerQuery({
+    fallback: defaultPageSize,
+    max: maxPageSize,
+  }),
+  query: z.string().optional().default(""),
+  sort: adminUserSortSchema.optional().default("lastActive"),
+  status: adminUserListStatusFilterSchema.optional().default("all"),
+})
+
+const userParamsSchema = z.object({
+  userId: z.string(),
+})
 
 export type UsersRouteDependencies = {
   readonly adminService: AdminService
@@ -28,165 +48,182 @@ export type UsersRouteDependencies = {
   readonly sessionResolver: AdminSessionResolver
 }
 
-export function createUsersRoute({
+export function createUsersRoutes(dependencies: UsersRouteDependencies) {
+  return [
+    createListUsersRoute(dependencies),
+    createGetUserRoute(dependencies),
+    createUpdateUserStatusRoute(dependencies),
+    createDeleteUserRoute(dependencies),
+  ] as const
+}
+
+function createListUsersRoute({
+  adminService,
+  sessionResolver,
+}: UsersRouteDependencies) {
+  const routeConfig = {
+    method: "get",
+    middleware: [createRequireAdminSessionMiddleware(sessionResolver)],
+    operationId: "getAdminUsers",
+    path: "/users",
+    request: {
+      query: usersQuerySchema,
+    },
+    responses: adminAuthenticatedResponses(
+      jsonResponse("어드민 사용자 목록입니다.", adminUserListDtoSchema)
+    ),
+    security: [{ adminSessionCookie: [] }],
+    summary: "어드민 사용자 목록 조회",
+  } satisfies AnyRouteConfig
+
+  const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
+    context.json(await adminService.getUsers(context.req.valid("query")), 200)
+
+  return defineAdminRoute({
+    ...routeConfig,
+    handler,
+  })
+}
+
+function createGetUserRoute({
+  adminService,
+  sessionResolver,
+}: UsersRouteDependencies) {
+  const routeConfig = {
+    method: "get",
+    middleware: [createRequireAdminSessionMiddleware(sessionResolver)],
+    operationId: "getAdminUser",
+    path: "/users/{userId}",
+    request: {
+      params: userParamsSchema,
+    },
+    responses: {
+      ...adminAuthenticatedResponses(
+        jsonResponse("어드민 사용자 상세입니다.", adminUserDetailDtoSchema)
+      ),
+      404: jsonResponse("사용자를 찾을 수 없습니다.", ErrorResponseSchema),
+    },
+    security: [{ adminSessionCookie: [] }],
+    summary: "어드민 사용자 상세 조회",
+  } satisfies AnyRouteConfig
+
+  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
+    const { userId } = context.req.valid("param")
+    const user = await adminService.getUser({
+      userId,
+    })
+
+    if (user === null) {
+      throw notFoundAdminError()
+    }
+
+    return context.json(user, 200)
+  }
+
+  return defineAdminRoute({
+    ...routeConfig,
+    handler,
+  })
+}
+
+function createUpdateUserStatusRoute({
   adminService,
   now,
   sessionResolver,
-}: UsersRouteDependencies): Hono {
-  const route = new Hono()
+}: UsersRouteDependencies) {
+  const routeConfig = {
+    method: "patch",
+    middleware: [createRequireOwnerAdminSessionMiddleware(sessionResolver)],
+    operationId: "updateAdminUserStatus",
+    path: "/users/{userId}/status",
+    request: {
+      body: {
+        content: {
+          "application/json": {
+            schema: adminUpdateUserStatusRequestSchema,
+          },
+        },
+      },
+      params: userParamsSchema,
+    },
+    responses: {
+      ...adminAuthenticatedResponses(
+        jsonResponse(
+          "상태가 변경된 어드민 사용자입니다.",
+          adminUserDetailDtoSchema
+        )
+      ),
+      400: jsonResponse("잘못된 요청입니다.", ErrorResponseSchema),
+      404: jsonResponse("사용자를 찾을 수 없습니다.", ErrorResponseSchema),
+    },
+    security: [{ adminSessionCookie: [] }],
+    summary: "어드민 사용자 상태 변경",
+  } satisfies AnyRouteConfig
 
-  route.get("/", async (context) => {
-    const sessionResult = await resolveAdminSession(context, sessionResolver)
-
-    if (sessionResult.kind === "err") {
-      return context.json(
-        errorResponse(sessionResult.code),
-        sessionResult.status
-      )
-    }
-
-    const query = parseUsersQuery({
-      page: context.req.query("page"),
-      pageSize: context.req.query("pageSize"),
-      query: context.req.query("query"),
-      sort: context.req.query("sort"),
-      status: context.req.query("status"),
-    })
-
-    if (query === null) {
-      return context.json(errorResponse("invalid_request"), 400)
-    }
-
-    return context.json(await adminService.getUsers(query))
-  })
-
-  route.get("/:userId", async (context) => {
-    const sessionResult = await resolveAdminSession(context, sessionResolver)
-
-    if (sessionResult.kind === "err") {
-      return context.json(
-        errorResponse(sessionResult.code),
-        sessionResult.status
-      )
-    }
-
-    const user = await adminService.getUser({
-      userId: context.req.param("userId"),
-    })
-
-    if (user === null) {
-      return context.json(errorResponse("not_found"), 404)
-    }
-
-    return context.json(user)
-  })
-
-  route.patch("/:userId/status", async (context) => {
-    const sessionResult = await resolveOwnerAdminSession(
-      context,
-      sessionResolver
-    )
-
-    if (sessionResult.kind === "err") {
-      return context.json(
-        errorResponse(sessionResult.code),
-        sessionResult.status
-      )
-    }
-
-    const parsedBody = await parseJsonBody(
-      context,
-      adminUpdateUserStatusRequestSchema
-    )
-
-    if (parsedBody.kind === "err") {
-      return context.json(
-        errorResponse("invalid_request", jsonBodyErrorDetail(parsedBody.error)),
-        400
-      )
-    }
-
+  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
+    const { userId } = context.req.valid("param")
+    const { status } = context.req.valid("json")
     const user = await adminService.updateUserStatus({
       now: now(),
-      status: parsedBody.value.status,
-      userId: context.req.param("userId"),
+      status,
+      userId,
     })
 
     if (user === null) {
-      return context.json(errorResponse("not_found"), 404)
+      throw notFoundAdminError()
     }
 
-    return context.json(user)
+    return context.json(user, 200)
+  }
+
+  return defineAdminRoute({
+    ...routeConfig,
+    handler,
   })
+}
 
-  route.delete("/:userId", async (context) => {
-    const sessionResult = await resolveOwnerAdminSession(
-      context,
-      sessionResolver
-    )
+function createDeleteUserRoute({
+  adminService,
+  now,
+  sessionResolver,
+}: UsersRouteDependencies) {
+  const routeConfig = {
+    method: "delete",
+    middleware: [createRequireOwnerAdminSessionMiddleware(sessionResolver)],
+    operationId: "deleteAdminUser",
+    path: "/users/{userId}",
+    request: {
+      params: userParamsSchema,
+    },
+    responses: {
+      ...adminAuthenticatedResponses(
+        jsonResponse(
+          "삭제 처리된 어드민 사용자 결과입니다.",
+          adminDeleteUserResultSchema
+        )
+      ),
+      404: jsonResponse("사용자를 찾을 수 없습니다.", ErrorResponseSchema),
+    },
+    security: [{ adminSessionCookie: [] }],
+    summary: "어드민 사용자 삭제 상태 전환",
+  } satisfies AnyRouteConfig
 
-    if (sessionResult.kind === "err") {
-      return context.json(
-        errorResponse(sessionResult.code),
-        sessionResult.status
-      )
-    }
-
+  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
+    const { userId } = context.req.valid("param")
     const result = await adminService.deleteUser({
       now: now(),
-      userId: context.req.param("userId"),
+      userId,
     })
 
     if (result === null) {
-      return context.json(errorResponse("not_found"), 404)
+      throw notFoundAdminError()
     }
 
-    return context.json(result)
-  })
-
-  return route
-}
-
-function parseUsersQuery(input: {
-  readonly page: string | undefined
-  readonly pageSize: string | undefined
-  readonly query: string | undefined
-  readonly sort: string | undefined
-  readonly status: string | undefined
-}): {
-  readonly page: number
-  readonly pageSize: number
-  readonly query: string
-  readonly sort: AdminUserSort
-  readonly status: AdminUserListStatusFilter
-} | null {
-  const page = parsePositiveIntegerParam({
-    fallback: defaultPage,
-    value: input.page,
-  })
-  const pageSize = parsePositiveIntegerParam({
-    fallback: defaultPageSize,
-    max: maxPageSize,
-    value: input.pageSize,
-  })
-  const sortResult = adminUserSortSchema.safeParse(input.sort ?? "lastActive")
-  const statusResult = adminUserListStatusFilterSchema.safeParse(
-    input.status ?? "all"
-  )
-
-  if (page === null || pageSize === null || !sortResult.success) {
-    return null
+    return context.json(result, 200)
   }
 
-  if (!statusResult.success) {
-    return null
-  }
-
-  return {
-    page,
-    pageSize,
-    query: input.query ?? "",
-    sort: sortResult.data,
-    status: statusResult.data,
-  }
+  return defineAdminRoute({
+    ...routeConfig,
+    handler,
+  })
 }

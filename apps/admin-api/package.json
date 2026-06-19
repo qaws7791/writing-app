@@ -13,15 +13,16 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@hono/zod-openapi": "^1.4.0",
     "@workspace/contracts": "workspace:*",
     "@workspace/core": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/env": "workspace:*",
+    "@workspace/hono": "workspace:*",
     "@workspace/logger": "workspace:*",
     "better-auth": "^1.6.0",
     "drizzle-orm": "^0.45.0",
     "hono": "^4.10.0",
-    "hono-openapi": "^1.1.0",
     "zod": "^4.2.0"
   },
   "devDependencies": {

@@ -29,31 +29,24 @@ const markdownRoots = [
 
 const adminRouteSources = [
   {
-    basePath: "/health",
     filePath: "apps/admin-api/src/routes/health.route.ts",
   },
   {
-    basePath: "/dashboard",
     filePath: "apps/admin-api/src/routes/dashboard.route.ts",
   },
   {
-    basePath: "/analytics",
     filePath: "apps/admin-api/src/routes/analytics.route.ts",
   },
   {
-    basePath: "/courses",
     filePath: "apps/admin-api/src/routes/courses.route.ts",
   },
   {
-    basePath: "/courses",
     filePath: "apps/admin-api/src/routes/curriculum-editor.route.ts",
   },
   {
-    basePath: "/users",
     filePath: "apps/admin-api/src/routes/users.route.ts",
   },
   {
-    basePath: "/settings",
     filePath: "apps/admin-api/src/routes/settings.route.ts",
   },
 ] as const
@@ -385,7 +378,12 @@ function readAdminRoutes(): Route[] {
       method: "POST",
       path: "/api/auth/*",
     },
+    {
+      method: "GET",
+      path: "/openapi",
+    },
   ]
+  const routePattern = /method:\s*"([a-z]+)"[\s\S]*?path:\s*"([^"]+)"/g
 
   for (const source of adminRouteSources) {
     const content = fs.readFileSync(
@@ -393,25 +391,15 @@ function readAdminRoutes(): Route[] {
       "utf8"
     )
 
-    for (const match of content.matchAll(
-      /route\.(get|post|put|patch|delete)\("([^"]+)"/g
-    )) {
+    for (const match of content.matchAll(routePattern)) {
       routes.push({
         method: (match[1] ?? "").toUpperCase(),
-        path: joinRoutePath(source.basePath, match[2] ?? ""),
+        path: normalizeRoutePath(match[2] ?? ""),
       })
     }
   }
 
   return routes
-}
-
-function joinRoutePath(basePath: string, childPath: string): string {
-  if (childPath === "/") {
-    return normalizeRoutePath(basePath)
-  }
-
-  return normalizeRoutePath(`${basePath}${childPath}`)
 }
 
 function reportRouteDrift({

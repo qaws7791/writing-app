@@ -1,16 +1,17 @@
-import { Hono } from "hono"
+import type { MiddlewareHandler } from "hono"
+import type { OpenAPIHono } from "@hono/zod-openapi"
 import { cors } from "hono/cors"
-import { ZodError } from "zod"
+import { createApp as createHonoApp } from "@workspace/hono/core"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
-import { createAnalyticsRoute } from "@/routes/analytics.route"
-import { createCoursesRoute } from "@/routes/courses.route"
-import { createCurriculumEditorRoute } from "@/routes/curriculum-editor.route"
-import { createDashboardRoute } from "@/routes/dashboard.route"
-import { errorResponse } from "@/routes/error-response"
-import { createHealthRoute } from "@/routes/health.route"
-import { createSettingsRoute } from "@/routes/settings.route"
-import { createUsersRoute } from "@/routes/users.route"
+import { createOpenApiDocument } from "@/http/openapi"
+import { createAnalyticsRoutes } from "@/routes/analytics.route"
+import { createCoursesRoutes } from "@/routes/courses.route"
+import { createCurriculumEditorRoutes } from "@/routes/curriculum-editor.route"
+import { createDashboardRoutes } from "@/routes/dashboard.route"
+import { healthRoute } from "@/routes/health.route"
+import { createSettingsRoutes } from "@/routes/settings.route"
+import { createUsersRoutes } from "@/routes/users.route"
 import type { AdminService } from "@workspace/core/admin"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
@@ -29,20 +30,64 @@ export type AdminApiDependencies = {
   readonly sessionResolver: AdminSessionResolver
 }
 
-export function createApp(dependencies: AdminApiDependencies): Hono {
-  const app = new Hono()
-
-  app.onError((error, context) => {
-    if (error instanceof ZodError) {
-      return context.json(errorResponse("invalid_request"), 400)
-    }
-
-    return context.json(errorResponse("internal_error"), 500)
+export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
+  const now = dependencies.now ?? (() => new Date())
+  const app = createHonoApp({
+    middleware: createMiddleware(dependencies),
+    routes: [
+      healthRoute,
+      ...createDashboardRoutes({
+        dashboardService: dependencies.dashboardService,
+        now,
+        sessionResolver: dependencies.sessionResolver,
+      }),
+      ...createAnalyticsRoutes({
+        adminService: dependencies.dashboardService,
+        now,
+        sessionResolver: dependencies.sessionResolver,
+      }),
+      ...createCoursesRoutes({
+        adminService: dependencies.dashboardService,
+        now,
+        sessionResolver: dependencies.sessionResolver,
+      }),
+      ...createCurriculumEditorRoutes({
+        adminService: dependencies.dashboardService,
+        sessionResolver: dependencies.sessionResolver,
+      }),
+      ...createUsersRoutes({
+        adminService: dependencies.dashboardService,
+        now,
+        sessionResolver: dependencies.sessionResolver,
+      }),
+      ...createSettingsRoutes({
+        adminService: dependencies.dashboardService,
+        now,
+        sessionResolver: dependencies.sessionResolver,
+      }),
+    ] as const,
   })
 
+  if (dependencies.authHandler !== undefined) {
+    const authHandler = dependencies.authHandler
+
+    app.on(["GET", "POST"], "/api/auth/*", (context) => {
+      return authHandler(context.req.raw)
+    })
+  }
+
+  app.get("/openapi", (context) => context.json(createOpenApiDocument(app)))
+
+  return app
+}
+
+function createMiddleware(
+  dependencies: AdminApiDependencies
+): readonly MiddlewareHandler[] {
+  const middleware: MiddlewareHandler[] = []
+
   if (dependencies.requestLogger !== undefined) {
-    app.use(
-      "*",
+    middleware.push(
       createRequestLoggingMiddleware({
         createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
         logRequest: dependencies.requestLogger,
@@ -52,8 +97,7 @@ export function createApp(dependencies: AdminApiDependencies): Hono {
     )
   }
 
-  app.use(
-    "*",
+  middleware.push(
     cors({
       allowHeaders: ["Authorization", "Content-Type"],
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -62,61 +106,5 @@ export function createApp(dependencies: AdminApiDependencies): Hono {
     })
   )
 
-  app.route("/health", createHealthRoute())
-  if (dependencies.authHandler !== undefined) {
-    const authHandler = dependencies.authHandler
-
-    app.on(["GET", "POST"], "/api/auth/*", (context) => {
-      return authHandler(context.req.raw)
-    })
-  }
-  app.route(
-    "/dashboard",
-    createDashboardRoute({
-      dashboardService: dependencies.dashboardService,
-      now: dependencies.now ?? (() => new Date()),
-      sessionResolver: dependencies.sessionResolver,
-    })
-  )
-  app.route(
-    "/analytics",
-    createAnalyticsRoute({
-      adminService: dependencies.dashboardService,
-      now: dependencies.now ?? (() => new Date()),
-      sessionResolver: dependencies.sessionResolver,
-    })
-  )
-  app.route(
-    "/courses",
-    createCoursesRoute({
-      adminService: dependencies.dashboardService,
-      now: dependencies.now ?? (() => new Date()),
-      sessionResolver: dependencies.sessionResolver,
-    })
-  )
-  app.route(
-    "/courses",
-    createCurriculumEditorRoute({
-      adminService: dependencies.dashboardService,
-      sessionResolver: dependencies.sessionResolver,
-    })
-  )
-  app.route(
-    "/users",
-    createUsersRoute({
-      adminService: dependencies.dashboardService,
-      now: dependencies.now ?? (() => new Date()),
-      sessionResolver: dependencies.sessionResolver,
-    })
-  )
-  app.route(
-    "/settings",
-    createSettingsRoute({
-      adminService: dependencies.dashboardService,
-      now: dependencies.now ?? (() => new Date()),
-      sessionResolver: dependencies.sessionResolver,
-    })
-  )
-
-  return app
+  return middleware
 }

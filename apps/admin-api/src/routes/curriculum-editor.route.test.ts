@@ -68,9 +68,8 @@ describe("어드민 API curriculum editor route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -98,9 +97,8 @@ describe("어드민 API curriculum editor route", () => {
 
     expect(response.status).toBe(404)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "not_found",
-      },
+      code: "NOT_FOUND",
+      message: "Not Found",
     })
   })
 })

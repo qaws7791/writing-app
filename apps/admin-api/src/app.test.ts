@@ -233,9 +233,8 @@ describe("어드민 API dashboard route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -272,9 +271,8 @@ describe("어드민 API dashboard route", () => {
 
     expect(response.status).toBe(500)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "internal_error",
-      },
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Internal Server Error",
     })
   })
 })
@@ -287,9 +285,8 @@ describe("어드민 API analytics route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -335,10 +332,9 @@ describe("어드민 API analytics route", () => {
     )
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 })
@@ -351,9 +347,8 @@ describe("어드민 API users route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -383,10 +378,9 @@ describe("어드민 API users route", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 
@@ -438,13 +432,9 @@ describe("어드민 API users route", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-        detail: {
-          code: "invalid_body",
-        },
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 
@@ -465,9 +455,8 @@ describe("어드민 API users route", () => {
 
     expect(statusResponse.status).toBe(403)
     await expect(statusResponse.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
 
     const deleteResponse = await app.request("/users/user-1", {
@@ -477,9 +466,8 @@ describe("어드민 API users route", () => {
 
     expect(deleteResponse.status).toBe(403)
     await expect(deleteResponse.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
   })
 })

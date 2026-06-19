@@ -24,6 +24,25 @@ describe("apps/admin-api architecture", () => {
 
     expect(violations).toEqual([])
   })
+
+  it("admin route file은 raw Hono sub-app을 만들지 않는다", () => {
+    const violations = readSourceFiles(resolve(adminApiSourceRoot, "routes"))
+      .filter(isRouteFile)
+      .flatMap((filePath) => {
+        const imports = readNamedImports(filePath)
+          .filter(({ source }) => source === "hono")
+          .map(({ importedName, source }) =>
+            formatViolation(filePath, `${source}:${importedName}`)
+          )
+        const instantiations = readSourceText(filePath).includes("new Hono(")
+          ? [formatViolation(filePath, "new Hono()")]
+          : []
+
+        return [...imports, ...instantiations]
+      })
+
+    expect(violations).toEqual([])
+  })
 })
 
 function readSourceFiles(rootPath: string): string[] {
@@ -94,6 +113,10 @@ function readNamedImports(filePath: string): {
   visit(sourceFile)
 
   return imports
+}
+
+function readSourceText(filePath: string): string {
+  return readFileSync(filePath, "utf8")
 }
 
 function readStringLiteral(node: ts.Node | undefined): string | null {
