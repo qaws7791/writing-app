@@ -3,25 +3,18 @@ import type {
   LessonId,
 } from "@workspace/core/modules/content/domain/content.ids"
 import {
-  courseDetailDtoSchema,
-  courseListDtoSchema,
-  lessonDtoSchema,
   type CourseDetailDto,
   type CourseListDto,
   type LessonDto,
 } from "@workspace/core/modules/content/domain/content.dto"
 import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
-import { err, ok, type Result } from "@workspace/core/shared/result"
+import {
+  createContentReader,
+  type ContentReaderError,
+} from "@workspace/core/modules/content/application/use-cases/content-reader"
+import type { Result } from "@workspace/core/shared/result"
 
-export type ContentServiceError =
-  | {
-      readonly kind: "course-not-found"
-      readonly courseId: CourseId
-    }
-  | {
-      readonly kind: "lesson-not-found"
-      readonly lessonId: LessonId
-    }
+export type ContentServiceError = ContentReaderError
 
 export type ContentService = {
   readonly listCourses: () => Promise<CourseListDto>
@@ -36,35 +29,5 @@ export type ContentService = {
 export function createContentService(
   repository: ContentRepository
 ): ContentService {
-  return {
-    async listCourses() {
-      return courseListDtoSchema.parse({
-        courses: await repository.listCourses(),
-      })
-    },
-    async getCourseDetail(courseId) {
-      const courseDetail = await repository.findCourseDetail(courseId)
-
-      if (courseDetail === null) {
-        return err({
-          kind: "course-not-found",
-          courseId,
-        })
-      }
-
-      return ok(courseDetailDtoSchema.parse(courseDetail))
-    },
-    async getLesson(lessonId) {
-      const lesson = await repository.findLesson(lessonId)
-
-      if (lesson === null) {
-        return err({
-          kind: "lesson-not-found",
-          lessonId,
-        })
-      }
-
-      return ok(lessonDtoSchema.parse(lesson))
-    },
-  }
+  return createContentReader(repository)
 }

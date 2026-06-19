@@ -121,6 +121,8 @@ apps/api -> packages/core -> packages/db
 
 학습자 API는 `apps/api/src/main.ts`에서 `createLearnerApiCore()`를 통해 core 서비스를 조립하고 Hono 앱에 주입한다. OpenAPI 문서는 실제 등록 route에서 `/openapi`로 생성한다.
 
+콘텐츠 조회는 core의 공통 content reader가 repository 조회, DTO 검증, not-found result를 담당한다. `LearnerContentService`는 이 조회 결과에 학습자 진행률을 합성하는 책임만 추가한다.
+
 어드민 API는 `apps/admin-api/src/main.ts`에서 SQLite DB, 어드민 repository, Better Auth, 관리자 세션 resolver, 요청 로거를 조립한다.
 
 `packages/core`의 공개 표면은 실제 런타임에서 쓰이는 module API, learner API bootstrap, result/errors/kernel 같은 공통 값으로 제한한다. request context, event bus, unit of work, container wiring처럼 아직 use case에 연결되지 않은 scaffold는 도입 시점까지 공개하지 않는다.
