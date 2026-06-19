@@ -3,13 +3,15 @@ import type {
   AdminContentResetResultDto,
   AdminCourseDetailDto,
   AdminCourseListDto,
+} from "@workspace/core/modules/admin/domain/admin.dto"
+import type {
   AdminRepository,
   ArchiveAdminCourseInput,
   CreateAdminCourseInput,
   ReadAdminCourseInput,
   ReadAdminCoursesInput,
   ResetAdminContentInput,
-} from "@workspace/core/modules/admin/api"
+} from "@workspace/core/modules/admin/application/ports/admin.repository"
 import { contentStatuses } from "@workspace/core/shared/kernel/status"
 import { and, asc, count, eq, inArray, or, sql } from "drizzle-orm"
 

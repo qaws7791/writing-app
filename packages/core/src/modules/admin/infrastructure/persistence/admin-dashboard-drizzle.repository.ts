@@ -1,14 +1,14 @@
+import type { AdminDashboardDto } from "@workspace/core/modules/admin/domain/admin.dto"
 import type {
-  AdminDashboardDto,
   AdminDashboardRepository,
   ReadAdminDashboardInput,
-} from "@workspace/core/modules/admin/api"
+} from "@workspace/core/modules/admin/application/ports/admin.repository"
 import {
   addLearningCalendarDays,
   isLearningDateKeyInRange,
   toLearningDateKey,
   type LearningDateKey,
-} from "@workspace/core/modules/learning/api"
+} from "@workspace/core/modules/learning/domain/learning-date"
 import {
   contentStatuses,
   lessonProgressStatuses,

@@ -2,7 +2,7 @@ import type {
   CourseDetailDto,
   CourseSummaryDto,
   LessonSummaryDto,
-} from "@workspace/core/modules/content/api"
+} from "@workspace/core/modules/content/domain/content.dto"
 import {
   lessonProgressStatuses,
   type LessonProgressStatus as PersistedLessonProgressStatus,

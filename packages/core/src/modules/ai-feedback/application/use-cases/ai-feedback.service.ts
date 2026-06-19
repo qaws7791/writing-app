@@ -1,5 +1,5 @@
-import type { ContentRepository } from "@workspace/core/modules/content/api"
-import { lessonDtoSchema } from "@workspace/core/modules/content/api"
+import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
+import { lessonDtoSchema } from "@workspace/core/modules/content/domain/content.dto"
 import {
   aiFeedbackPayloadSchema,
   createAiFeedbackCommandSchema,

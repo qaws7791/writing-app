@@ -1,8 +1,8 @@
-import type { ContentRepository } from "@workspace/core/modules/content/api"
+import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
 import {
   answerableLessonStepTypes,
   lessonDtoSchema,
-} from "@workspace/core/modules/content/api"
+} from "@workspace/core/modules/content/domain/content.dto"
 import {
   completeLessonCommandSchema,
   lessonStartedAnswerSchema,

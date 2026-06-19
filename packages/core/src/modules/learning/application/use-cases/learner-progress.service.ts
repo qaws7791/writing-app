@@ -1,4 +1,4 @@
-import type { ContentRepository } from "@workspace/core/modules/content/api"
+import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
 import {
   learnerProgressOverviewDtoSchema,
   type LearnerProgressOverviewDto,

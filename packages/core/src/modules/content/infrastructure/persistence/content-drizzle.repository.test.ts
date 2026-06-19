@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm"
 import {
   courseIdSchema,
   lessonIdSchema,
-} from "@workspace/core/modules/content/api"
+} from "@workspace/core/modules/content/domain/content.ids"
 
 import { createInMemoryKwepDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"

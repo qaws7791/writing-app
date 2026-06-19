@@ -3,7 +3,7 @@ import type {
   LessonId,
   LessonStepId,
   UnitId,
-} from "@workspace/core/modules/content/api"
+} from "@workspace/core/modules/content/domain/content.ids"
 
 export type NewAdminCourseContentIds = {
   readonly courseId: CourseId

@@ -1,9 +1,9 @@
+import type { AdminSettingsDto } from "@workspace/core/modules/admin/domain/admin.dto"
 import type {
   AdminRepository,
-  AdminSettingsDto,
   SaveAdminLegalSettingsInput,
   SaveAdminNoticeSettingsInput,
-} from "@workspace/core/modules/admin/api"
+} from "@workspace/core/modules/admin/application/ports/admin.repository"
 
 import type { KwepDatabase } from "@workspace/db/client"
 import { adminSettings } from "@workspace/db/schema"

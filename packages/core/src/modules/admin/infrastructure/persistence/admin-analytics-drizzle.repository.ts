@@ -2,17 +2,19 @@ import type {
   AdminAnalyticsDto,
   AdminLessonAnalyticsPageDto,
   AdminLessonAnalyticsSort,
-  AdminRepository,
   AdminSortDirection,
   AdminUserStatus,
+} from "@workspace/core/modules/admin/domain/admin.dto"
+import type {
+  AdminRepository,
   ReadAdminAnalyticsInput,
   ReadAdminLessonAnalyticsInput,
-} from "@workspace/core/modules/admin/api"
+} from "@workspace/core/modules/admin/application/ports/admin.repository"
 import {
   addLearningCalendarDays,
   toLearningDateKey,
   type LearningDateKey,
-} from "@workspace/core/modules/learning/api"
+} from "@workspace/core/modules/learning/domain/learning-date"
 import {
   contentStatuses,
   learnerAccountStatuses,

@@ -1,19 +1,21 @@
 import type {
   AdminDeleteUserResultDto,
-  AdminRepository,
   AdminUserDetailDto,
   AdminUserListDto,
   AdminUserSort,
   AdminUserStatus,
+} from "@workspace/core/modules/admin/domain/admin.dto"
+import type {
+  AdminRepository,
   DeleteAdminUserInput,
   ReadAdminUserInput,
   ReadAdminUsersInput,
   UpdateAdminUserStatusInput,
-} from "@workspace/core/modules/admin/api"
+} from "@workspace/core/modules/admin/application/ports/admin.repository"
 import {
   toLearningDateKey,
   type LearningDateKey,
-} from "@workspace/core/modules/learning/api"
+} from "@workspace/core/modules/learning/domain/learning-date"
 import {
   contentStatuses,
   learnerAccountStatuses,

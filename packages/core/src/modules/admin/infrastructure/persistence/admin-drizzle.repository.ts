@@ -1,4 +1,4 @@
-import type { AdminRepository } from "@workspace/core/modules/admin/api"
+import type { AdminRepository } from "@workspace/core/modules/admin/application/ports/admin.repository"
 
 import type { KwepDatabase } from "@workspace/db/client"
 import { createAdminAnalyticsRepository } from "@workspace/core/modules/admin/infrastructure/persistence/admin-analytics-drizzle.repository"

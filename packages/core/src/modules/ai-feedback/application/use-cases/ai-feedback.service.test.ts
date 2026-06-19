@@ -5,13 +5,13 @@ import {
   lessonIdSchema,
   lessonStepIdSchema,
   unitIdSchema,
-} from "@workspace/core/modules/content/api"
+} from "@workspace/core/modules/content/domain/content.ids"
 import {
   lessonDtoSchema,
   type LessonDto,
-} from "@workspace/core/modules/content/api"
-import type { ContentRepository } from "@workspace/core/modules/content/api"
-import { learnerIdSchema } from "@workspace/core/modules/learning/api"
+} from "@workspace/core/modules/content/domain/content.dto"
+import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
+import { learnerIdSchema } from "@workspace/core/modules/learning/domain/learning.ids"
 import {
   createAiFeedbackService,
   type AiFeedbackService,

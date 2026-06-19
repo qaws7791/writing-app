@@ -53,6 +53,18 @@ describe("core architecture", () => {
     expect(violations).toEqual([])
   })
 
+  it("core 내부 구현은 module public api facade를 import하지 않는다", () => {
+    const violations = readSourceFiles(coreSourceRoot)
+      .filter((filePath) => !isFacadeFile(filePath))
+      .flatMap((filePath) =>
+        readImports(filePath)
+          .filter(isModuleApiFacadeImport)
+          .map((source) => formatViolation(filePath, source))
+      )
+
+    expect(violations).toEqual([])
+  })
+
   it("domain 계층은 runtime adapter 의존성을 import하지 않는다", () => {
     const violations = readSourceFiles(modulesRoot)
       .filter((filePath) => filePath.split(sep).includes("domain"))
@@ -134,6 +146,14 @@ function readStringLiteral(node: ts.Node | undefined): string | null {
   }
 
   return null
+}
+
+function isFacadeFile(filePath: string): boolean {
+  return filePath.endsWith(`${sep}index.ts`)
+}
+
+function isModuleApiFacadeImport(source: string): boolean {
+  return /^@workspace\/core\/modules\/[^/]+\/api$/.test(source)
 }
 
 function isRuntimeAdapterImport(source: string): boolean {

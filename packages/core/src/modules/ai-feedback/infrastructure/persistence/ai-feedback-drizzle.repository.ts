@@ -1,6 +1,6 @@
 import { and, count, eq } from "drizzle-orm"
 
-import type { AiFeedbackRepository } from "@workspace/core/modules/ai-feedback/api"
+import type { AiFeedbackRepository } from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.repository"
 import type { KwepDatabase } from "@workspace/db/client"
 import { aiFeedbackAttempts } from "@workspace/db/schema"
 

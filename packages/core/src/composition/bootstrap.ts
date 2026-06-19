@@ -1,10 +1,10 @@
 import OpenAI from "openai"
 
+import { defaultAiFeedbackAttemptPolicy } from "@workspace/core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import {
   createAiFeedbackService,
-  defaultAiFeedbackAttemptPolicy,
   type AiFeedbackService,
-} from "@workspace/core/modules/ai-feedback/api"
+} from "@workspace/core/modules/ai-feedback/application/use-cases/ai-feedback.service"
 import {
   createOpenAiFeedbackProvider,
   createUnavailableAiFeedbackProvider,
@@ -13,21 +13,23 @@ import { createDrizzleAiFeedbackRepository } from "@workspace/core/modules/ai-fe
 import {
   createLearnerContentService,
   type LearnerContentService,
-} from "@workspace/core/modules/content/api"
+} from "@workspace/core/modules/content/application/use-cases/learner-content.service"
 import { createDrizzleContentRepository } from "@workspace/core/modules/content/infrastructure/persistence/content-drizzle.repository"
 import {
   createLearningService,
-  createProgressService,
   type LearningService,
+} from "@workspace/core/modules/learning/application/use-cases/learning.service"
+import {
+  createProgressService,
   type ProgressService,
-} from "@workspace/core/modules/learning/api"
+} from "@workspace/core/modules/learning/application/use-cases/learner-progress.service"
 import {
   createDrizzleProfileReader,
   createDrizzleProgressReader,
   type ProfileReader,
 } from "@workspace/core/modules/learning/infrastructure/persistence/learner-read-models"
 import { createDrizzleLearningRepository } from "@workspace/core/modules/learning/infrastructure/persistence/learning-drizzle.repository"
-import { type SessionResolver } from "@workspace/core/modules/auth/api"
+import { type SessionResolver } from "@workspace/core/modules/auth/domain/learner-session"
 import {
   createLearnerAuth,
   createLearnerSessionResolver,
