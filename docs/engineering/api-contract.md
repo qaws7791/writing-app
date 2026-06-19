@@ -24,7 +24,7 @@
 
 기준 URL은 환경별 `NEXT_PUBLIC_API_BASE_URL` 또는 `WEB_API_BASE_URL`이 가리키는 `apps/api` origin이다.
 
-`/profile`의 통계 shape와 `/progress`의 진행률 overview shape는 `packages/core/modules/learning`의 learner read-model DTO schema를 단일 기준으로 사용한다. API module은 인증 사용자 shape와 route response 조합만 담당한다.
+학습자 request/response DTO와 status enum은 `packages/contracts`의 Zod schema를 단일 기준으로 사용한다. `apps/api`의 route schema는 `@workspace/contracts/*`를 직접 import해 OpenAPI 문서를 생성하고, `apps/web`은 같은 정적 OpenAPI JSON에서 generated 타입을 만들며 런타임 응답 파싱은 가능한 범위에서 같은 contracts schema를 사용한다. API module은 인증 사용자 shape와 route response 조합만 담당한다.
 
 현재 route:
 
@@ -124,15 +124,18 @@ JSON body 오류 detail:
 
 - route 정의는 `@hono/zod-openapi` 기반이다.
 - route spec과 handler를 같은 파일 가까이에 둔다.
+- route schema 파일과 `apps/api/src/http/openapi.ts`는 HTTP 계약 원천인 `@workspace/contracts/*`를 직접 import한다.
 - `/openapi`는 실제 Hono 앱에 등록된 route에서 OpenAPI 3.1 문서를 생성한다.
 - 정적 계약 파일은 `docs/engineering/contracts/writing-app-api-openapi.json`이다.
 - 웹 generated 타입은 이 정적 JSON을 기준으로 생성한다.
+- `bun run check:api-contract`는 임시 OpenAPI JSON과 웹 generated 타입을 다시 생성해 추적 파일과 비교하므로 schema drift를 한 곳에서 감지한다.
 
 명령:
 
 ```bash
-bun --filter @workspace/api openapi:generate
-bun --filter @workspace/web api:generate
+bun --filter=@workspace/api openapi:generate
+bun --filter=@workspace/web api:generate
+bun run check:api-contract
 ```
 
 ## 계약 변경 절차
@@ -141,4 +144,5 @@ bun --filter @workspace/web api:generate
 2. route 테스트를 갱신한다.
 3. OpenAPI 정적 JSON을 갱신한다.
 4. 웹 generated 타입과 mapper 테스트를 갱신한다.
-5. 관련 engineering 문서를 갱신한다.
+5. `bun run check:api-contract`로 OpenAPI JSON과 웹 generated 타입 drift가 없는지 확인한다.
+6. 관련 engineering 문서를 갱신한다.

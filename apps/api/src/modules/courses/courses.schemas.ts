@@ -2,7 +2,7 @@ import {
   courseDetailDtoSchema,
   courseIdSchema,
   courseListDtoSchema,
-} from "@workspace/core/modules/content"
+} from "@workspace/contracts/content"
 import { z } from "@workspace/hono/zod"
 
 export const courseParamsSchema = z.object({

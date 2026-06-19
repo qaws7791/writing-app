@@ -128,7 +128,7 @@ apps/api -> packages/core -> packages/db
 
 ## API 런타임
 
-학습자 API는 `apps/api/src/main.ts`에서 `createLearnerApiCore()`를 통해 core 서비스를 조립하고 Hono 앱에 주입한다. OpenAPI 문서는 실제 등록 route에서 `/openapi`로 생성한다.
+학습자 API는 `apps/api/src/main.ts`에서 `createLearnerApiCore()`를 통해 core 서비스를 조립하고 Hono 앱에 주입한다. OpenAPI 문서는 실제 등록 route에서 `/openapi`로 생성하며, route schema는 `packages/contracts`의 Zod 계약을 직접 참조한다. 정적 OpenAPI JSON과 웹 generated 타입의 drift는 `bun run check:api-contract`에서 함께 검증한다.
 
 콘텐츠 조회는 core의 공통 content reader가 repository 조회, DTO 검증, not-found result를 담당한다. `LearnerContentService`는 이 조회 결과에 학습자 진행률을 합성하는 책임만 추가한다.
 

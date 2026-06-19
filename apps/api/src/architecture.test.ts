@@ -19,12 +19,23 @@ describe("apps/api architecture", () => {
       return readImports(filePath)
         .filter(
           (source) =>
-            source === "@workspace/core" ||
-            (source.startsWith("@workspace/core/") &&
-              !isAllowedCoreModuleFacadeImport(source))
+            isWorkspaceCoreImport(source) &&
+            !isAllowedCoreModuleFacadeImport(source)
         )
         .map((source) => formatViolation(filePath, source))
     })
+
+    expect(violations).toEqual([])
+  })
+
+  it("HTTP contract schema는 contracts package를 직접 import한다", () => {
+    const violations = readSourceFiles(apiSourceRoot)
+      .filter(isHttpContractSchemaFile)
+      .flatMap((filePath) => {
+        return readImports(filePath)
+          .filter(isWorkspaceCoreImport)
+          .map((source) => formatViolation(filePath, source))
+      })
 
     expect(violations).toEqual([])
   })
@@ -125,6 +136,10 @@ function readStringLiteral(node: ts.Node | undefined): string | null {
   return null
 }
 
+function isWorkspaceCoreImport(source: string): boolean {
+  return source === "@workspace/core" || source.startsWith("@workspace/core/")
+}
+
 function isAllowedCoreModuleFacadeImport(source: string): boolean {
   const prefix = "@workspace/core/modules/"
 
@@ -138,6 +153,18 @@ function isAllowedCoreModuleFacadeImport(source: string): boolean {
     allowedCoreModuleFacades.has(modulePath) ||
     (modulePath.endsWith("/api") &&
       allowedCoreModuleFacades.has(modulePath.slice(0, -"/api".length)))
+  )
+}
+
+function isHttpContractSchemaFile(filePath: string): boolean {
+  const relativePath = relative(apiSourceRoot, filePath)
+  const parts = relativePath.split(sep)
+
+  return (
+    (parts[0] === "http" && parts[1] === "openapi.ts") ||
+    (parts[0] === "modules" &&
+      parts.length === 3 &&
+      (parts[2]?.endsWith(".schemas.ts") ?? false))
   )
 }
 

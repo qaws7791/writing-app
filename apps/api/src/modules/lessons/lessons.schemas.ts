@@ -1,7 +1,4 @@
-import {
-  lessonDtoSchema,
-  lessonIdSchema,
-} from "@workspace/core/modules/content"
+import { lessonDtoSchema, lessonIdSchema } from "@workspace/contracts/content"
 import { z } from "@workspace/hono/zod"
 
 export const lessonParamsSchema = z.object({

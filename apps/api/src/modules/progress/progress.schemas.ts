@@ -3,4 +3,4 @@ export {
   learnerProgressLessonDtoSchema as progressLessonSchema,
   learnerProgressNextLessonDtoSchema as progressNextLessonSchema,
   lessonAvailabilityStatusSchema as progressLessonStatusSchema,
-} from "@workspace/core/modules/learning"
+} from "@workspace/contracts/learning"

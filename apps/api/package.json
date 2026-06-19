@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "^1.4.0",
+    "@workspace/contracts": "workspace:*",
     "@workspace/core": "workspace:*",
     "@workspace/env": "workspace:*",
     "@workspace/hono": "workspace:*",

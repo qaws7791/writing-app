@@ -87,6 +87,7 @@ bun run storybook
 
 ```bash
 bun run check:components-config
+bun run check:api-contract
 bun run check:document-drift
 bun run check:workspace-inventory
 bun run format:check
@@ -100,8 +101,8 @@ bun lefthook run pre-commit
 OpenAPI 계약과 웹 생성 타입을 갱신해야 할 때:
 
 ```bash
-bun --filter @workspace/api openapi:generate
-bun --filter @workspace/web api:generate
+bun --filter=@workspace/api openapi:generate
+bun --filter=@workspace/web api:generate
 ```
 
 정적 OpenAPI 계약 파일은 `docs/engineering/contracts/writing-app-api-openapi.json`이다.

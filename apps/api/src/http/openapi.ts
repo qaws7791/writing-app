@@ -1,7 +1,7 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
+import { learnerAccountStatusSchema } from "@workspace/contracts/status"
 import { ErrorResponseSchema } from "@workspace/hono/errors"
 import { z } from "@workspace/hono/zod"
-import { learnerAccountStatusSchema } from "@workspace/core/modules/auth"
 
 export const openApiDocumentConfig = {
   info: {

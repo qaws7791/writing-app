@@ -196,6 +196,10 @@ function validateDocumentedCommands(
     for (const command of content.matchAll(/\bbun run ([\w:.-]+)/g)) {
       const scriptName = command[1] ?? ""
 
+      if (scriptName.startsWith("--")) {
+        continue
+      }
+
       if (!rootScripts.has(scriptName)) {
         failures.push(
           `${filePath} references missing root script ${scriptName}.`
@@ -204,7 +208,7 @@ function validateDocumentedCommands(
     }
 
     for (const command of content.matchAll(
-      /\bbun --filter ([^\s`]+) ([\w:.-]+)/g
+      /\bbun (?:run )?--filter(?:=|\s+)([^\s`]+) ([\w:.-]+)/g
     )) {
       const packageName = command[1] ?? ""
       const scriptName = command[2] ?? ""

@@ -51,6 +51,7 @@
 
 ```bash
 bun run check:components-config
+bun run check:api-contract
 bun run check:document-drift
 bun run check:workspace-inventory
 bun run test
@@ -67,11 +68,11 @@ bun lefthook run pre-commit
 워크스페이스 단위 검증 예시는 다음과 같다.
 
 ```bash
-bun --filter @workspace/api test
-bun --filter @workspace/admin-api test
-bun --filter @workspace/core test
-bun --filter @workspace/db test
-bun --filter @workspace/web test
+bun run --filter=@workspace/api test
+bun run --filter=@workspace/admin-api test
+bun run --filter=@workspace/core test
+bun run --filter=@workspace/db test
+bun run --filter=@workspace/web test
 ```
 
 ## 커버리지 기준

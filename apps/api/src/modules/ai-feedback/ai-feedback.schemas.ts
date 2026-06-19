@@ -1,12 +1,12 @@
 import {
   aiFeedbackResultDtoSchema,
   createAiFeedbackCommandSchema,
-} from "@workspace/core/modules/ai-feedback"
+} from "@workspace/contracts/ai-feedback"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/core/modules/content"
-import { learnerIdSchema } from "@workspace/core/modules/learning"
+} from "@workspace/contracts/content"
+import { learnerIdSchema } from "@workspace/contracts/learning"
 import { z } from "@workspace/hono/zod"
 
 export const createFeedbackBodySchema = z.object({
