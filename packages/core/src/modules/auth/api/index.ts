@@ -1,5 +1,4 @@
 export * from "@workspace/core/modules/auth/domain/bearer-session"
 export * from "@workspace/core/modules/auth/domain/learner-session"
 export * from "@workspace/core/modules/auth/application/use-cases/learner-onboarding"
-export * from "@workspace/core/modules/auth/infrastructure/adapters/learner-auth"
 export * from "@workspace/core/shared/kernel/status"

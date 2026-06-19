@@ -1,4 +1,3 @@
-export * from "@workspace/core/modules/admin/infrastructure/persistence/admin-drizzle.repository"
 export * from "@workspace/core/modules/admin/domain/admin.dto"
 export * from "@workspace/core/modules/admin/domain/admin-role"
 export * from "@workspace/core/modules/admin/application/ports/admin.repository"

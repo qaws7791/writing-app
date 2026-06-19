@@ -7,5 +7,3 @@ export * from "@workspace/core/modules/learning/domain/learning-progress-read-mo
 export * from "@workspace/core/modules/learning/application/ports/learning.repository"
 export * from "@workspace/core/modules/learning/application/use-cases/learning.service"
 export * from "@workspace/core/modules/learning/application/use-cases/learner-progress.service"
-export * from "@workspace/core/modules/learning/infrastructure/persistence/learning-drizzle.repository"
-export * from "@workspace/core/modules/learning/infrastructure/persistence/learner-read-models"

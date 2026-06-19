@@ -98,7 +98,8 @@ apps/api -> packages/core -> packages/db
 
 이 방향은 `scripts/oxlint/workspace-rules.mjs`의 `workspace/no-invalid-workspace-dependency` 규칙으로 강제한다.
 
-어드민 API는 현재 `apps/admin-api`에서 `@workspace/db`를 직접 조립해 `createDrizzleAdminRepository(database.db)`에 넘긴다. 어드민 서비스 구현 자체는 `packages/core/admin`에 둔다.
+어드민 API는 현재 `apps/admin-api`에서 `@workspace/db`를 직접 조립해 `@workspace/core/admin/admin-drizzle.repository`의 `createDrizzleAdminRepository(database.db)`에 넘긴다. 어드민 서비스 구현 자체는 `packages/core/admin`에 둔다.
+`packages/core`의 module public facade는 domain/application 계약을 노출하고, Drizzle·Better Auth·OpenAI 같은 infrastructure 어댑터는 composition 또는 명시적인 adapter subpath에서만 직접 의존한다.
 
 ## 현재 앱 라우트
 

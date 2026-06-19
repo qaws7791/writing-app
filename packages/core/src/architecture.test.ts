@@ -39,6 +39,20 @@ describe("core architecture", () => {
     expect(violations).toEqual([])
   })
 
+  it("module api facade는 infrastructure를 export하지 않는다", () => {
+    const violations = readdirSync(modulesRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .flatMap((entry) => {
+        const indexPath = resolve(modulesRoot, entry.name, "api", "index.ts")
+
+        return readImports(indexPath)
+          .filter((source) => source.includes("/infrastructure/"))
+          .map((source) => formatViolation(indexPath, source))
+      })
+
+    expect(violations).toEqual([])
+  })
+
   it("domain 계층은 runtime adapter 의존성을 import하지 않는다", () => {
     const violations = readSourceFiles(modulesRoot)
       .filter((filePath) => filePath.split(sep).includes("domain"))
