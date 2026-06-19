@@ -1,10 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import type { ReactNode } from "react"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+
+import {
+  BookOpenIcon,
+  HomeIcon,
+  UserIcon,
+} from "@workspace/ui/components/icons"
 
 type GlobalNavProps = {
   readonly currentPath?: string
@@ -111,9 +116,9 @@ export function GlobalNav({ currentPath }: GlobalNavProps) {
 export function MobileNav({ currentPath }: GlobalNavProps) {
   const pathname = useActivePath(currentPath)
   const items = [
-    ["home", "홈", KwepHomeIcon],
-    ["learn", "배우기", KwepBookOpenIcon],
-    ["profile", "프로필", KwepUserIcon],
+    ["home", "홈", HomeIcon],
+    ["learn", "배우기", BookOpenIcon],
+    ["profile", "프로필", UserIcon],
   ] as const
 
   return (
@@ -144,66 +149,5 @@ export function MobileNav({ currentPath }: GlobalNavProps) {
         </Link>
       ))}
     </nav>
-  )
-}
-
-type KwepIconProps = {
-  readonly className?: string
-  readonly size?: number
-}
-
-function KwepHomeIcon({ className, size = 24 }: KwepIconProps) {
-  return (
-    <KwepSvgIcon className={className} name="house" size={size}>
-      <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
-      <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    </KwepSvgIcon>
-  )
-}
-
-function KwepBookOpenIcon({ className, size = 24 }: KwepIconProps) {
-  return (
-    <KwepSvgIcon className={className} name="book-open" size={size}>
-      <path d="M12 7v14" />
-      <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
-    </KwepSvgIcon>
-  )
-}
-
-function KwepUserIcon({ className, size = 24 }: KwepIconProps) {
-  return (
-    <KwepSvgIcon className={className} name="user" size={size}>
-      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-      <circle cx={12} cy={7} r={4} />
-    </KwepSvgIcon>
-  )
-}
-
-function KwepSvgIcon({
-  children,
-  className,
-  name,
-  size,
-}: KwepIconProps & {
-  readonly children: ReactNode
-  readonly name: string
-}) {
-  const mergedClassName = `lucide lucide-${name}${className ? ` ${className}` : ""}`
-
-  return (
-    <svg
-      className={mergedClassName}
-      fill="none"
-      height={size}
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      viewBox="0 0 24 24"
-      width={size}
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      {children}
-    </svg>
   )
 }
