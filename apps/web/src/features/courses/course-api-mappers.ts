@@ -7,7 +7,7 @@ import type {
   ApiCourseDetailResponse,
   ApiCourseListResponse,
   ApiProgressResponse,
-} from "@/lib/api/writing-app-api"
+} from "@/lib/api/writing-app-api-contract"
 
 export function mapCourseList(
   response: ApiCourseListResponse

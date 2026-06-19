@@ -105,7 +105,7 @@ bun run --filter=@workspace/web test
 
 - 화면 텍스트와 접근성 role을 사용자 관점으로 조회한다.
 - API는 포트 mock 또는 명시적 test double로 대체한다.
-- generated OpenAPI 타입은 mapper 경계 안에 격리한다.
+- generated OpenAPI 타입은 `apps/web/src/lib/api/writing-app-api-contract.ts`에 격리하고 feature mapper는 이 transport contract 타입만 참조한다.
 - `apps/web` 아키텍처 테스트는 `openapi-fetch` dependency/import가 없고 자체 HTTP adapter를 유지하는지 확인한다.
 - overlay 계열 컴포넌트는 테스트 mock을 사용해 포털 구현 세부사항에 묶이지 않게 한다.
 - 내부 탐색은 가능한 link role과 href로 검증한다.

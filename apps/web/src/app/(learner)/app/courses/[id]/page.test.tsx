@@ -5,7 +5,7 @@ import CourseDetailRoute from "@/app/(learner)/app/courses/[id]/page"
 import type { CourseDetail } from "@/features/courses/course-types"
 import { networkApiError } from "@/lib/api/api-error"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
-import type { WritingAppApi } from "@/lib/api/writing-app-api"
+import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 import { createHttpNetworkError } from "@workspace/http-client"
 
 const api: WritingAppApi = {

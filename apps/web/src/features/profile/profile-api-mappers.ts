@@ -1,4 +1,4 @@
-import type { ApiProfileResponse } from "@/lib/api/writing-app-api"
+import type { ApiProfileResponse } from "@/lib/api/writing-app-api-contract"
 import type { LearnerProfile } from "@/features/profile/profile-types"
 
 export function mapProfile(response: ApiProfileResponse): LearnerProfile {

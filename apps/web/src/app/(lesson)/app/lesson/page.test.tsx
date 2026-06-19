@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import LessonRoute from "@/app/(lesson)/app/lesson/page"
 import { networkApiError } from "@/lib/api/api-error"
 import { apiFailure } from "@/lib/api/api-result"
-import type { WritingAppApi } from "@/lib/api/writing-app-api"
+import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 import { createHttpNetworkError } from "@workspace/http-client"
 
 const api: WritingAppApi = {

@@ -31,6 +31,18 @@ describe("apps/web architecture", () => {
     expect(packageDependencies).not.toContain("openapi-fetch")
     expect(importViolations).toEqual([])
   })
+
+  it("generated OpenAPI 타입은 transport contract 파일에서만 import한다", () => {
+    const violations = readSourceFiles(webSourceRoot)
+      .filter((filePath) => !isWritingAppApiContractFile(filePath))
+      .flatMap((filePath) => {
+        return readImports(filePath)
+          .filter(isGeneratedOpenApiImport)
+          .map((source) => formatViolation(filePath, source))
+      })
+
+    expect(violations).toEqual([])
+  })
 })
 
 function readPackageDependencies(packageJsonPath: string): string[] {
@@ -129,6 +141,17 @@ function isWorkspaceCoreImport(source: string): boolean {
 
 function isOpenApiFetchImport(source: string): boolean {
   return source === "openapi-fetch" || source.startsWith("openapi-fetch/")
+}
+
+function isGeneratedOpenApiImport(source: string): boolean {
+  return source === "@/lib/api/generated/writing-app-api"
+}
+
+function isWritingAppApiContractFile(filePath: string): boolean {
+  return (
+    relative(webSourceRoot, filePath).split(sep).join("/") ===
+    "lib/api/writing-app-api-contract.ts"
+  )
 }
 
 function formatViolation(filePath: string, source: string): string {

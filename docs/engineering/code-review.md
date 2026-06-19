@@ -25,7 +25,7 @@
 - `apps/api -> packages/core -> packages/db` 방향을 지키는가?
 - `packages/db`가 `packages/core`를 import하지 않는가?
 - 프론트엔드가 DB나 core infrastructure에 직접 의존하지 않는가?
-- generated OpenAPI 타입은 mapper 경계 안에 격리되는가?
+- generated OpenAPI 타입은 `writing-app-api-contract.ts`에 격리되고, feature mapper는 transport contract 타입만 참조하는가?
 - `Kwep/` 구현 파일을 제품 런타임에서 import하지 않는가?
 
 ## 인증과 권한 체크

@@ -19,7 +19,7 @@ import {
   type LessonStepCheckedState,
 } from "@/features/lessons/lesson-step-policy"
 import type { Lesson } from "@/features/lessons/lesson-types"
-import type { WritingAppApi } from "@/lib/api/writing-app-api"
+import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 
 const LESSON_START_ERROR =
   "레슨 시작을 저장하지 못했습니다. 다시 시도해 주세요."
