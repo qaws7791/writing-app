@@ -3,11 +3,8 @@ import { ErrorResponseSchema } from "@workspace/hono/errors"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
 import { mapCoreError } from "@/errors/map-core-error"
-import {
-  authenticatedResponses,
-  jsonResponse,
-  savedResponseSchema,
-} from "@/http/openapi"
+import { authenticatedResponses, jsonResponse } from "@/http/openapi"
+import { savedResponseSchema } from "@/http/learner-contract.schemas"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
   completeLessonBodySchema,

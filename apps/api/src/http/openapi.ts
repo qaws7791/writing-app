@@ -1,5 +1,4 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
-import { learnerAccountStatusSchema } from "@workspace/contracts/status"
 import { ErrorResponseSchema } from "@workspace/hono/errors"
 import { z } from "@workspace/hono/zod"
 
@@ -29,19 +28,6 @@ export type ApiOpenApiDocument = {
   readonly openapi: string
   readonly paths?: unknown
 }
-
-export const learnerUserSchema = z.object({
-  email: z.string(),
-  id: z.string(),
-  image: z.string().nullable(),
-  joinedAt: z.string().datetime(),
-  name: z.string(),
-  status: learnerAccountStatusSchema,
-})
-
-export const savedResponseSchema = z.object({
-  saved: z.boolean(),
-})
 
 export function jsonResponse(description: string, schema: z.ZodType) {
   return {

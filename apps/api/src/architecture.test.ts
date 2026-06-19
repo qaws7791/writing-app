@@ -161,7 +161,9 @@ function isHttpContractSchemaFile(filePath: string): boolean {
   const parts = relativePath.split(sep)
 
   return (
-    (parts[0] === "http" && parts[1] === "openapi.ts") ||
+    (parts[0] === "http" &&
+      (parts[1] === "openapi.ts" ||
+        (parts[1]?.endsWith(".schemas.ts") ?? false))) ||
     (parts[0] === "modules" &&
       parts.length === 3 &&
       (parts[2]?.endsWith(".schemas.ts") ?? false))
