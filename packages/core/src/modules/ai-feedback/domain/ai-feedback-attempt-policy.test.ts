@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   aiFeedbackAttemptPolicySchema,
+  calculateRemainingAiFeedbackAttempts,
   defaultAiFeedbackAttemptPolicy,
 } from "@/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 
@@ -16,5 +17,21 @@ describe("AI 피드백 시도 정책", () => {
       aiFeedbackAttemptPolicySchema.safeParse({ maxCompletedAttempts: 0 })
         .success
     ).toBe(false)
+  })
+
+  it("완료된 시도 수에서 남은 시도 횟수를 음수 없이 계산한다", () => {
+    expect(
+      calculateRemainingAiFeedbackAttempts({
+        attemptPolicy: defaultAiFeedbackAttemptPolicy,
+        completedAttempts: 1,
+      })
+    ).toBe(2)
+
+    expect(
+      calculateRemainingAiFeedbackAttempts({
+        attemptPolicy: defaultAiFeedbackAttemptPolicy,
+        completedAttempts: 4,
+      })
+    ).toBe(0)
   })
 })

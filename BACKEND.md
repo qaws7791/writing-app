@@ -40,7 +40,7 @@
 
 `apps/api`는 학습자 HTTP transport 경계다. Hono 앱 생성, 라우트 등록, 미들웨어, 환경 변수 파싱, 인증 헤더 전달, request body 파싱, transport-level validation, core 호출, HTTP response 변환, 에러 매핑, 프로세스 시작만 이곳에서 수행한다.
 
-현재 reset 단계에서는 기존 `apps/api/src` 구현을 제거했다. 아래 라우트와 정책은 후속 Task에서 새 baseline으로 다시 작성할 목표 계약이다.
+현재 API 라우트는 `apps/api/src/modules/*`와 `apps/api/src/http`에 구현되어 있으며, 아래 라우트와 정책을 현재 계약으로 유지한다.
 
 현재 API 라우트는 버전 접두사 없이 노출한다. 사용자 정보가 필요하지 않은 콘텐츠 조회 API는 공개로 유지하고, 사용자별 데이터가 필요한 API만 Better Auth 세션 인증을 요구한다.
 
@@ -51,18 +51,14 @@
 - `GET /health`
 - `GET /openapi`
 - `GET /api/auth/*`, `POST /api/auth/*`
+- `GET /auth/session`
 - `GET /courses`
-- `GET /courses/search?q=...`
 - `GET /courses/:courseId`
 - `GET /lessons/:lessonId`
-- `GET /me`
 - `GET /profile`
 - `GET /progress`
-- `GET /courses/:courseId/progress`
-- `GET /lessons/:lessonId/progress`
-- `PUT /lessons/:lessonId/progress`
-- `PUT /lessons/:lessonId/answers`
-- `POST /lessons/:lessonId/complete`
+- `POST /learning/answers`
+- `POST /learning/lessons/:lessonId/complete`
 - `POST /ai-feedback`
 
 API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL` 기본 경로 위임, `WEB_ORIGIN` 기반 CORS 허용 origin 같은 앱별 의미 변환은 `apps/api/src/env.ts`에 유지한다.
@@ -91,27 +87,22 @@ bun --filter @workspace/api dev
 
 `apps/admin-api`는 관리자용 백엔드 조립 루트다. 플랫폼 API와 별도 Hono 런타임으로 실행되며, 꺼져 있어도 학습자 플랫폼 API는 정상 동작해야 한다.
 
-현재 reset 단계에서는 기존 `apps/admin-api/src` 구현을 제거했다. 아래 라우트는 후속 Task에서 새 baseline으로 다시 작성할 목표 계약이다.
+현재 어드민 API 라우트는 `apps/admin-api/src/routes`에 `@workspace/hono/core` typed route로 구현되어 있으며, 아래 라우트를 현재 계약으로 유지한다.
 
 주요 라우트는 다음과 같다.
 
 - `GET /health`
 - `GET /openapi`
 - `GET /api/auth/*`, `POST /api/auth/*`
-- `GET /session`
 - `GET /dashboard`
-- `GET /courses?page=...&pageSize=...&query=...`
+- `GET /courses?page=...&pageSize=...&query=...&status=...`
 - `POST /courses`
-- `GET /courses?include=units,lessons`
-- `GET /courses/:courseId`
-- `GET /courses/:courseId/editor`
-- `PUT /courses/:courseId/editor`
-- `GET /courses/:courseId/lessons/:lessonId`
-- `DELETE /courses/:courseId`
+- `GET /courses/{courseId}/editor`
+- `DELETE /courses/{courseId}`
 - `GET /users?page=...&pageSize=...&query=...&status=...&sort=...`
-- `GET /users/:userId`
-- `PATCH /users/:userId/status`
-- `DELETE /users/:userId`
+- `GET /users/{userId}`
+- `PATCH /users/{userId}/status`
+- `DELETE /users/{userId}`
 - `GET /analytics?days=30`
 - `GET /analytics/lessons?page=...&pageSize=...&query=...`
 - `GET /settings`
@@ -163,7 +154,7 @@ bun --filter @workspace/admin-api seed:admin
 
 레슨 답변 저장 command의 `answer`는 `learningAnswerSchema`를 통과한 값만 허용한다. API route, core service command, DB learning repository는 같은 학습 답변 계약을 사용하며, 임의 JSON 값은 application boundary 전에 거절한다.
 
-어드민 코스 상세는 현재 `GET /courses/:courseId/editor` 기반 읽기 전용 미리보기다. 코스 기본 정보, 유닛, 레슨, 스텝을 조회해 운영자가 확인할 수 있게 하지만 저장형 편집 API는 제공하지 않는다.
+어드민 코스 상세는 현재 `GET /courses/{courseId}/editor` 기반 읽기 전용 미리보기다. 코스 기본 정보, 유닛, 레슨, 스텝을 조회해 운영자가 확인할 수 있게 하지만 저장형 편집 API는 제공하지 않는다.
 
 ## `packages/db`
 

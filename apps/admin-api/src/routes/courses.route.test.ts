@@ -10,8 +10,8 @@ import type {
   AdminArchiveCourseResultDto,
   AdminCourseDetailDto,
   AdminCourseListDto,
-  AdminRole,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
+import type { AdminRole } from "@workspace/core/admin"
 import { adminRoles } from "@workspace/core/admin"
 
 const courseDetail: AdminCourseDetailDto = {
@@ -121,10 +121,9 @@ describe("어드민 API courses route", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 
@@ -138,10 +137,9 @@ describe("어드민 API courses route", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 
@@ -154,9 +152,8 @@ describe("어드민 API courses route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -186,9 +183,8 @@ describe("어드민 API courses route", () => {
 
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
   })
 
@@ -218,9 +214,8 @@ describe("어드민 API courses route", () => {
 
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
   })
 
@@ -236,9 +231,8 @@ describe("어드민 API courses route", () => {
 
     expect(response.status).toBe(404)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "not_found",
-      },
+      code: "NOT_FOUND",
+      message: "Not Found",
     })
   })
 })
@@ -249,30 +243,32 @@ function createDependencies({
   readonly role?: AdminRole
 } = {}): AdminApiDependencies {
   return createTestAdminApiDependencies({
-    dashboardService: {
-      async archiveCourse(input) {
-        expect(input.now).toEqual(testAdminNow)
+    adminServices: {
+      courses: {
+        async archiveCourse(input) {
+          expect(input.now).toEqual(testAdminNow)
 
-        if (input.courseId === "missing") {
-          return null
-        }
+          if (input.courseId === "missing") {
+            return null
+          }
 
-        expect(input.courseId).toBe("cmock")
-        return archiveCourseResult
-      },
-      async createCourse(input) {
-        expect(input.now).toEqual(testAdminNow)
-        return courseDetail
-      },
-      async getCourses(input) {
-        expect(input).toEqual({
-          category: "입문자를 위한 코스",
-          page: 2,
-          pageSize: 10,
-          query: "글쓰기",
-          status: "active",
-        })
-        return courseList
+          expect(input.courseId).toBe("cmock")
+          return archiveCourseResult
+        },
+        async createCourse(input) {
+          expect(input.now).toEqual(testAdminNow)
+          return courseDetail
+        },
+        async getCourses(input) {
+          expect(input).toEqual({
+            category: "입문자를 위한 코스",
+            page: 2,
+            pageSize: 10,
+            query: "글쓰기",
+            status: "active",
+          })
+          return courseList
+        },
       },
     },
     sessionResolver: {

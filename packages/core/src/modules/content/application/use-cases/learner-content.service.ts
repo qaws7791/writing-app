@@ -4,26 +4,20 @@ import type {
 } from "@workspace/core/modules/content/domain/content.ids"
 import {
   courseDetailDtoSchema,
-  courseListDtoSchema,
-  lessonDtoSchema,
   type CourseDetailDto,
   type CourseListDto,
   type LessonDto,
 } from "@workspace/core/modules/content/domain/content.dto"
 import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
+import {
+  createContentReader,
+  type ContentReaderError,
+} from "@workspace/core/modules/content/application/use-cases/content-reader"
 import type { ProgressReader } from "@workspace/core/modules/learning/domain/learning-progress-read-model"
 import { withLearnerCourseProgress } from "@workspace/core/modules/learning/domain/learning-progress-read-model"
-import { err, ok, type Result } from "@workspace/core/shared/result"
+import { ok, type Result } from "@workspace/core/shared/result"
 
-export type LearnerContentServiceError =
-  | {
-      readonly kind: "course-not-found"
-      readonly courseId: CourseId
-    }
-  | {
-      readonly kind: "lesson-not-found"
-      readonly lessonId: LessonId
-    }
+export type LearnerContentServiceError = ContentReaderError
 
 export type LearnerContentService = {
   readonly listCourses: () => Promise<CourseListDto>
@@ -43,43 +37,25 @@ export function createLearnerContentService({
   readonly contentRepository: ContentRepository
   readonly progressReader: ProgressReader
 }): LearnerContentService {
-  return {
-    async listCourses() {
-      return courseListDtoSchema.parse({
-        courses: await contentRepository.listCourses(),
-      })
-    },
-    async getCourseDetail(input) {
-      const courseDetail = await contentRepository.findCourseDetail(
-        input.courseId
-      )
+  const contentReader = createContentReader(contentRepository)
 
-      if (courseDetail === null) {
-        return err({
-          courseId: input.courseId,
-          kind: "course-not-found",
-        })
+  return {
+    listCourses: contentReader.listCourses,
+    async getCourseDetail(input) {
+      const courseDetail = await contentReader.getCourseDetail(input.courseId)
+
+      if (courseDetail.kind === "err") {
+        return courseDetail
       }
 
       const progress = await progressReader.readLearnerProgress(input.userId)
 
       return ok(
         courseDetailDtoSchema.parse(
-          withLearnerCourseProgress(courseDetail, progress.lessonProgress)
+          withLearnerCourseProgress(courseDetail.value, progress.lessonProgress)
         )
       )
     },
-    async getLesson(lessonId) {
-      const lesson = await contentRepository.findLesson(lessonId)
-
-      if (lesson === null) {
-        return err({
-          kind: "lesson-not-found",
-          lessonId,
-        })
-      }
-
-      return ok(lessonDtoSchema.parse(lesson))
-    },
+    getLesson: contentReader.getLesson,
   }
 }

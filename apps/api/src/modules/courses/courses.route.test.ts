@@ -285,6 +285,7 @@ function createCourseDetailDependencies(
   }
 
   return {
+    ...createTestDependencies(),
     contentService: createLearnerContentService({
       contentRepository,
       progressReader,

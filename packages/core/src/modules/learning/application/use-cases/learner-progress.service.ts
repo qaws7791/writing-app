@@ -1,15 +1,12 @@
-import type { ContentRepository } from "@workspace/core/modules/content/api"
+import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
+import {
+  learnerProgressOverviewDtoSchema,
+  type LearnerProgressOverviewDto,
+} from "@workspace/core/modules/learning/domain/learner-read-model.dto"
 import {
   toCourseProgress,
   type ProgressReader,
 } from "@workspace/core/modules/learning/domain/learning-progress-read-model"
-
-export type LearnerProgressOverviewDto = {
-  readonly courses: readonly ReturnType<typeof toCourseProgress>[]
-  readonly user: {
-    readonly currentStreakDays: number
-  }
-}
 
 export type ProgressService = {
   readonly readProgress: (userId: string) => Promise<LearnerProgressOverviewDto>
@@ -42,12 +39,12 @@ export function createProgressService({
         })
       )
 
-      return {
+      return learnerProgressOverviewDtoSchema.parse({
         courses: courseProgress.filter((course) => course !== null),
         user: {
           currentStreakDays: progress.currentStreakDays,
         },
-      }
+      })
     },
   }
 }

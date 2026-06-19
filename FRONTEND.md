@@ -30,7 +30,7 @@
 
 ## 현재 앱 라우트
 
-아래 라우트는 Kwep 피벗의 목표 라우트다. 현재 reset 단계에서는 `apps/web/src`, `apps/admin/src`, `packages/ui/src`의 기존 구현을 제거했고, 후속 Task에서 같은 monorepo 골격 위에 새 화면을 작성한다.
+아래 라우트는 현재 `apps/web/src/app`과 `apps/admin/src/app`에 구현된 화면 계약이다.
 
 ### 학습자 웹
 
@@ -85,6 +85,7 @@
 ## 학습자 경험
 
 - 공개 랜딩은 제품명, 가치 제안, 코스 미리보기, 학습 방식, 로그인 CTA를 제공한다.
+- 공개 랜딩 구현은 `features/landing/landing-page.tsx`가 라우팅과 최상위 조립만 맡고, section component, 정적 콘텐츠, motion hook, SVG/preview primitive를 같은 feature 폴더의 전용 파일로 분리한다.
 - 홈은 진행 중인 코스, 다음 레슨, 전체 학습 맥락, 현재 연속 학습일을 보여준다.
 - 코스 상세는 유닛별 커리큘럼과 레슨의 완료, 진행 가능, 잠금 상태를 보여준다.
 - 레슨은 시작 화면을 먼저 보여주고 사용자가 시작한 뒤 첫 스텝으로 진입한다.

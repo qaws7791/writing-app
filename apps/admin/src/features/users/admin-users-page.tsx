@@ -4,16 +4,16 @@ import { useState, useTransition } from "react"
 
 import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { ReadAdminUsersInput } from "@/lib/api/admin-api"
 import type {
-  AdminDeleteUserResultDto,
-  AdminUserDetailDto,
-  AdminUserListDto,
-} from "@workspace/core/admin"
+  AdminDeleteUserResult,
+  AdminUserDetail,
+  AdminUserList,
+  ReadAdminUsersInput,
+} from "@/lib/api/admin-api"
 import {
   learnerAccountStatuses,
   type LearnerOperationalStatus,
-} from "@workspace/core/status"
+} from "@workspace/contracts/status"
 
 export function AdminUsersPage({
   deleteUser,
@@ -23,16 +23,16 @@ export function AdminUsersPage({
 }: {
   readonly deleteUser: (
     userId: string
-  ) => Promise<AdminApiResult<AdminDeleteUserResultDto>>
+  ) => Promise<AdminApiResult<AdminDeleteUserResult>>
   readonly filters: ReadAdminUsersInput
   readonly updateUserStatus: (input: {
     readonly status: LearnerOperationalStatus
     readonly userId: string
-  }) => Promise<AdminApiResult<AdminUserDetailDto>>
-  readonly usersResult: AdminApiResult<AdminUserListDto>
+  }) => Promise<AdminApiResult<AdminUserDetail>>
+  readonly usersResult: AdminApiResult<AdminUserList>
 }) {
   const [deleteTarget, setDeleteTarget] = useState<
-    AdminUserListDto["items"][number] | null
+    AdminUserList["items"][number] | null
   >(null)
   const [message, setMessage] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()

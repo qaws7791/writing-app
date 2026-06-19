@@ -1,14 +1,14 @@
 import { AdminHeader } from "@/components/admin-header"
-import { CurriculumMap } from "@/features/courses/course-editor/curriculum-map"
-import { LessonPreview } from "@/features/courses/course-editor/lesson-preview"
-import { LessonWorkspace } from "@/features/courses/course-editor/lesson-workspace"
-import { StepWorkspace } from "@/features/courses/course-editor/step-workspace"
-import type { AdminCourseDetailDto } from "@workspace/core/admin"
+import { CurriculumMap } from "@/features/courses/course-editor/preview/curriculum-map"
+import { LessonPreview } from "@/features/courses/course-editor/preview/lesson-preview"
+import { LessonWorkspace } from "@/features/courses/course-editor/workspace/lesson-workspace"
+import { StepWorkspace } from "@/features/courses/course-editor/workspace/step-workspace"
+import type { AdminCourseDetail } from "@/lib/api/admin-api"
 
 export function CourseEditorShell({
   course,
 }: {
-  readonly course: AdminCourseDetailDto
+  readonly course: AdminCourseDetail
 }) {
   const firstUnit = course.units[0] ?? null
   const firstLesson = firstUnit?.lessons[0] ?? null

@@ -12,6 +12,7 @@ import {
 } from "@workspace/core/modules/learning"
 
 import { createApp, type ApiDependencies } from "@/app"
+import { createTestDependencies } from "@/routes/test-dependencies"
 
 const activeSession = {
   user: {
@@ -204,6 +205,7 @@ function createDependencies(): ApiDependencies {
   }
 
   return {
+    ...createTestDependencies(),
     contentService: createLearnerContentService({
       contentRepository,
       progressReader,

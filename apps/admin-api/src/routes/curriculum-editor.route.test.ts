@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { createApp } from "@/app"
 import { createTestAdminApiDependencies } from "@/routes/test-dependencies"
-import type { AdminCourseDetailDto } from "@workspace/core/admin"
+import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
 
 const courseDetail: AdminCourseDetailDto = {
   category: "미분류",
@@ -68,9 +68,8 @@ describe("어드민 API curriculum editor route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -98,23 +97,24 @@ describe("어드민 API curriculum editor route", () => {
 
     expect(response.status).toBe(404)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "not_found",
-      },
+      code: "NOT_FOUND",
+      message: "Not Found",
     })
   })
 })
 
 function createDependencies() {
   return createTestAdminApiDependencies({
-    dashboardService: {
-      async getCourseEditor(input) {
-        if (input.courseId === "missing") {
-          return null
-        }
+    adminServices: {
+      courses: {
+        async getCourseEditor(input) {
+          if (input.courseId === "missing") {
+            return null
+          }
 
-        expect(input.courseId).toBe("cmock")
-        return courseDetail
+          expect(input.courseId).toBe("cmock")
+          return courseDetail
+        },
       },
     },
   })

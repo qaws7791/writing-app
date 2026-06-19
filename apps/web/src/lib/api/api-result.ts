@@ -1,27 +1,23 @@
+import {
+  httpApiFailure,
+  httpApiOk,
+  type HttpApiFailure,
+  type HttpApiOk,
+  type HttpApiResult,
+} from "@workspace/http-client"
+
 import type { ApiError } from "@/lib/api/api-error"
 
-export type ApiOk<TValue> = {
-  readonly status: "ok"
-  readonly value: TValue
-}
+export type ApiOk<TValue> = HttpApiOk<TValue>
 
-export type ApiFailure = {
-  readonly error: ApiError
-  readonly status: "error"
-}
+export type ApiFailure = HttpApiFailure<ApiError>
 
-export type ApiResult<TValue> = ApiOk<TValue> | ApiFailure
+export type ApiResult<TValue> = HttpApiResult<TValue, ApiError>
 
 export function apiOk<TValue>(value: TValue): ApiOk<TValue> {
-  return {
-    status: "ok",
-    value,
-  }
+  return httpApiOk(value)
 }
 
 export function apiFailure(error: ApiError): ApiFailure {
-  return {
-    error,
-    status: "error",
-  }
+  return httpApiFailure(error)
 }

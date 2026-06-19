@@ -93,48 +93,68 @@ export type DeleteAdminUserInput = {
   readonly userId: string
 }
 
-export type AdminRepository = {
+export type DashboardReader = {
+  readonly readDashboard: (
+    input: ReadAdminDashboardInput
+  ) => Promise<AdminDashboardDto>
+}
+
+export type AnalyticsReader = {
+  readonly readAnalytics: (
+    input: ReadAdminAnalyticsInput
+  ) => Promise<AdminAnalyticsDto>
+  readonly readLessonAnalytics: (
+    input: ReadAdminLessonAnalyticsInput
+  ) => Promise<AdminLessonAnalyticsPageDto>
+}
+
+export type CourseAdminRepository = {
   readonly archiveCourse: (
     input: ArchiveAdminCourseInput
   ) => Promise<AdminArchiveCourseResultDto | null>
   readonly createCourse: (
     input: CreateAdminCourseInput
   ) => Promise<AdminCourseDetailDto>
-  readonly deleteUser: (
-    input: DeleteAdminUserInput
-  ) => Promise<AdminDeleteUserResultDto | null>
-  readonly readAnalytics: (
-    input: ReadAdminAnalyticsInput
-  ) => Promise<AdminAnalyticsDto>
-  readonly readDashboard: (
-    input: ReadAdminDashboardInput
-  ) => Promise<AdminDashboardDto>
-  readonly readLessonAnalytics: (
-    input: ReadAdminLessonAnalyticsInput
-  ) => Promise<AdminLessonAnalyticsPageDto>
   readonly readCourseEditor: (
     input: ReadAdminCourseInput
   ) => Promise<AdminCourseDetailDto | null>
   readonly readCourses: (
     input: ReadAdminCoursesInput
   ) => Promise<AdminCourseListDto>
-  readonly readSettings: () => Promise<AdminSettingsDto>
+}
+
+export type UserAdminRepository = {
+  readonly deleteUser: (
+    input: DeleteAdminUserInput
+  ) => Promise<AdminDeleteUserResultDto | null>
   readonly readUser: (
     input: ReadAdminUserInput
   ) => Promise<AdminUserDetailDto | null>
   readonly readUsers: (input: ReadAdminUsersInput) => Promise<AdminUserListDto>
-  readonly resetContent: (
-    input: ResetAdminContentInput
-  ) => Promise<AdminContentResetResultDto>
+  readonly updateUserStatus: (
+    input: UpdateAdminUserStatusInput
+  ) => Promise<AdminUserDetailDto | null>
+}
+
+export type SettingsRepository = {
+  readonly readSettings: () => Promise<AdminSettingsDto>
   readonly saveLegalSettings: (
     input: SaveAdminLegalSettingsInput
   ) => Promise<AdminSettingsDto>
   readonly saveNoticeSettings: (
     input: SaveAdminNoticeSettingsInput
   ) => Promise<AdminSettingsDto>
-  readonly updateUserStatus: (
-    input: UpdateAdminUserStatusInput
-  ) => Promise<AdminUserDetailDto | null>
 }
 
-export type AdminDashboardRepository = Pick<AdminRepository, "readDashboard">
+export type ContentResetRepository = {
+  readonly resetContent: (
+    input: ResetAdminContentInput
+  ) => Promise<AdminContentResetResultDto>
+}
+
+export type AdminRepository = DashboardReader &
+  AnalyticsReader &
+  CourseAdminRepository &
+  UserAdminRepository &
+  SettingsRepository &
+  ContentResetRepository

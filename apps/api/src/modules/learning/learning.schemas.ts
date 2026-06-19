@@ -1,11 +1,11 @@
 import {
   lessonIdSchema,
   lessonStepIdSchema,
-} from "@workspace/core/modules/content"
+} from "@workspace/contracts/content"
 import {
   learningAnswerSchema,
   learnerIdSchema,
-} from "@workspace/core/modules/learning"
+} from "@workspace/contracts/learning"
 import { z } from "@workspace/hono/zod"
 
 export const saveAnswerBodySchema = z.object({

@@ -8,6 +8,26 @@ export type ApiCoreError =
   | LearnerContentServiceError
   | LearningServiceError
 
+export type ApiCoreResult<TValue> =
+  | {
+      readonly kind: "ok"
+      readonly value: TValue
+    }
+  | {
+      readonly error: ApiCoreError
+      readonly kind: "err"
+    }
+
+export function unwrapApiCoreResult<TValue>(
+  result: ApiCoreResult<TValue>
+): TValue {
+  if (result.kind === "err") {
+    throw mapCoreError(result.error)
+  }
+
+  return result.value
+}
+
 export function mapCoreError(error: ApiCoreError): AppError {
   switch (error.kind) {
     case "invalid-request":

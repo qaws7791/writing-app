@@ -5,12 +5,12 @@ import { AdminAnalyticsPage } from "@/features/analytics/admin-analytics-page"
 import { networkAdminApiError } from "@/lib/api/api-error"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
-  AdminAnalyticsDto,
-  AdminLessonAnalyticsPageDto,
-} from "@workspace/core/admin"
+  AdminAnalytics,
+  AdminLessonAnalyticsPage,
+} from "@/lib/api/admin-api"
 import { createHttpNetworkError } from "@workspace/http-client"
 
-const analytics: AdminAnalyticsDto = {
+const analytics: AdminAnalytics = {
   dailySeries: [
     {
       completions: 2,
@@ -32,7 +32,7 @@ const analytics: AdminAnalyticsDto = {
   worstLessons: [],
 }
 
-const lessonAnalytics: AdminLessonAnalyticsPageDto = {
+const lessonAnalytics: AdminLessonAnalyticsPage = {
   items: [
     {
       completed: 7,

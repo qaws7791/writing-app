@@ -11,13 +11,44 @@ import {
 import { adminSessionCookieName } from "@/lib/auth/admin-session-token"
 import { buildAdminApiUrl, type AdminApiBaseUrl } from "@/runtime-config"
 import type {
+  AdminAnalytics,
   AdminApi,
+  AdminArchiveCourseResult,
+  AdminContentResetResult,
+  AdminCourseDetail,
+  AdminCourseLesson,
+  AdminCourseList,
+  AdminCourseListItem,
+  AdminCourseStep,
+  AdminCourseUnit,
+  AdminDashboard,
+  AdminDeleteUserResult,
+  AdminLessonAnalyticsItem,
+  AdminLessonAnalyticsPage,
+  AdminPagination,
+  AdminSettings,
+  AdminUserDetail,
+  AdminUserList,
+  AdminUserListItem,
   ReadAdminAnalyticsInput,
   ReadAdminCoursesInput,
   ReadAdminLessonAnalyticsInput,
   ReadAdminUsersInput,
   UpdateAdminUserStatusInput,
 } from "@/lib/api/admin-api"
+import type {
+  AdminAnalyticsDto,
+  AdminArchiveCourseResultDto,
+  AdminContentResetResultDto,
+  AdminCourseDetailDto,
+  AdminCourseListDto,
+  AdminDashboardDto,
+  AdminDeleteUserResultDto,
+  AdminLessonAnalyticsPageDto,
+  AdminSettingsDto,
+  AdminUserDetailDto,
+  AdminUserListDto,
+} from "@workspace/contracts/admin"
 import {
   adminAnalyticsDtoSchema,
   adminArchiveCourseResultSchema,
@@ -30,7 +61,7 @@ import {
   adminSettingsDtoSchema,
   adminUserDetailDtoSchema,
   adminUserListDtoSchema,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
 import { fetchHttpResponse, type HttpFetch } from "@workspace/http-client"
 
 type ResponseSchema<TValue> = {
@@ -46,6 +77,15 @@ type ResponseSchema<TValue> = {
 
 export type AdminFetchLike = HttpFetch
 export type AdminTokenProvider = () => Promise<string | null> | string | null
+type AdminHttpMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT"
+type AdminHttpClient = {
+  readonly requestJson: <TValue>(input: {
+    readonly body?: unknown
+    readonly method: AdminHttpMethod
+    readonly path: string
+    readonly schema: ResponseSchema<TValue>
+  }) => Promise<AdminApiResult<TValue>>
+}
 
 export function createHttpAdminApi({
   baseUrl,
@@ -64,116 +104,382 @@ export function createHttpAdminApi({
 
   return {
     archiveCourse(courseId) {
-      return client.requestJson({
+      return requestAdminJson(client, {
         method: "DELETE",
         path: `/courses/${courseId}`,
         schema: adminArchiveCourseResultSchema,
+        toModel: toAdminArchiveCourseResult,
       })
     },
     createCourse() {
-      return client.requestJson({
+      return requestAdminJson(client, {
         method: "POST",
         path: "/courses",
         schema: adminCourseDetailDtoSchema,
+        toModel: toAdminCourseDetail,
       })
     },
     deleteUser(userId) {
-      return client.requestJson({
+      return requestAdminJson(client, {
         method: "DELETE",
         path: `/users/${userId}`,
         schema: adminDeleteUserResultSchema,
+        toModel: toAdminDeleteUserResult,
       })
     },
     getAnalytics(input) {
-      return client.requestJson({
+      return requestAdminJson(client, {
         method: "GET",
         path: `/analytics?${analyticsSearchParams(input)}`,
         schema: adminAnalyticsDtoSchema,
+        toModel: toAdminAnalytics,
       })
     },
     getCourses(input) {
-      return client.requestJson({
+      return requestAdminJson(client, {
         method: "GET",
         path: `/courses?${coursesSearchParams(input)}`,
         schema: adminCourseListDtoSchema,
+        toModel: toAdminCourseList,
       })
     },
     getCourseEditor(courseId) {
-      return client.requestJson({
+      return requestAdminJson(client, {
         method: "GET",
         path: `/courses/${courseId}/editor`,
         schema: adminCourseDetailDtoSchema,
+        toModel: toAdminCourseDetail,
       })
     },
     getDashboard() {
-      return client.requestJson({
+      return requestAdminJson(client, {
         method: "GET",
         path: "/dashboard",
         schema: adminDashboardDtoSchema,
+        toModel: toAdminDashboard,
       })
     },
     getLessonAnalytics(input) {
-      return client.requestJson({
+      return requestAdminJson(client, {
         method: "GET",
         path: `/analytics/lessons?${lessonAnalyticsSearchParams(input)}`,
         schema: adminLessonAnalyticsPageDtoSchema,
+        toModel: toAdminLessonAnalyticsPage,
       })
     },
     getSettings() {
-      return client.requestJson({
+      return requestAdminJson(client, {
         method: "GET",
         path: "/settings",
         schema: adminSettingsDtoSchema,
+        toModel: toAdminSettings,
       })
     },
     getUser(userId) {
-      return client.requestJson({
+      return requestAdminJson(client, {
         method: "GET",
         path: `/users/${userId}`,
         schema: adminUserDetailDtoSchema,
+        toModel: toAdminUserDetail,
       })
     },
     getUsers(input) {
-      return client.requestJson({
+      return requestAdminJson(client, {
         method: "GET",
         path: `/users?${usersSearchParams(input)}`,
         schema: adminUserListDtoSchema,
+        toModel: toAdminUserList,
       })
     },
     resetContent() {
-      return client.requestJson({
+      return requestAdminJson(client, {
         body: {},
         method: "POST",
         path: "/settings/content-reset",
         schema: adminContentResetResultSchema,
+        toModel: toAdminContentResetResult,
       })
     },
     saveLegalSettings(input) {
-      return client.requestJson({
+      return requestAdminJson(client, {
         body: input,
         method: "PUT",
         path: "/settings/legal",
         schema: adminSettingsDtoSchema,
+        toModel: toAdminSettings,
       })
     },
     saveNoticeSettings(input) {
-      return client.requestJson({
+      return requestAdminJson(client, {
         body: input,
         method: "PUT",
         path: "/settings/notice",
         schema: adminSettingsDtoSchema,
+        toModel: toAdminSettings,
       })
     },
     updateUserStatus(input: UpdateAdminUserStatusInput) {
-      return client.requestJson({
+      return requestAdminJson(client, {
         body: {
           status: input.status,
         },
         method: "PATCH",
         path: `/users/${input.userId}/status`,
         schema: adminUserDetailDtoSchema,
+        toModel: toAdminUserDetail,
       })
     },
+  }
+}
+
+async function requestAdminJson<TWire, TModel>(
+  client: AdminHttpClient,
+  input: {
+    readonly body?: unknown
+    readonly method: AdminHttpMethod
+    readonly path: string
+    readonly schema: ResponseSchema<TWire>
+    readonly toModel: (value: TWire) => TModel
+  }
+): Promise<AdminApiResult<TModel>> {
+  const requestInput = {
+    method: input.method,
+    path: input.path,
+    schema: input.schema,
+  }
+  const result = await client.requestJson(
+    input.body === undefined
+      ? requestInput
+      : {
+          ...requestInput,
+          body: input.body,
+        }
+  )
+
+  if (result.status === "error") {
+    return result
+  }
+
+  return adminApiOk(input.toModel(result.value))
+}
+
+type AdminUserListItemDto = AdminUserListDto["items"][number]
+type AdminLessonAnalyticsItemDto = AdminAnalyticsDto["worstLessons"][number]
+type AdminCourseListItemDto = AdminCourseListDto["items"][number]
+type AdminCourseUnitDto = AdminCourseDetailDto["units"][number]
+type AdminCourseLessonDto = AdminCourseUnitDto["lessons"][number]
+type AdminCourseStepDto = AdminCourseLessonDto["steps"][number]
+
+function toAdminDashboard(dto: AdminDashboardDto): AdminDashboard {
+  return {
+    metrics: {
+      activeCourses: dto.metrics.activeCourses,
+      activeLessons: dto.metrics.activeLessons,
+      activeUsersLast7Days: dto.metrics.activeUsersLast7Days,
+      completedLessons: dto.metrics.completedLessons,
+      signupsLast7Days: dto.metrics.signupsLast7Days,
+      signupsToday: dto.metrics.signupsToday,
+      totalUsers: dto.metrics.totalUsers,
+    },
+    recentActivities: dto.recentActivities.map((activity) => ({
+      currentStreakDays: activity.currentStreakDays,
+      email: activity.email,
+      lastActiveDate: activity.lastActiveDate,
+      name: activity.name,
+      userId: activity.userId,
+    })),
+  }
+}
+
+function toAdminUserList(dto: AdminUserListDto): AdminUserList {
+  return {
+    items: dto.items.map(toAdminUserListItem),
+    pagination: toAdminPagination(dto.pagination),
+  }
+}
+
+function toAdminUserListItem(dto: AdminUserListItemDto): AdminUserListItem {
+  return {
+    email: dto.email,
+    id: dto.id,
+    joined: dto.joined,
+    lastActive: dto.lastActive,
+    lessonsDone: dto.lessonsDone,
+    name: dto.name,
+    status: dto.status,
+    streak: dto.streak,
+  }
+}
+
+function toAdminUserDetail(dto: AdminUserDetailDto): AdminUserDetail {
+  return {
+    ...toAdminUserListItem(dto),
+    progressPercent: dto.progressPercent,
+    totalLessons: dto.totalLessons,
+  }
+}
+
+function toAdminDeleteUserResult(
+  dto: AdminDeleteUserResultDto
+): AdminDeleteUserResult {
+  return {
+    deleted: dto.deleted,
+  }
+}
+
+function toAdminAnalytics(dto: AdminAnalyticsDto): AdminAnalytics {
+  return {
+    dailySeries: dto.dailySeries.map((item) => ({
+      completions: item.completions,
+      date: item.date,
+      signups: item.signups,
+    })),
+    streakBuckets: dto.streakBuckets.map((item) => ({
+      count: item.count,
+      label: item.label,
+    })),
+    worstLessons: dto.worstLessons.map(toAdminLessonAnalyticsItem),
+  }
+}
+
+function toAdminLessonAnalyticsPage(
+  dto: AdminLessonAnalyticsPageDto
+): AdminLessonAnalyticsPage {
+  return {
+    items: dto.items.map(toAdminLessonAnalyticsItem),
+    pagination: toAdminPagination(dto.pagination),
+  }
+}
+
+function toAdminLessonAnalyticsItem(
+  dto: AdminLessonAnalyticsItemDto
+): AdminLessonAnalyticsItem {
+  return {
+    completed: dto.completed,
+    completionRate: dto.completionRate,
+    courseId: dto.courseId,
+    courseTitle: dto.courseTitle,
+    dropOffRate: dto.dropOffRate,
+    lessonId: dto.lessonId,
+    lessonTitle: dto.lessonTitle,
+    started: dto.started,
+  }
+}
+
+function toAdminSettings(dto: AdminSettingsDto): AdminSettings {
+  return {
+    legal: {
+      privacy: dto.legal.privacy,
+      terms: dto.legal.terms,
+    },
+    notice: {
+      announce: dto.notice.announce,
+      banner: dto.notice.banner,
+    },
+  }
+}
+
+function toAdminContentResetResult(
+  dto: AdminContentResetResultDto
+): AdminContentResetResult {
+  return {
+    changed: {
+      archived: dto.changed.archived,
+      courses: dto.changed.courses,
+      lessons: dto.changed.lessons,
+      steps: dto.changed.steps,
+      units: dto.changed.units,
+    },
+    revision: dto.revision,
+  }
+}
+
+function toAdminCourseDetail(dto: AdminCourseDetailDto): AdminCourseDetail {
+  return {
+    category: dto.category,
+    description: dto.description,
+    id: dto.id,
+    revision: dto.revision,
+    status: dto.status,
+    title: dto.title,
+    units: dto.units.map(toAdminCourseUnit),
+  }
+}
+
+function toAdminCourseUnit(dto: AdminCourseUnitDto): AdminCourseUnit {
+  return {
+    id: dto.id,
+    lessons: dto.lessons.map(toAdminCourseLesson),
+    sortOrder: dto.sortOrder,
+    status: dto.status,
+    title: dto.title,
+  }
+}
+
+function toAdminCourseLesson(dto: AdminCourseLessonDto): AdminCourseLesson {
+  return {
+    category: dto.category,
+    description: dto.description,
+    estimatedMinutes: dto.estimatedMinutes,
+    id: dto.id,
+    sortOrder: dto.sortOrder,
+    status: dto.status,
+    summary: [...dto.summary],
+    steps: dto.steps.map(toAdminCourseStep),
+    title: dto.title,
+  }
+}
+
+function toAdminCourseStep(dto: AdminCourseStepDto): AdminCourseStep {
+  return {
+    contentJson: dto.contentJson,
+    id: dto.id,
+    sortOrder: dto.sortOrder,
+    status: dto.status,
+    type: dto.type,
+  }
+}
+
+function toAdminCourseList(dto: AdminCourseListDto): AdminCourseList {
+  return {
+    items: dto.items.map(toAdminCourseListItem),
+    pagination: toAdminPagination(dto.pagination),
+  }
+}
+
+function toAdminCourseListItem(
+  dto: AdminCourseListItemDto
+): AdminCourseListItem {
+  return {
+    category: dto.category,
+    id: dto.id,
+    lessonCount: dto.lessonCount,
+    revision: dto.revision,
+    status: dto.status,
+    title: dto.title,
+    unitCount: dto.unitCount,
+  }
+}
+
+function toAdminArchiveCourseResult(
+  dto: AdminArchiveCourseResultDto
+): AdminArchiveCourseResult {
+  return {
+    archived: dto.archived,
+  }
+}
+
+function toAdminPagination(input: {
+  readonly page: number
+  readonly pageSize: number
+  readonly totalItems: number
+  readonly totalPages: number
+}): AdminPagination {
+  return {
+    page: input.page,
+    pageSize: input.pageSize,
+    totalItems: input.totalItems,
+    totalPages: input.totalPages,
   }
 }
 
@@ -185,18 +491,11 @@ function createAdminHttpClient({
   readonly baseUrl: AdminApiBaseUrl
   readonly fetch: AdminFetchLike
   readonly tokenProvider: AdminTokenProvider
-}): {
-  readonly requestJson: <TValue>(input: {
-    readonly body?: unknown
-    readonly method: "DELETE" | "GET" | "PATCH" | "POST" | "PUT"
-    readonly path: string
-    readonly schema: ResponseSchema<TValue>
-  }) => Promise<AdminApiResult<TValue>>
-} {
+}): AdminHttpClient {
   return {
     async requestJson<TValue>(input: {
       readonly body?: unknown
-      readonly method: "DELETE" | "GET" | "PATCH" | "POST" | "PUT"
+      readonly method: AdminHttpMethod
       readonly path: string
       readonly schema: ResponseSchema<TValue>
     }) {

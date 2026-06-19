@@ -24,8 +24,16 @@
 
 - `apps/api -> packages/core -> packages/db` 방향을 지키는가?
 - `packages/db`가 `packages/core`를 import하지 않는가?
+- 관리자 use case가 기능별 파일과 repository port에 의존하고 불필요하게 전체 `AdminRepository` 또는 mega service를 요구하지 않는가?
+- 관리자 DTO schema가 기능별 contract 파일에 있고 `@workspace/contracts/admin` entrypoint만 공개 계약으로 소비되는가?
+- 어드민 코스 편집기 root에는 shell entrypoint만 두고 `workspace`, `preview`, `step-forms` 디렉토리 책임이 섞이지 않는가?
+- 어드민 코스 편집기 step form 의존 방향이 `step-form-registry -> step-forms barrel -> forms -> shared`로 유지되는가?
+- 학습 step answer 검증은 learning domain policy에 있고 application service가 step type별 validator를 다시 구현하지 않는가?
+- AI feedback service가 attempt 계산, provider 호출, persistence 저장 세부사항을 직접 구현하지 않고 coordinator와 domain policy에 위임하는가?
 - 프론트엔드가 DB나 core infrastructure에 직접 의존하지 않는가?
-- generated OpenAPI 타입은 mapper 경계 안에 격리되는가?
+- generated OpenAPI 타입은 `writing-app-api-contract.ts`에 격리되고, feature mapper는 transport contract 타입만 참조하는가?
+- 매칭 스텝 presentation 상호작용 모델은 `apps/web` feature 내부에 있고 `packages/contracts`나 `packages/core` public API로 새어 나가지 않는가?
+- Learning domain이 content 타입을 필요로 할 때 content module facade가 아니라 `@workspace/contracts/content` 또는 구체적인 독립 경계를 import하는가?
 - `Kwep/` 구현 파일을 제품 런타임에서 import하지 않는가?
 
 ## 인증과 권한 체크

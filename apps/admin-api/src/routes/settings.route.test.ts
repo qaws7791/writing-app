@@ -8,9 +8,9 @@ import {
 } from "@/routes/test-dependencies"
 import type {
   AdminContentResetResultDto,
-  AdminRole,
   AdminSettingsDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
+import type { AdminRole } from "@workspace/core/admin"
 import { adminRoles } from "@workspace/core/admin"
 
 const settings: AdminSettingsDto = {
@@ -43,9 +43,8 @@ describe("어드민 API settings route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -98,9 +97,8 @@ describe("어드민 API settings route", () => {
 
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
   })
 
@@ -140,9 +138,8 @@ describe("어드민 API settings route", () => {
 
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
   })
 
@@ -172,9 +169,8 @@ describe("어드민 API settings route", () => {
 
     expect(response.status).toBe(403)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
   })
 
@@ -193,13 +189,9 @@ describe("어드민 API settings route", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-        detail: {
-          code: "invalid_body",
-        },
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 
@@ -217,12 +209,8 @@ describe("어드민 API settings route", () => {
 
     expect(response.status).toBe(400)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-        detail: {
-          code: "malformed_json",
-        },
-      },
+      code: "HTTP_EXCEPTION",
+      message: "Bad Request",
     })
   })
 })
@@ -233,31 +221,35 @@ function createDependencies({
   readonly role?: AdminRole
 } = {}): AdminApiDependencies {
   return createTestAdminApiDependencies({
-    dashboardService: {
-      async getSettings() {
-        return settings
+    adminServices: {
+      contentReset: {
+        async resetContent(input) {
+          expect(input.now).toEqual(testAdminNow)
+          return contentResetResult
+        },
       },
-      async resetContent(input) {
-        expect(input.now).toEqual(testAdminNow)
-        return contentResetResult
-      },
-      async updateLegalSettings(input) {
-        expect(input).toEqual({
-          now: testAdminNow,
-          privacy: "개인정보처리방침",
-          terms: "이용약관",
-        })
+      settings: {
+        async getSettings() {
+          return settings
+        },
+        async updateLegalSettings(input) {
+          expect(input).toEqual({
+            now: testAdminNow,
+            privacy: "개인정보처리방침",
+            terms: "이용약관",
+          })
 
-        return settings
-      },
-      async updateNoticeSettings(input) {
-        expect(input).toEqual({
-          announce: "공지 내용",
-          banner: "새 강의가 추가되었어요!",
-          now: testAdminNow,
-        })
+          return settings
+        },
+        async updateNoticeSettings(input) {
+          expect(input).toEqual({
+            announce: "공지 내용",
+            banner: "새 강의가 추가되었어요!",
+            now: testAdminNow,
+          })
 
-        return settings
+          return settings
+        },
       },
     },
     sessionResolver: {

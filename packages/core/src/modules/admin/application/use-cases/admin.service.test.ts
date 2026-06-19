@@ -12,8 +12,10 @@ import type {
   AdminUserDetailDto,
   AdminUserListDto,
 } from "@/modules/admin/domain/admin.dto"
-import type { AdminRepository } from "@/modules/admin/application/ports/admin.repository"
-import { createAdminService } from "@/modules/admin/application/use-cases/admin.service"
+import {
+  createAdminService,
+  type AdminServicePorts,
+} from "@/modules/admin/application/use-cases/admin.service"
 
 const dashboard: AdminDashboardDto = {
   metrics: {
@@ -244,8 +246,14 @@ const courseList: AdminCourseListDto = {
 
 describe("어드민 서비스", () => {
   it("repository 대시보드 스냅샷을 관리자 dashboard DTO로 반환한다", async () => {
-    const repository: AdminRepository = createRepository()
-    const service = createAdminService(repository)
+    const service = createService({
+      dashboardReader: {
+        async readDashboard(input) {
+          expect(input.now.toISOString()).toBe("2026-06-14T03:00:00.000Z")
+          return dashboard
+        },
+      },
+    })
 
     await expect(
       service.getDashboard({
@@ -255,8 +263,36 @@ describe("어드민 서비스", () => {
   })
 
   it("repository 사용자 목록과 상세, 상태 변경, 삭제 결과를 관리자 DTO로 반환한다", async () => {
-    const repository: AdminRepository = createRepository()
-    const service = createAdminService(repository)
+    const service = createService({
+      userRepository: {
+        async deleteUser(input) {
+          expect(input.userId).toBe("user-1")
+          return { deleted: true }
+        },
+        async readUser(input) {
+          expect(input.userId).toBe("user-1")
+          return userDetail
+        },
+        async readUsers(input) {
+          expect(input).toEqual({
+            page: 1,
+            pageSize: 20,
+            query: "학습",
+            sort: "lastActive",
+            status: "all",
+          })
+          return userList
+        },
+        async updateUserStatus(input) {
+          expect(input.status).toBe("suspended")
+          expect(input.userId).toBe("user-1")
+          return {
+            ...userDetail,
+            status: "suspended",
+          }
+        },
+      },
+    })
 
     await expect(
       service.getUsers({
@@ -289,8 +325,27 @@ describe("어드민 서비스", () => {
   })
 
   it("repository 분석 스냅샷과 레슨 분석 페이지를 관리자 DTO로 반환한다", async () => {
-    const repository: AdminRepository = createRepository()
-    const service = createAdminService(repository)
+    const service = createService({
+      analyticsReader: {
+        async readAnalytics(input) {
+          expect(input).toEqual({
+            days: 2,
+            now: new Date("2026-06-14T03:00:00.000Z"),
+          })
+          return analytics
+        },
+        async readLessonAnalytics(input) {
+          expect(input).toEqual({
+            direction: "asc",
+            page: 1,
+            pageSize: 10,
+            query: "둘째",
+            sort: "completionRate",
+          })
+          return lessonAnalytics
+        },
+      },
+    })
 
     await expect(
       service.getAnalytics({
@@ -310,8 +365,35 @@ describe("어드민 서비스", () => {
   })
 
   it("repository 운영 설정 저장과 콘텐츠 초기화 결과를 관리자 DTO로 반환한다", async () => {
-    const repository: AdminRepository = createRepository()
-    const service = createAdminService(repository)
+    const service = createService({
+      contentResetRepository: {
+        async resetContent(input) {
+          expect(input.now.toISOString()).toBe("2026-06-14T03:00:00.000Z")
+          return contentResetResult
+        },
+      },
+      settingsRepository: {
+        async readSettings() {
+          return settings
+        },
+        async saveLegalSettings(input) {
+          expect(input).toEqual({
+            now: new Date("2026-06-14T03:00:00.000Z"),
+            privacy: "개인정보처리방침",
+            terms: "이용약관",
+          })
+          return settings
+        },
+        async saveNoticeSettings(input) {
+          expect(input).toEqual({
+            announce: "공지 내용",
+            banner: "새 강의가 추가되었어요!",
+            now: new Date("2026-06-14T03:00:00.000Z"),
+          })
+          return settings
+        },
+      },
+    })
 
     await expect(service.getSettings()).resolves.toEqual(settings)
     await expect(
@@ -336,8 +418,35 @@ describe("어드민 서비스", () => {
   })
 
   it("repository 코스 목록, 생성, editor 조회, 보관 결과를 관리자 DTO로 반환한다", async () => {
-    const repository: AdminRepository = createRepository()
-    const service = createAdminService(repository)
+    const service = createService({
+      courseRepository: {
+        async archiveCourse(input) {
+          expect(input).toEqual({
+            courseId: "cmock",
+            now: new Date("2026-06-14T03:00:00.000Z"),
+          })
+          return archiveCourseResult
+        },
+        async createCourse(input) {
+          expect(input.now.toISOString()).toBe("2026-06-14T03:00:00.000Z")
+          return courseDetail
+        },
+        async readCourseEditor(input) {
+          expect(input.courseId).toBe("cmock")
+          return courseDetail
+        },
+        async readCourses(input) {
+          expect(input).toEqual({
+            category: "입문자를 위한 코스",
+            page: 1,
+            pageSize: 20,
+            query: "글쓰기",
+            status: "active",
+          })
+          return courseList
+        },
+      },
+    })
 
     await expect(
       service.getCourses({
@@ -367,101 +476,77 @@ describe("어드민 서비스", () => {
   })
 })
 
-function createRepository(): AdminRepository {
+function createService(overrides: Partial<AdminServicePorts>) {
+  return createAdminService({
+    ...createUnusedAdminServicePorts(),
+    ...overrides,
+  })
+}
+
+function createUnusedAdminServicePorts(): AdminServicePorts {
   return {
-    async archiveCourse(input) {
-      expect(input).toEqual({
-        courseId: "cmock",
-        now: new Date("2026-06-14T03:00:00.000Z"),
-      })
-      return archiveCourseResult
+    analyticsReader: {
+      async readAnalytics() {
+        return failUnexpectedPort("analyticsReader.readAnalytics")
+      },
+      async readLessonAnalytics() {
+        return failUnexpectedPort("analyticsReader.readLessonAnalytics")
+      },
     },
-    async createCourse(input) {
-      expect(input.now.toISOString()).toBe("2026-06-14T03:00:00.000Z")
-      return courseDetail
+    contentResetRepository: {
+      async resetContent() {
+        return failUnexpectedPort("contentResetRepository.resetContent")
+      },
     },
-    async deleteUser(input) {
-      expect(input.userId).toBe("user-1")
-      return { deleted: true }
+    courseRepository: {
+      async archiveCourse() {
+        return failUnexpectedPort("courseRepository.archiveCourse")
+      },
+      async createCourse() {
+        return failUnexpectedPort("courseRepository.createCourse")
+      },
+      async readCourseEditor() {
+        return failUnexpectedPort("courseRepository.readCourseEditor")
+      },
+      async readCourses() {
+        return failUnexpectedPort("courseRepository.readCourses")
+      },
     },
-    async readDashboard(input) {
-      expect(input.now.toISOString()).toBe("2026-06-14T03:00:00.000Z")
-      return dashboard
+    dashboardReader: {
+      async readDashboard() {
+        return failUnexpectedPort("dashboardReader.readDashboard")
+      },
     },
-    async readAnalytics(input) {
-      expect(input).toEqual({
-        days: 2,
-        now: new Date("2026-06-14T03:00:00.000Z"),
-      })
-      return analytics
+    settingsRepository: {
+      async readSettings() {
+        return failUnexpectedPort("settingsRepository.readSettings")
+      },
+      async saveLegalSettings() {
+        return failUnexpectedPort("settingsRepository.saveLegalSettings")
+      },
+      async saveNoticeSettings() {
+        return failUnexpectedPort("settingsRepository.saveNoticeSettings")
+      },
     },
-    async readLessonAnalytics(input) {
-      expect(input).toEqual({
-        direction: "asc",
-        page: 1,
-        pageSize: 10,
-        query: "둘째",
-        sort: "completionRate",
-      })
-      return lessonAnalytics
-    },
-    async readCourseEditor(input) {
-      expect(input.courseId).toBe("cmock")
-      return courseDetail
-    },
-    async readCourses(input) {
-      expect(input).toEqual({
-        category: "입문자를 위한 코스",
-        page: 1,
-        pageSize: 20,
-        query: "글쓰기",
-        status: "active",
-      })
-      return courseList
-    },
-    async readSettings() {
-      return settings
-    },
-    async readUser(input) {
-      expect(input.userId).toBe("user-1")
-      return userDetail
-    },
-    async readUsers(input) {
-      expect(input).toEqual({
-        page: 1,
-        pageSize: 20,
-        query: "학습",
-        sort: "lastActive",
-        status: "all",
-      })
-      return userList
-    },
-    async resetContent(input) {
-      expect(input.now.toISOString()).toBe("2026-06-14T03:00:00.000Z")
-      return contentResetResult
-    },
-    async saveLegalSettings(input) {
-      expect(input).toEqual({
-        now: new Date("2026-06-14T03:00:00.000Z"),
-        privacy: "개인정보처리방침",
-        terms: "이용약관",
-      })
-      return settings
-    },
-    async saveNoticeSettings(input) {
-      expect(input).toEqual({
-        announce: "공지 내용",
-        banner: "새 강의가 추가되었어요!",
-        now: new Date("2026-06-14T03:00:00.000Z"),
-      })
-      return settings
-    },
-    async updateUserStatus(input) {
-      expect(input.status).toBe("suspended")
-      return {
-        ...userDetail,
-        status: "suspended",
-      }
+    userRepository: {
+      async deleteUser() {
+        return failUnexpectedPort("userRepository.deleteUser")
+      },
+      async readUser() {
+        return failUnexpectedPort("userRepository.readUser")
+      },
+      async readUsers() {
+        return failUnexpectedPort("userRepository.readUsers")
+      },
+      async updateUserStatus() {
+        return failUnexpectedPort("userRepository.updateUserStatus")
+      },
     },
   }
+}
+
+function failUnexpectedPort(portName: string): never {
+  throw new Error(
+    `테스트에서 사용하지 않는 admin port가 호출되었습니다: ${portName}`
+  )
 }

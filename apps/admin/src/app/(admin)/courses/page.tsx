@@ -2,7 +2,7 @@ import { AdminCoursesPage } from "@/features/courses/admin-courses-page"
 import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
 import type { ReadAdminCoursesInput } from "@/lib/api/admin-api"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
-import { contentStatusSchema } from "@workspace/core/status"
+import { contentStatusSchema } from "@workspace/contracts/status"
 
 export default async function AdminCoursesRoute({
   searchParams,

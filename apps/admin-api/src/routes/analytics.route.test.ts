@@ -8,7 +8,7 @@ import {
 import type {
   AdminAnalyticsDto,
   AdminLessonAnalyticsPageDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
 
 const analytics: AdminAnalyticsDto = {
   dailySeries: [
@@ -88,9 +88,8 @@ describe("어드민 API analytics route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -117,10 +116,9 @@ describe("어드민 API analytics route", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 
@@ -150,10 +148,9 @@ describe("어드민 API analytics route", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 
@@ -170,35 +167,36 @@ describe("어드민 API analytics route", () => {
     )
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 })
 
 function createDependencies() {
   return createTestAdminApiDependencies({
-    dashboardService: {
-      async getAnalytics(input) {
-        expect(input).toEqual({
-          days: 2,
-          now: testAdminNow,
-        })
+    adminServices: {
+      analytics: {
+        async getAnalytics(input) {
+          expect(input).toEqual({
+            days: 2,
+            now: testAdminNow,
+          })
 
-        return analytics
-      },
-      async getLessonAnalytics(input) {
-        expect(input).toEqual({
-          direction: "asc",
-          page: 1,
-          pageSize: 10,
-          query: "둘째",
-          sort: "completionRate",
-        })
+          return analytics
+        },
+        async getLessonAnalytics(input) {
+          expect(input).toEqual({
+            direction: "asc",
+            page: 1,
+            pageSize: 10,
+            query: "둘째",
+            sort: "completionRate",
+          })
 
-        return lessonAnalytics
+          return lessonAnalytics
+        },
       },
     },
   })

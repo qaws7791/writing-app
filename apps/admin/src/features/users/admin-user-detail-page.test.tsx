@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { AdminUserDetailPage } from "@/features/users/admin-user-detail-page"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminUserDetailDto } from "@workspace/core/admin"
+import type { AdminUserDetail } from "@/lib/api/admin-api"
 
 describe("AdminUserDetailPage", () => {
   it("사용자 상세 통계를 렌더링한다", () => {
@@ -35,7 +35,7 @@ describe("AdminUserDetailPage", () => {
   })
 })
 
-const userDetail: AdminUserDetailDto = {
+const userDetail: AdminUserDetail = {
   email: "minji@example.com",
   id: "user-1",
   joined: "2026-06-01",

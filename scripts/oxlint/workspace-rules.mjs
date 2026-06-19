@@ -28,6 +28,10 @@ const workspaceDependencyMessages = {
     "apps/api must depend on packages/core, not packages/db. Move DB access behind the core interface.",
   apiCannotImportDrizzle:
     "apps/api must not import Drizzle directly. DB implementation belongs behind packages/core -> packages/db.",
+  browserCannotImportCore:
+    "Browser apps must import request/response contracts from packages/contracts, not packages/core runtime modules.",
+  contractsCannotImportCore:
+    "packages/contracts must stay independent from packages/core runtime modules.",
   dbCannotImportCore:
     "packages/db must not import packages/core when enforcing apps/api -> packages/core -> packages/db.",
 }
@@ -84,6 +88,21 @@ export function readWorkspaceDependencyMessageId({ filename, source }) {
     if (isDrizzleImport(source)) {
       return "apiCannotImportDrizzle"
     }
+  }
+
+  if (
+    (isInWorkspacePath(normalizedFilename, "apps/web/") ||
+      isInWorkspacePath(normalizedFilename, "apps/admin/")) &&
+    isWorkspaceCoreImport(source)
+  ) {
+    return "browserCannotImportCore"
+  }
+
+  if (
+    isInWorkspacePath(normalizedFilename, "packages/contracts/") &&
+    isWorkspaceCoreImport(source)
+  ) {
+    return "contractsCannotImportCore"
   }
 
   if (

@@ -5,11 +5,11 @@ import { describe, expect, it, vi } from "vitest"
 import { AdminSettingsPage } from "@/features/settings/admin-settings-page"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
-  AdminContentResetResultDto,
-  AdminSettingsDto,
-} from "@workspace/core/admin"
+  AdminContentResetResult,
+  AdminSettings,
+} from "@/lib/api/admin-api"
 
-const settings: AdminSettingsDto = {
+const settings: AdminSettings = {
   legal: {
     privacy: "개인정보처리방침",
     terms: "이용약관",
@@ -24,10 +24,10 @@ describe("AdminSettingsPage", () => {
   it("공지, 약관, 개인정보 설정을 저장한다", async () => {
     const user = userEvent.setup()
     const saveNoticeSettings = vi.fn<
-      () => Promise<AdminApiResult<AdminSettingsDto>>
+      () => Promise<AdminApiResult<AdminSettings>>
     >(async () => ok(settings))
     const saveLegalSettings = vi.fn<
-      () => Promise<AdminApiResult<AdminSettingsDto>>
+      () => Promise<AdminApiResult<AdminSettings>>
     >(async () => ok(settings))
 
     render(
@@ -62,7 +62,7 @@ describe("AdminSettingsPage", () => {
   it("콘텐츠 초기화 확인 대화상자를 거쳐 초기화한다", async () => {
     const user = userEvent.setup()
     const resetContent = vi.fn<
-      () => Promise<AdminApiResult<AdminContentResetResultDto>>
+      () => Promise<AdminApiResult<AdminContentResetResult>>
     >(async () => ok(resetResult))
 
     render(
@@ -86,7 +86,7 @@ describe("AdminSettingsPage", () => {
   })
 })
 
-const resetResult: AdminContentResetResultDto = {
+const resetResult: AdminContentResetResult = {
   changed: {
     archived: 0,
     courses: 5,

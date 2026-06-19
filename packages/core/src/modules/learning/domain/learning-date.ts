@@ -1,4 +1,4 @@
-import type { Brand } from "@workspace/core/modules/content/domain/content.ids"
+import type { Brand } from "@workspace/contracts/content/content.ids"
 
 export type LearningDateKey = Brand<string, "LearningDateKey">
 

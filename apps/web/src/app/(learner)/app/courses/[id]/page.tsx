@@ -2,6 +2,10 @@ import { notFound, redirect } from "next/navigation"
 
 import { AppRouteNotice } from "@/components/app-route-notice"
 import { CourseDetailPage } from "@/features/courses/course-detail-page"
+import {
+  describeRouteApiFailure,
+  toRouteApiOutcome,
+} from "@/lib/api/route-api-outcome"
 import { createLoginPagePath } from "@/lib/auth/auth-navigation"
 import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
@@ -27,25 +31,24 @@ export default async function CourseDetailRoute({
     tokenProvider: () => token,
   })
   const courseResult = await api.getCourseDetail(id)
+  const courseOutcome = toRouteApiOutcome(courseResult)
 
-  if (courseResult.status === "error") {
-    if (courseResult.error.code === "not-found") {
+  if (courseOutcome.status === "error") {
+    if (courseOutcome.failure.kind === "authentication") {
+      redirect(createLoginPagePath(nextPath))
+    }
+
+    if (courseOutcome.failure.kind === "not-found") {
       notFound()
     }
 
     return (
       <AppRouteNotice
-        description="코스 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+        description={describeRouteApiFailure(courseOutcome.failure)}
         title="코스를 열 수 없습니다."
       />
     )
   }
 
-  const course = courseResult.value
-
-  if (course === undefined) {
-    notFound()
-  }
-
-  return <CourseDetailPage course={course} />
+  return <CourseDetailPage course={courseOutcome.value} />
 }

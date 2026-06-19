@@ -109,6 +109,8 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 
 `turbo.json`의 `globalEnv`는 task cache와 실행에 영향을 주는 환경 변수를 선언한다. 새 runtime env를 추가하면 여기도 함께 갱신한다.
 
+`build` task output은 패키지 산출물 `dist/**`와 Next.js 산출물 `.next/**`를 포함하되, 재사용하면 안 되는 `.next/cache/**`는 제외한다. coverage, `.turbo`, `.next`, `dist` 같은 산출물과 캐시는 `.gitignore` 기준으로 Git에 포함하지 않는다.
+
 현재 포함 예:
 
 - API/auth origin 관련 변수

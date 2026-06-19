@@ -11,10 +11,10 @@ import type {
   AdminAnalyticsDto,
   AdminDashboardDto,
   AdminLessonAnalyticsPageDto,
-  AdminRole,
   AdminUserDetailDto,
   AdminUserListDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
+import type { AdminRole } from "@workspace/core/admin"
 import { adminRoles } from "@workspace/core/admin"
 
 type CapturedRequestLogEvent = {
@@ -233,9 +233,8 @@ describe("어드민 API dashboard route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -256,10 +255,13 @@ describe("어드민 API dashboard route", () => {
     const dependencies = createDependencies()
     const app = createApp({
       ...dependencies,
-      dashboardService: {
-        ...dependencies.dashboardService,
-        async getDashboard() {
-          throw new Error("database unavailable")
+      adminServices: {
+        ...dependencies.adminServices,
+        dashboard: {
+          ...dependencies.adminServices.dashboard,
+          async getDashboard() {
+            throw new Error("database unavailable")
+          },
         },
       },
     })
@@ -272,9 +274,8 @@ describe("어드민 API dashboard route", () => {
 
     expect(response.status).toBe(500)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "internal_error",
-      },
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Internal Server Error",
     })
   })
 })
@@ -287,9 +288,8 @@ describe("어드민 API analytics route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -335,10 +335,9 @@ describe("어드민 API analytics route", () => {
     )
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 })
@@ -351,9 +350,8 @@ describe("어드민 API users route", () => {
 
     expect(response.status).toBe(401)
     await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "unauthorized",
-      },
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
     })
   })
 
@@ -383,10 +381,9 @@ describe("어드민 API users route", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 
@@ -438,13 +435,9 @@ describe("어드민 API users route", () => {
     })
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      error: {
-        code: "invalid_request",
-        detail: {
-          code: "invalid_body",
-        },
-      },
+    await expect(response.json()).resolves.toMatchObject({
+      code: "VALIDATION_FAILED",
+      message: "Request validation failed",
     })
   })
 
@@ -465,9 +458,8 @@ describe("어드민 API users route", () => {
 
     expect(statusResponse.status).toBe(403)
     await expect(statusResponse.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
 
     const deleteResponse = await app.request("/users/user-1", {
@@ -477,9 +469,8 @@ describe("어드민 API users route", () => {
 
     expect(deleteResponse.status).toBe(403)
     await expect(deleteResponse.json()).resolves.toEqual({
-      error: {
-        code: "forbidden",
-      },
+      code: "FORBIDDEN",
+      message: "Forbidden",
     })
   })
 })
@@ -490,55 +481,61 @@ function createDependencies({
   readonly role?: AdminRole
 } = {}): AdminApiDependencies {
   return createTestAdminApiDependencies({
-    dashboardService: {
-      async deleteUser(input) {
-        expect(input.userId).toBe("user-1")
-        return { deleted: true }
-      },
-      async getAnalytics(input) {
-        expect(input).toEqual({
-          days: 2,
-          now: testAdminNow,
-        })
+    adminServices: {
+      analytics: {
+        async getAnalytics(input) {
+          expect(input).toEqual({
+            days: 2,
+            now: testAdminNow,
+          })
 
-        return analytics
-      },
-      async getDashboard() {
-        return dashboard
-      },
-      async getLessonAnalytics(input) {
-        expect(input).toEqual({
-          direction: "asc",
-          page: 1,
-          pageSize: 10,
-          query: "둘째",
-          sort: "completionRate",
-        })
+          return analytics
+        },
+        async getLessonAnalytics(input) {
+          expect(input).toEqual({
+            direction: "asc",
+            page: 1,
+            pageSize: 10,
+            query: "둘째",
+            sort: "completionRate",
+          })
 
-        return lessonAnalytics
+          return lessonAnalytics
+        },
       },
-      async getUser(input) {
-        expect(input.userId).toBe("user-1")
-        return userDetail
+      dashboard: {
+        async getDashboard() {
+          return dashboard
+        },
       },
-      async getUsers(input) {
-        expect(input).toEqual({
-          page: 1,
-          pageSize: 12,
-          query: "학습",
-          sort: "lastActive",
-          status: "active",
-        })
-        return userList
-      },
-      async updateUserStatus(input) {
-        expect(input.status).toBe("suspended")
-        expect(input.userId).toBe("user-1")
+      users: {
+        async deleteUser(input) {
+          expect(input.userId).toBe("user-1")
+          return { deleted: true }
+        },
+        async getUser(input) {
+          expect(input.userId).toBe("user-1")
+          return userDetail
+        },
+        async getUsers(input) {
+          expect(input).toEqual({
+            page: 1,
+            pageSize: 12,
+            query: "학습",
+            sort: "lastActive",
+            status: "active",
+          })
+          return userList
+        },
+        async updateUserStatus(input) {
+          expect(input.status).toBe("suspended")
+          expect(input.userId).toBe("user-1")
 
-        return {
-          ...userDetail,
-          status: "suspended",
-        }
+          return {
+            ...userDetail,
+            status: "suspended",
+          }
+        },
       },
     },
     sessionResolver: {

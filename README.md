@@ -14,8 +14,13 @@
 - `packages/ui`: 공유 UI 컴포넌트
 - `packages/core`: 도메인, DTO, 유스케이스, repository 구현
 - `packages/db`: Drizzle SQLite schema, migration, seed, DB client
+- `packages/hono`: Hono route, validation, error handling 표준
 - `packages/env`: 환경 변수 파싱 helper
+- `packages/http-client`: HTTP result와 네트워크 오류 모델
 - `packages/logger`: API 런타임용 logger
+- `packages/config`: 공유 TypeScript 설정
+
+전체 workspace 인벤토리는 `docs/engineering/workspace-inventory.md`에서 확인한다.
 
 ## 필요한 도구
 
@@ -81,6 +86,10 @@ bun run storybook
 ## 주요 검증
 
 ```bash
+bun run check:components-config
+bun run check:api-contract
+bun run check:document-drift
+bun run check:workspace-inventory
 bun run format:check
 bun run lint
 bun run typecheck
@@ -92,8 +101,8 @@ bun lefthook run pre-commit
 OpenAPI 계약과 웹 생성 타입을 갱신해야 할 때:
 
 ```bash
-bun --filter @workspace/api openapi:generate
-bun --filter @workspace/web api:generate
+bun --filter=@workspace/api openapi:generate
+bun --filter=@workspace/web api:generate
 ```
 
 정적 OpenAPI 계약 파일은 `docs/engineering/contracts/writing-app-api-openapi.json`이다.

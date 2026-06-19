@@ -1,39 +1,50 @@
-import { Hono } from "hono"
+import type { AnyRouteConfig } from "@workspace/hono/core"
+import { adminDashboardDtoSchema } from "@workspace/contracts/admin"
+import type { AdminDashboardUseCase } from "@workspace/core/admin"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
-import { errorResponse } from "@/routes/error-response"
-import { resolveAdminSession } from "@/routes/route-helpers"
-import type { AdminService } from "@workspace/core/admin"
+import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
+import { adminAuthenticatedResponses, jsonResponse } from "@/http/openapi"
+import { adminSessionRouteOptions } from "@/routes/admin-route-options"
 
 export type DashboardRouteDependencies = {
-  readonly dashboardService: AdminService
+  readonly dashboardService: AdminDashboardUseCase
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
 }
 
-export function createDashboardRoute({
+export function createDashboardRoutes(
+  dependencies: DashboardRouteDependencies
+) {
+  return [createGetDashboardRoute(dependencies)] as const
+}
+
+function createGetDashboardRoute({
   dashboardService,
   now,
   sessionResolver,
-}: DashboardRouteDependencies): Hono {
-  const route = new Hono()
+}: DashboardRouteDependencies) {
+  const routeConfig = {
+    method: "get",
+    operationId: "getAdminDashboard",
+    path: "/dashboard",
+    responses: adminAuthenticatedResponses(
+      jsonResponse("어드민 대시보드입니다.", adminDashboardDtoSchema)
+    ),
+    summary: "어드민 대시보드 조회",
+    ...adminSessionRouteOptions(sessionResolver),
+  } satisfies AnyRouteConfig
 
-  route.get("/", async (context) => {
-    const sessionResult = await resolveAdminSession(context, sessionResolver)
-
-    if (sessionResult.kind === "err") {
-      return context.json(
-        errorResponse(sessionResult.code),
-        sessionResult.status
-      )
-    }
-
-    return context.json(
+  const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
+    context.json(
       await dashboardService.getDashboard({
         now: now(),
-      })
+      }),
+      200
     )
-  })
 
-  return route
+  return defineAdminRoute({
+    ...routeConfig,
+    handler,
+  })
 }

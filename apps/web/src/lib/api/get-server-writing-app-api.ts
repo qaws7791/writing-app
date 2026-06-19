@@ -1,5 +1,5 @@
 import { createHttpWritingAppApi } from "@/lib/api/http/create-http-writing-app-api"
-import type { WritingAppApi } from "@/lib/api/writing-app-api"
+import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 import { readServerApiBaseUrl, type ServerApiBaseUrl } from "@/runtime-config"
 
 export function getServerWritingAppApi({

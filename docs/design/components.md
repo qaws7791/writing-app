@@ -9,6 +9,8 @@
 - 목적지가 있는 UI는 버튼처럼 보여도 `Link`를 사용한다.
 - 화면 텍스트와 `aria-label`은 한국어로 작성한다.
 - destructive 동작은 즉시 실행하지 않고 확인 dialog를 거친다.
+- 컴포넌트와 스타일 import 경계는 `@workspace/ui`, `@workspace/ui/styles`, `@workspace/ui/components/icons`, `@workspace/ui/components/ui/*`, `@workspace/ui/lib/utils`를 우선 사용한다. 호환 entrypoint와 설정 entrypoint는 `packages/ui/README.md`를 따른다.
+- 앱 `tsconfig.json`은 `packages/ui/src` 내부를 직접 가리키는 source alias를 만들지 않는다. 공유 UI 소비는 `@workspace/ui` package export map을 통한다.
 
 ## Button
 
@@ -87,6 +89,7 @@
 구현 위치: `packages/ui/src/components/icons.tsx`
 
 기본 아이콘 라이브러리는 `lucide-react`다. 새 아이콘이 필요하면 먼저 `lucide-react` export를 추가한다. 직접 SVG를 추가할 때는 lucide와 같은 stroke 규칙을 유지하고, 장식 아이콘은 `aria-hidden="true"`를 지정한다.
+여러 화면에서 반복되는 브랜드형 아이콘은 앱 파일에 직접 SVG helper를 두지 않고 `@workspace/ui/components/icons`에서 가져온다. 화면 의미가 강한 도메인 전용 그림이나 외부 브랜드 로고만 앱 내부에 둘 수 있다.
 
 ## 학습자 앱 컴포넌트
 
@@ -101,12 +104,19 @@
 
 ### GlobalNav와 MobileNav
 
-구현 위치: `apps/web/src/components/layout/global-nav.tsx`
+구현 위치:
+
+- `apps/web/src/components/layout/global-nav.tsx`: 데스크톱 상단 nav 조립
+- `apps/web/src/components/layout/global-nav-routes.ts`: route 경로, 메뉴 항목, 활성 상태 정책
+- `apps/web/src/components/layout/global-nav-brand.tsx`: 브랜드 홈 링크
+- `apps/web/src/components/layout/global-nav-account-menu.tsx`: 계정 메뉴와 열림 상태
+- `apps/web/src/components/layout/mobile-nav.tsx`: 모바일 하단 nav
 
 - 상단 브랜드는 `글결.`이다.
 - `홈`, `배우기`, `프로필`의 활성 상태는 `aria-current="page"`로 표시한다.
 - `/app` 홈은 정확히 `/app`에서만 활성화한다.
 - `/app/courses`와 하위 상세는 `배우기`가 활성화된다.
+- `global-nav.tsx`는 외부 import 호환성을 위해 `MobileNav`를 re-export한다.
 
 ### LessonShell
 

@@ -2,17 +2,19 @@ import type {
   AdminAnalyticsDto,
   AdminLessonAnalyticsPageDto,
   AdminLessonAnalyticsSort,
-  AdminRepository,
   AdminSortDirection,
   AdminUserStatus,
+} from "@workspace/core/modules/admin/domain/admin.dto"
+import type {
+  AnalyticsReader,
   ReadAdminAnalyticsInput,
   ReadAdminLessonAnalyticsInput,
-} from "@workspace/core/modules/admin/api"
+} from "@workspace/core/modules/admin/application/ports/admin.repository"
 import {
   addLearningCalendarDays,
   toLearningDateKey,
   type LearningDateKey,
-} from "@workspace/core/modules/learning/api"
+} from "@workspace/core/modules/learning/domain/learning-date"
 import {
   contentStatuses,
   learnerAccountStatuses,
@@ -36,14 +38,9 @@ import {
   lessons,
 } from "@workspace/db/schema"
 
-type AdminAnalyticsRepository = Pick<
-  AdminRepository,
-  "readAnalytics" | "readLessonAnalytics"
->
-
 export function createAdminAnalyticsRepository(
   db: KwepDatabase
-): AdminAnalyticsRepository {
+): AnalyticsReader {
   return {
     readAnalytics(input) {
       return Promise.resolve(readAnalytics(db, input))

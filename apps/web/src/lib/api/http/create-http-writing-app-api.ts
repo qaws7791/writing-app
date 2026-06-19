@@ -3,7 +3,7 @@ import {
   mapCourseList,
   mapProgress,
 } from "@/features/courses/course-api-mappers"
-import { mapLesson } from "@/features/lessons/lesson-api-mappers"
+import { mapAiFeedback, mapLesson } from "@/features/lessons/lesson-api-mappers"
 import { mapProfile } from "@/features/profile/profile-api-mappers"
 import { apiOk, type ApiResult } from "@/lib/api/api-result"
 import {
@@ -15,13 +15,21 @@ import type { BrowserApiBaseUrl, ServerApiBaseUrl } from "@/runtime-config"
 import {
   courseDetailDtoSchema,
   courseListDtoSchema,
-  courseVisualKeySchema,
   lessonDtoSchema,
-} from "@workspace/core/content"
-import { aiFeedbackResultDtoSchema } from "@workspace/core/ai-feedback"
+} from "@workspace/contracts/content"
+import { aiFeedbackResultDtoSchema } from "@workspace/contracts/ai-feedback"
+import {
+  learnerProfileStatsDtoSchema,
+  learnerProgressOverviewDtoSchema,
+} from "@workspace/contracts/learning"
+import { learnerAccountStatusSchema } from "@workspace/contracts/status"
 import { z } from "zod"
 import type {
-  AiFeedbackResult,
+  CompleteLessonResult,
+  SaveLessonAnswerResult,
+  WritingAppApi,
+} from "@/lib/api/writing-app-api-port"
+import type {
   ApiAiFeedbackResponse,
   ApiCompleteLessonResponse,
   ApiCourseDetailResponse,
@@ -30,8 +38,7 @@ import type {
   ApiProfileResponse,
   ApiProgressResponse,
   ApiSaveLessonAnswerResponse,
-  WritingAppApi,
-} from "@/lib/api/writing-app-api"
+} from "@/lib/api/writing-app-api-contract"
 
 export function createHttpWritingAppApi({
   baseUrl,
@@ -50,14 +57,17 @@ export function createHttpWritingAppApi({
 
   return {
     async completeLesson(input) {
-      return client.requestJson<ApiCompleteLessonResponse>({
-        body: {
-          currentStepIndex: input.currentStepIndex,
-        },
-        method: "POST",
-        path: `/learning/lessons/${input.lessonId}/complete`,
-        schema: savedResponseSchema,
-      })
+      return mapApiResult(
+        await client.requestJson<ApiCompleteLessonResponse>({
+          body: {
+            currentStepIndex: input.currentStepIndex,
+          },
+          method: "POST",
+          path: `/learning/lessons/${input.lessonId}/complete`,
+          schema: savedResponseSchema,
+        }),
+        mapCompleteLessonResult
+      )
     },
     async createAiFeedback(input) {
       return mapApiResult(
@@ -67,7 +77,7 @@ export function createHttpWritingAppApi({
           path: "/ai-feedback",
           schema: aiFeedbackResultDtoSchema,
         }),
-        mapAiFeedbackResult
+        mapAiFeedback
       )
     },
     async getCourseDetail(courseId) {
@@ -121,64 +131,36 @@ export function createHttpWritingAppApi({
       )
     },
     async saveLessonAnswer(input) {
-      return client.requestJson<ApiSaveLessonAnswerResponse>({
-        body: input,
-        method: "POST",
-        path: "/learning/answers",
-        schema: savedResponseSchema,
-      })
+      return mapApiResult(
+        await client.requestJson<ApiSaveLessonAnswerResponse>({
+          body: input,
+          method: "POST",
+          path: "/learning/answers",
+          schema: savedResponseSchema,
+        }),
+        mapSaveLessonAnswerResult
+      )
     },
   }
 }
-
-const nonNegativeIntegerSchema = z.number().int().nonnegative()
 
 const savedResponseSchema = z.object({
   saved: z.literal(true),
 })
 
 const apiProfileResponseSchema = z.object({
-  stats: z.object({
-    completedLessons: nonNegativeIntegerSchema,
-    currentStreakDays: nonNegativeIntegerSchema,
-    lastActiveDate: z.string().nullable(),
-    progressPercent: nonNegativeIntegerSchema.max(100),
-    totalLessons: nonNegativeIntegerSchema,
-  }),
+  stats: learnerProfileStatsDtoSchema,
   user: z.object({
     email: z.email(),
     id: z.string(),
     image: z.string().nullable(),
     joinedAt: z.string(),
     name: z.string(),
-    status: z.enum(["active", "deleted", "suspended"]),
+    status: learnerAccountStatusSchema,
   }),
 })
 
-const progressLessonSchema = z.object({
-  courseId: z.string().optional(),
-  currentStepIndex: nonNegativeIntegerSchema.nullable(),
-  estimatedMinutes: z.number().int().positive(),
-  id: z.string(),
-  status: z.enum(["available", "completed", "locked"]),
-  title: z.string(),
-})
-
-const apiProgressResponseSchema = z.object({
-  courses: z.array(
-    z.object({
-      id: z.string(),
-      lessons: z.array(progressLessonSchema),
-      nextLessons: z.array(progressLessonSchema.required({ courseId: true })),
-      progressPercent: nonNegativeIntegerSchema.max(100),
-      title: z.string(),
-      visualKey: courseVisualKeySchema,
-    })
-  ),
-  user: z.object({
-    currentStreakDays: nonNegativeIntegerSchema,
-  }),
-})
+const apiProgressResponseSchema = learnerProgressOverviewDtoSchema
 
 function mapApiResult<TInput, TOutput>(
   result: ApiResult<TInput>,
@@ -191,17 +173,18 @@ function mapApiResult<TInput, TOutput>(
   return apiOk(mapper(result.value))
 }
 
-function mapAiFeedbackResult(
-  response: ApiAiFeedbackResponse
-): AiFeedbackResult {
+function mapSaveLessonAnswerResult(
+  response: ApiSaveLessonAnswerResponse
+): SaveLessonAnswerResult {
   return {
-    improvements: response.improvements,
-    nextAction: response.nextAction,
-    remainingAttempts: response.remainingAttempts,
-    score: response.score,
-    scoreRange: response.scoreRange,
-    showScore: response.showScore,
-    strengths: response.strengths,
-    summary: response.summary,
+    saved: response.saved,
+  }
+}
+
+function mapCompleteLessonResult(
+  response: ApiCompleteLessonResponse
+): CompleteLessonResult {
+  return {
+    saved: response.saved,
   }
 }

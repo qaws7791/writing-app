@@ -16,18 +16,19 @@
 | Workspace   | `apps/*`, `packages/*` | Bun workspace로 관리한다.                                                |
 | 작업 실행기 | Turbo `^2.8.8`         | `build`, `dev`, `test`, `typecheck`, `lint`를 workspace 단위로 실행한다. |
 
+패키지 매니저와 workspace 정책의 단일 출처는 루트 `package.json`이다. npm 설정이 실제로 필요하지 않으면 빈 `.npmrc` placeholder를 두지 않는다.
+
 ## 프론트엔드
 
-| 기술           | 버전                | 사용 위치                    | 선택 근거                                             |
-| -------------- | ------------------- | ---------------------------- | ----------------------------------------------------- |
-| Next.js        | `16.2.5`            | `apps/web`, `apps/admin`     | App Router 기반 서버/클라이언트 경계를 명시하기 쉽다. |
-| React          | `19.2.4`            | 웹 앱, 어드민, UI 패키지     | Next.js 16과 맞춘 UI 런타임이다.                      |
-| Tailwind CSS   | `^4` 또는 `^4.1.18` | 웹 앱, 어드민, UI, Storybook | 디자인 토큰과 UI primitive 스타일을 빠르게 공유한다.  |
-| Base UI        | `^1.4.0`            | `packages/ui`                | 접근성 있는 headless UI primitive 기반을 제공한다.    |
-| shadcn         | `^4.8.1`            | `packages/ui`                | 복사 가능한 컴포넌트 패턴을 workspace UI로 소유한다.  |
-| lucide-react   | `^1.8.0`            | 앱, UI, Storybook            | 일관된 아이콘 시스템을 제공한다.                      |
-| TanStack Table | `^8.21.3`           | `apps/admin`                 | 관리자 목록 UI의 테이블 상태를 명시적으로 관리한다.   |
-| dnd-kit        | `@dnd-kit/*`        | `apps/admin`                 | 커리큘럼 편집 drag-and-drop에 사용한다.               |
+| 기술         | 버전                | 사용 위치                    | 선택 근거                                             |
+| ------------ | ------------------- | ---------------------------- | ----------------------------------------------------- |
+| Next.js      | `16.2.5`            | `apps/web`, `apps/admin`     | App Router 기반 서버/클라이언트 경계를 명시하기 쉽다. |
+| React        | `19.2.4`            | 웹 앱, 어드민, UI 패키지     | Next.js 16과 맞춘 UI 런타임이다.                      |
+| Tailwind CSS | `^4` 또는 `^4.1.18` | 웹 앱, 어드민, UI, Storybook | 디자인 토큰과 UI primitive 스타일을 빠르게 공유한다.  |
+| Base UI      | `^1.4.0`            | `packages/ui`                | 접근성 있는 headless UI primitive 기반을 제공한다.    |
+| lucide-react | `^1.8.0`            | 앱, UI, Storybook            | 일관된 아이콘 시스템을 제공한다.                      |
+
+`packages/ui`의 primitive는 shadcn/Base UI 파일 관례를 따르지만, 런타임 dependency는 현재 source 또는 stylesheet에서 직접 import하는 패키지만 둔다.
 
 ## 백엔드
 
@@ -68,6 +69,7 @@
 - 새 의존성은 앱 또는 패키지의 책임 경계 안에서만 추가한다.
 - 한 기능 때문에 루트 공통 의존성으로 승격하지 않는다.
 - `Kwep/`의 의존성은 제품 스택 판단에 포함하지 않는다.
+- workspace package의 runtime dependency는 해당 workspace source, stylesheet, 또는 명시적 script에서 직접 사용하는 경우에만 둔다.
 
 ## 의존성 추가 기준
 

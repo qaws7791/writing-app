@@ -32,10 +32,9 @@
 - `packages/db`
 - `packages/env`
 - `packages/hono`
+- `packages/http-client`
 - `packages/logger`
 - `packages/ui`
-
-현재 `packages/http-client`도 자체 `vitest.config.ts`와 package test script를 가진다. 루트 workspace에 포함되어야 하는지 변경 시 함께 확인한다.
 
 ## 테스트 계층
 
@@ -51,6 +50,10 @@
 ## 주요 명령
 
 ```bash
+bun run check:components-config
+bun run check:api-contract
+bun run check:document-drift
+bun run check:workspace-inventory
 bun run test
 bun run test:coverage
 bun run typecheck
@@ -59,19 +62,23 @@ bun run build
 bun lefthook run pre-commit
 ```
 
+`packages/ui/tsconfig.lint.json`은 실제 TypeScript source와 Vitest 설정 파일만 포함한다. 존재하지 않는 생성기 경로나 빌드 출력 경로를 lint tsconfig에 추가하지 않는다.
+앱 `tsconfig.json`의 test alias는 실제 테스트 지원 디렉터리가 있을 때만 둔다.
+
 워크스페이스 단위 검증 예시는 다음과 같다.
 
 ```bash
-bun --filter @workspace/api test
-bun --filter @workspace/admin-api test
-bun --filter @workspace/core test
-bun --filter @workspace/db test
-bun --filter @workspace/web test
+bun run --filter=@workspace/api test
+bun run --filter=@workspace/admin-api test
+bun run --filter=@workspace/core test
+bun run --filter=@workspace/db test
+bun run --filter=@workspace/web test
 ```
 
 ## 커버리지 기준
 
 - `bun run test:coverage`는 V8 coverage를 사용한다.
+- 루트 coverage는 `vitest.workspace.ts`를 사용하며, `vitest.config.ts`를 가진 workspace는 coverage workspace에 포함되어야 한다.
 - 현재 저장소에는 전역 최소 coverage threshold가 고정되어 있지 않다.
 - 새 정책, 권한, 보안, 데이터 보존 로직은 threshold 유무와 관계없이 회귀 테스트를 추가한다.
 - 단순 markup 변경은 UI smoke 수준으로 충분할 수 있다.
@@ -84,6 +91,9 @@ bun --filter @workspace/web test
 - 어드민 API는 operator와 owner 권한 차이를 검증한다.
 - JSON body 오류는 malformed JSON과 schema 오류를 구분한다.
 - OpenAPI 생성 route는 실제 등록 route 기준으로 검증한다.
+- 어드민 서비스 테스트는 기능별 use case 조합과 repository port test double을 검증하고, 사용하지 않는 port 호출은 실패시켜 service 의존 범위를 고정한다.
+- 학습자 웹 앱은 `@workspace/core`를 직접 import하지 않는다는 아키텍처 테스트로 API 계약 경계를 고정한다.
+- 어드민 API route의 wire contract schema는 `@workspace/contracts/admin`에서 직접 가져온다. `apps/admin`은 `@workspace/core`를 직접 import하지 않고, `@workspace/contracts/admin`은 `apps/admin/src/lib/api/http-admin-api.ts`에서만 사용한다는 아키텍처 테스트로 앱 모델 경계를 고정한다.
 
 ## DB 테스트 기준
 
@@ -96,7 +106,8 @@ bun --filter @workspace/web test
 
 - 화면 텍스트와 접근성 role을 사용자 관점으로 조회한다.
 - API는 포트 mock 또는 명시적 test double로 대체한다.
-- generated OpenAPI 타입은 mapper 경계 안에 격리한다.
+- generated OpenAPI 타입은 `apps/web/src/lib/api/writing-app-api-contract.ts`에 격리하고 feature mapper는 이 transport contract 타입만 참조한다.
+- `apps/web` 아키텍처 테스트는 `openapi-fetch` dependency/import가 없고 자체 HTTP adapter를 유지하는지 확인한다.
 - overlay 계열 컴포넌트는 테스트 mock을 사용해 포털 구현 세부사항에 묶이지 않게 한다.
 - 내부 탐색은 가능한 link role과 href로 검증한다.
 

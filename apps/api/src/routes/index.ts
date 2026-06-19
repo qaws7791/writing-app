@@ -1,5 +1,10 @@
+import type { OpenAPIHono } from "@hono/zod-openapi"
+
+import type { ApiDependencies } from "@/context/create-request-context"
+import { createOpenApiDocument } from "@/http/openapi"
 import { aiFeedbackRoute } from "@/modules/ai-feedback/ai-feedback.routes"
 import { authSessionRoute } from "@/modules/auth/auth.routes"
+import { registerAuthProxy } from "@/modules/auth/auth-proxy"
 import {
   getCourseDetailRoute,
   listCoursesRoute,
@@ -25,3 +30,11 @@ export const routes = [
   completeLessonRoute,
   aiFeedbackRoute,
 ] as const
+
+export function registerApiBootstrapRoutes(
+  app: OpenAPIHono,
+  dependencies: Pick<ApiDependencies, "authHandler">
+): void {
+  registerAuthProxy(app, dependencies.authHandler)
+  app.get("/openapi", (context) => context.json(createOpenApiDocument(app)))
+}

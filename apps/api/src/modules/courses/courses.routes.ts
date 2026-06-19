@@ -2,7 +2,7 @@ import type { AnyRouteConfig } from "@workspace/hono/core"
 import { ErrorResponseSchema } from "@workspace/hono/errors"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
-import { mapCoreError } from "@/errors/map-core-error"
+import { unwrapApiCoreResult } from "@/errors/map-core-error"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
@@ -27,10 +27,6 @@ const listCoursesHandler: ApiRouteHandler<
   typeof listCoursesRouteConfig
 > = async (context) => {
   const contentService = context.var.requestContext.contentService
-
-  if (contentService === undefined) {
-    throw new Error("Content service is not configured.")
-  }
 
   return context.json(await contentService.listCourses(), 200)
 }
@@ -63,21 +59,13 @@ const getCourseDetailHandler: ApiRouteHandler<
 > = async (context) => {
   const contentService = context.var.requestContext.contentService
 
-  if (contentService === undefined) {
-    throw new Error("Content service is not configured.")
-  }
-
   const { courseId } = context.req.valid("param")
   const result = await contentService.getCourseDetail({
     courseId,
     userId: context.var.activeSession.user.id,
   })
 
-  if (result.kind === "err") {
-    throw mapCoreError(result.error)
-  }
-
-  return context.json(result.value, 200)
+  return context.json(unwrapApiCoreResult(result), 200)
 }
 
 export const getCourseDetailRoute = defineApiRoute({

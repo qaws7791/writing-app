@@ -228,9 +228,8 @@ describe("HTTP AdminApi", () => {
       fetch: async () =>
         jsonResponse(
           {
-            error: {
-              code: "not_found",
-            },
+            code: "NOT_FOUND",
+            message: "Not Found",
           },
           404
         ),
@@ -255,9 +254,8 @@ describe("HTTP AdminApi", () => {
       fetch: async () =>
         jsonResponse(
           {
-            error: {
-              code: "forbidden",
-            },
+            code: "FORBIDDEN",
+            message: "Forbidden",
           },
           403
         ),

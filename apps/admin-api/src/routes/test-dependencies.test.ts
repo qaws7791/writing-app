@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { AdminDashboardDto } from "@workspace/core/admin"
+import type { AdminDashboardDto } from "@workspace/contracts/admin"
 import { localRuntimeDefaults } from "@workspace/env"
 
 import {
@@ -45,20 +45,22 @@ describe("어드민 API 테스트 의존성", () => {
 
   it("테스트에서 필요한 admin service 메서드만 override한다", async () => {
     const dependencies = createTestAdminApiDependencies({
-      dashboardService: {
-        async getDashboard(input) {
-          expect(input).toEqual({ now: testAdminNow })
+      adminServices: {
+        dashboard: {
+          async getDashboard(input) {
+            expect(input).toEqual({ now: testAdminNow })
 
-          return dashboard
+            return dashboard
+          },
         },
       },
     })
 
     await expect(
-      dependencies.dashboardService.getDashboard({ now: testAdminNow })
+      dependencies.adminServices.dashboard.getDashboard({ now: testAdminNow })
     ).resolves.toEqual(dashboard)
-    await expect(dependencies.dashboardService.getSettings()).rejects.toThrow(
-      "Unexpected admin service call: getSettings"
-    )
+    await expect(
+      dependencies.adminServices.settings.getSettings()
+    ).rejects.toThrow("Unexpected admin service call: settings.getSettings")
   })
 })

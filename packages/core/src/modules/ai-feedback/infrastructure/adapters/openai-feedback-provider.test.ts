@@ -5,7 +5,7 @@ import {
   createUnavailableAiFeedbackProvider,
   type OpenAiResponseCreateRequest,
 } from "@workspace/core/modules/ai-feedback/infrastructure/adapters/openai-feedback-provider"
-import { createAiFeedbackPrompt } from "@workspace/core/modules/ai-feedback/api"
+import { createAiFeedbackPrompt } from "@workspace/core/modules/ai-feedback/domain/ai-feedback.prompt"
 
 describe("OpenAI AI feedback provider", () => {
   it("Responses API 출력 JSON을 AI feedback payload로 변환한다", async () => {

@@ -4,6 +4,8 @@ import {
   calculateCurrentStreakDays,
   type LearningDateKey,
 } from "@workspace/core/modules/learning/domain/learning-date"
+import { learnerProfileStatsDtoSchema } from "@workspace/core/modules/learning/domain/learner-read-model.dto"
+import type { ProfileReader } from "@workspace/core/modules/learning/domain/learner-profile-read-model"
 import type { ProgressReader } from "@workspace/core/modules/learning/domain/learning-progress-read-model"
 import {
   contentStatuses,
@@ -16,18 +18,6 @@ import {
   lessons,
 } from "@workspace/db/schema"
 
-export type LearnerProfileStatsDto = {
-  readonly completedLessons: number
-  readonly currentStreakDays: number
-  readonly lastActiveDate: string | null
-  readonly progressPercent: number
-  readonly totalLessons: number
-}
-
-export type ProfileReader = {
-  readonly readProfileStats: (userId: string) => Promise<LearnerProfileStatsDto>
-}
-
 export function createDrizzleProfileReader(db: KwepDatabase): ProfileReader {
   return {
     async readProfileStats(userId) {
@@ -37,7 +27,7 @@ export function createDrizzleProfileReader(db: KwepDatabase): ProfileReader {
         readActivity(db, userId),
       ])
 
-      return {
+      return learnerProfileStatsDtoSchema.parse({
         completedLessons,
         currentStreakDays: calculateCurrentStreakDays(
           activity.map((day) => day.activityDate)
@@ -48,7 +38,7 @@ export function createDrizzleProfileReader(db: KwepDatabase): ProfileReader {
             ? 0
             : Math.round((completedLessons / totalLessons) * 100),
         totalLessons,
-      }
+      })
     },
   }
 }

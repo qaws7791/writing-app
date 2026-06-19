@@ -9,10 +9,10 @@ import { networkApiError, type ApiError } from "@/lib/api/api-error"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
 import type { ApiResult } from "@/lib/api/api-result"
 import type {
-  ApiCompleteLessonResponse,
-  ApiSaveLessonAnswerResponse,
+  CompleteLessonResult,
+  SaveLessonAnswerResult,
   WritingAppApi,
-} from "@/lib/api/writing-app-api"
+} from "@/lib/api/writing-app-api-port"
 import { createHttpNetworkError } from "@workspace/http-client"
 
 const push = vi.fn()
@@ -293,8 +293,8 @@ describe("레슨 경험", () => {
 
   it("늦게 실패한 이전 답변 저장은 최신 성공 상태를 덮어쓰지 않는다", async () => {
     const user = userEvent.setup()
-    const firstSave = createDeferred<ApiResult<ApiSaveLessonAnswerResponse>>()
-    const secondSave = createDeferred<ApiResult<ApiSaveLessonAnswerResponse>>()
+    const firstSave = createDeferred<ApiResult<SaveLessonAnswerResult>>()
+    const secondSave = createDeferred<ApiResult<SaveLessonAnswerResult>>()
     const saveLessonAnswer = vi
       .fn()
       .mockReturnValueOnce(firstSave.promise)
@@ -332,7 +332,7 @@ describe("레슨 경험", () => {
 
   it("이전 스텝의 답변 저장 실패를 다음 스텝에 표시하지 않는다", async () => {
     const user = userEvent.setup()
-    const answerSave = createDeferred<ApiResult<ApiSaveLessonAnswerResponse>>()
+    const answerSave = createDeferred<ApiResult<SaveLessonAnswerResult>>()
     const api = createApi({
       saveLessonAnswer: vi.fn(() => answerSave.promise),
     })
@@ -380,7 +380,7 @@ describe("레슨 경험", () => {
 
   it("마지막 스텝 완료는 최신 답변 저장이 끝난 뒤 저장한다", async () => {
     const user = userEvent.setup()
-    const answerSave = createDeferred<ApiResult<ApiSaveLessonAnswerResponse>>()
+    const answerSave = createDeferred<ApiResult<SaveLessonAnswerResult>>()
     const completeLesson = vi.fn(async () => apiOk({ saved: true }))
     const api = createApi({
       completeLesson,
@@ -417,7 +417,7 @@ describe("레슨 경험", () => {
 
   it("최신 답변 저장이 실패하면 레슨 완료를 저장하지 않는다", async () => {
     const user = userEvent.setup()
-    const answerSave = createDeferred<ApiResult<ApiSaveLessonAnswerResponse>>()
+    const answerSave = createDeferred<ApiResult<SaveLessonAnswerResult>>()
     const completeLesson = vi.fn(async () => apiOk({ saved: true }))
     const api = createApi({
       completeLesson,
@@ -450,7 +450,7 @@ describe("레슨 경험", () => {
 
   it("완료 버튼을 빠르게 여러 번 눌러도 완료 저장은 한 번만 호출한다", async () => {
     const user = userEvent.setup()
-    const completeSave = createDeferred<ApiResult<ApiCompleteLessonResponse>>()
+    const completeSave = createDeferred<ApiResult<CompleteLessonResult>>()
     const completeLesson = vi.fn(() => completeSave.promise)
     const api = createApi({
       completeLesson,

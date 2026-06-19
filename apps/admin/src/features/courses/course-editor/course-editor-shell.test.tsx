@@ -2,9 +2,9 @@ import { render, screen, within } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
-import type { AdminCourseDetailDto } from "@workspace/core/admin"
+import type { AdminCourseDetail } from "@/lib/api/admin-api"
 
-const course: AdminCourseDetailDto = {
+const course: AdminCourseDetail = {
   category: "입문자를 위한 코스",
   description: "글쓰기 입문 과정",
   id: "c1",
@@ -101,7 +101,7 @@ describe("CourseEditorShell", () => {
       throw new Error("테스트 코스 fixture에 첫 유닛과 첫 레슨이 필요합니다.")
     }
 
-    const courseWithUnknownStep: AdminCourseDetailDto = {
+    const courseWithUnknownStep: AdminCourseDetail = {
       ...course,
       units: [
         {

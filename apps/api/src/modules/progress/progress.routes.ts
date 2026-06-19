@@ -16,10 +16,6 @@ export const progressRoute = defineApiRoute({
   handler: async (context) => {
     const progressService = context.var.requestContext.progressService
 
-    if (progressService === undefined) {
-      throw new Error("Progress service is not configured.")
-    }
-
     return context.json(
       await progressService.readProgress(context.var.activeSession.user.id),
       200

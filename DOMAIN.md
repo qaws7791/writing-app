@@ -117,7 +117,7 @@ type CurriculumNodeStatus = "active" | "deprecated" | "archived"
 
 ## 현재 구현 상태
 
-현재 피벗 reset 단계에서는 기존 도메인 구현 코드와 기존 DB migration 파일을 제거했다. 새 도메인 계약, DTO, repository port, baseline schema, seed loader는 후속 Task에서 Kwep 기준으로 다시 작성한다.
+현재 도메인 계약, DTO, repository port, baseline schema, seed loader는 Kwep 기준 baseline으로 구현되어 있다. 런타임은 변환된 DB seed와 repository를 통해 콘텐츠를 조회하고, 단일 현재 커리큘럼 모델을 기준으로 학습 진행과 어드민 편집을 처리한다.
 
 목표 모델은 단일 현재 커리큘럼 모델이다. 커리큘럼 버전 테이블, 버전별 유닛/레슨/스텝 snapshot, 마이그레이션 맵, 마이그레이션 적용 기록, 학습자 업그레이드 숨김 기록은 재도입하지 않는다.
 

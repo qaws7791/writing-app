@@ -6,12 +6,12 @@ import {
   lessonIdSchema,
   lessonStepIdSchema,
   unitIdSchema,
-} from "@workspace/core/modules/content/api"
+} from "@workspace/core/modules/content/domain/content.ids"
 import {
   lessonDtoSchema,
   type LessonDto,
-} from "@workspace/core/modules/content/api"
-import type { ContentRepository } from "@workspace/core/modules/content/api"
+} from "@workspace/core/modules/content/domain/content.dto"
+import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
 import { learnerIdSchema } from "@/modules/learning/domain/learning.ids"
 import {
   createLearningService,
@@ -38,6 +38,8 @@ describe("학습 서비스", () => {
     expect(source).not.toContain("function readStringArray")
     expect(source).not.toContain("function readNumberArray")
     expect(source).not.toContain("function readObjectArray")
+    expect(source).not.toContain("function isValidStepAnswer")
+    expect(source).toContain("validateStepAnswerForLesson")
   })
 
   it("Kwep 답변 가능 스텝 타입과 일치하는 저장 요청을 허용한다", async () => {

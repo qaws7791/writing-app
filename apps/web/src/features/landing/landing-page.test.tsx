@@ -114,14 +114,16 @@ describe("공개 랜딩 페이지", () => {
       expect(button).not.toHaveAttribute("type")
     }
 
-    expect(
-      Array.from(container.querySelectorAll("img")).map((image) =>
-        image.getAttribute("alt")
-      )
-    ).toEqual([
+    const images = Array.from(container.querySelectorAll("img"))
+
+    expect(images.map((image) => image.getAttribute("alt"))).toEqual([
       "Kernel 앱 홈 화면 미리보기",
       "Kernel 레슨 진행 화면",
       "Kernel 코스 대시보드 화면",
     ])
+
+    for (const image of images) {
+      expect(image.getAttribute("src")).toMatch(/^data:image\/svg\+xml,/)
+    }
   })
 })

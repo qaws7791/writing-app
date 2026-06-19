@@ -14,8 +14,10 @@
 │   └── storybook/  # UI 컴포넌트 개발 환경
 ├── packages/
 │   ├── ui/      # 공유 UI 컴포넌트와 디자인 시스템
+│   ├── config/  # 공유 TypeScript 설정
 │   ├── db/      # Drizzle schema, migration, seed, db client
 │   ├── hono/    # Hono OpenAPI route, validation, error handling 표준 패키지
+│   ├── http-client/ # HTTP transport result와 네트워크 오류 모델
 │   ├── logger/  # pino logger와 요청 로그 helper
 │   ├── env/     # 환경 변수 parsing helper
 │   └── core/    # shared kernel, module facade, usecase, repository adapter, composition root
@@ -109,17 +111,25 @@
 
 `packages/ui`는 shadcn 기반 공유 UI 컴포넌트와 디자인 시스템을 제공한다.
 
+### config
+
+`packages/config`는 workspace에서 공유하는 TypeScript 설정을 제공한다.
+
 ### core
 
 `packages/core`는 프레임워크와 HTTP transport에 의존하지 않는 비즈니스 로직 패키지다. 학습자 API 방향은 `apps/api -> packages/core -> packages/db`이며, core는 module facade, domain 규칙, usecase, repository port와 adapter, 학습자 API 런타임 조립을 소유한다.
 
-core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 브랜드 타입, Result, 에러, 이벤트 버스, 요청 컨텍스트, Unit of Work 같은 공통 kernel을 제공한다. `modules/*/api/index.ts`는 Hono와 다른 module이 사용할 좁은 public facade이며, `domain`, `application`, `infrastructure` 구현은 이 facade 뒤에 둔다. `composition`은 DI container, event wiring, bootstrap을 담당한다.
+core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 Result, 공통 오류, status kernel처럼 실제 런타임에서 쓰는 공통 값을 제공한다. `modules/*/api/index.ts`는 Hono와 다른 module이 사용할 좁은 public facade이며, `domain`, `application`, `infrastructure` 구현은 이 facade 뒤에 둔다. `composition`은 학습자 API 런타임 bootstrap을 담당한다.
 
 학습자 API는 core 내부 파일 구조에 직접 묶이지 않도록 `@workspace/core/modules/{auth,content,learning,ai-feedback,learner-api}` public facade만 import한다. 기존 `@workspace/core/{admin,auth,content,learning,ai-feedback,status}` public import는 source shim이 아니라 package export map으로 새 `modules`와 `shared` 위치에 직접 연결한다.
 
 ### hono
 
 `packages/hono`는 Hono 기반 API 앱의 반복되는 transport 표준을 제공한다. 앱 생성, OpenAPI route 정의, Env 고정 route builder, Zod validation hook, `AppError`, 404와 공통 error handler를 담당한다. 에러 wire contract는 `{ code, message, errors? }`다.
+
+### http-client
+
+`packages/http-client`는 web과 admin HTTP adapter가 공유하는 result shape와 네트워크 오류 모델을 제공한다.
 
 ### db
 

@@ -4,6 +4,11 @@ import { AppRouteNotice } from "@/components/app-route-notice"
 import type { ProgressCourseList } from "@/features/courses/course-types"
 import { LessonExperience } from "@/features/lessons/lesson-experience"
 import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
+import {
+  describeRouteApiFailure,
+  readOptionalRouteApiValue,
+  toRouteApiOutcome,
+} from "@/lib/api/route-api-outcome"
 import { createLoginPagePath } from "@/lib/auth/auth-navigation"
 import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
 
@@ -39,26 +44,31 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
     tokenProvider: () => token,
   })
   const lessonResult = await api.getLesson(lessonId)
+  const lessonOutcome = toRouteApiOutcome(lessonResult)
 
-  if (lessonResult.status === "error") {
+  if (lessonOutcome.status === "error") {
+    if (lessonOutcome.failure.kind === "authentication") {
+      redirect(createLoginPagePath(nextPath))
+    }
+
     return (
       <AppRouteNotice
-        description="레슨 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+        description={describeRouteApiFailure(lessonOutcome.failure)}
         title="레슨을 열 수 없습니다."
       />
     )
   }
 
-  const lesson = lessonResult.value
+  const lesson = lessonOutcome.value
   const [courseDetailResult, progressResult] = await Promise.all([
     api.getCourseDetail(lesson.courseId),
     api.getProgress(),
   ])
-  const courseDetail =
-    courseDetailResult.status === "ok" ? courseDetailResult.value : undefined
+  const courseDetail = readOptionalRouteApiValue(courseDetailResult)
+  const progress = readOptionalRouteApiValue(progressResult)
   const initialProgress =
-    progressResult.status === "ok"
-      ? resolveInitialLessonProgress(progressResult.value, lesson.id)
+    progress !== undefined
+      ? resolveInitialLessonProgress(progress, lesson.id)
       : undefined
 
   return (

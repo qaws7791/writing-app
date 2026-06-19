@@ -1,33 +1,39 @@
 import OpenAI from "openai"
 
+import { defaultAiFeedbackAttemptPolicy } from "@workspace/core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import {
   createAiFeedbackService,
-  createDrizzleAiFeedbackRepository,
+  type AiFeedbackService,
+} from "@workspace/core/modules/ai-feedback/application/use-cases/ai-feedback.service"
+import {
   createOpenAiFeedbackProvider,
   createUnavailableAiFeedbackProvider,
-  defaultAiFeedbackAttemptPolicy,
-  type AiFeedbackService,
-} from "@workspace/core/modules/ai-feedback/api"
+} from "@workspace/core/modules/ai-feedback/infrastructure/adapters/openai-feedback-provider"
+import { createDrizzleAiFeedbackRepository } from "@workspace/core/modules/ai-feedback/infrastructure/persistence/ai-feedback-drizzle.repository"
 import {
-  createDrizzleContentRepository,
   createLearnerContentService,
   type LearnerContentService,
-} from "@workspace/core/modules/content/api"
+} from "@workspace/core/modules/content/application/use-cases/learner-content.service"
+import { createDrizzleContentRepository } from "@workspace/core/modules/content/infrastructure/persistence/content-drizzle.repository"
+import {
+  createLearningService,
+  type LearningService,
+} from "@workspace/core/modules/learning/application/use-cases/learning.service"
+import {
+  createProgressService,
+  type ProgressService,
+} from "@workspace/core/modules/learning/application/use-cases/learner-progress.service"
 import {
   createDrizzleProfileReader,
   createDrizzleProgressReader,
-  createDrizzleLearningRepository,
-  createLearningService,
-  createProgressService,
-  type LearningService,
-  type ProfileReader,
-  type ProgressService,
-} from "@workspace/core/modules/learning/api"
+} from "@workspace/core/modules/learning/infrastructure/persistence/learner-read-models"
+import { createDrizzleLearningRepository } from "@workspace/core/modules/learning/infrastructure/persistence/learning-drizzle.repository"
+import { type ProfileReader } from "@workspace/core/modules/learning/domain/learner-profile-read-model"
+import { type SessionResolver } from "@workspace/core/modules/auth/domain/learner-session"
 import {
   createLearnerAuth,
   createLearnerSessionResolver,
-  type SessionResolver,
-} from "@workspace/core/modules/auth/api"
+} from "@workspace/core/modules/auth/infrastructure/adapters/learner-auth"
 import { createKwepDatabase } from "@workspace/db"
 
 export type CreateLearnerApiCoreInput = {

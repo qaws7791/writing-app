@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import { readdirSync, readFileSync } from "node:fs"
 import { dirname, relative, resolve, sep } from "node:path"
 import { fileURLToPath } from "node:url"
+import ts from "typescript"
 
 const coreSourceRoot = dirname(fileURLToPath(import.meta.url))
 const modulesRoot = resolve(coreSourceRoot, "modules")
@@ -38,6 +39,32 @@ describe("core architecture", () => {
     expect(violations).toEqual([])
   })
 
+  it("module api facade는 infrastructure를 export하지 않는다", () => {
+    const violations = readdirSync(modulesRoot, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .flatMap((entry) => {
+        const indexPath = resolve(modulesRoot, entry.name, "api", "index.ts")
+
+        return readImports(indexPath)
+          .filter((source) => source.includes("/infrastructure/"))
+          .map((source) => formatViolation(indexPath, source))
+      })
+
+    expect(violations).toEqual([])
+  })
+
+  it("core 내부 구현은 module public api facade를 import하지 않는다", () => {
+    const violations = readSourceFiles(coreSourceRoot)
+      .filter((filePath) => !isFacadeFile(filePath))
+      .flatMap((filePath) =>
+        readImports(filePath)
+          .filter(isModuleApiFacadeImport)
+          .map((source) => formatViolation(filePath, source))
+      )
+
+    expect(violations).toEqual([])
+  })
+
   it("domain 계층은 runtime adapter 의존성을 import하지 않는다", () => {
     const violations = readSourceFiles(modulesRoot)
       .filter((filePath) => filePath.split(sep).includes("domain"))
@@ -46,6 +73,17 @@ describe("core architecture", () => {
           .filter(isRuntimeAdapterImport)
           .map((source) => formatViolation(filePath, source))
       )
+
+    expect(violations).toEqual([])
+  })
+
+  it("learning domain은 content module facade나 domain 파일을 직접 import하지 않는다", () => {
+    const learningDomainRoot = resolve(modulesRoot, "learning", "domain")
+    const violations = readSourceFiles(learningDomainRoot).flatMap((filePath) =>
+      readImports(filePath)
+        .filter(isCoreContentModuleImport)
+        .map((source) => formatViolation(filePath, source))
+    )
 
     expect(violations).toEqual([])
   })
@@ -69,19 +107,64 @@ function readSourceFiles(rootPath: string): string[] {
 
 function readImports(filePath: string): string[] {
   const content = readFileSync(filePath, "utf8")
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS
+  )
   const imports: string[] = []
-  const importPattern =
-    /\b(?:import|export)\s+(?:type\s+)?(?:[^"'`]*?\s+from\s+)?["']([^"']+)["']|import\(\s*["']([^"']+)["']\s*\)/g
 
-  for (const match of content.matchAll(importPattern)) {
-    const source = match[1] ?? match[2]
+  function visit(node: ts.Node) {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+      pushImport(node.moduleSpecifier)
+    }
 
-    if (source !== undefined) {
+    if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword
+    ) {
+      pushImport(node.arguments[0])
+    }
+
+    if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) {
+      pushImport(node.argument.literal)
+    }
+
+    ts.forEachChild(node, visit)
+  }
+
+  function pushImport(node: ts.Node | undefined) {
+    const source = readStringLiteral(node)
+
+    if (source !== null) {
       imports.push(source)
     }
   }
 
+  visit(sourceFile)
+
   return imports
+}
+
+function readStringLiteral(node: ts.Node | undefined): string | null {
+  if (
+    node !== undefined &&
+    (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node))
+  ) {
+    return node.text
+  }
+
+  return null
+}
+
+function isFacadeFile(filePath: string): boolean {
+  return filePath.endsWith(`${sep}index.ts`)
+}
+
+function isModuleApiFacadeImport(source: string): boolean {
+  return /^@workspace\/core\/modules\/[^/]+\/api$/.test(source)
 }
 
 function isRuntimeAdapterImport(source: string): boolean {
@@ -96,6 +179,15 @@ function isRuntimeAdapterImport(source: string): boolean {
     source.startsWith("hono/") ||
     source === "openai" ||
     source.startsWith("openai/")
+  )
+}
+
+function isCoreContentModuleImport(source: string): boolean {
+  return (
+    source === "@workspace/core/content" ||
+    source.startsWith("@workspace/core/content/") ||
+    source === "@workspace/core/modules/content" ||
+    source.startsWith("@workspace/core/modules/content/")
   )
 }
 

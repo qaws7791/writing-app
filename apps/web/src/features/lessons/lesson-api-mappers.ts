@@ -1,5 +1,9 @@
 import type { Lesson, LessonStep } from "@/features/lessons/lesson-types"
-import type { ApiLessonResponse } from "@/lib/api/writing-app-api"
+import type {
+  ApiAiFeedbackResponse,
+  ApiLessonResponse,
+} from "@/lib/api/writing-app-api-contract"
+import type { LessonAiFeedback } from "@/features/lessons/lesson-logic"
 
 export function mapLesson(response: ApiLessonResponse): Lesson {
   return {
@@ -12,6 +16,21 @@ export function mapLesson(response: ApiLessonResponse): Lesson {
     summary: response.summary,
     title: response.title,
     unitId: response.unitId,
+  }
+}
+
+export function mapAiFeedback(
+  response: ApiAiFeedbackResponse
+): LessonAiFeedback {
+  return {
+    improvements: response.improvements,
+    nextAction: response.nextAction,
+    remainingAttempts: response.remainingAttempts,
+    score: response.score,
+    scoreRange: response.scoreRange,
+    showScore: response.showScore,
+    strengths: response.strengths,
+    summary: response.summary,
   }
 }
 

@@ -1,0 +1,55 @@
+name: Document Drift
+
+on:
+  pull_request:
+    paths:
+      - "README.md"
+      - "CONTEXT.md"
+      - "ARCHITECTURE.md"
+      - "BACKEND.md"
+      - "FRONTEND.md"
+      - "DOMAIN.md"
+      - "GLOSSARY.md"
+      - "docs/**/*.md"
+      - "apps/api/src/**/*.ts"
+      - "apps/admin-api/src/**/*.ts"
+      - "apps/*/components.json"
+      - "apps/*/package.json"
+      - "packages/*/components.json"
+      - "packages/*/package.json"
+      - "package.json"
+      - "scripts/check-components-config.ts"
+      - "scripts/check-document-drift.ts"
+  push:
+    branches:
+      - main
+    paths:
+      - "README.md"
+      - "CONTEXT.md"
+      - "ARCHITECTURE.md"
+      - "BACKEND.md"
+      - "FRONTEND.md"
+      - "DOMAIN.md"
+      - "GLOSSARY.md"
+      - "docs/**/*.md"
+      - "apps/api/src/**/*.ts"
+      - "apps/admin-api/src/**/*.ts"
+      - "apps/*/components.json"
+      - "apps/*/package.json"
+      - "packages/*/components.json"
+      - "packages/*/package.json"
+      - "package.json"
+      - "scripts/check-components-config.ts"
+      - "scripts/check-document-drift.ts"
+
+jobs:
+  document-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - run: bun install --frozen-lockfile
+      - run: bun run check:document-drift
+      - run: bun run check:components-config

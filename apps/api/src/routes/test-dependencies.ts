@@ -5,9 +5,11 @@ import {
   lessonDtoSchema,
   type ContentRepository,
 } from "@workspace/core/modules/content"
+import type { AiFeedbackService } from "@workspace/core/modules/ai-feedback"
 import { readBearerToken } from "@workspace/core/modules/auth"
 import {
   createProgressService,
+  type LearningService,
   type ProgressReader,
 } from "@workspace/core/modules/learning"
 
@@ -26,10 +28,12 @@ const activeSession = {
 
 export function createTestDependencies(): ApiDependencies {
   return {
+    aiFeedbackService: createFailingAiFeedbackService(),
     contentService: createLearnerContentService({
       contentRepository,
       progressReader,
     }),
+    learningService: createFailingLearningService(),
     profileReader: {
       async readProfileStats() {
         return {
@@ -51,6 +55,28 @@ export function createTestDependencies(): ApiDependencies {
 
         return token === "active-token" ? activeSession : null
       },
+    },
+  }
+}
+
+export function createFailingAiFeedbackService(): AiFeedbackService {
+  return {
+    async createFeedback() {
+      throwUnexpectedTestDependencyCall("aiFeedbackService.createFeedback")
+    },
+  }
+}
+
+export function createFailingLearningService(): LearningService {
+  return {
+    async completeLesson() {
+      throwUnexpectedTestDependencyCall("learningService.completeLesson")
+    },
+    async saveLessonProgress() {
+      throwUnexpectedTestDependencyCall("learningService.saveLessonProgress")
+    },
+    async saveStepAnswer() {
+      throwUnexpectedTestDependencyCall("learningService.saveStepAnswer")
     },
   }
 }
@@ -170,4 +196,8 @@ const contentRepository: ContentRepository = {
       }),
     ]
   },
+}
+
+function throwUnexpectedTestDependencyCall(methodName: string): never {
+  throw new Error(`Unexpected test dependency call: ${methodName}`)
 }

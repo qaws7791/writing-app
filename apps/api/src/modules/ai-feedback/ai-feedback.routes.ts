@@ -2,7 +2,7 @@ import type { AnyRouteConfig } from "@workspace/hono/core"
 import { ErrorResponseSchema } from "@workspace/hono/errors"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
-import { mapCoreError } from "@/errors/map-core-error"
+import { unwrapApiCoreResult } from "@/errors/map-core-error"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
@@ -48,10 +48,6 @@ const aiFeedbackHandler: ApiRouteHandler<typeof aiFeedbackRouteConfig> = async (
 ) => {
   const aiFeedbackService = context.var.requestContext.aiFeedbackService
 
-  if (aiFeedbackService === undefined) {
-    throw new Error("AI feedback service is not configured.")
-  }
-
   const body = context.req.valid("json")
   const result = await aiFeedbackService.createFeedback(
     createAiFeedbackCommandSchema.parse({
@@ -61,11 +57,7 @@ const aiFeedbackHandler: ApiRouteHandler<typeof aiFeedbackRouteConfig> = async (
     })
   )
 
-  if (result.kind === "err") {
-    throw mapCoreError(result.error)
-  }
-
-  return context.json(result.value, 200)
+  return context.json(unwrapApiCoreResult(result), 200)
 }
 
 export const aiFeedbackRoute = defineApiRoute({

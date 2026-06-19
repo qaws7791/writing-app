@@ -1,19 +1,21 @@
 import type {
   AdminDeleteUserResultDto,
-  AdminRepository,
   AdminUserDetailDto,
   AdminUserListDto,
   AdminUserSort,
   AdminUserStatus,
+} from "@workspace/core/modules/admin/domain/admin.dto"
+import type {
   DeleteAdminUserInput,
   ReadAdminUserInput,
   ReadAdminUsersInput,
   UpdateAdminUserStatusInput,
-} from "@workspace/core/modules/admin/api"
+  UserAdminRepository,
+} from "@workspace/core/modules/admin/application/ports/admin.repository"
 import {
   toLearningDateKey,
   type LearningDateKey,
-} from "@workspace/core/modules/learning/api"
+} from "@workspace/core/modules/learning/domain/learning-date"
 import {
   contentStatuses,
   learnerAccountStatuses,
@@ -47,14 +49,9 @@ import {
   lessons,
 } from "@workspace/db/schema"
 
-type AdminUserRepository = Pick<
-  AdminRepository,
-  "deleteUser" | "readUser" | "readUsers" | "updateUserStatus"
->
-
 export function createAdminUserRepository(
   db: KwepDatabase
-): AdminUserRepository {
+): UserAdminRepository {
   return {
     deleteUser(input) {
       return Promise.resolve(deleteUser(db, input))

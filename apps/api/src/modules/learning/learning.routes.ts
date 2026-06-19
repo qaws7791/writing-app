@@ -2,12 +2,9 @@ import type { AnyRouteConfig } from "@workspace/hono/core"
 import { ErrorResponseSchema } from "@workspace/hono/errors"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
-import { mapCoreError } from "@/errors/map-core-error"
-import {
-  authenticatedResponses,
-  jsonResponse,
-  savedResponseSchema,
-} from "@/http/openapi"
+import { unwrapApiCoreResult } from "@/errors/map-core-error"
+import { authenticatedResponses, jsonResponse } from "@/http/openapi"
+import { savedResponseSchema } from "@/http/learner-contract.schemas"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
   completeLessonBodySchema,
@@ -47,10 +44,6 @@ const saveAnswerHandler: ApiRouteHandler<typeof saveAnswerRouteConfig> = async (
 ) => {
   const learningService = context.var.requestContext.learningService
 
-  if (learningService === undefined) {
-    throw new Error("Learning service is not configured.")
-  }
-
   const body = context.req.valid("json")
   const result = await learningService.saveStepAnswer({
     ...body,
@@ -58,11 +51,7 @@ const saveAnswerHandler: ApiRouteHandler<typeof saveAnswerRouteConfig> = async (
     userId: learnerIdSchema.parse(context.var.activeSession.user.id),
   })
 
-  if (result.kind === "err") {
-    throw mapCoreError(result.error)
-  }
-
-  return context.json(result.value, 200)
+  return context.json(unwrapApiCoreResult(result), 200)
 }
 
 export const saveAnswerRoute = defineApiRoute({
@@ -102,10 +91,6 @@ const completeLessonHandler: ApiRouteHandler<
 > = async (context) => {
   const learningService = context.var.requestContext.learningService
 
-  if (learningService === undefined) {
-    throw new Error("Learning service is not configured.")
-  }
-
   const { lessonId } = context.req.valid("param")
   const body = context.req.valid("json")
   const result = await learningService.completeLesson({
@@ -115,11 +100,7 @@ const completeLessonHandler: ApiRouteHandler<
     userId: learnerIdSchema.parse(context.var.activeSession.user.id),
   })
 
-  if (result.kind === "err") {
-    throw mapCoreError(result.error)
-  }
-
-  return context.json(result.value, 200)
+  return context.json(unwrapApiCoreResult(result), 200)
 }
 
 export const completeLessonRoute = defineApiRoute({

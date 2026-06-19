@@ -1,0 +1,32 @@
+{
+  "name": "@workspace/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./admin": "./src/admin/index.ts",
+    "./admin/*": "./src/admin/*.ts",
+    "./ai-feedback": "./src/ai-feedback/index.ts",
+    "./content": "./src/content/index.ts",
+    "./content/content.ids": "./src/content/content.ids.ts",
+    "./content/steps": "./src/content/steps/index.ts",
+    "./content/steps/*": "./src/content/steps/*.ts",
+    "./learning": "./src/learning/index.ts",
+    "./learning/learner-read-model": "./src/learning/learner-read-model.ts",
+    "./learning/learning": "./src/learning/learning.ts",
+    "./learning/learning.ids": "./src/learning/learning.ids.ts",
+    "./status": "./src/status.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@workspace/config": "workspace:*",
+    "typescript": "5.9.3"
+  }
+}

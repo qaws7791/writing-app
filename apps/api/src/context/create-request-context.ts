@@ -9,13 +9,13 @@ import type {
 import type { RequestLogger, RequestLoggingRuntime } from "@workspace/logger"
 
 export type ApiDependencies = {
-  readonly aiFeedbackService?: AiFeedbackService
+  readonly aiFeedbackService: AiFeedbackService
   readonly authHandler?: (request: Request) => Promise<Response>
-  readonly contentService?: LearnerContentService
-  readonly learningService?: LearningService
+  readonly contentService: LearnerContentService
+  readonly learningService: LearningService
   readonly now?: () => Date
   readonly profileReader: ProfileReader
-  readonly progressService?: ProgressService
+  readonly progressService: ProgressService
   readonly requestLogger?: RequestLogger
   readonly requestLoggingRuntime?: RequestLoggingRuntime
   readonly sessionResolver: SessionResolver

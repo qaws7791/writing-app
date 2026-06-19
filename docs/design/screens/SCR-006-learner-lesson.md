@@ -28,6 +28,7 @@
 - 중앙 콘텐츠만 스크롤된다.
 - 주요 CTA는 `LessonPrimaryButton`을 사용한다.
 - 완료 화면은 `bg-primary` fullscreen overlay를 사용한다.
+- 레슨 화면 구현은 시작, 진행, 완료 화면 파일을 분리하고, 다음 레슨 탐색은 `lesson-next-course-lesson.ts` selector가 담당한다.
 
 ## 상태
 
