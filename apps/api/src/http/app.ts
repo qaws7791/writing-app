@@ -7,11 +7,9 @@ import {
   type ApiDependencies,
   type ApiRequestContext,
 } from "@/context/create-request-context"
-import { createOpenApiDocument } from "@/http/openapi"
 import { createCorsMiddleware } from "@/middleware/cors.middleware"
 import { createRequestContextMiddleware } from "@/middleware/request-context.middleware"
-import { registerAuthProxy } from "@/modules/auth/auth-proxy"
-import { routes } from "@/routes"
+import { registerApiBootstrapRoutes, routes } from "@/routes"
 
 export type { ApiDependencies, ApiRequestContext }
 export { createOpenApiDocument } from "@/http/openapi"
@@ -23,9 +21,7 @@ export function createApp(dependencies: ApiDependencies): OpenAPIHono {
     routes,
   })
 
-  registerAuthProxy(app, dependencies.authHandler)
-
-  app.get("/openapi", (context) => context.json(createOpenApiDocument(app)))
+  registerApiBootstrapRoutes(app, dependencies)
 
   return app
 }
