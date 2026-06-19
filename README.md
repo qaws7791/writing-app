@@ -86,6 +86,7 @@ bun run storybook
 ## 주요 검증
 
 ```bash
+bun run check:components-config
 bun run check:document-drift
 bun run check:workspace-inventory
 bun run format:check

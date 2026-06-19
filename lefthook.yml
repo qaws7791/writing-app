@@ -21,6 +21,10 @@ pre-commit:
       glob: "{README.md,CONTEXT.md,ARCHITECTURE.md,BACKEND.md,FRONTEND.md,DOMAIN.md,GLOSSARY.md,docs/**/*.md,apps/api/src/**/*.ts,apps/admin-api/src/**/*.ts,package.json,apps/*/package.json,packages/*/package.json,scripts/check-document-drift.ts}"
       run: bun run check:document-drift
 
+    components-config:
+      glob: "{apps/*/components.json,packages/*/components.json,package.json,README.md,docs/engineering/testing.md,scripts/check-components-config.ts}"
+      run: bun run check:components-config
+
 pre-push:
   commands:
     workspace-lint:

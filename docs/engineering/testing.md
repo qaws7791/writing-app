@@ -50,6 +50,7 @@
 ## 주요 명령
 
 ```bash
+bun run check:components-config
 bun run check:document-drift
 bun run check:workspace-inventory
 bun run test

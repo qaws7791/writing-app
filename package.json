@@ -9,6 +9,7 @@
   "scripts": {
     "build": "turbo build",
     "build-storybook": "bun --filter storybook build",
+    "check:components-config": "bun scripts/check-components-config.ts",
     "check:document-drift": "bun scripts/check-document-drift.ts",
     "check:localhost-literals": "bun scripts/check-localhost-literals.ts",
     "check:workspace-inventory": "bun scripts/check-workspace-inventory.ts",
@@ -19,7 +20,7 @@
     "dev:app:setup": "bun --filter @workspace/db db:migrate && bun --filter @workspace/db db:seed",
     "dev:app:fresh": "bun run db:reset && bun run dev:app:setup && bun run dev:app",
     "db:reset": "bun --filter @workspace/db db:reset",
-    "lint": "bun run check:workspace-inventory && bun run check:document-drift && oxlint apps packages scripts",
+    "lint": "bun run check:workspace-inventory && bun run check:document-drift && bun run check:components-config && oxlint apps packages scripts",
     "lint:fix": "oxlint apps packages scripts --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",

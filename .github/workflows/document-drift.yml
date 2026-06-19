@@ -13,9 +13,12 @@ on:
       - "docs/**/*.md"
       - "apps/api/src/**/*.ts"
       - "apps/admin-api/src/**/*.ts"
+      - "apps/*/components.json"
       - "apps/*/package.json"
+      - "packages/*/components.json"
       - "packages/*/package.json"
       - "package.json"
+      - "scripts/check-components-config.ts"
       - "scripts/check-document-drift.ts"
   push:
     branches:
@@ -31,9 +34,12 @@ on:
       - "docs/**/*.md"
       - "apps/api/src/**/*.ts"
       - "apps/admin-api/src/**/*.ts"
+      - "apps/*/components.json"
       - "apps/*/package.json"
+      - "packages/*/components.json"
       - "packages/*/package.json"
       - "package.json"
+      - "scripts/check-components-config.ts"
       - "scripts/check-document-drift.ts"
 
 jobs:
@@ -46,3 +52,4 @@ jobs:
           bun-version: 1.3.10
       - run: bun install --frozen-lockfile
       - run: bun run check:document-drift
+      - run: bun run check:components-config
