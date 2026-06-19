@@ -170,6 +170,14 @@ function validateRootPackageScripts() {
     failures.push("package.json lint must run check:workspace-inventory.")
   }
 
+  const coverageScript = scripts["test:coverage"]
+  if (
+    typeof coverageScript !== "string" ||
+    !coverageScript.includes("vitest.workspace.ts")
+  ) {
+    failures.push("package.json test:coverage must use vitest.workspace.ts.")
+  }
+
   const analysisScript = scripts["repomix:analysis"]
   if (typeof analysisScript !== "string") {
     failures.push("package.json must declare repomix:analysis.")

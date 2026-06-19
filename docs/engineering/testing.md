@@ -77,6 +77,7 @@ bun --filter @workspace/web test
 ## 커버리지 기준
 
 - `bun run test:coverage`는 V8 coverage를 사용한다.
+- 루트 coverage는 `vitest.workspace.ts`를 사용하며, `vitest.config.ts`를 가진 workspace는 coverage workspace에 포함되어야 한다.
 - 현재 저장소에는 전역 최소 coverage threshold가 고정되어 있지 않다.
 - 새 정책, 권한, 보안, 데이터 보존 로직은 threshold 유무와 관계없이 회귀 테스트를 추가한다.
 - 단순 markup 변경은 UI smoke 수준으로 충분할 수 있다.
