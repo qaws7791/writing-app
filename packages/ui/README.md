@@ -1,30 +1,45 @@
-앱 layout에서는 공통 primitive와 Next 통합 컴포넌트의 import 경계를 분리한다.
-현재 앱의 필수 root provider는 `ThemeProvider`이며, toast UI가 필요한 앱은 같은
-`@workspace/ui/next` 경계에서 `Toaster`를 함께 배치한다.
+# `@workspace/ui`
 
-```tsx title="app/layout.tsx"
-import { ThemeProvider, Toaster } from "@workspace/ui/next"
+`packages/ui`는 앱 공통 UI primitive, 아이콘, 스타일 entrypoint만 제공하는
+도메인 비의존 패키지다. 라우팅, 인증, 앱 layout provider, 데이터 조회 같은
+런타임 조립 책임은 각 앱에 둔다.
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <html lang="ko">
-      <body>
-        <ThemeProvider>
-          {children}
-          <Toaster />
-        </ThemeProvider>
-      </body>
-    </html>
-  )
-}
+## 공개 entrypoint
+
+현재 public export는 실제 파일이 있는 아래 경계만 유지한다.
+
+| entrypoint                               | 책임                                                 |
+| ---------------------------------------- | ---------------------------------------------------- |
+| `@workspace/ui`                          | 공통 primitive와 `cn` helper를 한 번에 가져오는 집합 |
+| `@workspace/ui/styles`                   | 앱 전역 CSS import                                   |
+| `@workspace/ui/globals.css`              | `styles`와 같은 전역 CSS 호환 entrypoint             |
+| `@workspace/ui/postcss.config`           | Tailwind/PostCSS 설정 공유                           |
+| `@workspace/ui/lib/utils`                | `cn` helper                                          |
+| `@workspace/ui/utils`                    | `cn` helper의 stable utility entrypoint              |
+| `@workspace/ui/components/icons`         | 앱에서 반복 사용하는 공통 아이콘                     |
+| `@workspace/ui/components/ui/{컴포넌트}` | shadcn/Base UI 기반 primitive                        |
+
+## 사용 예시
+
+앱 전역 CSS는 앱의 root stylesheet에서 가져온다.
+
+```css
+@import "@workspace/ui/styles";
 ```
 
-`TooltipProvider`는 tooltip delay 같은 전역 기본값을 조정해야 할 때만 선택적으로
-추가한다. 개별 `Tooltip` 사용 자체를 위해 앱 root layout에 항상 추가할 필요는 없다.
+화면 구현에서는 필요한 primitive와 아이콘을 명시적인 entrypoint에서 가져온다.
+
+```tsx
+import { BookOpenIcon } from "@workspace/ui/components/icons"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Card, CardContent } from "@workspace/ui/components/ui/card"
+```
+
+간단한 화면에서는 root entrypoint를 사용할 수 있다.
+
+```tsx
+import { Button, Card, cn } from "@workspace/ui"
+```
 
 ## import 규칙
 

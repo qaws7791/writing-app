@@ -20,7 +20,7 @@
 - `apps/storybook`: 공유 UI 컴포넌트와 디자인 시스템 상태를 확인하는 Storybook이다.
 - `packages/core`: DTO, Zod schema, 도메인 서비스, repository port와 구현, 트랜잭션 경계, DB query, 학습자 API 런타임 조립을 둔다.
 - `packages/db`: Drizzle SQLite client, schema, migration, seed 같은 저수준 영속성 primitive를 둔다.
-- `packages/ui`: shadcn 기반 공유 UI 컴포넌트와 Next 통합 경계를 제공한다.
+- `packages/ui`: shadcn/Base UI 기반 공유 primitive, 아이콘, 스타일 entrypoint를 제공한다.
 - `packages/hono`: Hono route, validation, error handling 표준을 제공한다.
 - `packages/env`: 환경 변수 파싱과 로컬 기본값을 제공한다.
 - `packages/logger`: pino logger와 요청 로그 middleware를 제공한다.

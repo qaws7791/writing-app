@@ -9,6 +9,7 @@
 - 목적지가 있는 UI는 버튼처럼 보여도 `Link`를 사용한다.
 - 화면 텍스트와 `aria-label`은 한국어로 작성한다.
 - destructive 동작은 즉시 실행하지 않고 확인 dialog를 거친다.
+- 컴포넌트와 스타일 import 경계는 `@workspace/ui`, `@workspace/ui/styles`, `@workspace/ui/components/icons`, `@workspace/ui/components/ui/*`, `@workspace/ui/lib/utils`를 우선 사용한다. 호환 entrypoint와 설정 entrypoint는 `packages/ui/README.md`를 따른다.
 
 ## Button
 
