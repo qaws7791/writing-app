@@ -61,4 +61,15 @@ describe("코스 목록 화면", () => {
       within(courseCard as HTMLElement).getByText("8개 레슨")
     ).toBeInTheDocument()
   })
+
+  it("빈 코스 목록은 fallback 코스 대신 empty state로 보여준다", () => {
+    render(<CoursesPage courses={[]} />)
+
+    expect(
+      screen.getByRole("heading", { name: "아직 열려 있는 코스가 없습니다." })
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole("link", { name: /글쓰기 첫걸음 30일/ })
+    ).not.toBeInTheDocument()
+  })
 })
