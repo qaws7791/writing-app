@@ -109,10 +109,10 @@ function isWorkspaceCoreImport(source: string): boolean {
 }
 
 function isAdminApiBoundaryFile(filePath: string): boolean {
-  return relative(adminSourceRoot, filePath)
-    .split(sep)
-    .join("/")
-    .startsWith("lib/api/")
+  return (
+    relative(adminSourceRoot, filePath).split(sep).join("/") ===
+    "lib/api/http-admin-api.ts"
+  )
 }
 
 function formatViolation(filePath: string, source: string): string {
