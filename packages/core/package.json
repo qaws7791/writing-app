@@ -19,7 +19,6 @@
     "./content": "./src/modules/content/api/index.ts",
     "./learner-api-core": "./src/composition/bootstrap.ts",
     "./learning": "./src/modules/learning/api/index.ts",
-    "./learning/learning-match-presentation": "./src/modules/learning/domain/learning-match-presentation.ts",
     "./modules/auth": "./src/modules/auth/index.ts",
     "./modules/auth/api": "./src/modules/auth/api/index.ts",
     "./modules/admin": "./src/modules/admin/index.ts",

@@ -43,6 +43,16 @@ describe("apps/web architecture", () => {
 
     expect(violations).toEqual([])
   })
+
+  it("매칭 스텝 presentation 모델은 web feature 내부에서만 import한다", () => {
+    const violations = readSourceFiles(webSourceRoot).flatMap((filePath) => {
+      return readImports(filePath)
+        .filter(isWorkspaceMatchPresentationImport)
+        .map((source) => formatViolation(filePath, source))
+    })
+
+    expect(violations).toEqual([])
+  })
 })
 
 function readPackageDependencies(packageJsonPath: string): string[] {
@@ -151,6 +161,13 @@ function isWritingAppApiContractFile(filePath: string): boolean {
   return (
     relative(webSourceRoot, filePath).split(sep).join("/") ===
     "lib/api/writing-app-api-contract.ts"
+  )
+}
+
+function isWorkspaceMatchPresentationImport(source: string): boolean {
+  return (
+    source === "@workspace/contracts/learning/learning-match-presentation" ||
+    source === "@workspace/core/learning/learning-match-presentation"
   )
 }
 

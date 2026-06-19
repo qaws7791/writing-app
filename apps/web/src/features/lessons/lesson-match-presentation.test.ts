@@ -7,7 +7,7 @@ import {
   toMatchAnswerPairs,
   toggleMatchSelection,
   type MatchSelectionMap,
-} from "@/modules/learning/domain/learning-match-presentation"
+} from "@/features/lessons/lesson-match-presentation"
 
 describe("매칭 스텝 표시와 상호작용 정책", () => {
   it("오른쪽 선택지 순서는 같은 입력에서 결정적으로 고정한다", () => {

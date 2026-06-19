@@ -3,7 +3,6 @@ export * from "@workspace/core/modules/learning/domain/learner-profile-read-mode
 export * from "@workspace/core/modules/learning/domain/learner-read-model.dto"
 export * from "@workspace/core/modules/learning/domain/learning.dto"
 export * from "@workspace/core/modules/learning/domain/learning.ids"
-export * from "@workspace/core/modules/learning/domain/learning-match-presentation"
 export * from "@workspace/core/modules/learning/domain/learning-progress-read-model"
 export * from "@workspace/core/modules/learning/domain/step-answer-policy"
 export * from "@workspace/core/modules/learning/application/ports/learning.repository"

@@ -1,6 +1,6 @@
-import type { Brand } from "@workspace/contracts/content/content.ids"
-
-export type MatchChoiceId = Brand<string, "MatchChoiceId">
+export type MatchChoiceId = string & {
+  readonly __brand: "MatchChoiceId"
+}
 
 export type MatchStepPairInput = {
   readonly left: string

@@ -102,6 +102,7 @@ apps/api -> packages/core -> packages/db
 `packages/core`의 module public facade는 domain/application 계약을 노출하고, Drizzle·Better Auth·OpenAI 같은 infrastructure 어댑터는 composition 또는 명시적인 adapter subpath에서만 직접 의존한다.
 `packages/core` 내부 구현 파일은 `@workspace/core/modules/*/api` public facade를 역참조하지 않고, 필요한 domain·application port·use-case 선언 파일을 직접 import한다. 이 경계는 `packages/core/src/architecture.test.ts`에서 검증한다.
 학습자·관리자 request/response DTO와 Zod schema는 `packages/contracts`가 원본으로 소유한다. 관리자 contract는 `packages/contracts/src/admin` 아래 기능별 파일과 shared schema 파일로 나누고 `@workspace/contracts/admin` entrypoint가 공개 계약을 다시 노출한다. 브라우저 앱은 API 경계에서 contracts를 검증하고 화면은 앱 내부 모델을 소비한다. `apps/admin`은 `http-admin-api.ts` HTTP adapter에서만 admin contract를 검증·변환하고, API 포트와 화면은 앱 모델 타입을 소비한다. `apps/web`의 core 직접 import 금지는 아키텍처 테스트와 workspace lint rule로 고정하며, `packages/core`는 기존 public API 호환성을 위해 contracts를 re-export한다.
+매칭 스텝의 presentation choice id, deterministic shuffle, selection map, answer payload 변환은 HTTP contract나 core domain이 아니라 `apps/web/src/features/lessons/lesson-match-presentation.ts`가 소유하는 프런트엔드 feature model이다. `packages/contracts`는 학습 DTO schema만 노출하고, core는 이 웹 UI 상호작용 모델을 재수출하지 않는다.
 
 ## 현재 앱 라우트
 

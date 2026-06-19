@@ -27,6 +27,7 @@
 학습자 request/response DTO와 status enum은 `packages/contracts`의 Zod schema를 단일 기준으로 사용한다. `apps/api`의 route schema는 `@workspace/contracts/*`를 직접 import해 OpenAPI 문서를 생성하고, `apps/web`은 같은 정적 OpenAPI JSON에서 generated 타입을 만들며 런타임 응답 파싱은 가능한 범위에서 같은 contracts schema를 사용한다. API module은 인증 사용자 shape와 route response 조합만 담당한다.
 
 `apps/web` feature model은 앱 내부 타입으로 유지하며 `@workspace/core`를 직접 import하지 않는다. API wire DTO와 contracts schema는 `apps/web/src/lib/api` 경계에서 검증·변환한다.
+매칭 스텝의 presentation choice id, selection map, deterministic shuffle, answer pair 변환은 HTTP request/response 계약이 아니므로 `packages/contracts`에서 노출하지 않는다. 해당 상호작용 모델은 `apps/web/src/features/lessons/lesson-match-presentation.ts`가 소유한다.
 
 현재 route:
 

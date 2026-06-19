@@ -16,7 +16,6 @@
     "./learning/learner-read-model": "./src/learning/learner-read-model.ts",
     "./learning/learning": "./src/learning/learning.ts",
     "./learning/learning.ids": "./src/learning/learning.ids.ts",
-    "./learning/learning-match-presentation": "./src/learning/learning-match-presentation.ts",
     "./status": "./src/status.ts"
   },
   "scripts": {
