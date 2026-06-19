@@ -253,6 +253,242 @@ function validateWorkspaceInventoryDocument(
   }
 }
 
+function validatePackageExports(workspaceEntries: readonly WorkspaceEntry[]) {
+  for (const entry of workspaceEntries) {
+    const packageDirectory = path.join(repositoryRoot, entry.directory)
+    const manifestPath = path.join(packageDirectory, "package.json")
+    const manifest = readJsonFile(manifestPath)
+    const exportsValue = manifest["exports"]
+
+    if (exportsValue === undefined) {
+      continue
+    }
+
+    if (!isRecord(exportsValue)) {
+      failures.push(
+        `${entry.directory}/package.json exports must be an object.`
+      )
+      continue
+    }
+
+    for (const [exportKey, exportValue] of Object.entries(exportsValue)) {
+      validateExportKey(entry.directory, exportKey)
+      validateExportValue({
+        conditionPath: exportKey,
+        exportKey,
+        packageDirectory,
+        value: exportValue,
+      })
+    }
+  }
+}
+
+function validateExportKey(packageDirectory: string, exportKey: string) {
+  if (!exportKey.startsWith(".")) {
+    failures.push(
+      `${packageDirectory}/package.json export key ${exportKey} must start with ".".`
+    )
+  }
+
+  if (exportKey === "./src" || exportKey.startsWith("./src/")) {
+    failures.push(
+      `${packageDirectory}/package.json must not expose source-internal export key ${exportKey}.`
+    )
+  }
+}
+
+function validateExportValue({
+  conditionPath,
+  exportKey,
+  packageDirectory,
+  value,
+}: {
+  readonly conditionPath: string
+  readonly exportKey: string
+  readonly packageDirectory: string
+  readonly value: unknown
+}) {
+  if (typeof value === "string") {
+    validateExportTarget({
+      exportKey,
+      packageDirectory,
+      target: value,
+    })
+    return
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      failures.push(
+        `${packageDirectory}/package.json export ${conditionPath} must not be empty.`
+      )
+    }
+
+    for (const [index, item] of value.entries()) {
+      validateExportValue({
+        conditionPath: `${conditionPath}[${index}]`,
+        exportKey,
+        packageDirectory,
+        value: item,
+      })
+    }
+    return
+  }
+
+  if (isRecord(value)) {
+    const entries = Object.entries(value)
+
+    if (entries.length === 0) {
+      failures.push(
+        `${packageDirectory}/package.json export ${conditionPath} must not be empty.`
+      )
+    }
+
+    for (const [condition, target] of entries) {
+      validateExportValue({
+        conditionPath: `${conditionPath}.${condition}`,
+        exportKey,
+        packageDirectory,
+        value: target,
+      })
+    }
+    return
+  }
+
+  failures.push(
+    `${packageDirectory}/package.json export ${conditionPath} must resolve to a string target.`
+  )
+}
+
+function validateExportTarget({
+  exportKey,
+  packageDirectory,
+  target,
+}: {
+  readonly exportKey: string
+  readonly packageDirectory: string
+  readonly target: string
+}) {
+  if (!target.startsWith("./")) {
+    failures.push(
+      `${packageDirectory}/package.json export ${exportKey} target ${target} must be package-relative.`
+    )
+    return
+  }
+
+  const absolutePackageDirectory = path.resolve(packageDirectory)
+  const absoluteTarget = path.resolve(packageDirectory, target)
+
+  if (!isPathInsideDirectory(absoluteTarget, absolutePackageDirectory)) {
+    failures.push(
+      `${packageDirectory}/package.json export ${exportKey} target ${target} must stay inside the package.`
+    )
+    return
+  }
+
+  if (target.includes("*")) {
+    validateWildcardExportTarget({
+      absolutePackageDirectory,
+      exportKey,
+      packageDirectory,
+      target,
+    })
+    return
+  }
+
+  if (!fs.existsSync(absoluteTarget)) {
+    failures.push(
+      `${packageDirectory}/package.json export ${exportKey} target ${target} does not exist.`
+    )
+    return
+  }
+
+  if (!fs.statSync(absoluteTarget).isFile()) {
+    failures.push(
+      `${packageDirectory}/package.json export ${exportKey} target ${target} must be a file.`
+    )
+  }
+}
+
+function validateWildcardExportTarget({
+  absolutePackageDirectory,
+  exportKey,
+  packageDirectory,
+  target,
+}: {
+  readonly absolutePackageDirectory: string
+  readonly exportKey: string
+  readonly packageDirectory: string
+  readonly target: string
+}) {
+  const wildcardCount = [...target].filter(
+    (character) => character === "*"
+  ).length
+
+  if (wildcardCount !== 1) {
+    failures.push(
+      `${packageDirectory}/package.json export ${exportKey} target ${target} must use one wildcard.`
+    )
+    return
+  }
+
+  const [prefix = "", suffix = ""] = target.slice(2).split("*")
+  const searchRoot = prefix.endsWith("/")
+    ? prefix.slice(0, -1)
+    : path.dirname(prefix)
+  const absoluteSearchRoot = path.resolve(packageDirectory, searchRoot)
+
+  if (!isPathInsideDirectory(absoluteSearchRoot, absolutePackageDirectory)) {
+    failures.push(
+      `${packageDirectory}/package.json export ${exportKey} target ${target} must stay inside the package.`
+    )
+    return
+  }
+
+  if (
+    !fs.existsSync(absoluteSearchRoot) ||
+    !fs.statSync(absoluteSearchRoot).isDirectory()
+  ) {
+    failures.push(
+      `${packageDirectory}/package.json export ${exportKey} target ${target} base directory does not exist.`
+    )
+    return
+  }
+
+  const hasMatchingFile = collectFiles(absoluteSearchRoot).some((filePath) => {
+    const relativeFilePath = normalizePath(
+      path.relative(absolutePackageDirectory, filePath)
+    )
+
+    return (
+      relativeFilePath.startsWith(prefix) && relativeFilePath.endsWith(suffix)
+    )
+  })
+
+  if (!hasMatchingFile) {
+    failures.push(
+      `${packageDirectory}/package.json export ${exportKey} target ${target} has no matching files.`
+    )
+  }
+}
+
+function collectFiles(directory: string): string[] {
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = path.join(directory, entry.name)
+
+    return entry.isDirectory() ? collectFiles(entryPath) : [entryPath]
+  })
+}
+
+function isPathInsideDirectory(filePath: string, directory: string): boolean {
+  const relativePath = path.relative(directory, filePath)
+
+  return (
+    relativePath.length === 0 ||
+    (!relativePath.startsWith("..") && !path.isAbsolute(relativePath))
+  )
+}
+
 function readMarkdownTableRows(content: string): string[][] {
   return content
     .split(/\r?\n/)
@@ -275,6 +511,7 @@ validateVitestWorkspace(workspaceEntries)
 validateRootPackageScripts()
 validateTurboTasks()
 validateWorkspaceInventoryDocument(workspaceEntries)
+validatePackageExports(workspaceEntries)
 
 if (failures.length > 0) {
   console.error("Workspace inventory check failed.")
