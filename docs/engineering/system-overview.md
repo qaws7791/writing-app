@@ -132,6 +132,7 @@ apps/api -> packages/core -> packages/db
 
 콘텐츠 조회는 core의 공통 content reader가 repository 조회, DTO 검증, not-found result를 담당한다. `LearnerContentService`는 이 조회 결과에 학습자 진행률을 합성하는 책임만 추가한다.
 학습 step answer 검증은 `packages/core/src/modules/learning/domain/step-answer-policy.ts`의 domain policy가 소유한다. `LearningService`는 command parse, lesson 조회, policy 판정, repository 저장 조정에 집중하고 step type별 answer validator를 직접 구현하지 않는다.
+AI 피드백 생성은 `AiFeedbackService`가 lesson 조회와 AI_FEEDBACK step 판정만 담당하고, 시도 한도 계산·prompt 기반 provider 호출·결과 저장은 `ai-feedback-attempt-coordinator.ts`가 조정한다. AI_FEEDBACK step 지원 여부는 `ai-feedback-step-policy.ts` domain policy가 소유한다.
 
 어드민 API는 `apps/admin-api/src/main.ts`에서 SQLite DB, 어드민 repository, Better Auth, 관리자 세션 resolver, 요청 로거를 조립한다. Route의 request/query wire contract는 `packages/contracts/admin`을 직접 참조하고, `apps/admin` 화면은 core나 admin wire DTO package를 직접 import하지 않는다.
 

@@ -1,19 +1,16 @@
 import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
 import { lessonDtoSchema } from "@workspace/core/modules/content/domain/content.dto"
 import {
-  aiFeedbackPayloadSchema,
   createAiFeedbackCommandSchema,
   type CreateAiFeedbackCommand,
   type AiFeedbackResultDto,
 } from "@workspace/core/modules/ai-feedback/domain/ai-feedback.dto"
-import {
-  aiFeedbackAttemptPolicySchema,
-  type AiFeedbackAttemptPolicy,
-} from "@workspace/core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
+import type { AiFeedbackAttemptPolicy } from "@workspace/core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import type { AiFeedbackProvider } from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.provider"
-import { createAiFeedbackPrompt } from "@workspace/core/modules/ai-feedback/domain/ai-feedback.prompt"
 import type { AiFeedbackRepository } from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.repository"
-import { err, ok, type Result } from "@workspace/core/shared/result"
+import { resolveAiFeedbackStep } from "@workspace/core/modules/ai-feedback/domain/ai-feedback-step-policy"
+import { createAiFeedbackAttemptCoordinator } from "@workspace/core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
+import { err, type Result } from "@workspace/core/shared/result"
 
 export type AiFeedbackServiceError =
   | {
@@ -53,7 +50,11 @@ export function createAiFeedbackService({
   readonly feedbackRepository: AiFeedbackRepository
   readonly provider: AiFeedbackProvider
 }): AiFeedbackService {
-  const parsedAttemptPolicy = aiFeedbackAttemptPolicySchema.parse(attemptPolicy)
+  const attemptCoordinator = createAiFeedbackAttemptCoordinator({
+    attemptPolicy,
+    feedbackRepository,
+    provider,
+  })
 
   return {
     async createFeedback(command) {
@@ -68,80 +69,22 @@ export function createAiFeedbackService({
       }
 
       const parsedLesson = lessonDtoSchema.parse(lesson)
-      const step = parsedLesson.steps.find(
-        (candidate) => candidate.id === parsedCommand.stepId
-      )
+      const stepResolution = resolveAiFeedbackStep({
+        lesson: parsedLesson,
+        stepId: parsedCommand.stepId,
+      })
 
-      if (step === undefined) {
+      if (stepResolution.kind === "rejected") {
         return err({
           kind: "invalid-request",
-          reason: "step-not-found-in-lesson",
-          stepId: parsedCommand.stepId,
+          reason: stepResolution.reason,
+          stepId: stepResolution.stepId,
         })
       }
 
-      if (step.type !== "AI_FEEDBACK") {
-        return err({
-          kind: "invalid-request",
-          reason: "step-feedback-not-supported",
-          stepId: parsedCommand.stepId,
-        })
-      }
-
-      const completedAttempts = await feedbackRepository.countCompletedAttempts(
-        {
-          lessonId: parsedCommand.lessonId,
-          stepId: parsedCommand.stepId,
-          userId: parsedCommand.userId,
-        }
-      )
-      const remainingAttempts = Math.max(
-        0,
-        parsedAttemptPolicy.maxCompletedAttempts - completedAttempts
-      )
-
-      if (remainingAttempts === 0) {
-        return err({
-          kind: "attempt-limit-exceeded",
-          remainingAttempts: 0,
-        })
-      }
-
-      const providerResult = await provider.createFeedback(
-        createAiFeedbackPrompt({
-          answer: parsedCommand.answer,
-          focus: step.focus,
-          lessonTitle: parsedLesson.title,
-        })
-      )
-
-      if (providerResult.kind === "err") {
-        return err({
-          kind: "provider-failed",
-          remainingAttempts,
-        })
-      }
-
-      const result = aiFeedbackPayloadSchema.parse(providerResult.value)
-      const saveResult = await feedbackRepository.saveCompletedAttempt(
-        {
-          ...parsedCommand,
-          result,
-        },
-        parsedAttemptPolicy.maxCompletedAttempts
-      )
-
-      if (saveResult.kind === "limit-exceeded") {
-        return err({
-          kind: "attempt-limit-exceeded",
-          remainingAttempts: 0,
-        })
-      }
-
-      return ok({
-        ...result,
-        remainingAttempts:
-          parsedAttemptPolicy.maxCompletedAttempts - saveResult.attemptNumber,
+      return attemptCoordinator.createAttempt(parsedCommand, {
+        focus: stepResolution.step.focus,
+        lessonTitle: parsedLesson.title,
       })
     },
   }
