@@ -61,6 +61,8 @@ bun run build
 bun lefthook run pre-commit
 ```
 
+`packages/ui/tsconfig.lint.json`은 실제 TypeScript source와 Vitest 설정 파일만 포함한다. 존재하지 않는 생성기 경로나 빌드 출력 경로를 lint tsconfig에 추가하지 않는다.
+
 워크스페이스 단위 검증 예시는 다음과 같다.
 
 ```bash
