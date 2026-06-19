@@ -40,7 +40,7 @@
 
 `apps/api`는 학습자 HTTP transport 경계다. Hono 앱 생성, 라우트 등록, 미들웨어, 환경 변수 파싱, 인증 헤더 전달, request body 파싱, transport-level validation, core 호출, HTTP response 변환, 에러 매핑, 프로세스 시작만 이곳에서 수행한다.
 
-현재 reset 단계에서는 기존 `apps/api/src` 구현을 제거했다. 아래 라우트와 정책은 후속 Task에서 새 baseline으로 다시 작성할 목표 계약이다.
+현재 API 라우트는 `apps/api/src/modules/*`와 `apps/api/src/http`에 구현되어 있으며, 아래 라우트와 정책을 현재 계약으로 유지한다.
 
 현재 API 라우트는 버전 접두사 없이 노출한다. 사용자 정보가 필요하지 않은 콘텐츠 조회 API는 공개로 유지하고, 사용자별 데이터가 필요한 API만 Better Auth 세션 인증을 요구한다.
 
@@ -91,7 +91,7 @@ bun --filter @workspace/api dev
 
 `apps/admin-api`는 관리자용 백엔드 조립 루트다. 플랫폼 API와 별도 Hono 런타임으로 실행되며, 꺼져 있어도 학습자 플랫폼 API는 정상 동작해야 한다.
 
-현재 reset 단계에서는 기존 `apps/admin-api/src` 구현을 제거했다. 아래 라우트는 후속 Task에서 새 baseline으로 다시 작성할 목표 계약이다.
+현재 어드민 API 라우트는 `apps/admin-api/src/routes`에 구현되어 있으며, 아래 라우트를 현재 계약으로 유지한다.
 
 주요 라우트는 다음과 같다.
 

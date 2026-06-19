@@ -30,7 +30,7 @@
 
 ## 현재 앱 라우트
 
-아래 라우트는 Kwep 피벗의 목표 라우트다. 현재 reset 단계에서는 `apps/web/src`, `apps/admin/src`, `packages/ui/src`의 기존 구현을 제거했고, 후속 Task에서 같은 monorepo 골격 위에 새 화면을 작성한다.
+아래 라우트는 현재 `apps/web/src/app`과 `apps/admin/src/app`에 구현된 화면 계약이다.
 
 ### 학습자 웹
 

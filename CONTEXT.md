@@ -27,11 +27,11 @@
 - `packages/http-client`: HTTP transport result와 네트워크 오류 모델을 제공한다.
 - `packages/config`: workspace TypeScript 설정을 제공한다.
 
-## 피벗 reset 상태
+## 현재 구현 상태
 
-Kwep 피벗은 기존 제품 구현을 이어 고치는 방식이 아니라 새 baseline을 작성하는 방식으로 진행한다. 현재 `apps/api`, `apps/web`, `apps/admin-api`, `apps/admin`, `packages/core`, `packages/db`, `packages/ui`, `packages/env`, `packages/logger`의 기존 `src` 구현은 제거했고, package manifest와 TypeScript, ESLint, Vitest, Next/Hono 실행 설정 같은 monorepo 골격만 보존한다.
+Kwep 피벗 baseline은 현재 `apps/*/src`와 `packages/*/src`에 구현되어 있다. 학습자 웹/API, 어드민 웹/API, 공유 UI, core 도메인 계약, DB schema/seed, 환경 변수 파서, logger, HTTP client result 모델을 같은 Bun workspace에서 관리한다.
 
-후속 Task는 보존된 골격 위에 Kwep 요구사항 기준의 새 API, DB, UI 구현을 추가한다.
+루트 workspace 인벤토리와 검증 기준은 `docs/engineering/workspace-inventory.md`를 단일 기준으로 둔다. `Kwep/`는 요구사항과 콘텐츠 seed 참고 원천으로만 사용하며 제품 런타임은 `Kwep/` 구현 파일을 import하지 않는다.
 
 ## 핵심 런타임 경계
 
