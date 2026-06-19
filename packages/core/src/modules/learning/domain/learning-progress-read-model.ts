@@ -7,6 +7,7 @@ import {
   lessonProgressStatuses,
   type LessonProgressStatus as PersistedLessonProgressStatus,
 } from "@workspace/core/shared/kernel/status"
+import type { LessonAvailabilityStatus } from "@workspace/core/modules/learning/domain/learner-read-model.dto"
 
 export type LearnerProgressSnapshot = {
   readonly currentStreakDays: number
@@ -24,8 +25,6 @@ export type ProgressReader = {
     userId: string
   ) => Promise<LearnerProgressSnapshot>
 }
-
-export type LessonAvailabilityStatus = "available" | "completed" | "locked"
 
 export function toCourseProgress(
   course: CourseSummaryDto,

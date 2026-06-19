@@ -24,6 +24,8 @@
 
 기준 URL은 환경별 `NEXT_PUBLIC_API_BASE_URL` 또는 `WEB_API_BASE_URL`이 가리키는 `apps/api` origin이다.
 
+`/profile`의 통계 shape와 `/progress`의 진행률 overview shape는 `packages/core/modules/learning`의 learner read-model DTO schema를 단일 기준으로 사용한다. API module은 인증 사용자 shape와 route response 조합만 담당한다.
+
 현재 route:
 
 | 메서드     | 경로                                    | 인증          | 설명                           |

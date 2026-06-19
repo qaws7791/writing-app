@@ -1,13 +1,9 @@
-import { learnerUserSchema } from "@/http/openapi"
+import { learnerProfileStatsDtoSchema } from "@workspace/core/modules/learning"
 import { z } from "@workspace/hono/zod"
 
+import { learnerUserSchema } from "@/http/openapi"
+
 export const profileResponseSchema = z.object({
-  stats: z.object({
-    completedLessons: z.number().int().nonnegative(),
-    currentStreakDays: z.number().int().nonnegative(),
-    lastActiveDate: z.string().nullable(),
-    progressPercent: z.number().int().min(0).max(100),
-    totalLessons: z.number().int().nonnegative(),
-  }),
+  stats: learnerProfileStatsDtoSchema,
   user: learnerUserSchema,
 })
