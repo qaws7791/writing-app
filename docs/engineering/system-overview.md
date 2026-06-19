@@ -131,6 +131,7 @@ apps/api -> packages/core -> packages/db
 학습자 API는 `apps/api/src/main.ts`에서 `createLearnerApiCore()`를 통해 core 서비스를 조립하고 Hono 앱에 주입한다. OpenAPI 문서는 실제 등록 route에서 `/openapi`로 생성하며, route schema는 `packages/contracts`의 Zod 계약을 직접 참조한다. 정적 OpenAPI JSON과 웹 generated 타입의 drift는 `bun run check:api-contract`에서 함께 검증한다.
 
 콘텐츠 조회는 core의 공통 content reader가 repository 조회, DTO 검증, not-found result를 담당한다. `LearnerContentService`는 이 조회 결과에 학습자 진행률을 합성하는 책임만 추가한다.
+학습 step answer 검증은 `packages/core/src/modules/learning/domain/step-answer-policy.ts`의 domain policy가 소유한다. `LearningService`는 command parse, lesson 조회, policy 판정, repository 저장 조정에 집중하고 step type별 answer validator를 직접 구현하지 않는다.
 
 어드민 API는 `apps/admin-api/src/main.ts`에서 SQLite DB, 어드민 repository, Better Auth, 관리자 세션 resolver, 요청 로거를 조립한다. Route의 request/query wire contract는 `packages/contracts/admin`을 직접 참조하고, `apps/admin` 화면은 core나 admin wire DTO package를 직접 import하지 않는다.
 

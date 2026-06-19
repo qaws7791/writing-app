@@ -46,6 +46,8 @@
 | `POST`     | `/learning/lessons/{lessonId}/complete` | active 학습자 | 레슨 완료                      |
 | `POST`     | `/ai-feedback`                          | active 학습자 | AI 코칭 생성                   |
 
+`POST /learning/answers`의 transport schema는 학습 답변 union을 검증하고, core의 `LearningService`는 lesson 조회 뒤 `step-answer-policy`에 step type별 answer 검증을 위임한다. 따라서 route나 service가 콘텐츠 후보, unsupported step, lesson-started marker 규칙을 중복 구현하지 않는다.
+
 ## 어드민 API
 
 기준 URL은 `ADMIN_API_BASE_URL`이 가리키는 `apps/admin-api` origin이다.

@@ -38,6 +38,8 @@ describe("학습 서비스", () => {
     expect(source).not.toContain("function readStringArray")
     expect(source).not.toContain("function readNumberArray")
     expect(source).not.toContain("function readObjectArray")
+    expect(source).not.toContain("function isValidStepAnswer")
+    expect(source).toContain("validateStepAnswerForLesson")
   })
 
   it("Kwep 답변 가능 스텝 타입과 일치하는 저장 요청을 허용한다", async () => {
