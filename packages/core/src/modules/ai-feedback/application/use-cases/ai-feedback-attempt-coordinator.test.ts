@@ -37,7 +37,7 @@ const context = {
 }
 
 describe("AI 피드백 시도 coordinator", () => {
-  it("provider 결과를 Kwep AI 코칭 응답 DTO로 정렬하고 저장한다", async () => {
+  it("provider 결과를 AI 코칭 응답 DTO로 정렬하고 저장한다", async () => {
     const savedAttempts: AiFeedbackAttemptRecord[] = []
     const providerInputs: AiFeedbackProviderInput[] = []
     const coordinator = createCoordinator({
@@ -74,7 +74,7 @@ describe("AI 피드백 시도 coordinator", () => {
           "칭찬은 구체적으로, 개선점은 다음 시도에서 바로 적용할 수 있게 씁니다.",
           "점수는 0부터 100 사이 정수로 판단합니다.",
         ].join("\n"),
-        policyVersion: "kwep-writing-coach-v1",
+        policyVersion: "writing-coach-v1",
       },
     ])
     expect(savedAttempts).toEqual([

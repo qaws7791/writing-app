@@ -6,7 +6,7 @@ import { Database } from "bun:sqlite"
 
 import { describe, expect, it } from "vitest"
 
-import { createKwepDatabase } from "@/client"
+import { createWritingAppDatabase } from "@/client"
 import {
   authUsers,
   courses,
@@ -20,14 +20,14 @@ import {
 import { seedDatabase } from "@/seeds/seed"
 
 describe("개발 DB seed 실행", () => {
-  it("baseline migration을 적용하고 Kwep 콘텐츠를 삽입한다", async () => {
-    const tempDirectory = mkdtempSync(join(tmpdir(), "kwep-seed-"))
+  it("baseline migration을 적용하고 기준 콘텐츠를 삽입한다", async () => {
+    const tempDirectory = mkdtempSync(join(tmpdir(), "writing-app-seed-"))
     const databaseUrl = join(tempDirectory, "api.sqlite")
 
     try {
       await seedDatabase(databaseUrl)
 
-      const client = createKwepDatabase(databaseUrl)
+      const client = createWritingAppDatabase(databaseUrl)
 
       try {
         expect(client.db.select().from(courses).all()).toHaveLength(5)
@@ -56,13 +56,15 @@ describe("개발 DB seed 실행", () => {
   })
 
   it("seed 재실행 시 기존 학습 진행과 답변 기록을 보존한다", async () => {
-    const tempDirectory = mkdtempSync(join(tmpdir(), "kwep-seed-preserve-"))
+    const tempDirectory = mkdtempSync(
+      join(tmpdir(), "writing-app-seed-preserve-")
+    )
     const databaseUrl = join(tempDirectory, "api.sqlite")
 
     try {
       await seedDatabase(databaseUrl)
 
-      const client = createKwepDatabase(databaseUrl)
+      const client = createWritingAppDatabase(databaseUrl)
 
       try {
         const now = new Date("2026-06-15T00:00:00.000Z")
@@ -97,7 +99,7 @@ describe("개발 DB seed 실행", () => {
 
       await seedDatabase(databaseUrl)
 
-      const reseededClient = createKwepDatabase(databaseUrl)
+      const reseededClient = createWritingAppDatabase(databaseUrl)
 
       try {
         expect(
@@ -128,13 +130,15 @@ describe("개발 DB seed 실행", () => {
   })
 
   it("seed 데이터에 없는 기존 콘텐츠는 삭제하지 않고 archived 처리한다", async () => {
-    const tempDirectory = mkdtempSync(join(tmpdir(), "kwep-seed-archive-"))
+    const tempDirectory = mkdtempSync(
+      join(tmpdir(), "writing-app-seed-archive-")
+    )
     const databaseUrl = join(tempDirectory, "api.sqlite")
 
     try {
       await seedDatabase(databaseUrl)
 
-      const client = createKwepDatabase(databaseUrl)
+      const client = createWritingAppDatabase(databaseUrl)
 
       try {
         client.db
@@ -191,7 +195,7 @@ describe("개발 DB seed 실행", () => {
 
       await seedDatabase(databaseUrl)
 
-      const reseededClient = createKwepDatabase(databaseUrl)
+      const reseededClient = createWritingAppDatabase(databaseUrl)
 
       try {
         expect(
@@ -231,7 +235,9 @@ describe("개발 DB seed 실행", () => {
   })
 
   it("production에서는 명시적 허용 조건 없이 seed를 실행하지 않는다", async () => {
-    const tempDirectory = mkdtempSync(join(tmpdir(), "kwep-production-seed-"))
+    const tempDirectory = mkdtempSync(
+      join(tmpdir(), "writing-app-production-seed-")
+    )
     const databaseUrl = join(tempDirectory, "api.sqlite")
 
     try {
@@ -249,7 +255,9 @@ describe("개발 DB seed 실행", () => {
   })
 
   it("저장소 data 밖의 이전 DB 파일은 명시적 허용 조건이 있어도 재생성하지 않는다", async () => {
-    const tempDirectory = mkdtempSync(join(tmpdir(), "kwep-legacy-seed-"))
+    const tempDirectory = mkdtempSync(
+      join(tmpdir(), "writing-app-legacy-seed-")
+    )
     const databaseUrl = join(tempDirectory, "api.sqlite")
     const legacyClient = new Database(databaseUrl)
 
@@ -388,7 +396,7 @@ describe("개발 DB seed 실행", () => {
         forceDatabaseReset: true,
       })
 
-      const client = createKwepDatabase(databaseUrl)
+      const client = createWritingAppDatabase(databaseUrl)
 
       try {
         const courseColumns = client.sqlite

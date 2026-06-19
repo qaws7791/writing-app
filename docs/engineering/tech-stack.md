@@ -32,14 +32,14 @@
 
 ## 백엔드
 
-| 기술                | 버전      | 사용 위치                                     | 선택 근거                                                        |
-| ------------------- | --------- | --------------------------------------------- | ---------------------------------------------------------------- |
-| Hono                | `^4.10.0` | `apps/api`, `apps/admin-api`, `packages/hono` | Bun 런타임에서 작은 HTTP transport 경계를 만든다.                |
-| `@hono/zod-openapi` | `^1.4.0`  | `apps/api`, `packages/hono`                   | route 정의와 OpenAPI 생성을 같은 위치에 둔다.                    |
-| `hono-openapi`      | `^1.1.0`  | `apps/admin-api`                              | 어드민 API 의존성에 남아 있다.                                   |
-| Zod                 | `^4.2.0`  | 전 영역                                       | 런타임 validation과 DTO schema를 명시한다.                       |
-| Better Auth         | `^1.6.0`  | 인증                                          | 학습자 Google OAuth와 관리자 ID/password 인증을 분리해 조립한다. |
-| OpenAI SDK          | `^6.39.0` | `packages/core`                               | AI 피드백 provider adapter에서 사용한다.                         |
+| 기술                | 버전      | 사용 위치                                     | 선택 근거                                                            |
+| ------------------- | --------- | --------------------------------------------- | -------------------------------------------------------------------- |
+| Hono                | `^4.10.0` | `apps/api`, `apps/admin-api`, `packages/hono` | Bun 런타임에서 작은 HTTP transport 경계를 만든다.                    |
+| `@hono/zod-openapi` | `^1.4.0`  | `apps/api`, `packages/hono`                   | route 정의와 OpenAPI 생성을 같은 위치에 둔다.                        |
+| `hono-openapi`      | `^1.1.0`  | `apps/admin-api`                              | 어드민 API 의존성에 남아 있다.                                       |
+| Zod                 | `^4.2.0`  | 전 영역                                       | 런타임 validation과 DTO schema를 명시한다.                           |
+| Better Auth         | `^1.6.0`  | 인증                                          | 학습자 Google OAuth와 관리자 아이디/패스워드 인증을 분리해 조립한다. |
+| OpenAI SDK          | `^6.39.0` | `packages/core`                               | AI 피드백 provider adapter에서 사용한다.                             |
 
 ## 데이터
 
@@ -68,7 +68,7 @@
 - Next.js, React, React DOM은 앱 단위에서 같은 버전을 사용한다.
 - 새 의존성은 앱 또는 패키지의 책임 경계 안에서만 추가한다.
 - 한 기능 때문에 루트 공통 의존성으로 승격하지 않는다.
-- `Kwep/`의 의존성은 제품 스택 판단에 포함하지 않는다.
+- 레거시 실험 디렉터리의 의존성은 제품 스택 판단에 포함하지 않는다.
 - workspace package의 runtime dependency는 해당 workspace source, stylesheet, 또는 명시적 script에서 직접 사용하는 경우에만 둔다.
 
 ## 의존성 추가 기준

@@ -26,7 +26,7 @@ import {
   sql,
 } from "drizzle-orm"
 
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   calculateCurrentStreakDays,
   createActiveLearnerCondition,
@@ -45,7 +45,7 @@ import {
 const recentActivityLimit = 5
 
 export function createAdminDashboardRepository(
-  db: KwepDatabase
+  db: WritingAppDatabase
 ): DashboardReader {
   return {
     readDashboard(input) {
@@ -55,7 +55,7 @@ export function createAdminDashboardRepository(
 }
 
 function readDashboard(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: ReadAdminDashboardInput
 ): AdminDashboardDto {
   const todayKey = toLearningDateKey(input.now)
@@ -84,7 +84,7 @@ function readDashboard(
   }
 }
 
-function readActiveCourseCount(db: KwepDatabase): number {
+function readActiveCourseCount(db: WritingAppDatabase): number {
   return (
     db
       .select({ value: count() })
@@ -94,7 +94,7 @@ function readActiveCourseCount(db: KwepDatabase): number {
   )
 }
 
-function readActiveLessonCount(db: KwepDatabase): number {
+function readActiveLessonCount(db: WritingAppDatabase): number {
   return (
     db
       .select({ value: count() })
@@ -113,7 +113,7 @@ function readActiveLessonCount(db: KwepDatabase): number {
 }
 
 function readActiveUsersLast7DaysCount(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: {
     readonly last7DaysStart: string
     readonly todayKey: string
@@ -136,7 +136,7 @@ function readActiveUsersLast7DaysCount(
   )
 }
 
-function readCompletedLessonCount(db: KwepDatabase): number {
+function readCompletedLessonCount(db: WritingAppDatabase): number {
   return (
     db
       .select({ value: count() })
@@ -154,7 +154,7 @@ function readCompletedLessonCount(db: KwepDatabase): number {
 }
 
 function readSignupCountByLearningDate(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   range: {
     readonly end: LearningDateKey
     readonly start: LearningDateKey
@@ -171,7 +171,7 @@ function readSignupCountByLearningDate(
     ).length
 }
 
-function readLearnerCount(db: KwepDatabase): number {
+function readLearnerCount(db: WritingAppDatabase): number {
   return (
     db
       .select({ value: count() })
@@ -183,7 +183,7 @@ function readLearnerCount(db: KwepDatabase): number {
 }
 
 function readRecentActivities(
-  db: KwepDatabase
+  db: WritingAppDatabase
 ): AdminDashboardDto["recentActivities"] {
   const nameExpression = sql<string>`coalesce(${learnerProfiles.displayName}, ${authUsers.name})`
   const lastActiveExpression = sql<string>`max(${learnerActivityDays.activityDate})`

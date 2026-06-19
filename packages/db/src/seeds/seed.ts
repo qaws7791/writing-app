@@ -4,10 +4,10 @@ import { fileURLToPath } from "node:url"
 
 import { archiveContentRowsOutsideSeed } from "@/content/content-archive-policy"
 import {
-  createKwepDatabase,
+  createWritingAppDatabase,
   getDefaultDatabaseUrl,
-  type KwepDatabase,
-  type KwepDatabaseClient,
+  type WritingAppDatabase,
+  type WritingAppDatabaseClient,
 } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import {
@@ -27,8 +27,8 @@ import {
 } from "@workspace/db/seeds/seed-content"
 import { persistedLearnerAccountStatuses } from "@workspace/db/persisted-values"
 
-type KwepDatabaseTransaction = Parameters<
-  Parameters<KwepDatabase["transaction"]>[0]
+type WritingAppDatabaseTransaction = Parameters<
+  Parameters<WritingAppDatabase["transaction"]>[0]
 >[0]
 
 const repositoryDataDirectory = fileURLToPath(
@@ -52,13 +52,13 @@ export async function seedDatabase(
   assertProductionSeedAllowed(options)
   ensureDatabaseDirectory(databaseUrl)
 
-  let client = createKwepDatabase(databaseUrl)
+  let client = createWritingAppDatabase(databaseUrl)
 
   try {
     if (shouldRecreateLegacyDatabase(client, databaseUrl)) {
       client.close()
       recreateDatabaseFile(databaseUrl, options)
-      client = createKwepDatabase(databaseUrl)
+      client = createWritingAppDatabase(databaseUrl)
     }
 
     runBaselineMigration(client.sqlite)
@@ -127,7 +127,7 @@ function ensureDatabaseDirectory(databaseUrl: string): void {
 }
 
 function shouldRecreateLegacyDatabase(
-  client: KwepDatabaseClient,
+  client: WritingAppDatabaseClient,
   databaseUrl: string
 ): boolean {
   const databasePath = getDatabaseFilePath(databaseUrl)
@@ -171,7 +171,7 @@ function shouldRecreateLegacyDatabase(
 }
 
 function readTableColumns(
-  client: KwepDatabaseClient,
+  client: WritingAppDatabaseClient,
   tableName: string
 ): readonly string[] {
   return client.sqlite
@@ -245,7 +245,7 @@ function getDatabaseFilePath(databaseUrl: string): string | null {
   return databaseUrl
 }
 
-function seedDefaultLearner(client: KwepDatabaseClient): void {
+function seedDefaultLearner(client: WritingAppDatabaseClient): void {
   const now = new Date("2026-06-14T00:00:00.000Z")
 
   client.db
@@ -290,7 +290,9 @@ function seedDefaultLearner(client: KwepDatabaseClient): void {
     .run()
 }
 
-async function upsertContentRows(client: KwepDatabaseClient): Promise<void> {
+async function upsertContentRows(
+  client: WritingAppDatabaseClient
+): Promise<void> {
   const rows = await createDefaultContentSeedRows()
 
   client.db.transaction((transaction) => {
@@ -303,7 +305,7 @@ async function upsertContentRows(client: KwepDatabaseClient): Promise<void> {
 }
 
 function upsertCourses(
-  transaction: KwepDatabaseTransaction,
+  transaction: WritingAppDatabaseTransaction,
   rows: readonly CourseSeedRow[]
 ): void {
   for (const row of rows) {
@@ -326,7 +328,7 @@ function upsertCourses(
 }
 
 function upsertCourseUnits(
-  transaction: KwepDatabaseTransaction,
+  transaction: WritingAppDatabaseTransaction,
   rows: readonly CourseUnitSeedRow[]
 ): void {
   for (const row of rows) {
@@ -347,7 +349,7 @@ function upsertCourseUnits(
 }
 
 function upsertLessons(
-  transaction: KwepDatabaseTransaction,
+  transaction: WritingAppDatabaseTransaction,
   rows: readonly LessonSeedRow[]
 ): void {
   for (const row of rows) {
@@ -373,7 +375,7 @@ function upsertLessons(
 }
 
 function upsertLessonSteps(
-  transaction: KwepDatabaseTransaction,
+  transaction: WritingAppDatabaseTransaction,
   rows: readonly LessonStepSeedRow[]
 ): void {
   for (const row of rows) {

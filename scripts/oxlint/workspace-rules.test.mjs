@@ -14,7 +14,7 @@ tester.run(
   {
     invalid: [
       {
-        code: 'import { createKwepDatabase } from "@workspace/db"',
+        code: 'import { createWritingAppDatabase } from "@workspace/db"',
         errors: [{ messageId: "apiCannotImportDb" }],
         filename: "apps/api/src/main.ts",
       },
@@ -50,7 +50,7 @@ tester.run(
         filename: "apps/api/src/main.ts",
       },
       {
-        code: 'import { createKwepDatabase } from "@workspace/db"',
+        code: 'import { createWritingAppDatabase } from "@workspace/db"',
         filename: "packages/core/src/runtime.ts",
       },
       {

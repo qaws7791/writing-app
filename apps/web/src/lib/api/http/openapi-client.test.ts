@@ -81,7 +81,7 @@ describe("OpenAPI HTTP client", () => {
     })
 
     expect(requests[0]?.headers.get("Cookie")).toBe(
-      "kwep_session=token-1.signature"
+      "learner_session_token=token-1.signature"
     )
     expect(requests[0]?.headers.has("Authorization")).toBe(false)
     expect(requests[0]?.credentials).toBe("include")

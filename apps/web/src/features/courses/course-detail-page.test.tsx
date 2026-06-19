@@ -67,7 +67,7 @@ const course: CourseDetail = {
 }
 
 describe("코스 상세 화면", () => {
-  it("Kwep 코스 상세처럼 hero, 진행률, 첫 레슨 링크를 표시한다", () => {
+  it("현재 제품 코스 상세처럼 hero, 진행률, 첫 레슨 링크를 표시한다", () => {
     render(<CourseDetailPage course={course} />)
 
     expect(

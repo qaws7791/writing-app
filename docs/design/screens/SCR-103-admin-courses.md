@@ -24,6 +24,7 @@
 ## UI 기준
 
 - 필터는 `.admin-toolbar`에 둔다.
+- 페이지 크기 선택은 `10`, `20`, `50` 옵션을 제공한다.
 - table 첫 열은 제목과 revision을 함께 보여준다.
 - 새 코스 버튼은 `admin-primary-button`이다.
 - 보관 버튼은 `admin-secondary-button`이고, 확인 dialog의 실행은 `admin-danger-button`이다.

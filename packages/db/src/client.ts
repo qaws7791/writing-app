@@ -5,11 +5,11 @@ import { drizzle, type BunSQLiteDatabase } from "drizzle-orm/bun-sqlite"
 
 import * as schema from "@workspace/db/schema"
 
-export type KwepDatabase = BunSQLiteDatabase<typeof schema>
+export type WritingAppDatabase = BunSQLiteDatabase<typeof schema>
 
-export type KwepDatabaseClient = {
+export type WritingAppDatabaseClient = {
   readonly sqlite: Database
-  readonly db: KwepDatabase
+  readonly db: WritingAppDatabase
   readonly close: () => void
 }
 
@@ -17,9 +17,9 @@ export function getDefaultDatabaseUrl(): string {
   return fileURLToPath(new URL("../../../data/api.sqlite", import.meta.url))
 }
 
-export function createKwepDatabase(
+export function createWritingAppDatabase(
   url = process.env["DATABASE_URL"] ?? getDefaultDatabaseUrl()
-): KwepDatabaseClient {
+): WritingAppDatabaseClient {
   const sqlite = new Database(normalizeDatabaseUrl(url))
 
   sqlite.exec("PRAGMA foreign_keys = ON")
@@ -34,8 +34,8 @@ export function createKwepDatabase(
   }
 }
 
-export function createInMemoryKwepDatabase(): KwepDatabaseClient {
-  return createKwepDatabase(":memory:")
+export function createInMemoryWritingAppDatabase(): WritingAppDatabaseClient {
+  return createWritingAppDatabase(":memory:")
 }
 
 function normalizeDatabaseUrl(url: string): string {

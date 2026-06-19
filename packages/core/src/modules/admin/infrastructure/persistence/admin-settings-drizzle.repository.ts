@@ -5,11 +5,11 @@ import type {
   SettingsRepository,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
 
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import { adminSettings } from "@workspace/db/schema"
 
 export function createAdminSettingsRepository(
-  db: KwepDatabase
+  db: WritingAppDatabase
 ): SettingsRepository {
   return {
     readSettings() {
@@ -31,7 +31,7 @@ const settingsKeys = {
   terms: "legal.terms",
 } as const
 
-function readSettings(db: KwepDatabase): AdminSettingsDto {
+function readSettings(db: WritingAppDatabase): AdminSettingsDto {
   const rows = db.select().from(adminSettings).all()
   const values = new Map(rows.map((row) => [row.key, row.value]))
 
@@ -48,7 +48,7 @@ function readSettings(db: KwepDatabase): AdminSettingsDto {
 }
 
 function saveNoticeSettings(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: SaveAdminNoticeSettingsInput
 ): AdminSettingsDto {
   saveSettingRows(db, input.now, [
@@ -60,7 +60,7 @@ function saveNoticeSettings(
 }
 
 function saveLegalSettings(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: SaveAdminLegalSettingsInput
 ): AdminSettingsDto {
   saveSettingRows(db, input.now, [
@@ -72,7 +72,7 @@ function saveLegalSettings(
 }
 
 function saveSettingRows(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   now: Date,
   rows: readonly (readonly [key: string, value: string])[]
 ): void {

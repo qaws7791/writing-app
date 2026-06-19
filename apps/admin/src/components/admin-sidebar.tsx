@@ -44,7 +44,7 @@ export function AdminSidebar({ activePath }: { readonly activePath: string }) {
         <span className="admin-sidebar__mark">글</span>
         <span>
           <strong>글결 관리자</strong>
-          <small>Kwep 운영 콘솔</small>
+          <small>글결 운영 콘솔</small>
         </span>
       </Link>
       <nav aria-label="어드민 주요 메뉴" className="admin-sidebar__nav">

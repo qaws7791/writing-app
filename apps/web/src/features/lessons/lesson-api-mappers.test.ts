@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import { mapLesson } from "@/features/lessons/lesson-api-mappers"
 
 describe("레슨 API mapper", () => {
-  it("API 레슨 응답의 Kwep step 타입 순서를 보존한다", () => {
+  it("API 레슨 응답의 API step 타입 순서를 보존한다", () => {
     expect(
       mapLesson({
         category: "문장의 기본기",
@@ -118,7 +118,7 @@ describe("레슨 API mapper", () => {
     })
   })
 
-  it("Kwep step content를 타입별 내부 모델로 변환한다", () => {
+  it("API step content를 타입별 내부 모델로 변환한다", () => {
     expect(
       mapLesson({
         category: "문장의 기본기",

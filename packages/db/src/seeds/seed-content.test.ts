@@ -9,18 +9,18 @@ import {
   toStepSeedRows,
   toStandardLessonStepType,
   toUnitSeedRows,
-  type KwepCourseSeed,
+  type ContentSeedCourse,
   type StandardLessonStepType,
 } from "@/seeds/seed-content"
 
-async function readSeedData(): Promise<readonly KwepCourseSeed[]> {
+async function readSeedData(): Promise<readonly ContentSeedCourse[]> {
   const seedUrl = new URL("./content-seed-data.json", import.meta.url)
 
-  return (await Bun.file(seedUrl).json()) as readonly KwepCourseSeed[]
+  return (await Bun.file(seedUrl).json()) as readonly ContentSeedCourse[]
 }
 
-describe("Kwep 콘텐츠 seed 변환", () => {
-  it("Kwep 원본 콘텐츠를 새 baseline row 수량으로 변환한다", async () => {
+describe("기준 콘텐츠 seed 변환", () => {
+  it("기준 콘텐츠를 새 baseline row 수량으로 변환한다", async () => {
     const rows = createContentSeedRows(await readSeedData())
 
     expect(rows.courses).toHaveLength(5)
@@ -77,7 +77,7 @@ describe("Kwep 콘텐츠 seed 변환", () => {
     })
   })
 
-  it("Kwep 스텝 타입을 저장용 표준 타입으로 정규화한다", () => {
+  it("표준 스텝 타입을 저장용 표준 타입으로 정규화한다", () => {
     expect(toStandardLessonStepType("reading")).toBe("READING")
     expect(toStandardLessonStepType("multiple_choice")).toBe("MULTIPLE_CHOICE")
     expect(toStandardLessonStepType("ai_feedback")).toBe("AI_FEEDBACK")
@@ -170,7 +170,7 @@ describe("Kwep 콘텐츠 seed 변환", () => {
     ).toThrow("Invalid lesson time")
   })
 
-  it("Kwep 스텝 타입 분포를 보존한다", async () => {
+  it("표준 스텝 타입 분포를 보존한다", async () => {
     const rows = createContentSeedRows(await readSeedData())
     const distribution = rows.steps.reduce(
       (counts, step) => ({
@@ -206,7 +206,7 @@ describe("Kwep 콘텐츠 seed 변환", () => {
   })
 })
 
-function createCourseSeed(): KwepCourseSeed {
+function createCourseSeed(): ContentSeedCourse {
   return {
     cat: "입문",
     desc: "코스 설명",

@@ -35,7 +35,8 @@
 - 콘텐츠: 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝.
 - 확정 스텝 타입: `READING`, `COMPARE`, `MULTIPLE_CHOICE`, `FILL_BLANK`, `SELECT`, `ORDER`, `WRITE`, `AI_FEEDBACK`, `MATCH`, `CATEGORIZE`.
 - 콘텐츠 상태: `active`, `archived`.
-- 레슨 진행 상태: `available`, `completed`, `locked`.
+- 레슨 진행 표시 상태: `available`, `completed`.
+- 레슨 접근 정책: 모든 active 레슨은 잠금 없이 접근 가능.
 
 ## 문서 관리 규칙
 

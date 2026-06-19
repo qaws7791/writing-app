@@ -1,6 +1,6 @@
 import type { AdminRepository } from "@workspace/core/modules/admin/application/ports/admin.repository"
 
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import { createAdminAnalyticsRepository } from "@workspace/core/modules/admin/infrastructure/persistence/admin-analytics-drizzle.repository"
 import {
   createAdminCourseRepository,
@@ -13,7 +13,7 @@ import { createAdminUserRepository } from "@workspace/core/modules/admin/infrast
 export type { DrizzleAdminRepositoryDependencies } from "@workspace/core/modules/admin/infrastructure/persistence/admin-course-drizzle.repository"
 
 export function createDrizzleAdminRepository(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   dependencies: DrizzleAdminRepositoryDependencies = {}
 ): AdminRepository {
   return {

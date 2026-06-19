@@ -9,7 +9,7 @@ import {
   type LearnerProfileRepository,
 } from "@workspace/core/modules/auth/application/use-cases/learner-onboarding"
 import type { SessionResolver } from "@workspace/core/modules/auth/domain/learner-session"
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   authAccounts,
   authSessions,
@@ -21,7 +21,7 @@ import * as dbSchema from "@workspace/db/schema"
 export type CreateLearnerAuthInput = {
   readonly authBaseUrl: string
   readonly cookieDomain?: string
-  readonly db: KwepDatabase
+  readonly db: WritingAppDatabase
   readonly googleClientId?: string
   readonly googleClientSecret?: string
   readonly secret: string
@@ -93,7 +93,7 @@ type LearnerBetterAuthSession = {
 
 export function createLearnerSessionResolver(
   auth: LearnerBetterAuthSessionApi,
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   profileRepository: LearnerProfileRepository = createDrizzleLearnerProfileRepository(
     db
   )
@@ -115,7 +115,7 @@ function createLearnerAdvancedOptions(cookieDomain: string | undefined) {
   const baseOptions = {
     cookies: {
       session_token: {
-        name: "kwep_session",
+        name: "learner_session_token",
       },
     },
   }

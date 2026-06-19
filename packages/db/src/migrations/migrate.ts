@@ -2,10 +2,10 @@ import { readFileSync } from "node:fs"
 
 import type { Database } from "bun:sqlite"
 
-import { createKwepDatabase } from "@workspace/db/client"
+import { createWritingAppDatabase } from "@workspace/db/client"
 
 const baselineMigrationUrl = new URL(
-  "./0000-kwep-baseline.sql",
+  "./0000-writing-app-baseline.sql",
   import.meta.url
 )
 
@@ -18,7 +18,7 @@ export function runBaselineMigration(sqlite: Database): void {
 }
 
 if (import.meta.main) {
-  const client = createKwepDatabase()
+  const client = createWritingAppDatabase()
 
   try {
     runBaselineMigration(client.sqlite)

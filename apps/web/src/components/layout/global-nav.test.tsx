@@ -9,7 +9,7 @@ vi.mock("next/navigation", () => ({
 }))
 
 describe("전역 내비게이션", () => {
-  it("Kwep Header의 내부 이동을 링크 의미론으로 제공한다", async () => {
+  it("현재 제품 header의 내부 이동을 링크 의미론으로 제공한다", async () => {
     const user = userEvent.setup()
     render(<GlobalNav currentPath="/app/profile" />)
 

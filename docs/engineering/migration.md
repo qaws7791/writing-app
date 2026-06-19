@@ -4,7 +4,7 @@
 
 ## 현재 마이그레이션 모델
 
-- 현재 DB baseline은 `packages/db/src/migrations/0000-kwep-baseline.sql`이다.
+- 현재 DB baseline은 `packages/db/src/migrations/0000-writing-app-baseline.sql`이다.
 - 마이그레이션 실행 진입점은 `packages/db/src/migrations/migrate.ts`다.
 - 현재 방식은 누적 migration 체인이 아니라 baseline SQL 적용 방식이다.
 - 운영 데이터 이전이 필요해지면 별도 migration 계획과 ADR을 작성한다.

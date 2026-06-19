@@ -18,7 +18,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     expect(source).not.toContain("switch (step.type)")
   })
 
-  it("객관식 선택을 Kwep 버튼 UI로 타입별 payload로 전달한다", async () => {
+  it("객관식 선택을 현재 제품 버튼 UI로 타입별 payload로 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step: LessonStep = {
@@ -142,7 +142,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     })
   })
 
-  it("매칭 스텝은 Kwep 버튼 페어링 UI로 답을 전달한다", async () => {
+  it("매칭 스텝은 현재 제품 버튼 페어링 UI로 답을 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step: LessonStep = {
@@ -178,7 +178,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     )
   })
 
-  it("분류 스텝은 Kwep 태그 패널 UI로 답을 전달한다", async () => {
+  it("분류 스텝은 현재 제품 태그 패널 UI로 답을 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step: LessonStep = {
@@ -225,7 +225,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     })
   })
 
-  it("글쓰기 스텝은 Kwep 구조 가이드와 글자 카운터를 보여주고 답을 전달한다", async () => {
+  it("글쓰기 스텝은 쓰기 구조 가이드와 글자 카운터를 보여주고 답을 전달한다", async () => {
     const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step = {

@@ -1,8 +1,8 @@
 # 도메인 가이드
 
-## Kwep 피벗 콘텐츠 모델
+## 현재 제품 콘텐츠 모델
 
-Kwep 피벗의 콘텐츠 단위는 다음 계층으로 정의한다.
+현재 제품의 콘텐츠 단위는 다음 계층으로 정의한다.
 
 ```text
 Course
@@ -11,7 +11,7 @@ Course
       -> Step
 ```
 
-초기 baseline seed는 Kwep 프로토타입에서 확인한 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 기준으로 한다. 런타임은 `Kwep` 파일을 직접 읽지 않고, 변환된 DB seed와 repository를 통해서만 콘텐츠를 조회한다.
+초기 baseline seed는 기준 콘텐츠 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 기준으로 한다. 런타임은 변환된 DB seed와 repository를 통해서만 콘텐츠를 조회한다.
 
 표준 스텝 타입은 다음 10개다.
 
@@ -117,7 +117,7 @@ type CurriculumNodeStatus = "active" | "deprecated" | "archived"
 
 ## 현재 구현 상태
 
-현재 도메인 계약, DTO, repository port, baseline schema, seed loader는 Kwep 기준 baseline으로 구현되어 있다. 런타임은 변환된 DB seed와 repository를 통해 콘텐츠를 조회하고, 단일 현재 커리큘럼 모델을 기준으로 학습 진행과 어드민 편집을 처리한다.
+현재 도메인 계약, DTO, repository port, baseline schema, seed loader는 기준 콘텐츠 baseline으로 구현되어 있다. 런타임은 변환된 DB seed와 repository를 통해 콘텐츠를 조회하고, 단일 현재 커리큘럼 모델을 기준으로 학습 진행과 어드민 편집을 처리한다.
 
 목표 모델은 단일 현재 커리큘럼 모델이다. 커리큘럼 버전 테이블, 버전별 유닛/레슨/스텝 snapshot, 마이그레이션 맵, 마이그레이션 적용 기록, 학습자 업그레이드 숨김 기록은 재도입하지 않는다.
 

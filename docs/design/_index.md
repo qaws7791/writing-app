@@ -41,11 +41,12 @@
 | `screens/SCR-101-admin-login.md`           | 관리자 로그인 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.               |
 | `screens/SCR-102-admin-dashboard.md`       | 어드민 대시보드 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.             |
 | `screens/SCR-103-admin-courses.md`         | 콘텐츠 관리 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
-| `screens/SCR-104-admin-course-detail.md`   | 코스 미리보기 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.               |
+| `screens/SCR-104-admin-course-detail.md`   | 코스 편집 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
 | `screens/SCR-105-admin-users.md`           | 사용자 관리 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
 | `screens/SCR-106-admin-user-detail.md`     | 사용자 상세 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
 | `screens/SCR-107-admin-analytics.md`       | 분석 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                        |
 | `screens/SCR-108-admin-settings.md`        | 운영 설정 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
+| `screens/SCR-109-admin-step-debug.md`      | 스텝 디버그 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
 
 ## 관리 기준
 

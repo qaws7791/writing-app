@@ -118,13 +118,13 @@ const lessonSteps = [
 ] as const
 
 describe("콘텐츠 DTO schema", () => {
-  it("Kwep 10개 스텝 DTO를 discriminated union으로 parse한다", () => {
+  it("표준 10개 스텝 DTO를 discriminated union으로 parse한다", () => {
     expect(lessonSteps.map((step) => lessonStepDtoSchema.parse(step))).toEqual(
       lessonSteps
     )
   })
 
-  it("Kwep write 스텝은 guide 없이 prompt나 topic만 있어도 parse한다", () => {
+  it("쓰기 스텝은 guide 없이 prompt나 topic만 있어도 parse한다", () => {
     expect(
       lessonStepDtoSchema.parse({
         id: "l1-s11",

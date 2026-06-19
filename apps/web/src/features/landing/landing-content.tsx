@@ -2,7 +2,7 @@
 
 import type { ComponentType } from "react"
 
-import { KwepSparklesIcon } from "@/features/landing/landing-icons"
+import { SparklesIcon } from "@/features/landing/landing-icons"
 import {
   FlameIcon,
   LayersIcon,
@@ -134,7 +134,7 @@ export const features: readonly Feature[] = [
   {
     bg: "#F4EFE6",
     body: "진도와 관심사에 맞춰 다음에 배울 조각을 자연스럽게 이어서 추천해요.",
-    icon: KwepSparklesIcon,
+    icon: SparklesIcon,
     title: "나에게 맞춰",
   },
 ]

@@ -8,7 +8,7 @@ import type { LearningRepository } from "@workspace/core/modules/learning/applic
 import { toLearningDateKey } from "@workspace/core/modules/learning/domain/learning-date"
 import { lessonProgressStatuses } from "@workspace/core/shared/kernel/status"
 
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   learnerActivityDays,
   learnerLessonAnswers,
@@ -20,7 +20,7 @@ export type SaveStepAnswerInput = SaveStepAnswerCommand
 export type CompleteLessonInput = CompleteLessonCommand
 
 export function createDrizzleLearningRepository(
-  db: KwepDatabase
+  db: WritingAppDatabase
 ): LearningRepository {
   return {
     async completeLesson(input) {
@@ -36,7 +36,7 @@ export function createDrizzleLearningRepository(
 }
 
 function saveLessonProgress(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: SaveLessonProgressInput
 ): void {
   db.insert(learnerLessonProgress)
@@ -66,7 +66,10 @@ function saveLessonProgress(
   })
 }
 
-function saveStepAnswer(db: KwepDatabase, input: SaveStepAnswerInput): void {
+function saveStepAnswer(
+  db: WritingAppDatabase,
+  input: SaveStepAnswerInput
+): void {
   db.insert(learnerLessonAnswers)
     .values({
       answerJson: JSON.stringify(input.answer),
@@ -94,7 +97,10 @@ function saveStepAnswer(db: KwepDatabase, input: SaveStepAnswerInput): void {
   })
 }
 
-function completeLesson(db: KwepDatabase, input: CompleteLessonInput): void {
+function completeLesson(
+  db: WritingAppDatabase,
+  input: CompleteLessonInput
+): void {
   const existingProgress = db
     .select()
     .from(learnerLessonProgress)
@@ -138,7 +144,7 @@ function completeLesson(db: KwepDatabase, input: CompleteLessonInput): void {
 }
 
 function recordActivityDay(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: {
     readonly completedLessons: number
     readonly occurredAt: Date

@@ -18,7 +18,7 @@ describe("로그인 페이지", () => {
     authClientMocks.requestGoogleLogin.mockClear()
   })
 
-  it("Kwep 로그인 화면과 같은 문구, 구조, Google 버튼을 렌더링한다", async () => {
+  it("현재 제품 로그인 화면과 같은 문구, 구조, Google 버튼을 렌더링한다", async () => {
     const user = userEvent.setup()
     render(<AuthPage nextPath="/app/courses" />)
 

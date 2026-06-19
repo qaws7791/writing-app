@@ -161,7 +161,7 @@ export function AdminSettingsPage({
         <section className="admin-panel">
           <div className="admin-section-heading">
             <h2>콘텐츠 초기화</h2>
-            <p>Kwep seed 기준으로 콘텐츠 baseline을 재시드합니다.</p>
+            <p>기준 콘텐츠 seed로 콘텐츠 baseline을 재시드합니다.</p>
           </div>
           <button
             className="admin-danger-button"
@@ -180,7 +180,7 @@ export function AdminSettingsPage({
         >
           <div className="admin-dialog">
             <h2 id="reset-content-title">콘텐츠 초기화 확인</h2>
-            <p>현재 active 콘텐츠를 Kwep seed 기준으로 다시 정렬합니다.</p>
+            <p>현재 active 콘텐츠를 기준 콘텐츠 seed에 맞춰 다시 정렬합니다.</p>
             <div className="admin-dialog__actions">
               <button
                 className="admin-secondary-button"

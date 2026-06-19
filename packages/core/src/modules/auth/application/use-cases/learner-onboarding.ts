@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm"
 
 import type { LearnerAccountStatus } from "@workspace/core/shared/kernel/status"
 import { learnerAccountStatuses } from "@workspace/core/shared/kernel/status"
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import { learnerProfiles } from "@workspace/db/schema"
 
 export type LearnerProfileRepository = {
@@ -35,7 +35,7 @@ export function createLearnerOnboardingService({
 }
 
 export function createDrizzleLearnerProfileRepository(
-  db: KwepDatabase
+  db: WritingAppDatabase
 ): LearnerProfileRepository {
   return {
     async ensureActiveProfile(input) {

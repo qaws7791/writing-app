@@ -17,7 +17,7 @@ import { contentStatuses } from "@workspace/core/shared/kernel/status"
 import { and, asc, count, eq, inArray, or, sql } from "drizzle-orm"
 
 import { archiveContentRowsOutsideSeed } from "@workspace/db/content/content-archive-policy"
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   createDefaultAdminCourseContentIds,
   type CreateAdminCourseContentIds,
@@ -45,7 +45,7 @@ type ResolvedDrizzleAdminRepositoryDependencies = {
 }
 
 export function createAdminCourseRepository(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   dependencies: DrizzleAdminRepositoryDependencies = {}
 ): CourseAdminRepository & ContentResetRepository {
   const resolvedDependencies =
@@ -82,7 +82,7 @@ function resolveDrizzleAdminRepositoryDependencies(
 }
 
 function createCourse(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: CreateAdminCourseInput,
   createContentIds: CreateAdminCourseContentIds
 ): AdminCourseDetailDto {
@@ -105,7 +105,7 @@ function createCourse(
 }
 
 function insertCourseAggregate(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: CreateAdminCourseInput,
   contentIds: NewAdminCourseContentIds
 ): AdminCourseDetailDto {
@@ -209,7 +209,7 @@ function isContentIdCollision(error: unknown): boolean {
 }
 
 function readCourseEditor(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: ReadAdminCourseInput
 ): AdminCourseDetailDto | null {
   const course = db
@@ -341,7 +341,7 @@ function readJsonStringArray(value: string): string[] {
 }
 
 function readCourses(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: ReadAdminCoursesInput
 ): AdminCourseListDto {
   const query = input.query.trim().toLowerCase()
@@ -423,7 +423,7 @@ function createReadCoursesWhereCondition({
 }
 
 function archiveCourse(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: ArchiveAdminCourseInput
 ): AdminArchiveCourseResultDto | null {
   const course = db
@@ -448,7 +448,7 @@ function archiveCourse(
   return { archived: true }
 }
 
-function readNextCourseSortOrder(db: KwepDatabase): number {
+function readNextCourseSortOrder(db: WritingAppDatabase): number {
   const sortOrders = db
     .select()
     .from(courses)
@@ -459,7 +459,7 @@ function readNextCourseSortOrder(db: KwepDatabase): number {
 }
 
 async function resetContent(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: ResetAdminContentInput
 ): Promise<AdminContentResetResultDto> {
   const seedRows = await createDefaultContentSeedRows()
@@ -555,7 +555,7 @@ async function resetContent(
   })
 }
 
-function readNextContentRevision(db: KwepDatabase): number {
+function readNextContentRevision(db: WritingAppDatabase): number {
   const revision =
     db
       .select({

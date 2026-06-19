@@ -42,7 +42,7 @@ describe("학습 서비스", () => {
     expect(source).toContain("validateStepAnswerForLesson")
   })
 
-  it("Kwep 답변 가능 스텝 타입과 일치하는 저장 요청을 허용한다", async () => {
+  it("표준 답변 가능 스텝 타입과 일치하는 저장 요청을 허용한다", async () => {
     const savedAnswers: SaveStepAnswerCommand[] = []
     const service = createService({
       savedAnswers,

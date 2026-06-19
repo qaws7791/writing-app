@@ -89,7 +89,7 @@ const course: CourseDetail = {
 }
 
 describe("코스 커리큘럼", () => {
-  it("Kwep 커리큘럼처럼 유닛을 접고 펼치며 진행 가능한 레슨만 링크로 제공한다", async () => {
+  it("현재 제품 커리큘럼처럼 유닛을 접고 펼치며 진행 가능한 레슨만 링크로 제공한다", async () => {
     const user = userEvent.setup()
 
     render(<CourseCurriculum course={course} />)

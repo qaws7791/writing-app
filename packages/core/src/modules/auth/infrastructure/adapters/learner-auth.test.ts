@@ -5,7 +5,7 @@ import {
   createLearnerSessionResolver,
 } from "@workspace/core/modules/auth/infrastructure/adapters/learner-auth"
 import { learnerAccountStatuses } from "@workspace/core/shared/kernel/status"
-import { createInMemoryKwepDatabase } from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import {
   authAccounts,
@@ -93,7 +93,7 @@ describe("학습자 Better Auth", () => {
         database.db
       )
       const headers = new Headers({
-        Cookie: "kwep_session=session-token-1.signature",
+        Cookie: "learner_session_token=session-token-1.signature",
       })
 
       await expect(resolver.resolveSession(headers)).resolves.toEqual({
@@ -202,7 +202,7 @@ describe("학습자 Better Auth", () => {
 })
 
 function createMigratedTestDatabase() {
-  const database = createInMemoryKwepDatabase()
+  const database = createInMemoryWritingAppDatabase()
 
   runBaselineMigration(database.sqlite)
 

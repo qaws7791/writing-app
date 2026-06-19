@@ -16,14 +16,15 @@
 ### 학습자
 
 - Google OAuth를 사용한다.
-- Better Auth 세션은 `kwep_session` 쿠키를 사용한다.
+- Better Auth 세션은 `learner_session_token` 쿠키를 사용한다.
 - `BETTER_AUTH_SECRET`은 32자 이상 랜덤 문자열이어야 한다.
 - 웹과 API가 다른 서브도메인에 있으면 `BETTER_AUTH_COOKIE_DOMAIN`을 명시한다.
 - API는 `WEB_ORIGIN`을 trusted origin/CORS 기준으로 사용한다.
 
 ### 관리자
 
-- email/password 로그인을 사용한다.
+- 관리자 아이디와 패스워드 로그인을 사용한다.
+- 관리자 아이디는 이메일 주소 형식이다.
 - 관리자 세션은 `admin_session_token` 쿠키를 사용한다.
 - 관리자 인증 테이블은 `admin_*` prefix를 사용한다.
 - 관리자 비밀값은 학습자 비밀값과 공유하지 않는다.

@@ -1,17 +1,17 @@
 import { sql } from "drizzle-orm"
 import { persistedContentStatuses } from "@workspace/db/persisted-values"
 
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import type { ContentSeedRows } from "@workspace/db/seeds/seed-content"
 
-type KwepDatabaseTransaction = Parameters<
-  Parameters<KwepDatabase["transaction"]>[0]
+type WritingAppDatabaseTransaction = Parameters<
+  Parameters<WritingAppDatabase["transaction"]>[0]
 >[0]
 
 type ContentTableName = "course_units" | "courses" | "lesson_steps" | "lessons"
 
 export function archiveContentRowsOutsideSeed(
-  transaction: KwepDatabaseTransaction,
+  transaction: WritingAppDatabaseTransaction,
   rows: ContentSeedRows
 ): number {
   return (
@@ -39,7 +39,7 @@ export function archiveContentRowsOutsideSeed(
 }
 
 function archiveRowsNotIn(
-  transaction: KwepDatabaseTransaction,
+  transaction: WritingAppDatabaseTransaction,
   tableName: ContentTableName,
   activeIds: readonly string[]
 ): number {

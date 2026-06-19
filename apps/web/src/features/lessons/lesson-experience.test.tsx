@@ -551,7 +551,7 @@ describe("레슨 경험", () => {
     expect(push).toHaveBeenLastCalledWith("/app/courses/c1")
   })
 
-  it("매칭과 분류가 Kwep 확인 흐름으로 다음 스텝을 연다", async () => {
+  it("매칭과 분류가 현재 제품 확인 흐름으로 다음 스텝을 연다", async () => {
     const user = userEvent.setup()
     const api = createApi({
       completeLesson: vi.fn(async () => apiOk({ saved: true })),
@@ -643,7 +643,7 @@ describe("레슨 경험", () => {
     expect(screen.getByText("구조 가이드")).toBeInTheDocument()
   })
 
-  it("읽기 후 객관식을 Kwep 확인 footer로 채점한다", async () => {
+  it("읽기 후 객관식을 현재 제품 확인 footer로 채점한다", async () => {
     const user = userEvent.setup()
     const api = createApi({
       saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),

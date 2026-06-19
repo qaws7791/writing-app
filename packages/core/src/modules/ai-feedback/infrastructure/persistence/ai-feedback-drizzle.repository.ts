@@ -1,11 +1,11 @@
 import { and, count, eq } from "drizzle-orm"
 
 import type { AiFeedbackRepository } from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.repository"
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import { aiFeedbackAttempts } from "@workspace/db/schema"
 
 export function createDrizzleAiFeedbackRepository(
-  db: KwepDatabase
+  db: WritingAppDatabase
 ): AiFeedbackRepository {
   return {
     async countCompletedAttempts(input) {

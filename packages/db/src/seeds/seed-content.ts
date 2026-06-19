@@ -4,7 +4,7 @@ import {
   type PersistedCourseVisualKey,
 } from "@workspace/db/persisted-values"
 
-export type KwepStepType =
+export type ContentSeedStepType =
   | "reading"
   | "compare"
   | "multiple_choice"
@@ -28,33 +28,33 @@ export type StandardLessonStepType =
   | "MATCH"
   | "CATEGORIZE"
 
-export type KwepStepSeed = {
-  readonly type: KwepStepType
+export type ContentSeedStep = {
+  readonly type: ContentSeedStepType
 }
 
-export type KwepLessonSeed = {
+export type ContentSeedLesson = {
   readonly id: string
   readonly title: string
   readonly time: string
   readonly cat?: string
   readonly desc?: string
   readonly summary?: readonly string[]
-  readonly steps: readonly KwepStepSeed[]
+  readonly steps: readonly ContentSeedStep[]
 }
 
-export type KwepUnitSeed = {
+export type ContentSeedUnit = {
   readonly id: string
   readonly title: string
-  readonly lessons: readonly KwepLessonSeed[]
+  readonly lessons: readonly ContentSeedLesson[]
 }
 
-export type KwepCourseSeed = {
+export type ContentSeedCourse = {
   readonly id: string
   readonly title: string
   readonly desc: string
   readonly cat: string
   readonly visualKey: PersistedCourseVisualKey
-  readonly units: readonly KwepUnitSeed[]
+  readonly units: readonly ContentSeedUnit[]
 }
 
 export type CourseSeedRow = {
@@ -116,16 +116,16 @@ const stepTypeMap = {
   ai_feedback: "AI_FEEDBACK",
   match: "MATCH",
   categorize: "CATEGORIZE",
-} satisfies Record<KwepStepType, StandardLessonStepType>
+} satisfies Record<ContentSeedStepType, StandardLessonStepType>
 
 export function toStandardLessonStepType(
-  stepType: KwepStepType
+  stepType: ContentSeedStepType
 ): StandardLessonStepType {
   return stepTypeMap[stepType]
 }
 
 export function createContentSeedRows(
-  courses: readonly KwepCourseSeed[]
+  courses: readonly ContentSeedCourse[]
 ): ContentSeedRows {
   return {
     courses: courses.map(toCourseSeedRow),
@@ -136,7 +136,7 @@ export function createContentSeedRows(
 }
 
 export function toCourseSeedRow(
-  course: KwepCourseSeed,
+  course: ContentSeedCourse,
   courseIndex: number
 ): CourseSeedRow {
   return {
@@ -151,7 +151,7 @@ export function toCourseSeedRow(
   }
 }
 
-export function toUnitSeedRows(course: KwepCourseSeed): CourseUnitSeedRow[] {
+export function toUnitSeedRows(course: ContentSeedCourse): CourseUnitSeedRow[] {
   return course.units.map((unit, unitIndex) => ({
     courseId: course.id,
     id: unit.id,
@@ -161,7 +161,7 @@ export function toUnitSeedRows(course: KwepCourseSeed): CourseUnitSeedRow[] {
   }))
 }
 
-export function toLessonSeedRows(course: KwepCourseSeed): LessonSeedRow[] {
+export function toLessonSeedRows(course: ContentSeedCourse): LessonSeedRow[] {
   return course.units.flatMap((unit) =>
     unit.lessons.map((lesson, lessonIndex) => ({
       category: lesson.cat ?? null,
@@ -178,14 +178,14 @@ export function toLessonSeedRows(course: KwepCourseSeed): LessonSeedRow[] {
   )
 }
 
-export function toStepSeedRows(course: KwepCourseSeed): LessonStepSeedRow[] {
+export function toStepSeedRows(course: ContentSeedCourse): LessonStepSeedRow[] {
   return course.units.flatMap((unit) =>
     unit.lessons.flatMap(toLessonStepSeedRows)
   )
 }
 
 export function toLessonStepSeedRows(
-  lesson: KwepLessonSeed
+  lesson: ContentSeedLesson
 ): LessonStepSeedRow[] {
   return lesson.steps.map((step, stepIndex) => ({
     contentJson: normalizeSeedStepContent(step),
@@ -197,16 +197,16 @@ export function toLessonStepSeedRows(
   }))
 }
 
-export function normalizeSeedStepContent(step: KwepStepSeed): string {
+export function normalizeSeedStepContent(step: ContentSeedStep): string {
   return JSON.stringify(step)
 }
 
 export async function readContentSeedData(): Promise<
-  readonly KwepCourseSeed[]
+  readonly ContentSeedCourse[]
 > {
   const seedUrl = new URL("./content-seed-data.json", import.meta.url)
 
-  return (await Bun.file(seedUrl).json()) as readonly KwepCourseSeed[]
+  return (await Bun.file(seedUrl).json()) as readonly ContentSeedCourse[]
 }
 
 export async function createDefaultContentSeedRows(): Promise<ContentSeedRows> {

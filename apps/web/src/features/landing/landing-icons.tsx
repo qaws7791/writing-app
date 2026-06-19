@@ -1,6 +1,6 @@
 "use client"
 
-export function KwepSparklesIcon({
+export function SparklesIcon({
   className,
   size = 24,
 }: {

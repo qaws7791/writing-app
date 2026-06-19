@@ -53,7 +53,7 @@ describe("프로필 화면", () => {
     setTheme.mockClear()
   })
 
-  it("Kwep ProfileScreen과 같은 사용자 정보, 학습 요약, 테마 토글, 로그아웃을 보여준다", async () => {
+  it("현재 제품 프로필 화면의 사용자 정보, 학습 요약, 테마 토글, 로그아웃을 보여준다", async () => {
     const user = userEvent.setup()
 
     render(<ProfilePage profile={profile} />)

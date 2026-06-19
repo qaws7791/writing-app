@@ -7,7 +7,7 @@ import {
 } from "@/scripts/seed-admin-user"
 import { seedAdminUser } from "@/scripts/seed-admin"
 import { adminRoles } from "@workspace/core/admin"
-import { createInMemoryKwepDatabase } from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
 describe("seed admin user", () => {
@@ -72,7 +72,7 @@ describe("seed admin user", () => {
   })
 
   it("seed한 관리자 계정은 email/password로 로그인할 수 있다", async () => {
-    const database = createInMemoryKwepDatabase()
+    const database = createInMemoryWritingAppDatabase()
 
     try {
       runBaselineMigration(database.sqlite)
@@ -115,7 +115,7 @@ describe("seed admin user", () => {
   })
 
   it("기존 credential 비밀번호는 resetPassword가 없으면 바꾸지 않는다", async () => {
-    const database = createInMemoryKwepDatabase()
+    const database = createInMemoryWritingAppDatabase()
 
     try {
       runBaselineMigration(database.sqlite)
@@ -150,7 +150,7 @@ describe("seed admin user", () => {
   })
 
   it("resetPassword가 true이면 기존 credential 비밀번호를 갱신한다", async () => {
-    const database = createInMemoryKwepDatabase()
+    const database = createInMemoryWritingAppDatabase()
 
     try {
       runBaselineMigration(database.sqlite)

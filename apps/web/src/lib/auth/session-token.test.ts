@@ -7,7 +7,7 @@ import {
 } from "@/lib/auth/session-token"
 
 describe("learner session token", () => {
-  it("kwep_session 쿠키 값을 서버 요청 Cookie 헤더용 토큰으로 읽는다", () => {
+  it("learner_session_token 쿠키 값을 서버 요청 Cookie 헤더용 토큰으로 읽는다", () => {
     expect(
       readLearnerSessionTokenFromCookieHeader(
         `theme=dark; ${learnerSessionCookieName}=user-1; other=value`

@@ -61,7 +61,9 @@ describe("HTTP WritingAppApi", () => {
       "https://api.example.test/profile",
       "https://api.example.test/progress",
     ])
-    expect(requests[0]?.headers.get("Cookie")).toBe("kwep_session=token-1")
+    expect(requests[0]?.headers.get("Cookie")).toBe(
+      "learner_session_token=token-1"
+    )
     expect(requests[0]?.credentials).toBe("include")
   })
 

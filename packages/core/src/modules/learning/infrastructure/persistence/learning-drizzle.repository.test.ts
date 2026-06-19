@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { createInMemoryKwepDatabase } from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
@@ -22,7 +22,7 @@ import {
   createContentSeedRows,
   readContentSeedData,
 } from "@workspace/db/seeds/seed-content"
-import type { KwepDatabaseClient } from "@workspace/db/client"
+import type { WritingAppDatabaseClient } from "@workspace/db/client"
 
 const now = new Date("2026-06-14T09:30:00.000Z")
 const userId = learnerIdSchema.parse("user-1")
@@ -32,7 +32,7 @@ const newStepId = lessonStepIdSchema.parse("l-new-s3")
 
 describe("학습 진행 repository", () => {
   it("progress 저장 시 학습 활동 날짜 row를 생성한다", async () => {
-    const client = createInMemoryKwepDatabase()
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       await seedLearningBaseline(client)
@@ -67,7 +67,7 @@ describe("학습 진행 repository", () => {
   })
 
   it("KST 기준 다음 날 새벽 활동을 해당 학습일로 저장한다", async () => {
-    const client = createInMemoryKwepDatabase()
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       await seedLearningBaseline(client)
@@ -92,7 +92,7 @@ describe("학습 진행 repository", () => {
   })
 
   it("answer 저장 시 답변과 활동 날짜의 saved_answers를 갱신한다", async () => {
-    const client = createInMemoryKwepDatabase()
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       await seedLearningBaseline(client)
@@ -133,7 +133,7 @@ describe("학습 진행 repository", () => {
   })
 
   it("lesson 완료 시 progress를 completed로 바꾸고 completed_lessons를 한 번만 증가시킨다", async () => {
-    const client = createInMemoryKwepDatabase()
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       await seedLearningBaseline(client)
@@ -172,7 +172,9 @@ describe("학습 진행 repository", () => {
   })
 })
 
-async function seedLearningBaseline(client: KwepDatabaseClient): Promise<void> {
+async function seedLearningBaseline(
+  client: WritingAppDatabaseClient
+): Promise<void> {
   runBaselineMigration(client.sqlite)
 
   client.db

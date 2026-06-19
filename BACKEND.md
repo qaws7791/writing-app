@@ -176,9 +176,9 @@ DB 테이블과 컬럼 명명 규칙은 `docs/engineering/schema-conventions.md`
 - `feedback_attempts`: AI 피드백 완료 시도와 구조화 결과
 - `admin_settings`: 공지, 법적 문서, 운영 설정 key-value 저장소
 
-콘텐츠 시드는 Kwep 기준 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 명시적으로 보관한다. 표준 스텝 타입은 `READING`, `COMPARE`, `MULTIPLE_CHOICE`, `FILL_BLANK`, `SELECT`, `ORDER`, `WRITE`, `AI_FEEDBACK`, `MATCH`, `CATEGORIZE`다.
+콘텐츠 시드는 기준 콘텐츠 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 명시적으로 보관한다. 표준 스텝 타입은 `READING`, `COMPARE`, `MULTIPLE_CHOICE`, `FILL_BLANK`, `SELECT`, `ORDER`, `WRITE`, `AI_FEEDBACK`, `MATCH`, `CATEGORIZE`다.
 
-DB migration은 피벗 기간 동안 누적 보정 migration이 아니라 `0000-kwep-baseline.sql` 기준 새 baseline으로 관리한다. 운영 데이터 이전이 필요하면 별도 이전 계획을 작성하고 이 baseline 구현에 호환 adapter를 넣지 않는다.
+DB migration은 피벗 기간 동안 누적 보정 migration이 아니라 `0000-writing-app-baseline.sql` 기준 새 baseline으로 관리한다. 운영 데이터 이전이 필요하면 별도 이전 계획을 작성하고 이 baseline 구현에 호환 adapter를 넣지 않는다.
 
 AI 피드백은 `packages/core`의 OpenAI provider adapter가 OpenAI Responses API와 Structured Outputs를 호출하고, core AI 피드백 서비스가 재시도 제한, 저장 답변 조회, 결과 저장 규칙을 담당한다. 한국어 글쓰기 코칭 지침과 입력 프롬프트 조립은 `packages/core/src/ai-feedback/ai-feedback.prompt.ts`의 prompt policy가 단일 출처다. 완료 시도 한도는 `packages/core/src/ai-feedback/ai-feedback-attempt-policy.ts`의 attempt policy로 명시하고, core 런타임 factory가 기본 정책을 서비스에 주입한다. OpenAI 호출 실패는 사용자 재시도 횟수를 소모하지 않고 `ai-feedback-unavailable` 오류로 반환한다.
 

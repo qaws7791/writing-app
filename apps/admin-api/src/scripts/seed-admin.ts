@@ -1,8 +1,11 @@
-import { createKwepDatabase, getDefaultDatabaseUrl } from "@workspace/db/client"
+import {
+  createWritingAppDatabase,
+  getDefaultDatabaseUrl,
+} from "@workspace/db/client"
 import {
   adminAuthAccounts,
   adminAuthUsers,
-  type KwepDatabase,
+  type WritingAppDatabase,
 } from "@workspace/db"
 import { hashPassword } from "better-auth/crypto"
 
@@ -12,7 +15,7 @@ import {
 } from "@/scripts/seed-admin-user"
 
 export function seedAdminUser(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: SeedAdminUserInput
 ): Promise<void> {
   return hashPassword(input.password).then((passwordHash) => {
@@ -60,7 +63,7 @@ export function seedAdminUser(
 }
 
 if (import.meta.main) {
-  const client = createKwepDatabase(
+  const client = createWritingAppDatabase(
     process.env["DATABASE_URL"] ?? getDefaultDatabaseUrl()
   )
 

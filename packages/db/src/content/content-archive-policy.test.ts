@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url"
 import { eq } from "drizzle-orm"
 import { persistedContentStatuses } from "@workspace/db/persisted-values"
 
-import { createKwepDatabase } from "@/client"
+import { createWritingAppDatabase } from "@/client"
 import { archiveContentRowsOutsideSeed } from "@/content/content-archive-policy"
 import { runBaselineMigration } from "@/migrations/migrate"
 import type { ContentSeedRows } from "@/seeds/seed-content"
@@ -13,7 +13,7 @@ import { courseUnits, courses, lessonSteps, lessons } from "@/schema"
 
 describe("콘텐츠 보관 정책", () => {
   it("seed 밖 활성 콘텐츠만 한 번에 보관하고 변경 수를 반환한다", () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
 
     try {
       runBaselineMigration(client.sqlite)
@@ -54,7 +54,7 @@ describe("콘텐츠 보관 정책", () => {
   })
 
   it("이미 보관된 콘텐츠는 변경 수에 포함하지 않는다", () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
 
     try {
       runBaselineMigration(client.sqlite)
@@ -74,7 +74,7 @@ describe("콘텐츠 보관 정책", () => {
   })
 
   it("seed ID가 비어 있으면 활성 콘텐츠 전체를 보관한다", () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
 
     try {
       runBaselineMigration(client.sqlite)
@@ -175,7 +175,7 @@ const emptySeedRows: ContentSeedRows = {
 }
 
 function seedContentRows(
-  db: ReturnType<typeof createKwepDatabase>["db"]
+  db: ReturnType<typeof createWritingAppDatabase>["db"]
 ): void {
   db.insert(courses)
     .values([
@@ -283,7 +283,7 @@ function createStepRow(
 }
 
 function readStatuses(
-  db: ReturnType<typeof createKwepDatabase>["db"],
+  db: ReturnType<typeof createWritingAppDatabase>["db"],
   namespace: string
 ): readonly string[] {
   const courseId = `${namespace}-course`

@@ -7,7 +7,7 @@
 - 기본 작업 브랜치 prefix는 `codex/`를 사용한다.
 - 브랜치 이름은 작업 의도를 짧게 드러낸다.
 - 예: `codex/engineering-docs`, `codex/api-route-boundary`
-- 실험 코드나 폐기 예정 코드는 `Kwep/`에 추가하지 않는다.
+- 실험 코드나 폐기 예정 코드는 제품 런타임 경로에 추가하지 않는다.
 
 ## 커밋 메시지
 

@@ -8,7 +8,7 @@ export type OpenAiResponseCreateRequest = {
   readonly model: string
   readonly text: {
     readonly format: {
-      readonly name: "kwep_ai_feedback"
+      readonly name: "writing_app_ai_feedback"
       readonly schema: typeof aiFeedbackJsonSchema
       readonly strict: true
       readonly type: "json_schema"
@@ -40,7 +40,7 @@ export function createOpenAiFeedbackProvider({
           model,
           text: {
             format: {
-              name: "kwep_ai_feedback",
+              name: "writing_app_ai_feedback",
               schema: aiFeedbackJsonSchema,
               strict: true,
               type: "json_schema",

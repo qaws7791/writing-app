@@ -17,7 +17,7 @@ describe("공개 랜딩 페이지", () => {
     routerPush.mockClear()
   })
 
-  it("Kwep 랜딩의 브랜드, 섹션 순서, 주요 CTA를 렌더링한다", async () => {
+  it("현재 제품 랜딩의 브랜드, 섹션 순서, 주요 CTA를 렌더링한다", async () => {
     const user = userEvent.setup()
     const { container } = render(<LandingPage />)
 
@@ -105,7 +105,7 @@ describe("공개 랜딩 페이지", () => {
     expect(routerPush).toHaveBeenLastCalledWith("/app/courses")
   })
 
-  it("Kwep 랜딩 HTML과 다른 제품 전용 속성을 추가하지 않는다", () => {
+  it("현재 제품 랜딩 HTML과 다른 제품 전용 속성을 추가하지 않는다", () => {
     const { container } = render(<LandingPage />)
 
     expect(container.querySelector("[data-testid]")).not.toBeInTheDocument()

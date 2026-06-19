@@ -6,13 +6,13 @@ import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
 import {
-  createInMemoryKwepDatabase,
-  createKwepDatabase,
+  createInMemoryWritingAppDatabase,
+  createWritingAppDatabase,
   getDefaultDatabaseUrl,
 } from "@/client"
 import { runBaselineMigration } from "@/migrations/migrate"
 
-describe("Kwep DB client", () => {
+describe("Writing App DB client", () => {
   it("기본 SQLite DB 경로는 실행 위치와 무관하게 저장소 루트 data를 가리킨다", () => {
     const expectedPath = fileURLToPath(
       new URL("../../../data/api.sqlite", import.meta.url)
@@ -29,7 +29,7 @@ describe("Kwep DB client", () => {
   })
 
   it("상대 file: SQLite URL은 현재 실행 위치 기준 파일 경로로 연다", () => {
-    const tempDirectory = mkdtempSync(join(tmpdir(), "kwep-db-client-"))
+    const tempDirectory = mkdtempSync(join(tmpdir(), "writing-app-db-client-"))
     const originalCwd = process.cwd()
 
     try {
@@ -39,7 +39,7 @@ describe("Kwep DB client", () => {
       mkdirSync(join(tempDirectory, "data"), { recursive: true })
       process.chdir(join(tempDirectory, "apps", "api"))
 
-      const client = createKwepDatabase("file:../../data/api.sqlite")
+      const client = createWritingAppDatabase("file:../../data/api.sqlite")
 
       try {
         const databaseFile = client.sqlite
@@ -72,7 +72,7 @@ describe("Kwep DB client", () => {
   })
 
   it("in-memory SQLite DB에 새 baseline schema를 적용한다", () => {
-    const client = createInMemoryKwepDatabase()
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       runBaselineMigration(client.sqlite)

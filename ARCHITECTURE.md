@@ -149,13 +149,13 @@ core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 R
 
 공유 DB는 사용하지만 인증 테이블은 플랫폼용 `user`, `session`, `account`, `verification`과 관리자용 `admin_user`, `admin_session`, `admin_account`, `admin_verification`으로 분리한다.
 
-## Kwep 피벗 경계
+## 현재 제품 경계
 
-`Kwep/`는 요구사항과 seed 콘텐츠를 읽는 기준으로만 둔다. 제품 런타임은 현재 monorepo의 Next.js, Hono, Better Auth, Drizzle, OpenAPI 경계를 사용하며 `Kwep` 구현 파일을 import하지 않는다.
+제품 런타임은 현재 monorepo의 Next.js, Hono, Better Auth, Drizzle, OpenAPI 경계를 사용하며 레거시 실험 디렉터리의 구현 파일을 import하지 않는다.
 
-콘텐츠 구조는 `Course -> Unit -> Lesson -> Step`으로 표현한다. Kwep seed는 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 새 DB baseline seed로 제공한다.
+콘텐츠 구조는 `Course -> Unit -> Lesson -> Step`으로 표현한다. 기준 콘텐츠 seed는 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 새 DB baseline seed로 제공한다.
 
-DB migration은 기존 schema를 누적 보정하지 않고 `0000-kwep-baseline.sql` 기준으로 재정의한다. 운영 데이터 이전이 필요해지는 시점에는 별도 데이터 이전 계획을 작성한다.
+DB migration은 기존 schema를 누적 보정하지 않고 `0000-writing-app-baseline.sql` 기준으로 재정의한다. 운영 데이터 이전이 필요해지는 시점에는 별도 데이터 이전 계획을 작성한다.
 
 현재 제품 구현은 `apps/*/src`와 `packages/*/src`에 유지한다. 오래된 reset 단계 문구는 현재 구조의 기준으로 사용하지 않는다.
 

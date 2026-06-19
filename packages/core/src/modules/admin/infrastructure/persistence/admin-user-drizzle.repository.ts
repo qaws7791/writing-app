@@ -34,7 +34,7 @@ import {
   sql,
 } from "drizzle-orm"
 
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   calculateCurrentStreakDays,
   groupActivityDatesByUserId,
@@ -50,7 +50,7 @@ import {
 } from "@workspace/db/schema"
 
 export function createAdminUserRepository(
-  db: KwepDatabase
+  db: WritingAppDatabase
 ): UserAdminRepository {
   return {
     deleteUser(input) {
@@ -80,7 +80,7 @@ type AdminUserSnapshot = {
 }
 
 function readUsers(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: ReadAdminUsersInput
 ): AdminUserListDto {
   const query = input.query.trim().toLowerCase()
@@ -226,7 +226,7 @@ function createReadUsersOrder(
 }
 
 function readUser(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: ReadAdminUserInput
 ): AdminUserDetailDto | null {
   const user = readUserSnapshots(db).find((item) => item.id === input.userId)
@@ -248,7 +248,7 @@ function readUser(
 }
 
 function updateUserStatus(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: UpdateAdminUserStatusInput
 ): AdminUserDetailDto | null {
   if (readUser(db, input) === null) {
@@ -267,7 +267,7 @@ function updateUserStatus(
 }
 
 function deleteUser(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: DeleteAdminUserInput
 ): AdminDeleteUserResultDto | null {
   if (readUser(db, input) === null) {
@@ -285,7 +285,7 @@ function deleteUser(
   return { deleted: true }
 }
 
-function readUserSnapshots(db: KwepDatabase): AdminUserSnapshot[] {
+function readUserSnapshots(db: WritingAppDatabase): AdminUserSnapshot[] {
   const userRows = db
     .select({
       createdAt: authUsers.createdAt,
@@ -324,7 +324,7 @@ function readUserSnapshots(db: KwepDatabase): AdminUserSnapshot[] {
   })
 }
 
-function countActiveLessons(db: KwepDatabase): number {
+function countActiveLessons(db: WritingAppDatabase): number {
   const activeCourseIds = new Set(
     db
       .select()

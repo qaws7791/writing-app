@@ -59,7 +59,7 @@ describe("OpenAI AI feedback provider", () => {
       model: "gpt-5.2",
       text: {
         format: {
-          name: "kwep_ai_feedback",
+          name: "writing_app_ai_feedback",
           strict: true,
           type: "json_schema",
         },

@@ -4,7 +4,7 @@
 
 ## 제품 목표
 
-- `Kwep` 프로토타입에서 확인한 글쓰기 학습 흐름을 제품 코드로 이식한다.
+- 현재 제품의 글쓰기 학습 흐름을 안정적인 제품 코드로 유지하고 확장한다.
 - 한국어 글쓰기 학습자가 문장 구조, 문법, 논증, 독자 중심 글쓰기, 퇴고를 작은 레슨 단위로 익히게 한다.
 - 레슨은 읽기, 비교, 객관식, 빈칸, 선택, 순서, 매칭, 분류, 쓰기, AI 코칭 같은 step 기반 경험으로 구성한다.
 - 학습 진행률, 답변, 완료 상태를 사용자별로 저장해 이어 학습할 수 있게 한다.
@@ -29,9 +29,9 @@
 
 ## 현재 구현 상태
 
-Kwep 피벗 baseline은 현재 `apps/*/src`와 `packages/*/src`에 구현되어 있다. 학습자 웹/API, 어드민 웹/API, 공유 UI, core 도메인 계약, DB schema/seed, 환경 변수 파서, logger, HTTP client result 모델을 같은 Bun workspace에서 관리한다.
+현재 제품 baseline은 현재 `apps/*/src`와 `packages/*/src`에 구현되어 있다. 학습자 웹/API, 어드민 웹/API, 공유 UI, core 도메인 계약, DB schema/seed, 환경 변수 파서, logger, HTTP client result 모델을 같은 Bun workspace에서 관리한다.
 
-루트 workspace 인벤토리와 검증 기준은 `docs/engineering/workspace-inventory.md`를 단일 기준으로 둔다. `Kwep/`는 요구사항과 콘텐츠 seed 참고 원천으로만 사용하며 제품 런타임은 `Kwep/` 구현 파일을 import하지 않는다.
+루트 workspace 인벤토리와 검증 기준은 `docs/engineering/workspace-inventory.md`를 단일 기준으로 둔다. 제품 런타임은 레거시 실험 디렉터리의 구현 파일을 import하지 않는다.
 
 ## 핵심 런타임 경계
 
@@ -42,8 +42,8 @@ Kwep 피벗 baseline은 현재 `apps/*/src`와 `packages/*/src`에 구현되어 
 - 학습자 API 의존성 방향은 `apps/api -> packages/core -> packages/db`다.
 - `packages/core`는 HTTP transport를 모르지만 DB primitive를 사용해 도메인 규칙, 유스케이스, repository 구현을 제공한다.
 - `packages/db`는 `packages/core`를 import하지 않는 저수준 영속성 패키지다.
-- `Kwep/` 디렉토리는 읽기 전용 요구사항 원천이다. 런타임 코드는 `Kwep` 파일을 import하거나 직접 참조하지 않는다.
-- Kwep 콘텐츠는 새 DB baseline seed로 승격하고, 개발 DB는 누적 보정 migration이 아니라 새 baseline schema로 재생성한다.
+- 런타임 코드는 레거시 실험 디렉터리의 파일을 import하거나 직접 참조하지 않는다.
+- 기준 콘텐츠는 새 DB baseline seed로 승격하고, 개발 DB는 누적 보정 migration이 아니라 새 baseline schema로 재생성한다.
 
 ## 문서 언어 정책
 

@@ -13,7 +13,7 @@ import {
 } from "@workspace/core/modules/content/domain/content.dto"
 import { contentStatuses } from "@workspace/core/shared/kernel/status"
 
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   courses,
   courseUnits,
@@ -30,7 +30,7 @@ const rawStepContentSchema = z.object({
 const lessonSummaryJsonSchema = z.array(z.string())
 
 export function createDrizzleContentRepository(
-  db: KwepDatabase
+  db: WritingAppDatabase
 ): ContentRepository {
   return {
     listCourses() {
@@ -45,7 +45,7 @@ export function createDrizzleContentRepository(
   }
 }
 
-function listCourses(db: KwepDatabase): readonly CourseSummaryDto[] {
+function listCourses(db: WritingAppDatabase): readonly CourseSummaryDto[] {
   const rows = db
     .select({
       id: courses.id,
@@ -70,7 +70,7 @@ function listCourses(db: KwepDatabase): readonly CourseSummaryDto[] {
 }
 
 function findCourseDetail(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   courseId: string
 ): CourseDetailDto | null {
   const course = db
@@ -152,7 +152,10 @@ function findCourseDetail(
   })
 }
 
-function findLesson(db: KwepDatabase, lessonId: string): LessonDto | null {
+function findLesson(
+  db: WritingAppDatabase,
+  lessonId: string
+): LessonDto | null {
   const lesson = db
     .select()
     .from(lessons)

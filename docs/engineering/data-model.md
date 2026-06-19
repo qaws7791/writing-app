@@ -8,7 +8,7 @@
 - 기준 파일:
   - `packages/db/src/schema/*.schema.ts`
   - `packages/db/src/persisted-values.ts`
-  - `packages/db/src/migrations/0000-kwep-baseline.sql`
+  - `packages/db/src/migrations/0000-writing-app-baseline.sql`
   - `packages/db/src/seeds/*`
 
 ## 모델 원칙
@@ -140,7 +140,7 @@ stateDiagram-v2
 
 ## Seed 정책
 
-- 기본 seed는 Kwep 기준 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 생성한다.
+- 기본 seed는 기준 콘텐츠 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 생성한다.
 - `packages/db/src/seeds/content-seed-data.json`가 콘텐츠 seed 원천이다.
 - `db:seed`는 baseline migration을 적용한 뒤 stable ID 기준으로 upsert한다.
 - seed에서 사라진 콘텐츠 row는 삭제하지 않고 `archived`로 전환한다.

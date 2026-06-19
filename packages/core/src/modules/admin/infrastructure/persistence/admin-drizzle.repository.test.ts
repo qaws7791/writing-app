@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url"
 
 import { eq } from "drizzle-orm"
 
-import { createKwepDatabase } from "@workspace/db/client"
+import { createWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { createDrizzleAdminRepository } from "@/modules/admin/infrastructure/persistence/admin-drizzle.repository"
 import {
@@ -131,7 +131,7 @@ describe("어드민 DB repository", () => {
   })
 
   it("기존 학습자와 콘텐츠 테이블에서 dashboard 지표를 계산한다", async () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
 
     try {
@@ -173,7 +173,7 @@ describe("어드민 DB repository", () => {
   })
 
   it("dashboard 가입자 집계는 UTC 자정이 아니라 학습 활동일 기준으로 계산한다", async () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
 
     try {
@@ -217,7 +217,7 @@ describe("어드민 DB repository", () => {
   })
 
   it("사용자 목록과 상세, 상태 변경, 삭제 상태 전환을 처리한다", async () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
 
     try {
@@ -314,7 +314,7 @@ describe("어드민 DB repository", () => {
   })
 
   it("코스 목록 검색, 카테고리 필터, 상태 필터, 페이지네이션을 처리한다", async () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
 
     try {
       runBaselineMigration(client.sqlite)
@@ -401,7 +401,7 @@ describe("어드민 DB repository", () => {
   })
 
   it("기존 학습자와 학습 진행 테이블에서 분석 지표를 계산한다", async () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
 
     try {
@@ -522,8 +522,8 @@ describe("어드민 DB repository", () => {
     }
   })
 
-  it("운영 설정 저장과 Kwep seed 콘텐츠 초기화를 처리한다", async () => {
-    const client = createKwepDatabase(":memory:")
+  it("운영 설정 저장과 기준 콘텐츠 seed 콘텐츠 초기화를 처리한다", async () => {
+    const client = createWritingAppDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
 
     try {
@@ -618,7 +618,7 @@ describe("어드민 DB repository", () => {
   })
 
   it("콘텐츠 reset은 seed 밖 활성 콘텐츠를 보관하고 변경 수를 반환한다", async () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
 
     try {
@@ -671,7 +671,7 @@ describe("어드민 DB repository", () => {
   })
 
   it("새 코스를 기본 커리큘럼과 함께 만들고 보관하면 학습자 목록에서 제외한다", async () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
 
     try {
@@ -730,7 +730,7 @@ describe("어드민 DB repository", () => {
   })
 
   it("새 코스 ID 생성은 요청 시각이 아니라 명시적 factory에 맡긴다", async () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
 
     try {
@@ -762,7 +762,7 @@ describe("어드민 DB repository", () => {
   })
 
   it("생성된 콘텐츠 ID가 DB unique constraint와 충돌하면 다시 생성한다", async () => {
-    const client = createKwepDatabase(":memory:")
+    const client = createWritingAppDatabase(":memory:")
     const now = new Date("2026-06-14T03:00:00.000Z")
 
     try {
@@ -828,7 +828,7 @@ function createTestCourseContentIds(
 }
 
 function seedOutsideContentRows(
-  db: ReturnType<typeof createKwepDatabase>["db"]
+  db: ReturnType<typeof createWritingAppDatabase>["db"]
 ): void {
   db.insert(courses)
     .values({
@@ -940,7 +940,9 @@ function readFunctionSource(source: string, name: string): string | undefined {
   return undefined
 }
 
-function seedDashboardRows(db: ReturnType<typeof createKwepDatabase>["db"]) {
+function seedDashboardRows(
+  db: ReturnType<typeof createWritingAppDatabase>["db"]
+) {
   const today = new Date("2026-06-14T00:30:00.000Z")
   const yesterday = new Date("2026-06-13T00:30:00.000Z")
   const twoDaysAgo = new Date("2026-06-12T00:30:00.000Z")

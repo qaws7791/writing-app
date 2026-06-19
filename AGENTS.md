@@ -2,7 +2,7 @@
 
 - This repository is monorepo for writing learning platform project.
 - This repository is a bun-managed monorepo with the following structure:
-- Don't Edit `/Kwep` directory, which contains experimental code and is not part of the main project structure.
+- Don't edit the legacy experimental directory at the repository root; it is not part of the main project structure.
 - All documents must be written in Korean.
 
 ## First Principle

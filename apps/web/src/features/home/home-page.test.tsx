@@ -77,7 +77,7 @@ const completedProgress: ProgressCourseList = {
 }
 
 describe("홈 화면", () => {
-  it("Kwep 홈 fresh 상태의 인사, 통계, 첫 코스 링크를 보여준다", () => {
+  it("현재 제품 홈 fresh 상태의 인사, 통계, 첫 코스 링크를 보여준다", () => {
     render(<HomePage learnerName="글쓰기 탐험가" progress={emptyProgress} />)
 
     expect(screen.getByText("안녕하세요 👋")).toBeInTheDocument()

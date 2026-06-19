@@ -5,7 +5,7 @@ import {
 } from "@workspace/core/modules/content/domain/content.ids"
 import { learnerIdSchema } from "@workspace/core/modules/learning/domain/learning.ids"
 
-import { createInMemoryKwepDatabase } from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { createDrizzleAiFeedbackRepository } from "@/modules/ai-feedback/infrastructure/persistence/ai-feedback-drizzle.repository"
 import {
@@ -16,7 +16,7 @@ import {
   lessons,
   lessonSteps,
 } from "@workspace/db/schema"
-import type { KwepDatabaseClient } from "@workspace/db/client"
+import type { WritingAppDatabaseClient } from "@workspace/db/client"
 
 const now = new Date("2026-06-14T10:30:00.000Z")
 const learnerId = learnerIdSchema.parse("user-1")
@@ -26,7 +26,7 @@ const stepId = lessonStepIdSchema.parse("l-ai-s2")
 
 describe("AI 피드백 repository", () => {
   it("완료된 AI 코칭 시도를 저장하고 user/lesson/step 기준으로 집계한다", async () => {
-    const client = createInMemoryKwepDatabase()
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       seedFeedbackBaseline(client)
@@ -148,7 +148,7 @@ describe("AI 피드백 repository", () => {
   })
 })
 
-function seedFeedbackBaseline(client: KwepDatabaseClient): void {
+function seedFeedbackBaseline(client: WritingAppDatabaseClient): void {
   runBaselineMigration(client.sqlite)
 
   client.db

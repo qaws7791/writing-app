@@ -23,9 +23,9 @@
 ## UI 기준
 
 - 요약 영역은 `.analytics-grid`를 사용한다.
-- 시계열과 bucket은 ordered list로 표시한다.
+- 시계열과 bucket은 Recharts 기반 차트로 표시할 수 있다.
+- 차트 영역에는 수치 단위와 데이터 의미를 텍스트로 보완한다.
 - 레슨별 분석은 table로 제공한다.
-- 새 차트 라이브러리 없이 CSS, SVG, list 기반 표현을 우선한다.
 
 ## 상태
 

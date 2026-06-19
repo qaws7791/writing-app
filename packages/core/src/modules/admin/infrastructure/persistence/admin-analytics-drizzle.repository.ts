@@ -22,7 +22,7 @@ import {
 } from "@workspace/core/shared/kernel/status"
 import { and, asc, countDistinct, desc, eq, or, sql } from "drizzle-orm"
 
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   calculateCurrentStreakDays,
   createPageBounds,
@@ -39,7 +39,7 @@ import {
 } from "@workspace/db/schema"
 
 export function createAdminAnalyticsRepository(
-  db: KwepDatabase
+  db: WritingAppDatabase
 ): AnalyticsReader {
   return {
     readAnalytics(input) {
@@ -77,7 +77,7 @@ const streakBucketRanges = [
 ] as const
 
 function readAnalytics(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: ReadAdminAnalyticsInput
 ): AdminAnalyticsDto {
   const lessonAnalytics = createLessonAnalyticsSnapshots(db)
@@ -90,7 +90,7 @@ function readAnalytics(
 }
 
 function readLessonAnalytics(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: ReadAdminLessonAnalyticsInput
 ): AdminLessonAnalyticsPageDto {
   const query = input.query.trim().toLowerCase()
@@ -226,7 +226,7 @@ function createReadLessonAnalyticsOrder(
 }
 
 function createDailySeries(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   input: ReadAdminAnalyticsInput
 ): AdminAnalyticsDto["dailySeries"] {
   const learnerIds = new Set(readActiveLearners(db).map((user) => user.id))
@@ -263,7 +263,7 @@ function createDailySeries(
 }
 
 function createStreakBuckets(
-  db: KwepDatabase
+  db: WritingAppDatabase
 ): AdminAnalyticsDto["streakBuckets"] {
   const activitiesByUserId = groupActivityDatesByUserId(
     db.select().from(learnerActivityDays).all()
@@ -290,7 +290,7 @@ function createStreakBuckets(
 }
 
 function createLessonAnalyticsSnapshots(
-  db: KwepDatabase
+  db: WritingAppDatabase
 ): AdminLessonAnalyticsSnapshot[] {
   const learnerIds = new Set(readActiveLearners(db).map((user) => user.id))
   const progressRows = db
@@ -320,7 +320,7 @@ function createLessonAnalyticsSnapshots(
   })
 }
 
-function readActiveLearners(db: KwepDatabase): AdminLearnerSnapshot[] {
+function readActiveLearners(db: WritingAppDatabase): AdminLearnerSnapshot[] {
   return db
     .select({
       createdAt: authUsers.createdAt,
@@ -333,7 +333,7 @@ function readActiveLearners(db: KwepDatabase): AdminLearnerSnapshot[] {
     .filter((user) => user.status !== learnerAccountStatuses.deleted)
 }
 
-function readActiveLessonSnapshots(db: KwepDatabase): {
+function readActiveLessonSnapshots(db: WritingAppDatabase): {
   readonly courseId: string
   readonly courseTitle: string
   readonly lessonId: string

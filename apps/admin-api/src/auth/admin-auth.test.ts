@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 
 import { createAdminAuth, createAdminSessionResolver } from "@/auth/admin-auth"
 import { adminRoles } from "@workspace/core/admin"
-import { createInMemoryKwepDatabase } from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
 const adminSession = {
@@ -17,7 +17,7 @@ const adminSession = {
 
 describe("Admin Better Auth session resolver", () => {
   it("관리자 email/password 가입 endpoint가 admin Better Auth 테이블을 사용한다", async () => {
-    const database = createInMemoryKwepDatabase()
+    const database = createInMemoryWritingAppDatabase()
 
     try {
       runBaselineMigration(database.sqlite)
@@ -55,7 +55,7 @@ describe("Admin Better Auth session resolver", () => {
   })
 
   it("관리자 인증은 Google social sign-in을 열지 않는다", async () => {
-    const database = createInMemoryKwepDatabase()
+    const database = createInMemoryWritingAppDatabase()
 
     try {
       runBaselineMigration(database.sqlite)

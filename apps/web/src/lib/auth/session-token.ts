@@ -1,4 +1,4 @@
-export const learnerSessionCookieName = "kwep_session"
+export const learnerSessionCookieName = "learner_session_token"
 
 export function readLearnerSessionTokenFromCookieHeader(
   cookieHeader: null | string

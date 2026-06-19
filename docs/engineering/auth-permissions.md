@@ -4,10 +4,10 @@
 
 ## 인증 경계
 
-| 영역   | 사용자         | 인증 방식                  | API              | 쿠키/테이블                                                                        |
-| ------ | -------------- | -------------------------- | ---------------- | ---------------------------------------------------------------------------------- |
-| 학습자 | 일반 학습자    | Better Auth Google OAuth   | `apps/api`       | `kwep_session`, `user/session/account/verification`                                |
-| 관리자 | 운영자, 소유자 | Better Auth email/password | `apps/admin-api` | `admin_session_token`, `admin_user/admin_session/admin_account/admin_verification` |
+| 영역   | 사용자         | 인증 방식                   | API              | 쿠키/테이블                                                                        |
+| ------ | -------------- | --------------------------- | ---------------- | ---------------------------------------------------------------------------------- |
+| 학습자 | 일반 학습자    | Better Auth Google OAuth    | `apps/api`       | `learner_session_token`, `user/session/account/verification`                       |
+| 관리자 | 운영자, 소유자 | Better Auth 아이디/패스워드 | `apps/admin-api` | `admin_session_token`, `admin_user/admin_session/admin_account/admin_verification` |
 
 학습자와 관리자는 인증 테이블, 쿠키 이름, 로그인 방식, API origin을 공유하지 않는다.
 
@@ -46,6 +46,8 @@ unknown role은 관리자 세션 resolver에서 유효하지 않은 세션으로
 | 코스 목록 조회             | 허용     | 허용  |
 | 코스 상세/편집 문서 조회   | 허용     | 허용  |
 | 코스 생성                  | 거부     | 허용  |
+| 코스 정보 저장             | 거부     | 허용  |
+| 유닛/레슨/스텝 변경        | 거부     | 허용  |
 | 코스 보관                  | 거부     | 허용  |
 | 사용자 목록 조회           | 허용     | 허용  |
 | 사용자 상세 조회           | 허용     | 허용  |

@@ -9,7 +9,7 @@ export function StepWorkspace({ steps }: { readonly steps: readonly Step[] }) {
     <section className="admin-panel">
       <div className="admin-section-heading">
         <h2>스텝 편집</h2>
-        <p>Kwep 10개 스텝 타입별 필드를 확인합니다.</p>
+        <p>표준 10개 스텝 타입별 필드를 확인합니다.</p>
       </div>
       <ol aria-label="스텝 편집 폼" className="step-form-list">
         {steps.map((step) => (

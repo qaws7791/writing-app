@@ -1,7 +1,7 @@
 import { serve } from "bun"
 import { createAdminService } from "@workspace/core/admin"
 import { createDrizzleAdminRepository } from "@workspace/core/admin/admin-drizzle.repository"
-import { createKwepDatabase } from "@workspace/db"
+import { createWritingAppDatabase } from "@workspace/db"
 import {
   createAppLogger,
   createRequestLogger,
@@ -13,7 +13,7 @@ import { createAdminAuth, createAdminSessionResolver } from "@/auth/admin-auth"
 import { parseAdminApiEnv } from "@/env"
 
 const env = parseAdminApiEnv(process.env)
-const database = createKwepDatabase(env.databaseUrl)
+const database = createWritingAppDatabase(env.databaseUrl)
 const logger = createAppLogger()
 const adminRepository = createDrizzleAdminRepository(database.db)
 const adminService = createAdminService({

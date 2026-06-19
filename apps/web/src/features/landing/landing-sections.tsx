@@ -14,7 +14,7 @@ import {
   stats,
   steps,
 } from "@/features/landing/landing-content"
-import { KwepSparklesIcon } from "@/features/landing/landing-icons"
+import { SparklesIcon } from "@/features/landing/landing-icons"
 import {
   Reveal,
   useCountUp,
@@ -107,7 +107,7 @@ export function Hero({
             className="inline-flex items-center gap-2 bg-surface rounded-full mb-6"
             style={{ padding: "0.5rem 1rem" }}
           >
-            <KwepSparklesIcon className="text-charcoal" size={15} />
+            <SparklesIcon className="text-charcoal" size={15} />
             <span
               className="font-bold text-muted"
               style={{ fontSize: "0.8125rem" }}

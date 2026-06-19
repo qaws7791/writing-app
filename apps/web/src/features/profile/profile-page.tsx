@@ -26,7 +26,7 @@ const serverMountedSnapshot = () => false
 
 export function ProfilePage({ profile }: ProfilePageProps) {
   const router = useRouter()
-  const joinedDate = formatKwepJoinedDate(profile.user.joinedAt)
+  const joinedDate = formatJoinedDate(profile.user.joinedAt)
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -146,7 +146,7 @@ function ProfileButton({
   )
 }
 
-function formatKwepJoinedDate(isoDate: string): string {
+function formatJoinedDate(isoDate: string): string {
   return isoDate.slice(0, 10).replaceAll("-", ".")
 }
 
@@ -154,13 +154,13 @@ function cx(...classes: Array<false | null | string | undefined>): string {
   return classes.filter(Boolean).join(" ")
 }
 
-type KwepIconProps = Omit<SVGProps<SVGSVGElement>, "height" | "width"> & {
+type IconProps = Omit<SVGProps<SVGSVGElement>, "height" | "width"> & {
   readonly size?: number
 }
 
-function SunIcon({ className, size = 24, ...props }: KwepIconProps) {
+function SunIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg className={className} iconName="sun" size={size} {...props}>
+    <SvgIcon className={className} iconName="sun" size={size} {...props}>
       <circle cx="12" cy="12" r="4" />
       <path d="M12 2v2" />
       <path d="M12 20v2" />
@@ -170,35 +170,35 @@ function SunIcon({ className, size = 24, ...props }: KwepIconProps) {
       <path d="M20 12h2" />
       <path d="m6.34 17.66-1.41 1.41" />
       <path d="m19.07 4.93-1.41 1.41" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-function MoonIcon({ className, size = 24, ...props }: KwepIconProps) {
+function MoonIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg className={className} iconName="moon" size={size} {...props}>
+    <SvgIcon className={className} iconName="moon" size={size} {...props}>
       <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-function MonitorIcon({ className, size = 24, ...props }: KwepIconProps) {
+function MonitorIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg className={className} iconName="monitor" size={size} {...props}>
+    <SvgIcon className={className} iconName="monitor" size={size} {...props}>
       <rect height="14" rx="2" width="20" x="2" y="3" />
       <line x1="8" x2="16" y1="21" y2="21" />
       <line x1="12" x2="12" y1="17" y2="21" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-function KwepSvg({
+function SvgIcon({
   children,
   className,
   iconName,
   size = 24,
   ...props
-}: KwepIconProps & {
+}: IconProps & {
   readonly children: ReactNode
   readonly iconName: string
 }) {

@@ -5,7 +5,7 @@ import {
   lessonIdSchema,
 } from "@workspace/core/modules/content/domain/content.ids"
 
-import { createInMemoryKwepDatabase } from "@workspace/db/client"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import { createDrizzleContentRepository } from "@/modules/content/infrastructure/persistence/content-drizzle.repository"
 import {
@@ -18,11 +18,11 @@ import {
   createContentSeedRows,
   readContentSeedData,
 } from "@workspace/db/seeds/seed-content"
-import type { KwepDatabaseClient } from "@workspace/db/client"
+import type { WritingAppDatabaseClient } from "@workspace/db/client"
 
 describe("콘텐츠 baseline repository", () => {
-  it("Kwep seed row를 baseline schema에 삽입한다", async () => {
-    const client = createInMemoryKwepDatabase()
+  it("기준 콘텐츠 seed row를 baseline schema에 삽입한다", async () => {
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       await seedContentRows(client)
@@ -37,7 +37,7 @@ describe("콘텐츠 baseline repository", () => {
   })
 
   it("학습자 코스 목록에서 archived 코스를 제외하고 lesson metadata를 반환한다", async () => {
-    const client = createInMemoryKwepDatabase()
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       await seedContentRows(client)
@@ -64,7 +64,7 @@ describe("콘텐츠 baseline repository", () => {
   })
 
   it("코스 상세에서 archived 하위 콘텐츠를 제외한다", async () => {
-    const client = createInMemoryKwepDatabase()
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       await seedContentRows(client)
@@ -96,7 +96,7 @@ describe("콘텐츠 baseline repository", () => {
   })
 
   it("레슨 조회에서 archived 레슨과 스텝을 제외한다", async () => {
-    const client = createInMemoryKwepDatabase()
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       await seedContentRows(client)
@@ -125,8 +125,8 @@ describe("콘텐츠 baseline repository", () => {
     }
   })
 
-  it("guide가 없는 Kwep write 스텝이 포함된 레슨을 조회한다", async () => {
-    const client = createInMemoryKwepDatabase()
+  it("guide가 없는 쓰기 스텝이 포함된 레슨을 조회한다", async () => {
+    const client = createInMemoryWritingAppDatabase()
 
     try {
       await seedContentRows(client)
@@ -143,7 +143,9 @@ describe("콘텐츠 baseline repository", () => {
   })
 })
 
-async function seedContentRows(client: KwepDatabaseClient): Promise<void> {
+async function seedContentRows(
+  client: WritingAppDatabaseClient
+): Promise<void> {
   runBaselineMigration(client.sqlite)
 
   const rows = createContentSeedRows(await readContentSeedData())

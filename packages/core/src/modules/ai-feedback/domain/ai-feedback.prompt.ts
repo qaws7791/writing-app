@@ -1,4 +1,4 @@
-export const aiFeedbackPromptPolicyVersion = "kwep-writing-coach-v1"
+export const aiFeedbackPromptPolicyVersion = "writing-coach-v1"
 
 export type AiFeedbackPromptInput = {
   readonly answer: string

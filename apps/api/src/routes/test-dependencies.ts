@@ -95,7 +95,7 @@ function readTestSessionToken(headers: Headers): string | null {
     .get("Cookie")
     ?.split(";")
     .map((cookie) => cookie.trim().split("="))
-    .find(([name]) => name === "kwep_session")?.[1]
+    .find(([name]) => name === "learner_session_token")?.[1]
 
   if (cookieToken !== undefined) {
     return decodeURIComponent(cookieToken)

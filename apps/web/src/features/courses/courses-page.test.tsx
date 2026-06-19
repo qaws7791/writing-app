@@ -29,7 +29,7 @@ const courses: readonly CourseSummary[] = [
 ]
 
 describe("코스 목록 화면", () => {
-  it("Kwep 배우기 화면처럼 카테고리와 코스 상세 링크를 보여준다", async () => {
+  it("현재 제품 코스 목록처럼 카테고리와 코스 상세 링크를 보여준다", async () => {
     const user = userEvent.setup()
 
     render(<CoursesPage courses={courses} />)

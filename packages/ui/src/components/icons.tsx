@@ -10,62 +10,50 @@ export {
   Sparkles as SparklesIcon,
 } from "lucide-react"
 
-type KwepIconProps = Omit<SVGProps<SVGSVGElement>, "height" | "width"> & {
+type IconProps = Omit<SVGProps<SVGSVGElement>, "height" | "width"> & {
   readonly size?: number
 }
 
-export function BookOpenIcon({
-  className,
-  size = 24,
-  ...props
-}: KwepIconProps) {
+export function BookOpenIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg className={className} iconName="book-open" size={size} {...props}>
+    <SvgIcon className={className} iconName="book-open" size={size} {...props}>
       <path d="M12 7v14" />
       <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-export function CheckIcon({ className, size = 24, ...props }: KwepIconProps) {
+export function CheckIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg className={className} iconName="check" size={size} {...props}>
+    <SvgIcon className={className} iconName="check" size={size} {...props}>
       <path d="M20 6 9 17l-5-5" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-export function ChevronDownIcon({
-  className,
-  size = 24,
-  ...props
-}: KwepIconProps) {
+export function ChevronDownIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg
+    <SvgIcon
       className={className}
       iconName="chevron-down"
       size={size}
       {...props}
     >
       <path d="m6 9 6 6 6-6" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-export function ChevronLeftIcon({
-  className,
-  size = 24,
-  ...props
-}: KwepIconProps) {
+export function ChevronLeftIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg
+    <SvgIcon
       className={className}
       iconName="chevron-left"
       size={size}
       {...props}
     >
       <path d="m15 18-6-6 6-6" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
@@ -73,78 +61,78 @@ export function ChevronRightIcon({
   className,
   size = 24,
   ...props
-}: KwepIconProps) {
+}: IconProps) {
   return (
-    <KwepSvg
+    <SvgIcon
       className={className}
       iconName="chevron-right"
       size={size}
       {...props}
     >
       <path d="m9 18 6-6-6-6" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-export function FlameIcon({ className, size = 24, ...props }: KwepIconProps) {
+export function FlameIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg className={className} iconName="flame" size={size} {...props}>
+    <SvgIcon className={className} iconName="flame" size={size} {...props}>
       <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-export function LockIcon({ className, size = 24, ...props }: KwepIconProps) {
+export function LockIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg className={className} iconName="lock" size={size} {...props}>
+    <SvgIcon className={className} iconName="lock" size={size} {...props}>
       <rect height="11" rx="2" ry="2" width="18" x="3" y="11" />
       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-export function PlayIcon({ className, size = 24, ...props }: KwepIconProps) {
+export function PlayIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg className={className} iconName="play" size={size} {...props}>
+    <SvgIcon className={className} iconName="play" size={size} {...props}>
       <polygon points="6 3 20 12 6 21 6 3" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-export function HomeIcon({ className, size = 24, ...props }: KwepIconProps) {
+export function HomeIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg className={className} iconName="house" size={size} {...props}>
+    <SvgIcon className={className} iconName="house" size={size} {...props}>
       <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
       <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-export function UserIcon({ className, size = 24, ...props }: KwepIconProps) {
+export function UserIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg className={className} iconName="user" size={size} {...props}>
+    <SvgIcon className={className} iconName="user" size={size} {...props}>
       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-export function XIcon({ className, size = 24, ...props }: KwepIconProps) {
+export function XIcon({ className, size = 24, ...props }: IconProps) {
   return (
-    <KwepSvg className={className} iconName="x" size={size} {...props}>
+    <SvgIcon className={className} iconName="x" size={size} {...props}>
       <path d="M18 6 6 18" />
       <path d="m6 6 12 12" />
-    </KwepSvg>
+    </SvgIcon>
   )
 }
 
-function KwepSvg({
+function SvgIcon({
   children,
   className,
   iconName,
   size,
   ...props
-}: KwepIconProps & {
+}: IconProps & {
   readonly children: ReactNode
   readonly iconName: string
   readonly size: number

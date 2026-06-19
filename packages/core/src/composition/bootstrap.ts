@@ -34,7 +34,7 @@ import {
   createLearnerAuth,
   createLearnerSessionResolver,
 } from "@workspace/core/modules/auth/infrastructure/adapters/learner-auth"
-import { createKwepDatabase } from "@workspace/db"
+import { createWritingAppDatabase } from "@workspace/db"
 
 export type CreateLearnerApiCoreInput = {
   readonly authBaseUrl: string
@@ -62,7 +62,7 @@ export type LearnerApiCore = {
 export function createLearnerApiCore(
   input: CreateLearnerApiCoreInput
 ): LearnerApiCore {
-  const database = createKwepDatabase(input.databaseUrl)
+  const database = createWritingAppDatabase(input.databaseUrl)
   const contentRepository = createDrizzleContentRepository(database.db)
   const feedbackRepository = createDrizzleAiFeedbackRepository(database.db)
   const learningRepository = createDrizzleLearningRepository(database.db)

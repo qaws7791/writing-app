@@ -7,7 +7,7 @@ import {
   adminRoleValues,
   parseAdminRole,
 } from "@workspace/core/admin"
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   adminAuthAccounts,
   adminAuthSessions,
@@ -19,7 +19,7 @@ import * as dbSchema from "@workspace/db/schema"
 export type CreateAdminAuthInput = {
   readonly authBaseUrl: string
   readonly cookieDomain?: string
-  readonly db: KwepDatabase
+  readonly db: WritingAppDatabase
   readonly secret: string
   readonly webOrigin: string
 }

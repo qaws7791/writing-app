@@ -6,7 +6,7 @@
 
 - 기준일: 2026-06-19
 - 기준 소스: 현재 코드베이스의 `apps/*`, `packages/*`, 루트 설정, 기존 `docs` 문서
-- 제외: `Kwep/` 구현 파일. `Kwep/`는 요구사항과 콘텐츠 seed 참고 원천일 뿐 제품 런타임이 import하지 않는다.
+- 제외: 레거시 실험 디렉터리의 구현 파일. 제품 런타임은 해당 디렉터리를 import하지 않는다.
 
 ## 시스템 목적
 
@@ -73,20 +73,20 @@ flowchart TB
 
 ## 서비스 경계
 
-| 경계                   | 책임                                                                             | 금지                                                        |
-| ---------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `apps/web`             | 학습자 화면, 인증 시작, API 포트 호출, API DTO mapper                            | DB 직접 접근, `Kwep/` import, API 응답을 화면에 그대로 전달 |
-| `apps/api`             | 학습자 HTTP transport, Hono route, CORS, 인증 세션 확인, OpenAPI 생성, core 호출 | `@workspace/db`와 Drizzle 직접 import                       |
-| `apps/admin`           | 관리자 화면, 관리자 로그인, 어드민 API 포트 호출                                 | 학습자 API 호출, DB 직접 접근                               |
-| `apps/admin-api`       | 관리자 HTTP transport, 관리자 인증, 권한 guard, 운영 API                         | 학습자 웹 세션/쿠키와 혼용                                  |
-| `packages/core`        | 도메인 DTO, 브랜드 타입, 상태 정책, 유스케이스, repository 구현, 학습자 API 조립 | HTTP transport 의존                                         |
-| `packages/db`          | SQLite client, Drizzle schema, migration, seed, persisted 값                     | `@workspace/core` import                                    |
-| `packages/ui`          | 공유 UI primitive와 스타일                                                       | 앱별 데이터 조회, 라우팅 정책                               |
-| `packages/config`      | 공유 TypeScript 설정                                                             | 런타임 코드와 도메인 로직                                   |
-| `packages/hono`        | Hono route, validation, error handling 표준                                      | 도메인 정책 소유                                            |
-| `packages/env`         | 환경 변수 파싱과 로컬 기본값                                                     | 앱별 의미 변환                                              |
-| `packages/logger`      | pino logger와 요청 로그 middleware                                               | 비즈니스 이벤트 저장                                        |
-| `packages/http-client` | HTTP result shape와 네트워크 오류 모델                                           | 앱별 사용자 메시지와 인증 정책                              |
+| 경계                   | 책임                                                                             | 금지                                                                     |
+| ---------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `apps/web`             | 학습자 화면, 인증 시작, API 포트 호출, API DTO mapper                            | DB 직접 접근, 레거시 실험 디렉터리 import, API 응답을 화면에 그대로 전달 |
+| `apps/api`             | 학습자 HTTP transport, Hono route, CORS, 인증 세션 확인, OpenAPI 생성, core 호출 | `@workspace/db`와 Drizzle 직접 import                                    |
+| `apps/admin`           | 관리자 화면, 관리자 로그인, 어드민 API 포트 호출                                 | 학습자 API 호출, DB 직접 접근                                            |
+| `apps/admin-api`       | 관리자 HTTP transport, 관리자 인증, 권한 guard, 운영 API                         | 학습자 웹 세션/쿠키와 혼용                                               |
+| `packages/core`        | 도메인 DTO, 브랜드 타입, 상태 정책, 유스케이스, repository 구현, 학습자 API 조립 | HTTP transport 의존                                                      |
+| `packages/db`          | SQLite client, Drizzle schema, migration, seed, persisted 값                     | `@workspace/core` import                                                 |
+| `packages/ui`          | 공유 UI primitive와 스타일                                                       | 앱별 데이터 조회, 라우팅 정책                                            |
+| `packages/config`      | 공유 TypeScript 설정                                                             | 런타임 코드와 도메인 로직                                                |
+| `packages/hono`        | Hono route, validation, error handling 표준                                      | 도메인 정책 소유                                                         |
+| `packages/env`         | 환경 변수 파싱과 로컬 기본값                                                     | 앱별 의미 변환                                                           |
+| `packages/logger`      | pino logger와 요청 로그 middleware                                               | 비즈니스 이벤트 저장                                                     |
+| `packages/http-client` | HTTP result shape와 네트워크 오류 모델                                           | 앱별 사용자 메시지와 인증 정책                                           |
 
 ## 런타임 의존성 방향
 
@@ -129,6 +129,7 @@ Learning domain이 content DTO나 content id 타입을 참조해야 할 때는 c
 - `/users/[id]`: 사용자 상세
 - `/analytics`: 분석
 - `/settings`: 운영 설정
+- `/debug/steps`: 내부 QA용 스텝 디버그
 
 ## API 런타임
 
@@ -140,7 +141,7 @@ learner route handler는 typed route가 검증한 transport 입력을 읽고, re
 AI 피드백 생성은 `AiFeedbackService`가 lesson 조회와 AI_FEEDBACK step 판정만 담당하고, 시도 한도 계산·prompt 기반 provider 호출·결과 저장은 `ai-feedback-attempt-coordinator.ts`가 조정한다. AI_FEEDBACK step 지원 여부는 `ai-feedback-step-policy.ts` domain policy가 소유한다.
 
 어드민 API는 `apps/admin-api/src/main.ts`에서 SQLite DB, 어드민 repository, Better Auth, 관리자 세션 resolver, 요청 로거를 조립한다. Route는 `@workspace/hono/core`의 typed route definition으로 등록하고, request/query/body wire contract는 `packages/contracts/admin`을 직접 참조한다. 관리자 세션과 owner 권한은 route middleware가 `AppError` 기반 표준 오류로 변환하며, `/openapi`는 등록된 typed route에서 OpenAPI 3.1 문서를 생성한다. `apps/admin-api`의 app 조립 경계는 core의 broad `AdminService`를 route에 직접 넘기지 않고 analytics, courses, dashboard, settings, content reset, users use case 슬롯으로 나눠 주입한다. `apps/admin` 화면은 core나 admin wire DTO package를 직접 import하지 않는다.
-어드민 코스 편집기는 root에 `course-editor-shell.tsx` entrypoint만 두고, 읽기 전용 레슨/스텝 작업 화면은 `workspace/`, 학습자 표시 확인은 `preview/`, 스텝 타입별 폼은 `step-forms/` 아래에 둔다. step form 의존 방향은 `step-forms/step-form-registry.tsx -> step-forms/index.ts -> step-forms/* -> step-forms/shared/step-form-contract.tsx`이다. 개별 step form은 registry를 import하지 않고, registry는 개별 form 파일이나 shared shell을 직접 import하지 않는다.
+어드민 코스 편집기는 root에 `course-editor-shell.tsx` entrypoint만 두고, 레슨/스텝 편집 작업 화면은 `workspace/`, 학습자 표시 확인은 `preview/`, 스텝 타입별 폼은 `step-forms/` 아래에 둔다. step form 의존 방향은 `step-forms/step-form-registry.tsx -> step-forms/index.ts -> step-forms/* -> step-forms/shared/step-form-contract.tsx`이다. 개별 step form은 registry를 import하지 않고, registry는 개별 form 파일이나 shared shell을 직접 import하지 않는다.
 
 `packages/core`의 공개 표면은 실제 런타임에서 쓰이는 module API, learner API bootstrap, result/errors/kernel 같은 공통 값으로 제한한다. request context, event bus, unit of work, container wiring처럼 아직 use case에 연결되지 않은 scaffold는 도입 시점까지 공개하지 않는다.
 
@@ -149,7 +150,8 @@ AI 피드백 생성은 `AiFeedbackService`가 lesson 조회와 AI_FEEDBACK step 
 - 단일 SQLite 파일을 기본 저장소로 사용한다.
 - 로컬 기본 경로는 저장소 루트의 `data/api.sqlite`다.
 - 학습자 API와 어드민 API는 같은 SQLite 파일을 공유하지만 인증 테이블과 쿠키 이름을 분리한다.
-- `createKwepDatabase()`는 연결 직후 `foreign_keys=ON`, `journal_mode=WAL`, `busy_timeout=5000`, `synchronous=NORMAL`을 적용한다.
+- 브라우저 localStorage는 사용자 계정, 학습 진행, 연속 학습일의 영속 저장소로 사용하지 않는다.
+- `createWritingAppDatabase()`는 연결 직후 `foreign_keys=ON`, `journal_mode=WAL`, `busy_timeout=5000`, `synchronous=NORMAL`을 적용한다.
 
 ## 배포 인프라 개요
 

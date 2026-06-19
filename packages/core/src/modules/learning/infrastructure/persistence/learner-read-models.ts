@@ -11,14 +11,16 @@ import {
   contentStatuses,
   lessonProgressStatuses,
 } from "@workspace/core/shared/kernel/status"
-import type { KwepDatabase } from "@workspace/db/client"
+import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   learnerActivityDays,
   learnerLessonProgress,
   lessons,
 } from "@workspace/db/schema"
 
-export function createDrizzleProfileReader(db: KwepDatabase): ProfileReader {
+export function createDrizzleProfileReader(
+  db: WritingAppDatabase
+): ProfileReader {
   return {
     async readProfileStats(userId) {
       const [completedLessons, totalLessons, activity] = await Promise.all([
@@ -43,7 +45,9 @@ export function createDrizzleProfileReader(db: KwepDatabase): ProfileReader {
   }
 }
 
-export function createDrizzleProgressReader(db: KwepDatabase): ProgressReader {
+export function createDrizzleProgressReader(
+  db: WritingAppDatabase
+): ProgressReader {
   return {
     async readLearnerProgress(userId) {
       const [progressRows, activity] = await Promise.all([
@@ -72,7 +76,7 @@ export function createDrizzleProgressReader(db: KwepDatabase): ProgressReader {
 }
 
 function countCompletedLessons(
-  db: KwepDatabase,
+  db: WritingAppDatabase,
   userId: string
 ): Promise<number> {
   return Promise.resolve(
@@ -89,7 +93,7 @@ function countCompletedLessons(
   )
 }
 
-function countActiveLessons(db: KwepDatabase): Promise<number> {
+function countActiveLessons(db: WritingAppDatabase): Promise<number> {
   return Promise.resolve(
     db
       .select({ value: count() })
@@ -99,7 +103,7 @@ function countActiveLessons(db: KwepDatabase): Promise<number> {
   )
 }
 
-function readActivity(db: KwepDatabase, userId: string) {
+function readActivity(db: WritingAppDatabase, userId: string) {
   return Promise.resolve(
     db
       .select({ activityDate: learnerActivityDays.activityDate })

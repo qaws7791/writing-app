@@ -148,6 +148,7 @@
 구현 위치: `apps/admin/src/components/admin-sidebar.tsx`
 
 - 주요 메뉴: 대시보드, 콘텐츠 관리, 사용자 관리, 분석, 운영 설정.
+- 내부 QA 라우트는 주요 메뉴에 포함하지 않는다.
 - 아이콘은 `lucide-react`를 사용한다.
 - 활성 링크는 `aria-current="page"`와 `.is-active`를 함께 사용한다.
 
@@ -169,7 +170,7 @@ CSS class: `.admin-panel`
 
 CSS class: `.admin-toolbar`
 
-- 검색, select filter, 페이지 크기, 주요 행동을 한 줄 grid로 배치한다.
+- 화면에 필요한 검색, select filter, 페이지 크기, 주요 행동을 한 줄 grid로 배치한다.
 - label 안의 span은 12px bold 보조 라벨이다.
 - 모바일 대응이 필요해지면 grid를 1열로 접는 규칙을 먼저 추가한다.
 
