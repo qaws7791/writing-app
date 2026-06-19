@@ -51,18 +51,14 @@
 - `GET /health`
 - `GET /openapi`
 - `GET /api/auth/*`, `POST /api/auth/*`
+- `GET /auth/session`
 - `GET /courses`
-- `GET /courses/search?q=...`
 - `GET /courses/:courseId`
 - `GET /lessons/:lessonId`
-- `GET /me`
 - `GET /profile`
 - `GET /progress`
-- `GET /courses/:courseId/progress`
-- `GET /lessons/:lessonId/progress`
-- `PUT /lessons/:lessonId/progress`
-- `PUT /lessons/:lessonId/answers`
-- `POST /lessons/:lessonId/complete`
+- `POST /learning/answers`
+- `POST /learning/lessons/:lessonId/complete`
 - `POST /ai-feedback`
 
 API 앱은 `@workspace/env`의 `parseEnv`로 시작 단계 환경 변수를 검증한다. `DATABASE_URL` 기본 경로 위임, `WEB_ORIGIN` 기반 CORS 허용 origin 같은 앱별 의미 변환은 `apps/api/src/env.ts`에 유지한다.
@@ -96,17 +92,11 @@ bun --filter @workspace/api dev
 주요 라우트는 다음과 같다.
 
 - `GET /health`
-- `GET /openapi`
 - `GET /api/auth/*`, `POST /api/auth/*`
-- `GET /session`
 - `GET /dashboard`
-- `GET /courses?page=...&pageSize=...&query=...`
+- `GET /courses?page=...&pageSize=...&query=...&status=...`
 - `POST /courses`
-- `GET /courses?include=units,lessons`
-- `GET /courses/:courseId`
 - `GET /courses/:courseId/editor`
-- `PUT /courses/:courseId/editor`
-- `GET /courses/:courseId/lessons/:lessonId`
 - `DELETE /courses/:courseId`
 - `GET /users?page=...&pageSize=...&query=...&status=...&sort=...`
 - `GET /users/:userId`

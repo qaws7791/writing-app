@@ -50,6 +50,8 @@
 ## 주요 명령
 
 ```bash
+bun run check:document-drift
+bun run check:workspace-inventory
 bun run test
 bun run test:coverage
 bun run typecheck

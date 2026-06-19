@@ -17,6 +17,10 @@ pre-commit:
       glob: "{package.json,turbo.json,vitest.workspace.ts,docs/engineering/workspace-inventory.md,docs/engineering/testing.md,ARCHITECTURE.md,CONTEXT.md,docs/engineering/system-overview.md,scripts/check-workspace-inventory.ts}"
       run: bun run check:workspace-inventory
 
+    document-drift:
+      glob: "{README.md,CONTEXT.md,ARCHITECTURE.md,BACKEND.md,FRONTEND.md,DOMAIN.md,GLOSSARY.md,docs/**/*.md,apps/api/src/**/*.ts,apps/admin-api/src/**/*.ts,package.json,apps/*/package.json,packages/*/package.json,scripts/check-document-drift.ts}"
+      run: bun run check:document-drift
+
 pre-push:
   commands:
     workspace-lint:
