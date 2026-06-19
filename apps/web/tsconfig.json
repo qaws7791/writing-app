@@ -5,8 +5,7 @@
     "incremental": true,
     "types": ["bun", "@testing-library/jest-dom"],
     "paths": {
-      "@/*": ["./src/*"],
-      "@test/*": ["./test/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
