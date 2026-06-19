@@ -2,7 +2,7 @@ import type { AnyRouteConfig } from "@workspace/hono/core"
 import { ErrorResponseSchema } from "@workspace/hono/errors"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
-import { mapCoreError } from "@/errors/map-core-error"
+import { unwrapApiCoreResult } from "@/errors/map-core-error"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
 import { savedResponseSchema } from "@/http/learner-contract.schemas"
 import { requireActiveSession } from "@/middleware/auth.middleware"
@@ -51,11 +51,7 @@ const saveAnswerHandler: ApiRouteHandler<typeof saveAnswerRouteConfig> = async (
     userId: learnerIdSchema.parse(context.var.activeSession.user.id),
   })
 
-  if (result.kind === "err") {
-    throw mapCoreError(result.error)
-  }
-
-  return context.json(result.value, 200)
+  return context.json(unwrapApiCoreResult(result), 200)
 }
 
 export const saveAnswerRoute = defineApiRoute({
@@ -104,11 +100,7 @@ const completeLessonHandler: ApiRouteHandler<
     userId: learnerIdSchema.parse(context.var.activeSession.user.id),
   })
 
-  if (result.kind === "err") {
-    throw mapCoreError(result.error)
-  }
-
-  return context.json(result.value, 200)
+  return context.json(unwrapApiCoreResult(result), 200)
 }
 
 export const completeLessonRoute = defineApiRoute({

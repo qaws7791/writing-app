@@ -2,7 +2,7 @@ import type { AnyRouteConfig } from "@workspace/hono/core"
 import { ErrorResponseSchema } from "@workspace/hono/errors"
 
 import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
-import { mapCoreError } from "@/errors/map-core-error"
+import { unwrapApiCoreResult } from "@/errors/map-core-error"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
@@ -65,11 +65,7 @@ const getCourseDetailHandler: ApiRouteHandler<
     userId: context.var.activeSession.user.id,
   })
 
-  if (result.kind === "err") {
-    throw mapCoreError(result.error)
-  }
-
-  return context.json(result.value, 200)
+  return context.json(unwrapApiCoreResult(result), 200)
 }
 
 export const getCourseDetailRoute = defineApiRoute({
