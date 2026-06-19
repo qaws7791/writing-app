@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { fetchHttpResponse } from "@/index"
+import { fetchHttpResponse, httpApiFailure, httpApiOk } from "@/index"
 
 describe("HTTP client transport", () => {
   it("fetch 예외를 원인이 보존된 네트워크 오류 값으로 반환한다", async () => {
@@ -56,6 +56,22 @@ describe("HTTP client transport", () => {
     ).resolves.toEqual({
       kind: "ok",
       response,
+    })
+  })
+
+  it("클라이언트 API result shape를 명시적으로 만든다", () => {
+    expect(httpApiOk({ id: "course-1" })).toEqual({
+      status: "ok",
+      value: {
+        id: "course-1",
+      },
+    })
+
+    expect(httpApiFailure({ code: "contract-error" })).toEqual({
+      error: {
+        code: "contract-error",
+      },
+      status: "error",
     })
   })
 })

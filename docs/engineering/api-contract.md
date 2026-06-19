@@ -109,6 +109,13 @@ JSON body 오류 detail:
 - `invalid_body`
 - `unknown_body_read_error`
 
+## 클라이언트 API Result 경계
+
+- `@workspace/http-client`는 HTTP fetch 실행, 네트워크 예외 분류, 클라이언트 API result의 공통 `status: "ok" | "error"` shape를 소유한다.
+- `apps/web`과 `apps/admin`은 각 앱의 사용자 메시지, 서버 오류 코드 매핑, 인증 cookie 정책을 소유한다.
+- 앱별 `api-result.ts`는 앱 API 포트의 이름을 유지하는 얇은 alias와 factory만 제공한다.
+- `packages/core/shared/result`는 도메인 use case의 성공/실패 값을 표현하며 HTTP transport 또는 UI 메시지를 알지 않는다.
+
 ## OpenAPI 생성
 
 학습자 API:
