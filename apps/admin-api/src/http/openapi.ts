@@ -46,13 +46,29 @@ export function jsonResponse(description: string, schema: z.ZodType) {
   }
 }
 
+export function jsonRequestBody<const TSchema extends z.ZodType>(
+  schema: TSchema
+) {
+  return {
+    content: {
+      "application/json": {
+        schema,
+      },
+    },
+  }
+}
+
+export function errorJsonResponse(description: string) {
+  return jsonResponse(description, ErrorResponseSchema)
+}
+
 export function adminAuthenticatedResponses(
   successResponse: ReturnType<typeof jsonResponse>
 ) {
   return {
     200: successResponse,
-    401: jsonResponse("관리자 인증이 필요합니다.", ErrorResponseSchema),
-    403: jsonResponse("소유자 권한이 필요합니다.", ErrorResponseSchema),
+    401: errorJsonResponse("관리자 인증이 필요합니다."),
+    403: errorJsonResponse("소유자 권한이 필요합니다."),
   }
 }
 

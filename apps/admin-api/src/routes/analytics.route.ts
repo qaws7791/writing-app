@@ -11,7 +11,7 @@ import { z } from "@workspace/hono/zod"
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
 import { adminAuthenticatedResponses, jsonResponse } from "@/http/openapi"
-import { createRequireAdminSessionMiddleware } from "@/middleware/admin-auth.middleware"
+import { adminSessionRouteOptions } from "@/routes/admin-route-options"
 import { positiveIntegerQuery } from "@/routes/query-schemas"
 
 const defaultAnalyticsDays = 30
@@ -62,7 +62,6 @@ function createGetAnalyticsRoute({
 }: AnalyticsRouteDependencies) {
   const routeConfig = {
     method: "get",
-    middleware: [createRequireAdminSessionMiddleware(sessionResolver)],
     operationId: "getAdminAnalytics",
     path: "/analytics",
     request: {
@@ -71,8 +70,8 @@ function createGetAnalyticsRoute({
     responses: adminAuthenticatedResponses(
       jsonResponse("어드민 분석 요약입니다.", adminAnalyticsDtoSchema)
     ),
-    security: [{ adminSessionCookie: [] }],
     summary: "어드민 분석 요약 조회",
+    ...adminSessionRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
@@ -99,7 +98,6 @@ function createGetLessonAnalyticsRoute({
 }: AnalyticsRouteDependencies) {
   const routeConfig = {
     method: "get",
-    middleware: [createRequireAdminSessionMiddleware(sessionResolver)],
     operationId: "getAdminLessonAnalytics",
     path: "/analytics/lessons",
     request: {
@@ -111,8 +109,8 @@ function createGetLessonAnalyticsRoute({
         adminLessonAnalyticsPageDtoSchema
       )
     ),
-    security: [{ adminSessionCookie: [] }],
     summary: "어드민 레슨별 분석 조회",
+    ...adminSessionRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {

@@ -8,17 +8,21 @@ import {
   adminUserSortSchema,
 } from "@workspace/contracts/admin"
 import { type AdminService } from "@workspace/core/admin"
-import { ErrorResponseSchema } from "@workspace/hono/errors"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
 import { notFoundAdminError } from "@/errors/admin-errors"
-import { adminAuthenticatedResponses, jsonResponse } from "@/http/openapi"
 import {
-  createRequireAdminSessionMiddleware,
-  createRequireOwnerAdminSessionMiddleware,
-} from "@/middleware/admin-auth.middleware"
+  adminAuthenticatedResponses,
+  errorJsonResponse,
+  jsonRequestBody,
+  jsonResponse,
+} from "@/http/openapi"
+import {
+  adminSessionRouteOptions,
+  ownerAdminRouteOptions,
+} from "@/routes/admin-route-options"
 import { positiveIntegerQuery } from "@/routes/query-schemas"
 
 const defaultPage = 1
@@ -63,7 +67,6 @@ function createListUsersRoute({
 }: UsersRouteDependencies) {
   const routeConfig = {
     method: "get",
-    middleware: [createRequireAdminSessionMiddleware(sessionResolver)],
     operationId: "getAdminUsers",
     path: "/users",
     request: {
@@ -72,8 +75,8 @@ function createListUsersRoute({
     responses: adminAuthenticatedResponses(
       jsonResponse("어드민 사용자 목록입니다.", adminUserListDtoSchema)
     ),
-    security: [{ adminSessionCookie: [] }],
     summary: "어드민 사용자 목록 조회",
+    ...adminSessionRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
@@ -91,7 +94,6 @@ function createGetUserRoute({
 }: UsersRouteDependencies) {
   const routeConfig = {
     method: "get",
-    middleware: [createRequireAdminSessionMiddleware(sessionResolver)],
     operationId: "getAdminUser",
     path: "/users/{userId}",
     request: {
@@ -101,10 +103,10 @@ function createGetUserRoute({
       ...adminAuthenticatedResponses(
         jsonResponse("어드민 사용자 상세입니다.", adminUserDetailDtoSchema)
       ),
-      404: jsonResponse("사용자를 찾을 수 없습니다.", ErrorResponseSchema),
+      404: errorJsonResponse("사용자를 찾을 수 없습니다."),
     },
-    security: [{ adminSessionCookie: [] }],
     summary: "어드민 사용자 상세 조회",
+    ...adminSessionRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
@@ -133,17 +135,10 @@ function createUpdateUserStatusRoute({
 }: UsersRouteDependencies) {
   const routeConfig = {
     method: "patch",
-    middleware: [createRequireOwnerAdminSessionMiddleware(sessionResolver)],
     operationId: "updateAdminUserStatus",
     path: "/users/{userId}/status",
     request: {
-      body: {
-        content: {
-          "application/json": {
-            schema: adminUpdateUserStatusRequestSchema,
-          },
-        },
-      },
+      body: jsonRequestBody(adminUpdateUserStatusRequestSchema),
       params: userParamsSchema,
     },
     responses: {
@@ -153,11 +148,11 @@ function createUpdateUserStatusRoute({
           adminUserDetailDtoSchema
         )
       ),
-      400: jsonResponse("잘못된 요청입니다.", ErrorResponseSchema),
-      404: jsonResponse("사용자를 찾을 수 없습니다.", ErrorResponseSchema),
+      400: errorJsonResponse("잘못된 요청입니다."),
+      404: errorJsonResponse("사용자를 찾을 수 없습니다."),
     },
-    security: [{ adminSessionCookie: [] }],
     summary: "어드민 사용자 상태 변경",
+    ...ownerAdminRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
@@ -189,7 +184,6 @@ function createDeleteUserRoute({
 }: UsersRouteDependencies) {
   const routeConfig = {
     method: "delete",
-    middleware: [createRequireOwnerAdminSessionMiddleware(sessionResolver)],
     operationId: "deleteAdminUser",
     path: "/users/{userId}",
     request: {
@@ -202,10 +196,10 @@ function createDeleteUserRoute({
           adminDeleteUserResultSchema
         )
       ),
-      404: jsonResponse("사용자를 찾을 수 없습니다.", ErrorResponseSchema),
+      404: errorJsonResponse("사용자를 찾을 수 없습니다."),
     },
-    security: [{ adminSessionCookie: [] }],
     summary: "어드민 사용자 삭제 상태 전환",
+    ...ownerAdminRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {

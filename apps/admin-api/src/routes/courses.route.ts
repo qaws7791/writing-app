@@ -6,17 +6,20 @@ import {
   adminCourseListStatusFilterSchema,
 } from "@workspace/contracts/admin"
 import { type AdminService } from "@workspace/core/admin"
-import { ErrorResponseSchema } from "@workspace/hono/errors"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
 import { notFoundAdminError } from "@/errors/admin-errors"
-import { adminAuthenticatedResponses, jsonResponse } from "@/http/openapi"
 import {
-  createRequireAdminSessionMiddleware,
-  createRequireOwnerAdminSessionMiddleware,
-} from "@/middleware/admin-auth.middleware"
+  adminAuthenticatedResponses,
+  errorJsonResponse,
+  jsonResponse,
+} from "@/http/openapi"
+import {
+  adminSessionRouteOptions,
+  ownerAdminRouteOptions,
+} from "@/routes/admin-route-options"
 import { positiveIntegerQuery } from "@/routes/query-schemas"
 
 const defaultPage = 1
@@ -60,7 +63,6 @@ function createListCoursesRoute({
 }: CoursesRouteDependencies) {
   const routeConfig = {
     method: "get",
-    middleware: [createRequireAdminSessionMiddleware(sessionResolver)],
     operationId: "getAdminCourses",
     path: "/courses",
     request: {
@@ -69,8 +71,8 @@ function createListCoursesRoute({
     responses: adminAuthenticatedResponses(
       jsonResponse("어드민 코스 목록입니다.", adminCourseListDtoSchema)
     ),
-    security: [{ adminSessionCookie: [] }],
     summary: "어드민 코스 목록 조회",
+    ...adminSessionRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
@@ -89,14 +91,13 @@ function createCreateCourseRoute({
 }: CoursesRouteDependencies) {
   const routeConfig = {
     method: "post",
-    middleware: [createRequireOwnerAdminSessionMiddleware(sessionResolver)],
     operationId: "createAdminCourse",
     path: "/courses",
     responses: adminAuthenticatedResponses(
       jsonResponse("생성된 어드민 코스입니다.", adminCourseDetailDtoSchema)
     ),
-    security: [{ adminSessionCookie: [] }],
     summary: "어드민 코스 생성",
+    ...ownerAdminRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
@@ -120,7 +121,6 @@ function createArchiveCourseRoute({
 }: CoursesRouteDependencies) {
   const routeConfig = {
     method: "delete",
-    middleware: [createRequireOwnerAdminSessionMiddleware(sessionResolver)],
     operationId: "archiveAdminCourse",
     path: "/courses/{courseId}",
     request: {
@@ -133,10 +133,10 @@ function createArchiveCourseRoute({
           adminArchiveCourseResultSchema
         )
       ),
-      404: jsonResponse("코스를 찾을 수 없습니다.", ErrorResponseSchema),
+      404: errorJsonResponse("코스를 찾을 수 없습니다."),
     },
-    security: [{ adminSessionCookie: [] }],
     summary: "어드민 코스 보관",
+    ...ownerAdminRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
