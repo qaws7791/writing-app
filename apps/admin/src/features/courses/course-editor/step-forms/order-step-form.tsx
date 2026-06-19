@@ -2,7 +2,7 @@ import {
   readStepContent,
   StepFormShell,
   type EditorStep,
-} from "@/features/courses/course-editor/step-form-contract"
+} from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
 
 export function OrderStepForm({ step }: { readonly step: EditorStep }) {
   const content = readStepContent(step)

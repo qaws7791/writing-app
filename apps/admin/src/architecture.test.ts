@@ -5,6 +5,12 @@ import { fileURLToPath } from "node:url"
 import ts from "typescript"
 
 const adminSourceRoot = dirname(fileURLToPath(import.meta.url))
+const courseEditorSourceRoot = resolve(
+  adminSourceRoot,
+  "features",
+  "courses",
+  "course-editor"
+)
 
 describe("apps/admin architecture", () => {
   it("admin app은 core package를 직접 import하지 않는다", () => {
@@ -25,6 +31,29 @@ describe("apps/admin architecture", () => {
           .filter((source) => source === "@workspace/contracts/admin")
           .map((source) => formatViolation(filePath, source))
       })
+
+    expect(violations).toEqual([])
+  })
+
+  it("course editor step form registry는 step-forms barrel만 import한다", () => {
+    const registryPath = resolve(
+      courseEditorSourceRoot,
+      "step-form-registry.tsx"
+    )
+    const violations = readImports(registryPath)
+      .filter(isCourseEditorStepFormsDeepImport)
+      .map((source) => formatViolation(registryPath, source))
+
+    expect(violations).toEqual([])
+  })
+
+  it("course editor step forms는 registry를 import하지 않는다", () => {
+    const stepFormsRoot = resolve(courseEditorSourceRoot, "step-forms")
+    const violations = readSourceFiles(stepFormsRoot).flatMap((filePath) => {
+      return readImports(filePath)
+        .filter(isCourseEditorStepFormRegistryImport)
+        .map((source) => formatViolation(filePath, source))
+    })
 
     expect(violations).toEqual([])
   })
@@ -113,6 +142,14 @@ function isAdminApiBoundaryFile(filePath: string): boolean {
     relative(adminSourceRoot, filePath).split(sep).join("/") ===
     "lib/api/http-admin-api.ts"
   )
+}
+
+function isCourseEditorStepFormsDeepImport(source: string): boolean {
+  return source.startsWith("@/features/courses/course-editor/step-forms/")
+}
+
+function isCourseEditorStepFormRegistryImport(source: string): boolean {
+  return source === "@/features/courses/course-editor/step-form-registry"
 }
 
 function formatViolation(filePath: string, source: string): string {
