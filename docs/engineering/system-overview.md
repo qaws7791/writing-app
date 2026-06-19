@@ -123,6 +123,8 @@ apps/api -> packages/core -> packages/db
 
 어드민 API는 `apps/admin-api/src/main.ts`에서 SQLite DB, 어드민 repository, Better Auth, 관리자 세션 resolver, 요청 로거를 조립한다.
 
+`packages/core`의 공개 표면은 실제 런타임에서 쓰이는 module API, learner API bootstrap, result/errors/kernel 같은 공통 값으로 제한한다. request context, event bus, unit of work, container wiring처럼 아직 use case에 연결되지 않은 scaffold는 도입 시점까지 공개하지 않는다.
+
 ## 데이터 저장소
 
 - 단일 SQLite 파일을 기본 저장소로 사용한다.

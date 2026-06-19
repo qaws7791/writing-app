@@ -35,16 +35,11 @@
     "./modules/learning/api": "./src/modules/learning/api/index.ts",
     "./modules/*": "./src/modules/*.ts",
     "./result": "./src/shared/result/index.ts",
-    "./shared/context": "./src/shared/context/index.ts",
     "./shared/errors": "./src/shared/errors/index.ts",
-    "./shared/event-bus": "./src/shared/event-bus/index.ts",
     "./shared/kernel": "./src/shared/kernel/index.ts",
     "./shared/kernel/status": "./src/shared/kernel/status.ts",
     "./shared/result": "./src/shared/result/index.ts",
-    "./shared/unit-of-work": "./src/shared/unit-of-work/index.ts",
     "./composition/bootstrap": "./src/composition/bootstrap.ts",
-    "./composition/container": "./src/composition/container.ts",
-    "./composition/event-wiring": "./src/composition/event-wiring.ts",
     "./status": "./src/shared/kernel/status.ts"
   },
   "scripts": {
