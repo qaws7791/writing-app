@@ -16,6 +16,8 @@
 | Workspace   | `apps/*`, `packages/*` | Bun workspace로 관리한다.                                                |
 | 작업 실행기 | Turbo `^2.8.8`         | `build`, `dev`, `test`, `typecheck`, `lint`를 workspace 단위로 실행한다. |
 
+패키지 매니저와 workspace 정책의 단일 출처는 루트 `package.json`이다. npm 설정이 실제로 필요하지 않으면 빈 `.npmrc` placeholder를 두지 않는다.
+
 ## 프론트엔드
 
 | 기술           | 버전                | 사용 위치                    | 선택 근거                                             |
