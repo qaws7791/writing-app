@@ -53,8 +53,8 @@ writing-app은 한국어 글쓰기 학습 플랫폼이다. 학습자는 작은 �
 - `DOMAIN.md`
 - `ARCHITECTURE.md`
 - `FRONTEND.md`
-- `docs/product/screen-specification.md`
-- `docs/product/user-flows.md`
+- `docs/product/user-stories/_index.md`
+- `docs/product/requirements/_index.md`
 - `docs/design/text-localization-policy.md`
 - `docs/design/screens`
 - `apps/web/src/app/globals.css`
