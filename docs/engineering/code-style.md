@@ -58,6 +58,8 @@ bun run lint:fix
 - `workspace/no-unsafe-unknown-cast`: error.
 - `workspace/no-invalid-workspace-dependency`: error.
 
+Architecture test는 계층 규칙을 검사할 때 TypeScript AST 기반 import 수집을 사용한다. type-only import, dynamic import, export declaration도 runtime import와 같은 경계를 따라야 한다.
+
 ## TypeScript
 
 - `strict`를 유지한다.

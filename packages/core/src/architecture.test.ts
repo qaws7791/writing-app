@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import { readdirSync, readFileSync } from "node:fs"
 import { dirname, relative, resolve, sep } from "node:path"
 import { fileURLToPath } from "node:url"
+import ts from "typescript"
 
 const coreSourceRoot = dirname(fileURLToPath(import.meta.url))
 const modulesRoot = resolve(coreSourceRoot, "modules")
@@ -69,19 +70,56 @@ function readSourceFiles(rootPath: string): string[] {
 
 function readImports(filePath: string): string[] {
   const content = readFileSync(filePath, "utf8")
+  const sourceFile = ts.createSourceFile(
+    filePath,
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS
+  )
   const imports: string[] = []
-  const importPattern =
-    /\b(?:import|export)\s+(?:type\s+)?(?:[^"'`]*?\s+from\s+)?["']([^"']+)["']|import\(\s*["']([^"']+)["']\s*\)/g
 
-  for (const match of content.matchAll(importPattern)) {
-    const source = match[1] ?? match[2]
+  function visit(node: ts.Node) {
+    if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) {
+      pushImport(node.moduleSpecifier)
+    }
 
-    if (source !== undefined) {
+    if (
+      ts.isCallExpression(node) &&
+      node.expression.kind === ts.SyntaxKind.ImportKeyword
+    ) {
+      pushImport(node.arguments[0])
+    }
+
+    if (ts.isImportTypeNode(node) && ts.isLiteralTypeNode(node.argument)) {
+      pushImport(node.argument.literal)
+    }
+
+    ts.forEachChild(node, visit)
+  }
+
+  function pushImport(node: ts.Node | undefined) {
+    const source = readStringLiteral(node)
+
+    if (source !== null) {
       imports.push(source)
     }
   }
 
+  visit(sourceFile)
+
   return imports
+}
+
+function readStringLiteral(node: ts.Node | undefined): string | null {
+  if (
+    node !== undefined &&
+    (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node))
+  ) {
+    return node.text
+  }
+
+  return null
 }
 
 function isRuntimeAdapterImport(source: string): boolean {
