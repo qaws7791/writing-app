@@ -38,6 +38,7 @@ describe("apps/admin architecture", () => {
   it("course editor step form registry는 step-forms barrel만 import한다", () => {
     const registryPath = resolve(
       courseEditorSourceRoot,
+      "step-forms",
       "step-form-registry.tsx"
     )
     const violations = readImports(registryPath)
@@ -54,6 +55,21 @@ describe("apps/admin architecture", () => {
         .filter(isCourseEditorStepFormRegistryImport)
         .map((source) => formatViolation(filePath, source))
     })
+
+    expect(violations).toEqual([])
+  })
+
+  it("course editor root에는 shell entrypoint만 둔다", () => {
+    const allowedFileNames = new Set([
+      "course-editor-shell.test.tsx",
+      "course-editor-shell.tsx",
+    ])
+    const violations = readdirSync(courseEditorSourceRoot, {
+      withFileTypes: true,
+    })
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((fileName) => !allowedFileNames.has(fileName))
 
     expect(violations).toEqual([])
   })
@@ -145,11 +161,16 @@ function isAdminApiBoundaryFile(filePath: string): boolean {
 }
 
 function isCourseEditorStepFormsDeepImport(source: string): boolean {
-  return source.startsWith("@/features/courses/course-editor/step-forms/")
+  return (
+    source.startsWith("@/features/courses/course-editor/step-forms/") &&
+    source !== "@/features/courses/course-editor/step-forms"
+  )
 }
 
 function isCourseEditorStepFormRegistryImport(source: string): boolean {
-  return source === "@/features/courses/course-editor/step-form-registry"
+  return (
+    source === "@/features/courses/course-editor/step-forms/step-form-registry"
+  )
 }
 
 function formatViolation(filePath: string, source: string): string {

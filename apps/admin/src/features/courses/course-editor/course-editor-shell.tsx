@@ -1,8 +1,8 @@
 import { AdminHeader } from "@/components/admin-header"
-import { CurriculumMap } from "@/features/courses/course-editor/curriculum-map"
-import { LessonPreview } from "@/features/courses/course-editor/lesson-preview"
-import { LessonWorkspace } from "@/features/courses/course-editor/lesson-workspace"
-import { StepWorkspace } from "@/features/courses/course-editor/step-workspace"
+import { CurriculumMap } from "@/features/courses/course-editor/preview/curriculum-map"
+import { LessonPreview } from "@/features/courses/course-editor/preview/lesson-preview"
+import { LessonWorkspace } from "@/features/courses/course-editor/workspace/lesson-workspace"
+import { StepWorkspace } from "@/features/courses/course-editor/workspace/step-workspace"
 import type { AdminCourseDetail } from "@/lib/api/admin-api"
 
 export function CourseEditorShell({

@@ -1,4 +1,4 @@
-import { renderStepForm } from "@/features/courses/course-editor/step-form-registry"
+import { renderStepForm } from "@/features/courses/course-editor/step-forms/step-form-registry"
 import type { AdminCourseDetail } from "@/lib/api/admin-api"
 
 type Step =
