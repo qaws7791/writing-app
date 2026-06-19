@@ -76,6 +76,17 @@ describe("core architecture", () => {
 
     expect(violations).toEqual([])
   })
+
+  it("learning domain은 content module facade나 domain 파일을 직접 import하지 않는다", () => {
+    const learningDomainRoot = resolve(modulesRoot, "learning", "domain")
+    const violations = readSourceFiles(learningDomainRoot).flatMap((filePath) =>
+      readImports(filePath)
+        .filter(isCoreContentModuleImport)
+        .map((source) => formatViolation(filePath, source))
+    )
+
+    expect(violations).toEqual([])
+  })
 })
 
 function readSourceFiles(rootPath: string): string[] {
@@ -168,6 +179,15 @@ function isRuntimeAdapterImport(source: string): boolean {
     source.startsWith("hono/") ||
     source === "openai" ||
     source.startsWith("openai/")
+  )
+}
+
+function isCoreContentModuleImport(source: string): boolean {
+  return (
+    source === "@workspace/core/content" ||
+    source.startsWith("@workspace/core/content/") ||
+    source === "@workspace/core/modules/content" ||
+    source.startsWith("@workspace/core/modules/content/")
   )
 }
 

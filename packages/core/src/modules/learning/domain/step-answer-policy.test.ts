@@ -6,10 +6,7 @@ import {
   lessonStepIdSchema,
   unitIdSchema,
 } from "@/modules/content/domain/content.ids"
-import {
-  lessonDtoSchema,
-  type LessonDto,
-} from "@/modules/content/domain/content.dto"
+import { lessonDtoSchema, type LessonDto } from "@workspace/contracts/content"
 import { validateStepAnswerForLesson } from "@/modules/learning/domain/step-answer-policy"
 
 describe("스텝 답변 정책", () => {

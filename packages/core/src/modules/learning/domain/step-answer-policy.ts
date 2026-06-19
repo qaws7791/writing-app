@@ -1,9 +1,6 @@
-import type {
-  LessonDto,
-  LessonStepDto,
-} from "@workspace/core/modules/content/domain/content.dto"
-import { answerableLessonStepTypes } from "@workspace/core/modules/content/domain/content.dto"
-import type { LessonStepId } from "@workspace/core/modules/content/domain/content.ids"
+import type { LessonDto, LessonStepDto } from "@workspace/contracts/content"
+import { answerableLessonStepTypes } from "@workspace/contracts/content"
+import type { LessonStepId } from "@workspace/contracts/content/content.ids"
 import {
   lessonStartedAnswerSchema,
   type LearningAnswer,

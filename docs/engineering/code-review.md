@@ -31,6 +31,7 @@
 - 프론트엔드가 DB나 core infrastructure에 직접 의존하지 않는가?
 - generated OpenAPI 타입은 `writing-app-api-contract.ts`에 격리되고, feature mapper는 transport contract 타입만 참조하는가?
 - 매칭 스텝 presentation 상호작용 모델은 `apps/web` feature 내부에 있고 `packages/contracts`나 `packages/core` public API로 새어 나가지 않는가?
+- Learning domain이 content 타입을 필요로 할 때 content module facade가 아니라 `@workspace/contracts/content` 또는 구체적인 독립 경계를 import하는가?
 - `Kwep/` 구현 파일을 제품 런타임에서 import하지 않는가?
 
 ## 인증과 권한 체크

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   courseDetailDtoSchema,
   courseSummaryDtoSchema,
-} from "@workspace/core/modules/content/domain/content.dto"
+} from "@workspace/contracts/content"
 
 import {
   toCourseProgress,
