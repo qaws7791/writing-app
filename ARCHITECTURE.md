@@ -14,8 +14,10 @@
 │   └── storybook/  # UI 컴포넌트 개발 환경
 ├── packages/
 │   ├── ui/      # 공유 UI 컴포넌트와 디자인 시스템
+│   ├── config/  # 공유 TypeScript 설정
 │   ├── db/      # Drizzle schema, migration, seed, db client
 │   ├── hono/    # Hono OpenAPI route, validation, error handling 표준 패키지
+│   ├── http-client/ # HTTP transport result와 네트워크 오류 모델
 │   ├── logger/  # pino logger와 요청 로그 helper
 │   ├── env/     # 환경 변수 parsing helper
 │   └── core/    # shared kernel, module facade, usecase, repository adapter, composition root
@@ -109,6 +111,10 @@
 
 `packages/ui`는 shadcn 기반 공유 UI 컴포넌트와 디자인 시스템을 제공한다.
 
+### config
+
+`packages/config`는 workspace에서 공유하는 TypeScript 설정을 제공한다.
+
 ### core
 
 `packages/core`는 프레임워크와 HTTP transport에 의존하지 않는 비즈니스 로직 패키지다. 학습자 API 방향은 `apps/api -> packages/core -> packages/db`이며, core는 module facade, domain 규칙, usecase, repository port와 adapter, 학습자 API 런타임 조립을 소유한다.
@@ -120,6 +126,10 @@ core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 �
 ### hono
 
 `packages/hono`는 Hono 기반 API 앱의 반복되는 transport 표준을 제공한다. 앱 생성, OpenAPI route 정의, Env 고정 route builder, Zod validation hook, `AppError`, 404와 공통 error handler를 담당한다. 에러 wire contract는 `{ code, message, errors? }`다.
+
+### http-client
+
+`packages/http-client`는 web과 admin HTTP adapter가 공유하는 result shape와 네트워크 오류 모델을 제공한다.
 
 ### db
 

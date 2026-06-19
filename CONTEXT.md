@@ -21,6 +21,11 @@
 - `packages/core`: DTO, Zod schema, 도메인 서비스, repository port와 구현, 트랜잭션 경계, DB query, 학습자 API 런타임 조립을 둔다.
 - `packages/db`: Drizzle SQLite client, schema, migration, seed 같은 저수준 영속성 primitive를 둔다.
 - `packages/ui`: shadcn 기반 공유 UI 컴포넌트와 Next 통합 경계를 제공한다.
+- `packages/hono`: Hono route, validation, error handling 표준을 제공한다.
+- `packages/env`: 환경 변수 파싱과 로컬 기본값을 제공한다.
+- `packages/logger`: pino logger와 요청 로그 middleware를 제공한다.
+- `packages/http-client`: HTTP transport result와 네트워크 오류 모델을 제공한다.
+- `packages/config`: workspace TypeScript 설정을 제공한다.
 
 ## 피벗 reset 상태
 

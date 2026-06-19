@@ -13,6 +13,10 @@ pre-commit:
       glob: "{apps,packages}/**/*.{ts,tsx,js,jsx}"
       run: bun run scripts/lint-staged-workspaces.ts {staged_files}
 
+    workspace-inventory:
+      glob: "{package.json,turbo.json,vitest.workspace.ts,docs/engineering/workspace-inventory.md,docs/engineering/testing.md,ARCHITECTURE.md,CONTEXT.md,docs/engineering/system-overview.md,scripts/check-workspace-inventory.ts}"
+      run: bun run check:workspace-inventory
+
 pre-push:
   commands:
     workspace-lint:

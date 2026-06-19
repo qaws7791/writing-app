@@ -47,6 +47,7 @@ flowchart TB
     core["packages/core\n도메인, 유스케이스, repository 구현"]
     dbpkg["packages/db\nDrizzle schema, migration, seed, SQLite client"]
     ui["packages/ui\n공유 UI"]
+    config["packages/config\n공유 TypeScript 설정"]
     hono["packages/hono\nHono route/error 표준"]
     env["packages/env\n환경 변수 파싱과 로컬 기본값"]
     logger["packages/logger\nPino와 요청 로그"]
@@ -72,15 +73,20 @@ flowchart TB
 
 ## 서비스 경계
 
-| 경계             | 책임                                                                             | 금지                                                        |
-| ---------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------- |
-| `apps/web`       | 학습자 화면, 인증 시작, API 포트 호출, API DTO mapper                            | DB 직접 접근, `Kwep/` import, API 응답을 화면에 그대로 전달 |
-| `apps/api`       | 학습자 HTTP transport, Hono route, CORS, 인증 세션 확인, OpenAPI 생성, core 호출 | `@workspace/db`와 Drizzle 직접 import                       |
-| `apps/admin`     | 관리자 화면, 관리자 로그인, 어드민 API 포트 호출                                 | 학습자 API 호출, DB 직접 접근                               |
-| `apps/admin-api` | 관리자 HTTP transport, 관리자 인증, 권한 guard, 운영 API                         | 학습자 웹 세션/쿠키와 혼용                                  |
-| `packages/core`  | 도메인 DTO, 브랜드 타입, 상태 정책, 유스케이스, repository 구현, 학습자 API 조립 | HTTP transport 의존                                         |
-| `packages/db`    | SQLite client, Drizzle schema, migration, seed, persisted 값                     | `@workspace/core` import                                    |
-| `packages/ui`    | 공유 UI primitive와 스타일                                                       | 앱별 데이터 조회, 라우팅 정책                               |
+| 경계                   | 책임                                                                             | 금지                                                        |
+| ---------------------- | -------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `apps/web`             | 학습자 화면, 인증 시작, API 포트 호출, API DTO mapper                            | DB 직접 접근, `Kwep/` import, API 응답을 화면에 그대로 전달 |
+| `apps/api`             | 학습자 HTTP transport, Hono route, CORS, 인증 세션 확인, OpenAPI 생성, core 호출 | `@workspace/db`와 Drizzle 직접 import                       |
+| `apps/admin`           | 관리자 화면, 관리자 로그인, 어드민 API 포트 호출                                 | 학습자 API 호출, DB 직접 접근                               |
+| `apps/admin-api`       | 관리자 HTTP transport, 관리자 인증, 권한 guard, 운영 API                         | 학습자 웹 세션/쿠키와 혼용                                  |
+| `packages/core`        | 도메인 DTO, 브랜드 타입, 상태 정책, 유스케이스, repository 구현, 학습자 API 조립 | HTTP transport 의존                                         |
+| `packages/db`          | SQLite client, Drizzle schema, migration, seed, persisted 값                     | `@workspace/core` import                                    |
+| `packages/ui`          | 공유 UI primitive와 스타일                                                       | 앱별 데이터 조회, 라우팅 정책                               |
+| `packages/config`      | 공유 TypeScript 설정                                                             | 런타임 코드와 도메인 로직                                   |
+| `packages/hono`        | Hono route, validation, error handling 표준                                      | 도메인 정책 소유                                            |
+| `packages/env`         | 환경 변수 파싱과 로컬 기본값                                                     | 앱별 의미 변환                                              |
+| `packages/logger`      | pino logger와 요청 로그 middleware                                               | 비즈니스 이벤트 저장                                        |
+| `packages/http-client` | HTTP result shape와 네트워크 오류 모델                                           | 앱별 사용자 메시지와 인증 정책                              |
 
 ## 런타임 의존성 방향
 

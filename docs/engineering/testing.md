@@ -32,10 +32,9 @@
 - `packages/db`
 - `packages/env`
 - `packages/hono`
+- `packages/http-client`
 - `packages/logger`
 - `packages/ui`
-
-현재 `packages/http-client`도 자체 `vitest.config.ts`와 package test script를 가진다. 루트 workspace에 포함되어야 하는지 변경 시 함께 확인한다.
 
 ## 테스트 계층
 
