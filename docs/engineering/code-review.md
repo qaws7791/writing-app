@@ -25,6 +25,7 @@
 - `apps/api -> packages/core -> packages/db` 방향을 지키는가?
 - `packages/db`가 `packages/core`를 import하지 않는가?
 - 관리자 use case가 기능별 파일과 repository port에 의존하고 불필요하게 전체 `AdminRepository` 또는 mega service를 요구하지 않는가?
+- 관리자 DTO schema가 기능별 contract 파일에 있고 `@workspace/contracts/admin` entrypoint만 공개 계약으로 소비되는가?
 - 프론트엔드가 DB나 core infrastructure에 직접 의존하지 않는가?
 - generated OpenAPI 타입은 `writing-app-api-contract.ts`에 격리되고, feature mapper는 transport contract 타입만 참조하는가?
 - `Kwep/` 구현 파일을 제품 런타임에서 import하지 않는가?
