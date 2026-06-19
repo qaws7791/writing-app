@@ -1,16 +1,16 @@
 import { and, asc, count, eq } from "drizzle-orm"
 import { z } from "zod"
+import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
 import {
   courseDetailDtoSchema,
   courseSummaryDtoSchema,
   lessonDtoSchema,
   lessonStepDtoSchema,
-  type ContentRepository,
   type CourseDetailDto,
   type CourseSummaryDto,
   type LessonDto,
   type LessonStepDto,
-} from "@workspace/core/modules/content/api"
+} from "@workspace/core/modules/content/domain/content.dto"
 import { contentStatuses } from "@workspace/core/shared/kernel/status"
 
 import type { KwepDatabase } from "@workspace/db/client"

@@ -59,6 +59,7 @@ bun run lint:fix
 - `workspace/no-invalid-workspace-dependency`: error.
 
 Architecture test는 계층 규칙을 검사할 때 TypeScript AST 기반 import 수집을 사용한다. type-only import, dynamic import, export declaration도 runtime import와 같은 경계를 따라야 한다.
+`bun run check:import-cycles`는 workspace package runtime dependency cycle과 `packages/core`, 어드민 course editor의 runtime module cycle을 검사한다. type-only import는 cycle graph에서 제외한다.
 
 ## TypeScript
 

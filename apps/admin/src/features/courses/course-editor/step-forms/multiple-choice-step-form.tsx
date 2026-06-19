@@ -2,7 +2,7 @@ import {
   readStepContent,
   StepFormShell,
   type EditorStep,
-} from "@/features/courses/course-editor/step-form-registry"
+} from "@/features/courses/course-editor/step-form-contract"
 
 export function MultipleChoiceStepForm({
   step,

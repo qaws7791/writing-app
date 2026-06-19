@@ -25,6 +25,10 @@ pre-commit:
       glob: "{apps/*/components.json,packages/*/components.json,package.json,README.md,docs/engineering/testing.md,scripts/check-components-config.ts}"
       run: bun run check:components-config
 
+    import-cycles:
+      glob: "{package.json,apps/*/package.json,packages/*/package.json,apps/admin/src/features/courses/course-editor/**/*.{ts,tsx},packages/core/src/**/*.{ts,tsx},scripts/check-import-cycles.ts,docs/engineering/code-style.md}"
+      run: bun run check:import-cycles
+
 pre-push:
   commands:
     workspace-lint:

@@ -2,7 +2,7 @@ import {
   readStepContent,
   StepFormShell,
   type EditorStep,
-} from "@/features/courses/course-editor/step-form-registry"
+} from "@/features/courses/course-editor/step-form-contract"
 
 export function WriteStepForm({ step }: { readonly step: EditorStep }) {
   const content = readStepContent(step)
