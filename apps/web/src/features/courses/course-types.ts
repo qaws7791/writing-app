@@ -1,4 +1,4 @@
-import type { CourseVisualKey } from "@workspace/core/content"
+import type { CourseVisualKey } from "@workspace/contracts/content"
 
 export type CourseStatus = "active" | "archived"
 export type LessonProgressStatus = "available" | "completed" | "locked"

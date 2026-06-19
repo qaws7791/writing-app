@@ -31,7 +31,7 @@
       "name": "@workspace/admin",
       "version": "0.0.0",
       "dependencies": {
-        "@workspace/core": "workspace:*",
+        "@workspace/contracts": "workspace:*",
         "@workspace/env": "workspace:*",
         "@workspace/http-client": "workspace:*",
         "@workspace/ui": "workspace:*",
@@ -126,7 +126,7 @@
       "name": "@workspace/web",
       "version": "0.0.0",
       "dependencies": {
-        "@workspace/core": "workspace:*",
+        "@workspace/contracts": "workspace:*",
         "@workspace/env": "workspace:*",
         "@workspace/http-client": "workspace:*",
         "@workspace/ui": "workspace:*",
@@ -162,10 +162,22 @@
       "name": "@workspace/config",
       "version": "0.0.0",
     },
+    "packages/contracts": {
+      "name": "@workspace/contracts",
+      "version": "0.0.0",
+      "dependencies": {
+        "zod": "^4.2.0",
+      },
+      "devDependencies": {
+        "@workspace/config": "workspace:*",
+        "typescript": "5.9.3",
+      },
+    },
     "packages/core": {
       "name": "@workspace/core",
       "version": "0.0.0",
       "dependencies": {
+        "@workspace/contracts": "workspace:*",
         "@workspace/db": "workspace:*",
         "better-auth": "^1.6.0",
         "drizzle-orm": "^0.45.0",
@@ -941,6 +953,8 @@
     "@workspace/api": ["@workspace/api@workspace:apps/api"],
 
     "@workspace/config": ["@workspace/config@workspace:packages/config"],
+
+    "@workspace/contracts": ["@workspace/contracts@workspace:packages/contracts"],
 
     "@workspace/core": ["@workspace/core@workspace:packages/core"],
 

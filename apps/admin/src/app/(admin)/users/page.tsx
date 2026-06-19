@@ -5,7 +5,7 @@ import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-toke
 import {
   learnerAccountStatusSchema,
   type LearnerOperationalStatus,
-} from "@workspace/core/status"
+} from "@workspace/contracts/status"
 
 export default async function AdminUsersRoute({
   searchParams,

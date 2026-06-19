@@ -14,7 +14,7 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@workspace/core": "workspace:*",
+    "@workspace/contracts": "workspace:*",
     "@workspace/env": "workspace:*",
     "@workspace/http-client": "workspace:*",
     "@workspace/ui": "workspace:*",

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { AdminDashboardPage } from "@/features/dashboard/admin-dashboard-page"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminDashboardDto } from "@workspace/core/admin"
+import type { AdminDashboardDto } from "@workspace/contracts/admin"
 
 const dashboard: AdminDashboardDto = {
   metrics: {

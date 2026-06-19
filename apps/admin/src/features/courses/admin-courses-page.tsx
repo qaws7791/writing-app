@@ -12,8 +12,8 @@ import type {
 import type {
   AdminArchiveCourseResultDto,
   AdminCourseDetailDto,
-} from "@workspace/core/admin"
-import { contentStatuses } from "@workspace/core/status"
+} from "@workspace/contracts/admin"
+import { contentStatuses } from "@workspace/contracts/status"
 
 export function AdminCoursesPage({
   archiveCourse,

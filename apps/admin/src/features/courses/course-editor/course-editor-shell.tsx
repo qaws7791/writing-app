@@ -3,7 +3,7 @@ import { CurriculumMap } from "@/features/courses/course-editor/curriculum-map"
 import { LessonPreview } from "@/features/courses/course-editor/lesson-preview"
 import { LessonWorkspace } from "@/features/courses/course-editor/lesson-workspace"
 import { StepWorkspace } from "@/features/courses/course-editor/step-workspace"
-import type { AdminCourseDetailDto } from "@workspace/core/admin"
+import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
 
 export function CourseEditorShell({
   course,

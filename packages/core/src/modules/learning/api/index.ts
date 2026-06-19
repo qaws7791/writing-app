@@ -1,4 +1,5 @@
 export * from "@workspace/core/modules/learning/domain/learning-date"
+export * from "@workspace/core/modules/learning/domain/learner-profile-read-model"
 export * from "@workspace/core/modules/learning/domain/learner-read-model.dto"
 export * from "@workspace/core/modules/learning/domain/learning.dto"
 export * from "@workspace/core/modules/learning/domain/learning.ids"

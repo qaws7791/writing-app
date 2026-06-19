@@ -26,9 +26,9 @@ import {
 import {
   createDrizzleProfileReader,
   createDrizzleProgressReader,
-  type ProfileReader,
 } from "@workspace/core/modules/learning/infrastructure/persistence/learner-read-models"
 import { createDrizzleLearningRepository } from "@workspace/core/modules/learning/infrastructure/persistence/learning-drizzle.repository"
+import { type ProfileReader } from "@workspace/core/modules/learning/domain/learner-profile-read-model"
 import { type SessionResolver } from "@workspace/core/modules/auth/domain/learner-session"
 import {
   createLearnerAuth,

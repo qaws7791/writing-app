@@ -21,7 +21,7 @@ import {
   toggleMatchSelection,
   type MatchChoiceId,
   type MatchSelectionMap,
-} from "@workspace/core/learning/learning-match-presentation"
+} from "@workspace/contracts/learning/learning-match-presentation"
 import {
   getLessonStepDescription,
   getLessonStepTitle,

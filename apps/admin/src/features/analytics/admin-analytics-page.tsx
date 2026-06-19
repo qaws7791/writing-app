@@ -3,7 +3,7 @@ import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminAnalyticsDto,
   AdminLessonAnalyticsPageDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
 
 export function AdminAnalyticsPage({
   analyticsResult,

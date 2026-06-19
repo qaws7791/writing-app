@@ -7,7 +7,7 @@ import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminContentResetResultDto,
   AdminSettingsDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
 
 const settings: AdminSettingsDto = {
   legal: {

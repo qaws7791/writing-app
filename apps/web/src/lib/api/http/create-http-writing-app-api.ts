@@ -15,10 +15,14 @@ import type { BrowserApiBaseUrl, ServerApiBaseUrl } from "@/runtime-config"
 import {
   courseDetailDtoSchema,
   courseListDtoSchema,
-  courseVisualKeySchema,
   lessonDtoSchema,
-} from "@workspace/core/content"
-import { aiFeedbackResultDtoSchema } from "@workspace/core/ai-feedback"
+} from "@workspace/contracts/content"
+import { aiFeedbackResultDtoSchema } from "@workspace/contracts/ai-feedback"
+import {
+  learnerProfileStatsDtoSchema,
+  learnerProgressOverviewDtoSchema,
+} from "@workspace/contracts/learning"
+import { learnerAccountStatusSchema } from "@workspace/contracts/status"
 import { z } from "zod"
 import type {
   AiFeedbackResult,
@@ -131,54 +135,23 @@ export function createHttpWritingAppApi({
   }
 }
 
-const nonNegativeIntegerSchema = z.number().int().nonnegative()
-
 const savedResponseSchema = z.object({
   saved: z.literal(true),
 })
 
 const apiProfileResponseSchema = z.object({
-  stats: z.object({
-    completedLessons: nonNegativeIntegerSchema,
-    currentStreakDays: nonNegativeIntegerSchema,
-    lastActiveDate: z.string().nullable(),
-    progressPercent: nonNegativeIntegerSchema.max(100),
-    totalLessons: nonNegativeIntegerSchema,
-  }),
+  stats: learnerProfileStatsDtoSchema,
   user: z.object({
     email: z.email(),
     id: z.string(),
     image: z.string().nullable(),
     joinedAt: z.string(),
     name: z.string(),
-    status: z.enum(["active", "deleted", "suspended"]),
+    status: learnerAccountStatusSchema,
   }),
 })
 
-const progressLessonSchema = z.object({
-  courseId: z.string().optional(),
-  currentStepIndex: nonNegativeIntegerSchema.nullable(),
-  estimatedMinutes: z.number().int().positive(),
-  id: z.string(),
-  status: z.enum(["available", "completed", "locked"]),
-  title: z.string(),
-})
-
-const apiProgressResponseSchema = z.object({
-  courses: z.array(
-    z.object({
-      id: z.string(),
-      lessons: z.array(progressLessonSchema),
-      nextLessons: z.array(progressLessonSchema.required({ courseId: true })),
-      progressPercent: nonNegativeIntegerSchema.max(100),
-      title: z.string(),
-      visualKey: courseVisualKeySchema,
-    })
-  ),
-  user: z.object({
-    currentStreakDays: nonNegativeIntegerSchema,
-  }),
-})
+const apiProgressResponseSchema = learnerProgressOverviewDtoSchema
 
 function mapApiResult<TInput, TOutput>(
   result: ApiResult<TInput>,

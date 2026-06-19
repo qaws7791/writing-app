@@ -9,7 +9,7 @@ import type {
   AdminDeleteUserResultDto,
   AdminUserDetailDto,
   AdminUserListDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
 
 const filters: ReadAdminUsersInput = {
   page: 1,

@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
-import type { AdminCourseDetailDto } from "@workspace/core/admin"
+import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
 
 const course: AdminCourseDetailDto = {
   category: "입문자를 위한 코스",

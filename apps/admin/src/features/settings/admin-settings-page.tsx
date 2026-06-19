@@ -9,7 +9,7 @@ import type {
   AdminLegalSettingsRequest,
   AdminNoticeSettingsRequest,
   AdminSettingsDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
 
 export function AdminSettingsPage({
   resetContent,

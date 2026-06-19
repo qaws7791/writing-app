@@ -2,7 +2,7 @@ import { Activity, BookOpen, CheckCircle2, Users } from "lucide-react"
 
 import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminDashboardDto } from "@workspace/core/admin"
+import type { AdminDashboardDto } from "@workspace/contracts/admin"
 
 export function AdminDashboardPage({
   dashboardResult,

@@ -28,6 +28,21 @@ tester.run(
         errors: [{ messageId: "dbCannotImportCore" }],
         filename: "packages/db/src/schema/content.schema.ts",
       },
+      {
+        code: 'import { courseListDtoSchema } from "@workspace/core/content"',
+        errors: [{ messageId: "browserCannotImportCore" }],
+        filename: "apps/web/src/lib/api.ts",
+      },
+      {
+        code: 'import type { AdminDashboardDto } from "@workspace/core/admin"',
+        errors: [{ messageId: "browserCannotImportCore" }],
+        filename: "apps/admin/src/lib/api.ts",
+      },
+      {
+        code: 'export * from "@workspace/core/content"',
+        errors: [{ messageId: "contractsCannotImportCore" }],
+        filename: "packages/contracts/src/content/index.ts",
+      },
     ],
     valid: [
       {
@@ -43,8 +58,12 @@ tester.run(
         filename: "packages/db/src/schema/content.schema.ts",
       },
       {
-        code: 'import { readBearerToken } from "@workspace/core/auth"',
+        code: 'import { courseListDtoSchema } from "@workspace/contracts/content"',
         filename: "apps/web/src/lib/auth.ts",
+      },
+      {
+        code: 'import type { AdminDashboardDto } from "@workspace/contracts/admin"',
+        filename: "apps/admin/src/lib/api.ts",
       },
     ],
   }

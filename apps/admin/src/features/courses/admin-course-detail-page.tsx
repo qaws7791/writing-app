@@ -1,7 +1,7 @@
 import { AdminHeader } from "@/components/admin-header"
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminCourseDetailDto } from "@workspace/core/admin"
+import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
 
 export function AdminCourseDetailPage({
   courseResult,

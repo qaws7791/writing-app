@@ -1,6 +1,6 @@
 import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminUserDetailDto } from "@workspace/core/admin"
+import type { AdminUserDetailDto } from "@workspace/contracts/admin"
 
 export function AdminUserDetailPage({
   userResult,

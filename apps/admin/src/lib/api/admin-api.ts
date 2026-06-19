@@ -17,9 +17,9 @@ import type {
   AdminUserListStatusFilter,
   AdminUserSort,
   AdminUpdateUserStatusRequest,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
 
-import type { ContentStatus } from "@workspace/core/status"
+import type { ContentStatus } from "@workspace/contracts/status"
 import type { AdminApiResult } from "@/lib/api/api-result"
 
 export type AdminCourseStatusFilter = AdminCourseListStatusFilter

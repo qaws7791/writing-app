@@ -49,6 +49,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@workspace/contracts": "workspace:*",
     "@workspace/db": "workspace:*",
     "better-auth": "^1.6.0",
     "drizzle-orm": "^0.45.0",

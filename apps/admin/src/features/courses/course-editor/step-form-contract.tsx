@@ -1,4 +1,4 @@
-import type { AdminCourseDetailDto } from "@workspace/core/admin"
+import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
 
 export type EditorStep =
   AdminCourseDetailDto["units"][number]["lessons"][number]["steps"][number]

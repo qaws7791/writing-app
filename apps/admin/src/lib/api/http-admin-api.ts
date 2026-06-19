@@ -30,7 +30,7 @@ import {
   adminSettingsDtoSchema,
   adminUserDetailDtoSchema,
   adminUserListDtoSchema,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
 import { fetchHttpResponse, type HttpFetch } from "@workspace/http-client"
 
 type ResponseSchema<TValue> = {

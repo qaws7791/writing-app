@@ -9,11 +9,11 @@ import type {
   AdminDeleteUserResultDto,
   AdminUserDetailDto,
   AdminUserListDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
 import {
   learnerAccountStatuses,
   type LearnerOperationalStatus,
-} from "@workspace/core/status"
+} from "@workspace/contracts/status"
 
 export function AdminUsersPage({
   deleteUser,

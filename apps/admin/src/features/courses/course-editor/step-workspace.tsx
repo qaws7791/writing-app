@@ -1,5 +1,5 @@
 import { renderStepForm } from "@/features/courses/course-editor/step-form-registry"
-import type { AdminCourseDetailDto } from "@workspace/core/admin"
+import type { AdminCourseDetailDto } from "@workspace/contracts/admin"
 
 type Step =
   AdminCourseDetailDto["units"][number]["lessons"][number]["steps"][number]

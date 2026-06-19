@@ -12,7 +12,7 @@ import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminArchiveCourseResultDto,
   AdminCourseDetailDto,
-} from "@workspace/core/admin"
+} from "@workspace/contracts/admin"
 import { createHttpNetworkError } from "@workspace/http-client"
 
 const filters: ReadAdminCoursesInput = {
