@@ -132,6 +132,7 @@ JSON body 오류 detail:
 - `/openapi`는 실제 Hono 앱에 등록된 route에서 OpenAPI 3.1 문서를 생성한다.
 - 정적 계약 파일은 `docs/engineering/contracts/writing-app-api-openapi.json`이다.
 - 웹 generated 타입은 이 정적 JSON을 기준으로 생성한다.
+- `apps/web` 런타임 HTTP 호출은 `src/lib/api/http/openapi-client.ts`의 자체 adapter가 담당하며, `openapi-fetch`는 도입하지 않는다.
 - `bun run check:api-contract`는 임시 OpenAPI JSON과 웹 generated 타입을 다시 생성해 추적 파일과 비교하므로 schema drift를 한 곳에서 감지한다.
 
 명령:

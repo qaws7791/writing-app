@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url"
 import ts from "typescript"
 
 const webSourceRoot = dirname(fileURLToPath(import.meta.url))
+const webPackageJsonPath = resolve(webSourceRoot, "../package.json")
 
 describe("apps/web architecture", () => {
   it("web app은 core package를 직접 import하지 않는다", () => {
@@ -16,7 +17,37 @@ describe("apps/web architecture", () => {
 
     expect(violations).toEqual([])
   })
+
+  it("web app은 openapi-fetch에 의존하지 않는다", () => {
+    const packageDependencies = readPackageDependencies(webPackageJsonPath)
+    const importViolations = readSourceFiles(webSourceRoot).flatMap(
+      (filePath) => {
+        return readImports(filePath)
+          .filter(isOpenApiFetchImport)
+          .map((source) => formatViolation(filePath, source))
+      }
+    )
+
+    expect(packageDependencies).not.toContain("openapi-fetch")
+    expect(importViolations).toEqual([])
+  })
 })
+
+function readPackageDependencies(packageJsonPath: string): string[] {
+  const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8")) as {
+    readonly dependencies?: PackageDependencyMap
+    readonly devDependencies?: PackageDependencyMap
+  }
+
+  return [
+    ...Object.keys(packageJson.dependencies ?? {}),
+    ...Object.keys(packageJson.devDependencies ?? {}),
+  ].sort()
+}
+
+type PackageDependencyMap = {
+  readonly [dependencyName: string]: string
+}
 
 function readSourceFiles(rootPath: string): string[] {
   return readdirSync(rootPath, { withFileTypes: true }).flatMap((entry) => {
@@ -94,6 +125,10 @@ function readStringLiteral(node: ts.Node | undefined): string | null {
 
 function isWorkspaceCoreImport(source: string): boolean {
   return source === "@workspace/core" || source.startsWith("@workspace/core/")
+}
+
+function isOpenApiFetchImport(source: string): boolean {
+  return source === "openapi-fetch" || source.startsWith("openapi-fetch/")
 }
 
 function formatViolation(filePath: string, source: string): string {
