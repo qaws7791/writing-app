@@ -33,10 +33,6 @@ const getLessonHandler: ApiRouteHandler<typeof getLessonRouteConfig> = async (
 ) => {
   const contentService = context.var.requestContext.contentService
 
-  if (contentService === undefined) {
-    throw new Error("Content service is not configured.")
-  }
-
   const { lessonId } = context.req.valid("param")
   const result = await contentService.getLesson(lessonId)
 

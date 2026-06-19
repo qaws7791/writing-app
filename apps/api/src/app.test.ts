@@ -3,6 +3,7 @@ import { readBearerToken } from "@workspace/core/modules/auth"
 import { localRuntimeDefaults } from "@workspace/env"
 
 import { createApp, type ApiDependencies } from "@/app"
+import { createTestDependencies } from "@/routes/test-dependencies"
 
 type CapturedRequestLogEvent = {
   readonly durationMs: number
@@ -198,6 +199,7 @@ describe("플랫폼 API profile route", () => {
 
 function createDependencies(): ApiDependencies {
   return {
+    ...createTestDependencies(),
     profileReader: {
       async readProfileStats() {
         return profileStats

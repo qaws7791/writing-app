@@ -28,10 +28,6 @@ const listCoursesHandler: ApiRouteHandler<
 > = async (context) => {
   const contentService = context.var.requestContext.contentService
 
-  if (contentService === undefined) {
-    throw new Error("Content service is not configured.")
-  }
-
   return context.json(await contentService.listCourses(), 200)
 }
 
@@ -62,10 +58,6 @@ const getCourseDetailHandler: ApiRouteHandler<
   typeof getCourseDetailRouteConfig
 > = async (context) => {
   const contentService = context.var.requestContext.contentService
-
-  if (contentService === undefined) {
-    throw new Error("Content service is not configured.")
-  }
 
   const { courseId } = context.req.valid("param")
   const result = await contentService.getCourseDetail({

@@ -8,6 +8,7 @@ import { learnerIdSchema } from "@workspace/core/modules/learning"
 import type { LearningService } from "@workspace/core/modules/learning"
 
 import { createApp, type ApiDependencies } from "@/app"
+import { createTestDependencies } from "@/routes/test-dependencies"
 
 const occurredAt = new Date("2026-06-14T09:30:00.000Z")
 const activeSession = {
@@ -231,19 +232,9 @@ function createDependencies({
   readonly learningService: LearningService
 }): ApiDependencies {
   return {
+    ...createTestDependencies(),
     learningService,
     now: () => occurredAt,
-    profileReader: {
-      async readProfileStats() {
-        return {
-          completedLessons: 0,
-          currentStreakDays: 0,
-          lastActiveDate: null,
-          progressPercent: 0,
-          totalLessons: 0,
-        }
-      },
-    },
     sessionResolver: {
       async resolveSession(headers) {
         const token = readBearerToken(headers.get("Authorization"))

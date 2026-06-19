@@ -47,10 +47,6 @@ const saveAnswerHandler: ApiRouteHandler<typeof saveAnswerRouteConfig> = async (
 ) => {
   const learningService = context.var.requestContext.learningService
 
-  if (learningService === undefined) {
-    throw new Error("Learning service is not configured.")
-  }
-
   const body = context.req.valid("json")
   const result = await learningService.saveStepAnswer({
     ...body,
@@ -101,10 +97,6 @@ const completeLessonHandler: ApiRouteHandler<
   typeof completeLessonRouteConfig
 > = async (context) => {
   const learningService = context.var.requestContext.learningService
-
-  if (learningService === undefined) {
-    throw new Error("Learning service is not configured.")
-  }
 
   const { lessonId } = context.req.valid("param")
   const body = context.req.valid("json")

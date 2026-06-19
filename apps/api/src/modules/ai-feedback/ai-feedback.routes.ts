@@ -48,10 +48,6 @@ const aiFeedbackHandler: ApiRouteHandler<typeof aiFeedbackRouteConfig> = async (
 ) => {
   const aiFeedbackService = context.var.requestContext.aiFeedbackService
 
-  if (aiFeedbackService === undefined) {
-    throw new Error("AI feedback service is not configured.")
-  }
-
   const body = context.req.valid("json")
   const result = await aiFeedbackService.createFeedback(
     createAiFeedbackCommandSchema.parse({
