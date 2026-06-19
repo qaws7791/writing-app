@@ -117,6 +117,8 @@ Learning domain이 content DTO나 content id 타입을 참조해야 할 때는 c
 - `/app/lesson?lesson_id=...`: 레슨 진행
 - `/app/profile`: 프로필
 
+학습자 웹의 server route는 API 호출 결과를 `apps/web/src/lib/api/route-api-outcome.ts`의 route-level outcome으로 분류한다. 인증 실패는 로그인 redirect, not-found는 route별 notFound 또는 notice, 네트워크·서버 실패는 `AppRouteNotice`로 처리하며, empty state는 성공 응답의 빈 값일 때만 화면 컴포넌트가 다룬다.
+
 ### 어드민 웹
 
 - `/login`: 관리자 로그인
