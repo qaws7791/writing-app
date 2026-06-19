@@ -7,7 +7,7 @@ import {
   adminUserListStatusFilterSchema,
   adminUserSortSchema,
 } from "@workspace/contracts/admin"
-import { type AdminService } from "@workspace/core/admin"
+import type { AdminUserUseCase } from "@workspace/core/admin"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
@@ -47,7 +47,7 @@ const userParamsSchema = z.object({
 })
 
 export type UsersRouteDependencies = {
-  readonly adminService: AdminService
+  readonly userService: AdminUserUseCase
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
 }
@@ -62,7 +62,7 @@ export function createUsersRoutes(dependencies: UsersRouteDependencies) {
 }
 
 function createListUsersRoute({
-  adminService,
+  userService,
   sessionResolver,
 }: UsersRouteDependencies) {
   const routeConfig = {
@@ -80,7 +80,7 @@ function createListUsersRoute({
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
-    context.json(await adminService.getUsers(context.req.valid("query")), 200)
+    context.json(await userService.getUsers(context.req.valid("query")), 200)
 
   return defineAdminRoute({
     ...routeConfig,
@@ -89,7 +89,7 @@ function createListUsersRoute({
 }
 
 function createGetUserRoute({
-  adminService,
+  userService,
   sessionResolver,
 }: UsersRouteDependencies) {
   const routeConfig = {
@@ -111,7 +111,7 @@ function createGetUserRoute({
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const { userId } = context.req.valid("param")
-    const user = await adminService.getUser({
+    const user = await userService.getUser({
       userId,
     })
 
@@ -129,9 +129,9 @@ function createGetUserRoute({
 }
 
 function createUpdateUserStatusRoute({
-  adminService,
   now,
   sessionResolver,
+  userService,
 }: UsersRouteDependencies) {
   const routeConfig = {
     method: "patch",
@@ -158,7 +158,7 @@ function createUpdateUserStatusRoute({
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const { userId } = context.req.valid("param")
     const { status } = context.req.valid("json")
-    const user = await adminService.updateUserStatus({
+    const user = await userService.updateUserStatus({
       now: now(),
       status,
       userId,
@@ -178,9 +178,9 @@ function createUpdateUserStatusRoute({
 }
 
 function createDeleteUserRoute({
-  adminService,
   now,
   sessionResolver,
+  userService,
 }: UsersRouteDependencies) {
   const routeConfig = {
     method: "delete",
@@ -204,7 +204,7 @@ function createDeleteUserRoute({
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const { userId } = context.req.valid("param")
-    const result = await adminService.deleteUser({
+    const result = await userService.deleteUser({
       now: now(),
       userId,
     })

@@ -1,6 +1,6 @@
 import type { AnyRouteConfig } from "@workspace/hono/core"
 import { adminCourseDetailDtoSchema } from "@workspace/contracts/admin"
-import type { AdminService } from "@workspace/core/admin"
+import type { AdminCourseUseCase } from "@workspace/core/admin"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
@@ -18,7 +18,7 @@ const courseParamsSchema = z.object({
 })
 
 export type CurriculumEditorRouteDependencies = {
-  readonly adminService: AdminService
+  readonly courseService: AdminCourseUseCase
   readonly sessionResolver: AdminSessionResolver
 }
 
@@ -29,7 +29,7 @@ export function createCurriculumEditorRoutes(
 }
 
 function createGetCourseEditorRoute({
-  adminService,
+  courseService,
   sessionResolver,
 }: CurriculumEditorRouteDependencies) {
   const routeConfig = {
@@ -51,7 +51,7 @@ function createGetCourseEditorRoute({
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const { courseId } = context.req.valid("param")
-    const course = await adminService.getCourseEditor({
+    const course = await courseService.getCourseEditor({
       courseId,
     })
 

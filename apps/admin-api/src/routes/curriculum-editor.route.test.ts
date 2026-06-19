@@ -105,14 +105,16 @@ describe("어드민 API curriculum editor route", () => {
 
 function createDependencies() {
   return createTestAdminApiDependencies({
-    dashboardService: {
-      async getCourseEditor(input) {
-        if (input.courseId === "missing") {
-          return null
-        }
+    adminServices: {
+      courses: {
+        async getCourseEditor(input) {
+          if (input.courseId === "missing") {
+            return null
+          }
 
-        expect(input.courseId).toBe("cmock")
-        return courseDetail
+          expect(input.courseId).toBe("cmock")
+          return courseDetail
+        },
       },
     },
   })

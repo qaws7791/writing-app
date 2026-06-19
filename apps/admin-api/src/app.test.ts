@@ -255,10 +255,13 @@ describe("어드민 API dashboard route", () => {
     const dependencies = createDependencies()
     const app = createApp({
       ...dependencies,
-      dashboardService: {
-        ...dependencies.dashboardService,
-        async getDashboard() {
-          throw new Error("database unavailable")
+      adminServices: {
+        ...dependencies.adminServices,
+        dashboard: {
+          ...dependencies.adminServices.dashboard,
+          async getDashboard() {
+            throw new Error("database unavailable")
+          },
         },
       },
     })
@@ -478,55 +481,61 @@ function createDependencies({
   readonly role?: AdminRole
 } = {}): AdminApiDependencies {
   return createTestAdminApiDependencies({
-    dashboardService: {
-      async deleteUser(input) {
-        expect(input.userId).toBe("user-1")
-        return { deleted: true }
-      },
-      async getAnalytics(input) {
-        expect(input).toEqual({
-          days: 2,
-          now: testAdminNow,
-        })
+    adminServices: {
+      analytics: {
+        async getAnalytics(input) {
+          expect(input).toEqual({
+            days: 2,
+            now: testAdminNow,
+          })
 
-        return analytics
-      },
-      async getDashboard() {
-        return dashboard
-      },
-      async getLessonAnalytics(input) {
-        expect(input).toEqual({
-          direction: "asc",
-          page: 1,
-          pageSize: 10,
-          query: "둘째",
-          sort: "completionRate",
-        })
+          return analytics
+        },
+        async getLessonAnalytics(input) {
+          expect(input).toEqual({
+            direction: "asc",
+            page: 1,
+            pageSize: 10,
+            query: "둘째",
+            sort: "completionRate",
+          })
 
-        return lessonAnalytics
+          return lessonAnalytics
+        },
       },
-      async getUser(input) {
-        expect(input.userId).toBe("user-1")
-        return userDetail
+      dashboard: {
+        async getDashboard() {
+          return dashboard
+        },
       },
-      async getUsers(input) {
-        expect(input).toEqual({
-          page: 1,
-          pageSize: 12,
-          query: "학습",
-          sort: "lastActive",
-          status: "active",
-        })
-        return userList
-      },
-      async updateUserStatus(input) {
-        expect(input.status).toBe("suspended")
-        expect(input.userId).toBe("user-1")
+      users: {
+        async deleteUser(input) {
+          expect(input.userId).toBe("user-1")
+          return { deleted: true }
+        },
+        async getUser(input) {
+          expect(input.userId).toBe("user-1")
+          return userDetail
+        },
+        async getUsers(input) {
+          expect(input).toEqual({
+            page: 1,
+            pageSize: 12,
+            query: "학습",
+            sort: "lastActive",
+            status: "active",
+          })
+          return userList
+        },
+        async updateUserStatus(input) {
+          expect(input.status).toBe("suspended")
+          expect(input.userId).toBe("user-1")
 
-        return {
-          ...userDetail,
-          status: "suspended",
-        }
+          return {
+            ...userDetail,
+            status: "suspended",
+          }
+        },
       },
     },
     sessionResolver: {

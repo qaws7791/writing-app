@@ -12,7 +12,14 @@ import { createDashboardRoutes } from "@/routes/dashboard.route"
 import { healthRoute } from "@/routes/health.route"
 import { createSettingsRoutes } from "@/routes/settings.route"
 import { createUsersRoutes } from "@/routes/users.route"
-import type { AdminService } from "@workspace/core/admin"
+import type {
+  AdminAnalyticsUseCase,
+  AdminContentResetUseCase,
+  AdminCourseUseCase,
+  AdminDashboardUseCase,
+  AdminSettingsUseCase,
+  AdminUserUseCase,
+} from "@workspace/core/admin"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   createRequestLoggingMiddleware,
@@ -20,10 +27,19 @@ import {
   type RequestLoggingRuntime,
 } from "@workspace/logger"
 
+export type AdminApiServices = {
+  readonly analytics: AdminAnalyticsUseCase
+  readonly contentReset: AdminContentResetUseCase
+  readonly courses: AdminCourseUseCase
+  readonly dashboard: AdminDashboardUseCase
+  readonly settings: AdminSettingsUseCase
+  readonly users: AdminUserUseCase
+}
+
 export type AdminApiDependencies = {
+  readonly adminServices: AdminApiServices
   readonly adminOrigin?: string
   readonly authHandler?: (request: Request) => Promise<Response>
-  readonly dashboardService: AdminService
   readonly now?: () => Date
   readonly requestLogger?: RequestLogger
   readonly requestLoggingRuntime?: RequestLoggingRuntime
@@ -37,32 +53,33 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
     routes: [
       healthRoute,
       ...createDashboardRoutes({
-        dashboardService: dependencies.dashboardService,
+        dashboardService: dependencies.adminServices.dashboard,
         now,
         sessionResolver: dependencies.sessionResolver,
       }),
       ...createAnalyticsRoutes({
-        adminService: dependencies.dashboardService,
+        analyticsService: dependencies.adminServices.analytics,
         now,
         sessionResolver: dependencies.sessionResolver,
       }),
       ...createCoursesRoutes({
-        adminService: dependencies.dashboardService,
+        courseService: dependencies.adminServices.courses,
         now,
         sessionResolver: dependencies.sessionResolver,
       }),
       ...createCurriculumEditorRoutes({
-        adminService: dependencies.dashboardService,
+        courseService: dependencies.adminServices.courses,
         sessionResolver: dependencies.sessionResolver,
       }),
       ...createUsersRoutes({
-        adminService: dependencies.dashboardService,
+        userService: dependencies.adminServices.users,
         now,
         sessionResolver: dependencies.sessionResolver,
       }),
       ...createSettingsRoutes({
-        adminService: dependencies.dashboardService,
+        contentResetService: dependencies.adminServices.contentReset,
         now,
+        settingsService: dependencies.adminServices.settings,
         sessionResolver: dependencies.sessionResolver,
       }),
     ] as const,

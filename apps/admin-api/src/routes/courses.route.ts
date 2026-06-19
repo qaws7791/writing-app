@@ -5,7 +5,7 @@ import {
   adminCourseListDtoSchema,
   adminCourseListStatusFilterSchema,
 } from "@workspace/contracts/admin"
-import { type AdminService } from "@workspace/core/admin"
+import type { AdminCourseUseCase } from "@workspace/core/admin"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
@@ -44,7 +44,7 @@ const courseParamsSchema = z.object({
 })
 
 export type CoursesRouteDependencies = {
-  readonly adminService: AdminService
+  readonly courseService: AdminCourseUseCase
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
 }
@@ -58,7 +58,7 @@ export function createCoursesRoutes(dependencies: CoursesRouteDependencies) {
 }
 
 function createListCoursesRoute({
-  adminService,
+  courseService,
   sessionResolver,
 }: CoursesRouteDependencies) {
   const routeConfig = {
@@ -76,7 +76,10 @@ function createListCoursesRoute({
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
-    context.json(await adminService.getCourses(context.req.valid("query")), 200)
+    context.json(
+      await courseService.getCourses(context.req.valid("query")),
+      200
+    )
 
   return defineAdminRoute({
     ...routeConfig,
@@ -85,7 +88,7 @@ function createListCoursesRoute({
 }
 
 function createCreateCourseRoute({
-  adminService,
+  courseService,
   now,
   sessionResolver,
 }: CoursesRouteDependencies) {
@@ -102,7 +105,7 @@ function createCreateCourseRoute({
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
     context.json(
-      await adminService.createCourse({
+      await courseService.createCourse({
         now: now(),
       }),
       200
@@ -115,7 +118,7 @@ function createCreateCourseRoute({
 }
 
 function createArchiveCourseRoute({
-  adminService,
+  courseService,
   now,
   sessionResolver,
 }: CoursesRouteDependencies) {
@@ -141,7 +144,7 @@ function createArchiveCourseRoute({
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const { courseId } = context.req.valid("param")
-    const result = await adminService.archiveCourse({
+    const result = await courseService.archiveCourse({
       courseId,
       now: now(),
     })

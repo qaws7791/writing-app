@@ -176,25 +176,27 @@ describe("어드민 API analytics route", () => {
 
 function createDependencies() {
   return createTestAdminApiDependencies({
-    dashboardService: {
-      async getAnalytics(input) {
-        expect(input).toEqual({
-          days: 2,
-          now: testAdminNow,
-        })
+    adminServices: {
+      analytics: {
+        async getAnalytics(input) {
+          expect(input).toEqual({
+            days: 2,
+            now: testAdminNow,
+          })
 
-        return analytics
-      },
-      async getLessonAnalytics(input) {
-        expect(input).toEqual({
-          direction: "asc",
-          page: 1,
-          pageSize: 10,
-          query: "둘째",
-          sort: "completionRate",
-        })
+          return analytics
+        },
+        async getLessonAnalytics(input) {
+          expect(input).toEqual({
+            direction: "asc",
+            page: 1,
+            pageSize: 10,
+            query: "둘째",
+            sort: "completionRate",
+          })
 
-        return lessonAnalytics
+          return lessonAnalytics
+        },
       },
     },
   })

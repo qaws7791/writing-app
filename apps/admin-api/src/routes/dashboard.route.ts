@@ -1,6 +1,6 @@
 import type { AnyRouteConfig } from "@workspace/hono/core"
 import { adminDashboardDtoSchema } from "@workspace/contracts/admin"
-import type { AdminService } from "@workspace/core/admin"
+import type { AdminDashboardUseCase } from "@workspace/core/admin"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
@@ -8,7 +8,7 @@ import { adminAuthenticatedResponses, jsonResponse } from "@/http/openapi"
 import { adminSessionRouteOptions } from "@/routes/admin-route-options"
 
 export type DashboardRouteDependencies = {
-  readonly dashboardService: AdminService
+  readonly dashboardService: AdminDashboardUseCase
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
 }

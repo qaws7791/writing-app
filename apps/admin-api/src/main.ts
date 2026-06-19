@@ -16,6 +16,14 @@ const env = parseAdminApiEnv(process.env)
 const database = createKwepDatabase(env.databaseUrl)
 const logger = createAppLogger()
 const adminRepository = createDrizzleAdminRepository(database.db)
+const adminService = createAdminService({
+  analyticsReader: adminRepository,
+  contentResetRepository: adminRepository,
+  courseRepository: adminRepository,
+  dashboardReader: adminRepository,
+  settingsRepository: adminRepository,
+  userRepository: adminRepository,
+})
 const auth = createAdminAuth({
   authBaseUrl: env.authBaseUrl,
   cookieDomain: env.cookieDomain,
@@ -24,16 +32,16 @@ const auth = createAdminAuth({
   webOrigin: env.adminOrigin,
 })
 const app = createApp({
+  adminServices: {
+    analytics: adminService,
+    contentReset: adminService,
+    courses: adminService,
+    dashboard: adminService,
+    settings: adminService,
+    users: adminService,
+  },
   adminOrigin: env.adminOrigin,
   authHandler: auth.handler,
-  dashboardService: createAdminService({
-    analyticsReader: adminRepository,
-    contentResetRepository: adminRepository,
-    courseRepository: adminRepository,
-    dashboardReader: adminRepository,
-    settingsRepository: adminRepository,
-    userRepository: adminRepository,
-  }),
   requestLogger: createRequestLogger(logger),
   requestLoggingRuntime: defaultRequestLoggingRuntime,
   sessionResolver: createAdminSessionResolver(auth),

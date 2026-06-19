@@ -221,31 +221,35 @@ function createDependencies({
   readonly role?: AdminRole
 } = {}): AdminApiDependencies {
   return createTestAdminApiDependencies({
-    dashboardService: {
-      async getSettings() {
-        return settings
+    adminServices: {
+      contentReset: {
+        async resetContent(input) {
+          expect(input.now).toEqual(testAdminNow)
+          return contentResetResult
+        },
       },
-      async resetContent(input) {
-        expect(input.now).toEqual(testAdminNow)
-        return contentResetResult
-      },
-      async updateLegalSettings(input) {
-        expect(input).toEqual({
-          now: testAdminNow,
-          privacy: "개인정보처리방침",
-          terms: "이용약관",
-        })
+      settings: {
+        async getSettings() {
+          return settings
+        },
+        async updateLegalSettings(input) {
+          expect(input).toEqual({
+            now: testAdminNow,
+            privacy: "개인정보처리방침",
+            terms: "이용약관",
+          })
 
-        return settings
-      },
-      async updateNoticeSettings(input) {
-        expect(input).toEqual({
-          announce: "공지 내용",
-          banner: "새 강의가 추가되었어요!",
-          now: testAdminNow,
-        })
+          return settings
+        },
+        async updateNoticeSettings(input) {
+          expect(input).toEqual({
+            announce: "공지 내용",
+            banner: "새 강의가 추가되었어요!",
+            now: testAdminNow,
+          })
 
-        return settings
+          return settings
+        },
       },
     },
     sessionResolver: {

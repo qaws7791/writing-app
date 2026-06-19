@@ -5,7 +5,7 @@ import {
   adminLessonAnalyticsSortSchema,
   adminSortDirectionSchema,
 } from "@workspace/contracts/admin"
-import { type AdminService } from "@workspace/core/admin"
+import type { AdminAnalyticsUseCase } from "@workspace/core/admin"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
@@ -41,7 +41,7 @@ const lessonAnalyticsQuerySchema = z.object({
 })
 
 export type AnalyticsRouteDependencies = {
-  readonly adminService: AdminService
+  readonly analyticsService: AdminAnalyticsUseCase
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
 }
@@ -56,7 +56,7 @@ export function createAnalyticsRoutes(
 }
 
 function createGetAnalyticsRoute({
-  adminService,
+  analyticsService,
   now,
   sessionResolver,
 }: AnalyticsRouteDependencies) {
@@ -78,7 +78,7 @@ function createGetAnalyticsRoute({
     const { days } = context.req.valid("query")
 
     return context.json(
-      await adminService.getAnalytics({
+      await analyticsService.getAnalytics({
         days,
         now: now(),
       }),
@@ -93,7 +93,7 @@ function createGetAnalyticsRoute({
 }
 
 function createGetLessonAnalyticsRoute({
-  adminService,
+  analyticsService,
   sessionResolver,
 }: AnalyticsRouteDependencies) {
   const routeConfig = {
@@ -116,7 +116,7 @@ function createGetLessonAnalyticsRoute({
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const query = context.req.valid("query")
 
-    return context.json(await adminService.getLessonAnalytics(query), 200)
+    return context.json(await analyticsService.getLessonAnalytics(query), 200)
   }
 
   return defineAdminRoute({

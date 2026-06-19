@@ -5,7 +5,10 @@ import {
   adminNoticeSettingsRequestSchema,
   adminSettingsDtoSchema,
 } from "@workspace/contracts/admin"
-import { type AdminService } from "@workspace/core/admin"
+import type {
+  AdminContentResetUseCase,
+  AdminSettingsUseCase,
+} from "@workspace/core/admin"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
@@ -21,8 +24,9 @@ import {
 } from "@/routes/admin-route-options"
 
 export type SettingsRouteDependencies = {
-  readonly adminService: AdminService
+  readonly contentResetService: AdminContentResetUseCase
   readonly now: () => Date
+  readonly settingsService: AdminSettingsUseCase
   readonly sessionResolver: AdminSessionResolver
 }
 
@@ -36,7 +40,7 @@ export function createSettingsRoutes(dependencies: SettingsRouteDependencies) {
 }
 
 function createGetSettingsRoute({
-  adminService,
+  settingsService,
   sessionResolver,
 }: SettingsRouteDependencies) {
   const routeConfig = {
@@ -51,7 +55,7 @@ function createGetSettingsRoute({
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
-    context.json(await adminService.getSettings(), 200)
+    context.json(await settingsService.getSettings(), 200)
 
   return defineAdminRoute({
     ...routeConfig,
@@ -60,8 +64,8 @@ function createGetSettingsRoute({
 }
 
 function createUpdateNoticeSettingsRoute({
-  adminService,
   now,
+  settingsService,
   sessionResolver,
 }: SettingsRouteDependencies) {
   const routeConfig = {
@@ -85,7 +89,7 @@ function createUpdateNoticeSettingsRoute({
     const body = context.req.valid("json")
 
     return context.json(
-      await adminService.updateNoticeSettings({
+      await settingsService.updateNoticeSettings({
         ...body,
         now: now(),
       }),
@@ -100,8 +104,8 @@ function createUpdateNoticeSettingsRoute({
 }
 
 function createUpdateLegalSettingsRoute({
-  adminService,
   now,
+  settingsService,
   sessionResolver,
 }: SettingsRouteDependencies) {
   const routeConfig = {
@@ -125,7 +129,7 @@ function createUpdateLegalSettingsRoute({
     const body = context.req.valid("json")
 
     return context.json(
-      await adminService.updateLegalSettings({
+      await settingsService.updateLegalSettings({
         ...body,
         now: now(),
       }),
@@ -140,7 +144,7 @@ function createUpdateLegalSettingsRoute({
 }
 
 function createResetContentRoute({
-  adminService,
+  contentResetService,
   now,
   sessionResolver,
 }: SettingsRouteDependencies) {
@@ -157,7 +161,7 @@ function createResetContentRoute({
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
     context.json(
-      await adminService.resetContent({
+      await contentResetService.resetContent({
         now: now(),
       }),
       200

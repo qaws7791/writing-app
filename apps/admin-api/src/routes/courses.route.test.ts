@@ -243,30 +243,32 @@ function createDependencies({
   readonly role?: AdminRole
 } = {}): AdminApiDependencies {
   return createTestAdminApiDependencies({
-    dashboardService: {
-      async archiveCourse(input) {
-        expect(input.now).toEqual(testAdminNow)
+    adminServices: {
+      courses: {
+        async archiveCourse(input) {
+          expect(input.now).toEqual(testAdminNow)
 
-        if (input.courseId === "missing") {
-          return null
-        }
+          if (input.courseId === "missing") {
+            return null
+          }
 
-        expect(input.courseId).toBe("cmock")
-        return archiveCourseResult
-      },
-      async createCourse(input) {
-        expect(input.now).toEqual(testAdminNow)
-        return courseDetail
-      },
-      async getCourses(input) {
-        expect(input).toEqual({
-          category: "입문자를 위한 코스",
-          page: 2,
-          pageSize: 10,
-          query: "글쓰기",
-          status: "active",
-        })
-        return courseList
+          expect(input.courseId).toBe("cmock")
+          return archiveCourseResult
+        },
+        async createCourse(input) {
+          expect(input.now).toEqual(testAdminNow)
+          return courseDetail
+        },
+        async getCourses(input) {
+          expect(input).toEqual({
+            category: "입문자를 위한 코스",
+            page: 2,
+            pageSize: 10,
+            query: "글쓰기",
+            status: "active",
+          })
+          return courseList
+        },
       },
     },
     sessionResolver: {

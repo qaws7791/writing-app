@@ -1,15 +1,19 @@
-import type { AdminApiDependencies } from "@/app"
+import type { AdminApiDependencies, AdminApiServices } from "@/app"
 import type {
   AdminAuthenticatedSession,
   AdminSessionResolver,
 } from "@/auth/admin-session"
-import { adminRoles, type AdminService } from "@workspace/core/admin"
+import { adminRoles } from "@workspace/core/admin"
 import { readBearerToken } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env"
 
+type TestAdminApiServicesOverrides = {
+  readonly [TKey in keyof AdminApiServices]?: Partial<AdminApiServices[TKey]>
+}
+
 type TestAdminApiDependencyOverrides = {
   readonly adminOrigin?: string
-  readonly dashboardService?: Partial<AdminService>
+  readonly adminServices?: TestAdminApiServicesOverrides
   readonly now?: () => Date
   readonly sessionResolver?: AdminSessionResolver
 }
@@ -28,12 +32,36 @@ export const testAdminSession = {
 export function createTestAdminApiDependencies(
   overrides: TestAdminApiDependencyOverrides = {}
 ): AdminApiDependencies {
+  const failingAdminServices = createFailingAdminApiServices()
+
   return {
-    adminOrigin: overrides.adminOrigin ?? localRuntimeDefaults.adminWebOrigin,
-    dashboardService: {
-      ...createFailingAdminService(),
-      ...overrides.dashboardService,
+    adminServices: {
+      analytics: {
+        ...failingAdminServices.analytics,
+        ...overrides.adminServices?.analytics,
+      },
+      contentReset: {
+        ...failingAdminServices.contentReset,
+        ...overrides.adminServices?.contentReset,
+      },
+      courses: {
+        ...failingAdminServices.courses,
+        ...overrides.adminServices?.courses,
+      },
+      dashboard: {
+        ...failingAdminServices.dashboard,
+        ...overrides.adminServices?.dashboard,
+      },
+      settings: {
+        ...failingAdminServices.settings,
+        ...overrides.adminServices?.settings,
+      },
+      users: {
+        ...failingAdminServices.users,
+        ...overrides.adminServices?.users,
+      },
     },
+    adminOrigin: overrides.adminOrigin ?? localRuntimeDefaults.adminWebOrigin,
     now: overrides.now ?? (() => testAdminNow),
     sessionResolver:
       overrides.sessionResolver ?? createTestAdminSessionResolver(),
@@ -70,58 +98,68 @@ function readTestAdminSessionToken(headers: Headers): string | null {
   return readBearerToken(headers.get("Authorization"))
 }
 
-function createFailingAdminService(): AdminService {
+function createFailingAdminApiServices(): AdminApiServices {
   return {
-    async archiveCourse() {
-      throwUnexpectedAdminServiceCall("archiveCourse")
+    analytics: {
+      async getAnalytics() {
+        throwUnexpectedAdminServiceCall("analytics.getAnalytics")
+      },
+      async getLessonAnalytics() {
+        throwUnexpectedAdminServiceCall("analytics.getLessonAnalytics")
+      },
     },
-    async createCourse() {
-      throwUnexpectedAdminServiceCall("createCourse")
+    contentReset: {
+      async resetContent() {
+        throwUnexpectedAdminServiceCall("contentReset.resetContent")
+      },
     },
-    async deleteUser() {
-      throwUnexpectedAdminServiceCall("deleteUser")
+    courses: {
+      async archiveCourse() {
+        throwUnexpectedAdminServiceCall("courses.archiveCourse")
+      },
+      async createCourse() {
+        throwUnexpectedAdminServiceCall("courses.createCourse")
+      },
+      async getCourseEditor() {
+        throwUnexpectedAdminServiceCall("courses.getCourseEditor")
+      },
+      async getCourses() {
+        throwUnexpectedAdminServiceCall("courses.getCourses")
+      },
     },
-    async getAnalytics() {
-      throwUnexpectedAdminServiceCall("getAnalytics")
+    dashboard: {
+      async getDashboard() {
+        throwUnexpectedAdminServiceCall("dashboard.getDashboard")
+      },
     },
-    async getCourseEditor() {
-      throwUnexpectedAdminServiceCall("getCourseEditor")
+    settings: {
+      async getSettings() {
+        throwUnexpectedAdminServiceCall("settings.getSettings")
+      },
+      async updateLegalSettings() {
+        throwUnexpectedAdminServiceCall("settings.updateLegalSettings")
+      },
+      async updateNoticeSettings() {
+        throwUnexpectedAdminServiceCall("settings.updateNoticeSettings")
+      },
     },
-    async getCourses() {
-      throwUnexpectedAdminServiceCall("getCourses")
-    },
-    async getDashboard() {
-      throwUnexpectedAdminServiceCall("getDashboard")
-    },
-    async getLessonAnalytics() {
-      throwUnexpectedAdminServiceCall("getLessonAnalytics")
-    },
-    async getSettings() {
-      throwUnexpectedAdminServiceCall("getSettings")
-    },
-    async getUser() {
-      throwUnexpectedAdminServiceCall("getUser")
-    },
-    async getUsers() {
-      throwUnexpectedAdminServiceCall("getUsers")
-    },
-    async resetContent() {
-      throwUnexpectedAdminServiceCall("resetContent")
-    },
-    async updateLegalSettings() {
-      throwUnexpectedAdminServiceCall("updateLegalSettings")
-    },
-    async updateNoticeSettings() {
-      throwUnexpectedAdminServiceCall("updateNoticeSettings")
-    },
-    async updateUserStatus() {
-      throwUnexpectedAdminServiceCall("updateUserStatus")
+    users: {
+      async deleteUser() {
+        throwUnexpectedAdminServiceCall("users.deleteUser")
+      },
+      async getUser() {
+        throwUnexpectedAdminServiceCall("users.getUser")
+      },
+      async getUsers() {
+        throwUnexpectedAdminServiceCall("users.getUsers")
+      },
+      async updateUserStatus() {
+        throwUnexpectedAdminServiceCall("users.updateUserStatus")
+      },
     },
   }
 }
 
-function throwUnexpectedAdminServiceCall(
-  methodName: keyof AdminService
-): never {
+function throwUnexpectedAdminServiceCall(methodName: string): never {
   throw new Error(`Unexpected admin service call: ${methodName}`)
 }
