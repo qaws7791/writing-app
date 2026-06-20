@@ -320,6 +320,7 @@ function upsertCourses(
           sortOrder: row.sortOrder,
           status: row.status,
           title: row.title,
+          visualKey: row.visualKey,
         },
         target: courses.id,
       })

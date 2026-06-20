@@ -57,18 +57,19 @@ export function AdminUsersPage({
         description="학습자 상태와 진행 현황을 관리합니다."
         title="사용자 관리"
       />
-      <section className="admin-toolbar" aria-label="사용자 필터">
+      <form className="admin-toolbar" method="get" aria-label="사용자 필터">
         <label>
           <span>사용자 검색</span>
           <input
             aria-label="사용자 검색"
             defaultValue={filters.query}
+            name="query"
             placeholder="이름 또는 이메일"
           />
         </label>
         <label>
           <span>상태</span>
-          <select aria-label="상태" defaultValue={filters.status}>
+          <select aria-label="상태" defaultValue={filters.status} name="status">
             <option value="all">전체</option>
             <option value="active">active</option>
             <option value="suspended">suspended</option>
@@ -77,14 +78,17 @@ export function AdminUsersPage({
         </label>
         <label>
           <span>정렬</span>
-          <select aria-label="정렬" defaultValue={filters.sort}>
+          <select aria-label="정렬" defaultValue={filters.sort} name="sort">
             <option value="lastActive">최근 접속</option>
             <option value="joined">가입일</option>
             <option value="lessonsDone">완료 레슨</option>
             <option value="streak">연속 학습일</option>
           </select>
         </label>
-      </section>
+        <button className="admin-secondary-button" type="submit">
+          필터 적용
+        </button>
+      </form>
       {message === null ? null : (
         <p className="admin-inline-status" role="status">
           {message}

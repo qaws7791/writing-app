@@ -15,6 +15,22 @@ export function readBaselineMigrationSql(): string {
 
 export function runBaselineMigration(sqlite: Database): void {
   sqlite.exec(readBaselineMigrationSql())
+  ensureCourseVisualKeyColumn(sqlite)
+}
+
+function ensureCourseVisualKeyColumn(sqlite: Database): void {
+  const courseColumns = sqlite
+    .query<{ readonly name: string }, []>("PRAGMA table_info(courses)")
+    .all()
+    .map((row) => row.name)
+
+  if (courseColumns.includes("visual_key")) {
+    return
+  }
+
+  sqlite.exec(
+    "ALTER TABLE courses ADD COLUMN visual_key TEXT NOT NULL DEFAULT 'basic-sentence-writing'"
+  )
 }
 
 if (import.meta.main) {

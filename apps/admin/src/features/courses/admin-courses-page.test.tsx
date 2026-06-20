@@ -76,6 +76,20 @@ describe("AdminCoursesPage", () => {
     expect(screen.getByLabelText("카테고리")).toHaveDisplayValue("전체")
     expect(screen.getByLabelText("상태")).toHaveDisplayValue("전체")
     expect(screen.getByLabelText("페이지 크기")).toHaveDisplayValue("20개")
+    expect(screen.getByRole("button", { name: "필터 적용" })).toHaveAttribute(
+      "type",
+      "submit"
+    )
+    expect(screen.getByLabelText("코스 검색")).toHaveAttribute("name", "query")
+    expect(screen.getByLabelText("카테고리")).toHaveAttribute(
+      "name",
+      "category"
+    )
+    expect(screen.getByLabelText("상태")).toHaveAttribute("name", "status")
+    expect(screen.getByLabelText("페이지 크기")).toHaveAttribute(
+      "name",
+      "pageSize"
+    )
 
     const activeRow = screen.getByRole("row", {
       name: /글쓰기 첫걸음 30일/,

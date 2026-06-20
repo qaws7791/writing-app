@@ -148,4 +148,52 @@ describe("Writing App DB client", () => {
       client.close()
     }
   })
+
+  it("기존 courses 테이블에 visual_key가 없으면 보존 가능한 마이그레이션으로 추가한다", () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      client.sqlite.exec(`
+        CREATE TABLE courses (
+          id TEXT PRIMARY KEY NOT NULL,
+          title TEXT NOT NULL,
+          description TEXT NOT NULL,
+          category TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'active',
+          sort_order INTEGER NOT NULL,
+          curriculum_revision INTEGER NOT NULL DEFAULT 0
+        );
+        INSERT INTO courses (
+          id,
+          title,
+          description,
+          category,
+          sort_order
+        ) VALUES (
+          'legacy-course',
+          '기존 코스',
+          '기존 설명',
+          'writing',
+          1
+        );
+      `)
+
+      runBaselineMigration(client.sqlite)
+
+      const courseColumns = client.sqlite
+        .query<{ readonly name: string }, []>("PRAGMA table_info(courses)")
+        .all()
+        .map((row) => row.name)
+      const legacyCourse = client.sqlite
+        .query<{ readonly visual_key: string }, []>(
+          "SELECT visual_key FROM courses WHERE id = 'legacy-course'"
+        )
+        .get()
+
+      expect(courseColumns).toContain("visual_key")
+      expect(legacyCourse?.visual_key).toBe("basic-sentence-writing")
+    } finally {
+      client.close()
+    }
+  })
 })

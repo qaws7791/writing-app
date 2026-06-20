@@ -54,7 +54,7 @@ export function AdminCoursesPage({
         description="코스를 검색하고 새 강의를 생성하거나 보관합니다."
         title="콘텐츠 관리"
       />
-      <section className="admin-toolbar" aria-label="코스 필터">
+      <form className="admin-toolbar" method="get" aria-label="코스 필터">
         <label>
           <span>코스 검색</span>
           <input
@@ -66,7 +66,11 @@ export function AdminCoursesPage({
         </label>
         <label>
           <span>카테고리</span>
-          <select aria-label="카테고리" defaultValue={filters.category}>
+          <select
+            aria-label="카테고리"
+            defaultValue={filters.category}
+            name="category"
+          >
             <option value="">전체</option>
             <option value="입문자를 위한 코스">입문자를 위한 코스</option>
             <option value="문법 심화">문법 심화</option>
@@ -78,7 +82,7 @@ export function AdminCoursesPage({
         </label>
         <label>
           <span>상태</span>
-          <select aria-label="상태" defaultValue={filters.status}>
+          <select aria-label="상태" defaultValue={filters.status} name="status">
             <option value="all">전체</option>
             <option value="active">active</option>
             <option value="archived">archived</option>
@@ -86,12 +90,19 @@ export function AdminCoursesPage({
         </label>
         <label>
           <span>페이지 크기</span>
-          <select aria-label="페이지 크기" defaultValue={filters.pageSize}>
+          <select
+            aria-label="페이지 크기"
+            defaultValue={filters.pageSize}
+            name="pageSize"
+          >
             <option value={10}>10개</option>
             <option value={20}>20개</option>
             <option value={50}>50개</option>
           </select>
         </label>
+        <button className="admin-secondary-button" type="submit">
+          필터 적용
+        </button>
         <button
           className="admin-primary-button"
           disabled={isPending}
@@ -109,7 +120,7 @@ export function AdminCoursesPage({
         >
           <Plus aria-hidden="true" size={16} />새 코스
         </button>
-      </section>
+      </form>
       {message === null ? null : (
         <p className="admin-inline-status" role="status">
           {message}

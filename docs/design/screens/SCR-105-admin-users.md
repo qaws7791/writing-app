@@ -25,6 +25,8 @@
 ## UI 기준
 
 - 검색, 상태, 정렬 필터를 toolbar에 둔다.
+- 필터 toolbar는 `GET` form이며, 사용자 검색 `query`, 상태 `status`, 정렬 `sort`를 query string으로 제출한다.
+- 필터 적용 버튼은 `admin-secondary-button`이다.
 - 페이지 크기 선택 control은 제공하지 않는다.
 - 사용자 목록은 페이지당 12명 고정으로 표시한다.
 - 사용자 첫 열은 이름과 이메일을 함께 표시한다.

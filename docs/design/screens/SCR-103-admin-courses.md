@@ -24,6 +24,8 @@
 ## UI 기준
 
 - 필터는 `.admin-toolbar`에 둔다.
+- 필터 toolbar는 `GET` form이며, 코스 검색 `query`, 카테고리 `category`, 상태 `status`, 페이지 크기 `pageSize`를 query string으로 제출한다.
+- 필터 적용 버튼은 `admin-secondary-button`이다.
 - 페이지 크기 선택은 `10`, `20`, `50` 옵션을 제공한다.
 - table 첫 열은 제목과 revision을 함께 보여준다.
 - 새 코스 버튼은 `admin-primary-button`이다.

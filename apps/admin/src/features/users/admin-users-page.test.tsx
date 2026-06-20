@@ -60,6 +60,16 @@ describe("AdminUsersPage", () => {
     expect(screen.getByLabelText("사용자 검색")).toHaveValue("")
     expect(screen.getByLabelText("상태")).toHaveDisplayValue("전체")
     expect(screen.getByLabelText("정렬")).toHaveDisplayValue("최근 접속")
+    expect(screen.getByRole("button", { name: "필터 적용" })).toHaveAttribute(
+      "type",
+      "submit"
+    )
+    expect(screen.getByLabelText("사용자 검색")).toHaveAttribute(
+      "name",
+      "query"
+    )
+    expect(screen.getByLabelText("상태")).toHaveAttribute("name", "status")
+    expect(screen.getByLabelText("정렬")).toHaveAttribute("name", "sort")
 
     const row = screen.getByRole("row", { name: /민지/ })
     expect(within(row).getByText("minji@example.com")).toBeVisible()

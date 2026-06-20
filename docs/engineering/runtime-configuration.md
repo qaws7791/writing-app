@@ -95,6 +95,19 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 
 관리자 비밀값은 학습자 비밀값과 같은 값을 사용하지 않는다.
 
+## 어드민 로컬 seed 설정
+
+`bun run dev:admin:setup`은 로컬에서 즉시 로그인 가능한 관리자 계정을 보장하기 위해 `ADMIN_SEED_RESET_PASSWORD=true`로 `seed:admin`을 실행한다. 기본 계정은 환경 변수가 없을 때 아래 값을 사용한다.
+
+| 변수                        | 기본값                                | 설명                            |
+| --------------------------- | ------------------------------------- | ------------------------------- |
+| `ADMIN_SEED_EMAIL`          | `admin@example.com`                   | 로컬 seed 관리자 이메일         |
+| `ADMIN_SEED_NAME`           | `관리자`                              | 로컬 seed 관리자 이름           |
+| `ADMIN_SEED_PASSWORD`       | `replace-with-local-admin-password`   | 로컬 seed 관리자 비밀번호       |
+| `ADMIN_SEED_RESET_PASSWORD` | `dev:admin:setup`에서만 `true`로 지정 | 기존 credential 비밀번호 재설정 |
+
+`bun --filter @workspace/admin-api seed:admin`을 직접 실행하면 `ADMIN_SEED_RESET_PASSWORD=true`를 명시하지 않는 한 기존 credential 비밀번호를 보존한다.
+
 ## 어드민 웹 설정
 
 파일: `apps/admin/src/runtime-config.ts`

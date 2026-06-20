@@ -129,6 +129,51 @@ describe("개발 DB seed 실행", () => {
     }
   })
 
+  it("seed 재실행 시 코스 visual key를 기준 콘텐츠 값으로 갱신한다", async () => {
+    const tempDirectory = mkdtempSync(
+      join(tmpdir(), "writing-app-seed-visual-key-")
+    )
+    const databaseUrl = join(tempDirectory, "api.sqlite")
+
+    try {
+      await seedDatabase(databaseUrl)
+
+      const client = createWritingAppDatabase(databaseUrl)
+
+      try {
+        client.sqlite
+          .query("UPDATE courses SET visual_key = 'legacy-visual'")
+          .run()
+      } finally {
+        client.close()
+      }
+
+      await seedDatabase(databaseUrl)
+
+      const reseededClient = createWritingAppDatabase(databaseUrl)
+
+      try {
+        expect(
+          reseededClient.db
+            .select()
+            .from(courses)
+            .all()
+            .map((course) => course.visualKey)
+        ).toEqual([
+          "basic-sentence-writing",
+          "grammar-complete",
+          "essay-writing",
+          "creative-writing",
+          "expression",
+        ])
+      } finally {
+        reseededClient.close()
+      }
+    } finally {
+      removeTempDirectory(tempDirectory)
+    }
+  })
+
   it("seed 데이터에 없는 기존 콘텐츠는 삭제하지 않고 archived 처리한다", async () => {
     const tempDirectory = mkdtempSync(
       join(tmpdir(), "writing-app-seed-archive-")
