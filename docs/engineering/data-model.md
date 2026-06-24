@@ -4,7 +4,7 @@
 
 ## 기준
 
-- 기준일: 2026-06-19
+- 기준일: 2026-06-25
 - 기준 파일:
   - `packages/db/src/schema/*.schema.ts`
   - `packages/db/src/persisted-values.ts`
@@ -34,6 +34,8 @@ erDiagram
 
   admin_user ||--o{ admin_session : has
   admin_user ||--o{ admin_account : has
+  admin_user ||--o{ admin_resource_documents : authors
+  admin_user ||--o{ admin_ai_chat_conversations : owns
 
   courses ||--o{ course_units : contains
   courses ||--o{ lessons : contains
@@ -44,6 +46,7 @@ erDiagram
   lessons ||--o{ ai_feedback_attempts : feedback_for
   lesson_steps ||--o{ learner_lesson_answers : answer_for
   lesson_steps ||--o{ ai_feedback_attempts : feedback_step
+  admin_ai_chat_conversations ||--o{ admin_ai_chat_messages : contains
 ```
 
 ## 인증 테이블
@@ -106,6 +109,16 @@ Better Auth adapter 계약을 따른다.
 | 테이블           | 주요 컬럼                    | 설명                                        |
 | ---------------- | ---------------------------- | ------------------------------------------- |
 | `admin_settings` | `key`, `value`, `updated_at` | 공지, 법적 문서, 운영 설정 key-value 저장소 |
+
+## 관리자 자료실과 AI 채팅 테이블
+
+관리자 전용 운영 도구는 다음 테이블을 사용한다.
+
+| 테이블                        | 주요 컬럼                                                                  | 설명                             |
+| ----------------------------- | -------------------------------------------------------------------------- | -------------------------------- |
+| `admin_resource_documents`    | `id`, `title`, `content_json`, `excerpt`, `status`, `author_id`, timestamp | 관리자 자료 문서와 검색 발췌     |
+| `admin_ai_chat_conversations` | `id`, `title`, `admin_id`, timestamp                                       | 관리자별 AI 채팅 대화            |
+| `admin_ai_chat_messages`      | `id`, `conversation_id`, `role`, `content`, `created_at`                   | AI 채팅 사용자/어시스턴트 메시지 |
 
 ## 상태 머신
 

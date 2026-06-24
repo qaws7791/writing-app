@@ -4,7 +4,7 @@
 
 ## 기준
 
-- 기준일: 2026-06-19
+- 기준일: 2026-06-25
 - 기준 소스: 현재 코드베이스의 `apps/*`, `packages/*`, 루트 설정, 기존 `docs` 문서
 - 제외: 레거시 실험 디렉터리의 구현 파일. 제품 런타임은 해당 디렉터리를 import하지 않는다.
 
@@ -24,6 +24,8 @@ flowchart LR
   adminWeb --> adminApi["어드민 API apps/admin-api"]
   api --> google["Google OAuth"]
   api --> openai["OpenAI Responses API"]
+  adminApi --> mastra["Mastra 관리자 AI 에이전트"]
+  mastra --> openai
   api --> db["SQLite data/api.sqlite"]
   adminApi --> db
 ```
@@ -130,6 +132,8 @@ Learning domain이 content DTO나 content id 타입을 참조해야 할 때는 c
 - `/analytics`: 분석
 - `/settings`: 운영 설정
 - `/debug/steps`: 내부 QA용 스텝 디버그
+- `/resources`: 관리자 자료실
+- `/chat`: 관리자 AI 채팅
 
 ## API 런타임
 
@@ -141,6 +145,7 @@ learner route handler는 typed route가 검증한 transport 입력을 읽고, re
 AI 피드백 생성은 `AiFeedbackService`가 lesson 조회와 AI_FEEDBACK step 판정만 담당하고, 시도 한도 계산·prompt 기반 provider 호출·결과 저장은 `ai-feedback-attempt-coordinator.ts`가 조정한다. AI_FEEDBACK step 지원 여부는 `ai-feedback-step-policy.ts` domain policy가 소유한다.
 
 어드민 API는 `apps/admin-api/src/main.ts`에서 SQLite DB, 어드민 repository, Better Auth, 관리자 세션 resolver, 요청 로거를 조립한다. Route는 `@workspace/hono/core`의 typed route definition으로 등록하고, request/query/body wire contract는 `packages/contracts/admin`을 직접 참조한다. 관리자 세션과 owner 권한은 route middleware가 `AppError` 기반 표준 오류로 변환하며, `/openapi`는 등록된 typed route에서 OpenAPI 3.1 문서를 생성한다. `apps/admin-api`의 app 조립 경계는 core의 broad `AdminService`를 route에 직접 넘기지 않고 analytics, courses, dashboard, settings, content reset, users use case 슬롯으로 나눠 주입한다. `apps/admin` 화면은 core나 admin wire DTO package를 직접 import하지 않는다.
+관리자 자료실과 관리자 AI 채팅은 어드민 API 경계에 속한다. 자료실은 `admin_resource_documents`를 단일 저장소로 사용하는 DB 기반 CRUD이며, Tiptap JSON 원문과 검색용 발췌문을 함께 저장한다. AI 채팅은 `admin_ai_chat_conversations`, `admin_ai_chat_messages`에 대화 내역을 저장하고, `apps/admin-api`에 내장한 Mastra `admin-content-agent`를 Hono route에서 호출해 `chunk`, `done`, `error` SSE 이벤트로 응답한다. Mastra Memory는 사용하지 않고 저장된 메시지를 프롬프트 컨텍스트로 구성한다.
 어드민 코스 편집기는 root에 `course-editor-shell.tsx` entrypoint만 두고, 레슨/스텝 편집 작업 화면은 `workspace/`, 학습자 표시 확인은 `preview/`, 스텝 타입별 폼은 `step-forms/` 아래에 둔다. step form 의존 방향은 `step-forms/step-form-registry.tsx -> step-forms/index.ts -> step-forms/* -> step-forms/shared/step-form-contract.tsx`이다. 개별 step form은 registry를 import하지 않고, registry는 개별 form 파일이나 shared shell을 직접 import하지 않는다.
 
 `packages/core`의 공개 표면은 실제 런타임에서 쓰이는 module API, learner API bootstrap, result/errors/kernel 같은 공통 값으로 제한한다. request context, event bus, unit of work, container wiring처럼 아직 use case에 연결되지 않은 scaffold는 도입 시점까지 공개하지 않는다.

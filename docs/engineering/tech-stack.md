@@ -4,7 +4,7 @@
 
 ## 기준
 
-- 기준일: 2026-06-19
+- 기준일: 2026-06-25
 - 기준 파일: 루트 `package.json`, 각 workspace `package.json`, `turbo.json`, `vitest.workspace.ts`
 
 ## 런타임과 패키지 관리
@@ -40,6 +40,7 @@
 | Zod                 | `^4.2.0`  | 전 영역                                       | 런타임 validation과 DTO schema를 명시한다.                           |
 | Better Auth         | `^1.6.0`  | 인증                                          | 학습자 Google OAuth와 관리자 아이디/패스워드 인증을 분리해 조립한다. |
 | OpenAI SDK          | `^6.39.0` | `packages/core`                               | AI 피드백 provider adapter에서 사용한다.                             |
+| Mastra              | `^1.46.0` | `apps/admin-api`                              | 관리자 AI 채팅 에이전트를 어드민 API 안에 내장 실행한다.             |
 
 ## 데이터
 
