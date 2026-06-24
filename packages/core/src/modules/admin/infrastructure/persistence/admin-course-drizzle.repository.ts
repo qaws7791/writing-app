@@ -4,6 +4,10 @@ import type {
   AdminCourseDetailDto,
   AdminCourseListDto,
 } from "@workspace/core/modules/admin/domain/admin.dto"
+import {
+  courseVisualKeySchema,
+  type CourseVisualKey,
+} from "@workspace/contracts/content"
 import type {
   ArchiveAdminCourseInput,
   ContentResetRepository,
@@ -366,6 +370,7 @@ function readCourses(
       status: courses.status,
       title: courses.title,
       unitCount: activeUnitCountExpression,
+      visualKey: courses.visualKey,
     })
     .from(courses)
     .leftJoin(courseUnits, eq(courseUnits.courseId, courses.id))
@@ -380,6 +385,7 @@ function readCourses(
       courses.curriculumRevision,
       courses.status,
       courses.title,
+      courses.visualKey,
       courses.sortOrder
     )
     .orderBy(asc(courses.sortOrder))
@@ -388,7 +394,10 @@ function readCourses(
     .all()
 
   return {
-    items: rows,
+    items: rows.map((row) => ({
+      ...row,
+      visualKey: readCourseVisualKey(row.visualKey),
+    })),
     pagination: {
       page: pagination.page,
       pageSize: pagination.pageSize,
@@ -396,6 +405,12 @@ function readCourses(
       totalPages: pagination.totalPages,
     },
   }
+}
+
+function readCourseVisualKey(value: string): CourseVisualKey {
+  const parsed = courseVisualKeySchema.safeParse(value)
+
+  return parsed.success ? parsed.data : "basic-sentence-writing"
 }
 
 function createReadCoursesWhereCondition({
@@ -485,6 +500,7 @@ async function resetContent(
             sortOrder: course.sortOrder,
             status: contentStatuses.active,
             title: course.title,
+            visualKey: course.visualKey,
           },
           target: courses.id,
         })

@@ -4,6 +4,7 @@ import {
   adminNonNegativeIntegerSchema,
   adminPositiveIntegerSchema,
 } from "@workspace/contracts/admin/admin-shared"
+import { courseVisualKeySchema } from "@workspace/contracts/content"
 
 export const adminCourseStepDtoSchema = z.object({
   contentJson: z.string(),
@@ -51,6 +52,7 @@ export const adminCourseListItemDtoSchema = z.object({
   status: adminContentStatusSchema,
   title: z.string(),
   unitCount: adminNonNegativeIntegerSchema,
+  visualKey: courseVisualKeySchema,
 })
 
 export const adminCourseListDtoSchema = z.object({

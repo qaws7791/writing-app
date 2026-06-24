@@ -31,6 +31,7 @@ const courses: AdminCourseList = {
       status: "active",
       title: "글쓰기 첫걸음 30일",
       unitCount: 3,
+      visualKey: "basic-sentence-writing",
     },
     {
       category: "문법 심화",
@@ -40,6 +41,7 @@ const courses: AdminCourseList = {
       status: "archived",
       title: "문장의 기본 문법",
       unitCount: 3,
+      visualKey: "grammar-complete",
     },
   ],
   pagination: {

@@ -2,8 +2,10 @@
 
 import { Archive, Plus } from "lucide-react"
 import { useState, useTransition } from "react"
+import Image from "next/image"
 
 import { AdminHeader } from "@/components/admin-header"
+import { createAdminCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminArchiveCourseResult,
@@ -149,13 +151,25 @@ export function AdminCoursesPage({
               {courses.items.map((course) => (
                 <tr key={course.id}>
                   <td>
-                    <a
-                      className="admin-table__title"
-                      href={`/courses/${course.id}`}
-                    >
-                      {course.title}
-                    </a>
-                    <span>revision {course.revision}</span>
+                    <div className="admin-course-title-cell">
+                      <div className="admin-course-thumbnail">
+                        <Image
+                          alt=""
+                          fill
+                          sizes="64px"
+                          src={createAdminCourseImageUrl(course.visualKey)}
+                        />
+                      </div>
+                      <div>
+                        <a
+                          className="admin-table__title"
+                          href={`/courses/${course.id}`}
+                        >
+                          {course.title}
+                        </a>
+                        <span>revision {course.revision}</span>
+                      </div>
+                    </div>
                   </td>
                   <td>{course.category}</td>
                   <td>
