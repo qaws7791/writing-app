@@ -1,5 +1,4 @@
 import { render, screen, within } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 
 import { CoursesPage } from "@/features/courses/courses-page"
@@ -30,9 +29,12 @@ const courses: readonly CourseSummary[] = [
 
 describe("코스 목록 화면", () => {
   it("현재 제품 코스 목록처럼 카테고리와 코스 상세 링크를 보여준다", async () => {
-    const user = userEvent.setup()
-
-    render(<CoursesPage courses={courses} />)
+    render(
+      <CoursesPage
+        courses={courses}
+        filters={{ category: "", query: "", sort: "latest" }}
+      />
+    )
 
     expect(
       screen.getByRole("heading", { name: "무엇을 써볼까요?" })
@@ -43,7 +45,8 @@ describe("코스 목록 화면", () => {
       )
     ).toBeInTheDocument()
 
-    const beginnerCategory = screen.getByRole("button", {
+    const allCategory = screen.getByRole("link", { name: "전체" })
+    const beginnerCategory = screen.getByRole("link", {
       name: "입문자를 위한 코스",
     })
     const categorySlider = screen.getByLabelText("코스 카테고리")
@@ -54,24 +57,68 @@ describe("코스 목록 화면", () => {
       "no-scrollbar",
       "overflow-x-auto"
     )
-    expect(beginnerCategory).toHaveClass("bg-charcoal", "text-cream")
+    expect(allCategory).toHaveClass("bg-charcoal", "text-cream")
+    expect(beginnerCategory).toHaveAttribute(
+      "href",
+      "/app/courses?category=%EC%9E%85%EB%AC%B8%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C+%EC%BD%94%EC%8A%A4"
+    )
     expect(screen.getByText("글쓰기 첫걸음 30일")).toBeInTheDocument()
     expect(screen.getByText("10개 레슨")).toBeInTheDocument()
 
-    await user.click(screen.getByRole("button", { name: "문법 심화" }))
+    const grammarCourseCard = screen.getByText("문장의 기본 문법").closest("a")
 
-    const courseTitle = screen.getByText("문장의 기본 문법")
-    const courseCard = courseTitle.closest("a")
-
-    expect(courseCard).not.toBeNull()
-    expect(courseCard).toHaveAttribute("href", "/app/courses/c2")
+    expect(grammarCourseCard).not.toBeNull()
+    expect(grammarCourseCard).toHaveAttribute("href", "/app/courses/c2")
     expect(
-      within(courseCard as HTMLElement).getByText("8개 레슨")
+      within(grammarCourseCard as HTMLElement).getByText("8개 레슨")
     ).toBeInTheDocument()
   })
 
+  it("URL 필터 기준으로 검색, 카테고리, 정렬 결과를 보여준다", () => {
+    render(
+      <CoursesPage
+        courses={courses}
+        filters={{ category: "", query: "문장", sort: "studyTime" }}
+      />
+    )
+
+    expect(screen.getByLabelText("검색")).toHaveValue("문장")
+    expect(screen.getByLabelText("정렬")).toHaveDisplayValue("학습시간순")
+    expect(screen.getAllByRole("link", { name: /문장/ })[0]).toHaveAttribute(
+      "href",
+      "/app/courses/c2"
+    )
+    expect(screen.getByText("글쓰기 첫걸음 30일")).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "초기화" })).toHaveAttribute(
+      "href",
+      "/app/courses"
+    )
+  })
+
+  it("검색 결과가 없으면 필터 초기화 링크를 보여준다", () => {
+    render(
+      <CoursesPage
+        courses={courses}
+        filters={{ category: "문법 심화", query: "없는 코스", sort: "latest" }}
+      />
+    )
+
+    expect(
+      screen.getByRole("heading", { name: "조건에 맞는 코스가 없습니다." })
+    ).toBeInTheDocument()
+    expect(screen.getByRole("link", { name: "필터 초기화" })).toHaveAttribute(
+      "href",
+      "/app/courses"
+    )
+  })
+
   it("빈 코스 목록은 fallback 코스 대신 empty state로 보여준다", () => {
-    render(<CoursesPage courses={[]} />)
+    render(
+      <CoursesPage
+        courses={[]}
+        filters={{ category: "", query: "", sort: "latest" }}
+      />
+    )
 
     expect(
       screen.getByRole("heading", { name: "아직 열려 있는 코스가 없습니다." })

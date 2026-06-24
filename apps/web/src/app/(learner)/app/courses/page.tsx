@@ -1,16 +1,24 @@
 import { redirect } from "next/navigation"
 
 import { AppRouteNotice } from "@/components/app-route-notice"
-import { CoursesPage } from "@/features/courses/courses-page"
+import {
+  CoursesPage,
+  type CourseListFilters,
+} from "@/features/courses/courses-page"
+import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 import {
   describeRouteApiFailure,
   toRouteApiOutcome,
 } from "@/lib/api/route-api-outcome"
 import { createLoginPagePath } from "@/lib/auth/auth-navigation"
 import { getServerLearnerSessionToken } from "@/lib/auth/server-session-token"
-import { getServerWritingAppApi } from "@/lib/api/get-server-writing-app-api"
 
-export default async function CoursesRoute() {
+export default async function CoursesRoute({
+  searchParams,
+}: {
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const resolvedSearchParams = await searchParams
   const token = await getServerLearnerSessionToken()
 
   if (token === null) {
@@ -36,5 +44,32 @@ export default async function CoursesRoute() {
     )
   }
 
-  return <CoursesPage courses={coursesOutcome.value} />
+  return (
+    <CoursesPage
+      courses={coursesOutcome.value}
+      filters={readCourseListFilters(resolvedSearchParams)}
+    />
+  )
+}
+
+function readCourseListFilters(
+  searchParams: Record<string, string | string[] | undefined>
+): CourseListFilters {
+  return {
+    category: readString(searchParams["category"], ""),
+    query: readString(searchParams["query"], ""),
+    sort: readCourseSort(readString(searchParams["sort"], "latest")),
+  }
+}
+
+function readString(value: string | string[] | undefined, fallback: string) {
+  return typeof value === "string" ? value : fallback
+}
+
+function readCourseSort(value: string): CourseListFilters["sort"] {
+  if (value === "title" || value === "studyTime") {
+    return value
+  }
+
+  return "latest"
 }
