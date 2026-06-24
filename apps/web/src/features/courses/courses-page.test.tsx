@@ -46,6 +46,14 @@ describe("코스 목록 화면", () => {
     const beginnerCategory = screen.getByRole("button", {
       name: "입문자를 위한 코스",
     })
+    const categorySlider = screen.getByLabelText("코스 카테고리")
+
+    expect(categorySlider).toHaveClass(
+      "-mx-5",
+      "px-5",
+      "no-scrollbar",
+      "overflow-x-auto"
+    )
     expect(beginnerCategory).toHaveClass("bg-charcoal", "text-cream")
     expect(screen.getByText("글쓰기 첫걸음 30일")).toBeInTheDocument()
     expect(screen.getByText("10개 레슨")).toBeInTheDocument()

@@ -148,7 +148,7 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
           </>
         ) : (
           <Link
-            className="bg-surface rounded-4xl p-7 cursor-pointer btn-squish"
+            className="bg-surface rounded-4xl p-7 cursor-pointer btn-squish block"
             href="/app/courses"
           >
             <div className="flex items-center gap-2 mb-5">

@@ -89,6 +89,15 @@ button:not(:disabled),
   cursor: pointer;
 }
 
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .dark {
   --color-cream: #1b1916;
   --color-surface: #262320;

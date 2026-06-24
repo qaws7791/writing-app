@@ -51,7 +51,10 @@ export function CoursesPage({ courses }: CoursesPageProps) {
         </div>
       ) : (
         <>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar mb-8 pb-2">
+          <div
+            aria-label="코스 카테고리"
+            className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5 md:-mx-10 md:px-10 mb-8 pb-2"
+          >
             {categories.map((category) => (
               <button
                 className={cx(
