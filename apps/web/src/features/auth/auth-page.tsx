@@ -2,15 +2,19 @@
 
 /* eslint-disable react/button-has-type */
 
-import { requestGoogleLogin } from "@/lib/auth/auth-client"
+import { requestGoogleLogin, requestTestLogin } from "@/lib/auth/auth-client"
 
 type AuthPageProps = {
   readonly nextPath: string
+  readonly testAuthEnabled?: boolean
 }
 
-export function AuthPage({ nextPath }: AuthPageProps) {
+export function AuthPage({ nextPath, testAuthEnabled = false }: AuthPageProps) {
   const loginWithGoogle = () => {
     void requestGoogleLogin(nextPath)
+  }
+  const loginWithTestUser = () => {
+    requestTestLogin(nextPath)
   }
 
   return (
@@ -36,6 +40,15 @@ export function AuthPage({ nextPath }: AuthPageProps) {
           <GoogleIcon />
           Google로 계속하기
         </button>
+        {testAuthEnabled ? (
+          <button
+            className="w-full bg-surface text-charcoal font-bold py-4 rounded-4xl btn-squish"
+            onClick={loginWithTestUser}
+            style={{ fontSize: "1rem" }}
+          >
+            테스트 계정으로 계속하기
+          </button>
+        ) : null}
         <p
           className="text-center text-muted font-medium"
           style={{ fontSize: "0.875rem" }}

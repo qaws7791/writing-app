@@ -76,6 +76,32 @@ describe("학습자 Better Auth", () => {
     })
   })
 
+  it("테스트 인증 플래그가 켜졌을 때만 테스트 로그인 플러그인을 등록한다", () => {
+    const database = createMigratedTestDatabase()
+
+    try {
+      createLearnerAuth({
+        authBaseUrl: "https://api.example.test",
+        db: database.db,
+        secret: "x".repeat(32),
+        testAuthEnabled: true,
+        webOrigin: "https://app.example.test",
+      })
+    } finally {
+      database.close()
+    }
+
+    const authConfig = authMocks.betterAuth.mock.calls.at(0)?.at(0)
+
+    expect(authConfig).toMatchObject({
+      plugins: [
+        {
+          id: "learner-test-auth",
+        },
+      ],
+    })
+  })
+
   it("Better Auth getSession 결과를 학습자 세션으로 변환한다", async () => {
     const database = createMigratedTestDatabase()
     const getSession = vi.fn(async () => ({

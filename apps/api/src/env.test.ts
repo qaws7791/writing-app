@@ -30,6 +30,7 @@ describe("API env", () => {
       openAiApiKey: "sk-test",
       openAiModel: "gpt-5.4-mini",
       port: 4101,
+      testAuthEnabled: false,
       webOrigin: localRuntimeDefaults.learnerWebOrigin,
     })
   })
@@ -56,8 +57,26 @@ describe("API env", () => {
       openAiApiKey: undefined,
       openAiModel: "gpt-5.2",
       port: localRuntimePorts.learnerApi,
+      testAuthEnabled: false,
       webOrigin: localRuntimeDefaults.learnerWebOrigin,
     })
+  })
+
+  it("로컬 테스트 인증 플래그를 읽되 production에서는 끈다", () => {
+    expect(
+      parseApiEnv({
+        BETTER_AUTH_SECRET: "x".repeat(32),
+        ENABLE_TEST_AUTH: "true",
+        NODE_ENV: "development",
+      }).testAuthEnabled
+    ).toBe(true)
+    expect(
+      parseApiEnv({
+        BETTER_AUTH_SECRET: "x".repeat(32),
+        ENABLE_TEST_AUTH: "true",
+        NODE_ENV: "production",
+      }).testAuthEnabled
+    ).toBe(false)
   })
 
   it("선택 Better Auth 쿠키 도메인을 읽는다", () => {

@@ -44,6 +44,7 @@
 - `ADMIN_ORIGIN`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
+- `ENABLE_TEST_AUTH`
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
 
@@ -62,6 +63,7 @@
 | `CORS_ORIGIN`               | 선택 alias | 없음                           | 첫 origin을 `WEB_ORIGIN` fallback으로 사용 |
 | `GOOGLE_CLIENT_ID`          | 선택       | 없음                           | Google OAuth client id                     |
 | `GOOGLE_CLIENT_SECRET`      | 선택       | 없음                           | Google OAuth 비밀값                        |
+| `ENABLE_TEST_AUTH`          | 선택       | `false`                        | 로컬 자동화용 학습자 테스트 인증 활성화    |
 | `OPENAI_API_KEY`            | 선택       | 없음                           | OpenAI API key                             |
 | `OPENAI_MODEL`              | 선택       | `gpt-5.2`                      | AI 피드백 모델                             |
 
@@ -73,8 +75,10 @@
 | -------------------------- | ----------------------- | ----------------------------------- |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:4000` | 브라우저에서 호출할 학습자 API      |
 | `WEB_API_BASE_URL`         | `http://localhost:4000` | 서버 컴포넌트에서 호출할 학습자 API |
+| `ENABLE_TEST_AUTH`         | `false`                 | 로컬 자동화용 테스트 로그인 버튼    |
 
 base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildApiUrl()`로 만든다.
+테스트 인증은 `NODE_ENV=production`에서는 `ENABLE_TEST_AUTH=true`여도 비활성화한다.
 
 ## 어드민 API 설정
 
@@ -130,6 +134,7 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 - Better Auth 비밀값/url/cookie domain
 - DB reset 관련 변수
 - `DATABASE_URL`
+- `ENABLE_TEST_AUTH`
 - `NODE_ENV`
 - 웹/API base URL
 

@@ -1,10 +1,14 @@
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env"
 
 import { createWebAuthClient } from "@/lib/auth/auth-client"
-import { readBrowserApiBaseUrl } from "@/runtime-config"
+import { readBrowserApiBaseUrl, type BrowserApiBaseUrl } from "@/runtime-config"
 
 describe("auth client", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it("Better Auth sign-out endpoint를 POST로 호출하고 안전한 이동 경로를 반환한다", async () => {
     const fetch = vi.fn(async () => Response.json({ success: true }))
     const authClient = createWebAuthClient({
@@ -57,5 +61,25 @@ describe("auth client", () => {
       callbackURL: "http://localhost:3000/app/courses",
       provider: "google",
     })
+  })
+
+  it("테스트 로그인 요청은 테스트 인증 endpoint로 브라우저를 이동시킨다", () => {
+    const assign = vi.fn()
+    vi.stubGlobal("window", {
+      location: {
+        assign,
+        origin: "http://localhost:3000",
+      },
+    })
+    const authClient = createWebAuthClient({
+      apiBaseUrl: "http://localhost:4000" as BrowserApiBaseUrl,
+      fetchImplementation: vi.fn(async () => Response.json({ success: true })),
+    })
+
+    authClient.requestTestLogin("/app/courses")
+
+    expect(assign).toHaveBeenCalledWith(
+      "http://localhost:4000/api/auth/test/sign-in?callbackURL=http%3A%2F%2Flocalhost%3A3000%2Fapp%2Fcourses"
+    )
   })
 })

@@ -1,0 +1,143 @@
+import { describe, expect, it } from "vitest"
+import { eq } from "drizzle-orm"
+
+import { createLearnerAuth } from "@workspace/core/modules/auth/infrastructure/adapters/learner-auth"
+import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import { authAccounts, authSessions, authUsers } from "@workspace/db/schema"
+
+const authBaseUrl = "http://localhost:4000"
+const webOrigin = "http://localhost:3000"
+
+describe("학습자 테스트 인증", () => {
+  it("테스트 로그인 endpoint가 Google 계정과 같은 학습자 세션 쿠키를 발급한다", async () => {
+    const database = createMigratedTestDatabase()
+
+    try {
+      const auth = createLearnerAuth({
+        authBaseUrl,
+        db: database.db,
+        secret: "x".repeat(32),
+        testAuthEnabled: true,
+        webOrigin,
+      })
+      const response = await auth.handler(
+        new Request(
+          `${authBaseUrl}/api/auth/test/sign-in?callbackURL=${encodeURIComponent(
+            `${webOrigin}/app/courses`
+          )}`,
+          {
+            headers: {
+              Origin: webOrigin,
+            },
+          }
+        )
+      )
+
+      expect(response.status).toBe(302)
+      expect(response.headers.get("location")).toBe(`${webOrigin}/app/courses`)
+
+      const cookieHeader = readCookieHeader(response)
+      expect(cookieHeader).toContain("learner_session_token=")
+
+      await expect(
+        auth.api.getSession({
+          headers: new Headers({
+            Cookie: cookieHeader,
+          }),
+        })
+      ).resolves.toMatchObject({
+        user: {
+          email: "learner@example.com",
+          id: "user-1",
+          name: "학습자",
+        },
+      })
+      expect(
+        database.db
+          .select({ email: authUsers.email, id: authUsers.id })
+          .from(authUsers)
+          .where(eq(authUsers.id, "user-1"))
+          .all()
+      ).toEqual([
+        {
+          email: "learner@example.com",
+          id: "user-1",
+        },
+      ])
+      expect(
+        database.db
+          .select({
+            accountId: authAccounts.accountId,
+            providerId: authAccounts.providerId,
+            userId: authAccounts.userId,
+          })
+          .from(authAccounts)
+          .where(eq(authAccounts.userId, "user-1"))
+          .all()
+      ).toEqual([
+        {
+          accountId: "test-google-user-1",
+          providerId: "google",
+          userId: "user-1",
+        },
+      ])
+      expect(
+        database.db
+          .select({ userId: authSessions.userId })
+          .from(authSessions)
+          .where(eq(authSessions.userId, "user-1"))
+          .all()
+      ).toHaveLength(1)
+    } finally {
+      database.close()
+    }
+  })
+
+  it("외부 callbackURL은 학습자 앱 기본 경로로 되돌린다", async () => {
+    const database = createMigratedTestDatabase()
+
+    try {
+      const auth = createLearnerAuth({
+        authBaseUrl,
+        db: database.db,
+        secret: "x".repeat(32),
+        testAuthEnabled: true,
+        webOrigin,
+      })
+      const response = await auth.handler(
+        new Request(
+          `${authBaseUrl}/api/auth/test/sign-in?callbackURL=${encodeURIComponent(
+            "https://example.com/app/courses"
+          )}`
+        )
+      )
+
+      expect(response.status).toBe(302)
+      expect(response.headers.get("location")).toBe(`${webOrigin}/app`)
+    } finally {
+      database.close()
+    }
+  })
+})
+
+function createMigratedTestDatabase() {
+  const database = createInMemoryWritingAppDatabase()
+
+  runBaselineMigration(database.sqlite)
+
+  return database
+}
+
+function readCookieHeader(response: Response): string {
+  const setCookie = response.headers.get("set-cookie")
+
+  expect(setCookie).not.toBeNull()
+
+  return (
+    setCookie
+      ?.split(/,(?=\s*[^;,\s]+=)/)
+      .map((cookie) => cookie.split(";")[0])
+      .join("; ") ?? ""
+  )
+}

@@ -23,6 +23,7 @@ Prefer explicitness over implicitness and choose simplicity over cleverness and 
 ## Task Guide
 
 - Always update the documentation (/docs) to the latest version for changes when starting and finishing a task.
+- 로컬 브라우저 테스트나 E2E 테스트는 Google OAuth 대신 `ENABLE_TEST_AUTH=true` 테스트 전용 로그인을 사용한다.
 
 ### Prerequisites
 

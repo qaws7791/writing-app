@@ -118,6 +118,17 @@ bun run --filter=@workspace/web test
 - 테스트 double은 예상하지 않은 service 호출을 실패시키는 형태를 선호한다.
 - 외부 provider 호출은 테스트에서 직접 수행하지 않는다.
 
+## 로컬 브라우저 자동 인증
+
+AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없으므로 로컬 자동화는 테스트 전용 학습자 인증 경로를 사용한다.
+
+- `apps/api`와 `apps/web`에 모두 `ENABLE_TEST_AUTH=true`를 명시한 로컬 dev server에서만 사용한다.
+- `NODE_ENV=production`에서는 플래그가 `true`여도 API endpoint와 웹 버튼이 활성화되지 않는다.
+- 웹 로그인 화면은 테스트 로그인 버튼을 노출하고, 버튼은 `GET /api/auth/test/sign-in?callbackURL=...`로 브라우저를 이동시킨다.
+- API는 기본 학습자 `learner@example.com`을 찾거나 생성하고 Google account row를 연결한 뒤 `learner_session_token` 세션 쿠키를 발급한다.
+- callback URL은 학습자 웹 origin 내부 URL만 허용하며, 외부 URL은 `/app`으로 되돌린다.
+- 이 경로는 로컬 smoke와 E2E 자동화를 위한 것이다. 제품 테스트에서는 Google OAuth 자체를 검증하지 않고, 인증 이후의 보호 route와 사용자 흐름을 검증한다.
+
 ## 실패 대응
 
 - 실패를 우회하기 위한 조건문을 제품 코드에 추가하지 않는다.

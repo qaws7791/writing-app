@@ -20,6 +20,7 @@
 - `BETTER_AUTH_SECRET`은 32자 이상 랜덤 문자열이어야 한다.
 - 웹과 API가 다른 서브도메인에 있으면 `BETTER_AUTH_COOKIE_DOMAIN`을 명시한다.
 - API는 `WEB_ORIGIN`을 trusted origin/CORS 기준으로 사용한다.
+- 로컬 자동화용 `ENABLE_TEST_AUTH`는 non-production에서만 동작하며, 운영 인증 경로로 사용하지 않는다.
 
 ### 관리자
 

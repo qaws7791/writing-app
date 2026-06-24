@@ -15,6 +15,7 @@ export type ApiEnv = {
   readonly openAiApiKey: string | undefined
   readonly openAiModel: string
   readonly port: number
+  readonly testAuthEnabled: boolean
   readonly webOrigin: string
 }
 
@@ -36,6 +37,7 @@ export function parseApiEnv(input: AppEnvInput): ApiEnv {
     openAiApiKey: env.OPENAI_API_KEY,
     openAiModel: env.OPENAI_MODEL,
     port: env.API_PORT,
+    testAuthEnabled: env.NODE_ENV !== "production" && env.ENABLE_TEST_AUTH,
     webOrigin: env.WEB_ORIGIN,
   }
 }

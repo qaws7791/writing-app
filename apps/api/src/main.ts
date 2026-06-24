@@ -20,6 +20,7 @@ const core = createLearnerApiCore({
   googleClientSecret: env.googleClientSecret,
   openAiApiKey: env.openAiApiKey,
   openAiModel: env.openAiModel,
+  testAuthEnabled: env.testAuthEnabled,
   webOrigin: env.webOrigin,
 })
 const app = createApp({

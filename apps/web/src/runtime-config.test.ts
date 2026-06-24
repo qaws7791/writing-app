@@ -7,6 +7,7 @@ import {
   buildApiUrl,
   readBrowserApiBaseUrl,
   readServerApiBaseUrl,
+  readTestAuthEnabled,
 } from "@/runtime-config"
 
 describe("web runtime config", () => {
@@ -46,7 +47,23 @@ describe("web runtime config", () => {
     ).toBe("https://api.example.test/profile")
   })
 
-  it("runtime config 밖의 실행 코드가 API base URL env를 직접 읽지 않는다", () => {
+  it("테스트 인증 플래그는 로컬에서 명시적으로 켠 경우에만 활성화한다", () => {
+    expect(readTestAuthEnabled({})).toBe(false)
+    expect(
+      readTestAuthEnabled({
+        ENABLE_TEST_AUTH: "true",
+        NODE_ENV: "development",
+      })
+    ).toBe(true)
+    expect(
+      readTestAuthEnabled({
+        ENABLE_TEST_AUTH: "true",
+        NODE_ENV: "production",
+      })
+    ).toBe(false)
+  })
+
+  it("runtime config 밖의 실행 코드가 runtime env를 직접 읽지 않는다", () => {
     const offenders = findRuntimeSourceFiles().filter((filePath) => {
       if (filePath.endsWith("runtime-config.ts")) {
         return false
@@ -54,7 +71,7 @@ describe("web runtime config", () => {
 
       const source = readFileSync(filePath, "utf8")
 
-      return /process\.env(?:\[['"](?:NEXT_PUBLIC_API_BASE_URL|WEB_API_BASE_URL)['"]\]|\.(?:NEXT_PUBLIC_API_BASE_URL|WEB_API_BASE_URL))/.test(
+      return /process\.env(?:\[['"](?:NEXT_PUBLIC_API_BASE_URL|WEB_API_BASE_URL|ENABLE_TEST_AUTH)['"]\]|\.(?:NEXT_PUBLIC_API_BASE_URL|WEB_API_BASE_URL|ENABLE_TEST_AUTH))/.test(
         source
       )
     })

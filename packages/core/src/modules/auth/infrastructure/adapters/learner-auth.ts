@@ -8,6 +8,10 @@ import {
   createLearnerOnboardingService,
   type LearnerProfileRepository,
 } from "@workspace/core/modules/auth/application/use-cases/learner-onboarding"
+import {
+  createLearnerTestAuthPlugin,
+  defaultLearnerTestAuthUser,
+} from "@workspace/core/modules/auth/infrastructure/adapters/learner-test-auth-plugin"
 import type { SessionResolver } from "@workspace/core/modules/auth/domain/learner-session"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
@@ -25,6 +29,7 @@ export type CreateLearnerAuthInput = {
   readonly googleClientId?: string
   readonly googleClientSecret?: string
   readonly secret: string
+  readonly testAuthEnabled?: boolean
   readonly webOrigin: string
 }
 
@@ -52,6 +57,15 @@ export function createLearnerAuth(input: CreateLearnerAuthInput) {
     databaseHooks: createLearnerAuthHooks({
       onboardingService: learnerOnboardingService,
     }),
+    plugins:
+      input.testAuthEnabled === true
+        ? [
+            createLearnerTestAuthPlugin({
+              callbackOrigin: input.webOrigin,
+              user: defaultLearnerTestAuthUser,
+            }),
+          ]
+        : [],
     secret: input.secret,
     socialProviders:
       input.googleClientId === undefined ||

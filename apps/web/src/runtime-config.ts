@@ -33,6 +33,10 @@ export function readServerApiBaseUrl(
   ) as ServerApiBaseUrl
 }
 
+export function readTestAuthEnabled(env: WebRuntimeEnv = process.env): boolean {
+  return env["NODE_ENV"] !== "production" && env["ENABLE_TEST_AUTH"] === "true"
+}
+
 export function buildApiUrl(
   apiBaseUrl: BrowserApiBaseUrl | ServerApiBaseUrl,
   path: string

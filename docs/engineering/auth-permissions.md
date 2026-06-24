@@ -67,6 +67,8 @@ unknown role은 관리자 세션 resolver에서 유효하지 않은 세션으로
 
 - 인증 처리는 Better Auth handler가 `/api/auth/*`에서 담당한다.
 - Google 로그인 시작은 웹 클라이언트가 학습자 API base URL의 Better Auth endpoint를 직접 호출한다.
+- 로컬 자동화용 테스트 로그인은 `ENABLE_TEST_AUTH=true`와 non-production 환경에서만 `/api/auth/test/sign-in`을 연다.
+- 테스트 로그인은 기본 학습자와 Google account row를 보장한 뒤 실제 학습자와 같은 `learner_session_token` Better Auth 세션 쿠키를 발급한다.
 - 보호 route는 `requireActiveSession` middleware를 사용한다.
 - 브라우저 JavaScript가 세션 쿠키를 읽어 Bearer token으로 변환하지 않는다.
 

@@ -45,6 +45,7 @@ export type CreateLearnerApiCoreInput = {
   readonly googleClientSecret?: string
   readonly openAiApiKey?: string
   readonly openAiModel: string
+  readonly testAuthEnabled?: boolean
   readonly webOrigin: string
 }
 
@@ -74,6 +75,7 @@ export function createLearnerApiCore(
     googleClientId: input.googleClientId,
     googleClientSecret: input.googleClientSecret,
     secret: input.betterAuthSecret,
+    testAuthEnabled: input.testAuthEnabled,
     webOrigin: input.webOrigin,
   })
   const provider =

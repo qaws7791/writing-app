@@ -42,11 +42,26 @@ describe("env parser", () => {
       DATABASE_URL: ":memory:",
       GOOGLE_CLIENT_ID: undefined,
       GOOGLE_CLIENT_SECRET: undefined,
+      ENABLE_TEST_AUTH: false,
       NODE_ENV: "test",
       OPENAI_API_KEY: undefined,
       OPENAI_MODEL: "gpt-5.2",
       WEB_ORIGIN: localRuntimeDefaults.learnerWebOrigin,
     })
+  })
+
+  it("테스트 인증 플래그는 명시적으로 true일 때만 켜진다", () => {
+    expect(
+      parseEnv({
+        BETTER_AUTH_SECRET: validSecret,
+        ENABLE_TEST_AUTH: "true",
+      }).ENABLE_TEST_AUTH
+    ).toBe(true)
+    expect(
+      parseEnv({
+        BETTER_AUTH_SECRET: validSecret,
+      }).ENABLE_TEST_AUTH
+    ).toBe(false)
   })
 
   it("DATABASE_URL이 없으면 DB client 기본 경로를 사용하도록 비워 둔다", () => {

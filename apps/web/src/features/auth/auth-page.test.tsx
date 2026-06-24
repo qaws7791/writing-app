@@ -7,15 +7,18 @@ import { resolveSafeNextPath } from "@/lib/auth/auth-navigation"
 
 const authClientMocks = vi.hoisted(() => ({
   requestGoogleLogin: vi.fn(),
+  requestTestLogin: vi.fn(),
 }))
 
 vi.mock("@/lib/auth/auth-client", () => ({
   requestGoogleLogin: authClientMocks.requestGoogleLogin,
+  requestTestLogin: authClientMocks.requestTestLogin,
 }))
 
 describe("로그인 페이지", () => {
   beforeEach(() => {
     authClientMocks.requestGoogleLogin.mockClear()
+    authClientMocks.requestTestLogin.mockClear()
   })
 
   it("현재 제품 로그인 화면과 같은 문구, 구조, Google 버튼을 렌더링한다", async () => {
@@ -39,9 +42,29 @@ describe("로그인 페이지", () => {
     expect(googleLogin).toHaveClass(
       "w-full bg-ink text-white font-bold py-5 rounded-4xl btn-squish flex items-center justify-center gap-3"
     )
+    expect(
+      screen.queryByRole("button", {
+        name: "테스트 계정으로 계속하기",
+      })
+    ).not.toBeInTheDocument()
 
     await user.click(googleLogin)
     expect(authClientMocks.requestGoogleLogin).toHaveBeenCalledWith(
+      "/app/courses"
+    )
+  })
+
+  it("로컬 테스트 인증이 켜진 경우 테스트 계정 로그인 버튼을 제공한다", async () => {
+    const user = userEvent.setup()
+    render(<AuthPage nextPath="/app/courses" testAuthEnabled />)
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "테스트 계정으로 계속하기",
+      })
+    )
+
+    expect(authClientMocks.requestTestLogin).toHaveBeenCalledWith(
       "/app/courses"
     )
   })

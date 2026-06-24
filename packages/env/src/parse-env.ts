@@ -9,6 +9,10 @@ const nodeEnvSchema = z
   .enum(["development", "test", "production"])
   .default("development")
 const portSchema = z.coerce.number().int().min(1).max(65535)
+const booleanFlagSchema = z
+  .enum(["true", "false"])
+  .default("false")
+  .transform((value) => value === "true")
 
 export const appEnvSchema = z.object({
   ADMIN_API_PORT: portSchema.default(localRuntimePorts.adminApi),
@@ -21,6 +25,7 @@ export const appEnvSchema = z.object({
   DATABASE_URL: z.string().min(1).optional(),
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+  ENABLE_TEST_AUTH: booleanFlagSchema,
   NODE_ENV: nodeEnvSchema,
   OPENAI_API_KEY: z.string().min(1).optional(),
   OPENAI_MODEL: z.string().min(1).default("gpt-5.2"),
