@@ -12,6 +12,8 @@ export type AdminUserOperationalStatus = "active" | "suspended"
 export type AdminUserSort = "joined" | "lastActive" | "lessonsDone" | "streak"
 export type AdminUserStatus = AdminUserOperationalStatus | "deleted"
 export type AdminUserListStatusFilter = "all" | AdminUserStatus
+export type AdminResourceDocumentStatusFilter = "all" | AdminCourseStatus
+export type AdminAiChatMessageRole = "assistant" | "user"
 
 export type AdminPagination = {
   readonly page: number
@@ -161,6 +163,30 @@ export type AdminArchiveCourseResult = {
   readonly archived: true
 }
 
+export type AdminAiChatMessage = {
+  readonly content: string
+  readonly createdAt: string
+  readonly id: string
+  readonly role: AdminAiChatMessageRole
+}
+
+export type AdminAiChatConversation = {
+  readonly createdAt: string
+  readonly id: string
+  readonly messageCount: number
+  readonly title: string
+  readonly updatedAt: string
+}
+
+export type AdminAiChatConversationList = {
+  readonly items: readonly AdminAiChatConversation[]
+}
+
+export type AdminAiChatConversationDetail = {
+  readonly conversation: AdminAiChatConversation
+  readonly messages: readonly AdminAiChatMessage[]
+}
+
 export type AdminCourseListItem = {
   readonly category: string
   readonly id: string
@@ -169,11 +195,66 @@ export type AdminCourseListItem = {
   readonly status: AdminCourseStatus
   readonly title: string
   readonly unitCount: number
+  readonly visualKey:
+    | "basic-sentence-writing"
+    | "creative-writing"
+    | "essay-writing"
+    | "expression"
+    | "grammar-complete"
 }
 
 export type AdminCourseList = {
   readonly items: readonly AdminCourseListItem[]
   readonly pagination: AdminPagination
+}
+
+export type AdminTiptapDocument = {
+  readonly content: readonly {
+    readonly content?: readonly {
+      readonly text: string
+      readonly type: "text"
+    }[]
+    readonly type: "paragraph"
+  }[]
+  readonly type: "doc"
+}
+
+export type AdminResourceDocumentAuthor = {
+  readonly email: string
+  readonly id: string
+  readonly name: string
+}
+
+export type AdminResourceDocumentListItem = {
+  readonly author: AdminResourceDocumentAuthor
+  readonly createdAt: string
+  readonly excerpt: string
+  readonly id: string
+  readonly status: AdminCourseStatus
+  readonly title: string
+  readonly updatedAt: string
+}
+
+export type AdminResourceDocumentDetail = AdminResourceDocumentListItem & {
+  readonly content: AdminTiptapDocument
+}
+
+export type AdminResourceDocumentList = {
+  readonly items: readonly AdminResourceDocumentListItem[]
+  readonly pagination: AdminPagination
+}
+
+export type AdminResourceDocumentInput = {
+  readonly content: AdminTiptapDocument
+  readonly title: string
+}
+
+export type AdminArchiveResourceDocumentResult = {
+  readonly archived: true
+}
+
+export type AdminDeleteResourceDocumentResult = {
+  readonly deleted: true
 }
 
 export type ReadAdminCoursesInput = {
@@ -190,6 +271,13 @@ export type ReadAdminUsersInput = {
   readonly query: string
   readonly sort: AdminUserSort
   readonly status: AdminUserListStatusFilter
+}
+
+export type ReadAdminResourcesInput = {
+  readonly page: number
+  readonly pageSize: number
+  readonly query: string
+  readonly status: AdminResourceDocumentStatusFilter
 }
 
 export type ReadAdminAnalyticsInput = {
@@ -213,13 +301,28 @@ export type AdminApi = {
   readonly archiveCourse: (
     courseId: string
   ) => Promise<AdminApiResult<AdminArchiveCourseResult>>
+  readonly archiveResourceDocument: (
+    documentId: string
+  ) => Promise<AdminApiResult<AdminArchiveResourceDocumentResult>>
+  readonly createResourceDocument: (
+    input: AdminResourceDocumentInput
+  ) => Promise<AdminApiResult<AdminResourceDocumentDetail>>
   readonly createCourse: () => Promise<AdminApiResult<AdminCourseDetail>>
+  readonly deleteResourceDocument: (
+    documentId: string
+  ) => Promise<AdminApiResult<AdminDeleteResourceDocumentResult>>
   readonly deleteUser: (
     userId: string
   ) => Promise<AdminApiResult<AdminDeleteUserResult>>
   readonly getAnalytics: (
     input: ReadAdminAnalyticsInput
   ) => Promise<AdminApiResult<AdminAnalytics>>
+  readonly getAiChatConversation: (
+    conversationId: string
+  ) => Promise<AdminApiResult<AdminAiChatConversationDetail>>
+  readonly getAiChatConversations: () => Promise<
+    AdminApiResult<AdminAiChatConversationList>
+  >
   readonly getCourses: (
     input: ReadAdminCoursesInput
   ) => Promise<AdminApiResult<AdminCourseList>>
@@ -230,6 +333,12 @@ export type AdminApi = {
   readonly getLessonAnalytics: (
     input: ReadAdminLessonAnalyticsInput
   ) => Promise<AdminApiResult<AdminLessonAnalyticsPage>>
+  readonly getResourceDocument: (
+    documentId: string
+  ) => Promise<AdminApiResult<AdminResourceDocumentDetail>>
+  readonly getResourceDocuments: (
+    input: ReadAdminResourcesInput
+  ) => Promise<AdminApiResult<AdminResourceDocumentList>>
   readonly getSettings: () => Promise<AdminApiResult<AdminSettings>>
   readonly getUser: (userId: string) => Promise<AdminApiResult<AdminUserDetail>>
   readonly getUsers: (
@@ -245,4 +354,8 @@ export type AdminApi = {
   readonly updateUserStatus: (
     input: UpdateAdminUserStatusInput
   ) => Promise<AdminApiResult<AdminUserDetail>>
+  readonly updateResourceDocument: (
+    documentId: string,
+    input: AdminResourceDocumentInput
+  ) => Promise<AdminApiResult<AdminResourceDocumentDetail>>
 }

@@ -370,6 +370,7 @@ function responseFor(request: Request): unknown {
           status: "active",
           title: "글쓰기 첫걸음 30일",
           unitCount: 3,
+          visualKey: "basic-sentence-writing",
         },
       ],
       pagination: {

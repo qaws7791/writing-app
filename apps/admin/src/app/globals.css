@@ -443,6 +443,33 @@ a {
   font-weight: 750;
 }
 
+.admin-course-title-cell {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.admin-course-title-cell > div:last-child {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-course-thumbnail {
+  position: relative;
+  width: 64px;
+  height: 42px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 1px solid #e5ebf1;
+  border-radius: 8px;
+  background: #f1f5f9;
+}
+
+.admin-course-thumbnail img {
+  object-fit: cover;
+}
+
 .admin-status-pill {
   display: inline-flex;
   min-height: 24px;
@@ -495,6 +522,211 @@ a {
 .admin-row-actions {
   display: flex;
   gap: 8px;
+}
+
+.admin-resource-create-panel {
+  margin-bottom: 14px;
+}
+
+.admin-resource-form {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-resource-form .admin-primary-button,
+.admin-resource-form .admin-secondary-button,
+.admin-resource-form .admin-danger-button {
+  width: fit-content;
+}
+
+.admin-resource-form textarea {
+  min-height: 220px;
+}
+
+.admin-resource-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-resource-list-item {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e5ebf1;
+  border-radius: 8px;
+  background: #fbfcfe;
+  padding: 12px;
+}
+
+.admin-resource-list-item:hover {
+  border-color: #99f6e4;
+  background: #f0fdfa;
+}
+
+.admin-resource-list-item__icon {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.admin-resource-list-item span:nth-child(2) {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-resource-list-item strong {
+  color: #0f172a;
+  font-size: 15px;
+}
+
+.admin-resource-list-item small,
+.admin-resource-list-item em {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 13px;
+  font-style: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-chat-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.28fr) minmax(0, 0.72fr);
+  gap: 16px;
+  min-height: calc(100vh - 120px);
+}
+
+.admin-chat-sidebar-panel {
+  align-content: start;
+}
+
+.admin-chat-conversation-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.admin-chat-conversation {
+  display: grid;
+  gap: 4px;
+  border: 1px solid #e5ebf1;
+  border-radius: 8px;
+  background: #fbfcfe;
+  padding: 10px 12px;
+}
+
+.admin-chat-conversation.is-active {
+  border-color: #5eead4;
+  background: #f0fdfa;
+}
+
+.admin-chat-conversation strong {
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-chat-conversation span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.admin-chat-panel {
+  display: grid;
+  grid-template-rows: auto minmax(320px, 1fr) auto;
+  gap: 14px;
+}
+
+.admin-chat-panel .admin-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-chat-messages {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.admin-chat-empty {
+  display: grid;
+  place-items: center;
+  gap: 8px;
+  min-height: 260px;
+  color: #64748b;
+  text-align: center;
+}
+
+.admin-chat-empty strong {
+  color: #172033;
+}
+
+.admin-chat-message {
+  display: grid;
+  gap: 5px;
+  max-width: 78%;
+}
+
+.admin-chat-message span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.admin-chat-message p {
+  margin: 0;
+  border-radius: 8px;
+  color: #172033;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  padding: 10px 12px;
+}
+
+.admin-chat-message.is-user {
+  justify-self: end;
+}
+
+.admin-chat-message.is-user span {
+  text-align: right;
+}
+
+.admin-chat-message.is-user p {
+  background: #ccfbf1;
+}
+
+.admin-chat-message.is-assistant p {
+  background: #f1f5f9;
+}
+
+.admin-chat-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.admin-chat-form textarea {
+  width: 100%;
+  min-height: 72px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  color: #172033;
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+  padding: 10px;
 }
 
 .user-detail-panel {
@@ -866,7 +1098,18 @@ a {
   .course-editor-form-grid,
   .user-detail-panel dl,
   .analytics-grid,
-  .settings-grid {
+  .settings-grid,
+  .admin-chat-layout,
+  .admin-chat-form {
     grid-template-columns: 1fr;
+  }
+
+  .admin-resource-list-item {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
+
+  .admin-resource-list-item .admin-status-pill {
+    grid-column: 2;
+    width: fit-content;
   }
 }

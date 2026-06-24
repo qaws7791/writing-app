@@ -1,6 +1,8 @@
 import {
   BarChart3,
   BookOpen,
+  Bot,
+  FolderOpen,
   LayoutDashboard,
   Settings,
   Users,
@@ -29,6 +31,16 @@ const navigationItems = [
     href: "/analytics",
     icon: BarChart3,
     label: "분석",
+  },
+  {
+    href: "/resources",
+    icon: FolderOpen,
+    label: "자료실",
+  },
+  {
+    href: "/chat",
+    icon: Bot,
+    label: "AI 채팅",
   },
   {
     href: "/settings",

@@ -13,6 +13,11 @@ import { buildAdminApiUrl, type AdminApiBaseUrl } from "@/runtime-config"
 import type {
   AdminAnalytics,
   AdminApi,
+  AdminAiChatConversation,
+  AdminAiChatConversationDetail,
+  AdminAiChatConversationList,
+  AdminAiChatMessage,
+  AdminArchiveResourceDocumentResult,
   AdminArchiveCourseResult,
   AdminContentResetResult,
   AdminCourseDetail,
@@ -23,41 +28,60 @@ import type {
   AdminCourseUnit,
   AdminDashboard,
   AdminDeleteUserResult,
+  AdminDeleteResourceDocumentResult,
   AdminLessonAnalyticsItem,
   AdminLessonAnalyticsPage,
   AdminPagination,
+  AdminResourceDocumentDetail,
+  AdminResourceDocumentList,
+  AdminResourceDocumentListItem,
   AdminSettings,
+  AdminTiptapDocument,
   AdminUserDetail,
   AdminUserList,
   AdminUserListItem,
   ReadAdminAnalyticsInput,
   ReadAdminCoursesInput,
   ReadAdminLessonAnalyticsInput,
+  ReadAdminResourcesInput,
   ReadAdminUsersInput,
   UpdateAdminUserStatusInput,
 } from "@/lib/api/admin-api"
 import type {
   AdminAnalyticsDto,
+  AdminAiChatConversationDetailDto,
+  AdminAiChatConversationDto,
+  AdminAiChatConversationListDto,
+  AdminArchiveResourceDocumentResultDto,
   AdminArchiveCourseResultDto,
   AdminContentResetResultDto,
   AdminCourseDetailDto,
   AdminCourseListDto,
   AdminDashboardDto,
+  AdminDeleteResourceDocumentResultDto,
   AdminDeleteUserResultDto,
   AdminLessonAnalyticsPageDto,
+  AdminResourceDocumentDetailDto,
+  AdminResourceDocumentListDto,
   AdminSettingsDto,
   AdminUserDetailDto,
   AdminUserListDto,
 } from "@workspace/contracts/admin"
 import {
   adminAnalyticsDtoSchema,
+  adminAiChatConversationDetailDtoSchema,
+  adminAiChatConversationListDtoSchema,
+  adminArchiveResourceDocumentResultSchema,
   adminArchiveCourseResultSchema,
   adminContentResetResultSchema,
   adminCourseDetailDtoSchema,
   adminCourseListDtoSchema,
   adminDashboardDtoSchema,
+  adminDeleteResourceDocumentResultSchema,
   adminDeleteUserResultSchema,
   adminLessonAnalyticsPageDtoSchema,
+  adminResourceDocumentDetailDtoSchema,
+  adminResourceDocumentListDtoSchema,
   adminSettingsDtoSchema,
   adminUserDetailDtoSchema,
   adminUserListDtoSchema,
@@ -111,12 +135,37 @@ export function createHttpAdminApi({
         toModel: toAdminArchiveCourseResult,
       })
     },
+    archiveResourceDocument(documentId) {
+      return requestAdminJson(client, {
+        method: "PATCH",
+        path: `/resources/${documentId}/archive`,
+        schema: adminArchiveResourceDocumentResultSchema,
+        toModel: toAdminArchiveResourceDocumentResult,
+      })
+    },
     createCourse() {
       return requestAdminJson(client, {
         method: "POST",
         path: "/courses",
         schema: adminCourseDetailDtoSchema,
         toModel: toAdminCourseDetail,
+      })
+    },
+    createResourceDocument(input) {
+      return requestAdminJson(client, {
+        body: input,
+        method: "POST",
+        path: "/resources",
+        schema: adminResourceDocumentDetailDtoSchema,
+        toModel: toAdminResourceDocumentDetail,
+      })
+    },
+    deleteResourceDocument(documentId) {
+      return requestAdminJson(client, {
+        method: "DELETE",
+        path: `/resources/${documentId}`,
+        schema: adminDeleteResourceDocumentResultSchema,
+        toModel: toAdminDeleteResourceDocumentResult,
       })
     },
     deleteUser(userId) {
@@ -133,6 +182,22 @@ export function createHttpAdminApi({
         path: `/analytics?${analyticsSearchParams(input)}`,
         schema: adminAnalyticsDtoSchema,
         toModel: toAdminAnalytics,
+      })
+    },
+    getAiChatConversation(conversationId) {
+      return requestAdminJson(client, {
+        method: "GET",
+        path: `/ai-chat/conversations/${conversationId}`,
+        schema: adminAiChatConversationDetailDtoSchema,
+        toModel: toAdminAiChatConversationDetail,
+      })
+    },
+    getAiChatConversations() {
+      return requestAdminJson(client, {
+        method: "GET",
+        path: "/ai-chat/conversations",
+        schema: adminAiChatConversationListDtoSchema,
+        toModel: toAdminAiChatConversationList,
       })
     },
     getCourses(input) {
@@ -165,6 +230,22 @@ export function createHttpAdminApi({
         path: `/analytics/lessons?${lessonAnalyticsSearchParams(input)}`,
         schema: adminLessonAnalyticsPageDtoSchema,
         toModel: toAdminLessonAnalyticsPage,
+      })
+    },
+    getResourceDocument(documentId) {
+      return requestAdminJson(client, {
+        method: "GET",
+        path: `/resources/${documentId}`,
+        schema: adminResourceDocumentDetailDtoSchema,
+        toModel: toAdminResourceDocumentDetail,
+      })
+    },
+    getResourceDocuments(input) {
+      return requestAdminJson(client, {
+        method: "GET",
+        path: `/resources?${resourcesSearchParams(input)}`,
+        schema: adminResourceDocumentListDtoSchema,
+        toModel: toAdminResourceDocumentList,
       })
     },
     getSettings() {
@@ -229,6 +310,15 @@ export function createHttpAdminApi({
         toModel: toAdminUserDetail,
       })
     },
+    updateResourceDocument(documentId, input) {
+      return requestAdminJson(client, {
+        body: input,
+        method: "PUT",
+        path: `/resources/${documentId}`,
+        schema: adminResourceDocumentDetailDtoSchema,
+        toModel: toAdminResourceDocumentDetail,
+      })
+    },
   }
 }
 
@@ -264,11 +354,15 @@ async function requestAdminJson<TWire, TModel>(
 }
 
 type AdminUserListItemDto = AdminUserListDto["items"][number]
+type AdminAiChatMessageDto =
+  AdminAiChatConversationDetailDto["messages"][number]
 type AdminLessonAnalyticsItemDto = AdminAnalyticsDto["worstLessons"][number]
 type AdminCourseListItemDto = AdminCourseListDto["items"][number]
 type AdminCourseUnitDto = AdminCourseDetailDto["units"][number]
 type AdminCourseLessonDto = AdminCourseUnitDto["lessons"][number]
 type AdminCourseStepDto = AdminCourseLessonDto["steps"][number]
+type AdminResourceDocumentListItemDto =
+  AdminResourceDocumentListDto["items"][number]
 
 function toAdminDashboard(dto: AdminDashboardDto): AdminDashboard {
   return {
@@ -316,6 +410,44 @@ function toAdminUserDetail(dto: AdminUserDetailDto): AdminUserDetail {
     ...toAdminUserListItem(dto),
     progressPercent: dto.progressPercent,
     totalLessons: dto.totalLessons,
+  }
+}
+
+function toAdminAiChatConversationList(
+  dto: AdminAiChatConversationListDto
+): AdminAiChatConversationList {
+  return {
+    items: dto.items.map(toAdminAiChatConversation),
+  }
+}
+
+function toAdminAiChatConversationDetail(
+  dto: AdminAiChatConversationDetailDto
+): AdminAiChatConversationDetail {
+  return {
+    conversation: toAdminAiChatConversation(dto.conversation),
+    messages: dto.messages.map(toAdminAiChatMessage),
+  }
+}
+
+function toAdminAiChatConversation(
+  dto: AdminAiChatConversationDto
+): AdminAiChatConversation {
+  return {
+    createdAt: dto.createdAt,
+    id: dto.id,
+    messageCount: dto.messageCount,
+    title: dto.title,
+    updatedAt: dto.updatedAt,
+  }
+}
+
+function toAdminAiChatMessage(dto: AdminAiChatMessageDto): AdminAiChatMessage {
+  return {
+    content: dto.content,
+    createdAt: dto.createdAt,
+    id: dto.id,
+    role: dto.role,
   }
 }
 
@@ -458,6 +590,74 @@ function toAdminCourseListItem(
     status: dto.status,
     title: dto.title,
     unitCount: dto.unitCount,
+    visualKey: dto.visualKey,
+  }
+}
+
+function toAdminResourceDocumentList(
+  dto: AdminResourceDocumentListDto
+): AdminResourceDocumentList {
+  return {
+    items: dto.items.map(toAdminResourceDocumentListItem),
+    pagination: toAdminPagination(dto.pagination),
+  }
+}
+
+function toAdminResourceDocumentListItem(
+  dto: AdminResourceDocumentListItemDto
+): AdminResourceDocumentListItem {
+  return {
+    author: {
+      email: dto.author.email,
+      id: dto.author.id,
+      name: dto.author.name,
+    },
+    createdAt: dto.createdAt,
+    excerpt: dto.excerpt,
+    id: dto.id,
+    status: dto.status,
+    title: dto.title,
+    updatedAt: dto.updatedAt,
+  }
+}
+
+function toAdminResourceDocumentDetail(
+  dto: AdminResourceDocumentDetailDto
+): AdminResourceDocumentDetail {
+  return {
+    ...toAdminResourceDocumentListItem(dto),
+    content: toAdminTiptapDocument(dto.content),
+  }
+}
+
+function toAdminTiptapDocument(
+  dto: AdminResourceDocumentDetailDto["content"]
+): AdminTiptapDocument {
+  return {
+    content: dto.content.map((node) => ({
+      content: node.content?.map((child) => ({
+        text: child.text,
+        type: child.type,
+      })),
+      type: node.type,
+    })),
+    type: dto.type,
+  }
+}
+
+function toAdminArchiveResourceDocumentResult(
+  dto: AdminArchiveResourceDocumentResultDto
+): AdminArchiveResourceDocumentResult {
+  return {
+    archived: dto.archived,
+  }
+}
+
+function toAdminDeleteResourceDocumentResult(
+  dto: AdminDeleteResourceDocumentResultDto
+): AdminDeleteResourceDocumentResult {
+  return {
+    deleted: dto.deleted,
   }
 }
 
@@ -619,6 +819,17 @@ function usersSearchParams(input: ReadAdminUsersInput): string {
   params.set("pageSize", String(input.pageSize))
   params.set("query", input.query)
   params.set("sort", input.sort)
+  params.set("status", input.status)
+
+  return params.toString()
+}
+
+function resourcesSearchParams(input: ReadAdminResourcesInput): string {
+  const params = new URLSearchParams()
+
+  params.set("page", String(input.page))
+  params.set("pageSize", String(input.pageSize))
+  params.set("query", input.query)
   params.set("status", input.status)
 
   return params.toString()
