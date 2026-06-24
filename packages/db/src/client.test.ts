@@ -87,6 +87,9 @@ describe("Writing App DB client", () => {
       expect(tableNames).toEqual([
         "account",
         "admin_account",
+        "admin_ai_chat_conversations",
+        "admin_ai_chat_messages",
+        "admin_resource_documents",
         "admin_session",
         "admin_settings",
         "admin_user",

@@ -5,18 +5,22 @@ import { createApp as createHonoApp } from "@workspace/hono/core"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { createOpenApiDocument } from "@/http/openapi"
+import { createAiChatRoutes } from "@/routes/ai-chat.route"
 import { createAnalyticsRoutes } from "@/routes/analytics.route"
 import { createCoursesRoutes } from "@/routes/courses.route"
 import { createCurriculumEditorRoutes } from "@/routes/curriculum-editor.route"
 import { createDashboardRoutes } from "@/routes/dashboard.route"
 import { healthRoute } from "@/routes/health.route"
+import { createResourcesRoutes } from "@/routes/resources.route"
 import { createSettingsRoutes } from "@/routes/settings.route"
 import { createUsersRoutes } from "@/routes/users.route"
 import type {
+  AdminAiChatUseCase,
   AdminAnalyticsUseCase,
   AdminContentResetUseCase,
   AdminCourseUseCase,
   AdminDashboardUseCase,
+  AdminResourceUseCase,
   AdminSettingsUseCase,
   AdminUserUseCase,
 } from "@workspace/core/admin"
@@ -26,17 +30,21 @@ import {
   type RequestLogger,
   type RequestLoggingRuntime,
 } from "@workspace/logger"
+import type { AdminAiChatAgent } from "@/mastra/admin-content-agent"
 
 export type AdminApiServices = {
+  readonly aiChat: AdminAiChatUseCase
   readonly analytics: AdminAnalyticsUseCase
   readonly contentReset: AdminContentResetUseCase
   readonly courses: AdminCourseUseCase
   readonly dashboard: AdminDashboardUseCase
+  readonly resources: AdminResourceUseCase
   readonly settings: AdminSettingsUseCase
   readonly users: AdminUserUseCase
 }
 
 export type AdminApiDependencies = {
+  readonly aiChatAgent?: AdminAiChatAgent
   readonly adminServices: AdminApiServices
   readonly adminOrigin?: string
   readonly authHandler?: (request: Request) => Promise<Response>
@@ -52,6 +60,12 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
     middleware: createMiddleware(dependencies),
     routes: [
       healthRoute,
+      ...createAiChatRoutes({
+        aiChatAgent: dependencies.aiChatAgent,
+        aiChatService: dependencies.adminServices.aiChat,
+        now,
+        sessionResolver: dependencies.sessionResolver,
+      }),
       ...createDashboardRoutes({
         dashboardService: dependencies.adminServices.dashboard,
         now,
@@ -74,6 +88,11 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
       ...createUsersRoutes({
         userService: dependencies.adminServices.users,
         now,
+        sessionResolver: dependencies.sessionResolver,
+      }),
+      ...createResourcesRoutes({
+        now,
+        resourceService: dependencies.adminServices.resources,
         sessionResolver: dependencies.sessionResolver,
       }),
       ...createSettingsRoutes({

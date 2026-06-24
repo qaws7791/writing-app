@@ -340,6 +340,7 @@ describe("어드민 DB repository", () => {
             status: "active",
             title: "활성 코스",
             unitCount: 1,
+            visualKey: "basic-sentence-writing",
           },
         ],
         pagination: {
@@ -368,6 +369,7 @@ describe("어드민 DB repository", () => {
             status: "active",
             title: "활성 코스",
             unitCount: 1,
+            visualKey: "basic-sentence-writing",
           },
         ],
         pagination: {

@@ -20,6 +20,7 @@
   },
   "scripts": {
     "lint": "oxlint .",
+    "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -27,6 +28,8 @@
   },
   "devDependencies": {
     "@workspace/config": "workspace:*",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.0"
   }
 }

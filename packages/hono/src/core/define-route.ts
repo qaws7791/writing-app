@@ -20,7 +20,7 @@ export function defineRoute<E extends Env>(
 
 export function defineRoute(
   config: AnyRouteConfig & {
-    handler: RouteHandler<AnyRouteConfig, Env>
+    handler: unknown
   }
 ): DefinedRoute {
   const { handler, ...routeConfig } = config
@@ -31,7 +31,7 @@ export function defineRoute(
 
   return defineOpenAPIRoute({
     route,
-    handler,
+    handler: handler as RouteHandler<AnyRouteConfig, Env>,
   } as DefinedRoute)
 }
 

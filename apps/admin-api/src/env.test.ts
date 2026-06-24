@@ -20,6 +20,8 @@ describe("어드민 API env", () => {
       cookieDomain: undefined,
       databaseUrl: ":memory:",
       nodeEnv: "test",
+      openAiApiKey: undefined,
+      openAiModel: "gpt-5.2",
       port: 4102,
     })
   })
@@ -40,6 +42,8 @@ describe("어드민 API env", () => {
       cookieDomain: undefined,
       databaseUrl: ":memory:",
       nodeEnv: "test",
+      openAiApiKey: undefined,
+      openAiModel: "gpt-5.2",
       port: localRuntimePorts.adminApi,
     })
   })

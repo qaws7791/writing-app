@@ -58,12 +58,25 @@ export function jsonRequestBody<const TSchema extends z.ZodType>(
   }
 }
 
+export function eventStreamResponse(description: string) {
+  return {
+    content: {
+      "text/event-stream": {
+        schema: z.string(),
+      },
+    },
+    description,
+  }
+}
+
 export function errorJsonResponse(description: string) {
   return jsonResponse(description, ErrorResponseSchema)
 }
 
 export function adminAuthenticatedResponses(
-  successResponse: ReturnType<typeof jsonResponse>
+  successResponse:
+    | ReturnType<typeof eventStreamResponse>
+    | ReturnType<typeof jsonResponse>
 ) {
   return {
     200: successResponse,

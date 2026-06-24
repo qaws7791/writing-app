@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 
 import type {
+  AdminAiChatConversationDetailDto,
+  AdminAiChatConversationListDto,
+  AdminAiChatMessageDto,
   AdminAnalyticsDto,
   AdminArchiveCourseResultDto,
   AdminCourseListDto,
@@ -8,6 +11,8 @@ import type {
   AdminContentResetResultDto,
   AdminDashboardDto,
   AdminLessonAnalyticsPageDto,
+  AdminResourceDocumentDetailDto,
+  AdminResourceDocumentListDto,
   AdminSettingsDto,
   AdminUserDetailDto,
   AdminUserListDto,
@@ -164,6 +169,35 @@ const contentResetResult: AdminContentResetResultDto = {
   revision: 1,
 }
 
+const aiChatUserMessage: AdminAiChatMessageDto = {
+  content: "강의 소개 문구를 써줘",
+  createdAt: "2026-06-14T03:00:00.000Z",
+  id: "message-1",
+  role: "user",
+}
+
+const aiChatAssistantMessage: AdminAiChatMessageDto = {
+  content: "학습자의 목표를 먼저 보여주는 문구를 제안합니다.",
+  createdAt: "2026-06-14T03:01:00.000Z",
+  id: "message-2",
+  role: "assistant",
+}
+
+const aiChatConversationDetail: AdminAiChatConversationDetailDto = {
+  conversation: {
+    createdAt: "2026-06-14T03:00:00.000Z",
+    id: "chat-1",
+    messageCount: 2,
+    title: "강의 소개 문구",
+    updatedAt: "2026-06-14T03:01:00.000Z",
+  },
+  messages: [aiChatUserMessage, aiChatAssistantMessage],
+}
+
+const aiChatConversationList: AdminAiChatConversationListDto = {
+  items: [aiChatConversationDetail.conversation],
+}
+
 const courseDetail: AdminCourseDetailDto = {
   category: "미분류",
   description: "강의 설명을 입력하세요.",
@@ -234,6 +268,57 @@ const courseList: AdminCourseListDto = {
       status: "active",
       title: "글쓰기 첫걸음 30일",
       unitCount: 3,
+      visualKey: "basic-sentence-writing",
+    },
+  ],
+  pagination: {
+    page: 1,
+    pageSize: 20,
+    totalItems: 1,
+    totalPages: 1,
+  },
+}
+
+const resourceDocumentContent: AdminResourceDocumentDetailDto["content"] = {
+  content: [
+    {
+      content: [
+        {
+          text: "관리자 자료 본문",
+          type: "text",
+        },
+      ],
+      type: "paragraph",
+    },
+  ],
+  type: "doc",
+}
+
+const resourceDocumentDetail: AdminResourceDocumentDetailDto = {
+  author: {
+    email: "admin@example.com",
+    id: "admin-1",
+    name: "관리자",
+  },
+  content: resourceDocumentContent,
+  createdAt: "2026-06-14T03:00:00.000Z",
+  excerpt: "관리자 자료 본문",
+  id: "resource-1",
+  status: "active",
+  title: "운영 자료",
+  updatedAt: "2026-06-14T03:00:00.000Z",
+}
+
+const resourceDocumentList: AdminResourceDocumentListDto = {
+  items: [
+    {
+      author: resourceDocumentDetail.author,
+      createdAt: resourceDocumentDetail.createdAt,
+      excerpt: resourceDocumentDetail.excerpt,
+      id: resourceDocumentDetail.id,
+      status: resourceDocumentDetail.status,
+      title: resourceDocumentDetail.title,
+      updatedAt: resourceDocumentDetail.updatedAt,
     },
   ],
   pagination: {
@@ -364,6 +449,66 @@ describe("어드민 서비스", () => {
     ).resolves.toEqual(lessonAnalytics)
   })
 
+  it("repository AI 채팅 대화와 메시지 저장 결과를 관리자 DTO로 반환한다", async () => {
+    const service = createService({
+      aiChatRepository: {
+        async createAiChatUserMessage(input) {
+          expect(input).toEqual({
+            adminId: "admin-1",
+            conversationId: null,
+            message: "강의 소개 문구를 써줘",
+            now: new Date("2026-06-14T03:00:00.000Z"),
+          })
+          return aiChatConversationDetail
+        },
+        async readAiChatConversation(input) {
+          expect(input).toEqual({
+            adminId: "admin-1",
+            conversationId: "chat-1",
+          })
+          return aiChatConversationDetail
+        },
+        async readAiChatConversations(input) {
+          expect(input.adminId).toBe("admin-1")
+          return aiChatConversationList
+        },
+        async saveAiChatAssistantMessage(input) {
+          expect(input).toEqual({
+            content: "학습자의 목표를 먼저 보여주는 문구를 제안합니다.",
+            conversationId: "chat-1",
+            now: new Date("2026-06-14T03:01:00.000Z"),
+          })
+          return aiChatAssistantMessage
+        },
+      },
+    })
+
+    await expect(
+      service.getAiChatConversations({ adminId: "admin-1" })
+    ).resolves.toEqual(aiChatConversationList)
+    await expect(
+      service.getAiChatConversation({
+        adminId: "admin-1",
+        conversationId: "chat-1",
+      })
+    ).resolves.toEqual(aiChatConversationDetail)
+    await expect(
+      service.createAiChatUserMessage({
+        adminId: "admin-1",
+        conversationId: null,
+        message: "강의 소개 문구를 써줘",
+        now: new Date("2026-06-14T03:00:00.000Z"),
+      })
+    ).resolves.toEqual(aiChatConversationDetail)
+    await expect(
+      service.saveAiChatAssistantMessage({
+        content: "학습자의 목표를 먼저 보여주는 문구를 제안합니다.",
+        conversationId: "chat-1",
+        now: new Date("2026-06-14T03:01:00.000Z"),
+      })
+    ).resolves.toEqual(aiChatAssistantMessage)
+  })
+
   it("repository 운영 설정 저장과 콘텐츠 초기화 결과를 관리자 DTO로 반환한다", async () => {
     const service = createService({
       contentResetRepository: {
@@ -474,6 +619,112 @@ describe("어드민 서비스", () => {
       })
     ).resolves.toEqual(archiveCourseResult)
   })
+
+  it("repository 자료실 목록, 상세, 생성, 수정, 보관, 삭제 결과를 관리자 DTO로 반환한다", async () => {
+    const service = createService({
+      resourceRepository: {
+        async archiveResourceDocument(input) {
+          expect(input).toEqual({
+            adminId: "admin-1",
+            documentId: "resource-1",
+            now: new Date("2026-06-14T03:00:00.000Z"),
+          })
+          return {
+            kind: "ok",
+            value: { archived: true },
+          }
+        },
+        async createResourceDocument(input) {
+          expect(input).toEqual({
+            adminId: "admin-1",
+            content: resourceDocumentContent,
+            now: new Date("2026-06-14T03:00:00.000Z"),
+            title: "운영 자료",
+          })
+          return resourceDocumentDetail
+        },
+        async deleteResourceDocument(input) {
+          expect(input).toEqual({
+            adminId: "admin-1",
+            documentId: "resource-1",
+          })
+          return {
+            kind: "ok",
+            value: { deleted: true },
+          }
+        },
+        async readResourceDocument(input) {
+          expect(input.documentId).toBe("resource-1")
+          return resourceDocumentDetail
+        },
+        async readResourceDocuments(input) {
+          expect(input).toEqual({
+            page: 1,
+            pageSize: 20,
+            query: "운영",
+            status: "active",
+          })
+          return resourceDocumentList
+        },
+        async updateResourceDocument(input) {
+          expect(input).toEqual({
+            content: resourceDocumentContent,
+            documentId: "resource-1",
+            now: new Date("2026-06-14T03:00:00.000Z"),
+            title: "운영 자료",
+          })
+          return resourceDocumentDetail
+        },
+      },
+    })
+
+    await expect(
+      service.getResourceDocuments({
+        page: 1,
+        pageSize: 20,
+        query: "운영",
+        status: "active",
+      })
+    ).resolves.toEqual(resourceDocumentList)
+    await expect(
+      service.getResourceDocument({ documentId: "resource-1" })
+    ).resolves.toEqual(resourceDocumentDetail)
+    await expect(
+      service.createResourceDocument({
+        adminId: "admin-1",
+        content: resourceDocumentContent,
+        now: new Date("2026-06-14T03:00:00.000Z"),
+        title: "운영 자료",
+      })
+    ).resolves.toEqual(resourceDocumentDetail)
+    await expect(
+      service.updateResourceDocument({
+        content: resourceDocumentContent,
+        documentId: "resource-1",
+        now: new Date("2026-06-14T03:00:00.000Z"),
+        title: "운영 자료",
+      })
+    ).resolves.toEqual(resourceDocumentDetail)
+    await expect(
+      service.archiveResourceDocument({
+        adminId: "admin-1",
+        documentId: "resource-1",
+        now: new Date("2026-06-14T03:00:00.000Z"),
+      })
+    ).resolves.toEqual({
+      kind: "ok",
+      value: { archived: true },
+    })
+    await expect(
+      service.deleteResourceDocument({
+        adminId: "admin-1",
+        documentId: "resource-1",
+      })
+    ).resolves.toEqual({
+      kind: "ok",
+      value: { deleted: true },
+    })
+  })
 })
 
 function createService(overrides: Partial<AdminServicePorts>) {
@@ -485,6 +736,20 @@ function createService(overrides: Partial<AdminServicePorts>) {
 
 function createUnusedAdminServicePorts(): AdminServicePorts {
   return {
+    aiChatRepository: {
+      async createAiChatUserMessage() {
+        return failUnexpectedPort("aiChatRepository.createAiChatUserMessage")
+      },
+      async readAiChatConversation() {
+        return failUnexpectedPort("aiChatRepository.readAiChatConversation")
+      },
+      async readAiChatConversations() {
+        return failUnexpectedPort("aiChatRepository.readAiChatConversations")
+      },
+      async saveAiChatAssistantMessage() {
+        return failUnexpectedPort("aiChatRepository.saveAiChatAssistantMessage")
+      },
+    },
     analyticsReader: {
       async readAnalytics() {
         return failUnexpectedPort("analyticsReader.readAnalytics")
@@ -515,6 +780,26 @@ function createUnusedAdminServicePorts(): AdminServicePorts {
     dashboardReader: {
       async readDashboard() {
         return failUnexpectedPort("dashboardReader.readDashboard")
+      },
+    },
+    resourceRepository: {
+      async archiveResourceDocument() {
+        return failUnexpectedPort("resourceRepository.archiveResourceDocument")
+      },
+      async createResourceDocument() {
+        return failUnexpectedPort("resourceRepository.createResourceDocument")
+      },
+      async deleteResourceDocument() {
+        return failUnexpectedPort("resourceRepository.deleteResourceDocument")
+      },
+      async readResourceDocument() {
+        return failUnexpectedPort("resourceRepository.readResourceDocument")
+      },
+      async readResourceDocuments() {
+        return failUnexpectedPort("resourceRepository.readResourceDocuments")
+      },
+      async updateResourceDocument() {
+        return failUnexpectedPort("resourceRepository.updateResourceDocument")
       },
     },
     settingsRepository: {

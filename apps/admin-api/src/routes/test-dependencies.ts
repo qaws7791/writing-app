@@ -36,6 +36,10 @@ export function createTestAdminApiDependencies(
 
   return {
     adminServices: {
+      aiChat: {
+        ...failingAdminServices.aiChat,
+        ...overrides.adminServices?.aiChat,
+      },
       analytics: {
         ...failingAdminServices.analytics,
         ...overrides.adminServices?.analytics,
@@ -51,6 +55,10 @@ export function createTestAdminApiDependencies(
       dashboard: {
         ...failingAdminServices.dashboard,
         ...overrides.adminServices?.dashboard,
+      },
+      resources: {
+        ...failingAdminServices.resources,
+        ...overrides.adminServices?.resources,
       },
       settings: {
         ...failingAdminServices.settings,
@@ -100,6 +108,20 @@ function readTestAdminSessionToken(headers: Headers): string | null {
 
 function createFailingAdminApiServices(): AdminApiServices {
   return {
+    aiChat: {
+      async createAiChatUserMessage() {
+        throwUnexpectedAdminServiceCall("aiChat.createAiChatUserMessage")
+      },
+      async getAiChatConversation() {
+        throwUnexpectedAdminServiceCall("aiChat.getAiChatConversation")
+      },
+      async getAiChatConversations() {
+        throwUnexpectedAdminServiceCall("aiChat.getAiChatConversations")
+      },
+      async saveAiChatAssistantMessage() {
+        throwUnexpectedAdminServiceCall("aiChat.saveAiChatAssistantMessage")
+      },
+    },
     analytics: {
       async getAnalytics() {
         throwUnexpectedAdminServiceCall("analytics.getAnalytics")
@@ -130,6 +152,26 @@ function createFailingAdminApiServices(): AdminApiServices {
     dashboard: {
       async getDashboard() {
         throwUnexpectedAdminServiceCall("dashboard.getDashboard")
+      },
+    },
+    resources: {
+      async archiveResourceDocument() {
+        throwUnexpectedAdminServiceCall("resources.archiveResourceDocument")
+      },
+      async createResourceDocument() {
+        throwUnexpectedAdminServiceCall("resources.createResourceDocument")
+      },
+      async deleteResourceDocument() {
+        throwUnexpectedAdminServiceCall("resources.deleteResourceDocument")
+      },
+      async getResourceDocument() {
+        throwUnexpectedAdminServiceCall("resources.getResourceDocument")
+      },
+      async getResourceDocuments() {
+        throwUnexpectedAdminServiceCall("resources.getResourceDocuments")
+      },
+      async updateResourceDocument() {
+        throwUnexpectedAdminServiceCall("resources.updateResourceDocument")
       },
     },
     settings: {

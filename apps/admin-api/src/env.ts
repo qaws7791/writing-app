@@ -11,6 +11,8 @@ export type AdminApiEnv = {
   readonly cookieDomain: string | undefined
   readonly databaseUrl: string | undefined
   readonly nodeEnv: "development" | "test" | "production"
+  readonly openAiApiKey: string | undefined
+  readonly openAiModel: string
   readonly port: number
 }
 
@@ -34,6 +36,8 @@ export function parseAdminApiEnv(input: AppEnvInput): AdminApiEnv {
     cookieDomain: env.ADMIN_BETTER_AUTH_COOKIE_DOMAIN,
     databaseUrl: env.DATABASE_URL,
     nodeEnv: env.NODE_ENV,
+    openAiApiKey: env.OPENAI_API_KEY,
+    openAiModel: env.OPENAI_MODEL,
     port: env.ADMIN_API_PORT,
   }
 }

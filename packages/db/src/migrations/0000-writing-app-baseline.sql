@@ -99,6 +99,33 @@ CREATE TABLE IF NOT EXISTS admin_settings (
   updated_at INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS admin_resource_documents (
+  id TEXT PRIMARY KEY NOT NULL,
+  title TEXT NOT NULL,
+  content_json TEXT NOT NULL,
+  excerpt TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  author_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE CASCADE,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS admin_ai_chat_conversations (
+  id TEXT PRIMARY KEY NOT NULL,
+  title TEXT NOT NULL,
+  admin_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE CASCADE,
+  created_at INTEGER NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS admin_ai_chat_messages (
+  id TEXT PRIMARY KEY NOT NULL,
+  conversation_id TEXT NOT NULL REFERENCES admin_ai_chat_conversations(id) ON DELETE CASCADE,
+  role TEXT NOT NULL,
+  content TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS courses (
   id TEXT PRIMARY KEY NOT NULL,
   title TEXT NOT NULL,

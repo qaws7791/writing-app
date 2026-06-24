@@ -1,4 +1,10 @@
-import type { Env, MiddlewareHandler } from "hono"
+import type {
+  Env,
+  Handler,
+  Input,
+  MiddlewareHandler,
+  TypedResponse,
+} from "hono"
 import type { OpenAPIRoute, RouteConfig, RouteHandler } from "@hono/zod-openapi"
 
 export type AnyRouteConfig = RouteConfig & {
@@ -9,7 +15,7 @@ export type DefineRouteConfig<
   R extends AnyRouteConfig = AnyRouteConfig,
   E extends Env = Env,
 > = R & {
-  handler: RouteHandler<R, E>
+  handler: LooseRouteHandler<R, E>
 }
 
 export type DefinedRoute<
@@ -28,3 +34,19 @@ export type CreateAppOptions<
   middleware?: readonly MiddlewareHandler[]
   routes: TRoutes
 }
+
+type LooseHandlerResponse =
+  | Promise<Response | TypedResponse<unknown>>
+  | Promise<void>
+  | Response
+  | TypedResponse<unknown>
+
+type LooseRouteHandler<R extends AnyRouteConfig, E extends Env> =
+  RouteHandler<R, E> extends Handler<
+    infer TEnv extends Env,
+    infer TPath extends string,
+    infer TInput extends Input,
+    infer _TResponse
+  >
+    ? Handler<TEnv, TPath, TInput, LooseHandlerResponse>
+    : never
