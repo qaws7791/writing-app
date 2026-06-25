@@ -14,7 +14,7 @@ import {
 } from "@workspace/ui"
 
 const meta = {
-  title: "Components/Disclosure Selection",
+  title: "Interactions/Disclosure Selection",
   parameters: {
     layout: "padded",
   },

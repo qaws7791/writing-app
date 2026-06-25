@@ -16,9 +16,12 @@
 - custom viewport는 `mobile-sm`, `mobile-lg`, `tablet`, `desktop`, `wide`를 제공한다.
 - Getting Started 문서 9개를 추가했다.
 - Storybook 전용 helper block은 `apps/storybook/src/blocks`에 둔다.
+- Foundation story는 Color, Typography, Spacing, Motion 단위로 분리했다.
+- Components story는 Actions, Forms, Surfaces, Feedback, Data Display, Disclosure, Selection 범주로 확장했다.
+- Patterns, Recipes, Quality 항목은 조합 예시와 검증 체크리스트를 제공한다.
+- 기존 `Components/Current UI` 갤러리는 `Migration/CurrentBaseline`으로 이동했다.
 
 ## 다음 작업
 
-- P0 component story를 독립 파일로 분리한다.
-- Foundation story를 Color, Typography, Spacing, Motion 단위로 확장한다.
-- recipe와 quality matrix를 추가한다.
+- 새 public component를 추가할 때 동일한 범주의 story를 함께 추가한다.
+- `packages/ui` colocated story가 생기면 현재 Storybook 앱 story와 중복되는 항목을 정리한다.

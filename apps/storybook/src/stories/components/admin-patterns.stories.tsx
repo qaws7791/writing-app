@@ -19,7 +19,7 @@ import {
 } from "@workspace/ui"
 
 const meta = {
-  title: "Components/Admin Patterns",
+  title: "Patterns/Admin",
   parameters: {
     layout: "padded",
   },
