@@ -1,13 +1,5 @@
-@import "@workspace/ui/globals.css";
-
-body {
-  background: var(--cream);
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
+@import "@workspace/ui/styles";
+@source "../../../../packages/ui/src/";
 
 body[data-density="compact"] {
   --component-radius-card: 1.5rem;
