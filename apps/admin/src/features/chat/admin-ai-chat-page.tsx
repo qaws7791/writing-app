@@ -12,6 +12,8 @@ import type {
   AdminAiChatConversationList,
   AdminAiChatMessage,
 } from "@/lib/api/admin-api"
+import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 type UiMessage = AdminAiChatMessage | PendingMessage
 
@@ -95,7 +97,7 @@ export function AdminAiChatPage({
             <h2>대화</h2>
             <p>{conversations.length}개 대화</p>
           </div>
-          <Link className="admin-secondary-button" href="/chat">
+          <Link className={buttonVariants({ variant: "outline" })} href="/chat">
             <MessageSquarePlus aria-hidden="true" size={16} />새 대화
           </Link>
           <div className="admin-chat-conversation-list">
@@ -121,14 +123,14 @@ export function AdminAiChatPage({
             <div className="admin-alert" role="alert">
               {errorMessage}
               {lastFailedMessage === null ? null : (
-                <button
-                  className="admin-secondary-button"
+                <Button
+                  variant="outline"
                   disabled={isPending}
                   onClick={() => sendMessage(lastFailedMessage)}
                   type="button"
                 >
                   재시도
-                </button>
+                </Button>
               )}
             </div>
           )}
@@ -164,20 +166,17 @@ export function AdminAiChatPage({
               sendMessage(message)
             }}
           >
-            <textarea
+            <Textarea
               aria-label="AI 채팅 메시지"
+              className="min-h-[74px]"
               onChange={(event) => setDraft(event.target.value)}
               placeholder="필요한 콘텐츠 초안이나 운영 문구를 입력하세요."
               value={draft}
             />
-            <button
-              className="admin-primary-button"
-              disabled={!canSend}
-              type="submit"
-            >
+            <Button disabled={!canSend} type="submit">
               <Send aria-hidden="true" size={16} />
               전송
-            </button>
+            </Button>
           </form>
         </section>
       </div>

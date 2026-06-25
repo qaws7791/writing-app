@@ -4,6 +4,8 @@ import { LessonPreview } from "@/features/courses/course-editor/preview/lesson-p
 import { LessonWorkspace } from "@/features/courses/course-editor/workspace/lesson-workspace"
 import { StepWorkspace } from "@/features/courses/course-editor/workspace/step-workspace"
 import type { AdminCourseDetail } from "@/lib/api/admin-api"
+import { Input } from "@workspace/ui/components/ui/input"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 export function CourseEditorShell({
   course,
@@ -30,15 +32,15 @@ export function CourseEditorShell({
               </div>
               <label className="admin-form-field">
                 <span>코스 제목</span>
-                <input defaultValue={course.title} />
+                <Input defaultValue={course.title} />
               </label>
               <label className="admin-form-field">
                 <span>카테고리</span>
-                <input defaultValue={course.category} />
+                <Input defaultValue={course.category} />
               </label>
               <label className="admin-form-field">
                 <span>설명</span>
-                <textarea defaultValue={course.description} />
+                <Textarea defaultValue={course.description} />
               </label>
             </div>
             <CurriculumMap course={course} />

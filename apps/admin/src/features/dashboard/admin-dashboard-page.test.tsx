@@ -27,24 +27,24 @@ const dashboard: AdminDashboard = {
 }
 
 describe("AdminDashboardPage", () => {
-  it("dashboard API 응답으로 지표 카드와 최근 활동을 렌더링한다", () => {
+  it("dashboard API 응답으로 Kwep 기준 4개 지표 카드를 렌더링한다", () => {
     render(<AdminDashboardPage dashboardResult={ok(dashboard)} />)
 
     expect(screen.getByRole("heading", { name: "대시보드" })).toBeVisible()
     const metrics = screen.getByLabelText("주요 지표")
     expect(within(metrics).getByText("총 사용자")).toBeVisible()
     expect(within(metrics).getByText("36")).toBeVisible()
-    expect(within(metrics).getByText("최근 7일 활성")).toBeVisible()
-    expect(within(metrics).getByText("8")).toBeVisible()
-    expect(within(metrics).getByText("누적 완료 레슨")).toBeVisible()
+    expect(within(metrics).getByText("활성 8명 (최근 7일)")).toBeVisible()
+    expect(within(metrics).getByText("신규 가입")).toBeVisible()
+    expect(within(metrics).getByText("+4")).toBeVisible()
+    expect(within(metrics).getByText("오늘 1명")).toBeVisible()
+    expect(within(metrics).getByText("총 레슨 완료")).toBeVisible()
     expect(within(metrics).getByText("72")).toBeVisible()
+    expect(within(metrics).getByText("누적 완료 수")).toBeVisible()
     expect(within(metrics).getByText("콘텐츠")).toBeVisible()
-    expect(within(metrics).getByText("5개 코스 · 44개 레슨")).toBeVisible()
-
-    const activityList = screen.getByRole("list", { name: "최근 활동" })
-    expect(within(activityList).getByText("민지")).toBeVisible()
-    expect(within(activityList).getByText("minji@example.com")).toBeVisible()
-    expect(within(activityList).getByText("5일 연속")).toBeVisible()
+    expect(within(metrics).getByText("44")).toBeVisible()
+    expect(within(metrics).getByText("5개 강의의 레슨")).toBeVisible()
+    expect(screen.queryByRole("list", { name: "최근 활동" })).toBeNull()
   })
 
   it("API 오류 상태를 한국어로 보여준다", () => {

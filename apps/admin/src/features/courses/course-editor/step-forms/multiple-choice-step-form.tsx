@@ -3,6 +3,7 @@ import {
   StepFormShell,
   type EditorStep,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
+import { Input } from "@workspace/ui/components/ui/input"
 
 export function MultipleChoiceStepForm({
   step,
@@ -15,11 +16,11 @@ export function MultipleChoiceStepForm({
     <StepFormShell step={step}>
       <label className="admin-form-field">
         <span>질문</span>
-        <input defaultValue={String(content["prompt"] ?? "")} />
+        <Input defaultValue={String(content["prompt"] ?? "")} />
       </label>
       <label className="admin-form-field">
         <span>정답</span>
-        <input defaultValue={String(content["answer"] ?? "")} />
+        <Input defaultValue={String(content["answer"] ?? "")} />
       </label>
     </StepFormShell>
   )

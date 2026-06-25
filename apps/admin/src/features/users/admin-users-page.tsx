@@ -14,6 +14,9 @@ import {
   learnerAccountStatuses,
   type LearnerOperationalStatus,
 } from "@workspace/contracts/status"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Input } from "@workspace/ui/components/ui/input"
+import { Select } from "@workspace/ui/components/ui/select"
 
 export function AdminUsersPage({
   deleteUser,
@@ -60,7 +63,7 @@ export function AdminUsersPage({
       <form className="admin-toolbar" method="get" aria-label="사용자 필터">
         <label>
           <span>사용자 검색</span>
-          <input
+          <Input
             aria-label="사용자 검색"
             defaultValue={filters.query}
             name="query"
@@ -69,25 +72,25 @@ export function AdminUsersPage({
         </label>
         <label>
           <span>상태</span>
-          <select aria-label="상태" defaultValue={filters.status} name="status">
+          <Select aria-label="상태" defaultValue={filters.status} name="status">
             <option value="all">전체</option>
             <option value="active">active</option>
             <option value="suspended">suspended</option>
             <option value="deleted">deleted</option>
-          </select>
+          </Select>
         </label>
         <label>
           <span>정렬</span>
-          <select aria-label="정렬" defaultValue={filters.sort} name="sort">
+          <Select aria-label="정렬" defaultValue={filters.sort} name="sort">
             <option value="lastActive">최근 접속</option>
             <option value="joined">가입일</option>
             <option value="lessonsDone">완료 레슨</option>
             <option value="streak">연속 학습일</option>
-          </select>
+          </Select>
         </label>
-        <button className="admin-secondary-button" type="submit">
+        <Button variant="outline" type="submit">
           필터 적용
-        </button>
+        </Button>
       </form>
       {message === null ? null : (
         <p className="admin-inline-status" role="status">
@@ -135,8 +138,8 @@ export function AdminUsersPage({
                   <td>{user.streak}일</td>
                   <td>
                     <div className="admin-row-actions">
-                      <button
-                        className="admin-secondary-button"
+                      <Button
+                        variant="outline"
                         disabled={
                           isPending ||
                           user.status === learnerAccountStatuses.suspended
@@ -158,15 +161,15 @@ export function AdminUsersPage({
                         type="button"
                       >
                         정지
-                      </button>
-                      <button
-                        className="admin-danger-button"
+                      </Button>
+                      <Button
+                        variant="destructive"
                         disabled={isPending}
                         onClick={() => setDeleteTarget(user)}
                         type="button"
                       >
                         삭제 요청
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -185,15 +188,15 @@ export function AdminUsersPage({
             <h2 id="delete-user-title">삭제 요청 처리 확인</h2>
             <p>{deleteTarget.email} 계정을 삭제 상태로 전환합니다.</p>
             <div className="admin-dialog__actions">
-              <button
-                className="admin-secondary-button"
+              <Button
+                variant="outline"
                 onClick={() => setDeleteTarget(null)}
                 type="button"
               >
                 취소
-              </button>
-              <button
-                className="admin-danger-button"
+              </Button>
+              <Button
+                variant="destructive"
                 disabled={isPending}
                 onClick={() => {
                   const userId = deleteTarget.id
@@ -212,7 +215,7 @@ export function AdminUsersPage({
                 type="button"
               >
                 삭제 처리
-              </button>
+              </Button>
             </div>
           </div>
         </div>

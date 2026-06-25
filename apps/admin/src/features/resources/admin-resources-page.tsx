@@ -13,6 +13,10 @@ import type {
   AdminResourceDocumentList,
   ReadAdminResourcesInput,
 } from "@/lib/api/admin-api"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Input } from "@workspace/ui/components/ui/input"
+import { Select } from "@workspace/ui/components/ui/select"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 export function AdminResourcesPage({
   createResourceDocument,
@@ -53,7 +57,7 @@ export function AdminResourcesPage({
       <form className="admin-toolbar" method="get" aria-label="자료 필터">
         <label>
           <span>자료 검색</span>
-          <input
+          <Input
             aria-label="자료 검색"
             defaultValue={filters.query}
             name="query"
@@ -62,15 +66,15 @@ export function AdminResourcesPage({
         </label>
         <label>
           <span>상태</span>
-          <select aria-label="상태" defaultValue={filters.status} name="status">
+          <Select aria-label="상태" defaultValue={filters.status} name="status">
             <option value="all">전체</option>
             <option value="active">active</option>
             <option value="archived">archived</option>
-          </select>
+          </Select>
         </label>
         <label>
           <span>페이지 크기</span>
-          <select
+          <Select
             aria-label="페이지 크기"
             defaultValue={filters.pageSize}
             name="pageSize"
@@ -78,11 +82,11 @@ export function AdminResourcesPage({
             <option value={10}>10개</option>
             <option value={20}>20개</option>
             <option value={50}>50개</option>
-          </select>
+          </Select>
         </label>
-        <button className="admin-secondary-button" type="submit">
+        <Button variant="outline" type="submit">
           필터 적용
-        </button>
+        </Button>
       </form>
       <section className="admin-panel admin-resource-create-panel">
         <div className="admin-section-heading">
@@ -108,20 +112,16 @@ export function AdminResourcesPage({
         >
           <label className="admin-form-field">
             <span>제목</span>
-            <input name="title" required maxLength={120} />
+            <Input name="title" required maxLength={120} />
           </label>
           <label className="admin-form-field">
             <span>본문</span>
-            <textarea name="body" required />
+            <Textarea className="min-h-56" name="body" required />
           </label>
-          <button
-            className="admin-primary-button"
-            disabled={isPending}
-            type="submit"
-          >
+          <Button disabled={isPending} type="submit">
             <Plus aria-hidden="true" size={16} />
             저장
-          </button>
+          </Button>
         </form>
       </section>
       {message === null ? null : (
@@ -238,7 +238,7 @@ export function AdminResourceDetailPage({
         >
           <label className="admin-form-field">
             <span>제목</span>
-            <input
+            <Input
               defaultValue={document.title}
               maxLength={120}
               name="title"
@@ -247,22 +247,19 @@ export function AdminResourceDetailPage({
           </label>
           <label className="admin-form-field">
             <span>본문</span>
-            <textarea
+            <Textarea
+              className="min-h-56"
               defaultValue={readPlainTextFromTiptapDocument(document.content)}
               name="body"
               required
             />
           </label>
           <div className="admin-row-actions">
-            <button
-              className="admin-primary-button"
-              disabled={isPending}
-              type="submit"
-            >
+            <Button disabled={isPending} type="submit">
               저장
-            </button>
-            <button
-              className="admin-secondary-button"
+            </Button>
+            <Button
+              variant="outline"
               disabled={isPending || document.status === "archived"}
               onClick={() => {
                 startTransition(async () => {
@@ -279,9 +276,9 @@ export function AdminResourceDetailPage({
             >
               <Archive aria-hidden="true" size={15} />
               보관
-            </button>
-            <button
-              className="admin-danger-button"
+            </Button>
+            <Button
+              variant="destructive"
               disabled={isPending}
               onClick={() => {
                 startTransition(async () => {
@@ -298,7 +295,7 @@ export function AdminResourceDetailPage({
             >
               <Trash2 aria-hidden="true" size={15} />
               삭제
-            </button>
+            </Button>
           </div>
         </form>
       </section>

@@ -1,4 +1,6 @@
 import type { AdminCourseDetail } from "@/lib/api/admin-api"
+import { Input } from "@workspace/ui/components/ui/input"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 type Lesson = AdminCourseDetail["units"][number]["lessons"][number]
 
@@ -12,11 +14,11 @@ export function LessonWorkspace({ lesson }: { readonly lesson: Lesson }) {
       <div className="course-editor-form-grid">
         <label className="admin-form-field">
           <span>레슨 제목</span>
-          <input defaultValue={lesson.title} />
+          <Input defaultValue={lesson.title} />
         </label>
         <label className="admin-form-field">
           <span>예상 시간</span>
-          <input
+          <Input
             aria-label="예상 시간"
             defaultValue={lesson.estimatedMinutes}
             min={1}
@@ -26,11 +28,11 @@ export function LessonWorkspace({ lesson }: { readonly lesson: Lesson }) {
       </div>
       <label className="admin-form-field">
         <span>레슨 설명</span>
-        <textarea defaultValue={lesson.description ?? ""} />
+        <Textarea defaultValue={lesson.description ?? ""} />
       </label>
       <label className="admin-form-field">
         <span>레슨 요약</span>
-        <textarea
+        <Textarea
           aria-label="레슨 요약"
           defaultValue={JSON.stringify(lesson.summary, null, 2)}
         />

@@ -1,4 +1,5 @@
-import { Activity, BookOpen, CheckCircle2, Users } from "lucide-react"
+import type { ReactNode } from "react"
+import { BookOpen, CheckCircle2, UserPlus, Users } from "lucide-react"
 
 import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
@@ -23,12 +24,12 @@ export function AdminDashboardPage({
     )
   }
 
-  const { metrics, recentActivities } = dashboardResult.value
+  const { metrics } = dashboardResult.value
 
   return (
     <>
       <AdminHeader
-        description="학습자 활동과 콘텐츠 상태를 한눈에 확인합니다."
+        description="글결 서비스 현황 한눈에 보기"
         title="대시보드"
       />
       <section className="admin-metric-grid" aria-label="주요 지표">
@@ -36,72 +37,26 @@ export function AdminDashboardPage({
           icon={<Users aria-hidden="true" size={19} />}
           label="총 사용자"
           value={metrics.totalUsers.toLocaleString("ko-KR")}
+          detail={`활성 ${metrics.activeUsersLast7Days.toLocaleString("ko-KR")}명 (최근 7일)`}
         />
         <MetricCard
-          icon={<Activity aria-hidden="true" size={19} />}
-          label="최근 7일 활성"
-          value={metrics.activeUsersLast7Days.toLocaleString("ko-KR")}
-          detail={`오늘 가입 ${metrics.signupsToday}명 · 7일 가입 ${metrics.signupsLast7Days}명`}
+          icon={<UserPlus aria-hidden="true" size={19} />}
+          label="신규 가입"
+          value={`+${metrics.signupsLast7Days.toLocaleString("ko-KR")}`}
+          detail={`오늘 ${metrics.signupsToday.toLocaleString("ko-KR")}명`}
         />
         <MetricCard
           icon={<CheckCircle2 aria-hidden="true" size={19} />}
-          label="누적 완료 레슨"
+          label="총 레슨 완료"
           value={metrics.completedLessons.toLocaleString("ko-KR")}
+          detail="누적 완료 수"
         />
         <MetricCard
           icon={<BookOpen aria-hidden="true" size={19} />}
           label="콘텐츠"
-          value={`${metrics.activeCourses}개 코스 · ${metrics.activeLessons}개 레슨`}
+          value={metrics.activeLessons.toLocaleString("ko-KR")}
+          detail={`${metrics.activeCourses.toLocaleString("ko-KR")}개 강의의 레슨`}
         />
-      </section>
-      <section className="admin-dashboard-grid">
-        <div className="admin-panel">
-          <div className="admin-section-heading">
-            <h2>최근 활동</h2>
-            <p>마지막 학습일 기준 최근 학습자입니다.</p>
-          </div>
-          <ul aria-label="최근 활동" className="admin-activity-list">
-            {recentActivities.length === 0 ? (
-              <li className="admin-empty">최근 활동이 없습니다.</li>
-            ) : (
-              recentActivities.map((activity) => (
-                <li key={activity.userId}>
-                  <div>
-                    <strong>{activity.name}</strong>
-                    <span>{activity.email}</span>
-                  </div>
-                  <div>
-                    <strong>{activity.currentStreakDays}일 연속</strong>
-                    <span>{activity.lastActiveDate ?? "활동 없음"}</span>
-                  </div>
-                </li>
-              ))
-            )}
-          </ul>
-        </div>
-        <div className="admin-panel">
-          <div className="admin-section-heading">
-            <h2>운영 흐름</h2>
-            <p>활성 사용자와 완료 레슨의 균형을 빠르게 확인합니다.</p>
-          </div>
-          <div className="admin-bar-summary" aria-label="운영 흐름 차트">
-            <Bar
-              label="활성"
-              value={metrics.activeUsersLast7Days}
-              max={Math.max(metrics.totalUsers, 1)}
-            />
-            <Bar
-              label="완료"
-              value={metrics.completedLessons}
-              max={Math.max(metrics.completedLessons, metrics.activeLessons, 1)}
-            />
-            <Bar
-              label="콘텐츠"
-              value={metrics.activeLessons}
-              max={Math.max(metrics.completedLessons, metrics.activeLessons, 1)}
-            />
-          </div>
-        </div>
       </section>
     </>
   )
@@ -114,38 +69,18 @@ function MetricCard({
   value,
 }: {
   readonly detail?: string
-  readonly icon: React.ReactNode
+  readonly icon: ReactNode
   readonly label: string
   readonly value: string
 }) {
   return (
     <article className="admin-metric-card">
-      <div className="admin-metric-card__icon">{icon}</div>
-      <span>{label}</span>
+      <div className="admin-metric-card__label">
+        {icon}
+        <span>{label}</span>
+      </div>
       <strong>{value}</strong>
       {detail === undefined ? null : <small>{detail}</small>}
     </article>
-  )
-}
-
-function Bar({
-  label,
-  max,
-  value,
-}: {
-  readonly label: string
-  readonly max: number
-  readonly value: number
-}) {
-  const width = `${Math.max(4, Math.round((value / max) * 100))}%`
-
-  return (
-    <div className="admin-bar-summary__row">
-      <span>{label}</span>
-      <div>
-        <i style={{ width }} />
-      </div>
-      <strong>{value.toLocaleString("ko-KR")}</strong>
-    </div>
   )
 }

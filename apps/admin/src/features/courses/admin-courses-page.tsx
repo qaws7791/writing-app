@@ -14,6 +14,9 @@ import type {
   ReadAdminCoursesInput,
 } from "@/lib/api/admin-api"
 import { contentStatuses } from "@workspace/contracts/status"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Input } from "@workspace/ui/components/ui/input"
+import { Select } from "@workspace/ui/components/ui/select"
 
 export function AdminCoursesPage({
   archiveCourse,
@@ -59,7 +62,7 @@ export function AdminCoursesPage({
       <form className="admin-toolbar" method="get" aria-label="코스 필터">
         <label>
           <span>코스 검색</span>
-          <input
+          <Input
             aria-label="코스 검색"
             defaultValue={filters.query}
             name="query"
@@ -68,7 +71,7 @@ export function AdminCoursesPage({
         </label>
         <label>
           <span>카테고리</span>
-          <select
+          <Select
             aria-label="카테고리"
             defaultValue={filters.category}
             name="category"
@@ -80,19 +83,19 @@ export function AdminCoursesPage({
             <option value="중급 글쓰기">중급 글쓰기</option>
             <option value="심화 글쓰기">심화 글쓰기</option>
             <option value="미분류">미분류</option>
-          </select>
+          </Select>
         </label>
         <label>
           <span>상태</span>
-          <select aria-label="상태" defaultValue={filters.status} name="status">
+          <Select aria-label="상태" defaultValue={filters.status} name="status">
             <option value="all">전체</option>
             <option value="active">active</option>
             <option value="archived">archived</option>
-          </select>
+          </Select>
         </label>
         <label>
           <span>페이지 크기</span>
-          <select
+          <Select
             aria-label="페이지 크기"
             defaultValue={filters.pageSize}
             name="pageSize"
@@ -100,13 +103,12 @@ export function AdminCoursesPage({
             <option value={10}>10개</option>
             <option value={20}>20개</option>
             <option value={50}>50개</option>
-          </select>
+          </Select>
         </label>
-        <button className="admin-secondary-button" type="submit">
+        <Button variant="outline" type="submit">
           필터 적용
-        </button>
-        <button
-          className="admin-primary-button"
+        </Button>
+        <Button
           disabled={isPending}
           onClick={() => {
             startTransition(async () => {
@@ -120,8 +122,8 @@ export function AdminCoursesPage({
           }}
           type="button"
         >
-          <Plus aria-hidden="true" size={16} />새 코스
-        </button>
+          <Plus aria-hidden="true" data-icon="inline-start" size={16} />새 코스
+        </Button>
       </form>
       {message === null ? null : (
         <p className="admin-inline-status" role="status">
@@ -179,8 +181,8 @@ export function AdminCoursesPage({
                     <span className="admin-status-pill">{course.status}</span>
                   </td>
                   <td>
-                    <button
-                      className="admin-secondary-button"
+                    <Button
+                      variant="outline"
                       disabled={
                         course.status === contentStatuses.archived || isPending
                       }
@@ -189,7 +191,7 @@ export function AdminCoursesPage({
                     >
                       <Archive aria-hidden="true" size={15} />
                       보관
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -207,15 +209,15 @@ export function AdminCoursesPage({
             <h2 id="archive-course-title">코스 보관 확인</h2>
             <p>{archiveTarget.title} 코스를 학습자 화면에서 숨깁니다.</p>
             <div className="admin-dialog__actions">
-              <button
-                className="admin-secondary-button"
+              <Button
+                variant="outline"
                 onClick={() => setArchiveTarget(null)}
                 type="button"
               >
                 취소
-              </button>
-              <button
-                className="admin-danger-button"
+              </Button>
+              <Button
+                variant="destructive"
                 disabled={isPending}
                 onClick={() => {
                   const courseId = archiveTarget.id
@@ -234,7 +236,7 @@ export function AdminCoursesPage({
                 type="button"
               >
                 보관하기
-              </button>
+              </Button>
             </div>
           </div>
         </div>

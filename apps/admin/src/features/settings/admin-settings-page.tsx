@@ -10,6 +10,9 @@ import type {
   AdminNoticeSettingsRequest,
   AdminSettings,
 } from "@/lib/api/admin-api"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Input } from "@workspace/ui/components/ui/input"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 export function AdminSettingsPage({
   resetContent,
@@ -88,7 +91,7 @@ export function AdminSettingsPage({
           </div>
           <label className="admin-form-field">
             <span>배너</span>
-            <input
+            <Input
               aria-label="배너"
               defaultValue={notice.banner}
               name="banner"
@@ -96,19 +99,15 @@ export function AdminSettingsPage({
           </label>
           <label className="admin-form-field">
             <span>공지</span>
-            <textarea
+            <Textarea
               aria-label="공지"
               defaultValue={notice.announce}
               name="announce"
             />
           </label>
-          <button
-            className="admin-primary-button"
-            disabled={isPending}
-            type="submit"
-          >
+          <Button disabled={isPending} type="submit">
             공지 저장
-          </button>
+          </Button>
         </form>
         <form
           className="admin-panel"
@@ -136,7 +135,7 @@ export function AdminSettingsPage({
           </div>
           <label className="admin-form-field">
             <span>이용약관</span>
-            <textarea
+            <Textarea
               aria-label="이용약관"
               defaultValue={legal.terms}
               name="terms"
@@ -144,32 +143,28 @@ export function AdminSettingsPage({
           </label>
           <label className="admin-form-field">
             <span>개인정보처리방침</span>
-            <textarea
+            <Textarea
               aria-label="개인정보처리방침"
               defaultValue={legal.privacy}
               name="privacy"
             />
           </label>
-          <button
-            className="admin-primary-button"
-            disabled={isPending}
-            type="submit"
-          >
+          <Button disabled={isPending} type="submit">
             약관 저장
-          </button>
+          </Button>
         </form>
         <section className="admin-panel">
           <div className="admin-section-heading">
             <h2>콘텐츠 초기화</h2>
             <p>기준 콘텐츠 seed로 콘텐츠 baseline을 재시드합니다.</p>
           </div>
-          <button
-            className="admin-danger-button"
+          <Button
+            variant="destructive"
             onClick={() => setShowResetDialog(true)}
             type="button"
           >
             콘텐츠 초기화
-          </button>
+          </Button>
         </section>
       </section>
       {showResetDialog ? (
@@ -182,15 +177,15 @@ export function AdminSettingsPage({
             <h2 id="reset-content-title">콘텐츠 초기화 확인</h2>
             <p>현재 active 콘텐츠를 기준 콘텐츠 seed에 맞춰 다시 정렬합니다.</p>
             <div className="admin-dialog__actions">
-              <button
-                className="admin-secondary-button"
+              <Button
+                variant="outline"
                 onClick={() => setShowResetDialog(false)}
                 type="button"
               >
                 취소
-              </button>
-              <button
-                className="admin-danger-button"
+              </Button>
+              <Button
+                variant="destructive"
                 disabled={isPending}
                 onClick={() => {
                   startTransition(async () => {
@@ -208,7 +203,7 @@ export function AdminSettingsPage({
                 type="button"
               >
                 초기화 실행
-              </button>
+              </Button>
             </div>
           </div>
         </div>

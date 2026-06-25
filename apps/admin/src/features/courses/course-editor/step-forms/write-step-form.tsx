@@ -3,6 +3,7 @@ import {
   StepFormShell,
   type EditorStep,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
+import { Input } from "@workspace/ui/components/ui/input"
 
 export function WriteStepForm({ step }: { readonly step: EditorStep }) {
   const content = readStepContent(step)
@@ -18,15 +19,15 @@ export function WriteStepForm({ step }: { readonly step: EditorStep }) {
       <div className="course-editor-form-grid">
         <label className="admin-form-field">
           <span>최소</span>
-          <input defaultValue={min} type="number" />
+          <Input defaultValue={min} type="number" />
         </label>
         <label className="admin-form-field">
           <span>목표</span>
-          <input defaultValue={goal} type="number" />
+          <Input defaultValue={goal} type="number" />
         </label>
         <label className="admin-form-field">
           <span>최대</span>
-          <input defaultValue={max} type="number" />
+          <Input defaultValue={max} type="number" />
         </label>
       </div>
     </StepFormShell>

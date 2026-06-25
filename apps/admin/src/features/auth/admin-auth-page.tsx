@@ -5,6 +5,8 @@ import { ShieldCheck } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import { requestAdminPasswordLogin } from "@/lib/auth/admin-auth-client"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Input } from "@workspace/ui/components/ui/input"
 
 export function AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
   const router = useRouter()
@@ -50,11 +52,11 @@ export function AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
         <form className="admin-auth-form" onSubmit={handleSubmit}>
           <label>
             이메일
-            <input autoComplete="email" name="email" required type="email" />
+            <Input autoComplete="email" name="email" required type="email" />
           </label>
           <label>
             비밀번호
-            <input
+            <Input
               autoComplete="current-password"
               name="password"
               required
@@ -66,13 +68,9 @@ export function AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
               {errorMessage}
             </p>
           )}
-          <button
-            className="admin-primary-button"
-            disabled={isSubmitting}
-            type="submit"
-          >
+          <Button className="w-full" disabled={isSubmitting} type="submit">
             로그인
-          </button>
+          </Button>
         </form>
       </section>
     </main>

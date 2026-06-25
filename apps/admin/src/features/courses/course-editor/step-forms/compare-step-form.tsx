@@ -3,6 +3,7 @@ import {
   StepFormShell,
   type EditorStep,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 export function CompareStepForm({ step }: { readonly step: EditorStep }) {
   const content = readStepContent(step)
@@ -12,11 +13,11 @@ export function CompareStepForm({ step }: { readonly step: EditorStep }) {
       <div className="course-editor-form-grid">
         <label className="admin-form-field">
           <span>초안</span>
-          <textarea defaultValue={String(content["before"] ?? "")} />
+          <Textarea defaultValue={String(content["before"] ?? "")} />
         </label>
         <label className="admin-form-field">
           <span>수정본</span>
-          <textarea defaultValue={String(content["after"] ?? "")} />
+          <Textarea defaultValue={String(content["after"] ?? "")} />
         </label>
       </div>
     </StepFormShell>

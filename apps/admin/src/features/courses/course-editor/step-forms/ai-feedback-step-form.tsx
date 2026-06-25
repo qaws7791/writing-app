@@ -3,6 +3,7 @@ import {
   StepFormShell,
   type EditorStep,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
+import { Input } from "@workspace/ui/components/ui/input"
 
 export function AiFeedbackStepForm({ step }: { readonly step: EditorStep }) {
   const content = readStepContent(step)
@@ -16,7 +17,7 @@ export function AiFeedbackStepForm({ step }: { readonly step: EditorStep }) {
       </p>
       <label className="admin-form-field">
         <span>source step</span>
-        <input defaultValue={sourceStepId} />
+        <Input defaultValue={sourceStepId} />
       </label>
     </StepFormShell>
   )
