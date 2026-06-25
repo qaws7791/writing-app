@@ -83,8 +83,8 @@
 
 | Phase | 완료 기준                                           | 상태    |
 | ----- | --------------------------------------------------- | ------- |
-| 0     | PR checklist, ADR, baseline 계획                    | 진행 중 |
-| 1     | token Storybook, contrast test, compatibility alias | 대기    |
+| 0     | PR checklist, ADR, baseline 계획                    | 완료    |
+| 1     | token Storybook, contrast test, compatibility alias | 진행 중 |
 | 2     | P0 primitive story와 interaction test               | 대기    |
 | 3     | 수동 dialog/menu/disclosure pilot 제거              | 대기    |
 | 4     | admin 전역 CSS 주요 class 제거                      | 대기    |

@@ -1,6 +1,17 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./tokens/reference.css";
+@import "./tokens/semantic.css";
+@import "./tokens/typography.css";
+@import "./tokens/spacing.css";
+@import "./tokens/radius.css";
+@import "./tokens/elevation.css";
+@import "./tokens/motion.css";
+@import "./tokens/z-index.css";
+@import "./tokens/density.css";
+@import "./tokens/component.css";
+@import "./utilities.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -35,8 +46,31 @@
   --color-coral-light: var(--coral-light);
   --color-mint-dark: var(--mint-dark);
   --color-coral-dark: var(--coral-dark);
-  --font-sans:
-    Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --color-bg-canvas: var(--semantic-color-bg-canvas);
+  --color-bg-surface: var(--semantic-color-bg-surface);
+  --color-bg-surface-hover: var(--semantic-color-bg-surface-hover);
+  --color-bg-elevated: var(--semantic-color-bg-elevated);
+  --color-bg-inverse: var(--semantic-color-bg-inverse);
+  --color-fg-default: var(--semantic-color-fg-default);
+  --color-fg-muted: var(--semantic-color-fg-muted);
+  --color-fg-subtle: var(--semantic-color-fg-subtle);
+  --color-fg-inverse: var(--semantic-color-fg-inverse);
+  --color-fg-disabled: var(--semantic-color-fg-disabled);
+  --color-border-subtle: var(--semantic-color-border-subtle);
+  --color-border-default: var(--semantic-color-border-default);
+  --color-border-strong: var(--semantic-color-border-strong);
+  --color-border-focus: var(--semantic-color-border-focus);
+  --color-action-primary-bg: var(--semantic-color-action-primary-bg);
+  --color-action-primary-fg: var(--semantic-color-action-primary-fg);
+  --color-action-selected-bg: var(--semantic-color-action-selected-bg);
+  --color-action-selected-fg: var(--semantic-color-action-selected-fg);
+  --color-success-bg: var(--semantic-color-success-bg);
+  --color-success-fg: var(--semantic-color-success-fg);
+  --color-danger-bg: var(--semantic-color-danger-bg);
+  --color-danger-fg: var(--semantic-color-danger-fg);
+  --color-info-bg: var(--semantic-color-info-bg);
+  --color-info-fg: var(--semantic-color-info-fg);
+  --font-sans: var(--font-family-sans);
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
@@ -45,61 +79,45 @@
   --radius-3xl: 1.5rem;
   --radius-4xl: 2.5rem;
   --radius-5xl: 3.5rem;
-}
-
-:root {
-  --radius: 2.5rem;
-  --cream: #fdfbf7;
-  --surface: #f4efe6;
-  --surface-hover: #eae2d3;
-  --charcoal: #2a2621;
-  --ink: #2a2621;
-  --mint: #34c759;
-  --coral: #ff7a6b;
-  --highlight: #ffc800;
-  --muted: #524d47;
-  --mint-light: #52d86a;
-  --coral-light: #ffada7;
-  --mint-dark: #084d1c;
-  --coral-dark: #8b1d0f;
-  --background: var(--cream);
-  --foreground: var(--charcoal);
-  --card: var(--surface);
-  --card-foreground: var(--charcoal);
-  --popover: var(--cream);
-  --popover-foreground: var(--charcoal);
-  --primary: var(--charcoal);
-  --primary-foreground: var(--cream);
-  --secondary: var(--surface);
-  --secondary-foreground: var(--charcoal);
-  --muted-foreground: var(--muted);
-  --accent: var(--highlight);
-  --accent-foreground: var(--ink);
-  --destructive: var(--coral-light);
-  --destructive-foreground: var(--coral-dark);
-  --border: color-mix(in oklab, var(--charcoal) 12%, transparent);
-  --input: color-mix(in oklab, var(--charcoal) 10%, transparent);
-  --ring: var(--charcoal);
-  --font-sans:
-    Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  background: var(--cream);
-  color: var(--charcoal);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.dark {
-  --cream: #1b1916;
-  --surface: #262320;
-  --surface-hover: #332f2a;
-  --charcoal: #f4efe6;
-  --mint: #3dd968;
-  --coral: #ff8c7f;
-  --highlight: #ffc800;
-  --muted: #a89f92;
-  --mint-light: #1e5b30;
-  --coral-light: #6e2a22;
-  --mint-dark: #6fe588;
-  --coral-dark: #ffada7;
+  --radius-control: var(--component-radius-control);
+  --radius-card: var(--component-radius-card);
+  --radius-panel: var(--component-radius-panel);
+  --radius-dialog: var(--component-radius-dialog);
+  --radius-pill: var(--component-radius-pill);
+  --text-display-lg: var(--type-display-lg-size);
+  --text-display-lg--line-height: var(--type-display-lg-line-height);
+  --text-display-md: var(--type-display-md-size);
+  --text-display-md--line-height: var(--type-display-md-line-height);
+  --text-heading-xl: var(--type-heading-xl-size);
+  --text-heading-xl--line-height: var(--type-heading-xl-line-height);
+  --text-heading-lg: var(--type-heading-lg-size);
+  --text-heading-lg--line-height: var(--type-heading-lg-line-height);
+  --text-heading-md: var(--type-heading-md-size);
+  --text-heading-md--line-height: var(--type-heading-md-line-height);
+  --text-heading-sm: var(--type-heading-sm-size);
+  --text-heading-sm--line-height: var(--type-heading-sm-line-height);
+  --text-title-lg: var(--type-title-lg-size);
+  --text-title-lg--line-height: var(--type-title-lg-line-height);
+  --text-title-md: var(--type-title-md-size);
+  --text-title-md--line-height: var(--type-title-md-line-height);
+  --text-body-lg: var(--type-body-lg-size);
+  --text-body-lg--line-height: var(--type-body-lg-line-height);
+  --text-body-md: var(--type-body-md-size);
+  --text-body-md--line-height: var(--type-body-md-line-height);
+  --text-body-sm: var(--type-body-sm-size);
+  --text-body-sm--line-height: var(--type-body-sm-line-height);
+  --text-label-md: var(--type-label-md-size);
+  --text-label-md--line-height: var(--type-label-md-line-height);
+  --text-label-sm: var(--type-label-sm-size);
+  --text-label-sm--line-height: var(--type-label-sm-line-height);
+  --text-caption: var(--type-caption-size);
+  --text-caption--line-height: var(--type-caption-line-height);
+  --spacing-page-gutter: var(--page-gutter);
+  --spacing-surface-padding-md: var(--surface-padding-md);
+  --spacing-control-inline-padding: var(--control-inline-padding);
+  --shadow-dialog: var(--elevation-dialog);
+  --ease-press: var(--motion-ease-press);
+  --ease-enter: var(--motion-ease-enter);
 }
 
 @layer base {
@@ -126,65 +144,4 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
-}
-
-.border-surface {
-  border-color: var(--surface);
-}
-
-.border-surface\/50 {
-  border-color: color-mix(in oklab, var(--surface) 50%, transparent);
-}
-
-.border-charcoal\/10 {
-  border-color: color-mix(in oklab, var(--charcoal) 10%, transparent);
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.btn-squish {
-  transition:
-    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 0.2s,
-    border-color 0.2s,
-    color 0.2s;
-}
-
-.btn-squish:active:not(:disabled) {
-  transform: scale(0.96);
-}
-
-.no-scrollbar {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
-@keyframes fi {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.an-fi {
-  animation: fi 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-nextjs-portal,
-[data-nextjs-devtools],
-[data-nextjs-devtools-button],
-[data-nextjs-toast],
-[data-nextjs-dialog-overlay] {
-  display: none !important;
 }

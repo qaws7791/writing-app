@@ -22,7 +22,8 @@
 
 | variant       | 용도                         |
 | ------------- | ---------------------------- |
-| `default`     | 주요 행동                    |
+| `solid`       | 주요 행동                    |
+| `default`     | 기존 호출 호환용 주요 행동   |
 | `outline`     | 보조 행동, 확장 메뉴 trigger |
 | `secondary`   | 낮은 강조의 보조 행동        |
 | `ghost`       | 표면 없는 보조 행동          |
@@ -43,7 +44,7 @@
 | `icon-lg` | 48px 정사각 |
 
 아이콘은 `data-icon="inline-start"` 또는 `data-icon="inline-end"`로 padding 보정을 받는다.
-버튼은 기본적으로 `rounded-4xl`, `font-bold`, `.btn-squish`를 사용하고 텍스트 줄바꿈을 허용하지 않는다.
+버튼은 기본적으로 `rounded-control`, `font-bold`, `.btn-squish`를 사용하고 텍스트 줄바꿈을 허용하지 않는다. 높이와 padding은 root의 density token을 따른다.
 
 ## Card
 
@@ -74,8 +75,8 @@
 
 구현 위치: `packages/ui/src/components/ui/input.tsx`
 
-- 높이 44px.
-- `bg-cream`, `rounded-3xl`, `border-charcoal/12`, `focus-visible:ring-3`을 사용한다.
+- 높이는 density token의 `control-height-md`를 따른다.
+- `bg-bg-elevated`, `rounded-control`, `border-border-default`, `focus-visible:ring-3`을 사용한다.
 - invalid 상태는 `aria-invalid="true"`로 표시한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
@@ -84,7 +85,8 @@
 구현 위치: `packages/ui/src/components/ui/select.tsx`
 
 - native `select`를 감싼 primitive다.
-- 높이 44px, `bg-cream`, `rounded-3xl`, `border-charcoal/12`, `focus-visible:ring-3`을 사용한다.
+- 높이는 density token의 `control-height-md`를 따른다.
+- `bg-bg-elevated`, `rounded-control`, `border-border-default`, `focus-visible:ring-3`을 사용한다.
 - 라우팅이나 데이터 정책이 없는 필터, 정렬, 페이지 크기 선택에 사용한다.
 - 복잡한 combobox나 다중 선택이 필요해지면 Base UI 기반 별도 primitive를 추가한다.
 
@@ -93,7 +95,7 @@
 구현 위치: `packages/ui/src/components/ui/textarea.tsx`
 
 - 최소 높이 96px.
-- `bg-cream`, `rounded-3xl`, `border-charcoal/12`, `focus-visible:ring-3`을 사용한다.
+- `bg-bg-elevated`, `rounded-control`, `border-border-default`, `focus-visible:ring-3`을 사용한다.
 - 긴 본문 편집처럼 화면별 높이가 필요한 경우 `className`으로 `min-h-*`를 조정한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
@@ -101,7 +103,7 @@
 
 구현 위치: `packages/ui/src/components/ui/progress.tsx`
 
-구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. 레슨 몰입 화면처럼 앱 고유 레이아웃과 색상 처리가 필요한 경우 앱 전용 progressbar를 사용할 수 있다.
+구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 `action-primary-bg`를 사용해 track과 비텍스트 대비를 확보한다. 레슨 몰입 화면처럼 앱 고유 레이아웃과 색상 처리가 필요한 경우 앱 전용 progressbar를 임시로 유지할 수 있으나 Phase 6에서 공용 `Progress`로 이관한다.
 
 ## Icon
 

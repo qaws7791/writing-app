@@ -1,0 +1,106 @@
+:root {
+  --semantic-color-bg-canvas: var(--ref-color-neutral-25);
+  --semantic-color-bg-surface: var(--ref-color-neutral-100);
+  --semantic-color-bg-surface-hover: var(--ref-color-neutral-200);
+  --semantic-color-bg-elevated: var(--ref-color-neutral-0);
+  --semantic-color-bg-inverse: var(--ref-color-neutral-950);
+
+  --semantic-color-fg-default: var(--ref-color-neutral-950);
+  --semantic-color-fg-muted: var(--ref-color-neutral-700);
+  --semantic-color-fg-subtle: var(--ref-color-neutral-500);
+  --semantic-color-fg-inverse: var(--ref-color-neutral-25);
+  --semantic-color-fg-disabled: color-mix(
+    in oklab,
+    var(--semantic-color-fg-default) 38%,
+    transparent
+  );
+
+  --semantic-color-border-subtle: color-mix(
+    in oklab,
+    var(--semantic-color-fg-default) 8%,
+    transparent
+  );
+  --semantic-color-border-default: color-mix(
+    in oklab,
+    var(--semantic-color-fg-default) 14%,
+    transparent
+  );
+  --semantic-color-border-strong: color-mix(
+    in oklab,
+    var(--semantic-color-fg-default) 28%,
+    transparent
+  );
+  --semantic-color-border-focus: var(--semantic-color-fg-default);
+
+  --semantic-color-action-primary-bg: var(--ref-color-neutral-950);
+  --semantic-color-action-primary-fg: var(--ref-color-neutral-25);
+  --semantic-color-action-selected-bg: var(--ref-color-yellow-500);
+  --semantic-color-action-selected-fg: var(--ref-color-neutral-950);
+
+  --semantic-color-success-bg: var(--ref-color-green-400);
+  --semantic-color-success-fg: var(--ref-color-green-900);
+  --semantic-color-danger-bg: var(--ref-color-red-300);
+  --semantic-color-danger-fg: var(--ref-color-red-900);
+  --semantic-color-info-bg: var(--ref-color-blue-100);
+  --semantic-color-info-fg: var(--ref-color-blue-700);
+
+  --cream: var(--semantic-color-bg-canvas);
+  --surface: var(--semantic-color-bg-surface);
+  --surface-hover: var(--semantic-color-bg-surface-hover);
+  --charcoal: var(--semantic-color-fg-default);
+  --ink: var(--ref-color-neutral-950);
+  --mint: var(--ref-color-green-500);
+  --coral: var(--ref-color-red-500);
+  --highlight: var(--semantic-color-action-selected-bg);
+  --muted: var(--semantic-color-fg-muted);
+  --mint-light: var(--semantic-color-success-bg);
+  --coral-light: var(--semantic-color-danger-bg);
+  --mint-dark: var(--semantic-color-success-fg);
+  --coral-dark: var(--semantic-color-danger-fg);
+
+  --background: var(--semantic-color-bg-canvas);
+  --foreground: var(--semantic-color-fg-default);
+  --card: var(--semantic-color-bg-surface);
+  --card-foreground: var(--semantic-color-fg-default);
+  --popover: var(--semantic-color-bg-canvas);
+  --popover-foreground: var(--semantic-color-fg-default);
+  --primary: var(--semantic-color-action-primary-bg);
+  --primary-foreground: var(--semantic-color-action-primary-fg);
+  --secondary: var(--semantic-color-bg-surface);
+  --secondary-foreground: var(--semantic-color-fg-default);
+  --muted-foreground: var(--semantic-color-fg-muted);
+  --accent: var(--semantic-color-action-selected-bg);
+  --accent-foreground: var(--semantic-color-action-selected-fg);
+  --destructive: var(--semantic-color-danger-bg);
+  --destructive-foreground: var(--semantic-color-danger-fg);
+  --border: var(--semantic-color-border-default);
+  --input: var(--semantic-color-border-default);
+  --ring: var(--semantic-color-border-focus);
+
+  background: var(--semantic-color-bg-canvas);
+  color: var(--semantic-color-fg-default);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dark {
+  --semantic-color-bg-canvas: #1b1916;
+  --semantic-color-bg-surface: #262320;
+  --semantic-color-bg-surface-hover: #332f2a;
+  --semantic-color-bg-elevated: #211f1c;
+  --semantic-color-bg-inverse: var(--ref-color-neutral-25);
+
+  --semantic-color-fg-default: var(--ref-color-neutral-100);
+  --semantic-color-fg-muted: #a89f92;
+  --semantic-color-fg-subtle: #7f766b;
+  --semantic-color-fg-inverse: var(--ref-color-neutral-950);
+  --semantic-color-border-focus: var(--ref-color-neutral-100);
+
+  --semantic-color-action-primary-bg: var(--ref-color-neutral-100);
+  --semantic-color-action-primary-fg: var(--ref-color-neutral-950);
+  --semantic-color-success-bg: #1e5b30;
+  --semantic-color-success-fg: #6fe588;
+  --semantic-color-danger-bg: #6e2a22;
+  --semantic-color-danger-fg: var(--ref-color-red-300);
+  --semantic-color-info-bg: #1e3a5f;
+  --semantic-color-info-fg: #bfdbfe;
+}

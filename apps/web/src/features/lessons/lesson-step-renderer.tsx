@@ -127,7 +127,7 @@ export function LessonStepRenderer({
 
   return (
     <section aria-labelledby={headingId} className="flex flex-col gap-5">
-      <p className="text-sm font-medium text-primary">
+      <p className="text-sm font-medium text-fg-muted">
         {stepIndex + 1}/{totalSteps} 스텝
       </p>
       <Card>
@@ -161,7 +161,7 @@ function LessonAnswerErrorMessage({
   }
 
   return (
-    <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+    <p className="rounded-lg border border-danger-fg/30 bg-danger-bg/15 px-4 py-3 text-sm text-danger-fg">
       {answerError}
     </p>
   )
@@ -325,7 +325,7 @@ function AiFeedbackAnswer({
         </p>
       ) : null}
       {error === null ? null : (
-        <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <p className="rounded-lg border border-danger-fg/30 bg-danger-bg/15 px-4 py-3 text-sm text-danger-fg">
           {error}
         </p>
       )}

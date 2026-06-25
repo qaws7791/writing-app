@@ -1,0 +1,11 @@
+:root {
+  --button-primary-bg: var(--semantic-color-action-primary-bg);
+  --button-primary-fg: var(--semantic-color-action-primary-fg);
+  --button-secondary-bg: var(--semantic-color-bg-surface);
+  --button-secondary-fg: var(--semantic-color-fg-default);
+  --button-danger-bg: var(--semantic-color-danger-bg);
+  --button-danger-fg: var(--semantic-color-danger-fg);
+
+  --progress-track-bg: var(--semantic-color-bg-surface);
+  --progress-indicator-bg: var(--semantic-color-action-primary-bg);
+}

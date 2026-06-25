@@ -4,31 +4,34 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const buttonVariants = cva(
-  "group/button btn-squish inline-flex shrink-0 items-center justify-center rounded-4xl border border-transparent bg-clip-padding text-sm font-bold whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/25 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button btn-squish inline-flex shrink-0 items-center justify-center rounded-control border border-transparent bg-clip-padding text-sm font-bold whitespace-nowrap transition-colors outline-none select-none focus-visible:border-border-focus focus-visible:ring-3 focus-visible:ring-border-focus/25 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-danger-fg aria-invalid:ring-3 aria-invalid:ring-danger-fg/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
-        default: "bg-charcoal text-cream hover:bg-charcoal/90",
+        default:
+          "bg-action-primary-bg text-action-primary-fg hover:bg-action-primary-bg/90",
+        solid:
+          "bg-action-primary-bg text-action-primary-fg hover:bg-action-primary-bg/90",
         outline:
-          "border-charcoal/12 bg-transparent text-charcoal hover:border-charcoal/24 hover:bg-surface aria-expanded:bg-surface aria-expanded:text-charcoal",
+          "border-border-default bg-transparent text-fg-default hover:border-border-strong hover:bg-bg-surface aria-expanded:bg-bg-surface aria-expanded:text-fg-default",
         secondary:
-          "bg-surface text-charcoal hover:bg-surface-hover aria-expanded:bg-surface-hover aria-expanded:text-charcoal",
+          "bg-bg-surface text-fg-default hover:bg-bg-surface-hover aria-expanded:bg-bg-surface-hover aria-expanded:text-fg-default",
         ghost:
-          "text-charcoal hover:bg-surface aria-expanded:bg-surface aria-expanded:text-charcoal",
+          "text-fg-default hover:bg-bg-surface aria-expanded:bg-bg-surface aria-expanded:text-fg-default",
         destructive:
-          "bg-coral-light text-coral-dark hover:bg-coral focus-visible:border-coral-dark focus-visible:ring-coral/25",
-        link: "rounded-md px-0 text-charcoal underline-offset-4 hover:underline",
+          "bg-danger-bg text-danger-fg hover:bg-coral focus-visible:border-danger-fg focus-visible:ring-danger-fg/25",
+        link: "rounded-md px-0 text-fg-default underline-offset-4 hover:underline",
       },
       size: {
         default:
-          "h-11 gap-2 px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+          "h-(--control-height-md) gap-2 px-(--control-inline-padding) has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
         xs: "h-7 gap-1 rounded-2xl px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-9 gap-1.5 rounded-3xl px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
-        lg: "h-12 gap-2 px-6 text-base has-data-[icon=inline-end]:pr-5 has-data-[icon=inline-start]:pl-5",
-        icon: "size-11",
+        sm: "h-(--control-height-sm) gap-1.5 rounded-control px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+        lg: "h-(--control-height-lg) gap-2 px-6 text-base has-data-[icon=inline-end]:pr-5 has-data-[icon=inline-start]:pl-5",
+        icon: "size-(--control-height-md)",
         "icon-xs": "size-7 rounded-2xl [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-9 rounded-3xl",
-        "icon-lg": "size-12",
+        "icon-sm": "size-(--control-height-sm) rounded-control",
+        "icon-lg": "size-(--control-height-lg)",
       },
     },
     defaultVariants: {
