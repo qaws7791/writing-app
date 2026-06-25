@@ -61,9 +61,16 @@
 
 ## Phase 4 Admin Pattern
 
-- PageHeader, SectionHeader, FilterToolbar, DataTable, Pagination을 제공한다.
-- StatCard, StatGrid, EmptyState, DetailList, ActionGroup, ListItem, SplitPane을 제공한다.
+- PageHeader, SectionHeader, FilterToolbar, DataTable을 제공하기 시작했다.
+- StatCard, StatGrid, EmptyState를 제공하기 시작했다.
+- Pagination, DetailList, ActionGroup, ListItem, SplitPane은 실제 이관 화면과 함께 추가한다.
 - 이관 순서는 dashboard, courses, users, resources, analytics/settings, chat, course editor 순서를 따른다.
+
+### 현재 상태
+
+- `AdminHeader`는 `PageHeader`를 사용하는 호환 래퍼로 남겼다.
+- dashboard metric card는 `StatGrid`와 `StatCard`를 사용하는 pilot으로 이관했다.
+- courses/users/resources의 toolbar와 table은 다음 pilot에서 `FilterToolbar`와 `DataTable`로 바꾼다.
 
 ## Phase 5 Web 기본 화면
 
@@ -94,7 +101,7 @@
 | 1     | token Storybook, contrast test, compatibility alias | 완료    |
 | 2     | P0 primitive story와 interaction test               | 완료    |
 | 3     | 수동 dialog/menu/disclosure pilot 제거              | 진행 중 |
-| 4     | admin 전역 CSS 주요 class 제거                      | 대기    |
+| 4     | admin 전역 CSS 주요 class 제거                      | 진행 중 |
 | 5     | web inline typography와 raw progress 축소           | 대기    |
 | 6     | lesson UI pattern 분리                              | 대기    |
 | 7     | alias 제거 계획과 lint 강제                         | 대기    |

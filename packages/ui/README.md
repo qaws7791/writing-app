@@ -27,7 +27,7 @@
 
 ## 현재 primitive
 
-root entrypoint는 `Button`, `Card`, `Input`, `NativeSelect`, `Select`, `Textarea`, `Progress`, `Accordion`, `SegmentedControl`, `ToggleGroup`, `Surface`, `Field`, `Badge`, `Alert`, `Callout`, `Spinner`, `Separator`, `Avatar`와 `cn`을 노출한다. 큰 composite pattern은 실제 사용 사례와 test가 생길 때 별도 subpath로 추가한다.
+root entrypoint는 `Button`, `Card`, `Input`, `NativeSelect`, `Select`, `Textarea`, `Progress`, `Accordion`, `SegmentedControl`, `ToggleGroup`, `Surface`, `Field`, `Badge`, `Alert`, `Callout`, `Spinner`, `Separator`, `Avatar`, `PageHeader`, `SectionHeader`, `StatCard`, `StatGrid`, `FilterToolbar`, `DataTable`, `EmptyState`와 `cn`을 노출한다. 큰 composite pattern은 실제 사용 사례와 test가 생길 때 별도 subpath로 추가한다.
 
 ## 사용 예시
 

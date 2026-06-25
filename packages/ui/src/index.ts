@@ -32,6 +32,16 @@ export {
   SegmentedControlItem,
 } from "@/components/ui/segmented-control"
 export { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+export { PageHeader } from "@/components/ui/page-header"
+export { SectionHeader } from "@/components/ui/section-header"
+export { StatCard, StatGrid } from "@/components/ui/stat-card"
+export {
+  FilterToolbar,
+  FilterToolbarField,
+  FilterToolbarLabel,
+} from "@/components/ui/filter-toolbar"
+export { DataTable, DataTableContainer } from "@/components/ui/data-table"
+export { EmptyState } from "@/components/ui/empty-state"
 export { Surface, surfaceVariants } from "@/components/ui/surface"
 export {
   Field,

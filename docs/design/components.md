@@ -157,6 +157,19 @@
 
 `Spinner`는 caller가 `label`을 제공할 때만 접근 가능한 `status`가 된다. label이 없으면 장식으로 처리한다. `Separator`는 기본 decorative이고, 의미 있는 구분선이 필요할 때 `decorative={false}`를 사용한다. `Avatar`는 image와 fallback anatomy만 제공한다.
 
+## Page와 Admin Pattern
+
+구현 위치:
+
+- `packages/ui/src/components/ui/page-header.tsx`
+- `packages/ui/src/components/ui/section-header.tsx`
+- `packages/ui/src/components/ui/stat-card.tsx`
+- `packages/ui/src/components/ui/filter-toolbar.tsx`
+- `packages/ui/src/components/ui/data-table.tsx`
+- `packages/ui/src/components/ui/empty-state.tsx`
+
+`PageHeader`와 `SectionHeader`는 제목, 설명, 선택적 action 영역만 제공한다. `StatGrid`와 `StatCard`는 dashboard 지표 같은 반복 metric에 사용한다. `FilterToolbar`는 검색과 select filter를 배치하는 form이고, `FilterToolbarField`와 `FilterToolbarLabel`을 함께 사용한다. `DataTableContainer`와 `DataTable`은 horizontal overflow와 기본 table cell 스타일만 제공한다. `EmptyState`는 결과 없음과 초기 상태를 표현하며, 도메인 메시지는 호출자가 전달한다.
+
 ## Icon
 
 구현 위치: `packages/ui/src/components/icons.tsx`

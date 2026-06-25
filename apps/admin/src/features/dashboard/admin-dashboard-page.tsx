@@ -4,6 +4,7 @@ import { BookOpen, CheckCircle2, UserPlus, Users } from "lucide-react"
 import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type { AdminDashboard } from "@/lib/api/admin-api"
+import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 
 export function AdminDashboardPage({
   dashboardResult,
@@ -32,7 +33,7 @@ export function AdminDashboardPage({
         description="글결 서비스 현황 한눈에 보기"
         title="대시보드"
       />
-      <section className="admin-metric-grid" aria-label="주요 지표">
+      <StatGrid aria-label="주요 지표">
         <MetricCard
           icon={<Users aria-hidden="true" size={19} />}
           label="총 사용자"
@@ -57,7 +58,7 @@ export function AdminDashboardPage({
           value={metrics.activeLessons.toLocaleString("ko-KR")}
           detail={`${metrics.activeCourses.toLocaleString("ko-KR")}개 강의의 레슨`}
         />
-      </section>
+      </StatGrid>
     </>
   )
 }
@@ -73,14 +74,5 @@ function MetricCard({
   readonly label: string
   readonly value: string
 }) {
-  return (
-    <article className="admin-metric-card">
-      <div className="admin-metric-card__label">
-        {icon}
-        <span>{label}</span>
-      </div>
-      <strong>{value}</strong>
-      {detail === undefined ? null : <small>{detail}</small>}
-    </article>
-  )
+  return <StatCard detail={detail} icon={icon} label={label} value={value} />
 }

@@ -1,3 +1,5 @@
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
+
 export function AdminHeader({
   description,
   title,
@@ -5,12 +7,5 @@ export function AdminHeader({
   readonly description: string
   readonly title: string
 }) {
-  return (
-    <header className="admin-header">
-      <div>
-        <h1>{title}</h1>
-        <p>{description}</p>
-      </div>
-    </header>
-  )
+  return <PageHeader description={description} title={title} />
 }
