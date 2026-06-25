@@ -11,7 +11,8 @@
 
 ## 구현 상태
 
-- `apps/storybook/.storybook/main.ts`는 MDX와 `packages/ui` colocated story, Storybook 앱 story를 함께 읽는다.
+- `apps/storybook/.storybook/main.ts`는 MDX와 Storybook 앱 story를 함께 읽는다.
+- `packages/ui`에는 story 파일을 두지 않고, 디자인 시스템 문서는 `apps/storybook`에서 관리한다.
 - `preview.tsx`는 theme, density, motion global을 적용한다.
 - custom viewport는 `mobile-sm`, `mobile-lg`, `tablet`, `desktop`, `wide`를 제공한다.
 - Getting Started 문서 9개를 추가했다.
@@ -24,4 +25,4 @@
 ## 다음 작업
 
 - 새 public component를 추가할 때 동일한 범주의 story를 함께 추가한다.
-- `packages/ui` colocated story가 생기면 현재 Storybook 앱 story와 중복되는 항목을 정리한다.
+- `packages/ui`에 story 파일을 추가하지 않는다. Storybook 문서는 `apps/storybook/src/stories`에 둔다.
