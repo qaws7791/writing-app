@@ -17,7 +17,7 @@ import {
 } from "@workspace/ui"
 
 const meta = {
-  title: "Components/Current UI",
+  title: "Migration/CurrentBaseline",
   parameters: {
     layout: "centered",
   },
