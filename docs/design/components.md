@@ -172,6 +172,10 @@
 
 `StatGrid`와 `StatCard`는 어드민 전용이 아니다. 학습자 프로필의 완료 레슨, 연속 학습일처럼 숫자 지표를 반복해 보여주는 web 화면에서도 같은 primitive를 사용한다.
 
+## Guardrail
+
+`bun run check:design-system-guardrails`는 현재 이관 기준선보다 `admin-*` class, 앱 inline typography style, 앱 raw hex color가 늘어나지 않는지 검사한다. 이 검사는 root `bun run lint`에 포함한다. 기존 부채를 줄인 뒤에는 스크립트의 기준선을 함께 낮춘다.
+
 ## Icon
 
 구현 위치: `packages/ui/src/components/icons.tsx`

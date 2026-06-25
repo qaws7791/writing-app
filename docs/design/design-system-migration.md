@@ -103,7 +103,13 @@
 - compatibility alias 제거 일정을 확정한다.
 - dead CSS와 class/style assertion test를 정리한다.
 - Storybook visual regression CI를 적용한다.
-- architecture lint를 경고에서 오류로 승격한다.
+- architecture lint를 경고에서 오류로 승격하기 시작했다.
+
+### 현재 상태
+
+- `bun run check:design-system-guardrails`를 추가하고 root `bun run lint`에 연결했다.
+- 현재 기준선보다 `admin-*` class, 앱 inline typography style, 앱 raw hex color가 늘어나면 실패한다.
+- 기준선은 이관이 진행될 때마다 낮춘다.
 
 ## 작업 체크리스트
 
@@ -116,4 +122,4 @@
 | 4     | admin 전역 CSS 주요 class 제거                      | 진행 중 |
 | 5     | web inline typography와 raw progress 축소           | 진행 중 |
 | 6     | lesson UI pattern 분리                              | 진행 중 |
-| 7     | alias 제거 계획과 lint 강제                         | 대기    |
+| 7     | alias 제거 계획과 lint 강제                         | 진행 중 |
