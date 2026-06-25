@@ -88,10 +88,15 @@
 ## Phase 6 Lesson Experience
 
 - LessonPrimaryButton은 Button으로 대체한다.
-- progress header는 Progress로 대체한다.
+- progress header는 Progress로 대체하기 시작했다.
 - sticky footer는 StickyActionBar로 대체한다.
 - rich text와 callout, choice, token, character counter, feedback 표현을 generic pattern으로 분리한다.
 - 정답 정책과 세션 저장 로직은 앱에 남긴다.
+
+### 현재 상태
+
+- `LessonProgressHeader`의 수동 progressbar는 공용 `Progress` primitive로 대체했다.
+- `LessonPrimaryButton`, sticky footer, step renderer의 선택지/feedback 표현은 다음 단위로 남긴다.
 
 ## Phase 7 정리와 강제
 
@@ -110,5 +115,5 @@
 | 3     | 수동 dialog/menu/disclosure pilot 제거              | 진행 중 |
 | 4     | admin 전역 CSS 주요 class 제거                      | 진행 중 |
 | 5     | web inline typography와 raw progress 축소           | 진행 중 |
-| 6     | lesson UI pattern 분리                              | 대기    |
+| 6     | lesson UI pattern 분리                              | 진행 중 |
 | 7     | alias 제거 계획과 lint 강제                         | 대기    |

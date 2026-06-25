@@ -9,6 +9,7 @@ import {
 } from "@/features/lessons/lesson-step-policy"
 import type { LessonStep } from "@/features/lessons/lesson-types"
 import { XIcon } from "@workspace/ui/components/icons"
+import { Progress } from "@workspace/ui/components/ui/progress"
 
 type LessonCheckedState = false | LessonStepCheckedState
 
@@ -69,23 +70,8 @@ export function LessonProgressHeader({
       >
         <XIcon size={28} />
       </button>
-      <div
-        aria-label="레슨 진행률"
-        aria-valuemax={100}
-        aria-valuemin={0}
-        aria-valuenow={Math.round(progress)}
-        className="flex-1 bg-surface h-4 rounded-full overflow-hidden"
-        role="progressbar"
-      >
-        <div
-          className="bg-primary h-full rounded-full transition-all duration-500"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-      <div
-        className="ml-4 font-bold text-muted"
-        style={{ fontSize: "0.875rem" }}
-      >
+      <Progress aria-label="레슨 진행률" className="flex-1" value={progress} />
+      <div className="ml-4 text-label-md font-bold text-muted">
         {currentStepNumber}/{totalStepCount}
       </div>
     </header>
