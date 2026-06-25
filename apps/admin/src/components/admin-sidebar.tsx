@@ -53,7 +53,7 @@ export function AdminSidebar({ activePath }: { readonly activePath: string }) {
   return (
     <aside className="sticky top-0 flex h-screen flex-col gap-6 bg-bg-surface p-5 max-[860px]:static max-[860px]:h-auto max-[860px]:border-b max-[860px]:border-border-subtle">
       <Link className="flex items-center gap-3 px-3 pb-4 pt-2" href="/">
-        <span className="grid size-[42px] place-items-center rounded-[18px] bg-charcoal text-cream font-black">
+        <span className="grid size-[42px] place-items-center rounded-[18px] bg-action-primary-bg text-action-primary-fg font-black">
           글
         </span>
         <span className="grid gap-0.5">
@@ -82,8 +82,8 @@ export function AdminSidebar({ activePath }: { readonly activePath: string }) {
               className={cn(
                 "btn-squish flex items-center gap-3 rounded-pill px-4 py-3 text-body-md font-black transition-colors max-[860px]:shrink-0",
                 isActive
-                  ? "bg-charcoal text-cream"
-                  : "text-charcoal hover:bg-cream"
+                  ? "bg-action-primary-bg text-action-primary-fg"
+                  : "text-fg-default hover:bg-bg-canvas"
               )}
               href={item.href}
               key={item.href}
