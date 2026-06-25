@@ -2,72 +2,72 @@ import { create, type ThemeVars } from "storybook/theming"
 
 type ThemeName = "light" | "dark" | "system"
 
-const accentColor = "#006FEE"
+const accentColor = "#FFC800"
 const fontBase =
-  '"Noto Sans KR", "Noto Sans", "Apple SD Gothic Neo", "Malgun Gothic", ui-sans-serif, system-ui, sans-serif'
+  "Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
 const fontCode = '"JetBrains Mono", "Fira Code", ui-monospace, monospace'
 
 const lightTheme = create({
   base: "light",
-  brandTitle: "글필 Design System",
+  brandTitle: "글결 Design System",
   brandUrl: "/",
 
   colorPrimary: accentColor,
   colorSecondary: accentColor,
 
-  appBg: "#f5f5f5",
-  appContentBg: "#ffffff",
-  appPreviewBg: "#f5f5f5",
-  appBorderColor: "#e5e5e5",
+  appBg: "#fdfbf7",
+  appContentBg: "#fdfbf7",
+  appPreviewBg: "#f4efe6",
+  appBorderColor: "#eae2d3",
   appBorderRadius: 8,
 
   fontBase,
   fontCode,
 
-  textColor: "#1a1a1a",
-  textInverseColor: "#f5f5f5",
-  textMutedColor: "#6b7280",
+  textColor: "#2a2621",
+  textInverseColor: "#fdfbf7",
+  textMutedColor: "#524d47",
 
-  barTextColor: "#6b7280",
-  barHoverColor: "#1a1a1a",
+  barTextColor: "#524d47",
+  barHoverColor: "#2a2621",
   barSelectedColor: accentColor,
-  barBg: "#ffffff",
+  barBg: "#fdfbf7",
 
   inputBg: "#ffffff",
-  inputBorder: "#e5e5e5",
-  inputTextColor: "#1a1a1a",
+  inputBorder: "#eae2d3",
+  inputTextColor: "#2a2621",
   inputBorderRadius: 6,
 })
 
 const darkTheme = create({
   base: "dark",
-  brandTitle: "글필 Design System",
+  brandTitle: "글결 Design System",
   brandUrl: "/",
 
   colorPrimary: accentColor,
   colorSecondary: accentColor,
 
-  appBg: "#0f0f13",
-  appContentBg: "#19191f",
-  appPreviewBg: "#0f0f13",
-  appBorderColor: "#2d2d35",
+  appBg: "#1b1916",
+  appContentBg: "#1b1916",
+  appPreviewBg: "#262320",
+  appBorderColor: "#332f2a",
   appBorderRadius: 8,
 
   fontBase,
   fontCode,
 
-  textColor: "#f5f5f5",
-  textInverseColor: "#1a1a1a",
-  textMutedColor: "#9ca3af",
+  textColor: "#f4efe6",
+  textInverseColor: "#2a2621",
+  textMutedColor: "#a89f92",
 
-  barTextColor: "#9ca3af",
-  barHoverColor: "#f5f5f5",
+  barTextColor: "#a89f92",
+  barHoverColor: "#f4efe6",
   barSelectedColor: accentColor,
-  barBg: "#19191f",
+  barBg: "#1b1916",
 
-  inputBg: "#19191f",
-  inputBorder: "#2d2d35",
-  inputTextColor: "#f5f5f5",
+  inputBg: "#262320",
+  inputBorder: "#332f2a",
+  inputTextColor: "#f4efe6",
   inputBorderRadius: 6,
 })
 

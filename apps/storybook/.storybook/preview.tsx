@@ -114,7 +114,7 @@ const preview: Preview = {
           className="antialiased"
           style={{
             fontFamily:
-              '"Noto Sans KR", "Noto Sans", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif',
+              "Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
           }}
         >
           <Story />
