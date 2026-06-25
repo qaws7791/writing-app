@@ -9,7 +9,8 @@
 1. 제품의 전체 디자인 방향은 `design-brief.md`에서 확인한다.
 2. 라우트와 화면 구조는 `ia-spec.md`와 `screens/` 문서에서 확인한다.
 3. 구현에 필요한 공통 기준은 `foundations.md`, `components.md`, `patterns.md`에서 확인한다.
-4. 품질 기준은 `accessibility.md`, `assets.md`, `text-localization-policy.md`에서 확인한다.
+4. 디자인 시스템 이관 작업은 `design-system-migration.md`에서 Phase와 동결 기준을 확인한다.
+5. 품질 기준은 `accessibility.md`, `assets.md`, `text-localization-policy.md`에서 확인한다.
 
 ## 디렉토리 지도
 
@@ -28,6 +29,7 @@
 | `foundations.md`                           | 색상, 타이포그래피, 간격, radius, shadow, motion 같은 디자인 토큰 기준을 정의한다.    |
 | `components.md`                            | Button, Card, Input, Progress, Shell, Admin Table 같은 공통 컴포넌트 기준을 정의한다. |
 | `patterns.md`                              | 학습자와 어드민 화면에서 반복되는 UI 패턴과 상태 표현 방식을 정의한다.                |
+| `design-system-migration.md`               | `packages/ui` 디자인 시스템 이관 Phase, 동결 기준, 완료 상태를 관리한다.              |
 | `accessibility.md`                         | 키보드 탐색, 레슨 접근성, Form, motion, 언어 기준을 정의한다.                         |
 | `assets.md`                                | 아이콘, 이미지, SVG, 어드민 에셋, 파일 관리 기준을 정의한다.                          |
 | `text-localization-policy.md`              | 화면 문구의 한국어 현지화 원칙, 적용 범위, 예외, 구현 규칙을 정의한다.                |
