@@ -85,7 +85,7 @@
 | ----- | --------------------------------------------------- | ---- |
 | 0     | PR checklist, ADR, baseline 계획                    | 완료 |
 | 1     | token Storybook, contrast test, compatibility alias | 완료 |
-| 2     | P0 primitive story와 interaction test               | 대기 |
+| 2     | P0 primitive story와 interaction test               | 완료 |
 | 3     | 수동 dialog/menu/disclosure pilot 제거              | 대기 |
 | 4     | admin 전역 CSS 주요 class 제거                      | 대기 |
 | 5     | web inline typography와 raw progress 축소           | 대기 |

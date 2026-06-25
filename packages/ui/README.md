@@ -25,6 +25,10 @@
 
 새 공용 컴포넌트는 legacy 색상 이름보다 `bg-*`, `fg-*`, `action-*`, `success-*`, `danger-*`, `info-*` semantic token을 먼저 사용한다. `cream`, `surface`, `charcoal`, `primary`, `destructive`는 앱 이관이 끝날 때까지 유지하는 compatibility alias다.
 
+## 현재 primitive
+
+root entrypoint는 `Button`, `Card`, `Input`, `NativeSelect`, `Select`, `Textarea`, `Progress`, `Surface`, `Field`, `Badge`, `Alert`, `Callout`, `Spinner`, `Separator`, `Avatar`와 `cn`을 노출한다. 큰 composite pattern은 실제 사용 사례와 test가 생길 때 별도 subpath로 추가한다.
+
 ## 사용 예시
 
 앱 전역 CSS는 앱의 root stylesheet에서 가져온다.

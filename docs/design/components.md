@@ -71,6 +71,18 @@
 
 `CardTitle`은 `as` prop으로 `div`, `h1`, `h2`, `h3`를 받을 수 있다. 의미 있는 제목 계층이 필요하면 적절한 heading을 선택한다.
 
+## Surface
+
+구현 위치: `packages/ui/src/components/ui/surface.tsx`
+
+`Surface`는 anatomy가 없는 일반 표면이다. admin panel, 간단한 목록 컨테이너, web의 반복 표면을 흡수한다. `variant`는 `default`, `elevated`, `panel`만 제공하고, padding은 `size`와 density token을 따른다.
+
+## Field
+
+구현 위치: `packages/ui/src/components/ui/field.tsx`
+
+구성은 `Field`, `FieldLabel`, `FieldDescription`, `FieldError`, `FieldGroup`, `FormSection`이다. `Field`는 label과 description, error를 자동으로 연결하지 않는다. 호출자가 `htmlFor`, `id`, `aria-describedby`, `aria-invalid`를 명시해 관계를 드러낸다. `FieldError`는 `role="alert"`를 사용한다.
+
 ## Input
 
 구현 위치: `packages/ui/src/components/ui/input.tsx`
@@ -104,6 +116,31 @@
 구현 위치: `packages/ui/src/components/ui/progress.tsx`
 
 구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 `action-primary-bg`를 사용해 track과 비텍스트 대비를 확보한다. 레슨 몰입 화면처럼 앱 고유 레이아웃과 색상 처리가 필요한 경우 앱 전용 progressbar를 임시로 유지할 수 있으나 Phase 6에서 공용 `Progress`로 이관한다.
+
+## Badge
+
+구현 위치: `packages/ui/src/components/ui/badge.tsx`
+
+`Badge`는 domain status를 직접 해석하지 않는다. app이 상태를 `tone`으로 변환해 전달한다. 지원 tone은 `neutral`, `success`, `danger`, `info`, `selected`다.
+
+## Alert와 Callout
+
+구현 위치:
+
+- `packages/ui/src/components/ui/alert.tsx`
+- `packages/ui/src/components/ui/callout.tsx`
+
+`Alert`는 상태 메시지이고 기본 role은 `status`다. 오류처럼 assertive announcement가 필요한 경우 호출자가 role을 바꾼다. `Callout`은 본문 안의 참고, 설명, 안내 표면이며 사용자 문자열을 포함하지 않는다.
+
+## Spinner, Separator, Avatar
+
+구현 위치:
+
+- `packages/ui/src/components/ui/spinner.tsx`
+- `packages/ui/src/components/ui/separator.tsx`
+- `packages/ui/src/components/ui/avatar.tsx`
+
+`Spinner`는 caller가 `label`을 제공할 때만 접근 가능한 `status`가 된다. label이 없으면 장식으로 처리한다. `Separator`는 기본 decorative이고, 의미 있는 구분선이 필요할 때 `decorative={false}`를 사용한다. `Avatar`는 image와 fallback anatomy만 제공한다.
 
 ## Icon
 
