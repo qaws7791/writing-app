@@ -1,3 +1,4 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -10,7 +11,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
+  --color-primary: var(--highlight);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -23,55 +24,82 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --color-cream: var(--cream);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-charcoal: var(--charcoal);
+  --color-ink: var(--ink);
+  --color-mint: var(--mint);
+  --color-coral: var(--coral);
+  --color-mint-light: var(--mint-light);
+  --color-coral-light: var(--coral-light);
+  --color-mint-dark: var(--mint-dark);
+  --color-coral-dark: var(--coral-dark);
+  --font-sans:
+    Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2.5rem;
+  --radius-5xl: 3.5rem;
 }
 
 :root {
-  --radius: 0.5rem;
-  --background: oklch(0.99 0.004 250);
-  --foreground: oklch(0.2 0.025 260);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.025 260);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.025 260);
-  --primary: oklch(0.45 0.11 175);
-  --primary-foreground: oklch(0.99 0.004 250);
-  --secondary: oklch(0.92 0.04 82);
-  --secondary-foreground: oklch(0.24 0.03 72);
-  --muted: oklch(0.94 0.01 255);
-  --muted-foreground: oklch(0.46 0.025 260);
-  --accent: oklch(0.9 0.04 250);
-  --accent-foreground: oklch(0.22 0.04 260);
-  --destructive: oklch(0.57 0.2 27);
-  --destructive-foreground: oklch(0.99 0.004 250);
-  --border: oklch(0.88 0.012 255);
-  --input: oklch(0.92 0.012 255);
-  --ring: oklch(0.58 0.12 175);
+  --radius: 2.5rem;
+  --cream: #fdfbf7;
+  --surface: #f4efe6;
+  --surface-hover: #eae2d3;
+  --charcoal: #2a2621;
+  --ink: #2a2621;
+  --mint: #34c759;
+  --coral: #ff7a6b;
+  --highlight: #ffc800;
+  --muted: #524d47;
+  --mint-light: #52d86a;
+  --coral-light: #ffada7;
+  --mint-dark: #084d1c;
+  --coral-dark: #8b1d0f;
+  --background: var(--cream);
+  --foreground: var(--charcoal);
+  --card: var(--surface);
+  --card-foreground: var(--charcoal);
+  --popover: var(--cream);
+  --popover-foreground: var(--charcoal);
+  --primary: var(--charcoal);
+  --primary-foreground: var(--cream);
+  --secondary: var(--surface);
+  --secondary-foreground: var(--charcoal);
+  --muted-foreground: var(--muted);
+  --accent: var(--highlight);
+  --accent-foreground: var(--ink);
+  --destructive: var(--coral-light);
+  --destructive-foreground: var(--coral-dark);
+  --border: color-mix(in oklab, var(--charcoal) 12%, transparent);
+  --input: color-mix(in oklab, var(--charcoal) 10%, transparent);
+  --ring: var(--charcoal);
+  --font-sans:
+    Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: var(--cream);
+  color: var(--charcoal);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .dark {
-  --background: oklch(0.17 0.02 260);
-  --foreground: oklch(0.95 0.006 250);
-  --card: oklch(0.21 0.025 260);
-  --card-foreground: oklch(0.95 0.006 250);
-  --popover: oklch(0.21 0.025 260);
-  --popover-foreground: oklch(0.95 0.006 250);
-  --primary: oklch(0.72 0.12 175);
-  --primary-foreground: oklch(0.15 0.02 260);
-  --secondary: oklch(0.35 0.05 82);
-  --secondary-foreground: oklch(0.97 0.02 82);
-  --muted: oklch(0.27 0.02 260);
-  --muted-foreground: oklch(0.74 0.018 255);
-  --accent: oklch(0.29 0.04 250);
-  --accent-foreground: oklch(0.95 0.006 250);
-  --destructive: oklch(0.69 0.18 23);
-  --destructive-foreground: oklch(0.15 0.02 260);
-  --border: oklch(0.32 0.02 260);
-  --input: oklch(0.3 0.02 260);
-  --ring: oklch(0.72 0.12 175);
+  --cream: #1b1916;
+  --surface: #262320;
+  --surface-hover: #332f2a;
+  --charcoal: #f4efe6;
+  --mint: #3dd968;
+  --coral: #ff8c7f;
+  --highlight: #ffc800;
+  --muted: #a89f92;
+  --mint-light: #1e5b30;
+  --coral-light: #6e2a22;
+  --mint-dark: #6fe588;
+  --coral-dark: #ffada7;
 }
 
 @layer base {
@@ -89,18 +117,74 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family:
-      Inter,
-      ui-sans-serif,
-      system-ui,
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      sans-serif;
+    font-family: var(--font-sans);
+    margin: 0;
+    padding: 0;
   }
 
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+}
+
+.border-surface {
+  border-color: var(--surface);
+}
+
+.border-surface\/50 {
+  border-color: color-mix(in oklab, var(--surface) 50%, transparent);
+}
+
+.border-charcoal\/10 {
+  border-color: color-mix(in oklab, var(--charcoal) 10%, transparent);
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.btn-squish {
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.2s,
+    border-color 0.2s,
+    color 0.2s;
+}
+
+.btn-squish:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes fi {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.an-fi {
+  animation: fi 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+nextjs-portal,
+[data-nextjs-devtools],
+[data-nextjs-devtools-button],
+[data-nextjs-toast],
+[data-nextjs-dialog-overlay] {
+  display: none !important;
 }

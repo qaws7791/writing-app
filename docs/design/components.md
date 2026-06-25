@@ -33,16 +33,17 @@
 
 | size      | 기준        |
 | --------- | ----------- |
-| `xs`      | 높이 24px   |
-| `sm`      | 높이 32px   |
-| `default` | 높이 36px   |
-| `lg`      | 높이 40px   |
-| `icon-xs` | 24px 정사각 |
-| `icon-sm` | 32px 정사각 |
-| `icon`    | 36px 정사각 |
-| `icon-lg` | 40px 정사각 |
+| `xs`      | 높이 28px   |
+| `sm`      | 높이 36px   |
+| `default` | 높이 44px   |
+| `lg`      | 높이 48px   |
+| `icon-xs` | 28px 정사각 |
+| `icon-sm` | 36px 정사각 |
+| `icon`    | 44px 정사각 |
+| `icon-lg` | 48px 정사각 |
 
 아이콘은 `data-icon="inline-start"` 또는 `data-icon="inline-end"`로 padding 보정을 받는다.
+버튼은 기본적으로 `rounded-4xl`, `font-bold`, `.btn-squish`를 사용하고 텍스트 줄바꿈을 허용하지 않는다.
 
 ## Card
 
@@ -73,8 +74,8 @@
 
 구현 위치: `packages/ui/src/components/ui/input.tsx`
 
-- 높이 36px.
-- `bg-input/50`, `rounded-md`, `focus-visible:ring-3`을 사용한다.
+- 높이 44px.
+- `bg-cream`, `rounded-3xl`, `border-charcoal/12`, `focus-visible:ring-3`을 사용한다.
 - invalid 상태는 `aria-invalid="true"`로 표시한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
@@ -135,22 +136,24 @@
 
 ## 어드민 앱 컴포넌트
 
+어드민 앱은 학습자 앱과 동일한 `@workspace/ui` 제품 토큰과 primitive를 사용한다. 어드민 전용 클래스는 데이터 밀도와 업무 흐름을 표현하는 조합 역할만 하며, 색상·radius·font·motion 기준은 `packages/ui`에서 가져온다.
+
 ### AdminShell
 
 구현 위치: `apps/admin/src/components/admin-shell.tsx`
 
-- 264px 사이드바와 본문 1fr grid.
-- 사이드바는 sticky 100vh.
-- 본문 padding은 `28px 32px 48px`.
+- 256px 사이드바와 본문 1fr 구성을 사용한다.
+- 사이드바는 `bg-surface`, sticky 100vh다.
+- 본문은 `max-w-6xl`, `px-5 md:px-10`, `py-8`을 사용한다.
 
 ### AdminSidebar
 
 구현 위치: `apps/admin/src/components/admin-sidebar.tsx`
 
-- 주요 메뉴: 대시보드, 콘텐츠 관리, 사용자 관리, 분석, 운영 설정.
+- 주요 메뉴: 대시보드, 강의 관리, 사용자 관리, 분석, 자료실, AI 채팅, 운영 설정.
 - 내부 QA 라우트는 주요 메뉴에 포함하지 않는다.
 - 아이콘은 `lucide-react`를 사용한다.
-- 활성 링크는 `aria-current="page"`와 `.is-active`를 함께 사용한다.
+- 활성 링크는 `aria-current="page"`와 `.is-active`를 함께 사용하며, `bg-charcoal text-cream` pill로 표시한다.
 
 ### AdminHeader
 
@@ -163,7 +166,7 @@
 
 CSS class: `.admin-panel`
 
-- 1px border, 8px radius, 흰색 배경, 18px padding.
+- `bg-surface`, 큰 radius, 20px에서 28px padding을 사용한다.
 - 반복 업무 화면의 기본 표면이다.
 
 ### Admin Toolbar
@@ -171,7 +174,7 @@ CSS class: `.admin-panel`
 CSS class: `.admin-toolbar`
 
 - 화면에 필요한 검색, select filter, 페이지 크기, 주요 행동을 한 줄 grid로 배치한다.
-- label 안의 span은 12px bold 보조 라벨이다.
+- label 안의 span은 12px에서 13px bold 보조 라벨이다.
 - 모바일 대응이 필요해지면 grid를 1열로 접는 규칙을 먼저 추가한다.
 
 ### Admin Table
@@ -180,7 +183,7 @@ CSS class: `.admin-table`, `.admin-table-wrap`
 
 - horizontal overflow를 허용한다.
 - 최소 너비는 760px이다.
-- `th`는 12px, `td`는 14px 기준이다.
+- `th`는 13px, `td`는 15px 기준이다.
 - 첫 열은 제목과 보조 식별자를 세로로 보여준다.
 
 ### Admin Dialog
