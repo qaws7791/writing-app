@@ -1,7 +1,5 @@
 "use client"
 
-/* eslint-disable react/button-has-type */
-
 import { useRef, useState, type MouseEvent as ReactMouseEvent } from "react"
 
 import {
@@ -22,6 +20,7 @@ import {
 } from "@/features/landing/landing-motion"
 import { Pebbles, PreviewFrame } from "@/features/landing/landing-primitives"
 import { ArrowRightIcon } from "@workspace/ui/components/icons"
+import { Button } from "@workspace/ui/components/ui/button"
 
 export function LandingNav({
   goRoot,
@@ -43,10 +42,11 @@ export function LandingNav({
       }}
     >
       <div className="max-w-6xl mx-auto px-5 md:px-10 h-16 flex items-center justify-between">
-        <button
-          className="flex items-center gap-2"
+        <Button
+          className="h-auto gap-2 px-0 py-0 text-charcoal hover:bg-transparent"
           onClick={goRoot}
-          tabIndex={0}
+          type="button"
+          variant="ghost"
         >
           <span
             className="inline-block bg-primary rounded-full"
@@ -58,16 +58,15 @@ export function LandingNav({
           >
             Kernel
           </span>
-        </button>
+        </Button>
 
-        <button
-          className="btn-squish bg-charcoal text-cream rounded-full font-bold"
+        <Button
           onClick={startLearning}
           style={{ fontSize: "0.9375rem", padding: "0.625rem 1.25rem" }}
-          tabIndex={0}
+          type="button"
         >
           시작하기
-        </button>
+        </Button>
       </div>
     </nav>
   )
@@ -147,29 +146,30 @@ export function Hero({
           </p>
 
           <div className="flex flex-wrap items-center gap-3 mt-9">
-            <button
-              className="btn-squish bg-charcoal text-cream rounded-full font-bold inline-flex items-center gap-2"
+            <Button
+              className="h-auto gap-2"
               onClick={startLearning}
               style={{
                 fontSize: "1.0625rem",
                 padding: "1rem 1.75rem",
               }}
-              tabIndex={0}
+              type="button"
             >
               무료로 시작하기
               <ArrowRightIcon size={19} />
-            </button>
-            <button
-              className="btn-squish bg-surface rounded-full font-bold"
+            </Button>
+            <Button
+              className="h-auto"
               onClick={browseCourses}
               style={{
                 fontSize: "1.0625rem",
                 padding: "1rem 1.75rem",
               }}
-              tabIndex={0}
+              type="button"
+              variant="secondary"
             >
               코스 둘러보기
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -496,15 +496,15 @@ export function FinalCta({
           >
             가입은 1분이면 충분해요. 지금 바로 첫 레슨을 시작해 보세요.
           </p>
-          <button
-            className="btn-squish bg-primary text-ink rounded-full font-bold inline-flex items-center gap-2 mt-9"
+          <Button
+            className="mt-9 h-auto gap-2 bg-primary text-ink hover:bg-primary/90"
             onClick={startLearning}
             style={{ fontSize: "1.125rem", padding: "1.125rem 2rem" }}
-            tabIndex={0}
+            type="button"
           >
             무료로 시작하기
             <ArrowRightIcon size={20} />
-          </button>
+          </Button>
         </div>
       </Reveal>
     </section>

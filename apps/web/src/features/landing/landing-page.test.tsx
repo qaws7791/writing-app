@@ -111,7 +111,7 @@ describe("공개 랜딩 페이지", () => {
     expect(container.querySelector("[data-testid]")).not.toBeInTheDocument()
 
     for (const button of container.querySelectorAll("button")) {
-      expect(button).not.toHaveAttribute("type")
+      expect(button).toHaveAttribute("type", "button")
     }
 
     const images = Array.from(container.querySelectorAll("img"))

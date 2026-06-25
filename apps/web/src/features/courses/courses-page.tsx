@@ -3,6 +3,9 @@ import Link from "next/link"
 
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type { CourseSummary } from "@/features/courses/course-types"
+import { buttonVariants, Button } from "@workspace/ui/components/ui/button"
+import { Input } from "@workspace/ui/components/ui/input"
+import { Select } from "@workspace/ui/components/ui/select"
 
 type CoursesPageProps = {
   readonly courses: readonly CourseSummary[]
@@ -13,10 +16,6 @@ export type CourseListFilters = {
   readonly category: string
   readonly query: string
   readonly sort: "latest" | "studyTime" | "title"
-}
-
-function cx(...classes: Array<false | null | string | undefined>): string {
-  return classes.filter(Boolean).join(" ")
 }
 
 export function CoursesPage({ courses, filters }: CoursesPageProps) {
@@ -68,8 +67,7 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
             <input name="category" type="hidden" value={filters.category} />
             <label className="grid gap-2">
               <span className="text-muted font-bold text-sm">검색</span>
-              <input
-                className="min-h-11 rounded-full bg-cream px-4 text-charcoal font-medium outline-none"
+              <Input
                 defaultValue={filters.query}
                 name="query"
                 placeholder="제목, 설명, 카테고리 검색"
@@ -77,26 +75,17 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
             </label>
             <label className="grid gap-2">
               <span className="text-muted font-bold text-sm">정렬</span>
-              <select
-                className="min-h-11 rounded-full bg-cream px-4 text-charcoal font-bold outline-none"
-                defaultValue={filters.sort}
-                name="sort"
-              >
+              <Select defaultValue={filters.sort} name="sort">
                 <option value="latest">최신순</option>
                 <option value="title">제목순</option>
                 <option value="studyTime">학습시간순</option>
-              </select>
+              </Select>
             </label>
             <div className="flex items-end gap-2">
-              <button
-                className="min-h-11 rounded-full bg-charcoal px-5 text-cream font-bold btn-squish"
-                type="submit"
-              >
-                적용
-              </button>
+              <Button type="submit">적용</Button>
               {hasActiveFilters ? (
                 <Link
-                  className="min-h-11 rounded-full bg-cream px-5 text-charcoal font-bold inline-flex items-center btn-squish"
+                  className={buttonVariants({ variant: "outline" })}
                   href="/app/courses"
                 >
                   초기화
@@ -110,15 +99,13 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
           >
             {["", ...categories].map((category) => (
               <Link
-                className={cx(
-                  "px-6 py-3 rounded-full font-bold whitespace-nowrap btn-squish",
-                  filters.category === category
-                    ? "bg-charcoal text-cream"
-                    : "bg-surface text-charcoal"
-                )}
+                className={buttonVariants({
+                  className: "h-auto px-6 py-3 text-base",
+                  variant:
+                    filters.category === category ? "default" : "secondary",
+                })}
                 href={createCoursesHref(filters, { category })}
                 key={category}
-                style={{ fontSize: "1rem" }}
               >
                 {category === "" ? "전체" : category}
               </Link>
@@ -135,10 +122,7 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
               <p className="text-muted font-medium mb-4">
                 검색어나 카테고리를 조정하면 더 많은 코스를 볼 수 있습니다.
               </p>
-              <Link
-                className="inline-flex min-h-11 items-center rounded-full bg-charcoal px-5 text-cream font-bold btn-squish"
-                href="/app/courses"
-              >
+              <Link className={buttonVariants()} href="/app/courses">
                 필터 초기화
               </Link>
             </div>

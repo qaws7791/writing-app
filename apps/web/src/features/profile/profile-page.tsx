@@ -10,6 +10,7 @@ import { useTheme } from "next-themes"
 
 import type { LearnerProfile } from "@/features/profile/profile-types"
 import { requestLogout } from "@/lib/auth/auth-client"
+import { Button } from "@workspace/ui/components/ui/button"
 
 type ProfilePageProps = {
   readonly profile: LearnerProfile
@@ -65,16 +66,18 @@ export function ProfilePage({ profile }: ProfilePageProps) {
       <div className="mb-12">
         <ThemeToggle />
       </div>
-      <ProfileButton
+      <Button
+        className="h-auto w-full py-5 text-base"
         onClick={() => {
           void requestLogout("/").then((path) => {
             router.push(path)
           })
         }}
-        variant="wrong"
+        type="button"
+        variant="destructive"
       >
         로그아웃
-      </ProfileButton>
+      </Button>
     </div>
   )
 }
@@ -94,55 +97,24 @@ function ThemeToggle() {
         const on = active === value
 
         return (
-          <button
+          <Button
             aria-pressed={on}
             className={cx(
-              "btn-squish flex flex-col items-center gap-2 py-4 rounded-[1.75rem] font-bold transition-colors",
+              "h-auto w-full flex-col gap-2 rounded-[1.75rem] py-4",
               on ? "bg-primary" : "text-muted hover:bg-surface-hover"
             )}
             key={value}
             onClick={() => setTheme(value)}
             style={on ? { color: "#2A2621" } : undefined}
+            type="button"
+            variant="ghost"
           >
             <Icon size={22} strokeWidth={2.5} />
             {label}
-          </button>
+          </Button>
         )
       })}
     </div>
-  )
-}
-
-function ProfileButton({
-  children,
-  disabled,
-  onClick,
-  variant = "primary",
-}: {
-  readonly children: ReactNode
-  readonly disabled?: boolean
-  readonly onClick?: () => void
-  readonly variant?: "primary" | "wrong"
-}) {
-  const variantClassName = {
-    primary: "bg-charcoal text-cream",
-    wrong: "bg-coral-light text-charcoal",
-  }[variant]
-
-  return (
-    <button
-      className={cx(
-        "w-full font-bold py-5 rounded-4xl btn-squish",
-        variantClassName,
-        disabled ? "opacity-50 cursor-not-allowed" : undefined
-      )}
-      disabled={disabled}
-      onClick={onClick}
-      style={{ fontSize: "1.125rem" }}
-      type="button"
-    >
-      {children}
-    </button>
   )
 }
 

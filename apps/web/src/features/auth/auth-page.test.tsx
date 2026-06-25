@@ -38,9 +38,14 @@ describe("로그인 페이지", () => {
       name: "Google로 계속하기",
     })
 
-    expect(googleLogin).not.toHaveAttribute("type")
+    expect(googleLogin).toHaveAttribute("type", "button")
     expect(googleLogin).toHaveClass(
-      "w-full bg-ink text-white font-bold py-5 rounded-4xl btn-squish flex items-center justify-center gap-3"
+      "btn-squish",
+      "w-full",
+      "py-5",
+      "font-bold",
+      "bg-charcoal",
+      "text-cream"
     )
     expect(
       screen.queryByRole("button", {

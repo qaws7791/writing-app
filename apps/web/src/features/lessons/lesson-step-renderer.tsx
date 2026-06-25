@@ -47,6 +47,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/ui/card"
+import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 type LessonStepRendererProps = {
   readonly step: LessonStep
@@ -1174,7 +1175,7 @@ function WriteAnswer({
           <p className="font-medium whitespace-pre-line">{step.structure}</p>
         </div>
       )}
-      <textarea
+      <Textarea
         className={`w-full bg-surface rounded-4xl p-6 font-medium outline-none resize-none ${minHeight}`}
         disabled={checked !== false}
         onChange={(event) => handleChange(event.target.value)}

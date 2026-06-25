@@ -6,22 +6,23 @@ import Link from "next/link"
 
 import { globalNavClassName } from "@/components/layout/global-nav-class-name"
 import { globalNavAccountItems } from "@/components/layout/global-nav-routes"
+import { Button } from "@workspace/ui/components/ui/button"
 
 export function GlobalNavAccountMenu() {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <div className="relative">
-      <button
+      <Button
         aria-expanded={isOpen}
         aria-haspopup="menu"
-        className="w-9 h-9 bg-primary rounded-full flex justify-center items-center font-black btn-squish ring-2 ring-surface hover:ring-surface-hover"
+        className="size-9 bg-primary text-ink ring-2 ring-surface hover:ring-surface-hover"
         onClick={() => setIsOpen((current) => !current)}
-        style={{ fontSize: "0.9375rem" }}
+        size="icon-sm"
         type="button"
       >
         ✍️
-      </button>
+      </Button>
       {isOpen ? (
         <div className="absolute right-0 top-12 bg-cream border-2 border-surface rounded-4xl p-4 w-48 z-50">
           {globalNavAccountItems.map((item) => (

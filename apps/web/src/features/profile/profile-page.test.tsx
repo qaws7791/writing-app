@@ -96,7 +96,7 @@ describe("프로필 화면", () => {
 
     expect(screen.getByRole("button", { name: "라이트" })).toHaveClass(
       "btn-squish",
-      "flex",
+      "inline-flex",
       "flex-col"
     )
     expect(systemThemeButton).toHaveAttribute("aria-pressed", "true")

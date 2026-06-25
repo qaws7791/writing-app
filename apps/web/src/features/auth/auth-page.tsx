@@ -1,8 +1,7 @@
 "use client"
 
-/* eslint-disable react/button-has-type */
-
 import { requestGoogleLogin, requestTestLogin } from "@/lib/auth/auth-client"
+import { Button } from "@workspace/ui/components/ui/button"
 
 type AuthPageProps = {
   readonly nextPath: string
@@ -32,22 +31,23 @@ export function AuthPage({ nextPath, testAuthEnabled = false }: AuthPageProps) {
         매일 한 단락씩, 글의 결을 다듬는 한국어 글쓰기 학습
       </p>
       <div className="w-full max-w-sm space-y-4">
-        <button
-          className="w-full bg-ink text-white font-bold py-5 rounded-4xl btn-squish flex items-center justify-center gap-3"
+        <Button
+          className="h-auto w-full py-5 text-base"
           onClick={loginWithGoogle}
-          style={{ fontSize: "1.125rem" }}
+          type="button"
         >
           <GoogleIcon />
           Google로 계속하기
-        </button>
+        </Button>
         {testAuthEnabled ? (
-          <button
-            className="w-full bg-surface text-charcoal font-bold py-4 rounded-4xl btn-squish"
+          <Button
+            className="h-auto w-full py-4 text-base"
             onClick={loginWithTestUser}
-            style={{ fontSize: "1rem" }}
+            type="button"
+            variant="secondary"
           >
             테스트 계정으로 계속하기
-          </button>
+          </Button>
         ) : null}
         <p
           className="text-center text-muted font-medium"
