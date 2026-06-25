@@ -1,10 +1,9 @@
 "use client"
 
-import { Archive, FileText, Plus, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useState, useTransition } from "react"
 
-import { AdminHeader } from "@/components/admin-header"
+import { StatusBadge } from "@/components/status-badge"
 import { readPlainTextFromTiptapDocument } from "@/features/resources/resource-document-content"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
@@ -13,10 +12,42 @@ import type {
   AdminResourceDocumentList,
   ReadAdminResourcesInput,
 } from "@/lib/api/admin-api"
+import {
+  ArchiveIcon,
+  FileTextIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@workspace/ui/components/icons"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
+import { EmptyState } from "@workspace/ui/components/ui/empty-state"
+import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
+import {
+  FilterToolbar,
+  FilterToolbarField,
+  FilterToolbarLabel,
+} from "@workspace/ui/components/ui/filter-toolbar"
 import { Input } from "@workspace/ui/components/ui/input"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
+import { SectionHeader } from "@workspace/ui/components/ui/section-header"
 import { Select } from "@workspace/ui/components/ui/select"
+import { Surface } from "@workspace/ui/components/ui/surface"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
+
+type StatusMessage = {
+  readonly message: string
+  readonly tone: "danger" | "success"
+}
+
+type ResourceDocumentAction = "archive" | "delete"
 
 export function AdminResourcesPage({
   createResourceDocument,
@@ -29,19 +60,19 @@ export function AdminResourcesPage({
   readonly documentsResult: AdminApiResult<AdminResourceDocumentList>
   readonly filters: ReadAdminResourcesInput
 }) {
-  const [message, setMessage] = useState<string | null>(null)
+  const [message, setMessage] = useState<StatusMessage | null>(null)
   const [isPending, startTransition] = useTransition()
 
   if (documentsResult.status === "error") {
     return (
       <>
-        <AdminHeader
+        <PageHeader
           description="운영 자료와 교육 문서를 저장하고 검색합니다."
           title="자료실"
         />
-        <section className="admin-alert" role="alert">
-          {documentsResult.error.message}
-        </section>
+        <Alert role="alert" tone="danger">
+          <AlertDescription>{documentsResult.error.message}</AlertDescription>
+        </Alert>
       </>
     )
   }
@@ -50,30 +81,30 @@ export function AdminResourcesPage({
 
   return (
     <>
-      <AdminHeader
+      <PageHeader
         description="운영 자료와 교육 문서를 저장하고 검색합니다."
         title="자료실"
       />
-      <form className="admin-toolbar" method="get" aria-label="자료 필터">
-        <label>
-          <span>자료 검색</span>
+      <FilterToolbar method="get" aria-label="자료 필터">
+        <FilterToolbarField>
+          <FilterToolbarLabel>자료 검색</FilterToolbarLabel>
           <Input
             aria-label="자료 검색"
             defaultValue={filters.query}
             name="query"
             placeholder="제목 또는 본문 검색"
           />
-        </label>
-        <label>
-          <span>상태</span>
+        </FilterToolbarField>
+        <FilterToolbarField>
+          <FilterToolbarLabel>상태</FilterToolbarLabel>
           <Select aria-label="상태" defaultValue={filters.status} name="status">
             <option value="all">전체</option>
             <option value="active">active</option>
             <option value="archived">archived</option>
           </Select>
-        </label>
-        <label>
-          <span>페이지 크기</span>
+        </FilterToolbarField>
+        <FilterToolbarField>
+          <FilterToolbarLabel>페이지 크기</FilterToolbarLabel>
           <Select
             aria-label="페이지 크기"
             defaultValue={filters.pageSize}
@@ -83,18 +114,15 @@ export function AdminResourcesPage({
             <option value={20}>20개</option>
             <option value={50}>50개</option>
           </Select>
-        </label>
+        </FilterToolbarField>
         <Button variant="outline" type="submit">
           필터 적용
         </Button>
-      </form>
-      <section className="admin-panel admin-resource-create-panel">
-        <div className="admin-section-heading">
-          <h2>새 자료</h2>
-          <p>운영 자료를 작성합니다.</p>
-        </div>
+      </FilterToolbar>
+      <Surface className="mb-4" variant="panel">
+        <SectionHeader title="새 자료" description="운영 자료를 작성합니다." />
         <form
-          className="admin-resource-form"
+          className="grid gap-3.5"
           onSubmit={(event) => {
             event.preventDefault()
             const formData = new FormData(event.currentTarget)
@@ -104,65 +132,73 @@ export function AdminResourcesPage({
 
               setMessage(
                 result.status === "ok"
-                  ? "자료를 저장했습니다."
-                  : result.error.message
+                  ? { message: "자료를 저장했습니다.", tone: "success" }
+                  : { message: result.error.message, tone: "danger" }
               )
             })
           }}
         >
-          <label className="admin-form-field">
-            <span>제목</span>
-            <Input name="title" required maxLength={120} />
-          </label>
-          <label className="admin-form-field">
-            <span>본문</span>
-            <Textarea className="min-h-56" name="body" required />
-          </label>
+          <Field>
+            <FieldLabel htmlFor="resource-title">제목</FieldLabel>
+            <Input id="resource-title" name="title" required maxLength={120} />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="resource-body">본문</FieldLabel>
+            <Textarea
+              className="min-h-56"
+              id="resource-body"
+              name="body"
+              required
+            />
+          </Field>
           <Button disabled={isPending} type="submit">
-            <Plus aria-hidden="true" size={16} />
+            <PlusIcon aria-hidden="true" size={16} />
             저장
           </Button>
         </form>
-      </section>
+      </Surface>
       {message === null ? null : (
-        <p className="admin-inline-status" role="status">
-          {message}
-        </p>
+        <Alert className="mb-4" role="status" tone={message.tone}>
+          <AlertDescription>{message.message}</AlertDescription>
+        </Alert>
       )}
-      <section className="admin-panel">
-        <div className="admin-section-heading">
-          <h2>자료 목록</h2>
-          <p>
-            총 {documents.pagination.totalItems}개 · {documents.pagination.page}
-            /{documents.pagination.totalPages} 페이지
-          </p>
-        </div>
+      <Surface variant="panel">
+        <SectionHeader
+          title="자료 목록"
+          description={`총 ${documents.pagination.totalItems}개 · ${documents.pagination.page}/${documents.pagination.totalPages} 페이지`}
+        />
         {documents.items.length === 0 ? (
-          <p className="admin-empty">조건에 맞는 자료가 없습니다.</p>
+          <EmptyState role="status" title="조건에 맞는 자료가 없습니다." />
         ) : (
-          <div className="admin-resource-list">
+          <div className="grid gap-3">
             {documents.items.map((document) => (
               <Link
-                className="admin-resource-list-item"
+                className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3.5 rounded-card border border-border-subtle bg-bg-canvas p-3.5 transition-colors hover:border-border-strong hover:bg-bg-surface-hover max-[860px]:grid-cols-[44px_minmax(0,1fr)]"
                 href={`/resources/${document.id}`}
                 key={document.id}
               >
-                <span className="admin-resource-list-item__icon">
-                  <FileText aria-hidden="true" size={18} />
+                <span className="grid size-11 place-items-center rounded-card bg-bg-surface text-fg-muted">
+                  <FileTextIcon aria-hidden="true" size={18} />
                 </span>
-                <span>
-                  <strong>{document.title}</strong>
-                  <small>
+                <span className="grid min-w-0 gap-1">
+                  <strong className="text-title-md font-black text-fg-default">
+                    {document.title}
+                  </strong>
+                  <small className="overflow-hidden text-ellipsis whitespace-nowrap text-label-sm font-semibold text-fg-muted">
                     {document.author.name} · {formatDate(document.updatedAt)}
                   </small>
-                  <em>{document.excerpt}</em>
+                  <em className="overflow-hidden text-ellipsis whitespace-nowrap text-label-sm font-semibold not-italic text-fg-muted">
+                    {document.excerpt}
+                  </em>
                 </span>
-                <span className="admin-status-pill">{document.status}</span>
+                <span className="max-[860px]:col-start-2">
+                  <StatusBadge status={document.status} />
+                </span>
               </Link>
             ))}
           </div>
         )}
-      </section>
+      </Surface>
     </>
   )
 }
@@ -186,19 +222,21 @@ export function AdminResourceDetailPage({
     formData: FormData
   ) => Promise<AdminApiResult<AdminResourceDocumentDetail>>
 }) {
-  const [message, setMessage] = useState<string | null>(null)
+  const [message, setMessage] = useState<StatusMessage | null>(null)
+  const [pendingAction, setPendingAction] =
+    useState<ResourceDocumentAction | null>(null)
   const [isPending, startTransition] = useTransition()
 
   if (documentResult.status === "error") {
     return (
       <>
-        <AdminHeader
+        <PageHeader
           description="자료 문서 내용을 확인하고 수정합니다."
           title="자료 상세"
         />
-        <section className="admin-alert" role="alert">
-          {documentResult.error.message}
-        </section>
+        <Alert role="alert" tone="danger">
+          <AlertDescription>{documentResult.error.message}</AlertDescription>
+        </Alert>
       </>
     )
   }
@@ -207,20 +245,20 @@ export function AdminResourceDetailPage({
 
   return (
     <>
-      <AdminHeader
+      <PageHeader
         description={`${document.author.name} · ${formatDate(
           document.updatedAt
         )}`}
         title={document.title}
       />
       {message === null ? null : (
-        <p className="admin-inline-status" role="status">
-          {message}
-        </p>
+        <Alert className="mb-4" role="status" tone={message.tone}>
+          <AlertDescription>{message.message}</AlertDescription>
+        </Alert>
       )}
-      <section className="admin-panel">
+      <Surface variant="panel">
         <form
-          className="admin-resource-form"
+          className="grid gap-3.5"
           onSubmit={(event) => {
             event.preventDefault()
             const formData = new FormData(event.currentTarget)
@@ -230,75 +268,113 @@ export function AdminResourceDetailPage({
 
               setMessage(
                 result.status === "ok"
-                  ? "자료를 수정했습니다."
-                  : result.error.message
+                  ? { message: "자료를 수정했습니다.", tone: "success" }
+                  : { message: result.error.message, tone: "danger" }
               )
             })
           }}
         >
-          <label className="admin-form-field">
-            <span>제목</span>
+          <Field>
+            <FieldLabel htmlFor="resource-detail-title">제목</FieldLabel>
             <Input
               defaultValue={document.title}
+              id="resource-detail-title"
               maxLength={120}
               name="title"
               required
             />
-          </label>
-          <label className="admin-form-field">
-            <span>본문</span>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="resource-detail-body">본문</FieldLabel>
             <Textarea
               className="min-h-56"
               defaultValue={readPlainTextFromTiptapDocument(document.content)}
+              id="resource-detail-body"
               name="body"
               required
             />
-          </label>
-          <div className="admin-row-actions">
+          </Field>
+          <div className="flex gap-2">
             <Button disabled={isPending} type="submit">
               저장
             </Button>
             <Button
               variant="outline"
               disabled={isPending || document.status === "archived"}
-              onClick={() => {
-                startTransition(async () => {
-                  const result = await archiveResourceDocument()
-
-                  setMessage(
-                    result.status === "ok"
-                      ? "자료를 보관했습니다."
-                      : result.error.message
-                  )
-                })
-              }}
+              onClick={() => setPendingAction("archive")}
               type="button"
             >
-              <Archive aria-hidden="true" size={15} />
+              <ArchiveIcon aria-hidden="true" size={15} />
               보관
             </Button>
             <Button
               variant="destructive"
               disabled={isPending}
-              onClick={() => {
-                startTransition(async () => {
-                  const result = await deleteResourceDocument()
-
-                  setMessage(
-                    result.status === "ok"
-                      ? "자료를 삭제했습니다."
-                      : result.error.message
-                  )
-                })
-              }}
+              onClick={() => setPendingAction("delete")}
               type="button"
             >
-              <Trash2 aria-hidden="true" size={15} />
+              <TrashIcon aria-hidden="true" size={15} />
               삭제
             </Button>
           </div>
         </form>
-      </section>
+      </Surface>
+      <AlertDialog
+        open={pendingAction !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingAction(null)
+          }
+        }}
+      >
+        {pendingAction === null ? null : (
+          <AlertDialogContent>
+            <AlertDialogTitle>
+              {pendingAction === "archive"
+                ? "자료 보관 확인"
+                : "자료 삭제 확인"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingAction === "archive"
+                ? `${document.title} 자료를 자료실 목록에서 보관 상태로 전환합니다.`
+                : `${document.title} 자료를 삭제합니다.`}
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
+              <Button
+                variant="destructive"
+                disabled={isPending}
+                onClick={() => {
+                  const action = pendingAction
+
+                  startTransition(async () => {
+                    const result =
+                      action === "archive"
+                        ? await archiveResourceDocument()
+                        : await deleteResourceDocument()
+
+                    setMessage(
+                      result.status === "ok"
+                        ? {
+                            message:
+                              action === "archive"
+                                ? "자료를 보관했습니다."
+                                : "자료를 삭제했습니다.",
+                            tone: "success",
+                          }
+                        : { message: result.error.message, tone: "danger" }
+                    )
+                    setPendingAction(null)
+                  })
+                }}
+                type="button"
+              >
+                {pendingAction === "archive" ? "보관하기" : "삭제하기"}
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
     </>
   )
 }

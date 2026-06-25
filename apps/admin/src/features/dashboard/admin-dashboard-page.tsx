@@ -1,9 +1,15 @@
 import type { ReactNode } from "react"
-import { BookOpen, CheckCircle2, UserPlus, Users } from "lucide-react"
 
-import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type { AdminDashboard } from "@/lib/api/admin-api"
+import {
+  BookOpenIcon,
+  CheckCircleIcon,
+  UserPlusIcon,
+  UsersIcon,
+} from "@workspace/ui/components/icons"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
 import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 
 export function AdminDashboardPage({
@@ -14,13 +20,13 @@ export function AdminDashboardPage({
   if (dashboardResult.status === "error") {
     return (
       <>
-        <AdminHeader
+        <PageHeader
           description="학습자 활동과 콘텐츠 상태를 한눈에 확인합니다."
           title="대시보드"
         />
-        <section className="admin-alert" role="alert">
-          {dashboardResult.error.message}
-        </section>
+        <Alert role="alert" tone="danger">
+          <AlertDescription>{dashboardResult.error.message}</AlertDescription>
+        </Alert>
       </>
     )
   }
@@ -29,31 +35,28 @@ export function AdminDashboardPage({
 
   return (
     <>
-      <AdminHeader
-        description="글결 서비스 현황 한눈에 보기"
-        title="대시보드"
-      />
+      <PageHeader description="글결 서비스 현황 한눈에 보기" title="대시보드" />
       <StatGrid aria-label="주요 지표">
         <MetricCard
-          icon={<Users aria-hidden="true" size={19} />}
+          icon={<UsersIcon aria-hidden="true" size={19} />}
           label="총 사용자"
           value={metrics.totalUsers.toLocaleString("ko-KR")}
           detail={`활성 ${metrics.activeUsersLast7Days.toLocaleString("ko-KR")}명 (최근 7일)`}
         />
         <MetricCard
-          icon={<UserPlus aria-hidden="true" size={19} />}
+          icon={<UserPlusIcon aria-hidden="true" size={19} />}
           label="신규 가입"
           value={`+${metrics.signupsLast7Days.toLocaleString("ko-KR")}`}
           detail={`오늘 ${metrics.signupsToday.toLocaleString("ko-KR")}명`}
         />
         <MetricCard
-          icon={<CheckCircle2 aria-hidden="true" size={19} />}
+          icon={<CheckCircleIcon aria-hidden="true" size={19} />}
           label="총 레슨 완료"
           value={metrics.completedLessons.toLocaleString("ko-KR")}
           detail="누적 완료 수"
         />
         <MetricCard
-          icon={<BookOpen aria-hidden="true" size={19} />}
+          icon={<BookOpenIcon aria-hidden="true" size={19} />}
           label="콘텐츠"
           value={metrics.activeLessons.toLocaleString("ko-KR")}
           detail={`${metrics.activeCourses.toLocaleString("ko-KR")}개 강의의 레슨`}

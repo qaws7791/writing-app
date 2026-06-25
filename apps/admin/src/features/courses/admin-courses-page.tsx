@@ -1,10 +1,10 @@
 "use client"
 
-import { Archive, Plus } from "lucide-react"
 import { useState, useTransition } from "react"
 import Image from "next/image"
+import Link from "next/link"
 
-import { AdminHeader } from "@/components/admin-header"
+import { StatusBadge } from "@/components/status-badge"
 import { createAdminCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
@@ -14,9 +14,36 @@ import type {
   ReadAdminCoursesInput,
 } from "@/lib/api/admin-api"
 import { contentStatuses } from "@workspace/contracts/status"
+import { ArchiveIcon, PlusIcon } from "@workspace/ui/components/icons"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
+import {
+  DataTable,
+  DataTableContainer,
+} from "@workspace/ui/components/ui/data-table"
+import {
+  FilterToolbar,
+  FilterToolbarField,
+  FilterToolbarLabel,
+} from "@workspace/ui/components/ui/filter-toolbar"
 import { Input } from "@workspace/ui/components/ui/input"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
+import { SectionHeader } from "@workspace/ui/components/ui/section-header"
 import { Select } from "@workspace/ui/components/ui/select"
+import { Surface } from "@workspace/ui/components/ui/surface"
+
+type StatusMessage = {
+  readonly message: string
+  readonly tone: "danger" | "success"
+}
 
 export function AdminCoursesPage({
   archiveCourse,
@@ -34,19 +61,19 @@ export function AdminCoursesPage({
   const [archiveTarget, setArchiveTarget] = useState<
     AdminCourseList["items"][number] | null
   >(null)
-  const [message, setMessage] = useState<string | null>(null)
+  const [message, setMessage] = useState<StatusMessage | null>(null)
   const [isPending, startTransition] = useTransition()
 
   if (coursesResult.status === "error") {
     return (
       <>
-        <AdminHeader
+        <PageHeader
           description="코스를 검색하고 새 강의를 생성하거나 보관합니다."
           title="콘텐츠 관리"
         />
-        <section className="admin-alert" role="alert">
-          {coursesResult.error.message}
-        </section>
+        <Alert role="alert" tone="danger">
+          <AlertDescription>{coursesResult.error.message}</AlertDescription>
+        </Alert>
       </>
     )
   }
@@ -55,22 +82,22 @@ export function AdminCoursesPage({
 
   return (
     <>
-      <AdminHeader
+      <PageHeader
         description="코스를 검색하고 새 강의를 생성하거나 보관합니다."
         title="콘텐츠 관리"
       />
-      <form className="admin-toolbar" method="get" aria-label="코스 필터">
-        <label>
-          <span>코스 검색</span>
+      <FilterToolbar method="get" aria-label="코스 필터">
+        <FilterToolbarField>
+          <FilterToolbarLabel>코스 검색</FilterToolbarLabel>
           <Input
             aria-label="코스 검색"
             defaultValue={filters.query}
             name="query"
             placeholder="제목 또는 설명 검색"
           />
-        </label>
-        <label>
-          <span>카테고리</span>
+        </FilterToolbarField>
+        <FilterToolbarField>
+          <FilterToolbarLabel>카테고리</FilterToolbarLabel>
           <Select
             aria-label="카테고리"
             defaultValue={filters.category}
@@ -84,17 +111,17 @@ export function AdminCoursesPage({
             <option value="심화 글쓰기">심화 글쓰기</option>
             <option value="미분류">미분류</option>
           </Select>
-        </label>
-        <label>
-          <span>상태</span>
+        </FilterToolbarField>
+        <FilterToolbarField>
+          <FilterToolbarLabel>상태</FilterToolbarLabel>
           <Select aria-label="상태" defaultValue={filters.status} name="status">
             <option value="all">전체</option>
             <option value="active">active</option>
             <option value="archived">archived</option>
           </Select>
-        </label>
-        <label>
-          <span>페이지 크기</span>
+        </FilterToolbarField>
+        <FilterToolbarField>
+          <FilterToolbarLabel>페이지 크기</FilterToolbarLabel>
           <Select
             aria-label="페이지 크기"
             defaultValue={filters.pageSize}
@@ -104,7 +131,7 @@ export function AdminCoursesPage({
             <option value={20}>20개</option>
             <option value={50}>50개</option>
           </Select>
-        </label>
+        </FilterToolbarField>
         <Button variant="outline" type="submit">
           필터 적용
         </Button>
@@ -115,31 +142,30 @@ export function AdminCoursesPage({
               const result = await createCourse()
               setMessage(
                 result.status === "ok"
-                  ? "새 코스를 만들었습니다."
-                  : result.error.message
+                  ? { message: "새 코스를 만들었습니다.", tone: "success" }
+                  : { message: result.error.message, tone: "danger" }
               )
             })
           }}
           type="button"
         >
-          <Plus aria-hidden="true" data-icon="inline-start" size={16} />새 코스
+          <PlusIcon aria-hidden="true" data-icon="inline-start" size={16} />새
+          코스
         </Button>
-      </form>
+      </FilterToolbar>
       {message === null ? null : (
-        <p className="admin-inline-status" role="status">
-          {message}
-        </p>
+        <Alert className="mb-4" role="status" tone={message.tone}>
+          <AlertDescription>{message.message}</AlertDescription>
+        </Alert>
       )}
-      <section className="admin-panel">
-        <div className="admin-section-heading">
-          <h2>코스 목록</h2>
-          <p>
-            총 {courses.pagination.totalItems}개 · {courses.pagination.page}/
-            {courses.pagination.totalPages} 페이지
-          </p>
-        </div>
-        <div className="admin-table-wrap">
-          <table className="admin-table">
+      <Surface variant="panel">
+        <SectionHeader
+          title="코스 목록"
+          description={`총 ${courses.pagination.totalItems}개 · ${courses.pagination.page}/${courses.pagination.totalPages} 페이지`}
+        />
+        <DataTableContainer>
+          <DataTable>
+            <caption className="sr-only">코스 목록</caption>
             <thead>
               <tr>
                 <th scope="col">코스</th>
@@ -153,8 +179,8 @@ export function AdminCoursesPage({
               {courses.items.map((course) => (
                 <tr key={course.id}>
                   <td>
-                    <div className="admin-course-title-cell">
-                      <div className="admin-course-thumbnail">
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-12 w-[70px] shrink-0 overflow-hidden rounded-card border border-border-subtle bg-bg-canvas">
                         <Image
                           alt=""
                           fill
@@ -162,14 +188,16 @@ export function AdminCoursesPage({
                           src={createAdminCourseImageUrl(course.visualKey)}
                         />
                       </div>
-                      <div>
-                        <a
-                          className="admin-table__title"
+                      <div className="grid min-w-0 gap-1">
+                        <Link
+                          className="font-black text-fg-default hover:underline"
                           href={`/courses/${course.id}`}
                         >
                           {course.title}
-                        </a>
-                        <span>revision {course.revision}</span>
+                        </Link>
+                        <span className="text-caption font-semibold text-fg-muted">
+                          revision {course.revision}
+                        </span>
                       </div>
                     </div>
                   </td>
@@ -178,7 +206,7 @@ export function AdminCoursesPage({
                     {course.unitCount}개 유닛 · {course.lessonCount}개 레슨
                   </td>
                   <td>
-                    <span className="admin-status-pill">{course.status}</span>
+                    <StatusBadge status={course.status} />
                   </td>
                   <td>
                     <Button
@@ -189,33 +217,32 @@ export function AdminCoursesPage({
                       onClick={() => setArchiveTarget(course)}
                       type="button"
                     >
-                      <Archive aria-hidden="true" size={15} />
+                      <ArchiveIcon aria-hidden="true" size={15} />
                       보관
                     </Button>
                   </td>
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
-      </section>
-      {archiveTarget === null ? null : (
-        <div
-          aria-labelledby="archive-course-title"
-          className="admin-dialog-backdrop"
-          role="dialog"
-        >
-          <div className="admin-dialog">
-            <h2 id="archive-course-title">코스 보관 확인</h2>
-            <p>{archiveTarget.title} 코스를 학습자 화면에서 숨깁니다.</p>
-            <div className="admin-dialog__actions">
-              <Button
-                variant="outline"
-                onClick={() => setArchiveTarget(null)}
-                type="button"
-              >
-                취소
-              </Button>
+          </DataTable>
+        </DataTableContainer>
+      </Surface>
+      <AlertDialog
+        open={archiveTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setArchiveTarget(null)
+          }
+        }}
+      >
+        {archiveTarget === null ? null : (
+          <AlertDialogContent>
+            <AlertDialogTitle>코스 보관 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              {archiveTarget.title} 코스를 학습자 화면에서 숨깁니다.
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
               <Button
                 variant="destructive"
                 disabled={isPending}
@@ -227,8 +254,8 @@ export function AdminCoursesPage({
 
                     setMessage(
                       result.status === "ok"
-                        ? "코스를 보관했습니다."
-                        : result.error.message
+                        ? { message: "코스를 보관했습니다.", tone: "success" }
+                        : { message: result.error.message, tone: "danger" }
                     )
                     setArchiveTarget(null)
                   })
@@ -237,10 +264,10 @@ export function AdminCoursesPage({
               >
                 보관하기
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
     </>
   )
 }

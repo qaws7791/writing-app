@@ -14,17 +14,17 @@
 
 ## 정보 구조
 
-- `AdminHeader`
+- `PageHeader`
 - 처리 상태 메시지
-- 공지와 배너 form
-- 법적 문서 form
-- 콘텐츠 초기화 패널
-- 초기화 확인 dialog
+- `Surface` 성격의 공지와 배너 form
+- `Surface` 성격의 법적 문서 form
+- `Surface variant="panel"` 콘텐츠 초기화 패널
+- `AlertDialog` 초기화 확인
 
 ## UI 기준
 
-- 설정 form은 `.settings-grid` 2열을 사용한다.
-- 공지/배너와 법적 문서는 각각 `admin-panel` form으로 분리한다.
+- 설정 form은 responsive 2열 grid를 사용한다.
+- 공지/배너와 법적 문서는 각각 `SectionHeader`, `Field`, `Input`, `Textarea` 조합으로 분리한다.
 - 저장 버튼은 기본 `Button`이다.
 - 콘텐츠 초기화는 `Button variant="destructive"`와 확인 dialog를 사용한다.
 
@@ -42,4 +42,4 @@
 
 - textarea와 input에는 label 또는 `aria-label`을 제공한다.
 - 처리 완료 메시지는 `role="status"`로 표시한다.
-- 초기화 확인 dialog는 `role="dialog"`와 `aria-labelledby`를 제공한다.
+- 초기화 확인 dialog는 `AlertDialog`를 사용하며 `role="alertdialog"` 의미와 제목/설명 관계를 제공한다.

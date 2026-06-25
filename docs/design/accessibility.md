@@ -15,7 +15,7 @@
 - 학습자 `charcoal` 버튼 위에는 `cream` 텍스트를 사용한다.
 - `muted` 텍스트는 긴 본문보다 보조 정보에 사용한다.
 - `danger-bg`, `success-bg` 위에는 각각 `danger-fg`, `success-fg` 또는 `fg-default`를 사용한다.
-- 어드민 위험 버튼 `#e11d48` 위에는 흰색 텍스트를 사용한다.
+- 어드민 위험 버튼은 `danger-*` semantic token과 `Button variant="destructive"`를 사용한다.
 
 색 조합을 새로 만들 때는 구현 전 대비를 확인한다.
 
@@ -43,7 +43,7 @@
 - 테이블은 `th scope="col"`을 사용한다.
 - 오류는 `role="alert"`를 사용한다.
 - 처리 완료, 저장 완료 같은 상태는 `role="status"`를 사용한다.
-- 확인 dialog는 `role="dialog"`와 `aria-labelledby`를 제공한다.
+- 확인 dialog는 `AlertDialog`를 사용하고 `role="alertdialog"` 의미와 제목/설명 관계를 제공한다.
 - 위험 작업 버튼은 색상만으로 의미를 전달하지 않고 `보관하기`, `삭제 처리`, `초기화 실행`처럼 명확한 텍스트를 사용한다.
 
 ## Form 접근성

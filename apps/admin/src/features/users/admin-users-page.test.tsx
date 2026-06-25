@@ -102,7 +102,7 @@ describe("AdminUsersPage", () => {
 
     await user.click(screen.getByRole("button", { name: "삭제 요청" }))
     expect(
-      screen.getByRole("dialog", { name: "삭제 요청 처리 확인" })
+      screen.getByRole("alertdialog", { name: "삭제 요청 처리 확인" })
     ).toBeVisible()
     await user.click(screen.getByRole("button", { name: "삭제 처리" }))
 

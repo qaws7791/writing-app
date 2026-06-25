@@ -15,17 +15,17 @@
 
 ## 정보 구조
 
-- `AdminHeader`
+- `PageHeader`
 - 최근 30일 가입 추이
 - 연속 학습일 분포
-- 레슨별 완료율 table
+- `DataTable` 레슨별 완료율
 
 ## UI 기준
 
-- 요약 영역은 `.analytics-grid`를 사용한다.
+- 요약 영역은 2열 responsive grid와 `Surface variant="panel"`을 사용한다.
 - 시계열과 bucket은 Recharts 기반 차트로 표시할 수 있다.
 - 차트 영역에는 수치 단위와 데이터 의미를 텍스트로 보완한다.
-- 레슨별 분석은 table로 제공한다.
+- 레슨별 분석은 `DataTableContainer`와 `DataTable`로 제공한다.
 
 ## 상태
 

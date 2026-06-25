@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import Link from "next/link"
 
-import { AdminHeader } from "@/components/admin-header"
+import { StatusBadge } from "@/components/status-badge"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminDeleteUserResult,
@@ -14,9 +15,35 @@ import {
   learnerAccountStatuses,
   type LearnerOperationalStatus,
 } from "@workspace/contracts/status"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
+import {
+  DataTable,
+  DataTableContainer,
+} from "@workspace/ui/components/ui/data-table"
+import {
+  FilterToolbar,
+  FilterToolbarField,
+  FilterToolbarLabel,
+} from "@workspace/ui/components/ui/filter-toolbar"
 import { Input } from "@workspace/ui/components/ui/input"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
+import { SectionHeader } from "@workspace/ui/components/ui/section-header"
 import { Select } from "@workspace/ui/components/ui/select"
+import { Surface } from "@workspace/ui/components/ui/surface"
+
+type StatusMessage = {
+  readonly message: string
+  readonly tone: "danger" | "success"
+}
 
 export function AdminUsersPage({
   deleteUser,
@@ -37,77 +64,74 @@ export function AdminUsersPage({
   const [deleteTarget, setDeleteTarget] = useState<
     AdminUserList["items"][number] | null
   >(null)
-  const [message, setMessage] = useState<string | null>(null)
+  const [message, setMessage] = useState<StatusMessage | null>(null)
   const [isPending, startTransition] = useTransition()
 
   if (usersResult.status === "error") {
     return (
       <>
-        <AdminHeader
+        <PageHeader
           description="학습자 상태와 진행 현황을 관리합니다."
           title="사용자 관리"
         />
-        <section className="admin-alert" role="alert">
-          {usersResult.error.message}
-        </section>
+        <Alert role="alert" tone="danger">
+          <AlertDescription>{usersResult.error.message}</AlertDescription>
+        </Alert>
       </>
     )
   }
 
   return (
     <>
-      <AdminHeader
+      <PageHeader
         description="학습자 상태와 진행 현황을 관리합니다."
         title="사용자 관리"
       />
-      <form className="admin-toolbar" method="get" aria-label="사용자 필터">
-        <label>
-          <span>사용자 검색</span>
+      <FilterToolbar method="get" aria-label="사용자 필터">
+        <FilterToolbarField>
+          <FilterToolbarLabel>사용자 검색</FilterToolbarLabel>
           <Input
             aria-label="사용자 검색"
             defaultValue={filters.query}
             name="query"
             placeholder="이름 또는 이메일"
           />
-        </label>
-        <label>
-          <span>상태</span>
+        </FilterToolbarField>
+        <FilterToolbarField>
+          <FilterToolbarLabel>상태</FilterToolbarLabel>
           <Select aria-label="상태" defaultValue={filters.status} name="status">
             <option value="all">전체</option>
             <option value="active">active</option>
             <option value="suspended">suspended</option>
             <option value="deleted">deleted</option>
           </Select>
-        </label>
-        <label>
-          <span>정렬</span>
+        </FilterToolbarField>
+        <FilterToolbarField>
+          <FilterToolbarLabel>정렬</FilterToolbarLabel>
           <Select aria-label="정렬" defaultValue={filters.sort} name="sort">
             <option value="lastActive">최근 접속</option>
             <option value="joined">가입일</option>
             <option value="lessonsDone">완료 레슨</option>
             <option value="streak">연속 학습일</option>
           </Select>
-        </label>
+        </FilterToolbarField>
         <Button variant="outline" type="submit">
           필터 적용
         </Button>
-      </form>
+      </FilterToolbar>
       {message === null ? null : (
-        <p className="admin-inline-status" role="status">
-          {message}
-        </p>
+        <Alert className="mb-4" role="status" tone={message.tone}>
+          <AlertDescription>{message.message}</AlertDescription>
+        </Alert>
       )}
-      <section className="admin-panel">
-        <div className="admin-section-heading">
-          <h2>사용자 목록</h2>
-          <p>
-            총 {usersResult.value.pagination.totalItems}명 ·{" "}
-            {usersResult.value.pagination.page}/
-            {usersResult.value.pagination.totalPages} 페이지
-          </p>
-        </div>
-        <div className="admin-table-wrap">
-          <table className="admin-table">
+      <Surface variant="panel">
+        <SectionHeader
+          title="사용자 목록"
+          description={`총 ${usersResult.value.pagination.totalItems}명 · ${usersResult.value.pagination.page}/${usersResult.value.pagination.totalPages} 페이지`}
+        />
+        <DataTableContainer>
+          <DataTable>
+            <caption className="sr-only">사용자 목록</caption>
             <thead>
               <tr>
                 <th scope="col">사용자</th>
@@ -122,22 +146,24 @@ export function AdminUsersPage({
               {usersResult.value.items.map((user) => (
                 <tr key={user.id}>
                   <td>
-                    <a
-                      className="admin-table__title"
+                    <Link
+                      className="font-black text-fg-default hover:underline"
                       href={`/users/${user.id}`}
                     >
                       {user.name}
-                    </a>
-                    <span>{user.email}</span>
+                    </Link>
+                    <span className="block text-caption font-semibold text-fg-muted">
+                      {user.email}
+                    </span>
                   </td>
                   <td>
-                    <span className="admin-status-pill">{user.status}</span>
+                    <StatusBadge status={user.status} />
                   </td>
                   <td>{user.lastActive ?? "없음"}</td>
                   <td>{user.lessonsDone}개 완료</td>
                   <td>{user.streak}일</td>
                   <td>
-                    <div className="admin-row-actions">
+                    <div className="flex gap-2">
                       <Button
                         variant="outline"
                         disabled={
@@ -153,8 +179,14 @@ export function AdminUsersPage({
 
                             setMessage(
                               result.status === "ok"
-                                ? "사용자 상태를 변경했습니다."
-                                : result.error.message
+                                ? {
+                                    message: "사용자 상태를 변경했습니다.",
+                                    tone: "success",
+                                  }
+                                : {
+                                    message: result.error.message,
+                                    tone: "danger",
+                                  }
                             )
                           })
                         }}
@@ -175,26 +207,25 @@ export function AdminUsersPage({
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
-      </section>
-      {deleteTarget === null ? null : (
-        <div
-          aria-labelledby="delete-user-title"
-          className="admin-dialog-backdrop"
-          role="dialog"
-        >
-          <div className="admin-dialog">
-            <h2 id="delete-user-title">삭제 요청 처리 확인</h2>
-            <p>{deleteTarget.email} 계정을 삭제 상태로 전환합니다.</p>
-            <div className="admin-dialog__actions">
-              <Button
-                variant="outline"
-                onClick={() => setDeleteTarget(null)}
-                type="button"
-              >
-                취소
-              </Button>
+          </DataTable>
+        </DataTableContainer>
+      </Surface>
+      <AlertDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteTarget(null)
+          }
+        }}
+      >
+        {deleteTarget === null ? null : (
+          <AlertDialogContent>
+            <AlertDialogTitle>삭제 요청 처리 확인</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget.email} 계정을 삭제 상태로 전환합니다.
+            </AlertDialogDescription>
+            <AlertDialogFooter>
+              <AlertDialogCancel>취소</AlertDialogCancel>
               <Button
                 variant="destructive"
                 disabled={isPending}
@@ -206,8 +237,11 @@ export function AdminUsersPage({
 
                     setMessage(
                       result.status === "ok"
-                        ? "삭제 요청을 처리했습니다."
-                        : result.error.message
+                        ? {
+                            message: "삭제 요청을 처리했습니다.",
+                            tone: "success",
+                          }
+                        : { message: result.error.message, tone: "danger" }
                     )
                     setDeleteTarget(null)
                   })
@@ -216,10 +250,10 @@ export function AdminUsersPage({
               >
                 삭제 처리
               </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        )}
+      </AlertDialog>
     </>
   )
 }

@@ -101,7 +101,9 @@ describe("AdminCoursesPage", () => {
     expect(within(activeRow).getByText("active")).toBeVisible()
 
     await user.click(within(activeRow).getByRole("button", { name: "보관" }))
-    expect(screen.getByRole("dialog", { name: "코스 보관 확인" })).toBeVisible()
+    expect(
+      screen.getByRole("alertdialog", { name: "코스 보관 확인" })
+    ).toBeVisible()
     await user.click(screen.getByRole("button", { name: "보관하기" }))
 
     expect(archiveCourse).toHaveBeenCalledWith("c1")

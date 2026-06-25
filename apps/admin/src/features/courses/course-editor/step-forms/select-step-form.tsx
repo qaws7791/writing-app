@@ -3,6 +3,7 @@ import {
   StepFormShell,
   type EditorStep,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
+import { FieldDescription } from "@workspace/ui/components/ui/field"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 export function SelectStepForm({ step }: { readonly step: EditorStep }) {
@@ -10,7 +11,7 @@ export function SelectStepForm({ step }: { readonly step: EditorStep }) {
 
   return (
     <StepFormShell step={step}>
-      <p className="step-form-help">segments 입력 보조</p>
+      <FieldDescription>segments 입력 보조</FieldDescription>
       <Textarea
         aria-label="SELECT segments"
         defaultValue={JSON.stringify(content["segments"] ?? [], null, 2)}

@@ -15,9 +15,11 @@ export function AdminShell({
   const pathname = usePathname()
 
   return (
-    <div className="admin-shell">
+    <div className="grid min-h-screen grid-cols-[256px_minmax(0,1fr)] bg-bg-canvas text-fg-default max-[860px]:grid-cols-1">
       <AdminSidebar activePath={activePath ?? pathname} />
-      <div className="admin-shell__content">{children}</div>
+      <div className="mx-auto w-full min-w-0 max-w-6xl px-5 py-8 pb-14 md:px-10">
+        {children}
+      </div>
     </div>
   )
 }

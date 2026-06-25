@@ -196,7 +196,7 @@
 
 ## Guardrail
 
-`bun run check:design-system-guardrails`는 현재 이관 기준선보다 `admin-*` class, 앱 inline typography style, 앱 raw hex color가 늘어나지 않는지 검사한다. 이 검사는 root `bun run lint`에 포함한다. 기존 부채를 줄인 뒤에는 스크립트의 기준선을 함께 낮춘다.
+`bun run check:design-system-guardrails`는 legacy admin 디자인 class, 앱 inline typography style, 앱 raw hex color가 현재 이관 기준선보다 늘어나지 않는지 검사한다. 이 검사는 root `bun run lint`에 포함한다. 2026-06-25 admin 이관 이후 legacy admin 디자인 class 기준선은 0이다.
 
 ## Icon
 
@@ -246,14 +246,14 @@
 
 ## 어드민 앱 컴포넌트
 
-어드민 앱은 학습자 앱과 동일한 `@workspace/ui` 제품 토큰과 primitive를 사용한다. 어드민 전용 클래스는 데이터 밀도와 업무 흐름을 표현하는 조합 역할만 하며, 색상·radius·font·motion 기준은 `packages/ui`에서 가져온다.
+어드민 앱은 학습자 앱과 동일한 `@workspace/ui` 제품 토큰과 primitive를 사용한다. 어드민 화면의 도메인 조립은 앱 feature에 남기고, 색상·radius·font·motion 기준은 `packages/ui`에서 가져온다.
 
 ### AdminShell
 
 구현 위치: `apps/admin/src/components/admin-shell.tsx`
 
 - 256px 사이드바와 본문 1fr 구성을 사용한다.
-- 사이드바는 `bg-surface`, sticky 100vh다.
+- 사이드바와 본문은 semantic Tailwind class와 공용 토큰을 사용한다.
 - 본문은 `max-w-6xl`, `px-5 md:px-10`, `py-8`을 사용한다.
 
 ### AdminSidebar
@@ -262,44 +262,46 @@
 
 - 주요 메뉴: 대시보드, 강의 관리, 사용자 관리, 분석, 자료실, AI 채팅, 운영 설정.
 - 내부 QA 라우트는 주요 메뉴에 포함하지 않는다.
-- 아이콘은 `lucide-react`를 사용한다.
-- 활성 링크는 `aria-current="page"`와 `.is-active`를 함께 사용하며, `bg-charcoal text-cream` pill로 표시한다.
+- 아이콘은 `@workspace/ui/components/icons`에서 가져온다.
+- 활성 링크는 `aria-current="page"`와 `action-primary-*` semantic token으로 표시한다.
 
-### AdminHeader
+### Admin Page Header
 
-구현 위치: `apps/admin/src/components/admin-header.tsx`
+구현 위치: `packages/ui/src/components/ui/page-header.tsx`
 
-- 모든 어드민 주요 화면 상단에 둔다.
-- 제목과 설명만 포함한다.
+- 모든 어드민 주요 화면은 `PageHeader`를 직접 사용한다.
+- 앱 전용 `AdminHeader` 래퍼는 유지하지 않는다.
 
-### Admin Panel
+### Admin Surface
 
-CSS class: `.admin-panel`
+구현 위치: `packages/ui/src/components/ui/surface.tsx`
 
-- `bg-surface`, 큰 radius, 20px에서 28px padding을 사용한다.
-- 반복 업무 화면의 기본 표면이다.
+- 반복 업무 화면의 기본 표면은 `Surface variant="panel"`이다.
+- 화면별 grid, flex, spacing 조합은 feature component의 semantic utility class로 둔다.
 
-### Admin Toolbar
+### Admin Filter
 
-CSS class: `.admin-toolbar`
+구현 위치: `packages/ui/src/components/ui/filter-toolbar.tsx`
 
-- 화면에 필요한 검색, select filter, 페이지 크기, 주요 행동을 한 줄 grid로 배치한다.
-- label 안의 span은 12px에서 13px bold 보조 라벨이다.
-- 모바일 대응이 필요해지면 grid를 1열로 접는 규칙을 먼저 추가한다.
+- 목록 화면의 검색, select filter, 페이지 크기, 주요 행동은 `FilterToolbar`에 둔다.
+- 각 필드는 `FilterToolbarField`와 `FilterToolbarLabel`을 사용한다.
 
-### Admin Table
+### Admin Data Table
 
-CSS class: `.admin-table`, `.admin-table-wrap`
+구현 위치: `packages/ui/src/components/ui/data-table.tsx`
 
-- horizontal overflow를 허용한다.
-- 최소 너비는 760px이다.
-- `th`는 13px, `td`는 15px 기준이다.
-- 첫 열은 제목과 보조 식별자를 세로로 보여준다.
+- 표는 `DataTableContainer`와 `DataTable`을 사용한다.
+- table semantic은 앱이 유지하고, `th scope="col"`과 caption 또는 `aria-label`을 제공한다.
+- 첫 열의 제목, 보조 식별자, thumbnail 조립은 feature component가 담당한다.
 
-### Admin Dialog
+### Admin Status와 Dialog
 
-CSS class: `.admin-dialog-backdrop`, `.admin-dialog`
+구현 위치:
 
-- 위험 작업 확인에 사용한다.
-- `role="dialog"`와 `aria-labelledby`를 제공한다.
-- 현재 focus trap은 구현되어 있지 않다. 복잡한 dialog가 늘어나면 Base UI dialog primitive 도입을 우선 검토한다.
+- `packages/ui/src/components/ui/badge.tsx`
+- `packages/ui/src/components/ui/alert.tsx`
+- `packages/ui/src/components/ui/alert-dialog.tsx`
+
+- 콘텐츠와 사용자 상태는 app-local `StatusBadge`가 Kwep 어드민 기준의 중립 `Badge`로 표시한다.
+- 오류와 성공 메시지는 `Alert`를 사용하고, 오류는 `role="alert"`, 처리 완료는 `role="status"`로 노출한다.
+- 위험 작업 확인은 `AlertDialog`를 사용한다. 비동기 destructive action은 자동 close action 대신 footer 안의 `Button variant="destructive"`로 실행한다.

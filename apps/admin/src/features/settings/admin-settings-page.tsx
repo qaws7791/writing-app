@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react"
 
-import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminContentResetResult,
@@ -10,9 +9,27 @@ import type {
   AdminNoticeSettingsRequest,
   AdminSettings,
 } from "@/lib/api/admin-api"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
+import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
+import { SectionHeader } from "@workspace/ui/components/ui/section-header"
+import { Surface } from "@workspace/ui/components/ui/surface"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
+
+type StatusMessage = {
+  readonly message: string
+  readonly tone: "danger" | "success"
+}
 
 export function AdminSettingsPage({
   resetContent,
@@ -30,20 +47,20 @@ export function AdminSettingsPage({
   readonly settingsResult: AdminApiResult<AdminSettings>
 }) {
   const [isPending, startTransition] = useTransition()
-  const [message, setMessage] = useState<string | null>(null)
+  const [message, setMessage] = useState<StatusMessage | null>(null)
   const [resetRevision, setResetRevision] = useState<number | null>(null)
   const [showResetDialog, setShowResetDialog] = useState(false)
 
   if (settingsResult.status === "error") {
     return (
       <>
-        <AdminHeader
+        <PageHeader
           description="공지, 약관, 콘텐츠 초기화를 관리합니다."
           title="운영 설정"
         />
-        <section className="admin-alert" role="alert">
-          {settingsResult.error.message}
-        </section>
+        <Alert role="alert" tone="danger">
+          <AlertDescription>{settingsResult.error.message}</AlertDescription>
+        </Alert>
       </>
     )
   }
@@ -52,21 +69,23 @@ export function AdminSettingsPage({
 
   return (
     <>
-      <AdminHeader
+      <PageHeader
         description="공지, 약관, 콘텐츠 초기화를 관리합니다."
         title="운영 설정"
       />
       {message === null ? null : (
-        <p className="admin-inline-status" role="status">
-          <span>{message}</span>
-          {resetRevision === null ? null : (
-            <span>revision {resetRevision}</span>
-          )}
-        </p>
+        <Alert className="mb-4" role="status" tone={message.tone}>
+          <AlertDescription className="flex flex-wrap gap-2">
+            <span>{message.message}</span>
+            {resetRevision === null ? null : (
+              <span>revision {resetRevision}</span>
+            )}
+          </AlertDescription>
+        </Alert>
       )}
-      <section className="settings-grid">
+      <section className="grid gap-4 lg:grid-cols-2">
         <form
-          className="admin-panel"
+          className="grid gap-4 rounded-panel border border-border-subtle bg-bg-surface p-(--surface-padding-md)"
           onSubmit={(event) => {
             event.preventDefault()
             const formData = new FormData(event.currentTarget)
@@ -79,38 +98,40 @@ export function AdminSettingsPage({
 
               setMessage(
                 result.status === "ok"
-                  ? "운영 설정을 저장했습니다."
-                  : result.error.message
+                  ? { message: "운영 설정을 저장했습니다.", tone: "success" }
+                  : { message: result.error.message, tone: "danger" }
               )
             })
           }}
         >
-          <div className="admin-section-heading">
-            <h2>공지와 배너</h2>
-            <p>학습자에게 노출할 운영 메시지입니다.</p>
-          </div>
-          <label className="admin-form-field">
-            <span>배너</span>
+          <SectionHeader
+            title="공지와 배너"
+            description="학습자에게 노출할 운영 메시지입니다."
+          />
+          <Field>
+            <FieldLabel htmlFor="settings-banner">배너</FieldLabel>
             <Input
               aria-label="배너"
               defaultValue={notice.banner}
+              id="settings-banner"
               name="banner"
             />
-          </label>
-          <label className="admin-form-field">
-            <span>공지</span>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="settings-announce">공지</FieldLabel>
             <Textarea
               aria-label="공지"
               defaultValue={notice.announce}
+              id="settings-announce"
               name="announce"
             />
-          </label>
+          </Field>
           <Button disabled={isPending} type="submit">
             공지 저장
           </Button>
         </form>
         <form
-          className="admin-panel"
+          className="grid gap-4 rounded-panel border border-border-subtle bg-bg-surface p-(--surface-padding-md)"
           onSubmit={(event) => {
             event.preventDefault()
             const formData = new FormData(event.currentTarget)
@@ -123,41 +144,43 @@ export function AdminSettingsPage({
 
               setMessage(
                 result.status === "ok"
-                  ? "운영 설정을 저장했습니다."
-                  : result.error.message
+                  ? { message: "운영 설정을 저장했습니다.", tone: "success" }
+                  : { message: result.error.message, tone: "danger" }
               )
             })
           }}
         >
-          <div className="admin-section-heading">
-            <h2>법적 문서</h2>
-            <p>이용약관과 개인정보처리방침 본문입니다.</p>
-          </div>
-          <label className="admin-form-field">
-            <span>이용약관</span>
+          <SectionHeader
+            title="법적 문서"
+            description="이용약관과 개인정보처리방침 본문입니다."
+          />
+          <Field>
+            <FieldLabel htmlFor="settings-terms">이용약관</FieldLabel>
             <Textarea
               aria-label="이용약관"
               defaultValue={legal.terms}
+              id="settings-terms"
               name="terms"
             />
-          </label>
-          <label className="admin-form-field">
-            <span>개인정보처리방침</span>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="settings-privacy">개인정보처리방침</FieldLabel>
             <Textarea
               aria-label="개인정보처리방침"
               defaultValue={legal.privacy}
+              id="settings-privacy"
               name="privacy"
             />
-          </label>
+          </Field>
           <Button disabled={isPending} type="submit">
             약관 저장
           </Button>
         </form>
-        <section className="admin-panel">
-          <div className="admin-section-heading">
-            <h2>콘텐츠 초기화</h2>
-            <p>기준 콘텐츠 seed로 콘텐츠 baseline을 재시드합니다.</p>
-          </div>
+        <Surface className="lg:col-span-2" variant="panel">
+          <SectionHeader
+            title="콘텐츠 초기화"
+            description="기준 콘텐츠 seed로 콘텐츠 baseline을 재시드합니다."
+          />
           <Button
             variant="destructive"
             onClick={() => setShowResetDialog(true)}
@@ -165,49 +188,45 @@ export function AdminSettingsPage({
           >
             콘텐츠 초기화
           </Button>
-        </section>
+        </Surface>
       </section>
-      {showResetDialog ? (
-        <div
-          aria-labelledby="reset-content-title"
-          className="admin-dialog-backdrop"
-          role="dialog"
-        >
-          <div className="admin-dialog">
-            <h2 id="reset-content-title">콘텐츠 초기화 확인</h2>
-            <p>현재 active 콘텐츠를 기준 콘텐츠 seed에 맞춰 다시 정렬합니다.</p>
-            <div className="admin-dialog__actions">
-              <Button
-                variant="outline"
-                onClick={() => setShowResetDialog(false)}
-                type="button"
-              >
-                취소
-              </Button>
-              <Button
-                variant="destructive"
-                disabled={isPending}
-                onClick={() => {
-                  startTransition(async () => {
-                    const result = await resetContent()
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <AlertDialogContent>
+          <AlertDialogTitle>콘텐츠 초기화 확인</AlertDialogTitle>
+          <AlertDialogDescription>
+            현재 active 콘텐츠를 기준 콘텐츠 seed에 맞춰 다시 정렬합니다.
+          </AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel>취소</AlertDialogCancel>
+            <Button
+              variant="destructive"
+              disabled={isPending}
+              onClick={() => {
+                startTransition(async () => {
+                  const result = await resetContent()
 
-                    if (result.status === "ok") {
-                      setMessage("콘텐츠를 초기화했습니다.")
-                      setResetRevision(result.value.revision)
-                    } else {
-                      setMessage(result.error.message)
-                    }
-                    setShowResetDialog(false)
-                  })
-                }}
-                type="button"
-              >
-                초기화 실행
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+                  if (result.status === "ok") {
+                    setMessage({
+                      message: "콘텐츠를 초기화했습니다.",
+                      tone: "success",
+                    })
+                    setResetRevision(result.value.revision)
+                  } else {
+                    setMessage({
+                      message: result.error.message,
+                      tone: "danger",
+                    })
+                  }
+                  setShowResetDialog(false)
+                })
+              }}
+              type="button"
+            >
+              초기화 실행
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

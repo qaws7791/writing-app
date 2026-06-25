@@ -1,13 +1,27 @@
 import type { ReactNode, SVGProps } from "react"
 
 export {
+  Archive as ArchiveIcon,
   ArrowRight as ArrowRightIcon,
+  BarChart3 as BarChartIcon,
+  Bot as BotIcon,
   CheckCircle2 as CheckCircleIcon,
+  FileText as FileTextIcon,
+  FolderOpen as FolderOpenIcon,
   GraduationCap as GraduationCapIcon,
   Layers as LayersIcon,
+  LayoutDashboard as LayoutDashboardIcon,
   LogIn as LogInIcon,
+  MessageSquarePlus as MessageSquarePlusIcon,
+  Plus as PlusIcon,
   Puzzle as PuzzleIcon,
+  Send as SendIcon,
+  Settings as SettingsIcon,
+  ShieldCheck as ShieldCheckIcon,
   Sparkles as SparklesIcon,
+  Trash2 as TrashIcon,
+  UserPlus as UserPlusIcon,
+  Users as UsersIcon,
 } from "lucide-react"
 
 type IconProps = Omit<SVGProps<SVGSVGElement>, "height" | "width"> & {

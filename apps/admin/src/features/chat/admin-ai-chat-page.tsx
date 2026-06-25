@@ -1,10 +1,8 @@
 "use client"
 
-import { Bot, MessageSquarePlus, Send } from "lucide-react"
 import Link from "next/link"
 import { useMemo, useState, useTransition } from "react"
 
-import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminAiChatConversation,
@@ -12,8 +10,19 @@ import type {
   AdminAiChatConversationList,
   AdminAiChatMessage,
 } from "@/lib/api/admin-api"
+import {
+  BotIcon,
+  MessageSquarePlusIcon,
+  SendIcon,
+} from "@workspace/ui/components/icons"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
+import { EmptyState } from "@workspace/ui/components/ui/empty-state"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
+import { SectionHeader } from "@workspace/ui/components/ui/section-header"
+import { Surface } from "@workspace/ui/components/ui/surface"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
+import { cn } from "@workspace/ui/lib/utils"
 
 type UiMessage = AdminAiChatMessage | PendingMessage
 
@@ -87,73 +96,111 @@ export function AdminAiChatPage({
 
   return (
     <>
-      <AdminHeader
+      <PageHeader
         description="운영 자료와 교육 콘텐츠 초안을 대화로 작성합니다."
         title="AI 채팅"
       />
-      <div className="admin-chat-layout">
-        <aside className="admin-panel admin-chat-sidebar-panel">
-          <div className="admin-section-heading">
-            <h2>대화</h2>
-            <p>{conversations.length}개 대화</p>
-          </div>
+      <div className="grid min-h-[42rem] grid-cols-[18rem_minmax(0,1fr)] gap-4 max-lg:grid-cols-1">
+        <Surface className="grid content-start gap-4" variant="panel">
+          <SectionHeader
+            title="대화"
+            description={`${conversations.length}개 대화`}
+          />
           <Link className={buttonVariants({ variant: "outline" })} href="/chat">
-            <MessageSquarePlus aria-hidden="true" size={16} />새 대화
+            <MessageSquarePlusIcon aria-hidden="true" size={16} />새 대화
           </Link>
-          <div className="admin-chat-conversation-list">
+          <div className="grid gap-2">
             {conversations.map((conversation) => (
               <Link
-                className={
+                className={cn(
+                  "grid gap-1 rounded-card border border-border-subtle px-3 py-2.5 text-fg-default transition-colors hover:border-border-strong hover:bg-bg-canvas",
                   activeConversationId === conversation.id
-                    ? "admin-chat-conversation is-active"
-                    : "admin-chat-conversation"
-                }
+                    ? "border-action-primary-bg bg-action-primary-bg text-action-primary-fg"
+                    : ""
+                )}
                 href={`/chat?conversationId=${conversation.id}`}
                 key={conversation.id}
                 onClick={() => setActiveConversationId(conversation.id)}
               >
-                <strong>{conversation.title}</strong>
-                <span>{conversation.messageCount}개 메시지</span>
+                <strong className="overflow-hidden text-ellipsis whitespace-nowrap text-body-sm font-black">
+                  {conversation.title}
+                </strong>
+                <span
+                  className={cn(
+                    "text-label-sm font-semibold text-fg-muted",
+                    activeConversationId === conversation.id
+                      ? "text-action-primary-fg/80"
+                      : ""
+                  )}
+                >
+                  {conversation.messageCount}개 메시지
+                </span>
               </Link>
             ))}
           </div>
-        </aside>
-        <section className="admin-panel admin-chat-panel">
+        </Surface>
+        <Surface
+          className="grid min-h-0 grid-rows-[auto_1fr_auto] gap-4"
+          variant="panel"
+        >
           {errorMessage === null ? null : (
-            <div className="admin-alert" role="alert">
-              {errorMessage}
-              {lastFailedMessage === null ? null : (
-                <Button
-                  variant="outline"
-                  disabled={isPending}
-                  onClick={() => sendMessage(lastFailedMessage)}
-                  type="button"
-                >
-                  재시도
-                </Button>
-              )}
-            </div>
+            <Alert role="alert" tone="danger">
+              <AlertDescription className="flex flex-wrap items-center gap-2">
+                <span>{errorMessage}</span>
+                {lastFailedMessage === null ? null : (
+                  <Button
+                    variant="outline"
+                    disabled={isPending}
+                    onClick={() => sendMessage(lastFailedMessage)}
+                    type="button"
+                  >
+                    재시도
+                  </Button>
+                )}
+              </AlertDescription>
+            </Alert>
           )}
-          <div className="admin-chat-messages" role="log">
+          <div
+            className="min-h-0 overflow-y-auto rounded-panel border border-border-subtle bg-bg-canvas p-4"
+            role="log"
+          >
             {visibleMessages.length === 0 ? (
-              <div className="admin-chat-empty">
-                <Bot aria-hidden="true" size={28} />
-                <strong>새 대화를 시작하세요.</strong>
-              </div>
+              <EmptyState
+                icon={<BotIcon aria-hidden="true" size={28} />}
+                title="새 대화를 시작하세요."
+              />
             ) : (
-              visibleMessages.map((message) => (
-                <article
-                  className={`admin-chat-message is-${message.role}`}
-                  key={message.id}
-                >
-                  <span>{message.role === "user" ? "관리자" : "AI"}</span>
-                  <p>{message.content}</p>
-                </article>
-              ))
+              <div className="grid gap-3">
+                {visibleMessages.map((message) => (
+                  <article
+                    className={cn(
+                      "grid max-w-[42rem] gap-1 rounded-card border border-border-subtle bg-bg-surface p-3",
+                      message.role === "user"
+                        ? "ml-auto border-action-primary-bg bg-action-primary-bg text-action-primary-fg"
+                        : "text-fg-default"
+                    )}
+                    key={message.id}
+                  >
+                    <span
+                      className={cn(
+                        "text-label-sm font-black text-fg-muted",
+                        message.role === "user"
+                          ? "text-action-primary-fg/80"
+                          : ""
+                      )}
+                    >
+                      {message.role === "user" ? "관리자" : "AI"}
+                    </span>
+                    <p className="m-0 whitespace-pre-wrap text-body-sm font-semibold">
+                      {message.content}
+                    </p>
+                  </article>
+                ))}
+              </div>
             )}
           </div>
           <form
-            className="admin-chat-form"
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 max-md:grid-cols-1"
             onSubmit={(event) => {
               event.preventDefault()
               const message = draft.trim()
@@ -174,11 +221,11 @@ export function AdminAiChatPage({
               value={draft}
             />
             <Button disabled={!canSend} type="submit">
-              <Send aria-hidden="true" size={16} />
+              <SendIcon aria-hidden="true" size={16} />
               전송
             </Button>
           </form>
-        </section>
+        </Surface>
       </div>
     </>
   )

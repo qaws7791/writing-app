@@ -124,12 +124,20 @@ describe("AdminResourceDetailPage", () => {
     expect(screen.getByLabelText("본문")).toHaveValue("운영 자료 본문")
 
     await user.click(screen.getByRole("button", { name: "보관" }))
+    expect(
+      screen.getByRole("alertdialog", { name: "자료 보관 확인" })
+    ).toBeVisible()
+    await user.click(screen.getByRole("button", { name: "보관하기" }))
     await waitFor(() =>
       expect(screen.getByText("자료를 보관했습니다.")).toBeVisible()
     )
     expect(archiveResourceDocument).toHaveBeenCalled()
 
     await user.click(screen.getByRole("button", { name: "삭제" }))
+    expect(
+      screen.getByRole("alertdialog", { name: "자료 삭제 확인" })
+    ).toBeVisible()
+    await user.click(screen.getByRole("button", { name: "삭제하기" }))
     await waitFor(() =>
       expect(screen.getByText("자료를 삭제했습니다.")).toBeVisible()
     )

@@ -9,6 +9,19 @@ type Guardrail = {
   readonly roots: readonly string[]
 }
 
+const legacyAdminDesignClassPattern = String.raw`(?:admin-(?:shell(?:__content)?|sidebar(?:__(?:brand|mark|nav|link))?|header|panel|grid|alert|metric-grid|metric-card(?:__label)?|section-heading|toolbar|inline-status|table(?:__title|-wrap)?|course-title-cell|course-thumbnail|status-pill|dialog(?:-backdrop|__actions)?|row-actions|resource-(?:create-panel|form|list(?:-item(?:__icon)?)?)|chat-(?:layout|sidebar-panel|conversation-list|conversation|panel|messages|empty|message|form)|auth-(?:page|card(?:__mark)?|form)|inline-error|form-field)|settings-grid|analytics-grid|course-editor(?:-list|-form-grid|__(?:read-only|summary|workspace))|step-form-(?:list|card|help)|lesson-preview-card)`
+
+const legacyAdminDesignClassRegex = new RegExp(
+  [
+    String.raw`\.(?:${legacyAdminDesignClassPattern})\b`,
+    String.raw`className="[^"]*\b(?:${legacyAdminDesignClassPattern})\b[^"]*"`,
+    String.raw`className='[^']*\b(?:${legacyAdminDesignClassPattern})\b[^']*'`,
+    `className=\\{\`[^\`]*\\b(?:${legacyAdminDesignClassPattern})\\b[^\`]*\`\\}`,
+    String.raw`className=\{[^}\n]*\b(?:${legacyAdminDesignClassPattern})\b[^}\n]*\}`,
+  ].join("|"),
+  "g"
+)
+
 const ignoredDirectories = new Set([
   ".next",
   ".turbo",
@@ -20,10 +33,10 @@ const scannedExtensions = new Set([".css", ".ts", ".tsx"])
 
 const guardrails: readonly Guardrail[] = [
   {
-    baseline: 387,
-    description: "apps/admin/src의 기존 admin-* class 기준선",
-    label: "admin class",
-    pattern: /\badmin-[a-z0-9_-]+\b/g,
+    baseline: 0,
+    description: "apps/admin/src의 legacy admin 디자인 class 기준선",
+    label: "legacy admin design class",
+    pattern: legacyAdminDesignClassRegex,
     roots: ["apps/admin/src"],
   },
   {

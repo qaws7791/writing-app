@@ -3,6 +3,11 @@ import {
   StepFormShell,
   type EditorStep,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 
 export function AiFeedbackStepForm({ step }: { readonly step: EditorStep }) {
@@ -12,13 +17,13 @@ export function AiFeedbackStepForm({ step }: { readonly step: EditorStep }) {
 
   return (
     <StepFormShell step={step}>
-      <p className="step-form-help">
+      <FieldDescription>
         source step: {sourceStepId} · retry {retryLimit}회
-      </p>
-      <label className="admin-form-field">
-        <span>source step</span>
-        <Input defaultValue={sourceStepId} />
-      </label>
+      </FieldDescription>
+      <Field>
+        <FieldLabel htmlFor={`${step.id}-source-step`}>source step</FieldLabel>
+        <Input id={`${step.id}-source-step`} defaultValue={sourceStepId} />
+      </Field>
     </StepFormShell>
   )
 }

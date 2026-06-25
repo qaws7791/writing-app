@@ -1,4 +1,5 @@
 import type { AdminCourseDetail } from "@/lib/api/admin-api"
+import { Badge } from "@workspace/ui/components/ui/badge"
 
 export type EditorStep =
   AdminCourseDetail["units"][number]["lessons"][number]["steps"][number]
@@ -28,10 +29,12 @@ export function StepFormShell({
   readonly step: EditorStep
 }) {
   return (
-    <article className="step-form-card">
-      <header>
-        <strong>{step.type}</strong>
-        <span>{step.id}</span>
+    <article className="grid gap-4 rounded-card border border-border-subtle bg-bg-canvas p-4">
+      <header className="flex flex-wrap items-center justify-between gap-2">
+        <Badge tone="neutral">{step.type}</Badge>
+        <span className="text-label-sm font-semibold text-fg-muted">
+          {step.id}
+        </span>
       </header>
       {children}
     </article>

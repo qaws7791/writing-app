@@ -3,6 +3,7 @@ import {
   StepFormShell,
   type EditorStep,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
+import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
 export function ReadingStepForm({ step }: { readonly step: EditorStep }) {
@@ -10,10 +11,13 @@ export function ReadingStepForm({ step }: { readonly step: EditorStep }) {
 
   return (
     <StepFormShell step={step}>
-      <label className="admin-form-field">
-        <span>본문</span>
-        <Textarea defaultValue={String(content["body"] ?? "")} />
-      </label>
+      <Field>
+        <FieldLabel htmlFor={`${step.id}-body`}>본문</FieldLabel>
+        <Textarea
+          id={`${step.id}-body`}
+          defaultValue={String(content["body"] ?? "")}
+        />
+      </Field>
     </StepFormShell>
   )
 }

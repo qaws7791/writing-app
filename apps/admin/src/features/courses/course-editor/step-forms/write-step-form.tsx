@@ -3,6 +3,11 @@ import {
   StepFormShell,
   type EditorStep,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 
 export function WriteStepForm({ step }: { readonly step: EditorStep }) {
@@ -13,22 +18,22 @@ export function WriteStepForm({ step }: { readonly step: EditorStep }) {
 
   return (
     <StepFormShell step={step}>
-      <p className="step-form-help">
+      <FieldDescription>
         min {min} · goal {goal} · max {max}
-      </p>
-      <div className="course-editor-form-grid">
-        <label className="admin-form-field">
-          <span>최소</span>
-          <Input defaultValue={min} type="number" />
-        </label>
-        <label className="admin-form-field">
-          <span>목표</span>
-          <Input defaultValue={goal} type="number" />
-        </label>
-        <label className="admin-form-field">
-          <span>최대</span>
-          <Input defaultValue={max} type="number" />
-        </label>
+      </FieldDescription>
+      <div className="grid gap-4 md:grid-cols-3">
+        <Field>
+          <FieldLabel htmlFor={`${step.id}-min`}>최소</FieldLabel>
+          <Input id={`${step.id}-min`} defaultValue={min} type="number" />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor={`${step.id}-goal`}>목표</FieldLabel>
+          <Input id={`${step.id}-goal`} defaultValue={goal} type="number" />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor={`${step.id}-max`}>최대</FieldLabel>
+          <Input id={`${step.id}-max`} defaultValue={max} type="number" />
+        </Field>
       </div>
     </StepFormShell>
   )

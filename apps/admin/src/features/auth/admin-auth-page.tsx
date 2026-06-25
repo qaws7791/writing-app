@@ -1,12 +1,15 @@
 "use client"
 
 import { useState, type FormEvent } from "react"
-import { ShieldCheck } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 import { requestAdminPasswordLogin } from "@/lib/auth/admin-auth-client"
+import { ShieldCheckIcon } from "@workspace/ui/components/icons"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
+import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
+import { Surface } from "@workspace/ui/components/ui/surface"
 
 export function AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
   const router = useRouter()
@@ -38,41 +41,56 @@ export function AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
   }
 
   return (
-    <main className="admin-auth-page">
-      <section className="admin-auth-card">
-        <div className="admin-auth-card__mark">
-          <ShieldCheck aria-hidden="true" size={28} />
+    <main className="grid min-h-screen place-items-center bg-bg-canvas p-6">
+      <Surface
+        aria-labelledby="admin-login-title"
+        className="grid w-full max-w-[420px] justify-items-center gap-3 p-9 text-center"
+        variant="panel"
+      >
+        <div className="grid size-14 place-items-center rounded-control bg-action-primary-bg text-action-primary-fg">
+          <ShieldCheckIcon aria-hidden="true" size={28} />
         </div>
-        <span>글결 운영 콘솔</span>
-        <h1>관리자 로그인</h1>
-        <p>
+        <span className="text-label-sm font-black text-fg-muted">
+          글결 운영 콘솔
+        </span>
+        <h1 className="m-0 text-heading-md font-black" id="admin-login-title">
+          관리자 로그인
+        </h1>
+        <p className="m-0 mb-2 text-body-sm font-semibold text-fg-muted">
           콘텐츠, 사용자, 분석, 운영 설정을 관리하려면 관리자 계정으로
           로그인하세요.
         </p>
-        <form className="admin-auth-form" onSubmit={handleSubmit}>
-          <label>
-            이메일
-            <Input autoComplete="email" name="email" required type="email" />
-          </label>
-          <label>
-            비밀번호
+        <form className="grid w-full gap-3.5 text-left" onSubmit={handleSubmit}>
+          <Field>
+            <FieldLabel htmlFor="admin-login-email">이메일</FieldLabel>
+            <Input
+              autoComplete="email"
+              id="admin-login-email"
+              name="email"
+              required
+              type="email"
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="admin-login-password">비밀번호</FieldLabel>
             <Input
               autoComplete="current-password"
+              id="admin-login-password"
               name="password"
               required
               type="password"
             />
-          </label>
+          </Field>
           {errorMessage === null ? null : (
-            <p className="admin-inline-error" role="alert">
-              {errorMessage}
-            </p>
+            <Alert role="alert" tone="danger">
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
           )}
           <Button className="w-full" disabled={isSubmitting} type="submit">
             로그인
           </Button>
         </form>
-      </section>
+      </Surface>
     </main>
   )
 }

@@ -1,7 +1,8 @@
-import { AdminHeader } from "@/components/admin-header"
 import { CourseEditorShell } from "@/features/courses/course-editor/course-editor-shell"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type { AdminCourseDetail } from "@/lib/api/admin-api"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
 
 export function AdminCourseDetailPage({
   courseResult,
@@ -11,13 +12,13 @@ export function AdminCourseDetailPage({
   if (courseResult.status === "error") {
     return (
       <>
-        <AdminHeader
+        <PageHeader
           description="코스의 유닛, 레슨, 스텝을 편집합니다."
           title="코스 편집"
         />
-        <section className="admin-alert" role="alert">
-          {courseResult.error.message}
-        </section>
+        <Alert role="alert" tone="danger">
+          <AlertDescription>{courseResult.error.message}</AlertDescription>
+        </Alert>
       </>
     )
   }

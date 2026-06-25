@@ -38,6 +38,20 @@
 - `HomeIcon`
 - `UserIcon`
 - `XIcon`
+- `ArchiveIcon`
+- `BarChartIcon`
+- `BotIcon`
+- `FileTextIcon`
+- `FolderOpenIcon`
+- `LayoutDashboardIcon`
+- `MessageSquarePlusIcon`
+- `PlusIcon`
+- `SendIcon`
+- `SettingsIcon`
+- `ShieldCheckIcon`
+- `TrashIcon`
+- `UserPlusIcon`
+- `UsersIcon`
 
 ## 이미지
 
@@ -79,7 +93,7 @@
 
 현재 어드민은 코스 썸네일 업로드를 운영하지 않는다. 코스 목록과 상세는 텍스트, 상태, 카운트, 표로 식별한다.
 
-어드민 아이콘은 `lucide-react`를 화면 컴포넌트에서 직접 사용할 수 있다. 여러 화면에서 반복되는 어드민 전용 아이콘 묶음이 생기면 그때 공유 export를 검토한다.
+어드민 화면 컴포넌트는 `lucide-react`를 직접 import하지 않는다. 필요한 아이콘은 먼저 `@workspace/ui/components/icons`에 re-export하고 화면에서는 그 public API만 사용한다.
 
 ## 파일 관리
 

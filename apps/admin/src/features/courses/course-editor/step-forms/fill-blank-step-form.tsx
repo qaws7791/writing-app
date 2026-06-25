@@ -3,6 +3,7 @@ import {
   StepFormShell,
   type EditorStep,
 } from "@/features/courses/course-editor/step-forms/shared/step-form-contract"
+import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 
 export function FillBlankStepForm({ step }: { readonly step: EditorStep }) {
@@ -10,14 +11,20 @@ export function FillBlankStepForm({ step }: { readonly step: EditorStep }) {
 
   return (
     <StepFormShell step={step}>
-      <label className="admin-form-field">
-        <span>빈칸 문장</span>
-        <Input defaultValue={String(content["prompt"] ?? "")} />
-      </label>
-      <label className="admin-form-field">
-        <span>정답</span>
-        <Input defaultValue={String(content["answer"] ?? "")} />
-      </label>
+      <Field>
+        <FieldLabel htmlFor={`${step.id}-prompt`}>빈칸 문장</FieldLabel>
+        <Input
+          id={`${step.id}-prompt`}
+          defaultValue={String(content["prompt"] ?? "")}
+        />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor={`${step.id}-answer`}>정답</FieldLabel>
+        <Input
+          id={`${step.id}-answer`}
+          defaultValue={String(content["answer"] ?? "")}
+        />
+      </Field>
     </StepFormShell>
   )
 }

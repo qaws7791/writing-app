@@ -15,7 +15,7 @@
 
 ## 정보 구조
 
-- `AdminHeader`
+- `PageHeader`
 - 스텝 타입 선택
 - 렌더러 미리보기
 - 샘플 data JSON

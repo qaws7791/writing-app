@@ -76,7 +76,7 @@ describe("AdminSettingsPage", () => {
 
     await user.click(screen.getByRole("button", { name: "콘텐츠 초기화" }))
     expect(
-      screen.getByRole("dialog", { name: "콘텐츠 초기화 확인" })
+      screen.getByRole("alertdialog", { name: "콘텐츠 초기화 확인" })
     ).toBeVisible()
     await user.click(screen.getByRole("button", { name: "초기화 실행" }))
 

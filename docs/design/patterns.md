@@ -58,13 +58,13 @@
 ### 화면 구조
 
 - 모든 보호된 어드민 화면은 `AdminShell` 안에서 렌더링한다.
-- 본문 상단에는 `AdminHeader`를 둔다.
-- 조회 실패는 헤더 아래 `admin-alert`로 표시한다.
+- 본문 상단에는 `PageHeader`를 직접 둔다.
+- 조회 실패는 헤더 아래 `Alert role="alert"`로 표시한다.
 
 ### 목록 화면
 
-- 필터는 `admin-toolbar`에 모은다.
-- 목록은 `admin-panel` 안의 `admin-table`로 표시한다.
+- 필터는 `FilterToolbar`에 모은다.
+- 목록은 `Surface variant="panel"` 안의 `DataTable`로 표시한다.
 - 페이지네이션 메타는 섹션 heading 설명에 표시한다.
 - 검색/필터가 실제 URL과 동기화되지 않는 경우, 후속 작업에서 form submit 또는 query 반영 정책을 명시한 뒤 구현한다.
 
@@ -78,14 +78,14 @@
 
 ### 상태 pill
 
-- 콘텐츠와 사용자 상태는 `.admin-status-pill`로 표시한다.
+- 콘텐츠와 사용자 상태는 app-local `StatusBadge`가 Kwep 어드민 기준의 중립 `Badge`로 표시한다.
 - enum 값은 외부 계약이므로 `active`, `archived`, `suspended`, `deleted` 같은 영어 식별자를 유지할 수 있다.
 
 ### 위험 작업
 
 - 보관, 삭제 요청, 콘텐츠 초기화는 확인 dialog를 거친다.
 - confirm 버튼은 `Button variant="destructive"`를 사용한다.
-- 성공 또는 실패 결과는 `admin-inline-status`에 한국어로 표시한다.
+- 성공 또는 실패 결과는 `Alert role="status"`에 한국어로 표시한다.
 
 ### 오류와 상태
 

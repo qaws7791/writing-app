@@ -1,9 +1,16 @@
-import { AdminHeader } from "@/components/admin-header"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminAnalytics,
   AdminLessonAnalyticsPage,
 } from "@/lib/api/admin-api"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import {
+  DataTable,
+  DataTableContainer,
+} from "@workspace/ui/components/ui/data-table"
+import { PageHeader } from "@workspace/ui/components/ui/page-header"
+import { SectionHeader } from "@workspace/ui/components/ui/section-header"
+import { Surface } from "@workspace/ui/components/ui/surface"
 
 export function AdminAnalyticsPage({
   analyticsResult,
@@ -15,13 +22,13 @@ export function AdminAnalyticsPage({
   if (analyticsResult.status === "error") {
     return (
       <>
-        <AdminHeader
+        <PageHeader
           description="가입, 완료, 이탈 지표를 분석합니다."
           title="분석"
         />
-        <section className="admin-alert" role="alert">
-          {analyticsResult.error.message}
-        </section>
+        <Alert role="alert" tone="danger">
+          <AlertDescription>{analyticsResult.error.message}</AlertDescription>
+        </Alert>
       </>
     )
   }
@@ -33,49 +40,61 @@ export function AdminAnalyticsPage({
 
   return (
     <>
-      <AdminHeader
+      <PageHeader
         description="가입, 완료, 이탈 지표를 분석합니다."
         title="분석"
       />
-      <section className="analytics-grid">
-        <div className="admin-panel">
-          <div className="admin-section-heading">
-            <h2>최근 30일 가입 추이</h2>
-            <p>일별 가입과 레슨 완료를 함께 봅니다.</p>
-          </div>
-          <ol className="analytics-series">
+      <section className="mb-4 grid gap-4 lg:grid-cols-2">
+        <Surface variant="panel">
+          <SectionHeader
+            title="최근 30일 가입 추이"
+            description="일별 가입과 레슨 완료를 함께 봅니다."
+          />
+          <ol className="grid list-none gap-2 p-0">
             {analyticsResult.value.dailySeries.map((point) => (
-              <li key={point.date}>
-                <span>{point.date}</span>
-                <strong>
+              <li
+                className="flex items-center justify-between gap-3 rounded-card border border-border-subtle bg-bg-canvas px-3 py-2.5 text-body-sm"
+                key={point.date}
+              >
+                <span className="font-semibold text-fg-muted">
+                  {point.date}
+                </span>
+                <strong className="font-black text-fg-default">
                   가입 {point.signups} · 완료 {point.completions}
                 </strong>
               </li>
             ))}
           </ol>
-        </div>
-        <div className="admin-panel">
-          <div className="admin-section-heading">
-            <h2>연속 학습일 분포</h2>
-            <p>현재 streak bucket입니다.</p>
-          </div>
-          <ol className="analytics-buckets">
+        </Surface>
+        <Surface variant="panel">
+          <SectionHeader
+            title="연속 학습일 분포"
+            description="현재 streak bucket입니다."
+          />
+          <ol className="grid list-none gap-2 p-0">
             {analyticsResult.value.streakBuckets.map((bucket) => (
-              <li key={bucket.label}>
-                <span>{bucket.label}</span>
-                <strong>{bucket.count}명</strong>
+              <li
+                className="flex items-center justify-between gap-3 rounded-card border border-border-subtle bg-bg-canvas px-3 py-2.5 text-body-sm"
+                key={bucket.label}
+              >
+                <span className="font-semibold text-fg-muted">
+                  {bucket.label}
+                </span>
+                <strong className="font-black text-fg-default">
+                  {bucket.count}명
+                </strong>
               </li>
             ))}
           </ol>
-        </div>
+        </Surface>
       </section>
-      <section className="admin-panel">
-        <div className="admin-section-heading">
-          <h2>레슨별 완료율</h2>
-          <p>완료율과 이탈률을 기준으로 개선 대상을 찾습니다.</p>
-        </div>
-        <div className="admin-table-wrap">
-          <table aria-label="레슨별 분석" className="admin-table">
+      <Surface variant="panel">
+        <SectionHeader
+          title="레슨별 완료율"
+          description="완료율과 이탈률을 기준으로 개선 대상을 찾습니다."
+        />
+        <DataTableContainer>
+          <DataTable aria-label="레슨별 분석">
             <thead>
               <tr>
                 <th scope="col">레슨</th>
@@ -98,9 +117,9 @@ export function AdminAnalyticsPage({
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
-      </section>
+          </DataTable>
+        </DataTableContainer>
+      </Surface>
     </>
   )
 }

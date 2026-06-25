@@ -15,21 +15,21 @@
 
 ## 정보 구조
 
-- `AdminHeader`
-- 코스 필터 toolbar
+- `PageHeader`
+- `FilterToolbar`
 - 처리 상태 메시지
-- 코스 목록 table
-- 코스 보관 확인 dialog
+- `DataTable` 코스 목록
+- `AlertDialog` 코스 보관 확인
 
 ## UI 기준
 
-- 필터는 `.admin-toolbar`에 둔다.
+- 필터는 `FilterToolbar`에 둔다.
 - 필터 toolbar는 `GET` form이며, 코스 검색 `query`, 카테고리 `category`, 상태 `status`, 페이지 크기 `pageSize`를 query string으로 제출한다.
-- 필터 적용 버튼은 `Button variant="secondary"`이다.
+- 필터 적용 버튼은 `Button variant="outline"`이다.
 - 페이지 크기 선택은 `10`, `20`, `50` 옵션을 제공한다.
 - table 첫 열은 제목과 revision을 함께 보여준다.
 - 새 코스 버튼은 기본 `Button`이다.
-- 보관 버튼은 `Button variant="secondary"`이고, 확인 dialog의 실행은 `Button variant="destructive"`이다.
+- 보관 버튼은 `Button variant="outline"`이고, 확인 dialog의 실행은 `Button variant="destructive"`이다.
 
 ## 상태
 
@@ -44,4 +44,4 @@
 
 - toolbar는 `aria-label="코스 필터"`를 제공한다.
 - table header는 `scope="col"`을 사용한다.
-- dialog는 `role="dialog"`와 `aria-labelledby`를 제공한다.
+- 확인 dialog는 `AlertDialog`를 사용하며 `role="alertdialog"` 의미와 제목/설명 관계를 제공한다.

@@ -22,7 +22,7 @@
 
 ## UI 기준
 
-- 어드민 로그인 카드는 `admin-auth-card` 기준을 따른다.
+- 어드민 로그인 카드는 `Surface variant="panel"`, `Field`, `Alert`, `Button`, `Input` 조합을 사용한다.
 - 학습자 앱의 큰 장식성 레이아웃을 사용하지 않는다.
 - 오류는 명확한 한국어로 표시한다.
 
