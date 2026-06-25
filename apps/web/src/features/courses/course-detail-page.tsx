@@ -29,10 +29,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
         <ChevronLeftIcon className="mr-1" size={20} />
         돌아가기
       </Link>
-      <Surface
-        className="-mx-3 mb-12 rounded-panel px-5 py-8 md:mx-0 md:p-10"
-        size="none"
-      >
+      <Surface className="-mx-3 mb-12 md:mx-0" size="lg" variant="panel">
         <div className="flex items-start justify-between gap-4 mb-6">
           <Image
             alt={course.title}
@@ -65,7 +62,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             </p>
             <Link
               className={buttonVariants({
-                className: "w-full px-10 py-5 md:w-auto",
+                className: "w-full md:w-auto",
                 size: "lg",
               })}
               href={`/app/lesson?lesson_id=${encodeURIComponent(nextLesson.id)}`}

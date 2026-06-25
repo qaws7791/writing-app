@@ -59,13 +59,11 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
         </div>
         <StatGrid aria-label="학습 현황" className="grid-cols-2 gap-3">
           <StatCard
-            className="min-h-0 rounded-card px-5 py-3.5"
             icon={<FlameIcon size={20} />}
             label="연속 학습"
             value={`${progress.currentStreakDays}일`}
           />
           <StatCard
-            className="min-h-0 rounded-card px-5 py-3.5"
             icon={<BookOpenIcon size={20} />}
             label="완료한 레슨"
             value={`${totalDone}개`}
@@ -134,7 +132,7 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
             </h2>
             <div
               className={buttonVariants({
-                className: "w-full justify-between px-6",
+                className: "w-full justify-between",
                 size: "lg",
               })}
             >
@@ -170,11 +168,12 @@ function ContinueCourseCard({
 
   return (
     <Surface
+      variant="panel"
       size="none"
       className={
         isDesktop
-          ? "overflow-hidden rounded-card select-none"
-          : "flex w-80 shrink-0 flex-col overflow-hidden rounded-panel select-none sm:w-[22rem]"
+          ? "overflow-hidden select-none"
+          : "flex w-80 shrink-0 flex-col overflow-hidden select-none sm:w-[22rem]"
       }
     >
       {isDesktop ? (

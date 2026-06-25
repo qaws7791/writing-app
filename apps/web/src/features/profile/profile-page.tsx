@@ -54,12 +54,13 @@ export function ProfilePage({ profile }: ProfilePageProps) {
         <ThemeToggle />
       </div>
       <Button
-        className="h-auto w-full py-5 text-base"
+        className="w-full"
         onClick={() => {
           void requestLogout("/").then((path) => {
             router.push(path)
           })
         }}
+        size="lg"
         type="button"
         variant="destructive"
       >
@@ -81,18 +82,14 @@ function ThemeToggle() {
   return (
     <SegmentedControl
       aria-label="화면 테마"
-      className="grid w-full grid-cols-3 rounded-panel"
+      className="grid w-full grid-cols-3"
       onValueChange={setTheme}
       value={active}
     >
       {THEME_OPTIONS.map(({ Icon, label, value }) => {
         return (
-          <SegmentedControlItem
-            className="h-auto w-full flex-col gap-2 rounded-card py-4 data-[pressed]:bg-action-selected-bg data-[pressed]:text-action-selected-fg"
-            key={value}
-            value={value}
-          >
-            <Icon size={22} strokeWidth={2.5} />
+          <SegmentedControlItem className="w-full" key={value} value={value}>
+            <Icon className="mr-2" size={16} strokeWidth={2.5} />
             {label}
           </SegmentedControlItem>
         )

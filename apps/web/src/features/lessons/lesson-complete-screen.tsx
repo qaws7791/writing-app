@@ -36,7 +36,7 @@ export function LessonCompleteScreen({
           오늘의 학습이 저장되었습니다.
         </p>
         {points.length > 0 ? (
-          <Surface className="mb-6 w-full rounded-panel text-left" size="lg">
+          <Surface className="mb-6 w-full text-left" size="lg" variant="panel">
             <p className="mb-5 text-label-md font-black uppercase text-fg-muted">
               이번 레슨 핵심 요약
             </p>
@@ -53,8 +53,9 @@ export function LessonCompleteScreen({
           </Surface>
         ) : null}
         <Surface
-          className="mb-10 flex w-full flex-row items-center justify-around rounded-panel text-center"
+          className="mb-10 flex w-full flex-row items-center justify-around text-center"
           size="lg"
+          variant="panel"
         >
           <div className="flex flex-col items-center gap-1">
             <span className="text-label-md font-bold text-fg-muted">

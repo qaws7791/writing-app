@@ -27,8 +27,9 @@ export function AuthPage({ nextPath, testAuthEnabled = false }: AuthPageProps) {
       </p>
       <div className="w-full max-w-sm space-y-4">
         <Button
-          className="h-auto w-full py-5 text-base"
+          className="w-full"
           onClick={loginWithGoogle}
+          size="lg"
           type="button"
         >
           <GoogleIcon />
@@ -36,8 +37,9 @@ export function AuthPage({ nextPath, testAuthEnabled = false }: AuthPageProps) {
         </Button>
         {testAuthEnabled ? (
           <Button
-            className="h-auto w-full py-4 text-base"
+            className="w-full"
             onClick={loginWithTestUser}
+            size="lg"
             type="button"
             variant="secondary"
           >

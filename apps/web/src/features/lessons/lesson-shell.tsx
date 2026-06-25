@@ -11,7 +11,6 @@ import type { LessonStep } from "@/features/lessons/lesson-types"
 import { XIcon } from "@workspace/ui/components/icons"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
-  Callout,
   CalloutContent,
   CalloutTitle,
 } from "@workspace/ui/components/ui/callout"
@@ -104,19 +103,12 @@ export function LessonCheckedFooter({
       tone={feedback.isCorrect ? "success" : "danger"}
     >
       <div className="grid gap-4">
-        <Callout
-          className="border-0 bg-transparent p-0"
-          tone={feedback.isCorrect ? "success" : "danger"}
-        >
-          <CalloutTitle className="text-title-lg font-black">
-            {feedback.title}
-          </CalloutTitle>
+        <div className="grid gap-2">
+          <CalloutTitle>{feedback.title}</CalloutTitle>
           {feedback.body === "" ? null : (
-            <CalloutContent className="text-body-md">
-              {feedback.body}
-            </CalloutContent>
+            <CalloutContent>{feedback.body}</CalloutContent>
           )}
-        </Callout>
+        </div>
         <Button
           className="w-full"
           onClick={onNext}

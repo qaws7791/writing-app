@@ -40,24 +40,19 @@ export function LandingNav({
       }
     >
       <div className="max-w-6xl mx-auto px-5 md:px-10 h-16 flex items-center justify-between">
-        <Button
-          className="h-auto gap-2 px-0 py-0 text-fg-default hover:bg-transparent"
+        <button
+          className="flex items-center gap-2 text-fg-default btn-squish cursor-pointer outline-none"
           onClick={goRoot}
           type="button"
-          variant="ghost"
         >
           <span
             className="inline-block bg-action-selected-bg rounded-full"
             style={{ width: 12, height: 12 }}
           />
           <span className="text-title-lg font-black">Kernel</span>
-        </Button>
+        </button>
 
-        <Button
-          className="h-auto px-5 py-2.5 text-body-sm"
-          onClick={startLearning}
-          type="button"
-        >
+        <Button onClick={startLearning} size="sm" type="button">
           시작하기
         </Button>
       </div>
@@ -123,17 +118,13 @@ export function Hero({
           </p>
 
           <div className="flex flex-wrap items-center gap-3 mt-9">
-            <Button
-              className="h-auto gap-2 px-7 py-4 text-body-lg"
-              onClick={startLearning}
-              type="button"
-            >
+            <Button onClick={startLearning} size="lg" type="button">
               무료로 시작하기
               <ArrowRightIcon size={19} />
             </Button>
             <Button
-              className="h-auto px-7 py-4 text-body-lg"
               onClick={browseCourses}
+              size="lg"
               type="button"
               variant="secondary"
             >
@@ -387,8 +378,9 @@ export function FinalCta({
             가입은 1분이면 충분해요. 지금 바로 첫 레슨을 시작해 보세요.
           </p>
           <Button
-            className="mt-9 h-auto gap-2 bg-action-selected-bg px-8 py-4 text-body-lg text-action-selected-fg hover:bg-action-selected-bg/90"
+            className="mt-9"
             onClick={startLearning}
+            size="lg"
             type="button"
           >
             무료로 시작하기

@@ -734,10 +734,6 @@ function MatchAnswer({
             return (
               <ChoiceCard
                 aria-disabled={checked !== false}
-                className={cn(
-                  "min-h-14 justify-center text-center",
-                  isActive ? "scale-[1.02] shadow-lg" : undefined
-                )}
                 key={leftChoice.id}
                 onClick={() => handleLeftTap(leftChoice.id)}
                 state={state}
@@ -785,10 +781,6 @@ function MatchAnswer({
             return (
               <ChoiceCard
                 aria-disabled={checked !== false || selectedLeft === null}
-                className={cn(
-                  "min-h-14 justify-center text-center",
-                  isHighlighted ? "ring-2 ring-border-strong" : undefined
-                )}
                 key={rightChoice.id}
                 onClick={() => handleRightTap(rightChoice.id)}
                 state={state}
@@ -800,7 +792,7 @@ function MatchAnswer({
         </div>
       </div>
       {checked !== false && step.explanation ? (
-        <Surface className="mt-6 rounded-panel" size="md">
+        <Surface className="mt-6" size="md" variant="panel">
           <div className="mb-2 font-bold text-fg-muted">해설</div>
           <p className="font-medium">{step.explanation}</p>
         </Surface>
@@ -984,7 +976,7 @@ function CategorizeAnswer({
           })}
         </div>
         {checked !== false && step.explanation ? (
-          <Surface className="mt-2 rounded-panel an-fi" size="md">
+          <Surface className="mt-2 an-fi" size="md" variant="panel">
             <div className="mb-2 font-bold text-fg-muted">해설</div>
             <p className="font-medium">{step.explanation}</p>
           </Surface>
@@ -996,23 +988,16 @@ function CategorizeAnswer({
             태그 선택
           </div>
           <div className="flex flex-wrap gap-2">
-            {step.categories.map((category, index) => {
-              const palette = getCategoryPalette(index)
+            {step.categories.map((category) => {
               const isActive = activeTagId === category.id
 
               return (
                 <Button
-                  className={cn(
-                    palette.base,
-                    isActive
-                      ? cn("scale-95 ring-4 opacity-75", palette.activeRing)
-                      : ""
-                  )}
                   key={category.id}
                   onClick={() => handleTagTap(category.id)}
                   size="sm"
                   type="button"
-                  variant="secondary"
+                  variant={isActive ? "default" : "secondary"}
                 >
                   {category.label}
                 </Button>
@@ -1087,10 +1072,7 @@ function WriteAnswer({
         </Badge>
       )}
       {step.claim === undefined ? null : (
-        <Surface
-          className="mb-4 rounded-panel bg-action-selected-bg/20"
-          size="md"
-        >
+        <Surface className="mb-4" size="md" variant="panel">
           <div className="mb-2 text-label-md font-bold text-fg-muted">
             {claimLabel}
           </div>
@@ -1101,10 +1083,7 @@ function WriteAnswer({
         <MarkdownRichText className="mb-4">{guide}</MarkdownRichText>
       ) : null}
       {step.reference === undefined ? null : (
-        <Surface
-          className="mb-4 rounded-panel font-medium text-fg-muted"
-          size="md"
-        >
+        <Surface className="mb-4" size="md" variant="panel">
           <div className="mb-2 text-label-md font-bold text-fg-muted">
             참고 원문
           </div>
@@ -1112,7 +1091,7 @@ function WriteAnswer({
         </Surface>
       )}
       {step.structure === undefined ? null : (
-        <Surface className="mb-4 rounded-panel" size="md">
+        <Surface className="mb-4" size="md" variant="panel">
           <div className="mb-2 text-label-md font-bold text-fg-muted">
             구조 가이드
           </div>
@@ -1120,7 +1099,7 @@ function WriteAnswer({
         </Surface>
       )}
       <Textarea
-        className={`w-full rounded-panel bg-bg-surface p-6 text-body-lg font-medium outline-none ${minHeight}`}
+        className={minHeight}
         disabled={checked !== false}
         onChange={(event) => handleChange(event.target.value)}
         placeholder={placeholder}
@@ -1142,7 +1121,7 @@ function WriteAnswer({
       </div>
       {step.draft ? (
         <Button
-          className="mt-4 h-auto px-0 text-fg-muted hover:text-fg-default"
+          className="mt-4"
           onClick={() => {
             setDraftSaved(true)
             setTimeout(() => setDraftSaved(false), 2000)
@@ -1154,7 +1133,7 @@ function WriteAnswer({
         </Button>
       ) : null}
       {checked !== false && step.sample !== undefined ? (
-        <Surface className="mt-6 rounded-panel" size="md">
+        <Surface className="mt-6" size="md" variant="panel">
           <div className="mb-2 font-bold text-fg-muted">참조 답안</div>
           <p className="font-medium whitespace-pre-line">{step.sample}</p>
         </Surface>

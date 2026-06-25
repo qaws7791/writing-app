@@ -92,7 +92,7 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
             {["", ...categories].map((category) => (
               <Link
                 className={buttonVariants({
-                  className: "h-auto px-6 py-3 text-base",
+                  size: "lg",
                   variant:
                     filters.category === category ? "default" : "secondary",
                 })}

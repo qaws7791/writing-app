@@ -1,6 +1,8 @@
 @import "@workspace/ui/styles";
 @plugin "@tailwindcss/typography";
 
+@source "../../../../packages/ui/src";
+
 @keyframes landing-marquee-forward {
   from {
     transform: translateX(0%);

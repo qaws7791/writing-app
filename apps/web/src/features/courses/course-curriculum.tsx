@@ -78,7 +78,7 @@ function CurriculumUnit({
   return (
     <AccordionItem value={unit.id}>
       <AccordionHeader>
-        <AccordionTrigger className="text-body-md">
+        <AccordionTrigger>
           <div className="flex items-center gap-4">
             <div
               className={cn(
