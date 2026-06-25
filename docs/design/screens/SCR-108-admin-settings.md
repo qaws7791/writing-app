@@ -25,8 +25,8 @@
 
 - 설정 form은 `.settings-grid` 2열을 사용한다.
 - 공지/배너와 법적 문서는 각각 `admin-panel` form으로 분리한다.
-- 저장 버튼은 `admin-primary-button`이다.
-- 콘텐츠 초기화는 `admin-danger-button`과 확인 dialog를 사용한다.
+- 저장 버튼은 기본 `Button`이다.
+- 콘텐츠 초기화는 `Button variant="destructive"`와 확인 dialog를 사용한다.
 
 ## 상태
 

@@ -10,6 +10,7 @@
 | 관리자 | 운영자, 소유자 | Better Auth 아이디/패스워드 | `apps/admin-api` | `admin_session_token`, `admin_user/admin_session/admin_account/admin_verification` |
 
 학습자와 관리자는 인증 테이블, 쿠키 이름, 로그인 방식, API origin을 공유하지 않는다.
+`apps/admin`의 `(admin)` route group은 서버 layout에서 `admin_session_token`이 없으면 콘솔 shell을 렌더링하지 않고 `/login`으로 보낸다. 어드민 API는 기존처럼 모든 보호 route에서 실제 관리자 세션을 검증한다.
 
 ## 학습자 권한
 

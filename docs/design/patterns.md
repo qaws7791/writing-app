@@ -85,7 +85,7 @@
 ### 위험 작업
 
 - 보관, 삭제 요청, 콘텐츠 초기화는 확인 dialog를 거친다.
-- confirm 버튼은 `admin-danger-button`을 사용한다.
+- confirm 버튼은 `Button variant="destructive"`를 사용한다.
 - 성공 또는 실패 결과는 `admin-inline-status`에 한국어로 표시한다.
 
 ### 오류와 상태

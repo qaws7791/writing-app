@@ -79,6 +79,24 @@
 - invalid 상태는 `aria-invalid="true"`로 표시한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
+## Select
+
+구현 위치: `packages/ui/src/components/ui/select.tsx`
+
+- native `select`를 감싼 primitive다.
+- 높이 44px, `bg-cream`, `rounded-3xl`, `border-charcoal/12`, `focus-visible:ring-3`을 사용한다.
+- 라우팅이나 데이터 정책이 없는 필터, 정렬, 페이지 크기 선택에 사용한다.
+- 복잡한 combobox나 다중 선택이 필요해지면 Base UI 기반 별도 primitive를 추가한다.
+
+## Textarea
+
+구현 위치: `packages/ui/src/components/ui/textarea.tsx`
+
+- 최소 높이 96px.
+- `bg-cream`, `rounded-3xl`, `border-charcoal/12`, `focus-visible:ring-3`을 사용한다.
+- 긴 본문 편집처럼 화면별 높이가 필요한 경우 `className`으로 `min-h-*`를 조정한다.
+- placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
+
 ## Progress
 
 구현 위치: `packages/ui/src/components/ui/progress.tsx`
@@ -160,7 +178,7 @@
 구현 위치: `apps/admin/src/components/admin-header.tsx`
 
 - 모든 어드민 주요 화면 상단에 둔다.
-- 제목, 설명, 관리자 세션 pill을 포함한다.
+- 제목과 설명만 포함한다.
 
 ### Admin Panel
 
