@@ -111,6 +111,10 @@
 - 현재 기준선보다 `admin-*` class, 앱 inline typography style, 앱 raw hex color가 늘어나면 실패한다.
 - 기준선은 이관이 진행될 때마다 낮춘다.
 
+## Storybook 실행 명세
+
+- Storybook 전체 설계의 현재 실행 상태는 `docs/design/storybook.md`에서 추적한다.
+
 ## 작업 체크리스트
 
 | Phase | 완료 기준                                           | 상태    |

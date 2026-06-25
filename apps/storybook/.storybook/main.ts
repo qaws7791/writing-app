@@ -87,6 +87,7 @@ function getStorybookManualChunk(id: string) {
 
 const config: StorybookConfig = {
   stories: [
+    "../src/docs/**/*.mdx",
     "../../../packages/ui/src/**/*.stories.@(ts|tsx)",
     "../src/stories/**/*.stories.@(ts|tsx)",
   ],

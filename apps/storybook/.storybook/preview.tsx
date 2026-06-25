@@ -8,8 +8,11 @@ import { addons } from "storybook/preview-api"
 
 import "../styles.css"
 import { getStorybookTheme, type ThemeName } from "./storybook-theme"
+import { viewports } from "./viewports"
 
 const GLOBALS_UPDATED = "globalsUpdated"
+type DensityName = "comfortable" | "compact"
+type MotionName = "full" | "reduced"
 
 function ThemedDocsContainer({
   children,
@@ -57,9 +60,24 @@ const preview: Preview = {
       },
     },
     layout: "centered",
+    a11y: {
+      test: "error",
+    },
+    viewport: {
+      viewports,
+    },
     options: {
       storySort: {
-        order: ["Foundations", "Components", "Patterns"],
+        order: [
+          "Getting Started",
+          "Foundations",
+          "Components",
+          "Patterns",
+          "Interactions",
+          "Recipes",
+          "Quality",
+          "Migration",
+        ],
       },
     },
     docs: {
@@ -79,12 +97,38 @@ const preview: Preview = {
         dynamicTitle: true,
       },
     },
+    density: {
+      description: "Design system density",
+      toolbar: {
+        title: "Density",
+        items: [
+          { value: "comfortable", title: "Comfortable" },
+          { value: "compact", title: "Compact" },
+        ],
+        dynamicTitle: true,
+      },
+    },
+    motion: {
+      description: "Motion preference",
+      toolbar: {
+        title: "Motion",
+        items: [
+          { value: "full", title: "Full" },
+          { value: "reduced", title: "Reduced" },
+        ],
+        dynamicTitle: true,
+      },
+    },
   },
   initialGlobals: {
+    density: "comfortable",
+    motion: "full",
     theme: "system",
   },
   decorators: [
     (Story, context) => {
+      const density = context.globals.density as DensityName
+      const motion = context.globals.motion as MotionName
       const theme = context.globals.theme as ThemeName
 
       React.useEffect(() => {
@@ -111,7 +155,9 @@ const preview: Preview = {
 
       return (
         <div
-          className="antialiased"
+          className="storybook-root antialiased"
+          data-density={density}
+          data-motion={motion}
           style={{
             fontFamily:
               "Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif",

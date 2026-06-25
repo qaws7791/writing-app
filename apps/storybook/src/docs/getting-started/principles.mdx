@@ -1,0 +1,17 @@
+import { Meta } from "@storybook/addon-docs/blocks"
+
+<Meta title="Getting Started/Principles" />
+
+# 원칙
+
+## 하나의 foundation, 두 가지 density
+
+색상, typography, spacing, radius, motion은 하나의 foundation에서 나온다. web은 comfortable, admin은 compact를 선택하지만 의미 토큰과 컴포넌트 계약은 같다.
+
+## Semantic first
+
+스토리는 raw palette보다 `bg-surface`, `fg-muted`, `action-primary`, `danger` 같은 semantic role을 먼저 보여준다. 색상 이름은 구현 세부가 아니라 의미를 전달해야 한다.
+
+## Accessibility first
+
+복합 위젯은 role, ARIA, keyboard model을 story와 play test로 검증한다. Storybook의 자동 a11y 검사는 error 기준으로 유지한다.

@@ -1,0 +1,14 @@
+import { Meta } from "@storybook/addon-docs/blocks"
+
+<Meta title="Getting Started/Theme & Density" />
+
+# Theme와 Density
+
+Theme는 HTML의 `.dark` class로 적용한다. System은 Storybook을 실행하는 브라우저의 `prefers-color-scheme`를 따른다.
+
+Density는 story root의 `data-density`로 적용한다.
+
+- `comfortable`: 학습자 앱 기본값, 넓은 spacing과 큰 CTA
+- `compact`: 어드민 앱 기본값, 높은 정보 밀도와 좁은 control
+
+컴포넌트 API에 density prop을 반복해서 추가하지 않는다.

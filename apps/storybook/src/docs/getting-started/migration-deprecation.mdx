@@ -1,0 +1,15 @@
+import { Meta } from "@storybook/addon-docs/blocks"
+
+<Meta title="Getting Started/Migration & Deprecation" />
+
+# 이관과 제거
+
+`cream`, `surface`, `charcoal` 같은 compatibility alias는 앱 이관 중에만 유지한다. 새 story는 semantic token을 먼저 사용한다.
+
+현재 기준선보다 다음 항목이 늘어나면 root lint가 실패한다.
+
+- `admin-*` class
+- 앱 inline typography style
+- 앱 raw hex color
+
+기준선을 낮추는 변경은 migration 문서와 guardrail script를 함께 갱신한다.
