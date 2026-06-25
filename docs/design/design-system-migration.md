@@ -75,8 +75,15 @@
 ## Phase 5 Web 기본 화면
 
 - semantic typography와 layout token을 적용한다.
-- home/profile stat, course card, auth page, route notice를 공용 primitive 조합으로 바꾼다.
+- profile stat과 theme control을 공용 primitive 조합으로 바꾸기 시작했다.
+- home stat, course card, auth page, route notice를 공용 primitive 조합으로 바꾼다.
 - raw progress 구현과 local `cx` helper를 제거한다.
+
+### 현재 상태
+
+- profile 학습 요약은 `StatGrid`와 `StatCard`를 사용한다.
+- profile theme control은 `SegmentedControl`을 사용하고 raw inline color와 local `cx` helper를 제거했다.
+- home, course detail, auth, route notice는 다음 pilot으로 남긴다.
 
 ## Phase 6 Lesson Experience
 
@@ -102,6 +109,6 @@
 | 2     | P0 primitive story와 interaction test               | 완료    |
 | 3     | 수동 dialog/menu/disclosure pilot 제거              | 진행 중 |
 | 4     | admin 전역 CSS 주요 class 제거                      | 진행 중 |
-| 5     | web inline typography와 raw progress 축소           | 대기    |
+| 5     | web inline typography와 raw progress 축소           | 진행 중 |
 | 6     | lesson UI pattern 분리                              | 대기    |
 | 7     | alias 제거 계획과 lint 강제                         | 대기    |

@@ -59,8 +59,7 @@ describe("프로필 화면", () => {
     render(<ProfilePage profile={profile} />)
 
     expect(screen.getByText("✍️")).toHaveClass(
-      "w-32",
-      "h-32",
+      "size-32",
       "bg-primary",
       "rounded-[3rem]"
     )
@@ -75,18 +74,13 @@ describe("프로필 화면", () => {
       "font-bold",
       "mb-6"
     )
-    expect(screen.getByText("완료한 레슨")).toHaveClass(
-      "text-muted",
-      "font-bold",
-      "mb-2"
+    expect(screen.getByRole("region", { name: "나의 학습 요약" })).toHaveClass(
+      "grid-cols-2"
     )
-    expect(screen.getByText("12")).toHaveClass("font-black")
-    expect(screen.getByText("연속 학습일")).toHaveClass(
-      "text-muted",
-      "font-bold",
-      "mb-2"
-    )
-    expect(screen.getByText("🔥 4")).toHaveClass("font-black")
+    expect(screen.getByText("완료한 레슨")).toBeInTheDocument()
+    expect(screen.getByText("12")).toHaveClass("text-heading-lg")
+    expect(screen.getByText("연속 학습일")).toBeInTheDocument()
+    expect(screen.getByText("🔥 4")).toHaveClass("text-heading-lg")
     expect(screen.getByRole("heading", { name: "화면 테마" })).toHaveClass(
       "font-bold",
       "mb-6"
@@ -95,12 +89,11 @@ describe("프로필 화면", () => {
     const systemThemeButton = screen.getByRole("button", { name: "시스템" })
 
     expect(screen.getByRole("button", { name: "라이트" })).toHaveClass(
-      "btn-squish",
-      "inline-flex",
+      "h-auto",
       "flex-col"
     )
     expect(systemThemeButton).toHaveAttribute("aria-pressed", "true")
-    expect(systemThemeButton).toHaveClass("bg-primary")
+    expect(systemThemeButton).toHaveAttribute("data-pressed")
 
     await user.click(screen.getByRole("button", { name: "다크" }))
     expect(setTheme).toHaveBeenLastCalledWith("dark")

@@ -1,7 +1,5 @@
 "use client"
 
-/* eslint-disable react/button-has-type */
-
 import type { ReactNode, SVGProps } from "react"
 import { useSyncExternalStore } from "react"
 
@@ -11,6 +9,11 @@ import { useTheme } from "next-themes"
 import type { LearnerProfile } from "@/features/profile/profile-types"
 import { requestLogout } from "@/lib/auth/auth-client"
 import { Button } from "@workspace/ui/components/ui/button"
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+} from "@workspace/ui/components/ui/segmented-control"
+import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 
 type ProfilePageProps = {
   readonly profile: LearnerProfile
@@ -32,37 +35,21 @@ export function ProfilePage({ profile }: ProfilePageProps) {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex flex-col items-center mb-16 mt-8">
-        <div
-          className="w-32 h-32 bg-primary rounded-[3rem] flex justify-center items-center mb-6"
-          style={{ fontSize: "3rem" }}
-        >
+        <div className="mb-6 flex size-32 items-center justify-center rounded-[3rem] bg-primary text-display-lg">
           ✍️
         </div>
-        <h1 className="font-black mb-2" style={{ fontSize: "1.75rem" }}>
-          {profile.user.name}
-        </h1>
+        <h1 className="mb-2 text-heading-md font-black">{profile.user.name}</h1>
         <p className="text-muted font-bold">가입일: {joinedDate}</p>
       </div>
-      <h3 className="font-bold mb-6" style={{ fontSize: "1.5rem" }}>
-        나의 학습 요약
-      </h3>
-      <div className="grid grid-cols-2 gap-4 mb-12">
-        <div className="bg-surface p-8 rounded-4xl flex flex-col items-center text-center">
-          <span className="text-muted font-bold mb-2">완료한 레슨</span>
-          <span className="font-black" style={{ fontSize: "2.25rem" }}>
-            {profile.stats.completedLessons}
-          </span>
-        </div>
-        <div className="bg-surface p-8 rounded-4xl flex flex-col items-center text-center">
-          <span className="text-muted font-bold mb-2">연속 학습일</span>
-          <span className="font-black" style={{ fontSize: "2.25rem" }}>
-            🔥 {profile.stats.currentStreakDays}
-          </span>
-        </div>
-      </div>
-      <h3 className="font-bold mb-6" style={{ fontSize: "1.5rem" }}>
-        화면 테마
-      </h3>
+      <h2 className="mb-6 text-heading-sm font-bold">나의 학습 요약</h2>
+      <StatGrid aria-label="나의 학습 요약" className="mb-12 grid-cols-2">
+        <StatCard label="완료한 레슨" value={profile.stats.completedLessons} />
+        <StatCard
+          label="연속 학습일"
+          value={`🔥 ${profile.stats.currentStreakDays}`}
+        />
+      </StatGrid>
+      <h2 className="mb-6 text-heading-sm font-bold">화면 테마</h2>
       <div className="mb-12">
         <ThemeToggle />
       </div>
@@ -92,38 +79,30 @@ function ThemeToggle() {
   const active = mounted ? theme : "system"
 
   return (
-    <div className="grid grid-cols-3 gap-2 bg-surface p-2 rounded-4xl">
+    <SegmentedControl
+      aria-label="화면 테마"
+      className="grid w-full grid-cols-3 rounded-4xl"
+      onValueChange={setTheme}
+      value={active}
+    >
       {THEME_OPTIONS.map(({ Icon, label, value }) => {
-        const on = active === value
-
         return (
-          <Button
-            aria-pressed={on}
-            className={cx(
-              "h-auto w-full flex-col gap-2 rounded-[1.75rem] py-4",
-              on ? "bg-primary" : "text-muted hover:bg-surface-hover"
-            )}
+          <SegmentedControlItem
+            className="h-auto w-full flex-col gap-2 rounded-[1.75rem] py-4 data-[pressed]:bg-primary data-[pressed]:text-charcoal"
             key={value}
-            onClick={() => setTheme(value)}
-            style={on ? { color: "#2A2621" } : undefined}
-            type="button"
-            variant="ghost"
+            value={value}
           >
             <Icon size={22} strokeWidth={2.5} />
             {label}
-          </Button>
+          </SegmentedControlItem>
         )
       })}
-    </div>
+    </SegmentedControl>
   )
 }
 
 function formatJoinedDate(isoDate: string): string {
   return isoDate.slice(0, 10).replaceAll("-", ".")
-}
-
-function cx(...classes: Array<false | null | string | undefined>): string {
-  return classes.filter(Boolean).join(" ")
 }
 
 type IconProps = Omit<SVGProps<SVGSVGElement>, "height" | "width"> & {
