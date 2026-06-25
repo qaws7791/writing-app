@@ -1,30 +1,28 @@
 "use client"
 
-/* eslint-disable @next/next/no-img-element */
-
 import type { CSSProperties } from "react"
 
 import type { Pebble } from "@/features/landing/landing-content"
 
-const previewFrameSources = {
-  "Kernel 앱 홈 화면 미리보기": createPreviewFrameSource({
-    accent: "#FFC800",
-    secondary: "#34C759",
+const previewFrameTokens = {
+  "Kernel 앱 홈 화면 미리보기": {
+    accent: "var(--semantic-color-action-selected-bg)",
+    secondary: "var(--semantic-color-success-bg)",
     title: "Home",
-  }),
-  "Kernel 레슨 진행 화면": createPreviewFrameSource({
-    accent: "#34C759",
-    secondary: "#FF7A6B",
+  },
+  "Kernel 레슨 진행 화면": {
+    accent: "var(--semantic-color-success-bg)",
+    secondary: "var(--semantic-color-danger-bg)",
     title: "Lesson",
-  }),
-  "Kernel 코스 대시보드 화면": createPreviewFrameSource({
-    accent: "#FF7A6B",
-    secondary: "#FFC800",
+  },
+  "Kernel 코스 대시보드 화면": {
+    accent: "var(--semantic-color-danger-bg)",
+    secondary: "var(--semantic-color-action-selected-bg)",
     title: "Courses",
-  }),
+  },
 } as const
 
-type PreviewFrameAlt = keyof typeof previewFrameSources
+type PreviewFrameAlt = keyof typeof previewFrameTokens
 
 export function Pebbles({ items }: { readonly items: readonly Pebble[] }) {
   return (
@@ -63,45 +61,155 @@ export function PreviewFrame({
   readonly alt: PreviewFrameAlt
   readonly aspectRatio: string
 }) {
+  const frame = previewFrameTokens[alt]
+
   return (
-    <img
-      alt={alt}
-      className="w-full rounded-4xl object-cover"
-      src={previewFrameSources[alt]}
+    <svg
+      aria-label={alt}
+      className="w-full rounded-panel object-cover"
+      role="img"
       style={{ aspectRatio }}
-    />
+      viewBox="0 0 900 1200"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect
+        fill="var(--semantic-color-bg-inverse)"
+        height="1200"
+        rx="64"
+        width="900"
+      />
+      <rect
+        fill="var(--semantic-color-bg-canvas)"
+        height="1040"
+        rx="48"
+        width="760"
+        x="70"
+        y="80"
+      />
+      <circle cx="150" cy="165" fill={frame.accent} r="30" />
+      <rect
+        fill="var(--semantic-color-fg-default)"
+        height="24"
+        rx="12"
+        width="240"
+        x="205"
+        y="140"
+      />
+      <rect
+        fill="var(--semantic-color-fg-muted)"
+        height="18"
+        rx="9"
+        width="150"
+        x="205"
+        y="182"
+      />
+      <rect
+        fill={frame.accent}
+        height="170"
+        rx="38"
+        width="670"
+        x="115"
+        y="270"
+      />
+      <rect
+        fill="var(--semantic-color-fg-default)"
+        height="24"
+        rx="12"
+        width="300"
+        x="160"
+        y="318"
+      />
+      <rect
+        fill="var(--semantic-color-fg-default)"
+        height="18"
+        opacity=".62"
+        rx="9"
+        width="440"
+        x="160"
+        y="365"
+      />
+      <rect
+        fill="var(--semantic-color-bg-surface)"
+        height="240"
+        rx="38"
+        width="315"
+        x="115"
+        y="485"
+      />
+      <rect
+        fill="var(--semantic-color-bg-surface)"
+        height="240"
+        rx="38"
+        width="315"
+        x="470"
+        y="485"
+      />
+      <rect
+        fill="var(--semantic-color-fg-default)"
+        height="22"
+        rx="11"
+        width="170"
+        x="160"
+        y="545"
+      />
+      <rect
+        fill="var(--semantic-color-fg-default)"
+        height="22"
+        rx="11"
+        width="160"
+        x="515"
+        y="545"
+      />
+      <rect
+        fill="var(--semantic-color-fg-muted)"
+        height="18"
+        rx="9"
+        width="210"
+        x="160"
+        y="610"
+      />
+      <rect
+        fill="var(--semantic-color-fg-muted)"
+        height="18"
+        rx="9"
+        width="200"
+        x="515"
+        y="610"
+      />
+      <rect
+        fill={frame.secondary}
+        height="250"
+        rx="42"
+        width="670"
+        x="115"
+        y="780"
+      />
+      <rect
+        fill="var(--semantic-color-fg-default)"
+        height="24"
+        rx="12"
+        width="220"
+        x="160"
+        y="838"
+      />
+      <rect
+        fill="var(--semantic-color-fg-default)"
+        height="18"
+        opacity=".62"
+        rx="9"
+        width="490"
+        x="160"
+        y="900"
+      />
+      <text
+        className="text-heading-lg font-black"
+        fill="var(--semantic-color-fg-default)"
+        fontFamily="Arial, sans-serif"
+        x="160"
+        y="1010"
+      >
+        {frame.title}
+      </text>
+    </svg>
   )
-}
-
-function createPreviewFrameSource({
-  accent,
-  secondary,
-  title,
-}: {
-  readonly accent: string
-  readonly secondary: string
-  readonly title: string
-}) {
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200">
-  <rect width="900" height="1200" rx="64" fill="#2A2621"/>
-  <rect x="70" y="80" width="760" height="1040" rx="48" fill="#FDFBF7"/>
-  <circle cx="150" cy="165" r="30" fill="${accent}"/>
-  <rect x="205" y="140" width="240" height="24" rx="12" fill="#2A2621"/>
-  <rect x="205" y="182" width="150" height="18" rx="9" fill="#8C857A"/>
-  <rect x="115" y="270" width="670" height="170" rx="38" fill="${accent}"/>
-  <rect x="160" y="318" width="300" height="24" rx="12" fill="#2A2621"/>
-  <rect x="160" y="365" width="440" height="18" rx="9" fill="#2A2621" opacity=".62"/>
-  <rect x="115" y="485" width="315" height="240" rx="38" fill="#F4EFE6"/>
-  <rect x="470" y="485" width="315" height="240" rx="38" fill="#F4EFE6"/>
-  <rect x="160" y="545" width="170" height="22" rx="11" fill="#2A2621"/>
-  <rect x="515" y="545" width="160" height="22" rx="11" fill="#2A2621"/>
-  <rect x="160" y="610" width="210" height="18" rx="9" fill="#8C857A"/>
-  <rect x="515" y="610" width="200" height="18" rx="9" fill="#8C857A"/>
-  <rect x="115" y="780" width="670" height="250" rx="42" fill="${secondary}"/>
-  <rect x="160" y="838" width="220" height="24" rx="12" fill="#2A2621"/>
-  <rect x="160" y="900" width="490" height="18" rx="9" fill="#2A2621" opacity=".62"/>
-  <text x="160" y="1010" fill="#2A2621" font-family="Arial, sans-serif" font-size="54" font-weight="800">${title}</text>
-</svg>`
-
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`
 }

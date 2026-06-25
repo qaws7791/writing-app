@@ -129,6 +129,18 @@
 
 기반은 `@base-ui/react/accordion`이다. 구조는 `Accordion`, `AccordionItem`, `AccordionHeader`, `AccordionTrigger`, `AccordionPanel`이다. 수동 disclosure 구현 대신 사용하며, `value`와 `defaultValue`는 Base UI 계약에 맞춰 문자열 배열로 전달한다. 여러 패널을 동시에 열어야 하면 `multiple`을 명시한다.
 
+## DropdownMenu
+
+구현 위치: `packages/ui/src/components/ui/dropdown-menu.tsx`
+
+기반은 `@base-ui/react/menu`다. 계정 메뉴처럼 trigger와 메뉴 항목이 필요한 경우 사용한다. 구조는 `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem`, `DropdownMenuLinkItem`, `DropdownMenuSeparator`다. 항목 tone은 `neutral`, `danger`만 제공한다. 링크 항목도 메뉴 안에서는 `role="menuitem"` 의미를 따른다.
+
+## AlertDialog
+
+구현 위치: `packages/ui/src/components/ui/alert-dialog.tsx`
+
+기반은 `@base-ui/react/alert-dialog`다. 레슨 나가기, 삭제 확인처럼 사용자의 확인이 필요한 위험 전이에 사용한다. controlled `open`, `onOpenChange`를 지원하며 구조는 `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogCancel`, `AlertDialogAction`이다. 위험 확인 action은 `variant="destructive"`를 명시한다.
+
 ## SegmentedControl과 ToggleGroup
 
 구현 위치:
@@ -146,6 +158,16 @@
 - `packages/ui/src/components/ui/callout.tsx`
 
 `Alert`는 상태 메시지이고 기본 role은 `status`다. 오류처럼 assertive announcement가 필요한 경우 호출자가 role을 바꾼다. `Callout`은 본문 안의 참고, 설명, 안내 표면이며 사용자 문자열을 포함하지 않는다.
+
+## StickyActionBar, RichText, ChoiceCard
+
+구현 위치:
+
+- `packages/ui/src/components/ui/sticky-action-bar.tsx`
+- `packages/ui/src/components/ui/rich-text.tsx`
+- `packages/ui/src/components/ui/choice-card.tsx`
+
+`StickyActionBar`는 모바일 safe-area를 포함한 하단 고정 행동 영역이다. tone은 `default`, `success`, `danger`만 제공한다. `RichText`는 markdown parser가 아니라 ReactMarkdown 결과물을 감싸는 token 기반 prose wrapper다. markdown parsing과 remark/rehype 정책은 앱이 소유한다. `ChoiceCard`와 `ChoiceCardGroup`은 레슨 선택형 UI의 generic button/card이며 상태는 `idle`, `selected`, `correct`, `wrong`, `disabled`만 받는다.
 
 ## Spinner, Separator, Avatar
 
@@ -189,7 +211,7 @@
 
 구현 위치: `apps/web/src/components/layout/app-shell.tsx`
 
-- 배경은 `bg-cream`, 텍스트는 `text-charcoal`.
+- 배경은 `bg-bg-canvas`, 텍스트는 `text-fg-default`.
 - 데스크톱 상단 `GlobalNav`와 모바일 하단 `MobileNav`를 포함한다.
 - 본문은 `max-w-6xl`, `px-5 md:px-10`, `pb-24`를 사용한다.
 - `/app/lesson`은 몰입형 route group으로 분리되어 `AppShell`을 사용하지 않는다.
@@ -208,6 +230,7 @@
 - `홈`, `배우기`, `프로필`의 활성 상태는 `aria-current="page"`로 표시한다.
 - `/app` 홈은 정확히 `/app`에서만 활성화한다.
 - `/app/courses`와 하위 상세는 `배우기`가 활성화된다.
+- 계정 메뉴는 `DropdownMenu`를 사용하고, `프로필`, `로그아웃` 항목은 menuitem 의미를 따른다.
 - `global-nav.tsx`는 외부 import 호환성을 위해 `MobileNav`를 re-export한다.
 
 ### LessonShell
@@ -217,13 +240,9 @@
 - 전체 viewport를 차지하는 몰입형 shell이다.
 - 상단 진행 헤더와 하단 행동 영역은 `shrink-0`으로 고정한다.
 - 중앙 `main`만 `overflow-y-auto`로 스크롤한다.
-- 하단 CTA는 콘텐츠 transform 조상 내부에 넣지 않는다.
-
-### LessonPrimaryButton
-
-- 너비 100%, padding `py-5`, radius `rounded-4xl`.
-- variant는 `primary`, `secondary`, `correct`, `wrong`이다.
-- disabled는 opacity와 cursor로 명확히 표시한다.
+- 하단 CTA와 정답 피드백은 `StickyActionBar`, `Callout`, `Button` 조합을 사용한다.
+- 나가기 확인은 `AlertDialog`를 사용한다.
+- 선택형 레슨 UI는 `ChoiceCard`, markdown 본문은 `RichText`를 사용한다.
 
 ## 어드민 앱 컴포넌트
 

@@ -9,7 +9,7 @@ type AppShellProps = {
 
 export function AppShell({ children, currentPath }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-cream text-charcoal flex flex-col">
+    <div className="flex min-h-screen flex-col bg-bg-canvas text-fg-default">
       <GlobalNav currentPath={currentPath} />
       <main className="flex-1 w-full max-w-6xl mx-auto px-5 md:px-10 pt-6 pb-24 an-fi">
         {children}

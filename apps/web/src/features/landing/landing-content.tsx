@@ -28,6 +28,12 @@ export type Feature = {
   readonly title: string
 }
 
+const LANDING_ACCENT = "var(--semantic-color-action-selected-bg)"
+const LANDING_DANGER = "var(--semantic-color-danger-bg)"
+const LANDING_SUCCESS = "var(--semantic-color-success-bg)"
+const LANDING_SUCCESS_STRONG = "var(--semantic-color-success-fg)"
+const LANDING_SURFACE = "var(--semantic-color-bg-surface)"
+
 export const marqueeRows = [
   {
     items: [
@@ -58,24 +64,24 @@ export const marqueeRows = [
 ] as const
 
 export const marqueeColors = [
-  "#FFC800",
-  "#FF7A6B",
-  "#34C759",
-  "#F4EFE6",
+  LANDING_ACCENT,
+  LANDING_DANGER,
+  LANDING_SUCCESS,
+  LANDING_SURFACE,
 ] as const
 
 export const heroPebbles: readonly Pebble[] = [
-  { color: "#FFC800", duration: 9, left: "-60px", size: 220, top: "12%" },
+  { color: LANDING_ACCENT, duration: 9, left: "-60px", size: 220, top: "12%" },
   {
     bottom: "14%",
-    color: "#FF7A6B",
+    color: LANDING_DANGER,
     delay: 1,
     duration: 7,
     left: "8%",
     size: 140,
   },
   {
-    color: "#34C759",
+    color: LANDING_SUCCESS,
     delay: 0.5,
     duration: 10,
     right: "6%",
@@ -84,7 +90,7 @@ export const heroPebbles: readonly Pebble[] = [
   },
   {
     bottom: "22%",
-    color: "#52D86A",
+    color: LANDING_SUCCESS_STRONG,
     delay: 1.5,
     duration: 6,
     right: "24%",
@@ -93,17 +99,17 @@ export const heroPebbles: readonly Pebble[] = [
 ]
 
 export const finalPebbles: readonly Pebble[] = [
-  { color: "#FFC800", duration: 8, left: "6%", size: 160, top: "-30px" },
+  { color: LANDING_ACCENT, duration: 8, left: "6%", size: 160, top: "-30px" },
   {
     bottom: "-20px",
-    color: "#FF7A6B",
+    color: LANDING_DANGER,
     delay: 1,
     duration: 7,
     right: "12%",
     size: 110,
   },
   {
-    color: "#34C759",
+    color: LANDING_SUCCESS,
     delay: 0.5,
     duration: 6,
     right: "8%",
@@ -114,25 +120,25 @@ export const finalPebbles: readonly Pebble[] = [
 
 export const features: readonly Feature[] = [
   {
-    bg: "#FFC800",
+    bg: LANDING_ACCENT,
     body: "큰 개념을 한 입 크기의 레슨으로 나눠, 부담 없이 매일 한 조각씩 익혀요.",
     icon: LayersIcon,
     title: "작은 조각으로",
   },
   {
-    bg: "#FF7A6B",
+    bg: LANDING_DANGER,
     body: "연속 학습 기록과 부드러운 리듬이 학습을 매일의 습관으로 만들어 줍니다.",
     icon: FlameIcon,
     title: "습관이 되는 흐름",
   },
   {
-    bg: "#34C759",
+    bg: LANDING_SUCCESS,
     body: "분류, 매칭, 순서 맞추기 — 손으로 조작하며 개념을 몸에 익히는 인터랙션.",
     icon: PuzzleIcon,
     title: "직접 만지는 학습",
   },
   {
-    bg: "#F4EFE6",
+    bg: LANDING_SURFACE,
     body: "진도와 관심사에 맞춰 다음에 배울 조각을 자연스럽게 이어서 추천해요.",
     icon: SparklesIcon,
     title: "나에게 맞춰",
@@ -158,9 +164,9 @@ export const steps = [
 ] as const
 
 export const stats = [
-  { bg: "#FFC800", label: "큐레이션 코스", suffix: "+", value: 120 },
-  { bg: "#FF7A6B", label: "학습 조각", suffix: "+", value: 5000 },
-  { bg: "#34C759", label: "습관 지속률", suffix: "%", value: 98 },
+  { bg: LANDING_ACCENT, label: "큐레이션 코스", suffix: "+", value: 120 },
+  { bg: LANDING_DANGER, label: "학습 조각", suffix: "+", value: 5000 },
+  { bg: LANDING_SUCCESS, label: "습관 지속률", suffix: "%", value: 98 },
 ] as const
 
 export const footerLinks = [

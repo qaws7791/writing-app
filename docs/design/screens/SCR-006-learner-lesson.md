@@ -23,11 +23,14 @@
 ## UI 기준
 
 - `AppShell`을 사용하지 않는 몰입형 전체 화면이다.
-- root는 `h-dvh min-h-screen overflow-hidden bg-cream text-charcoal`이다.
+- root는 `h-dvh min-h-screen overflow-hidden bg-bg-canvas text-fg-default`이다.
 - 상단 진행 헤더와 하단 CTA는 고정 영역으로 유지한다.
 - 중앙 콘텐츠만 스크롤된다.
-- 주요 CTA는 `LessonPrimaryButton`을 사용한다.
-- 완료 화면은 `bg-primary` fullscreen overlay를 사용한다.
+- 주요 CTA는 `Button`과 `StickyActionBar`를 사용한다.
+- 나가기 확인은 `AlertDialog`를 사용한다.
+- 완료 화면은 `action-selected-*` token 기반 fullscreen overlay를 사용한다.
+- markdown 본문은 앱의 `ReactMarkdown` 결과를 `RichText`로 감싼다.
+- 선택형 UI는 `ChoiceCard`의 `data-state`를 사용해 `idle`, `selected`, `correct`, `wrong`, `disabled` 상태를 표현한다.
 - 완료 화면은 레슨 요약이 있으면 `이번 레슨 핵심 요약` 목록을 표시한다.
 - 레슨 요약이 없으면 완료 화면의 핵심 요약 영역을 표시하지 않는다.
 - 레슨 화면 구현은 시작, 진행, 완료 화면 파일을 분리하고, 다음 레슨 탐색은 `lesson-next-course-lesson.ts` selector가 담당한다.

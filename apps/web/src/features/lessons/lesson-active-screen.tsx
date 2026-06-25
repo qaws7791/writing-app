@@ -14,11 +14,13 @@ import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
 import type { Lesson, LessonStep } from "@/features/lessons/lesson-types"
 import {
   LessonCheckedFooter,
-  LessonPrimaryButton,
   LessonProgressHeader,
   LessonShell,
 } from "@/features/lessons/lesson-shell"
 import { LessonExitModal } from "@/features/lessons/lesson-exit-modal"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Callout, CalloutContent } from "@workspace/ui/components/ui/callout"
+import { StickyActionBar } from "@workspace/ui/components/ui/sticky-action-bar"
 
 type LessonCheckedState = false | LessonStepCheckedState
 
@@ -73,17 +75,19 @@ export function LessonActiveScreen({
       contentRef={contentRef}
       footer={
         checked === false ? (
-          <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent">
-            <LessonPrimaryButton
+          <StickyActionBar className="mx-auto max-w-2xl">
+            <Button
+              className="w-full"
               disabled={!isReady || isCompleting}
               onClick={onSubmitCurrentStep}
-              variant={isReady ? "primary" : "secondary"}
+              size="lg"
+              variant={isReady ? "default" : "secondary"}
             >
               {isCompleting
                 ? "완료 저장 중"
                 : getLessonStepActionLabel(currentStep)}
-            </LessonPrimaryButton>
-          </div>
+            </Button>
+          </StickyActionBar>
         ) : (
           <LessonCheckedFooter
             checked={checked}
@@ -114,9 +118,9 @@ export function LessonActiveScreen({
           totalSteps={lesson.steps.length}
         />
         {completeError === null ? null : (
-          <p className="mt-6 rounded-2xl bg-coral/10 px-4 py-3 text-coral-dark font-bold">
-            {completeError}
-          </p>
+          <Callout className="mt-6" role="alert" tone="danger">
+            <CalloutContent>{completeError}</CalloutContent>
+          </Callout>
         )}
       </div>
       {showExit ? (

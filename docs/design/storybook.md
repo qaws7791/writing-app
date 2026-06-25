@@ -19,6 +19,7 @@
 - Storybook 전용 helper block은 `apps/storybook/src/blocks`에 둔다.
 - Foundation story는 Color, Typography, Spacing, Motion 단위로 분리했다.
 - Components story는 Actions, Forms, Surfaces, Feedback, Data Display, Disclosure, Selection 범주로 확장했다.
+- `Components/Interactions/Web Patterns`는 `DropdownMenu`, `AlertDialog`, `StickyActionBar`, `RichText`, `ChoiceCard`의 web 이관용 public primitive와 interaction을 검증한다.
 - Patterns, Recipes, Quality 항목은 조합 예시와 검증 체크리스트를 제공한다.
 - 기존 `Components/Current UI` 갤러리는 `Migration/CurrentBaseline`으로 이동했다.
 

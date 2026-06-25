@@ -9,7 +9,14 @@ import {
 } from "@/features/lessons/lesson-step-policy"
 import type { LessonStep } from "@/features/lessons/lesson-types"
 import { XIcon } from "@workspace/ui/components/icons"
+import { Button } from "@workspace/ui/components/ui/button"
+import {
+  Callout,
+  CalloutContent,
+  CalloutTitle,
+} from "@workspace/ui/components/ui/callout"
 import { Progress } from "@workspace/ui/components/ui/progress"
+import { StickyActionBar } from "@workspace/ui/components/ui/sticky-action-bar"
 
 type LessonCheckedState = false | LessonStepCheckedState
 
@@ -25,7 +32,7 @@ export function LessonShell({
   readonly header: ReactNode
 }) {
   return (
-    <div className="flex h-dvh min-h-screen w-full flex-col overflow-hidden bg-cream text-charcoal">
+    <div className="flex h-dvh min-h-screen w-full flex-col overflow-hidden bg-bg-canvas text-fg-default">
       {header}
       <main
         aria-label="레슨 콘텐츠"
@@ -60,59 +67,23 @@ export function LessonProgressHeader({
   return (
     <header
       aria-label="레슨 진행"
-      className="shrink-0 w-full max-w-3xl mx-auto flex items-center px-6 pt-6 pb-4"
+      className="mx-auto flex w-full max-w-3xl shrink-0 items-center px-6 pb-4 pt-6"
     >
-      <button
+      <Button
         aria-label="나가기"
-        className="text-muted hover:text-charcoal font-bold mr-4 transition-colors w-9 h-9 flex items-center justify-center"
+        className="mr-4"
         onClick={onExit}
+        size="icon-sm"
         type="button"
+        variant="ghost"
       >
         <XIcon size={28} />
-      </button>
+      </Button>
       <Progress aria-label="레슨 진행률" className="flex-1" value={progress} />
-      <div className="ml-4 text-label-md font-bold text-muted">
+      <div className="ml-4 text-label-md font-bold text-fg-muted">
         {currentStepNumber}/{totalStepCount}
       </div>
     </header>
-  )
-}
-
-export function LessonPrimaryButton({
-  children,
-  className,
-  disabled,
-  onClick,
-  variant = "primary",
-}: {
-  readonly children: ReactNode
-  readonly className?: string
-  readonly disabled?: boolean
-  readonly onClick: () => void
-  readonly variant?: "correct" | "primary" | "secondary" | "wrong"
-}) {
-  const variantClassName = {
-    correct: "bg-mint-light text-charcoal",
-    primary: "bg-charcoal text-cream",
-    secondary: "bg-surface text-charcoal",
-    wrong: "bg-coral-light text-charcoal",
-  }[variant]
-
-  return (
-    <button
-      className={cx(
-        "w-full font-bold py-5 rounded-4xl btn-squish",
-        variantClassName,
-        disabled ? "opacity-50 cursor-not-allowed" : undefined,
-        className
-      )}
-      disabled={disabled}
-      onClick={onClick}
-      style={{ fontSize: "1.125rem" }}
-      type="button"
-    >
-      {children}
-    </button>
   )
 }
 
@@ -128,40 +99,34 @@ export function LessonCheckedFooter({
   const feedback = getCheckedFeedback(step, checked)
 
   return (
-    <div className="w-full max-w-2xl pointer-events-auto an-su">
-      <div className="h-10 bg-gradient-to-t from-cream to-transparent" />
-      <div
-        className={cx(
-          "h-1",
-          feedback.isCorrect ? "bg-mint-light" : "bg-coral-light"
-        )}
-      />
-      <div className="bg-cream px-6 pb-8 pt-5">
-        <p
-          className={cx(
-            "font-black mb-2",
-            feedback.isCorrect ? "text-mint-dark" : "text-coral-dark"
-          )}
-          style={{ fontSize: "1.25rem" }}
+    <StickyActionBar
+      className="pointer-events-auto mx-auto max-w-2xl an-su"
+      tone={feedback.isCorrect ? "success" : "danger"}
+    >
+      <div className="grid gap-4">
+        <Callout
+          className="border-0 bg-transparent p-0"
+          tone={feedback.isCorrect ? "success" : "danger"}
         >
-          {feedback.title}
-        </p>
-        {feedback.body === "" ? null : (
-          <p
-            className="text-muted font-medium mb-5"
-            style={{ fontSize: "1rem" }}
-          >
-            {feedback.body}
-          </p>
-        )}
-        <LessonPrimaryButton
+          <CalloutTitle className="text-title-lg font-black">
+            {feedback.title}
+          </CalloutTitle>
+          {feedback.body === "" ? null : (
+            <CalloutContent className="text-body-md">
+              {feedback.body}
+            </CalloutContent>
+          )}
+        </Callout>
+        <Button
+          className="w-full"
           onClick={onNext}
-          variant={feedback.isCorrect ? "correct" : "wrong"}
+          size="lg"
+          variant={feedback.isCorrect ? "secondary" : "destructive"}
         >
           계속하기
-        </LessonPrimaryButton>
+        </Button>
       </div>
-    </div>
+    </StickyActionBar>
   )
 }
 
@@ -201,8 +166,4 @@ function getCheckedFeedback(
     isCorrect,
     title: isCorrect ? "정확해요!" : "다시 확인해보세요",
   }
-}
-
-function cx(...classes: Array<false | null | string | undefined>): string {
-  return classes.filter(Boolean).join(" ")
 }

@@ -85,9 +85,16 @@
 - profile theme control은 `SegmentedControl`을 사용하고 raw inline color와 local `cx` helper를 제거했다.
 - home, course detail, auth, route notice는 다음 pilot으로 남긴다.
 
+### 2026-06-25 web 전면 이관 착수 기준
+
+- `apps/web/src`의 UI-facing 파일 전체를 대상으로 하되 API adapter, mapper, 인증 유틸, 순수 lesson policy는 디자인 시스템 범위 밖에 둔다.
+- 착수 시점의 web 잔여 기준선은 정적 typography inline style 130건, raw hex 40건, 로컬 class helper 11건, legacy token alias 사용 182건, native `<img>` 3건이다.
+- 이관 중 새 public primitive는 `DropdownMenu`, `AlertDialog`, `StickyActionBar`, `RichText`, `ChoiceCard`처럼 web 이관에 필요한 도메인 비의존 표현만 추가한다.
+- 완료 시 앱 테스트는 class/style 구현값보다 역할, 접근성 속성, 사용자 흐름, 도메인 결과를 검증한다.
+
 ## Phase 6 Lesson Experience
 
-- LessonPrimaryButton은 Button으로 대체한다.
+- LessonPrimaryButton은 제거했고 Button으로 대체했다.
 - progress header는 Progress로 대체하기 시작했다.
 - sticky footer는 StickyActionBar로 대체한다.
 - rich text와 callout, choice, token, character counter, feedback 표현을 generic pattern으로 분리한다.
@@ -96,7 +103,9 @@
 ### 현재 상태
 
 - `LessonProgressHeader`의 수동 progressbar는 공용 `Progress` primitive로 대체했다.
-- `LessonPrimaryButton`, sticky footer, step renderer의 선택지/feedback 표현은 다음 단위로 남긴다.
+- `LessonPrimaryButton`은 제거했고 주요 CTA는 `Button`과 `StickyActionBar`로 대체했다.
+- 나가기 확인은 `AlertDialog`, markdown 본문은 `RichText`, 객관식/매칭 선택지는 `ChoiceCard`를 사용한다.
+- class/style assertion test는 접근성 역할, `aria-*`, `data-state`, 사용자 흐름 검증으로 바꿨다.
 
 ## Phase 7 정리와 강제
 
@@ -109,7 +118,7 @@
 
 - `bun run check:design-system-guardrails`를 추가하고 root `bun run lint`에 연결했다.
 - 현재 기준선보다 `admin-*` class, 앱 inline typography style, 앱 raw hex color가 늘어나면 실패한다.
-- 기준선은 이관이 진행될 때마다 낮춘다.
+- 2026-06-25 기준선은 `admin-*` class 387건, 앱 inline typography style 0건, 앱 raw hex color 27건이다. raw hex 잔여분은 Storybook theme 설정에만 남아 있다.
 
 ## Storybook 실행 명세
 
@@ -122,8 +131,8 @@
 | 0     | PR checklist, ADR, baseline 계획                    | 완료    |
 | 1     | token Storybook, contrast test, compatibility alias | 완료    |
 | 2     | P0 primitive story와 interaction test               | 완료    |
-| 3     | 수동 dialog/menu/disclosure pilot 제거              | 진행 중 |
+| 3     | 수동 dialog/menu/disclosure pilot 제거              | 완료    |
 | 4     | admin 전역 CSS 주요 class 제거                      | 진행 중 |
-| 5     | web inline typography와 raw progress 축소           | 진행 중 |
-| 6     | lesson UI pattern 분리                              | 진행 중 |
+| 5     | web inline typography와 raw progress 축소           | 완료    |
+| 6     | lesson UI pattern 분리                              | 완료    |
 | 7     | alias 제거 계획과 lint 강제                         | 진행 중 |

@@ -49,15 +49,9 @@ describe("코스 목록 화면", () => {
     const beginnerCategory = screen.getByRole("link", {
       name: "입문자를 위한 코스",
     })
-    const categorySlider = screen.getByLabelText("코스 카테고리")
 
-    expect(categorySlider).toHaveClass(
-      "-mx-5",
-      "px-5",
-      "no-scrollbar",
-      "overflow-x-auto"
-    )
-    expect(allCategory).toHaveClass("bg-charcoal", "text-cream")
+    expect(screen.getByLabelText("코스 카테고리")).toBeInTheDocument()
+    expect(allCategory).toHaveAttribute("href", "/app/courses")
     expect(beginnerCategory).toHaveAttribute(
       "href",
       "/app/courses?category=%EC%9E%85%EB%AC%B8%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C+%EC%BD%94%EC%8A%A4"
@@ -103,9 +97,9 @@ describe("코스 목록 화면", () => {
       />
     )
 
-    expect(
-      screen.getByRole("heading", { name: "조건에 맞는 코스가 없습니다." })
-    ).toBeInTheDocument()
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "조건에 맞는 코스가 없습니다."
+    )
     expect(screen.getByRole("link", { name: "필터 초기화" })).toHaveAttribute(
       "href",
       "/app/courses"
@@ -120,9 +114,9 @@ describe("코스 목록 화면", () => {
       />
     )
 
-    expect(
-      screen.getByRole("heading", { name: "아직 열려 있는 코스가 없습니다." })
-    ).toBeInTheDocument()
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "아직 열려 있는 코스가 없습니다."
+    )
     expect(
       screen.queryByRole("link", { name: /글쓰기 첫걸음 30일/ })
     ).not.toBeInTheDocument()

@@ -20,12 +20,12 @@
 ### 카테고리 탭
 
 - 코스 목록의 카테고리 선택은 가로 스크롤 pill 버튼으로 표현한다.
-- 활성 상태는 `bg-charcoal text-cream`, 비활성은 `bg-surface text-charcoal`을 쓴다.
+- 활성 상태는 `Button` 기본 variant, 비활성은 `secondary` variant를 쓴다.
 - URL 복원이 필요한 상태가 되면 query로 승격한다.
 
 ### 진행률
 
-- 코스 진행률은 pill track과 `primary` indicator로 표시한다.
+- 코스 진행률은 공용 `Progress`로 표시한다.
 - 수치가 필요한 곳은 `completed/total`처럼 명확한 분수를 같이 제공한다.
 - 레슨 진행률은 `role="progressbar"`와 `aria-valuenow`, `aria-valuemin`, `aria-valuemax`를 제공한다.
 
@@ -39,9 +39,8 @@
 
 ### 정답과 오답 피드백
 
-- 정답은 `mint-light`, `mint-dark` 계열을 사용한다.
-- 오답은 `coral-light`, `coral-dark` 계열을 사용한다.
-- 피드백 footer는 하단 CTA 영역 위에 표시하고, 다음 행동은 `계속하기`로 유지한다.
+- 정답은 `success-*`, 오답은 `danger-*` semantic token을 사용한다.
+- 피드백 footer는 `StickyActionBar`와 `Callout`으로 표시하고, 다음 행동은 `계속하기`로 유지한다.
 
 ### 빈 상태
 
@@ -52,7 +51,7 @@
 
 - 프로필의 테마 전환은 3분할 segmented control이다.
 - 옵션은 라이트, 다크, 시스템이다.
-- 활성 상태는 `aria-pressed="true"`와 `bg-primary`로 표시한다.
+- 활성 상태는 `aria-pressed="true"`와 `data-pressed`로 검증하며, 색상은 `action-selected-*` token을 사용한다.
 
 ## 어드민 패턴
 

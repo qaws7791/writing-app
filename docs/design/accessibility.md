@@ -14,7 +14,7 @@
 - 학습자 `primary` 노랑 위에는 `ink` 또는 `charcoal` 계열 텍스트를 사용한다.
 - 학습자 `charcoal` 버튼 위에는 `cream` 텍스트를 사용한다.
 - `muted` 텍스트는 긴 본문보다 보조 정보에 사용한다.
-- `coral-light`, `mint-light` 위에는 각각 `coral-dark`, `mint-dark` 또는 `charcoal`을 사용한다.
+- `danger-bg`, `success-bg` 위에는 각각 `danger-fg`, `success-fg` 또는 `fg-default`를 사용한다.
 - 어드민 위험 버튼 `#e11d48` 위에는 흰색 텍스트를 사용한다.
 
 색 조합을 새로 만들 때는 구현 전 대비를 확인한다.

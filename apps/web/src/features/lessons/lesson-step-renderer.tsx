@@ -39,6 +39,7 @@ import type {
   WriteStep,
   LessonStep,
 } from "@/features/lessons/lesson-types"
+import { Badge } from "@workspace/ui/components/ui/badge"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
   Card,
@@ -47,7 +48,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@workspace/ui/components/ui/card"
+import {
+  ChoiceCard,
+  ChoiceCardGroup,
+} from "@workspace/ui/components/ui/choice-card"
+import { RichText } from "@workspace/ui/components/ui/rich-text"
+import { Surface } from "@workspace/ui/components/ui/surface"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
+import { cn } from "@workspace/ui/lib/utils"
 
 type LessonStepRendererProps = {
   readonly step: LessonStep
@@ -167,6 +175,20 @@ function LessonAnswerErrorMessage({
   )
 }
 
+function MarkdownRichText({
+  children,
+  className,
+}: {
+  readonly children: string
+  readonly className?: string
+}) {
+  return (
+    <RichText className={className}>
+      <ReactMarkdown>{children}</ReactMarkdown>
+    </RichText>
+  )
+}
+
 function renderStepContent(
   step: LessonStep,
   handlers: LessonStepContentHandlers
@@ -237,11 +259,11 @@ function CompareStepView({ step }: { readonly step: CompareStep }) {
     <div className="grid gap-3 md:grid-cols-2">
       {step.versions.map((version) => (
         <div
-          className="rounded-lg border border-border px-4 py-3"
+          className="rounded-lg border border-border-default px-4 py-3"
           key={version.label}
         >
           <p className="font-medium">{version.label}</p>
-          <p className="mt-2 leading-7 text-muted-foreground">{version.text}</p>
+          <p className="mt-2 leading-7 text-fg-muted">{version.text}</p>
         </div>
       ))}
     </div>
@@ -255,19 +277,13 @@ function ReadingStepView({
 }) {
   return (
     <div className="an-fi">
-      <h2 className="font-bold mb-2" style={{ fontSize: "1.5rem" }}>
-        {step.title}
-      </h2>
+      <h2 className="mb-2 text-heading-sm font-bold">{step.title}</h2>
       {step.guide === "" ? null : (
-        <div className="prose prose-sm max-w-none mb-6 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-muted prose-p:font-medium prose-strong:text-charcoal prose-li:text-muted prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted">
-          <ReactMarkdown>{step.guide}</ReactMarkdown>
-        </div>
+        <MarkdownRichText className="mb-6">{step.guide}</MarkdownRichText>
       )}
-      <div className="prose prose-sm max-w-none mb-6 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-charcoal/80 prose-p:font-medium prose-strong:text-charcoal prose-li:text-charcoal/80 prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted prose-hr:border-surface">
-        <ReactMarkdown>{step.body}</ReactMarkdown>
-      </div>
+      <MarkdownRichText className="mb-6">{step.body}</MarkdownRichText>
       {step.source === undefined ? null : (
-        <div className="text-muted font-bold" style={{ fontSize: "0.8125rem" }}>
+        <div className="text-label-md font-bold text-fg-muted">
           출처: {step.source}
         </div>
       )}
@@ -320,7 +336,7 @@ function AiFeedbackAnswer({
         {feedback === null ? "AI 코칭 받기" : "다시 받기"}
       </Button>
       {isLoading ? (
-        <p className="rounded-lg border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
+        <p className="rounded-lg border border-border-default bg-bg-surface px-4 py-3 text-sm text-fg-muted">
           AI 코칭을 준비하고 있습니다.
         </p>
       ) : null}
@@ -331,7 +347,7 @@ function AiFeedbackAnswer({
       )}
       {feedback === null ? null : <AiFeedbackResultView feedback={feedback} />}
       {canRetry ? null : feedback === null ? null : (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-fg-muted">
           남은 AI 코칭 시도 횟수가 없습니다.
         </p>
       )}
@@ -345,12 +361,12 @@ function AiFeedbackResultView({
   readonly feedback: LessonAiFeedback
 }) {
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-border px-4 py-4">
+    <div className="flex flex-col gap-4 rounded-lg border border-border-default px-4 py-4">
       <div className="flex flex-col gap-2">
         <h2 className="font-medium">총평</h2>
-        <p className="leading-7 text-muted-foreground">{feedback.summary}</p>
+        <p className="leading-7 text-fg-muted">{feedback.summary}</p>
         {feedback.showScore ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-fg-muted">
             {feedback.score}/{feedback.scoreRange[1]}점
           </p>
         ) : null}
@@ -359,7 +375,7 @@ function AiFeedbackResultView({
       <FeedbackList items={feedback.improvements} title="다듬을 점" />
       <div className="flex flex-col gap-2">
         <h2 className="font-medium">다음 시도</h2>
-        <p className="leading-7 text-muted-foreground">{feedback.nextAction}</p>
+        <p className="leading-7 text-fg-muted">{feedback.nextAction}</p>
       </div>
     </div>
   )
@@ -375,7 +391,7 @@ function FeedbackList({
   return (
     <div className="flex flex-col gap-2">
       <h2 className="font-medium">{title}</h2>
-      <ul className="flex flex-col gap-1 text-muted-foreground">
+      <ul className="flex flex-col gap-1 text-fg-muted">
         {items.map((item) => (
           <li key={item}>{item}</li>
         ))}
@@ -399,13 +415,8 @@ function MultipleChoiceAnswer({
 
   return (
     <div className="an-fi">
-      <h2
-        className="font-bold mb-8"
-        style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
-      >
-        {step.question}
-      </h2>
-      <div className="space-y-3">
+      <h2 className="mb-8 text-heading-sm font-bold">{step.question}</h2>
+      <ChoiceCardGroup aria-label="객관식 선택지">
         {step.options.map((option) => (
           <MultipleChoiceOptionButton
             checked={checked}
@@ -433,7 +444,7 @@ function MultipleChoiceAnswer({
             {option.text}
           </MultipleChoiceOptionButton>
         ))}
-      </div>
+      </ChoiceCardGroup>
     </div>
   )
 }
@@ -453,37 +464,30 @@ function MultipleChoiceOptionButton({
   readonly selectedOptionId: null | string
   readonly step: MultipleChoiceStep
 }) {
-  const variant = getMultipleChoiceVariant({
+  const state = getMultipleChoiceState({
     checked,
     optionId,
     selectedOptionId,
     step,
   })
-  const colors = MULTIPLE_CHOICE_COLORS[variant]
   const faded =
     checked !== false &&
     optionId !== step.correct &&
     selectedOptionId !== optionId
 
   return (
-    <button
-      className={cx(
-        "w-full px-5 py-4 rounded-3xl text-left font-medium btn-squish transition-colors",
-        colors.bg,
-        colors.text,
-        faded ? "opacity-40" : undefined
-      )}
+    <ChoiceCard
+      className={cn(faded ? "opacity-40" : undefined)}
       disabled={faded}
       onClick={onSelect}
-      style={{ fontSize: "1rem" }}
-      type="button"
+      state={state}
     >
       {children}
-    </button>
+    </ChoiceCard>
   )
 }
 
-function getMultipleChoiceVariant({
+function getMultipleChoiceState({
   checked,
   optionId,
   selectedOptionId,
@@ -493,7 +497,7 @@ function getMultipleChoiceVariant({
   readonly optionId: string
   readonly selectedOptionId: null | string
   readonly step: MultipleChoiceStep
-}): keyof typeof MULTIPLE_CHOICE_COLORS {
+}): "correct" | "idle" | "selected" | "wrong" {
   if (checked === "correct" && optionId === step.correct) {
     return "correct"
   }
@@ -511,30 +515,11 @@ function getMultipleChoiceVariant({
   }
 
   if (checked === false && selectedOptionId === optionId) {
-    return "primary"
+    return "selected"
   }
 
-  return "secondary"
+  return "idle"
 }
-
-const MULTIPLE_CHOICE_COLORS = {
-  correct: {
-    bg: "bg-mint-light",
-    text: "text-mint-dark",
-  },
-  primary: {
-    bg: "bg-primary",
-    text: "text-ink",
-  },
-  secondary: {
-    bg: "bg-surface",
-    text: "text-charcoal",
-  },
-  wrong: {
-    bg: "bg-coral-light",
-    text: "text-coral-dark",
-  },
-} as const
 
 function FillBlankAnswer({
   onAnswerChange,
@@ -648,7 +633,7 @@ function OrderAnswer({
         ))}
       </div>
       {orderedItems.length > 0 ? (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-fg-muted">
           선택한 순서: {orderedItems.join(" → ")}
         </p>
       ) : null}
@@ -706,18 +691,13 @@ function MatchAnswer({
 
   return (
     <div className="an-fi">
-      <h2
-        className="font-bold mb-2"
-        style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
-      >
+      <h2 className="mb-2 text-heading-sm font-bold">
         {step.title || "짝을 맞춰보세요"}
       </h2>
       {step.guide ? (
-        <div className="prose prose-sm max-w-none mb-6 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-muted prose-p:font-medium prose-strong:text-charcoal prose-li:text-muted prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted">
-          <ReactMarkdown>{step.guide}</ReactMarkdown>
-        </div>
+        <MarkdownRichText className="mb-6">{step.guide}</MarkdownRichText>
       ) : (
-        <p className="text-muted font-medium mb-6">
+        <p className="mb-6 text-body-md font-medium text-fg-muted">
           왼쪽 단어를 탭하고, 오른쪽에서 알맞은 기능을 탭해 짝을 맞추세요.
         </p>
       )}
@@ -743,29 +723,27 @@ function MatchAnswer({
               )
             const isActive = selectedLeft === leftChoice.id
             const isPaired = matchedRightChoiceId !== undefined
+            const state = isCorrect
+              ? "correct"
+              : isWrong
+                ? "wrong"
+                : isActive || isPaired
+                  ? "selected"
+                  : "idle"
 
             return (
-              <button
-                className={cx(
-                  "w-full rounded-3xl p-4 font-bold text-center transition-all duration-150 active:scale-95",
-                  isCorrect
-                    ? "bg-mint-light text-charcoal"
-                    : isWrong
-                      ? "bg-coral-light text-charcoal"
-                      : isActive
-                        ? "bg-charcoal text-cream shadow-lg scale-[1.02]"
-                        : isPaired
-                          ? "bg-primary text-ink"
-                          : "bg-surface text-charcoal"
+              <ChoiceCard
+                aria-disabled={checked !== false}
+                className={cn(
+                  "min-h-14 justify-center text-center",
+                  isActive ? "scale-[1.02] shadow-lg" : undefined
                 )}
-                disabled={checked !== false}
                 key={leftChoice.id}
                 onClick={() => handleLeftTap(leftChoice.id)}
-                style={{ fontSize: "1rem", minHeight: "3.5rem" }}
-                type="button"
+                state={state}
               >
                 {leftChoice.text}
-              </button>
+              </ChoiceCard>
             )
           })}
         </div>
@@ -794,40 +772,38 @@ function MatchAnswer({
                 pairedLeftChoiceId,
                 rightChoice.id
               )
+            const state = isCorrect
+              ? "correct"
+              : isWrong
+                ? "wrong"
+                : isHighlighted || isPaired
+                  ? "selected"
+                  : selectedLeft === null
+                    ? "disabled"
+                    : "idle"
 
             return (
-              <button
-                className={cx(
-                  "w-full rounded-3xl p-4 font-bold text-center transition-all duration-150 active:scale-95",
-                  isCorrect
-                    ? "bg-mint-light text-charcoal"
-                    : isWrong
-                      ? "bg-coral-light text-charcoal"
-                      : isHighlighted
-                        ? "bg-primary text-ink ring-2 ring-charcoal"
-                        : isPaired
-                          ? "bg-primary text-ink"
-                          : selectedLeft !== null
-                            ? "bg-surface text-charcoal hover:bg-primary/50"
-                            : "bg-surface text-muted"
+              <ChoiceCard
+                aria-disabled={checked !== false || selectedLeft === null}
+                className={cn(
+                  "min-h-14 justify-center text-center",
+                  isHighlighted ? "ring-2 ring-border-strong" : undefined
                 )}
-                disabled={checked !== false || selectedLeft === null}
                 key={rightChoice.id}
                 onClick={() => handleRightTap(rightChoice.id)}
-                style={{ fontSize: "1rem", minHeight: "3.5rem" }}
-                type="button"
+                state={state}
               >
                 {rightChoice.text}
-              </button>
+              </ChoiceCard>
             )
           })}
         </div>
       </div>
       {checked !== false && step.explanation ? (
-        <div className="mt-6 bg-surface rounded-4xl p-6">
-          <div className="font-bold text-muted mb-2">해설</div>
+        <Surface className="mt-6 rounded-panel" size="md">
+          <div className="mb-2 font-bold text-fg-muted">해설</div>
           <p className="font-medium">{step.explanation}</p>
-        </div>
+        </Surface>
       ) : null}
     </div>
   )
@@ -835,24 +811,24 @@ function MatchAnswer({
 
 const CATEGORY_PALETTE = [
   {
-    activeRing: "ring-charcoal/50",
-    base: "bg-charcoal text-cream",
-    cardBg: "bg-charcoal/10",
+    activeRing: "ring-border-strong/50",
+    base: "bg-bg-inverse text-fg-inverse",
+    cardBg: "bg-bg-surface-hover",
   },
   {
-    activeRing: "ring-primary",
-    base: "bg-primary text-ink",
-    cardBg: "bg-primary/25",
+    activeRing: "ring-action-selected-bg",
+    base: "bg-action-selected-bg text-action-selected-fg",
+    cardBg: "bg-action-selected-bg/25",
   },
   {
-    activeRing: "ring-mint",
-    base: "bg-mint text-ink",
-    cardBg: "bg-mint/20",
+    activeRing: "ring-success-fg",
+    base: "bg-success-bg text-action-selected-fg",
+    cardBg: "bg-success-bg/60",
   },
   {
-    activeRing: "ring-coral/60",
-    base: "bg-coral text-ink",
-    cardBg: "bg-coral/10",
+    activeRing: "ring-danger-fg/60",
+    base: "bg-danger-bg text-action-selected-fg",
+    cardBg: "bg-danger-bg/60",
   },
 ] as const
 
@@ -942,16 +918,11 @@ function CategorizeAnswer({
   return (
     <div className="select-none flex flex-col" style={{ minHeight: "100%" }}>
       <div className="flex-1">
-        <h2
-          className="font-bold mb-2"
-          style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
-        >
+        <h2 className="mb-2 text-heading-sm font-bold">
           {step.title || "항목을 분류하세요"}
         </h2>
         {step.guide ? (
-          <div className="prose prose-sm max-w-none mb-5 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-muted prose-p:font-medium prose-strong:text-charcoal prose-li:text-muted prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted">
-            <ReactMarkdown>{step.guide}</ReactMarkdown>
-          </div>
+          <MarkdownRichText className="mb-5">{step.guide}</MarkdownRichText>
         ) : null}
         <div className="flex flex-col gap-3 mb-4">
           {step.items.map((item) => {
@@ -981,18 +952,18 @@ function CategorizeAnswer({
 
             return (
               <div
-                className={cx(
+                className={cn(
                   "rounded-3xl px-4 py-3.5 transition-all duration-200",
                   isCorrect
-                    ? "bg-mint-light"
+                    ? "bg-success-bg"
                     : isWrong
-                      ? "bg-coral-light"
+                      ? "bg-danger-bg"
                       : isTagged && palette !== null
                         ? palette.cardBg
-                        : "bg-surface",
+                        : "bg-bg-surface",
                   isClickable ? "cursor-pointer btn-squish" : "",
                   isClickable && !isTagged
-                    ? "ring-2 ring-charcoal/20 ring-offset-1"
+                    ? "ring-2 ring-border-subtle ring-offset-1"
                     : ""
                 )}
                 key={item.id}
@@ -1000,20 +971,11 @@ function CategorizeAnswer({
               >
                 <div className="flex items-center gap-2 flex-wrap">
                   {isTagged && category != null && palette !== null ? (
-                    <span
-                      className={cx(
-                        "inline-flex items-center rounded-full px-2.5 py-0.5 font-bold shrink-0",
-                        palette.base
-                      )}
-                      style={{ fontSize: "0.75rem" }}
-                    >
+                    <Badge className={cn("shrink-0", palette.base)}>
                       {category.label}
-                    </span>
+                    </Badge>
                   ) : null}
-                  <span
-                    className="font-bold text-charcoal flex-1"
-                    style={{ fontSize: "0.9375rem" }}
-                  >
+                  <span className="flex-1 text-body-sm font-bold text-fg-default">
                     {item.text}
                   </span>
                 </div>
@@ -1022,18 +984,15 @@ function CategorizeAnswer({
           })}
         </div>
         {checked !== false && step.explanation ? (
-          <div className="mt-2 bg-surface rounded-4xl p-6 an-fi">
-            <div className="font-bold text-muted mb-2">해설</div>
+          <Surface className="mt-2 rounded-panel an-fi" size="md">
+            <div className="mb-2 font-bold text-fg-muted">해설</div>
             <p className="font-medium">{step.explanation}</p>
-          </div>
+          </Surface>
         ) : null}
       </div>
       {checked === false ? (
-        <div className="-mx-6 mt-auto shrink-0 px-6 pt-5 pb-3 bg-gradient-to-t from-cream via-cream to-transparent">
-          <div
-            className="font-bold text-muted mb-2 tracking-widest"
-            style={{ fontSize: "0.75rem" }}
-          >
+        <div className="-mx-6 mt-auto shrink-0 bg-gradient-to-t from-bg-canvas via-bg-canvas to-transparent px-6 pb-3 pt-5">
+          <div className="mb-2 text-label-sm font-bold uppercase text-fg-muted">
             태그 선택
           </div>
           <div className="flex flex-wrap gap-2">
@@ -1042,21 +1001,21 @@ function CategorizeAnswer({
               const isActive = activeTagId === category.id
 
               return (
-                <button
-                  className={cx(
-                    "rounded-full px-4 py-2 font-bold btn-squish transition-all duration-150",
+                <Button
+                  className={cn(
                     palette.base,
                     isActive
-                      ? cx("scale-95 ring-4 opacity-75", palette.activeRing)
+                      ? cn("scale-95 ring-4 opacity-75", palette.activeRing)
                       : ""
                   )}
                   key={category.id}
                   onClick={() => handleTagTap(category.id)}
-                  style={{ fontSize: "0.875rem" }}
+                  size="sm"
                   type="button"
+                  variant="secondary"
                 >
                   {category.label}
-                </button>
+                </Button>
               )
             })}
           </div>
@@ -1121,103 +1080,84 @@ function WriteAnswer({
 
   return (
     <div className="an-fi">
-      <h2
-        className="font-bold mb-3"
-        style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
-      >
-        {title}
-      </h2>
+      <h2 className="mb-3 text-heading-sm font-bold">{title}</h2>
       {badge === null ? null : (
-        <div
-          className="inline-block bg-charcoal/5 text-charcoal font-bold px-4 py-2 rounded-full mb-4"
-          style={{ fontSize: "0.875rem" }}
-        >
+        <Badge className="mb-4" tone="neutral">
           {badge}
-        </div>
+        </Badge>
       )}
       {step.claim === undefined ? null : (
-        <div className="bg-primary/20 rounded-4xl p-5 mb-4">
-          <div
-            className="font-bold text-muted mb-2"
-            style={{ fontSize: "0.8125rem" }}
-          >
+        <Surface
+          className="mb-4 rounded-panel bg-action-selected-bg/20"
+          size="md"
+        >
+          <div className="mb-2 text-label-md font-bold text-fg-muted">
             {claimLabel}
           </div>
-          <p className="font-medium" style={{ fontSize: "1.0625rem" }}>
-            {step.claim}
-          </p>
-        </div>
+          <p className="text-body-lg font-medium">{step.claim}</p>
+        </Surface>
       )}
       {guide ? (
-        <div className="prose prose-sm max-w-none mb-4 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-muted prose-p:font-medium prose-strong:text-charcoal prose-li:text-muted prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted">
-          <ReactMarkdown>{guide}</ReactMarkdown>
-        </div>
+        <MarkdownRichText className="mb-4">{guide}</MarkdownRichText>
       ) : null}
       {step.reference === undefined ? null : (
-        <div className="bg-surface rounded-4xl p-5 mb-4 text-muted font-medium">
-          <div
-            className="font-bold text-muted mb-2"
-            style={{ fontSize: "0.8125rem" }}
-          >
+        <Surface
+          className="mb-4 rounded-panel font-medium text-fg-muted"
+          size="md"
+        >
+          <div className="mb-2 text-label-md font-bold text-fg-muted">
             참고 원문
           </div>
           {step.reference}
-        </div>
+        </Surface>
       )}
       {step.structure === undefined ? null : (
-        <div className="bg-surface rounded-4xl p-5 mb-4">
-          <div
-            className="font-bold text-muted mb-2"
-            style={{ fontSize: "0.8125rem" }}
-          >
+        <Surface className="mb-4 rounded-panel" size="md">
+          <div className="mb-2 text-label-md font-bold text-fg-muted">
             구조 가이드
           </div>
           <p className="font-medium whitespace-pre-line">{step.structure}</p>
-        </div>
+        </Surface>
       )}
       <Textarea
-        className={`w-full bg-surface rounded-4xl p-6 font-medium outline-none resize-none ${minHeight}`}
+        className={`w-full rounded-panel bg-bg-surface p-6 text-body-lg font-medium outline-none ${minHeight}`}
         disabled={checked !== false}
         onChange={(event) => handleChange(event.target.value)}
         placeholder={placeholder}
-        style={{ fontSize: "1.0625rem" }}
         value={text}
       />
-      <div
-        className="mt-4 flex justify-between items-center text-muted font-bold"
-        style={{ fontSize: "0.875rem" }}
-      >
+      <div className="mt-4 flex items-center justify-between text-label-md font-bold text-fg-muted">
         <span>
           {text.length}자 · 최소 {min}
           {goal === undefined ? "" : ` · 목표 ${goal}`}
           {` · 최대 ${max}`}
         </span>
         <span
-          className={cx(
-            text.length >= min ? "text-mint-dark" : "text-coral-dark"
+          className={cn(
+            text.length >= min ? "text-success-fg" : "text-danger-fg"
           )}
         >
           {text.length >= min ? "✓" : "✗"}
         </span>
       </div>
       {step.draft ? (
-        <button
-          className="mt-4 inline-flex items-center gap-2 text-muted font-bold hover:text-charcoal"
+        <Button
+          className="mt-4 h-auto px-0 text-fg-muted hover:text-fg-default"
           onClick={() => {
             setDraftSaved(true)
             setTimeout(() => setDraftSaved(false), 2000)
           }}
-          style={{ fontSize: "0.875rem" }}
           type="button"
+          variant="link"
         >
           {draftSaved ? "저장됨" : "드래프트 저장"}
-        </button>
+        </Button>
       ) : null}
       {checked !== false && step.sample !== undefined ? (
-        <div className="mt-6 bg-surface rounded-4xl p-6">
-          <div className="font-bold text-muted mb-2">참조 답안</div>
+        <Surface className="mt-6 rounded-panel" size="md">
+          <div className="mb-2 font-bold text-fg-muted">참조 답안</div>
           <p className="font-medium whitespace-pre-line">{step.sample}</p>
-        </div>
+        </Surface>
       ) : null}
     </div>
   )
@@ -1238,8 +1178,4 @@ function emitAnswer(
     answer: createLessonStepAnswer(payload),
     stepId,
   })
-}
-
-function cx(...classes: Array<false | null | string | undefined>): string {
-  return classes.filter(Boolean).join(" ")
 }

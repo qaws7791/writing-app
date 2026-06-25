@@ -8,7 +8,6 @@ import {
   UserIcon,
 } from "@workspace/ui/components/icons"
 
-import { globalNavClassName } from "@/components/layout/global-nav-class-name"
 import {
   type GlobalNavPathProps,
   useGlobalNavCurrentPath,
@@ -18,6 +17,7 @@ import {
   globalNavMobileItems,
   isGlobalNavRouteActive,
 } from "@/components/layout/global-nav-routes"
+import { cn } from "@workspace/ui/lib/utils"
 
 const mobileNavIcons = {
   home: HomeIcon,
@@ -30,7 +30,7 @@ export function MobileNav({ currentPath }: GlobalNavPathProps) {
 
   return (
     <nav
-      className="sm:hidden fixed bottom-0 left-0 right-0 bg-cream border-t-2 border-surface z-40 px-4 py-2 flex justify-around items-center"
+      className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border-subtle bg-bg-canvas px-4 py-2 sm:hidden"
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
     >
       {globalNavMobileItems.map((item) => {
@@ -40,18 +40,19 @@ export function MobileNav({ currentPath }: GlobalNavPathProps) {
         return (
           <Link
             aria-current={isActive ? "page" : undefined}
-            className={globalNavClassName(
-              "flex flex-col items-center gap-0.5 font-bold transition-colors",
-              isActive ? "text-charcoal" : "text-muted"
+            className={cn(
+              "flex flex-col items-center gap-0.5 text-caption font-bold transition-colors",
+              isActive ? "text-fg-default" : "text-fg-muted"
             )}
             href={item.href}
             key={item.key}
-            style={{ fontSize: "0.6875rem" }}
           >
             <div
-              className={globalNavClassName(
+              className={cn(
                 "w-7 h-7 rounded-full flex justify-center items-center transition-colors",
-                isActive ? "bg-primary text-ink" : "bg-transparent"
+                isActive
+                  ? "bg-action-selected-bg text-action-selected-fg"
+                  : "bg-transparent"
               )}
             >
               <Icon size={16} />

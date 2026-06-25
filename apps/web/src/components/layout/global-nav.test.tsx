@@ -11,6 +11,7 @@ vi.mock("next/navigation", () => ({
 describe("전역 내비게이션", () => {
   it("현재 제품 header의 내부 이동을 링크 의미론으로 제공한다", async () => {
     const user = userEvent.setup()
+
     render(<GlobalNav currentPath="/app/profile" />)
 
     expect(screen.getByRole("link", { name: "글결." })).toHaveAttribute(
@@ -29,11 +30,11 @@ describe("전역 내비게이션", () => {
 
     await user.click(screen.getByRole("button", { name: "✍️" }))
 
-    expect(screen.getByRole("link", { name: "프로필" })).toHaveAttribute(
+    expect(screen.getByRole("menuitem", { name: "프로필" })).toHaveAttribute(
       "href",
       "/app/profile"
     )
-    expect(screen.getByRole("link", { name: "로그아웃" })).toHaveAttribute(
+    expect(screen.getByRole("menuitem", { name: "로그아웃" })).toHaveAttribute(
       "href",
       "/login"
     )

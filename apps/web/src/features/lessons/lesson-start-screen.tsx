@@ -2,10 +2,12 @@
 
 import type { Lesson } from "@/features/lessons/lesson-types"
 import {
-  LessonPrimaryButton,
   LessonProgressHeader,
   LessonShell,
 } from "@/features/lessons/lesson-shell"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Callout, CalloutContent } from "@workspace/ui/components/ui/callout"
+import { StickyActionBar } from "@workspace/ui/components/ui/sticky-action-bar"
 
 export function LessonStartScreen({
   canStart,
@@ -25,14 +27,16 @@ export function LessonStartScreen({
   return (
     <LessonShell
       footer={
-        <div className="w-full max-w-2xl px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent">
-          <LessonPrimaryButton
+        <StickyActionBar className="mx-auto max-w-2xl">
+          <Button
+            className="w-full"
             disabled={!canStart || isSavingStart}
             onClick={onStart}
+            size="lg"
           >
             {isSavingStart ? "저장 중" : "시작하기"}
-          </LessonPrimaryButton>
-        </div>
+          </Button>
+        </StickyActionBar>
       }
       header={
         <LessonProgressHeader
@@ -45,38 +49,24 @@ export function LessonStartScreen({
     >
       <div className="an-fi">
         {lesson.category === null ? null : (
-          <div
-            className="font-bold text-muted tracking-widest mb-4"
-            style={{ fontSize: "0.8125rem" }}
-          >
+          <div className="mb-4 text-label-md font-bold uppercase text-fg-muted">
             {lesson.category}
           </div>
         )}
-        <h1
-          className="font-bold mb-6"
-          style={{ fontSize: "2.5rem", lineHeight: 1.2 }}
-        >
-          {lesson.title}
-        </h1>
+        <h1 className="mb-6 text-heading-xl font-bold">{lesson.title}</h1>
         {lesson.description === null ? null : (
-          <p
-            className="text-muted font-medium mb-8"
-            style={{ fontSize: "1.125rem" }}
-          >
+          <p className="mb-8 text-body-lg font-medium text-fg-muted">
             {lesson.description}
           </p>
         )}
-        <div
-          className="flex gap-6 text-muted font-medium"
-          style={{ fontSize: "0.9375rem" }}
-        >
+        <div className="flex gap-6 text-body-sm font-medium text-fg-muted">
           <span>⏱ {lesson.estimatedMinutes}분</span>
           <span>📚 {lesson.steps.length}개 스텝</span>
         </div>
         {startError === null ? null : (
-          <p className="mt-8 rounded-2xl bg-coral/10 px-4 py-3 text-coral-dark font-bold">
-            {startError}
-          </p>
+          <Callout className="mt-8" role="alert" tone="danger">
+            <CalloutContent>{startError}</CalloutContent>
+          </Callout>
         )}
       </div>
     </LessonShell>

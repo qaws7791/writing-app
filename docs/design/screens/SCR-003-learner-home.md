@@ -27,7 +27,9 @@
 - 모바일 진행 코스는 가로 스크롤 카드 패턴을 사용할 수 있다.
 - 진행 중 코스 카드는 다음 학습 레슨 CTA를 최대 2개까지 표시할 수 있다.
 - 다음 학습 레슨 CTA는 레슨 제목을 포함하고 각 CTA는 `/app/lesson?lesson_id=...`로 이동한다.
-- 빈 상태는 `bg-surface rounded-4xl` 카드와 코스 둘러보기 CTA를 사용한다.
+- 빈 상태는 `bg-bg-surface rounded-panel` 카드와 코스 둘러보기 CTA를 사용한다.
+- 이어서 학습 코스 이미지는 `next/image`를 사용한다.
+- 진행률은 공용 `Progress`, 요약 지표는 `StatCard`를 사용한다.
 
 ## 상태
 

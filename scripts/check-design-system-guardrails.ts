@@ -27,7 +27,7 @@ const guardrails: readonly Guardrail[] = [
     roots: ["apps/admin/src"],
   },
   {
-    baseline: 111,
+    baseline: 0,
     description:
       "apps/**의 fontSize, lineHeight, letterSpacing inline style 기준선",
     label: "inline typography style",
@@ -36,7 +36,7 @@ const guardrails: readonly Guardrail[] = [
     roots: ["apps"],
   },
   {
-    baseline: 67,
+    baseline: 27,
     description: "apps/**의 raw hex color 기준선",
     label: "raw hex color",
     pattern: /#[0-9a-fA-F]{3,8}\b/g,

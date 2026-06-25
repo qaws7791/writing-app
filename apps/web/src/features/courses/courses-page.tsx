@@ -4,6 +4,8 @@ import Link from "next/link"
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type { CourseSummary } from "@/features/courses/course-types"
 import { buttonVariants, Button } from "@workspace/ui/components/ui/button"
+import { EmptyState } from "@workspace/ui/components/ui/empty-state"
+import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
 import { Select } from "@workspace/ui/components/ui/select"
 
@@ -34,53 +36,43 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
 
   return (
     <div>
-      <h1 className="font-bold mb-4" style={{ fontSize: "2.25rem" }}>
-        무엇을 써볼까요?
-      </h1>
-      <p
-        className="text-muted font-medium mb-8"
-        style={{ fontSize: "1.125rem" }}
-      >
+      <h1 className="mb-4 text-heading-lg font-bold">무엇을 써볼까요?</h1>
+      <p className="mb-8 text-body-lg font-medium text-fg-muted">
         관심 있는 주제를 골라 매일 한 단락씩 글의 결을 다듬어 보세요.
       </p>
 
       {courses.length === 0 ? (
-        <div
-          className="rounded-2xl bg-surface px-6 py-8 text-charcoal"
+        <EmptyState
+          description="새 코스가 공개되면 이곳에서 바로 이어갈 수 있습니다."
           role="status"
-        >
-          <h2 className="font-bold mb-2" style={{ fontSize: "1.25rem" }}>
-            아직 열려 있는 코스가 없습니다.
-          </h2>
-          <p className="text-muted font-medium" style={{ fontSize: "1rem" }}>
-            새 코스가 공개되면 이곳에서 바로 이어갈 수 있습니다.
-          </p>
-        </div>
+          title="아직 열려 있는 코스가 없습니다."
+        />
       ) : (
         <>
           <form
             action="/app/courses"
             aria-label="코스 검색과 정렬"
-            className="bg-surface rounded-2xl md:rounded-4xl p-4 md:p-5 mb-5 grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_auto]"
+            className="mb-5 grid gap-3 rounded-card bg-bg-surface p-(--surface-padding-md) md:grid-cols-[minmax(0,1fr)_180px_auto]"
             method="get"
           >
             <input name="category" type="hidden" value={filters.category} />
-            <label className="grid gap-2">
-              <span className="text-muted font-bold text-sm">검색</span>
+            <Field>
+              <FieldLabel htmlFor="course-query">검색</FieldLabel>
               <Input
                 defaultValue={filters.query}
+                id="course-query"
                 name="query"
                 placeholder="제목, 설명, 카테고리 검색"
               />
-            </label>
-            <label className="grid gap-2">
-              <span className="text-muted font-bold text-sm">정렬</span>
-              <Select defaultValue={filters.sort} name="sort">
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="course-sort">정렬</FieldLabel>
+              <Select defaultValue={filters.sort} id="course-sort" name="sort">
                 <option value="latest">최신순</option>
                 <option value="title">제목순</option>
                 <option value="studyTime">학습시간순</option>
               </Select>
-            </label>
+            </Field>
             <div className="flex items-end gap-2">
               <Button type="submit">적용</Button>
               {hasActiveFilters ? (
@@ -112,25 +104,21 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
             ))}
           </div>
           {visibleCourses.length === 0 ? (
-            <div
-              className="rounded-2xl bg-surface px-6 py-8 text-charcoal"
+            <EmptyState
+              actions={
+                <Link className={buttonVariants()} href="/app/courses">
+                  필터 초기화
+                </Link>
+              }
+              description="검색어나 카테고리를 조정하면 더 많은 코스를 볼 수 있습니다."
               role="status"
-            >
-              <h2 className="font-bold mb-2" style={{ fontSize: "1.25rem" }}>
-                조건에 맞는 코스가 없습니다.
-              </h2>
-              <p className="text-muted font-medium mb-4">
-                검색어나 카테고리를 조정하면 더 많은 코스를 볼 수 있습니다.
-              </p>
-              <Link className={buttonVariants()} href="/app/courses">
-                필터 초기화
-              </Link>
-            </div>
+              title="조건에 맞는 코스가 없습니다."
+            />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {visibleCourses.map((course) => (
                 <Link
-                  className="bg-surface rounded-2xl md:rounded-4xl overflow-hidden cursor-pointer btn-squish flex flex-row md:flex-col"
+                  className="flex flex-row overflow-hidden rounded-card bg-bg-surface btn-squish md:flex-col"
                   href={`/app/courses/${course.id}`}
                   key={course.id}
                 >
@@ -144,25 +132,13 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
                     />
                   </div>
                   <div className="p-4 md:p-6 flex-1 flex flex-col min-w-0">
-                    <h2
-                      className="font-bold mt-3 mb-1"
-                      style={{
-                        fontSize: "1.125rem",
-                        lineHeight: 1.35,
-                      }}
-                    >
+                    <h2 className="mb-1 mt-3 text-title-md font-bold">
                       {course.title}
                     </h2>
-                    <p
-                      className="text-charcoal font-medium leading-relaxed hidden md:block"
-                      style={{ fontSize: "0.9375rem" }}
-                    >
+                    <p className="hidden text-body-sm font-medium text-fg-default md:block">
                       {course.description}
                     </p>
-                    <div
-                      className="mt-auto pt-2 text-charcoal font-bold"
-                      style={{ fontSize: "0.8125rem" }}
-                    >
+                    <div className="mt-auto pt-2 text-label-sm font-bold text-fg-default">
                       {course.lessonCount}개 레슨
                     </div>
                   </div>

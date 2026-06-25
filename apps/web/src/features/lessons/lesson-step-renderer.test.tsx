@@ -38,10 +38,10 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
 
     expect(
       screen.getByRole("heading", { name: "더 좋은 문장은 무엇인가요?" })
-    ).toHaveStyle({ fontSize: "1.625rem", lineHeight: "1.3" })
+    ).toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "좋은 글을 씁니다." })
-    ).toHaveClass("bg-surface", "text-charcoal", "rounded-3xl")
+    ).toHaveAttribute("data-state", "idle")
 
     await user.click(
       screen.getByRole("button", {
@@ -60,7 +60,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
       screen.getByRole("button", {
         name: "독자가 바로 이해하는 문장을 씁니다.",
       })
-    ).toHaveClass("bg-primary", "text-ink")
+    ).toHaveAttribute("data-state", "selected")
     expect(screen.queryByText("정답입니다.")).not.toBeInTheDocument()
   })
 
@@ -159,10 +159,14 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
 
     expect(
       screen.getByRole("heading", { name: "접속사와 기능 짝짓기" })
-    ).toHaveStyle({ fontSize: "1.625rem", lineHeight: "1.3" })
+    ).toBeInTheDocument()
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "그러나" }))
+    expect(screen.getByRole("button", { name: "그러나" })).toHaveAttribute(
+      "data-state",
+      "selected"
+    )
     await user.click(screen.getByRole("button", { name: "역접" }))
 
     expect(onAnswerChange).toHaveBeenCalledWith({
@@ -172,9 +176,9 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
       },
       stepId: "match-1",
     })
-    expect(screen.getByRole("button", { name: "그러나" })).toHaveClass(
-      "bg-primary",
-      "text-ink"
+    expect(screen.getByRole("button", { name: "그러나" })).toHaveAttribute(
+      "data-state",
+      "selected"
     )
   })
 
@@ -204,14 +208,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     renderAnswerableStep(step, onAnswerChange)
 
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument()
-    expect(screen.getByText("태그 선택")).toHaveClass(
-      "font-bold",
-      "text-muted",
-      "tracking-widest"
-    )
-    expect(screen.getByText("태그 선택").parentElement).not.toHaveClass(
-      "absolute"
-    )
+    expect(screen.getByText("태그 선택")).toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "좋은 문장" }))
     await user.click(screen.getByText("독자가 바로 이해한다."))
@@ -245,14 +242,9 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     expect(screen.getByText("구조 가이드")).toBeInTheDocument()
     expect(
       screen.getByText("0자 · 최소 20 · 목표 80 · 최대 2000").parentElement
-    ).toHaveClass("text-muted", "font-bold")
-    expect(screen.getByText("✗")).toHaveClass("text-coral-dark")
-    expect(screen.getByPlaceholderText("여기에 작성하세요...")).toHaveClass(
-      "w-full",
-      "bg-surface",
-      "rounded-4xl",
-      "p-6"
-    )
+    ).toBeInTheDocument()
+    expect(screen.getByText("✗")).toBeInTheDocument()
+    expect(screen.getByPlaceholderText("여기에 작성하세요...")).toBeEnabled()
 
     await user.type(
       screen.getByPlaceholderText("여기에 작성하세요..."),

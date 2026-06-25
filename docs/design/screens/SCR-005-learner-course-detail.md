@@ -25,7 +25,9 @@
 
 ## UI 기준
 
-- 상세 hero 카드는 `bg-surface rounded-4xl`을 사용한다.
+- 상세 hero 카드는 `Surface`와 `rounded-panel`을 사용한다.
+- 코스 진행률은 공용 `Progress`를 사용한다.
+- 커리큘럼 disclosure는 공용 `Accordion`을 사용한다.
 - 진행 bar는 `charcoal/20` track과 `primary` indicator를 사용한다.
 - CTA는 `bg-charcoal text-cream rounded-full`이다.
 - 커리큘럼은 완료 여부와 현재 이어서 학습할 위치를 구분한다.

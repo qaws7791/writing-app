@@ -1,7 +1,6 @@
 "use client"
 
-/* eslint-disable @next/next/no-img-element */
-
+import Image from "next/image"
 import Link from "next/link"
 
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
@@ -17,6 +16,10 @@ import {
   PlayIcon,
   SparklesIcon,
 } from "@workspace/ui/components/icons"
+import { buttonVariants } from "@workspace/ui/components/ui/button"
+import { Progress } from "@workspace/ui/components/ui/progress"
+import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
+import { Surface } from "@workspace/ui/components/ui/surface"
 
 const CONTINUE_COURSE_LIMIT = 5
 
@@ -45,77 +48,39 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
     <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 xl:gap-14">
       <div className="lg:w-[360px] lg:shrink-0 lg:sticky lg:top-20 lg:self-start">
         <div className="mb-8">
-          <p
-            className="text-muted font-bold mb-2"
-            style={{ fontSize: "0.9375rem" }}
-          >
+          <p className="mb-2 text-body-sm font-bold text-fg-muted">
             안녕하세요 👋
           </p>
-          <h1
-            className="font-black"
-            style={{ fontSize: "2.25rem", lineHeight: 1.2 }}
-          >
+          <h1 className="text-heading-lg font-black">
             {firstName}님,
             <br />
             오늘도 함께 써봐요.
           </h1>
         </div>
-        <div className="flex gap-3">
-          <div className="flex items-center gap-3 bg-surface rounded-2xl px-5 py-3.5 flex-1">
-            <FlameIcon className="shrink-0 text-muted" size={20} />
-            <div>
-              <p
-                className="font-black"
-                style={{ fontSize: "1.25rem", lineHeight: 1 }}
-              >
-                {progress.currentStreakDays}일
-              </p>
-              <p
-                className="font-bold text-muted"
-                style={{ fontSize: "0.6875rem", marginTop: 6 }}
-              >
-                연속 학습
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 bg-surface rounded-2xl px-5 py-3.5 flex-1">
-            <BookOpenIcon className="shrink-0 text-muted" size={20} />
-            <div>
-              <p
-                className="font-black"
-                style={{ fontSize: "1.25rem", lineHeight: 1 }}
-              >
-                {totalDone}개
-              </p>
-              <p
-                className="font-bold text-muted"
-                style={{ fontSize: "0.6875rem", marginTop: 6 }}
-              >
-                완료한 레슨
-              </p>
-            </div>
-          </div>
-        </div>
+        <StatGrid aria-label="학습 현황" className="grid-cols-2 gap-3">
+          <StatCard
+            className="min-h-0 rounded-card px-5 py-3.5"
+            icon={<FlameIcon size={20} />}
+            label="연속 학습"
+            value={`${progress.currentStreakDays}일`}
+          />
+          <StatCard
+            className="min-h-0 rounded-card px-5 py-3.5"
+            icon={<BookOpenIcon size={20} />}
+            label="완료한 레슨"
+            value={`${totalDone}개`}
+          />
+        </StatGrid>
       </div>
 
       <div className="flex-1 min-w-0">
         {hasProgress ? (
           <>
             <div className="flex items-baseline justify-between mb-5">
-              <p
-                className="font-bold text-muted"
-                style={{
-                  fontSize: "0.75rem",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                }}
-              >
+              <p className="text-label-sm font-bold uppercase text-fg-muted">
                 이어서 학습하기
               </p>
-              <p
-                className="font-bold text-muted"
-                style={{ fontSize: "0.75rem" }}
-              >
+              <p className="text-label-sm font-bold text-fg-muted">
                 {items.length}개 코스
               </p>
             </div>
@@ -126,21 +91,26 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
                 scrollSnapType: "x mandatory",
               }}
             >
-              {items.map((course) => (
+              {items.map((course, index) => (
                 <div
                   className="last:pr-2"
                   key={course.id}
                   style={{ scrollSnapAlign: "start" }}
                 >
-                  <ContinueCourseCard course={course} variant="mobile" />
+                  <ContinueCourseCard
+                    course={course}
+                    priority={index === 0}
+                    variant="mobile"
+                  />
                 </div>
               ))}
             </div>
             <div className="hidden lg:flex flex-col gap-4">
-              {items.map((course) => (
+              {items.map((course, index) => (
                 <ContinueCourseCard
                   course={course}
                   key={course.id}
+                  priority={index === 0}
                   variant="desktop"
                 />
               ))}
@@ -148,30 +118,27 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
           </>
         ) : (
           <Link
-            className="bg-surface rounded-4xl p-7 cursor-pointer btn-squish block"
+            className="block cursor-pointer rounded-panel bg-bg-surface p-7 btn-squish"
             href="/app/courses"
           >
             <div className="flex items-center gap-2 mb-5">
-              <SparklesIcon className="text-muted" size={16} />
-              <span
-                className="text-muted font-bold"
-                style={{ fontSize: "0.875rem" }}
-              >
+              <SparklesIcon className="text-fg-muted" size={16} />
+              <span className="text-label-md font-bold text-fg-muted">
                 지금 시작해볼까요?
               </span>
             </div>
-            <h2
-              className="font-black mb-7"
-              style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
-            >
+            <h2 className="mb-7 text-heading-sm font-black">
               첫 번째 코스를
               <br />
               선택해 보세요
             </h2>
-            <div className="flex items-center justify-between bg-charcoal text-cream px-6 py-4 rounded-full">
-              <span className="font-bold" style={{ fontSize: "1rem" }}>
-                코스 둘러보기
-              </span>
+            <div
+              className={buttonVariants({
+                className: "w-full justify-between px-6",
+                size: "lg",
+              })}
+            >
+              <span>코스 둘러보기</span>
               <ChevronRightIcon size={20} />
             </div>
           </Link>
@@ -183,10 +150,15 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
 
 type ContinueCourseCardProps = {
   readonly course: ProgressCourse
+  readonly priority?: boolean
   readonly variant: "desktop" | "mobile"
 }
 
-function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
+function ContinueCourseCard({
+  course,
+  priority = false,
+  variant,
+}: ContinueCourseCardProps) {
   const completedLessonCount = course.lessons.filter(
     (lesson) => lesson.status === "completed"
   ).length
@@ -197,25 +169,28 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
   const courseHref = `/app/courses/${course.id}`
 
   return (
-    <div
+    <Surface
+      size="none"
       className={
         isDesktop
-          ? "bg-surface rounded-[24px] overflow-hidden select-none"
-          : "w-80 sm:w-[22rem] shrink-0 bg-surface rounded-[28px] overflow-hidden flex flex-col select-none"
+          ? "overflow-hidden rounded-card select-none"
+          : "flex w-80 shrink-0 flex-col overflow-hidden rounded-panel select-none sm:w-[22rem]"
       }
     >
       {isDesktop ? (
         <div className="flex">
           <Link
-            className="w-44 shrink-0 cursor-pointer btn-squish"
+            className="relative min-h-28 w-44 shrink-0 cursor-pointer btn-squish"
             href={courseHref}
           >
-            <img
+            <Image
               alt={course.title}
-              className="w-full h-full object-cover pointer-events-none"
+              className="object-cover pointer-events-none"
               draggable={false}
+              fill
+              priority={priority}
+              sizes="176px"
               src={createCourseImageUrl(course.visualKey)}
-              style={{ minHeight: "7rem" }}
             />
           </Link>
           <Link
@@ -227,7 +202,7 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
               course={course}
               progressPercent={progressPercent}
               totalLessonCount={totalLessonCount}
-              titleFontSize="1rem"
+              variant={variant}
             />
           </Link>
         </div>
@@ -236,19 +211,24 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
           className="w-full cursor-pointer btn-squish text-left"
           href={courseHref}
         >
-          <img
-            alt={course.title}
-            className="w-full h-36 object-cover pointer-events-none"
-            draggable={false}
-            src={createCourseImageUrl(course.visualKey)}
-          />
+          <div className="relative h-36 w-full">
+            <Image
+              alt={course.title}
+              className="object-cover pointer-events-none"
+              draggable={false}
+              fill
+              priority={priority}
+              sizes="(min-width: 640px) 22rem, 20rem"
+              src={createCourseImageUrl(course.visualKey)}
+            />
+          </div>
           <div className="px-6 pt-5 pb-4">
             <ContinueCourseSummary
               completedLessonCount={completedLessonCount}
               course={course}
               progressPercent={progressPercent}
               totalLessonCount={totalLessonCount}
-              titleFontSize="1.0625rem"
+              variant={variant}
             />
           </div>
         </Link>
@@ -269,15 +249,12 @@ function ContinueCourseCard({ course, variant }: ContinueCourseCardProps) {
             />
           ))
         ) : (
-          <div
-            className="px-4 py-3 text-muted font-bold"
-            style={{ fontSize: "0.875rem" }}
-          >
+          <div className="px-4 py-3 text-label-md font-bold text-fg-muted">
             모든 레슨을 완료했어요
           </div>
         )}
       </div>
-    </div>
+    </Surface>
   )
 }
 
@@ -285,23 +262,25 @@ function ContinueCourseSummary({
   completedLessonCount,
   course,
   progressPercent,
-  titleFontSize,
   totalLessonCount,
+  variant,
 }: {
   readonly completedLessonCount: number
   readonly course: ProgressCourse
   readonly progressPercent: number
-  readonly titleFontSize: string
   readonly totalLessonCount: number
+  readonly variant: "desktop" | "mobile"
 }) {
   return (
     <>
       <p
-        className="font-bold mb-3"
+        className={
+          variant === "desktop"
+            ? "mb-3 text-body-md font-bold"
+            : "mb-3 text-title-md font-bold"
+        }
         style={{
           display: "-webkit-box",
-          fontSize: titleFontSize,
-          lineHeight: 1.45,
           overflow: "hidden",
           WebkitBoxOrient: "vertical",
           WebkitLineClamp: 2,
@@ -309,20 +288,15 @@ function ContinueCourseSummary({
       >
         {course.title}
       </p>
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-2 bg-charcoal/10 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-charcoal rounded-full transition-all"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-        <span
-          className="font-bold text-muted shrink-0"
-          style={{ fontSize: "0.75rem" }}
-        >
+      <Progress
+        aria-label={`${course.title} 진행률`}
+        className="items-center gap-3"
+        value={progressPercent}
+      >
+        <span className="shrink-0 text-label-sm font-bold text-fg-muted">
           {completedLessonCount}/{totalLessonCount}
         </span>
-      </div>
+      </Progress>
     </>
   )
 }
@@ -338,33 +312,36 @@ function NextLessonLink({
     <Link
       className={
         isDesktop
-          ? "text-left flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-charcoal/5 btn-squish"
-          : "text-left flex items-center gap-4 px-4 py-3.5 rounded-2xl hover:bg-charcoal/5 btn-squish"
+          ? "flex items-center gap-3 rounded-2xl px-3 py-3 text-left btn-squish hover:bg-bg-surface-hover"
+          : "flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left btn-squish hover:bg-bg-surface-hover"
       }
       href={`/app/lesson?lesson_id=${encodeURIComponent(lesson.id)}`}
     >
       <span
         className={
           isDesktop
-            ? "w-8 h-8 shrink-0 rounded-full bg-charcoal text-cream flex items-center justify-center"
-            : "w-10 h-10 shrink-0 rounded-full bg-charcoal text-cream flex items-center justify-center"
+            ? "flex size-8 shrink-0 items-center justify-center rounded-full bg-action-primary-bg text-action-primary-fg"
+            : "flex size-10 shrink-0 items-center justify-center rounded-full bg-action-primary-bg text-action-primary-fg"
         }
       >
         <PlayIcon fill="currentColor" size={isDesktop ? 12 : 14} />
       </span>
       <span className="flex-1 min-w-0">
         <span
-          className="block font-bold truncate"
-          style={{
-            fontSize: isDesktop ? "0.875rem" : "0.9375rem",
-            lineHeight: 1.4,
-          }}
+          className={
+            isDesktop
+              ? "block truncate text-body-sm font-bold"
+              : "block truncate text-body-md font-bold"
+          }
         >
           {lesson.title}
         </span>
         <span
-          className="block text-muted font-bold"
-          style={{ fontSize: "0.75rem", marginTop: isDesktop ? 2 : 3 }}
+          className={
+            isDesktop
+              ? "mt-0.5 block text-label-sm font-bold text-fg-muted"
+              : "mt-1 block text-label-sm font-bold text-fg-muted"
+          }
         >
           {lesson.estimatedMinutes}분
         </span>

@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 
@@ -101,23 +101,19 @@ describe("코스 커리큘럼", () => {
     const firstUnitToggle = screen.getByRole("button", {
       name: /문장의 기본기\s*2개 레슨/,
     })
-    const firstUnitPanel = firstUnitToggle.nextElementSibling as HTMLElement
-    expect(firstUnitPanel).toHaveStyle({ gridTemplateRows: "1fr" })
+    expect(firstUnitToggle).toHaveAttribute("aria-expanded", "true")
 
     await user.click(firstUnitToggle)
-    expect(firstUnitPanel).toHaveStyle({ gridTemplateRows: "0fr" })
+    expect(firstUnitToggle).toHaveAttribute("aria-expanded", "false")
 
     await user.click(firstUnitToggle)
-    expect(firstUnitPanel).toHaveStyle({ gridTemplateRows: "1fr" })
+    expect(firstUnitToggle).toHaveAttribute("aria-expanded", "true")
 
     const firstLessonLink = screen.getByRole("link", {
       name: /좋은 문장이란 무엇인가/,
     })
     expect(firstLessonLink).toHaveAttribute("href", "/app/lesson?lesson_id=l1")
 
-    const lockedLessonRow = screen.getByText("짧게 쓰기").closest("div")
-      ?.parentElement?.parentElement
-    expect(lockedLessonRow).toHaveClass("cursor-not-allowed")
     expect(
       screen.queryByRole("link", { name: /짧게 쓰기/ })
     ).not.toBeInTheDocument()
@@ -125,11 +121,10 @@ describe("코스 커리큘럼", () => {
     const secondUnitToggle = screen.getByRole("button", {
       name: /문단의 흐름\s*1개 레슨/,
     })
-    const secondUnitPanel = secondUnitToggle.nextElementSibling as HTMLElement
-    expect(secondUnitPanel).toHaveStyle({ gridTemplateRows: "0fr" })
+    expect(secondUnitToggle).toHaveAttribute("aria-expanded", "false")
 
     await user.click(secondUnitToggle)
-    expect(secondUnitPanel).toHaveStyle({ gridTemplateRows: "1fr" })
-    expect(within(secondUnitPanel).getByText("문단 만들기")).toBeInTheDocument()
+    expect(secondUnitToggle).toHaveAttribute("aria-expanded", "true")
+    expect(screen.getByText("문단 만들기")).toBeInTheDocument()
   })
 })

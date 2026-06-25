@@ -125,40 +125,22 @@ describe("레슨 경험", () => {
     expect(
       screen.getByRole("heading", { name: "좋은 문장이란 무엇인가" })
     ).toBeInTheDocument()
-    expect(screen.getByText("문장의 기본기")).toHaveClass(
-      "font-bold",
-      "text-muted",
-      "tracking-widest",
-      "mb-4"
-    )
+    expect(screen.getByText("문장의 기본기")).toBeInTheDocument()
     expect(
       screen.getByText("명료하고 군더더기 없는 문장을 살펴봅니다.")
     ).toBeInTheDocument()
     expect(screen.getByText("⏱ 5분")).toBeInTheDocument()
     expect(screen.getByText("📚 2개 스텝")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "나가기" })).toHaveClass(
-      "text-muted",
-      "hover:text-charcoal",
-      "font-bold",
-      "mr-4",
-      "transition-colors",
-      "w-9",
-      "h-9",
-      "flex",
-      "items-center",
-      "justify-center"
-    )
+    expect(screen.getByRole("button", { name: "나가기" })).toBeEnabled()
     const startContent = screen.getByRole("main", { name: "레슨 콘텐츠" })
-    const startShell = startContent.parentElement
 
-    expect(startShell).toHaveClass("h-dvh", "overflow-hidden")
-    expect(screen.getByRole("banner", { name: "레슨 진행" })).toHaveClass(
-      "shrink-0"
-    )
-    expect(startContent).toHaveClass("min-h-0", "flex-1", "overflow-y-auto")
-    expect(screen.getByRole("contentinfo", { name: "레슨 행동" })).toHaveClass(
-      "shrink-0"
-    )
+    expect(startContent).toBeInTheDocument()
+    expect(
+      screen.getByRole("banner", { name: "레슨 진행" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("contentinfo", { name: "레슨 행동" })
+    ).toBeInTheDocument()
     expect(
       screen.getByRole("progressbar", { name: "레슨 진행률" })
     ).toHaveAttribute("aria-valuenow", "0")
@@ -179,23 +161,14 @@ describe("레슨 경험", () => {
     expect(
       screen.getByText("좋은 문장은 독자가 바로 이해할 수 있는 문장입니다.")
     ).toBeInTheDocument()
-    expect(screen.getByText("1/2")).toHaveClass(
-      "ml-4",
-      "font-bold",
-      "text-muted"
-    )
+    expect(screen.getByText("1/2")).toBeInTheDocument()
     const stepContent = screen.getByRole("main", { name: "레슨 콘텐츠" })
 
-    expect(stepContent).toHaveClass("min-h-0", "flex-1", "overflow-y-auto")
+    expect(stepContent).toBeInTheDocument()
     expect(
       screen.getByRole("progressbar", { name: "레슨 진행률" })
     ).toHaveAttribute("aria-valuenow", "50")
-    expect(screen.getByRole("button", { name: "이해했어요" })).toHaveClass(
-      "bg-charcoal",
-      "text-cream",
-      "rounded-4xl",
-      "btn-squish"
-    )
+    expect(screen.getByRole("button", { name: "이해했어요" })).toBeEnabled()
   })
 
   it("시작 저장이 실패하면 한국어 오류를 보여주고 시작 화면에 머문다", async () => {
@@ -235,11 +208,7 @@ describe("레슨 경험", () => {
     expect(
       screen.getByRole("heading", { name: "내 문장으로 정리하기" })
     ).toBeInTheDocument()
-    expect(screen.getByText("2/2")).toHaveClass(
-      "ml-4",
-      "font-bold",
-      "text-muted"
-    )
+    expect(screen.getByText("2/2")).toBeInTheDocument()
     expect(
       screen.getByRole("progressbar", { name: "레슨 진행률" })
     ).toHaveAttribute("aria-valuenow", "100")
@@ -497,11 +466,7 @@ describe("레슨 경험", () => {
     await user.click(screen.getByRole("button", { name: "시작하기" }))
     await user.click(screen.getByRole("button", { name: "이해했어요" }))
 
-    expect(screen.getByText("2/2")).toHaveClass(
-      "ml-4",
-      "font-bold",
-      "text-muted"
-    )
+    expect(screen.getByText("2/2")).toBeInTheDocument()
     expect(
       screen.getByRole("heading", { name: "내 문장으로 정리하기" })
     ).toBeInTheDocument()
@@ -527,22 +492,17 @@ describe("레슨 경험", () => {
       currentStepIndex: 1,
       lessonId: "l1",
     })
-    expect(await screen.findByRole("heading", { name: "완료!" })).toHaveClass(
-      "font-black",
-      "text-ink"
-    )
-    expect(screen.getByText("오늘의 학습이 저장되었습니다.")).toHaveClass(
-      "text-ink",
-      "font-bold"
-    )
-    expect(screen.getByText("이번 레슨 핵심 요약")).toHaveClass(
-      "font-black",
-      "text-muted"
-    )
+    expect(
+      await screen.findByRole("heading", { name: "완료!" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText("오늘의 학습이 저장되었습니다.")
+    ).toBeInTheDocument()
+    expect(screen.getByText("이번 레슨 핵심 요약")).toBeInTheDocument()
     expect(screen.getByText("읽기")).toBeInTheDocument()
     expect(screen.getByText("쓰기")).toBeInTheDocument()
-    expect(screen.getByText("+1")).toHaveClass("font-black", "text-charcoal")
-    expect(screen.getByText("1/2")).toHaveClass("font-black", "text-charcoal")
+    expect(screen.getByText("+1")).toBeInTheDocument()
+    expect(screen.getByText("1/2")).toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "다음 레슨 →" }))
     expect(push).toHaveBeenLastCalledWith("/app/lesson?lesson_id=l2")
@@ -624,7 +584,7 @@ describe("레슨 경험", () => {
     expect(screen.getByRole("button", { name: "확인하기" })).toBeEnabled()
     await user.click(screen.getByRole("button", { name: "확인하기" }))
 
-    expect(screen.getByText("완벽해요!")).toHaveClass("text-mint-dark")
+    expect(screen.getByText("완벽해요!")).toBeInTheDocument()
     expect(
       screen.getAllByText("접속사는 문장 사이의 논리 관계를 신호로 보여줍니다.")
     ).toHaveLength(2)
@@ -705,22 +665,18 @@ describe("레슨 경험", () => {
     await user.click(screen.getByRole("button", { name: "이해했어요" }))
     await user.click(screen.getByRole("button", { name: "이해했어요" }))
 
-    expect(screen.getByText("4/4")).toHaveClass(
-      "ml-4",
-      "font-bold",
-      "text-muted"
-    )
+    expect(screen.getByText("4/4")).toBeInTheDocument()
     expect(screen.getByRole("button", { name: "확인하기" })).toBeDisabled()
     await user.click(screen.getByRole("button", { name: "정확히 1개" }))
 
-    expect(screen.getByRole("button", { name: "정확히 1개" })).toHaveClass(
-      "bg-primary",
-      "text-ink"
+    expect(screen.getByRole("button", { name: "정확히 1개" })).toHaveAttribute(
+      "data-state",
+      "selected"
     )
     expect(screen.getByRole("button", { name: "확인하기" })).toBeEnabled()
     await user.click(screen.getByRole("button", { name: "확인하기" }))
 
-    expect(screen.getByText("완벽해요!")).toHaveClass("text-mint-dark")
+    expect(screen.getByText("완벽해요!")).toBeInTheDocument()
     expect(
       screen.getAllByText("하나의 문단에는 단 하나의 핵심 주제문이 들어갑니다.")
     ).toHaveLength(1)

@@ -35,11 +35,11 @@ export function ProfilePage({ profile }: ProfilePageProps) {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex flex-col items-center mb-16 mt-8">
-        <div className="mb-6 flex size-32 items-center justify-center rounded-[3rem] bg-primary text-display-lg">
+        <div className="mb-6 flex size-32 items-center justify-center rounded-panel bg-action-selected-bg text-display-lg text-action-selected-fg">
           ✍️
         </div>
         <h1 className="mb-2 text-heading-md font-black">{profile.user.name}</h1>
-        <p className="text-muted font-bold">가입일: {joinedDate}</p>
+        <p className="font-bold text-fg-muted">가입일: {joinedDate}</p>
       </div>
       <h2 className="mb-6 text-heading-sm font-bold">나의 학습 요약</h2>
       <StatGrid aria-label="나의 학습 요약" className="mb-12 grid-cols-2">
@@ -81,14 +81,14 @@ function ThemeToggle() {
   return (
     <SegmentedControl
       aria-label="화면 테마"
-      className="grid w-full grid-cols-3 rounded-4xl"
+      className="grid w-full grid-cols-3 rounded-panel"
       onValueChange={setTheme}
       value={active}
     >
       {THEME_OPTIONS.map(({ Icon, label, value }) => {
         return (
           <SegmentedControlItem
-            className="h-auto w-full flex-col gap-2 rounded-[1.75rem] py-4 data-[pressed]:bg-primary data-[pressed]:text-charcoal"
+            className="h-auto w-full flex-col gap-2 rounded-card py-4 data-[pressed]:bg-action-selected-bg data-[pressed]:text-action-selected-fg"
             key={value}
             value={value}
           >

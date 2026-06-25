@@ -18,16 +18,11 @@ export function AuthPage({ nextPath, testAuthEnabled = false }: AuthPageProps) {
 
   return (
     <div className="min-h-[80vh] flex flex-col justify-center items-center px-6 an-fi">
-      <div className="mb-8" style={{ fontSize: "4rem" }}>
+      <div className="mb-8 text-display-md" aria-hidden="true">
         ✍️
       </div>
-      <h1 className="font-black mb-4 text-center" style={{ fontSize: "3rem" }}>
-        글결.
-      </h1>
-      <p
-        className="text-muted font-medium mb-12 text-center"
-        style={{ fontSize: "1.125rem" }}
-      >
+      <h1 className="mb-4 text-center text-display-md font-black">글결.</h1>
+      <p className="mb-12 text-center text-body-lg font-medium text-fg-muted">
         매일 한 단락씩, 글의 결을 다듬는 한국어 글쓰기 학습
       </p>
       <div className="w-full max-w-sm space-y-4">
@@ -49,10 +44,7 @@ export function AuthPage({ nextPath, testAuthEnabled = false }: AuthPageProps) {
             테스트 계정으로 계속하기
           </Button>
         ) : null}
-        <p
-          className="text-center text-muted font-medium"
-          style={{ fontSize: "0.875rem" }}
-        >
+        <p className="text-center text-label-md font-medium text-fg-muted">
           이메일/비밀번호 가입은 지원하지 않습니다
         </p>
       </div>

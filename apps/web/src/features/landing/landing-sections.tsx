@@ -33,36 +33,29 @@ export function LandingNav({
 }) {
   return (
     <nav
-      className="fixed top-0 inset-x-0 z-50"
-      style={{
-        backdropFilter: navScrolled ? "blur(12px)" : "blur(0px)",
-        backgroundColor: navScrolled
-          ? "rgba(253,251,247,0.85)"
-          : "rgba(253,251,247,0)",
-      }}
+      className={
+        navScrolled
+          ? "fixed inset-x-0 top-0 z-50 bg-bg-canvas/85 backdrop-blur-md"
+          : "fixed inset-x-0 top-0 z-50 bg-bg-canvas/0"
+      }
     >
       <div className="max-w-6xl mx-auto px-5 md:px-10 h-16 flex items-center justify-between">
         <Button
-          className="h-auto gap-2 px-0 py-0 text-charcoal hover:bg-transparent"
+          className="h-auto gap-2 px-0 py-0 text-fg-default hover:bg-transparent"
           onClick={goRoot}
           type="button"
           variant="ghost"
         >
           <span
-            className="inline-block bg-primary rounded-full"
+            className="inline-block bg-action-selected-bg rounded-full"
             style={{ width: 12, height: 12 }}
           />
-          <span
-            className="font-black"
-            style={{ fontSize: "1.25rem", letterSpacing: "-0.02em" }}
-          >
-            Kernel
-          </span>
+          <span className="text-title-lg font-black">Kernel</span>
         </Button>
 
         <Button
+          className="h-auto px-5 py-2.5 text-body-sm"
           onClick={startLearning}
-          style={{ fontSize: "0.9375rem", padding: "0.625rem 1.25rem" }}
           type="button"
         >
           시작하기
@@ -102,34 +95,21 @@ export function Hero({
 
       <div className="relative z-10 w-full max-w-6xl mx-auto px-5 md:px-10 grid lg:grid-cols-2 gap-12 items-center">
         <div>
-          <div
-            className="inline-flex items-center gap-2 bg-surface rounded-full mb-6"
-            style={{ padding: "0.5rem 1rem" }}
-          >
-            <SparklesIcon className="text-charcoal" size={15} />
-            <span
-              className="font-bold text-muted"
-              style={{ fontSize: "0.8125rem" }}
-            >
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-bg-surface px-4 py-2">
+            <SparklesIcon className="text-fg-default" size={15} />
+            <span className="text-label-md font-bold text-fg-muted">
               하루 5분, 새로운 학습 습관
             </span>
           </div>
 
-          <h1
-            className="font-black"
-            style={{
-              fontSize: "clamp(2.5rem, 6vw, 4.25rem)",
-              lineHeight: 1.08,
-              letterSpacing: "-0.03em",
-            }}
-          >
+          <h1 className="text-display-lg font-black">
             <span className="block">매일 한 조각,</span>
             <span className="block">
               단단해지는{" "}
               <span className="relative inline-block">
                 <span className="relative z-10">학습</span>
                 <span
-                  className="absolute inset-x-0 bottom-1 bg-primary rounded-full"
+                  className="absolute inset-x-0 bottom-1 bg-action-selected-bg rounded-full"
                   style={{ height: "0.4em", zIndex: 0, transform: "scaleX(1)" }}
                 />
               </span>
@@ -137,34 +117,23 @@ export function Hero({
             </span>
           </h1>
 
-          <p
-            className="text-muted mt-6 max-w-md"
-            style={{ fontSize: "1.125rem", lineHeight: 1.6 }}
-          >
+          <p className="mt-6 max-w-md text-body-lg text-fg-muted">
             Kernel은 복잡한 개념을 작은 조각으로 나눠, 매일 가볍게 쌓아 올리는
             학습 경험을 만듭니다. 어른의 호기심을 위한 학습.
           </p>
 
           <div className="flex flex-wrap items-center gap-3 mt-9">
             <Button
-              className="h-auto gap-2"
+              className="h-auto gap-2 px-7 py-4 text-body-lg"
               onClick={startLearning}
-              style={{
-                fontSize: "1.0625rem",
-                padding: "1rem 1.75rem",
-              }}
               type="button"
             >
               무료로 시작하기
               <ArrowRightIcon size={19} />
             </Button>
             <Button
-              className="h-auto"
+              className="h-auto px-7 py-4 text-body-lg"
               onClick={browseCourses}
-              style={{
-                fontSize: "1.0625rem",
-                padding: "1rem 1.75rem",
-              }}
               type="button"
               variant="secondary"
             >
@@ -180,7 +149,7 @@ export function Hero({
           }}
         >
           <div
-            className="relative bg-surface rounded-5xl p-4 mx-auto"
+            className="relative bg-bg-surface rounded-panel p-4 mx-auto"
             style={{ maxWidth: 420 }}
           >
             <PreviewFrame
@@ -208,13 +177,11 @@ export function Marquee() {
           >
             {[...row.items, ...row.items].map((label, index) => (
               <span
-                className="rounded-full font-bold whitespace-nowrap"
+                className="rounded-full px-6 py-3 text-body-lg font-bold whitespace-nowrap"
                 key={`${label}-${index < row.items.length ? "a" : "b"}`}
                 style={{
                   backgroundColor: marqueeColors[index % marqueeColors.length],
-                  color: "#2A2621",
-                  fontSize: "1.0625rem",
-                  padding: "0.75rem 1.5rem",
+                  color: "var(--semantic-color-fg-default)",
                 }}
               >
                 {label}
@@ -231,24 +198,10 @@ export function Features() {
   return (
     <section className="py-24 max-w-6xl mx-auto px-5 md:px-10">
       <Reveal className="max-w-xl mb-14" y={20}>
-        <p
-          className="font-bold text-muted mb-3"
-          style={{
-            fontSize: "0.8125rem",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-          }}
-        >
+        <p className="mb-3 text-label-md font-bold uppercase text-fg-muted">
           왜 Kernel인가
         </p>
-        <h2
-          className="font-black"
-          style={{
-            fontSize: "clamp(2rem, 4vw, 3rem)",
-            lineHeight: 1.15,
-            letterSpacing: "-0.02em",
-          }}
-        >
+        <h2 className="text-heading-lg font-black">
           학습을 가볍게,
           <br />
           그러나 단단하게.
@@ -261,7 +214,7 @@ export function Features() {
 
           return (
             <Reveal
-              className="bg-surface rounded-4xl p-8"
+              className="bg-bg-surface rounded-panel p-8"
               delay={index * 120}
               key={feature.title}
               y={40}
@@ -274,20 +227,12 @@ export function Features() {
                   width: 56,
                 }}
               >
-                <Icon className="text-ink" size={26} />
+                <Icon className="text-action-selected-fg" size={26} />
               </div>
-              <h3
-                className="font-black mb-3"
-                style={{ fontSize: "1.5rem", letterSpacing: "-0.01em" }}
-              >
+              <h3 className="mb-3 text-heading-sm font-black">
                 {feature.title}
               </h3>
-              <p
-                className="text-muted"
-                style={{ fontSize: "1.0625rem", lineHeight: 1.6 }}
-              >
-                {feature.body}
-              </p>
+              <p className="text-body-lg text-fg-muted">{feature.body}</p>
             </Reveal>
           )
         })}
@@ -298,28 +243,19 @@ export function Features() {
 
 export function HowItWorks() {
   return (
-    <section className="py-24 bg-surface">
+    <section className="py-24 bg-bg-surface">
       <div className="max-w-3xl mx-auto px-5 md:px-10">
-        <Reveal
-          as="h2"
-          className="font-black mb-16"
-          style={{
-            fontSize: "clamp(2rem, 4vw, 3rem)",
-            lineHeight: 1.15,
-            letterSpacing: "-0.02em",
-          }}
-          y={20}
-        >
+        <Reveal as="h2" className="mb-16 text-heading-lg font-black" y={20}>
           이렇게 시작해요
         </Reveal>
 
         <div className="relative">
           <div
-            className="absolute top-2 bottom-2 bg-cream rounded-full"
+            className="absolute top-2 bottom-2 bg-bg-canvas rounded-full"
             style={{ left: 27, width: 4 }}
           >
             <div
-              className="absolute inset-x-0 top-0 bg-charcoal rounded-full origin-top"
+              className="absolute inset-x-0 top-0 bg-bg-inverse rounded-full origin-top"
               style={{ height: "100%", transform: "scaleY(0)" }}
             />
           </div>
@@ -332,28 +268,14 @@ export function HowItWorks() {
                 key={step.n}
                 x={24}
               >
-                <div
-                  className="relative z-10 shrink-0 inline-flex items-center justify-center rounded-full bg-charcoal text-cream font-black"
-                  style={{ width: 58, height: 58, fontSize: "1.0625rem" }}
-                >
+                <div className="relative z-10 inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-bg-inverse text-body-lg font-black text-fg-inverse">
                   {step.n}
                 </div>
                 <div className="pt-2">
-                  <h3
-                    className="font-black mb-2"
-                    style={{
-                      fontSize: "1.5rem",
-                      letterSpacing: "-0.01em",
-                    }}
-                  >
+                  <h3 className="mb-2 text-heading-sm font-black">
                     {step.title}
                   </h3>
-                  <p
-                    className="text-muted"
-                    style={{ fontSize: "1.0625rem", lineHeight: 1.6 }}
-                  >
-                    {step.body}
-                  </p>
+                  <p className="text-body-lg text-fg-muted">{step.body}</p>
                 </div>
               </Reveal>
             ))}
@@ -393,20 +315,14 @@ function StatCard({
 
   return (
     <div
-      className="rounded-4xl p-8 text-center"
+      className="rounded-panel p-8 text-center"
       style={{ backgroundColor: stat.bg }}
     >
-      <p
-        className="font-black text-ink"
-        style={{
-          fontSize: "clamp(2.5rem, 6vw, 3.75rem)",
-          lineHeight: 1,
-        }}
-      >
+      <p className="text-display-md font-black text-action-selected-fg">
         {value.toLocaleString()}
         {stat.suffix}
       </p>
-      <p className="font-bold text-ink mt-3" style={{ fontSize: "1rem" }}>
+      <p className="mt-3 text-body-md font-bold text-action-selected-fg">
         {stat.label}
       </p>
     </div>
@@ -425,37 +341,21 @@ export function Showcase() {
       ref={ref}
     >
       <Reveal className="max-w-xl mb-14" y={20}>
-        <p
-          className="font-bold text-muted mb-3"
-          style={{
-            fontSize: "0.8125rem",
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-          }}
-        >
+        <p className="mb-3 text-label-md font-bold uppercase text-fg-muted">
           미리보기
         </p>
-        <h2
-          className="font-black"
-          style={{
-            fontSize: "clamp(2rem, 4vw, 3rem)",
-            lineHeight: 1.15,
-            letterSpacing: "-0.02em",
-          }}
-        >
-          손에 익는 학습 경험
-        </h2>
+        <h2 className="text-heading-lg font-black">손에 익는 학습 경험</h2>
       </Reveal>
 
       <div className="grid md:grid-cols-2 gap-6">
         <div
-          className="bg-surface rounded-5xl p-5"
+          className="bg-bg-surface rounded-panel p-5"
           style={{ transform: `translateY(${firstPreviewY}px)` }}
         >
           <PreviewFrame alt="Kernel 레슨 진행 화면" aspectRatio="4 / 3" />
         </div>
         <div
-          className="bg-charcoal rounded-5xl p-5 md:mt-16"
+          className="bg-bg-inverse rounded-panel p-5 md:mt-16"
           style={{ transform: `translateY(${secondPreviewY}px)` }}
         >
           <PreviewFrame alt="Kernel 코스 대시보드 화면" aspectRatio="4 / 3" />
@@ -473,33 +373,22 @@ export function FinalCta({
   return (
     <section className="py-20 max-w-6xl mx-auto px-5 md:px-10">
       <Reveal
-        className="relative overflow-hidden bg-charcoal rounded-5xl px-8 py-20 md:py-28 text-center"
+        className="relative overflow-hidden bg-bg-inverse rounded-panel px-8 py-20 md:py-28 text-center"
         y={40}
       >
         <Pebbles items={finalPebbles} />
         <div className="relative z-10">
-          <h2
-            className="font-black text-cream"
-            style={{
-              fontSize: "clamp(2.25rem, 5vw, 3.75rem)",
-              lineHeight: 1.1,
-              letterSpacing: "-0.02em",
-            }}
-          >
+          <h2 className="text-display-md font-black text-fg-inverse">
             오늘의 첫 조각을
             <br />
             맞춰볼까요?
           </h2>
-          <p
-            className="text-cream/70 mt-5 max-w-md mx-auto"
-            style={{ fontSize: "1.125rem", lineHeight: 1.6 }}
-          >
+          <p className="mx-auto mt-5 max-w-md text-body-lg text-fg-inverse/70">
             가입은 1분이면 충분해요. 지금 바로 첫 레슨을 시작해 보세요.
           </p>
           <Button
-            className="mt-9 h-auto gap-2 bg-primary text-ink hover:bg-primary/90"
+            className="mt-9 h-auto gap-2 bg-action-selected-bg px-8 py-4 text-body-lg text-action-selected-fg hover:bg-action-selected-bg/90"
             onClick={startLearning}
-            style={{ fontSize: "1.125rem", padding: "1.125rem 2rem" }}
             type="button"
           >
             무료로 시작하기
@@ -513,48 +402,32 @@ export function FinalCta({
 
 export function Footer() {
   return (
-    <footer className="bg-surface">
+    <footer className="bg-bg-surface">
       <div className="max-w-6xl mx-auto px-5 md:px-10 py-16">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span
-                className="inline-block bg-primary rounded-full"
+                className="inline-block bg-action-selected-bg rounded-full"
                 style={{ width: 12, height: 12 }}
               />
-              <span
-                className="font-black"
-                style={{ fontSize: "1.25rem", letterSpacing: "-0.02em" }}
-              >
-                Kernel
-              </span>
+              <span className="text-title-lg font-black">Kernel</span>
             </div>
-            <p
-              className="text-muted max-w-xs"
-              style={{ fontSize: "0.9375rem", lineHeight: 1.6 }}
-            >
+            <p className="max-w-xs text-body-sm text-fg-muted">
               어른의 호기심을 위한 학습. 매일 한 조각씩, 단단하게.
             </p>
           </div>
           {footerLinks.map((column) => (
             <div key={column.group}>
-              <p
-                className="font-bold mb-4"
-                style={{
-                  fontSize: "0.8125rem",
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                }}
-              >
+              <p className="mb-4 text-label-md font-bold uppercase">
                 {column.group}
               </p>
               <ul className="flex flex-col gap-3">
                 {column.items.map((item) => (
                   <li key={item}>
                     <a
-                      className="text-muted transition-colors hover:text-charcoal"
+                      className="text-body-sm text-fg-muted transition-colors hover:text-fg-default"
                       href="#"
-                      style={{ fontSize: "0.9375rem" }}
                     >
                       {item}
                     </a>
@@ -564,14 +437,11 @@ export function Footer() {
             </div>
           ))}
         </div>
-        <div
-          className="mt-14 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3"
-          style={{ borderTop: "2px solid var(--color-surface-hover)" }}
-        >
-          <p className="text-muted" style={{ fontSize: "0.875rem" }}>
+        <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-border-subtle pt-8 sm:flex-row">
+          <p className="text-label-md text-fg-muted">
             © 2026 Kernel. All rights reserved.
           </p>
-          <p className="text-muted" style={{ fontSize: "0.875rem" }}>
+          <p className="text-label-md text-fg-muted">
             Made with care, one kernel at a time.
           </p>
         </div>

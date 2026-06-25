@@ -3,7 +3,8 @@
 import type { CourseDetail } from "@/features/courses/course-types"
 import { getNextCourseLesson } from "@/features/lessons/lesson-next-course-lesson"
 import type { Lesson } from "@/features/lessons/lesson-types"
-import { LessonPrimaryButton } from "@/features/lessons/lesson-shell"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Surface } from "@workspace/ui/components/ui/surface"
 
 export function LessonCompleteScreen({
   courseDetail,
@@ -25,91 +26,72 @@ export function LessonCompleteScreen({
   )
 
   return (
-    <div className="flex flex-col min-h-screen bg-primary w-full fixed inset-0 z-50 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex min-h-screen w-full flex-col overflow-y-auto bg-action-selected-bg text-action-selected-fg">
       <div className="w-full max-w-3xl mx-auto flex flex-col items-center text-center px-6 py-16 my-auto an-fi">
-        <div className="mb-4" style={{ fontSize: "5rem" }}>
+        <div className="mb-4 text-display-lg" aria-hidden="true">
           🙌
         </div>
-        <h1
-          className="font-black mb-3 text-ink"
-          style={{ fontSize: "2.75rem" }}
-        >
-          완료!
-        </h1>
-        <p
-          className="text-ink font-bold mb-10"
-          style={{ fontSize: "1.125rem" }}
-        >
+        <h1 className="mb-3 text-display-md font-black">완료!</h1>
+        <p className="mb-10 text-body-lg font-bold">
           오늘의 학습이 저장되었습니다.
         </p>
         {points.length > 0 ? (
-          <div className="w-full bg-cream rounded-5xl p-7 mb-6 text-left">
-            <p
-              className="font-black text-muted mb-5"
-              style={{ fontSize: "0.8125rem", letterSpacing: "0.06em" }}
-            >
+          <Surface className="mb-6 w-full rounded-panel text-left" size="lg">
+            <p className="mb-5 text-label-md font-black uppercase text-fg-muted">
               이번 레슨 핵심 요약
             </p>
             <ul className="space-y-4">
               {points.map((point, index) => (
                 <li className="flex items-start gap-4" key={point}>
-                  <div
-                    className="w-7 h-7 bg-primary rounded-full flex justify-center items-center font-black text-ink shrink-0"
-                    style={{ fontSize: "0.875rem" }}
-                  >
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-action-selected-bg text-label-md font-black text-action-selected-fg">
                     {index + 1}
                   </div>
-                  <p
-                    className="font-medium leading-relaxed"
-                    style={{ fontSize: "1rem" }}
-                  >
-                    {point}
-                  </p>
+                  <p className="text-body-md font-medium">{point}</p>
                 </li>
               ))}
             </ul>
-          </div>
+          </Surface>
         ) : null}
-        <div className="w-full bg-cream rounded-5xl p-7 mb-10 flex flex-row justify-around items-center text-center">
+        <Surface
+          className="mb-10 flex w-full flex-row items-center justify-around rounded-panel text-center"
+          size="lg"
+        >
           <div className="flex flex-col items-center gap-1">
-            <span
-              className="font-bold text-muted"
-              style={{ fontSize: "0.875rem" }}
-            >
+            <span className="text-label-md font-bold text-fg-muted">
               완료한 레슨
             </span>
-            <span
-              className="font-black text-charcoal"
-              style={{ fontSize: "2rem" }}
-            >
+            <span className="text-heading-lg font-black text-fg-default">
               +1
             </span>
           </div>
-          <div className="w-px h-12 bg-surface rounded-full" />
+          <div className="h-12 w-px rounded-full bg-border-subtle" />
           <div className="flex flex-col items-center gap-1">
-            <span
-              className="font-bold text-muted"
-              style={{ fontSize: "0.875rem" }}
-            >
+            <span className="text-label-md font-bold text-fg-muted">
               코스 진행률
             </span>
-            <span
-              className="font-black text-charcoal"
-              style={{ fontSize: "2rem" }}
-            >
+            <span className="text-heading-lg font-black text-fg-default">
               {completedLessons}/{totalLessons}
             </span>
           </div>
-        </div>
+        </Surface>
         <div className="flex flex-col gap-3 w-full max-w-sm">
           {nextLesson === null ? null : (
-            <LessonPrimaryButton onClick={() => onNext(nextLesson.id)}>
+            <Button
+              className="w-full"
+              onClick={() => onNext(nextLesson.id)}
+              size="lg"
+            >
               다음 레슨 →
-            </LessonPrimaryButton>
+            </Button>
           )}
-          <LessonPrimaryButton onClick={onCourse} variant="secondary">
+          <Button
+            className="w-full"
+            onClick={onCourse}
+            size="lg"
+            variant="secondary"
+          >
             코스로 돌아가기
-          </LessonPrimaryButton>
+          </Button>
         </div>
       </div>
     </div>

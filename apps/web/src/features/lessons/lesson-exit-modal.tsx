@@ -1,6 +1,16 @@
 "use client"
 
-import { LessonPrimaryButton } from "@/features/lessons/lesson-shell"
+import { useRef } from "react"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogTitle,
+} from "@workspace/ui/components/ui/alert-dialog"
 
 export function LessonExitModal({
   onCancel,
@@ -9,25 +19,35 @@ export function LessonExitModal({
   readonly onCancel: () => void
   readonly onConfirm: () => void
 }) {
+  const confirmedRef = useRef(false)
+
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-6 bg-charcoal/30 backdrop-blur-sm">
-      <div className="bg-cream rounded-4xl p-8 w-full max-w-md an-fi">
-        <h3 className="font-bold mb-3" style={{ fontSize: "1.5rem" }}>
-          학습을 중단할까요?
-        </h3>
-        <p
-          className="text-muted font-medium mb-8"
-          style={{ fontSize: "1.125rem" }}
-        >
+    <AlertDialog
+      onOpenChange={(open) => {
+        if (!open && !confirmedRef.current) {
+          onCancel()
+        }
+      }}
+      open
+    >
+      <AlertDialogContent>
+        <AlertDialogTitle>학습을 중단할까요?</AlertDialogTitle>
+        <AlertDialogDescription>
           진행 상황은 자동으로 저장되어 있어요.
-        </p>
-        <div className="flex gap-3">
-          <LessonPrimaryButton onClick={onCancel} variant="secondary">
-            계속 학습
-          </LessonPrimaryButton>
-          <LessonPrimaryButton onClick={onConfirm}>나가기</LessonPrimaryButton>
-        </div>
-      </div>
-    </div>
+        </AlertDialogDescription>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onCancel}>계속 학습</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              confirmedRef.current = true
+              onConfirm()
+            }}
+            variant="destructive"
+          >
+            나가기
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

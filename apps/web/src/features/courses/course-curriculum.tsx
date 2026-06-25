@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 
 import Link from "next/link"
 
@@ -10,23 +10,21 @@ import type {
   CourseUnit,
   LessonProgressStatus,
 } from "@/features/courses/course-types"
+import { CheckIcon, LockIcon, PlayIcon } from "@workspace/ui/components/icons"
 import {
-  CheckIcon,
-  ChevronDownIcon,
-  LockIcon,
-  PlayIcon,
-} from "@workspace/ui/components/icons"
+  Accordion,
+  AccordionHeader,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
+} from "@workspace/ui/components/ui/accordion"
+import { cn } from "@workspace/ui/lib/utils"
 
 type CourseCurriculumProps = {
   readonly course: CourseDetail
 }
 
 export function CourseCurriculum({ course }: CourseCurriculumProps) {
-  const [openUnits, setOpenUnits] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(
-      course.units.map((unit, index) => [unit.id, index === 0])
-    )
-  )
   const progressByLessonId = useMemo(
     () =>
       new Map(
@@ -39,40 +37,35 @@ export function CourseCurriculum({ course }: CourseCurriculumProps) {
   )
 
   return (
-    <>
-      <h3 className="font-bold mb-2" style={{ fontSize: "1.5rem" }}>
+    <section aria-labelledby="course-curriculum-title">
+      <h3
+        className="mb-2 text-heading-sm font-bold"
+        id="course-curriculum-title"
+      >
         커리큘럼
       </h3>
-      <div>
+      <Accordion
+        defaultValue={course.units[0] ? [course.units[0].id] : []}
+        multiple
+      >
         {course.units.map((unit, unitIndex) => (
           <CurriculumUnit
-            isOpen={openUnits[unit.id] ?? false}
             key={unit.id}
-            onToggle={() =>
-              setOpenUnits((current) => ({
-                ...current,
-                [unit.id]: !(current[unit.id] ?? false),
-              }))
-            }
             progressByLessonId={progressByLessonId}
             unit={unit}
             unitIndex={unitIndex}
           />
         ))}
-      </div>
-    </>
+      </Accordion>
+    </section>
   )
 }
 
 function CurriculumUnit({
-  isOpen,
-  onToggle,
   progressByLessonId,
   unit,
   unitIndex,
 }: {
-  readonly isOpen: boolean
-  readonly onToggle: () => void
   readonly progressByLessonId: ReadonlyMap<string, LessonProgressStatus>
   readonly unit: CourseUnit
   readonly unitIndex: number
@@ -83,67 +76,45 @@ function CurriculumUnit({
   )
 
   return (
-    <div className="border-b border-charcoal/10">
-      <button
-        className="w-full py-5 flex items-center justify-between text-left"
-        onClick={onToggle}
-        type="button"
-      >
-        <div className="flex items-center gap-4">
-          <div
-            className={cx(
-              "w-10 h-10 rounded-full flex justify-center items-center font-black shrink-0",
-              unitDone
-                ? "bg-mint-light text-charcoal"
-                : "bg-charcoal/15 text-charcoal"
-            )}
-          >
-            {unitDone ? (
-              <CheckIcon size={18} />
-            ) : (
-              <span style={{ fontSize: "0.875rem" }}>{unitIndex + 1}</span>
-            )}
-          </div>
-          <div>
-            <div className="font-bold" style={{ fontSize: "1.125rem" }}>
-              {unit.title}
-            </div>
+    <AccordionItem value={unit.id}>
+      <AccordionHeader>
+        <AccordionTrigger className="text-body-md">
+          <div className="flex items-center gap-4">
             <div
-              className="text-muted font-medium mt-1"
-              style={{ fontSize: "0.8125rem" }}
+              className={cn(
+                "w-10 h-10 rounded-full flex justify-center items-center font-black shrink-0",
+                unitDone
+                  ? "bg-success-bg text-success-fg"
+                  : "bg-bg-surface-hover text-fg-default"
+              )}
             >
-              {unit.lessons.length}개 레슨
+              {unitDone ? (
+                <CheckIcon size={18} />
+              ) : (
+                <span className="text-label-md">{unitIndex + 1}</span>
+              )}
+            </div>
+            <div>
+              <div className="text-title-md font-bold">{unit.title}</div>
+              <div className="mt-1 text-label-sm font-medium text-fg-muted">
+                {unit.lessons.length}개 레슨
+              </div>
             </div>
           </div>
+        </AccordionTrigger>
+      </AccordionHeader>
+      <AccordionPanel>
+        <div className="grid gap-1 pb-1">
+          {unit.lessons.map((lesson) => (
+            <CurriculumLesson
+              key={lesson.id}
+              lesson={lesson}
+              status={resolveLessonStatus(progressByLessonId, lesson.id)}
+            />
+          ))}
         </div>
-        <ChevronDownIcon
-          className="transition-transform duration-300 text-muted"
-          size={22}
-          style={{
-            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-          }}
-        />
-      </button>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateRows: isOpen ? "1fr" : "0fr",
-          transition: "grid-template-rows 280ms cubic-bezier(0.4, 0, 0.2, 1)",
-        }}
-      >
-        <div className="overflow-hidden">
-          <div className="pb-4">
-            {unit.lessons.map((lesson) => (
-              <CurriculumLesson
-                key={lesson.id}
-                lesson={lesson}
-                status={resolveLessonStatus(progressByLessonId, lesson.id)}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+      </AccordionPanel>
+    </AccordionItem>
   )
 }
 
@@ -156,21 +127,21 @@ function CurriculumLesson({
 }) {
   const done = status === "completed"
   const locked = status === "locked"
-  const className = cx(
+  const className = cn(
     "flex items-center gap-3 py-3 pl-6 -mr-2 pr-2 rounded-2xl transition-colors",
-    locked ? "cursor-not-allowed" : "cursor-pointer hover:bg-charcoal/[0.04]"
+    locked ? "cursor-not-allowed" : "hover:bg-bg-surface-hover"
   )
   const content = (
     <>
       <div className="w-7 shrink-0 flex justify-center">
         <div
-          className={cx(
+          className={cn(
             "w-6 h-6 rounded-full flex justify-center items-center",
             done
-              ? "bg-mint-light text-charcoal"
+              ? "bg-success-bg text-success-fg"
               : locked
-                ? "bg-charcoal/10 text-charcoal/40"
-                : "bg-charcoal/10 text-charcoal"
+                ? "bg-bg-surface-hover text-fg-disabled"
+                : "bg-bg-surface-hover text-fg-default"
           )}
         >
           {done ? (
@@ -184,15 +155,14 @@ function CurriculumLesson({
       </div>
       <div className="flex-1">
         <div
-          className={cx("font-bold", locked ? "text-muted" : "")}
-          style={{ fontSize: "0.9375rem" }}
+          className={cn(
+            "text-body-sm font-bold",
+            locked ? "text-fg-muted" : "text-fg-default"
+          )}
         >
           {lesson.title}
         </div>
-        <div
-          className={cx("font-medium", locked ? "text-muted" : "text-muted")}
-          style={{ fontSize: "0.8125rem" }}
-        >
+        <div className="text-label-sm font-medium text-fg-muted">
           {lesson.estimatedMinutes}분
         </div>
       </div>
@@ -222,8 +192,4 @@ function resolveLessonStatus(
   lessonId: string
 ): LessonProgressStatus {
   return progressByLessonId.get(lessonId) ?? "locked"
-}
-
-function cx(...classes: Array<false | null | string | undefined>): string {
-  return classes.filter(Boolean).join(" ")
 }

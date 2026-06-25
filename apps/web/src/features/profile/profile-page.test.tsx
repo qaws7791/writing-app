@@ -58,39 +58,28 @@ describe("프로필 화면", () => {
 
     render(<ProfilePage profile={profile} />)
 
-    expect(screen.getByText("✍️")).toHaveClass(
-      "size-32",
-      "bg-primary",
-      "rounded-[3rem]"
-    )
-    expect(screen.getByRole("heading", { name: "민지" })).toHaveClass(
-      "font-black"
-    )
-    expect(screen.getByText("가입일: 2026.06.01")).toHaveClass(
-      "text-muted",
-      "font-bold"
-    )
-    expect(screen.getByRole("heading", { name: "나의 학습 요약" })).toHaveClass(
-      "font-bold",
-      "mb-6"
-    )
-    expect(screen.getByRole("region", { name: "나의 학습 요약" })).toHaveClass(
-      "grid-cols-2"
-    )
+    expect(screen.getByText("✍️")).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "민지" })).toBeInTheDocument()
+    expect(screen.getByText("가입일: 2026.06.01")).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "나의 학습 요약" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("region", { name: "나의 학습 요약" })
+    ).toBeInTheDocument()
     expect(screen.getByText("완료한 레슨")).toBeInTheDocument()
-    expect(screen.getByText("12")).toHaveClass("text-heading-lg")
+    expect(screen.getByText("12")).toBeInTheDocument()
     expect(screen.getByText("연속 학습일")).toBeInTheDocument()
-    expect(screen.getByText("🔥 4")).toHaveClass("text-heading-lg")
-    expect(screen.getByRole("heading", { name: "화면 테마" })).toHaveClass(
-      "font-bold",
-      "mb-6"
-    )
+    expect(screen.getByText("🔥 4")).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "화면 테마" })
+    ).toBeInTheDocument()
 
     const systemThemeButton = screen.getByRole("button", { name: "시스템" })
 
-    expect(screen.getByRole("button", { name: "라이트" })).toHaveClass(
-      "h-auto",
-      "flex-col"
+    expect(screen.getByRole("button", { name: "라이트" })).toHaveAttribute(
+      "aria-pressed",
+      "false"
     )
     expect(systemThemeButton).toHaveAttribute("aria-pressed", "true")
     expect(systemThemeButton).toHaveAttribute("data-pressed")

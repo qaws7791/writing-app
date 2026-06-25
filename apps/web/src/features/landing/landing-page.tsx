@@ -32,10 +32,10 @@ export function LandingPage() {
   }
 
   return (
-    <div className="relative bg-cream text-charcoal min-h-screen overflow-x-hidden">
+    <div className="relative min-h-screen overflow-x-hidden bg-bg-canvas text-fg-default">
       <div
         aria-hidden
-        className="fixed z-0 rounded-full bg-primary pointer-events-none hidden md:block"
+        className="pointer-events-none fixed z-0 hidden rounded-full bg-action-selected-bg md:block"
         style={{
           filter: "blur(8px)",
           height: 220,

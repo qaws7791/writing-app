@@ -24,10 +24,10 @@
 
 ## UI 기준
 
-- avatar는 `bg-primary`와 큰 radius를 사용한다.
-- 학습 요약은 2열 `bg-surface rounded-4xl` 타일이다.
+- avatar는 `action-selected-*` token과 `rounded-panel`을 사용한다.
+- 학습 요약은 2열 `StatCard` 타일이다.
 - 테마 전환은 라이트, 다크, 시스템 3분할 control이다.
-- 로그아웃은 `coral-light` 계열의 낮은 위험 표현을 사용한다.
+- 로그아웃은 `Button variant="destructive"`를 사용한다.
 
 ## 상태
 
