@@ -20,6 +20,18 @@ export {
   ProgressTrack,
   ProgressValue,
 } from "@/components/ui/progress"
+export {
+  Accordion,
+  AccordionHeader,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+export {
+  SegmentedControl,
+  SegmentedControlItem,
+} from "@/components/ui/segmented-control"
+export { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 export { Surface, surfaceVariants } from "@/components/ui/surface"
 export {
   Field,

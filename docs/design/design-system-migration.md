@@ -49,8 +49,15 @@
 ## Phase 3 접근성 Primitive
 
 - AlertDialog, Dialog, DropdownMenu, Popover, Tooltip을 Base UI 기반으로 추가한다.
-- Accordion과 SegmentedControl, ToggleGroup을 추가한다.
+- Accordion과 SegmentedControl, ToggleGroup을 추가했다.
 - web account menu, curriculum, theme control, lesson exit, admin destructive dialog를 pilot 대상으로 둔다.
+
+### 현재 상태
+
+- `Accordion`은 Base UI의 expanded state와 trigger/panel 관계를 유지하고, 커리큘럼 disclosure 이관의 기준 primitive로 둔다.
+- `SegmentedControl`은 단일 선택 컨트롤로 문자열 `value`를 노출하고, 내부에서 Base UI ToggleGroup 배열 상태로 변환한다.
+- `ToggleGroup`은 다중 선택 토큰, 태그, 검토 범위 같은 컨트롤을 위해 배열 `value` 계약을 그대로 노출한다.
+- Dialog, menu, popover 계열 overlay는 pilot 화면을 정한 뒤 별도 작업 단위로 추가한다.
 
 ## Phase 4 Admin Pattern
 
@@ -81,13 +88,13 @@
 
 ## 작업 체크리스트
 
-| Phase | 완료 기준                                           | 상태 |
-| ----- | --------------------------------------------------- | ---- |
-| 0     | PR checklist, ADR, baseline 계획                    | 완료 |
-| 1     | token Storybook, contrast test, compatibility alias | 완료 |
-| 2     | P0 primitive story와 interaction test               | 완료 |
-| 3     | 수동 dialog/menu/disclosure pilot 제거              | 대기 |
-| 4     | admin 전역 CSS 주요 class 제거                      | 대기 |
-| 5     | web inline typography와 raw progress 축소           | 대기 |
-| 6     | lesson UI pattern 분리                              | 대기 |
-| 7     | alias 제거 계획과 lint 강제                         | 대기 |
+| Phase | 완료 기준                                           | 상태    |
+| ----- | --------------------------------------------------- | ------- |
+| 0     | PR checklist, ADR, baseline 계획                    | 완료    |
+| 1     | token Storybook, contrast test, compatibility alias | 완료    |
+| 2     | P0 primitive story와 interaction test               | 완료    |
+| 3     | 수동 dialog/menu/disclosure pilot 제거              | 진행 중 |
+| 4     | admin 전역 CSS 주요 class 제거                      | 대기    |
+| 5     | web inline typography와 raw progress 축소           | 대기    |
+| 6     | lesson UI pattern 분리                              | 대기    |
+| 7     | alias 제거 계획과 lint 강제                         | 대기    |

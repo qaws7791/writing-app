@@ -123,6 +123,21 @@
 
 `Badge`는 domain status를 직접 해석하지 않는다. app이 상태를 `tone`으로 변환해 전달한다. 지원 tone은 `neutral`, `success`, `danger`, `info`, `selected`다.
 
+## Accordion
+
+구현 위치: `packages/ui/src/components/ui/accordion.tsx`
+
+기반은 `@base-ui/react/accordion`이다. 구조는 `Accordion`, `AccordionItem`, `AccordionHeader`, `AccordionTrigger`, `AccordionPanel`이다. 수동 disclosure 구현 대신 사용하며, `value`와 `defaultValue`는 Base UI 계약에 맞춰 문자열 배열로 전달한다. 여러 패널을 동시에 열어야 하면 `multiple`을 명시한다.
+
+## SegmentedControl과 ToggleGroup
+
+구현 위치:
+
+- `packages/ui/src/components/ui/segmented-control.tsx`
+- `packages/ui/src/components/ui/toggle-group.tsx`
+
+`SegmentedControl`은 테마, 보기 방식, 범주처럼 하나의 값을 고르는 컨트롤이다. 호출자는 `value`, `defaultValue`, `onValueChange`를 문자열 단위로 다룬다. `ToggleGroup`은 태그나 검토 범위처럼 여러 값을 동시에 고르는 컨트롤을 위해 Base UI의 배열 `value` 계약을 그대로 노출한다.
+
 ## Alert와 Callout
 
 구현 위치:
