@@ -34,7 +34,7 @@ function StatCard({
     <article
       data-slot="stat-card"
       className={cn(
-        "grid min-h-36 content-start gap-2 overflow-hidden rounded-panel border border-border-subtle bg-bg-surface p-(--surface-padding-md) text-fg-default",
+        "grid min-h-24 content-start gap-2 overflow-hidden rounded-panel  bg-bg-surface p-(--surface-padding-md) text-fg-default",
         className
       )}
       {...props}

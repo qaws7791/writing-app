@@ -9,8 +9,8 @@ const choiceCardVariants = cva(
     variants: {
       state: {
         correct: "border-success-fg/20 bg-success-bg text-success-fg",
-        disabled: "border-border-subtle bg-bg-surface text-fg-disabled",
-        idle: "border-border-subtle bg-bg-surface text-fg-default hover:bg-bg-surface-hover",
+        disabled: "bg-bg-surface text-fg-disabled",
+        idle: "bg-bg-surface text-fg-default hover:bg-bg-surface-hover",
         selected:
           "border-action-selected-fg/25 bg-action-selected-bg text-action-selected-fg",
         wrong: "border-danger-fg/20 bg-danger-bg text-danger-fg",

@@ -9,7 +9,7 @@ const surfaceVariants = cva("text-fg-default", {
     variant: {
       default: "bg-bg-surface",
       elevated: "bg-bg-elevated",
-      panel: "rounded-panel border border-border-subtle bg-bg-surface",
+      panel: "rounded-panel bg-bg-surface",
     },
     size: {
       none: "",
