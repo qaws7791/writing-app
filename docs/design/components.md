@@ -115,7 +115,7 @@
 
 구현 위치: `packages/ui/src/components/ui/progress.tsx`
 
-구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 `action-primary-bg`를 사용해 track과 비텍스트 대비를 확보한다. 레슨 몰입 화면처럼 앱 고유 레이아웃과 색상 처리가 필요한 경우 앱 전용 progressbar를 임시로 유지할 수 있으나 Phase 6에서 공용 `Progress`로 이관한다.
+구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 `bg-progress-indicator`를 사용하고, track은 `bg-progress-track` (`#cac7c0`)을 사용하여 카드 등 다양한 배경 위에 배치되더라도 비텍스트 대비를 확보한다. 레슨 몰입 화면처럼 앱 고유 레이아웃과 색상 처리가 필요한 경우 앱 전용 progressbar를 임시로 유지할 수 있으나 Phase 6에서 공용 `Progress`로 이관한다.
 
 ## Badge
 

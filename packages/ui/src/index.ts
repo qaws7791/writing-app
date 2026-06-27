@@ -22,10 +22,9 @@ export {
 } from "./components/ui/progress"
 export {
   Accordion,
-  AccordionHeader,
   AccordionItem,
-  AccordionPanel,
   AccordionTrigger,
+  AccordionContent,
 } from "./components/ui/accordion"
 export {
   AlertDialog,

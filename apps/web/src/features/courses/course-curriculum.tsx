@@ -13,9 +13,8 @@ import type {
 import { CheckIcon, LockIcon, PlayIcon } from "@workspace/ui/components/icons"
 import {
   Accordion,
-  AccordionHeader,
+  AccordionContent,
   AccordionItem,
-  AccordionPanel,
   AccordionTrigger,
 } from "@workspace/ui/components/ui/accordion"
 import { cn } from "@workspace/ui/lib/utils"
@@ -77,33 +76,31 @@ function CurriculumUnit({
 
   return (
     <AccordionItem value={unit.id}>
-      <AccordionHeader>
-        <AccordionTrigger>
-          <div className="flex items-center gap-4">
-            <div
-              className={cn(
-                "w-10 h-10 rounded-full flex justify-center items-center font-black shrink-0",
-                unitDone
-                  ? "bg-success-bg text-success-fg"
-                  : "bg-bg-surface-hover text-fg-default"
-              )}
-            >
-              {unitDone ? (
-                <CheckIcon size={18} />
-              ) : (
-                <span className="text-label-md">{unitIndex + 1}</span>
-              )}
-            </div>
-            <div>
-              <div className="text-title-md font-bold">{unit.title}</div>
-              <div className="mt-1 text-label-sm font-medium text-fg-muted">
-                {unit.lessons.length}개 레슨
-              </div>
+      <AccordionTrigger>
+        <div className="flex items-center gap-4">
+          <div
+            className={cn(
+              "w-10 h-10 rounded-full flex justify-center items-center font-black shrink-0",
+              unitDone
+                ? "bg-success-bg text-success-fg"
+                : "bg-bg-surface-hover text-fg-default"
+            )}
+          >
+            {unitDone ? (
+              <CheckIcon size={18} />
+            ) : (
+              <span className="text-label-md">{unitIndex + 1}</span>
+            )}
+          </div>
+          <div>
+            <div className="text-title-md font-bold">{unit.title}</div>
+            <div className="mt-1 text-label-sm font-medium text-fg-muted">
+              {unit.lessons.length}개 레슨
             </div>
           </div>
-        </AccordionTrigger>
-      </AccordionHeader>
-      <AccordionPanel>
+        </div>
+      </AccordionTrigger>
+      <AccordionContent>
         <div className="grid gap-1 pb-1">
           {unit.lessons.map((lesson) => (
             <CurriculumLesson
@@ -113,7 +110,7 @@ function CurriculumUnit({
             />
           ))}
         </div>
-      </AccordionPanel>
+      </AccordionContent>
     </AccordionItem>
   )
 }
@@ -129,7 +126,7 @@ function CurriculumLesson({
   const locked = status === "locked"
   const className = cn(
     "flex items-center gap-3 py-3 pl-6 -mr-2 pr-2 rounded-2xl transition-colors",
-    locked ? "cursor-not-allowed" : "hover:bg-bg-surface-hover"
+    locked ? "cursor-not-allowed" : "hover:bg-bg-surface"
   )
   const content = (
     <>

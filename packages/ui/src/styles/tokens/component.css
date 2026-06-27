@@ -6,6 +6,6 @@
   --button-danger-bg: var(--semantic-color-danger-bg);
   --button-danger-fg: var(--semantic-color-danger-fg);
 
-  --progress-track-bg: var(--semantic-color-bg-surface);
+  --progress-track-bg: var(--ref-color-neutral-300);
   --progress-indicator-bg: var(--semantic-color-action-primary-bg);
 }

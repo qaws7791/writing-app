@@ -40,17 +40,17 @@ export const Badges: Story = {
 export const Avatars: Story = {
   render: () => (
     <div className="flex items-center gap-4">
-      <Avatar>
+      <Avatar size="sm">
         <AvatarFallback>ㄱㄱ</AvatarFallback>
       </Avatar>
-      <Avatar className="size-12">
+      <Avatar size="md">
         <AvatarImage
           alt="글결 사용자"
           src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80"
         />
         <AvatarFallback>사용자</AvatarFallback>
       </Avatar>
-      <Avatar className="size-14">
+      <Avatar size="lg">
         <AvatarFallback>관리</AvatarFallback>
       </Avatar>
     </div>
@@ -69,7 +69,7 @@ export const SeparatorUsage: Story = {
       <Separator />
       <div className="flex h-12 items-center gap-4">
         <span className="text-body-sm font-bold">왼쪽</span>
-        <Separator decorative={false} orientation="vertical" />
+        <Separator orientation="vertical" />
         <span className="text-body-sm font-bold">오른쪽</span>
       </div>
     </div>

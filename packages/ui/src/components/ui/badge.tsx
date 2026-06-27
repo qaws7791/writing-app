@@ -1,5 +1,5 @@
-import * as React from "react"
-
+import { mergeProps } from "@base-ui/react/merge-props"
+import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "../../lib/utils"
@@ -30,18 +30,25 @@ const badgeVariants = cva(
 
 function Badge({
   className,
-  tone = "neutral",
   variant = "soft",
+  tone = "neutral",
+  render,
   ...props
-}: React.ComponentProps<"span"> & VariantProps<typeof badgeVariants>) {
-  return (
-    <span
-      data-slot="badge"
-      data-tone={tone}
-      className={cn(badgeVariants({ tone, variant, className }))}
-      {...props}
-    />
-  )
+}: useRender.ComponentProps<"span"> & VariantProps<typeof badgeVariants>) {
+  return useRender({
+    defaultTagName: "span",
+    props: mergeProps<"span">(
+      {
+        className: cn(badgeVariants({ variant, tone }), className),
+      },
+      props
+    ),
+    render,
+    state: {
+      slot: "badge",
+      variant,
+    },
+  })
 }
 
 export { Badge, badgeVariants }
