@@ -1,13 +1,15 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type { CourseSummary } from "@/features/courses/course-types"
-import { buttonVariants, Button } from "@workspace/ui/components/ui/button"
+import { buttonVariants } from "@workspace/ui/components/ui/button"
 import { EmptyState } from "@workspace/ui/components/ui/empty-state"
-import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
-import { Input } from "@workspace/ui/components/ui/input"
-import { Select } from "@workspace/ui/components/ui/select"
+import { SearchIcon, XIcon } from "@workspace/ui/components/icons"
 
 type CoursesPageProps = {
   readonly courses: readonly CourseSummary[]
@@ -21,6 +23,16 @@ export type CourseListFilters = {
 }
 
 export function CoursesPage({ courses, filters }: CoursesPageProps) {
+  const router = useRouter()
+  const [query, setQuery] = useState(filters.query)
+  const [prevFiltersQuery, setPrevFiltersQuery] = useState(filters.query)
+  const searchRef = useRef<HTMLInputElement>(null)
+
+  if (filters.query !== prevFiltersQuery) {
+    setQuery(filters.query)
+    setPrevFiltersQuery(filters.query)
+  }
+
   const categories = Array.from(
     new Set(courses.map((course) => course.category))
   )
@@ -33,6 +45,46 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
     filters.category !== "" ||
     filters.query.trim() !== "" ||
     filters.sort !== "latest"
+
+  const updateUrl = useCallback(
+    (overrides: Partial<CourseListFilters>) => {
+      const nextFilters = {
+        category: filters.category,
+        query,
+        sort: filters.sort,
+        ...overrides,
+      }
+      const params = new URLSearchParams()
+
+      if (nextFilters.category !== "") {
+        params.set("category", nextFilters.category)
+      }
+
+      if (nextFilters.query.trim() !== "") {
+        params.set("query", nextFilters.query.trim())
+      }
+
+      if (nextFilters.sort !== "latest") {
+        params.set("sort", nextFilters.sort)
+      }
+
+      const search = params.toString()
+      const href = search === "" ? "/app/courses" : `/app/courses?${search}`
+      router.replace(href, { scroll: false })
+    },
+    [filters.category, filters.sort, query, router]
+  )
+
+  // 디바운스된 query 값을 통해 URL을 갱신하여 서버 필터링 재호출
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (query.trim() !== filters.query.trim()) {
+        updateUrl({ query })
+      }
+    }, 300)
+
+    return () => clearTimeout(timer)
+  }, [query, filters.query, updateUrl])
 
   return (
     <div>
@@ -49,32 +101,56 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
         />
       ) : (
         <>
-          <form
-            action="/app/courses"
-            aria-label="코스 검색과 정렬"
-            className="mb-5 grid gap-3 rounded-card bg-bg-surface p-(--surface-padding-md) md:grid-cols-[minmax(0,1fr)_180px_auto]"
-            method="get"
-          >
-            <input name="category" type="hidden" value={filters.category} />
-            <Field>
-              <FieldLabel htmlFor="course-query">검색</FieldLabel>
-              <Input
-                defaultValue={filters.query}
-                id="course-query"
-                name="query"
-                placeholder="제목, 설명, 카테고리 검색"
+          <div className="mb-5 flex flex-wrap items-center gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <label className="sr-only" htmlFor="course-query">
+                검색
+              </label>
+              <SearchIcon
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-fg-muted pointer-events-none"
+                size={16}
               />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="course-sort">정렬</FieldLabel>
-              <Select defaultValue={filters.sort} id="course-sort" name="sort">
+              <input
+                className="w-full pl-11 pr-10 py-3 rounded-full bg-bg-surface font-medium placeholder:text-fg-muted outline-none focus:ring-2 focus:ring-border-focus/20 transition-shadow text-base md:text-sm text-fg-default border border-border-default"
+                id="course-query"
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="코스 검색…"
+                ref={searchRef}
+                style={{ fontSize: "0.9375rem" }}
+                value={query}
+              />
+              {query ? (
+                <button
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg-default transition-colors cursor-pointer"
+                  onClick={() => {
+                    setQuery("")
+                    searchRef.current?.focus()
+                  }}
+                  type="button"
+                >
+                  <XIcon size={15} />
+                </button>
+              ) : null}
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="sr-only" htmlFor="course-sort">
+                정렬
+              </label>
+              <select
+                className="px-4 py-3 rounded-full bg-bg-surface font-bold text-fg-default outline-none cursor-pointer shrink-0 border border-border-default text-base md:text-sm"
+                id="course-sort"
+                onChange={(e) => {
+                  updateUrl({
+                    sort: e.target.value as CourseListFilters["sort"],
+                  })
+                }}
+                style={{ fontSize: "0.9375rem" }}
+                value={filters.sort}
+              >
                 <option value="latest">최신순</option>
                 <option value="title">제목순</option>
                 <option value="studyTime">학습시간순</option>
-              </Select>
-            </Field>
-            <div className="flex items-end gap-2">
-              <Button type="submit">적용</Button>
+              </select>
               {hasActiveFilters ? (
                 <Link
                   className={buttonVariants({ variant: "outline" })}
@@ -84,7 +160,7 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
                 </Link>
               ) : null}
             </div>
-          </form>
+          </div>
           <div
             aria-label="코스 카테고리"
             className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5 md:-mx-10 md:px-10 mb-8 pb-2"

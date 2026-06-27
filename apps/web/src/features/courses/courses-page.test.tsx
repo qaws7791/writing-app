@@ -1,8 +1,16 @@
 import { render, screen, within } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { CoursesPage } from "@/features/courses/courses-page"
 import type { CourseSummary } from "@/features/courses/course-types"
+
+vi.mock("next/navigation", () => ({
+  useRouter() {
+    return {
+      replace: vi.fn(),
+    }
+  },
+}))
 
 const courses: readonly CourseSummary[] = [
   {

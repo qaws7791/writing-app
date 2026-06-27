@@ -15,6 +15,7 @@ export {
   MessageSquarePlus as MessageSquarePlusIcon,
   Plus as PlusIcon,
   Puzzle as PuzzleIcon,
+  Search as SearchIcon,
   Send as SendIcon,
   Settings as SettingsIcon,
   ShieldCheck as ShieldCheckIcon,
