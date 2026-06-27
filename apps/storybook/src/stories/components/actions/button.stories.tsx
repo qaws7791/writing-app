@@ -110,22 +110,3 @@ export const Interaction: Story = {
     await expect(args.onClick).toHaveBeenCalled()
   },
 }
-
-export const DensityComparison: Story = {
-  render: () => (
-    <div className="grid gap-4 md:grid-cols-2">
-      {(["comfortable", "compact"] as const).map((density) => (
-        <div
-          className="flex flex-wrap items-center gap-2 rounded-panel border border-border-subtle bg-bg-surface p-surface-padding-md"
-          data-density={density}
-          key={density}
-        >
-          <Button>{density}</Button>
-          <Button size="sm" variant="outline">
-            보조
-          </Button>
-        </div>
-      ))}
-    </div>
-  ),
-}

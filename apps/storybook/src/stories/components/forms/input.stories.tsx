@@ -39,14 +39,6 @@ export const TypesAndSizes: Story = {
         placeholder="비밀번호"
         type="password"
       />
-      <div className="grid gap-3 rounded-panel border border-border-subtle bg-bg-surface p-surface-padding-md">
-        <p className="text-label-sm font-bold text-fg-muted">compact density</p>
-        <Input
-          data-density="compact"
-          aria-label="compact input"
-          placeholder="밀도 비교"
-        />
-      </div>
     </div>
   ),
 }

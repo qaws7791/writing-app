@@ -11,7 +11,6 @@ import { getStorybookTheme, type ThemeName } from "./storybook-theme"
 import { viewports } from "./viewports"
 
 const GLOBALS_UPDATED = "globalsUpdated"
-type DensityName = "comfortable" | "compact"
 type MotionName = "full" | "reduced"
 
 function ThemedDocsContainer({
@@ -97,17 +96,6 @@ const preview: Preview = {
         dynamicTitle: true,
       },
     },
-    density: {
-      description: "Design system density",
-      toolbar: {
-        title: "Density",
-        items: [
-          { value: "comfortable", title: "Comfortable" },
-          { value: "compact", title: "Compact" },
-        ],
-        dynamicTitle: true,
-      },
-    },
     motion: {
       description: "Motion preference",
       toolbar: {
@@ -121,13 +109,11 @@ const preview: Preview = {
     },
   },
   initialGlobals: {
-    density: "comfortable",
     motion: "full",
     theme: "system",
   },
   decorators: [
     (Story, context) => {
-      const density = context.globals.density as DensityName
       const motion = context.globals.motion as MotionName
       const theme = context.globals.theme as ThemeName
 
@@ -156,7 +142,6 @@ const preview: Preview = {
       return (
         <div
           className="storybook-root antialiased"
-          data-density={density}
           data-motion={motion}
           style={{
             fontFamily:

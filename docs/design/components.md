@@ -78,7 +78,7 @@
 
 구현 위치: `packages/ui/src/components/ui/surface.tsx`
 
-`Surface`는 anatomy가 없는 일반 표면이다. admin panel, 간단한 목록 컨테이너, web의 반복 표면을 흡수한다. `variant`는 `default`, `elevated`, `panel`만 제공하고, padding은 `size`와 density token을 따른다.
+`Surface`는 anatomy가 없는 일반 표면이다. admin panel, 간단한 목록 컨테이너, web의 반복 표면을 흡수한다. `variant`는 `default`, `elevated`, `panel`만 제공하고, padding은 `size` 토큰을 따른다.
 
 ## Field
 

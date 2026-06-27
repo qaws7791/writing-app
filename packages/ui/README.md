@@ -21,7 +21,7 @@
 
 ## 스타일 구조
 
-전역 스타일 entrypoint는 `@workspace/ui/styles`와 `@workspace/ui/globals.css`를 유지한다. 내부 구현은 `src/styles/tokens/` 아래에서 reference, semantic, typography, spacing, radius, elevation, motion, z-index, density, component token으로 나눈다.
+전역 스타일 entrypoint는 `@workspace/ui/styles`와 `@workspace/ui/globals.css`를 유지한다. 내부 구현은 `src/styles/tokens/` 아래에서 reference, semantic, typography, spacing, radius, elevation, motion, z-index, component token으로 나눈다.
 
 새 공용 컴포넌트는 legacy 색상 이름보다 `bg-*`, `fg-*`, `action-*`, `success-*`, `danger-*`, `info-*` semantic token을 먼저 사용한다. `cream`, `surface`, `charcoal`, `primary`, `destructive`는 앱 이관이 끝날 때까지 유지하는 compatibility alias다.
 

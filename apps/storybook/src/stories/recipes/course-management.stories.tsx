@@ -52,13 +52,10 @@ function CourseCard() {
   )
 }
 
-export const DensityRecipe: Story = {
+export const CardRecipe: Story = {
   render: () => (
-    <div className="grid gap-6 lg:grid-cols-2">
-      <RecipeFrame density="comfortable" label="Comfortable">
-        <CourseCard />
-      </RecipeFrame>
-      <RecipeFrame density="compact" label="Compact">
+    <div className="grid gap-6">
+      <RecipeFrame label="Course Card">
         <CourseCard />
       </RecipeFrame>
     </div>

@@ -1,7 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { Button, Input, Progress, ProgressValue } from "@workspace/ui"
-
 type ColorToken = {
   readonly background: string
   readonly foreground?: string
@@ -141,35 +139,6 @@ export const Typography: Story = {
           <span className="text-caption font-bold text-fg-subtle">{token}</span>
           <p className={`${className} font-bold`}>{text}</p>
         </div>
-      ))}
-    </div>
-  ),
-}
-
-export const Density: Story = {
-  render: () => (
-    <div className="grid gap-6 lg:grid-cols-2">
-      {(["comfortable", "compact"] as const).map((density) => (
-        <section
-          className="grid gap-4 rounded-panel border border-border-subtle bg-bg-surface p-surface-padding-md"
-          data-density={density}
-          key={density}
-        >
-          <div>
-            <h2 className="text-title-lg font-black">{density}</h2>
-            <p className="text-body-sm font-medium text-fg-muted">
-              root density가 control, surface, radius token을 바꾼다.
-            </p>
-          </div>
-          <Input aria-label={`${density} 검색`} placeholder="검색어" />
-          <Progress value={64} aria-label={`${density} 진행률`}>
-            <ProgressValue />
-          </Progress>
-          <div className="flex flex-wrap gap-2">
-            <Button>저장</Button>
-            <Button variant="outline">취소</Button>
-          </div>
-        </section>
       ))}
     </div>
   ),

@@ -19,7 +19,7 @@ export default function RootLayout({
 }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body data-density="comfortable">
+      <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

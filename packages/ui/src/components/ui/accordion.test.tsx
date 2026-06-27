@@ -4,9 +4,8 @@ import { describe, expect, it } from "vitest"
 
 import {
   Accordion,
-  AccordionHeader,
   AccordionItem,
-  AccordionPanel,
+  AccordionContent,
   AccordionTrigger,
 } from "./accordion"
 
@@ -17,10 +16,8 @@ describe("accordion", () => {
     render(
       <Accordion defaultValue={["intro"]}>
         <AccordionItem value="intro">
-          <AccordionHeader>
-            <AccordionTrigger>소개</AccordionTrigger>
-          </AccordionHeader>
-          <AccordionPanel>첫 번째 유닛 설명</AccordionPanel>
+          <AccordionTrigger>소개</AccordionTrigger>
+          <AccordionContent>첫 번째 유닛 설명</AccordionContent>
         </AccordionItem>
       </Accordion>
     )
@@ -39,16 +36,12 @@ describe("accordion", () => {
     render(
       <Accordion defaultValue={["intro", "practice"]} multiple>
         <AccordionItem value="intro">
-          <AccordionHeader>
-            <AccordionTrigger>소개</AccordionTrigger>
-          </AccordionHeader>
-          <AccordionPanel>첫 번째 유닛 설명</AccordionPanel>
+          <AccordionTrigger>소개</AccordionTrigger>
+          <AccordionContent>첫 번째 유닛 설명</AccordionContent>
         </AccordionItem>
         <AccordionItem value="practice">
-          <AccordionHeader>
-            <AccordionTrigger>연습</AccordionTrigger>
-          </AccordionHeader>
-          <AccordionPanel>두 번째 유닛 설명</AccordionPanel>
+          <AccordionTrigger>연습</AccordionTrigger>
+          <AccordionContent>두 번째 유닛 설명</AccordionContent>
         </AccordionItem>
       </Accordion>
     )

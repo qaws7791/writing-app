@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { Progress, ProgressLabel, ProgressValue, Surface } from "@workspace/ui"
+import { Progress, ProgressLabel, ProgressValue } from "@workspace/ui"
 
 import { KeyboardTable } from "../../../blocks/keyboard-table"
 
@@ -80,27 +80,6 @@ export const Accessibility: Story = {
           },
         ]}
       />
-    </div>
-  ),
-}
-
-export const DensityComparison: Story = {
-  render: () => (
-    <div className="grid gap-4 md:grid-cols-2">
-      {(["comfortable", "compact"] as const).map((density) => (
-        <Surface
-          className="grid gap-4"
-          data-density={density}
-          key={density}
-          variant="panel"
-        >
-          <h2 className="text-title-lg font-black">{density}</h2>
-          <Progress value={72}>
-            <ProgressLabel>진행률</ProgressLabel>
-            <ProgressValue />
-          </Progress>
-        </Surface>
-      ))}
     </div>
   ),
 }

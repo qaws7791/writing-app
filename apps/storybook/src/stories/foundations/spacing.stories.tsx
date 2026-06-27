@@ -1,7 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { Button, Input, Surface } from "@workspace/ui"
-
 const spacingTokens = [
   { className: "w-1", label: "1", token: "spacing-1" },
   { className: "w-2", label: "2", token: "spacing-2" },
@@ -43,33 +41,6 @@ export const Scale: Story = {
             </span>
           </div>
         </div>
-      ))}
-    </div>
-  ),
-}
-
-export const DensityComparison: Story = {
-  render: () => (
-    <div className="grid gap-6 lg:grid-cols-2">
-      {(["comfortable", "compact"] as const).map((density) => (
-        <Surface
-          className="grid gap-4"
-          data-density={density}
-          key={density}
-          variant="panel"
-        >
-          <div>
-            <h2 className="text-title-lg font-black">{density}</h2>
-            <p className="text-body-sm font-medium text-fg-muted">
-              control과 surface 토큰이 같은 구성의 공간감을 바꾼다.
-            </p>
-          </div>
-          <Input aria-label={`${density} 검색`} placeholder="코스 검색" />
-          <div className="flex flex-wrap gap-2">
-            <Button>저장</Button>
-            <Button variant="outline">취소</Button>
-          </div>
-        </Surface>
       ))}
     </div>
   ),

@@ -15,10 +15,3 @@
   --component-radius-dialog: 2.5rem;
   --component-radius-pill: 999px;
 }
-
-[data-density="compact"] {
-  --component-radius-control: 0.875rem;
-  --component-radius-card: 1.25rem;
-  --component-radius-panel: 1.5rem;
-  --component-radius-dialog: 1.5rem;
-}

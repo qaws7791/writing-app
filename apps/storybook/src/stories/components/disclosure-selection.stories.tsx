@@ -2,9 +2,8 @@ import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import {
   Accordion,
-  AccordionHeader,
   AccordionItem,
-  AccordionPanel,
+  AccordionContent,
   AccordionTrigger,
   SegmentedControl,
   SegmentedControlItem,
@@ -34,20 +33,16 @@ export const AccordionExample: Story = {
       </div>
       <Accordion defaultValue={["unit-1"]} multiple>
         <AccordionItem value="unit-1">
-          <AccordionHeader>
-            <AccordionTrigger>1강. 문장의 중심 찾기</AccordionTrigger>
-          </AccordionHeader>
-          <AccordionPanel>
+          <AccordionTrigger>1강. 문장의 중심 찾기</AccordionTrigger>
+          <AccordionContent>
             핵심 문장과 보조 문장을 구분하고 문단 흐름을 정리한다.
-          </AccordionPanel>
+          </AccordionContent>
         </AccordionItem>
         <AccordionItem value="unit-2">
-          <AccordionHeader>
-            <AccordionTrigger>2강. 근거를 쌓는 방식</AccordionTrigger>
-          </AccordionHeader>
-          <AccordionPanel>
+          <AccordionTrigger>2강. 근거를 쌓는 방식</AccordionTrigger>
+          <AccordionContent>
             주장과 근거를 연결해 설득력 있는 단락을 구성한다.
-          </AccordionPanel>
+          </AccordionContent>
         </AccordionItem>
       </Accordion>
     </Surface>

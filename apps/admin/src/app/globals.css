@@ -1,14 +1,6 @@
 @import "@workspace/ui/styles";
 @source "../../../../packages/ui/src/";
 
-body[data-density="compact"] {
-  --component-radius-card: 1.5rem;
-  --component-radius-panel: 2.5rem;
-  --component-radius-dialog: 2rem;
-  --surface-padding-md: 1.5rem;
-  --surface-padding-lg: 2rem;
-}
-
 [data-slot="stat-card"] {
   min-height: 148px;
   border-color: var(--surface-hover);
