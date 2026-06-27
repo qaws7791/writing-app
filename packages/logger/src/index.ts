@@ -23,6 +23,22 @@ export function createAppLogger({
   level = "info",
   stream,
 }: CreateAppLoggerOptions = {}): AppLogger {
+  const isPretty =
+    process.env.NODE_ENV === "development" || process.env.LOG_PRETTY === "true"
+
+  if (isPretty && !stream) {
+    return pino({
+      base: null,
+      level,
+      transport: {
+        target: "pino-pretty",
+        options: {
+          colorize: true,
+        },
+      },
+    })
+  }
+
   return pino(
     {
       base: null,
