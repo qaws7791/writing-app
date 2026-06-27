@@ -12,7 +12,11 @@ import {
   FieldDescription,
   FieldLabel,
   Input,
-  NativeSelect,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Progress,
   ProgressLabel,
   ProgressValue,
@@ -74,10 +78,15 @@ export const ResponsiveForm: Story = {
           </Field>
           <Field>
             <FieldLabel htmlFor="recipe-mobile-status">상태</FieldLabel>
-            <NativeSelect id="recipe-mobile-status" defaultValue="draft">
-              <option value="draft">초안</option>
-              <option value="published">공개</option>
-            </NativeSelect>
+            <Select defaultValue="draft">
+              <SelectTrigger id="recipe-mobile-status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">초안</SelectItem>
+                <SelectItem value="published">공개</SelectItem>
+              </SelectContent>
+            </Select>
           </Field>
           <Button>저장</Button>
         </div>
@@ -90,10 +99,15 @@ export const ResponsiveForm: Story = {
           </Field>
           <Field>
             <FieldLabel htmlFor="recipe-desktop-status">상태</FieldLabel>
-            <NativeSelect id="recipe-desktop-status" defaultValue="draft">
-              <option value="draft">초안</option>
-              <option value="published">공개</option>
-            </NativeSelect>
+            <Select defaultValue="draft">
+              <SelectTrigger id="recipe-desktop-status">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">초안</SelectItem>
+                <SelectItem value="published">공개</SelectItem>
+              </SelectContent>
+            </Select>
           </Field>
           <Button>저장</Button>
         </div>

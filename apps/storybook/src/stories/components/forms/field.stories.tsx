@@ -7,9 +7,14 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-  FormSection,
+  FieldLegend,
+  FieldSet,
   Input,
-  NativeSelect,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Textarea,
 } from "@workspace/ui"
 
@@ -48,7 +53,7 @@ export const States: Story = {
         <FieldLabel htmlFor="field-state-disabled">비활성</FieldLabel>
         <Input disabled id="field-state-disabled" value="수정할 수 없음" />
       </Field>
-      <Field invalid>
+      <Field data-invalid>
         <FieldLabel htmlFor="field-state-error">오류</FieldLabel>
         <Input
           aria-describedby="field-state-error-message"
@@ -66,12 +71,12 @@ export const States: Story = {
 
 export const Groups: Story = {
   render: () => (
-    <FormSection className="max-w-2xl rounded-panel border border-border-subtle bg-bg-surface p-surface-padding-md">
+    <FieldSet className="max-w-2xl rounded-panel border border-border-subtle p-surface-padding-md bg-bg-elevated">
       <div>
-        <h2 className="text-title-lg font-black">코스 정보</h2>
-        <p className="text-body-sm font-medium text-fg-muted">
+        <FieldLegend>코스 정보</FieldLegend>
+        <FieldDescription>
           같은 주제의 필드는 FormSection과 FieldGroup으로 묶는다.
-        </p>
+        </FieldDescription>
       </div>
       <FieldGroup>
         <Field>
@@ -80,10 +85,15 @@ export const Groups: Story = {
         </Field>
         <Field>
           <FieldLabel htmlFor="field-group-status">상태</FieldLabel>
-          <NativeSelect id="field-group-status" defaultValue="draft">
-            <option value="draft">초안</option>
-            <option value="published">공개</option>
-          </NativeSelect>
+          <Select defaultValue="draft">
+            <SelectTrigger id="field-group-status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="draft">초안</SelectItem>
+              <SelectItem value="published">공개</SelectItem>
+            </SelectContent>
+          </Select>
         </Field>
         <Field>
           <FieldLabel htmlFor="field-group-description">설명</FieldLabel>
@@ -94,7 +104,7 @@ export const Groups: Story = {
         <Button variant="outline">취소</Button>
         <Button>저장</Button>
       </div>
-    </FormSection>
+    </FieldSet>
   ),
 }
 
@@ -118,7 +128,7 @@ export const LongContent: Story = {
 export const Accessibility: Story = {
   render: () => (
     <div className="grid max-w-3xl gap-6">
-      <Field invalid>
+      <Field data-invalid>
         <FieldLabel htmlFor="field-a11y-title">제목</FieldLabel>
         <Input
           aria-describedby="field-a11y-title-help field-a11y-title-error"

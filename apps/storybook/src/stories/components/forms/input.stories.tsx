@@ -75,7 +75,7 @@ export const LongContent: Story = {
 
 export const FormInteraction: Story = {
   render: () => (
-    <Field invalid className="w-[min(32rem,calc(100vw-2rem))]">
+    <Field data-invalid className="w-[min(32rem,calc(100vw-2rem))]">
       <FieldLabel htmlFor="input-interaction">제목</FieldLabel>
       <Input
         aria-describedby="input-interaction-error"

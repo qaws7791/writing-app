@@ -20,7 +20,7 @@ export const AccessibilityContracts: Story = {
     <div className="grid max-w-4xl gap-6">
       <DoDont
         doExample={
-          <Field invalid>
+          <Field data-invalid>
             <FieldLabel htmlFor="quality-title">제목</FieldLabel>
             <Input
               aria-describedby="quality-title-error"

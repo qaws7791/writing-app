@@ -16,7 +16,11 @@ import {
   FieldError,
   FieldLabel,
   Input,
-  NativeSelect,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Separator,
   Spinner,
   Surface,
@@ -82,13 +86,18 @@ export const FormControls: Story = {
 
       <Field>
         <FieldLabel htmlFor="primitive-status">상태</FieldLabel>
-        <NativeSelect id="primitive-status" defaultValue="draft">
-          <option value="draft">초안</option>
-          <option value="published">공개</option>
-        </NativeSelect>
+        <Select defaultValue="draft">
+          <SelectTrigger id="primitive-status">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="draft">초안</SelectItem>
+            <SelectItem value="published">공개</SelectItem>
+          </SelectContent>
+        </Select>
       </Field>
 
-      <Field invalid>
+      <Field data-invalid>
         <FieldLabel htmlFor="primitive-body">본문</FieldLabel>
         <Textarea
           id="primitive-body"

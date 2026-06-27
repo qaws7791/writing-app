@@ -80,7 +80,7 @@ export const CounterComposition: Story = {
 
 export const FormInteraction: Story = {
   render: () => (
-    <Field invalid className="w-[min(36rem,calc(100vw-2rem))]">
+    <Field data-invalid className="w-[min(36rem,calc(100vw-2rem))]">
       <FieldLabel htmlFor="textarea-interaction">본문</FieldLabel>
       <Textarea
         aria-describedby="textarea-interaction-error"
