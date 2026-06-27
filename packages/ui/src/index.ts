@@ -10,8 +10,18 @@ export {
   CardTitle,
 } from "./components/ui/card"
 export { Input } from "./components/ui/input"
-export { NativeSelect } from "./components/ui/native-select"
-export { Select } from "./components/ui/select"
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "./components/ui/select"
 export { Textarea } from "./components/ui/textarea"
 export {
   Progress,
@@ -54,11 +64,15 @@ export { EmptyState } from "./components/ui/empty-state"
 export { Surface, surfaceVariants } from "./components/ui/surface"
 export {
   Field,
+  FieldLabel,
   FieldDescription,
   FieldError,
   FieldGroup,
-  FieldLabel,
-  FormSection,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+  FieldContent,
+  FieldTitle,
 } from "./components/ui/field"
 export { Badge, badgeVariants } from "./components/ui/badge"
 export {

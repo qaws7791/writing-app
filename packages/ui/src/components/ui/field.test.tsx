@@ -7,7 +7,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "./field"
 describe("Field", () => {
   it("keeps label, description, and error relation explicit", () => {
     render(
-      <Field invalid>
+      <Field data-invalid>
         <FieldLabel htmlFor="title">제목</FieldLabel>
         <Input
           id="title"
