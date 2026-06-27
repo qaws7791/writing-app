@@ -61,7 +61,13 @@ export function validateStepAnswerForLesson({
     }
   }
 
+  const isStarted = isLessonStartedAnswer(answer, {
+    firstStepId: lesson.steps[0]?.id,
+    stepId: step.id,
+  })
+
   if (
+    !isStarted &&
     answerableStepTypes.has(step.type) &&
     (!isLessonStepAnswer(answer) || !isValidStepAnswer(step, answer))
   ) {

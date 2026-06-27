@@ -30,7 +30,7 @@ export function MobileNav({ currentPath }: GlobalNavPathProps) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border-subtle bg-bg-canvas px-4 py-2 sm:hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t-2 border-surface bg-bg-canvas px-4 py-2 sm:hidden"
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
     >
       {globalNavMobileItems.map((item) => {

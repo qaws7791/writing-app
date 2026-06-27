@@ -40,7 +40,7 @@ function CalloutTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="callout-title"
-      className={cn("font-bold", className)}
+      className={cn("text-xl font-black", className)}
       {...props}
     />
   )

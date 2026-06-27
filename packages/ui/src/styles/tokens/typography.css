@@ -2,14 +2,14 @@
   --font-family-sans:
     Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
-  --type-display-lg-size: clamp(3rem, 6vw, 4.25rem);
+  --type-display-lg-size: 5rem;
   --type-display-lg-line-height: 1.05;
-  --type-display-md-size: clamp(2.5rem, 5vw, 3.75rem);
+  --type-display-md-size: 2.75rem;
   --type-display-md-line-height: 1.1;
 
   --type-heading-xl-size: 2.5rem;
   --type-heading-xl-line-height: 1.2;
-  --type-heading-lg-size: 2rem;
+  --type-heading-lg-size: 2.25rem;
   --type-heading-lg-line-height: 1.2;
   --type-heading-md-size: 1.625rem;
   --type-heading-md-line-height: 1.3;

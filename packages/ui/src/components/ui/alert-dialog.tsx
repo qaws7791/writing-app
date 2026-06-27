@@ -34,13 +34,13 @@ function AlertDialogContent({
     <AlertDialogPrimitive.Portal>
       <AlertDialogPrimitive.Backdrop
         data-slot="alert-dialog-backdrop"
-        className="fixed inset-0 z-50 bg-bg-inverse/30 data-[ending-style]:animate-out data-[ending-style]:fade-out-0 data-[starting-style]:animate-in data-[starting-style]:fade-in-0"
+        className="fixed inset-0 z-50 bg-bg-inverse/30 backdrop-blur-sm data-ending-style:animate-out data-ending-style:fade-out-0 data-starting-style:animate-in data-starting-style:fade-in-0"
       />
       <AlertDialogPrimitive.Viewport className="fixed inset-0 z-50 grid place-items-center px-5 py-8">
         <AlertDialogPrimitive.Popup
           data-slot="alert-dialog-content"
           className={cn(
-            "grid w-full max-w-md gap-5 rounded-dialog border border-border-default bg-bg-elevated p-(--surface-padding-lg) text-fg-default shadow-dialog outline-none data-[ending-style]:animate-out data-[ending-style]:fade-out-0 data-[starting-style]:animate-in data-[starting-style]:fade-in-0",
+            "grid w-full max-w-md gap-5 rounded-4xl border-2 border-surface bg-bg-canvas p-8 text-fg-default shadow-none outline-none data-ending-style:animate-out data-ending-style:fade-out-0 data-starting-style:animate-in data-starting-style:fade-in-0",
             className
           )}
           {...props}

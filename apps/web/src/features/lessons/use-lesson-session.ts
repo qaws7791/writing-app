@@ -100,6 +100,10 @@ export function useLessonSession({
   const isMountedRef = useRef(false)
   const latestAnswerSaveRef = useRef<LatestAnswerSave | null>(null)
   const startInFlightRef = useRef(false)
+  const pendingAnswerRef = useRef<{
+    readonly answer: LessonAnswerChange["answer"]
+    readonly stepId: string
+  } | null>(null)
 
   useEffect(() => {
     isMountedRef.current = true
@@ -173,8 +177,11 @@ export function useLessonSession({
     setHasStarted(true)
   }, [api, lesson])
 
-  const saveAnswer = useCallback(
-    async ({ answer, stepId }: LessonAnswerChange): Promise<void> => {
+  const persistAnswerToServer = useCallback(
+    async (
+      stepId: string,
+      answer: LessonAnswerChange["answer"]
+    ): Promise<boolean> => {
       const requestId = answerRequestIdRef.current + 1
       answerRequestIdRef.current = requestId
       setAnswerSaveState({
@@ -209,7 +216,7 @@ export function useLessonSession({
         !isMountedRef.current ||
         latestAnswerSaveRef.current?.requestId !== requestId
       ) {
-        return
+        return outcome.status === "ok"
       }
 
       setAnswerSaveState(
@@ -226,8 +233,17 @@ export function useLessonSession({
               stepId,
             }
       )
+
+      return outcome.status === "ok"
     },
     [api, lesson.id]
+  )
+
+  const saveAnswer = useCallback(
+    async ({ answer, stepId }: LessonAnswerChange): Promise<void> => {
+      pendingAnswerRef.current = { answer, stepId }
+    },
+    []
   )
 
   const setAnswerPayload = useCallback(
@@ -277,10 +293,26 @@ export function useLessonSession({
 
     if (checked === false && isLessonStepCheckable(step)) {
       setChecked(getLessonStepCheckedResult(step, answerPayload))
+
+      if (
+        pendingAnswerRef.current &&
+        pendingAnswerRef.current.stepId === step.id
+      ) {
+        void persistAnswerToServer(step.id, pendingAnswerRef.current.answer)
+        pendingAnswerRef.current = null
+      }
       return
     }
 
     setChecked(false)
+
+    if (
+      pendingAnswerRef.current &&
+      pendingAnswerRef.current.stepId === step.id
+    ) {
+      void persistAnswerToServer(step.id, pendingAnswerRef.current.answer)
+      pendingAnswerRef.current = null
+    }
 
     if (!isLastLessonStep(lesson, currentStepIndex)) {
       setCurrentStepIndex((index) =>

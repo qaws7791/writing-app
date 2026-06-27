@@ -17,7 +17,12 @@ const buttonVariants = cva(
         secondary:
           "bg-bg-surface text-fg-default hover:bg-bg-surface-hover aria-expanded:bg-bg-surface-hover aria-expanded:text-fg-default",
         ghost:
-          "text-fg-default hover:bg-bg-surface aria-expanded:bg-bg-surface aria-expanded:text-fg-default",
+          "text-fg-muted hover:bg-bg-surface hover:text-fg-default aria-expanded:bg-bg-surface aria-expanded:text-fg-default",
+        correct:
+          "bg-success-bg text-fg-default hover:bg-success-bg/90 focus-visible:border-success-fg focus-visible:ring-success-fg/25",
+        wrong:
+          "bg-danger-bg text-fg-default hover:bg-danger-bg/90 focus-visible:border-danger-fg focus-visible:ring-danger-fg/25",
+        white: "bg-bg-canvas text-fg-default hover:bg-bg-surface",
         destructive:
           "bg-danger-bg text-danger-fg hover:bg-coral focus-visible:border-danger-fg focus-visible:ring-danger-fg/25",
         link: "rounded-md px-0 text-fg-default underline-offset-4 hover:underline",
@@ -27,7 +32,7 @@ const buttonVariants = cva(
           "h-(--control-height-md) gap-2 px-(--control-inline-padding) has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
         xs: "h-7 gap-1 rounded-2xl px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3",
         sm: "h-(--control-height-sm) gap-1.5 rounded-control px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
-        lg: "h-(--control-height-lg) gap-2 px-6 text-base has-data-[icon=inline-end]:pr-5 has-data-[icon=inline-start]:pl-5",
+        lg: "min-h-(--control-height-lg) gap-2 rounded-4xl px-6 py-5 text-lg leading-none has-data-[icon=inline-end]:pr-5 has-data-[icon=inline-start]:pl-5",
         icon: "size-(--control-height-md)",
         "icon-xs": "size-7 rounded-2xl [&_svg:not([class*='size-'])]:size-3",
         "icon-sm": "size-(--control-height-sm) rounded-control",

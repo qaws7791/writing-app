@@ -129,7 +129,7 @@ function DropdownMenuContent({
         <MenuPrimitive.Popup
           data-slot="dropdown-menu-content"
           className={cn(
-            "z-50 grid min-w-48 gap-1 rounded-card border border-border-default bg-bg-elevated p-2 text-fg-default shadow-dialog outline-none data-[ending-style]:animate-out data-[ending-style]:fade-out-0 data-[starting-style]:animate-in data-[starting-style]:fade-in-0",
+            "z-50 grid min-w-48 gap-1 rounded-4xl border-2 border-surface bg-bg-canvas p-4 text-fg-default shadow-none outline-none data-[ending-style]:animate-out data-[ending-style]:fade-out-0 data-[starting-style]:animate-in data-[starting-style]:fade-in-0",
             className
           )}
           {...props}
@@ -149,7 +149,7 @@ function dropdownMenuItemClassName({
   readonly tone?: DropdownMenuItemTone
 }) {
   return cn(
-    "flex min-h-10 w-full items-center rounded-control px-3 text-left text-sm font-bold transition-colors outline-none data-[highlighted]:bg-bg-surface data-[highlighted]:text-fg-default data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+    "flex min-h-12 w-full items-center rounded-3xl px-4 py-3 text-left text-sm font-bold transition-colors outline-none data-[highlighted]:bg-bg-surface data-[highlighted]:text-fg-default data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
     tone === "danger" ? "text-danger-fg" : "text-fg-default",
     className
   )

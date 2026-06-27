@@ -27,6 +27,9 @@
 | `outline`     | 보조 행동, 확장 메뉴 trigger |
 | `secondary`   | 낮은 강조의 보조 행동        |
 | `ghost`       | 표면 없는 보조 행동          |
+| `correct`     | 레슨 정답 피드백 CTA         |
+| `wrong`       | 레슨 오답 피드백 CTA         |
+| `white`       | 강조 배경 위의 밝은 CTA      |
 | `destructive` | 삭제, 실패, 위험 행동        |
 | `link`        | 텍스트 링크형 행동           |
 
@@ -44,7 +47,7 @@
 | `icon-lg` | 48px 정사각 |
 
 아이콘은 `data-icon="inline-start"` 또는 `data-icon="inline-end"`로 padding 보정을 받는다.
-버튼은 기본적으로 `rounded-control`, `font-bold`, `.btn-squish`를 사용하고 텍스트 줄바꿈을 허용하지 않는다. 높이와 padding은 root의 density token을 따른다.
+버튼은 기본적으로 `rounded-control`, `font-bold`, `.btn-squish`를 사용하고 텍스트 줄바꿈을 허용하지 않는다. `lg` 크기는 레슨 CTA 기준의 `rounded-4xl`, `text-lg`, `py-5`를 사용한다.
 
 ## Card
 
@@ -88,7 +91,7 @@
 구현 위치: `packages/ui/src/components/ui/input.tsx`
 
 - 높이는 density token의 `control-height-md`를 따른다.
-- `bg-bg-elevated`, `rounded-control`, `border-border-default`, `focus-visible:ring-3`을 사용한다.
+- `bg-bg-surface`, `rounded-control`, `border-border-default`, `focus-visible:ring-3`을 사용한다.
 - invalid 상태는 `aria-invalid="true"`로 표시한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
@@ -115,7 +118,7 @@
 
 구현 위치: `packages/ui/src/components/ui/progress.tsx`
 
-구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 `bg-progress-indicator`를 사용하고, track은 `bg-progress-track` (`#cac7c0`)을 사용하여 카드 등 다양한 배경 위에 배치되더라도 비텍스트 대비를 확보한다. 레슨 몰입 화면처럼 앱 고유 레이아웃과 색상 처리가 필요한 경우 앱 전용 progressbar를 임시로 유지할 수 있으나 Phase 6에서 공용 `Progress`로 이관한다.
+구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 기본적으로 `bg-progress-indicator`를 사용하고, track은 `bg-progress-track` (`#cac7c0`)을 사용하여 카드 등 다양한 배경 위에 배치되더라도 비텍스트 대비를 확보한다. 레슨과 코스 상세처럼 kwep 기준의 노란 진행률이 필요한 화면은 `indicatorClassName="bg-progress-lesson-indicator"`와 `trackClassName`으로 높이와 색을 명시한다.
 
 ## Badge
 
@@ -190,7 +193,7 @@
 - `packages/ui/src/components/ui/data-table.tsx`
 - `packages/ui/src/components/ui/empty-state.tsx`
 
-`PageHeader`와 `SectionHeader`는 제목, 설명, 선택적 action 영역만 제공한다. `StatGrid`와 `StatCard`는 dashboard 지표 같은 반복 metric에 사용한다. `FilterToolbar`는 검색과 select filter를 배치하는 form이고, `FilterToolbarField`와 `FilterToolbarLabel`을 함께 사용한다. `DataTableContainer`와 `DataTable`은 horizontal overflow와 기본 table cell 스타일만 제공한다. `EmptyState`는 결과 없음과 초기 상태를 표현하며, 도메인 메시지는 호출자가 전달한다.
+`PageHeader`와 `SectionHeader`는 제목, 설명, 선택적 action 영역만 제공한다. `StatGrid`와 `StatCard`는 dashboard 지표 같은 반복 metric에 사용한다. 학습자 홈 기준으로 `StatCard`는 `rounded-2xl`, `px-5 py-3.5`, 작은 라벨과 `text-title-lg` 값 표현을 기본값으로 삼는다. `FilterToolbar`는 검색과 select filter를 배치하는 form이고, `FilterToolbarField`와 `FilterToolbarLabel`을 함께 사용한다. `DataTableContainer`와 `DataTable`은 horizontal overflow와 기본 table cell 스타일만 제공한다. `EmptyState`는 결과 없음과 초기 상태를 표현하며, 도메인 메시지는 호출자가 전달한다.
 
 `StatGrid`와 `StatCard`는 어드민 전용이 아니다. 학습자 프로필의 완료 레슨, 연속 학습일처럼 숫자 지표를 반복해 보여주는 web 화면에서도 같은 primitive를 사용한다.
 
@@ -213,7 +216,7 @@
 
 - 배경은 `bg-bg-canvas`, 텍스트는 `text-fg-default`.
 - 데스크톱 상단 `GlobalNav`와 모바일 하단 `MobileNav`를 포함한다.
-- 본문은 `max-w-6xl`, `px-5 md:px-10`, `pb-24`를 사용한다.
+- 본문은 `max-w-6xl`, `px-4 md:px-12`, `pb-24`를 사용한다.
 - `/app/lesson`은 몰입형 route group으로 분리되어 `AppShell`을 사용하지 않는다.
 
 ### GlobalNav와 MobileNav
@@ -240,7 +243,7 @@
 - 전체 viewport를 차지하는 몰입형 shell이다.
 - 상단 진행 헤더와 하단 행동 영역은 `shrink-0`으로 고정한다.
 - 중앙 `main`만 `overflow-y-auto`로 스크롤한다.
-- 하단 CTA와 정답 피드백은 `StickyActionBar`, `Callout`, `Button` 조합을 사용한다.
+- 하단 CTA와 정답 피드백은 `StickyActionBar`, `Callout`, `Button` 조합을 사용한다. 기본 CTA는 cream gradient footer를 사용하고, 정답/오답 피드백은 상단 gradient와 색상 구분선 뒤에 `correct` 또는 `wrong` 버튼을 배치한다.
 - 나가기 확인은 `AlertDialog`를 사용한다.
 - 선택형 레슨 UI는 `ChoiceCard`, markdown 본문은 `RichText`를 사용한다.
 

@@ -4,13 +4,14 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const stickyActionBarVariants = cva(
-  "w-full border-t px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-5",
+  "w-full px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]",
   {
     variants: {
       tone: {
-        default: "border-border-subtle bg-bg-canvas text-fg-default",
-        danger: "border-danger-fg/20 bg-danger-bg text-danger-fg",
-        success: "border-success-fg/20 bg-success-bg text-success-fg",
+        default:
+          "bg-gradient-to-t from-bg-canvas via-bg-canvas to-transparent pt-10 text-fg-default",
+        danger: "pt-0 text-danger-fg",
+        success: "pt-0 text-success-fg",
       },
     },
     defaultVariants: {

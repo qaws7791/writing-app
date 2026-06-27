@@ -7,7 +7,7 @@ function StatGrid({ className, ...props }: React.ComponentProps<"section">) {
     <section
       data-slot="stat-grid"
       className={cn(
-        "grid grid-cols-4 gap-4 max-lg:grid-cols-2 max-sm:grid-cols-1",
+        "grid grid-cols-4 gap-3 max-lg:grid-cols-2 max-sm:grid-cols-1",
         className
       )}
       {...props}
@@ -34,16 +34,16 @@ function StatCard({
     <article
       data-slot="stat-card"
       className={cn(
-        "grid min-h-24 content-start gap-2 overflow-hidden rounded-panel  bg-bg-surface p-(--surface-padding-md) text-fg-default",
+        "grid content-start gap-1 overflow-hidden rounded-2xl bg-bg-surface px-5 py-3.5 text-fg-default",
         className
       )}
       {...props}
     >
-      <div className="flex items-center gap-2 text-label-md font-black text-fg-muted">
+      <div className="flex items-center gap-2 text-label-md font-bold text-fg-muted">
         {icon}
         <span>{label}</span>
       </div>
-      <strong className="text-heading-lg font-black leading-tight">
+      <strong className="text-title-lg font-black leading-tight">
         {value}
       </strong>
       {detail === undefined ? null : (

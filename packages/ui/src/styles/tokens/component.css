@@ -8,4 +8,5 @@
 
   --progress-track-bg: var(--ref-color-neutral-300);
   --progress-indicator-bg: var(--semantic-color-action-primary-bg);
+  --progress-lesson-indicator-bg: var(--semantic-color-action-selected-bg);
 }

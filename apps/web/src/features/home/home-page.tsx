@@ -116,7 +116,7 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
           </>
         ) : (
           <Link
-            className="block cursor-pointer rounded-panel bg-bg-surface p-7 btn-squish"
+            className="block cursor-pointer rounded-panel bg-bg-surface p-7 btn-squish hover:scale-[1.02] transition-transform duration-200"
             href="/app/courses"
           >
             <div className="flex items-center gap-2 mb-5">
@@ -172,16 +172,16 @@ function ContinueCourseCard({
       size="none"
       className={
         isDesktop
-          ? "overflow-hidden select-none"
-          : "flex w-80 shrink-0 flex-col overflow-hidden select-none sm:w-[22rem]"
+          ? "overflow-hidden rounded-[24px] select-none"
+          : "flex w-80 shrink-0 flex-col overflow-hidden rounded-[28px] select-none sm:w-[22rem]"
       }
     >
       {isDesktop ? (
-        <div className="flex">
-          <Link
-            className="relative min-h-28 w-44 shrink-0 cursor-pointer btn-squish"
-            href={courseHref}
-          >
+        <Link
+          className="flex cursor-pointer text-left hover:scale-[1.02] transition-transform duration-200 btn-squish"
+          href={courseHref}
+        >
+          <div className="relative min-h-28 h-28 w-44 shrink-0 overflow-hidden">
             <Image
               alt={course.title}
               className="object-cover pointer-events-none"
@@ -191,11 +191,8 @@ function ContinueCourseCard({
               sizes="176px"
               src={createCourseImageUrl(course.visualKey)}
             />
-          </Link>
-          <Link
-            className="flex-1 min-w-0 px-5 py-4 cursor-pointer btn-squish text-left"
-            href={courseHref}
-          >
+          </div>
+          <div className="flex-1 min-w-0 px-5 py-4">
             <ContinueCourseSummary
               completedLessonCount={completedLessonCount}
               course={course}
@@ -203,14 +200,14 @@ function ContinueCourseCard({
               totalLessonCount={totalLessonCount}
               variant={variant}
             />
-          </Link>
-        </div>
+          </div>
+        </Link>
       ) : (
         <Link
-          className="w-full cursor-pointer btn-squish text-left"
+          className="w-full cursor-pointer btn-squish hover:scale-[1.02] transition-transform duration-200 text-left"
           href={courseHref}
         >
-          <div className="relative h-36 w-full">
+          <div className="relative h-36 w-full overflow-hidden">
             <Image
               alt={course.title}
               className="object-cover pointer-events-none"
@@ -290,6 +287,8 @@ function ContinueCourseSummary({
       <Progress
         aria-label={`${course.title} 진행률`}
         className="items-center gap-3"
+        indicatorClassName="bg-action-primary-bg"
+        trackClassName="h-2 bg-charcoal/10"
         value={progressPercent}
       >
         <span className="shrink-0 text-label-sm font-bold text-fg-muted">

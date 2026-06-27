@@ -111,12 +111,11 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
                 size={16}
               />
               <input
-                className="w-full pl-11 pr-10 py-3 rounded-full bg-bg-surface font-medium placeholder:text-fg-muted outline-none focus:ring-2 focus:ring-border-focus/20 transition-shadow text-base md:text-sm text-fg-default border border-border-default"
+                className="w-full pl-11 pr-10 py-3 rounded-full bg-bg-surface font-medium placeholder:text-fg-muted outline-none focus:ring-2 focus:ring-border-focus/20 transition-shadow text-body-sm text-fg-default border border-border-default"
                 id="course-query"
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="코스 검색…"
                 ref={searchRef}
-                style={{ fontSize: "0.9375rem" }}
                 value={query}
               />
               {query ? (
@@ -137,14 +136,13 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
                 정렬
               </label>
               <select
-                className="px-4 py-3 rounded-full bg-bg-surface font-bold text-fg-default outline-none cursor-pointer shrink-0 border border-border-default text-base md:text-sm"
+                className="px-4 py-3 rounded-full bg-bg-surface font-bold text-body-sm text-fg-default outline-none cursor-pointer shrink-0 border border-border-default"
                 id="course-sort"
                 onChange={(e) => {
                   updateUrl({
                     sort: e.target.value as CourseListFilters["sort"],
                   })
                 }}
-                style={{ fontSize: "0.9375rem" }}
                 value={filters.sort}
               >
                 <option value="latest">최신순</option>
@@ -163,12 +161,13 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
           </div>
           <div
             aria-label="코스 카테고리"
-            className="flex gap-2 overflow-x-auto no-scrollbar -mx-5 px-5 md:-mx-10 md:px-10 mb-8 pb-2"
+            className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:-mx-12 md:px-12 mb-8 pb-2"
           >
             {["", ...categories].map((category) => (
               <Link
                 className={buttonVariants({
-                  size: "lg",
+                  className:
+                    "rounded-full px-6 py-3 h-auto text-body-sm font-bold",
                   variant:
                     filters.category === category ? "default" : "secondary",
                 })}
@@ -194,7 +193,7 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {visibleCourses.map((course) => (
                 <Link
-                  className="flex flex-row overflow-hidden rounded-card bg-bg-surface btn-squish md:flex-col"
+                  className="flex flex-row overflow-hidden rounded-2xl bg-bg-surface btn-squish hover:scale-[1.02] transition-transform duration-200 md:flex-col md:rounded-4xl"
                   href={`/app/courses/${course.id}`}
                   key={course.id}
                 >

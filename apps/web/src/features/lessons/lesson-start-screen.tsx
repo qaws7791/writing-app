@@ -49,7 +49,7 @@ export function LessonStartScreen({
     >
       <div className="an-fi">
         {lesson.category === null ? null : (
-          <div className="mb-4 text-label-md font-bold uppercase text-fg-muted">
+          <div className="mb-4 text-label-sm font-bold uppercase text-fg-muted tracking-widest">
             {lesson.category}
           </div>
         )}

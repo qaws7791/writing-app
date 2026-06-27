@@ -4,12 +4,19 @@ import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 
 import { cn } from "../../lib/utils"
 
+type ProgressProps = ProgressPrimitive.Root.Props & {
+  readonly indicatorClassName?: string
+  readonly trackClassName?: string
+}
+
 function Progress({
   className,
   children,
+  indicatorClassName,
+  trackClassName,
   value,
   ...props
-}: ProgressPrimitive.Root.Props) {
+}: ProgressProps) {
   return (
     <ProgressPrimitive.Root
       value={value}
@@ -18,18 +25,22 @@ function Progress({
       {...props}
     >
       {children}
-      <ProgressTrack>
-        <ProgressIndicator />
+      <ProgressTrack className={trackClassName}>
+        <ProgressIndicator className={indicatorClassName} />
       </ProgressTrack>
     </ProgressPrimitive.Root>
   )
 }
 
 function ProgressTrack({ className, ...props }: ProgressPrimitive.Track.Props) {
+  const hasHeight =
+    typeof className === "string" &&
+    className.split(/\s+/).some((c) => c.startsWith("h-"))
   return (
     <ProgressPrimitive.Track
       className={cn(
-        "relative flex h-3 w-full items-center overflow-x-hidden rounded-full bg-progress-track",
+        "relative flex w-full items-center overflow-x-hidden rounded-full bg-progress-track",
+        !hasHeight && "h-3",
         className
       )}
       data-slot="progress-track"
@@ -42,10 +53,17 @@ function ProgressIndicator({
   className,
   ...props
 }: ProgressPrimitive.Indicator.Props) {
+  const hasBg =
+    typeof className === "string" &&
+    className.split(/\s+/).some((c) => c.startsWith("bg-"))
   return (
     <ProgressPrimitive.Indicator
       data-slot="progress-indicator"
-      className={cn("h-full bg-progress-indicator transition-all", className)}
+      className={cn(
+        "h-full transition-all",
+        !hasBg && "bg-progress-indicator",
+        className
+      )}
       {...props}
     />
   )

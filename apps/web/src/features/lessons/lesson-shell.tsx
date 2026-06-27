@@ -78,7 +78,13 @@ export function LessonProgressHeader({
       >
         <XIcon size={28} />
       </Button>
-      <Progress aria-label="레슨 진행률" className="flex-1" value={progress} />
+      <Progress
+        aria-label="레슨 진행률"
+        className="flex-1"
+        indicatorClassName="bg-progress-lesson-indicator"
+        trackClassName="h-4 bg-bg-surface"
+        value={progress}
+      />
       <div className="ml-4 text-label-md font-bold text-fg-muted">
         {currentStepNumber}/{totalStepCount}
       </div>
@@ -102,9 +108,19 @@ export function LessonCheckedFooter({
       className="pointer-events-auto mx-auto max-w-2xl an-su"
       tone={feedback.isCorrect ? "success" : "danger"}
     >
-      <div className="grid gap-4">
+      <div className="-mx-6 h-10 bg-gradient-to-t from-bg-canvas to-transparent" />
+      <div
+        className={
+          feedback.isCorrect
+            ? "-mx-6 h-1 bg-success-bg"
+            : "-mx-6 h-1 bg-danger-bg"
+        }
+      />
+      <div className="-mx-6 bg-bg-canvas px-6 pt-5 pb-2 grid gap-4">
         <div className="grid gap-2">
-          <CalloutTitle>{feedback.title}</CalloutTitle>
+          <CalloutTitle className="text-[1.25rem] font-black">
+            {feedback.title}
+          </CalloutTitle>
           {feedback.body === "" ? null : (
             <CalloutContent>{feedback.body}</CalloutContent>
           )}
@@ -113,7 +129,7 @@ export function LessonCheckedFooter({
           className="w-full"
           onClick={onNext}
           size="lg"
-          variant={feedback.isCorrect ? "secondary" : "destructive"}
+          variant={feedback.isCorrect ? "correct" : "wrong"}
         >
           계속하기
         </Button>

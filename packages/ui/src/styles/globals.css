@@ -22,7 +22,7 @@
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--highlight);
+  --color-primary: var(--semantic-color-action-primary-bg);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -30,6 +30,7 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-highlight: var(--highlight);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -66,6 +67,7 @@
   --color-action-selected-fg: var(--semantic-color-action-selected-fg);
   --color-progress-track: var(--progress-track-bg);
   --color-progress-indicator: var(--progress-indicator-bg);
+  --color-progress-lesson-indicator: var(--progress-lesson-indicator-bg);
   --color-success-bg: var(--semantic-color-success-bg);
   --color-success-fg: var(--semantic-color-success-fg);
   --color-danger-bg: var(--semantic-color-danger-bg);

@@ -29,7 +29,11 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
         <ChevronLeftIcon className="mr-1" size={20} />
         돌아가기
       </Link>
-      <Surface className="-mx-3 mb-12 md:mx-0" size="lg" variant="panel">
+      <Surface
+        className="-mx-3 mb-12 px-5 py-8 border-none md:mx-0 md:p-10"
+        size="none"
+        variant="panel"
+      >
         <div className="flex items-start justify-between gap-4 mb-6">
           <Image
             alt={course.title}
@@ -48,9 +52,11 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
         <Progress
           aria-label="코스 진행률"
           className="mb-10"
+          indicatorClassName="bg-progress-lesson-indicator"
+          trackClassName="h-4 bg-bg-surface-hover"
           value={progressPercent}
         >
-          <span className="ml-auto text-label-md font-black tabular-nums text-fg-default">
+          <span className="ml-auto text-title-md font-black tabular-nums text-fg-default">
             {completedLessonCount}/{totalLessonCount}
           </span>
         </Progress>
@@ -62,7 +68,8 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             </p>
             <Link
               className={buttonVariants({
-                className: "w-full md:w-auto",
+                className:
+                  "w-full rounded-full px-10 md:w-auto h-auto py-5 text-lg font-bold",
                 size: "lg",
               })}
               href={`/app/lesson?lesson_id=${encodeURIComponent(nextLesson.id)}`}

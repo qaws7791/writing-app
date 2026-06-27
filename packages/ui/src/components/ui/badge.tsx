@@ -46,6 +46,7 @@ function Badge({
     render,
     state: {
       slot: "badge",
+      tone,
       variant,
     },
   })
