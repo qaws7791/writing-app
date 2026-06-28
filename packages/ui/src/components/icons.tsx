@@ -23,6 +23,8 @@ export {
   Trash2 as TrashIcon,
   UserPlus as UserPlusIcon,
   Users as UsersIcon,
+  ChevronsLeft as ChevronsLeftIcon,
+  ChevronsRight as ChevronsRightIcon,
 } from "lucide-react"
 
 type IconProps = Omit<SVGProps<SVGSVGElement>, "height" | "width"> & {

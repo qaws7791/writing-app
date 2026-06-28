@@ -15,21 +15,29 @@
 
 ## 정보 구조
 
-- `PageHeader`
-- `FilterToolbar`
+- `PageHeader` (우측 상단에 '새 강의' 등록 버튼 포함)
+- 검색 및 필터링 폼 (배경 및 테두리 없는 인라인 폼)
+  - 돋보기 아이콘이 들어간 넓은 텍스트 검색 입력창
+  - 카테고리 Select, 상태 Select
+  - 우측 정렬된 결과 개수 표시 (`N개 결과`)
 - 처리 상태 메시지
-- `DataTable` 코스 목록
+- 코스 목록 테이블 (배경 없음, border 적용, 둥근 모서리)
+  - 열 구성: 강의명 (정사각형 썸네일 + 강의명 굵게), 카테고리 (배지), 유닛 (아이콘 + 수), 레슨 (아이콘 + 수), 작업 (마우스 호버 시 보관 버튼 표시)
+- 페이지네이션 영역 (테이블 하단)
+  - 좌측 하단: "페이지당" + Select 컴포넌트 (페이지 크기 선택)
+  - 우측 하단: 4개의 페이지 이동 버튼 (`<<`, `<`, 현재/전체 페이지, `>`, `>>`)
 - `AlertDialog` 코스 보관 확인
 
 ## UI 기준
 
-- 필터는 `FilterToolbar`에 둔다.
-- 필터 toolbar는 `GET` form이며, 코스 검색 `query`, 카테고리 `category`, 상태 `status`, 페이지 크기 `pageSize`를 query string으로 제출한다.
-- 필터 적용 버튼은 `Button variant="outline"`이다.
-- 페이지 크기 선택은 `10`, `20`, `50` 옵션을 제공한다.
-- table 첫 열은 제목과 revision을 함께 보여준다.
-- 새 코스 버튼은 기본 `Button`이다.
-- 보관 버튼은 `Button variant="outline"`이고, 확인 dialog의 실행은 `Button variant="destructive"`이다.
+- 새 코스 생성 버튼은 `PageHeader` 우측 `actions` 영역에 둥근 캡슐 형태로 배치한다.
+- 필터 폼은 `GET` 방식의 inline form이며 배경이나 테두리 없이 바닥에 배치된다.
+- 텍스트 검색(`query`), 카테고리(`category`), 상태(`status`), 페이지 크기(`pageSize`)가 변경되거나 제출 시 query string으로 제출된다.
+- 카테고리, 상태, 페이지 크기 선택은 브라우저 Select 컴포넌트를 사용하고 변경 시 자동으로 폼이 적용되도록 처리한다.
+- 페이지 크기 선택은 좌측 하단에 "페이지당 [N개]" 형태로 표시한다.
+- 코스 목록 테이블은 배경색 없이 얇은 테두리(border)와 둥근 모서리를 갖는다.
+- 테이블 행 호버 시에만 우측 끝에 보관 버튼이 나타난다.
+- 우측 하단에 4개의 이동 버튼(`<<`, `<`, `page / totalPages`, `>`, `>>`)을 제공한다.
 
 ## 상태
 
@@ -42,6 +50,6 @@
 
 ## 접근성
 
-- toolbar는 `aria-label="코스 필터"`를 제공한다.
+- 필터 폼은 `aria-label="코스 필터"`를 제공한다.
 - table header는 `scope="col"`을 사용한다.
 - 확인 dialog는 `AlertDialog`를 사용하며 `role="alertdialog"` 의미와 제목/설명 관계를 제공한다.
