@@ -4,22 +4,19 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "../../lib/utils"
 
-const alertVariants = cva(
-  "grid gap-1.5 rounded-2xl border p-(--surface-padding-sm)",
-  {
-    variants: {
-      tone: {
-        neutral: "border-border-default bg-bg-elevated text-fg-default",
-        success: "border-success-fg/20 bg-success-bg text-success-fg",
-        danger: "border-danger-fg/20 bg-danger-bg text-danger-fg",
-        info: "border-info-fg/20 bg-info-bg text-info-fg",
-      },
+const alertVariants = cva("grid gap-1.5 rounded-2xl border p-4", {
+  variants: {
+    tone: {
+      neutral: "border-border-default bg-bg-elevated text-fg-default",
+      success: "border-success-fg/20 bg-success-bg text-success-fg",
+      danger: "border-danger-fg/20 bg-danger-bg text-danger-fg",
+      info: "border-info-fg/20 bg-info-bg text-info-fg",
     },
-    defaultVariants: {
-      tone: "neutral",
-    },
-  }
-)
+  },
+  defaultVariants: {
+    tone: "neutral",
+  },
+})
 
 function Alert({
   className,

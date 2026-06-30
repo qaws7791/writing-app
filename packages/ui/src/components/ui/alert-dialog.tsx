@@ -18,7 +18,7 @@ function AlertDialogTrigger({
     <AlertDialogPrimitive.Trigger
       data-slot="alert-dialog-trigger"
       className={cn(
-        "inline-flex h-(--control-height-md) items-center justify-center rounded-control px-(--control-inline-padding) text-sm font-bold text-fg-default transition-colors outline-none hover:bg-bg-surface focus-visible:border-border-focus focus-visible:ring-3 focus-visible:ring-border-focus/20",
+        "inline-flex h-11 items-center justify-center rounded-control px-5 text-sm font-bold text-fg-default transition-colors outline-none hover:bg-bg-surface focus-visible:border-border-focus focus-visible:ring-3 focus-visible:ring-border-focus/20",
         className
       )}
       {...props}

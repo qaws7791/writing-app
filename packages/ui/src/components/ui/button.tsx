@@ -29,14 +29,14 @@ const buttonVariants = cva(
       },
       size: {
         default:
-          "h-(--control-height-md) gap-2 px-(--control-inline-padding) has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
+          "h-11 gap-2 px-5 has-data-[icon=inline-end]:pr-4 has-data-[icon=inline-start]:pl-4",
         xs: "h-7 gap-1 rounded-2xl px-2.5 text-xs has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3",
-        sm: "h-(--control-height-sm) gap-1.5 rounded-control px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
-        lg: "min-h-(--control-height-lg) gap-2 rounded-4xl px-6 py-5 text-lg leading-none has-data-[icon=inline-end]:pr-5 has-data-[icon=inline-start]:pl-5",
-        icon: "size-(--control-height-md)",
+        sm: "h-9 gap-1.5 rounded-control px-4 has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3",
+        lg: "min-h-12 gap-2 rounded-4xl px-6 py-5 text-lg leading-none has-data-[icon=inline-end]:pr-5 has-data-[icon=inline-start]:pl-5",
+        icon: "size-11",
         "icon-xs": "size-7 rounded-2xl [&_svg:not([class*='size-'])]:size-3",
-        "icon-sm": "size-(--control-height-sm) rounded-control",
-        "icon-lg": "size-(--control-height-lg)",
+        "icon-sm": "size-9 rounded-control",
+        "icon-lg": "size-12",
       },
     },
     defaultVariants: {

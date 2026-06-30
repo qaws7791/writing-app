@@ -16,7 +16,7 @@
 
 1. reference token: 실제 색상과 수치다. `packages/ui/src/styles/tokens/reference.css`에 둔다.
 2. semantic token: 제품 역할이다. `packages/ui/src/styles/tokens/semantic.css`에 둔다.
-3. component token: 컴포넌트 결정이다. `packages/ui/src/styles/tokens/component.css`, `density.css`, `radius.css`에 둔다.
+3. component token: 컴포넌트 결정이다. `packages/ui/src/styles/tokens/component.css`, `radius.css`에 둔다.
 
 ## Semantic Color
 
@@ -79,8 +79,6 @@
 
 ## 스페이싱과 레이아웃
 
-- web root는 `data-density="comfortable"`, admin root는 `data-density="compact"`를 사용한다.
-- `control-height-*`, `control-inline-padding`, `surface-padding-*`, `page-gutter`는 density에 따라 달라진다.
 - 학습자 앱 본문 최대 폭은 `max-w-6xl`, 상세/레슨은 `max-w-3xl` 또는 `max-w-2xl`을 사용한다.
 - 학습자 앱 페이지 padding은 모바일 `px-5` 또는 `px-6`, 데스크톱 `md:px-10` 또는 `md:px-12`를 기준으로 한다.
 - 어드민 shell은 256px sidebar와 본문 1fr flex/grid 구성을 사용한다.

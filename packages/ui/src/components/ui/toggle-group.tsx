@@ -28,7 +28,7 @@ function ToggleGroupItem({
     <TogglePrimitive
       data-slot="toggle-group-item"
       className={cn(
-        "inline-flex h-(--control-height-sm) min-w-(--control-height-sm) items-center justify-center rounded-control px-3 text-sm font-bold text-fg-muted transition-colors outline-none hover:bg-bg-surface-hover hover:text-fg-default focus-visible:border-border-focus focus-visible:ring-3 focus-visible:ring-border-focus/20 disabled:pointer-events-none disabled:opacity-50 data-[pressed]:bg-action-selected-bg data-[pressed]:text-action-selected-fg",
+        "inline-flex h-9 min-w-9 items-center justify-center rounded-control px-3 text-sm font-bold text-fg-muted transition-colors outline-none hover:bg-bg-surface-hover hover:text-fg-default focus-visible:border-border-focus focus-visible:ring-3 focus-visible:ring-border-focus/20 disabled:pointer-events-none disabled:opacity-50 data-[pressed]:bg-action-selected-bg data-[pressed]:text-action-selected-fg",
         className
       )}
       {...props}

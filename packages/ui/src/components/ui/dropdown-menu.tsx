@@ -83,7 +83,7 @@ function DropdownMenuTrigger({
       handle={handle}
       id={id}
       className={cn(
-        "inline-flex h-(--control-height-md) items-center justify-center gap-2 rounded-control px-(--control-inline-padding) text-sm font-bold text-fg-default transition-colors outline-none hover:bg-bg-surface focus-visible:border-border-focus focus-visible:ring-3 focus-visible:ring-border-focus/20 disabled:pointer-events-none disabled:opacity-50 data-[popup-open]:bg-bg-surface",
+        "inline-flex h-11 items-center justify-center gap-2 rounded-control px-5 text-sm font-bold text-fg-default transition-colors outline-none hover:bg-bg-surface focus-visible:border-border-focus focus-visible:ring-3 focus-visible:ring-border-focus/20 disabled:pointer-events-none disabled:opacity-50 data-[popup-open]:bg-bg-surface",
         className
       )}
       onClick={(event) => {

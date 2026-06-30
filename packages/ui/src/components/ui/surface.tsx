@@ -13,9 +13,9 @@ const surfaceVariants = cva("text-fg-default", {
     },
     size: {
       none: "",
-      sm: "p-(--surface-padding-sm)",
-      md: "p-(--surface-padding-md)",
-      lg: "p-(--surface-padding-lg)",
+      sm: "p-4",
+      md: "p-6",
+      lg: "p-8",
     },
   },
   defaultVariants: {

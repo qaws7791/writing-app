@@ -21,7 +21,7 @@ function EmptyState({
     <div
       data-slot="empty-state"
       className={cn(
-        "grid min-h-64 place-items-center gap-3 rounded-panel border border-dashed border-border-default bg-bg-surface p-(--surface-padding-lg) text-center text-fg-default",
+        "grid min-h-64 place-items-center gap-3 rounded-panel border border-dashed border-border-default bg-bg-surface p-8 text-center text-fg-default",
         className
       )}
       {...props}
