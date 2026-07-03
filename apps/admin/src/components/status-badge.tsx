@@ -9,5 +9,5 @@ type StatusBadgeProps = {
 }
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  return <Badge tone="neutral">{status}</Badge>
+  return <Badge variant="secondary">{status}</Badge>
 }

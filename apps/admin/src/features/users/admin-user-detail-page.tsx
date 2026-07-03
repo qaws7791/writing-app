@@ -34,10 +34,10 @@ export function AdminUserDetailPage({
       />
       <Surface variant="panel">
         <div className="mb-5 grid gap-1.5">
-          <strong className="text-title-lg font-black text-fg-default">
+          <strong className="text-title-lg font-black text-foreground">
             {user.name}
           </strong>
-          <span className="text-body-sm font-semibold text-fg-muted">
+          <span className="text-body-sm font-semibold text-muted-foreground">
             {user.email}
           </span>
           <div>
@@ -45,35 +45,43 @@ export function AdminUserDetailPage({
           </div>
         </div>
         <dl className="grid gap-2 sm:grid-cols-2">
-          <div className="rounded-card border border-border-subtle bg-bg-canvas p-3">
-            <dt className="text-label-sm font-bold text-fg-muted">가입일</dt>
-            <dd className="m-0 text-body-sm font-black text-fg-default">
+          <div className="rounded-card border border-border/50 bg-background p-3">
+            <dt className="text-label-sm font-bold text-muted-foreground">
+              가입일
+            </dt>
+            <dd className="m-0 text-body-sm font-black text-foreground">
               {user.joined}
             </dd>
           </div>
-          <div className="rounded-card border border-border-subtle bg-bg-canvas p-3">
-            <dt className="text-label-sm font-bold text-fg-muted">최근 접속</dt>
-            <dd className="m-0 text-body-sm font-black text-fg-default">
+          <div className="rounded-card border border-border/50 bg-background p-3">
+            <dt className="text-label-sm font-bold text-muted-foreground">
+              최근 접속
+            </dt>
+            <dd className="m-0 text-body-sm font-black text-foreground">
               {user.lastActive ?? "없음"}
             </dd>
           </div>
-          <div className="rounded-card border border-border-subtle bg-bg-canvas p-3">
-            <dt className="text-label-sm font-bold text-fg-muted">완료 레슨</dt>
-            <dd className="m-0 text-body-sm font-black text-fg-default">
+          <div className="rounded-card border border-border/50 bg-background p-3">
+            <dt className="text-label-sm font-bold text-muted-foreground">
+              완료 레슨
+            </dt>
+            <dd className="m-0 text-body-sm font-black text-foreground">
               {user.lessonsDone} / {user.totalLessons}
             </dd>
           </div>
-          <div className="rounded-card border border-border-subtle bg-bg-canvas p-3">
-            <dt className="text-label-sm font-bold text-fg-muted">전체 진도</dt>
-            <dd className="m-0 text-body-sm font-black text-fg-default">
+          <div className="rounded-card border border-border/50 bg-background p-3">
+            <dt className="text-label-sm font-bold text-muted-foreground">
+              전체 진도
+            </dt>
+            <dd className="m-0 text-body-sm font-black text-foreground">
               {user.progressPercent}%
             </dd>
           </div>
-          <div className="rounded-card border border-border-subtle bg-bg-canvas p-3">
-            <dt className="text-label-sm font-bold text-fg-muted">
+          <div className="rounded-card border border-border/50 bg-background p-3">
+            <dt className="text-label-sm font-bold text-muted-foreground">
               연속 학습일
             </dt>
-            <dd className="m-0 text-body-sm font-black text-fg-default">
+            <dd className="m-0 text-body-sm font-black text-foreground">
               {user.streak}일 연속
             </dd>
           </div>

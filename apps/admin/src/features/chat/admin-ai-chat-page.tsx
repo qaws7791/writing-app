@@ -17,7 +17,12 @@ import {
 } from "@workspace/ui/components/icons"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
-import { EmptyState } from "@workspace/ui/components/ui/empty-state"
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@workspace/ui/components/ui/empty"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
 import { SectionHeader } from "@workspace/ui/components/ui/section-header"
 import { Surface } from "@workspace/ui/components/ui/surface"
@@ -113,9 +118,9 @@ export function AdminAiChatPage({
             {conversations.map((conversation) => (
               <Link
                 className={cn(
-                  "grid gap-1 rounded-card border border-border-subtle px-3 py-2.5 text-fg-default transition-colors hover:border-border-strong hover:bg-bg-canvas",
+                  "grid gap-1 rounded-card border border-border/50 px-3 py-2.5 text-foreground transition-colors hover:border-foreground/20 hover:bg-background",
                   activeConversationId === conversation.id
-                    ? "border-action-primary-bg bg-action-primary-bg text-action-primary-fg"
+                    ? "border-action-primary-bg bg-accent text-accent-foreground"
                     : ""
                 )}
                 href={`/chat?conversationId=${conversation.id}`}
@@ -127,9 +132,9 @@ export function AdminAiChatPage({
                 </strong>
                 <span
                   className={cn(
-                    "text-label-sm font-semibold text-fg-muted",
+                    "text-label-sm font-semibold text-muted-foreground",
                     activeConversationId === conversation.id
-                      ? "text-action-primary-fg/80"
+                      ? "text-accent-foreground/80"
                       : ""
                   )}
                 >
@@ -161,31 +166,35 @@ export function AdminAiChatPage({
             </Alert>
           )}
           <div
-            className="min-h-0 overflow-y-auto rounded-panel border border-border-subtle bg-bg-canvas p-4"
+            className="min-h-0 overflow-y-auto rounded-panel border border-border/50 bg-background p-4"
             role="log"
           >
             {visibleMessages.length === 0 ? (
-              <EmptyState
-                icon={<BotIcon aria-hidden="true" size={28} />}
-                title="새 대화를 시작하세요."
-              />
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <BotIcon aria-hidden="true" size={28} />
+                  </EmptyMedia>
+                  <EmptyTitle>새 대화를 시작하세요.</EmptyTitle>
+                </EmptyHeader>
+              </Empty>
             ) : (
               <div className="grid gap-3">
                 {visibleMessages.map((message) => (
                   <article
                     className={cn(
-                      "grid max-w-[42rem] gap-1 rounded-card border border-border-subtle bg-bg-surface p-3",
+                      "grid max-w-[42rem] gap-1 rounded-card border border-border/50 bg-surface p-3",
                       message.role === "user"
-                        ? "ml-auto border-action-primary-bg bg-action-primary-bg text-action-primary-fg"
-                        : "text-fg-default"
+                        ? "ml-auto border-action-primary-bg bg-accent text-accent-foreground"
+                        : "text-foreground"
                     )}
                     key={message.id}
                   >
                     <span
                       className={cn(
-                        "text-label-sm font-black text-fg-muted",
+                        "text-label-sm font-black text-muted-foreground",
                         message.role === "user"
-                          ? "text-action-primary-fg/80"
+                          ? "text-accent-foreground/80"
                           : ""
                       )}
                     >

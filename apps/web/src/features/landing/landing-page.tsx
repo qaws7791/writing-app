@@ -3,17 +3,7 @@
 import { useRouter } from "next/navigation"
 
 import { useLandingChromeMotion } from "@/features/landing/landing-motion"
-import {
-  Features,
-  FinalCta,
-  Footer,
-  Hero,
-  HowItWorks,
-  LandingNav,
-  Marquee,
-  Showcase,
-  Stats,
-} from "@/features/landing/landing-sections"
+import { Hero, LandingNav } from "@/features/landing/landing-sections"
 
 export function LandingPage() {
   const router = useRouter()
@@ -32,10 +22,10 @@ export function LandingPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-bg-canvas text-fg-default">
+    <div className="relative min-h-screen overflow-x-hidden bg-background text-foreground">
       <div
         aria-hidden
-        className="pointer-events-none fixed z-0 hidden rounded-full bg-action-selected-bg md:block"
+        className="pointer-events-none fixed z-0 hidden rounded-full bg-accent-soft md:block"
         style={{
           filter: "blur(8px)",
           height: 220,
@@ -51,13 +41,6 @@ export function LandingPage() {
           startLearning={startLearning}
         />
         <Hero browseCourses={browseCourses} startLearning={startLearning} />
-        <Marquee />
-        <Features />
-        <HowItWorks />
-        <Stats />
-        <Showcase />
-        <FinalCta startLearning={startLearning} />
-        <Footer />
       </div>
     </div>
   )

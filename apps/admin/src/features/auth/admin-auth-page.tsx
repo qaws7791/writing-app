@@ -41,22 +41,22 @@ export function AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-bg-canvas p-6">
+    <main className="grid min-h-screen place-items-center bg-background p-6">
       <Surface
         aria-labelledby="admin-login-title"
         className="grid w-full max-w-[420px] justify-items-center gap-3 p-9 text-center"
         variant="panel"
       >
-        <div className="grid size-14 place-items-center rounded-control bg-action-primary-bg text-action-primary-fg">
+        <div className="grid size-14 place-items-center rounded-control bg-accent text-accent-foreground">
           <ShieldCheckIcon aria-hidden="true" size={28} />
         </div>
-        <span className="text-label-sm font-black text-fg-muted">
+        <span className="text-label-sm font-black text-muted-foreground">
           글결 운영 콘솔
         </span>
         <h1 className="m-0 text-heading-md font-black" id="admin-login-title">
           관리자 로그인
         </h1>
-        <p className="m-0 mb-2 text-body-sm font-semibold text-fg-muted">
+        <p className="m-0 mb-2 text-body-sm font-semibold text-muted-foreground">
           콘텐츠, 사용자, 분석, 운영 설정을 관리하려면 관리자 계정으로
           로그인하세요.
         </p>

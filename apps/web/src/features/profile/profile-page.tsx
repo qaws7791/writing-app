@@ -35,11 +35,11 @@ export function ProfilePage({ profile }: ProfilePageProps) {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="flex flex-col items-center mb-16 mt-8">
-        <div className="mb-6 flex size-32 items-center justify-center rounded-panel bg-action-selected-bg text-display-lg text-action-selected-fg">
+        <div className="mb-6 flex size-32 items-center justify-center rounded-panel bg-accent-soft text-display-lg text-accent">
           ✍️
         </div>
         <h1 className="mb-2 text-heading-md font-black">{profile.user.name}</h1>
-        <p className="font-bold text-fg-muted">가입일: {joinedDate}</p>
+        <p className="font-bold text-muted-foreground">가입일: {joinedDate}</p>
       </div>
       <h2 className="mb-6 text-heading-sm font-bold">나의 학습 요약</h2>
       <StatGrid aria-label="나의 학습 요약" className="mb-12 grid-cols-2">

@@ -85,7 +85,7 @@ export function AdminSettingsPage({
       )}
       <section className="grid gap-4 lg:grid-cols-2">
         <form
-          className="grid gap-4 rounded-panel border border-border-subtle bg-bg-surface p-6"
+          className="grid gap-4 rounded-panel border border-border/50 bg-surface p-6"
           onSubmit={(event) => {
             event.preventDefault()
             const formData = new FormData(event.currentTarget)
@@ -131,7 +131,7 @@ export function AdminSettingsPage({
           </Button>
         </form>
         <form
-          className="grid gap-4 rounded-panel border border-border-subtle bg-bg-surface p-6"
+          className="grid gap-4 rounded-panel border border-border/50 bg-surface p-6"
           onSubmit={(event) => {
             event.preventDefault()
             const formData = new FormData(event.currentTarget)

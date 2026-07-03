@@ -22,17 +22,17 @@ export function AuthPage({ nextPath, testAuthEnabled = false }: AuthPageProps) {
         ✍️
       </div>
       <h1 className="mb-4 text-center text-display-md font-black">글결.</h1>
-      <p className="mb-12 text-center text-body-lg font-medium text-fg-muted">
+      <p className="mb-12 text-center text-body-lg font-medium text-muted-foreground">
         매일 한 단락씩, 글의 결을 다듬는 한국어 글쓰기 학습
       </p>
       <div className="w-full max-w-sm space-y-4">
         <Button
           className="w-full"
           onClick={loginWithGoogle}
-          size="lg"
+          size="extra"
           type="button"
         >
-          <GoogleIcon />
+          <GoogleIcon className="w-6 h-6" />
           Google로 계속하기
         </Button>
         {testAuthEnabled ? (
@@ -46,7 +46,7 @@ export function AuthPage({ nextPath, testAuthEnabled = false }: AuthPageProps) {
             테스트 계정으로 계속하기
           </Button>
         ) : null}
-        <p className="text-center text-label-md font-medium text-fg-muted">
+        <p className="text-center text-label-md font-medium text-muted-foreground">
           이메일/비밀번호 가입은 지원하지 않습니다
         </p>
       </div>
@@ -54,9 +54,9 @@ export function AuthPage({ nextPath, testAuthEnabled = false }: AuthPageProps) {
   )
 }
 
-function GoogleIcon() {
+function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg className="w-6 h-6" viewBox="0 0 24 24">
+    <svg viewBox="0 0 24 24" {...props}>
       <path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
         fill="white"

@@ -48,7 +48,7 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
     <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 xl:gap-14">
       <div className="lg:w-[360px] lg:shrink-0 lg:sticky lg:top-20 lg:self-start">
         <div className="mb-8">
-          <p className="mb-2 text-body-sm font-bold text-fg-muted">
+          <p className="mb-2 text-body-sm font-bold text-muted-foreground">
             안녕하세요 👋
           </p>
           <h1 className="text-heading-lg font-black">
@@ -75,10 +75,10 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
         {hasProgress ? (
           <>
             <div className="flex items-baseline justify-between mb-5">
-              <p className="text-label-sm font-bold uppercase text-fg-muted">
+              <p className="text-label-sm font-bold uppercase text-muted-foreground">
                 이어서 학습하기
               </p>
-              <p className="text-label-sm font-bold text-fg-muted">
+              <p className="text-label-sm font-bold text-muted-foreground">
                 {items.length}개 코스
               </p>
             </div>
@@ -116,12 +116,12 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
           </>
         ) : (
           <Link
-            className="block cursor-pointer rounded-panel bg-bg-surface p-7 btn-squish hover:scale-[1.02] transition-transform duration-200"
+            className="block cursor-pointer rounded-panel bg-surface p-7 btn-squish hover:scale-[1.02] transition-transform duration-200"
             href="/app/courses"
           >
             <div className="flex items-center gap-2 mb-5">
-              <SparklesIcon className="text-fg-muted" size={16} />
-              <span className="text-label-md font-bold text-fg-muted">
+              <SparklesIcon className="text-muted-foreground" size={16} />
+              <span className="text-label-md font-bold text-muted-foreground">
                 지금 시작해볼까요?
               </span>
             </div>
@@ -245,7 +245,7 @@ function ContinueCourseCard({
             />
           ))
         ) : (
-          <div className="px-4 py-3 text-label-md font-bold text-fg-muted">
+          <div className="px-4 py-3 text-label-md font-bold text-muted-foreground">
             모든 레슨을 완료했어요
           </div>
         )}
@@ -287,11 +287,11 @@ function ContinueCourseSummary({
       <Progress
         aria-label={`${course.title} 진행률`}
         className="items-center gap-3"
-        indicatorClassName="bg-action-primary-bg"
+        indicatorClassName="bg-accent"
         trackClassName="h-2 bg-charcoal/10"
         value={progressPercent}
       >
-        <span className="shrink-0 text-label-sm font-bold text-fg-muted">
+        <span className="shrink-0 text-label-sm font-bold text-muted-foreground">
           {completedLessonCount}/{totalLessonCount}
         </span>
       </Progress>
@@ -310,16 +310,16 @@ function NextLessonLink({
     <Link
       className={
         isDesktop
-          ? "flex items-center gap-3 rounded-2xl px-3 py-3 text-left btn-squish hover:bg-bg-surface-hover"
-          : "flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left btn-squish hover:bg-bg-surface-hover"
+          ? "flex items-center gap-3 rounded-2xl px-3 py-3 text-left btn-squish hover:bg-surface-hover"
+          : "flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left btn-squish hover:bg-surface-hover"
       }
       href={`/app/lesson?lesson_id=${encodeURIComponent(lesson.id)}`}
     >
       <span
         className={
           isDesktop
-            ? "flex size-8 shrink-0 items-center justify-center rounded-full bg-action-primary-bg text-action-primary-fg"
-            : "flex size-10 shrink-0 items-center justify-center rounded-full bg-action-primary-bg text-action-primary-fg"
+            ? "flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground"
+            : "flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground"
         }
       >
         <PlayIcon fill="currentColor" size={isDesktop ? 12 : 14} />
@@ -337,8 +337,8 @@ function NextLessonLink({
         <span
           className={
             isDesktop
-              ? "mt-0.5 block text-label-sm font-bold text-fg-muted"
-              : "mt-1 block text-label-sm font-bold text-fg-muted"
+              ? "mt-0.5 block text-label-sm font-bold text-muted-foreground"
+              : "mt-1 block text-label-sm font-bold text-muted-foreground"
           }
         >
           {lesson.estimatedMinutes}분

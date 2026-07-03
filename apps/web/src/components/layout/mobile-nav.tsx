@@ -30,7 +30,7 @@ export function MobileNav({ currentPath }: GlobalNavPathProps) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t-2 border-surface bg-bg-canvas px-4 py-2 sm:hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t-2 border-surface bg-background px-4 py-2 sm:hidden"
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
     >
       {globalNavMobileItems.map((item) => {
@@ -42,7 +42,7 @@ export function MobileNav({ currentPath }: GlobalNavPathProps) {
             aria-current={isActive ? "page" : undefined}
             className={cn(
               "flex flex-col items-center gap-0.5 text-caption font-bold transition-colors",
-              isActive ? "text-fg-default" : "text-fg-muted"
+              isActive ? "text-foreground" : "text-muted-foreground"
             )}
             href={item.href}
             key={item.key}
@@ -50,9 +50,7 @@ export function MobileNav({ currentPath }: GlobalNavPathProps) {
             <div
               className={cn(
                 "w-7 h-7 rounded-full flex justify-center items-center transition-colors",
-                isActive
-                  ? "bg-action-selected-bg text-action-selected-fg"
-                  : "bg-transparent"
+                isActive ? "bg-accent-soft text-accent" : "bg-transparent"
               )}
             >
               <Icon size={16} />

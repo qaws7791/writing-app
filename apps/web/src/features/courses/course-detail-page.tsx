@@ -6,7 +6,11 @@ import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type { CourseDetail } from "@/features/courses/course-types"
 import { ChevronLeftIcon } from "@workspace/ui/components/icons"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
-import { Progress } from "@workspace/ui/components/ui/progress"
+import {
+  Progress,
+  ProgressLabel,
+  ProgressValue,
+} from "@workspace/ui/components/ui/progress"
 import { Surface } from "@workspace/ui/components/ui/surface"
 
 type CourseDetailPageProps = {
@@ -23,14 +27,14 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
   return (
     <div className="max-w-3xl mx-auto">
       <Link
-        className="mb-8 flex w-fit items-center text-label-md font-bold text-fg-muted btn-squish hover:text-fg-default"
+        className="mb-8 flex w-fit items-center text-label-md font-bold text-muted-foreground btn-squish hover:text-foreground"
         href="/app/courses"
       >
         <ChevronLeftIcon className="mr-1" size={20} />
         돌아가기
       </Link>
       <Surface
-        className="-mx-3 mb-12 px-5 py-8 border-none md:mx-0 md:p-10"
+        className="-mx-3 mb-12 px-5 py-8 border-none md:mx-0 md:p-10 rounded-4xl"
         size="none"
         variant="panel"
       >
@@ -46,23 +50,18 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
           />
         </div>
         <h1 className="mb-4 text-heading-xl font-bold">{course.title}</h1>
-        <p className="mb-8 text-body-lg font-medium text-fg-default">
+        <p className="mb-8 text-body-lg font-medium text-foreground">
           {course.description}
         </p>
-        <Progress
-          aria-label="코스 진행률"
-          className="mb-10"
-          indicatorClassName="bg-progress-lesson-indicator"
-          trackClassName="h-4 bg-bg-surface-hover"
-          value={progressPercent}
-        >
-          <span className="ml-auto text-title-md font-black tabular-nums text-fg-default">
-            {completedLessonCount}/{totalLessonCount}
-          </span>
+        <Progress value={progressPercent} className="mb-10">
+          <ProgressLabel className="text-sm font-medium text-muted-foreground">
+            진행도
+          </ProgressLabel>
+          <ProgressValue className="text-lg font-bold" />
         </Progress>
         {nextLesson === null ? null : (
           <div>
-            <p className="mb-4 text-label-md font-bold text-fg-muted">
+            <p className="mb-4 text-label-md font-bold text-muted-foreground">
               {completedLessonCount > 0 ? "다음 레슨" : "첫 번째 레슨"}:{" "}
               {nextLesson.title}
             </p>

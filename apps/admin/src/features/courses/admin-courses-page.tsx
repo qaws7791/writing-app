@@ -34,9 +34,14 @@ import {
 } from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
-  DataTable,
-  DataTableContainer,
-} from "@workspace/ui/components/ui/data-table"
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableCaption,
+} from "@workspace/ui/components/ui/table"
 import {
   FilterToolbarField,
   FilterToolbarLabel,
@@ -110,23 +115,31 @@ export function AdminCoursesPage({
         description={`강의 ${courses.pagination.totalItems}개 · 편집 내용은 학습자 앱에 즉시 반영됩니다.`}
         title="콘텐츠 관리"
         actions={
-          <Button
-            disabled={isPending}
-            onClick={() => {
-              startTransition(async () => {
-                const result = await createCourse()
-                setMessage(
-                  result.status === "ok"
-                    ? { message: "새 코스를 만들었습니다.", tone: "success" }
-                    : { message: result.error.message, tone: "danger" }
-                )
-              })
-            }}
-            type="button"
-            className="rounded-full bg-fg-default text-bg-canvas hover:bg-fg-default/90 px-5 py-3 font-bold flex items-center gap-2 text-sm"
-          >
-            <PlusIcon aria-hidden="true" size={16} />새 강의
-          </Button>
+          <div className="flex flex-col items-end gap-2">
+            <Button
+              disabled={isPending}
+              onClick={() => {
+                startTransition(async () => {
+                  const result = await createCourse()
+                  setMessage(
+                    result.status === "ok"
+                      ? { message: "새 코스를 만들었습니다.", tone: "success" }
+                      : { message: result.error.message, tone: "danger" }
+                  )
+                })
+              }}
+              type="button"
+              className="rounded-full bg-fg-default text-bg-canvas hover:bg-fg-default/90 px-5 py-3 font-bold flex items-center gap-2 text-sm"
+            >
+              <PlusIcon aria-hidden="true" size={16} />새 강의
+            </Button>
+            <Link
+              className="text-xs font-bold text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+              href="/debug/steps"
+            >
+              스텝 디버그 →
+            </Link>
+          </div>
         }
       />
 
@@ -138,14 +151,14 @@ export function AdminCoursesPage({
               코스 검색
             </FilterToolbarLabel>
             <SearchIcon
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-muted pointer-events-none"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
               size={16}
             />
             <input
               defaultValue={filters.query}
               name="query"
               placeholder="강의 제목 또는 설명 검색..."
-              className="w-full bg-transparent rounded-2xl pl-10 pr-4 py-2.5 text-fg-default placeholder:text-fg-muted outline-none border border-border-subtle focus:border-fg-muted transition-colors text-sm font-semibold"
+              className="w-full bg-transparent rounded-2xl pl-10 pr-4 py-2.5 text-foreground placeholder:text-muted-foreground outline-none border border-border/50 focus:border-fg-muted transition-colors text-sm font-semibold"
             />
           </FilterToolbarField>
           <FilterToolbarField className="gap-0">
@@ -160,7 +173,7 @@ export function AdminCoursesPage({
                 formRef.current?.requestSubmit()
               }}
             >
-              <SelectTrigger className="bg-transparent rounded-2xl border border-border-subtle cursor-pointer text-sm font-semibold flex items-center px-4 py-2.5 h-11 hover:border-fg-muted transition-colors w-[180px]">
+              <SelectTrigger className="bg-transparent rounded-2xl border border-border/50 cursor-pointer text-sm font-semibold flex items-center px-4 py-2.5 h-11 hover:border-fg-muted transition-colors w-[180px]">
                 <SelectValue placeholder="전체 카테고리" />
               </SelectTrigger>
               <SelectContent>
@@ -186,7 +199,7 @@ export function AdminCoursesPage({
                 formRef.current?.requestSubmit()
               }}
             >
-              <SelectTrigger className="bg-transparent rounded-2xl border border-border-subtle cursor-pointer text-sm font-semibold flex items-center px-4 py-2.5 h-11 hover:border-fg-muted transition-colors w-[140px]">
+              <SelectTrigger className="bg-transparent rounded-2xl border border-border/50 cursor-pointer text-sm font-semibold flex items-center px-4 py-2.5 h-11 hover:border-fg-muted transition-colors w-[140px]">
                 <SelectValue placeholder="전체 상태" />
               </SelectTrigger>
               <SelectContent>
@@ -196,7 +209,7 @@ export function AdminCoursesPage({
               </SelectContent>
             </Select>
           </FilterToolbarField>
-          <span className="text-fg-muted font-bold ml-auto text-sm">
+          <span className="text-muted-foreground font-bold ml-auto text-sm">
             {courses.pagination.totalItems}개 결과
           </span>
         </div>
@@ -208,124 +221,128 @@ export function AdminCoursesPage({
         )}
 
         {/* 테이블 박스: 배경 없음, 테두리, 둥근 모서리 */}
-        <div className="border border-border-subtle rounded-[24px] overflow-hidden">
-          <DataTableContainer>
-            <DataTable className="min-w-0">
-              <caption className="sr-only">코스 목록</caption>
-              <thead>
-                <tr className="border-b border-border-subtle bg-transparent">
-                  <th
-                    scope="col"
-                    className="px-5 py-3.5 text-fg-muted font-bold text-[0.8125rem] w-[50%]"
+        <div className="border border-border/50 rounded-[24px] overflow-hidden">
+          <Table className="min-w-0">
+            <TableCaption className="sr-only">코스 목록</TableCaption>
+            <TableHeader>
+              <TableRow className="border-b border-border/50 bg-transparent">
+                <TableHead
+                  scope="col"
+                  className="px-5 py-3.5 text-muted-foreground font-bold text-[0.8125rem] w-[50%]"
+                >
+                  강의명
+                </TableHead>
+                <TableHead
+                  scope="col"
+                  className="px-4 py-3.5 text-muted-foreground font-bold text-[0.8125rem] text-center w-[20%]"
+                >
+                  카테고리
+                </TableHead>
+                <TableHead
+                  scope="col"
+                  className="px-4 py-3.5 text-muted-foreground font-bold text-[0.8125rem] text-center w-[15%]"
+                >
+                  유닛
+                </TableHead>
+                <TableHead
+                  scope="col"
+                  className="px-4 py-3.5 text-muted-foreground font-bold text-[0.8125rem] text-center w-[15%]"
+                >
+                  레슨
+                </TableHead>
+                <TableHead scope="col" className="px-4 py-3.5 w-[60px]" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {courses.items.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={5}
+                    className="p-12 text-center text-muted-foreground font-semibold"
                   >
-                    강의명
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3.5 text-fg-muted font-bold text-[0.8125rem] text-center w-[20%]"
+                    검색 결과가 없습니다.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                courses.items.map((course) => (
+                  <TableRow
+                    key={course.id}
+                    className="group transition-colors hover:bg-fg-default/5 border-b border-border/50 last:border-b-0"
                   >
-                    카테고리
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3.5 text-fg-muted font-bold text-[0.8125rem] text-center w-[15%]"
-                  >
-                    유닛
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-4 py-3.5 text-fg-muted font-bold text-[0.8125rem] text-center w-[15%]"
-                  >
-                    레슨
-                  </th>
-                  <th scope="col" className="px-4 py-3.5 w-[60px]" />
-                </tr>
-              </thead>
-              <tbody>
-                {courses.items.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={5}
-                      className="p-12 text-center text-fg-muted font-semibold"
-                    >
-                      검색 결과가 없습니다.
-                    </td>
-                  </tr>
-                ) : (
-                  courses.items.map((course) => (
-                    <tr
-                      key={course.id}
-                      className="group transition-colors hover:bg-fg-default/5 border-b border-border-subtle last:border-b-0"
-                    >
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-border-subtle bg-bg-canvas">
-                            <Image
-                              alt=""
-                              fill
-                              sizes="36px"
-                              src={createAdminCourseImageUrl(course.visualKey)}
-                              className="object-cover"
-                            />
-                          </div>
-                          <div className="grid min-w-0">
-                            <Link
-                              className="font-bold text-fg-default hover:underline text-sm"
-                              href={`/courses/${course.id}`}
-                            >
-                              {course.title}
-                            </Link>
-                          </div>
+                    <TableCell className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-border/50 bg-background">
+                          <Image
+                            alt=""
+                            fill
+                            sizes="36px"
+                            src={createAdminCourseImageUrl(course.visualKey)}
+                            className="object-cover"
+                          />
                         </div>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        {course.category && (
-                          <span className="inline-block border border-border-subtle rounded-full px-3 py-0.5 font-bold text-[0.75rem] text-fg-default bg-transparent">
-                            {course.category}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <span className="inline-flex items-center gap-1.5 text-fg-muted font-bold text-[0.875rem]">
-                          <LayersIcon size={13} className="text-fg-muted" />{" "}
-                          {course.unitCount}
+                        <div className="grid min-w-0">
+                          <Link
+                            className="font-bold text-foreground hover:underline text-sm"
+                            href={`/courses/${course.id}`}
+                          >
+                            {course.title}
+                          </Link>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-center">
+                      {course.category && (
+                        <span className="inline-block border border-border/50 rounded-full px-3 py-0.5 font-bold text-[0.75rem] text-foreground bg-transparent">
+                          {course.category}
                         </span>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <span className="inline-flex items-center gap-1.5 text-fg-muted font-bold text-[0.875rem]">
-                          <BookOpenIcon size={13} className="text-fg-muted" />{" "}
-                          {course.lessonCount}
-                        </span>
-                      </td>
-                      <td className="px-4 py-4 text-right">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          disabled={
-                            course.status === contentStatuses.archived ||
-                            isPending
-                          }
-                          onClick={() => setArchiveTarget(course)}
-                          type="button"
-                          className="h-8 w-8 rounded-xl text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                          aria-label="보관"
-                        >
-                          <ArchiveIcon aria-hidden="true" size={15} />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </DataTable>
-          </DataTableContainer>
+                      )}
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-center">
+                      <span className="inline-flex items-center gap-1.5 text-muted-foreground font-bold text-[0.875rem]">
+                        <LayersIcon
+                          size={13}
+                          className="text-muted-foreground"
+                        />{" "}
+                        {course.unitCount}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-center">
+                      <span className="inline-flex items-center gap-1.5 text-muted-foreground font-bold text-[0.875rem]">
+                        <BookOpenIcon
+                          size={13}
+                          className="text-muted-foreground"
+                        />{" "}
+                        {course.lessonCount}
+                      </span>
+                    </TableCell>
+                    <TableCell className="px-4 py-4 text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        disabled={
+                          course.status === contentStatuses.archived ||
+                          isPending
+                        }
+                        onClick={() => setArchiveTarget(course)}
+                        type="button"
+                        className="h-8 w-8 rounded-xl text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label="보관"
+                      >
+                        <ArchiveIcon aria-hidden="true" size={15} />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </div>
 
         {/* 테이블 하단 페이징 영역 */}
         {courses.items.length > 0 && (
           <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
             {/* 페이지 크기 선택 */}
-            <div className="flex items-center gap-2 text-fg-muted font-semibold text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground font-semibold text-sm">
               <span>페이지당</span>
               <FilterToolbarField className="gap-0">
                 <FilterToolbarLabel className="sr-only">
@@ -339,7 +356,7 @@ export function AdminCoursesPage({
                     formRef.current?.requestSubmit()
                   }}
                 >
-                  <SelectTrigger className="bg-transparent rounded-xl border border-border-subtle cursor-pointer text-sm font-semibold flex items-center px-2.5 py-1.5 h-8 hover:border-fg-muted transition-colors w-[80px]">
+                  <SelectTrigger className="bg-transparent rounded-xl border border-border/50 cursor-pointer text-sm font-semibold flex items-center px-2.5 py-1.5 h-8 hover:border-fg-muted transition-colors w-[80px]">
                     <SelectValue placeholder="20개" />
                   </SelectTrigger>
                   <SelectContent>
@@ -357,7 +374,7 @@ export function AdminCoursesPage({
                 <Link
                   href={createPageLink(1)}
                   aria-label="첫 페이지"
-                  className="h-8 w-8 p-1.5 rounded-xl text-fg-muted border border-transparent hover:border-border-subtle hover:bg-fg-default/5 transition-colors flex items-center justify-center"
+                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground border border-transparent hover:border-border/50 hover:bg-fg-default/5 transition-colors flex items-center justify-center"
                 >
                   <ChevronsLeftIcon size={16} />
                 </Link>
@@ -365,7 +382,7 @@ export function AdminCoursesPage({
                 <button
                   type="button"
                   disabled
-                  className="h-8 w-8 p-1.5 rounded-xl text-fg-muted/30 border border-transparent flex items-center justify-center cursor-not-allowed"
+                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground/30 border border-transparent flex items-center justify-center cursor-not-allowed"
                 >
                   <ChevronsLeftIcon size={16} />
                 </button>
@@ -374,7 +391,7 @@ export function AdminCoursesPage({
                 <Link
                   href={createPageLink(courses.pagination.page - 1)}
                   aria-label="이전 페이지"
-                  className="h-8 w-8 p-1.5 rounded-xl text-fg-muted border border-transparent hover:border-border-subtle hover:bg-fg-default/5 transition-colors flex items-center justify-center"
+                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground border border-transparent hover:border-border/50 hover:bg-fg-default/5 transition-colors flex items-center justify-center"
                 >
                   <ChevronLeftIcon size={16} />
                 </Link>
@@ -382,19 +399,19 @@ export function AdminCoursesPage({
                 <button
                   type="button"
                   disabled
-                  className="h-8 w-8 p-1.5 rounded-xl text-fg-muted/30 border border-transparent flex items-center justify-center cursor-not-allowed"
+                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground/30 border border-transparent flex items-center justify-center cursor-not-allowed"
                 >
                   <ChevronLeftIcon size={16} />
                 </button>
               )}
-              <span className="px-3 font-bold text-fg-default text-sm">
+              <span className="px-3 font-bold text-foreground text-sm">
                 {courses.pagination.page} / {courses.pagination.totalPages}
               </span>
               {courses.pagination.page < courses.pagination.totalPages ? (
                 <Link
                   href={createPageLink(courses.pagination.page + 1)}
                   aria-label="다음 페이지"
-                  className="h-8 w-8 p-1.5 rounded-xl text-fg-muted border border-transparent hover:border-border-subtle hover:bg-fg-default/5 transition-colors flex items-center justify-center"
+                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground border border-transparent hover:border-border/50 hover:bg-fg-default/5 transition-colors flex items-center justify-center"
                 >
                   <ChevronRightIcon size={16} />
                 </Link>
@@ -402,7 +419,7 @@ export function AdminCoursesPage({
                 <button
                   type="button"
                   disabled
-                  className="h-8 w-8 p-1.5 rounded-xl text-fg-muted/30 border border-transparent flex items-center justify-center cursor-not-allowed"
+                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground/30 border border-transparent flex items-center justify-center cursor-not-allowed"
                 >
                   <ChevronRightIcon size={16} />
                 </button>
@@ -411,7 +428,7 @@ export function AdminCoursesPage({
                 <Link
                   href={createPageLink(courses.pagination.totalPages)}
                   aria-label="마지막 페이지"
-                  className="h-8 w-8 p-1.5 rounded-xl text-fg-muted border border-transparent hover:border-border-subtle hover:bg-fg-default/5 transition-colors flex items-center justify-center"
+                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground border border-transparent hover:border-border/50 hover:bg-fg-default/5 transition-colors flex items-center justify-center"
                 >
                   <ChevronsRightIcon size={16} />
                 </Link>
@@ -419,7 +436,7 @@ export function AdminCoursesPage({
                 <button
                   type="button"
                   disabled
-                  className="h-8 w-8 p-1.5 rounded-xl text-fg-muted/30 border border-transparent flex items-center justify-center cursor-not-allowed"
+                  className="h-8 w-8 p-1.5 rounded-xl text-muted-foreground/30 border border-transparent flex items-center justify-center cursor-not-allowed"
                 >
                   <ChevronsRightIcon size={16} />
                 </button>

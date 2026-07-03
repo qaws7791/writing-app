@@ -26,9 +26,14 @@ import {
 } from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
-  DataTable,
-  DataTableContainer,
-} from "@workspace/ui/components/ui/data-table"
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  TableCaption,
+} from "@workspace/ui/components/ui/table"
 import {
   FilterToolbar,
   FilterToolbarField,
@@ -129,86 +134,84 @@ export function AdminUsersPage({
           title="사용자 목록"
           description={`총 ${usersResult.value.pagination.totalItems}명 · ${usersResult.value.pagination.page}/${usersResult.value.pagination.totalPages} 페이지`}
         />
-        <DataTableContainer>
-          <DataTable>
-            <caption className="sr-only">사용자 목록</caption>
-            <thead>
-              <tr>
-                <th scope="col">사용자</th>
-                <th scope="col">상태</th>
-                <th scope="col">최근 접속</th>
-                <th scope="col">완료</th>
-                <th scope="col">연속</th>
-                <th scope="col">작업</th>
-              </tr>
-            </thead>
-            <tbody>
-              {usersResult.value.items.map((user) => (
-                <tr key={user.id}>
-                  <td>
-                    <Link
-                      className="font-black text-fg-default hover:underline"
-                      href={`/users/${user.id}`}
-                    >
-                      {user.name}
-                    </Link>
-                    <span className="block text-caption font-semibold text-fg-muted">
-                      {user.email}
-                    </span>
-                  </td>
-                  <td>
-                    <StatusBadge status={user.status} />
-                  </td>
-                  <td>{user.lastActive ?? "없음"}</td>
-                  <td>{user.lessonsDone}개 완료</td>
-                  <td>{user.streak}일</td>
-                  <td>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        disabled={
-                          isPending ||
-                          user.status === learnerAccountStatuses.suspended
-                        }
-                        onClick={() => {
-                          startTransition(async () => {
-                            const result = await updateUserStatus({
-                              status: learnerAccountStatuses.suspended,
-                              userId: user.id,
-                            })
-
-                            setMessage(
-                              result.status === "ok"
-                                ? {
-                                    message: "사용자 상태를 변경했습니다.",
-                                    tone: "success",
-                                  }
-                                : {
-                                    message: result.error.message,
-                                    tone: "danger",
-                                  }
-                            )
+        <Table>
+          <TableCaption className="sr-only">사용자 목록</TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead scope="col">사용자</TableHead>
+              <TableHead scope="col">상태</TableHead>
+              <TableHead scope="col">최근 접속</TableHead>
+              <TableHead scope="col">완료</TableHead>
+              <TableHead scope="col">연속</TableHead>
+              <TableHead scope="col">작업</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {usersResult.value.items.map((user) => (
+              <TableRow key={user.id}>
+                <TableCell>
+                  <Link
+                    className="font-black text-foreground hover:underline"
+                    href={`/users/${user.id}`}
+                  >
+                    {user.name}
+                  </Link>
+                  <span className="block text-caption font-semibold text-muted-foreground">
+                    {user.email}
+                  </span>
+                </TableCell>
+                <TableCell>
+                  <StatusBadge status={user.status} />
+                </TableCell>
+                <TableCell>{user.lastActive ?? "없음"}</TableCell>
+                <TableCell>{user.lessonsDone}개 완료</TableCell>
+                <TableCell>{user.streak}일</TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      disabled={
+                        isPending ||
+                        user.status === learnerAccountStatuses.suspended
+                      }
+                      onClick={() => {
+                        startTransition(async () => {
+                          const result = await updateUserStatus({
+                            status: learnerAccountStatuses.suspended,
+                            userId: user.id,
                           })
-                        }}
-                        type="button"
-                      >
-                        정지
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        disabled={isPending}
-                        onClick={() => setDeleteTarget(user)}
-                        type="button"
-                      >
-                        삭제 요청
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </DataTable>
-        </DataTableContainer>
+
+                          setMessage(
+                            result.status === "ok"
+                              ? {
+                                  message: "사용자 상태를 변경했습니다.",
+                                  tone: "success",
+                                }
+                              : {
+                                  message: result.error.message,
+                                  tone: "danger",
+                                }
+                          )
+                        })
+                      }}
+                      type="button"
+                    >
+                      정지
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      disabled={isPending}
+                      onClick={() => setDeleteTarget(user)}
+                      type="button"
+                    >
+                      삭제 요청
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </Surface>
       <AlertDialog
         open={deleteTarget !== null}

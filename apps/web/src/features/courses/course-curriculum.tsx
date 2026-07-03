@@ -82,8 +82,8 @@ function CurriculumUnit({
             className={cn(
               "w-10 h-10 rounded-full flex justify-center items-center font-black shrink-0",
               unitDone
-                ? "bg-success-bg text-success-fg"
-                : "bg-bg-surface-hover text-fg-default"
+                ? "bg-success text-success-foreground"
+                : "bg-surface-hover text-foreground"
             )}
           >
             {unitDone ? (
@@ -94,7 +94,7 @@ function CurriculumUnit({
           </div>
           <div>
             <div className="text-title-md font-bold">{unit.title}</div>
-            <div className="mt-1 text-label-sm font-medium text-fg-muted">
+            <div className="mt-1 text-label-sm font-medium text-muted-foreground">
               {unit.lessons.length}개 레슨
             </div>
           </div>
@@ -126,7 +126,7 @@ function CurriculumLesson({
   const locked = status === "locked"
   const className = cn(
     "flex items-center gap-3 py-3 pl-6 -mr-2 pr-2 rounded-2xl transition-colors",
-    locked ? "cursor-not-allowed" : "hover:bg-bg-surface"
+    locked ? "cursor-not-allowed" : "hover:bg-muted/10"
   )
   const content = (
     <>
@@ -135,10 +135,10 @@ function CurriculumLesson({
           className={cn(
             "w-6 h-6 rounded-full flex justify-center items-center",
             done
-              ? "bg-success-bg text-success-fg"
+              ? "bg-success text-success-foreground"
               : locked
-                ? "bg-bg-surface-hover text-fg-disabled"
-                : "bg-bg-surface-hover text-fg-default"
+                ? "bg-surface-hover text-muted-foreground"
+                : "bg-surface-hover text-foreground"
           )}
         >
           {done ? (
@@ -154,12 +154,12 @@ function CurriculumLesson({
         <div
           className={cn(
             "text-body-sm font-bold",
-            locked ? "text-fg-muted" : "text-fg-default"
+            locked ? "text-muted-foreground" : "text-foreground"
           )}
         >
           {lesson.title}
         </div>
-        <div className="text-label-sm font-medium text-fg-muted">
+        <div className="text-label-sm font-medium text-muted-foreground">
           {lesson.estimatedMinutes}분
         </div>
       </div>

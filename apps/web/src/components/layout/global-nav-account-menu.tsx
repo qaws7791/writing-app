@@ -6,29 +6,25 @@ import { globalNavAccountItems } from "@/components/layout/global-nav-routes"
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuLinkItem,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@workspace/ui/components/ui/dropdown-menu"
 
 export function GlobalNavAccountMenu() {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        className="bg-action-selected-bg text-action-selected-fg"
-        type="button"
-      >
+      <DropdownMenuTrigger className="bg-accent-soft text-accent" type="button">
         ✍️
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         {globalNavAccountItems.map((item) => (
-          <DropdownMenuLinkItem
-            href={item.href}
+          <DropdownMenuItem
             key={item.label}
             render={<Link href={item.href} />}
-            tone={item.tone === "danger" ? "danger" : "neutral"}
+            variant={item.tone === "danger" ? "destructive" : "default"}
           >
             {item.label}
-          </DropdownMenuLinkItem>
+          </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>

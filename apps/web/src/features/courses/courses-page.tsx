@@ -24,7 +24,6 @@ import {
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -41,6 +40,12 @@ export type CourseListFilters = {
   readonly query: string
   readonly sort: "latest" | "studyTime" | "title"
 }
+
+const sortOptions = [
+  { label: "최신순", value: "latest" },
+  { label: "제목순", value: "title" },
+  { label: "학습시간순", value: "studyTime" },
+] as const
 
 export function CoursesPage({ courses, filters }: CoursesPageProps) {
   const router = useRouter()
@@ -125,7 +130,7 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
               <label className="sr-only" htmlFor="course-query">
                 검색
               </label>
-              <InputGroup className="h-11 rounded-full bg-surface border border-border [--radius:9999px] px-1">
+              <InputGroup className="h-11 rounded-full bg-surface px-1">
                 <InputGroupInput
                   id="course-query"
                   onChange={(e) => setQuery(e.target.value)}
@@ -163,6 +168,7 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
                 정렬
               </label>
               <Select
+                items={sortOptions}
                 value={filters.sort}
                 onValueChange={(value) => {
                   updateUrl({
@@ -170,18 +176,15 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
                   })
                 }}
               >
-                <SelectTrigger
-                  id="course-sort"
-                  className="h-11 px-5 rounded-full bg-surface border border-border text-body-sm font-bold text-foreground transition-shadow focus-visible:ring-2 focus-visible:ring-focus/20 shadow-none hover:bg-surface cursor-pointer shrink-0"
-                >
+                <SelectTrigger id="course-sort">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectGroup>
-                    <SelectItem value="latest">최신순</SelectItem>
-                    <SelectItem value="title">제목순</SelectItem>
-                    <SelectItem value="studyTime">학습시간순</SelectItem>
-                  </SelectGroup>
+                  {sortOptions.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

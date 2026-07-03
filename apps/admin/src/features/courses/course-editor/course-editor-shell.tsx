@@ -4,7 +4,11 @@ import { LessonWorkspace } from "@/features/courses/course-editor/workspace/less
 import { StepWorkspace } from "@/features/courses/course-editor/workspace/step-workspace"
 import type { AdminCourseDetail } from "@/lib/api/admin-api"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
-import { EmptyState } from "@workspace/ui/components/ui/empty-state"
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+} from "@workspace/ui/components/ui/empty"
 import { Input } from "@workspace/ui/components/ui/input"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
 import { SectionHeader } from "@workspace/ui/components/ui/section-header"
@@ -63,7 +67,11 @@ export function CourseEditorShell({
           </aside>
           <main className="grid content-start gap-4">
             {firstLesson === null ? (
-              <EmptyState role="status" title="레슨이 없습니다." />
+              <Empty role="status">
+                <EmptyHeader>
+                  <EmptyTitle>레슨이 없습니다.</EmptyTitle>
+                </EmptyHeader>
+              </Empty>
             ) : (
               <>
                 <LessonWorkspace lesson={firstLesson} />

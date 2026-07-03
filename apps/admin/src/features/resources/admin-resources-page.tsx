@@ -28,7 +28,11 @@ import {
   AlertDialogTitle,
 } from "@workspace/ui/components/ui/alert-dialog"
 import { Button } from "@workspace/ui/components/ui/button"
-import { EmptyState } from "@workspace/ui/components/ui/empty-state"
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+} from "@workspace/ui/components/ui/empty"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import {
   FilterToolbar,
@@ -168,26 +172,30 @@ export function AdminResourcesPage({
           description={`총 ${documents.pagination.totalItems}개 · ${documents.pagination.page}/${documents.pagination.totalPages} 페이지`}
         />
         {documents.items.length === 0 ? (
-          <EmptyState role="status" title="조건에 맞는 자료가 없습니다." />
+          <Empty role="status">
+            <EmptyHeader>
+              <EmptyTitle>조건에 맞는 자료가 없습니다.</EmptyTitle>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <div className="grid gap-3">
             {documents.items.map((document) => (
               <Link
-                className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3.5 rounded-card border border-border-subtle bg-bg-canvas p-3.5 transition-colors hover:border-border-strong hover:bg-bg-surface-hover max-[860px]:grid-cols-[44px_minmax(0,1fr)]"
+                className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3.5 rounded-card border border-border/50 bg-background p-3.5 transition-colors hover:border-foreground/20 hover:bg-surface-hover max-[860px]:grid-cols-[44px_minmax(0,1fr)]"
                 href={`/resources/${document.id}`}
                 key={document.id}
               >
-                <span className="grid size-11 place-items-center rounded-card bg-bg-surface text-fg-muted">
+                <span className="grid size-11 place-items-center rounded-card bg-surface text-muted-foreground">
                   <FileTextIcon aria-hidden="true" size={18} />
                 </span>
                 <span className="grid min-w-0 gap-1">
-                  <strong className="text-title-md font-black text-fg-default">
+                  <strong className="text-title-md font-black text-foreground">
                     {document.title}
                   </strong>
-                  <small className="overflow-hidden text-ellipsis whitespace-nowrap text-label-sm font-semibold text-fg-muted">
+                  <small className="overflow-hidden text-ellipsis whitespace-nowrap text-label-sm font-semibold text-muted-foreground">
                     {document.author.name} · {formatDate(document.updatedAt)}
                   </small>
-                  <em className="overflow-hidden text-ellipsis whitespace-nowrap text-label-sm font-semibold not-italic text-fg-muted">
+                  <em className="overflow-hidden text-ellipsis whitespace-nowrap text-label-sm font-semibold not-italic text-muted-foreground">
                     {document.excerpt}
                   </em>
                 </span>

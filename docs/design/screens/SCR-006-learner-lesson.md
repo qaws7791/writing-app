@@ -23,7 +23,7 @@
 ## UI 기준
 
 - `AppShell`을 사용하지 않는 몰입형 전체 화면이다.
-- root는 `h-dvh min-h-screen overflow-hidden bg-bg-canvas text-fg-default`이다.
+- root는 `h-dvh min-h-screen overflow-hidden bg-background text-foreground`이다.
 - 상단 진행 헤더와 하단 CTA는 고정 영역으로 유지한다.
 - 중앙 콘텐츠만 스크롤된다.
 - 주요 CTA는 `Button`과 `StickyActionBar`를 사용한다.

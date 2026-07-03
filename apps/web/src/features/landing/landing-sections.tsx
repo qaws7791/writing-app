@@ -21,6 +21,7 @@ import {
 import { Pebbles, PreviewFrame } from "@/features/landing/landing-primitives"
 import { ArrowRightIcon } from "@workspace/ui/components/icons"
 import { Button } from "@workspace/ui/components/ui/button"
+import Image from "next/image"
 
 export function LandingNav({
   goRoot,
@@ -35,24 +36,24 @@ export function LandingNav({
     <nav
       className={
         navScrolled
-          ? "fixed inset-x-0 top-0 z-50 bg-bg-canvas/85 backdrop-blur-md"
-          : "fixed inset-x-0 top-0 z-50 bg-bg-canvas/0"
+          ? "fixed inset-x-0 top-0 z-50 bg-background/85 backdrop-blur-md"
+          : "fixed inset-x-0 top-0 z-50 bg-background/0"
       }
     >
       <div className="max-w-6xl mx-auto px-5 md:px-10 h-16 flex items-center justify-between">
         <button
-          className="flex items-center gap-2 text-fg-default btn-squish cursor-pointer outline-none"
+          className="flex items-center gap-2 text-foreground btn-squish cursor-pointer outline-none"
           onClick={goRoot}
           type="button"
         >
           <span
-            className="inline-block bg-action-selected-bg rounded-full"
+            className="inline-block bg-accent-soft rounded-full"
             style={{ width: 12, height: 12 }}
           />
           <span className="text-title-lg font-black">Kernel</span>
         </button>
 
-        <Button onClick={startLearning} size="sm" type="button">
+        <Button onClick={startLearning} type="button">
           시작하기
         </Button>
       </div>
@@ -90,9 +91,9 @@ export function Hero({
 
       <div className="relative z-10 w-full max-w-6xl mx-auto px-5 md:px-10 grid lg:grid-cols-2 gap-12 items-center">
         <div>
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-bg-surface px-4 py-2">
-            <SparklesIcon className="text-fg-default" size={15} />
-            <span className="text-label-md font-bold text-fg-muted">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2">
+            <SparklesIcon className="text-foreground" size={15} />
+            <span className="text-label-md font-bold text-muted-foreground">
               하루 5분, 새로운 학습 습관
             </span>
           </div>
@@ -104,15 +105,14 @@ export function Hero({
               <span className="relative inline-block">
                 <span className="relative z-10">학습</span>
                 <span
-                  className="absolute inset-x-0 bottom-1 bg-action-selected-bg rounded-full"
+                  className="absolute inset-x-0 bottom-1 bg-accent-soft rounded-full"
                   style={{ height: "0.4em", zIndex: 0, transform: "scaleX(1)" }}
                 />
               </span>
-              .
             </span>
           </h1>
 
-          <p className="mt-6 max-w-md text-body-lg text-fg-muted">
+          <p className="mt-6 max-w-md text-body-lg text-muted-foreground">
             Kernel은 복잡한 개념을 작은 조각으로 나눠, 매일 가볍게 쌓아 올리는
             학습 경험을 만듭니다. 어른의 호기심을 위한 학습.
           </p>
@@ -140,12 +140,15 @@ export function Hero({
           }}
         >
           <div
-            className="relative bg-bg-surface rounded-panel p-4 mx-auto"
+            className="relative bg-surface rounded-panel p-4 mx-auto"
             style={{ maxWidth: 420 }}
           >
-            <PreviewFrame
-              alt="Kernel 앱 홈 화면 미리보기"
-              aspectRatio="9 / 16"
+            <Image
+              unoptimized
+              src="https://placehold.co/400x600?text=hero"
+              alt="hero"
+              width={400}
+              height={600}
             />
           </div>
         </div>
@@ -189,7 +192,7 @@ export function Features() {
   return (
     <section className="py-24 max-w-6xl mx-auto px-5 md:px-10">
       <Reveal className="max-w-xl mb-14" y={20}>
-        <p className="mb-3 text-label-md font-bold uppercase text-fg-muted">
+        <p className="mb-3 text-label-md font-bold uppercase text-muted-foreground">
           왜 Kernel인가
         </p>
         <h2 className="text-heading-lg font-black">
@@ -205,7 +208,7 @@ export function Features() {
 
           return (
             <Reveal
-              className="bg-bg-surface rounded-panel p-8"
+              className="bg-surface rounded-panel p-8"
               delay={index * 120}
               key={feature.title}
               y={40}
@@ -218,12 +221,14 @@ export function Features() {
                   width: 56,
                 }}
               >
-                <Icon className="text-action-selected-fg" size={26} />
+                <Icon className="text-accent" size={26} />
               </div>
               <h3 className="mb-3 text-heading-sm font-black">
                 {feature.title}
               </h3>
-              <p className="text-body-lg text-fg-muted">{feature.body}</p>
+              <p className="text-body-lg text-muted-foreground">
+                {feature.body}
+              </p>
             </Reveal>
           )
         })}
@@ -234,7 +239,7 @@ export function Features() {
 
 export function HowItWorks() {
   return (
-    <section className="py-24 bg-bg-surface">
+    <section className="py-24 bg-surface">
       <div className="max-w-3xl mx-auto px-5 md:px-10">
         <Reveal as="h2" className="mb-16 text-heading-lg font-black" y={20}>
           이렇게 시작해요
@@ -242,11 +247,11 @@ export function HowItWorks() {
 
         <div className="relative">
           <div
-            className="absolute top-2 bottom-2 bg-bg-canvas rounded-full"
+            className="absolute top-2 bottom-2 bg-background rounded-full"
             style={{ left: 27, width: 4 }}
           >
             <div
-              className="absolute inset-x-0 top-0 bg-bg-inverse rounded-full origin-top"
+              className="absolute inset-x-0 top-0 bg-foreground rounded-full origin-top"
               style={{ height: "100%", transform: "scaleY(0)" }}
             />
           </div>
@@ -259,14 +264,16 @@ export function HowItWorks() {
                 key={step.n}
                 x={24}
               >
-                <div className="relative z-10 inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-bg-inverse text-body-lg font-black text-fg-inverse">
+                <div className="relative z-10 inline-flex size-14 shrink-0 items-center justify-center rounded-full bg-foreground text-body-lg font-black text-background">
                   {step.n}
                 </div>
                 <div className="pt-2">
                   <h3 className="mb-2 text-heading-sm font-black">
                     {step.title}
                   </h3>
-                  <p className="text-body-lg text-fg-muted">{step.body}</p>
+                  <p className="text-body-lg text-muted-foreground">
+                    {step.body}
+                  </p>
                 </div>
               </Reveal>
             ))}
@@ -309,13 +316,11 @@ function StatCard({
       className="rounded-panel p-8 text-center"
       style={{ backgroundColor: stat.bg }}
     >
-      <p className="text-display-md font-black text-action-selected-fg">
+      <p className="text-display-md font-black text-accent">
         {value.toLocaleString()}
         {stat.suffix}
       </p>
-      <p className="mt-3 text-body-md font-bold text-action-selected-fg">
-        {stat.label}
-      </p>
+      <p className="mt-3 text-body-md font-bold text-accent">{stat.label}</p>
     </div>
   )
 }
@@ -332,7 +337,7 @@ export function Showcase() {
       ref={ref}
     >
       <Reveal className="max-w-xl mb-14" y={20}>
-        <p className="mb-3 text-label-md font-bold uppercase text-fg-muted">
+        <p className="mb-3 text-label-md font-bold uppercase text-muted-foreground">
           미리보기
         </p>
         <h2 className="text-heading-lg font-black">손에 익는 학습 경험</h2>
@@ -340,13 +345,13 @@ export function Showcase() {
 
       <div className="grid md:grid-cols-2 gap-6">
         <div
-          className="bg-bg-surface rounded-panel p-5"
+          className="bg-surface rounded-panel p-5"
           style={{ transform: `translateY(${firstPreviewY}px)` }}
         >
           <PreviewFrame alt="Kernel 레슨 진행 화면" aspectRatio="4 / 3" />
         </div>
         <div
-          className="bg-bg-inverse rounded-panel p-5 md:mt-16"
+          className="bg-foreground rounded-panel p-5 md:mt-16"
           style={{ transform: `translateY(${secondPreviewY}px)` }}
         >
           <PreviewFrame alt="Kernel 코스 대시보드 화면" aspectRatio="4 / 3" />
@@ -364,17 +369,17 @@ export function FinalCta({
   return (
     <section className="py-20 max-w-6xl mx-auto px-5 md:px-10">
       <Reveal
-        className="relative overflow-hidden bg-bg-inverse rounded-panel px-8 py-20 md:py-28 text-center"
+        className="relative overflow-hidden bg-foreground rounded-panel px-8 py-20 md:py-28 text-center"
         y={40}
       >
         <Pebbles items={finalPebbles} />
         <div className="relative z-10">
-          <h2 className="text-display-md font-black text-fg-inverse">
+          <h2 className="text-display-md font-black text-background">
             오늘의 첫 조각을
             <br />
             맞춰볼까요?
           </h2>
-          <p className="mx-auto mt-5 max-w-md text-body-lg text-fg-inverse/70">
+          <p className="mx-auto mt-5 max-w-md text-body-lg text-background/70">
             가입은 1분이면 충분해요. 지금 바로 첫 레슨을 시작해 보세요.
           </p>
           <Button
@@ -394,18 +399,18 @@ export function FinalCta({
 
 export function Footer() {
   return (
-    <footer className="bg-bg-surface">
+    <footer className="bg-surface">
       <div className="max-w-6xl mx-auto px-5 md:px-10 py-16">
         <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span
-                className="inline-block bg-action-selected-bg rounded-full"
+                className="inline-block bg-accent-soft rounded-full"
                 style={{ width: 12, height: 12 }}
               />
               <span className="text-title-lg font-black">Kernel</span>
             </div>
-            <p className="max-w-xs text-body-sm text-fg-muted">
+            <p className="max-w-xs text-body-sm text-muted-foreground">
               어른의 호기심을 위한 학습. 매일 한 조각씩, 단단하게.
             </p>
           </div>
@@ -418,7 +423,7 @@ export function Footer() {
                 {column.items.map((item) => (
                   <li key={item}>
                     <a
-                      className="text-body-sm text-fg-muted transition-colors hover:text-fg-default"
+                      className="text-body-sm text-muted-foreground transition-colors hover:text-foreground"
                       href="#"
                     >
                       {item}
@@ -429,11 +434,11 @@ export function Footer() {
             </div>
           ))}
         </div>
-        <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-border-subtle pt-8 sm:flex-row">
-          <p className="text-label-md text-fg-muted">
+        <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-border/50 pt-8 sm:flex-row">
+          <p className="text-label-md text-muted-foreground">
             © 2026 Kernel. All rights reserved.
           </p>
-          <p className="text-label-md text-fg-muted">
+          <p className="text-label-md text-muted-foreground">
             Made with care, one kernel at a time.
           </p>
         </div>
