@@ -11,9 +11,11 @@ function ViewportFrame({
 }) {
   return (
     <section className="grid gap-2">
-      <span className="text-label-sm font-black text-fg-muted">{label}</span>
+      <span className="text-label-sm font-black text-muted-foreground">
+        {label}
+      </span>
       <div
-        className="overflow-hidden rounded-panel border border-border-subtle bg-bg-canvas"
+        className="overflow-hidden rounded-panel border border-border/50 bg-background"
         style={{ width }}
       >
         {children}

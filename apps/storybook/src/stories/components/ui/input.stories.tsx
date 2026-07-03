@@ -1,16 +1,18 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+﻿import type { Meta, StoryObj } from "@storybook/react-vite"
 import { expect, userEvent, within } from "storybook/test"
 
 import {
+  Button,
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
   Input,
+  Label,
 } from "@workspace/ui"
 
 const meta = {
-  title: "Components/Forms/Input",
+  title: "Components/UI/Input",
   component: Input,
   args: {
     placeholder: "제목을 입력하세요",
@@ -54,6 +56,45 @@ export const States: Story = {
         aria-label="invalid input"
         placeholder="오류"
       />
+    </div>
+  ),
+}
+
+export const File: Story = {
+  render: () => (
+    <div className="grid w-[min(32rem,calc(100vw-2rem))] gap-1.5">
+      <Label htmlFor="picture">사진 업로드</Label>
+      <Input id="picture" type="file" />
+    </div>
+  ),
+}
+
+export const WithLabel: Story = {
+  render: () => (
+    <div className="grid w-[min(32rem,calc(100vw-2rem))] gap-1.5">
+      <Label htmlFor="email-input">이메일</Label>
+      <Input type="email" id="email-input" placeholder="이메일 주소" />
+    </div>
+  ),
+}
+
+export const WithButton: Story = {
+  render: () => (
+    <div className="flex w-[min(32rem,calc(100vw-2rem))] items-center gap-2">
+      <Input type="email" placeholder="이메일 주소" />
+      <Button type="submit">구독</Button>
+    </div>
+  ),
+}
+
+export const WithText: Story = {
+  render: () => (
+    <div className="grid w-[min(32rem,calc(100vw-2rem))] gap-1.5">
+      <Label htmlFor="email-desc">이메일</Label>
+      <Input type="email" id="email-desc" placeholder="이메일 주소" />
+      <p className="text-sm text-muted-foreground">
+        이메일은 다른 사용자에게 공개되지 않습니다.
+      </p>
     </div>
   ),
 }

@@ -3,9 +3,17 @@ import { BookOpenIcon } from "@workspace/ui/components/icons"
 
 import {
   Button,
-  DataTable,
-  DataTableContainer,
-  EmptyState,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
   FilterToolbar,
   FilterToolbarField,
   FilterToolbarLabel,
@@ -66,24 +74,22 @@ export const Overview: Story = {
       </FilterToolbar>
       <Surface variant="panel">
         <SectionHeader title="코스 목록" description="총 3개 · 1/1 페이지" />
-        <DataTableContainer>
-          <DataTable>
-            <thead>
-              <tr>
-                <th scope="col">코스</th>
-                <th scope="col">카테고리</th>
-                <th scope="col">상태</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>문장의 중심 찾기</td>
-                <td>입문자를 위한 코스</td>
-                <td>active</td>
-              </tr>
-            </tbody>
-          </DataTable>
-        </DataTableContainer>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead scope="col">코스</TableHead>
+              <TableHead scope="col">카테고리</TableHead>
+              <TableHead scope="col">상태</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow>
+              <TableCell>문장의 중심 찾기</TableCell>
+              <TableCell>입문자를 위한 코스</TableCell>
+              <TableCell>active</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </Surface>
     </div>
   ),
@@ -91,10 +97,16 @@ export const Overview: Story = {
 
 export const EmptyResult: Story = {
   render: () => (
-    <EmptyState
-      title="표시할 항목이 없습니다"
-      description="검색어나 필터를 조정해 다시 확인하세요."
-      actions={<Button variant="outline">필터 초기화</Button>}
-    />
+    <Empty>
+      <EmptyHeader>
+        <EmptyTitle>표시할 항목이 없습니다</EmptyTitle>
+        <EmptyDescription>
+          검색어나 필터를 조정해 다시 확인하세요.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button variant="outline">필터 초기화</Button>
+      </EmptyContent>
+    </Empty>
   ),
 }

@@ -13,7 +13,7 @@ function TokenSwatch({
 }: TokenSwatchProps) {
   return (
     <div
-      className="grid min-h-36 content-between rounded-card border border-border-subtle p-5"
+      className="grid min-h-36 content-between rounded-card border border-border/50 p-5"
       style={{ background, color: foreground }}
     >
       <span className="text-label-sm font-black">{token}</span>

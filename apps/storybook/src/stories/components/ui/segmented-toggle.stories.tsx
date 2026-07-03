@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+﻿import type { Meta, StoryObj } from "@storybook/react-vite"
 import { expect, userEvent, within } from "storybook/test"
 
 import {
@@ -9,7 +9,7 @@ import {
 } from "@workspace/ui"
 
 const meta = {
-  title: "Components/Selection/Segmented Toggle",
+  title: "Components/UI/Segmented Toggle",
   parameters: {
     layout: "centered",
   },

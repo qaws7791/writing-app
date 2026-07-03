@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+﻿import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import {
   Avatar,
@@ -11,7 +11,7 @@ import {
 const badgeTones = ["neutral", "success", "danger", "info", "selected"] as const
 
 const meta = {
-  title: "Components/Data Display/Badge Avatar",
+  title: "Components/UI/Badge Avatar",
   parameters: {
     layout: "centered",
   },
@@ -43,7 +43,7 @@ export const Avatars: Story = {
       <Avatar size="sm">
         <AvatarFallback>ㄱㄱ</AvatarFallback>
       </Avatar>
-      <Avatar size="md">
+      <Avatar>
         <AvatarImage
           alt="글결 사용자"
           src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=160&q=80"
@@ -59,10 +59,10 @@ export const Avatars: Story = {
 
 export const SeparatorUsage: Story = {
   render: () => (
-    <div className="grid w-[min(28rem,calc(100vw-2rem))] gap-4 rounded-panel border border-border-subtle bg-bg-surface p-surface-padding-md">
+    <div className="grid w-[min(28rem,calc(100vw-2rem))] gap-4 rounded-panel border border-border/50 bg-surface p-surface-padding-md">
       <div>
         <h2 className="text-title-lg font-black">섹션 제목</h2>
-        <p className="text-body-sm font-semibold text-fg-muted">
+        <p className="text-body-sm font-semibold text-muted-foreground">
           장식 구분선은 role을 노출하지 않는다.
         </p>
       </div>

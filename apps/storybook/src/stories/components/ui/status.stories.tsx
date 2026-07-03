@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+﻿import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import {
   Alert,
@@ -14,7 +14,7 @@ import {
 const tones = ["neutral", "success", "danger", "info"] as const
 
 const meta = {
-  title: "Components/Feedback/Status",
+  title: "Components/UI/Status",
   parameters: {
     layout: "padded",
   },
@@ -56,7 +56,10 @@ export const Callouts: Story = {
 export const LoadingStates: Story = {
   render: () => (
     <div className="flex flex-wrap items-center gap-5">
-      <Spinner label="불러오는 중" />
+      <div className="flex items-center gap-2">
+        <Spinner aria-label="불러오는 중" />
+        <span className="text-body-sm font-medium">불러오는 중</span>
+      </div>
       <Button disabled>
         <Spinner aria-hidden="true" className="size-3" />
         저장 중

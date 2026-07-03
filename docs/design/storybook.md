@@ -19,7 +19,6 @@
 - Storybook 전용 helper block은 `apps/storybook/src/blocks`에 둔다.
 - Foundation story는 Color, Typography, Spacing, Motion 단위로 분리했다.
 - Components story는 Actions, Forms, Surfaces, Feedback, Data Display, Disclosure, Selection 범주로 확장했다.
-- `Components/Interactions/Web Patterns`는 `DropdownMenu`, `AlertDialog`, `StickyActionBar`, `RichText`, `ChoiceCard`의 web 이관용 public primitive와 interaction을 검증한다.
 - Patterns, Recipes, Quality 항목은 조합 예시와 검증 체크리스트를 제공한다.
 - 기존 `Components/Current UI` 갤러리는 `Migration/CurrentBaseline`으로 이동했다.
 
@@ -27,3 +26,16 @@
 
 - 새 public component를 추가할 때 동일한 범주의 story를 함께 추가한다.
 - `packages/ui`에 story 파일을 추가하지 않는다. Storybook 문서는 `apps/storybook/src/stories`에 둔다.
+
+## 완료된 작업 (2026-06-30)
+
+- CSF 3.0 포맷을 사용하여 핵심 UI 컴포넌트의 스토리북 스토리 보강 및 신규 생성 완료:
+  - **Input** (보강): [input.stories.tsx](file:///d:/Code/Github/writing-app/writing-app/apps/storybook/src/stories/components/forms/input.stories.tsx) (With Label, With Button, With Text, File 업로드 등 shadcn/ui 공식 문서 수준의 복합 예제 추가)
+  - **Textarea** (보강): [textarea.stories.tsx](file:///d:/Code/Github/writing-app/writing-app/apps/storybook/src/stories/components/forms/textarea.stories.tsx) (With Label, With Text, With Button 등 폼 연동 및 버튼 배치 복합 예제 추가)
+  - **Toggle** (신규 생성): [toggle.stories.tsx](file:///d:/Code/Github/writing-app/writing-app/apps/storybook/src/stories/components/selection/toggle.stories.tsx) (Default, Outline, Sizes, With Icon, Disabled, Controlled 토글 등 다양한 상태 예제 추가)
+  - **Toggle Group** (신규 생성): [toggle-group.stories.tsx](file:///d:/Code/Github/writing-app/writing-app/apps/storybook/src/stories/components/selection/toggle-group.stories.tsx) (Single/Multiple 선택, Outline 변형, Sizes, Spacing, 수직/수평 정렬, 비활성화 등 `@base-ui/react` 기반 속성 검증)
+  - **Avatar** (신규 생성): [avatar.stories.tsx](file:///d:/Code/Github/writing-app/writing-app/apps/storybook/src/stories/components/data-display/avatar.stories.tsx) (Default 이미지, Sizes, Fallback 텍스트, Badge, AvatarGroup 및 카운트 조합 예제 추가)
+  - **Card** (보강): [card.stories.tsx](file:///d:/Code/Github/writing-app/writing-app/apps/storybook/src/stories/components/surfaces/card.stories.tsx) (LoginForm 설정 카드, Card Grid 레이아웃 등의 복합 조합 예제 추가)
+  - **Table** (신규 생성): [table.stories.tsx](file:///d:/Code/Github/writing-app/writing-app/apps/storybook/src/stories/components/data-display/table.stories.tsx) (Default 송장 테이블, Zebra/Striped 스타일 등 복합 데이터 디스플레이 예제 추가)
+  - **Accordion** (보강): [accordion.stories.tsx](file:///d:/Code/Github/writing-app/writing-app/apps/storybook/src/stories/components/disclosure/accordion.stories.tsx) (비활성화 상태의 아이템 처리(Lock 아이콘), 아이콘이 추가된 FAQ 커스텀 레이아웃 추가)
+  - **Web Patterns 및 스크린샷 스크립트 정리** (2026-06-30): 불필요한 `web-patterns.stories.tsx` 스토리 및 더 이상 사용하지 않는 [screenshot.ts](file:///d:/Code/Github/writing-app/writing-app/scripts/screenshot.ts) 파일을 삭제하고 관련 문서/설정을 정리함.

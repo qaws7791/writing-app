@@ -60,14 +60,14 @@ export const Scale: Story = {
     <div className="grid max-w-5xl gap-4">
       {textTokens.map((item) => (
         <section
-          className="grid gap-3 rounded-panel border border-border-subtle bg-bg-surface p-surface-padding-md md:grid-cols-[12rem_1fr]"
+          className="grid gap-3 rounded-panel border border-border/50 bg-surface p-surface-padding-md md:grid-cols-[12rem_1fr]"
           key={item.token}
         >
           <div>
-            <p className="text-label-sm font-black text-fg-default">
+            <p className="text-label-sm font-black text-foreground">
               {item.token}
             </p>
-            <p className="text-caption font-medium text-fg-muted">
+            <p className="text-caption font-medium text-muted-foreground">
               {item.usage}
             </p>
           </div>
@@ -80,11 +80,11 @@ export const Scale: Story = {
 
 export const LongContent: Story = {
   render: () => (
-    <article className="grid max-w-3xl gap-5 rounded-panel border border-border-subtle bg-bg-surface p-surface-padding-lg">
+    <article className="grid max-w-3xl gap-5 rounded-panel border border-border/50 bg-surface p-surface-padding-lg">
       <h1 className="text-heading-lg font-black">
         길이가 긴 제목도 행간과 줄바꿈을 유지한다
       </h1>
-      <p className="text-body-md font-medium text-fg-muted">
+      <p className="text-body-md font-medium text-muted-foreground">
         디자인 시스템의 타이포그래피 토큰은 화면 크기에 따라 임의로 확대하지
         않고, 정해진 역할과 밀도 안에서 읽기 흐름을 유지한다.
       </p>

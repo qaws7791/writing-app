@@ -13,7 +13,7 @@ function ContrastPair({
 }: ContrastPairProps) {
   return (
     <div
-      className="grid gap-2 rounded-panel border border-border-subtle p-5"
+      className="grid gap-2 rounded-panel border border-border/50 p-5"
       style={{ background, color: foreground }}
     >
       <span className="text-label-sm font-black">{role}</span>

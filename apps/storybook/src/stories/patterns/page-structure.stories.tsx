@@ -3,9 +3,17 @@ import { BookOpenIcon } from "@workspace/ui/components/icons"
 
 import {
   Button,
-  DataTable,
-  DataTableContainer,
-  EmptyState,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
   PageHeader,
   SectionHeader,
   StatCard,
@@ -46,7 +54,7 @@ export const Headers: Story = {
             </Button>
           }
         />
-        <p className="text-body-sm font-semibold text-fg-muted">
+        <p className="text-body-sm font-semibold text-muted-foreground">
           SectionHeader는 패널이나 테이블 위에서 사용한다.
         </p>
       </Surface>
@@ -74,39 +82,43 @@ export const Tables: Story = {
   render: () => (
     <Surface variant="panel">
       <SectionHeader title="코스 목록" description="총 3개" />
-      <DataTableContainer>
-        <DataTable>
-          <thead>
-            <tr>
-              <th scope="col">코스</th>
-              <th scope="col">카테고리</th>
-              <th scope="col">상태</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>문장의 중심 찾기</td>
-              <td>입문</td>
-              <td>active</td>
-            </tr>
-            <tr>
-              <td>근거 문장 만들기</td>
-              <td>기초</td>
-              <td>draft</td>
-            </tr>
-          </tbody>
-        </DataTable>
-      </DataTableContainer>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead scope="col">코스</TableHead>
+            <TableHead scope="col">카테고리</TableHead>
+            <TableHead scope="col">상태</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow>
+            <TableCell>문장의 중심 찾기</TableCell>
+            <TableCell>입문</TableCell>
+            <TableCell>active</TableCell>
+          </TableRow>
+          <TableRow>
+            <TableCell>근거 문장 만들기</TableCell>
+            <TableCell>기초</TableCell>
+            <TableCell>draft</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     </Surface>
   ),
 }
 
 export const EmptyResults: Story = {
   render: () => (
-    <EmptyState
-      title="표시할 항목이 없습니다"
-      description="검색어나 필터를 조정해 다시 확인하세요."
-      actions={<Button variant="outline">필터 초기화</Button>}
-    />
+    <Empty>
+      <EmptyHeader>
+        <EmptyTitle>표시할 항목이 없습니다</EmptyTitle>
+        <EmptyDescription>
+          검색어나 필터를 조정해 다시 확인하세요.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button variant="outline">필터 초기화</Button>
+      </EmptyContent>
+    </Empty>
   ),
 }

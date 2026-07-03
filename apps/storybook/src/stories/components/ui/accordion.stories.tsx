@@ -1,5 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+﻿import type { Meta, StoryObj } from "@storybook/react-vite"
 import { expect, userEvent, within } from "storybook/test"
+import { Lock, HelpCircle, BookOpen } from "lucide-react"
 
 import {
   Accordion,
@@ -9,7 +10,7 @@ import {
 } from "@workspace/ui"
 
 const meta = {
-  title: "Components/Disclosure/Accordion",
+  title: "Components/UI/Accordion",
   parameters: {
     layout: "padded",
   },
@@ -54,6 +55,60 @@ export const Multiple: Story = {
 
         <AccordionContent>
           독자가 납득할 수 있는 사례를 배치한다.
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  ),
+}
+
+export const WithDisabledItem: Story = {
+  render: () => (
+    <Accordion className="max-w-2xl" defaultValue={["lesson-1"]}>
+      <AccordionItem value="lesson-1">
+        <AccordionTrigger>1강. 문장의 중심 찾기</AccordionTrigger>
+        <AccordionContent>
+          핵심 문장과 보조 문장을 구분하고 문단 흐름을 정리한다.
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="lesson-2" disabled>
+        <AccordionTrigger>
+          <span className="flex items-center gap-2">
+            2강. 근거 쌓기 (비활성화됨)
+            <Lock className="size-3.5 text-muted-foreground-foreground" />
+          </span>
+        </AccordionTrigger>
+        <AccordionContent>
+          주장과 근거를 연결해 설득력 있는 단락을 구성한다.
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  ),
+}
+
+export const CustomLayout: Story = {
+  render: () => (
+    <Accordion className="max-w-2xl">
+      <AccordionItem value="faq-1">
+        <AccordionTrigger className="hover:no-underline">
+          <span className="flex items-center gap-2">
+            <HelpCircle className="size-4 text-primary" />
+            환불 규정은 어떻게 되나요?
+          </span>
+        </AccordionTrigger>
+        <AccordionContent>
+          수강 시작 후 7일 이내에 진도율 10% 미만인 경우 100% 환불이 가능합니다.
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="faq-2">
+        <AccordionTrigger className="hover:no-underline">
+          <span className="flex items-center gap-2">
+            <BookOpen className="size-4 text-primary" />
+            수강 기간은 얼마 동안 유지되나요?
+          </span>
+        </AccordionTrigger>
+        <AccordionContent>
+          기본 수강 기간은 90일이며, 이후 30일 단위로 무료 연장 신청을 하실 수
+          있습니다.
         </AccordionContent>
       </AccordionItem>
     </Accordion>

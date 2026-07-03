@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+﻿import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import {
   Button,
@@ -21,7 +21,7 @@ import {
 import { KeyboardTable } from "../../../blocks/keyboard-table"
 
 const meta = {
-  title: "Components/Forms/Field",
+  title: "Components/UI/Field",
   parameters: {
     layout: "padded",
   },
@@ -71,7 +71,7 @@ export const States: Story = {
 
 export const Groups: Story = {
   render: () => (
-    <FieldSet className="max-w-2xl rounded-panel border border-border-subtle p-surface-padding-md bg-bg-elevated">
+    <FieldSet className="max-w-2xl rounded-panel border border-border/50 p-surface-padding-md bg-bg-elevated">
       <div>
         <FieldLegend>코스 정보</FieldLegend>
         <FieldDescription>

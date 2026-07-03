@@ -105,14 +105,14 @@ export const Colors: Story = {
     <div className="grid gap-5">
       <div>
         <h2 className="text-heading-lg font-black">색상 토큰</h2>
-        <p className="mt-2 text-body-md font-medium text-fg-muted">
+        <p className="mt-2 text-body-md font-medium text-muted-foreground">
           fill과 foreground를 분리한 semantic token이다.
         </p>
       </div>
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         {colorTokens.map((color) => (
           <div
-            className="grid min-h-36 content-between rounded-card border border-border-subtle p-5"
+            className="grid min-h-36 content-between rounded-card border border-border/50 p-5"
             key={color.token}
             style={{
               background: color.background,
@@ -132,11 +132,10 @@ export const Typography: Story = {
   render: () => (
     <div className="grid max-w-4xl gap-6">
       {typeTokens.map(({ className, text, token }) => (
-        <div
-          className="grid gap-2 border-b border-border-subtle pb-4"
-          key={token}
-        >
-          <span className="text-caption font-bold text-fg-subtle">{token}</span>
+        <div className="grid gap-2 border-b border-border/50 pb-4" key={token}>
+          <span className="text-caption font-bold text-muted-foreground/70">
+            {token}
+          </span>
           <p className={`${className} font-bold`}>{text}</p>
         </div>
       ))}

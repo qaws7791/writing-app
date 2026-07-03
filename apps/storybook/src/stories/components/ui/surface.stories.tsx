@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+﻿import type { Meta, StoryObj } from "@storybook/react-vite"
 
 import { Badge, Button, Surface } from "@workspace/ui"
 
@@ -6,7 +6,7 @@ const variants = ["default", "elevated", "panel"] as const
 const sizes = ["none", "sm", "md", "lg"] as const
 
 const meta = {
-  title: "Components/Surfaces/Surface",
+  title: "Components/UI/Surface",
   component: Surface,
   parameters: {
     layout: "padded",
@@ -27,11 +27,11 @@ export const Variants: Story = {
         >
           <div>
             <h2 className="text-title-lg font-black">{variant}</h2>
-            <p className="text-body-sm font-semibold text-fg-muted">
+            <p className="text-body-sm font-semibold text-muted-foreground">
               배경, 테두리, padding은 token으로만 결정한다.
             </p>
           </div>
-          <Badge tone="selected">surface</Badge>
+          <Badge variant="secondary">surface</Badge>
         </Surface>
       ))}
     </div>
@@ -44,7 +44,7 @@ export const Sizes: Story = {
       {sizes.map((size) => (
         <Surface key={size} size={size} variant="panel">
           <h2 className="text-title-md font-black">{size}</h2>
-          <p className="text-body-sm font-semibold text-fg-muted">
+          <p className="text-body-sm font-semibold text-muted-foreground">
             surface padding token
           </p>
         </Surface>
@@ -58,7 +58,7 @@ export const Composition: Story = {
     <Surface className="grid max-w-xl gap-4" variant="panel">
       <div>
         <h2 className="text-title-lg font-black">검토 요청</h2>
-        <p className="text-body-sm font-semibold text-fg-muted">
+        <p className="text-body-sm font-semibold text-muted-foreground">
           Surface는 의미 없는 카드가 아니라 배경과 경계만 제공한다.
         </p>
       </div>

@@ -1,16 +1,18 @@
-import type { Meta, StoryObj } from "@storybook/react-vite"
+﻿import type { Meta, StoryObj } from "@storybook/react-vite"
 import { expect, userEvent, within } from "storybook/test"
 
 import {
+  Button,
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
+  Label,
   Textarea,
 } from "@workspace/ui"
 
 const meta = {
-  title: "Components/Forms/Textarea",
+  title: "Components/UI/Textarea",
   component: Textarea,
   args: {
     placeholder: "본문을 입력하세요",
@@ -62,12 +64,44 @@ export const States: Story = {
   ),
 }
 
+export const WithLabel: Story = {
+  render: () => (
+    <div className="grid w-[min(34rem,calc(100vw-2rem))] gap-1.5">
+      <Label htmlFor="message">메시지</Label>
+      <Textarea placeholder="메시지를 입력하세요." id="message" />
+    </div>
+  ),
+}
+
+export const WithText: Story = {
+  render: () => (
+    <div className="grid w-[min(34rem,calc(100vw-2rem))] gap-1.5">
+      <Label htmlFor="message-2">메시지</Label>
+      <Textarea placeholder="메시지를 입력하세요." id="message-2" />
+      <p className="text-sm text-muted-foreground">
+        이 내용은 관리자에게 전송됩니다.
+      </p>
+    </div>
+  ),
+}
+
+export const WithButton: Story = {
+  render: () => (
+    <div className="grid w-[min(34rem,calc(100vw-2rem))] gap-2">
+      <Textarea placeholder="피드백이나 문의사항을 입력하세요." />
+      <Button className="w-fit justify-self-end">보내기</Button>
+    </div>
+  ),
+}
+
 export const CounterComposition: Story = {
   render: () => (
     <Field className="w-[min(36rem,calc(100vw-2rem))]">
       <div className="flex items-center justify-between gap-3">
         <FieldLabel htmlFor="textarea-counter">피드백</FieldLabel>
-        <span className="text-caption font-bold text-fg-subtle">42 / 500</span>
+        <span className="text-caption font-bold text-muted-foreground/70">
+          42 / 500
+        </span>
       </div>
       <Textarea
         defaultValue="문장의 흐름은 좋아졌지만 두 번째 근거가 조금 더 구체적이면 좋겠습니다."

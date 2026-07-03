@@ -29,14 +29,12 @@ export const Scale: Story = {
           className="grid grid-cols-[7rem_1fr] items-center gap-4"
           key={item.token}
         >
-          <span className="text-label-sm font-bold text-fg-muted">
+          <span className="text-label-sm font-bold text-muted-foreground">
             {item.token}
           </span>
           <div className="flex items-center gap-3">
-            <span
-              className={`${item.className} block h-6 bg-action-primary-bg`}
-            />
-            <span className="text-caption font-bold text-fg-subtle">
+            <span className={`${item.className} block h-6 bg-accent`} />
+            <span className="text-caption font-bold text-muted-foreground/70">
               {item.label}
             </span>
           </div>

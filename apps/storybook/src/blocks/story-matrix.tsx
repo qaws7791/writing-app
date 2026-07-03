@@ -23,13 +23,13 @@ function StoryMatrix({
     <div className={`grid gap-4 ${gridClassName}`}>
       {items.map((item, index) => (
         <section
-          className="grid gap-3 rounded-panel border border-border-subtle bg-bg-surface p-surface-padding-md"
+          className="grid gap-3 rounded-panel border border-border/50 bg-surface p-surface-padding-md"
           key={index}
         >
           <div className="grid gap-1">
             <h3 className="text-title-md font-black">{item.title}</h3>
             {item.description === undefined ? null : (
-              <p className="text-body-sm font-semibold text-fg-muted">
+              <p className="text-body-sm font-semibold text-muted-foreground">
                 {item.description}
               </p>
             )}
