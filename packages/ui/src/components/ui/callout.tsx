@@ -7,10 +7,10 @@ import { cn } from "../../lib/utils"
 const calloutVariants = cva("grid gap-2 rounded-card border p-6", {
   variants: {
     tone: {
-      neutral: "border-border-default bg-bg-surface text-fg-default",
-      success: "border-success-fg/20 bg-success-bg text-success-fg",
-      danger: "border-danger-fg/20 bg-danger-bg text-danger-fg",
-      info: "border-info-fg/20 bg-info-bg text-info-fg",
+      neutral: "border-border bg-surface text-foreground",
+      success: "border-success-fg/20 bg-success text-success-foreground",
+      danger: "border-danger-fg/20 bg-danger text-danger-foreground",
+      info: "border-info-fg/20 bg-info text-info-foreground",
     },
   },
   defaultVariants: {

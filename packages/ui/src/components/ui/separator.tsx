@@ -3,24 +3,25 @@
 import { Separator as SeparatorPrimitive } from "@base-ui/react/separator"
 
 import { cn } from "../../lib/utils"
-
-type SeparatorProps = SeparatorPrimitive.Props & {
-  readonly decorative?: boolean
-}
-
+/**
+ * `Separator` 컴포넌트는 콘텐츠를 시각적으로 구분하는 데 사용됩니다.
+ *
+ * @example
+ * ```tsx
+ * <Separator orientation="horizontal" />
+ * ```
+ */
 function Separator({
   className,
-  decorative = true,
   orientation = "horizontal",
   ...props
-}: SeparatorProps) {
+}: SeparatorPrimitive.Props) {
   return (
     <SeparatorPrimitive
       data-slot="separator"
       orientation={orientation}
-      role={decorative ? "none" : "separator"}
       className={cn(
-        "shrink-0 bg-border-default data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px",
+        "shrink-0 bg-border data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch",
         className
       )}
       {...props}

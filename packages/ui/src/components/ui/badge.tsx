@@ -5,49 +5,68 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const badgeVariants = cva(
-  "inline-flex min-h-6 w-fit items-center rounded-pill border px-2.5 text-label-sm font-bold",
+  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-3xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
   {
     variants: {
-      tone: {
-        neutral: "border-border-default bg-bg-elevated text-fg-default",
-        success: "border-success-fg/20 bg-success-bg text-success-fg",
-        danger: "border-danger-fg/20 bg-danger-bg text-danger-fg",
-        info: "border-info-fg/20 bg-info-bg text-info-fg",
-        selected:
-          "border-action-selected-fg/20 bg-action-selected-bg text-action-selected-fg",
-      },
       variant: {
-        soft: "",
-        outline: "bg-transparent",
+        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
+        secondary:
+          "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
+        destructive:
+          "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
+        outline:
+          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
+        ghost:
+          "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
+        link: "text-primary underline-offset-4 hover:underline",
       },
     },
     defaultVariants: {
-      tone: "neutral",
-      variant: "soft",
+      variant: "default",
     },
   }
 )
 
+/**
+ * `Badge` 컴포넌트는 상태, 카테고리 또는 태그를 나타내는 작은 시각적 요소입니다.
+ *
+ * @example
+ * ```tsx
+ * <Badge>Badge</Badge>
+ * ```
+ */
 function Badge({
   className,
-  variant = "soft",
-  tone = "neutral",
+  variant,
+  tone,
   render,
   ...props
-}: useRender.ComponentProps<"span"> & VariantProps<typeof badgeVariants>) {
+}: useRender.ComponentProps<"span"> &
+  VariantProps<typeof badgeVariants> & {
+    tone?: "neutral" | "success" | "danger" | "info" | "selected" | string
+  }) {
+  const resolvedVariant =
+    variant ||
+    (tone === "danger"
+      ? "destructive"
+      : tone === "success"
+        ? "outline"
+        : tone === "neutral" || tone === "info" || tone === "selected"
+          ? "secondary"
+          : "default")
+
   return useRender({
     defaultTagName: "span",
     props: mergeProps<"span">(
       {
-        className: cn(badgeVariants({ variant, tone }), className),
+        className: cn(badgeVariants({ variant: resolvedVariant }), className),
       },
       props
     ),
     render,
     state: {
       slot: "badge",
-      tone,
-      variant,
+      variant: resolvedVariant,
     },
   })
 }

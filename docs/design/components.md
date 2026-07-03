@@ -91,7 +91,7 @@
 구현 위치: `packages/ui/src/components/ui/input.tsx`
 
 - 높이는 density token의 `control-height-md`를 따른다.
-- `bg-bg-surface`, `rounded-control`, `border-border-default`, `focus-visible:ring-3`을 사용한다.
+- `bg-surface`, `rounded-control`, `border-border`, `focus-visible:ring-3`을 사용한다.
 - invalid 상태는 `aria-invalid="true"`로 표시한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
@@ -101,7 +101,7 @@
 
 - native `select`를 감싼 primitive다.
 - 높이는 density token의 `control-height-md`를 따른다.
-- `bg-bg-elevated`, `rounded-control`, `border-border-default`, `focus-visible:ring-3`을 사용한다.
+- `bg-bg-elevated`, `rounded-control`, `border-border`, `focus-visible:ring-3`을 사용한다.
 - 라우팅이나 데이터 정책이 없는 필터, 정렬, 페이지 크기 선택에 사용한다.
 - 복잡한 combobox나 다중 선택이 필요해지면 Base UI 기반 별도 primitive를 추가한다.
 
@@ -110,7 +110,7 @@
 구현 위치: `packages/ui/src/components/ui/textarea.tsx`
 
 - 최소 높이 96px.
-- `bg-bg-elevated`, `rounded-control`, `border-border-default`, `focus-visible:ring-3`을 사용한다.
+- `bg-bg-elevated`, `rounded-control`, `border-border`, `focus-visible:ring-3`을 사용한다.
 - 긴 본문 편집처럼 화면별 높이가 필요한 경우 `className`으로 `min-h-*`를 조정한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
@@ -118,7 +118,7 @@
 
 구현 위치: `packages/ui/src/components/ui/progress.tsx`
 
-구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 기본적으로 `bg-progress-indicator`를 사용하고, track은 `bg-progress-track` (`#cac7c0`)을 사용하여 카드 등 다양한 배경 위에 배치되더라도 비텍스트 대비를 확보한다. 레슨과 코스 상세처럼 kwep 기준의 노란 진행률이 필요한 화면은 `indicatorClassName="bg-progress-lesson-indicator"`와 `trackClassName`으로 높이와 색을 명시한다.
+구조는 `Progress`, `ProgressTrack`, `ProgressIndicator`, `ProgressLabel`, `ProgressValue`다. 학습 진행률이나 코스 완료율을 표시할 때 사용한다. indicator는 기본적으로 `bg-accent`를 사용하고, track은 `bg-default-soft` (`#cac7c0`)을 사용하여 카드 등 다양한 배경 위에 배치되더라도 비텍스트 대비를 확보한다. 레슨과 코스 상세처럼 kwep 기준의 노란 진행률이 필요한 화면은 `indicatorClassName="bg-accent"`와 `trackClassName`으로 높이와 색을 명시한다.
 
 ## Badge
 
@@ -214,7 +214,7 @@
 
 구현 위치: `apps/web/src/components/layout/app-shell.tsx`
 
-- 배경은 `bg-bg-canvas`, 텍스트는 `text-fg-default`.
+- 배경은 `bg-background`, 텍스트는 `text-foreground`.
 - 데스크톱 상단 `GlobalNav`와 모바일 하단 `MobileNav`를 포함한다.
 - 본문은 `max-w-6xl`, `px-4 md:px-12`, `pb-24`를 사용한다.
 - `/app/lesson`은 몰입형 route group으로 분리되어 `AppShell`을 사용하지 않는다.

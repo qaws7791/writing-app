@@ -2,12 +2,20 @@ import * as React from "react"
 
 import { cn } from "../../lib/utils"
 
+/**
+ * `Textarea` 컴포넌트는 사용자가 여러 줄의 텍스트를 입력할 수 있는 입력 필드를 제공합니다.
+ *
+ * @example
+ * ```tsx
+ * <Textarea placeholder="Enter your text here..." />
+ * ```
+ */
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
     <textarea
       data-slot="textarea"
       className={cn(
-        "min-h-24 w-full min-w-0 rounded-control border border-border-default bg-bg-elevated px-4 py-3 text-base font-medium text-fg-default transition-[border-color,box-shadow,background-color] outline-none placeholder:text-fg-subtle focus-visible:border-border-focus focus-visible:ring-3 focus-visible:ring-border-focus/20 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-danger-fg aria-invalid:ring-3 aria-invalid:ring-danger-fg/20 md:text-sm",
+        "flex field-sizing-content min-h-16 w-full resize-none rounded-2xl border border-transparent bg-input/50 px-3 py-3 text-base transition-[color,box-shadow,background-color] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
         className
       )}
       {...props}

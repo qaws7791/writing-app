@@ -4,16 +4,15 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const choiceCardVariants = cva(
-  "btn-squish flex w-full items-center gap-3 rounded-card border px-5 py-4 text-left text-body-md font-bold transition-colors outline-none focus-visible:border-border-focus focus-visible:ring-3 focus-visible:ring-border-focus/20 disabled:pointer-events-none disabled:opacity-50",
+  "btn-squish flex w-full items-center gap-3 rounded-card border px-5 py-4 text-left text-body-md font-bold transition-colors outline-none focus-visible:border-focus focus-visible:ring-3 focus-visible:ring-focus/20 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       state: {
-        correct: "border-success-fg/20 bg-success-bg text-success-fg",
-        disabled: "bg-bg-surface text-fg-disabled",
-        idle: "bg-bg-surface text-fg-default hover:bg-bg-surface-hover",
-        selected:
-          "border-action-selected-fg/25 bg-action-selected-bg text-action-selected-fg",
-        wrong: "border-danger-fg/20 bg-danger-bg text-danger-fg",
+        correct: "border-success-fg/20 bg-success text-success-foreground",
+        disabled: "bg-surface text-muted-foreground",
+        idle: "bg-surface text-foreground hover:bg-surface-hover",
+        selected: "border-action-selected-fg/25 bg-accent-soft text-accent",
+        wrong: "border-danger-fg/20 bg-danger text-danger-foreground",
       },
     },
     defaultVariants: {

@@ -1,35 +1,67 @@
 import * as React from "react"
-
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "../../lib/utils"
 
-const alertVariants = cva("grid gap-1.5 rounded-2xl border p-4", {
-  variants: {
-    tone: {
-      neutral: "border-border-default bg-bg-elevated text-fg-default",
-      success: "border-success-fg/20 bg-success-bg text-success-fg",
-      danger: "border-danger-fg/20 bg-danger-bg text-danger-fg",
-      info: "border-info-fg/20 bg-info-bg text-info-fg",
+const alertVariants = cva(
+  "group/alert relative grid w-full gap-0.5 rounded-2xl border px-4 py-3 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2.5 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",
+  {
+    variants: {
+      variant: {
+        default: "bg-card text-card-foreground",
+        destructive:
+          "bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
+      },
     },
-  },
-  defaultVariants: {
-    tone: "neutral",
-  },
-})
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
+/**
+ * `Alert` 컴포넌트는 사용자의 주의를 끌기 위한 알림을 표시합니다.
+ * 
+ * @example
+ * ```tsx
+ * <Alert>
+  <InfoIcon />
+  <AlertTitle>Heads up!</AlertTitle>
+  <AlertDescription>
+    You can add components and dependencies to your app using the cli.
+  </AlertDescription>
+  <AlertAction>
+    <Button variant="outline">Enable</Button>
+  </AlertAction>
+</Alert>
+ * ```
+ */
 function Alert({
   className,
-  role = "status",
-  tone = "neutral",
+  variant,
+  tone,
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
+}: React.ComponentProps<"div"> &
+  VariantProps<typeof alertVariants> & {
+    tone?:
+      | "neutral"
+      | "info"
+      | "success"
+      | "warning"
+      | "danger"
+      | "destructive"
+      | "selected"
+  }) {
+  const resolvedVariant =
+    variant ||
+    (tone === "danger" || tone === "destructive" || tone === "warning"
+      ? "destructive"
+      : "default")
   return (
     <div
-      role={role}
       data-slot="alert"
-      data-tone={tone}
-      className={cn(alertVariants({ tone, className }))}
+      role="alert"
+      className={cn(alertVariants({ variant: resolvedVariant }), className)}
       {...props}
     />
   )
@@ -39,7 +71,10 @@ function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="alert-title"
-      className={cn("font-bold", className)}
+      className={cn(
+        "font-medium group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground",
+        className
+      )}
       {...props}
     />
   )
@@ -52,10 +87,23 @@ function AlertDescription({
   return (
     <div
       data-slot="alert-description"
-      className={cn("text-sm font-medium", className)}
+      className={cn(
+        "text-sm text-balance text-muted-foreground md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4",
+        className
+      )}
       {...props}
     />
   )
 }
 
-export { Alert, AlertDescription, AlertTitle, alertVariants }
+function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="alert-action"
+      className={cn("absolute top-2.5 right-3", className)}
+      {...props}
+    />
+  )
+}
+
+export { Alert, AlertTitle, AlertDescription, AlertAction }

@@ -22,7 +22,9 @@
     color var(--motion-duration-normal);
 }
 
-.btn-squish:active:not(:disabled) {
+.btn-squish:active:not(:disabled):not([aria-haspopup="true"]):not(
+    [aria-expanded="true"]
+  ) {
   transform: scale(var(--motion-press-scale));
 }
 

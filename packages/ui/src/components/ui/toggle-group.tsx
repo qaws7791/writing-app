@@ -3,36 +3,96 @@ import { Toggle as TogglePrimitive } from "@base-ui/react/toggle"
 import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group"
 
 import { cn } from "../../lib/utils"
+import { VariantProps } from "class-variance-authority"
+import { toggleVariants } from "./toggle"
 
+const ToggleGroupContext = React.createContext<
+  VariantProps<typeof toggleVariants> & {
+    spacing?: number
+    orientation?: "horizontal" | "vertical"
+  }
+>({
+  size: "default",
+  variant: "default",
+  spacing: 2,
+  orientation: "horizontal",
+})
+
+/**
+ * `ToggleGroup` 컴포넌트는 여러 개의 토글 버튼을 그룹화하여 사용자가 선택할 수 있도록 합니다.
+ *
+ * @example
+ * ```tsx
+ * <ToggleGroup type="single">
+  <ToggleGroupItem value="a">A</ToggleGroupItem>
+  <ToggleGroupItem value="b">B</ToggleGroupItem>
+  <ToggleGroupItem value="c">C</ToggleGroupItem>
+</ToggleGroup>
+ * ```
+ */
 function ToggleGroup({
   className,
+  variant,
+  size,
+  spacing = 2,
+  orientation = "horizontal",
+  children,
   ...props
-}: ToggleGroupPrimitive.Props<string>) {
+}: ToggleGroupPrimitive.Props &
+  VariantProps<typeof toggleVariants> & {
+    spacing?: number
+    orientation?: "horizontal" | "vertical"
+  }) {
   return (
     <ToggleGroupPrimitive
       data-slot="toggle-group"
+      data-variant={variant}
+      data-size={size}
+      data-spacing={spacing}
+      data-orientation={orientation}
+      style={{ "--gap": spacing } as React.CSSProperties}
       className={cn(
-        "inline-flex items-center gap-1 rounded-control border border-border-subtle bg-bg-surface p-1 data-[orientation=vertical]:flex-col",
+        "group/toggle-group flex w-fit flex-row items-center gap-[--spacing(var(--gap))] data-[spacing=0]:data-[variant=outline]:rounded-3xl data-vertical:flex-col data-vertical:items-stretch",
         className
       )}
       {...props}
-    />
+    >
+      <ToggleGroupContext.Provider
+        value={{ variant, size, spacing, orientation }}
+      >
+        {children}
+      </ToggleGroupContext.Provider>
+    </ToggleGroupPrimitive>
   )
 }
 
 function ToggleGroupItem({
   className,
+  children,
+  variant = "default",
+  size = "default",
   ...props
-}: TogglePrimitive.Props<string>) {
+}: TogglePrimitive.Props & VariantProps<typeof toggleVariants>) {
+  const context = React.useContext(ToggleGroupContext)
+
   return (
     <TogglePrimitive
       data-slot="toggle-group-item"
+      data-variant={context.variant || variant}
+      data-size={context.size || size}
+      data-spacing={context.spacing}
       className={cn(
-        "inline-flex h-9 min-w-9 items-center justify-center rounded-control px-3 text-sm font-bold text-fg-muted transition-colors outline-none hover:bg-bg-surface-hover hover:text-fg-default focus-visible:border-border-focus focus-visible:ring-3 focus-visible:ring-border-focus/20 disabled:pointer-events-none disabled:opacity-50 data-[pressed]:bg-action-selected-bg data-[pressed]:text-action-selected-fg",
+        "shrink-0 group-data-[spacing=0]/toggle-group:rounded-none group-data-[spacing=0]/toggle-group:px-3 group-data-[spacing=0]/toggle-group:shadow-none focus:z-10 focus-visible:z-10 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-end]:pr-2.5 group-data-[spacing=0]/toggle-group:has-data-[icon=inline-start]:pl-2.5 group-data-horizontal/toggle-group:data-[spacing=0]:first:rounded-l-3xl group-data-vertical/toggle-group:data-[spacing=0]:first:rounded-t-3xl group-data-horizontal/toggle-group:data-[spacing=0]:last:rounded-r-3xl group-data-vertical/toggle-group:data-[spacing=0]:last:rounded-b-3xl data-[state=on]:bg-muted group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:border-l-0 group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:border-t-0 group-data-horizontal/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-l group-data-vertical/toggle-group:data-[spacing=0]:data-[variant=outline]:first:border-t",
+        toggleVariants({
+          variant: context.variant || variant,
+          size: context.size || size,
+        }),
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </TogglePrimitive>
   )
 }
 

@@ -19,7 +19,7 @@ function PageHeader({
     <header
       data-slot="page-header"
       className={cn(
-        "mb-7 flex items-start justify-between gap-5 text-fg-default max-md:grid",
+        "mb-7 flex items-start justify-between gap-5 text-foreground max-md:grid",
         className
       )}
       {...props}
@@ -29,7 +29,7 @@ function PageHeader({
           {title}
         </h1>
         {description === undefined ? null : (
-          <p className="m-0 max-w-3xl text-body-lg font-semibold text-fg-muted">
+          <p className="m-0 max-w-3xl text-body-lg font-semibold text-muted-foreground">
             {description}
           </p>
         )}

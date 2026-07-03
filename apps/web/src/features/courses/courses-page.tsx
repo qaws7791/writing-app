@@ -8,7 +8,27 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type { CourseSummary } from "@/features/courses/course-types"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
-import { EmptyState } from "@workspace/ui/components/ui/empty-state"
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyContent,
+} from "@workspace/ui/components/ui/empty"
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@workspace/ui/components/ui/input-group"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/ui/select"
 import { SearchIcon, XIcon } from "@workspace/ui/components/icons"
 
 type CoursesPageProps = {
@@ -41,10 +61,6 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
     filters.sort,
     courses
   )
-  const hasActiveFilters =
-    filters.category !== "" ||
-    filters.query.trim() !== "" ||
-    filters.sort !== "latest"
 
   const updateUrl = useCallback(
     (overrides: Partial<CourseListFilters>) => {
@@ -89,74 +105,85 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
   return (
     <div>
       <h1 className="mb-4 text-heading-lg font-bold">무엇을 써볼까요?</h1>
-      <p className="mb-8 text-body-lg font-medium text-fg-muted">
+      <p className="mb-8 text-body-lg font-medium text-muted-foreground">
         관심 있는 주제를 골라 매일 한 단락씩 글의 결을 다듬어 보세요.
       </p>
 
       {courses.length === 0 ? (
-        <EmptyState
-          description="새 코스가 공개되면 이곳에서 바로 이어갈 수 있습니다."
-          role="status"
-          title="아직 열려 있는 코스가 없습니다."
-        />
+        <Empty role="status">
+          <EmptyHeader>
+            <EmptyTitle>아직 열려 있는 코스가 없습니다.</EmptyTitle>
+            <EmptyDescription>
+              새 코스가 공개되면 이곳에서 바로 이어갈 수 있습니다.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <>
           <div className="mb-5 flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[200px]">
               <label className="sr-only" htmlFor="course-query">
                 검색
               </label>
-              <SearchIcon
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-fg-muted pointer-events-none"
-                size={16}
-              />
-              <input
-                className="w-full pl-11 pr-10 py-3 rounded-full bg-bg-surface font-medium placeholder:text-fg-muted outline-none focus:ring-2 focus:ring-border-focus/20 transition-shadow text-body-sm text-fg-default border border-border-default"
-                id="course-query"
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="코스 검색…"
-                ref={searchRef}
-                value={query}
-              />
-              {query ? (
-                <button
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-fg-muted hover:text-fg-default transition-colors cursor-pointer"
-                  onClick={() => {
-                    setQuery("")
-                    searchRef.current?.focus()
-                  }}
-                  type="button"
+              <InputGroup className="h-11 rounded-full bg-surface border border-border [--radius:9999px] px-1">
+                <InputGroupInput
+                  id="course-query"
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="코스 검색…"
+                  ref={searchRef}
+                  value={query}
+                  className="text-body-sm font-medium placeholder:text-muted-foreground"
+                />
+                <InputGroupAddon
+                  align="inline-start"
+                  className="pl-3.5 text-muted-foreground"
                 >
-                  <XIcon size={15} />
-                </button>
-              ) : null}
+                  <SearchIcon size={16} />
+                </InputGroupAddon>
+                {query ? (
+                  <InputGroupAddon align="inline-end" className="pr-3.5">
+                    <InputGroupButton
+                      aria-label="검색어 지우기"
+                      size="icon-xs"
+                      onClick={() => {
+                        setQuery("")
+                        searchRef.current?.focus()
+                      }}
+                      type="button"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <XIcon size={15} />
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                ) : null}
+              </InputGroup>
             </div>
             <div className="flex items-center gap-2">
               <label className="sr-only" htmlFor="course-sort">
                 정렬
               </label>
-              <select
-                className="px-4 py-3 rounded-full bg-bg-surface font-bold text-body-sm text-fg-default outline-none cursor-pointer shrink-0 border border-border-default"
-                id="course-sort"
-                onChange={(e) => {
+              <Select
+                value={filters.sort}
+                onValueChange={(value) => {
                   updateUrl({
-                    sort: e.target.value as CourseListFilters["sort"],
+                    sort: value as CourseListFilters["sort"],
                   })
                 }}
-                value={filters.sort}
               >
-                <option value="latest">최신순</option>
-                <option value="title">제목순</option>
-                <option value="studyTime">학습시간순</option>
-              </select>
-              {hasActiveFilters ? (
-                <Link
-                  className={buttonVariants({ variant: "outline" })}
-                  href="/app/courses"
+                <SelectTrigger
+                  id="course-sort"
+                  className="h-11 px-5 rounded-full bg-surface border border-border text-body-sm font-bold text-foreground transition-shadow focus-visible:ring-2 focus-visible:ring-focus/20 shadow-none hover:bg-surface cursor-pointer shrink-0"
                 >
-                  초기화
-                </Link>
-              ) : null}
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="latest">최신순</SelectItem>
+                    <SelectItem value="title">제목순</SelectItem>
+                    <SelectItem value="studyTime">학습시간순</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div
@@ -179,21 +206,24 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
             ))}
           </div>
           {visibleCourses.length === 0 ? (
-            <EmptyState
-              actions={
+            <Empty role="status">
+              <EmptyHeader>
+                <EmptyTitle>조건에 맞는 코스가 없습니다.</EmptyTitle>
+                <EmptyDescription>
+                  검색어나 카테고리를 조정하면 더 많은 코스를 볼 수 있습니다.
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
                 <Link className={buttonVariants()} href="/app/courses">
                   필터 초기화
                 </Link>
-              }
-              description="검색어나 카테고리를 조정하면 더 많은 코스를 볼 수 있습니다."
-              role="status"
-              title="조건에 맞는 코스가 없습니다."
-            />
+              </EmptyContent>
+            </Empty>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {visibleCourses.map((course) => (
                 <Link
-                  className="flex flex-row overflow-hidden rounded-2xl bg-bg-surface btn-squish hover:scale-[1.02] transition-transform duration-200 md:flex-col md:rounded-4xl"
+                  className="flex flex-row overflow-hidden rounded-2xl bg-surface btn-squish hover:scale-[1.02] transition-transform duration-200 md:flex-col md:rounded-4xl"
                   href={`/app/courses/${course.id}`}
                   key={course.id}
                 >
@@ -210,10 +240,10 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
                     <h2 className="mb-1 mt-3 text-title-md font-bold">
                       {course.title}
                     </h2>
-                    <p className="hidden text-body-sm font-medium text-fg-default md:block">
+                    <p className="hidden text-body-sm font-medium text-foreground md:block">
                       {course.description}
                     </p>
-                    <div className="mt-auto pt-2 text-label-sm font-bold text-fg-default">
+                    <div className="mt-auto pt-2 text-label-sm font-bold text-foreground">
                       {course.lessonCount}개 레슨
                     </div>
                   </div>

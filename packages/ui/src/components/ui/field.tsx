@@ -1,21 +1,25 @@
-import { cva, VariantProps } from "class-variance-authority"
+"use client"
+
+import { useMemo } from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+
 import { cn } from "../../lib/utils"
 import { Label } from "./label"
 import { Separator } from "./separator"
-import { useMemo } from "react"
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (
     <fieldset
       data-slot="field-set"
       className={cn(
-        "flex flex-col gap-4 has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
+        "flex flex-col gap-6 has-[>[data-slot=checkbox-group]]:gap-3 has-[>[data-slot=radio-group]]:gap-3",
         className
       )}
       {...props}
     />
   )
 }
+
 function FieldLegend({
   className,
   variant = "legend",
@@ -26,27 +30,29 @@ function FieldLegend({
       data-slot="field-legend"
       data-variant={variant}
       className={cn(
-        "mb-1.5 font-medium data-[variant=label]:text-sm data-[variant=legend]:text-base",
+        "mb-3 font-medium data-[variant=label]:text-sm data-[variant=legend]:text-base",
         className
       )}
       {...props}
     />
   )
 }
+
 function FieldGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="field-group"
       className={cn(
-        "group/field-group @container/field-group flex w-full flex-col gap-5 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",
+        "group/field-group @container/field-group flex w-full flex-col gap-7 data-[slot=checkbox-group]:gap-3 *:data-[slot=field-group]:gap-4",
         className
       )}
       {...props}
     />
   )
 }
+
 const fieldVariants = cva(
-  "group/field flex w-full gap-2 data-[invalid=true]:text-destructive-foreground",
+  "group/field flex w-full gap-3 data-[invalid=true]:text-destructive",
   {
     variants: {
       orientation: {
@@ -62,6 +68,34 @@ const fieldVariants = cva(
     },
   }
 )
+
+/**
+ * `Field` 컴포넌트는 입력 필드와 관련된 레이블, 설명, 오류 메시지 등을 그룹화하는 컨테이너 역할을 합니다.
+ * 
+ * @example
+ * ```tsx
+ * <FieldSet>
+  <FieldLegend>Profile</FieldLegend>
+  <FieldDescription>This appears on invoices and emails.</FieldDescription>
+  <FieldGroup>
+    <Field>
+      <FieldLabel htmlFor="name">Full name</FieldLabel>
+      <Input id="name" autoComplete="off" placeholder="Evil Rabbit" />
+      <FieldDescription>This appears on invoices and emails.</FieldDescription>
+    </Field>
+    <Field>
+      <FieldLabel htmlFor="username">Username</FieldLabel>
+      <Input id="username" autoComplete="off" aria-invalid />
+      <FieldError>Choose another username.</FieldError>
+    </Field>
+    <Field orientation="horizontal">
+      <Switch id="newsletter" />
+      <FieldLabel htmlFor="newsletter">Subscribe to the newsletter</FieldLabel>
+    </Field>
+  </FieldGroup>
+</FieldSet>
+```
+ */
 function Field({
   className,
   orientation = "vertical",
@@ -77,18 +111,20 @@ function Field({
     />
   )
 }
+
 function FieldContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="field-content"
       className={cn(
-        "group/field-content flex flex-1 flex-col gap-0.5 leading-snug",
+        "group/field-content flex flex-1 flex-col gap-1 leading-snug",
         className
       )}
       {...props}
     />
   )
 }
+
 function FieldLabel({
   className,
   ...props
@@ -97,7 +133,7 @@ function FieldLabel({
     <Label
       data-slot="field-label"
       className={cn(
-        "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border *:data-[slot=field]:p-2.5 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10",
+        "group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:bg-input/30 has-[>[data-slot=field]]:rounded-2xl has-[>[data-slot=field]]:border *:data-[slot=field]:p-4",
         "has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col",
         className
       )}
@@ -105,6 +141,7 @@ function FieldLabel({
     />
   )
 }
+
 function FieldTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -117,6 +154,7 @@ function FieldTitle({ className, ...props }: React.ComponentProps<"div">) {
     />
   )
 }
+
 function FieldDescription({ className, ...props }: React.ComponentProps<"p">) {
   return (
     <p
@@ -131,6 +169,7 @@ function FieldDescription({ className, ...props }: React.ComponentProps<"p">) {
     />
   )
 }
+
 function FieldSeparator({
   children,
   className,
@@ -160,6 +199,7 @@ function FieldSeparator({
     </div>
   )
 }
+
 function FieldError({
   className,
   children,
@@ -172,15 +212,19 @@ function FieldError({
     if (children) {
       return children
     }
+
     if (!errors?.length) {
       return null
     }
+
     const uniqueErrors = [
       ...new Map(errors.map((error) => [error?.message, error])).values(),
     ]
+
     if (uniqueErrors?.length == 1) {
       return uniqueErrors[0]?.message
     }
+
     return (
       <ul className="ml-4 flex list-disc flex-col gap-1">
         {uniqueErrors.map(
@@ -190,23 +234,23 @@ function FieldError({
       </ul>
     )
   }, [children, errors])
+
   if (!content) {
     return null
   }
+
   return (
     <div
       role="alert"
       data-slot="field-error"
-      className={cn(
-        "text-sm font-normal text-destructive-foreground",
-        className
-      )}
+      className={cn("text-sm font-normal text-destructive", className)}
       {...props}
     >
       {content}
     </div>
   )
 }
+
 export {
   Field,
   FieldLabel,

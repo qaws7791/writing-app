@@ -7,7 +7,7 @@ function RichText({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="rich-text"
       className={cn(
-        "prose prose-sm max-w-none text-body-md font-medium text-fg-default prose-headings:font-black prose-headings:text-fg-default prose-p:text-fg-muted prose-p:leading-7 prose-strong:text-fg-default prose-li:text-fg-muted prose-li:leading-7 prose-code:rounded-md prose-code:bg-bg-surface prose-code:px-1 prose-code:text-fg-default prose-blockquote:border-action-selected-bg prose-blockquote:text-fg-muted prose-hr:border-border-subtle",
+        "prose prose-sm max-w-none text-body-md font-medium text-foreground prose-headings:font-black prose-headings:text-foreground prose-p:text-muted-foreground prose-p:leading-7 prose-strong:text-foreground prose-li:text-muted-foreground prose-li:leading-7 prose-code:rounded-md prose-code:bg-surface prose-code:px-1 prose-code:text-foreground prose-blockquote:border-action-selected-bg prose-blockquote:text-muted-foreground prose-hr:border-border/50",
         className
       )}
       {...props}

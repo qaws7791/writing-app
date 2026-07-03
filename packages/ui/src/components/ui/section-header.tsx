@@ -19,7 +19,7 @@ function SectionHeader({
     <div
       data-slot="section-header"
       className={cn(
-        "mb-5 flex items-start justify-between gap-4 text-fg-default max-md:grid",
+        "mb-5 flex items-start justify-between gap-4 text-foreground max-md:grid",
         className
       )}
       {...props}
@@ -29,7 +29,7 @@ function SectionHeader({
           {title}
         </h2>
         {description === undefined ? null : (
-          <p className="m-0 text-body-sm font-semibold text-fg-muted">
+          <p className="m-0 text-body-sm font-semibold text-muted-foreground">
             {description}
           </p>
         )}

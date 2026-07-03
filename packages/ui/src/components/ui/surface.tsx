@@ -4,12 +4,12 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "../../lib/utils"
 
-const surfaceVariants = cva("text-fg-default", {
+const surfaceVariants = cva("text-foreground", {
   variants: {
     variant: {
-      default: "bg-bg-surface",
+      default: "bg-surface",
       elevated: "bg-bg-elevated",
-      panel: "rounded-panel bg-bg-surface",
+      panel: "rounded-panel bg-surface",
     },
     size: {
       none: "",

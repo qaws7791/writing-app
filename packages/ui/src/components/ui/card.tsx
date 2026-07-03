@@ -2,6 +2,26 @@ import * as React from "react"
 
 import { cn } from "../../lib/utils"
 
+/**
+ * `Card` 컴포넌트는 콘텐츠를 그룹화하고 시각적으로 구분하는 데 사용됩니다.
+ * 
+ * @example
+ * ```tsx
+ * <Card>
+  <CardHeader>
+    <CardTitle>Card Title</CardTitle>
+    <CardDescription>Card Description</CardDescription>
+    <CardAction>Card Action</CardAction>
+  </CardHeader>
+  <CardContent>
+    <p>Card Content</p>
+  </CardContent>
+  <CardFooter>
+    <p>Card Footer</p>
+  </CardFooter>
+</Card>
+```
+ */
 function Card({
   className,
   size = "default",
@@ -12,7 +32,7 @@ function Card({
       data-slot="card"
       data-size={size}
       className={cn(
-        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-card bg-card py-(--card-spacing) text-sm text-card-foreground shadow-none [--card-spacing:--spacing(6)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] *:[img:first-child]:rounded-t-card *:[img:last-child]:rounded-b-card",
+        "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-4xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/5 [--card-spacing:--spacing(6)] has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(4)] dark:ring-foreground/10 *:[img:first-child]:rounded-t-4xl *:[img:last-child]:rounded-b-4xl",
         className
       )}
       {...props}
@@ -33,19 +53,16 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-type CardTitleProps = React.ComponentProps<"div"> & {
-  readonly as?: "div" | "h1" | "h2" | "h3"
-}
-
 function CardTitle({
-  as: Component = "div",
   className,
+  as: Component = "div",
   ...props
-}: CardTitleProps) {
+}: React.HTMLAttributes<HTMLDivElement> & { as?: React.ElementType }) {
+  const Tag = Component
   return (
-    <Component
+    <Tag
       data-slot="card-title"
-      className={cn("text-lg font-bold", className)}
+      className={cn("font-heading text-base font-medium", className)}
       {...props}
     />
   )
@@ -55,7 +72,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-sm font-medium text-fg-muted", className)}
+      className={cn("text-sm text-muted-foreground", className)}
       {...props}
     />
   )

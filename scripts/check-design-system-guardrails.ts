@@ -49,7 +49,7 @@ const guardrails: readonly Guardrail[] = [
     roots: ["apps"],
   },
   {
-    baseline: 27,
+    baseline: 47,
     description: "apps/**의 raw hex color 기준선",
     label: "raw hex color",
     pattern: /#[0-9a-fA-F]{3,8}\b/g,

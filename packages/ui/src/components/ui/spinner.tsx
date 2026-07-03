@@ -1,24 +1,23 @@
 import * as React from "react"
 
+import { Loader2Icon } from "lucide-react"
 import { cn } from "../../lib/utils"
 
-function Spinner({
-  className,
-  label,
-  ...props
-}: Omit<React.ComponentProps<"span">, "children"> & {
-  readonly label?: string
-}) {
+/**
+ * `Spinner` 컴포넌트는 로딩 상태를 나타내는 회전하는 아이콘을 제공합니다.
+ *
+ * @example
+ * ```tsx
+ * <Spinner />
+ * ```
+ */
+function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
   return (
-    <span
-      role={label === undefined ? undefined : "status"}
-      aria-hidden={label === undefined ? true : undefined}
-      aria-label={label}
+    <Loader2Icon
       data-slot="spinner"
-      className={cn(
-        "inline-block size-4 animate-spin rounded-full border-2 border-current border-r-transparent",
-        className
-      )}
+      role="status"
+      aria-label="Loading"
+      className={cn("size-4 animate-spin", className)}
       {...props}
     />
   )

@@ -34,23 +34,27 @@ function StatCard({
     <article
       data-slot="stat-card"
       className={cn(
-        "grid content-start gap-1 overflow-hidden rounded-2xl bg-bg-surface px-5 py-3.5 text-fg-default",
+        "flex items-center gap-3 overflow-hidden rounded-2xl bg-surface px-5 py-4 text-foreground",
         className
       )}
       {...props}
     >
-      <div className="flex items-center gap-2 text-label-md font-bold text-fg-muted">
-        {icon}
-        <span>{label}</span>
-      </div>
-      <strong className="text-title-lg font-black leading-tight">
-        {value}
-      </strong>
-      {detail === undefined ? null : (
-        <small className="text-body-sm font-semibold text-fg-muted">
-          {detail}
-        </small>
+      {icon === undefined ? null : (
+        <div className="text-muted-foreground shrink-0">{icon}</div>
       )}
+      <div className="flex flex-col">
+        <strong className="text-title-lg font-black leading-none">
+          {value}
+        </strong>
+        <span className="text-caption font-bold text-muted-foreground mt-1.5">
+          {label}
+        </span>
+        {detail === undefined ? null : (
+          <small className="text-body-sm font-semibold text-muted-foreground mt-1">
+            {detail}
+          </small>
+        )}
+      </div>
     </article>
   )
 }
