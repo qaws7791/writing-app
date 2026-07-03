@@ -49,17 +49,17 @@ export function LessonStartScreen({
     >
       <div className="an-fi">
         {lesson.category === null ? null : (
-          <div className="mb-4 text-label-sm font-bold uppercase text-fg-muted tracking-widest">
+          <div className="mb-4 text-label-sm font-bold uppercase text-muted-foreground tracking-widest">
             {lesson.category}
           </div>
         )}
         <h1 className="mb-6 text-heading-xl font-bold">{lesson.title}</h1>
         {lesson.description === null ? null : (
-          <p className="mb-8 text-body-lg font-medium text-fg-muted">
+          <p className="mb-8 text-body-lg font-medium text-muted-foreground">
             {lesson.description}
           </p>
         )}
-        <div className="flex gap-6 text-body-sm font-medium text-fg-muted">
+        <div className="flex gap-6 text-body-sm font-medium text-muted-foreground">
           <span>⏱ {lesson.estimatedMinutes}분</span>
           <span>📚 {lesson.steps.length}개 스텝</span>
         </div>

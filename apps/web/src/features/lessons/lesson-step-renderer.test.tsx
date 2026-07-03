@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, fireEvent } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
@@ -10,11 +10,11 @@ import type { LessonStep } from "@/features/lessons/lesson-types"
 describe("레슨 스텝 렌더러 답변 저장", () => {
   it("스텝 타입별 콘텐츠 렌더링은 switch 대신 레지스트리로 연결한다", () => {
     const source = readFileSync(
-      join(process.cwd(), "src/features/lessons/lesson-step-renderer.tsx"),
+      join(process.cwd(), "../../packages/lesson/src/lesson-step-renderer.tsx"),
       "utf8"
     )
 
-    expect(source).toContain("stepContentRendererByType")
+    expect(source).toContain("STEP_COMPONENTS")
     expect(source).not.toContain("switch (step.type)")
   })
 
@@ -105,7 +105,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
 
     renderAnswerableStep(step, onAnswerChange)
 
-    await user.click(screen.getByRole("button", { name: "정말 매우" }))
+    await user.click(screen.getByText("정말 매우"))
 
     expect(onAnswerChange).toHaveBeenCalledWith({
       answer: {
@@ -117,7 +117,6 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
   })
 
   it("순서 배열 값을 타입별 payload로 전달한다", async () => {
-    const user = userEvent.setup()
     const onAnswerChange = vi.fn()
     const step: LessonStep = {
       correct: ["원인", "결과"],
@@ -131,11 +130,14 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
 
     renderAnswerableStep(step, onAnswerChange)
 
-    await user.click(screen.getByRole("button", { name: "원인 순서에 추가" }))
+    const buttons = screen.getAllByRole("button", {
+      name: "드래그하여 순서 변경",
+    })
+    fireEvent.keyDown(buttons[1], { key: "ArrowUp" })
 
     expect(onAnswerChange).toHaveBeenCalledWith({
       answer: {
-        orderedItems: ["원인"],
+        orderedItems: ["원인", "결과"],
         type: "ORDER",
       },
       stepId: "order-1",
@@ -280,7 +282,9 @@ describe("레슨 스텝 렌더러 AI 코칭", () => {
 
     await user.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
 
-    expect(screen.getByText("AI 코칭을 준비하고 있습니다.")).toBeInTheDocument()
+    expect(
+      screen.getByText("AI가 코칭을 준비하고 있습니다...")
+    ).toBeInTheDocument()
     expect(onAiFeedbackRequest).toHaveBeenCalledWith({
       answer: "짧고 명확하게 쓴다",
       stepId: "ai-1",
@@ -310,9 +314,10 @@ describe("레슨 스텝 렌더러 AI 코칭", () => {
     expect(
       screen.getByText("예시를 하나 더 넣어 다시 써보세요.")
     ).toBeInTheDocument()
-    expect(screen.getByText("4/5점")).toBeInTheDocument()
+    expect(screen.getByText("4")).toBeInTheDocument()
+    expect(screen.getByText("/ 5점")).toBeInTheDocument()
     expect(
-      screen.getByRole("button", { name: "다시 받기" })
+      screen.getByRole("button", { name: /다시 받기/ })
     ).toBeInTheDocument()
   })
 

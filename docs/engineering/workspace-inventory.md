@@ -20,6 +20,7 @@
 | `packages/http-client` | `@workspace/http-client` | package | HTTP transport result와 네트워크 오류 모델                 |
 | `packages/logger`      | `@workspace/logger`      | package | pino logger와 요청 로그 middleware                         |
 | `packages/ui`          | `@workspace/ui`          | package | 공유 UI primitive, 아이콘, 스타일                          |
+| `packages/lesson`      | `@workspace/lesson`      | package | 학습자/어드민 레슨 진행 및 렌더링 로직                     |
 
 ## 비워크스페이스 도구 루트
 

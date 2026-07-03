@@ -14,16 +14,16 @@ export function LessonPreview({ lesson }: { readonly lesson: Lesson }) {
       />
       <Card>
         <CardContent className="grid gap-2">
-          <span className="text-label-sm font-bold text-fg-muted">
+          <span className="text-label-sm font-bold text-muted-foreground">
             시작 화면
           </span>
-          <strong className="text-title-xl font-black text-fg-default">
+          <strong className="text-title-xl font-black text-foreground">
             {lesson.title}
           </strong>
-          <p className="m-0 text-body-sm font-semibold text-fg-muted">
+          <p className="m-0 text-body-sm font-semibold text-muted-foreground">
             {lesson.description}
           </p>
-          <small className="text-label-sm font-bold text-fg-muted">
+          <small className="text-label-sm font-bold text-muted-foreground">
             {lesson.estimatedMinutes}분 · {lesson.steps.length}개 스텝
           </small>
         </CardContent>

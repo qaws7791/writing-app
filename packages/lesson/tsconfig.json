@@ -1,0 +1,10 @@
+{
+  "extends": "@workspace/config/typescript/react-library.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": "."
+  },
+  "include": ["."],
+  "exclude": ["node_modules", "dist"]
+}

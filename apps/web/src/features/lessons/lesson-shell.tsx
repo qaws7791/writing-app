@@ -31,7 +31,7 @@ export function LessonShell({
   readonly header: ReactNode
 }) {
   return (
-    <div className="flex h-dvh min-h-screen w-full flex-col overflow-hidden bg-bg-canvas text-fg-default">
+    <div className="flex h-dvh min-h-screen w-full flex-col overflow-hidden bg-background text-foreground">
       {header}
       <main
         aria-label="레슨 콘텐츠"
@@ -78,14 +78,8 @@ export function LessonProgressHeader({
       >
         <XIcon size={28} />
       </Button>
-      <Progress
-        aria-label="레슨 진행률"
-        className="flex-1"
-        indicatorClassName="bg-progress-lesson-indicator"
-        trackClassName="h-4 bg-bg-surface"
-        value={progress}
-      />
-      <div className="ml-4 text-label-md font-bold text-fg-muted">
+      <Progress aria-label="레슨 진행률" className="flex-1" value={progress} />
+      <div className="ml-4 text-label-md font-bold text-muted-foreground">
         {currentStepNumber}/{totalStepCount}
       </div>
     </header>
@@ -111,12 +105,10 @@ export function LessonCheckedFooter({
       <div className="-mx-6 h-10 bg-gradient-to-t from-bg-canvas to-transparent" />
       <div
         className={
-          feedback.isCorrect
-            ? "-mx-6 h-1 bg-success-bg"
-            : "-mx-6 h-1 bg-danger-bg"
+          feedback.isCorrect ? "-mx-6 h-1 bg-success" : "-mx-6 h-1 bg-danger"
         }
       />
-      <div className="-mx-6 bg-bg-canvas px-6 pt-5 pb-2 grid gap-4">
+      <div className="-mx-6 bg-background px-6 pt-5 pb-2 grid gap-4">
         <div className="grid gap-2">
           <CalloutTitle className="text-[1.25rem] font-black">
             {feedback.title}

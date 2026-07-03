@@ -26,7 +26,7 @@ export function LessonCompleteScreen({
   )
 
   return (
-    <div className="fixed inset-0 z-50 flex min-h-screen w-full flex-col overflow-y-auto bg-action-selected-bg text-action-selected-fg">
+    <div className="fixed inset-0 z-50 flex min-h-screen w-full flex-col overflow-y-auto bg-accent text-accent-foreground">
       <div className="w-full max-w-3xl mx-auto flex flex-col items-center text-center px-6 py-16 my-auto an-fi">
         <div className="mb-4 text-display-lg" aria-hidden="true">
           🙌
@@ -37,17 +37,17 @@ export function LessonCompleteScreen({
         </p>
         {points.length > 0 ? (
           <Surface
-            className="mb-6 w-full rounded-5xl bg-bg-canvas text-left"
+            className="mb-6 w-full rounded-4xl bg-background text-left"
             size="lg"
             variant="panel"
           >
-            <p className="mb-5 text-label-md font-black uppercase text-fg-muted">
+            <p className="mb-5 text-label-md font-black uppercase text-muted-foreground">
               이번 레슨 핵심 요약
             </p>
             <ul className="space-y-4">
               {points.map((point, index) => (
                 <li className="flex items-start gap-4" key={point}>
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-action-selected-bg text-label-md font-black text-action-selected-fg">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-label-md font-black text-accent">
                     {index + 1}
                   </div>
                   <p className="text-body-md font-medium">{point}</p>
@@ -57,24 +57,24 @@ export function LessonCompleteScreen({
           </Surface>
         ) : null}
         <Surface
-          className="mb-10 flex w-full flex-row items-center justify-around rounded-5xl bg-bg-canvas text-center"
+          className="mb-10 flex w-full flex-row items-center justify-around rounded-4xl bg-background text-center"
           size="lg"
           variant="panel"
         >
           <div className="flex flex-col items-center gap-1">
-            <span className="text-label-md font-bold text-fg-muted">
+            <span className="text-label-md font-bold text-muted-foreground">
               완료한 레슨
             </span>
-            <span className="text-heading-lg font-black text-fg-default">
+            <span className="text-heading-lg font-black text-foreground">
               +1
             </span>
           </div>
-          <div className="h-12 w-px rounded-full bg-bg-surface" />
+          <div className="h-12 w-px rounded-full bg-surface" />
           <div className="flex flex-col items-center gap-1">
-            <span className="text-label-md font-bold text-fg-muted">
+            <span className="text-label-md font-bold text-muted-foreground">
               코스 진행률
             </span>
-            <span className="text-heading-lg font-black text-fg-default">
+            <span className="text-heading-lg font-black text-foreground">
               {completedLessons}/{totalLessons}
             </span>
           </div>
@@ -84,7 +84,7 @@ export function LessonCompleteScreen({
             <Button
               className="w-full"
               onClick={() => onNext(nextLesson.id)}
-              size="lg"
+              size="extra"
             >
               다음 레슨 →
             </Button>
@@ -92,7 +92,7 @@ export function LessonCompleteScreen({
           <Button
             className="w-full"
             onClick={onCourse}
-            size="lg"
+            size="extra"
             variant="secondary"
           >
             코스로 돌아가기
