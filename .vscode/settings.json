@@ -1,8 +1,22 @@
 {
   "js/ts.tsdk.path": "node_modules\\typescript\\lib",
-  "tailwindCSS.experimental.configFile": "packages/ui/src/styles/globals.css",
+  "tailwindCSS.experimental.configFile": {
+    "packages/ui/src/styles/globals.css": "packages/ui/src/**",
+    "apps/web/src/app/globals.css": "apps/web/src/**",
+    "apps/admin/src/app/globals.css": "apps/admin/src/**"
+  }, 
   "oxc.fmt.configPath": ".oxfmtrc.json",
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,
-  "oxc.typeAware": true
+  "oxc.typeAware": true,
+  "tailwindCSS.classFunctions": [
+    "tw",
+    "clsx",
+    "tw\\.[a-z-]+",
+    "cva",
+    "cx"
+  ],
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
 }
