@@ -51,16 +51,16 @@ const navigationItems = [
 
 export function AdminSidebar({ activePath }: { readonly activePath: string }) {
   return (
-    <aside className="sticky top-0 flex h-screen flex-col gap-6 bg-bg-surface p-5 max-[860px]:static max-[860px]:h-auto max-[860px]:border-b max-[860px]:border-border-subtle">
+    <aside className="static top-0 flex h-fit flex-col gap-6 bg-surface p-5 max-[860px]:sticky min-[860px]:h-screen max-[860px]:border-b max-[860px]:border-border/50">
       <Link className="flex items-center gap-3 px-3 pb-4 pt-2" href="/">
-        <span className="grid size-[42px] place-items-center rounded-[18px] bg-action-primary-bg text-action-primary-fg font-black">
+        <span className="grid size-[42px] place-items-center rounded-[18px] bg-accent text-accent-foreground font-black">
           글
         </span>
         <span className="grid gap-0.5">
           <strong className="text-[1.375rem] font-black leading-tight">
             글결 관리자
           </strong>
-          <small className="text-label-sm font-bold text-fg-muted">
+          <small className="text-label-sm font-bold text-muted-foreground-foreground">
             글결 운영 콘솔
           </small>
         </span>
@@ -82,8 +82,8 @@ export function AdminSidebar({ activePath }: { readonly activePath: string }) {
               className={cn(
                 "btn-squish flex items-center gap-3 rounded-pill px-4 py-3 text-body-md font-black transition-colors max-[860px]:shrink-0",
                 isActive
-                  ? "bg-action-primary-bg text-action-primary-fg"
-                  : "text-fg-default hover:bg-bg-canvas"
+                  ? "bg-accent text-accent-foreground"
+                  : "text-foreground hover:bg-background"
               )}
               href={item.href}
               key={item.href}
