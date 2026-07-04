@@ -1,18 +1,30 @@
+"use client"
+
 import { useState } from "react"
 
-import type { StepProps } from "./step-types"
-import type { FillBlankStep } from "../lesson-types"
-import { emitAnswer } from "../utils/emit-answer"
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "../../lib/utils"
+import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
 
 export function FillBlankAnswer({
-  checked,
-  onAnswerChange,
-  step,
-}: StepProps<FillBlankStep>) {
+  blankCount,
+  checked = false,
+  onChange,
+  template,
+  words,
+}: {
+  readonly blankCount: number
+  readonly checked?: LessonStepCheckedVisual
+  readonly onChange?: (selectedWords: readonly string[]) => void
+  readonly template: string
+  readonly words: readonly string[]
+}) {
   const [selectedWords, setSelectedWords] = useState<
     readonly (string | null)[]
-  >(() => Array.from({ length: step.answer.length }, () => null))
+  >(() => Array.from({ length: blankCount }, () => null))
+
+  function emitChange(nextWords: readonly (string | null)[]) {
+    onChange?.(nextWords.map((word) => word ?? ""))
+  }
 
   function handleSelectWord(word: string) {
     if (checked !== false) return
@@ -25,10 +37,7 @@ export function FillBlankAnswer({
     if (emptyIndex !== -1) {
       nextWords[emptyIndex] = word
       setSelectedWords(nextWords)
-      emitAnswer(onAnswerChange, step.id, {
-        selectedWords: nextWords.map((w) => w ?? ""),
-        type: "FILL_BLANK",
-      })
+      emitChange(nextWords)
     }
   }
 
@@ -38,10 +47,7 @@ export function FillBlankAnswer({
     const nextWords = [...selectedWords]
     nextWords[index] = null
     setSelectedWords(nextWords)
-    emitAnswer(onAnswerChange, step.id, {
-      selectedWords: nextWords.map((w) => w ?? ""),
-      type: "FILL_BLANK",
-    })
+    emitChange(nextWords)
   }
 
   return (
@@ -53,10 +59,10 @@ export function FillBlankAnswer({
         className="font-medium leading-relaxed mb-10"
         style={{ fontSize: "1.25rem" }}
       >
-        {step.template.split("___").map((part, index) => (
+        {template.split("___").map((part, index) => (
           <span key={index}>
             {part}
-            {index < step.answer.length ? (
+            {index < blankCount ? (
               <span
                 onClick={() => handleRemoveWord(index)}
                 className={cn(
@@ -73,7 +79,7 @@ export function FillBlankAnswer({
         ))}
       </p>
       <div className="flex flex-wrap gap-3">
-        {step.words.map((word) => {
+        {words.map((word) => {
           const used = selectedWords.includes(word)
           return (
             <button

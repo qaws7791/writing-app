@@ -1,32 +1,49 @@
-import { useState, useEffect } from "react"
+"use client"
 
-import type { StepProps } from "./step-types"
-import type { LessonAiFeedback } from "../lesson-logic"
-import type { AiFeedbackStep } from "../lesson-types"
-import { Badge } from "@workspace/ui/components/ui/badge"
-import { Button } from "@workspace/ui/components/ui/button"
-import { Surface } from "@workspace/ui/components/ui/surface"
+import { useState } from "react"
+
+import { Badge } from "../ui/badge"
+import { Button } from "../ui/button"
+import { Surface } from "../ui/surface"
+
+export type AiFeedbackViewModel = {
+  readonly improvements: readonly string[]
+  readonly nextAction: string
+  readonly remainingAttempts: number
+  readonly score: number
+  readonly scoreRange: readonly [number, number]
+  readonly showScore: boolean
+  readonly strengths: readonly string[]
+  readonly summary: string
+}
+
+export type AiFeedbackRequestOutcome =
+  | {
+      readonly feedback: AiFeedbackViewModel
+      readonly status: "ok"
+    }
+  | {
+      readonly message: string
+      readonly status: "error"
+    }
 
 export function AiFeedbackAnswer({
-  onAiFeedbackRequest,
-  step,
-}: StepProps<AiFeedbackStep>) {
+  allowRetry,
+  draftText = "",
+  focus,
+  onRequest,
+}: {
+  readonly allowRetry: boolean
+  readonly draftText?: string
+  readonly focus: string
+  readonly onRequest?: () => Promise<AiFeedbackRequestOutcome>
+}) {
   const [error, setError] = useState<null | string>(null)
-  const [feedback, setFeedback] = useState<LessonAiFeedback | null>(null)
+  const [feedback, setFeedback] = useState<AiFeedbackViewModel | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [draftText, setDraftText] = useState("")
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem(`writing-app-draft-${step.target}`)
-      if (saved) {
-        setDraftText(saved)
-      }
-    }
-  }, [step.target])
 
   async function handleRequest() {
-    if (onAiFeedbackRequest === undefined) {
+    if (onRequest === undefined) {
       setError("AI 코칭을 사용할 수 없습니다.")
       return
     }
@@ -34,10 +51,7 @@ export function AiFeedbackAnswer({
     setError(null)
     setIsLoading(true)
 
-    const result = await onAiFeedbackRequest({
-      answer: draftText || step.target,
-      stepId: step.id,
-    })
+    const result = await onRequest()
 
     setIsLoading(false)
 
@@ -50,13 +64,13 @@ export function AiFeedbackAnswer({
   }
 
   const canRetry =
-    feedback !== null && step.allowRetry && feedback.remainingAttempts > 0
+    feedback !== null && allowRetry && feedback.remainingAttempts > 0
 
   return (
     <div className="an-fi flex flex-col gap-5">
-      {step.focus ? (
+      {focus ? (
         <Badge className="w-fit" tone="neutral">
-          코칭 초점: {step.focus}
+          코칭 초점: {focus}
         </Badge>
       ) : null}
 
@@ -124,7 +138,7 @@ export function AiFeedbackAnswer({
 function AiFeedbackResultView({
   feedback,
 }: {
-  readonly feedback: LessonAiFeedback
+  readonly feedback: AiFeedbackViewModel
 }) {
   return (
     <div className="flex flex-col gap-4">

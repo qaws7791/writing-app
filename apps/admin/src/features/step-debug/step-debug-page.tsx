@@ -4,19 +4,6 @@ import { useState } from "react"
 
 import { lessonStepDefinitions } from "@workspace/contracts/content/steps"
 import {
-  getLessonStepActionLabel,
-  getLessonStepCheckedResult,
-  getLessonStepExplanation,
-  getLessonStepWrongText,
-  isLessonStepCheckable,
-  isLessonStepSubmittable,
-  LessonStepRenderer,
-  type LessonAiFeedbackOutcome,
-  type LessonAiFeedbackRequest,
-  type LessonStepAnswerPayload,
-  type LessonStepCheckedState,
-} from "@workspace/lesson"
-import {
   Button,
   Callout,
   CalloutContent,
@@ -24,6 +11,21 @@ import {
   PageHeader,
 } from "@workspace/ui"
 
+import type {
+  LessonAiFeedbackOutcome,
+  LessonAiFeedbackRequest,
+  LessonStepAnswerPayload,
+} from "@/features/step-debug/step-logic"
+import {
+  getLessonStepActionLabel,
+  getLessonStepCheckedResult,
+  getLessonStepExplanation,
+  getLessonStepWrongText,
+  isLessonStepCheckable,
+  isLessonStepSubmittable,
+  type LessonStepCheckedState,
+} from "@/features/step-debug/step-policy"
+import { LessonStepRenderer } from "@/features/step-debug/step-renderer"
 import { StepDebugPanel } from "@/features/step-debug/step-debug-panel"
 import { STEP_DEBUG_ENTRIES } from "@/features/step-debug/step-debug-samples"
 import { StepDebugValidation } from "@/features/step-debug/step-debug-validation"

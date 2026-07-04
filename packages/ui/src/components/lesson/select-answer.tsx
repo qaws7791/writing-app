@@ -1,18 +1,30 @@
+"use client"
+
 import { useState } from "react"
 
-import type { StepProps } from "./step-types"
-import type { SelectStep } from "../lesson-types"
-import { emitAnswer } from "../utils/emit-answer"
-import { Surface } from "@workspace/ui/components/ui/surface"
-import { cn } from "@workspace/ui/lib/utils"
+import { Surface } from "../ui/surface"
+import { cn } from "../../lib/utils"
+import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
 
 export function SelectAnswer({
-  checked,
-  onAnswerChange,
-  step,
-}: StepProps<SelectStep>) {
+  checked = false,
+  correctIndexes,
+  explanation,
+  layout,
+  onChange,
+  question,
+  segments,
+}: {
+  readonly checked?: LessonStepCheckedVisual
+  readonly correctIndexes: readonly number[]
+  readonly explanation?: string
+  readonly layout?: string
+  readonly onChange?: (selectedIndexes: readonly number[]) => void
+  readonly question: string
+  readonly segments: readonly string[]
+}) {
   const [selectedIndexes, setSelectedIndexes] = useState<readonly number[]>([])
-  const isBlock = step.layout === "block"
+  const isBlock = layout === "block"
 
   return (
     <div className="an-fi">
@@ -20,16 +32,16 @@ export function SelectAnswer({
         className="font-bold mb-10"
         style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
       >
-        {step.question}
+        {question}
       </h2>
       <div
         className={
           isBlock ? "flex flex-col gap-3" : "flex flex-wrap gap-x-2.5 gap-y-3"
         }
       >
-        {step.segments.map((segment, index) => {
+        {segments.map((segment, index) => {
           const isSelected = selectedIndexes.includes(index)
-          const isCorrect = step.correct.includes(index)
+          const isCorrect = correctIndexes.includes(index)
           let cls = "bg-surface"
           if (checked !== false) {
             if (isCorrect && isSelected)
@@ -43,16 +55,11 @@ export function SelectAnswer({
               key={segment}
               onClick={() => {
                 if (checked === false) {
-                  const ws = [...(selectedIndexes || [])]
-                  if (ws.includes(index))
-                    setSelectedIndexes(ws.filter((x: number) => x !== index))
-                  else setSelectedIndexes([...ws, index])
-                  emitAnswer(onAnswerChange, step.id, {
-                    selectedIndexes: ws.includes(index)
-                      ? ws.filter((x: number) => x !== index)
-                      : [...ws, index],
-                    type: "SELECT",
-                  })
+                  const nextIndexes = selectedIndexes.includes(index)
+                    ? selectedIndexes.filter((value) => value !== index)
+                    : [...selectedIndexes, index]
+                  setSelectedIndexes(nextIndexes)
+                  onChange?.(nextIndexes)
                 }
               }}
               className={cn(
@@ -70,14 +77,14 @@ export function SelectAnswer({
           )
         })}
       </div>
-      {checked !== false && step.explanation ? (
+      {checked !== false && explanation ? (
         <Surface
           className="mt-8 bg-surface rounded-4xl p-6"
           size="md"
           variant="panel"
         >
           <div className="font-bold text-muted-foreground mb-2">해설</div>
-          <p className="font-medium">{step.explanation}</p>
+          <p className="font-medium">{explanation}</p>
         </Surface>
       ) : null}
     </div>

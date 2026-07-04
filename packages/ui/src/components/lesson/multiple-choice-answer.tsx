@@ -1,16 +1,26 @@
+"use client"
+
 import { useState } from "react"
 
-import type { StepProps } from "./step-types"
-import type { MultipleChoiceStep } from "../lesson-types"
-import { emitAnswer } from "../utils/emit-answer"
-import { cn } from "@workspace/ui/lib/utils"
+import { cn } from "../../lib/utils"
+import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
 
 export function MultipleChoiceAnswer({
-  checked,
-  onAnswerChange,
-  onAnswerPayloadChange,
-  step,
-}: StepProps<MultipleChoiceStep>) {
+  checked = false,
+  correctOptionId,
+  onSelect,
+  options,
+  question,
+}: {
+  readonly checked?: LessonStepCheckedVisual
+  readonly correctOptionId: string
+  readonly onSelect?: (optionId: string) => void
+  readonly options: readonly {
+    readonly id: string
+    readonly text: string
+  }[]
+  readonly question: string
+}) {
   const [selectedOptionId, setSelectedOptionId] = useState<null | string>(null)
 
   const MC_COLORS: Record<
@@ -36,21 +46,21 @@ export function MultipleChoiceAnswer({
         className="font-bold mb-8"
         style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
       >
-        {step.question}
+        {question}
       </h2>
       <div className="space-y-3">
-        {step.options.map((option) => {
+        {options.map((option) => {
           let variant: "secondary" | "primary" | "correct" | "wrong" =
             "secondary"
-          if (checked === "correct" && option.id === step.correct)
+          if (checked === "correct" && option.id === correctOptionId)
             variant = "correct"
           else if (
             checked === "wrong" &&
             selectedOptionId === option.id &&
-            option.id !== step.correct
+            option.id !== correctOptionId
           )
             variant = "wrong"
-          else if (checked === "wrong" && option.id === step.correct)
+          else if (checked === "wrong" && option.id === correctOptionId)
             variant = "correct"
           else if (checked === false && selectedOptionId === option.id)
             variant = "primary"
@@ -58,7 +68,7 @@ export function MultipleChoiceAnswer({
           const c = MC_COLORS[variant]
           const faded =
             checked !== false &&
-            option.id !== step.correct &&
+            option.id !== correctOptionId &&
             selectedOptionId !== option.id
 
           return (
@@ -67,15 +77,7 @@ export function MultipleChoiceAnswer({
               onClick={() => {
                 if (checked === false) {
                   setSelectedOptionId(option.id)
-                  emitAnswer(
-                    onAnswerChange,
-                    step.id,
-                    {
-                      selectedOptionId: option.id,
-                      type: "MULTIPLE_CHOICE",
-                    },
-                    onAnswerPayloadChange
-                  )
+                  onSelect?.(option.id)
                 }
               }}
               disabled={faded}

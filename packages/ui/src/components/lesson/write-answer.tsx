@@ -1,127 +1,110 @@
-import { useState, useEffect } from "react"
-import ReactMarkdown from "react-markdown"
+"use client"
 
-import type { StepProps } from "./step-types"
-import type { WriteStep } from "../lesson-types"
-import { emitAnswer } from "../utils/emit-answer"
-import { Badge } from "@workspace/ui/components/ui/badge"
-import { Button } from "@workspace/ui/components/ui/button"
-import { Surface } from "@workspace/ui/components/ui/surface"
-import { Textarea } from "@workspace/ui/components/ui/textarea"
-import { cn } from "@workspace/ui/lib/utils"
+import { useState, useEffect } from "react"
+
+import { Badge } from "../ui/badge"
+import { Button } from "../ui/button"
+import { Surface } from "../ui/surface"
+import { Textarea } from "../ui/textarea"
+import { cn } from "../../lib/utils"
+import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
+import { MarkdownContent } from "./markdown-content"
 
 export function WriteAnswer({
-  checked,
-  onAnswerChange,
-  onAnswerPayloadChange,
-  step,
-}: StepProps<WriteStep>) {
-  const [text, setText] = useState(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(`writing-app-draft-${step.id}`) ?? ""
-    }
-    return ""
-  })
+  badge,
+  checked = false,
+  claim,
+  claimLabel,
+  draft = false,
+  goal,
+  guide,
+  initialText = "",
+  max = 2000,
+  min = 20,
+  onChange,
+  onDraftSave,
+  placeholder = "여기에 작성하세요...",
+  reference,
+  sample,
+  structure,
+  title,
+}: {
+  readonly badge?: string
+  readonly checked?: LessonStepCheckedVisual
+  readonly claim?: string
+  readonly claimLabel?: string
+  readonly draft?: boolean
+  readonly goal?: number
+  readonly guide?: string
+  readonly initialText?: string
+  readonly max?: number
+  readonly min?: number
+  readonly onChange?: (text: string) => void
+  readonly onDraftSave?: (text: string) => void
+  readonly placeholder?: string
+  readonly reference?: string
+  readonly sample?: string
+  readonly structure?: string
+  readonly title: string
+}) {
+  const [text, setText] = useState(initialText)
   const [draftSaved, setDraftSaved] = useState(false)
-  const min = step.min || 20
-  const max = step.max ?? 2000
-  const goal = step.goal
-  const title = step.title ?? step.prompt ?? ""
-  const guide = step.guide || step.context
-  const badge =
-    step.badge ??
-    (step.mode === "counter"
-      ? "반박 쓰기"
-      : step.mode === "self-rebut"
-        ? "자기 반박"
-        : null)
-  const claimLabel =
-    step.claimLabel ?? (step.mode === "self-rebut" ? "내 주장" : "대상 주장")
-  const placeholder =
-    step.placeholder ??
-    (step.mode === "self-rebut"
-      ? "내 주장의 약점을 스스로 짚어보세요..."
-      : "여기에 작성하세요...")
   const minHeight = goal
     ? "min-h-[280px]"
-    : step.claim
+    : claim
       ? "min-h-[200px]"
       : "min-h-[150px]"
 
   useEffect(() => {
-    if (text) {
-      emitAnswer(
-        onAnswerChange,
-        step.id,
-        {
-          text,
-          type: "WRITE",
-        },
-        onAnswerPayloadChange
-      )
+    if (initialText) {
+      onChange?.(initialText)
     }
+    // Emit initial draft once on mount when present.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function handleChange(nextText: string) {
     const slicedText = nextText.slice(0, max)
-
     setText(slicedText)
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`writing-app-draft-${step.id}`, slicedText)
-    }
-
-    emitAnswer(
-      onAnswerChange,
-      step.id,
-      {
-        text: slicedText,
-        type: "WRITE",
-      },
-      onAnswerPayloadChange
-    )
+    onChange?.(slicedText)
   }
 
   return (
     <div className="an-fi flex flex-col gap-4">
       <h2 className="text-heading-sm font-bold text-foreground">{title}</h2>
-      {badge === null ? null : (
+      {badge === undefined ? null : (
         <Badge className="w-fit" tone="neutral">
           {badge}
         </Badge>
       )}
-      {step.claim === undefined ? null : (
+      {claim === undefined ? null : (
         <Surface size="md" variant="panel">
           <div className="mb-2 text-label-md font-bold text-muted-foreground">
-            {claimLabel}
+            {claimLabel ?? "대상 주장"}
           </div>
-          <p className="text-body-lg font-medium text-foreground">
-            {step.claim}
-          </p>
+          <p className="text-body-lg font-medium text-foreground">{claim}</p>
         </Surface>
       )}
       {guide ? (
-        <div className="prose prose-sm max-w-none mb-4 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-muted prose-p:font-medium prose-strong:text-charcoal prose-li:text-muted prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted">
-          <ReactMarkdown>{guide}</ReactMarkdown>
-        </div>
+        <MarkdownContent className="mb-4">{guide}</MarkdownContent>
       ) : null}
-      {step.reference === undefined ? null : (
+      {reference === undefined ? null : (
         <Surface size="md" variant="panel">
           <div className="mb-2 text-label-md font-bold text-muted-foreground">
             참고 원문
           </div>
           <p className="text-body-md leading-relaxed text-foreground whitespace-pre-line">
-            {step.reference}
+            {reference}
           </p>
         </Surface>
       )}
-      {step.structure === undefined ? null : (
+      {structure === undefined ? null : (
         <Surface size="md" variant="panel">
           <div className="mb-2 text-label-md font-bold text-muted-foreground">
             구조 가이드
           </div>
           <p className="font-medium text-body-md leading-relaxed text-foreground whitespace-pre-line">
-            {step.structure}
+            {structure}
           </p>
         </Surface>
       )}
@@ -148,10 +131,11 @@ export function WriteAnswer({
           {text.length >= min ? "✓" : "✗"}
         </span>
       </div>
-      {step.draft ? (
+      {draft ? (
         <Button
           className="w-fit self-start"
           onClick={() => {
+            onDraftSave?.(text)
             setDraftSaved(true)
             setTimeout(() => setDraftSaved(false), 2000)
           }}
@@ -161,11 +145,11 @@ export function WriteAnswer({
           {draftSaved ? "저장됨" : "드래프트 저장"}
         </Button>
       ) : null}
-      {checked !== false && step.sample !== undefined ? (
+      {checked !== false && sample !== undefined ? (
         <Surface size="md" variant="panel">
           <div className="mb-2 font-bold text-muted-foreground">참조 답안</div>
           <p className="font-medium text-body-md text-foreground whitespace-pre-line">
-            {step.sample}
+            {sample}
           </p>
         </Surface>
       ) : null}

@@ -8,7 +8,8 @@
 - 앱은 조립자 역할을 한다. 비즈니스 규칙은 가능한 한 `packages/core` 또는 feature 내부 순수 함수에 둔다.
 - 외부 API 응답은 화면에 바로 넘기지 않는다. API mapper 또는 runtime schema parse로 내부 모델에 맞춘다.
 - 클라이언트 컴포넌트는 상호작용 상태가 필요할 때만 사용한다. 서버 컴포넌트에서 충분한 조회는 서버에서 처리한다.
-- 공유 UI는 `packages/ui`에 둔다. 앱 전용 조합, 데이터 조회, 라우팅 정책은 각 앱에 둔다.
+- 공유 UI는 `packages/ui`에 둔다. `components/ui`는 shadcn 프리미티브, `components/<domain>`은 순수 도메인 프레젠테이션이다. API 호출, 세션, 채점, 라우팅은 각 앱 feature에서 조합한다.
+- 학습자 앱의 레슨 모델·답안 payload·채점 정책·`LessonStepRenderer`는 `apps/web/src/features/lessons`가 소유한다. OpenAPI 생성 타입은 `src/lib/api/generated`에 격리하고 feature는 mapper 결과만 사용한다.
 
 ## 2026-06-15 HTTP 클라이언트 응답 계약 검증 시작
 

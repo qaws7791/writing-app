@@ -1,12 +1,13 @@
+"use client"
+
 import type { PointerEvent, KeyboardEvent } from "react"
 import { useState, useEffect, useRef } from "react"
 
-import type { StepProps } from "./step-types"
-import type { OrderStep } from "../lesson-types"
-import { emitAnswer } from "../utils/emit-answer"
-import { Surface } from "@workspace/ui/components/ui/surface"
-import { cn } from "@workspace/ui/lib/utils"
 import { GripVertical } from "lucide-react"
+
+import { Surface } from "../ui/surface"
+import { cn } from "../../lib/utils"
+import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
 
 function shuffleNotEqual(
   items: readonly string[],
@@ -30,12 +31,22 @@ function shuffleNotEqual(
 }
 
 export function OrderAnswer({
-  checked,
-  onAnswerChange,
-  step,
-}: StepProps<OrderStep>) {
+  checked = false,
+  correctItems,
+  explanation,
+  items,
+  onChange,
+  showNumbers,
+}: {
+  readonly checked?: LessonStepCheckedVisual
+  readonly correctItems: readonly string[]
+  readonly explanation?: string
+  readonly items: readonly string[]
+  readonly onChange?: (orderedItems: readonly string[]) => void
+  readonly showNumbers?: boolean
+}) {
   const [orderedItems, setOrderedItems] = useState<readonly string[]>(() =>
-    shuffleNotEqual(step.items, step.correct)
+    shuffleNotEqual(items, correctItems)
   )
   const itemRefs = useRef<(HTMLDivElement | null)[]>([])
   const [dragIndex, setDragIndex] = useState<number | null>(null)
@@ -48,11 +59,10 @@ export function OrderAnswer({
   } | null>(null)
 
   useEffect(() => {
-    emitAnswer(onAnswerChange, step.id, {
-      orderedItems,
-      type: "ORDER",
-    })
-  }, [orderedItems, onAnswerChange, step.id])
+    onChange?.(orderedItems)
+    // Parent may pass an inline callback; only re-emit when order changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderedItems])
 
   const onPointerDown = (e: PointerEvent, index: number) => {
     if (checked !== false) return
@@ -141,7 +151,7 @@ export function OrderAnswer({
     <div className="an-fi">
       <div className="space-y-3 mb-6 select-none">
         {orderedItems.map((item, i) => {
-          const isCorrect = step.correct[i] === item
+          const isCorrect = correctItems[i] === item
           const isDragging = dragIndex === i
           let translateY = 0
           if (dragIndex !== null && hoverIndex !== null && !isDragging) {
@@ -194,7 +204,7 @@ export function OrderAnswer({
                   <GripVertical size={18} />
                 </button>
               ) : null}
-              {step.showNumbers ? (
+              {showNumbers ? (
                 <span className="shrink-0 font-black w-6 text-center mt-0.5 text-body-md">
                   {i + 1}
                 </span>
@@ -209,10 +219,10 @@ export function OrderAnswer({
       {checked !== false ? (
         <Surface className="mt-6" size="md" variant="panel">
           <div className="font-bold text-muted-foreground mb-2">정답 순서</div>
-          <p className="font-medium text-body-md">{step.correct.join(" → ")}</p>
-          {step.explanation ? (
+          <p className="font-medium text-body-md">{correctItems.join(" → ")}</p>
+          {explanation ? (
             <p className="mt-3 font-medium text-muted-foreground text-body-sm">
-              {step.explanation}
+              {explanation}
             </p>
           ) : null}
         </Surface>

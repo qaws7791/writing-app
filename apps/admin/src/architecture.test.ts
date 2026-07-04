@@ -23,6 +23,16 @@ describe("apps/admin architecture", () => {
     expect(violations).toEqual([])
   })
 
+  it("admin app은 제거된 lesson package를 import하지 않는다", () => {
+    const violations = readSourceFiles(adminSourceRoot).flatMap((filePath) => {
+      return readImports(filePath)
+        .filter(isWorkspaceLessonImport)
+        .map((source) => formatViolation(filePath, source))
+    })
+
+    expect(violations).toEqual([])
+  })
+
   it("admin 화면은 admin wire DTO package를 직접 import하지 않는다", () => {
     const violations = readSourceFiles(adminSourceRoot)
       .filter((filePath) => !isAdminApiBoundaryFile(filePath))
@@ -151,6 +161,12 @@ function readStringLiteral(node: ts.Node | undefined): string | null {
 
 function isWorkspaceCoreImport(source: string): boolean {
   return source === "@workspace/core" || source.startsWith("@workspace/core/")
+}
+
+function isWorkspaceLessonImport(source: string): boolean {
+  return (
+    source === "@workspace/lesson" || source.startsWith("@workspace/lesson/")
+  )
 }
 
 function isAdminApiBoundaryFile(filePath: string): boolean {

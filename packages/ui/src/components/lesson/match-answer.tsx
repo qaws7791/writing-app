@@ -1,30 +1,46 @@
-import { useState, useMemo } from "react"
-import ReactMarkdown from "react-markdown"
+"use client"
 
-import type { StepProps } from "./step-types"
-import type { MatchStep } from "../lesson-types"
+import { useState, useMemo } from "react"
+
+import { ChoiceCard } from "../ui/choice-card"
+import { Surface } from "../ui/surface"
+import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
+import { MarkdownContent } from "./markdown-content"
 import {
   createMatchStepPresentation,
   findMatchedLeftChoiceIdForRightChoiceId,
   isCorrectMatchChoice,
   toMatchAnswerPairs,
   toggleMatchSelection,
+  type MatchAnswerPair,
   type MatchChoiceId,
   type MatchSelectionMap,
-} from "../lesson-match-presentation"
-import { emitAnswer } from "../utils/emit-answer"
-import { ChoiceCard } from "@workspace/ui/components/ui/choice-card"
-import { Surface } from "@workspace/ui/components/ui/surface"
+} from "./match-presentation"
 
 export function MatchAnswer({
-  checked,
-  onAnswerChange,
-  onAnswerPayloadChange,
-  step,
-}: StepProps<MatchStep>) {
+  checked = false,
+  explanation,
+  guide,
+  onChange,
+  pairs,
+  title,
+}: {
+  readonly checked?: LessonStepCheckedVisual
+  readonly explanation?: string
+  readonly guide: string
+  readonly onChange?: (pairs: readonly MatchAnswerPair[]) => void
+  readonly pairs: readonly {
+    readonly left: string
+    readonly right: string
+  }[]
+  readonly title: string
+}) {
   const [matchMap, setMatchMap] = useState<MatchSelectionMap>({})
   const [selectedLeft, setSelectedLeft] = useState<MatchChoiceId | null>(null)
-  const presentation = useMemo(() => createMatchStepPresentation(step), [step])
+  const presentation = useMemo(
+    () => createMatchStepPresentation({ pairs }),
+    [pairs]
+  )
 
   function handleLeftTap(leftChoiceId: MatchChoiceId) {
     if (checked !== false) {
@@ -47,27 +63,17 @@ export function MatchAnswer({
     })
 
     setMatchMap(nextMap)
-    emitAnswer(
-      onAnswerChange,
-      step.id,
-      {
-        pairs: toMatchAnswerPairs(presentation, nextMap),
-        type: "MATCH",
-      },
-      onAnswerPayloadChange
-    )
+    onChange?.(toMatchAnswerPairs(presentation, nextMap))
     setSelectedLeft(null)
   }
 
   return (
     <div className="an-fi">
       <h2 className="mb-2 text-heading-sm font-bold">
-        {step.title || "짝을 맞춰보세요"}
+        {title || "짝을 맞춰보세요"}
       </h2>
-      {step.guide ? (
-        <div className="prose prose-sm max-w-none mb-6 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-muted prose-p:font-medium prose-strong:text-charcoal prose-li:text-muted prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted">
-          <ReactMarkdown>{step.guide}</ReactMarkdown>
-        </div>
+      {guide ? (
+        <MarkdownContent className="mb-6">{guide}</MarkdownContent>
       ) : (
         <p className="mb-6 text-body-md font-medium text-muted-foreground">
           왼쪽 단어를 탭하고, 오른쪽에서 알맞은 기능을 탭해 짝을 맞추세요.
@@ -163,10 +169,10 @@ export function MatchAnswer({
           })}
         </div>
       </div>
-      {checked !== false && step.explanation ? (
+      {checked !== false && explanation ? (
         <Surface className="mt-6" size="md" variant="panel">
           <div className="mb-2 font-bold text-muted-foreground">해설</div>
-          <p className="font-medium">{step.explanation}</p>
+          <p className="font-medium">{explanation}</p>
         </Surface>
       ) : null}
     </div>

@@ -1,4 +1,4 @@
-import type { Lesson, LessonStep } from "./lesson-types"
+import type { Lesson, LessonStep } from "@/features/step-debug/step-types"
 
 export type LessonStartedAnswer = {
   readonly kind: "lesson-started"

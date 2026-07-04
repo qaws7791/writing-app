@@ -1,4 +1,4 @@
-import type { LessonStepAnswerPayload } from "./lesson-logic"
+import type { LessonStepAnswerPayload } from "@/features/step-debug/step-logic"
 import type {
   FillBlankStep,
   MatchStep,
@@ -6,7 +6,7 @@ import type {
   OrderStep,
   SelectStep,
   LessonStep,
-} from "./lesson-types"
+} from "@/features/step-debug/step-types"
 
 type CheckableStepType =
   | "FILL_BLANK"

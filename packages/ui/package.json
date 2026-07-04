@@ -15,7 +15,10 @@
     "./utils": "./src/utils/index.ts",
     "./utils/*": "./src/utils/*.ts",
     "./components/icons": "./src/components/icons.tsx",
-    "./components/ui/*": "./src/components/ui/*.tsx"
+    "./components/ui/*": "./src/components/ui/*.tsx",
+    "./components/lesson/match-presentation": "./src/components/lesson/match-presentation.ts",
+    "./components/lesson/lesson-step-checked-visual": "./src/components/lesson/lesson-step-checked-visual.ts",
+    "./components/lesson/*": "./src/components/lesson/*.tsx"
   },
   "scripts": {
     "lint": "oxlint .",
@@ -28,6 +31,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.8.0",
+    "react-markdown": "^10.1.0",
     "tailwind-merge": "^3.5.0",
     "tw-animate-css": "^1.4.0"
   },

@@ -5,7 +5,7 @@ export type {
   MatchSelectionMap,
   MatchStepPresentation,
   MatchStepPresentationInput,
-} from "@workspace/lesson"
+} from "@workspace/ui/components/lesson/match-presentation"
 
 export {
   createMatchStepPresentation,
@@ -13,4 +13,4 @@ export {
   isCorrectMatchChoice,
   toMatchAnswerPairs,
   toggleMatchSelection,
-} from "@workspace/lesson"
+} from "@workspace/ui/components/lesson/match-presentation"

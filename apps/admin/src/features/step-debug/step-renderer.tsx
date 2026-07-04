@@ -20,14 +20,14 @@ import {
   type LessonAiFeedbackRequest,
   type LessonAnswerChange,
   type LessonStepAnswerPayload,
-} from "@/features/lessons/lesson-logic"
+} from "@/features/step-debug/step-logic"
 import {
   getLessonStepDescription,
   getLessonStepTitle,
   isLessonStepStandalone,
   type LessonStepCheckedState,
-} from "@/features/lessons/lesson-step-policy"
-import type { LessonStep } from "@/features/lessons/lesson-types"
+} from "@/features/step-debug/step-policy"
+import type { LessonStep } from "@/features/step-debug/step-types"
 
 export type LessonStepRendererProps = {
   readonly step: LessonStep

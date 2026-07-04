@@ -13,8 +13,7 @@
 │   ├── admin-api/  # Hono - 관리자 API
 │   └── storybook/  # UI 컴포넌트 개발 환경
 ├── packages/
-│   ├── ui/      # 공유 UI 컴포넌트와 디자인 시스템
-│   ├── lesson/  # 레슨 도메인 공유 레이어 (스텝 타입, 렌더러, 정책)
+│   ├── ui/      # 공유 UI 프리미티브와 순수 도메인 프레젠테이션
 │   ├── config/  # 공유 TypeScript 설정
 │   ├── db/      # Drizzle schema, migration, seed, db client
 │   ├── hono/    # Hono OpenAPI route, validation, error handling 표준 패키지

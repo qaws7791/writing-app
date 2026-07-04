@@ -27,7 +27,7 @@
 - 기존 `cream`, `surface`, `charcoal`, `primary`, `destructive` 이름은 이관 중 호환 alias로 유지한다.
 - Button의 기존 `default` variant는 migration alias로 유지하고, 새 문서와 story는 `solid` 또는 `primary` 같은 명확한 이름을 사용한다.
 - Base UI 기반 overlay, menu, disclosure, segmented selection은 앱에서 직접 다시 구현하지 않는다.
-- `CourseCard`, `LessonStep`, `AdminCourseTable`처럼 도메인 이름을 가진 module은 공용 UI API로 올리지 않는다.
+- 비즈니스 로직·라우팅·데이터 조회가 섞인 feature module(`CourseCard` 조립체, `AdminCourseTable` 등)은 공용 UI API로 올리지 않는다. 순수 도메인 프레젠테이션은 ADR-0003에 따라 `components/<domain>`에 둘 수 있다.
 
 ## 고려한 대안
 

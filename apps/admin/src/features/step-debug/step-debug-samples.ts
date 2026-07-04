@@ -1,4 +1,4 @@
-import type { LessonStep } from "@workspace/lesson"
+import type { LessonStep } from "@/features/step-debug/step-types"
 
 type LessonStepDebugDto = Omit<LessonStep, "order"> & {
   readonly sortOrder: number

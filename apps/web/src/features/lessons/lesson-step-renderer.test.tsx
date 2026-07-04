@@ -8,14 +8,14 @@ import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
 import type { LessonStep } from "@/features/lessons/lesson-types"
 
 describe("레슨 스텝 렌더러 답변 저장", () => {
-  it("스텝 타입별 콘텐츠 렌더링은 switch 대신 레지스트리로 연결한다", () => {
+  it("스텝 타입별 콘텐츠는 앱 렌더러가 UI 패키지 컴포넌트로 조합한다", () => {
     const source = readFileSync(
-      join(process.cwd(), "../../packages/lesson/src/lesson-step-renderer.tsx"),
+      join(process.cwd(), "src/features/lessons/lesson-step-renderer.tsx"),
       "utf8"
     )
 
-    expect(source).toContain("STEP_COMPONENTS")
-    expect(source).not.toContain("switch (step.type)")
+    expect(source).toContain("@workspace/ui/components/lesson/")
+    expect(source).toContain("switch (step.type)")
   })
 
   it("객관식 선택을 현재 제품 버튼 UI로 타입별 payload로 전달한다", async () => {
@@ -133,7 +133,11 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     const buttons = screen.getAllByRole("button", {
       name: "드래그하여 순서 변경",
     })
-    fireEvent.keyDown(buttons[1], { key: "ArrowUp" })
+    const secondHandle = buttons[1]
+    if (secondHandle === undefined) {
+      throw new Error("순서 변경 핸들을 찾지 못했습니다.")
+    }
+    fireEvent.keyDown(secondHandle, { key: "ArrowUp" })
 
     expect(onAnswerChange).toHaveBeenCalledWith({
       answer: {

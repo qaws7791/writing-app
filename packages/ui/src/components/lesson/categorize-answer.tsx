@@ -1,12 +1,12 @@
-import { useState } from "react"
-import ReactMarkdown from "react-markdown"
+"use client"
 
-import type { StepProps } from "./step-types"
-import type { CategorizeStep } from "../lesson-types"
-import { emitAnswer } from "../utils/emit-answer"
-import { Badge } from "@workspace/ui/components/ui/badge"
-import { Surface } from "@workspace/ui/components/ui/surface"
-import { cn } from "@workspace/ui/lib/utils"
+import { useState } from "react"
+
+import { Badge } from "../ui/badge"
+import { Surface } from "../ui/surface"
+import { cn } from "../../lib/utils"
+import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
+import { MarkdownContent } from "./markdown-content"
 
 const CATEGORY_PALETTE = [
   {
@@ -48,19 +48,59 @@ function getDefaultCategoryPalette(): (typeof CATEGORY_PALETTE)[number] {
   return palette
 }
 
+export type CategorizePlacement = {
+  readonly categoryId: string
+  readonly itemId: string
+}
+
 export function CategorizeAnswer({
-  checked,
-  onAnswerChange,
-  onAnswerPayloadChange,
-  step,
-}: StepProps<CategorizeStep>) {
+  categories,
+  checked = false,
+  explanation,
+  guide,
+  items,
+  onChange,
+  title,
+}: {
+  readonly categories: readonly {
+    readonly id: string
+    readonly label: string
+  }[]
+  readonly checked?: LessonStepCheckedVisual
+  readonly explanation?: string
+  readonly guide: string
+  readonly items: readonly {
+    readonly categoryId: string
+    readonly id: string
+    readonly text: string
+  }[]
+  readonly onChange?: (placements: readonly CategorizePlacement[]) => void
+  readonly title: string
+}) {
   const [placements, setPlacements] = useState<
     Readonly<Record<string, string>>
   >({})
   const [activeTagId, setActiveTagId] = useState<null | string>(null)
 
   function getCategoryIndex(categoryId: string): number {
-    return step.categories.findIndex((category) => category.id === categoryId)
+    return categories.findIndex((category) => category.id === categoryId)
+  }
+
+  function emitChange(nextPlacements: Readonly<Record<string, string>>) {
+    onChange?.(
+      items.flatMap((item) => {
+        const categoryId = nextPlacements[item.id]
+
+        return categoryId === undefined
+          ? []
+          : [
+              {
+                categoryId,
+                itemId: item.id,
+              },
+            ]
+      })
+    )
   }
 
   function handleTagTap(categoryId: string) {
@@ -87,41 +127,20 @@ export function CategorizeAnswer({
     }
 
     setPlacements(nextPlacements)
-    emitAnswer(
-      onAnswerChange,
-      step.id,
-      {
-        items: step.items.flatMap((item) => {
-          const categoryId = nextPlacements[item.id]
-
-          return categoryId === undefined
-            ? []
-            : [
-                {
-                  categoryId,
-                  itemId: item.id,
-                },
-              ]
-        }),
-        type: "CATEGORIZE",
-      },
-      onAnswerPayloadChange
-    )
+    emitChange(nextPlacements)
   }
 
   return (
     <div className="select-none flex flex-col" style={{ minHeight: "100%" }}>
       <div className="flex-1">
         <h2 className="mb-2 text-heading-sm font-bold">
-          {step.title || "항목을 분류하세요"}
+          {title || "항목을 분류하세요"}
         </h2>
-        {step.guide ? (
-          <div className="prose prose-sm max-w-none mb-5 prose-headings:font-bold prose-headings:text-charcoal prose-p:text-muted prose-p:font-medium prose-strong:text-charcoal prose-li:text-muted prose-li:font-medium prose-code:bg-surface prose-code:rounded prose-code:px-1 prose-code:text-charcoal prose-blockquote:border-primary prose-blockquote:text-muted">
-            <ReactMarkdown>{step.guide}</ReactMarkdown>
-          </div>
+        {guide ? (
+          <MarkdownContent className="mb-5">{guide}</MarkdownContent>
         ) : null}
         <div className="flex flex-col gap-3 mb-4">
-          {step.items.map((item) => {
+          {items.map((item) => {
             const assignedCategoryId = placements[item.id]
             const categoryIndex =
               assignedCategoryId === undefined
@@ -132,7 +151,7 @@ export function CategorizeAnswer({
             const category =
               assignedCategoryId === undefined
                 ? null
-                : step.categories.find(
+                : categories.find(
                     (candidate) => candidate.id === assignedCategoryId
                   )
             const isTagged = assignedCategoryId !== undefined
@@ -179,10 +198,10 @@ export function CategorizeAnswer({
             )
           })}
         </div>
-        {checked !== false && step.explanation ? (
+        {checked !== false && explanation ? (
           <Surface className="mt-2 an-fi" size="md" variant="panel">
             <div className="mb-2 font-bold text-muted-foreground">해설</div>
-            <p className="font-medium">{step.explanation}</p>
+            <p className="font-medium">{explanation}</p>
           </Surface>
         ) : null}
       </div>
@@ -192,7 +211,7 @@ export function CategorizeAnswer({
             태그 선택
           </div>
           <div className="flex flex-wrap gap-2">
-            {step.categories.map((category, idx) => {
+            {categories.map((category, idx) => {
               const isActive = activeTagId === category.id
               const palette = getCategoryPalette(idx)
 
