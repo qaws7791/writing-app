@@ -46,6 +46,7 @@ import {
   FilterToolbarField,
   FilterToolbarLabel,
 } from "@workspace/ui/components/ui/filter-toolbar"
+import { Input } from "@workspace/ui/components/ui/input"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
 import {
   Select,
@@ -154,11 +155,11 @@ export function AdminCoursesPage({
               className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
               size={16}
             />
-            <input
+            <Input
               defaultValue={filters.query}
               name="query"
               placeholder="강의 제목 또는 설명 검색..."
-              className="w-full bg-transparent rounded-2xl pl-10 pr-4 py-2.5 text-foreground placeholder:text-muted-foreground outline-none border border-border/50 focus:border-fg-muted transition-colors text-sm font-semibold"
+              className="pl-10 font-semibold"
             />
           </FilterToolbarField>
           <FilterToolbarField className="gap-0">
@@ -173,7 +174,7 @@ export function AdminCoursesPage({
                 formRef.current?.requestSubmit()
               }}
             >
-              <SelectTrigger className="bg-transparent rounded-2xl border border-border/50 cursor-pointer text-sm font-semibold flex items-center px-4 py-2.5 h-11 hover:border-fg-muted transition-colors w-[180px]">
+              <SelectTrigger className="w-[180px] font-semibold">
                 <SelectValue placeholder="전체 카테고리" />
               </SelectTrigger>
               <SelectContent>
@@ -199,7 +200,7 @@ export function AdminCoursesPage({
                 formRef.current?.requestSubmit()
               }}
             >
-              <SelectTrigger className="bg-transparent rounded-2xl border border-border/50 cursor-pointer text-sm font-semibold flex items-center px-4 py-2.5 h-11 hover:border-fg-muted transition-colors w-[140px]">
+              <SelectTrigger className="w-[140px] font-semibold">
                 <SelectValue placeholder="전체 상태" />
               </SelectTrigger>
               <SelectContent>
@@ -356,7 +357,7 @@ export function AdminCoursesPage({
                     formRef.current?.requestSubmit()
                   }}
                 >
-                  <SelectTrigger className="bg-transparent rounded-xl border border-border/50 cursor-pointer text-sm font-semibold flex items-center px-2.5 py-1.5 h-8 hover:border-fg-muted transition-colors w-[80px]">
+                  <SelectTrigger className="h-8 w-[80px] font-semibold">
                     <SelectValue placeholder="20개" />
                   </SelectTrigger>
                   <SelectContent>

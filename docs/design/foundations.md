@@ -99,6 +99,7 @@
 ## Shadow와 Border
 
 - `@workspace/ui`의 `Card`와 앱 패널은 shadow보다 색상 면, radius, 얇은 charcoal alpha border로 구분한다.
+- Input, Textarea, Select trigger 같은 form control은 배경 fill 없이 `border-field-border`로 구분한다.
 - Dialog shadow는 `0 20px 45px rgb(42 38 33 / 0.16)`을 기준으로 사용한다.
 - focus ring은 `border-focus` semantic token을 사용한다.
 

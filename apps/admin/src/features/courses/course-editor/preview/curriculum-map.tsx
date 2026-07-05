@@ -25,7 +25,7 @@ export function CurriculumMap({
             <ol className="grid list-none gap-1 p-0">
               {unit.lessons.map((lesson) => (
                 <li
-                  className="rounded-control bg-surface px-2.5 py-2 text-label-sm font-semibold text-muted-foreground"
+                  className="rounded-md bg-surface px-2.5 py-2 text-label-sm font-semibold text-muted-foreground"
                   key={lesson.id}
                 >
                   {lesson.title}

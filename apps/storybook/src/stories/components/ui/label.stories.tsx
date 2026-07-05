@@ -1,6 +1,6 @@
 ﻿import type { Meta, StoryObj } from "@storybook/react-vite"
 
-import { Label } from "@workspace/ui"
+import { Input, Label } from "@workspace/ui"
 
 const meta = {
   title: "Components/UI/Label",
@@ -33,12 +33,7 @@ export const WithInput: Story = {
   render: () => (
     <div className="grid w-full max-w-sm items-center gap-2">
       <Label htmlFor="email-input">이메일 주소</Label>
-      <input
-        type="email"
-        id="email-input"
-        placeholder="example@email.com"
-        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
-      />
+      <Input type="email" id="email-input" placeholder="example@email.com" />
     </div>
   ),
 }
@@ -72,13 +67,7 @@ export const RequiredField: Story = {
       <Label htmlFor="required-username">
         사용자 이름 <span className="text-destructive font-semibold">*</span>
       </Label>
-      <input
-        type="text"
-        id="required-username"
-        placeholder="홍길동"
-        required
-        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-      />
+      <Input type="text" id="required-username" placeholder="홍길동" required />
     </div>
   ),
 }
@@ -93,12 +82,12 @@ export const DisabledState: Story = {
     <div className="grid gap-6 max-w-sm">
       <div className="grid w-full items-center gap-2">
         <Label htmlFor="disabled-input">비활성 입력 필드</Label>
-        <input
+        <Input
           type="text"
           id="disabled-input"
           disabled
           placeholder="입력할 수 없습니다"
-          className="peer flex h-9 w-full rounded-md border border-input bg-muted px-3 py-1 text-sm shadow-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50"
+          className="peer"
         />
       </div>
       <div className="flex items-center space-x-2">

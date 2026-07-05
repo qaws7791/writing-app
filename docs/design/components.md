@@ -90,8 +90,10 @@
 
 구현 위치: `packages/ui/src/components/ui/input.tsx`
 
+공통 field control contract는 `packages/ui/src/lib/field-control-variants.ts`에 정의한다.
+
 - 높이는 density token의 `control-height-md`를 따른다.
-- `bg-surface`, `rounded-control`, `border-border`, `focus-visible:ring-3`을 사용한다.
+- `bg-transparent`, `border-field-border`, `rounded-control`, hover/focus 시 border 강조, `focus-visible:ring-3`을 사용한다.
 - invalid 상태는 `aria-invalid="true"`로 표시한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 
@@ -99,9 +101,9 @@
 
 구현 위치: `packages/ui/src/components/ui/select.tsx`
 
-- native `select`를 감싼 primitive다.
+- Base UI select primitive다.
+- `SelectTrigger`는 Input과 동일한 field control contract를 따른다.
 - 높이는 density token의 `control-height-md`를 따른다.
-- `bg-bg-elevated`, `rounded-control`, `border-border`, `focus-visible:ring-3`을 사용한다.
 - 라우팅이나 데이터 정책이 없는 필터, 정렬, 페이지 크기 선택에 사용한다.
 - 복잡한 combobox나 다중 선택이 필요해지면 Base UI 기반 별도 primitive를 추가한다.
 
@@ -109,8 +111,9 @@
 
 구현 위치: `packages/ui/src/components/ui/textarea.tsx`
 
+- Input과 동일한 field control contract를 따른다.
 - 최소 높이 96px.
-- `bg-bg-elevated`, `rounded-control`, `border-border`, `focus-visible:ring-3`을 사용한다.
+- `bg-transparent`, `border-field-border`, `rounded-control`, hover/focus 시 border 강조, `focus-visible:ring-3`을 사용한다.
 - 긴 본문 편집처럼 화면별 높이가 필요한 경우 `className`으로 `min-h-*`를 조정한다.
 - placeholder만으로 필드 이름을 대신하지 않는다. 보이는 label 또는 `aria-label`을 제공한다.
 

@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
-import { Surface } from "@workspace/ui/components/ui/surface"
 
 export function AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
   const router = useRouter()
@@ -42,12 +41,8 @@ export function AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
 
   return (
     <main className="grid min-h-screen place-items-center bg-background p-6">
-      <Surface
-        aria-labelledby="admin-login-title"
-        className="grid w-full max-w-[420px] justify-items-center gap-3 p-9 text-center"
-        variant="panel"
-      >
-        <div className="grid size-14 place-items-center rounded-control bg-accent text-accent-foreground">
+      <div className="grid w-full max-w-[420px] justify-items-center gap-3 p-9 text-center">
+        <div className="grid size-14 place-items-center rounded-md bg-accent text-accent-foreground">
           <ShieldCheckIcon aria-hidden="true" size={28} />
         </div>
         <span className="text-label-sm font-black text-muted-foreground">
@@ -90,7 +85,7 @@ export function AdminAuthPage({ nextPath }: { readonly nextPath: string }) {
             로그인
           </Button>
         </form>
-      </Surface>
+      </div>
     </main>
   )
 }

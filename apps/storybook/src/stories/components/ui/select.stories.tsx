@@ -240,7 +240,7 @@ export const Sizes: Story = {
           Default 크기 (h-9)
         </span>
         <Select defaultValue="default">
-          <SelectTrigger size="default" className="w-[180px]">
+          <SelectTrigger className="w-[180px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -253,7 +253,7 @@ export const Sizes: Story = {
       <div className="flex flex-col gap-1">
         <span className="text-xs text-muted-foreground">Small 크기 (h-8)</span>
         <Select defaultValue="sm">
-          <SelectTrigger size="sm" className="w-[180px]">
+          <SelectTrigger className="h-8 w-[180px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

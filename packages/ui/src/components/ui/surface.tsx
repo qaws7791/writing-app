@@ -9,7 +9,7 @@ const surfaceVariants = cva("text-foreground", {
     variant: {
       default: "bg-surface",
       elevated: "bg-bg-elevated",
-      panel: "rounded-panel bg-surface",
+      panel: "rounded-3xl bg-surface",
     },
     size: {
       none: "",
