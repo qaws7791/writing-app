@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { FileText, KeyRound, Megaphone, Check } from "lucide-react"
 
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
@@ -21,15 +22,21 @@ import {
 import { Button } from "@workspace/ui/components/ui/button"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import { Input } from "@workspace/ui/components/ui/input"
-import { PageHeader } from "@workspace/ui/components/ui/page-header"
-import { SectionHeader } from "@workspace/ui/components/ui/section-header"
-import { Surface } from "@workspace/ui/components/ui/surface"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
+import { cn } from "@workspace/ui/lib/utils"
+
+type SettingsTab = "access" | "legal" | "notice"
 
 type StatusMessage = {
   readonly message: string
   readonly tone: "danger" | "success"
 }
+
+const tabs = [
+  { icon: Megaphone, id: "notice" as const, label: "공지·배너" },
+  { icon: FileText, id: "legal" as const, label: "약관·개인정보" },
+  { icon: KeyRound, id: "access" as const, label: "접근·콘텐츠" },
+]
 
 export function AdminSettingsPage({
   resetContent,
@@ -46,18 +53,18 @@ export function AdminSettingsPage({
   ) => Promise<AdminApiResult<AdminSettings>>
   readonly settingsResult: AdminApiResult<AdminSettings>
 }) {
+  const [tab, setTab] = useState<SettingsTab>("notice")
   const [isPending, startTransition] = useTransition()
   const [message, setMessage] = useState<StatusMessage | null>(null)
+  const [savedNotice, setSavedNotice] = useState(false)
+  const [savedLegal, setSavedLegal] = useState(false)
   const [resetRevision, setResetRevision] = useState<number | null>(null)
   const [showResetDialog, setShowResetDialog] = useState(false)
 
   if (settingsResult.status === "error") {
     return (
       <>
-        <PageHeader
-          description="공지, 약관, 콘텐츠 초기화를 관리합니다."
-          title="운영 설정"
-        />
+        <SettingsHeading />
         <Alert role="alert" tone="danger">
           <AlertDescription>{settingsResult.error.message}</AlertDescription>
         </Alert>
@@ -69,10 +76,7 @@ export function AdminSettingsPage({
 
   return (
     <>
-      <PageHeader
-        description="공지, 약관, 콘텐츠 초기화를 관리합니다."
-        title="운영 설정"
-      />
+      <SettingsHeading />
       {message === null ? null : (
         <Alert className="mb-4" role="status" tone={message.tone}>
           <AlertDescription className="flex flex-wrap gap-2">
@@ -83,9 +87,27 @@ export function AdminSettingsPage({
           </AlertDescription>
         </Alert>
       )}
-      <section className="grid gap-4 lg:grid-cols-2">
+      <div className="mb-6 flex flex-wrap gap-2">
+        {tabs.map(({ icon: Icon, id, label }) => (
+          <button
+            className={cn(
+              "btn-squish inline-flex items-center gap-2 rounded-3xl px-4 py-2.5 text-[0.875rem] font-bold transition-colors",
+              tab === id
+                ? "bg-primary text-primary-foreground"
+                : "bg-surface text-foreground"
+            )}
+            key={id}
+            onClick={() => setTab(id)}
+            type="button"
+          >
+            <Icon aria-hidden="true" size={16} />
+            {label}
+          </button>
+        ))}
+      </div>
+      {tab === "notice" ? (
         <form
-          className="grid gap-4 rounded-panel border border-border/50 bg-surface p-6"
+          className="max-w-2xl rounded-4xl bg-surface p-6"
           onSubmit={(event) => {
             event.preventDefault()
             const formData = new FormData(event.currentTarget)
@@ -96,42 +118,51 @@ export function AdminSettingsPage({
                 banner: String(formData.get("banner") ?? ""),
               })
 
-              setMessage(
-                result.status === "ok"
-                  ? { message: "운영 설정을 저장했습니다.", tone: "success" }
-                  : { message: result.error.message, tone: "danger" }
-              )
+              if (result.status === "ok") {
+                flashSaved(setSavedNotice)
+                setMessage({
+                  message: "운영 설정을 저장했습니다.",
+                  tone: "success",
+                })
+                return
+              }
+
+              setMessage({
+                message: result.error.message,
+                tone: "danger",
+              })
             })
           }}
         >
-          <SectionHeader
-            title="공지와 배너"
-            description="학습자에게 노출할 운영 메시지입니다."
-          />
           <Field>
-            <FieldLabel htmlFor="settings-banner">배너</FieldLabel>
+            <FieldLabel htmlFor="settings-banner">상단 배너 문구</FieldLabel>
             <Input
-              aria-label="배너"
               defaultValue={notice.banner}
               id="settings-banner"
               name="banner"
+              placeholder="예: 새 강의가 추가되었어요!"
             />
           </Field>
-          <Field>
-            <FieldLabel htmlFor="settings-announce">공지</FieldLabel>
+          <Field className="mt-4">
+            <FieldLabel htmlFor="settings-announce">공지 내용</FieldLabel>
             <Textarea
-              aria-label="공지"
               defaultValue={notice.announce}
               id="settings-announce"
               name="announce"
+              rows={5}
             />
           </Field>
-          <Button disabled={isPending} type="submit">
-            공지 저장
-          </Button>
+          <div className="mt-4 flex items-center gap-2">
+            <Button disabled={isPending} type="submit">
+              저장
+            </Button>
+            <SavedHint show={savedNotice} />
+          </div>
         </form>
+      ) : null}
+      {tab === "legal" ? (
         <form
-          className="grid gap-4 rounded-panel border border-border/50 bg-surface p-6"
+          className="max-w-2xl rounded-4xl bg-surface p-6"
           onSubmit={(event) => {
             event.preventDefault()
             const formData = new FormData(event.currentTarget)
@@ -142,54 +173,67 @@ export function AdminSettingsPage({
                 terms: String(formData.get("terms") ?? ""),
               })
 
-              setMessage(
-                result.status === "ok"
-                  ? { message: "운영 설정을 저장했습니다.", tone: "success" }
-                  : { message: result.error.message, tone: "danger" }
-              )
+              if (result.status === "ok") {
+                flashSaved(setSavedLegal)
+                setMessage({
+                  message: "운영 설정을 저장했습니다.",
+                  tone: "success",
+                })
+                return
+              }
+
+              setMessage({
+                message: result.error.message,
+                tone: "danger",
+              })
             })
           }}
         >
-          <SectionHeader
-            title="법적 문서"
-            description="이용약관과 개인정보처리방침 본문입니다."
-          />
           <Field>
             <FieldLabel htmlFor="settings-terms">이용약관</FieldLabel>
             <Textarea
-              aria-label="이용약관"
               defaultValue={legal.terms}
               id="settings-terms"
               name="terms"
+              rows={6}
             />
           </Field>
-          <Field>
+          <Field className="mt-4">
             <FieldLabel htmlFor="settings-privacy">개인정보처리방침</FieldLabel>
             <Textarea
-              aria-label="개인정보처리방침"
               defaultValue={legal.privacy}
               id="settings-privacy"
               name="privacy"
+              rows={6}
             />
           </Field>
-          <Button disabled={isPending} type="submit">
-            약관 저장
-          </Button>
+          <div className="mt-4 flex items-center gap-2">
+            <Button disabled={isPending} type="submit">
+              저장
+            </Button>
+            <SavedHint show={savedLegal} />
+          </div>
         </form>
-        <Surface className="lg:col-span-2" variant="panel">
-          <SectionHeader
-            title="콘텐츠 초기화"
-            description="기준 콘텐츠 seed로 콘텐츠 baseline을 재시드합니다."
-          />
-          <Button
-            variant="destructive"
-            onClick={() => setShowResetDialog(true)}
-            type="button"
-          >
-            콘텐츠 초기화
-          </Button>
-        </Surface>
-      </section>
+      ) : null}
+      {tab === "access" ? (
+        <div className="flex max-w-2xl flex-col gap-5">
+          <article className="rounded-4xl bg-surface p-6">
+            <h2 className="m-0 mb-2 text-[1.125rem] font-bold text-foreground">
+              콘텐츠 초기화
+            </h2>
+            <p className="m-0 mb-4 text-[0.875rem] font-medium text-muted-foreground">
+              기준 콘텐츠 seed로 콘텐츠 baseline을 재시드합니다.
+            </p>
+            <Button
+              onClick={() => setShowResetDialog(true)}
+              type="button"
+              variant="destructive"
+            >
+              콘텐츠 초기화
+            </Button>
+          </article>
+        </div>
+      ) : null}
       <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
         <AlertDialogContent>
           <AlertDialogTitle>콘텐츠 초기화 확인</AlertDialogTitle>
@@ -199,7 +243,6 @@ export function AdminSettingsPage({
           <AlertDialogFooter>
             <AlertDialogCancel>취소</AlertDialogCancel>
             <Button
-              variant="destructive"
               disabled={isPending}
               onClick={() => {
                 startTransition(async () => {
@@ -221,6 +264,7 @@ export function AdminSettingsPage({
                 })
               }}
               type="button"
+              variant="destructive"
             >
               초기화 실행
             </Button>
@@ -229,4 +273,33 @@ export function AdminSettingsPage({
       </AlertDialog>
     </>
   )
+}
+
+function SettingsHeading() {
+  return (
+    <header className="mb-6">
+      <h1 className="m-0 text-[2rem] font-bold text-foreground">운영 설정</h1>
+      <p className="mt-1 text-[1.0625rem] font-medium text-muted-foreground">
+        서비스 운영에 필요한 설정을 관리합니다.
+      </p>
+    </header>
+  )
+}
+
+function SavedHint({ show }: { readonly show: boolean }) {
+  if (!show) {
+    return null
+  }
+
+  return (
+    <span className="ml-2 inline-flex items-center gap-1 text-[0.8125rem] font-bold text-mint-dark">
+      <Check aria-hidden="true" size={14} />
+      저장됨
+    </span>
+  )
+}
+
+function flashSaved(setSaved: (value: boolean) => void) {
+  setSaved(true)
+  window.setTimeout(() => setSaved(false), 2000)
 }

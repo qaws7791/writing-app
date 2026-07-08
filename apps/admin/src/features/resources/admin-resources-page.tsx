@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useState, useTransition } from "react"
+import { useRef, useState, useTransition } from "react"
 
 import { StatusBadge } from "@/components/status-badge"
 import { readPlainTextFromTiptapDocument } from "@/features/resources/resource-document-content"
@@ -16,6 +16,7 @@ import {
   ArchiveIcon,
   FileTextIcon,
   PlusIcon,
+  SearchIcon,
   TrashIcon,
 } from "@workspace/ui/components/icons"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
@@ -35,14 +36,18 @@ import {
 } from "@workspace/ui/components/ui/empty"
 import { Field, FieldLabel } from "@workspace/ui/components/ui/field"
 import {
-  FilterToolbar,
   FilterToolbarField,
   FilterToolbarLabel,
 } from "@workspace/ui/components/ui/filter-toolbar"
 import { Input } from "@workspace/ui/components/ui/input"
 import { PageHeader } from "@workspace/ui/components/ui/page-header"
-import { SectionHeader } from "@workspace/ui/components/ui/section-header"
-import { Select } from "@workspace/ui/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/ui/select"
 import { Surface } from "@workspace/ui/components/ui/surface"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
@@ -66,14 +71,12 @@ export function AdminResourcesPage({
 }) {
   const [message, setMessage] = useState<StatusMessage | null>(null)
   const [isPending, startTransition] = useTransition()
+  const formRef = useRef<HTMLFormElement>(null)
 
   if (documentsResult.status === "error") {
     return (
       <>
-        <PageHeader
-          description="운영 자료와 교육 문서를 저장하고 검색합니다."
-          title="자료실"
-        />
+        <ResourcesHeading />
         <Alert role="alert" tone="danger">
           <AlertDescription>{documentsResult.error.message}</AlertDescription>
         </Alert>
@@ -85,46 +88,87 @@ export function AdminResourcesPage({
 
   return (
     <>
-      <PageHeader
-        description="운영 자료와 교육 문서를 저장하고 검색합니다."
-        title="자료실"
-      />
-      <FilterToolbar method="get" aria-label="자료 필터">
-        <FilterToolbarField>
-          <FilterToolbarLabel>자료 검색</FilterToolbarLabel>
+      <ResourcesHeading totalDocuments={documents.pagination.totalItems} />
+      <form
+        ref={formRef}
+        aria-label="자료 필터"
+        className="mb-4 flex flex-wrap items-center gap-3"
+        method="get"
+      >
+        <FilterToolbarField className="relative min-w-[220px] flex-1 gap-0">
+          <FilterToolbarLabel className="sr-only">자료 검색</FilterToolbarLabel>
+          <SearchIcon
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+            size={16}
+          />
           <Input
             aria-label="자료 검색"
+            className="pl-10 font-semibold"
             defaultValue={filters.query}
             name="query"
-            placeholder="제목 또는 본문 검색"
+            placeholder="제목 또는 본문 검색…"
           />
         </FilterToolbarField>
-        <FilterToolbarField>
-          <FilterToolbarLabel>상태</FilterToolbarLabel>
-          <Select aria-label="상태" defaultValue={filters.status} name="status">
-            <option value="all">전체</option>
-            <option value="active">active</option>
-            <option value="archived">archived</option>
+        <FilterToolbarField className="gap-0">
+          <FilterToolbarLabel className="sr-only">상태</FilterToolbarLabel>
+          <Select
+            aria-label="상태"
+            defaultValue={filters.status}
+            name="status"
+            onValueChange={() => {
+              formRef.current?.requestSubmit()
+            }}
+          >
+            <SelectTrigger
+              className="w-[140px] font-semibold"
+              variant="outlined"
+            >
+              <SelectValue placeholder="전체" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="active">활성</SelectItem>
+              <SelectItem value="archived">보관</SelectItem>
+            </SelectContent>
           </Select>
         </FilterToolbarField>
-        <FilterToolbarField>
-          <FilterToolbarLabel>페이지 크기</FilterToolbarLabel>
+        <FilterToolbarField className="gap-0">
+          <FilterToolbarLabel className="sr-only">
+            페이지 크기
+          </FilterToolbarLabel>
           <Select
             aria-label="페이지 크기"
-            defaultValue={filters.pageSize}
+            defaultValue={String(filters.pageSize)}
             name="pageSize"
+            onValueChange={() => {
+              formRef.current?.requestSubmit()
+            }}
           >
-            <option value={10}>10개</option>
-            <option value={20}>20개</option>
-            <option value={50}>50개</option>
+            <SelectTrigger
+              className="w-[120px] font-semibold"
+              variant="outlined"
+            >
+              <SelectValue placeholder="20개" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="10">10개</SelectItem>
+              <SelectItem value="20">20개</SelectItem>
+              <SelectItem value="50">50개</SelectItem>
+            </SelectContent>
           </Select>
         </FilterToolbarField>
-        <Button variant="outline" type="submit">
-          필터 적용
-        </Button>
-      </FilterToolbar>
-      <Surface className="mb-4" variant="panel">
-        <SectionHeader title="새 자료" description="운영 자료를 작성합니다." />
+        <span className="ml-auto text-sm font-bold text-muted-foreground">
+          {documents.pagination.totalItems}개
+        </span>
+      </form>
+      <article className="mb-4 rounded-4xl bg-surface p-6">
+        <h2 className="m-0 mb-1 text-[1.125rem] font-bold text-foreground">
+          새 자료
+        </h2>
+        <p className="mb-4 text-[0.875rem] font-medium text-muted-foreground">
+          운영 자료를 작성합니다.
+        </p>
         <form
           className="grid gap-3.5"
           onSubmit={(event) => {
@@ -160,54 +204,65 @@ export function AdminResourcesPage({
             저장
           </Button>
         </form>
-      </Surface>
+      </article>
       {message === null ? null : (
         <Alert className="mb-4" role="status" tone={message.tone}>
           <AlertDescription>{message.message}</AlertDescription>
         </Alert>
       )}
-      <Surface variant="panel">
-        <SectionHeader
-          title="자료 목록"
-          description={`총 ${documents.pagination.totalItems}개 · ${documents.pagination.page}/${documents.pagination.totalPages} 페이지`}
-        />
-        {documents.items.length === 0 ? (
-          <Empty role="status">
-            <EmptyHeader>
-              <EmptyTitle>조건에 맞는 자료가 없습니다.</EmptyTitle>
-            </EmptyHeader>
-          </Empty>
-        ) : (
-          <div className="grid gap-3">
-            {documents.items.map((document) => (
-              <Link
-                className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3.5 rounded-card border border-border/50 bg-background p-3.5 transition-colors hover:border-foreground/20 hover:bg-surface-hover max-[860px]:grid-cols-[44px_minmax(0,1fr)]"
-                href={`/resources/${document.id}`}
-                key={document.id}
-              >
-                <span className="grid size-11 place-items-center rounded-card bg-surface text-muted-foreground">
-                  <FileTextIcon aria-hidden="true" size={18} />
-                </span>
-                <span className="grid min-w-0 gap-1">
-                  <strong className="text-title-md font-black text-foreground">
-                    {document.title}
-                  </strong>
-                  <small className="overflow-hidden text-ellipsis whitespace-nowrap text-label-sm font-semibold text-muted-foreground">
-                    {document.author.name} · {formatDate(document.updatedAt)}
-                  </small>
-                  <em className="overflow-hidden text-ellipsis whitespace-nowrap text-label-sm font-semibold not-italic text-muted-foreground">
-                    {document.excerpt}
-                  </em>
-                </span>
-                <span className="max-[860px]:col-start-2">
-                  <StatusBadge status={document.status} />
-                </span>
-              </Link>
-            ))}
-          </div>
-        )}
-      </Surface>
+      {documents.items.length === 0 ? (
+        <Empty role="status">
+          <EmptyHeader>
+            <EmptyTitle>조건에 맞는 자료가 없습니다.</EmptyTitle>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <div className="grid gap-3">
+          {documents.items.map((document) => (
+            <Link
+              className="grid grid-cols-[44px_minmax(0,1fr)_auto] items-center gap-3.5 rounded-card border border-border/50 bg-background p-3.5 transition-colors hover:border-foreground/20 hover:bg-surface-hover max-[860px]:grid-cols-[44px_minmax(0,1fr)]"
+              href={`/resources/${document.id}`}
+              key={document.id}
+            >
+              <span className="grid size-11 place-items-center rounded-card bg-surface text-muted-foreground">
+                <FileTextIcon aria-hidden="true" size={18} />
+              </span>
+              <span className="grid min-w-0 gap-1">
+                <strong className="text-title-md font-black text-foreground">
+                  {document.title}
+                </strong>
+                <small className="overflow-hidden text-ellipsis whitespace-nowrap text-label-sm font-semibold text-muted-foreground">
+                  {document.author.name} · {formatDate(document.updatedAt)}
+                </small>
+                <em className="overflow-hidden text-ellipsis whitespace-nowrap text-label-sm font-semibold not-italic text-muted-foreground">
+                  {document.excerpt}
+                </em>
+              </span>
+              <span className="max-[860px]:col-start-2">
+                <StatusBadge status={document.status} />
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
     </>
+  )
+}
+
+function ResourcesHeading({
+  totalDocuments,
+}: {
+  readonly totalDocuments?: number
+}) {
+  return (
+    <header className="mb-6">
+      <h1 className="m-0 text-[2rem] font-bold text-foreground">자료실</h1>
+      <p className="mt-1 text-[1.0625rem] font-medium text-muted-foreground">
+        {totalDocuments === undefined
+          ? "운영 자료와 교육 문서를 저장하고 검색합니다."
+          : `자료 ${totalDocuments}개 · 운영 자료와 교육 문서를 관리합니다.`}
+      </p>
+    </header>
   )
 }
 

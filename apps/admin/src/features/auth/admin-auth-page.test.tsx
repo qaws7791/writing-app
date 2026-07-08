@@ -28,8 +28,10 @@ describe("AdminAuthPage", () => {
   it("관리자 email/password 로그인 폼과 운영 콘솔 설명을 보여준다", () => {
     render(<AdminAuthPage nextPath="/courses" />)
 
-    expect(screen.getByRole("heading", { name: "관리자 로그인" })).toBeVisible()
-    expect(screen.getByText("글결 운영 콘솔")).toBeVisible()
+    expect(screen.getByRole("heading", { name: "글결 어드민" })).toBeVisible()
+    expect(
+      screen.getByText("접근하려면 관리자 계정으로 로그인하세요.")
+    ).toBeVisible()
     expect(screen.getByLabelText("이메일")).toBeVisible()
     expect(screen.getByLabelText("비밀번호")).toHaveAttribute(
       "type",

@@ -16,16 +16,7 @@ import {
   SendIcon,
 } from "@workspace/ui/components/icons"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
-import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
-import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@workspace/ui/components/ui/empty"
-import { PageHeader } from "@workspace/ui/components/ui/page-header"
-import { SectionHeader } from "@workspace/ui/components/ui/section-header"
-import { Surface } from "@workspace/ui/components/ui/surface"
+import { Button } from "@workspace/ui/components/ui/button"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 import { cn } from "@workspace/ui/lib/utils"
 
@@ -60,7 +51,12 @@ type StreamEvent =
       readonly type: "error"
     }
 
-type ChunkStreamData = Extract<StreamEvent, { readonly type: "chunk" }>["data"]
+const QUICK_PROMPTS = [
+  "이 레슨 목표를 더 명확하게 다듬어 줘",
+  "객관식 문제 3개 만들어줘",
+  "이 개념을 초보자에게 어떻게 설명하면 좋을까?",
+  "한국어 글쓰기 교육에 효과적인 스텝 구성은?",
+] as const
 type DoneStreamData = Extract<StreamEvent, { readonly type: "done" }>["data"]
 type ErrorStreamData = Extract<StreamEvent, { readonly type: "error" }>["data"]
 
@@ -100,143 +96,245 @@ export function AdminAiChatPage({
   const visibleMessages = useMemo(() => messages, [messages])
 
   return (
-    <>
-      <PageHeader
-        description="운영 자료와 교육 콘텐츠 초안을 대화로 작성합니다."
-        title="AI 채팅"
-      />
-      <div className="grid min-h-[42rem] grid-cols-[18rem_minmax(0,1fr)] gap-4 max-lg:grid-cols-1">
-        <Surface className="grid content-start gap-4" variant="panel">
-          <SectionHeader
-            title="대화"
-            description={`${conversations.length}개 대화`}
-          />
-          <Link className={buttonVariants({ variant: "outline" })} href="/chat">
-            <MessageSquarePlusIcon aria-hidden="true" size={16} />새 대화
+    <div
+      className="-mx-5 -mt-8 flex min-h-full md:-mx-10"
+      style={{ height: "calc(100vh - 2rem)" }}
+    >
+      <aside className="flex w-56 shrink-0 flex-col border-r border-surface-hover">
+        <div className="flex items-center justify-between px-4 pb-4 pt-6">
+          <span className="text-[0.9375rem] font-bold text-foreground">
+            AI 에이전트
+          </span>
+          <Link
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+            href="/chat"
+            title="새 대화"
+          >
+            <MessageSquarePlusIcon aria-hidden="true" size={16} />
           </Link>
-          <div className="grid gap-2">
-            {conversations.map((conversation) => (
+        </div>
+        <div className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-4">
+          {conversations.length === 0 ? (
+            <p className="px-2 py-3 text-[0.8125rem] font-medium text-muted-foreground">
+              대화가 없습니다.
+            </p>
+          ) : (
+            conversations.map((conversation) => (
               <Link
                 className={cn(
-                  "grid gap-1 rounded-card border border-border/50 px-3 py-2.5 text-foreground transition-colors hover:border-foreground/20 hover:bg-background",
+                  "group relative w-full rounded-xl px-3 py-2.5 text-left transition-colors",
                   activeConversationId === conversation.id
-                    ? "border-action-primary-bg bg-accent text-accent-foreground"
-                    : ""
+                    ? "bg-surface text-foreground"
+                    : "text-foreground hover:bg-surface/60"
                 )}
                 href={`/chat?conversationId=${conversation.id}`}
                 key={conversation.id}
                 onClick={() => setActiveConversationId(conversation.id)}
               >
-                <strong className="overflow-hidden text-ellipsis whitespace-nowrap text-body-sm font-black">
+                <div className="truncate pr-6 text-[0.8125rem] font-bold">
                   {conversation.title}
-                </strong>
-                <span
-                  className={cn(
-                    "text-label-sm font-semibold text-muted-foreground",
-                    activeConversationId === conversation.id
-                      ? "text-accent-foreground/80"
-                      : ""
-                  )}
-                >
+                </div>
+                <div className="mt-0.5 text-[0.6875rem] font-medium text-muted-foreground">
                   {conversation.messageCount}개 메시지
-                </span>
+                </div>
               </Link>
-            ))}
-          </div>
-        </Surface>
-        <Surface
-          className="grid min-h-0 grid-rows-[auto_1fr_auto] gap-4"
-          variant="panel"
-        >
-          {errorMessage === null ? null : (
-            <Alert role="alert" tone="danger">
-              <AlertDescription className="flex flex-wrap items-center gap-2">
-                <span>{errorMessage}</span>
-                {lastFailedMessage === null ? null : (
-                  <Button
-                    variant="outline"
-                    disabled={isPending}
-                    onClick={() => sendMessage(lastFailedMessage)}
+            ))
+          )}
+        </div>
+      </aside>
+      <div className="flex min-w-0 flex-1 flex-col">
+        {errorMessage === null ? null : (
+          <Alert className="m-4" role="alert" tone="danger">
+            <AlertDescription className="flex flex-wrap items-center gap-2">
+              <span>{errorMessage}</span>
+              {lastFailedMessage === null ? null : (
+                <Button
+                  disabled={isPending}
+                  onClick={() => sendMessage(lastFailedMessage)}
+                  type="button"
+                  variant="outline"
+                >
+                  재시도
+                </Button>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
+        {visibleMessages.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center px-6">
+            <div className="flex w-full max-w-xl flex-col items-center">
+              <div className="mb-5 flex size-12 items-center justify-center rounded-2xl bg-surface">
+                <BotIcon
+                  aria-hidden="true"
+                  className="text-muted-foreground"
+                  size={22}
+                />
+              </div>
+              <h2 className="m-0 mb-1.5 text-center text-[1.375rem] font-bold text-foreground">
+                무엇을 도와드릴까요?
+              </h2>
+              <p className="m-0 mb-8 text-center text-[0.9375rem] font-medium text-muted-foreground">
+                콘텐츠 제작, 레슨 설계, 문제 생성 등 무엇이든 물어보세요.
+              </p>
+              <form
+                className="mb-4 flex w-full items-end gap-3 rounded-3xl bg-surface px-5 py-4 shadow-sm"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  const message = draft.trim()
+                  if (message.length === 0) {
+                    return
+                  }
+                  setDraft("")
+                  sendMessage(message)
+                }}
+              >
+                <Textarea
+                  aria-label="AI 채팅 메시지"
+                  className="min-h-[1.5rem] max-h-40 flex-1 resize-none border-0 bg-transparent px-0 py-0 font-medium shadow-none focus-visible:ring-0"
+                  onChange={(event) => setDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                      event.preventDefault()
+                      const message = draft.trim()
+                      if (message.length === 0) {
+                        return
+                      }
+                      setDraft("")
+                      sendMessage(message)
+                    }
+                  }}
+                  placeholder="메시지를 입력하세요…"
+                  value={draft}
+                />
+                <Button
+                  aria-label="전송"
+                  className="size-9 shrink-0 rounded-full p-0"
+                  disabled={!canSend}
+                  type="submit"
+                >
+                  <SendIcon aria-hidden="true" size={15} />
+                </Button>
+              </form>
+              <p className="mb-6 text-[0.75rem] font-medium text-muted-foreground">
+                Enter 전송 · Shift+Enter 줄바꿈
+              </p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {QUICK_PROMPTS.map((prompt) => (
+                  <button
+                    className="rounded-full border border-surface-hover bg-background px-4 py-2 text-[0.8125rem] font-medium transition-colors hover:bg-surface"
+                    key={prompt}
+                    onClick={() => setDraft(prompt)}
                     type="button"
                   >
-                    재시도
-                  </Button>
-                )}
-              </AlertDescription>
-            </Alert>
-          )}
-          <div
-            className="min-h-0 overflow-y-auto rounded-panel border border-border/50 bg-background p-4"
-            role="log"
-          >
-            {visibleMessages.length === 0 ? (
-              <Empty>
-                <EmptyHeader>
-                  <EmptyMedia variant="icon">
-                    <BotIcon aria-hidden="true" size={28} />
-                  </EmptyMedia>
-                  <EmptyTitle>새 대화를 시작하세요.</EmptyTitle>
-                </EmptyHeader>
-              </Empty>
-            ) : (
-              <div className="grid gap-3">
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="shrink-0 border-b border-surface-hover px-6 py-4">
+              <div className="truncate text-[1rem] font-bold text-foreground">
+                {conversations.find((item) => item.id === activeConversationId)
+                  ?.title ?? "AI 대화"}
+              </div>
+              <div className="mt-0.5 text-[0.75rem] font-medium text-muted-foreground">
+                메시지 {visibleMessages.length}개
+              </div>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto py-4" role="log">
+              <div className="grid gap-2">
                 {visibleMessages.map((message) => (
                   <article
                     className={cn(
-                      "grid max-w-[42rem] gap-1 rounded-card border border-border/50 bg-surface p-3",
-                      message.role === "user"
-                        ? "ml-auto border-action-primary-bg bg-accent text-accent-foreground"
-                        : "text-foreground"
+                      "flex items-start gap-3 px-6 py-2",
+                      message.role === "user" ? "flex-row-reverse" : "flex-row"
                     )}
                     key={message.id}
                   >
-                    <span
+                    <div
                       className={cn(
-                        "text-label-sm font-black text-muted-foreground",
+                        "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full",
                         message.role === "user"
-                          ? "text-accent-foreground/80"
-                          : ""
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-surface text-muted-foreground"
                       )}
                     >
-                      {message.role === "user" ? "관리자" : "AI"}
-                    </span>
-                    <p className="m-0 whitespace-pre-wrap text-body-sm font-semibold">
-                      {message.content}
-                    </p>
+                      {message.role === "user" ? (
+                        <span className="text-[0.6875rem] font-bold">나</span>
+                      ) : (
+                        <BotIcon aria-hidden="true" size={14} />
+                      )}
+                    </div>
+                    <div
+                      className={cn(
+                        "flex max-w-[70%] flex-col gap-1",
+                        message.role === "user" ? "items-end" : "items-start"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "px-4 py-3 text-[0.9375rem] font-medium",
+                          message.role === "user"
+                            ? "rounded-3xl rounded-tr-sm bg-primary text-primary-foreground"
+                            : "rounded-3xl rounded-tl-sm bg-surface text-foreground"
+                        )}
+                      >
+                        <p className="m-0 whitespace-pre-wrap">
+                          {message.content}
+                        </p>
+                      </div>
+                    </div>
                   </article>
                 ))}
               </div>
-            )}
-          </div>
-          <form
-            className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-3 max-md:grid-cols-1"
-            onSubmit={(event) => {
-              event.preventDefault()
-              const message = draft.trim()
-
-              if (message.length === 0) {
-                return
-              }
-
-              setDraft("")
-              sendMessage(message)
-            }}
-          >
-            <Textarea
-              aria-label="AI 채팅 메시지"
-              className="min-h-[74px]"
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder="필요한 콘텐츠 초안이나 운영 문구를 입력하세요."
-              value={draft}
-            />
-            <Button disabled={!canSend} type="submit">
-              <SendIcon aria-hidden="true" size={16} />
-              전송
-            </Button>
-          </form>
-        </Surface>
+            </div>
+            <form
+              className="shrink-0 border-t border-surface-hover px-4 py-4"
+              onSubmit={(event) => {
+                event.preventDefault()
+                const message = draft.trim()
+                if (message.length === 0) {
+                  return
+                }
+                setDraft("")
+                sendMessage(message)
+              }}
+            >
+              <div className="flex items-end gap-3 rounded-3xl bg-surface px-4 py-3">
+                <Textarea
+                  aria-label="AI 채팅 메시지"
+                  className="min-h-[1.5rem] max-h-40 flex-1 resize-none border-0 bg-transparent px-0 py-0 font-medium shadow-none focus-visible:ring-0"
+                  onChange={(event) => setDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                      event.preventDefault()
+                      const message = draft.trim()
+                      if (message.length === 0) {
+                        return
+                      }
+                      setDraft("")
+                      sendMessage(message)
+                    }
+                  }}
+                  placeholder="메시지를 입력하세요… (Enter 전송 / Shift+Enter 줄바꿈)"
+                  value={draft}
+                />
+                <Button
+                  aria-label="전송"
+                  className="size-8 shrink-0 rounded-full p-0"
+                  disabled={!canSend}
+                  type="submit"
+                >
+                  <SendIcon aria-hidden="true" size={14} />
+                </Button>
+              </div>
+            </form>
+          </>
+        )}
       </div>
-    </>
+    </div>
   )
 
   function sendMessage(message: string): void {
@@ -410,6 +508,10 @@ function parseSseEvent(value: string): StreamEvent | null {
   }
 
   return null
+}
+
+type ChunkStreamData = {
+  readonly delta: string
 }
 
 function isChunkData(value: unknown): value is ChunkStreamData {

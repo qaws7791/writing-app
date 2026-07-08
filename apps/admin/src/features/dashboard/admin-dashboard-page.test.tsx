@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 
 import { AdminDashboardPage } from "@/features/dashboard/admin-dashboard-page"
 import type { AdminApiResult } from "@/lib/api/api-result"
-import type { AdminDashboard } from "@/lib/api/admin-api"
+import type { AdminAnalytics, AdminDashboard } from "@/lib/api/admin-api"
 
 const dashboard: AdminDashboard = {
   metrics: {
@@ -26,9 +26,23 @@ const dashboard: AdminDashboard = {
   ],
 }
 
+const analytics: AdminAnalytics = {
+  dailySeries: [
+    { completions: 2, date: "2026-06-01", signups: 1 },
+    { completions: 4, date: "2026-06-02", signups: 0 },
+  ],
+  streakBuckets: [{ count: 3, label: "0일" }],
+  worstLessons: [],
+}
+
 describe("AdminDashboardPage", () => {
-  it("dashboard API 응답으로 Kwep 기준 4개 지표 카드를 렌더링한다", () => {
-    render(<AdminDashboardPage dashboardResult={ok(dashboard)} />)
+  it("dashboard API 응답으로 Kwep 기준 지표 카드와 최근 활동을 렌더링한다", () => {
+    render(
+      <AdminDashboardPage
+        analyticsResult={ok(analytics)}
+        dashboardResult={ok(dashboard)}
+      />
+    )
 
     expect(screen.getByRole("heading", { name: "대시보드" })).toBeVisible()
     const metrics = screen.getByLabelText("주요 지표")
@@ -44,12 +58,14 @@ describe("AdminDashboardPage", () => {
     expect(within(metrics).getByText("콘텐츠")).toBeVisible()
     expect(within(metrics).getByText("44")).toBeVisible()
     expect(within(metrics).getByText("5개 강의의 레슨")).toBeVisible()
-    expect(screen.queryByRole("list", { name: "최근 활동" })).toBeNull()
+    expect(screen.getByRole("heading", { name: "최근 활동" })).toBeVisible()
+    expect(screen.getByRole("link", { name: /민지/ })).toBeVisible()
   })
 
   it("API 오류 상태를 한국어로 보여준다", () => {
     render(
       <AdminDashboardPage
+        analyticsResult={ok(analytics)}
         dashboardResult={{
           error: {
             code: "unauthorized",

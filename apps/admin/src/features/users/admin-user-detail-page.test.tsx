@@ -9,12 +9,11 @@ describe("AdminUserDetailPage", () => {
   it("사용자 상세 통계를 렌더링한다", () => {
     render(<AdminUserDetailPage userResult={ok(userDetail)} />)
 
-    expect(screen.getByRole("heading", { name: "사용자 상세" })).toBeVisible()
-    expect(screen.getByText("민지")).toBeVisible()
+    expect(screen.getByRole("heading", { name: "민지" })).toBeVisible()
     expect(screen.getByText("minji@example.com")).toBeVisible()
-    expect(screen.getByText("12 / 44")).toBeVisible()
+    expect(screen.getByText("12 / 44 레슨 완료")).toBeVisible()
     expect(screen.getByText("35%")).toBeVisible()
-    expect(screen.getByText("5일 연속")).toBeVisible()
+    expect(screen.getByText("5일")).toBeVisible()
   })
 
   it("API 오류를 보여준다", () => {

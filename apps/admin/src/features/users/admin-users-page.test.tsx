@@ -58,18 +58,12 @@ describe("AdminUsersPage", () => {
 
     expect(screen.getByRole("heading", { name: "사용자 관리" })).toBeVisible()
     expect(screen.getByLabelText("사용자 검색")).toHaveValue("")
-    expect(screen.getByLabelText("상태")).toHaveDisplayValue("전체")
-    expect(screen.getByLabelText("정렬")).toHaveDisplayValue("최근 접속")
-    expect(screen.getByRole("button", { name: "필터 적용" })).toHaveAttribute(
-      "type",
-      "submit"
-    )
+    expect(screen.getByRole("combobox", { name: "상태" })).toBeVisible()
+    expect(screen.getByRole("combobox", { name: "정렬" })).toBeVisible()
     expect(screen.getByLabelText("사용자 검색")).toHaveAttribute(
       "name",
       "query"
     )
-    expect(screen.getByLabelText("상태")).toHaveAttribute("name", "status")
-    expect(screen.getByLabelText("정렬")).toHaveAttribute("name", "sort")
 
     const row = screen.getByRole("row", { name: /민지/ })
     expect(within(row).getByText("minji@example.com")).toBeVisible()

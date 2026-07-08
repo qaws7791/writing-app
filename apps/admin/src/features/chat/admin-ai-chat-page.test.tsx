@@ -50,7 +50,7 @@ describe("AdminAiChatPage", () => {
       />
     )
 
-    expect(screen.getByRole("heading", { name: "AI 채팅" })).toBeVisible()
+    expect(screen.getByText("AI 에이전트")).toBeVisible()
     expect(screen.getByRole("link", { name: /강의 소개 문구/ })).toBeVisible()
 
     const log = screen.getByRole("log")

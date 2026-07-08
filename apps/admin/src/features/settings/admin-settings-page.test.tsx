@@ -39,14 +39,18 @@ describe("AdminSettingsPage", () => {
       />
     )
 
-    expect(screen.getByLabelText("배너")).toHaveValue("오늘의 공지")
+    expect(screen.getByLabelText("상단 배너 문구")).toHaveValue("오늘의 공지")
+
+    await user.click(screen.getByRole("button", { name: "약관·개인정보" }))
     expect(screen.getByLabelText("이용약관")).toHaveValue("이용약관")
     expect(screen.getByLabelText("개인정보처리방침")).toHaveValue(
       "개인정보처리방침"
     )
 
-    await user.click(screen.getByRole("button", { name: "공지 저장" }))
-    await user.click(screen.getByRole("button", { name: "약관 저장" }))
+    await user.click(screen.getByRole("button", { name: "공지·배너" }))
+    await user.click(screen.getByRole("button", { name: "저장" }))
+    await user.click(screen.getByRole("button", { name: "약관·개인정보" }))
+    await user.click(screen.getByRole("button", { name: "저장" }))
 
     expect(saveNoticeSettings).toHaveBeenCalledWith({
       announce: "공지 본문",
@@ -74,6 +78,7 @@ describe("AdminSettingsPage", () => {
       />
     )
 
+    await user.click(screen.getByRole("button", { name: "접근·콘텐츠" }))
     await user.click(screen.getByRole("button", { name: "콘텐츠 초기화" }))
     expect(
       screen.getByRole("alertdialog", { name: "콘텐츠 초기화 확인" })

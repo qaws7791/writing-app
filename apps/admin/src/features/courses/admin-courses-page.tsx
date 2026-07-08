@@ -156,6 +156,7 @@ export function AdminCoursesPage({
               size={16}
             />
             <Input
+              aria-label="코스 검색"
               defaultValue={filters.query}
               name="query"
               placeholder="강의 제목 또는 설명 검색..."
@@ -174,7 +175,10 @@ export function AdminCoursesPage({
                 formRef.current?.requestSubmit()
               }}
             >
-              <SelectTrigger className="w-[180px] font-semibold">
+              <SelectTrigger
+                className="w-[180px] font-semibold"
+                variant="outlined"
+              >
                 <SelectValue placeholder="전체 카테고리" />
               </SelectTrigger>
               <SelectContent>
@@ -200,7 +204,10 @@ export function AdminCoursesPage({
                 formRef.current?.requestSubmit()
               }}
             >
-              <SelectTrigger className="w-[140px] font-semibold">
+              <SelectTrigger
+                className="w-[140px] font-semibold"
+                variant="outlined"
+              >
                 <SelectValue placeholder="전체 상태" />
               </SelectTrigger>
               <SelectContent>
@@ -357,7 +364,10 @@ export function AdminCoursesPage({
                     formRef.current?.requestSubmit()
                   }}
                 >
-                  <SelectTrigger className="h-8 w-[80px] font-semibold">
+                  <SelectTrigger
+                    className="h-8 w-[80px] font-semibold"
+                    variant="outlined"
+                  >
                     <SelectValue placeholder="20개" />
                   </SelectTrigger>
                   <SelectContent>

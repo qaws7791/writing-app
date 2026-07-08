@@ -78,12 +78,12 @@ describe("AdminResourcesPage", () => {
 
     expect(screen.getByRole("heading", { name: "자료실" })).toBeVisible()
     expect(screen.getByLabelText("자료 검색")).toHaveAttribute("name", "query")
-    expect(screen.getByLabelText("상태")).toHaveDisplayValue("전체")
-    expect(screen.getByLabelText("페이지 크기")).toHaveDisplayValue("20개")
+    expect(screen.getByRole("combobox", { name: "상태" })).toBeVisible()
+    expect(screen.getByRole("combobox", { name: "페이지 크기" })).toBeVisible()
 
     const item = screen.getByRole("link", { name: /운영 자료/ })
     expect(within(item).getByText("운영 자료 본문")).toBeVisible()
-    expect(within(item).getByText("active")).toBeVisible()
+    expect(within(item).getByText("활성")).toBeVisible()
 
     await user.type(screen.getByLabelText("제목"), "운영 자료")
     await user.type(screen.getByLabelText("본문"), "운영 자료 본문")

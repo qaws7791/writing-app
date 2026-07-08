@@ -1,8 +1,9 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useRef, useState, useTransition } from "react"
 import Link from "next/link"
 
+import { SearchIcon } from "@workspace/ui/components/icons"
 import { StatusBadge } from "@/components/status-badge"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
@@ -35,15 +36,17 @@ import {
   TableCaption,
 } from "@workspace/ui/components/ui/table"
 import {
-  FilterToolbar,
   FilterToolbarField,
   FilterToolbarLabel,
 } from "@workspace/ui/components/ui/filter-toolbar"
 import { Input } from "@workspace/ui/components/ui/input"
-import { PageHeader } from "@workspace/ui/components/ui/page-header"
-import { SectionHeader } from "@workspace/ui/components/ui/section-header"
-import { Select } from "@workspace/ui/components/ui/select"
-import { Surface } from "@workspace/ui/components/ui/surface"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@workspace/ui/components/ui/select"
 
 type StatusMessage = {
   readonly message: string
@@ -71,14 +74,12 @@ export function AdminUsersPage({
   >(null)
   const [message, setMessage] = useState<StatusMessage | null>(null)
   const [isPending, startTransition] = useTransition()
+  const formRef = useRef<HTMLFormElement>(null)
 
   if (usersResult.status === "error") {
     return (
       <>
-        <PageHeader
-          description="학습자 상태와 진행 현황을 관리합니다."
-          title="사용자 관리"
-        />
+        <UsersHeading />
         <Alert role="alert" tone="danger">
           <AlertDescription>{usersResult.error.message}</AlertDescription>
         </Alert>
@@ -88,86 +89,161 @@ export function AdminUsersPage({
 
   return (
     <>
-      <PageHeader
-        description="학습자 상태와 진행 현황을 관리합니다."
-        title="사용자 관리"
-      />
-      <FilterToolbar method="get" aria-label="사용자 필터">
-        <FilterToolbarField>
-          <FilterToolbarLabel>사용자 검색</FilterToolbarLabel>
+      <UsersHeading totalUsers={usersResult.value.pagination.totalItems} />
+      <form
+        ref={formRef}
+        aria-label="사용자 필터"
+        className="mb-4 flex flex-wrap items-center gap-3"
+        method="get"
+      >
+        <FilterToolbarField className="relative min-w-[220px] flex-1 gap-0">
+          <FilterToolbarLabel className="sr-only">
+            사용자 검색
+          </FilterToolbarLabel>
+          <SearchIcon
+            aria-hidden="true"
+            className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground"
+            size={16}
+          />
           <Input
             aria-label="사용자 검색"
+            className="pl-10 font-semibold"
             defaultValue={filters.query}
             name="query"
-            placeholder="이름 또는 이메일"
+            placeholder="이름 또는 이메일 검색…"
           />
         </FilterToolbarField>
-        <FilterToolbarField>
-          <FilterToolbarLabel>상태</FilterToolbarLabel>
-          <Select aria-label="상태" defaultValue={filters.status} name="status">
-            <option value="all">전체</option>
-            <option value="active">active</option>
-            <option value="suspended">suspended</option>
-            <option value="deleted">deleted</option>
+        <FilterToolbarField className="gap-0">
+          <FilterToolbarLabel className="sr-only">상태</FilterToolbarLabel>
+          <Select
+            aria-label="상태"
+            defaultValue={filters.status}
+            name="status"
+            onValueChange={() => {
+              formRef.current?.requestSubmit()
+            }}
+          >
+            <SelectTrigger
+              className="w-[140px] font-semibold"
+              variant="outlined"
+            >
+              <SelectValue placeholder="전체" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">전체</SelectItem>
+              <SelectItem value="active">활성</SelectItem>
+              <SelectItem value="suspended">정지</SelectItem>
+              <SelectItem value="deleted">삭제</SelectItem>
+            </SelectContent>
           </Select>
         </FilterToolbarField>
-        <FilterToolbarField>
-          <FilterToolbarLabel>정렬</FilterToolbarLabel>
-          <Select aria-label="정렬" defaultValue={filters.sort} name="sort">
-            <option value="lastActive">최근 접속</option>
-            <option value="joined">가입일</option>
-            <option value="lessonsDone">완료 레슨</option>
-            <option value="streak">연속 학습일</option>
+        <FilterToolbarField className="gap-0">
+          <FilterToolbarLabel className="sr-only">정렬</FilterToolbarLabel>
+          <Select
+            aria-label="정렬"
+            defaultValue={filters.sort}
+            name="sort"
+            onValueChange={() => {
+              formRef.current?.requestSubmit()
+            }}
+          >
+            <SelectTrigger
+              className="w-[160px] font-semibold"
+              variant="outlined"
+            >
+              <SelectValue placeholder="최근 접속" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="lastActive">최근 접속</SelectItem>
+              <SelectItem value="joined">가입일</SelectItem>
+              <SelectItem value="lessonsDone">완료 레슨</SelectItem>
+              <SelectItem value="streak">연속 학습일</SelectItem>
+            </SelectContent>
           </Select>
         </FilterToolbarField>
-        <Button variant="outline" type="submit">
-          필터 적용
-        </Button>
-      </FilterToolbar>
+        <span className="ml-auto text-sm font-bold text-muted-foreground">
+          {usersResult.value.pagination.totalItems}명
+        </span>
+      </form>
       {message === null ? null : (
         <Alert className="mb-4" role="status" tone={message.tone}>
           <AlertDescription>{message.message}</AlertDescription>
         </Alert>
       )}
-      <Surface variant="panel">
-        <SectionHeader
-          title="사용자 목록"
-          description={`총 ${usersResult.value.pagination.totalItems}명 · ${usersResult.value.pagination.page}/${usersResult.value.pagination.totalPages} 페이지`}
-        />
-        <Table>
+      <div className="overflow-hidden rounded-[24px] border border-border/50">
+        <Table className="min-w-0">
           <TableCaption className="sr-only">사용자 목록</TableCaption>
           <TableHeader>
-            <TableRow>
-              <TableHead scope="col">사용자</TableHead>
-              <TableHead scope="col">상태</TableHead>
-              <TableHead scope="col">최근 접속</TableHead>
-              <TableHead scope="col">완료</TableHead>
-              <TableHead scope="col">연속</TableHead>
-              <TableHead scope="col">작업</TableHead>
+            <TableRow className="border-b border-border/50 bg-transparent">
+              <TableHead
+                className="px-5 py-3.5 text-[0.8125rem] font-bold text-muted-foreground"
+                scope="col"
+              >
+                사용자
+              </TableHead>
+              <TableHead
+                className="px-5 py-3.5 text-[0.8125rem] font-bold text-muted-foreground"
+                scope="col"
+              >
+                상태
+              </TableHead>
+              <TableHead
+                className="px-5 py-3.5 text-[0.8125rem] font-bold text-muted-foreground"
+                scope="col"
+              >
+                최근 접속
+              </TableHead>
+              <TableHead
+                className="px-5 py-3.5 text-[0.8125rem] font-bold text-muted-foreground"
+                scope="col"
+              >
+                완료
+              </TableHead>
+              <TableHead
+                className="px-5 py-3.5 text-[0.8125rem] font-bold text-muted-foreground"
+                scope="col"
+              >
+                연속
+              </TableHead>
+              <TableHead
+                className="px-5 py-3.5 text-[0.8125rem] font-bold text-muted-foreground"
+                scope="col"
+              >
+                작업
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {usersResult.value.items.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>
+              <TableRow
+                className="group border-b border-border/50 last:border-0"
+                key={user.id}
+              >
+                <TableCell className="px-5 py-4">
                   <Link
-                    className="font-black text-foreground hover:underline"
+                    className="font-bold text-foreground hover:underline"
                     href={`/users/${user.id}`}
                   >
                     {user.name}
                   </Link>
-                  <span className="block text-caption font-semibold text-muted-foreground">
+                  <span className="block text-[0.8125rem] font-medium text-muted-foreground">
                     {user.email}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-5 py-4">
                   <StatusBadge status={user.status} />
                 </TableCell>
-                <TableCell>{user.lastActive ?? "없음"}</TableCell>
-                <TableCell>{user.lessonsDone}개 완료</TableCell>
-                <TableCell>{user.streak}일</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
+                <TableCell className="px-5 py-4 text-[0.875rem] font-medium">
+                  {user.lastActive ?? "없음"}
+                </TableCell>
+                <TableCell className="px-5 py-4 text-[0.875rem] font-medium">
+                  {user.lessonsDone}개 완료
+                </TableCell>
+                <TableCell className="px-5 py-4 text-[0.875rem] font-medium">
+                  {user.streak}일
+                </TableCell>
+                <TableCell className="px-5 py-4">
+                  <div className="flex gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                     <Button
                       variant="outline"
                       disabled={
@@ -212,7 +288,7 @@ export function AdminUsersPage({
             ))}
           </TableBody>
         </Table>
-      </Surface>
+      </div>
       <AlertDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => {
@@ -258,5 +334,18 @@ export function AdminUsersPage({
         )}
       </AlertDialog>
     </>
+  )
+}
+
+function UsersHeading({ totalUsers }: { readonly totalUsers?: number }) {
+  return (
+    <header className="mb-6">
+      <h1 className="m-0 text-[2rem] font-bold text-foreground">사용자 관리</h1>
+      <p className="mt-1 text-[1.0625rem] font-medium text-muted-foreground">
+        {totalUsers === undefined
+          ? "학습자 상태와 진행 현황을 관리합니다."
+          : `학습자 ${totalUsers}명 · 상태와 진행 현황을 관리합니다.`}
+      </p>
+    </header>
   )
 }
