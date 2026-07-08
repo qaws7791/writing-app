@@ -263,3 +263,15 @@ export function getLessonStepActionLabel(step: LessonStep): string {
 
   return "다음으로 →"
 }
+
+export function isLessonStepCheckedCorrect(
+  checked: LessonStepCheckedState
+): boolean {
+  if (checked === "correct") {
+    return true
+  }
+  if (checked === "wrong") {
+    return false
+  }
+  return checked.wrong.length === 0 && checked.missed.length === 0
+}

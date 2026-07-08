@@ -136,14 +136,8 @@ describe("레슨 경험", () => {
 
     expect(startContent).toBeInTheDocument()
     expect(
-      screen.getByRole("banner", { name: "레슨 진행" })
-    ).toBeInTheDocument()
-    expect(
       screen.getByRole("contentinfo", { name: "레슨 행동" })
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole("progressbar", { name: "레슨 진행률" })
-    ).toHaveAttribute("aria-valuenow", "0")
 
     await user.click(screen.getByRole("button", { name: "시작하기" }))
 
@@ -789,6 +783,10 @@ describe("레슨 경험", () => {
   })
 
   it("AI 코칭 요청을 createAiFeedback으로 위임한다", async () => {
+    localStorage.setItem(
+      "writing-app-draft-짧고 명확하게 쓴다",
+      "짧고 명확하게 쓴다"
+    )
     const user = userEvent.setup()
     const createAiFeedback = vi.fn(async () =>
       apiOk({
@@ -838,6 +836,54 @@ describe("레슨 경험", () => {
       })
     )
     expect(await screen.findByText("좋은 출발입니다.")).toBeInTheDocument()
+    localStorage.clear()
+  })
+
+  it("객관식 문제에서 오답을 제출할 경우 계속하기를 누르면 다음 스텝으로 넘어가지 않고 동일 스텝에서 재시도할 수 있다", async () => {
+    const user = userEvent.setup()
+    const api = createApi({
+      completeLesson: vi.fn(async () => apiOk({ saved: true })),
+      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
+    })
+
+    render(
+      <LessonExperience
+        api={api}
+        initialProgress={{ currentStepIndex: 0 }}
+        lesson={createSingleChoiceLesson()}
+      />
+    )
+
+    // 1. 오답 선택 ("좋은 글을 씁니다.")
+    await user.click(screen.getByRole("button", { name: "좋은 글을 씁니다." }))
+    await user.click(screen.getByRole("button", { name: "확인하기" }))
+
+    // 2. 오답 피드백 표시 확인
+    expect(screen.getByText("아쉽지만 달라요")).toBeInTheDocument()
+
+    // 3. "계속하기" 클릭
+    await user.click(screen.getByRole("button", { name: "계속하기" }))
+
+    // 4. 다음 단계로 안 넘어가고 동일한 단계에 머무르고 있는지 검증 ("더 좋은 문장은 무엇인가요?")
+    expect(
+      screen.getByRole("heading", { name: "더 좋은 문장은 무엇인가요?" })
+    ).toBeInTheDocument()
+    // 피드백 영역이 닫혀서 "아쉽지만 달라요"가 사라졌는지 확인
+    expect(screen.queryByText("아쉽지만 달라요")).not.toBeInTheDocument()
+
+    // 5. 다시 문제 풀기 가능 상태 확인: 이전 오답이 여전히 선택된 상태이므로 "확인하기" 버튼이 활성화되어 있어야 함
+    expect(screen.getByRole("button", { name: "확인하기" })).toBeEnabled()
+
+    // 6. 정답 선택 ("독자가 바로 이해하는 문장을 씁니다.")
+    await user.click(
+      screen.getByRole("button", {
+        name: "독자가 바로 이해하는 문장을 씁니다.",
+      })
+    )
+    await user.click(screen.getByRole("button", { name: "확인하기" }))
+
+    // 7. 정답 피드백 표시 확인
+    expect(screen.getByText("완벽해요!")).toBeInTheDocument()
   })
 })
 

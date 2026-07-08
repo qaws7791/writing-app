@@ -15,6 +15,7 @@ import {
 import {
   getLessonStepCheckedResult,
   isLessonStepCheckable,
+  isLessonStepCheckedCorrect,
   isLessonStepSubmittable,
   type LessonStepCheckedState,
 } from "@/features/lessons/lesson-step-policy"
@@ -301,6 +302,11 @@ export function useLessonSession({
         void persistAnswerToServer(step.id, pendingAnswerRef.current.answer)
         pendingAnswerRef.current = null
       }
+      return
+    }
+
+    if (checked !== false && !isLessonStepCheckedCorrect(checked)) {
+      setChecked(false)
       return
     }
 
