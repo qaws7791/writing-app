@@ -8,26 +8,29 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary-hover",
+        default: "bg-charcoal text-cream hover:opacity-90",
+        solid: "bg-charcoal text-cream hover:opacity-90",
         outline:
-          "border-border bg-transparent hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:bg-transparent dark:hover:bg-input/30",
+          "border-4 border-charcoal bg-transparent text-charcoal hover:bg-surface aria-expanded:bg-surface",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-secondary text-secondary-foreground hover:bg-surface-hover aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "bg-transparent text-muted-foreground hover:bg-surface hover:text-foreground aria-expanded:bg-surface",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+          "bg-coral-light text-charcoal hover:opacity-90 focus-visible:ring-coral-light/30",
         link: "text-primary underline-offset-4 hover:underline",
         correct:
-          "bg-emerald-600 text-white hover:bg-emerald-600/90 focus-visible:ring-emerald-500/20",
+          "bg-mint-light text-charcoal hover:opacity-90 focus-visible:ring-mint-light/30",
         wrong:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive/20",
+          "bg-coral-light text-charcoal hover:opacity-90 focus-visible:ring-coral-light/30",
+        white: "bg-cream text-charcoal hover:bg-surface",
+        ink: "bg-ink text-white hover:opacity-90 focus-visible:ring-ink/30",
       },
       size: {
         default: "h-11 px-5 py-2.5 gap-2 font-bold text-base",
         sm: "h-8 gap-1 px-3",
-        lg: "h-14 px-7 py-4 font-bold text-base gap-2",
-        extra: "h-16 px-8 py-5 font-bold text-lg gap-2",
+        lg: "h-14 px-7 py-4 font-bold text-body-lg gap-2",
+        extra: "h-16 px-8 py-5 font-bold text-body-lg gap-2",
         icon: "size-10",
         "icon-xs": "size-8 [&_svg:not([class*='size-'])]:size-3",
         "icon-sm": "size-9",

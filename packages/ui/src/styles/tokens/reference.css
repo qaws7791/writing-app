@@ -1,0 +1,40 @@
+/* Kwep reference tokens — Kwep/src/styles/theme.css 와 동기화 */
+
+:root {
+  --ref-cream: #fdfbf7;
+  --ref-surface: #f4efe6;
+  --ref-surface-hover: #eae2d3;
+  --ref-charcoal: #2a2621;
+  --ref-primary-yellow: #ffc800;
+  --ref-coral: #ff7a6b;
+  --ref-mint: #34c759;
+  --ref-ink: #2a2621;
+  --ref-muted: #524d47;
+  --ref-mint-light: #52d86a;
+  --ref-coral-light: #ffada7;
+  --ref-mint-dark: #084d1c;
+  --ref-coral-dark: #8b1d0f;
+  --ref-default-soft: #cac7c0;
+  --ref-info-bg: #dbeafe;
+  --ref-info-fg: #1d4ed8;
+}
+
+.dark,
+[data-theme="dark"] {
+  --ref-cream: #1b1916;
+  --ref-surface: #262320;
+  --ref-surface-hover: #332f2a;
+  --ref-charcoal: #f4efe6;
+  --ref-primary-yellow: #ffc800;
+  --ref-coral: #ff8c7f;
+  --ref-mint: #3dd968;
+  --ref-ink: #2a2621;
+  --ref-muted: #a89f92;
+  --ref-mint-light: #1e5b30;
+  --ref-coral-light: #6e2a22;
+  --ref-mint-dark: #6fe588;
+  --ref-coral-dark: #ffada7;
+  --ref-default-soft: #4a4640;
+  --ref-info-bg: #1e3a5f;
+  --ref-info-fg: #bfdbfe;
+}

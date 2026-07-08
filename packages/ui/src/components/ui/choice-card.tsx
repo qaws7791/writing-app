@@ -11,7 +11,7 @@ const choiceCardVariants = cva(
         correct: "border-success-fg/20 bg-success text-success-foreground",
         disabled: "bg-surface text-muted-foreground",
         idle: "bg-surface text-foreground hover:bg-surface-hover",
-        selected: "border-action-selected-fg/25 bg-accent-soft text-accent",
+        selected: "border-charcoal/20 bg-accent text-accent-foreground",
         wrong: "border-danger-fg/20 bg-danger text-danger-foreground",
       },
     },

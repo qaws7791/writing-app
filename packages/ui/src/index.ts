@@ -27,6 +27,7 @@ export {
   SelectScrollDownButton,
   SelectScrollUpButton,
   SelectSeparator,
+  selectTriggerVariants,
   SelectTrigger,
   SelectValue,
 } from "./components/ui/select"

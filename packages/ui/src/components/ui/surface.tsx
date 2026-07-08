@@ -4,25 +4,28 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "../../lib/utils"
 
-const surfaceVariants = cva("text-foreground", {
-  variants: {
-    variant: {
-      default: "bg-surface",
-      elevated: "bg-bg-elevated",
-      panel: "rounded-3xl bg-surface",
+const surfaceVariants = cva(
+  "rounded-4xl text-foreground transition-transform",
+  {
+    variants: {
+      variant: {
+        default: "bg-surface",
+        elevated: "bg-bg-elevated border border-border",
+        panel: "rounded-4xl bg-surface",
+      },
+      size: {
+        none: "",
+        sm: "p-4",
+        md: "p-6",
+        lg: "p-8",
+      },
     },
-    size: {
-      none: "",
-      sm: "p-4",
-      md: "p-6",
-      lg: "p-8",
+    defaultVariants: {
+      variant: "default",
+      size: "md",
     },
-  },
-  defaultVariants: {
-    variant: "default",
-    size: "md",
-  },
-})
+  }
+)
 
 function Surface({
   className,

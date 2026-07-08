@@ -22,7 +22,7 @@ function Accordion({ className, ...props }: AccordionPrimitive.Root.Props) {
   return (
     <AccordionPrimitive.Root
       data-slot="accordion"
-      className={cn("flex w-full flex-col overflow-hidden border-b", className)}
+      className={cn("flex w-full flex-col overflow-hidden", className)}
       {...props}
     />
   )
@@ -44,7 +44,7 @@ function AccordionTrigger({
   ...props
 }: AccordionPrimitive.Trigger.Props) {
   return (
-    <AccordionPrimitive.Header className="flex">
+    <AccordionPrimitive.Header className="flex" render={<div />}>
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(

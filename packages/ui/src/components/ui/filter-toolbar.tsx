@@ -7,7 +7,7 @@ function FilterToolbar({ className, ...props }: React.ComponentProps<"form">) {
     <form
       data-slot="filter-toolbar"
       className={cn(
-        "mb-4 grid grid-cols-[minmax(220px,1fr)_repeat(3,minmax(140px,auto))_auto_auto] items-end gap-3 rounded-panel border bg-surface p-4 max-lg:grid-cols-1",
+        "mb-4 grid grid-cols-[minmax(220px,1fr)_repeat(3,minmax(140px,auto))_auto_auto] items-end gap-3 rounded-4xl border border-surface-hover bg-surface p-4 max-lg:grid-cols-1",
         className
       )}
       {...props}

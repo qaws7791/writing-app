@@ -1,0 +1,17 @@
+:root,
+[data-density="comfortable"] {
+  --radius-control: 1.5rem;
+  --radius-card: 2rem;
+  --radius-panel: 2.5rem;
+  --radius-dialog: 2rem;
+  --radius-pill: 999px;
+  --radius-4xl: 2.5rem;
+  --radius-5xl: 3.5rem;
+}
+
+[data-density="compact"] {
+  --radius-control: 0.875rem;
+  --radius-card: 1.25rem;
+  --radius-panel: 1.5rem;
+  --radius-dialog: 1.5rem;
+}

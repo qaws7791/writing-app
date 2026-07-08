@@ -1,0 +1,12 @@
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-normal: 1ms;
+    --motion-duration-enter: 1ms;
+    --motion-press-scale: 1;
+  }
+
+  .an-fi,
+  .an-su {
+    animation: none;
+  }
+}
