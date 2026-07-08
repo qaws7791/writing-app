@@ -546,6 +546,68 @@ describe("레슨 경험", () => {
     expect(push).toHaveBeenLastCalledWith("/app/courses/c1")
   })
 
+  it("다음 레슨으로 soft navigation하면 완료 화면이 아니라 시작 화면을 연다", async () => {
+    const user = userEvent.setup()
+    const completeLesson = vi.fn(async () => apiOk({ saved: true }))
+    const saveLessonAnswer = vi.fn(async () => apiOk({ saved: true }))
+    const api = createApi({ completeLesson, saveLessonAnswer })
+    const nextLesson: Lesson = {
+      category: "문장의 기본기",
+      courseId: "c1",
+      description: "주제문과 뒷받침 문장으로 단단한 문단을 만듭니다.",
+      estimatedMinutes: 8,
+      id: "l2",
+      steps: [
+        {
+          body: "한 문단은 주제문과 뒷받침으로 구성됩니다.",
+          guide: "핵심 구조를 읽어보세요.",
+          id: "l2-s1",
+          order: 1,
+          title: "한 문단의 구조",
+          type: "READING",
+        },
+      ],
+      summary: ["문단"],
+      title: "한 문단의 구조",
+      unitId: "u1",
+    }
+
+    const { rerender } = render(
+      <LessonExperience api={api} courseDetail={courseDetail} lesson={lesson} />
+    )
+
+    await user.click(screen.getByRole("button", { name: "시작하기" }))
+    await user.click(screen.getByRole("button", { name: "이해했어요" }))
+    await user.type(
+      screen.getByPlaceholderText("여기에 작성하세요..."),
+      "좋은 문장은 바로 이해됩니다."
+    )
+    await user.click(screen.getByRole("button", { name: "다음으로 →" }))
+
+    expect(
+      await screen.findByRole("heading", { name: "완료!" })
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "다음 레슨 →" }))
+    expect(push).toHaveBeenLastCalledWith("/app/lesson?lesson_id=l2")
+
+    rerender(
+      <LessonExperience
+        api={api}
+        courseDetail={courseDetail}
+        lesson={nextLesson}
+      />
+    )
+
+    expect(
+      screen.getByRole("heading", { name: "한 문단의 구조" })
+    ).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "시작하기" })).toBeInTheDocument()
+    expect(
+      screen.queryByRole("heading", { name: "완료!" })
+    ).not.toBeInTheDocument()
+  })
+
   it("매칭과 분류가 현재 제품 확인 흐름으로 다음 스텝을 연다", async () => {
     const user = userEvent.setup()
     const api = createApi({

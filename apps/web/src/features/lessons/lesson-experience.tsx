@@ -25,7 +25,11 @@ type LessonExperienceProps = {
   readonly lesson: Lesson
 }
 
-export function LessonExperience({
+export function LessonExperience(props: LessonExperienceProps) {
+  return <LessonExperienceSession key={props.lesson.id} {...props} />
+}
+
+function LessonExperienceSession({
   api,
   courseDetail,
   initialProgress,
