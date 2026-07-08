@@ -1,10 +1,7 @@
 "use client"
 
 import type { Lesson } from "@/features/lessons/lesson-types"
-import {
-  LessonProgressHeader,
-  LessonShell,
-} from "@/features/lessons/lesson-shell"
+import { LessonIntroHeader, LessonShell } from "@/features/lessons/lesson-shell"
 import { Button } from "@workspace/ui/components/ui/button"
 import { Callout, CalloutContent } from "@workspace/ui/components/ui/callout"
 import { StickyActionBar } from "@workspace/ui/components/ui/sticky-action-bar"
@@ -26,26 +23,20 @@ export function LessonStartScreen({
 }) {
   return (
     <LessonShell
+      fixedFooter
       footer={
-        <StickyActionBar className="mx-auto max-w-2xl">
+        <StickyActionBar className="pointer-events-auto mx-auto max-w-2xl">
           <Button
             className="w-full"
             disabled={!canStart || isSavingStart}
             onClick={onStart}
-            size="lg"
+            size="extra"
           >
             {isSavingStart ? "저장 중" : "시작하기"}
           </Button>
         </StickyActionBar>
       }
-      header={
-        <LessonProgressHeader
-          currentStepNumber={0}
-          onExit={onExit}
-          progress={0}
-          totalStepCount={lesson.steps.length}
-        />
-      }
+      header={<LessonIntroHeader onExit={onExit} />}
     >
       <div className="an-fi">
         {lesson.category === null ? null : (

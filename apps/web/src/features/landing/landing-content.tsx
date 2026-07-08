@@ -28,11 +28,11 @@ export type Feature = {
   readonly title: string
 }
 
-const LANDING_ACCENT = "var(--semantic-color-action-selected-bg)"
-const LANDING_DANGER = "var(--semantic-color-danger-bg)"
-const LANDING_SUCCESS = "var(--semantic-color-success-bg)"
-const LANDING_SUCCESS_STRONG = "var(--semantic-color-success-fg)"
-const LANDING_SURFACE = "var(--semantic-color-bg-surface)"
+const LANDING_ACCENT = "#FFC800"
+const LANDING_DANGER = "#FF7A6B"
+const LANDING_SUCCESS = "#34C759"
+const LANDING_SUCCESS_STRONG = "#52D86A"
+const LANDING_SURFACE = "#F4EFE6"
 
 export const marqueeRows = [
   {

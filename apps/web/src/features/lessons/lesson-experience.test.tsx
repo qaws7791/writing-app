@@ -593,13 +593,22 @@ describe("레슨 경험", () => {
     await user.click(screen.getByRole("button", { name: "계속하기" }))
 
     expect(screen.getByText("태그 선택")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "다음으로 →" })).toBeDisabled()
+    expect(screen.getByRole("button", { name: "확인하기" })).toBeDisabled()
 
     await user.click(screen.getByRole("button", { name: "주제문" }))
     await user.click(screen.getByText("꾸준한 글쓰기는 사고를 정돈한다."))
 
-    expect(screen.getByRole("button", { name: "다음으로 →" })).toBeEnabled()
-    await user.click(screen.getByRole("button", { name: "다음으로 →" }))
+    expect(screen.getByRole("button", { name: "확인하기" })).toBeEnabled()
+    await user.click(screen.getByRole("button", { name: "확인하기" }))
+
+    expect(screen.getByText("완벽해요!")).toBeInTheDocument()
+    expect(
+      screen.getAllByText(
+        "단락은 주제문 1개, 뒷받침 1~2개, 구체 예시로 구성하면 단단해집니다."
+      )
+    ).toHaveLength(2)
+
+    await user.click(screen.getByRole("button", { name: "계속하기" }))
 
     expect(screen.getByText("구조 가이드")).toBeInTheDocument()
   })

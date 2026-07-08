@@ -21,7 +21,6 @@ import {
 import { Pebbles, PreviewFrame } from "@/features/landing/landing-primitives"
 import { ArrowRightIcon } from "@workspace/ui/components/icons"
 import { Button } from "@workspace/ui/components/ui/button"
-import Image from "next/image"
 
 export function LandingNav({
   goRoot,
@@ -50,7 +49,7 @@ export function LandingNav({
             className="inline-block bg-accent-soft rounded-full"
             style={{ width: 12, height: 12 }}
           />
-          <span className="text-title-lg font-black">Kernel</span>
+          <span className="text-title-lg font-black">글결</span>
         </button>
 
         <Button onClick={startLearning} type="button">
@@ -105,15 +104,16 @@ export function Hero({
               <span className="relative inline-block">
                 <span className="relative z-10">학습</span>
                 <span
-                  className="absolute inset-x-0 bottom-1 bg-accent-soft rounded-full"
+                  className="absolute inset-x-0 bottom-1 bg-accent rounded-full"
                   style={{ height: "0.4em", zIndex: 0, transform: "scaleX(1)" }}
                 />
               </span>
+              .
             </span>
           </h1>
 
           <p className="mt-6 max-w-md text-body-lg text-muted-foreground">
-            Kernel은 복잡한 개념을 작은 조각으로 나눠, 매일 가볍게 쌓아 올리는
+            글결은 복잡한 개념을 작은 조각으로 나눠, 매일 가볍게 쌓아 올리는
             학습 경험을 만듭니다. 어른의 호기심을 위한 학습.
           </p>
 
@@ -140,16 +140,10 @@ export function Hero({
           }}
         >
           <div
-            className="relative bg-surface rounded-panel p-4 mx-auto"
+            className="relative mx-auto rounded-5xl bg-surface p-4"
             style={{ maxWidth: 420 }}
           >
-            <Image
-              unoptimized
-              src="https://placehold.co/400x600?text=hero"
-              alt="hero"
-              width={400}
-              height={600}
-            />
+            <PreviewFrame alt="글결 앱 홈 화면 미리보기" aspectRatio="9 / 16" />
           </div>
         </div>
       </div>
@@ -193,7 +187,7 @@ export function Features() {
     <section className="py-24 max-w-6xl mx-auto px-5 md:px-10">
       <Reveal className="max-w-xl mb-14" y={20}>
         <p className="mb-3 text-label-md font-bold uppercase text-muted-foreground">
-          왜 Kernel인가
+          왜 글결인가
         </p>
         <h2 className="text-heading-lg font-black">
           학습을 가볍게,
@@ -348,13 +342,13 @@ export function Showcase() {
           className="bg-surface rounded-panel p-5"
           style={{ transform: `translateY(${firstPreviewY}px)` }}
         >
-          <PreviewFrame alt="Kernel 레슨 진행 화면" aspectRatio="4 / 3" />
+          <PreviewFrame alt="글결 레슨 진행 화면" aspectRatio="4 / 3" />
         </div>
         <div
           className="bg-foreground rounded-panel p-5 md:mt-16"
           style={{ transform: `translateY(${secondPreviewY}px)` }}
         >
-          <PreviewFrame alt="Kernel 코스 대시보드 화면" aspectRatio="4 / 3" />
+          <PreviewFrame alt="글결 코스 대시보드 화면" aspectRatio="4 / 3" />
         </div>
       </div>
     </section>
@@ -383,7 +377,7 @@ export function FinalCta({
             가입은 1분이면 충분해요. 지금 바로 첫 레슨을 시작해 보세요.
           </p>
           <Button
-            className="mt-9"
+            className="mt-9 bg-accent text-foreground hover:bg-accent/90"
             onClick={startLearning}
             size="lg"
             type="button"
@@ -408,7 +402,7 @@ export function Footer() {
                 className="inline-block bg-accent-soft rounded-full"
                 style={{ width: 12, height: 12 }}
               />
-              <span className="text-title-lg font-black">Kernel</span>
+              <span className="text-title-lg font-black">글결</span>
             </div>
             <p className="max-w-xs text-body-sm text-muted-foreground">
               어른의 호기심을 위한 학습. 매일 한 조각씩, 단단하게.
@@ -436,7 +430,7 @@ export function Footer() {
         </div>
         <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-border/50 pt-8 sm:flex-row">
           <p className="text-label-md text-muted-foreground">
-            © 2026 Kernel. All rights reserved.
+            © 2026 글결. All rights reserved.
           </p>
           <p className="text-label-md text-muted-foreground">
             Made with care, one kernel at a time.

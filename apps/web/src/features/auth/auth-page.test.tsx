@@ -39,6 +39,8 @@ describe("로그인 페이지", () => {
     })
 
     expect(googleLogin).toHaveAttribute("type", "button")
+    expect(googleLogin.className).toMatch(/bg-ink/)
+    expect(googleLogin.className).toMatch(/text-white/)
     expect(
       screen.queryByRole("button", {
         name: "테스트 계정으로 계속하기",

@@ -30,10 +30,10 @@ describe("공개 랜딩 페이지", () => {
       return section as HTMLElement
     }
 
-    expect(screen.getAllByText("Kernel")).toHaveLength(2)
+    expect(screen.getAllByText("글결")).toHaveLength(2)
     expect(screen.getByText("하루 5분, 새로운 학습 습관")).toBeInTheDocument()
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      /매일 한 조각,\s*단단해지는\s*학습\./
+      /매일 한 조각,\s*단단해지는\s*학습/
     )
 
     const primaryCtas = screen.getAllByRole("button", {
@@ -55,7 +55,7 @@ describe("공개 랜딩 페이지", () => {
     expect(pageSections.map((section) => section.textContent)).toEqual([
       expect.stringContaining("하루 5분, 새로운 학습 습관"),
       expect.stringContaining("언어디자인코딩역사"),
-      expect.stringContaining("왜 Kernel인가"),
+      expect.stringContaining("왜 글결인가"),
       expect.stringContaining("이렇게 시작해요"),
       expect.stringContaining("큐레이션 코스"),
       expect.stringContaining("미리보기"),
@@ -63,7 +63,7 @@ describe("공개 랜딩 페이지", () => {
     ])
 
     const features = getSection(2)
-    expect(within(features).getByText("왜 Kernel인가")).toBeInTheDocument()
+    expect(within(features).getByText("왜 글결인가")).toBeInTheDocument()
     expect(within(features).getByText("작은 조각으로")).toBeInTheDocument()
     expect(within(features).getByText("습관이 되는 흐름")).toBeInTheDocument()
     expect(within(features).getByText("직접 만지는 학습")).toBeInTheDocument()
@@ -92,7 +92,7 @@ describe("공개 랜딩 페이지", () => {
       within(finalCta).getByRole("heading", { level: 2 })
     ).toHaveTextContent(/오늘의 첫 조각을\s*맞춰볼까요\?/)
 
-    await user.click(screen.getByRole("button", { name: "Kernel" }))
+    await user.click(screen.getByRole("button", { name: "글결" }))
     expect(routerPush).toHaveBeenLastCalledWith("/")
 
     await user.click(screen.getByRole("button", { name: "시작하기" }))
@@ -114,16 +114,16 @@ describe("공개 랜딩 페이지", () => {
       expect(button).toHaveAttribute("type", "button")
     }
 
-    expect(container.querySelector("img")).not.toBeInTheDocument()
+    const heroImages = container.querySelectorAll(
+      "[aria-label='글결 앱 홈 화면 미리보기']"
+    )
+    expect(heroImages).toHaveLength(1)
 
     expect(
-      screen.getByRole("img", { name: "Kernel 앱 홈 화면 미리보기" })
+      screen.getByRole("img", { name: "글결 레슨 진행 화면" })
     ).toBeInTheDocument()
     expect(
-      screen.getByRole("img", { name: "Kernel 레슨 진행 화면" })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole("img", { name: "Kernel 코스 대시보드 화면" })
+      screen.getByRole("img", { name: "글결 코스 대시보드 화면" })
     ).toBeInTheDocument()
   })
 })

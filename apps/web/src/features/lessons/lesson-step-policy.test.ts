@@ -85,7 +85,8 @@ describe("lesson-step-policy", () => {
       type: "CATEGORIZE",
     }
 
-    expect(isLessonStepCheckable(step)).toBe(false)
+    expect(isLessonStepCheckable(step)).toBe(true)
+    expect(getLessonStepActionLabel(step)).toBe("확인하기")
     expect(isLessonStepSubmittable(step, undefined)).toBe(false)
     expect(
       isLessonStepSubmittable(step, {
@@ -93,6 +94,18 @@ describe("lesson-step-policy", () => {
         type: "CATEGORIZE",
       })
     ).toBe(true)
+    expect(
+      getLessonStepCheckedResult(step, {
+        items: [{ categoryId: "topic", itemId: "item-1" }],
+        type: "CATEGORIZE",
+      })
+    ).toBe("correct")
+    expect(
+      getLessonStepCheckedResult(step, {
+        items: [{ categoryId: "wrong", itemId: "item-1" }],
+        type: "CATEGORIZE",
+      })
+    ).toBe("wrong")
   })
 
   it("채점 가능한 스텝은 타입별 정책으로 정오답을 판정한다", () => {

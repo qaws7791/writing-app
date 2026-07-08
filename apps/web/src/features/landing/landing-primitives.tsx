@@ -5,17 +5,17 @@ import type { CSSProperties } from "react"
 import type { Pebble } from "@/features/landing/landing-content"
 
 const previewFrameTokens = {
-  "Kernel 앱 홈 화면 미리보기": {
+  "글결 앱 홈 화면 미리보기": {
     accent: "var(--semantic-color-action-selected-bg)",
     secondary: "var(--semantic-color-success-bg)",
     title: "Home",
   },
-  "Kernel 레슨 진행 화면": {
+  "글결 레슨 진행 화면": {
     accent: "var(--semantic-color-success-bg)",
     secondary: "var(--semantic-color-danger-bg)",
     title: "Lesson",
   },
-  "Kernel 코스 대시보드 화면": {
+  "글결 코스 대시보드 화면": {
     accent: "var(--semantic-color-danger-bg)",
     secondary: "var(--semantic-color-action-selected-bg)",
     title: "Courses",

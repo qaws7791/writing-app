@@ -3,7 +3,17 @@
 import { useRouter } from "next/navigation"
 
 import { useLandingChromeMotion } from "@/features/landing/landing-motion"
-import { Hero, LandingNav } from "@/features/landing/landing-sections"
+import {
+  Features,
+  FinalCta,
+  Footer,
+  Hero,
+  HowItWorks,
+  LandingNav,
+  Marquee,
+  Showcase,
+  Stats,
+} from "@/features/landing/landing-sections"
 
 export function LandingPage() {
   const router = useRouter()
@@ -41,6 +51,13 @@ export function LandingPage() {
           startLearning={startLearning}
         />
         <Hero browseCourses={browseCourses} startLearning={startLearning} />
+        <Marquee />
+        <Features />
+        <HowItWorks />
+        <Stats />
+        <Showcase />
+        <FinalCta startLearning={startLearning} />
+        <Footer />
       </div>
     </div>
   )

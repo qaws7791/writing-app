@@ -31,6 +31,7 @@ export function AuthPage({ nextPath, testAuthEnabled = false }: AuthPageProps) {
           onClick={loginWithGoogle}
           size="extra"
           type="button"
+          variant="ink"
         >
           <GoogleIcon className="w-6 h-6" />
           Google로 계속하기
@@ -39,7 +40,7 @@ export function AuthPage({ nextPath, testAuthEnabled = false }: AuthPageProps) {
           <Button
             className="w-full"
             onClick={loginWithTestUser}
-            size="lg"
+            size="extra"
             type="button"
             variant="secondary"
           >

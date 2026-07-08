@@ -199,6 +199,7 @@ function renderStepContent(
             })
           }
           showNumbers={step.showNumbers}
+          title={step.title}
         />
       )
     case "MATCH":
@@ -283,8 +284,8 @@ function renderStepContent(
       )
     }
     case "AI_FEEDBACK": {
-      const draftText =
-        readDraftText(`writing-app-draft-${step.target}`) || step.target
+      const draftKey = `writing-app-draft-${step.target}`
+      const draftText = readDraftText(draftKey)
 
       return (
         <AiFeedbackAnswer

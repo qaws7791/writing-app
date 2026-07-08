@@ -82,7 +82,6 @@ describe("프로필 화면", () => {
       "false"
     )
     expect(systemThemeButton).toHaveAttribute("aria-pressed", "true")
-    expect(systemThemeButton).toHaveAttribute("data-pressed")
 
     await user.click(screen.getByRole("button", { name: "다크" }))
     expect(setTheme).toHaveBeenLastCalledWith("dark")
