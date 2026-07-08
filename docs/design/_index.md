@@ -9,7 +9,7 @@
 1. 제품의 전체 디자인 방향은 `design-brief.md`에서 확인한다.
 2. 라우트와 화면 구조는 `ia-spec.md`와 `screens/` 문서에서 확인한다.
 3. 구현에 필요한 공통 기준은 `foundations.md`, `components.md`, `patterns.md`에서 확인한다.
-4. 디자인 시스템 이관 작업은 `design-system-migration.md`에서 Phase와 동결 기준을 확인한다.
+4. Kwep 프로토타입 기준 디자인 시스템 이관은 `design-system-migration.md`에서 Phase, 매핑표, 동결 기준을 확인한다.
 5. 품질 기준은 `accessibility.md`, `assets.md`, `text-localization-policy.md`에서 확인한다.
 
 ## 디렉토리 지도

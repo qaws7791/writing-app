@@ -31,21 +31,21 @@
 
 현재 route:
 
-| 메서드     | 경로                                    | 인증          | 설명                           |
-| ---------- | --------------------------------------- | ------------- | ------------------------------ |
-| `GET`      | `/health`                               | 없음          | API 상태                       |
-| `GET`      | `/openapi`                              | 없음          | OpenAPI 3.1 문서               |
-| `GET/POST` | `/api/auth/*`                           | Better Auth   | 인증 handler                   |
-| `GET`      | `/api/auth/sign-in/google`              | 없음          | Google sign-in redirect helper |
-| `GET`      | `/auth/session`                         | active 학습자 | 현재 세션                      |
-| `GET`      | `/profile`                              | active 학습자 | 프로필과 통계                  |
-| `GET`      | `/courses`                              | active 학습자 | 코스 목록                      |
-| `GET`      | `/courses/{courseId}`                   | active 학습자 | 코스 상세                      |
-| `GET`      | `/lessons/{lessonId}`                   | active 학습자 | 레슨 상세                      |
-| `GET`      | `/progress`                             | active 학습자 | 학습 진행                      |
-| `POST`     | `/learning/answers`                     | active 학습자 | 스텝 답변 저장                 |
-| `POST`     | `/learning/lessons/{lessonId}/complete` | active 학습자 | 레슨 완료                      |
-| `POST`     | `/ai-feedback`                          | active 학습자 | AI 코칭 생성                   |
+| 메서드     | 경로                                    | 인증          | 설명                                             |
+| ---------- | --------------------------------------- | ------------- | ------------------------------------------------ |
+| `GET`      | `/health`                               | 없음          | API 상태                                         |
+| `GET`      | `/openapi`                              | 없음          | OpenAPI 3.1 문서                                 |
+| `GET/POST` | `/api/auth/*`                           | Better Auth   | 인증 handler                                     |
+| `GET`      | `/api/auth/sign-in/google`              | 없음          | Google sign-in redirect helper                   |
+| `GET`      | `/auth/session`                         | active 학습자 | 현재 세션                                        |
+| `GET`      | `/profile`                              | active 학습자 | 프로필과 통계                                    |
+| `GET`      | `/courses`                              | active 학습자 | 코스 목록                                        |
+| `GET`      | `/courses/{courseId}`                   | active 학습자 | 코스 상세                                        |
+| `GET`      | `/lessons/{lessonId}`                   | active 학습자 | 레슨 상세                                        |
+| `GET`      | `/progress`                             | active 학습자 | 학습 진행 (`status=in_progress\|completed` 선택) |
+| `POST`     | `/learning/answers`                     | active 학습자 | 스텝 답변 저장                                   |
+| `POST`     | `/learning/lessons/{lessonId}/complete` | active 학습자 | 레슨 완료                                        |
+| `POST`     | `/ai-feedback`                          | active 학습자 | AI 코칭 생성                                     |
 
 `POST /learning/answers`의 transport schema는 학습 답변 union을 검증하고, core의 `LearningService`는 lesson 조회 뒤 `step-answer-policy`에 step type별 answer 검증을 위임한다. 따라서 route나 service가 콘텐츠 후보, unsupported step, lesson-started marker 규칙을 중복 구현하지 않는다.
 `POST /ai-feedback`의 route는 인증 학습자 command를 core에 전달한다. core의 `AiFeedbackService`는 lesson과 AI_FEEDBACK step 판정에 집중하고, attempt 한도 계산·provider 호출·저장 기록은 AI feedback attempt coordinator가 처리한다.

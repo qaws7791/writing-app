@@ -11,6 +11,7 @@
 - destructive 동작은 즉시 실행하지 않고 확인 dialog를 거친다.
 - 컴포넌트와 스타일 import 경계는 `@workspace/ui`, `@workspace/ui/styles`, `@workspace/ui/components/icons`, `@workspace/ui/components/ui/*`, `@workspace/ui/lib/utils`를 우선 사용한다. 호환 entrypoint와 설정 entrypoint는 `packages/ui/README.md`를 따른다.
 - 앱 `tsconfig.json`은 `packages/ui/src` 내부를 직접 가리키는 source alias를 만들지 않는다. 공유 UI 소비는 `@workspace/ui` package export map을 통한다.
+- `packages/ui` 소스는 `@/`를 사용하지 않는다. 공유 UI 내부 참조는 `#lib/*`, `#components/*` 또는 상대 경로를 사용하고, 앱 소스는 `@/`를 유지한다.
 
 ## Button
 
@@ -20,18 +21,19 @@
 
 ### Variant
 
-| variant       | 용도                         |
-| ------------- | ---------------------------- |
-| `solid`       | 주요 행동                    |
-| `default`     | 기존 호출 호환용 주요 행동   |
-| `outline`     | 보조 행동, 확장 메뉴 trigger |
-| `secondary`   | 낮은 강조의 보조 행동        |
-| `ghost`       | 표면 없는 보조 행동          |
-| `correct`     | 레슨 정답 피드백 CTA         |
-| `wrong`       | 레슨 오답 피드백 CTA         |
-| `white`       | 강조 배경 위의 밝은 CTA      |
-| `destructive` | 삭제, 실패, 위험 행동        |
-| `link`        | 텍스트 링크형 행동           |
+| variant       | 용도                                                  |
+| ------------- | ----------------------------------------------------- |
+| `solid`       | 주요 행동 (`bg-charcoal text-cream`)                  |
+| `default`     | 기존 호출 호환용 주요 행동 (`bg-charcoal text-cream`) |
+| `outline`     | 보조 행동, 확장 메뉴 trigger                          |
+| `secondary`   | 낮은 강조의 보조 행동                                 |
+| `ghost`       | 표면 없는 보조 행동                                   |
+| `correct`     | 레슨 정답 피드백 CTA                                  |
+| `wrong`       | 레슨 오답 피드백 CTA                                  |
+| `white`       | 강조 배경 위의 밝은 CTA                               |
+| `ink`         | OAuth 등 테마 무관 고정 CTA (`bg-ink text-white`)     |
+| `destructive` | 삭제, 실패, 위험 행동                                 |
+| `link`        | 텍스트 링크형 행동                                    |
 
 ### Size
 
@@ -47,7 +49,7 @@
 | `icon-lg` | 48px 정사각 |
 
 아이콘은 `data-icon="inline-start"` 또는 `data-icon="inline-end"`로 padding 보정을 받는다.
-버튼은 기본적으로 `rounded-control`, `font-bold`, `.btn-squish`를 사용하고 텍스트 줄바꿈을 허용하지 않는다. `lg` 크기는 레슨 CTA 기준의 `rounded-4xl`, `text-lg`, `py-5`를 사용한다.
+버튼은 기본적으로 `rounded-control`, `font-bold`, `.btn-squish`를 사용하고 텍스트 줄바꿈을 허용하지 않는다. `lg`·`extra` 크기는 레슨 CTA 기준의 `rounded-4xl`, `text-body-lg`(1.125rem), `py-5`를 사용한다.
 
 ## Card
 
@@ -102,7 +104,9 @@
 구현 위치: `packages/ui/src/components/ui/select.tsx`
 
 - Base UI select primitive다.
-- `SelectTrigger`는 Input과 동일한 field control contract를 따른다.
+- `SelectTrigger`는 `variant`로 표현 스타일을 선택한다.
+  - `default`: `bg-surface` filled, `rounded-full`, 학습자 목록 툴바(정렬·필터) 기본
+  - `outlined`: Input/Textarea와 동일한 field control contract (`border-field-border`, `bg-transparent`)
 - 높이는 density token의 `control-height-md`를 따른다.
 - 라우팅이나 데이터 정책이 없는 필터, 정렬, 페이지 크기 선택에 사용한다.
 - 복잡한 combobox나 다중 선택이 필요해지면 Base UI 기반 별도 primitive를 추가한다.
@@ -173,7 +177,7 @@
 - `packages/ui/src/components/ui/rich-text.tsx`
 - `packages/ui/src/components/ui/choice-card.tsx`
 
-`StickyActionBar`는 모바일 safe-area를 포함한 하단 고정 행동 영역이다. tone은 `default`, `success`, `danger`만 제공한다. `RichText`는 markdown parser가 아니라 ReactMarkdown 결과물을 감싸는 token 기반 prose wrapper다. markdown parsing과 remark/rehype 정책은 앱이 소유한다. `ChoiceCard`와 `ChoiceCardGroup`은 레슨 선택형 UI의 generic button/card이며 상태는 `idle`, `selected`, `correct`, `wrong`, `disabled`만 받는다.
+`StickyActionBar`는 모바일 safe-area를 포함한 하단 고정 행동 영역이다. tone은 `default`, `success`, `danger`만 제공한다. `RichText`는 markdown parser가 아니라 ReactMarkdown 결과물을 감싸는 token 기반 prose wrapper다. markdown parsing과 remark/rehype 정책은 앱이 소유한다. `ChoiceCard`와 `ChoiceCardGroup`은 레슨 선택형 UI의 generic button/card이며 상태는 `idle`, `selected`, `correct`, `wrong`, `disabled`만 받는다. `selected`는 `bg-accent text-accent-foreground`를 사용한다. `MultipleChoiceAnswer`, `SelectAnswer`, `FillBlankAnswer` 등 lesson step 컴포넌트의 미채점 선택 상태도 동일한 accent 토큰을 따른다. `MatchAnswer`는 미채점 상태에서 연결된 항목은 공통 accent fill과 연결선으로 표시하고, 아직 짝이 없는 항목은 surface 상태를 유지한다. 왼쪽·오른쪽 어느 쪽이든 먼저 탭해 짝을 맞출 수 있다. 채점 후에는 연결선과 버튼이 정오답 톤으로 바뀐다. monorepo에서 `primary`는 차콜(주요 CTA)이므로 선택 fill에 `bg-primary`를 쓰지 않는다.
 
 ## Spinner, Separator, Avatar
 
@@ -196,7 +200,7 @@
 - `packages/ui/src/components/ui/data-table.tsx`
 - `packages/ui/src/components/ui/empty-state.tsx`
 
-`PageHeader`와 `SectionHeader`는 제목, 설명, 선택적 action 영역만 제공한다. `StatGrid`와 `StatCard`는 dashboard 지표 같은 반복 metric에 사용한다. 학습자 홈 기준으로 `StatCard`는 `rounded-2xl`, `px-5 py-3.5`, 작은 라벨과 `text-title-lg` 값 표현을 기본값으로 삼는다. `FilterToolbar`는 검색과 select filter를 배치하는 form이고, `FilterToolbarField`와 `FilterToolbarLabel`을 함께 사용한다. `DataTableContainer`와 `DataTable`은 horizontal overflow와 기본 table cell 스타일만 제공한다. `EmptyState`는 결과 없음과 초기 상태를 표현하며, 도메인 메시지는 호출자가 전달한다.
+`PageHeader`와 `SectionHeader`는 제목, 설명, 선택적 action 영역만 제공한다. `StatGrid`와 `StatCard`는 dashboard 지표 같은 반복 metric에 사용한다. 학습자 홈 기준으로 `StatCard`는 `layout="compact"`(`rounded-2xl`, `px-5 py-3.5`, 작은 라벨과 `text-title-lg` 값)을 쓴다. 학습자 프로필 요약은 `layout="profile"`(`bg-surface`, `p-8`, 중앙 정렬, border 없음, `text-heading-lg font-black` 값)을 쓴다. 어드민·대시보드 metric은 기본 `layout="metric"`(border, 좌측 정렬)이다. `FilterToolbar`는 검색과 select filter를 배치하는 form이고, `FilterToolbarField`와 `FilterToolbarLabel`을 함께 사용한다. `DataTableContainer`와 `DataTable`은 horizontal overflow와 기본 table cell 스타일만 제공한다. `EmptyState`는 결과 없음과 초기 상태를 표현하며, 도메인 메시지는 호출자가 전달한다.
 
 `StatGrid`와 `StatCard`는 어드민 전용이 아니다. 학습자 프로필의 완료 레슨, 연속 학습일처럼 숫자 지표를 반복해 보여주는 web 화면에서도 같은 primitive를 사용한다.
 
@@ -237,6 +241,8 @@
 - `/app` 홈은 정확히 `/app`에서만 활성화한다.
 - `/app/courses`와 하위 상세는 `배우기`가 활성화된다.
 - 계정 메뉴는 `DropdownMenu`를 사용하고, `프로필`, `로그아웃` 항목은 menuitem 의미를 따른다.
+- 계정 메뉴 드롭다운은 Kwep `Chrome.tsx`와 같이 `bg-cream`, `border-2 border-surface`, `rounded-4xl`, `w-48`, `p-4`를 쓰고 그림자는 없다. 트리거 우측(`align="end"`, `sideOffset={12}`)에 정렬한다.
+- 메뉴 항목은 `w-full text-left`, `py-3 px-4`, `rounded-3xl`, `font-bold`이며 hover/focus/highlight 시 `bg-surface`를 쓴다. 로그아웃만 `text-coral-dark`로 구분한다.
 - `global-nav.tsx`는 외부 import 호환성을 위해 `MobileNav`를 re-export한다.
 
 ### LessonShell
@@ -249,6 +255,16 @@
 - 하단 CTA와 정답 피드백은 `StickyActionBar`, `Callout`, `Button` 조합을 사용한다. 기본 CTA는 cream gradient footer를 사용하고, 정답/오답 피드백은 상단 gradient와 색상 구분선 뒤에 `correct` 또는 `wrong` 버튼을 배치한다.
 - 나가기 확인은 `AlertDialog`를 사용한다.
 - 선택형 레슨 UI는 `ChoiceCard`, markdown 본문은 `RichText`를 사용한다.
+
+### CompareStepView 및 레슨 콜아웃
+
+구현 위치: `packages/ui/src/components/lesson/compare-step-view.tsx`
+
+- Kwep `StepRenderer` compare 분기와 동일한 마크업·토큰을 따른다.
+- 버전 본문은 `bg-surface` 패널 + `1.125rem` 본문 `p` 태그다.
+- 「생각해보기」 등 노란 힌트 박스는 `bg-accent-soft`를 쓴다. `bg-primary/20`은 monorepo에서 `primary`가 차콜이므로 사용하지 않는다.
+- 콜아웃 제목·보조 라벨은 `text-muted-foreground`(`fg-muted`)를 쓴다. `text-muted`는 배경용 soft 토큰이라 대비가 부족하다.
+- compare·reading·write 등 정보 제시형 스텝 CTA 라벨은 「이해했어요」다.
 
 ## 어드민 앱 컴포넌트
 

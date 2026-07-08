@@ -12,11 +12,7 @@
 
 ## 토큰 구조
 
-`@workspace/ui`는 Tailwind CSS 4, Base UI 기반 primitive, 글결 제품 토큰을 사용한다. 토큰은 세 단계로 관리한다.
-
-1. reference token: 실제 색상과 수치다. `packages/ui/src/styles/tokens/reference.css`에 둔다.
-2. semantic token: 제품 역할이다. `packages/ui/src/styles/tokens/semantic.css`에 둔다.
-3. component token: 컴포넌트 결정이다. `packages/ui/src/styles/tokens/component.css`, `radius.css`에 둔다.
+`@workspace/ui`는 Tailwind CSS 4, Base UI 기반 primitive, 글결 제품 토큰을 사용한다. 토큰은 `packages/ui/src/styles/tokens/` 아래 reference, semantic, component, radius, motion으로 분리하고, `globals.css`가 entrypoint다.
 
 ## Semantic Color
 
@@ -99,7 +95,7 @@
 ## Shadow와 Border
 
 - `@workspace/ui`의 `Card`와 앱 패널은 shadow보다 색상 면, radius, 얇은 charcoal alpha border로 구분한다.
-- Input, Textarea, Select trigger 같은 form control은 배경 fill 없이 `border-field-border`로 구분한다.
+- Input, Textarea, `SelectTrigger variant="outlined"` 같은 form control은 배경 fill 없이 `border-field-border`로 구분한다.
 - Dialog shadow는 `0 20px 45px rgb(42 38 33 / 0.16)`을 기준으로 사용한다.
 - focus ring은 `border-focus` semantic token을 사용한다.
 

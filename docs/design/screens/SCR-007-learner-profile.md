@@ -24,10 +24,11 @@
 
 ## UI 기준
 
-- avatar는 `action-selected-*` token과 `rounded-panel`을 사용한다.
-- 학습 요약은 2열 `StatCard` 타일이다.
-- 테마 전환은 라이트, 다크, 시스템 3분할 control이다.
-- 로그아웃은 `Button variant="destructive"`를 사용한다.
+- avatar는 `bg-accent`, `rounded-[3rem]`, `size-32`를 사용한다. 이미지가 없으면 `✍️` fallback을 쓴다.
+- 이름은 `text-[1.75rem] font-black`이다.
+- 학습 요약은 2열 `StatGrid`와 `StatCard layout="profile"` 타일이다. 카드는 `bg-surface`, `p-8`, 중앙 정렬, border 없음.
+- 테마 전환은 라이트, 다크, 시스템 3분할 control이며 활성 옵션은 `bg-accent text-charcoal`이다.
+- 로그아웃은 `Button variant="destructive" size="extra"`를 사용한다.
 
 ## 상태
 
