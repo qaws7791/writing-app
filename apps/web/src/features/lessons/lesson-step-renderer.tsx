@@ -26,8 +26,6 @@ import type { LessonStep } from "@/features/lessons/lesson-types"
 
 export type LessonStepRendererProps = {
   readonly step: LessonStep
-  readonly stepIndex: number
-  readonly totalSteps: number
   readonly answerError?: null | string
   readonly checked?: LessonStepCheckedState | false
   readonly onAiFeedbackRequest?: (
@@ -49,16 +47,9 @@ export function LessonStepRenderer({
   onAnswerChange,
   onAnswerPayloadChange,
   step,
-  stepIndex,
-  totalSteps,
 }: LessonStepRendererProps) {
   return (
-    <LessonStepFrame
-      answerError={answerError}
-      stepId={step.id}
-      stepIndex={stepIndex}
-      totalSteps={totalSteps}
-    >
+    <LessonStepFrame answerError={answerError} stepId={step.id}>
       {renderStepContent(step, {
         checked,
         onAiFeedbackRequest,

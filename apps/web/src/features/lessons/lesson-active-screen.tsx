@@ -114,8 +114,6 @@ export function LessonActiveScreen({
           onAnswerPayloadChange={onAnswerPayloadChange}
           key={currentStepIndex}
           step={currentStep}
-          stepIndex={currentStepIndex}
-          totalSteps={lesson.steps.length}
         />
         {completeError === null ? null : (
           <Callout className="mt-6" role="alert" tone="danger">

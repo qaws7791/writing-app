@@ -307,8 +307,6 @@ export function StepDebugPage() {
                         setPayload(change.payload)
                       }}
                       step={selectedEntry.sample}
-                      stepIndex={0}
-                      totalSteps={STEP_DEBUG_ENTRIES.length}
                     />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent">

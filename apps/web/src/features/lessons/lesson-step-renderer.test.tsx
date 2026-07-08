@@ -279,8 +279,6 @@ describe("레슨 스텝 렌더러 AI 코칭", () => {
       <LessonStepRenderer
         onAiFeedbackRequest={onAiFeedbackRequest}
         step={aiFeedbackStep}
-        stepIndex={0}
-        totalSteps={1}
       />
     )
 
@@ -336,8 +334,6 @@ describe("레슨 스텝 렌더러 AI 코칭", () => {
       <LessonStepRenderer
         onAiFeedbackRequest={onAiFeedbackRequest}
         step={aiFeedbackStep}
-        stepIndex={0}
-        totalSteps={1}
       />
     )
 
@@ -356,14 +352,7 @@ function renderAnswerableStep(
     readonly stepId: string
   }) => void
 ) {
-  render(
-    <LessonStepRenderer
-      onAnswerChange={onAnswerChange}
-      step={step}
-      stepIndex={0}
-      totalSteps={1}
-    />
-  )
+  render(<LessonStepRenderer onAnswerChange={onAnswerChange} step={step} />)
 }
 
 const aiFeedbackStep: LessonStep = {
