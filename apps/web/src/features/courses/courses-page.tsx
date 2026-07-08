@@ -16,12 +16,6 @@ import {
   EmptyContent,
 } from "@workspace/ui/components/ui/empty"
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from "@workspace/ui/components/ui/input-group"
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -38,13 +32,20 @@ type CoursesPageProps = {
 export type CourseListFilters = {
   readonly category: string
   readonly query: string
-  readonly sort: "latest" | "studyTime" | "title"
+  readonly sort:
+    | "latest"
+    | "lessons-asc"
+    | "lessons-desc"
+    | "title"
+    | "title-desc"
 }
 
 const sortOptions = [
-  { label: "최신순", value: "latest" },
-  { label: "제목순", value: "title" },
-  { label: "학습시간순", value: "studyTime" },
+  { label: "기본 순", value: "latest" },
+  { label: "제목 가나다순", value: "title" },
+  { label: "제목 역순", value: "title-desc" },
+  { label: "레슨 많은 순", value: "lessons-desc" },
+  { label: "레슨 적은 순", value: "lessons-asc" },
 ] as const
 
 export function CoursesPage({ courses, filters }: CoursesPageProps) {
@@ -126,42 +127,35 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
       ) : (
         <>
           <div className="mb-5 flex flex-wrap items-center gap-3">
-            <div className="flex-1 min-w-[200px]">
+            <div className="relative flex-1 min-w-[200px]">
               <label className="sr-only" htmlFor="course-query">
                 검색
               </label>
-              <InputGroup className="h-11 rounded-full bg-surface px-1">
-                <InputGroupInput
-                  id="course-query"
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="코스 검색…"
-                  ref={searchRef}
-                  value={query}
-                  className="text-body-sm font-medium placeholder:text-muted-foreground"
-                />
-                <InputGroupAddon
-                  align="inline-start"
-                  className="pl-3.5 text-muted-foreground"
+              <SearchIcon
+                className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground"
+                size={16}
+              />
+              <input
+                className="w-full rounded-full bg-surface py-3 pl-11 pr-10 text-body-sm font-medium text-foreground outline-none transition-shadow placeholder:text-muted-foreground focus:ring-2 focus:ring-charcoal/20"
+                id="course-query"
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="코스 검색…"
+                ref={searchRef}
+                value={query}
+              />
+              {query ? (
+                <button
+                  aria-label="검색어 지우기"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                  onClick={() => {
+                    setQuery("")
+                    searchRef.current?.focus()
+                  }}
+                  type="button"
                 >
-                  <SearchIcon size={16} />
-                </InputGroupAddon>
-                {query ? (
-                  <InputGroupAddon align="inline-end" className="pr-3.5">
-                    <InputGroupButton
-                      aria-label="검색어 지우기"
-                      size="icon-xs"
-                      onClick={() => {
-                        setQuery("")
-                        searchRef.current?.focus()
-                      }}
-                      type="button"
-                      className="text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      <XIcon size={15} />
-                    </InputGroupButton>
-                  </InputGroupAddon>
-                ) : null}
-              </InputGroup>
+                  <XIcon size={15} />
+                </button>
+              ) : null}
             </div>
             <div className="flex items-center gap-2">
               <label className="sr-only" htmlFor="course-sort">
@@ -226,17 +220,19 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {visibleCourses.map((course) => (
                 <Link
-                  className="flex flex-row overflow-hidden rounded-2xl bg-surface btn-squish hover:scale-[1.02] transition-transform duration-200 md:flex-col md:rounded-4xl"
+                  className="flex flex-row overflow-hidden rounded-2xl bg-surface btn-squish transition-transform duration-200 md:flex-col md:rounded-4xl"
                   href={`/app/courses/${course.id}`}
                   key={course.id}
                 >
                   <div className="relative w-28 shrink-0 md:w-full md:h-44">
                     <Image
                       alt={course.title}
-                      className="object-cover"
+                      draggable="false"
+                      className="object-cover select-none"
                       fill
                       sizes="(max-width: 768px) 112px, (max-width: 1024px) 50vw, 33vw"
-                      src={createCourseImageUrl(course.visualKey)}
+                      src={createCourseImageUrl(course.id, 600, 300)}
+                      unoptimized
                     />
                   </div>
                   <div className="p-4 md:p-6 flex-1 flex flex-col min-w-0">
@@ -290,7 +286,15 @@ function sortCourses(
       return left.title.localeCompare(right.title, "ko")
     }
 
-    if (sort === "studyTime") {
+    if (sort === "title-desc") {
+      return right.title.localeCompare(left.title, "ko")
+    }
+
+    if (sort === "lessons-desc") {
+      return right.lessonCount - left.lessonCount
+    }
+
+    if (sort === "lessons-asc") {
       return left.lessonCount - right.lessonCount
     }
 

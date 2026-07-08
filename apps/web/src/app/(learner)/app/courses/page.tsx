@@ -67,7 +67,12 @@ function readString(value: string | string[] | undefined, fallback: string) {
 }
 
 function readCourseSort(value: string): CourseListFilters["sort"] {
-  if (value === "title" || value === "studyTime") {
+  if (
+    value === "title" ||
+    value === "title-desc" ||
+    value === "lessons-desc" ||
+    value === "lessons-asc"
+  ) {
     return value
   }
 

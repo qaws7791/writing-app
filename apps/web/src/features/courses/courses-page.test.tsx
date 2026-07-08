@@ -80,21 +80,19 @@ describe("코스 목록 화면", () => {
     render(
       <CoursesPage
         courses={courses}
-        filters={{ category: "", query: "문장", sort: "studyTime" }}
+        filters={{ category: "", query: "문장", sort: "lessons-asc" }}
       />
     )
 
     expect(screen.getByLabelText("검색")).toHaveValue("문장")
-    expect(screen.getByLabelText("정렬")).toHaveDisplayValue("학습시간순")
+    expect(screen.getByRole("combobox", { name: "정렬" })).toHaveTextContent(
+      "레슨 적은 순"
+    )
     expect(screen.getAllByRole("link", { name: /문장/ })[0]).toHaveAttribute(
       "href",
       "/app/courses/c2"
     )
     expect(screen.getByText("글쓰기 첫걸음 30일")).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: "초기화" })).toHaveAttribute(
-      "href",
-      "/app/courses"
-    )
   })
 
   it("검색 결과가 없으면 필터 초기화 링크를 보여준다", () => {

@@ -1,10 +1,22 @@
 import { render, screen, within } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import userEvent from "@testing-library/user-event"
+import { describe, expect, it, vi } from "vitest"
 
 import { HomePage } from "@/features/home/home-page"
 import type { ProgressCourseList } from "@/features/courses/course-types"
+import type { LearnerProfile } from "@/features/profile/profile-types"
+import { apiOk } from "@/lib/api/api-result"
+import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 
-const emptyProgress: ProgressCourseList = {
+const profileStats: LearnerProfile["stats"] = {
+  completedLessons: 0,
+  currentStreakDays: 0,
+  lastActiveDate: null,
+  progressPercent: 0,
+  totalLessons: 0,
+}
+
+const emptyInProgress: ProgressCourseList = {
   courses: [],
   currentStreakDays: 0,
 }
@@ -77,8 +89,14 @@ const completedProgress: ProgressCourseList = {
 }
 
 describe("홈 화면", () => {
-  it("현재 제품 홈 fresh 상태의 인사, 통계, 첫 코스 링크를 보여준다", () => {
-    render(<HomePage learnerName="글쓰기 탐험가" progress={emptyProgress} />)
+  it("fresh 상태의 인사, 통계, 진행중 탭 CTA를 보여준다", () => {
+    render(
+      <HomePage
+        inProgress={emptyInProgress}
+        learnerName="글쓰기 탐험가"
+        profileStats={profileStats}
+      />
+    )
 
     expect(screen.getByText("안녕하세요 👋")).toBeInTheDocument()
     expect(
@@ -90,6 +108,8 @@ describe("홈 화면", () => {
     expect(screen.getByText("연속 학습")).toBeInTheDocument()
     expect(screen.getByText("0개")).toBeInTheDocument()
     expect(screen.getByText("완료한 레슨")).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "진행중" })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "완료" })).toBeInTheDocument()
 
     const startCard = screen.getByRole("link", { name: /코스 둘러보기/ })
     expect(startCard).toHaveAttribute("href", "/app/courses")
@@ -98,21 +118,28 @@ describe("홈 화면", () => {
     ).toBeInTheDocument()
     expect(
       within(startCard).getByRole("heading", {
-        name: /첫 번째 코스를\s*선택해 보세요/,
+        name: /새로운 코스를\s*선택해 보세요/,
       })
     ).toBeInTheDocument()
-    expect(within(startCard).getByText("코스 둘러보기")).toBeInTheDocument()
   })
 
   it("진행 중 코스와 다음 레슨 링크를 보여준다", () => {
-    render(<HomePage learnerName="몽쉘" progress={progressWithActiveCourse} />)
+    render(
+      <HomePage
+        inProgress={progressWithActiveCourse}
+        learnerName="몽쉘"
+        profileStats={{
+          ...profileStats,
+          completedLessons: 1,
+          currentStreakDays: 2,
+        }}
+      />
+    )
 
     expect(screen.getByText("이어서 학습하기")).toBeInTheDocument()
-    expect(screen.getByText("1개 코스")).toBeInTheDocument()
     expect(screen.getAllByText("글쓰기 첫걸음 30일")).toHaveLength(2)
     expect(screen.getAllByText("1/3")).toHaveLength(2)
     expect(screen.getAllByText("짧게 쓰기")).toHaveLength(2)
-    expect(document.querySelector(".border-t")).toBeNull()
 
     expect(
       firstElement(screen.getAllByRole("link", { name: /글쓰기 첫걸음 30일/ }))
@@ -122,14 +149,52 @@ describe("홈 화면", () => {
     ).toHaveAttribute("href", "/app/lesson?lesson_id=l2")
   })
 
-  it("다음 레슨이 없는 진행 코스에는 완료 메시지를 보여준다", () => {
-    render(<HomePage learnerName="몽쉘" progress={completedProgress} />)
+  it("완료 탭에서 완료 코스 목록을 불러온다", async () => {
+    const user = userEvent.setup()
+    const getProgress = vi.fn(async () => apiOk(completedProgress))
+    const api = createApi({ getProgress })
 
-    expect(screen.getByText("이어서 학습하기")).toBeInTheDocument()
-    expect(screen.getAllByText("완료한 코스")).toHaveLength(2)
-    expect(screen.getAllByText("모든 레슨을 완료했어요")).toHaveLength(2)
+    render(
+      <HomePage
+        api={api}
+        inProgress={emptyInProgress}
+        learnerName="몽쉘"
+        profileStats={{
+          ...profileStats,
+          completedLessons: 1,
+          currentStreakDays: 5,
+        }}
+      />
+    )
+
+    await user.click(screen.getByRole("tab", { name: "완료" }))
+
+    expect(getProgress).toHaveBeenCalledWith({ status: "completed" })
+    expect(await screen.findAllByText("완료한 코스")).toHaveLength(2)
+    expect(
+      screen.queryByRole("heading", {
+        name: /새로운 코스를\s*선택해 보세요/,
+      })
+    ).not.toBeInTheDocument()
   })
 })
+
+function createApi({
+  getProgress,
+}: {
+  readonly getProgress: WritingAppApi["getProgress"]
+}): WritingAppApi {
+  return {
+    completeLesson: vi.fn(),
+    createAiFeedback: vi.fn(),
+    getCourseDetail: vi.fn(),
+    getLesson: vi.fn(),
+    getProfile: vi.fn(),
+    getProgress,
+    listCourses: vi.fn(),
+    saveLessonAnswer: vi.fn(),
+  }
+}
 
 function firstElement<TElement>(elements: readonly TElement[]): TElement {
   const element = elements[0]

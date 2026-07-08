@@ -2,13 +2,19 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { useCallback, useMemo, useState, type ReactNode } from "react"
 
+import { CompletedCourseCard } from "@/features/home/completed-course-card"
 import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type {
   ProgressCourse,
   ProgressCourseList,
   ProgressNextLesson,
 } from "@/features/courses/course-types"
+import type { LearnerProfile } from "@/features/profile/profile-types"
+import { getBrowserLearnerSessionToken } from "@/lib/auth/session-token"
+import { getBrowserWritingAppApi } from "@/lib/api/get-browser-writing-app-api"
+import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
 import {
   BookOpenIcon,
   ChevronRightIcon,
@@ -16,33 +22,75 @@ import {
   PlayIcon,
   SparklesIcon,
 } from "@workspace/ui/components/icons"
-import { buttonVariants } from "@workspace/ui/components/ui/button"
+import { Button, buttonVariants } from "@workspace/ui/components/ui/button"
 import { Progress } from "@workspace/ui/components/ui/progress"
 import { StatCard, StatGrid } from "@workspace/ui/components/ui/stat-card"
 import { Surface } from "@workspace/ui/components/ui/surface"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@workspace/ui/components/ui/tabs"
 
 const CONTINUE_COURSE_LIMIT = 5
 
+type CompletedCoursesState =
+  | { readonly status: "error" }
+  | { readonly status: "idle" }
+  | { readonly status: "loaded"; readonly courses: readonly ProgressCourse[] }
+  | { readonly status: "loading" }
+
 type HomePageProps = {
+  readonly api?: WritingAppApi
+  readonly inProgress: ProgressCourseList
   readonly learnerName: null | string | undefined
-  readonly progress: ProgressCourseList
+  readonly profileStats: LearnerProfile["stats"]
 }
 
-export function HomePage({ learnerName, progress }: HomePageProps) {
+export function HomePage({
+  api,
+  inProgress,
+  learnerName,
+  profileStats,
+}: HomePageProps) {
   const firstName = normalizeFirstName(learnerName)
-  const totalDone = progress.courses.reduce(
-    (total, course) =>
-      total +
-      course.lessons.filter((lesson) => lesson.status === "completed").length,
-    0
+  const inProgressItems = inProgress.courses.slice(0, CONTINUE_COURSE_LIMIT)
+  const resolvedApi = useMemo(
+    () =>
+      api ??
+      getBrowserWritingAppApi({
+        tokenProvider: getBrowserLearnerSessionToken,
+      }),
+    [api]
   )
-  const inProgress = progress.courses.filter(
-    (course) =>
-      course.progressPercent > 0 ||
-      course.lessons.some((lesson) => lesson.status === "completed")
+  const [completedState, setCompletedState] = useState<CompletedCoursesState>({
+    status: "idle",
+  })
+
+  const loadCompletedCourses = useCallback(async () => {
+    setCompletedState({ status: "loading" })
+    const result = await resolvedApi.getProgress({ status: "completed" })
+
+    if (result.status === "error") {
+      setCompletedState({ status: "error" })
+      return
+    }
+
+    setCompletedState({
+      courses: result.value.courses,
+      status: "loaded",
+    })
+  }, [resolvedApi])
+
+  const handleTabChange = useCallback(
+    (value: string) => {
+      if (value === "completed" && completedState.status === "idle") {
+        void loadCompletedCourses()
+      }
+    },
+    [completedState.status, loadCompletedCourses]
   )
-  const hasProgress = inProgress.length > 0
-  const items = inProgress.slice(0, CONTINUE_COURSE_LIMIT)
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 lg:gap-10 xl:gap-14">
@@ -61,88 +109,219 @@ export function HomePage({ learnerName, progress }: HomePageProps) {
           <StatCard
             icon={<FlameIcon size={20} />}
             label="연속 학습"
-            value={`${progress.currentStreakDays}일`}
+            layout="compact"
+            value={`${profileStats.currentStreakDays}일`}
           />
           <StatCard
             icon={<BookOpenIcon size={20} />}
             label="완료한 레슨"
-            value={`${totalDone}개`}
+            layout="compact"
+            value={`${profileStats.completedLessons}개`}
           />
         </StatGrid>
       </div>
 
       <div className="flex-1 min-w-0">
-        {hasProgress ? (
-          <>
-            <div className="flex items-baseline justify-between mb-5">
-              <p className="text-label-sm font-bold uppercase text-muted-foreground">
-                이어서 학습하기
-              </p>
-              <p className="text-label-sm font-bold text-muted-foreground">
-                {items.length}개 코스
-              </p>
-            </div>
-            <div
-              className="lg:hidden flex overflow-x-auto gap-5 no-scrollbar -mx-4 px-4 pt-1 pb-3"
-              style={{
-                scrollPaddingLeft: "1rem",
-                scrollSnapType: "x mandatory",
-              }}
-            >
-              {items.map((course, index) => (
-                <div
-                  className="last:pr-2"
-                  key={course.id}
-                  style={{ scrollSnapAlign: "start" }}
-                >
+        <Tabs
+          className="flex w-full flex-col gap-4"
+          defaultValue="in_progress"
+          onValueChange={handleTabChange}
+        >
+          <TabsList className="w-fit shrink-0 self-start">
+            <TabsTrigger value="in_progress">진행중</TabsTrigger>
+            <TabsTrigger value="completed">완료</TabsTrigger>
+          </TabsList>
+          <TabsContent className="w-full flex-none" value="in_progress">
+            {inProgressItems.length > 0 ? (
+              <CourseCardList
+                courses={inProgressItems}
+                renderCard={(course, index, variant) => (
                   <ContinueCourseCard
                     course={course}
+                    key={course.id}
                     priority={index === 0}
-                    variant="mobile"
+                    variant={variant}
                   />
-                </div>
-              ))}
-            </div>
-            <div className="hidden lg:flex flex-col gap-4">
-              {items.map((course, index) => (
-                <ContinueCourseCard
-                  course={course}
-                  key={course.id}
-                  priority={index === 0}
-                  variant="desktop"
-                />
-              ))}
-            </div>
-          </>
-        ) : (
-          <Link
-            className="block cursor-pointer rounded-panel bg-surface p-7 btn-squish hover:scale-[1.02] transition-transform duration-200"
-            href="/app/courses"
-          >
-            <div className="flex items-center gap-2 mb-5">
-              <SparklesIcon className="text-muted-foreground" size={16} />
-              <span className="text-label-md font-bold text-muted-foreground">
-                지금 시작해볼까요?
-              </span>
-            </div>
-            <h2 className="mb-7 text-heading-sm font-black">
-              첫 번째 코스를
-              <br />
-              선택해 보세요
-            </h2>
-            <div
-              className={buttonVariants({
-                className: "w-full justify-between",
-                size: "lg",
-              })}
-            >
-              <span>코스 둘러보기</span>
-              <ChevronRightIcon size={20} />
-            </div>
-          </Link>
-        )}
+                )}
+              />
+            ) : (
+              <StartCourseCta />
+            )}
+          </TabsContent>
+
+          <TabsContent className="w-full flex-none" value="completed">
+            <CompletedCoursesPanel
+              onRetry={() => {
+                void loadCompletedCourses()
+              }}
+              state={completedState}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
+  )
+}
+
+function CompletedCoursesPanel({
+  onRetry,
+  state,
+}: {
+  readonly onRetry: () => void
+  readonly state: CompletedCoursesState
+}) {
+  if (state.status === "idle" || state.status === "loading") {
+    return <CompletedCourseCardSkeletonList />
+  }
+
+  if (state.status === "error") {
+    return (
+      <div className="rounded-panel bg-surface px-6 py-8 text-center">
+        <p className="mb-4 text-body-md font-bold">
+          완료한 코스를 불러오지 못했어요
+        </p>
+        <Button onClick={onRetry} type="button" variant="secondary">
+          다시 시도
+        </Button>
+      </div>
+    )
+  }
+
+  if (state.courses.length === 0) {
+    return (
+      <p className="rounded-panel bg-surface px-6 py-8 text-center text-body-md font-bold text-muted-foreground">
+        아직 완료한 코스가 없어요
+      </p>
+    )
+  }
+
+  return (
+    <CourseCardList
+      courses={state.courses}
+      renderCard={(course, index, variant) => (
+        <CompletedCourseCard
+          course={course}
+          key={course.id}
+          priority={index === 0}
+          variant={variant}
+        />
+      )}
+    />
+  )
+}
+
+function CourseCardList({
+  courses,
+  renderCard,
+}: {
+  readonly courses: readonly ProgressCourse[]
+  readonly renderCard: (
+    course: ProgressCourse,
+    index: number,
+    variant: "desktop" | "mobile"
+  ) => ReactNode
+}) {
+  return (
+    <div className="flex flex-col gap-4">
+      {courses.map((course, index) => (
+        <div className="w-full min-w-0" key={course.id}>
+          <div className="w-full lg:hidden *:w-full *:max-w-none">
+            {renderCard(course, index, "mobile")}
+          </div>
+          <div className="hidden w-full lg:block">
+            {renderCard(course, index, "desktop")}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function CompletedCourseCardSkeletonList() {
+  return (
+    <div className="flex flex-col gap-4">
+      {["mobile-1", "mobile-2", "mobile-3"].map((key) => (
+        <div className="w-full min-w-0" key={key}>
+          <div className="w-full lg:hidden *:w-full *:max-w-none">
+            <CompletedCourseCardSkeleton variant="mobile" />
+          </div>
+          <div className="hidden w-full lg:block">
+            <CompletedCourseCardSkeleton variant="desktop" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function CompletedCourseCardSkeleton({
+  variant,
+}: {
+  readonly variant: "desktop" | "mobile"
+}) {
+  const isDesktop = variant === "desktop"
+
+  return (
+    <Surface
+      variant="panel"
+      size="none"
+      className={
+        isDesktop
+          ? "flex overflow-hidden rounded-[24px]"
+          : "flex w-80 shrink-0 flex-col overflow-hidden rounded-[28px] sm:w-[22rem]"
+      }
+    >
+      <div
+        className={
+          isDesktop
+            ? "h-28 w-44 shrink-0 animate-pulse bg-charcoal/10"
+            : "h-36 w-full animate-pulse bg-charcoal/10"
+        }
+      />
+      <div
+        className={
+          isDesktop ? "flex flex-1 items-center px-5 py-4" : "px-6 py-5"
+        }
+      >
+        <div
+          className={
+            isDesktop
+              ? "h-5 w-3/5 animate-pulse rounded-full bg-charcoal/10"
+              : "h-6 w-4/5 animate-pulse rounded-full bg-charcoal/10"
+          }
+        />
+      </div>
+    </Surface>
+  )
+}
+
+function StartCourseCta() {
+  return (
+    <Link
+      className="block cursor-pointer rounded-panel bg-surface p-7"
+      href="/app/courses"
+    >
+      <div className="flex items-center gap-2 mb-5">
+        <SparklesIcon className="text-muted-foreground" size={16} />
+        <span className="text-label-md font-bold text-muted-foreground">
+          지금 시작해볼까요?
+        </span>
+      </div>
+      <h2 className="mb-7 text-heading-sm font-black">
+        새로운 코스를
+        <br />
+        선택해 보세요
+      </h2>
+      <div
+        className={buttonVariants({
+          className: "w-full justify-between",
+          size: "lg",
+        })}
+      >
+        <span>코스 둘러보기</span>
+        <ChevronRightIcon size={20} />
+      </div>
+    </Link>
   )
 }
 
@@ -177,10 +356,7 @@ function ContinueCourseCard({
       }
     >
       {isDesktop ? (
-        <Link
-          className="flex cursor-pointer text-left hover:scale-[1.02] transition-transform duration-200 btn-squish"
-          href={courseHref}
-        >
+        <Link className="flex cursor-pointer text-left" href={courseHref}>
           <div className="relative min-h-28 h-28 w-44 shrink-0 overflow-hidden">
             <Image
               alt={course.title}
@@ -189,7 +365,8 @@ function ContinueCourseCard({
               fill
               priority={priority}
               sizes="176px"
-              src={createCourseImageUrl(course.visualKey)}
+              src={createCourseImageUrl(course.id, 440, 320)}
+              unoptimized
             />
           </div>
           <div className="flex-1 min-w-0 px-5 py-4">
@@ -203,10 +380,7 @@ function ContinueCourseCard({
           </div>
         </Link>
       ) : (
-        <Link
-          className="w-full cursor-pointer btn-squish hover:scale-[1.02] transition-transform duration-200 text-left"
-          href={courseHref}
-        >
+        <Link className="w-full cursor-pointer text-left" href={courseHref}>
           <div className="relative h-36 w-full overflow-hidden">
             <Image
               alt={course.title}
@@ -215,7 +389,8 @@ function ContinueCourseCard({
               fill
               priority={priority}
               sizes="(min-width: 640px) 22rem, 20rem"
-              src={createCourseImageUrl(course.visualKey)}
+              src={createCourseImageUrl(course.id, 700, 320)}
+              unoptimized
             />
           </div>
           <div className="px-6 pt-5 pb-4">
@@ -232,7 +407,7 @@ function ContinueCourseCard({
       <div
         className={
           isDesktop
-            ? "px-3 pb-3 flex flex-col gap-0.5"
+            ? "px-3 py-3 flex flex-col gap-0.5"
             : "px-3 pb-4 flex flex-col gap-1"
         }
       >
@@ -287,7 +462,7 @@ function ContinueCourseSummary({
       <Progress
         aria-label={`${course.title} 진행률`}
         className="items-center gap-3"
-        indicatorClassName="bg-accent"
+        indicatorClassName="bg-charcoal"
         trackClassName="h-2 bg-charcoal/10"
         value={progressPercent}
       >
@@ -310,16 +485,16 @@ function NextLessonLink({
     <Link
       className={
         isDesktop
-          ? "flex items-center gap-3 rounded-2xl px-3 py-3 text-left btn-squish hover:bg-surface-hover"
-          : "flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left btn-squish hover:bg-surface-hover"
+          ? "flex items-center gap-3 rounded-2xl px-3 py-3 text-left hover:bg-surface-hover"
+          : "flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left  hover:bg-surface-hover"
       }
       href={`/app/lesson?lesson_id=${encodeURIComponent(lesson.id)}`}
     >
       <span
         className={
           isDesktop
-            ? "flex size-8 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground"
-            : "flex size-10 shrink-0 items-center justify-center rounded-full bg-accent text-accent-foreground"
+            ? "flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            : "flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
         }
       >
         <PlayIcon fill="currentColor" size={isDesktop ? 12 : 14} />

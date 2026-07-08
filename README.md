@@ -40,6 +40,8 @@ cp apps/admin/.env.example apps/admin/.env
 
 `BETTER_AUTH_SECRET`과 `ADMIN_BETTER_AUTH_SECRET`은 서로 다른 32자 이상 문자열로 둔다. `OPENAI_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`은 해당 기능을 실제 호출할 때만 설정한다.
 
+로컬에서 Google OAuth 대신 테스트 로그인 버튼을 쓰려면 `apps/api/.env`와 `apps/web/.env` 모두에 `ENABLE_TEST_AUTH=true`가 있어야 한다. API만 빠지면 `/api/auth/test/sign-in`이 404를 반환한다.
+
 ## 데이터 준비
 
 학습자 API와 어드민 API는 로컬에서 저장소 루트의 `data/api.sqlite`를 공유한다.

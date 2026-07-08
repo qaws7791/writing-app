@@ -20,12 +20,12 @@ export default async function AppHomeRoute() {
   const api = getServerWritingAppApi({
     tokenProvider: () => token,
   })
-  const [profileResult, progressResult] = await Promise.all([
+  const [profileResult, inProgressResult] = await Promise.all([
     api.getProfile(),
-    api.getProgress(),
+    api.getProgress({ status: "in_progress" }),
   ])
   const profileOutcome = toRouteApiOutcome(profileResult)
-  const progressOutcome = toRouteApiOutcome(progressResult)
+  const inProgressOutcome = toRouteApiOutcome(inProgressResult)
 
   if (profileOutcome.status === "error") {
     if (profileOutcome.failure.kind === "authentication") {
@@ -40,14 +40,14 @@ export default async function AppHomeRoute() {
     )
   }
 
-  if (progressOutcome.status === "error") {
-    if (progressOutcome.failure.kind === "authentication") {
+  if (inProgressOutcome.status === "error") {
+    if (inProgressOutcome.failure.kind === "authentication") {
       redirect(createLoginPagePath("/app"))
     }
 
     return (
       <AppRouteNotice
-        description={describeRouteApiFailure(progressOutcome.failure)}
+        description={describeRouteApiFailure(inProgressOutcome.failure)}
         title="홈을 열 수 없습니다."
       />
     )
@@ -55,8 +55,9 @@ export default async function AppHomeRoute() {
 
   return (
     <HomePage
+      inProgress={inProgressOutcome.value}
       learnerName={profileOutcome.value.user.name}
-      progress={progressOutcome.value}
+      profileStats={profileOutcome.value.stats}
     />
   )
 }

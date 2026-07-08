@@ -6,11 +6,6 @@ import { createCourseImageUrl } from "@/features/courses/course-visual-assets"
 import type { CourseDetail } from "@/features/courses/course-types"
 import { ChevronLeftIcon } from "@workspace/ui/components/icons"
 import { buttonVariants } from "@workspace/ui/components/ui/button"
-import {
-  Progress,
-  ProgressLabel,
-  ProgressValue,
-} from "@workspace/ui/components/ui/progress"
 import { Surface } from "@workspace/ui/components/ui/surface"
 
 type CourseDetailPageProps = {
@@ -45,20 +40,26 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             height={128}
             priority
             sizes="(max-width: 768px) 96px, 128px"
-            src={createCourseImageUrl(course.visualKey)}
+            src={createCourseImageUrl(course.id, 240, 240)}
+            unoptimized
             width={128}
           />
         </div>
         <h1 className="mb-4 text-heading-xl font-bold">{course.title}</h1>
-        <p className="mb-8 text-body-lg font-medium text-foreground">
+        <p className="mb-8 text-body-lg font-medium text-charcoal leading-relaxed">
           {course.description}
         </p>
-        <Progress value={progressPercent} className="mb-10">
-          <ProgressLabel className="text-sm font-medium text-muted-foreground">
-            진행도
-          </ProgressLabel>
-          <ProgressValue className="text-lg font-bold" />
-        </Progress>
+        <div className="mb-10 flex items-center gap-6">
+          <div className="h-4 flex-1 overflow-hidden rounded-full bg-charcoal/20">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <span className="text-title-md font-black">
+            {completedLessonCount}/{totalLessonCount}
+          </span>
+        </div>
         {nextLesson === null ? null : (
           <div>
             <p className="mb-4 text-label-md font-bold text-muted-foreground">
@@ -68,7 +69,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             <Link
               className={buttonVariants({
                 className:
-                  "w-full rounded-full px-10 md:w-auto h-auto py-5 text-lg font-bold",
+                  "w-full rounded-full bg-charcoal px-10 text-cream md:w-auto h-auto py-5 text-lg font-bold hover:opacity-90",
                 size: "lg",
               })}
               href={`/app/lesson?lesson_id=${encodeURIComponent(nextLesson.id)}`}

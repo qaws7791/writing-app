@@ -82,8 +82,8 @@ function CurriculumUnit({
             className={cn(
               "w-10 h-10 rounded-full flex justify-center items-center font-black shrink-0",
               unitDone
-                ? "bg-success text-success-foreground"
-                : "bg-surface-hover text-foreground"
+                ? "bg-mint-light text-charcoal"
+                : "bg-charcoal/15 text-charcoal"
             )}
           >
             {unitDone ? (
@@ -135,10 +135,10 @@ function CurriculumLesson({
           className={cn(
             "w-6 h-6 rounded-full flex justify-center items-center",
             done
-              ? "bg-success text-success-foreground"
+              ? "bg-mint-light text-charcoal"
               : locked
-                ? "bg-surface-hover text-muted-foreground"
-                : "bg-surface-hover text-foreground"
+                ? "bg-charcoal/15 text-muted-foreground"
+                : "bg-charcoal/15 text-charcoal"
           )}
         >
           {done ? (
