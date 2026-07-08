@@ -1,179 +1,89 @@
 import { describe, expect, it } from "vitest"
-import {
-  courseDetailDtoSchema,
-  courseSummaryDtoSchema,
-} from "@workspace/contracts/content"
 
 import {
-  toCourseProgress,
-  withLearnerCourseProgress,
+  filterCoursesByProgressStatus,
+  hasStartedCourse,
+  isCourseCompleted,
+  matchesProgressCourseStatusFilter,
 } from "@workspace/core/modules/learning/domain/learning-progress-read-model"
 
-describe("학습 진행 read model", () => {
-  it("첫 미완료 lesson만 available로 계산하고 이후 lesson은 locked로 둔다", () => {
-    expect(
-      toCourseProgress(courseSummary, courseDetail, [
-        {
-          currentStepIndex: 0,
-          lessonId: "l1",
-          status: "completed",
-        },
-        {
-          currentStepIndex: 2,
-          lessonId: "l-new",
-          status: "in_progress",
-        },
-      ])
-    ).toEqual({
-      id: "c1",
-      lessons: [
-        {
-          currentStepIndex: 0,
-          estimatedMinutes: 5,
-          id: "l1",
-          status: "completed",
-          title: "좋은 문장이란 무엇인가",
-        },
-        {
-          currentStepIndex: 2,
-          estimatedMinutes: 10,
-          id: "l-new",
-          status: "available",
-          title: "새 학습 활동 둘러보기",
-        },
-        {
-          currentStepIndex: null,
-          estimatedMinutes: 5,
-          id: "l2",
-          status: "locked",
-          title: "한 문장에 한 생각만 담기",
-        },
-      ],
-      nextLessons: [
-        {
-          courseId: "c1",
-          currentStepIndex: 2,
-          estimatedMinutes: 10,
-          id: "l-new",
-          status: "available",
-          title: "새 학습 활동 둘러보기",
-        },
-      ],
-      progressPercent: 33,
-      title: "글쓰기 첫걸음 30일",
-      visualKey: "basic-sentence-writing",
-    })
-  })
-
-  it("모든 lesson을 완료하면 course 상세의 nextLesson을 비운다", () => {
-    expect(
-      withLearnerCourseProgress(courseDetail, [
-        {
-          currentStepIndex: 0,
-          lessonId: "l1",
-          status: "completed",
-        },
-        {
-          currentStepIndex: 2,
-          lessonId: "l-new",
-          status: "completed",
-        },
-        {
-          currentStepIndex: 0,
-          lessonId: "l2",
-          status: "completed",
-        },
-      ]).progress
-    ).toMatchObject({
-      completedLessons: 3,
-      nextLesson: null,
-      percentage: 100,
-      totalLessons: 3,
-    })
-  })
-})
-
-const courseSummary = courseSummaryDtoSchema.parse({
-  category: "입문자를 위한 코스",
-  description: "매일 조금씩 쓰는 습관을 만듭니다.",
-  id: "c1",
-  lessonCount: 3,
-  status: "active",
-  title: "글쓰기 첫걸음 30일",
-  visualKey: "basic-sentence-writing",
-})
-
-const courseDetail = courseDetailDtoSchema.parse({
-  category: "입문자를 위한 코스",
-  description: "매일 조금씩 쓰는 습관을 만듭니다.",
-  id: "c1",
-  lessonCount: 3,
-  progress: {
-    completedLessons: 0,
-    lessons: [
-      {
-        currentStepIndex: null,
-        lessonId: "l1",
-        status: "available",
-      },
-      {
-        currentStepIndex: null,
-        lessonId: "l-new",
-        status: "locked",
-      },
-      {
-        currentStepIndex: null,
-        lessonId: "l2",
-        status: "locked",
-      },
-    ],
-    nextLesson: {
-      currentStepIndex: null,
+const inProgressCourse = {
+  lessons: [
+    {
+      currentStepIndex: 2,
       estimatedMinutes: 5,
       id: "l1",
-      status: "available",
-      title: "좋은 문장이란 무엇인가",
+      status: "completed" as const,
+      title: "완료 레슨",
     },
-    percentage: 0,
-    totalLessons: 3,
-  },
-  status: "active",
-  title: "글쓰기 첫걸음 30일",
-  visualKey: "basic-sentence-writing",
-  units: [
     {
-      id: "u1",
-      lessons: [
-        {
-          category: "문장의 기본기",
-          description: "명료하고 군더더기 없는 문장을 살펴봅니다.",
-          estimatedMinutes: 5,
-          id: "l1",
-          sortOrder: 1,
-          status: "active",
-          title: "좋은 문장이란 무엇인가",
-        },
-        {
-          category: "문장의 기본기",
-          description: "새 학습 활동을 살펴봅니다.",
-          estimatedMinutes: 10,
-          id: "l-new",
-          sortOrder: 2,
-          status: "active",
-          title: "새 학습 활동 둘러보기",
-        },
-        {
-          category: "문장의 기본기",
-          description: "한 문장에는 한 생각만 담습니다.",
-          estimatedMinutes: 5,
-          id: "l2",
-          sortOrder: 3,
-          status: "active",
-          title: "한 문장에 한 생각만 담기",
-        },
-      ],
-      sortOrder: 1,
-      title: "문장의 기본기",
+      currentStepIndex: null,
+      estimatedMinutes: 7,
+      id: "l2",
+      status: "available" as const,
+      title: "다음 레슨",
     },
   ],
+  progressPercent: 50,
+}
+
+const completedCourse = {
+  lessons: [
+    {
+      currentStepIndex: null,
+      estimatedMinutes: 5,
+      id: "l3",
+      status: "completed" as const,
+      title: "완료 레슨",
+    },
+  ],
+  progressPercent: 100,
+}
+
+const untouchedCourse = {
+  lessons: [
+    {
+      currentStepIndex: null,
+      estimatedMinutes: 5,
+      id: "l4",
+      status: "available" as const,
+      title: "첫 레슨",
+    },
+  ],
+  progressPercent: 0,
+}
+
+describe("learning progress read model filter", () => {
+  it("시작한 코스와 완료 코스를 구분한다", () => {
+    expect(hasStartedCourse(inProgressCourse)).toBe(true)
+    expect(isCourseCompleted(inProgressCourse)).toBe(false)
+    expect(hasStartedCourse(completedCourse)).toBe(true)
+    expect(isCourseCompleted(completedCourse)).toBe(true)
+    expect(hasStartedCourse(untouchedCourse)).toBe(false)
+    expect(isCourseCompleted(untouchedCourse)).toBe(false)
+  })
+
+  it("status 필터에 맞는 코스만 반환한다", () => {
+    const courses = [inProgressCourse, completedCourse, untouchedCourse]
+
+    expect(filterCoursesByProgressStatus(courses, "in_progress")).toEqual([
+      inProgressCourse,
+    ])
+    expect(filterCoursesByProgressStatus(courses, "completed")).toEqual([
+      completedCourse,
+    ])
+    expect(filterCoursesByProgressStatus(courses)).toEqual(courses)
+  })
+
+  it("status 매칭 규칙을 제공한다", () => {
+    expect(
+      matchesProgressCourseStatusFilter(inProgressCourse, "in_progress")
+    ).toBe(true)
+    expect(
+      matchesProgressCourseStatusFilter(completedCourse, "completed")
+    ).toBe(true)
+    expect(
+      matchesProgressCourseStatusFilter(untouchedCourse, "in_progress")
+    ).toBe(false)
+  })
 })

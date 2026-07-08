@@ -42,6 +42,15 @@ export const learnerProgressCourseDtoSchema = z.object({
   visualKey: courseVisualKeySchema,
 })
 
+export const progressCourseStatusFilterValues = [
+  "in_progress",
+  "completed",
+] as const
+
+export const progressCourseStatusFilterSchema = z.enum(
+  progressCourseStatusFilterValues
+)
+
 export const learnerProgressOverviewDtoSchema = z.object({
   courses: z.array(learnerProgressCourseDtoSchema),
   user: z.object({
@@ -59,4 +68,8 @@ export type LessonAvailabilityStatus = z.infer<
 
 export type LearnerProgressOverviewDto = z.infer<
   typeof learnerProgressOverviewDtoSchema
+>
+
+export type ProgressCourseStatusFilter = z.infer<
+  typeof progressCourseStatusFilterSchema
 >

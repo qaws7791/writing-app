@@ -3,13 +3,22 @@ import {
   learnerProgressOverviewDtoSchema,
   type LearnerProgressOverviewDto,
 } from "@workspace/core/modules/learning/domain/learner-read-model.dto"
+import type { ProgressCourseStatusFilter } from "@workspace/core/modules/learning/domain/learner-read-model.dto"
 import {
+  filterCoursesByProgressStatus,
   toCourseProgress,
   type ProgressReader,
 } from "@workspace/core/modules/learning/domain/learning-progress-read-model"
 
+export type ReadProgressOptions = {
+  readonly status?: ProgressCourseStatusFilter
+}
+
 export type ProgressService = {
-  readonly readProgress: (userId: string) => Promise<LearnerProgressOverviewDto>
+  readonly readProgress: (
+    userId: string,
+    options?: ReadProgressOptions
+  ) => Promise<LearnerProgressOverviewDto>
 }
 
 export function createProgressService({
@@ -20,7 +29,7 @@ export function createProgressService({
   readonly progressReader: ProgressReader
 }): ProgressService {
   return {
-    async readProgress(userId) {
+    async readProgress(userId, options) {
       const [courses, progress] = await Promise.all([
         contentRepository.listCourses(),
         progressReader.readLearnerProgress(userId),
@@ -40,7 +49,10 @@ export function createProgressService({
       )
 
       return learnerProgressOverviewDtoSchema.parse({
-        courses: courseProgress.filter((course) => course !== null),
+        courses: filterCoursesByProgressStatus(
+          courseProgress.filter((course) => course !== null),
+          options?.status
+        ),
         user: {
           currentStreakDays: progress.currentStreakDays,
         },

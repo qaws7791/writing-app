@@ -7,7 +7,10 @@ import {
   lessonProgressStatuses,
   type LessonProgressStatus as PersistedLessonProgressStatus,
 } from "@workspace/core/shared/kernel/status"
-import type { LessonAvailabilityStatus } from "@workspace/core/modules/learning/domain/learner-read-model.dto"
+import type {
+  LessonAvailabilityStatus,
+  ProgressCourseStatusFilter,
+} from "@workspace/core/modules/learning/domain/learner-read-model.dto"
 
 export type LearnerProgressSnapshot = {
   readonly currentStreakDays: number
@@ -24,6 +27,53 @@ export type ProgressReader = {
   readonly readLearnerProgress: (
     userId: string
   ) => Promise<LearnerProgressSnapshot>
+}
+
+export type CourseProgress = ReturnType<typeof toCourseProgress>
+
+export function isCourseCompleted(
+  course: Pick<CourseProgress, "lessons" | "progressPercent">
+): boolean {
+  if (course.lessons.length === 0) {
+    return false
+  }
+
+  return course.lessons.every((lesson) => lesson.status === "completed")
+}
+
+export function hasStartedCourse(
+  course: Pick<CourseProgress, "lessons">
+): boolean {
+  return course.lessons.some(
+    (lesson) =>
+      lesson.status === "completed" || lesson.currentStepIndex !== null
+  )
+}
+
+export function matchesProgressCourseStatusFilter(
+  course: Pick<CourseProgress, "lessons" | "progressPercent">,
+  status: ProgressCourseStatusFilter
+): boolean {
+  if (status === "completed") {
+    return isCourseCompleted(course)
+  }
+
+  return hasStartedCourse(course) && !isCourseCompleted(course)
+}
+
+export function filterCoursesByProgressStatus<
+  TCourse extends Pick<CourseProgress, "lessons" | "progressPercent">,
+>(
+  courses: readonly TCourse[],
+  status?: ProgressCourseStatusFilter
+): readonly TCourse[] {
+  if (status === undefined) {
+    return courses
+  }
+
+  return courses.filter((course) =>
+    matchesProgressCourseStatusFilter(course, status)
+  )
 }
 
 export function toCourseProgress(
