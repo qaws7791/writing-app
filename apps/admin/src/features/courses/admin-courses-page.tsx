@@ -476,6 +476,7 @@ export function AdminCoursesPage({
               <Button
                 variant="destructive"
                 disabled={isPending}
+                size="extra"
                 onClick={() => {
                   const courseId = archiveTarget.id
 

@@ -308,6 +308,7 @@ export function AdminUsersPage({
               <Button
                 variant="destructive"
                 disabled={isPending}
+                size="extra"
                 onClick={() => {
                   const userId = deleteTarget.id
 

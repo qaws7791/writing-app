@@ -244,6 +244,7 @@ export function AdminSettingsPage({
             <AlertDialogCancel>취소</AlertDialogCancel>
             <Button
               disabled={isPending}
+              size="extra"
               onClick={() => {
                 startTransition(async () => {
                   const result = await resetContent()

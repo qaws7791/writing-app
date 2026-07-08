@@ -407,6 +407,7 @@ export function AdminResourceDetailPage({
               <Button
                 variant="destructive"
                 disabled={isPending}
+                size="extra"
                 onClick={() => {
                   const action = pendingAction
 

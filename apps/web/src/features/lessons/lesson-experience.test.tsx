@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
@@ -169,6 +169,40 @@ describe("레슨 경험", () => {
       screen.getByRole("progressbar", { name: "레슨 진행률" })
     ).toHaveAttribute("aria-valuenow", "50")
     expect(screen.getByRole("button", { name: "이해했어요" })).toBeEnabled()
+  })
+
+  it("진행 중 나가기를 누르면 확인 dialog를 보여주고 계속 학습 또는 나가기를 선택할 수 있다", async () => {
+    const user = userEvent.setup()
+    const api = createApi({
+      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
+    })
+
+    render(<LessonExperience api={api} lesson={lesson} />)
+
+    await user.click(screen.getByRole("button", { name: "시작하기" }))
+    await user.click(screen.getByRole("button", { name: "나가기" }))
+
+    expect(
+      screen.getByRole("alertdialog", { name: "학습을 중단할까요?" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText("진행 상황은 자동으로 저장되어 있어요.")
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "계속 학습" }))
+
+    expect(
+      screen.queryByRole("alertdialog", { name: "학습을 중단할까요?" })
+    ).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "나가기" }))
+    await user.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", {
+        name: "나가기",
+      })
+    )
+
+    expect(push).toHaveBeenCalledWith("/app/courses/c1")
   })
 
   it("시작 저장이 실패하면 한국어 오류를 보여주고 시작 화면에 머문다", async () => {

@@ -102,6 +102,23 @@ export const SmallSize: Story = {
   ),
 }
 
+export const LessonExit: Story = {
+  render: () => (
+    <AlertDialog open>
+      <AlertDialogContent>
+        <AlertDialogTitle>학습을 중단할까요?</AlertDialogTitle>
+        <AlertDialogDescription>
+          진행 상황은 자동으로 저장되어 있어요.
+        </AlertDialogDescription>
+        <AlertDialogFooter>
+          <AlertDialogCancel>계속 학습</AlertDialogCancel>
+          <AlertDialogAction>나가기</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  ),
+}
+
 export const FormInteraction: Story = {
   render: () => (
     <AlertDialog>

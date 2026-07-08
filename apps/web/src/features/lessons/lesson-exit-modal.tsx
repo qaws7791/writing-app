@@ -42,7 +42,6 @@ export function LessonExitModal({
               confirmedRef.current = true
               onConfirm()
             }}
-            variant="destructive"
           >
             나가기
           </AlertDialogAction>

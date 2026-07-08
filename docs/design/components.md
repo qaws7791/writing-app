@@ -149,7 +149,7 @@
 
 구현 위치: `packages/ui/src/components/ui/alert-dialog.tsx`
 
-기반은 `@base-ui/react/alert-dialog`다. 레슨 나가기, 삭제 확인처럼 사용자의 확인이 필요한 위험 전이에 사용한다. controlled `open`, `onOpenChange`를 지원하며 구조는 `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogCancel`, `AlertDialogAction`이다. 위험 확인 action은 `variant="destructive"`를 명시한다.
+기반은 `@base-ui/react/alert-dialog`다. 레슨 나가기, 삭제 확인처럼 사용자의 확인이 필요한 전이에 사용한다. controlled `open`, `onOpenChange`를 지원하며 구조는 `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogCancel`, `AlertDialogAction`이다. 기본 스타일은 Kwep `Modal`과 동일하다. `bg-cream` 패널, `bg-charcoal/30` 오버레이, 제목 `text-heading-sm font-bold`, 설명 `text-body-lg`, footer는 동일 너비 `size="extra"` pill 버튼 2개(`AlertDialogCancel`은 `secondary`, `AlertDialogAction`은 `default`)를 가로로 배치한다. 레슨 나가기처럼 일반 확인은 `AlertDialogAction` 기본 variant를 쓴다. 삭제·보관·초기화처럼 되돌릴 수 없는 작업만 `variant="destructive"`를 명시한다.
 
 ## SegmentedControl과 ToggleGroup
 
@@ -253,7 +253,7 @@
 - 상단 진행 헤더와 하단 행동 영역은 `shrink-0`으로 고정한다.
 - 중앙 `main`만 `overflow-y-auto`로 스크롤한다.
 - 하단 CTA와 정답 피드백은 `StickyActionBar`, `Callout`, `Button` 조합을 사용한다. 기본 CTA는 cream gradient footer를 사용하고, 정답/오답 피드백은 상단 gradient와 색상 구분선 뒤에 `correct` 또는 `wrong` 버튼을 배치한다.
-- 나가기 확인은 `AlertDialog`를 사용한다.
+- 나가기 확인은 `AlertDialog`를 사용한다. 확인 action은 `default` variant, 취소는 `secondary`다.
 - 선택형 레슨 UI는 `ChoiceCard`, markdown 본문은 `RichText`를 사용한다.
 
 ### CompareStepView 및 레슨 콜아웃

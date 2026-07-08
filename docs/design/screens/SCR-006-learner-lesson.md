@@ -27,7 +27,7 @@
 - 상단 진행 헤더와 하단 CTA는 고정 영역으로 유지한다.
 - 중앙 콘텐츠만 스크롤된다.
 - 주요 CTA는 `Button`과 `StickyActionBar`를 사용한다.
-- 나가기 확인은 `AlertDialog`를 사용한다.
+- 나가기 확인은 `AlertDialog`를 사용한다. 취소는 `계속 학습`, 확인은 `나가기`이며 확인 action은 `default`(charcoal) variant를 쓴다.
 - 완료 화면은 `action-selected-*` token 기반 fullscreen overlay를 사용한다.
 - markdown 본문은 앱의 `ReactMarkdown` 결과를 `RichText`로 감싼다.
 - 선택형 UI는 `ChoiceCard`의 `data-state`를 사용해 `idle`, `selected`, `correct`, `wrong`, `disabled` 상태를 표현한다.
