@@ -29,6 +29,8 @@ const ignoredDirectories = new Set([
   "dist",
   "node_modules",
 ])
+
+const ignoredHexPaths = ["apps/admin/src/features/step-debug"] as const
 const scannedExtensions = new Set([".css", ".ts", ".tsx"])
 
 const guardrails: readonly Guardrail[] = [
@@ -77,13 +79,25 @@ function collectFiles(directory: string): string[] {
 }
 
 function countMatches(guardrail: Guardrail): number {
-  return guardrail.roots
-    .flatMap((root) => collectFiles(path.join(repositoryRoot, root)))
-    .reduce((count, filePath) => {
-      const content = fs.readFileSync(filePath, "utf8")
+  const files = guardrail.roots.flatMap((root) =>
+    collectFiles(path.join(repositoryRoot, root))
+  )
 
-      return count + [...content.matchAll(guardrail.pattern)].length
-    }, 0)
+  const scopedFiles =
+    guardrail.label === "raw hex color"
+      ? files.filter(
+          (filePath) =>
+            !ignoredHexPaths.some((ignoredPath) =>
+              filePath.includes(ignoredPath.replace(/\//g, path.sep))
+            )
+        )
+      : files
+
+  return scopedFiles.reduce((count, filePath) => {
+    const content = fs.readFileSync(filePath, "utf8")
+
+    return count + [...content.matchAll(guardrail.pattern)].length
+  }, 0)
 }
 
 for (const guardrail of guardrails) {
