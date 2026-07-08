@@ -123,6 +123,7 @@ bun run --filter=@workspace/web test
 AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없으므로 로컬 자동화는 테스트 전용 학습자 인증 경로를 사용한다.
 
 - `apps/api`와 `apps/web`에 모두 `ENABLE_TEST_AUTH=true`를 명시한 로컬 dev server에서만 사용한다.
+- 웹 버튼만 보이고 API에 플래그가 없으면 `GET /api/auth/test/sign-in`이 404를 반환한다. API `.env`를 바꾼 뒤에는 dev server를 재시작한다.
 - `NODE_ENV=production`에서는 플래그가 `true`여도 API endpoint와 웹 버튼이 활성화되지 않는다.
 - 웹 로그인 화면은 테스트 로그인 버튼을 노출하고, 버튼은 `GET /api/auth/test/sign-in?callbackURL=...`로 브라우저를 이동시킨다.
 - API는 기본 학습자 `learner@example.com`을 찾거나 생성하고 Google account row를 연결한 뒤 `learner_session_token` 세션 쿠키를 발급한다.
