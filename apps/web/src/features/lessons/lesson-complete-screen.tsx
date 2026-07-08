@@ -26,7 +26,7 @@ export function LessonCompleteScreen({
   )
 
   return (
-    <div className="fixed inset-0 z-50 flex min-h-screen w-full flex-col overflow-y-auto bg-accent text-accent-foreground">
+    <div className="fixed inset-0 z-50 flex min-h-screen w-full flex-col overflow-y-auto bg-background text-foreground">
       <div className="w-full max-w-3xl mx-auto flex flex-col items-center text-center px-6 py-16 my-auto an-fi">
         <div className="mb-4 text-display-lg" aria-hidden="true">
           🙌
@@ -37,7 +37,7 @@ export function LessonCompleteScreen({
         </p>
         {points.length > 0 ? (
           <Surface
-            className="mb-6 w-full rounded-4xl bg-background text-left"
+            className="mb-6 w-full rounded-4xl text-left"
             size="lg"
             variant="panel"
           >
@@ -47,7 +47,7 @@ export function LessonCompleteScreen({
             <ul className="space-y-4">
               {points.map((point, index) => (
                 <li className="flex items-start gap-4" key={point}>
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent-soft text-label-md font-black text-accent">
+                  <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-charcoal text-cream text-label-md font-black">
                     {index + 1}
                   </div>
                   <p className="text-body-md font-medium">{point}</p>
@@ -57,7 +57,7 @@ export function LessonCompleteScreen({
           </Surface>
         ) : null}
         <Surface
-          className="mb-10 flex w-full flex-row items-center justify-around rounded-4xl bg-background text-center"
+          className="mb-10 flex w-full flex-row items-center justify-around rounded-4xl text-center"
           size="lg"
           variant="panel"
         >
@@ -69,7 +69,7 @@ export function LessonCompleteScreen({
               +1
             </span>
           </div>
-          <div className="h-12 w-px rounded-full bg-surface" />
+          <div className="h-12 w-px rounded-full bg-border" />
           <div className="flex flex-col items-center gap-1">
             <span className="text-label-md font-bold text-muted-foreground">
               코스 진행률
