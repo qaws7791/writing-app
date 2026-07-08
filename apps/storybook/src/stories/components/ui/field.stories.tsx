@@ -86,7 +86,7 @@ export const Groups: Story = {
         <Field>
           <FieldLabel htmlFor="field-group-status">상태</FieldLabel>
           <Select defaultValue="draft">
-            <SelectTrigger id="field-group-status">
+            <SelectTrigger id="field-group-status" variant="outlined">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

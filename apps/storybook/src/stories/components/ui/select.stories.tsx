@@ -30,7 +30,7 @@ type Story = StoryObj<typeof meta>
 export const Playground: Story = {
   render: () => (
     <Select defaultValue="draft">
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-[180px]" variant="outlined">
         <SelectValue placeholder="상태" />
       </SelectTrigger>
       <SelectContent>
@@ -42,10 +42,49 @@ export const Playground: Story = {
   ),
 }
 
+export const Variants: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-muted-foreground">
+          default (surface filled)
+        </span>
+        <Select defaultValue="latest">
+          <SelectTrigger className="w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="latest">기본 순</SelectItem>
+            <SelectItem value="title">제목 가나다순</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <span className="text-xs text-muted-foreground">
+          outlined (field control)
+        </span>
+        <Select defaultValue="draft">
+          <SelectTrigger className="w-[180px]" variant="outlined">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="draft">초안</SelectItem>
+            <SelectItem value="published">공개</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  ),
+}
+
 export const OptionsAndGroups: Story = {
   render: () => (
     <Select defaultValue="sentence">
-      <SelectTrigger className="w-[min(24rem,calc(100vw-2rem))]">
+      <SelectTrigger
+        className="w-[min(24rem,calc(100vw-2rem))]"
+        variant="outlined"
+      >
         <SelectValue placeholder="코스 분류" />
       </SelectTrigger>
       <SelectContent>
@@ -71,7 +110,7 @@ export const States: Story = {
       <Field>
         <FieldLabel htmlFor="state-default-select">기본</FieldLabel>
         <Select defaultValue="all">
-          <SelectTrigger id="state-default-select">
+          <SelectTrigger id="state-default-select" variant="outlined">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -84,7 +123,7 @@ export const States: Story = {
       <Field>
         <FieldLabel htmlFor="state-disabled-select">비활성</FieldLabel>
         <Select disabled defaultValue="locked">
-          <SelectTrigger id="state-disabled-select">
+          <SelectTrigger id="state-disabled-select" variant="outlined">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -96,7 +135,11 @@ export const States: Story = {
       <Field data-invalid>
         <FieldLabel htmlFor="state-invalid-select">오류 상태</FieldLabel>
         <Select defaultValue="">
-          <SelectTrigger id="state-invalid-select" aria-invalid>
+          <SelectTrigger
+            id="state-invalid-select"
+            aria-invalid
+            variant="outlined"
+          >
             <SelectValue placeholder="선택 필요" />
           </SelectTrigger>
           <SelectContent>
@@ -113,7 +156,7 @@ export const LongContent: Story = {
     <Field className="w-[min(30rem,calc(100vw-2rem))]">
       <FieldLabel htmlFor="select-long">검토 기준</FieldLabel>
       <Select defaultValue="long">
-        <SelectTrigger id="select-long">
+        <SelectTrigger id="select-long" variant="outlined">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -139,6 +182,7 @@ export const FormInteraction: Story = {
           id="select-interaction"
           aria-describedby="select-interaction-error"
           aria-invalid="true"
+          variant="outlined"
         >
           <SelectValue placeholder="선택하세요" />
         </SelectTrigger>
@@ -168,7 +212,7 @@ export const FormInteraction: Story = {
 export const Scrollable: Story = {
   render: () => (
     <Select defaultValue="utc">
-      <SelectTrigger className="w-[280px]">
+      <SelectTrigger className="w-[280px]" variant="outlined">
         <SelectValue placeholder="시간대 선택" />
       </SelectTrigger>
       <SelectContent>
@@ -214,7 +258,7 @@ export const Scrollable: Story = {
 export const DisabledItems: Story = {
   render: () => (
     <Select defaultValue="apple">
-      <SelectTrigger className="w-[180px]">
+      <SelectTrigger className="w-[180px]" variant="outlined">
         <SelectValue placeholder="과일 선택" />
       </SelectTrigger>
       <SelectContent>
@@ -240,7 +284,7 @@ export const Sizes: Story = {
           Default 크기 (h-9)
         </span>
         <Select defaultValue="default">
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[180px]" variant="outlined">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -253,7 +297,7 @@ export const Sizes: Story = {
       <div className="flex flex-col gap-1">
         <span className="text-xs text-muted-foreground">Small 크기 (h-8)</span>
         <Select defaultValue="sm">
-          <SelectTrigger className="h-8 w-[180px]">
+          <SelectTrigger className="h-8 w-[180px]" variant="outlined">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

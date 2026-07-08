@@ -79,7 +79,7 @@ export const ResponsiveForm: Story = {
           <Field>
             <FieldLabel htmlFor="recipe-mobile-status">상태</FieldLabel>
             <Select defaultValue="draft">
-              <SelectTrigger id="recipe-mobile-status">
+              <SelectTrigger id="recipe-mobile-status" variant="outlined">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -100,7 +100,7 @@ export const ResponsiveForm: Story = {
           <Field>
             <FieldLabel htmlFor="recipe-desktop-status">상태</FieldLabel>
             <Select defaultValue="draft">
-              <SelectTrigger id="recipe-desktop-status">
+              <SelectTrigger id="recipe-desktop-status" variant="outlined">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

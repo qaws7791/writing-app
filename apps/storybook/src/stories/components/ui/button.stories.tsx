@@ -6,6 +6,7 @@ import { Button } from "@workspace/ui"
 
 const variants = [
   "default",
+  "solid",
   "outline",
   "secondary",
   "ghost",
@@ -13,9 +14,19 @@ const variants = [
   "link",
   "correct",
   "wrong",
+  "white",
+  "ink",
 ] as const
 
-const sizes = ["sm", "default", "lg", "icon", "icon-sm", "icon-lg"] as const
+const sizes = [
+  "sm",
+  "default",
+  "lg",
+  "extra",
+  "icon",
+  "icon-sm",
+  "icon-lg",
+] as const
 
 const meta = {
   title: "Components/UI/Button",
@@ -73,6 +84,9 @@ export const Variants: Story = {
       <Button variant="link">Link</Button>
       <Button variant="correct">Correct</Button>
       <Button variant="wrong">Wrong</Button>
+      <Button variant="white">White</Button>
+      <Button variant="ink">Ink</Button>
+      <Button variant="solid">Solid</Button>
     </div>
   ),
 }

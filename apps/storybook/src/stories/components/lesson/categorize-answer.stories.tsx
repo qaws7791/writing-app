@@ -80,3 +80,47 @@ export const CheckedWrong: Story = {
     checked: "wrong",
   },
 }
+
+/**
+ * 긴 태그 라벨과 좁은 모바일 폭에서 분류된 항목 레이아웃입니다.
+ */
+export const NarrowWithLongTags: Story = {
+  decorators: [
+    (Story) => (
+      <div className="mx-auto w-[320px] rounded-3xl border border-border p-4">
+        <Story />
+      </div>
+    ),
+    ...lessonDecorators,
+  ],
+  args: {
+    categories: [
+      { id: "A", label: "주제문 (핵심 주장)" },
+      { id: "B", label: "뒷받침 문장 (근거·설명)" },
+      { id: "C", label: "구체적 예시 (사례)" },
+    ],
+    checked: "correct",
+    defaultPlacements: {
+      i1: "A",
+      i2: "B",
+      i3: "C",
+    },
+    items: [
+      {
+        categoryId: "A",
+        id: "i1",
+        text: "꾸준한 글쓰기는 사고를 정돈한다.",
+      },
+      {
+        categoryId: "B",
+        id: "i2",
+        text: "매일 쓰는 사람은 자기 생각을 더 명확히 표현한다.",
+      },
+      {
+        categoryId: "C",
+        id: "i3",
+        text: "예컨대 일기를 3년 쓴 이는 회의에서도 핵심을 빠르게 짚는다.",
+      },
+    ],
+  },
+}
