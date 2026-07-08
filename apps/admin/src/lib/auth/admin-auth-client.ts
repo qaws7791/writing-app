@@ -33,3 +33,17 @@ export async function requestAdminPasswordLogin({
 
   return safeNextPath
 }
+
+export async function requestAdminSignOut(): Promise<void> {
+  const response = await fetch(
+    buildAdminApiUrl(readAdminApiBaseUrl(), "/api/auth/sign-out"),
+    {
+      credentials: "include",
+      method: "POST",
+    }
+  )
+
+  if (!response.ok) {
+    throw new Error("Failed to sign out")
+  }
+}

@@ -6,7 +6,15 @@ export default async function AdminDashboardRoute() {
   const api = getServerAdminApi({
     tokenProvider: getServerAdminSessionToken,
   })
-  const dashboardResult = await api.getDashboard()
+  const [dashboardResult, analyticsResult] = await Promise.all([
+    api.getDashboard(),
+    api.getAnalytics({ days: 30 }),
+  ])
 
-  return <AdminDashboardPage dashboardResult={dashboardResult} />
+  return (
+    <AdminDashboardPage
+      analyticsResult={analyticsResult}
+      dashboardResult={dashboardResult}
+    />
+  )
 }

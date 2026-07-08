@@ -1,99 +1,84 @@
-import Link from "next/link"
+"use client"
 
+import Link from "next/link"
+import { ExternalLink, LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useTransition } from "react"
+
+import { requestAdminSignOut } from "@/lib/auth/admin-auth-client"
 import {
-  BarChartIcon,
-  BookOpenIcon,
-  BotIcon,
-  FolderOpenIcon,
-  LayoutDashboardIcon,
-  SettingsIcon,
-  UsersIcon,
-} from "@workspace/ui/components/icons"
+  adminNavigationItems,
+  isAdminNavigationActive,
+} from "@/lib/navigation/admin-navigation"
+import { readLearnerWebOrigin } from "@/runtime-config"
 import { cn } from "@workspace/ui/lib/utils"
 
-const navigationItems = [
-  {
-    href: "/",
-    icon: LayoutDashboardIcon,
-    label: "대시보드",
-  },
-  {
-    href: "/courses",
-    icon: BookOpenIcon,
-    label: "콘텐츠 관리",
-  },
-  {
-    href: "/users",
-    icon: UsersIcon,
-    label: "사용자 관리",
-  },
-  {
-    href: "/analytics",
-    icon: BarChartIcon,
-    label: "분석",
-  },
-  {
-    href: "/resources",
-    icon: FolderOpenIcon,
-    label: "자료실",
-  },
-  {
-    href: "/chat",
-    icon: BotIcon,
-    label: "AI 채팅",
-  },
-  {
-    href: "/settings",
-    icon: SettingsIcon,
-    label: "운영 설정",
-  },
-] as const
+const learnerWebOrigin = readLearnerWebOrigin()
 
 export function AdminSidebar({ activePath }: { readonly activePath: string }) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+
   return (
-    <aside className="static top-0 flex h-fit flex-col gap-6 bg-surface p-5 max-[860px]:sticky min-[860px]:h-screen max-[860px]:border-b max-[860px]:border-border/50">
-      <Link className="flex items-center gap-3 px-3 pb-4 pt-2" href="/">
-        <span className="grid size-[42px] place-items-center rounded-[18px] bg-accent text-accent-foreground font-black">
-          글
-        </span>
-        <span className="grid gap-0.5">
-          <strong className="text-[1.375rem] font-black leading-tight">
-            글결 관리자
-          </strong>
-          <small className="text-label-sm font-bold text-muted-foreground-foreground">
-            글결 운영 콘솔
-          </small>
-        </span>
-      </Link>
-      <nav
-        aria-label="어드민 주요 메뉴"
-        className="grid gap-1.5 max-[860px]:flex max-[860px]:overflow-x-auto max-[860px]:pb-0.5"
+    <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-surface p-5 md:flex">
+      <Link
+        className="mb-6 px-3 py-2 text-[1.375rem] font-bold text-foreground"
+        href="/"
       >
-        {navigationItems.map((item) => {
-          const isActive =
-            item.href === "/"
-              ? activePath === item.href
-              : activePath.startsWith(item.href)
+        글결 <span className="text-muted-foreground">어드민</span>
+      </Link>
+      <nav aria-label="어드민 주요 메뉴" className="flex flex-1 flex-col gap-1">
+        {adminNavigationItems.map((item) => {
+          const isActive = isAdminNavigationActive(
+            activePath,
+            item.href,
+            item.end
+          )
           const Icon = item.icon
 
           return (
             <Link
               aria-current={isActive ? "page" : undefined}
               className={cn(
-                "btn-squish flex items-center gap-3 rounded-pill px-4 py-3 text-body-md font-black transition-colors max-[860px]:shrink-0",
+                "btn-squish flex items-center gap-3 rounded-3xl px-4 py-3 text-body-md font-bold transition-colors",
                 isActive
-                  ? "bg-accent text-accent-foreground"
+                  ? "bg-primary text-primary-foreground"
                   : "text-foreground hover:bg-background"
               )}
               href={item.href}
               key={item.href}
             >
-              <Icon aria-hidden="true" size={18} strokeWidth={2} />
+              <Icon aria-hidden="true" size={20} strokeWidth={2} />
               <span>{item.label}</span>
             </Link>
           )
         })}
       </nav>
+      <div className="flex flex-col gap-1 pt-4">
+        <a
+          className="btn-squish flex items-center gap-3 rounded-3xl px-4 py-3 text-[0.9375rem] font-bold text-muted-foreground transition-colors hover:bg-background"
+          href={learnerWebOrigin}
+          rel="noreferrer"
+          target="_blank"
+        >
+          <ExternalLink aria-hidden="true" size={18} />
+          앱으로 이동
+        </a>
+        <button
+          className="btn-squish flex items-center gap-3 rounded-3xl px-4 py-3 text-left text-[0.9375rem] font-bold text-destructive transition-colors hover:bg-background disabled:opacity-60"
+          disabled={isPending}
+          onClick={() => {
+            startTransition(async () => {
+              await requestAdminSignOut()
+              router.replace("/login")
+            })
+          }}
+          type="button"
+        >
+          <LogOut aria-hidden="true" size={18} />
+          어드민 로그아웃
+        </button>
+      </div>
     </aside>
   )
 }

@@ -26,6 +26,15 @@ export function buildAdminApiUrl(
   return new URL(path.replace(/^\/+/, ""), `${apiBaseUrl}/`).toString()
 }
 
+export function readLearnerWebOrigin(
+  env: AdminRuntimeEnv = process.env
+): string {
+  const candidate = env["LEARNER_WEB_ORIGIN"]
+  return candidate === undefined || candidate.trim() === ""
+    ? localRuntimeDefaults.learnerWebOrigin
+    : candidate
+}
+
 function toApiBaseUrl(rawValue: string | undefined, fallback: string): string {
   const candidate =
     rawValue === undefined || rawValue.trim() === "" ? fallback : rawValue
