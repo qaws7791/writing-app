@@ -50,7 +50,7 @@ describe("학습자 테스트 인증", () => {
         user: {
           email: "learner@example.com",
           id: "user-1",
-          name: "학습자",
+          name: "글쓰기 탐험가",
         },
       })
       expect(
@@ -89,6 +89,65 @@ describe("학습자 테스트 인증", () => {
           .where(eq(authSessions.userId, "user-1"))
           .all()
       ).toHaveLength(1)
+    } finally {
+      database.close()
+    }
+  })
+
+  it("기존 테스트 사용자 이름이 다르면 기본 표시명으로 동기화한다", async () => {
+    const database = createMigratedTestDatabase()
+
+    try {
+      database.db
+        .insert(authUsers)
+        .values({
+          createdAt: new Date("2026-01-01T00:00:00.000Z"),
+          email: "learner@example.com",
+          emailVerified: true,
+          id: "user-1",
+          image: null,
+          name: "학습자",
+          updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+        })
+        .run()
+
+      const auth = createLearnerAuth({
+        authBaseUrl,
+        db: database.db,
+        secret: "x".repeat(32),
+        testAuthEnabled: true,
+        webOrigin,
+      })
+      const response = await auth.handler(
+        new Request(`${authBaseUrl}/api/auth/test/sign-in`, {
+          headers: {
+            Origin: webOrigin,
+          },
+        })
+      )
+
+      expect(response.status).toBe(302)
+
+      await expect(
+        auth.api.getSession({
+          headers: new Headers({
+            Cookie: readCookieHeader(response),
+          }),
+        })
+      ).resolves.toMatchObject({
+        user: {
+          name: "글쓰기 탐험가",
+        },
+      })
+      expect(
+        database.db
+          .select({ name: authUsers.name })
+          .from(authUsers)
+          .where(eq(authUsers.id, "user-1"))
+          .get()
+      ).toEqual({
+        name: "글쓰기 탐험가",
+      })
     } finally {
       database.close()
     }

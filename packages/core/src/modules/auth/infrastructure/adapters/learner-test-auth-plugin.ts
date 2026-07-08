@@ -1,7 +1,11 @@
 import type { BetterAuthPlugin } from "better-auth"
 import { createAuthEndpoint } from "better-auth/api"
 import { setSessionCookie } from "better-auth/cookies"
+import { eq } from "drizzle-orm"
 import { z } from "zod"
+
+import type { WritingAppDatabase } from "@workspace/db/client"
+import { authUsers, learnerProfiles } from "@workspace/db/schema"
 
 const googleProviderId = "google"
 
@@ -15,6 +19,7 @@ export type LearnerTestAuthUser = {
 
 export type LearnerTestAuthConfig = {
   readonly callbackOrigin: string
+  readonly database?: WritingAppDatabase
   readonly user: LearnerTestAuthUser
 }
 
@@ -23,7 +28,7 @@ export const defaultLearnerTestAuthUser: LearnerTestAuthUser = {
   email: "learner@example.com",
   id: "user-1",
   image: null,
-  name: "학습자",
+  name: "글쓰기 탐험가",
 }
 
 export function createLearnerTestAuthPlugin(
@@ -42,7 +47,7 @@ export function createLearnerTestAuthPlugin(
         },
         async (ctx) => {
           const adapter = ctx.context.internalAdapter as LearnerInternalAdapter
-          const user = await findOrCreateTestUser(adapter, config.user)
+          const user = await findOrCreateTestUser(adapter, config)
           const session = await adapter.createSession(user.id)
 
           await setSessionCookie(ctx, {
@@ -105,8 +110,9 @@ type LearnerInternalAdapter = {
 
 async function findOrCreateTestUser(
   adapter: LearnerInternalAdapter,
-  user: LearnerTestAuthUser
+  config: LearnerTestAuthConfig
 ) {
+  const user = config.user
   const existingUser = await adapter.findUserByEmail(user.email, {
     includeAccounts: true,
   })
@@ -118,7 +124,7 @@ async function findOrCreateTestUser(
       userId: existingUser.user.id,
     })
 
-    return existingUser.user
+    return syncExistingTestUser(config.database, existingUser.user, user)
   }
 
   const createdUser = await adapter.createUser({
@@ -136,6 +142,44 @@ async function findOrCreateTestUser(
   })
 
   return createdUser
+}
+
+async function syncExistingTestUser(
+  database: WritingAppDatabase | undefined,
+  existingUser: BetterAuthUser,
+  expectedUser: LearnerTestAuthUser
+): Promise<BetterAuthUser> {
+  if (existingUser.name === expectedUser.name || database === undefined) {
+    return existingUser
+  }
+
+  const updatedAt = new Date()
+
+  await Promise.resolve(
+    database
+      .update(authUsers)
+      .set({
+        name: expectedUser.name,
+        updatedAt,
+      })
+      .where(eq(authUsers.id, existingUser.id))
+      .run()
+  )
+  await Promise.resolve(
+    database
+      .update(learnerProfiles)
+      .set({
+        displayName: expectedUser.name,
+      })
+      .where(eq(learnerProfiles.userId, existingUser.id))
+      .run()
+  )
+
+  return {
+    ...existingUser,
+    name: expectedUser.name,
+    updatedAt,
+  }
 }
 
 async function ensureGoogleAccount(

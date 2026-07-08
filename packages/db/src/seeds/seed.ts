@@ -256,7 +256,7 @@ function seedDefaultLearner(client: WritingAppDatabaseClient): void {
       emailVerified: true,
       id: "user-1",
       image: null,
-      name: "학습자",
+      name: "글쓰기 탐험가",
       updatedAt: now,
     })
     .onConflictDoUpdate({
@@ -264,7 +264,7 @@ function seedDefaultLearner(client: WritingAppDatabaseClient): void {
         email: "learner@example.com",
         emailVerified: true,
         image: null,
-        name: "학습자",
+        name: "글쓰기 탐험가",
         updatedAt: now,
       },
       target: authUsers.id,
@@ -275,14 +275,14 @@ function seedDefaultLearner(client: WritingAppDatabaseClient): void {
     .insert(learnerProfiles)
     .values({
       deletedAt: null,
-      displayName: "학습자",
+      displayName: "글쓰기 탐험가",
       status: persistedLearnerAccountStatuses.active,
       userId: "user-1",
     })
     .onConflictDoUpdate({
       set: {
         deletedAt: null,
-        displayName: "학습자",
+        displayName: "글쓰기 탐험가",
         status: persistedLearnerAccountStatuses.active,
       },
       target: learnerProfiles.userId,

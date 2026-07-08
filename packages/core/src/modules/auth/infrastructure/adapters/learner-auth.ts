@@ -62,6 +62,7 @@ export function createLearnerAuth(input: CreateLearnerAuthInput) {
         ? [
             createLearnerTestAuthPlugin({
               callbackOrigin: input.webOrigin,
+              database: input.db,
               user: defaultLearnerTestAuthUser,
             }),
           ]

@@ -37,12 +37,12 @@ describe("개발 DB seed 실행", () => {
           {
             email: "learner@example.com",
             id: "user-1",
-            name: "학습자",
+            name: "글쓰기 탐험가",
           },
         ])
         expect(client.db.select().from(learnerProfiles).all()).toMatchObject([
           {
-            displayName: "학습자",
+            displayName: "글쓰기 탐험가",
             status: "active",
             userId: "user-1",
           },
