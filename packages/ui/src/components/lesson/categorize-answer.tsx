@@ -2,32 +2,30 @@
 
 import { useState } from "react"
 
-import { Badge } from "../ui/badge"
-import { Surface } from "../ui/surface"
 import { cn } from "../../lib/utils"
 import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
 import { MarkdownContent } from "./markdown-content"
 
 const CATEGORY_PALETTE = [
   {
-    activeRing: "ring-border-strong/50",
-    base: "bg-foreground text-background",
-    cardBg: "bg-surface-hover",
+    activeRing: "ring-charcoal/50",
+    base: "bg-charcoal text-cream",
+    cardBg: "bg-charcoal/10",
   },
   {
-    activeRing: "ring-action-selected-bg",
-    base: "bg-accent-soft text-accent",
-    cardBg: "bg-accent-soft/25",
+    activeRing: "ring-accent",
+    base: "bg-accent text-accent-foreground",
+    cardBg: "bg-accent/25",
   },
   {
-    activeRing: "ring-success",
-    base: "bg-success text-accent",
-    cardBg: "bg-success/60",
+    activeRing: "ring-mint",
+    base: "bg-mint text-ink",
+    cardBg: "bg-mint/20",
   },
   {
-    activeRing: "ring-danger/60",
-    base: "bg-danger text-accent",
-    cardBg: "bg-danger/60",
+    activeRing: "ring-coral/60",
+    base: "bg-coral text-ink",
+    cardBg: "bg-coral/10",
   },
 ] as const
 
@@ -56,6 +54,7 @@ export type CategorizePlacement = {
 export function CategorizeAnswer({
   categories,
   checked = false,
+  defaultPlacements,
   explanation,
   guide,
   items,
@@ -67,6 +66,7 @@ export function CategorizeAnswer({
     readonly label: string
   }[]
   readonly checked?: LessonStepCheckedVisual
+  readonly defaultPlacements?: Readonly<Record<string, string>>
   readonly explanation?: string
   readonly guide: string
   readonly items: readonly {
@@ -79,7 +79,7 @@ export function CategorizeAnswer({
 }) {
   const [placements, setPlacements] = useState<
     Readonly<Record<string, string>>
-  >({})
+  >(() => defaultPlacements ?? {})
   const [activeTagId, setActiveTagId] = useState<null | string>(null)
 
   function getCategoryIndex(categoryId: string): number {
@@ -133,7 +133,10 @@ export function CategorizeAnswer({
   return (
     <div className="select-none flex flex-col" style={{ minHeight: "100%" }}>
       <div className="flex-1">
-        <h2 className="mb-2 text-heading-sm font-bold">
+        <h2
+          className="font-bold mb-2"
+          style={{ fontSize: "1.625rem", lineHeight: 1.3 }}
+        >
           {title || "항목을 분류하세요"}
         </h2>
         {guide ? (
@@ -170,27 +173,41 @@ export function CategorizeAnswer({
                 className={cn(
                   "rounded-3xl px-4 py-3.5 transition-all duration-200",
                   isCorrect
-                    ? "bg-success"
+                    ? "bg-mint-light"
                     : isWrong
-                      ? "bg-danger"
+                      ? "bg-coral-light"
                       : isTagged && palette !== null
                         ? palette.cardBg
                         : "bg-surface",
                   isClickable ? "cursor-pointer btn-squish" : "",
                   isClickable && !isTagged
-                    ? "ring-2 ring-border-subtle ring-offset-1"
+                    ? "ring-2 ring-charcoal/20 ring-offset-1"
                     : ""
                 )}
                 key={item.id}
                 onClick={() => handleItemTap(item.id)}
               >
-                <div className="flex items-center gap-2 flex-wrap">
+                <div
+                  className={cn(
+                    "flex gap-1.5",
+                    isTagged ? "flex-col items-start" : "items-center"
+                  )}
+                >
                   {isTagged && category != null && palette !== null ? (
-                    <Badge className={cn("shrink-0", palette.base)}>
+                    <span
+                      className={cn(
+                        "inline-flex max-w-full items-center rounded-full px-2.5 py-0.5 font-bold",
+                        palette.base
+                      )}
+                      style={{ fontSize: "0.75rem" }}
+                    >
                       {category.label}
-                    </Badge>
+                    </span>
                   ) : null}
-                  <span className="flex-1 text-body-sm font-bold text-foreground">
+                  <span
+                    className="font-bold text-charcoal w-full"
+                    style={{ fontSize: "0.9375rem" }}
+                  >
                     {item.text}
                   </span>
                 </div>
@@ -199,15 +216,18 @@ export function CategorizeAnswer({
           })}
         </div>
         {checked !== false && explanation ? (
-          <Surface className="mt-2 an-fi" size="md" variant="panel">
-            <div className="mb-2 font-bold text-muted-foreground">해설</div>
+          <div className="mt-2 bg-surface rounded-4xl p-6 an-fi">
+            <div className="font-bold text-muted-foreground mb-2">해설</div>
             <p className="font-medium">{explanation}</p>
-          </Surface>
+          </div>
         ) : null}
       </div>
       {checked === false ? (
         <div className="-mx-6 mt-auto shrink-0 bg-gradient-to-t from-bg-canvas via-bg-canvas to-transparent px-6 pb-3 pt-5">
-          <div className="mb-2 text-label-sm font-bold uppercase text-muted-foreground">
+          <div
+            className="font-bold text-muted-foreground mb-2 tracking-widest"
+            style={{ fontSize: "0.75rem" }}
+          >
             태그 선택
           </div>
           <div className="flex flex-wrap gap-2">
@@ -220,14 +240,11 @@ export function CategorizeAnswer({
                   key={category.id}
                   onClick={() => handleTagTap(category.id)}
                   className={cn(
-                    "rounded-full px-4 py-2 font-bold btn-squish transition-all duration-150 text-body-sm cursor-pointer outline-none border",
+                    "rounded-full px-4 py-2 font-bold btn-squish transition-all duration-150 text-body-sm cursor-pointer outline-none",
+                    palette.base,
                     isActive
-                      ? cn(
-                          "scale-95 ring-3 ring-offset-1",
-                          palette.activeRing,
-                          palette.base
-                        )
-                      : "bg-surface border-border text-foreground hover:bg-surface-hover"
+                      ? cn("scale-95 ring-4 opacity-75", palette.activeRing)
+                      : ""
                   )}
                   type="button"
                 >

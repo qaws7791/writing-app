@@ -5,7 +5,6 @@ import { useState, useEffect, useRef } from "react"
 
 import { GripVertical } from "lucide-react"
 
-import { Surface } from "../ui/surface"
 import { cn } from "../../lib/utils"
 import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
 
@@ -37,6 +36,7 @@ export function OrderAnswer({
   items,
   onChange,
   showNumbers,
+  title,
 }: {
   readonly checked?: LessonStepCheckedVisual
   readonly correctItems: readonly string[]
@@ -44,6 +44,7 @@ export function OrderAnswer({
   readonly items: readonly string[]
   readonly onChange?: (orderedItems: readonly string[]) => void
   readonly showNumbers?: boolean
+  readonly title?: string
 }) {
   const [orderedItems, setOrderedItems] = useState<readonly string[]>(() =>
     shuffleNotEqual(items, correctItems)
@@ -149,6 +150,9 @@ export function OrderAnswer({
 
   return (
     <div className="an-fi">
+      <h2 className="font-bold mb-8" style={{ fontSize: "1.75rem" }}>
+        {title || "올바른 순서로 배열하세요"}
+      </h2>
       <div className="space-y-3 mb-6 select-none">
         {orderedItems.map((item, i) => {
           const isCorrect = correctItems[i] === item
@@ -169,11 +173,11 @@ export function OrderAnswer({
           return (
             <div
               className={cn(
-                "bg-surface p-4 rounded-card flex items-start gap-3 border border-border",
+                "bg-surface p-4 rounded-3xl flex items-start gap-3",
                 checked !== false &&
                   (isCorrect
-                    ? "border-success-fg/20 bg-success text-success-foreground"
-                    : "border-danger-fg/20 bg-danger text-danger-foreground"),
+                    ? "bg-mint-light text-charcoal"
+                    : "bg-coral-light text-charcoal"),
                 isDragging && "shadow-lg"
               )}
               key={`${item}-${i}`}
@@ -192,7 +196,7 @@ export function OrderAnswer({
               {checked === false ? (
                 <button
                   aria-label="드래그하여 순서 변경"
-                  className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:bg-white/10 touch-none"
+                  className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground hover:bg-white touch-none"
                   onPointerCancel={onPointerUp}
                   onPointerDown={(e) => onPointerDown(e, i)}
                   onPointerMove={onPointerMove}
@@ -205,11 +209,17 @@ export function OrderAnswer({
                 </button>
               ) : null}
               {showNumbers ? (
-                <span className="shrink-0 font-black w-6 text-center mt-0.5 text-body-md">
+                <span
+                  className="shrink-0 font-black w-6 text-center mt-0.5"
+                  style={{ fontSize: "1rem" }}
+                >
                   {i + 1}
                 </span>
               ) : null}
-              <span className="font-bold flex-1 min-w-0 break-words whitespace-normal text-body-md">
+              <span
+                className="font-bold flex-1 min-w-0 break-words whitespace-normal"
+                style={{ fontSize: "1rem" }}
+              >
                 {item}
               </span>
             </div>
@@ -217,15 +227,15 @@ export function OrderAnswer({
         })}
       </div>
       {checked !== false ? (
-        <Surface className="mt-6" size="md" variant="panel">
+        <div className="mt-6 bg-surface rounded-4xl p-6">
           <div className="font-bold text-muted-foreground mb-2">정답 순서</div>
-          <p className="font-medium text-body-md">{correctItems.join(" → ")}</p>
+          <p className="font-medium">{correctItems.join(" → ")}</p>
           {explanation ? (
-            <p className="mt-3 font-medium text-muted-foreground text-body-sm">
+            <p className="mt-3 font-medium text-muted-foreground">
               {explanation}
             </p>
           ) : null}
-        </Surface>
+        </div>
       ) : null}
     </div>
   )

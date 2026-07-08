@@ -23,7 +23,10 @@ export function ReadingStepView({
         {body}
       </MarkdownContent>
       {source === undefined ? null : (
-        <div className="text-muted font-bold" style={{ fontSize: "0.8125rem" }}>
+        <div
+          className="text-muted-foreground font-bold"
+          style={{ fontSize: "0.8125rem" }}
+        >
           출처: {source}
         </div>
       )}

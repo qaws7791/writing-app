@@ -68,7 +68,7 @@ export function FillBlankAnswer({
                 className={cn(
                   "inline-block min-w-[80px] px-3 py-1 rounded-xl mx-1 text-center cursor-pointer",
                   selectedWords[index]
-                    ? "bg-primary text-ink font-bold"
+                    ? "bg-accent text-accent-foreground font-bold"
                     : "bg-surface"
                 )}
               >
@@ -89,8 +89,8 @@ export function FillBlankAnswer({
               className={cn(
                 "px-5 py-3 rounded-full font-bold btn-squish",
                 used
-                  ? "bg-surface text-muted"
-                  : "bg-surface text-charcoal hover:bg-primary hover:text-ink"
+                  ? "bg-surface text-muted-foreground"
+                  : "bg-surface text-charcoal hover:bg-accent hover:text-accent-foreground"
               )}
               style={{ fontSize: "1rem" }}
               type="button"

@@ -24,18 +24,18 @@ export function MultipleChoiceAnswer({
   const [selectedOptionId, setSelectedOptionId] = useState<null | string>(null)
 
   const MC_COLORS: Record<
-    "secondary" | "primary" | "correct" | "wrong",
+    "secondary" | "selected" | "correct" | "wrong",
     { bg: string; text: string }
   > = {
     secondary: { bg: "bg-surface", text: "text-charcoal" },
-    primary: { bg: "bg-primary", text: "text-ink" },
-    correct: { bg: "bg-success", text: "text-success-foreground" },
-    wrong: { bg: "bg-danger", text: "text-danger-foreground" },
+    selected: { bg: "bg-accent", text: "text-accent-foreground" },
+    correct: { bg: "bg-mint-light", text: "text-charcoal" },
+    wrong: { bg: "bg-coral-light", text: "text-charcoal" },
   }
 
   const stateMap = {
     secondary: "idle",
-    primary: "selected",
+    selected: "selected",
     correct: "correct",
     wrong: "wrong",
   } as const
@@ -50,7 +50,7 @@ export function MultipleChoiceAnswer({
       </h2>
       <div className="space-y-3">
         {options.map((option) => {
-          let variant: "secondary" | "primary" | "correct" | "wrong" =
+          let variant: "secondary" | "selected" | "correct" | "wrong" =
             "secondary"
           if (checked === "correct" && option.id === correctOptionId)
             variant = "correct"
@@ -63,7 +63,7 @@ export function MultipleChoiceAnswer({
           else if (checked === "wrong" && option.id === correctOptionId)
             variant = "correct"
           else if (checked === false && selectedOptionId === option.id)
-            variant = "primary"
+            variant = "selected"
 
           const c = MC_COLORS[variant]
           const faded =

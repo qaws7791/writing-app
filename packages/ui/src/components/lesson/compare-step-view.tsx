@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 
-import { Surface } from "../ui/surface"
 import { cn } from "../../lib/utils"
 
 export function CompareStepView({
@@ -20,7 +19,7 @@ export function CompareStepView({
   const [tab, setTab] = useState(0)
 
   return (
-    <div className="an-fi flex flex-col gap-4">
+    <div className="an-fi">
       <h2 className="font-bold mb-6" style={{ fontSize: "1.75rem" }}>
         {title || "두 버전을 비교해보세요"}
       </h2>
@@ -30,8 +29,8 @@ export function CompareStepView({
             className={cn(
               "btn-squish flex-1 py-3 rounded-full font-bold transition-all outline-none",
               tab === index
-                ? "bg-foreground text-background"
-                : "bg-surface text-muted-foreground border border-border hover:bg-surface-hover hover:text-foreground"
+                ? "bg-charcoal text-cream"
+                : "bg-surface text-charcoal hover:bg-surface/70"
             )}
             key={version.label}
             onClick={() => setTab(index)}
@@ -42,24 +41,23 @@ export function CompareStepView({
           </button>
         ))}
       </div>
-      <Surface
-        className="whitespace-pre-line leading-relaxed text-body-lg font-medium p-6 md:p-8 rounded-4xl"
-        variant="panel"
-      >
-        {versions[tab]?.text}
-      </Surface>
-      {analysis ? (
-        <Surface
-          className="bg-warning/15 border border-warning/10 p-6 rounded-4xl"
-          variant="panel"
+      <div className="bg-surface rounded-4xl p-6 md:p-8">
+        <p
+          className="font-medium leading-relaxed whitespace-pre-line"
+          style={{ fontSize: "1.125rem" }}
         >
-          <div className="font-bold text-warning-foreground mb-2">
+          {versions[tab]?.text}
+        </p>
+      </div>
+      {analysis ? (
+        <div className="mt-6 bg-accent-soft rounded-4xl p-6">
+          <div className="font-bold text-muted-foreground mb-2">
             💡 생각해보기
           </div>
-          <p className="font-medium text-body-md leading-relaxed text-warning-foreground">
+          <p className="font-medium" style={{ fontSize: "1.0625rem" }}>
             {analysis}
           </p>
-        </Surface>
+        </div>
       ) : null}
     </div>
   )

@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 
-import { Surface } from "../ui/surface"
 import { cn } from "../../lib/utils"
 import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
 
@@ -44,12 +43,10 @@ export function SelectAnswer({
           const isCorrect = correctIndexes.includes(index)
           let cls = "bg-surface"
           if (checked !== false) {
-            if (isCorrect && isSelected)
-              cls = "bg-success text-success-foreground"
-            else if (isCorrect && !isSelected)
-              cls = "bg-success/30 text-success-foreground"
-            else if (isSelected) cls = "bg-danger text-danger-foreground"
-          } else if (isSelected) cls = "bg-primary text-ink"
+            if (isCorrect && isSelected) cls = "bg-mint-light text-charcoal"
+            else if (isCorrect && !isSelected) cls = "bg-mint/30 text-charcoal"
+            else if (isSelected) cls = "bg-coral-light text-charcoal"
+          } else if (isSelected) cls = "bg-accent text-accent-foreground"
           return (
             <span
               key={segment}
@@ -78,14 +75,10 @@ export function SelectAnswer({
         })}
       </div>
       {checked !== false && explanation ? (
-        <Surface
-          className="mt-8 bg-surface rounded-4xl p-6"
-          size="md"
-          variant="panel"
-        >
+        <div className="mt-8 bg-surface rounded-4xl p-6">
           <div className="font-bold text-muted-foreground mb-2">해설</div>
           <p className="font-medium">{explanation}</p>
-        </Surface>
+        </div>
       ) : null}
     </div>
   )
