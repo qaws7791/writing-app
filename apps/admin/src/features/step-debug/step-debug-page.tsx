@@ -1,15 +1,10 @@
 "use client"
 
 import { useState } from "react"
+import { RotateCcw } from "lucide-react"
 
 import { lessonStepDefinitions } from "@workspace/contracts/content/steps"
-import {
-  Button,
-  Callout,
-  CalloutContent,
-  CalloutTitle,
-  PageHeader,
-} from "@workspace/ui"
+import { Button, PageHeader, cn } from "@workspace/ui"
 
 import type {
   LessonAiFeedbackOutcome,
@@ -40,12 +35,13 @@ export function StepDebugPage() {
     undefined
   )
   const [checked, setChecked] = useState<false | LessonStepCheckedState>(false)
+  const [previewRevision, setPreviewRevision] = useState(0)
 
-  // 스텝 타입 변경 시 상태 리셋 (렌더링 중 동기화)
   if (selectedType !== prevSelectedType) {
     setPrevSelectedType(selectedType)
     setPayload(undefined)
     setChecked(false)
+    setPreviewRevision(0)
   }
 
   const selectedEntry =
@@ -60,9 +56,14 @@ export function StepDebugPage() {
   const isReady = isLessonStepSubmittable(step, payload)
   const isCheckable = isLessonStepCheckable(step)
   const actionLabel = getLessonStepActionLabel(step)
+  const hideOuterActionBar = step.type === "AI_FEEDBACK" && checked === false
 
   const handleSubmit = () => {
-    if (checked === false && isCheckable) {
+    if (checked !== false) {
+      return
+    }
+
+    if (isCheckable) {
       setChecked(getLessonStepCheckedResult(step, payload))
     }
   }
@@ -70,9 +71,9 @@ export function StepDebugPage() {
   const handleReset = () => {
     setPayload(undefined)
     setChecked(false)
+    setPreviewRevision((revision) => revision + 1)
   }
 
-  // Mock AI 피드백
   const handleAiFeedbackRequest = async (
     _request: LessonAiFeedbackRequest
   ): Promise<LessonAiFeedbackOutcome> => {
@@ -137,72 +138,152 @@ export function StepDebugPage() {
     lessonStepDefinitions[selectedType as keyof typeof lessonStepDefinitions]
       ?.schema
 
+  const renderPreviewActionBar = () => {
+    if (hideOuterActionBar) {
+      return null
+    }
+
+    if (checked === false) {
+      return (
+        <Button
+          className="w-full font-bold"
+          disabled={!isReady}
+          onClick={isCheckable ? handleSubmit : undefined}
+          size="extra"
+          variant={isReady ? "default" : "secondary"}
+        >
+          {actionLabel}
+        </Button>
+      )
+    }
+
+    if (feedback === null) {
+      return null
+    }
+
+    return (
+      <div className="an-su">
+        <div
+          className={cn(
+            "h-1 -mx-6 mb-5",
+            feedback.isCorrect ? "bg-mint-light" : "bg-coral-light"
+          )}
+        />
+        <p
+          className={cn(
+            "font-black mb-2",
+            feedback.isCorrect ? "text-mint-dark" : "text-coral-dark"
+          )}
+          style={{ fontSize: "1.25rem" }}
+        >
+          {feedback.title}
+        </p>
+        {feedback.body !== "" ? (
+          <p
+            className="text-muted-foreground font-medium mb-5"
+            style={{ fontSize: "1rem" }}
+          >
+            {feedback.body}
+          </p>
+        ) : null}
+        <Button
+          className="w-full font-bold"
+          onClick={handleReset}
+          size="extra"
+          variant={feedback.isCorrect ? "correct" : "wrong"}
+        >
+          다시 시도
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-full">
       <PageHeader
         description="모든 스텝 타입의 스키마, 샘플 데이터, 렌더러 UI를 확인합니다"
         title="스텝 디버그"
       />
-      <div className="flex flex-1 min-h-0 gap-0 border-t border-border">
-        {/* 사이드바 */}
+      <div className="flex flex-1 min-h-0 border-t border-border">
         <nav
           aria-label="스텝 타입 목록"
-          className="w-56 shrink-0 border-r border-border overflow-y-auto bg-background"
+          className="w-80 shrink-0 overflow-y-auto border-r border-border px-6 py-8"
         >
-          <ul className="py-2">
+          <div className="mb-6">
+            <h1 className="font-black mb-2" style={{ fontSize: "1.5rem" }}>
+              스텝 투어
+            </h1>
+            <p
+              className="text-muted-foreground font-medium"
+              style={{ fontSize: "0.875rem" }}
+            >
+              모든 스텝 타입의 UI/UX를 한 곳에서 확인하세요.
+            </p>
+          </div>
+          <button
+            className="w-full mb-6 flex items-center justify-center gap-2 bg-surface text-charcoal font-bold py-3 rounded-3xl btn-squish"
+            onClick={handleReset}
+            style={{ fontSize: "0.875rem" }}
+            type="button"
+          >
+            <RotateCcw size={16} />
+            현재 스텝 초기화
+          </button>
+          <div className="space-y-2">
             {STEP_DEBUG_ENTRIES.map((entry) => {
               const isActive = entry.type === selectedType
 
               return (
-                <li key={entry.type}>
-                  <button
-                    className={[
-                      "w-full text-left px-4 py-3 flex items-center gap-3 transition-colors cursor-pointer",
-                      isActive
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                    ].join(" ")}
-                    onClick={() => setSelectedType(entry.type)}
-                    type="button"
-                  >
-                    <span className="text-lg" aria-hidden>
-                      {entry.icon}
+                <button
+                  className={cn(
+                    "w-full text-left px-4 py-3 rounded-3xl font-bold transition-colors flex items-start gap-3 btn-squish",
+                    isActive
+                      ? "bg-charcoal text-cream"
+                      : "bg-surface text-charcoal hover:bg-surface/70"
+                  )}
+                  key={entry.type}
+                  onClick={() => setSelectedType(entry.type)}
+                  style={{ fontSize: "0.9375rem" }}
+                  type="button"
+                >
+                  <span style={{ fontSize: "1.125rem" }}>{entry.icon}</span>
+                  <span className="flex-1">
+                    <span className="block">{entry.label}</span>
+                    <span
+                      className={cn(
+                        "block font-medium mt-0.5",
+                        isActive ? "text-cream/70" : "text-muted-foreground"
+                      )}
+                      style={{ fontSize: "0.75rem" }}
+                    >
+                      {entry.desc}
                     </span>
-                    <div className="flex flex-col gap-0.5 min-w-0">
-                      <span className="text-xs font-bold truncate">
-                        {entry.type}
-                      </span>
-                      <span className="text-[10px] truncate opacity-60">
-                        {entry.desc}
-                      </span>
-                    </div>
-                  </button>
-                </li>
+                  </span>
+                </button>
               )
             })}
-          </ul>
+          </div>
         </nav>
 
-        {/* 메인 영역 */}
         <main
           aria-label={`${selectedEntry.label} 스텝 디버그`}
-          className="flex-1 overflow-y-auto"
+          className="flex-1 overflow-y-auto px-6 py-10 md:px-12"
         >
-          <div className="mx-auto max-w-2xl px-6 py-8 flex flex-col gap-6">
-            {/* 스텝 타입 헤더 */}
-            <div className="flex items-center gap-3">
-              <span className="text-3xl" aria-hidden>
-                {selectedEntry.icon}
-              </span>
+          <div className="mx-auto flex w-full max-w-2xl flex-col gap-6">
+            <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-lg font-bold">{selectedEntry.label}</h1>
-                <p className="text-sm text-muted-foreground">
-                  {selectedEntry.desc}
-                </p>
+                <div
+                  className="text-muted-foreground font-bold tracking-widest mb-1"
+                  style={{ fontSize: "0.75rem" }}
+                >
+                  STEP TYPE
+                </div>
+                <div className="font-black" style={{ fontSize: "1.25rem" }}>
+                  {selectedEntry.icon} {selectedEntry.label}
+                </div>
               </div>
             </div>
 
-            {/* 렌더러 미리보기 */}
             <section aria-labelledby="preview-heading">
               <h2
                 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground"
@@ -210,60 +291,34 @@ export function StepDebugPage() {
               >
                 렌더러 미리보기
               </h2>
-              <div className="rounded-xl border border-border bg-background p-6 flex flex-col gap-5">
-                <LessonStepRenderer
-                  checked={checked}
-                  onAiFeedbackRequest={handleAiFeedbackRequest}
-                  onAnswerChange={() => {}}
-                  onAnswerPayloadChange={(change) => {
-                    setPayload(change.payload)
-                  }}
-                  step={selectedEntry.sample}
-                  stepIndex={0}
-                  totalSteps={STEP_DEBUG_ENTRIES.length}
-                />
-
-                {/* 액션 버튼 및 피드백 시뮬레이터 */}
-                <div className="mt-2 pt-4 border-t border-border flex flex-col gap-4">
-                  {checked === false ? (
-                    <Button
-                      className="w-full"
-                      disabled={!isReady}
-                      onClick={isCheckable ? handleSubmit : handleReset}
-                      size="lg"
-                      variant={isReady ? "default" : "secondary"}
-                    >
-                      {actionLabel}
-                    </Button>
-                  ) : (
-                    feedback !== null && (
-                      <div className="grid gap-4 an-su">
-                        <Callout
-                          tone={feedback.isCorrect ? "success" : "danger"}
-                        >
-                          <CalloutTitle className="text-[1.15rem] font-black">
-                            {feedback.title}
-                          </CalloutTitle>
-                          {feedback.body !== "" ? (
-                            <CalloutContent>{feedback.body}</CalloutContent>
-                          ) : null}
-                        </Callout>
-                        <Button
-                          className="w-full"
-                          onClick={handleReset}
-                          size="lg"
-                          variant={feedback.isCorrect ? "correct" : "wrong"}
-                        >
-                          다시 풀기
-                        </Button>
-                      </div>
-                    )
-                  )}
+              <div className="max-w-sm mx-auto w-full">
+                <div
+                  className="relative bg-cream rounded-3xl overflow-hidden shadow-xl border border-surface"
+                  data-density="comfortable"
+                  style={{ height: "680px" }}
+                >
+                  <div className="absolute inset-0 overflow-y-auto pb-48 px-6 pt-8">
+                    <LessonStepRenderer
+                      checked={checked}
+                      key={`${selectedEntry.type}-${previewRevision}`}
+                      onAiFeedbackRequest={handleAiFeedbackRequest}
+                      onAnswerChange={() => {}}
+                      onAnswerPayloadChange={(change) => {
+                        setPayload(change.payload)
+                      }}
+                      previewStandalone
+                      step={selectedEntry.sample}
+                      stepIndex={0}
+                      totalSteps={STEP_DEBUG_ENTRIES.length}
+                    />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 px-6 pb-8 pt-10 bg-gradient-to-t from-cream via-cream to-transparent">
+                    {renderPreviewActionBar()}
+                  </div>
                 </div>
               </div>
             </section>
 
-            {/* 디버그 패널 */}
             {stepSchema !== undefined ? (
               <section aria-labelledby="schema-heading">
                 <h2
@@ -280,7 +335,6 @@ export function StepDebugPage() {
               </section>
             ) : null}
 
-            {/* 검증 결과 */}
             <section aria-labelledby="validation-heading">
               <h2
                 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground"

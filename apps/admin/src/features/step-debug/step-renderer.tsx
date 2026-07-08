@@ -33,6 +33,7 @@ export type LessonStepRendererProps = {
   readonly step: LessonStep
   readonly stepIndex: number
   readonly totalSteps: number
+  readonly previewStandalone?: boolean
   readonly answerError?: null | string
   readonly checked?: LessonStepCheckedState | false
   readonly onAiFeedbackRequest?: (
@@ -53,6 +54,7 @@ export function LessonStepRenderer({
   onAiFeedbackRequest,
   onAnswerChange,
   onAnswerPayloadChange,
+  previewStandalone = false,
   step,
   stepIndex,
   totalSteps,
@@ -61,7 +63,7 @@ export function LessonStepRenderer({
     <LessonStepFrame
       answerError={answerError}
       description={getLessonStepDescription(step)}
-      standalone={isLessonStepStandalone(step)}
+      standalone={previewStandalone || isLessonStepStandalone(step)}
       stepId={step.id}
       stepIndex={stepIndex}
       title={getLessonStepTitle(step)}
@@ -199,6 +201,7 @@ function renderStepContent(
             })
           }
           showNumbers={step.showNumbers}
+          title={step.title}
         />
       )
     case "MATCH":
@@ -283,8 +286,8 @@ function renderStepContent(
       )
     }
     case "AI_FEEDBACK": {
-      const draftText =
-        readDraftText(`writing-app-draft-${step.target}`) || step.target
+      const draftKey = `writing-app-draft-${step.target}`
+      const draftText = readDraftText(draftKey)
 
       return (
         <AiFeedbackAnswer

@@ -1,5 +1,6 @@
 import type { LessonStepAnswerPayload } from "@/features/step-debug/step-logic"
 import type {
+  CategorizeStep,
   FillBlankStep,
   MatchStep,
   MultipleChoiceStep,
@@ -9,6 +10,7 @@ import type {
 } from "@/features/step-debug/step-types"
 
 type CheckableStepType =
+  | "CATEGORIZE"
   | "FILL_BLANK"
   | "MATCH"
   | "MULTIPLE_CHOICE"
@@ -127,6 +129,7 @@ export function isLessonStepCheckable(
   step: LessonStep
 ): step is CheckableLessonStep {
   return (
+    step.type === "CATEGORIZE" ||
     step.type === "FILL_BLANK" ||
     step.type === "MATCH" ||
     step.type === "MULTIPLE_CHOICE" ||
@@ -140,6 +143,8 @@ export function getLessonStepCheckedResult(
   payload: LessonStepAnswerPayload | undefined
 ): LessonStepCheckedState {
   switch (step.type) {
+    case "CATEGORIZE":
+      return checkPolicyByStepType.CATEGORIZE(step, payload)
     case "FILL_BLANK":
       return checkPolicyByStepType.FILL_BLANK(step, payload)
     case "MATCH":
@@ -154,6 +159,7 @@ export function getLessonStepCheckedResult(
 }
 
 const checkPolicyByStepType = {
+  CATEGORIZE: getCategorizeCheckedResult,
   FILL_BLANK: getFillBlankCheckedResult,
   MATCH: getMatchCheckedResult,
   MULTIPLE_CHOICE: getMultipleChoiceCheckedResult,
@@ -164,6 +170,28 @@ const checkPolicyByStepType = {
     step: Extract<CheckableLessonStep, { readonly type: TType }>,
     payload: LessonStepAnswerPayload | undefined
   ) => LessonStepCheckedState
+}
+
+function getCategorizeCheckedResult(
+  step: CategorizeStep,
+  payload: LessonStepAnswerPayload | undefined
+): LessonStepCheckedState {
+  if (payload?.type !== "CATEGORIZE") {
+    return "wrong"
+  }
+
+  if (payload.items.length !== step.items.length) {
+    return "wrong"
+  }
+
+  const isCorrect = step.items.every((item) =>
+    payload.items.some(
+      (placement) =>
+        placement.itemId === item.id && placement.categoryId === item.categoryId
+    )
+  )
+
+  return isCorrect ? "correct" : "wrong"
 }
 
 function getFillBlankCheckedResult(
