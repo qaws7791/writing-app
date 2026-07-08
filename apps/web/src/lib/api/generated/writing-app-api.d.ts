@@ -677,7 +677,9 @@ export interface operations {
   }
   getProgress: {
     parameters: {
-      query?: never
+      query?: {
+        status?: "in_progress" | "completed"
+      }
       header?: never
       path?: never
       cookie?: never

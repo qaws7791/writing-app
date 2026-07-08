@@ -1,5 +1,4 @@
 @import "@workspace/ui/styles";
-@plugin "@tailwindcss/typography";
 
 @source "../../../../packages/ui/src";
 

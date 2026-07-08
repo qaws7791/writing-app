@@ -110,11 +110,13 @@ export function createHttpWritingAppApi({
         mapProfile
       )
     },
-    async getProgress() {
+    async getProgress(options) {
+      const path = buildProgressPath(options)
+
       return mapApiResult(
         await client.requestJson<ApiProgressResponse>({
           method: "GET",
-          path: "/progress",
+          path,
           schema: apiProgressResponseSchema,
         }),
         mapProgress
@@ -161,6 +163,20 @@ const apiProfileResponseSchema = z.object({
 })
 
 const apiProgressResponseSchema = learnerProgressOverviewDtoSchema
+
+function buildProgressPath(
+  options?: Parameters<WritingAppApi["getProgress"]>[0]
+): string {
+  if (options?.status === undefined) {
+    return "/progress"
+  }
+
+  const searchParams = new URLSearchParams({
+    status: options.status,
+  })
+
+  return `/progress?${searchParams.toString()}`
+}
 
 function mapApiResult<TInput, TOutput>(
   result: ApiResult<TInput>,

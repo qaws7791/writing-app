@@ -37,6 +37,10 @@ export type CompleteLessonResult = {
   readonly saved: boolean
 }
 
+export type GetProgressOptions = {
+  readonly status?: "completed" | "in_progress"
+}
+
 export type WritingAppApi = {
   readonly completeLesson: (
     input: CompleteLessonInput
@@ -49,7 +53,9 @@ export type WritingAppApi = {
   ) => Promise<ApiResult<CourseDetail>>
   readonly getLesson: (lessonId: string) => Promise<ApiResult<Lesson>>
   readonly getProfile: () => Promise<ApiResult<LearnerProfile>>
-  readonly getProgress: () => Promise<ApiResult<ProgressCourseList>>
+  readonly getProgress: (
+    options?: GetProgressOptions
+  ) => Promise<ApiResult<ProgressCourseList>>
   readonly listCourses: () => Promise<ApiResult<readonly CourseSummary[]>>
   readonly saveLessonAnswer: (
     input: SaveLessonAnswerInput

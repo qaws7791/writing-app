@@ -33,12 +33,27 @@ describe("HTTP WritingAppApi", () => {
           })
         }
 
-        return jsonResponse({
-          courses: [],
-          user: {
-            currentStreakDays: 2,
-          },
-        })
+        if (request.url === "https://api.example.test/progress") {
+          return jsonResponse({
+            courses: [],
+            user: {
+              currentStreakDays: 2,
+            },
+          })
+        }
+
+        if (
+          request.url === "https://api.example.test/progress?status=in_progress"
+        ) {
+          return jsonResponse({
+            courses: [],
+            user: {
+              currentStreakDays: 2,
+            },
+          })
+        }
+
+        throw new Error(`unexpected request: ${request.url}`)
       },
       tokenProvider: () => "token-1",
     })
@@ -57,9 +72,18 @@ describe("HTTP WritingAppApi", () => {
         currentStreakDays: 2,
       },
     })
+    await expect(
+      api.getProgress({ status: "in_progress" })
+    ).resolves.toMatchObject({
+      status: "ok",
+      value: {
+        currentStreakDays: 2,
+      },
+    })
     expect(requests.map((request) => request.url)).toEqual([
       "https://api.example.test/profile",
       "https://api.example.test/progress",
+      "https://api.example.test/progress?status=in_progress",
     ])
     expect(requests[0]?.headers.get("Cookie")).toBe(
       "learner_session_token=token-1"

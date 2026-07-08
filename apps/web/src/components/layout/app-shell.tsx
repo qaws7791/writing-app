@@ -11,7 +11,7 @@ export function AppShell({ children, currentPath }: AppShellProps) {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <GlobalNav currentPath={currentPath} />
-      <main className="flex-1 w-full max-w-6xl mx-auto px-4 md:px-12 pb-24 an-fi">
+      <main className="flex-1 w-full max-w-6xl mx-auto px-4 md:px-12 pb-24 pt-8 an-fi">
         {children}
       </main>
       <MobileNav currentPath={currentPath} />
