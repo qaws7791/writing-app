@@ -306,7 +306,6 @@ export function StepDebugPage() {
                       onAnswerPayloadChange={(change) => {
                         setPayload(change.payload)
                       }}
-                      previewStandalone
                       step={selectedEntry.sample}
                       stepIndex={0}
                       totalSteps={STEP_DEBUG_ENTRIES.length}

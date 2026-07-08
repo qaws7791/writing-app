@@ -21,12 +21,7 @@ import {
   type LessonAnswerChange,
   type LessonStepAnswerPayload,
 } from "@/features/lessons/lesson-logic"
-import {
-  getLessonStepDescription,
-  getLessonStepTitle,
-  isLessonStepStandalone,
-  type LessonStepCheckedState,
-} from "@/features/lessons/lesson-step-policy"
+import { type LessonStepCheckedState } from "@/features/lessons/lesson-step-policy"
 import type { LessonStep } from "@/features/lessons/lesson-types"
 
 export type LessonStepRendererProps = {
@@ -60,11 +55,8 @@ export function LessonStepRenderer({
   return (
     <LessonStepFrame
       answerError={answerError}
-      description={getLessonStepDescription(step)}
-      standalone={isLessonStepStandalone(step)}
       stepId={step.id}
       stepIndex={stepIndex}
-      title={getLessonStepTitle(step)}
       totalSteps={totalSteps}
     >
       {renderStepContent(step, {

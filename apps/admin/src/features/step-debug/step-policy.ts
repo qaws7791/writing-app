@@ -31,56 +31,6 @@ export type LessonStepCheckedState =
       readonly wrong: readonly number[]
     }
 
-export function isLessonStepStandalone(step: LessonStep): boolean {
-  return (
-    step.type === "CATEGORIZE" ||
-    step.type === "MATCH" ||
-    step.type === "MULTIPLE_CHOICE" ||
-    step.type === "READING" ||
-    step.type === "WRITE"
-  )
-}
-
-export function getLessonStepTitle(step: LessonStep): string {
-  switch (step.type) {
-    case "AI_FEEDBACK":
-      return "AI 코칭"
-    case "CATEGORIZE":
-    case "COMPARE":
-    case "MATCH":
-    case "ORDER":
-    case "READING":
-      return step.title
-    case "FILL_BLANK":
-      return "빈칸 채우기"
-    case "MULTIPLE_CHOICE":
-    case "SELECT":
-      return step.question
-    case "WRITE":
-      return step.title ?? "직접 써보기"
-  }
-}
-
-export function getLessonStepDescription(step: LessonStep): string {
-  switch (step.type) {
-    case "AI_FEEDBACK":
-      return step.focus
-    case "CATEGORIZE":
-    case "MATCH":
-    case "READING":
-    case "WRITE":
-      return step.guide
-    case "COMPARE":
-      return step.analysis
-    case "FILL_BLANK":
-    case "ORDER":
-    case "SELECT":
-      return step.explanation
-    case "MULTIPLE_CHOICE":
-      return "답을 선택하면 해설을 확인합니다."
-  }
-}
-
 export function isLessonStepSubmittable(
   step: LessonStep,
   payload: LessonStepAnswerPayload | undefined

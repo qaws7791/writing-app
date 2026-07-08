@@ -3,11 +3,8 @@ import { describe, expect, it } from "vitest"
 import {
   getLessonStepActionLabel,
   getLessonStepCheckedResult,
-  getLessonStepDescription,
-  getLessonStepTitle,
   type CheckableLessonStep,
   isLessonStepCheckable,
-  isLessonStepStandalone,
   isLessonStepSubmittable,
 } from "@/features/lessons/lesson-step-policy"
 import type { LessonStepAnswerPayload } from "@/features/lessons/lesson-logic"
@@ -24,10 +21,7 @@ describe("lesson-step-policy", () => {
       type: "READING",
     }
 
-    expect(getLessonStepTitle(step)).toBe("읽기 제목")
-    expect(getLessonStepDescription(step)).toBe("읽기 안내")
     expect(getLessonStepActionLabel(step)).toBe("이해했어요")
-    expect(isLessonStepStandalone(step)).toBe(true)
     expect(isLessonStepCheckable(step)).toBe(false)
     expect(isLessonStepSubmittable(step, undefined)).toBe(true)
   })
@@ -55,12 +49,7 @@ describe("lesson-step-policy", () => {
       type: "MULTIPLE_CHOICE",
     }
 
-    expect(getLessonStepTitle(step)).toBe("정답은?")
-    expect(getLessonStepDescription(step)).toBe(
-      "답을 선택하면 해설을 확인합니다."
-    )
     expect(getLessonStepActionLabel(step)).toBe("확인하기")
-    expect(isLessonStepStandalone(step)).toBe(true)
     expect(isLessonStepCheckable(step)).toBe(true)
     expect(isLessonStepSubmittable(step, emptyPayload)).toBe(false)
     expect(isLessonStepSubmittable(step, correctPayload)).toBe(true)

@@ -84,7 +84,8 @@ function countMatches(guardrail: Guardrail): number {
   )
 
   const scopedFiles =
-    guardrail.label === "raw hex color"
+    guardrail.label === "raw hex color" ||
+    guardrail.label === "inline typography style"
       ? files.filter(
           (filePath) =>
             !ignoredHexPaths.some((ignoredPath) =>

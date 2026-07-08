@@ -21,19 +21,13 @@ import {
   type LessonAnswerChange,
   type LessonStepAnswerPayload,
 } from "@/features/step-debug/step-logic"
-import {
-  getLessonStepDescription,
-  getLessonStepTitle,
-  isLessonStepStandalone,
-  type LessonStepCheckedState,
-} from "@/features/step-debug/step-policy"
+import { type LessonStepCheckedState } from "@/features/step-debug/step-policy"
 import type { LessonStep } from "@/features/step-debug/step-types"
 
 export type LessonStepRendererProps = {
   readonly step: LessonStep
   readonly stepIndex: number
   readonly totalSteps: number
-  readonly previewStandalone?: boolean
   readonly answerError?: null | string
   readonly checked?: LessonStepCheckedState | false
   readonly onAiFeedbackRequest?: (
@@ -54,7 +48,6 @@ export function LessonStepRenderer({
   onAiFeedbackRequest,
   onAnswerChange,
   onAnswerPayloadChange,
-  previewStandalone = false,
   step,
   stepIndex,
   totalSteps,
@@ -62,11 +55,8 @@ export function LessonStepRenderer({
   return (
     <LessonStepFrame
       answerError={answerError}
-      description={getLessonStepDescription(step)}
-      standalone={previewStandalone || isLessonStepStandalone(step)}
       stepId={step.id}
       stepIndex={stepIndex}
-      title={getLessonStepTitle(step)}
       totalSteps={totalSteps}
     >
       {renderStepContent(step, {
