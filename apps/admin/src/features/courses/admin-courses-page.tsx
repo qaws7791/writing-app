@@ -212,8 +212,8 @@ export function AdminCoursesPage({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">전체 상태</SelectItem>
-                <SelectItem value="active">active</SelectItem>
-                <SelectItem value="archived">archived</SelectItem>
+                <SelectItem value="active">활성</SelectItem>
+                <SelectItem value="archived">보관</SelectItem>
               </SelectContent>
             </Select>
           </FilterToolbarField>
