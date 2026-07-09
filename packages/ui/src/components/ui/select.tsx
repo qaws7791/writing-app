@@ -32,12 +32,18 @@ const selectTriggerVariants = cva(
  * 
  * @example
  * ```tsx
+const items = [
+  { label: "Select a fruit", value: null },
+  { label: "Apple", value: "apple" }
+]
+
 <Select items={items}>
-  <SelectTrigger className="w-[180px]">
-    <SelectValue placeholder="Theme" />
+  <SelectTrigger className="w-full max-w-48">
+    <SelectValue />
   </SelectTrigger>
   <SelectContent>
     <SelectGroup>
+      <SelectLabel>Fruits</SelectLabel>
       {items.map((item) => (
         <SelectItem key={item.value} value={item.value}>
           {item.label}
