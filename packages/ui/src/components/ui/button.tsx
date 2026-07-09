@@ -11,7 +11,7 @@ const buttonVariants = cva(
         default: "bg-charcoal text-cream hover:opacity-90",
         solid: "bg-charcoal text-cream hover:opacity-90",
         outline:
-          "border-4 border-charcoal bg-transparent text-charcoal hover:bg-surface aria-expanded:bg-surface",
+          "border border-border bg-transparent text-charcoal hover:bg-surface aria-expanded:bg-surface",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-surface-hover aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
         ghost:
