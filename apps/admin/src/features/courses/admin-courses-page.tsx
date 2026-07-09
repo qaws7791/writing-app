@@ -57,6 +57,18 @@ import {
 } from "@workspace/ui/components/ui/select"
 import { createAdminCourseImageUrl } from "@/features/courses/course-visual-assets"
 
+const courseStatusFilterItems = [
+  { label: "전체 상태", value: "all" },
+  { label: "활성", value: contentStatuses.active },
+  { label: "보관", value: contentStatuses.archived },
+] as const
+
+const coursePageSizeItems = [
+  { label: "10개", value: "10" },
+  { label: "20개", value: "20" },
+  { label: "50개", value: "50" },
+] as const
+
 type StatusMessage = {
   readonly message: string
   readonly tone: "danger" | "success"
@@ -199,6 +211,7 @@ export function AdminCoursesPage({
             <Select
               aria-label="상태"
               defaultValue={filters.status}
+              items={courseStatusFilterItems}
               name="status"
               onValueChange={() => {
                 formRef.current?.requestSubmit()
@@ -211,9 +224,11 @@ export function AdminCoursesPage({
                 <SelectValue placeholder="전체 상태" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">전체 상태</SelectItem>
-                <SelectItem value="active">활성</SelectItem>
-                <SelectItem value="archived">보관</SelectItem>
+                {courseStatusFilterItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </FilterToolbarField>
@@ -358,22 +373,25 @@ export function AdminCoursesPage({
                 </FilterToolbarLabel>
                 <Select
                   aria-label="페이지 크기"
-                  defaultValue={filters.pageSize}
+                  defaultValue={String(filters.pageSize)}
+                  items={coursePageSizeItems}
                   name="pageSize"
                   onValueChange={() => {
                     formRef.current?.requestSubmit()
                   }}
                 >
                   <SelectTrigger
-                    className="h-8 w-[80px] font-semibold"
+                    className="h-8 font-semibold"
                     variant="outlined"
                   >
                     <SelectValue placeholder="20개" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="10">10개</SelectItem>
-                    <SelectItem value="20">20개</SelectItem>
-                    <SelectItem value="50">50개</SelectItem>
+                    {coursePageSizeItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </FilterToolbarField>

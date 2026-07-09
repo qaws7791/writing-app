@@ -48,6 +48,20 @@ import {
   SelectValue,
 } from "@workspace/ui/components/ui/select"
 
+const userStatusFilterItems = [
+  { label: "전체", value: "all" },
+  { label: "활성", value: "active" },
+  { label: "정지", value: "suspended" },
+  { label: "삭제", value: "deleted" },
+] as const
+
+const userSortItems = [
+  { label: "최근 접속", value: "lastActive" },
+  { label: "가입일", value: "joined" },
+  { label: "완료 레슨", value: "lessonsDone" },
+  { label: "연속 학습일", value: "streak" },
+] as const
+
 type StatusMessage = {
   readonly message: string
   readonly tone: "danger" | "success"
@@ -118,6 +132,7 @@ export function AdminUsersPage({
           <Select
             aria-label="상태"
             defaultValue={filters.status}
+            items={userStatusFilterItems}
             name="status"
             onValueChange={() => {
               formRef.current?.requestSubmit()
@@ -130,10 +145,11 @@ export function AdminUsersPage({
               <SelectValue placeholder="전체" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
-              <SelectItem value="active">활성</SelectItem>
-              <SelectItem value="suspended">정지</SelectItem>
-              <SelectItem value="deleted">삭제</SelectItem>
+              {userStatusFilterItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </FilterToolbarField>
@@ -142,6 +158,7 @@ export function AdminUsersPage({
           <Select
             aria-label="정렬"
             defaultValue={filters.sort}
+            items={userSortItems}
             name="sort"
             onValueChange={() => {
               formRef.current?.requestSubmit()
@@ -154,10 +171,11 @@ export function AdminUsersPage({
               <SelectValue placeholder="최근 접속" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="lastActive">최근 접속</SelectItem>
-              <SelectItem value="joined">가입일</SelectItem>
-              <SelectItem value="lessonsDone">완료 레슨</SelectItem>
-              <SelectItem value="streak">연속 학습일</SelectItem>
+              {userSortItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </FilterToolbarField>

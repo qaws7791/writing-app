@@ -51,6 +51,18 @@ import {
 import { Surface } from "@workspace/ui/components/ui/surface"
 import { Textarea } from "@workspace/ui/components/ui/textarea"
 
+const resourceStatusFilterItems = [
+  { label: "전체", value: "all" },
+  { label: "활성", value: "active" },
+  { label: "보관", value: "archived" },
+] as const
+
+const resourcePageSizeItems = [
+  { label: "10개", value: "10" },
+  { label: "20개", value: "20" },
+  { label: "50개", value: "50" },
+] as const
+
 type StatusMessage = {
   readonly message: string
   readonly tone: "danger" | "success"
@@ -115,6 +127,7 @@ export function AdminResourcesPage({
           <Select
             aria-label="상태"
             defaultValue={filters.status}
+            items={resourceStatusFilterItems}
             name="status"
             onValueChange={() => {
               formRef.current?.requestSubmit()
@@ -127,9 +140,11 @@ export function AdminResourcesPage({
               <SelectValue placeholder="전체" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
-              <SelectItem value="active">활성</SelectItem>
-              <SelectItem value="archived">보관</SelectItem>
+              {resourceStatusFilterItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </FilterToolbarField>
@@ -140,6 +155,7 @@ export function AdminResourcesPage({
           <Select
             aria-label="페이지 크기"
             defaultValue={String(filters.pageSize)}
+            items={resourcePageSizeItems}
             name="pageSize"
             onValueChange={() => {
               formRef.current?.requestSubmit()
@@ -152,9 +168,11 @@ export function AdminResourcesPage({
               <SelectValue placeholder="20개" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="10">10개</SelectItem>
-              <SelectItem value="20">20개</SelectItem>
-              <SelectItem value="50">50개</SelectItem>
+              {resourcePageSizeItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </FilterToolbarField>
