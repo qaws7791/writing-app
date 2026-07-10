@@ -12,6 +12,8 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@headless-tree/core": "^1.7.0",
+    "@headless-tree/react": "^1.7.0",
     "@lexical/react": "0.46.0",
     "@workspace/contracts": "workspace:*",
     "@workspace/env": "workspace:*",

@@ -1,4 +1,4 @@
-import { FileTextIcon, FolderTreeIcon } from "lucide-react"
+import { Trash2Icon } from "lucide-react"
 
 import {
   Empty,
@@ -8,23 +8,20 @@ import {
   EmptyTitle,
 } from "@workspace/ui/components/ui/empty"
 
-export default function AdminResourcesRoute() {
+export default function AdminResourceTrashRoute() {
   return (
     <div className="flex min-h-full items-center justify-center px-6 py-20">
       <Empty>
         <EmptyMedia variant="icon">
-          <FolderTreeIcon aria-hidden="true" />
+          <Trash2Icon aria-hidden="true" />
         </EmptyMedia>
         <EmptyHeader>
-          <EmptyTitle>문서를 선택해 주세요.</EmptyTitle>
+          <EmptyTitle>휴지통</EmptyTitle>
           <EmptyDescription>
-            왼쪽 자료 트리에서 문서를 열거나 새 문서를 만드세요.
+            왼쪽 트리에서 삭제된 문서를 확인하거나 최상위 삭제 항목을
+            복원하세요.
           </EmptyDescription>
         </EmptyHeader>
-        <FileTextIcon
-          aria-hidden="true"
-          className="size-5 text-muted-foreground"
-        />
       </Empty>
     </div>
   )

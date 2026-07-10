@@ -255,10 +255,24 @@ apps/admin/src/features/resources/
 
 ### 3. 자료실 shell과 Tree
 
+상태: 완료
+
 - reui Tree primitive를 `packages/ui`에 추가한다.
 - persistent layout, desktop resize/collapse, mobile drawer를 구현한다.
 - lazy load, expanded state, drag/drop, menu move, context actions, breadcrumb, 검색과 휴지통을 연결한다.
 - 이 단계에서는 문서 본문을 읽기 전용 Markdown으로 연결해 tree/API 흐름을 먼저 안정화한다.
+
+검증 결과:
+
+- reui 공식 구조를 따르는 generic `Tree`, `TreeItem`, `TreeItemLabel`, `TreeDragLine` primitive를 `packages/ui`에 추가하고 Headless Tree의 keyboard selection, async data loader, drag/drop 기능과 연결했다. tree·treeitem·expanded·selected 접근성 계약을 UI package test로 고정했다.
+- 자료실 nested layout이 관리자 세션과 활성 최상위 트리를 병렬 prefetch하고, client 작업 공간은 viewport 판별 뒤 desktop resize·collapse 또는 mobile left drawer 중 하나만 렌더링한다. 최초 서버 tree 결과는 정확히 한 번만 소비하며 active·trash 전환 뒤에는 현재 API 상태를 다시 읽는다.
+- expanded folder ID를 version·관리자 ID·active/trash 범위가 포함된 localStorage key로 관리하고 storage event도 같은 외부 store 경계에서 동기화한다. 루트와 실제 expanded folder만 지연 조회하며 중복 요청은 item별 promise cache로 합친다.
+- 폴더·문서 생성, 이름 변경, 낙관적 drag/drop, 검색 기반 목적지와 형제 위치를 선택하는 menu move, 재귀 휴지통 이동·복원을 expected revision 흐름으로 연결했다. stale revision은 화면에 올라온 부모를 재조회하고, 서버 거부는 이동 전 자식 순서로 복구한다.
+- 휴지통에서는 삭제 subtree의 최상위 항목에만 복원 메뉴를 제공하고 하위 항목 단독 복원은 노출하지 않는다. 폴더 휴지통 이동·복원 뒤 하위 문서까지 함께 전환되고, 선택 문서가 subtree에 포함되면 빈 선택 화면으로 이동하는 동작을 실제 브라우저에서 확인했다.
+- 검색 결과의 조상 경로를 펼쳐 문서로 이동하고, 읽기 화면은 full breadcrumb와 긴 경로의 가운데 popover 축약, 생성자·수정자·상대·정확 시각 metadata, active·archived 상태를 제공한다. GFM Markdown renderer는 raw HTML을 실행하지 않고 HTTPS URL 이미지만 렌더링한다.
+- 구 Tiptap 목록·폼 UI와 helper·test를 새 route 전환과 함께 삭제해 죽은 frontend 코드를 남기지 않았다. legacy API·repository·schema의 최종 삭제는 7단계 일괄 전환에 남긴다.
+- 실제 로컬 관리자 로그인과 데스크톱·모바일 브라우저에서 생성, 중첩, 이름 변경, 읽기 화면 갱신, 재귀 휴지통 이동, archived 하위 문서 열기, subtree 복원, drawer 자동 닫힘을 확인했다. 이 과정에서 발견한 누락 migration을 막기 위해 `dev:admin:setup`이 baseline seed 직후 자료실 migration을 적용하도록 고정했다.
+- admin 전체 test, UI primitive test, admin·UI lint/typecheck, root lint와 admin production build를 통과했다.
 
 ### 4. Lexical GFM 편집기
 
@@ -285,7 +299,7 @@ apps/admin/src/features/resources/
 
 ### 7. 한 번에 전환
 
-- legacy Tiptap contract, UI, helper, API, repository code와 test를 삭제한다.
+- 남은 legacy Tiptap contract, API, repository code와 test를 삭제한다.
 - DB 백업 후 명시 migration을 실행한다.
 - `ENABLE_TEST_AUTH=true`로 두 브라우저 context E2E를 통과시킨다.
 - build, lint, typecheck, package test, API contract drift, 문서 drift를 실행한다.

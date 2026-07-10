@@ -77,7 +77,14 @@ export function AdminShell({
             )
           })}
         </nav>
-        <main className="an-fi mx-auto w-full max-w-6xl flex-1 px-5 py-8 md:px-10">
+        <main
+          className={cn(
+            "an-fi w-full flex-1",
+            currentPath.startsWith("/resources")
+              ? "flex min-h-0 max-w-none overflow-hidden"
+              : "mx-auto max-w-6xl px-5 py-8 md:px-10"
+          )}
+        >
           {children}
         </main>
       </div>
