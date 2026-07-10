@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
       {
         headers: [
           ...createNextSecurityHeaders({
+            allowHttpsImages: true,
             connectSources: [adminApiOrigin],
             development,
           }),

@@ -7,6 +7,11 @@ import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 import { Badge } from "@workspace/ui/components/ui/badge"
 import { Markdown } from "@workspace/ui/components/ui/markdown"
 
+import {
+  formatResourceExactDate,
+  formatResourceRelativeDate,
+} from "@/features/resources/resource-document-date"
+
 export function ResourceDocumentView({
   document,
 }: {
@@ -26,8 +31,8 @@ export function ResourceDocumentView({
         </div>
         <ResourceDocumentMetadata
           createdBy={document.createdBy.name}
-          exactUpdatedAt={formatExactDate(document.updatedAt)}
-          relativeUpdatedAt={formatRelativeDate(document.updatedAt)}
+          exactUpdatedAt={formatResourceExactDate(document.updatedAt)}
+          relativeUpdatedAt={formatResourceRelativeDate(document.updatedAt)}
           updatedBy={document.updatedBy.name}
         />
       </header>
@@ -45,37 +50,5 @@ export function ResourceDocumentView({
         <Markdown>{document.contentMarkdown}</Markdown>
       )}
     </article>
-  )
-}
-
-function formatExactDate(value: string): string {
-  return new Intl.DateTimeFormat("ko-KR", {
-    dateStyle: "long",
-    timeStyle: "short",
-    timeZone: "Asia/Seoul",
-  }).format(new Date(value))
-}
-
-function formatRelativeDate(value: string): string {
-  const differenceInSeconds = Math.round(
-    (new Date(value).getTime() - Date.now()) / 1_000
-  )
-  const absoluteSeconds = Math.abs(differenceInSeconds)
-  const [amount, unit] =
-    absoluteSeconds < 60
-      ? [differenceInSeconds, "second"]
-      : absoluteSeconds < 3_600
-        ? [Math.round(differenceInSeconds / 60), "minute"]
-        : absoluteSeconds < 86_400
-          ? [Math.round(differenceInSeconds / 3_600), "hour"]
-          : absoluteSeconds < 2_592_000
-            ? [Math.round(differenceInSeconds / 86_400), "day"]
-            : absoluteSeconds < 31_536_000
-              ? [Math.round(differenceInSeconds / 2_592_000), "month"]
-              : [Math.round(differenceInSeconds / 31_536_000), "year"]
-
-  return new Intl.RelativeTimeFormat("ko-KR", { numeric: "auto" }).format(
-    amount,
-    unit as Intl.RelativeTimeFormatUnit
   )
 }

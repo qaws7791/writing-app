@@ -346,6 +346,11 @@ export type AdminImportResourceDocumentResult = {
   readonly mutation: AdminResourceNodeMutation
 }
 
+export type AdminSaveResourceDocumentInput = {
+  readonly expectedContentRevision: number
+  readonly markdown: string
+}
+
 export type AdminExportResourceDocument = {
   readonly fileName: string
   readonly markdown: string
@@ -501,6 +506,10 @@ export type AdminApi = {
     nodeId: string,
     input: AdminResourceRevisionCommandInput
   ) => Promise<AdminApiResult<AdminResourceRestoreResult>>
+  readonly saveResourceLibraryDocument: (
+    documentId: string,
+    input: AdminSaveResourceDocumentInput
+  ) => Promise<AdminApiResult<AdminResourceLibraryDocument>>
   readonly saveLegalSettings: (
     input: AdminLegalSettingsRequest
   ) => Promise<AdminApiResult<AdminSettings>>

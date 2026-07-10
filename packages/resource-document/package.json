@@ -5,7 +5,12 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./resource-markdown-import": "./src/resource-markdown.ts"
+    "./resource-horizontal-rule": "./src/resource-horizontal-rule-node.ts",
+    "./resource-image": "./src/resource-image-node.ts",
+    "./resource-markdown": "./src/resource-markdown.ts",
+    "./resource-markdown-import": "./src/resource-markdown.ts",
+    "./resource-markdown-validation": "./src/resource-markdown-validation.ts",
+    "./resource-table": "./src/resource-table-state.ts"
   },
   "imports": {
     "#resource-document/index": "./src/index.ts",

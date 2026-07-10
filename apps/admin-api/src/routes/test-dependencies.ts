@@ -196,6 +196,11 @@ function createFailingAdminApiServices(): AdminApiServices {
             "resourceLibrary.documents.importDocument"
           )
         },
+        async saveDocument() {
+          throwUnexpectedAdminServiceCall(
+            "resourceLibrary.documents.saveDocument"
+          )
+        },
       },
       search: {
         async search() {

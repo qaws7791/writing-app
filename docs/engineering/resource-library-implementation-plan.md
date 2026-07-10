@@ -276,10 +276,21 @@ apps/admin/src/features/resources/
 
 ### 4. Lexical GFM 편집기
 
+상태: 완료
+
 - `packages/resource-document`의 node와 transformer를 확정한다.
 - WYSIWYG editor, slash command, Markdown shortcut, block handle, 플로팅 toolbar를 구현한다.
 - 단일 Markdown import/export, URL image, raw HTML 비활성화를 연결한다.
 - 아직 collaboration 없이 한 client에서 Markdown projection과 화면 상태를 검증한다.
+
+완료 근거:
+
+- 문서 저장 계약에 `contentRevision` 낙관적 잠금을 적용하고, GFM 정규화·일반 텍스트 FTS·수정자 metadata를 하나의 SQLite transaction으로 갱신한다. stale revision은 별도 API 오류로 보존해 다음 단계의 공동 편집 경계와 구분했다.
+- Lexical `0.46.0` exact 패키지로 분할 화면 없는 WYSIWYG 편집기, Markdown 단축키, 키보드 슬래시 메뉴, 블록 이동 핸들, 플로팅 인라인 서식·링크 도구와 저장 버튼 없는 500ms 직렬 자동 저장을 구현했다. 저장·대기·진행·충돌·오류·유효하지 않음 상태는 아이콘 애니메이션과 한국어 텍스트로 항상 표시한다.
+- 슬래시 명령은 일반 문단에서만 열리고 본문, H1~H3, 글머리·번호·할 일 목록, 인용, 코드, 구분선, 표, HTTPS 이미지 URL을 제공한다. 다이얼로그형 이미지·표 명령은 슬래시 문단을 대상 블록으로 직접 교체해 Markdown에 표현할 수 없는 빈 문단을 남기지 않는다.
+- Lexical DOM reconciler가 첫 하위 텍스트에서 계산하는 Element 포맷 캐시는 파생 값과 일치할 때만 허용하고, 임의로 주입된 layout·포맷 속성은 계속 거부한다. 여러 블록에 적용한 인라인 서식도 GFM 저장과 재접속 왕복을 보장한다.
+- 단일 `.md` 가져오기와 내보내기를 트리 작업 공간에 연결했다. raw HTML은 실행하지 않고 코드 리터럴로 렌더링하며, 외부 이미지는 HTTPS와 필수 대체 텍스트만 허용하고 `no-referrer`로 렌더링한다. 관리자 CSP도 자료실의 임의 HTTPS 이미지 정책과 일치시켰다.
+- 관련 contract·core·API·React·Markdown 테스트와 타입 검사를 통과했다. `ENABLE_TEST_AUTH=true` 실제 브라우저에서 제목 단축키, 슬래시 H2, 다중 블록 굵게 저장·재접속, 단일 가져오기·내보내기, raw HTML 비실행, HTTP 이미지 거부, HTTPS 이미지 저장·`no-referrer`, 2×2 GFM 표 저장을 확인했다.
 
 ### 5. 자체 호스팅 공동 편집
 

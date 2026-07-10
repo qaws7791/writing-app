@@ -9,7 +9,7 @@ import {
   Trash2Icon,
 } from "lucide-react"
 
-import type { ResourceLibraryApi } from "@/features/resources/resource-library-api"
+import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import type {
   AdminResourceTreeNode,
   AdminResourceTreeScope,
@@ -130,7 +130,7 @@ export function ResourceTreeActionDialog({
   onTrash,
 }: {
   readonly action: ResourceTreeAction | null
-  readonly api: ResourceLibraryApi
+  readonly api: ResourceTreeApi
   readonly node: AdminResourceTreeNode | null
   readonly onClose: () => void
   readonly onMove: (input: ResourceTreeMoveInput) => Promise<string | null>
@@ -267,7 +267,7 @@ function ResourceMoveDialog({
   onClose,
   onMove,
 }: {
-  readonly api: ResourceLibraryApi
+  readonly api: ResourceTreeApi
   readonly node: AdminResourceTreeNode
   readonly onClose: () => void
   readonly onMove: (input: ResourceTreeMoveInput) => Promise<string | null>

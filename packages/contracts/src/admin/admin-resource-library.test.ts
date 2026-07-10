@@ -12,6 +12,7 @@ import {
 import {
   adminImportResourceDocumentRequestSchema,
   adminResourceDocumentDtoSchema,
+  adminSaveResourceDocumentRequestSchema,
 } from "@workspace/contracts/admin/admin-resource-documents"
 import { adminResourceSearchDtoSchema } from "@workspace/contracts/admin/admin-resource-search"
 
@@ -125,6 +126,15 @@ describe("자료실 트리·문서·검색 계약", () => {
         parentId: null,
       })
     ).toMatchObject({ fileName: "운영 안내.md" })
+    expect(
+      adminSaveResourceDocumentRequestSchema.parse({
+        expectedContentRevision: 3,
+        markdown: "## 시작\n\n수정 본문",
+      })
+    ).toEqual({
+      expectedContentRevision: 3,
+      markdown: "## 시작\n\n수정 본문",
+    })
   })
 
   it("검색 결과는 폴더와 문서의 경로 및 본문 문맥을 구분한다", () => {

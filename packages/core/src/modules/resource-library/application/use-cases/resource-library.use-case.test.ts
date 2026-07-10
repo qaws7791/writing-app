@@ -199,6 +199,76 @@ describe("자료실 use case", () => {
       fixture.client.close()
     }
   })
+
+  it("문서 저장은 본문 revision, 수정 메타데이터와 FTS를 원자적으로 갱신한다", async () => {
+    const fixture = createFixture()
+    const editedAt = new Date("2026-07-10T01:00:00.000Z")
+
+    try {
+      await expect(
+        fixture.document.importDocument({
+          actorId: "admin-1",
+          expectedRevision: 0,
+          fileName: "운영 안내.md",
+          markdown: "초기 본문",
+          now,
+          parentId: null,
+        })
+      ).resolves.toMatchObject({ kind: "ok" })
+
+      await expect(
+        fixture.document.saveDocument({
+          actorId: "admin-1",
+          documentId: "document-empty",
+          expectedContentRevision: 0,
+          markdown: "## 시작\n\n실시간 **공동 편집** 갱신",
+          now: editedAt,
+        })
+      ).resolves.toMatchObject({
+        kind: "ok",
+        value: {
+          contentMarkdown: "## 시작\n\n실시간 **공동 편집** 갱신",
+          contentRevision: 1,
+          updatedAt: editedAt.toISOString(),
+          updatedBy: { id: "admin-1" },
+        },
+      })
+      await expect(
+        fixture.search.search({ limit: 20, query: "갱신", scope: "active" })
+      ).resolves.toMatchObject({
+        items: [{ id: "document-empty", kind: "document" }],
+      })
+      await expect(
+        fixture.document.saveDocument({
+          actorId: "admin-1",
+          documentId: "document-empty",
+          expectedContentRevision: 0,
+          markdown: "충돌 본문",
+          now: editedAt,
+        })
+      ).resolves.toEqual({
+        actualContentRevision: 1,
+        kind: "stale-content-revision",
+      })
+      await expect(
+        fixture.document.saveDocument({
+          actorId: "admin-1",
+          documentId: "document-empty",
+          expectedContentRevision: 1,
+          markdown: "#### 지원하지 않는 제목",
+          now: editedAt,
+        })
+      ).resolves.toMatchObject({ kind: "invalid-markdown" })
+      await expect(
+        fixture.document.getDocument({ documentId: "document-empty" })
+      ).resolves.toMatchObject({
+        contentMarkdown: "## 시작\n\n실시간 **공동 편집** 갱신",
+        contentRevision: 1,
+      })
+    } finally {
+      fixture.client.close()
+    }
+  })
 })
 
 function createFixture() {

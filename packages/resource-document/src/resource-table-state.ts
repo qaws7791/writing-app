@@ -1,4 +1,4 @@
-import type { TableNode } from "@lexical/table"
+import { $createTableNodeWithDimensions, type TableNode } from "@lexical/table"
 import { $getState, $setState, createState } from "lexical"
 
 export type ResourceTableColumnAlignment = "center" | "left" | "right" | null
@@ -25,6 +25,32 @@ export function $setResourceTableColumnAlignments(
   alignments: readonly ResourceTableColumnAlignment[]
 ): void {
   $setState(tableNode, tableColumnAlignmentsState, [...alignments])
+}
+
+export function $createResourceTableNodeWithDimensions(
+  rows: number,
+  columns: number
+): TableNode {
+  if (
+    !Number.isSafeInteger(rows) ||
+    !Number.isSafeInteger(columns) ||
+    rows < 1 ||
+    columns < 1
+  ) {
+    throw new RangeError("자료 표의 행과 열은 1 이상의 정수여야 합니다.")
+  }
+
+  const table = $createTableNodeWithDimensions(rows, columns, {
+    columns: false,
+    rows: true,
+  })
+
+  $setResourceTableColumnAlignments(
+    table,
+    Array.from({ length: columns }, () => null)
+  )
+
+  return table
 }
 
 function parseTableAlignments(

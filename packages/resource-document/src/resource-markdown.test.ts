@@ -36,8 +36,25 @@ import {
   validateResourceMarkdown,
 } from "#resource-document/index"
 import { $validateResourceDocumentStructure } from "#resource-document/resource-lexical-validation"
+import { $createResourceTableNodeWithDimensions } from "#resource-document/resource-table-state"
 
 describe("자료 Markdown 계약", () => {
+  it("새 자료 표에 GFM 열 정렬 상태를 함께 초기화한다", () => {
+    const editor = createResourceDocumentEditor()
+
+    editor.update(
+      () => {
+        $getRoot().append($createResourceTableNodeWithDimensions(2, 2))
+      },
+      { discrete: true }
+    )
+
+    expect(readResourceDocumentMarkdown(editor)).toEqual({
+      markdown: "|   |   |\n| - | - |\n|   |   |",
+      status: "valid",
+    })
+  })
+
   it("문단의 GFM 인라인 서식을 의미 손실 없이 보존한다", () => {
     const markdown =
       "일반 **굵게** *기울임* ~~취소선~~ `인라인 코드` [링크](https://example.com)를 포함한다."
@@ -698,6 +715,29 @@ describe("자료 Markdown 계약", () => {
         },
       ],
       status: "invalid",
+    })
+  })
+
+  it("DOM reconciler가 하위 텍스트에서 계산한 Element 포맷 캐시를 허용한다", () => {
+    const editor = createResourceDocumentEditor()
+
+    replaceResourceDocumentMarkdown(editor, "**본문**")
+    editor.update(
+      () => {
+        const paragraph = $getRoot().getFirstChild()
+
+        if (!$isElementNode(paragraph)) {
+          throw new Error("fixture paragraph node를 찾지 못했습니다.")
+        }
+
+        paragraph.setTextFormat(1)
+      },
+      { discrete: true }
+    )
+
+    expect(readResourceDocumentMarkdown(editor)).toEqual({
+      markdown: "**본문**",
+      status: "valid",
     })
   })
 

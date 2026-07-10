@@ -724,8 +724,6 @@ function validateElementProperties(
     ["format", node.getFormatType()],
     ["indent", node.getIndent()],
     ["style", node.getStyle()],
-    ["text-format", node.getTextFormat()],
-    ["text-style", node.getTextStyle()],
   ] as const
 
   for (const [property, value] of properties) {
@@ -734,6 +732,23 @@ function validateElementProperties(
     }
 
     if (value !== null && value !== "" && value !== 0) {
+      issues.push({
+        code: "unsupported-lexical-property",
+        nodeType: node.getType(),
+        property,
+        value,
+      })
+    }
+  }
+
+  const firstText = node.getAllTextNodes()[0]
+  const derivedProperties = [
+    ["text-format", node.getTextFormat(), firstText?.getFormat() ?? 0],
+    ["text-style", node.getTextStyle(), firstText?.getStyle() ?? ""],
+  ] as const
+
+  for (const [property, value, derivedValue] of derivedProperties) {
+    if (value !== 0 && value !== "" && value !== derivedValue) {
       issues.push({
         code: "unsupported-lexical-property",
         nodeType: node.getType(),

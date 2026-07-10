@@ -1,10 +1,12 @@
-import { sql } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 
 import type {
   ImportResourceDocumentInput,
   ImportResourceDocumentResult,
   ResourceDocumentRecord,
   ResourceDocumentRepository,
+  SaveResourceDocumentInput,
+  SaveResourceDocumentResult,
 } from "@workspace/core/modules/resource-library/application/ports/resource-document.repository"
 import {
   createAvailableResourceName,
@@ -21,6 +23,7 @@ import {
   parseResourceBreadcrumbPath,
   readActiveChildRows,
   reserveTreeRevision,
+  updateResourceSearchBody,
   validateActiveParent,
   validateTreeRevision,
   type WritingAppDatabaseTransaction,
@@ -59,7 +62,84 @@ export function createDrizzleResourceDocumentRepository(
     async readDocument(documentId) {
       return readResourceDocumentRecord(db, documentId)
     },
+    async saveDocument(input) {
+      return saveDocument(db, input)
+    },
   }
+}
+
+function saveDocument(
+  db: WritingAppDatabase,
+  input: SaveResourceDocumentInput
+): SaveResourceDocumentResult {
+  return db.transaction(
+    (transaction) => {
+      const current = transaction
+        .select({ contentRevision: adminResourceDocuments.contentRevision })
+        .from(adminResourceDocuments)
+        .innerJoin(
+          adminResourceNodes,
+          eq(adminResourceNodes.id, adminResourceDocuments.nodeId)
+        )
+        .where(
+          and(
+            eq(adminResourceDocuments.nodeId, input.documentId),
+            eq(adminResourceNodes.kind, "document"),
+            eq(adminResourceNodes.status, "active")
+          )
+        )
+        .get()
+
+      if (current === undefined) {
+        return { kind: "not-found" }
+      }
+
+      if (current.contentRevision !== input.expectedContentRevision) {
+        return {
+          actualContentRevision: current.contentRevision,
+          kind: "stale-content-revision",
+        }
+      }
+
+      transaction
+        .update(adminResourceDocuments)
+        .set({
+          contentMarkdown: input.markdown,
+          contentRevision: input.expectedContentRevision + 1,
+        })
+        .where(
+          and(
+            eq(adminResourceDocuments.nodeId, input.documentId),
+            eq(
+              adminResourceDocuments.contentRevision,
+              input.expectedContentRevision
+            )
+          )
+        )
+        .run()
+      transaction
+        .update(adminResourceNodes)
+        .set({
+          updatedAt: input.now,
+          updatedBy: input.actorId,
+        })
+        .where(eq(adminResourceNodes.id, input.documentId))
+        .run()
+      updateResourceSearchBody(transaction, {
+        bodyText: input.bodyText,
+        nodeId: input.documentId,
+      })
+
+      const document = readResourceDocumentRecord(transaction, input.documentId)
+
+      if (document === null) {
+        throw new Error("저장한 자료 문서를 조회하지 못했습니다.")
+      }
+
+      return { kind: "ok", value: document }
+    },
+    { behavior: "immediate" }
+  )
 }
 
 function importDocument(

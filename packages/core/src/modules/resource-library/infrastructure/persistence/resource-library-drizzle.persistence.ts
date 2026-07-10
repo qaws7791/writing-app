@@ -256,6 +256,17 @@ export function updateResourceSearchName(
   `)
 }
 
+export function updateResourceSearchBody(
+  transaction: WritingAppDatabaseTransaction,
+  input: { readonly bodyText: string; readonly nodeId: ResourceNodeId }
+): void {
+  transaction.run(sql`
+    UPDATE admin_resource_search
+    SET body_text = ${input.bodyText}
+    WHERE node_id = ${input.nodeId}
+  `)
+}
+
 export function readResourceSubtree(
   database: WritingAppDatabase | WritingAppDatabaseTransaction,
   nodeId: ResourceNodeId

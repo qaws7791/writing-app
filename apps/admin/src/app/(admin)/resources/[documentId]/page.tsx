@@ -1,6 +1,8 @@
+import { ResourceDocumentEditor } from "@/features/resources/editor/resource-document-editor"
 import { ResourceDocumentView } from "@/features/resources/resource-document-view"
 import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
+import { readAdminApiBaseUrl } from "@/runtime-config"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 
 export default async function AdminResourceDocumentRoute({
@@ -23,5 +25,13 @@ export default async function AdminResourceDocumentRoute({
     )
   }
 
-  return <ResourceDocumentView document={result.value} />
+  return result.value.status === "archived" ? (
+    <ResourceDocumentView document={result.value} />
+  ) : (
+    <ResourceDocumentEditor
+      apiBaseUrl={readAdminApiBaseUrl()}
+      document={result.value}
+      key={result.value.id}
+    />
+  )
 }

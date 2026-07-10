@@ -4,10 +4,12 @@ export type NextSecurityHeader = {
 }
 
 export function createNextSecurityHeaders({
+  allowHttpsImages = false,
   connectSources = [],
   development = false,
   imageSources = [],
 }: {
+  readonly allowHttpsImages?: boolean
   readonly connectSources?: readonly string[]
   readonly development?: boolean
   readonly imageSources?: readonly string[]
@@ -27,7 +29,9 @@ export function createNextSecurityHeaders({
     "font-src 'self' data:",
     "form-action 'self'",
     "frame-ancestors 'none'",
-    `img-src 'self' data: blob: ${normalizeSources(imageSources).join(" ")}`.trim(),
+    `img-src 'self' data: blob: ${
+      allowHttpsImages ? "https:" : ""
+    } ${normalizeSources(imageSources).join(" ")}`.trim(),
     "manifest-src 'self'",
     "media-src 'self'",
     "object-src 'none'",

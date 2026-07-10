@@ -109,6 +109,10 @@ export function $importResourceMarkdownAst(root: Root): void {
       lexicalRoot.append(lexicalNode)
     }
   }
+
+  if (lexicalRoot.getChildrenSize() === 0) {
+    lexicalRoot.append($createParagraphNode())
+  }
 }
 
 export function $exportResourceMarkdownAst(): Root {

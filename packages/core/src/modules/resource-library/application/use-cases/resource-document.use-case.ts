@@ -4,8 +4,10 @@ import {
   type AdminImportResourceDocumentRequest,
   type AdminImportResourceDocumentResultDto,
   type AdminResourceDocumentDto,
+  type AdminSaveResourceDocumentRequest,
 } from "@workspace/contracts/admin"
 import {
+  normalizeResourceMarkdown,
   prepareResourceMarkdownImport,
   readResourceMarkdownPlainText,
   type ResourceDocumentIssue,
@@ -37,6 +39,18 @@ export type ResourceDocumentImportResult =
       readonly value: AdminImportResourceDocumentResultDto
     }
 
+export type ResourceDocumentSaveResult =
+  | {
+      readonly issues: readonly ResourceDocumentIssue[]
+      readonly kind: "invalid-markdown"
+    }
+  | { readonly kind: "not-found" }
+  | {
+      readonly actualContentRevision: number
+      readonly kind: "stale-content-revision"
+    }
+  | { readonly kind: "ok"; readonly value: AdminResourceDocumentDto }
+
 export type ResourceDocumentUseCase = {
   readonly exportDocument: (input: { readonly documentId: string }) => Promise<
     | { readonly kind: "not-found" }
@@ -54,6 +68,13 @@ export type ResourceDocumentUseCase = {
       readonly now: Date
     }
   ) => Promise<ResourceDocumentImportResult>
+  readonly saveDocument: (
+    input: AdminSaveResourceDocumentRequest & {
+      readonly actorId: string
+      readonly documentId: string
+      readonly now: Date
+    }
+  ) => Promise<ResourceDocumentSaveResult>
 }
 
 export type ResourceDocumentUseCaseDependencies = {
@@ -135,6 +156,37 @@ export function createResourceDocumentUseCase({
       })
 
       return mapImportResult(result)
+    },
+    async saveDocument(input) {
+      const normalization = normalizeResourceMarkdown(input.markdown)
+
+      if (normalization.status === "invalid") {
+        return {
+          issues: normalization.issues,
+          kind: "invalid-markdown",
+        }
+      }
+
+      const plainText = readResourceMarkdownPlainText(normalization.markdown)
+
+      if (plainText.status === "invalid") {
+        throw new Error(
+          "정규화한 자료 Markdown에서 검색 텍스트를 만들지 못했습니다."
+        )
+      }
+
+      const result = await documentRepository.saveDocument({
+        actorId: input.actorId,
+        bodyText: plainText.text,
+        documentId: toResourceDocumentId(input.documentId),
+        expectedContentRevision: input.expectedContentRevision,
+        markdown: normalization.markdown,
+        now: input.now,
+      })
+
+      return result.kind === "ok"
+        ? { kind: "ok", value: toDocumentDto(result.value) }
+        : result
     },
   }
 }

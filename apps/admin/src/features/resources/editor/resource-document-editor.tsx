@@ -1,0 +1,326 @@
+"use client"
+
+import { useCallback, useMemo, useState, useTransition } from "react"
+import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin"
+import { LexicalComposer } from "@lexical/react/LexicalComposer"
+import { ContentEditable } from "@lexical/react/LexicalContentEditable"
+import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary"
+import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin"
+import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin"
+import { ListPlugin } from "@lexical/react/LexicalListPlugin"
+import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin"
+import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin"
+import { TablePlugin } from "@lexical/react/LexicalTablePlugin"
+import type { EditorThemeClasses } from "lexical"
+import {
+  CloudCheckIcon,
+  CloudUploadIcon,
+  DownloadIcon,
+  LoaderCircleIcon,
+  TriangleAlertIcon,
+  type LucideIcon,
+} from "lucide-react"
+import {
+  createResourceDocumentEditor,
+  replaceResourceDocumentMarkdown,
+  resourceDocumentNodes,
+  resourceMarkdownTransformers,
+} from "@workspace/resource-document/resource-markdown"
+import { isAllowedResourceLinkUrl } from "@workspace/resource-document/resource-markdown-validation"
+import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
+import { Button } from "@workspace/ui/components/ui/button"
+import { Spinner } from "@workspace/ui/components/ui/spinner"
+import { cn } from "@workspace/ui/lib/utils"
+
+import {
+  ResourceDocumentAutosavePlugin,
+  type ResourceDocumentSyncState,
+} from "@/features/resources/editor/resource-document-autosave-plugin"
+import { ResourceDraggableBlockPlugin } from "@/features/resources/editor/resource-draggable-block-plugin"
+import { ResourceFloatingToolbarPlugin } from "@/features/resources/editor/resource-floating-toolbar-plugin"
+import { ResourceSlashMenuPlugin } from "@/features/resources/editor/resource-slash-menu-plugin"
+import {
+  ResourceBreadcrumb,
+  ResourceDocumentMetadata,
+} from "@/features/resources/resource-breadcrumb"
+import {
+  formatResourceExactDate,
+  formatResourceRelativeDate,
+} from "@/features/resources/resource-document-date"
+import {
+  createBrowserResourceLibraryApi,
+  type ResourceDocumentEditorApi,
+} from "@/features/resources/resource-library-api"
+import type { AdminResourceLibraryDocument } from "@/lib/api/admin-api"
+import type { AdminApiBaseUrl } from "@/runtime-config"
+
+const editorTransformers = [...resourceMarkdownTransformers]
+
+const resourceEditorTheme = {
+  code: "my-5 block overflow-x-auto rounded-xl bg-muted px-4 py-3 font-mono text-sm leading-6",
+  heading: {
+    h1: "mt-9 mb-3 text-3xl font-black tracking-tight text-foreground",
+    h2: "mt-8 mb-3 text-2xl font-bold tracking-tight text-foreground",
+    h3: "mt-6 mb-2 text-xl font-bold text-foreground",
+  },
+  link: "text-primary underline decoration-primary/40 underline-offset-4",
+  list: {
+    checklist: "my-3 grid list-none gap-1 pl-0",
+    listitem: "my-1 ml-6 pl-1",
+    listitemChecked:
+      "relative my-1 ml-7 list-none text-muted-foreground line-through before:absolute before:-left-7 before:top-1 before:size-4 before:rounded before:bg-primary before:content-['✓'] before:text-center before:text-xs before:font-bold before:leading-4 before:text-primary-foreground",
+    listitemUnchecked:
+      "relative my-1 ml-7 list-none before:absolute before:-left-7 before:top-1 before:size-4 before:rounded before:border before:border-border before:bg-background before:content-['']",
+    ol: "my-3 list-decimal pl-6",
+    ul: "my-3 list-disc pl-6",
+  },
+  paragraph: "my-2 min-h-7 leading-7 text-foreground",
+  quote: "my-5 border-l-4 border-primary/40 pl-4 text-muted-foreground italic",
+  table: "my-6 w-full border-collapse overflow-hidden text-sm",
+  tableCell: "min-w-28 border border-border px-3 py-2 align-top",
+  tableCellHeader:
+    "min-w-28 border border-border bg-muted px-3 py-2 text-left font-bold align-top",
+  tableScrollableWrapper: "my-6 overflow-x-auto",
+  text: {
+    bold: "font-bold",
+    code: "rounded bg-muted px-1.5 py-0.5 font-mono text-[0.9em]",
+    italic: "italic",
+    strikethrough: "line-through",
+  },
+} satisfies EditorThemeClasses
+
+const initialSyncState: ResourceDocumentSyncState = {
+  kind: "saved",
+  message: "모든 변경 사항이 저장됨",
+}
+
+export function ResourceDocumentEditor({
+  apiBaseUrl,
+  document,
+}: {
+  readonly apiBaseUrl: AdminApiBaseUrl
+  readonly document: AdminResourceLibraryDocument
+}) {
+  const api = useMemo(
+    () => createBrowserResourceLibraryApi(apiBaseUrl),
+    [apiBaseUrl]
+  )
+
+  return <ResourceDocumentEditorSurface api={api} document={document} />
+}
+
+export function ResourceDocumentEditorSurface({
+  api,
+  document,
+}: {
+  readonly api: ResourceDocumentEditorApi
+  readonly document: AdminResourceLibraryDocument
+}) {
+  const [anchorElement, setAnchorElement] = useState<HTMLDivElement | null>(
+    null
+  )
+  const [currentDocument, setCurrentDocument] = useState(document)
+  const [exportError, setExportError] = useState<string | null>(null)
+  const [isExporting, startExportTransition] = useTransition()
+  const [syncState, setSyncState] = useState(initialSyncState)
+  const [initialEditorState] = useState(() =>
+    serializeInitialEditorState(document.contentMarkdown)
+  )
+  const onSaved = useCallback((saved: AdminResourceLibraryDocument) => {
+    setCurrentDocument(saved)
+  }, [])
+  const onSyncStateChange = useCallback((state: ResourceDocumentSyncState) => {
+    setSyncState(state)
+  }, [])
+
+  return (
+    <article className="mx-auto grid w-full max-w-5xl gap-6 px-6 pt-16 pb-32 md:px-12 md:pt-12">
+      <header className="grid gap-4 border-b border-border/60 pb-6">
+        <ResourceBreadcrumb
+          currentName={currentDocument.name}
+          path={currentDocument.path}
+        />
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="min-w-0 flex-1 text-3xl font-black tracking-tight text-foreground md:text-4xl">
+            {currentDocument.name}
+          </h1>
+          <Button
+            disabled={syncState.kind !== "saved" || isExporting}
+            onClick={() => {
+              startExportTransition(async () => {
+                const result = await api.exportResourceDocument(
+                  currentDocument.id
+                )
+
+                if (result.status === "error") {
+                  setExportError(result.error.message)
+                  return
+                }
+
+                downloadMarkdownFile(result.value)
+                setExportError(null)
+              })
+            }}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            {isExporting ? (
+              <Spinner aria-hidden="true" />
+            ) : (
+              <DownloadIcon aria-hidden="true" />
+            )}
+            Markdown 내보내기
+          </Button>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <ResourceDocumentMetadata
+            createdBy={currentDocument.createdBy.name}
+            exactUpdatedAt={formatResourceExactDate(currentDocument.updatedAt)}
+            relativeUpdatedAt={formatResourceRelativeDate(
+              currentDocument.updatedAt
+            )}
+            updatedBy={currentDocument.updatedBy.name}
+          />
+          <ResourceSyncStatus state={syncState} />
+        </div>
+      </header>
+      {exportError === null ? null : (
+        <Alert role="alert" tone="danger">
+          <AlertDescription>{exportError}</AlertDescription>
+        </Alert>
+      )}
+      <LexicalComposer
+        initialConfig={{
+          editorState: initialEditorState,
+          namespace: `resource-document-${document.id}`,
+          nodes: [...resourceDocumentNodes],
+          onError: (error) => {
+            throw error
+          },
+          theme: resourceEditorTheme,
+        }}
+      >
+        <div
+          className="relative -mx-3 min-h-[60vh] px-3 md:-mx-10 md:px-10"
+          ref={setAnchorElement}
+        >
+          <RichTextPlugin
+            contentEditable={
+              <ContentEditable
+                aria-label="자료 본문"
+                className="min-h-[60vh] outline-none [&_hr]:my-8 [&_hr]:border-border [&_img]:my-6 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-2xl [&_img]:border [&_img]:border-border"
+              />
+            }
+            ErrorBoundary={LexicalErrorBoundary}
+            placeholder={
+              <p className="pointer-events-none absolute top-2 left-3 text-muted-foreground md:left-10">
+                내용을 입력하거나 / 명령어를 사용하세요.
+              </p>
+            }
+          />
+          <HistoryPlugin />
+          <ListPlugin />
+          <CheckListPlugin />
+          <LinkPlugin validateUrl={isAllowedResourceLinkUrl} />
+          <TablePlugin
+            hasCellBackgroundColor={false}
+            hasCellMerge={false}
+            hasHorizontalScroll
+          />
+          <MarkdownShortcutPlugin transformers={editorTransformers} />
+          <ResourceSlashMenuPlugin />
+          <ResourceFloatingToolbarPlugin />
+          <ResourceDocumentAutosavePlugin
+            api={api}
+            documentId={document.id}
+            initialContentRevision={document.contentRevision}
+            initialMarkdown={document.contentMarkdown}
+            onSaved={onSaved}
+            onSyncStateChange={onSyncStateChange}
+          />
+          {anchorElement === null ? null : (
+            <ResourceDraggableBlockPlugin anchorElement={anchorElement} />
+          )}
+        </div>
+      </LexicalComposer>
+    </article>
+  )
+}
+
+function ResourceSyncStatus({
+  state,
+}: {
+  readonly state: ResourceDocumentSyncState
+}) {
+  const presentation = readSyncStatusPresentation(state)
+  const Icon = presentation.Icon
+
+  return (
+    <span
+      aria-live="polite"
+      className={cn(
+        "inline-flex items-center gap-2 text-xs font-medium",
+        presentation.className
+      )}
+      role="status"
+    >
+      <Icon
+        aria-hidden="true"
+        className={cn("size-4", presentation.iconClass)}
+      />
+      {state.message}
+    </span>
+  )
+}
+
+function readSyncStatusPresentation(state: ResourceDocumentSyncState): {
+  readonly className: string
+  readonly Icon: LucideIcon
+  readonly iconClass?: string
+} {
+  switch (state.kind) {
+    case "saved":
+      return { className: "text-muted-foreground", Icon: CloudCheckIcon }
+    case "pending":
+      return { className: "text-muted-foreground", Icon: CloudUploadIcon }
+    case "saving":
+      return {
+        className: "text-primary",
+        Icon: LoaderCircleIcon,
+        iconClass: "animate-spin motion-reduce:animate-none",
+      }
+    case "conflict":
+    case "error":
+    case "invalid":
+      return { className: "text-destructive", Icon: TriangleAlertIcon }
+  }
+}
+
+function serializeInitialEditorState(markdown: string): string {
+  const editor = createResourceDocumentEditor()
+  const validation = replaceResourceDocumentMarkdown(editor, markdown)
+
+  if (validation.status === "invalid") {
+    throw new Error("저장된 자료 Markdown을 Lexical 편집기로 열 수 없습니다.")
+  }
+
+  return JSON.stringify(editor.getEditorState().toJSON())
+}
+
+function downloadMarkdownFile(file: {
+  readonly fileName: string
+  readonly markdown: string
+}): void {
+  const url = URL.createObjectURL(
+    new Blob([file.markdown], { type: "text/markdown;charset=utf-8" })
+  )
+  const anchor = document.createElement("a")
+
+  anchor.download = file.fileName
+  anchor.href = url
+  document.body.append(anchor)
+  anchor.click()
+  anchor.remove()
+  URL.revokeObjectURL(url)
+}

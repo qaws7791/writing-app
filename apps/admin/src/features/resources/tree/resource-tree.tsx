@@ -30,9 +30,10 @@ import {
   FolderPlusIcon,
   RefreshCwIcon,
   Trash2Icon,
+  UploadIcon,
 } from "lucide-react"
 
-import type { ResourceLibraryApi } from "@/features/resources/resource-library-api"
+import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import {
   getExpandedResourceIdsSnapshot,
   getServerExpandedResourceIdsSnapshot,
@@ -111,7 +112,7 @@ export function ResourceTree({
   toolbarEnd,
 }: {
   readonly adminId: string
-  readonly api: ResourceLibraryApi
+  readonly api: ResourceTreeApi
   readonly initialTree?: InitialResourceTreeState
   readonly onInitialTreeConsumed?: () => void
   readonly onDocumentOpen: () => void
@@ -127,6 +128,7 @@ export function ResourceTree({
     new Map<string, Promise<{ data: ResourceTreeItemData; id: string }[]>>()
   )
   const mutationInFlightRef = useRef(false)
+  const markdownFileInputRef = useRef<HTMLInputElement>(null)
   const revisionRef = useRef(
     initialTree?.status === "ok" ? initialTree.value.revision : null
   )
@@ -135,6 +137,7 @@ export function ResourceTree({
   )
   const [shouldLoadRoot] = useState(initialTree === undefined)
   const [isCreating, startCreatingTransition] = useTransition()
+  const [isImporting, startImportingTransition] = useTransition()
   const [pendingAction, setPendingAction] = useState<PendingTreeAction | null>(
     null
   )
@@ -381,14 +384,7 @@ export function ResourceTree({
     }
     if (mutationInFlightRef.current) return
 
-    const selectedNode = readSelectedResourceNode(
-      itemDataRef.current,
-      selectedItems
-    )
-    const parentId =
-      selectedNode?.kind === "folder"
-        ? selectedNode.id
-        : (selectedNode?.parentId ?? null)
+    const parentId = readInsertionParentId(itemDataRef.current, selectedItems)
     const parentItemId = parentId ?? resourceTreeRootId
 
     mutationInFlightRef.current = true
@@ -424,6 +420,59 @@ export function ResourceTree({
     setErrorMessage(null)
 
     if (node.kind === "document") openDocument(node.id)
+  }
+
+  async function importMarkdownFile(file: File): Promise<void> {
+    const revision = revisionRef.current
+
+    if (revision === null) {
+      setErrorMessage("자료 트리를 먼저 다시 불러와 주세요.")
+      return
+    }
+
+    if (!file.name.toLocaleLowerCase("ko-KR").endsWith(".md")) {
+      setErrorMessage("Markdown(.md) 파일 하나를 선택해 주세요.")
+      return
+    }
+
+    if (mutationInFlightRef.current) return
+
+    const parentId = readInsertionParentId(itemDataRef.current, selectedItems)
+    const parentItemId = parentId ?? resourceTreeRootId
+    const existingIds = await tree.loadChildrenIds(parentItemId)
+    const markdown = await file.text()
+
+    mutationInFlightRef.current = true
+    const result = await api.importResourceDocument({
+      expectedRevision: revision,
+      fileName: file.name,
+      markdown,
+      parentId,
+    })
+    mutationInFlightRef.current = false
+
+    if (result.status === "error") {
+      if (result.error.code === "stale-revision") await reloadVisibleTree()
+      setErrorMessage(result.error.message)
+      return
+    }
+
+    const node = result.value.mutation.node
+    revisionRef.current = result.value.mutation.revision
+    itemDataRef.current.set(node.id, node)
+    tree.getItemInstance(node.id).updateCachedData(node, true)
+    tree
+      .getItemInstance(parentItemId)
+      .updateCachedChildrenIds([...existingIds, node.id])
+    markParentAsNonEmpty(parentId)
+    setExpandedItems((current) =>
+      parentId === null
+        ? current
+        : [...mergeExpandedResourceIds(current, [parentId])]
+    )
+    setSelectedItems([node.id])
+    setErrorMessage(null)
+    openDocument(node.id)
   }
 
   function markParentAsNonEmpty(parentId: string | null): void {
@@ -613,6 +662,38 @@ export function ResourceTree({
             <FolderPlusIcon aria-hidden="true" />
           )}
         </Button>
+        <input
+          accept=".md,text/markdown"
+          hidden
+          onChange={(event) => {
+            const file = event.currentTarget.files?.[0]
+            event.currentTarget.value = ""
+
+            if (file === null || file === undefined) return
+
+            startImportingTransition(async () => {
+              await importMarkdownFile(file)
+            })
+          }}
+          ref={markdownFileInputRef}
+          type="file"
+        />
+        <Button
+          aria-label="Markdown 파일 가져오기"
+          disabled={scope === "trash" || isCreating || isImporting}
+          onClick={() => {
+            markdownFileInputRef.current?.click()
+          }}
+          size="icon-sm"
+          type="button"
+          variant="outline"
+        >
+          {isImporting ? (
+            <Spinner aria-hidden="true" />
+          ) : (
+            <UploadIcon aria-hidden="true" />
+          )}
+        </Button>
         {toolbarEnd}
       </div>
       <ResourceSearch api={api} onSelect={selectSearchResult} scope={scope} />
@@ -753,4 +834,15 @@ function readSelectedResourceNode(
   const selectedId = selectedItems[0]
   if (selectedId === undefined) return null
   return itemData.get(selectedId) ?? null
+}
+
+function readInsertionParentId(
+  itemData: ReadonlyMap<string, AdminResourceTreeNode>,
+  selectedItems: readonly string[]
+): string | null {
+  const selectedNode = readSelectedResourceNode(itemData, selectedItems)
+
+  return selectedNode?.kind === "folder"
+    ? selectedNode.id
+    : (selectedNode?.parentId ?? null)
 }

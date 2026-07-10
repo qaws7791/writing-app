@@ -227,6 +227,17 @@ describe("어드민 API 자료실 트리 route", () => {
     expect(importResponse.status).toBe(200)
     await expect(importResponse.json()).resolves.toEqual({ document, mutation })
 
+    const saveResponse = await app.request("/resources/documents/document-1", {
+      body: JSON.stringify({
+        expectedContentRevision: 2,
+        markdown: "실시간 공동 편집 본문",
+      }),
+      headers,
+      method: "PUT",
+    })
+    expect(saveResponse.status).toBe(200)
+    await expect(saveResponse.json()).resolves.toEqual(document)
+
     const exportResponse = await app.request(
       "/resources/documents/document-1/export",
       { headers }
@@ -283,6 +294,39 @@ describe("어드민 API 자료실 트리 route", () => {
       code: "STALE_REVISION",
     })
   })
+
+  it("stale content revision은 구조 충돌과 구분한 409로 매핑한다", async () => {
+    const app = createApp(
+      createTestAdminApiDependencies({
+        adminServices: {
+          resourceLibrary: {
+            documents: {
+              async saveDocument() {
+                return {
+                  actualContentRevision: 3,
+                  kind: "stale-content-revision",
+                }
+              },
+            },
+          },
+        },
+      })
+    )
+
+    const response = await app.request("/resources/documents/document-1", {
+      body: JSON.stringify({
+        expectedContentRevision: 2,
+        markdown: "충돌 본문",
+      }),
+      headers,
+      method: "PUT",
+    })
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toMatchObject({
+      code: "STALE_CONTENT_REVISION",
+    })
+  })
 })
 
 function createDependencies() {
@@ -314,6 +358,16 @@ function createDependencies() {
               parentId: "folder-1",
             })
             return { kind: "ok", value: { document, mutation } }
+          },
+          async saveDocument(input) {
+            expect(input).toEqual({
+              actorId: "admin-1",
+              documentId: "document-1",
+              expectedContentRevision: 2,
+              markdown: "실시간 공동 편집 본문",
+              now: testAdminNow,
+            })
+            return { kind: "ok", value: document }
           },
         },
         search: {

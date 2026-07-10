@@ -181,6 +181,10 @@ export function readResourceDocumentMarkdown(
     return markdownValidation
   }
 
+  if (markdown === "") {
+    return { markdown, status: "valid" }
+  }
+
   const restoredEditor = createResourceDocumentEditor()
 
   restoredEditor.update(() => $importResourceMarkdownAst(parsedMarkdown), {

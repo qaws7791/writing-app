@@ -43,6 +43,11 @@ export const adminImportResourceDocumentResultDtoSchema = z.object({
   mutation: adminResourceNodeMutationDtoSchema,
 })
 
+export const adminSaveResourceDocumentRequestSchema = z.object({
+  expectedContentRevision: adminResourceRevisionSchema,
+  markdown: z.string().max(adminResourceMarkdownMaxLength),
+})
+
 export type AdminImportResourceDocumentRequest = z.infer<
   typeof adminImportResourceDocumentRequestSchema
 >
@@ -51,4 +56,7 @@ export type AdminImportResourceDocumentResultDto = z.infer<
 >
 export type AdminResourceDocumentDto = z.infer<
   typeof adminResourceDocumentDtoSchema
+>
+export type AdminSaveResourceDocumentRequest = z.infer<
+  typeof adminSaveResourceDocumentRequestSchema
 >

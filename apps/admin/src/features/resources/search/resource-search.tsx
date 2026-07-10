@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react"
 import { FileTextIcon, FolderIcon, SearchIcon } from "lucide-react"
 
-import type { ResourceLibraryApi } from "@/features/resources/resource-library-api"
+import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import type {
   AdminResourceSearchItem,
   AdminResourceTreeScope,
@@ -18,7 +18,7 @@ export function ResourceSearch({
   onSelect,
   scope,
 }: {
-  readonly api: ResourceLibraryApi
+  readonly api: ResourceTreeApi
   readonly onSelect: (item: AdminResourceSearchItem) => void
   readonly scope: AdminResourceTreeScope
 }) {

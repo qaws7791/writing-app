@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { ResourceLibraryApi } from "@/features/resources/resource-library-api"
+import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import { ResourceTree } from "@/features/resources/tree/resource-tree"
 import type { AdminResourceTreeNode } from "@/lib/api/admin-api"
 
@@ -144,21 +144,109 @@ describe("자료 트리", () => {
     })
     expect(screen.getByText("새 문서", { selector: "span" })).toBeVisible()
   })
+
+  it("선택한 폴더에 Markdown 단일 파일을 가져오고 문서를 연다", async () => {
+    const api = createResourceLibraryApi()
+    vi.mocked(api.getResourceTree).mockResolvedValue({
+      status: "ok",
+      value: { nodes: [], revision: 2 },
+    })
+    vi.mocked(api.importResourceDocument).mockResolvedValue({
+      status: "ok",
+      value: {
+        document: {
+          contentMarkdown: "가져온 본문",
+          contentRevision: 0,
+          createdAt: "2026-07-10T00:00:00.000Z",
+          createdBy: {
+            email: "admin@example.com",
+            id: "admin-1",
+            name: "관리자",
+          },
+          id: "document-import",
+          name: "가져온 문서",
+          parentId: folder.id,
+          path: [{ id: folder.id, name: folder.name }],
+          status: "active",
+          updatedAt: "2026-07-10T00:00:00.000Z",
+          updatedBy: {
+            email: "admin@example.com",
+            id: "admin-1",
+            name: "관리자",
+          },
+        },
+        mutation: {
+          affectedParentIds: [folder.id],
+          node: {
+            hasChildren: false,
+            id: "document-import",
+            kind: "document",
+            name: "가져온 문서",
+            parentId: folder.id,
+            sortOrder: 0,
+            status: "active",
+          },
+          revision: 3,
+        },
+      },
+    })
+    const { container } = render(
+      <ResourceTree
+        adminId="admin-3"
+        api={api}
+        initialTree={{ status: "ok", value: { nodes: [folder], revision: 1 } }}
+        onDocumentOpen={vi.fn()}
+        scope="active"
+      />
+    )
+
+    fireEvent.click(await screen.findByText("운영 가이드"))
+    await waitFor(() => {
+      expect(api.getResourceTree).toHaveBeenCalledWith({
+        parentId: folder.id,
+        scope: "active",
+      })
+    })
+    const input =
+      container.querySelector<HTMLInputElement>('input[type="file"]')
+
+    if (input === null) {
+      throw new Error("Markdown 파일 입력을 찾지 못했습니다.")
+    }
+
+    fireEvent.change(input, {
+      target: {
+        files: [new File(["# 가져온 문서\n\n가져온 본문"], "가져오기.md")],
+      },
+    })
+
+    await waitFor(() => {
+      expect(api.importResourceDocument).toHaveBeenCalledWith({
+        expectedRevision: 2,
+        fileName: "가져오기.md",
+        markdown: "# 가져온 문서\n\n가져온 본문",
+        parentId: folder.id,
+      })
+      expect(pushMock).toHaveBeenCalledWith("/resources/document-import")
+    })
+    expect(screen.getByText("가져온 문서", { selector: "span" })).toBeVisible()
+  })
 })
 
 const expandedStorageKey =
   "writing-app:resource-library:expanded:v1:admin-1:active"
 
-function createResourceLibraryApi(): ResourceLibraryApi {
+function createResourceLibraryApi(): ResourceTreeApi {
   return {
     createResourceDocumentNode:
-      vi.fn<ResourceLibraryApi["createResourceDocumentNode"]>(),
-    createResourceFolder: vi.fn<ResourceLibraryApi["createResourceFolder"]>(),
-    getResourceTree: vi.fn<ResourceLibraryApi["getResourceTree"]>(),
-    moveResourceNode: vi.fn<ResourceLibraryApi["moveResourceNode"]>(),
-    renameResourceNode: vi.fn<ResourceLibraryApi["renameResourceNode"]>(),
-    restoreResourceNode: vi.fn<ResourceLibraryApi["restoreResourceNode"]>(),
-    searchResources: vi.fn<ResourceLibraryApi["searchResources"]>(),
-    trashResourceNode: vi.fn<ResourceLibraryApi["trashResourceNode"]>(),
+      vi.fn<ResourceTreeApi["createResourceDocumentNode"]>(),
+    createResourceFolder: vi.fn<ResourceTreeApi["createResourceFolder"]>(),
+    getResourceTree: vi.fn<ResourceTreeApi["getResourceTree"]>(),
+    importResourceDocument: vi.fn<ResourceTreeApi["importResourceDocument"]>(),
+    moveResourceNode: vi.fn<ResourceTreeApi["moveResourceNode"]>(),
+    renameResourceNode: vi.fn<ResourceTreeApi["renameResourceNode"]>(),
+    restoreResourceNode: vi.fn<ResourceTreeApi["restoreResourceNode"]>(),
+    searchResources: vi.fn<ResourceTreeApi["searchResources"]>(),
+    trashResourceNode: vi.fn<ResourceTreeApi["trashResourceNode"]>(),
   }
 }

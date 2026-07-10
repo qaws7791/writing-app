@@ -397,6 +397,15 @@ export function createHttpAdminApi({
         toModel: toAdminResourceRestoreResult,
       })
     },
+    saveResourceLibraryDocument(documentId, input) {
+      return requestAdminJson(client, {
+        body: input,
+        method: "PUT",
+        path: `/resources/documents/${documentId}`,
+        schema: adminResourceDocumentDtoSchema,
+        toModel: toAdminResourceLibraryDocument,
+      })
+    },
     saveLegalSettings(input) {
       return requestAdminJson(client, {
         body: input,

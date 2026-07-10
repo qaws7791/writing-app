@@ -10,6 +10,7 @@ type ResourceDocumentRejection =
   | ResourceTreeCommandRejection
   | { readonly kind: "invalid-file-name" }
   | { readonly kind: "invalid-markdown" }
+  | { readonly kind: "stale-content-revision" }
 
 export function throwResourceLibraryRejection(
   rejection: ResourceDocumentRejection
@@ -30,5 +31,7 @@ export function throwResourceLibraryRejection(
       throw notFoundAdminError()
     case "stale-revision":
       throw resourceLibraryConflictAdminError("STALE_REVISION")
+    case "stale-content-revision":
+      throw resourceLibraryConflictAdminError("STALE_CONTENT_REVISION")
   }
 }
