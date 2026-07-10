@@ -97,6 +97,9 @@ writing-app
 /users
 /users/[id]
 /analytics
+/resources
+/resources/[id]
+/resources/trash
 /settings
 /debug/steps
 ```
@@ -131,6 +134,18 @@ writing-app
 
 분석이다. 가입/완료 추이, 연속 학습일 분포, 레슨별 완료율과 이탈률을 보여준다.
 
+### `/resources`
+
+관리자 자료실이다. 왼쪽 자료 트리, 전역 검색, 새 폴더·문서 생성, Markdown 가져오기를 제공한다. 자료실 공동 편집 고도화가 완료되기 전에는 현재 목록 화면을 유지한다.
+
+### `/resources/[id]`
+
+자료 문서 편집이다. 공통 자료 트리와 breadcrumb, 제목, 동기화 상태, Lexical GFM 편집기를 표시한다.
+
+### `/resources/trash`
+
+자료실 휴지통이다. 직접 휴지통으로 이동한 최상위 폴더와 문서를 표시하고 전체 하위 트리 복원을 제공한다. 이 라우트는 자료실 공동 편집 고도화 완료 시 활성화한다.
+
 ### `/settings`
 
 운영 설정이다. 배너, 공지, 약관, 개인정보처리방침, 콘텐츠 초기화를 관리한다.
@@ -149,6 +164,7 @@ writing-app
   콘텐츠 관리 -> /courses
   사용자 관리 -> /users
   분석 -> /analytics
+  자료실 -> /resources
   운영 설정 -> /settings
 ```
 
@@ -181,6 +197,9 @@ writing-app
   사용자 관리 /users
     사용자 상세 /users/[id]
   분석 /analytics
+  자료실 /resources
+    자료 편집 /resources/[id]
+    휴지통 /resources/trash
   운영 설정 /settings
   내부 QA /debug/steps
 ```

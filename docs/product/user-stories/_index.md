@@ -38,11 +38,12 @@
 
 ## 어드민
 
-| ID                                                     | 제목                  | 주 사용자 | 관련 요구사항 | 관련 화면                                             | 상태 |
-| ------------------------------------------------------ | --------------------- | --------- | ------------- | ----------------------------------------------------- | ---- |
-| [US-ADM-1](./admin/us-adm-1-admin-login.md)            | 어드민 로그인         | 운영자    | `REQ-ADM-1`   | `SCR-101`                                             | 기준 |
-| [US-ADM-2](./admin/us-adm-2-view-product-status.md)    | 제품 상태 조회        | 운영자    | `REQ-ADM-2`   | `SCR-102`, `SCR-107`                                  | 기준 |
-| [US-ADM-3](./admin/us-adm-3-operate-content.md)        | 콘텐츠 운영           | 운영자    | `REQ-ADM-3`   | `SCR-103`, `SCR-104`, `SCR-109`                       | 기준 |
-| [US-ADM-4](./admin/us-adm-4-operate-users.md)          | 사용자 운영           | 운영자    | `REQ-ADM-4`   | `SCR-105`, `SCR-106`                                  | 기준 |
-| [US-ADM-5](./admin/us-adm-5-manage-settings.md)        | 운영 설정 관리        | 운영자    | `REQ-ADM-5`   | `SCR-108`                                             | 기준 |
-| [US-ADM-6](./admin/us-adm-6-navigate-admin-console.md) | 어드민 주요 메뉴 이동 | 운영자    | `REQ-ADM-6`   | `SCR-102`, `SCR-103`, `SCR-105`, `SCR-107`, `SCR-108` | 기준 |
+| ID                                                       | 제목                  | 주 사용자 | 관련 요구사항 | 관련 화면                                             | 상태 |
+| -------------------------------------------------------- | --------------------- | --------- | ------------- | ----------------------------------------------------- | ---- |
+| [US-ADM-1](./admin/us-adm-1-admin-login.md)              | 어드민 로그인         | 운영자    | `REQ-ADM-1`   | `SCR-101`                                             | 기준 |
+| [US-ADM-2](./admin/us-adm-2-view-product-status.md)      | 제품 상태 조회        | 운영자    | `REQ-ADM-2`   | `SCR-102`, `SCR-107`                                  | 기준 |
+| [US-ADM-3](./admin/us-adm-3-operate-content.md)          | 콘텐츠 운영           | 운영자    | `REQ-ADM-3`   | `SCR-103`, `SCR-104`, `SCR-109`                       | 기준 |
+| [US-ADM-4](./admin/us-adm-4-operate-users.md)            | 사용자 운영           | 운영자    | `REQ-ADM-4`   | `SCR-105`, `SCR-106`                                  | 기준 |
+| [US-ADM-5](./admin/us-adm-5-manage-settings.md)          | 운영 설정 관리        | 운영자    | `REQ-ADM-5`   | `SCR-108`                                             | 기준 |
+| [US-ADM-6](./admin/us-adm-6-navigate-admin-console.md)   | 어드민 주요 메뉴 이동 | 운영자    | `REQ-ADM-6`   | `SCR-102`, `SCR-103`, `SCR-105`, `SCR-107`, `SCR-108` | 기준 |
+| [US-ADM-7](./admin/us-adm-7-collaborate-on-resources.md) | 자료실 공동 편집      | 운영자    | `REQ-ADM-7`   | `SCR-110`                                             | 계획 |
