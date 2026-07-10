@@ -32,6 +32,8 @@
     "./modules/learner-api/api": "./src/modules/learner-api/api/index.ts",
     "./modules/learning": "./src/modules/learning/index.ts",
     "./modules/learning/api": "./src/modules/learning/api/index.ts",
+    "./modules/resource-library": "./src/modules/resource-library/index.ts",
+    "./modules/resource-library/api": "./src/modules/resource-library/api/index.ts",
     "./modules/*": "./src/modules/*.ts",
     "./result": "./src/shared/result/index.ts",
     "./shared/errors": "./src/shared/errors/index.ts",

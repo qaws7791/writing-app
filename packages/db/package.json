@@ -16,6 +16,7 @@
   },
   "scripts": {
     "db:migrate": "bun src/migrations/migrate.ts",
+    "db:migrate:resource-library": "bun src/migrations/resource-library.migration.ts",
     "db:reset": "bun src/scripts/reset-database.ts",
     "db:seed": "bun src/seeds/seed.ts",
     "lint": "oxlint .",

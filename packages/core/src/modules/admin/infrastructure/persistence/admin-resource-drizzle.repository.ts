@@ -19,7 +19,8 @@ import { contentStatuses } from "@workspace/core/shared/kernel/status"
 import { and, count, desc, eq, or, sql } from "drizzle-orm"
 
 import type { WritingAppDatabase } from "@workspace/db/client"
-import { adminAuthUsers, adminResourceDocuments } from "@workspace/db/schema"
+import { adminAuthUsers } from "@workspace/db/schema"
+import { legacyAdminResourceDocuments as adminResourceDocuments } from "@workspace/db/schema/admin.schema"
 import { createPageBounds } from "@workspace/core/modules/admin/infrastructure/persistence/admin-repository-shared"
 
 type ResourceDocumentRow = typeof adminResourceDocuments.$inferSelect

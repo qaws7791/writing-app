@@ -16,20 +16,23 @@ export const adminSettings = sqliteTable("admin_settings", {
   value: text("value").notNull(),
 })
 
-export const adminResourceDocuments = sqliteTable("admin_resource_documents", {
-  authorId: text("author_id")
-    .notNull()
-    .references(() => adminAuthUsers.id, { onDelete: "cascade" }),
-  contentJson: text("content_json").notNull(),
-  createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-  excerpt: text("excerpt").notNull(),
-  id: text("id").primaryKey().notNull(),
-  status: text("status", { enum: contentStatusValues })
-    .notNull()
-    .default(contentStatuses.active),
-  title: text("title").notNull(),
-  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
-})
+export const legacyAdminResourceDocuments = sqliteTable(
+  "admin_resource_documents",
+  {
+    authorId: text("author_id")
+      .notNull()
+      .references(() => adminAuthUsers.id, { onDelete: "cascade" }),
+    contentJson: text("content_json").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    excerpt: text("excerpt").notNull(),
+    id: text("id").primaryKey().notNull(),
+    status: text("status", { enum: contentStatusValues })
+      .notNull()
+      .default(contentStatuses.active),
+    title: text("title").notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+  }
+)
 
 export const adminAiChatConversations = sqliteTable(
   "admin_ai_chat_conversations",

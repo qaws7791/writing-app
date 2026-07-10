@@ -86,7 +86,7 @@ flowchart LR
 
 1. 명시적 DB migration에서 기존 `admin_resource_documents`의 `content_json` 컬럼을 감지한다.
 2. 하나의 SQLite 트랜잭션에서 기존 자료 table을 삭제하고 새 table·index·FTS5 table을 만든다.
-3. fresh database용 baseline SQL과 기존 database 보정 경로를 같은 최종 schema로 맞춘다.
+3. 기존 화면이 남아 있는 내부 구현 단계에서는 fresh database에 baseline과 자료실 migration을 순서대로 적용한다. 7단계 일괄 전환에서 legacy 코드 삭제와 함께 baseline 자체를 같은 최종 schema로 합친다.
 4. migration은 재실행해도 새 자료를 다시 삭제하지 않도록 schema 판별을 먼저 수행한다.
 5. 서버 시작은 migration을 실행하지 않는다. 배포 전 기존 SQLite 파일을 백업하고 명시 명령으로 실행한다.
 
@@ -221,10 +221,20 @@ apps/admin/src/features/resources/
 
 ### 1. DB와 domain 전환
 
+상태: 완료
+
 - legacy 자료 table을 교체하는 idempotent migration을 추가한다.
 - unified node, document, collaboration, audit, tree state, FTS schema를 추가한다.
 - branded resource node/document/folder ID와 discriminated union contract를 만든다.
 - 이름 정규화, unique suffix, cycle 검증, 정렬 재번호, 휴지통 이동·복원 정책을 순수 함수와 repository integration test로 고정한다.
+
+검증 결과:
+
+- 기존 `content_json` schema를 판별해 자료를 폐기하고 unified node, Markdown document, Yjs collaboration, audit, tree revision, FTS5 schema를 한 SQLite 트랜잭션에서 생성하는 명시적 migration을 추가했다. 최종 schema 재실행은 새 자료를 보존하고 알 수 없는 변형 schema는 삭제하지 않고 거부한다.
+- kind, status, 활성 형제 이름, 폴더 부모, 문서 본문 소유, 이름·본문 길이, 휴지통 상태, revision, 감사 event·JSON을 DB 제약과 trigger로 검증한다. 활성 자료의 이름과 Markdown 일반 텍스트 검색을 위한 FTS5 table을 생성한다.
+- folder, document, audit event ID를 brand type으로 분리하고 폴더·문서 node를 discriminated union으로 정의했다. NFC·공백·대소문자 이름 정규화, grapheme을 자르지 않는 숫자 접미사, 수동 충돌 거부, 순환 검증, 연속 정렬, 연결된 하위 트리 휴지통·복원을 순수 정책으로 고정했다.
+- 트리 repository는 `BEGIN IMMEDIATE` transaction과 expected revision으로 구조 명령을 직렬화한다. 생성, 이름 변경, 부모 이동, 같은 부모 재정렬, 재귀 휴지통 이동·복원, 감사 event가 원자적으로 반영되고 감사 저장 실패 시 node와 revision도 함께 롤백된다.
+- 1,100단계 폴더 fixture에서 애플리케이션 깊이 제한 없이 recursive CTE 휴지통 이동·복원을 통과했다. 도메인·repository·migration 계약과 core·DB package 전체 test, lint, typecheck를 통과했다.
 
 ### 2. REST tree와 자료 명령
 
