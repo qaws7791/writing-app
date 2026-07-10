@@ -92,10 +92,25 @@ const auth = createAdminAuth({
   webOrigin: env.adminOrigin,
 })
 const sessionResolver = createAdminSessionResolver(auth)
+const resourceEvents = createResourceEventsHub({
+  async readDocumentStateVersion(documentId) {
+    const prepared = await resourceCollaborationService.prepare({
+      documentId: toResourceDocumentId(documentId),
+    })
+
+    return prepared.kind === "ok" ? prepared.value.stateVersion : null
+  },
+})
 const collaborationAdapter = createYWebSocketBunAdapter({
   onFlush: createResourceCollaborationFlushHandler({
     collaborationService: resourceCollaborationService,
     now: () => new Date(),
+    onCommitted(commit) {
+      resourceEvents.publishDocumentVersion({
+        ...commit,
+        type: "resource-document-version-advanced",
+      })
+    },
     onFailure(failure) {
       logger.error(failure, "resource.collaboration.flush.failed")
     },
@@ -114,7 +129,6 @@ const collaborationUpgradeHandler = createResourceCollaborationUpgradeHandler({
 })
 const resourceCollaborationRooms =
   createResourceCollaborationRooms(collaborationAdapter)
-const resourceEvents = createResourceEventsHub()
 const eventsUpgradeHandler = createResourceEventsUpgradeHandler({
   adminOrigin: env.adminOrigin,
   onAuthorizationRejected(reason) {

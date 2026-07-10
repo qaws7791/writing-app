@@ -6,6 +6,29 @@ import type { ResourceCollaborationUseCase } from "@workspace/core/modules/resou
 const now = new Date("2026-07-10T00:00:00.000Z")
 
 describe("자료 문서 공동 편집 flush 계측", () => {
+  it("본문 저장 commit 뒤 새 version을 실시간 Hub에 알린다", async () => {
+    const service = createService()
+    const onCommitted = vi.fn()
+    vi.mocked(service.flush).mockResolvedValue({
+      kind: "ok",
+      value: { contentRevision: 6, stateVersion: 4 },
+    })
+
+    await expect(
+      createResourceCollaborationFlushHandler({
+        collaborationService: service,
+        now: () => now,
+        onCommitted,
+        onFailure: vi.fn(),
+      })(createFlushInput())
+    ).resolves.toEqual({ kind: "ok", stateVersion: 4 })
+    expect(onCommitted).toHaveBeenCalledWith({
+      contentRevision: 6,
+      documentId: "document-1",
+      stateVersion: 4,
+    })
+  })
+
   it("Markdown projection 실패를 기록하고 room 오류로 반환한다", async () => {
     const service = createService()
     const onFailure = vi.fn()
@@ -19,6 +42,7 @@ describe("자료 문서 공동 편집 flush 계측", () => {
       createResourceCollaborationFlushHandler({
         collaborationService: service,
         now: () => now,
+        onCommitted: vi.fn(),
         onFailure,
       })(createFlushInput())
     ).resolves.toEqual({ kind: "error" })
@@ -44,6 +68,7 @@ describe("자료 문서 공동 편집 flush 계측", () => {
       createResourceCollaborationFlushHandler({
         collaborationService: service,
         now: () => now,
+        onCommitted: vi.fn(),
         onFailure,
       })(createFlushInput())
     ).resolves.toEqual({ kind: "error" })

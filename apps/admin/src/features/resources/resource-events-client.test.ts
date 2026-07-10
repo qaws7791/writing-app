@@ -40,6 +40,95 @@ describe("자료실 실시간 이벤트 revision", () => {
     subscription.disconnect()
   })
 
+  it("재연결 뒤 마지막 활성 문서를 같은 연결에서 다시 구독한다", () => {
+    vi.useFakeTimers()
+    vi.stubGlobal("WebSocket", TestResourceEventsSocket)
+    const subscription = connectBrowserResourceEvents({
+      onConnectionChange: vi.fn(),
+      onError: vi.fn(),
+      onEvent: vi.fn(),
+      serverUrl: "ws://admin-api.test/resources/events",
+    })
+    const first = TestResourceEventsSocket.instances[0]
+
+    subscription.subscribeDocument({
+      documentId: "document-1",
+      knownStateVersion: 0,
+    })
+    first?.dispatchEvent(new Event("open"))
+    expect(first?.sentMessages).toEqual([
+      JSON.stringify({
+        documentId: "document-1",
+        knownStateVersion: 0,
+        type: "resource-document-subscribe",
+      }),
+    ])
+
+    first?.dispatchEvent(new Event("close"))
+    vi.advanceTimersByTime(250)
+    const second = TestResourceEventsSocket.instances[1]
+    second?.dispatchEvent(new Event("open"))
+
+    expect(second?.sentMessages).toEqual(first?.sentMessages)
+    subscription.disconnect()
+  })
+
+  it("열린 작업 공간 연결에서 heartbeat를 주기적으로 보낸다", () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date("2026-07-11T05:38:00.000Z"))
+    vi.stubGlobal("WebSocket", TestResourceEventsSocket)
+    const subscription = connectBrowserResourceEvents({
+      onConnectionChange: vi.fn(),
+      onError: vi.fn(),
+      onEvent: vi.fn(),
+      serverUrl: "ws://admin-api.test/resources/events",
+    })
+    const socket = TestResourceEventsSocket.instances[0]
+
+    socket?.dispatchEvent(new Event("open"))
+    vi.advanceTimersByTime(15_000)
+
+    expect(socket?.sentMessages.map((message) => JSON.parse(message))).toEqual([
+      {
+        sentAt: "2026-07-11T05:38:15.000Z",
+        type: "resource-realtime-heartbeat",
+      },
+    ])
+    subscription.disconnect()
+  })
+
+  it("문서 구독 확인을 트리 사건 오류로 처리하지 않는다", () => {
+    vi.stubGlobal("WebSocket", TestResourceEventsSocket)
+    const onError = vi.fn()
+    const onDocumentEvent = vi.fn()
+    const subscription = connectBrowserResourceEvents({
+      onConnectionChange: vi.fn(),
+      onDocumentEvent,
+      onError,
+      onEvent: vi.fn(),
+      serverUrl: "ws://admin-api.test/resources/events",
+    })
+    const socket = TestResourceEventsSocket.instances[0]
+
+    socket?.dispatchEvent(
+      new MessageEvent("message", {
+        data: JSON.stringify({
+          documentId: "document-1",
+          stateVersion: 3,
+          type: "resource-document-subscription-confirmed",
+        }),
+      })
+    )
+
+    expect(onDocumentEvent).toHaveBeenCalledWith({
+      documentId: "document-1",
+      stateVersion: 3,
+      type: "resource-document-subscription-confirmed",
+    })
+    expect(onError).not.toHaveBeenCalled()
+    subscription.disconnect()
+  })
+
   it("revision gap을 브라우저 performance entry로 기록한다", () => {
     performance.clearMarks("resource-tree.revision-gap")
 
@@ -69,6 +158,7 @@ describe("자료실 실시간 이벤트 revision", () => {
 
 class TestResourceEventsSocket extends EventTarget {
   static readonly instances: TestResourceEventsSocket[] = []
+  readonly sentMessages: string[] = []
 
   constructor(readonly url: string) {
     super()
@@ -76,4 +166,8 @@ class TestResourceEventsSocket extends EventTarget {
   }
 
   close(): void {}
+
+  send(message: string): void {
+    this.sentMessages.push(message)
+  }
 }

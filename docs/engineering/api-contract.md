@@ -62,46 +62,48 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 
 현재 route:
 
-| 메서드     | 경로                                       | 권한        | 설명                   |
-| ---------- | ------------------------------------------ | ----------- | ---------------------- |
-| `GET`      | `/health`                                  | 없음        | API 상태               |
-| `GET`      | `/openapi`                                 | 없음        | OpenAPI 3.1 문서       |
-| `GET/POST` | `/api/auth/*`                              | Better Auth | 관리자 인증 handler    |
-| `GET`      | `/session`                                 | 관리자      | 현재 관리자 세션       |
-| `GET`      | `/dashboard`                               | 관리자      | 대시보드               |
-| `GET`      | `/analytics`                               | 관리자      | 분석 요약              |
-| `GET`      | `/analytics/lessons`                       | 관리자      | 레슨별 분석            |
-| `GET`      | `/courses`                                 | 관리자      | 코스 목록              |
-| `POST`     | `/courses`                                 | owner       | 코스 생성              |
-| `DELETE`   | `/courses/{courseId}`                      | owner       | 코스 보관              |
-| `GET`      | `/courses/{courseId}/editor`               | 관리자      | 코스 편집 문서 조회    |
-| `GET`      | `/users`                                   | 관리자      | 사용자 목록            |
-| `GET`      | `/users/{userId}`                          | 관리자      | 사용자 상세            |
-| `PATCH`    | `/users/{userId}/status`                   | owner       | 사용자 상태 변경       |
-| `DELETE`   | `/users/{userId}`                          | owner       | 사용자 삭제 상태 전환  |
-| `GET`      | `/settings`                                | 관리자      | 설정 조회              |
-| `PUT`      | `/settings/notice`                         | owner       | 공지 설정 저장         |
-| `PUT`      | `/settings/legal`                          | owner       | 법적 문서 저장         |
-| `POST`     | `/settings/content-reset`                  | owner       | 콘텐츠 초기화          |
-| `GET`      | `/resources/tree`                          | 관리자      | 자료 트리 지연 조회    |
-| `POST`     | `/resources/folders`                       | 관리자      | 자료 폴더 생성         |
-| `POST`     | `/resources/documents`                     | 관리자      | 빈 자료 문서 생성      |
-| `GET`      | `/resources/documents/{documentId}`        | 관리자      | Markdown 문서 조회     |
-| `POST`     | `/resources/documents/import`              | 관리자      | Markdown 단일 가져오기 |
-| `GET`      | `/resources/documents/{documentId}/export` | 관리자      | Markdown 문서 내보내기 |
-| `GET`      | `/resources/search`                        | 관리자      | 제목·본문 FTS 검색     |
-| `GET`      | `/resources/nodes/{nodeId}/active-editors` | 관리자      | 하위 활성 편집자 조회  |
-| `PATCH`    | `/resources/nodes/{nodeId}/name`           | 관리자      | 자료 항목 이름 변경    |
-| `PATCH`    | `/resources/nodes/{nodeId}/move`           | 관리자      | 자료 항목 이동·정렬    |
-| `POST`     | `/resources/nodes/{nodeId}/trash`          | 관리자      | 하위 트리 휴지통 이동  |
-| `POST`     | `/resources/nodes/{nodeId}/restore`        | 관리자      | 하위 트리 복원         |
-| WebSocket  | `/resources/collaboration/{documentId}`    | 관리자      | Yjs 본문 공동 편집     |
-| WebSocket  | `/resources/events`                        | 관리자      | 자료 트리 변경 수신    |
-| `GET`      | `/ai-chat/conversations`                   | 관리자      | AI 대화 목록           |
-| `GET`      | `/ai-chat/conversations/{conversationId}`  | 관리자      | AI 대화 상세           |
-| `POST`     | `/ai-chat/messages/stream`                 | 관리자      | AI 응답 stream         |
+| 메서드     | 경로                                       | 권한        | 설명                     |
+| ---------- | ------------------------------------------ | ----------- | ------------------------ |
+| `GET`      | `/health`                                  | 없음        | API 상태                 |
+| `GET`      | `/openapi`                                 | 없음        | OpenAPI 3.1 문서         |
+| `GET/POST` | `/api/auth/*`                              | Better Auth | 관리자 인증 handler      |
+| `GET`      | `/session`                                 | 관리자      | 현재 관리자 세션         |
+| `GET`      | `/dashboard`                               | 관리자      | 대시보드                 |
+| `GET`      | `/analytics`                               | 관리자      | 분석 요약                |
+| `GET`      | `/analytics/lessons`                       | 관리자      | 레슨별 분석              |
+| `GET`      | `/courses`                                 | 관리자      | 코스 목록                |
+| `POST`     | `/courses`                                 | owner       | 코스 생성                |
+| `DELETE`   | `/courses/{courseId}`                      | owner       | 코스 보관                |
+| `GET`      | `/courses/{courseId}/editor`               | 관리자      | 코스 편집 문서 조회      |
+| `GET`      | `/users`                                   | 관리자      | 사용자 목록              |
+| `GET`      | `/users/{userId}`                          | 관리자      | 사용자 상세              |
+| `PATCH`    | `/users/{userId}/status`                   | owner       | 사용자 상태 변경         |
+| `DELETE`   | `/users/{userId}`                          | owner       | 사용자 삭제 상태 전환    |
+| `GET`      | `/settings`                                | 관리자      | 설정 조회                |
+| `PUT`      | `/settings/notice`                         | owner       | 공지 설정 저장           |
+| `PUT`      | `/settings/legal`                          | owner       | 법적 문서 저장           |
+| `POST`     | `/settings/content-reset`                  | owner       | 콘텐츠 초기화            |
+| `GET`      | `/resources/tree`                          | 관리자      | 자료 트리 지연 조회      |
+| `POST`     | `/resources/folders`                       | 관리자      | 자료 폴더 생성           |
+| `POST`     | `/resources/documents`                     | 관리자      | 빈 자료 문서 생성        |
+| `GET`      | `/resources/documents/{documentId}`        | 관리자      | Markdown 문서 조회       |
+| `POST`     | `/resources/documents/import`              | 관리자      | Markdown 단일 가져오기   |
+| `GET`      | `/resources/documents/{documentId}/export` | 관리자      | Markdown 문서 내보내기   |
+| `GET`      | `/resources/search`                        | 관리자      | 제목·본문 FTS 검색       |
+| `GET`      | `/resources/nodes/{nodeId}/active-editors` | 관리자      | 하위 활성 편집자 조회    |
+| `PATCH`    | `/resources/nodes/{nodeId}/name`           | 관리자      | 자료 항목 이름 변경      |
+| `PATCH`    | `/resources/nodes/{nodeId}/move`           | 관리자      | 자료 항목 이동·정렬      |
+| `POST`     | `/resources/nodes/{nodeId}/trash`          | 관리자      | 하위 트리 휴지통 이동    |
+| `POST`     | `/resources/nodes/{nodeId}/restore`        | 관리자      | 하위 트리 복원           |
+| WebSocket  | `/resources/collaboration/{documentId}`    | 관리자      | Yjs 본문 공동 편집       |
+| WebSocket  | `/resources/events`                        | 관리자      | 작업 공간 사건·문서 구독 |
+| `GET`      | `/ai-chat/conversations`                   | 관리자      | AI 대화 목록             |
+| `GET`      | `/ai-chat/conversations/{conversationId}`  | 관리자      | AI 대화 상세             |
+| `POST`     | `/ai-chat/messages/stream`                 | 관리자      | AI 응답 stream           |
 
 자료 본문 저장용 REST endpoint는 제공하지 않는다. 본문 변경은 공동 편집 WebSocket으로 전파하고 서버 room의 debounce·종료·내보내기·휴지통 이동 flush 경계에서 Markdown과 검색 색인으로 투영한다.
+
+`/resources/events`는 작업 공간 수명 동안 연결 하나를 유지한다. 클라이언트는 `resource-document-subscribe`, `resource-document-unsubscribe`, `resource-realtime-heartbeat` 메시지만 보낼 수 있다. 서버는 기존 트리·제목 사건과 함께 `resource-document-subscription-confirmed`, `resource-document-version-advanced`, `resource-document-invalidated`를 보낸다. 본문 Yjs update는 이 채널로 보내지 않으며 아직 `/resources/collaboration/{documentId}`를 사용한다. 연결당 활성 문서는 최대 하나이고 45초 heartbeat 만료 또는 socket 종료에서 구독을 제거한다.
 
 ## 인증 표면
 

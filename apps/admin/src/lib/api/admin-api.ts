@@ -281,6 +281,28 @@ export type AdminResourceEvent =
       readonly type: "resource-document-title-confirmed"
     }
 
+export type AdminResourceDocumentRealtimeEvent =
+  | {
+      readonly documentId: string
+      readonly stateVersion: number
+      readonly type: "resource-document-subscription-confirmed"
+    }
+  | {
+      readonly contentRevision: number
+      readonly documentId: string
+      readonly stateVersion: number
+      readonly type: "resource-document-version-advanced"
+    }
+  | {
+      readonly documentId: string
+      readonly reason: "archived" | "projection-failed"
+      readonly type: "resource-document-invalidated"
+    }
+
+export type AdminResourceRealtimeMessage =
+  | AdminResourceDocumentRealtimeEvent
+  | AdminResourceEvent
+
 export type AdminResourceNodeMutation = {
   readonly affectedParentIds: readonly (string | null)[]
   readonly node: AdminResourceTreeNode

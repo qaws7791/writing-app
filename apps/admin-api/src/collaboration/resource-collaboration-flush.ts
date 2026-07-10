@@ -30,6 +30,11 @@ export type ResourceCollaborationFlushHandler = (
 export function createResourceCollaborationFlushHandler(input: {
   readonly collaborationService: ResourceCollaborationUseCase
   readonly now: () => Date
+  readonly onCommitted: (commit: {
+    readonly contentRevision: number
+    readonly documentId: string
+    readonly stateVersion: number
+  }) => void
   readonly onFailure: (failure: ResourceCollaborationFlushFailure) => void
 }): ResourceCollaborationFlushHandler {
   return async (flush) => {
@@ -43,6 +48,11 @@ export function createResourceCollaborationFlushHandler(input: {
       })
 
       if (result.kind === "ok") {
+        input.onCommitted({
+          contentRevision: result.value.contentRevision,
+          documentId: flush.roomId,
+          stateVersion: result.value.stateVersion,
+        })
         return { kind: "ok", stateVersion: result.value.stateVersion }
       }
 

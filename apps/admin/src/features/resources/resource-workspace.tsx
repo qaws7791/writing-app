@@ -3,6 +3,7 @@
 import type { ReactNode } from "react"
 import {
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -13,6 +14,7 @@ import { MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react"
 
 import { createBrowserResourceLibraryApi } from "@/features/resources/resource-library-api"
 import { connectBrowserResourceEvents } from "@/features/resources/resource-events-client"
+import { createResourceWorkspaceRealtime } from "@/features/resources/resource-workspace-realtime"
 import {
   ResourceTree,
   type InitialResourceTreeState,
@@ -57,6 +59,14 @@ export function ResourceWorkspace({
     () => buildAdminApiWebSocketUrl(apiBaseUrl, "/resources/events"),
     [apiBaseUrl]
   )
+  const realtime = useMemo(
+    () =>
+      createResourceWorkspaceRealtime({
+        connectEvents: connectBrowserResourceEvents,
+        serverUrl: eventsServerUrl,
+      }),
+    [eventsServerUrl]
+  )
   const isDesktop = useSyncExternalStore<boolean | null>(
     subscribeDesktopMediaQuery,
     readDesktopMediaQuery,
@@ -82,6 +92,17 @@ export function ResourceWorkspace({
   const documentId = Array.isArray(params.documentId)
     ? params.documentId[0]
     : params.documentId
+  useEffect(() => {
+    realtime.start()
+    return () => {
+      realtime.dispose()
+    }
+  }, [realtime])
+  useEffect(() => {
+    realtime.setActiveDocument(
+      documentId === undefined ? null : { documentId, knownStateVersion: 0 }
+    )
+  }, [documentId, realtime])
   const scope: AdminResourceTreeScope =
     pathname === "/resources/trash" || searchParams.get("scope") === "trash"
       ? "trash"
@@ -91,7 +112,7 @@ export function ResourceWorkspace({
       <ResourceTree
         adminId={adminId}
         api={api}
-        connectEvents={connectBrowserResourceEvents}
+        connectEvents={realtime.connectTree}
         eventsServerUrl={eventsServerUrl}
         initialTree={
           scope === "active" && isInitialActiveTreeAvailable

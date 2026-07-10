@@ -333,12 +333,10 @@ describe("어드민 API 자료실 트리 route", () => {
             },
           },
         },
-        resourceCollaborationRooms: {
-          close: vi.fn(),
+        resourceEvents: {
           countActiveEditors,
-          flushDocument: vi.fn(),
-          lockDocuments: vi.fn(),
-          release: vi.fn(),
+          publish: vi.fn(),
+          publishDocumentInvalidated: vi.fn(),
         },
       })
     )
@@ -371,6 +369,7 @@ describe("어드민 API 자료실 트리 route", () => {
       },
     }))
     const publish = vi.fn()
+    const publishDocumentInvalidated = vi.fn()
     const close = vi.fn(() => 1)
     const app = createApp(
       createTestAdminApiDependencies({
@@ -393,7 +392,11 @@ describe("어드민 API 자료실 트리 route", () => {
           lockDocuments,
           release: vi.fn(),
         },
-        resourceEvents: { publish },
+        resourceEvents: {
+          countActiveEditors: vi.fn(),
+          publish,
+          publishDocumentInvalidated,
+        },
       })
     )
 
@@ -416,6 +419,11 @@ describe("어드민 API 자료실 트리 route", () => {
       nodeId: "document-1",
       revision: 5,
       type: "resource-tree-mutated",
+    })
+    expect(publishDocumentInvalidated).toHaveBeenCalledWith({
+      documentId: "document-1",
+      reason: "archived",
+      type: "resource-document-invalidated",
     })
     expect(lockDocuments.mock.invocationCallOrder[0]).toBeLessThan(
       trashNode.mock.invocationCallOrder[0] ?? 0

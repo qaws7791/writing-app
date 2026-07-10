@@ -404,7 +404,7 @@ describe("자료 트리", () => {
     ) => {
       reportConnection = input.onConnectionChange
       input.onConnectionChange(true)
-      return { disconnect() {} }
+      return createTestEventsSubscription()
     }
 
     render(
@@ -447,7 +447,7 @@ describe("자료 트리", () => {
     const api = createResourceLibraryApi()
     const connectDisconnectedEvents: ResourceEventsConnector = (input) => {
       input.onConnectionChange(false)
-      return { disconnect() {} }
+      return createTestEventsSubscription()
     }
 
     render(
@@ -496,7 +496,7 @@ function createResourceLibraryApi(): ResourceTreeApi {
 
 const connectTestResourceEvents: ResourceEventsConnector = (input) => {
   input.onConnectionChange(true)
-  return { disconnect() {} }
+  return createTestEventsSubscription()
 }
 
 function createResourceEventsFixture(): {
@@ -509,7 +509,7 @@ function createResourceEventsFixture(): {
     connector(input) {
       input.onConnectionChange(true)
       onEvent = input.onEvent
-      return { disconnect() {} }
+      return createTestEventsSubscription()
     },
     emit(event) {
       if (onEvent === null) {
@@ -518,5 +518,13 @@ function createResourceEventsFixture(): {
 
       onEvent(event)
     },
+  }
+}
+
+function createTestEventsSubscription() {
+  return {
+    disconnect() {},
+    subscribeDocument() {},
+    unsubscribeDocument() {},
   }
 }

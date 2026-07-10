@@ -71,7 +71,7 @@
 - AI 피드백 요청 수, 실패 수, provider unavailable 수
 - SQLite busy/lock 관련 실패 수
 - seed/migration 성공/실패
-- 자료실 room 수·client 수, flush·projection latency와 실패 수, snapshot 크기
+- 자료실 room 수·client 수, 작업 공간 연결 수·문서 구독 수·heartbeat 만료 수, flush·projection latency와 실패 수, snapshot 크기
 
 ## 알림 후보
 

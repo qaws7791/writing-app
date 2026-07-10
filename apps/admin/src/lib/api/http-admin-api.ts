@@ -36,6 +36,7 @@ import type {
   AdminResourceEvent,
   AdminResourceLibraryDocument,
   AdminResourceNodeMutation,
+  AdminResourceRealtimeMessage,
   AdminResourceRestoreResult,
   AdminResourceSearch,
   AdminResourceTrashResult,
@@ -94,6 +95,7 @@ import {
   adminResourceActiveEditorCountDtoSchema,
   adminResourceDocumentDtoSchema,
   adminResourceEventSchema,
+  adminResourceRealtimeServerMessageSchema,
   adminResourceNodeMutationDtoSchema,
   adminResourceRestoreResultDtoSchema,
   adminResourceSearchDtoSchema,
@@ -138,6 +140,41 @@ export function parseAdminResourceEvent(
         revision: result.data.revision,
         type: "resource-document-title-confirmed",
       }
+}
+
+export function parseAdminResourceRealtimeMessage(
+  value: unknown
+): AdminResourceRealtimeMessage | null {
+  const result = adminResourceRealtimeServerMessageSchema.safeParse(value)
+
+  if (!result.success) return null
+
+  const resourceEvent = parseAdminResourceEvent(result.data)
+  if (resourceEvent !== null) return resourceEvent
+
+  switch (result.data.type) {
+    case "resource-document-subscription-confirmed":
+      return {
+        documentId: result.data.documentId,
+        stateVersion: result.data.stateVersion,
+        type: result.data.type,
+      }
+    case "resource-document-version-advanced":
+      return {
+        contentRevision: result.data.contentRevision,
+        documentId: result.data.documentId,
+        stateVersion: result.data.stateVersion,
+        type: result.data.type,
+      }
+    case "resource-document-invalidated":
+      return {
+        documentId: result.data.documentId,
+        reason: result.data.reason,
+        type: result.data.type,
+      }
+    default:
+      return null
+  }
 }
 
 export type AdminFetchLike = HttpFetch

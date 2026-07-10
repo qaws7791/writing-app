@@ -16,7 +16,10 @@ import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import type { ResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
-import type { ResourceEventsPublisher } from "@/collaboration/resource-events-hub"
+import type {
+  ResourceEventsPublisher,
+  ResourceEventsWorkspace,
+} from "@/collaboration/resource-events-hub"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
 import { resourceCollaborationUnavailableAdminError } from "@/errors/admin-errors"
 import {
@@ -44,7 +47,7 @@ const resourceNodeParamsSchema = z.object({
 
 export type ResourceTreeRouteDependencies = {
   readonly collaborationRooms: ResourceCollaborationRooms
-  readonly events: ResourceEventsPublisher
+  readonly events: ResourceEventsWorkspace
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
   readonly treeService: ResourceTreeUseCase
@@ -66,7 +69,7 @@ export function createResourceTreeRoutes(
 }
 
 function createGetResourceActiveEditorCountRoute({
-  collaborationRooms,
+  events,
   sessionResolver,
   treeService,
 }: ResourceTreeRouteDependencies) {
@@ -92,7 +95,7 @@ function createGetResourceActiveEditorCountRoute({
 
     return context.json(
       {
-        activeEditorCount: collaborationRooms.countActiveEditors(documentIds),
+        activeEditorCount: events.countActiveEditors(documentIds),
       },
       200
     )
@@ -421,6 +424,13 @@ function createResourceRevisionRoute({
       ...result.value,
       nodeId: command.nodeId,
     })
+    for (const documentId of documentIds) {
+      events.publishDocumentInvalidated({
+        documentId,
+        reason: "archived",
+        type: "resource-document-invalidated",
+      })
+    }
     const closedActiveRoomCount = collaborationRooms.close(lockResult.lock)
 
     return context.json(

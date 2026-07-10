@@ -9,7 +9,7 @@ import { createTestAdminSessionResolver } from "@/routes/test-dependencies"
 const adminOrigin = "http://admin.example.test"
 
 describe("자료실 이벤트 WebSocket upgrade", () => {
-  it("관리자 세션을 인증하고 수신 전용 events 연결로 upgrade한다", async () => {
+  it("관리자 세션을 인증하고 작업 공간 events 연결로 upgrade한다", async () => {
     const upgrade = vi.fn<ResourceEventsUpgrade>(() => true)
     const request = createRequest()
     const response = await createHandler()(request, upgrade)

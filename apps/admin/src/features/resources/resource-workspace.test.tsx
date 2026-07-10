@@ -5,6 +5,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ResourceWorkspace } from "@/features/resources/resource-workspace"
 import { readAdminApiBaseUrl } from "@/runtime-config"
 
+const { connectEventsMock } = vi.hoisted(() => ({
+  connectEventsMock: vi.fn(() => ({
+    disconnect: vi.fn(),
+    subscribeDocument: vi.fn(),
+    unsubscribeDocument: vi.fn(),
+  })),
+}))
+
 vi.mock("next/navigation", () => ({
   useParams: () => ({}),
   usePathname: () => "/resources",
@@ -16,7 +24,7 @@ vi.mock("@/features/resources/resource-library-api", () => ({
 }))
 
 vi.mock("@/features/resources/resource-events-client", () => ({
-  connectBrowserResourceEvents: () => ({ disconnect() {} }),
+  connectBrowserResourceEvents: connectEventsMock,
 }))
 
 vi.mock("@/features/resources/tree/resource-tree", () => ({
@@ -85,6 +93,7 @@ const initialTree = {
 
 describe("자료실 반응형 shell 포커스", () => {
   beforeEach(() => {
+    connectEventsMock.mockClear()
     vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
       return window.setTimeout(() => {
         callback(performance.now())
@@ -140,6 +149,21 @@ describe("자료실 반응형 shell 포커스", () => {
     expect(
       await screen.findByRole("button", { name: "자료 트리 접기" })
     ).toHaveFocus()
+  })
+
+  it("자료 트리를 접고 펼쳐도 작업 공간 실시간 연결을 하나만 유지한다", async () => {
+    installMatchMedia(true)
+    renderWorkspace()
+
+    expect(connectEventsMock).toHaveBeenCalledTimes(1)
+    fireEvent.click(
+      await screen.findByRole("button", { name: "자료 트리 접기" })
+    )
+    fireEvent.click(
+      await screen.findByRole("button", { name: "자료 트리 펼치기" })
+    )
+
+    expect(connectEventsMock).toHaveBeenCalledTimes(1)
   })
 })
 
