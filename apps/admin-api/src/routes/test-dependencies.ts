@@ -8,7 +8,18 @@ import { readBearerToken } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env"
 
 type TestAdminApiServicesOverrides = {
-  readonly [TKey in keyof AdminApiServices]?: Partial<AdminApiServices[TKey]>
+  readonly [TKey in Exclude<
+    keyof AdminApiServices,
+    "resourceLibrary"
+  >]?: Partial<AdminApiServices[TKey]>
+} & {
+  readonly resourceLibrary?: {
+    readonly documents?: Partial<
+      AdminApiServices["resourceLibrary"]["documents"]
+    >
+    readonly search?: Partial<AdminApiServices["resourceLibrary"]["search"]>
+    readonly tree?: Partial<AdminApiServices["resourceLibrary"]["tree"]>
+  }
 }
 
 type TestAdminApiDependencyOverrides = {
@@ -59,6 +70,20 @@ export function createTestAdminApiDependencies(
       resources: {
         ...failingAdminServices.resources,
         ...overrides.adminServices?.resources,
+      },
+      resourceLibrary: {
+        documents: {
+          ...failingAdminServices.resourceLibrary.documents,
+          ...overrides.adminServices?.resourceLibrary?.documents,
+        },
+        search: {
+          ...failingAdminServices.resourceLibrary.search,
+          ...overrides.adminServices?.resourceLibrary?.search,
+        },
+        tree: {
+          ...failingAdminServices.resourceLibrary.tree,
+          ...overrides.adminServices?.resourceLibrary?.tree,
+        },
       },
       settings: {
         ...failingAdminServices.settings,
@@ -152,6 +177,53 @@ function createFailingAdminApiServices(): AdminApiServices {
     dashboard: {
       async getDashboard() {
         throwUnexpectedAdminServiceCall("dashboard.getDashboard")
+      },
+    },
+    resourceLibrary: {
+      documents: {
+        async exportDocument() {
+          throwUnexpectedAdminServiceCall(
+            "resourceLibrary.documents.exportDocument"
+          )
+        },
+        async getDocument() {
+          throwUnexpectedAdminServiceCall(
+            "resourceLibrary.documents.getDocument"
+          )
+        },
+        async importDocument() {
+          throwUnexpectedAdminServiceCall(
+            "resourceLibrary.documents.importDocument"
+          )
+        },
+      },
+      search: {
+        async search() {
+          throwUnexpectedAdminServiceCall("resourceLibrary.search.search")
+        },
+      },
+      tree: {
+        async createDocument() {
+          throwUnexpectedAdminServiceCall("resourceLibrary.tree.createDocument")
+        },
+        async createFolder() {
+          throwUnexpectedAdminServiceCall("resourceLibrary.tree.createFolder")
+        },
+        async getTree() {
+          throwUnexpectedAdminServiceCall("resourceLibrary.tree.getTree")
+        },
+        async moveNode() {
+          throwUnexpectedAdminServiceCall("resourceLibrary.tree.moveNode")
+        },
+        async renameNode() {
+          throwUnexpectedAdminServiceCall("resourceLibrary.tree.renameNode")
+        },
+        async restoreNode() {
+          throwUnexpectedAdminServiceCall("resourceLibrary.tree.restoreNode")
+        },
+        async trashNode() {
+          throwUnexpectedAdminServiceCall("resourceLibrary.tree.trashNode")
+        },
       },
     },
     resources: {

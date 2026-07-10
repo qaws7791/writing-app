@@ -70,6 +70,24 @@ describe("자료 트리 Drizzle repository", () => {
         { event_type: "create", node_id: "folder-2" },
         { event_type: "create", node_id: "document-1" },
       ])
+      expect(
+        fixture.client.sqlite
+          .query<
+            {
+              readonly body_text: string
+              readonly name: string
+              readonly node_id: string
+            },
+            []
+          >(
+            "SELECT node_id, name, body_text FROM admin_resource_search ORDER BY rowid"
+          )
+          .all()
+      ).toEqual([
+        { body_text: "", name: "새 폴더", node_id: "folder-1" },
+        { body_text: "", name: "새 폴더 (2)", node_id: "folder-2" },
+        { body_text: "", name: "제목 없음", node_id: "document-1" },
+      ])
 
       await expect(
         fixture.repository.createNode({
@@ -138,7 +156,7 @@ describe("자료 트리 Drizzle repository", () => {
       ).resolves.toMatchObject({ kind: "ok", value: { revision: 6 } })
       expect(
         (await fixture.repository.readChildren(toParent("folder-a"))).map(
-          ({ id, sortOrder }) => ({ id, sortOrder })
+          ({ node: { id, sortOrder } }) => ({ id, sortOrder })
         )
       ).toEqual([
         { id: "document-b", sortOrder: 0 },
@@ -167,7 +185,7 @@ describe("자료 트리 Drizzle repository", () => {
       })
       expect(
         (await fixture.repository.readChildren(toParent("folder-a"))).map(
-          ({ id, sortOrder }) => ({ id, sortOrder })
+          ({ node: { id, sortOrder } }) => ({ id, sortOrder })
         )
       ).toEqual([
         { id: "document-b", sortOrder: 0 },
@@ -175,7 +193,7 @@ describe("자료 트리 Drizzle repository", () => {
       ])
       expect(
         (await fixture.repository.readChildren(toParent("folder-b"))).map(
-          ({ id, sortOrder }) => ({ id, sortOrder })
+          ({ node: { id, sortOrder } }) => ({ id, sortOrder })
         )
       ).toEqual([{ id: "document-a", sortOrder: 0 }])
       expect(readAuditEvents(fixture.client.sqlite).slice(-2)).toEqual([
@@ -215,9 +233,17 @@ describe("자료 트리 Drizzle repository", () => {
         { id: "child", status: "archived", trashRootId: "root" },
         { id: "leaf", status: "archived", trashRootId: "root" },
       ])
+      await expect(
+        fixture.repository.readChildren({ parentId: null, scope: "trash" })
+      ).resolves.toEqual([
+        expect.objectContaining({
+          hasChildren: true,
+          node: expect.objectContaining({ id: "root", status: "archived" }),
+        }),
+      ])
       expect(
         (await fixture.repository.readChildren(toParent(null))).map(
-          ({ id, sortOrder }) => ({ id, sortOrder })
+          ({ node: { id, sortOrder } }) => ({ id, sortOrder })
         )
       ).toEqual([
         { id: "before", sortOrder: 0 },
@@ -241,7 +267,7 @@ describe("자료 트리 Drizzle repository", () => {
       })
       expect(
         (await fixture.repository.readChildren(toParent(null))).map(
-          ({ id, name, sortOrder }) => ({ id, name, sortOrder })
+          ({ node: { id, name, sortOrder } }) => ({ id, name, sortOrder })
         )
       ).toEqual([
         { id: "before", name: "앞", sortOrder: 0 },
@@ -317,7 +343,9 @@ describe("자료 트리 Drizzle repository", () => {
       ).rejects.toThrow("UNIQUE constraint failed")
       expect(await fixture.repository.readRevision()).toBe(1)
       expect(await fixture.repository.readChildren(toParent(null))).toEqual([
-        expect.objectContaining({ name: "변경 전" }),
+        expect.objectContaining({
+          node: expect.objectContaining({ name: "변경 전" }),
+        }),
       ])
       expect(readAuditEvents(fixture.client.sqlite)).toHaveLength(1)
     } finally {
@@ -434,8 +462,10 @@ function readNodeIds(
 
 function toParent(parentId: string | null): {
   readonly parentId: ReturnType<typeof toResourceFolderId> | null
+  readonly scope: "active"
 } {
   return {
     parentId: parentId === null ? null : toResourceFolderId(parentId),
+    scope: "active",
   }
 }

@@ -3,7 +3,9 @@ import type {
   ResourceDocumentId,
   ResourceFolderId,
   ResourceNodeId,
+  ResourceTreeEntry,
   ResourceTreeNode,
+  ResourceTreeScope,
 } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
 
 type ResourceTreeCommandContext = {
@@ -63,7 +65,7 @@ export type ResourceTreeCommandRejection =
     }
   | {
       readonly kind: "invalid-name"
-      readonly reason: "empty" | "too-long"
+      readonly reason: "empty" | "invalid-character" | "too-long"
     }
   | {
       readonly kind: "cycle"
@@ -126,7 +128,8 @@ export type ResourceTreeRepository = {
   ) => Promise<MoveResourceNodeResult>
   readonly readChildren: (input: {
     readonly parentId: ResourceFolderId | null
-  }) => Promise<readonly ResourceTreeNode[]>
+    readonly scope: ResourceTreeScope
+  }) => Promise<readonly ResourceTreeEntry[]>
   readonly readRevision: () => Promise<number>
   readonly readSubtree: (
     nodeId: ResourceNodeId

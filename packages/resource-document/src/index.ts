@@ -1,13 +1,17 @@
 export {
   createResourceDocumentEditor,
   normalizeResourceMarkdown,
+  prepareResourceMarkdownImport,
   readResourceDocumentMarkdown,
+  readResourceMarkdownPlainText,
   replaceResourceDocumentMarkdown,
   resourceDocumentNodes,
   resourceMarkdownTransformers,
   type ResourceDocumentIssue,
   type InvalidResourceMarkdown,
   type ResourceMarkdownNormalization,
+  type ResourceMarkdownImportPreparation,
+  type ResourceMarkdownPlainText,
   type ValidResourceMarkdown,
 } from "#resource-document/resource-markdown"
 export {

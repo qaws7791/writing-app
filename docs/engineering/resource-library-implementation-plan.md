@@ -238,10 +238,20 @@ apps/admin/src/features/resources/
 
 ### 2. REST tree와 자료 명령
 
+상태: 완료
+
 - core port/use case/repository를 tree, document, search 책임으로 나눈다.
 - 폴더·문서 생성, 지연 조회, 이름 변경, 이동, 휴지통 이동·복원, 검색, import/export endpoint를 구현한다.
 - 모든 관리자에게 변경 권한을 허용하고 구조 이벤트를 audit table에 남긴다.
 - OpenAPI와 admin HTTP adapter를 새 contract로 갱신한다.
+
+검증 결과:
+
+- 트리, Markdown 문서, 검색 REST contract를 책임별 파일로 분리하고 문서 말단 node, active·trash 범위, expected revision, 경로·행위자 metadata를 Zod schema로 고정했다.
+- tree, document, search port와 use case, Drizzle repository를 분리했다. 생성·이름 변경·이동·재정렬·재귀 휴지통 이동·복원·단일 Markdown 가져오기는 `BEGIN IMMEDIATE` transaction과 revision 검증을 거치며 모든 구조 변경과 가져오기가 감사 event를 남긴다.
+- 첫 번째 H1 제목 추출과 본문 제거, 파일명 제목, GFM 검증, 일반 텍스트 FTS 색인, 활성·휴지통 검색, `# 제목`을 결합한 Markdown 내보내기를 구현했다. 유효하지 않은 Markdown은 node나 revision을 변경하기 전에 거부한다.
+- 지연 트리와 모든 자료 명령을 관리자 세션 REST route로 공개하고 validation, not found, 이름·위치·순환·revision 충돌을 400·404·409 오류로 구분했다. 일반 `operator`를 포함한 모든 관리자가 명령을 실행할 수 있으며 새 route가 OpenAPI에 포함된다.
+- admin HTTP adapter는 새 JSON contract와 `text/markdown` 내보내기 contract를 검증하고 revision·이름·이동 충돌을 UI가 구분할 수 있는 오류로 보존한다. route와 adapter 계약, 문장부호·폴더·활성·휴지통 FTS, 원자적 가져오기와 경로 metadata를 통합 테스트로 고정했다.
 
 ### 3. 자료실 shell과 Tree
 

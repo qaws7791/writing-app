@@ -4,8 +4,12 @@ export type AdminApiErrorCode =
   | "contract-error"
   | "forbidden"
   | "invalid-request"
+  | "move-cycle"
+  | "name-conflict"
   | "network-error"
   | "not-found"
+  | "position-conflict"
+  | "stale-revision"
   | "unauthorized"
 
 export type AdminApiError =
@@ -29,6 +33,10 @@ const serverCodeMap = {
   HTTP_EXCEPTION: "invalid-request",
   INVALID_REQUEST: "invalid-request",
   NOT_FOUND: "not-found",
+  RESOURCE_MOVE_CYCLE: "move-cycle",
+  RESOURCE_NAME_CONFLICT: "name-conflict",
+  RESOURCE_POSITION_CONFLICT: "position-conflict",
+  STALE_REVISION: "stale-revision",
   UNAUTHORIZED: "unauthorized",
   VALIDATION_FAILED: "invalid-request",
 } as const satisfies Record<string, ServerAdminApiErrorCode>
@@ -37,8 +45,12 @@ const messageByCode = {
   "contract-error": "API 응답을 해석할 수 없습니다.",
   forbidden: "관리자 권한이 필요합니다.",
   "invalid-request": "요청 내용을 확인해 주세요.",
+  "move-cycle": "폴더를 자신의 하위 경로로 이동할 수 없습니다.",
+  "name-conflict": "같은 위치에 동일한 이름이 있습니다.",
   "network-error": "네트워크 연결을 확인해 주세요.",
   "not-found": "요청한 항목을 찾을 수 없습니다.",
+  "position-conflict": "이동할 위치를 다시 확인해 주세요.",
+  "stale-revision": "다른 사용자의 변경 사항을 다시 불러옵니다.",
   unauthorized: "관리자 로그인이 필요합니다.",
 } as const satisfies Record<AdminApiErrorCode, string>
 

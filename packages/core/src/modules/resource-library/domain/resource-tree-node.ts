@@ -5,6 +5,7 @@ export type ResourceDocumentId = Brand<string, "ResourceDocumentId">
 export type ResourceAuditEventId = Brand<string, "ResourceAuditEventId">
 export type ResourceNodeId = ResourceFolderId | ResourceDocumentId
 export type ResourceNodeStatus = "active" | "archived"
+export type ResourceTreeScope = "active" | "trash"
 
 type ResourceTreeNodeBase = {
   readonly name: string
@@ -26,6 +27,16 @@ export type ResourceDocumentNode = ResourceTreeNodeBase & {
 }
 
 export type ResourceTreeNode = ResourceFolderNode | ResourceDocumentNode
+
+export type ResourceTreeEntry = {
+  readonly hasChildren: boolean
+  readonly node: ResourceTreeNode
+}
+
+export type ResourceBreadcrumbItem = {
+  readonly id: ResourceFolderId
+  readonly name: string
+}
 
 export function toResourceFolderId(value: string): ResourceFolderId {
   return value as ResourceFolderId

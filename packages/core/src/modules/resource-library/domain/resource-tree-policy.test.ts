@@ -31,6 +31,10 @@ describe("자료 트리 도메인 정책", () => {
       reason: "empty",
       status: "invalid",
     })
+    expect(normalizeResourceName("여러\n줄")).toEqual({
+      reason: "invalid-character",
+      status: "invalid",
+    })
   })
 
   it("생성과 복원 이름 충돌에 제한 없는 숫자 접미사를 적용한다", () => {

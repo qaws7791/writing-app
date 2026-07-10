@@ -31,7 +31,16 @@ import type {
   AdminDeleteResourceDocumentResult,
   AdminLessonAnalyticsItem,
   AdminLessonAnalyticsPage,
+  AdminExportResourceDocument,
+  AdminImportResourceDocumentResult,
   AdminPagination,
+  AdminResourceLibraryDocument,
+  AdminResourceNodeMutation,
+  AdminResourceRestoreResult,
+  AdminResourceSearch,
+  AdminResourceTrashResult,
+  AdminResourceTree,
+  AdminResourceTreeNode,
   AdminResourceDocumentDetail,
   AdminResourceDocumentList,
   AdminResourceDocumentListItem,
@@ -62,8 +71,16 @@ import type {
   AdminDeleteResourceDocumentResultDto,
   AdminDeleteUserResultDto,
   AdminLessonAnalyticsPageDto,
+  AdminImportResourceDocumentResultDto,
+  AdminResourceDocumentDto,
   AdminResourceDocumentDetailDto,
   AdminResourceDocumentListDto,
+  AdminResourceNodeMutationDto,
+  AdminResourceRestoreResultDto,
+  AdminResourceSearchDto,
+  AdminResourceTrashResultDto,
+  AdminResourceTreeDto,
+  AdminResourceTreeNodeDto,
   AdminSessionDto,
   AdminSettingsDto,
   AdminUserDetailDto,
@@ -82,8 +99,15 @@ import {
   adminDeleteResourceDocumentResultSchema,
   adminDeleteUserResultSchema,
   adminLessonAnalyticsPageDtoSchema,
+  adminImportResourceDocumentResultDtoSchema,
+  adminResourceDocumentDtoSchema,
   adminResourceDocumentDetailDtoSchema,
   adminResourceDocumentListDtoSchema,
+  adminResourceNodeMutationDtoSchema,
+  adminResourceRestoreResultDtoSchema,
+  adminResourceSearchDtoSchema,
+  adminResourceTrashResultDtoSchema,
+  adminResourceTreeDtoSchema,
   adminSessionDtoSchema,
   adminSettingsDtoSchema,
   adminUserDetailDtoSchema,
@@ -106,6 +130,9 @@ export type AdminFetchLike = HttpFetch
 export type AdminTokenProvider = () => Promise<string | null> | string | null
 type AdminHttpMethod = "DELETE" | "GET" | "PATCH" | "POST" | "PUT"
 type AdminHttpClient = {
+  readonly requestMarkdown: (input: {
+    readonly path: string
+  }) => Promise<AdminApiResult<AdminExportResourceDocument>>
   readonly requestJson: <TValue>(input: {
     readonly body?: unknown
     readonly method: AdminHttpMethod
@@ -164,6 +191,24 @@ export function createHttpAdminApi({
         path: "/resources",
         schema: adminResourceDocumentDetailDtoSchema,
         toModel: toAdminResourceDocumentDetail,
+      })
+    },
+    createResourceDocumentNode(input) {
+      return requestAdminJson(client, {
+        body: input,
+        method: "POST",
+        path: "/resources/documents",
+        schema: adminResourceNodeMutationDtoSchema,
+        toModel: toAdminResourceNodeMutation,
+      })
+    },
+    createResourceFolder(input) {
+      return requestAdminJson(client, {
+        body: input,
+        method: "POST",
+        path: "/resources/folders",
+        schema: adminResourceNodeMutationDtoSchema,
+        toModel: toAdminResourceNodeMutation,
       })
     },
     deleteResourceDocument(documentId) {
@@ -246,12 +291,28 @@ export function createHttpAdminApi({
         toModel: toAdminResourceDocumentDetail,
       })
     },
+    getResourceLibraryDocument(documentId) {
+      return requestAdminJson(client, {
+        method: "GET",
+        path: `/resources/documents/${documentId}`,
+        schema: adminResourceDocumentDtoSchema,
+        toModel: toAdminResourceLibraryDocument,
+      })
+    },
     getResourceDocuments(input) {
       return requestAdminJson(client, {
         method: "GET",
         path: `/resources?${resourcesSearchParams(input)}`,
         schema: adminResourceDocumentListDtoSchema,
         toModel: toAdminResourceDocumentList,
+      })
+    },
+    getResourceTree(input) {
+      return requestAdminJson(client, {
+        method: "GET",
+        path: `/resources/tree?${resourceTreeSearchParams(input)}`,
+        schema: adminResourceTreeDtoSchema,
+        toModel: toAdminResourceTree,
       })
     },
     getSettings() {
@@ -295,6 +356,47 @@ export function createHttpAdminApi({
         toModel: toAdminContentResetResult,
       })
     },
+    exportResourceDocument(documentId) {
+      return client.requestMarkdown({
+        path: `/resources/documents/${documentId}/export`,
+      })
+    },
+    importResourceDocument(input) {
+      return requestAdminJson(client, {
+        body: input,
+        method: "POST",
+        path: "/resources/documents/import",
+        schema: adminImportResourceDocumentResultDtoSchema,
+        toModel: toAdminImportResourceDocumentResult,
+      })
+    },
+    moveResourceNode(nodeId, input) {
+      return requestAdminJson(client, {
+        body: input,
+        method: "PATCH",
+        path: `/resources/nodes/${nodeId}/move`,
+        schema: adminResourceNodeMutationDtoSchema,
+        toModel: toAdminResourceNodeMutation,
+      })
+    },
+    renameResourceNode(nodeId, input) {
+      return requestAdminJson(client, {
+        body: input,
+        method: "PATCH",
+        path: `/resources/nodes/${nodeId}/name`,
+        schema: adminResourceNodeMutationDtoSchema,
+        toModel: toAdminResourceNodeMutation,
+      })
+    },
+    restoreResourceNode(nodeId, input) {
+      return requestAdminJson(client, {
+        body: input,
+        method: "POST",
+        path: `/resources/nodes/${nodeId}/restore`,
+        schema: adminResourceRestoreResultDtoSchema,
+        toModel: toAdminResourceRestoreResult,
+      })
+    },
     saveLegalSettings(input) {
       return requestAdminJson(client, {
         body: input,
@@ -311,6 +413,23 @@ export function createHttpAdminApi({
         path: "/settings/notice",
         schema: adminSettingsDtoSchema,
         toModel: toAdminSettings,
+      })
+    },
+    searchResources(input) {
+      return requestAdminJson(client, {
+        method: "GET",
+        path: `/resources/search?${resourceSearchParams(input)}`,
+        schema: adminResourceSearchDtoSchema,
+        toModel: toAdminResourceSearch,
+      })
+    },
+    trashResourceNode(nodeId, input) {
+      return requestAdminJson(client, {
+        body: input,
+        method: "POST",
+        path: `/resources/nodes/${nodeId}/trash`,
+        schema: adminResourceTrashResultDtoSchema,
+        toModel: toAdminResourceTrashResult,
       })
     },
     updateUserStatus(input: UpdateAdminUserStatusInput) {
@@ -655,6 +774,108 @@ function toAdminResourceDocumentDetail(
   }
 }
 
+function toAdminResourceTree(dto: AdminResourceTreeDto): AdminResourceTree {
+  return {
+    nodes: dto.nodes.map(toAdminResourceTreeNode),
+    revision: dto.revision,
+  }
+}
+
+function toAdminResourceTreeNode(
+  dto: AdminResourceTreeNodeDto
+): AdminResourceTreeNode {
+  const node = {
+    id: dto.id,
+    name: dto.name,
+    parentId: dto.parentId,
+    sortOrder: dto.sortOrder,
+    status: dto.status,
+  }
+
+  return dto.kind === "folder"
+    ? {
+        ...node,
+        hasChildren: dto.hasChildren,
+        kind: "folder",
+      }
+    : {
+        ...node,
+        hasChildren: false,
+        kind: "document",
+      }
+}
+
+function toAdminResourceNodeMutation(
+  dto: AdminResourceNodeMutationDto
+): AdminResourceNodeMutation {
+  return {
+    affectedParentIds: [...dto.affectedParentIds],
+    node: toAdminResourceTreeNode(dto.node),
+    revision: dto.revision,
+  }
+}
+
+function toAdminResourceTrashResult(
+  dto: AdminResourceTrashResultDto
+): AdminResourceTrashResult {
+  return {
+    affectedParentIds: [...dto.affectedParentIds],
+    documentCount: dto.documentCount,
+    folderCount: dto.folderCount,
+    revision: dto.revision,
+  }
+}
+
+function toAdminResourceRestoreResult(
+  dto: AdminResourceRestoreResultDto
+): AdminResourceRestoreResult {
+  return {
+    ...toAdminResourceTrashResult(dto),
+    node: toAdminResourceTreeNode(dto.node),
+  }
+}
+
+function toAdminResourceLibraryDocument(
+  dto: AdminResourceDocumentDto
+): AdminResourceLibraryDocument {
+  return {
+    contentMarkdown: dto.contentMarkdown,
+    contentRevision: dto.contentRevision,
+    createdAt: dto.createdAt,
+    createdBy: { ...dto.createdBy },
+    id: dto.id,
+    name: dto.name,
+    parentId: dto.parentId,
+    path: dto.path.map((item) => ({ ...item })),
+    status: dto.status,
+    updatedAt: dto.updatedAt,
+    updatedBy: { ...dto.updatedBy },
+  }
+}
+
+function toAdminImportResourceDocumentResult(
+  dto: AdminImportResourceDocumentResultDto
+): AdminImportResourceDocumentResult {
+  return {
+    document: toAdminResourceLibraryDocument(dto.document),
+    mutation: toAdminResourceNodeMutation(dto.mutation),
+  }
+}
+
+function toAdminResourceSearch(
+  dto: AdminResourceSearchDto
+): AdminResourceSearch {
+  return {
+    items: dto.items.map((item) => ({
+      excerpt: item.excerpt,
+      id: item.id,
+      kind: item.kind,
+      name: item.name,
+      path: item.path.map((pathItem) => ({ ...pathItem })),
+    })),
+  }
+}
+
 function toAdminTiptapDocument(
   dto: AdminResourceDocumentDetailDto["content"]
 ): AdminTiptapDocument {
@@ -720,35 +941,54 @@ function createAdminHttpClient({
   readonly tokenProvider: AdminTokenProvider
 }): AdminHttpClient {
   return {
+    async requestMarkdown(input) {
+      const request = await createAdminRequest({
+        baseUrl,
+        method: "GET",
+        path: input.path,
+        requestOrigin,
+        tokenProvider,
+      })
+      const fetchResult = await fetchHttpResponse(request, fetch)
+
+      if (fetchResult.kind === "network-error") {
+        return adminApiError(networkAdminApiError(fetchResult.error))
+      }
+
+      const { response } = fetchResult
+
+      if (!response.ok) {
+        const bodyResult = await readJson(response)
+
+        return bodyResult.kind === "ok"
+          ? adminApiError(toAdminApiError(response.status, bodyResult.value))
+          : adminApiError(contractAdminApiError(response.status))
+      }
+
+      const fileName = readMarkdownFileName(response)
+
+      if (fileName === null) {
+        return adminApiError(contractAdminApiError(response.status))
+      }
+
+      return adminApiOk({
+        fileName,
+        markdown: await response.text(),
+      })
+    },
     async requestJson<TValue>(input: {
       readonly body?: unknown
       readonly method: AdminHttpMethod
       readonly path: string
       readonly schema: ResponseSchema<TValue>
     }) {
-      const headers = new Headers()
-      const token = await tokenProvider()
-
-      if (token !== null) {
-        headers.set(
-          "Cookie",
-          `${adminSessionCookieName}=${encodeURIComponent(token)}`
-        )
-      }
-
-      if (requestOrigin !== undefined) {
-        headers.set("Origin", new URL(requestOrigin).origin)
-      }
-
-      if (input.body !== undefined) {
-        headers.set("Content-Type", "application/json")
-      }
-
-      const request = new Request(buildAdminApiUrl(baseUrl, input.path), {
-        body: input.body === undefined ? undefined : JSON.stringify(input.body),
-        credentials: "include",
-        headers,
+      const request = await createAdminRequest({
+        baseUrl,
+        body: input.body,
         method: input.method,
+        path: input.path,
+        requestOrigin,
+        tokenProvider,
       })
 
       const fetchResult = await fetchHttpResponse(request, fetch)
@@ -776,6 +1016,64 @@ function createAdminHttpClient({
 
       return adminApiOk(parsedBody.data)
     },
+  }
+}
+
+async function createAdminRequest(input: {
+  readonly baseUrl: AdminApiBaseUrl
+  readonly body?: unknown
+  readonly method: AdminHttpMethod
+  readonly path: string
+  readonly requestOrigin?: string
+  readonly tokenProvider: AdminTokenProvider
+}): Promise<Request> {
+  const headers = new Headers()
+  const token = await input.tokenProvider()
+
+  if (token !== null) {
+    headers.set(
+      "Cookie",
+      `${adminSessionCookieName}=${encodeURIComponent(token)}`
+    )
+  }
+
+  if (input.requestOrigin !== undefined) {
+    headers.set("Origin", new URL(input.requestOrigin).origin)
+  }
+
+  if (input.body !== undefined) {
+    headers.set("Content-Type", "application/json")
+  }
+
+  return new Request(buildAdminApiUrl(input.baseUrl, input.path), {
+    body: input.body === undefined ? undefined : JSON.stringify(input.body),
+    credentials: "include",
+    headers,
+    method: input.method,
+  })
+}
+
+function readMarkdownFileName(response: Response): string | null {
+  const contentType = response.headers
+    .get("Content-Type")
+    ?.split(";", 1)[0]
+    ?.trim()
+    .toLowerCase()
+  const disposition = response.headers.get("Content-Disposition")
+  const encodedFileName = disposition?.match(
+    /^attachment;\s*filename\*=UTF-8''([^;]+)$/iu
+  )?.[1]
+
+  if (contentType !== "text/markdown" || encodedFileName === undefined) {
+    return null
+  }
+
+  try {
+    const fileName = decodeURIComponent(encodedFileName)
+
+    return fileName.length > 0 ? fileName : null
+  } catch {
+    return null
   }
 }
 
@@ -862,6 +1160,35 @@ function resourcesSearchParams(input: ReadAdminResourcesInput): string {
   params.set("pageSize", String(input.pageSize))
   params.set("query", input.query)
   params.set("status", input.status)
+
+  return params.toString()
+}
+
+function resourceTreeSearchParams(input: {
+  readonly parentId: string | null
+  readonly scope: "active" | "trash"
+}): string {
+  const params = new URLSearchParams()
+
+  if (input.parentId !== null) {
+    params.set("parentId", input.parentId)
+  }
+
+  params.set("scope", input.scope)
+
+  return params.toString()
+}
+
+function resourceSearchParams(input: {
+  readonly limit: number
+  readonly query: string
+  readonly scope: "active" | "trash"
+}): string {
+  const params = new URLSearchParams()
+
+  params.set("limit", String(input.limit))
+  params.set("query", input.query)
+  params.set("scope", input.scope)
 
   return params.toString()
 }

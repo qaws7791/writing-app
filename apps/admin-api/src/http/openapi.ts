@@ -69,6 +69,17 @@ export function eventStreamResponse(description: string) {
   }
 }
 
+export function markdownResponse(description: string) {
+  return {
+    content: {
+      "text/markdown": {
+        schema: z.string(),
+      },
+    },
+    description,
+  }
+}
+
 export function errorJsonResponse(description: string) {
   return jsonResponse(description, ErrorResponseSchema)
 }
@@ -77,6 +88,7 @@ export function adminAuthenticatedResponses(
   successResponse:
     | ReturnType<typeof eventStreamResponse>
     | ReturnType<typeof jsonResponse>
+    | ReturnType<typeof markdownResponse>
 ) {
   return {
     200: successResponse,

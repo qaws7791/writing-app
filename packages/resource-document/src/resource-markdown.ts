@@ -17,6 +17,8 @@ import {
   type Transformer,
 } from "@lexical/markdown"
 import type { Klass, LexicalEditor, LexicalNode } from "lexical"
+import type { Heading, Root } from "mdast"
+import { visit } from "unist-util-visit"
 
 import {
   $exportResourceMarkdownAst,
@@ -54,6 +56,24 @@ export type InvalidResourceMarkdown = {
 export type ResourceMarkdownNormalization =
   | InvalidResourceMarkdown
   | ValidResourceMarkdown
+
+export type ResourceMarkdownImportPreparation =
+  | InvalidResourceMarkdown
+  | {
+      readonly headingTitle: string | null
+      readonly markdown: string
+      readonly status: "valid"
+    }
+
+export type ResourceMarkdownPlainText =
+  | {
+      readonly issues: readonly ResourceMarkdownIssue[]
+      readonly status: "invalid"
+    }
+  | {
+      readonly status: "valid"
+      readonly text: string
+    }
 
 export type ResourceDocumentIssue =
   | ResourceDocumentStructureIssue
@@ -194,4 +214,79 @@ export function normalizeResourceMarkdown(
   }
 
   return readResourceDocumentMarkdown(editor)
+}
+
+export function prepareResourceMarkdownImport(
+  markdown: string
+): ResourceMarkdownImportPreparation {
+  const normalized = normalizeResourceMarkdown(markdown)
+
+  if (normalized.status === "invalid") {
+    return normalized
+  }
+
+  const root = parseResourceMarkdownAst(normalized.markdown)
+  const firstHeadingIndex = root.children.findIndex(
+    (node) => node.type === "heading" && node.depth === 1
+  )
+
+  if (firstHeadingIndex < 0) {
+    return {
+      headingTitle: null,
+      markdown: normalized.markdown,
+      status: "valid",
+    }
+  }
+
+  const heading = root.children[firstHeadingIndex]
+
+  if (heading?.type !== "heading") {
+    throw new Error("가져올 자료의 첫 번째 H1을 찾지 못했습니다.")
+  }
+
+  const body: Root = {
+    ...root,
+    children: root.children.filter((_, index) => index !== firstHeadingIndex),
+  }
+
+  return {
+    headingTitle: readAstText(heading),
+    markdown: serializeResourceMarkdownAst(body),
+    status: "valid",
+  }
+}
+
+export function readResourceMarkdownPlainText(
+  markdown: string
+): ResourceMarkdownPlainText {
+  const root = parseResourceMarkdownAst(markdown)
+  const validation = validateResourceMarkdownAst(root)
+
+  if (validation.status === "invalid") {
+    return validation
+  }
+
+  return {
+    status: "valid",
+    text: readAstText(root),
+  }
+}
+
+function readAstText(root: Heading | Root): string {
+  const fragments: string[] = []
+
+  visit(root, (node) => {
+    switch (node.type) {
+      case "code":
+      case "inlineCode":
+      case "text":
+        fragments.push(node.value)
+        break
+      case "image":
+        fragments.push(node.alt ?? "")
+        break
+    }
+  })
+
+  return fragments.join(" ").replace(/\s+/g, " ").trim()
 }

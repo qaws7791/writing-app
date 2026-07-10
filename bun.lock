@@ -193,6 +193,7 @@
       "dependencies": {
         "@workspace/contracts": "workspace:*",
         "@workspace/db": "workspace:*",
+        "@workspace/resource-document": "workspace:*",
         "better-auth": "^1.6.0",
         "drizzle-orm": "^0.45.0",
         "openai": "^6.39.0",

@@ -15,6 +15,9 @@ import { createCoursesRoutes } from "@/routes/courses.route"
 import { createCurriculumEditorRoutes } from "@/routes/curriculum-editor.route"
 import { createDashboardRoutes } from "@/routes/dashboard.route"
 import { healthRoute } from "@/routes/health.route"
+import { createResourceDocumentsRoutes } from "@/routes/resource-documents.route"
+import { createResourceSearchRoutes } from "@/routes/resource-search.route"
+import { createResourceTreeRoutes } from "@/routes/resource-tree.route"
 import { createResourcesRoutes } from "@/routes/resources.route"
 import { createSettingsRoutes } from "@/routes/settings.route"
 import { createSessionRoute } from "@/routes/session.route"
@@ -29,6 +32,11 @@ import type {
   AdminSettingsUseCase,
   AdminUserUseCase,
 } from "@workspace/core/admin"
+import type {
+  ResourceDocumentUseCase,
+  ResourceSearchUseCase,
+  ResourceTreeUseCase,
+} from "@workspace/core/modules/resource-library/api"
 import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 import {
   createRequestLoggingMiddleware,
@@ -43,6 +51,11 @@ export type AdminApiServices = {
   readonly contentReset: AdminContentResetUseCase
   readonly courses: AdminCourseUseCase
   readonly dashboard: AdminDashboardUseCase
+  readonly resourceLibrary: {
+    readonly documents: ResourceDocumentUseCase
+    readonly search: ResourceSearchUseCase
+    readonly tree: ResourceTreeUseCase
+  }
   readonly resources: AdminResourceUseCase
   readonly settings: AdminSettingsUseCase
   readonly users: AdminUserUseCase
@@ -94,6 +107,20 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
       ...createUsersRoutes({
         userService: dependencies.adminServices.users,
         now,
+        sessionResolver: dependencies.sessionResolver,
+      }),
+      ...createResourceTreeRoutes({
+        now,
+        sessionResolver: dependencies.sessionResolver,
+        treeService: dependencies.adminServices.resourceLibrary.tree,
+      }),
+      ...createResourceDocumentsRoutes({
+        documentService: dependencies.adminServices.resourceLibrary.documents,
+        now,
+        sessionResolver: dependencies.sessionResolver,
+      }),
+      ...createResourceSearchRoutes({
+        searchService: dependencies.adminServices.resourceLibrary.search,
         sessionResolver: dependencies.sessionResolver,
       }),
       ...createResourcesRoutes({

@@ -1,6 +1,17 @@
 import { serve } from "bun"
 import { createAdminService } from "@workspace/core/admin"
 import { createDrizzleAdminRepository } from "@workspace/core/admin/admin-drizzle.repository"
+import {
+  createResourceDocumentUseCase,
+  createResourceSearchUseCase,
+  createResourceTreeUseCase,
+  toResourceAuditEventId,
+  toResourceDocumentId,
+  toResourceFolderId,
+} from "@workspace/core/modules/resource-library/api"
+import { createDrizzleResourceDocumentRepository } from "@workspace/core/resource-library/resource-document-drizzle.repository"
+import { createDrizzleResourceSearchRepository } from "@workspace/core/resource-library/resource-search-drizzle.repository"
+import { createDrizzleResourceTreeRepository } from "@workspace/core/resource-library/resource-tree-drizzle.repository"
 import { createWritingAppDatabase } from "@workspace/db"
 import {
   createAppLogger,
@@ -20,6 +31,29 @@ const env = parseAdminApiEnv(process.env)
 const database = createWritingAppDatabase(env.databaseUrl)
 const logger = createAppLogger()
 const adminRepository = createDrizzleAdminRepository(database.db)
+const resourceTreeRepository = createDrizzleResourceTreeRepository(database.db)
+const resourceDocumentRepository = createDrizzleResourceDocumentRepository(
+  database.db
+)
+const createResourceAuditEventId = () =>
+  toResourceAuditEventId(`resource-audit-${crypto.randomUUID()}`)
+const resourceTreeService = createResourceTreeUseCase({
+  createAuditEventId: createResourceAuditEventId,
+  createDocumentId: () =>
+    toResourceDocumentId(`resource-document-${crypto.randomUUID()}`),
+  createFolderId: () =>
+    toResourceFolderId(`resource-folder-${crypto.randomUUID()}`),
+  treeRepository: resourceTreeRepository,
+})
+const resourceDocumentService = createResourceDocumentUseCase({
+  createAuditEventId: createResourceAuditEventId,
+  createDocumentId: () =>
+    toResourceDocumentId(`resource-document-${crypto.randomUUID()}`),
+  documentRepository: resourceDocumentRepository,
+})
+const resourceSearchService = createResourceSearchUseCase(
+  createDrizzleResourceSearchRepository(database.db)
+)
 const aiChatAgent =
   env.openAiApiKey === undefined
     ? undefined
@@ -55,6 +89,11 @@ const app = createApp({
     courses: adminService,
     dashboard: adminService,
     resources: adminService,
+    resourceLibrary: {
+      documents: resourceDocumentService,
+      search: resourceSearchService,
+      tree: resourceTreeService,
+    },
     settings: adminService,
     users: adminService,
   },

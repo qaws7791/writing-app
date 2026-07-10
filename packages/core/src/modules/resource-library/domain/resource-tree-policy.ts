@@ -18,14 +18,14 @@ export type ResourceName = {
 export type ResourceNameValidation =
   | (ResourceName & { readonly status: "valid" })
   | {
-      readonly reason: "empty" | "too-long"
+      readonly reason: "empty" | "invalid-character" | "too-long"
       readonly status: "invalid"
     }
 
 export type ResourceNameChangeValidation =
   | (ResourceName & { readonly status: "valid" })
   | {
-      readonly reason: "conflict" | "empty" | "too-long"
+      readonly reason: "conflict" | "empty" | "invalid-character" | "too-long"
       readonly status: "invalid"
     }
 
@@ -38,6 +38,10 @@ export function normalizeResourceName(name: string): ResourceNameValidation {
 
   if (displayName.length > RESOURCE_NAME_MAX_LENGTH) {
     return { reason: "too-long", status: "invalid" }
+  }
+
+  if (/\p{Cc}/u.test(displayName)) {
+    return { reason: "invalid-character", status: "invalid" }
   }
 
   return {

@@ -267,6 +267,120 @@ export type AdminDeleteResourceDocumentResult = {
   readonly deleted: true
 }
 
+export type AdminResourceTreeScope = "active" | "trash"
+
+export type AdminResourceBreadcrumbItem = {
+  readonly id: string
+  readonly name: string
+}
+
+export type AdminResourceActor = {
+  readonly email: string
+  readonly id: string
+  readonly name: string
+}
+
+type AdminResourceTreeNodeBase = {
+  readonly id: string
+  readonly name: string
+  readonly parentId: string | null
+  readonly sortOrder: number
+  readonly status: "active" | "archived"
+}
+
+export type AdminResourceTreeNode =
+  | (AdminResourceTreeNodeBase & {
+      readonly hasChildren: boolean
+      readonly kind: "folder"
+    })
+  | (AdminResourceTreeNodeBase & {
+      readonly hasChildren: false
+      readonly kind: "document"
+    })
+
+export type AdminResourceTree = {
+  readonly nodes: readonly AdminResourceTreeNode[]
+  readonly revision: number
+}
+
+export type AdminResourceNodeMutation = {
+  readonly affectedParentIds: readonly (string | null)[]
+  readonly node: AdminResourceTreeNode
+  readonly revision: number
+}
+
+export type AdminResourceTrashResult = {
+  readonly affectedParentIds: readonly (string | null)[]
+  readonly documentCount: number
+  readonly folderCount: number
+  readonly revision: number
+}
+
+export type AdminResourceRestoreResult = AdminResourceTrashResult & {
+  readonly node: AdminResourceTreeNode
+}
+
+export type AdminResourceLibraryDocument = {
+  readonly contentMarkdown: string
+  readonly contentRevision: number
+  readonly createdAt: string
+  readonly createdBy: AdminResourceActor
+  readonly id: string
+  readonly name: string
+  readonly parentId: string | null
+  readonly path: readonly AdminResourceBreadcrumbItem[]
+  readonly status: "active" | "archived"
+  readonly updatedAt: string
+  readonly updatedBy: AdminResourceActor
+}
+
+export type AdminImportResourceDocumentInput = {
+  readonly expectedRevision: number
+  readonly fileName: string
+  readonly markdown: string
+  readonly parentId: string | null
+}
+
+export type AdminImportResourceDocumentResult = {
+  readonly document: AdminResourceLibraryDocument
+  readonly mutation: AdminResourceNodeMutation
+}
+
+export type AdminExportResourceDocument = {
+  readonly fileName: string
+  readonly markdown: string
+}
+
+export type AdminResourceSearchItem = {
+  readonly excerpt: string | null
+  readonly id: string
+  readonly kind: "document" | "folder"
+  readonly name: string
+  readonly path: readonly AdminResourceBreadcrumbItem[]
+}
+
+export type AdminResourceSearch = {
+  readonly items: readonly AdminResourceSearchItem[]
+}
+
+export type AdminResourceParentCommandInput = {
+  readonly expectedRevision: number
+  readonly parentId: string | null
+}
+
+export type AdminResourceRevisionCommandInput = {
+  readonly expectedRevision: number
+}
+
+export type AdminMoveResourceNodeInput = AdminResourceRevisionCommandInput & {
+  readonly destinationIndex: number
+  readonly destinationParentId: string | null
+}
+
+export type AdminRenameResourceNodeInput = AdminResourceRevisionCommandInput & {
+  readonly name: string
+}
+
 export type ReadAdminCoursesInput = {
   readonly category: string
   readonly page: number
@@ -317,6 +431,12 @@ export type AdminApi = {
   readonly createResourceDocument: (
     input: AdminResourceDocumentInput
   ) => Promise<AdminApiResult<AdminResourceDocumentDetail>>
+  readonly createResourceDocumentNode: (
+    input: AdminResourceParentCommandInput
+  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
+  readonly createResourceFolder: (
+    input: AdminResourceParentCommandInput
+  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
   readonly createCourse: () => Promise<AdminApiResult<AdminCourseDetail>>
   readonly deleteResourceDocument: (
     documentId: string
@@ -346,9 +466,16 @@ export type AdminApi = {
   readonly getResourceDocument: (
     documentId: string
   ) => Promise<AdminApiResult<AdminResourceDocumentDetail>>
+  readonly getResourceLibraryDocument: (
+    documentId: string
+  ) => Promise<AdminApiResult<AdminResourceLibraryDocument>>
   readonly getResourceDocuments: (
     input: ReadAdminResourcesInput
   ) => Promise<AdminApiResult<AdminResourceDocumentList>>
+  readonly getResourceTree: (input: {
+    readonly parentId: string | null
+    readonly scope: AdminResourceTreeScope
+  }) => Promise<AdminApiResult<AdminResourceTree>>
   readonly getSettings: () => Promise<AdminApiResult<AdminSettings>>
   readonly getSession: () => Promise<AdminApiResult<AdminSession>>
   readonly getUser: (userId: string) => Promise<AdminApiResult<AdminUserDetail>>
@@ -356,12 +483,39 @@ export type AdminApi = {
     input: ReadAdminUsersInput
   ) => Promise<AdminApiResult<AdminUserList>>
   readonly resetContent: () => Promise<AdminApiResult<AdminContentResetResult>>
+  readonly exportResourceDocument: (
+    documentId: string
+  ) => Promise<AdminApiResult<AdminExportResourceDocument>>
+  readonly importResourceDocument: (
+    input: AdminImportResourceDocumentInput
+  ) => Promise<AdminApiResult<AdminImportResourceDocumentResult>>
+  readonly moveResourceNode: (
+    nodeId: string,
+    input: AdminMoveResourceNodeInput
+  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
+  readonly renameResourceNode: (
+    nodeId: string,
+    input: AdminRenameResourceNodeInput
+  ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
+  readonly restoreResourceNode: (
+    nodeId: string,
+    input: AdminResourceRevisionCommandInput
+  ) => Promise<AdminApiResult<AdminResourceRestoreResult>>
   readonly saveLegalSettings: (
     input: AdminLegalSettingsRequest
   ) => Promise<AdminApiResult<AdminSettings>>
   readonly saveNoticeSettings: (
     input: AdminNoticeSettingsRequest
   ) => Promise<AdminApiResult<AdminSettings>>
+  readonly searchResources: (input: {
+    readonly limit: number
+    readonly query: string
+    readonly scope: AdminResourceTreeScope
+  }) => Promise<AdminApiResult<AdminResourceSearch>>
+  readonly trashResourceNode: (
+    nodeId: string,
+    input: AdminResourceRevisionCommandInput
+  ) => Promise<AdminApiResult<AdminResourceTrashResult>>
   readonly updateUserStatus: (
     input: UpdateAdminUserStatusInput
   ) => Promise<AdminApiResult<AdminUserDetail>>

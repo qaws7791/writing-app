@@ -1,4 +1,4 @@
-import { and, asc, eq, getTableColumns, isNull, ne, sql } from "drizzle-orm"
+import { and, eq, sql } from "drizzle-orm"
 
 import type {
   CreateResourceNodeInput,
@@ -7,7 +7,6 @@ import type {
   MoveResourceNodeResult,
   RenameResourceNodeInput,
   RenameResourceNodeResult,
-  ResourceTreeCommandRejection,
   ResourceTreeRepository,
   RestoreResourceNodeInput,
   RestoreResourceNodeResult,
@@ -23,65 +22,32 @@ import {
   validateResourceMove,
   validateResourceNameChange,
 } from "@workspace/core/modules/resource-library/domain/resource-tree-policy"
+import type { ResourceTreeNode } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
 import {
-  toResourceDocumentId,
-  toResourceFolderId,
-  toResourceNodeId,
-  type ResourceFolderId,
-  type ResourceNodeId,
-  type ResourceTreeNode,
-} from "@workspace/core/modules/resource-library/domain/resource-tree-node"
+  countResourceKinds,
+  insertResourceSearchIndex,
+  insertAuditEvent,
+  readActiveChildRows,
+  readActiveNodeRow,
+  readAncestorFolderIds,
+  readResourceSubtree,
+  readResourceChildren,
+  readTreeRevision,
+  reserveTreeRevision,
+  toParentId,
+  toResourceNodeIdFromRows,
+  toResourceTreeNode,
+  uniqueParentIds,
+  updateResourceSearchName,
+  validateActiveParent,
+  validateTreeRevision,
+  writeSortAssignments,
+} from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
-  adminResourceAuditEvents,
   adminResourceDocuments,
   adminResourceNodes,
-  adminResourceTreeState,
 } from "@workspace/db/schema"
-
-type WritingAppDatabaseTransaction = Parameters<
-  Parameters<WritingAppDatabase["transaction"]>[0]
->[0]
-
-type ResourceNodeRow = typeof adminResourceNodes.$inferSelect
-type ResourceAuditEventType =
-  (typeof adminResourceAuditEvents.$inferInsert)["eventType"]
-
-type ResourceAuditPayload =
-  | {
-      readonly kind: "create"
-      readonly name: string
-      readonly nodeKind: ResourceTreeNode["kind"]
-      readonly parentId: ResourceFolderId | null
-    }
-  | {
-      readonly fromName: string
-      readonly kind: "rename"
-      readonly toName: string
-    }
-  | {
-      readonly fromIndex: number
-      readonly fromParentId: ResourceFolderId | null
-      readonly kind: "move" | "reorder"
-      readonly toIndex: number
-      readonly toParentId: ResourceFolderId | null
-    }
-  | {
-      readonly documentCount: number
-      readonly folderCount: number
-      readonly kind: "restore" | "trash"
-    }
-
-type RecursiveResourceNodeRow = {
-  readonly id: string
-  readonly kind: ResourceNodeRow["kind"]
-  readonly name: string
-  readonly normalized_name: string
-  readonly parent_id: string | null
-  readonly sort_order: number
-  readonly status: ResourceNodeRow["status"]
-  readonly trash_root_id: string | null
-}
 
 export function createDrizzleResourceTreeRepository(
   db: WritingAppDatabase
@@ -93,8 +59,8 @@ export function createDrizzleResourceTreeRepository(
     async moveNode(input) {
       return moveNode(db, input)
     },
-    async readChildren({ parentId }) {
-      return readActiveChildren(db, parentId)
+    async readChildren(input) {
+      return readResourceChildren(db, input)
     },
     async readRevision() {
       return readTreeRevision(db)
@@ -195,6 +161,13 @@ function createNode(
           .run()
       }
 
+      insertResourceSearchIndex(transaction, {
+        bodyText: "",
+        kind: node.kind,
+        name: node.name,
+        nodeId: node.id,
+      })
+
       insertAuditEvent(transaction, {
         actorId: input.actorId,
         auditEventId: input.auditEventId,
@@ -292,6 +265,10 @@ function renameNode(
         })
         .where(eq(adminResourceNodes.id, input.nodeId))
         .run()
+      updateResourceSearchName(transaction, {
+        name: renamedNode.name,
+        nodeId: renamedNode.id,
+      })
       insertAuditEvent(transaction, {
         actorId: input.actorId,
         auditEventId: input.auditEventId,
@@ -643,6 +620,10 @@ function restoreNode(
         })
         .where(eq(adminResourceNodes.id, restoredNode.id))
         .run()
+      updateResourceSearchName(transaction, {
+        name: restoredNode.name,
+        nodeId: restoredNode.id,
+      })
       writeSortAssignments(transaction, restoredAssignments, input)
       transaction
         .update(adminResourceNodes)
@@ -674,349 +655,5 @@ function restoreNode(
       }
     },
     { behavior: "immediate" }
-  )
-}
-
-function validateTreeRevision(
-  transaction: WritingAppDatabaseTransaction,
-  input: { readonly expectedRevision: number }
-): ResourceTreeCommandRejection | null {
-  const actualRevision = readTreeRevision(transaction)
-
-  return actualRevision === input.expectedRevision
-    ? null
-    : { actualRevision, kind: "stale-revision" }
-}
-
-function reserveTreeRevision(
-  transaction: WritingAppDatabaseTransaction,
-  input: {
-    readonly expectedRevision: number
-    readonly now: Date
-  }
-): number {
-  transaction
-    .update(adminResourceTreeState)
-    .set({
-      revision: sql`${adminResourceTreeState.revision} + 1`,
-      updatedAt: input.now,
-    })
-    .where(
-      and(
-        eq(adminResourceTreeState.singletonId, 1),
-        eq(adminResourceTreeState.revision, input.expectedRevision)
-      )
-    )
-    .run()
-  const changed = transaction
-    .select({ value: sql<number>`changes()` })
-    .from(sql`(SELECT 1)`)
-    .get()?.value
-
-  if (changed !== 1) {
-    throw new Error("자료 트리 revision을 예약하지 못했습니다.")
-  }
-
-  return input.expectedRevision + 1
-}
-
-function readTreeRevision(
-  database: WritingAppDatabase | WritingAppDatabaseTransaction
-): number {
-  const state = database
-    .select({ revision: adminResourceTreeState.revision })
-    .from(adminResourceTreeState)
-    .where(eq(adminResourceTreeState.singletonId, 1))
-    .get()
-
-  if (state === undefined) {
-    throw new Error("자료 트리 revision 상태가 없습니다.")
-  }
-
-  return state.revision
-}
-
-function validateActiveParent(
-  transaction: WritingAppDatabaseTransaction,
-  parentId: ResourceFolderId | null
-): { readonly kind: "parent-not-found" } | null {
-  if (parentId === null) {
-    return null
-  }
-
-  const parent = transaction
-    .select({ id: adminResourceNodes.id })
-    .from(adminResourceNodes)
-    .where(
-      and(
-        eq(adminResourceNodes.id, parentId),
-        eq(adminResourceNodes.kind, "folder"),
-        eq(adminResourceNodes.status, "active")
-      )
-    )
-    .get()
-
-  return parent === undefined ? { kind: "parent-not-found" } : null
-}
-
-function readActiveNodeRow(
-  database: WritingAppDatabase | WritingAppDatabaseTransaction,
-  nodeId: ResourceNodeId
-): ResourceNodeRow | undefined {
-  return database
-    .select()
-    .from(adminResourceNodes)
-    .where(
-      and(
-        eq(adminResourceNodes.id, nodeId),
-        eq(adminResourceNodes.status, "active")
-      )
-    )
-    .get()
-}
-
-function readActiveChildren(
-  database: WritingAppDatabase | WritingAppDatabaseTransaction,
-  parentId: ResourceFolderId | null
-): readonly ResourceTreeNode[] {
-  return readActiveChildRows(database, parentId).map(toResourceTreeNode)
-}
-
-function readActiveChildRows(
-  database: WritingAppDatabase | WritingAppDatabaseTransaction,
-  parentId: ResourceFolderId | null,
-  excludedNodeId?: ResourceNodeId
-): readonly ResourceNodeRow[] {
-  const parentCondition =
-    parentId === null
-      ? isNull(adminResourceNodes.parentId)
-      : eq(adminResourceNodes.parentId, parentId)
-  const excludedNodeCondition =
-    excludedNodeId === undefined
-      ? undefined
-      : ne(adminResourceNodes.id, excludedNodeId)
-
-  return database
-    .select(getTableColumns(adminResourceNodes))
-    .from(adminResourceNodes)
-    .where(
-      and(
-        parentCondition,
-        eq(adminResourceNodes.status, "active"),
-        excludedNodeCondition
-      )
-    )
-    .orderBy(asc(adminResourceNodes.sortOrder), asc(adminResourceNodes.id))
-    .all()
-}
-
-function readResourceSubtree(
-  database: WritingAppDatabase | WritingAppDatabaseTransaction,
-  nodeId: ResourceNodeId
-): readonly ResourceTreeNode[] {
-  return database
-    .all<RecursiveResourceNodeRow>(sql`
-      WITH RECURSIVE subtree(
-        id,
-        kind,
-        parent_id,
-        name,
-        normalized_name,
-        sort_order,
-        status,
-        trash_root_id,
-        sort_path
-      ) AS (
-        SELECT
-          id,
-          kind,
-          parent_id,
-          name,
-          normalized_name,
-          sort_order,
-          status,
-          trash_root_id,
-          printf('%010d:%s', sort_order, id)
-        FROM admin_resource_nodes
-        WHERE id = ${nodeId}
-
-        UNION ALL
-
-        SELECT
-          child.id,
-          child.kind,
-          child.parent_id,
-          child.name,
-          child.normalized_name,
-          child.sort_order,
-          child.status,
-          child.trash_root_id,
-          parent.sort_path || '/' || printf('%010d:%s', child.sort_order, child.id)
-        FROM admin_resource_nodes AS child
-        INNER JOIN subtree AS parent ON child.parent_id = parent.id
-      )
-      SELECT
-        id,
-        kind,
-        parent_id,
-        name,
-        normalized_name,
-        sort_order,
-        status,
-        trash_root_id
-      FROM subtree
-      ORDER BY sort_path
-    `)
-    .map(toResourceTreeNodeFromRecursiveRow)
-}
-
-function readAncestorFolderIds(
-  transaction: WritingAppDatabaseTransaction,
-  parentId: ResourceFolderId | null
-): readonly ResourceFolderId[] {
-  if (parentId === null) {
-    return []
-  }
-
-  return transaction
-    .all<{ readonly id: string }>(sql`
-      WITH RECURSIVE ancestors(id, parent_id) AS (
-        SELECT id, parent_id
-        FROM admin_resource_nodes
-        WHERE id = ${parentId}
-
-        UNION ALL
-
-        SELECT parent.id, parent.parent_id
-        FROM admin_resource_nodes AS parent
-        INNER JOIN ancestors AS child ON child.parent_id = parent.id
-      )
-      SELECT id FROM ancestors
-    `)
-    .map(({ id }) => toResourceFolderId(id))
-}
-
-function writeSortAssignments(
-  transaction: WritingAppDatabaseTransaction,
-  assignments: readonly {
-    readonly nodeId: ResourceNodeId
-    readonly sortOrder: number
-  }[],
-  input: { readonly actorId: string; readonly now: Date }
-): void {
-  for (const assignment of assignments) {
-    transaction
-      .update(adminResourceNodes)
-      .set({
-        sortOrder: assignment.sortOrder,
-        updatedAt: input.now,
-        updatedBy: input.actorId,
-      })
-      .where(
-        and(
-          eq(adminResourceNodes.id, assignment.nodeId),
-          ne(adminResourceNodes.sortOrder, assignment.sortOrder)
-        )
-      )
-      .run()
-  }
-}
-
-function insertAuditEvent(
-  transaction: WritingAppDatabaseTransaction,
-  input: {
-    readonly actorId: string
-    readonly auditEventId: string
-    readonly eventType: ResourceAuditEventType
-    readonly nodeId: ResourceNodeId
-    readonly now: Date
-    readonly payload: ResourceAuditPayload
-  }
-): void {
-  transaction
-    .insert(adminResourceAuditEvents)
-    .values({
-      actorId: input.actorId,
-      createdAt: input.now,
-      eventType: input.eventType,
-      id: input.auditEventId,
-      nodeId: input.nodeId,
-      payloadJson: JSON.stringify(input.payload),
-    })
-    .run()
-}
-
-function toResourceTreeNode(row: ResourceNodeRow): ResourceTreeNode {
-  const parentId = toParentId(row.parentId)
-  const common = {
-    name: row.name,
-    normalizedName: row.normalizedName,
-    parentId,
-    sortOrder: row.sortOrder,
-    status: row.status,
-    trashRootId:
-      row.trashRootId === null ? null : toResourceNodeId(row.trashRootId),
-  }
-
-  return row.kind === "folder"
-    ? { ...common, id: toResourceFolderId(row.id), kind: row.kind }
-    : { ...common, id: toResourceDocumentId(row.id), kind: row.kind }
-}
-
-function toResourceTreeNodeFromRecursiveRow(
-  row: RecursiveResourceNodeRow
-): ResourceTreeNode {
-  const common = {
-    name: row.name,
-    normalizedName: row.normalized_name,
-    parentId: toParentId(row.parent_id),
-    sortOrder: row.sort_order,
-    status: row.status,
-    trashRootId:
-      row.trash_root_id === null ? null : toResourceNodeId(row.trash_root_id),
-  }
-
-  return row.kind === "folder"
-    ? { ...common, id: toResourceFolderId(row.id), kind: row.kind }
-    : { ...common, id: toResourceDocumentId(row.id), kind: row.kind }
-}
-
-function toResourceNodeIdFromRows(
-  id: string,
-  rows: readonly Pick<ResourceNodeRow, "id" | "kind">[]
-): ResourceNodeId {
-  const row = rows.find((candidate) => candidate.id === id)
-
-  if (row === undefined) {
-    throw new Error(`자료 node 종류를 찾지 못했습니다: ${id}`)
-  }
-
-  return row.kind === "folder"
-    ? toResourceFolderId(id)
-    : toResourceDocumentId(id)
-}
-
-function toParentId(parentId: string | null): ResourceFolderId | null {
-  return parentId === null ? null : toResourceFolderId(parentId)
-}
-
-function countResourceKinds(nodes: readonly ResourceTreeNode[]): {
-  readonly documentCount: number
-  readonly folderCount: number
-} {
-  return nodes.reduce(
-    (counts, node) =>
-      node.kind === "folder"
-        ? { ...counts, folderCount: counts.folderCount + 1 }
-        : { ...counts, documentCount: counts.documentCount + 1 },
-    { documentCount: 0, folderCount: 0 }
-  )
-}
-
-function uniqueParentIds(
-  parentIds: readonly (ResourceFolderId | null)[]
-): readonly (ResourceFolderId | null)[] {
-  return parentIds.filter(
-    (parentId, index) => parentIds.indexOf(parentId) === index
   )
 }
