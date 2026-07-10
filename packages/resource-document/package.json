@@ -1,0 +1,53 @@
+{
+  "name": "@workspace/resource-document",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "imports": {
+    "#resource-document/index": "./src/index.ts",
+    "#resource-document/resource-collaboration": "./src/resource-collaboration.ts",
+    "#resource-document/resource-horizontal-rule-node": "./src/resource-horizontal-rule-node.ts",
+    "#resource-document/resource-image-node": "./src/resource-image-node.ts",
+    "#resource-document/resource-lexical-validation": "./src/resource-lexical-validation.ts",
+    "#resource-document/resource-markdown": "./src/resource-markdown.ts",
+    "#resource-document/resource-markdown-ast": "./src/resource-markdown-ast.ts",
+    "#resource-document/resource-markdown-definitions": "./src/resource-markdown-definitions.ts",
+    "#resource-document/resource-markdown-validation": "./src/resource-markdown-validation.ts",
+    "#resource-document/resource-table-state": "./src/resource-table-state.ts"
+  },
+  "scripts": {
+    "lint": "oxlint .",
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest watch --config vitest.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lexical/code": "0.46.0",
+    "@lexical/headless": "0.46.0",
+    "@lexical/link": "0.46.0",
+    "@lexical/list": "0.46.0",
+    "@lexical/markdown": "0.46.0",
+    "@lexical/rich-text": "0.46.0",
+    "@lexical/table": "0.46.0",
+    "@lexical/yjs": "0.46.0",
+    "lexical": "0.46.0",
+    "mdast-util-from-markdown": "2.0.3",
+    "mdast-util-gfm": "3.1.0",
+    "mdast-util-to-markdown": "2.1.2",
+    "micromark-extension-gfm": "3.0.0",
+    "unist-util-visit": "5.0.0",
+    "yjs": "13.6.31"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.10",
+    "@types/mdast": "4.0.4",
+    "@workspace/config": "workspace:*",
+    "jsdom": "^29.1.1",
+    "typescript": "5.9.3",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.0"
+  }
+}

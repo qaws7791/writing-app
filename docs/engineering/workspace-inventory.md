@@ -4,22 +4,23 @@
 
 ## 워크스페이스
 
-| 경로                   | 패키지 이름              | 분류    | 책임                                                        |
-| ---------------------- | ------------------------ | ------- | ----------------------------------------------------------- |
-| `apps/admin`           | `@workspace/admin`       | app     | 관리자 Next.js 운영 대시보드                                |
-| `apps/admin-api`       | `@workspace/admin-api`   | app     | 관리자 Hono API                                             |
-| `apps/api`             | `@workspace/api`         | app     | 학습자 Hono API                                             |
-| `apps/storybook`       | `storybook`              | app     | 공유 UI 컴포넌트 개발 환경                                  |
-| `apps/web`             | `@workspace/web`         | app     | 학습자 Next.js 앱                                           |
-| `packages/config`      | `@workspace/config`      | package | 공유 TypeScript 설정                                        |
-| `packages/contracts`   | `@workspace/contracts`   | package | 학습자·관리자 request/response DTO와 Zod 계약               |
-| `packages/core`        | `@workspace/core`        | package | 도메인 유스케이스, repository 구현, 학습자 API 런타임 조립  |
-| `packages/db`          | `@workspace/db`          | package | Drizzle schema, migration, seed, SQLite client              |
-| `packages/env`         | `@workspace/env`         | package | 환경 변수 파싱과 로컬 기본값                                |
-| `packages/hono`        | `@workspace/hono`        | package | Hono route, validation, error handling 표준                 |
-| `packages/http-client` | `@workspace/http-client` | package | HTTP transport result와 네트워크 오류 모델                  |
-| `packages/logger`      | `@workspace/logger`      | package | pino logger와 요청 로그 middleware                          |
-| `packages/ui`          | `@workspace/ui`          | package | 공유 UI primitive, 도메인 순수 프레젠테이션, 아이콘, 스타일 |
+| 경로                         | 패키지 이름                    | 분류    | 책임                                                        |
+| ---------------------------- | ------------------------------ | ------- | ----------------------------------------------------------- |
+| `apps/admin`                 | `@workspace/admin`             | app     | 관리자 Next.js 운영 대시보드                                |
+| `apps/admin-api`             | `@workspace/admin-api`         | app     | 관리자 Hono API                                             |
+| `apps/api`                   | `@workspace/api`               | app     | 학습자 Hono API                                             |
+| `apps/storybook`             | `storybook`                    | app     | 공유 UI 컴포넌트 개발 환경                                  |
+| `apps/web`                   | `@workspace/web`               | app     | 학습자 Next.js 앱                                           |
+| `packages/config`            | `@workspace/config`            | package | 공유 TypeScript 설정                                        |
+| `packages/contracts`         | `@workspace/contracts`         | package | 학습자·관리자 request/response DTO와 Zod 계약               |
+| `packages/core`              | `@workspace/core`              | package | 도메인 유스케이스, repository 구현, 학습자 API 런타임 조립  |
+| `packages/db`                | `@workspace/db`                | package | Drizzle schema, migration, seed, SQLite client              |
+| `packages/env`               | `@workspace/env`               | package | 환경 변수 파싱과 로컬 기본값                                |
+| `packages/hono`              | `@workspace/hono`              | package | Hono route, validation, error handling 표준                 |
+| `packages/http-client`       | `@workspace/http-client`       | package | HTTP transport result와 네트워크 오류 모델                  |
+| `packages/logger`            | `@workspace/logger`            | package | pino logger와 요청 로그 middleware                          |
+| `packages/resource-document` | `@workspace/resource-document` | package | 브라우저·서버 공용 Lexical GFM 문서 계약과 Yjs 투영         |
+| `packages/ui`                | `@workspace/ui`                | package | 공유 UI primitive, 도메인 순수 프레젠테이션, 아이콘, 스타일 |
 
 ## 비워크스페이스 도구 루트
 

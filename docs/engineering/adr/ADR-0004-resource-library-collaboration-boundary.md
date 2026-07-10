@@ -28,7 +28,9 @@
 - 트리 명령 이벤트는 단조 증가 revision을 포함한다. 클라이언트가 revision 간격을 놓치면 영향받은 부모를 다시 조회한다.
 - 실행 취소는 Yjs의 사용자별 local origin을 기준으로 현재 탭에서 만든 변경만 대상으로 한다.
 - 현재 단일 서버와 로컬 SQLite 배포를 전제로 문서당 동시 편집자 20명을 지원 목표로 둔다.
-- 모든 Lexical 패키지는 같은 정확한 버전으로 고정하고, Markdown transformer 목록은 클라이언트와 headless 서버가 하나의 좁은 패키지에서 공유한다.
+- 모든 Lexical 패키지는 정확히 `0.46.0`으로 고정한다. 클라이언트 import·붙여넣기와 headless 저장 투영은 하나의 좁은 패키지가 제공하는 정규 GFM AST mapper를 공유하고, `@lexical/markdown` transformer는 편집 shortcut에만 사용한다.
+- 브라우저는 provider가 쓰는 네트워크 Y.Doc과 화면 Lexical에 연결하는 Y.Doc을 직접 공유하지 않는다. 원격 update를 별도 headless Y.Doc과 Lexical에 먼저 적용해 지원 node·계층·속성·NodeState 불변식을 검증하고, 유효한 전체 상태만 화면 Y.Doc으로 미러링한다.
+- Markdown 저장 projection은 직렬화 결과를 새 headless editor에 다시 입력한 `EditorState`와 원래 상태의 동등성을 확인한다. GFM으로 손실 없이 표현할 수 없는 상태는 기존 Markdown을 덮어쓰지 않는다.
 
 ## 고려한 대안
 
@@ -56,6 +58,7 @@
 
 - 일반 조회와 검색은 Markdown을 사용하고 공동 편집 연결이 없어도 동작한다.
 - 공동 편집 상태와 Markdown 투영이 어긋날 수 있으므로 state version, projection 실패 격리, 재구축 테스트가 필요하다.
+- 원격 update 검증은 화면 reconcile 전에 수행하므로 문서 크기에 따른 검증 지연을 계측해야 한다. 유효하지 않은 원격 상태는 화면과 분리된 Y.Doc에만 남고, 이후 유효한 상태로 회복되면 검증된 전체 상태를 다시 미러링한다.
 - WebSocket room registry는 현재 단일 인스턴스에 한정된다. 다중 인스턴스로 확장하기 전에는 pub/sub와 room 소유권 ADR이 추가로 필요하다.
 - 공식 Lexical 드래그 블록 플러그인은 실험적이므로 adapter 뒤에 격리하고 E2E 회귀 테스트를 둔다.
-- GFM 표, 할 일 목록, 이미지 노드는 Markdown 왕복 fixture를 통과한 transformer만 공개한다.
+- GFM 표, 할 일 목록, 이미지 노드는 정규 GFM AST mapper와 지원 Lexical node의 의미 왕복 fixture를 통과한 범위만 공개한다.

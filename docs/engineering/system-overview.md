@@ -54,6 +54,7 @@ flowchart TB
     env["packages/env\n환경 변수 파싱과 로컬 기본값"]
     logger["packages/logger\nPino와 요청 로그"]
     httpClient["packages/http-client\nHTTP 결과 모델"]
+    resourceDocument["packages/resource-document\nLexical GFM·Yjs 문서 계약"]
   end
 
   web --> ui
@@ -75,20 +76,21 @@ flowchart TB
 
 ## 서비스 경계
 
-| 경계                   | 책임                                                                             | 금지                                                                     |
-| ---------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `apps/web`             | 학습자 화면, 인증 시작, API 포트 호출, API DTO mapper                            | DB 직접 접근, 레거시 실험 디렉터리 import, API 응답을 화면에 그대로 전달 |
-| `apps/api`             | 학습자 HTTP transport, Hono route, CORS, 인증 세션 확인, OpenAPI 생성, core 호출 | `@workspace/db`와 Drizzle 직접 import                                    |
-| `apps/admin`           | 관리자 화면, 관리자 로그인, 어드민 API 포트 호출                                 | 학습자 API 호출, DB 직접 접근                                            |
-| `apps/admin-api`       | 관리자 HTTP transport, 관리자 인증, 권한 guard, 운영 API                         | 학습자 웹 세션/쿠키와 혼용                                               |
-| `packages/core`        | 도메인 DTO, 브랜드 타입, 상태 정책, 유스케이스, repository 구현, 학습자 API 조립 | HTTP transport 의존                                                      |
-| `packages/db`          | SQLite client, Drizzle schema, migration, seed, persisted 값                     | `@workspace/core` import                                                 |
-| `packages/ui`          | 공유 UI primitive, 순수 도메인 프레젠테이션, 스타일                              | 앱별 데이터 조회, 채점/세션, 라우팅 정책, API 호출                       |
-| `packages/config`      | 공유 TypeScript 설정                                                             | 런타임 코드와 도메인 로직                                                |
-| `packages/hono`        | Hono route, validation, error handling 표준                                      | 도메인 정책 소유                                                         |
-| `packages/env`         | 환경 변수 파싱과 로컬 기본값                                                     | 앱별 의미 변환                                                           |
-| `packages/logger`      | pino logger와 요청 로그 middleware                                               | 비즈니스 이벤트 저장                                                     |
-| `packages/http-client` | HTTP result shape와 네트워크 오류 모델                                           | 앱별 사용자 메시지와 인증 정책                                           |
+| 경계                         | 책임                                                                             | 금지                                                                     |
+| ---------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `apps/web`                   | 학습자 화면, 인증 시작, API 포트 호출, API DTO mapper                            | DB 직접 접근, 레거시 실험 디렉터리 import, API 응답을 화면에 그대로 전달 |
+| `apps/api`                   | 학습자 HTTP transport, Hono route, CORS, 인증 세션 확인, OpenAPI 생성, core 호출 | `@workspace/db`와 Drizzle 직접 import                                    |
+| `apps/admin`                 | 관리자 화면, 관리자 로그인, 어드민 API 포트 호출                                 | 학습자 API 호출, DB 직접 접근                                            |
+| `apps/admin-api`             | 관리자 HTTP transport, 관리자 인증, 권한 guard, 운영 API                         | 학습자 웹 세션/쿠키와 혼용                                               |
+| `packages/core`              | 도메인 DTO, 브랜드 타입, 상태 정책, 유스케이스, repository 구현, 학습자 API 조립 | HTTP transport 의존                                                      |
+| `packages/db`                | SQLite client, Drizzle schema, migration, seed, persisted 값                     | `@workspace/core` import                                                 |
+| `packages/ui`                | 공유 UI primitive, 순수 도메인 프레젠테이션, 스타일                              | 앱별 데이터 조회, 채점/세션, 라우팅 정책, API 호출                       |
+| `packages/config`            | 공유 TypeScript 설정                                                             | 런타임 코드와 도메인 로직                                                |
+| `packages/hono`              | Hono route, validation, error handling 표준                                      | 도메인 정책 소유                                                         |
+| `packages/env`               | 환경 변수 파싱과 로컬 기본값                                                     | 앱별 의미 변환                                                           |
+| `packages/logger`            | pino logger와 요청 로그 middleware                                               | 비즈니스 이벤트 저장                                                     |
+| `packages/http-client`       | HTTP result shape와 네트워크 오류 모델                                           | 앱별 사용자 메시지와 인증 정책                                           |
+| `packages/resource-document` | Lexical node, GFM AST mapper, Markdown 검증, Yjs snapshot 투영                   | React UI, API 호출, DB 영속화, 폴더·트리 정책                            |
 
 ## 런타임 의존성 방향
 
@@ -146,6 +148,8 @@ AI 피드백 생성은 `AiFeedbackService`가 lesson 조회와 AI_FEEDBACK step 
 
 어드민 API는 `apps/admin-api/src/main.ts`에서 SQLite DB, 어드민 repository, Better Auth, 관리자 세션 resolver, 요청 로거를 조립한다. Route는 `@workspace/hono/core`의 typed route definition으로 등록하고, request/query/body wire contract는 `packages/contracts/admin`을 직접 참조한다. 관리자 세션과 owner 권한은 route middleware가 `AppError` 기반 표준 오류로 변환하며, `/openapi`는 등록된 typed route에서 OpenAPI 3.1 문서를 생성한다. `apps/admin-api`의 app 조립 경계는 core의 broad `AdminService`를 route에 직접 넘기지 않고 analytics, courses, dashboard, settings, content reset, users use case 슬롯으로 나눠 주입한다. `apps/admin` 화면은 core나 admin wire DTO package를 직접 import하지 않는다.
 관리자 자료실과 관리자 AI 채팅은 어드민 API 경계에 속한다. 자료실은 `admin_resource_documents`를 단일 저장소로 사용하는 DB 기반 CRUD이며, Tiptap JSON 원문과 검색용 발췌문을 함께 저장한다. AI 채팅은 `admin_ai_chat_conversations`, `admin_ai_chat_messages`에 대화 내역을 저장하고, `apps/admin-api`에 내장한 Mastra `admin-content-agent`를 Hono route에서 호출해 `chunk`, `done`, `error` SSE 이벤트로 응답한다. Mastra Memory는 사용하지 않고 저장된 메시지를 프롬프트 컨텍스트로 구성한다.
+
+자료실 전환의 0단계 경계로 `packages/resource-document`가 브라우저·headless 서버 공용 Lexical 0.46.0 node, 정규 GFM AST import/export와 검증, Yjs snapshot 투영을 제공한다. `apps/admin-api/src/collaboration/y-websocket-bun-adapter.ts`는 공식 Yjs 13 `sync`·`awareness` 공개 protocol API를 Bun `ServerWebSocket`에 연결하고 socket별 전송 실패를 격리한다. 실제 Bun endpoint·WebsocketProvider·Y.Doc·Lexical binding 통합 계약은 검증했지만, 인증·origin 검증과 운영 `/resources/collaboration/{documentId}` upgrade는 아직 `main.ts`에 연결하지 않는다. `apps/admin`에는 공식 experimental block drag API를 격리한 client component만 추가했으며 운영 자료실 화면에는 아직 연결하지 않았다. 따라서 현재 운영 자료실의 Tiptap CRUD 동작은 다음 전환 단계 전까지 유지된다.
 어드민 코스 편집기는 root에 `course-editor-shell.tsx` entrypoint만 두고, 레슨/스텝 편집 작업 화면은 `workspace/`, 학습자 표시 확인은 `preview/`, 스텝 타입별 폼은 `step-forms/` 아래에 둔다. step form 의존 방향은 `step-forms/step-form-registry.tsx -> step-forms/index.ts -> step-forms/* -> step-forms/shared/step-form-contract.tsx`이다. 개별 step form은 registry를 import하지 않고, registry는 개별 form 파일이나 shared shell을 직접 import하지 않는다.
 
 `packages/core`의 공개 표면은 실제 런타임에서 쓰이는 module API, learner API bootstrap, result/errors/kernel 같은 공통 값으로 제한한다. request context, event bus, unit of work, container wiring처럼 아직 use case에 연결되지 않은 scaffold는 도입 시점까지 공개하지 않는다.

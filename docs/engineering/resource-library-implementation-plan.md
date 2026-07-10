@@ -37,7 +37,7 @@ flowchart LR
   rest["apps/admin-api\nREST 명령/조회"]
   ws["apps/admin-api\nYjs WebSocket + 트리 이벤트"]
   core["packages/core\n자료실 use case와 정책"]
-  document["packages/resource-document\nLexical node와 GFM transformer"]
+  document["packages/resource-document\nLexical node와 정규 GFM AST mapper"]
   db["packages/db\nSQLite + FTS5"]
 
   admin -->|"트리·검색·제목 명령"| rest
@@ -54,7 +54,7 @@ flowchart LR
 
 - `packages/ui`는 reui에서 가져온 범용 Tree 프리미티브만 소유한다.
 - `apps/admin/src/features/resources`는 트리 데이터 조립, 자료실 UX, Lexical React plugin, 라우팅을 소유한다.
-- `packages/resource-document`는 브라우저와 headless 서버가 공유하는 Lexical node 등록과 GFM transformer, Markdown 검증·직렬화를 소유한다. React 화면, API 호출, 폴더 정책은 포함하지 않는다.
+- `packages/resource-document`는 브라우저와 headless 서버가 공유하는 Lexical node 등록과 GFM AST mapper, Markdown 검증·직렬화를 소유한다. React 화면, API 호출, 폴더 정책은 포함하지 않는다.
 - `packages/contracts`는 REST request/response와 WebSocket 사용자 정의 event schema를 소유한다. Yjs binary protocol 자체를 다시 정의하지 않는다.
 - `packages/core`는 이름, 이동, 순환 방지, 정렬, 재귀 휴지통, 복원, 감사 이벤트 정책을 소유한다.
 - `apps/admin-api`는 인증, REST mapping, WebSocket upgrade, room 수명주기와 broadcast를 소유한다.
@@ -166,10 +166,10 @@ apps/admin/src/features/resources/
 
 ### Lexical 구성
 
-- 모든 Lexical 패키지는 공식 Notion 예제에서 확인한 `0.46.0` exact version으로 함께 설치한다. 구현 시작 시 더 새 안정 버전을 선택하면 모든 Lexical 패키지와 round-trip fixture를 한 번에 올린다.
+- 공식 Notion 예제의 상호작용과 구성 방식을 참고하되 예제의 현재 버전을 그대로 추종하지 않는다. 자료 문서 위험 게이트에서 검증한 모든 Lexical 패키지를 `0.46.0` exact version으로 함께 고정하고, 이후 버전을 올릴 때는 모든 Lexical 패키지와 round-trip fixture를 한 번에 갱신한다.
 - 공식 extension이 있는 rich text, history, list, table, horizontal rule은 extension API를 우선하고, 공동 편집과 사용자 정의 slash·block·toolbar·sync 기능만 plugin adapter로 둔다.
 - rich text, heading, quote, list, checklist, code, link, table, horizontal rule, image node만 등록한다.
-- GFM transformer 하나를 import, paste, shortcut, 저장 projection에 공통 사용한다.
+- 정규 GFM AST 변환 경계를 import, paste, 저장 projection에 공통 사용하고 Lexical transformer는 shortcut에만 사용한다.
 - 원시 HTML transformer와 GFM 밖의 node는 등록하지 않는다.
 - 이미지 node는 HTTPS URL과 필수 alt만 가지며 `referrerPolicy="no-referrer"`로 렌더링한다.
 - 링크는 HTTPS, `mailto:`, 앱 내부 상대 경로만 허용하고 외부 링크에는 `noopener noreferrer`를 적용한다.
@@ -193,6 +193,8 @@ apps/admin/src/features/resources/
 
 ### 0. 위험 검증과 계약 fixture
 
+상태: 완료
+
 - 같은 exact Lexical version으로 최소 editor를 구성한다.
 - 합의한 모든 GFM block의 Markdown → Lexical → Markdown 왕복 fixture를 먼저 만든다.
 - 특히 표, 할 일 목록, fenced code language, 이미지 alt/URL, 중첩 목록을 검증한다.
@@ -200,6 +202,22 @@ apps/admin/src/features/resources/
 - server-side Yjs snapshot → headless Lexical → Markdown projection을 검증한다.
 - 실험적 draggable block plugin이 React 19와 Next.js client boundary에서 동작하는지 확인한다.
 - spike 코드는 production 경계로 이동하거나 삭제하고 별도 실험 디렉터리에 남기지 않는다.
+
+검증 결과:
+
+- `packages/resource-document`에 exact Lexical `0.46.0` node와 정규 GFM MDAST import/export, Markdown 검증, Yjs headless 투영 공개 경계를 추가했다.
+- 문단, H1~H3, 인라인 서식과 링크, 글머리·번호·할 일·중첩 목록, 인용, 언어가 있는 fenced code, 구분선, 정렬 표, HTTPS 이미지와 대체 텍스트의 의미 왕복과 반복 정규화 안정성을 계약 테스트로 고정했다.
+- reference 링크·이미지, 중복 definition의 GFM first-wins 의미, autolink, 괄호 URL, escaped alt, 표의 optional outer pipe·inline-code pipe·escaped pipe·빈 셀·누락 셀·초과 셀을 실제 GFM AST에서 검증한다. 코드와 escape literal은 URL 검증 대상에서 제외한다.
+- 지원하지 않는 H4~H6, title, inline 이미지, 혼합 task 목록, 복수 block 인용, loose list, code meta와 성립하지 않는 표 delimiter는 조용히 손실하지 않고 구체적인 `invalid` issue로 거부한다. 원시 HTML은 실행하거나 HTML로 렌더링하지 않고, 블록은 `html` fenced code, 문장 내부는 inline code인 리터럴 코드로 정규화해 여러 줄 원문도 보존한다.
+- 저장 projection 전에 지원 node 계층과 Text·Element·Link·Heading·ListItem·Table의 Markdown에 투영되지 않는 속성을 검사한다. 손실 가능한 상태는 조용히 버리지 않고 구체적인 `invalid` issue로 차단하며, projection 결과의 URL 안전성도 다시 검증한다.
+- 저장 projection은 직렬화한 Markdown을 새 headless Lexical editor에 다시 입력한 결과와 원래 `EditorState`가 같은지 비교한다. 인접 서식과 delimiter 문자를 포함한 의미 왕복이 다르면 `markdown-round-trip-mismatch`로 거부하고 손실 가능한 Markdown을 저장하지 않는다.
+- persisted NodeState는 자료 표 열 정렬 상태만 허용하고 다른 key와 Lexical slot은 저장 전에 거부한다. 표 정렬 상태도 허용 값만 파싱하며 잘못된 값을 기본값으로 대체하지 않는다.
+- Yjs snapshot을 새 headless Lexical binding에 적용해 같은 Markdown으로 투영하고, 손상 snapshot을 포함한 모든 투영 종료 경로에서 binding과 문서를 `try/finally`로 정리한다.
+- 브라우저 공동 편집은 네트워크 Y.Doc, 검증용 headless Y.Doc, 화면 editor용 Y.Doc을 분리한다. 원격 update는 headless Lexical 구조 검증을 통과한 상태만 화면 Y.Doc으로 미러링하며, 실패와 회복 상태를 호출자에게 명시적으로 알린다. 객체형·빈 이미지 속성, 비 HTTPS URL, 임의 node type·tag·NodeState는 화면 reconcile 전에 격리한다.
+- 사용자 정의 이미지 node는 화면 경계에서도 URL과 대체 텍스트를 다시 검사하고, 유효하지 않은 값은 `<img>` 생성과 `src` 반영 전에 동기적으로 거부한다.
+- `apps/admin-api`의 Bun adapter는 공식 `y-protocols`·`lib0` 공개 API를 사용한다. 실제 Bun endpoint와 `WebsocketProvider` 두 개, 각 Y.Doc에 연결한 Lexical binding의 동시 편집이 같은 Markdown으로 수렴함을 검증했다.
+- socket `send`의 exception과 반환값 `0`을 해당 연결로 격리한다. initial sync, sync reply, awareness broadcast 실패가 건강한 연결이나 발신자를 닫지 않는 failure-injection 계약을 고정했다.
+- `apps/admin/src/features/resources/editor/resource-draggable-block-plugin.tsx`가 공식 website-notion 예제와 같은 `DraggableBlockPlugin_EXPERIMENTAL`을 Next client component 안에 격리한다. React 19 실제 렌더와 두 블록 drag reorder 테스트, admin typecheck와 production build를 통과했다.
 
 ### 1. DB와 domain 전환
 
@@ -257,7 +275,7 @@ apps/admin/src/features/resources/
 
 ### 단위와 계약
 
-- GFM transformer round-trip golden fixture.
+- 정규 GFM AST mapper round-trip golden fixture.
 - HTML·위험 프로토콜 거부와 HTTPS 이미지 허용.
 - 이름 정규화·충돌·빈 이름 복구·자동 접미사.
 - 경로 breadcrumb 축약과 전체 경로 복원.
@@ -308,7 +326,7 @@ apps/admin/src/features/resources/
 | 위험                               | 완화                                                                   |
 | ---------------------------------- | ---------------------------------------------------------------------- |
 | 실험적 draggable block plugin 변경 | exact version 고정, adapter 격리, E2E golden interaction               |
-| GFM 표·이미지의 왕복 손실          | phase 0 transformer fixture 통과 전 UI 공개 금지                       |
+| GFM 표·이미지의 왕복 손실          | phase 0 정규 GFM AST mapper fixture 통과 전 UI 공개 금지               |
 | Yjs 상태와 Markdown 불일치         | state version, 단일 projection transaction, 실패 시 기존 Markdown 보존 |
 | SQLite write contention            | room별 debounce, 짧은 transaction, WAL·busy timeout 계측               |
 | 단일 서버 장애                     | snapshot 주기 저장, 종료 flush, 재시작 복구 test                       |

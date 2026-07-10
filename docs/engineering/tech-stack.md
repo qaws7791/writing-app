@@ -4,7 +4,7 @@
 
 ## 기준
 
-- 기준일: 2026-06-25
+- 기준일: 2026-07-10
 - 기준 파일: 루트 `package.json`, 각 workspace `package.json`, `turbo.json`, `vitest.workspace.ts`
 
 ## 런타임과 패키지 관리
@@ -29,6 +29,20 @@
 | lucide-react | `^1.8.0`            | 앱, UI, Storybook            | 일관된 아이콘 시스템을 제공한다.                      |
 
 `packages/ui`의 primitive는 shadcn/Base UI 파일 관례를 따르지만, 런타임 dependency는 현재 source 또는 stylesheet에서 직접 import하는 패키지만 둔다.
+
+## 문서 편집과 공동 편집
+
+| 기술        | 버전      | 사용 위치                                  | 선택 근거                                                                                                     |
+| ----------- | --------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Lexical     | `0.46.0`  | `packages/resource-document`, `apps/admin` | 브라우저와 headless 서버가 같은 node·GFM AST 계약을 사용하고 admin이 공식 React block drag plugin을 격리한다. |
+| Yjs         | `13.6.31` | `packages/resource-document`, `admin-api`  | 문서 본문의 CRDT snapshot과 동시 변경 수렴을 담당한다.                                                        |
+| y-websocket | `3.0.0`   | `apps/admin-api` 통합 테스트               | 실제 공식 client가 Bun WebSocket 경계와 호환되는지 검증한다.                                                  |
+| y-protocols | `1.0.7`   | `apps/admin-api`                           | 공개 sync·awareness protocol API로 Bun WebSocket server를 구성한다.                                           |
+| lib0        | `0.2.117` | `apps/admin-api`                           | y-websocket 이진 protocol의 공개 encoder·decoder를 제공한다.                                                  |
+
+모든 직접 사용하는 `lexical`, `@lexical/*` 패키지는 정확히 `0.46.0`으로 함께 고정한다. 저장 경계는 `mdast-util-from-markdown`, `mdast-util-gfm`, `mdast-util-to-markdown`의 정규 GFM AST를 사용한다. `@lexical/markdown` transformer는 향후 편집 shortcut용 공개 목록으로만 유지하고 저장 import/export를 담당하지 않는다. 실험적 `DraggableBlockPlugin_EXPERIMENTAL`은 `apps/admin`의 client component 하나에서만 사용한다.
+
+공식 `@y/websocket-server`의 server adapter는 Node `ws` 타입을 요구하고 최신판은 Yjs 14 계열을 사용하므로 Bun `ServerWebSocket`과 Lexical의 Yjs 13 경계에 직접 결합하지 않는다. 대신 같은 공식 Yjs 프로젝트의 공개 `y-protocols/sync`, `y-protocols/awareness`, `lib0` API만 사용해 Bun transport adapter를 구성하고 실제 `WebsocketProvider` 통합 테스트로 protocol 호환성을 고정한다.
 
 ## 백엔드
 
