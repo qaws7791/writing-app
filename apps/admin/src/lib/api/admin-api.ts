@@ -338,6 +338,33 @@ export type AdminResourceLibraryDocument = {
   readonly updatedBy: AdminResourceActor
 }
 
+export type AdminResourceDocumentTransactionInput = {
+  readonly knownStateVersion: number
+  readonly transactionId: string
+  readonly update: Uint8Array
+}
+
+export type AdminResourceDocumentTransactionResult = {
+  readonly contentRevision: number
+  readonly kind: "accepted" | "already-accepted"
+  readonly stateVersion: number
+  readonly transactionId: string
+}
+
+export type AdminResourceDocumentSync =
+  | { readonly kind: "up-to-date"; readonly stateVersion: number }
+  | {
+      readonly fromStateVersion: number
+      readonly kind: "updates"
+      readonly stateVersion: number
+      readonly updates: readonly Uint8Array[]
+    }
+  | {
+      readonly kind: "snapshot"
+      readonly snapshot: Uint8Array
+      readonly stateVersion: number
+    }
+
 export type AdminImportResourceDocumentInput = {
   readonly expectedRevision: number
   readonly fileName: string
@@ -454,6 +481,10 @@ export type AdminApi = {
   readonly getResourceLibraryDocument: (
     documentId: string
   ) => Promise<AdminApiResult<AdminResourceLibraryDocument>>
+  readonly getResourceDocumentSync: (
+    documentId: string,
+    afterStateVersion: number
+  ) => Promise<AdminApiResult<AdminResourceDocumentSync>>
   readonly getResourceActiveEditorCount: (
     nodeId: string
   ) => Promise<AdminApiResult<AdminResourceActiveEditorCount>>
@@ -492,6 +523,10 @@ export type AdminApi = {
   readonly saveNoticeSettings: (
     input: AdminNoticeSettingsRequest
   ) => Promise<AdminApiResult<AdminSettings>>
+  readonly saveResourceDocumentTransaction: (
+    documentId: string,
+    input: AdminResourceDocumentTransactionInput
+  ) => Promise<AdminApiResult<AdminResourceDocumentTransactionResult>>
   readonly searchResources: (input: {
     readonly limit: number
     readonly query: string

@@ -105,6 +105,8 @@ bun run --filter=@workspace/web test
 
 자료 문서 HTTP 동기화 테스트는 Yjs update의 검증·Markdown 투영, 동일 transaction ID 재승인, 단조 state version, 200건·2MiB update log 정리, 정리 뒤 snapshot fallback과 승인 이후 version 사건 발행을 검증한다. SQLite 통합 테스트는 snapshot, Markdown, FTS, 수정자, update log와 멱등 receipt가 같은 transaction에서 확정되는지 확인한다.
 
+클라이언트 transaction queue 테스트는 500ms 유휴 batching, 연속 입력의 1초 상한과 일시적 실패 뒤 같은 transaction ID·Yjs payload 재시도를 가짜 타이머로 검증한다.
+
 - baseline migration은 in-memory DB에 적용할 수 있어야 한다.
 - seed는 반복 실행해도 stable ID 기준으로 같은 결과를 내야 한다.
 - seed에서 빠진 콘텐츠는 삭제가 아니라 `archived` 전환으로 검증한다.

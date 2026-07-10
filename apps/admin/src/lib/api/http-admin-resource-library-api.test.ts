@@ -111,6 +111,32 @@ describe("자료실 HTTP AdminApi", () => {
       { status: "ok", value: document }
     )
     await expect(
+      api.saveResourceDocumentTransaction("document-1", {
+        knownStateVersion: 2,
+        transactionId: "transaction-1",
+        update: Uint8Array.of(1, 2, 3),
+      })
+    ).resolves.toEqual({
+      status: "ok",
+      value: {
+        contentRevision: 3,
+        kind: "accepted",
+        stateVersion: 3,
+        transactionId: "transaction-1",
+      },
+    })
+    await expect(api.getResourceDocumentSync("document-1", 2)).resolves.toEqual(
+      {
+        status: "ok",
+        value: {
+          fromStateVersion: 2,
+          kind: "updates",
+          stateVersion: 3,
+          updates: [Uint8Array.of(1, 2, 3)],
+        },
+      }
+    )
+    await expect(
       api.importResourceDocument({
         expectedRevision: 4,
         fileName: "운영 안내.md",
@@ -173,6 +199,14 @@ describe("자료실 HTTP AdminApi", () => {
         "https://admin-api.example.test/resources/nodes/document-1/restore",
       ],
       ["GET", "https://admin-api.example.test/resources/documents/document-1"],
+      [
+        "POST",
+        "https://admin-api.example.test/resources/documents/document-1/transactions",
+      ],
+      [
+        "GET",
+        "https://admin-api.example.test/resources/documents/document-1/sync?afterStateVersion=2",
+      ],
       ["POST", "https://admin-api.example.test/resources/documents/import"],
       [
         "GET",
@@ -194,6 +228,11 @@ describe("자료실 HTTP AdminApi", () => {
       },
       { expectedRevision: 4 },
       { expectedRevision: 5 },
+      {
+        knownStateVersion: 2,
+        transactionId: "transaction-1",
+        updateBase64: "AQID",
+      },
       {
         expectedRevision: 4,
         fileName: "운영 안내.md",
@@ -269,6 +308,24 @@ function responseFor(request: Request): Response {
 
   if (request.url.endsWith("/active-editors")) {
     return jsonResponse({ activeEditorCount: 2 })
+  }
+
+  if (request.url.endsWith("/transactions")) {
+    return jsonResponse({
+      contentRevision: 3,
+      kind: "accepted",
+      stateVersion: 3,
+      transactionId: "transaction-1",
+    })
+  }
+
+  if (request.url.includes("/sync?")) {
+    return jsonResponse({
+      fromStateVersion: 2,
+      kind: "updates",
+      stateVersion: 3,
+      updatesBase64: ["AQID"],
+    })
   }
 
   if (

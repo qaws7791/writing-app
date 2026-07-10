@@ -33,6 +33,8 @@ import type {
   AdminImportResourceDocumentResult,
   AdminPagination,
   AdminResourceActiveEditorCount,
+  AdminResourceDocumentSync,
+  AdminResourceDocumentTransactionResult,
   AdminResourceEvent,
   AdminResourceLibraryDocument,
   AdminResourceNodeMutation,
@@ -67,6 +69,8 @@ import type {
   AdminLessonAnalyticsPageDto,
   AdminImportResourceDocumentResultDto,
   AdminResourceActiveEditorCountDto,
+  AdminReadResourceDocumentSyncResponse,
+  AdminSaveResourceDocumentTransactionResponse,
   AdminResourceDocumentDto,
   AdminResourceNodeMutationDto,
   AdminResourceRestoreResultDto,
@@ -93,6 +97,7 @@ import {
   adminLessonAnalyticsPageDtoSchema,
   adminImportResourceDocumentResultDtoSchema,
   adminResourceActiveEditorCountDtoSchema,
+  adminReadResourceDocumentSyncResponseSchema,
   adminResourceDocumentDtoSchema,
   adminResourceEventSchema,
   adminResourceRealtimeServerMessageSchema,
@@ -101,6 +106,7 @@ import {
   adminResourceSearchDtoSchema,
   adminResourceTrashResultDtoSchema,
   adminResourceTreeDtoSchema,
+  adminSaveResourceDocumentTransactionResponseSchema,
   adminSessionDtoSchema,
   adminSettingsDtoSchema,
   adminUserDetailDtoSchema,
@@ -317,6 +323,14 @@ export function createHttpAdminApi({
         toModel: toAdminResourceLibraryDocument,
       })
     },
+    getResourceDocumentSync(documentId, afterStateVersion) {
+      return requestAdminJson(client, {
+        method: "GET",
+        path: `/resources/documents/${documentId}/sync?afterStateVersion=${afterStateVersion}`,
+        schema: adminReadResourceDocumentSyncResponseSchema,
+        toModel: toAdminResourceDocumentSync,
+      })
+    },
     getResourceActiveEditorCount(nodeId) {
       return requestAdminJson(client, {
         method: "GET",
@@ -431,6 +445,19 @@ export function createHttpAdminApi({
         path: "/settings/notice",
         schema: adminSettingsDtoSchema,
         toModel: toAdminSettings,
+      })
+    },
+    saveResourceDocumentTransaction(documentId, input) {
+      return requestAdminJson(client, {
+        body: {
+          knownStateVersion: input.knownStateVersion,
+          transactionId: input.transactionId,
+          updateBase64: encodeBase64(input.update),
+        },
+        method: "POST",
+        path: `/resources/documents/${documentId}/transactions`,
+        schema: adminSaveResourceDocumentTransactionResponseSchema,
+        toModel: toAdminResourceDocumentTransactionResult,
       })
     },
     searchResources(input) {
@@ -835,6 +862,51 @@ function toAdminResourceLibraryDocument(
     updatedAt: dto.updatedAt,
     updatedBy: { ...dto.updatedBy },
   }
+}
+
+function toAdminResourceDocumentTransactionResult(
+  dto: AdminSaveResourceDocumentTransactionResponse
+): AdminResourceDocumentTransactionResult {
+  return {
+    contentRevision: dto.contentRevision,
+    kind: dto.kind,
+    stateVersion: dto.stateVersion,
+    transactionId: dto.transactionId,
+  }
+}
+
+function toAdminResourceDocumentSync(
+  dto: AdminReadResourceDocumentSyncResponse
+): AdminResourceDocumentSync {
+  switch (dto.kind) {
+    case "up-to-date":
+      return dto
+    case "updates":
+      return {
+        fromStateVersion: dto.fromStateVersion,
+        kind: dto.kind,
+        stateVersion: dto.stateVersion,
+        updates: dto.updatesBase64.map(decodeBase64),
+      }
+    case "snapshot":
+      return {
+        kind: dto.kind,
+        snapshot: decodeBase64(dto.snapshotBase64),
+        stateVersion: dto.stateVersion,
+      }
+  }
+}
+
+function encodeBase64(value: Uint8Array): string {
+  let binary = ""
+
+  for (const byte of value) binary += String.fromCharCode(byte)
+  return btoa(binary)
+}
+
+function decodeBase64(value: string): Uint8Array {
+  const binary = atob(value)
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0))
 }
 
 function toAdminImportResourceDocumentResult(

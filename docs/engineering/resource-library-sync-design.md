@@ -2,7 +2,7 @@
 
 ## 문서 상태
 
-- 상태: 부분 구현 (3단계 HTTP transaction·update log 완료)
+- 상태: 부분 구현 (4단계 클라이언트 Adapter 전환 진행 중)
 - 기준일: 2026-07-11
 - 관련 요구사항: `REQ-ADM-7 자료실 공동 편집`
 - 관련 화면: `SCR-110 관리자 자료실`
@@ -23,6 +23,8 @@
 - 본문 클라이언트 Adapter와 휴지통·내보내기 공통 operation queue는 아직 전환하지 않았다. 본문 update는 계속 기존 문서별 WebSocket을 사용한다.
 - 2026-07-11: 3단계 서버 구현을 완료했다. HTTP transaction은 Yjs 검증, Markdown·FTS 투영, snapshot·update log·멱등 receipt와 version 증가를 한 SQLite transaction으로 확정한다. sync 조회는 연속된 최근 update가 없거나 1MiB를 넘으면 최신 snapshot으로 복구한다.
 - update log는 승인 시점에 문서별 200건·2MiB 한도를 즉시 강제하고, 별도 receipt는 정리 뒤에도 같은 transaction ID의 최초 승인 결과를 보존한다. 클라이언트 본문 transport는 4단계까지 기존 문서별 WebSocket을 유지한다.
+- 2026-07-11: 4단계 클라이언트 Adapter 전환을 시작했다. 먼저 관리자 HTTP API Adapter와 문서별 cache·transaction queue를 분리해 검증한 뒤 편집기 binding을 한 번에 전환한다.
+- 관리자 HTTP API Adapter는 Yjs binary와 Base64 wire 형식의 변환을 담당한다. 문서별 transaction queue는 500ms 유휴 구간의 update를 합치고 연속 입력은 1초 안에 확정하며, 실패한 요청은 같은 transaction ID와 payload로 재시도한다.
 
 ## 결정 요약
 
