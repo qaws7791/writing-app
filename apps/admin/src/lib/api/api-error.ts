@@ -9,7 +9,6 @@ export type AdminApiErrorCode =
   | "network-error"
   | "not-found"
   | "position-conflict"
-  | "stale-content-revision"
   | "stale-revision"
   | "unauthorized"
 
@@ -37,7 +36,6 @@ const serverCodeMap = {
   RESOURCE_MOVE_CYCLE: "move-cycle",
   RESOURCE_NAME_CONFLICT: "name-conflict",
   RESOURCE_POSITION_CONFLICT: "position-conflict",
-  STALE_CONTENT_REVISION: "stale-content-revision",
   STALE_REVISION: "stale-revision",
   UNAUTHORIZED: "unauthorized",
   VALIDATION_FAILED: "invalid-request",
@@ -52,8 +50,6 @@ const messageByCode = {
   "network-error": "네트워크 연결을 확인해 주세요.",
   "not-found": "요청한 항목을 찾을 수 없습니다.",
   "position-conflict": "이동할 위치를 다시 확인해 주세요.",
-  "stale-content-revision":
-    "다른 사용자가 문서를 변경했습니다. 최신 내용을 다시 불러와 주세요.",
   "stale-revision": "다른 사용자의 변경 사항을 다시 불러옵니다.",
   unauthorized: "관리자 로그인이 필요합니다.",
 } as const satisfies Record<AdminApiErrorCode, string>

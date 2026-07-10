@@ -111,12 +111,6 @@ describe("자료실 HTTP AdminApi", () => {
       { status: "ok", value: document }
     )
     await expect(
-      api.saveResourceLibraryDocument("document-1", {
-        expectedContentRevision: 2,
-        markdown: "공동 편집 본문 갱신",
-      })
-    ).resolves.toEqual({ status: "ok", value: document })
-    await expect(
       api.importResourceDocument({
         expectedRevision: 4,
         fileName: "운영 안내.md",
@@ -179,7 +173,6 @@ describe("자료실 HTTP AdminApi", () => {
         "https://admin-api.example.test/resources/nodes/document-1/restore",
       ],
       ["GET", "https://admin-api.example.test/resources/documents/document-1"],
-      ["PUT", "https://admin-api.example.test/resources/documents/document-1"],
       ["POST", "https://admin-api.example.test/resources/documents/import"],
       [
         "GET",
@@ -201,10 +194,6 @@ describe("자료실 HTTP AdminApi", () => {
       },
       { expectedRevision: 4 },
       { expectedRevision: 5 },
-      {
-        expectedContentRevision: 2,
-        markdown: "공동 편집 본문 갱신",
-      },
       {
         expectedRevision: 4,
         fileName: "운영 안내.md",
@@ -247,41 +236,6 @@ describe("자료실 HTTP AdminApi", () => {
       status: "error",
     })
   })
-
-  it("본문 revision 충돌 코드를 별도 오류로 보존한다", async () => {
-    const api = createHttpAdminApi({
-      baseUrl: readAdminApiBaseUrl({
-        ADMIN_API_BASE_URL: "https://admin-api.example.test/",
-      }),
-      fetch: async () =>
-        new Response(
-          JSON.stringify({
-            code: "STALE_CONTENT_REVISION",
-            message: "Resource library conflict",
-          }),
-          {
-            headers: { "Content-Type": "application/json" },
-            status: 409,
-          }
-        ),
-      tokenProvider: () => "admin-token",
-    })
-
-    await expect(
-      api.saveResourceLibraryDocument("document-1", {
-        expectedContentRevision: 2,
-        markdown: "본문",
-      })
-    ).resolves.toEqual({
-      error: {
-        code: "stale-content-revision",
-        message:
-          "다른 사용자가 문서를 변경했습니다. 최신 내용을 다시 불러와 주세요.",
-        status: 409,
-      },
-      status: "error",
-    })
-  })
 })
 
 function responseFor(request: Request): Response {
@@ -318,7 +272,7 @@ function responseFor(request: Request): Response {
   }
 
   if (
-    (request.method === "GET" || request.method === "PUT") &&
+    request.method === "GET" &&
     request.url.endsWith("/resources/documents/document-1")
   ) {
     return jsonResponse(document)

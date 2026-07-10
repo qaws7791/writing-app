@@ -129,6 +129,7 @@ function createCreateResourceFolderRoute(
   return createResourceNodeRoute({
     ...dependencies,
     kind: "folder",
+    method: "post",
     operationId: "createAdminResourceFolder",
     path: "/resources/folders",
     summary: "자료실 폴더 생성",
@@ -141,6 +142,7 @@ function createCreateResourceDocumentRoute(
   return createResourceNodeRoute({
     ...dependencies,
     kind: "document",
+    method: "post",
     operationId: "createAdminResourceDocumentNode",
     path: "/resources/documents",
     summary: "자료실 문서 생성",
@@ -150,6 +152,7 @@ function createCreateResourceDocumentRoute(
 function createResourceNodeRoute({
   kind,
   events,
+  method,
   now,
   operationId,
   path,
@@ -158,12 +161,13 @@ function createResourceNodeRoute({
   treeService,
 }: ResourceTreeRouteDependencies & {
   readonly kind: "document" | "folder"
+  readonly method: "post"
   readonly operationId: string
   readonly path: string
   readonly summary: string
 }) {
   const routeConfig = {
-    method: "post",
+    method,
     operationId,
     path,
     request: { body: jsonRequestBody(adminCreateResourceNodeRequestSchema) },
@@ -310,6 +314,7 @@ function createTrashResourceNodeRoute(
     ...dependencies,
     action: "trash",
     description: "휴지통으로 이동한 자료실 하위 트리의 결과입니다.",
+    method: "post",
     operationId: "trashAdminResourceNode",
     path: "/resources/nodes/{nodeId}/trash",
     responseSchema: adminResourceTrashResultDtoSchema,
@@ -324,6 +329,7 @@ function createRestoreResourceNodeRoute(
     ...dependencies,
     action: "restore",
     description: "복원한 자료실 하위 트리의 결과입니다.",
+    method: "post",
     operationId: "restoreAdminResourceNode",
     path: "/resources/nodes/{nodeId}/restore",
     responseSchema: adminResourceRestoreResultDtoSchema,
@@ -336,6 +342,7 @@ function createResourceRevisionRoute({
   collaborationRooms,
   description,
   events,
+  method,
   now,
   operationId,
   path,
@@ -346,13 +353,14 @@ function createResourceRevisionRoute({
 }: ResourceTreeRouteDependencies & {
   readonly action: "restore" | "trash"
   readonly description: string
+  readonly method: "post"
   readonly operationId: string
   readonly path: string
   readonly responseSchema: z.ZodType
   readonly summary: string
 }) {
   const routeConfig = {
-    method: "post",
+    method,
     operationId,
     path,
     request: {

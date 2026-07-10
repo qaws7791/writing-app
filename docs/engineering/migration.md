@@ -7,6 +7,7 @@
 - 현재 DB baseline은 `packages/db/src/migrations/0000-writing-app-baseline.sql`이다.
 - 마이그레이션 실행 진입점은 `packages/db/src/migrations/migrate.ts`다.
 - 현재 방식은 누적 migration 체인이 아니라 baseline SQL 적용 방식이다.
+- 최종 자료실 트리·Markdown·Yjs·감사·FTS5 schema도 같은 baseline에 포함하며 별도 자료실 migration 명령은 두지 않는다.
 - 운영 데이터 이전이 필요해지면 별도 migration 계획과 ADR을 작성한다.
 
 ## 명령
@@ -29,6 +30,13 @@
 6. `bun --filter @workspace/db test`를 실행한다.
 7. 영향을 받는 API/core 테스트를 실행한다.
 8. 문서와 OpenAPI 계약이 영향을 받으면 함께 갱신한다.
+
+## 자료실 전환 기록
+
+- 기존 Tiptap 자료는 제품 결정에 따라 이전하지 않고 폐기했다.
+- 전환 전 SQLite WAL checkpoint와 일관된 파일 백업을 만들고 원본·백업 모두 `PRAGMA integrity_check` 결과 `ok`를 확인했다.
+- 명시적 일회성 전환으로 운영 개발 DB를 최종 자료실 schema로 바꾼 뒤, 최종 schema를 `0000-writing-app-baseline.sql`에 통합했다.
+- 일회성 전환 코드와 명령은 제거했으며 이후 신규 DB와 로컬 준비는 baseline만 적용한다.
 
 ## 콘텐츠 seed 마이그레이션
 

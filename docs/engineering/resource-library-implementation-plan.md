@@ -2,15 +2,16 @@
 
 ## 문서 상태
 
-- 계획 확정
+- 구현 완료
 - 작성일: 2026-07-10
+- 완료일: 2026-07-11
 - 관련 제품 기준: `REQ-ADM-7`
 - 관련 화면: `SCR-110`
 - 관련 결정: `ADR-0004`
 
 ## 목표
 
-현재 Tiptap JSON 기반 목록·폼 자료실을 제거하고, 폴더 트리와 Markdown 원본, Lexical GFM 편집기, 자체 호스팅 Yjs 공동 편집을 하나의 전환 작업으로 완성한다. 구현은 내부 단계로 나누지만 구버전과의 이중 쓰기나 하위 호환 계층 없이 한 번에 교체한다.
+기존 Tiptap JSON 기반 목록·폼 자료실을 제거하고, 폴더 트리와 Markdown 원본, Lexical GFM 편집기, 자체 호스팅 Yjs 공동 편집을 하나의 전환 작업으로 완성한다. 구현은 내부 단계로 나누되 구버전과의 이중 쓰기나 하위 호환 계층 없이 한 번에 교체했다.
 
 ## 공식 참고 기준
 
@@ -19,7 +20,7 @@
 - [Lexical 공동 편집 문서](https://lexical.dev/docs/collaboration/react): `@lexical/yjs`, `yjs`, `y-websocket` 기반 연결과 `editorState: null` 초기화 규칙을 따른다.
 - [reui Tree 문서](https://reui.io/docs/components/base/tree): `@headless-tree/core`, `@headless-tree/react` 기반 Tree, TreeItem, TreeItemLabel 구조를 사용한다.
 
-## 현재 상태와 제거 대상
+## 전환 전 상태와 제거 대상
 
 - `admin_resource_documents.content_json`은 제한된 Tiptap 문단 JSON을 저장한다.
 - `apps/admin`은 목록, 생성 form, 상세 `Textarea`를 한 파일에서 렌더링한다.
@@ -270,8 +271,8 @@ apps/admin/src/features/resources/
 - 폴더·문서 생성, 이름 변경, 낙관적 drag/drop, 검색 기반 목적지와 형제 위치를 선택하는 menu move, 재귀 휴지통 이동·복원을 expected revision 흐름으로 연결했다. stale revision은 화면에 올라온 부모를 재조회하고, 서버 거부는 이동 전 자식 순서로 복구한다.
 - 휴지통에서는 삭제 subtree의 최상위 항목에만 복원 메뉴를 제공하고 하위 항목 단독 복원은 노출하지 않는다. 폴더 휴지통 이동·복원 뒤 하위 문서까지 함께 전환되고, 선택 문서가 subtree에 포함되면 빈 선택 화면으로 이동하는 동작을 실제 브라우저에서 확인했다.
 - 검색 결과의 조상 경로를 펼쳐 문서로 이동하고, 읽기 화면은 full breadcrumb와 긴 경로의 가운데 popover 축약, 생성자·수정자·상대·정확 시각 metadata, active·archived 상태를 제공한다. GFM Markdown renderer는 raw HTML을 실행하지 않고 HTTPS URL 이미지만 렌더링한다.
-- 구 Tiptap 목록·폼 UI와 helper·test를 새 route 전환과 함께 삭제해 죽은 frontend 코드를 남기지 않았다. legacy API·repository·schema의 최종 삭제는 7단계 일괄 전환에 남긴다.
-- 실제 로컬 관리자 로그인과 데스크톱·모바일 브라우저에서 생성, 중첩, 이름 변경, 읽기 화면 갱신, 재귀 휴지통 이동, archived 하위 문서 열기, subtree 복원, drawer 자동 닫힘을 확인했다. 이 과정에서 발견한 누락 migration을 막기 위해 `dev:admin:setup`이 baseline seed 직후 자료실 migration을 적용하도록 고정했다.
+- 구 Tiptap 목록·폼 UI와 helper·test를 새 route 전환과 함께 삭제해 죽은 frontend 코드를 남기지 않았다. 당시 남겨 둔 legacy API·repository·schema는 7단계에서 제거했다.
+- 실제 로컬 관리자 로그인과 데스크톱·모바일 브라우저에서 생성, 중첩, 이름 변경, 읽기 화면 갱신, 재귀 휴지통 이동, archived 하위 문서 열기, subtree 복원, drawer 자동 닫힘을 확인했다. 최종 전환 뒤 `dev:admin:setup`은 최종 schema baseline을 먼저 적용한 뒤 콘텐츠와 관리자 seed를 실행한다.
 - admin 전체 test, UI primitive test, admin·UI lint/typecheck, root lint와 admin production build를 통과했다.
 
 ### 4. Lexical GFM 편집기
@@ -336,13 +337,20 @@ apps/admin/src/features/resources/
 
 ### 7. 한 번에 전환
 
-상태: 대기
+상태: 완료
 
 - 남은 legacy Tiptap contract, API, repository code와 test를 삭제한다.
 - DB 백업 후 명시 migration을 실행한다.
 - `ENABLE_TEST_AUTH=true`로 두 브라우저 context E2E를 통과시킨다.
 - build, lint, typecheck, package test, API contract drift, 문서 drift를 실행한다.
 - 제품·디자인·엔지니어링 기준 문서를 현재 구현 상태로 전환하고 계획 표기를 제거한다.
+
+완료 근거:
+
+- 운영 DB를 SQLite 일관성 백업으로 보존하고 무결성 검사를 통과한 뒤 명시적 자료실 마이그레이션을 실행했다. 최종 schema는 baseline에 통합하고 전환용 migration과 실행 명령을 제거했다.
+- legacy Tiptap contract, CRUD API·repository·test와 REST 본문 저장 경로를 제거했다. 문서 본문 변경은 자체 호스팅 Yjs 공동 편집 경로에서만 영속화된다.
+- 독립된 브라우저 두 개에서 교차 입력 수렴, 현재 편집자 2명 표시, 하위 트리 휴지통 이동·읽기 전용 전환·복원을 확인했다. 복원 후 Markdown 전체 내용과 `content_revision=3`, DB 무결성 `ok`를 확인했다.
+- Turbo test 13개 task를 순차 실행해 통과했고 root typecheck·lint·format, API contract drift, 문서 drift와 admin·admin-api production build를 통과했다. root 통합 build에서는 자료실과 무관한 기존 Storybook의 `@tailwindcss/typography` 의존성 누락만 남아 있다.
 
 ## 테스트 계획
 
@@ -361,7 +369,7 @@ apps/admin/src/features/resources/
 - 전체 subtree 휴지통 이동·복원과 trash root 조회.
 - restore 이름 충돌과 원래 순서 복구.
 - Markdown, Yjs snapshot, content revision, FTS의 원자적 projection.
-- migration 재실행 시 새 자료 보존.
+- 최종 baseline 단독 적용과 재실행 시 schema·자료 보존.
 
 ### WebSocket 통합
 

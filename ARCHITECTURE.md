@@ -19,6 +19,7 @@
 │   ├── hono/    # Hono OpenAPI route, validation, error handling 표준 패키지
 │   ├── http-client/ # HTTP transport result와 네트워크 오류 모델
 │   ├── logger/  # pino logger와 요청 로그 helper
+│   ├── resource-document/ # Lexical GFM 문서 계약과 Yjs 투영
 │   ├── env/     # 환경 변수 parsing helper
 │   └── core/    # shared kernel, module facade, usecase, repository adapter, composition root
 └── docs/       # product, design, engineering 기준 문서
@@ -32,6 +33,7 @@
 - auth: Better Auth
 - database: Drizzle with SQLite
 - logging: pino with pino-pretty
+- rich text collaboration: Lexical 0.46.0, Yjs 13
 - package manager: Bun monorepo
 
 ## 앱
@@ -86,6 +88,7 @@
   - 콘텐츠 검색, 생성, 보관, 미리보기
   - 사용자 검색, 상태 변경, 삭제 요청 처리
   - 분석과 운영 설정 관리
+  - 무제한 자료 트리, GFM WYSIWYG 편집, 실시간 공동 편집과 휴지통 복원
 
 ### admin-api
 
@@ -99,6 +102,7 @@
   - 코스-유닛-레슨-스텝 계층형 조회와 코스 보관
   - 사용자 목록, 상세, 상태 변경, 삭제 상태 전환
   - 대시보드, 분석, 운영 설정
+  - 자료 트리·검색·Markdown 가져오기/내보내기 REST와 자체 호스팅 Yjs WebSocket
   - 최초 관리자 계정 seed
 
 ### storybook
@@ -123,6 +127,8 @@ core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 R
 
 학습자 API는 core 내부 파일 구조에 직접 묶이지 않도록 `@workspace/core/modules/{auth,content,learning,ai-feedback,learner-api}` public facade만 import한다. 기존 `@workspace/core/{admin,auth,content,learning,ai-feedback,status}` public import는 source shim이 아니라 package export map으로 새 `modules`와 `shared` 위치에 직접 연결한다.
 
+자료실은 `packages/core/src/modules/resource-library`의 tree/document/search/collaboration use case와 repository 경계로 분리한다. 트리 구조 명령은 expected revision과 SQLite transaction으로 직렬화하고 본문 변경은 Yjs room flush가 Markdown·FTS·수정 메타데이터를 하나의 영속화 경계에서 갱신한다.
+
 ### hono
 
 `packages/hono`는 Hono 기반 API 앱의 반복되는 transport 표준을 제공한다. 앱 생성, OpenAPI route 정의, Env 고정 route builder, Zod validation hook, `AppError`, 404와 공통 error handler를 담당한다. 에러 wire contract는 `{ code, message, errors? }`다.
@@ -142,6 +148,10 @@ core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 R
 ### logger
 
 `packages/logger`는 API 런타임에서 공유하는 pino logger와 요청 로그 필드 helper를 제공한다.
+
+### resource-document
+
+`packages/resource-document`는 브라우저와 headless 서버가 공유하는 Lexical node, 정규 GFM AST import/export·검증, Yjs snapshot projection을 제공한다. GFM으로 의미 보존할 수 없는 상태는 기존 Markdown을 덮어쓰기 전에 거부한다.
 
 ## 런타임 분리
 

@@ -18,7 +18,7 @@
     "check:workspace-inventory": "bun scripts/check-workspace-inventory.ts",
     "dev": "turbo dev",
     "dev:admin": "bun run dev:admin:setup && turbo dev --filter=@workspace/admin --filter=@workspace/admin-api",
-    "dev:admin:setup": "bun --filter @workspace/db db:seed && bun --filter @workspace/db db:migrate:resource-library && ADMIN_SEED_RESET_PASSWORD=true bun --filter @workspace/admin-api seed:admin",
+    "dev:admin:setup": "bun --filter @workspace/db db:migrate && bun --filter @workspace/db db:seed && ADMIN_SEED_RESET_PASSWORD=true bun --filter @workspace/admin-api seed:admin",
     "dev:app": "turbo dev --filter=@workspace/web --filter=@workspace/api",
     "dev:app:setup": "bun --filter @workspace/db db:migrate && bun --filter @workspace/db db:seed",
     "dev:app:fresh": "bun run db:reset && bun run dev:app:setup && bun run dev:app",

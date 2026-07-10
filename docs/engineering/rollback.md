@@ -33,6 +33,7 @@
 5. health check를 확인한다.
 6. 학습자 로그인, 코스 조회, 레슨 조회, 진행 저장을 smoke test한다.
 7. 어드민 로그인, 목록 조회, 설정 조회를 smoke test한다.
+8. 자료실 트리 조회, 문서 열기, 공동 편집 연결과 Markdown 내보내기를 smoke test한다.
 
 ## DB 롤백
 
@@ -58,6 +59,7 @@ DB 롤백은 코드 롤백보다 위험하다. 아래 조건을 확인한다.
 - WAL 모드를 사용하므로 백업/복구 시 `*.sqlite`, `*.sqlite-wal`, `*.sqlite-shm` 파일 상태를 함께 고려한다.
 - 운영 중 `db:reset`을 사용하지 않는다.
 - 네트워크 파일시스템에서 같은 SQLite 파일을 여러 서버가 공유하지 않는다.
+- 자료실 room이 열려 있으면 새 WebSocket 수락을 중단하고 모든 room flush가 끝난 뒤 DB 파일을 교체한다.
 
 ## Seed 롤백
 

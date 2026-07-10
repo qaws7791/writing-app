@@ -8,7 +8,6 @@ import {
 } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { runResourceLibraryMigration } from "@workspace/db/migrations/resource-library.migration"
 
 const now = new Date("2026-07-10T00:00:00.000Z")
 
@@ -367,7 +366,6 @@ function createRepositoryFixture() {
   const client = createInMemoryWritingAppDatabase()
   runBaselineMigration(client.sqlite)
   insertAdminUser(client.sqlite)
-  runResourceLibraryMigration(client.sqlite)
 
   return {
     client,

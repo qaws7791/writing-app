@@ -5,7 +5,6 @@ import { createDrizzleResourceTreeRepository } from "@workspace/core/modules/res
 import { toResourceFolderId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { runResourceLibraryMigration } from "@workspace/db/migrations/resource-library.migration"
 
 const folderCount = 100
 const documentsPerFolder = 99
@@ -19,7 +18,6 @@ describe("자료실 10,000개 node 성능 기준", () => {
     try {
       runBaselineMigration(client.sqlite)
       insertAdminUser(client.sqlite)
-      runResourceLibraryMigration(client.sqlite)
       insertPerformanceFixture(client.sqlite)
 
       const tree = createDrizzleResourceTreeRepository(client.db)

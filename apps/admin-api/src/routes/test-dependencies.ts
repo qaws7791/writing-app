@@ -71,10 +71,6 @@ export function createTestAdminApiDependencies(
         ...failingAdminServices.dashboard,
         ...overrides.adminServices?.dashboard,
       },
-      resources: {
-        ...failingAdminServices.resources,
-        ...overrides.adminServices?.resources,
-      },
       resourceLibrary: {
         documents: {
           ...failingAdminServices.resourceLibrary.documents,
@@ -204,11 +200,6 @@ function createFailingAdminApiServices(): AdminApiServices {
             "resourceLibrary.documents.importDocument"
           )
         },
-        async saveDocument() {
-          throwUnexpectedAdminServiceCall(
-            "resourceLibrary.documents.saveDocument"
-          )
-        },
       },
       search: {
         async search() {
@@ -242,26 +233,6 @@ function createFailingAdminApiServices(): AdminApiServices {
         async trashNode() {
           throwUnexpectedAdminServiceCall("resourceLibrary.tree.trashNode")
         },
-      },
-    },
-    resources: {
-      async archiveResourceDocument() {
-        throwUnexpectedAdminServiceCall("resources.archiveResourceDocument")
-      },
-      async createResourceDocument() {
-        throwUnexpectedAdminServiceCall("resources.createResourceDocument")
-      },
-      async deleteResourceDocument() {
-        throwUnexpectedAdminServiceCall("resources.deleteResourceDocument")
-      },
-      async getResourceDocument() {
-        throwUnexpectedAdminServiceCall("resources.getResourceDocument")
-      },
-      async getResourceDocuments() {
-        throwUnexpectedAdminServiceCall("resources.getResourceDocuments")
-      },
-      async updateResourceDocument() {
-        throwUnexpectedAdminServiceCall("resources.updateResourceDocument")
       },
     },
     settings: {

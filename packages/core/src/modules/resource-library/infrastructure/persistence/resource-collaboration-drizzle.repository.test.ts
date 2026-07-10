@@ -4,7 +4,6 @@ import { toResourceDocumentId } from "@workspace/core/modules/resource-library/d
 import { createDrizzleResourceCollaborationRepository } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-collaboration-drizzle.repository"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { runResourceLibraryMigration } from "@workspace/db/migrations/resource-library.migration"
 
 const documentId = toResourceDocumentId("document-1")
 
@@ -108,7 +107,6 @@ function createFixture() {
       ('admin-1', '관리자 1', 'admin1@example.com', 1, 'operator', 1, 1),
       ('admin-2', '관리자 2', 'admin2@example.com', 1, 'operator', 1, 1);
   `)
-  runResourceLibraryMigration(client.sqlite)
   client.sqlite.exec(`
     INSERT INTO admin_resource_nodes (
       id, kind, parent_id, name, normalized_name, sort_order, status,

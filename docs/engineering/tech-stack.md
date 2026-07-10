@@ -40,7 +40,7 @@
 | y-protocols | `1.0.7`   | `apps/admin-api`                           | 공개 sync·awareness protocol API로 Bun WebSocket server를 구성한다.                                           |
 | lib0        | `0.2.117` | `apps/admin-api`                           | y-websocket 이진 protocol의 공개 encoder·decoder를 제공한다.                                                  |
 
-모든 직접 사용하는 `lexical`, `@lexical/*` 패키지는 정확히 `0.46.0`으로 함께 고정한다. 저장 경계는 `mdast-util-from-markdown`, `mdast-util-gfm`, `mdast-util-to-markdown`의 정규 GFM AST를 사용한다. `@lexical/markdown` transformer는 향후 편집 shortcut용 공개 목록으로만 유지하고 저장 import/export를 담당하지 않는다. 실험적 `DraggableBlockPlugin_EXPERIMENTAL`은 `apps/admin`의 client component 하나에서만 사용한다.
+모든 직접 사용하는 `lexical`, `@lexical/*` 패키지는 정확히 `0.46.0`으로 함께 고정한다. 저장 경계는 `mdast-util-from-markdown`, `mdast-util-gfm`, `mdast-util-to-markdown`의 정규 GFM AST를 사용한다. `@lexical/markdown` transformer는 편집 shortcut에만 사용하고 저장 import/export를 담당하지 않는다. 실험적 `DraggableBlockPlugin_EXPERIMENTAL`은 `apps/admin`의 client component 하나에서만 사용한다.
 
 공식 `@y/websocket-server`의 server adapter는 Node `ws` 타입을 요구하고 최신판은 Yjs 14 계열을 사용하므로 Bun `ServerWebSocket`과 Lexical의 Yjs 13 경계에 직접 결합하지 않는다. 대신 같은 공식 Yjs 프로젝트의 공개 `y-protocols/sync`, `y-protocols/awareness`, `lib0` API만 사용해 Bun transport adapter를 구성하고 실제 `WebsocketProvider` 통합 테스트로 protocol 호환성을 고정한다.
 

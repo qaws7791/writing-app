@@ -45,7 +45,6 @@ export function resourceLibraryConflictAdminError(
     | "RESOURCE_MOVE_CYCLE"
     | "RESOURCE_NAME_CONFLICT"
     | "RESOURCE_POSITION_CONFLICT"
-    | "STALE_CONTENT_REVISION"
     | "STALE_REVISION"
 ): AppError {
   return new AppError({

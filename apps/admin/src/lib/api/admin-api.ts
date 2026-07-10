@@ -12,7 +12,6 @@ export type AdminUserOperationalStatus = "active" | "suspended"
 export type AdminUserSort = "joined" | "lastActive" | "lessonsDone" | "streak"
 export type AdminUserStatus = AdminUserOperationalStatus | "deleted"
 export type AdminUserListStatusFilter = "all" | AdminUserStatus
-export type AdminResourceDocumentStatusFilter = "all" | AdminCourseStatus
 export type AdminAiChatMessageRole = "assistant" | "user"
 export type AdminRole = "operator" | "owner"
 
@@ -218,55 +217,6 @@ export type AdminCourseList = {
   readonly pagination: AdminPagination
 }
 
-export type AdminTiptapDocument = {
-  readonly content: readonly {
-    readonly content?: readonly {
-      readonly text: string
-      readonly type: "text"
-    }[]
-    readonly type: "paragraph"
-  }[]
-  readonly type: "doc"
-}
-
-export type AdminResourceDocumentAuthor = {
-  readonly email: string
-  readonly id: string
-  readonly name: string
-}
-
-export type AdminResourceDocumentListItem = {
-  readonly author: AdminResourceDocumentAuthor
-  readonly createdAt: string
-  readonly excerpt: string
-  readonly id: string
-  readonly status: AdminCourseStatus
-  readonly title: string
-  readonly updatedAt: string
-}
-
-export type AdminResourceDocumentDetail = AdminResourceDocumentListItem & {
-  readonly content: AdminTiptapDocument
-}
-
-export type AdminResourceDocumentList = {
-  readonly items: readonly AdminResourceDocumentListItem[]
-  readonly pagination: AdminPagination
-}
-
-export type AdminResourceDocumentInput = {
-  readonly content: AdminTiptapDocument
-  readonly title: string
-}
-
-export type AdminArchiveResourceDocumentResult = {
-  readonly archived: true
-}
-
-export type AdminDeleteResourceDocumentResult = {
-  readonly deleted: true
-}
-
 export type AdminResourceTreeScope = "active" | "trash"
 
 export type AdminResourceBreadcrumbItem = {
@@ -378,11 +328,6 @@ export type AdminImportResourceDocumentResult = {
   readonly mutation: AdminResourceNodeMutation
 }
 
-export type AdminSaveResourceDocumentInput = {
-  readonly expectedContentRevision: number
-  readonly markdown: string
-}
-
 export type AdminExportResourceDocument = {
   readonly fileName: string
   readonly markdown: string
@@ -434,13 +379,6 @@ export type ReadAdminUsersInput = {
   readonly status: AdminUserListStatusFilter
 }
 
-export type ReadAdminResourcesInput = {
-  readonly page: number
-  readonly pageSize: number
-  readonly query: string
-  readonly status: AdminResourceDocumentStatusFilter
-}
-
 export type ReadAdminAnalyticsInput = {
   readonly days: number
 }
@@ -462,12 +400,6 @@ export type AdminApi = {
   readonly archiveCourse: (
     courseId: string
   ) => Promise<AdminApiResult<AdminArchiveCourseResult>>
-  readonly archiveResourceDocument: (
-    documentId: string
-  ) => Promise<AdminApiResult<AdminArchiveResourceDocumentResult>>
-  readonly createResourceDocument: (
-    input: AdminResourceDocumentInput
-  ) => Promise<AdminApiResult<AdminResourceDocumentDetail>>
   readonly createResourceDocumentNode: (
     input: AdminResourceParentCommandInput
   ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
@@ -475,9 +407,6 @@ export type AdminApi = {
     input: AdminResourceParentCommandInput
   ) => Promise<AdminApiResult<AdminResourceNodeMutation>>
   readonly createCourse: () => Promise<AdminApiResult<AdminCourseDetail>>
-  readonly deleteResourceDocument: (
-    documentId: string
-  ) => Promise<AdminApiResult<AdminDeleteResourceDocumentResult>>
   readonly deleteUser: (
     userId: string
   ) => Promise<AdminApiResult<AdminDeleteUserResult>>
@@ -500,18 +429,12 @@ export type AdminApi = {
   readonly getLessonAnalytics: (
     input: ReadAdminLessonAnalyticsInput
   ) => Promise<AdminApiResult<AdminLessonAnalyticsPage>>
-  readonly getResourceDocument: (
-    documentId: string
-  ) => Promise<AdminApiResult<AdminResourceDocumentDetail>>
   readonly getResourceLibraryDocument: (
     documentId: string
   ) => Promise<AdminApiResult<AdminResourceLibraryDocument>>
   readonly getResourceActiveEditorCount: (
     nodeId: string
   ) => Promise<AdminApiResult<AdminResourceActiveEditorCount>>
-  readonly getResourceDocuments: (
-    input: ReadAdminResourcesInput
-  ) => Promise<AdminApiResult<AdminResourceDocumentList>>
   readonly getResourceTree: (input: {
     readonly parentId: string | null
     readonly scope: AdminResourceTreeScope
@@ -541,10 +464,6 @@ export type AdminApi = {
     nodeId: string,
     input: AdminResourceRevisionCommandInput
   ) => Promise<AdminApiResult<AdminResourceRestoreResult>>
-  readonly saveResourceLibraryDocument: (
-    documentId: string,
-    input: AdminSaveResourceDocumentInput
-  ) => Promise<AdminApiResult<AdminResourceLibraryDocument>>
   readonly saveLegalSettings: (
     input: AdminLegalSettingsRequest
   ) => Promise<AdminApiResult<AdminSettings>>
@@ -563,8 +482,4 @@ export type AdminApi = {
   readonly updateUserStatus: (
     input: UpdateAdminUserStatusInput
   ) => Promise<AdminApiResult<AdminUserDetail>>
-  readonly updateResourceDocument: (
-    documentId: string,
-    input: AdminResourceDocumentInput
-  ) => Promise<AdminApiResult<AdminResourceDocumentDetail>>
 }

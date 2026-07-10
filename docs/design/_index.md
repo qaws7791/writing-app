@@ -49,7 +49,7 @@
 | `screens/SCR-107-admin-analytics.md`       | 분석 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                        |
 | `screens/SCR-108-admin-settings.md`        | 운영 설정 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                   |
 | `screens/SCR-109-admin-step-debug.md`      | 스텝 디버그 화면의 목적, 정보 구조, UI 기준, 상태, 접근성을 정의한다.                 |
-| `screens/SCR-110-admin-resources.md`       | 계획된 관리자 자료실의 트리, 공동 편집, 휴지통, 검색 화면 기준을 정의한다.            |
+| `screens/SCR-110-admin-resources.md`       | 관리자 자료실의 트리, 공동 편집, 휴지통, 검색 화면 기준을 정의한다.                   |
 
 ## 관리 기준
 

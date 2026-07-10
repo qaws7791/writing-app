@@ -1,13 +1,5 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 import { adminAuthUsers } from "@workspace/db/schema/admin-auth.schema"
-import {
-  persistedContentStatuses,
-  persistedContentStatusValues,
-} from "@workspace/db/persisted-values"
-
-const contentStatuses = persistedContentStatuses
-const contentStatusValues = persistedContentStatusValues
-
 const adminAiChatMessageRoleValues = ["assistant", "user"] as const
 
 export const adminSettings = sqliteTable("admin_settings", {
@@ -15,24 +7,6 @@ export const adminSettings = sqliteTable("admin_settings", {
   updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
   value: text("value").notNull(),
 })
-
-export const legacyAdminResourceDocuments = sqliteTable(
-  "admin_resource_documents",
-  {
-    authorId: text("author_id")
-      .notNull()
-      .references(() => adminAuthUsers.id, { onDelete: "cascade" }),
-    contentJson: text("content_json").notNull(),
-    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
-    excerpt: text("excerpt").notNull(),
-    id: text("id").primaryKey().notNull(),
-    status: text("status", { enum: contentStatusValues })
-      .notNull()
-      .default(contentStatuses.active),
-    title: text("title").notNull(),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
-  }
-)
 
 export const adminAiChatConversations = sqliteTable(
   "admin_ai_chat_conversations",

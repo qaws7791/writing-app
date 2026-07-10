@@ -81,7 +81,6 @@ const adminService = createAdminService({
   contentResetRepository: adminRepository,
   courseRepository: adminRepository,
   dashboardReader: adminRepository,
-  resourceRepository: adminRepository,
   settingsRepository: adminRepository,
   userRepository: adminRepository,
 })
@@ -138,7 +137,6 @@ const app = createApp({
     contentReset: adminService,
     courses: adminService,
     dashboard: adminService,
-    resources: adminService,
     resourceLibrary: {
       documents: resourceDocumentService,
       search: resourceSearchService,

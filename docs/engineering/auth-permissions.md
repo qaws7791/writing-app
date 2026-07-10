@@ -59,8 +59,11 @@ unknown role은 관리자 세션 resolver에서 유효하지 않은 세션으로
 | 공지/배너 저장             | 거부     | 허용  |
 | 약관/개인정보처리방침 저장 | 거부     | 허용  |
 | 콘텐츠 초기화              | 거부     | 허용  |
+| 자료실 트리·문서 조회      | 허용     | 허용  |
+| 자료실 구조 변경·가져오기  | 허용     | 허용  |
+| 자료실 본문 공동 편집      | 허용     | 허용  |
 
-변경성 route는 `resolveOwnerAdminSession()`을 사용해 서비스 호출 전에 차단한다.
+코스·사용자·운영 설정의 변경성 route는 `resolveOwnerAdminSession()`을 사용해 서비스 호출 전에 차단한다. 자료실은 작성자 소유권 없이 전체 관리자가 공동 관리하므로 구조 명령, 가져오기와 WebSocket 편집 모두 유효한 관리자 세션을 요구한다.
 
 ## API별 권한 기준
 
@@ -78,7 +81,8 @@ unknown role은 관리자 세션 resolver에서 유효하지 않은 세션으로
 - 인증 처리는 Better Auth handler가 `/api/auth/*`에서 담당한다.
 - 관리자 로그인은 `POST /api/auth/sign-in/email`을 사용한다.
 - 조회 route는 관리자 세션만 요구한다.
-- 변경 route는 owner 세션을 요구한다.
+- 코스·사용자·운영 설정 변경 route는 owner 세션을 요구한다.
+- 자료실 REST와 WebSocket은 operator와 owner 모두 사용할 수 있다.
 
 ## 오류 정책
 

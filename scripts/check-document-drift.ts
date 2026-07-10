@@ -49,6 +49,15 @@ const adminRouteSources = [
   {
     filePath: "apps/admin-api/src/routes/settings.route.ts",
   },
+  {
+    filePath: "apps/admin-api/src/routes/resource-tree.route.ts",
+  },
+  {
+    filePath: "apps/admin-api/src/routes/resource-documents.route.ts",
+  },
+  {
+    filePath: "apps/admin-api/src/routes/resource-search.route.ts",
+  },
 ] as const
 
 const repositoryRoot = process.cwd()
@@ -343,7 +352,7 @@ function readApiRoutes(): Route[] {
   const routeFiles = collectFiles(path.join(repositoryRoot, "apps/api/src"))
     .filter((filePath) => filePath.endsWith(".routes.ts"))
     .map((filePath) => fs.readFileSync(filePath, "utf8"))
-  const routePattern = /method:\s*"([a-z]+)"[\s\S]*?path:\s*"([^"]+)"/g
+  const routePattern = /^\s*method:\s*"([a-z]+)"[\s\S]*?^\s*path:\s*"([^"]+)"/gm
   const routes = routeFiles.flatMap((content) =>
     [...content.matchAll(routePattern)].map((match) => ({
       method: (match[1] ?? "").toUpperCase(),
@@ -383,7 +392,7 @@ function readAdminRoutes(): Route[] {
       path: "/openapi",
     },
   ]
-  const routePattern = /method:\s*"([a-z]+)"[\s\S]*?path:\s*"([^"]+)"/g
+  const routePattern = /^\s*method:\s*"([a-z]+)"[\s\S]*?^\s*path:\s*"([^"]+)"/gm
 
   for (const source of adminRouteSources) {
     const content = fs.readFileSync(

@@ -4,7 +4,7 @@
 
 백엔드는 모듈러 모놀리스로 구성한다. 도메인 규칙, 데이터 접근, 로깅, 프로세스 조립 책임을 패키지 단위로 분리하고, 런타임은 학습자용 API와 관리자용 API를 별도 Hono 앱으로 실행한다.
 
-현재 학습자 API는 공개 콘텐츠 조회, Better Auth 기반 Google 로그인, 학습 진행/답변 저장, 프로필과 연속 학습일 계산, OpenAI 기반 AI 코칭을 포함한다. 관리자 API는 관리자 인증, 대시보드, 콘텐츠 계층 조회와 편집, 사용자 운영, 분석, 운영 설정을 제공한다.
+현재 학습자 API는 공개 콘텐츠 조회, Better Auth 기반 Google 로그인, 학습 진행/답변 저장, 프로필과 연속 학습일 계산, OpenAI 기반 AI 코칭을 포함한다. 관리자 API는 관리자 인증, 대시보드, 콘텐츠 계층 조회와 편집, 사용자 운영, 분석, 운영 설정, 자료실 트리와 실시간 공동 편집을 제공한다.
 
 사용자 또는 관리자가 받을 수 있는 API 오류 응답의 `message`는 한국어로 작성한다. 상세 원칙은 `docs/design/text-localization-policy.md`를 따른다.
 
@@ -110,6 +110,22 @@ bun --filter @workspace/api dev
 - `PUT /settings/notice`
 - `PUT /settings/legal`
 - `POST /settings/content-reset`
+- `GET /resources/tree`
+- `POST /resources/folders`
+- `POST /resources/documents`
+- `GET /resources/documents/{documentId}`
+- `POST /resources/documents/import`
+- `GET /resources/documents/{documentId}/export`
+- `GET /resources/search`
+- `GET /resources/nodes/{nodeId}/active-editors`
+- `PATCH /resources/nodes/{nodeId}/name`
+- `PATCH /resources/nodes/{nodeId}/move`
+- `POST /resources/nodes/{nodeId}/trash`
+- `POST /resources/nodes/{nodeId}/restore`
+- `WebSocket /resources/collaboration/{documentId}`
+- `WebSocket /resources/events`
+
+자료실 본문 저장용 REST endpoint는 두지 않는다. 자체 호스팅 Yjs room이 변경을 병합하고 debounce, 마지막 연결 종료, 내보내기, 휴지통 이동과 프로세스 종료 시 GFM Markdown 원본·FTS 색인·수정 메타데이터를 transaction으로 투영한다. WebSocket upgrade는 관리자 session cookie와 `ADMIN_ORIGIN`을 검증하며 문서당 동시 연결은 20개로 제한한다.
 
 관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 관리자 Better Auth 런타임에는 Google/OAuth social provider를 등록하지 않는다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다. `admin_` 테이블 prefix와 Better Auth 컬럼명 보존 규칙은 `docs/engineering/schema-conventions.md`를 따른다. Next.js 어드민 앱은 `/api/auth/*`를 프록시하지 않고 어드민 Hono API의 인증 endpoint를 직접 호출한다. 관리자 보호 API도 `auth.api.getSession({ headers })`로 관리자용 httpOnly 세션 쿠키를 검증하며, `ADMIN_BETTER_AUTH_SECRET`은 공통 `BETTER_AUTH_SECRET`보다 우선한다.
 
@@ -145,7 +161,7 @@ bun --filter @workspace/admin-api seed:admin
 
 ## `packages/core`
 
-`packages/core`는 도메인 중심 계약과 학습자 API application implementation을 담는다. 콘텐츠, 학습 진행, AI 피드백, 브랜드 ID, repository port와 구현, 명시적 결과 변형, 도메인 서비스, 트랜잭션 경계, DB query, Better Auth profile onboarding, OpenAI feedback provider adapter를 둔다. HTTP transport에는 의존하지 않으며, DB 접근은 `packages/db`의 저수준 primitive를 통해 수행한다.
+`packages/core`는 도메인 중심 계약과 application implementation을 담는다. 콘텐츠, 학습 진행, AI 피드백, 자료실 트리·문서·검색·공동 편집, 브랜드 ID, repository port와 구현, 명시적 결과 변형, 도메인 서비스, 트랜잭션 경계, DB query, Better Auth profile onboarding, OpenAI feedback provider adapter를 둔다. HTTP transport에는 의존하지 않으며, DB 접근은 `packages/db`의 저수준 primitive를 통해 수행한다.
 
 ## 콘텐츠 변경 정책
 
@@ -176,6 +192,12 @@ DB 테이블과 컬럼 명명 규칙은 `docs/engineering/schema-conventions.md`
 - `lesson_answers`: 사용자별 레슨 스텝 답변
 - `feedback_attempts`: AI 피드백 완료 시도와 구조화 결과
 - `admin_settings`: 공지, 법적 문서, 운영 설정 key-value 저장소
+- `admin_resource_nodes`: 폴더·문서 트리, 정렬, 휴지통 상태
+- `admin_resource_documents`: 문서별 GFM Markdown 원본과 content revision
+- `admin_resource_collaboration`: Yjs snapshot과 projection 상태
+- `admin_resource_audit_events`: 자료 구조 변경 감사 기록
+- `admin_resource_tree_state`: 자료 구조 명령의 전역 revision
+- `admin_resource_search`: 자료 제목·본문 FTS5 색인
 
 콘텐츠 시드는 기준 콘텐츠 5개 코스, 15개 유닛, 44개 레슨, 136개 스텝을 명시적으로 보관한다. 표준 스텝 타입은 `READING`, `COMPARE`, `MULTIPLE_CHOICE`, `FILL_BLANK`, `SELECT`, `ORDER`, `WRITE`, `AI_FEEDBACK`, `MATCH`, `CATEGORIZE`다.
 

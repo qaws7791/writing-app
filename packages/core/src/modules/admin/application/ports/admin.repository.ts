@@ -14,12 +14,6 @@ import type {
   AdminLessonAnalyticsPageDto,
   AdminLessonAnalyticsSort,
   AdminNoticeSettingsRequest,
-  AdminArchiveResourceDocumentResultDto,
-  AdminDeleteResourceDocumentResultDto,
-  AdminResourceDocumentDetailDto,
-  AdminResourceDocumentListDto,
-  AdminResourceDocumentRequest,
-  AdminResourceDocumentStatusFilter,
   AdminSettingsDto,
   AdminSortDirection,
   AdminUserDetailDto,
@@ -100,38 +94,6 @@ export type UpdateAdminUserStatusInput = {
 export type DeleteAdminUserInput = {
   readonly now: Date
   readonly userId: string
-}
-
-export type ReadAdminResourceDocumentsInput = {
-  readonly page: number
-  readonly pageSize: number
-  readonly query: string
-  readonly status: AdminResourceDocumentStatusFilter
-}
-
-export type ReadAdminResourceDocumentInput = {
-  readonly documentId: string
-}
-
-export type CreateAdminResourceDocumentInput = AdminResourceDocumentRequest & {
-  readonly adminId: string
-  readonly now: Date
-}
-
-export type UpdateAdminResourceDocumentInput = AdminResourceDocumentRequest & {
-  readonly documentId: string
-  readonly now: Date
-}
-
-export type ArchiveAdminResourceDocumentInput = {
-  readonly adminId: string
-  readonly documentId: string
-  readonly now: Date
-}
-
-export type DeleteAdminResourceDocumentInput = {
-  readonly adminId: string
-  readonly documentId: string
 }
 
 export type ReadAdminAiChatConversationsInput = {
@@ -227,27 +189,6 @@ export type ContentResetRepository = {
   ) => Promise<AdminContentResetResultDto>
 }
 
-export type ResourceAdminRepository = {
-  readonly archiveResourceDocument: (
-    input: ArchiveAdminResourceDocumentInput
-  ) => Promise<AdminOwnerMutationResult<AdminArchiveResourceDocumentResultDto>>
-  readonly createResourceDocument: (
-    input: CreateAdminResourceDocumentInput
-  ) => Promise<AdminResourceDocumentDetailDto>
-  readonly deleteResourceDocument: (
-    input: DeleteAdminResourceDocumentInput
-  ) => Promise<AdminOwnerMutationResult<AdminDeleteResourceDocumentResultDto>>
-  readonly readResourceDocument: (
-    input: ReadAdminResourceDocumentInput
-  ) => Promise<AdminResourceDocumentDetailDto | null>
-  readonly readResourceDocuments: (
-    input: ReadAdminResourceDocumentsInput
-  ) => Promise<AdminResourceDocumentListDto>
-  readonly updateResourceDocument: (
-    input: UpdateAdminResourceDocumentInput
-  ) => Promise<AdminResourceDocumentDetailDto | null>
-}
-
 export type AiChatAdminRepository = {
   readonly createAiChatUserMessage: (
     input: CreateAdminAiChatUserMessageInput
@@ -269,5 +210,4 @@ export type AdminRepository = DashboardReader &
   CourseAdminRepository &
   UserAdminRepository &
   SettingsRepository &
-  ContentResetRepository &
-  ResourceAdminRepository
+  ContentResetRepository

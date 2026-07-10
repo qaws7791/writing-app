@@ -3,7 +3,6 @@ import {
   adminImportResourceDocumentRequestSchema,
   adminImportResourceDocumentResultDtoSchema,
   adminResourceDocumentDtoSchema,
-  adminSaveResourceDocumentRequestSchema,
 } from "@workspace/contracts/admin"
 import {
   toResourceDocumentId,
@@ -46,57 +45,9 @@ export function createResourceDocumentsRoutes(
 ) {
   return [
     createGetResourceDocumentRoute(dependencies),
-    createSaveResourceDocumentRoute(dependencies),
     createImportResourceDocumentRoute(dependencies),
     createExportResourceDocumentRoute(dependencies),
   ] as const
-}
-
-function createSaveResourceDocumentRoute({
-  documentService,
-  now,
-  sessionResolver,
-}: ResourceDocumentsRouteDependencies) {
-  const routeConfig = {
-    method: "put",
-    operationId: "saveAdminResourceLibraryDocument",
-    path: "/resources/documents/{documentId}",
-    request: {
-      body: jsonRequestBody(adminSaveResourceDocumentRequestSchema),
-      params: resourceDocumentParamsSchema,
-    },
-    responses: {
-      ...adminAuthenticatedResponses(
-        jsonResponse(
-          "저장한 자료실 Markdown 문서입니다.",
-          adminResourceDocumentDtoSchema
-        )
-      ),
-      400: errorJsonResponse("유효하지 않은 Markdown 문서입니다."),
-      404: errorJsonResponse("활성 자료실 문서를 찾을 수 없습니다."),
-      409: errorJsonResponse("문서 본문 변경 충돌이 발생했습니다."),
-    },
-    summary: "자료실 Markdown 문서 저장",
-    ...adminSessionRouteOptions(sessionResolver),
-  } satisfies AnyRouteConfig
-
-  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
-    const session = context.get("activeAdminSession")
-    const result = await documentService.saveDocument({
-      ...context.req.valid("json"),
-      ...context.req.valid("param"),
-      actorId: session.admin.id,
-      now: now(),
-    })
-
-    if (result.kind !== "ok") {
-      throwResourceLibraryRejection(result)
-    }
-
-    return context.json(result.value, 200)
-  }
-
-  return defineAdminRoute({ ...routeConfig, handler })
 }
 
 function createGetResourceDocumentRoute({

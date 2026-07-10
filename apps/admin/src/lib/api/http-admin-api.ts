@@ -17,7 +17,6 @@ import type {
   AdminAiChatConversationDetail,
   AdminAiChatConversationList,
   AdminAiChatMessage,
-  AdminArchiveResourceDocumentResult,
   AdminArchiveCourseResult,
   AdminContentResetResult,
   AdminCourseDetail,
@@ -28,7 +27,6 @@ import type {
   AdminCourseUnit,
   AdminDashboard,
   AdminDeleteUserResult,
-  AdminDeleteResourceDocumentResult,
   AdminLessonAnalyticsItem,
   AdminLessonAnalyticsPage,
   AdminExportResourceDocument,
@@ -43,19 +41,14 @@ import type {
   AdminResourceTrashResult,
   AdminResourceTree,
   AdminResourceTreeNode,
-  AdminResourceDocumentDetail,
-  AdminResourceDocumentList,
-  AdminResourceDocumentListItem,
   AdminSession,
   AdminSettings,
-  AdminTiptapDocument,
   AdminUserDetail,
   AdminUserList,
   AdminUserListItem,
   ReadAdminAnalyticsInput,
   ReadAdminCoursesInput,
   ReadAdminLessonAnalyticsInput,
-  ReadAdminResourcesInput,
   ReadAdminUsersInput,
   UpdateAdminUserStatusInput,
 } from "@/lib/api/admin-api"
@@ -64,20 +57,16 @@ import type {
   AdminAiChatConversationDetailDto,
   AdminAiChatConversationDto,
   AdminAiChatConversationListDto,
-  AdminArchiveResourceDocumentResultDto,
   AdminArchiveCourseResultDto,
   AdminContentResetResultDto,
   AdminCourseDetailDto,
   AdminCourseListDto,
   AdminDashboardDto,
-  AdminDeleteResourceDocumentResultDto,
   AdminDeleteUserResultDto,
   AdminLessonAnalyticsPageDto,
   AdminImportResourceDocumentResultDto,
   AdminResourceActiveEditorCountDto,
   AdminResourceDocumentDto,
-  AdminResourceDocumentDetailDto,
-  AdminResourceDocumentListDto,
   AdminResourceNodeMutationDto,
   AdminResourceRestoreResultDto,
   AdminResourceSearchDto,
@@ -94,21 +83,17 @@ import {
   adminAnalyticsDtoSchema,
   adminAiChatConversationDetailDtoSchema,
   adminAiChatConversationListDtoSchema,
-  adminArchiveResourceDocumentResultSchema,
   adminArchiveCourseResultSchema,
   adminContentResetResultSchema,
   adminCourseDetailDtoSchema,
   adminCourseListDtoSchema,
   adminDashboardDtoSchema,
-  adminDeleteResourceDocumentResultSchema,
   adminDeleteUserResultSchema,
   adminLessonAnalyticsPageDtoSchema,
   adminImportResourceDocumentResultDtoSchema,
   adminResourceActiveEditorCountDtoSchema,
   adminResourceDocumentDtoSchema,
   adminResourceEventSchema,
-  adminResourceDocumentDetailDtoSchema,
-  adminResourceDocumentListDtoSchema,
   adminResourceNodeMutationDtoSchema,
   adminResourceRestoreResultDtoSchema,
   adminResourceSearchDtoSchema,
@@ -197,29 +182,12 @@ export function createHttpAdminApi({
         toModel: toAdminArchiveCourseResult,
       })
     },
-    archiveResourceDocument(documentId) {
-      return requestAdminJson(client, {
-        method: "PATCH",
-        path: `/resources/${documentId}/archive`,
-        schema: adminArchiveResourceDocumentResultSchema,
-        toModel: toAdminArchiveResourceDocumentResult,
-      })
-    },
     createCourse() {
       return requestAdminJson(client, {
         method: "POST",
         path: "/courses",
         schema: adminCourseDetailDtoSchema,
         toModel: toAdminCourseDetail,
-      })
-    },
-    createResourceDocument(input) {
-      return requestAdminJson(client, {
-        body: input,
-        method: "POST",
-        path: "/resources",
-        schema: adminResourceDocumentDetailDtoSchema,
-        toModel: toAdminResourceDocumentDetail,
       })
     },
     createResourceDocumentNode(input) {
@@ -238,14 +206,6 @@ export function createHttpAdminApi({
         path: "/resources/folders",
         schema: adminResourceNodeMutationDtoSchema,
         toModel: toAdminResourceNodeMutation,
-      })
-    },
-    deleteResourceDocument(documentId) {
-      return requestAdminJson(client, {
-        method: "DELETE",
-        path: `/resources/${documentId}`,
-        schema: adminDeleteResourceDocumentResultSchema,
-        toModel: toAdminDeleteResourceDocumentResult,
       })
     },
     deleteUser(userId) {
@@ -312,14 +272,6 @@ export function createHttpAdminApi({
         toModel: toAdminLessonAnalyticsPage,
       })
     },
-    getResourceDocument(documentId) {
-      return requestAdminJson(client, {
-        method: "GET",
-        path: `/resources/${documentId}`,
-        schema: adminResourceDocumentDetailDtoSchema,
-        toModel: toAdminResourceDocumentDetail,
-      })
-    },
     getResourceLibraryDocument(documentId) {
       return requestAdminJson(client, {
         method: "GET",
@@ -334,14 +286,6 @@ export function createHttpAdminApi({
         path: `/resources/nodes/${nodeId}/active-editors`,
         schema: adminResourceActiveEditorCountDtoSchema,
         toModel: toAdminResourceActiveEditorCount,
-      })
-    },
-    getResourceDocuments(input) {
-      return requestAdminJson(client, {
-        method: "GET",
-        path: `/resources?${resourcesSearchParams(input)}`,
-        schema: adminResourceDocumentListDtoSchema,
-        toModel: toAdminResourceDocumentList,
       })
     },
     getResourceTree(input) {
@@ -434,15 +378,6 @@ export function createHttpAdminApi({
         toModel: toAdminResourceRestoreResult,
       })
     },
-    saveResourceLibraryDocument(documentId, input) {
-      return requestAdminJson(client, {
-        body: input,
-        method: "PUT",
-        path: `/resources/documents/${documentId}`,
-        schema: adminResourceDocumentDtoSchema,
-        toModel: toAdminResourceLibraryDocument,
-      })
-    },
     saveLegalSettings(input) {
       return requestAdminJson(client, {
         body: input,
@@ -489,15 +424,6 @@ export function createHttpAdminApi({
         toModel: toAdminUserDetail,
       })
     },
-    updateResourceDocument(documentId, input) {
-      return requestAdminJson(client, {
-        body: input,
-        method: "PUT",
-        path: `/resources/${documentId}`,
-        schema: adminResourceDocumentDetailDtoSchema,
-        toModel: toAdminResourceDocumentDetail,
-      })
-    },
   }
 }
 
@@ -540,8 +466,6 @@ type AdminCourseListItemDto = AdminCourseListDto["items"][number]
 type AdminCourseUnitDto = AdminCourseDetailDto["units"][number]
 type AdminCourseLessonDto = AdminCourseUnitDto["lessons"][number]
 type AdminCourseStepDto = AdminCourseLessonDto["steps"][number]
-type AdminResourceDocumentListItemDto =
-  AdminResourceDocumentListDto["items"][number]
 
 function toAdminDashboard(dto: AdminDashboardDto): AdminDashboard {
   return {
@@ -784,42 +708,6 @@ function toAdminCourseListItem(
   }
 }
 
-function toAdminResourceDocumentList(
-  dto: AdminResourceDocumentListDto
-): AdminResourceDocumentList {
-  return {
-    items: dto.items.map(toAdminResourceDocumentListItem),
-    pagination: toAdminPagination(dto.pagination),
-  }
-}
-
-function toAdminResourceDocumentListItem(
-  dto: AdminResourceDocumentListItemDto
-): AdminResourceDocumentListItem {
-  return {
-    author: {
-      email: dto.author.email,
-      id: dto.author.id,
-      name: dto.author.name,
-    },
-    createdAt: dto.createdAt,
-    excerpt: dto.excerpt,
-    id: dto.id,
-    status: dto.status,
-    title: dto.title,
-    updatedAt: dto.updatedAt,
-  }
-}
-
-function toAdminResourceDocumentDetail(
-  dto: AdminResourceDocumentDetailDto
-): AdminResourceDocumentDetail {
-  return {
-    ...toAdminResourceDocumentListItem(dto),
-    content: toAdminTiptapDocument(dto.content),
-  }
-}
-
 function toAdminResourceTree(dto: AdminResourceTreeDto): AdminResourceTree {
   return {
     nodes: dto.nodes.map(toAdminResourceTreeNode),
@@ -932,37 +820,6 @@ function toAdminResourceSearch(
       name: item.name,
       path: item.path.map((pathItem) => ({ ...pathItem })),
     })),
-  }
-}
-
-function toAdminTiptapDocument(
-  dto: AdminResourceDocumentDetailDto["content"]
-): AdminTiptapDocument {
-  return {
-    content: dto.content.map((node) => ({
-      content: node.content?.map((child) => ({
-        text: child.text,
-        type: child.type,
-      })),
-      type: node.type,
-    })),
-    type: dto.type,
-  }
-}
-
-function toAdminArchiveResourceDocumentResult(
-  dto: AdminArchiveResourceDocumentResultDto
-): AdminArchiveResourceDocumentResult {
-  return {
-    archived: dto.archived,
-  }
-}
-
-function toAdminDeleteResourceDocumentResult(
-  dto: AdminDeleteResourceDocumentResultDto
-): AdminDeleteResourceDocumentResult {
-  return {
-    deleted: dto.deleted,
   }
 }
 
@@ -1207,17 +1064,6 @@ function usersSearchParams(input: ReadAdminUsersInput): string {
   params.set("pageSize", String(input.pageSize))
   params.set("query", input.query)
   params.set("sort", input.sort)
-  params.set("status", input.status)
-
-  return params.toString()
-}
-
-function resourcesSearchParams(input: ReadAdminResourcesInput): string {
-  const params = new URLSearchParams()
-
-  params.set("page", String(input.page))
-  params.set("pageSize", String(input.pageSize))
-  params.set("query", input.query)
   params.set("status", input.status)
 
   return params.toString()

@@ -101,7 +101,7 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 
 ## 어드민 로컬 seed 설정
 
-`bun run dev:admin:setup`은 baseline seed 뒤 자료실 전환 migration을 적용하고, 로컬에서 즉시 로그인 가능한 관리자 계정을 보장하기 위해 `ADMIN_SEED_RESET_PASSWORD=true`로 `seed:admin`을 실행한다. 7단계에서 baseline을 최종 schema로 합치기 전까지 이 순서를 유지한다. 기본 계정은 환경 변수가 없을 때 아래 값을 사용한다.
+`bun run dev:admin:setup`은 최종 자료실 schema를 포함한 baseline migration, 콘텐츠 seed, `ADMIN_SEED_RESET_PASSWORD=true` 관리자 seed를 순서대로 실행한다. 별도 자료실 전환 migration은 없다. 기본 계정은 환경 변수가 없을 때 아래 값을 사용한다.
 
 | 변수                        | 기본값                                | 설명                            |
 | --------------------------- | ------------------------------------- | ------------------------------- |

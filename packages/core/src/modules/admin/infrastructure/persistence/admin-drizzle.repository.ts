@@ -8,7 +8,6 @@ import {
   type DrizzleAdminRepositoryDependencies,
 } from "@workspace/core/modules/admin/infrastructure/persistence/admin-course-drizzle.repository"
 import { createAdminDashboardRepository } from "@workspace/core/modules/admin/infrastructure/persistence/admin-dashboard-drizzle.repository"
-import { createAdminResourceRepository } from "@workspace/core/modules/admin/infrastructure/persistence/admin-resource-drizzle.repository"
 import { createAdminSettingsRepository } from "@workspace/core/modules/admin/infrastructure/persistence/admin-settings-drizzle.repository"
 import { createAdminUserRepository } from "@workspace/core/modules/admin/infrastructure/persistence/admin-user-drizzle.repository"
 
@@ -25,6 +24,5 @@ export function createDrizzleAdminRepository(
     ...createAdminDashboardRepository(db),
     ...createAdminAnalyticsRepository(db),
     ...createAdminSettingsRepository(db),
-    ...createAdminResourceRepository(db),
   }
 }

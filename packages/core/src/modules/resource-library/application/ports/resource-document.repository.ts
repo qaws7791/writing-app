@@ -50,23 +50,6 @@ export type ImportResourceDocumentResult = ResourceTreeCommandResult<{
   }
 }>
 
-export type SaveResourceDocumentInput = {
-  readonly actorId: string
-  readonly bodyText: string
-  readonly documentId: ResourceDocumentId
-  readonly expectedContentRevision: number
-  readonly markdown: string
-  readonly now: Date
-}
-
-export type SaveResourceDocumentResult =
-  | { readonly kind: "not-found" }
-  | {
-      readonly actualContentRevision: number
-      readonly kind: "stale-content-revision"
-    }
-  | { readonly kind: "ok"; readonly value: ResourceDocumentRecord }
-
 export type ResourceDocumentRepository = {
   readonly importDocument: (
     input: ImportResourceDocumentInput
@@ -74,7 +57,4 @@ export type ResourceDocumentRepository = {
   readonly readDocument: (
     documentId: ResourceDocumentId
   ) => Promise<ResourceDocumentRecord | null>
-  readonly saveDocument: (
-    input: SaveResourceDocumentInput
-  ) => Promise<SaveResourceDocumentResult>
 }

@@ -4,7 +4,6 @@ import type {
   ContentResetRepository,
   CourseAdminRepository,
   DashboardReader,
-  ResourceAdminRepository,
   SettingsRepository,
   UserAdminRepository,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
@@ -29,10 +28,6 @@ import {
   type AdminDashboardUseCase,
 } from "@workspace/core/modules/admin/application/use-cases/admin-dashboard.use-case"
 import {
-  createAdminResourceUseCase,
-  type AdminResourceUseCase,
-} from "@workspace/core/modules/admin/application/use-cases/admin-resource.use-case"
-import {
   createAdminSettingsUseCase,
   type AdminSettingsUseCase,
 } from "@workspace/core/modules/admin/application/use-cases/admin-settings.use-case"
@@ -46,7 +41,6 @@ export type AdminService = AdminAnalyticsUseCase &
   AdminContentResetUseCase &
   AdminCourseUseCase &
   AdminDashboardUseCase &
-  AdminResourceUseCase &
   AdminSettingsUseCase &
   AdminUserUseCase
 
@@ -56,7 +50,6 @@ export type AdminServicePorts = {
   readonly contentResetRepository: ContentResetRepository
   readonly courseRepository: CourseAdminRepository
   readonly dashboardReader: DashboardReader
-  readonly resourceRepository: ResourceAdminRepository
   readonly settingsRepository: SettingsRepository
   readonly userRepository: UserAdminRepository
 }
@@ -68,7 +61,6 @@ export function createAdminService(ports: AdminServicePorts): AdminService {
     ...createAdminContentResetUseCase(ports.contentResetRepository),
     ...createAdminCourseUseCase(ports.courseRepository),
     ...createAdminDashboardUseCase(ports.dashboardReader),
-    ...createAdminResourceUseCase(ports.resourceRepository),
     ...createAdminSettingsUseCase(ports.settingsRepository),
     ...createAdminUserUseCase(ports.userRepository),
   }

@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import {
-  adminLegalSettingsRequestSchema,
-  adminResourceDocumentRequestSchema,
-} from "@workspace/contracts/admin"
+import { adminLegalSettingsRequestSchema } from "@workspace/contracts/admin"
 import { createAiFeedbackCommandSchema } from "@workspace/contracts/ai-feedback"
 import {
   jsonValueSchema,
@@ -31,25 +28,11 @@ describe("외부 입력 크기 제한", () => {
     ).toBe(false)
   })
 
-  it("어드민 법적 문구와 자료실 전체 본문을 제한한다", () => {
+  it("어드민 법적 문구를 제한한다", () => {
     expect(
       adminLegalSettingsRequestSchema.safeParse({
         privacy: oversizedText,
         terms: "약관",
-      }).success
-    ).toBe(false)
-    expect(
-      adminResourceDocumentRequestSchema.safeParse({
-        content: {
-          content: [
-            {
-              content: [{ text: oversizedText, type: "text" }],
-              type: "paragraph",
-            },
-          ],
-          type: "doc",
-        },
-        title: "자료",
       }).success
     ).toBe(false)
   })

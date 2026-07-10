@@ -16,7 +16,7 @@ export function readBaselineMigrationSql(): string {
 export function runBaselineMigration(sqlite: Database): void {
   sqlite.exec(readBaselineMigrationSql())
   ensureCourseVisualKeyColumn(sqlite)
-  ensureAdminResourceAndChatTables(sqlite)
+  ensureAdminChatTables(sqlite)
 }
 
 function ensureCourseVisualKeyColumn(sqlite: Database): void {
@@ -34,19 +34,8 @@ function ensureCourseVisualKeyColumn(sqlite: Database): void {
   )
 }
 
-function ensureAdminResourceAndChatTables(sqlite: Database): void {
+function ensureAdminChatTables(sqlite: Database): void {
   sqlite.exec(`
-CREATE TABLE IF NOT EXISTS admin_resource_documents (
-  id TEXT PRIMARY KEY NOT NULL,
-  title TEXT NOT NULL,
-  content_json TEXT NOT NULL,
-  excerpt TEXT NOT NULL,
-  status TEXT NOT NULL DEFAULT 'active',
-  author_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE CASCADE,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS admin_ai_chat_conversations (
   id TEXT PRIMARY KEY NOT NULL,
   title TEXT NOT NULL,

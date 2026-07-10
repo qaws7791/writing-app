@@ -6,7 +6,6 @@ export type { AdminAnalyticsUseCase } from "@workspace/core/modules/admin/applic
 export type { AdminContentResetUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-content-reset.use-case"
 export type { AdminCourseUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-course.use-case"
 export type { AdminDashboardUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-dashboard.use-case"
-export type { AdminResourceUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-resource.use-case"
 export type { AdminSettingsUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-settings.use-case"
 export type { AdminUserUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-user.use-case"
 export * from "@workspace/core/modules/admin/application/use-cases/admin.service"

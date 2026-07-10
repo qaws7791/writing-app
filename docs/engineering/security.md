@@ -37,7 +37,7 @@
 
 ## 인가 보안
 
-- 관리자 `operator`는 조회 중심 업무만 수행한다.
+- 관리자 `operator`는 코스·사용자·운영 설정에서 조회 중심 업무를 수행하며 자료실은 owner와 동일하게 공동 관리한다.
 - 관리자 `owner`만 변경성 업무를 수행한다.
 - unknown role은 세션 없음처럼 처리한다.
 - 권한 부족 응답은 서비스 호출 전에 반환한다.
@@ -52,6 +52,7 @@
 - CORS 응답 header는 CSRF 방어로 사용하지 않는다.
 - 쿠키가 포함된 `POST`, `PUT`, `PATCH`, `DELETE` 요청은 공통 middleware가 `Origin`과 Fetch Metadata를 검사하고 신뢰하지 않은 요청을 side effect 전에 `403`으로 종료한다.
 - Server Action과 Next.js Route Handler는 공개 HTTP 진입점으로 취급한다. 어드민 AI chat proxy도 요청 origin, 세션, 본문 크기를 직접 검증한다.
+- 자료실 공동 편집과 이벤트 WebSocket upgrade는 `ADMIN_ORIGIN`, 실제 관리자 세션 cookie, `GET`과 `Upgrade: websocket`을 연결 전에 검증하며 URL query token을 허용하지 않는다.
 
 ## 학습 진행 무결성
 
@@ -64,8 +65,8 @@
 ## 입력과 요청 크기
 
 - 학습자 API와 어드민 API는 요청 본문을 최대 `1 MiB`로 제한하고 초과 요청을 `413 PAYLOAD_TOO_LARGE`로 거부한다.
-- AI 답안, 학습 답안 배열과 텍스트, 공지, 법적 문구, 자료실 문서는 contracts schema에서 용도별 최대 길이와 개수를 검증한다.
-- 자료실 문서는 개별 node뿐 아니라 문서 전체 텍스트 길이도 제한한다.
+- AI 답안, 학습 답안 배열과 텍스트, 공지, 법적 문구, 자료실 이름과 Markdown은 contracts schema에서 용도별 최대 길이와 개수를 검증한다.
+- 자료실 GFM Markdown 원본은 문서 전체 길이를 제한하고 저장 투영 전에 지원 node·속성·URL과 의미 왕복을 검증한다.
 - 일반 JSON 값은 깊이, 전체 node 수, 배열·객체 크기와 문자열 길이를 반복 방식으로 검증한다.
 
 ## 민감 데이터 처리
@@ -110,6 +111,7 @@
 - 앱 소유 `learner_profiles.status`를 `deleted`로 전환한다.
 - 학습 진행, 답변, 피드백 row는 감사와 복구 판단을 위해 보존한다.
 - 콘텐츠 삭제는 기본적으로 `archived` 상태 전환으로 처리한다.
+- 자료실 휴지통 이동은 폴더의 전체 하위 트리를 `archived`로 전환하고 복원은 반대로 적용한다. 영구 삭제 endpoint는 제공하지 않는다.
 
 ## DB 안전장치
 

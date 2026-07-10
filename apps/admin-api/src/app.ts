@@ -20,7 +20,6 @@ import { healthRoute } from "@/routes/health.route"
 import { createResourceDocumentsRoutes } from "@/routes/resource-documents.route"
 import { createResourceSearchRoutes } from "@/routes/resource-search.route"
 import { createResourceTreeRoutes } from "@/routes/resource-tree.route"
-import { createResourcesRoutes } from "@/routes/resources.route"
 import { createSettingsRoutes } from "@/routes/settings.route"
 import { createSessionRoute } from "@/routes/session.route"
 import { createUsersRoutes } from "@/routes/users.route"
@@ -30,7 +29,6 @@ import type {
   AdminContentResetUseCase,
   AdminCourseUseCase,
   AdminDashboardUseCase,
-  AdminResourceUseCase,
   AdminSettingsUseCase,
   AdminUserUseCase,
 } from "@workspace/core/admin"
@@ -58,7 +56,6 @@ export type AdminApiServices = {
     readonly search: ResourceSearchUseCase
     readonly tree: ResourceTreeUseCase
   }
-  readonly resources: AdminResourceUseCase
   readonly settings: AdminSettingsUseCase
   readonly users: AdminUserUseCase
 }
@@ -129,11 +126,6 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
       }),
       ...createResourceSearchRoutes({
         searchService: dependencies.adminServices.resourceLibrary.search,
-        sessionResolver: dependencies.sessionResolver,
-      }),
-      ...createResourcesRoutes({
-        now,
-        resourceService: dependencies.adminServices.resources,
         sessionResolver: dependencies.sessionResolver,
       }),
       ...createSettingsRoutes({
