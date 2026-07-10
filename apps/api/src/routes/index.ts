@@ -13,6 +13,7 @@ import { healthRoute } from "@/modules/health/health.routes"
 import { getLessonRoute } from "@/modules/lessons/lessons.routes"
 import {
   completeLessonRoute,
+  saveLessonProgressRoute,
   saveAnswerRoute,
 } from "@/modules/learning/learning.routes"
 import { profileRoute } from "@/modules/profile/profile.routes"
@@ -28,6 +29,7 @@ export const routes = [
   progressRoute,
   saveAnswerRoute,
   completeLessonRoute,
+  saveLessonProgressRoute,
   aiFeedbackRoute,
 ] as const
 

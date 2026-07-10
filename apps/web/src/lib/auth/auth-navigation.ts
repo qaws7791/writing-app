@@ -1,3 +1,5 @@
+import { resolveSafeInternalPath } from "@workspace/ui/lib/safe-navigation-path"
+
 const defaultNextPath = "/app"
 
 export function resolveSafeNextPath(
@@ -5,19 +7,11 @@ export function resolveSafeNextPath(
 ): string {
   const candidate = Array.isArray(nextPath) ? nextPath[0] : nextPath
 
-  if (candidate === undefined || candidate.length === 0) {
-    return defaultNextPath
-  }
-
-  if (!candidate.startsWith("/") || candidate.startsWith("//")) {
-    return defaultNextPath
-  }
-
-  if (candidate === "/login" || candidate.startsWith("/login?")) {
-    return defaultNextPath
-  }
-
-  return candidate
+  return resolveSafeInternalPath({
+    blockedPathnames: ["/login"],
+    candidate,
+    defaultPath: defaultNextPath,
+  })
 }
 
 export function createLoginPagePath(nextPath: string): string {

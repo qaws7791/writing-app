@@ -6,20 +6,21 @@ import {
   isCourseCompleted,
   matchesProgressCourseStatusFilter,
 } from "@workspace/core/modules/learning/domain/learning-progress-read-model"
+import { lessonIdSchema } from "@workspace/contracts/content"
 
 const inProgressCourse = {
   lessons: [
     {
       currentStepIndex: 2,
       estimatedMinutes: 5,
-      id: "l1",
+      id: lessonIdSchema.parse("l1"),
       status: "completed" as const,
       title: "완료 레슨",
     },
     {
       currentStepIndex: null,
       estimatedMinutes: 7,
-      id: "l2",
+      id: lessonIdSchema.parse("l2"),
       status: "available" as const,
       title: "다음 레슨",
     },
@@ -32,7 +33,7 @@ const completedCourse = {
     {
       currentStepIndex: null,
       estimatedMinutes: 5,
-      id: "l3",
+      id: lessonIdSchema.parse("l3"),
       status: "completed" as const,
       title: "완료 레슨",
     },
@@ -45,7 +46,7 @@ const untouchedCourse = {
     {
       currentStepIndex: null,
       estimatedMinutes: 5,
-      id: "l4",
+      id: lessonIdSchema.parse("l4"),
       status: "available" as const,
       title: "첫 레슨",
     },

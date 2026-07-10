@@ -18,7 +18,9 @@ import {
   type LearningService,
 } from "@/modules/learning/application/use-cases/learning.service"
 import type {
+  CompleteLessonRecord,
   LearningRepository,
+  LessonProgressRecord,
   SaveStepAnswerCommand,
 } from "@/modules/learning/application/ports/learning.repository"
 import type { LearningAnswer } from "@/modules/learning/domain/learning.dto"
@@ -28,6 +30,113 @@ const learnerId = learnerIdSchema.parse("user-1")
 const lessonId = lessonIdSchema.parse("l1")
 
 describe("학습 서비스", () => {
+  it("필수 스텝 답변이 없으면 레슨 완료를 거절한다", async () => {
+    const completedLessons: CompleteLessonRecord[] = []
+    const service = createService({ completedLessons })
+
+    await expect(
+      service.completeLesson({ lessonId, occurredAt, userId: learnerId })
+    ).resolves.toEqual({
+      error: {
+        kind: "invalid-request",
+        lessonId,
+        reason: "step-progress-incomplete",
+      },
+      kind: "err",
+    })
+    expect(completedLessons).toEqual([])
+  })
+
+  it("서버가 모든 필수 스텝 답변을 확인하고 마지막 index를 계산한다", async () => {
+    const completedLessons: CompleteLessonRecord[] = []
+    const service = createService({
+      completedLessons,
+      initialAnswers: new Map<string, LearningAnswer>([
+        ["l1-s1", { kind: "lesson-started" }],
+        ["l1-s3", { selectedOptionId: "b", type: "MULTIPLE_CHOICE" }],
+        ["l1-s4", { selectedWords: ["관찰"], type: "FILL_BLANK" }],
+        ["l1-s5", { selectedIndexes: [0, 1], type: "SELECT" }],
+        ["l1-s6", { orderedItems: ["나는", "책을", "읽었다"], type: "ORDER" }],
+        ["l1-s7", { text: "나의 문장 답변", type: "WRITE" }],
+        ["l1-s8", { requested: true, type: "AI_FEEDBACK" }],
+        [
+          "l1-s9",
+          { pairs: [{ left: "그러나", right: "역접" }], type: "MATCH" },
+        ],
+        [
+          "l1-s10",
+          {
+            items: [{ categoryId: "A", itemId: "i1" }],
+            type: "CATEGORIZE",
+          },
+        ],
+      ]),
+      initialProgress: {
+        currentStepIndex: 9,
+        lessonId,
+        status: "in_progress",
+        userId: learnerId,
+      },
+    })
+
+    await expect(
+      service.completeLesson({ lessonId, occurredAt, userId: learnerId })
+    ).resolves.toEqual({ kind: "ok", value: { saved: true } })
+    expect(completedLessons).toEqual([
+      {
+        currentStepIndex: 9,
+        lessonId,
+        occurredAt,
+        userId: learnerId,
+      },
+    ])
+  })
+
+  it("앞선 답변을 저장하지 않고 후속 스텝 답변을 보내면 거절한다", async () => {
+    const service = createService()
+
+    await expect(
+      service.saveStepAnswer({
+        answer: { text: "순서를 건너뛴 답변", type: "WRITE" },
+        lessonId,
+        occurredAt,
+        stepId: lessonStepIdSchema.parse("l1-s7"),
+        userId: learnerId,
+      })
+    ).resolves.toEqual({
+      error: {
+        kind: "invalid-request",
+        lessonId,
+        reason: "step-progress-incomplete",
+      },
+      kind: "err",
+    })
+  })
+
+  it("저장된 진행 index를 건너뛰는 진행 요청을 거절한다", async () => {
+    const service = createService({
+      initialAnswers: new Map<string, LearningAnswer>([
+        ["l1-s1", { kind: "lesson-started" }],
+      ]),
+    })
+
+    await expect(
+      service.saveLessonProgress({
+        currentStepIndex: 2,
+        lessonId,
+        occurredAt,
+        userId: learnerId,
+      })
+    ).resolves.toEqual({
+      error: {
+        kind: "invalid-request",
+        lessonId,
+        reason: "step-progress-incomplete",
+      },
+      kind: "err",
+    })
+  })
+
   it("스텝 답변 구조 검증을 수동 타입 리더가 아니라 Zod 스키마로 처리한다", () => {
     const source = readFileSync(
       new URL("./learning.service.ts", import.meta.url),
@@ -323,10 +432,18 @@ describe("학습 서비스", () => {
 })
 
 function createService({
+  completedLessons = [],
+  initialAnswers = new Map(),
+  initialProgress = null,
   savedAnswers = [],
 }: {
+  readonly completedLessons?: CompleteLessonRecord[]
+  readonly initialAnswers?: ReadonlyMap<string, LearningAnswer>
+  readonly initialProgress?: LessonProgressRecord | null
   readonly savedAnswers?: SaveStepAnswerCommand[]
 } = {}): LearningService {
+  const answers = new Map(initialAnswers)
+  let progress = initialProgress
   const contentRepository: ContentRepository = {
     async findCourseDetail() {
       return null
@@ -339,10 +456,26 @@ function createService({
     },
   }
   const learningRepository: LearningRepository = {
-    async completeLesson() {},
-    async saveLessonProgress() {},
+    async completeLesson(record) {
+      completedLessons.push(record)
+    },
+    async findLessonProgress() {
+      return progress
+    },
+    async findStepAnswer(query) {
+      return answers.get(query.stepId) ?? null
+    },
+    async saveLessonProgress(command) {
+      progress = {
+        currentStepIndex: command.currentStepIndex,
+        lessonId: command.lessonId,
+        status: "in_progress",
+        userId: command.userId,
+      }
+    },
     async saveStepAnswer(command) {
       savedAnswers.push(command)
+      answers.set(command.stepId, command.answer)
     },
   }
 

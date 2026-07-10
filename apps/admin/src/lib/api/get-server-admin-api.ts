@@ -1,6 +1,10 @@
 import { createHttpAdminApi } from "@/lib/api/http-admin-api"
 import type { AdminApi } from "@/lib/api/admin-api"
-import { readAdminApiBaseUrl, type AdminApiBaseUrl } from "@/runtime-config"
+import {
+  readAdminApiBaseUrl,
+  readAdminWebOrigin,
+  type AdminApiBaseUrl,
+} from "@/runtime-config"
 
 export function getServerAdminApi({
   apiBaseUrl = readAdminApiBaseUrl(),
@@ -12,6 +16,7 @@ export function getServerAdminApi({
   return createHttpAdminApi({
     baseUrl: apiBaseUrl,
     fetch: globalThis.fetch.bind(globalThis),
+    requestOrigin: readAdminWebOrigin(),
     tokenProvider,
   })
 }

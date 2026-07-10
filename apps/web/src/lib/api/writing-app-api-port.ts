@@ -19,6 +19,10 @@ export type SaveLessonAnswerInput = {
 }
 
 export type CompleteLessonInput = {
+  readonly lessonId: string
+}
+
+export type SaveLessonProgressInput = {
   readonly currentStepIndex: number
   readonly lessonId: string
 }
@@ -34,6 +38,10 @@ export type SaveLessonAnswerResult = {
 }
 
 export type CompleteLessonResult = {
+  readonly saved: boolean
+}
+
+export type SaveLessonProgressResult = {
   readonly saved: boolean
 }
 
@@ -60,4 +68,7 @@ export type WritingAppApi = {
   readonly saveLessonAnswer: (
     input: SaveLessonAnswerInput
   ) => Promise<ApiResult<SaveLessonAnswerResult>>
+  readonly saveLessonProgress: (
+    input: SaveLessonProgressInput
+  ) => Promise<ApiResult<SaveLessonProgressResult>>
 }

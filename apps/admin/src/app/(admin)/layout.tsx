@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { AdminShell } from "@/components/admin-shell"
 import { createAdminLoginPath } from "@/lib/auth/admin-auth-navigation"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
+import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
 
 export default async function AdminLayout({
   children,
@@ -13,6 +14,14 @@ export default async function AdminLayout({
   const token = await getServerAdminSessionToken()
 
   if (token === null) {
+    redirect(createAdminLoginPath("/"))
+  }
+
+  const sessionResult = await getServerAdminApi({
+    tokenProvider: () => token,
+  }).getSession()
+
+  if (sessionResult.status === "error") {
     redirect(createAdminLoginPath("/"))
   }
 

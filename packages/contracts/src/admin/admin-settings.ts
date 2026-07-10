@@ -1,12 +1,15 @@
 import { z } from "zod"
 
+export const adminNoticeTextMaxLength = 2_000
+export const adminLegalTextMaxLength = 100_000
+
 export const adminNoticeSettingsRequestSchema = z.object({
-  announce: z.string(),
-  banner: z.string(),
+  announce: z.string().max(adminNoticeTextMaxLength),
+  banner: z.string().max(adminNoticeTextMaxLength),
 })
 export const adminLegalSettingsRequestSchema = z.object({
-  privacy: z.string(),
-  terms: z.string(),
+  privacy: z.string().max(adminLegalTextMaxLength),
+  terms: z.string().max(adminLegalTextMaxLength),
 })
 export const adminSettingsDtoSchema = z.object({
   legal: adminLegalSettingsRequestSchema,

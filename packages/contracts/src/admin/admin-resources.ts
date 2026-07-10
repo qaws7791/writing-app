@@ -5,25 +5,53 @@ import {
   adminPositiveIntegerSchema,
 } from "@workspace/contracts/admin/admin-shared"
 
+export const adminResourceDocumentMaxTextLength = 200_000
+const adminResourceParagraphMaxCount = 500
+const adminResourceTextNodeMaxCount = 100
+const adminResourceTextNodeMaxLength = 10_000
+
 export const adminResourceDocumentStatusFilterSchema = z.union([
   z.literal("all"),
   adminContentStatusSchema,
 ])
 
 export const adminTiptapTextNodeSchema = z.object({
-  text: z.string(),
+  text: z.string().max(adminResourceTextNodeMaxLength),
   type: z.literal("text"),
 })
 
 export const adminTiptapParagraphNodeSchema = z.object({
-  content: z.array(adminTiptapTextNodeSchema).optional(),
+  content: z
+    .array(adminTiptapTextNodeSchema)
+    .max(adminResourceTextNodeMaxCount)
+    .optional(),
   type: z.literal("paragraph"),
 })
 
-export const adminTiptapDocumentSchema = z.object({
-  content: z.array(adminTiptapParagraphNodeSchema).min(1),
-  type: z.literal("doc"),
-})
+export const adminTiptapDocumentSchema = z
+  .object({
+    content: z
+      .array(adminTiptapParagraphNodeSchema)
+      .min(1)
+      .max(adminResourceParagraphMaxCount),
+    type: z.literal("doc"),
+  })
+  .refine(
+    (document) =>
+      document.content.reduce(
+        (documentLength, paragraph) =>
+          documentLength +
+          (paragraph.content?.reduce(
+            (paragraphLength, textNode) =>
+              paragraphLength + textNode.text.length,
+            0
+          ) ?? 0),
+        0
+      ) <= adminResourceDocumentMaxTextLength,
+    {
+      message: "자료실 문서 본문이 허용된 크기를 초과했습니다.",
+    }
+  )
 
 export const adminResourceDocumentAuthorDtoSchema = z.object({
   email: z.string(),

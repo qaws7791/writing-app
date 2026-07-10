@@ -18,7 +18,7 @@ export const completeLessonParamsSchema = z.object({
   lessonId: lessonIdSchema,
 })
 
-export const completeLessonBodySchema = z.object({
+export const saveLessonProgressBodySchema = z.object({
   currentStepIndex: z.number().int().nonnegative(),
 })
 

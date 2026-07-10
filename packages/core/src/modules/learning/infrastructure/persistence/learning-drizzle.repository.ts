@@ -1,10 +1,16 @@
 import { and, eq, sql } from "drizzle-orm"
 import type {
-  CompleteLessonCommand,
+  CompleteLessonRecord,
   SaveLessonProgressCommand,
   SaveStepAnswerCommand,
 } from "@workspace/core/modules/learning/domain/learning.dto"
+import { learningAnswerSchema } from "@workspace/core/modules/learning/domain/learning.dto"
 import type { LearningRepository } from "@workspace/core/modules/learning/application/ports/learning.repository"
+import type { FindStepAnswerQuery } from "@workspace/core/modules/learning/application/ports/learning.repository"
+import type {
+  FindLessonProgressQuery,
+  LessonProgressRecord,
+} from "@workspace/core/modules/learning/application/ports/learning.repository"
 import { toLearningDateKey } from "@workspace/core/modules/learning/domain/learning-date"
 import { lessonProgressStatuses } from "@workspace/core/shared/kernel/status"
 
@@ -17,7 +23,7 @@ import {
 
 export type SaveLessonProgressInput = SaveLessonProgressCommand
 export type SaveStepAnswerInput = SaveStepAnswerCommand
-export type CompleteLessonInput = CompleteLessonCommand
+export type CompleteLessonInput = CompleteLessonRecord
 
 export function createDrizzleLearningRepository(
   db: WritingAppDatabase
@@ -26,12 +32,79 @@ export function createDrizzleLearningRepository(
     async completeLesson(input) {
       completeLesson(db, input)
     },
+    async findLessonProgress(query) {
+      return findLessonProgress(db, query)
+    },
+    async findStepAnswer(query) {
+      return findStepAnswer(db, query)
+    },
     async saveLessonProgress(input) {
       saveLessonProgress(db, input)
     },
     async saveStepAnswer(input) {
       saveStepAnswer(db, input)
     },
+  }
+}
+
+function findLessonProgress(
+  db: WritingAppDatabase,
+  query: FindLessonProgressQuery
+): LessonProgressRecord | null {
+  const row = db
+    .select({
+      currentStepIndex: learnerLessonProgress.currentStepIndex,
+      lessonId: learnerLessonProgress.lessonId,
+      status: learnerLessonProgress.status,
+      userId: learnerLessonProgress.userId,
+    })
+    .from(learnerLessonProgress)
+    .where(
+      and(
+        eq(learnerLessonProgress.userId, query.userId),
+        eq(learnerLessonProgress.lessonId, query.lessonId)
+      )
+    )
+    .get()
+
+  if (
+    row === undefined ||
+    (row.status !== lessonProgressStatuses.completed &&
+      row.status !== lessonProgressStatuses.inProgress)
+  ) {
+    return null
+  }
+
+  return {
+    currentStepIndex: row.currentStepIndex,
+    lessonId: query.lessonId,
+    status: row.status,
+    userId: query.userId,
+  }
+}
+
+function findStepAnswer(db: WritingAppDatabase, query: FindStepAnswerQuery) {
+  const row = db
+    .select({ answerJson: learnerLessonAnswers.answerJson })
+    .from(learnerLessonAnswers)
+    .where(
+      and(
+        eq(learnerLessonAnswers.userId, query.userId),
+        eq(learnerLessonAnswers.lessonId, query.lessonId),
+        eq(learnerLessonAnswers.stepId, query.stepId)
+      )
+    )
+    .get()
+
+  if (row === undefined) {
+    return null
+  }
+
+  try {
+    const result = learningAnswerSchema.safeParse(JSON.parse(row.answerJson))
+    return result.success ? result.data : null
+  } catch {
+    return null
   }
 }
 

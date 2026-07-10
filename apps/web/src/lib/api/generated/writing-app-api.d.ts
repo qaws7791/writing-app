@@ -157,6 +157,23 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/learning/lessons/{lessonId}/progress": {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /** 레슨 진행 저장 */
+    post: operations["saveLessonProgress"]
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/ai-feedback": {
     parameters: {
       query?: never
@@ -874,6 +891,66 @@ export interface operations {
       }
       cookie?: never
     }
+    requestBody?: never
+    responses: {
+      /** @description 레슨 완료 저장 결과입니다. */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": {
+            saved: boolean
+          }
+        }
+      }
+      /** @description 잘못된 요청입니다. */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"]
+        }
+      }
+      /** @description 인증이 필요합니다. */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"]
+        }
+      }
+      /** @description 계정을 사용할 수 없습니다. */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"]
+        }
+      }
+      /** @description 레슨을 찾을 수 없습니다. */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"]
+        }
+      }
+    }
+  }
+  saveLessonProgress: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        lessonId: string
+      }
+      cookie?: never
+    }
     requestBody: {
       content: {
         "application/json": {
@@ -882,7 +959,7 @@ export interface operations {
       }
     }
     responses: {
-      /** @description 레슨 완료 저장 결과입니다. */
+      /** @description 레슨 진행 저장 결과입니다. */
       200: {
         headers: {
           [name: string]: unknown

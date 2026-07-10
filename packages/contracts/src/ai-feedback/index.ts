@@ -6,10 +6,20 @@ import {
 } from "@workspace/contracts/content/content.ids"
 import { learnerIdSchema } from "@workspace/contracts/learning/learning.ids"
 
-const nonEmptyTextSchema = z.string().trim().min(1)
+export const aiFeedbackAnswerMaxLength = 20_000
+const aiFeedbackOutputTextMaxLength = 4_000
+const aiFeedbackOutputCollectionMaxLength = 20
+const nonEmptyTextSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(aiFeedbackOutputTextMaxLength)
 
 export const aiFeedbackPayloadSchema = z.object({
-  improvements: z.array(nonEmptyTextSchema).min(1),
+  improvements: z
+    .array(nonEmptyTextSchema)
+    .min(1)
+    .max(aiFeedbackOutputCollectionMaxLength),
   nextAction: nonEmptyTextSchema,
   score: z.number().int().nonnegative(),
   scoreRange: z
@@ -18,7 +28,10 @@ export const aiFeedbackPayloadSchema = z.object({
       message: "scoreRange는 최소값이 최대값보다 작아야 합니다.",
     }),
   showScore: z.boolean(),
-  strengths: z.array(nonEmptyTextSchema).min(1),
+  strengths: z
+    .array(nonEmptyTextSchema)
+    .min(1)
+    .max(aiFeedbackOutputCollectionMaxLength),
   summary: nonEmptyTextSchema,
 })
 
@@ -27,7 +40,7 @@ export const aiFeedbackResultDtoSchema = aiFeedbackPayloadSchema.extend({
 })
 
 export const createAiFeedbackCommandSchema = z.object({
-  answer: nonEmptyTextSchema,
+  answer: z.string().trim().min(1).max(aiFeedbackAnswerMaxLength),
   lessonId: lessonIdSchema,
   occurredAt: z.date(),
   stepId: lessonStepIdSchema,

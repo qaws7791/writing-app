@@ -4,7 +4,7 @@
 
 ## 기준
 
-- 기준일: 2026-06-19
+- 기준일: 2026-07-10
 - 기준 파일:
   - `apps/api/src/routes/index.ts`
   - `apps/api/src/modules/*/*.routes.ts`
@@ -44,10 +44,12 @@
 | `GET`      | `/lessons/{lessonId}`                   | active 학습자 | 레슨 상세                                        |
 | `GET`      | `/progress`                             | active 학습자 | 학습 진행 (`status=in_progress\|completed` 선택) |
 | `POST`     | `/learning/answers`                     | active 학습자 | 스텝 답변 저장                                   |
+| `POST`     | `/learning/lessons/{lessonId}/progress` | active 학습자 | 순차 레슨 진행 index 저장                        |
 | `POST`     | `/learning/lessons/{lessonId}/complete` | active 학습자 | 레슨 완료                                        |
 | `POST`     | `/ai-feedback`                          | active 학습자 | AI 코칭 생성                                     |
 
 `POST /learning/answers`의 transport schema는 학습 답변 union을 검증하고, core의 `LearningService`는 lesson 조회 뒤 `step-answer-policy`에 step type별 answer 검증을 위임한다. 따라서 route나 service가 콘텐츠 후보, unsupported step, lesson-started marker 규칙을 중복 구현하지 않는다.
+`POST /learning/lessons/{lessonId}/progress`는 현재 저장된 index와 같거나 정확히 1 큰 index만 허용한다. `POST /learning/lessons/{lessonId}/complete`는 body에서 index를 받지 않으며 core가 마지막 index 도달과 필수 답안 저장을 확인한 뒤 완료 index를 계산한다.
 `POST /ai-feedback`의 route는 인증 학습자 command를 core에 전달한다. core의 `AiFeedbackService`는 lesson과 AI_FEEDBACK step 판정에 집중하고, attempt 한도 계산·provider 호출·저장 기록은 AI feedback attempt coordinator가 처리한다.
 
 ## 어드민 API
@@ -60,26 +62,36 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 
 현재 route:
 
-| 메서드     | 경로                         | 권한        | 설명                  |
-| ---------- | ---------------------------- | ----------- | --------------------- |
-| `GET`      | `/health`                    | 없음        | API 상태              |
-| `GET`      | `/openapi`                   | 없음        | OpenAPI 3.1 문서      |
-| `GET/POST` | `/api/auth/*`                | Better Auth | 관리자 인증 handler   |
-| `GET`      | `/dashboard`                 | 관리자      | 대시보드              |
-| `GET`      | `/analytics`                 | 관리자      | 분석 요약             |
-| `GET`      | `/analytics/lessons`         | 관리자      | 레슨별 분석           |
-| `GET`      | `/courses`                   | 관리자      | 코스 목록             |
-| `POST`     | `/courses`                   | owner       | 코스 생성             |
-| `DELETE`   | `/courses/{courseId}`        | owner       | 코스 보관             |
-| `GET`      | `/courses/{courseId}/editor` | 관리자      | 코스 편집 문서 조회   |
-| `GET`      | `/users`                     | 관리자      | 사용자 목록           |
-| `GET`      | `/users/{userId}`            | 관리자      | 사용자 상세           |
-| `PATCH`    | `/users/{userId}/status`     | owner       | 사용자 상태 변경      |
-| `DELETE`   | `/users/{userId}`            | owner       | 사용자 삭제 상태 전환 |
-| `GET`      | `/settings`                  | 관리자      | 설정 조회             |
-| `PUT`      | `/settings/notice`           | owner       | 공지 설정 저장        |
-| `PUT`      | `/settings/legal`            | owner       | 법적 문서 저장        |
-| `POST`     | `/settings/content-reset`    | owner       | 콘텐츠 초기화         |
+| 메서드     | 경로                                      | 권한          | 설명                  |
+| ---------- | ----------------------------------------- | ------------- | --------------------- |
+| `GET`      | `/health`                                 | 없음          | API 상태              |
+| `GET`      | `/openapi`                                | 없음          | OpenAPI 3.1 문서      |
+| `GET/POST` | `/api/auth/*`                             | Better Auth   | 관리자 인증 handler   |
+| `GET`      | `/session`                                | 관리자        | 현재 관리자 세션      |
+| `GET`      | `/dashboard`                              | 관리자        | 대시보드              |
+| `GET`      | `/analytics`                              | 관리자        | 분석 요약             |
+| `GET`      | `/analytics/lessons`                      | 관리자        | 레슨별 분석           |
+| `GET`      | `/courses`                                | 관리자        | 코스 목록             |
+| `POST`     | `/courses`                                | owner         | 코스 생성             |
+| `DELETE`   | `/courses/{courseId}`                     | owner         | 코스 보관             |
+| `GET`      | `/courses/{courseId}/editor`              | 관리자        | 코스 편집 문서 조회   |
+| `GET`      | `/users`                                  | 관리자        | 사용자 목록           |
+| `GET`      | `/users/{userId}`                         | 관리자        | 사용자 상세           |
+| `PATCH`    | `/users/{userId}/status`                  | owner         | 사용자 상태 변경      |
+| `DELETE`   | `/users/{userId}`                         | owner         | 사용자 삭제 상태 전환 |
+| `GET`      | `/settings`                               | 관리자        | 설정 조회             |
+| `PUT`      | `/settings/notice`                        | owner         | 공지 설정 저장        |
+| `PUT`      | `/settings/legal`                         | owner         | 법적 문서 저장        |
+| `POST`     | `/settings/content-reset`                 | owner         | 콘텐츠 초기화         |
+| `GET`      | `/resources`                              | 관리자        | 자료실 목록           |
+| `POST`     | `/resources`                              | 관리자        | 자료실 문서 생성      |
+| `GET`      | `/resources/{documentId}`                 | 관리자        | 자료실 문서 상세      |
+| `PUT`      | `/resources/{documentId}`                 | 관리자        | 자료실 문서 저장      |
+| `PATCH`    | `/resources/{documentId}/archive`         | 작성자 관리자 | 자료실 문서 보관      |
+| `DELETE`   | `/resources/{documentId}`                 | 작성자 관리자 | 자료실 문서 삭제      |
+| `GET`      | `/ai-chat/conversations`                  | 관리자        | AI 대화 목록          |
+| `GET`      | `/ai-chat/conversations/{conversationId}` | 관리자        | AI 대화 상세          |
+| `POST`     | `/ai-chat/messages/stream`                | 관리자        | AI 응답 stream        |
 
 ## 인증 표면
 
@@ -87,6 +99,8 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 - 관리자 로그인은 `POST /api/auth/sign-in/email`을 사용한다.
 - 프론트엔드는 Next.js same-origin auth proxy를 두지 않고 API origin의 Better Auth endpoint를 직접 호출한다.
 - 브라우저 요청은 `credentials: "include"`를 사용한다.
+- 쿠키가 포함된 변경 요청은 CORS와 별도로 설정된 웹 origin 검사를 통과해야 한다.
+- 어드민 Server Action의 API adapter는 서버 요청에도 정규화한 `ADMIN_ORIGIN`을 명시한다.
 
 ## 오류 응답
 
@@ -109,6 +123,7 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 - `403 FORBIDDEN`
 - `404 NOT_FOUND`
 - `429` AI 피드백 시도 한도
+- `413 PAYLOAD_TOO_LARGE`
 - `500 INTERNAL_SERVER_ERROR`
 - `503` AI provider unavailable
 

@@ -280,6 +280,10 @@
         "apps/*/scripts/**/*.{js,jsx,ts,tsx,cjs,mjs}",
         "packages/*/scripts/**/*.{js,jsx,ts,tsx,cjs,mjs}"
       ],
+      "env": {
+        "browser": true,
+        "node": true
+      },
       "rules": {
         "no-console": "off"
       }

@@ -1,7 +1,12 @@
 import type { MiddlewareHandler } from "hono"
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { createApp as createHonoApp } from "@workspace/hono/core"
+import {
+  createRequestBodyLimitMiddleware,
+  createTrustedOriginMiddleware,
+} from "@workspace/hono/security"
 import { createRequestLoggingMiddleware } from "@workspace/logger"
+import { localRuntimeDefaults } from "@workspace/env/local-runtime-defaults"
 
 import {
   type ApiDependencies,
@@ -44,7 +49,14 @@ function createMiddleware(
     )
   }
 
-  middleware.push(createCorsMiddleware(dependencies))
+  const webOrigin =
+    dependencies.webOrigin ?? localRuntimeDefaults.learnerWebOrigin
+
+  middleware.push(
+    createCorsMiddleware(dependencies),
+    createRequestBodyLimitMiddleware(),
+    createTrustedOriginMiddleware({ trustedOrigin: webOrigin })
+  )
 
   return middleware
 }

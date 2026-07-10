@@ -14,6 +14,16 @@ export type AdminUserStatus = AdminUserOperationalStatus | "deleted"
 export type AdminUserListStatusFilter = "all" | AdminUserStatus
 export type AdminResourceDocumentStatusFilter = "all" | AdminCourseStatus
 export type AdminAiChatMessageRole = "assistant" | "user"
+export type AdminRole = "operator" | "owner"
+
+export type AdminSession = {
+  readonly admin: {
+    readonly email: string
+    readonly id: string
+    readonly name: string
+    readonly role: AdminRole
+  }
+}
 
 export type AdminPagination = {
   readonly page: number
@@ -340,6 +350,7 @@ export type AdminApi = {
     input: ReadAdminResourcesInput
   ) => Promise<AdminApiResult<AdminResourceDocumentList>>
   readonly getSettings: () => Promise<AdminApiResult<AdminSettings>>
+  readonly getSession: () => Promise<AdminApiResult<AdminSession>>
   readonly getUser: (userId: string) => Promise<AdminApiResult<AdminUserDetail>>
   readonly getUsers: (
     input: ReadAdminUsersInput

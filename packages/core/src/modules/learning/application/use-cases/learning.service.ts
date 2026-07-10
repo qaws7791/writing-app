@@ -1,7 +1,12 @@
 import type { ContentRepository } from "@workspace/core/modules/content/application/ports/content.repository"
-import { lessonDtoSchema } from "@workspace/core/modules/content/domain/content.dto"
+import {
+  lessonDtoSchema,
+  type LessonDto,
+  type LessonStepDto,
+} from "@workspace/core/modules/content/domain/content.dto"
 import {
   completeLessonCommandSchema,
+  completeLessonRecordSchema,
   saveLessonProgressCommandSchema,
   saveStepAnswerCommandSchema,
   type CompleteLessonCommand,
@@ -9,7 +14,11 @@ import {
   type SaveStepAnswerCommand,
 } from "@workspace/core/modules/learning/domain/learning.dto"
 import type { LearningRepository } from "@workspace/core/modules/learning/application/ports/learning.repository"
-import { validateStepAnswerForLesson } from "@workspace/core/modules/learning/domain/step-answer-policy"
+import type { LearningAnswer } from "@workspace/core/modules/learning/domain/learning.dto"
+import {
+  answerableStepTypes,
+  validateStepAnswerForLesson,
+} from "@workspace/core/modules/learning/domain/step-answer-policy"
 import { err, ok, type Result } from "@workspace/core/shared/result"
 
 export type LearningServiceError =
@@ -25,6 +34,11 @@ export type LearningServiceError =
         | "step-answer-shape-invalid"
         | "step-not-found-in-lesson"
       readonly stepId: SaveStepAnswerCommand["stepId"]
+    }
+  | {
+      readonly kind: "invalid-request"
+      readonly lessonId: SaveStepAnswerCommand["lessonId"]
+      readonly reason: "step-progress-incomplete"
     }
 
 export type LearningMutationResult = {
@@ -62,7 +76,37 @@ export function createLearningService({
         })
       }
 
-      await learningRepository.completeLesson(parsedCommand)
+      const parsedLesson = lessonDtoSchema.parse(lesson)
+      const lastStepIndex = parsedLesson.steps.length - 1
+      const [hasCompletedSteps, progress] = await Promise.all([
+        hasCompletedLessonSteps({
+          lesson: parsedLesson,
+          learningRepository,
+          userId: parsedCommand.userId,
+        }),
+        learningRepository.findLessonProgress({
+          lessonId: parsedCommand.lessonId,
+          userId: parsedCommand.userId,
+        }),
+      ])
+      const hasReachedLastStep =
+        progress?.status === "completed" ||
+        progress?.currentStepIndex === lastStepIndex
+
+      if (lastStepIndex < 0 || !hasCompletedSteps || !hasReachedLastStep) {
+        return err({
+          kind: "invalid-request",
+          lessonId: parsedCommand.lessonId,
+          reason: "step-progress-incomplete",
+        })
+      }
+
+      await learningRepository.completeLesson(
+        completeLessonRecordSchema.parse({
+          ...parsedCommand,
+          currentStepIndex: lastStepIndex,
+        })
+      )
 
       return ok({ saved: true })
     },
@@ -75,6 +119,51 @@ export function createLearningService({
           kind: "lesson-not-found",
           lessonId: parsedCommand.lessonId,
         })
+      }
+
+      const parsedLesson = lessonDtoSchema.parse(lesson)
+      const currentStep = parsedLesson.steps[parsedCommand.currentStepIndex]
+      const firstStep = parsedLesson.steps[0]
+      const [startAnswer, priorStepsComplete, progress] = await Promise.all([
+        firstStep === undefined
+          ? null
+          : learningRepository.findStepAnswer({
+              lessonId: parsedCommand.lessonId,
+              stepId: firstStep.id,
+              userId: parsedCommand.userId,
+            }),
+        hasCompletedAnswerableStepsBefore({
+          beforeStepIndex: parsedCommand.currentStepIndex,
+          lesson: parsedLesson,
+          learningRepository,
+          userId: parsedCommand.userId,
+        }),
+        learningRepository.findLessonProgress({
+          lessonId: parsedCommand.lessonId,
+          userId: parsedCommand.userId,
+        }),
+      ])
+      const followsSavedProgress =
+        progress === null
+          ? parsedCommand.currentStepIndex === 0
+          : parsedCommand.currentStepIndex === progress.currentStepIndex ||
+            parsedCommand.currentStepIndex === progress.currentStepIndex + 1
+
+      if (
+        currentStep === undefined ||
+        startAnswer === null ||
+        !priorStepsComplete ||
+        !followsSavedProgress
+      ) {
+        return err({
+          kind: "invalid-request",
+          lessonId: parsedCommand.lessonId,
+          reason: "step-progress-incomplete",
+        })
+      }
+
+      if (progress?.status === "completed") {
+        return ok({ saved: true })
       }
 
       await learningRepository.saveLessonProgress(parsedCommand)
@@ -107,6 +196,24 @@ export function createLearningService({
         })
       }
 
+      const stepIndex = parsedLesson.steps.findIndex(
+        (step) => step.id === parsedCommand.stepId
+      )
+      const priorStepsComplete = await hasCompletedAnswerableStepsBefore({
+        beforeStepIndex: stepIndex,
+        lesson: parsedLesson,
+        learningRepository,
+        userId: parsedCommand.userId,
+      })
+
+      if (stepIndex < 0 || !priorStepsComplete) {
+        return err({
+          kind: "invalid-request",
+          lessonId: parsedCommand.lessonId,
+          reason: "step-progress-incomplete",
+        })
+      }
+
       await learningRepository.saveStepAnswer(parsedCommand)
 
       return ok({ saved: true })
@@ -114,4 +221,80 @@ export function createLearningService({
   }
 }
 
-export { answerableStepTypes } from "@workspace/core/modules/learning/domain/step-answer-policy"
+async function hasCompletedLessonSteps({
+  lesson,
+  learningRepository,
+  userId,
+}: {
+  readonly lesson: LessonDto
+  readonly learningRepository: LearningRepository
+  readonly userId: SaveStepAnswerCommand["userId"]
+}): Promise<boolean> {
+  const firstStep = lesson.steps[0]
+
+  if (firstStep === undefined) {
+    return false
+  }
+
+  const startAnswer = await learningRepository.findStepAnswer({
+    lessonId: lesson.id,
+    stepId: firstStep.id,
+    userId,
+  })
+
+  if (startAnswer === null) {
+    return false
+  }
+
+  return hasCompletedAnswerableStepsBefore({
+    beforeStepIndex: lesson.steps.length,
+    lesson,
+    learningRepository,
+    userId,
+  })
+}
+
+async function hasCompletedAnswerableStepsBefore({
+  beforeStepIndex,
+  lesson,
+  learningRepository,
+  userId,
+}: {
+  readonly beforeStepIndex: number
+  readonly lesson: LessonDto
+  readonly learningRepository: LearningRepository
+  readonly userId: SaveStepAnswerCommand["userId"]
+}): Promise<boolean> {
+  const requiredSteps = lesson.steps
+    .slice(0, beforeStepIndex)
+    .filter((step) => answerableStepTypes.has(step.type))
+  const savedAnswers = await Promise.all(
+    requiredSteps.map((step) =>
+      learningRepository.findStepAnswer({
+        lessonId: lesson.id,
+        stepId: step.id,
+        userId,
+      })
+    )
+  )
+
+  return requiredSteps.every((step, index) =>
+    isCompletedStepAnswer(step, savedAnswers[index] ?? null, lesson)
+  )
+}
+
+function isCompletedStepAnswer(
+  step: LessonStepDto,
+  answer: LearningAnswer | null,
+  lesson: LessonDto
+): boolean {
+  return (
+    answer !== null &&
+    "type" in answer &&
+    answer.type === step.type &&
+    validateStepAnswerForLesson({ answer, lesson, stepId: step.id }).kind ===
+      "accepted"
+  )
+}
+
+export { answerableStepTypes }

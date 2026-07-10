@@ -13,6 +13,10 @@
       "types": "./src/errors/index.ts",
       "import": "./src/errors/index.ts"
     },
+    "./security": {
+      "types": "./src/security/index.ts",
+      "import": "./src/security/index.ts"
+    },
     "./zod": {
       "types": "./src/zod/index.ts",
       "import": "./src/zod/index.ts"

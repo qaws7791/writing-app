@@ -2,6 +2,10 @@ import type { MiddlewareHandler } from "hono"
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { cors } from "hono/cors"
 import { createApp as createHonoApp } from "@workspace/hono/core"
+import {
+  createRequestBodyLimitMiddleware,
+  createTrustedOriginMiddleware,
+} from "@workspace/hono/security"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { createOpenApiDocument } from "@/http/openapi"
@@ -13,6 +17,7 @@ import { createDashboardRoutes } from "@/routes/dashboard.route"
 import { healthRoute } from "@/routes/health.route"
 import { createResourcesRoutes } from "@/routes/resources.route"
 import { createSettingsRoutes } from "@/routes/settings.route"
+import { createSessionRoute } from "@/routes/session.route"
 import { createUsersRoutes } from "@/routes/users.route"
 import type {
   AdminAiChatUseCase,
@@ -60,6 +65,7 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
     middleware: createMiddleware(dependencies),
     routes: [
       healthRoute,
+      createSessionRoute(dependencies.sessionResolver),
       ...createAiChatRoutes({
         aiChatAgent: dependencies.aiChatAgent,
         aiChatService: dependencies.adminServices.aiChat,
@@ -133,13 +139,18 @@ function createMiddleware(
     )
   }
 
+  const adminOrigin =
+    dependencies.adminOrigin ?? localRuntimeDefaults.adminWebOrigin
+
   middleware.push(
     cors({
       allowHeaders: ["Authorization", "Content-Type"],
       allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       credentials: true,
-      origin: dependencies.adminOrigin ?? localRuntimeDefaults.adminWebOrigin,
-    })
+      origin: adminOrigin,
+    }),
+    createRequestBodyLimitMiddleware(),
+    createTrustedOriginMiddleware({ trustedOrigin: adminOrigin })
   )
 
   return middleware

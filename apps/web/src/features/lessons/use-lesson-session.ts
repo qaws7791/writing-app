@@ -28,6 +28,8 @@ const LESSON_ANSWER_ERROR =
   "답변을 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
 const LESSON_COMPLETE_ERROR =
   "레슨 완료를 저장하지 못했습니다. 다시 시도해 주세요."
+const LESSON_PROGRESS_ERROR =
+  "레슨 진행을 저장하지 못했습니다. 다시 시도해 주세요."
 
 type UseLessonSessionInput = {
   readonly api: WritingAppApi
@@ -94,6 +96,7 @@ export function useLessonSession({
   const [hasStarted, setHasStarted] = useState(initialProgress !== undefined)
   const [isComplete, setIsComplete] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
+  const [isSavingProgress, setIsSavingProgress] = useState(false)
   const [isSavingStart, setIsSavingStart] = useState(false)
   const [startError, setStartError] = useState<null | string>(null)
   const answerRequestIdRef = useRef(0)
@@ -105,6 +108,7 @@ export function useLessonSession({
     readonly answer: LessonAnswerChange["answer"]
     readonly stepId: string
   } | null>(null)
+  const progressInFlightRef = useRef(false)
 
   useEffect(() => {
     isMountedRef.current = true
@@ -165,10 +169,26 @@ export function useLessonSession({
       return
     }
 
+    if (result.status === "error") {
+      startInFlightRef.current = false
+      setIsSavingStart(false)
+      setStartError(LESSON_START_ERROR)
+      return
+    }
+
+    const progressResult = await api.saveLessonProgress({
+      currentStepIndex: 0,
+      lessonId: lesson.id,
+    })
+
+    if (!isMountedRef.current) {
+      return
+    }
+
     startInFlightRef.current = false
     setIsSavingStart(false)
 
-    if (result.status === "error") {
+    if (progressResult.status === "error") {
       setStartError(LESSON_START_ERROR)
       return
     }
@@ -275,12 +295,24 @@ export function useLessonSession({
         }
       }
 
+      const saved = await persistAnswerToServer(stepId, {
+        requested: true,
+        type: "AI_FEEDBACK",
+      })
+
+      if (!saved) {
+        return {
+          message: LESSON_ANSWER_ERROR,
+          status: "error",
+        }
+      }
+
       return {
         feedback: result.value,
         status: "ok",
       }
     },
-    [api, lesson.id]
+    [api, lesson.id, persistAnswerToServer]
   )
 
   async function submitCurrentStep(): Promise<void> {
@@ -321,13 +353,45 @@ export function useLessonSession({
     }
 
     if (!isLastLessonStep(lesson, currentStepIndex)) {
-      setCurrentStepIndex((index) =>
-        Math.min(lesson.steps.length - 1, index + 1)
+      const canAdvance = await waitForLatestAnswerSave(step.id)
+
+      if (!canAdvance) {
+        return
+      }
+
+      if (progressInFlightRef.current) {
+        return
+      }
+
+      const nextStepIndex = Math.min(
+        lesson.steps.length - 1,
+        currentStepIndex + 1
       )
+      progressInFlightRef.current = true
+      setCompleteError(null)
+      setIsSavingProgress(true)
+      const progressResult = await api.saveLessonProgress({
+        currentStepIndex: nextStepIndex,
+        lessonId: lesson.id,
+      })
+
+      if (!isMountedRef.current) {
+        return
+      }
+
+      progressInFlightRef.current = false
+      setIsSavingProgress(false)
+
+      if (progressResult.status === "error") {
+        setCompleteError(LESSON_PROGRESS_ERROR)
+        return
+      }
+
+      setCurrentStepIndex(nextStepIndex)
       return
     }
 
-    await completeCurrentLesson(step.id, currentStepIndex)
+    await completeCurrentLesson(step.id)
   }
 
   return {
@@ -345,6 +409,7 @@ export function useLessonSession({
     isQuizStep,
     isReady,
     isSavingStart,
+    isSavingProgress,
     progress,
     requestAiFeedback,
     saveAnswer,
@@ -355,10 +420,7 @@ export function useLessonSession({
     visibleStepNumber,
   }
 
-  async function completeCurrentLesson(
-    currentStepId: string,
-    stepIndex: number
-  ): Promise<void> {
+  async function completeCurrentLesson(currentStepId: string): Promise<void> {
     if (completeInFlightRef.current) {
       return
     }
@@ -379,10 +441,7 @@ export function useLessonSession({
       return
     }
 
-    const result = await api.completeLesson({
-      currentStepIndex: stepIndex,
-      lessonId: lesson.id,
-    })
+    const result = await api.completeLesson({ lessonId: lesson.id })
 
     if (!isMountedRef.current) {
       return

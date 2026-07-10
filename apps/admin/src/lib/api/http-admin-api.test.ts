@@ -4,6 +4,36 @@ import { createHttpAdminApi } from "@/lib/api/http-admin-api"
 import { readAdminApiBaseUrl } from "@/runtime-config"
 
 describe("HTTP AdminApi", () => {
+  it("서버 요청에 검증된 Origin을 명시하고 세션 응답을 파싱한다", async () => {
+    let capturedRequest: Request | undefined
+    const api = createHttpAdminApi({
+      baseUrl: readAdminApiBaseUrl({
+        ADMIN_API_BASE_URL: "https://admin-api.example.test/",
+      }),
+      fetch: async (request) => {
+        capturedRequest = request
+        return jsonResponse({
+          admin: {
+            email: "admin@example.com",
+            id: "admin-1",
+            name: "관리자",
+            role: "owner",
+          },
+        })
+      },
+      requestOrigin: "https://admin.example.test/path",
+      tokenProvider: () => "admin-token",
+    })
+
+    await expect(api.getSession()).resolves.toMatchObject({
+      status: "ok",
+      value: { admin: { id: "admin-1", role: "owner" } },
+    })
+    expect(capturedRequest?.headers.get("Origin")).toBe(
+      "https://admin.example.test"
+    )
+  })
+
   it("대시보드, 코스, 사용자, 분석, 설정 endpoint를 Better Auth 쿠키와 함께 호출한다", async () => {
     const requests: Request[] = []
     const bodies: unknown[] = []

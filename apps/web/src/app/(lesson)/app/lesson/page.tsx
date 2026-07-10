@@ -23,6 +23,15 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
   const lessonId = Array.isArray(lessonIdParameter)
     ? lessonIdParameter[0]
     : lessonIdParameter
+  const token = await getServerLearnerSessionToken()
+
+  if (token === null) {
+    const requestedLessonPath =
+      lessonId === undefined || lessonId.trim() === ""
+        ? "/app/lesson"
+        : `/app/lesson?lesson_id=${encodeURIComponent(lessonId)}`
+    redirect(createLoginPagePath(requestedLessonPath))
+  }
 
   if (lessonId === undefined || lessonId.trim() === "") {
     return (
@@ -34,12 +43,6 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
   }
 
   const nextPath = `/app/lesson?lesson_id=${encodeURIComponent(lessonId)}`
-  const token = await getServerLearnerSessionToken()
-
-  if (token === null) {
-    redirect(createLoginPagePath(nextPath))
-  }
-
   const api = getServerWritingAppApi({
     tokenProvider: () => token,
   })

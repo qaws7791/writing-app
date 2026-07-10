@@ -15,9 +15,5 @@ export async function getServerAdminSessionToken(): Promise<null | string> {
     return cookieToken
   }
 
-  if (process.env["NODE_ENV"] === "production") {
-    return null
-  }
-
-  return normalizeAdminSessionToken(process.env["ADMIN_DEV_SESSION_TOKEN"])
+  return null
 }

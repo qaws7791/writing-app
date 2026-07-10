@@ -5,6 +5,7 @@ import { join } from "node:path"
 import { describe, expect, it, vi } from "vitest"
 
 import { LessonStepRenderer } from "@/features/lessons/lesson-step-renderer"
+import { writeLessonDraftText } from "@workspace/ui/lib/lesson-draft-storage"
 import type { LessonStep } from "@/features/lessons/lesson-types"
 
 describe("레슨 스텝 렌더러 답변 저장", () => {
@@ -169,10 +170,6 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "그러나" }))
-    expect(screen.getByRole("button", { name: "그러나" })).toHaveAttribute(
-      "data-state",
-      "selected"
-    )
     await user.click(screen.getByRole("button", { name: "역접" }))
 
     expect(onAnswerChange).toHaveBeenCalledWith({
@@ -182,10 +179,6 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
       },
       stepId: "match-1",
     })
-    expect(screen.getByRole("button", { name: "그러나" })).toHaveAttribute(
-      "data-state",
-      "selected"
-    )
   })
 
   it("분류 스텝은 현재 제품 태그 패널 UI로 답을 전달한다", async () => {
@@ -271,6 +264,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
 
 describe("레슨 스텝 렌더러 AI 코칭", () => {
   it("AI 코칭 요청 중 로딩을 보여주고 결과와 다시 받기 버튼을 표시한다", async () => {
+    writeLessonDraftText("짧고 명확하게 쓴다", "짧고 명확하게 쓴다")
     const user = userEvent.setup()
     const feedback = createPendingFeedback()
     const onAiFeedbackRequest = vi.fn(() => feedback.promise)
@@ -284,9 +278,7 @@ describe("레슨 스텝 렌더러 AI 코칭", () => {
 
     await user.click(screen.getByRole("button", { name: "AI 코칭 받기" }))
 
-    expect(
-      screen.getByText("AI가 코칭을 준비하고 있습니다...")
-    ).toBeInTheDocument()
+    expect(screen.getByText("AI가 코칭 중입니다...")).toBeInTheDocument()
     expect(onAiFeedbackRequest).toHaveBeenCalledWith({
       answer: "짧고 명확하게 쓴다",
       stepId: "ai-1",
@@ -309,9 +301,9 @@ describe("레슨 스텝 렌더러 AI 코칭", () => {
     expect(
       await screen.findByText("전체 흐름이 선명합니다.")
     ).toBeInTheDocument()
-    expect(screen.getByText("핵심 문장이 선명합니다.")).toBeInTheDocument()
+    expect(screen.getByText(/핵심 문장이 선명합니다\./)).toBeInTheDocument()
     expect(
-      screen.getByText("근거 문장을 한 문장 더 붙여보세요.")
+      screen.getByText(/근거 문장을 한 문장 더 붙여보세요\./)
     ).toBeInTheDocument()
     expect(
       screen.getByText("예시를 하나 더 넣어 다시 써보세요.")

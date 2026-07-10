@@ -30,10 +30,9 @@ describe("전역 내비게이션", () => {
 
     await user.click(screen.getByRole("button", { name: "✍️" }))
 
-    expect(screen.getByRole("menuitem", { name: "프로필" })).toHaveAttribute(
-      "href",
-      "/app/profile"
-    )
+    expect(
+      await screen.findByRole("menuitem", { name: "프로필" })
+    ).toHaveAttribute("href", "/app/profile")
     expect(screen.getByRole("menuitem", { name: "로그아웃" })).toHaveAttribute(
       "href",
       "/login"

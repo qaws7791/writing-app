@@ -23,6 +23,7 @@ const api: WritingAppApi = {
   getProgress: vi.fn(),
   listCourses: vi.fn(),
   saveLessonAnswer: vi.fn(),
+  saveLessonProgress: vi.fn(),
 }
 
 const profile: LearnerProfile = {

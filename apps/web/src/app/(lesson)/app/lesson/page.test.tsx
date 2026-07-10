@@ -16,19 +16,25 @@ const api: WritingAppApi = {
   getProgress: vi.fn(),
   listCourses: vi.fn(),
   saveLessonAnswer: vi.fn(),
+  saveLessonProgress: vi.fn(),
 }
 
-vi.mock("next/navigation", () => ({
-  redirect: vi.fn((path: string) => {
+const { redirectMock, sessionTokenMock } = vi.hoisted(() => ({
+  redirectMock: vi.fn((path: string) => {
     throw new Error(`redirect:${path}`)
   }),
+  sessionTokenMock: vi.fn(async (): Promise<null | string> => "learner-token"),
+}))
+
+vi.mock("next/navigation", () => ({
+  redirect: redirectMock,
   useRouter: () => ({
     push: vi.fn(),
   }),
 }))
 
 vi.mock("@/lib/auth/server-session-token", () => ({
-  getServerLearnerSessionToken: vi.fn(async () => "learner-token"),
+  getServerLearnerSessionToken: sessionTokenMock,
 }))
 
 vi.mock("@/lib/api/get-server-writing-app-api", () => ({
@@ -38,6 +44,17 @@ vi.mock("@/lib/api/get-server-writing-app-api", () => ({
 describe("레슨 route", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    sessionTokenMock.mockResolvedValue("learner-token")
+  })
+
+  it("lesson_id가 없어도 인증되지 않은 요청을 먼저 로그인으로 보낸다", async () => {
+    sessionTokenMock.mockResolvedValueOnce(null)
+
+    await expect(
+      LessonRoute({ searchParams: Promise.resolve({}) })
+    ).rejects.toBeInstanceOf(Error)
+
+    expect(redirectMock).toHaveBeenCalledWith("/login?next=%2Fapp%2Flesson")
   })
 
   it("레슨 조회 실패를 fallback 콘텐츠로 숨기지 않는다", async () => {

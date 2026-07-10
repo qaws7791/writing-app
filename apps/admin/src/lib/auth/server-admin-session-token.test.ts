@@ -17,26 +17,23 @@ describe("server admin session token", () => {
 
   it("쿠키 토큰을 우선 사용한다", async () => {
     mockedCookies.mockResolvedValueOnce(createCookieStore("cookie-token"))
-    vi.stubEnv("ADMIN_DEV_SESSION_TOKEN", "dev-token")
     vi.stubEnv("NODE_ENV", "production")
 
     await expect(getServerAdminSessionToken()).resolves.toBe("cookie-token")
   })
 
-  it("운영 환경에서는 개발 토큰 fallback을 사용하지 않는다", async () => {
+  it("쿠키가 없으면 운영 환경에서도 null을 반환한다", async () => {
     mockedCookies.mockResolvedValueOnce(createCookieStore(null))
-    vi.stubEnv("ADMIN_DEV_SESSION_TOKEN", "dev-token")
     vi.stubEnv("NODE_ENV", "production")
 
     await expect(getServerAdminSessionToken()).resolves.toBeNull()
   })
 
-  it("운영 환경이 아니면 개발 토큰 fallback을 허용한다", async () => {
+  it("쿠키가 없으면 개발 환경에서도 환경 변수 token을 사용하지 않는다", async () => {
     mockedCookies.mockResolvedValueOnce(createCookieStore(null))
-    vi.stubEnv("ADMIN_DEV_SESSION_TOKEN", "dev-token")
     vi.stubEnv("NODE_ENV", "development")
 
-    await expect(getServerAdminSessionToken()).resolves.toBe("dev-token")
+    await expect(getServerAdminSessionToken()).resolves.toBeNull()
   })
 })
 

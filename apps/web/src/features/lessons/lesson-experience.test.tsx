@@ -328,7 +328,7 @@ describe("레슨 경험", () => {
     )
   })
 
-  it("이전 스텝의 답변 저장 실패를 다음 스텝에 표시하지 않는다", async () => {
+  it("현재 스텝 답변 저장에 실패하면 다음 스텝으로 진행하지 않는다", async () => {
     const user = userEvent.setup()
     const answerSave = createDeferred<ApiResult<SaveLessonAnswerResult>>()
     const api = createApi({
@@ -366,14 +366,17 @@ describe("레슨 경험", () => {
     await user.click(screen.getByRole("button", { name: "계속하기" }))
 
     expect(
-      screen.getByRole("heading", { name: "다음 읽기" })
-    ).toBeInTheDocument()
+      screen.queryByRole("heading", { name: "다음 읽기" })
+    ).not.toBeInTheDocument()
 
     answerSave.resolve(apiFailure(networkError("이전 스텝 저장 실패")))
 
     await waitFor(() =>
-      expect(screen.queryByText(LESSON_ANSWER_ERROR)).not.toBeInTheDocument()
+      expect(screen.getByText(LESSON_ANSWER_ERROR)).toBeInTheDocument()
     )
+    expect(
+      screen.getByRole("heading", { name: "더 좋은 문장은 무엇인가요?" })
+    ).toBeInTheDocument()
   })
 
   it("마지막 스텝 완료는 최신 답변 저장이 끝난 뒤 저장한다", async () => {
@@ -407,7 +410,6 @@ describe("레슨 경험", () => {
 
     await waitFor(() =>
       expect(completeLesson).toHaveBeenCalledWith({
-        currentStepIndex: 0,
         lessonId: "l-answer",
       })
     )
@@ -518,7 +520,6 @@ describe("레슨 경험", () => {
     )
 
     expect(completeLesson).toHaveBeenCalledWith({
-      currentStepIndex: 1,
       lessonId: "l1",
     })
     expect(
@@ -800,9 +801,10 @@ describe("레슨 경험", () => {
         summary: "좋은 출발입니다.",
       })
     )
+    const saveLessonAnswer = vi.fn(async () => apiOk({ saved: true }))
     const api = createApi({
       createAiFeedback,
-      saveLessonAnswer: vi.fn(async () => apiOk({ saved: true })),
+      saveLessonAnswer,
     })
     const coachingLesson: Lesson = {
       ...lesson,
@@ -831,6 +833,13 @@ describe("레슨 경험", () => {
     await waitFor(() =>
       expect(createAiFeedback).toHaveBeenCalledWith({
         answer: "짧고 명확하게 쓴다",
+        lessonId: "l-coaching",
+        stepId: "ai-step",
+      })
+    )
+    await waitFor(() =>
+      expect(saveLessonAnswer).toHaveBeenLastCalledWith({
+        answer: { requested: true, type: "AI_FEEDBACK" },
         lessonId: "l-coaching",
         stepId: "ai-step",
       })
@@ -946,6 +955,7 @@ function createApi(overrides: Partial<WritingAppApi>): WritingAppApi {
     getProgress: vi.fn(unavailable),
     listCourses: vi.fn(unavailable),
     saveLessonAnswer: vi.fn(unavailable),
+    saveLessonProgress: vi.fn(async () => apiOk({ saved: true })),
     ...overrides,
   }
 }

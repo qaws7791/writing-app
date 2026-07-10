@@ -1,4 +1,5 @@
 export * from "@workspace/contracts/admin/admin-shared"
+export * from "@workspace/contracts/admin/admin-session"
 export * from "@workspace/contracts/admin/admin-dashboard"
 export * from "@workspace/contracts/admin/admin-users"
 export * from "@workspace/contracts/admin/admin-analytics"

@@ -70,6 +70,10 @@ export type LessonStepAnswerPayload =
       readonly text: string
       readonly type: "WRITE"
     }
+  | {
+      readonly requested: true
+      readonly type: "AI_FEEDBACK"
+    }
 
 export function getFirstLessonStep(lesson: Lesson): LessonStep | null {
   return getLessonStep(lesson, 0)

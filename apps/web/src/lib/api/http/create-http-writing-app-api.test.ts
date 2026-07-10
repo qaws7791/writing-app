@@ -100,7 +100,7 @@ describe("HTTP WritingAppApi", () => {
       }),
       fetch: async (request) => {
         urls.push(request.url)
-        bodies.push(await request.json())
+        bodies.push(request.body === null ? null : await request.json())
 
         if (request.url === "https://api.example.test/ai-feedback") {
           return jsonResponse({
@@ -138,8 +138,18 @@ describe("HTTP WritingAppApi", () => {
       },
     })
     await expect(
-      api.completeLesson({
+      api.saveLessonProgress({
         currentStepIndex: 2,
+        lessonId: "l1",
+      })
+    ).resolves.toEqual({
+      status: "ok",
+      value: {
+        saved: true,
+      },
+    })
+    await expect(
+      api.completeLesson({
         lessonId: "l1",
       })
     ).resolves.toEqual({
@@ -173,6 +183,7 @@ describe("HTTP WritingAppApi", () => {
       {
         currentStepIndex: 2,
       },
+      null,
       {
         answer: "나의 답변",
         lessonId: "l1",
@@ -181,6 +192,7 @@ describe("HTTP WritingAppApi", () => {
     ])
     expect(urls).toEqual([
       "https://api.example.test/learning/answers",
+      "https://api.example.test/learning/lessons/l1/progress",
       "https://api.example.test/learning/lessons/l1/complete",
       "https://api.example.test/ai-feedback",
     ])

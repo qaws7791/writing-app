@@ -13,6 +13,10 @@ import { OrderAnswer } from "@workspace/ui/components/lesson/order-answer"
 import { ReadingStepView } from "@workspace/ui/components/lesson/reading-step-view"
 import { SelectAnswer } from "@workspace/ui/components/lesson/select-answer"
 import { WriteAnswer } from "@workspace/ui/components/lesson/write-answer"
+import {
+  readLessonDraftText,
+  writeLessonDraftText,
+} from "@workspace/ui/lib/lesson-draft-storage"
 
 import {
   createLessonStepAnswer,
@@ -81,22 +85,6 @@ function emitAnswer(
     answer: createLessonStepAnswer(payload),
     stepId,
   })
-}
-
-function readDraftText(key: string): string {
-  if (typeof window === "undefined") {
-    return ""
-  }
-
-  return localStorage.getItem(key) ?? ""
-}
-
-function writeDraftText(key: string, text: string) {
-  if (typeof window === "undefined") {
-    return
-  }
-
-  localStorage.setItem(key, text)
 }
 
 function renderStepContent(
@@ -219,7 +207,6 @@ function renderStepContent(
         />
       )
     case "WRITE": {
-      const draftKey = `writing-app-draft-${step.id}`
       const title = step.title ?? step.prompt ?? ""
       const guide = step.guide || step.context
       const badge =
@@ -247,17 +234,17 @@ function renderStepContent(
           draft={step.draft}
           goal={step.goal}
           guide={guide}
-          initialText={readDraftText(draftKey)}
+          initialText={readLessonDraftText(step.id)}
           max={step.max}
           min={step.min || 20}
           onChange={(text) => {
-            writeDraftText(draftKey, text)
+            writeLessonDraftText(step.id, text)
             emitAnswer(handlers, step.id, {
               text,
               type: "WRITE",
             })
           }}
-          onDraftSave={(text) => writeDraftText(draftKey, text)}
+          onDraftSave={(text) => writeLessonDraftText(step.id, text)}
           placeholder={placeholder}
           reference={step.reference}
           sample={step.sample}
@@ -267,8 +254,7 @@ function renderStepContent(
       )
     }
     case "AI_FEEDBACK": {
-      const draftKey = `writing-app-draft-${step.target}`
-      const draftText = readDraftText(draftKey)
+      const draftText = readLessonDraftText(step.target)
 
       return (
         <AiFeedbackAnswer

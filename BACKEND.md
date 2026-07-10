@@ -58,6 +58,7 @@
 - `GET /profile`
 - `GET /progress`
 - `POST /learning/answers`
+- `POST /learning/lessons/:lessonId/progress`
 - `POST /learning/lessons/:lessonId/complete`
 - `POST /ai-feedback`
 

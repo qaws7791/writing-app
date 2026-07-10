@@ -136,7 +136,7 @@ describe("홈 화면", () => {
       />
     )
 
-    expect(screen.getByText("이어서 학습하기")).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "진행중" })).toBeInTheDocument()
     expect(screen.getAllByText("글쓰기 첫걸음 30일")).toHaveLength(2)
     expect(screen.getAllByText("1/3")).toHaveLength(2)
     expect(screen.getAllByText("짧게 쓰기")).toHaveLength(2)
@@ -193,6 +193,7 @@ function createApi({
     getProgress,
     listCourses: vi.fn(),
     saveLessonAnswer: vi.fn(),
+    saveLessonProgress: vi.fn(),
   }
 }
 

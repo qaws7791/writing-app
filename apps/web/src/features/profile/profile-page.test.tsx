@@ -68,7 +68,7 @@ describe("프로필 화면", () => {
       screen.getByRole("region", { name: "나의 학습 요약" })
     ).toBeInTheDocument()
     expect(screen.getByText("완료한 레슨")).toBeInTheDocument()
-    expect(screen.getByText("12")).toBeInTheDocument()
+    expect(screen.getByText("📚 12")).toBeInTheDocument()
     expect(screen.getByText("연속 학습일")).toBeInTheDocument()
     expect(screen.getByText("🔥 4")).toBeInTheDocument()
     expect(

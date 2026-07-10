@@ -26,6 +26,7 @@ import { learnerAccountStatusSchema } from "@workspace/contracts/status"
 import { z } from "zod"
 import type {
   CompleteLessonResult,
+  SaveLessonProgressResult,
   SaveLessonAnswerResult,
   WritingAppApi,
 } from "@/lib/api/writing-app-api-port"
@@ -38,6 +39,7 @@ import type {
   ApiProfileResponse,
   ApiProgressResponse,
   ApiSaveLessonAnswerResponse,
+  ApiSaveLessonProgressResponse,
 } from "@/lib/api/writing-app-api-contract"
 
 export function createHttpWritingAppApi({
@@ -59,9 +61,6 @@ export function createHttpWritingAppApi({
     async completeLesson(input) {
       return mapApiResult(
         await client.requestJson<ApiCompleteLessonResponse>({
-          body: {
-            currentStepIndex: input.currentStepIndex,
-          },
           method: "POST",
           path: `/learning/lessons/${input.lessonId}/complete`,
           schema: savedResponseSchema,
@@ -143,6 +142,17 @@ export function createHttpWritingAppApi({
         mapSaveLessonAnswerResult
       )
     },
+    async saveLessonProgress(input) {
+      return mapApiResult(
+        await client.requestJson<ApiSaveLessonProgressResponse>({
+          body: { currentStepIndex: input.currentStepIndex },
+          method: "POST",
+          path: `/learning/lessons/${input.lessonId}/progress`,
+          schema: savedResponseSchema,
+        }),
+        mapSaveLessonProgressResult
+      )
+    },
   }
 }
 
@@ -203,4 +213,10 @@ function mapCompleteLessonResult(
   return {
     saved: response.saved,
   }
+}
+
+function mapSaveLessonProgressResult(
+  response: ApiSaveLessonProgressResponse
+): SaveLessonProgressResult {
+  return { saved: response.saved }
 }

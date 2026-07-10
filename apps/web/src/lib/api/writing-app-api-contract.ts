@@ -21,4 +21,8 @@ export type ApiSaveLessonAnswerResponse = ApiResponseBody<
   200
 >
 export type ApiCompleteLessonResponse = ApiResponseBody<"completeLesson", 200>
+export type ApiSaveLessonProgressResponse = ApiResponseBody<
+  "saveLessonProgress",
+  200
+>
 export type ApiAiFeedbackResponse = ApiResponseBody<"createAiFeedback", 200>

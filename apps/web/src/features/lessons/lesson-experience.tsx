@@ -86,6 +86,7 @@ function LessonExperienceSession({
         currentStep={session.currentStep}
         currentStepIndex={session.currentStepIndex}
         isCompleting={session.isCompleting}
+        isSavingProgress={session.isSavingProgress}
         isReady={session.isReady}
         lesson={lesson}
         onAiFeedbackRequest={session.requestAiFeedback}

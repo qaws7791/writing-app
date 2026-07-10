@@ -9,9 +9,10 @@ export function createAdminLogoutPath(): string {
 }
 
 export function resolveSafeAdminNextPath(nextPath: string): string {
-  return nextPath.startsWith("/") &&
-    !nextPath.startsWith("//") &&
-    !nextPath.startsWith("/login")
-    ? nextPath
-    : "/"
+  return resolveSafeInternalPath({
+    blockedPathnames: ["/login"],
+    candidate: nextPath,
+    defaultPath: "/",
+  })
 }
+import { resolveSafeInternalPath } from "@workspace/ui/lib/safe-navigation-path"

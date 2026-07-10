@@ -35,6 +35,7 @@ import type {
   AdminResourceDocumentDetail,
   AdminResourceDocumentList,
   AdminResourceDocumentListItem,
+  AdminSession,
   AdminSettings,
   AdminTiptapDocument,
   AdminUserDetail,
@@ -63,6 +64,7 @@ import type {
   AdminLessonAnalyticsPageDto,
   AdminResourceDocumentDetailDto,
   AdminResourceDocumentListDto,
+  AdminSessionDto,
   AdminSettingsDto,
   AdminUserDetailDto,
   AdminUserListDto,
@@ -82,6 +84,7 @@ import {
   adminLessonAnalyticsPageDtoSchema,
   adminResourceDocumentDetailDtoSchema,
   adminResourceDocumentListDtoSchema,
+  adminSessionDtoSchema,
   adminSettingsDtoSchema,
   adminUserDetailDtoSchema,
   adminUserListDtoSchema,
@@ -114,15 +117,18 @@ type AdminHttpClient = {
 export function createHttpAdminApi({
   baseUrl,
   fetch,
+  requestOrigin,
   tokenProvider,
 }: {
   readonly baseUrl: AdminApiBaseUrl
   readonly fetch: AdminFetchLike
+  readonly requestOrigin?: string
   readonly tokenProvider: AdminTokenProvider
 }): AdminApi {
   const client = createAdminHttpClient({
     baseUrl,
     fetch,
+    requestOrigin,
     tokenProvider,
   })
 
@@ -256,6 +262,14 @@ export function createHttpAdminApi({
         toModel: toAdminSettings,
       })
     },
+    getSession() {
+      return requestAdminJson(client, {
+        method: "GET",
+        path: "/session",
+        schema: adminSessionDtoSchema,
+        toModel: toAdminSession,
+      })
+    },
     getUser(userId) {
       return requestAdminJson(client, {
         method: "GET",
@@ -382,6 +396,17 @@ function toAdminDashboard(dto: AdminDashboardDto): AdminDashboard {
       name: activity.name,
       userId: activity.userId,
     })),
+  }
+}
+
+function toAdminSession(dto: AdminSessionDto): AdminSession {
+  return {
+    admin: {
+      email: dto.admin.email,
+      id: dto.admin.id,
+      name: dto.admin.name,
+      role: dto.admin.role,
+    },
   }
 }
 
@@ -686,10 +711,12 @@ function toAdminPagination(input: {
 function createAdminHttpClient({
   baseUrl,
   fetch,
+  requestOrigin,
   tokenProvider,
 }: {
   readonly baseUrl: AdminApiBaseUrl
   readonly fetch: AdminFetchLike
+  readonly requestOrigin?: string
   readonly tokenProvider: AdminTokenProvider
 }): AdminHttpClient {
   return {
@@ -707,6 +734,10 @@ function createAdminHttpClient({
           "Cookie",
           `${adminSessionCookieName}=${encodeURIComponent(token)}`
         )
+      }
+
+      if (requestOrigin !== undefined) {
+        headers.set("Origin", new URL(requestOrigin).origin)
       }
 
       if (input.body !== undefined) {

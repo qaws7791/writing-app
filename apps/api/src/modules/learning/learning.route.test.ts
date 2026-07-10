@@ -145,7 +145,7 @@ describe("플랫폼 API learning route", () => {
     })
   })
 
-  it("인증된 lesson 완료 요청을 learning service로 전달한다", async () => {
+  it("완료 index를 받지 않고 인증된 lesson 완료 요청을 service로 전달한다", async () => {
     const completedCommands: unknown[] = []
     const app = createApp(
       createDependencies({
@@ -167,7 +167,7 @@ describe("플랫폼 API learning route", () => {
 
     const response = await app.request("/learning/lessons/l1/complete", {
       body: JSON.stringify({
-        currentStepIndex: 2,
+        currentStepIndex: 999_999,
       }),
       headers: {
         Authorization: "Bearer active-token",
@@ -180,7 +180,6 @@ describe("플랫폼 API learning route", () => {
     await expect(response.json()).resolves.toEqual({ saved: true })
     expect(completedCommands).toEqual([
       {
-        currentStepIndex: 2,
         lessonId: lessonIdSchema.parse("l1"),
         occurredAt,
         userId: learnerIdSchema.parse("user-1"),
@@ -188,15 +187,27 @@ describe("플랫폼 API learning route", () => {
     ])
   })
 
-  it("잘못된 lesson 완료 JSON 본문은 HTTP_EXCEPTION으로 응답한다", async () => {
+  it("인증된 lesson 진행 요청을 현재 사용자 command로 전달한다", async () => {
+    const progressCommands: unknown[] = []
     const app = createApp(
       createDependencies({
-        learningService: createLearningService(),
+        learningService: {
+          async completeLesson() {
+            return { kind: "ok", value: { saved: true } }
+          },
+          async saveLessonProgress(command) {
+            progressCommands.push(command)
+            return { kind: "ok", value: { saved: true } }
+          },
+          async saveStepAnswer() {
+            return { kind: "ok", value: { saved: true } }
+          },
+        },
       })
     )
 
-    const response = await app.request("/learning/lessons/l1/complete", {
-      body: "{",
+    const response = await app.request("/learning/lessons/l1/progress", {
+      body: JSON.stringify({ currentStepIndex: 1 }),
       headers: {
         Authorization: "Bearer active-token",
         "Content-Type": "application/json",
@@ -204,11 +215,15 @@ describe("플랫폼 API learning route", () => {
       method: "POST",
     })
 
-    expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({
-      code: "HTTP_EXCEPTION",
-      message: "Bad Request",
-    })
+    expect(response.status).toBe(200)
+    expect(progressCommands).toEqual([
+      {
+        currentStepIndex: 1,
+        lessonId: lessonIdSchema.parse("l1"),
+        occurredAt,
+        userId: learnerIdSchema.parse("user-1"),
+      },
+    ])
   })
 })
 

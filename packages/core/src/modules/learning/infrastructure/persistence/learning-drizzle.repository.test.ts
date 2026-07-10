@@ -53,6 +53,14 @@ describe("학습 진행 repository", () => {
           userId: "user-1",
         }),
       ])
+      await expect(
+        repository.findLessonProgress({ lessonId, userId })
+      ).resolves.toEqual({
+        currentStepIndex: 2,
+        lessonId,
+        status: "in_progress",
+        userId,
+      })
       expect(client.db.select().from(learnerActivityDays).all()).toEqual([
         expect.objectContaining({
           activityDate: "2026-06-14",
@@ -120,6 +128,16 @@ describe("학습 진행 repository", () => {
           userId: "user-1",
         }),
       ])
+      await expect(
+        repository.findStepAnswer({
+          lessonId: newLessonId,
+          stepId: newStepId,
+          userId,
+        })
+      ).resolves.toEqual({
+        selectedOptionId: "b",
+        type: "MULTIPLE_CHOICE",
+      })
       expect(client.db.select().from(learnerActivityDays).all()).toEqual([
         expect.objectContaining({
           activityDate: "2026-06-14",

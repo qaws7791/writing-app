@@ -1,6 +1,7 @@
 import { z } from "zod"
+import type { AnyRouteConfig } from "@workspace/hono/core"
 
-import { defineApiRoute } from "@/context/hono-env"
+import { defineApiRoute, type ApiRouteHandler } from "@/context/hono-env"
 import { authenticatedResponses, jsonResponse } from "@/http/openapi"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
@@ -12,7 +13,7 @@ const progressQuerySchema = z.object({
   status: progressCourseStatusFilterSchema.optional(),
 })
 
-export const progressRoute = defineApiRoute({
+const progressRouteConfig = {
   method: "get",
   middleware: [requireActiveSession],
   operationId: "getProgress",
@@ -25,15 +26,23 @@ export const progressRoute = defineApiRoute({
   ),
   security: [{ bearerAuth: [] }],
   summary: "학습 진행 조회",
-  handler: async (context) => {
-    const progressService = context.var.requestContext.progressService
-    const { status } = context.req.valid("query")
+} satisfies AnyRouteConfig
 
-    return context.json(
-      await progressService.readProgress(context.var.activeSession.user.id, {
-        status,
-      }),
-      200
-    )
-  },
+const progressHandler: ApiRouteHandler<typeof progressRouteConfig> = async (
+  context
+) => {
+  const progressService = context.var.requestContext.progressService
+  const { status } = context.req.valid("query")
+
+  return context.json(
+    await progressService.readProgress(context.var.activeSession.user.id, {
+      status,
+    }),
+    200
+  )
+}
+
+export const progressRoute = defineApiRoute({
+  ...progressRouteConfig,
+  handler: progressHandler,
 })

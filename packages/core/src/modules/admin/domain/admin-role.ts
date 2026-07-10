@@ -1,14 +1,12 @@
-import { z } from "zod"
+import {
+  adminRoles,
+  adminRoleSchema,
+  adminRoleValues,
+  type AdminRole,
+} from "@workspace/contracts/admin"
 
-export const adminRoles = {
-  operator: "operator",
-  owner: "owner",
-} as const
-export const adminRoleValues = [adminRoles.owner, adminRoles.operator] as const
-
-export const adminRoleSchema = z.enum(adminRoleValues)
-
-export type AdminRole = z.infer<typeof adminRoleSchema>
+export { adminRoles, adminRoleSchema, adminRoleValues }
+export type { AdminRole }
 
 export function parseAdminRole(role: unknown): AdminRole | null {
   const result = adminRoleSchema.safeParse(role)

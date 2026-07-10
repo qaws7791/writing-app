@@ -32,6 +32,7 @@ export function LessonActiveScreen({
   currentStep,
   currentStepIndex,
   isCompleting,
+  isSavingProgress,
   isReady,
   lesson,
   onAiFeedbackRequest,
@@ -52,6 +53,7 @@ export function LessonActiveScreen({
   readonly currentStep: LessonStep
   readonly currentStepIndex: number
   readonly isCompleting: boolean
+  readonly isSavingProgress: boolean
   readonly isReady: boolean
   readonly lesson: Lesson
   readonly onAiFeedbackRequest: (
@@ -78,14 +80,16 @@ export function LessonActiveScreen({
           <StickyActionBar className="mx-auto max-w-2xl">
             <Button
               className="w-full"
-              disabled={!isReady || isCompleting}
+              disabled={!isReady || isCompleting || isSavingProgress}
               onClick={onSubmitCurrentStep}
               size="lg"
               variant={isReady ? "default" : "secondary"}
             >
               {isCompleting
                 ? "완료 저장 중"
-                : getLessonStepActionLabel(currentStep)}
+                : isSavingProgress
+                  ? "진행 저장 중"
+                  : getLessonStepActionLabel(currentStep)}
             </Button>
           </StickyActionBar>
         ) : (

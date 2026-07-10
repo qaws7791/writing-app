@@ -7,9 +7,9 @@ import { authenticatedResponses, jsonResponse } from "@/http/openapi"
 import { savedResponseSchema } from "@/http/learner-contract.schemas"
 import { requireActiveSession } from "@/middleware/auth.middleware"
 import {
-  completeLessonBodySchema,
   completeLessonParamsSchema,
   learnerIdSchema,
+  saveLessonProgressBodySchema,
   saveAnswerBodySchema,
 } from "@/modules/learning/learning.schemas"
 
@@ -59,20 +59,60 @@ export const saveAnswerRoute = defineApiRoute({
   handler: saveAnswerHandler,
 })
 
+const saveLessonProgressRouteConfig = {
+  method: "post",
+  middleware: [requireActiveSession],
+  operationId: "saveLessonProgress",
+  path: "/learning/lessons/{lessonId}/progress",
+  request: {
+    body: {
+      content: {
+        "application/json": {
+          schema: saveLessonProgressBodySchema,
+        },
+      },
+      required: true,
+    },
+    params: completeLessonParamsSchema,
+  },
+  responses: {
+    ...authenticatedResponses(
+      jsonResponse("레슨 진행 저장 결과입니다.", savedResponseSchema)
+    ),
+    400: jsonResponse("잘못된 요청입니다.", ErrorResponseSchema),
+    404: jsonResponse("레슨을 찾을 수 없습니다.", ErrorResponseSchema),
+  },
+  security: [{ bearerAuth: [] }],
+  summary: "레슨 진행 저장",
+} satisfies AnyRouteConfig
+
+const saveLessonProgressHandler: ApiRouteHandler<
+  typeof saveLessonProgressRouteConfig
+> = async (context) => {
+  const { lessonId } = context.req.valid("param")
+  const body = context.req.valid("json")
+  const result =
+    await context.var.requestContext.learningService.saveLessonProgress({
+      ...body,
+      lessonId,
+      occurredAt: context.var.requestContext.now(),
+      userId: learnerIdSchema.parse(context.var.activeSession.user.id),
+    })
+
+  return context.json(unwrapApiCoreResult(result), 200)
+}
+
+export const saveLessonProgressRoute = defineApiRoute({
+  ...saveLessonProgressRouteConfig,
+  handler: saveLessonProgressHandler,
+})
+
 const completeLessonRouteConfig = {
   method: "post",
   middleware: [requireActiveSession],
   operationId: "completeLesson",
   path: "/learning/lessons/{lessonId}/complete",
   request: {
-    body: {
-      content: {
-        "application/json": {
-          schema: completeLessonBodySchema,
-        },
-      },
-      required: true,
-    },
     params: completeLessonParamsSchema,
   },
   responses: {
@@ -92,9 +132,7 @@ const completeLessonHandler: ApiRouteHandler<
   const learningService = context.var.requestContext.learningService
 
   const { lessonId } = context.req.valid("param")
-  const body = context.req.valid("json")
   const result = await learningService.completeLesson({
-    ...body,
     lessonId,
     occurredAt: context.var.requestContext.now(),
     userId: learnerIdSchema.parse(context.var.activeSession.user.id),

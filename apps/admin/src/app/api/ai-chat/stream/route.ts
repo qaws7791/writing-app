@@ -1,8 +1,24 @@
-import { buildAdminApiUrl, readAdminApiBaseUrl } from "@/runtime-config"
+import {
+  buildAdminApiUrl,
+  readAdminApiBaseUrl,
+  readAdminWebOrigin,
+} from "@/runtime-config"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
 import { adminSessionCookieName } from "@/lib/auth/admin-session-token"
 
 export async function POST(request: Request): Promise<Response> {
+  const adminWebOrigin = readAdminWebOrigin()
+
+  if (request.headers.get("Origin") !== adminWebOrigin) {
+    return Response.json(
+      {
+        code: "FORBIDDEN_ORIGIN",
+        message: "Forbidden",
+      },
+      { status: 403 }
+    )
+  }
+
   const token = await getServerAdminSessionToken()
 
   if (token === null) {
@@ -15,13 +31,26 @@ export async function POST(request: Request): Promise<Response> {
     )
   }
 
+  const requestBody = await request.text()
+
+  if (new TextEncoder().encode(requestBody).byteLength > 64 * 1024) {
+    return Response.json(
+      {
+        code: "PAYLOAD_TOO_LARGE",
+        message: "Payload Too Large",
+      },
+      { status: 413 }
+    )
+  }
+
   const response = await fetch(
     buildAdminApiUrl(readAdminApiBaseUrl(), "/ai-chat/messages/stream"),
     {
-      body: await request.text(),
+      body: requestBody,
       headers: {
         "Content-Type": "application/json",
         Cookie: `${adminSessionCookieName}=${encodeURIComponent(token)}`,
+        Origin: adminWebOrigin,
       },
       method: "POST",
     }

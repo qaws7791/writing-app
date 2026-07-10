@@ -35,6 +35,13 @@ export function readLearnerWebOrigin(
     : candidate
 }
 
+export function readAdminWebOrigin(env: AdminRuntimeEnv = process.env): string {
+  const candidate = env["ADMIN_ORIGIN"]
+  return candidate === undefined || candidate.trim() === ""
+    ? localRuntimeDefaults.adminWebOrigin
+    : new URL(candidate).origin
+}
+
 function toApiBaseUrl(rawValue: string | undefined, fallback: string): string {
   const candidate =
     rawValue === undefined || rawValue.trim() === "" ? fallback : rawValue

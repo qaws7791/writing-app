@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { readBearerToken } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env"
 
@@ -151,6 +151,50 @@ const lessonAnalytics: AdminLessonAnalyticsPageDto = {
 }
 
 describe("어드민 API dashboard route", () => {
+  it("유효한 관리자 세션 정보를 반환한다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request("/session", {
+      headers: {
+        Authorization: "Bearer admin-token",
+      },
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      admin: {
+        email: "admin@example.com",
+        id: "admin-1",
+        name: "관리자",
+        role: "owner",
+      },
+    })
+  })
+
+  it("신뢰하지 않은 Origin의 쿠키 인증 변경 요청을 side effect 전에 거절한다", async () => {
+    const resetContent = vi.fn()
+    const app = createApp(
+      createTestAdminApiDependencies({
+        adminServices: {
+          contentReset: { resetContent },
+        },
+        sessionResolver: createDependencies().sessionResolver,
+      })
+    )
+
+    const response = await app.request("/settings/content-reset", {
+      headers: {
+        Cookie: "admin_session_token=admin-token",
+        Origin: "https://attacker.example.test",
+        "Sec-Fetch-Site": "same-site",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(403)
+    expect(resetContent).not.toHaveBeenCalled()
+  })
+
   it("요청 완료 로그에 request id와 응답 상태를 남긴다", async () => {
     const requestEvents: CapturedRequestLogEvent[] = []
     const app = createApp({
