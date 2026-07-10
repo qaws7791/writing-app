@@ -286,7 +286,7 @@ apps/admin/src/features/resources/
 완료 근거:
 
 - 문서 저장 계약에 `contentRevision` 낙관적 잠금을 적용하고, GFM 정규화·일반 텍스트 FTS·수정자 metadata를 하나의 SQLite transaction으로 갱신한다. stale revision은 별도 API 오류로 보존해 다음 단계의 공동 편집 경계와 구분했다.
-- Lexical `0.46.0` exact 패키지로 분할 화면 없는 WYSIWYG 편집기, Markdown 단축키, 키보드 슬래시 메뉴, 블록 이동 핸들, 플로팅 인라인 서식·링크 도구와 저장 버튼 없는 500ms 직렬 자동 저장을 구현했다. 저장·대기·진행·충돌·오류·유효하지 않음 상태는 아이콘 애니메이션과 한국어 텍스트로 항상 표시한다.
+- Lexical `0.46.0` exact 패키지로 분할 화면 없는 WYSIWYG 편집기, Markdown 단축키, 키보드 슬래시 메뉴, 블록 이동 핸들, 플로팅 인라인 서식·링크 도구를 구현했다. 저장 버튼 없는 동기화 상태는 아이콘 애니메이션과 한국어 텍스트로 항상 표시한다.
 - 슬래시 명령은 일반 문단에서만 열리고 본문, H1~H3, 글머리·번호·할 일 목록, 인용, 코드, 구분선, 표, HTTPS 이미지 URL을 제공한다. 다이얼로그형 이미지·표 명령은 슬래시 문단을 대상 블록으로 직접 교체해 Markdown에 표현할 수 없는 빈 문단을 남기지 않는다.
 - Lexical DOM reconciler가 첫 하위 텍스트에서 계산하는 Element 포맷 캐시는 파생 값과 일치할 때만 허용하고, 임의로 주입된 layout·포맷 속성은 계속 거부한다. 여러 블록에 적용한 인라인 서식도 GFM 저장과 재접속 왕복을 보장한다.
 - 단일 `.md` 가져오기와 내보내기를 트리 작업 공간에 연결했다. raw HTML은 실행하지 않고 코드 리터럴로 렌더링하며, 외부 이미지는 HTTPS와 필수 대체 텍스트만 허용하고 `no-referrer`로 렌더링한다. 관리자 CSP도 자료실의 임의 HTTPS 이미지 정책과 일치시켰다.
@@ -294,13 +294,28 @@ apps/admin/src/features/resources/
 
 ### 5. 자체 호스팅 공동 편집
 
+상태: 완료
+
 - admin-api WebSocket upgrade와 인증·origin 검증을 추가한다.
 - Yjs room registry, SQLite snapshot load/flush, Markdown projection, FTS 갱신을 구현한다.
 - admin client provider, sync 상태 UI, 재연결 병합, local undo를 연결한다.
 - 제목과 트리 event channel을 연결하고 revision gap refetch를 구현한다.
 - 휴지통 이동 중 active room flush·읽기 전환·disconnect를 구현한다.
 
+완료 근거:
+
+- 관리자 session cookie와 정확한 Origin을 검증하는 Bun WebSocket upgrade를 공동 편집과 receive-only 자료 event channel에 각각 추가했다. URL query token은 허용하지 않으며 비활성 문서, 잘못된 method·upgrade·origin, 인증 실패를 연결 전에 거부한다.
+- 자체 호스팅 Yjs room registry는 문서당 연결 20개 상한, 1초 debounce와 직렬 flush, 마지막 연결 종료·명시 내보내기·서버 종료 시 flush를 제공한다. snapshot, state version, GFM Markdown projection, 일반 텍스트 FTS, 수정자 metadata를 하나의 `BEGIN IMMEDIATE` transaction으로 저장하고 projection·DB 실패는 해당 room만 오류 상태로 격리한다.
+- 브라우저는 `WebsocketProvider`와 cursor를 렌더링하지 않는 Lexical collaboration provider를 사용한다. 원격 update를 별도 headless 문서에서 검증한 뒤 화면에 반영하며, 재연결 병합, 현재 client 변경만 추적하는 Yjs undo, 폐기·서버 오류의 읽기 전용 전환, 연결·동기화·저장·재연결·오류 상태의 상시 표시를 구현했다. 기존 REST 자동 저장 plugin과 `HistoryPlugin`은 제거했다.
+- 구조 변경과 문서 제목 확정을 별도 WebSocket event로 발행한다. client는 다음 revision만 부분 재조회하고 gap에서는 보이는 트리 전체를 다시 읽으며 stale event는 무시한다. 원격 휴지통 이동은 선택 문서를 빈 화면으로 이동시킨다.
+- 휴지통 이동은 하위 활성 문서 room을 잠그고 모두 flush한 뒤 DB 구조 변경, event 발행, socket 종료 순서로 실행한다. 확인창은 하위 문서의 실제 WebSocket 연결 수를 조회해 활성 편집자 수를 아이콘과 텍스트로 항상 표시하며, 조회 실패 시 삭제를 허용하지 않는다. 내보내기도 열린 room을 먼저 flush해 최신 Markdown을 반환한다.
+- 공식 `WebsocketProvider` client와 Lexical binding 통합 테스트로 동시 입력 수렴, snapshot bootstrap, debounce·빈 room·종료 flush, room별 실패 격리, 20개 연결 상한과 잠금을 검증했다. 계약·core·API·React 관련 테스트와 타입 검사를 통과했다.
+- `ENABLE_TEST_AUTH=true` 로컬 환경의 두 독립 브라우저에서 교차 입력, 다른 client 변경을 보존하는 local undo, 한 client offline 중 양쪽 입력의 재연결 병합, API 서버 재시작 뒤 snapshot 복구, 제목 event 전파, 휴지통 이동 시 양쪽 화면 전환을 확인했다. 같은 문서를 연 두 브라우저에 대해 휴지통 확인창이 `현재 공동 편집 중인 관리자 2명`을 표시하는 것도 확인했다.
+- root typecheck·lint·format 검사와 admin·admin-api production build를 통과했다. root build는 두 application build가 성공한 뒤 이 작업과 무관한 Storybook의 기존 `@tailwindcss/typography` 의존성 누락에서 중단되는 상태를 확인했다.
+
 ### 6. 오류·접근성·성능 강화
+
+상태: 대기
 
 - 10,000개 node fixture로 lazy tree와 FTS 검색을 측정한다.
 - 문서당 20개 WebSocket client 부하와 재연결 폭주를 검증한다.
@@ -309,6 +324,8 @@ apps/admin/src/features/resources/
 - 모든 대화상자와 sync 상태 메시지를 한국어 접근성 이름으로 검증한다.
 
 ### 7. 한 번에 전환
+
+상태: 대기
 
 - 남은 legacy Tiptap contract, API, repository code와 test를 삭제한다.
 - DB 백업 후 명시 migration을 실행한다.

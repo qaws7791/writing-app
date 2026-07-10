@@ -303,20 +303,52 @@ export type AdminResourceTree = {
   readonly revision: number
 }
 
+export type AdminResourceActiveEditorCount = {
+  readonly activeEditorCount: number
+}
+
+export type AdminResourceTreeMutationAction =
+  | "create-document"
+  | "create-folder"
+  | "import-document"
+  | "move"
+  | "rename"
+  | "restore"
+  | "trash"
+
+export type AdminResourceEvent =
+  | {
+      readonly action: AdminResourceTreeMutationAction
+      readonly affectedParentIds: readonly (string | null)[]
+      readonly nodeId: string
+      readonly revision: number
+      readonly type: "resource-tree-mutated"
+    }
+  | {
+      readonly documentId: string
+      readonly name: string
+      readonly revision: number
+      readonly type: "resource-document-title-confirmed"
+    }
+
 export type AdminResourceNodeMutation = {
   readonly affectedParentIds: readonly (string | null)[]
   readonly node: AdminResourceTreeNode
   readonly revision: number
 }
 
-export type AdminResourceTrashResult = {
+type AdminResourceSubtreeMutation = {
   readonly affectedParentIds: readonly (string | null)[]
   readonly documentCount: number
   readonly folderCount: number
   readonly revision: number
 }
 
-export type AdminResourceRestoreResult = AdminResourceTrashResult & {
+export type AdminResourceTrashResult = AdminResourceSubtreeMutation & {
+  readonly closedActiveRoomCount: number
+}
+
+export type AdminResourceRestoreResult = AdminResourceSubtreeMutation & {
   readonly node: AdminResourceTreeNode
 }
 
@@ -474,6 +506,9 @@ export type AdminApi = {
   readonly getResourceLibraryDocument: (
     documentId: string
   ) => Promise<AdminApiResult<AdminResourceLibraryDocument>>
+  readonly getResourceActiveEditorCount: (
+    nodeId: string
+  ) => Promise<AdminApiResult<AdminResourceActiveEditorCount>>
   readonly getResourceDocuments: (
     input: ReadAdminResourcesInput
   ) => Promise<AdminApiResult<AdminResourceDocumentList>>

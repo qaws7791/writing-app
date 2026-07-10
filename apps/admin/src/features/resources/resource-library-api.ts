@@ -8,6 +8,7 @@ export type ResourceTreeApi = Pick<
   AdminApi,
   | "createResourceDocumentNode"
   | "createResourceFolder"
+  | "getResourceActiveEditorCount"
   | "getResourceTree"
   | "importResourceDocument"
   | "moveResourceNode"
@@ -17,10 +18,7 @@ export type ResourceTreeApi = Pick<
   | "trashResourceNode"
 >
 
-export type ResourceDocumentEditorApi = Pick<
-  AdminApi,
-  "exportResourceDocument" | "saveResourceLibraryDocument"
->
+export type ResourceDocumentEditorApi = Pick<AdminApi, "exportResourceDocument">
 
 export type ResourceLibraryApi = ResourceDocumentEditorApi & ResourceTreeApi
 

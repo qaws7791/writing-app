@@ -1,11 +1,19 @@
 import type { Binding, Provider, UserState } from "@lexical/yjs"
 import {
   createBinding,
+  createUndoManager,
   syncLexicalUpdateToYjs,
   syncYjsChangesToLexical,
 } from "@lexical/yjs"
 import type { LexicalEditor } from "lexical"
-import { SKIP_COLLAB_TAG } from "lexical"
+import {
+  CAN_REDO_COMMAND,
+  CAN_UNDO_COMMAND,
+  COMMAND_PRIORITY_EDITOR,
+  REDO_COMMAND,
+  SKIP_COLLAB_TAG,
+  UNDO_COMMAND,
+} from "lexical"
 import type { Doc as YjsDocument, Text as YjsText, YEvent } from "yjs"
 import {
   applyUpdate,
@@ -170,6 +178,7 @@ function connectDirectResourceDocumentCollaboration({
   const documentMap = new Map([[id, document]])
   const binding = createBinding(editor, provider, id, document, documentMap)
   const sharedRoot = binding.root.getSharedType()
+  const undoManager = createUndoManager(binding, sharedRoot)
   const onYjsTreeChanges = (
     events: YEvent<YjsText>[],
     transaction: YEvent<YjsText>["transaction"]
@@ -182,7 +191,8 @@ function connectDirectResourceDocumentCollaboration({
       binding,
       provider,
       events,
-      transaction.origin instanceof UndoManager
+      transaction.origin instanceof UndoManager,
+      () => undefined
     )
   }
 
@@ -212,14 +222,56 @@ function connectDirectResourceDocumentCollaboration({
       )
     }
   )
+  const removeUndoCommands = registerCollaborationUndo(editor, undoManager)
 
   return {
     binding,
     disconnect() {
       sharedRoot.unobserveDeep(onYjsTreeChanges)
+      removeUndoCommands()
       removeUpdateListener()
+      undoManager.destroy()
       binding.root.destroy(binding)
     },
+  }
+}
+
+function registerCollaborationUndo(
+  editor: LexicalEditor,
+  undoManager: UndoManager
+): () => void {
+  const updateAvailability = () => {
+    editor.dispatchCommand(CAN_UNDO_COMMAND, undoManager.undoStack.length > 0)
+    editor.dispatchCommand(CAN_REDO_COMMAND, undoManager.redoStack.length > 0)
+  }
+  const removeUndoCommand = editor.registerCommand(
+    UNDO_COMMAND,
+    () => {
+      undoManager.undo()
+      return true
+    },
+    COMMAND_PRIORITY_EDITOR
+  )
+  const removeRedoCommand = editor.registerCommand(
+    REDO_COMMAND,
+    () => {
+      undoManager.redo()
+      return true
+    },
+    COMMAND_PRIORITY_EDITOR
+  )
+
+  undoManager.on("stack-item-added", updateAvailability)
+  undoManager.on("stack-item-popped", updateAvailability)
+  undoManager.on("stack-cleared", updateAvailability)
+  updateAvailability()
+
+  return () => {
+    undoManager.off("stack-item-added", updateAvailability)
+    undoManager.off("stack-item-popped", updateAvailability)
+    undoManager.off("stack-cleared", updateAvailability)
+    removeRedoCommand()
+    removeUndoCommand()
   }
 }
 

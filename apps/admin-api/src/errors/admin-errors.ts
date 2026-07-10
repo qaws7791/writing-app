@@ -32,6 +32,14 @@ export function notFoundAdminError(): AppError {
   })
 }
 
+export function resourceCollaborationUnavailableAdminError(): AppError {
+  return new AppError({
+    code: "RESOURCE_COLLABORATION_UNAVAILABLE",
+    message: "Resource collaboration unavailable",
+    status: 503,
+  })
+}
+
 export function resourceLibraryConflictAdminError(
   code:
     | "RESOURCE_MOVE_CYCLE"

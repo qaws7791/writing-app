@@ -71,7 +71,7 @@ describe("Bun y-websocket 어댑터", () => {
       providerB.destroy()
       documentA.destroy()
       documentB.destroy()
-      adapter.dispose()
+      await adapter.dispose()
     }
   })
 
@@ -133,12 +133,12 @@ describe("Bun y-websocket 어댑터", () => {
     } finally {
       destroyClient(clientA)
       destroyClient(clientB)
-      adapter.dispose()
+      await adapter.dispose()
     }
   })
 
   for (const failure of ["throw", "zero"] as const) {
-    it(`broadcast 전송 ${failure} 실패를 해당 socket으로 격리한다`, () => {
+    it(`broadcast 전송 ${failure} 실패를 해당 socket으로 격리한다`, async () => {
       const adapter = createYWebSocketBunAdapter()
       const roomId = `broadcast-${failure}-${crypto.randomUUID()}`
       const healthy = createTestSocket(roomId)
@@ -167,12 +167,12 @@ describe("Bun y-websocket 어댑터", () => {
           recovered.destroy()
         }
       } finally {
-        adapter.dispose()
+        await adapter.dispose()
       }
     })
   }
 
-  it("initial·reply·awareness 전송 실패가 건강한 연결로 전파되지 않는다", () => {
+  it("initial·reply·awareness 전송 실패가 건강한 연결로 전파되지 않는다", async () => {
     const adapter = createYWebSocketBunAdapter()
 
     try {
@@ -208,7 +208,155 @@ describe("Bun y-websocket 어댑터", () => {
       expect(awareness.wasClosed()).toBe(true)
       expect(healthy.wasClosed()).toBe(false)
     } finally {
-      adapter.dispose()
+      await adapter.dispose()
+    }
+  })
+
+  it("저장된 Yjs snapshot과 state version으로 새 room을 초기화한다", async () => {
+    const seed = new Doc()
+    const adapter = createYWebSocketBunAdapter()
+
+    try {
+      seed.getText("body").insert(0, "저장된 문서")
+      const socket = createTestSocket(
+        `snapshot-${crypto.randomUUID()}`,
+        null,
+        encodeStateAsUpdate(seed),
+        7
+      )
+
+      openTestSocket(adapter, socket.socket)
+      sendTestMessage(adapter, socket.socket, createSyncStepOneMessage())
+
+      const recovered = new Doc()
+
+      try {
+        applySyncMessages(socket.sent, recovered)
+        expect(recovered.getText("body").toString()).toBe("저장된 문서")
+      } finally {
+        recovered.destroy()
+      }
+    } finally {
+      seed.destroy()
+      await adapter.dispose()
+    }
+  })
+
+  it("문서별 연결을 20명으로 제한한다", async () => {
+    const adapter = createYWebSocketBunAdapter()
+    const roomId = `capacity-${crypto.randomUUID()}`
+    const sockets = Array.from({ length: 21 }, () => createTestSocket(roomId))
+
+    try {
+      for (const socket of sockets) {
+        openTestSocket(adapter, socket.socket)
+      }
+
+      expect(adapter.getRoomConnectionCount(roomId)).toBe(20)
+      expect(sockets[19]?.wasClosed()).toBe(false)
+      expect(sockets[20]?.wasClosed()).toBe(true)
+    } finally {
+      await adapter.dispose()
+    }
+  })
+
+  it("편집 변경을 지연 저장하고 actor와 state version을 전달한다", async () => {
+    const flushes: Array<{
+      readonly actorId: string
+      readonly expectedStateVersion: number
+      readonly reason: string
+    }> = []
+    const adapter = createYWebSocketBunAdapter({
+      flushDelayMilliseconds: 1,
+      async onFlush(input) {
+        flushes.push(input)
+        return { kind: "ok", stateVersion: input.expectedStateVersion + 1 }
+      },
+    })
+    const socket = createTestSocket(
+      `flush-${crypto.randomUUID()}`,
+      null,
+      null,
+      4,
+      "admin-actor"
+    )
+
+    try {
+      openTestSocket(adapter, socket.socket)
+      sendTestMessage(
+        adapter,
+        socket.socket,
+        createDocumentUpdateMessage("저장할 변경")
+      )
+
+      await waitFor(() => flushes.length === 1)
+      expect(flushes).toEqual([
+        {
+          actorId: "admin-actor",
+          expectedStateVersion: 4,
+          reason: "debounce",
+          roomId: socket.data.roomId,
+          snapshot: expect.any(Uint8Array),
+        },
+      ])
+    } finally {
+      await adapter.dispose()
+    }
+  })
+
+  it("마지막 연결이 닫히면 대기 중인 변경을 즉시 저장하고 room을 제거한다", async () => {
+    const reasons: string[] = []
+    const adapter = createYWebSocketBunAdapter({
+      flushDelayMilliseconds: 60_000,
+      async onFlush(input) {
+        reasons.push(input.reason)
+        return { kind: "ok", stateVersion: input.expectedStateVersion + 1 }
+      },
+    })
+    const socket = createTestSocket(`room-empty-${crypto.randomUUID()}`)
+
+    try {
+      openTestSocket(adapter, socket.socket)
+      sendTestMessage(
+        adapter,
+        socket.socket,
+        createDocumentUpdateMessage("마지막 변경")
+      )
+      closeTestSocket(adapter, socket.socket)
+
+      await waitFor(() => !adapter.hasRoom(socket.data.roomId))
+      expect(reasons).toEqual(["room-empty"])
+    } finally {
+      await adapter.dispose()
+    }
+  })
+
+  it("room 잠금은 변경을 저장한 뒤 후속 편집을 거부한다", async () => {
+    const adapter = createYWebSocketBunAdapter({
+      flushDelayMilliseconds: 60_000,
+      async onFlush(input) {
+        return { kind: "ok", stateVersion: input.expectedStateVersion + 1 }
+      },
+    })
+    const socket = createTestSocket(`locked-${crypto.randomUUID()}`)
+
+    try {
+      openTestSocket(adapter, socket.socket)
+      sendTestMessage(
+        adapter,
+        socket.socket,
+        createDocumentUpdateMessage("잠금 전 변경")
+      )
+
+      await expect(adapter.lockRoom(socket.data.roomId)).resolves.toBe("ok")
+      sendTestMessage(
+        adapter,
+        socket.socket,
+        createDocumentUpdateMessage("잠금 후 변경")
+      )
+      expect(socket.wasClosed()).toBe(true)
+    } finally {
+      await adapter.dispose()
     }
   })
 })
@@ -229,7 +377,7 @@ function startServer(
       if (
         roomId !== null &&
         bunServer.upgrade(request, {
-          data: { roomId },
+          data: createConnectionData(roomId),
         })
       ) {
         return undefined
@@ -267,9 +415,15 @@ function destroyClient(client: TestClient): void {
 
 function createTestSocket(
   roomId: string,
-  initialFailure: "throw" | "zero" | null = null
+  initialFailure: "throw" | "zero" | null = null,
+  initialSnapshot: Uint8Array | null = null,
+  initialStateVersion = 0,
+  actorId = "admin-test"
 ): TestSocket {
-  return new TestSocket(roomId, initialFailure)
+  return new TestSocket(
+    createConnectionData(roomId, actorId, initialSnapshot, initialStateVersion),
+    initialFailure
+  )
 }
 
 class TestSocket implements Bun.ServerWebSocket<YWebSocketConnectionData> {
@@ -283,8 +437,11 @@ class TestSocket implements Bun.ServerWebSocket<YWebSocketConnectionData> {
   private failure: "throw" | "zero" | null
   private readonly subscribedTopics = new Set<string>()
 
-  constructor(roomId: string, failure: "throw" | "zero" | null) {
-    this.data = { roomId }
+  constructor(
+    data: YWebSocketConnectionData,
+    failure: "throw" | "zero" | null
+  ) {
+    this.data = data
     this.failure = failure
   }
 
@@ -414,6 +571,28 @@ function sendTestMessage(
   }
 
   handleMessage(socket, Buffer.from(message))
+}
+
+function closeTestSocket(
+  adapter: YWebSocketBunAdapter,
+  socket: Bun.ServerWebSocket<YWebSocketConnectionData>
+): void {
+  adapter.websocket.close?.(socket, 1000, "fixture 연결 종료")
+}
+
+function createConnectionData(
+  roomId: string,
+  actorId = "admin-test",
+  initialSnapshot: Uint8Array | null = null,
+  initialStateVersion = 0
+): YWebSocketConnectionData {
+  return {
+    actorId,
+    channel: "collaboration",
+    initialSnapshot,
+    initialStateVersion,
+    roomId,
+  }
 }
 
 function createDocumentUpdateMessage(text: string): Uint8Array {

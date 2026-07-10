@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import {
   useCallback,
   useEffect,
+  useEffectEvent,
   useLayoutEffect,
   useRef,
   useState,
@@ -35,6 +36,10 @@ import {
 
 import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import {
+  classifyResourceEventRevision,
+  type ResourceEventsConnector,
+} from "@/features/resources/resource-events-client"
+import {
   getExpandedResourceIdsSnapshot,
   getServerExpandedResourceIdsSnapshot,
   mergeExpandedResourceIds,
@@ -54,6 +59,7 @@ import {
   resourceTreeRootId,
 } from "@/features/resources/tree/resource-tree-dnd"
 import type {
+  AdminResourceEvent,
   AdminResourceSearchItem,
   AdminResourceTree,
   AdminResourceTreeNode,
@@ -104,6 +110,8 @@ const loadingItem: ResourceTreeLoadingItem = {
 export function ResourceTree({
   adminId,
   api,
+  connectEvents,
+  eventsServerUrl,
   initialTree,
   onInitialTreeConsumed,
   onDocumentOpen,
@@ -113,6 +121,8 @@ export function ResourceTree({
 }: {
   readonly adminId: string
   readonly api: ResourceTreeApi
+  readonly connectEvents: ResourceEventsConnector
+  readonly eventsServerUrl: string
   readonly initialTree?: InitialResourceTreeState
   readonly onInitialTreeConsumed?: () => void
   readonly onDocumentOpen: () => void
@@ -128,6 +138,7 @@ export function ResourceTree({
     new Map<string, Promise<{ data: ResourceTreeItemData; id: string }[]>>()
   )
   const mutationInFlightRef = useRef(false)
+  const eventOperationRef = useRef(Promise.resolve())
   const markdownFileInputRef = useRef<HTMLInputElement>(null)
   const revisionRef = useRef(
     initialTree?.status === "ok" ? initialTree.value.revision : null
@@ -603,6 +614,100 @@ export function ResourceTree({
       )
     )
   }
+
+  async function reloadAffectedParents(
+    affectedParentIds: readonly (string | null)[]
+  ): Promise<void> {
+    const parentItemIds = [
+      ...new Set(
+        affectedParentIds.map((parentId) => parentId ?? resourceTreeRootId)
+      ),
+    ]
+
+    await Promise.all(
+      parentItemIds.flatMap((parentItemId) => {
+        if (
+          parentItemId !== resourceTreeRootId &&
+          !itemDataRef.current.has(parentItemId)
+        ) {
+          return []
+        }
+
+        childrenRequestRef.current.delete(parentItemId)
+        return [tree.getItemInstance(parentItemId).invalidateChildrenIds(false)]
+      })
+    )
+  }
+
+  async function handleResourceEvent(event: AdminResourceEvent): Promise<void> {
+    const currentRevision = revisionRef.current
+
+    if (event.type === "resource-document-title-confirmed") {
+      if (currentRevision !== null && event.revision < currentRevision) return
+
+      const node = itemDataRef.current.get(event.documentId)
+
+      if (node?.kind === "document") {
+        const renamedNode = { ...node, name: event.name }
+
+        itemDataRef.current.set(node.id, renamedNode)
+        tree.getItemInstance(node.id).updateCachedData(renamedNode)
+        tree.rebuildTree()
+      }
+      if (selectedDocumentId === event.documentId) router.refresh()
+      return
+    }
+
+    const revisionSequence = classifyResourceEventRevision(
+      currentRevision,
+      event.revision
+    )
+
+    if (revisionSequence === "gap") {
+      await reloadVisibleTree()
+      return
+    }
+
+    if (revisionSequence === "stale") return
+
+    if (event.action === "trash") {
+      const eventNode = itemDataRef.current.get(event.nodeId)
+
+      if (eventNode !== undefined && isSelectedDocumentInSubtree(eventNode)) {
+        router.push("/resources")
+      }
+    }
+
+    revisionRef.current = event.revision
+    await reloadAffectedParents(event.affectedParentIds)
+  }
+
+  const onResourceEvent = useEffectEvent(handleResourceEvent)
+  const onResourceEventError = useEffectEvent(reloadVisibleTree)
+
+  useEffect(() => {
+    const subscription = connectEvents({
+      onError() {
+        eventOperationRef.current = eventOperationRef.current
+          .then(() => onResourceEventError())
+          .catch(() => {
+            setErrorMessage("자료실 실시간 변경을 다시 불러오지 못했습니다.")
+          })
+      },
+      onEvent(event) {
+        eventOperationRef.current = eventOperationRef.current
+          .then(() => onResourceEvent(event))
+          .catch(() => {
+            setErrorMessage("자료실 실시간 변경을 반영하지 못했습니다.")
+          })
+      },
+      serverUrl: eventsServerUrl,
+    })
+
+    return () => {
+      subscription.disconnect()
+    }
+  }, [connectEvents, eventsServerUrl])
 
   function openDocument(documentId: string): void {
     router.push(

@@ -39,6 +39,10 @@ export const adminResourceTreeDtoSchema = z.object({
   revision: adminResourceRevisionSchema,
 })
 
+export const adminResourceActiveEditorCountDtoSchema = z.object({
+  activeEditorCount: adminNonNegativeIntegerSchema,
+})
+
 export const adminCreateResourceNodeRequestSchema = z.object({
   expectedRevision: adminResourceRevisionSchema,
   parentId: adminResourceFolderIdSchema.nullable(),
@@ -69,19 +73,27 @@ export const adminResourceNodeMutationDtoSchema =
     node: adminResourceTreeNodeDtoSchema,
   })
 
-export const adminResourceTrashResultDtoSchema =
+export const adminResourceTrashMutationDtoSchema =
   adminResourceMutationBaseDtoSchema.extend({
     documentCount: adminNonNegativeIntegerSchema,
     folderCount: adminNonNegativeIntegerSchema,
   })
 
+export const adminResourceTrashResultDtoSchema =
+  adminResourceTrashMutationDtoSchema.extend({
+    closedActiveRoomCount: adminNonNegativeIntegerSchema,
+  })
+
 export const adminResourceRestoreResultDtoSchema =
-  adminResourceTrashResultDtoSchema.extend({
+  adminResourceTrashMutationDtoSchema.extend({
     node: adminResourceTreeNodeDtoSchema,
   })
 
 export type AdminCreateResourceNodeRequest = z.infer<
   typeof adminCreateResourceNodeRequestSchema
+>
+export type AdminResourceActiveEditorCountDto = z.infer<
+  typeof adminResourceActiveEditorCountDtoSchema
 >
 export type AdminMoveResourceNodeRequest = z.infer<
   typeof adminMoveResourceNodeRequestSchema
@@ -100,6 +112,9 @@ export type AdminResourceRevisionRequest = z.infer<
 >
 export type AdminResourceTrashResultDto = z.infer<
   typeof adminResourceTrashResultDtoSchema
+>
+export type AdminResourceTrashMutationDto = z.infer<
+  typeof adminResourceTrashMutationDtoSchema
 >
 export type AdminResourceTreeDto = z.infer<typeof adminResourceTreeDtoSchema>
 export type AdminResourceTreeNodeDto = z.infer<

@@ -5,12 +5,20 @@ import {
   adminResourceDocumentDtoSchema,
   adminSaveResourceDocumentRequestSchema,
 } from "@workspace/contracts/admin"
-import type { ResourceDocumentUseCase } from "@workspace/core/modules/resource-library/api"
+import {
+  toResourceDocumentId,
+  type ResourceDocumentUseCase,
+} from "@workspace/core/modules/resource-library/api"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
+import type { ResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
+import type { ResourceEventsPublisher } from "@/collaboration/resource-events-hub"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
-import { notFoundAdminError } from "@/errors/admin-errors"
+import {
+  notFoundAdminError,
+  resourceCollaborationUnavailableAdminError,
+} from "@/errors/admin-errors"
 import {
   adminAuthenticatedResponses,
   errorJsonResponse,
@@ -26,7 +34,9 @@ const resourceDocumentParamsSchema = z.object({
 })
 
 export type ResourceDocumentsRouteDependencies = {
+  readonly collaborationRooms: ResourceCollaborationRooms
   readonly documentService: ResourceDocumentUseCase
+  readonly events: ResourceEventsPublisher
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
 }
@@ -128,6 +138,7 @@ function createGetResourceDocumentRoute({
 
 function createImportResourceDocumentRoute({
   documentService,
+  events,
   now,
   sessionResolver,
 }: ResourceDocumentsRouteDependencies) {
@@ -165,6 +176,13 @@ function createImportResourceDocumentRoute({
       throwResourceLibraryRejection(result)
     }
 
+    events.publish({
+      action: "import-document",
+      affectedParentIds: result.value.mutation.affectedParentIds,
+      nodeId: result.value.document.id,
+      revision: result.value.mutation.revision,
+      type: "resource-tree-mutated",
+    })
     return context.json(result.value, 200)
   }
 
@@ -172,6 +190,7 @@ function createImportResourceDocumentRoute({
 }
 
 function createExportResourceDocumentRoute({
+  collaborationRooms,
   documentService,
   sessionResolver,
 }: ResourceDocumentsRouteDependencies) {
@@ -185,15 +204,23 @@ function createExportResourceDocumentRoute({
         markdownResponse("내보낸 자료실 Markdown 문서입니다.")
       ),
       404: errorJsonResponse("자료실 문서를 찾을 수 없습니다."),
+      503: errorJsonResponse("공동 편집 변경을 저장할 수 없습니다."),
     },
     summary: "자료실 Markdown 문서 내보내기",
     ...adminSessionRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
-    const result = await documentService.exportDocument(
-      context.req.valid("param")
+    const params = context.req.valid("param")
+    const flushResult = await collaborationRooms.flushDocument(
+      toResourceDocumentId(params.documentId)
     )
+
+    if (flushResult === "error") {
+      throw resourceCollaborationUnavailableAdminError()
+    }
+
+    const result = await documentService.exportDocument(params)
 
     if (result.kind === "not-found") {
       throw notFoundAdminError()

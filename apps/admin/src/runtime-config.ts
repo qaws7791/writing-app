@@ -26,6 +26,16 @@ export function buildAdminApiUrl(
   return new URL(path.replace(/^\/+/, ""), `${apiBaseUrl}/`).toString()
 }
 
+export function buildAdminApiWebSocketUrl(
+  apiBaseUrl: AdminApiBaseUrl,
+  path: string
+): string {
+  const url = new URL(path.replace(/^\/+/, ""), `${apiBaseUrl}/`)
+
+  url.protocol = url.protocol === "https:" ? "wss:" : "ws:"
+  return url.toString().replace(/\/+$/, "")
+}
+
 export function readLearnerWebOrigin(
   env: AdminRuntimeEnv = process.env
 ): string {

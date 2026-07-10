@@ -42,6 +42,7 @@
         "@lexical/selection": "0.46.0",
         "@lexical/table": "0.46.0",
         "@lexical/utils": "0.46.0",
+        "@lexical/yjs": "0.46.0",
         "@workspace/contracts": "workspace:*",
         "@workspace/env": "workspace:*",
         "@workspace/http-client": "workspace:*",
@@ -54,6 +55,8 @@
         "react": "19.2.4",
         "react-dom": "19.2.4",
         "recharts": "^3.9.2",
+        "y-websocket": "3.0.0",
+        "yjs": "13.6.31",
       },
       "devDependencies": {
         "@tailwindcss/postcss": "^4",

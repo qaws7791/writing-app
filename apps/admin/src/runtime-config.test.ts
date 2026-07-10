@@ -3,7 +3,11 @@ import { join, relative } from "node:path"
 import { describe, expect, it } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env"
 
-import { buildAdminApiUrl, readAdminApiBaseUrl } from "@/runtime-config"
+import {
+  buildAdminApiUrl,
+  buildAdminApiWebSocketUrl,
+  readAdminApiBaseUrl,
+} from "@/runtime-config"
 
 describe("admin runtime config", () => {
   it("어드민 API base URL을 기본값과 환경 변수에서 명시적으로 읽는다", () => {
@@ -27,6 +31,14 @@ describe("admin runtime config", () => {
         "settings"
       )
     ).toBe("https://admin-api.example.test/settings")
+    expect(
+      buildAdminApiWebSocketUrl(
+        readAdminApiBaseUrl({
+          ADMIN_API_BASE_URL: "https://admin-api.example.test///",
+        }),
+        "/resources/collaboration"
+      )
+    ).toBe("wss://admin-api.example.test/resources/collaboration")
   })
 
   it("runtime config 밖의 실행 코드가 어드민 API base URL env를 직접 읽지 않는다", () => {

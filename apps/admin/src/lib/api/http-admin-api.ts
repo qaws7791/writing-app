@@ -34,6 +34,8 @@ import type {
   AdminExportResourceDocument,
   AdminImportResourceDocumentResult,
   AdminPagination,
+  AdminResourceActiveEditorCount,
+  AdminResourceEvent,
   AdminResourceLibraryDocument,
   AdminResourceNodeMutation,
   AdminResourceRestoreResult,
@@ -72,6 +74,7 @@ import type {
   AdminDeleteUserResultDto,
   AdminLessonAnalyticsPageDto,
   AdminImportResourceDocumentResultDto,
+  AdminResourceActiveEditorCountDto,
   AdminResourceDocumentDto,
   AdminResourceDocumentDetailDto,
   AdminResourceDocumentListDto,
@@ -79,6 +82,7 @@ import type {
   AdminResourceRestoreResultDto,
   AdminResourceSearchDto,
   AdminResourceTrashResultDto,
+  AdminResourceTrashMutationDto,
   AdminResourceTreeDto,
   AdminResourceTreeNodeDto,
   AdminSessionDto,
@@ -100,7 +104,9 @@ import {
   adminDeleteUserResultSchema,
   adminLessonAnalyticsPageDtoSchema,
   adminImportResourceDocumentResultDtoSchema,
+  adminResourceActiveEditorCountDtoSchema,
   adminResourceDocumentDtoSchema,
+  adminResourceEventSchema,
   adminResourceDocumentDetailDtoSchema,
   adminResourceDocumentListDtoSchema,
   adminResourceNodeMutationDtoSchema,
@@ -123,6 +129,29 @@ type ResponseSchema<TValue> = {
       }
     | {
         readonly success: false
+      }
+}
+
+export function parseAdminResourceEvent(
+  value: unknown
+): AdminResourceEvent | null {
+  const result = adminResourceEventSchema.safeParse(value)
+
+  if (!result.success) return null
+
+  return result.data.type === "resource-tree-mutated"
+    ? {
+        action: result.data.action,
+        affectedParentIds: [...result.data.affectedParentIds],
+        nodeId: result.data.nodeId,
+        revision: result.data.revision,
+        type: "resource-tree-mutated",
+      }
+    : {
+        documentId: result.data.documentId,
+        name: result.data.name,
+        revision: result.data.revision,
+        type: "resource-document-title-confirmed",
       }
 }
 
@@ -297,6 +326,14 @@ export function createHttpAdminApi({
         path: `/resources/documents/${documentId}`,
         schema: adminResourceDocumentDtoSchema,
         toModel: toAdminResourceLibraryDocument,
+      })
+    },
+    getResourceActiveEditorCount(nodeId) {
+      return requestAdminJson(client, {
+        method: "GET",
+        path: `/resources/nodes/${nodeId}/active-editors`,
+        schema: adminResourceActiveEditorCountDtoSchema,
+        toModel: toAdminResourceActiveEditorCount,
       })
     },
     getResourceDocuments(input) {
@@ -790,6 +827,12 @@ function toAdminResourceTree(dto: AdminResourceTreeDto): AdminResourceTree {
   }
 }
 
+function toAdminResourceActiveEditorCount(
+  dto: AdminResourceActiveEditorCountDto
+): AdminResourceActiveEditorCount {
+  return { activeEditorCount: dto.activeEditorCount }
+}
+
 function toAdminResourceTreeNode(
   dto: AdminResourceTreeNodeDto
 ): AdminResourceTreeNode {
@@ -828,10 +871,8 @@ function toAdminResourceTrashResult(
   dto: AdminResourceTrashResultDto
 ): AdminResourceTrashResult {
   return {
-    affectedParentIds: [...dto.affectedParentIds],
-    documentCount: dto.documentCount,
-    folderCount: dto.folderCount,
-    revision: dto.revision,
+    ...toAdminResourceSubtreeMutation(dto),
+    closedActiveRoomCount: dto.closedActiveRoomCount,
   }
 }
 
@@ -839,8 +880,17 @@ function toAdminResourceRestoreResult(
   dto: AdminResourceRestoreResultDto
 ): AdminResourceRestoreResult {
   return {
-    ...toAdminResourceTrashResult(dto),
+    ...toAdminResourceSubtreeMutation(dto),
     node: toAdminResourceTreeNode(dto.node),
+  }
+}
+
+function toAdminResourceSubtreeMutation(dto: AdminResourceTrashMutationDto) {
+  return {
+    affectedParentIds: [...dto.affectedParentIds],
+    documentCount: dto.documentCount,
+    folderCount: dto.folderCount,
+    revision: dto.revision,
   }
 }
 

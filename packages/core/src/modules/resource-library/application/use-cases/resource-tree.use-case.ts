@@ -1,11 +1,11 @@
 import {
   adminResourceNodeMutationDtoSchema,
   adminResourceRestoreResultDtoSchema,
-  adminResourceTrashResultDtoSchema,
+  adminResourceTrashMutationDtoSchema,
   adminResourceTreeDtoSchema,
   type AdminResourceNodeMutationDto,
   type AdminResourceRestoreResultDto,
-  type AdminResourceTrashResultDto,
+  type AdminResourceTrashMutationDto,
   type AdminResourceTreeDto,
   type AdminResourceTreeNodeDto,
   type AdminResourceTreeScope,
@@ -45,6 +45,9 @@ export type ResourceTreeUseCase = {
     readonly parentId: string | null
     readonly scope: AdminResourceTreeScope
   }) => Promise<AdminResourceTreeDto>
+  readonly getSubtreeDocumentIds: (
+    nodeId: string
+  ) => Promise<readonly ResourceDocumentId[]>
   readonly moveNode: (
     input: ResourceStructureCommandInput & {
       readonly destinationIndex: number
@@ -63,7 +66,7 @@ export type ResourceTreeUseCase = {
   ) => Promise<ResourceTreeCommandResult<AdminResourceRestoreResultDto>>
   readonly trashNode: (
     input: ResourceStructureCommandInput & { readonly nodeId: string }
-  ) => Promise<ResourceTreeCommandResult<AdminResourceTrashResultDto>>
+  ) => Promise<ResourceTreeCommandResult<AdminResourceTrashMutationDto>>
 }
 
 export type ResourceTreeUseCaseDependencies = {
@@ -134,6 +137,13 @@ export function createResourceTreeUseCase({
         revision,
       })
     },
+    async getSubtreeDocumentIds(nodeId) {
+      const subtree = await treeRepository.readSubtree(toResourceNodeId(nodeId))
+
+      return subtree.flatMap((node) =>
+        node.kind === "document" && node.status === "active" ? [node.id] : []
+      )
+    },
     async moveNode(input) {
       const result = await treeRepository.moveNode({
         ...toRepositoryCommand(input, createAuditEventId()),
@@ -182,7 +192,7 @@ export function createResourceTreeUseCase({
       return result.kind === "ok"
         ? {
             kind: "ok",
-            value: adminResourceTrashResultDtoSchema.parse(result.value),
+            value: adminResourceTrashMutationDtoSchema.parse(result.value),
           }
         : result
     },

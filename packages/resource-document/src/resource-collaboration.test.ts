@@ -7,6 +7,7 @@ import {
   $isTextNode,
   $setState,
   createState,
+  UNDO_COMMAND,
 } from "lexical"
 import {
   applyUpdate,
@@ -126,6 +127,77 @@ describe("자료 문서 공동 편집 계약", () => {
     clientB.disconnect()
     documentA.destroy()
     documentB.destroy()
+  })
+
+  it("undo는 현재 사용자의 변경만 되돌리고 원격 변경은 유지한다", () => {
+    const snapshotResult = createResourceDocumentSnapshot("기본")
+
+    if (snapshotResult.status !== "valid") {
+      throw new Error("유효한 Markdown fixture가 거부되었습니다.")
+    }
+
+    const networkDocument = new Doc()
+    const editor = createResourceDocumentEditor()
+    const remoteCollaboration = createHeadlessResourceDocumentCollaboration({
+      document: networkDocument,
+      id: "resource-remote-undo",
+    })
+
+    applyUpdate(networkDocument, snapshotResult.snapshot)
+
+    const collaboration = connectResourceDocumentCollaboration({
+      document: networkDocument,
+      editor,
+      id: "resource-local-undo",
+      onRemoteValidationChange() {},
+      provider: createTestProvider(),
+    })
+    try {
+      expect(readResourceDocumentMarkdown(editor)).toEqual({
+        markdown: "기본",
+        status: "valid",
+      })
+      const networkUpdate = vi.fn()
+
+      networkDocument.on("update", networkUpdate)
+      appendToFirstTextNode(editor, " 로컬")
+      expect(networkUpdate).toHaveBeenCalled()
+      expect(readResourceDocumentMarkdown(remoteCollaboration.editor)).toEqual({
+        markdown: "기본 로컬",
+        status: "valid",
+      })
+      appendParagraph(remoteCollaboration.editor, "원격")
+
+      expect(readResourceDocumentMarkdown(remoteCollaboration.editor)).toEqual({
+        markdown: "기본 로컬\n\n원격",
+        status: "valid",
+      })
+      expect(
+        projectResourceDocumentSnapshot(encodeStateAsUpdate(networkDocument))
+      ).toEqual({ markdown: "기본 로컬\n\n원격", status: "valid" })
+      expect(collaboration.getRemoteValidation()).toEqual({ status: "valid" })
+      const merged = readResourceDocumentMarkdown(editor)
+
+      expect(merged.status).toBe("valid")
+      if (merged.status === "valid") {
+        expect(merged.markdown).toContain("로컬")
+        expect(merged.markdown).toContain("원격")
+      }
+
+      expect(editor.dispatchCommand(UNDO_COMMAND, undefined)).toBe(true)
+
+      const undone = readResourceDocumentMarkdown(editor)
+
+      expect(undone.status).toBe("valid")
+      if (undone.status === "valid") {
+        expect(undone.markdown).not.toContain("로컬")
+        expect(undone.markdown).toContain("원격")
+      }
+    } finally {
+      remoteCollaboration.disconnect()
+      collaboration.disconnect()
+      networkDocument.destroy()
+    }
   })
 
   it("손상된 snapshot 투영이 실패해도 Yjs 문서를 정리한다", () => {
@@ -494,6 +566,20 @@ function appendToFirstTextNode(
       }
 
       node.spliceText(node.getTextContentSize(), 0, text)
+    },
+    { discrete: true }
+  )
+}
+
+function appendParagraph(
+  editor: ReturnType<
+    typeof createHeadlessResourceDocumentCollaboration
+  >["editor"],
+  text: string
+): void {
+  editor.update(
+    () => {
+      $getRoot().append($createParagraphNode().append($createTextNode(text)))
     },
     { discrete: true }
   )

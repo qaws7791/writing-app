@@ -6,12 +6,16 @@ import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react"
 
 import { createBrowserResourceLibraryApi } from "@/features/resources/resource-library-api"
+import { connectBrowserResourceEvents } from "@/features/resources/resource-events-client"
 import {
   ResourceTree,
   type InitialResourceTreeState,
 } from "@/features/resources/tree/resource-tree"
 import type { AdminResourceTreeScope } from "@/lib/api/admin-api"
-import type { AdminApiBaseUrl } from "@/runtime-config"
+import {
+  buildAdminApiWebSocketUrl,
+  type AdminApiBaseUrl,
+} from "@/runtime-config"
 import { Button } from "@workspace/ui/components/ui/button"
 import {
   Drawer,
@@ -43,6 +47,10 @@ export function ResourceWorkspace({
     () => createBrowserResourceLibraryApi(apiBaseUrl),
     [apiBaseUrl]
   )
+  const eventsServerUrl = useMemo(
+    () => buildAdminApiWebSocketUrl(apiBaseUrl, "/resources/events"),
+    [apiBaseUrl]
+  )
   const isDesktop = useSyncExternalStore<boolean | null>(
     subscribeDesktopMediaQuery,
     readDesktopMediaQuery,
@@ -70,6 +78,8 @@ export function ResourceWorkspace({
       <ResourceTree
         adminId={adminId}
         api={api}
+        connectEvents={connectBrowserResourceEvents}
+        eventsServerUrl={eventsServerUrl}
         initialTree={
           scope === "active" && isInitialActiveTreeAvailable
             ? initialTree

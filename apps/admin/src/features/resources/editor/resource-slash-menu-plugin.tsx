@@ -138,11 +138,9 @@ export function ResourceSlashMenuPlugin() {
       textNodeContainingQuery: TextNode | null,
       closeMenu: () => void
     ) => {
-      const targetKey = editor.getEditorState().read(() => {
-        const target = textNodeContainingQuery?.getParent()
-
-        return $isParagraphNode(target) ? target.getKey() : null
-      })
+      const queryNodeKey = textNodeContainingQuery?.getKey() ?? null
+      const target = textNodeContainingQuery?.getParent()
+      const targetKey = $isParagraphNode(target) ? target.getKey() : null
 
       closeMenu()
 
@@ -154,7 +152,7 @@ export function ResourceSlashMenuPlugin() {
 
           if (!$isParagraphNode(target)) return
 
-          textNodeContainingQuery?.remove()
+          if (queryNodeKey !== null) $getNodeByKey(queryNodeKey)?.remove()
           target.selectEnd()
         },
         { discrete: true }

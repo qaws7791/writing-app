@@ -89,6 +89,9 @@ describe("자료실 use case", () => {
         },
       })
       await expect(
+        fixture.tree.getSubtreeDocumentIds("folder-1")
+      ).resolves.toEqual(["document-empty", "document-import"])
+      await expect(
         fixture.document.getDocument({ documentId: "document-import" })
       ).resolves.toMatchObject({
         id: "document-import",
@@ -141,6 +144,9 @@ describe("자료실 use case", () => {
           now,
         })
       ).resolves.toMatchObject({ kind: "ok", value: { revision: 4 } })
+      await expect(
+        fixture.tree.getSubtreeDocumentIds("document-import")
+      ).resolves.toEqual([])
       await expect(
         fixture.search.search({ limit: 20, query: "공동", scope: "active" })
       ).resolves.toEqual({ items: [] })

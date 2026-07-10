@@ -1,9 +1,13 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
+import type { ResourceEventsConnector } from "@/features/resources/resource-events-client"
 import { ResourceTree } from "@/features/resources/tree/resource-tree"
-import type { AdminResourceTreeNode } from "@/lib/api/admin-api"
+import type {
+  AdminResourceEvent,
+  AdminResourceTreeNode,
+} from "@/lib/api/admin-api"
 
 const { pushMock, refreshMock } = vi.hoisted(() => ({
   pushMock: vi.fn(),
@@ -65,6 +69,8 @@ describe("자료 트리", () => {
       <ResourceTree
         adminId="admin-1"
         api={api}
+        connectEvents={connectTestResourceEvents}
+        eventsServerUrl="ws://admin-api.test/resources/events"
         initialTree={{
           status: "ok",
           value: { nodes: [folder, rootDocument], revision: 1 },
@@ -120,6 +126,8 @@ describe("자료 트리", () => {
       <ResourceTree
         adminId="admin-2"
         api={api}
+        connectEvents={connectTestResourceEvents}
+        eventsServerUrl="ws://admin-api.test/resources/events"
         initialTree={{ status: "ok", value: { nodes: [folder], revision: 1 } }}
         onDocumentOpen={vi.fn()}
         scope="active"
@@ -194,6 +202,8 @@ describe("자료 트리", () => {
       <ResourceTree
         adminId="admin-3"
         api={api}
+        connectEvents={connectTestResourceEvents}
+        eventsServerUrl="ws://admin-api.test/resources/events"
         initialTree={{ status: "ok", value: { nodes: [folder], revision: 1 } }}
         onDocumentOpen={vi.fn()}
         scope="active"
@@ -231,6 +241,118 @@ describe("자료 트리", () => {
     })
     expect(screen.getByText("가져온 문서", { selector: "span" })).toBeVisible()
   })
+
+  it("다른 관리자가 확정한 문서 제목을 현재 트리에 반영한다", async () => {
+    const api = createResourceLibraryApi()
+    const events = createResourceEventsFixture()
+
+    render(
+      <ResourceTree
+        adminId="admin-4"
+        api={api}
+        connectEvents={events.connector}
+        eventsServerUrl="ws://admin-api.test/resources/events"
+        initialTree={{
+          status: "ok",
+          value: { nodes: [rootDocument], revision: 1 },
+        }}
+        onDocumentOpen={vi.fn()}
+        scope="active"
+      />
+    )
+
+    act(() => {
+      events.emit({
+        documentId: rootDocument.id,
+        name: "변경된 시작 안내",
+        revision: 1,
+        type: "resource-document-title-confirmed",
+      })
+    })
+
+    expect(await screen.findByText("변경된 시작 안내")).toBeVisible()
+  })
+
+  it("tree revision gap을 감지하면 보이는 트리를 서버에서 다시 조회한다", async () => {
+    const api = createResourceLibraryApi()
+    const events = createResourceEventsFixture()
+    const renamedDocument = { ...rootDocument, name: "건너뛴 변경 반영" }
+
+    vi.mocked(api.getResourceTree).mockImplementation(async ({ parentId }) => ({
+      status: "ok",
+      value: {
+        nodes: parentId === null ? [folder, renamedDocument] : [],
+        revision: 3,
+      },
+    }))
+
+    render(
+      <ResourceTree
+        adminId="admin-5"
+        api={api}
+        connectEvents={events.connector}
+        eventsServerUrl="ws://admin-api.test/resources/events"
+        initialTree={{
+          status: "ok",
+          value: { nodes: [folder, rootDocument], revision: 1 },
+        }}
+        onDocumentOpen={vi.fn()}
+        scope="active"
+      />
+    )
+
+    act(() => {
+      events.emit({
+        action: "rename",
+        affectedParentIds: [null],
+        nodeId: rootDocument.id,
+        revision: 3,
+        type: "resource-tree-mutated",
+      })
+    })
+
+    expect(await screen.findByText("건너뛴 변경 반영")).toBeVisible()
+    expect(api.getResourceTree).toHaveBeenCalledWith({
+      parentId: null,
+      scope: "active",
+    })
+  })
+
+  it("휴지통 확인창에 하위 문서의 활성 편집자 수를 항상 표시한다", async () => {
+    const api = createResourceLibraryApi()
+
+    vi.mocked(api.getResourceActiveEditorCount).mockResolvedValue({
+      status: "ok",
+      value: { activeEditorCount: 2 },
+    })
+
+    render(
+      <ResourceTree
+        adminId="admin-6"
+        api={api}
+        connectEvents={connectTestResourceEvents}
+        eventsServerUrl="ws://admin-api.test/resources/events"
+        initialTree={{
+          status: "ok",
+          value: { nodes: [rootDocument], revision: 1 },
+        }}
+        onDocumentOpen={vi.fn()}
+        scope="active"
+      />
+    )
+
+    fireEvent.click(await screen.findByRole("button", { name: "자료 메뉴" }))
+    fireEvent.click(
+      await screen.findByRole("menuitem", { name: "휴지통으로 이동" })
+    )
+
+    expect(
+      await screen.findByText("현재 공동 편집 중인 관리자 2명")
+    ).toBeVisible()
+    expect(api.getResourceActiveEditorCount).toHaveBeenCalledWith(
+      rootDocument.id
+    )
+  })
 })
 
 const expandedStorageKey =
@@ -241,6 +363,8 @@ function createResourceLibraryApi(): ResourceTreeApi {
     createResourceDocumentNode:
       vi.fn<ResourceTreeApi["createResourceDocumentNode"]>(),
     createResourceFolder: vi.fn<ResourceTreeApi["createResourceFolder"]>(),
+    getResourceActiveEditorCount:
+      vi.fn<ResourceTreeApi["getResourceActiveEditorCount"]>(),
     getResourceTree: vi.fn<ResourceTreeApi["getResourceTree"]>(),
     importResourceDocument: vi.fn<ResourceTreeApi["importResourceDocument"]>(),
     moveResourceNode: vi.fn<ResourceTreeApi["moveResourceNode"]>(),
@@ -248,5 +372,30 @@ function createResourceLibraryApi(): ResourceTreeApi {
     restoreResourceNode: vi.fn<ResourceTreeApi["restoreResourceNode"]>(),
     searchResources: vi.fn<ResourceTreeApi["searchResources"]>(),
     trashResourceNode: vi.fn<ResourceTreeApi["trashResourceNode"]>(),
+  }
+}
+
+const connectTestResourceEvents: ResourceEventsConnector = () => ({
+  disconnect() {},
+})
+
+function createResourceEventsFixture(): {
+  readonly connector: ResourceEventsConnector
+  readonly emit: (event: AdminResourceEvent) => void
+} {
+  let onEvent: ((event: AdminResourceEvent) => void) | null = null
+
+  return {
+    connector(input) {
+      onEvent = input.onEvent
+      return { disconnect() {} }
+    },
+    emit(event) {
+      if (onEvent === null) {
+        throw new Error("자료실 이벤트 fixture가 연결되지 않았습니다.")
+      }
+
+      onEvent(event)
+    },
   }
 }

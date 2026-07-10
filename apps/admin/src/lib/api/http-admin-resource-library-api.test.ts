@@ -90,6 +90,12 @@ describe("자료실 HTTP AdminApi", () => {
       })
     ).resolves.toEqual({ status: "ok", value: mutation })
     await expect(
+      api.getResourceActiveEditorCount("document-1")
+    ).resolves.toEqual({
+      status: "ok",
+      value: { activeEditorCount: 2 },
+    })
+    await expect(
       api.trashResourceNode("document-1", { expectedRevision: 4 })
     ).resolves.toMatchObject({
       status: "ok",
@@ -159,6 +165,10 @@ describe("자료실 HTTP AdminApi", () => {
       [
         "PATCH",
         "https://admin-api.example.test/resources/nodes/document-1/move",
+      ],
+      [
+        "GET",
+        "https://admin-api.example.test/resources/nodes/document-1/active-editors",
       ],
       [
         "POST",
@@ -303,6 +313,10 @@ function responseFor(request: Request): Response {
     })
   }
 
+  if (request.url.endsWith("/active-editors")) {
+    return jsonResponse({ activeEditorCount: 2 })
+  }
+
   if (
     (request.method === "GET" || request.method === "PUT") &&
     request.url.endsWith("/resources/documents/document-1")
@@ -317,6 +331,7 @@ function responseFor(request: Request): Response {
   if (request.url.endsWith("/trash")) {
     return jsonResponse({
       affectedParentIds: ["folder-1"],
+      closedActiveRoomCount: 0,
       documentCount: 1,
       folderCount: 0,
       revision: 5,

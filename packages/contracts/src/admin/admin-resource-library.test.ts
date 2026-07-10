@@ -4,6 +4,7 @@ import {
   adminCreateResourceNodeRequestSchema,
   adminMoveResourceNodeRequestSchema,
   adminRenameResourceNodeRequestSchema,
+  adminResourceActiveEditorCountDtoSchema,
   adminResourceNodeMutationDtoSchema,
   adminResourceRestoreResultDtoSchema,
   adminResourceTrashResultDtoSchema,
@@ -27,6 +28,15 @@ const documentNode = {
 } as const
 
 describe("자료실 트리·문서·검색 계약", () => {
+  it("하위 문서의 활성 편집자 수를 검증한다", () => {
+    expect(
+      adminResourceActiveEditorCountDtoSchema.parse({ activeEditorCount: 2 })
+    ).toEqual({ activeEditorCount: 2 })
+    expect(() =>
+      adminResourceActiveEditorCountDtoSchema.parse({ activeEditorCount: -1 })
+    ).toThrow()
+  })
+
   it("지연 트리와 구조 명령의 revision 계약을 파싱한다", () => {
     expect(
       adminResourceTreeDtoSchema.parse({
@@ -78,11 +88,16 @@ describe("자료실 트리·문서·검색 계약", () => {
     expect(
       adminResourceTrashResultDtoSchema.parse({
         affectedParentIds: ["folder-1"],
+        closedActiveRoomCount: 1,
         documentCount: 3,
         folderCount: 2,
         revision: 8,
       })
-    ).toMatchObject({ documentCount: 3, folderCount: 2 })
+    ).toMatchObject({
+      closedActiveRoomCount: 1,
+      documentCount: 3,
+      folderCount: 2,
+    })
     expect(
       adminResourceRestoreResultDtoSchema.parse({
         affectedParentIds: ["folder-1"],

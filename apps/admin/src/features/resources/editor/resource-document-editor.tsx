@@ -5,7 +5,6 @@ import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin"
 import { LexicalComposer } from "@lexical/react/LexicalComposer"
 import { ContentEditable } from "@lexical/react/LexicalContentEditable"
 import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary"
-import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin"
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin"
 import { ListPlugin } from "@lexical/react/LexicalListPlugin"
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin"
@@ -17,12 +16,11 @@ import {
   CloudUploadIcon,
   DownloadIcon,
   LoaderCircleIcon,
+  LockIcon,
   TriangleAlertIcon,
   type LucideIcon,
 } from "lucide-react"
 import {
-  createResourceDocumentEditor,
-  replaceResourceDocumentMarkdown,
   resourceDocumentNodes,
   resourceMarkdownTransformers,
 } from "@workspace/resource-document/resource-markdown"
@@ -33,9 +31,11 @@ import { Spinner } from "@workspace/ui/components/ui/spinner"
 import { cn } from "@workspace/ui/lib/utils"
 
 import {
-  ResourceDocumentAutosavePlugin,
+  connectBrowserResourceDocumentCollaboration,
+  type ResourceDocumentCollaborationConnector,
   type ResourceDocumentSyncState,
-} from "@/features/resources/editor/resource-document-autosave-plugin"
+} from "@/features/resources/editor/resource-document-collaboration-client"
+import { ResourceDocumentCollaborationPlugin } from "@/features/resources/editor/resource-document-collaboration-plugin"
 import { ResourceDraggableBlockPlugin } from "@/features/resources/editor/resource-draggable-block-plugin"
 import { ResourceFloatingToolbarPlugin } from "@/features/resources/editor/resource-floating-toolbar-plugin"
 import { ResourceSlashMenuPlugin } from "@/features/resources/editor/resource-slash-menu-plugin"
@@ -52,7 +52,10 @@ import {
   type ResourceDocumentEditorApi,
 } from "@/features/resources/resource-library-api"
 import type { AdminResourceLibraryDocument } from "@/lib/api/admin-api"
-import type { AdminApiBaseUrl } from "@/runtime-config"
+import {
+  buildAdminApiWebSocketUrl,
+  type AdminApiBaseUrl,
+} from "@/runtime-config"
 
 const editorTransformers = [...resourceMarkdownTransformers]
 
@@ -90,8 +93,8 @@ const resourceEditorTheme = {
 } satisfies EditorThemeClasses
 
 const initialSyncState: ResourceDocumentSyncState = {
-  kind: "saved",
-  message: "모든 변경 사항이 저장됨",
+  kind: "connecting",
+  message: "공동 편집 서버에 연결 중",
 }
 
 export function ResourceDocumentEditor({
@@ -105,30 +108,39 @@ export function ResourceDocumentEditor({
     () => createBrowserResourceLibraryApi(apiBaseUrl),
     [apiBaseUrl]
   )
+  const collaborationServerUrl = useMemo(
+    () => buildAdminApiWebSocketUrl(apiBaseUrl, "/resources/collaboration"),
+    [apiBaseUrl]
+  )
 
-  return <ResourceDocumentEditorSurface api={api} document={document} />
+  return (
+    <ResourceDocumentEditorSurface
+      api={api}
+      collaborationServerUrl={collaborationServerUrl}
+      connectCollaboration={connectBrowserResourceDocumentCollaboration}
+      document={document}
+    />
+  )
 }
 
 export function ResourceDocumentEditorSurface({
   api,
+  collaborationServerUrl,
+  connectCollaboration,
   document,
 }: {
   readonly api: ResourceDocumentEditorApi
+  readonly collaborationServerUrl: string
+  readonly connectCollaboration: ResourceDocumentCollaborationConnector
   readonly document: AdminResourceLibraryDocument
 }) {
   const [anchorElement, setAnchorElement] = useState<HTMLDivElement | null>(
     null
   )
-  const [currentDocument, setCurrentDocument] = useState(document)
+  const currentDocument = document
   const [exportError, setExportError] = useState<string | null>(null)
   const [isExporting, startExportTransition] = useTransition()
   const [syncState, setSyncState] = useState(initialSyncState)
-  const [initialEditorState] = useState(() =>
-    serializeInitialEditorState(document.contentMarkdown)
-  )
-  const onSaved = useCallback((saved: AdminResourceLibraryDocument) => {
-    setCurrentDocument(saved)
-  }, [])
   const onSyncStateChange = useCallback((state: ResourceDocumentSyncState) => {
     setSyncState(state)
   }, [])
@@ -192,7 +204,7 @@ export function ResourceDocumentEditorSurface({
       )}
       <LexicalComposer
         initialConfig={{
-          editorState: initialEditorState,
+          editorState: null,
           namespace: `resource-document-${document.id}`,
           nodes: [...resourceDocumentNodes],
           onError: (error) => {
@@ -219,7 +231,6 @@ export function ResourceDocumentEditorSurface({
               </p>
             }
           />
-          <HistoryPlugin />
           <ListPlugin />
           <CheckListPlugin />
           <LinkPlugin validateUrl={isAllowedResourceLinkUrl} />
@@ -231,13 +242,11 @@ export function ResourceDocumentEditorSurface({
           <MarkdownShortcutPlugin transformers={editorTransformers} />
           <ResourceSlashMenuPlugin />
           <ResourceFloatingToolbarPlugin />
-          <ResourceDocumentAutosavePlugin
-            api={api}
+          <ResourceDocumentCollaborationPlugin
+            connect={connectCollaboration}
             documentId={document.id}
-            initialContentRevision={document.contentRevision}
-            initialMarkdown={document.contentMarkdown}
-            onSaved={onSaved}
             onSyncStateChange={onSyncStateChange}
+            serverUrl={collaborationServerUrl}
           />
           {anchorElement === null ? null : (
             <ResourceDraggableBlockPlugin anchorElement={anchorElement} />
@@ -282,30 +291,25 @@ function readSyncStatusPresentation(state: ResourceDocumentSyncState): {
   switch (state.kind) {
     case "saved":
       return { className: "text-muted-foreground", Icon: CloudCheckIcon }
-    case "pending":
-      return { className: "text-muted-foreground", Icon: CloudUploadIcon }
-    case "saving":
+    case "syncing":
+      return {
+        className: "text-primary",
+        Icon: CloudUploadIcon,
+        iconClass: "animate-pulse motion-reduce:animate-none",
+      }
+    case "connecting":
+    case "reconnecting":
       return {
         className: "text-primary",
         Icon: LoaderCircleIcon,
         iconClass: "animate-spin motion-reduce:animate-none",
       }
-    case "conflict":
     case "error":
     case "invalid":
       return { className: "text-destructive", Icon: TriangleAlertIcon }
+    case "readonly":
+      return { className: "text-muted-foreground", Icon: LockIcon }
   }
-}
-
-function serializeInitialEditorState(markdown: string): string {
-  const editor = createResourceDocumentEditor()
-  const validation = replaceResourceDocumentMarkdown(editor, markdown)
-
-  if (validation.status === "invalid") {
-    throw new Error("저장된 자료 Markdown을 Lexical 편집기로 열 수 없습니다.")
-  }
-
-  return JSON.stringify(editor.getEditorState().toJSON())
 }
 
 function downloadMarkdownFile(file: {

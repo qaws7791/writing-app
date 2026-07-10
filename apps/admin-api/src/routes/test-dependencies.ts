@@ -3,6 +3,8 @@ import type {
   AdminAuthenticatedSession,
   AdminSessionResolver,
 } from "@/auth/admin-session"
+import type { ResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
+import type { ResourceEventsPublisher } from "@/collaboration/resource-events-hub"
 import { adminRoles } from "@workspace/core/admin"
 import { readBearerToken } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env"
@@ -26,6 +28,8 @@ type TestAdminApiDependencyOverrides = {
   readonly adminOrigin?: string
   readonly adminServices?: TestAdminApiServicesOverrides
   readonly now?: () => Date
+  readonly resourceCollaborationRooms?: ResourceCollaborationRooms
+  readonly resourceEvents?: ResourceEventsPublisher
   readonly sessionResolver?: AdminSessionResolver
 }
 
@@ -96,6 +100,10 @@ export function createTestAdminApiDependencies(
     },
     adminOrigin: overrides.adminOrigin ?? localRuntimeDefaults.adminWebOrigin,
     now: overrides.now ?? (() => testAdminNow),
+    resourceCollaborationRooms:
+      overrides.resourceCollaborationRooms ??
+      createTestResourceCollaborationRooms(),
+    resourceEvents: overrides.resourceEvents ?? { publish() {} },
     sessionResolver:
       overrides.sessionResolver ?? createTestAdminSessionResolver(),
   }
@@ -217,6 +225,11 @@ function createFailingAdminApiServices(): AdminApiServices {
         async getTree() {
           throwUnexpectedAdminServiceCall("resourceLibrary.tree.getTree")
         },
+        async getSubtreeDocumentIds() {
+          throwUnexpectedAdminServiceCall(
+            "resourceLibrary.tree.getSubtreeDocumentIds"
+          )
+        },
         async moveNode() {
           throwUnexpectedAdminServiceCall("resourceLibrary.tree.moveNode")
         },
@@ -276,6 +289,24 @@ function createFailingAdminApiServices(): AdminApiServices {
         throwUnexpectedAdminServiceCall("users.updateUserStatus")
       },
     },
+  }
+}
+
+function createTestResourceCollaborationRooms(): ResourceCollaborationRooms {
+  return {
+    close() {
+      return 0
+    },
+    countActiveEditors() {
+      return 0
+    },
+    async flushDocument() {
+      return "ok"
+    },
+    async lockDocuments() {
+      return { kind: "ok", lock: { documentIds: [] } }
+    },
+    release() {},
   }
 }
 

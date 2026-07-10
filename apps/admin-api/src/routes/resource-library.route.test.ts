@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { createApp } from "@/app"
 import {
@@ -10,6 +10,7 @@ import type {
   AdminResourceDocumentDto,
   AdminResourceNodeMutationDto,
 } from "@workspace/contracts/admin"
+import { toResourceDocumentId } from "@workspace/core/modules/resource-library/api"
 
 const headers = {
   Authorization: "Bearer admin-token",
@@ -188,6 +189,7 @@ describe("어드민 API 자료실 트리 route", () => {
     )
     expect(trashResponse.status).toBe(200)
     await expect(trashResponse.json()).resolves.toMatchObject({
+      closedActiveRoomCount: 0,
       documentCount: 1,
       folderCount: 0,
       revision: 5,
@@ -327,6 +329,148 @@ describe("어드민 API 자료실 트리 route", () => {
       code: "STALE_CONTENT_REVISION",
     })
   })
+
+  it("내보내기 전 열린 공동 편집 room을 먼저 저장한다", async () => {
+    const flushDocument = vi.fn(async () => "error" as const)
+    const exportDocument = vi.fn()
+    const app = createApp(
+      createTestAdminApiDependencies({
+        adminServices: {
+          resourceLibrary: { documents: { exportDocument } },
+        },
+        resourceCollaborationRooms: {
+          close: vi.fn(),
+          countActiveEditors: vi.fn(),
+          flushDocument,
+          lockDocuments: vi.fn(),
+          release: vi.fn(),
+        },
+      })
+    )
+
+    const response = await app.request(
+      "/resources/documents/document-1/export",
+      { headers }
+    )
+
+    expect(response.status).toBe(503)
+    expect(flushDocument).toHaveBeenCalledWith(
+      toResourceDocumentId("document-1")
+    )
+    expect(exportDocument).not.toHaveBeenCalled()
+  })
+
+  it("휴지통 확인용 하위 문서 활성 편집자 수를 조회한다", async () => {
+    const countActiveEditors = vi.fn(() => 3)
+    const app = createApp(
+      createTestAdminApiDependencies({
+        adminServices: {
+          resourceLibrary: {
+            tree: {
+              async getSubtreeDocumentIds(nodeId) {
+                expect(nodeId).toBe("folder-1")
+                return [
+                  toResourceDocumentId("document-1"),
+                  toResourceDocumentId("document-2"),
+                ]
+              },
+            },
+          },
+        },
+        resourceCollaborationRooms: {
+          close: vi.fn(),
+          countActiveEditors,
+          flushDocument: vi.fn(),
+          lockDocuments: vi.fn(),
+          release: vi.fn(),
+        },
+      })
+    )
+
+    const response = await app.request(
+      "/resources/nodes/folder-1/active-editors",
+      { headers }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({ activeEditorCount: 3 })
+    expect(countActiveEditors).toHaveBeenCalledWith([
+      toResourceDocumentId("document-1"),
+      toResourceDocumentId("document-2"),
+    ])
+  })
+
+  it("하위 room 잠금·flush 뒤 휴지통 변경 event를 보내고 연결을 닫는다", async () => {
+    const lock = {
+      documentIds: [toResourceDocumentId("document-1")],
+    }
+    const lockDocuments = vi.fn(async () => ({ kind: "ok" as const, lock }))
+    const trashNode = vi.fn(async () => ({
+      kind: "ok" as const,
+      value: {
+        affectedParentIds: ["folder-1"],
+        documentCount: 1,
+        folderCount: 0,
+        revision: 5,
+      },
+    }))
+    const publish = vi.fn()
+    const close = vi.fn(() => 1)
+    const app = createApp(
+      createTestAdminApiDependencies({
+        adminServices: {
+          resourceLibrary: {
+            tree: {
+              async getSubtreeDocumentIds() {
+                return [toResourceDocumentId("document-1")]
+              },
+              trashNode,
+            },
+          },
+        },
+        resourceCollaborationRooms: {
+          close,
+          countActiveEditors: vi.fn(),
+          async flushDocument() {
+            return "ok"
+          },
+          lockDocuments,
+          release: vi.fn(),
+        },
+        resourceEvents: { publish },
+      })
+    )
+
+    const response = await app.request("/resources/nodes/document-1/trash", {
+      body: JSON.stringify({ expectedRevision: 4 }),
+      headers,
+      method: "POST",
+    })
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      closedActiveRoomCount: 1,
+    })
+    expect(lockDocuments).toHaveBeenCalledWith([
+      toResourceDocumentId("document-1"),
+    ])
+    expect(publish).toHaveBeenCalledWith({
+      action: "trash",
+      affectedParentIds: ["folder-1"],
+      nodeId: "document-1",
+      revision: 5,
+      type: "resource-tree-mutated",
+    })
+    expect(lockDocuments.mock.invocationCallOrder[0]).toBeLessThan(
+      trashNode.mock.invocationCallOrder[0] ?? 0
+    )
+    expect(trashNode.mock.invocationCallOrder[0]).toBeLessThan(
+      publish.mock.invocationCallOrder[0] ?? 0
+    )
+    expect(publish.mock.invocationCallOrder[0]).toBeLessThan(
+      close.mock.invocationCallOrder[0] ?? 0
+    )
+  })
 })
 
 function createDependencies() {
@@ -412,6 +556,10 @@ function createDependencies() {
           async getTree(input) {
             expect(input).toEqual({ parentId: "folder-1", scope: "active" })
             return { nodes: [documentNode], revision: 4 }
+          },
+          async getSubtreeDocumentIds(nodeId) {
+            expect(nodeId).toBe("document-1")
+            return [toResourceDocumentId("document-1")]
           },
           async moveNode(input) {
             expect(input).toMatchObject({

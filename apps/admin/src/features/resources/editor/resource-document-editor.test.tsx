@@ -16,11 +16,13 @@ import { useEffect } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import {
   readResourceDocumentMarkdown,
+  replaceResourceDocumentMarkdown,
   resourceDocumentNodes,
   resourceMarkdownTransformers,
 } from "@workspace/resource-document/resource-markdown"
 
 import { ResourceDocumentEditorSurface } from "@/features/resources/editor/resource-document-editor"
+import type { ResourceDocumentCollaborationConnector } from "@/features/resources/editor/resource-document-collaboration-client"
 import { ResourceSlashMenuPlugin } from "@/features/resources/editor/resource-slash-menu-plugin"
 import type { ResourceDocumentEditorApi } from "@/features/resources/resource-library-api"
 import type { AdminResourceLibraryDocument } from "@/lib/api/admin-api"
@@ -53,12 +55,7 @@ describe("자료 Lexical 편집기", () => {
   })
 
   it("저장된 GFM을 분할 화면 없이 편집 가능한 문서로 렌더링한다", () => {
-    render(
-      <ResourceDocumentEditorSurface
-        api={createEditorApi()}
-        document={documentFixture}
-      />
-    )
+    renderResourceEditor()
 
     expect(
       screen.getByRole("heading", { level: 2, name: "시작" })
@@ -235,147 +232,21 @@ describe("자료 Lexical 편집기", () => {
     ).not.toBeInTheDocument()
   })
 
-  it("본문 변경을 content revision과 함께 자동 저장한다", async () => {
-    const user = userEvent.setup()
-    const api = createEditorApi()
-    vi.mocked(api.saveResourceLibraryDocument).mockImplementation(
-      async (_documentId, input) => ({
-        status: "ok",
-        value: {
-          ...documentFixture,
-          contentMarkdown: input.markdown,
-          contentRevision: 1,
-          updatedAt: "2026-07-10T01:00:00.000Z",
-        },
-      })
-    )
+  it("공동 편집 연결 상태를 항상 표시하고 unmount 때 연결을 정리한다", async () => {
+    const disconnect = vi.fn()
+    const connector = createCollaborationConnector(disconnect)
+    const { unmount } = renderResourceEditor(connector)
 
-    render(
-      <ResourceDocumentEditorSurface api={api} document={documentFixture} />
-    )
-    const editor = screen.getByRole("textbox", { name: "자료 본문" })
-
-    await user.click(editor)
-    await user.type(editor, " 갱신")
-
-    await waitFor(
-      () => {
-        expect(api.saveResourceLibraryDocument).toHaveBeenCalledWith(
-          "document-1",
-          expect.objectContaining({
-            expectedContentRevision: 0,
-            markdown: expect.stringContaining("갱신"),
-          })
-        )
-      },
-      { timeout: 2_000 }
-    )
-    expect(await screen.findByText("모든 변경 사항이 저장됨")).toBeVisible()
-  })
-
-  it("여러 블록을 선택한 서식을 유효한 GFM으로 자동 저장한다", async () => {
-    const user = userEvent.setup()
-    const api = createEditorApi()
-    vi.mocked(api.saveResourceLibraryDocument).mockImplementation(
-      async (_documentId, input) => ({
-        status: "ok",
-        value: {
-          ...documentFixture,
-          contentMarkdown: input.markdown,
-          contentRevision: 1,
-        },
-      })
-    )
-
-    render(
-      <ResourceDocumentEditorSurface api={api} document={documentFixture} />
-    )
-    const editor = screen.getByRole("textbox", { name: "자료 본문" })
-
-    await user.click(editor)
-    await user.keyboard("{Control>}a{/Control}")
-    await user.click(screen.getByRole("button", { name: "굵게" }))
-
-    await waitFor(
-      () => {
-        expect(api.saveResourceLibraryDocument).toHaveBeenCalledWith(
-          "document-1",
-          {
-            expectedContentRevision: 0,
-            markdown: "## **시작**\n\n**본문 강조**",
-          }
-        )
-      },
-      { timeout: 2_000 }
-    )
-  })
-
-  it("저장 중 발생한 편집은 병렬 요청 없이 다음 content revision으로 이어서 저장한다", async () => {
-    const user = userEvent.setup()
-    const api = createEditorApi()
-    type SaveResult = Awaited<
-      ReturnType<ResourceDocumentEditorApi["saveResourceLibraryDocument"]>
-    >
-    const firstSave = createDeferred<SaveResult>()
-
-    vi.mocked(api.saveResourceLibraryDocument)
-      .mockImplementationOnce(() => firstSave.promise)
-      .mockImplementationOnce(async (_documentId, input) => ({
-        status: "ok",
-        value: {
-          ...documentFixture,
-          contentMarkdown: input.markdown,
-          contentRevision: 2,
-        },
-      }))
-
-    render(
-      <ResourceDocumentEditorSurface api={api} document={documentFixture} />
-    )
-    const editor = screen.getByRole("textbox", { name: "자료 본문" })
-
-    await user.click(editor)
-    await user.type(editor, " 첫째")
-    await waitFor(
-      () => {
-        expect(api.saveResourceLibraryDocument).toHaveBeenCalledTimes(1)
-      },
-      { timeout: 2_000 }
-    )
-    await user.type(editor, " 둘째")
-    expect(api.saveResourceLibraryDocument).toHaveBeenCalledTimes(1)
-
-    const firstMarkdown = vi.mocked(api.saveResourceLibraryDocument).mock
-      .calls[0]?.[1].markdown
-
-    if (firstMarkdown === undefined) {
-      throw new Error("첫 번째 자동 저장 Markdown을 찾지 못했습니다.")
-    }
-
-    act(() => {
-      firstSave.resolve({
-        status: "ok",
-        value: {
-          ...documentFixture,
-          contentMarkdown: firstMarkdown,
-          contentRevision: 1,
-        },
-      })
-    })
-
-    await waitFor(
-      () => {
-        expect(api.saveResourceLibraryDocument).toHaveBeenCalledTimes(2)
-      },
-      { timeout: 2_000 }
-    )
-    expect(api.saveResourceLibraryDocument).toHaveBeenLastCalledWith(
-      "document-1",
+    expect(await screen.findByText("모든 변경 사항이 동기화됨")).toBeVisible()
+    expect(connector).toHaveBeenCalledWith(
       expect.objectContaining({
-        expectedContentRevision: 1,
-        markdown: expect.stringContaining("둘째"),
+        documentId: "document-1",
+        serverUrl: "ws://admin-api.test/resources/collaboration",
       })
     )
+
+    unmount()
+    expect(disconnect).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -383,30 +254,41 @@ function createEditorApi(): ResourceDocumentEditorApi {
   return {
     exportResourceDocument:
       vi.fn<ResourceDocumentEditorApi["exportResourceDocument"]>(),
-    saveResourceLibraryDocument:
-      vi.fn<ResourceDocumentEditorApi["saveResourceLibraryDocument"]>(),
   }
 }
 
-function createDeferred<TValue>(): {
-  readonly promise: Promise<TValue>
-  readonly resolve: (value: TValue) => void
-} {
-  let settle: ((value: TValue) => void) | undefined
-  const promise = new Promise<TValue>((resolve) => {
-    settle = resolve
+function renderResourceEditor(
+  connector = createCollaborationConnector()
+): ReturnType<typeof render> {
+  return render(
+    <ResourceDocumentEditorSurface
+      api={createEditorApi()}
+      collaborationServerUrl="ws://admin-api.test/resources/collaboration"
+      connectCollaboration={connector}
+      document={documentFixture}
+    />
+  )
+}
+
+function createCollaborationConnector(
+  disconnect = vi.fn()
+): ResourceDocumentCollaborationConnector {
+  return vi.fn(({ editor, onSyncStateChange }) => {
+    const result = replaceResourceDocumentMarkdown(
+      editor,
+      documentFixture.contentMarkdown
+    )
+
+    if (result.status === "invalid") {
+      throw new Error("공동 편집 fixture Markdown을 열지 못했습니다.")
+    }
+
+    onSyncStateChange({
+      kind: "saved",
+      message: "모든 변경 사항이 동기화됨",
+    })
+    return { disconnect }
   })
-
-  return {
-    promise,
-    resolve(value) {
-      if (settle === undefined) {
-        throw new Error("비동기 테스트 요청을 준비하지 못했습니다.")
-      }
-
-      settle(value)
-    },
-  }
 }
 
 function installEditorDomGeometry(): void {

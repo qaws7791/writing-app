@@ -9,6 +9,10 @@ const appDirectory = dirname(fileURLToPath(import.meta.url))
 const development = process.env.NODE_ENV !== "production"
 const adminApiOrigin =
   process.env.ADMIN_API_BASE_URL ?? localRuntimeDefaults.adminApiBaseUrl
+const adminApiWebSocketUrl = new URL(adminApiOrigin)
+
+adminApiWebSocketUrl.protocol =
+  adminApiWebSocketUrl.protocol === "https:" ? "wss:" : "ws:"
 
 const nextConfig: NextConfig = {
   async headers() {
@@ -17,7 +21,7 @@ const nextConfig: NextConfig = {
         headers: [
           ...createNextSecurityHeaders({
             allowHttpsImages: true,
-            connectSources: [adminApiOrigin],
+            connectSources: [adminApiOrigin, adminApiWebSocketUrl.origin],
             development,
           }),
         ],

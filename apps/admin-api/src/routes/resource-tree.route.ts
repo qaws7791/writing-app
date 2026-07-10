@@ -3,6 +3,7 @@ import {
   adminCreateResourceNodeRequestSchema,
   adminMoveResourceNodeRequestSchema,
   adminRenameResourceNodeRequestSchema,
+  adminResourceActiveEditorCountDtoSchema,
   adminResourceNodeMutationDtoSchema,
   adminResourceRestoreResultDtoSchema,
   adminResourceRevisionRequestSchema,
@@ -14,7 +15,10 @@ import type { ResourceTreeUseCase } from "@workspace/core/modules/resource-libra
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
+import type { ResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
+import type { ResourceEventsPublisher } from "@/collaboration/resource-events-hub"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
+import { resourceCollaborationUnavailableAdminError } from "@/errors/admin-errors"
 import {
   adminAuthenticatedResponses,
   errorJsonResponse,
@@ -39,6 +43,8 @@ const resourceNodeParamsSchema = z.object({
 })
 
 export type ResourceTreeRouteDependencies = {
+  readonly collaborationRooms: ResourceCollaborationRooms
+  readonly events: ResourceEventsPublisher
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
   readonly treeService: ResourceTreeUseCase
@@ -49,6 +55,7 @@ export function createResourceTreeRoutes(
 ) {
   return [
     createGetResourceTreeRoute(dependencies),
+    createGetResourceActiveEditorCountRoute(dependencies),
     createCreateResourceFolderRoute(dependencies),
     createCreateResourceDocumentRoute(dependencies),
     createRenameResourceNodeRoute(dependencies),
@@ -56,6 +63,42 @@ export function createResourceTreeRoutes(
     createTrashResourceNodeRoute(dependencies),
     createRestoreResourceNodeRoute(dependencies),
   ] as const
+}
+
+function createGetResourceActiveEditorCountRoute({
+  collaborationRooms,
+  sessionResolver,
+  treeService,
+}: ResourceTreeRouteDependencies) {
+  const routeConfig = {
+    method: "get",
+    operationId: "getAdminResourceActiveEditorCount",
+    path: "/resources/nodes/{nodeId}/active-editors",
+    request: { params: resourceNodeParamsSchema },
+    responses: adminAuthenticatedResponses(
+      jsonResponse(
+        "자료실 하위 문서의 활성 편집자 수입니다.",
+        adminResourceActiveEditorCountDtoSchema
+      )
+    ),
+    summary: "자료실 하위 문서 활성 편집자 수 조회",
+    ...adminSessionRouteOptions(sessionResolver),
+  } satisfies AnyRouteConfig
+
+  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
+    const documentIds = await treeService.getSubtreeDocumentIds(
+      context.req.valid("param").nodeId
+    )
+
+    return context.json(
+      {
+        activeEditorCount: collaborationRooms.countActiveEditors(documentIds),
+      },
+      200
+    )
+  }
+
+  return defineAdminRoute({ ...routeConfig, handler })
 }
 
 function createGetResourceTreeRoute({
@@ -106,6 +149,7 @@ function createCreateResourceDocumentRoute(
 
 function createResourceNodeRoute({
   kind,
+  events,
   now,
   operationId,
   path,
@@ -147,6 +191,11 @@ function createResourceNodeRoute({
       throwResourceLibraryRejection(result)
     }
 
+    publishTreeMutation(events, {
+      action: kind === "folder" ? "create-folder" : "create-document",
+      ...result.value,
+      nodeId: result.value.node.id,
+    })
     return context.json(result.value, 200)
   }
 
@@ -154,6 +203,7 @@ function createResourceNodeRoute({
 }
 
 function createRenameResourceNodeRoute({
+  events,
   now,
   sessionResolver,
   treeService,
@@ -187,6 +237,20 @@ function createRenameResourceNodeRoute({
       throwResourceLibraryRejection(result)
     }
 
+    publishTreeMutation(events, {
+      action: "rename",
+      ...result.value,
+      nodeId: result.value.node.id,
+    })
+    if (result.value.node.kind === "document") {
+      events.publish({
+        documentId: result.value.node.id,
+        name: result.value.node.name,
+        revision: result.value.revision,
+        type: "resource-document-title-confirmed",
+      })
+    }
+
     return context.json(result.value, 200)
   }
 
@@ -194,6 +258,7 @@ function createRenameResourceNodeRoute({
 }
 
 function createMoveResourceNodeRoute({
+  events,
   now,
   sessionResolver,
   treeService,
@@ -227,6 +292,11 @@ function createMoveResourceNodeRoute({
       throwResourceLibraryRejection(result)
     }
 
+    publishTreeMutation(events, {
+      action: "move",
+      ...result.value,
+      nodeId: result.value.node.id,
+    })
     return context.json(result.value, 200)
   }
 
@@ -263,7 +333,9 @@ function createRestoreResourceNodeRoute(
 
 function createResourceRevisionRoute({
   action,
+  collaborationRooms,
   description,
+  events,
   now,
   operationId,
   path,
@@ -300,19 +372,83 @@ function createResourceRevisionRoute({
       nodeId: context.req.valid("param").nodeId,
       now: now(),
     }
-    const result =
-      action === "trash"
-        ? await treeService.trashNode(command)
-        : await treeService.restoreNode(command)
+    if (action === "restore") {
+      const result = await treeService.restoreNode(command)
+
+      if (result.kind !== "ok") {
+        throwResourceLibraryRejection(result)
+      }
+
+      publishTreeMutation(events, {
+        action: "restore",
+        ...result.value,
+        nodeId: result.value.node.id,
+      })
+      return context.json(result.value, 200)
+    }
+
+    const documentIds = await treeService.getSubtreeDocumentIds(command.nodeId)
+    const lockResult = await collaborationRooms.lockDocuments(documentIds)
+
+    if (lockResult.kind === "error") {
+      throw resourceCollaborationUnavailableAdminError()
+    }
+
+    let result: Awaited<ReturnType<ResourceTreeUseCase["trashNode"]>>
+
+    try {
+      result = await treeService.trashNode(command)
+    } catch (error) {
+      collaborationRooms.release(lockResult.lock)
+      throw error
+    }
 
     if (result.kind !== "ok") {
+      collaborationRooms.release(lockResult.lock)
       throwResourceLibraryRejection(result)
     }
 
-    return context.json(result.value, 200)
+    publishTreeMutation(events, {
+      action: "trash",
+      ...result.value,
+      nodeId: command.nodeId,
+    })
+    const closedActiveRoomCount = collaborationRooms.close(lockResult.lock)
+
+    return context.json(
+      {
+        ...result.value,
+        closedActiveRoomCount,
+      },
+      200
+    )
   }
 
   return defineAdminRoute({ ...routeConfig, handler })
+}
+
+function publishTreeMutation(
+  events: ResourceEventsPublisher,
+  input: {
+    readonly action:
+      | "create-document"
+      | "create-folder"
+      | "move"
+      | "rename"
+      | "restore"
+      | "trash"
+    readonly affectedParentIds: readonly (string | null)[]
+    readonly nodeId: string
+    readonly revision: number
+  }
+): void {
+  events.publish({
+    action: input.action,
+    affectedParentIds: [...input.affectedParentIds],
+    nodeId: input.nodeId,
+    revision: input.revision,
+    type: "resource-tree-mutated",
+  })
 }
 
 function resourceMutationResponses(description: string, schema: z.ZodType) {
