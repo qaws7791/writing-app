@@ -47,6 +47,7 @@ import {
   mergeExpandedResourceIds,
   subscribeExpandedResourceIds,
   updateExpandedResourceIds,
+  type ResourceWorkspaceConnectionState,
 } from "@/features/resources/resource-workspace-state"
 import { ResourceSearch } from "@/features/resources/search/resource-search"
 import {
@@ -108,6 +109,7 @@ const loadingItem: ResourceTreeLoadingItem = {
   kind: "loading",
   name: "불러오는 중",
 }
+const resourceConnectionWarningDelayMilliseconds = 750
 
 export function ResourceTree({
   adminId,
@@ -120,7 +122,6 @@ export function ResourceTree({
   recordRevisionGap = recordBrowserResourceEventRevisionGap,
   scope,
   selectedDocumentId,
-  structureChangesAllowed = true,
   toolbarEnd,
 }: {
   readonly adminId: string
@@ -133,7 +134,6 @@ export function ResourceTree({
   readonly recordRevisionGap?: ResourceEventRevisionGapRecorder
   readonly scope: AdminResourceTreeScope
   readonly selectedDocumentId?: string
-  readonly structureChangesAllowed?: boolean
   readonly toolbarEnd?: ReactNode
 }) {
   const router = useRouter()
@@ -152,7 +152,8 @@ export function ResourceTree({
   const [errorMessage, setErrorMessage] = useState<string | null>(
     initialTree?.status === "error" ? initialTree.message : null
   )
-  const [eventsConnected, setEventsConnected] = useState(false)
+  const [workspaceConnectionState, setWorkspaceConnectionState] =
+    useState<ResourceWorkspaceConnectionState>("preparing")
   const [shouldLoadRoot] = useState(initialTree === undefined)
   const [isCreating, startCreatingTransition] = useTransition()
   const [isImporting, startImportingTransition] = useTransition()
@@ -199,7 +200,7 @@ export function ResourceTree({
         typeof updater === "function" ? updater(current.itemIds) : updater,
     }))
   }, [])
-  const structureMutationsAllowed = structureChangesAllowed && eventsConnected
+  const structureMutationsAllowed = workspaceConnectionState === "online"
 
   function acceptTree(treeValue: AdminResourceTree): void {
     revisionRef.current = treeValue.revision
@@ -700,9 +701,27 @@ export function ResourceTree({
   const onResourceEventError = useEffectEvent(reloadVisibleTree)
 
   useEffect(() => {
+    let connectionWarningTimer: ReturnType<typeof setTimeout> | null = null
     const subscription = connectEvents({
       onConnectionChange(connected) {
-        setEventsConnected(connected)
+        if (connected) {
+          if (connectionWarningTimer !== null) {
+            clearTimeout(connectionWarningTimer)
+            connectionWarningTimer = null
+          }
+          setWorkspaceConnectionState("online")
+          return
+        }
+
+        setWorkspaceConnectionState((current) =>
+          current === "reconnecting" ? current : "preparing"
+        )
+        if (connectionWarningTimer !== null) return
+
+        connectionWarningTimer = setTimeout(() => {
+          connectionWarningTimer = null
+          setWorkspaceConnectionState("reconnecting")
+        }, resourceConnectionWarningDelayMilliseconds)
       },
       onError() {
         eventOperationRef.current = eventOperationRef.current
@@ -722,6 +741,9 @@ export function ResourceTree({
     })
 
     return () => {
+      if (connectionWarningTimer !== null) {
+        clearTimeout(connectionWarningTimer)
+      }
       subscription.disconnect()
     }
   }, [connectEvents, eventsServerUrl])
@@ -875,17 +897,16 @@ export function ResourceTree({
           </Alert>
         </div>
       )}
-      {structureMutationsAllowed ? null : (
+      {workspaceConnectionState === "reconnecting" ||
+      workspaceConnectionState === "unavailable" ? (
         <div className="px-3 pb-2">
           <Alert tone="warning">
             <AlertDescription>
-              {structureChangesAllowed
-                ? "자료실 실시간 연결이 복구될 때까지 자료 구조를 변경할 수 없습니다."
-                : "공동 편집 연결이 복구될 때까지 자료 구조를 변경할 수 없습니다."}
+              자료실 실시간 연결이 복구될 때까지 자료 구조를 변경할 수 없습니다.
             </AlertDescription>
           </Alert>
         </div>
-      )}
+      ) : null}
       <ScrollArea className="min-h-0 flex-1 px-2 pb-3">
         <Tree aria-label="자료 폴더와 문서" tree={tree}>
           {items.map((item) => {

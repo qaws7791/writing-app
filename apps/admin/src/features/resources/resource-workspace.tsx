@@ -11,7 +11,6 @@ import {
 import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react"
 
-import { ResourceStructureAvailabilityProvider } from "@/features/resources/resource-collaboration-availability"
 import { createBrowserResourceLibraryApi } from "@/features/resources/resource-library-api"
 import { connectBrowserResourceEvents } from "@/features/resources/resource-events-client"
 import {
@@ -68,7 +67,6 @@ export function ResourceWorkspace({
   const searchParams = useSearchParams()
   const [isMobileTreeOpen, setIsMobileTreeOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
-  const [structureChangesAllowed, setStructureChangesAllowed] = useState(true)
   const mobileTreeTriggerRef = useRef<HTMLButtonElement>(null)
   const collapseSidebarTriggerRef = useRef<HTMLButtonElement>(null)
   const expandSidebarTriggerRef = useRef<HTMLButtonElement>(null)
@@ -88,15 +86,6 @@ export function ResourceWorkspace({
     pathname === "/resources/trash" || searchParams.get("scope") === "trash"
       ? "trash"
       : "active"
-  function provideStructureAvailability(content: ReactNode) {
-    return (
-      <ResourceStructureAvailabilityProvider
-        report={setStructureChangesAllowed}
-      >
-        {content}
-      </ResourceStructureAvailabilityProvider>
-    )
-  }
   function renderSidebar(toolbarEnd?: ReactNode) {
     return (
       <ResourceTree
@@ -116,14 +105,13 @@ export function ResourceWorkspace({
         }}
         scope={scope}
         selectedDocumentId={documentId}
-        structureChangesAllowed={structureChangesAllowed}
         toolbarEnd={toolbarEnd}
       />
     )
   }
 
   if (isDesktop === null) {
-    return provideStructureAvailability(
+    return (
       <div
         className="flex min-h-0 flex-1 items-center justify-center"
         role="status"
@@ -137,7 +125,7 @@ export function ResourceWorkspace({
   }
 
   if (!isDesktop) {
-    return provideStructureAvailability(
+    return (
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         <Button
           aria-label="자료 트리 열기"
@@ -170,7 +158,7 @@ export function ResourceWorkspace({
   }
 
   if (isSidebarCollapsed) {
-    return provideStructureAvailability(
+    return (
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <aside className="flex w-12 shrink-0 justify-center border-r border-border bg-surface/40 pt-3">
           <Button
@@ -192,7 +180,7 @@ export function ResourceWorkspace({
     )
   }
 
-  return provideStructureAvailability(
+  return (
     <ResizablePanelGroup className="min-h-0 flex-1" orientation="horizontal">
       <ResizablePanel defaultSize="24%" maxSize="36rem" minSize="18rem">
         <aside className="h-full border-r border-border">

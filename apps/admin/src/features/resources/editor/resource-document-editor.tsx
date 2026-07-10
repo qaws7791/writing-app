@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
+import { useMemo, useState, useTransition } from "react"
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin"
 import { LexicalComposer } from "@lexical/react/LexicalComposer"
 import { ContentEditable } from "@lexical/react/LexicalContentEditable"
@@ -46,7 +46,6 @@ import {
   ResourceBreadcrumb,
   ResourceDocumentMetadata,
 } from "@/features/resources/resource-breadcrumb"
-import { useResourceStructureAvailabilityReporter } from "@/features/resources/resource-collaboration-availability"
 import {
   formatResourceExactDate,
   formatResourceRelativeDate,
@@ -108,7 +107,6 @@ export function ResourceDocumentEditor({
   readonly apiBaseUrl: AdminApiBaseUrl
   readonly document: AdminResourceLibraryDocument
 }) {
-  const reportStructureAvailability = useResourceStructureAvailabilityReporter()
   const api = useMemo(
     () => createBrowserResourceLibraryApi(apiBaseUrl),
     [apiBaseUrl]
@@ -124,7 +122,6 @@ export function ResourceDocumentEditor({
       collaborationServerUrl={collaborationServerUrl}
       connectCollaboration={connectBrowserResourceDocumentCollaboration}
       document={document}
-      onStructureAvailabilityChange={reportStructureAvailability}
     />
   )
 }
@@ -134,16 +131,12 @@ export function ResourceDocumentEditorSurface({
   collaborationServerUrl,
   connectCollaboration,
   document,
-  onStructureAvailabilityChange,
   writeClipboardText = writeBrowserClipboardText,
 }: {
   readonly api: ResourceDocumentEditorApi
   readonly collaborationServerUrl: string
   readonly connectCollaboration: ResourceDocumentCollaborationConnector
   readonly document: AdminResourceLibraryDocument
-  readonly onStructureAvailabilityChange: (
-    structureChangesAllowed: boolean
-  ) => void
   readonly writeClipboardText?: (text: string) => Promise<void>
 }) {
   const [anchorElement, setAnchorElement] = useState<HTMLDivElement | null>(
@@ -155,21 +148,6 @@ export function ResourceDocumentEditorSurface({
   const [syncState, setSyncState] = useState(initialSyncState)
   const [collaborationClient, setCollaborationClient] =
     useState<ResourceDocumentCollaborationClient | null>(null)
-  const onSyncStateChange = useCallback(
-    (state: ResourceDocumentSyncState) => {
-      setSyncState(state)
-      onStructureAvailabilityChange(
-        state.kind === "saved" || state.kind === "syncing"
-      )
-    },
-    [onStructureAvailabilityChange]
-  )
-
-  useEffect(() => {
-    return () => {
-      onStructureAvailabilityChange(true)
-    }
-  }, [onStructureAvailabilityChange])
 
   return (
     <article className="mx-auto grid w-full max-w-5xl gap-6 px-6 pt-16 pb-32 md:px-12 md:pt-12">
@@ -276,7 +254,7 @@ export function ResourceDocumentEditorSurface({
           <ResourceDocumentCollaborationPlugin
             connect={connectCollaboration}
             documentId={document.id}
-            onSyncStateChange={onSyncStateChange}
+            onSyncStateChange={setSyncState}
             onClientChange={setCollaborationClient}
             serverUrl={collaborationServerUrl}
           />
@@ -376,7 +354,7 @@ function ResourceSyncStatus({
       aria-label={state.message}
       aria-live="polite"
       className={cn(
-        "inline-flex items-center gap-2 text-xs font-medium",
+        "inline-flex min-h-5 items-center gap-2 text-xs font-medium sm:w-64 sm:shrink-0 sm:justify-end",
         presentation.className
       )}
       role="status"

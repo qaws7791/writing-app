@@ -1,5 +1,11 @@
 import type { AdminResourceTreeScope } from "@/lib/api/admin-api"
 
+export type ResourceWorkspaceConnectionState =
+  | "online"
+  | "preparing"
+  | "reconnecting"
+  | "unavailable"
+
 const expandedResourceIdsStorageVersion = "v1"
 const emptyExpandedResourceIds: string[] = []
 const expandedResourceIdsSnapshots = new Map<string, string[]>()

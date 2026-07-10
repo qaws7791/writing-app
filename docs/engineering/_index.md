@@ -42,6 +42,7 @@
 | `code-review.md`                                          | 리뷰 우선순위, 공통 체크리스트, 경계와 인증과 데이터와 API와 프론트엔드 검토 기준을 정의한다.    |
 | `git-workflow.md`                                         | 브랜치, 커밋 메시지, 커밋 전 확인, Git hook, PR, 리뷰, 머지 정책을 정의한다.                     |
 | `resource-library-implementation-plan.md`                 | 자료실 트리, Markdown, Lexical, Yjs 공동 편집의 확정 구현 순서와 검증 기준을 기록한다.           |
+| `resource-library-sync-design.md`                         | 자료실의 지속 연결, 문서 구독과 HTTP transaction 기반 공동 편집 목표 설계를 기록한다.            |
 | `adr/ADR-0001-example.md`                                 | ADR 작성 형식과 결정 기록의 예시를 제공한다.                                                     |
 | `adr/ADR-0002-ui-design-system-contract.md`               | 공유 UI 디자인 시스템의 공용화 범위, 밀도, naming 계약을 기록한다.                               |
 | `adr/ADR-0003-lesson-ui-orchestration-boundary.md`        | 레슨 순수 UI와 앱 오케스트레이션 경계를 기록한다.                                                |

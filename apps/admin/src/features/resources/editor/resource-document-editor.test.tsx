@@ -236,11 +236,7 @@ describe("자료 Lexical 편집기", () => {
   it("공동 편집 연결 상태를 항상 표시하고 unmount 때 연결을 정리한다", async () => {
     const disconnect = vi.fn()
     const connector = createCollaborationConnector(disconnect)
-    const reportStructureAvailability = vi.fn()
-    const { unmount } = renderResourceEditor(
-      connector,
-      reportStructureAvailability
-    )
+    const { unmount } = renderResourceEditor(connector)
 
     expect(await screen.findByText("모든 변경 사항이 동기화됨")).toBeVisible()
     expect(connector).toHaveBeenCalledWith(
@@ -249,8 +245,6 @@ describe("자료 Lexical 편집기", () => {
         serverUrl: "ws://admin-api.test/resources/collaboration",
       })
     )
-    expect(reportStructureAvailability).toHaveBeenCalledWith(true)
-
     unmount()
     expect(disconnect).toHaveBeenCalledTimes(1)
   })
@@ -284,7 +278,6 @@ describe("자료 Lexical 편집기", () => {
         collaborationServerUrl="ws://admin-api.test/resources/collaboration"
         connectCollaboration={connector}
         document={documentFixture}
-        onStructureAvailabilityChange={vi.fn()}
         writeClipboardText={writeClipboardText}
       />
     )
@@ -300,28 +293,6 @@ describe("자료 Lexical 편집기", () => {
     )
     expect(
       await screen.findByText("현재 Markdown을 클립보드에 복사했습니다.")
-    ).toBeVisible()
-  })
-
-  it("공동 편집 연결 상태로 자료 구조 변경 가능 여부를 보고한다", async () => {
-    const reportStructureAvailability = vi.fn()
-    const connector: ResourceDocumentCollaborationConnector = vi.fn(
-      ({ onSyncStateChange }) => {
-        onSyncStateChange({
-          kind: "reconnecting",
-          message: "연결이 끊겨 다시 연결하는 중",
-        })
-        return { disconnect: vi.fn(), retry: vi.fn() }
-      }
-    )
-
-    renderResourceEditor(connector, reportStructureAvailability)
-
-    await waitFor(() => {
-      expect(reportStructureAvailability).toHaveBeenCalledWith(false)
-    })
-    expect(
-      await screen.findByText("연결이 끊겨 다시 연결하는 중")
     ).toBeVisible()
   })
 
@@ -395,9 +366,12 @@ describe("자료 Lexical 편집기", () => {
 
       renderResourceEditor(connector)
 
-      expect(
-        await screen.findByRole("status", { name: state.message })
-      ).toBeVisible()
+      const status = await screen.findByRole("status", {
+        name: state.message,
+      })
+
+      expect(status).toBeVisible()
+      expect(status).toHaveClass("min-h-5", "sm:w-64")
     }
   )
 })
@@ -410,8 +384,7 @@ function createEditorApi(): ResourceDocumentEditorApi {
 }
 
 function renderResourceEditor(
-  connector = createCollaborationConnector(),
-  onStructureAvailabilityChange = vi.fn()
+  connector = createCollaborationConnector()
 ): ReturnType<typeof render> {
   return render(
     <ResourceDocumentEditorSurface
@@ -419,7 +392,6 @@ function renderResourceEditor(
       collaborationServerUrl="ws://admin-api.test/resources/collaboration"
       connectCollaboration={connector}
       document={documentFixture}
-      onStructureAvailabilityChange={onStructureAvailabilityChange}
     />
   )
 }

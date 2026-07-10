@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import type { ResourceEventsConnector } from "@/features/resources/resource-events-client"
@@ -43,6 +43,10 @@ describe("자료 트리", () => {
     localStorage.clear()
     pushMock.mockClear()
     refreshMock.mockClear()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
   })
 
   it("최상위 자료는 사전 조회 결과를 사용하고 펼친 폴더만 지연 조회한다", async () => {
@@ -360,7 +364,7 @@ describe("자료 트리", () => {
     )
   })
 
-  it("공동 편집 연결이 끊기면 탐색은 유지하고 구조 변경 행동을 막는다", async () => {
+  it("자료실 실시간 연결이 유지되면 경고 없이 구조 변경 행동을 제공한다", async () => {
     const api = createResourceLibraryApi()
 
     render(
@@ -375,23 +379,67 @@ describe("자료 트리", () => {
         }}
         onDocumentOpen={vi.fn()}
         scope="active"
-        structureChangesAllowed={false}
       />
     )
 
     expect(await screen.findByText(rootDocument.name)).toBeVisible()
     expect(
-      screen.getByText(
+      screen.queryByText(
         "공동 편집 연결이 복구될 때까지 자료 구조를 변경할 수 없습니다."
       )
-    ).toBeVisible()
-    expect(screen.getByRole("button", { name: "새 문서" })).toBeDisabled()
-    expect(screen.getByRole("button", { name: "새 폴더" })).toBeDisabled()
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "새 문서" })).toBeEnabled()
+    expect(screen.getByRole("button", { name: "새 폴더" })).toBeEnabled()
     expect(
       screen.getByRole("button", { name: "Markdown 파일 가져오기" })
-    ).toBeDisabled()
+    ).toBeEnabled()
+    expect(screen.getByRole("button", { name: "자료 메뉴" })).toBeVisible()
+  })
+
+  it("750ms 안에 복구된 자료실 연결은 전역 경고를 표시하지 않는다", () => {
+    vi.useFakeTimers()
+    let reportConnection: (connected: boolean) => void = () => undefined
+    const connectBrieflyDisconnectedEvents: ResourceEventsConnector = (
+      input
+    ) => {
+      reportConnection = input.onConnectionChange
+      input.onConnectionChange(true)
+      return { disconnect() {} }
+    }
+
+    render(
+      <ResourceTree
+        adminId="admin-8"
+        api={createResourceLibraryApi()}
+        connectEvents={connectBrieflyDisconnectedEvents}
+        eventsServerUrl="ws://admin-api.test/resources/events"
+        initialTree={{
+          status: "ok",
+          value: { nodes: [rootDocument], revision: 1 },
+        }}
+        onDocumentOpen={vi.fn()}
+        scope="active"
+      />
+    )
+
+    act(() => {
+      reportConnection(false)
+      vi.advanceTimersByTime(749)
+    })
     expect(
-      screen.queryByRole("button", { name: "자료 메뉴" })
+      screen.queryByText(
+        "자료실 실시간 연결이 복구될 때까지 자료 구조를 변경할 수 없습니다."
+      )
+    ).not.toBeInTheDocument()
+
+    act(() => {
+      reportConnection(true)
+      vi.advanceTimersByTime(1)
+    })
+    expect(
+      screen.queryByText(
+        "자료실 실시간 연결이 복구될 때까지 자료 구조를 변경할 수 없습니다."
+      )
     ).not.toBeInTheDocument()
   })
 
@@ -404,7 +452,7 @@ describe("자료 트리", () => {
 
     render(
       <ResourceTree
-        adminId="admin-8"
+        adminId="admin-9"
         api={api}
         connectEvents={connectDisconnectedEvents}
         eventsServerUrl="ws://admin-api.test/resources/events"
