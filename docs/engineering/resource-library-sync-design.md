@@ -2,7 +2,7 @@
 
 ## 문서 상태
 
-- 상태: 부분 구현 (2단계 지속 연결 구독 완료)
+- 상태: 부분 구현 (3단계 HTTP transaction·update log 완료)
 - 기준일: 2026-07-11
 - 관련 요구사항: `REQ-ADM-7 자료실 공동 편집`
 - 관련 화면: `SCR-110 관리자 자료실`
@@ -20,7 +20,9 @@
 - 작업 공간 shell이 실시간 연결을 소유하므로 자료 트리 접기·펼치기와 active/trash 전환에서 실제 WebSocket을 다시 만들지 않는다. 문서 route 변경은 기존 연결에서 구독만 바꾸고 재연결 뒤 마지막 활성 문서를 다시 구독한다.
 - Hub는 연결당 활성 문서를 하나만 보관하고 빠른 구독 전환을 연결별로 직렬화한다. heartbeat가 45초 동안 확인되지 않거나 socket이 닫히면 구독을 정리한다.
 - 활성 편집자 수는 문서 구독 registry의 관리자 ID 집합으로 계산한다. 기존 Yjs room flush가 commit되면 해당 구독자에게 새 version을 알리고 휴지통 이동은 문서 무효화 사건을 먼저 보낸다.
-- HTTP transaction, update log와 통합 자료실 동기화 Module은 아직 구현하지 않았다. 본문 update는 계속 기존 문서별 WebSocket을 사용한다.
+- 본문 클라이언트 Adapter와 휴지통·내보내기 공통 operation queue는 아직 전환하지 않았다. 본문 update는 계속 기존 문서별 WebSocket을 사용한다.
+- 2026-07-11: 3단계 서버 구현을 완료했다. HTTP transaction은 Yjs 검증, Markdown·FTS 투영, snapshot·update log·멱등 receipt와 version 증가를 한 SQLite transaction으로 확정한다. sync 조회는 연속된 최근 update가 없거나 1MiB를 넘으면 최신 snapshot으로 복구한다.
+- update log는 승인 시점에 문서별 200건·2MiB 한도를 즉시 강제하고, 별도 receipt는 정리 뒤에도 같은 transaction ID의 최초 승인 결과를 보존한다. 클라이언트 본문 transport는 4단계까지 기존 문서별 WebSocket을 유지한다.
 
 ## 결정 요약
 
@@ -364,16 +366,19 @@ type ReadResourceDocumentSyncResponse =
 
 증분 pull과 transaction 멱등성을 위한 update log를 추가한다.
 
-| 열               | 의미                         |
-| ---------------- | ---------------------------- |
-| `document_id`    | 자료 문서 ID                 |
-| `state_version`  | 서버가 부여한 문서별 순서    |
-| `transaction_id` | 클라이언트가 만든 멱등 키    |
-| `actor_id`       | transaction을 보낸 관리자 ID |
-| `yjs_update`     | 합쳐진 Yjs update binary     |
-| `created_at`     | 서버 승인 시각               |
+| 열                 | 의미                         |
+| ------------------ | ---------------------------- |
+| `document_id`      | 자료 문서 ID                 |
+| `state_version`    | 서버가 부여한 문서별 순서    |
+| `content_revision` | 승인 당시 Markdown revision  |
+| `transaction_id`   | 클라이언트가 만든 멱등 키    |
+| `actor_id`         | transaction을 보낸 관리자 ID |
+| `yjs_update`       | 합쳐진 Yjs update binary     |
+| `created_at`       | 서버 승인 시각               |
 
 기본 키는 `(document_id, state_version)`이고 `(document_id, transaction_id)`는 unique다.
+
+정리 가능한 update binary와 영구적인 멱등 승인 기록의 수명을 분리한다. `admin_resource_collaboration_transactions`는 문서 ID와 transaction ID를 기본 키로 승인 당시 `state_version`, `content_revision`, 관리자와 시각을 보관한다. update log가 정리된 뒤 같은 transaction ID가 다시 도착해도 이 receipt를 조회해 최초 승인 결과를 반환한다.
 
 최신 전체 snapshot은 모든 승인 transaction에서 함께 갱신해 rollback 호환성을 보존한다. update log는 증분 조회를 위한 최근 구간이며 다음 중 하나에 도달하면 가장 오래된 row부터 정리한다.
 

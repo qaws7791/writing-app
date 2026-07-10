@@ -4,6 +4,7 @@ import {
   check,
   index,
   integer,
+  primaryKey,
   type AnySQLiteColumn,
   sqliteTable,
   text,
@@ -135,6 +136,73 @@ export const adminResourceCollaboration = sqliteTable(
     check(
       "admin_resource_collaboration_state_version_check",
       sql`${table.stateVersion} >= 0`
+    ),
+  ]
+)
+
+export const adminResourceCollaborationUpdates = sqliteTable(
+  "admin_resource_collaboration_updates",
+  {
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => adminAuthUsers.id, { onDelete: "restrict" }),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    contentRevision: integer("content_revision").notNull(),
+    documentId: text("document_id")
+      .notNull()
+      .references(() => adminResourceDocuments.nodeId, {
+        onDelete: "cascade",
+      }),
+    stateVersion: integer("state_version").notNull(),
+    transactionId: text("transaction_id").notNull(),
+    yjsUpdate: blob("yjs_update", { mode: "buffer" }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.documentId, table.stateVersion] }),
+    uniqueIndex("admin_resource_collaboration_updates_transaction_uq").on(
+      table.documentId,
+      table.transactionId
+    ),
+    check(
+      "admin_resource_collaboration_updates_state_version_check",
+      sql`${table.stateVersion} > 0`
+    ),
+    check(
+      "admin_resource_collaboration_updates_content_revision_check",
+      sql`${table.contentRevision} > 0`
+    ),
+    check(
+      "admin_resource_collaboration_updates_size_check",
+      sql`length(${table.yjsUpdate}) <= 524288`
+    ),
+  ]
+)
+
+export const adminResourceCollaborationTransactions = sqliteTable(
+  "admin_resource_collaboration_transactions",
+  {
+    actorId: text("actor_id")
+      .notNull()
+      .references(() => adminAuthUsers.id, { onDelete: "restrict" }),
+    contentRevision: integer("content_revision").notNull(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+    documentId: text("document_id")
+      .notNull()
+      .references(() => adminResourceDocuments.nodeId, {
+        onDelete: "cascade",
+      }),
+    stateVersion: integer("state_version").notNull(),
+    transactionId: text("transaction_id").notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.documentId, table.transactionId] }),
+    check(
+      "admin_resource_collaboration_transactions_state_version_check",
+      sql`${table.stateVersion} > 0`
+    ),
+    check(
+      "admin_resource_collaboration_transactions_content_revision_check",
+      sql`${table.contentRevision} > 0`
     ),
   ]
 )

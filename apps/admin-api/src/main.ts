@@ -4,6 +4,7 @@ import { createDrizzleAdminRepository } from "@workspace/core/admin/admin-drizzl
 import {
   createResourceCollaborationUseCase,
   createResourceDocumentUseCase,
+  createResourceDocumentSyncUseCase,
   createResourceSearchUseCase,
   createResourceTreeUseCase,
   toResourceAuditEventId,
@@ -12,6 +13,7 @@ import {
 } from "@workspace/core/modules/resource-library/api"
 import { createDrizzleResourceCollaborationRepository } from "@workspace/core/resource-library/resource-collaboration-drizzle.repository"
 import { createDrizzleResourceDocumentRepository } from "@workspace/core/resource-library/resource-document-drizzle.repository"
+import { createDrizzleResourceDocumentSyncRepository } from "@workspace/core/resource-library/resource-document-sync-drizzle.repository"
 import { createDrizzleResourceSearchRepository } from "@workspace/core/resource-library/resource-search-drizzle.repository"
 import { createDrizzleResourceTreeRepository } from "@workspace/core/resource-library/resource-tree-drizzle.repository"
 import { createWritingAppDatabase } from "@workspace/db"
@@ -43,6 +45,9 @@ const adminRepository = createDrizzleAdminRepository(database.db)
 const resourceTreeRepository = createDrizzleResourceTreeRepository(database.db)
 const resourceDocumentRepository = createDrizzleResourceDocumentRepository(
   database.db
+)
+const resourceDocumentSyncService = createResourceDocumentSyncUseCase(
+  createDrizzleResourceDocumentSyncRepository(database.db)
 )
 const resourceCollaborationService = createResourceCollaborationUseCase(
   createDrizzleResourceCollaborationRepository(database.db)
@@ -154,6 +159,7 @@ const app = createApp({
     resourceLibrary: {
       documents: resourceDocumentService,
       search: resourceSearchService,
+      sync: resourceDocumentSyncService,
       tree: resourceTreeService,
     },
     settings: adminService,

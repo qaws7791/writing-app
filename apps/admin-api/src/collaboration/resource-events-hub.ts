@@ -32,7 +32,10 @@ export type ResourceEventsHub = {
 export type ResourceEventsPublisher = Pick<ResourceEventsHub, "publish">
 export type ResourceEventsWorkspace = Pick<
   ResourceEventsHub,
-  "countActiveEditors" | "publish" | "publishDocumentInvalidated"
+  | "countActiveEditors"
+  | "publish"
+  | "publishDocumentInvalidated"
+  | "publishDocumentVersion"
 >
 
 type ResourceEventsSocket = Bun.ServerWebSocket<ResourceEventsConnectionData>

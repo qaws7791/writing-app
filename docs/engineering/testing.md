@@ -103,6 +103,8 @@ bun run --filter=@workspace/web test
 
 자료실 실시간 연결 테스트는 실제 Bun WebSocket 경계를 사용해 문서 구독 확인, 문서별 version 사건 격리, 빠른 구독 전환 순서, 관리자 ID 기준 활성 편집자 집계와 heartbeat 만료 정리를 검증한다. 브라우저 Adapter 테스트는 문서 전환에서 소켓을 다시 만들지 않고 재연결 뒤 마지막 활성 문서를 다시 구독하는지 확인한다.
 
+자료 문서 HTTP 동기화 테스트는 Yjs update의 검증·Markdown 투영, 동일 transaction ID 재승인, 단조 state version, 200건·2MiB update log 정리, 정리 뒤 snapshot fallback과 승인 이후 version 사건 발행을 검증한다. SQLite 통합 테스트는 snapshot, Markdown, FTS, 수정자, update log와 멱등 receipt가 같은 transaction에서 확정되는지 확인한다.
+
 - baseline migration은 in-memory DB에 적용할 수 있어야 한다.
 - seed는 반복 실행해도 stable ID 기준으로 같은 결과를 내야 한다.
 - seed에서 빠진 콘텐츠는 삭제가 아니라 `archived` 전환으로 검증한다.

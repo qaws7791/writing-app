@@ -91,6 +91,8 @@ describe("Writing App DB client", () => {
         "admin_ai_chat_messages",
         "admin_resource_audit_events",
         "admin_resource_collaboration",
+        "admin_resource_collaboration_transactions",
+        "admin_resource_collaboration_updates",
         "admin_resource_documents",
         "admin_resource_nodes",
         "admin_resource_search",

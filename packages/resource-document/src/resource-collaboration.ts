@@ -330,6 +330,46 @@ export type ResourceDocumentSnapshotResult =
       readonly status: "valid"
     }
 
+export type ApplyResourceDocumentUpdateResult =
+  | Extract<ResourceMarkdownNormalization, { readonly status: "invalid" }>
+  | {
+      readonly markdown: string
+      readonly snapshot: Uint8Array
+      readonly status: "valid"
+    }
+
+export function applyResourceDocumentUpdate(
+  snapshot: Uint8Array,
+  update: Uint8Array
+): ApplyResourceDocumentUpdateResult {
+  const document = new Doc()
+
+  try {
+    try {
+      applyUpdate(document, snapshot)
+      applyUpdate(document, update)
+    } catch {
+      return {
+        issues: [{ code: "invalid-collaboration-state" }],
+        status: "invalid",
+      }
+    }
+
+    const nextSnapshot = encodeStateAsUpdate(document)
+    const projection = projectResourceDocumentSnapshot(nextSnapshot)
+
+    return projection.status === "invalid"
+      ? projection
+      : {
+          markdown: projection.markdown,
+          snapshot: nextSnapshot,
+          status: "valid",
+        }
+  } finally {
+    document.destroy()
+  }
+}
+
 export function createResourceDocumentSnapshot(
   markdown: string
 ): ResourceDocumentSnapshotResult {

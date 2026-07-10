@@ -13,10 +13,36 @@ describe("기준 migration", () => {
       expect(
         readColumnNames(client.sqlite, "admin_resource_documents")
       ).toEqual(["node_id", "content_markdown", "content_revision"])
+      expect(
+        readColumnNames(client.sqlite, "admin_resource_collaboration_updates")
+      ).toEqual([
+        "document_id",
+        "state_version",
+        "content_revision",
+        "transaction_id",
+        "actor_id",
+        "yjs_update",
+        "created_at",
+      ])
+      expect(
+        readColumnNames(
+          client.sqlite,
+          "admin_resource_collaboration_transactions"
+        )
+      ).toEqual([
+        "document_id",
+        "transaction_id",
+        "state_version",
+        "content_revision",
+        "actor_id",
+        "created_at",
+      ])
       expect(readObjectNames(client.sqlite)).toEqual(
         expect.arrayContaining([
           "admin_resource_audit_events",
           "admin_resource_collaboration",
+          "admin_resource_collaboration_updates",
+          "admin_resource_collaboration_transactions",
           "admin_resource_documents",
           "admin_resource_nodes",
           "admin_resource_search",

@@ -35,11 +35,13 @@ export {
   type SerializedResourceImageNode,
 } from "#resource-document/resource-image-node"
 export {
+  applyResourceDocumentUpdate,
   connectResourceDocumentCollaboration,
   createHeadlessResourceDocumentCollaboration,
   createResourceDocumentSnapshot,
   projectResourceDocumentSnapshot,
   type ConnectResourceDocumentCollaborationInput,
+  type ApplyResourceDocumentUpdateResult,
   type CreateHeadlessResourceDocumentCollaborationInput,
   type HeadlessResourceDocumentCollaboration,
   type ResourceDocumentCollaboration,

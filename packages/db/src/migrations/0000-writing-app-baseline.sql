@@ -183,6 +183,30 @@ CREATE TABLE IF NOT EXISTS admin_resource_collaboration (
   projected_at INTEGER
 );
 
+CREATE TABLE IF NOT EXISTS admin_resource_collaboration_updates (
+  document_id TEXT NOT NULL
+    REFERENCES admin_resource_documents(node_id) ON DELETE CASCADE,
+  state_version INTEGER NOT NULL CHECK (state_version > 0),
+  content_revision INTEGER NOT NULL CHECK (content_revision > 0),
+  transaction_id TEXT NOT NULL,
+  actor_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE RESTRICT,
+  yjs_update BLOB NOT NULL CHECK (length(yjs_update) <= 524288),
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (document_id, state_version),
+  UNIQUE (document_id, transaction_id)
+);
+
+CREATE TABLE IF NOT EXISTS admin_resource_collaboration_transactions (
+  document_id TEXT NOT NULL
+    REFERENCES admin_resource_documents(node_id) ON DELETE CASCADE,
+  transaction_id TEXT NOT NULL,
+  state_version INTEGER NOT NULL CHECK (state_version > 0),
+  content_revision INTEGER NOT NULL CHECK (content_revision > 0),
+  actor_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE RESTRICT,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (document_id, transaction_id)
+);
+
 CREATE TABLE IF NOT EXISTS admin_resource_audit_events (
   id TEXT PRIMARY KEY NOT NULL,
   node_id TEXT NOT NULL REFERENCES admin_resource_nodes(id) ON DELETE RESTRICT,

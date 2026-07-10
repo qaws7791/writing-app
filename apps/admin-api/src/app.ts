@@ -18,6 +18,7 @@ import { createCurriculumEditorRoutes } from "@/routes/curriculum-editor.route"
 import { createDashboardRoutes } from "@/routes/dashboard.route"
 import { healthRoute } from "@/routes/health.route"
 import { createResourceDocumentsRoutes } from "@/routes/resource-documents.route"
+import { createResourceDocumentSyncRoutes } from "@/routes/resource-document-sync.route"
 import { createResourceSearchRoutes } from "@/routes/resource-search.route"
 import { createResourceTreeRoutes } from "@/routes/resource-tree.route"
 import { createSettingsRoutes } from "@/routes/settings.route"
@@ -34,6 +35,7 @@ import type {
 } from "@workspace/core/admin"
 import type {
   ResourceDocumentUseCase,
+  ResourceDocumentSyncUseCase,
   ResourceSearchUseCase,
   ResourceTreeUseCase,
 } from "@workspace/core/modules/resource-library/api"
@@ -53,6 +55,7 @@ export type AdminApiServices = {
   readonly dashboard: AdminDashboardUseCase
   readonly resourceLibrary: {
     readonly documents: ResourceDocumentUseCase
+    readonly sync: ResourceDocumentSyncUseCase
     readonly search: ResourceSearchUseCase
     readonly tree: ResourceTreeUseCase
   }
@@ -123,6 +126,12 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
         events: dependencies.resourceEvents,
         now,
         sessionResolver: dependencies.sessionResolver,
+      }),
+      ...createResourceDocumentSyncRoutes({
+        events: dependencies.resourceEvents,
+        now,
+        sessionResolver: dependencies.sessionResolver,
+        syncService: dependencies.adminServices.resourceLibrary.sync,
       }),
       ...createResourceSearchRoutes({
         searchService: dependencies.adminServices.resourceLibrary.search,

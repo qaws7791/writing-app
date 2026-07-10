@@ -20,6 +20,7 @@ type TestAdminApiServicesOverrides = {
       AdminApiServices["resourceLibrary"]["documents"]
     >
     readonly search?: Partial<AdminApiServices["resourceLibrary"]["search"]>
+    readonly sync?: Partial<AdminApiServices["resourceLibrary"]["sync"]>
     readonly tree?: Partial<AdminApiServices["resourceLibrary"]["tree"]>
   }
 }
@@ -80,6 +81,10 @@ export function createTestAdminApiDependencies(
           ...failingAdminServices.resourceLibrary.search,
           ...overrides.adminServices?.resourceLibrary?.search,
         },
+        sync: {
+          ...failingAdminServices.resourceLibrary.sync,
+          ...overrides.adminServices?.resourceLibrary?.sync,
+        },
         tree: {
           ...failingAdminServices.resourceLibrary.tree,
           ...overrides.adminServices?.resourceLibrary?.tree,
@@ -103,6 +108,7 @@ export function createTestAdminApiDependencies(
       countActiveEditors: () => 0,
       publish() {},
       publishDocumentInvalidated() {},
+      publishDocumentVersion() {},
     },
     sessionResolver:
       overrides.sessionResolver ?? createTestAdminSessionResolver(),
@@ -208,6 +214,16 @@ function createFailingAdminApiServices(): AdminApiServices {
       search: {
         async search() {
           throwUnexpectedAdminServiceCall("resourceLibrary.search.search")
+        },
+      },
+      sync: {
+        async readSync() {
+          throwUnexpectedAdminServiceCall("resourceLibrary.sync.readSync")
+        },
+        async saveTransaction() {
+          throwUnexpectedAdminServiceCall(
+            "resourceLibrary.sync.saveTransaction"
+          )
         },
       },
       tree: {

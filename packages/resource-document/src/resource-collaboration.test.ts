@@ -20,6 +20,7 @@ import {
 } from "yjs"
 
 import {
+  applyResourceDocumentUpdate,
   connectResourceDocumentCollaboration,
   createHeadlessResourceDocumentCollaboration,
   createResourceDocumentEditor,
@@ -31,6 +32,39 @@ import {
 } from "#resource-document/index"
 
 describe("자료 문서 공동 편집 계약", () => {
+  it("기존 snapshot에 Yjs update를 적용해 검증된 최신 snapshot을 만든다", () => {
+    const initial = createResourceDocumentSnapshot("초기 본문")
+    if (initial.status !== "valid") throw new Error("초기 snapshot 생성 실패")
+
+    const sourceDocument = new Doc()
+    const source = createHeadlessResourceDocumentCollaboration({
+      document: sourceDocument,
+      id: "resource-update-source",
+    })
+    applyUpdate(sourceDocument, initial.snapshot)
+    readResourceDocumentMarkdown(source.editor)
+    const updates: Uint8Array[] = []
+    sourceDocument.on("update", (update) => updates.push(update))
+
+    const replaced = replaceResourceDocumentMarkdown(
+      source.editor,
+      "변경된 **본문**"
+    )
+    if (replaced.status !== "valid") throw new Error("fixture 변경 실패")
+
+    const result = applyResourceDocumentUpdate(
+      initial.snapshot,
+      mergeUpdates(updates)
+    )
+
+    expect(result).toMatchObject({
+      markdown: "변경된 **본문**",
+      status: "valid",
+    })
+    source.disconnect()
+    sourceDocument.destroy()
+  })
+
   it("Yjs snapshot을 headless Lexical에서 같은 Markdown으로 투영한다", () => {
     const markdown = [
       "# 자료실",

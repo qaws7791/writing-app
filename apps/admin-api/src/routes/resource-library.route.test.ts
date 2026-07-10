@@ -10,7 +10,10 @@ import type {
   AdminResourceDocumentDto,
   AdminResourceNodeMutationDto,
 } from "@workspace/contracts/admin"
-import { toResourceDocumentId } from "@workspace/core/modules/resource-library/api"
+import {
+  toResourceDocumentId,
+  toResourceDocumentTransactionId,
+} from "@workspace/core/modules/resource-library/api"
 
 const headers = {
   Authorization: "Bearer admin-token",
@@ -56,6 +59,101 @@ const document: AdminResourceDocumentDto = {
 }
 
 describe("어드민 API 자료실 트리 route", () => {
+  it("Yjs transaction을 HTTP로 저장하고 승인 version을 반환한다", async () => {
+    const publishDocumentVersion = vi.fn()
+    const saveTransaction = vi.fn(async () => ({
+      contentRevision: 4,
+      kind: "accepted" as const,
+      stateVersion: 7,
+      transactionId: toResourceDocumentTransactionId("transaction-1"),
+    }))
+    const app = createApp(
+      createTestAdminApiDependencies({
+        adminServices: {
+          resourceLibrary: {
+            sync: { readSync: vi.fn(), saveTransaction },
+          },
+        },
+        resourceEvents: {
+          countActiveEditors: vi.fn(),
+          publish: vi.fn(),
+          publishDocumentInvalidated: vi.fn(),
+          publishDocumentVersion,
+        },
+      })
+    )
+
+    const response = await app.request(
+      "/resources/documents/document-1/transactions",
+      {
+        body: JSON.stringify({
+          knownStateVersion: 3,
+          transactionId: "transaction-1",
+          updateBase64: "AQID",
+        }),
+        headers,
+        method: "POST",
+      }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      contentRevision: 4,
+      kind: "accepted",
+      stateVersion: 7,
+      transactionId: "transaction-1",
+    })
+    expect(saveTransaction).toHaveBeenCalledWith({
+      actorId: "admin-1",
+      documentId: toResourceDocumentId("document-1"),
+      knownStateVersion: 3,
+      now: testAdminNow,
+      transactionId: toResourceDocumentTransactionId("transaction-1"),
+      update: Uint8Array.of(1, 2, 3),
+    })
+    expect(publishDocumentVersion).toHaveBeenCalledWith({
+      contentRevision: 4,
+      documentId: "document-1",
+      stateVersion: 7,
+      type: "resource-document-version-advanced",
+    })
+  })
+
+  it("마지막 확인 version 뒤의 누락 update를 HTTP로 반환한다", async () => {
+    const readSync = vi.fn(async () => ({
+      fromStateVersion: 2,
+      kind: "updates" as const,
+      stateVersion: 4,
+      updates: [Uint8Array.of(1, 2, 3), Uint8Array.of(4, 5, 6)],
+    }))
+    const app = createApp(
+      createTestAdminApiDependencies({
+        adminServices: {
+          resourceLibrary: {
+            sync: { readSync, saveTransaction: vi.fn() },
+          },
+        },
+      })
+    )
+
+    const response = await app.request(
+      "/resources/documents/document-1/sync?afterStateVersion=2",
+      { headers }
+    )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      fromStateVersion: 2,
+      kind: "updates",
+      stateVersion: 4,
+      updatesBase64: ["AQID", "BAUG"],
+    })
+    expect(readSync).toHaveBeenCalledWith({
+      afterStateVersion: 2,
+      documentId: toResourceDocumentId("document-1"),
+    })
+  })
+
   it("관리자 세션이 없으면 새 자료실 route도 401을 반환한다", async () => {
     const app = createApp(createDependencies())
 
@@ -337,6 +435,7 @@ describe("어드민 API 자료실 트리 route", () => {
           countActiveEditors,
           publish: vi.fn(),
           publishDocumentInvalidated: vi.fn(),
+          publishDocumentVersion: vi.fn(),
         },
       })
     )
@@ -396,6 +495,7 @@ describe("어드민 API 자료실 트리 route", () => {
           countActiveEditors: vi.fn(),
           publish,
           publishDocumentInvalidated,
+          publishDocumentVersion: vi.fn(),
         },
       })
     )

@@ -114,18 +114,20 @@ Better Auth adapter 계약을 따른다.
 
 관리자 전용 운영 도구는 다음 테이블을 사용한다.
 
-| 테이블                         | 주요 컬럼                                                                                     | 설명                                     |
-| ------------------------------ | --------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| `admin_resource_nodes`         | `id`, `kind`, `parent_id`, `name`, `normalized_name`, `sort_order`, `status`, `trash_root_id` | 무제한 폴더·문서 트리와 휴지통 원래 위치 |
-| `admin_resource_documents`     | `node_id`, `content_markdown`, `content_revision`                                             | 문서별 GFM Markdown 도메인 원본          |
-| `admin_resource_collaboration` | `document_id`, `yjs_state`, `state_version`, `projected_at`                                   | 재연결 가능한 Yjs 동기화 상태            |
-| `admin_resource_audit_events`  | `id`, `node_id`, `event_type`, `actor_id`, `payload_json`, `created_at`                       | 자료 구조 변경 감사 이벤트               |
-| `admin_resource_tree_state`    | `singleton_id`, `revision`, `updated_at`                                                      | 구조 명령 직렬화용 전역 revision         |
-| `admin_resource_search`        | `node_id`, `kind`, `name`, `body_text`                                                        | 활성 자료 제목·본문 FTS5 색인            |
-| `admin_ai_chat_conversations`  | `id`, `title`, `admin_id`, timestamp                                                          | 관리자별 AI 채팅 대화                    |
-| `admin_ai_chat_messages`       | `id`, `conversation_id`, `role`, `content`, `created_at`                                      | AI 채팅 사용자/어시스턴트 메시지         |
+| 테이블                                      | 주요 컬럼                                                                                                    | 설명                                     |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| `admin_resource_nodes`                      | `id`, `kind`, `parent_id`, `name`, `normalized_name`, `sort_order`, `status`, `trash_root_id`                | 무제한 폴더·문서 트리와 휴지통 원래 위치 |
+| `admin_resource_documents`                  | `node_id`, `content_markdown`, `content_revision`                                                            | 문서별 GFM Markdown 도메인 원본          |
+| `admin_resource_collaboration`              | `document_id`, `yjs_state`, `state_version`, `projected_at`                                                  | 재연결 가능한 Yjs 동기화 상태            |
+| `admin_resource_collaboration_updates`      | `document_id`, `state_version`, `content_revision`, `transaction_id`, `actor_id`, `yjs_update`, `created_at` | HTTP 증분 동기화용 최근 Yjs update log   |
+| `admin_resource_collaboration_transactions` | `document_id`, `transaction_id`, `state_version`, `content_revision`, `actor_id`, `created_at`               | 정리와 독립된 transaction 멱등 승인 기록 |
+| `admin_resource_audit_events`               | `id`, `node_id`, `event_type`, `actor_id`, `payload_json`, `created_at`                                      | 자료 구조 변경 감사 이벤트               |
+| `admin_resource_tree_state`                 | `singleton_id`, `revision`, `updated_at`                                                                     | 구조 명령 직렬화용 전역 revision         |
+| `admin_resource_search`                     | `node_id`, `kind`, `name`, `body_text`                                                                       | 활성 자료 제목·본문 FTS5 색인            |
+| `admin_ai_chat_conversations`               | `id`, `title`, `admin_id`, timestamp                                                                         | 관리자별 AI 채팅 대화                    |
+| `admin_ai_chat_messages`                    | `id`, `conversation_id`, `role`, `content`, `created_at`                                                     | AI 채팅 사용자/어시스턴트 메시지         |
 
-자료 트리의 `active | archived` 상태와 `trash_root_id`는 함께 바뀐다. 폴더 휴지통 이동·복원은 연결된 전체 하위 트리에 같은 transaction으로 적용한다. `content_markdown`은 본문의 유일한 도메인 원본이며 `yjs_state`는 동시 편집 병합과 재접속을 위한 동기화 메타데이터다.
+자료 트리의 `active | archived` 상태와 `trash_root_id`는 함께 바뀐다. 폴더 휴지통 이동·복원은 연결된 전체 하위 트리에 같은 transaction으로 적용한다. `content_markdown`은 본문의 유일한 도메인 원본이며 `yjs_state`와 update log는 동시 편집 병합과 재접속을 위한 동기화 메타데이터다. update log는 문서별 200건·2MiB까지만 보존하지만 transaction 승인 기록은 별도로 유지해 오래된 재시도에도 최초 승인 version을 반환한다.
 
 ## 상태 머신
 
