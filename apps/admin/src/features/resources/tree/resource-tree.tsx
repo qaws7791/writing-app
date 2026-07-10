@@ -37,6 +37,8 @@ import {
 import type { ResourceTreeApi } from "@/features/resources/resource-library-api"
 import {
   classifyResourceEventRevision,
+  recordBrowserResourceEventRevisionGap,
+  type ResourceEventRevisionGapRecorder,
   type ResourceEventsConnector,
 } from "@/features/resources/resource-events-client"
 import {
@@ -115,8 +117,10 @@ export function ResourceTree({
   initialTree,
   onInitialTreeConsumed,
   onDocumentOpen,
+  recordRevisionGap = recordBrowserResourceEventRevisionGap,
   scope,
   selectedDocumentId,
+  structureChangesAllowed = true,
   toolbarEnd,
 }: {
   readonly adminId: string
@@ -126,8 +130,10 @@ export function ResourceTree({
   readonly initialTree?: InitialResourceTreeState
   readonly onInitialTreeConsumed?: () => void
   readonly onDocumentOpen: () => void
+  readonly recordRevisionGap?: ResourceEventRevisionGapRecorder
   readonly scope: AdminResourceTreeScope
   readonly selectedDocumentId?: string
+  readonly structureChangesAllowed?: boolean
   readonly toolbarEnd?: ReactNode
 }) {
   const router = useRouter()
@@ -146,6 +152,7 @@ export function ResourceTree({
   const [errorMessage, setErrorMessage] = useState<string | null>(
     initialTree?.status === "error" ? initialTree.message : null
   )
+  const [eventsConnected, setEventsConnected] = useState(false)
   const [shouldLoadRoot] = useState(initialTree === undefined)
   const [isCreating, startCreatingTransition] = useTransition()
   const [isImporting, startImportingTransition] = useTransition()
@@ -192,6 +199,7 @@ export function ResourceTree({
         typeof updater === "function" ? updater(current.itemIds) : updater,
     }))
   }, [])
+  const structureMutationsAllowed = structureChangesAllowed && eventsConnected
 
   function acceptTree(treeValue: AdminResourceTree): void {
     revisionRef.current = treeValue.revision
@@ -224,11 +232,13 @@ export function ResourceTree({
   const tree = useTree<ResourceTreeItemData>({
     canDrag: (items) =>
       scope === "active" &&
+      structureMutationsAllowed &&
       !mutationInFlightRef.current &&
       items.length === 1 &&
       isResourceNode(items[0]?.getItemData()),
     canDrop: (items, target) =>
       scope === "active" &&
+      structureMutationsAllowed &&
       items.length === 1 &&
       (isOrderedDragTarget(target) || target.item.isFolder()),
     canReorder: true,
@@ -664,6 +674,10 @@ export function ResourceTree({
     )
 
     if (revisionSequence === "gap") {
+      recordRevisionGap({
+        currentRevision,
+        incomingRevision: event.revision,
+      })
       await reloadVisibleTree()
       return
     }
@@ -687,6 +701,9 @@ export function ResourceTree({
 
   useEffect(() => {
     const subscription = connectEvents({
+      onConnectionChange(connected) {
+        setEventsConnected(connected)
+      },
       onError() {
         eventOperationRef.current = eventOperationRef.current
           .then(() => onResourceEventError())
@@ -737,7 +754,9 @@ export function ResourceTree({
       <div className="flex items-center gap-2 px-3 pt-3 pb-2">
         <Button
           className="flex-1"
-          disabled={scope === "trash" || isCreating}
+          disabled={
+            scope === "trash" || !structureMutationsAllowed || isCreating
+          }
           onClick={() => {
             startCreatingTransition(async () => {
               await createNode("document")
@@ -751,7 +770,9 @@ export function ResourceTree({
         </Button>
         <Button
           aria-label="새 폴더"
-          disabled={scope === "trash" || isCreating}
+          disabled={
+            scope === "trash" || !structureMutationsAllowed || isCreating
+          }
           onClick={() => {
             startCreatingTransition(async () => {
               await createNode("folder")
@@ -785,7 +806,12 @@ export function ResourceTree({
         />
         <Button
           aria-label="Markdown 파일 가져오기"
-          disabled={scope === "trash" || isCreating || isImporting}
+          disabled={
+            scope === "trash" ||
+            !structureMutationsAllowed ||
+            isCreating ||
+            isImporting
+          }
           onClick={() => {
             markdownFileInputRef.current?.click()
           }}
@@ -849,6 +875,17 @@ export function ResourceTree({
           </Alert>
         </div>
       )}
+      {structureMutationsAllowed ? null : (
+        <div className="px-3 pb-2">
+          <Alert tone="warning">
+            <AlertDescription>
+              {structureChangesAllowed
+                ? "자료실 실시간 연결이 복구될 때까지 자료 구조를 변경할 수 없습니다."
+                : "공동 편집 연결이 복구될 때까지 자료 구조를 변경할 수 없습니다."}
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
       <ScrollArea className="min-h-0 flex-1 px-2 pb-3">
         <Tree aria-label="자료 폴더와 문서" tree={tree}>
           {items.map((item) => {
@@ -856,6 +893,7 @@ export function ResourceTree({
             const isLoading = data.kind === "loading"
             const canShowActions =
               isResourceNode(data) &&
+              structureMutationsAllowed &&
               (scope === "active" ||
                 item.getParent()?.getId() === resourceTreeRootId)
 

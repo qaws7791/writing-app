@@ -5,13 +5,41 @@ import { LexicalErrorBoundary } from "@lexical/react/LexicalErrorBoundary"
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin"
 import { $createParagraphNode, $createTextNode, $getRoot } from "lexical"
 import { useState } from "react"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { resourceDocumentNodes } from "@workspace/resource-document/resource-markdown"
 
 import { ResourceDraggableBlockPlugin } from "@/features/resources/editor/resource-draggable-block-plugin"
+import { ResourceSlashMenuPlugin } from "@/features/resources/editor/resource-slash-menu-plugin"
 
 afterEach(() => {
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
+})
+
+beforeEach(() => {
+  const rectangle = createRectangle(0, 20, 200)
+
+  Object.defineProperty(Range.prototype, "getBoundingClientRect", {
+    configurable: true,
+    value: () => rectangle,
+  })
+  Object.defineProperty(Range.prototype, "getClientRects", {
+    configurable: true,
+    value: () => ({
+      0: rectangle,
+      item: () => rectangle,
+      length: 1,
+      [Symbol.iterator]: () => [rectangle][Symbol.iterator](),
+    }),
+  })
+  Object.defineProperty(globalThis, "ResizeObserver", {
+    configurable: true,
+    value: class ResizeObserverMock {
+      disconnect(): void {}
+      observe(): void {}
+      unobserve(): void {}
+    },
+  })
 })
 
 describe("자료 편집기 블록 드래그 계약", () => {
@@ -41,7 +69,7 @@ describe("자료 편집기 블록 드래그 계약", () => {
     })
 
     const handle = await screen.findByRole("button", { name: "블록 이동" })
-    const draggable = handle.parentElement
+    const draggable = handle.closest('[draggable="true"]')
 
     if (draggable === null) {
       throw new Error("공식 plugin의 draggable wrapper를 찾지 못했습니다.")
@@ -70,6 +98,63 @@ describe("자료 편집기 블록 드래그 계약", () => {
 
     expect(firstBlock).toBeInTheDocument()
   })
+
+  it("키보드 단축키로 현재 블록을 아래로 이동한다", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+      function getBoundingClientRect(this: HTMLElement) {
+        if (this.textContent === "첫째 블록") return createRectangle(0, 30)
+        if (this.textContent === "둘째 블록") return createRectangle(40, 70)
+        return createRectangle(0, 100, 500)
+      }
+    )
+
+    const { container } = render(<EditorFixture />)
+    const anchor = await screen.findByTestId("resource-editor-anchor")
+
+    fireEvent.mouseMove(anchor.parentElement ?? anchor, {
+      clientX: 100,
+      clientY: 10,
+    })
+    const handle = await screen.findByRole("button", { name: "블록 이동" })
+
+    handle.focus()
+    fireEvent.keyDown(handle, { altKey: true, key: "ArrowDown" })
+
+    await waitFor(() => {
+      expect(
+        [...container.querySelectorAll("p")].map(
+          (element) => element.textContent
+        )
+      ).toEqual(["둘째 블록", "첫째 블록"])
+    })
+    expect(handle).toHaveAttribute(
+      "aria-keyshortcuts",
+      "Alt+ArrowUp Alt+ArrowDown"
+    )
+  })
+
+  it("새 블록 추가 버튼으로 다음 문단의 slash menu를 연다", async () => {
+    vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(
+      function getBoundingClientRect(this: HTMLElement) {
+        if (this.textContent === "첫째 블록") return createRectangle(0, 30)
+        if (this.textContent === "둘째 블록") return createRectangle(40, 70)
+        return createRectangle(0, 100, 500)
+      }
+    )
+
+    render(<EditorFixture />)
+    const anchor = await screen.findByTestId("resource-editor-anchor")
+
+    fireEvent.mouseMove(anchor.parentElement ?? anchor, {
+      clientX: 100,
+      clientY: 10,
+    })
+    fireEvent.click(await screen.findByRole("button", { name: "새 블록 추가" }))
+
+    expect(
+      await screen.findByRole("listbox", { name: "블록 종류" })
+    ).toBeVisible()
+  })
 })
 
 function EditorFixture() {
@@ -87,6 +172,7 @@ function EditorFixture() {
           )
         },
         namespace: "resource-draggable-block-test",
+        nodes: [...resourceDocumentNodes],
         onError: (error) => {
           throw error
         },
@@ -101,6 +187,7 @@ function EditorFixture() {
           {anchorElement === null ? null : (
             <ResourceDraggableBlockPlugin anchorElement={anchorElement} />
           )}
+          <ResourceSlashMenuPlugin />
         </div>
       </div>
     </LexicalComposer>

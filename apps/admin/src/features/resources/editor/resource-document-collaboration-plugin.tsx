@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 
 import type {
+  ResourceDocumentCollaborationClient,
   ResourceDocumentCollaborationConnector,
   ResourceDocumentSyncState,
 } from "@/features/resources/editor/resource-document-collaboration-client"
@@ -12,11 +13,15 @@ export function ResourceDocumentCollaborationPlugin({
   connect,
   documentId,
   onSyncStateChange,
+  onClientChange,
   serverUrl,
 }: {
   readonly connect: ResourceDocumentCollaborationConnector
   readonly documentId: string
   readonly onSyncStateChange: (state: ResourceDocumentSyncState) => void
+  readonly onClientChange: (
+    client: ResourceDocumentCollaborationClient | null
+  ) => void
   readonly serverUrl: string
 }) {
   const [editor] = useLexicalComposerContext()
@@ -32,6 +37,7 @@ export function ResourceDocumentCollaborationPlugin({
         onSyncStateChange,
         serverUrl,
       })
+      onClientChange(collaboration)
     } catch {
       editor.setEditable(false)
       onSyncStateChange({
@@ -41,9 +47,17 @@ export function ResourceDocumentCollaborationPlugin({
     }
 
     return () => {
+      onClientChange(null)
       collaboration?.disconnect()
     }
-  }, [connect, documentId, editor, onSyncStateChange, serverUrl])
+  }, [
+    connect,
+    documentId,
+    editor,
+    onClientChange,
+    onSyncStateChange,
+    serverUrl,
+  ])
 
   return null
 }

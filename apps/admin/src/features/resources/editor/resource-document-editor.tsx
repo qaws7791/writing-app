@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState, useTransition } from "react"
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react"
 import { CheckListPlugin } from "@lexical/react/LexicalCheckListPlugin"
 import { LexicalComposer } from "@lexical/react/LexicalComposer"
 import { ContentEditable } from "@lexical/react/LexicalContentEditable"
@@ -10,6 +10,7 @@ import { ListPlugin } from "@lexical/react/LexicalListPlugin"
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin"
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin"
 import { TablePlugin } from "@lexical/react/LexicalTablePlugin"
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
 import type { EditorThemeClasses } from "lexical"
 import {
   CloudCheckIcon,
@@ -22,6 +23,7 @@ import {
 } from "lucide-react"
 import {
   resourceDocumentNodes,
+  readResourceDocumentMarkdown,
   resourceMarkdownTransformers,
 } from "@workspace/resource-document/resource-markdown"
 import { isAllowedResourceLinkUrl } from "@workspace/resource-document/resource-markdown-validation"
@@ -33,6 +35,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import {
   connectBrowserResourceDocumentCollaboration,
   type ResourceDocumentCollaborationConnector,
+  type ResourceDocumentCollaborationClient,
   type ResourceDocumentSyncState,
 } from "@/features/resources/editor/resource-document-collaboration-client"
 import { ResourceDocumentCollaborationPlugin } from "@/features/resources/editor/resource-document-collaboration-plugin"
@@ -43,6 +46,7 @@ import {
   ResourceBreadcrumb,
   ResourceDocumentMetadata,
 } from "@/features/resources/resource-breadcrumb"
+import { useResourceStructureAvailabilityReporter } from "@/features/resources/resource-collaboration-availability"
 import {
   formatResourceExactDate,
   formatResourceRelativeDate,
@@ -104,6 +108,7 @@ export function ResourceDocumentEditor({
   readonly apiBaseUrl: AdminApiBaseUrl
   readonly document: AdminResourceLibraryDocument
 }) {
+  const reportStructureAvailability = useResourceStructureAvailabilityReporter()
   const api = useMemo(
     () => createBrowserResourceLibraryApi(apiBaseUrl),
     [apiBaseUrl]
@@ -119,6 +124,7 @@ export function ResourceDocumentEditor({
       collaborationServerUrl={collaborationServerUrl}
       connectCollaboration={connectBrowserResourceDocumentCollaboration}
       document={document}
+      onStructureAvailabilityChange={reportStructureAvailability}
     />
   )
 }
@@ -128,11 +134,17 @@ export function ResourceDocumentEditorSurface({
   collaborationServerUrl,
   connectCollaboration,
   document,
+  onStructureAvailabilityChange,
+  writeClipboardText = writeBrowserClipboardText,
 }: {
   readonly api: ResourceDocumentEditorApi
   readonly collaborationServerUrl: string
   readonly connectCollaboration: ResourceDocumentCollaborationConnector
   readonly document: AdminResourceLibraryDocument
+  readonly onStructureAvailabilityChange: (
+    structureChangesAllowed: boolean
+  ) => void
+  readonly writeClipboardText?: (text: string) => Promise<void>
 }) {
   const [anchorElement, setAnchorElement] = useState<HTMLDivElement | null>(
     null
@@ -141,9 +153,23 @@ export function ResourceDocumentEditorSurface({
   const [exportError, setExportError] = useState<string | null>(null)
   const [isExporting, startExportTransition] = useTransition()
   const [syncState, setSyncState] = useState(initialSyncState)
-  const onSyncStateChange = useCallback((state: ResourceDocumentSyncState) => {
-    setSyncState(state)
-  }, [])
+  const [collaborationClient, setCollaborationClient] =
+    useState<ResourceDocumentCollaborationClient | null>(null)
+  const onSyncStateChange = useCallback(
+    (state: ResourceDocumentSyncState) => {
+      setSyncState(state)
+      onStructureAvailabilityChange(
+        state.kind === "saved" || state.kind === "syncing"
+      )
+    },
+    [onStructureAvailabilityChange]
+  )
+
+  useEffect(() => {
+    return () => {
+      onStructureAvailabilityChange(true)
+    }
+  }, [onStructureAvailabilityChange])
 
   return (
     <article className="mx-auto grid w-full max-w-5xl gap-6 px-6 pt-16 pb-32 md:px-12 md:pt-12">
@@ -213,6 +239,11 @@ export function ResourceDocumentEditorSurface({
           theme: resourceEditorTheme,
         }}
       >
+        <ResourceSyncRecovery
+          client={collaborationClient}
+          state={syncState}
+          writeClipboardText={writeClipboardText}
+        />
         <div
           className="relative -mx-3 min-h-[60vh] px-3 md:-mx-10 md:px-10"
           ref={setAnchorElement}
@@ -246,6 +277,7 @@ export function ResourceDocumentEditorSurface({
             connect={connectCollaboration}
             documentId={document.id}
             onSyncStateChange={onSyncStateChange}
+            onClientChange={setCollaborationClient}
             serverUrl={collaborationServerUrl}
           />
           {anchorElement === null ? null : (
@@ -254,6 +286,80 @@ export function ResourceDocumentEditorSurface({
         </div>
       </LexicalComposer>
     </article>
+  )
+}
+
+function ResourceSyncRecovery({
+  client,
+  state,
+  writeClipboardText,
+}: {
+  readonly client: ResourceDocumentCollaborationClient | null
+  readonly state: ResourceDocumentSyncState
+  readonly writeClipboardText: (text: string) => Promise<void>
+}) {
+  const [editor] = useLexicalComposerContext()
+  const [copyMessage, setCopyMessage] = useState<string | null>(null)
+  const [isCopying, startCopyTransition] = useTransition()
+
+  if (state.kind !== "error" && state.kind !== "invalid") return null
+
+  return (
+    <Alert role="alert" tone="danger">
+      <AlertDescription className="flex flex-wrap items-center justify-between gap-3">
+        <span>{state.message}</span>
+        <span className="flex items-center gap-2">
+          {state.kind === "error" ? (
+            <Button
+              disabled={client === null}
+              onClick={() => {
+                client?.retry()
+              }}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              동기화 다시 시도
+            </Button>
+          ) : null}
+          <Button
+            disabled={isCopying}
+            onClick={() => {
+              startCopyTransition(async () => {
+                const projection = readResourceDocumentMarkdown(editor)
+
+                if (projection.status === "invalid") {
+                  setCopyMessage(
+                    "현재 본문을 Markdown으로 변환하지 못했습니다."
+                  )
+                  return
+                }
+
+                try {
+                  await writeClipboardText(projection.markdown)
+                  setCopyMessage("현재 Markdown을 클립보드에 복사했습니다.")
+                } catch {
+                  setCopyMessage(
+                    "현재 Markdown을 클립보드에 복사하지 못했습니다."
+                  )
+                }
+              })
+            }}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            {isCopying ? <Spinner aria-hidden="true" /> : null}
+            현재 Markdown 복사
+          </Button>
+        </span>
+        {copyMessage === null ? null : (
+          <span aria-live="polite" className="basis-full" role="status">
+            {copyMessage}
+          </span>
+        )}
+      </AlertDescription>
+    </Alert>
   )
 }
 
@@ -267,6 +373,7 @@ function ResourceSyncStatus({
 
   return (
     <span
+      aria-label={state.message}
       aria-live="polite"
       className={cn(
         "inline-flex items-center gap-2 text-xs font-medium",
@@ -327,4 +434,12 @@ function downloadMarkdownFile(file: {
   anchor.click()
   anchor.remove()
   URL.revokeObjectURL(url)
+}
+
+async function writeBrowserClipboardText(text: string): Promise<void> {
+  if (navigator.clipboard === undefined) {
+    throw new Error("브라우저가 클립보드 쓰기를 지원하지 않습니다.")
+  }
+
+  await navigator.clipboard.writeText(text)
 }

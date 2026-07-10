@@ -1,4 +1,5 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import {
   hotkeysCoreFeature,
   selectionFeature,
@@ -34,6 +35,25 @@ describe("Tree", () => {
     expect(
       screen.getByRole("treeitem", { name: "운영 안내" })
     ).not.toHaveAttribute("aria-expanded")
+  })
+
+  it("방향키로 펼친 폴더의 문서와 부모 폴더를 탐색한다", async () => {
+    const user = userEvent.setup()
+
+    render(<TestTree />)
+    const folder = screen.getByRole("treeitem", { name: "운영" })
+    const document = screen.getByRole("treeitem", { name: "운영 안내" })
+
+    folder.focus()
+    await user.keyboard("{ArrowDown}")
+    await waitFor(() => {
+      expect(document).toHaveFocus()
+    })
+
+    await user.keyboard("{ArrowLeft}")
+    await waitFor(() => {
+      expect(folder).toHaveFocus()
+    })
   })
 })
 

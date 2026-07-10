@@ -6,6 +6,7 @@ export type ResourceEventsSubscription = {
 }
 
 export type ConnectResourceEventsInput = {
+  readonly onConnectionChange: (connected: boolean) => void
   readonly onError: () => void
   readonly onEvent: (event: AdminResourceEvent) => void
   readonly serverUrl: string
@@ -14,6 +15,15 @@ export type ConnectResourceEventsInput = {
 export type ResourceEventsConnector = (
   input: ConnectResourceEventsInput
 ) => ResourceEventsSubscription
+
+export type ResourceEventRevisionGap = {
+  readonly currentRevision: number | null
+  readonly incomingRevision: number
+}
+
+export type ResourceEventRevisionGapRecorder = (
+  gap: ResourceEventRevisionGap
+) => void
 
 const initialReconnectDelayMilliseconds = 250
 const maximumReconnectDelayMilliseconds = 2_500
@@ -29,6 +39,11 @@ export function classifyResourceEventRevision(
   return incomingRevision <= currentRevision ? "stale" : "next"
 }
 
+export const recordBrowserResourceEventRevisionGap: ResourceEventRevisionGapRecorder =
+  (gap) => {
+    performance.mark("resource-tree.revision-gap", { detail: gap })
+  }
+
 export const connectBrowserResourceEvents: ResourceEventsConnector = (
   input
 ) => {
@@ -40,6 +55,7 @@ export const connectBrowserResourceEvents: ResourceEventsConnector = (
   function connect(): void {
     if (stopped) return
 
+    input.onConnectionChange(false)
     const nextSocket = new WebSocket(input.serverUrl)
 
     socket = nextSocket
@@ -50,6 +66,7 @@ export const connectBrowserResourceEvents: ResourceEventsConnector = (
 
   function onClose(): void {
     socket = null
+    input.onConnectionChange(false)
     if (stopped || reconnectTimer !== null) return
 
     const reconnectDelay = Math.min(
@@ -87,6 +104,7 @@ export const connectBrowserResourceEvents: ResourceEventsConnector = (
 
   function onOpen(): void {
     reconnectAttempt = 0
+    input.onConnectionChange(true)
   }
 
   connect()

@@ -16,7 +16,14 @@ import {
   type TextMatchTransformer,
   type Transformer,
 } from "@lexical/markdown"
-import type { Klass, LexicalEditor, LexicalNode } from "lexical"
+import type {
+  EditorState,
+  Klass,
+  LexicalEditor,
+  LexicalNode,
+  SerializedElementNode,
+  SerializedLexicalNode,
+} from "lexical"
 import type { Heading, Root } from "mdast"
 import { visit } from "unist-util-visit"
 
@@ -192,8 +199,8 @@ export function readResourceDocumentMarkdown(
   })
 
   if (
-    JSON.stringify(editorState.toJSON()) !==
-    JSON.stringify(restoredEditor.getEditorState().toJSON())
+    serializeCanonicalResourceEditorState(editorState) !==
+    serializeCanonicalResourceEditorState(restoredEditor.getEditorState())
   ) {
     return {
       issues: [{ code: "markdown-round-trip-mismatch" }],
@@ -205,6 +212,28 @@ export function readResourceDocumentMarkdown(
     markdown,
     status: "valid",
   }
+}
+
+function serializeCanonicalResourceEditorState(
+  editorState: EditorState
+): string {
+  const serialized = editorState.toJSON()
+
+  return JSON.stringify({
+    ...serialized,
+    root: {
+      ...serialized.root,
+      children: serialized.root.children.filter(
+        (child) => !isEmptyTopLevelParagraph(child)
+      ),
+    },
+  })
+}
+
+function isEmptyTopLevelParagraph(node: SerializedLexicalNode): boolean {
+  if (node.type !== "paragraph" || !("children" in node)) return false
+
+  return (node as SerializedElementNode).children.length === 0
 }
 
 export function normalizeResourceMarkdown(

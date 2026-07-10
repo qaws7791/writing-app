@@ -24,6 +24,7 @@ import {
 import { createApp } from "@/app"
 import { createAdminAuth, createAdminSessionResolver } from "@/auth/admin-auth"
 import { createResourceCollaborationUpgradeHandler } from "@/collaboration/resource-collaboration-upgrade"
+import { createResourceCollaborationFlushHandler } from "@/collaboration/resource-collaboration-flush"
 import { createResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
 import { createResourceEventsHub } from "@/collaboration/resource-events-hub"
 import { createResourceEventsUpgradeHandler } from "@/collaboration/resource-events-upgrade"
@@ -93,23 +94,23 @@ const auth = createAdminAuth({
 })
 const sessionResolver = createAdminSessionResolver(auth)
 const collaborationAdapter = createYWebSocketBunAdapter({
-  async onFlush(input) {
-    const result = await resourceCollaborationService.flush({
-      actorId: input.actorId,
-      documentId: toResourceDocumentId(input.roomId),
-      expectedStateVersion: input.expectedStateVersion,
-      now: new Date(),
-      snapshot: input.snapshot,
-    })
-
-    return result.kind === "ok"
-      ? { kind: "ok", stateVersion: result.value.stateVersion }
-      : { kind: "error" }
-  },
+  onFlush: createResourceCollaborationFlushHandler({
+    collaborationService: resourceCollaborationService,
+    now: () => new Date(),
+    onFailure(failure) {
+      logger.error(failure, "resource.collaboration.flush.failed")
+    },
+  }),
 })
 const collaborationUpgradeHandler = createResourceCollaborationUpgradeHandler({
   adminOrigin: env.adminOrigin,
   collaborationService: resourceCollaborationService,
+  onAuthorizationRejected(reason) {
+    logger.warn(
+      { channel: "collaboration", reason },
+      "resource.websocket.authorization.rejected"
+    )
+  },
   sessionResolver,
 })
 const resourceCollaborationRooms =
@@ -117,6 +118,12 @@ const resourceCollaborationRooms =
 const resourceEvents = createResourceEventsHub()
 const eventsUpgradeHandler = createResourceEventsUpgradeHandler({
   adminOrigin: env.adminOrigin,
+  onAuthorizationRejected(reason) {
+    logger.warn(
+      { channel: "events", reason },
+      "resource.websocket.authorization.rejected"
+    )
+  },
   sessionResolver,
 })
 const resourceWebSocketHandler = createResourceWebSocketHandler({

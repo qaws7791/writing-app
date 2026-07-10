@@ -4,12 +4,24 @@ import {
   createResourceDocumentSnapshot,
   projectResourceDocumentSnapshot,
 } from "@workspace/resource-document"
-import { readResourceMarkdownPlainText } from "@workspace/resource-document/resource-markdown"
+import {
+  readResourceMarkdownPlainText,
+  type ResourceDocumentIssue,
+} from "@workspace/resource-document/resource-markdown"
+
+export type ResourceCollaborationStateIssue =
+  | ResourceDocumentIssue
+  | { readonly code: "persisted-markdown-mismatch" }
+
+type InvalidResourceCollaborationState = {
+  readonly issues: readonly ResourceCollaborationStateIssue[]
+  readonly kind: "invalid-state"
+}
 
 export type PrepareResourceCollaborationResult =
   | { readonly kind: "not-found" }
   | { readonly kind: "inactive" }
-  | { readonly kind: "invalid-state" }
+  | InvalidResourceCollaborationState
   | {
       readonly kind: "ok"
       readonly value: {
@@ -21,7 +33,7 @@ export type PrepareResourceCollaborationResult =
 export type FlushResourceCollaborationResult =
   | { readonly kind: "not-found" }
   | { readonly kind: "inactive" }
-  | { readonly kind: "invalid-state" }
+  | InvalidResourceCollaborationState
   | {
       readonly actualStateVersion: number
       readonly kind: "stale-state-version"
@@ -55,13 +67,13 @@ export function createResourceCollaborationUseCase(
       const projection = projectResourceDocumentSnapshot(input.snapshot)
 
       if (projection.status === "invalid") {
-        return { kind: "invalid-state" }
+        return { issues: projection.issues, kind: "invalid-state" }
       }
 
       const plainText = readResourceMarkdownPlainText(projection.markdown)
 
       if (plainText.status === "invalid") {
-        return { kind: "invalid-state" }
+        return { issues: plainText.issues, kind: "invalid-state" }
       }
 
       return repository.flush({
@@ -83,7 +95,7 @@ export function createResourceCollaborationUseCase(
         )
 
         return initialized.status === "invalid"
-          ? { kind: "invalid-state" }
+          ? { issues: initialized.issues, kind: "invalid-state" }
           : {
               kind: "ok",
               value: {
@@ -95,11 +107,15 @@ export function createResourceCollaborationUseCase(
 
       const projection = projectResourceDocumentSnapshot(loaded.value.snapshot)
 
-      if (
-        projection.status === "invalid" ||
-        projection.markdown !== loaded.value.contentMarkdown
-      ) {
-        return { kind: "invalid-state" }
+      if (projection.status === "invalid") {
+        return { issues: projection.issues, kind: "invalid-state" }
+      }
+
+      if (projection.markdown !== loaded.value.contentMarkdown) {
+        return {
+          issues: [{ code: "persisted-markdown-mismatch" }],
+          kind: "invalid-state",
+        }
       }
 
       return {

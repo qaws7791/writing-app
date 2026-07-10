@@ -315,13 +315,24 @@ apps/admin/src/features/resources/
 
 ### 6. 오류·접근성·성능 강화
 
-상태: 대기
+상태: 완료
 
 - 10,000개 node fixture로 lazy tree와 FTS 검색을 측정한다.
 - 문서당 20개 WebSocket client 부하와 재연결 폭주를 검증한다.
 - projection 실패, DB busy, WebSocket 인증 만료, event gap을 계측하고 복구 동작을 검증한다.
 - reduced motion, 키보드 tree/slash/toolbar, 모바일 drawer, focus 복구를 점검한다.
 - 모든 대화상자와 sync 상태 메시지를 한국어 접근성 이름으로 검증한다.
+
+완료 근거:
+
+- SQLite에 정확히 10,000개 node를 구성한 뒤 root lazy 조회, 단일 folder lazy 조회, 전체 FTS 검색과 경로 복원을 각각 2초 예산으로 검증했다. fixture 생성까지 포함한 전용 성능 test는 약 0.35초에 완료됐다.
+- 공식 `WebsocketProvider` client 20개를 동시에 연결·해제·재연결해 모두 room 상한 안에서 복구되는 것을 검증했다. flush callback 예외는 해당 room의 socket만 닫고 room을 폐기해 다음 재시도가 DB snapshot에서 새 room을 열도록 했다.
+- projection 실패 원인과 구조 issue, SQLite busy, flush 이유와 room ID를 구조화해 기록한다. WebSocket method·origin·query·session·upgrade 거부 이유도 channel과 함께 기록하며 event revision gap은 `resource-tree.revision-gap` performance mark를 남긴 뒤 보이는 트리를 다시 읽는다.
+- 공동 편집 또는 event channel이 끊기면 새 문서·폴더·가져오기, drag/drop, 항목 구조 메뉴를 잠그고 검색과 문서 탐색은 유지한다. 저장 오류는 같은 Y.Doc을 보존한 재시도와 현재 Markdown 복사를 제공하고, 잘못된 원격 상태는 provider 연결을 유지한 채 읽기 전용으로 격리했다가 유효한 상태에서 자동 복구한다.
+- React Strict Effect와 HMR 재연결에서 화면 editor 상태가 새 Y.Doc에 중복 병합되지 않도록 연결 전과 바인딩 해제 후 editor를 초기화하는 수명주기 계약을 추가했다. 내용 없는 최상위 문단은 GFM에 표현되지 않는 비의미 상태로 정규화하되 지원하지 않는 서식과 속성의 round-trip 손실은 계속 거부한다.
+- Tree의 Arrow 탐색과 focus 동기화, slash menu, toolbar, drag handle의 `Alt+ArrowUp`·`Alt+ArrowDown`, `+` 버튼의 다음 block 추가를 검증했다. 모바일 drawer 닫힘과 desktop sidebar 접기·펼치기 뒤 trigger focus를 복구하고 이름 변경·이동·휴지통·복원 dialog와 7개 sync 상태에 한국어 접근성 이름을 제공한다.
+- `ENABLE_TEST_AUTH=true` 실제 브라우저에서 모바일 drawer 문서 선택과 trigger focus, 새 block slash menu, 두 block의 키보드 재정렬과 DB Markdown 순서, API 중단 시 구조 잠금과 재기동 자동 복구를 확인했다. 감소된 모션에서는 sync icon animation과 Tree·drag menu transition이 모두 비활성화됐다.
+- resource-document 83개, core 136개, admin-api 114개, admin 109개, UI 19개 test와 root typecheck·lint·format 검사를 통과했다. admin과 admin-api production build도 통과했다.
 
 ### 7. 한 번에 전환
 

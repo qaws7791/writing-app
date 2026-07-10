@@ -45,7 +45,10 @@ describe("자료 공동 편집 use case", () => {
 
     await expect(
       createResourceCollaborationUseCase(repository).prepare({ documentId })
-    ).resolves.toEqual({ kind: "invalid-state" })
+    ).resolves.toEqual({
+      issues: [{ code: "persisted-markdown-mismatch" }],
+      kind: "invalid-state",
+    })
   })
 
   it("Yjs snapshot을 Markdown과 FTS 본문으로 투영해 flush한다", async () => {
@@ -91,7 +94,10 @@ describe("자료 공동 편집 use case", () => {
         now: new Date(),
         snapshot: Uint8Array.of(255, 255),
       })
-    ).resolves.toEqual({ kind: "invalid-state" })
+    ).resolves.toEqual({
+      issues: [{ code: "invalid-collaboration-state" }],
+      kind: "invalid-state",
+    })
     expect(repository.flush).not.toHaveBeenCalled()
   })
 })

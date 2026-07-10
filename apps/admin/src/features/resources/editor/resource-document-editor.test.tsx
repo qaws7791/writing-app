@@ -9,6 +9,7 @@ import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin"
 import {
   $createParagraphNode,
   $getRoot,
+  $isTextNode,
   CONTROLLED_TEXT_INSERTION_COMMAND,
   type LexicalEditor,
 } from "lexical"
@@ -235,7 +236,11 @@ describe("자료 Lexical 편집기", () => {
   it("공동 편집 연결 상태를 항상 표시하고 unmount 때 연결을 정리한다", async () => {
     const disconnect = vi.fn()
     const connector = createCollaborationConnector(disconnect)
-    const { unmount } = renderResourceEditor(connector)
+    const reportStructureAvailability = vi.fn()
+    const { unmount } = renderResourceEditor(
+      connector,
+      reportStructureAvailability
+    )
 
     expect(await screen.findByText("모든 변경 사항이 동기화됨")).toBeVisible()
     expect(connector).toHaveBeenCalledWith(
@@ -244,10 +249,157 @@ describe("자료 Lexical 편집기", () => {
         serverUrl: "ws://admin-api.test/resources/collaboration",
       })
     )
+    expect(reportStructureAvailability).toHaveBeenCalledWith(true)
 
     unmount()
     expect(disconnect).toHaveBeenCalledTimes(1)
   })
+
+  it("동기화 오류에서 다시 연결하고 현재 Markdown을 복사한다", async () => {
+    const user = userEvent.setup()
+    const retry = vi.fn()
+    const writeClipboardText = vi.fn(async () => undefined)
+    const connector: ResourceDocumentCollaborationConnector = vi.fn(
+      ({ editor, onSyncStateChange }) => {
+        const result = replaceResourceDocumentMarkdown(
+          editor,
+          documentFixture.contentMarkdown
+        )
+
+        if (result.status === "invalid") {
+          throw new Error("공동 편집 fixture Markdown을 열지 못했습니다.")
+        }
+
+        onSyncStateChange({
+          kind: "error",
+          message: "공동 편집 상태 저장에 실패했습니다.",
+        })
+        return { disconnect: vi.fn(), retry }
+      }
+    )
+
+    render(
+      <ResourceDocumentEditorSurface
+        api={createEditorApi()}
+        collaborationServerUrl="ws://admin-api.test/resources/collaboration"
+        connectCollaboration={connector}
+        document={documentFixture}
+        onStructureAvailabilityChange={vi.fn()}
+        writeClipboardText={writeClipboardText}
+      />
+    )
+
+    await user.click(
+      await screen.findByRole("button", { name: "동기화 다시 시도" })
+    )
+    await user.click(screen.getByRole("button", { name: "현재 Markdown 복사" }))
+
+    expect(retry).toHaveBeenCalledTimes(1)
+    expect(writeClipboardText).toHaveBeenCalledWith(
+      documentFixture.contentMarkdown
+    )
+    expect(
+      await screen.findByText("현재 Markdown을 클립보드에 복사했습니다.")
+    ).toBeVisible()
+  })
+
+  it("공동 편집 연결 상태로 자료 구조 변경 가능 여부를 보고한다", async () => {
+    const reportStructureAvailability = vi.fn()
+    const connector: ResourceDocumentCollaborationConnector = vi.fn(
+      ({ onSyncStateChange }) => {
+        onSyncStateChange({
+          kind: "reconnecting",
+          message: "연결이 끊겨 다시 연결하는 중",
+        })
+        return { disconnect: vi.fn(), retry: vi.fn() }
+      }
+    )
+
+    renderResourceEditor(connector, reportStructureAvailability)
+
+    await waitFor(() => {
+      expect(reportStructureAvailability).toHaveBeenCalledWith(false)
+    })
+    expect(
+      await screen.findByText("연결이 끊겨 다시 연결하는 중")
+    ).toBeVisible()
+  })
+
+  it("키보드로 플로팅 도구의 굵게 서식을 적용한다", async () => {
+    const user = userEvent.setup()
+    let editor: LexicalEditor | null = null
+    const connector: ResourceDocumentCollaborationConnector = vi.fn((input) => {
+      editor = input.editor
+      const result = replaceResourceDocumentMarkdown(
+        input.editor,
+        documentFixture.contentMarkdown
+      )
+
+      if (result.status === "invalid") {
+        throw new Error("공동 편집 fixture Markdown을 열지 못했습니다.")
+      }
+
+      input.onSyncStateChange({
+        kind: "saved",
+        message: "모든 변경 사항이 동기화됨",
+      })
+      return { disconnect: vi.fn(), retry: vi.fn() }
+    })
+
+    renderResourceEditor(connector)
+    await waitFor(() => {
+      expect(editor).not.toBeNull()
+    })
+    const activeEditor = requireEditor(editor)
+
+    activeEditor.update(
+      () => {
+        const text = $getRoot().getFirstDescendant()
+
+        if (!$isTextNode(text)) {
+          throw new Error("서식을 적용할 텍스트를 찾지 못했습니다.")
+        }
+
+        text.select(0, 2)
+      },
+      { discrete: true }
+    )
+    const bold = await screen.findByRole("button", { name: "굵게" })
+
+    bold.focus()
+    await user.keyboard("{Enter}")
+
+    expect(readResourceDocumentMarkdown(activeEditor)).toEqual({
+      markdown: "## **시작**\n\n본문 **강조**",
+      status: "valid",
+    })
+  })
+
+  it.each([
+    { kind: "connecting", message: "공동 편집 서버에 연결 중" },
+    { kind: "syncing", message: "공동 편집 변경 사항 동기화 중" },
+    { kind: "saved", message: "모든 변경 사항이 동기화됨" },
+    { kind: "reconnecting", message: "연결이 끊겨 다시 연결하는 중" },
+    { kind: "error", message: "공동 편집 상태 저장 오류" },
+    { kind: "invalid", message: "지원하지 않는 원격 서식 차단" },
+    { kind: "readonly", message: "휴지통 문서 읽기 전용" },
+  ] as const)(
+    "$kind 동기화 상태를 한국어 접근성 이름으로 표시한다",
+    async (state) => {
+      const connector: ResourceDocumentCollaborationConnector = vi.fn(
+        ({ onSyncStateChange }) => {
+          onSyncStateChange(state)
+          return { disconnect: vi.fn(), retry: vi.fn() }
+        }
+      )
+
+      renderResourceEditor(connector)
+
+      expect(
+        await screen.findByRole("status", { name: state.message })
+      ).toBeVisible()
+    }
+  )
 })
 
 function createEditorApi(): ResourceDocumentEditorApi {
@@ -258,7 +410,8 @@ function createEditorApi(): ResourceDocumentEditorApi {
 }
 
 function renderResourceEditor(
-  connector = createCollaborationConnector()
+  connector = createCollaborationConnector(),
+  onStructureAvailabilityChange = vi.fn()
 ): ReturnType<typeof render> {
   return render(
     <ResourceDocumentEditorSurface
@@ -266,6 +419,7 @@ function renderResourceEditor(
       collaborationServerUrl="ws://admin-api.test/resources/collaboration"
       connectCollaboration={connector}
       document={documentFixture}
+      onStructureAvailabilityChange={onStructureAvailabilityChange}
     />
   )
 }
@@ -287,7 +441,7 @@ function createCollaborationConnector(
       kind: "saved",
       message: "모든 변경 사항이 동기화됨",
     })
-    return { disconnect }
+    return { disconnect, retry: vi.fn() }
   })
 }
 
@@ -392,6 +546,14 @@ function focusEditor(editor: LexicalEditor | null): void {
       { discrete: true }
     )
   })
+}
+
+function requireEditor(editor: LexicalEditor | null): LexicalEditor {
+  if (editor === null) {
+    throw new Error("Lexical 편집기를 준비하지 못했습니다.")
+  }
+
+  return editor
 }
 
 function insertEditorText(editor: LexicalEditor | null, text: string): void {

@@ -1,10 +1,17 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { useCallback, useMemo, useState, useSyncExternalStore } from "react"
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react"
 
+import { ResourceStructureAvailabilityProvider } from "@/features/resources/resource-collaboration-availability"
 import { createBrowserResourceLibraryApi } from "@/features/resources/resource-library-api"
 import { connectBrowserResourceEvents } from "@/features/resources/resource-events-client"
 import {
@@ -61,6 +68,14 @@ export function ResourceWorkspace({
   const searchParams = useSearchParams()
   const [isMobileTreeOpen, setIsMobileTreeOpen] = useState(false)
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [structureChangesAllowed, setStructureChangesAllowed] = useState(true)
+  const mobileTreeTriggerRef = useRef<HTMLButtonElement>(null)
+  const collapseSidebarTriggerRef = useRef<HTMLButtonElement>(null)
+  const expandSidebarTriggerRef = useRef<HTMLButtonElement>(null)
+  const updateMobileTreeOpen = useCallback((open: boolean) => {
+    setIsMobileTreeOpen(open)
+    if (!open) focusOnNextFrame(mobileTreeTriggerRef)
+  }, [])
   const [isInitialActiveTreeAvailable, setIsInitialActiveTreeAvailable] =
     useState(true)
   const consumeInitialActiveTree = useCallback(() => {
@@ -73,6 +88,15 @@ export function ResourceWorkspace({
     pathname === "/resources/trash" || searchParams.get("scope") === "trash"
       ? "trash"
       : "active"
+  function provideStructureAvailability(content: ReactNode) {
+    return (
+      <ResourceStructureAvailabilityProvider
+        report={setStructureChangesAllowed}
+      >
+        {content}
+      </ResourceStructureAvailabilityProvider>
+    )
+  }
   function renderSidebar(toolbarEnd?: ReactNode) {
     return (
       <ResourceTree
@@ -88,17 +112,18 @@ export function ResourceWorkspace({
         key={scope}
         onInitialTreeConsumed={consumeInitialActiveTree}
         onDocumentOpen={() => {
-          setIsMobileTreeOpen(false)
+          updateMobileTreeOpen(false)
         }}
         scope={scope}
         selectedDocumentId={documentId}
+        structureChangesAllowed={structureChangesAllowed}
         toolbarEnd={toolbarEnd}
       />
     )
   }
 
   if (isDesktop === null) {
-    return (
+    return provideStructureAvailability(
       <div
         className="flex min-h-0 flex-1 items-center justify-center"
         role="status"
@@ -112,14 +137,15 @@ export function ResourceWorkspace({
   }
 
   if (!isDesktop) {
-    return (
+    return provideStructureAvailability(
       <div className="relative flex min-h-0 flex-1 overflow-hidden">
         <Button
           aria-label="자료 트리 열기"
           className="absolute top-3 left-3 z-20 shadow-sm"
           onClick={() => {
-            setIsMobileTreeOpen(true)
+            updateMobileTreeOpen(true)
           }}
+          ref={mobileTreeTriggerRef}
           size="icon-sm"
           type="button"
           variant="outline"
@@ -128,7 +154,7 @@ export function ResourceWorkspace({
         </Button>
         <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
         <Drawer
-          onOpenChange={setIsMobileTreeOpen}
+          onOpenChange={updateMobileTreeOpen}
           open={isMobileTreeOpen}
           swipeDirection="left"
         >
@@ -144,14 +170,16 @@ export function ResourceWorkspace({
   }
 
   if (isSidebarCollapsed) {
-    return (
+    return provideStructureAvailability(
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <aside className="flex w-12 shrink-0 justify-center border-r border-border bg-surface/40 pt-3">
           <Button
             aria-label="자료 트리 펼치기"
             onClick={() => {
               setIsSidebarCollapsed(false)
+              focusOnNextFrame(collapseSidebarTriggerRef)
             }}
+            ref={expandSidebarTriggerRef}
             size="icon-sm"
             type="button"
             variant="ghost"
@@ -164,7 +192,7 @@ export function ResourceWorkspace({
     )
   }
 
-  return (
+  return provideStructureAvailability(
     <ResizablePanelGroup className="min-h-0 flex-1" orientation="horizontal">
       <ResizablePanel defaultSize="24%" maxSize="36rem" minSize="18rem">
         <aside className="h-full border-r border-border">
@@ -173,7 +201,9 @@ export function ResourceWorkspace({
               aria-label="자료 트리 접기"
               onClick={() => {
                 setIsSidebarCollapsed(true)
+                focusOnNextFrame(expandSidebarTriggerRef)
               }}
+              ref={collapseSidebarTriggerRef}
               size="icon-sm"
               type="button"
               variant="ghost"
@@ -201,4 +231,12 @@ function subscribeDesktopMediaQuery(onChange: () => void): () => void {
 
 function readDesktopMediaQuery(): boolean {
   return window.matchMedia(desktopMediaQuery).matches
+}
+
+function focusOnNextFrame(target: {
+  readonly current: HTMLButtonElement | null
+}): void {
+  requestAnimationFrame(() => {
+    target.current?.focus()
+  })
 }

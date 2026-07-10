@@ -1,6 +1,9 @@
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import type { ResourceEventsConnectionData } from "@/collaboration/resource-events-hub"
-import { authorizeResourceWebSocket } from "@/collaboration/resource-websocket-authorization"
+import {
+  authorizeResourceWebSocket,
+  type ResourceWebSocketAuthorizationRejectionReason,
+} from "@/collaboration/resource-websocket-authorization"
 
 export type ResourceEventsUpgrade = (
   request: Request,
@@ -9,6 +12,9 @@ export type ResourceEventsUpgrade = (
 
 export function createResourceEventsUpgradeHandler(input: {
   readonly adminOrigin: string
+  readonly onAuthorizationRejected: (
+    reason: ResourceWebSocketAuthorizationRejectionReason
+  ) => void
   readonly sessionResolver: AdminSessionResolver
 }) {
   return async (
@@ -22,7 +28,10 @@ export function createResourceEventsUpgradeHandler(input: {
       request,
     })
 
-    if (authorization.kind === "error") return authorization.response
+    if (authorization.kind === "error") {
+      input.onAuthorizationRejected(authorization.reason)
+      return authorization.response
+    }
 
     return upgrade(request, {
       actorId: authorization.actorId,

@@ -1,7 +1,13 @@
 "use client"
 
 import { DraggableBlockPlugin_EXPERIMENTAL } from "@lexical/react/LexicalDraggableBlockPlugin"
-import { GripVertical } from "lucide-react"
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext"
+import {
+  $createParagraphNode,
+  $createTextNode,
+  $getNearestNodeFromDOMNode,
+} from "lexical"
+import { GripVertical, PlusIcon } from "lucide-react"
 import { useCallback, useRef } from "react"
 
 const resourceDragMenuClassName = "resource-drag-menu"
@@ -15,11 +21,72 @@ export function ResourceDraggableBlockPlugin({
   anchorElement,
   onActiveBlockChange,
 }: ResourceDraggableBlockPluginProps) {
-  const menuRef = useRef<HTMLButtonElement>(null)
+  const [editor] = useLexicalComposerContext()
+  const menuRef = useRef<HTMLDivElement>(null)
   const targetLineRef = useRef<HTMLDivElement>(null)
+  const activeBlockRef = useRef<HTMLElement | null>(null)
   const isOnMenu = useCallback((element: HTMLElement) => {
     return element.closest(`.${resourceDragMenuClassName}`) !== null
   }, [])
+  const handleActiveBlockChange = useCallback(
+    (element: HTMLElement | null) => {
+      activeBlockRef.current = element
+      onActiveBlockChange?.(element)
+    },
+    [onActiveBlockChange]
+  )
+  const moveActiveBlock = useCallback(
+    (direction: "down" | "up") => {
+      const activeBlock = activeBlockRef.current
+
+      if (activeBlock === null) return
+
+      editor.update(
+        () => {
+          const node = $getNearestNodeFromDOMNode(activeBlock)
+          const sibling =
+            direction === "up"
+              ? node?.getPreviousSibling()
+              : node?.getNextSibling()
+
+          if (
+            node === null ||
+            node === undefined ||
+            sibling === null ||
+            sibling === undefined
+          ) {
+            return
+          }
+
+          if (direction === "up") sibling.insertBefore(node)
+          else sibling.insertAfter(node)
+        },
+        { discrete: true }
+      )
+      editor.focus()
+    },
+    [editor]
+  )
+  const insertBlockWithSlashMenu = useCallback(() => {
+    const activeBlock = activeBlockRef.current
+
+    if (activeBlock === null) return
+
+    editor.update(
+      () => {
+        const node = $getNearestNodeFromDOMNode(activeBlock)
+
+        if (node === null) return
+
+        const paragraph = $createParagraphNode().append($createTextNode("/"))
+
+        node.insertAfter(paragraph)
+        paragraph.selectEnd()
+      },
+      { discrete: true }
+    )
+    editor.focus()
+  }, [editor])
 
   return (
     <DraggableBlockPlugin_EXPERIMENTAL
@@ -27,14 +94,38 @@ export function ResourceDraggableBlockPlugin({
       menuRef={menuRef}
       targetLineRef={targetLineRef}
       menuComponent={
-        <button
+        <div
+          className={`${resourceDragMenuClassName} absolute top-0 left-0 z-10 flex items-center rounded-md bg-background/90 text-muted-foreground opacity-0 shadow-sm transition-[transform,opacity] duration-150 focus-within:opacity-100 motion-reduce:transition-none`}
           ref={menuRef}
-          type="button"
-          aria-label="블록 이동"
-          className={`${resourceDragMenuClassName} absolute top-0 left-0 z-10 flex size-7 cursor-grab items-center justify-center rounded-md border-0 bg-transparent text-muted-foreground opacity-0 transition-[transform,opacity,background-color] duration-150 hover:bg-muted hover:text-foreground active:cursor-grabbing`}
         >
-          <GripVertical aria-hidden="true" className="size-4" />
-        </button>
+          <button
+            aria-label="새 블록 추가"
+            className="flex size-7 items-center justify-center rounded-md hover:bg-muted hover:text-foreground"
+            onClick={insertBlockWithSlashMenu}
+            onMouseDown={(event) => {
+              event.preventDefault()
+            }}
+            type="button"
+          >
+            <PlusIcon aria-hidden="true" className="size-4" />
+          </button>
+          <button
+            aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
+            aria-label="블록 이동"
+            className="flex size-7 cursor-grab items-center justify-center rounded-md hover:bg-muted hover:text-foreground active:cursor-grabbing"
+            onKeyDown={(event) => {
+              if (!event.altKey || event.ctrlKey || event.metaKey) return
+
+              if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+                event.preventDefault()
+                moveActiveBlock(event.key === "ArrowUp" ? "up" : "down")
+              }
+            }}
+            type="button"
+          >
+            <GripVertical aria-hidden="true" className="size-4" />
+          </button>
+        </div>
       }
       targetLineComponent={
         <div
@@ -44,7 +135,7 @@ export function ResourceDraggableBlockPlugin({
         />
       }
       isOnMenu={isOnMenu}
-      onElementChanged={onActiveBlockChange}
+      onElementChanged={handleActiveBlockChange}
     />
   )
 }

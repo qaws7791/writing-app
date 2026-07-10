@@ -552,6 +552,13 @@ function ResourceStatusDialog({
         </AlertDialogHeader>
         {isTrash ? (
           <div
+            aria-label={
+              activeEditors.kind === "loading"
+                ? "활성 편집자 수를 확인하는 중입니다."
+                : activeEditors.kind === "ready"
+                  ? `현재 공동 편집 중인 관리자 ${activeEditors.count}명`
+                  : "활성 편집자 수를 확인하지 못했습니다."
+            }
             aria-live="polite"
             className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm"
             role="status"

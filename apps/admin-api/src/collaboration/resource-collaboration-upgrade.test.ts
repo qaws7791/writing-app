@@ -73,9 +73,11 @@ describe("자료 문서 공동 편집 WebSocket upgrade", () => {
 
   it("관리자 세션이 없으면 문서를 조회하지 않고 401을 반환한다", async () => {
     const collaborationService = createCollaborationService()
+    const onAuthorizationRejected = vi.fn()
     const handler = createResourceCollaborationUpgradeHandler({
       adminOrigin,
       collaborationService,
+      onAuthorizationRejected,
       sessionResolver: createTestAdminSessionResolver({
         activeToken: "different-token",
       }),
@@ -84,13 +86,20 @@ describe("자료 문서 공동 편집 WebSocket upgrade", () => {
     const response = await handler(createRequest(), () => true)
 
     expect(response?.status).toBe(401)
+    expect(onAuthorizationRejected).toHaveBeenCalledWith("session-missing")
     expect(collaborationService.prepare).not.toHaveBeenCalled()
   })
 
   it.each([
     { expectedStatus: 404, result: { kind: "not-found" } as const },
     { expectedStatus: 409, result: { kind: "inactive" } as const },
-    { expectedStatus: 500, result: { kind: "invalid-state" } as const },
+    {
+      expectedStatus: 500,
+      result: {
+        issues: [{ code: "invalid-collaboration-state" }],
+        kind: "invalid-state",
+      } as const,
+    },
   ])(
     "준비 결과 $result.kind를 HTTP $expectedStatus로 변환한다",
     async ({ expectedStatus, result }) => {
@@ -123,6 +132,7 @@ function createHandler(collaborationService: ResourceCollaborationUseCase) {
   return createResourceCollaborationUpgradeHandler({
     adminOrigin,
     collaborationService,
+    onAuthorizationRejected: vi.fn(),
     sessionResolver: createTestAdminSessionResolver(),
   })
 }

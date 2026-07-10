@@ -2,7 +2,10 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
+  useEffect,
+  useRef,
   type CSSProperties,
   type HTMLAttributes,
   type ReactNode,
@@ -91,7 +94,16 @@ function TreeItem<TItem>({
   ...props
 }: TreeItemProps<TItem>) {
   const context = useRequiredTreeContext()
-  const itemProps = item.getProps()
+  const elementRef = useRef<HTMLButtonElement>(null)
+  const setElementRef = useCallback(
+    (element: HTMLButtonElement | null) => {
+      elementRef.current = element
+      item.registerElement(element)
+    },
+    [item]
+  )
+  const isFocused = item.isFocused()
+  const { ref: _headlessTreeRef, ...itemProps } = item.getProps()
   const defaultProps = {
     ...props,
     "aria-expanded": item.isFolder() ? item.isExpanded() : undefined,
@@ -102,7 +114,7 @@ function TreeItem<TItem>({
     ),
     "data-drag-target":
       typeof item.isDragTarget === "function" ? item.isDragTarget() : undefined,
-    "data-focus": item.isFocused(),
+    "data-focus": isFocused,
     "data-folder": item.isFolder(),
     "data-selected":
       typeof item.isSelected === "function" ? item.isSelected() : undefined,
@@ -112,6 +124,23 @@ function TreeItem<TItem>({
     } as CSSProperties,
   }
   const mergedProps = mergeProps<"button">(defaultProps, itemProps)
+  const renderProps = { ...mergedProps, ref: setElementRef }
+
+  useEffect(() => {
+    const element = elementRef.current
+    const activeElement = document.activeElement
+
+    if (
+      isFocused &&
+      element !== null &&
+      activeElement instanceof HTMLElement &&
+      activeElement.closest('[role="tree"]') ===
+        element.closest('[role="tree"]') &&
+      activeElement !== element
+    ) {
+      element.focus()
+    }
+  }, [isFocused])
 
   return (
     <TreeContext.Provider
@@ -126,7 +155,7 @@ function TreeItem<TItem>({
     >
       {useRender({
         defaultTagName: "button",
-        props: mergedProps,
+        props: renderProps,
         render,
       })}
     </TreeContext.Provider>
@@ -153,7 +182,7 @@ function TreeItemLabel<TItem>({
   return (
     <span
       className={cn(
-        "flex min-h-9 items-center gap-1 rounded-xl px-2 py-1.5 text-sm font-medium text-foreground transition-colors in-focus-visible:ring-2 in-focus-visible:ring-ring/50 hover:bg-accent in-data-[drag-target=true]:bg-accent in-data-[selected=true]:bg-accent in-data-[selected=true]:text-accent-foreground not-in-data-[folder=true]:ps-7 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "flex min-h-9 items-center gap-1 rounded-xl px-2 py-1.5 text-sm font-medium text-foreground transition-colors motion-reduce:transition-none in-focus-visible:ring-2 in-focus-visible:ring-ring/50 hover:bg-accent in-data-[drag-target=true]:bg-accent in-data-[selected=true]:bg-accent in-data-[selected=true]:text-accent-foreground not-in-data-[folder=true]:ps-7 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className
       )}
       data-slot="tree-item-label"
@@ -170,7 +199,7 @@ function TreeItemLabel<TItem>({
           <ChevronDownIcon
             aria-hidden="true"
             className={cn(
-              "size-4 transition-transform",
+              "size-4 transition-transform motion-reduce:transition-none",
               item.isExpanded() ? "rotate-0" : "-rotate-90"
             )}
           />

@@ -200,6 +200,85 @@ describe("자료 문서 공동 편집 계약", () => {
     }
   })
 
+  it("재연결 전에 남은 화면 상태를 네트워크 문서와 중복 병합하지 않는다", () => {
+    const snapshotResult = createResourceDocumentSnapshot("서버 본문")
+
+    if (snapshotResult.status !== "valid") {
+      throw new Error("유효한 Markdown fixture가 거부되었습니다.")
+    }
+
+    const document = new Doc()
+    const editor = createResourceDocumentEditor()
+
+    expect(replaceResourceDocumentMarkdown(editor, "서버 본문")).toEqual({
+      status: "valid",
+    })
+
+    const collaboration = connectResourceDocumentCollaboration({
+      document,
+      editor,
+      id: "resource-reconnect-with-residual-editor-state",
+      onRemoteValidationChange: () => undefined,
+      provider: createTestProvider(),
+    })
+
+    try {
+      expect(readResourceDocumentMarkdown(editor)).toEqual({
+        markdown: "",
+        status: "valid",
+      })
+      applyUpdate(document, snapshotResult.snapshot)
+
+      expect(readResourceDocumentMarkdown(editor)).toEqual({
+        markdown: "서버 본문",
+        status: "valid",
+      })
+      expect(
+        projectResourceDocumentSnapshot(encodeStateAsUpdate(document))
+      ).toEqual({
+        markdown: "서버 본문",
+        status: "valid",
+      })
+    } finally {
+      collaboration.disconnect()
+      document.destroy()
+    }
+  })
+
+  it("연결을 종료한 화면 editor의 원격 상태를 다음 연결에 남기지 않는다", () => {
+    const snapshotResult = createResourceDocumentSnapshot("서버 본문")
+
+    if (snapshotResult.status !== "valid") {
+      throw new Error("유효한 Markdown fixture가 거부되었습니다.")
+    }
+
+    const document = new Doc()
+    const editor = createResourceDocumentEditor()
+
+    applyUpdate(document, snapshotResult.snapshot)
+
+    const collaboration = connectResourceDocumentCollaboration({
+      document,
+      editor,
+      id: "resource-disconnect-clears-editor",
+      onRemoteValidationChange: () => undefined,
+      provider: createTestProvider(),
+    })
+
+    expect(readResourceDocumentMarkdown(editor)).toEqual({
+      markdown: "서버 본문",
+      status: "valid",
+    })
+
+    collaboration.disconnect()
+
+    expect(readResourceDocumentMarkdown(editor)).toEqual({
+      markdown: "",
+      status: "valid",
+    })
+    document.destroy()
+  })
+
   it("손상된 snapshot 투영이 실패해도 Yjs 문서를 정리한다", () => {
     const destroy = vi.spyOn(Doc.prototype, "destroy")
 

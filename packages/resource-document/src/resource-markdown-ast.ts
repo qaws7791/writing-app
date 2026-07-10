@@ -120,7 +120,11 @@ export function $exportResourceMarkdownAst(): Root {
     children: $getRoot()
       .getChildren()
       .map(exportBlockNode)
-      .filter((node): node is RootContent => node !== null),
+      .filter(
+        (node): node is RootContent =>
+          node !== null &&
+          !(node.type === "paragraph" && node.children.length === 0)
+      ),
     type: "root",
   }
 }

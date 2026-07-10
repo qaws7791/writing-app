@@ -260,6 +260,33 @@ describe("Bun y-websocket 어댑터", () => {
     }
   })
 
+  it("20개 client가 동시에 끊겼다 재연결되어도 room 상한 안에서 모두 복구한다", async () => {
+    const adapter = createYWebSocketBunAdapter()
+    const server = startServer(adapter)
+    const roomId = `reconnect-storm-${crypto.randomUUID()}`
+    const clients = Array.from({ length: 20 }, () =>
+      createClient(server, roomId)
+    )
+
+    try {
+      await waitFor(() => adapter.getRoomConnectionCount(roomId) === 20)
+
+      for (const client of clients) client.provider.disconnect()
+
+      await waitFor(() => adapter.getRoomConnectionCount(roomId) === 0)
+
+      for (const client of clients) client.provider.connect()
+
+      await waitFor(() =>
+        clients.every((client) => client.provider.wsconnected)
+      )
+      expect(adapter.getRoomConnectionCount(roomId)).toBe(20)
+    } finally {
+      for (const client of clients) destroyClient(client)
+      await adapter.dispose()
+    }
+  }, 15_000)
+
   it("편집 변경을 지연 저장하고 actor와 state version을 전달한다", async () => {
     const flushes: Array<{
       readonly actorId: string
@@ -299,6 +326,37 @@ describe("Bun y-websocket 어댑터", () => {
           snapshot: expect.any(Uint8Array),
         },
       ])
+    } finally {
+      await adapter.dispose()
+    }
+  })
+
+  it("flush callback 예외를 해당 room 오류로 격리하고 연결을 닫는다", async () => {
+    const adapter = createYWebSocketBunAdapter({
+      flushDelayMilliseconds: 1,
+      async onFlush() {
+        throw new Error("주입한 저장 예외")
+      },
+    })
+    const socket = createTestSocket(`flush-exception-${crypto.randomUUID()}`)
+
+    try {
+      openTestSocket(adapter, socket.socket)
+      sendTestMessage(
+        adapter,
+        socket.socket,
+        createDocumentUpdateMessage("저장 실패 변경")
+      )
+
+      await waitFor(() => socket.wasClosed())
+      expect(adapter.getRoomConnectionCount(socket.data.roomId)).toBe(0)
+      expect(adapter.hasRoom(socket.data.roomId)).toBe(false)
+
+      const retriedSocket = createTestSocket(socket.data.roomId)
+
+      openTestSocket(adapter, retriedSocket.socket)
+      expect(retriedSocket.wasClosed()).toBe(false)
+      expect(adapter.getRoomConnectionCount(socket.data.roomId)).toBe(1)
     } finally {
       await adapter.dispose()
     }

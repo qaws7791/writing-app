@@ -63,6 +63,12 @@ export function connectResourceDocumentCollaboration({
   onRemoteValidationChange,
   provider,
 }: ConnectResourceDocumentCollaborationInput): ResourceDocumentCollaboration {
+  const clearResult = replaceResourceDocumentMarkdown(editor, "")
+
+  if (clearResult.status === "invalid") {
+    throw new Error("공동 편집 연결 전에 화면 문서를 초기화하지 못했습니다.")
+  }
+
   const validationDocument = new Doc()
   const validationCollaboration = createDirectHeadlessCollaboration({
     document: validationDocument,
@@ -153,8 +159,15 @@ export function connectResourceDocumentCollaboration({
         try {
           validationCollaboration.disconnect()
         } finally {
-          editorDocument.destroy()
-          validationDocument.destroy()
+          try {
+            editorDocument.destroy()
+          } finally {
+            try {
+              validationDocument.destroy()
+            } finally {
+              replaceResourceDocumentMarkdown(editor, "")
+            }
+          }
         }
       }
     },

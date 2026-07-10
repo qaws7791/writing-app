@@ -43,6 +43,7 @@ describe("자료실 이벤트 WebSocket upgrade", () => {
 function createHandler() {
   return createResourceEventsUpgradeHandler({
     adminOrigin,
+    onAuthorizationRejected: vi.fn(),
     sessionResolver: createTestAdminSessionResolver(),
   })
 }

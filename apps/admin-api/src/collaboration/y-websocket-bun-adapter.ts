@@ -351,13 +351,19 @@ async function performRoomFlushes(
     }
 
     room.dirty = false
-    const result = await context.onFlush({
-      actorId,
-      expectedStateVersion: room.stateVersion,
-      reason,
-      roomId,
-      snapshot: encodeStateAsUpdate(room.document),
-    })
+    let result: YWebSocketRoomFlushResult
+
+    try {
+      result = await context.onFlush({
+        actorId,
+        expectedStateVersion: room.stateVersion,
+        reason,
+        roomId,
+        snapshot: encodeStateAsUpdate(room.document),
+      })
+    } catch {
+      result = { kind: "error" }
+    }
 
     if (result.kind === "error") {
       room.state = "error"
@@ -367,6 +373,7 @@ async function performRoomFlushes(
         1011,
         "공동 편집 상태 저장에 실패했습니다."
       )
+      destroyRoom(roomId, room, context.rooms)
       return "error"
     }
 

@@ -16,6 +16,7 @@ export type ResourceDocumentSyncState =
 
 export type ResourceDocumentCollaborationClient = {
   readonly disconnect: () => void
+  readonly retry: () => void
 }
 
 export type ConnectResourceDocumentCollaborationClientInput = {
@@ -45,6 +46,8 @@ export const connectBrowserResourceDocumentCollaboration: ResourceDocumentCollab
       { connect: false, disableBc: true }
     )
     let terminalState = false
+    let invalidRemoteState = false
+    let retryAllowed = false
     let disconnected = false
 
     provider.awareness.setLocalState(null)
@@ -54,9 +57,21 @@ export const connectBrowserResourceDocumentCollaboration: ResourceDocumentCollab
       id: `resource-document-${input.documentId}`,
       onRemoteValidationChange(validation) {
         if (validation.status === "invalid") {
-          enterTerminalState({
+          invalidRemoteState = true
+          input.editor.setEditable(false)
+          input.onSyncStateChange({
             kind: "invalid",
             message: "지원하지 않는 원격 서식이 차단되었습니다.",
+          })
+          return
+        }
+
+        if (invalidRemoteState) {
+          invalidRemoteState = false
+          input.editor.setEditable(true)
+          input.onSyncStateChange({
+            kind: "saved",
+            message: "원격 문서 상태가 정상으로 복구됨",
           })
         }
       },
@@ -67,7 +82,7 @@ export const connectBrowserResourceDocumentCollaboration: ResourceDocumentCollab
     }: {
       readonly status: "connected" | "connecting" | "disconnected"
     }) => {
-      if (terminalState) return
+      if (terminalState || invalidRemoteState) return
 
       switch (status) {
         case "connected":
@@ -85,12 +100,12 @@ export const connectBrowserResourceDocumentCollaboration: ResourceDocumentCollab
         case "disconnected":
           input.onSyncStateChange({
             kind: "reconnecting",
-            message: "연결이 끊겨 다시 연결하는 중",
+            message: "오프라인: 연결이 끊겨 다시 연결하는 중",
           })
       }
     }
     const onSync = (synced: boolean) => {
-      if (terminalState || !synced) return
+      if (terminalState || invalidRemoteState || !synced) return
 
       input.onSyncStateChange({
         kind: "saved",
@@ -102,30 +117,40 @@ export const connectBrowserResourceDocumentCollaboration: ResourceDocumentCollab
 
       input.onSyncStateChange({
         kind: "reconnecting",
-        message: "공동 편집 서버에 다시 연결하는 중",
+        message: "오프라인: 공동 편집 서버에 다시 연결하는 중",
       })
     }
     const onConnectionClose = (event: CloseEvent | null) => {
       if (terminalState || event === null) return
 
       if (event.code === 1008) {
-        enterTerminalState({
-          kind: "readonly",
-          message: "휴지통으로 이동되어 읽기 전용으로 전환됨",
-        })
+        enterTerminalState(
+          {
+            kind: "readonly",
+            message: "휴지통으로 이동되어 읽기 전용으로 전환됨",
+          },
+          false
+        )
         return
       }
 
       if (event.code === 1011 || event.code === 1013) {
-        enterTerminalState({
-          kind: "error",
-          message: event.reason || "공동 편집을 계속할 수 없습니다.",
-        })
+        enterTerminalState(
+          {
+            kind: "error",
+            message: event.reason || "공동 편집을 계속할 수 없습니다.",
+          },
+          true
+        )
       }
     }
 
-    function enterTerminalState(state: ResourceDocumentSyncState): void {
+    function enterTerminalState(
+      state: ResourceDocumentSyncState,
+      canRetry: boolean
+    ): void {
       terminalState = true
+      retryAllowed = canRetry
       input.editor.setEditable(false)
       input.onSyncStateChange(state)
       provider.disconnect()
@@ -161,6 +186,18 @@ export const connectBrowserResourceDocumentCollaboration: ResourceDocumentCollab
             document.destroy()
           }
         }
+      },
+      retry() {
+        if (disconnected || !retryAllowed) return
+
+        retryAllowed = false
+        terminalState = false
+        input.editor.setEditable(true)
+        input.onSyncStateChange({
+          kind: "connecting",
+          message: "공동 편집 서버에 다시 연결 중",
+        })
+        provider.connect()
       },
     }
   }

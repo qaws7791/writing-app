@@ -4,7 +4,10 @@ import {
 } from "@workspace/core/modules/resource-library/api"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
-import { authorizeResourceWebSocket } from "@/collaboration/resource-websocket-authorization"
+import {
+  authorizeResourceWebSocket,
+  type ResourceWebSocketAuthorizationRejectionReason,
+} from "@/collaboration/resource-websocket-authorization"
 import type { YWebSocketConnectionData } from "@/collaboration/y-websocket-bun-adapter"
 
 export type ResourceCollaborationUpgrade = (
@@ -20,6 +23,9 @@ export type ResourceCollaborationUpgradeHandler = (
 export function createResourceCollaborationUpgradeHandler(input: {
   readonly adminOrigin: string
   readonly collaborationService: ResourceCollaborationUseCase
+  readonly onAuthorizationRejected: (
+    reason: ResourceWebSocketAuthorizationRejectionReason
+  ) => void
   readonly sessionResolver: AdminSessionResolver
 }): ResourceCollaborationUpgradeHandler {
   return async (request, upgrade) => {
@@ -33,7 +39,10 @@ export function createResourceCollaborationUpgradeHandler(input: {
       sessionResolver: input.sessionResolver,
     })
 
-    if (authorization.kind === "error") return authorization.response
+    if (authorization.kind === "error") {
+      input.onAuthorizationRejected(authorization.reason)
+      return authorization.response
+    }
 
     const prepared = await input.collaborationService.prepare({
       documentId: resourceDocumentId,

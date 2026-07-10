@@ -39,6 +39,33 @@ import { $validateResourceDocumentStructure } from "#resource-document/resource-
 import { $createResourceTableNodeWithDimensions } from "#resource-document/resource-table-state"
 
 describe("자료 Markdown 계약", () => {
+  it("내용 없는 최상위 문단은 GFM의 비의미 공백으로 정규화한다", () => {
+    const editor = createResourceDocumentEditor()
+    const markdown = "| 열 |\n| --- |\n| 값 |"
+
+    expect(replaceResourceDocumentMarkdown(editor, markdown)).toEqual({
+      status: "valid",
+    })
+    editor.update(
+      () => {
+        const table = $getRoot().getFirstChild()
+
+        if (table === null) {
+          throw new Error("표 fixture를 찾지 못했습니다.")
+        }
+
+        table.insertBefore($createParagraphNode())
+        table.insertAfter($createParagraphNode())
+      },
+      { discrete: true }
+    )
+
+    expect(readResourceDocumentMarkdown(editor)).toEqual({
+      markdown: "| 열 |\n| - |\n| 값 |",
+      status: "valid",
+    })
+  })
+
   it("새 자료 표에 GFM 열 정렬 상태를 함께 초기화한다", () => {
     const editor = createResourceDocumentEditor()
 
