@@ -98,11 +98,15 @@ export type DeleteAdminUserInput = {
 
 export type ReadAdminAiChatConversationsInput = {
   readonly adminId: string
+  readonly page: number
+  readonly pageSize: number
 }
 
 export type ReadAdminAiChatConversationInput = {
   readonly adminId: string
   readonly conversationId: string
+  readonly messagePage: number
+  readonly messagePageSize: number
 }
 
 export type CreateAdminAiChatUserMessageInput = {

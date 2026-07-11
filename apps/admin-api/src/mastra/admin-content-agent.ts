@@ -5,7 +5,13 @@ import type { ReadableStream } from "node:stream/web"
 export const adminContentAgentId = "admin-content-agent"
 
 export type AdminAiChatAgent = {
-  readonly streamText: (prompt: string) => Promise<AsyncIterable<string>>
+  readonly streamText: (
+    prompt: string,
+    options: {
+      readonly maxOutputTokens: number
+      readonly signal: AbortSignal
+    }
+  ) => Promise<AsyncIterable<string>>
 }
 
 export function createAdminMastra({
@@ -39,9 +45,12 @@ export function createMastraAdminAiChatAgent(
   mastra: ReturnType<typeof createAdminMastra>
 ): AdminAiChatAgent {
   return {
-    async streamText(prompt) {
+    async streamText(prompt, options) {
       const agent = mastra.getAgentById(adminContentAgentId)
-      const stream = await agent.stream(prompt)
+      const stream = await agent.stream(prompt, {
+        abortSignal: options.signal,
+        modelSettings: { maxOutputTokens: options.maxOutputTokens },
+      })
 
       return readTextStream(stream.textStream)
     },

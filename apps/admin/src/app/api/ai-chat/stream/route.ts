@@ -51,8 +51,15 @@ export async function POST(request: Request): Promise<Response> {
         "Content-Type": "application/json",
         Cookie: `${adminSessionCookieName}=${encodeURIComponent(token)}`,
         Origin: adminWebOrigin,
+        ...(request.headers.has("x-forwarded-for")
+          ? {
+              "X-Forwarded-For":
+                request.headers.get("x-forwarded-for") ?? "unknown",
+            }
+          : {}),
       },
       method: "POST",
+      signal: request.signal,
     }
   )
 
@@ -62,6 +69,9 @@ export async function POST(request: Request): Promise<Response> {
       "Content-Type":
         response.headers.get("Content-Type") ??
         "text/event-stream; charset=utf-8",
+      ...(response.headers.has("Retry-After")
+        ? { "Retry-After": response.headers.get("Retry-After") ?? "1" }
+        : {}),
     },
     status: response.status,
   })
