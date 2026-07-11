@@ -92,13 +92,13 @@ describe("web runtime config", () => {
     })
 
     expect(
-      offenders.map((filePath) => relative(process.cwd(), filePath))
+      offenders.map((filePath) => relative(webDirectory, filePath))
     ).toEqual([])
   })
 })
 
 function findRuntimeSourceFiles(
-  directory = join(process.cwd(), "src")
+  directory = join(webDirectory, "src")
 ): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const entryPath = join(directory, entry.name)
@@ -118,3 +118,5 @@ function findRuntimeSourceFiles(
     return [entryPath]
   })
 }
+
+const webDirectory = join(import.meta.dirname, "..")

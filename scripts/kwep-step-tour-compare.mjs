@@ -103,7 +103,7 @@ async function interactWithPreview(page, stepId) {
 }
 
 async function extractPreviewFingerprint(page, source) {
-  return page.evaluate((src) => {
+  return page.evaluate((_src) => {
     const root = document.querySelector(
       ".max-w-sm.mx-auto .relative.bg-cream.rounded-3xl"
     )

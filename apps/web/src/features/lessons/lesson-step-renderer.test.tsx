@@ -11,7 +11,7 @@ import type { LessonStep } from "@/features/lessons/lesson-types"
 describe("레슨 스텝 렌더러 답변 저장", () => {
   it("스텝 타입별 콘텐츠는 앱 렌더러가 UI 패키지 컴포넌트로 조합한다", () => {
     const source = readFileSync(
-      join(process.cwd(), "src/features/lessons/lesson-step-renderer.tsx"),
+      join(import.meta.dirname, "lesson-step-renderer.tsx"),
       "utf8"
     )
 

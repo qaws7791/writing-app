@@ -17,7 +17,7 @@
 | baseline migration 적용 | `bun --filter @workspace/db db:migrate` | 로컬, 운영 배포 전     |
 | 콘텐츠 seed 적용        | `bun --filter @workspace/db db:seed`    | 로컬, 명시적 운영 절차 |
 | 학습자 앱 로컬 준비     | `bun run dev:app:setup`                 | 로컬                   |
-| 개발 DB 초기화          | `bun run db:reset`                      | 로컬 전용              |
+| 개발 DB 초기화          | `bun run db:reset`                      | 저장소 `data/` 하위 DB |
 | 깨끗한 학습자 앱 시작   | `bun run dev:app:fresh`                 | 로컬 전용              |
 
 ## 기본 절차
@@ -67,6 +67,15 @@ seed 실행 중 legacy DB 구조가 감지되면 DB 파일 재생성이 필요�
 - DB 파일이 저장소 루트 `data/` 하위 경로
 
 운영 DB에 이 절차를 적용하지 않는다. 운영 데이터 이전이 필요하면 별도 계획을 세운다.
+
+## DB 초기화 안전장치
+
+- 초기화 대상은 canonical path가 저장소 루트 `data/` 아래에 있는 일반 SQLite 파일이어야 한다. 상대 경로 탈출과 symlink 탈출은 거부한다.
+- 삭제 전에 대상 DB와 존재하는 `-wal`, `-shm` sidecar를 같은 경계 안에 백업한다. 삭제 실패 시 백업에서 원래 파일을 복구한다.
+- 대상 DB와 두 sidecar 외 파일은 삭제하지 않는다.
+- production에서는 `ALLOW_DATABASE_RESET=true`, CLI `--force`, canonical 대상에서 계산한 fingerprint가 모두 일치해야 한다.
+- 대상 fingerprint는 `bun run db:reset -- --print-fingerprint`로 얻고 `--target-fingerprint=<값>` 또는 `DATABASE_RESET_TARGET_FINGERPRINT`로 전달한다.
+- 백업은 `data/backups/<DB 파일명>-<fingerprint 앞 12자>/`에 저장한다. 복구 확인 뒤 별도 보존 정책에 따라 정리한다.
 
 ## 운영 마이그레이션 원칙
 

@@ -93,9 +93,11 @@ bun run --filter=@workspace/web test
 
 ## 커버리지 기준
 
-- `bun run test:coverage`는 V8 coverage를 사용한다.
-- 루트 coverage는 `vitest.workspace.ts`를 사용하며, `vitest.config.ts`를 가진 workspace는 coverage workspace에 포함되어야 한다.
-- 현재 저장소에는 전역 최소 coverage threshold가 고정되어 있지 않다.
+- `bun run test:coverage`는 13개 runtime workspace를 각각 해당 디렉터리에서 실행한다. `bun:sqlite` 경계는 Bun native coverage를 사용하고 나머지는 V8 coverage를 사용한다.
+- 루트 `vitest.workspace.ts`의 13개 프로젝트와 coverage 실행 목록은 일치해야 한다. `apps/storybook`과 `packages/config`는 runtime test 프로젝트가 아니므로 제외한다.
+- 각 runtime workspace는 `src`의 실행 코드를 `coverage.include`로 명시한다. 테스트, Storybook story, 타입 선언, 생성 파일, 설정 파일은 분모에서 제외한다.
+- 인증, repository, migration, 동기화처럼 보안·데이터 무결성에 직접 영향을 주는 모듈은 `run-workspace-coverage.ts`의 파일별 threshold를 통과해야 한다.
+- CI는 `coverage/<workspace>/`의 LCOV와 요약을 단일 artifact로 14일 보존한다. 새 runtime 파일은 테스트에서 import하지 않아도 분모에 포함되어 전체 coverage를 낮춘다.
 - 새 정책, 권한, 보안, 데이터 보존 로직은 threshold 유무와 관계없이 회귀 테스트를 추가한다.
 - 단순 markup 변경은 UI smoke 수준으로 충분할 수 있다.
 - 공유 package, repository, auth, migration 관련 변경은 테스트 범위를 넓힌다.

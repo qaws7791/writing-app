@@ -91,13 +91,13 @@ describe("admin runtime config", () => {
     })
 
     expect(
-      offenders.map((filePath) => relative(process.cwd(), filePath))
+      offenders.map((filePath) => relative(adminDirectory, filePath))
     ).toEqual([])
   })
 })
 
 function findRuntimeSourceFiles(
-  directory = join(process.cwd(), "src")
+  directory = join(adminDirectory, "src")
 ): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const entryPath = join(directory, entry.name)
@@ -117,3 +117,5 @@ function findRuntimeSourceFiles(
     return [entryPath]
   })
 }
+
+const adminDirectory = join(import.meta.dirname, "..")

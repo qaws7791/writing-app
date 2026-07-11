@@ -1,37 +1,32 @@
-import { existsSync, rmSync } from "node:fs"
-import { fileURLToPath } from "node:url"
-
 import { getDefaultDatabaseUrl } from "@workspace/db/client"
+import {
+  inspectDatabaseResetTarget,
+  resetSqliteDatabaseFiles,
+} from "@workspace/db/destructive-operation-guard"
 
 const databaseUrl = process.env["DATABASE_URL"] ?? getDefaultDatabaseUrl()
-const databasePath = getDatabaseFilePath(databaseUrl)
+const target = inspectDatabaseResetTarget(databaseUrl)
 
-if (databasePath === null) {
+if (target === null) {
   throw new Error("Cannot reset an in-memory database.")
 }
 
-for (const path of [
-  databasePath,
-  `${databasePath}-shm`,
-  `${databasePath}-wal`,
-]) {
-  if (existsSync(path)) {
-    rmSync(path, { force: true })
-  }
+if (process.argv.includes("--print-fingerprint")) {
+  process.stdout.write(`${target.fingerprint}\n`)
+} else {
+  resetSqliteDatabaseFiles({
+    allowDatabaseReset: process.env["ALLOW_DATABASE_RESET"] === "true",
+    databaseUrl,
+    forceDatabaseReset: process.argv.includes("--force"),
+    nodeEnv: process.env["NODE_ENV"] ?? "",
+    targetFingerprint:
+      readArgument("--target-fingerprint=") ??
+      process.env["DATABASE_RESET_TARGET_FINGERPRINT"],
+  })
 }
 
-function getDatabaseFilePath(databaseUrl: string): string | null {
-  if (databaseUrl === ":memory:") {
-    return null
-  }
-
-  if (databaseUrl.startsWith("file://")) {
-    return fileURLToPath(databaseUrl)
-  }
-
-  if (databaseUrl.startsWith("file:")) {
-    return databaseUrl.slice("file:".length)
-  }
-
-  return databaseUrl
+function readArgument(prefix: string): string | undefined {
+  return process.argv
+    .find((argument) => argument.startsWith(prefix))
+    ?.slice(prefix.length)
 }

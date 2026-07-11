@@ -178,9 +178,11 @@ function validateRootPackageScripts() {
   const coverageScript = scripts["test:coverage"]
   if (
     typeof coverageScript !== "string" ||
-    !coverageScript.includes("vitest.workspace.ts")
+    !coverageScript.includes("run-workspace-coverage.ts")
   ) {
-    failures.push("package.json test:coverage must use vitest.workspace.ts.")
+    failures.push(
+      "package.json test:coverage must use run-workspace-coverage.ts."
+    )
   }
 
   const analysisScript = scripts["repomix:analysis"]

@@ -33,10 +33,10 @@ export function StepDebugValidation({ sample }: StepDebugValidationProps) {
         ✗ 스키마 검증 실패
       </p>
       <ul className="flex flex-col gap-1">
-        {result.error.issues.map((issue, index) => (
+        {result.error.issues.map((issue) => (
           <li
             className="text-xs text-red-300/80"
-            key={`${issue.path.join(".")}-${index}`}
+            key={`${issue.path.join(".")}-${issue.code}-${issue.message}`}
           >
             {issue.path.join(".")} — {issue.message}
           </li>
