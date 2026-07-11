@@ -63,7 +63,7 @@ unknown role은 관리자 세션 resolver에서 유효하지 않은 세션으로
 | 자료실 구조 변경·가져오기  | 허용     | 허용  |
 | 자료실 본문 공동 편집      | 허용     | 허용  |
 
-코스·사용자·운영 설정의 변경성 route는 `resolveOwnerAdminSession()`을 사용해 서비스 호출 전에 차단한다. 자료실은 작성자 소유권 없이 전체 관리자가 공동 관리하므로 구조 명령, 가져오기와 WebSocket 편집 모두 유효한 관리자 세션을 요구한다.
+코스·사용자·운영 설정의 변경성 route는 owner middleware로 서비스 호출 전에 빠르게 차단한다. 해당 application use case도 필수 `AdminActor`의 role을 다시 확인하고 operator 직접 호출을 repository 접근 전에 `forbidden`으로 거부한다. 자료실은 작성자 소유권 없이 전체 관리자가 공동 관리하므로 구조 명령, 가져오기와 WebSocket 편집 모두 유효한 관리자 세션을 요구한다.
 
 ## API별 권한 기준
 
@@ -101,4 +101,5 @@ unknown role은 관리자 세션 resolver에서 유효하지 않은 세션으로
 - 새 role 또는 capability를 추가하기 전에 `admin-role.ts`를 먼저 변경한다.
 - DB enum, Better Auth additional field, seed, route guard, 테스트 fixture가 같은 role source를 사용해야 한다.
 - route에 문자열 literal로 role을 직접 비교하지 않는다.
-- 변경성 작업은 route에서 권한 확인을 끝낸 뒤 service를 호출한다.
+- owner 변경 작업은 transport에서 빠르게 권한을 확인하고, 인증된 세션으로 만든 `AdminActor`를 command에 포함해 application 정책에서도 다시 확인한다.
+- 새 transport의 actor 구성과 오류 변환은 `admin-transport-security.md`를 따른다.

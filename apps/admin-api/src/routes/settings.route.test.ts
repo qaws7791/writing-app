@@ -226,7 +226,8 @@ function createDependencies({
       contentReset: {
         async resetContent(input) {
           expect(input.now).toEqual(testAdminNow)
-          return contentResetResult
+          expect(input.actor).toEqual({ id: "admin-1", role })
+          return { kind: "ok", value: contentResetResult }
         },
       },
       settings: {
@@ -235,21 +236,23 @@ function createDependencies({
         },
         async updateLegalSettings(input) {
           expect(input).toEqual({
+            actor: { id: "admin-1", role },
             now: testAdminNow,
             privacy: "개인정보처리방침",
             terms: "이용약관",
           })
 
-          return settings
+          return { kind: "ok", value: settings }
         },
         async updateNoticeSettings(input) {
           expect(input).toEqual({
+            actor: { id: "admin-1", role },
             announce: "공지 내용",
             banner: "새 강의가 추가되었어요!",
             now: testAdminNow,
           })
 
-          return settings
+          return { kind: "ok", value: settings }
         },
       },
     },

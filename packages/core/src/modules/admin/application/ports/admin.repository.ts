@@ -122,18 +122,6 @@ export type SaveAdminAiChatAssistantMessageInput = {
   readonly now: Date
 }
 
-export type AdminOwnerMutationResult<TValue> =
-  | {
-      readonly kind: "forbidden"
-    }
-  | {
-      readonly kind: "not-found"
-    }
-  | {
-      readonly kind: "ok"
-      readonly value: TValue
-    }
-
 export type DashboardReader = {
   readonly readDashboard: (
     input: ReadAdminDashboardInput

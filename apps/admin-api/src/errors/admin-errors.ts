@@ -1,4 +1,5 @@
 import { AppError } from "@workspace/hono/errors"
+import type { AdminOwnerMutationResult } from "@workspace/core/admin"
 
 export function invalidAdminRequestError(): AppError {
   return new AppError({
@@ -22,6 +23,19 @@ export function forbiddenAdminError(): AppError {
     message: "Forbidden",
     status: 403,
   })
+}
+
+export function unwrapAdminOwnerMutationResult<TValue>(
+  result: AdminOwnerMutationResult<TValue>
+): TValue {
+  switch (result.kind) {
+    case "forbidden":
+      throw forbiddenAdminError()
+    case "not-found":
+      throw notFoundAdminError()
+    case "ok":
+      return result.value
+  }
 }
 
 export function notFoundAdminError(): AppError {

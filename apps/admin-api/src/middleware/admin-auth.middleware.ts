@@ -21,6 +21,10 @@ export function createRequireAdminSessionMiddleware(
     }
 
     context.set("activeAdminSession", session)
+    context.set("adminActor", {
+      id: session.admin.id,
+      role: session.admin.role,
+    })
 
     await next()
   }
@@ -39,6 +43,10 @@ export function createRequireOwnerAdminSessionMiddleware(
     }
 
     context.set("activeAdminSession", session)
+    context.set("adminActor", {
+      id: session.admin.id,
+      role: session.admin.role,
+    })
 
     if (!canAccessOwnerAdminRoute(session.admin.role)) {
       throw forbiddenAdminError()

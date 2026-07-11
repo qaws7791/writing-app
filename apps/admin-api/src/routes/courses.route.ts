@@ -10,7 +10,7 @@ import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
-import { notFoundAdminError } from "@/errors/admin-errors"
+import { unwrapAdminOwnerMutationResult } from "@/errors/admin-errors"
 import {
   adminAuthenticatedResponses,
   errorJsonResponse,
@@ -103,13 +103,13 @@ function createCreateCourseRoute({
     ...ownerAdminRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
-  const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
-    context.json(
-      await courseService.createCourse({
-        now: now(),
-      }),
-      200
-    )
+  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
+    const result = await courseService.createCourse({
+      actor: context.var.adminActor,
+      now: now(),
+    })
+    return context.json(unwrapAdminOwnerMutationResult(result), 200)
+  }
 
   return defineAdminRoute({
     ...routeConfig,
@@ -145,15 +145,11 @@ function createArchiveCourseRoute({
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const { courseId } = context.req.valid("param")
     const result = await courseService.archiveCourse({
+      actor: context.var.adminActor,
       courseId,
       now: now(),
     })
-
-    if (result === null) {
-      throw notFoundAdminError()
-    }
-
-    return context.json(result, 200)
+    return context.json(unwrapAdminOwnerMutationResult(result), 200)
   }
 
   return defineAdminRoute({
