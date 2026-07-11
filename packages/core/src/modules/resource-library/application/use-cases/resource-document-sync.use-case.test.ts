@@ -8,6 +8,7 @@ import { createDrizzleResourceDocumentSyncRepository } from "@workspace/core/mod
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 import {
+  applyResourceDocumentUpdate,
   createHeadlessResourceDocumentCollaboration,
   createResourceDocumentSnapshot,
   projectResourceDocumentSnapshot,
@@ -83,6 +84,72 @@ describe("자료 문서 동기화 use case", () => {
       fixture.client.close()
     }
   })
+
+  it("같은 snapshot에서 동시에 편집한 두 클라이언트와 durable Markdown이 수렴한다", async () => {
+    const initial = createResourceDocumentSnapshot("초기 본문")
+    if (initial.status !== "valid") throw new Error("초기 snapshot 생성 실패")
+
+    const fixture = createFixture(initial.snapshot)
+    const useCase = createResourceDocumentSyncUseCase(fixture.repository)
+    const firstUpdate = createUpdate(initial.snapshot, "첫 번째 관리자 본문")
+    const secondUpdate = createUpdate(initial.snapshot, "두 번째 관리자 본문")
+
+    try {
+      const [firstResult, secondResult] = await Promise.all([
+        useCase.saveTransaction({
+          actorId: "admin-1",
+          documentId,
+          knownStateVersion: 0,
+          now: new Date("2026-07-11T06:00:00.000Z"),
+          transactionId: toResourceDocumentTransactionId("transaction-1"),
+          update: firstUpdate,
+        }),
+        useCase.saveTransaction({
+          actorId: "admin-2",
+          documentId,
+          knownStateVersion: 0,
+          now: new Date("2026-07-11T06:00:01.000Z"),
+          transactionId: toResourceDocumentTransactionId("transaction-2"),
+          update: secondUpdate,
+        }),
+      ])
+      expect([firstResult, secondResult]).toMatchObject([
+        { kind: "accepted", stateVersion: 1 },
+        { kind: "accepted", stateVersion: 2 },
+      ])
+
+      const sync = await useCase.readSync({
+        afterStateVersion: 0,
+        documentId,
+      })
+      if (sync.kind !== "updates") {
+        throw new Error("두 클라이언트의 증분 update를 조회하지 못했습니다.")
+      }
+      const durable = await useCase.readSync({
+        afterStateVersion: 0,
+        documentId,
+        mode: "snapshot",
+      })
+      if (durable.kind !== "snapshot") {
+        throw new Error("durable snapshot을 조회하지 못했습니다.")
+      }
+      const durableProjection = projectResourceDocumentSnapshot(
+        durable.snapshot
+      )
+      if (durableProjection.status !== "valid") {
+        throw new Error("durable snapshot 투영에 실패했습니다.")
+      }
+
+      expect(
+        applyUpdates(initial.snapshot, [firstUpdate, ...sync.updates])
+      ).toBe(durableProjection.markdown)
+      expect(
+        applyUpdates(initial.snapshot, [secondUpdate, ...sync.updates])
+      ).toBe(durableProjection.markdown)
+    } finally {
+      fixture.client.close()
+    }
+  })
 })
 
 function createFixture(snapshot: Uint8Array) {
@@ -140,4 +207,23 @@ function createUpdate(snapshot: Uint8Array, markdown: string): Uint8Array {
   collaboration.disconnect()
   document.destroy()
   return mergeUpdates(updates)
+}
+
+function applyUpdates(
+  initialSnapshot: Uint8Array,
+  updates: readonly Uint8Array[]
+): string {
+  let snapshot = initialSnapshot
+  let markdown = ""
+
+  for (const update of updates) {
+    const applied = applyResourceDocumentUpdate(snapshot, update)
+    if (applied.status !== "valid") {
+      throw new Error("클라이언트 update 적용에 실패했습니다.")
+    }
+    snapshot = applied.snapshot
+    markdown = applied.markdown
+  }
+
+  return markdown
 }
