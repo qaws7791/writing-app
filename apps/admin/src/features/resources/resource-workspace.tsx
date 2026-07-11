@@ -15,6 +15,8 @@ import { MenuIcon, PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react"
 import { createBrowserResourceLibraryApi } from "@/features/resources/resource-library-api"
 import { connectBrowserResourceEvents } from "@/features/resources/resource-events-client"
 import { createResourceWorkspaceRealtime } from "@/features/resources/resource-workspace-realtime"
+import { createResourceWorkspaceSync } from "@/features/resources/resource-workspace-sync"
+import { ResourceWorkspaceSyncProvider } from "@/features/resources/resource-workspace-sync-context"
 import {
   ResourceTree,
   type InitialResourceTreeState,
@@ -67,6 +69,10 @@ export function ResourceWorkspace({
       }),
     [eventsServerUrl]
   )
+  const workspaceSync = useMemo(
+    () => createResourceWorkspaceSync({ api, realtime }),
+    [api, realtime]
+  )
   const isDesktop = useSyncExternalStore<boolean | null>(
     subscribeDesktopMediaQuery,
     readDesktopMediaQuery,
@@ -94,15 +100,12 @@ export function ResourceWorkspace({
     : params.documentId
   useEffect(() => {
     realtime.start()
+    workspaceSync.start()
     return () => {
+      workspaceSync.dispose()
       realtime.dispose()
     }
-  }, [realtime])
-  useEffect(() => {
-    realtime.setActiveDocument(
-      documentId === undefined ? null : { documentId, knownStateVersion: 0 }
-    )
-  }, [documentId, realtime])
+  }, [realtime, workspaceSync])
   const scope: AdminResourceTreeScope =
     pathname === "/resources/trash" || searchParams.get("scope") === "trash"
       ? "trash"
@@ -133,100 +136,108 @@ export function ResourceWorkspace({
 
   if (isDesktop === null) {
     return (
-      <div
-        className="flex min-h-0 flex-1 items-center justify-center"
-        role="status"
-      >
-        <Spinner aria-hidden="true" />
-        <span className="ml-2 text-sm text-muted-foreground">
-          자료실 화면을 준비하는 중입니다.
-        </span>
-      </div>
+      <ResourceWorkspaceSyncProvider sync={workspaceSync}>
+        <div
+          className="flex min-h-0 flex-1 items-center justify-center"
+          role="status"
+        >
+          <Spinner aria-hidden="true" />
+          <span className="ml-2 text-sm text-muted-foreground">
+            자료실 화면을 준비하는 중입니다.
+          </span>
+        </div>
+      </ResourceWorkspaceSyncProvider>
     )
   }
 
   if (!isDesktop) {
     return (
-      <div className="relative flex min-h-0 flex-1 overflow-hidden">
-        <Button
-          aria-label="자료 트리 열기"
-          className="absolute top-3 left-3 z-20 shadow-sm"
-          onClick={() => {
-            updateMobileTreeOpen(true)
-          }}
-          ref={mobileTreeTriggerRef}
-          size="icon-sm"
-          type="button"
-          variant="outline"
-        >
-          <MenuIcon aria-hidden="true" />
-        </Button>
-        <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
-        <Drawer
-          onOpenChange={updateMobileTreeOpen}
-          open={isMobileTreeOpen}
-          swipeDirection="left"
-        >
-          <DrawerContent>
-            <DrawerHeader className="sr-only">
-              <DrawerTitle>자료 트리</DrawerTitle>
-            </DrawerHeader>
-            {renderSidebar()}
-          </DrawerContent>
-        </Drawer>
-      </div>
+      <ResourceWorkspaceSyncProvider sync={workspaceSync}>
+        <div className="relative flex min-h-0 flex-1 overflow-hidden">
+          <Button
+            aria-label="자료 트리 열기"
+            className="absolute top-3 left-3 z-20 shadow-sm"
+            onClick={() => {
+              updateMobileTreeOpen(true)
+            }}
+            ref={mobileTreeTriggerRef}
+            size="icon-sm"
+            type="button"
+            variant="outline"
+          >
+            <MenuIcon aria-hidden="true" />
+          </Button>
+          <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
+          <Drawer
+            onOpenChange={updateMobileTreeOpen}
+            open={isMobileTreeOpen}
+            swipeDirection="left"
+          >
+            <DrawerContent>
+              <DrawerHeader className="sr-only">
+                <DrawerTitle>자료 트리</DrawerTitle>
+              </DrawerHeader>
+              {renderSidebar()}
+            </DrawerContent>
+          </Drawer>
+        </div>
+      </ResourceWorkspaceSyncProvider>
     )
   }
 
   if (isSidebarCollapsed) {
     return (
-      <div className="flex min-h-0 flex-1 overflow-hidden">
-        <aside className="flex w-12 shrink-0 justify-center border-r border-border bg-surface/40 pt-3">
-          <Button
-            aria-label="자료 트리 펼치기"
-            onClick={() => {
-              setIsSidebarCollapsed(false)
-              focusOnNextFrame(collapseSidebarTriggerRef)
-            }}
-            ref={expandSidebarTriggerRef}
-            size="icon-sm"
-            type="button"
-            variant="ghost"
-          >
-            <PanelLeftOpenIcon aria-hidden="true" />
-          </Button>
-        </aside>
-        <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
-      </div>
-    )
-  }
-
-  return (
-    <ResizablePanelGroup className="min-h-0 flex-1" orientation="horizontal">
-      <ResizablePanel defaultSize="24%" maxSize="36rem" minSize="18rem">
-        <aside className="h-full border-r border-border">
-          {renderSidebar(
+      <ResourceWorkspaceSyncProvider sync={workspaceSync}>
+        <div className="flex min-h-0 flex-1 overflow-hidden">
+          <aside className="flex w-12 shrink-0 justify-center border-r border-border bg-surface/40 pt-3">
             <Button
-              aria-label="자료 트리 접기"
+              aria-label="자료 트리 펼치기"
               onClick={() => {
-                setIsSidebarCollapsed(true)
-                focusOnNextFrame(expandSidebarTriggerRef)
+                setIsSidebarCollapsed(false)
+                focusOnNextFrame(collapseSidebarTriggerRef)
               }}
-              ref={collapseSidebarTriggerRef}
+              ref={expandSidebarTriggerRef}
               size="icon-sm"
               type="button"
               variant="ghost"
             >
-              <PanelLeftCloseIcon aria-hidden="true" />
+              <PanelLeftOpenIcon aria-hidden="true" />
             </Button>
-          )}
-        </aside>
-      </ResizablePanel>
-      <ResizableHandle withHandle />
-      <ResizablePanel defaultSize="76%" minSize="30rem">
-        <main className="h-full min-w-0 overflow-y-auto">{children}</main>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+          </aside>
+          <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
+        </div>
+      </ResourceWorkspaceSyncProvider>
+    )
+  }
+
+  return (
+    <ResourceWorkspaceSyncProvider sync={workspaceSync}>
+      <ResizablePanelGroup className="min-h-0 flex-1" orientation="horizontal">
+        <ResizablePanel defaultSize="24%" maxSize="36rem" minSize="18rem">
+          <aside className="h-full border-r border-border">
+            {renderSidebar(
+              <Button
+                aria-label="자료 트리 접기"
+                onClick={() => {
+                  setIsSidebarCollapsed(true)
+                  focusOnNextFrame(expandSidebarTriggerRef)
+                }}
+                ref={collapseSidebarTriggerRef}
+                size="icon-sm"
+                type="button"
+                variant="ghost"
+              >
+                <PanelLeftCloseIcon aria-hidden="true" />
+              </Button>
+            )}
+          </aside>
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel defaultSize="76%" minSize="30rem">
+          <main className="h-full min-w-0 overflow-y-auto">{children}</main>
+        </ResizablePanel>
+      </ResizablePanelGroup>
+    </ResourceWorkspaceSyncProvider>
   )
 }
 

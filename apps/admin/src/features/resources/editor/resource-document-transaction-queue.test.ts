@@ -47,6 +47,7 @@ describe("자료 문서 HTTP transaction queue", () => {
     if (firstUpdate === undefined || secondUpdate === undefined) {
       throw new Error("Yjs update fixture 생성 실패")
     }
+    queue.advanceKnownStateVersion(4)
     queue.enqueue(firstUpdate)
     expect(queue.hasPending()).toBe(true)
     await vi.advanceTimersByTimeAsync(300)
@@ -56,6 +57,7 @@ describe("자료 문서 HTTP transaction queue", () => {
 
     await vi.advanceTimersByTimeAsync(1)
     expect(save).toHaveBeenCalledTimes(1)
+    expect(calls[0]?.[1].knownStateVersion).toBe(4)
     const sentUpdate = calls[0]?.[1].update
     if (sentUpdate === undefined) throw new Error("저장 update 누락")
     const replica = new Doc()

@@ -27,6 +27,8 @@
 - 관리자 HTTP API Adapter는 Yjs binary와 Base64 wire 형식의 변환을 담당한다. 문서별 transaction queue는 500ms 유휴 구간의 update를 합치고 연속 입력은 1초 안에 확정하며, 실패한 요청은 같은 transaction ID와 payload로 재시도한다.
 - 활성 문서 조회는 Markdown bootstrap 시점의 `stateVersion`을 함께 반환한다. collaboration snapshot이 없는 기존 문서는 0으로 명시해 첫 pull 기준을 추측하지 않게 한다.
 - 새 Y.Doc은 Markdown을 독립 변환하지 않고 `mode=snapshot` sync로 서버 Yjs identity를 먼저 받는다. 이후에만 version 기반 증분 update를 적용해 서로 다른 client identity의 문서가 병합되는 오류를 막는다.
+- `ResourceWorkspaceSync`가 작업 공간 수명 동안 문서별 Y.Doc, HTTP transaction queue와 실시간 version listener를 소유한다. 초기 snapshot 전에는 편집기를 잠그고, 깨끗한 문서는 최근 3개만 보존하며 승인 대기 문서는 한도와 무관하게 유지한다.
+- production 편집기는 작업 공간 sync lease를 사용하도록 전환했다. 문서 이동은 Lexical binding만 해제하고 cached Y.Doc과 승인 대기 transaction을 유지하며, 기존 문서별 `WebsocketProvider` 구현은 rollback 경로로만 남아 있다.
 
 ## 결정 요약
 

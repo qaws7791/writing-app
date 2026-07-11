@@ -22,11 +22,17 @@ import {
   resourceMarkdownTransformers,
 } from "@workspace/resource-document/resource-markdown"
 
-import { ResourceDocumentEditorSurface } from "@/features/resources/editor/resource-document-editor"
+import {
+  ResourceDocumentEditor,
+  ResourceDocumentEditorSurface,
+} from "@/features/resources/editor/resource-document-editor"
 import type { ResourceDocumentCollaborationConnector } from "@/features/resources/editor/resource-document-collaboration-client"
 import { ResourceSlashMenuPlugin } from "@/features/resources/editor/resource-slash-menu-plugin"
 import type { ResourceDocumentEditorApi } from "@/features/resources/resource-library-api"
+import type { ResourceWorkspaceSync } from "@/features/resources/resource-workspace-sync"
+import { ResourceWorkspaceSyncProvider } from "@/features/resources/resource-workspace-sync-context"
 import type { AdminResourceLibraryDocument } from "@/lib/api/admin-api"
+import { readAdminApiBaseUrl } from "@/runtime-config"
 
 const documentFixture: AdminResourceLibraryDocument = {
   contentMarkdown: "## 시작\n\n본문 **강조**",
@@ -52,6 +58,54 @@ const documentFixture: AdminResourceLibraryDocument = {
 }
 
 describe("자료 Lexical 편집기", () => {
+  it("production 편집기는 작업 공간 HTTP 동기화 lease를 사용한다", async () => {
+    const release = vi.fn()
+    const attachDocument = vi.fn<ResourceWorkspaceSync["attachDocument"]>(
+      ({ editor }) => {
+        replaceResourceDocumentMarkdown(editor, documentFixture.contentMarkdown)
+        return {
+          release,
+          retry: vi.fn(async () => undefined),
+          subscribe(listener) {
+            listener({
+              kind: "synchronized",
+              message: "모든 변경 사항이 동기화됨",
+            })
+            return () => undefined
+          },
+        }
+      }
+    )
+    const sync: ResourceWorkspaceSync = {
+      attachDocument,
+      dispose: vi.fn(),
+      start: vi.fn(),
+    }
+    const { unmount } = render(
+      <ResourceWorkspaceSyncProvider sync={sync}>
+        <ResourceDocumentEditor
+          apiBaseUrl={readAdminApiBaseUrl({
+            ADMIN_API_BASE_URL: "https://admin-api.example.test",
+          })}
+          document={documentFixture}
+        />
+      </ResourceWorkspaceSyncProvider>
+    )
+
+    await waitFor(() => {
+      expect(attachDocument).toHaveBeenCalledWith({
+        documentId: "document-1",
+        editor: expect.any(Object),
+      })
+    })
+    expect(
+      screen.getByRole("status", { name: "모든 변경 사항이 동기화됨" })
+    ).toBeVisible()
+
+    unmount()
+    expect(release).toHaveBeenCalledTimes(1)
+  })
+
   beforeEach(() => {
     installEditorDomGeometry()
   })

@@ -10,6 +10,7 @@ import type { AdminApiResult } from "@/lib/api/api-result"
 type QueuedTransaction = AdminResourceDocumentTransactionInput
 
 export type ResourceDocumentTransactionQueue = {
+  readonly advanceKnownStateVersion: (stateVersion: number) => void
   readonly dispose: () => void
   readonly enqueue: (update: Uint8Array) => void
   readonly flush: () => void
@@ -85,6 +86,9 @@ export function createResourceDocumentTransactionQueue(input: {
   }
 
   return {
+    advanceKnownStateVersion(stateVersion) {
+      knownStateVersion = Math.max(knownStateVersion, stateVersion)
+    },
     dispose() {
       if (disposed) return
 

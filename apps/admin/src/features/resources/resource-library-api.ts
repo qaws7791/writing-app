@@ -20,7 +20,16 @@ export type ResourceTreeApi = Pick<
 
 export type ResourceDocumentEditorApi = Pick<AdminApi, "exportResourceDocument">
 
-export type ResourceLibraryApi = ResourceDocumentEditorApi & ResourceTreeApi
+export type ResourceWorkspaceSyncApi = Pick<
+  AdminApi,
+  | "getResourceDocumentSnapshot"
+  | "getResourceDocumentSync"
+  | "saveResourceDocumentTransaction"
+>
+
+export type ResourceLibraryApi = ResourceDocumentEditorApi &
+  ResourceTreeApi &
+  ResourceWorkspaceSyncApi
 
 export function createBrowserResourceLibraryApi(
   apiBaseUrl: AdminApiBaseUrl

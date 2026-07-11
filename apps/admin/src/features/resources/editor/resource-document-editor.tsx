@@ -33,7 +33,6 @@ import { Spinner } from "@workspace/ui/components/ui/spinner"
 import { cn } from "@workspace/ui/lib/utils"
 
 import {
-  connectBrowserResourceDocumentCollaboration,
   type ResourceDocumentCollaborationConnector,
   type ResourceDocumentCollaborationClient,
   type ResourceDocumentSyncState,
@@ -54,11 +53,10 @@ import {
   createBrowserResourceLibraryApi,
   type ResourceDocumentEditorApi,
 } from "@/features/resources/resource-library-api"
+import { type ResourceWorkspaceDocumentSyncState } from "@/features/resources/resource-workspace-sync"
+import { useResourceWorkspaceSync } from "@/features/resources/resource-workspace-sync-context"
 import type { AdminResourceLibraryDocument } from "@/lib/api/admin-api"
-import {
-  buildAdminApiWebSocketUrl,
-  type AdminApiBaseUrl,
-} from "@/runtime-config"
+import type { AdminApiBaseUrl } from "@/runtime-config"
 
 const editorTransformers = [...resourceMarkdownTransformers]
 
@@ -107,23 +105,62 @@ export function ResourceDocumentEditor({
   readonly apiBaseUrl: AdminApiBaseUrl
   readonly document: AdminResourceLibraryDocument
 }) {
+  const workspaceSync = useResourceWorkspaceSync()
   const api = useMemo(
     () => createBrowserResourceLibraryApi(apiBaseUrl),
     [apiBaseUrl]
   )
-  const collaborationServerUrl = useMemo(
-    () => buildAdminApiWebSocketUrl(apiBaseUrl, "/resources/collaboration"),
-    [apiBaseUrl]
+  const connectCollaboration = useMemo<ResourceDocumentCollaborationConnector>(
+    () =>
+      ({ editor, onSyncStateChange }) => {
+        const lease = workspaceSync.attachDocument({
+          documentId: document.id,
+          editor,
+        })
+        const unsubscribe = lease.subscribe((state) => {
+          onSyncStateChange(toEditorSyncState(state))
+        })
+
+        return {
+          disconnect() {
+            unsubscribe()
+            lease.release()
+          },
+          retry() {
+            void lease.retry()
+          },
+        }
+      },
+    [document.id, workspaceSync]
   )
 
   return (
     <ResourceDocumentEditorSurface
       api={api}
-      collaborationServerUrl={collaborationServerUrl}
-      connectCollaboration={connectBrowserResourceDocumentCollaboration}
+      collaborationServerUrl=""
+      connectCollaboration={connectCollaboration}
       document={document}
     />
   )
+}
+
+function toEditorSyncState(
+  state: ResourceWorkspaceDocumentSyncState
+): ResourceDocumentSyncState {
+  switch (state.kind) {
+    case "loading":
+      return { kind: "connecting", message: state.message }
+    case "saving":
+      return { kind: "syncing", message: state.message }
+    case "synchronized":
+      return { kind: "saved", message: state.message }
+    case "pending-offline":
+      return { kind: "reconnecting", message: state.message }
+    case "error":
+    case "invalid":
+    case "readonly":
+      return state
+  }
 }
 
 export function ResourceDocumentEditorSurface({
