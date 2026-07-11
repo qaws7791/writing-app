@@ -1,5 +1,6 @@
 export * from "@workspace/core/modules/admin/domain/admin.dto"
 export * from "@workspace/core/modules/admin/domain/admin-role"
+export * from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
 export * from "@workspace/core/modules/admin/application/ports/admin.repository"
 export type { AdminAiChatUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-ai-chat.use-case"
 export type { AdminAnalyticsUseCase } from "@workspace/core/modules/admin/application/use-cases/admin-analytics.use-case"

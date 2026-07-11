@@ -7,7 +7,7 @@
 ## 보안 원칙
 
 - 인증 경계를 학습자와 관리자로 분리한다.
-- 권한 확인은 변경성 작업 전에 수행한다.
+- owner 권한 확인은 transport와 application use case에서 변경성 작업 전에 수행한다.
 - 비밀값과 OAuth 비밀값은 저장소에 커밋하지 않는다.
 - 사용자에게 raw parser 오류, provider 오류, 내부 예외를 그대로 노출하지 않는다.
 - 세션 쿠키는 브라우저 JavaScript로 읽지 않는다.
@@ -44,7 +44,7 @@
 - 관리자 `operator`는 코스·사용자·운영 설정에서 조회 중심 업무를 수행하며 자료실은 owner와 동일하게 공동 관리한다.
 - 관리자 `owner`만 변경성 업무를 수행한다.
 - unknown role은 세션 없음처럼 처리한다.
-- 권한 부족 응답은 서비스 호출 전에 반환한다.
+- HTTP transport는 권한 부족 요청을 application 호출 전에 빠르게 거부하고, application use case도 `AdminActor`를 검사해 우회 호출을 repository 접근 전에 거부한다.
 - 학습자 profile 상태가 `active`가 아니면 보호 API를 사용할 수 없다.
 
 ## CORS와 origin

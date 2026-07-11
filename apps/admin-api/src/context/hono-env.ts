@@ -2,12 +2,14 @@ import type { RouteHandler } from "@hono/zod-openapi"
 import type { Env, Handler, Input, TypedResponse } from "hono"
 import type { AnyRouteConfig } from "@workspace/hono/core"
 import { defineRouteForEnv } from "@workspace/hono/core"
+import type { AdminActor } from "@workspace/core/admin"
 
 import type { AdminAuthenticatedSession } from "@/auth/admin-session"
 
 export type AdminHonoEnv = {
   Variables: {
     activeAdminSession: AdminAuthenticatedSession
+    adminActor: AdminActor
   }
 }
 

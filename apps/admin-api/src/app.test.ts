@@ -575,7 +575,8 @@ function createDependencies({
       users: {
         async deleteUser(input) {
           expect(input.userId).toBe("user-1")
-          return { deleted: true }
+          expect(input.actor).toEqual({ id: "admin-1", role })
+          return { kind: "ok", value: { deleted: true } }
         },
         async getUser(input) {
           expect(input.userId).toBe("user-1")
@@ -594,10 +595,11 @@ function createDependencies({
         async updateUserStatus(input) {
           expect(input.status).toBe("suspended")
           expect(input.userId).toBe("user-1")
+          expect(input.actor).toEqual({ id: "admin-1", role })
 
           return {
-            ...userDetail,
-            status: "suspended",
+            kind: "ok",
+            value: { ...userDetail, status: "suspended" },
           }
         },
       },

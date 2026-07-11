@@ -13,28 +13,37 @@ import type {
   UpdateAdminUserStatusInput,
   UserAdminRepository,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
+import {
+  canExecuteOwnerMutation,
+  type AdminOwnerMutationResult,
+  type OwnerAdminCommand,
+} from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
 
 export type AdminUserUseCase = {
   readonly deleteUser: (
-    input: DeleteAdminUserInput
-  ) => Promise<AdminDeleteUserResultDto | null>
+    input: OwnerAdminCommand<DeleteAdminUserInput>
+  ) => Promise<AdminOwnerMutationResult<AdminDeleteUserResultDto>>
   readonly getUser: (
     input: ReadAdminUserInput
   ) => Promise<AdminUserDetailDto | null>
   readonly getUsers: (input: ReadAdminUsersInput) => Promise<AdminUserListDto>
   readonly updateUserStatus: (
-    input: UpdateAdminUserStatusInput
-  ) => Promise<AdminUserDetailDto | null>
+    input: OwnerAdminCommand<UpdateAdminUserStatusInput>
+  ) => Promise<AdminOwnerMutationResult<AdminUserDetailDto>>
 }
 
 export function createAdminUserUseCase(
   userRepository: UserAdminRepository
 ): AdminUserUseCase {
   return {
-    async deleteUser(input) {
-      return adminDeleteUserResultSchema
+    async deleteUser({ actor, ...input }) {
+      if (!canExecuteOwnerMutation(actor)) {
+        return { kind: "forbidden" }
+      }
+      const value = adminDeleteUserResultSchema
         .nullable()
         .parse(await userRepository.deleteUser(input))
+      return value === null ? { kind: "not-found" } : { kind: "ok", value }
     },
     async getUser(input) {
       return adminUserDetailDtoSchema
@@ -44,10 +53,14 @@ export function createAdminUserUseCase(
     async getUsers(input) {
       return adminUserListDtoSchema.parse(await userRepository.readUsers(input))
     },
-    async updateUserStatus(input) {
-      return adminUserDetailDtoSchema
+    async updateUserStatus({ actor, ...input }) {
+      if (!canExecuteOwnerMutation(actor)) {
+        return { kind: "forbidden" }
+      }
+      const value = adminUserDetailDtoSchema
         .nullable()
         .parse(await userRepository.updateUserStatus(input))
+      return value === null ? { kind: "not-found" } : { kind: "ok", value }
     },
   }
 }

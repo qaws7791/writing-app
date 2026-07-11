@@ -7,15 +7,20 @@ import type {
   SaveAdminNoticeSettingsInput,
   SettingsRepository,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
+import {
+  canExecuteOwnerMutation,
+  type AdminOwnerMutationResult,
+  type OwnerAdminCommand,
+} from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
 
 export type AdminSettingsUseCase = {
   readonly getSettings: () => Promise<AdminSettingsDto>
   readonly updateLegalSettings: (
-    input: SaveAdminLegalSettingsInput
-  ) => Promise<AdminSettingsDto>
+    input: OwnerAdminCommand<SaveAdminLegalSettingsInput>
+  ) => Promise<AdminOwnerMutationResult<AdminSettingsDto>>
   readonly updateNoticeSettings: (
-    input: SaveAdminNoticeSettingsInput
-  ) => Promise<AdminSettingsDto>
+    input: OwnerAdminCommand<SaveAdminNoticeSettingsInput>
+  ) => Promise<AdminOwnerMutationResult<AdminSettingsDto>>
 }
 
 export function createAdminSettingsUseCase(
@@ -27,15 +32,23 @@ export function createAdminSettingsUseCase(
         await settingsRepository.readSettings()
       )
     },
-    async updateLegalSettings(input) {
-      return adminSettingsDtoSchema.parse(
+    async updateLegalSettings({ actor, ...input }) {
+      if (!canExecuteOwnerMutation(actor)) {
+        return { kind: "forbidden" }
+      }
+      const value = adminSettingsDtoSchema.parse(
         await settingsRepository.saveLegalSettings(input)
       )
+      return { kind: "ok", value }
     },
-    async updateNoticeSettings(input) {
-      return adminSettingsDtoSchema.parse(
+    async updateNoticeSettings({ actor, ...input }) {
+      if (!canExecuteOwnerMutation(actor)) {
+        return { kind: "forbidden" }
+      }
+      const value = adminSettingsDtoSchema.parse(
         await settingsRepository.saveNoticeSettings(input)
       )
+      return { kind: "ok", value }
     },
   }
 }

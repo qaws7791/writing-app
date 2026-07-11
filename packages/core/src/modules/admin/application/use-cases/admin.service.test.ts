@@ -278,6 +278,9 @@ const courseList: AdminCourseListDto = {
 }
 
 describe("어드민 서비스", () => {
+  const ownerActor = { id: "owner-1", role: "owner" } as const
+  const operatorActor = { id: "operator-1", role: "operator" } as const
+
   it("repository 대시보드 스냅샷을 관리자 dashboard DTO로 반환한다", async () => {
     const service = createService({
       dashboardReader: {
@@ -341,20 +344,22 @@ describe("어드민 서비스", () => {
     )
     await expect(
       service.updateUserStatus({
+        actor: ownerActor,
         now: new Date("2026-06-14T03:00:00.000Z"),
         status: "suspended",
         userId: "user-1",
       })
     ).resolves.toEqual({
-      ...userDetail,
-      status: "suspended",
+      kind: "ok",
+      value: { ...userDetail, status: "suspended" },
     })
     await expect(
       service.deleteUser({
+        actor: ownerActor,
         now: new Date("2026-06-14T03:00:00.000Z"),
         userId: "user-1",
       })
-    ).resolves.toEqual({ deleted: true })
+    ).resolves.toEqual({ kind: "ok", value: { deleted: true } })
   })
 
   it("repository 분석 스냅샷과 레슨 분석 페이지를 관리자 DTO로 반환한다", async () => {
@@ -503,23 +508,26 @@ describe("어드민 서비스", () => {
     await expect(service.getSettings()).resolves.toEqual(settings)
     await expect(
       service.updateNoticeSettings({
+        actor: ownerActor,
         announce: "공지 내용",
         banner: "새 강의가 추가되었어요!",
         now: new Date("2026-06-14T03:00:00.000Z"),
       })
-    ).resolves.toEqual(settings)
+    ).resolves.toEqual({ kind: "ok", value: settings })
     await expect(
       service.updateLegalSettings({
+        actor: ownerActor,
         now: new Date("2026-06-14T03:00:00.000Z"),
         privacy: "개인정보처리방침",
         terms: "이용약관",
       })
-    ).resolves.toEqual(settings)
+    ).resolves.toEqual({ kind: "ok", value: settings })
     await expect(
       service.resetContent({
+        actor: ownerActor,
         now: new Date("2026-06-14T03:00:00.000Z"),
       })
-    ).resolves.toEqual(contentResetResult)
+    ).resolves.toEqual({ kind: "ok", value: contentResetResult })
   })
 
   it("repository 코스 목록, 생성, editor 조회, 보관 결과를 관리자 DTO로 반환한다", async () => {
@@ -564,9 +572,10 @@ describe("어드민 서비스", () => {
     ).resolves.toEqual(courseList)
     await expect(
       service.createCourse({
+        actor: ownerActor,
         now: new Date("2026-06-14T03:00:00.000Z"),
       })
-    ).resolves.toEqual(courseDetail)
+    ).resolves.toEqual({ kind: "ok", value: courseDetail })
     await expect(
       service.getCourseEditor({
         courseId: "cmock",
@@ -574,10 +583,47 @@ describe("어드민 서비스", () => {
     ).resolves.toEqual(courseDetail)
     await expect(
       service.archiveCourse({
+        actor: ownerActor,
         courseId: "cmock",
         now: new Date("2026-06-14T03:00:00.000Z"),
       })
-    ).resolves.toEqual(archiveCourseResult)
+    ).resolves.toEqual({ kind: "ok", value: archiveCourseResult })
+  })
+
+  it("operator의 owner 변경 직접 호출을 모두 거부한다", async () => {
+    const service = createService({})
+    const now = new Date("2026-06-14T03:00:00.000Z")
+
+    await expect(
+      Promise.all([
+        service.createCourse({ actor: operatorActor, now }),
+        service.archiveCourse({
+          actor: operatorActor,
+          courseId: "course-1",
+          now,
+        }),
+        service.updateUserStatus({
+          actor: operatorActor,
+          now,
+          status: "suspended",
+          userId: "user-1",
+        }),
+        service.deleteUser({ actor: operatorActor, now, userId: "user-1" }),
+        service.updateNoticeSettings({
+          actor: operatorActor,
+          announce: "공지",
+          banner: "배너",
+          now,
+        }),
+        service.updateLegalSettings({
+          actor: operatorActor,
+          now,
+          privacy: "개인정보처리방침",
+          terms: "이용약관",
+        }),
+        service.resetContent({ actor: operatorActor, now }),
+      ])
+    ).resolves.toEqual(Array.from({ length: 7 }, () => ({ kind: "forbidden" })))
   })
 })
 

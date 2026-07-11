@@ -12,6 +12,7 @@ import type {
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
+import { unwrapAdminOwnerMutationResult } from "@/errors/admin-errors"
 import {
   adminAuthenticatedResponses,
   errorJsonResponse,
@@ -88,13 +89,12 @@ function createUpdateNoticeSettingsRoute({
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const body = context.req.valid("json")
 
-    return context.json(
-      await settingsService.updateNoticeSettings({
-        ...body,
-        now: now(),
-      }),
-      200
-    )
+    const result = await settingsService.updateNoticeSettings({
+      ...body,
+      actor: context.var.adminActor,
+      now: now(),
+    })
+    return context.json(unwrapAdminOwnerMutationResult(result), 200)
   }
 
   return defineAdminRoute({
@@ -128,13 +128,12 @@ function createUpdateLegalSettingsRoute({
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const body = context.req.valid("json")
 
-    return context.json(
-      await settingsService.updateLegalSettings({
-        ...body,
-        now: now(),
-      }),
-      200
-    )
+    const result = await settingsService.updateLegalSettings({
+      ...body,
+      actor: context.var.adminActor,
+      now: now(),
+    })
+    return context.json(unwrapAdminOwnerMutationResult(result), 200)
   }
 
   return defineAdminRoute({
@@ -159,13 +158,13 @@ function createResetContentRoute({
     ...ownerAdminRouteOptions(sessionResolver),
   } satisfies AnyRouteConfig
 
-  const handler: AdminRouteHandler<typeof routeConfig> = async (context) =>
-    context.json(
-      await contentResetService.resetContent({
-        now: now(),
-      }),
-      200
-    )
+  const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
+    const result = await contentResetService.resetContent({
+      actor: context.var.adminActor,
+      now: now(),
+    })
+    return context.json(unwrapAdminOwnerMutationResult(result), 200)
+  }
 
   return defineAdminRoute({
     ...routeConfig,

@@ -12,7 +12,10 @@ import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
-import { notFoundAdminError } from "@/errors/admin-errors"
+import {
+  notFoundAdminError,
+  unwrapAdminOwnerMutationResult,
+} from "@/errors/admin-errors"
 import {
   adminAuthenticatedResponses,
   errorJsonResponse,
@@ -159,16 +162,13 @@ function createUpdateUserStatusRoute({
     const { userId } = context.req.valid("param")
     const { status } = context.req.valid("json")
     const user = await userService.updateUserStatus({
+      actor: context.var.adminActor,
       now: now(),
       status,
       userId,
     })
 
-    if (user === null) {
-      throw notFoundAdminError()
-    }
-
-    return context.json(user, 200)
+    return context.json(unwrapAdminOwnerMutationResult(user), 200)
   }
 
   return defineAdminRoute({
@@ -205,15 +205,12 @@ function createDeleteUserRoute({
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const { userId } = context.req.valid("param")
     const result = await userService.deleteUser({
+      actor: context.var.adminActor,
       now: now(),
       userId,
     })
 
-    if (result === null) {
-      throw notFoundAdminError()
-    }
-
-    return context.json(result, 200)
+    return context.json(unwrapAdminOwnerMutationResult(result), 200)
   }
 
   return defineAdminRoute({

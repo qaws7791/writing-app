@@ -173,6 +173,23 @@ describe("어드민 API courses route", () => {
     await expect(response.json()).resolves.toEqual(courseDetail)
   })
 
+  it("application 정책이 거부한 코스 생성은 표준 403 오류로 변환한다", async () => {
+    const app = createApp(
+      createDependencies({ denyCreateCourseAtApplication: true })
+    )
+
+    const response = await app.request("/courses", {
+      headers: { Authorization: "Bearer admin-token" },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(403)
+    await expect(response.json()).resolves.toEqual({
+      code: "FORBIDDEN",
+      message: "Forbidden",
+    })
+  })
+
   it("운영자는 코스 생성 요청을 실행할 수 없다", async () => {
     const app = createApp(createDependencies({ role: adminRoles.operator }))
 
@@ -240,8 +257,10 @@ describe("어드민 API courses route", () => {
 })
 
 function createDependencies({
+  denyCreateCourseAtApplication = false,
   role = adminRoles.owner,
 }: {
+  readonly denyCreateCourseAtApplication?: boolean
   readonly role?: AdminRole
 } = {}): AdminApiDependencies {
   return createTestAdminApiDependencies({
@@ -249,17 +268,22 @@ function createDependencies({
       courses: {
         async archiveCourse(input) {
           expect(input.now).toEqual(testAdminNow)
+          expect(input.actor).toEqual({ id: "admin-1", role })
 
           if (input.courseId === "missing") {
-            return null
+            return { kind: "not-found" }
           }
 
           expect(input.courseId).toBe("cmock")
-          return archiveCourseResult
+          return { kind: "ok", value: archiveCourseResult }
         },
         async createCourse(input) {
           expect(input.now).toEqual(testAdminNow)
-          return courseDetail
+          expect(input.actor).toEqual({ id: "admin-1", role })
+          if (denyCreateCourseAtApplication) {
+            return { kind: "forbidden" }
+          }
+          return { kind: "ok", value: courseDetail }
         },
         async getCourses(input) {
           expect(input).toEqual({

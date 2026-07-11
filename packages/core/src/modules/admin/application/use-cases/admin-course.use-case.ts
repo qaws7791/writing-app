@@ -13,14 +13,19 @@ import type {
   ReadAdminCourseInput,
   ReadAdminCoursesInput,
 } from "@workspace/core/modules/admin/application/ports/admin.repository"
+import {
+  canExecuteOwnerMutation,
+  type AdminOwnerMutationResult,
+  type OwnerAdminCommand,
+} from "@workspace/core/modules/admin/application/policies/admin-actor-policy"
 
 export type AdminCourseUseCase = {
   readonly archiveCourse: (
-    input: ArchiveAdminCourseInput
-  ) => Promise<AdminArchiveCourseResultDto | null>
+    input: OwnerAdminCommand<ArchiveAdminCourseInput>
+  ) => Promise<AdminOwnerMutationResult<AdminArchiveCourseResultDto>>
   readonly createCourse: (
-    input: CreateAdminCourseInput
-  ) => Promise<AdminCourseDetailDto>
+    input: OwnerAdminCommand<CreateAdminCourseInput>
+  ) => Promise<AdminOwnerMutationResult<AdminCourseDetailDto>>
   readonly getCourseEditor: (
     input: ReadAdminCourseInput
   ) => Promise<AdminCourseDetailDto | null>
@@ -33,15 +38,23 @@ export function createAdminCourseUseCase(
   courseRepository: CourseAdminRepository
 ): AdminCourseUseCase {
   return {
-    async archiveCourse(input) {
-      return adminArchiveCourseResultSchema
+    async archiveCourse({ actor, ...input }) {
+      if (!canExecuteOwnerMutation(actor)) {
+        return { kind: "forbidden" }
+      }
+      const value = adminArchiveCourseResultSchema
         .nullable()
         .parse(await courseRepository.archiveCourse(input))
+      return value === null ? { kind: "not-found" } : { kind: "ok", value }
     },
-    async createCourse(input) {
-      return adminCourseDetailDtoSchema.parse(
+    async createCourse({ actor, ...input }) {
+      if (!canExecuteOwnerMutation(actor)) {
+        return { kind: "forbidden" }
+      }
+      const value = adminCourseDetailDtoSchema.parse(
         await courseRepository.createCourse(input)
       )
+      return { kind: "ok", value }
     },
     async getCourseEditor(input) {
       return adminCourseDetailDtoSchema
