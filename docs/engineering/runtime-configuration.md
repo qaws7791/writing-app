@@ -104,16 +104,18 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 
 ## 어드민 로컬 seed 설정
 
-`bun run dev:admin:setup`은 최종 자료실 schema를 포함한 baseline migration, 콘텐츠 seed, `ADMIN_SEED_RESET_PASSWORD=true` 관리자 seed를 순서대로 실행한다. 별도 자료실 전환 migration은 없다. 기본 계정은 환경 변수가 없을 때 아래 값을 사용한다.
+`bun run dev:admin:setup`은 최종 자료실 schema를 포함한 baseline migration, 콘텐츠 seed, 관리자 seed를 순서대로 실행한다. 별도 자료실 전환 migration은 없다. 관리자 credential은 `apps/admin-api/.env`에 명시해야 하며 기본 이메일과 비밀번호 fallback은 없다.
 
-| 변수                        | 기본값                                | 설명                            |
-| --------------------------- | ------------------------------------- | ------------------------------- |
-| `ADMIN_SEED_EMAIL`          | `admin@example.com`                   | 로컬 seed 관리자 이메일         |
-| `ADMIN_SEED_NAME`           | `관리자`                              | 로컬 seed 관리자 이름           |
-| `ADMIN_SEED_PASSWORD`       | `replace-with-local-admin-password`   | 로컬 seed 관리자 비밀번호       |
-| `ADMIN_SEED_RESET_PASSWORD` | `dev:admin:setup`에서만 `true`로 지정 | 기존 credential 비밀번호 재설정 |
+| 변수                               | 필수 조건        | 설명                                       |
+| ---------------------------------- | ---------------- | ------------------------------------------ |
+| `ADMIN_SEED_EMAIL`                 | 필수             | seed owner 이메일                          |
+| `ADMIN_SEED_NAME`                  | 선택             | 관리자 이름, 기본값 `관리자`               |
+| `ADMIN_SEED_PASSWORD`              | 필수             | 16자 이상, 세 종류 이상 문자군의 비밀번호  |
+| `ADMIN_SEED_RESET_PASSWORD`        | 선택             | `true`이면 기존 credential 비밀번호 재설정 |
+| `ADMIN_SEED_PRODUCTION_APPROVED`   | 운영 필수 `true` | 운영 seed 명시적 승인                      |
+| `ADMIN_SEED_EXPECTED_DATABASE_URL` | 운영 필수        | 실제 `DATABASE_URL`과 같은 대상 확인값     |
 
-`bun --filter @workspace/admin-api seed:admin`을 직접 실행하면 `ADMIN_SEED_RESET_PASSWORD=true`를 명시하지 않는 한 기존 credential 비밀번호를 보존한다.
+`bun --filter @workspace/admin-api seed:admin`을 직접 실행하면 `ADMIN_SEED_RESET_PASSWORD=true`를 명시하지 않는 한 기존 credential 비밀번호를 보존한다. 운영 seed와 관리자 인증 감사·세션 폐기 절차는 `admin-auth-security-operations.md`를 따른다.
 
 ## 어드민 로컬 개발 감시
 

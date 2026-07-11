@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   createInMemoryWritingAppDatabase,
+  createReadOnlyWritingAppDatabase,
   createWritingAppDatabase,
   getDefaultDatabaseUrl,
 } from "@/client"
@@ -161,6 +162,40 @@ describe("Writing App DB client", () => {
       expect(lessonForeignKeys).toEqual(["course_units", "courses"])
     } finally {
       client.close()
+    }
+  })
+
+  it("읽기 전용 client는 기존 DB를 조회하지만 쓰기를 거부한다", () => {
+    const tempDirectory = mkdtempSync(
+      join(tmpdir(), "writing-app-db-readonly-")
+    )
+    const databasePath = join(tempDirectory, "audit.sqlite")
+    const writableClient = createWritingAppDatabase(databasePath)
+
+    try {
+      runBaselineMigration(writableClient.sqlite)
+    } finally {
+      writableClient.close()
+    }
+
+    const readOnlyClient = createReadOnlyWritingAppDatabase(databasePath)
+
+    try {
+      expect(
+        readOnlyClient.sqlite
+          .query<{ readonly count: number }, []>(
+            "SELECT COUNT(*) AS count FROM admin_user"
+          )
+          .get()?.count
+      ).toBe(0)
+      expect(() =>
+        readOnlyClient.sqlite.exec(
+          "INSERT INTO admin_user (id, name, email, email_verified, role, created_at, updated_at) VALUES ('admin-1', '관리자', 'admin@example.com', 1, 'owner', 0, 0)"
+        )
+      ).toThrow()
+    } finally {
+      readOnlyClient.close()
+      rmSync(tempDirectory, { force: true, recursive: true })
     }
   })
 
