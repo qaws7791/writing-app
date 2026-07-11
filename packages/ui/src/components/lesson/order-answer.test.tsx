@@ -1,0 +1,58 @@
+import { act } from "react"
+import { hydrateRoot } from "react-dom/client"
+import { renderToString } from "react-dom/server"
+import { describe, expect, it } from "vitest"
+
+import {
+  createDeterministicOrder,
+  OrderAnswer,
+} from "@workspace/ui/components/lesson/order-answer"
+
+describe("ORDER 초기 순서", () => {
+  it("같은 seed는 정답과 다른 동일한 순서를 만든다", () => {
+    const items = ["첫째", "둘째", "셋째", "넷째"]
+    const first = createDeterministicOrder(items, items, "step-1")
+    const second = createDeterministicOrder(items, items, "step-1")
+
+    expect(first).toEqual(second)
+    expect(first).not.toEqual(items)
+  })
+
+  it("항목 추가와 삭제 후에도 각 항목을 정확히 한 번 포함한다", () => {
+    for (let size = 2; size <= 20; size += 1) {
+      const items = Array.from({ length: size }, (_, index) => `item-${index}`)
+      const shuffled = createDeterministicOrder(items, items, `step-${size}`)
+
+      expect([...shuffled].sort()).toEqual([...items].sort())
+      expect(new Set(shuffled)).toHaveLength(items.length)
+    }
+  })
+
+  it("SSR HTML과 hydration 초기 DOM 순서가 같다", async () => {
+    const props = {
+      correctItems: ["첫째", "둘째", "셋째"],
+      items: ["첫째", "둘째", "셋째"],
+      seed: "step-hydration",
+    }
+    const html = renderToString(<OrderAnswer {...props} />)
+    const container = document.createElement("div")
+    container.innerHTML = html
+    const before = container.textContent
+    const recoverableErrors: unknown[] = []
+    let after = ""
+
+    let root: ReturnType<typeof hydrateRoot> | undefined
+    await act(async () => {
+      root = hydrateRoot(container, <OrderAnswer {...props} />, {
+        onRecoverableError: (error) => recoverableErrors.push(error),
+      })
+      await new Promise((resolve) => setTimeout(resolve, 10))
+      after = container.textContent ?? ""
+    })
+
+    await act(async () => root?.unmount())
+
+    expect(recoverableErrors).toEqual([])
+    expect(after).toBe(before)
+  })
+})

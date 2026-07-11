@@ -8,25 +8,43 @@ import { GripVertical } from "lucide-react"
 import { cn } from "../../lib/utils"
 import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
 
-function shuffleNotEqual(
+export function createDeterministicOrder(
   items: readonly string[],
-  correct: readonly string[]
+  correct: readonly string[],
+  seed: string
 ): readonly string[] {
   const arr = [...items]
-  for (let attempt = 0; attempt < 5; attempt++) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      const temp = arr[i]
-      const nextVal = arr[j]
-      if (temp !== undefined && nextVal !== undefined) {
-        arr[i] = nextVal
-        arr[j] = temp
-      }
+  const random = createSeededRandom(`${seed}\u0000${items.join("\u0000")}`)
+
+  for (let index = arr.length - 1; index > 0; index -= 1) {
+    const targetIndex = Math.floor(random() * (index + 1))
+    const current = arr[index]
+    const target = arr[targetIndex]
+    if (current !== undefined && target !== undefined) {
+      arr[index] = target
+      arr[targetIndex] = current
     }
-    const sameAsCorrect = arr.every((v, i) => v === correct[i])
-    if (!sameAsCorrect || arr.length <= 1) return arr
   }
+
+  if (arr.length > 1 && arr.every((value, index) => value === correct[index])) {
+    const first = arr.shift()
+    if (first !== undefined) arr.push(first)
+  }
+
   return arr
+}
+
+function createSeededRandom(seed: string): () => number {
+  let state = 2_166_136_261
+  for (const character of seed) {
+    state ^= character.codePointAt(0) ?? 0
+    state = Math.imul(state, 16_777_619)
+  }
+
+  return () => {
+    state = Math.imul(state, 1_664_525) + 1_013_904_223
+    return (state >>> 0) / 4_294_967_296
+  }
 }
 
 export function OrderAnswer({
@@ -35,6 +53,7 @@ export function OrderAnswer({
   explanation,
   items,
   onChange,
+  seed,
   showNumbers,
   title,
 }: {
@@ -43,11 +62,12 @@ export function OrderAnswer({
   readonly explanation?: string
   readonly items: readonly string[]
   readonly onChange?: (orderedItems: readonly string[]) => void
+  readonly seed?: string
   readonly showNumbers?: boolean
   readonly title?: string
 }) {
   const [orderedItems, setOrderedItems] = useState<readonly string[]>(() =>
-    shuffleNotEqual(items, correctItems)
+    createDeterministicOrder(items, correctItems, seed ?? items.join("\u0000"))
   )
   const itemRefs = useRef<(HTMLDivElement | null)[]>([])
   const [dragIndex, setDragIndex] = useState<number | null>(null)

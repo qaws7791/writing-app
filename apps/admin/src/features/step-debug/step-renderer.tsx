@@ -165,6 +165,7 @@ function renderStepContent(
           correctItems={step.correct}
           explanation={step.explanation}
           items={step.items}
+          seed={step.id}
           onChange={(orderedItems) =>
             emitAnswer(handlers, step.id, {
               orderedItems,
