@@ -150,6 +150,74 @@ describe("자료 문서 동기화 use case", () => {
       fixture.client.close()
     }
   })
+
+  it("서버 재시작 뒤 SQLite version에서 sync와 transaction 저장을 이어간다", async () => {
+    const initial = createResourceDocumentSnapshot("초기 본문")
+    if (initial.status !== "valid") throw new Error("초기 snapshot 생성 실패")
+
+    const fixture = createFixture(initial.snapshot)
+    const firstServer = createResourceDocumentSyncUseCase(fixture.repository)
+    const firstUpdate = createUpdate(initial.snapshot, "재시작 전 본문")
+
+    try {
+      await expect(
+        firstServer.saveTransaction({
+          actorId: "admin-1",
+          documentId,
+          knownStateVersion: 0,
+          now: new Date("2026-07-11T06:00:00.000Z"),
+          transactionId: toResourceDocumentTransactionId("transaction-1"),
+          update: firstUpdate,
+        })
+      ).resolves.toMatchObject({ kind: "accepted", stateVersion: 1 })
+
+      const restartedServer = createResourceDocumentSyncUseCase(
+        fixture.repository
+      )
+      await expect(
+        restartedServer.readSync({ afterStateVersion: 0, documentId })
+      ).resolves.toMatchObject({
+        fromStateVersion: 0,
+        kind: "updates",
+        stateVersion: 1,
+        updates: [firstUpdate],
+      })
+
+      const firstApplied = applyResourceDocumentUpdate(
+        initial.snapshot,
+        firstUpdate
+      )
+      if (firstApplied.status !== "valid") {
+        throw new Error("재시작 전 update 적용에 실패했습니다.")
+      }
+      const secondUpdate = createUpdate(firstApplied.snapshot, "재시작 후 본문")
+      await expect(
+        restartedServer.saveTransaction({
+          actorId: "admin-2",
+          documentId,
+          knownStateVersion: 1,
+          now: new Date("2026-07-11T06:01:00.000Z"),
+          transactionId: toResourceDocumentTransactionId("transaction-2"),
+          update: secondUpdate,
+        })
+      ).resolves.toMatchObject({ kind: "accepted", stateVersion: 2 })
+
+      const durable = await restartedServer.readSync({
+        afterStateVersion: 0,
+        documentId,
+        mode: "snapshot",
+      })
+      if (durable.kind !== "snapshot") {
+        throw new Error("재시작 후 durable snapshot을 조회하지 못했습니다.")
+      }
+      expect(projectResourceDocumentSnapshot(durable.snapshot)).toEqual({
+        markdown: "재시작 후 본문",
+        status: "valid",
+      })
+    } finally {
+      fixture.client.close()
+    }
+  })
 })
 
 function createFixture(snapshot: Uint8Array) {

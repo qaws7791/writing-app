@@ -121,6 +121,8 @@ bun run --filter=@workspace/web test
 
 자료 문서 동기화 SQLite 통합 테스트는 같은 snapshot에서 두 클라이언트가 동시에 만든 update에 단조 version을 부여하고, 양쪽 클라이언트의 증분 적용 결과와 서버 durable Markdown이 동일하게 수렴하는지 검증한다.
 
+서버 재시작 fixture는 같은 SQLite repository에 새 동기화 use case를 조립해 기존 update log를 pull하고, 다음 transaction의 version과 durable Markdown을 이어서 확정하는지 검증한다.
+
 - baseline migration은 in-memory DB에 적용할 수 있어야 한다.
 - seed는 반복 실행해도 stable ID 기준으로 같은 결과를 내야 한다.
 - seed에서 빠진 콘텐츠는 삭제가 아니라 `archived` 전환으로 검증한다.

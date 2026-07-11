@@ -34,6 +34,7 @@
 - 활성 문서 route는 편집기가 사용하지 않는 Markdown 조회와 응답 필드를 제거했다. 저장소는 문서 메타데이터와 본문 조회를 분리하며, 휴지통 읽기 전용 문서와 내보내기만 durable Markdown을 추가로 읽는다.
 - 같은 서버 snapshot에서 두 클라이언트가 동시에 만든 update를 HTTP transaction으로 승인하는 SQLite 통합 fixture를 추가했다. 각 클라이언트가 자기 로컬 update와 서버 증분 pull을 적용한 결과는 서버 durable snapshot의 Markdown과 동일하게 수렴한다.
 - 작업 공간 통합 fixture는 HTTP 저장 실패 뒤 문서를 이동했다 돌아와도 로컬 변경과 불변 transaction을 보존하고, 명시적 재시도에서 같은 ID와 payload로 확정하는지 검증한다. 이전 문서의 늦은 version update는 해당 문서 cache에만 적용되어 새 활성 문서와 격리된다.
+- 서버 프로세스 재시작을 새 동기화 use case 조립으로 모사하는 fixture를 추가했다. 재시작 뒤에도 SQLite에 확정된 snapshot·update log·version에서 누락 pull을 제공하고 다음 transaction을 연속 version으로 승인한다.
 
 ## 결정 요약
 
