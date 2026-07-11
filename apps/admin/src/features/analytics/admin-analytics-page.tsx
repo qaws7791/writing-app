@@ -177,6 +177,9 @@ function LessonAnalyticsTable({
         강의 전체 레슨의 완료율과 이탈률
       </p>
       <div className="relative mb-4">
+        <label className="sr-only" htmlFor="lesson-analytics-search">
+          레슨 또는 강의 검색
+        </label>
         <SearchIcon
           aria-hidden="true"
           className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
@@ -184,6 +187,7 @@ function LessonAnalyticsTable({
         />
         <Input
           className="pl-8 text-[0.875rem] font-medium"
+          id="lesson-analytics-search"
           onChange={(event) => {
             setQuery(event.target.value)
             setPage(0)
@@ -193,84 +197,105 @@ function LessonAnalyticsTable({
         />
       </div>
       <div className="overflow-x-auto">
-        <div className="min-w-[520px]">
-          <div className="grid grid-cols-[2fr_1.4fr_1fr_1fr] gap-3 border-b border-background px-2 py-2">
-            <SortHeader
-              active={sortKey === "lessonTitle"}
-              asc={sortAsc}
-              label="레슨"
-              onClick={() => toggleSort("lessonTitle")}
-            />
-            <SortHeader
-              active={sortKey === "courseTitle"}
-              asc={sortAsc}
-              label="강의"
-              onClick={() => toggleSort("courseTitle")}
-            />
-            <SortHeader
-              active={sortKey === "completionRate"}
-              asc={sortAsc}
-              label="완료율"
-              onClick={() => toggleSort("completionRate")}
-            />
-            <SortHeader
-              active={sortKey === "dropOffRate"}
-              asc={sortAsc}
-              label="이탈률"
-              onClick={() => toggleSort("dropOffRate")}
-            />
-          </div>
-          {rows.length === 0 ? (
-            <div className="py-10 text-center text-[0.875rem] text-muted-foreground">
-              검색 결과가 없습니다.
-            </div>
-          ) : (
-            rows.map((lesson) => (
-              <div
-                className="grid grid-cols-[2fr_1.4fr_1fr_1fr] items-center gap-3 border-b border-background px-2 py-3 last:border-0"
-                key={lesson.lessonId}
-              >
-                <span className="truncate text-[0.875rem] font-bold text-foreground">
-                  {lesson.lessonTitle}
-                </span>
-                <span className="truncate text-[0.8125rem] font-medium text-muted-foreground">
-                  {lesson.courseTitle}
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 max-w-[80px] flex-1 overflow-hidden rounded-full bg-background">
-                    <div
-                      className="h-full rounded-full bg-primary"
-                      style={{
-                        background:
-                          lesson.completionRate < 50
-                            ? "var(--color-coral)"
-                            : "var(--color-charcoal)",
-                        width: `${lesson.completionRate}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="text-[0.8125rem] font-bold text-foreground">
-                    {lesson.completionRate}%
-                  </span>
-                </div>
-                <span
-                  className="inline-flex items-center gap-1 text-[0.8125rem] font-bold"
-                  style={{
-                    color:
-                      lesson.dropOffRate > 50
-                        ? "var(--color-coral-dark)"
-                        : "var(--color-muted-foreground)",
-                  }}
+        <table className="min-w-[520px] w-full table-fixed">
+          <caption className="sr-only">레슨별 완료율과 이탈률</caption>
+          <thead>
+            <tr className="border-b border-background">
+              <AnalyticsHeaderCell
+                active={sortKey === "lessonTitle"}
+                asc={sortAsc}
+                className="w-[34%]"
+                label="레슨"
+                onClick={() => toggleSort("lessonTitle")}
+              />
+              <AnalyticsHeaderCell
+                active={sortKey === "courseTitle"}
+                asc={sortAsc}
+                className="w-[26%]"
+                label="강의"
+                onClick={() => toggleSort("courseTitle")}
+              />
+              <AnalyticsHeaderCell
+                active={sortKey === "completionRate"}
+                asc={sortAsc}
+                className="w-[22%]"
+                label="완료율"
+                onClick={() => toggleSort("completionRate")}
+              />
+              <AnalyticsHeaderCell
+                active={sortKey === "dropOffRate"}
+                asc={sortAsc}
+                className="w-[18%]"
+                label="이탈률"
+                onClick={() => toggleSort("dropOffRate")}
+              />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 ? (
+              <tr>
+                <td
+                  className="py-10 text-center text-[0.875rem] text-muted-foreground"
+                  colSpan={4}
                 >
-                  {lesson.dropOffRate > 50 ? (
-                    <TrendingDown aria-hidden="true" size={13} />
-                  ) : null}
-                  {lesson.dropOffRate}%
-                </span>
-              </div>
-            ))
-          )}
-        </div>
+                  검색 결과가 없습니다.
+                </td>
+              </tr>
+            ) : (
+              rows.map((lesson) => (
+                <tr
+                  className="border-b border-background last:border-0"
+                  key={lesson.lessonId}
+                >
+                  <th
+                    className="truncate px-2 py-3 text-left text-[0.875rem] font-bold text-foreground"
+                    scope="row"
+                  >
+                    {lesson.lessonTitle}
+                  </th>
+                  <td className="truncate px-2 py-3 text-[0.8125rem] font-medium text-muted-foreground">
+                    {lesson.courseTitle}
+                  </td>
+                  <td className="px-2 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 max-w-[80px] flex-1 overflow-hidden rounded-full bg-background">
+                        <div
+                          className="h-full rounded-full bg-primary"
+                          style={{
+                            background:
+                              lesson.completionRate < 50
+                                ? "var(--color-coral)"
+                                : "var(--color-charcoal)",
+                            width: `${lesson.completionRate}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="text-[0.8125rem] font-bold text-foreground">
+                        {lesson.completionRate}%
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-2 py-3">
+                    <span
+                      className="inline-flex items-center gap-1 text-[0.8125rem] font-bold"
+                      style={{
+                        color:
+                          lesson.dropOffRate > 50
+                            ? "var(--color-coral-dark)"
+                            : "var(--color-muted-foreground)",
+                      }}
+                    >
+                      {lesson.dropOffRate > 50 ? (
+                        <TrendingDown aria-hidden="true" size={13} />
+                      ) : null}
+                      {lesson.dropOffRate}%
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
       {totalPages > 1 ? (
         <div className="mt-4 flex items-center justify-between border-t border-background pt-3">
@@ -280,6 +305,7 @@ function LessonAnalyticsTable({
           </span>
           <div className="flex items-center gap-2">
             <button
+              aria-label="이전 페이지"
               className="rounded-xl border border-surface-hover p-1.5 transition-colors hover:bg-surface disabled:opacity-30"
               disabled={safePage === 0}
               onClick={() => setPage((current) => Math.max(0, current - 1))}
@@ -291,6 +317,7 @@ function LessonAnalyticsTable({
               {safePage + 1} / {totalPages}
             </span>
             <button
+              aria-label="다음 페이지"
               className="rounded-xl border border-surface-hover p-1.5 transition-colors hover:bg-surface disabled:opacity-30"
               disabled={safePage === totalPages - 1}
               onClick={() =>
@@ -318,31 +345,39 @@ function LessonAnalyticsTable({
   }
 }
 
-function SortHeader({
+function AnalyticsHeaderCell({
   active,
   asc,
+  className,
   label,
   onClick,
 }: {
   readonly active: boolean
   readonly asc: boolean
+  readonly className: string
   readonly label: string
   readonly onClick: () => void
 }) {
   return (
-    <button
-      className="flex items-center gap-1 text-[0.8125rem] font-bold text-muted-foreground transition-colors hover:text-foreground"
-      onClick={onClick}
-      type="button"
+    <th
+      aria-sort={active ? (asc ? "ascending" : "descending") : "none"}
+      className={`${className} px-2 py-2 text-left`}
+      scope="col"
     >
-      {label}
-      {active ? (
-        <ChevronDownIcon
-          aria-hidden="true"
-          className={asc ? "rotate-180" : ""}
-          size={12}
-        />
-      ) : null}
-    </button>
+      <button
+        className="flex items-center gap-1 text-[0.8125rem] font-bold text-muted-foreground transition-colors hover:text-foreground"
+        onClick={onClick}
+        type="button"
+      >
+        {label}
+        {active ? (
+          <ChevronDownIcon
+            aria-hidden="true"
+            className={asc ? "rotate-180" : ""}
+            size={12}
+          />
+        ) : null}
+      </button>
+    </th>
   )
 }

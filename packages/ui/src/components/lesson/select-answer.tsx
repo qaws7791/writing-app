@@ -48,7 +48,9 @@ export function SelectAnswer({
             else if (isSelected) cls = "bg-coral-light text-charcoal"
           } else if (isSelected) cls = "bg-accent text-accent-foreground"
           return (
-            <span
+            <button
+              aria-pressed={isSelected}
+              disabled={checked !== false}
               key={segment}
               onClick={() => {
                 if (checked === false) {
@@ -60,7 +62,7 @@ export function SelectAnswer({
                 }
               }}
               className={cn(
-                "cursor-pointer font-medium transition-all duration-150 active:scale-95 rounded-3xl",
+                "cursor-pointer font-medium transition-all duration-150 active:scale-95 rounded-3xl disabled:cursor-default",
                 isBlock ? "block p-4 text-left" : "px-5 py-2.5",
                 cls
               )}
@@ -68,9 +70,10 @@ export function SelectAnswer({
                 fontSize: isBlock ? "1.05rem" : "1.15rem",
                 lineHeight: isBlock ? 1.5 : undefined,
               }}
+              type="button"
             >
               {segment}
-            </span>
+            </button>
           )
         })}
       </div>

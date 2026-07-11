@@ -169,7 +169,10 @@ export function CategorizeAnswer({
             const isClickable = activeTagId !== null && checked === false
 
             return (
-              <div
+              <button
+                aria-pressed={
+                  activeTagId !== null && assignedCategoryId === activeTagId
+                }
                 className={cn(
                   "rounded-3xl px-4 py-3.5 transition-all duration-200",
                   isCorrect
@@ -185,7 +188,9 @@ export function CategorizeAnswer({
                     : ""
                 )}
                 key={item.id}
+                disabled={!isClickable}
                 onClick={() => handleItemTap(item.id)}
+                type="button"
               >
                 <div
                   className={cn(
@@ -211,7 +216,7 @@ export function CategorizeAnswer({
                     {item.text}
                   </span>
                 </div>
-              </div>
+              </button>
             )
           })}
         </div>
@@ -237,6 +242,7 @@ export function CategorizeAnswer({
 
               return (
                 <button
+                  aria-pressed={isActive}
                   key={category.id}
                   onClick={() => handleTagTap(category.id)}
                   className={cn(

@@ -89,6 +89,20 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
       },
       stepId: "blank-1",
     })
+
+    const selectedBlank = screen.getByRole("button", {
+      name: "1번째 빈칸 군더더기, 선택 해제",
+    })
+    selectedBlank.focus()
+    await user.keyboard("{Enter}")
+
+    expect(onAnswerChange).toHaveBeenLastCalledWith({
+      answer: {
+        selectedWords: [""],
+        type: "FILL_BLANK",
+      },
+      stepId: "blank-1",
+    })
   })
 
   it("단어 선택 인덱스를 타입별 payload로 전달한다", async () => {
@@ -106,7 +120,9 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
 
     renderAnswerableStep(step, onAnswerChange)
 
-    await user.click(screen.getByText("정말 매우"))
+    const segment = screen.getByRole("button", { name: "정말 매우" })
+    segment.focus()
+    await user.keyboard(" ")
 
     expect(onAnswerChange).toHaveBeenCalledWith({
       answer: {
@@ -115,6 +131,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
       },
       stepId: "select-1",
     })
+    expect(segment).toHaveAttribute("aria-pressed", "true")
   })
 
   it("순서 배열 값을 타입별 payload로 전달한다", async () => {
@@ -209,8 +226,15 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
     expect(screen.queryByRole("combobox")).not.toBeInTheDocument()
     expect(screen.getByText("태그 선택")).toBeInTheDocument()
 
-    await user.click(screen.getByRole("button", { name: "좋은 문장" }))
-    await user.click(screen.getByText("독자가 바로 이해한다."))
+    const category = screen.getByRole("button", { name: "좋은 문장" })
+    await user.click(category)
+    expect(category).toHaveAttribute("aria-pressed", "true")
+
+    const item = screen.getByRole("button", {
+      name: "독자가 바로 이해한다.",
+    })
+    item.focus()
+    await user.keyboard("{Enter}")
 
     expect(onAnswerChange).toHaveBeenCalledWith({
       answer: {
@@ -219,6 +243,7 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
       },
       stepId: "categorize-1",
     })
+    expect(item).toHaveAttribute("aria-pressed", "true")
   })
 
   it("글쓰기 스텝은 쓰기 구조 가이드와 글자 카운터를 보여주고 답을 전달한다", async () => {

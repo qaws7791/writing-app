@@ -63,17 +63,20 @@ export function FillBlankAnswer({
           <span key={index}>
             {part}
             {index < blankCount ? (
-              <span
+              <button
+                aria-label={`${index + 1}번째 빈칸${selectedWords[index] ? ` ${selectedWords[index]}, 선택 해제` : ", 비어 있음"}`}
+                disabled={checked !== false || selectedWords[index] === null}
                 onClick={() => handleRemoveWord(index)}
                 className={cn(
-                  "inline-block min-w-[80px] px-3 py-1 rounded-xl mx-1 text-center cursor-pointer",
+                  "inline-block min-w-[80px] px-3 py-1 rounded-xl mx-1 text-center",
                   selectedWords[index]
-                    ? "bg-accent text-accent-foreground font-bold"
+                    ? "bg-accent text-accent-foreground font-bold cursor-pointer"
                     : "bg-surface"
                 )}
+                type="button"
               >
                 {selectedWords[index] ?? "___"}
-              </span>
+              </button>
             ) : null}
           </span>
         ))}
@@ -83,6 +86,7 @@ export function FillBlankAnswer({
           const used = selectedWords.includes(word)
           return (
             <button
+              aria-pressed={used}
               key={word}
               disabled={used || checked !== false}
               onClick={() => handleSelectWord(word)}
