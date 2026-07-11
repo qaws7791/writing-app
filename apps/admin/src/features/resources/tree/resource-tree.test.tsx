@@ -179,6 +179,7 @@ describe("자료 트리", () => {
           name: "가져온 문서",
           parentId: folder.id,
           path: [{ id: folder.id, name: folder.name }],
+          stateVersion: 0,
           status: "active",
           updatedAt: "2026-07-10T00:00:00.000Z",
           updatedBy: {

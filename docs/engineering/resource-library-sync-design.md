@@ -25,6 +25,7 @@
 - update log는 승인 시점에 문서별 200건·2MiB 한도를 즉시 강제하고, 별도 receipt는 정리 뒤에도 같은 transaction ID의 최초 승인 결과를 보존한다. 클라이언트 본문 transport는 4단계까지 기존 문서별 WebSocket을 유지한다.
 - 2026-07-11: 4단계 클라이언트 Adapter 전환을 시작했다. 먼저 관리자 HTTP API Adapter와 문서별 cache·transaction queue를 분리해 검증한 뒤 편집기 binding을 한 번에 전환한다.
 - 관리자 HTTP API Adapter는 Yjs binary와 Base64 wire 형식의 변환을 담당한다. 문서별 transaction queue는 500ms 유휴 구간의 update를 합치고 연속 입력은 1초 안에 확정하며, 실패한 요청은 같은 transaction ID와 payload로 재시도한다.
+- 활성 문서 조회는 Markdown bootstrap 시점의 `stateVersion`을 함께 반환한다. collaboration snapshot이 없는 기존 문서는 0으로 명시해 첫 pull 기준을 추측하지 않게 한다.
 
 ## 결정 요약
 

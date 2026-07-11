@@ -21,6 +21,7 @@ export const adminResourceDocumentDtoSchema = z.object({
   name: adminResourceNameSchema,
   parentId: adminResourceFolderIdSchema.nullable(),
   path: z.array(adminResourceBreadcrumbItemDtoSchema),
+  stateVersion: adminResourceRevisionSchema,
   status: adminResourceNodeStatusSchema,
   updatedAt: z.iso.datetime(),
   updatedBy: adminResourceActorDtoSchema,

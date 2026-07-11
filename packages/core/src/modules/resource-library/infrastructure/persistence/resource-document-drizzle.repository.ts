@@ -42,6 +42,7 @@ type ResourceDocumentQueryRow = {
   readonly name: string
   readonly parent_id: string | null
   readonly path_json: string
+  readonly state_version: number
   readonly status: ResourceDocumentRecord["status"]
   readonly updated_at: number
   readonly updated_by_email: string
@@ -204,6 +205,7 @@ function readResourceDocumentRecord(
       node.updated_at,
       document.content_markdown,
       document.content_revision,
+      COALESCE(collaboration.state_version, 0) AS state_version,
       creator.id AS created_by_id,
       creator.name AS created_by_name,
       creator.email AS created_by_email,
@@ -213,6 +215,8 @@ function readResourceDocumentRecord(
       paths.path_json
     FROM admin_resource_nodes AS node
     INNER JOIN admin_resource_documents AS document ON document.node_id = node.id
+    LEFT JOIN admin_resource_collaboration AS collaboration
+      ON collaboration.document_id = document.node_id
     INNER JOIN admin_user AS creator ON creator.id = node.created_by
     INNER JOIN admin_user AS editor ON editor.id = node.updated_by
     INNER JOIN paths ON paths.id = node.id
@@ -237,6 +241,7 @@ function readResourceDocumentRecord(
     name: row.name,
     parentId: row.parent_id === null ? null : toResourceFolderId(row.parent_id),
     path: parseResourceBreadcrumbPath(row.path_json),
+    stateVersion: row.state_version,
     status: row.status,
     updatedAt: new Date(row.updated_at),
     updatedBy: {

@@ -105,6 +105,8 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 
 자료 본문 저장용 REST endpoint는 4단계 클라이언트 전환을 위한 shadow 경계로 제공한다. `POST /resources/documents/{documentId}/transactions`는 Base64 Yjs update와 멱등 transaction ID를 받아 snapshot, Markdown, 검색 색인과 version을 원자적으로 저장한다. `GET /resources/documents/{documentId}/sync?afterStateVersion={version}`는 연속된 최근 update를 반환하고 보존 구간이 없거나 응답이 1MiB를 넘으면 최신 snapshot을 반환한다. 현재 production 편집은 공동 편집 WebSocket 경로를 계속 사용하며 두 transport에 같은 변경을 동시에 쓰지 않는다.
 
+활성 문서 `GET /resources/documents/{documentId}` 응답은 Markdown bootstrap 메타데이터와 함께 현재 `stateVersion`을 반환한다. collaboration snapshot이 아직 없는 문서는 0이며, 클라이언트는 이 값을 첫 HTTP sync의 기준으로 사용한다.
+
 `/resources/events`는 작업 공간 수명 동안 연결 하나를 유지한다. 클라이언트는 `resource-document-subscribe`, `resource-document-unsubscribe`, `resource-realtime-heartbeat` 메시지만 보낼 수 있다. 서버는 기존 트리·제목 사건과 함께 `resource-document-subscription-confirmed`, `resource-document-version-advanced`, `resource-document-invalidated`를 보낸다. 본문 Yjs update는 이 채널로 보내지 않으며 아직 `/resources/collaboration/{documentId}`를 사용한다. 연결당 활성 문서는 최대 하나이고 45초 heartbeat 만료 또는 socket 종료에서 구독을 제거한다.
 
 ## 인증 표면

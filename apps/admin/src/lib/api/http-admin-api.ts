@@ -858,6 +858,7 @@ function toAdminResourceLibraryDocument(
     name: dto.name,
     parentId: dto.parentId,
     path: dto.path.map((item) => ({ ...item })),
+    stateVersion: dto.stateVersion,
     status: dto.status,
     updatedAt: dto.updatedAt,
     updatedBy: { ...dto.updatedBy },

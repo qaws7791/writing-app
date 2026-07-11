@@ -32,6 +32,7 @@ const document = {
   name: "운영 안내",
   parentId: "folder-1",
   path: [{ id: "folder-1", name: "운영" }],
+  stateVersion: 2,
   status: "active",
   updatedAt: "2026-06-14T03:00:00.000Z",
   updatedBy: {

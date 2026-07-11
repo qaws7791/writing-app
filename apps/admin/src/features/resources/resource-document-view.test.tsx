@@ -25,6 +25,7 @@ describe("자료 문서 읽기 화면", () => {
             { id: "folder-3", name: "정책" },
             { id: "folder-4", name: "2026년" },
           ],
+          stateVersion: 0,
           status: "archived",
           updatedAt: "2026-07-09T00:00:00.000Z",
           updatedBy: {

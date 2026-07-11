@@ -26,6 +26,7 @@ export type ResourceDocumentRecord = {
   readonly name: string
   readonly parentId: ResourceFolderId | null
   readonly path: readonly ResourceBreadcrumbItem[]
+  readonly stateVersion: number
   readonly status: ResourceNodeStatus
   readonly updatedAt: Date
   readonly updatedBy: ResourceDocumentActor

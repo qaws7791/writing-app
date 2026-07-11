@@ -333,6 +333,7 @@ export type AdminResourceLibraryDocument = {
   readonly name: string
   readonly parentId: string | null
   readonly path: readonly AdminResourceBreadcrumbItem[]
+  readonly stateVersion: number
   readonly status: "active" | "archived"
   readonly updatedAt: string
   readonly updatedBy: AdminResourceActor

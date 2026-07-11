@@ -123,6 +123,7 @@ describe("자료실 트리·문서·검색 계약", () => {
         name: "운영 안내",
         parentId: "folder-1",
         path: [{ id: "folder-1", name: "운영" }],
+        stateVersion: 2,
         status: "active",
         updatedAt: "2026-07-10T01:00:00.000Z",
         updatedBy: {
@@ -131,7 +132,11 @@ describe("자료실 트리·문서·검색 계약", () => {
           name: "수정자",
         },
       })
-    ).toMatchObject({ contentRevision: 3, name: "운영 안내" })
+    ).toMatchObject({
+      contentRevision: 3,
+      name: "운영 안내",
+      stateVersion: 2,
+    })
     expect(
       adminImportResourceDocumentRequestSchema.parse({
         expectedRevision: 3,

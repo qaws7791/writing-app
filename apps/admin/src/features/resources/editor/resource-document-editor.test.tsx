@@ -41,6 +41,7 @@ const documentFixture: AdminResourceLibraryDocument = {
   name: "운영 안내",
   parentId: null,
   path: [],
+  stateVersion: 0,
   status: "active",
   updatedAt: "2026-07-10T00:00:00.000Z",
   updatedBy: {
