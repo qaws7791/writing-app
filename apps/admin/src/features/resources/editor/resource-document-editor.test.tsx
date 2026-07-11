@@ -78,6 +78,7 @@ describe("자료 Lexical 편집기", () => {
     )
     const sync: ResourceWorkspaceSync = {
       attachDocument,
+      checkActiveDocument: vi.fn(),
       dispose: vi.fn(),
       start: vi.fn(),
     }

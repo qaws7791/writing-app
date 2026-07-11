@@ -5,7 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ResourceWorkspace } from "@/features/resources/resource-workspace"
 import { readAdminApiBaseUrl } from "@/runtime-config"
 
-const { connectEventsMock } = vi.hoisted(() => ({
+const { checkActiveDocumentMock, connectEventsMock } = vi.hoisted(() => ({
+  checkActiveDocumentMock: vi.fn(),
   connectEventsMock: vi.fn(() => ({
     disconnect: vi.fn(),
     subscribeDocument: vi.fn(),
@@ -25,6 +26,15 @@ vi.mock("@/features/resources/resource-library-api", () => ({
 
 vi.mock("@/features/resources/resource-events-client", () => ({
   connectBrowserResourceEvents: connectEventsMock,
+}))
+
+vi.mock("@/features/resources/resource-workspace-sync", () => ({
+  createResourceWorkspaceSync: () => ({
+    attachDocument: vi.fn(),
+    checkActiveDocument: checkActiveDocumentMock,
+    dispose: vi.fn(),
+    start: vi.fn(),
+  }),
 }))
 
 vi.mock("@/features/resources/tree/resource-tree", () => ({
@@ -93,6 +103,7 @@ const initialTree = {
 
 describe("자료실 반응형 shell 포커스", () => {
   beforeEach(() => {
+    checkActiveDocumentMock.mockClear()
     connectEventsMock.mockClear()
     vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
       return window.setTimeout(() => {
@@ -165,6 +176,20 @@ describe("자료실 반응형 shell 포커스", () => {
 
     expect(connectEventsMock).toHaveBeenCalledTimes(1)
   })
+
+  it("숨겨졌던 탭이 다시 보이면 활성 문서 version을 확인한다", async () => {
+    installMatchMedia(true)
+    renderWorkspace()
+    await screen.findByText("문서 영역")
+
+    setDocumentVisibility("hidden")
+    fireEvent(document, new Event("visibilitychange"))
+    expect(checkActiveDocumentMock).not.toHaveBeenCalled()
+
+    setDocumentVisibility("visible")
+    fireEvent(document, new Event("visibilitychange"))
+    expect(checkActiveDocumentMock).toHaveBeenCalledTimes(1)
+  })
 })
 
 function renderWorkspace(): void {
@@ -190,5 +215,12 @@ function installMatchMedia(matches: boolean): void {
     onchange: null,
     removeEventListener() {},
     removeListener() {},
+  })
+}
+
+function setDocumentVisibility(visibilityState: DocumentVisibilityState): void {
+  Object.defineProperty(document, "visibilityState", {
+    configurable: true,
+    value: visibilityState,
   })
 }

@@ -30,6 +30,7 @@
 - `ResourceWorkspaceSync`가 작업 공간 수명 동안 문서별 Y.Doc, HTTP transaction queue와 실시간 version listener를 소유한다. 초기 snapshot 전에는 편집기를 잠그고, 깨끗한 문서는 최근 3개만 보존하며 승인 대기 문서는 한도와 무관하게 유지한다.
 - production 편집기는 작업 공간 sync lease를 사용하도록 전환했다. 문서 이동은 Lexical binding만 해제하고 cached Y.Doc과 승인 대기 transaction을 유지하며, 기존 문서별 `WebsocketProvider` 구현은 rollback 경로로만 남아 있다.
 - 서버의 `ResourceDocumentOperationCoordinator`는 같은 문서의 HTTP transaction 저장·sync 조회·내보내기·휴지통 이동을 한 순서로 실행한다. 하위 트리 휴지통은 문서 ID를 정렬·중복 제거해 모두 예약한 뒤 기존 room flush와 구조 변경을 수행하며 다른 문서 작업은 막지 않는다.
+- 탭이 다시 활성화되면 현재 문서를 마지막 확인 version으로 재구독한다. 구독 확인의 서버 version이 더 크면 기존 HTTP sync pull 경로가 누락 update 또는 snapshot을 적용해 실시간 알림 유실을 복구한다.
 
 ## 결정 요약
 

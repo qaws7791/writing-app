@@ -99,9 +99,17 @@ export function ResourceWorkspace({
     ? params.documentId[0]
     : params.documentId
   useEffect(() => {
+    function checkVisibleDocument(): void {
+      if (document.visibilityState === "visible") {
+        workspaceSync.checkActiveDocument()
+      }
+    }
+
     realtime.start()
     workspaceSync.start()
+    document.addEventListener("visibilitychange", checkVisibleDocument)
     return () => {
+      document.removeEventListener("visibilitychange", checkVisibleDocument)
       workspaceSync.dispose()
       realtime.dispose()
     }

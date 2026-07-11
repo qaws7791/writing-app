@@ -111,6 +111,8 @@ bun run --filter=@workspace/web test
 
 `ResourceWorkspaceSync` 테스트는 초기 snapshot 전 편집 잠금, 500ms transaction 저장, 문서 재진입 cache 재사용, version 알림의 증분 pull, 문서 무효화 잠금과 깨끗한 문서 3개 LRU 한도에서 승인 대기 문서 보존을 검증한다. production 편집기 테스트는 문서별 WebSocket connector 대신 작업 공간 lease를 연결하는지 확인한다.
 
+작업 공간 shell 테스트는 숨겨졌던 탭이 다시 보일 때만 활성 문서 version을 재확인하는지 검증한다. 동기화 Module 테스트는 재구독 확인에서 더 큰 서버 version을 받으면 누락 update를 HTTP로 가져와 문서에 적용하는지 확인한다.
+
 서버 operation coordinator 테스트는 같은 문서 작업의 순서, 다른 문서의 격리와 하위 문서 묶음의 선예약을 검증한다. Route 통합 테스트는 HTTP transaction 저장이 확정되기 전에 같은 문서의 Markdown 내보내기가 실행되지 않는지 확인한다.
 
 - baseline migration은 in-memory DB에 적용할 수 있어야 한다.

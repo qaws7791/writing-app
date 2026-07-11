@@ -38,6 +38,7 @@ export type ResourceWorkspaceSync = {
     readonly documentId: string
     readonly editor: LexicalEditor
   }) => ResourceDocumentSyncLease
+  readonly checkActiveDocument: () => void
   readonly dispose: () => void
   readonly start: () => void
 }
@@ -61,6 +62,10 @@ export function createResourceWorkspaceSync(input: {
   readonly realtime: ResourceWorkspaceSyncRealtime
 }): ResourceWorkspaceSync {
   const documents = new Map<string, CachedResourceDocument>()
+  let activeLease: {
+    readonly document: CachedResourceDocument
+    readonly documentId: string
+  } | null = null
   let unsubscribeDocumentEvents: (() => void) | null = null
 
   function start(): void {
@@ -86,6 +91,8 @@ export function createResourceWorkspaceSync(input: {
       documents.set(documentId, document)
 
       const releaseEditor = document.attach(editor)
+      const lease = { document, documentId }
+      activeLease = lease
       input.realtime.setActiveDocument({
         documentId,
         knownStateVersion: document.readStateVersion(),
@@ -97,6 +104,8 @@ export function createResourceWorkspaceSync(input: {
           if (released) return
           released = true
           releaseEditor()
+          if (activeLease !== lease) return
+          activeLease = null
           input.realtime.setActiveDocument(null)
           pruneDocumentCache(documents)
         },
@@ -104,9 +113,17 @@ export function createResourceWorkspaceSync(input: {
         subscribe: document.subscribe,
       }
     },
+    checkActiveDocument() {
+      if (activeLease === null) return
+      input.realtime.setActiveDocument({
+        documentId: activeLease.documentId,
+        knownStateVersion: activeLease.document.readStateVersion(),
+      })
+    },
     dispose() {
       unsubscribeDocumentEvents?.()
       unsubscribeDocumentEvents = null
+      activeLease = null
       input.realtime.setActiveDocument(null)
       for (const document of documents.values()) document.destroy()
       documents.clear()

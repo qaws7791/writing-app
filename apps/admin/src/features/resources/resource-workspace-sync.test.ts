@@ -151,6 +151,60 @@ describe("자료실 작업 공간 HTTP 동기화", () => {
     sync.dispose()
   })
 
+  it("탭 재활성화 때 현재 version을 다시 확인해 누락 update를 복구한다", async () => {
+    const snapshot = expectSnapshot("초기 본문")
+    const remoteUpdate = createUpdate(snapshot, "재활성화 뒤 본문")
+    const getResourceDocumentSync = vi.fn(async () => ({
+      status: "ok" as const,
+      value: {
+        fromStateVersion: 1,
+        kind: "updates" as const,
+        stateVersion: 2,
+        updates: [remoteUpdate],
+      },
+    }))
+    const realtime = createRealtimeFake()
+    const sync = createResourceWorkspaceSync({
+      api: {
+        getResourceDocumentSnapshot: vi.fn(async () => ({
+          status: "ok" as const,
+          value: { kind: "snapshot" as const, snapshot, stateVersion: 1 },
+        })),
+        getResourceDocumentSync,
+        saveResourceDocumentTransaction: vi.fn(),
+      },
+      realtime,
+    })
+    const editor = createResourceDocumentEditor()
+    const lease = sync.attachDocument({
+      documentId: "document-1",
+      editor,
+    })
+    await vi.waitFor(() => expect(editor.isEditable()).toBe(true))
+    realtime.setActiveDocument.mockClear()
+
+    sync.checkActiveDocument()
+    expect(realtime.setActiveDocument).toHaveBeenCalledWith({
+      documentId: "document-1",
+      knownStateVersion: 1,
+    })
+
+    realtime.publish({
+      documentId: "document-1",
+      stateVersion: 2,
+      type: "resource-document-subscription-confirmed",
+    })
+    await vi.waitFor(() => {
+      expect(readResourceDocumentMarkdown(editor)).toMatchObject({
+        markdown: "재활성화 뒤 본문",
+      })
+    })
+    expect(getResourceDocumentSync).toHaveBeenCalledWith("document-1", 1)
+
+    lease.release()
+    sync.dispose()
+  })
+
   it("깨끗한 문서는 3개만 보존해도 승인 대기 문서는 cache에서 제거하지 않는다", async () => {
     const snapshot = expectSnapshot("초기 본문")
     const pendingSave = deferred<
