@@ -95,6 +95,7 @@ bun --filter @workspace/api dev
 - `GET /health`
 - `GET /openapi`
 - `GET /api/auth/*`, `POST /api/auth/*`
+- `GET /session`
 - `GET /dashboard`
 - `GET /courses?page=...&pageSize=...&query=...&status=...`
 - `POST /courses`
@@ -110,10 +111,15 @@ bun --filter @workspace/api dev
 - `PUT /settings/notice`
 - `PUT /settings/legal`
 - `POST /settings/content-reset`
+- `GET /ai-chat/conversations`
+- `GET /ai-chat/conversations/{conversationId}`
+- `POST /ai-chat/messages/stream`
 - `GET /resources/tree`
 - `POST /resources/folders`
 - `POST /resources/documents`
 - `GET /resources/documents/{documentId}`
+- `POST /resources/documents/{documentId}/transactions`
+- `GET /resources/documents/{documentId}/sync`
 - `POST /resources/documents/import`
 - `GET /resources/documents/{documentId}/export`
 - `GET /resources/search`
@@ -122,10 +128,9 @@ bun --filter @workspace/api dev
 - `PATCH /resources/nodes/{nodeId}/move`
 - `POST /resources/nodes/{nodeId}/trash`
 - `POST /resources/nodes/{nodeId}/restore`
-- `WebSocket /resources/collaboration/{documentId}`
 - `WebSocket /resources/events`
 
-자료실 본문 저장용 REST endpoint는 두지 않는다. 자체 호스팅 Yjs room이 변경을 병합하고 debounce, 마지막 연결 종료, 내보내기, 휴지통 이동과 프로세스 종료 시 GFM Markdown 원본·FTS 색인·수정 메타데이터를 transaction으로 투영한다. WebSocket upgrade는 관리자 session cookie와 `ADMIN_ORIGIN`을 검증하며 문서당 동시 연결은 20개로 제한한다.
+자료실 본문은 `POST /resources/documents/{documentId}/transactions`가 멱등 Yjs update를 받아 GFM Markdown 원본·FTS 색인·수정 메타데이터와 함께 원자적으로 저장한다. 다른 편집자의 version 알림을 받으면 `GET /resources/documents/{documentId}/sync`가 연속 update 또는 최신 snapshot을 반환한다. `WebSocket /resources/events`는 작업 공간의 자료 트리 사건과 문서 version·무효화 알림만 전달하며 본문 Yjs binary를 전송하지 않는다. 이 WebSocket upgrade는 관리자 session cookie와 `ADMIN_ORIGIN`을 검증한다.
 
 관리자 인증은 Better Auth ID/password를 사용하고, 관리자 인증 테이블은 `admin_user`, `admin_session`, `admin_account`, `admin_verification`을 사용한다. 관리자 Better Auth 런타임에는 Google/OAuth social provider를 등록하지 않는다. 플랫폼 사용자 인증 테이블과 쿠키 prefix를 공유하지 않는다. `admin_` 테이블 prefix와 Better Auth 컬럼명 보존 규칙은 `docs/engineering/schema-conventions.md`를 따른다. Next.js 어드민 앱은 `/api/auth/*`를 프록시하지 않고 어드민 Hono API의 인증 endpoint를 직접 호출한다. 관리자 보호 API도 `auth.api.getSession({ headers })`로 관리자용 httpOnly 세션 쿠키를 검증하며, `ADMIN_BETTER_AUTH_SECRET`은 공통 `BETTER_AUTH_SECRET`보다 우선한다.
 
