@@ -19,6 +19,7 @@ import { createResourceDocumentOperationCoordinator } from "@/resource-library/r
 import {
   createAppLogger,
   createRequestLogger,
+  createSecurityAuditLogger,
   defaultRequestLoggingRuntime,
 } from "@workspace/logger"
 
@@ -35,6 +36,7 @@ import {
 const env = parseAdminApiEnv(process.env)
 const database = createWritingAppDatabase(env.databaseUrl)
 const logger = createAppLogger()
+const securityAuditLogger = createSecurityAuditLogger(logger)
 const adminRepository = createDrizzleAdminRepository(database.db)
 const resourceTreeRepository = createDrizzleResourceTreeRepository(database.db)
 const resourceDocumentRepository = createDrizzleResourceDocumentRepository(
@@ -105,10 +107,13 @@ const resourceEvents = createResourceEventsHub({
 const eventsUpgradeHandler = createResourceEventsUpgradeHandler({
   adminOrigin: env.adminOrigin,
   onAuthorizationRejected(reason) {
-    logger.warn(
-      { channel: "events", reason },
-      "resource.websocket.authorization.rejected"
-    )
+    securityAuditLogger({
+      action: "websocket.authorization.rejected",
+      outcome: "denied",
+      reason,
+      requestId: crypto.randomUUID(),
+      target: "GET /resources/events",
+    })
   },
   sessionResolver,
 })
@@ -131,8 +136,12 @@ const app = createApp({
   },
   adminOrigin: env.adminOrigin,
   authHandler: auth.handler,
+  errorLogger(event) {
+    logger.error(event, "request.failed")
+  },
   requestLogger: createRequestLogger(logger),
   requestLoggingRuntime: defaultRequestLoggingRuntime,
+  securityAuditLogger,
   resourceDocumentOperations,
   resourceEvents,
   sessionResolver,

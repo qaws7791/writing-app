@@ -8,6 +8,7 @@ import {
 import {
   createOpenAiFeedbackProvider,
   createUnavailableAiFeedbackProvider,
+  type OpenAiUsageEvent,
 } from "@workspace/core/modules/ai-feedback/infrastructure/adapters/openai-feedback-provider"
 import { createDrizzleAiFeedbackRepository } from "@workspace/core/modules/ai-feedback/infrastructure/persistence/ai-feedback-drizzle.repository"
 import {
@@ -45,6 +46,7 @@ export type CreateLearnerApiCoreInput = {
   readonly googleClientSecret?: string
   readonly openAiApiKey?: string
   readonly openAiModel: string
+  readonly onOpenAiUsage?: (event: OpenAiUsageEvent) => void
   readonly testAuthEnabled?: boolean
   readonly webOrigin: string
 }
@@ -86,6 +88,7 @@ export function createLearnerApiCore(
             apiKey: input.openAiApiKey,
           }),
           model: input.openAiModel,
+          onUsage: input.onOpenAiUsage,
         })
 
   return {

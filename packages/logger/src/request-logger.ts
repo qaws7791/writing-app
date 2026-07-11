@@ -1,11 +1,14 @@
 import type { Logger } from "pino"
 
 export type RequestLogEvent = {
+  readonly actorId?: string
+  readonly actorType?: "admin" | "learner"
   readonly adminId?: string
   readonly durationMs: number
+  readonly externalRequestId?: string
   readonly method: string
   readonly path: string
-  readonly requestId?: string
+  readonly requestId: string
   readonly status: number
   readonly userId?: string
 }

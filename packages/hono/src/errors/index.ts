@@ -2,6 +2,10 @@ export { AppError } from "./app-error"
 export { ErrorResponseSchema } from "./error-response"
 export type { ErrorResponse } from "./error-response"
 export { createErrorHandler } from "./error-handler"
+export type {
+  InternalErrorLogEvent,
+  InternalErrorLogger,
+} from "./error-handler"
 export { createNotFoundHandler } from "./not-found-handler"
 export { HTTP_ERROR_MESSAGES } from "./status"
 export type { ErrorStatusCode } from "./status"

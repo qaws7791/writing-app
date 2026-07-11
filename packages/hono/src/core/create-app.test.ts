@@ -330,6 +330,33 @@ describe("createApp", () => {
     expect(response.status).toBe(500)
   })
 
+  it("500 응답과 내부 오류 로그를 같은 request id로 연결하고 원인을 제한한다", async () => {
+    const errors: unknown[] = []
+    const errorApp = createApp({
+      errorLogger: (event) => errors.push(event),
+      middleware: [
+        async (context, next) => {
+          context.set("requestId", "server-request-id")
+          await next()
+        },
+      ],
+      routes: [unexpectedErrorRoute] as const,
+    })
+
+    const response = await errorApp.request("/unexpected-error")
+
+    expect(response.status).toBe(500)
+    expect(errors).toEqual([
+      expect.objectContaining({
+        causeClass: undefined,
+        errorClass: "Error",
+        requestId: "server-request-id",
+        status: 500,
+      }),
+    ])
+    expect(JSON.stringify(errors)).not.toContain("database password leaked")
+  })
+
   it("returns a standardized not found response", async () => {
     const response = await app.request("/missing")
 

@@ -38,11 +38,11 @@ export function createRequireOwnerAdminSessionMiddleware(
       throw unauthorizedAdminError()
     }
 
+    context.set("activeAdminSession", session)
+
     if (!canAccessOwnerAdminRoute(session.admin.role)) {
       throw forbiddenAdminError()
     }
-
-    context.set("activeAdminSession", session)
 
     await next()
   }

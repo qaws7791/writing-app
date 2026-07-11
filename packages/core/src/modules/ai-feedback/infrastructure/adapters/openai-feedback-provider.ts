@@ -20,6 +20,11 @@ export type OpenAiResponsesClient = {
   readonly responses: {
     readonly create: (request: OpenAiResponseCreateRequest) => Promise<{
       readonly output_text: string
+      readonly usage?: {
+        readonly input_tokens: number
+        readonly output_tokens: number
+        readonly total_tokens: number
+      }
     }>
   }
 }
@@ -27,9 +32,11 @@ export type OpenAiResponsesClient = {
 export function createOpenAiFeedbackProvider({
   client,
   model,
+  onUsage,
 }: {
   readonly client: OpenAiResponsesClient
   readonly model: string
+  readonly onUsage?: (event: OpenAiUsageEvent) => void
 }): AiFeedbackProvider {
   return {
     async createFeedback(input) {
@@ -48,6 +55,15 @@ export function createOpenAiFeedbackProvider({
           },
         })
 
+        if (response.usage !== undefined) {
+          onUsage?.({
+            inputTokens: response.usage.input_tokens,
+            model,
+            outputTokens: response.usage.output_tokens,
+            totalTokens: response.usage.total_tokens,
+          })
+        }
+
         return ok(
           aiFeedbackPayloadSchema.parse(JSON.parse(response.output_text))
         )
@@ -58,6 +74,13 @@ export function createOpenAiFeedbackProvider({
       }
     },
   }
+}
+
+export type OpenAiUsageEvent = {
+  readonly inputTokens: number
+  readonly model: string
+  readonly outputTokens: number
+  readonly totalTokens: number
 }
 
 export function createUnavailableAiFeedbackProvider(): AiFeedbackProvider {

@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./hono-request-logger": "./src/hono-request-logger.ts",
-    "./request-logger": "./src/request-logger.ts"
+    "./request-logger": "./src/request-logger.ts",
+    "./security-audit-logger": "./src/security-audit-logger.ts"
   },
   "scripts": {
     "lint": "oxlint .",

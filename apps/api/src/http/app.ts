@@ -22,6 +22,7 @@ export type { ApiOpenApiDocument } from "@/http/openapi"
 
 export function createApp(dependencies: ApiDependencies): OpenAPIHono {
   const app = createHonoApp({
+    errorLogger: dependencies.errorLogger,
     middleware: createMiddleware(dependencies),
     routes,
   })
@@ -43,6 +44,14 @@ function createMiddleware(
       createRequestLoggingMiddleware({
         createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
         logRequest: dependencies.requestLogger,
+        logSecurityAudit: dependencies.securityAuditLogger,
+        readActor(context) {
+          const session = context.get("activeSession")
+
+          return session === undefined
+            ? undefined
+            : { id: session.user.id, type: "learner" }
+        },
         readMonotonicTimeMs:
           dependencies.requestLoggingRuntime?.readMonotonicTimeMs,
       })

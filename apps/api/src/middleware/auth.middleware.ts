@@ -21,6 +21,8 @@ export const requireActiveSession: MiddlewareHandler<ApiHonoEnv> = async (
     })
   }
 
+  context.set("activeSession", session)
+
   if (session.user.status !== learnerAccountStatuses.active) {
     throw new AppError({
       code: "ACCOUNT_UNAVAILABLE",
@@ -28,8 +30,6 @@ export const requireActiveSession: MiddlewareHandler<ApiHonoEnv> = async (
       status: 403,
     })
   }
-
-  context.set("activeSession", session)
 
   await next()
 }

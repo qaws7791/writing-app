@@ -6,6 +6,7 @@ import type {
   TypedResponse,
 } from "hono"
 import type { OpenAPIRoute, RouteConfig, RouteHandler } from "@hono/zod-openapi"
+import type { InternalErrorLogger } from "../errors/error-handler"
 
 export type AnyRouteConfig = RouteConfig & {
   path: string
@@ -31,6 +32,7 @@ type CreateAppRoute = {
 export type CreateAppOptions<
   TRoutes extends readonly CreateAppRoute[] = readonly CreateAppRoute[],
 > = {
+  errorLogger?: InternalErrorLogger
   middleware?: readonly MiddlewareHandler[]
   routes: TRoutes
 }

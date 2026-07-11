@@ -10,7 +10,13 @@ export {
   defaultRequestLoggingRuntime,
   type RequestLoggingMiddlewareOptions,
   type RequestLoggingRuntime,
+  type RequestActor,
 } from "@workspace/logger/hono-request-logger"
+export {
+  createSecurityAuditLogger,
+  type SecurityAuditEvent,
+  type SecurityAuditLogger,
+} from "@workspace/logger/security-audit-logger"
 
 export type AppLogger = Logger
 

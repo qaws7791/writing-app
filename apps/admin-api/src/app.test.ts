@@ -211,12 +211,13 @@ describe("어드민 API dashboard route", () => {
     })
 
     expect(response.status).toBe(401)
-    expect(response.headers.get("x-request-id")).toBe("admin-request-1")
+    expect(response.headers.get("x-request-id")).not.toBe("admin-request-1")
     expect(requestEvents).toHaveLength(1)
     expect(requestEvents[0]).toMatchObject({
       method: "GET",
       path: "/dashboard",
-      requestId: "admin-request-1",
+      externalRequestId: "admin-request-1",
+      requestId: response.headers.get("x-request-id"),
       status: 401,
     })
     expect(requestEvents[0]?.durationMs).toBeGreaterThanOrEqual(0)
@@ -297,8 +298,12 @@ describe("어드민 API dashboard route", () => {
 
   it("서비스 예외를 표준 500 오류 응답으로 변환한다", async () => {
     const dependencies = createDependencies()
+    const errors: unknown[] = []
     const app = createApp({
       ...dependencies,
+      errorLogger(event) {
+        errors.push(event)
+      },
       adminServices: {
         ...dependencies.adminServices,
         dashboard: {
@@ -307,6 +312,11 @@ describe("어드민 API dashboard route", () => {
             throw new Error("database unavailable")
           },
         },
+      },
+      requestLogger() {},
+      requestLoggingRuntime: {
+        createRequestId: () => "admin-error-request-id",
+        readMonotonicTimeMs: () => 0,
       },
     })
 
@@ -317,6 +327,15 @@ describe("어드민 API dashboard route", () => {
     })
 
     expect(response.status).toBe(500)
+    expect(response.headers.get("x-request-id")).toBe("admin-error-request-id")
+    expect(errors).toEqual([
+      expect.objectContaining({
+        errorClass: "Error",
+        requestId: "admin-error-request-id",
+        status: 500,
+      }),
+    ])
+    expect(JSON.stringify(errors)).not.toContain("database unavailable")
     await expect(response.json()).resolves.toEqual({
       code: "INTERNAL_SERVER_ERROR",
       message: "Internal Server Error",
