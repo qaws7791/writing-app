@@ -88,6 +88,10 @@ export function contractAdminApiError(status?: number): AdminApiError {
   }
 }
 
+export function isAdminAuthenticationError(error: AdminApiError): boolean {
+  return error.code === "forbidden" || error.code === "unauthorized"
+}
+
 function readServerErrorCode(body: unknown): ServerAdminApiErrorCode | null {
   if (
     typeof body !== "object" ||

@@ -2,6 +2,8 @@ import { Suspense, type ReactNode } from "react"
 import { redirect } from "next/navigation"
 
 import { ResourceWorkspace } from "@/features/resources/resource-workspace"
+import { AdminServiceUnavailable } from "@/components/admin-service-unavailable"
+import { isAdminAuthenticationError } from "@/lib/api/api-error"
 import type { InitialResourceTreeState } from "@/features/resources/tree/resource-tree"
 import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
 import { createAdminLoginPath } from "@/lib/auth/admin-auth-navigation"
@@ -27,7 +29,11 @@ export default async function ResourceLayout({
   ])
 
   if (sessionResult.status === "error") {
-    redirect(createAdminLoginPath("/resources"))
+    if (isAdminAuthenticationError(sessionResult.error)) {
+      redirect(createAdminLoginPath("/resources"))
+    }
+
+    return <AdminServiceUnavailable retryHref="/resources" />
   }
 
   const initialTree: InitialResourceTreeState =

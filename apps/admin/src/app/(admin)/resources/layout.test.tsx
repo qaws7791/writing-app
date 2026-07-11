@@ -107,4 +107,24 @@ describe("자료실 layout", () => {
     ).toHaveAttribute("data-tree-status", "error")
     expect(redirectMock).not.toHaveBeenCalled()
   })
+
+  it("세션 network 오류는 로그인으로 보내지 않고 자료실 재시도를 제공한다", async () => {
+    getSessionMock.mockResolvedValueOnce({
+      error: { code: "network-error", message: "네트워크 오류" },
+      status: "error",
+    })
+
+    render(await ResourceLayout({ children: <h1>자료실</h1> }))
+
+    expect(redirectMock).not.toHaveBeenCalled()
+    expect(
+      screen.getByRole("heading", {
+        name: "관리자 서비스를 불러올 수 없습니다.",
+      })
+    ).toBeVisible()
+    expect(screen.getByRole("link", { name: "다시 시도" })).toHaveAttribute(
+      "href",
+      "/resources"
+    )
+  })
 })

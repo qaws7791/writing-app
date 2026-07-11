@@ -4,6 +4,7 @@ import type { ReactNode } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useTransition } from "react"
+import { useState } from "react"
 
 import { AdminSidebar } from "@/components/admin-sidebar"
 import { requestAdminSignOut } from "@/lib/auth/admin-auth-client"
@@ -23,11 +24,16 @@ export function AdminShell({
   const pathname = usePathname()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
+  const [signOutError, setSignOutError] = useState<string | null>(null)
   const currentPath = activePath ?? pathname
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
-      <AdminSidebar activePath={currentPath} />
+      <AdminSidebar
+        activePath={currentPath}
+        isSigningOut={isPending}
+        onSignOut={signOut}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex items-center justify-between bg-surface px-5 py-4 md:hidden">
           <Link className="text-[1.25rem] font-bold text-foreground" href="/">
@@ -36,12 +42,7 @@ export function AdminShell({
           <button
             className="text-[0.875rem] font-bold text-destructive disabled:opacity-60"
             disabled={isPending}
-            onClick={() => {
-              startTransition(async () => {
-                await requestAdminSignOut()
-                router.replace("/login")
-              })
-            }}
+            onClick={signOut}
             type="button"
           >
             로그아웃
@@ -77,6 +78,14 @@ export function AdminShell({
             )
           })}
         </nav>
+        {signOutError === null ? null : (
+          <p
+            className="mx-5 mt-4 rounded-2xl bg-destructive/10 px-4 py-3 text-sm font-bold text-destructive md:mx-10"
+            role="alert"
+          >
+            {signOutError}
+          </p>
+        )}
         <main
           className={cn(
             "an-fi w-full flex-1",
@@ -90,4 +99,18 @@ export function AdminShell({
       </div>
     </div>
   )
+
+  function signOut() {
+    startTransition(async () => {
+      setSignOutError(null)
+      try {
+        await requestAdminSignOut()
+        router.replace("/login")
+      } catch {
+        setSignOutError(
+          "로그아웃하지 못했습니다. 연결을 확인하고 다시 시도해 주세요."
+        )
+      }
+    })
+  }
 }

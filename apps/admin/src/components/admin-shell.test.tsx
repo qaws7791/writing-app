@@ -1,13 +1,23 @@
 import React from "react"
 import { render, screen, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
 import { AdminShell } from "@/components/admin-shell"
 
+const { replaceMock, signOutMock } = vi.hoisted(() => ({
+  replaceMock: vi.fn(),
+  signOutMock: vi.fn(),
+}))
+
+vi.mock("@/lib/auth/admin-auth-client", () => ({
+  requestAdminSignOut: signOutMock,
+}))
+
 vi.mock("next/navigation", () => ({
   usePathname: () => "/courses",
   useRouter: () => ({
-    replace: vi.fn(),
+    replace: replaceMock,
   }),
 }))
 
@@ -55,5 +65,28 @@ describe("AdminShell", () => {
     expect(
       screen.getByRole("heading", { name: "콘텐츠 관리" })
     ).toBeInTheDocument()
+  })
+
+  it("로그아웃 실패를 alert로 보여주고 재시도할 수 있다", async () => {
+    const user = userEvent.setup()
+    signOutMock
+      .mockRejectedValueOnce(new TypeError("network"))
+      .mockResolvedValueOnce(undefined)
+    render(
+      <AdminShell activePath="/courses">
+        <h1>콘텐츠 관리</h1>
+      </AdminShell>
+    )
+
+    await user.click(screen.getByRole("button", { name: "어드민 로그아웃" }))
+    expect(
+      await screen.findByText(
+        "로그아웃하지 못했습니다. 연결을 확인하고 다시 시도해 주세요."
+      )
+    ).toBeVisible()
+    expect(replaceMock).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole("button", { name: "어드민 로그아웃" }))
+    expect(replaceMock).toHaveBeenCalledWith("/login")
   })
 })

@@ -2,10 +2,6 @@
 
 import Link from "next/link"
 import { ExternalLink, LogOut } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { useTransition } from "react"
-
-import { requestAdminSignOut } from "@/lib/auth/admin-auth-client"
 import {
   adminNavigationItems,
   isAdminNavigationActive,
@@ -15,10 +11,15 @@ import { cn } from "@workspace/ui/lib/utils"
 
 const learnerWebOrigin = readLearnerWebOrigin()
 
-export function AdminSidebar({ activePath }: { readonly activePath: string }) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
-
+export function AdminSidebar({
+  activePath,
+  isSigningOut,
+  onSignOut,
+}: {
+  readonly activePath: string
+  readonly isSigningOut: boolean
+  readonly onSignOut: () => void
+}) {
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-surface p-5 md:flex">
       <Link
@@ -66,13 +67,8 @@ export function AdminSidebar({ activePath }: { readonly activePath: string }) {
         </a>
         <button
           className="btn-squish flex items-center gap-3 rounded-3xl px-4 py-3 text-left text-[0.9375rem] font-bold text-destructive transition-colors hover:bg-background disabled:opacity-60"
-          disabled={isPending}
-          onClick={() => {
-            startTransition(async () => {
-              await requestAdminSignOut()
-              router.replace("/login")
-            })
-          }}
+          disabled={isSigningOut}
+          onClick={onSignOut}
           type="button"
         >
           <LogOut aria-hidden="true" size={18} />
