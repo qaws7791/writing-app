@@ -1,6 +1,5 @@
 @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
 @import "tailwindcss";
-@plugin "@tailwindcss/typography";
 @import "tw-animate-css";
 @import "./tokens/reference.css";
 @import "./tokens/component.css";
@@ -8,6 +7,7 @@
 @import "./tokens/motion.css";
 @import "./utilities.css";
 
+@plugin "@tailwindcss/typography";
 @custom-variant dark (&:is(.dark *));
 @source "../**/*.{ts,tsx}";
 

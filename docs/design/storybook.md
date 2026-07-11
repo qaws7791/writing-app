@@ -12,6 +12,7 @@
 ## 구현 상태
 
 - `apps/storybook/.storybook/main.ts`는 MDX와 Storybook 앱 story를 함께 읽는다.
+- Storybook의 Tailwind/PostCSS 빌드 의존성은 `apps/storybook/package.json`에서 직접 선언해 Bun isolated install에서도 독립적으로 해석한다.
 - `packages/ui`에는 story 파일을 두지 않고, 디자인 시스템 문서는 `apps/storybook`에서 관리한다.
 - `preview.tsx`는 theme, density, motion global을 적용한다.
 - custom viewport는 `mobile-sm`, `mobile-lg`, `tablet`, `desktop`, `wide`를 제공한다.
@@ -26,6 +27,12 @@
 
 - 새 public component를 추가할 때 동일한 범주의 story를 함께 추가한다.
 - `packages/ui`에 story 파일을 추가하지 않는다. Storybook 문서는 `apps/storybook/src/stories`에 둔다.
+
+## 빌드 안정화 (2026-07-11)
+
+- `@tailwindcss/typography`를 Storybook의 직접 개발 의존성으로 선언해 Bun isolated install에서 공유 스타일 플러그인을 결정적으로 해석한다.
+- 공유 전역 스타일은 모든 `@import`를 `@plugin`보다 먼저 선언해 PostCSS import 순서 경고를 방지한다.
+- `bun --filter storybook build`와 `bun run build -- --force`로 Storybook 단독 빌드와 전체 워크스페이스 빌드를 검증했다.
 
 ## 완료된 작업 (2026-06-30)
 

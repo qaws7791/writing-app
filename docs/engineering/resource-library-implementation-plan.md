@@ -313,7 +313,7 @@ apps/admin/src/features/resources/
 - 휴지통 이동은 하위 활성 문서 room을 잠그고 모두 flush한 뒤 DB 구조 변경, event 발행, socket 종료 순서로 실행한다. 확인창은 하위 문서의 실제 WebSocket 연결 수를 조회해 활성 편집자 수를 아이콘과 텍스트로 항상 표시하며, 조회 실패 시 삭제를 허용하지 않는다. 내보내기도 열린 room을 먼저 flush해 최신 Markdown을 반환한다.
 - 공식 `WebsocketProvider` client와 Lexical binding 통합 테스트로 동시 입력 수렴, snapshot bootstrap, debounce·빈 room·종료 flush, room별 실패 격리, 20개 연결 상한과 잠금을 검증했다. 계약·core·API·React 관련 테스트와 타입 검사를 통과했다.
 - `ENABLE_TEST_AUTH=true` 로컬 환경의 두 독립 브라우저에서 교차 입력, 다른 client 변경을 보존하는 local undo, 한 client offline 중 양쪽 입력의 재연결 병합, API 서버 재시작 뒤 snapshot 복구, 제목 event 전파, 휴지통 이동 시 양쪽 화면 전환을 확인했다. 같은 문서를 연 두 브라우저에 대해 휴지통 확인창이 `현재 공동 편집 중인 관리자 2명`을 표시하는 것도 확인했다.
-- root typecheck·lint·format 검사와 admin·admin-api production build를 통과했다. root build는 두 application build가 성공한 뒤 이 작업과 무관한 Storybook의 기존 `@tailwindcss/typography` 의존성 누락에서 중단되는 상태를 확인했다.
+- root typecheck·lint·format 검사와 admin·admin-api production build를 통과했다. 당시 root build를 중단시킨 Storybook의 `@tailwindcss/typography` 의존성 누락은 2026-07-11에 직접 의존성 선언으로 해결했고, 캐시 없는 전체 빌드를 통과했다.
 
 ### 6. 오류·접근성·성능 강화
 
@@ -351,7 +351,7 @@ apps/admin/src/features/resources/
 - 운영 DB를 SQLite 일관성 백업으로 보존하고 무결성 검사를 통과한 뒤 명시적 자료실 마이그레이션을 실행했다. 최종 schema는 baseline에 통합하고 전환용 migration과 실행 명령을 제거했다.
 - legacy Tiptap contract, CRUD API·repository·test와 REST 본문 저장 경로를 제거했다. 문서 본문 변경은 자체 호스팅 Yjs 공동 편집 경로에서만 영속화된다.
 - 독립된 브라우저 두 개에서 교차 입력 수렴, 현재 편집자 2명 표시, 하위 트리 휴지통 이동·읽기 전용 전환·복원을 확인했다. 복원 후 Markdown 전체 내용과 `content_revision=3`, DB 무결성 `ok`를 확인했다.
-- Turbo test 13개 task를 순차 실행해 통과했고 root typecheck·lint·format, API contract drift, 문서 drift와 admin·admin-api production build를 통과했다. root 통합 build에서는 자료실과 무관한 기존 Storybook의 `@tailwindcss/typography` 의존성 누락만 남아 있다.
+- Turbo test 13개 task를 순차 실행해 통과했고 root typecheck·lint·format, API contract drift, 문서 drift와 admin·admin-api production build를 통과했다. 당시 남아 있던 Storybook의 `@tailwindcss/typography` 의존성 누락은 2026-07-11에 해결했으며 root 통합 build도 통과한다.
 
 ## 테스트 계획
 
