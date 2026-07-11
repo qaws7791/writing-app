@@ -54,6 +54,8 @@
 
 학습자 AI 피드백 repository 통합 테스트는 SQLite transaction에 50개 동시 요청을 입력해 provider 호출이 단일 in-flight 예약을 넘지 않는지 확인한다. 동일 idempotency key 결과 재사용, provider fault와 timeout의 `failed` 전이, TTL 만료의 `expired` 전이와 slot 재사용, 성공 3회 한도, 기존 완료 row의 `succeeded` migration을 함께 검증한다.
 
+학습 진행 repository 통합 테스트는 file-backed SQLite 연결 2개에서 index 1과 2 저장을 100회 동시에 실행한다. 최종 index가 2보다 작아지지 않고 낮은 요청이 `stale`로 구분되는지, 완료 뒤 늦은 저장에도 `completed` 상태와 index가 유지되는지 검증한다. 서비스 테스트는 현재 index와 같거나 정확히 1 큰 index만 허용하는 기존 순차 정책과 저장 시점 stale conflict를 함께 고정한다.
+
 ## 주요 명령
 
 ```bash

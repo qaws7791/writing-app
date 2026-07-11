@@ -9,6 +9,7 @@ export type ApiErrorCode =
   | "network-error"
   | "not-found"
   | "provider-unavailable"
+  | "progress-conflict"
   | "unauthorized"
 
 export type ApiError =
@@ -35,6 +36,7 @@ const serverCodeMap = {
   INVALID_REQUEST: "invalid-request",
   NOT_FOUND: "not-found",
   PROVIDER_UNAVAILABLE: "provider-unavailable",
+  PROGRESS_CONFLICT: "progress-conflict",
   UNAUTHORIZED: "unauthorized",
   VALIDATION_FAILED: "invalid-request",
 } as const satisfies Record<string, ServerApiErrorCode>
@@ -48,6 +50,7 @@ const messageByCode = {
   "network-error": "네트워크 연결을 확인해 주세요.",
   "not-found": "요청한 항목을 찾을 수 없습니다.",
   "provider-unavailable": "AI 코칭을 잠시 사용할 수 없습니다.",
+  "progress-conflict": "다른 요청에서 학습 진행이 갱신되었습니다.",
   unauthorized: "로그인이 필요합니다.",
 } as const satisfies Record<ApiErrorCode, string>
 

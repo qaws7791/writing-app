@@ -55,6 +55,12 @@ export function mapCoreError(error: ApiCoreError): AppError {
         message: "Attempt already in progress",
         status: 409,
       })
+    case "progress-conflict":
+      return new AppError({
+        code: "PROGRESS_CONFLICT",
+        message: "Lesson progress is stale",
+        status: 409,
+      })
     case "provider-failed":
       return new AppError({
         code: "PROVIDER_UNAVAILABLE",

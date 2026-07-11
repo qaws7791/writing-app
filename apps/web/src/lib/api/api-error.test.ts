@@ -40,6 +40,19 @@ describe("API 오류 매핑", () => {
     })
   })
 
+  it("stale 진행 저장 conflict를 최신 진행 재조회 안내로 변환한다", () => {
+    expect(
+      toApiError(409, {
+        code: "PROGRESS_CONFLICT",
+        message: "Lesson progress is stale",
+      })
+    ).toEqual({
+      code: "progress-conflict",
+      message: "다른 요청에서 학습 진행이 갱신되었습니다.",
+      status: 409,
+    })
+  })
+
   it("알 수 없는 응답은 contract-error로 변환한다", () => {
     expect(toApiError(500, { message: "boom" })).toEqual({
       code: "contract-error",
