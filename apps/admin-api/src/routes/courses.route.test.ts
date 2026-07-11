@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-import { readBearerToken } from "@workspace/core/auth"
 
 import { createApp, type AdminApiDependencies } from "@/app"
 import { adminSessionExpiresAt } from "@/auth/admin-session"
@@ -104,7 +103,7 @@ describe("어드민 API courses route", () => {
       "/courses?category=%EC%9E%85%EB%AC%B8%EC%9E%90%EB%A5%BC+%EC%9C%84%ED%95%9C+%EC%BD%94%EC%8A%A4&page=2&pageSize=10&query=%EA%B8%80%EC%93%B0%EA%B8%B0&status=active",
       {
         headers: {
-          Authorization: "Bearer admin-token",
+          Cookie: "admin_session_token=admin-token",
         },
       }
     )
@@ -118,7 +117,8 @@ describe("어드민 API courses route", () => {
 
     const response = await app.request("/courses?page=0", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
       },
     })
 
@@ -134,7 +134,8 @@ describe("어드민 API courses route", () => {
 
     const response = await app.request("/courses?pageSize=101", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
       },
     })
 
@@ -164,7 +165,8 @@ describe("어드민 API courses route", () => {
 
     const response = await app.request("/courses", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
       },
       method: "POST",
     })
@@ -195,7 +197,8 @@ describe("어드민 API courses route", () => {
 
     const response = await app.request("/courses", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
       },
       method: "POST",
     })
@@ -212,7 +215,8 @@ describe("어드민 API courses route", () => {
 
     const response = await app.request("/courses/cmock", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
       },
       method: "DELETE",
     })
@@ -226,7 +230,8 @@ describe("어드민 API courses route", () => {
 
     const response = await app.request("/courses/cmock", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
       },
       method: "DELETE",
     })
@@ -243,7 +248,8 @@ describe("어드민 API courses route", () => {
 
     const response = await app.request("/courses/missing", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
       },
       method: "DELETE",
     })
@@ -299,9 +305,9 @@ function createDependencies({
     },
     sessionResolver: {
       async resolveSession(headers) {
-        const token = readBearerToken(headers.get("Authorization"))
-
-        if (token !== "admin-token") {
+        if (
+          !headers.get("Cookie")?.includes("admin_session_token=admin-token")
+        ) {
           return null
         }
 

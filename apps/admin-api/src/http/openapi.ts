@@ -1,5 +1,6 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { ErrorResponseSchema } from "@workspace/hono/errors"
+import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { z } from "@workspace/hono/zod"
 
 export const openApiDocumentConfig = {
@@ -12,7 +13,7 @@ export const openApiDocumentConfig = {
 
 export const adminSessionCookieSecurityScheme = {
   in: "cookie",
-  name: "writing-app-admin.session_token",
+  name: adminSessionCookieName,
   type: "apiKey",
 } as const
 

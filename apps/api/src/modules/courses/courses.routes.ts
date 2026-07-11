@@ -19,7 +19,7 @@ const listCoursesRouteConfig = {
   responses: authenticatedResponses(
     jsonResponse("학습 가능한 코스 목록입니다.", courseListDtoSchema)
   ),
-  security: [{ bearerAuth: [] }],
+  security: [{ learnerSessionCookie: [] }],
   summary: "코스 목록 조회",
 } satisfies AnyRouteConfig
 
@@ -50,7 +50,7 @@ const getCourseDetailRouteConfig = {
     ),
     404: jsonResponse("코스를 찾을 수 없습니다.", ErrorResponseSchema),
   },
-  security: [{ bearerAuth: [] }],
+  security: [{ learnerSessionCookie: [] }],
   summary: "코스 상세 조회",
 } satisfies AnyRouteConfig
 

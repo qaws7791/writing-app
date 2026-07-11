@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { learnerAccountStatuses } from "@workspace/core/shared/kernel/status"
+import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
 import {
   createDrizzleLearnerProfileRepository,
@@ -130,7 +131,7 @@ function createLearnerAdvancedOptions(cookieDomain: string | undefined) {
   const baseOptions = {
     cookies: {
       session_token: {
-        name: "learner_session_token",
+        name: learnerSessionCookieName,
       },
     },
   }

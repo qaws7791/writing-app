@@ -4,7 +4,7 @@
 
 ## 기준
 
-- 기준일: 2026-07-11
+- 기준일: 2026-07-12
 - 기준 파일:
   - `package.json`
   - `apps/admin-api/package.json`
@@ -37,7 +37,9 @@
 
 - `NODE_ENV`
 - `BETTER_AUTH_SECRET`
+- `ADMIN_BETTER_AUTH_SECRET`
 - `BETTER_AUTH_URL`
+- `ADMIN_BETTER_AUTH_URL`
 - `BETTER_AUTH_COOKIE_DOMAIN`
 - `ADMIN_BETTER_AUTH_COOKIE_DOMAIN`
 - `DATABASE_URL`
@@ -50,6 +52,21 @@
 - `ENABLE_TEST_AUTH`
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
+
+## 운영 환경 fail-closed 계약
+
+`NODE_ENV=production`에서는 로컬 기본값으로 보완하지 않고 다음 설정을 프로세스 시작 전에 검증한다. 하나라도 누락되거나 조건에 맞지 않으면 API는 listen 또는 DB 연결 전에 종료한다.
+
+| 구분          | 필수 변수                                  | 운영 조건                                              |
+| ------------- | ------------------------------------------ | ------------------------------------------------------ |
+| 공개 origin   | `WEB_ORIGIN`, `ADMIN_ORIGIN`               | `https`이며 localhost 또는 loopback이 아님             |
+| 인증 기준 URL | `BETTER_AUTH_URL`, `ADMIN_BETTER_AUTH_URL` | `https`이며 localhost 또는 loopback이 아님             |
+| 데이터베이스  | `DATABASE_URL`                             | 명시적으로 설정하며 in-memory DB가 아님                |
+| 학습자 비밀값 | `BETTER_AUTH_SECRET`                       | 32자 이상, placeholder가 아니며 충분한 엔트로피를 가짐 |
+| 관리자 비밀값 | `ADMIN_BETTER_AUTH_SECRET`                 | 학습자 비밀값과 다르고 동일한 강도 조건을 만족함       |
+| 테스트 인증   | `ENABLE_TEST_AUTH`                         | `false`                                                |
+
+쿠키 domain을 설정하면 학습자 domain은 `WEB_ORIGIN`, 관리자 domain은 `ADMIN_ORIGIN`의 host 범위와 일치해야 한다. 개발과 테스트에서는 localhost URL과 `ENABLE_TEST_AUTH=true`를 계속 사용할 수 있다.
 
 ## 학습자 API 설정
 

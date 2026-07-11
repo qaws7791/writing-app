@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-import { readBearerToken } from "@workspace/core/modules/auth"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
@@ -53,8 +52,9 @@ describe("플랫폼 API learning route", () => {
         stepId: "l1-s3",
       }),
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3000",
       },
       method: "POST",
     })
@@ -109,8 +109,9 @@ describe("플랫폼 API learning route", () => {
         stepId: "l1-s1",
       }),
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3000",
       },
       method: "POST",
     })
@@ -132,8 +133,9 @@ describe("플랫폼 API learning route", () => {
     const response = await app.request("/learning/answers", {
       body: "{",
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3000",
       },
       method: "POST",
     })
@@ -170,8 +172,9 @@ describe("플랫폼 API learning route", () => {
         currentStepIndex: 999_999,
       }),
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3000",
       },
       method: "POST",
     })
@@ -209,8 +212,9 @@ describe("플랫폼 API learning route", () => {
     const response = await app.request("/learning/lessons/l1/progress", {
       body: JSON.stringify({ currentStepIndex: 1 }),
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3000",
       },
       method: "POST",
     })
@@ -294,9 +298,11 @@ function createDependencies({
     now: () => occurredAt,
     sessionResolver: {
       async resolveSession(headers) {
-        const token = readBearerToken(headers.get("Authorization"))
-
-        return token === "active-token" ? activeSession : null
+        return headers
+          .get("Cookie")
+          ?.includes("learner_session_token=active-token")
+          ? activeSession
+          : null
       },
     },
   }

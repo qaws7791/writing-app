@@ -66,7 +66,7 @@ describe("어드민 API ai chat route", () => {
   it("대화 목록과 상세를 반환한다", async () => {
     const app = createApp(createDependencies())
     const headers = {
-      Authorization: "Bearer admin-token",
+      Cookie: "admin_session_token=admin-token",
     }
 
     const listResponse = await app.request("/ai-chat/conversations", {
@@ -106,13 +106,17 @@ describe("어드민 API ai chat route", () => {
         message: "소개 문구를 써줘",
       }),
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3001",
       },
       method: "POST",
     })
 
     expect(response.status).toBe(200)
+    expect(response.headers.get("Content-Type")).toContain("text/event-stream")
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(response.headers.get("Vary")).toContain("Cookie")
     await expect(response.text()).resolves.toContain("event: done")
     expect(streamText).toHaveBeenCalledWith(
       expect.stringContaining("소개 문구를 써줘"),
@@ -128,8 +132,9 @@ describe("어드민 API ai chat route", () => {
         message: "소개 문구를 써줘",
       }),
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3001",
       },
       method: "POST",
     })
@@ -155,8 +160,9 @@ describe("어드민 API ai chat route", () => {
     const response = await app.request("/ai-chat/messages/stream", {
       body: JSON.stringify({ message: "소개 문구를 써줘" }),
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3001",
       },
       method: "POST",
     })
@@ -200,8 +206,9 @@ describe("어드민 API ai chat route", () => {
     const response = await app.request("/ai-chat/messages/stream", {
       body: JSON.stringify({ message: "소개 문구를 써줘" }),
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3001",
       },
       method: "POST",
     })

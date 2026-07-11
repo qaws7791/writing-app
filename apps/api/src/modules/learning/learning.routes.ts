@@ -35,7 +35,7 @@ const saveAnswerRouteConfig = {
     400: jsonResponse("잘못된 요청입니다.", ErrorResponseSchema),
     404: jsonResponse("레슨을 찾을 수 없습니다.", ErrorResponseSchema),
   },
-  security: [{ bearerAuth: [] }],
+  security: [{ learnerSessionCookie: [] }],
   summary: "레슨 답변 저장",
 } satisfies AnyRouteConfig
 
@@ -86,7 +86,7 @@ const saveLessonProgressRouteConfig = {
     ),
     404: jsonResponse("레슨을 찾을 수 없습니다.", ErrorResponseSchema),
   },
-  security: [{ bearerAuth: [] }],
+  security: [{ learnerSessionCookie: [] }],
   summary: "레슨 진행 저장",
 } satisfies AnyRouteConfig
 
@@ -126,7 +126,7 @@ const completeLessonRouteConfig = {
     400: jsonResponse("잘못된 요청입니다.", ErrorResponseSchema),
     404: jsonResponse("레슨을 찾을 수 없습니다.", ErrorResponseSchema),
   },
-  security: [{ bearerAuth: [] }],
+  security: [{ learnerSessionCookie: [] }],
   summary: "레슨 완료 저장",
 } satisfies AnyRouteConfig
 

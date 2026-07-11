@@ -186,3 +186,11 @@ AI 에이전트나 Playwright가 Google OAuth 화면을 직접 통과할 수 없
 - 실패를 우회하기 위한 조건문을 제품 코드에 추가하지 않는다.
 - flaky 테스트는 먼저 재현 조건과 시간/외부 의존성을 분리한다.
 - 테스트 수정이 실제 계약 변경인지, 오래된 기대값 수정인지 문서화한다.
+
+## HTTP 보안 계약 회귀 테스트
+
+- 운영 환경 표 기반 테스트는 HTTPS 공개 URL, 명시적 DB, 분리된 고엔트로피 인증 비밀값을 허용하고 누락·HTTP·localhost·동일하거나 약한 비밀값·운영 테스트 인증을 거부한다.
+- 실제 HTTPS 테스트 로그인 응답의 `Set-Cookie`에서 세션 쿠키 이름과 `Secure`, `HttpOnly`, `SameSite=Lax`를 확인한다.
+- 보호 route 매트릭스는 쿠키 인증 성공 시 `private, no-store`와 `Vary: Cookie`, Bearer 단독 요청의 `401`, 공개 route의 정책 비적용을 확인한다.
+- OpenAPI 테스트는 실제 인증 설정과 공유하는 쿠키 이름과 보호 route security scheme을 확인한다.
+- SSE와 파일 다운로드 테스트는 캐시 정책 적용 뒤에도 스트림 content type과 첨부 응답 계약이 유지되는지 확인한다.

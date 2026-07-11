@@ -6,6 +6,7 @@ import type { InternalErrorLogger } from "@workspace/hono/errors"
 import {
   createRequestBodyLimitMiddleware,
   createTrustedOriginMiddleware,
+  withPrivateNoStore,
 } from "@workspace/hono/security"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
@@ -175,7 +176,7 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
     const authHandler = dependencies.authHandler
 
     app.on(["GET", "POST"], "/api/auth/*", (context) => {
-      return authHandler(context.req.raw)
+      return authHandler(context.req.raw).then(withPrivateNoStore)
     })
   }
 

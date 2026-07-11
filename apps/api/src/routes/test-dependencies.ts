@@ -6,7 +6,7 @@ import {
   type ContentRepository,
 } from "@workspace/core/modules/content"
 import type { AiFeedbackService } from "@workspace/core/modules/ai-feedback"
-import { readBearerToken } from "@workspace/core/modules/auth"
+import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import {
   createProgressService,
   type LearningService,
@@ -95,13 +95,13 @@ function readTestSessionToken(headers: Headers): string | null {
     .get("Cookie")
     ?.split(";")
     .map((cookie) => cookie.trim().split("="))
-    .find(([name]) => name === "learner_session_token")?.[1]
+    .find(([name]) => name === learnerSessionCookieName)?.[1]
 
   if (cookieToken !== undefined) {
     return decodeURIComponent(cookieToken)
   }
 
-  return readBearerToken(headers.get("Authorization"))
+  return null
 }
 
 const contentRepository: ContentRepository = {

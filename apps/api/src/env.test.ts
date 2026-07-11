@@ -62,7 +62,7 @@ describe("API env", () => {
     })
   })
 
-  it("로컬 테스트 인증 플래그를 읽되 production에서는 끈다", () => {
+  it("로컬 테스트 인증 플래그를 읽되 production에서는 거부한다", () => {
     expect(
       parseApiEnv({
         BETTER_AUTH_SECRET: "x".repeat(32),
@@ -70,13 +70,41 @@ describe("API env", () => {
         NODE_ENV: "development",
       }).testAuthEnabled
     ).toBe(true)
-    expect(
+    expect(() =>
       parseApiEnv({
+        ADMIN_BETTER_AUTH_SECRET:
+          "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
+        ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",
+        ADMIN_ORIGIN: "https://admin.example.com",
         BETTER_AUTH_SECRET: "x".repeat(32),
+        BETTER_AUTH_URL: "https://api.example.com",
+        DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
         ENABLE_TEST_AUTH: "true",
         NODE_ENV: "production",
-      }).testAuthEnabled
-    ).toBe(false)
+        WEB_ORIGIN: "https://app.example.com",
+      })
+    ).toThrow(/ENABLE_TEST_AUTH/)
+  })
+
+  it("production startup은 명시적 HTTPS·DB·분리 secret을 사용한다", () => {
+    expect(
+      parseApiEnv({
+        ADMIN_BETTER_AUTH_SECRET:
+          "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
+        ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",
+        ADMIN_ORIGIN: "https://admin.example.com",
+        BETTER_AUTH_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef",
+        BETTER_AUTH_URL: "https://api.example.com",
+        DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
+        NODE_ENV: "production",
+        WEB_ORIGIN: "https://app.example.com",
+      })
+    ).toMatchObject({
+      authBaseUrl: "https://api.example.com",
+      databaseUrl: "file:/var/lib/writing-app/api.sqlite",
+      nodeEnv: "production",
+      webOrigin: "https://app.example.com",
+    })
   })
 
   it("선택 Better Auth 쿠키 도메인을 읽는다", () => {

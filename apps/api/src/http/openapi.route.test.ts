@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
 import { createApp } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"
@@ -13,8 +14,9 @@ describe("플랫폼 API openapi route", () => {
     const document = (await response.json()) as {
       readonly components: {
         readonly securitySchemes: {
-          readonly bearerAuth: {
-            readonly scheme: string
+          readonly learnerSessionCookie: {
+            readonly in: string
+            readonly name: string
             readonly type: string
           }
         }
@@ -29,9 +31,10 @@ describe("플랫폼 API openapi route", () => {
     expect(document).toMatchObject({
       components: {
         securitySchemes: {
-          bearerAuth: {
-            scheme: "bearer",
-            type: "http",
+          learnerSessionCookie: {
+            in: "cookie",
+            name: learnerSessionCookieName,
+            type: "apiKey",
           },
         },
       },
@@ -41,5 +44,14 @@ describe("플랫폼 API openapi route", () => {
       openapi: "3.1.0",
     })
     expect(document.paths).toHaveProperty("/courses/{courseId}")
+    expect(document).not.toHaveProperty([
+      "components",
+      "securitySchemes",
+      "bearerAuth",
+    ])
+    expect(document).toHaveProperty(
+      ["paths", "/profile", "get", "security"],
+      [{ learnerSessionCookie: [] }]
+    )
   })
 })

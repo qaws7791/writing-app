@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-import { readBearerToken } from "@workspace/core/modules/auth"
 import { localRuntimeDefaults } from "@workspace/env"
 
 import { createApp, type ApiDependencies } from "@/app"
@@ -73,7 +72,7 @@ describe("플랫폼 API profile route", () => {
     })
 
     const response = await app.request("/profile", {
-      headers: { Authorization: "Bearer active-token" },
+      headers: { Cookie: "learner_session_token=active-token" },
     })
 
     expect(response.status).toBe(200)
@@ -133,6 +132,8 @@ describe("플랫폼 API profile route", () => {
     expect(response.headers.get("location")).toBe(
       "https://accounts.google.com/o/oauth2/v2/auth"
     )
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(response.headers.get("Vary")).toContain("Cookie")
     const capturedRequest = capturedRequests[0]
 
     expect(capturedRequest?.method).toBe("POST")
@@ -162,15 +163,40 @@ describe("플랫폼 API profile route", () => {
 
     const response = await app.request("/profile", {
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
       },
     })
 
     expect(response.status).toBe(200)
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(response.headers.get("Vary")).toContain("Cookie")
     await expect(response.json()).resolves.toEqual({
       stats: profileStats,
       user: activeSession.user,
     })
+  })
+
+  it("Bearer 토큰만으로 보호 route에 접근할 수 없다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request("/profile", {
+      headers: { Authorization: "Bearer active-token" },
+    })
+
+    expect(response.status).toBe(401)
+  })
+
+  it("공개 health와 OpenAPI 응답에는 민감 응답 캐시 정책을 추가하지 않는다", async () => {
+    const app = createApp(createDependencies())
+
+    for (const path of ["/health", "/openapi"]) {
+      const response = await app.request(path)
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get("Cache-Control")).not.toBe(
+        "private, no-store"
+      )
+    }
   })
 
   it("suspended 또는 deleted 사용자는 보호 route에서 차단한다", async () => {
@@ -179,7 +205,7 @@ describe("플랫폼 API profile route", () => {
     for (const token of ["suspended-token", "deleted-token"]) {
       const response = await app.request("/profile", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Cookie: `learner_session_token=${token}`,
         },
       })
 
@@ -202,8 +228,9 @@ describe("플랫폼 API profile route", () => {
         lessonId: "lesson-1",
       }),
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
         "Content-Type": "application/json",
+        Origin: localRuntimeDefaults.learnerWebOrigin,
       },
       method: "POST",
     })
@@ -275,5 +302,5 @@ function readTestSessionToken(headers: Headers): string | null {
     return decodeURIComponent(cookieToken)
   }
 
-  return readBearerToken(headers.get("Authorization"))
+  return null
 }

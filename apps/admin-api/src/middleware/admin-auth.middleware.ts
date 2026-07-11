@@ -1,5 +1,6 @@
 import type { MiddlewareHandler } from "hono"
 import { canAccessOwnerAdminRoute } from "@workspace/core/admin"
+import { withPrivateNoStore } from "@workspace/hono/security"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
 import type { AdminHonoEnv } from "@/context/hono-env"
@@ -27,6 +28,7 @@ export function createRequireAdminSessionMiddleware(
     })
 
     await next()
+    context.res = withPrivateNoStore(context.res)
   }
 }
 
@@ -53,5 +55,6 @@ export function createRequireOwnerAdminSessionMiddleware(
     }
 
     await next()
+    context.res = withPrivateNoStore(context.res)
   }
 }

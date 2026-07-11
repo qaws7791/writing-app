@@ -5,7 +5,6 @@ import {
   createLearnerContentService,
   type ContentRepository,
 } from "@workspace/core/modules/content"
-import { readBearerToken } from "@workspace/core/modules/auth"
 import {
   createProgressService,
   type ProgressReader,
@@ -31,7 +30,7 @@ describe("플랫폼 API progress route", () => {
 
     const response = await app.request("/progress", {
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
       },
     })
 
@@ -89,7 +88,7 @@ describe("플랫폼 API progress route", () => {
 
     const response = await app.request("/progress?status=in_progress", {
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
       },
     })
 
@@ -112,7 +111,7 @@ describe("플랫폼 API progress route", () => {
 
     const response = await app.request("/progress?status=completed", {
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
       },
     })
 
@@ -356,9 +355,11 @@ function createProgressDependencies({
     }),
     sessionResolver: {
       async resolveSession(headers) {
-        const token = readBearerToken(headers.get("Authorization"))
-
-        return token === "active-token" ? activeSession : null
+        return headers
+          .get("Cookie")
+          ?.includes("learner_session_token=active-token")
+          ? activeSession
+          : null
       },
     },
   }

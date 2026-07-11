@@ -1,5 +1,6 @@
 import type { MiddlewareHandler } from "hono"
 import { AppError } from "@workspace/hono/errors"
+import { withPrivateNoStore } from "@workspace/hono/security"
 import { learnerAccountStatuses } from "@workspace/core/modules/auth"
 
 import type { ApiHonoEnv } from "@/context/hono-env"
@@ -32,4 +33,5 @@ export const requireActiveSession: MiddlewareHandler<ApiHonoEnv> = async (
   }
 
   await next()
+  context.res = withPrivateNoStore(context.res)
 }

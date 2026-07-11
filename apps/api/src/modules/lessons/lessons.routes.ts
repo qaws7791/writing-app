@@ -24,7 +24,7 @@ const getLessonRouteConfig = {
     ),
     404: jsonResponse("레슨을 찾을 수 없습니다.", ErrorResponseSchema),
   },
-  security: [{ bearerAuth: [] }],
+  security: [{ learnerSessionCookie: [] }],
   summary: "레슨 상세 조회",
 } satisfies AnyRouteConfig
 

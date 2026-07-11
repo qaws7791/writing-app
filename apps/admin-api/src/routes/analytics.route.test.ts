@@ -98,7 +98,7 @@ describe("어드민 API analytics route", () => {
 
     const response = await app.request("/analytics?days=2", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
       },
     })
 
@@ -111,7 +111,7 @@ describe("어드민 API analytics route", () => {
 
     const response = await app.request("/analytics?days=366", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
       },
     })
 
@@ -129,7 +129,7 @@ describe("어드민 API analytics route", () => {
       "/analytics/lessons?page=1&pageSize=10&query=%EB%91%98%EC%A7%B8&sort=completionRate&direction=asc",
       {
         headers: {
-          Authorization: "Bearer admin-token",
+          Cookie: "admin_session_token=admin-token",
         },
       }
     )
@@ -143,7 +143,7 @@ describe("어드민 API analytics route", () => {
 
     const response = await app.request("/analytics/lessons?pageSize=101", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
       },
     })
 
@@ -161,7 +161,7 @@ describe("어드민 API analytics route", () => {
       "/analytics/lessons?direction=sideways",
       {
         headers: {
-          Authorization: "Bearer admin-token",
+          Cookie: "admin_session_token=admin-token",
         },
       }
     )

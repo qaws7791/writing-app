@@ -44,9 +44,10 @@
     },
     "parameters": {},
     "securitySchemes": {
-      "bearerAuth": {
-        "scheme": "bearer",
-        "type": "http"
+      "learnerSessionCookie": {
+        "in": "cookie",
+        "name": "learner_session_token",
+        "type": "apiKey"
       }
     }
   },
@@ -80,7 +81,7 @@
         "operationId": "getAuthSession",
         "security": [
           {
-            "bearerAuth": []
+            "learnerSessionCookie": []
           }
         ],
         "summary": "현재 세션 조회",
@@ -159,7 +160,7 @@
         "operationId": "getProfile",
         "security": [
           {
-            "bearerAuth": []
+            "learnerSessionCookie": []
           }
         ],
         "summary": "학습자 프로필 조회",
@@ -270,7 +271,7 @@
         "operationId": "getCourses",
         "security": [
           {
-            "bearerAuth": []
+            "learnerSessionCookie": []
           }
         ],
         "summary": "코스 목록 조회",
@@ -364,7 +365,7 @@
         "operationId": "getCourseDetail",
         "security": [
           {
-            "bearerAuth": []
+            "learnerSessionCookie": []
           }
         ],
         "summary": "코스 상세 조회",
@@ -615,7 +616,7 @@
         "operationId": "getLesson",
         "security": [
           {
-            "bearerAuth": []
+            "learnerSessionCookie": []
           }
         ],
         "summary": "레슨 상세 조회",
@@ -1256,7 +1257,7 @@
         "operationId": "getProgress",
         "security": [
           {
-            "bearerAuth": []
+            "learnerSessionCookie": []
           }
         ],
         "summary": "학습 진행 조회",
@@ -1430,7 +1431,7 @@
         "operationId": "saveLessonAnswer",
         "security": [
           {
-            "bearerAuth": []
+            "learnerSessionCookie": []
           }
         ],
         "summary": "레슨 답변 저장",
@@ -1691,7 +1692,7 @@
         "operationId": "completeLesson",
         "security": [
           {
-            "bearerAuth": []
+            "learnerSessionCookie": []
           }
         ],
         "summary": "레슨 완료 저장",
@@ -1771,7 +1772,7 @@
         "operationId": "saveLessonProgress",
         "security": [
           {
-            "bearerAuth": []
+            "learnerSessionCookie": []
           }
         ],
         "summary": "레슨 진행 저장",
@@ -1878,7 +1879,7 @@
         "operationId": "createAiFeedback",
         "security": [
           {
-            "bearerAuth": []
+            "learnerSessionCookie": []
           }
         ],
         "summary": "AI 코칭 생성",

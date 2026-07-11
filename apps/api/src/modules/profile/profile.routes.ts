@@ -12,7 +12,7 @@ export const profileRoute = defineApiRoute({
   responses: authenticatedResponses(
     jsonResponse("학습자 프로필과 통계입니다.", profileResponseSchema)
   ),
-  security: [{ bearerAuth: [] }],
+  security: [{ learnerSessionCookie: [] }],
   summary: "학습자 프로필 조회",
   handler: async (context) => {
     const stats =

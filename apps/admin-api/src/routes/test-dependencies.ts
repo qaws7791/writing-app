@@ -10,7 +10,7 @@ import {
   type ResourceDocumentOperationCoordinator,
 } from "@/resource-library/resource-document-operation-coordinator"
 import { adminRoles } from "@workspace/core/admin"
-import { readBearerToken } from "@workspace/core/auth"
+import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { localRuntimeDefaults } from "@workspace/env"
 
 type TestAdminApiServicesOverrides = {
@@ -141,13 +141,13 @@ function readTestAdminSessionToken(headers: Headers): string | null {
     .get("Cookie")
     ?.split(";")
     .map((cookie) => cookie.trim().split("="))
-    .find(([name]) => name === "admin_session_token")?.[1]
+    .find(([name]) => name === adminSessionCookieName)?.[1]
 
   if (cookieToken !== undefined) {
     return decodeURIComponent(cookieToken)
   }
 
-  return readBearerToken(headers.get("Authorization"))
+  return null
 }
 
 function createFailingAdminApiServices(): AdminApiServices {
