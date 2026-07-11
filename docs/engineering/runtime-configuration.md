@@ -160,6 +160,8 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 - `NODE_ENV`
 - 웹/API base URL
 
+자료실 예약 부하 suite 전용 `RESOURCE_LIBRARY_LOAD_RUNS`와 `RESOURCE_LIBRARY_LOAD_ARTIFACT`도 task 입력과 artifact 위치를 결정하므로 `globalEnv`에 포함한다. 두 값은 제품 runtime 설정이 아니다.
+
 ## `.env.example` 정책
 
 - 실제 비밀값을 넣지 않는다.

@@ -50,6 +50,8 @@
   "scripts": {
     "lint": "oxlint .",
     "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
+    "test:e2e:resource-library-load": "playwright test --config playwright.load.config.ts",
+    "test:load:resource-library": "bun load/run-resource-document-sync-load.ts",
     "test:watch": "bun --bun ../../node_modules/vitest/vitest.mjs watch --config vitest.config.ts",
     "typecheck": "tsc --noEmit"
   },
@@ -63,6 +65,7 @@
     "zod": "^4.2.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/bun": "^1.3.10",
     "@workspace/config": "workspace:*",
     "typescript": "5.9.3",
