@@ -7,6 +7,7 @@
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
     "./content/*": "./src/content/*.ts",
+    "./destructive-operation-guard": "./src/destructive-operation-guard.ts",
     "./migrations/*": "./src/migrations/*.ts",
     "./persisted-values": "./src/persisted-values.ts",
     "./schema": "./src/schema/index.ts",

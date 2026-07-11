@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, rmSync } from "node:fs"
-import { dirname, isAbsolute, relative, resolve } from "node:path"
+import { existsSync, mkdirSync } from "node:fs"
+import { dirname } from "node:path"
 import { fileURLToPath } from "node:url"
 
 import { archiveContentRowsOutsideSeed } from "@/content/content-archive-policy"
@@ -10,6 +10,11 @@ import {
   type WritingAppDatabaseClient,
 } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
+import {
+  assertDestructiveDatabaseAllowed,
+  inspectDatabaseResetTarget,
+  resetSqliteDatabaseFiles,
+} from "@workspace/db/destructive-operation-guard"
 import {
   authUsers,
   courses,
@@ -31,15 +36,12 @@ type WritingAppDatabaseTransaction = Parameters<
   Parameters<WritingAppDatabase["transaction"]>[0]
 >[0]
 
-const repositoryDataDirectory = fileURLToPath(
-  new URL("../../../../data/", import.meta.url)
-)
-
 export type SeedDatabaseOptions = {
   readonly allowDatabaseReset?: boolean
   readonly databaseUrl?: string
   readonly forceDatabaseReset?: boolean
   readonly nodeEnv?: string
+  readonly targetFingerprint?: string
 }
 
 export async function seedDatabase(
@@ -78,6 +80,7 @@ function normalizeSeedDatabaseOptions(
       databaseUrl: input,
       forceDatabaseReset: false,
       nodeEnv: process.env["NODE_ENV"] ?? "",
+      targetFingerprint: "",
     }
   }
 
@@ -89,6 +92,7 @@ function normalizeSeedDatabaseOptions(
       getDefaultDatabaseUrl(),
     forceDatabaseReset: input.forceDatabaseReset ?? false,
     nodeEnv: input.nodeEnv ?? process.env["NODE_ENV"] ?? "",
+    targetFingerprint: input.targetFingerprint ?? "",
   }
 }
 
@@ -99,16 +103,10 @@ function assertProductionSeedAllowed(
     return
   }
 
-  if (!options.allowDatabaseReset || !options.forceDatabaseReset) {
-    throw new Error(
-      "production DB seed 실행은 ALLOW_DATABASE_RESET=true와 --force가 필요합니다."
-    )
-  }
+  const target = inspectDatabaseResetTarget(options.databaseUrl)
 
-  const databasePath = getDatabaseFilePath(options.databaseUrl)
-
-  if (databasePath !== null && !isRepositoryDataPath(databasePath)) {
-    throw new Error("저장소 data 디렉터리 밖의 DB 파일은 재생성할 수 없습니다.")
+  if (target !== null && target.files.length > 0) {
+    assertDestructiveDatabaseAllowed(target, options)
   }
 }
 
@@ -190,39 +188,13 @@ function recreateDatabaseFile(
     return
   }
 
-  assertDatabaseResetAllowed(databasePath, options)
-
-  rmSync(databasePath, { force: true })
-  rmSync(`${databasePath}-shm`, { force: true })
-  rmSync(`${databasePath}-wal`, { force: true })
-}
-
-function assertDatabaseResetAllowed(
-  databasePath: string,
-  options: Required<SeedDatabaseOptions>
-): void {
   if (!options.allowDatabaseReset || !options.forceDatabaseReset) {
     throw new Error(
       "DB 파일 재생성은 ALLOW_DATABASE_RESET=true와 --force가 필요합니다."
     )
   }
 
-  if (!isRepositoryDataPath(databasePath)) {
-    throw new Error("저장소 data 디렉터리 밖의 DB 파일은 재생성할 수 없습니다.")
-  }
-}
-
-function isRepositoryDataPath(databasePath: string): boolean {
-  const relativePath = relative(
-    resolve(repositoryDataDirectory),
-    resolve(databasePath)
-  )
-
-  return (
-    relativePath !== "" &&
-    !relativePath.startsWith("..") &&
-    !isAbsolute(relativePath)
-  )
+  resetSqliteDatabaseFiles(options)
 }
 
 function getDatabaseFilePath(databaseUrl: string): string | null {
@@ -402,5 +374,8 @@ if (import.meta.main) {
     allowDatabaseReset: process.env["ALLOW_DATABASE_RESET"] === "true",
     databaseUrl: process.env["DATABASE_URL"] ?? getDefaultDatabaseUrl(),
     forceDatabaseReset: process.argv.includes("--force"),
+    targetFingerprint: process.argv
+      .find((argument) => argument.startsWith("--target-fingerprint="))
+      ?.slice("--target-fingerprint=".length),
   })
 }

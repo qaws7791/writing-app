@@ -18,7 +18,9 @@ describe("admin auth navigation", () => {
   })
 
   it("어드민 앱 source에서 native window.location 이동을 사용하지 않는다", () => {
-    const sourceFiles = readSourceFiles(join(process.cwd(), "src"))
+    const sourceFiles = readSourceFiles(
+      join(import.meta.dirname, "../../..", "src")
+    )
     const forbiddenPattern =
       /window\\.location\\.(assign|replace|href)|location\\.(assign|replace|href)/
     const offenders = sourceFiles.filter((file) =>

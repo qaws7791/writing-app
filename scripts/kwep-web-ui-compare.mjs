@@ -159,10 +159,6 @@ function compareFingerprints(kwep, web, screenId) {
     )
     const webCta = web.buttons.find((button) => button.text.includes("Google"))
     if (kwepCta && webCta) {
-      const radiusDistance = colorDistance(
-        `rgb(${kwepCta.borderRadius})`,
-        `rgb(${webCta.borderRadius})`
-      )
       if (
         kwepCta.borderRadius &&
         webCta.borderRadius &&

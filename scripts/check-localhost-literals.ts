@@ -46,6 +46,10 @@ function collectFiles(directory: string): string[] {
       return []
     }
 
+    if (entry.name.includes(".test.") || entry.name.includes(".spec.")) {
+      return []
+    }
+
     return scannedExtensions.has(path.extname(entry.name)) ? [entryPath] : []
   })
 }

@@ -1,0 +1,113 @@
+name: 필수 품질 게이트
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: quality-gates-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CI: true
+
+jobs:
+  static-checks:
+    name: 정적 검증
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - run: bun run check:workspace-inventory
+      - run: bun run check:document-drift
+      - run: bun run check:api-contract
+      - run: bun run check:components-config
+      - run: bun run check:design-system-guardrails
+      - run: bun run check:import-cycles
+      - run: bun run check:localhost-literals
+      - run: bun run format:check
+      - run: bunx oxlint apps packages scripts --deny-warnings
+      - run: bun run typecheck
+      - if: always()
+        run: bun scripts/ci-workspace-inventory.ts lint typecheck
+
+  tests:
+    name: 테스트 및 커버리지
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - run: bun test scripts/ci-workspace-inventory.test.ts
+      - run: node scripts/oxlint/workspace-rules.test.mjs
+      - run: bun run test:coverage
+      - if: always()
+        run: bun scripts/ci-workspace-inventory.ts test
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ github.sha }}
+          path: coverage/
+          if-no-files-found: error
+          retention-days: 14
+
+  build:
+    name: 빌드
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+      - run: bun install --frozen-lockfile
+      - run: bun run build
+      - if: always()
+        run: bun scripts/ci-workspace-inventory.ts build
+
+  audit:
+    name: 의존성 감사
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [production, full]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.10
+      - name: production 의존성 설치
+        if: matrix.scope == 'production'
+        run: bun install --production --frozen-lockfile
+      - name: 전체 의존성 설치
+        if: matrix.scope == 'full'
+        run: bun install --frozen-lockfile
+      - run: bun run audit:${{ matrix.scope }}
+      - if: always()
+        run: bun scripts/ci-workspace-inventory.ts audit

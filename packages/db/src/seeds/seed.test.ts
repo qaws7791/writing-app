@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs"
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -292,7 +292,7 @@ describe("개발 DB seed 실행", () => {
           nodeEnv: "production",
         })
       ).rejects.toThrow(
-        "production DB seed 실행은 ALLOW_DATABASE_RESET=true와 --force가 필요합니다."
+        "저장소 data 디렉터리 밖의 DB 파일은 초기화할 수 없습니다."
       )
     } finally {
       rmSync(tempDirectory, { force: true, recursive: true })
@@ -348,7 +348,7 @@ describe("개발 DB seed 실행", () => {
           forceDatabaseReset: true,
         })
       ).rejects.toThrow(
-        "저장소 data 디렉터리 밖의 DB 파일은 재생성할 수 없습니다."
+        "저장소 data 디렉터리 밖의 DB 파일은 초기화할 수 없습니다."
       )
     } finally {
       legacyClient.close(false)
@@ -357,6 +357,9 @@ describe("개발 DB seed 실행", () => {
   })
 
   it("명시적 허용 조건이 없으면 이전 DB 파일을 삭제하지 않는다", async () => {
+    mkdirSync(fileURLToPath(new URL("../../../../data", import.meta.url)), {
+      recursive: true,
+    })
     const databaseUrl = join(
       fileURLToPath(new URL("../../../../data", import.meta.url)),
       `seed-guard-${crypto.randomUUID()}.sqlite`
@@ -394,6 +397,9 @@ describe("개발 DB seed 실행", () => {
   })
 
   it("저장소 data 하위 DB는 명시적 허용 조건으로 새 baseline으로 재생성한다", async () => {
+    mkdirSync(fileURLToPath(new URL("../../../../data", import.meta.url)), {
+      recursive: true,
+    })
     const databaseUrl = join(
       fileURLToPath(new URL("../../../../data", import.meta.url)),
       `seed-reset-${crypto.randomUUID()}.sqlite`

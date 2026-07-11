@@ -118,7 +118,15 @@
 - 서버 프로세스 시작은 마이그레이션, seed, reset을 수행하지 않는다.
 - 마이그레이션과 seed는 명시 명령으로 실행한다.
 - `db:reset`과 `dev:app:fresh`는 로컬 개발 DB 초기화용이며 운영에서 사용하지 않는다.
+- DB 파일을 파괴적으로 변경하는 명령은 저장소 `data/` 경계, symlink 탈출, SQLite 파일 형식, 백업 완료를 삭제 전에 검증한다.
+- production DB reset은 `ALLOW_DATABASE_RESET=true`, `--force`, 대상 fingerprint를 모두 요구한다.
 - seed 중 legacy DB 파일 재생성이 필요하면 `ALLOW_DATABASE_RESET=true`와 `--force`가 필요하다.
+
+## 의존성 감사 예외
+
+- CI의 production·full audit은 high 이상 advisory를 차단한다.
+- 현재 `package.json`의 audit 명령에 명시한 advisory는 upstream 직접·전이 의존성 업데이트를 기다리는 기준선 예외다. 목록에 없는 새 advisory는 즉시 실패한다.
+- 예외 목록은 월 1회와 의존성 변경 PR마다 재검토하고, 안전한 호환 버전이 나오면 해당 `--ignore`를 제거한다.
 
 ## 검토 체크리스트
 
