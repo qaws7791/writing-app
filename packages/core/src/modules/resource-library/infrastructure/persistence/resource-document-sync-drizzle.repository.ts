@@ -1,4 +1,10 @@
-import { and, asc, eq, gt, lte } from "drizzle-orm"
+import { and, asc, count, eq, gt, lt, lte } from "drizzle-orm"
+import {
+  adminResourceDocumentMaxNodes,
+  adminResourceDocumentMaxTransactions,
+  adminResourceDocumentReceiptRetentionMilliseconds,
+  adminResourceYjsSnapshotMaxBytes,
+} from "@workspace/contracts/admin"
 
 import type {
   CommitResourceDocumentTransactionInput,
@@ -18,11 +24,28 @@ import {
 } from "@workspace/db/schema"
 
 export function createDrizzleResourceDocumentSyncRepository(
-  db: WritingAppDatabase
+  db: WritingAppDatabase,
+  limits: {
+    readonly maxNodeCount?: number
+    readonly maxSnapshotBytes?: number
+    readonly maxTransactionsPerDocument?: number
+    readonly receiptRetentionMilliseconds?: number
+  } = {}
 ): ResourceDocumentSyncRepository {
+  const resolvedLimits = {
+    maxNodeCount: limits.maxNodeCount ?? adminResourceDocumentMaxNodes,
+    maxSnapshotBytes:
+      limits.maxSnapshotBytes ?? adminResourceYjsSnapshotMaxBytes,
+    maxTransactionsPerDocument:
+      limits.maxTransactionsPerDocument ?? adminResourceDocumentMaxTransactions,
+    receiptRetentionMilliseconds:
+      limits.receiptRetentionMilliseconds ??
+      adminResourceDocumentReceiptRetentionMilliseconds,
+  }
+
   return {
     async commitTransaction(input) {
-      return commitResourceDocumentTransaction(db, input)
+      return commitResourceDocumentTransaction(db, input, resolvedLimits)
     },
     async findAcceptedTransaction(input) {
       const accepted = db
@@ -127,7 +150,13 @@ function loadResourceDocumentSync(
 
 function commitResourceDocumentTransaction(
   db: WritingAppDatabase,
-  input: CommitResourceDocumentTransactionInput
+  input: CommitResourceDocumentTransactionInput,
+  limits: {
+    readonly maxNodeCount: number
+    readonly maxSnapshotBytes: number
+    readonly maxTransactionsPerDocument: number
+    readonly receiptRetentionMilliseconds: number
+  }
 ): CommitResourceDocumentTransactionResult {
   return db.transaction(
     (transaction) => {
@@ -158,6 +187,62 @@ function commitResourceDocumentTransaction(
           kind: "already-accepted",
           stateVersion: accepted.stateVersion,
           transactionId: input.transactionId,
+        }
+      }
+
+      if (input.snapshot.byteLength > limits.maxSnapshotBytes) {
+        return {
+          actual: input.snapshot.byteLength,
+          kind: "quota-exceeded",
+          limit: limits.maxSnapshotBytes,
+          quota: "snapshot-bytes",
+        }
+      }
+      if (input.nodeCount > limits.maxNodeCount) {
+        return {
+          actual: input.nodeCount,
+          kind: "quota-exceeded",
+          limit: limits.maxNodeCount,
+          quota: "node-count",
+        }
+      }
+
+      transaction
+        .delete(adminResourceCollaborationTransactions)
+        .where(
+          and(
+            eq(
+              adminResourceCollaborationTransactions.documentId,
+              input.documentId
+            ),
+            lt(
+              adminResourceCollaborationTransactions.createdAt,
+              new Date(
+                input.now.getTime() - limits.receiptRetentionMilliseconds
+              )
+            )
+          )
+        )
+        .run()
+
+      const retainedTransactionCount =
+        transaction
+          .select({ value: count() })
+          .from(adminResourceCollaborationTransactions)
+          .where(
+            eq(
+              adminResourceCollaborationTransactions.documentId,
+              input.documentId
+            )
+          )
+          .get()?.value ?? 0
+
+      if (retainedTransactionCount >= limits.maxTransactionsPerDocument) {
+        return {
+          actual: retainedTransactionCount,
+          kind: "quota-exceeded",
+          limit: limits.maxTransactionsPerDocument,
+          quota: "transaction-count",
         }
       }
 

@@ -11,8 +11,8 @@
 - API 적용: `apps/api`, `apps/admin-api`
 - 요청 ID header: `x-request-id`
 - 요청 완료 메시지: `request.completed`
-- 자료실 본문 동기화: HTTP transaction 거부·재시도, sync 응답 종류, projection issue와 SQLite busy를 구조화해 기록한다.
-- 자료실 작업 공간 사건: `/resources/events` WebSocket의 인증 거부 이유, 연결·문서 구독·heartbeat 만료를 구조화해 기록하며 본문 Yjs binary는 기록하거나 전송하지 않는다.
+- 자료실 본문 동기화: HTTP transaction의 snapshot byte·node·receipt quota 거부와 projection deadline 초과를 `resource-document.sync.rejected`로 구조화해 기록한다. 문서 ID, 실제 값, 상한과 지연만 포함하고 Markdown·Yjs binary는 기록하지 않는다.
+- 자료실 작업 공간 사건: `/resources/events` WebSocket의 upgrade 인증 거부와 세션 만료·폐기, actor/IP 연결·메시지·구독 quota 위반을 기존 `security.audit`의 `websocket.authorization.rejected` action으로 기록한다. 본문 Yjs binary는 기록하거나 전송하지 않는다.
 - 자료실 트리: event revision gap을 `resource-tree.revision-gap` performance mark로 기록하고 보이는 트리를 다시 조회한다.
 - 관리자 AI 채팅: 완료와 출력 byte 비용은 `admin.ai-chat.completed`, 요청 한도·동시 실행 거절은 `admin.ai-chat.request.rejected`, provider timeout은 `admin.ai-chat.provider.timeout`, 출력 상한 초과는 `admin.ai-chat.output.limit`, client 취소는 `admin.ai-chat.client.disconnected`로 기록한다.
 
@@ -83,7 +83,7 @@
 - AI 피드백 요청 수, 429 수, provider unavailable 수, model별 input/output token 합계와 모델 단가를 적용한 예상 비용
 - SQLite busy/lock 관련 실패 수
 - seed/migration 성공/실패
-- 작업 공간 연결 수·문서 구독 수·heartbeat 만료 수, HTTP transaction·projection latency와 실패 수, snapshot 크기
+- 작업 공간 actor/IP 연결 quota와 메시지·구독 rate 거부 수, HTTP transaction quota·projection deadline 거부 수, snapshot 크기와 node 수
 
 ## 초기 경보 기준
 

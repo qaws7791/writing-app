@@ -15,10 +15,17 @@ describe("자료실 이벤트 WebSocket upgrade", () => {
     const response = await createHandler()(request, upgrade)
 
     expect(response).toBeUndefined()
-    expect(upgrade).toHaveBeenCalledWith(request, {
-      actorId: "admin-1",
-      channel: "events",
-    })
+    expect(upgrade).toHaveBeenCalledWith(
+      request,
+      expect.objectContaining({
+        actorId: "admin-1",
+        channel: "events",
+        clientIp: "unknown",
+        sessionExpiresAtMilliseconds: new Date(
+          "2099-01-01T00:00:00.000Z"
+        ).getTime(),
+      })
+    )
   })
 
   it("다른 Origin은 upgrade 전에 거부한다", async () => {

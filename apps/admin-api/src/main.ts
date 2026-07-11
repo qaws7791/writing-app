@@ -43,7 +43,12 @@ const resourceDocumentRepository = createDrizzleResourceDocumentRepository(
   database.db
 )
 const resourceDocumentSyncService = createResourceDocumentSyncUseCase(
-  createDrizzleResourceDocumentSyncRepository(database.db)
+  createDrizzleResourceDocumentSyncRepository(database.db),
+  {
+    onRejected(event) {
+      logger.warn(event, "resource-document.sync.rejected")
+    },
+  }
 )
 const resourceDocumentOperations = createResourceDocumentOperationCoordinator()
 const createResourceAuditEventId = () =>
@@ -92,6 +97,17 @@ const auth = createAdminAuth({
 })
 const sessionResolver = createAdminSessionResolver(auth)
 const resourceEvents = createResourceEventsHub({
+  onPolicyViolation({ actorId, reason }) {
+    securityAuditLogger({
+      action: "websocket.authorization.rejected",
+      actorId,
+      actorType: "admin",
+      outcome: "denied",
+      reason,
+      requestId: crypto.randomUUID(),
+      target: "GET /resources/events",
+    })
+  },
   async readDocumentStateVersion(documentId) {
     const result = await resourceDocumentSyncService.readSync({
       afterStateVersion: 0,
@@ -103,6 +119,7 @@ const resourceEvents = createResourceEventsHub({
       ? null
       : result.stateVersion
   },
+  sessionResolver,
 })
 const eventsUpgradeHandler = createResourceEventsUpgradeHandler({
   adminOrigin: env.adminOrigin,
@@ -158,7 +175,8 @@ if (import.meta.main) {
 
       const eventsResponse = await eventsUpgradeHandler(
         request,
-        (upgradeRequest, data) => bunServer.upgrade(upgradeRequest, { data })
+        (upgradeRequest, data) => bunServer.upgrade(upgradeRequest, { data }),
+        bunServer.requestIP(request)?.address ?? "unknown"
       )
 
       return eventsResponse === null ? app.fetch(request) : eventsResponse

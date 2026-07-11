@@ -29,3 +29,10 @@ ADR-0004는 문서별 Yjs WebSocket room을 열고 짧은 debounce 뒤 서버가
 - 서버 재시작 뒤에도 SQLite snapshot·update log·receipt에서 동기화와 재시도를 복구한다.
 - 본문 저장 실패는 동일한 transaction ID와 payload를 재사용해 재시도한다.
 - 서버 인스턴스 간 version 알림 전달이 필요해지면 작업 공간 사건 Hub용 pub/sub를 별도 ADR로 결정한다.
+
+## 2026-07-12 보안 보완
+
+- HTTP transaction과 작업 공간 WebSocket의 역할 분리는 그대로 유지한다.
+- 최종 commit 전에 snapshot 3,000,000byte, Lexical node 20,000개, 7일 receipt 10,000개와 projection 1초 deadline을 검사한다.
+- transaction receipt의 멱등 보존 기간은 7일이다. 보존 기간이 지난 receipt만 새 commit의 SQLite transaction 안에서 정리하며, quota 또는 deadline 거부는 snapshot·Markdown revision·검색 색인을 변경하지 않는다.
+- 작업 공간 WebSocket은 세션 만료·폐기를 재검증하고 actor/IP 연결 및 message·subscribe rate, payload와 backpressure 상한을 적용한다. 본문 Yjs binary는 계속 HTTP로만 저장한다.

@@ -113,11 +113,11 @@ bun run --filter=@workspace/web test
 
 ## DB 테스트 기준
 
-자료실 실시간 연결 테스트는 실제 Bun WebSocket 경계를 사용해 문서 구독 확인, 문서별 version 사건 격리, 빠른 구독 전환 순서, 관리자 ID 기준 활성 편집자 집계와 heartbeat 만료 정리를 검증한다. 브라우저 Adapter 테스트는 문서 전환에서 소켓을 다시 만들지 않고 재연결 뒤 마지막 활성 문서를 다시 구독하는지 확인한다.
+자료실 실시간 연결 테스트는 실제 Bun WebSocket 경계를 사용해 문서 구독 확인, 문서별 version 사건 격리, 빠른 구독 전환 순서, 관리자 ID 기준 활성 편집자 집계와 heartbeat 만료 정리를 검증한다. fake clock으로 세션 만료 1008 종료를, 폐기 resolver로 heartbeat 재검증을, fake socket으로 actor/IP N+1 연결과 message·subscribe burst를 검증한다. 실제 Bun transport fixture는 4KiB 초과 payload가 앱 message handler에 도달하지 않는지 확인하고 handler 설정으로 64KiB backpressure 종료를 고정한다. 브라우저 Adapter 테스트는 문서 전환에서 소켓을 다시 만들지 않고 재연결 뒤 마지막 활성 문서를 다시 구독하는지 확인한다.
 
 작업 공간 연결 수명 테스트는 문서를 100회 전환해도 실제 연결 Adapter 생성은 한 번이고, 같은 연결에서 문서 구독·해제만 교체되는지 검증한다.
 
-자료 문서 HTTP 동기화 테스트는 Yjs update의 검증·Markdown 투영, 동일 transaction ID 재승인, 단조 state version, 200건·2MiB update log 정리, 정리 뒤 snapshot fallback과 승인 이후 version 사건 발행을 검증한다. SQLite 통합 테스트는 snapshot, Markdown, FTS, 수정자, update log와 멱등 receipt가 같은 transaction에서 확정되는지 확인한다.
+자료 문서 HTTP 동기화 테스트는 Yjs update의 검증·Markdown 투영, 동일 transaction ID 재승인, 단조 state version, 200건·2MiB update log 정리, 정리 뒤 snapshot fallback과 승인 이후 version 사건 발행을 검증한다. snapshot byte·node·transaction quota와 projection deadline fixture는 거부 뒤 snapshot, Markdown revision과 FTS가 변하지 않고 구조화 거부 사건이 발생하는지 확인한다. file-backed SQLite 통합 테스트는 snapshot, Markdown, FTS, 수정자, update log와 멱등 receipt가 같은 transaction에서 확정되며 7일 보존 경계보다 오래된 receipt만 정리되는지 확인한다.
 
 클라이언트 transaction queue 테스트는 500ms 유휴 batching, 연속 입력의 1초 상한과 일시적 실패 뒤 같은 transaction ID·Yjs payload 재시도를 가짜 타이머로 검증한다.
 

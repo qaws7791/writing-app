@@ -5,8 +5,10 @@ import {
   syncLexicalUpdateToYjs,
   syncYjsChangesToLexical,
 } from "@lexical/yjs"
-import type { LexicalEditor } from "lexical"
+import type { LexicalEditor, LexicalNode } from "lexical"
 import {
+  $getRoot,
+  $isElementNode,
   CAN_REDO_COMMAND,
   CAN_UNDO_COMMAND,
   COMMAND_PRIORITY_EDITOR,
@@ -335,6 +337,7 @@ export type ApplyResourceDocumentUpdateResult =
   | Extract<ResourceMarkdownNormalization, { readonly status: "invalid" }>
   | {
       readonly markdown: string
+      readonly nodeCount: number
       readonly snapshot: Uint8Array
       readonly status: "valid"
     }
@@ -357,12 +360,14 @@ export function applyResourceDocumentUpdate(
     }
 
     const nextSnapshot = encodeStateAsUpdate(document)
-    const projection = projectResourceDocumentSnapshot(nextSnapshot)
+    const projection =
+      projectResourceDocumentSnapshotWithNodeCount(nextSnapshot)
 
     return projection.status === "invalid"
       ? projection
       : {
           markdown: projection.markdown,
+          nodeCount: projection.nodeCount,
           snapshot: nextSnapshot,
           status: "valid",
         }
@@ -403,6 +408,24 @@ export function createResourceDocumentSnapshot(
 export function projectResourceDocumentSnapshot(
   snapshot: Uint8Array
 ): ResourceMarkdownNormalization {
+  const projection = projectResourceDocumentSnapshotWithNodeCount(snapshot)
+
+  return projection.status === "invalid"
+    ? projection
+    : { markdown: projection.markdown, status: "valid" }
+}
+
+type ResourceDocumentProjectionWithNodeCount =
+  | Extract<ResourceMarkdownNormalization, { readonly status: "invalid" }>
+  | {
+      readonly markdown: string
+      readonly nodeCount: number
+      readonly status: "valid"
+    }
+
+function projectResourceDocumentSnapshotWithNodeCount(
+  snapshot: Uint8Array
+): ResourceDocumentProjectionWithNodeCount {
   const document = new Doc()
   let collaboration: HeadlessResourceDocumentCollaboration | null = null
 
@@ -438,10 +461,26 @@ export function projectResourceDocumentSnapshot(
 
     const result = validateResourceMarkdown(projection.markdown)
 
-    return result.status === "invalid" ? result : projection
+    return result.status === "invalid"
+      ? result
+      : {
+          markdown: projection.markdown,
+          nodeCount: collaboration.editor
+            .getEditorState()
+            .read(() => countLexicalNodes($getRoot())),
+          status: "valid",
+        }
   } finally {
     destroyHeadlessCollaboration(document, collaboration)
   }
+}
+
+function countLexicalNodes(node: LexicalNode): number {
+  if (!$isElementNode(node)) return 1
+
+  return node
+    .getChildren()
+    .reduce((count, child) => count + countLexicalNodes(child), 1)
 }
 
 function destroyHeadlessCollaboration(

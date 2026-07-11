@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS admin_settings (
 );
 
 CREATE TABLE IF NOT EXISTS admin_resource_nodes (
-  id TEXT PRIMARY KEY NOT NULL,
+  id TEXT PRIMARY KEY NOT NULL CHECK (length(id) BETWEEN 1 AND 128),
   kind TEXT NOT NULL CHECK (kind IN ('folder', 'document')),
   parent_id TEXT REFERENCES admin_resource_nodes(id) ON DELETE RESTRICT,
   name TEXT NOT NULL CHECK (length(trim(name)) BETWEEN 1 AND 120),
@@ -178,7 +178,7 @@ END;
 CREATE TABLE IF NOT EXISTS admin_resource_collaboration (
   document_id TEXT PRIMARY KEY NOT NULL
     REFERENCES admin_resource_documents(node_id) ON DELETE CASCADE,
-  yjs_state BLOB NOT NULL,
+  yjs_state BLOB NOT NULL CHECK (length(yjs_state) <= 3000000),
   state_version INTEGER NOT NULL DEFAULT 0 CHECK (state_version >= 0),
   projected_at INTEGER
 );
@@ -188,7 +188,7 @@ CREATE TABLE IF NOT EXISTS admin_resource_collaboration_updates (
     REFERENCES admin_resource_documents(node_id) ON DELETE CASCADE,
   state_version INTEGER NOT NULL CHECK (state_version > 0),
   content_revision INTEGER NOT NULL CHECK (content_revision > 0),
-  transaction_id TEXT NOT NULL,
+  transaction_id TEXT NOT NULL CHECK (length(transaction_id) BETWEEN 1 AND 128),
   actor_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE RESTRICT,
   yjs_update BLOB NOT NULL CHECK (length(yjs_update) <= 524288),
   created_at INTEGER NOT NULL,
@@ -199,7 +199,7 @@ CREATE TABLE IF NOT EXISTS admin_resource_collaboration_updates (
 CREATE TABLE IF NOT EXISTS admin_resource_collaboration_transactions (
   document_id TEXT NOT NULL
     REFERENCES admin_resource_documents(node_id) ON DELETE CASCADE,
-  transaction_id TEXT NOT NULL,
+  transaction_id TEXT NOT NULL CHECK (length(transaction_id) BETWEEN 1 AND 128),
   state_version INTEGER NOT NULL CHECK (state_version > 0),
   content_revision INTEGER NOT NULL CHECK (content_revision > 0),
   actor_id TEXT NOT NULL REFERENCES admin_user(id) ON DELETE RESTRICT,

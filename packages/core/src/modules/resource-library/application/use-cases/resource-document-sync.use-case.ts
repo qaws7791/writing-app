@@ -2,12 +2,18 @@ import type {
   CommitResourceDocumentTransactionResult,
   ResourceDocumentSyncRepository,
 } from "@workspace/core/modules/resource-library/application/ports/resource-document-sync.repository"
+import {
+  adminResourceDocumentMaxNodes,
+  adminResourceDocumentProjectionTimeoutMilliseconds,
+  adminResourceYjsSnapshotMaxBytes,
+  adminResourceYjsUpdateMaxBytes,
+} from "@workspace/contracts/admin"
 import type { ResourceDocumentTransactionId } from "@workspace/core/modules/resource-library/domain/resource-document-sync"
 import type { ResourceDocumentId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
 import {
-  applyResourceDocumentUpdate,
   createResourceDocumentSnapshot,
   readResourceMarkdownPlainText,
+  type ApplyResourceDocumentUpdateResult,
   type ResourceDocumentIssue,
 } from "@workspace/resource-document"
 
@@ -18,6 +24,34 @@ export type SaveResourceDocumentTransactionResult =
       readonly kind: "invalid-state"
     }
   | { readonly kind: "update-too-large" }
+  | {
+      readonly actual: number
+      readonly kind: "quota-exceeded"
+      readonly limit: number
+      readonly quota: "node-count" | "snapshot-bytes" | "transaction-count"
+    }
+  | {
+      readonly elapsedMilliseconds: number
+      readonly kind: "projection-timeout"
+      readonly limitMilliseconds: number
+    }
+
+export type ResourceDocumentSyncRejection = Extract<
+  SaveResourceDocumentTransactionResult,
+  { readonly kind: "projection-timeout" | "quota-exceeded" }
+> & { readonly documentId: ResourceDocumentId }
+
+export type ResourceDocumentSyncPolicy = {
+  readonly maxNodeCount?: number
+  readonly maxSnapshotBytes?: number
+  readonly onRejected?: (event: ResourceDocumentSyncRejection) => void
+  readonly projectUpdate?: (input: {
+    readonly signal: AbortSignal
+    readonly snapshot: Uint8Array
+    readonly update: Uint8Array
+  }) => Promise<ApplyResourceDocumentUpdateResult>
+  readonly projectionTimeoutMilliseconds?: number
+}
 
 export type ResourceDocumentSyncUseCase = {
   readonly readSync: (input: {
@@ -51,9 +85,16 @@ export type ResourceDocumentSyncUseCase = {
 }
 
 export function createResourceDocumentSyncUseCase(
-  repository: ResourceDocumentSyncRepository
+  repository: ResourceDocumentSyncRepository,
+  policy: ResourceDocumentSyncPolicy = {}
 ): ResourceDocumentSyncUseCase {
   const operations = new Map<string, Promise<void>>()
+  const maxNodeCount = policy.maxNodeCount ?? adminResourceDocumentMaxNodes
+  const maxSnapshotBytes =
+    policy.maxSnapshotBytes ?? adminResourceYjsSnapshotMaxBytes
+  const projectionTimeoutMilliseconds =
+    policy.projectionTimeoutMilliseconds ??
+    adminResourceDocumentProjectionTimeoutMilliseconds
 
   return {
     readSync(input) {
@@ -124,7 +165,7 @@ export function createResourceDocumentSyncUseCase(
         operations,
         input.documentId,
         async () => {
-          if (input.update.byteLength > 512 * 1024) {
+          if (input.update.byteLength > adminResourceYjsUpdateMaxBytes) {
             return { kind: "update-too-large" }
           }
 
@@ -149,9 +190,40 @@ export function createResourceDocumentSyncUseCase(
             currentSnapshot instanceof Uint8Array
               ? currentSnapshot
               : currentSnapshot.snapshot
-          const applied = applyResourceDocumentUpdate(snapshot, input.update)
+          const projection = await projectUpdateWithDeadline({
+            projectUpdate: policy.projectUpdate ?? projectUpdateInWorker,
+            snapshot,
+            timeoutMilliseconds: projectionTimeoutMilliseconds,
+            update: input.update,
+          })
+          if (projection.kind === "timeout") {
+            return rejectTransaction(policy, input.documentId, {
+              elapsedMilliseconds: projection.elapsedMilliseconds,
+              kind: "projection-timeout",
+              limitMilliseconds: projectionTimeoutMilliseconds,
+            })
+          }
+
+          const applied = projection.result
           if (applied.status === "invalid") {
             return { issues: applied.issues, kind: "invalid-state" }
+          }
+
+          if (applied.snapshot.byteLength > maxSnapshotBytes) {
+            return rejectTransaction(policy, input.documentId, {
+              actual: applied.snapshot.byteLength,
+              kind: "quota-exceeded",
+              limit: maxSnapshotBytes,
+              quota: "snapshot-bytes",
+            })
+          }
+          if (applied.nodeCount > maxNodeCount) {
+            return rejectTransaction(policy, input.documentId, {
+              actual: applied.nodeCount,
+              kind: "quota-exceeded",
+              limit: maxNodeCount,
+              quota: "node-count",
+            })
           }
 
           const plainText = readResourceMarkdownPlainText(applied.markdown)
@@ -159,21 +231,111 @@ export function createResourceDocumentSyncUseCase(
             return { issues: plainText.issues, kind: "invalid-state" }
           }
 
-          return repository.commitTransaction({
+          const committed = await repository.commitTransaction({
             actorId: input.actorId,
             bodyText: plainText.text,
             documentId: input.documentId,
             expectedStateVersion: loaded.value.stateVersion,
             markdown: applied.markdown,
             now: input.now,
+            nodeCount: applied.nodeCount,
             snapshot: applied.snapshot,
             transactionId: input.transactionId,
             update: input.update,
           })
+
+          return committed.kind === "quota-exceeded"
+            ? rejectTransaction(policy, input.documentId, committed)
+            : committed
         }
       )
     },
   }
+}
+
+async function projectUpdateWithDeadline(input: {
+  readonly projectUpdate: NonNullable<
+    ResourceDocumentSyncPolicy["projectUpdate"]
+  >
+  readonly snapshot: Uint8Array
+  readonly timeoutMilliseconds: number
+  readonly update: Uint8Array
+}): Promise<
+  | { readonly elapsedMilliseconds: number; readonly kind: "timeout" }
+  | {
+      readonly kind: "completed"
+      readonly result: ApplyResourceDocumentUpdateResult
+    }
+> {
+  const controller = new AbortController()
+  const startedAt = performance.now()
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      controller.abort()
+      resolve({
+        elapsedMilliseconds: performance.now() - startedAt,
+        kind: "timeout",
+      })
+    }, input.timeoutMilliseconds)
+
+    void input
+      .projectUpdate({
+        signal: controller.signal,
+        snapshot: input.snapshot,
+        update: input.update,
+      })
+      .then((result) => {
+        clearTimeout(timeout)
+        resolve({ kind: "completed", result })
+      })
+      .catch((error: unknown) => {
+        clearTimeout(timeout)
+        reject(error)
+      })
+  })
+}
+
+function projectUpdateInWorker(input: {
+  readonly signal: AbortSignal
+  readonly snapshot: Uint8Array
+  readonly update: Uint8Array
+}): Promise<ApplyResourceDocumentUpdateResult> {
+  return new Promise((resolve, reject) => {
+    const worker = new Worker(
+      new URL("./resource-document-projection.worker.ts", import.meta.url).href
+    )
+    const abort = () => worker.terminate()
+
+    input.signal.addEventListener("abort", abort, { once: true })
+    worker.onmessage = (
+      event: MessageEvent<ApplyResourceDocumentUpdateResult>
+    ) => {
+      input.signal.removeEventListener("abort", abort)
+      worker.terminate()
+      resolve(event.data)
+    }
+    worker.onerror = (event) => {
+      input.signal.removeEventListener("abort", abort)
+      worker.terminate()
+      reject(event.error ?? new Error(event.message))
+    }
+    worker.postMessage({ snapshot: input.snapshot, update: input.update })
+  })
+}
+
+function rejectTransaction<
+  TResult extends Extract<
+    SaveResourceDocumentTransactionResult,
+    { readonly kind: "projection-timeout" | "quota-exceeded" }
+  >,
+>(
+  policy: ResourceDocumentSyncPolicy,
+  documentId: ResourceDocumentId,
+  result: TResult
+): TResult {
+  policy.onRejected?.({ ...result, documentId })
+  return result
 }
 
 function enqueueDocumentOperation<TResult>(

@@ -55,6 +55,10 @@ export const adminResourceNodes = sqliteTable(
   },
   (table) => [
     check(
+      "admin_resource_nodes_id_length_check",
+      sql`length(${table.id}) BETWEEN 1 AND 128`
+    ),
+    check(
       "admin_resource_nodes_kind_check",
       sql`${table.kind} IN ('folder', 'document')`
     ),
@@ -134,6 +138,10 @@ export const adminResourceCollaboration = sqliteTable(
   },
   (table) => [
     check(
+      "admin_resource_collaboration_snapshot_size_check",
+      sql`length(${table.yjsState}) <= 3000000`
+    ),
+    check(
       "admin_resource_collaboration_state_version_check",
       sql`${table.stateVersion} >= 0`
     ),
@@ -172,6 +180,10 @@ export const adminResourceCollaborationUpdates = sqliteTable(
       sql`${table.contentRevision} > 0`
     ),
     check(
+      "admin_resource_collaboration_updates_transaction_id_check",
+      sql`length(${table.transactionId}) BETWEEN 1 AND 128`
+    ),
+    check(
       "admin_resource_collaboration_updates_size_check",
       sql`length(${table.yjsUpdate}) <= 524288`
     ),
@@ -203,6 +215,10 @@ export const adminResourceCollaborationTransactions = sqliteTable(
     check(
       "admin_resource_collaboration_transactions_content_revision_check",
       sql`${table.contentRevision} > 0`
+    ),
+    check(
+      "admin_resource_collaboration_transactions_id_check",
+      sql`length(${table.transactionId}) BETWEEN 1 AND 128`
     ),
   ]
 )

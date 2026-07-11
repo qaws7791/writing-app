@@ -4,8 +4,13 @@ import { adminNonNegativeIntegerSchema } from "@workspace/contracts/admin/admin-
 
 export const adminResourceNameMaxLength = 120
 export const adminResourceMarkdownMaxLength = 200_000
+export const adminResourceIdMaxLength = 128
 
-export const adminResourceIdSchema = z.string().trim().min(1)
+export const adminResourceIdSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(adminResourceIdMaxLength)
 export const adminResourceFolderIdSchema = adminResourceIdSchema
 export const adminResourceDocumentIdSchema = adminResourceIdSchema
 export const adminResourceNodeKindSchema = z.enum(["folder", "document"])

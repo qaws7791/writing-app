@@ -2,6 +2,14 @@ import { z } from "zod"
 
 import { adminResourceRevisionSchema } from "@workspace/contracts/admin/admin-resource-library-shared"
 
+export const adminResourceYjsUpdateMaxBytes = 512 * 1024
+export const adminResourceYjsSnapshotMaxBytes = 3_000_000
+export const adminResourceDocumentMaxNodes = 20_000
+export const adminResourceDocumentMaxTransactions = 10_000
+export const adminResourceDocumentProjectionTimeoutMilliseconds = 1_000
+export const adminResourceDocumentReceiptRetentionMilliseconds =
+  7 * 24 * 60 * 60 * 1_000
+
 export const adminResourceDocumentTransactionIdSchema = z
   .string()
   .trim()
@@ -12,13 +20,13 @@ export const adminResourceDocumentTransactionIdSchema = z
 export const adminResourceYjsUpdateBase64Schema = z
   .string()
   .min(4)
-  .max(699_052)
+  .max(Math.ceil(adminResourceYjsUpdateMaxBytes / 3) * 4)
   .regex(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u)
 
-const adminResourceYjsSnapshotBase64Schema = z
+export const adminResourceYjsSnapshotBase64Schema = z
   .string()
   .min(4)
-  .max(4_000_000)
+  .max(Math.ceil(adminResourceYjsSnapshotMaxBytes / 3) * 4)
   .regex(/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/u)
 
 export const adminSaveResourceDocumentTransactionRequestSchema = z.object({

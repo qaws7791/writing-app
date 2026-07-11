@@ -1,7 +1,10 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 
-import type { AdminSessionResolver } from "@/auth/admin-session"
+import {
+  adminSessionExpiresAt,
+  type AdminSessionResolver,
+} from "@/auth/admin-session"
 import {
   adminRoles,
   adminRoleValues,
@@ -77,6 +80,9 @@ type AdminBetterAuthSessionApi = {
 }
 
 type AdminBetterAuthSession = {
+  readonly session: {
+    readonly expiresAt: Date
+  }
   readonly user: {
     readonly email: string
     readonly id: string
@@ -107,6 +113,7 @@ export function createAdminSessionResolver(
               name: session.user.name,
               role,
             },
+            [adminSessionExpiresAt]: session.session.expiresAt,
           }
     },
   }

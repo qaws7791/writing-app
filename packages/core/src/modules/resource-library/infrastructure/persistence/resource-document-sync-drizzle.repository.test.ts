@@ -1,9 +1,16 @@
+import { rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+
 import { describe, expect, it } from "vitest"
 
 import { toResourceDocumentId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
 import { toResourceDocumentTransactionId } from "@workspace/core/modules/resource-library/domain/resource-document-sync"
 import { createDrizzleResourceDocumentSyncRepository } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-document-sync-drizzle.repository"
-import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import {
+  createInMemoryWritingAppDatabase,
+  createWritingAppDatabase,
+} from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
 
 const documentId = toResourceDocumentId("document-1")
@@ -18,6 +25,7 @@ describe("자료 문서 동기화 Drizzle repository", () => {
       expectedStateVersion: 0,
       markdown: "변경 **본문**",
       now: new Date("2026-07-11T06:00:00.000Z"),
+      nodeCount: 3,
       snapshot: Uint8Array.of(4, 5, 6),
       transactionId: toResourceDocumentTransactionId("transaction-1"),
       update: Uint8Array.of(1, 2, 3),
@@ -79,6 +87,7 @@ describe("자료 문서 동기화 Drizzle repository", () => {
           expectedStateVersion: index,
           markdown: `본문 ${index}`,
           now: new Date(1_000 + index),
+          nodeCount: 3,
           snapshot: Uint8Array.of(index),
           transactionId: toResourceDocumentTransactionId(
             `transaction-${index}`
@@ -110,10 +119,113 @@ describe("자료 문서 동기화 Drizzle repository", () => {
       fixture.client.close()
     }
   })
+
+  it("transaction quota 거부 시 snapshot·revision·검색 index를 원자 보존한다", async () => {
+    const fixture = createFixture(undefined, {
+      maxTransactionsPerDocument: 2,
+    })
+
+    try {
+      await fixture.repository.commitTransaction(
+        createCommitInput({ stateVersion: 0, transactionIndex: 1 })
+      )
+      await fixture.repository.commitTransaction(
+        createCommitInput({ stateVersion: 1, transactionIndex: 2 })
+      )
+      const before = readStoredState(fixture.client.sqlite)
+
+      await expect(
+        fixture.repository.commitTransaction(
+          createCommitInput({ stateVersion: 2, transactionIndex: 3 })
+        )
+      ).resolves.toEqual({
+        actual: 2,
+        kind: "quota-exceeded",
+        limit: 2,
+        quota: "transaction-count",
+      })
+      expect(readStoredState(fixture.client.sqlite)).toEqual(before)
+    } finally {
+      fixture.client.close()
+    }
+  })
+
+  it("file-backed SQLite에서 idempotency 보존 기간이 지난 receipt만 정리한다", async () => {
+    const databasePath = join(
+      tmpdir(),
+      `writing-app-sync-${crypto.randomUUID()}.sqlite`
+    )
+    let fixture: ReturnType<typeof createFixture> | null = createFixture(
+      databasePath,
+      {
+        maxTransactionsPerDocument: 2,
+        receiptRetentionMilliseconds: 1_000,
+      }
+    )
+
+    try {
+      await fixture.repository.commitTransaction(
+        createCommitInput({ now: 1_000, stateVersion: 0, transactionIndex: 1 })
+      )
+      await fixture.repository.commitTransaction(
+        createCommitInput({ now: 1_500, stateVersion: 1, transactionIndex: 2 })
+      )
+      await expect(
+        fixture.repository.commitTransaction(
+          createCommitInput({
+            now: 2_000,
+            stateVersion: 2,
+            transactionIndex: 3,
+          })
+        )
+      ).resolves.toMatchObject({ kind: "quota-exceeded" })
+      await expect(
+        fixture.repository.commitTransaction(
+          createCommitInput({
+            now: 2_001,
+            stateVersion: 2,
+            transactionIndex: 3,
+          })
+        )
+      ).resolves.toMatchObject({ kind: "accepted", stateVersion: 3 })
+
+      expect(
+        fixture.client.sqlite
+          .query<{ readonly transaction_id: string }, []>(`
+            SELECT transaction_id
+            FROM admin_resource_collaboration_transactions
+            ORDER BY transaction_id
+          `)
+          .all()
+      ).toEqual([
+        { transaction_id: "transaction-2" },
+        { transaction_id: "transaction-3" },
+      ])
+    } finally {
+      fixture.client.sqlite.exec("PRAGMA wal_checkpoint(TRUNCATE)")
+      fixture.client.sqlite.exec("PRAGMA journal_mode = DELETE")
+      fixture.client.close()
+      fixture = null
+      Bun.gc(true)
+      for (const path of [
+        databasePath,
+        `${databasePath}-shm`,
+        `${databasePath}-wal`,
+      ]) {
+        rmSync(path, { force: true, maxRetries: 5, retryDelay: 100 })
+      }
+    }
+  })
 })
 
-function createFixture() {
-  const client = createInMemoryWritingAppDatabase()
+function createFixture(
+  databasePath?: string,
+  limits: Parameters<typeof createDrizzleResourceDocumentSyncRepository>[1] = {}
+) {
+  const client =
+    databasePath === undefined
+      ? createInMemoryWritingAppDatabase()
+      : createWritingAppDatabase(databasePath)
   runBaselineMigration(client.sqlite)
   client.sqlite.exec(`
     INSERT INTO admin_user (
@@ -137,7 +249,28 @@ function createFixture() {
 
   return {
     client,
-    repository: createDrizzleResourceDocumentSyncRepository(client.db),
+    repository: createDrizzleResourceDocumentSyncRepository(client.db, limits),
+  }
+}
+
+function createCommitInput(input: {
+  readonly now?: number
+  readonly stateVersion: number
+  readonly transactionIndex: number
+}) {
+  return {
+    actorId: "admin-2",
+    bodyText: `본문 ${input.transactionIndex}`,
+    documentId,
+    expectedStateVersion: input.stateVersion,
+    markdown: `본문 ${input.transactionIndex}`,
+    nodeCount: 3,
+    now: new Date(input.now ?? 10_000 + input.transactionIndex),
+    snapshot: Uint8Array.of(input.transactionIndex),
+    transactionId: toResourceDocumentTransactionId(
+      `transaction-${input.transactionIndex}`
+    ),
+    update: Uint8Array.of(input.transactionIndex),
   }
 }
 

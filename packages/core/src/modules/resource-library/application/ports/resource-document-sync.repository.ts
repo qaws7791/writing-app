@@ -20,6 +20,7 @@ export type CommitResourceDocumentTransactionInput = {
   readonly expectedStateVersion: number
   readonly markdown: string
   readonly now: Date
+  readonly nodeCount: number
   readonly snapshot: Uint8Array
   readonly transactionId: ResourceDocumentTransactionId
   readonly update: Uint8Array
@@ -27,6 +28,12 @@ export type CommitResourceDocumentTransactionInput = {
 
 export type CommitResourceDocumentTransactionResult =
   | { readonly kind: "inactive" | "not-found" }
+  | {
+      readonly actual: number
+      readonly kind: "quota-exceeded"
+      readonly limit: number
+      readonly quota: "node-count" | "snapshot-bytes" | "transaction-count"
+    }
   | {
       readonly actualStateVersion: number
       readonly kind: "stale-state-version"

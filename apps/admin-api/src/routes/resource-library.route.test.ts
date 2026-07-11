@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { createApp } from "@/app"
+import { adminSessionExpiresAt } from "@/auth/admin-session"
 import {
   createTestAdminApiDependencies,
   createTestAdminSessionResolver,
@@ -160,6 +161,65 @@ describe("어드민 API 자료실 트리 route", () => {
     })
   })
 
+  it("누적 quota와 projection deadline 거부를 명시적 HTTP 오류로 반환한다", async () => {
+    const createSyncApp = (
+      result:
+        | {
+            readonly actual: number
+            readonly kind: "quota-exceeded"
+            readonly limit: number
+            readonly quota: "snapshot-bytes"
+          }
+        | {
+            readonly elapsedMilliseconds: number
+            readonly kind: "projection-timeout"
+            readonly limitMilliseconds: number
+          }
+    ) =>
+      createApp(
+        createTestAdminApiDependencies({
+          adminServices: {
+            resourceLibrary: {
+              sync: {
+                readSync: vi.fn(),
+                saveTransaction: vi.fn(async () => result),
+              },
+            },
+          },
+        })
+      )
+    const request = () => ({
+      body: JSON.stringify({
+        knownStateVersion: 0,
+        transactionId: "transaction-1",
+        updateBase64: "AQID",
+      }),
+      headers,
+      method: "POST" as const,
+    })
+
+    const quotaResponse = await createSyncApp({
+      actual: 4,
+      kind: "quota-exceeded",
+      limit: 3,
+      quota: "snapshot-bytes",
+    }).request("/resources/documents/document-1/transactions", request())
+    expect(quotaResponse.status).toBe(422)
+    await expect(quotaResponse.json()).resolves.toMatchObject({
+      code: "RESOURCE_DOCUMENT_QUOTA_EXCEEDED",
+    })
+
+    const timeoutResponse = await createSyncApp({
+      elapsedMilliseconds: 1_001,
+      kind: "projection-timeout",
+      limitMilliseconds: 1_000,
+    }).request("/resources/documents/document-1/transactions", request())
+    expect(timeoutResponse.status).toBe(503)
+    await expect(timeoutResponse.json()).resolves.toMatchObject({
+      code: "RESOURCE_DOCUMENT_PROJECTION_TIMEOUT",
+    })
+  })
+
   it("같은 문서의 transaction 저장이 끝난 뒤 Markdown을 내보낸다", async () => {
     const saveGate = deferred<{
       readonly contentRevision: number
@@ -315,6 +375,7 @@ describe("어드민 API 자료실 트리 route", () => {
               name: "운영자",
               role: "operator",
             },
+            [adminSessionExpiresAt]: new Date("2099-01-01T00:00:00.000Z"),
           },
         }),
       })
