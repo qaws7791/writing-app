@@ -1,4 +1,5 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
+import { withPrivateNoStore } from "@workspace/hono/security"
 
 export function registerAuthProxy(
   app: OpenAPIHono,
@@ -12,7 +13,7 @@ export function registerAuthProxy(
     return redirectGoogleSignIn(context.req.raw, authHandler)
   })
   app.on(["GET", "POST"], "/api/auth/*", (context) => {
-    return authHandler(context.req.raw)
+    return authHandler(context.req.raw).then(withPrivateNoStore)
   })
 }
 
@@ -36,14 +37,14 @@ async function redirectGoogleSignIn(
   )
 
   if (!response.ok) {
-    return response
+    return withPrivateNoStore(response)
   }
 
   const body = (await response.json()) as { readonly url?: unknown }
 
   if (typeof body.url !== "string") {
-    return response
+    return withPrivateNoStore(response)
   }
 
-  return Response.redirect(body.url, 302)
+  return withPrivateNoStore(Response.redirect(body.url, 302))
 }

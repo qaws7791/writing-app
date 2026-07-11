@@ -24,7 +24,7 @@ const progressRouteConfig = {
   responses: authenticatedResponses(
     jsonResponse("학습자의 코스별 진행 상태입니다.", progressResponseSchema)
   ),
-  security: [{ bearerAuth: [] }],
+  security: [{ learnerSessionCookie: [] }],
   summary: "학습 진행 조회",
 } satisfies AnyRouteConfig
 

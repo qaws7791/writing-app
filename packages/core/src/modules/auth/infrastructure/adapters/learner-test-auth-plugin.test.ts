@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { eq } from "drizzle-orm"
+import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
 import { createLearnerAuth } from "@workspace/core/modules/auth/infrastructure/adapters/learner-auth"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
@@ -148,6 +149,35 @@ describe("학습자 테스트 인증", () => {
       ).toEqual({
         name: "글쓰기 탐험가",
       })
+    } finally {
+      database.close()
+    }
+  })
+
+  it("HTTPS 인증 응답은 Secure·HttpOnly·SameSite cookie를 발급한다", async () => {
+    const database = createMigratedTestDatabase()
+    const secureAuthBaseUrl = "https://api.example.test"
+    const secureWebOrigin = "https://app.example.test"
+
+    try {
+      const auth = createLearnerAuth({
+        authBaseUrl: secureAuthBaseUrl,
+        db: database.db,
+        secret: "x".repeat(32),
+        testAuthEnabled: true,
+        webOrigin: secureWebOrigin,
+      })
+      const response = await auth.handler(
+        new Request(`${secureAuthBaseUrl}/api/auth/test/sign-in`, {
+          headers: { Origin: secureWebOrigin },
+        })
+      )
+      const setCookie = response.headers.get("set-cookie") ?? ""
+
+      expect(setCookie).toContain(`${learnerSessionCookieName}=`)
+      expect(setCookie).toMatch(/;\s*Secure/iu)
+      expect(setCookie).toMatch(/;\s*HttpOnly/iu)
+      expect(setCookie).toMatch(/;\s*SameSite=Lax/iu)
     } finally {
       database.close()
     }

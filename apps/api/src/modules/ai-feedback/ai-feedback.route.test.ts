@@ -43,8 +43,9 @@ describe("플랫폼 API AI feedback route", () => {
         stepId: "l1-s2",
       }),
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3000",
         "Idempotency-Key": "request-1",
       },
       method: "POST",
@@ -97,8 +98,9 @@ describe("플랫폼 API AI feedback route", () => {
         stepId: "l1-s2",
       }),
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3000",
       },
       method: "POST",
     })
@@ -134,8 +136,9 @@ describe("플랫폼 API AI feedback route", () => {
         stepId: "l1-s2",
       }),
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3000",
         "Idempotency-Key": "request-in-progress",
       },
       method: "POST",
@@ -174,8 +177,9 @@ describe("플랫폼 API AI feedback route", () => {
     const response = await app.request("/ai-feedback", {
       body: "{",
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3000",
       },
       method: "POST",
     })

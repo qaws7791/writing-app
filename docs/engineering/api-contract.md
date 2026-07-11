@@ -20,6 +20,25 @@
 - 사용자 노출 오류 메시지는 한국어를 기본으로 한다.
 - Better Auth raw route는 앱의 OpenAPI route registry와 분리될 수 있다.
 
+## 쿠키 인증 OpenAPI 계약
+
+- 학습자 보호 route는 OpenAPI의 `learnerSessionCookie` apiKey scheme을 사용하며 실제 쿠키 이름은 `learner_session_token`이다.
+- 관리자 보호 route는 `adminSessionCookie` apiKey scheme을 사용하며 실제 쿠키 이름은 `admin_session_token`이다.
+- 쿠키 이름 상수는 실제 Better Auth 설정과 OpenAPI 생성이 함께 사용한다. 이름이 달라지면 계약 테스트가 실패한다.
+- Bearer token은 두 API의 세션 인증 수단이 아니다. 생성 클라이언트와 브라우저 호출은 요청에 `credentials: "include"`를 설정해야 한다.
+- 테스트용 세션 resolver도 쿠키만 허용하므로 Bearer fallback이 운영 계약을 가리지 않는다.
+
+## 응답 캐시 분류
+
+| 분류        | 경로                                                  | 응답 정책                                          |
+| ----------- | ----------------------------------------------------- | -------------------------------------------------- |
+| 공개        | `/health`, `/openapi`                                 | 각 route의 기존 캐시 정책 유지                     |
+| 인증        | `/api/auth/*`, Google 로그인 helper                   | `Cache-Control: private, no-store`, `Vary: Cookie` |
+| 학습자 보호 | `/auth/session`, `/profile`, 코스·레슨·진행·AI 피드백 | `Cache-Control: private, no-store`, `Vary: Cookie` |
+| 관리자 보호 | `/session`, 사용자·분석·설정·AI 대화·자료실 등        | `Cache-Control: private, no-store`, `Vary: Cookie` |
+
+SSE와 파일 다운로드도 보호 응답 정책을 적용하되 각각 `text/event-stream`과 `Content-Disposition` 계약을 보존한다.
+
 ## 학습자 API
 
 기준 URL은 환경별 `NEXT_PUBLIC_API_BASE_URL` 또는 `WEB_API_BASE_URL`이 가리키는 `apps/api` origin이다.

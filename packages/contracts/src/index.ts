@@ -1,5 +1,6 @@
 export * from "@workspace/contracts/admin"
 export * from "@workspace/contracts/ai-feedback"
+export * from "@workspace/contracts/auth-session-cookie"
 export * from "@workspace/contracts/content"
 export * from "@workspace/contracts/learning"
 export * from "@workspace/contracts/status"

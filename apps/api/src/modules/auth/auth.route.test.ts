@@ -21,7 +21,7 @@ describe("플랫폼 API auth route", () => {
 
     const response = await app.request("/auth/session", {
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
       },
     })
 

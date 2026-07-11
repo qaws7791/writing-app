@@ -9,7 +9,7 @@ describe("플랫폼 API lessons route", () => {
 
     const response = await app.request("/lessons/l1", {
       headers: {
-        Authorization: "Bearer active-token",
+        Cookie: "learner_session_token=active-token",
       },
     })
 

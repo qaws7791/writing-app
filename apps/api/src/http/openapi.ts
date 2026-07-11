@@ -1,5 +1,6 @@
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { ErrorResponseSchema } from "@workspace/hono/errors"
+import { learnerSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 import { z } from "@workspace/hono/zod"
 
 export const openApiDocumentConfig = {
@@ -10,15 +11,16 @@ export const openApiDocumentConfig = {
   openapi: "3.1.0",
 } as const
 
-export const bearerAuthSecurityScheme = {
-  scheme: "bearer",
-  type: "http",
+export const learnerSessionCookieSecurityScheme = {
+  in: "cookie",
+  name: learnerSessionCookieName,
+  type: "apiKey",
 } as const
 
 export type ApiOpenApiDocument = {
   readonly components: {
     readonly securitySchemes: {
-      readonly bearerAuth: typeof bearerAuthSecurityScheme
+      readonly learnerSessionCookie: typeof learnerSessionCookieSecurityScheme
     }
   }
   readonly info: {
@@ -59,7 +61,7 @@ export function createOpenApiDocument(app: OpenAPIHono): ApiOpenApiDocument {
       ...document.components,
       securitySchemes: {
         ...document.components?.securitySchemes,
-        bearerAuth: bearerAuthSecurityScheme,
+        learnerSessionCookie: learnerSessionCookieSecurityScheme,
       },
     },
   }

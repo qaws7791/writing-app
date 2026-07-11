@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-import { readBearerToken } from "@workspace/core/auth"
 
 import { createApp, type AdminApiDependencies } from "@/app"
 import { adminSessionExpiresAt } from "@/auth/admin-session"
@@ -54,7 +53,7 @@ describe("어드민 API settings route", () => {
 
     const response = await app.request("/settings", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
       },
     })
 
@@ -71,8 +70,9 @@ describe("어드민 API settings route", () => {
         banner: "새 강의가 추가되었어요!",
       }),
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3001",
       },
       method: "PUT",
     })
@@ -90,8 +90,9 @@ describe("어드민 API settings route", () => {
         banner: "새 강의가 추가되었어요!",
       }),
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3001",
       },
       method: "PUT",
     })
@@ -112,8 +113,9 @@ describe("어드민 API settings route", () => {
         terms: "이용약관",
       }),
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3001",
       },
       method: "PUT",
     })
@@ -131,8 +133,9 @@ describe("어드민 API settings route", () => {
         terms: "이용약관",
       }),
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3001",
       },
       method: "PUT",
     })
@@ -149,7 +152,8 @@ describe("어드민 API settings route", () => {
 
     const response = await app.request("/settings/content-reset", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
       },
       method: "POST",
     })
@@ -163,7 +167,8 @@ describe("어드민 API settings route", () => {
 
     const response = await app.request("/settings/content-reset", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
+        Origin: "http://localhost:3001",
       },
       method: "POST",
     })
@@ -183,8 +188,9 @@ describe("어드민 API settings route", () => {
         banner: 1,
       }),
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3001",
       },
       method: "PUT",
     })
@@ -202,8 +208,9 @@ describe("어드민 API settings route", () => {
     const response = await app.request("/settings/notice", {
       body: "{",
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
         "Content-Type": "application/json",
+        Origin: "http://localhost:3001",
       },
       method: "PUT",
     })
@@ -255,9 +262,9 @@ function createDependencies({
     },
     sessionResolver: {
       async resolveSession(headers) {
-        const token = readBearerToken(headers.get("Authorization"))
-
-        if (token !== "admin-token") {
+        if (
+          !headers.get("Cookie")?.includes("admin_session_token=admin-token")
+        ) {
           return null
         }
 

@@ -17,8 +17,9 @@ import {
 } from "@workspace/core/modules/resource-library/api"
 
 const headers = {
-  Authorization: "Bearer admin-token",
+  Cookie: "admin_session_token=admin-token",
   "Content-Type": "application/json",
+  Origin: "http://localhost:3001",
 }
 
 const documentNode = {
@@ -495,6 +496,13 @@ describe("어드민 API 자료실 트리 route", () => {
     expect(exportResponse.headers.get("Content-Type")).toContain(
       "text/markdown"
     )
+    expect(exportResponse.headers.get("Content-Disposition")).toContain(
+      "attachment"
+    )
+    expect(exportResponse.headers.get("Cache-Control")).toBe(
+      "private, no-store"
+    )
+    expect(exportResponse.headers.get("Vary")).toContain("Cookie")
     await expect(exportResponse.text()).resolves.toBe(
       "# 운영 안내\n\n실시간 공동 편집 본문"
     )

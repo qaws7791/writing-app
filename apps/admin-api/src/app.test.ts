@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from "vitest"
-import { readBearerToken } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env"
 
 import { createApp, type AdminApiDependencies } from "@/app"
@@ -157,11 +156,13 @@ describe("어드민 API dashboard route", () => {
 
     const response = await app.request("/session", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
       },
     })
 
     expect(response.status).toBe(200)
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(response.headers.get("Vary")).toContain("Cookie")
     await expect(response.json()).resolves.toEqual({
       admin: {
         email: "admin@example.com",
@@ -261,6 +262,8 @@ describe("어드민 API dashboard route", () => {
     )
 
     expect(response.status).toBe(200)
+    expect(response.headers.get("Cache-Control")).toBe("private, no-store")
+    expect(response.headers.get("Vary")).toContain("Cookie")
     expect(capturedRequests).toHaveLength(1)
     const capturedRequest = capturedRequests[0]
     if (capturedRequest === undefined) {
@@ -284,12 +287,35 @@ describe("어드민 API dashboard route", () => {
     })
   })
 
+  it("Bearer 토큰만으로 관리자 보호 route에 접근할 수 없다", async () => {
+    const app = createApp(createDependencies())
+
+    const response = await app.request("/dashboard", {
+      headers: { Authorization: "Bearer admin-token" },
+    })
+
+    expect(response.status).toBe(401)
+  })
+
+  it("공개 health와 OpenAPI 응답에는 민감 응답 캐시 정책을 추가하지 않는다", async () => {
+    const app = createApp(createDependencies())
+
+    for (const path of ["/health", "/openapi"]) {
+      const response = await app.request(path)
+
+      expect(response.status).toBe(200)
+      expect(response.headers.get("Cache-Control")).not.toBe(
+        "private, no-store"
+      )
+    }
+  })
+
   it("관리자 세션이 있으면 dashboard 지표를 반환한다", async () => {
     const app = createApp(createDependencies())
 
     const response = await app.request("/dashboard", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
       },
     })
 
@@ -323,7 +349,7 @@ describe("어드민 API dashboard route", () => {
 
     const response = await app.request("/dashboard", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
       },
     })
 
@@ -362,7 +388,7 @@ describe("어드민 API analytics route", () => {
 
     const response = await app.request("/analytics?days=2", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
       },
     })
 
@@ -377,7 +403,7 @@ describe("어드민 API analytics route", () => {
       "/analytics/lessons?page=1&pageSize=10&query=%EB%91%98%EC%A7%B8&sort=completionRate&direction=asc",
       {
         headers: {
-          Authorization: "Bearer admin-token",
+          Cookie: "admin_session_token=admin-token",
         },
       }
     )
@@ -393,7 +419,7 @@ describe("어드민 API analytics route", () => {
       "/analytics/lessons?direction=sideways",
       {
         headers: {
-          Authorization: "Bearer admin-token",
+          Cookie: "admin_session_token=admin-token",
         },
       }
     )
@@ -426,7 +452,7 @@ describe("어드민 API users route", () => {
       "/users?page=1&pageSize=12&query=%ED%95%99%EC%8A%B5&status=active&sort=lastActive",
       {
         headers: {
-          Authorization: "Bearer admin-token",
+          Cookie: "admin_session_token=admin-token",
         },
       }
     )
@@ -440,7 +466,7 @@ describe("어드민 API users route", () => {
 
     const response = await app.request("/users?pageSize=101", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
       },
     })
 
@@ -454,7 +480,8 @@ describe("어드민 API users route", () => {
   it("사용자 상세, 상태 변경, 삭제 상태 전환을 제공한다", async () => {
     const app = createApp(createDependencies())
     const headers = {
-      Authorization: "Bearer admin-token",
+      Cookie: "admin_session_token=admin-token",
+      Origin: localRuntimeDefaults.adminWebOrigin,
     }
 
     const detailResponse = await app.request("/users/user-1", { headers })
@@ -492,8 +519,9 @@ describe("어드민 API users route", () => {
     const response = await app.request("/users/user-1/status", {
       body: JSON.stringify({ status: "deleted" }),
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
         "Content-Type": "application/json",
+        Origin: localRuntimeDefaults.adminWebOrigin,
       },
       method: "PATCH",
     })
@@ -508,7 +536,8 @@ describe("어드민 API users route", () => {
   it("운영자는 사용자 상태 변경과 삭제를 실행할 수 없다", async () => {
     const app = createApp(createDependencies({ role: adminRoles.operator }))
     const headers = {
-      Authorization: "Bearer admin-token",
+      Cookie: "admin_session_token=admin-token",
+      Origin: localRuntimeDefaults.adminWebOrigin,
     }
 
     const statusResponse = await app.request("/users/user-1/status", {
@@ -635,5 +664,5 @@ function readTestAdminSessionToken(headers: Headers): string | null {
     return decodeURIComponent(cookieToken)
   }
 
-  return readBearerToken(headers.get("Authorization"))
+  return null
 }

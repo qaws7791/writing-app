@@ -78,7 +78,7 @@ describe("어드민 API curriculum editor route", () => {
 
     const response = await app.request("/courses/cmock/editor", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
       },
     })
 
@@ -91,7 +91,7 @@ describe("어드민 API curriculum editor route", () => {
 
     const response = await app.request("/courses/missing/editor", {
       headers: {
-        Authorization: "Bearer admin-token",
+        Cookie: "admin_session_token=admin-token",
       },
     })
 

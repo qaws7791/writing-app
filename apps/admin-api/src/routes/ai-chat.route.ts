@@ -6,6 +6,7 @@ import {
   type AdminAiChatConversationDetailDto,
 } from "@workspace/contracts/admin"
 import type { AdminAiChatUseCase } from "@workspace/core/admin"
+import { privateNoStoreCacheControl } from "@workspace/hono/security"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
@@ -222,8 +223,9 @@ function createStreamMessageRoute({
       }),
       {
         headers: {
-          "Cache-Control": "no-store",
+          "Cache-Control": privateNoStoreCacheControl,
           "Content-Type": "text/event-stream; charset=utf-8",
+          Vary: "Cookie",
         },
       }
     )

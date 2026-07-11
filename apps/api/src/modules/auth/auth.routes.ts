@@ -11,7 +11,7 @@ export const authSessionRoute = defineApiRoute({
   responses: authenticatedResponses(
     jsonResponse("현재 인증 세션입니다.", sessionResponseSchema)
   ),
-  security: [{ bearerAuth: [] }],
+  security: [{ learnerSessionCookie: [] }],
   summary: "현재 세션 조회",
   handler: (context) => {
     return context.json(

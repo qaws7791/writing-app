@@ -72,4 +72,26 @@ describe("어드민 API env", () => {
       }).cookieDomain
     ).toBe("example.com")
   })
+
+  it("production startup은 관리자 전용 secret과 HTTPS URL을 사용한다", () => {
+    expect(
+      parseAdminApiEnv({
+        ADMIN_BETTER_AUTH_SECRET:
+          "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
+        ADMIN_BETTER_AUTH_URL: "https://admin-api.example.com",
+        ADMIN_ORIGIN: "https://admin.example.com",
+        BETTER_AUTH_SECRET: "0123456789abcdef0123456789abcdef0123456789abcdef",
+        BETTER_AUTH_URL: "https://api.example.com",
+        DATABASE_URL: "file:/var/lib/writing-app/api.sqlite",
+        NODE_ENV: "production",
+        WEB_ORIGIN: "https://app.example.com",
+      })
+    ).toMatchObject({
+      adminOrigin: "https://admin.example.com",
+      authBaseUrl: "https://admin-api.example.com",
+      betterAuthSecret: "FEDCBA9876543210FEDCBA9876543210FEDCBA9876543210",
+      databaseUrl: "file:/var/lib/writing-app/api.sqlite",
+      nodeEnv: "production",
+    })
+  })
 })

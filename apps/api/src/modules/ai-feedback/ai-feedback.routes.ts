@@ -45,7 +45,7 @@ const aiFeedbackRouteConfig = {
     ),
     503: jsonResponse("AI provider를 사용할 수 없습니다.", ErrorResponseSchema),
   },
-  security: [{ bearerAuth: [] }],
+  security: [{ learnerSessionCookie: [] }],
   summary: "AI 코칭 생성",
 } satisfies AnyRouteConfig
 

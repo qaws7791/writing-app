@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./auth-session-cookie": "./src/auth-session-cookie.ts",
     "./admin": "./src/admin/index.ts",
     "./admin/*": "./src/admin/*.ts",
     "./ai-feedback": "./src/ai-feedback/index.ts",

@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { adminSessionCookieName } from "@workspace/contracts/auth-session-cookie"
 
 import {
   adminSessionExpiresAt,
@@ -124,7 +125,7 @@ function createAdminAdvancedOptions(cookieDomain: string | undefined) {
     cookiePrefix: "writing-app-admin",
     cookies: {
       session_token: {
-        name: "admin_session_token",
+        name: adminSessionCookieName,
       },
     },
   }

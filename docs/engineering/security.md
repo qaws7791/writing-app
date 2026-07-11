@@ -23,6 +23,7 @@
 - 웹과 API가 다른 서브도메인에 있으면 `BETTER_AUTH_COOKIE_DOMAIN`을 명시한다.
 - API는 `WEB_ORIGIN`을 trusted origin/CORS 기준으로 사용한다.
 - 로컬 자동화용 `ENABLE_TEST_AUTH`는 non-production에서만 동작하며, 운영 인증 경로로 사용하지 않는다.
+- 운영의 인증 기준 URL과 공개 origin은 HTTPS여야 하며 세션 쿠키는 `Secure`, `HttpOnly`, `SameSite=Lax`로 발급한다.
 
 ### 관리자
 
@@ -31,6 +32,7 @@
 - 관리자 세션은 `admin_session_token` 쿠키를 사용한다.
 - 관리자 인증 테이블은 `admin_*` prefix를 사용한다.
 - 관리자 비밀값은 학습자 비밀값과 공유하지 않는다.
+- 운영에서는 `ADMIN_BETTER_AUTH_SECRET`과 `ADMIN_BETTER_AUTH_URL`을 별도로 명시하며 약한 값, placeholder, 학습자와 같은 비밀값을 거부한다.
 - API는 `ADMIN_ORIGIN`을 trusted origin/CORS 기준으로 사용한다.
 - 어드민 보호 layout은 쿠키 존재 여부만 보지 않고 `GET /session`으로 실제 관리자 세션과 역할을 확인한다.
 - 어드민 웹은 환경 변수의 세션 token을 방문자에게 자동 주입하는 개발용 fallback을 지원하지 않는다.
@@ -76,6 +78,13 @@
 - 일반 JSON 값은 깊이, 전체 node 수, 배열·객체 크기와 문자열 길이를 반복 방식으로 검증한다.
 
 ## 민감 데이터 처리
+
+### HTTP 캐시와 프록시
+
+- 인증 handler와 세션·프로필·사용자·AI 대화 등 모든 보호 응답은 `Cache-Control: private, no-store`와 `Vary: Cookie`를 반환한다.
+- reverse proxy와 CDN은 `private` 또는 `no-store` 응답을 저장하지 않아야 한다. 쿠키가 포함된 요청을 공개 cache key로 축약하거나 다른 사용자에게 재사용하면 안 된다.
+- `/health`와 `/openapi`는 공개 route로 분리하며 보호 응답 middleware를 적용하지 않는다.
+- SSE와 다운로드 응답은 동일한 비저장 정책을 따르면서 스트림 및 첨부 헤더를 유지한다.
 
 저장소에 커밋하면 안 되는 값은 다음과 같다.
 
