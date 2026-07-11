@@ -72,6 +72,13 @@ describe("AdminAnalyticsPage", () => {
     expect(
       screen.getByRole("heading", { name: "스트릭 유지 분포" })
     ).toBeVisible()
+    expect(
+      screen.getByRole("table", { name: "일별 레슨 완료 데이터" })
+    ).toHaveTextContent("2026-06-14")
+    expect(screen.getByText("기간 합계 레슨 완료 7건")).toBeVisible()
+    expect(
+      screen.getByRole("table", { name: "스트릭 유지 분포 데이터" })
+    ).toHaveTextContent("1-3일")
     expect(screen.getByRole("heading", { name: "레슨별 완료율" })).toBeVisible()
     expect(screen.getByText("문장 시작하기")).toBeVisible()
     expect(screen.getByText("70%")).toBeVisible()

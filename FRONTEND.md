@@ -109,6 +109,7 @@
 - 코스 편집은 유닛, 레슨 배치, 레슨 추가/보관, 순서 변경, 표준 10개 스텝 타입별 편집 폼을 제공한다.
 - 사용자 관리는 검색, 상태 필터, 정렬, 페이지 이동, 정지/복구, 삭제 요청 처리를 제공한다.
 - 분석 화면의 차트는 새 의존성 없이 SVG 또는 CSS 기반 컴포넌트로 우선 구현한다.
+- 대시보드와 분석 화면의 Recharts 시각화는 viewport 200px 이내에서 동적으로 불러온다. 같은 데이터의 기간 합계와 semantic table을 먼저 렌더링해 JavaScript·차트 로딩 실패와 screen reader 환경에서도 핵심 값을 전달한다.
 - 자료실은 reui 기반 Tree 프리미티브로 무제한 폴더·문서 계층을 지연 로딩하고 데스크톱 조절 사이드바와 모바일 drawer를 제공한다.
 - 자료실 트리 shell은 문서 동기화 모듈을 정적 import하지 않는다. Lexical·Yjs 동기화 boundary는 `/resources/[documentId]`에서만 동적으로 불러오며, 빈 자료실과 휴지통의 초기 chunk는 CI에서 Lexical/Yjs 부재와 275,000 bytes gzip 예산을 검증한다.
 - 자료 본문은 Lexical에서 최종 문서 형태로 GFM을 편집하며 분할 미리보기나 저장 버튼을 두지 않는다. 슬래시 메뉴, Markdown shortcut, 블록 이동, 선택 서식 도구와 URL 이미지 입력을 제공한다.

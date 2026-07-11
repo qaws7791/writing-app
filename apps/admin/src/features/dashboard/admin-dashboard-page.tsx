@@ -1,10 +1,6 @@
 import Link from "next/link"
 
-import {
-  AdminCompletionTrendChart,
-  AdminSignupTrendChart,
-  AdminStreakDistributionChart,
-} from "@/components/admin-charts"
+import { AdminChartPanel } from "@/components/admin-chart-panel"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type { AdminAnalytics, AdminDashboard } from "@/lib/api/admin-api"
 import {
@@ -70,13 +66,13 @@ export function AdminDashboardPage({
       </StatGrid>
       {analytics === null ? null : (
         <section className="mt-6 grid gap-4 lg:grid-cols-2">
-          <AdminSignupTrendChart data={analytics.dailySeries} />
-          <AdminCompletionTrendChart data={analytics.dailySeries} />
+          <AdminChartPanel data={analytics.dailySeries} kind="signups" />
+          <AdminChartPanel data={analytics.dailySeries} kind="completions" />
         </section>
       )}
       <section className="mt-4 grid gap-4 lg:grid-cols-2">
         {analytics === null ? null : (
-          <AdminStreakDistributionChart data={analytics.streakBuckets} />
+          <AdminChartPanel data={analytics.streakBuckets} kind="streaks" />
         )}
         <RecentActivityPanel activities={recentActivities} />
       </section>

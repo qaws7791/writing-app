@@ -60,6 +60,13 @@ describe("AdminDashboardPage", () => {
     expect(within(metrics).getByText("5개 강의의 레슨")).toBeVisible()
     expect(screen.getByRole("heading", { name: "최근 활동" })).toBeVisible()
     expect(screen.getByRole("link", { name: /민지/ })).toBeVisible()
+    expect(
+      screen.getByRole("table", { name: "최근 30일 가입 추이 데이터" })
+    ).toHaveTextContent("2026-06-01")
+    expect(screen.getByText("기간 합계 가입 1건")).toBeVisible()
+    expect(
+      screen.getByRole("table", { name: "스트릭 유지 분포 데이터" })
+    ).toHaveTextContent("0일")
   })
 
   it("API 오류 상태를 한국어로 보여준다", () => {

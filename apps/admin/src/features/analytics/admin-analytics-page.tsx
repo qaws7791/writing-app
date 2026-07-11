@@ -2,11 +2,7 @@
 
 import { useMemo, useState } from "react"
 
-import {
-  AdminCompletionTrendChart,
-  AdminSignupTrendChart,
-  AdminStreakDistributionChart,
-} from "@/components/admin-charts"
+import { AdminChartPanel } from "@/components/admin-chart-panel"
 import type { AdminApiResult } from "@/lib/api/api-result"
 import type {
   AdminAnalytics,
@@ -57,12 +53,19 @@ export function AdminAnalyticsPage({
     <>
       <AnalyticsHeading />
       <section className="mb-4 grid gap-4 lg:grid-cols-2">
-        <AdminSignupTrendChart data={analyticsResult.value.dailySeries} />
-        <AdminCompletionTrendChart data={analyticsResult.value.dailySeries} />
+        <AdminChartPanel
+          data={analyticsResult.value.dailySeries}
+          kind="signups"
+        />
+        <AdminChartPanel
+          data={analyticsResult.value.dailySeries}
+          kind="completions"
+        />
       </section>
       <section className="mb-4 grid gap-4 lg:grid-cols-2">
-        <AdminStreakDistributionChart
+        <AdminChartPanel
           data={analyticsResult.value.streakBuckets}
+          kind="streaks"
         />
         <WorstLessonsPanel lessons={analyticsResult.value.worstLessons} />
       </section>
