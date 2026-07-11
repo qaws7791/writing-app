@@ -170,7 +170,7 @@ export const Loading: Story = {
         <Loader2 className="animate-spin" data-icon="inline-start" />
         저장 중...
       </Button>
-      <Button size="icon" disabled variant="outline">
+      <Button aria-label="불러오는 중" size="icon" disabled variant="outline">
         <Loader2 className="animate-spin" aria-hidden="true" />
       </Button>
     </div>

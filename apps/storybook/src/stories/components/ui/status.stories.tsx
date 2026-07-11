@@ -42,7 +42,7 @@ export const Callouts: Story = {
   render: () => (
     <div className="grid max-w-3xl gap-4">
       {tones.map((tone) => (
-        <Callout key={tone} tone={tone}>
+        <Callout aria-label={`${tone} 안내`} key={tone} tone={tone}>
           <CalloutTitle>{tone} callout</CalloutTitle>
           <CalloutContent>
             본문 흐름 안에서 주의, 성공, 정보, 위험 맥락을 강조한다.

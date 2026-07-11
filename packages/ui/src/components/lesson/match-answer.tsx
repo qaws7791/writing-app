@@ -22,6 +22,7 @@ type PendingMatchChoice =
   | { readonly id: MatchChoiceId; readonly side: "right" }
 
 type MatchConnectionLine = {
+  readonly id: string
   readonly tone: "correct" | "default" | "wrong"
   readonly x1: number
   readonly x2: number
@@ -90,6 +91,7 @@ function measureMatchConnectionLines({
 
     return [
       {
+        id: `${leftId}-${rightId}`,
         tone: isCorrect ? "correct" : isWrong ? "wrong" : "default",
         x1: leftRect.right - gridRect.left,
         x2: rightRect.left - gridRect.left,
@@ -122,7 +124,7 @@ function MatchConnectionOverlay({
             line.tone === "wrong" && "stroke-coral-dark",
             line.tone === "default" && "stroke-charcoal/60"
           )}
-          key={`${line.x1}-${line.y1}-${line.x2}-${line.y2}`}
+          key={line.id}
           strokeLinecap="round"
           x1={line.x1}
           x2={line.x2}
@@ -145,7 +147,7 @@ export function MatchAnswer({
   readonly checked?: LessonStepCheckedVisual
   readonly explanation?: string
   readonly guide: string
-  readonly onChange?: (pairs: readonly MatchAnswerPair[]) => void
+  readonly onChange?: (_pairs: readonly MatchAnswerPair[]) => void
   readonly pairs: readonly {
     readonly left: string
     readonly right: string

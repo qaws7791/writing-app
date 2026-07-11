@@ -1,6 +1,6 @@
 ﻿import * as React from "react"
 import type { Meta, StoryObj } from "@storybook/react-vite"
-import { expect, userEvent, within } from "storybook/test"
+import { expect, userEvent, waitFor, within } from "storybook/test"
 import {
   Cloud,
   CreditCard,
@@ -322,7 +322,6 @@ export const FormInteraction: Story = {
     const settingsItem = body.getByTestId("item-settings")
     await userEvent.click(settingsItem)
 
-    // 메뉴가 닫혔는지 확인
-    await expect(profileItem).not.toBeInTheDocument()
+    await waitFor(() => expect(profileItem).not.toBeInTheDocument())
   },
 }

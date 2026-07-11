@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { LexicalComposer } from "@lexical/react/LexicalComposer"
 import { ContentEditable } from "@lexical/react/LexicalContentEditable"
@@ -199,22 +199,27 @@ describe("자료 Lexical 편집기", () => {
     insertEditorText(editor, "/이미지")
     await screen.findByRole("listbox", { name: "블록 종류" })
     await user.keyboard("{Enter}")
-    await user.type(
-      screen.getByLabelText("이미지 URL"),
-      "http://example.com/a.png"
-    )
-    await user.type(screen.getByLabelText("대체 텍스트"), "운영 이미지")
+    const imageDialog = await screen.findByRole("dialog", {
+      name: "URL 이미지 삽입",
+    })
+    const imageUrl = screen.getByLabelText("이미지 URL")
+
+    expect(imageDialog).toBeVisible()
+    fireEvent.change(imageUrl, {
+      target: { value: "http://example.com/a.png" },
+    })
+    fireEvent.change(screen.getByLabelText("대체 텍스트"), {
+      target: { value: "운영 이미지" },
+    })
     await user.click(screen.getByRole("button", { name: "삽입" }))
 
     expect(
       await screen.findByText("이미지는 HTTPS URL만 사용할 수 있습니다.")
     ).toBeVisible()
 
-    await user.clear(screen.getByLabelText("이미지 URL"))
-    await user.type(
-      screen.getByLabelText("이미지 URL"),
-      "https://example.com/a.png"
-    )
+    fireEvent.change(imageUrl, {
+      target: { value: "https://example.com/a.png" },
+    })
     await user.click(screen.getByRole("button", { name: "삽입" }))
 
     expect(
@@ -247,10 +252,9 @@ describe("자료 Lexical 편집기", () => {
     insertEditorText(editor, "/표")
     await screen.findByRole("listbox", { name: "블록 종류" })
     await user.keyboard("{Enter}")
-    await user.clear(screen.getByLabelText("행"))
-    await user.type(screen.getByLabelText("행"), "2")
-    await user.clear(screen.getByLabelText("열"))
-    await user.type(screen.getByLabelText("열"), "2")
+    expect(await screen.findByRole("dialog", { name: "표 삽입" })).toBeVisible()
+    fireEvent.change(screen.getByLabelText("행"), { target: { value: "2" } })
+    fireEvent.change(screen.getByLabelText("열"), { target: { value: "2" } })
     await user.click(screen.getByRole("button", { name: "삽입" }))
 
     expect(await screen.findByRole("table")).toBeVisible()
