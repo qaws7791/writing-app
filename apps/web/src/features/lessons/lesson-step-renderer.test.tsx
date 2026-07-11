@@ -260,6 +260,36 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
       })
     )
   })
+
+  it("초안 영구 저장 실패를 표시하되 답안 전달은 계속한다", async () => {
+    const user = userEvent.setup()
+    const onAnswerChange = vi.fn()
+    const step: LessonStep = {
+      draft: true,
+      guide: "초안을 작성하세요.",
+      id: "write-draft-failure",
+      min: 1,
+      order: 1,
+      title: "초안 쓰기",
+      type: "WRITE",
+    }
+    renderAnswerableStep(step, onAnswerChange)
+    await user.type(screen.getByRole("textbox"), "제출할 초안")
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new DOMException("저장 용량 초과", "QuotaExceededError")
+    })
+
+    await user.click(screen.getByRole("button", { name: "드래프트 저장" }))
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "브라우저 저장 공간이 부족합니다."
+    )
+    expect(screen.getByRole("button", { name: "다시 저장" })).toBeEnabled()
+    expect(onAnswerChange).toHaveBeenLastCalledWith({
+      answer: { text: "제출할 초안", type: "WRITE" },
+      stepId: "write-draft-failure",
+    })
+  })
 })
 
 describe("레슨 스텝 렌더러 AI 코칭", () => {

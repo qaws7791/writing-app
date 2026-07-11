@@ -3,6 +3,11 @@ const lessonDraftMaxLength = 20_000
 const draftMemoryCache = new Map<string, string>()
 let listensForStorageChanges = false
 
+export type LessonDraftWriteResult =
+  | { readonly status: "quota-exceeded" }
+  | { readonly status: "saved" }
+  | { readonly status: "unavailable" }
+
 export function readLessonDraftText(userId: string, stepId: string): string {
   if (typeof window === "undefined") {
     return ""
@@ -34,9 +39,9 @@ export function writeLessonDraftText(
   userId: string,
   stepId: string,
   text: string
-): boolean {
+): LessonDraftWriteResult {
   if (typeof window === "undefined") {
-    return false
+    return { status: "unavailable" }
   }
 
   listenForStorageChanges()
@@ -48,9 +53,11 @@ export function writeLessonDraftText(
 
   try {
     window.localStorage.setItem(key, value)
-    return true
-  } catch {
-    return false
+    return { status: "saved" }
+  } catch (error) {
+    return {
+      status: isStorageQuotaExceeded(error) ? "quota-exceeded" : "unavailable",
+    }
   }
 }
 
@@ -103,6 +110,15 @@ function discardUnscopedLessonDrafts(stepId: string): void {
 
 function normalizeDraftText(text: string): string {
   return text.slice(0, lessonDraftMaxLength)
+}
+
+function isStorageQuotaExceeded(error: unknown): boolean {
+  return (
+    error instanceof DOMException &&
+    (error.name === "QuotaExceededError" ||
+      error.code === 22 ||
+      error.code === 1014)
+  )
 }
 
 function listenForStorageChanges(): void {

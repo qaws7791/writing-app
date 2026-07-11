@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 
+import type { LessonDraftWriteResult } from "../../lib/lesson-draft-storage"
 import { cn } from "../../lib/utils"
 import type { LessonStepCheckedVisual } from "./lesson-step-checked-visual"
 import { MarkdownContent } from "./markdown-content"
@@ -36,7 +37,9 @@ export function WriteAnswer({
   readonly max?: number
   readonly min?: number
   readonly onChange?: (text: string) => void
-  readonly onDraftSave?: (text: string) => void
+  readonly onDraftSave?: (
+    text: string
+  ) => LessonDraftWriteResult | Promise<LessonDraftWriteResult>
   readonly placeholder?: string
   readonly reference?: string
   readonly sample?: string
@@ -44,7 +47,9 @@ export function WriteAnswer({
   readonly title: string
 }) {
   const [text, setText] = useState(initialText)
-  const [draftSaved, setDraftSaved] = useState(false)
+  const [draftSaveStatus, setDraftSaveStatus] = useState<
+    "idle" | "pending" | LessonDraftWriteResult["status"]
+  >("idle")
   const minHeight = goal
     ? "min-h-[280px]"
     : claim
@@ -63,6 +68,16 @@ export function WriteAnswer({
     const slicedText = nextText.slice(0, max)
     setText(slicedText)
     onChange?.(slicedText)
+  }
+
+  async function handleDraftSave() {
+    setDraftSaveStatus("pending")
+    const result = await onDraftSave?.(text)
+    setDraftSaveStatus(result?.status ?? "unavailable")
+
+    if (result?.status === "saved") {
+      setTimeout(() => setDraftSaveStatus("idle"), 2000)
+    }
   }
 
   return (
@@ -148,18 +163,35 @@ export function WriteAnswer({
         </span>
       </div>
       {draft ? (
-        <button
-          className="mt-4 inline-flex items-center gap-2 text-muted-foreground font-bold hover:text-charcoal"
-          onClick={() => {
-            onDraftSave?.(text)
-            setDraftSaved(true)
-            setTimeout(() => setDraftSaved(false), 2000)
-          }}
-          style={{ fontSize: "0.875rem" }}
-          type="button"
-        >
-          {draftSaved ? "저장됨" : "드래프트 저장"}
-        </button>
+        <div className="mt-4">
+          <button
+            className="inline-flex items-center gap-2 text-muted-foreground font-bold hover:text-charcoal disabled:cursor-wait"
+            disabled={draftSaveStatus === "pending"}
+            onClick={handleDraftSave}
+            style={{ fontSize: "0.875rem" }}
+            type="button"
+          >
+            {draftSaveStatus === "pending"
+              ? "저장 중"
+              : draftSaveStatus === "saved"
+                ? "저장됨"
+                : draftSaveStatus === "idle"
+                  ? "드래프트 저장"
+                  : "다시 저장"}
+          </button>
+          {draftSaveStatus === "quota-exceeded" ? (
+            <p className="mt-2 text-coral-dark font-medium" role="alert">
+              브라우저 저장 공간이 부족합니다. 공간을 확보한 뒤 다시 저장해
+              주세요. 답안 제출은 계속할 수 있습니다.
+            </p>
+          ) : null}
+          {draftSaveStatus === "unavailable" ? (
+            <p className="mt-2 text-coral-dark font-medium" role="alert">
+              브라우저 저장소를 사용할 수 없습니다. 답안 제출은 계속할 수
+              있습니다.
+            </p>
+          ) : null}
+        </div>
       ) : null}
       {checked !== false && sample !== undefined ? (
         <div className="mt-6 bg-surface rounded-4xl p-6">

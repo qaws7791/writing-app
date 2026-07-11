@@ -8,7 +8,9 @@ import {
 
 describe("레슨 초안 저장소", () => {
   it("version key로 초안을 저장하고 읽는다", () => {
-    writeLessonDraftText("learner-a", "step-versioned", "초안")
+    expect(writeLessonDraftText("learner-a", "step-versioned", "초안")).toEqual(
+      { status: "saved" }
+    )
 
     expect(
       localStorage.getItem(
@@ -59,15 +61,25 @@ describe("레슨 초안 저장소", () => {
 
   it("브라우저 저장소 쓰기가 실패해도 메모리 값으로 계속 동작한다", () => {
     vi.spyOn(Storage.prototype, "setItem").mockImplementationOnce(() => {
-      throw new DOMException("저장소 사용 불가")
+      throw new DOMException("저장소 사용 불가", "SecurityError")
     })
 
-    expect(() =>
+    expect(
       writeLessonDraftText("learner-a", "step-memory-fallback", "메모리 초안")
-    ).not.toThrow()
+    ).toEqual({ status: "unavailable" })
     expect(readLessonDraftText("learner-a", "step-memory-fallback")).toBe(
       "메모리 초안"
     )
+  })
+
+  it("저장 용량 초과를 저장소 사용 불가와 구분한다", () => {
+    vi.spyOn(Storage.prototype, "setItem").mockImplementationOnce(() => {
+      throw new DOMException("저장 용량 초과", "QuotaExceededError")
+    })
+
+    expect(
+      writeLessonDraftText("learner-a", "step-quota", "용량 초과 초안")
+    ).toEqual({ status: "quota-exceeded" })
   })
 
   it("과도한 초안은 서버 입력 상한에 맞춰 제한한다", () => {
