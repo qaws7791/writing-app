@@ -9,6 +9,7 @@ import {
   aiFeedbackResultDtoSchema,
   createAiFeedbackCommandSchema,
   createFeedbackBodySchema,
+  createFeedbackHeadersSchema,
   learnerIdSchema,
 } from "@/modules/ai-feedback/ai-feedback.schemas"
 
@@ -18,6 +19,7 @@ const aiFeedbackRouteConfig = {
   operationId: "createAiFeedback",
   path: "/ai-feedback",
   request: {
+    headers: createFeedbackHeadersSchema,
     body: {
       content: {
         "application/json": {
@@ -33,6 +35,10 @@ const aiFeedbackRouteConfig = {
     ),
     400: jsonResponse("잘못된 요청입니다.", ErrorResponseSchema),
     404: jsonResponse("레슨을 찾을 수 없습니다.", ErrorResponseSchema),
+    409: jsonResponse(
+      "동일한 AI 코칭 요청을 처리 중입니다.",
+      ErrorResponseSchema
+    ),
     429: jsonResponse(
       "AI 코칭 시도 횟수를 모두 사용했습니다.",
       ErrorResponseSchema
@@ -49,9 +55,11 @@ const aiFeedbackHandler: ApiRouteHandler<typeof aiFeedbackRouteConfig> = async (
   const aiFeedbackService = context.var.requestContext.aiFeedbackService
 
   const body = context.req.valid("json")
+  const headers = context.req.valid("header")
   const result = await aiFeedbackService.createFeedback(
     createAiFeedbackCommandSchema.parse({
       ...body,
+      idempotencyKey: headers["idempotency-key"] ?? crypto.randomUUID(),
       occurredAt: context.var.requestContext.now(),
       userId: learnerIdSchema.parse(context.var.activeSession.user.id),
     })

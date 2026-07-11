@@ -29,6 +29,7 @@ export type SaveLessonProgressInput = {
 
 export type CreateAiFeedbackInput = {
   readonly answer: string
+  readonly idempotencyKey: string
   readonly lessonId: string
   readonly stepId: string
 }

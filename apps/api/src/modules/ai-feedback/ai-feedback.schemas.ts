@@ -1,5 +1,6 @@
 import {
   aiFeedbackAnswerMaxLength,
+  aiFeedbackIdempotencyKeySchema,
   aiFeedbackResultDtoSchema,
   createAiFeedbackCommandSchema,
 } from "@workspace/contracts/ai-feedback"
@@ -14,6 +15,10 @@ export const createFeedbackBodySchema = z.object({
   answer: z.string().trim().min(1).max(aiFeedbackAnswerMaxLength),
   lessonId: lessonIdSchema,
   stepId: lessonStepIdSchema,
+})
+
+export const createFeedbackHeadersSchema = z.object({
+  "idempotency-key": aiFeedbackIdempotencyKeySchema.optional(),
 })
 
 export {

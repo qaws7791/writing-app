@@ -36,6 +36,7 @@ export type NetworkErrorReporter = (event: {
 export type OpenApiClient = {
   readonly requestJson: <TValue>(input: {
     readonly body?: unknown
+    readonly headers?: Readonly<Record<string, string>>
     readonly method: "GET" | "POST"
     readonly path: string
     readonly schema: ResponseSchema<TValue>
@@ -56,6 +57,7 @@ export function createOpenApiClient({
   return {
     async requestJson<TValue>(input: {
       readonly body?: unknown
+      readonly headers?: Readonly<Record<string, string>>
       readonly method: "GET" | "POST"
       readonly path: string
       readonly schema: ResponseSchema<TValue>
@@ -72,6 +74,10 @@ export function createOpenApiClient({
 
       if (input.body !== undefined) {
         headers.set("Content-Type", "application/json")
+      }
+
+      for (const [name, value] of Object.entries(input.headers ?? {})) {
+        headers.set(name, value)
       }
 
       const request = new Request(buildApiUrl(baseUrl, input.path), {

@@ -9,7 +9,10 @@ import type { AiFeedbackAttemptPolicy } from "@workspace/core/modules/ai-feedbac
 import type { AiFeedbackProvider } from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.provider"
 import type { AiFeedbackRepository } from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.repository"
 import { resolveAiFeedbackStep } from "@workspace/core/modules/ai-feedback/domain/ai-feedback-step-policy"
-import { createAiFeedbackAttemptCoordinator } from "@workspace/core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
+import {
+  createAiFeedbackAttemptCoordinator,
+  type AiFeedbackAttemptTransitionEvent,
+} from "@workspace/core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
 import { err, type Result } from "@workspace/core/shared/result"
 
 export type AiFeedbackServiceError =
@@ -29,6 +32,10 @@ export type AiFeedbackServiceError =
       readonly remainingAttempts: 0
     }
   | {
+      readonly kind: "attempt-in-progress"
+      readonly remainingAttempts: number
+    }
+  | {
       readonly kind: "provider-failed"
       readonly remainingAttempts: number
     }
@@ -43,16 +50,21 @@ export function createAiFeedbackService({
   contentRepository,
   attemptPolicy,
   feedbackRepository,
+  onAttemptTransition,
   provider,
 }: {
   readonly contentRepository: ContentRepository
   readonly attemptPolicy: AiFeedbackAttemptPolicy
   readonly feedbackRepository: AiFeedbackRepository
+  readonly onAttemptTransition?: (
+    event: AiFeedbackAttemptTransitionEvent
+  ) => void
   readonly provider: AiFeedbackProvider
 }): AiFeedbackService {
   const attemptCoordinator = createAiFeedbackAttemptCoordinator({
     attemptPolicy,
     feedbackRepository,
+    onAttemptTransition,
     provider,
   })
 

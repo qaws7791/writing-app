@@ -93,6 +93,7 @@ describe("HTTP WritingAppApi", () => {
 
   it("답변 저장, 레슨 완료, AI 코칭 생성을 POST 요청으로 전달한다", async () => {
     const bodies: unknown[] = []
+    const idempotencyKeys: Array<string | null> = []
     const urls: string[] = []
     const api = createHttpWritingAppApi({
       baseUrl: readBrowserApiBaseUrl({
@@ -100,6 +101,7 @@ describe("HTTP WritingAppApi", () => {
       }),
       fetch: async (request) => {
         urls.push(request.url)
+        idempotencyKeys.push(request.headers.get("Idempotency-Key"))
         bodies.push(request.body === null ? null : await request.json())
 
         if (request.url === "https://api.example.test/ai-feedback") {
@@ -161,6 +163,7 @@ describe("HTTP WritingAppApi", () => {
     await expect(
       api.createAiFeedback({
         answer: "나의 답변",
+        idempotencyKey: "feedback-request-1",
         lessonId: "l1",
         stepId: "s2",
       })
@@ -196,6 +199,7 @@ describe("HTTP WritingAppApi", () => {
       "https://api.example.test/learning/lessons/l1/complete",
       "https://api.example.test/ai-feedback",
     ])
+    expect(idempotencyKeys).toEqual([null, null, null, "feedback-request-1"])
   })
 
   it("실패 응답을 ApiFailure로 변환한다", async () => {

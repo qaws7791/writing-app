@@ -52,6 +52,8 @@
 
 본문 transport는 HTTP transaction이다. 자료 문서·core·관리자 작업 공간 fixture는 같은 snapshot의 동시 update 수렴, 고정 transaction 재시도, 문서 전환·서버 재시작·version 알림 순서 역전·snapshot fallback을 검증한다. 실제 두 브라우저 context는 코드 블록 변경을 transaction으로 승인하고 다른 브라우저가 version 알림 뒤 HTTP pull로 표시하는지 확인한다. Bun WebSocket 테스트는 작업 공간 사건 구독, heartbeat, version·무효화 알림과 실패한 socket 격리에 한정한다.
 
+학습자 AI 피드백 repository 통합 테스트는 SQLite transaction에 50개 동시 요청을 입력해 provider 호출이 단일 in-flight 예약을 넘지 않는지 확인한다. 동일 idempotency key 결과 재사용, provider fault와 timeout의 `failed` 전이, TTL 만료의 `expired` 전이와 slot 재사용, 성공 3회 한도, 기존 완료 row의 `succeeded` migration을 함께 검증한다.
+
 ## 주요 명령
 
 ```bash

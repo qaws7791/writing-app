@@ -37,6 +37,7 @@ describe("AI 피드백 서비스", () => {
     await expect(
       service.createFeedback({
         answer: "문장을 더 분명하게 고쳐 보았습니다.",
+        idempotencyKey: "request-1",
         lessonId,
         occurredAt,
         stepId,
@@ -70,6 +71,7 @@ describe("AI 피드백 서비스", () => {
     await expect(
       service.createFeedback({
         answer: "없는 레슨에 코칭을 요청합니다.",
+        idempotencyKey: "request-2",
         lessonId,
         occurredAt,
         stepId,
@@ -92,6 +94,7 @@ describe("AI 피드백 서비스", () => {
     await expect(
       service.createFeedback({
         answer: "읽기 스텝에 코칭을 요청합니다.",
+        idempotencyKey: "request-3",
         lessonId,
         occurredAt,
         stepId: lessonStepIdSchema.parse("l1-s1"),
@@ -115,6 +118,7 @@ describe("AI 피드백 서비스", () => {
     await expect(
       service.createFeedback({
         answer: "없는 스텝에 코칭을 요청합니다.",
+        idempotencyKey: "request-4",
         lessonId,
         occurredAt,
         stepId: lessonStepIdSchema.parse("missing-step"),
@@ -151,11 +155,20 @@ function createService({
     },
   }
   const feedbackRepository: AiFeedbackRepository = {
-    async countCompletedAttempts() {
-      return 0
+    async markAttemptFailed() {
+      return true
     },
-    async saveCompletedAttempt() {
-      return { attemptNumber: 1, kind: "saved" }
+    async markAttemptSucceeded() {
+      return true
+    },
+    async reserveAttempt(input) {
+      return {
+        attemptId: input.attemptId,
+        attemptNumber: 1,
+        completedAttempts: 0,
+        expiredAttempts: [],
+        kind: "reserved",
+      }
     },
   }
   const provider: AiFeedbackProvider = {

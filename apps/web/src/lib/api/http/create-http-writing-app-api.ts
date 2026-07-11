@@ -72,7 +72,12 @@ export function createHttpWritingAppApi({
     async createAiFeedback(input) {
       return mapApiResult(
         await client.requestJson<ApiAiFeedbackResponse>({
-          body: input,
+          body: {
+            answer: input.answer,
+            lessonId: input.lessonId,
+            stepId: input.stepId,
+          },
+          headers: { "Idempotency-Key": input.idempotencyKey },
           method: "POST",
           path: "/ai-feedback",
           schema: aiFeedbackResultDtoSchema,

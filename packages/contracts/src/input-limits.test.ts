@@ -14,6 +14,7 @@ describe("외부 입력 크기 제한", () => {
     expect(
       createAiFeedbackCommandSchema.safeParse({
         answer: oversizedText,
+        idempotencyKey: "request-1",
         lessonId: "lesson-1",
         occurredAt: new Date("2026-07-10T00:00:00.000Z"),
         stepId: "step-1",

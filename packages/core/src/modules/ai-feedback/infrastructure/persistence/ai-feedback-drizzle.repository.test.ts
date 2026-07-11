@@ -4,10 +4,14 @@ import {
   lessonStepIdSchema,
 } from "@workspace/core/modules/content/domain/content.ids"
 import { learnerIdSchema } from "@workspace/core/modules/learning/domain/learning.ids"
-
-import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import {
+  createInMemoryWritingAppDatabase,
+  type WritingAppDatabaseClient,
+} from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
-import { createDrizzleAiFeedbackRepository } from "@/modules/ai-feedback/infrastructure/persistence/ai-feedback-drizzle.repository"
+import { createDrizzleAiFeedbackRepository } from "@workspace/core/modules/ai-feedback/infrastructure/persistence/ai-feedback-drizzle.repository"
+import { createAiFeedbackAttemptCoordinator } from "@workspace/core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
+import { defaultAiFeedbackAttemptPolicy } from "@workspace/core/modules/ai-feedback/domain/ai-feedback-attempt-policy"
 import {
   aiFeedbackAttempts,
   authUsers,
@@ -16,130 +20,219 @@ import {
   lessons,
   lessonSteps,
 } from "@workspace/db/schema"
-import type { WritingAppDatabaseClient } from "@workspace/db/client"
+import { err, ok } from "@workspace/core/shared/result"
+import type { AiFeedbackPayload } from "@workspace/core/modules/ai-feedback/domain/ai-feedback.dto"
+import type { AiFeedbackProvider } from "@workspace/core/modules/ai-feedback/application/ports/ai-feedback.provider"
 
 const now = new Date("2026-06-14T10:30:00.000Z")
 const learnerId = learnerIdSchema.parse("user-1")
-const otherLearnerId = learnerIdSchema.parse("user-2")
 const lessonId = lessonIdSchema.parse("l-ai")
 const stepId = lessonStepIdSchema.parse("l-ai-s2")
+let attemptSequence = 0
 
 describe("AI 피드백 repository", () => {
-  it("완료된 AI 코칭 시도를 저장하고 user/lesson/step 기준으로 집계한다", async () => {
+  it("SQLite transaction의 50개 동시 요청에서도 provider 호출을 하나의 in-flight 예약으로 제한한다", async () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      seedFeedbackBaseline(client)
+      const feedbackRepository = createDrizzleAiFeedbackRepository(client.db)
+      let providerCalls = 0
+      const coordinator = createAiFeedbackAttemptCoordinator({
+        attemptPolicy: defaultAiFeedbackAttemptPolicy,
+        createAttemptId: createSequence("parallel"),
+        feedbackRepository,
+        provider: {
+          async createFeedback() {
+            providerCalls += 1
+            await Promise.resolve()
+            return ok(feedbackPayload)
+          },
+        },
+      })
+
+      await Promise.all(
+        Array.from({ length: 50 }, (_, index) =>
+          coordinator.createAttempt(command(`parallel-${index}`), context)
+        )
+      )
+
+      expect(providerCalls).toBe(1)
+      expect(
+        client.db
+          .select()
+          .from(aiFeedbackAttempts)
+          .all()
+          .filter((attempt) => attempt.status === "succeeded")
+      ).toHaveLength(1)
+    } finally {
+      client.close()
+    }
+  })
+
+  it("동일 idempotency key의 성공 재시도는 저장 결과를 재사용하고 provider를 중복 호출하지 않는다", async () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      seedFeedbackBaseline(client)
+      let providerCalls = 0
+      const coordinator = createCoordinator(client, {
+        onProviderCall() {
+          providerCalls += 1
+        },
+      })
+
+      const first = await coordinator.createAttempt(
+        command("same-key"),
+        context
+      )
+      const retried = await coordinator.createAttempt(
+        command("same-key"),
+        context
+      )
+
+      expect(retried).toEqual(first)
+      expect(providerCalls).toBe(1)
+      expect(client.db.select().from(aiFeedbackAttempts).all()).toHaveLength(1)
+    } finally {
+      client.close()
+    }
+  })
+
+  it("provider 실패를 failed로 전이해 slot을 즉시 반환한다", async () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      seedFeedbackBaseline(client)
+      const failedCoordinator = createCoordinator(client, {
+        providerResult: err({ kind: "provider-unavailable" }),
+      })
+
+      await expect(
+        failedCoordinator.createAttempt(command("failed-key"), context)
+      ).resolves.toMatchObject({ kind: "err" })
+
+      await expect(
+        createCoordinator(client).createAttempt(command("new-key"), context)
+      ).resolves.toMatchObject({
+        kind: "ok",
+        value: { remainingAttempts: 2 },
+      })
+
+      expect(
+        client.db
+          .select({
+            attemptNumber: aiFeedbackAttempts.attemptNumber,
+            status: aiFeedbackAttempts.status,
+          })
+          .from(aiFeedbackAttempts)
+          .all()
+      ).toEqual([
+        { attemptNumber: 1, status: "failed" },
+        { attemptNumber: 1, status: "succeeded" },
+      ])
+    } finally {
+      client.close()
+    }
+  })
+
+  it("성공 attempt 3회 이후에는 새 provider 호출을 거절한다", async () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      seedFeedbackBaseline(client)
+      let providerCalls = 0
+      const coordinator = createCoordinator(client, {
+        onProviderCall() {
+          providerCalls += 1
+        },
+      })
+
+      for (const key of ["first", "second", "third"]) {
+        await expect(
+          coordinator.createAttempt(command(key), context)
+        ).resolves.toMatchObject({ kind: "ok" })
+      }
+      await expect(
+        coordinator.createAttempt(command("fourth"), context)
+      ).resolves.toEqual({
+        error: { kind: "attempt-limit-exceeded", remainingAttempts: 0 },
+        kind: "err",
+      })
+
+      expect(providerCalls).toBe(3)
+    } finally {
+      client.close()
+    }
+  })
+
+  it("만료된 pending attempt를 expired로 전이하고 같은 slot을 다시 예약한다", async () => {
     const client = createInMemoryWritingAppDatabase()
 
     try {
       seedFeedbackBaseline(client)
       const repository = createDrizzleAiFeedbackRepository(client.db)
+      await repository.reserveAttempt({
+        ...command("stale"),
+        attemptId: "attempt-stale",
+        expiresAt: new Date(now.getTime() + 100),
+        maxCompletedAttempts: 3,
+      })
 
-      await expect(
-        repository.saveCompletedAttempt(
-          {
-            answer: "문장을 명확하게 고쳤습니다.",
-            lessonId,
-            occurredAt: now,
-            result: {
-              improvements: ["근거를 더 붙이세요."],
-              nextAction: "예시 한 문장을 추가하세요.",
-              score: 84,
-              scoreRange: [0, 100],
-              showScore: true,
-              strengths: ["핵심 문장이 앞에 있습니다."],
-              summary: "의도가 분명합니다.",
-            },
-            stepId,
-            userId: learnerId,
-          },
-          3
-        )
-      ).resolves.toEqual({
+      const reservation = await repository.reserveAttempt({
+        ...command("replacement", new Date(now.getTime() + 101)),
+        attemptId: "attempt-replacement",
+        expiresAt: new Date(now.getTime() + 201),
+        maxCompletedAttempts: 3,
+      })
+
+      expect(reservation).toMatchObject({
         attemptNumber: 1,
-        kind: "saved",
+        expiredAttempts: [{ attemptId: "attempt-stale", attemptNumber: 1 }],
+        kind: "reserved",
       })
+      expect(
+        client.db
+          .select({ status: aiFeedbackAttempts.status })
+          .from(aiFeedbackAttempts)
+          .all()
+      ).toEqual([{ status: "expired" }, { status: "pending" }])
+    } finally {
+      client.close()
+    }
+  })
 
-      await expect(
-        repository.saveCompletedAttempt(
-          {
-            answer: "두 번째 문장을 명확하게 고쳤습니다.",
-            lessonId,
-            occurredAt: now,
-            result: {
-              improvements: ["문장 길이를 줄이세요."],
-              nextAction: "첫 문장을 둘로 나누세요.",
-              score: 86,
-              scoreRange: [0, 100],
-              showScore: true,
-              strengths: ["주장이 분명합니다."],
-              summary: "구조가 좋아졌습니다.",
-            },
-            stepId,
-            userId: learnerId,
-          },
-          1
-        )
-      ).resolves.toEqual({
-        completedAttempts: 1,
-        kind: "limit-exceeded",
-      })
+  it("기존 완료 attempt schema를 succeeded 상태로 보존 migration한다", () => {
+    const client = createInMemoryWritingAppDatabase()
 
-      await repository.saveCompletedAttempt(
-        {
-          answer: "문장을 명확하게 고쳤습니다.",
-          lessonId,
-          occurredAt: now,
-          result: {
-            improvements: ["근거를 더 붙이세요."],
-            nextAction: "예시 한 문장을 추가하세요.",
-            score: 84,
-            scoreRange: [0, 100],
-            showScore: true,
-            strengths: ["핵심 문장이 앞에 있습니다."],
-            summary: "의도가 분명합니다.",
-          },
-          stepId,
-          userId: learnerId,
-        },
-        3
-      )
+    try {
+      seedFeedbackBaseline(client)
+      client.sqlite.exec(`
+DROP TABLE ai_feedback_attempts;
+CREATE TABLE ai_feedback_attempts (
+  user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
+  lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+  step_id TEXT NOT NULL REFERENCES lesson_steps(id) ON DELETE CASCADE,
+  attempt_number INTEGER NOT NULL,
+  answer_text TEXT NOT NULL,
+  result_json TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  PRIMARY KEY (user_id, lesson_id, step_id, attempt_number)
+);
+INSERT INTO ai_feedback_attempts VALUES (
+  'user-1', 'l-ai', 'l-ai-s2', 1, '기존 답변', '${JSON.stringify(feedbackPayload)}', ${now.getTime()}
+);
+`)
 
-      await expect(
-        repository.countCompletedAttempts({
-          lessonId,
-          stepId,
-          userId: learnerId,
-        })
-      ).resolves.toBe(2)
-      await expect(
-        repository.countCompletedAttempts({
-          lessonId,
-          stepId,
-          userId: otherLearnerId,
-        })
-      ).resolves.toBe(0)
+      runBaselineMigration(client.sqlite)
 
       expect(client.db.select().from(aiFeedbackAttempts).all()).toEqual([
         expect.objectContaining({
-          answerText: "문장을 명확하게 고쳤습니다.",
+          answerText: "기존 답변",
           attemptNumber: 1,
-          lessonId: "l-ai",
-          resultJson: JSON.stringify({
-            improvements: ["근거를 더 붙이세요."],
-            nextAction: "예시 한 문장을 추가하세요.",
-            score: 84,
-            scoreRange: [0, 100],
-            showScore: true,
-            strengths: ["핵심 문장이 앞에 있습니다."],
-            summary: "의도가 분명합니다.",
-          }),
-          stepId: "l-ai-s2",
-          userId: "user-1",
-        }),
-        expect.objectContaining({
-          answerText: "문장을 명확하게 고쳤습니다.",
-          attemptNumber: 2,
-          lessonId: "l-ai",
-          stepId: "l-ai-s2",
-          userId: "user-1",
+          idempotencyKey: "legacy:1",
+          resultJson: JSON.stringify(feedbackPayload),
+          status: "succeeded",
         }),
       ])
     } finally {
@@ -148,31 +241,68 @@ describe("AI 피드백 repository", () => {
   })
 })
 
+const context = { focus: "명확성", lessonTitle: "AI 피드백 레슨" }
+const feedbackPayload: AiFeedbackPayload = {
+  improvements: ["근거를 더 붙이세요."],
+  nextAction: "예시 한 문장을 추가하세요.",
+  score: 84,
+  scoreRange: [0, 100],
+  showScore: true,
+  strengths: ["핵심 문장이 앞에 있습니다."],
+  summary: "의도가 분명합니다.",
+}
+
+function command(idempotencyKey: string, occurredAt = now) {
+  return {
+    answer: "문장을 명확하게 고쳤습니다.",
+    idempotencyKey,
+    lessonId,
+    occurredAt,
+    stepId,
+    userId: learnerId,
+  }
+}
+
+function createCoordinator(
+  client: WritingAppDatabaseClient,
+  options: {
+    readonly onProviderCall?: () => void
+    readonly providerResult?: Awaited<
+      ReturnType<AiFeedbackProvider["createFeedback"]>
+    >
+  } = {}
+) {
+  return createAiFeedbackAttemptCoordinator({
+    attemptPolicy: defaultAiFeedbackAttemptPolicy,
+    createAttemptId: () => `attempt-${++attemptSequence}`,
+    feedbackRepository: createDrizzleAiFeedbackRepository(client.db),
+    provider: {
+      async createFeedback() {
+        options.onProviderCall?.()
+        return options.providerResult ?? ok(feedbackPayload)
+      },
+    },
+  })
+}
+
+function createSequence(prefix: string): () => string {
+  let sequence = 0
+  return () => `${prefix}-${++sequence}`
+}
+
 function seedFeedbackBaseline(client: WritingAppDatabaseClient): void {
   runBaselineMigration(client.sqlite)
-
   client.db
     .insert(authUsers)
-    .values([
-      {
-        createdAt: now,
-        email: "learner@example.com",
-        emailVerified: true,
-        id: "user-1",
-        image: null,
-        name: "학습자",
-        updatedAt: now,
-      },
-      {
-        createdAt: now,
-        email: "other@example.com",
-        emailVerified: true,
-        id: "user-2",
-        image: null,
-        name: "다른 학습자",
-        updatedAt: now,
-      },
-    ])
+    .values({
+      createdAt: now,
+      email: "learner@example.com",
+      emailVerified: true,
+      id: "user-1",
+      image: null,
+      name: "학습자",
+      updatedAt: now,
+    })
     .run()
   client.db
     .insert(courses)

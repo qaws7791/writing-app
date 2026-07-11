@@ -1011,7 +1011,9 @@ export interface operations {
   createAiFeedback: {
     parameters: {
       query?: never
-      header?: never
+      header?: {
+        "idempotency-key"?: string
+      }
       path?: never
       cookie?: never
     }
@@ -1072,6 +1074,15 @@ export interface operations {
       }
       /** @description 레슨을 찾을 수 없습니다. */
       404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"]
+        }
+      }
+      /** @description 동일한 AI 코칭 요청을 처리 중입니다. */
+      409: {
         headers: {
           [name: string]: unknown
         }
