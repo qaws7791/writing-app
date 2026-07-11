@@ -80,6 +80,10 @@ const saveLessonProgressRouteConfig = {
       jsonResponse("레슨 진행 저장 결과입니다.", savedResponseSchema)
     ),
     400: jsonResponse("잘못된 요청입니다.", ErrorResponseSchema),
+    409: jsonResponse(
+      "저장된 진행보다 오래된 요청입니다.",
+      ErrorResponseSchema
+    ),
     404: jsonResponse("레슨을 찾을 수 없습니다.", ErrorResponseSchema),
   },
   security: [{ bearerAuth: [] }],

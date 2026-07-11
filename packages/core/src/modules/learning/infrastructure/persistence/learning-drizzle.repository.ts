@@ -10,6 +10,7 @@ import type { FindStepAnswerQuery } from "@workspace/core/modules/learning/appli
 import type {
   FindLessonProgressQuery,
   LessonProgressRecord,
+  SaveLessonProgressResult,
 } from "@workspace/core/modules/learning/application/ports/learning.repository"
 import { toLearningDateKey } from "@workspace/core/modules/learning/domain/learning-date"
 import { lessonProgressStatuses } from "@workspace/core/shared/kernel/status"
@@ -39,7 +40,7 @@ export function createDrizzleLearningRepository(
       return findStepAnswer(db, query)
     },
     async saveLessonProgress(input) {
-      saveLessonProgress(db, input)
+      return saveLessonProgress(db, input)
     },
     async saveStepAnswer(input) {
       saveStepAnswer(db, input)
@@ -111,8 +112,9 @@ function findStepAnswer(db: WritingAppDatabase, query: FindStepAnswerQuery) {
 function saveLessonProgress(
   db: WritingAppDatabase,
   input: SaveLessonProgressInput
-): void {
-  db.insert(learnerLessonProgress)
+): SaveLessonProgressResult {
+  const progress = db
+    .insert(learnerLessonProgress)
     .values({
       completedAt: null,
       currentStepIndex: input.currentStepIndex,
@@ -124,12 +126,21 @@ function saveLessonProgress(
     })
     .onConflictDoUpdate({
       set: {
-        currentStepIndex: input.currentStepIndex,
-        updatedAt: input.occurredAt,
+        currentStepIndex: sql`MAX(${learnerLessonProgress.currentStepIndex}, excluded.current_step_index)`,
+        updatedAt: sql`CASE
+          WHEN ${learnerLessonProgress.status} = ${lessonProgressStatuses.completed}
+            OR excluded.current_step_index <= ${learnerLessonProgress.currentStepIndex}
+          THEN ${learnerLessonProgress.updatedAt}
+          ELSE excluded.updated_at
+        END`,
       },
       target: [learnerLessonProgress.userId, learnerLessonProgress.lessonId],
     })
-    .run()
+    .returning({
+      currentStepIndex: learnerLessonProgress.currentStepIndex,
+      status: learnerLessonProgress.status,
+    })
+    .get()
 
   recordActivityDay(db, {
     completedLessons: 0,
@@ -137,6 +148,28 @@ function saveLessonProgress(
     savedAnswers: 0,
     userId: input.userId,
   })
+
+  if (progress.status === lessonProgressStatuses.completed) {
+    return {
+      currentStepIndex: progress.currentStepIndex,
+      kind: "completed",
+      status: "completed",
+    }
+  }
+
+  if (input.currentStepIndex < progress.currentStepIndex) {
+    return {
+      currentStepIndex: progress.currentStepIndex,
+      kind: "stale",
+      status: "in_progress",
+    }
+  }
+
+  return {
+    currentStepIndex: progress.currentStepIndex,
+    kind: "saved",
+    status: "in_progress",
+  }
 }
 
 function saveStepAnswer(
@@ -199,8 +232,8 @@ function completeLesson(
     })
     .onConflictDoUpdate({
       set: {
-        completedAt: existingProgress?.completedAt ?? input.occurredAt,
-        currentStepIndex: input.currentStepIndex,
+        completedAt: sql`COALESCE(${learnerLessonProgress.completedAt}, excluded.completed_at)`,
+        currentStepIndex: sql`MAX(${learnerLessonProgress.currentStepIndex}, excluded.current_step_index)`,
         status: lessonProgressStatuses.completed,
         updatedAt: input.occurredAt,
       },

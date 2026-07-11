@@ -40,6 +40,13 @@ export type LearningServiceError =
       readonly lessonId: SaveStepAnswerCommand["lessonId"]
       readonly reason: "step-progress-incomplete"
     }
+  | {
+      readonly currentStepIndex: number
+      readonly kind: "progress-conflict"
+      readonly lessonId: SaveLessonProgressCommand["lessonId"]
+      readonly reason: "stale-progress"
+      readonly requestedStepIndex: number
+    }
 
 export type LearningMutationResult = {
   readonly saved: true
@@ -166,7 +173,18 @@ export function createLearningService({
         return ok({ saved: true })
       }
 
-      await learningRepository.saveLessonProgress(parsedCommand)
+      const saveResult =
+        await learningRepository.saveLessonProgress(parsedCommand)
+
+      if (saveResult.kind === "stale") {
+        return err({
+          currentStepIndex: saveResult.currentStepIndex,
+          kind: "progress-conflict",
+          lessonId: parsedCommand.lessonId,
+          reason: "stale-progress",
+          requestedStepIndex: parsedCommand.currentStepIndex,
+        })
+      }
 
       return ok({ saved: true })
     },

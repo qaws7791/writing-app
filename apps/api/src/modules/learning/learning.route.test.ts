@@ -225,6 +225,48 @@ describe("플랫폼 API learning route", () => {
       },
     ])
   })
+
+  it("stale lesson 진행 결과를 409 conflict로 응답한다", async () => {
+    const app = createApp(
+      createDependencies({
+        learningService: {
+          async completeLesson() {
+            return { kind: "ok", value: { saved: true } }
+          },
+          async saveLessonProgress() {
+            return {
+              error: {
+                currentStepIndex: 2,
+                kind: "progress-conflict",
+                lessonId: lessonIdSchema.parse("l1"),
+                reason: "stale-progress",
+                requestedStepIndex: 1,
+              },
+              kind: "err",
+            }
+          },
+          async saveStepAnswer() {
+            return { kind: "ok", value: { saved: true } }
+          },
+        },
+      })
+    )
+
+    const response = await app.request("/learning/lessons/l1/progress", {
+      body: JSON.stringify({ currentStepIndex: 1 }),
+      headers: {
+        Authorization: "Bearer active-token",
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toEqual({
+      code: "PROGRESS_CONFLICT",
+      message: "Lesson progress is stale",
+    })
+  })
 })
 
 function createLearningService(): LearningService {

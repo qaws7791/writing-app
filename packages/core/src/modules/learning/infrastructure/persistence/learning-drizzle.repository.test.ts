@@ -1,6 +1,13 @@
+import { mkdtempSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
+
 import { describe, expect, it } from "vitest"
 
-import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
+import {
+  createInMemoryWritingAppDatabase,
+  createWritingAppDatabase,
+} from "@workspace/db/client"
 import {
   lessonIdSchema,
   lessonStepIdSchema,
@@ -31,6 +38,50 @@ const newLessonId = lessonIdSchema.parse("l-new")
 const newStepId = lessonStepIdSchema.parse("l-new-s3")
 
 describe("학습 진행 repository", () => {
+  it("file-backed SQLite 연결 2개에서 100회 동시 저장해도 진행 index가 후퇴하지 않는다", async () => {
+    const directory = mkdtempSync(join(tmpdir(), "learning-progress-cas-"))
+    const databasePath = join(directory, "progress.sqlite")
+    const firstClient = createWritingAppDatabase(databasePath)
+    const secondClient = createWritingAppDatabase(databasePath)
+
+    try {
+      await seedLearningBaseline(firstClient)
+      const firstRepository = createDrizzleLearningRepository(firstClient.db)
+      const secondRepository = createDrizzleLearningRepository(secondClient.db)
+
+      const results = await Promise.all(
+        Array.from({ length: 100 }, (_, index) =>
+          (index % 2 === 0
+            ? firstRepository
+            : secondRepository
+          ).saveLessonProgress({
+            currentStepIndex: index === 0 ? 2 : 1,
+            lessonId,
+            occurredAt: new Date(now.getTime() + index),
+            userId,
+          })
+        )
+      )
+
+      await expect(
+        firstRepository.findLessonProgress({ lessonId, userId })
+      ).resolves.toMatchObject({ currentStepIndex: 2 })
+      expect(results.filter((result) => result.kind === "stale")).toHaveLength(
+        99
+      )
+    } finally {
+      secondClient.close()
+      firstClient.close()
+      Bun.gc(true)
+      rmSync(directory, {
+        force: true,
+        maxRetries: 5,
+        recursive: true,
+        retryDelay: 100,
+      })
+    }
+  })
+
   it("progress 저장 시 학습 활동 날짜 row를 생성한다", async () => {
     const client = createInMemoryWritingAppDatabase()
 
@@ -184,6 +235,42 @@ describe("학습 진행 repository", () => {
           savedAnswers: 0,
         }),
       ])
+    } finally {
+      client.close()
+    }
+  })
+
+  it("완료된 lesson에 늦은 진행 저장이 도착해도 상태와 index가 후퇴하지 않는다", async () => {
+    const client = createInMemoryWritingAppDatabase()
+
+    try {
+      await seedLearningBaseline(client)
+      const repository = createDrizzleLearningRepository(client.db)
+
+      await repository.completeLesson({
+        currentStepIndex: 2,
+        lessonId,
+        occurredAt: now,
+        userId,
+      })
+      await expect(
+        repository.saveLessonProgress({
+          currentStepIndex: 1,
+          lessonId,
+          occurredAt: new Date(now.getTime() + 1),
+          userId,
+        })
+      ).resolves.toEqual({
+        currentStepIndex: 2,
+        kind: "completed",
+        status: "completed",
+      })
+      await expect(
+        repository.findLessonProgress({ lessonId, userId })
+      ).resolves.toMatchObject({
+        currentStepIndex: 2,
+        status: "completed",
+      })
     } finally {
       client.close()
     }

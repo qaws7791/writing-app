@@ -1006,6 +1006,15 @@ export interface operations {
           "application/json": components["schemas"]["ErrorResponse"]
         }
       }
+      /** @description 저장된 진행보다 오래된 요청입니다. */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          "application/json": components["schemas"]["ErrorResponse"]
+        }
+      }
     }
   }
   createAiFeedback: {

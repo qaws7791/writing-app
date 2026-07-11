@@ -104,6 +104,8 @@ Better Auth adapter 계약을 따른다.
 
 레슨 진행 상태 값은 `in_progress | completed`다.
 
+레슨 진행 index는 DB 단조 증가 정책을 따른다. `learner_lesson_progress` upsert는 기존 값과 요청 값의 `MAX`만 저장하고 `completed` 상태를 `in_progress`로 되돌리지 않는다. 더 낮은 index를 저장한 stale 요청은 현재 index를 포함한 명시적 결과를 반환하며, 같은 index 재저장은 멱등 성공으로 처리한다.
+
 AI 피드백 attempt 상태 값은 `pending | succeeded | failed | expired`다. `pending`과 `succeeded`만 완료 한도 slot을 점유하고, 같은 학습자·레슨·스텝에는 `pending` row를 하나만 허용한다. 같은 범위의 `idempotency_key`는 유일하며 `succeeded` 재요청은 저장된 결과를 재사용한다. provider 실패는 즉시 `failed`, TTL을 넘긴 미완료 예약은 다음 예약 transaction에서 `expired`로 전이해 slot을 반환한다.
 
 ## 운영 설정 테이블

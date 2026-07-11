@@ -21,6 +21,7 @@ import type {
   CompleteLessonRecord,
   LearningRepository,
   LessonProgressRecord,
+  SaveLessonProgressResult,
   SaveStepAnswerCommand,
 } from "@/modules/learning/application/ports/learning.repository"
 import type { LearningAnswer } from "@/modules/learning/domain/learning.dto"
@@ -132,6 +133,74 @@ describe("학습 서비스", () => {
         kind: "invalid-request",
         lessonId,
         reason: "step-progress-incomplete",
+      },
+      kind: "err",
+    })
+  })
+
+  it("저장된 index와 같거나 정확히 1 큰 순차 진행 요청을 허용한다", async () => {
+    const service = createService({
+      initialAnswers: new Map<string, LearningAnswer>([
+        ["l1-s1", { kind: "lesson-started" }],
+      ]),
+      initialProgress: {
+        currentStepIndex: 0,
+        lessonId,
+        status: "in_progress",
+        userId: learnerId,
+      },
+    })
+
+    await expect(
+      service.saveLessonProgress({
+        currentStepIndex: 1,
+        lessonId,
+        occurredAt,
+        userId: learnerId,
+      })
+    ).resolves.toEqual({ kind: "ok", value: { saved: true } })
+    await expect(
+      service.saveLessonProgress({
+        currentStepIndex: 1,
+        lessonId,
+        occurredAt,
+        userId: learnerId,
+      })
+    ).resolves.toEqual({ kind: "ok", value: { saved: true } })
+  })
+
+  it("검증 뒤 저장 시점에 더 높은 index가 있으면 stale conflict를 반환한다", async () => {
+    const service = createService({
+      initialAnswers: new Map<string, LearningAnswer>([
+        ["l1-s1", { kind: "lesson-started" }],
+      ]),
+      initialProgress: {
+        currentStepIndex: 0,
+        lessonId,
+        status: "in_progress",
+        userId: learnerId,
+      },
+      progressSaveResult: {
+        currentStepIndex: 2,
+        kind: "stale",
+        status: "in_progress",
+      },
+    })
+
+    await expect(
+      service.saveLessonProgress({
+        currentStepIndex: 1,
+        lessonId,
+        occurredAt,
+        userId: learnerId,
+      })
+    ).resolves.toEqual({
+      error: {
+        currentStepIndex: 2,
+        kind: "progress-conflict",
+        lessonId,
+        reason: "stale-progress",
+        requestedStepIndex: 1,
       },
       kind: "err",
     })
@@ -435,11 +504,13 @@ function createService({
   completedLessons = [],
   initialAnswers = new Map(),
   initialProgress = null,
+  progressSaveResult,
   savedAnswers = [],
 }: {
   readonly completedLessons?: CompleteLessonRecord[]
   readonly initialAnswers?: ReadonlyMap<string, LearningAnswer>
   readonly initialProgress?: LessonProgressRecord | null
+  readonly progressSaveResult?: SaveLessonProgressResult
   readonly savedAnswers?: SaveStepAnswerCommand[]
 } = {}): LearningService {
   const answers = new Map(initialAnswers)
@@ -472,6 +543,13 @@ function createService({
         status: "in_progress",
         userId: command.userId,
       }
+      return (
+        progressSaveResult ?? {
+          currentStepIndex: command.currentStepIndex,
+          kind: "saved",
+          status: "in_progress",
+        }
+      )
     },
     async saveStepAnswer(command) {
       savedAnswers.push(command)
