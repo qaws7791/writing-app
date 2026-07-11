@@ -135,12 +135,11 @@ export function HomePage({
             {inProgressItems.length > 0 ? (
               <CourseCardList
                 courses={inProgressItems}
-                renderCard={(course, index, variant) => (
+                renderCard={(course, index) => (
                   <ContinueCourseCard
                     course={course}
                     key={course.id}
                     priority={index === 0}
-                    variant={variant}
                   />
                 )}
               />
@@ -198,12 +197,11 @@ function CompletedCoursesPanel({
   return (
     <CourseCardList
       courses={state.courses}
-      renderCard={(course, index, variant) => (
+      renderCard={(course, index) => (
         <CompletedCourseCard
           course={course}
           key={course.id}
           priority={index === 0}
-          variant={variant}
         />
       )}
     />
@@ -215,22 +213,13 @@ function CourseCardList({
   renderCard,
 }: {
   readonly courses: readonly ProgressCourse[]
-  readonly renderCard: (
-    course: ProgressCourse,
-    index: number,
-    variant: "desktop" | "mobile"
-  ) => ReactNode
+  readonly renderCard: (course: ProgressCourse, index: number) => ReactNode
 }) {
   return (
     <div className="flex flex-col gap-4">
       {courses.map((course, index) => (
         <div className="w-full min-w-0" key={course.id}>
-          <div className="w-full lg:hidden *:w-full *:max-w-none">
-            {renderCard(course, index, "mobile")}
-          </div>
-          <div className="hidden w-full lg:block">
-            {renderCard(course, index, "desktop")}
-          </div>
+          {renderCard(course, index)}
         </div>
       ))}
     </div>
@@ -242,54 +231,23 @@ function CompletedCourseCardSkeletonList() {
     <div className="flex flex-col gap-4">
       {["mobile-1", "mobile-2", "mobile-3"].map((key) => (
         <div className="w-full min-w-0" key={key}>
-          <div className="w-full lg:hidden *:w-full *:max-w-none">
-            <CompletedCourseCardSkeleton variant="mobile" />
-          </div>
-          <div className="hidden w-full lg:block">
-            <CompletedCourseCardSkeleton variant="desktop" />
-          </div>
+          <CompletedCourseCardSkeleton />
         </div>
       ))}
     </div>
   )
 }
 
-function CompletedCourseCardSkeleton({
-  variant,
-}: {
-  readonly variant: "desktop" | "mobile"
-}) {
-  const isDesktop = variant === "desktop"
-
+function CompletedCourseCardSkeleton() {
   return (
     <Surface
       variant="panel"
       size="none"
-      className={
-        isDesktop
-          ? "flex overflow-hidden rounded-[24px]"
-          : "flex w-80 shrink-0 flex-col overflow-hidden rounded-[28px] sm:w-[22rem]"
-      }
+      className="flex w-full flex-col overflow-hidden rounded-[28px] lg:flex-row lg:rounded-[24px]"
     >
-      <div
-        className={
-          isDesktop
-            ? "h-28 w-44 shrink-0 animate-pulse bg-charcoal/10"
-            : "h-36 w-full animate-pulse bg-charcoal/10"
-        }
-      />
-      <div
-        className={
-          isDesktop ? "flex flex-1 items-center px-5 py-4" : "px-6 py-5"
-        }
-      >
-        <div
-          className={
-            isDesktop
-              ? "h-5 w-3/5 animate-pulse rounded-full bg-charcoal/10"
-              : "h-6 w-4/5 animate-pulse rounded-full bg-charcoal/10"
-          }
-        />
+      <div className="h-36 w-full animate-pulse bg-charcoal/10 lg:h-28 lg:w-44 lg:shrink-0" />
+      <div className="px-6 py-5 lg:flex lg:flex-1 lg:items-center lg:px-5 lg:py-4">
+        <div className="h-6 w-4/5 animate-pulse rounded-full bg-charcoal/10 lg:h-5 lg:w-3/5" />
       </div>
     </Surface>
   )
@@ -328,13 +286,11 @@ function StartCourseCta() {
 type ContinueCourseCardProps = {
   readonly course: ProgressCourse
   readonly priority?: boolean
-  readonly variant: "desktop" | "mobile"
 }
 
 function ContinueCourseCard({
   course,
   priority = false,
-  variant,
 }: ContinueCourseCardProps) {
   const completedLessonCount = course.lessons.filter(
     (lesson) => lesson.status === "completed"
@@ -342,80 +298,42 @@ function ContinueCourseCard({
   const totalLessonCount = course.lessons.length
   const progressPercent = clampProgressPercent(course.progressPercent)
   const nextLessons = course.nextLessons.slice(0, 2)
-  const isDesktop = variant === "desktop"
   const courseHref = `/app/courses/${course.id}`
 
   return (
     <Surface
       variant="panel"
       size="none"
-      className={
-        isDesktop
-          ? "overflow-hidden rounded-[24px] select-none"
-          : "flex w-80 shrink-0 flex-col overflow-hidden rounded-[28px] select-none sm:w-[22rem]"
-      }
+      className="flex w-full min-w-0 flex-col overflow-hidden rounded-[28px] select-none lg:rounded-[24px]"
     >
-      {isDesktop ? (
-        <Link className="flex cursor-pointer text-left" href={courseHref}>
-          <div className="relative min-h-28 h-28 w-44 shrink-0 overflow-hidden">
-            <Image
-              alt={course.title}
-              className="object-cover pointer-events-none"
-              draggable={false}
-              fill
-              priority={priority}
-              sizes="176px"
-              src={createCourseImageUrl(course.visualKey)}
-            />
-          </div>
-          <div className="flex-1 min-w-0 px-5 py-4">
-            <ContinueCourseSummary
-              completedLessonCount={completedLessonCount}
-              course={course}
-              progressPercent={progressPercent}
-              totalLessonCount={totalLessonCount}
-              variant={variant}
-            />
-          </div>
-        </Link>
-      ) : (
-        <Link className="w-full cursor-pointer text-left" href={courseHref}>
-          <div className="relative h-36 w-full overflow-hidden">
-            <Image
-              alt={course.title}
-              className="object-cover pointer-events-none"
-              draggable={false}
-              fill
-              priority={priority}
-              sizes="(min-width: 640px) 22rem, 20rem"
-              src={createCourseImageUrl(course.visualKey)}
-            />
-          </div>
-          <div className="px-6 pt-5 pb-4">
-            <ContinueCourseSummary
-              completedLessonCount={completedLessonCount}
-              course={course}
-              progressPercent={progressPercent}
-              totalLessonCount={totalLessonCount}
-              variant={variant}
-            />
-          </div>
-        </Link>
-      )}
-      <div
-        className={
-          isDesktop
-            ? "px-3 py-3 flex flex-col gap-0.5"
-            : "px-3 pb-4 flex flex-col gap-1"
-        }
+      <Link
+        className="flex w-full cursor-pointer flex-col text-left lg:flex-row"
+        href={courseHref}
       >
+        <div className="relative h-36 w-full shrink-0 overflow-hidden lg:h-28 lg:min-h-28 lg:w-44">
+          <Image
+            alt={course.title}
+            className="object-cover pointer-events-none"
+            draggable={false}
+            fill
+            priority={priority}
+            sizes="(min-width: 1024px) 176px, 100vw"
+            src={createCourseImageUrl(course.visualKey)}
+          />
+        </div>
+        <div className="px-6 pt-5 pb-4 lg:min-w-0 lg:flex-1 lg:px-5 lg:py-4">
+          <ContinueCourseSummary
+            completedLessonCount={completedLessonCount}
+            course={course}
+            progressPercent={progressPercent}
+            totalLessonCount={totalLessonCount}
+          />
+        </div>
+      </Link>
+      <div className="flex flex-col gap-1 px-3 pb-4 lg:gap-0.5 lg:py-3">
         {nextLessons.length > 0 ? (
           nextLessons.map((lesson) => (
-            <NextLessonLink
-              isDesktop={isDesktop}
-              key={lesson.id}
-              lesson={lesson}
-            />
+            <NextLessonLink key={lesson.id} lesson={lesson} />
           ))
         ) : (
           <div className="px-4 py-3 text-label-md font-bold text-muted-foreground">
@@ -432,22 +350,16 @@ function ContinueCourseSummary({
   course,
   progressPercent,
   totalLessonCount,
-  variant,
 }: {
   readonly completedLessonCount: number
   readonly course: ProgressCourse
   readonly progressPercent: number
   readonly totalLessonCount: number
-  readonly variant: "desktop" | "mobile"
 }) {
   return (
     <>
       <p
-        className={
-          variant === "desktop"
-            ? "mb-3 text-body-md font-bold"
-            : "mb-3 text-title-md font-bold"
-        }
+        className="mb-3 text-title-md font-bold lg:text-body-md"
         style={{
           display: "-webkit-box",
           overflow: "hidden",
@@ -472,48 +384,20 @@ function ContinueCourseSummary({
   )
 }
 
-function NextLessonLink({
-  isDesktop,
-  lesson,
-}: {
-  readonly isDesktop: boolean
-  readonly lesson: ProgressNextLesson
-}) {
+function NextLessonLink({ lesson }: { readonly lesson: ProgressNextLesson }) {
   return (
     <Link
-      className={
-        isDesktop
-          ? "flex items-center gap-3 rounded-2xl px-3 py-3 text-left hover:bg-surface-hover"
-          : "flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left  hover:bg-surface-hover"
-      }
+      className="flex items-center gap-4 rounded-2xl px-4 py-3.5 text-left hover:bg-surface-hover lg:gap-3 lg:px-3 lg:py-3"
       href={`/app/lesson?lesson_id=${encodeURIComponent(lesson.id)}`}
     >
-      <span
-        className={
-          isDesktop
-            ? "flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-            : "flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground"
-        }
-      >
-        <PlayIcon fill="currentColor" size={isDesktop ? 12 : 14} />
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground lg:size-8">
+        <PlayIcon className="size-3.5 lg:size-3" fill="currentColor" />
       </span>
       <span className="flex-1 min-w-0">
-        <span
-          className={
-            isDesktop
-              ? "block truncate text-body-sm font-bold"
-              : "block truncate text-body-md font-bold"
-          }
-        >
+        <span className="block truncate text-body-md font-bold lg:text-body-sm">
           {lesson.title}
         </span>
-        <span
-          className={
-            isDesktop
-              ? "mt-0.5 block text-label-sm font-bold text-muted-foreground"
-              : "mt-1 block text-label-sm font-bold text-muted-foreground"
-          }
-        >
+        <span className="mt-1 block text-label-sm font-bold text-muted-foreground lg:mt-0.5">
           {lesson.estimatedMinutes}분
         </span>
       </span>

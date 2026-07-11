@@ -137,16 +137,23 @@ describe("홈 화면", () => {
     )
 
     expect(screen.getByRole("tab", { name: "진행중" })).toBeInTheDocument()
-    expect(screen.getAllByText("글쓰기 첫걸음 30일")).toHaveLength(2)
-    expect(screen.getAllByText("1/3")).toHaveLength(2)
-    expect(screen.getAllByText("짧게 쓰기")).toHaveLength(2)
+    expect(screen.getAllByText("글쓰기 첫걸음 30일")).toHaveLength(1)
+    expect(screen.getAllByText("1/3")).toHaveLength(1)
+    expect(screen.getAllByText("짧게 쓰기")).toHaveLength(1)
+    expect(
+      screen.getAllByRole("img", { name: "글쓰기 첫걸음 30일" })
+    ).toHaveLength(1)
+    expect(
+      screen.getByRole("img", { name: "글쓰기 첫걸음 30일" })
+    ).toHaveAttribute("sizes", "(min-width: 1024px) 176px, 100vw")
 
     expect(
-      firstElement(screen.getAllByRole("link", { name: /글쓰기 첫걸음 30일/ }))
+      screen.getByRole("link", { name: /글쓰기 첫걸음 30일/ })
     ).toHaveAttribute("href", "/app/courses/c1")
-    expect(
-      firstElement(screen.getAllByRole("link", { name: /짧게 쓰기/ }))
-    ).toHaveAttribute("href", "/app/lesson?lesson_id=l2")
+    expect(screen.getByRole("link", { name: /짧게 쓰기/ })).toHaveAttribute(
+      "href",
+      "/app/lesson?lesson_id=l2"
+    )
   })
 
   it("완료 탭에서 완료 코스 목록을 불러온다", async () => {
@@ -170,7 +177,7 @@ describe("홈 화면", () => {
     await user.click(screen.getByRole("tab", { name: "완료" }))
 
     expect(getProgress).toHaveBeenCalledWith({ status: "completed" })
-    expect(await screen.findAllByText("완료한 코스")).toHaveLength(2)
+    expect(await screen.findAllByText("완료한 코스")).toHaveLength(1)
     expect(
       screen.queryByRole("heading", {
         name: /새로운 코스를\s*선택해 보세요/,
@@ -195,14 +202,4 @@ function createApi({
     saveLessonAnswer: vi.fn(),
     saveLessonProgress: vi.fn(),
   }
-}
-
-function firstElement<TElement>(elements: readonly TElement[]): TElement {
-  const element = elements[0]
-
-  if (element === undefined) {
-    throw new Error("첫 번째 요소를 찾지 못했습니다.")
-  }
-
-  return element
 }
