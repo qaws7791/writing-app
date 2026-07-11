@@ -113,6 +113,8 @@ bun run --filter=@workspace/web test
 
 작업 공간 shell 테스트는 숨겨졌던 탭이 다시 보일 때만 활성 문서 version을 재확인하는지 검증한다. 동기화 Module 테스트는 재구독 확인에서 더 큰 서버 version을 받으면 누락 update를 HTTP로 가져와 문서에 적용하는지 확인한다.
 
+작업 공간 동기화 통합 테스트는 일시적 HTTP 저장 실패 뒤 다른 문서를 거쳐 돌아와도 로컬 변경과 transaction ID·payload를 보존해 재시도하는지 확인한다. 이전 문서의 늦은 version update가 현재 문서에 적용되지 않고 원래 문서 cache에서만 복구되는지도 검증한다.
+
 서버 operation coordinator 테스트는 같은 문서 작업의 순서, 다른 문서의 격리와 하위 문서 묶음의 선예약을 검증한다. Route 통합 테스트는 HTTP transaction 저장이 확정되기 전에 같은 문서의 Markdown 내보내기가 실행되지 않는지 확인한다.
 
 자료 문서 조회 통합 테스트는 활성 문서 응답과 저장소 메타데이터 조회에 Markdown이 포함되지 않고, 같은 문서를 휴지통으로 이동한 뒤에는 읽기 전용 durable Markdown이 반환되는지 검증한다.

@@ -3,6 +3,7 @@ import { applyUpdate, Doc, mergeUpdates } from "yjs"
 
 import { createResourceWorkspaceSync } from "@/features/resources/resource-workspace-sync"
 import type {
+  AdminResourceDocumentTransactionInput,
   AdminResourceDocumentRealtimeEvent,
   AdminResourceDocumentSync,
 } from "@/lib/api/admin-api"
@@ -202,6 +203,167 @@ describe("자료실 작업 공간 HTTP 동기화", () => {
     expect(getResourceDocumentSync).toHaveBeenCalledWith("document-1", 1)
 
     lease.release()
+    sync.dispose()
+  })
+
+  it("저장 실패 뒤 문서를 이동했다 돌아와도 같은 transaction으로 재시도한다", async () => {
+    const snapshot = expectSnapshot("초기 본문")
+    const transactions: AdminResourceDocumentTransactionInput[] = []
+    const states: string[] = []
+    const saveResourceDocumentTransaction = vi.fn(
+      async (
+        _documentId: string,
+        transaction: AdminResourceDocumentTransactionInput
+      ) => {
+        transactions.push(transaction)
+        if (transactions.length === 1) {
+          return {
+            error: {
+              code: "contract-error" as const,
+              message: "일시적 저장 실패",
+              status: 503,
+            },
+            status: "error" as const,
+          }
+        }
+        return {
+          status: "ok" as const,
+          value: {
+            contentRevision: 1,
+            kind: "accepted" as const,
+            stateVersion: 1,
+            transactionId: transaction.transactionId,
+          },
+        }
+      }
+    )
+    const sync = createResourceWorkspaceSync({
+      api: {
+        getResourceDocumentSnapshot: vi.fn(async () => ({
+          status: "ok" as const,
+          value: { kind: "snapshot" as const, snapshot, stateVersion: 0 },
+        })),
+        getResourceDocumentSync: vi.fn(),
+        saveResourceDocumentTransaction,
+      },
+      realtime: createRealtimeFake(),
+    })
+    const firstEditor = createResourceDocumentEditor()
+    const firstLease = sync.attachDocument({
+      documentId: "document-1",
+      editor: firstEditor,
+    })
+    firstLease.subscribe((state) => states.push(state.kind))
+    await vi.waitFor(() => expect(firstEditor.isEditable()).toBe(true))
+
+    replaceResourceDocumentMarkdown(firstEditor, "재시도할 로컬 본문")
+    await vi.advanceTimersByTimeAsync(500)
+    await vi.waitFor(() => expect(states.at(-1)).toBe("pending-offline"))
+    firstLease.release()
+
+    const otherEditor = createResourceDocumentEditor()
+    const otherLease = sync.attachDocument({
+      documentId: "document-2",
+      editor: otherEditor,
+    })
+    await vi.waitFor(() => expect(otherEditor.isEditable()).toBe(true))
+    otherLease.release()
+
+    const restoredEditor = createResourceDocumentEditor()
+    const restoredLease = sync.attachDocument({
+      documentId: "document-1",
+      editor: restoredEditor,
+    })
+    restoredLease.subscribe((state) => states.push(state.kind))
+    await vi.waitFor(() => {
+      expect(readResourceDocumentMarkdown(restoredEditor)).toMatchObject({
+        markdown: "재시도할 로컬 본문",
+      })
+    })
+
+    const firstTransaction = transactions[0]
+    await restoredLease.retry()
+    expect(transactions).toHaveLength(2)
+    expect(transactions[1]).toEqual(firstTransaction)
+    expect(states.at(-1)).toBe("synchronized")
+
+    restoredLease.release()
+    sync.dispose()
+  })
+
+  it("문서 전환 뒤 이전 문서의 늦은 update를 새 문서와 격리한다", async () => {
+    const firstSnapshot = expectSnapshot("첫 문서 본문")
+    const secondSnapshot = expectSnapshot("둘째 문서 본문")
+    const delayedUpdate = createUpdate(
+      firstSnapshot,
+      "늦게 도착한 첫 문서 본문"
+    )
+    const realtime = createRealtimeFake()
+    const getResourceDocumentSync = vi.fn(async () => ({
+      status: "ok" as const,
+      value: {
+        fromStateVersion: 0,
+        kind: "updates" as const,
+        stateVersion: 1,
+        updates: [delayedUpdate],
+      },
+    }))
+    const sync = createResourceWorkspaceSync({
+      api: {
+        getResourceDocumentSnapshot: vi.fn(async (documentId: string) => ({
+          status: "ok" as const,
+          value: {
+            kind: "snapshot" as const,
+            snapshot:
+              documentId === "document-1" ? firstSnapshot : secondSnapshot,
+            stateVersion: 0,
+          },
+        })),
+        getResourceDocumentSync,
+        saveResourceDocumentTransaction: vi.fn(),
+      },
+      realtime,
+    })
+    const firstEditor = createResourceDocumentEditor()
+    const firstLease = sync.attachDocument({
+      documentId: "document-1",
+      editor: firstEditor,
+    })
+    await vi.waitFor(() => expect(firstEditor.isEditable()).toBe(true))
+    firstLease.release()
+
+    const secondEditor = createResourceDocumentEditor()
+    const secondLease = sync.attachDocument({
+      documentId: "document-2",
+      editor: secondEditor,
+    })
+    await vi.waitFor(() => expect(secondEditor.isEditable()).toBe(true))
+    realtime.publish({
+      contentRevision: 1,
+      documentId: "document-1",
+      stateVersion: 1,
+      type: "resource-document-version-advanced",
+    })
+    await vi.waitFor(() => {
+      expect(getResourceDocumentSync).toHaveBeenCalledWith("document-1", 0)
+      expect(readResourceDocumentMarkdown(secondEditor)).toMatchObject({
+        markdown: "둘째 문서 본문",
+      })
+    })
+
+    secondLease.release()
+    const restoredEditor = createResourceDocumentEditor()
+    const restoredLease = sync.attachDocument({
+      documentId: "document-1",
+      editor: restoredEditor,
+    })
+    await vi.waitFor(() => {
+      expect(readResourceDocumentMarkdown(restoredEditor)).toMatchObject({
+        markdown: "늦게 도착한 첫 문서 본문",
+      })
+    })
+
+    restoredLease.release()
     sync.dispose()
   })
 
