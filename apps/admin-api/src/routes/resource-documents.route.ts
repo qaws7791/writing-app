@@ -27,6 +27,7 @@ import {
 } from "@/http/openapi"
 import { adminSessionRouteOptions } from "@/routes/admin-route-options"
 import { throwResourceLibraryRejection } from "@/routes/resource-library-errors"
+import type { ResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 
 const resourceDocumentParamsSchema = z.object({
   documentId: z.string().trim().min(1),
@@ -35,6 +36,7 @@ const resourceDocumentParamsSchema = z.object({
 export type ResourceDocumentsRouteDependencies = {
   readonly collaborationRooms: ResourceCollaborationRooms
   readonly documentService: ResourceDocumentUseCase
+  readonly documentOperations: ResourceDocumentOperationCoordinator
   readonly events: ResourceEventsPublisher
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
@@ -142,6 +144,7 @@ function createImportResourceDocumentRoute({
 
 function createExportResourceDocumentRoute({
   collaborationRooms,
+  documentOperations,
   documentService,
   sessionResolver,
 }: ResourceDocumentsRouteDependencies) {
@@ -163,15 +166,17 @@ function createExportResourceDocumentRoute({
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const params = context.req.valid("param")
-    const flushResult = await collaborationRooms.flushDocument(
-      toResourceDocumentId(params.documentId)
-    )
+    const result = await documentOperations.run(params.documentId, async () => {
+      const flushResult = await collaborationRooms.flushDocument(
+        toResourceDocumentId(params.documentId)
+      )
 
-    if (flushResult === "error") {
-      throw resourceCollaborationUnavailableAdminError()
-    }
+      if (flushResult === "error") {
+        throw resourceCollaborationUnavailableAdminError()
+      }
 
-    const result = await documentService.exportDocument(params)
+      return documentService.exportDocument(params)
+    })
 
     if (result.kind === "not-found") {
       throw notFoundAdminError()

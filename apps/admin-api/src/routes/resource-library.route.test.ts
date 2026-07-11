@@ -120,6 +120,64 @@ describe("어드민 API 자료실 트리 route", () => {
     })
   })
 
+  it("같은 문서의 transaction 저장이 끝난 뒤 Markdown을 내보낸다", async () => {
+    const saveGate = deferred<{
+      readonly contentRevision: number
+      readonly kind: "accepted"
+      readonly stateVersion: number
+      readonly transactionId: ReturnType<typeof toResourceDocumentTransactionId>
+    }>()
+    const saveTransaction = vi.fn(() => saveGate.promise)
+    const exportDocument = vi.fn(async () => ({
+      kind: "ok" as const,
+      value: { fileName: "운영 안내.md", markdown: "저장된 본문" },
+    }))
+    const app = createApp(
+      createTestAdminApiDependencies({
+        adminServices: {
+          resourceLibrary: {
+            documents: { exportDocument },
+            sync: { readSync: vi.fn(), saveTransaction },
+          },
+        },
+      })
+    )
+    const transactionResponse = app.request(
+      "/resources/documents/document-1/transactions",
+      {
+        body: JSON.stringify({
+          knownStateVersion: 0,
+          transactionId: "transaction-1",
+          updateBase64: "AQID",
+        }),
+        headers,
+        method: "POST",
+      }
+    )
+    await vi.waitFor(() => expect(saveTransaction).toHaveBeenCalledTimes(1))
+
+    const exportResponse = app.request(
+      "/resources/documents/document-1/export",
+      { headers }
+    )
+    await Promise.resolve()
+    expect(exportDocument).not.toHaveBeenCalled()
+
+    saveGate.resolve({
+      contentRevision: 1,
+      kind: "accepted",
+      stateVersion: 1,
+      transactionId: toResourceDocumentTransactionId("transaction-1"),
+    })
+    const [saved, exported] = await Promise.all([
+      transactionResponse,
+      exportResponse,
+    ])
+    expect(saved.status).toBe(200)
+    expect(exported.status).toBe(200)
+    expect(exportDocument).toHaveBeenCalledTimes(1)
+  })
+
   it("마지막 확인 version 뒤의 누락 update를 HTTP로 반환한다", async () => {
     const readSync = vi.fn(async () => ({
       fromStateVersion: 2,
@@ -667,4 +725,12 @@ function createDependencies() {
       },
     },
   })
+}
+
+function deferred<TValue>() {
+  let resolve: (value: TValue | PromiseLike<TValue>) => void = () => undefined
+  const promise = new Promise<TValue>((promiseResolve) => {
+    resolve = promiseResolve
+  })
+  return { promise, resolve }
 }

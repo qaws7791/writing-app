@@ -17,6 +17,7 @@ import { createDrizzleResourceDocumentSyncRepository } from "@workspace/core/res
 import { createDrizzleResourceSearchRepository } from "@workspace/core/resource-library/resource-search-drizzle.repository"
 import { createDrizzleResourceTreeRepository } from "@workspace/core/resource-library/resource-tree-drizzle.repository"
 import { createWritingAppDatabase } from "@workspace/db"
+import { createResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 import {
   createAppLogger,
   createRequestLogger,
@@ -49,6 +50,7 @@ const resourceDocumentRepository = createDrizzleResourceDocumentRepository(
 const resourceDocumentSyncService = createResourceDocumentSyncUseCase(
   createDrizzleResourceDocumentSyncRepository(database.db)
 )
+const resourceDocumentOperations = createResourceDocumentOperationCoordinator()
 const resourceCollaborationService = createResourceCollaborationUseCase(
   createDrizzleResourceCollaborationRepository(database.db)
 )
@@ -170,6 +172,7 @@ const app = createApp({
   requestLogger: createRequestLogger(logger),
   requestLoggingRuntime: defaultRequestLoggingRuntime,
   resourceCollaborationRooms,
+  resourceDocumentOperations,
   resourceEvents,
   sessionResolver,
 })

@@ -30,6 +30,7 @@ import {
 } from "@/http/openapi"
 import { adminSessionRouteOptions } from "@/routes/admin-route-options"
 import { throwResourceLibraryRejection } from "@/routes/resource-library-errors"
+import type { ResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 
 const resourceTreeQuerySchema = z.object({
   parentId: z
@@ -48,6 +49,7 @@ const resourceNodeParamsSchema = z.object({
 export type ResourceTreeRouteDependencies = {
   readonly collaborationRooms: ResourceCollaborationRooms
   readonly events: ResourceEventsWorkspace
+  readonly documentOperations: ResourceDocumentOperationCoordinator
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
   readonly treeService: ResourceTreeUseCase
@@ -343,6 +345,7 @@ function createRestoreResourceNodeRoute(
 function createResourceRevisionRoute({
   action,
   collaborationRooms,
+  documentOperations,
   description,
   events,
   method,
@@ -399,47 +402,49 @@ function createResourceRevisionRoute({
     }
 
     const documentIds = await treeService.getSubtreeDocumentIds(command.nodeId)
-    const lockResult = await collaborationRooms.lockDocuments(documentIds)
+    return documentOperations.runMany(documentIds, async () => {
+      const lockResult = await collaborationRooms.lockDocuments(documentIds)
 
-    if (lockResult.kind === "error") {
-      throw resourceCollaborationUnavailableAdminError()
-    }
+      if (lockResult.kind === "error") {
+        throw resourceCollaborationUnavailableAdminError()
+      }
 
-    let result: Awaited<ReturnType<ResourceTreeUseCase["trashNode"]>>
+      let result: Awaited<ReturnType<ResourceTreeUseCase["trashNode"]>>
 
-    try {
-      result = await treeService.trashNode(command)
-    } catch (error) {
-      collaborationRooms.release(lockResult.lock)
-      throw error
-    }
+      try {
+        result = await treeService.trashNode(command)
+      } catch (error) {
+        collaborationRooms.release(lockResult.lock)
+        throw error
+      }
 
-    if (result.kind !== "ok") {
-      collaborationRooms.release(lockResult.lock)
-      throwResourceLibraryRejection(result)
-    }
+      if (result.kind !== "ok") {
+        collaborationRooms.release(lockResult.lock)
+        throwResourceLibraryRejection(result)
+      }
 
-    publishTreeMutation(events, {
-      action: "trash",
-      ...result.value,
-      nodeId: command.nodeId,
-    })
-    for (const documentId of documentIds) {
-      events.publishDocumentInvalidated({
-        documentId,
-        reason: "archived",
-        type: "resource-document-invalidated",
-      })
-    }
-    const closedActiveRoomCount = collaborationRooms.close(lockResult.lock)
-
-    return context.json(
-      {
+      publishTreeMutation(events, {
+        action: "trash",
         ...result.value,
-        closedActiveRoomCount,
-      },
-      200
-    )
+        nodeId: command.nodeId,
+      })
+      for (const documentId of documentIds) {
+        events.publishDocumentInvalidated({
+          documentId,
+          reason: "archived",
+          type: "resource-document-invalidated",
+        })
+      }
+      const closedActiveRoomCount = collaborationRooms.close(lockResult.lock)
+
+      return context.json(
+        {
+          ...result.value,
+          closedActiveRoomCount,
+        },
+        200
+      )
+    })
   }
 
   return defineAdminRoute({ ...routeConfig, handler })

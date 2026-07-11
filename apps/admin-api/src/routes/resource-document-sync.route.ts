@@ -27,6 +27,7 @@ import {
   jsonResponse,
 } from "@/http/openapi"
 import { adminSessionRouteOptions } from "@/routes/admin-route-options"
+import type { ResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 
 const resourceDocumentSyncParamsSchema = z.object({
   documentId: z.string().trim().min(1),
@@ -34,6 +35,7 @@ const resourceDocumentSyncParamsSchema = z.object({
 
 export function createResourceDocumentSyncRoutes(input: {
   readonly events: Pick<ResourceEventsHub, "publishDocumentVersion">
+  readonly documentOperations: ResourceDocumentOperationCoordinator
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
   readonly syncService: ResourceDocumentSyncUseCase
@@ -45,6 +47,7 @@ export function createResourceDocumentSyncRoutes(input: {
 }
 
 type ResourceDocumentSyncRouteInput = {
+  readonly documentOperations: ResourceDocumentOperationCoordinator
   readonly events: Pick<ResourceEventsHub, "publishDocumentVersion">
   readonly now: () => Date
   readonly sessionResolver: AdminSessionResolver
@@ -86,14 +89,16 @@ function createSaveResourceDocumentTransactionRoute(
 
     if (update.byteLength > 512 * 1024) throw invalidAdminRequestError()
 
-    const result = await input.syncService.saveTransaction({
-      actorId: context.get("activeAdminSession").admin.id,
-      documentId: toResourceDocumentId(documentId),
-      knownStateVersion: body.knownStateVersion,
-      now: input.now(),
-      transactionId: toResourceDocumentTransactionId(body.transactionId),
-      update,
-    })
+    const result = await input.documentOperations.run(documentId, () =>
+      input.syncService.saveTransaction({
+        actorId: context.get("activeAdminSession").admin.id,
+        documentId: toResourceDocumentId(documentId),
+        knownStateVersion: body.knownStateVersion,
+        now: input.now(),
+        transactionId: toResourceDocumentTransactionId(body.transactionId),
+        update,
+      })
+    )
 
     if (result.kind === "not-found" || result.kind === "inactive") {
       throw notFoundAdminError()
@@ -146,11 +151,14 @@ function createReadResourceDocumentSyncRoute(
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const query = context.req.valid("query")
-    const result = await input.syncService.readSync({
-      afterStateVersion: query.afterStateVersion,
-      documentId: toResourceDocumentId(context.req.valid("param").documentId),
-      mode: query.mode,
-    })
+    const documentId = context.req.valid("param").documentId
+    const result = await input.documentOperations.run(documentId, () =>
+      input.syncService.readSync({
+        afterStateVersion: query.afterStateVersion,
+        documentId: toResourceDocumentId(documentId),
+        mode: query.mode,
+      })
+    )
 
     if (result.kind === "not-found" || result.kind === "inactive") {
       throw notFoundAdminError()

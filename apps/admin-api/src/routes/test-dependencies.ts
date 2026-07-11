@@ -5,6 +5,10 @@ import type {
 } from "@/auth/admin-session"
 import type { ResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
 import type { ResourceEventsWorkspace } from "@/collaboration/resource-events-hub"
+import {
+  createResourceDocumentOperationCoordinator,
+  type ResourceDocumentOperationCoordinator,
+} from "@/resource-library/resource-document-operation-coordinator"
 import { adminRoles } from "@workspace/core/admin"
 import { readBearerToken } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env"
@@ -30,6 +34,7 @@ type TestAdminApiDependencyOverrides = {
   readonly adminServices?: TestAdminApiServicesOverrides
   readonly now?: () => Date
   readonly resourceCollaborationRooms?: ResourceCollaborationRooms
+  readonly resourceDocumentOperations?: ResourceDocumentOperationCoordinator
   readonly resourceEvents?: ResourceEventsWorkspace
   readonly sessionResolver?: AdminSessionResolver
 }
@@ -104,6 +109,9 @@ export function createTestAdminApiDependencies(
     resourceCollaborationRooms:
       overrides.resourceCollaborationRooms ??
       createTestResourceCollaborationRooms(),
+    resourceDocumentOperations:
+      overrides.resourceDocumentOperations ??
+      createResourceDocumentOperationCoordinator(),
     resourceEvents: overrides.resourceEvents ?? {
       countActiveEditors: () => 0,
       publish() {},

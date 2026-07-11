@@ -11,6 +11,7 @@ import type { AdminSessionResolver } from "@/auth/admin-session"
 import type { ResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
 import type { ResourceEventsWorkspace } from "@/collaboration/resource-events-hub"
 import { createOpenApiDocument } from "@/http/openapi"
+import type { ResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 import { createAiChatRoutes } from "@/routes/ai-chat.route"
 import { createAnalyticsRoutes } from "@/routes/analytics.route"
 import { createCoursesRoutes } from "@/routes/courses.route"
@@ -72,6 +73,7 @@ export type AdminApiDependencies = {
   readonly requestLogger?: RequestLogger
   readonly requestLoggingRuntime?: RequestLoggingRuntime
   readonly resourceCollaborationRooms: ResourceCollaborationRooms
+  readonly resourceDocumentOperations: ResourceDocumentOperationCoordinator
   readonly resourceEvents: ResourceEventsWorkspace
   readonly sessionResolver: AdminSessionResolver
 }
@@ -116,6 +118,7 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
       ...createResourceTreeRoutes({
         now,
         collaborationRooms: dependencies.resourceCollaborationRooms,
+        documentOperations: dependencies.resourceDocumentOperations,
         events: dependencies.resourceEvents,
         sessionResolver: dependencies.sessionResolver,
         treeService: dependencies.adminServices.resourceLibrary.tree,
@@ -123,11 +126,13 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
       ...createResourceDocumentsRoutes({
         collaborationRooms: dependencies.resourceCollaborationRooms,
         documentService: dependencies.adminServices.resourceLibrary.documents,
+        documentOperations: dependencies.resourceDocumentOperations,
         events: dependencies.resourceEvents,
         now,
         sessionResolver: dependencies.sessionResolver,
       }),
       ...createResourceDocumentSyncRoutes({
+        documentOperations: dependencies.resourceDocumentOperations,
         events: dependencies.resourceEvents,
         now,
         sessionResolver: dependencies.sessionResolver,
