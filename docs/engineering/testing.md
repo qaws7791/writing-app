@@ -151,6 +151,7 @@ bun run --filter=@workspace/web test
 ## 프론트엔드 테스트 기준
 
 - 화면 텍스트와 접근성 role을 사용자 관점으로 조회한다.
+- admin production build 뒤 `check:resource-route-bundle`을 실행해 `/resources`와 `/resources/trash` 초기 chunk에 Lexical/Yjs가 없고 합산 gzip이 275,000 bytes 이하인지 검사한다. 문서 편집 chunk는 `[documentId]` route의 동적 경계 뒤에서만 내려받는다.
 - API는 포트 mock 또는 명시적 test double로 대체한다.
 - generated OpenAPI 타입은 `apps/web/src/lib/api/writing-app-api-contract.ts`에 격리하고 feature mapper는 이 transport contract 타입만 참조한다.
 - `apps/web` 아키텍처 테스트는 `openapi-fetch` dependency/import가 없고 자체 HTTP adapter를 유지하는지 확인한다.

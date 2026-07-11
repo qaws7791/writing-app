@@ -5,17 +5,24 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { ResourceWorkspace } from "@/features/resources/resource-workspace"
 import { readAdminApiBaseUrl } from "@/runtime-config"
 
-const { checkActiveDocumentMock, connectEventsMock } = vi.hoisted(() => ({
+const {
+  checkActiveDocumentMock,
+  connectEventsMock,
+  createWorkspaceSyncMock,
+  paramsMock,
+} = vi.hoisted(() => ({
   checkActiveDocumentMock: vi.fn(),
   connectEventsMock: vi.fn(() => ({
     disconnect: vi.fn(),
     subscribeDocument: vi.fn(),
     unsubscribeDocument: vi.fn(),
   })),
+  createWorkspaceSyncMock: vi.fn(),
+  paramsMock: vi.fn((): { readonly documentId?: string } => ({})),
 }))
 
 vi.mock("next/navigation", () => ({
-  useParams: () => ({}),
+  useParams: paramsMock,
   usePathname: () => "/resources",
   useSearchParams: () => new URLSearchParams(),
 }))
@@ -29,12 +36,7 @@ vi.mock("@/features/resources/resource-events-client", () => ({
 }))
 
 vi.mock("@/features/resources/resource-workspace-sync", () => ({
-  createResourceWorkspaceSync: () => ({
-    attachDocument: vi.fn(),
-    checkActiveDocument: checkActiveDocumentMock,
-    dispose: vi.fn(),
-    start: vi.fn(),
-  }),
+  createResourceWorkspaceSync: createWorkspaceSyncMock,
 }))
 
 vi.mock("@/features/resources/tree/resource-tree", () => ({
@@ -105,6 +107,14 @@ describe("자료실 반응형 shell 포커스", () => {
   beforeEach(() => {
     checkActiveDocumentMock.mockClear()
     connectEventsMock.mockClear()
+    createWorkspaceSyncMock.mockReset()
+    createWorkspaceSyncMock.mockReturnValue({
+      attachDocument: vi.fn(),
+      checkActiveDocument: checkActiveDocumentMock,
+      dispose: vi.fn(),
+      start: vi.fn(),
+    })
+    paramsMock.mockReturnValue({})
     vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
       return window.setTimeout(() => {
         callback(performance.now())
@@ -177,10 +187,20 @@ describe("자료실 반응형 shell 포커스", () => {
     expect(connectEventsMock).toHaveBeenCalledTimes(1)
   })
 
-  it("숨겨졌던 탭이 다시 보이면 활성 문서 version을 확인한다", async () => {
+  it("문서를 선택하지 않은 자료실 shell은 문서 동기화 모듈을 만들지 않는다", async () => {
     installMatchMedia(true)
     renderWorkspace()
+
     await screen.findByText("문서 영역")
+    expect(createWorkspaceSyncMock).not.toHaveBeenCalled()
+  })
+
+  it("숨겨졌던 탭이 다시 보이면 활성 문서 version을 확인한다", async () => {
+    installMatchMedia(true)
+    paramsMock.mockReturnValue({ documentId: "document-1" })
+    renderWorkspace()
+    await screen.findByText("문서 영역")
+    await waitFor(() => expect(createWorkspaceSyncMock).toHaveBeenCalledOnce())
 
     setDocumentVisibility("hidden")
     fireEvent(document, new Event("visibilitychange"))

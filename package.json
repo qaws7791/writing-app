@@ -17,6 +17,7 @@
     "check:document-drift": "bun scripts/check-document-drift.ts",
     "check:import-cycles": "bun scripts/check-import-cycles.ts",
     "check:localhost-literals": "bun scripts/check-localhost-literals.ts",
+    "check:resource-route-bundle": "bun scripts/check-resource-route-bundle.ts",
     "check:workspace-inventory": "bun scripts/check-workspace-inventory.ts",
     "dev": "turbo dev",
     "dev:admin": "bun run dev:admin:setup && turbo dev --filter=@workspace/admin --filter=@workspace/admin-api",

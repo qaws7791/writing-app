@@ -14,7 +14,7 @@ import type {
 import {
   connectResourceDocumentCollaboration,
   type ResourceDocumentCollaboration,
-} from "@workspace/resource-document"
+} from "@workspace/resource-document/resource-collaboration"
 
 export type ResourceWorkspaceDocumentSyncState =
   | { readonly kind: "error"; readonly message: string }

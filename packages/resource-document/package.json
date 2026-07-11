@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./resource-collaboration": "./src/resource-collaboration.ts",
     "./resource-horizontal-rule": "./src/resource-horizontal-rule-node.ts",
     "./resource-image": "./src/resource-image-node.ts",
     "./resource-markdown": "./src/resource-markdown.ts",

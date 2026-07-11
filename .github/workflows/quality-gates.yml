@@ -86,6 +86,7 @@ jobs:
           key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
       - run: bun install --frozen-lockfile
       - run: bun run build
+      - run: bun run check:resource-route-bundle
       - if: always()
         run: bun scripts/ci-workspace-inventory.ts build
 
