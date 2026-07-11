@@ -29,6 +29,7 @@ import { type LessonStepCheckedState } from "@/features/lessons/lesson-step-poli
 import type { LessonStep } from "@/features/lessons/lesson-types"
 
 export type LessonStepRendererProps = {
+  readonly learnerId: string
   readonly step: LessonStep
   readonly answerError?: null | string
   readonly checked?: LessonStepCheckedState | false
@@ -47,6 +48,7 @@ type LessonAnswerPayloadChange = {
 export function LessonStepRenderer({
   answerError,
   checked = false,
+  learnerId,
   onAiFeedbackRequest,
   onAnswerChange,
   onAnswerPayloadChange,
@@ -56,6 +58,7 @@ export function LessonStepRenderer({
     <LessonStepFrame answerError={answerError} stepId={step.id}>
       {renderStepContent(step, {
         checked,
+        learnerId,
         onAiFeedbackRequest,
         onAnswerChange,
         onAnswerPayloadChange,
@@ -66,6 +69,7 @@ export function LessonStepRenderer({
 
 type LessonStepContentHandlers = {
   readonly checked: LessonStepCheckedState | false
+  readonly learnerId: string
   readonly onAiFeedbackRequest: LessonStepRendererProps["onAiFeedbackRequest"]
   readonly onAnswerChange: LessonStepRendererProps["onAnswerChange"]
   readonly onAnswerPayloadChange: LessonStepRendererProps["onAnswerPayloadChange"]
@@ -234,17 +238,19 @@ function renderStepContent(
           draft={step.draft}
           goal={step.goal}
           guide={guide}
-          initialText={readLessonDraftText(step.id)}
+          initialText={readLessonDraftText(handlers.learnerId, step.id)}
           max={step.max}
           min={step.min || 20}
           onChange={(text) => {
-            writeLessonDraftText(step.id, text)
+            writeLessonDraftText(handlers.learnerId, step.id, text)
             emitAnswer(handlers, step.id, {
               text,
               type: "WRITE",
             })
           }}
-          onDraftSave={(text) => writeLessonDraftText(step.id, text)}
+          onDraftSave={(text) =>
+            writeLessonDraftText(handlers.learnerId, step.id, text)
+          }
           placeholder={placeholder}
           reference={step.reference}
           sample={step.sample}
@@ -254,7 +260,7 @@ function renderStepContent(
       )
     }
     case "AI_FEEDBACK": {
-      const draftText = readLessonDraftText(step.target)
+      const draftText = readLessonDraftText(handlers.learnerId, step.target)
 
       return (
         <AiFeedbackAnswer

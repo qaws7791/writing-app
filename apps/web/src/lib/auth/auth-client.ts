@@ -1,4 +1,5 @@
 import { createAuthClient } from "better-auth/react"
+import { clearLessonDraftsForUser } from "@workspace/ui/lib/lesson-draft-storage"
 
 import { resolveSafeNextPath } from "@/lib/auth/auth-navigation"
 import {
@@ -15,13 +16,19 @@ export function requestTestLogin(nextPath: string): void {
   getDefaultWebAuthClient().requestTestLogin(nextPath)
 }
 
-export async function requestLogout(callbackPath: string): Promise<string> {
-  return getDefaultWebAuthClient().requestLogout(callbackPath)
+export async function requestLogout(
+  callbackPath: string,
+  learnerId: string
+): Promise<string> {
+  return getDefaultWebAuthClient().requestLogout(callbackPath, learnerId)
 }
 
 export type WebAuthClient = {
   readonly requestGoogleLogin: (nextPath: string) => Promise<void>
-  readonly requestLogout: (callbackPath: string) => Promise<string>
+  readonly requestLogout: (
+    callbackPath: string,
+    learnerId: string
+  ) => Promise<string>
   readonly requestTestLogin: (nextPath: string) => void
 }
 
@@ -67,7 +74,7 @@ export function createWebAuthClient({
         )
       )
     },
-    async requestLogout(callbackPath) {
+    async requestLogout(callbackPath, learnerId) {
       const safeCallbackPath = resolveSafeNextPath(callbackPath)
       const response = await fetchImplementation(
         buildApiUrl(apiBaseUrl, "/api/auth/sign-out"),
@@ -81,6 +88,7 @@ export function createWebAuthClient({
         throw new Error("Failed to sign out")
       }
 
+      clearLessonDraftsForUser(learnerId)
       return safeCallbackPath
     },
   }

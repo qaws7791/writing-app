@@ -1,9 +1,10 @@
 import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import type { ComponentProps } from "react"
 import { describe, expect, it, vi } from "vitest"
 
 import type { CourseDetail } from "@/features/courses/course-types"
-import { LessonExperience } from "@/features/lessons/lesson-experience"
+import { LessonExperience as LessonExperienceView } from "@/features/lessons/lesson-experience"
 import type { Lesson } from "@/features/lessons/lesson-types"
 import { networkApiError, type ApiError } from "@/lib/api/api-error"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
@@ -14,6 +15,12 @@ import type {
   WritingAppApi,
 } from "@/lib/api/writing-app-api-port"
 import { createHttpNetworkError } from "@workspace/http-client"
+
+function LessonExperience(
+  props: Omit<ComponentProps<typeof LessonExperienceView>, "learnerId">
+) {
+  return <LessonExperienceView learnerId="learner-test" {...props} />
+}
 
 const push = vi.fn()
 
@@ -785,7 +792,7 @@ describe("레슨 경험", () => {
 
   it("AI 코칭 요청을 createAiFeedback으로 위임한다", async () => {
     localStorage.setItem(
-      "writing-app-draft-짧고 명확하게 쓴다",
+      "writing-app:lesson-draft:v2:learner-test:%EC%A7%A7%EA%B3%A0%20%EB%AA%85%ED%99%95%ED%95%98%EA%B2%8C%20%EC%93%B4%EB%8B%A4",
       "짧고 명확하게 쓴다"
     )
     const user = userEvent.setup()

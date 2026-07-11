@@ -103,10 +103,12 @@
 - production 응답에는 HSTS를 적용하고 `X-Powered-By` header를 비활성화한다.
 - CSP는 `frame-ancestors 'none'`으로 clickjacking을 차단하고 앱별 API origin만 `connect-src`에 추가한다.
 - 내부 이동 경로는 URL parser로 같은 origin의 절대 경로인지 확인하고 역슬래시, 외부 origin과 로그인 순환 경로를 거부한다.
-- 레슨 초안은 version이 포함된 localStorage key와 최대 길이를 사용한다. 저장소 접근 실패 시 메모리 값으로 후퇴하며 token이나 서버 응답 전체를 저장하지 않는다.
+- 레슨 초안은 `version + 학습자 ID + step ID` namespace의 localStorage key와 동일한 메모리 cache 경계를 사용한다. 로그아웃은 현재 학습자의 초안만 제거하고, 소유자를 확인할 수 없는 legacy key는 새 계정으로 승격하지 않고 폐기한다.
+- 레슨 초안 key와 값에는 token·이메일·서버 응답 전체를 저장하지 않는다. 초안은 최대 20,000자로 제한하고 저장소 접근 실패 시 현재 사용자 namespace의 메모리 값으로만 후퇴한다.
 
 ## 데이터 보존과 삭제
 
+- 브라우저 레슨 초안은 서버 보존 대상이 아니며 로그아웃 시 현재 학습자 namespace에서 삭제한다.
 - 사용자 삭제 요청은 Better Auth provider row를 직접 훼손하지 않는다.
 - 앱 소유 `learner_profiles.status`를 `deleted`로 전환한다.
 - 학습 진행, 답변, 피드백 row는 감사와 복구 판단을 위해 보존한다.

@@ -35,6 +35,7 @@ export function LessonActiveScreen({
   isSavingProgress,
   isReady,
   lesson,
+  learnerId,
   onAiFeedbackRequest,
   onAnswerChange,
   onAnswerPayloadChange,
@@ -56,6 +57,7 @@ export function LessonActiveScreen({
   readonly isSavingProgress: boolean
   readonly isReady: boolean
   readonly lesson: Lesson
+  readonly learnerId: string
   readonly onAiFeedbackRequest: (
     request: LessonAiFeedbackRequest
   ) => Promise<LessonAiFeedbackOutcome>
@@ -113,6 +115,7 @@ export function LessonActiveScreen({
         <LessonStepRenderer
           answerError={answerError}
           checked={checked}
+          learnerId={learnerId}
           onAiFeedbackRequest={onAiFeedbackRequest}
           onAnswerChange={onAnswerChange}
           onAnswerPayloadChange={onAnswerPayloadChange}

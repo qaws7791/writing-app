@@ -87,7 +87,7 @@ describe("프로필 화면", () => {
     expect(setTheme).toHaveBeenLastCalledWith("dark")
 
     await user.click(screen.getByRole("button", { name: "로그아웃" }))
-    expect(requestLogout).toHaveBeenLastCalledWith("/")
+    expect(requestLogout).toHaveBeenLastCalledWith("/", "user-1")
     expect(routerPush).toHaveBeenLastCalledWith("/")
   })
 })

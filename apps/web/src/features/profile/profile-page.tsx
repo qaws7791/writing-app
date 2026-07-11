@@ -57,7 +57,7 @@ export function ProfilePage({ profile }: ProfilePageProps) {
       <Button
         className="w-full"
         onClick={() => {
-          void requestLogout("/").then((path) => {
+          void requestLogout("/", profile.user.id).then((path) => {
             router.push(path)
           })
         }}

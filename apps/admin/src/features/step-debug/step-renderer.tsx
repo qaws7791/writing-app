@@ -18,6 +18,8 @@ import {
   writeLessonDraftText,
 } from "@workspace/ui/lib/lesson-draft-storage"
 
+const adminPreviewDraftNamespace = "admin-step-debug"
+
 import {
   createLessonStepAnswer,
   type LessonAiFeedbackOutcome,
@@ -234,17 +236,19 @@ function renderStepContent(
           draft={step.draft}
           goal={step.goal}
           guide={guide}
-          initialText={readLessonDraftText(step.id)}
+          initialText={readLessonDraftText(adminPreviewDraftNamespace, step.id)}
           max={step.max}
           min={step.min || 20}
           onChange={(text) => {
-            writeLessonDraftText(step.id, text)
+            writeLessonDraftText(adminPreviewDraftNamespace, step.id, text)
             emitAnswer(handlers, step.id, {
               text,
               type: "WRITE",
             })
           }}
-          onDraftSave={(text) => writeLessonDraftText(step.id, text)}
+          onDraftSave={(text) =>
+            writeLessonDraftText(adminPreviewDraftNamespace, step.id, text)
+          }
           placeholder={placeholder}
           reference={step.reference}
           sample={step.sample}
@@ -254,7 +258,10 @@ function renderStepContent(
       )
     }
     case "AI_FEEDBACK": {
-      const draftText = readLessonDraftText(step.target)
+      const draftText = readLessonDraftText(
+        adminPreviewDraftNamespace,
+        step.target
+      )
 
       return (
         <AiFeedbackAnswer

@@ -23,6 +23,7 @@ type LessonExperienceProps = {
     readonly currentStepIndex: number
   }
   readonly lesson: Lesson
+  readonly learnerId: string
 }
 
 export function LessonExperience(props: LessonExperienceProps) {
@@ -34,6 +35,7 @@ function LessonExperienceSession({
   courseDetail,
   initialProgress,
   lesson,
+  learnerId,
 }: LessonExperienceProps) {
   const router = useRouter()
   const contentRef = useRef<HTMLElement>(null)
@@ -89,6 +91,7 @@ function LessonExperienceSession({
         isSavingProgress={session.isSavingProgress}
         isReady={session.isReady}
         lesson={lesson}
+        learnerId={learnerId}
         onAiFeedbackRequest={session.requestAiFeedback}
         onAnswerChange={session.saveAnswer}
         onAnswerPayloadChange={session.setAnswerPayload}

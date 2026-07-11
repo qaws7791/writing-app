@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env"
+import {
+  readLessonDraftText,
+  writeLessonDraftText,
+} from "@workspace/ui/lib/lesson-draft-storage"
 
 import { createWebAuthClient } from "@/lib/auth/auth-client"
 import { readBrowserApiBaseUrl, type BrowserApiBaseUrl } from "@/runtime-config"
@@ -15,10 +19,11 @@ describe("auth client", () => {
       apiBaseUrl: readBrowserApiBaseUrl({}),
       fetchImplementation: fetch,
     })
+    writeLessonDraftText("learner-test", "step-1", "로그아웃할 초안")
 
-    await expect(authClient.requestLogout("/app/profile")).resolves.toBe(
-      "/app/profile"
-    )
+    await expect(
+      authClient.requestLogout("/app/profile", "learner-test")
+    ).resolves.toBe("/app/profile")
 
     expect(fetch).toHaveBeenCalledWith(
       `${localRuntimeDefaults.learnerApiBaseUrl}/api/auth/sign-out`,
@@ -27,6 +32,7 @@ describe("auth client", () => {
         method: "POST",
       }
     )
+    expect(readLessonDraftText("learner-test", "step-1")).toBe("")
   })
 
   it("로그아웃 후 이동 경로는 외부 URL을 허용하지 않는다", async () => {
@@ -35,9 +41,9 @@ describe("auth client", () => {
       fetchImplementation: vi.fn(async () => Response.json({ success: true })),
     })
 
-    await expect(authClient.requestLogout("https://example.com")).resolves.toBe(
-      "/app"
-    )
+    await expect(
+      authClient.requestLogout("https://example.com", "learner-test")
+    ).resolves.toBe("/app")
   })
 
   it("Google 로그인 요청은 Better Auth client factory에 API base URL을 주입한다", async () => {

@@ -63,10 +63,23 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
   }
 
   const lesson = lessonOutcome.value
-  const [courseDetailResult, progressResult] = await Promise.all([
-    api.getCourseDetail(lesson.courseId),
-    api.getProgress(),
-  ])
+  const [courseDetailResult, progressResult, profileResult] = await Promise.all(
+    [api.getCourseDetail(lesson.courseId), api.getProgress(), api.getProfile()]
+  )
+  const profileOutcome = toRouteApiOutcome(profileResult)
+
+  if (profileOutcome.status === "error") {
+    if (profileOutcome.failure.kind === "authentication") {
+      redirect(createLoginPagePath(nextPath))
+    }
+
+    return (
+      <AppRouteNotice
+        description={describeRouteApiFailure(profileOutcome.failure)}
+        title="학습자 정보를 확인할 수 없습니다."
+      />
+    )
+  }
   const courseDetail = readOptionalRouteApiValue(courseDetailResult)
   const progress = readOptionalRouteApiValue(progressResult)
   const initialProgress =
@@ -79,6 +92,7 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
       courseDetail={courseDetail}
       initialProgress={initialProgress}
       lesson={lesson}
+      learnerId={profileOutcome.value.user.id}
     />
   )
 }

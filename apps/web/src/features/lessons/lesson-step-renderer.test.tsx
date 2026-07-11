@@ -264,13 +264,18 @@ describe("레슨 스텝 렌더러 답변 저장", () => {
 
 describe("레슨 스텝 렌더러 AI 코칭", () => {
   it("AI 코칭 요청 중 로딩을 보여주고 결과와 다시 받기 버튼을 표시한다", async () => {
-    writeLessonDraftText("짧고 명확하게 쓴다", "짧고 명확하게 쓴다")
+    writeLessonDraftText(
+      "learner-test",
+      "짧고 명확하게 쓴다",
+      "짧고 명확하게 쓴다"
+    )
     const user = userEvent.setup()
     const feedback = createPendingFeedback()
     const onAiFeedbackRequest = vi.fn(() => feedback.promise)
 
     render(
       <LessonStepRenderer
+        learnerId="learner-test"
         onAiFeedbackRequest={onAiFeedbackRequest}
         step={aiFeedbackStep}
       />
@@ -324,6 +329,7 @@ describe("레슨 스텝 렌더러 AI 코칭", () => {
 
     render(
       <LessonStepRenderer
+        learnerId="learner-test"
         onAiFeedbackRequest={onAiFeedbackRequest}
         step={aiFeedbackStep}
       />
@@ -344,7 +350,13 @@ function renderAnswerableStep(
     readonly stepId: string
   }) => void
 ) {
-  render(<LessonStepRenderer onAnswerChange={onAnswerChange} step={step} />)
+  render(
+    <LessonStepRenderer
+      learnerId="learner-test"
+      onAnswerChange={onAnswerChange}
+      step={step}
+    />
+  )
 }
 
 const aiFeedbackStep: LessonStep = {
