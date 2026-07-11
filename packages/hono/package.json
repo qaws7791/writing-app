@@ -30,14 +30,14 @@
   },
   "peerDependencies": {
     "@hono/zod-openapi": "^1.4.0",
-    "hono": "^4.10.0",
+    "hono": "^4.12.25",
     "zod": "^4.2.0"
   },
   "devDependencies": {
     "@hono/zod-openapi": "^1.4.0",
     "@types/bun": "^1.3.10",
     "@workspace/config": "workspace:*",
-    "hono": "^4.10.0",
+    "hono": "^4.12.25",
     "typescript": "5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.0",

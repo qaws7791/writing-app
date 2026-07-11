@@ -19,7 +19,7 @@
     "@workspace/env": "workspace:*",
     "@workspace/hono": "workspace:*",
     "@workspace/logger": "workspace:*",
-    "hono": "^4.10.0",
+    "hono": "^4.12.25",
     "zod": "^4.2.0"
   },
   "devDependencies": {

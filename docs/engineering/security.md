@@ -100,6 +100,12 @@
 - provider 실패는 사용자 재시도 횟수를 소모하지 않는 오류로 처리한다.
 - 프롬프트와 구조화 출력 정책은 core AI feedback module에서 관리한다.
 - AI 요청 답안과 provider 구조화 출력의 문자열·배열 크기는 provider 호출 전후에 각각 검증한다.
+
+## 런타임 의존성 보안
+
+- 직접 런타임 경계는 Better Auth 1.6.13 이상, Hono 4.12.25 이상, Next 16.2.6 이상을 사용한다.
+- Hono는 HTTP 경계 전체에 같은 수정 버전이 적용되도록 root override로 전이 중복도 4.12.25 이상으로 고정한다.
+- `bun audit --production`에서 직접 런타임 advisory가 0건인지 확인한다. 개발 도구와 간접 provider 체인의 advisory는 직접 의존성 문제와 분리해 추적하며 무기한 ignore를 추가하지 않는다.
 - 관리자 AI 채팅은 관리자와 클라이언트 IP별 요청 횟수, 관리자별 일일 요청 횟수, 대화별 동시 stream을 제한한다.
 - 관리자 AI 채팅은 provider timeout, prompt history 길이, 출력 token과 byte 상한을 적용하고 브라우저 연결이 끊기면 provider 작업을 취소한다.
 - 취소되거나 상한을 초과한 관리자 AI 응답은 assistant 메시지로 저장하지 않는다.
