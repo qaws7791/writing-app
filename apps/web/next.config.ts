@@ -3,14 +3,9 @@ import { fileURLToPath } from "node:url"
 
 import type { NextConfig } from "next"
 import { createNextSecurityHeaders } from "@workspace/config/nextjs/security-headers"
-import { localRuntimeDefaults } from "@workspace/env"
 
 const appDirectory = dirname(fileURLToPath(import.meta.url))
 const development = process.env.NODE_ENV !== "production"
-const configuredLearnerApiOrigin = process.env.NEXT_PUBLIC_API_BASE_URL
-const learnerApiOrigin =
-  configuredLearnerApiOrigin ??
-  (development ? localRuntimeDefaults.learnerApiBaseUrl : undefined)
 
 const nextConfig: NextConfig = {
   async headers() {
@@ -18,13 +13,8 @@ const nextConfig: NextConfig = {
       {
         headers: [
           ...createNextSecurityHeaders({
-            connectSources:
-              learnerApiOrigin === undefined ? [] : [learnerApiOrigin],
             development,
-            imageSources: [
-              "https://lh3.googleusercontent.com",
-              "https://images.googleusercontent.com",
-            ],
+            includeContentSecurityPolicy: false,
           }),
         ],
         source: "/(.*)",

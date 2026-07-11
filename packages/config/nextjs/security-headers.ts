@@ -3,21 +3,81 @@ export type NextSecurityHeader = {
   readonly value: string
 }
 
+type ContentSecurityPolicyOptions = {
+  readonly allowHttpsImages?: boolean
+  readonly connectSources?: readonly string[]
+  readonly development?: boolean
+  readonly imageSources?: readonly string[]
+  readonly nonce?: string
+}
+
 export function createNextSecurityHeaders({
   allowHttpsImages = false,
   connectSources = [],
   development = false,
   imageSources = [],
+  includeContentSecurityPolicy = true,
+  reportOnly = false,
 }: {
   readonly allowHttpsImages?: boolean
   readonly connectSources?: readonly string[]
   readonly development?: boolean
   readonly imageSources?: readonly string[]
+  readonly includeContentSecurityPolicy?: boolean
+  readonly reportOnly?: boolean
 } = {}): readonly NextSecurityHeader[] {
-  const scriptSources = ["'self'", "'unsafe-inline'"]
+  const headers: NextSecurityHeader[] = []
+  if (includeContentSecurityPolicy) {
+    headers.push({
+      key: reportOnly
+        ? "Content-Security-Policy-Report-Only"
+        : "Content-Security-Policy",
+      value: createContentSecurityPolicy({
+        allowHttpsImages,
+        connectSources,
+        development,
+        imageSources,
+      }),
+    })
+  }
 
-  if (development) {
-    scriptSources.push("'unsafe-eval'")
+  headers.push(
+    {
+      key: "Permissions-Policy",
+      value: "camera=(), geolocation=(), microphone=()",
+    },
+    { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+    { key: "X-Content-Type-Options", value: "nosniff" },
+    { key: "X-Frame-Options", value: "DENY" }
+  )
+
+  if (!development) {
+    headers.push({
+      key: "Strict-Transport-Security",
+      value: "max-age=31536000; includeSubDomains",
+    })
+  }
+
+  return headers
+}
+
+export function createContentSecurityPolicy({
+  allowHttpsImages = false,
+  connectSources = [],
+  development = false,
+  imageSources = [],
+  nonce,
+}: ContentSecurityPolicyOptions = {}): string {
+  const scriptSources = ["'self'"]
+  if (nonce === undefined) {
+    if (development) {
+      scriptSources.push("'unsafe-inline'", "'unsafe-eval'")
+    }
+  } else {
+    scriptSources.push(`'nonce-${nonce}'`, "'strict-dynamic'")
+    if (development) {
+      scriptSources.push("'unsafe-eval'")
+    }
   }
 
   const directives = [
@@ -36,32 +96,17 @@ export function createNextSecurityHeaders({
     "media-src 'self'",
     "object-src 'none'",
     `script-src ${scriptSources.join(" ")}`,
+    "script-src-attr 'none'",
     "style-src 'self' 'unsafe-inline'",
     "worker-src 'self' blob:",
-  ]
-
-  const headers: NextSecurityHeader[] = [
-    {
-      key: "Content-Security-Policy",
-      value: directives.join("; "),
-    },
-    {
-      key: "Permissions-Policy",
-      value: "camera=(), geolocation=(), microphone=()",
-    },
-    { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-    { key: "X-Content-Type-Options", value: "nosniff" },
-    { key: "X-Frame-Options", value: "DENY" },
+    "report-uri /api/csp-report",
   ]
 
   if (!development) {
-    headers.push({
-      key: "Strict-Transport-Security",
-      value: "max-age=31536000; includeSubDomains",
-    })
+    directives.push("upgrade-insecure-requests")
   }
 
-  return headers
+  return directives.join("; ")
 }
 
 function normalizeSources(sources: readonly string[]): readonly string[] {

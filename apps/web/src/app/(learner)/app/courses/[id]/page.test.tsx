@@ -1,7 +1,9 @@
 import { render, screen } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import CourseDetailRoute from "@/app/(learner)/app/courses/[id]/page"
+import CourseDetailRoute, {
+  generateMetadata,
+} from "@/app/(learner)/app/courses/[id]/page"
 import type { CourseDetail } from "@/features/courses/course-types"
 import { networkApiError } from "@/lib/api/api-error"
 import { apiFailure, apiOk } from "@/lib/api/api-result"
@@ -106,6 +108,39 @@ describe("코스 상세 route", () => {
     expect(
       screen.getByRole("heading", { name: "글쓰기 첫걸음 30일" })
     ).toBeInTheDocument()
+  })
+
+  it("course 정보로 공유 metadata를 만들고 없는 course에는 canonical을 만들지 않는다", async () => {
+    vi.mocked(api.getCourseDetail).mockResolvedValueOnce(apiOk(course))
+
+    const metadata = await generateMetadata({
+      params: Promise.resolve({ id: "c1" }),
+    })
+
+    expect(metadata).toMatchObject({
+      alternates: { canonical: "/app/courses/c1" },
+      description: course.description,
+      openGraph: {
+        images: [
+          {
+            alt: course.title,
+            url: "/course-thumbnails/basic-sentence-writing.png",
+          },
+        ],
+        title: course.title,
+      },
+      title: course.title,
+    })
+
+    vi.mocked(api.getCourseDetail).mockResolvedValueOnce(
+      apiFailure(networkError())
+    )
+    const fallback = await generateMetadata({
+      params: Promise.resolve({ id: "missing" }),
+    })
+
+    expect(fallback.alternates).toBeUndefined()
+    expect(fallback.robots).toMatchObject({ follow: false, index: false })
   })
 
   it("코스 조회 실패를 fallback 콘텐츠로 숨기지 않는다", async () => {

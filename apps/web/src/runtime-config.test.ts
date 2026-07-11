@@ -7,6 +7,8 @@ import { buildApiUrl, readBrowserApiBaseUrl } from "@/runtime-config"
 import {
   readServerApiBaseUrl,
   readTestAuthEnabled,
+  readWebCspRuntimeConfig,
+  readWebOrigin,
 } from "@/runtime-config-server"
 
 describe("web runtime config", () => {
@@ -39,6 +41,33 @@ describe("web runtime config", () => {
         WEB_API_BASE_URL: "https://internal-api.example.test/",
       })
     ).toBe("https://internal-api.example.test")
+  })
+
+  it("공개 metadata origin은 production에서 명시적으로 요구한다", () => {
+    expect(readWebOrigin({})).toBe(localRuntimeDefaults.learnerWebOrigin)
+    expect(
+      readWebOrigin({
+        NODE_ENV: "production",
+        WEB_ORIGIN: "https://writing.example.test/path",
+      })
+    ).toBe("https://writing.example.test")
+    expect(() => readWebOrigin({ NODE_ENV: "production" })).toThrow(
+      "production web origin is required"
+    )
+  })
+
+  it("CSP runtime 설정은 공개 API origin과 report-only 상태를 함께 읽는다", () => {
+    expect(
+      readWebCspRuntimeConfig({
+        CSP_REPORT_ONLY: "true",
+        NEXT_PUBLIC_API_BASE_URL: "https://api.example.test/path",
+        NODE_ENV: "production",
+      })
+    ).toEqual({
+      apiOrigin: "https://api.example.test",
+      development: false,
+      reportOnly: true,
+    })
   })
 
   it("API path를 같은 규칙으로 조합한다", () => {

@@ -51,6 +51,7 @@
 | `adr/ADR-0003-lesson-ui-orchestration-boundary.md`        | 레슨 순수 UI와 앱 오케스트레이션 경계를 기록한다.                                                |
 | `adr/ADR-0004-resource-library-collaboration-boundary.md` | 자료실 Markdown 원본과 Yjs·트리 명령 책임을 기록하며 본문 transport는 ADR-0005가 대체한다.       |
 | `adr/ADR-0005-resource-library-http-transaction-sync.md`  | 자료실 HTTP transaction 동기화와 작업 공간 WebSocket 역할을 기록한다.                            |
+| `adr/ADR-0006-strict-content-security-policy.md`          | request nonce 기반 strict CSP와 report-only rollout 결정을 기록한다.                             |
 | `contracts/writing-app-api-openapi.json`                  | Writing App API의 OpenAPI 계약을 기계 판독 가능한 형식으로 제공한다.                             |
 
 ## 관리 기준

@@ -10,6 +10,7 @@ import {
   readLearnerWebOrigin,
 } from "@/runtime-config"
 import {
+  readAdminCspRuntimeConfig,
   readAdminWebOrigin,
   readServerAdminApiBaseUrl,
 } from "@/runtime-config-server"
@@ -46,6 +47,20 @@ describe("admin runtime config", () => {
         NODE_ENV: "production",
       })
     ).toBe("https://admin.example.test")
+  })
+
+  it("CSP runtime 설정은 공개 admin API와 report-only 상태를 함께 읽는다", () => {
+    expect(
+      readAdminCspRuntimeConfig({
+        CSP_REPORT_ONLY: "true",
+        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test/path",
+        NODE_ENV: "production",
+      })
+    ).toEqual({
+      apiOrigin: "https://admin-api.example.test",
+      development: false,
+      reportOnly: true,
+    })
   })
 
   it("어드민 API path를 같은 규칙으로 조합한다", () => {

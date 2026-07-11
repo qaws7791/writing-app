@@ -53,6 +53,11 @@
 - `/users`: 사용자 목록.
 - `/users/[id]`: 사용자 상세, 상태 변경, 삭제 요청 처리.
 - `/analytics`: 가입, 완료, 연속 학습일, 레슨별 완료율과 이탈률 분석.
+
+관리자 코스 썸네일 route는 계약의 `visualKey` 허용 목록만 처리한다. 정상 파일은 프로세스 수명 동안 읽기 Promise를 재사용하고 장기 immutable cache header를 반환하며, 허용되지 않은 이름·경로 탐색·배포 누락 파일은 모두 404로 응답한다.
+
+학습자 공개 랜딩은 Open Graph·Twitter 기본 metadata와 manifest를 제공하고 sitemap에는 인증 없이 접근 가능한 route만 포함한다. 코스 상세의 metadata와 본문은 React request cache로 같은 조회를 공유하며, 조회할 수 없는 코스에는 canonical을 만들지 않는다. 관리자 앱은 root metadata와 `robots.txt` 양쪽에서 전체 색인을 차단한다.
+
 - `/resources`: 지연 로딩 자료 트리, 검색, 새 폴더·문서, Markdown 가져오기와 선택 안내.
 - `/resources/[documentId]`: breadcrumb, 제목, 동기화 상태와 Lexical GFM 공동 편집기.
 - `/resources/trash`: 직접 휴지통으로 이동한 최상위 항목과 전체 하위 트리 읽기·복원.

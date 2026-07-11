@@ -157,6 +157,7 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 ## 프론트엔드 보안 header 설정
 
 - 웹 앱의 `NEXT_PUBLIC_API_BASE_URL`과 어드민 앱의 `NEXT_PUBLIC_ADMIN_API_BASE_URL` origin은 각 앱 CSP의 `connect-src`에 반영된다.
+- `CSP_REPORT_ONLY`는 기본 `false`다. staging 위반 수집 또는 enforcement 회귀 rollback에서만 `true`로 빌드하고, 정상화 뒤 `false`로 다시 배포한다.
 - production build는 브라우저 공개 API URL과 학습자 웹 origin이 비어 있을 때 localhost 기본값으로 후퇴하지 않고 실패한다.
 - production 빌드는 HSTS와 공통 보안 header를 적용하고 `X-Powered-By`를 노출하지 않는다.
 - API origin을 변경할 때 CORS·trusted origin과 프론트엔드 CSP가 같은 배포 구성을 가리키는지 함께 검증한다.
