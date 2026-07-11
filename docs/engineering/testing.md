@@ -81,6 +81,13 @@ bun run --filter=@workspace/resource-document test
 bun run --filter=@workspace/web test
 ```
 
+개발 감시 설정을 변경할 때는 실제 dev server를 실행해 다음 조건을 확인한다.
+
+- 앱과 API가 표준 포트에서 모두 기동한다.
+- workspace package source를 변경하면 이를 import하는 API 프로세스가 재시작한다.
+- 임시 변경을 되돌린 뒤에도 재시작하며 디버그 표식이 남지 않는다.
+- Bun이 import한 workspace 파일을 프로젝트 디렉터리 밖으로 판정하는 경고가 발생하지 않는다.
+
 ## 커버리지 기준
 
 - `bun run test:coverage`는 V8 coverage를 사용한다.

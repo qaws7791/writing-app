@@ -4,8 +4,11 @@
 
 ## 기준
 
-- 기준일: 2026-07-10
+- 기준일: 2026-07-11
 - 기준 파일:
+  - `package.json`
+  - `apps/admin-api/package.json`
+  - `apps/admin-api/src/dev-environment.ts`
   - `packages/env/src/parse-env.ts`
   - `packages/env/src/local-runtime-defaults.ts`
   - `apps/api/src/config/env.ts`
@@ -111,6 +114,12 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 | `ADMIN_SEED_RESET_PASSWORD` | `dev:admin:setup`에서만 `true`로 지정 | 기존 credential 비밀번호 재설정 |
 
 `bun --filter @workspace/admin-api seed:admin`을 직접 실행하면 `ADMIN_SEED_RESET_PASSWORD=true`를 명시하지 않는 한 기존 credential 비밀번호를 보존한다.
+
+## 어드민 로컬 개발 감시
+
+`bun run dev:admin`은 setup을 마친 뒤 Turbo로 어드민 웹과 어드민 API를 실행한다. 어드민 웹 내부 변경은 Next.js watcher가 처리하고, 어드민 API는 Bun watcher가 workspace source 변경을 감지해 프로세스를 재시작한다.
+
+어드민 API Bun watcher는 저장소 루트에서 실행해 `apps/admin-api`와 import한 `packages/*` source를 함께 감시한다. `.env`는 `apps/admin-api/.env`를 명시적으로 읽고 preload에서 상대 `DATABASE_URL`만 `apps/admin-api` 기준 절대 경로로 정규화한다. Bun 작업 디렉터리는 저장소 루트로 유지한다.
 
 ## 어드민 웹 설정
 
