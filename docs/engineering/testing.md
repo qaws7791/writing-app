@@ -115,6 +115,8 @@ bun run --filter=@workspace/web test
 
 작업 공간 동기화 통합 테스트는 일시적 HTTP 저장 실패 뒤 다른 문서를 거쳐 돌아와도 로컬 변경과 transaction ID·payload를 보존해 재시도하는지 확인한다. 이전 문서의 늦은 version update가 현재 문서에 적용되지 않고 원래 문서 cache에서만 복구되는지도 검증한다.
 
+자신의 version 알림이 저장 응답보다 먼저 도착하는 fixture는 같은 update를 pull해도 추가 저장을 만들지 않고 durable 응답 전까지 `saving`을 유지하는지 검증한다. update log 보존 구간이 없을 때 최신 snapshot fallback을 현재 Y.Doc에 적용하는 경로도 확인한다.
+
 서버 operation coordinator 테스트는 같은 문서 작업의 순서, 다른 문서의 격리와 하위 문서 묶음의 선예약을 검증한다. Route 통합 테스트는 HTTP transaction 저장이 확정되기 전에 같은 문서의 Markdown 내보내기가 실행되지 않는지 확인한다.
 
 자료 문서 조회 통합 테스트는 활성 문서 응답과 저장소 메타데이터 조회에 Markdown이 포함되지 않고, 같은 문서를 휴지통으로 이동한 뒤에는 읽기 전용 durable Markdown이 반환되는지 검증한다.

@@ -152,6 +152,61 @@ describe("자료실 작업 공간 HTTP 동기화", () => {
     sync.dispose()
   })
 
+  it("증분 구간이 정리되면 최신 snapshot으로 현재 문서를 복구한다", async () => {
+    const initialSnapshot = expectSnapshot("초기 본문")
+    const remoteUpdate = createUpdate(initialSnapshot, "snapshot 복구 본문")
+    const applied = applyResourceDocumentUpdate(initialSnapshot, remoteUpdate)
+    if (applied.status !== "valid") {
+      throw new Error("snapshot fallback fixture 생성 실패")
+    }
+    const getResourceDocumentSync = vi.fn(async () => ({
+      status: "ok" as const,
+      value: {
+        kind: "snapshot" as const,
+        snapshot: applied.snapshot,
+        stateVersion: 5,
+      },
+    }))
+    const realtime = createRealtimeFake()
+    const sync = createResourceWorkspaceSync({
+      api: {
+        getResourceDocumentSnapshot: vi.fn(async () => ({
+          status: "ok" as const,
+          value: {
+            kind: "snapshot" as const,
+            snapshot: initialSnapshot,
+            stateVersion: 0,
+          },
+        })),
+        getResourceDocumentSync,
+        saveResourceDocumentTransaction: vi.fn(),
+      },
+      realtime,
+    })
+    const editor = createResourceDocumentEditor()
+    const lease = sync.attachDocument({
+      documentId: "document-1",
+      editor,
+    })
+    await vi.waitFor(() => expect(editor.isEditable()).toBe(true))
+
+    realtime.publish({
+      contentRevision: 5,
+      documentId: "document-1",
+      stateVersion: 5,
+      type: "resource-document-version-advanced",
+    })
+    await vi.waitFor(() => {
+      expect(readResourceDocumentMarkdown(editor)).toMatchObject({
+        markdown: "snapshot 복구 본문",
+      })
+    })
+    expect(getResourceDocumentSync).toHaveBeenCalledWith("document-1", 0)
+
+    lease.release()
+    sync.dispose()
+  })
+
   it("탭 재활성화 때 현재 version을 다시 확인해 누락 update를 복구한다", async () => {
     const snapshot = expectSnapshot("초기 본문")
     const remoteUpdate = createUpdate(snapshot, "재활성화 뒤 본문")
@@ -201,6 +256,95 @@ describe("자료실 작업 공간 HTTP 동기화", () => {
       })
     })
     expect(getResourceDocumentSync).toHaveBeenCalledWith("document-1", 1)
+
+    lease.release()
+    sync.dispose()
+  })
+
+  it("자신의 version 알림이 저장 응답보다 먼저 와도 durable 응답 뒤에 동기화된다", async () => {
+    const snapshot = expectSnapshot("초기 본문")
+    const saveResponse = deferred<
+      AdminApiResult<{
+        readonly contentRevision: number
+        readonly kind: "accepted"
+        readonly stateVersion: number
+        readonly transactionId: string
+      }>
+    >()
+    let transaction: AdminResourceDocumentTransactionInput | undefined
+    const saveResourceDocumentTransaction = vi.fn(
+      (_documentId: string, input: AdminResourceDocumentTransactionInput) => {
+        transaction = input
+        return saveResponse.promise
+      }
+    )
+    const getResourceDocumentSync = vi.fn(async () => {
+      if (transaction === undefined) {
+        throw new Error("저장 중인 transaction이 없습니다.")
+      }
+      return {
+        status: "ok" as const,
+        value: {
+          fromStateVersion: 0,
+          kind: "updates" as const,
+          stateVersion: 1,
+          updates: [transaction.update],
+        },
+      }
+    })
+    const realtime = createRealtimeFake()
+    const sync = createResourceWorkspaceSync({
+      api: {
+        getResourceDocumentSnapshot: vi.fn(async () => ({
+          status: "ok" as const,
+          value: { kind: "snapshot" as const, snapshot, stateVersion: 0 },
+        })),
+        getResourceDocumentSync,
+        saveResourceDocumentTransaction,
+      },
+      realtime,
+    })
+    const editor = createResourceDocumentEditor()
+    const lease = sync.attachDocument({
+      documentId: "document-1",
+      editor,
+    })
+    const states: string[] = []
+    lease.subscribe((state) => states.push(state.kind))
+    await vi.waitFor(() => expect(editor.isEditable()).toBe(true))
+
+    replaceResourceDocumentMarkdown(editor, "로컬 본문")
+    await vi.advanceTimersByTimeAsync(500)
+    expect(saveResourceDocumentTransaction).toHaveBeenCalledTimes(1)
+
+    realtime.publish({
+      contentRevision: 1,
+      documentId: "document-1",
+      stateVersion: 1,
+      type: "resource-document-version-advanced",
+    })
+    await vi.waitFor(() => {
+      expect(getResourceDocumentSync).toHaveBeenCalledWith("document-1", 0)
+      expect(readResourceDocumentMarkdown(editor)).toMatchObject({
+        markdown: "로컬 본문",
+      })
+    })
+    expect(saveResourceDocumentTransaction).toHaveBeenCalledTimes(1)
+    expect(states.at(-1)).toBe("saving")
+
+    if (transaction === undefined) {
+      throw new Error("저장 중인 transaction이 없습니다.")
+    }
+    saveResponse.resolve({
+      status: "ok",
+      value: {
+        contentRevision: 1,
+        kind: "accepted",
+        stateVersion: 1,
+        transactionId: transaction.transactionId,
+      },
+    })
+    await vi.waitFor(() => expect(states.at(-1)).toBe("synchronized"))
 
     lease.release()
     sync.dispose()
