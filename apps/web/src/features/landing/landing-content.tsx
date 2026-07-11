@@ -1,5 +1,3 @@
-"use client"
-
 import type { ComponentType } from "react"
 
 import { SparklesIcon } from "@/features/landing/landing-icons"

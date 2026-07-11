@@ -1,24 +1,10 @@
 import { render, screen, within } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { LandingPage } from "@/features/landing/landing-page"
 
-const routerPush = vi.fn()
-
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({
-    push: routerPush,
-  }),
-}))
-
 describe("공개 랜딩 페이지", () => {
-  beforeEach(() => {
-    routerPush.mockClear()
-  })
-
-  it("현재 제품 랜딩의 브랜드, 섹션 순서, 주요 CTA를 렌더링한다", async () => {
-    const user = userEvent.setup()
+  it("현재 제품 랜딩의 브랜드, 섹션 순서, 주요 CTA를 렌더링한다", () => {
     const { container } = render(<LandingPage />)
 
     const getSection = (index: number) => {
@@ -36,7 +22,7 @@ describe("공개 랜딩 페이지", () => {
       /매일 한 조각,\s*단단해지는\s*학습/
     )
 
-    const primaryCtas = screen.getAllByRole("button", {
+    const primaryCtas = screen.getAllByRole("link", {
       name: "무료로 시작하기",
     })
     expect(primaryCtas).toHaveLength(2)
@@ -46,7 +32,7 @@ describe("공개 랜딩 페이지", () => {
       throw new Error("첫 번째 무료로 시작하기 버튼을 찾지 못했습니다.")
     }
 
-    const browseCourses = screen.getByRole("button", {
+    const browseCourses = screen.getByRole("link", {
       name: "코스 둘러보기",
     })
 
@@ -92,17 +78,16 @@ describe("공개 랜딩 페이지", () => {
       within(finalCta).getByRole("heading", { level: 2 })
     ).toHaveTextContent(/오늘의 첫 조각을\s*맞춰볼까요\?/)
 
-    await user.click(screen.getByRole("button", { name: "글결" }))
-    expect(routerPush).toHaveBeenLastCalledWith("/")
-
-    await user.click(screen.getByRole("button", { name: "시작하기" }))
-    expect(routerPush).toHaveBeenLastCalledWith("/app")
-
-    await user.click(primaryCta)
-    expect(routerPush).toHaveBeenLastCalledWith("/app")
-
-    await user.click(browseCourses)
-    expect(routerPush).toHaveBeenLastCalledWith("/app/courses")
+    expect(screen.getByRole("link", { name: "글결" })).toHaveAttribute(
+      "href",
+      "/"
+    )
+    expect(screen.getByRole("link", { name: "시작하기" })).toHaveAttribute(
+      "href",
+      "/app"
+    )
+    expect(primaryCta).toHaveAttribute("href", "/app")
+    expect(browseCourses).toHaveAttribute("href", "/app/courses")
   })
 
   it("현재 제품 랜딩 HTML과 다른 제품 전용 속성을 추가하지 않는다", () => {
@@ -126,4 +111,68 @@ describe("공개 랜딩 페이지", () => {
       screen.getByRole("img", { name: "글결 코스 대시보드 화면" })
     ).toBeInTheDocument()
   })
+
+  it("motion listener를 passive로 등록하고 unmount에서 정리한다", () => {
+    installReducedMotion(false)
+    const addEventListener = vi.spyOn(window, "addEventListener")
+    const removeEventListener = vi.spyOn(window, "removeEventListener")
+    addEventListener.mockClear()
+    removeEventListener.mockClear()
+    const { unmount } = render(<LandingPage />)
+
+    for (const eventName of ["pointermove", "resize", "scroll"]) {
+      const added = addEventListener.mock.calls.filter(
+        ([registeredName]) => registeredName === eventName
+      )
+      expect(added.length).toBeGreaterThan(0)
+      if (eventName !== "resize") {
+        expect(
+          added.every(
+            ([, , options]) =>
+              typeof options === "object" && options.passive === true
+          )
+        ).toBe(true)
+      }
+    }
+
+    unmount()
+
+    for (const eventName of ["pointermove", "resize", "scroll"]) {
+      expect(
+        removeEventListener.mock.calls.filter(
+          ([registeredName]) => registeredName === eventName
+        )
+      ).toHaveLength(
+        addEventListener.mock.calls.filter(
+          ([registeredName]) => registeredName === eventName
+        ).length
+      )
+    }
+  })
+
+  it("reduced motion에서는 pointer와 parallax listener를 등록하지 않는다", () => {
+    installReducedMotion(true)
+    const addEventListener = vi.spyOn(window, "addEventListener")
+    addEventListener.mockClear()
+    render(<LandingPage />)
+
+    expect(
+      addEventListener.mock.calls.filter(
+        ([registeredName]) => registeredName === "pointermove"
+      )
+    ).toHaveLength(0)
+  })
 })
+
+function installReducedMotion(matches: boolean) {
+  window.matchMedia = () => ({
+    addEventListener: vi.fn(),
+    addListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+    matches,
+    media: "(prefers-reduced-motion: reduce)",
+    onchange: null,
+    removeEventListener: vi.fn(),
+    removeListener: vi.fn(),
+  })
+}

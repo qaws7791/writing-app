@@ -1,6 +1,4 @@
-"use client"
-
-import { useRef, useState, type MouseEvent as ReactMouseEvent } from "react"
+import Link from "next/link"
 
 import {
   features,
@@ -14,78 +12,18 @@ import {
 } from "@/features/landing/landing-content"
 import { SparklesIcon } from "@/features/landing/landing-icons"
 import {
+  LandingHeroPreviewMotion,
+  LandingShowcaseMotion,
+  LandingStatsMotion,
   Reveal,
-  useCountUp,
-  useScrollProgress,
 } from "@/features/landing/landing-motion"
-import { Pebbles, PreviewFrame } from "@/features/landing/landing-primitives"
+import { Pebbles } from "@/features/landing/landing-primitives"
 import { ArrowRightIcon } from "@workspace/ui/components/icons"
-import { Button } from "@workspace/ui/components/ui/button"
+import { buttonVariants } from "@workspace/ui/components/ui/button"
 
-export function LandingNav({
-  goRoot,
-  navScrolled,
-  startLearning,
-}: {
-  readonly goRoot: () => void
-  readonly navScrolled: boolean
-  readonly startLearning: () => void
-}) {
+export function Hero() {
   return (
-    <nav
-      className={
-        navScrolled
-          ? "fixed inset-x-0 top-0 z-50 bg-background/85 backdrop-blur-md"
-          : "fixed inset-x-0 top-0 z-50 bg-background/0"
-      }
-    >
-      <div className="max-w-6xl mx-auto px-5 md:px-10 h-16 flex items-center justify-between">
-        <button
-          className="flex items-center gap-2 text-foreground btn-squish cursor-pointer outline-none"
-          onClick={goRoot}
-          type="button"
-        >
-          <span
-            className="inline-block bg-accent-soft rounded-full"
-            style={{ width: 12, height: 12 }}
-          />
-          <span className="text-title-lg font-black">글결</span>
-        </button>
-
-        <Button onClick={startLearning} type="button">
-          시작하기
-        </Button>
-      </div>
-    </nav>
-  )
-}
-
-export function Hero({
-  browseCourses,
-  startLearning,
-}: {
-  readonly browseCourses: () => void
-  readonly startLearning: () => void
-}) {
-  const ref = useRef<HTMLElement | null>(null)
-  const scrollProgress = useScrollProgress(ref, "start-start")
-  const [previewOffset, setPreviewOffset] = useState({ x: 0, y: 0 })
-  const previewY = scrollProgress * 120
-
-  const handleMouseMove = (event: ReactMouseEvent<HTMLElement>) => {
-    const rect = event.currentTarget.getBoundingClientRect()
-    setPreviewOffset({
-      x: ((event.clientX - rect.left) / rect.width - 0.5) * 28,
-      y: ((event.clientY - rect.top) / rect.height - 0.5) * 28,
-    })
-  }
-
-  return (
-    <section
-      className="relative min-h-screen flex items-center pt-28 pb-20 overflow-hidden"
-      onMouseMove={handleMouseMove}
-      ref={ref}
-    >
+    <section className="relative min-h-screen flex items-center pt-28 pb-20 overflow-hidden">
       <Pebbles items={heroPebbles} />
 
       <div className="relative z-10 w-full max-w-6xl mx-auto px-5 md:px-10 grid lg:grid-cols-2 gap-12 items-center">
@@ -118,34 +56,20 @@ export function Hero({
           </p>
 
           <div className="flex flex-wrap items-center gap-3 mt-9">
-            <Button onClick={startLearning} size="lg" type="button">
+            <Link className={buttonVariants({ size: "lg" })} href="/app">
               무료로 시작하기
               <ArrowRightIcon size={19} />
-            </Button>
-            <Button
-              onClick={browseCourses}
-              size="lg"
-              type="button"
-              variant="secondary"
+            </Link>
+            <Link
+              className={buttonVariants({ size: "lg", variant: "secondary" })}
+              href="/app/courses"
             >
               코스 둘러보기
-            </Button>
+            </Link>
           </div>
         </div>
 
-        <div
-          className="relative hidden lg:block"
-          style={{
-            transform: `translate(${previewOffset.x}px, ${previewY + previewOffset.y}px)`,
-          }}
-        >
-          <div
-            className="relative mx-auto rounded-5xl bg-surface p-4"
-            style={{ maxWidth: 420 }}
-          >
-            <PreviewFrame alt="글결 앱 홈 화면 미리보기" aspectRatio="9 / 16" />
-          </div>
-        </div>
+        <LandingHeroPreviewMotion />
       </div>
     </section>
   )
@@ -279,57 +203,16 @@ export function HowItWorks() {
 }
 
 export function Stats() {
-  const [active, setActive] = useState(false)
-
   return (
     <section className="py-24 max-w-6xl mx-auto px-5 md:px-10">
-      <Reveal
-        className="grid sm:grid-cols-3 gap-5"
-        onVisible={() => setActive(true)}
-        y={30}
-      >
-        {stats.map((stat) => (
-          <StatCard active={active} key={stat.label} stat={stat} />
-        ))}
-      </Reveal>
+      <LandingStatsMotion stats={stats} />
     </section>
   )
 }
 
-function StatCard({
-  active,
-  stat,
-}: {
-  readonly active: boolean
-  readonly stat: (typeof stats)[number]
-}) {
-  const value = useCountUp(stat.value, active)
-
-  return (
-    <div
-      className="rounded-panel p-8 text-center"
-      style={{ backgroundColor: stat.bg }}
-    >
-      <p className="text-display-md font-black text-accent">
-        {value.toLocaleString()}
-        {stat.suffix}
-      </p>
-      <p className="mt-3 text-body-md font-bold text-accent">{stat.label}</p>
-    </div>
-  )
-}
-
 export function Showcase() {
-  const ref = useRef<HTMLElement | null>(null)
-  const scrollProgress = useScrollProgress(ref, "start-end")
-  const firstPreviewY = 60 - scrollProgress * 120
-  const secondPreviewY = -30 + scrollProgress * 120
-
   return (
-    <section
-      className="relative py-24 max-w-6xl mx-auto px-5 md:px-10 overflow-hidden"
-      ref={ref}
-    >
+    <section className="relative py-24 max-w-6xl mx-auto px-5 md:px-10 overflow-hidden">
       <Reveal className="max-w-xl mb-14" y={20}>
         <p className="mb-3 text-label-md font-bold uppercase text-muted-foreground">
           미리보기
@@ -337,29 +220,12 @@ export function Showcase() {
         <h2 className="text-heading-lg font-black">손에 익는 학습 경험</h2>
       </Reveal>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div
-          className="bg-surface rounded-panel p-5"
-          style={{ transform: `translateY(${firstPreviewY}px)` }}
-        >
-          <PreviewFrame alt="글결 레슨 진행 화면" aspectRatio="4 / 3" />
-        </div>
-        <div
-          className="bg-foreground rounded-panel p-5 md:mt-16"
-          style={{ transform: `translateY(${secondPreviewY}px)` }}
-        >
-          <PreviewFrame alt="글결 코스 대시보드 화면" aspectRatio="4 / 3" />
-        </div>
-      </div>
+      <LandingShowcaseMotion />
     </section>
   )
 }
 
-export function FinalCta({
-  startLearning,
-}: {
-  readonly startLearning: () => void
-}) {
+export function FinalCta() {
   return (
     <section className="py-20 max-w-6xl mx-auto px-5 md:px-10">
       <Reveal
@@ -376,15 +242,16 @@ export function FinalCta({
           <p className="mx-auto mt-5 max-w-md text-body-lg text-background/70">
             가입은 1분이면 충분해요. 지금 바로 첫 레슨을 시작해 보세요.
           </p>
-          <Button
-            className="mt-9 bg-accent text-foreground hover:bg-accent/90"
-            onClick={startLearning}
-            size="lg"
-            type="button"
+          <Link
+            className={buttonVariants({
+              className: "mt-9 bg-accent text-foreground hover:bg-accent/90",
+              size: "lg",
+            })}
+            href="/app"
           >
             무료로 시작하기
             <ArrowRightIcon size={20} />
-          </Button>
+          </Link>
         </div>
       </Reveal>
     </section>

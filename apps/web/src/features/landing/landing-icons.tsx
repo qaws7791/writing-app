@@ -1,5 +1,3 @@
-"use client"
-
 export function SparklesIcon({
   className,
   size = 24,

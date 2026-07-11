@@ -18,6 +18,7 @@
     "check:document-drift": "bun scripts/check-document-drift.ts",
     "check:import-cycles": "bun scripts/check-import-cycles.ts",
     "check:localhost-literals": "bun scripts/check-localhost-literals.ts",
+    "check:landing-route-bundle": "bun scripts/check-landing-route-bundle.ts",
     "check:resource-route-bundle": "bun scripts/check-resource-route-bundle.ts",
     "check:workspace-inventory": "bun scripts/check-workspace-inventory.ts",
     "dev": "turbo dev",

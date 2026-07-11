@@ -33,3 +33,14 @@
       rotate(8deg);
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-motion {
+    transform: none !important;
+  }
+
+  [style*="landing-marquee"],
+  [style*="landing-pebble-float"] {
+    animation: none !important;
+  }
+}

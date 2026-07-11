@@ -92,6 +92,7 @@
 
 - 공개 랜딩은 제품명, 가치 제안, 코스 미리보기, 학습 방식, 로그인 CTA를 제공한다.
 - 공개 랜딩 구현은 `features/landing/landing-page.tsx`가 라우팅과 최상위 조립만 맡고, section component, 정적 콘텐츠, motion hook, SVG/preview primitive를 같은 feature 폴더의 전용 파일로 분리한다.
+- 공개 랜딩의 정적 section은 Server Component로 렌더링하고 nav scroll, pointer glow, preview parallax, count-up만 client island로 둔다. pointer·scroll 값은 React 상위 state가 아니라 ref와 DOM transform으로 rAF당 한 번 갱신하며 listener는 passive/cleanup 규칙을 따른다. `prefers-reduced-motion: reduce`에서는 marquee·pebble·pointer·parallax·count-up animation을 비활성화한다.
 - 홈은 진행 중인 코스, 다음 레슨, 전체 학습 맥락, 현재 연속 학습일을 보여준다.
 - 홈 코스 카드는 breakpoint별 복제 마크업을 만들지 않고 하나의 링크·이미지 DOM을 반응형 CSS로 배치한다. 첫 코스 이미지만 우선 로드하며 `sizes`는 모바일 전체 폭과 데스크톱 176px 폭을 함께 명시한다.
 - 코스 상세는 유닛별 커리큘럼과 레슨의 완료, 진행 가능, 잠금 상태를 보여준다.

@@ -155,6 +155,7 @@ bun run --filter=@workspace/web test
 - 화면 텍스트와 접근성 role을 사용자 관점으로 조회한다.
 - admin production build 뒤 `check:resource-route-bundle`을 실행해 `/resources`와 `/resources/trash` 초기 chunk에 Lexical/Yjs가 없고 합산 gzip이 275,000 bytes 이하인지 검사한다. 문서 편집 chunk는 `[documentId]` route의 동적 경계 뒤에서만 내려받는다.
 - 같은 build 산출물에서 `check:admin-chart-route-bundle`을 실행해 대시보드와 `/analytics` 초기 chunk에 Recharts가 없는지 검사한다. 초기 JS gzip 예산은 각각 60,000 bytes와 75,000 bytes이며 차트는 viewport 200px 이내에서만 동적 로드한다.
+- web landing build는 `check:landing-route-bundle`로 정적 section이 client module에 들어가지 않았는지 검사한다. landing client module은 `landing-motion.tsx` island만 허용하고 초기 JS 합산 gzip은 50,000 bytes 이하로 제한한다.
 - API는 포트 mock 또는 명시적 test double로 대체한다.
 - generated OpenAPI 타입은 `apps/web/src/lib/api/writing-app-api-contract.ts`에 격리하고 feature mapper는 이 transport contract 타입만 참조한다.
 - `apps/web` 아키텍처 테스트는 `openapi-fetch` dependency/import가 없고 자체 HTTP adapter를 유지하는지 확인한다.

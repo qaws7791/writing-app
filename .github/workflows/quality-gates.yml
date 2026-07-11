@@ -88,6 +88,7 @@ jobs:
       - run: bun run build
       - run: bun run check:resource-route-bundle
       - run: bun run check:admin-chart-route-bundle
+      - run: bun run check:landing-route-bundle
       - if: always()
         run: bun scripts/ci-workspace-inventory.ts build
 
