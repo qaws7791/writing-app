@@ -102,7 +102,7 @@
   - 코스-유닛-레슨-스텝 계층형 조회와 코스 보관
   - 사용자 목록, 상세, 상태 변경, 삭제 상태 전환
   - 대시보드, 분석, 운영 설정
-  - 자료 트리·검색·Markdown 가져오기/내보내기 REST와 자체 호스팅 Yjs WebSocket
+  - 자료 트리·검색·Markdown 가져오기/내보내기·Yjs HTTP transaction REST와 작업 공간 사건 WebSocket
   - 최초 관리자 계정 seed
 
 ### storybook
@@ -127,7 +127,7 @@ core 내부는 `shared`, `modules`, `composition`으로 나눈다. `shared`는 R
 
 학습자 API는 core 내부 파일 구조에 직접 묶이지 않도록 `@workspace/core/modules/{auth,content,learning,ai-feedback,learner-api}` public facade만 import한다. 기존 `@workspace/core/{admin,auth,content,learning,ai-feedback,status}` public import는 source shim이 아니라 package export map으로 새 `modules`와 `shared` 위치에 직접 연결한다.
 
-자료실은 `packages/core/src/modules/resource-library`의 tree/document/search/collaboration use case와 repository 경계로 분리한다. 트리 구조 명령은 expected revision과 SQLite transaction으로 직렬화하고 본문 변경은 Yjs room flush가 Markdown·FTS·수정 메타데이터를 하나의 영속화 경계에서 갱신한다.
+자료실은 `packages/core/src/modules/resource-library`의 tree/document/search/document-sync use case와 repository 경계로 분리한다. 트리 구조 명령은 expected revision과 SQLite transaction으로 직렬화하고 본문 Yjs update는 멱등 HTTP transaction이 snapshot·Markdown·FTS·수정 메타데이터를 하나의 영속화 경계에서 갱신한다.
 
 ### hono
 

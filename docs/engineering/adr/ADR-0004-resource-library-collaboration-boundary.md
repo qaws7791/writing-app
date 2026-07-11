@@ -2,7 +2,7 @@
 
 ## 상태
 
-채택됨
+부분 대체됨 — 본문 transport 결정은 `ADR-0005 자료실 HTTP transaction 동기화`로 대체됨
 
 ## 날짜
 

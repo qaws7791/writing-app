@@ -3,10 +3,11 @@ import { and, asc, eq, gt, lte } from "drizzle-orm"
 import type {
   CommitResourceDocumentTransactionInput,
   CommitResourceDocumentTransactionResult,
+  ResourceDocumentSyncLoadResult,
   ResourceDocumentSyncRepository,
 } from "@workspace/core/modules/resource-library/application/ports/resource-document-sync.repository"
+import type { ResourceDocumentId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
 import { updateResourceSearchBody } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-library-drizzle.persistence"
-import { createDrizzleResourceCollaborationRepository } from "@workspace/core/modules/resource-library/infrastructure/persistence/resource-collaboration-drizzle.repository"
 import type { WritingAppDatabase } from "@workspace/db/client"
 import {
   adminResourceCollaboration,
@@ -19,9 +20,6 @@ import {
 export function createDrizzleResourceDocumentSyncRepository(
   db: WritingAppDatabase
 ): ResourceDocumentSyncRepository {
-  const collaborationRepository =
-    createDrizzleResourceCollaborationRepository(db)
-
   return {
     async commitTransaction(input) {
       return commitResourceDocumentTransaction(db, input)
@@ -56,8 +54,8 @@ export function createDrizzleResourceDocumentSyncRepository(
         transactionId: input.transactionId,
       }
     },
-    loadDocument(documentId) {
-      return collaborationRepository.load(documentId)
+    async loadDocument(documentId) {
+      return loadResourceDocumentSync(db, documentId)
     },
     async readUpdates(input) {
       return db
@@ -81,6 +79,48 @@ export function createDrizzleResourceDocumentSyncRepository(
           stateVersion: row.stateVersion,
           update: Uint8Array.from(row.update.values()),
         }))
+    },
+  }
+}
+
+function loadResourceDocumentSync(
+  db: WritingAppDatabase,
+  documentId: ResourceDocumentId
+): ResourceDocumentSyncLoadResult {
+  const row = db
+    .select({
+      contentMarkdown: adminResourceDocuments.contentMarkdown,
+      snapshot: adminResourceCollaboration.yjsState,
+      stateVersion: adminResourceCollaboration.stateVersion,
+      status: adminResourceNodes.status,
+    })
+    .from(adminResourceDocuments)
+    .innerJoin(
+      adminResourceNodes,
+      eq(adminResourceNodes.id, adminResourceDocuments.nodeId)
+    )
+    .leftJoin(
+      adminResourceCollaboration,
+      eq(adminResourceCollaboration.documentId, adminResourceDocuments.nodeId)
+    )
+    .where(
+      and(
+        eq(adminResourceDocuments.nodeId, documentId),
+        eq(adminResourceNodes.kind, "document")
+      )
+    )
+    .get()
+
+  if (row === undefined) return { kind: "not-found" }
+  if (row.status !== "active") return { kind: "inactive" }
+
+  return {
+    kind: "ok",
+    value: {
+      contentMarkdown: row.contentMarkdown,
+      snapshot:
+        row.snapshot === null ? null : Uint8Array.from(row.snapshot.values()),
+      stateVersion: row.stateVersion ?? 0,
     },
   }
 }

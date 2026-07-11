@@ -2,7 +2,6 @@ import { serve } from "bun"
 import { createAdminService } from "@workspace/core/admin"
 import { createDrizzleAdminRepository } from "@workspace/core/admin/admin-drizzle.repository"
 import {
-  createResourceCollaborationUseCase,
   createResourceDocumentUseCase,
   createResourceDocumentSyncUseCase,
   createResourceSearchUseCase,
@@ -11,7 +10,6 @@ import {
   toResourceDocumentId,
   toResourceFolderId,
 } from "@workspace/core/modules/resource-library/api"
-import { createDrizzleResourceCollaborationRepository } from "@workspace/core/resource-library/resource-collaboration-drizzle.repository"
 import { createDrizzleResourceDocumentRepository } from "@workspace/core/resource-library/resource-document-drizzle.repository"
 import { createDrizzleResourceDocumentSyncRepository } from "@workspace/core/resource-library/resource-document-sync-drizzle.repository"
 import { createDrizzleResourceSearchRepository } from "@workspace/core/resource-library/resource-search-drizzle.repository"
@@ -26,13 +24,8 @@ import {
 
 import { createApp } from "@/app"
 import { createAdminAuth, createAdminSessionResolver } from "@/auth/admin-auth"
-import { createResourceCollaborationUpgradeHandler } from "@/collaboration/resource-collaboration-upgrade"
-import { createResourceCollaborationFlushHandler } from "@/collaboration/resource-collaboration-flush"
-import { createResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
 import { createResourceEventsHub } from "@/collaboration/resource-events-hub"
 import { createResourceEventsUpgradeHandler } from "@/collaboration/resource-events-upgrade"
-import { createResourceWebSocketHandler } from "@/collaboration/resource-websocket-handler"
-import { createYWebSocketBunAdapter } from "@/collaboration/y-websocket-bun-adapter"
 import { parseAdminApiEnv } from "@/env"
 import {
   createAdminMastra,
@@ -51,9 +44,6 @@ const resourceDocumentSyncService = createResourceDocumentSyncUseCase(
   createDrizzleResourceDocumentSyncRepository(database.db)
 )
 const resourceDocumentOperations = createResourceDocumentOperationCoordinator()
-const resourceCollaborationService = createResourceCollaborationUseCase(
-  createDrizzleResourceCollaborationRepository(database.db)
-)
 const createResourceAuditEventId = () =>
   toResourceAuditEventId(`resource-audit-${crypto.randomUUID()}`)
 const resourceTreeService = createResourceTreeUseCase({
@@ -101,41 +91,17 @@ const auth = createAdminAuth({
 const sessionResolver = createAdminSessionResolver(auth)
 const resourceEvents = createResourceEventsHub({
   async readDocumentStateVersion(documentId) {
-    const prepared = await resourceCollaborationService.prepare({
+    const result = await resourceDocumentSyncService.readSync({
+      afterStateVersion: 0,
       documentId: toResourceDocumentId(documentId),
+      mode: "incremental",
     })
 
-    return prepared.kind === "ok" ? prepared.value.stateVersion : null
+    return result.kind === "inactive" || result.kind === "not-found"
+      ? null
+      : result.stateVersion
   },
 })
-const collaborationAdapter = createYWebSocketBunAdapter({
-  onFlush: createResourceCollaborationFlushHandler({
-    collaborationService: resourceCollaborationService,
-    now: () => new Date(),
-    onCommitted(commit) {
-      resourceEvents.publishDocumentVersion({
-        ...commit,
-        type: "resource-document-version-advanced",
-      })
-    },
-    onFailure(failure) {
-      logger.error(failure, "resource.collaboration.flush.failed")
-    },
-  }),
-})
-const collaborationUpgradeHandler = createResourceCollaborationUpgradeHandler({
-  adminOrigin: env.adminOrigin,
-  collaborationService: resourceCollaborationService,
-  onAuthorizationRejected(reason) {
-    logger.warn(
-      { channel: "collaboration", reason },
-      "resource.websocket.authorization.rejected"
-    )
-  },
-  sessionResolver,
-})
-const resourceCollaborationRooms =
-  createResourceCollaborationRooms(collaborationAdapter)
 const eventsUpgradeHandler = createResourceEventsUpgradeHandler({
   adminOrigin: env.adminOrigin,
   onAuthorizationRejected(reason) {
@@ -145,10 +111,6 @@ const eventsUpgradeHandler = createResourceEventsUpgradeHandler({
     )
   },
   sessionResolver,
-})
-const resourceWebSocketHandler = createResourceWebSocketHandler({
-  collaboration: collaborationAdapter,
-  events: resourceEvents,
 })
 const app = createApp({
   aiChatAgent,
@@ -171,7 +133,6 @@ const app = createApp({
   authHandler: auth.handler,
   requestLogger: createRequestLogger(logger),
   requestLoggingRuntime: defaultRequestLoggingRuntime,
-  resourceCollaborationRooms,
   resourceDocumentOperations,
   resourceEvents,
   sessionResolver,
@@ -185,13 +146,6 @@ if (import.meta.main) {
         return new Response("서버가 종료 중입니다.", { status: 503 })
       }
 
-      const collaborationResponse = await collaborationUpgradeHandler(
-        request,
-        (upgradeRequest, data) => bunServer.upgrade(upgradeRequest, { data })
-      )
-
-      if (collaborationResponse !== null) return collaborationResponse
-
       const eventsResponse = await eventsUpgradeHandler(
         request,
         (upgradeRequest, data) => bunServer.upgrade(upgradeRequest, { data })
@@ -200,14 +154,13 @@ if (import.meta.main) {
       return eventsResponse === null ? app.fetch(request) : eventsResponse
     },
     port: env.port,
-    websocket: resourceWebSocketHandler,
+    websocket: resourceEvents.websocket,
   })
 
   const shutdown = async () => {
     if (shuttingDown) return
 
     shuttingDown = true
-    await collaborationAdapter.dispose()
     server.stop(true)
     database.close()
   }

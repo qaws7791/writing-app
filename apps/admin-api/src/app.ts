@@ -8,7 +8,6 @@ import {
 } from "@workspace/hono/security"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
-import type { ResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
 import type { ResourceEventsWorkspace } from "@/collaboration/resource-events-hub"
 import { createOpenApiDocument } from "@/http/openapi"
 import type { ResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
@@ -72,7 +71,6 @@ export type AdminApiDependencies = {
   readonly now?: () => Date
   readonly requestLogger?: RequestLogger
   readonly requestLoggingRuntime?: RequestLoggingRuntime
-  readonly resourceCollaborationRooms: ResourceCollaborationRooms
   readonly resourceDocumentOperations: ResourceDocumentOperationCoordinator
   readonly resourceEvents: ResourceEventsWorkspace
   readonly sessionResolver: AdminSessionResolver
@@ -117,14 +115,12 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
       }),
       ...createResourceTreeRoutes({
         now,
-        collaborationRooms: dependencies.resourceCollaborationRooms,
         documentOperations: dependencies.resourceDocumentOperations,
         events: dependencies.resourceEvents,
         sessionResolver: dependencies.sessionResolver,
         treeService: dependencies.adminServices.resourceLibrary.tree,
       }),
       ...createResourceDocumentsRoutes({
-        collaborationRooms: dependencies.resourceCollaborationRooms,
         documentService: dependencies.adminServices.resourceLibrary.documents,
         documentOperations: dependencies.resourceDocumentOperations,
         events: dependencies.resourceEvents,

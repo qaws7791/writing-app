@@ -316,9 +316,7 @@ type AdminResourceSubtreeMutation = {
   readonly revision: number
 }
 
-export type AdminResourceTrashResult = AdminResourceSubtreeMutation & {
-  readonly closedActiveRoomCount: number
-}
+export type AdminResourceTrashResult = AdminResourceSubtreeMutation
 
 export type AdminResourceRestoreResult = AdminResourceSubtreeMutation & {
   readonly node: AdminResourceTreeNode

@@ -3,7 +3,6 @@ import type {
   AdminAuthenticatedSession,
   AdminSessionResolver,
 } from "@/auth/admin-session"
-import type { ResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
 import type { ResourceEventsWorkspace } from "@/collaboration/resource-events-hub"
 import {
   createResourceDocumentOperationCoordinator,
@@ -33,7 +32,6 @@ type TestAdminApiDependencyOverrides = {
   readonly adminOrigin?: string
   readonly adminServices?: TestAdminApiServicesOverrides
   readonly now?: () => Date
-  readonly resourceCollaborationRooms?: ResourceCollaborationRooms
   readonly resourceDocumentOperations?: ResourceDocumentOperationCoordinator
   readonly resourceEvents?: ResourceEventsWorkspace
   readonly sessionResolver?: AdminSessionResolver
@@ -106,9 +104,6 @@ export function createTestAdminApiDependencies(
     },
     adminOrigin: overrides.adminOrigin ?? localRuntimeDefaults.adminWebOrigin,
     now: overrides.now ?? (() => testAdminNow),
-    resourceCollaborationRooms:
-      overrides.resourceCollaborationRooms ??
-      createTestResourceCollaborationRooms(),
     resourceDocumentOperations:
       overrides.resourceDocumentOperations ??
       createResourceDocumentOperationCoordinator(),
@@ -288,24 +283,6 @@ function createFailingAdminApiServices(): AdminApiServices {
         throwUnexpectedAdminServiceCall("users.updateUserStatus")
       },
     },
-  }
-}
-
-function createTestResourceCollaborationRooms(): ResourceCollaborationRooms {
-  return {
-    close() {
-      return 0
-    },
-    countActiveEditors() {
-      return 0
-    },
-    async flushDocument() {
-      return "ok"
-    },
-    async lockDocuments() {
-      return { kind: "ok", lock: { documentIds: [] } }
-    },
-    release() {},
   }
 }
 

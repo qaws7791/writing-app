@@ -137,7 +137,6 @@ export function ResourceDocumentEditor({
   return (
     <ResourceDocumentEditorSurface
       api={api}
-      collaborationServerUrl=""
       connectCollaboration={connectCollaboration}
       document={document}
     />
@@ -165,13 +164,11 @@ function toEditorSyncState(
 
 export function ResourceDocumentEditorSurface({
   api,
-  collaborationServerUrl,
   connectCollaboration,
   document,
   writeClipboardText = writeBrowserClipboardText,
 }: {
   readonly api: ResourceDocumentEditorApi
-  readonly collaborationServerUrl: string
   readonly connectCollaboration: ResourceDocumentCollaborationConnector
   readonly document: AdminResourceActiveDocument
   readonly writeClipboardText?: (text: string) => Promise<void>
@@ -293,7 +290,6 @@ export function ResourceDocumentEditorSurface({
             documentId={document.id}
             onSyncStateChange={setSyncState}
             onClientChange={setCollaborationClient}
-            serverUrl={collaborationServerUrl}
           />
           {anchorElement === null ? null : (
             <ResourceDraggableBlockPlugin anchorElement={anchorElement} />

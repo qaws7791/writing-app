@@ -7,7 +7,8 @@
 - 완료일: 2026-07-11
 - 관련 제품 기준: `REQ-ADM-7`
 - 관련 화면: `SCR-110`
-- 관련 결정: `ADR-0004`
+- 관련 결정: `ADR-0004`, `ADR-0005`
+- 후속 변경: 본문 transport는 `ADR-0005`에 따라 HTTP transaction으로 전환됐으며, 아래 문서별 WebSocket room 관련 완료 근거는 당시 전환 기록이다. 현재 운영 경로는 `docs/engineering/resource-library-sync-design.md`를 따른다.
 
 ## 목표
 

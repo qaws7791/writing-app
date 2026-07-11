@@ -4,20 +4,13 @@ import {
   adminImportResourceDocumentResultDtoSchema,
   adminResourceDocumentDtoSchema,
 } from "@workspace/contracts/admin"
-import {
-  toResourceDocumentId,
-  type ResourceDocumentUseCase,
-} from "@workspace/core/modules/resource-library/api"
+import { type ResourceDocumentUseCase } from "@workspace/core/modules/resource-library/api"
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
-import type { ResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
 import type { ResourceEventsPublisher } from "@/collaboration/resource-events-hub"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
-import {
-  notFoundAdminError,
-  resourceCollaborationUnavailableAdminError,
-} from "@/errors/admin-errors"
+import { notFoundAdminError } from "@/errors/admin-errors"
 import {
   adminAuthenticatedResponses,
   errorJsonResponse,
@@ -34,7 +27,6 @@ const resourceDocumentParamsSchema = z.object({
 })
 
 export type ResourceDocumentsRouteDependencies = {
-  readonly collaborationRooms: ResourceCollaborationRooms
   readonly documentService: ResourceDocumentUseCase
   readonly documentOperations: ResourceDocumentOperationCoordinator
   readonly events: ResourceEventsPublisher
@@ -143,7 +135,6 @@ function createImportResourceDocumentRoute({
 }
 
 function createExportResourceDocumentRoute({
-  collaborationRooms,
   documentOperations,
   documentService,
   sessionResolver,
@@ -166,17 +157,9 @@ function createExportResourceDocumentRoute({
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
     const params = context.req.valid("param")
-    const result = await documentOperations.run(params.documentId, async () => {
-      const flushResult = await collaborationRooms.flushDocument(
-        toResourceDocumentId(params.documentId)
-      )
-
-      if (flushResult === "error") {
-        throw resourceCollaborationUnavailableAdminError()
-      }
-
-      return documentService.exportDocument(params)
-    })
+    const result = await documentOperations.run(params.documentId, () =>
+      documentService.exportDocument(params)
+    )
 
     if (result.kind === "not-found") {
       throw notFoundAdminError()

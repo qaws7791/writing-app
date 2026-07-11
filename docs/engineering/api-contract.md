@@ -97,17 +97,16 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 | `PATCH`    | `/resources/nodes/{nodeId}/move`                 | 관리자      | 자료 항목 이동·정렬       |
 | `POST`     | `/resources/nodes/{nodeId}/trash`                | 관리자      | 하위 트리 휴지통 이동     |
 | `POST`     | `/resources/nodes/{nodeId}/restore`              | 관리자      | 하위 트리 복원            |
-| WebSocket  | `/resources/collaboration/{documentId}`          | 관리자      | Yjs 본문 공동 편집        |
 | WebSocket  | `/resources/events`                              | 관리자      | 작업 공간 사건·문서 구독  |
 | `GET`      | `/ai-chat/conversations`                         | 관리자      | AI 대화 목록              |
 | `GET`      | `/ai-chat/conversations/{conversationId}`        | 관리자      | AI 대화 상세              |
 | `POST`     | `/ai-chat/messages/stream`                       | 관리자      | AI 응답 stream            |
 
-자료 본문 저장은 HTTP 동기화 경계를 사용한다. `POST /resources/documents/{documentId}/transactions`는 Base64 Yjs update와 멱등 transaction ID를 받아 snapshot, Markdown, 검색 색인과 version을 원자적으로 저장한다. `GET /resources/documents/{documentId}/sync?afterStateVersion={version}`는 연속된 최근 update를 반환하고 보존 구간이 없거나 응답이 1MiB를 넘으면 최신 snapshot을 반환한다. 아직 서버 Yjs identity가 없는 새 client는 같은 endpoint에 `mode=snapshot`을 지정해 증분 적용 전에 서버 snapshot을 강제로 받는다. 기존 공동 편집 WebSocket endpoint는 rollback을 위해 5단계 제거 전까지 남겨 두지만 production 편집기는 두 transport를 동시에 사용하지 않는다.
+자료 본문 저장은 HTTP 동기화 경계를 사용한다. `POST /resources/documents/{documentId}/transactions`는 Base64 Yjs update와 멱등 transaction ID를 받아 snapshot, Markdown, 검색 색인과 version을 원자적으로 저장한다. `GET /resources/documents/{documentId}/sync?afterStateVersion={version}`는 연속된 최근 update를 반환하고 보존 구간이 없거나 응답이 1MiB를 넘으면 최신 snapshot을 반환한다. 아직 서버 Yjs identity가 없는 새 client는 같은 endpoint에 `mode=snapshot`을 지정해 증분 적용 전에 서버 snapshot을 강제로 받는다. 본문 전용 WebSocket endpoint와 room은 제거했으며 두 transport를 동시에 쓰지 않는다.
 
 활성 문서 `GET /resources/documents/{documentId}` 응답은 제목·경로·작성자·수정자·시각·revision과 현재 `stateVersion`만 반환하고 `contentMarkdown`은 포함하지 않는다. collaboration snapshot이 아직 없는 문서는 version 0이며, 활성 본문은 `mode=snapshot` HTTP sync로만 초기화한다. 같은 endpoint에서 휴지통 문서를 조회할 때는 읽기 전용 화면을 위해 durable `contentMarkdown`을 포함한다.
 
-`/resources/events`는 작업 공간 수명 동안 연결 하나를 유지한다. 클라이언트는 `resource-document-subscribe`, `resource-document-unsubscribe`, `resource-realtime-heartbeat` 메시지만 보낼 수 있다. 서버는 기존 트리·제목 사건과 함께 `resource-document-subscription-confirmed`, `resource-document-version-advanced`, `resource-document-invalidated`를 보낸다. 본문 Yjs update는 이 채널로 보내지 않으며 아직 `/resources/collaboration/{documentId}`를 사용한다. 연결당 활성 문서는 최대 하나이고 45초 heartbeat 만료 또는 socket 종료에서 구독을 제거한다.
+`/resources/events`는 작업 공간 수명 동안 연결 하나를 유지한다. 클라이언트는 `resource-document-subscribe`, `resource-document-unsubscribe`, `resource-realtime-heartbeat` 메시지만 보낼 수 있다. 서버는 기존 트리·제목 사건과 함께 `resource-document-subscription-confirmed`, `resource-document-version-advanced`, `resource-document-invalidated`를 보낸다. 본문 Yjs update는 이 채널로 보내지 않고 version 알림 뒤 HTTP sync로 가져온다. 연결당 활성 문서는 최대 하나이고 45초 heartbeat 만료 또는 socket 종료에서 구독을 제거한다.
 
 ## 인증 표면
 

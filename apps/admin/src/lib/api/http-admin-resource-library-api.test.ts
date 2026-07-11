@@ -363,7 +363,6 @@ function responseFor(request: Request): Response {
   if (request.url.endsWith("/trash")) {
     return jsonResponse({
       affectedParentIds: ["folder-1"],
-      closedActiveRoomCount: 0,
       documentCount: 1,
       folderCount: 0,
       revision: 5,

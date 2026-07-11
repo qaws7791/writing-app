@@ -387,7 +387,6 @@ describe("어드민 API 자료실 트리 route", () => {
     )
     expect(trashResponse.status).toBe(200)
     await expect(trashResponse.json()).resolves.toMatchObject({
-      closedActiveRoomCount: 0,
       documentCount: 1,
       folderCount: 0,
       revision: 5,
@@ -484,36 +483,6 @@ describe("어드민 API 자료실 트리 route", () => {
     })
   })
 
-  it("내보내기 전 열린 공동 편집 room을 먼저 저장한다", async () => {
-    const flushDocument = vi.fn(async () => "error" as const)
-    const exportDocument = vi.fn()
-    const app = createApp(
-      createTestAdminApiDependencies({
-        adminServices: {
-          resourceLibrary: { documents: { exportDocument } },
-        },
-        resourceCollaborationRooms: {
-          close: vi.fn(),
-          countActiveEditors: vi.fn(),
-          flushDocument,
-          lockDocuments: vi.fn(),
-          release: vi.fn(),
-        },
-      })
-    )
-
-    const response = await app.request(
-      "/resources/documents/document-1/export",
-      { headers }
-    )
-
-    expect(response.status).toBe(503)
-    expect(flushDocument).toHaveBeenCalledWith(
-      toResourceDocumentId("document-1")
-    )
-    expect(exportDocument).not.toHaveBeenCalled()
-  })
-
   it("휴지통 확인용 하위 문서 활성 편집자 수를 조회한다", async () => {
     const countActiveEditors = vi.fn(() => 3)
     const app = createApp(
@@ -553,11 +522,7 @@ describe("어드민 API 자료실 트리 route", () => {
     ])
   })
 
-  it("하위 room 잠금·flush 뒤 휴지통 변경 event를 보내고 연결을 닫는다", async () => {
-    const lock = {
-      documentIds: [toResourceDocumentId("document-1")],
-    }
-    const lockDocuments = vi.fn(async () => ({ kind: "ok" as const, lock }))
+  it("HTTP transaction과 같은 문서 순서에서 휴지통 변경 event를 보낸다", async () => {
     const trashNode = vi.fn(async () => ({
       kind: "ok" as const,
       value: {
@@ -569,7 +534,6 @@ describe("어드민 API 자료실 트리 route", () => {
     }))
     const publish = vi.fn()
     const publishDocumentInvalidated = vi.fn()
-    const close = vi.fn(() => 1)
     const app = createApp(
       createTestAdminApiDependencies({
         adminServices: {
@@ -581,15 +545,6 @@ describe("어드민 API 자료실 트리 route", () => {
               trashNode,
             },
           },
-        },
-        resourceCollaborationRooms: {
-          close,
-          countActiveEditors: vi.fn(),
-          async flushDocument() {
-            return "ok"
-          },
-          lockDocuments,
-          release: vi.fn(),
         },
         resourceEvents: {
           countActiveEditors: vi.fn(),
@@ -607,12 +562,9 @@ describe("어드민 API 자료실 트리 route", () => {
     })
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toMatchObject({
-      closedActiveRoomCount: 1,
-    })
-    expect(lockDocuments).toHaveBeenCalledWith([
-      toResourceDocumentId("document-1"),
-    ])
+    await expect(response.json()).resolves.not.toHaveProperty(
+      "closedActiveRoomCount"
+    )
     expect(publish).toHaveBeenCalledWith({
       action: "trash",
       affectedParentIds: ["folder-1"],
@@ -625,14 +577,8 @@ describe("어드민 API 자료실 트리 route", () => {
       reason: "archived",
       type: "resource-document-invalidated",
     })
-    expect(lockDocuments.mock.invocationCallOrder[0]).toBeLessThan(
-      trashNode.mock.invocationCallOrder[0] ?? 0
-    )
     expect(trashNode.mock.invocationCallOrder[0]).toBeLessThan(
       publish.mock.invocationCallOrder[0] ?? 0
-    )
-    expect(publish.mock.invocationCallOrder[0]).toBeLessThan(
-      close.mock.invocationCallOrder[0] ?? 0
     )
   })
 })

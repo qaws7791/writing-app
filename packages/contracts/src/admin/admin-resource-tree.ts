@@ -80,9 +80,7 @@ export const adminResourceTrashMutationDtoSchema =
   })
 
 export const adminResourceTrashResultDtoSchema =
-  adminResourceTrashMutationDtoSchema.extend({
-    closedActiveRoomCount: adminNonNegativeIntegerSchema,
-  })
+  adminResourceTrashMutationDtoSchema
 
 export const adminResourceRestoreResultDtoSchema =
   adminResourceTrashMutationDtoSchema.extend({

@@ -2,11 +2,11 @@
 
 ## 문서 상태
 
-- 상태: 부분 구현 (4단계 클라이언트 Adapter 전환 진행 중)
+- 상태: 구현 완료 (5단계 기존 문서별 WebSocket 경로 제거 완료)
 - 기준일: 2026-07-11
 - 관련 요구사항: `REQ-ADM-7 자료실 공동 편집`
 - 관련 화면: `SCR-110 관리자 자료실`
-- 현재 결정: `ADR-0004 자료실 Markdown 원본과 공동 편집 경계`
+- 현재 결정: `ADR-0005 자료실 HTTP transaction 동기화`
 
 이 문서는 자료실의 문서별 Yjs WebSocket 연결을 작업 공간 단위의 지속 연결과 HTTP transaction 동기화로 재구성하는 목표 설계를 정의한다. 1단계인 상태와 화면 분리는 완료했으며, 지속 연결과 HTTP transaction을 채택할 때 `ADR-0004`의 문서별 WebSocket room 결정은 새 ADR에서 명시적으로 대체한다.
 
@@ -22,13 +22,13 @@
 - 활성 편집자 수는 문서 구독 registry의 관리자 ID 집합으로 계산한다. 기존 Yjs room flush가 commit되면 해당 구독자에게 새 version을 알리고 휴지통 이동은 문서 무효화 사건을 먼저 보낸다.
 - 2단계 완료 시점에는 본문 update와 휴지통·내보내기 순서를 기존 문서별 WebSocket room에 유지했고, 이후 4단계에서 HTTP Adapter와 공통 operation coordinator로 전환했다.
 - 2026-07-11: 3단계 서버 구현을 완료했다. HTTP transaction은 Yjs 검증, Markdown·FTS 투영, snapshot·update log·멱등 receipt와 version 증가를 한 SQLite transaction으로 확정한다. sync 조회는 연속된 최근 update가 없거나 1MiB를 넘으면 최신 snapshot으로 복구한다.
-- update log는 승인 시점에 문서별 200건·2MiB 한도를 즉시 강제하고, 별도 receipt는 정리 뒤에도 같은 transaction ID의 최초 승인 결과를 보존한다. 기존 문서별 WebSocket transport는 4단계 production 전환 뒤 rollback 경로로만 유지한다.
+- update log는 승인 시점에 문서별 200건·2MiB 한도를 즉시 강제하고, 별도 receipt는 정리 뒤에도 같은 transaction ID의 최초 승인 결과를 보존한다.
 - 2026-07-11: 4단계 클라이언트 Adapter 전환을 시작했다. 먼저 관리자 HTTP API Adapter와 문서별 cache·transaction queue를 분리해 검증한 뒤 편집기 binding을 한 번에 전환한다.
 - 관리자 HTTP API Adapter는 Yjs binary와 Base64 wire 형식의 변환을 담당한다. 문서별 transaction queue는 500ms 유휴 구간의 update를 합치고 연속 입력은 1초 안에 확정하며, 실패한 요청은 같은 transaction ID와 payload로 재시도한다.
 - 활성 문서 조회는 Markdown bootstrap 시점의 `stateVersion`을 함께 반환한다. collaboration snapshot이 없는 기존 문서는 0으로 명시해 첫 pull 기준을 추측하지 않게 한다.
 - 새 Y.Doc은 Markdown을 독립 변환하지 않고 `mode=snapshot` sync로 서버 Yjs identity를 먼저 받는다. 이후에만 version 기반 증분 update를 적용해 서로 다른 client identity의 문서가 병합되는 오류를 막는다.
 - `ResourceWorkspaceSync`가 작업 공간 수명 동안 문서별 Y.Doc, HTTP transaction queue와 실시간 version listener를 소유한다. 초기 snapshot 전에는 편집기를 잠그고, 깨끗한 문서는 최근 3개만 보존하며 승인 대기 문서는 한도와 무관하게 유지한다.
-- production 편집기는 작업 공간 sync lease를 사용하도록 전환했다. 문서 이동은 Lexical binding만 해제하고 cached Y.Doc과 승인 대기 transaction을 유지하며, 기존 문서별 `WebsocketProvider` 구현은 rollback 경로로만 남아 있다.
+- production 편집기는 작업 공간 sync lease를 사용한다. 문서 이동은 Lexical binding만 해제하고 cached Y.Doc과 승인 대기 transaction을 유지한다.
 - 서버의 `ResourceDocumentOperationCoordinator`는 같은 문서의 HTTP transaction 저장·sync 조회·내보내기·휴지통 이동을 한 순서로 실행한다. 하위 트리 휴지통은 문서 ID를 정렬·중복 제거해 모두 예약한 뒤 기존 room flush와 구조 변경을 수행하며 다른 문서 작업은 막지 않는다.
 - 탭이 다시 활성화되면 현재 문서를 마지막 확인 version으로 재구독한다. 구독 확인의 서버 version이 더 크면 기존 HTTP sync pull 경로가 누락 update 또는 snapshot을 적용해 실시간 알림 유실을 복구한다.
 - 활성 문서 route는 편집기가 사용하지 않는 Markdown 조회와 응답 필드를 제거했다. 저장소는 문서 메타데이터와 본문 조회를 분리하며, 휴지통 읽기 전용 문서와 내보내기만 durable Markdown을 추가로 읽는다.
@@ -40,6 +40,7 @@
 - 초기 원격 Yjs 상태를 Lexical에 반영한 직후에는 이를 discrete update로 확정한다. 이 경계가 없으면 같은 틱의 첫 코드 블록 입력이 `collaboration` 태그에 합쳐져 HTTP transaction에서 제외될 수 있다.
 - 자료 문서 공동 편집 계약은 코드 블록 내부의 첫 로컬 입력이 네트워크 Y.Doc과 원격 편집기에 전파되는지 검증한다. 작업 공간 fixture는 승인된 증분 update를 포함한 snapshot으로 새 편집기를 초기화하는 경로도 검증한다.
 - 격리된 두 관리자 브라우저에서 코드 블록 변경을 HTTP transaction으로 승인한 뒤 다른 브라우저가 version 알림의 HTTP pull로 같은 변경을 표시하는 것을 확인했다.
+- 2026-07-11: 5단계에서 브라우저 `WebsocketProvider`, 서버 문서별 upgrade·room·flush adapter와 이전 collaboration use case를 제거했다. 휴지통과 내보내기는 HTTP transaction과 같은 문서 operation coordinator만 사용하며, `/resources/events`는 작업 공간 사건과 version 알림만 유지한다.
 
 ## 결정 요약
 
@@ -577,12 +578,12 @@ sequenceDiagram
 - 두 브라우저 수렴, 재접속, 휴지통, 내보내기와 서버 재시작을 다시 검증한다.
 - 새 경로도 매 transaction마다 전체 snapshot을 갱신해 기존 구현으로 rollback할 수 있게 한다.
 
-### 5. 기존 room 제거와 결정 확정
+### 5. 기존 room 제거와 결정 확정 (완료)
 
-- `/resources/collaboration/{documentId}`, `WebsocketProvider`, room registry와 문서별 socket 계측을 제거한다.
-- 휴지통 잠금과 활성 관리자 수 조회를 구독 registry와 문서 동기화 Module로 옮긴다.
-- 새 ADR로 `ADR-0004`의 문서별 WebSocket 결정을 대체한다.
-- `ARCHITECTURE.md`, 시스템 개요, 기술 스택, Interface, 데이터, 보안, 테스트, 관측성, migration과 rollback 문서를 실제 구현 상태로 갱신한다.
+- `/resources/collaboration/{documentId}`, `WebsocketProvider`, room registry와 문서별 socket 계측을 제거했다.
+- 활성 관리자 수 조회는 작업 공간 구독 registry가 제공하고, 휴지통·내보내기는 문서 동기화 Module의 operation coordinator와 직렬화한다.
+- `ADR-0005`가 `ADR-0004`의 문서별 WebSocket 결정을 대체한다.
+- `ARCHITECTURE.md`, API 계약과 관측성 문서를 실제 구현 상태로 갱신했다.
 
 ## Rollback
 

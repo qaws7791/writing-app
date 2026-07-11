@@ -830,10 +830,7 @@ function toAdminResourceNodeMutation(
 function toAdminResourceTrashResult(
   dto: AdminResourceTrashResultDto
 ): AdminResourceTrashResult {
-  return {
-    ...toAdminResourceSubtreeMutation(dto),
-    closedActiveRoomCount: dto.closedActiveRoomCount,
-  }
+  return toAdminResourceSubtreeMutation(dto)
 }
 
 function toAdminResourceRestoreResult(

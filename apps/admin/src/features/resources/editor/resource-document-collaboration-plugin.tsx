@@ -14,7 +14,6 @@ export function ResourceDocumentCollaborationPlugin({
   documentId,
   onSyncStateChange,
   onClientChange,
-  serverUrl,
 }: {
   readonly connect: ResourceDocumentCollaborationConnector
   readonly documentId: string
@@ -22,7 +21,6 @@ export function ResourceDocumentCollaborationPlugin({
   readonly onClientChange: (
     client: ResourceDocumentCollaborationClient | null
   ) => void
-  readonly serverUrl: string
 }) {
   const [editor] = useLexicalComposerContext()
 
@@ -35,7 +33,6 @@ export function ResourceDocumentCollaborationPlugin({
         documentId,
         editor,
         onSyncStateChange,
-        serverUrl,
       })
       onClientChange(collaboration)
     } catch {
@@ -50,14 +47,7 @@ export function ResourceDocumentCollaborationPlugin({
       onClientChange(null)
       collaboration?.disconnect()
     }
-  }, [
-    connect,
-    documentId,
-    editor,
-    onClientChange,
-    onSyncStateChange,
-    serverUrl,
-  ])
+  }, [connect, documentId, editor, onClientChange, onSyncStateChange])
 
   return null
 }

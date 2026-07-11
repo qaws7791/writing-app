@@ -299,8 +299,10 @@ describe("자료 Lexical 편집기", () => {
     expect(connector).toHaveBeenCalledWith(
       expect.objectContaining({
         documentId: "document-1",
-        serverUrl: "ws://admin-api.test/resources/collaboration",
       })
+    )
+    expect(connector).toHaveBeenCalledWith(
+      expect.not.objectContaining({ serverUrl: expect.any(String) })
     )
     unmount()
     expect(disconnect).toHaveBeenCalledTimes(1)
@@ -332,7 +334,6 @@ describe("자료 Lexical 편집기", () => {
     render(
       <ResourceDocumentEditorSurface
         api={createEditorApi()}
-        collaborationServerUrl="ws://admin-api.test/resources/collaboration"
         connectCollaboration={connector}
         document={documentFixture}
         writeClipboardText={writeClipboardText}
@@ -444,7 +445,6 @@ function renderResourceEditor(
   return render(
     <ResourceDocumentEditorSurface
       api={createEditorApi()}
-      collaborationServerUrl="ws://admin-api.test/resources/collaboration"
       connectCollaboration={connector}
       document={documentFixture}
     />

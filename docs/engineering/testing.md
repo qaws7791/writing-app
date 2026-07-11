@@ -50,6 +50,8 @@
 
 자료 문서 계약은 `packages/resource-document`에서 정규 GFM AST 기반 Markdown → Lexical → Markdown 의미 보존과 반복 정규화 안정성, 중복 reference definition의 first-wins 의미, 여러 줄 원시 HTML의 실행 불가 리터럴 코드 보존, 지원하지 않는 AST 구조의 명시적 거부, 위험 URL 검증, Yjs snapshot의 headless 투영과 정리를 검증한다. 저장 전에는 지원 node 계층과 Markdown에 투영되지 않는 Text·Element·Link·Heading·ListItem·Table 속성, 알 수 없는 format bit, NodeState와 slot이 구체적인 `invalid` issue로 거부되는지도 검증한다. 세 TextNode의 모든 서식 전이와 delimiter 문자 조합을 직렬화한 뒤 새 editor에 다시 입력해 문자별 서식과 `EditorState` 동등성을 확인하며, GFM으로 표현할 수 없는 상태는 `valid`로 반환하지 않는다. 원격 Yjs update는 검증용 headless 문서와 화면 문서를 분리한 상태에서 객체형·빈 이미지 속성, 비 HTTPS URL, 임의 node type·tag·NodeState가 화면 editor에 반영되지 않고 정상 상태로 회복한 뒤에만 미러링되는지 검증한다. 이미지 node는 jsdom에서 유효하지 않은 URL을 `<img>` 생성 전에 거부하는지도 확인한다. Bun WebSocket 호환성은 `apps/admin-api`에서 OS가 할당한 로컬 포트의 실제 Bun server, 공식 `WebsocketProvider`, Y.Doc에 연결한 두 Lexical binding을 함께 실행해 동시 편집 수렴으로 검증한다. transport failure-injection은 production adapter에 테스트용 공개 주입 지점을 추가하지 않고 fake Bun socket으로 `send` exception과 반환값 `0`, initial·reply·awareness 경로가 실패한 socket만 격리하는지 검증한다. React block drag 계약은 `apps/admin`의 jsdom 환경에서 실제 `DraggableBlockPlugin_EXPERIMENTAL` portal을 렌더링하고 두 Lexical block을 drag/drop해 순서가 바뀌는지 확인한다.
 
+본문 transport는 HTTP transaction이다. 자료 문서·core·관리자 작업 공간 fixture는 같은 snapshot의 동시 update 수렴, 고정 transaction 재시도, 문서 전환·서버 재시작·version 알림 순서 역전·snapshot fallback을 검증한다. 실제 두 브라우저 context는 코드 블록 변경을 transaction으로 승인하고 다른 브라우저가 version 알림 뒤 HTTP pull로 표시하는지 확인한다. Bun WebSocket 테스트는 작업 공간 사건 구독, heartbeat, version·무효화 알림과 실패한 socket 격리에 한정한다.
+
 ## 주요 명령
 
 ```bash

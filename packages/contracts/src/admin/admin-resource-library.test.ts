@@ -87,13 +87,11 @@ describe("자료실 트리·문서·검색 계약", () => {
     expect(
       adminResourceTrashResultDtoSchema.parse({
         affectedParentIds: ["folder-1"],
-        closedActiveRoomCount: 1,
         documentCount: 3,
         folderCount: 2,
         revision: 8,
       })
     ).toMatchObject({
-      closedActiveRoomCount: 1,
       documentCount: 3,
       folderCount: 2,
     })

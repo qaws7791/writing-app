@@ -1,6 +1,17 @@
 import type { ResourceDocumentTransactionId } from "@workspace/core/modules/resource-library/domain/resource-document-sync"
 import type { ResourceDocumentId } from "@workspace/core/modules/resource-library/domain/resource-tree-node"
-import type { ResourceCollaborationLoadResult } from "@workspace/core/modules/resource-library/application/ports/resource-collaboration.repository"
+
+export type ResourceDocumentSyncLoadResult =
+  | { readonly kind: "not-found" }
+  | { readonly kind: "inactive" }
+  | {
+      readonly kind: "ok"
+      readonly value: {
+        readonly contentMarkdown: string
+        readonly snapshot: Uint8Array | null
+        readonly stateVersion: number
+      }
+    }
 
 export type CommitResourceDocumentTransactionInput = {
   readonly actorId: string
@@ -44,7 +55,7 @@ export type ResourceDocumentSyncRepository = {
   }) => Promise<AcceptedResourceDocumentTransaction | undefined>
   readonly loadDocument: (
     documentId: ResourceDocumentId
-  ) => Promise<ResourceCollaborationLoadResult>
+  ) => Promise<ResourceDocumentSyncLoadResult>
   readonly readUpdates: (input: {
     readonly afterStateVersion: number
     readonly documentId: ResourceDocumentId

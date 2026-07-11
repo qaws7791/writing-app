@@ -36,9 +36,9 @@ describe("admin runtime config", () => {
         readAdminApiBaseUrl({
           ADMIN_API_BASE_URL: "https://admin-api.example.test///",
         }),
-        "/resources/collaboration"
+        "/resources/events"
       )
-    ).toBe("wss://admin-api.example.test/resources/collaboration")
+    ).toBe("wss://admin-api.example.test/resources/events")
   })
 
   it("runtime config 밖의 실행 코드가 어드민 API base URL env를 직접 읽지 않는다", () => {

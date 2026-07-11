@@ -15,13 +15,11 @@ import type { ResourceTreeUseCase } from "@workspace/core/modules/resource-libra
 import { z } from "@workspace/hono/zod"
 
 import type { AdminSessionResolver } from "@/auth/admin-session"
-import type { ResourceCollaborationRooms } from "@/collaboration/resource-collaboration-rooms"
 import type {
   ResourceEventsPublisher,
   ResourceEventsWorkspace,
 } from "@/collaboration/resource-events-hub"
 import { defineAdminRoute, type AdminRouteHandler } from "@/context/hono-env"
-import { resourceCollaborationUnavailableAdminError } from "@/errors/admin-errors"
 import {
   adminAuthenticatedResponses,
   errorJsonResponse,
@@ -47,7 +45,6 @@ const resourceNodeParamsSchema = z.object({
 })
 
 export type ResourceTreeRouteDependencies = {
-  readonly collaborationRooms: ResourceCollaborationRooms
   readonly events: ResourceEventsWorkspace
   readonly documentOperations: ResourceDocumentOperationCoordinator
   readonly now: () => Date
@@ -344,7 +341,6 @@ function createRestoreResourceNodeRoute(
 
 function createResourceRevisionRoute({
   action,
-  collaborationRooms,
   documentOperations,
   description,
   events,
@@ -403,23 +399,9 @@ function createResourceRevisionRoute({
 
     const documentIds = await treeService.getSubtreeDocumentIds(command.nodeId)
     return documentOperations.runMany(documentIds, async () => {
-      const lockResult = await collaborationRooms.lockDocuments(documentIds)
-
-      if (lockResult.kind === "error") {
-        throw resourceCollaborationUnavailableAdminError()
-      }
-
-      let result: Awaited<ReturnType<ResourceTreeUseCase["trashNode"]>>
-
-      try {
-        result = await treeService.trashNode(command)
-      } catch (error) {
-        collaborationRooms.release(lockResult.lock)
-        throw error
-      }
+      const result = await treeService.trashNode(command)
 
       if (result.kind !== "ok") {
-        collaborationRooms.release(lockResult.lock)
         throwResourceLibraryRejection(result)
       }
 
@@ -435,15 +417,7 @@ function createResourceRevisionRoute({
           type: "resource-document-invalidated",
         })
       }
-      const closedActiveRoomCount = collaborationRooms.close(lockResult.lock)
-
-      return context.json(
-        {
-          ...result.value,
-          closedActiveRoomCount,
-        },
-        200
-      )
+      return context.json(result.value, 200)
     })
   }
 

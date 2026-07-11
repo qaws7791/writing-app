@@ -11,7 +11,7 @@
 - API 적용: `apps/api`, `apps/admin-api`
 - 요청 ID header: `x-request-id`
 - 요청 완료 메시지: `request.completed`
-- 자료실 공동 편집: WebSocket 인증 거부 이유, room flush 이유·실패 원인, projection issue와 SQLite busy를 구조화해 기록한다.
+- 자료실 공동 편집: 작업 공간 WebSocket 인증 거부 이유, HTTP transaction 거부·재시도, projection issue와 SQLite busy를 구조화해 기록한다.
 - 자료실 트리: event revision gap을 `resource-tree.revision-gap` performance mark로 기록하고 보이는 트리를 다시 조회한다.
 
 메트릭 수집기, tracing backend, alert manager, 운영 대시보드는 아직 코드로 구현되어 있지 않다. 이 문서의 메트릭/알림 항목은 도입 기준이다.
@@ -71,7 +71,7 @@
 - AI 피드백 요청 수, 실패 수, provider unavailable 수
 - SQLite busy/lock 관련 실패 수
 - seed/migration 성공/실패
-- 자료실 room 수·client 수, 작업 공간 연결 수·문서 구독 수·heartbeat 만료 수, flush·projection latency와 실패 수, snapshot 크기
+- 작업 공간 연결 수·문서 구독 수·heartbeat 만료 수, HTTP transaction·projection latency와 실패 수, snapshot 크기
 
 ## 알림 후보
 
