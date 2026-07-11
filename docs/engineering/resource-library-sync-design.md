@@ -43,6 +43,7 @@
 - 2026-07-11: 5단계에서 브라우저 `WebsocketProvider`, 서버 문서별 upgrade·room·flush adapter와 이전 collaboration use case를 제거했다. 휴지통과 내보내기는 HTTP transaction과 같은 문서 operation coordinator만 사용하며, `/resources/events`는 작업 공간 사건과 version 알림만 유지한다.
 - 2026-07-12: 작업 공간 WebSocket에 세션 만료 timer와 heartbeat·구독 재검증, actor/IP 연결 수, actor별 message·subscribe rate, 4KiB payload와 64KiB backpressure 상한을 적용했다. 정책 위반은 연결별로 격리하고 기존 보안 감사 사건으로 관측한다.
 - 2026-07-12: HTTP transaction의 최종 snapshot 3,000,000byte·Lexical node 20,000개·7일 receipt 10,000개 quota와 1초 projection deadline을 commit 전에 적용했다. receipt compaction은 보존 기간을 지난 행만 제거하며 quota·timeout 거부는 기존 snapshot·revision·검색 색인을 보존한다.
+- 2026-07-12: file-backed WAL connection 2개와 20-client 예약 부하 suite를 추가했다. 세 번의 workload에서 transaction latency·busy·retry·snapshot fallback을 JSON artifact로 남기고 모든 client의 Yjs 전체 상태와 Markdown이 durable snapshot에 수렴하는지 검증한다. 별도 Playwright smoke는 두 browser context가 Bun HTTP fixture process의 실제 transaction 경계를 거쳐 수렴하는지 확인한다.
 
 ## 결정 요약
 

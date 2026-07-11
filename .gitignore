@@ -17,6 +17,9 @@ apps/api/.generated/
 
 # Testing
 coverage
+/artifacts
+playwright-report
+test-results
 
 # Turbo
 .turbo

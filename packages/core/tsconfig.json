@@ -4,9 +4,9 @@
     "baseUrl": ".",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "paths": { "@/*": ["./src/*"] },
+    "paths": { "@/*": ["./src/*"], "@load/*": ["./load/*"] },
     "types": ["bun"]
   },
-  "include": ["src/**/*.ts", "vitest.config.ts"],
+  "include": ["load/**/*.ts", "src/**/*.ts", "vitest.config.ts"],
   "exclude": ["node_modules", "dist"]
 }

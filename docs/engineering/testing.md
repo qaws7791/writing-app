@@ -68,6 +68,8 @@ bun run test
 bun run test:coverage
 bun run test:e2e
 bun run test:storybook
+bun run test:load:resource-library
+bun run test:e2e:resource-library-load
 bun run typecheck
 bun run lint
 bun run build
@@ -126,6 +128,8 @@ bun run --filter=@workspace/web test
 작업 공간 연결 수명 테스트는 문서를 100회 전환해도 실제 연결 Adapter 생성은 한 번이고, 같은 연결에서 문서 구독·해제만 교체되는지 검증한다.
 
 자료 문서 HTTP 동기화 테스트는 Yjs update의 검증·Markdown 투영, 동일 transaction ID 재승인, 단조 state version, 200건·2MiB update log 정리, 정리 뒤 snapshot fallback과 승인 이후 version 사건 발행을 검증한다. snapshot byte·node·transaction quota와 projection deadline fixture는 거부 뒤 snapshot, Markdown revision과 FTS가 변하지 않고 구조화 거부 사건이 발생하는지 확인한다. file-backed SQLite 통합 테스트는 snapshot, Markdown, FTS, 수정자, update log와 멱등 receipt가 같은 transaction에서 확정되며 7일 보존 경계보다 오래된 receipt만 정리되는지 확인한다.
+
+예약 부하 suite는 file-backed WAL connection 2개와 20개 논리 client를 사용해 latency p50·p95·p99, busy, retry, snapshot fallback과 최종 Yjs·Markdown 수렴을 artifact로 남긴다. Playwright smoke는 격리된 browser context 2개가 별도 Bun HTTP fixture process의 실제 file-backed transaction 경계를 거쳐 같은 상태로 수렴하는지 확인한다. 실행·threshold·정리 기준은 `resource-library-load-testing.md`를 따른다.
 
 클라이언트 transaction queue 테스트는 500ms 유휴 batching, 연속 입력의 1초 상한과 일시적 실패 뒤 같은 transaction ID·Yjs payload 재시도를 가짜 타이머로 검증한다.
 
