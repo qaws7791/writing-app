@@ -48,6 +48,7 @@ describe("자료 문서 HTTP transaction queue", () => {
       throw new Error("Yjs update fixture 생성 실패")
     }
     queue.enqueue(firstUpdate)
+    expect(queue.hasPending()).toBe(true)
     await vi.advanceTimersByTimeAsync(300)
     queue.enqueue(secondUpdate)
     await vi.advanceTimersByTimeAsync(499)
@@ -64,6 +65,7 @@ describe("자료 문서 HTTP transaction queue", () => {
       contentRevision: 3,
       stateVersion: 4,
     })
+    expect(queue.hasPending()).toBe(false)
   })
 
   it("연속 입력은 늦어도 1초에 transaction을 만들고 실패하면 같은 키로 재시도한다", async () => {

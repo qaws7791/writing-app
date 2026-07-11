@@ -26,6 +26,7 @@
 - 2026-07-11: 4단계 클라이언트 Adapter 전환을 시작했다. 먼저 관리자 HTTP API Adapter와 문서별 cache·transaction queue를 분리해 검증한 뒤 편집기 binding을 한 번에 전환한다.
 - 관리자 HTTP API Adapter는 Yjs binary와 Base64 wire 형식의 변환을 담당한다. 문서별 transaction queue는 500ms 유휴 구간의 update를 합치고 연속 입력은 1초 안에 확정하며, 실패한 요청은 같은 transaction ID와 payload로 재시도한다.
 - 활성 문서 조회는 Markdown bootstrap 시점의 `stateVersion`을 함께 반환한다. collaboration snapshot이 없는 기존 문서는 0으로 명시해 첫 pull 기준을 추측하지 않게 한다.
+- 새 Y.Doc은 Markdown을 독립 변환하지 않고 `mode=snapshot` sync로 서버 Yjs identity를 먼저 받는다. 이후에만 version 기반 증분 update를 적용해 서로 다른 client identity의 문서가 병합되는 오류를 막는다.
 
 ## 결정 요약
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import {
+  adminReadResourceDocumentSyncQuerySchema,
   adminSaveResourceDocumentTransactionRequestSchema,
   adminSaveResourceDocumentTransactionResponseSchema,
   adminReadResourceDocumentSyncResponseSchema,
@@ -33,6 +34,12 @@ describe("자료 문서 HTTP 동기화 계약", () => {
   })
 
   it("누락 update와 snapshot fallback 응답을 판별한다", () => {
+    expect(
+      adminReadResourceDocumentSyncQuerySchema.parse({
+        afterStateVersion: "0",
+        mode: "snapshot",
+      })
+    ).toEqual({ afterStateVersion: 0, mode: "snapshot" })
     expect(
       adminReadResourceDocumentSyncResponseSchema.parse({
         fromStateVersion: 2,

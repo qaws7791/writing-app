@@ -107,6 +107,8 @@ bun run --filter=@workspace/web test
 
 클라이언트 transaction queue 테스트는 500ms 유휴 batching, 연속 입력의 1초 상한과 일시적 실패 뒤 같은 transaction ID·Yjs payload 재시도를 가짜 타이머로 검증한다.
 
+초기 HTTP 동기화 테스트는 `mode=snapshot` 요청이 현재 version과 같더라도 서버 snapshot을 반환하는지 검증한다. 클라이언트는 이 snapshot을 적용하기 전에는 편집 가능한 Y.Doc을 만들지 않는다.
+
 - baseline migration은 in-memory DB에 적용할 수 있어야 한다.
 - seed는 반복 실행해도 stable ID 기준으로 같은 결과를 내야 한다.
 - seed에서 빠진 콘텐츠는 삭제가 아니라 `archived` 전환으로 검증한다.

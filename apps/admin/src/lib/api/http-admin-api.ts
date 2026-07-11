@@ -331,6 +331,14 @@ export function createHttpAdminApi({
         toModel: toAdminResourceDocumentSync,
       })
     },
+    getResourceDocumentSnapshot(documentId) {
+      return requestAdminJson(client, {
+        method: "GET",
+        path: `/resources/documents/${documentId}/sync?afterStateVersion=0&mode=snapshot`,
+        schema: adminReadResourceDocumentSyncResponseSchema,
+        toModel: toAdminResourceDocumentSync,
+      })
+    },
     getResourceActiveEditorCount(nodeId) {
       return requestAdminJson(client, {
         method: "GET",

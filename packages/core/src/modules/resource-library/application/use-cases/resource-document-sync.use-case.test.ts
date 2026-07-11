@@ -50,6 +50,13 @@ describe("자료 문서 동기화 use case", () => {
         stateVersion: 1,
         updates: [update],
       })
+      await expect(
+        useCase.readSync({
+          afterStateVersion: 1,
+          documentId,
+          mode: "snapshot",
+        })
+      ).resolves.toMatchObject({ kind: "snapshot", stateVersion: 1 })
       fixture.client.sqlite.exec(
         "DELETE FROM admin_resource_collaboration_updates"
       )

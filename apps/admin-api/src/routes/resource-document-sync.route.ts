@@ -145,9 +145,11 @@ function createReadResourceDocumentSyncRoute(
   } satisfies AnyRouteConfig
 
   const handler: AdminRouteHandler<typeof routeConfig> = async (context) => {
+    const query = context.req.valid("query")
     const result = await input.syncService.readSync({
-      afterStateVersion: context.req.valid("query").afterStateVersion,
+      afterStateVersion: query.afterStateVersion,
       documentId: toResourceDocumentId(context.req.valid("param").documentId),
+      mode: query.mode,
     })
 
     if (result.kind === "not-found" || result.kind === "inactive") {

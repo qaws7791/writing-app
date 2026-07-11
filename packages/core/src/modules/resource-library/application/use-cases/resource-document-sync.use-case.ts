@@ -23,6 +23,7 @@ export type ResourceDocumentSyncUseCase = {
   readonly readSync: (input: {
     readonly afterStateVersion: number
     readonly documentId: ResourceDocumentId
+    readonly mode?: "incremental" | "snapshot"
   }) => Promise<
     | { readonly kind: "inactive" }
     | { readonly kind: "not-found" }
@@ -63,7 +64,10 @@ export function createResourceDocumentSyncUseCase(
           const loaded = await repository.loadDocument(input.documentId)
           if (loaded.kind !== "ok") return loaded
 
-          if (input.afterStateVersion === loaded.value.stateVersion) {
+          if (
+            input.mode !== "snapshot" &&
+            input.afterStateVersion === loaded.value.stateVersion
+          ) {
             return {
               kind: "up-to-date",
               stateVersion: loaded.value.stateVersion,
@@ -80,7 +84,11 @@ export function createResourceDocumentSyncUseCase(
             0
           )
 
-          if (isContinuous && totalBytes <= 1024 * 1024) {
+          if (
+            input.mode !== "snapshot" &&
+            isContinuous &&
+            totalBytes <= 1024 * 1024
+          ) {
             return {
               fromStateVersion: input.afterStateVersion,
               kind: "updates",

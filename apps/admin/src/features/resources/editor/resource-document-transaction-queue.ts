@@ -13,6 +13,7 @@ export type ResourceDocumentTransactionQueue = {
   readonly dispose: () => void
   readonly enqueue: (update: Uint8Array) => void
   readonly flush: () => void
+  readonly hasPending: () => boolean
   readonly retry: () => Promise<void>
 }
 
@@ -25,6 +26,7 @@ export function createResourceDocumentTransactionQueue(input: {
     readonly stateVersion: number
   }) => void
   readonly onError: (error: AdminApiError) => void
+  readonly onPending?: () => void
   readonly save: (
     documentId: string,
     transaction: AdminResourceDocumentTransactionInput
@@ -94,12 +96,18 @@ export function createResourceDocumentTransactionQueue(input: {
     enqueue(update) {
       if (disposed) return
 
+      const wasPending =
+        pendingUpdates.length > 0 || transactions.length > 0 || sending
       pendingUpdates.push(update)
+      if (!wasPending) input.onPending?.()
       if (idleTimer !== undefined) clearTimeout(idleTimer)
       idleTimer = setTimeout(flush, 500)
       maximumTimer ??= setTimeout(flush, 1_000)
     },
     flush,
+    hasPending() {
+      return pendingUpdates.length > 0 || transactions.length > 0 || sending
+    },
     async retry() {
       await sendNext()
     },

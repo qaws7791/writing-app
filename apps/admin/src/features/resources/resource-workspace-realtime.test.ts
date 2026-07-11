@@ -57,4 +57,38 @@ describe("자료실 작업 공간 실시간 연결", () => {
     expect(connectEvents).toHaveBeenCalledTimes(2)
     realtime.dispose()
   })
+
+  it("같은 연결의 문서 version 사건을 동기화 listener에 전달한다", () => {
+    let connectedInput: Parameters<ResourceEventsConnector>[0] | undefined
+    const connectEvents: ResourceEventsConnector = vi.fn((input) => {
+      connectedInput = input
+      return {
+        disconnect: vi.fn(),
+        subscribeDocument: vi.fn(),
+        unsubscribeDocument: vi.fn(),
+      }
+    })
+    const realtime = createResourceWorkspaceRealtime({
+      connectEvents,
+      serverUrl: "ws://admin-api.test/resources/events",
+    })
+    const listener = vi.fn()
+
+    realtime.subscribeDocumentEvents(listener)
+    realtime.start()
+    connectedInput?.onDocumentEvent?.({
+      contentRevision: 3,
+      documentId: "document-1",
+      stateVersion: 4,
+      type: "resource-document-version-advanced",
+    })
+
+    expect(listener).toHaveBeenCalledWith({
+      contentRevision: 3,
+      documentId: "document-1",
+      stateVersion: 4,
+      type: "resource-document-version-advanced",
+    })
+    realtime.dispose()
+  })
 })

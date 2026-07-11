@@ -486,6 +486,9 @@ export type AdminApi = {
     documentId: string,
     afterStateVersion: number
   ) => Promise<AdminApiResult<AdminResourceDocumentSync>>
+  readonly getResourceDocumentSnapshot: (
+    documentId: string
+  ) => Promise<AdminApiResult<AdminResourceDocumentSync>>
   readonly getResourceActiveEditorCount: (
     nodeId: string
   ) => Promise<AdminApiResult<AdminResourceActiveEditorCount>>

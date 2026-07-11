@@ -45,6 +45,7 @@ export const adminSaveResourceDocumentTransactionResponseSchema =
 
 export const adminReadResourceDocumentSyncQuerySchema = z.object({
   afterStateVersion: z.coerce.number().int().nonnegative(),
+  mode: z.enum(["incremental", "snapshot"]).default("incremental"),
 })
 
 export const adminReadResourceDocumentSyncResponseSchema = z.discriminatedUnion(

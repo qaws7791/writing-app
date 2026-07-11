@@ -3,6 +3,7 @@ import type {
   ResourceEventsConnector,
   ResourceEventsSubscription,
 } from "@/features/resources/resource-events-client"
+import type { AdminResourceDocumentRealtimeEvent } from "@/lib/api/admin-api"
 
 type ActiveResourceDocument = {
   readonly documentId: string
@@ -14,6 +15,9 @@ export type ResourceWorkspaceRealtime = {
   readonly dispose: () => void
   readonly setActiveDocument: (document: ActiveResourceDocument | null) => void
   readonly start: () => void
+  readonly subscribeDocumentEvents: (
+    listener: (event: AdminResourceDocumentRealtimeEvent) => void
+  ) => () => void
 }
 
 export function createResourceWorkspaceRealtime(input: {
@@ -21,6 +25,9 @@ export function createResourceWorkspaceRealtime(input: {
   readonly serverUrl: string
 }): ResourceWorkspaceRealtime {
   const listeners = new Set<ConnectResourceEventsInput>()
+  const documentListeners = new Set<
+    (event: AdminResourceDocumentRealtimeEvent) => void
+  >()
   let activeDocument: ActiveResourceDocument | null = null
   let connected = false
   let subscription: ResourceEventsSubscription | null = null
@@ -39,6 +46,7 @@ export function createResourceWorkspaceRealtime(input: {
         for (const listener of listeners) listener.onError()
       },
       onDocumentEvent(event) {
+        for (const listener of documentListeners) listener(event)
         for (const listener of listeners) listener.onDocumentEvent?.(event)
       },
       onEvent(event) {
@@ -73,6 +81,7 @@ export function createResourceWorkspaceRealtime(input: {
       if (subscription === null) return
 
       connected = false
+      documentListeners.clear()
       listeners.clear()
       subscription?.disconnect()
       subscription = null
@@ -91,5 +100,9 @@ export function createResourceWorkspaceRealtime(input: {
       }
     },
     start,
+    subscribeDocumentEvents(listener) {
+      documentListeners.add(listener)
+      return () => documentListeners.delete(listener)
+    },
   }
 }

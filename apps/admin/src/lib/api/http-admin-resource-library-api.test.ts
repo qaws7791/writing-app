@@ -138,6 +138,16 @@ describe("자료실 HTTP AdminApi", () => {
       }
     )
     await expect(
+      api.getResourceDocumentSnapshot("document-1")
+    ).resolves.toEqual({
+      status: "ok",
+      value: {
+        kind: "snapshot",
+        snapshot: Uint8Array.of(1, 2, 3),
+        stateVersion: 3,
+      },
+    })
+    await expect(
       api.importResourceDocument({
         expectedRevision: 4,
         fileName: "운영 안내.md",
@@ -207,6 +217,10 @@ describe("자료실 HTTP AdminApi", () => {
       [
         "GET",
         "https://admin-api.example.test/resources/documents/document-1/sync?afterStateVersion=2",
+      ],
+      [
+        "GET",
+        "https://admin-api.example.test/resources/documents/document-1/sync?afterStateVersion=0&mode=snapshot",
       ],
       ["POST", "https://admin-api.example.test/resources/documents/import"],
       [
@@ -321,6 +335,13 @@ function responseFor(request: Request): Response {
   }
 
   if (request.url.includes("/sync?")) {
+    if (request.url.includes("mode=snapshot")) {
+      return jsonResponse({
+        kind: "snapshot",
+        snapshotBase64: "AQID",
+        stateVersion: 3,
+      })
+    }
     return jsonResponse({
       fromStateVersion: 2,
       kind: "updates",

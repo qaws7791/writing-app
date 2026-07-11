@@ -152,6 +152,7 @@ describe("어드민 API 자료실 트리 route", () => {
     expect(readSync).toHaveBeenCalledWith({
       afterStateVersion: 2,
       documentId: toResourceDocumentId("document-1"),
+      mode: "incremental",
     })
   })
 
