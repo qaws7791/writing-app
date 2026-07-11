@@ -1,4 +1,3 @@
-@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./tokens/reference.css";
@@ -426,7 +425,8 @@
 @theme inline {
   /* Font Family */
   --font-sans:
-    Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, sans-serif;
   --font-heading: var(--font-sans);
   /* Text Sizes */
   --text-display-lg: 5rem;

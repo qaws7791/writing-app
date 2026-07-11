@@ -48,7 +48,7 @@
 
 ## 타이포그래피
 
-- 공통 UI, 학습자 앱, 어드민 앱은 Pretendard를 우선 사용한다.
+- 공통 UI, 학습자 앱, 어드민 앱, Storybook은 `pretendard@1.3.9` 패키지의 동적 서브셋 WOFF2를 self-host하고 `Pretendard Variable`을 우선 사용한다. 외부 폰트 CDN 요청은 허용하지 않으며 `font-display: swap`으로 시스템 폰트 fallback 뒤 교체한다. Pretendard는 SIL Open Font License 1.1을 따른다.
 - 모든 문서와 사용자 노출 텍스트는 한국어를 기본으로 한다.
 - letter spacing은 기본 0을 유지한다. 라벨성 uppercase 또는 작은 eyebrow에 한해 현재 구현처럼 `0.06em`에서 `0.08em`을 허용한다.
 

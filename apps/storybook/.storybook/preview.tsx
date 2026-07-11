@@ -4,6 +4,7 @@ import {
   type DocsContainerProps,
 } from "@storybook/addon-docs/blocks"
 import type { Preview } from "@storybook/react-vite"
+import "@workspace/ui/pretendard-font"
 import { addons } from "storybook/preview-api"
 
 import "../styles.css"
@@ -144,8 +145,7 @@ const preview: Preview = {
           className="storybook-root antialiased"
           data-motion={motion}
           style={{
-            fontFamily:
-              "Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif",
+            fontFamily: "var(--font-sans)",
           }}
         >
           <Story />

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import type { ReactNode } from "react"
 
 import { ThemeProvider } from "next-themes"
+import "@workspace/ui/pretendard-font"
 
 import "@/app/globals.css"
 
