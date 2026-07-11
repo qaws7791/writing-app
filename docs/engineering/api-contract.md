@@ -106,7 +106,7 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 
 `GET /ai-chat/conversations`는 `page`와 최대 50인 `pageSize`, `GET /ai-chat/conversations/{conversationId}`는 `messagePage`와 최대 100인 `messagePageSize` query로 대화와 메시지를 페이지 단위로 조회한다.
 
-자료 본문 저장은 HTTP 동기화 경계를 사용한다. `POST /resources/documents/{documentId}/transactions`는 Base64 Yjs update와 멱등 transaction ID를 받아 snapshot, Markdown, 검색 색인과 version을 원자적으로 저장한다. `GET /resources/documents/{documentId}/sync?afterStateVersion={version}`는 연속된 최근 update를 반환하고 보존 구간이 없거나 응답이 1MiB를 넘으면 최신 snapshot을 반환한다. 아직 서버 Yjs identity가 없는 새 client는 같은 endpoint에 `mode=snapshot`을 지정해 증분 적용 전에 서버 snapshot을 강제로 받는다. 본문 전용 WebSocket endpoint와 room은 제거했으며 두 transport를 동시에 쓰지 않는다.
+자료 본문 저장은 HTTP 동기화 경계를 사용한다. `POST /resources/documents/{documentId}/transactions`는 최대 512KiB decoded Base64 Yjs update와 멱등 transaction ID를 받아 snapshot, Markdown, 검색 색인과 version을 원자적으로 저장한다. 최종 snapshot 3,000,000byte, node 20,000개 또는 7일 receipt 10,000개를 넘으면 `RESOURCE_DOCUMENT_QUOTA_EXCEEDED`, projection 1초 deadline을 넘으면 `RESOURCE_DOCUMENT_PROJECTION_TIMEOUT`으로 거부한다. `GET /resources/documents/{documentId}/sync?afterStateVersion={version}`는 연속된 최근 update를 반환하고 보존 구간이 없거나 응답이 1MiB를 넘으면 최신 snapshot을 반환한다. 아직 서버 Yjs identity가 없는 새 client는 같은 endpoint에 `mode=snapshot`을 지정해 증분 적용 전에 서버 snapshot을 강제로 받는다. 본문 전용 WebSocket endpoint와 room은 제거했으며 두 transport를 동시에 쓰지 않는다. 모든 자료 문서 ID는 HTTP와 WebSocket 계약에서 128자 이하로 검증한다.
 
 활성 문서 `GET /resources/documents/{documentId}` 응답은 제목·경로·작성자·수정자·시각·revision과 현재 `stateVersion`만 반환하고 `contentMarkdown`은 포함하지 않는다. collaboration snapshot이 아직 없는 문서는 version 0이며, 활성 본문은 `mode=snapshot` HTTP sync로만 초기화한다. 같은 endpoint에서 휴지통 문서를 조회할 때는 읽기 전용 화면을 위해 durable `contentMarkdown`을 포함한다.
 

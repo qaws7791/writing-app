@@ -3,7 +3,7 @@
 ## 문서 상태
 
 - 상태: 구현 완료 (5단계 기존 문서별 WebSocket 경로 제거 완료)
-- 기준일: 2026-07-11
+- 기준일: 2026-07-12
 - 관련 요구사항: `REQ-ADM-7 자료실 공동 편집`
 - 관련 화면: `SCR-110 관리자 자료실`
 - 현재 결정: `ADR-0005 자료실 HTTP transaction 동기화`
@@ -41,6 +41,8 @@
 - 자료 문서 공동 편집 계약은 코드 블록 내부의 첫 로컬 입력이 네트워크 Y.Doc과 원격 편집기에 전파되는지 검증한다. 작업 공간 fixture는 승인된 증분 update를 포함한 snapshot으로 새 편집기를 초기화하는 경로도 검증한다.
 - 격리된 두 관리자 브라우저에서 코드 블록 변경을 HTTP transaction으로 승인한 뒤 다른 브라우저가 version 알림의 HTTP pull로 같은 변경을 표시하는 것을 확인했다.
 - 2026-07-11: 5단계에서 브라우저 `WebsocketProvider`, 서버 문서별 upgrade·room·flush adapter와 이전 collaboration use case를 제거했다. 휴지통과 내보내기는 HTTP transaction과 같은 문서 operation coordinator만 사용하며, `/resources/events`는 작업 공간 사건과 version 알림만 유지한다.
+- 2026-07-12: 작업 공간 WebSocket에 세션 만료 timer와 heartbeat·구독 재검증, actor/IP 연결 수, actor별 message·subscribe rate, 4KiB payload와 64KiB backpressure 상한을 적용했다. 정책 위반은 연결별로 격리하고 기존 보안 감사 사건으로 관측한다.
+- 2026-07-12: HTTP transaction의 최종 snapshot 3,000,000byte·Lexical node 20,000개·7일 receipt 10,000개 quota와 1초 projection deadline을 commit 전에 적용했다. receipt compaction은 보존 기간을 지난 행만 제거하며 quota·timeout 거부는 기존 snapshot·revision·검색 색인을 보존한다.
 
 ## 결정 요약
 
@@ -396,7 +398,7 @@ type ReadResourceDocumentSyncResponse =
 
 기본 키는 `(document_id, state_version)`이고 `(document_id, transaction_id)`는 unique다.
 
-정리 가능한 update binary와 영구적인 멱등 승인 기록의 수명을 분리한다. `admin_resource_collaboration_transactions`는 문서 ID와 transaction ID를 기본 키로 승인 당시 `state_version`, `content_revision`, 관리자와 시각을 보관한다. update log가 정리된 뒤 같은 transaction ID가 다시 도착해도 이 receipt를 조회해 최초 승인 결과를 반환한다.
+정리 가능한 update binary와 7일 동안 보존하는 멱등 승인 기록의 수명을 분리한다. `admin_resource_collaboration_transactions`는 문서 ID와 transaction ID를 기본 키로 승인 당시 `state_version`, `content_revision`, 관리자와 시각을 보관한다. update log가 먼저 정리되어도 receipt 보존 기간 안에 같은 transaction ID가 다시 도착하면 최초 승인 결과를 반환한다. 새 commit은 7일보다 오래된 receipt만 정리하고 보존 구간 10,000개 상한을 적용한다.
 
 최신 전체 snapshot은 모든 승인 transaction에서 함께 갱신해 rollback 호환성을 보존한다. update log는 증분 조회를 위한 최근 구간이며 다음 중 하나에 도달하면 가장 오래된 row부터 정리한다.
 

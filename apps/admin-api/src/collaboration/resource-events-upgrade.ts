@@ -12,6 +12,7 @@ export type ResourceEventsUpgrade = (
 
 export function createResourceEventsUpgradeHandler(input: {
   readonly adminOrigin: string
+  readonly now?: () => Date
   readonly onAuthorizationRejected: (
     reason: ResourceWebSocketAuthorizationRejectionReason
   ) => void
@@ -19,7 +20,8 @@ export function createResourceEventsUpgradeHandler(input: {
 }) {
   return async (
     request: Request,
-    upgrade: ResourceEventsUpgrade
+    upgrade: ResourceEventsUpgrade,
+    clientIp = "unknown"
   ): Promise<Response | null | undefined> => {
     if (new URL(request.url).pathname !== "/resources/events") return null
 
@@ -36,8 +38,18 @@ export function createResourceEventsUpgradeHandler(input: {
     return upgrade(request, {
       actorId: authorization.actorId,
       channel: "events",
+      clientIp,
+      sessionExpiresAtMilliseconds: authorization.sessionExpiresAt.getTime(),
+      sessionHeaders: createSessionHeaders(request.headers),
     })
       ? undefined
       : new Response("WebSocket upgrade에 실패했습니다.", { status: 500 })
   }
+}
+
+function createSessionHeaders(requestHeaders: Headers): Headers {
+  const headers = new Headers()
+  const cookie = requestHeaders.get("cookie")
+  if (cookie !== null) headers.set("cookie", cookie)
+  return headers
 }

@@ -3,6 +3,7 @@ import { readBearerToken } from "@workspace/core/auth"
 import { localRuntimeDefaults } from "@workspace/env"
 
 import { createApp, type AdminApiDependencies } from "@/app"
+import { adminSessionExpiresAt } from "@/auth/admin-session"
 import {
   createTestAdminApiDependencies,
   testAdminNow,
@@ -616,6 +617,7 @@ function createDependencies({
             name: "관리자",
             role,
           },
+          [adminSessionExpiresAt]: new Date("2099-01-01T00:00:00.000Z"),
         }
       },
     },

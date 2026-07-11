@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { applyUpdate, Doc, mergeUpdates } from "yjs"
 
 import { createResourceDocumentSyncUseCase } from "@workspace/core/modules/resource-library/application/use-cases/resource-document-sync.use-case"
@@ -218,6 +218,112 @@ describe("자료 문서 동기화 use case", () => {
       fixture.client.close()
     }
   })
+
+  it("snapshot·node quota 거부 후 기존 snapshot·revision·검색 index를 보존한다", async () => {
+    const initial = createResourceDocumentSnapshot("초기 본문")
+    if (initial.status !== "valid") throw new Error("초기 snapshot 생성 실패")
+
+    const fixture = createFixture(initial.snapshot)
+    const rejected = vi.fn()
+    const update = createUpdate(initial.snapshot, "변경 본문")
+
+    try {
+      const snapshotLimited = createResourceDocumentSyncUseCase(
+        fixture.repository,
+        { maxSnapshotBytes: 1, onRejected: rejected }
+      )
+      await expect(
+        snapshotLimited.saveTransaction({
+          actorId: "admin-1",
+          documentId,
+          knownStateVersion: 0,
+          now: new Date("2026-07-12T00:00:00.000Z"),
+          transactionId: toResourceDocumentTransactionId("snapshot-quota"),
+          update,
+        })
+      ).resolves.toMatchObject({
+        kind: "quota-exceeded",
+        limit: 1,
+        quota: "snapshot-bytes",
+      })
+
+      const nodeLimited = createResourceDocumentSyncUseCase(
+        fixture.repository,
+        { maxNodeCount: 1, onRejected: rejected }
+      )
+      await expect(
+        nodeLimited.saveTransaction({
+          actorId: "admin-1",
+          documentId,
+          knownStateVersion: 0,
+          now: new Date("2026-07-12T00:00:01.000Z"),
+          transactionId: toResourceDocumentTransactionId("node-quota"),
+          update,
+        })
+      ).resolves.toMatchObject({
+        kind: "quota-exceeded",
+        limit: 1,
+        quota: "node-count",
+      })
+
+      expect(readDurableState(fixture.client.sqlite)).toEqual({
+        body_text: "초기 본문",
+        content_markdown: "초기 본문",
+        content_revision: 0,
+        receipt_count: 0,
+        state_version: 0,
+        yjs_state_hex: Buffer.from(initial.snapshot)
+          .toString("hex")
+          .toUpperCase(),
+      })
+      expect(rejected).toHaveBeenCalledTimes(2)
+    } finally {
+      fixture.client.close()
+    }
+  })
+
+  it("projection deadline 초과를 명시적으로 거부하고 관측한다", async () => {
+    const initial = createResourceDocumentSnapshot("초기 본문")
+    if (initial.status !== "valid") throw new Error("초기 snapshot 생성 실패")
+
+    const fixture = createFixture(initial.snapshot)
+    const rejected = vi.fn()
+    const useCase = createResourceDocumentSyncUseCase(fixture.repository, {
+      onRejected: rejected,
+      projectUpdate: () => new Promise(() => undefined),
+      projectionTimeoutMilliseconds: 1,
+    })
+
+    try {
+      await expect(
+        useCase.saveTransaction({
+          actorId: "admin-1",
+          documentId,
+          knownStateVersion: 0,
+          now: new Date("2026-07-12T00:00:00.000Z"),
+          transactionId: toResourceDocumentTransactionId("projection-timeout"),
+          update: createUpdate(initial.snapshot, "변경 본문"),
+        })
+      ).resolves.toMatchObject({
+        kind: "projection-timeout",
+        limitMilliseconds: 1,
+      })
+      expect(rejected).toHaveBeenCalledWith(
+        expect.objectContaining({
+          documentId,
+          kind: "projection-timeout",
+          limitMilliseconds: 1,
+        })
+      )
+      expect(readDurableState(fixture.client.sqlite)).toMatchObject({
+        content_revision: 0,
+        receipt_count: 0,
+        state_version: 0,
+      })
+    } finally {
+      fixture.client.close()
+    }
+  })
 })
 
 function createFixture(snapshot: Uint8Array) {
@@ -294,4 +400,40 @@ function applyUpdates(
   }
 
   return markdown
+}
+
+function readDurableState(
+  sqlite: ReturnType<typeof createInMemoryWritingAppDatabase>["sqlite"]
+) {
+  return sqlite
+    .query<
+      {
+        readonly body_text: string
+        readonly content_markdown: string
+        readonly content_revision: number
+        readonly receipt_count: number
+        readonly state_version: number
+        readonly yjs_state_hex: string
+      },
+      []
+    >(`
+      SELECT
+        search.body_text,
+        document.content_markdown,
+        document.content_revision,
+        collaboration.state_version,
+        hex(collaboration.yjs_state) AS yjs_state_hex,
+        (
+          SELECT COUNT(*)
+          FROM admin_resource_collaboration_transactions
+          WHERE document_id = document.node_id
+        ) AS receipt_count
+      FROM admin_resource_documents AS document
+      INNER JOIN admin_resource_collaboration AS collaboration
+        ON collaboration.document_id = document.node_id
+      INNER JOIN admin_resource_search AS search
+        ON search.node_id = document.node_id
+      WHERE document.node_id = 'document-1'
+    `)
+    .get()
 }

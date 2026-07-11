@@ -56,7 +56,8 @@
 - CORS 응답 header는 CSRF 방어로 사용하지 않는다.
 - 쿠키가 포함된 `POST`, `PUT`, `PATCH`, `DELETE` 요청은 공통 middleware가 `Origin`과 Fetch Metadata를 검사하고 신뢰하지 않은 요청을 side effect 전에 `403`으로 종료한다.
 - Server Action과 Next.js Route Handler는 공개 HTTP 진입점으로 취급한다. 어드민 AI chat proxy도 요청 origin, 세션, 본문 크기를 직접 검증한다.
-- 자료실 공동 편집과 이벤트 WebSocket upgrade는 `ADMIN_ORIGIN`, 실제 관리자 세션 cookie, `GET`과 `Upgrade: websocket`을 연결 전에 검증하며 URL query token을 허용하지 않는다.
+- 자료실 이벤트 WebSocket upgrade는 `ADMIN_ORIGIN`, 실제 관리자 세션 cookie, `GET`과 `Upgrade: websocket`을 연결 전에 검증하며 URL query token을 허용하지 않는다. 연결 data에는 최초 세션 만료 시각과 cookie header만 보관하고 만료 timer 및 heartbeat·구독 시 재검증으로 폐기·만료 세션을 1008로 종료한다.
+- 자료실 이벤트 WebSocket은 관리자당 5개, IP당 20개 연결과 10초당 관리자별 메시지 60개·구독 20개를 허용한다. payload는 4KiB, 송신 backpressure는 64KiB로 제한하고 초과 연결은 transport 또는 1008 정책 위반으로 종료한다.
 
 ## 학습 진행 무결성
 
@@ -71,6 +72,7 @@
 - 학습자 API와 어드민 API는 요청 본문을 최대 `1 MiB`로 제한하고 초과 요청을 `413 PAYLOAD_TOO_LARGE`로 거부한다.
 - AI 답안, 학습 답안 배열과 텍스트, 공지, 법적 문구, 자료실 이름과 Markdown은 contracts schema에서 용도별 최대 길이와 개수를 검증한다.
 - 자료실 GFM Markdown 원본은 문서 전체 길이를 제한하고 저장 투영 전에 지원 node·속성·URL과 의미 왕복을 검증한다.
+- 자료실 HTTP transaction은 decoded update 512KiB, 최종 Yjs snapshot 3,000,000byte, Lexical node 20,000개와 7일 보존 구간의 transaction receipt 10,000개를 최종 commit 전에 제한한다. projection은 1초 deadline을 넘기면 명시적으로 거부하며 거부된 transaction은 기존 snapshot·revision·검색 색인을 변경하지 않는다.
 - 일반 JSON 값은 깊이, 전체 node 수, 배열·객체 크기와 문자열 길이를 반복 방식으로 검증한다.
 
 ## 민감 데이터 처리

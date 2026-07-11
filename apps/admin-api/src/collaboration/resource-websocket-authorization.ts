@@ -1,9 +1,13 @@
-import type { AdminSessionResolver } from "@/auth/admin-session"
+import {
+  adminSessionExpiresAt,
+  type AdminSessionResolver,
+} from "@/auth/admin-session"
 
 export type AuthorizedResourceWebSocket =
   | {
       readonly actorId: string
       readonly kind: "ok"
+      readonly sessionExpiresAt: Date
     }
   | {
       readonly kind: "error"
@@ -15,11 +19,13 @@ export type ResourceWebSocketAuthorizationRejectionReason =
   | "invalid-method"
   | "origin-mismatch"
   | "query-not-allowed"
+  | "session-expired"
   | "session-missing"
   | "upgrade-missing"
 
 export async function authorizeResourceWebSocket(input: {
   readonly adminOrigin: string
+  readonly now?: () => Date
   readonly request: Request
   readonly sessionResolver: AdminSessionResolver
 }): Promise<AuthorizedResourceWebSocket> {
@@ -65,11 +71,28 @@ export async function authorizeResourceWebSocket(input: {
     input.request.headers
   )
 
-  return session === null
-    ? {
-        kind: "error",
-        reason: "session-missing",
-        response: new Response("관리자 인증이 필요합니다.", { status: 401 }),
-      }
-    : { actorId: session.admin.id, kind: "ok" }
+  if (session === null) {
+    return {
+      kind: "error",
+      reason: "session-missing",
+      response: new Response("관리자 인증이 필요합니다.", { status: 401 }),
+    }
+  }
+
+  if (
+    session[adminSessionExpiresAt].getTime() <=
+    (input.now?.() ?? new Date()).getTime()
+  ) {
+    return {
+      kind: "error",
+      reason: "session-expired",
+      response: new Response("관리자 세션이 만료되었습니다.", { status: 401 }),
+    }
+  }
+
+  return {
+    actorId: session.admin.id,
+    kind: "ok",
+    sessionExpiresAt: session[adminSessionExpiresAt],
+  }
 }

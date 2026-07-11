@@ -2,6 +2,8 @@ import type { AdminRole } from "@workspace/core/admin"
 
 export type { AdminRole } from "@workspace/core/admin"
 
+export const adminSessionExpiresAt = Symbol("admin-session-expires-at")
+
 export type AdminAuthenticatedSession = {
   readonly admin: {
     readonly email: string
@@ -9,6 +11,7 @@ export type AdminAuthenticatedSession = {
     readonly name: string
     readonly role: AdminRole
   }
+  readonly [adminSessionExpiresAt]: Date
 }
 
 export type AdminSessionResolver = {

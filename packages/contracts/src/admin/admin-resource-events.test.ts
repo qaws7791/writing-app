@@ -21,6 +21,16 @@ describe("자료실 실시간 이벤트 계약", () => {
     })
   })
 
+  it("모든 실시간 문서 ID에 공통 최대 길이를 적용한다", () => {
+    expect(() =>
+      adminResourceRealtimeClientMessageSchema.parse({
+        documentId: "d".repeat(129),
+        knownStateVersion: 0,
+        type: "resource-document-subscribe",
+      })
+    ).toThrow()
+  })
+
   it("이전 활성 문서의 구독 해제 메시지를 구분한다", () => {
     expect(
       adminResourceRealtimeClientMessageSchema.parse({

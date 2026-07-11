@@ -2,6 +2,8 @@ import type { AnyRouteConfig } from "@workspace/hono/core"
 import {
   adminReadResourceDocumentSyncQuerySchema,
   adminReadResourceDocumentSyncResponseSchema,
+  adminResourceDocumentIdSchema,
+  adminResourceYjsUpdateMaxBytes,
   adminSaveResourceDocumentTransactionRequestSchema,
   adminSaveResourceDocumentTransactionResponseSchema,
 } from "@workspace/contracts/admin"
@@ -19,6 +21,8 @@ import {
   invalidAdminRequestError,
   notFoundAdminError,
   resourceCollaborationUnavailableAdminError,
+  resourceDocumentProjectionTimeoutAdminError,
+  resourceDocumentQuotaExceededAdminError,
 } from "@/errors/admin-errors"
 import {
   adminAuthenticatedResponses,
@@ -30,7 +34,7 @@ import { adminSessionRouteOptions } from "@/routes/admin-route-options"
 import type { ResourceDocumentOperationCoordinator } from "@/resource-library/resource-document-operation-coordinator"
 
 const resourceDocumentSyncParamsSchema = z.object({
-  documentId: z.string().trim().min(1),
+  documentId: adminResourceDocumentIdSchema,
 })
 
 export function createResourceDocumentSyncRoutes(input: {
@@ -74,6 +78,7 @@ function createSaveResourceDocumentTransactionRoute(
       ),
       400: errorJsonResponse("유효하지 않은 자료 문서 update입니다."),
       404: errorJsonResponse("활성 자료 문서를 찾을 수 없습니다."),
+      422: errorJsonResponse("자료 문서 누적 quota를 초과했습니다."),
       503: errorJsonResponse(
         "자료 문서 저장을 일시적으로 완료하지 못했습니다."
       ),
@@ -87,7 +92,9 @@ function createSaveResourceDocumentTransactionRoute(
     const documentId = context.req.valid("param").documentId
     const update = Uint8Array.from(Buffer.from(body.updateBase64, "base64"))
 
-    if (update.byteLength > 512 * 1024) throw invalidAdminRequestError()
+    if (update.byteLength > adminResourceYjsUpdateMaxBytes) {
+      throw invalidAdminRequestError()
+    }
 
     const result = await input.documentOperations.run(documentId, () =>
       input.syncService.saveTransaction({
@@ -108,6 +115,12 @@ function createSaveResourceDocumentTransactionRoute(
     }
     if (result.kind === "stale-state-version") {
       throw resourceCollaborationUnavailableAdminError()
+    }
+    if (result.kind === "quota-exceeded") {
+      throw resourceDocumentQuotaExceededAdminError()
+    }
+    if (result.kind === "projection-timeout") {
+      throw resourceDocumentProjectionTimeoutAdminError()
     }
 
     if (result.kind === "accepted") {

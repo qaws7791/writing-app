@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { createAdminAuth, createAdminSessionResolver } from "@/auth/admin-auth"
+import { adminSessionExpiresAt } from "@/auth/admin-session"
 import { adminRoles } from "@workspace/core/admin"
 import { createInMemoryWritingAppDatabase } from "@workspace/db/client"
 import { runBaselineMigration } from "@workspace/db/migrations/migrate"
@@ -101,6 +102,9 @@ describe("Admin Better Auth session resolver", () => {
 
   it("Better Auth getSession 결과를 관리자 세션으로 변환한다", async () => {
     const getSession = vi.fn(async () => ({
+      session: {
+        expiresAt: new Date("2026-07-13T00:00:00.000Z"),
+      },
       user: adminSession,
     }))
     const resolver = createAdminSessionResolver({
@@ -119,6 +123,7 @@ describe("Admin Better Auth session resolver", () => {
         name: "관리자",
         role: adminRoles.owner,
       },
+      [adminSessionExpiresAt]: new Date("2026-07-13T00:00:00.000Z"),
     })
     expect(getSession).toHaveBeenCalledWith({
       headers,

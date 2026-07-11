@@ -40,6 +40,22 @@ export function resourceCollaborationUnavailableAdminError(): AppError {
   })
 }
 
+export function resourceDocumentProjectionTimeoutAdminError(): AppError {
+  return new AppError({
+    code: "RESOURCE_DOCUMENT_PROJECTION_TIMEOUT",
+    message: "Resource document projection timeout",
+    status: 503,
+  })
+}
+
+export function resourceDocumentQuotaExceededAdminError(): AppError {
+  return new AppError({
+    code: "RESOURCE_DOCUMENT_QUOTA_EXCEEDED",
+    message: "Resource document quota exceeded",
+    status: 422,
+  })
+}
+
 export function resourceLibraryConflictAdminError(
   code:
     | "RESOURCE_MOVE_CYCLE"

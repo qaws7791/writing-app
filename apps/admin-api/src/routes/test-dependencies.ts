@@ -3,6 +3,7 @@ import type {
   AdminAuthenticatedSession,
   AdminSessionResolver,
 } from "@/auth/admin-session"
+import { adminSessionExpiresAt } from "@/auth/admin-session"
 import type { ResourceEventsWorkspace } from "@/collaboration/resource-events-hub"
 import {
   createResourceDocumentOperationCoordinator,
@@ -46,6 +47,7 @@ export const testAdminSession = {
     name: "관리자",
     role: adminRoles.owner,
   },
+  [adminSessionExpiresAt]: new Date("2099-01-01T00:00:00.000Z"),
 } as const satisfies AdminAuthenticatedSession
 
 export function createTestAdminApiDependencies(
