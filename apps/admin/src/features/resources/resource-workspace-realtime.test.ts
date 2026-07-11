@@ -4,6 +4,33 @@ import type { ResourceEventsConnector } from "@/features/resources/resource-even
 import { createResourceWorkspaceRealtime } from "@/features/resources/resource-workspace-realtime"
 
 describe("자료실 작업 공간 실시간 연결", () => {
+  it("문서를 100회 전환해도 실제 연결을 한 번만 만든다", () => {
+    const subscribeDocument = vi.fn()
+    const unsubscribeDocument = vi.fn()
+    const connectEvents: ResourceEventsConnector = vi.fn(() => ({
+      disconnect: vi.fn(),
+      subscribeDocument,
+      unsubscribeDocument,
+    }))
+    const realtime = createResourceWorkspaceRealtime({
+      connectEvents,
+      serverUrl: "ws://admin-api.test/resources/events",
+    })
+
+    realtime.start()
+    for (let index = 0; index < 100; index += 1) {
+      realtime.setActiveDocument({
+        documentId: `document-${index}`,
+        knownStateVersion: index,
+      })
+    }
+
+    expect(connectEvents).toHaveBeenCalledTimes(1)
+    expect(subscribeDocument).toHaveBeenCalledTimes(100)
+    expect(unsubscribeDocument).toHaveBeenCalledTimes(99)
+    realtime.dispose()
+  })
+
   it("자료 트리 listener가 교체돼도 실제 연결을 하나만 유지한다", () => {
     const disconnect = vi.fn()
     const connectEvents: ResourceEventsConnector = vi.fn(() => ({

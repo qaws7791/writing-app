@@ -20,9 +20,9 @@
 - 작업 공간 shell이 실시간 연결을 소유하므로 자료 트리 접기·펼치기와 active/trash 전환에서 실제 WebSocket을 다시 만들지 않는다. 문서 route 변경은 기존 연결에서 구독만 바꾸고 재연결 뒤 마지막 활성 문서를 다시 구독한다.
 - Hub는 연결당 활성 문서를 하나만 보관하고 빠른 구독 전환을 연결별로 직렬화한다. heartbeat가 45초 동안 확인되지 않거나 socket이 닫히면 구독을 정리한다.
 - 활성 편집자 수는 문서 구독 registry의 관리자 ID 집합으로 계산한다. 기존 Yjs room flush가 commit되면 해당 구독자에게 새 version을 알리고 휴지통 이동은 문서 무효화 사건을 먼저 보낸다.
-- 본문 클라이언트 Adapter와 휴지통·내보내기 공통 operation queue는 아직 전환하지 않았다. 본문 update는 계속 기존 문서별 WebSocket을 사용한다.
+- 2단계 완료 시점에는 본문 update와 휴지통·내보내기 순서를 기존 문서별 WebSocket room에 유지했고, 이후 4단계에서 HTTP Adapter와 공통 operation coordinator로 전환했다.
 - 2026-07-11: 3단계 서버 구현을 완료했다. HTTP transaction은 Yjs 검증, Markdown·FTS 투영, snapshot·update log·멱등 receipt와 version 증가를 한 SQLite transaction으로 확정한다. sync 조회는 연속된 최근 update가 없거나 1MiB를 넘으면 최신 snapshot으로 복구한다.
-- update log는 승인 시점에 문서별 200건·2MiB 한도를 즉시 강제하고, 별도 receipt는 정리 뒤에도 같은 transaction ID의 최초 승인 결과를 보존한다. 클라이언트 본문 transport는 4단계까지 기존 문서별 WebSocket을 유지한다.
+- update log는 승인 시점에 문서별 200건·2MiB 한도를 즉시 강제하고, 별도 receipt는 정리 뒤에도 같은 transaction ID의 최초 승인 결과를 보존한다. 기존 문서별 WebSocket transport는 4단계 production 전환 뒤 rollback 경로로만 유지한다.
 - 2026-07-11: 4단계 클라이언트 Adapter 전환을 시작했다. 먼저 관리자 HTTP API Adapter와 문서별 cache·transaction queue를 분리해 검증한 뒤 편집기 binding을 한 번에 전환한다.
 - 관리자 HTTP API Adapter는 Yjs binary와 Base64 wire 형식의 변환을 담당한다. 문서별 transaction queue는 500ms 유휴 구간의 update를 합치고 연속 입력은 1초 안에 확정하며, 실패한 요청은 같은 transaction ID와 payload로 재시도한다.
 - 활성 문서 조회는 Markdown bootstrap 시점의 `stateVersion`을 함께 반환한다. collaboration snapshot이 없는 기존 문서는 0으로 명시해 첫 pull 기준을 추측하지 않게 한다.
@@ -36,6 +36,7 @@
 - 작업 공간 통합 fixture는 HTTP 저장 실패 뒤 문서를 이동했다 돌아와도 로컬 변경과 불변 transaction을 보존하고, 명시적 재시도에서 같은 ID와 payload로 확정하는지 검증한다. 이전 문서의 늦은 version update는 해당 문서 cache에만 적용되어 새 활성 문서와 격리된다.
 - 서버 프로세스 재시작을 새 동기화 use case 조립으로 모사하는 fixture를 추가했다. 재시작 뒤에도 SQLite에 확정된 snapshot·update log·version에서 누락 pull을 제공하고 다음 transaction을 연속 version으로 승인한다.
 - 작업 공간 fixture는 자신의 version 알림이 HTTP 저장 응답보다 먼저 도착해 같은 update를 pull하더라도 중복 저장 없이 durable 응답 뒤에만 동기화 완료로 전환하는지 검증한다. 서버가 정리된 증분 구간 대신 최신 snapshot을 반환하면 같은 문서 Y.Doc에 적용해 현재 본문을 복구한다.
+- 문서 100회 전환 fixture는 실제 작업 공간 WebSocket Adapter를 한 번만 만들고, 기존 연결에서 문서 구독 100회와 이전 구독 해제 99회만 수행하는 채택 조건을 검증한다.
 
 ## 결정 요약
 
