@@ -34,6 +34,7 @@
 | `data-model.md`                                           | 데이터 모델 원칙, ERD, 인증과 콘텐츠와 학습 테이블, 상태 머신, seed 정책을 정의한다.             |
 | `schema-conventions.md`                                   | 데이터베이스 스키마 명명, Better Auth 테이블, 직접 관리 테이블, 새 스키마 체크리스트를 정의한다. |
 | `security.md`                                             | 인증, 인가, CORS, 민감 데이터, 오류 응답, AI provider, 데이터 보존 보안 기준을 정의한다.         |
+| `admin-auth-security-operations.md`                       | 관리자 계정 감사, 세션 폐기와 안전한 owner provisioning 운영 절차를 정의한다.                    |
 | `testing.md`                                              | 테스트 원칙, 도구, 프로젝트, 계층, 주요 명령, 커버리지, 테스트 데이터 기준을 정의한다.           |
 | `observability.md`                                        | 요청 로그, 런타임 로깅, 로그 정책, 메트릭과 알림과 대시보드 후보를 정의한다.                     |
 | `migration.md`                                            | 마이그레이션 모델, 명령, 기본 절차, seed 마이그레이션, 운영 원칙, 롤백 조건을 정의한다.          |

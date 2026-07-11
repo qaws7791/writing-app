@@ -7,7 +7,9 @@
     "build": "tsc --noEmit",
     "dev": "cd ../.. && bun --env-file=apps/admin-api/.env --preload ./apps/admin-api/src/dev-environment.ts --watch apps/admin-api/src/main.ts",
     "start": "bun src/main.ts",
+    "audit:admin-auth": "bun src/scripts/admin-auth-audit.ts",
     "lint": "oxlint .",
+    "revoke:admin-sessions": "bun src/scripts/revoke-admin-sessions.ts",
     "seed:admin": "bun src/scripts/seed-admin.ts",
     "test": "bun --bun ../../node_modules/vitest/vitest.mjs run --config vitest.config.ts",
     "typecheck": "tsc --noEmit"

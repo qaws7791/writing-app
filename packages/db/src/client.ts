@@ -34,6 +34,21 @@ export function createWritingAppDatabase(
   }
 }
 
+export function createReadOnlyWritingAppDatabase(
+  url: string
+): WritingAppDatabaseClient {
+  const sqlite = new Database(normalizeDatabaseUrl(url), { readonly: true })
+
+  sqlite.exec("PRAGMA foreign_keys = ON")
+  sqlite.exec("PRAGMA busy_timeout = 5000")
+
+  return {
+    sqlite,
+    db: drizzle(sqlite, { schema }),
+    close: () => sqlite.close(),
+  }
+}
+
 export function createInMemoryWritingAppDatabase(): WritingAppDatabaseClient {
   return createWritingAppDatabase(":memory:")
 }

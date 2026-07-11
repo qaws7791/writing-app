@@ -80,6 +80,8 @@ unknown role은 관리자 세션 resolver에서 유효하지 않은 세션으로
 
 - 인증 처리는 Better Auth handler가 `/api/auth/*`에서 담당한다.
 - 관리자 로그인은 `POST /api/auth/sign-in/email`을 사용한다.
+- 관리자 공개 가입 `POST /api/auth/sign-up/email`은 `404`로 차단한다.
+- 관리자 계정은 승인된 운영자가 폐쇄형 owner seed 절차로만 생성한다.
 - 조회 route는 관리자 세션만 요구한다.
 - 코스·사용자·운영 설정 변경 route는 owner 세션을 요구한다.
 - 자료실 REST와 WebSocket은 operator와 owner 모두 사용할 수 있다.

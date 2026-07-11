@@ -38,7 +38,9 @@ export function createAdminAuth(input: CreateAdminAuthInput) {
         admin_verification: adminAuthVerifications,
       },
     }),
+    disabledPaths: ["/sign-up/email"],
     emailAndPassword: {
+      disableSignUp: true,
       enabled: true,
     },
     secret: input.secret,
