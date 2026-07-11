@@ -1,38 +1,66 @@
 import type {
-  CreateAiFeedbackCommand,
   AiFeedbackPayload,
+  CreateAiFeedbackCommand,
 } from "@workspace/core/modules/ai-feedback/domain/ai-feedback.dto"
 
-export type CountAiFeedbackAttemptsInput = Pick<
-  CreateAiFeedbackCommand,
-  "lessonId" | "stepId" | "userId"
->
+export type AiFeedbackAttemptStatus =
+  | "expired"
+  | "failed"
+  | "pending"
+  | "succeeded"
 
-export type AiFeedbackAttemptRecord = CreateAiFeedbackCommand & {
+export type ReserveAiFeedbackAttemptInput = CreateAiFeedbackCommand & {
+  readonly attemptId: string
+  readonly expiresAt: Date
+  readonly maxCompletedAttempts: number
+}
+
+export type ExpiredAiFeedbackAttempt = {
+  readonly attemptId: string
   readonly attemptNumber: number
-  readonly result: AiFeedbackPayload
 }
 
-export type SaveAiFeedbackAttemptInput = CreateAiFeedbackCommand & {
-  readonly result: AiFeedbackPayload
+type ReservationMetadata = {
+  readonly completedAttempts: number
+  readonly expiredAttempts: readonly ExpiredAiFeedbackAttempt[]
 }
 
-export type SaveAiFeedbackAttemptResult =
-  | {
+export type ReserveAiFeedbackAttemptResult =
+  | (ReservationMetadata & {
+      readonly attemptId: string
       readonly attemptNumber: number
-      readonly kind: "saved"
-    }
-  | {
-      readonly completedAttempts: number
+      readonly kind: "reserved"
+    })
+  | (ReservationMetadata & {
+      readonly attemptNumber: number
+      readonly kind: "already-succeeded"
+      readonly result: AiFeedbackPayload
+    })
+  | (ReservationMetadata & {
+      readonly kind: "already-failed"
+    })
+  | (ReservationMetadata & {
+      readonly kind: "in-progress"
+    })
+  | (ReservationMetadata & {
       readonly kind: "limit-exceeded"
-    }
+    })
+
+export type FinalizeAiFeedbackAttemptInput = {
+  readonly attemptId: string
+  readonly occurredAt: Date
+}
 
 export type AiFeedbackRepository = {
-  readonly countCompletedAttempts: (
-    input: CountAiFeedbackAttemptsInput
-  ) => Promise<number>
-  readonly saveCompletedAttempt: (
-    record: SaveAiFeedbackAttemptInput,
-    maxAttempts: number
-  ) => Promise<SaveAiFeedbackAttemptResult>
+  readonly reserveAttempt: (
+    input: ReserveAiFeedbackAttemptInput
+  ) => Promise<ReserveAiFeedbackAttemptResult>
+  readonly markAttemptFailed: (
+    input: FinalizeAiFeedbackAttemptInput
+  ) => Promise<boolean>
+  readonly markAttemptSucceeded: (
+    input: FinalizeAiFeedbackAttemptInput & {
+      readonly result: AiFeedbackPayload
+    }
+  ) => Promise<boolean>
 }

@@ -11,6 +11,7 @@ import {
   type OpenAiUsageEvent,
 } from "@workspace/core/modules/ai-feedback/infrastructure/adapters/openai-feedback-provider"
 import { createDrizzleAiFeedbackRepository } from "@workspace/core/modules/ai-feedback/infrastructure/persistence/ai-feedback-drizzle.repository"
+import type { AiFeedbackAttemptTransitionEvent } from "@workspace/core/modules/ai-feedback/application/use-cases/ai-feedback-attempt-coordinator"
 import {
   createLearnerContentService,
   type LearnerContentService,
@@ -47,6 +48,9 @@ export type CreateLearnerApiCoreInput = {
   readonly openAiApiKey?: string
   readonly openAiModel: string
   readonly onOpenAiUsage?: (event: OpenAiUsageEvent) => void
+  readonly onAiFeedbackAttemptTransition?: (
+    event: AiFeedbackAttemptTransitionEvent
+  ) => void
   readonly testAuthEnabled?: boolean
   readonly webOrigin: string
 }
@@ -96,6 +100,7 @@ export function createLearnerApiCore(
       attemptPolicy: defaultAiFeedbackAttemptPolicy,
       contentRepository,
       feedbackRepository,
+      onAttemptTransition: input.onAiFeedbackAttemptTransition,
       provider,
     }),
     authHandler: auth.handler,

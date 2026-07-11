@@ -4,7 +4,7 @@
 
 ## 기준
 
-- 기준일: 2026-06-25
+- 기준일: 2026-07-12
 - 기준 파일:
   - `packages/db/src/schema/*.schema.ts`
   - `packages/db/src/persisted-values.ts`
@@ -92,17 +92,19 @@ Better Auth adapter 계약을 따른다.
 
 ## 학습 테이블
 
-| 테이블                    | 주요 컬럼                                                                                                 | 설명                           |
-| ------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `learner_profiles`        | `user_id`, `status`, `display_name`, `deleted_at`                                                         | 앱 소유 학습자 프로필          |
-| `learner_activity_days`   | `user_id`, `activity_date`, `first_activity_at`, `last_activity_at`, `completed_lessons`, `saved_answers` | Asia/Seoul 기준 학습 활동 날짜 |
-| `learner_lesson_progress` | `user_id`, `lesson_id`, `current_step_index`, `status`, `started_at`, `completed_at`, `updated_at`        | 레슨 진행                      |
-| `learner_lesson_answers`  | `user_id`, `lesson_id`, `step_id`, `answer_json`, `answered_at`, `updated_at`                             | 스텝 답변                      |
-| `ai_feedback_attempts`    | `user_id`, `lesson_id`, `step_id`, `attempt_number`, `answer_text`, `result_json`, `created_at`           | AI 피드백 시도                 |
+| 테이블                    | 주요 컬럼                                                                                                                                                      | 설명                           |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `learner_profiles`        | `user_id`, `status`, `display_name`, `deleted_at`                                                                                                              | 앱 소유 학습자 프로필          |
+| `learner_activity_days`   | `user_id`, `activity_date`, `first_activity_at`, `last_activity_at`, `completed_lessons`, `saved_answers`                                                      | Asia/Seoul 기준 학습 활동 날짜 |
+| `learner_lesson_progress` | `user_id`, `lesson_id`, `current_step_index`, `status`, `started_at`, `completed_at`, `updated_at`                                                             | 레슨 진행                      |
+| `learner_lesson_answers`  | `user_id`, `lesson_id`, `step_id`, `answer_json`, `answered_at`, `updated_at`                                                                                  | 스텝 답변                      |
+| `ai_feedback_attempts`    | `id`, `user_id`, `lesson_id`, `step_id`, `attempt_number`, `idempotency_key`, `status`, `answer_text`, `result_json`, `created_at`, `updated_at`, `expires_at` | AI 피드백 예약과 결과          |
 
 학습자 상태 값은 `active | suspended | deleted`다.
 
 레슨 진행 상태 값은 `in_progress | completed`다.
+
+AI 피드백 attempt 상태 값은 `pending | succeeded | failed | expired`다. `pending`과 `succeeded`만 완료 한도 slot을 점유하고, 같은 학습자·레슨·스텝에는 `pending` row를 하나만 허용한다. 같은 범위의 `idempotency_key`는 유일하며 `succeeded` 재요청은 저장된 결과를 재사용한다. provider 실패는 즉시 `failed`, TTL을 넘긴 미완료 예약은 다음 예약 transaction에서 `expired`로 전이해 slot을 반환한다.
 
 ## 운영 설정 테이블
 

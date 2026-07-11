@@ -50,7 +50,7 @@
 
 `POST /learning/answers`의 transport schema는 학습 답변 union을 검증하고, core의 `LearningService`는 lesson 조회 뒤 `step-answer-policy`에 step type별 answer 검증을 위임한다. 따라서 route나 service가 콘텐츠 후보, unsupported step, lesson-started marker 규칙을 중복 구현하지 않는다.
 `POST /learning/lessons/{lessonId}/progress`는 현재 저장된 index와 같거나 정확히 1 큰 index만 허용한다. `POST /learning/lessons/{lessonId}/complete`는 body에서 index를 받지 않으며 core가 마지막 index 도달과 필수 답안 저장을 확인한 뒤 완료 index를 계산한다.
-`POST /ai-feedback`의 route는 인증 학습자 command를 core에 전달한다. core의 `AiFeedbackService`는 lesson과 AI_FEEDBACK step 판정에 집중하고, attempt 한도 계산·provider 호출·저장 기록은 AI feedback attempt coordinator가 처리한다.
+`POST /ai-feedback`의 route는 인증 학습자 command를 core에 전달한다. 클라이언트는 재시도할 때 동일한 `Idempotency-Key` header를 보내며, header가 없으면 서버가 요청 단위 key를 생성한다. core의 `AiFeedbackService`는 lesson과 AI_FEEDBACK step 판정에 집중하고, attempt 원자 예약·한도 계산·provider 호출·상태 저장은 AI feedback attempt coordinator가 처리한다. 같은 학습자·레슨·스텝의 provider 호출은 한 번에 하나만 진행하며 동일 key의 성공 재시도는 저장된 결과를 반환한다.
 
 ## 어드민 API
 
@@ -141,6 +141,7 @@ Route 파일은 관리자 세션 middleware와 OpenAPI security requirement를 `
 - `401 UNAUTHORIZED`
 - `403 FORBIDDEN`
 - `404 NOT_FOUND`
+- `409 ATTEMPT_IN_PROGRESS` 동일 AI 피드백 범위의 요청 처리 중
 - `429` AI 피드백 시도 한도
 - `413 PAYLOAD_TOO_LARGE`
 - `500 INTERNAL_SERVER_ERROR`

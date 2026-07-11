@@ -15,6 +15,7 @@
 - 자료실 작업 공간 사건: `/resources/events` WebSocket의 인증 거부 이유, 연결·문서 구독·heartbeat 만료를 구조화해 기록하며 본문 Yjs binary는 기록하거나 전송하지 않는다.
 - 자료실 트리: event revision gap을 `resource-tree.revision-gap` performance mark로 기록하고 보이는 트리를 다시 조회한다.
 - 관리자 AI 채팅: 완료와 출력 byte 비용은 `admin.ai-chat.completed`, 요청 한도·동시 실행 거절은 `admin.ai-chat.request.rejected`, provider timeout은 `admin.ai-chat.provider.timeout`, 출력 상한 초과는 `admin.ai-chat.output.limit`, client 취소는 `admin.ai-chat.client.disconnected`로 기록한다.
+- 학습자 AI 피드백: 예약과 `pending -> succeeded | failed | expired` 전이는 `ai.feedback.attempt.transition`으로 기록한다.
 
 메트릭 수집기, tracing backend, alert manager, 운영 대시보드는 아직 코드로 구현되어 있지 않다. 이 문서의 메트릭/알림 항목은 도입 기준이다.
 
@@ -58,6 +59,7 @@
 - `request.failed`: 5xx의 오류 class, message를 제거한 stack frame, cause class와 server request ID만 기록한다.
 - `security.audit`: 가입·로그인 실패, 401/403, owner 변경 작업, AI quota 초과, WebSocket 인증 거절을 기록한다.
 - `ai.usage`: model, input/output/total token 수만 기록한다. prompt와 provider 응답 본문은 기록하지 않는다.
+- `ai.feedback.attempt.transition`: attempt ID와 번호, 학습자·레슨·스텝 ID, 이전/다음 상태, `reserved | provider-succeeded | provider-failed | ttl-expired` 이유를 기록한다. idempotency key, 답안, provider 결과는 기록하지 않는다.
 - request body, cookie, authorization header, token, password, provider payload는 어떤 구조 이벤트에도 포함하지 않는다.
 - owner 변경 감사 이벤트에는 actor ID, body를 제외한 target, 성공·거절·실패 결과를 남긴다. 로그 sink는 이벤트를 갱신하지 않고 append-only로 취급한다.
 

@@ -840,6 +840,7 @@ describe("레슨 경험", () => {
     await waitFor(() =>
       expect(createAiFeedback).toHaveBeenCalledWith({
         answer: "짧고 명확하게 쓴다",
+        idempotencyKey: expect.any(String),
         lessonId: "l-coaching",
         stepId: "ai-step",
       })

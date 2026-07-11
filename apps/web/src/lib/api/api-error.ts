@@ -3,6 +3,7 @@ import type { HttpNetworkError } from "@workspace/http-client"
 export type ApiErrorCode =
   | "account-unavailable"
   | "attempt-limit-exceeded"
+  | "attempt-in-progress"
   | "contract-error"
   | "invalid-request"
   | "network-error"
@@ -29,6 +30,7 @@ type ServerApiErrorCode = Exclude<ApiErrorCode, "network-error">
 const serverCodeMap = {
   ACCOUNT_UNAVAILABLE: "account-unavailable",
   ATTEMPT_LIMIT_EXCEEDED: "attempt-limit-exceeded",
+  ATTEMPT_IN_PROGRESS: "attempt-in-progress",
   HTTP_EXCEPTION: "invalid-request",
   INVALID_REQUEST: "invalid-request",
   NOT_FOUND: "not-found",
@@ -40,6 +42,7 @@ const serverCodeMap = {
 const messageByCode = {
   "account-unavailable": "사용할 수 없는 계정입니다.",
   "attempt-limit-exceeded": "AI 코칭 시도 횟수를 모두 사용했습니다.",
+  "attempt-in-progress": "AI 코칭 요청을 처리하고 있습니다.",
   "contract-error": "API 응답을 해석할 수 없습니다.",
   "invalid-request": "요청 내용을 확인해 주세요.",
   "network-error": "네트워크 연결을 확인해 주세요.",

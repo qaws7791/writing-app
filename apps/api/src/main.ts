@@ -21,6 +21,10 @@ const core = createLearnerApiCore({
   googleClientSecret: env.googleClientSecret,
   openAiApiKey: env.openAiApiKey,
   openAiModel: env.openAiModel,
+  onAiFeedbackAttemptTransition(event) {
+    const write = event.toStatus === "failed" ? logger.warn : logger.info
+    write.call(logger, event, "ai.feedback.attempt.transition")
+  },
   onOpenAiUsage(event) {
     logger.info(event, "ai.usage")
   },

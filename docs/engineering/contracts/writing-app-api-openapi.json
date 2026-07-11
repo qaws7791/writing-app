@@ -1872,6 +1872,19 @@
           }
         ],
         "summary": "AI 코칭 생성",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9._:-]+$"
+            },
+            "required": false,
+            "name": "idempotency-key",
+            "in": "header"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -2007,6 +2020,16 @@
           },
           "404": {
             "description": "레슨을 찾을 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "동일한 AI 코칭 요청을 처리 중입니다.",
             "content": {
               "application/json": {
                 "schema": {

@@ -45,6 +45,7 @@ describe("플랫폼 API AI feedback route", () => {
       headers: {
         Authorization: "Bearer active-token",
         "Content-Type": "application/json",
+        "Idempotency-Key": "request-1",
       },
       method: "POST",
     })
@@ -63,6 +64,7 @@ describe("플랫폼 API AI feedback route", () => {
     expect(commands).toEqual([
       {
         answer: "문장을 명확하게 고쳤습니다.",
+        idempotencyKey: "request-1",
         lessonId: "l1",
         occurredAt: now,
         stepId: "l1-s2",
@@ -105,6 +107,44 @@ describe("플랫폼 API AI feedback route", () => {
     await expect(response.json()).resolves.toEqual({
       code: "ATTEMPT_LIMIT_EXCEEDED",
       message: "Attempt limit exceeded",
+    })
+  })
+
+  it("같은 범위의 요청을 처리 중이면 409로 응답한다", async () => {
+    const app = createApp({
+      ...createTestDependencies(),
+      aiFeedbackService: createService({
+        async createFeedback() {
+          return {
+            error: {
+              kind: "attempt-in-progress",
+              remainingAttempts: 2,
+            },
+            kind: "err",
+          }
+        },
+      }),
+      now: () => now,
+    })
+
+    const response = await app.request("/ai-feedback", {
+      body: JSON.stringify({
+        answer: "처리 중인 코칭을 다시 요청합니다.",
+        lessonId: "l1",
+        stepId: "l1-s2",
+      }),
+      headers: {
+        Authorization: "Bearer active-token",
+        "Content-Type": "application/json",
+        "Idempotency-Key": "request-in-progress",
+      },
+      method: "POST",
+    })
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toEqual({
+      code: "ATTEMPT_IN_PROGRESS",
+      message: "Attempt already in progress",
     })
   })
 

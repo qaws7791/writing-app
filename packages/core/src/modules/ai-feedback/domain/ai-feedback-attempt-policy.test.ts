@@ -12,10 +12,20 @@ describe("AI 피드백 시도 정책", () => {
       aiFeedbackAttemptPolicySchema.parse(defaultAiFeedbackAttemptPolicy)
     ).toEqual({
       maxCompletedAttempts: 3,
+      pendingTtlMs: 60_000,
+      providerTimeoutMs: 30_000,
     })
     expect(
-      aiFeedbackAttemptPolicySchema.safeParse({ maxCompletedAttempts: 0 })
-        .success
+      aiFeedbackAttemptPolicySchema.safeParse({
+        ...defaultAiFeedbackAttemptPolicy,
+        maxCompletedAttempts: 0,
+      }).success
+    ).toBe(false)
+    expect(
+      aiFeedbackAttemptPolicySchema.safeParse({
+        ...defaultAiFeedbackAttemptPolicy,
+        providerTimeoutMs: 60_000,
+      }).success
     ).toBe(false)
   })
 

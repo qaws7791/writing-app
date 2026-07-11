@@ -343,12 +343,30 @@ CREATE TABLE IF NOT EXISTS learner_lesson_answers (
 );
 
 CREATE TABLE IF NOT EXISTS ai_feedback_attempts (
+  id TEXT PRIMARY KEY NOT NULL,
   user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
   lesson_id TEXT NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
   step_id TEXT NOT NULL REFERENCES lesson_steps(id) ON DELETE CASCADE,
   attempt_number INTEGER NOT NULL,
+  idempotency_key TEXT NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('pending', 'succeeded', 'failed', 'expired')),
   answer_text TEXT NOT NULL,
-  result_json TEXT NOT NULL,
+  result_json TEXT,
   created_at INTEGER NOT NULL,
-  PRIMARY KEY (user_id, lesson_id, step_id, attempt_number)
+  updated_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS ai_feedback_attempts_idempotency_idx
+ON ai_feedback_attempts(user_id, lesson_id, step_id, idempotency_key);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ai_feedback_attempts_active_slot_idx
+ON ai_feedback_attempts(user_id, lesson_id, step_id, attempt_number)
+WHERE status IN ('pending', 'succeeded');
+
+CREATE UNIQUE INDEX IF NOT EXISTS ai_feedback_attempts_pending_idx
+ON ai_feedback_attempts(user_id, lesson_id, step_id)
+WHERE status = 'pending';
+
+CREATE INDEX IF NOT EXISTS ai_feedback_attempts_expiry_idx
+ON ai_feedback_attempts(status, expires_at);

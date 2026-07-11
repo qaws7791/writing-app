@@ -100,6 +100,11 @@ export function useLessonSession({
   const [isSavingStart, setIsSavingStart] = useState(false)
   const [startError, setStartError] = useState<null | string>(null)
   const answerRequestIdRef = useRef(0)
+  const aiFeedbackRequestRef = useRef<{
+    readonly answer: string
+    readonly idempotencyKey: string
+    readonly stepId: string
+  } | null>(null)
   const completeInFlightRef = useRef(false)
   const isMountedRef = useRef(false)
   const latestAnswerSaveRef = useRef<LatestAnswerSave | null>(null)
@@ -282,18 +287,30 @@ export function useLessonSession({
       answer,
       stepId,
     }: LessonAiFeedbackRequest): Promise<LessonAiFeedbackOutcome> => {
+      const previousRequest = aiFeedbackRequestRef.current
+      const idempotencyKey =
+        previousRequest?.answer === answer && previousRequest.stepId === stepId
+          ? previousRequest.idempotencyKey
+          : crypto.randomUUID()
+      aiFeedbackRequestRef.current = { answer, idempotencyKey, stepId }
       const result = await api.createAiFeedback({
         answer,
+        idempotencyKey,
         lessonId: lesson.id,
         stepId,
       })
 
       if (result.status === "error") {
+        if (result.error.code !== "network-error") {
+          aiFeedbackRequestRef.current = null
+        }
         return {
           message: result.error.message,
           status: "error",
         }
       }
+
+      aiFeedbackRequestRef.current = null
 
       const saved = await persistAnswerToServer(stepId, {
         requested: true,

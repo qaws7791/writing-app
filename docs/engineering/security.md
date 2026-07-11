@@ -98,6 +98,8 @@
 - OpenAI API key는 환경 변수로만 주입한다.
 - API key가 없으면 unavailable provider를 사용해 호출하지 않는다.
 - provider 실패는 사용자 재시도 횟수를 소모하지 않는 오류로 처리한다.
+- provider 호출 전에 SQLite `IMMEDIATE` transaction으로 attempt slot을 예약한다. 완료 3회와 진행 중 예약을 함께 계산하고 같은 학습자·레슨·스텝에는 provider 호출 하나만 허용한다.
+- 동일 `Idempotency-Key`의 성공 재시도는 저장 결과를 재사용한다. provider fault와 30초 timeout은 `failed`, 프로세스 중단으로 남은 예약은 60초 TTL 뒤 `expired`로 전이해 slot을 반환한다.
 - 프롬프트와 구조화 출력 정책은 core AI feedback module에서 관리한다.
 - AI 요청 답안과 provider 구조화 출력의 문자열·배열 크기는 provider 호출 전후에 각각 검증한다.
 

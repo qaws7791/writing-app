@@ -54,6 +54,7 @@
 baseline SQL은 새 DB를 만들 때의 기준 구조를 제공한다. 이미 존재하는 로컬 DB가 현재 schema와 호환되지만 일부 additive column만 빠져 있으면, migration 진입점이 데이터를 보존한 채 컬럼을 추가한다.
 
 - `courses.visual_key`는 기존 `courses` row에 기본값 `basic-sentence-writing`을 채워 추가한다.
+- 상태 컬럼이 없는 기존 `ai_feedback_attempts`는 각 row의 attempt 번호와 결과를 보존한 채 `succeeded`로 변환하고 deterministic legacy ID와 idempotency key를 채운다.
 - seed 재실행은 각 코스의 `visual_key`를 기준 콘텐츠 seed 값으로 다시 맞춘다.
 
 ## 레거시 DB 재생성

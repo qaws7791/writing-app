@@ -49,6 +49,12 @@ export function mapCoreError(error: ApiCoreError): AppError {
         message: "Attempt limit exceeded",
         status: 429,
       })
+    case "attempt-in-progress":
+      return new AppError({
+        code: "ATTEMPT_IN_PROGRESS",
+        message: "Attempt already in progress",
+        status: 409,
+      })
     case "provider-failed":
       return new AppError({
         code: "PROVIDER_UNAVAILABLE",

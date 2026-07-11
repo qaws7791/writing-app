@@ -7,6 +7,11 @@ import {
 import { learnerIdSchema } from "@workspace/contracts/learning/learning.ids"
 
 export const aiFeedbackAnswerMaxLength = 20_000
+export const aiFeedbackIdempotencyKeySchema = z
+  .string()
+  .min(1)
+  .max(128)
+  .regex(/^[A-Za-z0-9._:-]+$/)
 const aiFeedbackOutputTextMaxLength = 4_000
 const aiFeedbackOutputCollectionMaxLength = 20
 const nonEmptyTextSchema = z
@@ -41,6 +46,7 @@ export const aiFeedbackResultDtoSchema = aiFeedbackPayloadSchema.extend({
 
 export const createAiFeedbackCommandSchema = z.object({
   answer: z.string().trim().min(1).max(aiFeedbackAnswerMaxLength),
+  idempotencyKey: aiFeedbackIdempotencyKeySchema,
   lessonId: lessonIdSchema,
   occurredAt: z.date(),
   stepId: lessonStepIdSchema,
