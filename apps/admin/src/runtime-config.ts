@@ -10,12 +10,13 @@ type AdminRuntimeEnv = {
   readonly [key: string]: string | undefined
 }
 
-export function readAdminApiBaseUrl(
-  env: AdminRuntimeEnv = process.env
-): AdminApiBaseUrl {
+export function readAdminApiBaseUrl(env?: AdminRuntimeEnv): AdminApiBaseUrl {
   return toApiBaseUrl(
-    env["ADMIN_API_BASE_URL"],
-    localRuntimeDefaults.adminApiBaseUrl
+    env === undefined
+      ? process.env.NEXT_PUBLIC_ADMIN_API_BASE_URL
+      : (env.NEXT_PUBLIC_ADMIN_API_BASE_URL ?? env.ADMIN_API_BASE_URL),
+    localRuntimeDefaults.adminApiBaseUrl,
+    env === undefined ? process.env.NODE_ENV : env.NODE_ENV
   ) as AdminApiBaseUrl
 }
 
@@ -36,23 +37,46 @@ export function buildAdminApiWebSocketUrl(
   return url.toString().replace(/\/+$/, "")
 }
 
-export function readLearnerWebOrigin(
-  env: AdminRuntimeEnv = process.env
-): string {
-  const candidate = env["LEARNER_WEB_ORIGIN"]
+export function readLearnerWebOrigin(env?: AdminRuntimeEnv): string {
+  const candidate =
+    env === undefined
+      ? process.env.NEXT_PUBLIC_LEARNER_WEB_ORIGIN
+      : env.NEXT_PUBLIC_LEARNER_WEB_ORIGIN
+  const nodeEnvironment =
+    env === undefined ? process.env.NODE_ENV : env.NODE_ENV
+
+  if (
+    nodeEnvironment === "production" &&
+    (candidate === undefined || candidate.trim() === "")
+  ) {
+    throw new Error("production learner web origin is required")
+  }
+
   return candidate === undefined || candidate.trim() === ""
     ? localRuntimeDefaults.learnerWebOrigin
-    : candidate
+    : new URL(candidate).origin
 }
 
-export function readAdminWebOrigin(env: AdminRuntimeEnv = process.env): string {
-  const candidate = env["ADMIN_ORIGIN"]
+export function readAdminWebOrigin(env?: AdminRuntimeEnv): string {
+  const candidate =
+    env === undefined ? process.env.ADMIN_ORIGIN : env.ADMIN_ORIGIN
   return candidate === undefined || candidate.trim() === ""
     ? localRuntimeDefaults.adminWebOrigin
     : new URL(candidate).origin
 }
 
-function toApiBaseUrl(rawValue: string | undefined, fallback: string): string {
+function toApiBaseUrl(
+  rawValue: string | undefined,
+  fallback: string,
+  nodeEnvironment: string | undefined
+): string {
+  if (
+    nodeEnvironment === "production" &&
+    (rawValue === undefined || rawValue.trim() === "")
+  ) {
+    throw new Error("production admin API base URL is required")
+  }
+
   const candidate =
     rawValue === undefined || rawValue.trim() === "" ? fallback : rawValue
   const url = new URL(candidate)

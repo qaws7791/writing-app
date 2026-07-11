@@ -40,8 +40,7 @@ export function CourseDetailPage({ course }: CourseDetailPageProps) {
             height={128}
             priority
             sizes="(max-width: 768px) 96px, 128px"
-            src={createCourseImageUrl(course.id, 240, 240)}
-            unoptimized
+            src={createCourseImageUrl(course.visualKey)}
             width={128}
           />
         </div>

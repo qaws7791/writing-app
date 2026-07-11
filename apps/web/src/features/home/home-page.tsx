@@ -365,8 +365,7 @@ function ContinueCourseCard({
               fill
               priority={priority}
               sizes="176px"
-              src={createCourseImageUrl(course.id, 440, 320)}
-              unoptimized
+              src={createCourseImageUrl(course.visualKey)}
             />
           </div>
           <div className="flex-1 min-w-0 px-5 py-4">
@@ -389,8 +388,7 @@ function ContinueCourseCard({
               fill
               priority={priority}
               sizes="(min-width: 640px) 22rem, 20rem"
-              src={createCourseImageUrl(course.id, 700, 320)}
-              unoptimized
+              src={createCourseImageUrl(course.visualKey)}
             />
           </div>
           <div className="px-6 pt-5 pb-4">

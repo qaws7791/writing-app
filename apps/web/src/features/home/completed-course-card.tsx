@@ -41,8 +41,7 @@ export function CompletedCourseCard({
               fill
               priority={priority}
               sizes="176px"
-              src={createCourseImageUrl(course.id, 440, 320)}
-              unoptimized
+              src={createCourseImageUrl(course.visualKey)}
             />
           </div>
           <div className="flex flex-1 min-w-0 items-center px-5 py-4">
@@ -69,8 +68,7 @@ export function CompletedCourseCard({
               fill
               priority={priority}
               sizes="(min-width: 640px) 22rem, 20rem"
-              src={createCourseImageUrl(course.id, 700, 320)}
-              unoptimized
+              src={createCourseImageUrl(course.visualKey)}
             />
           </div>
           <div className="px-6 py-5">

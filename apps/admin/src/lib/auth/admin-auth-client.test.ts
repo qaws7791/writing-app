@@ -5,14 +5,14 @@ import { requestAdminPasswordLogin } from "@/lib/auth/admin-auth-client"
 
 describe("admin auth client", () => {
   afterEach(() => {
-    delete process.env["ADMIN_API_BASE_URL"]
+    delete process.env["NEXT_PUBLIC_ADMIN_API_BASE_URL"]
     vi.unstubAllGlobals()
   })
 
   it("관리자 API의 Better Auth email/password 로그인 endpoint를 직접 호출한다", async () => {
     const fetch = vi.fn(async () => Response.json({ user: { id: "admin-1" } }))
 
-    process.env["ADMIN_API_BASE_URL"] =
+    process.env["NEXT_PUBLIC_ADMIN_API_BASE_URL"] =
       `${localRuntimeDefaults.adminApiBaseUrl}//`
     vi.stubGlobal("fetch", fetch)
 

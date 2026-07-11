@@ -7,6 +7,7 @@ import {
   buildAdminApiUrl,
   buildAdminApiWebSocketUrl,
   readAdminApiBaseUrl,
+  readLearnerWebOrigin,
 } from "@/runtime-config"
 
 describe("admin runtime config", () => {
@@ -14,9 +15,18 @@ describe("admin runtime config", () => {
     expect(readAdminApiBaseUrl({})).toBe(localRuntimeDefaults.adminApiBaseUrl)
     expect(
       readAdminApiBaseUrl({
-        ADMIN_API_BASE_URL: "https://admin-api.example.test///",
+        NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test///",
       })
     ).toBe("https://admin-api.example.test")
+  })
+
+  it("production 브라우저 공개 주소의 로컬 fallback을 거부한다", () => {
+    expect(() => readAdminApiBaseUrl({ NODE_ENV: "production" })).toThrow(
+      "production admin API base URL is required"
+    )
+    expect(() => readLearnerWebOrigin({ NODE_ENV: "production" })).toThrow(
+      "production learner web origin is required"
+    )
   })
 
   it("어드민 API path를 같은 규칙으로 조합한다", () => {
@@ -26,7 +36,7 @@ describe("admin runtime config", () => {
     expect(
       buildAdminApiUrl(
         readAdminApiBaseUrl({
-          ADMIN_API_BASE_URL: "https://admin-api.example.test///",
+          NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test///",
         }),
         "settings"
       )
@@ -34,7 +44,7 @@ describe("admin runtime config", () => {
     expect(
       buildAdminApiWebSocketUrl(
         readAdminApiBaseUrl({
-          ADMIN_API_BASE_URL: "https://admin-api.example.test///",
+          NEXT_PUBLIC_ADMIN_API_BASE_URL: "https://admin-api.example.test///",
         }),
         "/resources/events"
       )
@@ -42,6 +52,13 @@ describe("admin runtime config", () => {
   })
 
   it("runtime config 밖의 실행 코드가 어드민 API base URL env를 직접 읽지 않는다", () => {
+    const runtimeConfigSource = readFileSync(
+      join(process.cwd(), "src/runtime-config.ts"),
+      "utf8"
+    )
+    expect(runtimeConfigSource).toContain(
+      "process.env.NEXT_PUBLIC_ADMIN_API_BASE_URL"
+    )
     const offenders = findRuntimeSourceFiles().filter((filePath) => {
       if (filePath.endsWith("runtime-config.ts")) {
         return false

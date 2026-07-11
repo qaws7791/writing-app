@@ -57,6 +57,8 @@
 
 학습자 코스 썸네일은 `apps/web/public/course-thumbnails`에 둔다.
 
+코스 화면은 계약의 `visualKey`를 exhaustive local asset map으로 변환하고 Next Image 최적화를 사용한다. 새 `visualKey`를 추가할 때는 같은 변경에서 로컬 파일과 map 항목을 함께 추가한다.
+
 `picsum.photos/seed/{id}` 같은 외부 placeholder 이미지는 비제품 기준이다. 정식 코스 썸네일로 사용하지 않는다.
 
 현재 코스 썸네일:

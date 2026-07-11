@@ -22,6 +22,15 @@ describe("web runtime config", () => {
     ).toBe("https://api.example.test")
   })
 
+  it("production 브라우저와 서버 API 주소의 로컬 fallback을 거부한다", () => {
+    expect(() => readBrowserApiBaseUrl({ NODE_ENV: "production" })).toThrow(
+      "production API base URL is required"
+    )
+    expect(() => readServerApiBaseUrl({ NODE_ENV: "production" })).toThrow(
+      "production API base URL is required"
+    )
+  })
+
   it("서버 API base URL을 기본값과 환경 변수에서 명시적으로 읽는다", () => {
     expect(readServerApiBaseUrl({})).toBe(
       localRuntimeDefaults.learnerApiBaseUrl
@@ -64,6 +73,13 @@ describe("web runtime config", () => {
   })
 
   it("runtime config 밖의 실행 코드가 runtime env를 직접 읽지 않는다", () => {
+    const runtimeConfigSource = readFileSync(
+      join(process.cwd(), "src/runtime-config.ts"),
+      "utf8"
+    )
+    expect(runtimeConfigSource).toContain(
+      "process.env.NEXT_PUBLIC_API_BASE_URL"
+    )
     const offenders = findRuntimeSourceFiles().filter((filePath) => {
       if (filePath.endsWith("runtime-config.ts")) {
         return false

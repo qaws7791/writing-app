@@ -231,8 +231,7 @@ export function CoursesPage({ courses, filters }: CoursesPageProps) {
                       className="object-cover select-none"
                       fill
                       sizes="(max-width: 768px) 112px, (max-width: 1024px) 50vw, 33vw"
-                      src={createCourseImageUrl(course.id, 600, 300)}
-                      unoptimized
+                      src={createCourseImageUrl(course.visualKey)}
                     />
                   </div>
                   <div className="p-4 md:p-6 flex-1 flex flex-col min-w-0">

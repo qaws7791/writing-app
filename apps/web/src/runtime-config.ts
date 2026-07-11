@@ -15,21 +15,21 @@ type WebRuntimeEnv = {
   readonly [key: string]: string | undefined
 }
 
-export function readBrowserApiBaseUrl(
-  env: WebRuntimeEnv = process.env
-): BrowserApiBaseUrl {
+export function readBrowserApiBaseUrl(env?: WebRuntimeEnv): BrowserApiBaseUrl {
   return toApiBaseUrl(
-    env["NEXT_PUBLIC_API_BASE_URL"],
-    localRuntimeDefaults.learnerApiBaseUrl
+    env === undefined
+      ? process.env.NEXT_PUBLIC_API_BASE_URL
+      : env.NEXT_PUBLIC_API_BASE_URL,
+    localRuntimeDefaults.learnerApiBaseUrl,
+    env === undefined ? process.env.NODE_ENV : env.NODE_ENV
   ) as BrowserApiBaseUrl
 }
 
-export function readServerApiBaseUrl(
-  env: WebRuntimeEnv = process.env
-): ServerApiBaseUrl {
+export function readServerApiBaseUrl(env?: WebRuntimeEnv): ServerApiBaseUrl {
   return toApiBaseUrl(
-    env["WEB_API_BASE_URL"],
-    localRuntimeDefaults.learnerApiBaseUrl
+    env === undefined ? process.env.WEB_API_BASE_URL : env.WEB_API_BASE_URL,
+    localRuntimeDefaults.learnerApiBaseUrl,
+    env === undefined ? process.env.NODE_ENV : env.NODE_ENV
   ) as ServerApiBaseUrl
 }
 
@@ -44,7 +44,18 @@ export function buildApiUrl(
   return new URL(path.replace(/^\/+/, ""), `${apiBaseUrl}/`).toString()
 }
 
-function toApiBaseUrl(rawValue: string | undefined, fallback: string): string {
+function toApiBaseUrl(
+  rawValue: string | undefined,
+  fallback: string,
+  nodeEnvironment: string | undefined
+): string {
+  if (
+    nodeEnvironment === "production" &&
+    (rawValue === undefined || rawValue.trim() === "")
+  ) {
+    throw new Error("production API base URL is required")
+  }
+
   const candidate =
     rawValue === undefined || rawValue.trim() === "" ? fallback : rawValue
   const url = new URL(candidate)

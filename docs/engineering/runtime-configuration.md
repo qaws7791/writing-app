@@ -125,17 +125,19 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 
 파일: `apps/admin/src/runtime-config.ts`
 
-| 변수                 | 기본값                  | 설명                            |
-| -------------------- | ----------------------- | ------------------------------- |
-| `ADMIN_API_BASE_URL` | `http://localhost:4001` | 어드민 API URL                  |
-| `ADMIN_ORIGIN`       | `http://localhost:3001` | 서버 API 요청 origin과 CSP 기준 |
+| 변수                             | 기본값                  | 설명                                    |
+| -------------------------------- | ----------------------- | --------------------------------------- |
+| `NEXT_PUBLIC_ADMIN_API_BASE_URL` | `http://localhost:4001` | 브라우저와 서버가 호출할 어드민 API URL |
+| `NEXT_PUBLIC_LEARNER_WEB_ORIGIN` | `http://localhost:3000` | 어드민에서 이동할 학습자 웹 origin      |
+| `ADMIN_ORIGIN`                   | `http://localhost:3001` | 서버 API 요청 origin과 CSP 기준         |
 
 base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildAdminApiUrl()`로 만든다.
 어드민 웹은 `ADMIN_DEV_SESSION_TOKEN` 같은 자동 세션 주입 환경 변수를 지원하지 않는다. 로컬 개발은 seed 관리자 로그인, 학습자 브라우저 자동화는 `ENABLE_TEST_AUTH=true`를 사용한다.
 
 ## 프론트엔드 보안 header 설정
 
-- 웹 앱의 `NEXT_PUBLIC_API_BASE_URL`과 어드민 앱의 `ADMIN_API_BASE_URL` origin은 각 앱 CSP의 `connect-src`에 반영된다.
+- 웹 앱의 `NEXT_PUBLIC_API_BASE_URL`과 어드민 앱의 `NEXT_PUBLIC_ADMIN_API_BASE_URL` origin은 각 앱 CSP의 `connect-src`에 반영된다.
+- production build는 브라우저 공개 API URL과 학습자 웹 origin이 비어 있을 때 localhost 기본값으로 후퇴하지 않고 실패한다.
 - production 빌드는 HSTS와 공통 보안 header를 적용하고 `X-Powered-By`를 노출하지 않는다.
 - API origin을 변경할 때 CORS·trusted origin과 프론트엔드 CSP가 같은 배포 구성을 가리키는지 함께 검증한다.
 
