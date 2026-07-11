@@ -1,5 +1,3 @@
-import { localRuntimeDefaults } from "@workspace/env"
-
 declare const adminApiBaseUrlBrand: unique symbol
 
 export type AdminApiBaseUrl = string & {
@@ -15,7 +13,6 @@ export function readAdminApiBaseUrl(env?: AdminRuntimeEnv): AdminApiBaseUrl {
     env === undefined
       ? process.env.NEXT_PUBLIC_ADMIN_API_BASE_URL
       : (env.NEXT_PUBLIC_ADMIN_API_BASE_URL ?? env.ADMIN_API_BASE_URL),
-    localRuntimeDefaults.adminApiBaseUrl,
     env === undefined ? process.env.NODE_ENV : env.NODE_ENV
   ) as AdminApiBaseUrl
 }
@@ -53,21 +50,12 @@ export function readLearnerWebOrigin(env?: AdminRuntimeEnv): string {
   }
 
   return candidate === undefined || candidate.trim() === ""
-    ? localRuntimeDefaults.learnerWebOrigin
-    : new URL(candidate).origin
-}
-
-export function readAdminWebOrigin(env?: AdminRuntimeEnv): string {
-  const candidate =
-    env === undefined ? process.env.ADMIN_ORIGIN : env.ADMIN_ORIGIN
-  return candidate === undefined || candidate.trim() === ""
-    ? localRuntimeDefaults.adminWebOrigin
+    ? createDevelopmentLearnerWebOrigin()
     : new URL(candidate).origin
 }
 
 function toApiBaseUrl(
   rawValue: string | undefined,
-  fallback: string,
   nodeEnvironment: string | undefined
 ): string {
   if (
@@ -78,8 +66,22 @@ function toApiBaseUrl(
   }
 
   const candidate =
-    rawValue === undefined || rawValue.trim() === "" ? fallback : rawValue
+    rawValue === undefined || rawValue.trim() === ""
+      ? createDevelopmentAdminApiBaseUrl()
+      : rawValue
   const url = new URL(candidate)
 
   return url.toString().replace(/\/+$/, "")
+}
+
+function createDevelopmentAdminApiBaseUrl(): string {
+  const url = new URL(window.location.origin)
+  url.port = "4001"
+  return url.origin
+}
+
+function createDevelopmentLearnerWebOrigin(): string {
+  const url = new URL(window.location.origin)
+  url.port = "3000"
+  return url.origin
 }

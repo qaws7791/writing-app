@@ -5,11 +5,8 @@ import {
   toApiError,
 } from "@/lib/api/api-error"
 import { learnerSessionCookieName } from "@/lib/auth/session-token"
-import {
-  buildApiUrl,
-  type BrowserApiBaseUrl,
-  type ServerApiBaseUrl,
-} from "@/runtime-config"
+import { buildApiUrl, type BrowserApiBaseUrl } from "@/runtime-config"
+import type { ServerApiBaseUrl } from "@/runtime-config-server"
 import {
   fetchHttpResponse,
   type HttpFetch,

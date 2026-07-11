@@ -72,7 +72,7 @@
 
 ## 학습자 웹 설정
 
-파일: `apps/web/src/runtime-config.ts`
+파일: `apps/web/src/runtime-config.ts`, `apps/web/src/runtime-config-server.ts`
 
 | 변수                       | 기본값                  | 설명                                |
 | -------------------------- | ----------------------- | ----------------------------------- |
@@ -125,13 +125,14 @@ base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildA
 
 ## 어드민 웹 설정
 
-파일: `apps/admin/src/runtime-config.ts`
+파일: `apps/admin/src/runtime-config.ts`, `apps/admin/src/runtime-config-server.ts`
 
-| 변수                             | 기본값                  | 설명                                    |
-| -------------------------------- | ----------------------- | --------------------------------------- |
-| `NEXT_PUBLIC_ADMIN_API_BASE_URL` | `http://localhost:4001` | 브라우저와 서버가 호출할 어드민 API URL |
-| `NEXT_PUBLIC_LEARNER_WEB_ORIGIN` | `http://localhost:3000` | 어드민에서 이동할 학습자 웹 origin      |
-| `ADMIN_ORIGIN`                   | `http://localhost:3001` | 서버 API 요청 origin과 CSP 기준         |
+| 변수                             | 기본값                  | 설명                               |
+| -------------------------------- | ----------------------- | ---------------------------------- |
+| `NEXT_PUBLIC_ADMIN_API_BASE_URL` | `http://localhost:4001` | 브라우저가 호출할 어드민 API URL   |
+| `NEXT_PUBLIC_LEARNER_WEB_ORIGIN` | `http://localhost:3000` | 어드민에서 이동할 학습자 웹 origin |
+| `ADMIN_API_BASE_URL`             | `http://localhost:4001` | 서버가 호출할 내부 어드민 API URL  |
+| `ADMIN_ORIGIN`                   | `http://localhost:3001` | 서버 API 요청 origin과 CSP 기준    |
 
 base URL은 trailing slash를 제거해 정규화한다. endpoint URL은 `buildAdminApiUrl()`로 만든다.
 어드민 웹은 `ADMIN_DEV_SESSION_TOKEN` 같은 자동 세션 주입 환경 변수를 지원하지 않는다. 로컬 개발은 seed 관리자 로그인, 학습자 브라우저 자동화는 `ENABLE_TEST_AUTH=true`를 사용한다.

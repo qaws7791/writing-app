@@ -9,6 +9,10 @@ import {
   readAdminApiBaseUrl,
   readLearnerWebOrigin,
 } from "@/runtime-config"
+import {
+  readAdminWebOrigin,
+  readServerAdminApiBaseUrl,
+} from "@/runtime-config-server"
 
 describe("admin runtime config", () => {
   it("어드민 API base URL을 기본값과 환경 변수에서 명시적으로 읽는다", () => {
@@ -27,6 +31,21 @@ describe("admin runtime config", () => {
     expect(() => readLearnerWebOrigin({ NODE_ENV: "production" })).toThrow(
       "production learner web origin is required"
     )
+  })
+
+  it("서버 전용 API와 admin origin을 공개 브라우저 계약과 분리한다", () => {
+    expect(
+      readServerAdminApiBaseUrl({
+        ADMIN_API_BASE_URL: "https://admin-api.internal.test/",
+        NODE_ENV: "production",
+      })
+    ).toBe("https://admin-api.internal.test")
+    expect(
+      readAdminWebOrigin({
+        ADMIN_ORIGIN: "https://admin.example.test/path",
+        NODE_ENV: "production",
+      })
+    ).toBe("https://admin.example.test")
   })
 
   it("어드민 API path를 같은 규칙으로 조합한다", () => {

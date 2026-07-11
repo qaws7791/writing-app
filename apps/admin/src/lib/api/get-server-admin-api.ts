@@ -1,13 +1,13 @@
 import { createHttpAdminApi } from "@/lib/api/http-admin-api"
 import type { AdminApi } from "@/lib/api/admin-api"
 import {
-  readAdminApiBaseUrl,
   readAdminWebOrigin,
-  type AdminApiBaseUrl,
-} from "@/runtime-config"
+  readServerAdminApiBaseUrl,
+} from "@/runtime-config-server"
+import type { AdminApiBaseUrl } from "@/runtime-config"
 
 export function getServerAdminApi({
-  apiBaseUrl = readAdminApiBaseUrl(),
+  apiBaseUrl = readServerAdminApiBaseUrl(),
   tokenProvider,
 }: {
   readonly apiBaseUrl?: AdminApiBaseUrl

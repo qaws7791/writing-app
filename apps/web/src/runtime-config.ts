@@ -1,14 +1,9 @@
-import { localRuntimeDefaults } from "@workspace/env"
+import type { ServerApiBaseUrl } from "@/runtime-config-server"
 
 declare const browserApiBaseUrlBrand: unique symbol
-declare const serverApiBaseUrlBrand: unique symbol
 
 export type BrowserApiBaseUrl = string & {
   readonly [browserApiBaseUrlBrand]: true
-}
-
-export type ServerApiBaseUrl = string & {
-  readonly [serverApiBaseUrlBrand]: true
 }
 
 type WebRuntimeEnv = {
@@ -20,21 +15,8 @@ export function readBrowserApiBaseUrl(env?: WebRuntimeEnv): BrowserApiBaseUrl {
     env === undefined
       ? process.env.NEXT_PUBLIC_API_BASE_URL
       : env.NEXT_PUBLIC_API_BASE_URL,
-    localRuntimeDefaults.learnerApiBaseUrl,
     env === undefined ? process.env.NODE_ENV : env.NODE_ENV
   ) as BrowserApiBaseUrl
-}
-
-export function readServerApiBaseUrl(env?: WebRuntimeEnv): ServerApiBaseUrl {
-  return toApiBaseUrl(
-    env === undefined ? process.env.WEB_API_BASE_URL : env.WEB_API_BASE_URL,
-    localRuntimeDefaults.learnerApiBaseUrl,
-    env === undefined ? process.env.NODE_ENV : env.NODE_ENV
-  ) as ServerApiBaseUrl
-}
-
-export function readTestAuthEnabled(env: WebRuntimeEnv = process.env): boolean {
-  return env["NODE_ENV"] !== "production" && env["ENABLE_TEST_AUTH"] === "true"
 }
 
 export function buildApiUrl(
@@ -46,7 +28,6 @@ export function buildApiUrl(
 
 function toApiBaseUrl(
   rawValue: string | undefined,
-  fallback: string,
   nodeEnvironment: string | undefined
 ): string {
   if (
@@ -57,8 +38,16 @@ function toApiBaseUrl(
   }
 
   const candidate =
-    rawValue === undefined || rawValue.trim() === "" ? fallback : rawValue
+    rawValue === undefined || rawValue.trim() === ""
+      ? createDevelopmentBrowserApiBaseUrl()
+      : rawValue
   const url = new URL(candidate)
 
   return url.toString().replace(/\/+$/, "")
+}
+
+function createDevelopmentBrowserApiBaseUrl(): string {
+  const url = new URL(window.location.origin)
+  url.port = "4000"
+  return url.origin
 }

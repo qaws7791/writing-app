@@ -1,8 +1,8 @@
+import { buildAdminApiUrl } from "@/runtime-config"
 import {
-  buildAdminApiUrl,
-  readAdminApiBaseUrl,
   readAdminWebOrigin,
-} from "@/runtime-config"
+  readServerAdminApiBaseUrl,
+} from "@/runtime-config-server"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
 import { adminSessionCookieName } from "@/lib/auth/admin-session-token"
 
@@ -44,7 +44,7 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const response = await fetch(
-    buildAdminApiUrl(readAdminApiBaseUrl(), "/ai-chat/messages/stream"),
+    buildAdminApiUrl(readServerAdminApiBaseUrl(), "/ai-chat/messages/stream"),
     {
       body: requestBody,
       headers: {

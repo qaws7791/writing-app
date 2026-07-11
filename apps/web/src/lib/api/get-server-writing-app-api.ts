@@ -1,6 +1,9 @@
 import { createHttpWritingAppApi } from "@/lib/api/http/create-http-writing-app-api"
 import type { WritingAppApi } from "@/lib/api/writing-app-api-port"
-import { readServerApiBaseUrl, type ServerApiBaseUrl } from "@/runtime-config"
+import {
+  readServerApiBaseUrl,
+  type ServerApiBaseUrl,
+} from "@/runtime-config-server"
 
 export function getServerWritingAppApi({
   apiBaseUrl = readServerApiBaseUrl(),

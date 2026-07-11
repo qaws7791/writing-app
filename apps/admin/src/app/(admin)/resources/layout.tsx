@@ -6,7 +6,7 @@ import type { InitialResourceTreeState } from "@/features/resources/tree/resourc
 import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
 import { createAdminLoginPath } from "@/lib/auth/admin-auth-navigation"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
-import { readAdminApiBaseUrl } from "@/runtime-config"
+import { readServerAdminApiBaseUrl } from "@/runtime-config-server"
 import { Spinner } from "@workspace/ui/components/ui/spinner"
 
 export default async function ResourceLayout({
@@ -39,7 +39,7 @@ export default async function ResourceLayout({
     <Suspense fallback={<ResourceWorkspaceFallback />}>
       <ResourceWorkspace
         adminId={sessionResult.value.admin.id}
-        apiBaseUrl={readAdminApiBaseUrl()}
+        apiBaseUrl={readServerAdminApiBaseUrl()}
         initialTree={initialTree}
       >
         {children}

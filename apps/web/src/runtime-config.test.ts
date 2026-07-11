@@ -3,12 +3,11 @@ import { join, relative } from "node:path"
 import { describe, expect, it } from "vitest"
 import { localRuntimeDefaults } from "@workspace/env"
 
+import { buildApiUrl, readBrowserApiBaseUrl } from "@/runtime-config"
 import {
-  buildApiUrl,
-  readBrowserApiBaseUrl,
   readServerApiBaseUrl,
   readTestAuthEnabled,
-} from "@/runtime-config"
+} from "@/runtime-config-server"
 
 describe("web runtime config", () => {
   it("브라우저 API base URL을 기본값과 환경 변수에서 명시적으로 읽는다", () => {
@@ -27,7 +26,7 @@ describe("web runtime config", () => {
       "production API base URL is required"
     )
     expect(() => readServerApiBaseUrl({ NODE_ENV: "production" })).toThrow(
-      "production API base URL is required"
+      "production server API base URL is required"
     )
   })
 

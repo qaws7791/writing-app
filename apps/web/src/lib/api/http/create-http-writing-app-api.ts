@@ -11,7 +11,8 @@ import {
   type FetchLike,
   type TokenProvider,
 } from "@/lib/api/http/openapi-client"
-import type { BrowserApiBaseUrl, ServerApiBaseUrl } from "@/runtime-config"
+import type { BrowserApiBaseUrl } from "@/runtime-config"
+import type { ServerApiBaseUrl } from "@/runtime-config-server"
 import {
   courseDetailDtoSchema,
   courseListDtoSchema,

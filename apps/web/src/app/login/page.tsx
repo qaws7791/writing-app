@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 
 import { AuthPage } from "@/features/auth/auth-page"
 import { resolveSafeNextPath } from "@/lib/auth/auth-navigation"
-import { readTestAuthEnabled } from "@/runtime-config"
+import { readTestAuthEnabled } from "@/runtime-config-server"
 
 export const metadata: Metadata = {
   title: "로그인",

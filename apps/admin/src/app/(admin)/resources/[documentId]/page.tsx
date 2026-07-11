@@ -2,7 +2,7 @@ import { ResourceDocumentEditor } from "@/features/resources/editor/resource-doc
 import { ResourceDocumentView } from "@/features/resources/resource-document-view"
 import { getServerAdminApi } from "@/lib/api/get-server-admin-api"
 import { getServerAdminSessionToken } from "@/lib/auth/server-admin-session-token"
-import { readAdminApiBaseUrl } from "@/runtime-config"
+import { readServerAdminApiBaseUrl } from "@/runtime-config-server"
 import { Alert, AlertDescription } from "@workspace/ui/components/ui/alert"
 
 export default async function AdminResourceDocumentRoute({
@@ -29,7 +29,7 @@ export default async function AdminResourceDocumentRoute({
     <ResourceDocumentView document={result.value} />
   ) : (
     <ResourceDocumentEditor
-      apiBaseUrl={readAdminApiBaseUrl()}
+      apiBaseUrl={readServerAdminApiBaseUrl()}
       document={result.value}
       key={result.value.id}
     />
