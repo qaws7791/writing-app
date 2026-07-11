@@ -74,7 +74,38 @@ describe("레슨 route", () => {
       screen.queryByRole("heading", { name: "좋은 문장이란 무엇인가" })
     ).not.toBeInTheDocument()
   })
+
+  it("레슨·진행·프로필 조회를 함께 시작하고 코스 조회는 레슨 확인 뒤 시작한다", async () => {
+    const lesson =
+      createDeferred<Awaited<ReturnType<WritingAppApi["getLesson"]>>>()
+    vi.mocked(api.getLesson).mockReturnValueOnce(lesson.promise)
+
+    const routePromise = LessonRoute({
+      searchParams: Promise.resolve({ lesson_id: "l1" }),
+    })
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(api.getLesson).toHaveBeenCalledWith("l1")
+    expect(api.getProgress).toHaveBeenCalledOnce()
+    expect(api.getProfile).toHaveBeenCalledOnce()
+    expect(api.getCourseDetail).not.toHaveBeenCalled()
+
+    lesson.resolve(apiFailure(networkError()))
+    await routePromise
+
+    expect(api.getCourseDetail).not.toHaveBeenCalled()
+  })
 })
+
+function createDeferred<T>() {
+  let resolve: (value: T) => void = () => undefined
+  const promise = new Promise<T>((promiseResolve) => {
+    resolve = promiseResolve
+  })
+
+  return { promise, resolve }
+}
 
 function networkError() {
   return networkApiError(

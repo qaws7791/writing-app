@@ -64,6 +64,8 @@
 
 `apps/admin`은 `AdminApi` 포트만 사용한다. 서버 컴포넌트는 `getServerAdminApi()`로 현재 요청 쿠키를 어드민 API에 전달한다. 관리자 로그인은 `ADMIN_API_BASE_URL`의 Hono API `/api/auth/*` endpoint를 직접 호출한다.
 
+서로 의존하지 않는 서버 조회는 같은 렌더 주기에서 먼저 시작한 뒤 함께 기다린다. 관리자 AI 채팅은 목록과 선택 대화를 병렬로 조회한다. 학습자 레슨은 정상 경로의 지연을 줄이기 위해 레슨·진행·프로필 조회를 함께 시작하고, 코스 상세는 레슨이 확인되어 `courseId`를 얻은 뒤 시작한다. 따라서 잘못된 레슨 ID에서도 이미 시작한 진행·프로필 요청은 발생할 수 있지만 코스 상세 요청은 발생하지 않는다. 각 요청의 기존 오류·redirect 의미는 병렬화 전과 동일하게 유지한다.
+
 ## 인증과 redirect
 
 학습자 앱의 보호 라우트는 `apps/web/src/app/app/layout.tsx`에서 현재 사용자를 확인하고, 없으면 `/login`으로 보낸다. 로그인 `next` 값은 `src/lib/auth/auth-navigation.ts`의 허용 규칙을 통과해야 한다.

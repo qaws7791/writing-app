@@ -13,11 +13,15 @@ export default async function AdminAiChatRoute({
   const api = getServerAdminApi({
     tokenProvider: getServerAdminSessionToken,
   })
-  const conversationsResult = await api.getAiChatConversations()
-  const activeConversationResult =
+  const conversationsPromise = api.getAiChatConversations()
+  const activeConversationPromise =
     conversationId === ""
-      ? null
-      : await api.getAiChatConversation(conversationId)
+      ? Promise.resolve(null)
+      : api.getAiChatConversation(conversationId)
+  const [conversationsResult, activeConversationResult] = await Promise.all([
+    conversationsPromise,
+    activeConversationPromise,
+  ])
 
   if (
     activeConversationResult?.status === "error" &&

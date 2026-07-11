@@ -46,7 +46,10 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
   const api = getServerWritingAppApi({
     tokenProvider: () => token,
   })
-  const lessonResult = await api.getLesson(lessonId)
+  const lessonPromise = api.getLesson(lessonId)
+  const progressPromise = api.getProgress()
+  const profilePromise = api.getProfile()
+  const lessonResult = await lessonPromise
   const lessonOutcome = toRouteApiOutcome(lessonResult)
 
   if (lessonOutcome.status === "error") {
@@ -64,7 +67,7 @@ export default async function LessonRoute({ searchParams }: LessonRouteProps) {
 
   const lesson = lessonOutcome.value
   const [courseDetailResult, progressResult, profileResult] = await Promise.all(
-    [api.getCourseDetail(lesson.courseId), api.getProgress(), api.getProfile()]
+    [api.getCourseDetail(lesson.courseId), progressPromise, profilePromise]
   )
   const profileOutcome = toRouteApiOutcome(profileResult)
 
