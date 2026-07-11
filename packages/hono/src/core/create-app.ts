@@ -22,7 +22,7 @@ export function createApp<const TRoutes extends CreateAppOptions["routes"]>(
   }
 
   app.notFound(createNotFoundHandler())
-  app.onError(createErrorHandler())
+  app.onError(createErrorHandler(options.errorLogger))
 
   return app
 }

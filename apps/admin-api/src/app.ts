@@ -2,6 +2,7 @@ import type { MiddlewareHandler } from "hono"
 import type { OpenAPIHono } from "@hono/zod-openapi"
 import { cors } from "hono/cors"
 import { createApp as createHonoApp } from "@workspace/hono/core"
+import type { InternalErrorLogger } from "@workspace/hono/errors"
 import {
   createRequestBodyLimitMiddleware,
   createTrustedOriginMiddleware,
@@ -48,6 +49,7 @@ import {
   createRequestLoggingMiddleware,
   type RequestLogger,
   type RequestLoggingRuntime,
+  type SecurityAuditLogger,
 } from "@workspace/logger"
 import type { AdminAiChatAgent } from "@/mastra/admin-content-agent"
 
@@ -83,9 +85,11 @@ export type AdminApiDependencies = {
   readonly adminServices: AdminApiServices
   readonly adminOrigin?: string
   readonly authHandler?: (request: Request) => Promise<Response>
+  readonly errorLogger?: InternalErrorLogger
   readonly now?: () => Date
   readonly requestLogger?: RequestLogger
   readonly requestLoggingRuntime?: RequestLoggingRuntime
+  readonly securityAuditLogger?: SecurityAuditLogger
   readonly resourceDocumentOperations: ResourceDocumentOperationCoordinator
   readonly resourceEvents: ResourceEventsWorkspace
   readonly sessionResolver: AdminSessionResolver
@@ -96,6 +100,7 @@ export function createApp(dependencies: AdminApiDependencies): OpenAPIHono {
   const aiChatRequestGuard =
     dependencies.aiChatRequestGuard ?? createAiChatRequestGuard()
   const app = createHonoApp({
+    errorLogger: dependencies.errorLogger,
     middleware: createMiddleware(dependencies),
     routes: [
       healthRoute,
@@ -189,6 +194,18 @@ function createMiddleware(
       createRequestLoggingMiddleware({
         createRequestId: dependencies.requestLoggingRuntime?.createRequestId,
         logRequest: dependencies.requestLogger,
+        logSecurityAudit: dependencies.securityAuditLogger,
+        readActor(context) {
+          const session = context.get("activeAdminSession")
+
+          return session === undefined
+            ? undefined
+            : {
+                id: session.admin.id,
+                role: session.admin.role,
+                type: "admin",
+              }
+        },
         readMonotonicTimeMs:
           dependencies.requestLoggingRuntime?.readMonotonicTimeMs,
       })

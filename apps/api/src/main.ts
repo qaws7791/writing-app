@@ -3,6 +3,7 @@ import { createLearnerApiCore } from "@workspace/core/modules/learner-api"
 import {
   createAppLogger,
   createRequestLogger,
+  createSecurityAuditLogger,
   defaultRequestLoggingRuntime,
 } from "@workspace/logger"
 
@@ -20,6 +21,9 @@ const core = createLearnerApiCore({
   googleClientSecret: env.googleClientSecret,
   openAiApiKey: env.openAiApiKey,
   openAiModel: env.openAiModel,
+  onOpenAiUsage(event) {
+    logger.info(event, "ai.usage")
+  },
   testAuthEnabled: env.testAuthEnabled,
   webOrigin: env.webOrigin,
 })
@@ -27,11 +31,15 @@ const app = createApp({
   aiFeedbackService: core.aiFeedbackService,
   authHandler: core.authHandler,
   contentService: core.contentService,
+  errorLogger(event) {
+    logger.error(event, "request.failed")
+  },
   learningService: core.learningService,
   profileReader: core.profileReader,
   progressService: core.progressService,
   requestLogger: createRequestLogger(logger),
   requestLoggingRuntime: defaultRequestLoggingRuntime,
+  securityAuditLogger: createSecurityAuditLogger(logger),
   sessionResolver: core.sessionResolver,
   webOrigin: env.webOrigin,
 })

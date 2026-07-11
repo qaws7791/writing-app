@@ -6,6 +6,8 @@ import { createApp, type ApiDependencies } from "@/app"
 import { createTestDependencies } from "@/routes/test-dependencies"
 
 type CapturedRequestLogEvent = {
+  readonly actorId?: string
+  readonly actorType?: "admin" | "learner"
   readonly durationMs: number
   readonly method: string
   readonly path: string
@@ -49,15 +51,40 @@ describe("플랫폼 API profile route", () => {
     })
 
     expect(response.status).toBe(401)
-    expect(response.headers.get("x-request-id")).toBe("request-1")
+    expect(response.headers.get("x-request-id")).not.toBe("request-1")
     expect(requestEvents).toHaveLength(1)
     expect(requestEvents[0]).toMatchObject({
       method: "GET",
       path: "/profile",
-      requestId: "request-1",
+      externalRequestId: "request-1",
+      requestId: response.headers.get("x-request-id"),
       status: 401,
     })
     expect(requestEvents[0]?.durationMs).toBeGreaterThanOrEqual(0)
+  })
+
+  it("인증 요청 완료 로그에 학습자 actor를 보강한다", async () => {
+    const requestEvents: CapturedRequestLogEvent[] = []
+    const app = createApp({
+      ...createDependencies(),
+      requestLogger(event) {
+        requestEvents.push(event)
+      },
+    })
+
+    const response = await app.request("/profile", {
+      headers: { Authorization: "Bearer active-token" },
+    })
+
+    expect(response.status).toBe(200)
+    expect(requestEvents[0]).toMatchObject({
+      actorId: "user-1",
+      actorType: "learner",
+      status: 200,
+    })
+    expect(JSON.stringify(requestEvents[0])).not.toMatch(
+      /authorization|cookie|token|email/i
+    )
   })
 
   it("브라우저 쓰기 요청 preflight에 CORS 헤더로 응답한다", async () => {

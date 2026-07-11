@@ -8,6 +8,53 @@ import {
 import { createAiFeedbackPrompt } from "@workspace/core/modules/ai-feedback/domain/ai-feedback.prompt"
 
 describe("OpenAI AI feedback provider", () => {
+  it("응답 token 사용량을 입력·출력 본문 없이 구조 이벤트로 전달한다", async () => {
+    const usages: unknown[] = []
+    const provider = createOpenAiFeedbackProvider({
+      client: {
+        responses: {
+          async create() {
+            return {
+              output_text: JSON.stringify({
+                improvements: ["근거를 더 구체화하세요."],
+                nextAction: "예시를 추가하세요.",
+                score: 80,
+                scoreRange: [0, 100],
+                showScore: true,
+                strengths: ["주장이 선명합니다."],
+                summary: "좋은 답변입니다.",
+              }),
+              usage: {
+                input_tokens: 120,
+                output_tokens: 30,
+                total_tokens: 150,
+              },
+            }
+          },
+        },
+      },
+      model: "gpt-test",
+      onUsage: (event) => usages.push(event),
+    })
+
+    await provider.createFeedback(
+      createAiFeedbackPrompt({
+        answer: "학습자 답변",
+        focus: "명확성",
+        lessonTitle: "좋은 문장",
+      })
+    )
+
+    expect(usages).toEqual([
+      {
+        inputTokens: 120,
+        model: "gpt-test",
+        outputTokens: 30,
+        totalTokens: 150,
+      },
+    ])
+    expect(JSON.stringify(usages)).not.toContain("학습자 답변")
+  })
   it("Responses API 출력 JSON을 AI feedback payload로 변환한다", async () => {
     const requests: OpenAiResponseCreateRequest[] = []
     const provider = createOpenAiFeedbackProvider({
